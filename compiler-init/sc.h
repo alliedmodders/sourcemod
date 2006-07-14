@@ -332,7 +332,7 @@ typedef struct s_stringpair {
 #define tDECL    299
 #define tOPERATOR 300
 #define tPUBLIC  301
-#define tRETURN  303
+#define tRETURN  302
 #define tSIZEOF  303
 #define tSLEEP   304
 #define tSTATE   305

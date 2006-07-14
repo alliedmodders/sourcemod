@@ -4591,6 +4591,14 @@ static void statement(int *lastindent,int allow_decl)
       error(3);                 /* declaration only valid in a block */
     } /* if */
     break;
+  case tDECL:
+    if (allow_decl) {
+       declloc(FALSE);
+       lastst=tDECL;
+	} else {
+      error(3);                 /* declaration only valid in a block */
+    } /* if */
+    break;
   case tSTATIC:
     if (allow_decl) {
       declloc(TRUE);
