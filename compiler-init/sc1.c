@@ -195,9 +195,9 @@ int pc_compile(int argc, char *argv[])
   strcpy(binfname,outfname);
   ptr=get_extension(binfname);
   if (ptr!=NULL && stricmp(ptr,".asm")==0)
-    set_extension(binfname,".amx",TRUE);
+    set_extension(binfname,".smx",TRUE);
   else
-    set_extension(binfname,".amx",FALSE);
+    set_extension(binfname,".smx",FALSE);
   /* set output names that depend on the input name */
   if (sc_listing)
     set_extension(outfname,".lst",TRUE);
@@ -605,10 +605,10 @@ static void initglobals(void)
   litmax=sDEF_LITMAX;   /* current size of the literal table */
   errnum=0;             /* number of errors */
   warnnum=0;            /* number of warnings */
-  optproccall=TRUE;     /* support "procedure call" */
+  optproccall=FALSE;    /* sourcemod: do not support "procedure call" */
   verbosity=1;          /* verbosity level, no copyright banner */
-  sc_debug=sCHKBOUNDS;  /* by default: bounds checking+assertions */
-  pc_optimize=sOPTIMIZE_NOMACRO;
+  sc_debug=sSYMBOLIC;   /* sourcemod: full debug stuff */
+  pc_optimize=sOPTIMIZE_DEFAULT;  /* sourcemod: full optimization */
   sc_packstr=FALSE;     /* strings are unpacked by default */
   #if AMX_COMPACTMARGIN > 2
     sc_compress=TRUE;   /* compress output bytecodes */
@@ -758,6 +758,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         chdir(ptr);
         break;
 #endif
+#if 0 /* not allowed to change for SourceMod */
       case 'd':
         switch (*option_value(ptr)) {
         case '0':
@@ -778,6 +779,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
           about();
         } /* switch */
         break;
+#endif
       case 'e':
         strlcpy(ename,option_value(ptr),_MAX_PATH); /* set name of error file */
         break;
@@ -809,7 +811,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         break;
       case 'O':
         pc_optimize=*option_value(ptr) - '0';
-        if (pc_optimize<sOPTIMIZE_NONE || pc_optimize>=sOPTIMIZE_NUMBER)
+        if (pc_optimize<sOPTIMIZE_NONE || pc_optimize>=sOPTIMIZE_NUMBER || pc_optimize==sOPTIMIZE_NOMACRO)
           about();
         break;
       case 'p':
@@ -885,9 +887,11 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       case ';':
         sc_needsemicolon=toggle_option(ptr,sc_needsemicolon);
         break;
+#if 0 /* not allowed to change in SourceMod */
       case '(':
         optproccall=!toggle_option(ptr,!optproccall);
         break;
+#endif
       default:                  /* wrong option */
         about();
       } /* switch */
@@ -905,8 +909,8 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       i=atoi(ptr+1);
       add_constant(str,i,sGLOBAL,0);
     } else {
-      strlcpy(str,argv[arg],sizeof(str)-2); /* -2 because default extension is ".p" */
-      set_extension(str,".p",FALSE);
+      strlcpy(str,argv[arg],sizeof(str)-5); /* -5 because default extension is ".psrc" */
+      set_extension(str,".psrc",FALSE);
       insert_sourcefile(str);
       /* The output name is the first input name with a different extension,
        * but it is stored in a different directory
@@ -1094,7 +1098,8 @@ static void setconfig(char *root)
 
 static void setcaption(void)
 {
-  pc_printf("Pawn compiler " VERSION_STR "\t \t \tCopyright (c) 1997-2006, ITB CompuPhase\n\n");
+  pc_printf("SourcePawn Compiler " SMC_VERSTRING "\n");
+  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2006 AlliedModders, LLC\n\n");
 }
 
 static void about(void)
@@ -1112,11 +1117,13 @@ static void about(void)
 #if defined dos_setdrive
     pc_printf("         -Dpath   active directory path\n");
 #endif
+#if 0 /* not used for SourceMod */
     pc_printf("         -d<num>  debugging level (default=-d%d)\n",sc_debug);
     pc_printf("             0    no symbolic information, no run-time checks\n");
     pc_printf("             1    run-time checks, no symbolic information\n");
     pc_printf("             2    full debug information and dynamic checking\n");
     pc_printf("             3    same as -d2, but implies -O0\n");
+#endif
     pc_printf("         -e<name> set name of error file (quiet compile)\n");
 #if defined	__WIN32__ || defined _WIN32 || defined _Windows
     pc_printf("         -H<hwnd> window handle to send a notification message on finish\n");
@@ -1126,7 +1133,9 @@ static void about(void)
     pc_printf("         -o<name> set base name of (P-code) output file\n");
     pc_printf("         -O<num>  optimization level (default=-O%d)\n",pc_optimize);
     pc_printf("             0    no optimization\n");
+#if 0 /* not used for SourceMod */
     pc_printf("             1    JIT-compatible optimizations only\n");
+#endif
     pc_printf("             2    full optimizations\n");
     pc_printf("         -p<name> set name of \"prefix\" file\n");
 #if !defined SC_LIGHT
@@ -1142,7 +1151,9 @@ static void about(void)
     pc_printf("         -\\       use '\\' for escape characters\n");
     pc_printf("         -^       use '^' for escape characters\n");
     pc_printf("         -;[+/-]  require a semicolon to end each statement (default=%c)\n", sc_needsemicolon ? '+' : '-');
+#if 0 /* not allowed in SourceMod */
     pc_printf("         -([+/-]  require parantheses for function invocation (default=%c)\n", optproccall ? '-' : '+');
+#endif
     pc_printf("         sym=val  define constant \"sym\" with value \"val\"\n");
     pc_printf("         sym=     define constant \"sym\" with value 0\n");
 #if defined	__WIN32__ || defined _WIN32 || defined _Windows || defined __MSDOS__

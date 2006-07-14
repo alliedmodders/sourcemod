@@ -50,13 +50,13 @@
 #define CTRL_CHAR   '\\'    /* default control character */
 #define sCHARBITS   8       /* size of a packed character */
 
-#define sDIMEN_MAX     3    /* maximum number of array dimensions */
-#define sLINEMAX     511    /* input line length (in characters) */
+#define sDIMEN_MAX     4    /* maximum number of array dimensions */
+#define sLINEMAX     1024   /* input line length (in characters) */
 #define sCOMP_STACK   32    /* maximum nesting of #if .. #endif sections */
 #define sDEF_LITMAX  500    /* initial size of the literal pool, in "cells" */
 #define sDEF_AMXSTACK 4096  /* default stack size for AMX files */
 #define PREPROC_TERM  '\x7f'/* termination character for preprocessor expressions (the "DEL" code) */
-#define sDEF_PREFIX   "default.inc" /* default prefix filename */
+#define sDEF_PREFIX   "sourcemod.inc" /* default prefix filename */
 
 typedef union {
   void *pv;                 /* e.g. a name */
