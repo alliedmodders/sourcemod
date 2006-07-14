@@ -3226,11 +3226,13 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     sc_status=curstatus;
     sc_reparse=TRUE;      /* must add another pass to "initial scan" phase */
   } /* if */
+#if 0	/* Not used for SourceMod */
   /* we want public functions to be explicitly prototyped, as they are called
    * from the outside
    */
   if (fpublic && (sym->usage & uFORWARD)==0)
     error(235,symbolname);
+#endif
   /* declare all arguments */
   argcnt=declargs(sym,TRUE);
   opererror=!operatoradjust(opertok,sym,symbolname,tag);
