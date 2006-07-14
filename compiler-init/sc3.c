@@ -1670,13 +1670,29 @@ restart:
     if (sc_allowproccall) {
       callfunction(sym,lval1,FALSE);
     } else {
-      lval1->sym=NULL;
-      lval1->ident=iEXPRESSION;
-      lval1->constval=0;
-      lval1->tag=0;
-      error(76);                /* invalid function call, or syntax error */
-    } /* if */
-    return FALSE;
+      int n=-1,iter=0;
+      for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
+        if (sym->ident==iFUNCTN
+            && (sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0)
+        {
+          assert(sym->vclass==sGLOBAL);
+          if (strcmp(sym->name, lval1->sym->name)==0) {
+            n = iter;
+            break;
+          }
+          iter++;
+        }
+      }
+      if (n!=-1) {
+        lval1->sym=NULL;
+        lval1->ident=iCONSTEXPR;
+        lval1->constval=n;
+        lval1->tag=pc_addtag("Function");
+      } else {
+        error(76);                /* invalid function call, or syntax error */
+      } /* if */
+      return FALSE;
+    }
   } /* if */
   return lvalue;
 }
