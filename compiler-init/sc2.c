@@ -715,7 +715,7 @@ static int ftoi(cell *val,const unsigned char *curptr)
     #if PAWN_CELL_SIZE==32
       float value=(float)fnum;
       *val=*((cell *)&value);
-      #if !defined NDEBUG
+      #if 0 /* SourceMod - not needed */
         /* I assume that the C/C++ compiler stores "float" values in IEEE 754
          * format (as mandated in the ANSI standard). Test this assumption
          * anyway.
@@ -733,7 +733,7 @@ static int ftoi(cell *val,const unsigned char *curptr)
       #endif
     #elif PAWN_CELL_SIZE==64
       *val=*((cell *)&fnum);
-      #if !defined NDEBUG
+      #if 0 /* SourceMod - not needed */
         /* I assume that the C/C++ compiler stores "double" values in IEEE 754
          * format (as mandated in the ANSI standard).
          */
@@ -1456,7 +1456,7 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
   int prefixlen;
   const unsigned char *p,*s,*e;
   unsigned char *args[10];
-  int match,arg,len;
+  int match,arg,len,argsnum=0;
 
   memset(args,0,sizeof args);
 
@@ -1496,6 +1496,8 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
         /* store the parameter (overrule any earlier) */
         if (args[arg]!=NULL)
           free(args[arg]);
+		else
+          argsnum++;
         len=(int)(e-s);
         args[arg]=(unsigned char*)malloc(len+1);
         if (args[arg]==NULL)
@@ -1551,14 +1553,15 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
   if (match) {
     /* calculate the length of the substituted string */
     for (e=(unsigned char*)substitution,len=0; *e!='\0'; e++) {
-      if (*e=='%' && isdigit(*(e+1))) {
+      if (*e=='%' && isdigit(*(e+1)) && argsnum) {
         arg=*(e+1)-'0';
         assert(arg>=0 && arg<=9);
-        if (args[arg]!=NULL)
+        if (args[arg]!=NULL) {
           len+=strlen((char*)args[arg]);
-        else
-          len+=2;     /* copy '%' plus digit */
-        e++;          /* skip %, digit is skipped later */
+          e++;
+        } else {
+          len++;
+        }
       } else {
         len++;
       } /* if */
@@ -1576,12 +1579,23 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
           if (args[arg]!=NULL) {
             strins((char*)s,(char*)args[arg],strlen((char*)args[arg]));
             s+=strlen((char*)args[arg]);
+            e++;
           } else {
             error(236); /* parameter does not exist, incorrect #define pattern */
             strins((char*)s,(char*)e,2);
             s+=2;
           } /* if */
           e++;          /* skip %, digit is skipped later */
+		} else if (*e == '"') {
+			p=e;
+			if (is_startstring(e)) {
+				e=skipstring(e);
+				strins((char*)s,(char *)p,(e-p+1));
+				s+=(e-p+1);
+			} else {
+				strins((char*)s,(char*)e,1);
+				s++;
+			}
         } else {
           strins((char*)s,(char*)e,1);
           s++;
@@ -1620,7 +1634,7 @@ static void substallpatterns(unsigned char *line,int buffersize)
     if (*start=='\0')
       break;            /* abort loop on error */
     /* if matching the operator "defined", skip it plus the symbol behind it */
-    if (strncmp((char*)start,"defined",7)==0 && *(start+7)<=' ') {
+	if (strncmp((char*)start,"defined",7)==0 && !isalpha((char)*(start+7))) {
       start+=7;         /* skip "defined" */
       /* skip white space & parantheses */
       while (*start<=' ' && *start!='\0' || *start=='(')
