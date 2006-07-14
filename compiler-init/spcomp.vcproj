@@ -290,6 +290,14 @@
 				RelativePath=".\libpawnc.rc"
 				>
 			</File>
+			<File
+				RelativePath=".\sc5.scp"
+				>
+			</File>
+			<File
+				RelativePath=".\sc7.scp"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

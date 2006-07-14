@@ -131,6 +131,7 @@ static void addwhile(int *ptr);
 static void delwhile(void);
 static int *readwhile(void);
 
+static int norun      = 0;      /* the compiler never ran */
 static int lastst     = 0;      /* last executed statement type */
 static int nestlevel  = 0;      /* number of active (open) compound statements */
 static int rettype    = 0;      /* the type that a "return" expression should have */
@@ -435,7 +436,7 @@ cleanup:
       } /* if */
       if (pc_amxram>0 && (glb_declared+pc_stksize)*sizeof(cell)>=(unsigned long)pc_amxram)
         flag_exceed=1;
-      if ((sc_debug & sSYMBOLIC)!=0 || verbosity>=2 || stacksize+32>=(long)pc_stksize || flag_exceed) {
+      if (!norun && (sc_debug & sSYMBOLIC)!=0 || verbosity>=2 || stacksize+32>=(long)pc_stksize || flag_exceed) {
         pc_printf("Header size:       %8ld bytes\n", (long)hdrsize);
         pc_printf("Code size:         %8ld bytes\n", (long)code_idx);
         pc_printf("Data size:         %8ld bytes\n", (long)glb_declared*sizeof(cell));
@@ -1164,6 +1165,7 @@ static void about(void)
     pc_printf("with a colon (\":\") or an equal sign (\"=\"). That is, the options \"-d0\", \"-d=0\"\n");
     pc_printf("and \"-d:0\" are all equivalent.\n");
   } /* if */
+  norun = 1;
   longjmp(errbuf,3);        /* user abort */
 }
 
