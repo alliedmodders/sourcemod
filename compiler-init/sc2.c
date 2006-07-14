@@ -1586,16 +1586,16 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
             s+=2;
           } /* if */
           e++;          /* skip %, digit is skipped later */
-		} else if (*e == '"') {
-			p=e;
-			if (is_startstring(e)) {
-				e=skipstring(e);
-				strins((char*)s,(char *)p,(e-p+1));
-				s+=(e-p+1);
-			} else {
-				strins((char*)s,(char*)e,1);
-				s++;
-			}
+        } else if (*e == '"') {
+          p=e;
+          if (is_startstring(e)) {
+            e=skipstring(e);
+            strins((char*)s,(char *)p,(e-p+1));
+            s+=(e-p+1);
+          } else {
+            strins((char*)s,(char*)e,1);
+            s++;
+          }
         } else {
           strins((char*)s,(char*)e,1);
           s++;

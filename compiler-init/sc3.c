@@ -1988,7 +1988,7 @@ static int nesting=0;
       if (matchtoken('_')) {
         arglist[argpos]=ARG_IGNORED;  /* flag argument as "present, but ignored" */
         if (arg[argidx].ident==0 || arg[argidx].ident==iVARARGS) {
-          error(202);             /* argument count mismatch */
+          error(92);             /* argument count mismatch */
         } else if (!arg[argidx].hasdefault) {
           error(34,nargs+1);      /* argument has no default value */
         } /* if */
@@ -2007,7 +2007,7 @@ static int nesting=0;
         assert(sc_status==statFIRST || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {
         case 0:
-          error(202);             /* argument count mismatch */
+          error(92);             /* argument count mismatch */
           break;
         case iVARARGS:
           /* always pass by reference */

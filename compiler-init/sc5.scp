@@ -129,7 +129,8 @@ static char *errmsg[] = {
 /*088*/  "public variables and local variables may not have states (symbol \"%s\")\n",
 /*089*/  "state variables may not be initialized (symbol \"%s\")\n",
 /*090*/  "public functions may not return arrays (symbol \"%s\")\n",
-/*091*/  "ambiguous constant; tag override is required (symbol \"%s\")\n"
+/*091*/  "ambiguous constant; tag override is required (symbol \"%s\")\n",
+/*092*/  "number of arguments does not match definition\n"
 #else
   "\271pect\235\306k\212:\227\316bu\202fo\217\206\216\012",
   "\201l\223\252s\203g\352\315e\234\202(\255\363\201) c\355f\240\344w ea\275 \042c\351e\042\012",
@@ -221,7 +222,8 @@ static char *errmsg[] = {
   "pu\236\326 \301\310\226\206\344c\337\301\310\367\242\340\376\315\310\323",
   "\315\200\301\310\367\242\312\203i\205\211iz\235\323",
   "pu\236\326 \366\207\367\242\221tur\336\256y\207\323",
-  "a\230i\262ou\207\354t; \373ov\210rid\200\272\221qui\221\206\323"
+  "a\230i\262ou\207\354t; \373ov\210rid\200\272\221qui\221\206\323",
+  "\374\230\264\304\265t\207do\310\242\345\275 \327i\214\012",
 #endif
        };
 
