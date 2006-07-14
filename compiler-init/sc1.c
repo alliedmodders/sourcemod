@@ -61,6 +61,8 @@
   #include <windows.h>
 #endif
 
+#include <time.h>
+
 #include "lstring.h"
 #include "sc.h"
 #include "svnrev.h"
@@ -130,6 +132,7 @@ static void dostate(void);
 static void addwhile(int *ptr);
 static void delwhile(void);
 static int *readwhile(void);
+static void inst_datetime_defines(void);
 
 static int norun      = 0;      /* the compiler never ran */
 static int lastst     = 0;      /* last executed statement type */
@@ -305,6 +308,7 @@ int pc_compile(int argc, char *argv[])
     delete_symbols(&glbtab,0,TRUE,FALSE);
     #if !defined NO_DEFINE
       delete_substtable();
+      inst_datetime_defines();
     #endif
     resetglobals();
     sc_ctrlchar=sc_ctrlchar_org;
@@ -369,6 +373,7 @@ int pc_compile(int argc, char *argv[])
   delete_symbols(&glbtab,0,TRUE,FALSE);
   #if !defined NO_DEFINE
     delete_substtable();
+    inst_datetime_defines();
   #endif
   resetglobals();
   sc_ctrlchar=sc_ctrlchar_org;
@@ -520,6 +525,22 @@ int pc_addconstant(char *name,cell value,int tag)
   sc_status=statIDLE;
   add_constant(name,value,sGLOBAL,tag);
   return 1;
+}
+
+static void inst_datetime_defines(void)
+{
+  char date[64];
+  char ltime[64];
+  time_t td;
+  struct tm *curtime;
+
+  time(&td);
+  curtime = localtime(&td);
+  strftime(date, 31, "\"%m/%d%Y\"", curtime);
+  strftime(ltime, 31, "\"%H:%M:%S\"", curtime);
+
+  insert_subst("__DATE__", date, 8);
+  insert_subst("__TIME__", ltime, 8);
 }
 
 #if defined __cplusplus
@@ -1041,7 +1062,7 @@ static void setconfig(char *root)
     #elif defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
       /* see www.autopackage.org for the BinReloc module */
       br_init_lib(NULL);
-      ptr=br_find_exe("/opt/pawn/bin/pawncc");
+      ptr=br_find_exe("spcomp");
       strlcpy(path,ptr,sizeof path);
       free(ptr);
     #else
@@ -3199,7 +3220,9 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
   if ((sym->usage & (uPROTOTYPED | uREAD))==uREAD && sym->tag!=0) {
     int curstatus=sc_status;
     sc_status=statWRITE;  /* temporarily set status to WRITE, so the warning isn't blocked */
+#if 0 /* SourceMod - silly, should be removed in first pass, so removed */
     error(208);
+#endif
     sc_status=curstatus;
     sc_reparse=TRUE;      /* must add another pass to "initial scan" phase */
   } /* if */
@@ -3331,7 +3354,11 @@ static int argcompare(arginfo *a1,arginfo *a2)
 {
   int result,level,i;
 
+#if 0	/* SourceMod uses case insensitive args for forwards */
   result= strcmp(a1->name,a2->name)==0;     /* name */
+#else
+  result=1;
+#endif
   if (result)
     result= a1->ident==a2->ident;           /* type/class */
   if (result)
