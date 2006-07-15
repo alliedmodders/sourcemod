@@ -283,7 +283,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    325    /* value of last multi-character match-able token */
+#define tLAST    326    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -329,44 +329,45 @@ typedef struct s_stringpair {
 #define tIF      296
 #define tNATIVE  297
 #define tNEW     298
-#define tOPERATOR 299
-#define tPUBLIC  300
-#define tRETURN  301
-#define tSIZEOF  302
-#define tSLEEP   303
-#define tSTATE   304
-#define tSTATIC  305
-#define tSTOCK   306
-#define tSWITCH  307
-#define tTAGOF   308
-#define tWHILE   309
+#define tDECL    299
+#define tOPERATOR 300
+#define tPUBLIC  301
+#define tRETURN  302
+#define tSIZEOF  303
+#define tSLEEP   304
+#define tSTATE   305
+#define tSTATIC  306
+#define tSTOCK   307
+#define tSWITCH  308
+#define tTAGOF   309
+#define tWHILE   310
 /* compiler directives */
-#define tpASSERT 310    /* #assert */
-#define tpDEFINE 311
-#define tpELSE   312    /* #else */
-#define tpELSEIF 313    /* #elseif */
-#define tpEMIT   314
-#define tpENDIF  315
-#define tpENDINPUT 316
-#define tpENDSCRPT 317
-#define tpERROR  318
-#define tpFILE   319
-#define tpIF     320    /* #if */
-#define tINCLUDE 321
-#define tpLINE   322
-#define tpPRAGMA 323
-#define tpTRYINCLUDE 324
-#define tpUNDEF  325
+#define tpASSERT 311    /* #assert */
+#define tpDEFINE 312
+#define tpELSE   313    /* #else */
+#define tpELSEIF 314    /* #elseif */
+#define tpEMIT   315
+#define tpENDIF  316
+#define tpENDINPUT 317
+#define tpENDSCRPT 318
+#define tpERROR  319
+#define tpFILE   320
+#define tpIF     321    /* #if */
+#define tINCLUDE 322
+#define tpLINE   323
+#define tpPRAGMA 324
+#define tpTRYINCLUDE 325
+#define tpUNDEF  326
 /* semicolon is a special case, because it can be optional */
-#define tTERM    326    /* semicolon or newline */
-#define tENDEXPR 327    /* forced end of expression */
+#define tTERM    327    /* semicolon or newline */
+#define tENDEXPR 328    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  328    /* integer number */
-#define tRATIONAL 329   /* rational number */
-#define tSYMBOL  330
-#define tLABEL   331
-#define tSTRING  332
-#define tEXPR    333    /* for assigment to "lastst" only */
+#define tNUMBER  329    /* integer number */
+#define tRATIONAL 330   /* rational number */
+#define tSYMBOL  331
+#define tLABEL   332
+#define tSTRING  333
+#define tEXPR    334    /* for assigment to "lastst" only */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01

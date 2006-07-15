@@ -135,6 +135,7 @@ static int *readwhile(void);
 static void inst_datetime_defines(void);
 
 static int norun      = 0;      /* the compiler never ran */
+static int autozero   = 0;      /* if 1 will zero out the variable, if 0 omit the zeroing */ 
 static int lastst     = 0;      /* last executed statement type */
 static int nestlevel  = 0;      /* number of active (open) compound statements */
 static int rettype    = 0;      /* the type that a "return" expression should have */
@@ -1977,19 +1978,24 @@ static int declloc(int fstatic)
         int ctag = tag;         /* set to "tag" by default */
         int explicit_init=FALSE;/* is the variable explicitly initialized? */
         if (matchtoken('=')) {
+          if (!autozero)
+            error(10);
           doexpr(FALSE,FALSE,FALSE,FALSE,&ctag,NULL,TRUE);
           explicit_init=TRUE;
         } else {
-          ldconst(0,sPRI);      /* uninitialized variable, set to zero */
+          if (autozero)
+            ldconst(0,sPRI);      /* uninitialized variable, set to zero */
         } /* if */
-        /* now try to save the value (still in PRI) in the variable */
-        lval.sym=sym;
-        lval.ident=iVARIABLE;
-        lval.constval=0;
-        lval.tag=tag;
-        check_userop(NULL,ctag,lval.tag,2,NULL,&ctag);
-        store(&lval);
-        markexpr(sEXPR,NULL,0); /* full expression ends after the store */
+        if (autozero) {
+          /* now try to save the value (still in PRI) in the variable */
+          lval.sym=sym;
+          lval.ident=iVARIABLE;
+          lval.constval=0;
+          lval.tag=tag;
+          check_userop(NULL,ctag,lval.tag,2,NULL,&ctag);
+          store(&lval);
+          markexpr(sEXPR,NULL,0); /* full expression ends after the store */
+        }
         assert(staging);        /* end staging phase (optimize expression) */
         stgout(staging_start);
         stgset(FALSE);
@@ -2004,15 +2010,17 @@ static int declloc(int fstatic)
         assert(cur_lit>=0 && cur_lit<=litidx && litidx<=litmax);
         assert(size>0 && size>=sym->dim.array.length);
         assert(numdim>1 || size==sym->dim.array.length);
-        /* final literal values that are zero make no sense to put in the literal
-         * pool, because values get zero-initialized anyway; we check for this,
-         * because users often explicitly initialize strings to ""
-         */
-        while (litidx>cur_lit && litq[litidx-1]==0)
-          litidx--;
-        /* if the array is not completely filled, set all values to zero first */
-        if (litidx-cur_lit<size && (ucell)size<CELL_MAX)
-          fillarray(sym,size*sizeof(cell),0);
+        if (autozero) {
+          /* final literal values that are zero make no sense to put in the literal
+           * pool, because values get zero-initialized anyway; we check for this,
+           * because users often explicitly initialize strings to ""
+           */
+          while (litidx>cur_lit && litq[litidx-1]==0)
+            litidx--;
+          /* if the array is not completely filled, set all values to zero first */
+          if (litidx-cur_lit<size && (ucell)size<CELL_MAX)
+            fillarray(sym,size*sizeof(cell),0);
+        }
         if (cur_lit<litidx) {
           /* check whether the complete array is set to a single value; if
            * it is, more compact code can be generated */
@@ -2264,12 +2272,12 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
                        constvalue *enumroot,int *errorfound)
 {
   cell prev1=0,prev2=0;
-  int ellips=FALSE;
+  int ellips=FALSE,hadtoken=0;
   int curlit=litidx;
   int rtag,ctag;
 
   assert(ident==iARRAY || ident==iREFARRAY);
-  if (matchtoken('{')) {
+  if ((hadtoken=matchtoken('{')) && autozero) {
     constvalue *enumfield=(enumroot!=NULL) ? enumroot->next : NULL;
     do {
       int fieldlit=litidx;
@@ -2331,6 +2339,8 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
+    if (hadtoken && !autozero)
+      error(10);
     init(ident,&ctag,errorfound);
     if (!matchtag(tag,ctag,TRUE))
       error(213);               /* tagname mismatch */
@@ -4612,8 +4622,18 @@ static void statement(int *lastindent,int allow_decl)
     break;
   case tNEW:
     if (allow_decl) {
+      autozero=1;
       declloc(FALSE);
       lastst=tNEW;
+    } else {
+      error(3);                 /* declaration only valid in a block */
+    } /* if */
+    break;
+  case tDECL:
+    if (allow_decl) {
+      autozero=0;
+      declloc(FALSE);
+      lastst=tDECL;
     } else {
       error(3);                 /* declaration only valid in a block */
     } /* if */
@@ -4993,6 +5013,7 @@ static void dofor(void)
        * 'compound statement' level of it own.
        */
       nestlevel++;
+      autozero=1;
       declloc(FALSE); /* declare local variable */
     } else {
       doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);  /* expression 1 */
