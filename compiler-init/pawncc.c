@@ -89,7 +89,10 @@ int main(int argc, char *argv[])
 
 		lastsection = curoffs;
 
-		/** write the code table */
+		/** 
+		 * Begin writing each of our known tables out
+		 */
+		
 		if (strcmp(tables[0], ".code") == 0)
 		{
 			sp_file_code_t cod;
@@ -109,6 +112,7 @@ int main(int argc, char *argv[])
 				cod.flags |= SP_FILE_DEBUG;
 			}
 			cod.code = sizeof(cod);
+			cod.main = hdr->cip;
 
 			/* write the code in our newer format */
 			cbase = (unsigned char *)hdr + hdr->cod;
@@ -308,7 +312,6 @@ int main(int argc, char *argv[])
 				case OP_CASETBL:
 					{
 						cell num;
-						int i;
 						DBGPARAM(*(cell *)tptr);
 						num = *(cell *)tptr;
 						tptr += sizeof(cell);
@@ -332,9 +335,9 @@ int main(int argc, char *argv[])
 			/* backtrack and write this section's header info */
 			curoffs = (uint32_t)ftell(fp);
 			fseek(fp, offsets[0], SEEK_SET);
-			sfwrite(&lastsection, sizeof(lastsection), 1, fp);
+			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
 			cod.codesize += sizeof(cod);
-			sfwrite(&cod.codesize, sizeof(cod.codesize), 1, fp);
+			sfwrite(&cod.codesize, sizeof(uint32_t), 1, fp);
 			fseek(fp, curoffs, SEEK_SET);
 			lastsection = curoffs;
 		}
@@ -358,9 +361,127 @@ int main(int argc, char *argv[])
 			/* backtrack and write this section's header info */
 			curoffs = ftell(fp);
 			fseek(fp, offsets[1], SEEK_SET);
-			sfwrite(&lastsection, sizeof(lastsection), 1, fp);
+			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
 			dat.datasize += sizeof(dat);
-			sfwrite(&dat.datasize, sizeof(dat.datasize),1, fp);
+			sfwrite(&dat.datasize, sizeof(uint32_t),1, fp);
+			fseek(fp, curoffs, SEEK_SET);
+			lastsection = curoffs;
+		}
+
+		if (strcmp(tables[2], ".publics") == 0)
+		{
+			sp_file_publics_t *pbtbl;
+			AMX_FUNCSTUBNT *stub;
+			uint32_t publics = (hdr->natives - hdr->publics) / hdr->defsize;
+
+			pbtbl = (sp_file_publics_t *)malloc(sizeof(sp_file_publics_t) * publics);
+			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->publics);
+
+			for (i=0; i<publics; i++)
+			{
+				pbtbl[i].address = stub->address;
+				pbtbl[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
+
+				stub += hdr->defsize;
+			}
+			if (publics)
+			{
+				sfwrite(pbtbl, sizeof(sp_file_publics_t), publics, fp);
+			}
+			free(pbtbl);
+
+			/* backtrack and write section's header info */
+			curoffs = ftell(fp);
+			fseek(fp, offsets[2], SEEK_SET);
+			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
+			publics *= sizeof(sp_file_publics_t);
+			sfwrite(&publics, sizeof(uint32_t), 1, fp);
+			fseek(fp, curoffs, SEEK_SET);
+			lastsection = curoffs;
+		}
+
+		if (strcmp(tables[3], ".pubvars") == 0)
+		{
+			sp_file_pubvars_t *pbvars;
+			AMX_FUNCSTUBNT *stub;
+			uint32_t pubvars = (hdr->tags - hdr->pubvars) / hdr->defsize;
+
+			pbvars = (sp_file_pubvars_t *)malloc(sizeof(sp_file_pubvars_t) * pubvars);
+			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->pubvars);
+
+			for (i=0; i<pubvars; i++)
+			{
+				pbvars[i].address = stub->address;
+				pbvars[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
+
+				stub += hdr->defsize;
+			}
+			if (pubvars)
+			{
+				sfwrite(pbvars, sizeof(sp_file_pubvars_t), pubvars, fp);
+			}
+			free(pbvars);
+
+			/* backtrack and write section's header info */
+			curoffs = ftell(fp);
+			fseek(fp, offsets[3], SEEK_SET);
+			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
+			pubvars *= sizeof(sp_file_pubvars_t);
+			sfwrite(&pubvars, sizeof(uint32_t), 1, fp);
+			fseek(fp, curoffs, SEEK_SET);
+			lastsection = curoffs;
+		}
+
+		if (strcmp(tables[4], ".natives") == 0)
+		{
+			sp_file_natives_t *nvtbl;
+			AMX_FUNCSTUBNT *stub;
+			uint32_t natives = (hdr->libraries - hdr->natives) / hdr->defsize;
+
+			nvtbl = (sp_file_natives_t *)malloc(sizeof(sp_file_natives_t) * natives);
+			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->natives);
+
+			for (i=0; i<natives; i++)
+			{
+				nvtbl[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
+
+				stub += hdr->defsize;
+			}
+			if (natives)
+			{
+				sfwrite(nvtbl, sizeof(sp_file_natives_t), natives, fp);
+			}
+			free(nvtbl);
+
+			/* backtrack and write header */
+			curoffs = ftell(fp);
+			fseek(fp, offsets[4], SEEK_SET);
+			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
+			natives *= sizeof(sp_file_natives_t);
+			sfwrite(&natives, sizeof(uint32_t), 1, fp);
+			fseek(fp, curoffs, SEEK_SET);
+			lastsection = curoffs;
+		}
+
+		if (strcmp(tables[5], ".names") == 0)
+		{
+			unsigned char *base;
+			uint32_t namelen;
+
+			/* write the entire block */
+			base = (unsigned char *)hdr + hdr->nametable + sizeof(uint16_t);
+			/**
+			 * note - the name table will be padded to sizeof(cell) bytes.
+			 * this may clip at most an extra three bytes in!
+			 */
+			namelen = hdr->cod - hdr->nametable;
+			sfwrite(base, namelen, 1, fp);
+
+			/* backtrack and write header */
+			curoffs = ftell(fp);
+			fseek(fp, offsets[5], SEEK_SET);
+			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
+			sfwrite(&namelen, sizeof(uint32_t), 1, fp);
 			fseek(fp, curoffs, SEEK_SET);
 			lastsection = curoffs;
 		}

@@ -58,6 +58,7 @@ typedef struct sp_file_code_s
 	uint8_t		cellsize;		/* cellsize in bytes */
 	uint8_t		codeversion;	/* version of opcodes supported */
 	uint16_t	flags;			/* flags */
+	uint32_t	main;			/* address to "main" if any */
 	uint32_t	code;			/* rel offset to code */
 } sp_file_code_t;
 
