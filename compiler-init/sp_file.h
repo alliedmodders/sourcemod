@@ -59,14 +59,21 @@ typedef struct sp_file_code_s
 	uint8_t		codeversion;	/* version of opcodes supported */
 	uint16_t	flags;			/* flags */
 	uint32_t	main;			/* address to "main" if any */
+	uint32_t	disksize;		/* disksize in bytes */
+	uint32_t	compression;	/* compression */
 	uint32_t	code;			/* rel offset to code */
 } sp_file_code_t;
+
+#define SPFILE_COMPRESSION_NONE		0
+#define SPFILE_COMPRESSION_GZ		1
 
 /* section is .data */
 typedef struct sp_file_data_s
 {
-	uint32_t	datasize;		/* size of data section */
+	uint32_t	datasize;		/* size of data section in memory */
 	uint32_t	memsize;		/* total mem required (includes data) */
+	uint32_t	disksize;		/* size of data on disk (compressed) */
+	uint8_t		compression;	/* compression */
 	uint32_t	data;			/* file offset to data (helper) */
 } sp_file_data_t;
 

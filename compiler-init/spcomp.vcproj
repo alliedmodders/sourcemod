@@ -115,7 +115,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE;ZEXPORT"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -250,10 +250,6 @@
 				RelativePath=".\scvars.c"
 				>
 			</File>
-			<File
-				RelativePath=".\sp_file.c"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -306,6 +302,106 @@
 				RelativePath=".\sc7.scp"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="zlib"
+			>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath=".\zlib\adler32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\compress.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\crc32.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\deflate.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\gzio.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\infback.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inffast.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inflate.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inftrees.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\trees.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\uncompr.c"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\zutil.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath=".\zlib\crc32.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\deflate.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inffast.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inffixed.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inflate.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\inftrees.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\trees.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\zconf.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\zlib.h"
+					>
+				</File>
+				<File
+					RelativePath=".\zlib\zutil.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -6,6 +6,7 @@
 #include "sp_file.h"
 #include "amx.h"
 #include "osdefs.h"
+#include "zlib/zlib.h"
 
 #define NUM_SECTIONS	6
 
@@ -328,6 +329,8 @@ int main(int argc, char *argv[])
 				}
 			}
 			cod.codesize = (uint32_t)(tptr - tbase);
+			cod.disksize = cod.codesize;
+			cod.compression = SPFILE_COMPRESSION_NONE;
 			sfwrite(&cod, sizeof(cod), 1, fp);
 			sfwrite(tbase, cod.codesize, 1, fp);
 			free(tbase);
@@ -346,24 +349,58 @@ int main(int argc, char *argv[])
 		{
 			sp_file_data_t dat;
 			unsigned char *dbase;
+			Bytef *cmp_dbase;
+			uLong disksize;
+			int err;
 
 			dat.datasize = hdr->hea - hdr->dat;
 			dat.memsize = hdr->stp;
 			dat.data = sizeof(dat);
-			dbase = (unsigned char *)hdr + hdr->dat;
+			dat.compression = SPFILE_COMPRESSION_GZ;
 
-			sfwrite(&dat, sizeof(dat), 1, fp);
 			if (dat.datasize)
 			{
-				sfwrite(dbase, dat.datasize, 1, fp);
+				dat.disksize = (uint32_t)compressBound((uLong)dat.datasize);
+
+				dbase = (unsigned char *)hdr + hdr->dat;
+				cmp_dbase = (Bytef *)malloc(dat.disksize);
+
+				/* compress */
+				err = compress2(cmp_dbase, &disksize, (Bytef *)dbase, dat.datasize, Z_BEST_COMPRESSION);
+
+				if (err != Z_OK)
+				{
+					pc_printf("Failed to compress DAT section with error: %d\n", err);
+					pc_printf("Defaulting to no compression.\n");
+					dat.compression = SPFILE_COMPRESSION_NONE;
+					dat.disksize = dat.datasize;
+
+					/* write header */
+					sfwrite(&dat, sizeof(dat), 1, fp);
+					/* write data */
+					sfwrite(&dbase, dat.datasize, 1, fp);
+				} else {
+					dat.disksize = (uint32_t)disksize;
+
+					/* write header */
+					sfwrite(&dat, sizeof(dat), 1, fp);
+					/* write data */
+					sfwrite(&cmp_dbase, dat.disksize, 1, fp);
+				}
+				
+				free(cmp_dbase);
+			} else {
+				/* should be 0 */
+				dat.disksize = dat.datasize;
+				sfwrite(&dat, sizeof(dat), 1, fp);
 			}
 
 			/* backtrack and write this section's header info */
 			curoffs = ftell(fp);
 			fseek(fp, offsets[1], SEEK_SET);
 			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			dat.datasize += sizeof(dat);
-			sfwrite(&dat.datasize, sizeof(uint32_t),1, fp);
+			disksize += sizeof(dat);
+			sfwrite(&disksize, sizeof(uint32_t),1, fp);
 			fseek(fp, curoffs, SEEK_SET);
 			lastsection = curoffs;
 		}
