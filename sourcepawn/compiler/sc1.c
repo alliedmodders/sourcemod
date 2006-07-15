@@ -2339,8 +2339,11 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
-    if (hadtoken && !autozero)
+    if (hadtoken && !autozero) {
       error(10);
+      lexclr(TRUE);           /* drop the rest of the line */
+      return 0;
+    }
     init(ident,&ctag,errorfound);
     if (!matchtag(tag,ctag,TRUE))
       error(213);               /* tagname mismatch */
