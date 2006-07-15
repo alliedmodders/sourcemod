@@ -495,6 +495,9 @@ write_error:
 		unlink(bin_file->name);
 		fclose(fp);
 
+		memfile_destroy(bin_file);
+		bin_file = NULL;
+
 		return 1;
 	}
 

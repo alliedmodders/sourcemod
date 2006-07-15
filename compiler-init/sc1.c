@@ -135,7 +135,7 @@ static int *readwhile(void);
 static void inst_datetime_defines(void);
 
 static int norun      = 0;      /* the compiler never ran */
-static int autozero   = 0;      /* if 1 will zero out the variable, if 0 omit the zeroing */ 
+static int autozero   = 1;      /* if 1 will zero out the variable, if 0 omit the zeroing */ 
 static int lastst     = 0;      /* last executed statement type */
 static int nestlevel  = 0;      /* number of active (open) compound statements */
 static int rettype    = 0;      /* the type that a "return" expression should have */
