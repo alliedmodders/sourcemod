@@ -1076,10 +1076,12 @@ static int command(void)
             if (find_constval(&libname_tab,name,0)==NULL)
               curlibrary=append_constval(&libname_tab,name,0,0);
           } /* if */
+#if 0	/* more unused */
         } else if (strcmp(str,"pack")==0) {
           cell val;
           preproc_expr(&val,NULL);      /* default = packed/unpacked */
           sc_packstr=(int)val;
+#endif
         } else if (strcmp(str,"rational")==0) {
           char name[sNAMEMAX+1];
           cell digits=0;

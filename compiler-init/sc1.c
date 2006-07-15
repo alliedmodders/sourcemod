@@ -629,14 +629,10 @@ static void initglobals(void)
   warnnum=0;            /* number of warnings */
   optproccall=FALSE;    /* sourcemod: do not support "procedure call" */
   verbosity=1;          /* verbosity level, no copyright banner */
-  sc_debug=sSYMBOLIC;   /* sourcemod: full debug stuff */
-  pc_optimize=sOPTIMIZE_DEFAULT;  /* sourcemod: full optimization */
+  sc_debug=sCHKBOUNDS|sSYMBOLIC;   /* sourcemod: full debug stuff */
+  pc_optimize=sOPTIMIZE_DEFAULT;   /* sourcemod: full optimization */
   sc_packstr=FALSE;     /* strings are unpacked by default */
-  #if AMX_COMPACTMARGIN > 2
-    sc_compress=TRUE;   /* compress output bytecodes */
-  #else
-    sc_compress=FALSE;
-  #endif
+  sc_compress=FALSE;	/* always disable compact encoding! */
   sc_needsemicolon=FALSE;/* semicolon required to terminate expressions? */
   sc_dataalign=sizeof(cell);
   pc_stksize=sDEF_AMXSTACK;/* default stack size */
@@ -1132,7 +1128,7 @@ static void about(void)
     pc_printf("Options:\n");
     pc_printf("         -A<num>  alignment in bytes of the data segment and the stack\n");
     pc_printf("         -a       output assembler code\n");
-#if AMX_COMPACTMARGIN > 2
+#if 0	/* not toggleable in SourceMod */
     pc_printf("         -C[+/-]  compact encoding for output file (default=%c)\n", sc_compress ? '+' : '-');
 #endif
     pc_printf("         -c<name> codepage name or number; e.g. 1252 for Windows Latin-1\n");

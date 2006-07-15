@@ -47,7 +47,7 @@ typedef struct {
   char *name;
   int segment;          /* sIN_CSEG=parse in cseg, sIN_DSEG=parse in dseg */
   OPCODE_PROC func;
-} OPCODE;
+} OPCODEC;
 
 static cell codeindex;  /* similar to "code_idx" */
 static cell *lbltab;    /* label table */
@@ -454,7 +454,7 @@ static cell do_case(FILE *fbin,char *params,cell opcode)
   return opcodes(0)+opargs(2);
 }
 
-static OPCODE opcodelist[] = {
+static OPCODEC opcodelist[] = {
   /* node for "invalid instruction" */
   {  0, NULL,         0,        noop },
   /* opcodes in sorted order */

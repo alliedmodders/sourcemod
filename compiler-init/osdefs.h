@@ -42,6 +42,7 @@
 #    define access		_access
 #    define chdir		_chdir
 #    define strdup		_strdup
+#    define unlink		_unlink
 #  endif
 #endif
 

@@ -221,6 +221,8 @@ char *pc_readasm(void *handle, char *string, int maxchars)
 	#endif
 }
 
+extern memfile_t *bin_file;
+
 /* Should return a pointer, which is used as a "magic cookie" to all I/O
  * functions; return NULL for failure.
  */
@@ -234,6 +236,9 @@ void pc_closebin(void *handle,int deletefile)
 	if (deletefile)
 	{
 		memfile_destroy((memfile_t *)handle);
+		bin_file = NULL;
+	} else {
+		bin_file = (memfile_t *)handle;
 	}
 }
 
