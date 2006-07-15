@@ -1976,7 +1976,7 @@ static int declloc(int fstatic)
           check_userop(NULL,ctag,lval.tag,2,NULL,&ctag);
           store(&lval);
           markexpr(sEXPR,NULL,0); /* full expression ends after the store */
-		}
+        }
         assert(staging);        /* end staging phase (optimize expression) */
         stgout(staging_start);
         stgset(FALSE);
@@ -2253,7 +2253,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
                        constvalue *enumroot,int *errorfound)
 {
   cell prev1=0,prev2=0;
-  int ellips=FALSE, hadtoken=0;
+  int ellips=FALSE,hadtoken=0;
   int curlit=litidx;
   int rtag,ctag;
 
