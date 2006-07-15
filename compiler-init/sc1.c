@@ -758,6 +758,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         if (verbosity>1)
           verbosity=1;
         break;
+#if 0	/* not allowed in SourceMod */
       case 'C':
         #if AMX_COMPACTMARGIN > 2
           sc_compress=toggle_option(ptr,sc_compress);
@@ -765,6 +766,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
           about();
         #endif
         break;
+#endif
       case 'c':
         strlcpy(codepage,option_value(ptr),MAXCODEPAGE);  /* set name of codepage */
         break;
