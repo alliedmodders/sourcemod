@@ -250,6 +250,10 @@
 				RelativePath=".\scvars.c"
 				>
 			</File>
+			<File
+				RelativePath=".\sp_file.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -258,6 +262,10 @@
 			>
 			<File
 				RelativePath=".\amx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\amxdbg.h"
 				>
 			</File>
 			<File
@@ -278,6 +286,10 @@
 			</File>
 			<File
 				RelativePath=".\sp_file.h"
+				>
+			</File>
+			<File
+				RelativePath=".\sp_file_headers.h"
 				>
 			</File>
 			<File

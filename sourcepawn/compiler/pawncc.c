@@ -8,11 +8,27 @@
 #include "osdefs.h"
 #include "zlib/zlib.h"
 
-#define NUM_SECTIONS	6
+enum FileSections
+{
+	FS_Code,			/* required */
+	FS_Data,			/* required */
+	FS_Publics,
+	FS_Pubvars,
+	FS_Natives,
+	FS_Nametable,		/* required */
+	FS_DbgFile,
+	FS_DbgSymbol,
+	FS_DbgLine,
+	FS_DbgTags,
+	FS_DbgAutomaton,
+	FS_DbgState,
+	/* --- */
+	FS_Number,
+};
 
 int pc_printf(const char *message,...);
 int pc_compile(int argc, char **argv);
-void sfwrite(const void *buf, size_t size, size_t count, FILE *fp);
+void sfwrite(const void *buf, size_t size, size_t count, sp_file_t *spf);
 
 memfile_t *bin_file = NULL;
 jmp_buf brkout;
@@ -21,17 +37,11 @@ int main(int argc, char *argv[])
 {
 	if (pc_compile(argc,argv) == 0)
 	{
-		FILE *fp;
 		AMX_HEADER *hdr;
-		sp_file_hdr_t shdr;
-		uint32_t curoffs = 0;
-		uint32_t lastsection = 0;
 		int err;
-		uint8_t i8;
 		uint32_t i;
-		const char *tables[NUM_SECTIONS] = {".code", ".data", ".publics", ".pubvars", ".natives", ".names"};
-		uint32_t offsets[NUM_SECTIONS] = {0,0,0,0,0,0};
-		sp_file_section_t sh;
+		sp_file_t *spf;
+		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0};
 
 		if (bin_file == NULL)
 		{
@@ -39,13 +49,12 @@ int main(int argc, char *argv[])
 		}
 
 		hdr = (AMX_HEADER *)bin_file->base;
-		shdr.version = SPFILE_VERSION;
-		shdr.magic = SPFILE_MAGIC;
 
-		if ((fp=fopen(bin_file->name, "wb")) == NULL)
+		if ((spf=spfw_create(bin_file->name, NULL)) == NULL)
 		{
-			pc_printf("Error writing to file: %s", bin_file->name);
-			return 1;
+			pc_printf("Error creating binary file!\n");
+			memfile_destroy(bin_file);
+			return 0;
 		}
 
 		if ((err=setjmp(brkout))!=0)
@@ -53,48 +62,34 @@ int main(int argc, char *argv[])
 			goto write_error;
 		}
 
-		shdr.sections = NUM_SECTIONS;
-		shdr.stringtab = sizeof(shdr) + (sizeof(sp_file_section_t) * shdr.sections);
+		spfw_add_section(spf, ".code");
+		spfw_add_section(spf, ".data");
 
-		/**
-		 * write the header
-		 * unwritten values:
-		 *  imagesize
-		 */
-		sfwrite(&shdr, sizeof(shdr), 1, fp);
-
-		curoffs = shdr.stringtab;
-
-		/**
-		 * write the sections 
-		 * unwritten values:
-		 *  dataoffs
-		 *  size
-		 */
-		for (i8=0; i8<shdr.sections; i8++)
+		sections[FS_Publics] = (hdr->natives - hdr->publics) / hdr->defsize;
+		if (sections[FS_Publics])
 		{
-			/* set name offset to next in string table */
-			sh.nameoffs = curoffs - shdr.stringtab;
-			/* save offset to this section */
-			offsets[i8] = (uint32_t)ftell(fp) + sizeof(sh.nameoffs);
-			/* update `end of file` offset */
-			curoffs += strlen(tables[i8]) + 1;
-			sfwrite(&sh, sizeof(sh), 1, fp);
+			spfw_add_section(spf, ".publics");
+		}
+		sections[FS_Pubvars] = (hdr->tags - hdr->pubvars) / hdr->defsize;
+		if (sections[FS_Pubvars])
+		{
+			spfw_add_section(spf, ".pubvars");
+		}
+		sections[FS_Natives] = (hdr->libraries - hdr->natives) / hdr->defsize;
+		if (sections[FS_Natives])
+		{
+			spfw_add_section(spf, ".natives");
 		}
 
-		/** write the string table */
-		for (i8=0; i8<shdr.sections; i8++)
-		{
-			sfwrite(tables[i8], 1, strlen(tables[i8])+1, fp);
-		}
+		spfw_add_section(spf, ".names");
 
-		lastsection = curoffs;
-
+		spfw_finalize_header(spf);
+		
 		/** 
 		 * Begin writing each of our known tables out
 		 */
 		
-		if (strcmp(tables[0], ".code") == 0)
+		if (sections[FS_Code])
 		{
 			sp_file_code_t cod;
 			cell cip;
@@ -331,21 +326,14 @@ int main(int argc, char *argv[])
 			cod.codesize = (uint32_t)(tptr - tbase);
 			cod.disksize = cod.codesize;
 			cod.compression = SPFILE_COMPRESSION_NONE;
-			sfwrite(&cod, sizeof(cod), 1, fp);
-			sfwrite(tbase, cod.codesize, 1, fp);
+			sfwrite(&cod, sizeof(cod), 1, spf);
+			sfwrite(tbase, cod.codesize, 1, spf);
 			free(tbase);
 
-			/* backtrack and write this section's header info */
-			curoffs = (uint32_t)ftell(fp);
-			fseek(fp, offsets[0], SEEK_SET);
-			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			cod.codesize += sizeof(cod);
-			sfwrite(&cod.codesize, sizeof(uint32_t), 1, fp);
-			fseek(fp, curoffs, SEEK_SET);
-			lastsection = curoffs;
+			spfw_next_section(spf);
 		}
 
-		if (strcmp(tables[1], ".data") == 0)
+		if (sections[FS_Data])
 		{
 			sp_file_data_t dat;
 			unsigned char *dbase;
@@ -366,7 +354,7 @@ int main(int argc, char *argv[])
 				cmp_dbase = (Bytef *)malloc(dat.disksize);
 
 				/* compress */
-				err = compress2(cmp_dbase, &disksize, (Bytef *)dbase, dat.datasize, Z_BEST_COMPRESSION);
+				err = compress2(cmp_dbase, &disksize, (Bytef *)dbase, (uLong)dat.datasize, Z_BEST_COMPRESSION);
 
 				if (err != Z_OK)
 				{
@@ -376,40 +364,33 @@ int main(int argc, char *argv[])
 					dat.disksize = dat.datasize;
 
 					/* write header */
-					sfwrite(&dat, sizeof(dat), 1, fp);
+					sfwrite(&dat, sizeof(dat), 1, spf);
 					/* write data */
-					sfwrite(&dbase, dat.datasize, 1, fp);
+					sfwrite(&dbase, dat.datasize, 1, spf);
 				} else {
 					dat.disksize = (uint32_t)disksize;
 
 					/* write header */
-					sfwrite(&dat, sizeof(dat), 1, fp);
+					sfwrite(&dat, sizeof(dat), 1, spf);
 					/* write data */
-					sfwrite(&cmp_dbase, dat.disksize, 1, fp);
+					sfwrite(cmp_dbase, dat.disksize, 1, spf);
 				}
 				
 				free(cmp_dbase);
 			} else {
 				/* should be 0 */
 				dat.disksize = dat.datasize;
-				sfwrite(&dat, sizeof(dat), 1, fp);
+				sfwrite(&dat, sizeof(dat), 1, spf);
 			}
 
-			/* backtrack and write this section's header info */
-			curoffs = ftell(fp);
-			fseek(fp, offsets[1], SEEK_SET);
-			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			disksize += sizeof(dat);
-			sfwrite(&disksize, sizeof(uint32_t),1, fp);
-			fseek(fp, curoffs, SEEK_SET);
-			lastsection = curoffs;
+			spfw_next_section(spf);
 		}
 
-		if (strcmp(tables[2], ".publics") == 0)
+		if (sections[FS_Publics])
 		{
 			sp_file_publics_t *pbtbl;
 			AMX_FUNCSTUBNT *stub;
-			uint32_t publics = (hdr->natives - hdr->publics) / hdr->defsize;
+			uint32_t publics = sections[FS_Publics];
 
 			pbtbl = (sp_file_publics_t *)malloc(sizeof(sp_file_publics_t) * publics);
 			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->publics);
@@ -423,25 +404,18 @@ int main(int argc, char *argv[])
 			}
 			if (publics)
 			{
-				sfwrite(pbtbl, sizeof(sp_file_publics_t), publics, fp);
+				sfwrite(pbtbl, sizeof(sp_file_publics_t), publics, spf);
 			}
 			free(pbtbl);
 
-			/* backtrack and write section's header info */
-			curoffs = ftell(fp);
-			fseek(fp, offsets[2], SEEK_SET);
-			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			publics *= sizeof(sp_file_publics_t);
-			sfwrite(&publics, sizeof(uint32_t), 1, fp);
-			fseek(fp, curoffs, SEEK_SET);
-			lastsection = curoffs;
+			spfw_next_section(spf);
 		}
 
-		if (strcmp(tables[3], ".pubvars") == 0)
+		if (sections[FS_Pubvars])
 		{
 			sp_file_pubvars_t *pbvars;
 			AMX_FUNCSTUBNT *stub;
-			uint32_t pubvars = (hdr->tags - hdr->pubvars) / hdr->defsize;
+			uint32_t pubvars = sections[FS_Pubvars];
 
 			pbvars = (sp_file_pubvars_t *)malloc(sizeof(sp_file_pubvars_t) * pubvars);
 			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->pubvars);
@@ -455,21 +429,13 @@ int main(int argc, char *argv[])
 			}
 			if (pubvars)
 			{
-				sfwrite(pbvars, sizeof(sp_file_pubvars_t), pubvars, fp);
+				sfwrite(pbvars, sizeof(sp_file_pubvars_t), pubvars, spf);
 			}
 			free(pbvars);
-
-			/* backtrack and write section's header info */
-			curoffs = ftell(fp);
-			fseek(fp, offsets[3], SEEK_SET);
-			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			pubvars *= sizeof(sp_file_pubvars_t);
-			sfwrite(&pubvars, sizeof(uint32_t), 1, fp);
-			fseek(fp, curoffs, SEEK_SET);
-			lastsection = curoffs;
+			spfw_next_section(spf);
 		}
 
-		if (strcmp(tables[4], ".natives") == 0)
+		if (sections[FS_Natives])
 		{
 			sp_file_natives_t *nvtbl;
 			AMX_FUNCSTUBNT *stub;
@@ -486,21 +452,13 @@ int main(int argc, char *argv[])
 			}
 			if (natives)
 			{
-				sfwrite(nvtbl, sizeof(sp_file_natives_t), natives, fp);
+				sfwrite(nvtbl, sizeof(sp_file_natives_t), natives, spf);
 			}
 			free(nvtbl);
-
-			/* backtrack and write header */
-			curoffs = ftell(fp);
-			fseek(fp, offsets[4], SEEK_SET);
-			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			natives *= sizeof(sp_file_natives_t);
-			sfwrite(&natives, sizeof(uint32_t), 1, fp);
-			fseek(fp, curoffs, SEEK_SET);
-			lastsection = curoffs;
+			spfw_next_section(spf);
 		}
 
-		if (strcmp(tables[5], ".names") == 0)
+		if (sections[FS_Nametable])
 		{
 			unsigned char *base;
 			uint32_t namelen;
@@ -512,25 +470,18 @@ int main(int argc, char *argv[])
 			 * this may clip at most an extra three bytes in!
 			 */
 			namelen = hdr->cod - hdr->nametable;
-			sfwrite(base, namelen, 1, fp);
-
-			/* backtrack and write header */
-			curoffs = ftell(fp);
-			fseek(fp, offsets[5], SEEK_SET);
-			sfwrite(&lastsection, sizeof(uint32_t), 1, fp);
-			sfwrite(&namelen, sizeof(uint32_t), 1, fp);
-			fseek(fp, curoffs, SEEK_SET);
-			lastsection = curoffs;
+			sfwrite(base, namelen, 1, spf);
+			spfw_next_section(spf);
 		}
 
-		fclose(fp);
+		spfw_finalize_all(spf);
+		spfw_destroy(spf);
 
 		return 0;
 
 write_error:
 		pc_printf("Error writing to file: %s", bin_file->name);
 		unlink(bin_file->name);
-		fclose(fp);
 
 		memfile_destroy(bin_file);
 		bin_file = NULL;
@@ -541,9 +492,9 @@ write_error:
 	return 1;
 }
 
-void sfwrite(const void *buf, size_t size, size_t count, FILE *fp)
+void sfwrite(const void *buf, size_t size, size_t count, sp_file_t *spf)
 {
-	if (fwrite(buf, size, count, fp) != count)
+	if (spf->funcs.fnWrite(buf, size, count, spf->handle) != count)
 	{
 		longjmp(brkout, 1);
 	}

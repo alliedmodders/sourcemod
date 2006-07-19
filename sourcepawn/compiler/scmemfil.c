@@ -31,25 +31,10 @@
 #include <string.h>
 #include "memfile.h"
 
-#if defined FORTIFY
-  #include <alloc/fortify.h>
-#endif
-
-
-#define BUFFERSIZE 512u
-
-/* For every block, except the first:
- *   buffer points to a block that is BUFFERSIZE long that holds the data
- *   bufpos is the "used size" of the block
- * For the first block:
- *   buffer points to the "file name"
- *   bufpos is the current "file pointer"
- */
 typedef memfile_t MEMFILE;
 #define tMEMFILE  1
 
 #include "sc.h"
-
 
 MEMFILE *mfcreate(char *filename)
 {

@@ -1,110 +1,80 @@
 #ifndef _INCLUDE_SPFILE_H
 #define _INCLUDE_SPFILE_H
 
-#include <stddef.h>
-#if defined __GNUC__ || defined HAVE_STDINT_
-#include <stdint.h>
-#else
- #if !defined HAVE_STDINT_H
-	typedef unsigned __int64	uint64_t;
-	typedef __int64				int64_t;
-	typedef unsigned __int32	uint32_t;
-	typedef __int32				int32_t;
-	typedef unsigned __int16	uint16_t;
-	typedef __int16				int16_t;
-	typedef unsigned __int8		uint8_t;
-	typedef __int8				int8_t;
- #define HAVE_STDINT_H
- #endif
-#endif
+#include "sp_file_headers.h"
 
-#define SPFILE_MAGIC	0xDEADC0D3
-#define SPFILE_VERSION	0x0100
-
-//:TODO: better compiler/nix support
-#if defined __linux__
-	#pragma pack(1)         /* structures must be packed (byte-aligned) */
-#else
-	#pragma pack(push)
-	#pragma pack(1)         /* structures must be packed (byte-aligned) */
-#endif
-
-typedef struct sp_file_section_s
+/** 
+ * Used for overwriting writing routines.
+ */
+typedef struct sp_writefuncs_s
 {
-	uint32_t	nameoffs;	/* rel offset into global string table */
-	uint32_t	dataoffs;
-	uint32_t	size;
-} sp_file_section_t;
+	void *(*fnOpen)(const char *);	/* filename, returns handle */
+	void (*fnClose)(void *);			/* handle */
+	/* buffer, size, count, handle, returns count written */
+	size_t (*fnWrite)(const void *, size_t, size_t, void *);	
+	/* buffer, size, count, handle, returns count read */
+	size_t (*fnRead)(void *, size_t, size_t, void *);
+	/* returns current position from start */
+	size_t (*fnGetPos)(void *);
+	/* sets current position from start, return 0 for success, nonzero for error */
+	int (*fnSetPos)(void *, size_t);
+} sp_writefuncs_t;
 
-typedef struct sp_file_hdr_s
+typedef struct sp_file_s
 {
-	uint32_t	magic;
-	uint16_t	version;
-	uint32_t	imagesize;
-	uint8_t		sections;
-	uint32_t	stringtab;
-} sp_file_hdr_t;
+	sp_file_hdr_t header;
+	sp_file_section_t *sections;
+	size_t *offsets;
+	sp_writefuncs_t funcs;
+	size_t lastsection;
+	size_t curoffs;
+	void *handle;
+	int state;
+	char *nametab;
+	size_t nametab_idx;
+} sp_file_t;
 
-typedef enum
-{
-	SP_FILE_NONE = 0,
-	SP_FILE_DEBUG = 1,
-} sp_file_flags_t;
+/**
+ * Creates a new SourcePawn binary file.  
+ * You may optionally specify alternative writing functions.
+ */
+sp_file_t *spfw_create(const char *name, sp_writefuncs_t *optfuncs);
 
-/* section is ".code" */
-typedef struct sp_file_code_s
-{
-	uint32_t	codesize;		/* codesize in bytes */
-	uint8_t		cellsize;		/* cellsize in bytes */
-	uint8_t		codeversion;	/* version of opcodes supported */
-	uint16_t	flags;			/* flags */
-	uint32_t	main;			/* address to "main" if any */
-	uint32_t	disksize;		/* disksize in bytes */
-	uint32_t	compression;	/* compression */
-	uint32_t	code;			/* rel offset to code */
-} sp_file_code_t;
+/**
+ * Closes file handle and frees memory.
+ */
+void spfw_destroy(sp_file_t *spf);
 
-#define SPFILE_COMPRESSION_NONE		0
-#define SPFILE_COMPRESSION_GZ		1
+/**
+ * Adds a section name to the header. 
+ * Only valid BEFORE finalization.
+ * Returns the number of sections, or 0 on failure.
+ */
+uint8_t spfw_add_section(sp_file_t *spf, const char *name);
 
-/* section is .data */
-typedef struct sp_file_data_s
-{
-	uint32_t	datasize;		/* size of data section in memory */
-	uint32_t	memsize;		/* total mem required (includes data) */
-	uint32_t	disksize;		/* size of data on disk (compressed) */
-	uint8_t		compression;	/* compression */
-	uint32_t	data;			/* file offset to data (helper) */
-} sp_file_data_t;
+/**
+ * Finalizes the section header.
+ * This means no more sections can be added after this call.
+ * Also, aligns the writer to the first section.
+ * Returns 0 on success, nonzero on error.
+ */
+int spfw_finalize_header(sp_file_t *spf);
 
-/* section is .publics */
-typedef struct sp_file_publics_s
-{
-	uint32_t	address;		/* address rel to code section */
-	uint32_t	name;			/* index into nametable */
-} sp_file_publics_t;
+/**
+ * Finalizes the current section and advances to the next.
+ * In order for this to be accurate, the file pointer must
+ *  reside at the end before calling this, because the size
+ *  is calculated by differencing with the last known offset.
+ * Returns 1 if there are more sections left, 0 otherwise.
+ * Returns -1 if the file state is wrong.
+ */
+int spfw_next_section(sp_file_t *spf);
 
-/* section is .natives */
-typedef struct sp_file_natives_s
-{
-	uint32_t	name;			/* name of native at index */
-} sp_file_natives_t;
-
-/* section is .pubvars */
-typedef struct sp_file_pubvars_s
-{
-	uint32_t	address;		/* address rel to dat section */
-	uint32_t	name;			/* index into nametable */
-} sp_file_pubvars_t;
-
-#if defined __linux__
-	#pragma pack()    /* reset default packing */
-#else
-	#pragma pack(pop) /* reset previous packing */
-#endif
-
-
-/* section is .names */
-typedef char * sp_file_nametab_t;
+/**
+ * Finalizes all sections.
+ * Cannot be called until all sections are used.
+ * Must be called with the file pointer at the end.
+ */
+int spfw_finalize_all(sp_file_t *spf);
 
 #endif //_INCLUDE_SPFILE_H
