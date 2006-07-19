@@ -2,22 +2,23 @@
 #include <string.h>
 #include <malloc.h>
 #include "sp_file.h"
+#include "memfile.h"
 
-void *fp_open(const char *name);
-void fp_close(void *handle);
-size_t fp_write(const void *buf, size_t size, size_t count, void *handle);
-size_t fp_read(void *buf, size_t size, size_t count, void *handle);
-size_t fp_getpos(void *handle);
-int fp_setpos(void *handle, size_t pos);
+void *mf_open(const char *name);
+void mf_close(void *handle);
+size_t mf_write(const void *buf, size_t size, size_t count, void *handle);
+size_t mf_read(void *buf, size_t size, size_t count, void *handle);
+size_t mf_getpos(void *handle);
+int mf_setpos(void *handle, size_t pos);
 
 sp_writefuncs_t cstd_funcs = 
 {
-	fp_open,
-	fp_close,
-	fp_write,
-	fp_read,
-	fp_getpos,
-	fp_setpos
+	mf_open,
+	mf_close,
+	mf_write,
+	mf_read,
+	mf_getpos,
+	mf_setpos
 };
 
 sp_file_t *spfw_create(const char *name, sp_writefuncs_t *optfuncs)
@@ -46,6 +47,9 @@ sp_file_t *spfw_create(const char *name, sp_writefuncs_t *optfuncs)
 	pFile->header.stringtab = 0;
 	pFile->header.version = SPFILE_VERSION;
 	pFile->header.imagesize = 0;
+	pFile->header.disksize = 0;
+	pFile->header.compression = SPFILE_COMPRESSION_NONE;
+	pFile->header.dataoffs = 0;
 	pFile->lastsection = 0;
 	pFile->offsets = NULL;
 	pFile->sections = NULL;
@@ -113,6 +117,7 @@ int spfw_finalize_header(sp_file_t *spf)
 	size = sizeof(sp_file_section_t) * spf->header.sections;
 
 	spf->header.stringtab = sizeof(spf->header) + size;
+	spf->header.dataoffs = spf->header.stringtab + spf->nametab_idx;
 	if (spf->funcs.fnWrite(&spf->header, sizeof(spf->header), 1, spf->handle) != 1)
 	{
 		return -1;
@@ -178,6 +183,7 @@ int spfw_finalize_all(sp_file_t *spf)
 	}
 
 	offs = offsetof(sp_file_hdr_t, imagesize);
+	spf->header.disksize = spf->funcs.fnGetPos(spf->handle);
 	spf->header.imagesize = spf->funcs.fnGetPos(spf->handle);
 	spf->funcs.fnSetPos(spf->handle, offs);
 	spf->funcs.fnWrite(&spf->header.imagesize, sizeof(uint32_t), 1, spf->handle);
@@ -186,6 +192,53 @@ int spfw_finalize_all(sp_file_t *spf)
 	return 1;
 }
 
+/**
+ * More memory file operations
+ */
+
+void *mf_open(const char *name)
+{
+	return memfile_creat(name, 1024);
+}
+
+void mf_close(void *handle)
+{
+	memfile_destroy((memfile_t *)handle);
+}
+
+size_t mf_write(const void *buf, size_t size, size_t count, void *handle)
+{
+	if (!count)
+	{
+		return 0;
+	}
+
+	if (memfile_write((memfile_t *)handle, buf, size*count))
+	{
+		return count;
+	}
+
+	return 0;
+}
+
+size_t mf_read(void *buf, size_t size, size_t count, void *handle)
+{
+	return memfile_read((memfile_t *)handle, buf, size*count) / count;
+}
+
+size_t mf_getpos(void *handle)
+{
+	return (long)memfile_tell((memfile_t *)handle);
+}
+
+int mf_setpos(void *handle, size_t pos)
+{
+	memfile_seek((memfile_t *)handle, (long)pos);
+	return 1;
+}
+
+
+#if UNUSED_FOR_NOW
 /**
  * Default file operations...
  * Based on C standard library calls.
@@ -220,5 +273,4 @@ int fp_setpos(void *handle, size_t pos)
 {
 	return fseek((FILE *)handle, (long)pos, SEEK_SET);
 }
-
-
+#endif

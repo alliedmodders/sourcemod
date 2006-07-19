@@ -74,6 +74,7 @@ int spfw_next_section(sp_file_t *spf);
  * Finalizes all sections.
  * Cannot be called until all sections are used.
  * Must be called with the file pointer at the end.
+ * Also does compression!
  */
 int spfw_finalize_all(sp_file_t *spf);
 

@@ -5,6 +5,7 @@
 #include "memfile.h"
 #include "sp_file.h"
 #include "amx.h"
+#include "amxdbg.h"
 #include "osdefs.h"
 #include "zlib/zlib.h"
 
@@ -22,6 +23,7 @@ enum FileSections
 	FS_DbgTags,
 	FS_DbgAutomaton,
 	FS_DbgState,
+	FS_DbgStrings,
 	/* --- */
 	FS_Number,
 };
@@ -38,10 +40,14 @@ int main(int argc, char *argv[])
 	if (pc_compile(argc,argv) == 0)
 	{
 		AMX_HEADER *hdr;
+		AMX_DBG_HDR *dbg = NULL;
 		int err;
 		uint32_t i;
 		sp_file_t *spf;
+		memfile_t *dbgtab = NULL;
+		unsigned char *dbgptr = NULL;
 		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0};
+		FILE *fp;
 
 		if (bin_file == NULL)
 		{
@@ -82,6 +88,35 @@ int main(int argc, char *argv[])
 		}
 
 		spfw_add_section(spf, ".names");
+
+		if (hdr->flags & AMX_FLAG_DEBUG)
+		{
+			dbg = (AMX_DBG_HDR *)((unsigned char *)hdr + hdr->size);
+			if (dbg->magic != AMX_DBG_MAGIC)
+			{
+				pc_printf("Error reading AMX_DBG_HDR, debug data will not be written.");
+			} else {
+				dbgtab = memfile_creat("", 512);
+				dbgptr = (unsigned char *)dbg + sizeof(AMX_DBG_HDR);
+				if (dbg->files)
+				{
+					spfw_add_section(spf, ".dbg.files");
+					sections[FS_DbgFile] = dbg->files;
+				}
+				if (dbg->lines)
+				{
+					spfw_add_section(spf, ".dbg.lines");
+					sections[FS_DbgLine] = dbg->lines;
+				}
+				if (dbg->symbols)
+				{
+					spfw_add_section(spf, ".dbg.symbols");
+					sections[FS_DbgSymbol] = dbg->symbols;
+				}
+				sections[FS_DbgStrings] = 1;
+				spfw_add_section(spf, ".dbg.strings");
+			}
+		}
 
 		spfw_finalize_header(spf);
 		
@@ -324,8 +359,6 @@ int main(int argc, char *argv[])
 				}
 			}
 			cod.codesize = (uint32_t)(tptr - tbase);
-			cod.disksize = cod.codesize;
-			cod.compression = SPFILE_COMPRESSION_NONE;
 			sfwrite(&cod, sizeof(cod), 1, spf);
 			sfwrite(tbase, cod.codesize, 1, spf);
 			free(tbase);
@@ -336,51 +369,19 @@ int main(int argc, char *argv[])
 		if (sections[FS_Data])
 		{
 			sp_file_data_t dat;
-			unsigned char *dbase;
-			Bytef *cmp_dbase;
-			uLong disksize;
-			int err;
+			unsigned char *dbase = (unsigned char *)hdr + hdr->dat;
 
 			dat.datasize = hdr->hea - hdr->dat;
 			dat.memsize = hdr->stp;
 			dat.data = sizeof(dat);
-			dat.compression = SPFILE_COMPRESSION_GZ;
+
+			/* write header */
+			sfwrite(&dat, sizeof(dat), 1, spf);
 
 			if (dat.datasize)
 			{
-				dat.disksize = (uint32_t)compressBound((uLong)dat.datasize);
-
-				dbase = (unsigned char *)hdr + hdr->dat;
-				cmp_dbase = (Bytef *)malloc(dat.disksize);
-
-				/* compress */
-				err = compress2(cmp_dbase, &disksize, (Bytef *)dbase, (uLong)dat.datasize, Z_BEST_COMPRESSION);
-
-				if (err != Z_OK)
-				{
-					pc_printf("Failed to compress DAT section with error: %d\n", err);
-					pc_printf("Defaulting to no compression.\n");
-					dat.compression = SPFILE_COMPRESSION_NONE;
-					dat.disksize = dat.datasize;
-
-					/* write header */
-					sfwrite(&dat, sizeof(dat), 1, spf);
-					/* write data */
-					sfwrite(&dbase, dat.datasize, 1, spf);
-				} else {
-					dat.disksize = (uint32_t)disksize;
-
-					/* write header */
-					sfwrite(&dat, sizeof(dat), 1, spf);
-					/* write data */
-					sfwrite(cmp_dbase, dat.disksize, 1, spf);
-				}
-				
-				free(cmp_dbase);
-			} else {
-				/* should be 0 */
-				dat.disksize = dat.datasize;
-				sfwrite(&dat, sizeof(dat), 1, spf);
+				/* write data */
+				sfwrite(dbase, dat.datasize, 1, spf);
 			}
 
 			spfw_next_section(spf);
@@ -474,17 +475,186 @@ int main(int argc, char *argv[])
 			spfw_next_section(spf);
 		}
 
+		if (hdr->flags & AMX_FLAG_DEBUG)
+		{
+			if (sections[FS_DbgFile])
+			{
+				uint32_t idx;
+				sp_fdbg_file_t dbgfile;
+				AMX_DBG_FILE *_ptr;
+				uint32_t len;
+				for (idx=0; idx<sections[FS_DbgFile]; idx++)
+				{
+					/* get entry info */
+					_ptr = (AMX_DBG_FILE *)dbgptr;
+					len = strlen(_ptr->name);
+					/* store */
+					dbgfile.addr = _ptr->address;
+					dbgfile.name = (uint32_t)memfile_tell(dbgtab);
+					sfwrite(&dbgfile, sizeof(sp_fdbg_file_t), 1, spf);
+					/* write to tab, then move to next */
+					memfile_write(dbgtab, _ptr->name, len + 1);
+					dbgptr += sizeof(AMX_DBG_FILE) + len;
+				}
+				spfw_next_section(spf);
+			}
+
+			if (sections[FS_DbgLine])
+			{
+				uint32_t idx;
+				AMX_DBG_LINE *line;
+				sp_fdbg_line_t dbgline;
+				for (idx=0; idx<sections[FS_DbgLine]; idx++)
+				{
+					/* get entry info */
+					line = (AMX_DBG_LINE *)dbgptr;
+					/* store */
+					dbgline.addr = (uint32_t)line->address;
+					dbgline.line = (uint32_t)line->line;
+					sfwrite(&dbgline, sizeof(sp_fdbg_line_t), 1, spf);
+					/* move to next */
+					dbgptr += sizeof(AMX_DBG_LINE);
+				}
+				spfw_next_section(spf);
+			}
+
+			if (sections[FS_DbgSymbol])
+			{
+				uint32_t idx;
+				uint32_t dnum;
+				AMX_DBG_SYMBOL *sym;
+				AMX_DBG_SYMDIM *dim;
+				sp_fdbg_symbol_t dbgsym;
+				sp_fdbg_arraydim_t dbgdim;
+				uint32_t len;
+
+				for (idx=0; idx<sections[FS_DbgSymbol]; idx++)
+				{
+					/* get entry info */
+					sym = (AMX_DBG_SYMBOL *)dbgptr;
+					/* store */
+					dbgsym.addr = *(int32_t *)&sym->address;
+					dbgsym.tagid = sym->tag;
+					dbgsym.codestart = (uint32_t)sym->codestart;
+					dbgsym.codeend = (uint32_t)sym->codeend;
+					dbgsym.dimcount = (uint16_t)sym->dim;
+					dbgsym.vclass = (uint8_t)sym->vclass;
+					dbgsym.ident = (uint8_t)sym->ident;
+					dbgsym.name = (uint32_t)memfile_tell(dbgtab);
+					sfwrite(&dbgsym, sizeof(sp_fdbg_symbol_t), 1, spf);
+					/* write to tab */
+					len = strlen(sym->name);
+					memfile_write(dbgtab, sym->name, len + 1);
+					/* move to next */
+					dbgptr += sizeof(AMX_DBG_SYMBOL) + len;
+					/* look for any dimensions */
+					for (dnum=0; dnum<dbgsym.dimcount; dnum++)
+					{
+						/* get entry info */
+						dim = (AMX_DBG_SYMDIM *)dbgptr;
+						/* store */
+						dbgdim.size = (uint32_t)dim->size;
+						dbgdim.tagid = dim->tag;
+						sfwrite(&dbgdim, sizeof(sp_fdbg_arraydim_t), 1, spf);
+						/* move to next */
+						dbgptr += sizeof(AMX_DBG_SYMDIM);
+					}
+				}
+				spfw_next_section(spf);
+			}
+
+			if (sections[FS_DbgStrings])
+			{
+				sfwrite(dbgtab->base, sizeof(char), dbgtab->usedoffs, spf);
+				spfw_next_section(spf);
+			}
+		}
+
 		spfw_finalize_all(spf);
+
+		/** 
+		 * do compression
+		 * new block for scoping only
+		 */
+		if (1)
+		{
+			memfile_t *pOrig = (memfile_t *)spf->handle;
+			sp_file_hdr_t *pHdr;
+			unsigned char *proper;
+			size_t size;
+			Bytef *zcmp;
+			uLong disksize;
+			int err = Z_OK;
+
+			/* reuse this memory block! */
+			memfile_reset(bin_file);
+
+			/* copy tip of header */
+			memfile_write(bin_file, pOrig->base, sizeof(sp_file_hdr_t));
+
+			/* get pointer to header */
+			pHdr = (sp_file_hdr_t *)bin_file->base;
+
+			/* copy the rest of the header */
+			memfile_write(bin_file, 
+							(unsigned char *)pOrig->base + sizeof(sp_file_hdr_t),
+							pHdr->dataoffs - sizeof(sp_file_hdr_t));
+
+			size = pHdr->imagesize - pHdr->dataoffs;
+			proper = (unsigned char *)pOrig->base + pHdr->dataoffs;
+
+			/* get initial size estimate */
+			pHdr->disksize = (uint32_t)compressBound(pHdr->imagesize);
+			zcmp = (Bytef *)malloc(pHdr->disksize);
+
+			if ((err=compress2(zcmp, 
+					&disksize, 
+					(Bytef *)proper,
+					(uLong)size,
+					Z_BEST_COMPRESSION))
+				!= Z_OK)
+			{
+				free(zcmp);
+				pc_printf("Unable to compress (Z): error %d", err);
+				pc_printf("Falling back to no compression.");
+				memfile_write(bin_file, 
+							proper,
+							size);
+			} else {
+				pHdr->disksize = (uint32_t)disksize;
+				pHdr->compression = SPFILE_COMPRESSION_GZ;
+				memfile_write(bin_file,
+							(unsigned char *)zcmp,
+							pHdr->disksize);
+				free(zcmp);
+			}
+		}
+
 		spfw_destroy(spf);
+		memfile_destroy(dbgtab);
+
+		/** 
+		 * write file 
+		 */
+		if ((fp=fopen(bin_file->name, "wb")) != NULL)
+		{
+			fwrite(bin_file->base, bin_file->usedoffs, 1, fp);
+			fclose(fp);
+		} else {
+			pc_printf("Unable to open %s for writing!", bin_file->name);
+		}
+
+		memfile_destroy(bin_file);
 
 		return 0;
 
 write_error:
 		pc_printf("Error writing to file: %s", bin_file->name);
+		
+		spfw_destroy(spf);
 		unlink(bin_file->name);
-
 		memfile_destroy(bin_file);
-		bin_file = NULL;
+		memfile_destroy(dbgtab);
 
 		return 1;
 	}

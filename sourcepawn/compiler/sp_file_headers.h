@@ -29,6 +29,9 @@
 	#pragma pack(1)         /* structures must be packed (byte-aligned) */
 #endif
 
+#define SPFILE_COMPRESSION_NONE		0
+#define SPFILE_COMPRESSION_GZ		1
+
 typedef struct sp_file_section_s
 {
 	uint32_t	nameoffs;	/* rel offset into global string table */
@@ -36,13 +39,21 @@ typedef struct sp_file_section_s
 	uint32_t	size;
 } sp_file_section_t;
 
+/**
+ * If compression is 0, then
+ *  disksize may be 0 to mean that
+ *  only the imagesize is needed.
+ */
 typedef struct sp_file_hdr_s
 {
-	uint32_t	magic;
-	uint16_t	version;
-	uint32_t	imagesize;
-	uint8_t		sections;
-	uint32_t	stringtab;
+	uint32_t	magic;		/* magic number */
+	uint16_t	version;	/* version code */
+	uint8_t		compression;/* compression algorithm */
+	uint32_t	disksize;	/* size on disk */
+	uint32_t	imagesize;	/* size in memory */
+	uint8_t		sections;	/* number of sections */
+	uint32_t	stringtab;	/* offset to string table */
+	uint32_t	dataoffs;	/* offset to file proper (any compression starts here) */
 } sp_file_hdr_t;
 
 typedef enum
@@ -59,21 +70,14 @@ typedef struct sp_file_code_s
 	uint8_t		codeversion;	/* version of opcodes supported */
 	uint16_t	flags;			/* flags */
 	uint32_t	main;			/* address to "main" if any */
-	uint32_t	disksize;		/* disksize in bytes */
-	uint8_t		compression;	/* compression */
 	uint32_t	code;			/* rel offset to code */
 } sp_file_code_t;
-
-#define SPFILE_COMPRESSION_NONE		0
-#define SPFILE_COMPRESSION_GZ		1
 
 /* section is .data */
 typedef struct sp_file_data_s
 {
 	uint32_t	datasize;		/* size of data section in memory */
 	uint32_t	memsize;		/* total mem required (includes data) */
-	uint32_t	disksize;		/* size of data on disk (compressed) */
-	uint8_t		compression;	/* compression */
 	uint32_t	data;			/* file offset to data (helper) */
 } sp_file_data_t;
 
@@ -103,6 +107,44 @@ typedef struct sp_file_pubvars_s
 	#pragma pack(pop) /* reset previous packing */
 #endif
 
+/**
+ * Debug information structures
+ */
+typedef struct sp_fdbg_file_s
+{
+	uint32_t	addr;		/* address into code */
+	uint32_t	name;		/* offset into debug nametable */
+} sp_fdbg_file_t;
+
+typedef struct sp_fdbg_line_s
+{
+	uint32_t	addr;		/* address into code */
+	uint32_t	line;		/* line number */
+} sp_fdbg_line_t;
+
+#define SP_SYM_VARIABLE  1  /* cell that has an address and that can be fetched directly (lvalue) */
+#define SP_SYM_REFERENCE 2  /* VARIABLE, but must be dereferenced */
+#define SP_SYM_ARRAY     3
+#define SP_SYM_REFARRAY  4  /* an array passed by reference (i.e. a pointer) */
+#define SP_SYM_FUNCTION	 9
+
+typedef struct sp_fdbg_symbol_s
+{
+	int32_t		addr;		/* address rel to DAT or stack frame */
+	int16_t		tagid;		/* tag id */
+	uint32_t	codestart;	/* start scope validity in code */
+	uint32_t	codeend;	/* end scope validity in code */
+	uint8_t		ident;		/* variable type */
+	uint8_t		vclass;		/* scope class (local vs global) */
+	uint16_t	dimcount;	/* dimension count (for arrays) */
+	uint32_t	name;		/* offset into debug nametable */
+} sp_fdbg_symbol_t;
+
+typedef struct sp_fdbg_arraydim_s
+{
+	int16_t		tagid;		/* tag id */
+	uint32_t	size;		/* size of dimension */
+} sp_fdbg_arraydim_t;
 
 /* section is .names */
 typedef char * sp_file_nametab_t;

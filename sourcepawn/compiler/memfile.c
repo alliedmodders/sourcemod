@@ -28,6 +28,11 @@ memfile_t *memfile_creat(const char *name, size_t init)
 
 void memfile_destroy(memfile_t *mf)
 {
+	if (!mf)
+	{
+		return;
+	}
+
 	if (!mf->_static)
 	{
 		free(mf->name);
@@ -69,7 +74,7 @@ size_t memfile_read(memfile_t *mf, void *buffer, size_t maxsize)
 	return maxsize;
 }
 
-int memfile_write(memfile_t *mf, void *buffer, size_t size)
+int memfile_write(memfile_t *mf, const void *buffer, size_t size)
 {
 	if (mf->offs + size > mf->size)
 	{
@@ -102,4 +107,10 @@ int memfile_write(memfile_t *mf, void *buffer, size_t size)
 	}
 
 	return 1;
+}
+
+void memfile_reset(memfile_t *mf)
+{
+	mf->usedoffs = 0;
+	mf->offs = 0;
 }
