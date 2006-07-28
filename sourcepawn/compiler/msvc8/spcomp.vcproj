@@ -40,6 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -115,6 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\..\include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -175,83 +177,75 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\libpawnc.c"
+				RelativePath="..\libpawnc.c"
 				>
 			</File>
 			<File
-				RelativePath=".\lstring.c"
+				RelativePath="..\lstring.c"
 				>
 			</File>
 			<File
-				RelativePath=".\memfile.c"
+				RelativePath="..\memfile.c"
 				>
 			</File>
 			<File
-				RelativePath=".\pawncc.c"
+				RelativePath="..\pawncc.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc1.c"
+				RelativePath="..\sc1.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc2.c"
+				RelativePath="..\sc2.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc3.c"
+				RelativePath="..\sc3.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc4.c"
+				RelativePath="..\sc4.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc5.c"
+				RelativePath="..\sc5.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc6.c"
+				RelativePath="..\sc6.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sc7.c"
+				RelativePath="..\sc7.c"
 				>
 			</File>
 			<File
-				RelativePath=".\scexpand.c"
+				RelativePath="..\scexpand.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sci18n.c"
+				RelativePath="..\sci18n.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sclist.c"
+				RelativePath="..\sclist.c"
 				>
 			</File>
 			<File
-				RelativePath=".\scmemfil.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						Detect64BitPortabilityProblems="false"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath=".\scstate.c"
+				RelativePath="..\scmemfil.c"
 				>
 			</File>
 			<File
-				RelativePath=".\scvars.c"
+				RelativePath="..\scstate.c"
 				>
 			</File>
 			<File
-				RelativePath=".\sp_file.c"
+				RelativePath="..\scvars.c"
+				>
+			</File>
+			<File
+				RelativePath="..\sp_file.c"
 				>
 			</File>
 		</Filter>
@@ -261,39 +255,35 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\amx.h"
+				RelativePath="..\amx.h"
 				>
 			</File>
 			<File
-				RelativePath=".\amxdbg.h"
+				RelativePath="..\amxdbg.h"
 				>
 			</File>
 			<File
-				RelativePath=".\lstring.h"
+				RelativePath="..\lstring.h"
 				>
 			</File>
 			<File
-				RelativePath=".\memfile.h"
+				RelativePath="..\memfile.h"
 				>
 			</File>
 			<File
-				RelativePath=".\osdefs.h"
+				RelativePath="..\osdefs.h"
 				>
 			</File>
 			<File
-				RelativePath=".\sc.h"
+				RelativePath="..\sc.h"
 				>
 			</File>
 			<File
-				RelativePath=".\sp_file.h"
+				RelativePath="..\sp_file.h"
 				>
 			</File>
 			<File
-				RelativePath=".\sp_file_headers.h"
-				>
-			</File>
-			<File
-				RelativePath=".\svnrev.h"
+				RelativePath="..\svnrev.h"
 				>
 			</File>
 		</Filter>
@@ -303,15 +293,15 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\libpawnc.rc"
+				RelativePath="..\libpawnc.rc"
 				>
 			</File>
 			<File
-				RelativePath=".\sc5.scp"
+				RelativePath="..\sc5.scp"
 				>
 			</File>
 			<File
-				RelativePath=".\sc7.scp"
+				RelativePath="..\sc7.scp"
 				>
 			</File>
 		</Filter>
@@ -322,51 +312,51 @@
 				Name="Source Files"
 				>
 				<File
-					RelativePath=".\zlib\adler32.c"
+					RelativePath="..\zlib\adler32.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\compress.c"
+					RelativePath="..\zlib\compress.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\crc32.c"
+					RelativePath="..\zlib\crc32.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\deflate.c"
+					RelativePath="..\zlib\deflate.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\gzio.c"
+					RelativePath="..\zlib\gzio.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\infback.c"
+					RelativePath="..\zlib\infback.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inffast.c"
+					RelativePath="..\zlib\inffast.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inflate.c"
+					RelativePath="..\zlib\inflate.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inftrees.c"
+					RelativePath="..\zlib\inftrees.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\trees.c"
+					RelativePath="..\zlib\trees.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\uncompr.c"
+					RelativePath="..\zlib\uncompr.c"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\zutil.c"
+					RelativePath="..\zlib\zutil.c"
 					>
 				</File>
 			</Filter>
@@ -374,43 +364,43 @@
 				Name="Header Files"
 				>
 				<File
-					RelativePath=".\zlib\crc32.h"
+					RelativePath="..\zlib\crc32.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\deflate.h"
+					RelativePath="..\zlib\deflate.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inffast.h"
+					RelativePath="..\zlib\inffast.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inffixed.h"
+					RelativePath="..\zlib\inffixed.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inflate.h"
+					RelativePath="..\zlib\inflate.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\inftrees.h"
+					RelativePath="..\zlib\inftrees.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\trees.h"
+					RelativePath="..\zlib\trees.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\zconf.h"
+					RelativePath="..\zlib\zconf.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\zlib.h"
+					RelativePath="..\zlib\zlib.h"
 					>
 				</File>
 				<File
-					RelativePath=".\zlib\zutil.h"
+					RelativePath="..\zlib\zutil.h"
 					>
 				</File>
 			</Filter>
