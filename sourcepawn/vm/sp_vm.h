@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_SOURCEPAWN_VM_H_
 #define _INCLUDE_SOURCEPAWN_VM_H_
 
+#include <stdio.h>
 #include "sp_vm_types.h"
 
 /*****************

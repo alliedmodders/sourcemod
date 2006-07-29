@@ -24,7 +24,7 @@ typedef int32_t		cell_t;
  * Information about the core plugin tables.
  * These may or may not be present!
  */
-typedef struct sp_plugin_infotab_t
+typedef struct sp_plugin_infotab_s
 {
 	const char *stringbase;		/* base of string table */
 	uint32_t	publics_num;	/* number of publics */
@@ -33,13 +33,13 @@ typedef struct sp_plugin_infotab_t
 	sp_file_natives_t *natives; /* native table */
 	uint32_t	pubvars_num;	/* number of pubvars */
 	sp_file_pubvars_t *pubvars;	/* pubvars table */	
-} sp_plugin_infotab_s;
+} sp_plugin_infotab_t;
 
 /**
  * Information about the plugin's debug tables.
  * These are all present if one is present.
  */
-typedef struct sp_plugin_debug_t
+typedef struct sp_plugin_debug_s
 {
 	const char *stringbase;		/* base of string table */
 	uint32_t	files_num;		/* number of files */
@@ -48,7 +48,7 @@ typedef struct sp_plugin_debug_t
 	sp_fdbg_line_t *lines;		/* lines table */
 	uint32_t	syms_num;		/* number of symbols */
 	sp_fdbg_symbol_t *symbols;	/* symbol table */
-} sp_plugin_debug_s;
+} sp_plugin_debug_t;
 
 #define SP_FA_SELF_EXTERNAL		(1<<0)
 #define SP_FA_BASE_EXTERNAL		(1<<1)
@@ -58,7 +58,7 @@ typedef struct sp_plugin_debug_t
  * This differs from the on-disk structure to ensure
  *  that the format is properly read.
  */
-typedef struct sp_plugin_t
+typedef struct sp_plugin_s
 {
 	uint8_t		*base;			/* base of memory */
 	uint8_t		*pcode;			/* p-code */
@@ -70,10 +70,10 @@ typedef struct sp_plugin_t
 	uint32_t	allocflags;		/* allocation flags */
 	sp_plugin_infotab_t *info;	/* base info table */
 	sp_plugin_debug_t *debug;	/* debug info table */
-} sp_plugin_s;
+} sp_plugin_t;
 
 struct sp_context_s;
-typedef int (*SPVM_NATIVE_FUNC)(sp_context_s *, cell_t *);
+typedef int (*SPVM_NATIVE_FUNC)(struct sp_context_s *, cell_t *);
 
 /**********************************************
  *** The following structures are bound to the VM/JIT.
@@ -85,22 +85,22 @@ typedef int (*SPVM_NATIVE_FUNC)(sp_context_s *, cell_t *);
  * By default, these point back to the string table 
  *  in the sp_plugin_infotab_t structure.
  */
-typedef struct sp_public_t
+typedef struct sp_public_s
 {
 	uint32_t	offs;		/* code offset */
 	const char *name;		/* name */
-} sp_publics_s;
+} sp_public_t;
 
 /**
  * Offsets and names to public variables.
  * The offset is relocated and the name by default
  *  points back to the sp_plugin_infotab_t structure.
  */
-typedef struct sp_pubvar_t
+typedef struct sp_pubvar_s
 {
 	cell_t	   *offs;		/* pointer to data */
 	const char *name;		/* name */
-} sp_pubvar_t 
+} sp_pubvar_t;
 
 #define SP_NATIVE_NONE		(0)		/* Native is not yet found */
 #define SP_NATIVE_OKAY		(1)		/* Native has been added */
@@ -111,7 +111,7 @@ typedef struct sp_pubvar_t
  *  point back to the sp_plugin_infotab_t structure.
  * A native is NULL if unit
  */
-typedef struct sp_native_t
+typedef struct sp_native_s
 {
 	SPVM_NATIVE_FUNC	pfn;	/* function pointer */
 	const char *		name;	/* name of function */
@@ -190,7 +190,7 @@ typedef struct sp_context_s
 	int32_t			err;		/* error code */
 	uint32_t		pushcount;	/* push count */
 	/* context rebased database */
-	sp_public_t		*publics	/* public functions table */
+	sp_public_t		*publics;	/* public functions table */
 	sp_pubvar_t		*pubvars;	/* public variables table */
 	sp_native_t		*natives;	/* natives table */
 	sp_debug_file_t	*files;		/* files */
