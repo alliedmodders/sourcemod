@@ -584,6 +584,7 @@ int main(int argc, char *argv[])
 			size_t size;
 			Bytef *zcmp;
 			uLong disksize;
+			size_t header_size;
 			int err = Z_OK;
 
 			/* reuse this memory block! */
@@ -600,8 +601,9 @@ int main(int argc, char *argv[])
 							(unsigned char *)pOrig->base + sizeof(sp_file_hdr_t),
 							pHdr->dataoffs - sizeof(sp_file_hdr_t));
 
-			size = pHdr->imagesize - pHdr->dataoffs;
-			proper = (unsigned char *)pOrig->base + pHdr->dataoffs;
+			header_size = pHdr->dataoffs;
+			size = pHdr->imagesize - header_size;
+			proper = (unsigned char *)pOrig->base + header_size;
 
 			/* get initial size estimate */
 			pHdr->disksize = (uint32_t)compressBound(pHdr->imagesize);
@@ -621,11 +623,11 @@ int main(int argc, char *argv[])
 							proper,
 							size);
 			} else {
-				pHdr->disksize = (uint32_t)disksize;
+				pHdr->disksize = (uint32_t)disksize + header_size;
 				pHdr->compression = SPFILE_COMPRESSION_GZ;
 				memfile_write(bin_file,
 							(unsigned char *)zcmp,
-							pHdr->disksize);
+							disksize);
 				free(zcmp);
 			}
 		}
