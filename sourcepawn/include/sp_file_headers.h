@@ -19,7 +19,8 @@
 #endif
 
 #define SPFILE_MAGIC	0x53504646		/* Source Pawn File Format (SPFF) */
-#define SPFILE_VERSION	0x0100
+//#define SPFILE_VERSION	0x0100
+#define SPFILE_VERSION	0x0101			/* Uncompressed bytecode */
 
 //:TODO: better compiler/nix support
 #if defined __linux__
