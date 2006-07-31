@@ -12,6 +12,9 @@ typedef int32_t		cell_t;
 #define SP_ERR_NONE					0
 #define SP_ERR_FILE_FORMAT			1	/* File format unrecognized */
 #define SP_ERR_DECOMPRESSOR			2	/* A decompressor was not found */
+#define SP_ERR_HEAPLOW				3	/* Not enough space left on the heap */
+#define SP_ERR_PARAM				4	/* Invalid parameter */
+#define SP_ERR_INVALID_ADDRESS		5	/* A memory address was not valid */
 
 /**********************************************
  *** The following structures are reference structures.
@@ -183,9 +186,10 @@ typedef struct sp_context_s
 	SPVM_EXEC		exec;		/* execution base */
 	cell_t			pri;		/* PRI register */
 	cell_t			alt;		/* ALT register */
-	cell_t			*data;		/* data chunk */
-	cell_t			*heap;		/* pointer after data for start of heap */
-	cell_t			*sp;		/* stack pointer */
+	uint8_t			*data;		/* data chunk */
+	cell_t			heapbase;	/* heap base */
+	cell_t			hp;			/* heap pointer */
+	cell_t			sp;			/* stack pointer */
 	ucell_t			memory;		/* total memory size; */
 	int32_t			err;		/* error code */
 	uint32_t		pushcount;	/* push count */

@@ -52,7 +52,7 @@ typedef struct sp_file_hdr_s
 	uint32_t	disksize;	/* size on disk */
 	uint32_t	imagesize;	/* size in memory */
 	uint8_t		sections;	/* number of sections */
-	uint32_t	stringtab;	/* offset to string table aa*/
+	uint32_t	stringtab;	/* offset to string table */
 	uint32_t	dataoffs;	/* offset to file proper (any compression starts here) */
 } sp_file_hdr_t;
 
