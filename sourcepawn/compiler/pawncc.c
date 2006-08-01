@@ -174,17 +174,19 @@ int main(int argc, char *argv[])
 		{
 			sp_file_publics_t *pbtbl;
 			AMX_FUNCSTUBNT *stub;
+			unsigned char *stubptr;
 			uint32_t publics = sections[FS_Publics];
 
 			pbtbl = (sp_file_publics_t *)malloc(sizeof(sp_file_publics_t) * publics);
-			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->publics);
+			stubptr = (unsigned char *)hdr + hdr->publics;
 
 			for (i=0; i<publics; i++)
 			{
+				stub = (AMX_FUNCSTUBNT *)stubptr;
 				pbtbl[i].address = stub->address;
 				pbtbl[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
 
-				stub += hdr->defsize;
+				stubptr += hdr->defsize;
 			}
 			if (publics)
 			{
@@ -199,17 +201,19 @@ int main(int argc, char *argv[])
 		{
 			sp_file_pubvars_t *pbvars;
 			AMX_FUNCSTUBNT *stub;
+			unsigned char *stubptr;
 			uint32_t pubvars = sections[FS_Pubvars];
 
 			pbvars = (sp_file_pubvars_t *)malloc(sizeof(sp_file_pubvars_t) * pubvars);
-			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->pubvars);
+			stubptr = (unsigned char *)hdr + hdr->pubvars;
 
 			for (i=0; i<pubvars; i++)
 			{
+				stub = (AMX_FUNCSTUBNT *)stubptr;
 				pbvars[i].address = stub->address;
 				pbvars[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
 
-				stub += hdr->defsize;
+				stubptr += hdr->defsize;
 			}
 			if (pubvars)
 			{
@@ -223,16 +227,18 @@ int main(int argc, char *argv[])
 		{
 			sp_file_natives_t *nvtbl;
 			AMX_FUNCSTUBNT *stub;
+			unsigned char *stubptr;
 			uint32_t natives = (hdr->libraries - hdr->natives) / hdr->defsize;
 
 			nvtbl = (sp_file_natives_t *)malloc(sizeof(sp_file_natives_t) * natives);
-			stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->natives);
+			stubptr = (unsigned char *)hdr + hdr->natives;
 
 			for (i=0; i<natives; i++)
 			{
+				stub = (AMX_FUNCSTUBNT *)stubptr;
 				nvtbl[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
 
-				stub += hdr->defsize;
+				stubptr += hdr->defsize;
 			}
 			if (natives)
 			{
