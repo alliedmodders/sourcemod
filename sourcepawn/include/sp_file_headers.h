@@ -108,6 +108,14 @@ typedef struct sp_file_pubvars_s
 	#pragma pack(pop) /* reset previous packing */
 #endif
 
+typedef struct sp_fdbg_info_s
+{
+	uint32_t	num_files;	/* number of files */
+	uint32_t	num_lines;	/* number of lines */
+	uint32_t	num_syms;	/* number of symbols */
+	uint32_t	num_arrays;	/* number of symbols which are arrays */
+} sp_fdbg_info_t;
+
 /**
  * Debug information structures
  */

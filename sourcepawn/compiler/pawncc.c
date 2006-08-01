@@ -24,6 +24,7 @@ enum FileSections
 	FS_DbgAutomaton,
 	FS_DbgState,
 	FS_DbgStrings,
+	FS_DbgInfo,
 	/* --- */
 	FS_Number,
 };
@@ -113,7 +114,9 @@ int main(int argc, char *argv[])
 					spfw_add_section(spf, ".dbg.symbols");
 					sections[FS_DbgSymbol] = dbg->symbols;
 				}
+				sections[FS_DbgInfo] = 1;
 				sections[FS_DbgStrings] = 1;
+				spfw_add_section(spf, ".dbg.info");
 				spfw_add_section(spf, ".dbg.strings");
 			}
 		}
@@ -266,6 +269,10 @@ int main(int argc, char *argv[])
 
 		if (hdr->flags & AMX_FLAG_DEBUG)
 		{
+			sp_fdbg_info_t info;
+
+			memset(&info, 0, sizeof(sp_fdbg_info_t));
+
 			if (sections[FS_DbgFile])
 			{
 				uint32_t idx;
@@ -284,6 +291,7 @@ int main(int argc, char *argv[])
 					/* write to tab, then move to next */
 					memfile_write(dbgtab, _ptr->name, len + 1);
 					dbgptr += sizeof(AMX_DBG_FILE) + len;
+					info.num_files++;
 				}
 				spfw_next_section(spf);
 			}
@@ -303,6 +311,7 @@ int main(int argc, char *argv[])
 					sfwrite(&dbgline, sizeof(sp_fdbg_line_t), 1, spf);
 					/* move to next */
 					dbgptr += sizeof(AMX_DBG_LINE);
+					info.num_lines++;
 				}
 				spfw_next_section(spf);
 			}
@@ -337,6 +346,7 @@ int main(int argc, char *argv[])
 					/* move to next */
 					dbgptr += sizeof(AMX_DBG_SYMBOL) + len;
 					/* look for any dimensions */
+					info.num_syms++;
 					for (dnum=0; dnum<dbgsym.dimcount; dnum++)
 					{
 						/* get entry info */
@@ -347,10 +357,14 @@ int main(int argc, char *argv[])
 						sfwrite(&dbgdim, sizeof(sp_fdbg_arraydim_t), 1, spf);
 						/* move to next */
 						dbgptr += sizeof(AMX_DBG_SYMDIM);
+						info.num_arrays++;
 					}
 				}
 				spfw_next_section(spf);
 			}
+
+			sfwrite(&info, sizeof(sp_fdbg_info_t), 1, spf);
+			spfw_next_section(spf);
 
 			if (sections[FS_DbgStrings])
 			{
