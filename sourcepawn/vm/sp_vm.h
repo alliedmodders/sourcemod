@@ -146,11 +146,18 @@ int SP_GetPubvarByIndex(sp_context_t *ctx, uint32_t index, sp_pubvar_t **pubvar)
  * @param local_addr	Optionally filled with local address offset.
  * @param phys_addr		Optionally filled with relocated physical address.
  */
-int SP_FindPubvarByName(sp_context_t *ctx, 
-						const char *name, 
-						uint32_t *index, 
-						cell_t *local_addr, 
-						cell_t **phys_addr);
+int SP_FindPubvarByName(sp_context_t *ctx, const char *name, uint32_t *index);
+
+//:TODO: fill in the info of this function, hi
+int SP_GetPubvarAddrs(sp_context_t *ctx, uint32_t index, cell_t *local_addr, cell_t **phys_addr);
+
+/**
+* Gets the number of public variables.
+*
+* @param ctx			Context pointer.
+* @param num			Filled with the number of public variables.
+*/
+int SP_GetPubVarsNum(sp_context_t *ctx, uint32_t *num);
 
 /**
  * Round-about method of converting a plugin reference to a physical address
@@ -162,7 +169,7 @@ int SP_FindPubvarByName(sp_context_t *ctx,
 int SP_LocalToPhysAddr(sp_context_t *ctx, cell_t local_addr, cell_t **phys_addr);
 
 /**
- * Convers a local address to a physical string.
+ * Converts a local address to a physical string.
  * Note that SourcePawn does not support packed strings, as such this function is
  *  'cell to char' only.
  *

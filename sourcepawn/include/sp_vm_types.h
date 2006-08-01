@@ -16,6 +16,7 @@ typedef int32_t		cell_t;
 #define SP_ERR_PARAM				4	/* Invalid parameter */
 #define SP_ERR_INVALID_ADDRESS		5	/* A memory address was not valid */
 #define SP_ERR_NOT_FOUND			6	/* The object in question was not found */
+#define SP_ERR_INDEX				7	/* Invalid index parameter */
 
 /**********************************************
  *** The following structures are reference structures.

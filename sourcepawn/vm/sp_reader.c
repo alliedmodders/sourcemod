@@ -39,10 +39,6 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 			plugin->data_size = dat->datasize;
 			plugin->memory = dat->memsize;
 		}
-		else if (!(plugin->info->stringbase) && !strcmp(nameptr, ".names"))
-		{
-			plugin->info->stringbase = base + secptr->dataoffs;
-		}
 		else if (!(plugin->info->publics) && !strcmp(nameptr, ".publics"))
 		{
 			plugin->info->publics_num = secptr->size / sizeof(sp_file_publics_t);
@@ -58,25 +54,34 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 			plugin->info->natives_num = secptr->size / sizeof(sp_file_natives_t);
 			plugin->info->natives = (sp_file_natives_t *)(base + secptr->dataoffs);
 		}
+		else if (!(plugin->info->stringbase) && !strcmp(nameptr, ".names"))
+		{
+			plugin->info->stringbase = base + secptr->dataoffs;
+		}
 		else if (!(plugin->debug->files) && !strcmp(nameptr, ".dbg.files"))
 		{
-			plugin->debug->files_num = secptr->size / sizeof(sp_fdbg_file_t);
 			plugin->debug->files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
+		}
+		else if (!(plugin->debug->lines) && !strcmp(nameptr, ".dbg.lines"))
+		{
+			plugin->debug->lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
+		}
+		else if (!(plugin->debug->symbols) && !strcmp(nameptr, ".dbg.symbols"))
+		{
+			plugin->debug->symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
+		}
+		else if (!(plugin->debug->lines_num) && !strcmp(nameptr, ".dbg.info"))
+		{
+			sp_fdbg_info_t *inf = (sp_fdbg_info_t *)(base + secptr->dataoffs);
+			plugin->debug->files_num = inf->num_files;
+			plugin->debug->lines_num = inf->num_lines;
+			plugin->debug->syms_num = inf->num_syms;
 		}
 		else if (!(plugin->debug->stringbase) && !strcmp(nameptr, ".dbg.strings"))
 		{
 			plugin->debug->stringbase = base + secptr->dataoffs;
 		}
-		else if (!(plugin->debug->lines) && !strcmp(nameptr, ".dbg.lines"))
-		{
-			plugin->debug->lines_num = secptr->size / sizeof(sp_fdbg_line_t);
-			plugin->debug->lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug->symbols) && !strcmp(nameptr, ".dbg.symbols"))
-		{
-			plugin->debug->syms_num = secptr->size / sizeof(sp_fdbg_symbol_t);
-			plugin->debug->symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
-		}
+
 		secptr++;
 		sectnum++;
 	}
