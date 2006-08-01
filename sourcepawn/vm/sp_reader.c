@@ -87,6 +87,9 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 	if ((plugin->flags == SP_FILE_DEBUG) && (!(plugin->debug->files) || !(plugin->debug->lines) || !(plugin->debug->symbols)))
 		goto return_error;
 
+	if (err)
+		*err = SP_ERR_NONE;
+
 	return plugin;
 
 return_error:
