@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <string.h>
 #include <assert.h>
 #include "sp_vm.h"
 
@@ -104,4 +105,20 @@ int SP_HeapRelease(sp_context_t *ctx, cell_t local_addr)
 	ctx->hp = local_addr - sizeof(cell_t);
 
 	return SP_ERR_NONE;
+}
+
+int SP_FindNativeByName(sp_context_t *ctx, const char *name, uint32_t *index)
+{
+	uint32_t i;
+
+	for (i = 0; i < ctx->plugin->info->natives_num; i++)
+	{
+		if (!strcmp(name, ctx->natives[i].name))
+		{
+			if (index)
+				*index = i;
+			return SP_ERR_NONE;
+		}
+	}
+	return SP_ERR_NOT_FOUND;
 }
