@@ -15,7 +15,7 @@ typedef int32_t		cell_t;
 #define SP_ERR_HEAPLOW				3	/* Not enough space left on the heap */
 #define SP_ERR_PARAM				4	/* Invalid parameter */
 #define SP_ERR_INVALID_ADDRESS		5	/* A memory address was not valid */
-#define SP_ERR_NOT_FOUND			6	/* File not found */
+#define SP_ERR_NOT_FOUND			6	/* The object in question was not found */
 
 /**********************************************
  *** The following structures are reference structures.
