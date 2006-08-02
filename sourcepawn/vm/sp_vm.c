@@ -109,16 +109,143 @@ int SP_HeapRelease(sp_context_t *ctx, cell_t local_addr)
 
 int SP_FindNativeByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t i;
+	uint32_t mid, low, high, diff;
 
-	for (i = 0; i < ctx->plugin->info->natives_num; i++)
+	high = ctx->plugin->info.natives_num - 1;
+	low = 0;
+
+	while (low <= high)
 	{
-		if (!strcmp(name, ctx->natives[i].name))
+		mid = (low + high) / 2;
+		diff = strcmp(ctx->natives[mid].name, name);
+		if (diff == 0)
 		{
 			if (index)
-				*index = i;
+				*index = mid;
 			return SP_ERR_NONE;
+		} else if (diff < 0) {
+			low = mid + 1;
+		} else {
+			high = mid - 1;
 		}
 	}
+
 	return SP_ERR_NOT_FOUND;
+}
+
+int SP_GetNativeByIndex(sp_context_t *ctx, uint32_t index, sp_native_t **native)
+{
+	if (index >= ctx->plugin->info.natives_num)
+		return SP_ERR_INDEX;
+
+	if (native)
+		*native = &(ctx->natives[index]);
+
+	return SP_ERR_NONE;
+}
+
+int SP_GetNativesNum(sp_context_t *ctx, uint32_t *num)
+{
+	*num = ctx->plugin->info.natives_num;
+
+	return SP_ERR_NONE;
+}
+
+int SP_FindPublicByName(sp_context_t *ctx, const char *name, uint32_t *index)
+{
+	uint32_t mid, low, high, diff;
+
+	high = ctx->plugin->info.publics_num - 1;
+	low = 0;
+
+	while (low <= high)
+	{
+		mid = (low + high) / 2;
+		diff = strcmp(ctx->publics[mid].name, name);
+		if (diff == 0)
+		{
+			if (index)
+				*index = mid;
+			return SP_ERR_NONE;
+		} else if (diff < 0) {
+			low = mid + 1;
+		} else {
+			high = mid - 1;
+		}
+	}
+
+	return SP_ERR_NOT_FOUND;
+}
+
+int SP_GetPublicByIndex(sp_context_t *ctx, uint32_t index, sp_public_t **pblic)
+{
+	if (index >= ctx->plugin->info.publics_num)
+		return SP_ERR_INDEX;
+
+	if (pblic)
+		*pblic = &(ctx->publics[index]);
+
+	return SP_ERR_NONE;
+}
+
+int SP_GetPublicsNum(sp_context_t *ctx, uint32_t *num)
+{
+	*num = ctx->plugin->info.publics_num;
+
+	return SP_ERR_NONE;
+}
+
+int SP_GetPubvarByIndex(sp_context_t *ctx, uint32_t index, sp_pubvar_t **pubvar)
+{
+	if (index >= ctx->plugin->info.pubvars_num)
+		return SP_ERR_INDEX;
+
+	if (pubvar)
+		*pubvar = &(ctx->pubvars[index]);
+
+	return SP_ERR_NONE;
+}
+
+int SP_FindPubvarByName(sp_context_t *ctx, const char *name, uint32_t *index)
+{
+	uint32_t mid, low, high, diff;
+
+	high = ctx->plugin->info.pubvars_num - 1;
+	low = 0;
+
+	while (low <= high)
+	{
+		mid = (low + high) / 2;
+		diff = strcmp(ctx->pubvars[mid].name, name);
+		if (diff == 0)
+		{
+			if (index)
+				*index = mid;
+			return SP_ERR_NONE;
+		} else if (diff < 0) {
+			low = mid + 1;
+		} else {
+			high = mid - 1;
+		}
+	}
+
+	return SP_ERR_NOT_FOUND;
+}
+
+int SP_GetPubvarAddrs(sp_context_t *ctx, uint32_t index, cell_t *local_addr, cell_t **phys_addr)
+{
+	if (index >= ctx->plugin->info.pubvars_num)
+		return SP_ERR_INDEX;
+
+	*local_addr = ctx->plugin->info.pubvars[index].address;
+	*phys_addr = ctx->pubvars[index].offs;
+
+	return SP_ERR_NONE;
+}
+
+int SP_GetPubVarsNum(sp_context_t *ctx, uint32_t *num)
+{
+	*num = ctx->plugin->info.pubvars_num;
+
+	return SP_ERR_NONE;
 }

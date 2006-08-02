@@ -7,19 +7,11 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 {
 	char *nameptr;
 	uint8_t sectnum = 0;
-
-	sp_plugin_infotab_t *info = (sp_plugin_infotab_t *)malloc(sizeof(sp_plugin_infotab_t));
-	sp_plugin_debug_t *dbg = (sp_plugin_debug_t *)malloc(sizeof(sp_plugin_debug_t));
-
 	sp_file_section_t *secptr = (sp_file_section_t *)(base + sizeof(sp_file_hdr_t));
 
 	memset(plugin, 0, sizeof(sp_plugin_t));
-	memset(info, 0, sizeof(sp_plugin_infotab_t));
-	memset(dbg, 0, sizeof(sp_plugin_debug_t));
 
 	plugin->base = base;
-	plugin->info = info;
-	plugin->debug = dbg;
 
 	while (sectnum < hdr->sections)
 	{
@@ -39,57 +31,57 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 			plugin->data_size = dat->datasize;
 			plugin->memory = dat->memsize;
 		}
-		else if (!(plugin->info->publics) && !strcmp(nameptr, ".publics"))
+		else if (!(plugin->info.publics) && !strcmp(nameptr, ".publics"))
 		{
-			plugin->info->publics_num = secptr->size / sizeof(sp_file_publics_t);
-			plugin->info->publics = (sp_file_publics_t *)(base + secptr->dataoffs);
+			plugin->info.publics_num = secptr->size / sizeof(sp_file_publics_t);
+			plugin->info.publics = (sp_file_publics_t *)(base + secptr->dataoffs);
 		}
-		else if (!(plugin->info->pubvars) && !strcmp(nameptr, ".pubvars"))
+		else if (!(plugin->info.pubvars) && !strcmp(nameptr, ".pubvars"))
 		{
-			plugin->info->pubvars_num = secptr->size / sizeof(sp_file_pubvars_t);
-			plugin->info->pubvars = (sp_file_pubvars_t *)(base + secptr->dataoffs);
+			plugin->info.pubvars_num = secptr->size / sizeof(sp_file_pubvars_t);
+			plugin->info.pubvars = (sp_file_pubvars_t *)(base + secptr->dataoffs);
 		}
-		else if (!(plugin->info->natives) && !strcmp(nameptr, ".natives"))
+		else if (!(plugin->info.natives) && !strcmp(nameptr, ".natives"))
 		{
-			plugin->info->natives_num = secptr->size / sizeof(sp_file_natives_t);
-			plugin->info->natives = (sp_file_natives_t *)(base + secptr->dataoffs);
+			plugin->info.natives_num = secptr->size / sizeof(sp_file_natives_t);
+			plugin->info.natives = (sp_file_natives_t *)(base + secptr->dataoffs);
 		}
-		else if (!(plugin->info->stringbase) && !strcmp(nameptr, ".names"))
+		else if (!(plugin->info.stringbase) && !strcmp(nameptr, ".names"))
 		{
-			plugin->info->stringbase = base + secptr->dataoffs;
+			plugin->info.stringbase = base + secptr->dataoffs;
 		}
-		else if (!(plugin->debug->files) && !strcmp(nameptr, ".dbg.files"))
+		else if (!(plugin->debug.files) && !strcmp(nameptr, ".dbg.files"))
 		{
-			plugin->debug->files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
+			plugin->debug.files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
 		}
-		else if (!(plugin->debug->lines) && !strcmp(nameptr, ".dbg.lines"))
+		else if (!(plugin->debug.lines) && !strcmp(nameptr, ".dbg.lines"))
 		{
-			plugin->debug->lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
+			plugin->debug.lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
 		}
-		else if (!(plugin->debug->symbols) && !strcmp(nameptr, ".dbg.symbols"))
+		else if (!(plugin->debug.symbols) && !strcmp(nameptr, ".dbg.symbols"))
 		{
-			plugin->debug->symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
+			plugin->debug.symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
 		}
-		else if (!(plugin->debug->lines_num) && !strcmp(nameptr, ".dbg.info"))
+		else if (!(plugin->debug.lines_num) && !strcmp(nameptr, ".dbg.info"))
 		{
 			sp_fdbg_info_t *inf = (sp_fdbg_info_t *)(base + secptr->dataoffs);
-			plugin->debug->files_num = inf->num_files;
-			plugin->debug->lines_num = inf->num_lines;
-			plugin->debug->syms_num = inf->num_syms;
+			plugin->debug.files_num = inf->num_files;
+			plugin->debug.lines_num = inf->num_lines;
+			plugin->debug.syms_num = inf->num_syms;
 		}
-		else if (!(plugin->debug->stringbase) && !strcmp(nameptr, ".dbg.strings"))
+		else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
 		{
-			plugin->debug->stringbase = base + secptr->dataoffs;
+			plugin->debug.stringbase = base + secptr->dataoffs;
 		}
 
 		secptr++;
 		sectnum++;
 	}
 
-	if (!(plugin->pcode) || !(plugin->data) || !(plugin->info->stringbase))
+	if (!(plugin->pcode) || !(plugin->data) || !(plugin->info.stringbase))
 		goto return_error;
 
-	if ((plugin->flags == SP_FILE_DEBUG) && (!(plugin->debug->files) || !(plugin->debug->lines) || !(plugin->debug->symbols)))
+	if ((plugin->flags == SP_FILE_DEBUG) && (!(plugin->debug.files) || !(plugin->debug.lines) || !(plugin->debug.symbols)))
 		goto return_error;
 
 	if (err)
@@ -98,9 +90,6 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 	return plugin;
 
 return_error:
-	free(dbg);
-	free(info);
-
 	if (err)
 		*err = SP_ERR_FILE_FORMAT;
 
