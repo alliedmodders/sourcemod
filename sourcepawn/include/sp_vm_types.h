@@ -73,8 +73,8 @@ typedef struct sp_plugin_s
 	uint32_t	memory;			/* required memory */
 	uint16_t	flags;			/* code flags */
 	uint32_t	allocflags;		/* allocation flags */
-	sp_plugin_infotab_t *info;	/* base info table */
-	sp_plugin_debug_t *debug;	/* debug info table */
+	sp_plugin_infotab_t info;	/* base info table */
+	sp_plugin_debug_t   debug;	/* debug info table */
 } sp_plugin_t;
 
 struct sp_context_s;
