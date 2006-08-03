@@ -258,7 +258,7 @@ int SP_BindNatives(sp_context_t *ctx, sp_nativeinfo_t *natives, unsigned int num
 
 	for (i=0; i<max; i++)
 	{
-		if (ctx->natives[i].status == SP_NATIVE_OKAY && !overwrite)
+		if ((ctx->natives[i].status == SP_NATIVE_OKAY) && !overwrite)
 			continue;
 
 		for (j=0; (natives[j].name) && (!num || j<num); j++)
@@ -301,6 +301,17 @@ int SP_BindNativeToAny(sp_context_t *ctx, SPVM_NATIVE_FUNC native)
 			ctx->natives[i].status = SP_NATIVE_PENDING;
 		}
 	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_LocalToPhysAddr(sp_context_t *ctx, cell_t local_addr, cell_t **phys_addr)
+{
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+		return SP_ERR_INVALID_ADDRESS;
+	
+	if (phys_addr)
+		*phys_addr = (cell_t *)(ctx->data + local_addr);
 
 	return SP_ERR_NONE;
 }
