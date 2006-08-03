@@ -240,7 +240,7 @@ int SP_PushCellsFromArray(sp_context_t *ctx, cell_t array[], unsigned int numcel
  * Binds a list of native names and their function pointers to a context.
  * If num is 0, the list is read until an entry with a NULL name is reached.
  * All natives are assigned a status of SP_NATIVE_OKAY by default.
- * If overwrite is non-zero, already registered arrays will be overwritten.
+ * If overwrite is non-zero, already registered natives will be overwritten.
  * 
  * @param ctx			Context pointer.
  * @param natives		Array of natives.
@@ -250,6 +250,8 @@ int SP_BindNatives(sp_context_t *ctx, sp_nativeinfo_t *natives, unsigned int num
 
 /**
  * Binds a single native.  Overwrites any existing bind.
+ * If the context does not contain the native that will be binded the function will return
+ *  with a SP_ERR_NOT_FOUND error.
  *
  * @param ctx			Context pointer.
  * @param native		Pointer to native.
@@ -263,7 +265,7 @@ int SP_BindNative(sp_context_t *ctx, sp_nativeinfo_t *native, uint32_t status);
  *
  * @param ctx			Context pointer.
  */
-int SP_BindNativeToAny(sp_context_t *ctx, sp_nativeinfo_t *native);
+int SP_BindNativeToAny(sp_context_t *ctx, SPVM_NATIVE_FUNC native);
 
 /**
  * Executes a public function in a context.

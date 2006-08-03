@@ -249,3 +249,58 @@ int SP_GetPubVarsNum(sp_context_t *ctx, uint32_t *num)
 
 	return SP_ERR_NONE;
 }
+
+int SP_BindNatives(sp_context_t *ctx, sp_nativeinfo_t *natives, unsigned int num, int overwrite)
+{
+	uint32_t i, j, max;
+
+	max = ctx->plugin->info.natives_num;
+
+	for (i=0; i<max; i++)
+	{
+		if (ctx->natives[i].status == SP_NATIVE_OKAY && !overwrite)
+			continue;
+
+		for (j=0; (natives[j].name) && (!num || j<num); j++)
+		{
+			if (!strcmp(ctx->natives[i].name, natives[j].name))
+			{
+				ctx->natives[i].pfn = natives[j].func;
+				ctx->natives[i].status = SP_NATIVE_OKAY;
+			}
+		}
+	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_BindNative(sp_context_t *ctx, sp_nativeinfo_t *native, uint32_t status)
+{
+	uint32_t index, err;
+
+	if ((err = SP_FindNativeByName(ctx, native->name, &index)) != SP_ERR_NONE)
+		return err;
+
+	ctx->natives[index].pfn = native->func;
+	ctx->natives[index].status = status;
+
+	return SP_ERR_NONE;
+}
+
+int SP_BindNativeToAny(sp_context_t *ctx, SPVM_NATIVE_FUNC native)
+{
+	uint32_t nativesnum, i;
+
+	nativesnum = ctx->plugin->info.natives_num;
+
+	for (i=0; i<nativesnum; i++)
+	{
+		if (ctx->natives[i].status != SP_NATIVE_OKAY)
+		{
+			ctx->natives[i].pfn = native;
+			ctx->natives[i].status = SP_NATIVE_PENDING;
+		}
+	}
+
+	return SP_ERR_NONE;
+}
