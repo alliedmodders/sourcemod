@@ -24,6 +24,7 @@ int main()
 	assert(SP_HeapRelease(&ctx, 4) == SP_ERR_INVALID_ADDRESS);
 	assert(SP_HeapAlloc(&ctx, 500, &l, &p) == SP_ERR_NONE);
 	assert(SP_HeapRelease(&ctx, l) == SP_ERR_NONE);
+	assert(SP_PushCell(&ctx, 1337) == SP_ERR_NONE);
 
 	return 0;
 }
@@ -109,7 +110,8 @@ int SP_HeapRelease(sp_context_t *ctx, cell_t local_addr)
 
 int SP_FindNativeByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t mid, low, high, diff;
+	uint32_t mid, low, high;
+	int diff;
 
 	high = ctx->plugin->info.natives_num - 1;
 	low = 0;
@@ -121,7 +123,9 @@ int SP_FindNativeByName(sp_context_t *ctx, const char *name, uint32_t *index)
 		if (diff == 0)
 		{
 			if (index)
+			{
 				*index = mid;
+			}
 			return SP_ERR_NONE;
 		} else if (diff < 0) {
 			low = mid + 1;
@@ -136,10 +140,14 @@ int SP_FindNativeByName(sp_context_t *ctx, const char *name, uint32_t *index)
 int SP_GetNativeByIndex(sp_context_t *ctx, uint32_t index, sp_native_t **native)
 {
 	if (index >= ctx->plugin->info.natives_num)
+	{
 		return SP_ERR_INDEX;
+	}
 
 	if (native)
+	{
 		*native = &(ctx->natives[index]);
+	}
 
 	return SP_ERR_NONE;
 }
@@ -153,7 +161,8 @@ int SP_GetNativesNum(sp_context_t *ctx, uint32_t *num)
 
 int SP_FindPublicByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t mid, low, high, diff;
+	uint32_t mid, low, high;
+	int diff;
 
 	high = ctx->plugin->info.publics_num - 1;
 	low = 0;
@@ -165,7 +174,9 @@ int SP_FindPublicByName(sp_context_t *ctx, const char *name, uint32_t *index)
 		if (diff == 0)
 		{
 			if (index)
+			{
 				*index = mid;
+			}
 			return SP_ERR_NONE;
 		} else if (diff < 0) {
 			low = mid + 1;
@@ -180,10 +191,14 @@ int SP_FindPublicByName(sp_context_t *ctx, const char *name, uint32_t *index)
 int SP_GetPublicByIndex(sp_context_t *ctx, uint32_t index, sp_public_t **pblic)
 {
 	if (index >= ctx->plugin->info.publics_num)
+	{
 		return SP_ERR_INDEX;
+	}
 
 	if (pblic)
+	{
 		*pblic = &(ctx->publics[index]);
+	}
 
 	return SP_ERR_NONE;
 }
@@ -198,17 +213,22 @@ int SP_GetPublicsNum(sp_context_t *ctx, uint32_t *num)
 int SP_GetPubvarByIndex(sp_context_t *ctx, uint32_t index, sp_pubvar_t **pubvar)
 {
 	if (index >= ctx->plugin->info.pubvars_num)
+	{
 		return SP_ERR_INDEX;
+	}
 
 	if (pubvar)
+	{
 		*pubvar = &(ctx->pubvars[index]);
+	}
 
 	return SP_ERR_NONE;
 }
 
 int SP_FindPubvarByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t mid, low, high, diff;
+	uint32_t mid, low, high;
+	int diff;
 
 	high = ctx->plugin->info.pubvars_num - 1;
 	low = 0;
@@ -220,7 +240,9 @@ int SP_FindPubvarByName(sp_context_t *ctx, const char *name, uint32_t *index)
 		if (diff == 0)
 		{
 			if (index)
+			{
 				*index = mid;
+			}
 			return SP_ERR_NONE;
 		} else if (diff < 0) {
 			low = mid + 1;
@@ -235,7 +257,9 @@ int SP_FindPubvarByName(sp_context_t *ctx, const char *name, uint32_t *index)
 int SP_GetPubvarAddrs(sp_context_t *ctx, uint32_t index, cell_t *local_addr, cell_t **phys_addr)
 {
 	if (index >= ctx->plugin->info.pubvars_num)
+	{
 		return SP_ERR_INDEX;
+	}
 
 	*local_addr = ctx->plugin->info.pubvars[index].address;
 	*phys_addr = ctx->pubvars[index].offs;
@@ -259,7 +283,9 @@ int SP_BindNatives(sp_context_t *ctx, sp_nativeinfo_t *natives, unsigned int num
 	for (i=0; i<max; i++)
 	{
 		if ((ctx->natives[i].status == SP_NATIVE_OKAY) && !overwrite)
+		{
 			continue;
+		}
 
 		for (j=0; (natives[j].name) && (!num || j<num); j++)
 		{
@@ -276,10 +302,13 @@ int SP_BindNatives(sp_context_t *ctx, sp_nativeinfo_t *natives, unsigned int num
 
 int SP_BindNative(sp_context_t *ctx, sp_nativeinfo_t *native, uint32_t status)
 {
-	uint32_t index, err;
+	uint32_t index;
+	int err;
 
 	if ((err = SP_FindNativeByName(ctx, native->name, &index)) != SP_ERR_NONE)
+	{
 		return err;
+	}
 
 	ctx->natives[index].pfn = native->func;
 	ctx->natives[index].status = status;
@@ -308,10 +337,71 @@ int SP_BindNativeToAny(sp_context_t *ctx, SPVM_NATIVE_FUNC native)
 int SP_LocalToPhysAddr(sp_context_t *ctx, cell_t local_addr, cell_t **phys_addr)
 {
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+	{
 		return SP_ERR_INVALID_ADDRESS;
-	
+	}
+
 	if (phys_addr)
+	{
 		*phys_addr = (cell_t *)(ctx->data + local_addr);
+	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_PushCell(sp_context_t *ctx, cell_t value)
+{
+	if ((ctx->hp + STACKMARGIN) > (cell_t)(ctx->sp - sizeof(cell_t)))
+	{
+		return SP_ERR_HEAPLOW;
+	}
+
+	ctx->sp -= sizeof(cell_t);
+	*(cell_t *)(ctx->data + ctx->sp) = value;
+	ctx->pushcount++;
+
+	return SP_ERR_NONE;
+}
+
+int SP_PushCellsFromArray(sp_context_t *ctx, cell_t array[], unsigned int numcells)
+{
+	unsigned int i;
+	int err;
+
+	for (i=0; i<numcells; i++)
+	{
+		if ((err = SP_PushCell(ctx, array[i])) != SP_ERR_NONE)
+		{
+			ctx->sp += i * sizeof(cell_t);
+			ctx->pushcount -= i;
+			return err;
+		}
+	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_PushCellArray(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells)
+{
+	cell_t *ph_addr;
+	int err;
+
+	if ((err = SP_HeapAlloc(ctx, numcells, local_addr, &ph_addr)) != SP_ERR_NONE)
+	{
+		return err;
+	}
+
+	memcpy(ph_addr, array, numcells * sizeof(cell_t));
+	if (phys_addr)
+	{
+		*phys_addr = ph_addr;
+	}
+
+	if ((err = SP_PushCell(ctx, *local_addr)) != SP_ERR_NONE)
+	{
+		SP_HeapRelease(ctx, *local_addr);
+		return err;
+	}
 
 	return SP_ERR_NONE;
 }

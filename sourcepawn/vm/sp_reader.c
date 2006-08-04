@@ -79,19 +79,27 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 	}
 
 	if (!(plugin->pcode) || !(plugin->data) || !(plugin->info.stringbase))
+	{
 		goto return_error;
+	}
 
 	if ((plugin->flags == SP_FILE_DEBUG) && (!(plugin->debug.files) || !(plugin->debug.lines) || !(plugin->debug.symbols)))
+	{
 		goto return_error;
+	}
 
 	if (err)
+	{
 		*err = SP_ERR_NONE;
+	}
 
 	return plugin;
 
 return_error:
 	if (err)
+	{
 		*err = SP_ERR_FILE_FORMAT;
+	}
 
 	return NULL;
 }
@@ -180,7 +188,9 @@ sp_plugin_t *SP_LoadFromFilePointer(FILE *fp, int *err)
 
 return_error:
 	if (err)
+	{
 		*err = error;
+	}
 	return NULL;
 }
 
@@ -200,7 +210,9 @@ sp_plugin_t *SP_LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
 	if (!_ReadPlugin(&hdr, base, plugin, err))
 	{
 		if (noptr)
+		{
 			free(plugin);
+		}
 		return NULL;
 	}
 

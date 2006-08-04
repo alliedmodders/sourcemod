@@ -8,6 +8,7 @@
  ** Note that all functions return a non-zero error code on failure
  *   unless otherwise noted.
  * All input pointers must be valid unless otherwise noted as optional.
+ * All output pointers on failure are undefined.
  * All local address are guaranteed to be positive.  However, they are stored
  *  as signed integers, because they must logically fit inside a cell.
  */
@@ -195,6 +196,7 @@ int SP_PushCell(sp_context_t *ctx, cell_t value);
 
 /** 
  * Pushes an array of cells onto the stack.  Increases the parameter count by one.
+ * If the function returns an error it will fail entirely, releasing anything allocated in the process.
  * Note that this does not release the heap, so you should release it after
  *  calling SP_Execute().
  *
@@ -229,6 +231,7 @@ int SP_PushString(sp_context_t *ctx,
 /**
  * Individually pushes each cell of an array of cells onto the stack.  Increases the 
  *  parameter count by the number of cells pushed.
+ * If the function returns an error it will fail entirely, releasing anything allocated in the process.
  *
  * @param ctx			Context pointer.
  * @param array			Array of cells to read from.
@@ -260,7 +263,7 @@ int SP_BindNatives(sp_context_t *ctx, sp_nativeinfo_t *natives, unsigned int num
 int SP_BindNative(sp_context_t *ctx, sp_nativeinfo_t *native, uint32_t status);
 
 /**
- * Binds a single native to any non-registered native.
+ * Binds a single native to any non-registered or pending native.
  * Status is automatically set to pending.
  *
  * @param ctx			Context pointer.
