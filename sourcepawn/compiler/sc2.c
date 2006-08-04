@@ -1046,12 +1046,12 @@ static int command(void)
               error(27);          /* invalid character constant */
             sc_ctrlchar=(char)val;
           } /* if */
-        } else if (strcmp(str,"depricated")==0) {
+        } else if (strcmp(str,"deprecated")==0) {
           while (*lptr<=' ' && *lptr!='\0')
             lptr++;
-          pc_depricate=(char*)malloc(strlen((char*)lptr)+1);
-          if (pc_depricate!=NULL)
-            strcpy(pc_depricate,(char*)lptr);
+          pc_deprecate=(char*)malloc(strlen((char*)lptr)+1);
+          if (pc_deprecate!=NULL)
+            strcpy(pc_deprecate,(char*)lptr);
           lptr=(unsigned char*)strchr((char*)lptr,'\0'); /* skip to end (ignore "extra characters on line") */
         } else if (strcmp(str,"dynamic")==0) {
           preproc_expr(&pc_stksize,NULL);

@@ -612,7 +612,7 @@ static void resetglobals(void)
   pc_addlibtable=TRUE;  /* by default, add a "library table" to the output file */
   sc_alignnext=FALSE;
   pc_docexpr=FALSE;
-  pc_depricate=NULL;
+  pc_deprecate=NULL;
   sc_curstates=0;
   pc_memflags=0;
 }
@@ -2741,19 +2741,19 @@ SC_FUNC symbol *fetchfunc(char *name,int tag)
     /* set the required stack size to zero (only for non-native functions) */
     sym->x.stacksize=1;         /* 1 for PROC opcode */
   } /* if */
-  if (pc_depricate!=NULL) {
+  if (pc_deprecate!=NULL) {
     assert(sym!=NULL);
-    sym->flags|=flgDEPRICATED;
+    sym->flags|=flgDEPRECATED;
     if (sc_status==statWRITE) {
       if (sym->documentation!=NULL) {
         free(sym->documentation);
         sym->documentation=NULL;
       } /* if */
-      sym->documentation=pc_depricate;
+      sym->documentation=pc_deprecate;
     } else {
-      free(pc_depricate);
+      free(pc_deprecate);
     } /* if */
-    pc_depricate=NULL;
+    pc_deprecate=NULL;
   } /* if */
 
   return sym;
@@ -3273,9 +3273,9 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     cidx=code_idx;
     glbdecl=glb_declared;
   } /* if */
-  if ((sym->flags & flgDEPRICATED)!=0) {
+  if ((sym->flags & flgDEPRECATED)!=0) {
     char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
-    error(234,symbolname,ptr);  /* depricated (probably a public function) */
+    error(234,symbolname,ptr);  /* deprecated (probably a public function) */
   } /* if */
   begcseg();
   sym->usage|=uDEFINE;  /* set the definition flag */

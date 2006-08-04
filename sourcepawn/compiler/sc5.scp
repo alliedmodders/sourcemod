@@ -299,7 +299,7 @@ static char *warnmsg[] = {
 /*231*/  "state specification on forward declaration is ignored\n",
 /*232*/  "output file is written, but with compact encoding disabled\n",
 /*233*/  "state variable \"%s\" shadows a global variable\n",
-/*234*/  "function is depricated (symbol \"%s\") %s\n",
+/*234*/  "function is deprecated (symbol \"%s\") %s\n",
 /*235*/  "public function lacks forward declaration (symbol \"%s\")\n",
 /*236*/  "unknown parameter in substitution (incorrect #define pattern)\n"
 #else
