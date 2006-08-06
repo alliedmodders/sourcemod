@@ -295,5 +295,25 @@ int SP_BindNativeToAny(sp_context_t *ctx, SPVM_NATIVE_FUNC native);
  */
 int SP_Execute(sp_context_t *ctx, uint32_t idx, cell_t *result);
 
+/**
+ * Creates a base context.  The context is not bound to any JIT, and thus
+ *  thus inherits the parent code pointer of the file structure.  It does, 
+ *  however, have relocated info+debug tables (even though the code address
+ *  do not need to be relocated).  
+ * It is guaranteed to have a newly allocated and copied memory layout
+ *  of the data, heap and stack, and thus relevant address in the info/debug
+ *  tables must be relocated.
+ *
+ * @param plugin		Plugin file structure to build a context form.
+ * @param ctx			Pointer to store newly created context pointer.
+ */
+int SP_CreateBaseContext(sp_plugin_t *plugin, sp_context_t **ctx);
+
+/**
+ * Frees a base context.
+ *
+ * @param ctx			Context pointer.
+ */
+int SP_FreeBaseContext(sp_context_t *ctx);
 
 #endif //_INCLUDE_SOURCEPAWN_VM_H_
