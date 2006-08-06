@@ -11,6 +11,10 @@ int main()
 	/** temporary testing area */
 	sp_context_t ctx;
 	cell_t l, *p;
+	cell_t arr1[] = {1,3,3,7};
+	cell_t arr2[] = {123,1234,12345,123456};
+	const char *str = "hat hat";
+	char buf[20];
 
 	ctx.data = (uint8_t *)malloc(50000);
 	ctx.memory = 50000;
@@ -25,6 +29,12 @@ int main()
 	assert(SP_HeapAlloc(&ctx, 500, &l, &p) == SP_ERR_NONE);
 	assert(SP_HeapRelease(&ctx, l) == SP_ERR_NONE);
 	assert(SP_PushCell(&ctx, 1337) == SP_ERR_NONE);
+	assert(SP_PushCellArray(&ctx, &l, &p, arr1, 4) == SP_ERR_NONE);
+	assert(SP_HeapRelease(&ctx, l) == SP_ERR_NONE);
+	assert(SP_PushCellsFromArray(&ctx, arr2, 4) == SP_ERR_NONE);
+	assert(SP_PushString(&ctx, &l, &p, str) == SP_ERR_NONE);
+	assert(SP_LocalToString(&ctx, l, NULL, buf, 20) == SP_ERR_NONE);
+	assert(SP_HeapRelease(&ctx, l) == SP_ERR_NONE);
 
 	return 0;
 }
@@ -392,6 +402,70 @@ int SP_PushCellArray(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, 
 	}
 
 	memcpy(ph_addr, array, numcells * sizeof(cell_t));
+	if (phys_addr)
+	{
+		*phys_addr = ph_addr;
+	}
+
+	if ((err = SP_PushCell(ctx, *local_addr)) != SP_ERR_NONE)
+	{
+		SP_HeapRelease(ctx, *local_addr);
+		return err;
+	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_LocalToString(sp_context_t *ctx, cell_t local_addr, int *chars, char *buffer, size_t maxlength)
+{
+	size_t len = 0;
+	cell_t *src;
+
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+	{
+		return SP_ERR_INVALID_ADDRESS;
+	}
+
+	src = (cell_t *)(ctx->data + local_addr);
+	while ((*src != '\0') && (len < maxlength))
+	{
+		buffer[len++] = (char)*src++;
+	}
+
+	if (len >= maxlength)
+	{
+		len = maxlength - 1;
+	}
+	if (len >= 0)
+	{
+		buffer[len] = '\0';
+	}
+
+	if (chars)
+	{
+		*chars = len;
+	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_PushString(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, const char *string)
+{
+	cell_t *ph_addr;
+	int err;
+	unsigned int i, numcells = strlen(string);
+
+	if ((err = SP_HeapAlloc(ctx, numcells+1, local_addr, &ph_addr)) != SP_ERR_NONE)
+	{
+		return err;
+	}
+
+	for (i=0; i<numcells; i++)
+	{
+		ph_addr[i] = (cell_t)string[i];
+	}
+	ph_addr[numcells] = '\0';
+
 	if (phys_addr)
 	{
 		*phys_addr = ph_addr;
