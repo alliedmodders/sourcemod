@@ -403,15 +403,16 @@ int SP_PushCellArray(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, 
 	}
 
 	memcpy(ph_addr, array, numcells * sizeof(cell_t));
-	if (phys_addr)
-	{
-		*phys_addr = ph_addr;
-	}
 
 	if ((err = SP_PushCell(ctx, *local_addr)) != SP_ERR_NONE)
 	{
 		SP_HeapRelease(ctx, *local_addr);
 		return err;
+	}
+
+	if (phys_addr)
+	{
+		*phys_addr = ph_addr;
 	}
 
 	return SP_ERR_NONE;
@@ -467,16 +468,43 @@ int SP_PushString(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, con
 	}
 	ph_addr[numcells] = '\0';
 
-	if (phys_addr)
-	{
-		*phys_addr = ph_addr;
-	}
-
 	if ((err = SP_PushCell(ctx, *local_addr)) != SP_ERR_NONE)
 	{
 		SP_HeapRelease(ctx, *local_addr);
 		return err;
 	}
+
+	if (phys_addr)
+	{
+		*phys_addr = ph_addr;
+	}
+
+	return SP_ERR_NONE;
+}
+
+int SP_StringToLocal(sp_context_t *ctx, cell_t local_addr, size_t chars, const char *source)
+{
+	cell_t *dest;
+	size_t i, len;
+
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+	{
+		return SP_ERR_INVALID_ADDRESS;
+	}
+
+	len = strlen(source);
+	dest = (cell_t *)(ctx->data + local_addr);
+
+	if (len >= chars)
+	{
+		len = chars - 1;
+	}
+
+	for (i=0; i<len; i++)
+	{
+		dest[i] = (cell_t)source[i];
+	}
+	dest[len] = '\0';
 
 	return SP_ERR_NONE;
 }
