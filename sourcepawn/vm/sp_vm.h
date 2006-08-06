@@ -187,6 +187,19 @@ int SP_LocalToString(sp_context_t *ctx,
 					size_t maxlength);
 
 /**
+ * Converts a physical string to a local address.
+ * Note that SourcePawn does not support packed strings.
+ * @param ctx			Context pointer
+ * @param local_addr	Local address in plugin.
+ * @param chars			Number of chars to write, including NULL terminator.
+ * @param source		Source string to copy.
+ */
+int SP_StringToLocal(sp_context_t *ctx,
+					 cell_t local_addr,
+					 size_t chars,
+					 const char *source);
+
+/**
  * Pushes a cell onto the stack.  Increases the parameter count by one.
  *
  * @param ctx			Context pointer.

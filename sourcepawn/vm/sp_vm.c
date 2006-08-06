@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <string.h>
 #include <assert.h>
+#include <malloc.h>
 #include "sp_vm.h"
 
 #define CELLBOUNDMAX	(INT_MAX/sizeof(cell_t))

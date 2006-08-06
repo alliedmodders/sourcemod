@@ -168,6 +168,11 @@ typedef int (*SPVM_EXEC)(struct sp_context_s *,
 							uint32_t,
 							cell_t *res);
 
+/**
+ * Breaks into a debugger
+ */
+typedef int (*SPVM_DEBUGBREAK)(struct sp_context_s *);
+
 #define SP_CONTEXT_DEBUG			(1<<0)		/* in debug mode */
 #define SP_CONTEXT_INHERIT_MEMORY	(1<<1)		/* inherits memory pointers */
 #define SP_CONTEXT_INHERIT_CODE		(1<<2)		/* inherits code pointers */
@@ -179,11 +184,13 @@ typedef int (*SPVM_EXEC)(struct sp_context_s *,
  */
 typedef struct sp_context_s
 {
-	/* parent information */
+	/* general/parent information */
 	void			*base;		/* base of generated code and memory */
 	sp_plugin_t		*plugin;	/* pointer back to parent information */
 	struct sp_context_s *parent;	/* pointer to parent context */
 	uint32_t		flags;		/* context flags */
+	SPVM_DEBUGBREAK dbreak;		/* debug break function */
+	void			*user;		/* user specific pointer */
 	/* execution specific data */
 	SPVM_EXEC		exec;		/* execution base */
 	cell_t			pri;		/* PRI register */

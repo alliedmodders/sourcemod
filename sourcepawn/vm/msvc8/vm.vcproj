@@ -194,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sp_vm_debug.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\sp_vm_types.h"
 				>
 			</File>
