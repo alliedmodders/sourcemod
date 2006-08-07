@@ -121,8 +121,8 @@ int SP_HeapRelease(sp_context_t *ctx, cell_t local_addr)
 
 int SP_FindNativeByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t mid, low, high;
-	int diff;
+	int diff, high, low;
+	uint32_t mid;
 
 	high = ctx->plugin->info.natives_num - 1;
 	low = 0;
@@ -172,8 +172,8 @@ int SP_GetNativesNum(sp_context_t *ctx, uint32_t *num)
 
 int SP_FindPublicByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t mid, low, high;
-	int diff;
+	int diff, high, low;
+	uint32_t mid;
 
 	high = ctx->plugin->info.publics_num - 1;
 	low = 0;
@@ -238,8 +238,8 @@ int SP_GetPubvarByIndex(sp_context_t *ctx, uint32_t index, sp_pubvar_t **pubvar)
 
 int SP_FindPubvarByName(sp_context_t *ctx, const char *name, uint32_t *index)
 {
-	uint32_t mid, low, high;
-	int diff;
+	int diff, high, low;
+	uint32_t mid;
 
 	high = ctx->plugin->info.pubvars_num - 1;
 	low = 0;
@@ -364,7 +364,7 @@ int SP_PushCell(sp_context_t *ctx, cell_t value)
 {
 	if ((ctx->hp + STACKMARGIN) > (cell_t)(ctx->sp - sizeof(cell_t)))
 	{
-		return SP_ERR_HEAPLOW;
+		return SP_ERR_STACKERR;
 	}
 
 	ctx->sp -= sizeof(cell_t);
@@ -383,7 +383,7 @@ int SP_PushCellsFromArray(sp_context_t *ctx, cell_t array[], unsigned int numcel
 	{
 		if ((err = SP_PushCell(ctx, array[i])) != SP_ERR_NONE)
 		{
-			ctx->sp += i * sizeof(cell_t);
+			ctx->sp += (cell_t)(i * sizeof(cell_t));
 			ctx->pushcount -= i;
 			return err;
 		}
@@ -420,7 +420,7 @@ int SP_PushCellArray(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, 
 
 int SP_LocalToString(sp_context_t *ctx, cell_t local_addr, int *chars, char *buffer, size_t maxlength)
 {
-	size_t len = 0;
+	int len = 0;
 	cell_t *src;
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
@@ -429,12 +429,12 @@ int SP_LocalToString(sp_context_t *ctx, cell_t local_addr, int *chars, char *buf
 	}
 
 	src = (cell_t *)(ctx->data + local_addr);
-	while ((*src != '\0') && (len < maxlength))
+	while ((*src != '\0') && ((size_t)len < maxlength))
 	{
 		buffer[len++] = (char)*src++;
 	}
 
-	if (len >= maxlength)
+	if ((size_t)len >= maxlength)
 	{
 		len = maxlength - 1;
 	}
@@ -485,7 +485,7 @@ int SP_PushString(sp_context_t *ctx, cell_t *local_addr, cell_t **phys_addr, con
 int SP_StringToLocal(sp_context_t *ctx, cell_t local_addr, size_t chars, const char *source)
 {
 	cell_t *dest;
-	size_t i, len;
+	int i, len;
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
 	{
@@ -495,7 +495,7 @@ int SP_StringToLocal(sp_context_t *ctx, cell_t local_addr, size_t chars, const c
 	len = strlen(source);
 	dest = (cell_t *)(ctx->data + local_addr);
 
-	if (len >= chars)
+	if ((size_t)len >= chars)
 	{
 		len = chars - 1;
 	}
@@ -507,4 +507,142 @@ int SP_StringToLocal(sp_context_t *ctx, cell_t local_addr, size_t chars, const c
 	dest[len] = '\0';
 
 	return SP_ERR_NONE;
+}
+
+int SP_CreateBaseContext(sp_plugin_t *plugin, sp_context_t **ctx)
+{
+	uint32_t iter, max;
+	uint8_t *dat, *cursor;
+	const char *strbase;
+	sp_fdbg_symbol_t *sym;
+	sp_fdbg_arraydim_t *arr;
+	sp_context_t *context = *ctx;
+
+	context = (sp_context_t *)malloc(sizeof(sp_context_t));
+	memset(context, 0, sizeof(sp_context_t));
+
+	context->base = plugin->base;
+	context->plugin = plugin;
+	context->flags = plugin->flags;
+
+	context->data = (uint8_t *)malloc(plugin->memory);
+	memcpy(context->data, plugin->data, plugin->data_size);
+	context->memory = plugin->memory;
+	context->heapbase = (cell_t)(plugin->data_size);
+
+	strbase = plugin->info.stringbase;
+
+	if (max = plugin->info.publics_num)
+	{
+		context->publics = (sp_public_t *)malloc(sizeof(sp_public_t) * max);
+		for (iter=0; iter<max; iter++)
+		{
+			context->publics[iter].name = strbase + plugin->info.publics[iter].name;
+			context->publics[iter].offs = plugin->info.publics[iter].address;
+		}
+	}
+
+	if (max = plugin->info.pubvars_num)
+	{
+		dat = plugin->data;
+		context->pubvars = (sp_pubvar_t *)malloc(sizeof(sp_pubvar_t) * max);
+		for (iter=0; iter<max; iter++)
+		{
+			context->pubvars[iter].name = strbase + plugin->info.pubvars[iter].name;
+			context->pubvars[iter].offs = (cell_t *)(dat + plugin->info.pubvars[iter].address);
+		}
+	}
+
+	if (max = plugin->info.natives_num)
+	{
+		context->natives = (sp_native_t *)malloc(sizeof(sp_native_t) * max);
+		for (iter=0; iter<max; iter++)
+		{
+			context->natives[iter].name = strbase + plugin->info.natives[iter].name;
+			context->natives[iter].pfn = SP_NoExecNative;
+			context->natives[iter].status = SP_NATIVE_NONE;
+		}
+	}
+
+	strbase = plugin->debug.stringbase;
+
+	if (plugin->flags & SP_FLAG_DEBUG)
+	{
+		max = plugin->debug.files_num;
+		context->files = (sp_debug_file_t *)malloc(sizeof(sp_debug_file_t) * max);
+		for (iter=0; iter<max; iter++)
+		{
+			context->files[iter].addr = plugin->debug.files[iter].addr;
+			context->files[iter].name = strbase + plugin->debug.files[iter].name;
+		}
+
+		max = plugin->debug.lines_num;
+		context->lines = (sp_debug_line_t *)malloc(sizeof(sp_debug_line_t) * max);
+		for (iter=0; iter<max; iter++)
+		{
+			context->lines[iter].addr = plugin->debug.lines[iter].addr;
+			context->lines[iter].line = plugin->debug.lines[iter].line;
+		}
+
+		cursor = (uint8_t *)(plugin->debug.symbols);
+		max = plugin->debug.syms_num;
+		context->symbols = (sp_debug_symbol_t *)malloc(sizeof(sp_debug_symbol_t) * max);
+		for (iter=0; iter<max; iter++)
+		{
+			sym = (sp_fdbg_symbol_t *)cursor;
+
+			context->symbols[iter].codestart = sym->codestart;
+			context->symbols[iter].codeend = sym->codeend;
+			context->symbols[iter].name = strbase + sym->name;
+			context->symbols[iter].sym = sym;
+
+			if (sym->dimcount > 0)
+			{
+				cursor += sizeof(sp_fdbg_symbol_t);
+				arr = (sp_fdbg_arraydim_t *)cursor;
+				context->symbols[iter].dims = arr;
+				cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
+				continue;
+			}
+
+			context->symbols[iter].dims = NULL;
+			cursor += sizeof(sp_fdbg_symbol_t);
+		}
+	}
+
+	*ctx = context;
+	return SP_ERR_NONE;
+}
+
+int SP_FreeBaseContext(sp_context_t *ctx)
+{
+	if (ctx->flags & SP_FLAG_DEBUG)
+	{
+		free(ctx->symbols);
+		free(ctx->lines);
+		free(ctx->files);
+	}
+	if (ctx->plugin->info.natives)
+	{
+		free(ctx->natives);
+	}
+	if (ctx->plugin->info.pubvars_num)
+	{
+		free(ctx->pubvars);
+	}
+	if (ctx->plugin->info.publics_num)
+	{
+		free(ctx->publics);
+	}
+	free(ctx->data);
+	free(ctx);
+
+	return SP_ERR_NONE;
+}
+
+cell_t SP_NoExecNative(sp_context_t *ctx, cell_t *params)
+{
+	ctx->err = SP_ERR_NATIVE_PENDING;
+
+	return 0;
 }

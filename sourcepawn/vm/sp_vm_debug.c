@@ -3,8 +3,8 @@
 
 int SP_DbgLookupFile(sp_context_t *ctx, ucell_t addr, const char **filename)
 {
-	uint32_t mid, low, high;
-	int diff;
+	int diff, high, low;
+	uint32_t mid;
 
 	high = ctx->plugin->debug.files_num - 1;
 	low = 0;
@@ -53,8 +53,8 @@ int SP_DbgLookupFunction(sp_context_t *ctx, ucell_t addr, const char **name)
 
 int SP_DbgLookupLine(sp_context_t *ctx, ucell_t addr, uint32_t *line)
 {
-	uint32_t mid, low, high;
-	int diff;
+	int diff, high, low;
+	uint32_t mid;
 
 	high = ctx->plugin->debug.lines_num - 1;
 	low = 0;
