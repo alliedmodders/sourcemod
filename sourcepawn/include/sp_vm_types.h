@@ -17,11 +17,13 @@ typedef int32_t		cell_t;
 #define SP_ERR_INVALID_ADDRESS		5	/* A memory address was not valid */
 #define SP_ERR_NOT_FOUND			6	/* The object in question was not found */
 #define SP_ERR_INDEX				7	/* Invalid index parameter */
+#define SP_ERR_NATIVE_PENDING		8	/* A script tried to exec an unbound native */
+#define SP_ERR_STACKERR				9	/* Stack/Heap collision */
 
 /**********************************************
  *** The following structures are reference structures.
  *** They are not essential to the API, but are used
- ***  to hold the backend database format of the plugin
+ ***  to hold the back end database format of the plugin
  ***  binary.
  **********************************************/
 
@@ -78,7 +80,7 @@ typedef struct sp_plugin_s
 } sp_plugin_t;
 
 struct sp_context_s;
-typedef int (*SPVM_NATIVE_FUNC)(struct sp_context_s *, cell_t *);
+typedef cell_t (*SPVM_NATIVE_FUNC)(struct sp_context_s *, cell_t *);
 
 /**********************************************
  *** The following structures are bound to the VM/JIT.
@@ -210,6 +212,5 @@ typedef struct sp_context_s
 	sp_debug_line_t	*lines;		/* lines */
 	sp_debug_symbol_t *symbols;	/* symbols */
 } sp_context_t;
-								
-#endif //_INCLUDE_SOURCEPAWN_VM_TYPES_H
 
+#endif //_INCLUDE_SOURCEPAWN_VM_TYPES_H

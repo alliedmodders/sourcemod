@@ -57,11 +57,7 @@ typedef struct sp_file_hdr_s
 	uint32_t	dataoffs;	/* offset to file proper (any compression starts here) */
 } sp_file_hdr_t;
 
-typedef enum
-{
-	SP_FILE_NONE = 0,
-	SP_FILE_DEBUG = 1,
-} sp_file_flags_t;
+#define SP_FLAG_DEBUG	(1<<0)
 
 /* section is ".code" */
 typedef struct sp_file_code_s
