@@ -1,30 +1,34 @@
 #include "sp_vm.h"
 #include "sp_vm_debug.h"
 
+#define USHR(x) ((unsigned int)(x)>>1)
+
 int SP_DbgLookupFile(sp_context_t *ctx, ucell_t addr, const char **filename)
 {
-	int diff, high, low;
-	uint32_t mid;
+	int high, low, mid;
 
-	high = ctx->plugin->debug.files_num - 1;
-	low = 0;
+	high = ctx->plugin->debug.files_num;
+	low = -1;
 
-	while (low <= high)
+	while (high - low > 1)
 	{
-		mid = (low + high) / 2;
-		diff = ctx->files[mid].addr - addr;
-		if (diff == 0)
+		mid = USHR(low + high);
+		if (ctx->files[mid].addr <= addr)
 		{
-			*filename = ctx->files[mid].name;
-			return SP_ERR_NONE;
-		} else if (diff < 0) {
-			low = mid + 1;
+			low = mid;
 		} else {
-			high = mid - 1;
+			high = mid;
 		}
 	}
 
-	return SP_ERR_NOT_FOUND;
+	if (low == -1)
+	{
+		return SP_ERR_NOT_FOUND;
+	}
+
+	*filename = ctx->files[low].name;
+
+	return SP_ERR_NONE;
 }
 
 int SP_DbgLookupFunction(sp_context_t *ctx, ucell_t addr, const char **name)
@@ -53,28 +57,30 @@ int SP_DbgLookupFunction(sp_context_t *ctx, ucell_t addr, const char **name)
 
 int SP_DbgLookupLine(sp_context_t *ctx, ucell_t addr, uint32_t *line)
 {
-	int diff, high, low;
-	uint32_t mid;
+	int high, low, mid;
 
-	high = ctx->plugin->debug.lines_num - 1;
-	low = 0;
+	high = ctx->plugin->debug.lines_num;
+	low = -1;
 
-	while (low <= high)
+	while (high - low > 1)
 	{
-		mid = (low + high) / 2;
-		diff = ctx->lines[mid].addr - addr;
-		if (diff == 0)
+		mid = USHR(low + high);
+		if (ctx->lines[mid].addr <= addr)
 		{
-			*line = ctx->lines[mid].line;
-			return SP_ERR_NONE;
-		} else if (diff < 0) {
-			low = mid + 1;
+			low = mid;
 		} else {
-			high = mid - 1;
+			high = mid;
 		}
 	}
 
-	return SP_ERR_NOT_FOUND;
+	if (low == -1)
+	{
+		return SP_ERR_NOT_FOUND;
+	}
+
+	*line = ctx->lines[low].line;
+
+	return SP_ERR_NONE;
 }
 
 int SP_DbgInstallBreak(sp_context_t *ctx, SPVM_DEBUGBREAK newpfn, SPVM_DEBUGBREAK *oldpfn)

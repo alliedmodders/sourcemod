@@ -7,10 +7,10 @@
 #define CELLBOUNDMAX	(INT_MAX/sizeof(cell_t))
 #define STACKMARGIN		((cell_t)(16*sizeof(cell_t)))
 
-int main()
+/*int main()
 {
 	/** temporary testing area */
-	sp_context_t ctx;
+	/*sp_context_t ctx;
 	cell_t l, *p;
 	cell_t arr1[] = {1,3,3,7};
 	cell_t arr2[] = {123,1234,12345,123456};
@@ -38,7 +38,7 @@ int main()
 	assert(SP_HeapRelease(&ctx, l) == SP_ERR_NONE);
 
 	return 0;
-}
+}*/
 
 int SP_HeapAlloc(sp_context_t *ctx, unsigned int cells, cell_t *local_addr, cell_t **phys_addr)
 {
@@ -516,7 +516,7 @@ int SP_CreateBaseContext(sp_plugin_t *plugin, sp_context_t **ctx)
 	const char *strbase;
 	sp_fdbg_symbol_t *sym;
 	sp_fdbg_arraydim_t *arr;
-	sp_context_t *context = *ctx;
+	sp_context_t *context;
 
 	context = (sp_context_t *)malloc(sizeof(sp_context_t));
 	memset(context, 0, sizeof(sp_context_t));
