@@ -5079,7 +5079,7 @@ static int dofor(void)
        * 'compound statement' level of it own.
        */
       nestlevel++;
-	  autozero=1;
+      autozero=1;
       declloc(FALSE); /* declare local variable */
     } else {
       doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);  /* expression 1 */
