@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc4.c 3579 2006-06-06 13:35:29Z thiadmer $
+ *  Version: $Id: sc4.c 3633 2006-08-11 16:20:18Z thiadmer $
  */
 #include <assert.h>
 #include <ctype.h>
@@ -214,7 +214,7 @@ SC_FUNC void writetrailer(void)
  */
 SC_FUNC void begcseg(void)
 {
-  if (curseg!=sIN_CSEG || fcurrent!=fcurseg) {
+  if (sc_status!=statSKIP && (curseg!=sIN_CSEG || fcurrent!=fcurseg)) {
     stgwrite("\n");
     stgwrite("CODE ");
     outval(fcurrent,FALSE);
@@ -232,7 +232,7 @@ SC_FUNC void begcseg(void)
  */
 SC_FUNC void begdseg(void)
 {
-  if (curseg!=sIN_DSEG || fcurrent!=fcurseg) {
+  if (sc_status!=statSKIP && (curseg!=sIN_DSEG || fcurrent!=fcurseg)) {
     stgwrite("\n");
     stgwrite("DATA ");
     outval(fcurrent,FALSE);
@@ -245,6 +245,10 @@ SC_FUNC void begdseg(void)
 
 SC_FUNC void setline(int chkbounds)
 {
+  if (sc_asmfile) {
+    stgwrite("\t; line ");
+    outval(fline,TRUE);
+  } /* if */
   if ((sc_debug & sSYMBOLIC)!=0 || chkbounds && (sc_debug & sCHKBOUNDS)!=0) {
     /* generate a "break" (start statement) opcode rather than a "line" opcode
      * because earlier versions of Small/Pawn have an incompatible version of the

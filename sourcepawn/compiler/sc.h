@@ -25,7 +25,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc.h 3590 2006-06-24 14:16:39Z thiadmer $
+ *  Version: $Id: sc.h 3636 2006-08-14 15:42:05Z thiadmer $
  */
 #ifndef SC_H_INCLUDED
 #define SC_H_INCLUDED
@@ -279,11 +279,11 @@ typedef struct s_stringpair {
 #define opargs(n)       ((n)*sizeof(cell))      /* size of typical argument */
 
 /*  Tokens recognized by lex()
- *  Some of these constants are assigned as well to the variable "lastst"
+ *  Some of these constants are assigned as well to the variable "lastst" (see SC1.C)
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    326    /* value of last multi-character match-able token */
+#define tLAST    329    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -312,62 +312,66 @@ typedef struct s_stringpair {
 #define tDBLCOLON 280   /* :: */
 /* reserved words (statements) */
 #define tASSERT  281
-#define tBREAK   282
-#define tCASE    283
-#define tCHAR    284
-#define tCONST   285
-#define tCONTINUE 286
-#define tDEFAULT 287
-#define tDEFINED 288
-#define tDO      289
-#define tELSE    290
-#define tENUM    291
-#define tEXIT    292
-#define tFOR     293
-#define tFORWARD 294
-#define tGOTO    295
-#define tIF      296
-#define tNATIVE  297
-#define tNEW     298
-#define tDECL    299
-#define tOPERATOR 300
-#define tPUBLIC  301
-#define tRETURN  302
-#define tSIZEOF  303
-#define tSLEEP   304
-#define tSTATE   305
-#define tSTATIC  306
-#define tSTOCK   307
-#define tSWITCH  308
-#define tTAGOF   309
-#define tWHILE   310
+#define tBEGIN   282
+#define tBREAK   283
+#define tCASE    284
+#define tCHAR    285
+#define tCONST   286
+#define tCONTINUE 287
+#define tDEFAULT 288
+#define tDEFINED 289
+#define tDO      290
+#define tELSE    291
+#define tEND     292
+#define tENUM    293
+#define tEXIT    294
+#define tFOR     295
+#define tFORWARD 296
+#define tGOTO    297
+#define tIF      298
+#define tNATIVE  299
+#define tNEW     300
+#define tDECL    301
+#define tOPERATOR 302
+#define tPUBLIC  303
+#define tRETURN  304
+#define tSIZEOF  305
+#define tSLEEP   306
+#define tSTATE   307
+#define tSTATIC  308
+#define tSTOCK   309
+#define tSWITCH  310
+#define tTAGOF   311
+#define tTHEN    312
+#define tWHILE   313
 /* compiler directives */
-#define tpASSERT 311    /* #assert */
-#define tpDEFINE 312
-#define tpELSE   313    /* #else */
-#define tpELSEIF 314    /* #elseif */
-#define tpEMIT   315
-#define tpENDIF  316
-#define tpENDINPUT 317
-#define tpENDSCRPT 318
-#define tpERROR  319
-#define tpFILE   320
-#define tpIF     321    /* #if */
-#define tINCLUDE 322
-#define tpLINE   323
-#define tpPRAGMA 324
-#define tpTRYINCLUDE 325
-#define tpUNDEF  326
+#define tpASSERT 314    /* #assert */
+#define tpDEFINE 315
+#define tpELSE   316    /* #else */
+#define tpELSEIF 317    /* #elseif */
+#define tpEMIT   318
+#define tpENDIF  319
+#define tpENDINPUT 320
+#define tpENDSCRPT 321
+#define tpERROR  322
+#define tpFILE   323
+#define tpIF     324    /* #if */
+#define tINCLUDE 325
+#define tpLINE   326
+#define tpPRAGMA 327
+#define tpTRYINCLUDE 328
+#define tpUNDEF  329
 /* semicolon is a special case, because it can be optional */
-#define tTERM    327    /* semicolon or newline */
-#define tENDEXPR 328    /* forced end of expression */
+#define tTERM    330    /* semicolon or newline */
+#define tENDEXPR 331    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  329    /* integer number */
-#define tRATIONAL 330   /* rational number */
-#define tSYMBOL  331
-#define tLABEL   332
-#define tSTRING  333
-#define tEXPR    334    /* for assigment to "lastst" only */
+#define tNUMBER  332    /* integer number */
+#define tRATIONAL 333   /* rational number */
+#define tSYMBOL  334
+#define tLABEL   335
+#define tSTRING  336
+#define tEXPR    337 /* for assigment to "lastst" only (see SC1.C) */
+#define tENDLESS 338 /* endless loop, for assigment to "lastst" only */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
@@ -698,15 +702,15 @@ SC_FUNC void delete_dbgstringtable(void);
   typedef unsigned char MEMFILE;
   #define tMEMFILE  1
 #endif
-MEMFILE *mfcreate(char *filename);
+MEMFILE *mfcreate(const char *filename);
 void mfclose(MEMFILE *mf);
 int mfdump(MEMFILE *mf);
-long mflength(MEMFILE *mf);
+long mflength(const MEMFILE *mf);
 long mfseek(MEMFILE *mf,long offset,int whence);
-unsigned int mfwrite(MEMFILE *mf,unsigned char *buffer,unsigned int size);
+unsigned int mfwrite(MEMFILE *mf,const unsigned char *buffer,unsigned int size);
 unsigned int mfread(MEMFILE *mf,unsigned char *buffer,unsigned int size);
 char *mfgets(MEMFILE *mf,char *string,unsigned int size);
-int mfputs(MEMFILE *mf,char *string);
+int mfputs(MEMFILE *mf,const char *string);
 
 /* function prototypes in SCI18N.C */
 #define MAXCODEPAGE 12

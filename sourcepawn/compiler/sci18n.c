@@ -30,7 +30,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: CODEPAGE.C,v 1.0 2004-02-18 12:13:04+01 thiadmer Exp thiadmer $
+ *  Version: $Id: sci18n.c 3612 2006-07-22 09:59:46Z thiadmer $
  */
 #include <assert.h>
 #include <stdio.h>

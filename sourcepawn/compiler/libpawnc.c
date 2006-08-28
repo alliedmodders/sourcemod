@@ -20,7 +20,7 @@
  *			misrepresented as being the original software.
  *	3.	This notice may not be removed or altered from any source distribution.
  *
- *	Version: $Id: libsc.c 3114 2005-03-17 14:48:29Z thiadmer $
+ *  Version: $Id: libpawnc.c 3612 2006-07-22 09:59:46Z thiadmer $
  */
 #include <assert.h>
 #include <stdio.h>

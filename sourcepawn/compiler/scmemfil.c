@@ -31,12 +31,15 @@
 #include <string.h>
 #include "memfile.h"
 
+#if defined FORTIFY
+  #include <alloc/fortify.h>
+#endif
 typedef memfile_t MEMFILE;
 #define tMEMFILE  1
 
 #include "sc.h"
 
-MEMFILE *mfcreate(char *filename)
+MEMFILE *mfcreate(const char *filename)
 {
   return memfile_creat(filename, 4096);
 }
@@ -64,7 +67,7 @@ int mfdump(MEMFILE *mf)
   return okay;
 }
 
-long mflength(MEMFILE *mf)
+long mflength(const MEMFILE *mf)
 {
   return mf->usedoffs;
 }
@@ -105,7 +108,7 @@ long mfseek(MEMFILE *mf,long offset,int whence)
   return offset;
 }
 
-unsigned int mfwrite(MEMFILE *mf,unsigned char *buffer,unsigned int size)
+unsigned int mfwrite(MEMFILE *mf,const unsigned char *buffer,unsigned int size)
 {
   return (memfile_write(mf, buffer, size) ? size : 0);
 }
@@ -152,7 +155,7 @@ char *mfgets(MEMFILE *mf,char *string,unsigned int size)
   return string;
 }
 
-int mfputs(MEMFILE *mf,char *string)
+int mfputs(MEMFILE *mf,const char *string)
 {
   unsigned int written,length;
 

@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 			cod.flags = 0;
 			if (hdr->flags & AMX_FLAG_DEBUG)
 			{
-				cod.flags |= SP_FILE_DEBUG;
+				cod.flags |= SP_FLAG_DEBUG;
 			}
 			cod.code = sizeof(cod);
 			cod.main = hdr->cip;

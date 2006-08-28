@@ -20,7 +20,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: scvars.c 3577 2006-06-02 16:22:52Z thiadmer $
+ *  Version: $Id: scvars.c 3633 2006-08-11 16:20:18Z thiadmer $
  */
 #include <stdio.h>
 #include <stdlib.h>     /* for _MAX_PATH */

@@ -20,7 +20,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc1.c 3591 2006-06-25 14:30:07Z thiadmer $
+ *  Version: $Id: sc1.c 3636 2006-08-14 15:42:05Z thiadmer $
  */
 #include <assert.h>
 #include <ctype.h>
@@ -109,21 +109,21 @@ static long max_stacksize(symbol *root,int *recursion);
 static int testsymbols(symbol *root,int level,int testlabs,int testconst);
 static void destructsymbols(symbol *root,int level);
 static constvalue *find_constval_byval(constvalue *table,cell val);
+static symbol *fetchlab(char *name);
 static void statement(int *lastindent,int allow_decl);
-static void compound(int stmt_sameline);
+static void compound(int stmt_sameline,int starttok);
+static int test(int label,int parens,int invert);
 static int doexpr(int comma,int chkeffect,int allowarray,int mark_endexpr,
                   int *tag,symbol **symptr,int chkfuncresult);
 static void doassert(void);
 static void doexit(void);
-static void test(int label,int parens,int invert);
-static void doif(void);
-static void dowhile(void);
-static void dodo(void);
-static void dofor(void);
+static int doif(void);
+static int dowhile(void);
+static int dodo(void);
+static int dofor(void);
 static void doswitch(void);
 static void dogoto(void);
 static void dolabel(void);
-static symbol *fetchlab(char *name);
 static void doreturn(void);
 static void dobreak(void);
 static void docont(void);
@@ -134,10 +134,17 @@ static void delwhile(void);
 static int *readwhile(void);
 static void inst_datetime_defines(void);
 
+enum {
+  TEST_PLAIN,           /* no parentheses */
+  TEST_THEN,            /* '(' <expr> ')' or <expr> 'then' */
+  TEST_DO,              /* '(' <expr> ')' or <expr> 'do' */
+  TEST_OPT,             /* '(' <expr> ')' or <expr> */
+};
 static int norun      = 0;      /* the compiler never ran */
-static int autozero   = 1;      /* if 1 will zero out the variable, if 0 omit the zeroing */ 
+static int autozero   = 1;      /* if 1 will zero out the variable, if 0 omit the zeroing */
 static int lastst     = 0;      /* last executed statement type */
 static int nestlevel  = 0;      /* number of active (open) compound statements */
+static int endlessloop= 0;      /* nesting level of endless loop */
 static int rettype    = 0;      /* the type that a "return" expression should have */
 static int skipinput  = 0;      /* number of lines to skip from the first input file */
 static int optproccall = TRUE;  /* support "procedure call" */
@@ -449,9 +456,9 @@ cleanup:
         pc_printf("Stack/heap size:   %8ld bytes; ", (long)pc_stksize*sizeof(cell));
         pc_printf("estimated max. usage");
         if (recursion)
-          pc_printf(" is unknown, due to recursion\n");
+          pc_printf(": unknown, due to recursion\n");
         else if ((pc_memflags & suSLEEP_INSTR)!=0)
-          pc_printf(" is unknown, due to the \"sleep\" instruction\n");
+          pc_printf(": unknown, due to the \"sleep\" instruction\n");
         else
           pc_printf("=%ld cells (%ld bytes)\n",stacksize,stacksize*sizeof(cell));
         pc_printf("Total requirements:%8ld bytes\n", (long)hdrsize+(long)code_idx+(long)glb_declared*sizeof(cell)+(long)pc_stksize*sizeof(cell));
@@ -1415,6 +1422,9 @@ static void dumplits(void)
 {
   int j,k;
 
+  if (sc_status==statSKIP)
+    return;
+
   k=0;
   while (k<litidx){
     /* should be in the data segment */
@@ -1444,7 +1454,7 @@ static void dumpzero(int count)
 {
   int i;
 
-  if (count<=0)
+  if (sc_status==statSKIP || count<=0)
     return;
   assert(curseg==2);
   defstorage();
@@ -2196,6 +2206,24 @@ static void initials(int ident,int tag,cell *size,int dim[],int numdim,
           err++;
         } /* if */
       } /* for */
+      if (numdim>1 && dim[numdim-1]==0) {
+        /* also look whether, by any chance, all "counted" final dimensions are
+         * the same value; if so, we can store this
+         */
+        constvalue *ld=lastdim.next;
+        int d,match;
+        for (d=0; d<dim[numdim-2]; d++) {
+          assert(ld!=NULL);
+          assert(strtol(ld->name,NULL,16)==d);
+          if (d==0)
+            match=ld->value;
+          else if (match!=ld->value)
+            break;
+          ld=ld->next;
+        } /* for */
+        if (d==dim[numdim-2])
+          dim[numdim-1]=match;
+      } /* if */
       /* after all arrays have been initalized, we know the (major) dimensions
        * of the array and we can properly adjust the indirection vectors
        */
@@ -2446,26 +2474,28 @@ static void decl_const(int vclass)
   int symbolline;
   symbol *sym;
 
-  insert_docstring_separator(); /* see comment in newfunc() */
-  tag=pc_addtag(NULL);
-  if (lex(&val,&str)!=tSYMBOL)  /* read in (new) token */
-    error(20,str);              /* invalid symbol name */
-  symbolline=fline;             /* save line where symbol was found */
-  strcpy(constname,str);        /* save symbol name */
-  needtoken('=');
-  constexpr(&val,&exprtag,NULL);/* get value */
+  insert_docstring_separator();         /* see comment in newfunc() */
+  do {
+    tag=pc_addtag(NULL);
+    if (lex(&val,&str)!=tSYMBOL)        /* read in (new) token */
+      error(20,str);                    /* invalid symbol name */
+    symbolline=fline;                   /* save line where symbol was found */
+    strcpy(constname,str);              /* save symbol name */
+    needtoken('=');
+    constexpr(&val,&exprtag,NULL);      /* get value */
+    /* add_constant() checks for duplicate definitions */
+    if (!matchtag(tag,exprtag,FALSE)) {
+      /* temporarily reset the line number to where the symbol was defined */
+      int orgfline=fline;
+      fline=symbolline;
+      error(213);                       /* tagname mismatch */
+      fline=orgfline;
+    } /* if */
+    sym=add_constant(constname,val,vclass,tag);
+    if (sym!=NULL)
+      sc_attachdocumentation(sym);/* attach any documenation to the constant */
+  } while (matchtoken(',')); /* enddo */   /* more? */
   needtoken(tTERM);
-  /* add_constant() checks for duplicate definitions */
-  if (!matchtag(tag,exprtag,FALSE)) {
-    /* temporarily reset the line number to where the symbol was defined */
-    int orgfline=fline;
-    fline=symbolline;
-    error(213);                 /* tagname mismatch */
-    fline=orgfline;
-  } /* if */
-  sym=add_constant(constname,val,vclass,tag);
-  if (sym!=NULL)
-    sc_attachdocumentation(sym);/* attach any documenation to the function */
 }
 
 /*  decl_enum   - declare enumerated constants
@@ -4597,7 +4627,7 @@ redef_enumfield:
  */
 static void statement(int *lastindent,int allow_decl)
 {
-  int tok;
+  int tok,save;
   cell val;
   char *st;
 
@@ -4650,29 +4680,26 @@ static void statement(int *lastindent,int allow_decl)
     } /* if */
     break;
   case '{':
-    tok=fline;
+  case tBEGIN:
+    save=fline;
     if (!matchtoken('}'))       /* {} is the empty statement */
-      compound(tok==fline);
+      compound(save==fline,tok);
     /* lastst (for "last statement") does not change */
     break;
   case ';':
     error(36);                  /* empty statement */
     break;
   case tIF:
-    doif();
-    lastst=tIF;
+    lastst=doif();
     break;
   case tWHILE:
-    dowhile();
-    lastst=tWHILE;
+    lastst=dowhile();
     break;
   case tDO:
-    dodo();
-    lastst=tDO;
+    lastst=dodo();
     break;
   case tFOR:
-    dofor();
-    lastst=tFOR;
+    lastst=dofor();
     break;
   case tSWITCH:
     doswitch();
@@ -4734,23 +4761,24 @@ static void statement(int *lastindent,int allow_decl)
   } /* switch */
 }
 
-static void compound(int stmt_sameline)
+static void compound(int stmt_sameline,int starttok)
 {
   int indent=-1;
   cell save_decl=declared;
   int count_stmt=0;
   int block_start=fline;  /* save line where the compound block started */
+  int endtok;
 
   /* if there is more text on this line, we should adjust the statement indent */
   if (stmt_sameline) {
     int i;
     const unsigned char *p=lptr;
     /* go back to the opening brace */
-    while (*p!='{') {
+    while (*p!=starttok) {
       assert(p>pline);
       p--;
     } /* while */
-    assert(*p=='{');  /* it should be found */
+    assert(*p==starttok);  /* it should be found */
     /* go forward, skipping white-space */
     p++;
     while (*p<=' ' && *p!='\0')
@@ -4764,13 +4792,14 @@ static void compound(int stmt_sameline)
         stmtindent++;
   } /* if */
 
+  endtok=(starttok=='{') ? '}' : tEND;
   nestlevel+=1;                 /* increase compound statement level */
-  while (matchtoken('}')==0){   /* repeat until compound statement is closed */
+  while (matchtoken(endtok)==0){/* repeat until compound statement is closed */
     if (!freading){
       error(30,block_start);    /* compound block not closed at end of file */
       break;
     } else {
-      if (count_stmt>0 && (lastst==tRETURN || lastst==tBREAK || lastst==tCONTINUE))
+      if (count_stmt>0 && (lastst==tRETURN || lastst==tBREAK || lastst==tCONTINUE || lastst==tENDLESS))
         error(225);             /* unreachable code */
       statement(&indent,TRUE);  /* do a statement */
       count_stmt++;
@@ -4864,11 +4893,12 @@ SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr)
  *
  *  Global references: sc_intest (altered, but restored upon termination)
  */
-static void test(int label,int parens,int invert)
+static int test(int label,int parens,int invert)
 {
   int index,tok;
   cell cidx;
   int ident,tag;
+  int endtok;
   cell constval;
   symbol *sym;
   int localstaging=FALSE;
@@ -4884,8 +4914,15 @@ static void test(int label,int parens,int invert)
 
   PUSHSTK_I(sc_intest);
   sc_intest=TRUE;
-  if (parens)
-    needtoken('(');
+  endtok=0;
+  if (parens!=TEST_PLAIN) {
+    if (matchtoken('('))
+      endtok=')';
+    else if (parens==TEST_THEN)
+      endtok=tTHEN;
+    else if (parens==TEST_DO)
+      endtok=tDO;
+  } /* if */
   do {
     stgget(&index,&cidx);       /* mark position (of last expression) in
                                  * code generator */
@@ -4894,17 +4931,19 @@ static void test(int label,int parens,int invert)
     if (tok)
       markexpr(sEXPR,NULL,0);
   } while (tok); /* do */
-  if (parens)
-    needtoken(')');
+  if (endtok!=0)
+    needtoken(endtok);
   if (ident==iARRAY || ident==iREFARRAY) {
     char *ptr=(sym->name!=NULL) ? sym->name : "-unknown-";
     error(33,ptr);              /* array must be indexed */
   } /* if */
   if (ident==iCONSTEXPR) {      /* constant expression */
+    int testtype=0;
     sc_intest=(short)POPSTK_I();/* restore stack */
     stgdel(index,cidx);
     if (constval) {             /* code always executed */
       error(206);               /* redundant test: always non-zero */
+      testtype=tENDLESS;
     } else {
       error(205);               /* redundant code: never executed */
       jumplabel(label);
@@ -4913,7 +4952,7 @@ static void test(int label,int parens,int invert)
       stgout(0);                /* write "jumplabel" code */
       stgset(FALSE);            /* stop staging */
     } /* if */
-    return;
+    return testtype;
   } /* if */
   if (tag!=0 && tag!=pc_addtag("bool"))
     if (check_userop(lneg,tag,0,1,NULL,&tag))
@@ -4929,37 +4968,49 @@ static void test(int label,int parens,int invert)
                                  * assert() when localstaging is set to TRUE) */
     stgset(FALSE);              /* stop staging */
   } /* if */
+  return 0;
 }
 
-static void doif(void)
+static int doif(void)
 {
   int flab1,flab2;
   int ifindent;
+  int lastst_true;
 
   ifindent=stmtindent;          /* save the indent of the "if" instruction */
   flab1=getlabel();             /* get label number for false branch */
-  test(flab1,TRUE,FALSE);       /* get expression, branch to flab1 if false */
+  test(flab1,TEST_THEN,FALSE);  /* get expression, branch to flab1 if false */
   statement(NULL,FALSE);        /* if true, do a statement */
-  if (matchtoken(tELSE)==0){    /* if...else ? */
+  if (!matchtoken(tELSE)) {     /* if...else ? */
     setlabel(flab1);            /* no, simple if..., print false label */
   } else {
+    lastst_true=lastst;         /* save last statement of the "true" branch */
     /* to avoid the "dangling else" error, we want a warning if the "else"
      * has a lower indent than the matching "if" */
     if (stmtindent<ifindent && sc_tabsize>0)
       error(217);               /* loose indentation */
     flab2=getlabel();
     if ((lastst!=tRETURN) && (lastst!=tGOTO))
-      jumplabel(flab2);
+      jumplabel(flab2);         /* "true" branch jumps around "else" clause, unless the "true" branch statement already jumped */
     setlabel(flab1);            /* print false label */
     statement(NULL,FALSE);      /* do "else" clause */
     setlabel(flab2);            /* print true label */
-  } /* endif */
+    /* if both the "true" branch and the "false" branch ended with the same
+     * kind of statement, set the last statement id to that kind, rather than
+     * to the generic tIF; this allows for better "unreachable code" checking
+     */
+    if (lastst==lastst_true)
+      return lastst;
+  } /* if */
+  return tIF;
 }
 
-static void dowhile(void)
+static int dowhile(void)
 {
   int wq[wqSIZE];               /* allocate local queue */
+  int save_endlessloop,retcode;
 
+  save_endlessloop=endlessloop;
   addwhile(wq);                 /* add entry to queue for "break" */
   setlabel(wq[wqLOOP]);         /* loop label */
   /* The debugger uses the "break" opcode to be able to "break" out of
@@ -4967,21 +5018,27 @@ static void dowhile(void)
    * tiniest loop, set it below the top of the loop
    */
   setline(TRUE);
-  test(wq[wqEXIT],TRUE,FALSE);  /* branch to wq[wqEXIT] if false */
+  endlessloop=test(wq[wqEXIT],TEST_DO,FALSE);/* branch to wq[wqEXIT] if false */
   statement(NULL,FALSE);        /* if so, do a statement */
   jumplabel(wq[wqLOOP]);        /* and loop to "while" start */
   setlabel(wq[wqEXIT]);         /* exit label */
   delwhile();                   /* delete queue entry */
+
+  retcode=endlessloop ? tENDLESS : tWHILE;
+  endlessloop=save_endlessloop;
+  return retcode;
 }
 
 /*
  *  Note that "continue" will in this case not jump to the top of the loop, but
  *  to the end: just before the TRUE-or-FALSE testing code.
  */
-static void dodo(void)
+static int dodo(void)
 {
   int wq[wqSIZE],top;
+  int save_endlessloop,retcode;
 
+  save_endlessloop=endlessloop;
   addwhile(wq);           /* see "dowhile" for more info */
   top=getlabel();         /* make a label first */
   setlabel(top);          /* loop label */
@@ -4989,26 +5046,32 @@ static void dodo(void)
   needtoken(tWHILE);
   setlabel(wq[wqLOOP]);   /* "continue" always jumps to WQLOOP. */
   setline(TRUE);
-  test(wq[wqEXIT],TRUE,FALSE);
+  endlessloop=test(wq[wqEXIT],TEST_OPT,FALSE);
   jumplabel(top);
   setlabel(wq[wqEXIT]);
   delwhile();
   needtoken(tTERM);
+
+  retcode=endlessloop ? tENDLESS : tDO;
+  endlessloop=save_endlessloop;
+  return retcode;
 }
 
-static void dofor(void)
+static int dofor(void)
 {
   int wq[wqSIZE],skiplab;
   cell save_decl;
-  int save_nestlevel,index;
+  int save_nestlevel,save_endlessloop;
+  int index,endtok;
   int *ptr;
 
   save_decl=declared;
   save_nestlevel=nestlevel;
+  save_endlessloop=endlessloop;
 
   addwhile(wq);
   skiplab=getlabel();
-  needtoken('(');
+  endtok= matchtoken('(') ? ')' : tDO;
   if (matchtoken(';')==0) {
     /* new variable declarations are allowed here */
     if (matchtoken(tNEW)) {
@@ -5016,7 +5079,7 @@ static void dofor(void)
        * 'compound statement' level of it own.
        */
       nestlevel++;
-      autozero=1;
+	  autozero=1;
       declloc(FALSE); /* declare local variable */
     } else {
       doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);  /* expression 1 */
@@ -5046,14 +5109,16 @@ static void dofor(void)
   stgmark(sSTARTREORDER);
   stgmark((char)(sEXPRSTART+0));    /* mark start of 2nd expression in stage */
   setlabel(skiplab);                /* jump to this point after 1st expression */
-  if (matchtoken(';')==0) {
-    test(wq[wqEXIT],FALSE,FALSE);   /* expression 2 (jump to wq[wqEXIT] if false) */
+  if (matchtoken(';')) {
+    endlessloop=1;
+  } else {
+    endlessloop=test(wq[wqEXIT],TEST_PLAIN,FALSE);/* expression 2 (jump to wq[wqEXIT] if false) */
     needtoken(';');
   } /* if */
   stgmark((char)(sEXPRSTART+1));    /* mark start of 3th expression in stage */
-  if (matchtoken(')')==0) {
+  if (!matchtoken(endtok)) {
     doexpr(TRUE,TRUE,TRUE,TRUE,NULL,NULL,FALSE);    /* expression 3 */
-    needtoken(')');
+    needtoken(endtok);
   } /* if */
   stgmark(sENDREORDER);             /* mark end of reversed evaluation */
   stgout(index);
@@ -5075,6 +5140,10 @@ static void dofor(void)
     delete_symbols(&loctab,nestlevel,FALSE,TRUE);
     nestlevel=save_nestlevel;     /* reset 'compound statement' nesting level */
   } /* if */
+
+  index=endlessloop ? tENDLESS : tFOR;
+  endlessloop=save_endlessloop;
+  return index;
 }
 
 /* The switch statement is incompatible with its C sibling:
@@ -5092,16 +5161,17 @@ static void dofor(void)
 static void doswitch(void)
 {
   int lbl_table,lbl_exit,lbl_case;
-  int tok,swdefault,casecount;
+  int swdefault,casecount;
+  int tok,endtok;
   cell val;
   char *str;
   constvalue caselist = { NULL, "", 0, 0};   /* case list starts empty */
   constvalue *cse,*csp;
   char labelname[sNAMEMAX+1];
 
-  needtoken('(');
+  endtok= matchtoken('(') ? ')' : tDO;
   doexpr(TRUE,FALSE,FALSE,FALSE,NULL,NULL,TRUE);/* evaluate switch expression */
-  needtoken(')');
+  needtoken(endtok);
   /* generate the code for the switch statement, the label is the address
    * of the case table (to be generated later).
    */
@@ -5109,7 +5179,12 @@ static void doswitch(void)
   lbl_case=0;                   /* just to avoid a compiler warning */
   ffswitch(lbl_table);
 
-  needtoken('{');
+  if (matchtoken(tBEGIN)) {
+    endtok=tEND;
+  } else {
+    endtok='}';
+    needtoken('{');
+  } /* if */
   lbl_exit=getlabel();          /* get label number for jumping out of switch */
   swdefault=FALSE;
   casecount=0;
@@ -5195,15 +5270,14 @@ static void doswitch(void)
        */
       jumplabel(lbl_exit);
       break;
-    case '}':
-      /* nothing, but avoid dropping into "default" */
-      break;
     default:
-      error(2);
-      indent_nowarn=TRUE; /* disable this check */
-      tok='}';          /* break out of the loop after an error */
+      if (tok!=endtok) {
+        error(2);
+        indent_nowarn=TRUE; /* disable this check */
+        tok=endtok;     /* break out of the loop after an error */
+      } /* if */
     } /* switch */
-  } while (tok!='}');
+  } while (tok!=endtok);
 
   #if !defined NDEBUG
     /* verify that the case table is sorted (unfortunatly, duplicates can
@@ -5238,7 +5312,7 @@ static void doassert(void)
 
   if ((sc_debug & sCHKBOUNDS)!=0) {
     flab1=getlabel();           /* get label number for "OK" branch */
-    test(flab1,FALSE,TRUE);     /* get expression and branch to flab1 if true */
+    test(flab1,TEST_PLAIN,TRUE);/* get expression and branch to flab1 if true */
     insert_dbgline(fline);      /* make sure we can find the correct line number */
     ffabort(xASSERTION);
     setlabel(flab1);
@@ -5259,6 +5333,9 @@ static void dogoto(void)
   char *st;
   cell val;
   symbol *sym;
+
+  /* if we were inside an endless loop, assume that we jump out of it */
+  endlessloop=0;
 
   if (lex(&val,&st)==tSYMBOL) {
     sym=fetchlab(st);
@@ -5443,6 +5520,7 @@ static void dobreak(void)
 {
   int *ptr;
 
+  endlessloop=0;      /* if we were inside an endless loop, we just jumped out */
   ptr=readwhile();      /* readwhile() gives an error if not in loop */
   needtoken(tTERM);
   if (ptr==NULL)
@@ -5530,7 +5608,7 @@ static void dostate(void)
   if (matchtoken('(')) {
     flabel=getlabel();          /* get label number for "false" branch */
     pc_docexpr=TRUE;            /* attach expression as a documentation string */
-    test(flabel,FALSE,FALSE);   /* get expression, branch to flabel if false */
+    test(flabel,TEST_PLAIN,FALSE);/* get expression, branch to flabel if false */
     pc_docexpr=FALSE;
     needtoken(')');
   } else {

@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc3.c 3598 2006-07-04 13:44:04Z thiadmer $
+ *  Version: $Id: sc3.c 3635 2006-08-13 12:19:41Z thiadmer $
  */
 #include <assert.h>
 #include <stdio.h>
@@ -619,9 +619,26 @@ static void plnge2(void (*oper)(void),
   } /* if */
 }
 
-static cell truemodulus(cell a,cell b)
+static cell flooreddiv(cell a,cell b,int return_remainder)
 {
-  return (a % b + b) % b;
+  cell q,r;
+
+  if (b==0) {
+    error(29);
+    return 0;
+  } /* if */
+  /* first implement truncated division in a portable way */
+  #define IABS(a)       ((a)>=0 ? (a) : (-a))
+  q=IABS(a)/IABS(b);
+  if ((cell)(a ^ b)<0)
+    q=-q;               /* swap sign if either "a" or "b" is negative (but not both) */
+  r=a-q*b;              /* calculate the matching remainder */
+  /* now "fiddle" with the values to get floored division */
+  if (r!=0 && (cell)(r ^ b)<0) {
+    q--;
+    r+=b;
+  } /* if */
+  return return_remainder ? r : q;
 }
 
 static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
@@ -657,9 +674,9 @@ static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
   else if (oper==os_mult)
     return (left * right);
   else if (oper==os_div)
-    return (left - truemodulus(left,right)) / right;
+    return flooreddiv(left,right,0);
   else if (oper==os_mod)
-    return truemodulus(left,right);
+    return flooreddiv(left,right,1);
   else
     error(29);  /* invalid expression, assumed 0 (this should never occur) */
   return 0;

@@ -2,7 +2,9 @@
  *
  *  o  Name list (aliases)
  *  o  Include path list
- *  o  Macro defintions (text substitutions)
+ *  o  Macro definitions (text substitutions)
+ *  o  Documentation tags and automatic listings
+ *  o  Debug strings
  *
  *  Copyright (c) ITB CompuPhase, 2001-2006
  *
@@ -22,7 +24,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sclist.c 3579 2006-06-06 13:35:29Z thiadmer $
+ *  Version: $Id: sclist.c 3633 2006-08-11 16:20:18Z thiadmer $
  */
 #include <assert.h>
 #include <limits.h>

@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amx.h 3579 2006-06-06 13:35:29Z thiadmer $
+ *  Version: $Id: amx.h 3633 2006-08-11 16:20:18Z thiadmer $
  */
 
 #ifndef AMX_H_INCLUDED
@@ -266,6 +266,7 @@ typedef struct tagAMX {
   cell alt              ;
   cell reset_stk        ;
   cell reset_hea        ;
+  /* extra fields for increased performance */
   cell sysreq_d         ; /* relocated address/value for the SYSREQ.D opcode */
   #if defined JIT
     /* support variables for the JIT */
@@ -341,6 +342,7 @@ enum {
 #define AMX_FLAG_COMPACT  0x04  /* compact encoding */
 #define AMX_FLAG_SLEEP    0x08  /* script uses the sleep instruction (possible re-entry or power-down mode) */
 #define AMX_FLAG_NOCHECKS 0x10  /* no array bounds checking; no BREAK opcodes */
+#define AMX_FLAG_SYSREQN 0x800  /* script new (optimized) version of SYSREQ opcode */
 #define AMX_FLAG_NTVREG 0x1000  /* all native functions are registered */
 #define AMX_FLAG_JITC   0x2000  /* abstract machine is JIT compiled */
 #define AMX_FLAG_BROWSE 0x4000  /* busy browsing */

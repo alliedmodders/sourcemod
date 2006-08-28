@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc6.c 3579 2006-06-06 13:35:29Z thiadmer $
+ *  Version: $Id: sc6.c 3633 2006-08-11 16:20:18Z thiadmer $
  */
 #include <assert.h>
 #include <stdio.h>
@@ -670,7 +670,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   symbol *sym, **nativelist;
   constvalue *constptr;
   cell mainaddr;
-  char nullchar = 0;
+  char nullchar;
 
   /* if compression failed, restart the assembly with compaction switched off */
   if (setjmp(compact_err)!=0) {
@@ -785,8 +785,9 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   pc_writebin(fout,&hdr,sizeof hdr);
 
   /* dump zeros up to the rest of the header, so that we can easily "seek" */
+  nullchar='\0';
   for (nameofs=sizeof hdr; nameofs<hdr.cod; nameofs++)
-    pc_writebin(fout, &nullchar, 1);
+    pc_writebin(fout,&nullchar,1);
   nameofs=hdr.nametable+sizeof(int16_t);
 
   /* write the public functions table */

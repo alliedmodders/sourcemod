@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc2.c 3590 2006-06-24 14:16:39Z thiadmer $
+ *  Version: $Id: sc2.c 3636 2006-08-14 15:42:05Z thiadmer $
  */
 #include <assert.h>
 #include <stdio.h>
@@ -947,11 +947,27 @@ static int command(void)
         if ((ifstack[iflevel-1] & PARSEMODE)==PARSEMODE) {
           /* there has been a parse mode already on this level, so skip the rest */
           ifstack[iflevel-1] |= (char)SKIPMODE;
+          /* if we were already skipping this section, allow expressions with
+           * undefined symbols; otherwise check the expression to catch errors
+           */
+          if (tok==tpELSEIF) {
+            if (skiplevel==iflevel)
+              preproc_expr(&val,NULL);  /* get, but ignore the expression */
+            else
+              lptr=strchr(lptr,'\0');
+          } /* if */
         } else {
           /* previous conditions were all FALSE */
           if (tok==tpELSEIF) {
-            /* get new expression */
-            preproc_expr(&val,NULL);  /* get value (or 0 on error) */
+            /* if we were already skipping this section, allow expressions with
+             * undefined symbols; otherwise check the expression to catch errors
+             */
+            if (skiplevel==iflevel) {
+              preproc_expr(&val,NULL);  /* get value (or 0 on error) */
+            } else {
+              lptr=strchr(lptr,'\0');
+              val=0;
+            } /* if */
             ifstack[iflevel-1]=(char)(val ? PARSEMODE : SKIPMODE);
           } else {
             /* a simple #else, clear skip mode */
@@ -1816,10 +1832,10 @@ char *sc_tokens[] = {
          "*=", "/=", "%=", "+=", "-=", "<<=", ">>>=", ">>=", "&=", "^=", "|=",
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
-         "assert", "break", "case", "char", "const", "continue", "default",
-         "defined", "do", "else", "enum", "exit", "for", "forward", "goto",
+         "assert", "*begin", "break", "case", "char", "const", "continue", "default",
+         "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "goto",
          "if", "native", "new", "decl", "operator", "public", "return", "sizeof",
-         "sleep", "state", "static", "stock", "switch", "tagof", "while",
+         "sleep", "state", "static", "stock", "switch", "tagof", "*then", "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",
          "#endscript", "#error", "#file", "#if", "#include", "#line", "#pragma",
          "#tryinclude", "#undef",
