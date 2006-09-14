@@ -846,22 +846,21 @@ SC_FUNC void modheap(int delta)
 
 SC_FUNC void modheap_i()
 {
-  stgwrite("\theap.i\n");
-  code_idx+=opcodes(1);
+  pushreg(sPRI);
+  pushreg(sALT);
+  stgwrite("\tpop.h.pri\n");
+  stgwrite("\theap.pri\n");
+  code_idx+=opcodes(2);
+  popreg(sALT);
+  popreg(sPRI);
 }
 
 SC_FUNC void setheap_save(cell value)
 {
-  pushreg(sPRI);
-  pushreg(sALT);
-  stgwrite("\tconst.pri ");
+  assert(value);
+  stgwrite("\tpush.h.c ");
   outval(value, TRUE);
   code_idx+=opcodes(1)+opargs(1);
-  stgwrite("\theap ");
-  outval(sizeof(cell), TRUE);
-  stgwrite("\tstor.pri\n");
-  popreg(sALT);
-  popreg(sPRI);
 }
 
 SC_FUNC void setheap_pri(void)

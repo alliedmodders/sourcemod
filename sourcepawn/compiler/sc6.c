@@ -493,7 +493,7 @@ static OPCODEC opcodelist[] = {
   { 99, "grtr",       sIN_CSEG, parm0 },
   {120, "halt",       sIN_CSEG, parm1 },
   { 45, "heap",       sIN_CSEG, parm1 },
-  {160, "heap.i",     sIN_CSEG, parm0 },
+  {160, "heap.pri",   sIN_CSEG, parm0 },
   { 27, "idxaddr",    sIN_CSEG, parm0 },
   { 28, "idxaddr.b",  sIN_CSEG, parm1 },
   {109, "inc",        sIN_CSEG, parm1 },
@@ -544,12 +544,14 @@ static OPCODEC opcodelist[] = {
   { 84, "not",        sIN_CSEG, parm0 },
   { 82, "or",         sIN_CSEG, parm0 },
   { 43, "pop.alt",    sIN_CSEG, parm0 },
+  {162, "pop.h.pri",  sIN_CSEG, parm0 },
   { 42, "pop.pri",    sIN_CSEG, parm0 },
   { 46, "proc",       sIN_CSEG, parm0 },
   { 40, "push",       sIN_CSEG, parm1 },
   {133, "push.adr",   sIN_CSEG, parm1 },  /* version 4 */
   { 37, "push.alt",   sIN_CSEG, parm0 },
   { 39, "push.c",     sIN_CSEG, parm1 },
+  {161, "push.h.c",   sIN_CSEG, parm1 },
   { 36, "push.pri",   sIN_CSEG, parm0 },
   { 38, "push.r",     sIN_CSEG, parm1 },  /* obsolete (never generated) */
   { 41, "push.s",     sIN_CSEG, parm1 },

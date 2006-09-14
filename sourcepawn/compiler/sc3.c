@@ -1165,7 +1165,7 @@ void dynarray_from_heaplist(heapuse_list_t *heap)
   }
   free(heap);
   if (total)
-    setheap_save(total);
+    setheap_save(-total*sizeof(cell));
 }
 
 static int hier13(value *lval)
@@ -1193,11 +1193,11 @@ static int hier13(value *lval)
     if (lval->ident==iCONSTEXPR)        /* load constant here */
       ldconst(lval->constval,sPRI);
     sc_allowtags=(short)POPSTK_I();     /* restore */
-    jumplabel(flab2);
-    setlabel(flab1);
     heap=popsaveheaplist();
     dynarray_from_heaplist(heap);
     pushheaplist();
+    jumplabel(flab2);
+    setlabel(flab1);
     needtoken(':');
     if (hier13(&lval2))
       rvalue(&lval2);
@@ -1215,9 +1215,9 @@ static int hier13(value *lval)
     /* ??? if both are arrays, should check dimensions */
     if (!matchtag(lval->tag,lval2.tag,FALSE))
       error(213);               /* tagname mismatch ('true' and 'false' expressions) */
-    setlabel(flab2);
     heap=popsaveheaplist();
     dynarray_from_heaplist(heap);
+    setlabel(flab2);
 	if (array1 && array2) {
       markheap(HEAPUSE_DYNAMIC, 0);
 	}
