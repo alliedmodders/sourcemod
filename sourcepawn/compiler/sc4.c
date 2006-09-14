@@ -844,6 +844,26 @@ SC_FUNC void modheap(int delta)
   } /* if */
 }
 
+SC_FUNC void modheap_i()
+{
+  stgwrite("\theap.i\n");
+  code_idx+=opcodes(1);
+}
+
+SC_FUNC void setheap_save(cell value)
+{
+  pushreg(sPRI);
+  pushreg(sALT);
+  stgwrite("\tconst.pri ");
+  outval(value, TRUE);
+  code_idx+=opcodes(1)+opargs(1);
+  stgwrite("\theap ");
+  outval(sizeof(cell), TRUE);
+  stgwrite("\tstor.pri\n");
+  popreg(sALT);
+  popreg(sPRI);
+}
+
 SC_FUNC void setheap_pri(void)
 {
   stgwrite("\theap ");          /* ALT = HEA++ */

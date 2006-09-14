@@ -602,6 +602,7 @@ SC_FUNC void defstorage(void);
 SC_FUNC void modstk(int delta);
 SC_FUNC void setstk(cell value);
 SC_FUNC void modheap(int delta);
+SC_FUNC void modheap_i();
 SC_FUNC void setheap_pri(void);
 SC_FUNC void setheap(cell value);
 SC_FUNC void cell2addr(void);
@@ -610,6 +611,7 @@ SC_FUNC void addr2cell(void);
 SC_FUNC void char2addr(void);
 SC_FUNC void charalign(void);
 SC_FUNC void addconst(cell value);
+SC_FUNC void setheap_save(cell value);
 
 /*  Code generation functions for arithmetic operators.
  *

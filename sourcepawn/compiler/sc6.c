@@ -493,6 +493,7 @@ static OPCODEC opcodelist[] = {
   { 99, "grtr",       sIN_CSEG, parm0 },
   {120, "halt",       sIN_CSEG, parm1 },
   { 45, "heap",       sIN_CSEG, parm1 },
+  {160, "heap.i",     sIN_CSEG, parm0 },
   { 27, "idxaddr",    sIN_CSEG, parm0 },
   { 28, "idxaddr.b",  sIN_CSEG, parm1 },
   {109, "inc",        sIN_CSEG, parm1 },
