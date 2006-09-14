@@ -1218,9 +1218,9 @@ static int hier13(value *lval)
     heap=popsaveheaplist();
     dynarray_from_heaplist(heap);
     setlabel(flab2);
-	if (array1 && array2) {
+    if (array1 && array2) {
       markheap(HEAPUSE_DYNAMIC, 0);
-	}
+    }
     if (lval->ident==iARRAY)
       lval->ident=iREFARRAY;    /* iARRAY becomes iREFARRAY */
     else if (lval->ident!=iREFARRAY)
@@ -2002,7 +2002,7 @@ static void setdefarray(cell *string,cell size,cell array_sz,cell *dataaddr,int 
      */
     assert(array_sz>=size);
     modheap((int)array_sz*sizeof(cell));
-	markheap(HEAPUSE_STATIC, array_sz);
+    markheap(HEAPUSE_STATIC, array_sz);
     /* ??? should perhaps fill with zeros first */
     memcopy(size*sizeof(cell));
     moveto1();
