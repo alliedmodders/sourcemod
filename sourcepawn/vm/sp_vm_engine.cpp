@@ -1,7 +1,37 @@
 #include <malloc.h>
 #include <string.h>
-#include "sp_vm.h"
+#include "sp_file_headers.h"
+#include "sp_vm_types.h"
+#include "sp_vm_engine.h"
 #include "zlib/zlib.h"
+#include "sp_vm_basecontext.h"
+
+using namespace SourcePawn;
+
+void *SourcePawnEngine::BaseAlloc(size_t size)
+{
+	return malloc(size);
+}
+
+void SourcePawnEngine::BaseFree(void *memory)
+{
+	free(memory);
+}
+
+IPluginContext *SourcePawnEngine::CreateBaseContext(sp_context_t *ctx)
+{
+	return new BaseContext(ctx);
+}
+
+void SourcePawnEngine::FreeBaseContext(IPluginContext *ctx)
+{
+	sp_context_t *_ctx = ctx->GetContext();
+	IVirtualMachine *vm = ctx->GetVirtualMachine();
+	
+	vm->FreeContextVars(_ctx);
+
+	delete ctx;
+}
 
 sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin, int *err)
 {
@@ -15,7 +45,7 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 
 	while (sectnum < hdr->sections)
 	{
-		nameptr = base + hdr->stringtab + secptr->nameoffs;
+		nameptr = (char *)(base + hdr->stringtab + secptr->nameoffs);
 
 		if (!(plugin->pcode) && !strcmp(nameptr, ".code"))
 		{
@@ -48,7 +78,7 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 		}
 		else if (!(plugin->info.stringbase) && !strcmp(nameptr, ".names"))
 		{
-			plugin->info.stringbase = base + secptr->dataoffs;
+			plugin->info.stringbase = (const char *)(base + secptr->dataoffs);
 		}
 		else if (!(plugin->debug.files) && !strcmp(nameptr, ".dbg.files"))
 		{
@@ -71,7 +101,7 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 		}
 		else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
 		{
-			plugin->debug.stringbase = base + secptr->dataoffs;
+			plugin->debug.stringbase = (const char *)(base + secptr->dataoffs);
 		}
 
 		secptr++;
@@ -104,7 +134,7 @@ return_error:
 	return NULL;
 }
 
-sp_plugin_t *SP_LoadFromFilePointer(FILE *fp, int *err)
+sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 {
 	sp_file_hdr_t hdr;
 	sp_plugin_t *plugin;
@@ -184,6 +214,8 @@ sp_plugin_t *SP_LoadFromFilePointer(FILE *fp, int *err)
 		return NULL;
 	}
 
+	plugin->allocflags = 0;
+
 	return plugin;
 
 return_error:
@@ -194,7 +226,7 @@ return_error:
 	return NULL;
 }
 
-sp_plugin_t *SP_LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
+sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
 {
 	sp_file_hdr_t hdr;
 	uint8_t noptr = 0;
@@ -207,7 +239,7 @@ sp_plugin_t *SP_LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
 		noptr = 1;
 	}
 
-	if (!_ReadPlugin(&hdr, base, plugin, err))
+	if (!_ReadPlugin(&hdr, (uint8_t *)base, plugin, err))
 	{
 		if (noptr)
 		{
@@ -216,5 +248,26 @@ sp_plugin_t *SP_LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
 		return NULL;
 	}
 
+	if (!noptr)
+	{
+		plugin->allocflags |= SP_FA_SELF_EXTERNAL;
+	}
+	plugin->allocflags |= SP_FA_BASE_EXTERNAL;
+
 	return plugin;
+}
+
+int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
+{
+	if (!(plugin->allocflags & SP_FA_BASE_EXTERNAL))
+	{
+		free(plugin->base);
+		plugin->base = NULL;
+	}
+	if (!(plugin->allocflags & SP_FA_SELF_EXTERNAL))
+	{
+		free(plugin);
+	}
+
+	return SP_ERR_NONE;
 }

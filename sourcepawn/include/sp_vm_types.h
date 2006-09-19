@@ -19,6 +19,7 @@ typedef int32_t		cell_t;
 #define SP_ERR_INDEX				7	/* Invalid index parameter */
 #define SP_ERR_NATIVE_PENDING		8	/* A script tried to exec an unbound native */
 #define SP_ERR_STACKERR				9	/* Stack/Heap collision */
+#define SP_ERR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
 
 /**********************************************
  *** The following structures are reference structures.
@@ -126,6 +127,15 @@ typedef struct sp_native_s
 } sp_native_t;
 
 /** 
+ * Used for setting natives from modules/host apps.
+ */
+typedef struct sp_nativeinfo_s
+{
+	const char		*name;
+	SPVM_NATIVE_FUNC func;
+} sp_nativeinfo_t;
+
+/** 
  * Debug file table
  */
 typedef struct sp_debug_file_s
@@ -160,48 +170,38 @@ typedef struct sp_debug_symbol_s
 } sp_debug_symbol_t;
 
 /**
- * Executes a Context.
- * @sp_context_s	- Execution Context
- * @uint32_t		- Offset from code pointer
- * @res				- return value of function
- * @return			- error code (0=none)
- */
-typedef int (*SPVM_EXEC)(struct sp_context_s *,
-							uint32_t,
-							cell_t *res);
-
-/**
  * Breaks into a debugger
  */
 typedef int (*SPVM_DEBUGBREAK)(struct sp_context_s *);
 
-#define SP_CONTEXT_DEBUG			(1<<0)		/* in debug mode */
-#define SP_CONTEXT_INHERIT_MEMORY	(1<<1)		/* inherits memory pointers */
-#define SP_CONTEXT_INHERIT_CODE		(1<<2)		/* inherits code pointers */
+#define SPFLAG_PLUGIN_DEBUG		(1<<0)		/* plugin is in debug mode */
 
 /**
  * This is the heart of the VM.  It contains all of the runtime
  *  information about a plugin context.  
- * It is split into three sections.
+ * Note that user[0..3] can be used for any user based pointers.
+ * vm[0..3] should not be touched, as it is reserved for the VM.
  */
 typedef struct sp_context_s
 {
 	/* general/parent information */
 	void			*base;		/* base of generated code and memory */
 	sp_plugin_t		*plugin;	/* pointer back to parent information */
-	struct sp_context_s *parent;	/* pointer to parent context */
-	uint32_t		flags;		/* context flags */
+	void			*context;	/* pointer to IPluginContext */
+	void			*vmbase;	/* pointer to IVirtualMachine */
+	void			*user[4];	/* user specific pointers */
+	void			*vm[4];		/* VM specific pointers */
+	uint32_t		flags;		/* compilation flags */
 	SPVM_DEBUGBREAK dbreak;		/* debug break function */
-	void			*user;		/* user specific pointer */
-	/* execution specific data */
-	SPVM_EXEC		exec;		/* execution base */
-	cell_t			pri;		/* PRI register */
-	cell_t			alt;		/* ALT register */
+	/* context runtime information */
+	ucell_t			memory;		/* total memory size; */
 	uint8_t			*data;		/* data chunk */
 	cell_t			heapbase;	/* heap base */
+	/* execution specific data */
+	cell_t			pri;		/* PRI register */
+	cell_t			alt;		/* ALT register */
 	cell_t			hp;			/* heap pointer */
 	cell_t			sp;			/* stack pointer */
-	ucell_t			memory;		/* total memory size; */
 	int32_t			err;		/* error code */
 	uint32_t		pushcount;	/* push count */
 	/* context rebased database */
