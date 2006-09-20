@@ -3,6 +3,19 @@
 
 #include "..\jit_helpers.h"
 
+/**
+ * This outputs the execution function for a plugin.
+ * It also returns the 'return' offset, which is used for 
+ * breaking out of the JIT during runtime.
+ *
+ * If 'never_inline' is true, it outputs slightly different code used for
+ * inlining the error checking routines.
+ */
+jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline);
+
+/** 
+ * These are for writing the PushN opcodes.
+ */
 void Macro_PushN_Addr(JitWriter *jit, int i);
 void Macro_PushN_S(JitWriter *jit, int i);
 void Macro_PushN_C(JitWriter *jit, int i);

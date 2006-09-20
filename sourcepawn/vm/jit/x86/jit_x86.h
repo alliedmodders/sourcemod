@@ -9,12 +9,12 @@ using namespace SourcePawn;
 class CompData : public ICompilation
 {
 public:
-	CompData() : plugin(NULL), debug(false), always_inline(true)
+	CompData() : plugin(NULL), debug(false), inline_level(2)
 	{
 	};
 public:
 	sp_plugin_t *plugin;
-	bool always_inline;
+	int inline_level;
 	bool debug;
 };
 
@@ -43,5 +43,6 @@ public:
 #define AMX_INFO_FRM		AMX_REG_INFO
 #define AMX_INFO_HEAP		4
 #define AMX_INFO_RETVAL		8
+#define AMX_INFO_CONTEXT	12
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_

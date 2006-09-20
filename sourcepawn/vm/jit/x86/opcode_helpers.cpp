@@ -6,26 +6,129 @@
 
 int OpAdvTable[OP_NUM_OPCODES];
 
-void Write_Prologue(JitWriter *jit)
+jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 {
 	/** 
 	 * The state expected by our plugin is:
-	 * #define AMX_REG_PRI		REG_EAX
-	   #define AMX_REG_ALT		REG_EDX
-	   #define AMX_REG_STK		REG_EBP
-	   #define AMX_REG_DAT		REG_EDI
-	   #define AMX_REG_TMP		REG_ECX
-	   #define AMX_REG_INFO		REG_ESI
-	   #define AMX_REG_FRM		REG_EBX
-	   #define AMX_INFO_FRM		AMX_REG_INFO
-	   #define AMX_INFO_HEAP	4
-	   #define AMX_INFO_RETVAL	12
+	 * #define AMX_REG_PRI		REG_EAX		(done)
+	   #define AMX_REG_ALT		REG_EDX		(done)
+	   #define AMX_REG_STK		REG_EBP		(done)
+	   #define AMX_REG_DAT		REG_EDI		(done)
+	   #define AMX_REG_TMP		REG_ECX		(nothing)
+	   #define AMX_REG_INFO		REG_ESI		(done)
+	   #define AMX_REG_FRM		REG_EBX		(done)
+	   #define AMX_INFO_FRM		AMX_REG_INFO	(done)
+	   #define AMX_INFO_HEAP	4			(done)
+	   #define AMX_INFO_RETVAL	8			(done)
+	   #define AMX_INFO_CONTEXT	12			(done)
 	 *
 	 * The variables we're passed in:
 	 *  sp_context_t *ctx, uint32_t code_idx, cell_t *result
 	 */
 
+	/**
+	 * !NOTE!
+	 * Currently, we do not accept ctx->frm as the new frame pointer.
+	 * Instead, we copy the frame from the stack pointer.
+	 * This is because we do not support resuming or sleeping!
+	 */
 
+	//push ebp
+	//mov ebp, esp
+	IA32_Push_Reg(jit, REG_EBP);
+	IA32_Mov_Reg_Rm(jit, REG_EBP, REG_ESP, MOD_REG);
+
+	//push esi
+	//push edi
+	//push ebx
+	IA32_Push_Reg(jit, REG_ESI);
+	IA32_Push_Reg(jit, REG_EDI);
+	IA32_Push_Reg(jit, REG_EBX);
+
+	//sub esp, 4*4	- allocate info array
+	//mov esi, esp	- save info pointer
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4*4, MOD_REG);
+	IA32_Mov_Reg_Rm(jit, AMX_REG_INFO, REG_ESP, MOD_REG);
+
+	//mov eax, [ebp+16]	- get result pointer
+	//mov [esi+8], eax	- store into info pointer
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 16);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_EAX, AMX_INFO_RETVAL);
+
+	//mov eax, [ebp+8]		- get context
+	//mov [esi+12], eax		- store context into info pointer
+	//mov ecx, [eax+<offs>]	- get heap pointer
+	//mov [esi+4], ecx		- store heap into info pointer
+	//mov edi, [eax+<offs>]	- get data pointer
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 8);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_EAX, AMX_INFO_CONTEXT);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, hp));
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_ECX, AMX_INFO_HEAP);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_DAT, REG_EAX, offsetof(sp_context_t, data));
+
+	//mov ebp, [eax+<offs>]	- get stack pointer
+	//add ebp, edi			- relocate to data section
+	//mov ebx, ebp			- copy sp to frm
+	//mov ecx, [ebp+12]		- get code index
+	//add ecx, [eax+<offs>] - add code base to index
+	//mov edx, [eax+<offs>]	- get alt
+	//mov eax, [eax+<offs>] - get pri
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_STK, REG_EAX, offsetof(sp_context_t, sp));
+	IA32_Add_Rm_Reg(jit, REG_EBP, AMX_REG_STK, AMX_REG_DAT);
+	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EBP, 12);
+	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, base));
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, REG_EAX, offsetof(sp_context_t, alt));
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_EAX, offsetof(sp_context_t, pri));
+
+	/* by now, everything is set up, so we can call into the plugin */
+
+	//call ecx
+	IA32_Call_Rm(jit, REG_ECX);
+
+	/* if the code flow gets to here, there was a normal return */
+	//mov ebp, [esi+8]		- get retval pointer
+	//mov [ebp], eax		- store retval from PRI
+	//mov eax, SP_ERR_NONE	- set no error
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EBP, AMX_REG_INFO, AMX_INFO_RETVAL);
+	IA32_Mov_Rm_Reg(jit, REG_EBP, AMX_REG_PRI, MOD_MEM_REG);
+	IA32_Mov_Reg_Imm32(jit, REG_EAX, SP_ERR_NONE);
+
+	/* where error checking/return functions should go to */
+	jitoffs_t offs_return;
+	if (never_inline)
+	{
+		/* We have to write code assume we're breaking out of a call */
+		//jmp [past the next instruction]
+		//add esp, 4
+		jitoffs_t offs = IA32_Jump_Imm8(jit, 0);
+		offs_return = jit->jit_curpos();
+		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+		IA32_Send_Jump8_Here(jit, offs);
+	} else {
+		offs_return = jit->jit_curpos();
+	}
+
+	/* _FOR NOW_ ... 
+	 * We are _not_ going to restore anything that was on the stack.
+	 * This is a tiny, useless optimization based on the fact that 
+	 * BaseContext::Execute() automatically restores our values anyway.
+	 */
+
+	//add esp, 4*4
+	//pop ebx
+	//pop edi
+	//pop esi
+	//pop ebp
+	//ret
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*4, MOD_REG);
+	IA32_Pop_Reg(jit, REG_EBX);
+	IA32_Pop_Reg(jit, REG_EDI);
+	IA32_Pop_Reg(jit, REG_ESI);
+	IA32_Pop_Reg(jit, REG_EBP);
+	IA32_Return(jit);
+
+	return offs_return;
 }
 
 void Macro_PushN_Addr(JitWriter *jit, int i)
@@ -142,6 +245,7 @@ JITX86::JITX86()
 	OpAdvTable[OP_LOAD_S_BOTH] = sizeof(cell_t)*2;
 	OpAdvTable[OP_CONST] = sizeof(cell_t)*2;
 	OpAdvTable[OP_CONST_S] = sizeof(cell_t)*2;
+	OpAdvTable[OP_SYSREQ_N] = sizeof(cell_t)*2;
 
 	/* instructions with 1 parameter */
 	OpAdvTable[OP_LOAD_PRI] = sizeof(cell_t);
@@ -199,6 +303,7 @@ JITX86::JITX86()
 	OpAdvTable[OP_BOUNDS] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH_ADR] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH_HEAP_C] = sizeof(cell_t);
+	OpAdvTable[OP_SYSREQ_C] = sizeof(cell_t);
 
 	/* instructions with 0 parameters */
 	OpAdvTable[OP_LOAD_I] = 0;
@@ -261,6 +366,7 @@ JITX86::JITX86()
 	OpAdvTable[OP_BREAK] = 0;
 	OpAdvTable[OP_HEAP_PRI] = 0;
 	OpAdvTable[OP_POP_HEAP_PRI] = 0;
+	OpAdvTable[OP_SYSREQ_PRI] = 0;
 
 	/* opcodes that need relocation */
 	OpAdvTable[OP_CALL] = -2;

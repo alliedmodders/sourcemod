@@ -58,7 +58,18 @@ int BaseContext::Execute(uint32_t public_func, cell_t *result)
 		return err;
 	}
 
-	return vm->ContextExecute(ctx, pubfunc->offs, result);
+	PushCell(ctx->pushcount);
+	ctx->pushcount = 0;
+
+	cell_t save_sp = ctx->sp;
+	cell_t save_hp = ctx->hp;
+
+	err = vm->ContextExecute(ctx, pubfunc->offs, result);
+
+	ctx->sp = save_sp;
+	ctx->hp = save_hp;
+
+	return err;
 }
 
 int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_addr)

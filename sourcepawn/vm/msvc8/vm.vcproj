@@ -190,10 +190,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\sp_vm_base.h"
-				>
-			</File>
-			<File
 				RelativePath="..\sp_vm_basecontext.h"
 				>
 			</File>
@@ -317,6 +313,10 @@
 			</File>
 			<File
 				RelativePath="..\..\include\sp_vm_api.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\sp_vm_base.h"
 				>
 			</File>
 			<File

@@ -53,6 +53,7 @@
 #define IA32_XOR_RM_IMM32		0x81	// encoding is /6
 #define IA32_XOR_RM_IMM8		0x83	// encoding is /6
 #define IA32_ADD_RM_REG			0x01	// encoding is /r
+#define IA32_ADD_REG_RM			0x03	// encoding is /r
 #define IA32_ADD_RM_IMM32		0x81	// encoding is /0
 #define IA32_ADD_RM_IMM8		0x83	// encoding is /0
 #define IA32_ADD_EAX_IMM32		0x05	// no extra encoding
@@ -60,7 +61,9 @@
 #define IA32_SUB_RM_IMM8		0x83	// encoding is /5 <imm8>
 #define IA32_SUB_RM_IMM32		0x81	// encoding is /5 <imm32>
 #define IA32_JMP_IMM32			0xE9	// encoding is imm32
+#define IA32_JMP_IMM8			0xEB	// encoding is imm8
 #define IA32_CALL_IMM32			0xE8	// relative call, <imm32>
+#define IA32_CALL_RM			0xFF	// encoding is /2
 #define IA32_MOV_REG_IMM		0xB8	// encoding is +r <imm32>
 #define	IA32_MOV_RM_REG			0x89	// encoding is /r
 #define	IA32_MOV_REG_MEM		0x8B	// encoding is /r
@@ -385,6 +388,13 @@ inline void IA32_Add_Rm_Reg_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t 
 	jit->write_byte(disp);
 }
 
+inline void IA32_Add_Reg_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int8_t disp)
+{
+	jit->write_ubyte(IA32_ADD_REG_RM);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, src));
+	jit->write_byte(disp);
+}
+
 inline void IA32_Add_Rm_Imm8_Disp8(JitWriter *jit, 
 							 jit_uint8_t dest, 
 							 jit_int8_t val, 
@@ -652,6 +662,15 @@ inline jitoffs_t IA32_Jump_Imm32(JitWriter *jit, jit_int32_t disp)
 	return ptr;
 }
 
+inline jitoffs_t IA32_Jump_Imm8(JitWriter *jit, jit_int8_t disp)
+{
+	jitoffs_t ptr;
+	jit->write_ubyte(IA32_JMP_IMM8);
+	ptr = jit->jit_curpos();
+	jit->write_byte(disp);
+	return ptr;
+}
+
 inline jitoffs_t IA32_Jump_Cond_Imm32(JitWriter *jit, jit_uint8_t cond, jit_int32_t disp)
 {
 	jitoffs_t ptr;
@@ -669,6 +688,12 @@ inline jitoffs_t IA32_Call_Imm32(JitWriter *jit, jit_int32_t disp)
 	ptr = jit->jit_curpos();
 	jit->write_int32(disp);
 	return ptr;
+}
+
+inline void IA32_Call_Rm(JitWriter *jit, jit_uint8_t reg)
+{
+	jit->write_ubyte(IA32_CALL_RM);
+	jit->write_ubyte(ia32_modrm(MOD_REG, 2, reg));
 }
 
 inline void IA32_Write_Jump8(JitWriter *jit, jitoffs_t jmp, jitoffs_t target)

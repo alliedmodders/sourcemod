@@ -830,7 +830,6 @@ inline void WriteOp_Pop_Pri(JitWriter *jit)
 	//add ebp, 4
 	IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_STK, MOD_MEM_REG);
 	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
-
 }
 
 inline void WriteOp_Pop_Alt(JitWriter *jit)
@@ -1049,16 +1048,6 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		} else if (op_c == -1) {
 			switch (op)
 			{
-			case OP_SYSREQ_C:
-			case OP_SYSREQ_PRI:
-			case OP_SYSREQ_N:
-				{
-					if (!data->always_inline)
-					{
-						reloc_count++;
-					}
-					break;
-				}
 			case OP_CASETBL:
 				{
 					ucell_t num = *(ucell_t *)cip;
@@ -1083,14 +1072,30 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	 *********************************************/
 
 	JitWriter writer;
+	JitWriter *jit = &writer;
+	cell_t *endptr = (cell_t *)(end_cip);
+	jitoffs_t jit_return;
 
+	/* Initial code is written "blank,"
+	 * so we can check the exact memory usage.
+	 */
 	writer.inptr = (cell_t *)code;
 	writer.outptr = NULL;
 	writer.outbase = NULL;
 
-//redo_pass:
-	cell_t *endptr = (cell_t *)(end_cip);
-	JitWriter *jit = &writer;
+	/* Get inlining level */
+	int inline_level = data->inline_level;
+	bool never_inline = false;
+
+	if (inline_level == 0)
+	{
+		never_inline = true;
+	}
+
+//:TODO: Jump back here once finished!
+	/* Start writing the actual code */
+	jit_return = Write_Execute_Function(jit, never_inline);
+
 	for (; writer.inptr <= endptr;)
 	{
 		op = (OPCODE)writer.read_cell();
