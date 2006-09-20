@@ -201,6 +201,24 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	}
 }
 
+void Write_CheckMargin_Stack(JitWriter *jit)
+{
+	/* this is small, so we always inline it.
+	 */
+	//cmp ebp, [esi+stp]
+	//jle :continue
+	IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_STK, AMX_REG_INFO, AMX_INFO_STACKTOP);
+	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_LE, 0);
+	if (!(((CompData *)jit->data)->inline_level & JIT_INLINE_ERRORCHECKS))
+	{
+		//sub esp, 4	- correct stack for returning to non-inlined JIT
+		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+	}
+	Write_Error(jit, SP_ERR_STACKMIN);
+	//continue:
+	IA32_Send_Jump8_Here(jit, jmp);
+}
+
 void Macro_PushN_Addr(JitWriter *jit, int i)
 {
 	//push eax

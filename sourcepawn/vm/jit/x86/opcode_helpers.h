@@ -22,6 +22,12 @@ void Write_Error(JitWriter *jit, int error);
  */
 void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall);
 
+/**
+ * Verifies stack margins.
+ */
+void Write_CheckMargin_Stack(JitWriter *jit);
+
+
 /** 
  * These are for writing the PushN opcodes.
  */
@@ -76,7 +82,7 @@ typedef enum
 	OP_PUSH_S,				//DONE
 	OP_POP_PRI,				//DONE
 	OP_POP_ALT,				//DONE
-	OP_STACK,
+	OP_STACK,				//DONE
 	OP_HEAP,
 	OP_PROC,				//DONE
 	OP_RET,

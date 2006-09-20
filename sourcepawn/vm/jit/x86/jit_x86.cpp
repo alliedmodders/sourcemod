@@ -1199,6 +1199,22 @@ inline void WriteOp_Sctrl(JitWriter *jit)
 	}
 }
 
+inline void WriteOp_Stack(JitWriter *jit)
+{
+	//mov edx, ebp
+	//add ebp, <val>
+	//sub edx, edi
+	cell_t val = jit->read_cell();
+	IA32_Mov_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+		IA32_Add_Rm_Imm8(jit, AMX_REG_STK, (jit_int8_t)val, MOD_REG);
+	else
+		IA32_Add_Rm_Imm32(jit, AMX_REG_STK, val, MOD_REG);
+	IA32_Sub_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
+
+	Write_CheckMargin_Stack(jit);
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1896,6 +1912,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_SCTRL:
 			{
 				WriteOp_Sctrl(jit);
+				break;
+			}
+		case OP_STACK:
+			{
+				WriteOp_Stack(jit);
 				break;
 			}
 		default:
