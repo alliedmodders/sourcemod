@@ -75,6 +75,10 @@ public:
 	{
 		return (outptr - outbase);
 	}
+	inline void setpos(jitoffs_t offs)
+	{
+		outptr = outbase + offs;
+	}
 public:
 	cell_t *inptr;		/* input pointer */
 	jitcode_t outbase;	/* output pointer */

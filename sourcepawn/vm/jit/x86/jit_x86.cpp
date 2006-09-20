@@ -1104,6 +1104,66 @@ inline void WriteOp_Lidx_B(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
 
+inline void WriteOp_Lctrl(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+	switch (val)
+	{
+	case 0:
+		{
+			//mov ecx, [esi+ctx]
+			//mov eax, [ecx+<offs>]
+			IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_ECX, offsetof(sp_context_t, base));
+			break;
+		}
+	case 1:
+		{
+			//mov eax, edi
+			IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_DAT, MOD_REG);
+			break;
+		}
+	case 2:
+		{
+			//mov eax, [esi+hea]
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_INFO, AMX_INFO_HEAP);
+			break;
+		}
+	case 3:
+		{
+			//mov ecx, [esi+ctx]
+			//mov eax, [ecx+ctx.memory]
+			IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_ECX, offsetof(sp_context_t, memory));
+			break;
+		}
+	case 4:
+		{
+			//mov eax, ebp
+			//sub eax, edi	- unrelocate
+			IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_STK, MOD_REG);
+			IA32_Sub_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, MOD_REG);
+			break;
+		}
+	case 5:
+		{
+			//mov eax, [esi+frm]
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_INFO, AMX_INFO_FRM);
+			break;
+		}
+	case 6:
+		{
+			//mov eax, [cip]
+			jitoffs_t imm32 = IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
+			jitoffs_t save = jit->jit_curpos();
+			jit->setpos(imm32);
+			jit->write_int32((uint32_t)(jit->outbase + save));
+			jit->setpos(save);
+			break;
+		}
+	}
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1791,6 +1851,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_IDXADDR_B:
 			{
 				WriteOp_Idxaddr_B(jit);
+				break;
+			}
+		case OP_LCTRL:
+			{
+				WriteOp_Lctrl(jit);
 				break;
 			}
 		default:

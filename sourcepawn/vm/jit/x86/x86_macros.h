@@ -650,10 +650,13 @@ inline void IA32_Mov_Rm16_Reg_Disp_Reg(JitWriter *jit,
  * Moving from IMMEDIATE to REGISTER
  */
 
-inline void IA32_Mov_Reg_Imm32(JitWriter *jit, jit_uint8_t dest, jit_int32_t num)
+inline jitoffs_t IA32_Mov_Reg_Imm32(JitWriter *jit, jit_uint8_t dest, jit_int32_t num)
 {
+	jitoffs_t offs;
 	jit->write_ubyte(IA32_MOV_REG_IMM+dest);
+	offs = jit->jit_curpos();
 	jit->write_int32(num);
+	return offs;
 }
 
 inline void IA32_Mov_Rm_Imm32_Disp8(JitWriter *jit, 

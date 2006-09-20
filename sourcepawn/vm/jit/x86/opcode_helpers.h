@@ -63,7 +63,7 @@ typedef enum
 	OP_IDXADDR_B,			//DONE
 	OP_ALIGN_PRI,			//DONE
 	OP_ALIGN_ALT,			//DONE
-	OP_LCTRL,
+	OP_LCTRL,				//DONE
 	OP_SCTRL,
 	OP_MOVE_PRI,			//DONE
 	OP_MOVE_ALT,			//DONE
