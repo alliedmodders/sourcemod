@@ -218,16 +218,16 @@ inline void WriteOp_Proc(JitWriter *jit)
 {
 	//push old frame on stack:
 	//sub ebp, 4
-	//mov ecx, frm
+	//mov ecx, [frm]
 	//mov [ebp], ecx
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
 	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_INFO_FRM, MOD_MEM_REG);
 	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_TMP, MOD_MEM_REG);
 	//save frame:
-	//mov frm, ebp	- get new frame
-	//mov ebx, ebp	- store frame back
-	//sub frm, edi	- relocate local frame
-	IA32_Mov_Rm_Reg(jit, AMX_REG_INFO, AMX_REG_STK, MOD_MEM_REG);
+	//mov [frm], ebp	- get new frame
+	//mov ebx, ebp		- store frame back
+	//sub [frm], edi	- relocate local frame
+	IA32_Mov_Rm_Reg(jit, AMX_INFO_FRM, AMX_REG_STK, MOD_MEM_REG);
 	IA32_Mov_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_STK, MOD_REG);
 	IA32_Sub_Rm_Reg(jit, AMX_INFO_FRM, AMX_REG_DAT, MOD_MEM_REG);
 }
@@ -936,30 +936,30 @@ inline void WriteOp_Fill(JitWriter *jit)
 
 inline void WriteOp_Heap_Pri(JitWriter *jit)
 {
-	//mov edx, hea
-	//add hea, eax
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_INFO_FRM, AMX_INFO_HEAP);
-	IA32_Add_Rm_Reg_Disp8(jit, AMX_INFO_FRM, AMX_REG_PRI, AMX_INFO_HEAP);
+	//mov edx, [hea]
+	//add [hea], eax
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Add_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_PRI, AMX_INFO_HEAP);
 }
 
 inline void WriteOp_Push_Heap_C(JitWriter *jit)
 {
-	//mov ecx, hea
+	//mov ecx, [hea]
 	//mov [edi+ecx], <val>
-	//add hea, 4
+	//add [hea], 4
 	cell_t val = jit->read_cell();
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_INFO_FRM, AMX_INFO_HEAP);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
 	IA32_Mov_Rm_Imm32_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, val);
-	IA32_Add_Rm_Imm8_Disp8(jit, AMX_INFO_FRM, 4, AMX_INFO_HEAP);
+	IA32_Add_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
 }
 
 inline void WriteOp_Pop_Heap_Pri(JitWriter *jit)
 {
-	//sub hea, 4
+	//sub [hea], 4
 	//mov ecx, [hea]
 	//mov eax, [edi+ecx]
-	IA32_Sub_Rm_Imm8_Disp8(jit, AMX_INFO_FRM, 4, AMX_INFO_HEAP);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_INFO_FRM, AMX_INFO_HEAP);
+	IA32_Sub_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_TMP, NOSCALE);
 }
 

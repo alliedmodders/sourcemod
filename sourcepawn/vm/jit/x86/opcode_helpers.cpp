@@ -6,6 +6,28 @@
 
 int OpAdvTable[OP_NUM_OPCODES];
 
+void Write_Prologue(JitWriter *jit)
+{
+	/** 
+	 * The state expected by our plugin is:
+	 * #define AMX_REG_PRI		REG_EAX
+	   #define AMX_REG_ALT		REG_EDX
+	   #define AMX_REG_STK		REG_EBP
+	   #define AMX_REG_DAT		REG_EDI
+	   #define AMX_REG_TMP		REG_ECX
+	   #define AMX_REG_INFO		REG_ESI
+	   #define AMX_REG_FRM		REG_EBX
+	   #define AMX_INFO_FRM		AMX_REG_INFO
+	   #define AMX_INFO_HEAP	4
+	   #define AMX_INFO_RETVAL	12
+	 *
+	 * The variables we're passed in:
+	 *  sp_context_t *ctx, uint32_t code_idx, cell_t *result
+	 */
+
+
+}
+
 void Macro_PushN_Addr(JitWriter *jit, int i)
 {
 	//push eax

@@ -40,8 +40,8 @@ public:
 #define AMX_REG_INFO	REG_ESI
 #define AMX_REG_FRM		REG_EBX
 
-#define AMX_INFO_FRM	AMX_REG_INFO
-#define AMX_INFO_HEAP	4
-#define AMX_INFO_RETVAL	12
+#define AMX_INFO_FRM		AMX_REG_INFO
+#define AMX_INFO_HEAP		4
+#define AMX_INFO_RETVAL		8
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
