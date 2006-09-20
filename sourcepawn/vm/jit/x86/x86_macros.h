@@ -517,13 +517,6 @@ inline void IA32_Lea_Reg_DispRegMultImm8(JitWriter *jit,
 	jit->write_byte(val);
 }
 
-inline void IA32_Lea_DispRegReg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_uint8_t dispreg)
-{
-	jit->write_ubyte(IA32_LEA_REG_MEM);
-	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, dest, REG_SIB));
-	jit->write_ubyte(ia32_sib(NOSCALE, dispreg, src_base));
-}
-
 inline void IA32_Lea_DispRegImm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_int8_t val)
 {
 	/* :TODO: - why does this take in src_base? */

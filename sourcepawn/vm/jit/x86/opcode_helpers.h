@@ -27,6 +27,11 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall);
  */
 void Write_CheckMargin_Stack(JitWriter *jit);
 
+/**
+* Checks for division by zero.
+*/
+void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg);
+
 
 /** 
  * These are for writing the PushN opcodes.
@@ -111,11 +116,11 @@ typedef enum
 	OP_SHR_C_PRI,			//DONE
 	OP_SHR_C_ALT,			//DONE
 	OP_SMUL,				//DONE
-	OP_SDIV,
-	OP_SDIV_ALT,
+	OP_SDIV,				//DONE
+	OP_SDIV_ALT,			//DONE
 	OP_UMUL,				//DONE
-	OP_UDIV,
-	OP_UDIV_ALT,
+	OP_UDIV,				//DONE
+	OP_UDIV_ALT,			//DONE
 	OP_ADD,					//DONE
 	OP_SUB,					//DONE
 	OP_SUB_ALT,				//DONE

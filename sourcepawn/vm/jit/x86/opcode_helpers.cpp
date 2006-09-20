@@ -139,6 +139,26 @@ void Write_Error(JitWriter *jit, int error)
 	IA32_Write_Jump32(jit, jmp, data->jit_return);
 }
 
+void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg)
+{
+	CompData *data = (CompData *)jit->data;
+
+	//test reg, reg
+	//jnz :continue
+	//divzero: (write error)
+	IA32_Test_Rm_Reg(jit, reg, reg, MOD_REG);
+	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
+	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
+	{
+		//sub esp, 4    - correct stack for returning to non-inlined JIT
+		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+	}
+	Write_Error(jit, SP_ERR_DIVZERO);
+	//continue:
+	IA32_Send_Jump8_Here(jit, jmp);
+
+}
+
 void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 {
 	CompData *data = (CompData *)jit->data;
@@ -188,7 +208,7 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
 	IA32_Cmp_Reg_Rm_Disp8(jit, reg, AMX_REG_INFO, AMX_INFO_HEAP);
 	jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_B, 0);
-	IA32_Lea_DispRegReg(jit, REG_ECX, reg, REG_EDI);
+	IA32_Lea_Reg_DispRegMult(jit, REG_ECX, reg, REG_EDI, NOSCALE);
 	IA32_Cmp_Rm_Reg(jit, REG_ECX, AMX_REG_STK, MOD_REG);
 	jitoffs_t jmp3 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
 	IA32_Send_Jump8_Here(jit, jmp1);
@@ -199,24 +219,6 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	{
 		IA32_Return(jit);
 	}
-}
-
-void Write_CheckMargin_Stack(JitWriter *jit)
-{
-	/* this is small, so we always inline it.
-	 */
-	//cmp ebp, [esi+stp]
-	//jle :continue
-	IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_STK, AMX_REG_INFO, AMX_INFO_STACKTOP);
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_LE, 0);
-	if (!(((CompData *)jit->data)->inline_level & JIT_INLINE_ERRORCHECKS))
-	{
-		//sub esp, 4	- correct stack for returning to non-inlined JIT
-		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
-	}
-	Write_Error(jit, SP_ERR_STACKMIN);
-	//continue:
-	IA32_Send_Jump8_Here(jit, jmp);
 }
 
 void Macro_PushN_Addr(JitWriter *jit, int i)
