@@ -963,6 +963,46 @@ inline void WriteOp_Pop_Heap_Pri(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_TMP, NOSCALE);
 }
 
+inline void WriteOp_Load_Both(JitWriter *jit)
+{
+	WriteOp_Const_Pri(jit);
+	WriteOp_Const_Alt(jit);
+}
+
+inline void WriteOp_Load_S_Both(JitWriter *jit)
+{
+	WriteOp_Load_S_Pri(jit);
+	WriteOp_Load_S_Alt(jit);
+}
+
+inline void WriteOp_Const(JitWriter *jit)
+{
+	//mov [edi+<addr>], <val>
+	cell_t addr = jit->read_cell();
+	cell_t val = jit->read_cell();
+	if (addr < SCHAR_MAX && addr > SCHAR_MIN)
+	{
+		IA32_Mov_Rm_Imm32_Disp8(jit, AMX_REG_DAT, val, (jit_int8_t)addr);
+	} else {
+		IA32_Mov_Rm_Imm32_Disp32(jit, AMX_REG_DAT, val, addr);
+	}
+}
+
+inline void WriteOp_Const_S(JitWriter *jit)
+{
+	//mov [ebx+<offs>], <val>
+	cell_t offs = jit->read_cell();
+	cell_t val = jit->read_cell();
+
+	if (offs < SCHAR_MAX && offs > SCHAR_MIN)
+	{
+		IA32_Mov_Rm_Imm32_Disp8(jit, AMX_REG_FRM, val, (jit_int8_t)offs);
+	} else {
+		IA32_Mov_Rm_Imm32_Disp32(jit, AMX_REG_FRM, val, offs);
+	}
+}
+
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1591,10 +1631,31 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 				WriteOp_Push_Alt(jit);
 				break;
 			}
+		case OP_LOAD_BOTH:
+			{
+				WriteOp_Load_Both(jit);
+				break;
+			}
+		case OP_LOAD_S_BOTH:
+			{
+				WriteOp_Load_S_Both(jit);
+				break;
+			}
+		case OP_CONST:
+			{
+				WriteOp_Const(jit);
+				break;
+			}
+		case OP_CONST_S:
+			{
+				WriteOp_Const_S(jit);
+				break;
+			}
 		default:
 			{
-				/* :TODO: error! */
-				break;
+				AbortCompilation(co);
+				*err = SP_ERR_INVALID_INSTRUCTION;
+				return NULL;
 			}
 		}
 	}
