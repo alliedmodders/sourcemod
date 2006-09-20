@@ -1,183 +1,129 @@
 #include <string.h>
 #include <stdlib.h>
 #include "jit_x86.h"
+#include "..\jit_helpers.h"
+#include "opcode_helpers.h"
+#include "x86_macros.h"
 
-int OpAdvTable[OP_NUM_OPCODES];
-
-JITX86::JITX86()
+inline void WriteOp_Move_Pri(JitWriter *jit)
 {
-	memset(OpAdvTable, -1, sizeof(OpAdvTable));
+	//mov eax, edx
+	IA32_Mov_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+}
 
-	/* instructions with 5 parameters */
-	OpAdvTable[OP_PUSH5_C] = sizeof(cell_t)*5;
-	OpAdvTable[OP_PUSH5] = sizeof(cell_t)*5;
-	OpAdvTable[OP_PUSH5_S] = sizeof(cell_t)*5;
-	OpAdvTable[OP_PUSH5_ADR] = sizeof(cell_t)*5;
+inline void WriteOp_Move_Alt(JitWriter *jit)
+{
+	//mov edx, eax
+	IA32_Mov_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_PRI, MOD_REG);
+}
 
-	/* instructions with 4 parameters */
-	OpAdvTable[OP_PUSH4_C] = sizeof(cell_t)*4;
-	OpAdvTable[OP_PUSH4] = sizeof(cell_t)*4;
-	OpAdvTable[OP_PUSH4_S] = sizeof(cell_t)*4;
-	OpAdvTable[OP_PUSH4_ADR] = sizeof(cell_t)*4;
+inline void WriteOp_Xchg(JitWriter *jit)
+{
+	/* :TODO: change this? */
+	//xchg eax, edx
+	IA32_Xchg_Eax_Reg(jit, AMX_REG_ALT);
+}
 
-	/* instructions with 3 parameters */
-	OpAdvTable[OP_PUSH3_C] = sizeof(cell_t)*3;
-	OpAdvTable[OP_PUSH3] = sizeof(cell_t)*3;
-	OpAdvTable[OP_PUSH3_S] = sizeof(cell_t)*3;
-	OpAdvTable[OP_PUSH3_ADR] = sizeof(cell_t)*3;
+inline void WriteOp_Push(JitWriter *jit)
+{
+	//push stack, DAT offset based
+	//sub ebp, 4
+	//mov ecx, [edi+<val>]
+	//mov [ebp], ecx
+	cell_t val = jit->read_cell();
+	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+	//optimize encoding a bit...
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_DAT, (jit_int8_t)val);
+	else
+		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_DAT, val);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_TMP, MOD_MEM_REG);
+}
 
-	/* instructions with 2 parameters */
-	OpAdvTable[OP_PUSH2_C] = sizeof(cell_t)*2;
-	OpAdvTable[OP_PUSH2] = sizeof(cell_t)*2;
-	OpAdvTable[OP_PUSH2_S] = sizeof(cell_t)*2;
-	OpAdvTable[OP_PUSH2_ADR] = sizeof(cell_t)*2;
-	OpAdvTable[OP_LOAD_BOTH] = sizeof(cell_t)*2;
-	OpAdvTable[OP_LOAD_S_BOTH] = sizeof(cell_t)*2;
-	OpAdvTable[OP_CONST] = sizeof(cell_t)*2;
-	OpAdvTable[OP_CONST_S] = sizeof(cell_t)*2;
+inline void WriteOp_Push_S(JitWriter *jit)
+{
+	//push stack, FRM offset based
+	//sub ebp, 4
+	//mov ecx, [ebx+<val>]
+	//mov [ebp], ecx
+	cell_t val = jit->read_cell();
+	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+	//optimize encoding a bit...
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_FRM, (jit_int8_t)val);
+	else
+		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_FRM, val);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_TMP, MOD_MEM_REG);
+}
 
-	/* instructions with 1 parameter */
-	OpAdvTable[OP_LOAD_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LOAD_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LOAD_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LOAD_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LODB_I] = sizeof(cell_t);
-	OpAdvTable[OP_CONST_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_CONST_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_ADDR_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_ADDR_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_STRB_I] = sizeof(cell_t);
-	OpAdvTable[OP_LIDX_B] = sizeof(cell_t);
-	OpAdvTable[OP_IDXADDR_B] = sizeof(cell_t);
-	OpAdvTable[OP_ALIGN_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_ALIGN_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LCTRL] = sizeof(cell_t);
-	OpAdvTable[OP_SCTRL] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_R] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_C] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_S] = sizeof(cell_t);
-	OpAdvTable[OP_STACK] = sizeof(cell_t);
-	OpAdvTable[OP_HEAP] = sizeof(cell_t);
-	OpAdvTable[OP_JREL] = sizeof(cell_t);
-	OpAdvTable[OP_SHL_C_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SHL_C_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_SHR_C_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SHR_C_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_ADD_C] = sizeof(cell_t);
-	OpAdvTable[OP_SMUL_C] = sizeof(cell_t);
-	OpAdvTable[OP_ZERO] = sizeof(cell_t);
-	OpAdvTable[OP_ZERO_S] = sizeof(cell_t);
-	OpAdvTable[OP_EQ_C_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_EQ_C_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_INC] = sizeof(cell_t);
-	OpAdvTable[OP_INC_S] = sizeof(cell_t);
-	OpAdvTable[OP_DEC] = sizeof(cell_t);
-	OpAdvTable[OP_DEC_S] = sizeof(cell_t);
-	OpAdvTable[OP_MOVS] = sizeof(cell_t);
-	OpAdvTable[OP_CMPS] = sizeof(cell_t);
-	OpAdvTable[OP_FILL] = sizeof(cell_t);
-	OpAdvTable[OP_HALT] = sizeof(cell_t);
-	OpAdvTable[OP_BOUNDS] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_ADR] = sizeof(cell_t);
+inline void WriteOp_Push4_C(JitWriter *jit)
+{
+	Macro_PushN_C(jit, 4);
+}
 
-	/* instructions with 0 parameters */
-	OpAdvTable[OP_LOAD_I] = 0;
-	OpAdvTable[OP_STOR_I] = 0;
-	OpAdvTable[OP_LIDX] = 0;
-	OpAdvTable[OP_IDXADDR] = 0;
-	OpAdvTable[OP_MOVE_PRI] = 0;
-	OpAdvTable[OP_MOVE_ALT] = 0;
-	OpAdvTable[OP_XCHG] = 0;
-	OpAdvTable[OP_PUSH_PRI] = 0;
-	OpAdvTable[OP_PUSH_ALT] = 0;
-	OpAdvTable[OP_POP_PRI] = 0;
-	OpAdvTable[OP_POP_ALT] = 0;
-	OpAdvTable[OP_PROC] = 0;
-	OpAdvTable[OP_RET] = 0;
-	OpAdvTable[OP_RETN] = 0;
-	OpAdvTable[OP_CALL_PRI] = 0;
-	OpAdvTable[OP_SHL] = 0;
-	OpAdvTable[OP_SHR] = 0;
-	OpAdvTable[OP_SSHR] = 0;
-	OpAdvTable[OP_SMUL] = 0;
-	OpAdvTable[OP_SDIV] = 0;
-	OpAdvTable[OP_SDIV_ALT] = 0;
-	OpAdvTable[OP_UMUL] = 0;
-	OpAdvTable[OP_UDIV] = 0;
-	OpAdvTable[OP_UDIV_ALT] = 0;
-	OpAdvTable[OP_ADD] = 0;
-	OpAdvTable[OP_SUB] = 0;
-	OpAdvTable[OP_SUB_ALT] = 0;
-	OpAdvTable[OP_AND] = 0;
-	OpAdvTable[OP_OR] = 0;
-	OpAdvTable[OP_XOR] = 0;
-	OpAdvTable[OP_NOT] = 0;
-	OpAdvTable[OP_NEG] = 0;
-	OpAdvTable[OP_INVERT] = 0;
-	OpAdvTable[OP_ZERO_PRI] = 0;
-	OpAdvTable[OP_ZERO_ALT] = 0;
-	OpAdvTable[OP_SIGN_PRI] = 0;
-	OpAdvTable[OP_SIGN_ALT] = 0;
-	OpAdvTable[OP_EQ] = 0;
-	OpAdvTable[OP_NEQ] = 0;
-	OpAdvTable[OP_LESS] = 0;
-	OpAdvTable[OP_LEQ] = 0;
-	OpAdvTable[OP_GRTR] = 0;
-	OpAdvTable[OP_GEQ] = 0;
-	OpAdvTable[OP_SLESS] = 0;
-	OpAdvTable[OP_SLEQ] = 0;
-	OpAdvTable[OP_SGRTR] = 0;
-	OpAdvTable[OP_SGEQ] = 0;
-	OpAdvTable[OP_INC_PRI] = 0;
-	OpAdvTable[OP_INC_ALT] = 0;
-	OpAdvTable[OP_INC_I] = 0;
-	OpAdvTable[OP_DEC_PRI] = 0;
-	OpAdvTable[OP_DEC_ALT] = 0;
-	OpAdvTable[OP_DEC_I] = 0;
-	OpAdvTable[OP_JUMP_PRI] = 0;
-	OpAdvTable[OP_SWAP_PRI] = 0;
-	OpAdvTable[OP_SWAP_ALT] = 0;
-	OpAdvTable[OP_NOP] = 0;
-	OpAdvTable[OP_BREAK] = 0;
+inline void WriteOp_Push5_C(JitWriter *jit)
+{
+	Macro_PushN_C(jit, 5);
+}
 
-	/* opcodes that need relocation */
-	OpAdvTable[OP_CALL] = -2;
-	OpAdvTable[OP_JUMP] = -2;
-	OpAdvTable[OP_JZER] = -2;
-	OpAdvTable[OP_JNZ] = -2;
-	OpAdvTable[OP_JEQ] = -2;
-	OpAdvTable[OP_JNEQ] = -2;
-	OpAdvTable[OP_JLESS] = -2;
-	OpAdvTable[OP_JLEQ] = -2;
-	OpAdvTable[OP_JGRTR] = -2;
-	OpAdvTable[OP_JGEQ] = -2;
-	OpAdvTable[OP_JSLESS] = -2;
-	OpAdvTable[OP_JSLEQ] = -2;
-	OpAdvTable[OP_JSGRTR] = -2;
-	OpAdvTable[OP_JSGEQ] = -2;
-	OpAdvTable[OP_SWITCH] = -2;
+inline void WriteOp_Push2_Adr(JitWriter *jit)
+{
+	Macro_PushN_Addr(jit, 2);
+}
 
-	/* opcodes that are totally invalid */
-	OpAdvTable[OP_FILE] = -3;
-	OpAdvTable[OP_SYMBOL] = -3;
-	OpAdvTable[OP_LINE] = -3;
-	OpAdvTable[OP_SRANGE] = -3;
-	OpAdvTable[OP_SYMTAG] = -3;
-	OpAdvTable[OP_SYSREQ_D] = -3;
-	OpAdvTable[OP_SYSREQ_ND] = -3;
+inline void WriteOp_Push3_Adr(JitWriter *jit)
+{
+	Macro_PushN_Addr(jit, 3);
+}
+
+inline void WriteOp_Push4_Adr(JitWriter *jit)
+{
+	Macro_PushN_Addr(jit, 4);
+}
+
+inline void WriteOp_Push5_Adr(JitWriter *jit)
+{
+	Macro_PushN_Addr(jit, 5);
+}
+
+inline void WriteOp_Push2_S(JitWriter *jit)
+{
+	Macro_PushN_S(jit, 2);
+}
+
+inline void WriteOp_Push3_S(JitWriter *jit)
+{
+	Macro_PushN_S(jit, 3);
+}
+
+inline void WriteOp_Push4_S(JitWriter *jit)
+{
+	Macro_PushN_S(jit, 4);
+}
+
+inline void WriteOp_Push5_S(JitWriter *jit)
+{
+	Macro_PushN_S(jit, 5);
+}
+
+inline void WriteOp_Push5(JitWriter *jit)
+{
+	Macro_PushN(jit, 5);
+}
+
+inline void WriteOp_Push4(JitWriter *jit)
+{
+	Macro_PushN(jit, 4);
+}
+
+inline void WriteOp_Push3(JitWriter *jit)
+{
+	Macro_PushN(jit, 3);
+}
+
+inline void WriteOp_Push2(JitWriter *jit)
+{
+	Macro_PushN(jit, 2);
 }
 
 IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
@@ -242,6 +188,126 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 					*err = SP_ERR_INVALID_INSTRUCTION;
 					return NULL;
 				}
+			}
+		}
+	}
+
+	JitWriter writer;
+
+	writer.inptr = (cell_t *)code;
+	writer.outptr = NULL;
+	writer.outbase = NULL;
+
+//redo_pass:
+	/* SECOND PASS (medium load): writer.outbase is NULL, getting size only
+	 * THIRD PASS (heavy load!!): writer.outbase is valid and output is written
+	 */
+	cell_t *endptr = (cell_t *)(end_cip);
+	JitWriter *jit = &writer;
+	for (; writer.inptr <= endptr;)
+	{
+		op = (OPCODE)writer.read_cell();
+		switch (op)
+		{
+		case OP_MOVE_PRI:
+			{
+				WriteOp_Move_Pri(jit);
+				break;
+			}
+		case OP_MOVE_ALT:
+			{
+				WriteOp_Move_Alt(jit);
+				break;
+			}
+		case OP_XCHG:
+			{
+				WriteOp_Xchg(jit);
+				break;
+			}
+		case OP_PUSH:
+			{
+				WriteOp_Push(jit);
+				break;
+			}
+		case OP_PUSH_S:
+			{
+				WriteOp_Push_S(jit);
+				break;
+			}
+		case OP_PUSH4_C:
+			{
+				WriteOp_Push4_C(jit);
+				break;
+			}
+		case OP_PUSH5_C:
+			{
+				WriteOp_Push5_C(jit);
+				break;
+			}
+		case OP_PUSH2_ADR:
+			{
+				WriteOp_Push2_Adr(jit);
+				break;
+			}
+		case OP_PUSH3_ADR:
+			{
+				WriteOp_Push3_Adr(jit);
+				break;
+			}
+		case OP_PUSH4_ADR:
+			{
+				WriteOp_Push4_Adr(jit);
+				break;
+			}
+		case OP_PUSH5_ADR:
+			{
+				WriteOp_Push5_Adr(jit);
+				break;
+			}
+		case OP_PUSH2_S:
+			{
+				WriteOp_Push2_S(jit);
+				break;
+			}
+		case OP_PUSH3_S:
+			{
+				WriteOp_Push3_S(jit);
+				break;
+			}
+		case OP_PUSH4_S:
+			{
+				WriteOp_Push4_S(jit);
+				break;
+			}
+		case OP_PUSH5_S:
+			{
+				WriteOp_Push5_S(jit);
+				break;
+			}
+		case OP_PUSH5:
+			{
+				WriteOp_Push5(jit);
+				break;
+			}
+		case OP_PUSH4:
+			{
+				WriteOp_Push4(jit);
+				break;
+			}
+		case OP_PUSH3:
+			{
+				WriteOp_Push3(jit);
+				break;
+			}
+		case OP_PUSH2:
+			{
+				WriteOp_Push2(jit);
+				break;
+			}
+		default:
+			{
+				/* :TODO: error! */
+				break;
 			}
 		}
 	}

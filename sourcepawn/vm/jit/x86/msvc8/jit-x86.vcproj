@@ -191,6 +191,10 @@
 				RelativePath="..\jit_x86.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\opcode_helpers.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -202,11 +206,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\jit_helpers.h"
+				RelativePath="..\jit_x86.h"
 				>
 			</File>
 			<File
-				RelativePath="..\jit_x86.h"
+				RelativePath="..\opcode_helpers.h"
 				>
 			</File>
 			<File
@@ -223,6 +227,10 @@
 		<Filter
 			Name="SDK"
 			>
+			<File
+				RelativePath="..\..\jit_helpers.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\..\..\include\sp_file_headers.h"
 				>

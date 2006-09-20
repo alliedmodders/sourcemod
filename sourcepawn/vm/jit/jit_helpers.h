@@ -32,7 +32,7 @@ public:
 		inptr++;
 		return val;
 	}
-	inline cell_t read_cellptr()
+	inline cell_t *read_cellptr()
 	{
 		cell_t *val = *(cell_t **)(inptr);
 		inptr++;
@@ -58,7 +58,7 @@ public:
 	{
 		if (outptr)
 		{
-			*(jit_int32_t *)ptr = c;
+			*(jit_int32_t *)outptr = c;
 		}
 		outptr += sizeof(jit_int32_t);
 	}
