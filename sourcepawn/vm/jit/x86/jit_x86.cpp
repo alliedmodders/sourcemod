@@ -1215,6 +1215,57 @@ inline void WriteOp_Stack(JitWriter *jit)
 	Write_CheckMargin_Stack(jit);
 }
 
+inline void WriteOp_SDiv(JitWriter *jit)
+{
+	//mov ecx, edx
+	//mov edx, eax
+	//sar edx, 31
+	//idiv ecx
+	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_ALT, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_PRI, MOD_REG);
+	IA32_Sar_Rm_Imm8(jit, AMX_REG_ALT, 31, MOD_REG);
+	IA32_IDiv_Rm(jit, AMX_REG_TMP, MOD_REG);
+}
+
+
+inline void WriteOp_SDiv_Alt(JitWriter *jit)
+{
+	//mov ecx, eax
+	//mov eax, edx
+	//sar edx, 31
+	//idiv ecx
+	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+	IA32_Sar_Rm_Imm8(jit, AMX_REG_ALT, 31, MOD_REG);
+	IA32_IDiv_Rm(jit, AMX_REG_TMP, MOD_REG);
+}
+
+inline void WriteOp_UDiv(JitWriter *jit)
+{
+	//mov ecx, edx
+	//xor edx, edx
+	//div ecx
+	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_ALT, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
+	IA32_Xor_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_ALT, MOD_REG);
+	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
+}
+
+inline void WriteOp_UDiv_Alt(JitWriter *jit)
+{
+	//mov ecx, eax
+	//mov eax, edx
+	//xor edx, edx
+	//div ecx
+	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+	IA32_Xor_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_ALT, MOD_REG);
+	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1917,6 +1968,26 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_STACK:
 			{
 				WriteOp_Stack(jit);
+				break;
+			}
+		case OP_SDIV:
+			{
+				WriteOp_SDiv(jit);
+				break;
+			}
+		case OP_SDIV_ALT:
+			{
+				WriteOp_SDiv_Alt(jit);
+				break;
+			}
+		case OP_UDIV:
+			{
+				WriteOp_UDiv(jit);
+				break;
+			}
+		case OP_UDIV_ALT:
+			{
+				WriteOp_UDiv_Alt(jit);
 				break;
 			}
 		default:
