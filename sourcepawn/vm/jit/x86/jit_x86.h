@@ -9,6 +9,7 @@ using namespace SourcePawn;
 
 #define JIT_INLINE_ERRORCHECKS		(1<<0)
 #define JIT_INLINE_NATIVES			(1<<1)
+#define STACK_MARGIN				16
 
 class CompData : public ICompilation
 {
@@ -22,6 +23,7 @@ public:
 	jitoffs_t jit_return;
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
+	jitoffs_t jit_chkmargin_heap;
 	int inline_level;
 	bool checks;
 	bool debug;
@@ -49,10 +51,11 @@ public:
 #define AMX_REG_INFO	REG_ESI
 #define AMX_REG_FRM		REG_EBX
 
-#define AMX_INFO_FRM		AMX_REG_INFO
-#define AMX_INFO_HEAP		4
-#define AMX_INFO_RETVAL		8
-#define AMX_INFO_CONTEXT	12
-#define AMX_INFO_STACKTOP	16
+#define AMX_INFO_FRM		AMX_REG_INFO	//not relocated
+#define AMX_INFO_HEAP		4				//not relocated
+#define AMX_INFO_RETVAL		8				//physical
+#define AMX_INFO_CONTEXT	12				//physical
+#define AMX_INFO_STACKTOP	16				//relocated
+#define AMX_INFO_HEAPLOW	20				//not relocated
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_

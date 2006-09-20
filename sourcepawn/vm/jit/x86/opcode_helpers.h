@@ -19,6 +19,7 @@ void Write_Error(JitWriter *jit, int error);
 
 /**
  * Verifies an address by register.
+ * :TODO: optimize and make it look like the heap checkfunction!
  */
 void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall);
 
@@ -27,6 +28,10 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall);
  */
 void Write_CheckMargin_Stack(JitWriter *jit);
 
+/** 
+ * Verifies heap margins.
+ */
+void Write_CheckMargin_Heap(JitWriter *jit);
 /**
 * Checks for division by zero.
 */
@@ -88,7 +93,7 @@ typedef enum
 	OP_POP_PRI,				//DONE
 	OP_POP_ALT,				//DONE
 	OP_STACK,				//DONE
-	OP_HEAP,
+	OP_HEAP,				//DONE
 	OP_PROC,				//DONE
 	OP_RET,
 	OP_RETN,

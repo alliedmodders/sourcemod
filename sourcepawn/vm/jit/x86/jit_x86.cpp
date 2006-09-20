@@ -958,6 +958,8 @@ inline void WriteOp_Heap_Pri(JitWriter *jit)
 	//add [hea], eax
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_REG_INFO, AMX_INFO_HEAP);
 	IA32_Add_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_PRI, AMX_INFO_HEAP);
+
+	Write_CheckMargin_Heap(jit);
 }
 
 inline void WriteOp_Push_Heap_C(JitWriter *jit)
@@ -969,6 +971,8 @@ inline void WriteOp_Push_Heap_C(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
 	IA32_Mov_Rm_Imm32_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, val);
 	IA32_Add_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
+
+	Write_CheckMargin_Heap(jit);
 }
 
 inline void WriteOp_Pop_Heap_Pri(JitWriter *jit)
@@ -979,6 +983,8 @@ inline void WriteOp_Pop_Heap_Pri(JitWriter *jit)
 	IA32_Sub_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_TMP, NOSCALE);
+
+	Write_CheckMargin_Heap(jit);
 }
 
 inline void WriteOp_Load_Both(JitWriter *jit)
@@ -1215,6 +1221,20 @@ inline void WriteOp_Stack(JitWriter *jit)
 	Write_CheckMargin_Stack(jit);
 }
 
+inline void WriteOp_Heap(JitWriter *jit)
+{
+	//mov edx, hea
+	//add hea, <val>
+	cell_t val = jit->read_cell();
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_INFO_FRM, AMX_INFO_HEAP);
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+		IA32_Add_Rm_Imm8_Disp8(jit, AMX_INFO_FRM, (jit_int8_t)val, AMX_INFO_HEAP);
+	else
+		IA32_Add_Rm_Imm32_Disp8(jit, AMX_INFO_FRM, val, AMX_INFO_HEAP);
+
+	Write_CheckMargin_Heap(jit);
+}
+
 inline void WriteOp_SDiv(JitWriter *jit)
 {
 	//mov ecx, edx
@@ -1338,6 +1358,7 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	JitWriter writer;
 	JitWriter *jit = &writer;
 	cell_t *endptr = (cell_t *)(end_cip);
+	cell_t jitpos;
 
 	/* Initial code is written "blank,"
 	 * so we can check the exact memory usage.
@@ -1346,19 +1367,30 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	writer.outptr = NULL;
 	writer.outbase = NULL;
 
-	/* Get inlining level */
-	int inline_level = data->inline_level;
-
 //:TODO: Jump back here once finished!
+
+	/* Initialize pass vars */
+	data->jit_chkmargin_heap = 0;
+	data->jit_verify_addr_eax = 0;
+	data->jit_verify_addr_edx = 0;
 
 	/* Start writing the actual code */
 	data->jit_return = Write_Execute_Function(jit);
 
 	/* Write error checking routines in case they are needed */
-	data->jit_verify_addr_eax = jit->jit_curpos();
+	jitpos = jit->jit_curpos();
 	Write_Check_VerifyAddr(jit, REG_EAX, true);
-	data->jit_verify_addr_edx = jit->jit_curpos();
+	data->jit_verify_addr_eax = jitpos;
+
+	jitpos = jit->jit_curpos();
 	Write_Check_VerifyAddr(jit, REG_EDX, true);
+	data->jit_verify_addr_edx = jitpos;
+
+	jitpos = jit->jit_curpos();
+	Write_CheckMargin_Heap(jit);
+	data->jit_chkmargin_heap = jitpos;
+
+	/* Begin opcode browsing */
 
 	for (; writer.inptr <= endptr;)
 	{
@@ -1968,6 +2000,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_STACK:
 			{
 				WriteOp_Stack(jit);
+				break;
+			}
+		case OP_HEAP:
+			{
+				WriteOp_Heap(jit);
 				break;
 			}
 		case OP_SDIV:

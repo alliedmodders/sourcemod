@@ -32,27 +32,28 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 	IA32_Push_Reg(jit, REG_EDI);
 	IA32_Push_Reg(jit, REG_EBX);
 
-	//sub esp, 4*5	- allocate info array
+	//sub esp, 4*6	- allocate info array
 	//mov esi, esp	- save info pointer
-	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4*4, MOD_REG);
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4*6, MOD_REG);
 	IA32_Mov_Reg_Rm(jit, AMX_REG_INFO, REG_ESP, MOD_REG);
 
-	//mov eax, [ebp+16]	- get result pointer
-	//mov [esi+8], eax	- store into info pointer
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 16);
-	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_EAX, AMX_INFO_RETVAL);
-
+	/* Initial memory setup */
+	//mov eax, [ebp+16]		- get result pointer
+	//mov [esi+8], eax		- store into info pointer
 	//mov eax, [ebp+8]		- get context
 	//mov [esi+12], eax		- store context into info pointer
 	//mov ecx, [eax+<offs>]	- get heap pointer
 	//mov [esi+4], ecx		- store heap into info pointer
 	//mov edi, [eax+<offs>]	- get data pointer
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 16);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EAX, AMX_INFO_RETVAL);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 8);
-	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_EAX, AMX_INFO_CONTEXT);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EAX, AMX_INFO_CONTEXT);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, hp));
-	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_ECX, AMX_INFO_HEAP);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_HEAP);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_DAT, REG_EAX, offsetof(sp_context_t, data));
 
+	/* Frame setup */
 	//mov ebp, [eax+<offs>]	- get stack pointer
 	//add ebp, edi			- relocate to data section
 	//mov ebx, ebp			- copy sp to frm
@@ -60,13 +61,19 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 	IA32_Add_Rm_Reg(jit, REG_EBP, AMX_REG_STK, AMX_REG_DAT);
 	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_REG);
 
+	/* Info memory setup */
 	//mov ecx, edi			- copy base of data to temp var
 	//add ecx, [eax+<offs>] - add memsize to get stack top
 	//mov [esi+16], ecx		- store stack top into info pointer
+	//mov ecx, [eax+<offs>] - get heap low
+	//mov [esi+20], ecx		- store heap low into info pointer
 	IA32_Mov_Reg_Rm(jit, REG_ECX, AMX_REG_DAT, MOD_REG);
 	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, memory));
-	IA32_Mov_Rm_Reg_Disp8(jit, REG_ESI, REG_ECX, AMX_INFO_STACKTOP);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, heapbase));
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_HEAPLOW);
 
+	/* Remaining needed vars */
 	//mov ecx, [ebp+12]		- get code index
 	//add ecx, [eax+<offs>] - add code base to index
 	//mov edx, [eax+<offs>]	- get alt
@@ -77,7 +84,6 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_EAX, offsetof(sp_context_t, pri));
 
 	/* by now, everything is set up, so we can call into the plugin */
-
 	//call ecx
 	IA32_Call_Rm(jit, REG_ECX);
 
@@ -111,13 +117,13 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 	 * BaseContext::Execute() automatically restores our values anyway.
 	 */
 
-	//add esp, 4*4
+	//add esp, 4*6
 	//pop ebx
 	//pop edi
 	//pop esi
 	//pop ebp
 	//ret
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*5, MOD_REG);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*6, MOD_REG);
 	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Pop_Reg(jit, REG_EDI);
 	IA32_Pop_Reg(jit, REG_ESI);
@@ -218,6 +224,53 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	if (call)
 	{
 		IA32_Return(jit);
+	}
+}
+
+void Write_CheckMargin_Heap(JitWriter *jit)
+{
+	CompData *data = (CompData *)jit->data;
+
+	bool always_inline = ((data->inline_level & JIT_INLINE_ERRORCHECKS) == JIT_INLINE_ERRORCHECKS);
+
+	if (always_inline && data->jit_chkmargin_heap)
+	{
+		/* just generate the call */
+		jitoffs_t call = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32(jit, call, data->jit_chkmargin_heap);
+	} else {
+		//mov ecx, [esi+hea]
+		//cmp ecx, [esi+hlw]
+		//jl :error_heapmin
+		IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_HEAP);
+		IA32_Cmp_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_HEAPLOW);
+		jitoffs_t hm = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
+		//lea ecx, [edi+ecx+STACK_MARGIN]
+		//cmp ecx, ebp
+		// jg :error_heaplow
+		//OR
+		// ret
+		IA32_Lea_Reg_DispRegMultImm8(jit, REG_ECX, AMX_REG_DAT, REG_ECX, NOSCALE, STACK_MARGIN);
+		IA32_Cmp_Rm_Reg(jit, REG_ECX, AMX_REG_STK, MOD_REG);
+		jitoffs_t hl = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
+		jitoffs_t cont;
+		if (always_inline)
+		{
+			cont = IA32_Jump_Imm8(jit, 0);
+		} else {
+			IA32_Return(jit);
+		}
+		//:error_heapmin
+		IA32_Send_Jump8_Here(jit, hm);
+		Write_Error(jit, SP_ERR_HEAPMIN);
+		//:error_heaplow
+		IA32_Send_Jump8_Here(jit, hl);
+		Write_Error(jit, SP_ERR_HEAPLOW);
+		//:continue
+		if (!always_inline)
+		{
+			IA32_Send_Jump8_Here(jit, cont);
+		}
 	}
 }
 
