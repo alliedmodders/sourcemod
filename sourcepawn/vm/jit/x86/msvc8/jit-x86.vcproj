@@ -188,10 +188,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\jit_helpers.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\jit_x86.cpp"
 				>
 			</File>

@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_AMX_JIT_H
-#define _INCLUDE_AMX_JIT_H
+#ifndef _INCLUDE_SOURCEPAWN_JIT_HELPERS_H_
+#define _INCLUDE_SOURCEPAWN_JIT_HELPERS_H_
 
 #include <sp_vm_types.h>
 
@@ -23,27 +23,53 @@ typedef unsigned __int64 jit_uint64_t;
 typedef char * jitcode_t;
 typedef unsigned int jitoffs_t;
 
-//functions for writing to a JIT
-typedef struct tagJITWRITEFUNCS
+class JitWriter
 {
-	//Reading from the input stream
-	cell_t (*read_cell)(struct tagJITINFO *);
-	cell_t *(*read_cellptr)(struct tagJITINFO *);
-	//Writing to the output stream
-	void (*write_ubyte)(struct tagJITINFO *, jit_uint8_t);
-	void (*write_byte)(struct tagJITINFO *, jit_int8_t);
-	void (*write_int32)(struct tagJITINFO *, jit_int32_t);
-	void (*write_int64)(struct tagJITINFO *, jit_int64_t);
-	//helpers
-	jitoffs_t (*jit_curpos)(struct tagJITINFO *);
-} jitwritefuncs_t;
-
-typedef struct tagJITINFO
-{
-	jitwritefuncs_t wrfuncs;
+public:
+	inline cell_t read_cell()
+	{
+		cell_t val = *(inptr);
+		inptr++;
+		return val;
+	}
+	inline cell_t read_cellptr()
+	{
+		cell_t *val = *(cell_t **)(inptr);
+		inptr++;
+		return val;
+	}
+	inline void write_ubyte(jit_uint8_t c)
+	{
+		if (outptr)
+		{
+			*outptr = c;
+		}
+		outptr++;
+	}
+	inline void write_byte(jit_int8_t c)
+	{
+		if (outptr)
+		{
+			*outptr = c;
+		}
+		outptr++;
+	}
+	inline void write_int32(jit_int32_t c)
+	{
+		if (outptr)
+		{
+			*(jit_int32_t *)ptr = c;
+		}
+		outptr += sizeof(jit_int32_t);
+	}
+	inline jitoffs_t jit_curpos()
+	{
+		return (outptr - outbase);
+	}
+public:
 	cell_t *inptr;		/* input pointer */
 	jitcode_t outbase;	/* output pointer */
 	jitcode_t outptr;	/* output base */
-} jitinfo_t;
+};
 
-#endif //_INCLUDE_AMX_JIT_H
+#endif //_INCLUDE_SOURCEPAWN_JIT_HELPERS_H_

@@ -74,7 +74,11 @@ namespace SourcePawn
 		virtual void BaseFree(void *memory) =0;
 	};
 
-	class ICompilation;
+	class ICompilation
+	{
+	public:
+		virtual ~ICompilation() { };
+	};
 
 	class IVirtualMachine
 	{
@@ -107,9 +111,17 @@ namespace SourcePawn
 		 * Note: This will free the ICompilation pointer.
 		 *
 		 * @param co		Compilation pointer.
+		 * @param err		Filled with error code on exit.
 		 * @return			New plugin context.
 		 */
-		virtual IPluginContext *CompileToContext(ICompilation *co) =0;
+		virtual IPluginContext *CompileToContext(ICompilation *co, int *err) =0;
+
+		/**
+		 * Aborts a compilation and frees the ICompilation pointer.
+		 *
+		 * @param co		Compilation pointer.
+		 */
+		virtual void AbortCompilation(ICompilation *co) =0;
 
 		/**
 		 * Frees any internal variable usage on a context.

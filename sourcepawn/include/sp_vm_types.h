@@ -20,6 +20,7 @@ typedef int32_t		cell_t;
 #define SP_ERR_NATIVE_PENDING		8	/* A script tried to exec an unbound native */
 #define SP_ERR_STACKERR				9	/* Stack/Heap collision */
 #define SP_ERR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
+#define SP_ERR_INVALID_INSTRUCTION	11	/* Invalid instruction was encountered */
 
 /**********************************************
  *** The following structures are reference structures.
