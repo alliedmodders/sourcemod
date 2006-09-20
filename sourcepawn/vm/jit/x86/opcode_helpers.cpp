@@ -176,6 +176,7 @@ JITX86::JITX86()
 	OpAdvTable[OP_HALT] = sizeof(cell_t);
 	OpAdvTable[OP_BOUNDS] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH_ADR] = sizeof(cell_t);
+	OpAdvTable[OP_PUSH_HEAP_C] = sizeof(cell_t);
 
 	/* instructions with 0 parameters */
 	OpAdvTable[OP_LOAD_I] = 0;
@@ -236,6 +237,8 @@ JITX86::JITX86()
 	OpAdvTable[OP_SWAP_ALT] = 0;
 	OpAdvTable[OP_NOP] = 0;
 	OpAdvTable[OP_BREAK] = 0;
+	OpAdvTable[OP_HEAP_PRI] = 0;
+	OpAdvTable[OP_POP_HEAP_PRI] = 0;
 
 	/* opcodes that need relocation */
 	OpAdvTable[OP_CALL] = -2;
