@@ -2,6 +2,7 @@
 #define _INCLUDE_SOURCEPAWN_JIT_HELPERS_H_
 
 #include <sp_vm_types.h>
+#include <sp_vm_api.h>
 
 #if defined HAVE_STDINT_H && !defined WIN32
 #include <stdint.h>
@@ -70,6 +71,7 @@ public:
 	cell_t *inptr;		/* input pointer */
 	jitcode_t outbase;	/* output pointer */
 	jitcode_t outptr;	/* output base */
+	SourcePawn::ICompilation *data;	/* compiler live info */
 };
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_HELPERS_H_

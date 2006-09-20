@@ -7,11 +7,20 @@
  * This outputs the execution function for a plugin.
  * It also returns the 'return' offset, which is used for 
  * breaking out of the JIT during runtime.
- *
- * If 'never_inline' is true, it outputs slightly different code used for
- * inlining the error checking routines.
  */
-jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline);
+jitoffs_t Write_Execute_Function(JitWriter *jit);
+
+/**
+ * Generates code to set an error state in the VM and return.
+ * Note that this should only be called from inside an error
+ * checking function.
+ */
+void Write_Error(JitWriter *jit, int error);
+
+/**
+ * Verifies an address by register.
+ */
+void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall);
 
 /** 
  * These are for writing the PushN opcodes.
@@ -32,7 +41,7 @@ typedef enum
 	OP_LREF_ALT,			//DONE
 	OP_LREF_S_PRI,			//DONE
 	OP_LREF_S_ALT,			//DONE
-	OP_LOAD_I,
+	OP_LOAD_I,				//DONE
 	OP_LODB_I,
 	OP_CONST_PRI,			//DONE
 	OP_CONST_ALT,			//DONE

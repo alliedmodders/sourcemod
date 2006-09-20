@@ -3,17 +3,24 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
+#include "..\jit_helpers.h"
 
 using namespace SourcePawn;
+
+#define JIT_INLINE_ERRORCHECKS		(1<<0)
+#define JIT_INLINE_NATIVES			(1<<1)
 
 class CompData : public ICompilation
 {
 public:
-	CompData() : plugin(NULL), debug(false), inline_level(2)
+	CompData() : plugin(NULL), debug(false), inline_level(3)
 	{
 	};
 public:
 	sp_plugin_t *plugin;
+	jitoffs_t jit_return;
+	jitoffs_t jit_verify_addr_eax;
+	jitoffs_t jit_verify_addr_edx;
 	int inline_level;
 	bool debug;
 };
@@ -44,5 +51,6 @@ public:
 #define AMX_INFO_HEAP		4
 #define AMX_INFO_RETVAL		8
 #define AMX_INFO_CONTEXT	12
+#define AMX_INFO_STACKTOP	16
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_

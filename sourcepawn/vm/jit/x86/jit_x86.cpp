@@ -1,7 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "jit_x86.h"
-#include "..\jit_helpers.h"
 #include "opcode_helpers.h"
 #include "x86_macros.h"
 
@@ -1001,6 +1000,13 @@ inline void WriteOp_Const_S(JitWriter *jit)
 	}
 }
 
+inline void WriteOp_Load_I(JitWriter *jit)
+{
+	//mov eax, [edi+eax]
+	Write_Check_VerifyAddr(jit, REG_EAX, false);
+	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+}
+
 
 /*************************************************
  *************************************************
@@ -1074,7 +1080,6 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	JitWriter writer;
 	JitWriter *jit = &writer;
 	cell_t *endptr = (cell_t *)(end_cip);
-	jitoffs_t jit_return;
 
 	/* Initial code is written "blank,"
 	 * so we can check the exact memory usage.
@@ -1085,16 +1090,17 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 
 	/* Get inlining level */
 	int inline_level = data->inline_level;
-	bool never_inline = false;
-
-	if (inline_level == 0)
-	{
-		never_inline = true;
-	}
 
 //:TODO: Jump back here once finished!
+
 	/* Start writing the actual code */
-	jit_return = Write_Execute_Function(jit, never_inline);
+	data->jit_return = Write_Execute_Function(jit);
+
+	/* Write error checking routines in case they are needed */
+	data->jit_verify_addr_eax = jit->jit_curpos();
+	Write_Check_VerifyAddr(jit, REG_EAX, true);
+	data->jit_verify_addr_edx = jit->jit_curpos();
+	Write_Check_VerifyAddr(jit, REG_EDX, true);
 
 	for (; writer.inptr <= endptr;)
 	{
@@ -1654,6 +1660,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_CONST_S:
 			{
 				WriteOp_Const_S(jit);
+				break;
+			}
+		case OP_LOAD_I:
+			{
+				WriteOp_Load_I(jit);
 				break;
 			}
 		default:

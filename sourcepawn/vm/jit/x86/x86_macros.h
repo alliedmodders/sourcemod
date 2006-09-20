@@ -97,6 +97,7 @@
 #define IA32_SHL_RM_CL			0xD3	// encoding is /4
 #define IA32_SAR_RM_IMM8		0xC1	// encoding is /7 <ib>
 #define IA32_CMP_RM_REG			0x39	// encoding is /r
+#define IA32_CMP_REG_RM			0x3B	// encoding is /r
 #define IA32_SETCC_RM8_1		0x0F	// opcode part 1
 #define IA32_SETCC_RM8_2		0x90	// encoding is +cc /0 (8bits)
 #define IA32_XCHG_EAX_REG		0x90	// encoding is +r
@@ -498,8 +499,16 @@ inline void IA32_Lea_Reg_DispRegMultImm8(JitWriter *jit,
 	jit->write_byte(val);
 }
 
+inline void IA32_Lea_DispRegReg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_uint8_t dispreg)
+{
+	jit->write_ubyte(IA32_LEA_REG_MEM);
+	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, dest, REG_SIB));
+	jit->write_ubyte(ia32_sib(NOSCALE, dispreg, src_base));
+}
+
 inline void IA32_Lea_DispRegImm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_int8_t val)
 {
+	/* :TODO: - why does this take in src_base? */
 	jit->write_ubyte(IA32_LEA_REG_MEM);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, MOD_MEM_REG));
 	jit->write_byte(val);
@@ -507,6 +516,7 @@ inline void IA32_Lea_DispRegImm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t s
 
 inline void IA32_Lea_DispRegImm32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_int32_t val)
 {
+	/* :TODO: - why does this take in src_base? */
 	jit->write_ubyte(IA32_LEA_REG_MEM);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest, MOD_MEM_REG));
 	jit->write_int32(val);
@@ -709,10 +719,29 @@ inline void IA32_Write_Jump8(JitWriter *jit, jitoffs_t jmp, jitoffs_t target)
 	jit->outptr = oldptr;
 }
 
+inline void IA32_Write_Jump32(JitWriter *jit, jitoffs_t jmp, jitoffs_t target)
+{
+	//save old ptr
+	jitcode_t oldptr = jit->outptr;
+	//get relative difference
+	jit_int32_t diff = (target - (jmp + 1));
+	//overwrite old value
+	jit->outptr = jit->outbase + jmp;
+	jit->write_int32(diff);
+	//restore old ptr
+	jit->outptr = oldptr;
+}
+
 inline void IA32_Send_Jump8_Here(JitWriter *jit, jitoffs_t jmp)
 {
 	jitoffs_t curptr = jit->jit_curpos();
 	IA32_Write_Jump8(jit, jmp, curptr);
+}
+
+inline void IA32_Send_Jump32_Here(JitWriter *jit, jitoffs_t jmp)
+{
+	jitoffs_t curptr = jit->jit_curpos();
+	IA32_Write_Jump32(jit, jmp, curptr);
 }
 
 inline void IA32_Return(JitWriter *jit)
@@ -730,6 +759,13 @@ inline void IA32_Cmp_Rm_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, j
 {
 	jit->write_ubyte(IA32_CMP_RM_REG);
 	jit->write_ubyte(ia32_modrm(mode, src, dest));
+}
+
+inline void IA32_Cmp_Reg_Rm_Disp8(JitWriter *jit, jit_uint8_t reg1, jit_uint8_t reg2, jit_int8_t disp8)
+{
+	jit->write_ubyte(IA32_CMP_REG_RM);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, reg1, reg2));
+	jit->write_byte(disp8);
 }
 
 inline void IA32_Cmp_Rm_Imm8(JitWriter *jit, jit_uint8_t mode, jit_uint8_t rm, jit_int8_t imm8)
