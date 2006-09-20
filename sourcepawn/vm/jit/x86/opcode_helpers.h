@@ -64,7 +64,7 @@ typedef enum
 	OP_ALIGN_PRI,			//DONE
 	OP_ALIGN_ALT,			//DONE
 	OP_LCTRL,				//DONE
-	OP_SCTRL,
+	OP_SCTRL,				//DONE
 	OP_MOVE_PRI,			//DONE
 	OP_MOVE_ALT,			//DONE
 	OP_XCHG,				//DONE

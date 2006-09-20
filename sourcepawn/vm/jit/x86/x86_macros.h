@@ -65,6 +65,7 @@
 #define IA32_SUB_RM_IMM32		0x81	// encoding is /5 <imm32>
 #define IA32_JMP_IMM32			0xE9	// encoding is imm32
 #define IA32_JMP_IMM8			0xEB	// encoding is imm8
+#define IA32_JMP_RM				0xFF	// encoding is /4
 #define IA32_CALL_IMM32			0xE8	// relative call, <imm32>
 #define IA32_CALL_RM			0xFF	// encoding is /2
 #define IA32_MOV_REG_IMM		0xB8	// encoding is +r <imm32>
@@ -732,6 +733,12 @@ inline jitoffs_t IA32_Jump_Cond_Imm32(JitWriter *jit, jit_uint8_t cond, jit_int3
 	ptr = jit->jit_curpos();
 	jit->write_int32(disp);
 	return ptr;
+}
+
+inline void IA32_Jump_Reg(JitWriter *jit, jit_uint8_t reg)
+{
+	jit->write_ubyte(IA32_JMP_RM);
+	jit->write_ubyte(ia32_modrm(MOD_REG, 4, reg));
 }
 
 inline jitoffs_t IA32_Call_Imm32(JitWriter *jit, jit_int32_t disp)

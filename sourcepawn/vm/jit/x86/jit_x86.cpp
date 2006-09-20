@@ -1164,6 +1164,41 @@ inline void WriteOp_Lctrl(JitWriter *jit)
 	}
 }
 
+inline void WriteOp_Sctrl(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+	switch (val)
+	{
+	case 2:
+		{
+			//mov [esi+hea], eax
+			IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_INFO_HEAP, AMX_REG_PRI);
+			break;
+		}
+	case 4:
+		{
+			//lea ebp, [edi+eax]
+			IA32_Lea_Reg_DispRegMult(jit, AMX_REG_STK, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+			break;
+		}
+	case 5:
+		{
+			//mov ebx, eax	- overwrite frm
+			//mov frm, eax	- overwrite stacked frame
+			//add ebx, edi	- relocate local frm
+			IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_PRI, MOD_REG);
+			IA32_Mov_Rm_Reg(jit, AMX_INFO_FRM, AMX_REG_PRI, MOD_MEM_REG);
+			IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
+			break;
+		}
+	case 6:
+		{
+			IA32_Jump_Reg(jit, AMX_REG_PRI);
+			break;
+		}
+	}
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1856,6 +1891,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_LCTRL:
 			{
 				WriteOp_Lctrl(jit);
+				break;
+			}
+		case OP_SCTRL:
+			{
+				WriteOp_Sctrl(jit);
 				break;
 			}
 		default:
