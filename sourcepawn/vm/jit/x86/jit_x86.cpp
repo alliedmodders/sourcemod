@@ -755,6 +755,15 @@ inline void WriteOp_Idxaddr(JitWriter *jit)
 	IA32_Lea_Reg_DispRegMult(jit, AMX_REG_PRI, AMX_REG_ALT, AMX_REG_PRI, SCALE4);
 }
 
+inline void WriteOp_Idxaddr_B(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+	//shl eax, <val>
+	//add eax, edx
+	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+}
+
 inline void WriteOp_Sref_Pri(JitWriter *jit)
 {
 	//mov ecx, [edi+<val>]
@@ -1003,10 +1012,86 @@ inline void WriteOp_Const_S(JitWriter *jit)
 inline void WriteOp_Load_I(JitWriter *jit)
 {
 	//mov eax, [edi+eax]
-	Write_Check_VerifyAddr(jit, REG_EAX, false);
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
 
+inline void WriteOp_Lodb_I(JitWriter *jit)
+{
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
+
+	//mov eax, [edi+eax]
+	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+
+	//and eax, <bitmask>
+	cell_t val = jit->read_cell();
+	switch(val)
+	{
+	case 1:
+		{
+			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x000000FF);
+			break;
+		}
+	case 2:
+		{
+			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x0000FFFF);
+			break;
+		}
+	}
+}
+
+inline void WriteOp_Stor_I(JitWriter *jit)
+{
+	//mov [edi+edx], eax
+	Write_Check_VerifyAddr(jit, AMX_REG_ALT, false);
+	IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+}
+
+inline void WriteOp_Strb_I(JitWriter *jit)
+{
+	Write_Check_VerifyAddr(jit, AMX_REG_ALT, false);
+	//mov [edi+edx], eax
+	cell_t val = jit->read_cell();
+	switch (val)
+	{
+	case 1:
+		{
+			IA32_Mov_Rm8_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+			break;
+		}
+	case 2:
+		{
+			IA32_Mov_Rm16_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+			break;
+		}
+	case 3:
+		{
+			IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+			break;
+		}
+	}
+}
+
+inline void WriteOp_Lidx(JitWriter *jit)
+{
+	//lea eax, [edx+4*eax]
+	//mov eax, [edi+eax]
+	IA32_Lea_Reg_DispRegMult(jit, AMX_REG_PRI, AMX_REG_ALT, AMX_REG_PRI, SCALE4);
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
+	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+}
+
+inline void WriteOp_Lidx_B(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+	//shl eax, <val>
+	//add eax, edx
+	//mov eax, [edi+eax]
+	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
+	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+}
 
 /*************************************************
  *************************************************
@@ -1665,6 +1750,36 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_LOAD_I:
 			{
 				WriteOp_Load_I(jit);
+				break;
+			}
+		case OP_LODB_I:
+			{
+				WriteOp_Lodb_I(jit);
+				break;
+			}
+		case OP_STOR_I:
+			{
+				WriteOp_Stor_I(jit);
+				break;
+			}
+		case OP_STRB_I:
+			{
+				WriteOp_Strb_I(jit);
+				break;
+			}
+		case OP_LIDX:
+			{
+				WriteOp_Lidx(jit);
+				break;
+			}
+		case OP_LIDX_B:
+			{
+				WriteOp_Lidx_B(jit);
+				break;
+			}
+		case OP_IDXADDR_B:
+			{
+				WriteOp_Idxaddr_B(jit);
 				break;
 			}
 		default:

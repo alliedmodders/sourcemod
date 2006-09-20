@@ -147,6 +147,11 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	 * The old JIT did not.
 	 */
 
+	if (!data->checks)
+	{
+		return;
+	}
+
 	bool call = false;
 	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
 	{

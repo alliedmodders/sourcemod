@@ -13,7 +13,8 @@ using namespace SourcePawn;
 class CompData : public ICompilation
 {
 public:
-	CompData() : plugin(NULL), debug(false), inline_level(3)
+	CompData() : plugin(NULL), 
+		debug(false), inline_level(3), checks(true)
 	{
 	};
 public:
@@ -22,6 +23,7 @@ public:
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
 	int inline_level;
+	bool checks;
 	bool debug;
 };
 

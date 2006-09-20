@@ -63,6 +63,14 @@ public:
 		}
 		outptr += sizeof(jit_int32_t);
 	}
+	inline void write_uint32(jit_uint32_t c)
+	{
+		if (outptr)
+		{
+			*(jit_uint32_t *)outptr = c;
+		}
+		outptr += sizeof(jit_uint32_t);
+	}
 	inline jitoffs_t jit_curpos()
 	{
 		return (outptr - outbase);

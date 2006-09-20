@@ -42,7 +42,7 @@ typedef enum
 	OP_LREF_S_PRI,			//DONE
 	OP_LREF_S_ALT,			//DONE
 	OP_LOAD_I,				//DONE
-	OP_LODB_I,
+	OP_LODB_I,				//DONE
 	OP_CONST_PRI,			//DONE
 	OP_CONST_ALT,			//DONE
 	OP_ADDR_PRI,			//DONE
@@ -55,12 +55,12 @@ typedef enum
 	OP_SREF_ALT,			//DONE
 	OP_SREF_S_PRI,			//DONE
 	OP_SREF_S_ALT,			//DONE
-	OP_STOR_I,
-	OP_STRB_I,
-	OP_LIDX,
-	OP_LIDX_B,
+	OP_STOR_I,				//DONE
+	OP_STRB_I,				//DONE
+	OP_LIDX,				//DONE
+	OP_LIDX_B,				//DONE
 	OP_IDXADDR,				//DONE
-	OP_IDXADDR_B,
+	OP_IDXADDR_B,			//DONE
 	OP_ALIGN_PRI,			//DONE
 	OP_ALIGN_ALT,			//DONE
 	OP_LCTRL,
