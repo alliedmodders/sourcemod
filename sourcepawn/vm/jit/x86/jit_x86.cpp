@@ -18,7 +18,6 @@ inline void WriteOp_Move_Alt(JitWriter *jit)
 
 inline void WriteOp_Xchg(JitWriter *jit)
 {
-	/* :TODO: change this? XCHG is bad */
 	//xchg eax, edx
 	IA32_Xchg_Eax_Reg(jit, AMX_REG_ALT);
 }
@@ -757,10 +756,10 @@ inline void WriteOp_Idxaddr(JitWriter *jit)
 
 inline void WriteOp_Idxaddr_B(JitWriter *jit)
 {
-	cell_t val = jit->read_cell();
 	//shl eax, <val>
 	//add eax, edx
-	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	cell_t val = jit->read_cell();
+	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, (jit_uint8_t)val, MOD_REG);
 	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
 }
 
@@ -850,14 +849,26 @@ inline void WriteOp_Pop_Alt(JitWriter *jit)
 
 inline void WriteOp_Swap_Pri(JitWriter *jit)
 {
-	//xchg [ebp], eax // :TODO: change this xchg for another thing (SLOW!! :O )
-	IA32_Xchg_Rm_Reg(jit, AMX_REG_STK, AMX_REG_PRI, MOD_MEM_REG);
+	//add [ebp], eax
+	//sub eax, [ebp]
+	//add [ebp], eax
+	//neg eax
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_PRI, MOD_MEM_REG);
+	IA32_Sub_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_STK, MOD_MEM_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_PRI, MOD_MEM_REG);
+	IA32_Neg_Rm(jit, AMX_REG_PRI, MOD_REG);
 }
 
 inline void WriteOp_Swap_Alt(JitWriter *jit)
 {
-	//xchg [ebp], edx // :TODO: change this xchg for another thing
-	IA32_Xchg_Rm_Reg(jit, AMX_REG_STK, AMX_REG_ALT, MOD_MEM_REG);
+	//add [ebp], edx
+	//sub edx, [ebp]
+	//add [ebp], edx
+	//neg edx
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_ALT, MOD_MEM_REG);
+	IA32_Sub_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_STK, MOD_MEM_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_ALT, MOD_MEM_REG);
+	IA32_Neg_Rm(jit, AMX_REG_ALT, MOD_REG);
 }
 
 inline void WriteOp_PushAddr(JitWriter *jit)
@@ -1087,7 +1098,7 @@ inline void WriteOp_Lidx_B(JitWriter *jit)
 	//shl eax, <val>
 	//add eax, edx
 	//mov eax, [edi+eax]
-	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, (jit_uint8_t)val, MOD_REG);
 	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
 	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);

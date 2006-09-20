@@ -60,6 +60,7 @@
 #define IA32_ADD_RM_IMM8		0x83	// encoding is /0
 #define IA32_ADD_EAX_IMM32		0x05	// no extra encoding
 #define IA32_SUB_RM_REG			0x29	// encoding is /r
+#define IA32_SUB_REG_RM			0x2B	// encoding is /r
 #define IA32_SUB_RM_IMM8		0x83	// encoding is /5 <imm8>
 #define IA32_SUB_RM_IMM32		0x81	// encoding is /5 <imm32>
 #define IA32_JMP_IMM32			0xE9	// encoding is imm32
@@ -106,7 +107,6 @@
 #define IA32_SETCC_RM8_1		0x0F	// opcode part 1
 #define IA32_SETCC_RM8_2		0x90	// encoding is +cc /0 (8bits)
 #define IA32_XCHG_EAX_REG		0x90	// encoding is +r
-#define IA32_XCHG_RM_REG		0x87	// encoding is /r
 #define IA32_LEA_REG_MEM		0x8D	// encoding is /r
 #define IA32_POP_REG			0x58	// encoding is +r
 #define IA32_PUSH_REG			0x50	// encoding is +r
@@ -305,12 +305,6 @@ inline void IA32_Xchg_Eax_Reg(JitWriter *jit, jit_uint8_t reg)
 	jit->write_ubyte(IA32_XCHG_EAX_REG+reg);
 }
 
-inline void IA32_Xchg_Rm_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
-{
-	jit->write_ubyte(IA32_XCHG_RM_REG);
-	jit->write_ubyte(ia32_modrm(mode, src, dest));
-}
-
 /**********************
  * ARITHMETIC (BASIC) *
  **********************/
@@ -345,6 +339,12 @@ inline void IA32_Sub_Rm_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, j
 {
 	jit->write_ubyte(IA32_SUB_RM_REG);
 	jit->write_ubyte(ia32_modrm(mode, src, dest));
+}
+
+inline void IA32_Sub_Reg_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
+{
+	jit->write_ubyte(IA32_SUB_REG_RM);
+	jit->write_ubyte(ia32_modrm(mode, dest, src));
 }
 
 inline void IA32_Sub_Rm_Imm8(JitWriter *jit, jit_uint8_t reg, jit_int8_t val, jit_uint8_t mode)
