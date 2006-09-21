@@ -175,10 +175,20 @@ typedef struct sp_debug_symbol_s
 	sp_fdbg_symbol_t	*sym;	/* pointer to original symbol */
 } sp_debug_symbol_t;
 
+namespace SourcePawn
+{
+	class IPluginContext;
+	class IVirtualMachine;
+};
+
 /**
  * Breaks into a debugger
+ * Params:
+ *  [0] - plugin context
+ *  [1] - frm
+ *  [2] - cip
  */
-typedef int (*SPVM_DEBUGBREAK)(struct sp_context_s *);
+typedef int (*SPVM_DEBUGBREAK)(SourcePawn::IPluginContext *, uint32_t, uint32_t);
 
 #define SPFLAG_PLUGIN_DEBUG		(1<<0)		/* plugin is in debug mode */
 
@@ -193,8 +203,8 @@ typedef struct sp_context_s
 	/* general/parent information */
 	void			*base;		/* base of generated code and memory */
 	sp_plugin_t		*plugin;	/* pointer back to parent information */
-	void			*context;	/* pointer to IPluginContext */
-	void			*vmbase;	/* pointer to IVirtualMachine */
+	SourcePawn::IPluginContext *context;	/* pointer to IPluginContext */
+	SourcePawn::IVirtualMachine *vmbase;	/* pointer to IVirtualMachine */
 	void			*user[4];	/* user specific pointers */
 	void			*vm[4];		/* VM specific pointers */
 	uint32_t		flags;		/* compilation flags */

@@ -1382,6 +1382,23 @@ inline void WriteOp_Halt(JitWriter *jit)
 	IA32_Write_Jump32(jit, reloc, data->jit_return);
 }
 
+inline void WriteOp_Break(JitWriter *jit)
+{
+	CompData *data = (CompData *)jit->data;
+	if (data->debug)
+	{
+		//mov ecx, <cip>
+		jitoffs_t wr = IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, 0);
+		jitoffs_t save = jit->jit_curpos();
+		jit->setpos(wr);
+		jit->write_uint32((uint32_t)(jit->outbase + wr));
+		jit->setpos(save);
+		
+		wr = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32(jit, wr, data->jit_break);
+	}
+}
+
 
 /*************************************************
  *************************************************
@@ -1476,21 +1493,24 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	data->jit_return = Write_Execute_Function(jit);
 
 	/* Write error checking routines in case they are needed */
-	jitpos = jit->jit_curpos();
-	Write_Check_VerifyAddr(jit, REG_EAX, true);
-	data->jit_verify_addr_eax = jitpos;
+	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
+	{
+		jitpos = jit->jit_curpos();
+		Write_Check_VerifyAddr(jit, REG_EAX, true);
+		data->jit_verify_addr_eax = jitpos;
+	
+		jitpos = jit->jit_curpos();
+		Write_Check_VerifyAddr(jit, REG_EDX, true);
+		data->jit_verify_addr_edx = jitpos;
 
-	jitpos = jit->jit_curpos();
-	Write_Check_VerifyAddr(jit, REG_EDX, true);
-	data->jit_verify_addr_edx = jitpos;
+		jitpos = jit->jit_curpos();
+		Write_CheckMargin_Heap(jit);
+		data->jit_chkmargin_heap = jitpos;
 
-	jitpos = jit->jit_curpos();
-	Write_CheckMargin_Heap(jit);
-	data->jit_chkmargin_heap = jitpos;
-
-	jitpos = jit->jit_curpos();
-	Write_BoundsCheck(jit);
-	data->jit_bounds = jitpos;
+		jitpos = jit->jit_curpos();
+		Write_BoundsCheck(jit);
+		data->jit_bounds = jitpos;
+	}
 
 	/* Begin opcode browsing */
 	for (; writer.inptr <= endptr;)
@@ -2151,6 +2171,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_HALT:
 			{
 				WriteOp_Halt(jit);
+				break;
+			}
+		case OP_BREAK:
+			{
+				WriteOp_Break(jit);
 				break;
 			}
 		default:

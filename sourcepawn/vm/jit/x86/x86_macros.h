@@ -114,11 +114,14 @@
 #define IA32_LEA_REG_MEM		0x8D	// encoding is /r
 #define IA32_POP_REG			0x58	// encoding is +r
 #define IA32_PUSH_REG			0x50	// encoding is +r
+#define IA32_PUSH_RM			0xFF	// encoding is /6
 #define IA32_REP				0xF3	// no extra encoding
 #define IA32_MOVSD				0xA5	// no extra encoding
 #define IA32_MOVSB				0xA4	// no extra encoding
 #define IA32_STOSD				0xAB	// no extra encoding
 #define IA32_CLD				0xFC	// no extra encoding
+#define IA32_PUSHAD				0x60	// no extra encoding
+#define IA32_POPAD				0x61	// no extra encoding
 
 inline jit_uint8_t ia32_modrm(jit_uint8_t mode, jit_uint8_t reg, jit_uint8_t rm)
 {
@@ -568,6 +571,23 @@ inline void IA32_Push_Reg(JitWriter *jit, jit_uint8_t reg)
 	jit->write_ubyte(IA32_PUSH_REG+reg);
 }
 
+inline void IA32_Pushad(JitWriter *jit)
+{
+	jit->write_ubyte(IA32_PUSHAD);
+}
+
+inline void IA32_Popad(JitWriter *jit)
+{
+	jit->write_ubyte(IA32_POPAD);
+}
+
+inline void IA32_Push_Rm_Disp8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t disp8)
+{
+	jit->write_ubyte(IA32_PUSH_RM);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, 6, reg));
+	jit->write_ubyte(disp8);
+}
+
 /**
  * Moving from REGISTER/MEMORY to REGISTER
  */
@@ -771,7 +791,7 @@ inline jitoffs_t IA32_Call_Imm32(JitWriter *jit, jit_int32_t disp)
 	return ptr;
 }
 
-inline void IA32_Call_Rm(JitWriter *jit, jit_uint8_t reg)
+inline void IA32_Call_Reg(JitWriter *jit, jit_uint8_t reg)
 {
 	jit->write_ubyte(IA32_CALL_RM);
 	jit->write_ubyte(ia32_modrm(MOD_REG, 2, reg));
@@ -850,6 +870,14 @@ inline void IA32_Cmp_Rm_Imm32(JitWriter *jit, jit_uint8_t mode, jit_uint8_t rm, 
 {
 	jit->write_ubyte(IA32_CMP_RM_IMM32);
 	jit->write_ubyte(ia32_modrm(mode, 7, rm));
+	jit->write_int32(imm32);
+}
+
+inline void IA32_Cmp_Rm_Imm32_Disp8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t disp8, jit_int32_t imm32)
+{
+	jit->write_ubyte(IA32_CMP_RM_IMM32);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, 7, reg));
+	jit->write_ubyte(disp8);
 	jit->write_int32(imm32);
 }
 

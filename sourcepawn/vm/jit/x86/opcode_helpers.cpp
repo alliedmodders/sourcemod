@@ -85,7 +85,7 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 
 	/* by now, everything is set up, so we can call into the plugin */
 	//call ecx
-	IA32_Call_Rm(jit, REG_ECX);
+	IA32_Call_Reg(jit, REG_ECX);
 
 	/* if the code flow gets to here, there was a normal return */
 	//mov ebp, [esi+8]		- get retval pointer
@@ -131,6 +131,39 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 	IA32_Return(jit);
 
 	return offs_return;
+}
+
+void Write_BreakDebug(JitWriter *jit)
+{
+	//push ecx
+	//mov ecx, [esi+ctx]
+	//cmp [ecx+dbreak], 0
+	//jnz :nocall
+	IA32_Push_Reg(jit, AMX_REG_TMP);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, dbreak), 0);
+	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
+
+	//pushad
+	IA32_Pushad(jit);
+
+	//push [esi+frm]
+	//push [ecx+context]
+	//mov ecx, [ecx+dbreak]
+	//call ecx
+	//add esp, 8
+	//popad
+	IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_FRAME);
+	IA32_Push_Rm_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, context));
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_TMP, offsetof(sp_context_t, dbreak));
+	IA32_Call_Reg(jit, AMX_REG_TMP);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*2, MOD_REG);
+	IA32_Popad(jit);
+
+	//:nocall
+	IA32_Send_Jump8_Here(jit, jmp);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*1, MOD_REG);
+	IA32_Return(jit);
 }
 
 void Write_Error(JitWriter *jit, int error)

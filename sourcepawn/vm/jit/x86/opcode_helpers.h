@@ -43,6 +43,11 @@ void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg);
  */
 void Write_BoundsCheck(JitWriter *jit);
 
+/**
+ * Writes the break debug function.
+ */
+void Write_BreakDebug(JitWriter *jit);
+
 /** 
  * These are for writing the PushN opcodes.
  */
@@ -190,7 +195,7 @@ typedef enum
 	OP_NOP,					//DONE
 	OP_SYSREQ_N,
 	OP_SYMTAG,				//DEPRECATED
-	OP_BREAK,
+	OP_BREAK,				//DONE
 	OP_PUSH2_C,				//DONE
 	OP_PUSH2,				//DONE
 	OP_PUSH2_S,				//DONE

@@ -25,6 +25,7 @@ public:
 	jitoffs_t jit_verify_addr_edx;
 	jitoffs_t jit_chkmargin_heap;
 	jitoffs_t jit_bounds;
+	jitoffs_t jit_break;
 	int inline_level;
 	bool checks;
 	bool debug;
@@ -53,6 +54,7 @@ public:
 #define AMX_REG_FRM		REG_EBX
 
 #define AMX_INFO_FRM		AMX_REG_INFO	//not relocated
+#define AMX_INFO_FRAME		0				//(same thing as above) 
 #define AMX_INFO_HEAP		4				//not relocated
 #define AMX_INFO_RETVAL		8				//physical
 #define AMX_INFO_CONTEXT	12				//physical
