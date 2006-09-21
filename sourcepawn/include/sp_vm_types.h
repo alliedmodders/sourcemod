@@ -21,6 +21,10 @@ typedef int32_t		cell_t;
 #define SP_ERR_STACKERR				9	/* Stack/Heap collision */
 #define SP_ERR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
 #define SP_ERR_INVALID_INSTRUCTION	11	/* Invalid instruction was encountered */
+#define SP_ERR_MEMACCESS			12	/* Invalid memory access */
+#define SP_ERR_STACKMIN				13	/* Stack went beyond its minimum value */
+#define SP_ERR_HEAPMIN				14  /* Heap went beyond its minimum value */
+#define SP_ERR_DIVIDE_BY_ZERO		15	/* Division by zero */
 
 /**********************************************
  *** The following structures are reference structures.
@@ -203,6 +207,7 @@ typedef struct sp_context_s
 	cell_t			alt;		/* ALT register */
 	cell_t			hp;			/* heap pointer */
 	cell_t			sp;			/* stack pointer */
+	cell_t			frm;		/* frame pointer */
 	int32_t			err;		/* error code */
 	uint32_t		pushcount;	/* push count */
 	/* context rebased database */

@@ -1286,6 +1286,42 @@ inline void WriteOp_UDiv_Alt(JitWriter *jit)
 	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
 }
 
+inline void WriteOp_Ret(JitWriter *jit)
+{
+	//mov ebx, [ebp]		- get old FRM
+	//add ebp, 4			- pop stack
+	//mov [esi+frm], ebx	- restore
+	//add ebx, edi			- relocate
+	//ret
+	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_MEM_REG);
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);
+	IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
+	IA32_Return(jit);
+}
+
+inline void WriteOp_Retn(JitWriter *jit)
+{
+	//mov ebx, [ebp]		- get old frm
+	//mov ecx, [ebp+4]		- get return eip
+	//add ebp, 8			- pop stack
+	//mov [esi+frm], ebx	- restore frame pointer
+	//add ebx, edi			- relocate
+	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_MEM_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_STK, 4);
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);
+	IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
+	
+	//add ebp, [ebp]		- reduce by this # of params
+	//add ebp, 4			- pop one extra for the # itself
+	IA32_Add_Reg_Rm(jit, AMX_REG_STK, AMX_REG_STK, MOD_MEM_REG);
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+
+	//jmp ecx				- jump to return eip
+	IA32_Jump_Reg(jit, AMX_REG_TMP);
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -2025,6 +2061,16 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_UDIV_ALT:
 			{
 				WriteOp_UDiv_Alt(jit);
+				break;
+			}
+		case OP_RET:
+			{
+				WriteOp_Ret(jit);
+				break;
+			}
+		case OP_RETN:
+			{
+				WriteOp_Retn(jit);
 				break;
 			}
 		default:

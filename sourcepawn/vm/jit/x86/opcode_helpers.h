@@ -95,8 +95,8 @@ typedef enum
 	OP_STACK,				//DONE
 	OP_HEAP,				//DONE
 	OP_PROC,				//DONE
-	OP_RET,
-	OP_RETN,
+	OP_RET,					//DONE
+	OP_RETN,				//DONE
 	OP_CALL,
 	OP_CALL_PRI,
 	OP_JUMP,
