@@ -25,6 +25,7 @@ typedef int32_t		cell_t;
 #define SP_ERR_STACKMIN				13	/* Stack went beyond its minimum value */
 #define SP_ERR_HEAPMIN				14  /* Heap went beyond its minimum value */
 #define SP_ERR_DIVIDE_BY_ZERO		15	/* Division by zero */
+#define SP_ERR_ARRAY_BOUNDS			16	/* Array index is out of bounds */
 
 /**********************************************
  *** The following structures are reference structures.

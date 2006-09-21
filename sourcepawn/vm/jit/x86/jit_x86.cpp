@@ -930,6 +930,37 @@ inline void WriteOp_Movs(JitWriter *jit)
 	IA32_Pop_Reg(jit, REG_ESI);
 }
 
+inline void WriteOp_Cmps(JitWriter *jit)
+{
+	//push edi
+	//push esi
+	//lea esi, [edi+edx]
+	//lea edi, [edi+eax]
+	IA32_Push_Reg(jit, REG_EDI);
+	IA32_Push_Reg(jit, REG_ESI);
+	IA32_Lea_Reg_DispRegMult(jit, REG_ESI, AMX_REG_DAT, AMX_REG_ALT, NOSCALE);
+	IA32_Lea_Reg_DispRegMult(jit, REG_EDI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+
+	//xor eax, eax
+	//repe cmpsb
+	//je :cmps1
+	IA32_Xor_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
+	IA32_Cmpsb(jit);
+	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_E, 0);
+	
+	//sbb eax, eax
+	//sbb eax, -1
+	IA32_Sbb_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
+	IA32_Sbb_Eax_Imm32(jit, -1);
+	
+	//:cmps1
+	//pop esi
+	//pop edi
+	IA32_Send_Jump8_Here(jit, jmp);
+	IA32_Pop_Reg(jit, REG_ESI);
+	IA32_Pop_Reg(jit, REG_EDI);
+}
+
 inline void WriteOp_Fill(JitWriter *jit)
 {
 	//add edi, edx
@@ -1322,6 +1353,36 @@ inline void WriteOp_Retn(JitWriter *jit)
 	IA32_Jump_Reg(jit, AMX_REG_TMP);
 }
 
+inline void WriteOp_Bounds(JitWriter *jit)
+{
+	Write_BoundsCheck(jit);
+}
+
+inline void WriteOp_Halt(JitWriter *jit)
+{
+	//mov ecx, [esi+ret]
+	//mov [ecx], eax
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_RETVAL);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_MEM_REG);
+	
+	/* :TODO: 
+	 * We don't support sleeping or halting with weird values.
+	 * So we're omitting the mov eax <val> that was here.
+	 */
+	jit->read_cell();
+
+	CompData *data = (CompData *)jit->data;
+	jitoffs_t reloc;
+	if (data->inline_level & JIT_INLINE_ERRORCHECKS)
+	{
+		reloc = IA32_Jump_Imm32(jit, 0);
+	} else {
+		reloc = IA32_Call_Imm32(jit, 0);
+	}
+	IA32_Write_Jump32(jit, reloc, data->jit_return);
+}
+
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1409,6 +1470,7 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	data->jit_chkmargin_heap = 0;
 	data->jit_verify_addr_eax = 0;
 	data->jit_verify_addr_edx = 0;
+	data->jit_bounds = 0;
 
 	/* Start writing the actual code */
 	data->jit_return = Write_Execute_Function(jit);
@@ -1426,8 +1488,11 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 	Write_CheckMargin_Heap(jit);
 	data->jit_chkmargin_heap = jitpos;
 
-	/* Begin opcode browsing */
+	jitpos = jit->jit_curpos();
+	Write_BoundsCheck(jit);
+	data->jit_bounds = jitpos;
 
+	/* Begin opcode browsing */
 	for (; writer.inptr <= endptr;)
 	{
 		op = (OPCODE)writer.read_cell();
@@ -2071,6 +2136,21 @@ IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
 		case OP_RETN:
 			{
 				WriteOp_Retn(jit);
+				break;
+			}
+		case OP_CMPS:
+			{
+				WriteOp_Cmps(jit);
+				break;
+			}
+		case OP_BOUNDS:
+			{
+				WriteOp_Bounds(jit);
+				break;
+			}
+		case OP_HALT:
+			{
+				WriteOp_Halt(jit);
 				break;
 			}
 		default:

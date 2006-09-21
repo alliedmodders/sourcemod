@@ -159,7 +159,7 @@ void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg)
 		//sub esp, 4    - correct stack for returning to non-inlined JIT
 		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
 	}
-	Write_Error(jit, SP_ERR_DIVZERO);
+	Write_Error(jit, SP_ERR_DIVIDE_BY_ZERO);
 	//continue:
 	IA32_Send_Jump8_Here(jit, jmp);
 
@@ -227,13 +227,66 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	}
 }
 
+void Write_BoundsCheck(JitWriter *jit)
+{
+	CompData *data = (CompData *)jit->data;
+	bool always_inline = ((data->inline_level & JIT_INLINE_ERRORCHECKS) == JIT_INLINE_ERRORCHECKS);
+
+	/* :TODO: break out on high -O level? */
+
+	if (!always_inline)
+	{
+		if (data->jit_bounds)
+		{
+			/* just generate the call */
+			//mov ecx, <val>
+			//call <offs>
+			IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, jit->read_cell());
+			jitoffs_t call = IA32_Call_Imm32(jit, 0);
+			IA32_Write_Jump32(jit, call, data->jit_bounds);
+		} else {
+			//cmp eax, 0
+			//jl :err_bounds
+			//cmp eax, ecx
+			//jg :err_bounds
+			//ret
+			IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);
+			jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
+			//:TODO: make sure this is right order
+			IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_TMP, MOD_REG);
+			jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
+			IA32_Return(jit);
+			IA32_Send_Jump8_Here(jit, jmp1);
+			IA32_Send_Jump8_Here(jit, jmp2);
+			Write_Error(jit, SP_ERR_ARRAY_BOUNDS);
+		}
+	} else {
+		//cmp eax, 0
+		//jl :err_bounds
+		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);
+		jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
+		//cmp eax, <val>
+		//jg :err_bounds
+		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, jit->read_cell());
+		jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
+		//jmp :continue
+		jitoffs_t cont = IA32_Jump_Imm8(jit, 0);
+		//:err_bounds
+		IA32_Send_Jump8_Here(jit, jmp1);
+		IA32_Send_Jump8_Here(jit, jmp2);
+		Write_Error(jit, SP_ERR_ARRAY_BOUNDS);
+		//:continue
+		IA32_Send_Jump8_Here(jit, cont);
+	}
+}
+
 void Write_CheckMargin_Heap(JitWriter *jit)
 {
 	CompData *data = (CompData *)jit->data;
 
 	bool always_inline = ((data->inline_level & JIT_INLINE_ERRORCHECKS) == JIT_INLINE_ERRORCHECKS);
 
-	if (always_inline && data->jit_chkmargin_heap)
+	if (!always_inline && data->jit_chkmargin_heap)
 	{
 		/* just generate the call */
 		jitoffs_t call = IA32_Call_Imm32(jit, 0);

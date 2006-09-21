@@ -63,6 +63,8 @@
 #define IA32_SUB_REG_RM			0x2B	// encoding is /r
 #define IA32_SUB_RM_IMM8		0x83	// encoding is /5 <imm8>
 #define IA32_SUB_RM_IMM32		0x81	// encoding is /5 <imm32>
+#define IA32_SBB_RM_REG			0x19	// encoding is /r
+#define IA32_SBB_EAX_IMM32		0x1D	// encoding is <imm32>
 #define IA32_JMP_IMM32			0xE9	// encoding is imm32
 #define IA32_JMP_IMM8			0xEB	// encoding is imm8
 #define IA32_JMP_RM				0xFF	// encoding is /4
@@ -76,6 +78,7 @@
 #define IA32_CMP_RM_IMM32		0x81	// encoding is /7 <imm32>
 #define IA32_CMP_RM_IMM8		0x83	// encoding is /7 <imm8>
 #define IA32_CMP_EAX_IMM32		0x3D	// no extra encoding
+#define IA32_CMPSB				0xA6	// no extra encoding
 #define IA32_TEST_RM_REG		0x85	// encoding is /r
 #define IA32_JCC_IMM			0x70	// encoding is +cc <imm8>
 #define IA32_JCC_IMM32_1		0x0F	// opcode part 1
@@ -342,6 +345,12 @@ inline void IA32_Sub_Rm_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, j
 	jit->write_ubyte(ia32_modrm(mode, src, dest));
 }
 
+inline void IA32_Sbb_Rm_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
+{
+	jit->write_ubyte(IA32_SBB_RM_REG);
+	jit->write_ubyte(ia32_modrm(mode, src, dest));
+}
+
 inline void IA32_Sub_Reg_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
 {
 	jit->write_ubyte(IA32_SUB_REG_RM);
@@ -360,6 +369,12 @@ inline void IA32_Sub_Rm_Imm32(JitWriter *jit, jit_uint8_t reg, jit_int32_t val, 
 	jit->write_ubyte(IA32_SUB_RM_IMM32);
 	jit->write_ubyte(ia32_modrm(mode, 5, reg));
 	jit->write_int32(val);
+}
+
+inline void IA32_Sbb_Eax_Imm32(JitWriter *jit, jit_int32_t value)
+{
+	jit->write_ubyte(IA32_SBB_EAX_IMM32);
+	jit->write_int32(value);
 }
 
 inline void IA32_Div_Rm(JitWriter *jit, jit_uint8_t reg, jit_uint8_t mode)
@@ -857,6 +872,11 @@ inline void IA32_SetCC_Rm8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t cond)
 	jit->write_ubyte(IA32_SETCC_RM8_1);
 	jit->write_ubyte(IA32_SETCC_RM8_2+cond);
 	jit->write_ubyte(ia32_modrm(MOD_REG, 0, reg));
+}
+
+inline void IA32_Cmpsb(JitWriter *jit)
+{
+	jit->write_ubyte(IA32_CMPSB);
 }
 
 inline void IA32_Rep(JitWriter *jit)

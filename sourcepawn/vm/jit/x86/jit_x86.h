@@ -24,6 +24,7 @@ public:
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
 	jitoffs_t jit_chkmargin_heap;
+	jitoffs_t jit_bounds;
 	int inline_level;
 	bool checks;
 	bool debug;

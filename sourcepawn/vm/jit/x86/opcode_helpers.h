@@ -32,11 +32,16 @@ void Write_CheckMargin_Stack(JitWriter *jit);
  * Verifies heap margins.
  */
 void Write_CheckMargin_Heap(JitWriter *jit);
+
 /**
-* Checks for division by zero.
-*/
+ * Checks for division by zero.
+ */
 void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg);
 
+/**
+ * Writes a bounds check.
+ */
+void Write_BoundsCheck(JitWriter *jit);
 
 /** 
  * These are for writing the PushN opcodes.
@@ -166,10 +171,10 @@ typedef enum
 	OP_DEC_S,				//DONE
 	OP_DEC_I,				//DONE
 	OP_MOVS,				//DONE
-	OP_CMPS,
+	OP_CMPS,				//DONE
 	OP_FILL,				//DONE
-	OP_HALT,
-	OP_BOUNDS,
+	OP_HALT,				//DONE
+	OP_BOUNDS,				//DONE
 	OP_SYSREQ_PRI,
 	OP_SYSREQ_C,
 	OP_FILE,				//DEPRECATED
