@@ -543,17 +543,15 @@ inline void IA32_Lea_Reg_DispRegMultImm8(JitWriter *jit,
 
 inline void IA32_Lea_DispRegImm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_int8_t val)
 {
-	/* :TODO: - why does this take in src_base? */
 	jit->write_ubyte(IA32_LEA_REG_MEM);
-	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, MOD_MEM_REG));
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, src_base));
 	jit->write_byte(val);
 }
 
 inline void IA32_Lea_DispRegImm32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_int32_t val)
 {
-	/* :TODO: - why does this take in src_base? */
 	jit->write_ubyte(IA32_LEA_REG_MEM);
-	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest, MOD_MEM_REG));
+	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest, src_base));
 	jit->write_int32(val);
 }
 
@@ -585,7 +583,7 @@ inline void IA32_Push_Rm_Disp8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t disp
 {
 	jit->write_ubyte(IA32_PUSH_RM);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, 6, reg));
-	jit->write_ubyte(disp8);
+	jit->write_ubyte(disp8); // :TODO: is it ubyte or byte??
 }
 
 /**
