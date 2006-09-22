@@ -579,11 +579,11 @@ inline void IA32_Popad(JitWriter *jit)
 	jit->write_ubyte(IA32_POPAD);
 }
 
-inline void IA32_Push_Rm_Disp8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t disp8)
+inline void IA32_Push_Rm_Disp8(JitWriter *jit, jit_uint8_t reg, jit_int8_t disp8)
 {
 	jit->write_ubyte(IA32_PUSH_RM);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, 6, reg));
-	jit->write_ubyte(disp8); // :TODO: is it ubyte or byte??
+	jit->write_byte(disp8);
 }
 
 /**
@@ -871,11 +871,11 @@ inline void IA32_Cmp_Rm_Imm32(JitWriter *jit, jit_uint8_t mode, jit_uint8_t rm, 
 	jit->write_int32(imm32);
 }
 
-inline void IA32_Cmp_Rm_Imm32_Disp8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t disp8, jit_int32_t imm32)
+inline void IA32_Cmp_Rm_Imm32_Disp8(JitWriter *jit, jit_uint8_t reg, jit_int8_t disp8, jit_int32_t imm32)
 {
 	jit->write_ubyte(IA32_CMP_RM_IMM32);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, 7, reg));
-	jit->write_ubyte(disp8);
+	jit->write_byte(disp8);
 	jit->write_int32(imm32);
 }
 

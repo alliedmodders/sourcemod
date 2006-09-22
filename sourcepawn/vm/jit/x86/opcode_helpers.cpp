@@ -283,7 +283,7 @@ void Write_BoundsCheck(JitWriter *jit)
 			//cmp eax, ecx
 			//jg :err_bounds
 			//ret
-			IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);
+			IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);//:TODO: use imm8
 			jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
 			//:TODO: make sure this is right order
 			IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_TMP, MOD_REG);
@@ -296,11 +296,11 @@ void Write_BoundsCheck(JitWriter *jit)
 	} else {
 		//cmp eax, 0
 		//jl :err_bounds
-		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);
+		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);//:TODO: use imm8
 		jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
 		//cmp eax, <val>
 		//jg :err_bounds
-		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, jit->read_cell());
+		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, jit->read_cell());//:TODO:check val size and use cmp eax or imm8
 		jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
 		//jmp :continue
 		jitoffs_t cont = IA32_Jump_Imm8(jit, 0);

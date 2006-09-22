@@ -951,7 +951,7 @@ inline void WriteOp_Cmps(JitWriter *jit)
 	//sbb eax, eax
 	//sbb eax, -1
 	IA32_Sbb_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
-	IA32_Sbb_Eax_Imm32(jit, -1);
+	IA32_Sbb_Eax_Imm32(jit, -1);//:TODO: use imm8 here
 	
 	//:cmps1
 	//pop esi
@@ -1077,12 +1077,12 @@ inline void WriteOp_Lodb_I(JitWriter *jit)
 	{
 	case 1:
 		{
-			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x000000FF);
+			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x000000FF);//:TODO: replace with AND EAX, imm32
 			break;
 		}
 	case 2:
 		{
-			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x0000FFFF);
+			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x0000FFFF);//:TODO: replace with AND EAX, imm32
 			break;
 		}
 	}
@@ -1112,7 +1112,7 @@ inline void WriteOp_Strb_I(JitWriter *jit)
 			IA32_Mov_Rm16_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
 			break;
 		}
-	case 3:
+	case 4:
 		{
 			IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
 			break;
@@ -1222,7 +1222,7 @@ inline void WriteOp_Sctrl(JitWriter *jit)
 		{
 			//mov ebx, eax	- overwrite frm
 			//mov frm, eax	- overwrite stacked frame
-			//add ebx, edi	- relocate local frm
+			//add ebx, edi	- relocate local frm //:TODO: use LEA here!!!
 			IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_PRI, MOD_REG);
 			IA32_Mov_Rm_Reg(jit, AMX_INFO_FRM, AMX_REG_PRI, MOD_MEM_REG);
 			IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
@@ -1325,7 +1325,7 @@ inline void WriteOp_Ret(JitWriter *jit)
 	//ret
 	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_MEM_REG);
 	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);//:TODO: this is wrong!
 	IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
 	IA32_Return(jit);
 }
@@ -1340,7 +1340,7 @@ inline void WriteOp_Retn(JitWriter *jit)
 	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_MEM_REG);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_STK, 4);
 	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
-	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);//:TODO: this is wrong!
 	IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
 	
 	//add ebp, [ebp]		- reduce by this # of params
