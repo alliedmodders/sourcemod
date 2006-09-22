@@ -247,8 +247,8 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
 	IA32_Cmp_Reg_Rm_Disp8(jit, reg, AMX_REG_INFO, AMX_INFO_HEAP);
 	jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_B, 0);
-	IA32_Lea_Reg_DispRegMult(jit, REG_ECX, reg, REG_EDI, NOSCALE);
-	IA32_Cmp_Rm_Reg(jit, REG_ECX, AMX_REG_STK, MOD_REG);
+	IA32_Lea_Reg_DispRegMult(jit, AMX_REG_TMP, reg, AMX_REG_DAT, NOSCALE);
+	IA32_Cmp_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
 	jitoffs_t jmp3 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
 	IA32_Send_Jump8_Here(jit, jmp1);
 	Write_Error(jit, SP_ERR_MEMACCESS);
@@ -328,15 +328,15 @@ void Write_CheckMargin_Heap(JitWriter *jit)
 		//mov ecx, [esi+hea]
 		//cmp ecx, [esi+hlw]
 		//jl :error_heapmin
-		IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_HEAP);
-		IA32_Cmp_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_HEAPLOW);
+		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+		IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAPLOW);
 		jitoffs_t hm = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
 		//lea ecx, [edi+ecx+STACK_MARGIN]
 		//cmp ecx, ebp
 		// jg :error_heaplow
 		//OR
 		// ret
-		IA32_Lea_Reg_DispRegMultImm8(jit, REG_ECX, AMX_REG_DAT, REG_ECX, NOSCALE, STACK_MARGIN);
+		IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_TMP, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, STACK_MARGIN);
 		IA32_Cmp_Rm_Reg(jit, REG_ECX, AMX_REG_STK, MOD_REG);
 		jitoffs_t hl = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
 		jitoffs_t cont;
@@ -377,7 +377,6 @@ void Write_CheckMargin_Stack(JitWriter *jit)
 	//continue:
 	IA32_Send_Jump8_Here(jit, jmp);
 }
-
 
 void Macro_PushN_Addr(JitWriter *jit, int i)
 {
@@ -643,4 +642,3 @@ JITX86::JITX86()
 	OpAdvTable[OP_SYSREQ_ND] = -3;
 	OpAdvTable[OP_PUSH_R] = -3;
 }
-
