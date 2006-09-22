@@ -1150,8 +1150,8 @@ inline void WriteOp_Lctrl(JitWriter *jit)
 		{
 			//mov ecx, [esi+ctx]
 			//mov eax, [ecx+<offs>]
-			IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_CONTEXT);
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_ECX, offsetof(sp_context_t, base));
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_TMP, offsetof(sp_context_t, base));
 			break;
 		}
 	case 1:
@@ -1170,8 +1170,8 @@ inline void WriteOp_Lctrl(JitWriter *jit)
 		{
 			//mov ecx, [esi+ctx]
 			//mov eax, [ecx+ctx.memory]
-			IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_CONTEXT);
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_ECX, offsetof(sp_context_t, memory));
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_TMP, offsetof(sp_context_t, memory));
 			break;
 		}
 	case 4:
@@ -1273,12 +1273,11 @@ inline void WriteOp_SDiv(JitWriter *jit)
 	//sar edx, 31
 	//idiv ecx
 	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_ALT, MOD_REG);
-	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_Mov_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_PRI, MOD_REG);
 	IA32_Sar_Rm_Imm8(jit, AMX_REG_ALT, 31, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_IDiv_Rm(jit, AMX_REG_TMP, MOD_REG);
 }
-
 
 inline void WriteOp_SDiv_Alt(JitWriter *jit)
 {
@@ -1287,9 +1286,9 @@ inline void WriteOp_SDiv_Alt(JitWriter *jit)
 	//sar edx, 31
 	//idiv ecx
 	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_REG);
-	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_Mov_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
 	IA32_Sar_Rm_Imm8(jit, AMX_REG_ALT, 31, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_IDiv_Rm(jit, AMX_REG_TMP, MOD_REG);
 }
 
@@ -1299,8 +1298,8 @@ inline void WriteOp_UDiv(JitWriter *jit)
 	//xor edx, edx
 	//div ecx
 	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_ALT, MOD_REG);
-	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_Xor_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_ALT, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
 }
 
@@ -1311,9 +1310,9 @@ inline void WriteOp_UDiv_Alt(JitWriter *jit)
 	//xor edx, edx
 	//div ecx
 	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_REG);
-	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_Mov_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
 	IA32_Xor_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_ALT, MOD_REG);
+	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
 }
 
