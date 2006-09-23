@@ -109,20 +109,20 @@ typedef enum
 	OP_RETN,				//DONE
 	OP_CALL,
 	OP_CALL_PRI,
-	OP_JUMP,
-	OP_JREL,
-	OP_JZER,
-	OP_JNZ,
-	OP_JEQ,
-	OP_JNEQ,
-	OP_JLESS,
-	OP_JLEQ,
-	OP_JGRTR,
-	OP_JGEQ,
-	OP_JSLESS,
-	OP_JSLEQ,
-	OP_JSGRTR,
-	OP_JSGEQ,
+	OP_JUMP,				//DONE
+	OP_JREL,				//DONE
+	OP_JZER,				//DONE
+	OP_JNZ,					//DONE
+	OP_JEQ,					//DONE
+	OP_JNEQ,				//DONE
+	OP_JLESS,				//DONE
+	OP_JLEQ,				//DONE
+	OP_JGRTR,				//DONE
+	OP_JGEQ,				//DONE
+	OP_JSLESS,				//DONE
+	OP_JSLEQ,				//DONE
+	OP_JSGRTR,				//DONE
+	OP_JSGEQ,				//DONE
 	OP_SHL,					//DONE
 	OP_SHR,					//DONE
 	OP_SSHR,				//DONE

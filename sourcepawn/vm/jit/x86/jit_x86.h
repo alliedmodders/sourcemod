@@ -15,17 +15,20 @@ class CompData : public ICompilation
 {
 public:
 	CompData() : plugin(NULL), 
-		debug(false), inline_level(3), checks(true)
+		debug(false), inline_level(3), checks(true),
+		rebase(NULL)
 	{
 	};
 public:
 	sp_plugin_t *plugin;
+	jitcode_t *rebase;
 	jitoffs_t jit_return;
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
 	jitoffs_t jit_chkmargin_heap;
 	jitoffs_t jit_bounds;
 	jitoffs_t jit_break;
+	uint32_t codesize;
 	int inline_level;
 	bool checks;
 	bool debug;
@@ -45,6 +48,8 @@ public:
 	int ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result);
 };
 
+jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
+
 #define AMX_REG_PRI		REG_EAX
 #define AMX_REG_ALT		REG_EDX
 #define AMX_REG_STK		REG_EBP
@@ -60,5 +65,7 @@ public:
 #define AMX_INFO_CONTEXT	12				//physical
 #define AMX_INFO_STACKTOP	16				//relocated
 #define AMX_INFO_HEAPLOW	20				//not relocated
+
+extern ISourcePawnEngine *engine;
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_

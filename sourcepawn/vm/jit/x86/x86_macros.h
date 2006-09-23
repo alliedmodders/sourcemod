@@ -813,12 +813,30 @@ inline void IA32_Write_Jump32(JitWriter *jit, jitoffs_t jmp, jitoffs_t target)
 	//save old ptr
 	jitcode_t oldptr = jit->outptr;
 	//get relative difference
-	jit_int32_t diff = (target - (jmp + 1));
+	jit_int32_t diff = (target - (jmp + 4));
 	//overwrite old value
 	jit->outptr = jit->outbase + jmp;
 	jit->write_int32(diff);
 	//restore old ptr
 	jit->outptr = oldptr;
+}
+
+/* For writing and auto-calculating an absolute target */
+inline void IA32_Jump_Imm32_Abs(JitWriter *jit, jitoffs_t target)
+{
+	/* :TODO: this should work, but does it? */
+	jit->write_ubyte(IA32_JMP_IMM32);
+	IA32_Write_Jump32(jit, jit->jit_curpos(), target);
+	jit->outptr += 4;
+}
+
+inline void IA32_Jump_Cond_Imm32_Abs(JitWriter *jit, jit_uint8_t cond, jitoffs_t target)
+{
+	/* :TODO: this should work, but does it? */
+	jit->write_ubyte(IA32_JCC_IMM32_1);
+	jit->write_ubyte(IA32_JCC_IMM32_2+cond);
+	IA32_Write_Jump32(jit, jit->jit_curpos(), target);
+	jit->outptr += 4;
 }
 
 inline void IA32_Send_Jump8_Here(JitWriter *jit, jitoffs_t jmp)

@@ -23,6 +23,7 @@ typedef unsigned __int64 jit_uint64_t;
 
 typedef char * jitcode_t;
 typedef unsigned int jitoffs_t;
+typedef signed int jitrel_t;
 
 class JitWriter
 {
@@ -79,8 +80,13 @@ public:
 	{
 		outptr = outbase + offs;
 	}
+	inline jitoffs_t inputrel()
+	{
+		return (jitoffs_t)((char *)inptr - (char *)inbase);
+	}
 public:
 	cell_t *inptr;		/* input pointer */
+	cell_t *inbase;		/* input base */
 	jitcode_t outbase;	/* output pointer */
 	jitcode_t outptr;	/* output base */
 	SourcePawn::ICompilation *data;	/* compiler live info */
