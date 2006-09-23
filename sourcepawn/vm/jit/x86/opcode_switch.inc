@@ -158,11 +158,13 @@
 				WriteOp_SMul(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_UMUL:
 			{
 				WriteOp_UMul(jit);
 				break;
 			}
+#endif
 		case OP_ADD:
 			{
 				WriteOp_Add(jit);
@@ -243,26 +245,34 @@
 				WriteOp_Neq(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_LESS:
 			{
 				WriteOp_Less(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_LEQ:
 			{
 				WriteOp_Leq(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_GRTR:
 			{
 				WriteOp_Grtr(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_GEQ:
 			{
 				WriteOp_Geq(jit);
 				break;
 			}
+#endif
 		case OP_SLESS:
 			{
 				WriteOp_Sless(jit);
@@ -363,26 +373,34 @@
 				WriteOp_Load_S_Alt(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_LREF_PRI:
 			{
 				WriteOp_Lref_Pri(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_LREF_ALT:
 			{
 				WriteOp_Lref_Alt(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_LREF_S_PRI:
 			{
 				WriteOp_Lref_Pri(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_LREF_S_ALT:
 			{
 				WriteOp_Lref_Alt(jit);
 				break;
 			}
+#endif
 		case OP_CONST_PRI:
 			{
 				WriteOp_Const_Pri(jit);
@@ -428,36 +446,48 @@
 				WriteOp_Idxaddr(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_SREF_PRI:
 			{
 				WriteOp_Sref_Pri(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_SREF_ALT:
 			{
 				WriteOp_Sref_Alt(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_SREF_S_PRI:
 			{
 				WriteOp_Sref_S_Pri(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_SREF_S_ALT:
 			{
 				WriteOp_Sref_S_Alt(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_ALIGN_PRI:
 			{
 				WriteOp_Align_Pri(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_ALIGN_ALT:
 			{
 				WriteOp_Align_Alt(jit);
 				break;
 			}
+#endif
 		case OP_POP_PRI:
 			{
 				WriteOp_Pop_Pri(jit);
@@ -558,46 +588,58 @@
 				WriteOp_Load_I(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_LODB_I:
 			{
 				WriteOp_Lodb_I(jit);
 				break;
 			}
+#endif
 		case OP_STOR_I:
 			{
 				WriteOp_Stor_I(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_STRB_I:
 			{
 				WriteOp_Strb_I(jit);
 				break;
 			}
+#endif
 		case OP_LIDX:
 			{
 				WriteOp_Lidx(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_LIDX_B:
 			{
 				WriteOp_Lidx_B(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_IDXADDR_B:
 			{
 				WriteOp_Idxaddr_B(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_LCTRL:
 			{
 				WriteOp_Lctrl(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_SCTRL:
 			{
 				WriteOp_Sctrl(jit);
 				break;
 			}
+#endif
 		case OP_STACK:
 			{
 				WriteOp_Stack(jit);
@@ -618,31 +660,39 @@
 				WriteOp_SDiv_Alt(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_UDIV:
 			{
 				WriteOp_UDiv(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_UDIV_ALT:
 			{
 				WriteOp_UDiv_Alt(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_RET:
 			{
 				WriteOp_Ret(jit);
 				break;
 			}
+#endif
 		case OP_RETN:
 			{
 				WriteOp_Retn(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_CMPS:
 			{
 				WriteOp_Cmps(jit);
 				break;
 			}
+#endif
 		case OP_BOUNDS:
 			{
 				WriteOp_Bounds(jit);
@@ -658,11 +708,13 @@
 				WriteOp_Break(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_JREL:
 			{
 				WriteOp_JRel(jit);
 				break;
 			}
+#endif
 		case OP_JUMP:
 			{
 				WriteOp_Jump(jit);
@@ -688,26 +740,34 @@
 				WriteOp_Jneq(jit);
 				break;
 			}
+#ifdef UNSUPPORTED
 		case OP_JLESS:
 			{
 				WriteOp_Jless(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_JLEQ:
 			{
 				WriteOp_Jeq(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_JGRTR:
 			{
 				WriteOp_Jgrtr(jit);
 				break;
 			}
+#endif
+#ifdef UNSUPPORTED
 		case OP_JGEQ:
 			{
 				WriteOp_Jgeq(jit);
 				break;
 			}
+#endif
 		case OP_JSLESS:
 			{
 				WriteOp_Jsless(jit);
