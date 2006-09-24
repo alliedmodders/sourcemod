@@ -39,9 +39,9 @@ class JITX86 : public IVirtualMachine
 public:
 	JITX86();
 public:
-	const char *GetVMName() =0;
+	const char *GetVMName();
 	ICompilation *StartCompilation(sp_plugin_t *plugin);
-	bool SetCompilationOption(ICompilation *co, const char *key, const char *val) ;
+	bool SetCompilationOption(ICompilation *co, const char *key, const char *val);
 	sp_context_t *CompileToContext(ICompilation *co, int *err);
 	void AbortCompilation(ICompilation *co);
 	void FreeContext(sp_context_t *ctx);

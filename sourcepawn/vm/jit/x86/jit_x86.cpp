@@ -1155,6 +1155,7 @@ inline void WriteOp_Jeq(JitWriter *jit)
 	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_E, RelocLookup(jit, target, false));
 }
+
 inline void WriteOp_Jneq(JitWriter *jit)
 {
 	//cmp eax, edx

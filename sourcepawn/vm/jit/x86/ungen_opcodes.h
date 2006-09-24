@@ -161,7 +161,7 @@ inline void WriteOp_Lctrl(JitWriter *jit)
 			//mov ecx, [esi+ctx]
 			//mov eax, [ecx+<offs>]
 			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_TMP, offsetof(sp_context_t, base));
+			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_TMP, offsetof(sp_context_t, codebase));
 			break;
 		}
 	case 1:
