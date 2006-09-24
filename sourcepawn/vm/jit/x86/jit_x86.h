@@ -42,9 +42,9 @@ public:
 	const char *GetVMName() =0;
 	ICompilation *StartCompilation(sp_plugin_t *plugin);
 	bool SetCompilationOption(ICompilation *co, const char *key, const char *val) ;
-	IPluginContext *CompileToContext(ICompilation *co, int *err);
+	sp_context_t *CompileToContext(ICompilation *co, int *err);
 	void AbortCompilation(ICompilation *co);
-	void FreeContextVars(sp_context_t *ctx);
+	void FreeContext(sp_context_t *ctx);
 	int ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result);
 };
 

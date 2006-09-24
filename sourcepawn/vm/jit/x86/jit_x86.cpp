@@ -5,6 +5,10 @@
 #include "opcode_helpers.h"
 #include "x86_macros.h"
 
+#if defined USE_UNGEN_OPCODES
+#include "ungen_opcodes.h"
+#endif
+
 inline void WriteOp_Move_Pri(JitWriter *jit)
 {
 	//mov eax, edx
@@ -231,6 +235,27 @@ inline void WriteOp_Proc(JitWriter *jit)
 	IA32_Sub_Rm_Reg(jit, AMX_INFO_FRM, AMX_REG_DAT, MOD_MEM_REG);
 }
 
+inline void WriteOp_Lidx_B(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+	//shl eax, <val>
+	//add eax, edx
+	//mov eax, [edi+eax]
+	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, (jit_uint8_t)val, MOD_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
+	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+}
+
+inline void WriteOp_Idxaddr_B(JitWriter *jit)
+{
+	//shl eax, <val>
+	//add eax, edx
+	cell_t val = jit->read_cell();
+	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, (jit_uint8_t)val, MOD_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
+}
+
 inline void WriteOp_Shl(JitWriter *jit)
 {
 	//mov ecx, edx
@@ -292,18 +317,6 @@ inline void WriteOp_SMul(JitWriter *jit)
 	IA32_IMul_Rm(jit, AMX_REG_ALT, MOD_REG);
 	IA32_Mov_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_TMP, MOD_REG);
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_UMul(JitWriter *jit)
-{
-	//mov ecx, edx
-	//mul edx
-	//mov edx, ecx
-	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_ALT, MOD_REG);
-	IA32_Mul_Rm(jit, AMX_REG_ALT, MOD_REG);
-	IA32_Mov_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_TMP, MOD_REG);
-}
-#endif
 
 inline void WriteOp_Not(JitWriter *jit)
 {
@@ -400,54 +413,6 @@ inline void WriteOp_Neq(JitWriter *jit)
 	IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
 	IA32_SetCC_Rm8(jit, AMX_REG_PRI, CC_NE);
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Less(JitWriter *jit)
-{
-	//cmp eax, edx	; PRI < ALT ? (unsigned)
-	//mov eax, 0
-	//setb al
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
-	IA32_SetCC_Rm8(jit, AMX_REG_PRI, CC_B);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Leq(JitWriter *jit)
-{
-	//cmp eax, edx	; PRI <= ALT ? (unsigned)
-	//mov eax, 0
-	//setbe al
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
-	IA32_SetCC_Rm8(jit, AMX_REG_PRI, CC_BE);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Grtr(JitWriter *jit)
-{
-	//cmp eax, edx	; PRI > ALT ? (unsigned)
-	//mov eax, 0
-	//seta al
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
-	IA32_SetCC_Rm8(jit, AMX_REG_PRI, CC_A);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Geq(JitWriter *jit)
-{
-	//cmp eax, edx	; PRI >= ALT ? (unsigned)
-	//mov eax, 0
-	//setae al
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
-	IA32_SetCC_Rm8(jit, AMX_REG_PRI, CC_AE);
-}
-#endif
 
 inline void WriteOp_Sless(JitWriter *jit)
 {
@@ -633,7 +598,6 @@ inline void WriteOp_Load_S_Alt(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_ALT, AMX_REG_FRM, val);
 }
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Lref_Pri(JitWriter *jit)
 {
 	//mov eax, [edi+<val>]
@@ -645,9 +609,7 @@ inline void WriteOp_Lref_Pri(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_PRI, AMX_REG_DAT, val);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
-#endif
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Lref_Alt(JitWriter *jit)
 {
 	//mov edx, [edi+<val>]
@@ -659,9 +621,7 @@ inline void WriteOp_Lref_Alt(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_ALT, AMX_REG_DAT, val);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_ALT, AMX_REG_DAT, AMX_REG_ALT, NOSCALE);
 }
-#endif
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Lref_S_Pri(JitWriter *jit)
 {
 	//mov eax, [ebx+<val>]
@@ -673,9 +633,7 @@ inline void WriteOp_Lref_S_Pri(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_PRI, AMX_REG_FRM, val);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
-#endif
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Lref_S_Alt(JitWriter *jit)
 {
 	//mov edx, [ebx+<val>]
@@ -687,7 +645,6 @@ inline void WriteOp_Lref_S_Alt(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_ALT, AMX_REG_FRM, val);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_ALT, AMX_REG_DAT, AMX_REG_ALT, NOSCALE);
 }
-#endif
 
 inline void WriteOp_Const_Pri(JitWriter *jit)
 {
@@ -773,18 +730,6 @@ inline void WriteOp_Idxaddr(JitWriter *jit)
 	IA32_Lea_Reg_DispRegMult(jit, AMX_REG_PRI, AMX_REG_ALT, AMX_REG_PRI, SCALE4);
 }
 
-#ifdef UNSUPPORTED
-inline void WriteOp_Idxaddr_B(JitWriter *jit)
-{
-	//shl eax, <val>
-	//add eax, edx
-	cell_t val = jit->read_cell();
-	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, (jit_uint8_t)val, MOD_REG);
-	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-}
-#endif
-
-#ifdef UNSUPPORTED
 inline void WriteOp_Sref_Pri(JitWriter *jit)
 {
 	//mov ecx, [edi+<val>]
@@ -796,9 +741,7 @@ inline void WriteOp_Sref_Pri(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_DAT, val);
 	IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, AMX_REG_PRI);
 }
-#endif
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Sref_Alt(JitWriter *jit)
 {
 	//mov ecx, [edi+<val>]
@@ -810,9 +753,7 @@ inline void WriteOp_Sref_Alt(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_DAT, val);
 	IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, AMX_REG_ALT);
 }
-#endif
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Sref_S_Pri(JitWriter *jit)
 {
 	//mov ecx, [ebx+<val>]
@@ -824,9 +765,7 @@ inline void WriteOp_Sref_S_Pri(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_FRM, val);
 	IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, AMX_REG_PRI);
 }
-#endif
 
-#ifdef UNSUPPORTED
 inline void WriteOp_Sref_S_Alt(JitWriter *jit)
 {
 	//mov ecx, [ebx+<val>]
@@ -838,31 +777,6 @@ inline void WriteOp_Sref_S_Alt(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_FRM, val);
 	IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, AMX_REG_ALT);
 }
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Align_Pri(JitWriter *jit)
-{
-	//xor eax, <cellsize - val>
-	cell_t val = sizeof(cell_t) - jit->read_cell();
-	if (val < SCHAR_MAX && val > SCHAR_MIN)
-		IA32_Xor_Rm_Imm8(jit, AMX_REG_PRI, MOD_REG, (jit_int8_t)val);
-	else
-		IA32_Xor_Eax_Imm32(jit, val);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Align_Alt(JitWriter *jit)
-{
-	//xor edx, <cellsize - val>
-	cell_t val = sizeof(cell_t) - jit->read_cell();
-	if (val < SCHAR_MAX && val > SCHAR_MIN)
-		IA32_Xor_Rm_Imm8(jit, AMX_REG_ALT, MOD_REG, (jit_int8_t)val);
-	else
-		IA32_Xor_Rm_Imm32(jit, AMX_REG_ALT, MOD_REG, val);
-}
-#endif
 
 inline void WriteOp_Pop_Pri(JitWriter *jit)
 {
@@ -962,39 +876,6 @@ inline void WriteOp_Movs(JitWriter *jit)
 		IA32_Sub_Rm_Imm32(jit, REG_EDI, val, MOD_REG);
 	IA32_Pop_Reg(jit, REG_ESI);
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Cmps(JitWriter *jit)
-{
-	//push edi
-	//push esi
-	//lea esi, [edi+edx]
-	//lea edi, [edi+eax]
-	IA32_Push_Reg(jit, REG_EDI);
-	IA32_Push_Reg(jit, REG_ESI);
-	IA32_Lea_Reg_DispRegMult(jit, REG_ESI, AMX_REG_DAT, AMX_REG_ALT, NOSCALE);
-	IA32_Lea_Reg_DispRegMult(jit, REG_EDI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
-
-	//xor eax, eax
-	//repe cmpsb
-	//je :cmps1
-	IA32_Xor_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
-	IA32_Cmpsb(jit);
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_E, 0);
-	
-	//sbb eax, eax
-	//sbb eax, -1
-	IA32_Sbb_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
-	IA32_Sbb_Eax_Imm32(jit, -1);//:TODO: use imm8 here
-	
-	//:cmps1
-	//pop esi
-	//pop edi
-	IA32_Send_Jump8_Here(jit, jmp);
-	IA32_Pop_Reg(jit, REG_ESI);
-	IA32_Pop_Reg(jit, REG_EDI);
-}
-#endif
 
 inline void WriteOp_Fill(JitWriter *jit)
 {
@@ -1099,65 +980,12 @@ inline void WriteOp_Load_I(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
 
-#ifdef UNSUPPORTED
-inline void WriteOp_Lodb_I(JitWriter *jit)
-{
-	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
-
-	//mov eax, [edi+eax]
-	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
-
-	//and eax, <bitmask>
-	cell_t val = jit->read_cell();
-	switch(val)
-	{
-	case 1:
-		{
-			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x000000FF);//:TODO: replace with AND EAX, imm32
-			break;
-		}
-	case 2:
-		{
-			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x0000FFFF);//:TODO: replace with AND EAX, imm32
-			break;
-		}
-	}
-}
-#endif
-
 inline void WriteOp_Stor_I(JitWriter *jit)
 {
 	//mov [edi+edx], eax
 	Write_Check_VerifyAddr(jit, AMX_REG_ALT, false);
 	IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Strb_I(JitWriter *jit)
-{
-	Write_Check_VerifyAddr(jit, AMX_REG_ALT, false);
-	//mov [edi+edx], eax
-	cell_t val = jit->read_cell();
-	switch (val)
-	{
-	case 1:
-		{
-			IA32_Mov_Rm8_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
-			break;
-		}
-	case 2:
-		{
-			IA32_Mov_Rm16_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
-			break;
-		}
-	case 4:
-		{
-			IA32_Mov_Rm_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
-			break;
-		}
-	}
-}
-#endif
 
 inline void WriteOp_Lidx(JitWriter *jit)
 {
@@ -1167,119 +995,6 @@ inline void WriteOp_Lidx(JitWriter *jit)
 	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Lidx_B(JitWriter *jit)
-{
-	cell_t val = jit->read_cell();
-	//shl eax, <val>
-	//add eax, edx
-	//mov eax, [edi+eax]
-	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, (jit_uint8_t)val, MOD_REG);
-	IA32_Add_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
-	IA32_Mov_Reg_Rm_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Lctrl(JitWriter *jit)
-{
-	cell_t val = jit->read_cell();
-	switch (val)
-	{
-	case 0:
-		{
-			//mov ecx, [esi+ctx]
-			//mov eax, [ecx+<offs>]
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_TMP, offsetof(sp_context_t, base));
-			break;
-		}
-	case 1:
-		{
-			//mov eax, edi
-			IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_DAT, MOD_REG);
-			break;
-		}
-	case 2:
-		{
-			//mov eax, [esi+hea]
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_INFO, AMX_INFO_HEAP);
-			break;
-		}
-	case 3:
-		{
-			//mov ecx, [esi+ctx]
-			//mov eax, [ecx+ctx.memory]
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_TMP, offsetof(sp_context_t, memory));
-			break;
-		}
-	case 4:
-		{
-			//mov eax, ebp
-			//sub eax, edi	- unrelocate
-			IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_STK, MOD_REG);
-			IA32_Sub_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, MOD_REG);
-			break;
-		}
-	case 5:
-		{
-			//mov eax, [esi+frm]
-			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, AMX_REG_INFO, AMX_INFO_FRM);
-			break;
-		}
-	case 6:
-		{
-			//mov eax, [cip]
-			jitoffs_t imm32 = IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
-			jitoffs_t save = jit->jit_curpos();
-			jit->setpos(imm32);
-			jit->write_int32((uint32_t)(jit->outbase + save));
-			jit->setpos(save);
-			break;
-		}
-	}
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Sctrl(JitWriter *jit)
-{
-	cell_t val = jit->read_cell();
-	switch (val)
-	{
-	case 2:
-		{
-			//mov [esi+hea], eax
-			IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_INFO_HEAP, AMX_REG_PRI);
-			break;
-		}
-	case 4:
-		{
-			//lea ebp, [edi+eax]
-			IA32_Lea_Reg_DispRegMult(jit, AMX_REG_STK, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
-			break;
-		}
-	case 5:
-		{
-			//mov ebx, eax	- overwrite frm
-			//mov frm, eax	- overwrite stacked frame
-			//add ebx, edi	- relocate local frm //:TODO: use LEA here!!!
-			IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_PRI, MOD_REG);
-			IA32_Mov_Rm_Reg(jit, AMX_INFO_FRM, AMX_REG_PRI, MOD_MEM_REG);
-			IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
-			break;
-		}
-	case 6:
-		{
-			IA32_Jump_Reg(jit, AMX_REG_PRI);
-			break;
-		}
-	}
-}
-#endif
 
 inline void WriteOp_Stack(JitWriter *jit)
 {
@@ -1336,50 +1051,6 @@ inline void WriteOp_SDiv_Alt(JitWriter *jit)
 	Write_Check_DivZero(jit, AMX_REG_TMP);
 	IA32_IDiv_Rm(jit, AMX_REG_TMP, MOD_REG);
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_UDiv(JitWriter *jit)
-{
-	//mov ecx, edx
-	//xor edx, edx
-	//div ecx
-	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_ALT, MOD_REG);
-	IA32_Xor_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_ALT, MOD_REG);
-	Write_Check_DivZero(jit, AMX_REG_TMP);
-	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_UDiv_Alt(JitWriter *jit)
-{
-	//mov ecx, eax
-	//mov eax, edx
-	//xor edx, edx
-	//div ecx
-	IA32_Mov_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_REG);
-	IA32_Mov_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Xor_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_ALT, MOD_REG);
-	Write_Check_DivZero(jit, AMX_REG_TMP);
-	IA32_Div_Rm(jit, AMX_REG_TMP, MOD_REG);
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Ret(JitWriter *jit)
-{
-	//mov ebx, [ebp]		- get old FRM
-	//add ebp, 4			- pop stack
-	//mov [esi+frm], ebx	- restore
-	//add ebx, edi			- relocate
-	//ret
-	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_MEM_REG);
-	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_INFO, AMX_REG_FRM, AMX_INFO_FRM);//:TODO: this is wrong!
-	IA32_Add_Rm_Reg(jit, AMX_REG_FRM, AMX_REG_DAT, MOD_REG);
-	IA32_Return(jit);
-}
-#endif
 
 inline void WriteOp_Retn(JitWriter *jit)
 {
@@ -1449,21 +1120,6 @@ inline void WriteOp_Break(JitWriter *jit)
 	}
 }
 
-#ifdef UNSUPPORTED
-inline void WriteOp_JRel(JitWriter *jit)
-{
-	//jmp <offs>	;relative jump
-	cell_t cip_offs = jit->read_cell();
-
-	/* Note that since code size calculation has to be done in the same
-	 * phase as building relocation information, we cannot know the jump size
-	 * beforehand.  Thus, we always write full 32bit jumps for safety.
-	 */
-	jitoffs_t jmp = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32(jit, jmp, RelocLookup(jit, cip_offs));
-}
-#endif
-
 inline void WriteOp_Jump(JitWriter *jit)
 {
 	//jmp <offs>
@@ -1507,50 +1163,6 @@ inline void WriteOp_Jneq(JitWriter *jit)
 	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
 	IA32_Jump_Cond_Imm32(jit, CC_NE, RelocLookup(jit, target, false));
 }
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Jless(JitWriter *jit)
-{
-	//cmp eax, edx
-	//jb <target>
-	cell_t target = jit->read_cell();
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32(jit, CC_B, RelocLookup(jit, target, false));
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Jleq(JitWriter *jit)
-{
-	//cmp eax, edx
-	//jbe <target>
-	cell_t target = jit->read_cell();
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32(jit, CC_BE, RelocLookup(jit, target, false));
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Jgrtr(JitWriter *jit)
-{
-	//cmp eax, edx
-	//ja <target>
-	cell_t target = jit->read_cell();
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32(jit, CC_A, RelocLookup(jit, target, false));
-}
-#endif
-
-#ifdef UNSUPPORTED
-inline void WriteOp_Jgeq(JitWriter *jit)
-{
-	//cmp eax, edx
-	//jae <target>
-	cell_t target = jit->read_cell();
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32(jit, CC_AE, RelocLookup(jit, target, false));
-}
-#endif
 
 inline void WriteOp_Jsless(JitWriter *jit)
 {
@@ -1617,7 +1229,7 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 	}
 }
 
-IPluginContext *JITX86::CompileToContext(ICompilation *co, int *err)
+sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 {
 	CompData *data = (CompData *)co;
 	sp_plugin_t *plugin = data->plugin;
@@ -1750,7 +1362,7 @@ jit_rewind:
 
 		/* the total codesize is now known! */
 		uint32_t mem = writer.jit_curpos();
-		writer.outbase = new char[mem];
+		writer.outbase = (jitcode_t)engine->ExecAlloc(mem);
 		writer.outptr = writer.outbase;
 		/* go back for third pass */
 		goto jit_rewind;
@@ -1768,29 +1380,31 @@ jit_rewind:
 		}
 	}
 
-	/*******
-	* Context Setup
-	*******/
+	/*************
+	 * FOURTH PASS - Context Setup
+	 *************/
+
 	sp_context_t *ctx = new sp_context_t;
 	memset(ctx, 0, sizeof(sp_context_t));
 
-	ctx->base = plugin->base;
+	/* setup  basics */
+	ctx->codebase = writer.outbase;
 	ctx->plugin = plugin;
-	ctx->context = engine->CreateBaseContext(ctx);
 	ctx->vmbase = this;
 	ctx->flags = (data->debug ? SPFLAG_PLUGIN_DEBUG : 0);
 
+	/* setup memory */
 	ctx->data = new uint8_t[plugin->memory];
 	memcpy(ctx->data, plugin->data, plugin->data_size);
 	ctx->memory = plugin->memory;
 	ctx->heapbase = plugin->data_size;
-
 	ctx->hp = ctx->heapbase;
 	ctx->sp = ctx->memory - sizeof(cell_t);
 
 	const char *strbase = plugin->info.stringbase;
 	uint32_t max, iter;
 
+	/* relocate public info */
 	if ((max = plugin->info.publics_num))
 	{
 		ctx->publics = new sp_public_t[max];
@@ -1801,6 +1415,7 @@ jit_rewind:
 		}
 	}
 
+	/* relocate pubvar info */
 	if ((max = plugin->info.pubvars_num))
 	{
 		uint8_t *dat = ctx->data;
@@ -1812,21 +1427,26 @@ jit_rewind:
 		}
 	}
 
+	/* relocate native info */
 	if ((max = plugin->info.natives_num))
 	{
 		ctx->natives = new sp_native_t[max];
 		for (iter=0; iter<max; iter++)
 		{
 			ctx->natives[iter].name = strbase + plugin->info.natives[iter].name;
-			//ctx->natives[iter].pfn = SP_NoExecNative; :TODO:
+			ctx->natives[iter].pfn = NULL;
 			ctx->natives[iter].status = SP_NATIVE_NONE;
 		}
 	}
 
-	strbase = plugin->debug.stringbase;
-
-	if (plugin->flags & SP_FLAG_DEBUG)
+	/**
+	 * If we're debugging, make sure we copy the necessary info.
+	 */
+	if (data->debug)
 	{
+		strbase = plugin->debug.stringbase;
+		
+		/* relocate files */
 		max = plugin->debug.files_num;
 		ctx->files = new sp_debug_file_t[max];
 		for (iter=0; iter<max; iter++)
@@ -1835,6 +1455,7 @@ jit_rewind:
 			ctx->files[iter].name = strbase + plugin->debug.files[iter].name;
 		}
 
+		/* relocate lines */
 		max = plugin->debug.lines_num;
 		ctx->lines = new sp_debug_line_t[max];
 		for (iter=0; iter<max; iter++)
@@ -1843,6 +1464,7 @@ jit_rewind:
 			ctx->lines[iter].line = plugin->debug.lines[iter].line;
 		}
 
+		/* relocate arrays */
 		sp_fdbg_symbol_t *sym;
 		sp_fdbg_arraydim_t *arr;
 		uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
@@ -1872,14 +1494,38 @@ jit_rewind:
 		}
 	}
 
+	/* clean up relocation+compilation memory */
+	engine->BaseFree(data->rebase);
+	delete data;
+
 	*err = SP_ERR_NONE;
 
-	return ctx->context;
+	return ctx;
 }
 
 const char *JITX86::GetVMName()
 {
 	return "JIT (x86)";
+}
+
+int JITX86::ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result)
+{
+	typedef int (*CONTEXT_EXECUTE)(sp_context_t *, uint32_t, cell_t *);
+	CONTEXT_EXECUTE fn = (CONTEXT_EXECUTE)ctx->codebase;
+	return fn(ctx, code_idx, result);
+}
+
+void JITX86::FreeContext(sp_context_t *ctx)
+{
+	engine->ExecFree(ctx->codebase);
+	delete [] ctx->data;
+	delete [] ctx->files;
+	delete [] ctx->lines;
+	delete [] ctx->natives;
+	delete [] ctx->publics;
+	delete [] ctx->pubvars;
+	delete [] ctx->symbols;
+	delete ctx;
 }
 
 ICompilation *JITX86::StartCompilation(sp_plugin_t *plugin)

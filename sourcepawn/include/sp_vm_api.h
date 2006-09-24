@@ -59,7 +59,7 @@ namespace SourcePawn
 		virtual void FreeBaseContext(IPluginContext *ctx) =0;
 
 		/**
-		 * Allocates memory.
+		 * Allocates large blocks of temporary memory.
 		 * 
 		 * @param size		Size of memory to allocate.
 		 * @return			Pointer to memory, NULL if allocation failed.
@@ -72,6 +72,21 @@ namespace SourcePawn
 		 * @param mem		Memory address to free.
 		 */
 		virtual void BaseFree(void *memory) =0;
+
+		/**
+		 * Allocates executable memory.
+		 *
+		 * @param size		Size of memory to allocate.
+		 * @return			Pointer to memory, NULL if allocation failed.
+		 */
+		virtual void *ExecAlloc(size_t size) =0;
+
+		/**
+		 * Frees executable memory.
+		 *
+		 * @param mem		Address to free.
+		 */
+		virtual void ExecFree(void *address) =0;
 	};
 
 	class ICompilation
@@ -107,14 +122,14 @@ namespace SourcePawn
 		virtual bool SetCompilationOption(ICompilation *co, const char *key, const char *val) =0;
 
 		/**
-		 * Finalizes a compilation into a new IContext.
+		 * Finalizes a compilation into a new sp_context_t.
 		 * Note: This will free the ICompilation pointer.
 		 *
 		 * @param co		Compilation pointer.
 		 * @param err		Filled with error code on exit.
 		 * @return			New plugin context.
 		 */
-		virtual IPluginContext *CompileToContext(ICompilation *co, int *err) =0;
+		virtual sp_context_t *CompileToContext(ICompilation *co, int *err) =0;
 
 		/**
 		 * Aborts a compilation and frees the ICompilation pointer.
@@ -128,7 +143,7 @@ namespace SourcePawn
 		 *
 		 * @param ctx		Context structure pointer.
 		 */
-		virtual void FreeContextVars(sp_context_t *ctx) =0;
+		virtual void FreeContext(sp_context_t *ctx) =0;
 
 		/**
 		 * Calls the "execute" function on a context.

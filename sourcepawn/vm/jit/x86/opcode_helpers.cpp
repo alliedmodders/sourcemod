@@ -6,7 +6,7 @@
 
 int OpAdvTable[OP_NUM_OPCODES];
 
-jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
+jitoffs_t Write_Execute_Function(JitWriter *jit)
 {
 	/** 
 	 * The variables we're passed in:
@@ -79,7 +79,7 @@ jitoffs_t Write_Execute_Function(JitWriter *jit, bool never_inline)
 	//mov edx, [eax+<offs>]	- get alt
 	//mov eax, [eax+<offs>] - get pri
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EBP, 12);
-	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, base));
+	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, codebase));
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, REG_EAX, offsetof(sp_context_t, alt));
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_EAX, offsetof(sp_context_t, pri));
 
@@ -503,7 +503,6 @@ JITX86::JITX86()
 	OpAdvTable[OP_LREF_ALT] = sizeof(cell_t);
 	OpAdvTable[OP_LREF_S_PRI] = sizeof(cell_t);
 	OpAdvTable[OP_LREF_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LODB_I] = sizeof(cell_t);
 	OpAdvTable[OP_CONST_PRI] = sizeof(cell_t);
 	OpAdvTable[OP_CONST_ALT] = sizeof(cell_t);
 	OpAdvTable[OP_ADDR_PRI] = sizeof(cell_t);
@@ -516,19 +515,13 @@ JITX86::JITX86()
 	OpAdvTable[OP_SREF_ALT] = sizeof(cell_t);
 	OpAdvTable[OP_SREF_S_PRI] = sizeof(cell_t);
 	OpAdvTable[OP_SREF_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_STRB_I] = sizeof(cell_t);
 	OpAdvTable[OP_LIDX_B] = sizeof(cell_t);
 	OpAdvTable[OP_IDXADDR_B] = sizeof(cell_t);
-	OpAdvTable[OP_ALIGN_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_ALIGN_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LCTRL] = sizeof(cell_t);
-	OpAdvTable[OP_SCTRL] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH_C] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH_S] = sizeof(cell_t);
 	OpAdvTable[OP_STACK] = sizeof(cell_t);
 	OpAdvTable[OP_HEAP] = sizeof(cell_t);
-	OpAdvTable[OP_JREL] = sizeof(cell_t);
 	OpAdvTable[OP_SHL_C_PRI] = sizeof(cell_t);
 	OpAdvTable[OP_SHL_C_ALT] = sizeof(cell_t);
 	OpAdvTable[OP_SHR_C_PRI] = sizeof(cell_t);
@@ -544,7 +537,6 @@ JITX86::JITX86()
 	OpAdvTable[OP_DEC] = sizeof(cell_t);
 	OpAdvTable[OP_DEC_S] = sizeof(cell_t);
 	OpAdvTable[OP_MOVS] = sizeof(cell_t);
-	OpAdvTable[OP_CMPS] = sizeof(cell_t);
 	OpAdvTable[OP_FILL] = sizeof(cell_t);
 	OpAdvTable[OP_HALT] = sizeof(cell_t);
 	OpAdvTable[OP_BOUNDS] = sizeof(cell_t);
@@ -574,9 +566,6 @@ JITX86::JITX86()
 	OpAdvTable[OP_SMUL] = 0;
 	OpAdvTable[OP_SDIV] = 0;
 	OpAdvTable[OP_SDIV_ALT] = 0;
-	OpAdvTable[OP_UMUL] = 0;
-	OpAdvTable[OP_UDIV] = 0;
-	OpAdvTable[OP_UDIV_ALT] = 0;
 	OpAdvTable[OP_ADD] = 0;
 	OpAdvTable[OP_SUB] = 0;
 	OpAdvTable[OP_SUB_ALT] = 0;
@@ -592,10 +581,6 @@ JITX86::JITX86()
 	OpAdvTable[OP_SIGN_ALT] = 0;
 	OpAdvTable[OP_EQ] = 0;
 	OpAdvTable[OP_NEQ] = 0;
-	OpAdvTable[OP_LESS] = 0;
-	OpAdvTable[OP_LEQ] = 0;
-	OpAdvTable[OP_GRTR] = 0;
-	OpAdvTable[OP_GEQ] = 0;
 	OpAdvTable[OP_SLESS] = 0;
 	OpAdvTable[OP_SLEQ] = 0;
 	OpAdvTable[OP_SGRTR] = 0;
@@ -622,10 +607,6 @@ JITX86::JITX86()
 	OpAdvTable[OP_JNZ] = -2;
 	OpAdvTable[OP_JEQ] = -2;
 	OpAdvTable[OP_JNEQ] = -2;
-	OpAdvTable[OP_JLESS] = -2;
-	OpAdvTable[OP_JLEQ] = -2;
-	OpAdvTable[OP_JGRTR] = -2;
-	OpAdvTable[OP_JGEQ] = -2;
 	OpAdvTable[OP_JSLESS] = -2;
 	OpAdvTable[OP_JSLEQ] = -2;
 	OpAdvTable[OP_JSGRTR] = -2;
@@ -633,6 +614,7 @@ JITX86::JITX86()
 	OpAdvTable[OP_SWITCH] = -2;
 
 	/* opcodes that are totally invalid */
+	/* :TODO: make an alternate table if USE_UNGEN_OPCODES is on? */
 	OpAdvTable[OP_FILE] = -3;
 	OpAdvTable[OP_SYMBOL] = -3;
 	OpAdvTable[OP_LINE] = -3;
@@ -641,4 +623,24 @@ JITX86::JITX86()
 	OpAdvTable[OP_SYSREQ_D] = -3;
 	OpAdvTable[OP_SYSREQ_ND] = -3;
 	OpAdvTable[OP_PUSH_R] = -3;
+	OpAdvTable[OP_LODB_I] = -3;
+	OpAdvTable[OP_STRB_I] = -3;
+	OpAdvTable[OP_LCTRL] = -3;
+	OpAdvTable[OP_SCTRL] = -3;
+	OpAdvTable[OP_ALIGN_PRI] = -3;
+	OpAdvTable[OP_ALIGN_ALT] = -3;
+	OpAdvTable[OP_JREL] = -3;
+	OpAdvTable[OP_CMPS] = -3;
+	OpAdvTable[OP_UMUL] = -3;
+	OpAdvTable[OP_UDIV] = -3;
+	OpAdvTable[OP_UDIV_ALT] = -3;
+	OpAdvTable[OP_LESS] = -3;
+	OpAdvTable[OP_LEQ] = -3;
+	OpAdvTable[OP_GRTR] = -3;
+	OpAdvTable[OP_GEQ] = -3;
+	OpAdvTable[OP_JLESS] = -3;
+	OpAdvTable[OP_JLEQ] = -3;
+	OpAdvTable[OP_JGRTR] = -3;
+	OpAdvTable[OP_JGEQ] = -3;
+
 }

@@ -63,12 +63,12 @@ typedef enum
 	OP_LOAD_ALT,			//DONE
 	OP_LOAD_S_PRI,			//DONE
 	OP_LOAD_S_ALT,			//DONE
-	OP_LREF_PRI,			//UNSUPPORTED
-	OP_LREF_ALT,			//UNSUPPORTED
-	OP_LREF_S_PRI,			//UNSUPPORTED
-	OP_LREF_S_ALT,			//UNSUPPORTED
+	OP_LREF_PRI,			// !GEN :TODO: we will need this for dynarrays
+	OP_LREF_ALT,			// !GEN :TODO: we will need this for dynarrays
+	OP_LREF_S_PRI,			//DONE 
+	OP_LREF_S_ALT,			//DONE
 	OP_LOAD_I,				//DONE
-	OP_LODB_I,				//UNSUPPORTED
+	OP_LODB_I,				// !GEN :TODO: - only used for pack access - drop support in compiler first
 	OP_CONST_PRI,			//DONE
 	OP_CONST_ALT,			//DONE
 	OP_ADDR_PRI,			//DONE
@@ -77,26 +77,26 @@ typedef enum
 	OP_STOR_ALT,			//DONE
 	OP_STOR_S_PRI,			//DONE
 	OP_STOR_S_ALT,			//DONE
-	OP_SREF_PRI,			//UNSUPPORTED
-	OP_SREF_ALT,			//UNSUPPORTED
-	OP_SREF_S_PRI,			//UNSUPPORTED
-	OP_SREF_S_ALT,			//UNSUPPORTED
+	OP_SREF_PRI,			//DONE
+	OP_SREF_ALT,			//DONE
+	OP_SREF_S_PRI,			// !GEN :TODO: we will need this for dynarrays
+	OP_SREF_S_ALT,			// !GEN :TODO: we will need this for dynarrays
 	OP_STOR_I,				//DONE
-	OP_STRB_I,				//UNSUPPORTED
+	OP_STRB_I,				// !GEN :TODO: - only used for pack access, drop support in compiler first
 	OP_LIDX,				//DONE
-	OP_LIDX_B,				//UNSUPPORTED
+	OP_LIDX_B,				//DONE
 	OP_IDXADDR,				//DONE
-	OP_IDXADDR_B,			//UNSUPPORTED
-	OP_ALIGN_PRI,			//UNSUPPORTED
-	OP_ALIGN_ALT,			//UNSUPPORTED
-	OP_LCTRL,				//UNSUPPORTED
-	OP_SCTRL,				//UNSUPPORTED
+	OP_IDXADDR_B,			//DONE
+	OP_ALIGN_PRI,			// !GEN :TODO: - only used for pack access, drop support in compiler first
+	OP_ALIGN_ALT,			// !GEN :TODO: - only used for pack access, drop support in compiler first
+	OP_LCTRL,				// !GEN
+	OP_SCTRL,				// !GEN
 	OP_MOVE_PRI,			//DONE
 	OP_MOVE_ALT,			//DONE
 	OP_XCHG,				//DONE
 	OP_PUSH_PRI,			//DONE
 	OP_PUSH_ALT,			//DONE
-	OP_PUSH_R,				//DEPRECATED
+	OP_PUSH_R,				// !GEN DEPRECATED
 	OP_PUSH_C,				//DONE
 	OP_PUSH,				//DONE
 	OP_PUSH_S,				//DONE
@@ -105,20 +105,20 @@ typedef enum
 	OP_STACK,				//DONE
 	OP_HEAP,				//DONE
 	OP_PROC,				//DONE
-	OP_RET,					//UNSUPPORTED
+	OP_RET,					// !GEN
 	OP_RETN,				//DONE
 	OP_CALL,
-	OP_CALL_PRI,
+	OP_CALL_PRI,			// !GEN
 	OP_JUMP,				//DONE
-	OP_JREL,				//UNSUPPORTED
+	OP_JREL,				// !GEN
 	OP_JZER,				//DONE
 	OP_JNZ,					//DONE
 	OP_JEQ,					//DONE
 	OP_JNEQ,				//DONE
-	OP_JLESS,				//UNSUPPORTED
-	OP_JLEQ,				//UNSUPPORTED
-	OP_JGRTR,				//UNSUPPORTED
-	OP_JGEQ,				//UNSUPPORTED
+	OP_JLESS,				// !GEN
+	OP_JLEQ,				// !GEN
+	OP_JGRTR,				// !GEN
+	OP_JGEQ,				// !GEN
 	OP_JSLESS,				//DONE
 	OP_JSLEQ,				//DONE
 	OP_JSGRTR,				//DONE
@@ -133,9 +133,9 @@ typedef enum
 	OP_SMUL,				//DONE
 	OP_SDIV,				//DONE
 	OP_SDIV_ALT,			//DONE
-	OP_UMUL,				//UNSUPPORTED
-	OP_UDIV,				//UNSUPPORTED
-	OP_UDIV_ALT,			//UNSUPPORTED
+	OP_UMUL,				// !GEN
+	OP_UDIV,				// !GEN
+	OP_UDIV_ALT,			// !GEN
 	OP_ADD,					//DONE
 	OP_SUB,					//DONE
 	OP_SUB_ALT,				//DONE
@@ -155,10 +155,10 @@ typedef enum
 	OP_SIGN_ALT,			//DONE
 	OP_EQ,					//DONE
 	OP_NEQ,					//DONE
-	OP_LESS,				//UNSUPPORTED
-	OP_LEQ,					//UNSUPPORTED
-	OP_GRTR,				//UNSUPPORTED
-	OP_GEQ,					//UNSUPPORTED
+	OP_LESS,				// !GEN
+	OP_LEQ,					// !GEN
+	OP_GRTR,				// !GEN
+	OP_GEQ,					// !GEN
 	OP_SLESS,				//DONE
 	OP_SLEQ,				//DONE
 	OP_SGRTR,				//DONE
@@ -176,17 +176,17 @@ typedef enum
 	OP_DEC_S,				//DONE
 	OP_DEC_I,				//DONE
 	OP_MOVS,				//DONE
-	OP_CMPS,				//UNSUPPORTED
+	OP_CMPS,				// !GEN
 	OP_FILL,				//DONE
 	OP_HALT,				//DONE
 	OP_BOUNDS,				//DONE
-	OP_SYSREQ_PRI,
-	OP_SYSREQ_C,
-	OP_FILE,				//DEPRECATED
-	OP_LINE,				//DEPRECATED
-	OP_SYMBOL,				//DEPRECATED
-	OP_SRANGE,				//DEPRECATED
-	OP_JUMP_PRI,
+	OP_SYSREQ_PRI,			// !GEN
+	OP_SYSREQ_C,			
+	OP_FILE,				// !GEN DEPRECATED
+	OP_LINE,				// !GEN DEPRECATED
+	OP_SYMBOL,				// !GEN DEPRECATED
+	OP_SRANGE,				// !GEN DEPRECATED
+	OP_JUMP_PRI,			// !GEN
 	OP_SWITCH,
 	OP_CASETBL,
 	OP_SWAP_PRI,			//DONE
@@ -194,7 +194,7 @@ typedef enum
 	OP_PUSH_ADR,			//DONE
 	OP_NOP,					//DONE
 	OP_SYSREQ_N,
-	OP_SYMTAG,				//DEPRECATED
+	OP_SYMTAG,				// !GEN DEPRECATED
 	OP_BREAK,				//DONE
 	OP_PUSH2_C,				//DONE
 	OP_PUSH2,				//DONE
@@ -217,8 +217,8 @@ typedef enum
 	OP_CONST,				//DONE
 	OP_CONST_S,				//DONE
 	/* ----- */
-	OP_SYSREQ_D,			//UNSUPPORTED
-	OP_SYSREQ_ND,			//UNSUPPORTED
+	OP_SYSREQ_D,			// !GEN UNSUPPORT
+	OP_SYSREQ_ND,			// !GEN UNSUPPORT
 	/* ----- */
 	OP_HEAP_PRI,			//DONE
 	OP_PUSH_HEAP_C,			//DONE

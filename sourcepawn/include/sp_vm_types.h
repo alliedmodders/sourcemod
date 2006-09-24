@@ -201,7 +201,7 @@ typedef int (*SPVM_DEBUGBREAK)(SourcePawn::IPluginContext *, uint32_t, uint32_t)
 typedef struct sp_context_s
 {
 	/* general/parent information */
-	void			*base;		/* base of generated code and memory */
+	void			*codebase;	/* base of generated code and memory */
 	sp_plugin_t		*plugin;	/* pointer back to parent information */
 	SourcePawn::IPluginContext *context;	/* pointer to IPluginContext */
 	SourcePawn::IVirtualMachine *vmbase;	/* pointer to IVirtualMachine */

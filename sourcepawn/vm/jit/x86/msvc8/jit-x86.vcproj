@@ -214,6 +214,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ungen_opcodes.h"
+				>
+			</File>
+			<File
 				RelativePath="..\x86_macros.h"
 				>
 			</File>
@@ -225,6 +229,10 @@
 			>
 			<File
 				RelativePath="..\opcode_switch.inc"
+				>
+			</File>
+			<File
+				RelativePath="..\ungen_opcode_switch.inc"
 				>
 			</File>
 		</Filter>
