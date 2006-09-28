@@ -64,8 +64,8 @@
 #define IA32_SUB_REG_RM			0x2B	// encoding is /r
 #define IA32_SUB_RM_IMM8		0x83	// encoding is /5 <imm8>
 #define IA32_SUB_RM_IMM32		0x81	// encoding is /5 <imm32>
-#define IA32_SBB_RM_REG			0x19	// encoding is /r
-#define IA32_SBB_EAX_IMM32		0x1D	// encoding is <imm32>
+#define IA32_SBB_REG_RM			0x1B	// encoding is /r
+#define IA32_SBB_RM_IMM8		0x83	// encoding is <imm32>
 #define IA32_JMP_IMM32			0xE9	// encoding is imm32
 #define IA32_JMP_IMM8			0xEB	// encoding is imm8
 #define IA32_JMP_RM				0xFF	// encoding is /4
@@ -381,16 +381,17 @@ inline void IA32_Sub_Rm_Imm32(JitWriter *jit, jit_uint8_t reg, jit_int32_t val, 
 	jit->write_int32(val);
 }
 
-inline void IA32_Sbb_Rm_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
+inline void IA32_Sbb_Reg_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
 {
-	jit->write_ubyte(IA32_SBB_RM_REG);
-	jit->write_ubyte(ia32_modrm(mode, src, dest));
+	jit->write_ubyte(IA32_SBB_REG_RM);
+	jit->write_ubyte(ia32_modrm(mode, dest, src));
 }
 
-inline void IA32_Sbb_Eax_Imm32(JitWriter *jit, jit_int32_t value)
+inline void IA32_Sbb_Rm_Imm8(JitWriter *jit, jit_uint8_t dest, jit_int8_t value, jit_uint8_t mode)
 {
-	jit->write_ubyte(IA32_SBB_EAX_IMM32);
-	jit->write_int32(value);
+	jit->write_ubyte(IA32_SBB_RM_IMM8);
+	jit->write_ubyte(ia32_modrm(mode, 3, dest));
+	jit->write_byte(value);
 }
 
 inline void IA32_Div_Rm(JitWriter *jit, jit_uint8_t reg, jit_uint8_t mode)
@@ -686,18 +687,19 @@ inline void IA32_Mov_RmEBP_Reg_Disp_Reg(JitWriter *jit,
 	jit->write_byte(0);
 }
 
-inline void IA32_Mov_Rm8_Reg_Disp_Reg(JitWriter *jit, 
+inline void IA32_Mov_Rm8EBP_Reg_Disp_Reg(JitWriter *jit, 
 									 jit_uint8_t dest_base, 
 									 jit_uint8_t dest_index,
 									 jit_uint8_t dest_scale,
 									 jit_uint8_t src)
 {
 	jit->write_ubyte(IA32_MOV_RM8_REG);
-	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, src, REG_SIB));
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, src, REG_SIB));
 	jit->write_ubyte(ia32_sib(dest_scale, dest_index, dest_base));
+	jit->write_byte(0);
 }
 
-inline void IA32_Mov_Rm16_Reg_Disp_Reg(JitWriter *jit, 
+inline void IA32_Mov_Rm16EBP_Reg_Disp_Reg(JitWriter *jit, 
 									  jit_uint8_t dest_base, 
 									  jit_uint8_t dest_index,
 									  jit_uint8_t dest_scale,
@@ -705,8 +707,9 @@ inline void IA32_Mov_Rm16_Reg_Disp_Reg(JitWriter *jit,
 {
 	jit->write_ubyte(IA32_16BIT_PREFIX);
 	jit->write_ubyte(IA32_MOV_RM_REG);
-	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, src, REG_SIB));
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, src, REG_SIB));
 	jit->write_ubyte(ia32_sib(dest_scale, dest_index, dest_base));
+	jit->write_byte(0);
 }
 
 /**
