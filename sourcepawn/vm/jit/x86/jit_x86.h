@@ -52,8 +52,8 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 
 #define AMX_REG_PRI		REG_EAX
 #define AMX_REG_ALT		REG_EDX
-#define AMX_REG_STK		REG_EBP
-#define AMX_REG_DAT		REG_EDI
+#define AMX_REG_STK		REG_EDI
+#define AMX_REG_DAT		REG_EBP
 #define AMX_REG_TMP		REG_ECX
 #define AMX_REG_INFO	REG_ESI
 #define AMX_REG_FRM		REG_EBX
