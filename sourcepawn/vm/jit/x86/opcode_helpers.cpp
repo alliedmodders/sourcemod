@@ -20,6 +20,7 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	 * This is because we do not support resuming or sleeping!
 	 */
 
+	//:TODO: FIX THIS FOR THE EBP AND EDI SWITCHING
 	//push ebp
 	//mov ebp, esp
 	IA32_Push_Reg(jit, REG_EBP);
@@ -141,7 +142,7 @@ void Write_BreakDebug(JitWriter *jit)
 	//jnz :nocall
 	IA32_Push_Reg(jit, AMX_REG_TMP);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, dbreak), 0);
+	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, dbreak), 0);
 	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
 
 	//pushad
@@ -153,7 +154,7 @@ void Write_BreakDebug(JitWriter *jit)
 	//call ecx
 	//add esp, 8
 	//popad
-	IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_FRAME);
+	IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_FRAME); //:TODO: move to regs and push? and dont disp for 0
 	IA32_Push_Rm_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, context));
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_TMP, offsetof(sp_context_t, dbreak));
 	IA32_Call_Reg(jit, AMX_REG_TMP);
@@ -180,14 +181,12 @@ void Write_Error(JitWriter *jit, int error)
 
 void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg)
 {
-	CompData *data = (CompData *)jit->data;
-
 	//test reg, reg
 	//jnz :continue
 	//divzero: (write error)
 	IA32_Test_Rm_Reg(jit, reg, reg, MOD_REG);
 	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
-	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
+	if (!(((CompData *)jit->data)->inline_level & JIT_INLINE_ERRORCHECKS))
 	{
 		//sub esp, 4    - correct stack for returning to non-inlined JIT
 		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
@@ -197,7 +196,7 @@ void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg)
 	IA32_Send_Jump8_Here(jit, jmp);
 
 }
-
+//:TODO: FIX THIS FOR NEW EBP STUFF
 void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 {
 	CompData *data = (CompData *)jit->data;
@@ -283,10 +282,10 @@ void Write_BoundsCheck(JitWriter *jit)
 			//cmp eax, ecx
 			//jg :err_bounds
 			//ret
-			IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);//:TODO: use imm8
+			IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, 0);
 			jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
 			//:TODO: make sure this is right order
-			IA32_Cmp_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_TMP, MOD_REG);
+			IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_TMP, MOD_REG);
 			jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
 			IA32_Return(jit);
 			IA32_Send_Jump8_Here(jit, jmp1);
@@ -296,11 +295,15 @@ void Write_BoundsCheck(JitWriter *jit)
 	} else {
 		//cmp eax, 0
 		//jl :err_bounds
-		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, 0);//:TODO: use imm8
+		IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, 0);
 		jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
 		//cmp eax, <val>
 		//jg :err_bounds
-		IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, jit->read_cell());//:TODO:check val size and use cmp eax or imm8
+		cell_t val = jit->read_cell();
+		if (val < SCHAR_MAX && val > SCHAR_MIN)
+			IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, (jit_int8_t)val);
+		else
+			IA32_Cmp_Eax_Imm32(jit, val);
 		jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
 		//jmp :continue
 		jitoffs_t cont = IA32_Jump_Imm8(jit, 0);
@@ -331,13 +334,13 @@ void Write_CheckMargin_Heap(JitWriter *jit)
 		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
 		IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAPLOW);
 		jitoffs_t hm = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
-		//lea ecx, [edi+ecx+STACK_MARGIN]
-		//cmp ecx, ebp
+		//lea ecx, [ebp+ecx+STACK_MARGIN]
+		//cmp ecx, edi
 		// jg :error_heaplow
 		//OR
 		// ret
 		IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_TMP, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, STACK_MARGIN);
-		IA32_Cmp_Rm_Reg(jit, REG_ECX, AMX_REG_STK, MOD_REG);
+		IA32_Cmp_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
 		jitoffs_t hl = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
 		jitoffs_t cont;
 		if (always_inline)
@@ -364,7 +367,7 @@ void Write_CheckMargin_Stack(JitWriter *jit)
 {
 	/* this is small, so we always inline it.
 	*/
-	//cmp ebp, [esi+stp]
+	//cmp edi, [esi+stp]
 	//jle :continue
 	IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_STK, AMX_REG_INFO, AMX_INFO_STACKTOP);
 	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_LE, 0);
@@ -381,17 +384,17 @@ void Write_CheckMargin_Stack(JitWriter *jit)
 void Macro_PushN_Addr(JitWriter *jit, int i)
 {
 	//push eax
-	//mov eax, frm
+	//mov eax, [esi+frm]
 	//loop i times:
 	// lea ecx, [eax+<val>]
-	// mov [ebp-4*i], ecx
-	//sub ebp, 4*N
+	// mov [edi-4*i], ecx
+	//sub edi, 4*N
 	//pop eax
 
 	cell_t val;
 	int n = 1;
 	IA32_Push_Reg(jit, AMX_REG_PRI);
-	IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_INFO_FRM, MOD_MEM_REG);
+	IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_INFO, MOD_MEM_REG);
 	do
 	{
 		val = jit->read_cell();
@@ -409,8 +412,8 @@ void Macro_PushN_S(JitWriter *jit, int i)
 {
 	//loop i times:
 	// mov ecx, [ebx+<val>]
-	// mov [ebp-4*i], ecx
-	//sub ebp, 4*N
+	// mov [edi-4*i], ecx
+	//sub edi, 4*N
 
 	cell_t val;
 	int n = 1;
@@ -429,8 +432,8 @@ void Macro_PushN_S(JitWriter *jit, int i)
 void Macro_PushN_C(JitWriter *jit, int i)
 {
 	//loop i times:
-	// mov [ebp-4*i], <val>
-	//sub ebp, 4*N
+	// mov [edi-4*i], <val>
+	//sub edi, 4*N
 
 	int n = 1;
 	do 
@@ -443,9 +446,9 @@ void Macro_PushN_C(JitWriter *jit, int i)
 void Macro_PushN(JitWriter *jit, int i)
 {
 	//loop i times:
-	// mov ecx, [edi+<val>]
-	// mov [ebp-4*i], ecx
-	//sub ebp, 4*N
+	// mov ecx, [ebp+<val>]
+	// mov [edi-4*i], ecx
+	//sub edi, 4*N
 
 	cell_t val;
 	int n = 1;
