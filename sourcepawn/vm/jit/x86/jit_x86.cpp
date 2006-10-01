@@ -1210,6 +1210,8 @@ inline void WriteOp_Switch(JitWriter *jit)
 	if (!num_cases)
 	{
 		/* Special treatment for 0 cases */
+		//jmp <default>
+		IA32_Jump_Imm32_Abs(jit, RelocLookup(jit, *tbl, false));
 	} else {
 		/* Check if the case layout is fully sequential */
 		casetbl *iter = (casetbl *)(tbl + 1);
