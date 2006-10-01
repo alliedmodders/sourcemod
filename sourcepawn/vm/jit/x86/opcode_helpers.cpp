@@ -546,6 +546,17 @@ JITX86::JITX86()
 	OpAdvTable[OP_PUSH_ADR] = sizeof(cell_t);
 	OpAdvTable[OP_PUSH_HEAP_C] = sizeof(cell_t);
 	OpAdvTable[OP_SYSREQ_C] = sizeof(cell_t);
+	OpAdvTable[OP_CALL] = sizeof(cell_t);
+	OpAdvTable[OP_JUMP] = sizeof(cell_t);
+	OpAdvTable[OP_JZER] = sizeof(cell_t);
+	OpAdvTable[OP_JNZ] = sizeof(cell_t);
+	OpAdvTable[OP_JEQ] = sizeof(cell_t);
+	OpAdvTable[OP_JNEQ] = sizeof(cell_t);
+	OpAdvTable[OP_JSLESS] = sizeof(cell_t);
+	OpAdvTable[OP_JSLEQ] = sizeof(cell_t);
+	OpAdvTable[OP_JSGRTR] = sizeof(cell_t);
+	OpAdvTable[OP_JSGEQ] = sizeof(cell_t);
+	OpAdvTable[OP_SWITCH] = sizeof(cell_t);
 
 	/* instructions with 0 parameters */
 	OpAdvTable[OP_LOAD_I] = 0;
@@ -602,19 +613,6 @@ JITX86::JITX86()
 	OpAdvTable[OP_HEAP_PRI] = 0;
 	OpAdvTable[OP_POP_HEAP_PRI] = 0;
 	OpAdvTable[OP_SYSREQ_PRI] = 0;
-
-	/* opcodes that need relocation */
-	OpAdvTable[OP_CALL] = -2;
-	OpAdvTable[OP_JUMP] = -2;
-	OpAdvTable[OP_JZER] = -2;
-	OpAdvTable[OP_JNZ] = -2;
-	OpAdvTable[OP_JEQ] = -2;
-	OpAdvTable[OP_JNEQ] = -2;
-	OpAdvTable[OP_JSLESS] = -2;
-	OpAdvTable[OP_JSLEQ] = -2;
-	OpAdvTable[OP_JSGRTR] = -2;
-	OpAdvTable[OP_JSGEQ] = -2;
-	OpAdvTable[OP_SWITCH] = -2;
 
 	/* opcodes that are totally invalid */
 	/* :TODO: make an alternate table if USE_UNGEN_OPCODES is on? */

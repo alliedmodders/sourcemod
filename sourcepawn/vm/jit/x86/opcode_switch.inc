@@ -618,6 +618,16 @@
 				WriteOp_Jsleq(jit);
 				break;
 			}
+		case OP_SWITCH:
+			{
+				WriteOp_Switch(jit);
+				break;
+			}
+		case OP_CASETBL:
+			{
+				WriteOp_Casetbl(jit);
+				break;
+			}
 #if defined USE_UNGEN_OPCODES
 		#include "ungen_opcode_switch.inc"
 #endif

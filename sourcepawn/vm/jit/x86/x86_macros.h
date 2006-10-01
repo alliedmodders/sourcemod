@@ -78,6 +78,7 @@
 #define IA32_MOV_RM_IMM32		0xC7	// encoding is /0
 #define IA32_CMP_RM_IMM32		0x81	// encoding is /7 <imm32>
 #define IA32_CMP_RM_IMM8		0x83	// encoding is /7 <imm8>
+#define IA32_CMP_AL_IMM32		0x3C	// no extra encoding
 #define IA32_CMP_EAX_IMM32		0x3D	// no extra encoding
 #define IA32_CMPSB				0xA6	// no extra encoding
 #define IA32_TEST_RM_REG		0x85	// encoding is /r
@@ -468,6 +469,17 @@ inline void IA32_Add_Rm_Imm32_Disp8(JitWriter *jit,
 	jit->write_int32(val);
 }
 
+inline jitoffs_t IA32_Add_Rm_Imm32_Later(JitWriter *jit, 
+									jit_uint8_t dest, 
+									jit_uint8_t mode)
+{
+	jit->write_ubyte(IA32_ADD_RM_IMM32);
+	jit->write_ubyte(ia32_modrm(mode, 0, dest));
+	jitoffs_t ptr = jit->jit_curpos();
+	jit->write_int32(0);
+	return ptr;
+}
+
 inline void IA32_Add_Rm_Imm8_Disp32(JitWriter *jit, 
 							jit_uint8_t dest, 
 							jit_int8_t val, 
@@ -814,6 +826,12 @@ inline void IA32_Jump_Reg(JitWriter *jit, jit_uint8_t reg)
 	jit->write_ubyte(ia32_modrm(MOD_REG, 4, reg));
 }
 
+inline void IA32_Jump_Rm(JitWriter *jit, jit_uint8_t reg, jit_uint8_t mode)
+{
+	jit->write_ubyte(IA32_JMP_RM);
+	jit->write_ubyte(ia32_modrm(mode, 4, reg));
+}
+
 inline jitoffs_t IA32_Call_Imm32(JitWriter *jit, jit_int32_t disp)
 {
 	jitoffs_t ptr;
@@ -943,6 +961,12 @@ inline void IA32_Cmp_Rm_Disp8_Imm8(JitWriter *jit, jit_uint8_t reg, jit_int8_t d
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, 7, reg));
 	jit->write_byte(disp);
 	jit->write_byte(imm8);
+}
+
+inline void IA32_Cmp_Al_Imm8(JitWriter *jit, jit_int8_t value)
+{
+	jit->write_ubyte(IA32_CMP_AL_IMM32);
+	jit->write_byte(value);
 }
 
 inline void IA32_Cmp_Eax_Imm32(JitWriter *jit, jit_int32_t value)

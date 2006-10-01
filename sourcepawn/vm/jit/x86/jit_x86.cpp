@@ -1128,7 +1128,6 @@ inline void WriteOp_Jzer(JitWriter *jit)
 	//jz <target>
 	cell_t target = jit->read_cell();
 	IA32_Test_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_PRI, MOD_REG);
-	IA32_Jump_Imm32_Abs(jit, RelocLookup(jit, target, false));
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_Z, RelocLookup(jit, target, false));
 }
 
@@ -1195,6 +1194,124 @@ inline void WriteOp_JsGeq(JitWriter *jit)
 	IA32_Jump_Cond_Imm32(jit, CC_GE, RelocLookup(jit, target, false));
 }
 
+inline void WriteOp_Switch(JitWriter *jit)
+{
+	cell_t offs = jit->read_cell();
+	cell_t *tbl = (cell_t *)((char *)jit->inbase + offs);
+
+	struct casetbl
+	{
+		cell_t val;
+		cell_t offs;
+	};
+
+	/* Read the number of cases, then advance by one */
+	cell_t num_cases = *tbl++;
+	if (!num_cases)
+	{
+		/* Special treatment for 0 cases */
+	} else {
+		/* Check if the case layout is fully sequential */
+		casetbl *iter = (casetbl *)(tbl + 1);
+		casetbl *cases = iter;
+		cell_t first = iter[0].val;
+		cell_t last = first;
+		bool sequential = true;
+		for (cell_t i=1; i<num_cases; i++)
+		{
+			if (iter[i].val != ++last)
+			{
+				sequential = false;
+				break;
+			}
+		}
+		/* Time to generate. 
+		 * First check whether the bounds are correct: if (a < LOW || a > HIGH)
+		 * This check is valid for both sequential and non-sequential.
+		 */
+		cell_t low_bound = cases[0].val;
+		if (low_bound != 0)
+		{
+			/* negate it so we'll get a lower bound of 0 */
+			//lea ecx, [eax-<LOWER_BOUND>]
+			low_bound = -low_bound;
+			if (low_bound > SCHAR_MIN && low_bound < SCHAR_MAX)
+			{
+				IA32_Lea_DispRegImm8(jit, AMX_REG_TMP, AMX_REG_PRI, low_bound);
+			} else {
+				IA32_Lea_DispRegImm32(jit, AMX_REG_TMP, AMX_REG_PRI, low_bound);
+			}
+		}
+		cell_t high_bound = abs(cases[0].val - cases[num_cases-1].val);
+		//cmp ecx, <UPPER BOUND BOUND>
+		if (high_bound > SCHAR_MIN && high_bound < SCHAR_MAX)
+		{
+			IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_TMP, high_bound);
+		} else {
+			IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_TMP, high_bound);
+		}
+		//ja <default case>
+		IA32_Jump_Cond_Imm32_Abs(jit, CC_A, RelocLookup(jit, *tbl, false));
+
+		/**
+		 * Now we've taken the default case out of the way, it's time to do the
+		 * full check, which is different for sequential vs. non-sequential.
+		 */
+		if (sequential)
+		{
+			/* we're now theoretically guaranteed to be jumping to a correct offset.
+			 * ECX still has the correctly bound offset in it, luckily!
+			 * thus, we simply need to relocate ECX and store the cases.
+			 */
+			//shr ecx, 2
+			//add ecx, <case table start>
+			IA32_Shr_Rm_Imm8(jit, AMX_REG_TMP, 2, MOD_REG);
+			jitoffs_t tbl_offs = IA32_Add_Rm_Imm32_Later(jit, AMX_REG_TMP, MOD_REG);
+			IA32_Jump_Rm(jit, AMX_REG_TMP, MOD_MEM_REG);
+			/* The case table starts here.  Go back and write the output pointer. */
+			jitoffs_t cur_pos = jit->jit_curpos();
+			jit->setpos(tbl_offs);
+			jit->write_uint32((jit_uint32_t)(jit->outbase + cur_pos));
+			jit->setpos(cur_pos);
+			//now we can write the case table, finally!
+			jit_uint32_t base = (jit_uint32_t)jit->outbase;
+			for (cell_t i=0; i<num_cases; i++)
+			{
+				jit->write_uint32(base + RelocLookup(jit, cases[i].offs, false));
+			}
+		} else {
+			/* The slow version.  Go through each case and generate a check.
+			 * In the future we should replace case tables of more than ~8 cases with a
+			 * hash table lookup.
+			 */
+			cell_t val;
+			for (cell_t i=0; i<num_cases; i++)
+			{
+				val = cases[i].val;
+				//cmp eax, <val> OR cmp al, <val>
+				if (val > SCHAR_MIN && val < SCHAR_MAX)
+				{
+					IA32_Cmp_Al_Imm8(jit, val);
+				} else {
+					IA32_Cmp_Eax_Imm32(jit, cases[i].val);
+				}
+				IA32_Jump_Cond_Imm32_Abs(jit, CC_E, RelocLookup(jit, cases[i].offs, false));
+			}
+		}
+	}
+}
+
+inline void WriteOp_Casetbl(JitWriter *jit)
+{
+	/* do nothing here, switch does all ze work */
+	cell_t num_cases = jit->read_cell();
+
+	/* Two cells per case, one extra case for the default jump */
+	num_cases = (num_cases * 2) + 1;
+	jit->inptr += num_cases;
+}
+
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1255,9 +1372,6 @@ sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 			AbortCompilation(co);
 			*err = SP_ERR_INVALID_INSTRUCTION;
 			return NULL;
-		} else if (op_c == -2) {
-			/* :TODO: get rid of this block */
-			cip += sizeof(cell_t);
 		} else if (op_c == -1) {
 			switch (op)
 			{
