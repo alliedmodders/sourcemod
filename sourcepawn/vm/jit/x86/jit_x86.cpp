@@ -1068,6 +1068,14 @@ inline void WriteOp_Retn(JitWriter *jit)
 	IA32_Jump_Reg(jit, AMX_REG_TMP);
 }
 
+inline void WriteOp_Call(JitWriter *jit)
+{
+	cell_t offs = jit->read_cell();
+
+	jitoffs_t jmp = IA32_Call_Imm32(jit, 0);
+	IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
+}
+
 inline void WriteOp_Bounds(JitWriter *jit)
 {
 	Write_BoundsCheck(jit);

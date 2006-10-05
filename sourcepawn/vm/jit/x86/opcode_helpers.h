@@ -107,7 +107,7 @@ typedef enum
 	OP_PROC,				//DONE
 	OP_RET,					// !GEN
 	OP_RETN,				//DONE
-	OP_CALL,
+	OP_CALL,				//DONE
 	OP_CALL_PRI,			// !GEN
 	OP_JUMP,				//DONE
 	OP_JREL,				// !GEN

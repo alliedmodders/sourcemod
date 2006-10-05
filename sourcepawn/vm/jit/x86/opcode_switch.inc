@@ -628,6 +628,11 @@
 				WriteOp_Casetbl(jit);
 				break;
 			}
+		case OP_CALL:
+			{
+				WriteOp_Call(jit);
+				break;
+			}
 #if defined USE_UNGEN_OPCODES
 		#include "ungen_opcode_switch.inc"
 #endif
