@@ -13,7 +13,7 @@
  *  1.  The origin of this software must not be misrepresented; you must not
  *      claim that you wrote the original software. If you use this software in
  *      a product, an acknowledgment in the product documentation would be
- *      appreciated but is not required.
+ *      appreciated but is not reeq;quired.
  *  2.  Altered source versions must be plainly marked as such, and must not be
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
@@ -354,7 +354,7 @@ static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
     assert(0);
   } /* switch */
   markexpr(sPARM,NULL,0);       /* mark the end of a sub-expression */
-  pushval((cell)paramspassed*sizeof(cell));
+  pushval((cell)paramspassed /* *sizeof(cell)*/ );
   assert(sym->ident==iFUNCTN);
   ffcall(sym,NULL,paramspassed);
   if (sc_status!=statSKIP)
@@ -2453,7 +2453,7 @@ static int nesting=0;
     arglist[argidx]=ARG_DONE;
   } /* for */
   stgmark(sENDREORDER);         /* mark end of reversed evaluation */
-  pushval((cell)nargs*sizeof(cell));
+  pushval((cell)nargs /* *sizeof(cell)*/ );
   nest_stkusage++;
   ffcall(sym,NULL,nargs);
   if (sc_status!=statSKIP)

@@ -4459,7 +4459,7 @@ static void destructsymbols(symbol *root,int level)
         address(sym,sPRI);
         addconst(offset);       /* add offset to array data to the address */
         pushreg(sPRI);
-        pushval(2*sizeof(cell));/* 2 parameters */
+        pushval(2 /* *sizeof(cell)*/ );/* 2 parameters */
         assert(opsym->ident==iFUNCTN);
         ffcall(opsym,NULL,1);
         if (sc_status!=statSKIP)
@@ -5231,23 +5231,7 @@ static void doswitch(void)
         assert(csp->next==cse);
         insert_constval(csp,cse,itoh(lbl_case),val,0);
         if (matchtoken(tDBLDOT)) {
-          cell end;
-          constexpr(&end,NULL,NULL);
-          if (end<=val)
-            error(50);                  /* invalid range */
-          while (++val<=end) {
-            casecount++;
-            /* find the new insertion point */
-            for (csp=&caselist, cse=caselist.next;
-                 cse!=NULL && cse->value<val;
-                 csp=cse, cse=cse->next)
-              /* nothing */;
-            if (cse!=NULL && cse->value==val)
-              error(40,val);            /* duplicate "case" label */
-            assert(csp!=NULL);
-            assert(csp->next==cse);
-            insert_constval(csp,cse,itoh(lbl_case),val,0);
-          } /* if */
+          error(1, ":", "..");
         } /* if */
       } while (matchtoken(','));
       needtoken(':');                   /* ':' ends the case */
