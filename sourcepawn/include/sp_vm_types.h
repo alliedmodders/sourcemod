@@ -190,6 +190,7 @@ namespace SourcePawn
  */
 typedef int (*SPVM_DEBUGBREAK)(SourcePawn::IPluginContext *, uint32_t, uint32_t);
 
+
 #define SPFLAG_PLUGIN_DEBUG		(1<<0)		/* plugin is in debug mode */
 
 /**
@@ -214,8 +215,6 @@ typedef struct sp_context_s
 	uint8_t			*data;		/* data chunk */
 	cell_t			heapbase;	/* heap base */
 	/* execution specific data */
-	cell_t			pri;		/* PRI register */
-	cell_t			alt;		/* ALT register */
 	cell_t			hp;			/* heap pointer */
 	cell_t			sp;			/* stack pointer */
 	cell_t			frm;		/* frame pointer */
