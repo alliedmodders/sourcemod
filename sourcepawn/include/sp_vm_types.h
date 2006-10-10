@@ -18,7 +18,7 @@ typedef int32_t		cell_t;
 #define SP_ERR_NOT_FOUND			6	/* The object in question was not found */
 #define SP_ERR_INDEX				7	/* Invalid index parameter */
 #define SP_ERR_NATIVE_PENDING		8	/* A script tried to exec an unbound native */
-#define SP_ERR_STACKERR				9	/* Stack/Heap collision */
+#define SP_ERR_STACKLOW				9	/* Nnot enough space left on the stack */
 #define SP_ERR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
 #define SP_ERR_INVALID_INSTRUCTION	11	/* Invalid instruction was encountered */
 #define SP_ERR_MEMACCESS			12	/* Invalid memory access */
