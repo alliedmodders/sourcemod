@@ -1364,10 +1364,15 @@ inline void WriteOp_Switch(JitWriter *jit)
 			{
 				jit->write_uint32(base + RelocLookup(jit, cases[i].offs, false));
 			}
+			//if we get here, there was a bug in the JIT, so we should break into the debugger
+			jit->write_ubyte(IA32_INT3);
 		} else {
 			/* The slow version.  Go through each case and generate a check.
 			 * In the future we should replace case tables of more than ~8 cases with a
 			 * hash table lookup.
+			 * :THOUGHT: Another method of optimizing this - fill in the gaps with jumps to the default case,
+			 *  but only if we're under N cases or so!
+			 * :THOUGHT: Write out a static btree lookup :)
 			 */
 			cell_t val;
 			for (cell_t i=0; i<num_cases; i++)
@@ -1382,9 +1387,9 @@ inline void WriteOp_Switch(JitWriter *jit)
 				}
 				IA32_Jump_Cond_Imm32_Abs(jit, CC_E, RelocLookup(jit, cases[i].offs, false));
 			}
+			/* After all this, jump to the default case! */
+			IA32_Jump_Imm32_Abs(jit, RelocLookup(jit, *tbl, false));
 		}
-		//if we get here, there was a bug in the JIT, so we should break into the debugger
-		jit->write_ubyte(IA32_INT3);
 	}
 }
 
