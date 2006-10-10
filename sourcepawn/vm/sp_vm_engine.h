@@ -70,18 +70,18 @@ namespace SourcePawn
 
 
 		/**
-		* Allocates executable memory.
-		*
-		* @param size		Size of memory to allocate.
-		* @return			Pointer to memory, NULL if allocation failed.
-		*/
+		 * Allocates executable memory.
+		 *
+		 * @param size		Size of memory to allocate.
+		 * @return			Pointer to memory, NULL if allocation failed.
+		 */
 		void *ExecAlloc(size_t size);
 
 		/**
-		* Frees executable memory.
-		*
-		* @param mem		Address to free.
-		*/
+		 * Frees executable memory.
+		 *
+		 * @param mem		Address to free.
+		 */
 		void ExecFree(void *address);
 	};
 };

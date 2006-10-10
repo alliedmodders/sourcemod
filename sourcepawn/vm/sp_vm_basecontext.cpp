@@ -51,6 +51,8 @@ int BaseContext::Execute(uint32_t public_func, cell_t *result)
 {
 	IVirtualMachine *vm = (IVirtualMachine *)ctx->vmbase;
 
+	uint32_t pushcount = ctx->pushcount;
+
 	int err;
 	sp_public_t *pubfunc;
 	if ((err=GetPublicByIndex(public_func, &pubfunc)) != SP_ERR_NONE)
@@ -58,16 +60,30 @@ int BaseContext::Execute(uint32_t public_func, cell_t *result)
 		return err;
 	}
 
-	PushCell(ctx->pushcount);
+	PushCell(pushcount++);
 	ctx->pushcount = 0;
 
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
 	err = vm->ContextExecute(ctx, pubfunc->offs, result);
+	
+	/**
+	 * :TODO: turn this into an error check
+	 */
 
-	ctx->sp = save_sp;
-	ctx->hp = save_hp;
+#if defined _DEBUG
+	if (err == SP_ERR_NONE)
+	{
+		assert(ctx->sp - pushcount * sizeof(cell_t) == save_sp);
+		assert(ctx->hp == save_hp);
+	}
+#endif
+	if (err != SP_ERR_NONE)
+	{
+		ctx->sp = save_sp;
+		ctx->hp = save_hp;
+	}
 
 	return err;
 }
@@ -89,8 +105,8 @@ int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys
 	realmem = cells * sizeof(cell_t);
 
 	/**
-	* Check if the space between the heap and stack is sufficient.
-	*/
+	 * Check if the space between the heap and stack is sufficient.
+	 */
 	if ((cell_t)(ctx->sp - ctx->hp - realmem) < STACKMARGIN)
 	{
 		return SP_ERR_HEAPLOW;
@@ -394,7 +410,7 @@ int BaseContext::PushCell(cell_t value)
 {
 	if ((ctx->hp + STACKMARGIN) > (cell_t)(ctx->sp - sizeof(cell_t)))
 	{
-		return SP_ERR_STACKERR;
+		return SP_ERR_STACKLOW;
 	}
 
 	ctx->sp -= sizeof(cell_t);
