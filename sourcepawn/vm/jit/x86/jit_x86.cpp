@@ -1280,7 +1280,7 @@ inline void WriteOp_JsGeq(JitWriter *jit)
 inline void WriteOp_Switch(JitWriter *jit)
 {
 	cell_t offs = jit->read_cell();
-	cell_t *tbl = (cell_t *)((char *)jit->inbase + offs);
+	cell_t *tbl = (cell_t *)((char *)jit->inbase + offs + sizeof(cell_t));
 
 	struct casetbl
 	{
@@ -1348,9 +1348,9 @@ inline void WriteOp_Switch(JitWriter *jit)
 			 * ECX still has the correctly bound offset in it, luckily!
 			 * thus, we simply need to relocate ECX and store the cases.
 			 */
-			//shr ecx, 2
+			//shl ecx, 2
 			//add ecx, <case table start>
-			IA32_Shr_Rm_Imm8(jit, AMX_REG_TMP, 2, MOD_REG);
+			IA32_Shl_Rm_Imm8(jit, AMX_REG_TMP, 2, MOD_REG);
 			jitoffs_t tbl_offs = IA32_Add_Rm_Imm32_Later(jit, AMX_REG_TMP, MOD_REG);
 			IA32_Jump_Rm(jit, AMX_REG_TMP, MOD_MEM_REG);
 			/* The case table starts here.  Go back and write the output pointer. */
