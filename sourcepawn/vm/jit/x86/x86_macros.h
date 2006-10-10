@@ -117,6 +117,7 @@
 #define IA32_POP_REG			0x58	// encoding is +r
 #define IA32_PUSH_REG			0x50	// encoding is +r
 #define IA32_PUSH_RM			0xFF	// encoding is /6
+#define IA32_PUSH_IMM32			0x68	// encoding is <imm32>
 #define IA32_REP				0xF3	// no extra encoding
 #define IA32_MOVSD				0xA5	// no extra encoding
 #define IA32_MOVSB				0xA4	// no extra encoding
@@ -124,6 +125,8 @@
 #define IA32_CLD				0xFC	// no extra encoding
 #define IA32_PUSHAD				0x60	// no extra encoding
 #define IA32_POPAD				0x61	// no extra encoding
+#define IA32_NOP				0x90	// no extra encoding
+#define IA32_INT3				0xCC	// no extra encoding
 
 inline jit_uint8_t ia32_modrm(jit_uint8_t mode, jit_uint8_t reg, jit_uint8_t rm)
 {
@@ -368,6 +371,13 @@ inline void IA32_Sub_Reg_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, j
 	jit->write_ubyte(ia32_modrm(mode, dest, src));
 }
 
+inline void IA32_Sub_Reg_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int8_t disp8)
+{
+	jit->write_ubyte(IA32_SUB_REG_RM);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, src));
+	jit->write_byte(disp8);
+}
+
 inline void IA32_Sub_Rm_Imm8(JitWriter *jit, jit_uint8_t reg, jit_int8_t val, jit_uint8_t mode)
 {
 	jit->write_ubyte(IA32_SUB_RM_IMM8);
@@ -475,7 +485,7 @@ inline jitoffs_t IA32_Add_Rm_Imm32_Later(JitWriter *jit,
 {
 	jit->write_ubyte(IA32_ADD_RM_IMM32);
 	jit->write_ubyte(ia32_modrm(mode, 0, dest));
-	jitoffs_t ptr = jit->jit_curpos();
+	jitoffs_t ptr = jit->get_outputpos();
 	jit->write_int32(0);
 	return ptr;
 }
@@ -599,6 +609,12 @@ inline void IA32_Push_Reg(JitWriter *jit, jit_uint8_t reg)
 	jit->write_ubyte(IA32_PUSH_REG+reg);
 }
 
+inline void IA32_Push_Imm32(JitWriter *jit, jit_int32_t val)
+{
+	jit->write_ubyte(IA32_PUSH_IMM32);
+	jit->write_int32(val);
+}
+
 inline void IA32_Pushad(JitWriter *jit)
 {
 	jit->write_ubyte(IA32_PUSHAD);
@@ -630,6 +646,14 @@ inline void IA32_Mov_Reg_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t 
 {
 	jit->write_ubyte(IA32_MOV_REG_MEM);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, src));
+	jit->write_byte(disp);
+}
+
+inline void IA32_Mov_Reg_Esp_Disp8(JitWriter *jit, jit_uint8_t dest, jit_int8_t disp)
+{
+	jit->write_ubyte(IA32_MOV_REG_MEM);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest, REG_SIB));
+	jit->write_ubyte(ia32_sib(NOSCALE, REG_NOIDX, REG_ESP));
 	jit->write_byte(disp);
 }
 
@@ -732,7 +756,7 @@ inline jitoffs_t IA32_Mov_Reg_Imm32(JitWriter *jit, jit_uint8_t dest, jit_int32_
 {
 	jitoffs_t offs;
 	jit->write_ubyte(IA32_MOV_REG_IMM+dest);
-	offs = jit->jit_curpos();
+	offs = jit->get_outputpos();
 	jit->write_int32(num);
 	return offs;
 }
@@ -787,7 +811,7 @@ inline jitoffs_t IA32_Jump_Cond_Imm8(JitWriter *jit, jit_uint8_t cond, jit_int8_
 {
 	jitoffs_t ptr;
 	jit->write_ubyte(IA32_JCC_IMM+cond);
-	ptr = jit->jit_curpos();
+	ptr = jit->get_outputpos();
 	jit->write_byte(disp);
 	return ptr;
 }
@@ -796,7 +820,7 @@ inline jitoffs_t IA32_Jump_Imm32(JitWriter *jit, jit_int32_t disp)
 {
 	jitoffs_t ptr;
 	jit->write_ubyte(IA32_JMP_IMM32);
-	ptr = jit->jit_curpos();
+	ptr = jit->get_outputpos();
 	jit->write_int32(disp);
 	return ptr;
 }
@@ -805,7 +829,7 @@ inline jitoffs_t IA32_Jump_Imm8(JitWriter *jit, jit_int8_t disp)
 {
 	jitoffs_t ptr;
 	jit->write_ubyte(IA32_JMP_IMM8);
-	ptr = jit->jit_curpos();
+	ptr = jit->get_outputpos();
 	jit->write_byte(disp);
 	return ptr;
 }
@@ -815,7 +839,7 @@ inline jitoffs_t IA32_Jump_Cond_Imm32(JitWriter *jit, jit_uint8_t cond, jit_int3
 	jitoffs_t ptr;
 	jit->write_ubyte(IA32_JCC_IMM32_1);
 	jit->write_ubyte(IA32_JCC_IMM32_2+cond);
-	ptr = jit->jit_curpos();
+	ptr = jit->get_outputpos();
 	jit->write_int32(disp);
 	return ptr;
 }
@@ -836,7 +860,7 @@ inline jitoffs_t IA32_Call_Imm32(JitWriter *jit, jit_int32_t disp)
 {
 	jitoffs_t ptr;
 	jit->write_ubyte(IA32_CALL_IMM32);
-	ptr = jit->jit_curpos();
+	ptr = jit->get_outputpos();
 	jit->write_int32(disp);
 	return ptr;
 }
@@ -878,7 +902,7 @@ inline void IA32_Jump_Imm32_Abs(JitWriter *jit, jitoffs_t target)
 {
 	/* :TODO: this should work, but does it? */
 	jit->write_ubyte(IA32_JMP_IMM32);
-	IA32_Write_Jump32(jit, jit->jit_curpos(), target);
+	IA32_Write_Jump32(jit, jit->get_outputpos(), target);
 	jit->outptr += 4;
 }
 
@@ -887,19 +911,19 @@ inline void IA32_Jump_Cond_Imm32_Abs(JitWriter *jit, jit_uint8_t cond, jitoffs_t
 	/* :TODO: this should work, but does it? */
 	jit->write_ubyte(IA32_JCC_IMM32_1);
 	jit->write_ubyte(IA32_JCC_IMM32_2+cond);
-	IA32_Write_Jump32(jit, jit->jit_curpos(), target);
+	IA32_Write_Jump32(jit, jit->get_outputpos(), target);
 	jit->outptr += 4;
 }
 
 inline void IA32_Send_Jump8_Here(JitWriter *jit, jitoffs_t jmp)
 {
-	jitoffs_t curptr = jit->jit_curpos();
+	jitoffs_t curptr = jit->get_outputpos();
 	IA32_Write_Jump8(jit, jmp, curptr);
 }
 
 inline void IA32_Send_Jump32_Here(JitWriter *jit, jitoffs_t jmp)
 {
-	jitoffs_t curptr = jit->jit_curpos();
+	jitoffs_t curptr = jit->get_outputpos();
 	IA32_Write_Jump32(jit, jmp, curptr);
 }
 

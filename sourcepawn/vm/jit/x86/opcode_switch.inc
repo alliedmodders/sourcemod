@@ -30,7 +30,7 @@
 			}
 		case OP_PUSH3_C:
 			{
-				WriteOp_Push3(jit);
+				WriteOp_Push3_C(jit);
 				break;
 			}
 		case OP_PUSH4_C:
@@ -350,12 +350,12 @@
 			}
 		case OP_LREF_S_PRI:
 			{
-				WriteOp_Lref_Pri(jit);
+				WriteOp_Lref_S_Pri(jit);
 				break;
 			}
 		case OP_LREF_S_ALT:
 			{
-				WriteOp_Lref_Alt(jit);
+				WriteOp_Lref_S_Alt(jit);
 				break;
 			}
 		case OP_CONST_PRI:
@@ -611,6 +611,16 @@
 		case OP_JSLESS:
 			{
 				WriteOp_Jsless(jit);
+				break;
+			}
+		case OP_JSGRTR:
+			{
+				WriteOp_JsGrtr(jit);
+				break;
+			}
+		case OP_JSGEQ:
+			{
+				WriteOp_JsGeq(jit);
 				break;
 			}
 		case OP_JSLEQ:

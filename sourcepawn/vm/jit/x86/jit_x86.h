@@ -9,28 +9,32 @@ using namespace SourcePawn;
 
 #define JIT_INLINE_ERRORCHECKS		(1<<0)
 #define JIT_INLINE_NATIVES			(1<<1)
-#define STACK_MARGIN				16
+#define STACK_MARGIN				64		//8 parameters of safety, I guess
 
 class CompData : public ICompilation
 {
 public:
 	CompData() : plugin(NULL), 
-		debug(false), inline_level(3), checks(true),
-		rebase(NULL)
+		debug(false), inline_level(0), rebase(NULL)
 	{
 	};
 public:
 	sp_plugin_t *plugin;
-	jitcode_t *rebase;
+	jitcode_t rebase;
 	jitoffs_t jit_return;
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
-	jitoffs_t jit_chkmargin_heap;
-	jitoffs_t jit_bounds;
 	jitoffs_t jit_break;
+	jitoffs_t jit_sysreq_n;
+	jitoffs_t jit_error_bounds;
+	jitoffs_t jit_error_divzero;
+	jitoffs_t jit_error_stacklow;
+	jitoffs_t jit_error_stackmin;
+	jitoffs_t jit_error_memaccess;
+	jitoffs_t jit_error_heaplow;
+	jitoffs_t jit_error_heapmin;
 	uint32_t codesize;
 	int inline_level;
-	bool checks;
 	bool debug;
 };
 
@@ -48,6 +52,7 @@ public:
 	int ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result);
 };
 
+cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 
 #define AMX_REG_PRI		REG_EAX
@@ -65,6 +70,7 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 #define AMX_INFO_CONTEXT	12				//physical
 #define AMX_INFO_STACKTOP	16				//relocated
 #define AMX_INFO_HEAPLOW	20				//not relocated
+#define AMX_INFO_STACKTOP_U	24				//not relocated
 
 extern ISourcePawnEngine *engine;
 

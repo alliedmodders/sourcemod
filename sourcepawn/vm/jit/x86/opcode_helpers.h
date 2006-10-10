@@ -11,37 +11,39 @@
 jitoffs_t Write_Execute_Function(JitWriter *jit);
 
 /**
+ * Writes the Sysreq.n opcode as a function call.
+ */
+void WriteOp_Sysreq_N_Function(JitWriter *jit);
+
+/**
  * Generates code to set an error state in the VM and return.
- * Note that this should only be called from inside an error
- * checking function.
+ * This is used for generating the error set points in the VM.
  */
-void Write_Error(JitWriter *jit, int error);
+void Write_SetError(JitWriter *jit, bool always_inline, int error);
 
 /**
- * Verifies an address by register.
- * :TODO: optimize and make it look like the heap checkfunction!
+ * Checks the stacks for min and low errors.
+ * :TODO: Should a variation of this go in the pushN opcodes?
  */
-void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall);
+void Write_CheckStack_Min(JitWriter *jit);
+void Write_CheckStack_Low(JitWriter *jit);
 
 /**
- * Verifies stack margins.
+ * Checks the heap for min and low errors.
  */
-void Write_CheckMargin_Stack(JitWriter *jit);
+void Write_CheckHeap_Min(JitWriter *jit);
+void Write_CheckHeap_Low(JitWriter *jit);
 
-/** 
- * Verifies heap margins.
+/**
+ * Verifies an address by register.  The address must reside
+ * between DAT and HP and SP and STP.
  */
-void Write_CheckMargin_Heap(JitWriter *jit);
+void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg);
 
 /**
  * Checks for division by zero.
  */
 void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg);
-
-/**
- * Writes a bounds check.
- */
-void Write_BoundsCheck(JitWriter *jit);
 
 /**
  * Writes the break debug function.
@@ -56,132 +58,147 @@ void Macro_PushN_S(JitWriter *jit, int i);
 void Macro_PushN_C(JitWriter *jit, int i);
 void Macro_PushN(JitWriter *jit, int i);
 
+/**
+ * Legend for Statuses:
+ * ****** *** ********
+ * DONE       -> code generation is done
+ * !GEN       -> code generation is deliberate skipped because:
+ *                 (default): compiler does not generate
+ *                DEPRECATED: this feature no longer exists/supported
+ *               UNSUPPORTED: this opcode is not supported
+ *                      TODO: done in case needed
+ * VERIFIED   -> code generation is checked as run-time working.  prefixes:
+ *                ! errors are not checked yet.
+ *                - non-inline errors are not checked yet.
+ *                ~ assumed checked because of related variation, but not actually checked
+ */
+
 typedef enum
 {
 	OP_NONE,              /* invalid opcode */
-	OP_LOAD_PRI,			//DONE
-	OP_LOAD_ALT,			//DONE
-	OP_LOAD_S_PRI,			//DONE
-	OP_LOAD_S_ALT,			//DONE
+	OP_LOAD_PRI,			//!VERIFIED
+	OP_LOAD_ALT,			//~!VERIFIED (load.pri)
+	OP_LOAD_S_PRI,			//VERIFIED
+	OP_LOAD_S_ALT,			//VERIFIED
 	OP_LREF_PRI,			// !GEN :TODO: we will need this for dynarrays
 	OP_LREF_ALT,			// !GEN :TODO: we will need this for dynarrays
-	OP_LREF_S_PRI,			//DONE 
-	OP_LREF_S_ALT,			//DONE
-	OP_LOAD_I,				//DONE
+	OP_LREF_S_PRI,			//VERIFIED
+	OP_LREF_S_ALT,			//~VERIFIED (lref.s.pri)
+	OP_LOAD_I,				//VERIFIED
 	OP_LODB_I,				// !GEN :TODO: - only used for pack access - drop support in compiler first
-	OP_CONST_PRI,			//DONE
-	OP_CONST_ALT,			//DONE
-	OP_ADDR_PRI,			//DONE
-	OP_ADDR_ALT,			//DONE
-	OP_STOR_PRI,			//DONE
-	OP_STOR_ALT,			//DONE
-	OP_STOR_S_PRI,			//DONE
-	OP_STOR_S_ALT,			//DONE
-	OP_SREF_PRI,			//DONE
-	OP_SREF_ALT,			//DONE
-	OP_SREF_S_PRI,			// !GEN :TODO: we will need this for dynarrays
-	OP_SREF_S_ALT,			// !GEN :TODO: we will need this for dynarrays
-	OP_STOR_I,				//DONE
+	OP_CONST_PRI,			//VERIFIED
+	OP_CONST_ALT,			//~VERIFIED (const.pri)
+	OP_ADDR_PRI,			//VERIFIED
+	OP_ADDR_ALT,			//VERIFIED
+	OP_STOR_PRI,			//VERIFIED
+	OP_STOR_ALT,			//~VERIFIED (stor.pri)
+	OP_STOR_S_PRI,			//VERIFIED
+	OP_STOR_S_ALT,			//~VERIFIED (stor.s.pri)
+	OP_SREF_PRI,			// !GEN :TODO: we will need this for dynarrays
+	OP_SREF_ALT,			// !GEN :TODO: we will need this for dynarrays
+	OP_SREF_S_PRI,			//VERIFIED
+	OP_SREF_S_ALT,			//~VERIFIED (stor.s.alt)
+	OP_STOR_I,				//VERIFIED
 	OP_STRB_I,				// !GEN :TODO: - only used for pack access, drop support in compiler first
-	OP_LIDX,				//DONE
+	OP_LIDX,				//VERIFIED
 	OP_LIDX_B,				//DONE
-	OP_IDXADDR,				//DONE
+	OP_IDXADDR,				//VERIFIED
 	OP_IDXADDR_B,			//DONE
 	OP_ALIGN_PRI,			// !GEN :TODO: - only used for pack access, drop support in compiler first
 	OP_ALIGN_ALT,			// !GEN :TODO: - only used for pack access, drop support in compiler first
 	OP_LCTRL,				// !GEN
 	OP_SCTRL,				// !GEN
 	OP_MOVE_PRI,			//DONE
-	OP_MOVE_ALT,			//DONE
+	OP_MOVE_ALT,			//VERIFIED
 	OP_XCHG,				//DONE
 	OP_PUSH_PRI,			//DONE
 	OP_PUSH_ALT,			//DONE
 	OP_PUSH_R,				// !GEN DEPRECATED
-	OP_PUSH_C,				//DONE
+	OP_PUSH_C,				//VERIFIED
 	OP_PUSH,				//DONE
-	OP_PUSH_S,				//DONE
-	OP_POP_PRI,				//DONE
-	OP_POP_ALT,				//DONE
-	OP_STACK,				//DONE
+	OP_PUSH_S,				//VERIFIED
+	OP_POP_PRI,				//VERIFIED
+	OP_POP_ALT,				//VERIFIED
+	OP_STACK,				//VERIFIED
 	OP_HEAP,				//DONE
-	OP_PROC,				//DONE
+	OP_PROC,				//VERIFIED
 	OP_RET,					// !GEN
-	OP_RETN,				//DONE
-	OP_CALL,				//DONE
+	OP_RETN,				//VERIFIED
+	OP_CALL,				//VERIFIED
 	OP_CALL_PRI,			// !GEN
-	OP_JUMP,				//DONE
+	OP_JUMP,				//VERIFIED
 	OP_JREL,				// !GEN
-	OP_JZER,				//DONE
+	OP_JZER,				//VERIFIED
 	OP_JNZ,					//DONE
-	OP_JEQ,					//DONE
-	OP_JNEQ,				//DONE
+	OP_JEQ,					//VERIFIED
+	OP_JNEQ,				//VERIFIED
 	OP_JLESS,				// !GEN
 	OP_JLEQ,				// !GEN
 	OP_JGRTR,				// !GEN
 	OP_JGEQ,				// !GEN
-	OP_JSLESS,				//DONE
-	OP_JSLEQ,				//DONE
-	OP_JSGRTR,				//DONE
-	OP_JSGEQ,				//DONE
-	OP_SHL,					//DONE
-	OP_SHR,					//DONE
-	OP_SSHR,				//DONE
+	OP_JSLESS,				//VERIFIED
+	OP_JSLEQ,				//VERIFIED
+	OP_JSGRTR,				//VERIFIED
+	OP_JSGEQ,				//VERIFIED
+	OP_SHL,					//VERIFIED
+	OP_SHR,					//VERIFIED (Note: operator >>>)
+	OP_SSHR,				//VERIFIED (Note: operator >>)
 	OP_SHL_C_PRI,			//DONE
 	OP_SHL_C_ALT,			//DONE
 	OP_SHR_C_PRI,			//DONE
 	OP_SHR_C_ALT,			//DONE
-	OP_SMUL,				//DONE
+	OP_SMUL,				//VERIFIED
 	OP_SDIV,				//DONE
-	OP_SDIV_ALT,			//DONE
+	OP_SDIV_ALT,			//VERIFIED
 	OP_UMUL,				// !GEN
 	OP_UDIV,				// !GEN
 	OP_UDIV_ALT,			// !GEN
-	OP_ADD,					//DONE
+	OP_ADD,					//VERIFIED
 	OP_SUB,					//DONE
-	OP_SUB_ALT,				//DONE
-	OP_AND,					//DONE
-	OP_OR,					//DONE
-	OP_XOR,					//DONE
-	OP_NOT,					//DONE
-	OP_NEG,					//DONE
-	OP_INVERT,				//DONE
-	OP_ADD_C,				//DONE
-	OP_SMUL_C,				//DONE
-	OP_ZERO_PRI,			//DONE
-	OP_ZERO_ALT,			//DONE
-	OP_ZERO,				//DONE
-	OP_ZERO_S,				//DONE
+	OP_SUB_ALT,				//VERIFIED
+	OP_AND,					//VERIFIED
+	OP_OR,					//VERIFIED
+	OP_XOR,					//VERIFIED
+	OP_NOT,					//VERIFIED
+	OP_NEG,					//VERIFIED
+	OP_INVERT,				//VERIFIED
+	OP_ADD_C,				//VERIFIED
+	OP_SMUL_C,				//VERIFIED
+	OP_ZERO_PRI,			//VERIFIED
+	OP_ZERO_ALT,			//~VERIFIED
+	OP_ZERO,				//VERIFIED
+	OP_ZERO_S,				//VERIFIED
 	OP_SIGN_PRI,			//DONE
 	OP_SIGN_ALT,			//DONE
-	OP_EQ,					//DONE
-	OP_NEQ,					//DONE
+	OP_EQ,					//VERIFIED
+	OP_NEQ,					//VERIFIED
 	OP_LESS,				// !GEN
 	OP_LEQ,					// !GEN
 	OP_GRTR,				// !GEN
 	OP_GEQ,					// !GEN
-	OP_SLESS,				//DONE
-	OP_SLEQ,				//DONE
-	OP_SGRTR,				//DONE
-	OP_SGEQ,				//DONE
+	OP_SLESS,				//VERIFIED
+	OP_SLEQ,				//VERIFIED
+	OP_SGRTR,				//VERIFIED
+	OP_SGEQ,				//VERIFIED
 	OP_EQ_C_PRI,			//DONE
 	OP_EQ_C_ALT,			//DONE
-	OP_INC_PRI,				//DONE
-	OP_INC_ALT,				//DONE
-	OP_INC,					//DONE
-	OP_INC_S,				//DONE
-	OP_INC_I,				//DONE
-	OP_DEC_PRI,				//DONE
-	OP_DEC_ALT,				//DONE
-	OP_DEC,					//DONE
-	OP_DEC_S,				//DONE
-	OP_DEC_I,				//DONE
+	OP_INC_PRI,				//VERIFIED
+	OP_INC_ALT,				//~VERIFIED (inc.pri)
+	OP_INC,					//VERIFIED
+	OP_INC_S,				//VERIFIED
+	OP_INC_I,				//VERIFIED
+	OP_DEC_PRI,				//VERIFIED
+	OP_DEC_ALT,				//~VERIFIED (dec.pri)
+	OP_DEC,					//VERIFIED
+	OP_DEC_S,				//VERIFIED
+	OP_DEC_I,				//VERIFIED
 	OP_MOVS,				//DONE
 	OP_CMPS,				// !GEN
-	OP_FILL,				//DONE
+	OP_FILL,				//VERIFIED
 	OP_HALT,				//DONE
-	OP_BOUNDS,				//DONE
+	OP_BOUNDS,				//VERIFIED
 	OP_SYSREQ_PRI,			// !GEN
-	OP_SYSREQ_C,			
+	OP_SYSREQ_C,			// !GEN DEPRECATED
 	OP_FILE,				// !GEN DEPRECATED
 	OP_LINE,				// !GEN DEPRECATED
 	OP_SYMBOL,				// !GEN DEPRECATED
@@ -189,32 +206,32 @@ typedef enum
 	OP_JUMP_PRI,			// !GEN
 	OP_SWITCH,				//DONE
 	OP_CASETBL,				//DONE
-	OP_SWAP_PRI,			//DONE
-	OP_SWAP_ALT,			//DONE
-	OP_PUSH_ADR,			//DONE
-	OP_NOP,					//DONE
+	OP_SWAP_PRI,			//VERIFIED
+	OP_SWAP_ALT,			//~VERIFIED (swap.alt)
+	OP_PUSH_ADR,			//VERIFIED
+	OP_NOP,					//VERIFIED (lol)
 	OP_SYSREQ_N,
 	OP_SYMTAG,				// !GEN DEPRECATED
 	OP_BREAK,				//DONE
-	OP_PUSH2_C,				//DONE
-	OP_PUSH2,				//DONE
-	OP_PUSH2_S,				//DONE
-	OP_PUSH2_ADR,			//DONE
-	OP_PUSH3_C,				//DONE
-	OP_PUSH3,				//DONE
-	OP_PUSH3_S,				//DONE
-	OP_PUSH3_ADR,			//DONE
-	OP_PUSH4_C,				//DONE
-	OP_PUSH4,				//DONE
-	OP_PUSH4_S,				//DONE
-	OP_PUSH4_ADR,			//DONE
-	OP_PUSH5_C,				//DONE
-	OP_PUSH5,				//DONE
-	OP_PUSH5_S,				//DONE
-	OP_PUSH5_ADR,			//DONE
-	OP_LOAD_BOTH,			//DONE
-	OP_LOAD_S_BOTH,			//DONE
-	OP_CONST,				//DONE
+	OP_PUSH2_C,				//~VERIFIED (push3.c)
+	OP_PUSH2,				//VERIFIED
+	OP_PUSH2_S,				//VERIFIED
+	OP_PUSH2_ADR,			//VERIFIED
+	OP_PUSH3_C,				//VERIFIED
+	OP_PUSH3,				//~VERIFIED (push2)
+	OP_PUSH3_S,				//~VERIFIED (push2.s)
+	OP_PUSH3_ADR,			//~VERIFIED (push2.adr)
+	OP_PUSH4_C,				//~VERIFIED (push3.c)
+	OP_PUSH4,				//~VERIFIED (push2)
+	OP_PUSH4_S,				//~VERIFIED (push2.s)
+	OP_PUSH4_ADR,			//~VERIFIED (push2.adr)
+	OP_PUSH5_C,				//~VERIFIED (push3.c)
+	OP_PUSH5,				//~VERIFIED (push2)
+	OP_PUSH5_S,				//~VERIFIED (push2.s)
+	OP_PUSH5_ADR,			//~VERIFIED (push2.adr)
+	OP_LOAD_BOTH,			//VERIFIED
+	OP_LOAD_S_BOTH,			//VERIFIED
+	OP_CONST,				//VERIFIED
 	OP_CONST_S,				//DONE
 	/* ----- */
 	OP_SYSREQ_D,			// !GEN UNSUPPORT

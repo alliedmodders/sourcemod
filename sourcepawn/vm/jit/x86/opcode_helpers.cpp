@@ -6,6 +6,8 @@
 
 int OpAdvTable[OP_NUM_OPCODES];
 
+#define NUM_INFO_PARAMS	7
+
 jitoffs_t Write_Execute_Function(JitWriter *jit)
 {
 	/** 
@@ -20,7 +22,6 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	 * This is because we do not support resuming or sleeping!
 	 */
 
-	//:TODO: FIX THIS FOR THE EBP AND EDI SWITCHING
 	//push ebp
 	//mov ebp, esp
 	IA32_Push_Reg(jit, REG_EBP);
@@ -33,9 +34,9 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	IA32_Push_Reg(jit, REG_EDI);
 	IA32_Push_Reg(jit, REG_EBX);
 
-	//sub esp, 4*6	- allocate info array
+	//sub esp, 4*n	- reserve info array
 	//mov esi, esp	- save info pointer
-	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4*6, MOD_REG);
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4*NUM_INFO_PARAMS, MOD_REG);
 	IA32_Mov_Reg_Rm(jit, AMX_REG_INFO, REG_ESP, MOD_REG);
 
 	/* Initial memory setup */
@@ -45,7 +46,7 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	//mov [esi+12], eax		- store context into info pointer
 	//mov ecx, [eax+<offs>]	- get heap pointer
 	//mov [esi+4], ecx		- store heap into info pointer
-	//mov edi, [eax+<offs>]	- get data pointer
+	//mov ebp, [eax+<offs>]	- get data pointer
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 16);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EAX, AMX_INFO_RETVAL);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 8);
@@ -55,76 +56,73 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_DAT, REG_EAX, offsetof(sp_context_t, data));
 
 	/* Frame setup */
-	//mov ebp, [eax+<offs>]	- get stack pointer
-	//add ebp, edi			- relocate to data section
-	//mov ebx, ebp			- copy sp to frm
+	//mov edi, [eax+<offs>]	- get stack pointer
+	//add edi, ebp			- relocate to data section
+	//mov ebx, edi			- copy sp to frm
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_STK, REG_EAX, offsetof(sp_context_t, sp));
-	IA32_Add_Rm_Reg(jit, REG_EBP, AMX_REG_STK, AMX_REG_DAT);
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_REG);
 
 	/* Info memory setup */
-	//mov ecx, edi			- copy base of data to temp var
-	//add ecx, [eax+<offs>] - add memsize to get stack top
-	//mov [esi+16], ecx		- store stack top into info pointer
+	//mov ecx, [eax+<offs>] - copy memsize to temp var
+	//mov [esi+x], ecx		- store unrelocated
+	//add ecx, ebp			- relocate
+	//mov [esi+x], ecx		- store relocated
 	//mov ecx, [eax+<offs>] - get heap low
 	//mov [esi+20], ecx		- store heap low into info pointer
-	IA32_Mov_Reg_Rm(jit, REG_ECX, AMX_REG_DAT, MOD_REG);
-	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, memory));
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, memory));
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP_U);
+	IA32_Add_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_DAT, MOD_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, heapbase));
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_HEAPLOW);
 
 	/* Remaining needed vars */
-	//mov ecx, [ebp+12]		- get code index
-	//add ecx, [eax+<offs>] - add code base to index
-	//mov edx, [eax+<offs>]	- get alt
-	//mov eax, [eax+<offs>] - get pri
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EBP, 12);
+	//mov ecx, [esp+(4*(NUM_INFO_PARAMS+3))+12] - get code index (normally esp+12, but we have another array on the stack)
+	//add ecx, [eax+<offs>]   - add code base to index
+	IA32_Mov_Reg_Esp_Disp8(jit, REG_ECX, 12+(4*(NUM_INFO_PARAMS+3)));
 	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, codebase));
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, REG_EAX, offsetof(sp_context_t, alt));
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_PRI, REG_EAX, offsetof(sp_context_t, pri));
 
 	/* by now, everything is set up, so we can call into the plugin */
 	//call ecx
 	IA32_Call_Reg(jit, REG_ECX);
 
 	/* if the code flow gets to here, there was a normal return */
-	//mov ebp, [esi+8]		- get retval pointer
-	//mov [ebp], eax		- store retval from PRI
+	//mov ecx, [esi+8]		- get retval pointer
+	//mov [ecx], eax		- store retval from PRI
 	//mov eax, SP_ERR_NONE	- set no error
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_EBP, AMX_REG_INFO, AMX_INFO_RETVAL);
-	IA32_Mov_Rm_Reg(jit, REG_EBP, AMX_REG_PRI, MOD_MEM_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_RETVAL);
+	IA32_Mov_Rm_Reg(jit, REG_ECX, AMX_REG_PRI, MOD_MEM_REG);
 	IA32_Mov_Reg_Imm32(jit, REG_EAX, SP_ERR_NONE);
 
 	/* save where error checking/halting functions should go to */
-	jitoffs_t offs_return;
-	CompData *data = (CompData *)jit->data;
-	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
-	{
-		/* We have to write code assume we're breaking out of a call */
-		//jmp [past the next instruction]
-		//add esp, 4
-		jitoffs_t offs = IA32_Jump_Imm8(jit, 0);
-		offs_return = jit->jit_curpos();
-		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
-		IA32_Send_Jump8_Here(jit, offs);
-	} else {
-		offs_return = jit->jit_curpos();
-	}
+	jitoffs_t offs_return = jit->get_outputpos();
+	//mov esp, esi			- restore stack pointer
+	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_ESI, MOD_REG);
 
-	/* _FOR NOW_ ... 
-	 * We are _not_ going to restore anything that was on the stack.
-	 * This is a tiny, useless optimization based on the fact that 
-	 * BaseContext::Execute() automatically restores our values anyway.
+	/* _FOR NOW_ ...
+	 * We are going to restore SP, HP, and FRM for now.  This is for 
+     * debugging only, to check for alignment errors.  As such:
+	 * :TODO: probably remove this.
 	 */
+	//mov ecx, [esi+context]
+	//sub edi, ebp
+	//mov edx, [esi+heap]
+	//mov [ecx+sp], edi
+	//mov [ecx+hp], edx
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_ESI, AMX_INFO_CONTEXT);
+	IA32_Sub_Reg_Rm(jit, REG_EDI, REG_EBP, MOD_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_ESI, AMX_INFO_HEAP);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_ECX, REG_EDI, offsetof(sp_context_t, sp));
+	IA32_Mov_Rm_Reg(jit, REG_ECX, REG_EDX, MOD_REG);
 
-	//add esp, 4*6
+	//add esp, 4*NUM_INFO_PARAMS
 	//pop ebx
 	//pop edi
 	//pop esi
 	//pop ebp
 	//ret
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*6, MOD_REG);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*NUM_INFO_PARAMS, MOD_REG);
 	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Pop_Reg(jit, REG_EDI);
 	IA32_Pop_Reg(jit, REG_ESI);
@@ -167,7 +165,7 @@ void Write_BreakDebug(JitWriter *jit)
 	IA32_Return(jit);
 }
 
-void Write_Error(JitWriter *jit, int error)
+void Write_SetError(JitWriter *jit, bool always_inline, int error)
 {
 	CompData *data = (CompData *)jit->data;
 
@@ -182,22 +180,67 @@ void Write_Error(JitWriter *jit, int error)
 void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg)
 {
 	//test reg, reg
-	//jnz :continue
-	//divzero: (write error)
+	//jz :error
 	IA32_Test_Rm_Reg(jit, reg, reg, MOD_REG);
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
-	if (!(((CompData *)jit->data)->inline_level & JIT_INLINE_ERRORCHECKS))
-	{
-		//sub esp, 4    - correct stack for returning to non-inlined JIT
-		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
-	}
-	Write_Error(jit, SP_ERR_DIVIDE_BY_ZERO);
-	//continue:
-	IA32_Send_Jump8_Here(jit, jmp);
-
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_Z, ((CompData *)jit->data)->jit_error_divzero);
 }
-//:TODO: FIX THIS FOR NEW EBP STUFF
-void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
+
+void Write_CheckHeap_Min(JitWriter *jit)
+{
+	/* Check if the stack went beyond the heap low.
+	 * This usually means there was a compiler error.
+	 * NOTE: Special optimization here.
+	 * The heap low is always known ahead of time! :)
+	 */
+	CompData *data = (CompData *)jit->data;
+	//cmp [esi+info.heap], <heaplow>
+	//jb :error
+	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_INFO, AMX_INFO_HEAP, data->plugin->data_size);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_B, data->jit_error_heapmin);
+}
+
+void Write_CheckHeap_Low(JitWriter *jit)
+{
+	/* Check if the heap is trying to grow beyond the stack.
+	 */
+	//mov ecx, [esi+info.heap]
+	//lea ecx, [ebp+ecx+STACK_MARGIN]
+	//cmp ecx, edi
+	//ja :error		; I think this is right
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_TMP, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, STACK_MARGIN);
+	IA32_Cmp_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_A, ((CompData *)jit->data)->jit_error_heaplow);
+}
+
+void Write_CheckStack_Min(JitWriter *jit)
+{
+	/* Check if the stack went beyond the stack top
+	 * This usually means there was a compiler error.
+	 */
+	//cmp edi, [esi+info.stacktop]
+	//jae :error
+	IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_STK, AMX_REG_INFO, AMX_INFO_STACKTOP);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_stackmin);
+}
+
+void Write_CheckStack_Low(JitWriter *jit)
+{
+	/* Check if the stack went beyond the heap boundary.
+	 * Unfortunately this one isn't as quick as the other check.
+	 * The stack margin check is important for sysreq.n having space.
+	 */
+	//mov ecx, [esi+info.heap]
+	//lea ecx, [ebp+ecx+STACK_MARGIN]
+	//cmp edi, ecx
+	//jb :error		; I think this is right
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_TMP, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, STACK_MARGIN);
+	IA32_Cmp_Reg_Rm(jit, AMX_REG_STK, AMX_REG_TMP, MOD_REG);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_B, ((CompData *)jit->data)->jit_error_stacklow);
+}
+
+void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg)
 {
 	CompData *data = (CompData *)jit->data;
 
@@ -205,180 +248,55 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg, bool firstcall)
 	 * The old JIT did not.
 	 */
 
-	if (!data->checks)
-	{
-		return;
-	}
-
 	bool call = false;
 	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
 	{
 		/* If we're not in the initial generation phase,
 		 * Write a call to the actual routine instead.
 		 */
-		if (!firstcall)
+		if ((reg == REG_EAX) && data->jit_verify_addr_eax)
 		{
 			jitoffs_t call = IA32_Call_Imm32(jit, 0);
-			if (reg == REG_EAX)
-			{
-				IA32_Write_Jump32(jit, call, data->jit_verify_addr_eax);
-			} else if (reg == REG_EDX) {
-				IA32_Write_Jump32(jit, call, data->jit_verify_addr_edx);
-			}
+			IA32_Write_Jump32(jit, call, data->jit_verify_addr_eax);
+			return;
+		} else if ((reg == REG_EDX) && data->jit_verify_addr_edx) {
+			jitoffs_t call = IA32_Call_Imm32(jit, 0);
+			IA32_Write_Jump32(jit, call, data->jit_verify_addr_edx);
 			return;
 		}
 		call = true;
-	} else if (firstcall) {
-		/* Inline + initial gen == no code */
-		return;
 	}
 
-	//cmp reg, [stp]
-	//jae memaccess
-	//cmp reg, [hea]
-	//jb continue
-	//lea ecx, [reg+edi]
-	//cmp ecx, ebp
-	//jae continue
-	//memaccess: (write error)
-	//continue:
-	IA32_Cmp_Reg_Rm_Disp8(jit, reg, AMX_REG_INFO, AMX_INFO_STACKTOP);
-	jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
+	/** 
+	 * :TODO: If we can't find a nicer way of doing this,
+	 *  then scrap it on high optimizations.  The second portion is not needed at all!
+	 */
+
+	/* Part 1: Check if we're in the memory bounds */
+	//cmp <reg>, [esi+info.stpu]
+	//jae :error
+	IA32_Cmp_Reg_Rm_Disp8(jit, reg, AMX_REG_INFO, AMX_INFO_STACKTOP_U);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_memaccess);
+
+	/* Part 2: Check if we're in the invalid region between HP and SP */
+	jitoffs_t jmp;
+	//cmp <reg>, [esi+info.heap]
+	//jb :continue
+	//lea ecx, [ebp+<reg>]
+	//cmp edi, ecx
+	//jb :error
+	//:continue
 	IA32_Cmp_Reg_Rm_Disp8(jit, reg, AMX_REG_INFO, AMX_INFO_HEAP);
-	jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_B, 0);
-	IA32_Lea_Reg_DispRegMult(jit, AMX_REG_TMP, reg, AMX_REG_DAT, NOSCALE);
-	IA32_Cmp_Rm_Reg(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
-	jitoffs_t jmp3 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
-	IA32_Send_Jump8_Here(jit, jmp1);
-	Write_Error(jit, SP_ERR_MEMACCESS);
-	IA32_Send_Jump8_Here(jit, jmp2);
-	IA32_Send_Jump8_Here(jit, jmp3);
+	jmp = IA32_Jump_Cond_Imm8(jit, CC_B, 0);
+	IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_TMP, AMX_REG_DAT, reg, NOSCALE, 0);
+	IA32_Cmp_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_B, ((CompData *)jit->data)->jit_error_memaccess);
+	IA32_Send_Jump8_Here(jit, jmp);
+
 	if (call)
 	{
 		IA32_Return(jit);
 	}
-}
-
-void Write_BoundsCheck(JitWriter *jit)
-{
-	CompData *data = (CompData *)jit->data;
-	bool always_inline = ((data->inline_level & JIT_INLINE_ERRORCHECKS) == JIT_INLINE_ERRORCHECKS);
-
-	/* :TODO: break out on high -O level? */
-
-	if (!always_inline)
-	{
-		if (data->jit_bounds)
-		{
-			/* just generate the call */
-			//mov ecx, <val>
-			//call <offs>
-			IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, jit->read_cell());
-			jitoffs_t call = IA32_Call_Imm32(jit, 0);
-			IA32_Write_Jump32(jit, call, data->jit_bounds);
-		} else {
-			//cmp eax, 0
-			//jl :err_bounds
-			//cmp eax, ecx
-			//jg :err_bounds
-			//ret
-			IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, 0);
-			jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
-			//:TODO: make sure this is right order
-			IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_TMP, MOD_REG);
-			jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
-			IA32_Return(jit);
-			IA32_Send_Jump8_Here(jit, jmp1);
-			IA32_Send_Jump8_Here(jit, jmp2);
-			Write_Error(jit, SP_ERR_ARRAY_BOUNDS);
-		}
-	} else {
-		//cmp eax, 0
-		//jl :err_bounds
-		IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, 0);
-		jitoffs_t jmp1 = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
-		//cmp eax, <val>
-		//jg :err_bounds
-		cell_t val = jit->read_cell();
-		if (val < SCHAR_MAX && val > SCHAR_MIN)
-			IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, (jit_int8_t)val);
-		else
-			IA32_Cmp_Eax_Imm32(jit, val);
-		jitoffs_t jmp2 = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
-		//jmp :continue
-		jitoffs_t cont = IA32_Jump_Imm8(jit, 0);
-		//:err_bounds
-		IA32_Send_Jump8_Here(jit, jmp1);
-		IA32_Send_Jump8_Here(jit, jmp2);
-		Write_Error(jit, SP_ERR_ARRAY_BOUNDS);
-		//:continue
-		IA32_Send_Jump8_Here(jit, cont);
-	}
-}
-
-void Write_CheckMargin_Heap(JitWriter *jit)
-{
-	CompData *data = (CompData *)jit->data;
-
-	bool always_inline = ((data->inline_level & JIT_INLINE_ERRORCHECKS) == JIT_INLINE_ERRORCHECKS);
-
-	if (!always_inline && data->jit_chkmargin_heap)
-	{
-		/* just generate the call */
-		jitoffs_t call = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32(jit, call, data->jit_chkmargin_heap);
-	} else {
-		//mov ecx, [esi+hea]
-		//cmp ecx, [esi+hlw]
-		//jl :error_heapmin
-		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
-		IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAPLOW);
-		jitoffs_t hm = IA32_Jump_Cond_Imm8(jit, CC_L, 0);
-		//lea ecx, [ebp+ecx+STACK_MARGIN]
-		//cmp ecx, edi
-		// jg :error_heaplow
-		//OR
-		// ret
-		IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_TMP, AMX_REG_DAT, AMX_REG_TMP, NOSCALE, STACK_MARGIN);
-		IA32_Cmp_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
-		jitoffs_t hl = IA32_Jump_Cond_Imm8(jit, CC_G, 0);
-		jitoffs_t cont;
-		if (always_inline)
-		{
-			cont = IA32_Jump_Imm8(jit, 0);
-		} else {
-			IA32_Return(jit);
-		}
-		//:error_heapmin
-		IA32_Send_Jump8_Here(jit, hm);
-		Write_Error(jit, SP_ERR_HEAPMIN);
-		//:error_heaplow
-		IA32_Send_Jump8_Here(jit, hl);
-		Write_Error(jit, SP_ERR_HEAPLOW);
-		//:continue
-		if (!always_inline)
-		{
-			IA32_Send_Jump8_Here(jit, cont);
-		}
-	}
-}
-
-void Write_CheckMargin_Stack(JitWriter *jit)
-{
-	/* this is small, so we always inline it.
-	*/
-	//cmp edi, [esi+stp]
-	//jle :continue
-	IA32_Cmp_Reg_Rm_Disp8(jit, AMX_REG_STK, AMX_REG_INFO, AMX_INFO_STACKTOP);
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_LE, 0);
-	if (!(((CompData *)jit->data)->inline_level & JIT_INLINE_ERRORCHECKS))
-	{
-		//sub esp, 4	- correct stack for returning to non-inlined JIT
-		IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
-	}
-	Write_Error(jit, SP_ERR_STACKMIN);
-	//continue:
-	IA32_Send_Jump8_Here(jit, jmp);
 }
 
 void Macro_PushN_Addr(JitWriter *jit, int i)
@@ -404,6 +322,7 @@ void Macro_PushN_Addr(JitWriter *jit, int i)
 			IA32_Lea_DispRegImm32(jit, AMX_REG_TMP, AMX_REG_PRI, val);
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, AMX_REG_TMP, -4*n);
 	} while (n++ < i);
+	//:TODO: fix the case of this size > imm8!
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4*i, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_PRI);
 }
@@ -462,6 +381,83 @@ void Macro_PushN(JitWriter *jit, int i)
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, AMX_REG_TMP, -4*n);
 	} while (n++ < i);
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4*i, MOD_REG);
+}
+
+void WriteOp_Sysreq_N_Function(JitWriter *jit)
+{
+	/* The big daddy of opcodes.
+	 * eax - num_params
+	 * ecx - native index
+	 */
+	CompData *data = (CompData *)jit->data;
+
+	/* store the number of parameters on the stack */
+	//mov [edi-4], eax
+	//sub edi, 4
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, REG_EAX, -4);
+	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+
+	/* save registers we will need */
+	//push eax	; num_params for stack popping
+	//push edx
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Push_Reg(jit, AMX_REG_ALT);
+
+	/* push some callback stuff */
+	//push edi		; stack
+	//push ecx		; native index
+	IA32_Push_Reg(jit, AMX_REG_STK);
+	IA32_Push_Reg(jit, REG_ECX);
+
+	/* Relocate stack, heap, frm information, then store back */
+	//sub edi, ebp
+	//mov ecx, [esi+hea]
+	//mov eax, [esi+context]
+	//mov [eax+hp], ecx
+	//mov [eax+sp], edi
+	//mov ecx, [esi+frm]
+	//mov [eax+frm], ecx
+	IA32_Sub_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_TMP, offsetof(sp_context_t, hp));
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_STK, offsetof(sp_context_t, sp));
+	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_INFO_FRM, MOD_REG);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_TMP, offsetof(sp_context_t, frm));
+
+	/* finally, push the last parameter and make the call */
+	//push eax		; context
+	//mov eax, [eax+context]
+	//call NativeCallback
+	IA32_Push_Reg(jit, REG_EAX);
+	jitoffs_t call = IA32_Call_Imm32(jit, 0);
+	IA32_Write_Jump32(jit, call, (jitoffs_t)(char *)&NativeCallback);
+
+	/* restore what we damaged */
+	//add esp, 4*3
+	//add edi, ebp
+	//pop edx
+	//pop ecx	; num_params
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
+	IA32_Pop_Reg(jit, AMX_REG_ALT);
+	IA32_Pop_Reg(jit, REG_ECX);
+
+	//Note: always safe, we're in a call
+	//test eax, eax
+	//jne :error
+	IA32_Test_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NE, data->jit_return);
+
+	/* pop the AMX stack.  do not check the margins.
+	 * Note that this is not a true macro - we don't bother to
+	 * set ALT here because nothing will be using it.
+	 */
+	//lea edi, [edi+ecx*4+4]
+	IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_STK, AMX_REG_STK, REG_ECX, SCALE4, 4);
+
+	//ret
+	IA32_Return(jit);
 }
 
 JITX86::JITX86()
@@ -643,5 +639,4 @@ JITX86::JITX86()
 	OpAdvTable[OP_JLEQ] = -3;
 	OpAdvTable[OP_JGRTR] = -3;
 	OpAdvTable[OP_JGEQ] = -3;
-
 }

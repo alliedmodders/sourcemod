@@ -42,7 +42,7 @@ public:
 	}
 	inline void write_ubyte(jit_uint8_t c)
 	{
-		if (outptr)
+		if (outbase)
 		{
 			*outptr = c;
 		}
@@ -50,7 +50,7 @@ public:
 	}
 	inline void write_byte(jit_int8_t c)
 	{
-		if (outptr)
+		if (outbase)
 		{
 			*outptr = c;
 		}
@@ -58,7 +58,7 @@ public:
 	}
 	inline void write_int32(jit_int32_t c)
 	{
-		if (outptr)
+		if (outbase)
 		{
 			*(jit_int32_t *)outptr = c;
 		}
@@ -66,21 +66,21 @@ public:
 	}
 	inline void write_uint32(jit_uint32_t c)
 	{
-		if (outptr)
+		if (outbase)
 		{
 			*(jit_uint32_t *)outptr = c;
 		}
 		outptr += sizeof(jit_uint32_t);
 	}
-	inline jitoffs_t jit_curpos()
+	inline jitoffs_t get_outputpos()
 	{
 		return (outptr - outbase);
 	}
-	inline void setpos(jitoffs_t offs)
+	inline void set_outputpos(jitoffs_t offs)
 	{
 		outptr = outbase + offs;
 	}
-	inline jitoffs_t inputrel()
+	inline jitoffs_t get_inputpos()
 	{
 		return (jitoffs_t)((char *)inptr - (char *)inbase);
 	}
