@@ -1,6 +1,8 @@
 #ifndef _INCLUDE_JIT_X86_MACROS_H
 #define _INCLUDE_JIT_X86_MACROS_H
 
+#include <limits.h>
+
 //MOD R/M
 #define MOD_MEM_REG	0
 #define MOD_DISP8	1

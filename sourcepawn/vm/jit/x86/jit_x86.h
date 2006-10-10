@@ -69,7 +69,7 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 #define AMX_INFO_RETVAL		8				//physical
 #define AMX_INFO_CONTEXT	12				//physical
 #define AMX_INFO_STACKTOP	16				//relocated
-#define AMX_INFO_HEAPLOW	20				//not relocated
+#define AMX_INFO_HEAPLOW	20				//not relocated. currently unused
 #define AMX_INFO_STACKTOP_U	24				//not relocated
 
 extern ISourcePawnEngine *engine;

@@ -56,9 +56,11 @@ inline void WriteOp_Align_Pri(JitWriter *jit)
 	//xor eax, <cellsize - val>
 	cell_t val = sizeof(cell_t) - jit->read_cell();
 	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
 		IA32_Xor_Rm_Imm8(jit, AMX_REG_PRI, MOD_REG, (jit_int8_t)val);
-	else
+	} else {
 		IA32_Xor_Eax_Imm32(jit, val);
+	}
 }
 
 inline void WriteOp_Align_Alt(JitWriter *jit)
@@ -66,9 +68,11 @@ inline void WriteOp_Align_Alt(JitWriter *jit)
 	//xor edx, <cellsize - val>
 	cell_t val = sizeof(cell_t) - jit->read_cell();
 	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
 		IA32_Xor_Rm_Imm8(jit, AMX_REG_ALT, MOD_REG, (jit_int8_t)val);
-	else
+	} else {
 		IA32_Xor_Rm_Imm32(jit, AMX_REG_ALT, MOD_REG, val);
+	}
 }
 
 inline void WriteOp_Cmps(JitWriter *jit)

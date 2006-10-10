@@ -1138,7 +1138,7 @@ inline void WriteOp_Retn(JitWriter *jit)
 
 	/* pop params */
 	//mov ecx, [edi]
-	//lea edi, [edi+edi*4+4] 
+	//lea edi, [edi+ecx*4+4] 
 	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_MEM_REG);
 	IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_STK, AMX_REG_STK, AMX_REG_TMP, SCALE4, 4);
 
@@ -1538,7 +1538,9 @@ sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 	OPCODE op;
 	int op_c;
 
-	/* FIRST PASS (light load) - Get initial opcode information */
+	/* FIRST PASS (light load) - Get initial opcode information
+	 * :TODO: remove this pass soon, it's not needed anymore!
+	 */
 	for (cip = code; cip < end_cip;)
 	{
 		op = (OPCODE)*(ucell_t *)cip;

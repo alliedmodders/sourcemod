@@ -12,7 +12,7 @@ EXPORTFUNC void GiveEnginePointer(SourcePawn::ISourcePawnEngine *engine_p)
 
 EXPORTFUNC unsigned int GetExportCount()
 {
-	return 0;
+	return 1;
 }
 
 EXPORTFUNC SourcePawn::IVirtualMachine *GetExport(unsigned int exportnum)

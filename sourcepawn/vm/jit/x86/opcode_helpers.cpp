@@ -322,7 +322,6 @@ void Macro_PushN_Addr(JitWriter *jit, int i)
 			IA32_Lea_DispRegImm32(jit, AMX_REG_TMP, AMX_REG_PRI, val);
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, AMX_REG_TMP, -4*n);
 	} while (n++ < i);
-	//:TODO: fix the case of this size > imm8!
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4*i, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_PRI);
 }
