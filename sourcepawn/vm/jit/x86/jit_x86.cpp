@@ -1364,8 +1364,6 @@ inline void WriteOp_Switch(JitWriter *jit)
 			{
 				jit->write_uint32(base + RelocLookup(jit, cases[i].offs, false));
 			}
-			//if we get here, there was a bug in the JIT, so we should break into the debugger
-			jit->write_ubyte(IA32_INT3);
 		} else {
 			/* The slow version.  Go through each case and generate a check.
 			 * In the future we should replace case tables of more than ~8 cases with a
