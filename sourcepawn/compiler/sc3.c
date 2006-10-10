@@ -2402,7 +2402,7 @@ static int nesting=0;
       markexpr(sPARM,NULL,0);   /* mark the end of a sub-expression */
       nest_stkusage++;
     } else {
-      error(202,argidx);        /* argument count mismatch */
+      error(92,argidx);        /* argument count mismatch */
     } /* if */
     if (arglist[argidx]==ARG_UNHANDLED)
       nargs++;
