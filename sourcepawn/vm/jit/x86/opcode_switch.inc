@@ -643,10 +643,22 @@
 				WriteOp_Call(jit);
 				break;
 			}
+		case OP_SYSREQ_N:
+			{
+				if (data->inline_level & JIT_INLINE_NATIVES)
+				{
+					WriteOp_Sysreq_N(jit);
+				} else {
+					WriteOp_Sysreq_N_NoInline(jit);
+				}
+				break;
+			}
 #if defined USE_UNGEN_OPCODES
 		#include "ungen_opcode_switch.inc"
 #endif
 		default:
 			{
-				assert(0);
+				data->error_set = SP_ERR_INVALID_INSTRUCTION;
+				break;
 			}
+			

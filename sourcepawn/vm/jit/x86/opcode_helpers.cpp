@@ -4,8 +4,6 @@
 #include "opcode_helpers.h"
 #include "x86_macros.h"
 
-int OpAdvTable[OP_NUM_OPCODES];
-
 #define NUM_INFO_PARAMS	7
 
 jitoffs_t Write_Execute_Function(JitWriter *jit)
@@ -165,16 +163,26 @@ void Write_BreakDebug(JitWriter *jit)
 	IA32_Return(jit);
 }
 
-void Write_SetError(JitWriter *jit, bool always_inline, int error)
+void Write_GetError(JitWriter *jit)
 {
 	CompData *data = (CompData *)jit->data;
 
-	/* These are so small that we always inline them! */
+	//mov eax, [esi+info.context]
+	//mov eax, [eax+ctx.error]
+	//jmp [jit_return]
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EAX, offsetof(sp_context_t, err));
+	IA32_Jump_Imm32_Abs(jit, data->jit_return);
+}
+
+void Write_SetError(JitWriter *jit, int error)
+{
+	CompData *data = (CompData *)jit->data;
+
 	//mov eax, <error>
-	//jmp [...jit_return]
+	//jmp [jit_return]
 	IA32_Mov_Reg_Imm32(jit, REG_EAX, error);
-	jitoffs_t jmp = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32(jit, jmp, data->jit_return);
+	IA32_Jump_Imm32_Abs(jit, data->jit_return);
 }
 
 void Write_Check_DivZero(JitWriter *jit, jit_uint8_t reg)
@@ -426,11 +434,18 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 
 	/* finally, push the last parameter and make the call */
 	//push eax		; context
-	//mov eax, [eax+context]
 	//call NativeCallback
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32(jit, call, (jitoffs_t)(char *)&NativeCallback);
+	IA32_Write_Jump32_Abs(jit, call, (void *)&NativeCallback);
+
+	/* Test for error */
+	//mov ecx, [esi+context]
+	//cmp [ecx+err], 0
+	//jnz :error
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
 	//add esp, 4*3
@@ -441,12 +456,6 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_ALT);
 	IA32_Pop_Reg(jit, REG_ECX);
-
-	//Note: always safe, we're in a call
-	//test eax, eax
-	//jne :error
-	IA32_Test_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NE, data->jit_return);
 
 	/* pop the AMX stack.  do not check the margins.
 	 * Note that this is not a true macro - we don't bother to
@@ -459,183 +468,3 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
-JITX86::JITX86()
-{
-	memset(OpAdvTable, -1, sizeof(OpAdvTable));
-
-	/* instructions with 5 parameters */
-	OpAdvTable[OP_PUSH5_C] = sizeof(cell_t)*5;
-	OpAdvTable[OP_PUSH5] = sizeof(cell_t)*5;
-	OpAdvTable[OP_PUSH5_S] = sizeof(cell_t)*5;
-	OpAdvTable[OP_PUSH5_ADR] = sizeof(cell_t)*5;
-
-	/* instructions with 4 parameters */
-	OpAdvTable[OP_PUSH4_C] = sizeof(cell_t)*4;
-	OpAdvTable[OP_PUSH4] = sizeof(cell_t)*4;
-	OpAdvTable[OP_PUSH4_S] = sizeof(cell_t)*4;
-	OpAdvTable[OP_PUSH4_ADR] = sizeof(cell_t)*4;
-
-	/* instructions with 3 parameters */
-	OpAdvTable[OP_PUSH3_C] = sizeof(cell_t)*3;
-	OpAdvTable[OP_PUSH3] = sizeof(cell_t)*3;
-	OpAdvTable[OP_PUSH3_S] = sizeof(cell_t)*3;
-	OpAdvTable[OP_PUSH3_ADR] = sizeof(cell_t)*3;
-
-	/* instructions with 2 parameters */
-	OpAdvTable[OP_PUSH2_C] = sizeof(cell_t)*2;
-	OpAdvTable[OP_PUSH2] = sizeof(cell_t)*2;
-	OpAdvTable[OP_PUSH2_S] = sizeof(cell_t)*2;
-	OpAdvTable[OP_PUSH2_ADR] = sizeof(cell_t)*2;
-	OpAdvTable[OP_LOAD_BOTH] = sizeof(cell_t)*2;
-	OpAdvTable[OP_LOAD_S_BOTH] = sizeof(cell_t)*2;
-	OpAdvTable[OP_CONST] = sizeof(cell_t)*2;
-	OpAdvTable[OP_CONST_S] = sizeof(cell_t)*2;
-	OpAdvTable[OP_SYSREQ_N] = sizeof(cell_t)*2;
-
-	/* instructions with 1 parameter */
-	OpAdvTable[OP_LOAD_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LOAD_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LOAD_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LOAD_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_LREF_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_CONST_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_CONST_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_ADDR_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_ADDR_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_STOR_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_S_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SREF_S_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_LIDX_B] = sizeof(cell_t);
-	OpAdvTable[OP_IDXADDR_B] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_C] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_S] = sizeof(cell_t);
-	OpAdvTable[OP_STACK] = sizeof(cell_t);
-	OpAdvTable[OP_HEAP] = sizeof(cell_t);
-	OpAdvTable[OP_SHL_C_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SHL_C_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_SHR_C_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_SHR_C_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_ADD_C] = sizeof(cell_t);
-	OpAdvTable[OP_SMUL_C] = sizeof(cell_t);
-	OpAdvTable[OP_ZERO] = sizeof(cell_t);
-	OpAdvTable[OP_ZERO_S] = sizeof(cell_t);
-	OpAdvTable[OP_EQ_C_PRI] = sizeof(cell_t);
-	OpAdvTable[OP_EQ_C_ALT] = sizeof(cell_t);
-	OpAdvTable[OP_INC] = sizeof(cell_t);
-	OpAdvTable[OP_INC_S] = sizeof(cell_t);
-	OpAdvTable[OP_DEC] = sizeof(cell_t);
-	OpAdvTable[OP_DEC_S] = sizeof(cell_t);
-	OpAdvTable[OP_MOVS] = sizeof(cell_t);
-	OpAdvTable[OP_FILL] = sizeof(cell_t);
-	OpAdvTable[OP_HALT] = sizeof(cell_t);
-	OpAdvTable[OP_BOUNDS] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_ADR] = sizeof(cell_t);
-	OpAdvTable[OP_PUSH_HEAP_C] = sizeof(cell_t);
-	OpAdvTable[OP_SYSREQ_C] = sizeof(cell_t);
-	OpAdvTable[OP_CALL] = sizeof(cell_t);
-	OpAdvTable[OP_JUMP] = sizeof(cell_t);
-	OpAdvTable[OP_JZER] = sizeof(cell_t);
-	OpAdvTable[OP_JNZ] = sizeof(cell_t);
-	OpAdvTable[OP_JEQ] = sizeof(cell_t);
-	OpAdvTable[OP_JNEQ] = sizeof(cell_t);
-	OpAdvTable[OP_JSLESS] = sizeof(cell_t);
-	OpAdvTable[OP_JSLEQ] = sizeof(cell_t);
-	OpAdvTable[OP_JSGRTR] = sizeof(cell_t);
-	OpAdvTable[OP_JSGEQ] = sizeof(cell_t);
-	OpAdvTable[OP_SWITCH] = sizeof(cell_t);
-
-	/* instructions with 0 parameters */
-	OpAdvTable[OP_LOAD_I] = 0;
-	OpAdvTable[OP_STOR_I] = 0;
-	OpAdvTable[OP_LIDX] = 0;
-	OpAdvTable[OP_IDXADDR] = 0;
-	OpAdvTable[OP_MOVE_PRI] = 0;
-	OpAdvTable[OP_MOVE_ALT] = 0;
-	OpAdvTable[OP_XCHG] = 0;
-	OpAdvTable[OP_PUSH_PRI] = 0;
-	OpAdvTable[OP_PUSH_ALT] = 0;
-	OpAdvTable[OP_POP_PRI] = 0;
-	OpAdvTable[OP_POP_ALT] = 0;
-	OpAdvTable[OP_PROC] = 0;
-	OpAdvTable[OP_RET] = 0;
-	OpAdvTable[OP_RETN] = 0;
-	OpAdvTable[OP_CALL_PRI] = 0;
-	OpAdvTable[OP_SHL] = 0;
-	OpAdvTable[OP_SHR] = 0;
-	OpAdvTable[OP_SSHR] = 0;
-	OpAdvTable[OP_SMUL] = 0;
-	OpAdvTable[OP_SDIV] = 0;
-	OpAdvTable[OP_SDIV_ALT] = 0;
-	OpAdvTable[OP_ADD] = 0;
-	OpAdvTable[OP_SUB] = 0;
-	OpAdvTable[OP_SUB_ALT] = 0;
-	OpAdvTable[OP_AND] = 0;
-	OpAdvTable[OP_OR] = 0;
-	OpAdvTable[OP_XOR] = 0;
-	OpAdvTable[OP_NOT] = 0;
-	OpAdvTable[OP_NEG] = 0;
-	OpAdvTable[OP_INVERT] = 0;
-	OpAdvTable[OP_ZERO_PRI] = 0;
-	OpAdvTable[OP_ZERO_ALT] = 0;
-	OpAdvTable[OP_SIGN_PRI] = 0;
-	OpAdvTable[OP_SIGN_ALT] = 0;
-	OpAdvTable[OP_EQ] = 0;
-	OpAdvTable[OP_NEQ] = 0;
-	OpAdvTable[OP_SLESS] = 0;
-	OpAdvTable[OP_SLEQ] = 0;
-	OpAdvTable[OP_SGRTR] = 0;
-	OpAdvTable[OP_SGEQ] = 0;
-	OpAdvTable[OP_INC_PRI] = 0;
-	OpAdvTable[OP_INC_ALT] = 0;
-	OpAdvTable[OP_INC_I] = 0;
-	OpAdvTable[OP_DEC_PRI] = 0;
-	OpAdvTable[OP_DEC_ALT] = 0;
-	OpAdvTable[OP_DEC_I] = 0;
-	OpAdvTable[OP_JUMP_PRI] = 0;
-	OpAdvTable[OP_SWAP_PRI] = 0;
-	OpAdvTable[OP_SWAP_ALT] = 0;
-	OpAdvTable[OP_NOP] = 0;
-	OpAdvTable[OP_BREAK] = 0;
-	OpAdvTable[OP_HEAP_PRI] = 0;
-	OpAdvTable[OP_POP_HEAP_PRI] = 0;
-	OpAdvTable[OP_SYSREQ_PRI] = 0;
-
-	/* opcodes that are totally invalid */
-	/* :TODO: make an alternate table if USE_UNGEN_OPCODES is on? */
-	OpAdvTable[OP_FILE] = -3;
-	OpAdvTable[OP_SYMBOL] = -3;
-	OpAdvTable[OP_LINE] = -3;
-	OpAdvTable[OP_SRANGE] = -3;
-	OpAdvTable[OP_SYMTAG] = -3;
-	OpAdvTable[OP_SYSREQ_D] = -3;
-	OpAdvTable[OP_SYSREQ_ND] = -3;
-	OpAdvTable[OP_PUSH_R] = -3;
-	OpAdvTable[OP_LODB_I] = -3;
-	OpAdvTable[OP_STRB_I] = -3;
-	OpAdvTable[OP_LCTRL] = -3;
-	OpAdvTable[OP_SCTRL] = -3;
-	OpAdvTable[OP_ALIGN_PRI] = -3;
-	OpAdvTable[OP_ALIGN_ALT] = -3;
-	OpAdvTable[OP_JREL] = -3;
-	OpAdvTable[OP_CMPS] = -3;
-	OpAdvTable[OP_UMUL] = -3;
-	OpAdvTable[OP_UDIV] = -3;
-	OpAdvTable[OP_UDIV_ALT] = -3;
-	OpAdvTable[OP_LESS] = -3;
-	OpAdvTable[OP_LEQ] = -3;
-	OpAdvTable[OP_GRTR] = -3;
-	OpAdvTable[OP_GEQ] = -3;
-	OpAdvTable[OP_JLESS] = -3;
-	OpAdvTable[OP_JLEQ] = -3;
-	OpAdvTable[OP_JGRTR] = -3;
-	OpAdvTable[OP_JGEQ] = -3;
-}

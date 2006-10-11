@@ -12,6 +12,7 @@ using namespace SourcePawn;
 BaseContext::BaseContext(sp_context_t *_ctx)
 {
 	ctx = _ctx;
+	ctx->context = this;
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()

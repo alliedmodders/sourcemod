@@ -18,8 +18,10 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit);
 /**
  * Generates code to set an error state in the VM and return.
  * This is used for generating the error set points in the VM.
+ * GetError writes the error from the context. SetError hardcodes.
  */
-void Write_SetError(JitWriter *jit, bool always_inline, int error);
+void Write_GetError(JitWriter *jit);
+void Write_SetError(JitWriter *jit, int error);
 
 /**
  * Checks the stacks for min and low errors.
@@ -210,7 +212,7 @@ typedef enum
 	OP_SWAP_ALT,			//~VERIFIED (swap.alt)
 	OP_PUSH_ADR,			//VERIFIED
 	OP_NOP,					//VERIFIED (lol)
-	OP_SYSREQ_N,
+	OP_SYSREQ_N,			//VERIFIED
 	OP_SYMTAG,				// !GEN DEPRECATED
 	OP_BREAK,				//DONE
 	OP_PUSH2_C,				//~VERIFIED (push3.c)
@@ -243,7 +245,5 @@ typedef enum
 	/* ----- */
 	OP_NUM_OPCODES
 } OPCODE;
-
-extern int OpAdvTable[];
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_OPCODE_INFO_H_

@@ -33,15 +33,15 @@ public:
 	jitoffs_t jit_error_memaccess;
 	jitoffs_t jit_error_heaplow;
 	jitoffs_t jit_error_heapmin;
+	jitoffs_t jit_extern_error;
 	uint32_t codesize;
 	int inline_level;
+	int error_set;
 	bool debug;
 };
 
 class JITX86 : public IVirtualMachine
 {
-public:
-	JITX86();
 public:
 	const char *GetVMName();
 	ICompilation *StartCompilation(sp_plugin_t *plugin);

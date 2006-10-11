@@ -899,6 +899,22 @@ inline void IA32_Write_Jump32(JitWriter *jit, jitoffs_t jmp, jitoffs_t target)
 	jit->outptr = oldptr;
 }
 
+/**
+ * Corrects a jump using an absolute offset, not a relative one.
+ */
+inline void IA32_Write_Jump32_Abs(JitWriter *jit, jitoffs_t jmp, void *target)
+{
+	//save old ptr
+	jitcode_t oldptr = jit->outptr;
+	//get relative difference
+	long diff = ((long)target - ((long)jit->outbase + jmp + 4));
+	//overwrite old value
+	jit->outptr = jit->outbase + jmp;
+	jit->write_int32(diff);
+	//restore old ptr
+	jit->outptr = oldptr;
+}
+
 /* For writing and auto-calculating an absolute target */
 inline void IA32_Jump_Imm32_Abs(JitWriter *jit, jitoffs_t target)
 {

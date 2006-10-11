@@ -60,9 +60,11 @@ inline void WriteOp_Zero(JitWriter *jit)
 	//mov [ebp+<val>], 0
 	cell_t val = jit->read_cell();
 	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
 		IA32_Mov_Rm_Imm32_Disp8(jit, AMX_REG_DAT, 0, (jit_int8_t)val);
-	else
+	} else {
 		IA32_Mov_Rm_Imm32_Disp32(jit, AMX_REG_DAT, 0, val);
+	}
 }
 
 inline void WriteOp_Zero_S(JitWriter *jit)
@@ -70,9 +72,11 @@ inline void WriteOp_Zero_S(JitWriter *jit)
 	//mov [ebx+<val>], 0
 	cell_t val = jit->read_cell();
 	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
 		IA32_Mov_Rm_Imm32_Disp8(jit, AMX_REG_FRM, 0, (jit_int8_t)val);
-	else
+	} else {
 		IA32_Mov_Rm_Imm32_Disp32(jit, AMX_REG_FRM, 0, val);
+	}
 }
 
 inline void WriteOp_Push_S(JitWriter *jit)
@@ -85,9 +89,11 @@ inline void WriteOp_Push_S(JitWriter *jit)
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
 	//optimize encoding a bit...
 	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
 		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_FRM, (jit_int8_t)val);
-	else
+	} else {
 		IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_FRM, val);
+	}
 	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_TMP, MOD_MEM_REG);
 }
 
@@ -1406,8 +1412,14 @@ inline void WriteOp_Sysreq_N_NoInline(JitWriter *jit)
 	/* store the number of parameters on the stack, 
 	 * and store the native index as well.
 	 */
-	cell_t num_params = jit->read_cell();
 	cell_t native_index = jit->read_cell();
+	cell_t num_params = jit->read_cell();
+	
+	if ((uint32_t)native_index >= ((CompData*)jit->data)->plugin->info.natives_num)
+	{
+		((CompData *)jit->data)->error_set = SP_ERR_INSTRUCTION_PARAM;
+		return;
+	}
 
 	//mov eax, <num_params>
 	//mov ecx, <native_index>
@@ -1421,9 +1433,15 @@ inline void WriteOp_Sysreq_N_NoInline(JitWriter *jit)
 inline void WriteOp_Sysreq_N(JitWriter *jit)
 {
 	/* The big daddy of opcodes. */
-	cell_t num_params = jit->read_cell();
 	cell_t native_index = jit->read_cell();
+	cell_t num_params = jit->read_cell();
 	CompData *data = (CompData *)jit->data;
+
+	if ((uint32_t)native_index >= data->plugin->info.natives_num)
+	{
+		data->error_set = SP_ERR_INSTRUCTION_PARAM;
+		return;
+	}
 
 	/* store the number of parameters on the stack */
 	//mov [edi-4], num_params
@@ -1463,7 +1481,15 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//call NativeCallback
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32(jit, call, (jitoffs_t)(char *)&NativeCallback);
+	IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+
+	/* check for errors */
+	//mov ecx, [esi+context]
+	//cmp [ecx+err], 0
+	//jnz :error
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
 	//add esp, 4*3
@@ -1472,12 +1498,6 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
 	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_ALT);
-
-	/* check for errors */
-	//test eax, eax
-	//jne :error
-	IA32_Test_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NE, data->jit_return);
 
 	/* pop the stack.  do not check the margins.
 	 * Note that this is not a true macro - we don't bother to
@@ -1503,9 +1523,16 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
-	/* :TODO: fill this out... */
+	sp_native_t *native = &ctx->natives[native_idx];
+	
+	/* Technically both aren't needed, I guess */
+	if (native->status == SP_NATIVE_NONE)
+	{
+		ctx->err = SP_ERR_NATIVE_PENDING;
+		return 0;
+	}
 
-	return 0;
+	return native->pfn(ctx, params);
 }
 
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
@@ -1529,6 +1556,33 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 	}
 }
 
+void WriteErrorRoutines(CompData *data, JitWriter *jit)
+{
+	data->jit_error_divzero = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_DIVIDE_BY_ZERO);
+
+	data->jit_error_stacklow = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_STACKLOW);
+
+	data->jit_error_stackmin = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_STACKMIN);
+
+	data->jit_error_bounds = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_ARRAY_BOUNDS);
+
+	data->jit_error_memaccess = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_MEMACCESS);
+
+	data->jit_error_heaplow = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_HEAPLOW);
+
+	data->jit_error_heapmin = jit->get_outputpos();
+	Write_SetError(jit, SP_ERR_HEAPMIN);
+
+	data->jit_extern_error = jit->get_outputpos();
+	Write_GetError(jit);
+}
+
 sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 {
 	CompData *data = (CompData *)co;
@@ -1536,61 +1590,17 @@ sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 
 	/* The first phase is to browse */
 	uint8_t *code = plugin->pcode;
-	uint8_t *cip;
 	uint8_t *end_cip = plugin->pcode + plugin->pcode_size;
 	OPCODE op;
-	int op_c;
-
-	/* FIRST PASS (light load) - Get initial opcode information
-	 * :TODO: remove this pass soon, it's not needed anymore!
-	 */
-	for (cip = code; cip < end_cip;)
-	{
-		op = (OPCODE)*(ucell_t *)cip;
-		if ((unsigned)op >= OP_NUM_OPCODES)
-		{
-			AbortCompilation(co);
-			*err = SP_ERR_INVALID_INSTRUCTION;
-			return NULL;
-		}
-		cip += sizeof(cell_t);
-		op_c = OpAdvTable[op];
-		if (op_c >= 0)
-		{
-			cip += op_c;
-		} else if (op_c == -3) {
-			AbortCompilation(co);
-			*err = SP_ERR_INVALID_INSTRUCTION;
-			return NULL;
-		} else if (op_c == -1) {
-			switch (op)
-			{
-			case OP_CASETBL:
-				{
-					ucell_t num = *(ucell_t *)cip;
-					cip += sizeof(cell_t);
-					cip += ((2*num) + 1) * sizeof(cell_t);
-					break;
-				}
-			default:
-				{
-					AbortCompilation(co);
-					*err = SP_ERR_INVALID_INSTRUCTION;
-					return NULL;
-				}
-			}
-		}
-	}
 
 	/*********************************************
-	 * SECOND PASS (medium load): writer.outbase is NULL, getting size only
-	 * THIRD PASS (heavy load!!): writer.outbase is valid and output is written
+	 * FIRST PASS (medium load): writer.outbase is NULL, getting size only
+	 * SECOND PASS (heavy load!!): writer.outbase is valid and output is written
 	 *********************************************/
 
 	JitWriter writer;
 	JitWriter *jit = &writer;
 	cell_t *endptr = (cell_t *)(end_cip);
-	cell_t jitpos;
 
 	/* Initial code is written "blank,"
 	 * so we can check the exact memory usage.
@@ -1602,58 +1612,37 @@ sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 	writer.outbase = NULL;
 	data->rebase = (jitcode_t)engine->BaseAlloc(plugin->pcode_size);
 
-	/* Jump back here for second pass */
+	/* We will jump back here for second pass */
 jit_rewind:
 	/* Initialize pass vars */
 	writer.inptr = writer.inbase;
 	data->jit_verify_addr_eax = 0;
 	data->jit_verify_addr_edx = 0;
 
-	/* Start writing the actual code */
+	/* Write the prologue of the JIT */
 	data->jit_return = Write_Execute_Function(jit);
 
-	/* Write error checking routines that are jumped to */
-	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
+	/* Write the SYSREQ.N opcode if we need to */
+	if (!(data->inline_level & JIT_INLINE_NATIVES))
 	{
-		jitpos = jit->get_outputpos();
-		Write_Check_VerifyAddr(jit, REG_EAX);
-		data->jit_verify_addr_eax = jitpos;
-	
-		jitpos = jit->get_outputpos();
-		Write_Check_VerifyAddr(jit, REG_EDX);
-		data->jit_verify_addr_edx = jitpos;
+		data->jit_sysreq_n = jit->get_outputpos();
+		WriteOp_Sysreq_N_Function(jit);
 	}
 
-	/* Write error codes we need */
+	/* Write error checking routines that are called to */
+	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
 	{
-		data->jit_error_divzero = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_DIVIDE_BY_ZERO);
+		data->jit_verify_addr_eax = jit->get_outputpos();
+		Write_Check_VerifyAddr(jit, REG_EAX);
 	
-		data->jit_error_stacklow = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_STACKLOW);
-
-		data->jit_error_stackmin = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_STACKMIN);
-
-		data->jit_error_bounds = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_ARRAY_BOUNDS);
-
-		data->jit_error_memaccess = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_MEMACCESS);
-
-		data->jit_error_heaplow = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_HEAPLOW);
-		
-		data->jit_error_heapmin = jit->get_outputpos();
-		Write_SetError(jit, true, SP_ERR_HEAPMIN);
+		data->jit_verify_addr_edx = jit->get_outputpos();
+		Write_Check_VerifyAddr(jit, REG_EDX);
 	}
 
 	/* Actual code generation! */
 	if (writer.outbase == NULL)
 	{
-		/*******
-		 * SECOND PASS - get opcode sizes+info
-		 *******/
+		/* First Pass - find codesize and resolve relocation */
 		jitoffs_t pcode_offs;
 		jitoffs_t native_offs;
 
@@ -1673,7 +1662,16 @@ jit_rewind:
 			{
 				#include "opcode_switch.inc"
 			}
+			/* Check for errors.  This should only happen in the first pass. */
+			if (data->error_set != SP_ERR_NONE)
+			{
+				*err = data->error_set;
+				AbortCompilation(co);
+				return NULL;
+			}
 		}
+		/* Write these last because error jumps should be unpredicted, and thus forward */
+		WriteErrorRoutines(data, jit);
 
 		/* the total codesize is now known! */
 		uint32_t mem = writer.get_outputpos();
@@ -1693,6 +1691,8 @@ jit_rewind:
 				#include "opcode_switch.inc"
 			}
 		}
+		/* Write these last because error jumps should be unpredicted, and thus forward */
+		WriteErrorRoutines(data, jit);
 	}
 
 	/*************
@@ -1810,8 +1810,7 @@ jit_rewind:
 	}
 
 	/* clean up relocation+compilation memory */
-	engine->BaseFree(data->rebase);
-	delete data;
+	AbortCompilation(co);
 
 	*err = SP_ERR_NONE;
 
@@ -1848,13 +1847,18 @@ ICompilation *JITX86::StartCompilation(sp_plugin_t *plugin)
 	CompData *data = new CompData;
 
 	data->plugin = plugin;
-	data->inline_level = JIT_INLINE_ERRORCHECKS;
+	data->inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
+	data->error_set = SP_ERR_NONE;
 
 	return data;
 }
 
 void JITX86::AbortCompilation(ICompilation *co)
 {
+	if (((CompData *)co)->rebase)
+	{
+		engine->BaseFree(((CompData *)co)->rebase);
+	}
 	delete (CompData *)co;
 }
 
