@@ -11,9 +11,10 @@
 jitoffs_t Write_Execute_Function(JitWriter *jit);
 
 /**
- * Writes the Sysreq.n opcode as a function call.
+ * Writes the Sysreq.* opcodes as a function call.
  */
 void WriteOp_Sysreq_N_Function(JitWriter *jit);
+void WriteOp_Sysreq_C_Function(JitWriter *jit);
 
 /**
  * Generates code to set an error state in the VM and return.
@@ -200,7 +201,7 @@ typedef enum
 	OP_HALT,				//DONE
 	OP_BOUNDS,				//VERIFIED
 	OP_SYSREQ_PRI,			// !GEN
-	OP_SYSREQ_C,			// !GEN DEPRECATED
+	OP_SYSREQ_C,			//VERIFIED
 	OP_FILE,				// !GEN DEPRECATED
 	OP_LINE,				// !GEN DEPRECATED
 	OP_SYMBOL,				// !GEN DEPRECATED

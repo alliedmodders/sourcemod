@@ -15,17 +15,18 @@ class CompData : public ICompilation
 {
 public:
 	CompData() : plugin(NULL), 
-		debug(false), inline_level(0), rebase(NULL)
+		debug(false), inline_level(0), rebase(NULL),
+		error_set(SP_ERROR_NONE)
 	{
 	};
 public:
-	sp_plugin_t *plugin;
-	jitcode_t rebase;
-	jitoffs_t jit_return;
+	sp_plugin_t *plugin;			/* plugin handle */
+	jitcode_t rebase;				/* relocation map */
+	jitoffs_t jit_return;			/* point in main call to return to */
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
-	jitoffs_t jit_break;
-	jitoffs_t jit_sysreq_n;
+	jitoffs_t jit_break;			/* call to op.break */
+	jitoffs_t jit_sysreq_n;			/* call version of op.sysreq.n */
 	jitoffs_t jit_error_bounds;
 	jitoffs_t jit_error_divzero;
 	jitoffs_t jit_error_stacklow;
@@ -33,11 +34,12 @@ public:
 	jitoffs_t jit_error_memaccess;
 	jitoffs_t jit_error_heaplow;
 	jitoffs_t jit_error_heapmin;
-	jitoffs_t jit_extern_error;
-	uint32_t codesize;
-	int inline_level;
-	int error_set;
-	bool debug;
+	jitoffs_t jit_extern_error;		/* returning generic error */
+	jitoffs_t jit_sysreq_c;			/* old version! */
+	uint32_t codesize;				/* total codesize */
+	int inline_level;				/* inline optimization level */
+	int error_set;					/* error code to halt process */
+	bool debug;						/* whether to compile debug mode */
 };
 
 class JITX86 : public IVirtualMachine
@@ -53,6 +55,7 @@ public:
 };
 
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
+cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 
 #define AMX_REG_PRI		REG_EAX
@@ -69,8 +72,7 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 #define AMX_INFO_RETVAL		8				//physical
 #define AMX_INFO_CONTEXT	12				//physical
 #define AMX_INFO_STACKTOP	16				//relocated
-#define AMX_INFO_HEAPLOW	20				//not relocated. currently unused
-#define AMX_INFO_STACKTOP_U	24				//not relocated
+#define AMX_INFO_STACKTOP_U	20				//not relocated
 
 extern ISourcePawnEngine *engine;
 

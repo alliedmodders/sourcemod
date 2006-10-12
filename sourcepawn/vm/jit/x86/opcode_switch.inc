@@ -643,6 +643,11 @@
 				WriteOp_Call(jit);
 				break;
 			}
+		case OP_SYSREQ_C:
+			{
+				WriteOp_Sysreq_C(jit);
+				break;
+			}
 		case OP_SYSREQ_N:
 			{
 				if (data->inline_level & JIT_INLINE_NATIVES)
@@ -658,7 +663,7 @@
 #endif
 		default:
 			{
-				data->error_set = SP_ERR_INVALID_INSTRUCTION;
+				data->error_set = SP_ERROR_INVALID_INSTRUCTION;
 				break;
 			}
 			

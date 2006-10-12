@@ -151,7 +151,7 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 
 	if (err)
 	{
-		*err = SP_ERR_NONE;
+		*err = SP_ERROR_NONE;
 	}
 
 	return plugin;
@@ -159,7 +159,7 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 return_error:
 	if (err)
 	{
-		*err = SP_ERR_FILE_FORMAT;
+		*err = SP_ERROR_FILE_FORMAT;
 	}
 
 	return NULL;
@@ -175,7 +175,7 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 
 	if (!fp)
 	{
-		error = SP_ERR_NOT_FOUND;
+		error = SP_ERROR_NOT_FOUND;
 		goto return_error;
 	}
 
@@ -185,7 +185,7 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 
 	if (hdr.magic != SPFILE_MAGIC)
 	{
-		error = SP_ERR_FILE_FORMAT;
+		error = SP_ERROR_FILE_FORMAT;
 		goto return_error;
 	}
 
@@ -211,7 +211,7 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 			{
 				free(sectheader);
 				free(uncompdata);
-				error = SP_ERR_DECOMPRESSOR;
+				error = SP_ERROR_DECOMPRESSOR;
 				goto return_error;
 			}
 
@@ -232,7 +232,7 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 		}
 	default:
 		{
-			error = SP_ERR_DECOMPRESSOR;
+			error = SP_ERROR_DECOMPRESSOR;
 			goto return_error;
 		}
 	}
@@ -300,5 +300,5 @@ int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
 		free(plugin);
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }

@@ -1407,6 +1407,26 @@ inline void WriteOp_Casetbl(JitWriter *jit)
 	jit->inptr += num_cases;
 }
 
+inline void WriteOp_Sysreq_C(JitWriter *jit)
+{
+	/* store the number of parameters on the stack, 
+	 * and store the native index as well.
+	 */
+	cell_t native_index = jit->read_cell();
+
+	if ((uint32_t)native_index >= ((CompData*)jit->data)->plugin->info.natives_num)
+	{
+		((CompData *)jit->data)->error_set = SP_ERROR_INSTRUCTION_PARAM;
+		return;
+	}
+
+	//mov ecx, <native_index>
+	IA32_Mov_Rm_Imm32(jit, REG_ECX, native_index, MOD_REG);
+
+	jitoffs_t call = IA32_Call_Imm32(jit, 0);
+	IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_sysreq_c);
+}
+
 inline void WriteOp_Sysreq_N_NoInline(JitWriter *jit)
 {
 	/* store the number of parameters on the stack, 
@@ -1417,7 +1437,7 @@ inline void WriteOp_Sysreq_N_NoInline(JitWriter *jit)
 	
 	if ((uint32_t)native_index >= ((CompData*)jit->data)->plugin->info.natives_num)
 	{
-		((CompData *)jit->data)->error_set = SP_ERR_INSTRUCTION_PARAM;
+		((CompData *)jit->data)->error_set = SP_ERROR_INSTRUCTION_PARAM;
 		return;
 	}
 
@@ -1439,7 +1459,7 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 
 	if ((uint32_t)native_index >= data->plugin->info.natives_num)
 	{
-		data->error_set = SP_ERR_INSTRUCTION_PARAM;
+		data->error_set = SP_ERROR_INSTRUCTION_PARAM;
 		return;
 	}
 
@@ -1481,8 +1501,13 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//call NativeCallback
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, NativeCallback);
-
+	if (!data->debug)
+	{
+		IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+	} else {
+		IA32_Write_Jump32_Abs(jit, call, NativeCallback_Debug);
+	}
+	
 	/* check for errors */
 	//mov ecx, [esi+context]
 	//cmp [ecx+err], 0
@@ -1528,11 +1553,53 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 	/* Technically both aren't needed, I guess */
 	if (native->status == SP_NATIVE_NONE)
 	{
-		ctx->err = SP_ERR_NATIVE_PENDING;
+		ctx->err = SP_ERROR_NATIVE_PENDING;
 		return 0;
 	}
 
 	return native->pfn(ctx, params);
+}
+
+cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
+{
+	cell_t save_sp = ctx->sp;
+	cell_t save_hp = ctx->hp;
+
+	if (ctx->hp < ctx->heapbase)
+	{
+		ctx->err = SP_ERROR_HEAPMIN;
+		return 0;
+	}
+
+	if (ctx->hp + STACK_MARGIN > ctx->sp)
+	{
+		ctx->err = SP_ERROR_STACKLOW;
+		return 0;
+	}
+
+	if ((uint32_t)ctx->sp >= ctx->memory)
+	{
+		ctx->err = SP_ERROR_STACKMIN;
+		return 0;
+	}
+
+	cell_t result = NativeCallback(ctx, native_idx, params);
+	
+	if (ctx->err != SP_ERROR_NONE)
+	{
+		return result;
+	}
+
+	if (save_sp != ctx->sp)
+	{
+		ctx->err = SP_ERROR_STACKLEAK;
+		return result;
+	} else if (save_hp != ctx->hp) {
+		ctx->err = SP_ERROR_HEAPLEAK;
+		return result;
+	}
+
+	return result;
 }
 
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
@@ -1559,25 +1626,25 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 void WriteErrorRoutines(CompData *data, JitWriter *jit)
 {
 	data->jit_error_divzero = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_DIVIDE_BY_ZERO);
+	Write_SetError(jit, SP_ERROR_DIVIDE_BY_ZERO);
 
 	data->jit_error_stacklow = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_STACKLOW);
+	Write_SetError(jit, SP_ERROR_STACKLOW);
 
 	data->jit_error_stackmin = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_STACKMIN);
+	Write_SetError(jit, SP_ERROR_STACKMIN);
 
 	data->jit_error_bounds = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_ARRAY_BOUNDS);
+	Write_SetError(jit, SP_ERROR_ARRAY_BOUNDS);
 
 	data->jit_error_memaccess = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_MEMACCESS);
+	Write_SetError(jit, SP_ERROR_MEMACCESS);
 
 	data->jit_error_heaplow = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_HEAPLOW);
+	Write_SetError(jit, SP_ERROR_HEAPLOW);
 
 	data->jit_error_heapmin = jit->get_outputpos();
-	Write_SetError(jit, SP_ERR_HEAPMIN);
+	Write_SetError(jit, SP_ERROR_HEAPMIN);
 
 	data->jit_extern_error = jit->get_outputpos();
 	Write_GetError(jit);
@@ -1629,6 +1696,10 @@ jit_rewind:
 		WriteOp_Sysreq_N_Function(jit);
 	}
 
+	/* Plugins compiled with -O0 will need this! */
+	data->jit_sysreq_c = jit->get_outputpos();
+	WriteOp_Sysreq_C_Function(jit);
+
 	/* Write error checking routines that are called to */
 	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
 	{
@@ -1663,7 +1734,7 @@ jit_rewind:
 				#include "opcode_switch.inc"
 			}
 			/* Check for errors.  This should only happen in the first pass. */
-			if (data->error_set != SP_ERR_NONE)
+			if (data->error_set != SP_ERROR_NONE)
 			{
 				*err = data->error_set;
 				AbortCompilation(co);
@@ -1812,7 +1883,7 @@ jit_rewind:
 	/* clean up relocation+compilation memory */
 	AbortCompilation(co);
 
-	*err = SP_ERR_NONE;
+	*err = SP_ERROR_NONE;
 
 	return ctx;
 }
@@ -1848,7 +1919,7 @@ ICompilation *JITX86::StartCompilation(sp_plugin_t *plugin)
 
 	data->plugin = plugin;
 	data->inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
-	data->error_set = SP_ERR_NONE;
+	data->error_set = SP_ERROR_NONE;
 
 	return data;
 }

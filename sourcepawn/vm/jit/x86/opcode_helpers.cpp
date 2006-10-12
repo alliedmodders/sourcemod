@@ -4,7 +4,7 @@
 #include "opcode_helpers.h"
 #include "x86_macros.h"
 
-#define NUM_INFO_PARAMS	7
+#define NUM_INFO_PARAMS	6
 
 jitoffs_t Write_Execute_Function(JitWriter *jit)
 {
@@ -66,14 +66,10 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	//mov [esi+x], ecx		- store unrelocated
 	//add ecx, ebp			- relocate
 	//mov [esi+x], ecx		- store relocated
-	//mov ecx, [eax+<offs>] - get heap low
-	//mov [esi+20], ecx		- store heap low into info pointer
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, memory));
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP_U);
 	IA32_Add_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_DAT, MOD_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP);
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, heapbase));
-	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_HEAPLOW);
 
 	/* Remaining needed vars */
 	//mov ecx, [esp+(4*(NUM_INFO_PARAMS+3))+12] - get code index (normally esp+12, but we have another array on the stack)
@@ -88,10 +84,10 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	/* if the code flow gets to here, there was a normal return */
 	//mov ecx, [esi+8]		- get retval pointer
 	//mov [ecx], eax		- store retval from PRI
-	//mov eax, SP_ERR_NONE	- set no error
+	//mov eax, SP_ERROR_NONE	- set no error
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, AMX_REG_INFO, AMX_INFO_RETVAL);
 	IA32_Mov_Rm_Reg(jit, REG_ECX, AMX_REG_PRI, MOD_MEM_REG);
-	IA32_Mov_Reg_Imm32(jit, REG_EAX, SP_ERR_NONE);
+	IA32_Mov_Reg_Imm32(jit, REG_EAX, SP_ERROR_NONE);
 
 	/* save where error checking/halting functions should go to */
 	jitoffs_t offs_return = jit->get_outputpos();
@@ -390,6 +386,71 @@ void Macro_PushN(JitWriter *jit, int i)
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4*i, MOD_REG);
 }
 
+void WriteOp_Sysreq_C_Function(JitWriter *jit)
+{
+	/* The small daddy of the big daddy of opcodes.
+	 * ecx - native index
+	 */
+	CompData *data = (CompData *)jit->data;
+
+	/* save registers we will need */
+	//push edx
+	IA32_Push_Reg(jit, AMX_REG_ALT);
+
+	/* push some callback stuff */
+	//push edi		; stack
+	//push ecx		; native index
+	IA32_Push_Reg(jit, AMX_REG_STK);
+	IA32_Push_Reg(jit, REG_ECX);
+
+	/* Relocate stack, heap, frm information, then store back */
+	//sub edi, ebp
+	//mov ecx, [esi+hea]
+	//mov eax, [esi+context]
+	//mov [eax+hp], ecx
+	//mov [eax+sp], edi
+	//mov ecx, [esi+frm]
+	//mov [eax+frm], ecx
+	IA32_Sub_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_TMP, offsetof(sp_context_t, hp));
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_STK, offsetof(sp_context_t, sp));
+	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_INFO_FRM, MOD_REG);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_TMP, offsetof(sp_context_t, frm));
+
+	/* finally, push the last parameter and make the call */
+	//push eax		; context
+	//call NativeCallback
+	IA32_Push_Reg(jit, REG_EAX);
+	jitoffs_t call = IA32_Call_Imm32(jit, 0);
+	if (!data->debug)
+	{
+		IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+	} else {
+		IA32_Write_Jump32_Abs(jit, call, NativeCallback_Debug);
+	}
+
+	/* Test for error */
+	//mov ecx, [esi+context]
+	//cmp [ecx+err], 0
+	//jnz :error
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
+
+	/* restore what we damaged */
+	//add esp, 4*3
+	//add edi, ebp
+	//pop edx
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
+	IA32_Pop_Reg(jit, AMX_REG_ALT);
+
+	//ret
+	IA32_Return(jit);
+}
+
 void WriteOp_Sysreq_N_Function(JitWriter *jit)
 {
 	/* The big daddy of opcodes.
@@ -437,7 +498,12 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	//call NativeCallback
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, (void *)&NativeCallback);
+	if (!data->debug)
+	{
+		IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+	} else {
+		IA32_Write_Jump32_Abs(jit, call, NativeCallback_Debug);
+	}
 
 	/* Test for error */
 	//mov ecx, [esi+context]

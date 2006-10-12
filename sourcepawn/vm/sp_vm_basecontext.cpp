@@ -34,13 +34,13 @@ int BaseContext::SetDebugBreak(SPVM_DEBUGBREAK newpfn, SPVM_DEBUGBREAK *oldpfn)
 {
 	if (!IsDebugging())
 	{
-		return SP_ERR_NOTDEBUGGING;
+		return SP_ERROR_NOTDEBUGGING;
 	}
 
 	*oldpfn = ctx->dbreak;
 	ctx->dbreak = newpfn;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 IPluginDebugInfo *BaseContext::GetDebugInfo()
@@ -56,7 +56,7 @@ int BaseContext::Execute(uint32_t public_func, cell_t *result)
 
 	int err;
 	sp_public_t *pubfunc;
-	if ((err=GetPublicByIndex(public_func, &pubfunc)) != SP_ERR_NONE)
+	if ((err=GetPublicByIndex(public_func, &pubfunc)) != SP_ERROR_NONE)
 	{
 		return err;
 	}
@@ -74,13 +74,13 @@ int BaseContext::Execute(uint32_t public_func, cell_t *result)
 	 */
 
 #if defined _DEBUG
-	if (err == SP_ERR_NONE)
+	if (err == SP_ERROR_NONE)
 	{
 		assert(ctx->sp - pushcount * sizeof(cell_t) == save_sp);
 		assert(ctx->hp == save_hp);
 	}
 #endif
-	if (err != SP_ERR_NONE)
+	if (err != SP_ERROR_NONE)
 	{
 		ctx->sp = save_sp;
 		ctx->hp = save_hp;
@@ -97,7 +97,7 @@ int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys
 #if 0
 	if (cells > CELLBOUNDMAX)
 	{
-		return SP_ERR_PARAM;
+		return SP_ERROR_ARAM;
 	}
 #else
 	assert(cells < CELLBOUNDMAX);
@@ -110,7 +110,7 @@ int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys
 	 */
 	if ((cell_t)(ctx->sp - ctx->hp - realmem) < STACKMARGIN)
 	{
-		return SP_ERR_HEAPLOW;
+		return SP_ERROR_HEAPLOW;
 	}
 
 	addr = (cell_t *)(ctx->data + ctx->hp);
@@ -128,7 +128,7 @@ int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys
 
 	ctx->hp += realmem;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::HeapPop(cell_t local_addr)
@@ -140,7 +140,7 @@ int BaseContext::HeapPop(cell_t local_addr)
 	local_addr -= sizeof(cell_t);
 	if (local_addr < ctx->heapbase || local_addr >= ctx->sp)
 	{
-		return SP_ERR_INVALID_ADDRESS;
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	addr = (cell_t *)(ctx->data + local_addr);
@@ -148,12 +148,12 @@ int BaseContext::HeapPop(cell_t local_addr)
 	/* check if this memory count looks valid */
 	if (ctx->hp - cellcount - sizeof(cell_t) != local_addr)
 	{
-		return SP_ERR_INVALID_ADDRESS;
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	ctx->hp = local_addr;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 
@@ -161,12 +161,12 @@ int BaseContext::HeapRelease(cell_t local_addr)
 {
 	if (local_addr < ctx->heapbase)
 	{
-		return SP_ERR_INVALID_ADDRESS;
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	ctx->hp = local_addr - sizeof(cell_t);
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::FindNativeByName(const char *name, uint32_t *index)
@@ -187,7 +187,7 @@ int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 			{
 				*index = mid;
 			}
-			return SP_ERR_NONE;
+			return SP_ERROR_NONE;
 		} else if (diff < 0) {
 			low = mid + 1;
 		} else {
@@ -195,14 +195,14 @@ int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 		}
 	}
 
-	return SP_ERR_NOT_FOUND;
+	return SP_ERROR_NOT_FOUND;
 }
 
 int BaseContext::GetNativeByIndex(uint32_t index, sp_native_t **native)
 {
 	if (index >= ctx->plugin->info.natives_num)
 	{
-		return SP_ERR_INDEX;
+		return SP_ERROR_INDEX;
 	}
 
 	if (native)
@@ -210,7 +210,7 @@ int BaseContext::GetNativeByIndex(uint32_t index, sp_native_t **native)
 		*native = &(ctx->natives[index]);
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 
@@ -237,7 +237,7 @@ int BaseContext::FindPublicByName(const char *name, uint32_t *index)
 			{
 				*index = mid;
 			}
-			return SP_ERR_NONE;
+			return SP_ERROR_NONE;
 		} else if (diff < 0) {
 			low = mid + 1;
 		} else {
@@ -245,14 +245,14 @@ int BaseContext::FindPublicByName(const char *name, uint32_t *index)
 		}
 	}
 
-	return SP_ERR_NOT_FOUND;
+	return SP_ERROR_NOT_FOUND;
 }
 
 int BaseContext::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 {
 	if (index >= ctx->plugin->info.publics_num)
 	{
-		return SP_ERR_INDEX;
+		return SP_ERROR_INDEX;
 	}
 
 	if (pblic)
@@ -260,7 +260,7 @@ int BaseContext::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 		*pblic = &(ctx->publics[index]);
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 uint32_t BaseContext::GetPublicsNum()
@@ -272,7 +272,7 @@ int BaseContext::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 {
 	if (index >= ctx->plugin->info.pubvars_num)
 	{
-		return SP_ERR_INDEX;
+		return SP_ERROR_INDEX;
 	}
 
 	if (pubvar)
@@ -280,7 +280,7 @@ int BaseContext::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 		*pubvar = &(ctx->pubvars[index]);
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::FindPubvarByName(const char *name, uint32_t *index)
@@ -301,7 +301,7 @@ int BaseContext::FindPubvarByName(const char *name, uint32_t *index)
 			{
 				*index = mid;
 			}
-			return SP_ERR_NONE;
+			return SP_ERROR_NONE;
 		} else if (diff < 0) {
 			low = mid + 1;
 		} else {
@@ -309,20 +309,20 @@ int BaseContext::FindPubvarByName(const char *name, uint32_t *index)
 		}
 	}
 
-	return SP_ERR_NOT_FOUND;
+	return SP_ERROR_NOT_FOUND;
 }
 
 int BaseContext::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
 {
 	if (index >= ctx->plugin->info.pubvars_num)
 	{
-		return SP_ERR_INDEX;
+		return SP_ERROR_INDEX;
 	}
 
 	*local_addr = ctx->plugin->info.pubvars[index].address;
 	*phys_addr = ctx->pubvars[index].offs;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 uint32_t BaseContext::GetPubVarsNum()
@@ -353,7 +353,7 @@ int BaseContext::BindNatives(sp_nativeinfo_t *natives, unsigned int num, int ove
 		}
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 
@@ -363,7 +363,7 @@ int BaseContext::BindNative(sp_nativeinfo_t *native, uint32_t status)
 	uint32_t index;
 	int err;
 
-	if ((err = FindNativeByName(native->name, &index)) != SP_ERR_NONE)
+	if ((err = FindNativeByName(native->name, &index)) != SP_ERROR_NONE)
 	{
 		return err;
 	}
@@ -371,7 +371,7 @@ int BaseContext::BindNative(sp_nativeinfo_t *native, uint32_t status)
 	ctx->natives[index].pfn = native->func;
 	ctx->natives[index].status = status;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
@@ -389,14 +389,14 @@ int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 		}
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
 	{
-		return SP_ERR_INVALID_ADDRESS;
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	if (phys_addr)
@@ -404,21 +404,21 @@ int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 		*phys_addr = (cell_t *)(ctx->data + local_addr);
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::PushCell(cell_t value)
 {
 	if ((ctx->hp + STACKMARGIN) > (cell_t)(ctx->sp - sizeof(cell_t)))
 	{
-		return SP_ERR_STACKLOW;
+		return SP_ERROR_STACKLOW;
 	}
 
 	ctx->sp -= sizeof(cell_t);
 	*(cell_t *)(ctx->data + ctx->sp) = value;
 	ctx->pushcount++;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::PushCellsFromArray(cell_t array[], unsigned int numcells)
@@ -428,7 +428,7 @@ int BaseContext::PushCellsFromArray(cell_t array[], unsigned int numcells)
 
 	for (i=0; i<numcells; i++)
 	{
-		if ((err = PushCell(array[i])) != SP_ERR_NONE)
+		if ((err = PushCell(array[i])) != SP_ERROR_NONE)
 		{
 			ctx->sp += (cell_t)(i * sizeof(cell_t));
 			ctx->pushcount -= i;
@@ -436,7 +436,7 @@ int BaseContext::PushCellsFromArray(cell_t array[], unsigned int numcells)
 		}
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells)
@@ -444,14 +444,14 @@ int BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t ar
 	cell_t *ph_addr;
 	int err;
 
-	if ((err = HeapAlloc(numcells, local_addr, &ph_addr)) != SP_ERR_NONE)
+	if ((err = HeapAlloc(numcells, local_addr, &ph_addr)) != SP_ERROR_NONE)
 	{
 		return err;
 	}
 
 	memcpy(ph_addr, array, numcells * sizeof(cell_t));
 
-	if ((err = PushCell(*local_addr)) != SP_ERR_NONE)
+	if ((err = PushCell(*local_addr)) != SP_ERROR_NONE)
 	{
 		HeapRelease(*local_addr);
 		return err;
@@ -462,7 +462,7 @@ int BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t ar
 		*phys_addr = ph_addr;
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::LocalToString(cell_t local_addr, char *buffer, size_t maxlength, int *chars)
@@ -472,7 +472,7 @@ int BaseContext::LocalToString(cell_t local_addr, char *buffer, size_t maxlength
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
 	{
-		return SP_ERR_INVALID_ADDRESS;
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	src = (cell_t *)(ctx->data + local_addr);
@@ -495,7 +495,7 @@ int BaseContext::LocalToString(cell_t local_addr, char *buffer, size_t maxlength
 		*chars = len;
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::PushString(cell_t *local_addr, cell_t **phys_addr, const char *string)
@@ -504,7 +504,7 @@ int BaseContext::PushString(cell_t *local_addr, cell_t **phys_addr, const char *
 	int err;
 	unsigned int i, numcells = strlen(string);
 
-	if ((err = HeapAlloc(numcells+1, local_addr, &ph_addr)) != SP_ERR_NONE)
+	if ((err = HeapAlloc(numcells+1, local_addr, &ph_addr)) != SP_ERROR_NONE)
 	{
 		return err;
 	}
@@ -515,7 +515,7 @@ int BaseContext::PushString(cell_t *local_addr, cell_t **phys_addr, const char *
 	}
 	ph_addr[numcells] = '\0';
 
-	if ((err = PushCell(*local_addr)) != SP_ERR_NONE)
+	if ((err = PushCell(*local_addr)) != SP_ERROR_NONE)
 	{
 		HeapRelease(*local_addr);
 		return err;
@@ -526,7 +526,7 @@ int BaseContext::PushString(cell_t *local_addr, cell_t **phys_addr, const char *
 		*phys_addr = ph_addr;
 	}
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *source)
@@ -536,7 +536,7 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *sour
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
 	{
-		return SP_ERR_INVALID_ADDRESS;
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	len = strlen(source);
@@ -553,7 +553,7 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *sour
 	}
 	dest[len] = '\0';
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 #define USHR(x) ((unsigned int)(x)>>1)
@@ -578,12 +578,12 @@ int BaseContext::LookupFile(ucell_t addr, const char **filename)
 
 	if (low == -1)
 	{
-		return SP_ERR_NOT_FOUND;
+		return SP_ERROR_NOT_FOUND;
 	}
 
 	*filename = ctx->files[low].name;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::LookupFunction(ucell_t addr, const char **name)
@@ -602,12 +602,12 @@ int BaseContext::LookupFunction(ucell_t addr, const char **name)
 
 	if (iter >= max)
 	{
-		return SP_ERR_NOT_FOUND;
+		return SP_ERROR_NOT_FOUND;
 	}
 
 	*name = ctx->symbols[iter].name;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
 
 int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
@@ -630,10 +630,10 @@ int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
 
 	if (low == -1)
 	{
-		return SP_ERR_NOT_FOUND;
+		return SP_ERROR_NOT_FOUND;
 	}
 
 	*line = ctx->lines[low].line;
 
-	return SP_ERR_NONE;
+	return SP_ERROR_NONE;
 }
