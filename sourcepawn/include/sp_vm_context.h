@@ -284,7 +284,7 @@ namespace SourcePawn
 		/**
 		 * Binds a single native.  Overwrites any existing bind.
 		 * If the context does not contain the native that will be binded the function will return
-		 *  with a SP_ERR_NOT_FOUND error.
+		 *  with a SP_ERROR_OT_FOUND error.
 		 *
 		 * @param native		Pointer to native.
 		 * @param status		Status value to set (should be SP_NATIVE_OKAY).

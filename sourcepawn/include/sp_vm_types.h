@@ -9,23 +9,26 @@ typedef int32_t		cell_t;
 /**
  * Error codes
  */
-#define SP_ERR_NONE					0
-#define SP_ERR_FILE_FORMAT			1	/* File format unrecognized */
-#define SP_ERR_DECOMPRESSOR			2	/* A decompressor was not found */
-#define SP_ERR_HEAPLOW				3	/* Not enough space left on the heap */
-#define SP_ERR_PARAM				4	/* Invalid parameter */
-#define SP_ERR_INVALID_ADDRESS		5	/* A memory address was not valid */
-#define SP_ERR_NOT_FOUND			6	/* The object in question was not found */
-#define SP_ERR_INDEX				7	/* Invalid index parameter */
-#define SP_ERR_NATIVE_PENDING		8	/* A script tried to exec an unbound native */
-#define SP_ERR_STACKLOW				9	/* Nnot enough space left on the stack */
-#define SP_ERR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
-#define SP_ERR_INVALID_INSTRUCTION	11	/* Invalid instruction was encountered */
-#define SP_ERR_MEMACCESS			12	/* Invalid memory access */
-#define SP_ERR_STACKMIN				13	/* Stack went beyond its minimum value */
-#define SP_ERR_HEAPMIN				14  /* Heap went beyond its minimum value */
-#define SP_ERR_DIVIDE_BY_ZERO		15	/* Division by zero */
-#define SP_ERR_ARRAY_BOUNDS			16	/* Array index is out of bounds */
+#define SP_ERROR_NONE					0
+#define SP_ERROR_FILE_FORMAT			1	/* File format unrecognized */
+#define SP_ERROR_DECOMPRESSOR			2	/* A decompressor was not found */
+#define SP_ERROR_HEAPLOW				3	/* Not enough space left on the heap */
+#define SP_ERROR_PARAM					4	/* Invalid parameter */
+#define SP_ERROR_INVALID_ADDRESS		5	/* A memory address was not valid */
+#define SP_ERROR_NOT_FOUND				6	/* The object in question was not found */
+#define SP_ERROR_INDEX					7	/* Invalid index parameter */
+#define SP_ERROR_NATIVE_PENDING			8	/* A script tried to exec an unbound native */
+#define SP_ERROR_STACKLOW				9	/* Nnot enough space left on the stack */
+#define SP_ERROR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
+#define SP_ERROR_INVALID_INSTRUCTION	11	/* Invalid instruction was encountered */
+#define SP_ERROR_MEMACCESS				12	/* Invalid memory access */
+#define SP_ERROR_STACKMIN				13	/* Stack went beyond its minimum value */
+#define SP_ERROR_HEAPMIN				14  /* Heap went beyond its minimum value */
+#define SP_ERROR_DIVIDE_BY_ZERO			15	/* Division by zero */
+#define SP_ERROR_ARRAY_BOUNDS			16	/* Array index is out of bounds */
+#define SP_ERROR_INSTRUCTION_PARAM		17	/* Instruction had an invalid parameter */
+#define SP_ERROR_STACKLEAK				18  /* A native leaked an item on the stack */
+#define SP_ERROR_HEAPLEAK				19  /* A native leaked an item on the heap */
 
 /**********************************************
  *** The following structures are reference structures.
@@ -86,7 +89,16 @@ typedef struct sp_plugin_s
 	sp_plugin_debug_t   debug;	/* debug info table */
 } sp_plugin_t;
 
+/** Forward declarations */
+
+namespace SourcePawn
+{
+	class IPluginContext;
+	class IVirtualMachine;
+};
+
 struct sp_context_s;
+
 typedef cell_t (*SPVM_NATIVE_FUNC)(struct sp_context_s *, cell_t *);
 
 /**********************************************
@@ -175,12 +187,6 @@ typedef struct sp_debug_symbol_s
 	sp_fdbg_symbol_t	*sym;	/* pointer to original symbol */
 } sp_debug_symbol_t;
 
-namespace SourcePawn
-{
-	class IPluginContext;
-	class IVirtualMachine;
-};
-
 /**
  * Breaks into a debugger
  * Params:
@@ -189,7 +195,6 @@ namespace SourcePawn
  *  [2] - cip
  */
 typedef int (*SPVM_DEBUGBREAK)(SourcePawn::IPluginContext *, uint32_t, uint32_t);
-
 
 #define SPFLAG_PLUGIN_DEBUG		(1<<0)		/* plugin is in debug mode */
 
