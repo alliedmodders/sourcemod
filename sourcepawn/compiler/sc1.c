@@ -1972,6 +1972,7 @@ static int declloc(int fstatic)
       } /* if */
       markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
       modstk(-(int)size*sizeof(cell));
+      markstack(MEMUSE_STATIC, size);
       assert(curfunc!=NULL);
       assert((curfunc->usage & uNATIVE)==0);
       if (curfunc->x.stacksize<declared+1)
@@ -3334,6 +3335,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     sc_alignnext=FALSE;
   } /* if */
   declared=0;           /* number of local cells */
+  resetstacklist();
   rettype=(sym->usage & uRETVALUE);      /* set "return type" variable */
   curfunc=sym;
   define_args();        /* add the symbolic info for the function arguments */
@@ -3361,7 +3363,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
      * has only a single statement in its body (no compound block) and that
      * statement declares a new variable
      */
-    modstk((int)declared*sizeof(cell)); /* remove all local variables */
+    popstacklist();
     declared=0;
   } /* if */
   if ((lastst!=tRETURN) && (lastst!=tGOTO)){
@@ -4770,6 +4772,7 @@ static void compound(int stmt_sameline,int starttok)
   int block_start=fline;  /* save line where the compound block started */
   int endtok;
 
+  pushstacklist();
   /* if there is more text on this line, we should adjust the statement indent */
   if (stmt_sameline) {
     int i;
@@ -4808,8 +4811,9 @@ static void compound(int stmt_sameline,int starttok)
   } /* while */
   if (lastst!=tRETURN)
     destructsymbols(&loctab,nestlevel);
-  if (lastst!=tRETURN && lastst!=tGOTO)
-    modstk((int)(declared-save_decl)*sizeof(cell)); /* delete local variable space */
+  if (lastst!=tRETURN && lastst!=tGOTO) {
+    popstacklist();
+  }
   testsymbols(&loctab,nestlevel,FALSE,TRUE);        /* look for unused block locals */
   declared=save_decl;
   delete_symbols(&loctab,nestlevel,FALSE,TRUE);     /* erase local symbols, but
@@ -5069,7 +5073,8 @@ static int dofor(void)
   save_decl=declared;
   save_nestlevel=nestlevel;
   save_endlessloop=endlessloop;
-
+  pushstacklist();
+  
   addwhile(wq);
   skiplab=getlabel();
   endtok= matchtoken('(') ? ')' : tDO;
@@ -5094,8 +5099,11 @@ static int dofor(void)
    */
   ptr=readwhile();
   assert(ptr!=NULL);
-  ptr[wqBRK]=(int)declared;
-  ptr[wqCONT]=(int)declared;
+  /*ptr[wqBRK]=(int)declared;
+   *ptr[wqCONT]=(int)declared;
+   */
+  ptr[wqBRK] = stackusage->list_id;
+  ptr[wqCONT] = stackusage->list_id;
   jumplabel(skiplab);               /* skip expression 3 1st time */
   setlabel(wq[wqLOOP]);             /* "continue" goes to this label: expr3 */
   setline(TRUE);
@@ -5135,7 +5143,7 @@ static int dofor(void)
      * variable in "expr1".
      */
     destructsymbols(&loctab,nestlevel);
-    modstk((int)(declared-save_decl)*sizeof(cell));
+    popstacklist();
     testsymbols(&loctab,nestlevel,FALSE,TRUE);  /* look for unused block locals */
     declared=save_decl;
     delete_symbols(&loctab,nestlevel,FALSE,TRUE);
@@ -5152,7 +5160,7 @@ static int dofor(void)
  * 2. only one instruction may appear below each case, use a compound
  *    instruction to execute multiple instructions
  * 3. the "case" keyword accepts a comma separated list of values to
- *    match, it also accepts a range using the syntax "1 .. 4"
+ *    match
  *
  * SWITCH param
  *   PRI = expression result
@@ -5349,6 +5357,8 @@ static void dolabel(void)
   /* since one can jump around variable declarations or out of compound
    * blocks, the stack must be manually adjusted
    */
+  //:TODO: This is actually generated, egads!
+  //We have to support this and LCTRL/SCTRL
   setstk(-declared*sizeof(cell));
   sym->usage|=uDEFINE;  /* label is now defined */
 }
@@ -5496,8 +5506,7 @@ static void doreturn(void)
     rettype|=uRETNONE;                  /* function does not return anything */
   } /* if */
   destructsymbols(&loctab,0);           /* call destructor for *all* locals */
-  modstk((int)declared*sizeof(cell));   /* end of function, remove *all*
-                                         * local variables */
+  genstackfree(-1);						/* free everything on the stack */
   ffret(strcmp(curfunc->name,uENTRYFUNC)!=0);
 }
 
@@ -5511,7 +5520,7 @@ static void dobreak(void)
   if (ptr==NULL)
     return;
   destructsymbols(&loctab,nestlevel);
-  modstk(((int)declared-ptr[wqBRK])*sizeof(cell));
+  genstackfree(ptr[wqBRK]);
   jumplabel(ptr[wqEXIT]);
 }
 
@@ -5524,7 +5533,7 @@ static void docont(void)
   if (ptr==NULL)
     return;
   destructsymbols(&loctab,nestlevel);
-  modstk(((int)declared-ptr[wqCONT])*sizeof(cell));
+  genstackfree(ptr[wqCONT]);
   jumplabel(ptr[wqLOOP]);
 }
 

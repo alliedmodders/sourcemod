@@ -12,8 +12,14 @@ memuse_list_t *stackusage = NULL;
 void _push_memlist(memuse_list_t **head)
 {
   memuse_list_t *newlist = (memuse_list_t *)malloc(sizeof(memuse_list_t));
-  (*head)->prev = *head;
-  (*head)->head = NULL;
+  if (*head != NULL)
+  {
+    newlist->list_id = (*head)->list_id + 1;
+  } else {
+    newlist->list_id = 0;
+  }
+  newlist->prev = *head;
+  newlist->head = NULL;
   *head = newlist;
 }
 
@@ -51,6 +57,26 @@ int _mark_memlist(memuse_list_t *head, int type, int size)
   }
   return size;
 }
+
+void _reset_memlist(memuse_list_t **head)
+{
+  memuse_list_t *curlist = *head;
+  memuse_list_t *tmplist;
+  while (curlist) {
+    memuse_t *curuse = curlist->head;
+    memuse_t *tmpuse;
+    while (curuse) {
+      tmpuse = curuse->prev;
+      free(curuse);
+      curuse = tmpuse;
+    }
+    tmplist = curlist->prev;
+    free(curlist);
+    curlist = tmplist;
+  }
+  *head = NULL;
+}
+
 
 /**
  * Wrapper for pushing the heap list
@@ -99,8 +125,10 @@ void _heap_freeusage(memuse_list_t *heap)
 {
   memuse_t *cur=heap->head;
   memuse_t *tmp;
-  while (cur) {
-    if (cur->type == MEMUSE_STATIC) {
+  while (cur)
+  {
+    if (cur->type == MEMUSE_STATIC)
+	{
       modheap((-1)*cur->size*sizeof(cell));
     } else {
       modheap_i();
@@ -110,6 +138,34 @@ void _heap_freeusage(memuse_list_t *heap)
     cur=tmp;
   }
   heap->head=NULL;
+}
+
+void _stack_genusage(memuse_list_t *stack, int dofree)
+{
+  memuse_t *cur = stack->head;
+  memuse_t *tmp;
+  while (cur)
+  {
+    if (cur->type == MEMUSE_DYNAMIC)
+	{
+      /* no idea yet */
+      assert(0);
+	} else {
+      modstk(cur->size * sizeof(cell));
+	}
+	if (dofree)
+	{
+      tmp = cur->prev;
+      free(cur);
+      cur = tmp;
+	} else {
+      cur = cur->prev;
+	}
+  }
+  if (dofree)
+  {
+    stack->head = NULL;
+  }
 }
 
 /**
@@ -128,4 +184,30 @@ void popheaplist()
   heapusage=oldlist;
 }
 
+void genstackfree(int stop_id)
+{
+  memuse_list_t *curlist = stackusage;
+  while (curlist && curlist->list_id > stop_id)
+  {
+    _stack_genusage(curlist, 0);
+    curlist = curlist->prev;
+  }
+}
 
+void popstacklist()
+{
+  memuse_list_t *oldlist;
+  assert(stackusage != NULL);
+
+  _stack_genusage(stackusage, 1);
+  assert(stackusage->head==NULL);
+
+  oldlist = stackusage->prev;
+  free(stackusage);
+  stackusage = oldlist;
+}
+
+void resetstacklist()
+{
+  _reset_memlist(&stackusage);
+}

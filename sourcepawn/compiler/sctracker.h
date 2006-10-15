@@ -12,6 +12,7 @@ typedef struct memuse_s {
 
 typedef struct memuse_list_s {
   struct memuse_list_s *prev;   /* last used list */
+  int list_id;
   memuse_t *head;               /* head of the current list */
 } memuse_list_t;
 
@@ -29,6 +30,17 @@ int markheap(int type, int size);
 void pushstacklist();
 void popstacklist();
 int markstack(int type, int size);
+/**
+ * Generates code to free stack usage, but does not pop the list.  
+ *  This is used for code like dobreak()/docont()/doreturn().
+ * stop_id is the list at which to stop generating.
+ */
+void genstackfree(int stop_id);
+
+/**
+ * Resets the stack list by freeing everything
+ */
+void resetstacklist();
 
 extern memuse_list_t *heapusage;
 extern memuse_list_t *stackusage;
