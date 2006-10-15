@@ -28,6 +28,7 @@
   #include <alloc/fortify.h>
 #endif
 #include "sc.h"
+#include "sctracker.h"
 
 static int skim(int *opstr,void (*testfunc)(int),int dropval,int endval,
                 int (*hier)(value*),value *lval);
@@ -60,104 +61,8 @@ static int dbltest(void (*oper)(),value *lval1,value *lval2);
 static int commutative(void (*oper)());
 static int constant(value *lval);
 
-#define HEAPUSE_STATIC	0
-#define HEAPUSE_DYNAMIC	1
-
-typedef struct heapuse_s {
-  int type;   /* HEAPUSE_STATIC or HEAPUSE_DYNAMIC */
-  int size;   /* size of array for static (0 for dynamic) */
-  struct heapuse_s *prev; /* previous array on the list */
-} heapuse_t;
-
-typedef struct heapuse_list_s {
-  struct heapuse_list_s *prev;   /* last used list */
-  heapuse_t *head;               /* head of the current list */
-} heapuse_list_t;
-
 static char lastsymbol[sNAMEMAX+1]; /* name of last function/variable */
 static int bitwise_opercount;   /* count of bitwise operators in an expression */
-//static int decl_heap=0;
-static heapuse_list_t *heapusage = NULL;
-
-/**
- * Creates a new heap allocation tracker entry
- */
-void pushheaplist()
-{
-  heapuse_list_t *newlist=(heapuse_list_t *)malloc(sizeof(heapuse_list_t));
-  newlist->prev=heapusage;
-  newlist->head=NULL;
-  heapusage=newlist;
-}
-
-/**
- * Generates code to free all heap allocations on a tracker
- */
-void freeheapusage(heapuse_list_t *heap)
-{
-  heapuse_t *cur=heap->head;
-  heapuse_t *tmp;
-  while (cur) {
-	if (cur->type == HEAPUSE_STATIC) {
-	  modheap((-1)*cur->size*sizeof(cell));
-	} else {
-	  modheap_i();
-	}
-	tmp=cur->prev;
-	free(cur);
-	cur=tmp;
-  }
-  heap->head=NULL;
-}
-
-/**
- * Pops a heap list but does not free it.
- */
-heapuse_list_t *popsaveheaplist()
-{
-  heapuse_list_t *oldlist=heapusage;
-  heapusage=heapusage->prev;
-  return oldlist;
-}
-
-/**
- * Pops a heap list and frees it.
- */
-void popheaplist()
-{
-  heapuse_list_t *oldlist;
-  assert(heapusage!=NULL);
- 
-  freeheapusage(heapusage);
-  assert(heapusage->head==NULL);
-
-  oldlist=heapusage->prev;
-  free(heapusage);
-  heapusage=oldlist;
-}
-
-/*
- * Returns the size passed in
- */
-int markheap(int type, int size)
-{
-  heapuse_t *use;
-  if (type==HEAPUSE_STATIC && size==0)
-    return 0;
-  use=heapusage->head;
-  if (use && (type==HEAPUSE_STATIC) 
-      && (use->type == type))
-  {
-    use->size += size;
-  } else {
-    use=(heapuse_t *)malloc(sizeof(heapuse_t));
-    use->type=type;
-    use->size=size;
-    use->prev=heapusage->head;
-    heapusage->head=use;
-  }
-  return size;
-}
 
 /* Function addresses of binary operators for signed operations */
 static void (*op1[17])(void) = {

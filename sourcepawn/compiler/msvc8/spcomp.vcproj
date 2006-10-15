@@ -241,6 +241,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sctracker.c"
+				>
+			</File>
+			<File
 				RelativePath="..\scvars.c"
 				>
 			</File>
@@ -276,6 +280,10 @@
 			</File>
 			<File
 				RelativePath="..\sc.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sctracker.h"
 				>
 			</File>
 			<File
