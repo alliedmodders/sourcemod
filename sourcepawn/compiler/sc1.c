@@ -66,6 +66,7 @@
 #include "lstring.h"
 #include "sc.h"
 #include "svnrev.h"
+#include "sctracker.h"
 #define VERSION_STR "3.2." SVN_REVSTR
 #define VERSION_INT 0x0302
 

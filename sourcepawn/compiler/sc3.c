@@ -1056,13 +1056,13 @@ static int hier14(value *lval1)
  *   (a() ? return_array() : return_array()) ? return_array() : return_array()
  */
 
-void dynarray_from_heaplist(heapuse_list_t *heap)
+void dynarray_from_heaplist(memuse_list_t *heap)
 {
-  heapuse_t *use=heap->head;
-  heapuse_t *tmp;
+  memuse_t *use=heap->head;
+  memuse_t *tmp;
   long total=0;
   while (use) {
-    assert(use->type==HEAPUSE_STATIC);
+    assert(use->type==MEMUSE_STATIC);
     total+=use->size;
     tmp=use->prev;
     free(use);
@@ -1081,7 +1081,7 @@ static int hier13(value *lval)
     int flab2=getlabel();
     value lval2={0};
     int array1,array2;
-    heapuse_list_t *heap;
+    memuse_list_t *heap;
     
     pushheaplist();
     if (lvalue) {
@@ -1124,7 +1124,7 @@ static int hier13(value *lval)
     dynarray_from_heaplist(heap);
     setlabel(flab2);
     if (array1 && array2) {
-      markheap(HEAPUSE_DYNAMIC, 0);
+      markheap(MEMUSE_DYNAMIC, 0);
     }
     if (lval->ident==iARRAY)
       lval->ident=iREFARRAY;    /* iARRAY becomes iREFARRAY */
@@ -1907,7 +1907,7 @@ static void setdefarray(cell *string,cell size,cell array_sz,cell *dataaddr,int 
      */
     assert(array_sz>=size);
     modheap((int)array_sz*sizeof(cell));
-    markheap(HEAPUSE_STATIC, array_sz);
+    markheap(MEMUSE_STATIC, array_sz);
     /* ??? should perhaps fill with zeros first */
     memcopy(size*sizeof(cell));
     moveto1();
@@ -1982,7 +1982,7 @@ static int nesting=0;
     assert(retsize>0);
     modheap(retsize*sizeof(cell));/* address is in ALT */
     pushreg(sALT);                /* pass ALT as the last (hidden) parameter */
-    markheap(HEAPUSE_STATIC, retsize);
+    markheap(MEMUSE_STATIC, retsize);
     /* also mark the ident of the result as "array" */
     lval_result->ident=iREFARRAY;
     lval_result->sym=symret;
@@ -2090,14 +2090,14 @@ static int nesting=0;
               } else {
                 rvalue(&lval);    /* get value in PRI */
                 setheap_pri();    /* address of the value on the heap in PRI */
-                heapalloc+=markheap(HEAPUSE_STATIC, 1);
+                heapalloc+=markheap(MEMUSE_STATIC, 1);
                 nest_stkusage++;
               } /* if */
             } else if (lvalue) {
               address(lval.sym,sPRI);
             } else {
               setheap_pri();      /* address of the value on the heap in PRI */
-              heapalloc+=markheap(HEAPUSE_STATIC, 1);
+              heapalloc+=markheap(MEMUSE_STATIC, 1);
               nest_stkusage++;
             } /* if */
           } else if (lval.ident==iCONSTEXPR || lval.ident==iEXPRESSION
@@ -2109,7 +2109,7 @@ static int nesting=0;
             /* allocate a cell on the heap and store the
              * value (already in PRI) there */
             setheap_pri();        /* address of the value on the heap in PRI */
-            heapalloc+=markheap(HEAPUSE_STATIC, 1);
+            heapalloc+=markheap(MEMUSE_STATIC, 1);
             nest_stkusage++;
           } /* if */
           /* ??? handle const array passed by reference */
@@ -2147,7 +2147,7 @@ static int nesting=0;
               address(lval.sym,sPRI);
             } else {
               setheap_pri();      /* address of the value on the heap in PRI */
-              heapalloc+=markheap(HEAPUSE_STATIC, 1);
+              heapalloc+=markheap(MEMUSE_STATIC, 1);
               nest_stkusage++;
             } /* if */
           } /* if */
@@ -2294,7 +2294,7 @@ static int nesting=0;
       } else if (arg[argidx].ident==iREFERENCE) {
         setheap(arg[argidx].defvalue.val);
         /* address of the value on the heap in PRI */
-        heapalloc+=markheap(HEAPUSE_STATIC, 1);
+        heapalloc+=markheap(MEMUSE_STATIC, 1);
         nest_stkusage++;
       } else {
         int dummytag=arg[argidx].tags[0];
