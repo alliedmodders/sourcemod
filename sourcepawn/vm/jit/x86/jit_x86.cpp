@@ -960,15 +960,55 @@ inline void WriteOp_Fill(JitWriter *jit)
 	IA32_Pop_Reg(jit, REG_EDI);
 }
 
-inline void WriteOp_Heap_Pri(JitWriter *jit)
+inline void WriteOp_Heap_I(JitWriter *jit)
 {
-	//mov edx, [esi+hea]
-	//add [esi+hea], eax
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_REG_INFO, AMX_INFO_HEAP);
-	IA32_Add_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_PRI, AMX_INFO_HEAP);
+	//sub [esi+hea], 4
+	//mov ecx, [esi+hea]
+	//mov ecx, [ebp+ecx]
+	//sub [esi+hea], ecx
+	IA32_Sub_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Mov_Reg_RmEBP_Disp_Reg(jit, AMX_REG_TMP, AMX_REG_DAT, AMX_REG_TMP, NOSCALE);
+	IA32_Add_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_TMP, AMX_INFO_HEAP);
 
-	/* :TODO: should we do a full bounds check here? */
 	Write_CheckHeap_Min(jit);
+	Write_CheckHeap_Low(jit);
+}
+
+inline void WriteOp_GenArray(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+	if (val == 1)
+	{
+		/* flat array.  we can generate this without indirection tables. */
+		/* Note that we can overwrite ALT because technically STACK should be destroying ALT */
+		//mov edx, [esi+info.heap]
+		//mov ecx, [edi]
+		//mov [edi], edx			;store base of array into stack
+		//lea edx, [edx+ecx*4+4]	;get the final new heap pointer
+		//mov [esi+info.heap], edx	;store heap pointer back
+		//add edx, ebp				;relocate
+		//cmp edx, edi				;compare against stack pointer
+		//jae :error				;error out if not enough space
+		//shl ecx, 2
+		//mov [edx-4], ecx			;store # of cells allocated
+		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_REG_INFO, AMX_INFO_HEAP);
+		IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_MEM_REG);
+		IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_ALT, MOD_MEM_REG);
+		IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_ALT, AMX_REG_ALT, AMX_REG_TMP, SCALE4, 4);
+		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_ALT, AMX_INFO_HEAP);
+		IA32_Add_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
+		IA32_Cmp_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
+		IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_heaplow);
+		IA32_Shl_Rm_Imm8(jit, AMX_REG_TMP, 4, MOD_REG);
+		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_ALT, AMX_REG_TMP, -4);
+	} else {
+		//mov ecx, num_dims
+		//call [genarray]
+		IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, val);
+		jitoffs_t call = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_genarray);
+	}
 }
 
 inline void WriteOp_Push_Heap_C(JitWriter *jit)
@@ -982,18 +1022,6 @@ inline void WriteOp_Push_Heap_C(JitWriter *jit)
 	IA32_Add_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
 
 	Write_CheckHeap_Low(jit);
-}
-
-inline void WriteOp_Pop_Heap_Pri(JitWriter *jit)
-{
-	//sub [esi+hea], 4
-	//mov ecx, [esi+hea]
-	//mov eax, [ebp+ecx]
-	IA32_Sub_Rm_Imm8_Disp8(jit, AMX_REG_INFO, 4, AMX_INFO_HEAP);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
-	IA32_Mov_Reg_RmEBP_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_TMP, NOSCALE);
-
-	Write_CheckHeap_Min(jit);
 }
 
 inline void WriteOp_Load_Both(JitWriter *jit)

@@ -458,21 +458,6 @@
 				WriteOp_Fill(jit);
 				break;
 			}
-		case OP_HEAP_PRI:
-			{
-				WriteOp_Heap_Pri(jit);
-				break;
-			}
-		case OP_PUSH_HEAP_C:
-			{
-				WriteOp_Push_Heap_C(jit);
-				break;
-			}
-		case OP_POP_HEAP_PRI:
-			{
-				WriteOp_Pop_Heap_Pri(jit);
-				break;
-			}
 		case OP_PUSH_C:
 			{
 				WriteOp_Push_C(jit);
@@ -656,6 +641,21 @@
 				} else {
 					WriteOp_Sysreq_N_NoInline(jit);
 				}
+				break;
+			}
+		case OP_PUSH_HEAP_C:
+			{
+				WriteOp_Push_Heap_C(jit);
+				break;
+			}
+		case OP_HEAP_I:
+			{
+				WriteOp_Heap_I(jit);
+				break;
+			}
+		case OP_GENARRAY:
+			{
+				WriteOp_GenArray(jit);
 				break;
 			}
 #if defined USE_UNGEN_OPCODES

@@ -82,6 +82,8 @@
 #define IA32_CMP_RM_IMM8		0x83	// encoding is /7 <imm8>
 #define IA32_CMP_AL_IMM32		0x3C	// no extra encoding
 #define IA32_CMP_EAX_IMM32		0x3D	// no extra encoding
+#define IA32_CMP_RM_REG			0x39	// encoding is /r
+#define IA32_CMP_REG_RM			0x3B	// encoding is /r
 #define IA32_CMPSB				0xA6	// no extra encoding
 #define IA32_TEST_RM_REG		0x85	// encoding is /r
 #define IA32_JCC_IMM			0x70	// encoding is +cc <imm8>
@@ -110,8 +112,6 @@
 #define IA32_SHR_RM_CL			0xD3	// encoding is /5
 #define IA32_SHL_RM_CL			0xD3	// encoding is /4
 #define IA32_SAR_RM_IMM8		0xC1	// encoding is /7 <ib>
-#define IA32_CMP_RM_REG			0x39	// encoding is /r
-#define IA32_CMP_REG_RM			0x3B	// encoding is /r
 #define IA32_SETCC_RM8_1		0x0F	// opcode part 1
 #define IA32_SETCC_RM8_2		0x90	// encoding is +cc /0 (8bits)
 #define IA32_XCHG_EAX_REG		0x90	// encoding is +r

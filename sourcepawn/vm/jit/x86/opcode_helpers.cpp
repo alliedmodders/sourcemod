@@ -451,6 +451,10 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
+void WriteIntrinsic_GenArray(JitWriter *jit)
+{
+}
+
 void WriteOp_Sysreq_N_Function(JitWriter *jit)
 {
 	/* The big daddy of opcodes.

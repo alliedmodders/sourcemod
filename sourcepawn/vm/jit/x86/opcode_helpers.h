@@ -17,6 +17,11 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit);
 void WriteOp_Sysreq_C_Function(JitWriter *jit);
 
 /**
+ * Write the GENARRAY intrinsic function.
+ */
+void WriteIntrinsic_GenArray(JitWriter *jit);
+
+/**
  * Generates code to set an error state in the VM and return.
  * This is used for generating the error set points in the VM.
  * GetError writes the error from the context. SetError hardcodes.
@@ -240,9 +245,9 @@ typedef enum
 	OP_SYSREQ_D,			// !GEN UNSUPPORT
 	OP_SYSREQ_ND,			// !GEN UNSUPPORT
 	/* ----- */
-	OP_HEAP_PRI,			//DONE
+	OP_HEAP_I,				//
 	OP_PUSH_HEAP_C,			//DONE
-	OP_POP_HEAP_PRI,		//DONE
+	OP_GENARRAY,			//
 	/* ----- */
 	OP_NUM_OPCODES
 } OPCODE;

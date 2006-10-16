@@ -27,6 +27,7 @@ public:
 	jitoffs_t jit_verify_addr_edx;
 	jitoffs_t jit_break;			/* call to op.break */
 	jitoffs_t jit_sysreq_n;			/* call version of op.sysreq.n */
+	jitoffs_t jit_genarray;			/* call to genarray intrinsic */
 	jitoffs_t jit_error_bounds;
 	jitoffs_t jit_error_divzero;
 	jitoffs_t jit_error_stacklow;
