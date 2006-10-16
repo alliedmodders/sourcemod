@@ -1942,7 +1942,6 @@ static int declloc(int fstatic)
       } while (matchtoken('['));
     } else if (matchtoken('(')) {
       int dim_ident;
-      int dim_tag;
       symbol *dim_sym;
       do {
         ident=iREFARRAY;
@@ -1950,8 +1949,8 @@ static int declloc(int fstatic)
           error(53);
           return iREFARRAY;
         } /* if */
-        dim_ident = doexpr(TRUE,FALSE,FALSE,FALSE,&dim_tag,&dim_sym,0);
-        dim[numdim++] = 1;
+        dim_ident = doexpr(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0);
+        dim[numdim] = 0;
         if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION) {
           pushreg(sPRI);
         } else if (dim_ident == iCONSTEXPR) {
@@ -1959,9 +1958,8 @@ static int declloc(int fstatic)
         } else {
           assert(0); //:TODO: make this an error
         }
-        if (!matchtag(tag, dim_tag, FALSE))
-          error(213);
         needtoken(')');
+        numdim++;
       } while (matchtoken('('));
       genarray(numdim);
     }
@@ -2009,6 +2007,7 @@ static int declloc(int fstatic)
       //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
       /* genarray() pushes the address onto the stack, so we don't need to call modstk() here! */
       markheap(MEMUSE_DYNAMIC, 0);
+	  markstack(MEMUSE_STATIC, 1);
       assert(curfunc != NULL && ((curfunc->usage & uNATIVE) == 0));
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */

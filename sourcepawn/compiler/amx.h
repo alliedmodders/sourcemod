@@ -620,6 +620,8 @@ typedef enum {
   OP_SYSREQ_ND,
   /* ----- */
   OP_HEAP_I,
+  OP_PUSH_H_C,
+  OP_GENARRAY,
   OP_NUM_OPCODES
 } OPCODE;
 
