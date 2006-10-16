@@ -29,6 +29,7 @@ typedef int32_t		cell_t;
 #define SP_ERROR_INSTRUCTION_PARAM		17	/* Instruction had an invalid parameter */
 #define SP_ERROR_STACKLEAK				18  /* A native leaked an item on the stack */
 #define SP_ERROR_HEAPLEAK				19  /* A native leaked an item on the heap */
+#define SP_ERROR_ARRAY_TOO_BIG			20	/* A dynamic array is too big */
 
 /**********************************************
  *** The following structures are reference structures.
