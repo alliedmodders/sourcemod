@@ -590,6 +590,7 @@ SC_FUNC void moveto1(void);
 SC_FUNC void pushreg(regid reg);
 SC_FUNC void pushval(cell val);
 SC_FUNC void popreg(regid reg);
+SC_FUNC void genarray(int dims);
 SC_FUNC void swap1(void);
 SC_FUNC void ffswitch(int label);
 SC_FUNC void ffcase(cell value,char *labelname,int newtable);

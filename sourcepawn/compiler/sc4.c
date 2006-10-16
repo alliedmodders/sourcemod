@@ -673,6 +673,16 @@ SC_FUNC void popreg(regid reg)
 }
 
 /*
+ * Generate an array
+ */
+SC_FUNC void genarray(int dims)
+{
+  stgwrite("\tgenarray ");
+  outval(dims, TRUE);
+  code_idx+=opcodes(1)+opargs(1);
+}
+
+/*
  *  swap the top-of-stack with the value in primary register
  */
 SC_FUNC void swap1(void)
@@ -846,13 +856,8 @@ SC_FUNC void modheap(int delta)
 
 SC_FUNC void modheap_i()
 {
-  pushreg(sPRI);
-  pushreg(sALT);
-  stgwrite("\tpop.h.pri\n");
-  stgwrite("\theap.pri\n");
-  code_idx+=opcodes(2);
-  popreg(sALT);
-  popreg(sPRI);
+  stgwrite("\theap.i\n");
+  code_idx+=opcodes(1);
 }
 
 SC_FUNC void setheap_save(cell value)

@@ -121,7 +121,7 @@ int markstack(int type, int size)
 /**
  * Generates code to free all heap allocations on a tracker
  */
-void _heap_freeusage(memuse_list_t *heap)
+void _heap_freeusage(memuse_list_t *heap, int dofree)
 {
   memuse_t *cur=heap->head;
   memuse_t *tmp;
@@ -133,11 +133,19 @@ void _heap_freeusage(memuse_list_t *heap)
     } else {
       modheap_i();
     }
-    tmp=cur->prev;
-    free(cur);
-    cur=tmp;
+    if (dofree)
+    {
+      tmp=cur->prev;
+      free(cur);
+      cur=tmp;
+    } else {
+      cur=cur->prev;
+    }
   }
-  heap->head=NULL;
+  if (dofree)
+  {
+    heap->head=NULL;
+  }
 }
 
 void _stack_genusage(memuse_list_t *stack, int dofree)
@@ -176,7 +184,7 @@ void popheaplist()
   memuse_list_t *oldlist;
   assert(heapusage!=NULL);
 
-  _heap_freeusage(heapusage);
+  _heap_freeusage(heapusage, 1);
   assert(heapusage->head==NULL);
 
   oldlist=heapusage->prev;
@@ -190,6 +198,16 @@ void genstackfree(int stop_id)
   while (curlist && curlist->list_id > stop_id)
   {
     _stack_genusage(curlist, 0);
+    curlist = curlist->prev;
+  }
+}
+
+void genheapfree(int stop_id)
+{
+  memuse_list_t *curlist = heapusage;
+  while (curlist && curlist->list_id > stop_id)
+  {
+    _heap_freeusage(curlist, 0);
     curlist = curlist->prev;
   }
 }
@@ -210,4 +228,9 @@ void popstacklist()
 void resetstacklist()
 {
   _reset_memlist(&stackusage);
+}
+
+void resetheaplist()
+{
+  _reset_memlist(&heapusage);
 }

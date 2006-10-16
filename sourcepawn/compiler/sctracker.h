@@ -31,16 +31,18 @@ void pushstacklist();
 void popstacklist();
 int markstack(int type, int size);
 /**
- * Generates code to free stack usage, but does not pop the list.  
+ * Generates code to free mem usage, but does not pop the list.  
  *  This is used for code like dobreak()/docont()/doreturn().
  * stop_id is the list at which to stop generating.
  */
 void genstackfree(int stop_id);
+void genheapfree(int stop_id);
 
 /**
- * Resets the stack list by freeing everything
+ * Resets a mem list by freeing everything
  */
 void resetstacklist();
+void resetheaplist();
 
 extern memuse_list_t *heapusage;
 extern memuse_list_t *stackusage;

@@ -1667,7 +1667,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
       ispublic=TRUE;                    /* implicitly public variable */
       assert(!fstatic);
     } /* if */
-    while (matchtoken('[')) {
+	while (matchtoken('[')) {
       ident=iARRAY;
       if (numdim == sDIMEN_MAX) {
         error(53);                      /* exceeding maximum number of dimensions */
@@ -1926,19 +1926,45 @@ static int declloc(int fstatic)
      */
     if ((sym=findloc(name))!=NULL && sym->compound!=nestlevel || findglb(name,sGLOBAL)!=NULL)
       error(219,name);                  /* variable shadows another symbol */
-    while (matchtoken('[')){
-      ident=iARRAY;
-      if (numdim == sDIMEN_MAX) {
-        error(53);                      /* exceeding maximum number of dimensions */
-        return ident;
-      } /* if */
-      size=needsub(&idxtag[numdim],&enumroot); /* get size; size==0 for "var[]" */
-      #if INT_MAX < LONG_MAX
-        if (size > INT_MAX)
-          error(105);                   /* overflow, exceeding capacity */
-      #endif
-      dim[numdim++]=(int)size;
-    } /* while */
+	if (matchtoken('[')) {
+      do {
+        ident=iARRAY;
+        if (numdim == sDIMEN_MAX) {
+          error(53);                      /* exceeding maximum number of dimensions */
+          return ident;
+        } /* if */
+        size=needsub(&idxtag[numdim],&enumroot); /* get size; size==0 for "var[]" */
+        #if INT_MAX < LONG_MAX
+          if (size > INT_MAX)
+            error(105);                   /* overflow, exceeding capacity */
+        #endif
+        dim[numdim++]=(int)size;
+      } while (matchtoken('['));
+    } else if (matchtoken('(')) {
+      int dim_ident;
+      int dim_tag;
+      symbol *dim_sym;
+      do {
+        ident=iREFARRAY;
+        if (numdim == sDIMEN_MAX) {
+          error(53);
+          return iREFARRAY;
+        } /* if */
+        dim_ident = doexpr(TRUE,FALSE,FALSE,FALSE,&dim_tag,&dim_sym,0);
+        dim[numdim++] = 1;
+        if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION) {
+          pushreg(sPRI);
+        } else if (dim_ident == iCONSTEXPR) {
+          pushreg(sPRI);
+        } else {
+          assert(0); //:TODO: make this an error
+        }
+        if (!matchtag(tag, dim_tag, FALSE))
+          error(213);
+        needtoken(')');
+      } while (matchtoken('('));
+      genarray(numdim);
+    }
     if (getstates(name))
       error(88,name);           /* local variables may not have states */
     if (ident==iARRAY || fstatic) {
@@ -1952,7 +1978,7 @@ static int declloc(int fstatic)
         return ident;           /* error message already given */
       if (numdim==1)
         dim[0]=(int)size;
-    } /* if */
+    }
     /* reserve memory (on the stack) for the variable */
     if (fstatic) {
       /* write zeros for uninitialized fields */
@@ -1960,7 +1986,7 @@ static int declloc(int fstatic)
         litadd(0);
       sym=addvariable(name,(cur_lit+glb_declared)*sizeof(cell),ident,sSTATIC,
                       tag,dim,numdim,idxtag);
-    } else {
+    } else if (ident!=iREFARRAY) {
       declared+=(int)size;      /* variables are put on stack, adjust "declared" */
       sym=addvariable(name,-declared*sizeof(cell),ident,sLOCAL,tag,
                       dim,numdim,idxtag);
@@ -1975,6 +2001,15 @@ static int declloc(int fstatic)
       markstack(MEMUSE_STATIC, size);
       assert(curfunc!=NULL);
       assert((curfunc->usage & uNATIVE)==0);
+      if (curfunc->x.stacksize<declared+1)
+        curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
+    } else if (ident==iREFARRAY) {
+      declared+=1;	/* one cell for address */
+      sym=addvariable(name,-declared*sizeof(cell),ident,sLOCAL,tag,dim,numdim,idxtag);
+      //markexpr(sLDECL,name,-declared*sizeof(cell)); /* mark for better optimization */
+      /* genarray() pushes the address onto the stack, so we don't need to call modstk() here! */
+      markheap(MEMUSE_DYNAMIC, 0);
+      assert(curfunc != NULL && ((curfunc->usage & uNATIVE) == 0));
       if (curfunc->x.stacksize<declared+1)
         curfunc->x.stacksize=declared+1;  /* +1 for PROC opcode */
     } /* if */
@@ -2017,7 +2052,7 @@ static int declloc(int fstatic)
          * "uWRITTEN" flag that store() set */
         if (!explicit_init)
           sym->usage &= ~uWRITTEN;
-      } else {
+      } else if (ident!=iREFARRAY) {
         /* an array */
         assert(cur_lit>=0 && cur_lit<=litidx && litidx<=litmax);
         assert(size>0 && size>=sym->dim.array.length);
@@ -3336,6 +3371,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
   } /* if */
   declared=0;           /* number of local cells */
   resetstacklist();
+  resetheaplist();
   rettype=(sym->usage & uRETVALUE);      /* set "return type" variable */
   curfunc=sym;
   define_args();        /* add the symbolic info for the function arguments */
@@ -4773,6 +4809,7 @@ static void compound(int stmt_sameline,int starttok)
   int endtok;
 
   pushstacklist();
+  pushheaplist();
   /* if there is more text on this line, we should adjust the statement indent */
   if (stmt_sameline) {
     int i;
@@ -4812,6 +4849,7 @@ static void compound(int stmt_sameline,int starttok)
   if (lastst!=tRETURN)
     destructsymbols(&loctab,nestlevel);
   if (lastst!=tRETURN && lastst!=tGOTO) {
+    popheaplist();
     popstacklist();
   }
   testsymbols(&loctab,nestlevel,FALSE,TRUE);        /* look for unused block locals */
@@ -5506,6 +5544,7 @@ static void doreturn(void)
     rettype|=uRETNONE;                  /* function does not return anything */
   } /* if */
   destructsymbols(&loctab,0);           /* call destructor for *all* locals */
+  genheapfree(-1);
   genstackfree(-1);						/* free everything on the stack */
   ffret(strcmp(curfunc->name,uENTRYFUNC)!=0);
 }
