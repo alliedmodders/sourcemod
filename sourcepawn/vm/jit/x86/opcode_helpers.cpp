@@ -451,8 +451,141 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
+void GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], ucell_t dimcount)
+{
+	cell_t vectors = 1;				/* we need one vector to start off with */
+	cell_t cur_offs = 0;
+	cell_t cur_write = 0;
+
+	/* Initialize rotation */
+	cur_write = dims[dimcount-1];
+	
+	while (--dimcount >= 1)
+	{
+		cell_t cur_dim = dims[dimcount];
+		cell_t sub_dim = dims[dimcount-1];
+		for (cell_t i=0; i<vectors; i++)
+		{
+			for (cell_t j=0; j<cur_dim; j++)
+			{
+				arraybase[cur_offs] = (cur_write - cur_offs)*sizeof(cell_t);
+				cur_offs++;
+				cur_write += sub_dim;
+			}
+		}
+		vectors = cur_dim;
+	}
+
+	return;
+}
+
+/**
+ * A few notes about this function.
+ * I was more concerned about efficient use of registers here, rather than 
+ *  fine-tuned optimization.  The reason is that the code is already complicated,
+ *  and it is very easy to mess up.
+ */
 void WriteIntrinsic_GenArray(JitWriter *jit)
 {
+	/**
+	 * save important values
+	 */
+	//push ebx
+	//push eax
+	//push ecx				;value is referenced on stack
+	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Push_Reg(jit, REG_ECX);
+
+	/**
+	 * Calculate how many cells will be needed.
+	 */
+	//mov edx, [edi]		;get last dimension's count
+	//mov eax, 1			;position at second to last dimension
+	//:loop
+	//cmp eax, [esp]		;compare to # of params
+	//jae :done				;end loop if done
+	//mov ecx, [edi+eax*4]	;get dimension size
+	//imul edx, ecx			;multiply by size
+	//add edx, ecx			;add size (indirection vector)
+	//inc eax				;increment
+	//jmp :loop				;jump back
+	//:done
+	IA32_Mov_Reg_Rm(jit, REG_EDX, AMX_REG_STK, MOD_MEM_REG);
+	IA32_Mov_Reg_Imm32(jit, REG_EAX, 1);
+	jitoffs_t loop1 = jit->get_outputpos();
+	IA32_Cmp_Reg_Rm_ESP(jit, REG_EAX);
+	jitoffs_t done1 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
+	IA32_Mov_Reg_Rm_Disp_Reg(jit, REG_ECX, AMX_REG_STK, REG_EAX, SCALE4);
+	IA32_IMul_Reg_Rm(jit, REG_EDX, REG_ECX, MOD_REG);
+	IA32_Add_Rm_Reg(jit, REG_EDX, REG_ECX, MOD_REG);
+	IA32_Inc_Reg(jit, REG_EAX);
+	IA32_Write_Jump8(jit, IA32_Jump_Imm8(jit, loop1), loop1);
+	IA32_Send_Jump8_Here(jit, done1);
+
+	/* Test if we have heap space for this */
+	//mov eax, [esi+info.heap]	;get heap pointer
+	//lea eax, [eax+edx*4+4]	;new heap pointer
+	//cmp eax, <hlw>			;compare to heap low
+	//jbe :error				;die if we hit this (it should always be >)
+	//add eax, ebp				;relocate to stack
+	//cmp eax, edi				;die if above the stack pointer
+	//jae :error
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Lea_Reg_DispRegMultImm8(jit, REG_EAX, REG_EAX, REG_EDX, SCALE4, 4);
+	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, ((CompData *)jit->data)->plugin->data_size);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_BE, ((CompData *)jit->data)->jit_error_array_too_big);
+	IA32_Add_Rm_Reg(jit, REG_EAX, AMX_REG_DAT, MOD_REG);
+	IA32_Cmp_Reg_Rm(jit, REG_EAX, AMX_REG_STK, MOD_REG);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_array_too_big);
+	
+	/* Prepare for indirection iteration */
+	//mov eax, [esi+info.heap]	;get heap pointer
+	//lea ebx, [eax+edx*4+4]	;new heap pointer
+	//mov [esi+info.heap], ebx	;store back
+	//lea ebx, [ebp+ebx-4]		;relocate
+	//mov [ebx], edx			;store back total size
+	//push eax					;save heap pointer - we need it
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Lea_Reg_DispRegMultImm8(jit, REG_EBX, REG_EAX, REG_EDX, SCALE4, 4);
+	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EBX, AMX_INFO_HEAP);
+	IA32_Lea_Reg_DispRegMultImm8(jit, REG_EBX, AMX_REG_DAT, REG_EBX, NOSCALE, -4);
+	IA32_Mov_Rm_Reg(jit, REG_EBX, REG_EDX, MOD_MEM_REG);
+	IA32_Push_Reg(jit, REG_EAX);
+	
+	/* This part is too messy to do in straight assembly.
+	 * I'm letting the compiler handle it and thus it's in C.
+	 */
+	//lea ebx, [ebp+eax]		;get base pointer
+	//push dword [esp-4]		;push dimension count
+	//push edi					;push dim array
+	//push ebx
+	//call GenerateArrayIndirectionVectors
+	//add esp, 4*3
+	IA32_Lea_Reg_DispRegMult(jit, REG_EBX, REG_EAX, REG_EBP, NOSCALE);
+	IA32_Push_Rm_Disp8_ESP(jit, 4);
+	IA32_Push_Reg(jit, REG_EDI);
+	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Write_Jump32_Abs(jit, IA32_Call_Imm32(jit, 0), (void *)&GenerateArrayIndirectionVectors);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+
+	/* Store the heap pointer back into the stack */
+	//pop eax					;restore heap pointer
+	//pop ecx					;restore param count
+	//lea edi, [edi+ecx*4-4]	;pop params-4 off the stack
+	//mov [edi], eax			;store back the heap pointer
+	IA32_Pop_Reg(jit, REG_EAX);
+	IA32_Pop_Reg(jit, REG_ECX);
+	IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_STK, AMX_REG_STK, REG_ECX, SCALE4, -4);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, REG_EAX, MOD_MEM_REG);
+
+	/* Return to caller */
+	//pop eax
+	//pop ebx
+	//ret
+	IA32_Pop_Reg(jit, REG_EAX);
+	IA32_Pop_Reg(jit, REG_EBX);
+	IA32_Return(jit);
 }
 
 void WriteOp_Sysreq_N_Function(JitWriter *jit)

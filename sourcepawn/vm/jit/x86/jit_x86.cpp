@@ -1087,21 +1087,14 @@ inline void WriteOp_Lidx(JitWriter *jit)
 
 inline void WriteOp_Stack(JitWriter *jit)
 {
-	/* :TODO: Find an instance in the compiler where
-	 * the ALT value from STACK is actually used!
-	 */
-	//mov edx, edi
 	//add edi, <val>
-	//sub edx, ebp
 	cell_t val = jit->read_cell();
-	IA32_Mov_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
 	if (val < SCHAR_MAX && val > SCHAR_MIN)
 	{
 		IA32_Add_Rm_Imm8(jit, AMX_REG_STK, (jit_int8_t)val, MOD_REG);
 	} else {
 		IA32_Add_Rm_Imm32(jit, AMX_REG_STK, val, MOD_REG);
 	}
-	IA32_Sub_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
 
 	if (val > 0)
 	{
@@ -1674,6 +1667,9 @@ void WriteErrorRoutines(CompData *data, JitWriter *jit)
 	data->jit_error_heapmin = jit->get_outputpos();
 	Write_SetError(jit, SP_ERROR_HEAPMIN);
 
+	data->jit_error_array_too_big = jit->get_outputpos();
+	Write_SetError(jit, SP_ERROR_ARRAY_TOO_BIG);
+
 	data->jit_extern_error = jit->get_outputpos();
 	Write_GetError(jit);
 }
@@ -1727,6 +1723,9 @@ jit_rewind:
 	/* Plugins compiled with -O0 will need this! */
 	data->jit_sysreq_c = jit->get_outputpos();
 	WriteOp_Sysreq_C_Function(jit);
+
+	data->jit_genarray = jit->get_outputpos();
+	WriteIntrinsic_GenArray(jit);
 
 	/* Write error checking routines that are called to */
 	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
