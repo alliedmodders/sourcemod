@@ -675,9 +675,13 @@ SC_FUNC void popreg(regid reg)
 /*
  * Generate an array
  */
-SC_FUNC void genarray(int dims)
+SC_FUNC void genarray(int dims, int _autozero)
 {
-  stgwrite("\tgenarray ");
+  if (_autozero) {
+    stgwrite("\tgenarray.z ");
+  } else {
+    stgwrite("\tgenarray ");
+  }
   outval(dims, TRUE);
   code_idx+=opcodes(1)+opargs(1);
 }

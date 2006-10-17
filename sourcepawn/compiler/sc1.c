@@ -1961,7 +1961,7 @@ static int declloc(int fstatic)
         needtoken(')');
         numdim++;
       } while (matchtoken('('));
-      genarray(numdim);
+      genarray(numdim, autozero);
     }
     if (getstates(name))
       error(88,name);           /* local variables may not have states */

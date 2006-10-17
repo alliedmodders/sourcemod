@@ -490,6 +490,7 @@ static OPCODEC opcodelist[] = {
 /*{124, "file",       sIN_CSEG, do_file }, */
   {119, "fill",       sIN_CSEG, parm1 },
   {162, "genarray",   sIN_CSEG, parm1 },
+  {163, "genarray.z", sIN_CSEG, parm1 },
   {100, "geq",        sIN_CSEG, parm0 },
   { 99, "grtr",       sIN_CSEG, parm0 },
   {120, "halt",       sIN_CSEG, parm1 },
