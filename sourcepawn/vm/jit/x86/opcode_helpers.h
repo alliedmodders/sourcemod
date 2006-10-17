@@ -245,9 +245,10 @@ typedef enum
 	OP_SYSREQ_D,			// !GEN UNSUPPORT
 	OP_SYSREQ_ND,			// !GEN UNSUPPORT
 	/* ----- */
-	OP_HEAP_I,				//
-	OP_PUSH_HEAP_C,			//DONE
-	OP_GENARRAY,			//
+	OP_HEAP_I,				//VERIFIED
+	OP_PUSH_HEAP_C,			//VERIFIED
+	OP_GENARRAY,			//VERIFIED
+	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
 	/* ----- */
 	OP_NUM_OPCODES
 } OPCODE;

@@ -655,7 +655,12 @@
 			}
 		case OP_GENARRAY:
 			{
-				WriteOp_GenArray(jit);
+				WriteOp_GenArray(jit, false);
+				break;
+			}
+		case OP_GENARRAY_Z:
+			{
+				WriteOp_GenArray(jit, true);
 				break;
 			}
 #if defined USE_UNGEN_OPCODES

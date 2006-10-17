@@ -451,11 +451,12 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
-void GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], ucell_t dimcount)
+void GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], ucell_t _dimcount, bool autozero)
 {
 	cell_t vectors = 1;				/* we need one vector to start off with */
 	cell_t cur_offs = 0;
 	cell_t cur_write = 0;
+	cell_t dimcount = _dimcount;
 
 	/* Initialize rotation */
 	cur_write = dims[dimcount-1];
@@ -476,6 +477,17 @@ void GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], ucell_t d
 		vectors = cur_dim;
 	}
 
+	/* everything after cur_offs can be zeroed */
+	if (autozero)
+	{
+		size_t size = 1;
+		for (ucell_t i=0; i<_dimcount; i++)
+		{
+			size *= dims[i];
+		}
+		memset(&arraybase[cur_offs], 0, size*sizeof(cell_t));
+	}
+
 	return;
 }
 
@@ -492,9 +504,11 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	 */
 	//push ebx
 	//push eax
+	//push edx
 	//push ecx				;value is referenced on stack
 	IA32_Push_Reg(jit, REG_EBX);
 	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Push_Reg(jit, REG_EDX);
 	IA32_Push_Reg(jit, REG_ECX);
 
 	/**
@@ -557,17 +571,19 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	 * I'm letting the compiler handle it and thus it's in C.
 	 */
 	//lea ebx, [ebp+eax]		;get base pointer
-	//push dword [esp-4]		;push dimension count
+	//push dword [esp-8]		;push autozero
+	//push dword [esp-8]		;push dimension count
 	//push edi					;push dim array
 	//push ebx
 	//call GenerateArrayIndirectionVectors
 	//add esp, 4*3
 	IA32_Lea_Reg_DispRegMult(jit, REG_EBX, REG_EAX, REG_EBP, NOSCALE);
-	IA32_Push_Rm_Disp8_ESP(jit, 4);
+	IA32_Push_Rm_Disp8_ESP(jit, 8);
+	IA32_Push_Rm_Disp8_ESP(jit, 8);
 	IA32_Push_Reg(jit, REG_EDI);
 	IA32_Push_Reg(jit, REG_EBX);
 	IA32_Write_Jump32_Abs(jit, IA32_Call_Imm32(jit, 0), (void *)&GenerateArrayIndirectionVectors);
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*4, MOD_REG);
 
 	/* Store the heap pointer back into the stack */
 	//pop eax					;restore heap pointer
@@ -580,9 +596,11 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, REG_EAX, MOD_MEM_REG);
 
 	/* Return to caller */
+	//pop edx
 	//pop eax
 	//pop ebx
 	//ret
+	IA32_Pop_Reg(jit, REG_ECX);
 	IA32_Pop_Reg(jit, REG_EAX);
 	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Return(jit);

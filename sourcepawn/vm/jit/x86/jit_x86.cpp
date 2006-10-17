@@ -975,7 +975,7 @@ inline void WriteOp_Heap_I(JitWriter *jit)
 	Write_CheckHeap_Low(jit);
 }
 
-inline void WriteOp_GenArray(JitWriter *jit)
+inline void WriteOp_GenArray(JitWriter *jit, bool autozero)
 {
 	cell_t val = jit->read_cell();
 	if (val == 1)
@@ -1002,10 +1002,40 @@ inline void WriteOp_GenArray(JitWriter *jit)
 		IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_heaplow);
 		IA32_Shl_Rm_Imm8(jit, AMX_REG_TMP, 4, MOD_REG);
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_ALT, AMX_REG_TMP, -4);
+		if (autozero)
+		{
+			/* Zero out the array - inline a quick fill */
+			//push eax				;save pri
+			//push edi				;save stk
+			//xor eax, eax			;zero source
+			//mov edi, [edi]		;get heap ptr out of the stack
+			//add edi, ebp			;relocate
+			//cld					;clear direction flag
+			//rep stosd				;copy (note: ECX is sane from above)
+			//pop edi				;pop stk
+			//pop eax				;pop pri
+			IA32_Push_Reg(jit, REG_EAX);
+			IA32_Push_Reg(jit, REG_EDI);
+			IA32_Xor_Reg_Rm(jit, REG_EAX, REG_EAX, MOD_REG);
+			IA32_Mov_Reg_Rm(jit, REG_EDI, REG_EDI, MOD_REG);
+			IA32_Add_Rm_Reg(jit, REG_EDI, REG_EBP, MOD_REG);
+			IA32_Cld(jit);
+			IA32_Rep(jit);
+			IA32_Stosd(jit);
+			IA32_Pop_Reg(jit, REG_EDI);
+			IA32_Pop_Reg(jit, REG_EAX);
+		}
 	} else {
 		//mov ecx, num_dims
+		//mov edx, 0/1
 		//call [genarray]
 		IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, val);
+		if (autozero)
+		{
+			IA32_Mov_Reg_Imm32(jit, REG_EDX, 1);
+		} else {
+			IA32_Mov_Reg_Imm32(jit, REG_EDX, 0);
+		}
 		jitoffs_t call = IA32_Call_Imm32(jit, 0);
 		IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_genarray);
 	}
