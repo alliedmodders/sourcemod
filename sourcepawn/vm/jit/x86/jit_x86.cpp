@@ -253,13 +253,14 @@ inline void WriteOp_Proc(JitWriter *jit)
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, AMX_REG_TMP, -4);
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
 	//save frame:
-	//:TODO: move to a temp reg, subtract and then move to mem, faster??
-	//mov [esi+frm], edi	- get new frame
+	//mov ecx, edi			- get new frame
 	//mov ebx, edi			- store frame back
-	//sub [esi+frm], ebp	- relocate local frame
-	IA32_Mov_Rm_Reg(jit, AMX_REG_INFO, AMX_REG_STK, MOD_MEM_REG);
+	//sub ecx, ebp			- relocate local frame
+	//mov [esi+frm], ecx
+	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_REG);
 	IA32_Mov_Reg_Rm(jit, AMX_REG_FRM, AMX_REG_STK, MOD_REG);
-	IA32_Sub_Rm_Reg(jit, AMX_REG_INFO, AMX_REG_DAT, MOD_MEM_REG);
+	IA32_Sub_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_DAT, MOD_REG);
+	IA32_Mov_Rm_Reg(jit, AMX_REG_INFO, AMX_REG_TMP, MOD_MEM_REG);
 }
 
 inline void WriteOp_Lidx_B(JitWriter *jit)
@@ -888,17 +889,19 @@ inline void WriteOp_Swap_Alt(JitWriter *jit)
 inline void WriteOp_PushAddr(JitWriter *jit)
 {
 	//mov ecx, [esi+frm]	;get address (offset from frame)
-	//add ecx, <val>
-	//mov [edi-4], ecx
 	//sub edi, 4
+	//add ecx, <val>
+	//mov [edi], ecx
 	cell_t val = jit->read_cell();
 	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_INFO, MOD_MEM_REG);
-	if (val < SCHAR_MAX && val > SCHAR_MIN)
-		IA32_Add_Rm_Imm8(jit, AMX_REG_TMP, (jit_int8_t)val, MOD_REG);
-	else
-		IA32_Add_Rm_Imm32(jit, AMX_REG_TMP, val, MOD_REG);
-	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, AMX_REG_TMP, -4);
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
+		IA32_Add_Rm_Imm8(jit, AMX_REG_TMP, (jit_int8_t)val, MOD_REG);
+	} else {
+		IA32_Add_Rm_Imm32(jit, AMX_REG_TMP, val, MOD_REG);
+	}
+	IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_TMP, MOD_MEM_REG);
 }
 
 inline void WriteOp_Movs(JitWriter *jit)
@@ -1217,7 +1220,12 @@ inline void WriteOp_Bounds(JitWriter *jit)
 	
 	//cmp eax, <val>
 	//ja :error
-	IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_PRI, val);
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
+		IA32_Cmp_Rm_Imm8(jit, MOD_REG, AMX_REG_PRI, (jit_int8_t)val);
+	} else {
+		IA32_Cmp_Eax_Imm32(jit, val);
+	}
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_A, ((CompData *)jit->data)->jit_error_bounds);
 }
 
@@ -1405,9 +1413,9 @@ inline void WriteOp_Switch(JitWriter *jit)
 			 * ECX still has the correctly bound offset in it, luckily!
 			 * thus, we simply need to relocate ECX and store the cases.
 			 */
-			//shl ecx, 2
+			//lea ecx, [ecx*4]
 			//add ecx, <case table start>
-			IA32_Shl_Rm_Imm8(jit, AMX_REG_TMP, 2, MOD_REG);
+			IA32_Lea_Reg_RegMultImm32(jit, AMX_REG_TMP, AMX_REG_TMP, SCALE4, 0);
 			jitoffs_t tbl_offs = IA32_Add_Rm_Imm32_Later(jit, AMX_REG_TMP, MOD_REG);
 			IA32_Jump_Rm(jit, AMX_REG_TMP, MOD_MEM_REG);
 			/* The case table starts here.  Go back and write the output pointer. */
@@ -1472,7 +1480,7 @@ inline void WriteOp_Sysreq_C(JitWriter *jit)
 	}
 
 	//mov ecx, <native_index>
-	IA32_Mov_Rm_Imm32(jit, REG_ECX, native_index, MOD_REG);
+	IA32_Mov_Reg_Imm32(jit, REG_ECX, native_index);
 
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
 	IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_sysreq_c);
@@ -1494,8 +1502,8 @@ inline void WriteOp_Sysreq_N_NoInline(JitWriter *jit)
 
 	//mov eax, <num_params>
 	//mov ecx, <native_index>
-	IA32_Mov_Rm_Imm32(jit, REG_EAX, num_params, MOD_REG);
-	IA32_Mov_Rm_Imm32(jit, REG_ECX, native_index, MOD_REG);
+	IA32_Mov_Reg_Imm32(jit, REG_EAX, num_params);
+	IA32_Mov_Reg_Imm32(jit, REG_ECX, native_index);
 
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
 	IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_sysreq_n);
@@ -1528,27 +1536,31 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//push edi		; stack
 	//push <native>	; native index
 	IA32_Push_Reg(jit, AMX_REG_STK);
-	IA32_Push_Imm32(jit, native_index);
+	if (native_index < SCHAR_MAX && native_index > SCHAR_MIN)
+	{
+		IA32_Push_Imm8(jit, (jit_int8_t)native_index);
+	} else {
+		IA32_Push_Imm32(jit, native_index);
+	}
 
 	/* Relocate stack, heap, frm information, then store back */
-	//sub edi, ebp
-	//mov ecx, [esi+hea]
 	//mov eax, [esi+context]
+	//mov ecx, [esi+hea]
+	//sub edi, ebp
 	//mov [eax+hp], ecx
+	//mov ecx, [esi]
 	//mov [eax+sp], edi
-	//mov ecx, [esi+frm]
 	//mov [eax+frm], ecx
-	IA32_Sub_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_HEAP);
+	IA32_Sub_Reg_Rm(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_TMP, offsetof(sp_context_t, hp));
+	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_INFO_FRM, MOD_MEM_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_STK, offsetof(sp_context_t, sp));
-	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_INFO_FRM, MOD_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, REG_EAX, AMX_REG_TMP, offsetof(sp_context_t, frm));
 
 	/* finally, push the last parameter and make the call */
 	//push eax		; context
-	//mov eax, [eax+context]
 	//call NativeCallback
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
@@ -1564,7 +1576,7 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//cmp [ecx+err], 0
 	//jnz :error
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Cmp_Rm_Imm32_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
@@ -1572,7 +1584,7 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//add edi, ebp
 	//pop edx
 	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
-	IA32_Add_Rm_Reg(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
+	IA32_Add_Reg_Rm(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_ALT);
 
 	/* pop the stack.  do not check the margins.

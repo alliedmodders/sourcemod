@@ -253,4 +253,22 @@ typedef enum
 	OP_NUM_OPCODES
 } OPCODE;
 
+/*
+* :TODO: List of ASM Opts
+*	from jit_x86.cpp 
+*       TODO: all new array opcodes (4 ATM)
+*       DONE: Rest of opcodes including the SYSREQ.N inlined version (rev2)
+*       DONE: ALL ungen opcodes (rev1)
+*	from opcode_helpers.cpp
+*       DONE: SYSREQ.N .C (rev2)
+*			  MACRO OPCODES (rev2)
+*             ERROR CHECKS\{VERIFY ADDR} (rev2)
+*		TODO: BrkDebug
+*             ARRAY STUFF
+*			  EXEC FUNCTION
+*			  VERIFY ADDR
+*
+*	Oh and ALIGN all stuff that is called via CALL like what's done with PROC.
+*/
+
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_OPCODE_INFO_H_

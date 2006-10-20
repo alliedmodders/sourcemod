@@ -113,7 +113,7 @@ inline void WriteOp_Cmps(JitWriter *jit)
 
 inline void WriteOp_Lodb_I(JitWriter *jit)
 {
-	Write_Check_VerifyAddr(jit, AMX_REG_PRI, false);
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI);
 
 	//mov eax, [ebp+eax]
 	IA32_Mov_Reg_RmEBP_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
@@ -137,7 +137,7 @@ inline void WriteOp_Lodb_I(JitWriter *jit)
 
 inline void WriteOp_Strb_I(JitWriter *jit)
 {
-	Write_Check_VerifyAddr(jit, AMX_REG_ALT, false);
+	Write_Check_VerifyAddr(jit, AMX_REG_ALT);
 	//mov [ebp+edx], eax
 	cell_t val = jit->read_cell();
 	switch (val)
@@ -211,10 +211,10 @@ inline void WriteOp_Lctrl(JitWriter *jit)
 		{
 			//mov eax, [cip]
 			jitoffs_t imm32 = IA32_Mov_Reg_Imm32(jit, AMX_REG_PRI, 0);
-			jitoffs_t save = jit->jit_curpos();
-			jit->setpos(imm32);
+			jitoffs_t save = jit->get_outputpos();
+			jit->set_outputpos(imm32);
 			jit->write_int32((uint32_t)(jit->outbase + save));
-			jit->setpos(save);
+			jit->set_outputpos(save);
 			break;
 		}
 	}

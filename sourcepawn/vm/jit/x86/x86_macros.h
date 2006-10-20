@@ -16,16 +16,17 @@
 #define SCALE8		3
 
 //Register codes
-#define REG_EAX		0
-#define REG_ECX		1
-#define REG_EDX		2
-#define REG_EBX		3
-#define	REG_ESP		4
-#define	REG_SIB		4
-#define REG_NOIDX	4
-#define REG_EBP		5
-#define REG_ESI		6
-#define REG_EDI		7
+#define REG_EAX			0
+#define REG_ECX			1
+#define REG_EDX			2
+#define REG_EBX			3
+#define	REG_ESP			4
+#define	REG_SIB			4
+#define REG_NOIDX		4
+#define REG_IMM_BASE	5
+#define REG_EBP			5
+#define REG_ESI			6
+#define REG_EDI			7
 
 #define IA32_16BIT_PREFIX	0x66
 
@@ -122,6 +123,7 @@
 #define IA32_PUSH_REG			0x50	// encoding is +r
 #define IA32_PUSH_RM			0xFF	// encoding is /6
 #define IA32_PUSH_IMM32			0x68	// encoding is <imm32>
+#define IA32_PUSH_IMM8			0x6A	// encoding is <imm8>
 #define IA32_REP				0xF3	// no extra encoding
 #define IA32_MOVSD				0xA5	// no extra encoding
 #define IA32_MOVSB				0xA4	// no extra encoding
@@ -592,6 +594,18 @@ inline void IA32_Lea_Reg_DispRegMultImm8(JitWriter *jit,
 	jit->write_byte(val);
 }
 
+inline void IA32_Lea_Reg_RegMultImm32(JitWriter *jit, 
+										jit_uint8_t dest, 
+										jit_uint8_t src_index, 
+										jit_uint8_t scale, 
+										jit_int32_t val)
+{
+	jit->write_ubyte(IA32_LEA_REG_MEM);
+	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, dest, REG_SIB));
+	jit->write_ubyte(ia32_sib(scale, src_index, REG_IMM_BASE));
+	jit->write_int32(val);
+}
+
 inline void IA32_Lea_DispRegImm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src_base, jit_int8_t val)
 {
 	jit->write_ubyte(IA32_LEA_REG_MEM);
@@ -618,6 +632,12 @@ inline void IA32_Pop_Reg(JitWriter *jit, jit_uint8_t reg)
 inline void IA32_Push_Reg(JitWriter *jit, jit_uint8_t reg)
 {
 	jit->write_ubyte(IA32_PUSH_REG+reg);
+}
+
+inline void IA32_Push_Imm8(JitWriter *jit, jit_int8_t val)
+{
+	jit->write_ubyte(IA32_PUSH_IMM8);
+	jit->write_byte(val);
 }
 
 inline void IA32_Push_Imm32(JitWriter *jit, jit_int32_t val)
