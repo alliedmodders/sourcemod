@@ -110,7 +110,9 @@
 #define IA32_IMUL_REG_RM_1		0x0F	// encoding is _2
 #define IA32_IMUL_REG_RM_2		0xAF	// encoding is /r
 #define IA32_SHR_RM_IMM8		0xC1	// encoding is /5 <ib>
+#define IA32_SHR_RM_1			0xD1	// encoding is /5
 #define IA32_SHL_RM_IMM8		0xC1	// encoding is /4 <ib>
+#define IA32_SHL_RM_1			0xD1	// encoding is /4
 #define IA32_SAR_RM_CL			0xD3	// encoding is /7
 #define IA32_SHR_RM_CL			0xD3	// encoding is /5
 #define IA32_SHL_RM_CL			0xD3	// encoding is /4
@@ -292,11 +294,23 @@ inline void IA32_Shr_Rm_Imm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t value
 	jit->write_ubyte(value);
 }
 
+inline void IA32_Shr_Rm_1(JitWriter *jit, jit_uint8_t dest, jit_uint8_t mode)
+{
+	jit->write_ubyte(IA32_SHR_RM_1);
+	jit->write_ubyte(ia32_modrm(mode, 5, dest));
+}
+
 inline void IA32_Shl_Rm_Imm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t value, jit_uint8_t mode)
 {
 	jit->write_ubyte(IA32_SHL_RM_IMM8);
 	jit->write_ubyte(ia32_modrm(mode, 4, dest));
 	jit->write_ubyte(value);
+}
+
+inline void IA32_Shl_Rm_1(JitWriter *jit, jit_uint8_t dest, jit_uint8_t mode)
+{
+	jit->write_ubyte(IA32_SHL_RM_1);
+	jit->write_ubyte(ia32_modrm(mode, 4, dest));
 }
 
 inline void IA32_Sar_Rm_Imm8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t value, jit_uint8_t mode)

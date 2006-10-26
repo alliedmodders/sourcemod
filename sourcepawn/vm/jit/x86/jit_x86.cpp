@@ -312,28 +312,48 @@ inline void WriteOp_Shl_C_Pri(JitWriter *jit)
 {
 	//shl eax, <val>
 	jit_uint8_t val = (jit_uint8_t)jit->read_cell();
-	IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	if (val == 1)
+	{
+		IA32_Shl_Rm_1(jit, AMX_REG_PRI, MOD_REG);
+	} else {
+		IA32_Shl_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	}
 }
 
 inline void WriteOp_Shl_C_Alt(JitWriter *jit)
 {
 	//shl edx, <val>
 	jit_uint8_t val = (jit_uint8_t)jit->read_cell();
-	IA32_Shl_Rm_Imm8(jit, AMX_REG_ALT, val, MOD_REG);
+	if (val == 1)
+	{
+		IA32_Shl_Rm_1(jit, AMX_REG_ALT, MOD_REG);
+	} else {
+		IA32_Shl_Rm_Imm8(jit, AMX_REG_ALT, val, MOD_REG);
+	}
 }
 
 inline void WriteOp_Shr_C_Pri(JitWriter *jit)
 {
 	//shr eax, <val>
 	jit_uint8_t val = (jit_uint8_t)jit->read_cell();
-	IA32_Shr_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	if (val == 1)
+	{
+		IA32_Shr_Rm_1(jit, AMX_REG_PRI, MOD_REG);
+	} else {
+		IA32_Shr_Rm_Imm8(jit, AMX_REG_PRI, val, MOD_REG);
+	}
 }
 
 inline void WriteOp_Shr_C_Alt(JitWriter *jit)
 {
 	//shr edx, <val>
 	jit_uint8_t val = (jit_uint8_t)jit->read_cell();
-	IA32_Shr_Rm_Imm8(jit, AMX_REG_ALT, val, MOD_REG);
+	if (val == 1)
+	{
+		IA32_Shr_Rm_1(jit, AMX_REG_ALT, MOD_REG);
+	} else {
+		IA32_Shr_Rm_Imm8(jit, AMX_REG_ALT, val, MOD_REG);
+	}
 }
 
 inline void WriteOp_SMul(JitWriter *jit)
