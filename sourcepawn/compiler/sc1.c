@@ -1678,8 +1678,10 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
         if (size > INT_MAX)
           error(105);                   /* overflow, exceeding capacity */
       #endif
+#if 0	/* We don't actually care */
       if (ispublic)
         error(56,name);                 /* arrays cannot be public */
+#endif
       dim[numdim++]=(int)size;
     } /* while */
     assert(sc_curstates==0);
@@ -1857,7 +1859,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
     assert(sym!=NULL);
     sc_curstates=0;
     if (ispublic)
-      sym->usage|=uPUBLIC;
+      sym->usage|=uPUBLIC|uREAD;
     if (fconst)
       sym->usage|=uCONST;
     if (fstock)
