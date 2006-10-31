@@ -5574,6 +5574,7 @@ static void docont(void)
     return;
   destructsymbols(&loctab,nestlevel);
   genstackfree(ptr[wqCONT]);
+  genheapfree(ptr[wqCONT]);
   jumplabel(ptr[wqLOOP]);
 }
 
