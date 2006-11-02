@@ -398,6 +398,13 @@ inline void IA32_Sub_Reg_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t 
 	jit->write_byte(disp8);
 }
 
+inline void IA32_Sub_Rm_Reg_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int8_t disp8)
+{
+	jit->write_ubyte(IA32_SUB_RM_REG);
+	jit->write_ubyte(ia32_modrm(MOD_DISP8, src, dest));
+	jit->write_byte(disp8);
+}
+
 inline void IA32_Sub_Rm_Imm8(JitWriter *jit, jit_uint8_t reg, jit_int8_t val, jit_uint8_t mode)
 {
 	jit->write_ubyte(IA32_SUB_RM_IMM8);

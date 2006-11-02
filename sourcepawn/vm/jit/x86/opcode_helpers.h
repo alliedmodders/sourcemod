@@ -66,6 +66,12 @@ void Macro_PushN_S(JitWriter *jit, int i);
 void Macro_PushN_C(JitWriter *jit, int i);
 void Macro_PushN(JitWriter *jit, int i);
 
+/** 
+* Bound checking for the tracker stack,
+*/
+void JIT_VerifyLowBoundTracker(sp_context_t *ctx);
+void JIT_VerifyOrAllocateTracker(sp_context_t *ctx);
+
 /**
  * Legend for Statuses:
  * ****** *** ********
@@ -245,8 +251,8 @@ typedef enum
 	OP_SYSREQ_D,			// !GEN UNSUPPORT
 	OP_SYSREQ_ND,			// !GEN UNSUPPORT
 	/* ----- */
-	OP_HEAP_I,				//VERIFIED
-	OP_PUSH_HEAP_C,			//VERIFIED
+	OP_TRACKER_PUSH_C,		//DONE
+	OP_TRACKER_POP_SETHEAP,	//DONE
 	OP_GENARRAY,			//VERIFIED
 	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
 	/* ----- */

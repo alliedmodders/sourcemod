@@ -643,14 +643,14 @@
 				}
 				break;
 			}
-		case OP_PUSH_HEAP_C:
+		case OP_TRACKER_PUSH_C:
 			{
-				WriteOp_Push_Heap_C(jit);
+				WriteOp_Tracker_Push_C(jit);
 				break;
 			}
-		case OP_HEAP_I:
+		case OP_TRACKER_POP_SETHEAP:
 			{
-				WriteOp_Heap_I(jit);
+				WriteOp_Tracker_Pop_SetHeap(jit);
 				break;
 			}
 		case OP_GENARRAY:

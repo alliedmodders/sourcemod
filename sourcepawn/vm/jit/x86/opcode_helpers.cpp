@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <string.h>
+#include <malloc.h>
 #include "jit_x86.h"
 #include "opcode_helpers.h"
 #include "x86_macros.h"
@@ -687,3 +688,38 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
+void JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
+{
+	tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
+
+	if ((size_t)(trk->pCur - trk->pBase) >= trk->size)
+	{
+		ctx->err = SP_ERROR_TRACKER_BOUNDS;
+		return;
+	}
+
+	if (trk->pCur+1 - (trk->pBase + trk->size) == 0)
+	{
+		size_t disp = trk->size - 1;
+		trk->size *= 2;
+		trk->pBase = (ucell_t *)realloc(trk->pBase, trk->size);
+
+		if (!trk->pBase)
+		{
+			ctx->err = SP_ERROR_TRACKER_BOUNDS;
+			return;
+		}
+
+		trk->pCur = trk->pBase + disp;
+	}
+}
+
+void JIT_VerifyLowBoundTracker(sp_context_t *ctx)
+{
+	tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
+
+	if (trk->pCur <= trk->pBase)
+	{
+		ctx->err = SP_ERROR_TRACKER_BOUNDS;
+	}
+}
