@@ -860,14 +860,14 @@ SC_FUNC void modheap(int delta)
 
 SC_FUNC void modheap_i()
 {
-  stgwrite("\theap.i\n");
+  stgwrite("\ttracker.pop.setheap\n");
   code_idx+=opcodes(1);
 }
 
 SC_FUNC void setheap_save(cell value)
 {
   assert(value);
-  stgwrite("\tpush.h.c ");
+  stgwrite("\ttracker.push.c ");
   outval(value, TRUE);
   code_idx+=opcodes(1)+opargs(1);
 }

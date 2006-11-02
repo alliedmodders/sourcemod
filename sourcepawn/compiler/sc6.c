@@ -495,7 +495,6 @@ static OPCODEC opcodelist[] = {
   { 99, "grtr",       sIN_CSEG, parm0 },
   {120, "halt",       sIN_CSEG, parm1 },
   { 45, "heap",       sIN_CSEG, parm1 },
-  {160, "heap.i",     sIN_CSEG, parm0 },
   { 27, "idxaddr",    sIN_CSEG, parm0 },
   { 28, "idxaddr.b",  sIN_CSEG, parm1 },
   {109, "inc",        sIN_CSEG, parm1 },
@@ -552,7 +551,6 @@ static OPCODEC opcodelist[] = {
   {133, "push.adr",   sIN_CSEG, parm1 },  /* version 4 */
   { 37, "push.alt",   sIN_CSEG, parm0 },
   { 39, "push.c",     sIN_CSEG, parm1 },
-  {161, "push.h.c",   sIN_CSEG, parm1 },
   { 36, "push.pri",   sIN_CSEG, parm0 },
   { 38, "push.r",     sIN_CSEG, parm1 },  /* obsolete (never generated) */
   { 41, "push.s",     sIN_CSEG, parm1 },
@@ -615,6 +613,8 @@ static OPCODEC opcodelist[] = {
   {123, "sysreq.c",   sIN_CSEG, parm1 },
   {135, "sysreq.n",   sIN_CSEG, parm2 },  /* version 9 (replaces SYSREQ.d from earlier version) */
   {122, "sysreq.pri", sIN_CSEG, parm0 },
+  {161, "tracker.pop.setheap", sIN_CSEG, parm0 },
+  {160, "tracker.push.c", sIN_CSEG, parm1 },
   { 76, "udiv",       sIN_CSEG, parm0 },
   { 77, "udiv.alt",   sIN_CSEG, parm0 },
   { 75, "umul",       sIN_CSEG, parm0 },
