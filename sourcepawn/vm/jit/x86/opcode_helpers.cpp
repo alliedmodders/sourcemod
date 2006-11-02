@@ -538,14 +538,14 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 
 	/* Test if we have heap space for this */
 	//mov eax, [esi+info.heap]	;get heap pointer
-	//lea eax, [eax+edx*4+4]	;new heap pointer
+	//lea eax, [eax+edx*4]		;new heap pointer
 	//cmp eax, <hlw>			;compare to heap low
 	//jbe :error				;die if we hit this (it should always be >)
 	//add eax, ebp				;relocate to stack
 	//cmp eax, edi				;die if above the stack pointer
 	//jae :error
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_HEAP);
-	IA32_Lea_Reg_DispRegMultImm8(jit, REG_EAX, REG_EAX, REG_EDX, SCALE4, 4);
+	IA32_Lea_Reg_DispRegMult(jit, REG_EAX, REG_EAX, REG_EDX, SCALE4);
 	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, ((CompData *)jit->data)->plugin->data_size);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_BE, ((CompData *)jit->data)->jit_error_array_too_big);
 	IA32_Add_Rm_Reg(jit, REG_EAX, AMX_REG_DAT, MOD_REG);
@@ -554,17 +554,15 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	
 	/* Prepare for indirection iteration */
 	//mov eax, [esi+info.heap]	;get heap pointer
-	//lea ebx, [eax+edx*4+4]	;new heap pointer
+	//lea ebx, [eax+edx*4]		;new heap pointer
 	//mov [esi+info.heap], ebx	;store back
-	//lea ebx, [ebp+ebx-4]		;relocate
-	//mov [ebx], edx			;store back total size
 	//push eax					;save heap pointer - we need it
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_HEAP);
-	IA32_Lea_Reg_DispRegMultImm8(jit, REG_EBX, REG_EAX, REG_EDX, SCALE4, 4);
+	IA32_Lea_Reg_DispRegMult(jit, REG_EBX, REG_EAX, REG_EDX, SCALE4);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EBX, AMX_INFO_HEAP);
-	IA32_Lea_Reg_DispRegMultImm8(jit, REG_EBX, AMX_REG_DAT, REG_EBX, NOSCALE, -4);
-	IA32_Mov_Rm_Reg(jit, REG_EBX, REG_EDX, MOD_MEM_REG);
 	IA32_Push_Reg(jit, REG_EAX);
+
+	/* :TODO: Push EDX into tracker */
 	
 	/* This part is too messy to do in straight assembly.
 	 * I'm letting the compiler handle it and thus it's in C.

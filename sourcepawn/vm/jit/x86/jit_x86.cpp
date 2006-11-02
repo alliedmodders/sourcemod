@@ -993,23 +993,22 @@ inline void WriteOp_GenArray(JitWriter *jit, bool autozero)
 		//mov edx, [esi+info.heap]
 		//mov ecx, [edi]
 		//mov [edi], edx			;store base of array into stack
-		//lea edx, [edx+ecx*4+4]	;get the final new heap pointer
+		//lea edx, [edx+ecx*4]		;get the final new heap pointer
 		//mov [esi+info.heap], edx	;store heap pointer back
 		//add edx, ebp				;relocate
 		//cmp edx, edi				;compare against stack pointer
 		//jae :error				;error out if not enough space
-		//shl ecx, 2
-		//mov [edx-4], ecx			;store # of cells allocated
 		IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_ALT, AMX_REG_INFO, AMX_INFO_HEAP);
 		IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_STK, MOD_MEM_REG);
 		IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_ALT, MOD_MEM_REG);
-		IA32_Lea_Reg_DispRegMultImm8(jit, AMX_REG_ALT, AMX_REG_ALT, AMX_REG_TMP, SCALE4, 4);
+		IA32_Lea_Reg_DispRegMult(jit, AMX_REG_ALT, AMX_REG_ALT, AMX_REG_TMP, SCALE4);
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_ALT, AMX_INFO_HEAP);
 		IA32_Add_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
 		IA32_Cmp_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
 		IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_heaplow);
-		IA32_Shl_Rm_Imm8(jit, AMX_REG_TMP, 4, MOD_REG);
-		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_ALT, AMX_REG_TMP, -4);
+
+		/* :TODO: PUSH ECX ONTO TRACKER */
+
 		if (autozero)
 		{
 			/* Zero out the array - inline a quick fill */
