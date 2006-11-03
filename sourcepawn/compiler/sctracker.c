@@ -1,10 +1,94 @@
 #include <malloc.h>
+#include <string.h>
 #include <assert.h>
 #include "sc.h"
 #include "sctracker.h"
 
 memuse_list_t *heapusage = NULL;
 memuse_list_t *stackusage = NULL;
+funcenum_t *firstenum = NULL;
+funcenum_t *lastenum = NULL;
+
+void funcenums_free()
+{
+	funcenum_t *e, *next;
+
+	e = firstenum;
+	while (e)
+	{
+		functag_t *tag, *nexttag;
+		tag = e->first;
+		while (tag)
+		{
+			nexttag = tag->next;
+			free(tag);
+			tag = nexttag;
+		}
+		next = e->next;
+		free(e);
+		e = next;
+	}
+
+	firstenum = NULL;
+	lastenum = NULL;
+}
+
+funcenum_t *funcenums_find_byval(int value)
+{
+	funcenum_t *e = firstenum;
+
+	while (e)
+	{
+		if (e->value == value)
+		{
+			return e;
+		}
+		e = e->next;
+	}
+
+	return NULL;
+}
+
+funcenum_t *funcenums_add(const char *name)
+{
+	funcenum_t *e = (funcenum_t *)malloc(sizeof(funcenum_t));
+
+	memset(e, 0, sizeof(funcenum_t));
+
+	if (firstenum == NULL)
+	{
+		firstenum = e;
+		lastenum = e;
+	} else {
+		lastenum->next = e;
+		lastenum = e;
+	}
+
+	strcpy(e->name, name);
+	e->value = pc_addfunctag((char *)name);
+
+	return e;
+}
+
+functag_t *functags_add(funcenum_t *en, functag_t *src)
+{
+	functag_t *t = (functag_t *)malloc(sizeof(functag_t));
+	
+	memcpy(t, src, sizeof(functag_t));
+
+	t->next = NULL;
+
+	if (en->first == NULL)
+	{
+		en->first = t;
+		en->last = t;
+	} else {
+		en->last->next = t;
+		en->last = t;
+	}
+
+	return t;
+}
 
 /**
  * Creates a new mem usage tracker entry

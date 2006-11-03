@@ -57,6 +57,8 @@
 #define sDEF_AMXSTACK 4096  /* default stack size for AMX files */
 #define PREPROC_TERM  '\x7f'/* termination character for preprocessor expressions (the "DEL" code) */
 #define sDEF_PREFIX   "sourcemod.inc" /* default prefix filename */
+#define sARGS_MAX		32	/* number of arguments a function can have, max */
+#define sTAGS_MAX		16  /* maximum number of tags on an argument */
 
 typedef union {
   void *pv;                 /* e.g. a name */
@@ -283,7 +285,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    329    /* value of last multi-character match-able token */
+#define tLAST    330    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -327,51 +329,52 @@ typedef struct s_stringpair {
 #define tEXIT    294
 #define tFOR     295
 #define tFORWARD 296
-#define tGOTO    297
-#define tIF      298
-#define tNATIVE  299
-#define tNEW     300
-#define tDECL    301
-#define tOPERATOR 302
-#define tPUBLIC  303
-#define tRETURN  304
-#define tSIZEOF  305
-#define tSLEEP   306
-#define tSTATE   307
-#define tSTATIC  308
-#define tSTOCK   309
-#define tSWITCH  310
-#define tTAGOF   311
-#define tTHEN    312
-#define tWHILE   313
+#define tFUNCENUM 297
+#define tGOTO    298
+#define tIF      299
+#define tNATIVE  300
+#define tNEW     301
+#define tDECL    302
+#define tOPERATOR 303
+#define tPUBLIC  304
+#define tRETURN  305
+#define tSIZEOF  306
+#define tSLEEP   307
+#define tSTATE   308
+#define tSTATIC  309
+#define tSTOCK   310
+#define tSWITCH  311
+#define tTAGOF   312
+#define tTHEN    313
+#define tWHILE   314
 /* compiler directives */
-#define tpASSERT 314    /* #assert */
-#define tpDEFINE 315
-#define tpELSE   316    /* #else */
-#define tpELSEIF 317    /* #elseif */
-#define tpEMIT   318
-#define tpENDIF  319
-#define tpENDINPUT 320
-#define tpENDSCRPT 321
-#define tpERROR  322
-#define tpFILE   323
-#define tpIF     324    /* #if */
-#define tINCLUDE 325
-#define tpLINE   326
-#define tpPRAGMA 327
-#define tpTRYINCLUDE 328
-#define tpUNDEF  329
+#define tpASSERT 315    /* #assert */
+#define tpDEFINE 316
+#define tpELSE   317    /* #else */
+#define tpELSEIF 318    /* #elseif */
+#define tpEMIT   319
+#define tpENDIF  320
+#define tpENDINPUT 321
+#define tpENDSCRPT 322
+#define tpERROR  323
+#define tpFILE   324
+#define tpIF     325    /* #if */
+#define tINCLUDE 326
+#define tpLINE   327
+#define tpPRAGMA 328
+#define tpTRYINCLUDE 329
+#define tpUNDEF  330
 /* semicolon is a special case, because it can be optional */
-#define tTERM    330    /* semicolon or newline */
-#define tENDEXPR 331    /* forced end of expression */
+#define tTERM    331    /* semicolon or newline */
+#define tENDEXPR 332    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  332    /* integer number */
-#define tRATIONAL 333   /* rational number */
-#define tSYMBOL  334
-#define tLABEL   335
-#define tSTRING  336
-#define tEXPR    337 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 338 /* endless loop, for assigment to "lastst" only */
+#define tNUMBER  333    /* integer number */
+#define tRATIONAL 334   /* rational number */
+#define tSYMBOL  335
+#define tLABEL   336
+#define tSTRING  337
+#define tEXPR    338 /* for assigment to "lastst" only (see SC1.C) */
+#define tENDLESS 339 /* endless loop, for assigment to "lastst" only */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
@@ -432,9 +435,11 @@ typedef enum s_optmark {
 #if INT_MAX<0x8000u
   #define PUBLICTAG   0x8000u
   #define FIXEDTAG    0x4000u
+  #define FUNCTAG     0x2000u
 #else
   #define PUBLICTAG   0x80000000Lu
   #define FIXEDTAG    0x40000000Lu
+  #define FUNCTAG     0x20000000Lu
 #endif
 #define TAGMASK       (~PUBLICTAG)
 #define CELL_MAX      (((ucell)1 << (sizeof(cell)*8-1)) - 1)
@@ -451,6 +456,7 @@ typedef enum s_optmark {
 int pc_compile(int argc, char **argv);
 int pc_addconstant(char *name,cell value,int tag);
 int pc_addtag(char *name);
+int pc_addfunctag(char *name);
 int pc_enablewarning(int number,int enable);
 
 /*
@@ -517,6 +523,7 @@ SC_FUNC void delete_consttable(constvalue *table);
 SC_FUNC symbol *add_constant(char *name,cell val,int vclass,int tag);
 SC_FUNC void exporttag(int tag);
 SC_FUNC void sc_attachdocumentation(symbol *sym);
+SC_FUNC constvalue *find_tag_byval(int tag);
 
 /* function prototypes in SC2.C */
 #define PUSHSTK_P(v)  { stkitem s_; s_.pv=(v); pushstk(s_); }
@@ -801,6 +808,7 @@ SC_VDECL char *pc_deprecate;  /* if non-NULL, mark next declaration as deprecate
 SC_VDECL int sc_curstates;    /* ID of the current state list */
 SC_VDECL int pc_optimize;     /* (peephole) optimization level */
 SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
+SC_VDECL int pc_functag;      /* global function tag */
 
 SC_VDECL constvalue sc_automaton_tab; /* automaton table */
 SC_VDECL constvalue sc_state_tab;     /* state table */
@@ -813,6 +821,12 @@ SC_VDECL jmp_buf errbuf;      /* target of longjmp() on a fatal error */
 
 #if !defined SC_LIGHT
   SC_VDECL int sc_makereport; /* generate a cross-reference report */
+#endif
+
+#if defined WIN32
+#if !defined snprintf
+#define snprintf _snprintf
+#endif
 #endif
 
 #endif /* SC_SKIP_VDECL */

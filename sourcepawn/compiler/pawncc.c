@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 		int err;
 		uint32_t i;
 		sp_file_t *spf;
-		memfile_t *dbgtab = NULL;
+		memfile_t *dbgtab = NULL;		//dbgcrab
 		unsigned char *dbgptr = NULL;
 		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0};
 		FILE *fp;

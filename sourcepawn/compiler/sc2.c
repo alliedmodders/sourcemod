@@ -1833,7 +1833,7 @@ char *sc_tokens[] = {
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
          "assert", "*begin", "break", "case", "char", "const", "continue", "default",
-         "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "goto",
+         "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "funcenum", "goto",
          "if", "native", "new", "decl", "operator", "public", "return", "sizeof",
          "sleep", "state", "static", "stock", "switch", "tagof", "*then", "while",
          "#assert", "#define", "#else", "#elseif", "#emit", "#endif", "#endinput",

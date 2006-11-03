@@ -70,6 +70,8 @@
 #define VERSION_STR "3.2." SVN_REVSTR
 #define VERSION_INT 0x0302
 
+int pc_functag = 0;
+
 static void resetglobals(void);
 static void initglobals(void);
 static char *get_extension(char *filename);
@@ -126,6 +128,7 @@ static void doswitch(void);
 static void dogoto(void);
 static void dolabel(void);
 static void doreturn(void);
+static void dofuncenum(void);
 static void dobreak(void);
 static void docont(void);
 static void dosleep(void);
@@ -320,6 +323,7 @@ int pc_compile(int argc, char *argv[])
       inst_datetime_defines();
     #endif
     resetglobals();
+	funcenums_free();
     sc_ctrlchar=sc_ctrlchar_org;
     sc_packstr=lcl_packstr;
     sc_needsemicolon=lcl_needsemicolon;
@@ -380,6 +384,7 @@ int pc_compile(int argc, char *argv[])
   /* reset "defined" flag of all functions and global variables */
   reduce_referrers(&glbtab);
   delete_symbols(&glbtab,0,TRUE,FALSE);
+  funcenums_free();
   #if !defined NO_DEFINE
     delete_substtable();
     inst_datetime_defines();
@@ -577,6 +582,7 @@ int pc_addtag(char *name)
     if (strcmp(name,ptr->name)==0)
       return tag;       /* tagname is known, return its sequence number */
     tag &= (int)~FIXEDTAG;
+    tag &= (int)~FUNCTAG;
     if (tag>last)
       last=tag;
     ptr=ptr->next;
@@ -586,6 +592,43 @@ int pc_addtag(char *name)
   tag=last+1;           /* guaranteed not to exist already */
   if (isupper(*name))
     tag |= (int)FIXEDTAG;
+  append_constval(&tagname_tab,name,(cell)tag,0);
+  return tag;
+}
+
+int pc_addfunctag(char *name)
+{
+  cell val;
+  constvalue *ptr;
+  int last,tag;
+
+  if (name==NULL) {
+    /* no tagname was given, check for one */
+    if (lex(&val,&name)!=tLABEL) {
+      lexpush();
+      return 0;         /* untagged */
+    } /* if */
+  } /* if */
+
+  assert(strchr(name,':')==NULL); /* colon should already have been stripped */
+  last=0;
+  ptr=tagname_tab.next;
+  while (ptr!=NULL) {
+    tag=(int)(ptr->value & TAGMASK);
+    if (strcmp(name,ptr->name)==0)
+      return tag;       /* tagname is known, return its sequence number */
+    tag &= (int)~FIXEDTAG;
+    tag &= (int)~FUNCTAG;
+    if (tag>last)
+      last=tag;
+    ptr=ptr->next;
+  } /* while */
+
+  /* tagname currently unknown, add it */
+  tag=last+1;           /* guaranteed not to exist already */
+  if (isupper(*name))
+    tag |= (int)FIXEDTAG;
+  tag |= (int)FUNCTAG;
   append_constval(&tagname_tab,name,(cell)tag,0);
   return tag;
 }
@@ -1204,6 +1247,7 @@ static void setconstants(void)
   assert(sc_status==statIDLE);
   append_constval(&tagname_tab,"_",0,0);/* "untagged" */
   append_constval(&tagname_tab,"bool",1,0);
+  pc_functag = pc_addfunctag("Function");
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -1362,6 +1406,9 @@ static void parse(void)
       break;
     case tENUM:
       decl_enum(sGLOBAL);
+      break;
+    case tFUNCENUM:
+      dofuncenum();
       break;
     case tPUBLIC:
       /* This can be a public function or a public variable; see the comment
@@ -2536,6 +2583,185 @@ static void decl_const(int vclass)
   needtoken(tTERM);
 }
 
+/* dofuncenum - declare function enumerations
+ * 
+ */
+static void dofuncenum(void)
+{
+	cell val;
+	char *str,*ptr;
+	char tagname[sNAMEMAX+1];
+	constvalue *cur;
+	funcenum_t *fenum = NULL;
+	int i;
+
+	/* get the explicit tag (required!) */
+	int l = lex(&val,&str);
+	if (l != tSYMBOL)
+	{
+		/* Incomprehensible but it works for now! */
+		error(57);
+	}
+
+	/* This tag can't already exist! */
+	cur=tagname_tab.next;
+	while (cur)
+	{
+		if (strcmp(cur->name, str) == 0)
+		{
+			/* Another bad one... */
+			if (!(cur->value & FUNCTAG))
+			{
+				error(213);
+			}
+			break;
+		}
+		cur = cur->next;
+	}
+	strcpy(tagname, str);
+
+	fenum = funcenums_add(tagname);
+
+	needtoken('{');
+	do
+	{
+		functag_t func;
+		if (matchtoken('}'))
+		{
+			/* Quick exit */
+			lexpush();
+			break;
+		}
+		memset(&func, 0, sizeof(func));
+		func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
+		l = lex(&val, &str);
+		if (l == tFORWARD)
+		{
+			func.type = uFORWARD;
+		} else if (l == tPUBLIC) {
+			func.type = uPUBLIC;
+		} else {
+			error(1, "[forward,public]", str);
+		}
+		needtoken('(');
+		do 
+		{
+			funcarg_t *arg = &(func.args[func.argcount]);
+
+			/* Quick exit */
+			if (matchtoken(')'))
+			{
+				lexpush();
+				break;
+			}
+			l = lex(&val, &str);
+			if (l == '&')
+			{
+				if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
+				{
+					error(1, "-identifier-", "&");
+				}
+				arg->ident = iREFERENCE;
+			} else if (l == tCONST) {
+				if ((arg->ident != iVARIABLE && arg->ident != 0) || arg->tagcount > 0)
+				{
+					error(1, "-identifier-", "const");
+				}
+				arg->fconst=TRUE;
+			} else if (l == tLABEL) {
+				if (arg->tagcount > 0)
+				{
+					error(1, "-identifier-", "-tagname-");
+				}
+				arg->tags[arg->tagcount++] = pc_addtag(str);
+#if 0
+				while (arg->tagcount < sTAGS_MAX)
+				{
+					if (!matchtoken('_') && !needtoken(tSYMBOL))
+					{
+						break;
+					}
+					tokeninfo(&val, &ptr);
+					arg->tags[arg->tagcount++] = pc_addtag(ptr);
+					if (matchtoken('}'))
+					{
+						break;
+					}
+					needtoken(',');
+				}
+				needtoken(':');
+#endif
+				l=tLABEL;
+			} else if (l == tSYMBOL) {
+				if (func.argcount >= sARGS_MAX)
+				{
+					error(45);
+				}
+				if (str[0] == PUBLIC_CHAR)
+				{
+					error(56, str);
+				}
+				if (matchtoken('['))
+				{
+					if (arg->ident == iREFERENCE)
+					{
+						error(67, str);
+					}
+					do 
+					{
+						constvalue *enumroot;
+						cell size;
+						int ignore_tag;
+						if (arg->dimcount == sDIMEN_MAX)
+						{
+							error(53);
+							break;
+						}
+						size = needsub(&ignore_tag, &enumroot);
+						arg->dims[arg->dimcount] = size;
+						arg->dimcount += 1;
+					} while (matchtoken('['));
+					arg->ident=iREFARRAY;
+				} else if (arg->ident == 0) {
+					arg->ident = iVARIABLE;
+				}
+			
+				if (matchtoken('='))
+				{
+					needtoken('0');
+					arg->ommittable = TRUE;
+					func.ommittable = TRUE;
+				} else if (func.ommittable) {
+					/* :TODO: ERROR HERE! */
+				}
+				func.argcount++;
+			} else if (l == tELLIPS) {
+				if (arg->ident == iVARIABLE)
+				{
+					error(10);
+				}
+				arg->ident = iVARARGS;
+				func.argcount++;
+			} else {
+				error(10);
+			}
+		} while (l == '&' || l == tLABEL || l == tCONST || l != tELLIPS && matchtoken(','));
+		needtoken(')');
+		for (i=0; i<func.argcount; i++)
+		{
+			if (func.args[i].tagcount == 0)
+			{
+				func.args[i].tags[0] = 0;
+				func.args[i].tagcount = 1;
+			}
+		}
+		functags_add(fenum, &func);
+	} while (matchtoken(','));
+	needtoken('}');
+	matchtoken(';'); /* eat an optional semicolon.  nom nom nom */
+	errorset(sRESET, 0);
+}
+
 /*  decl_enum   - declare enumerated constants
  *
  */
@@ -3054,7 +3280,7 @@ static int parse_funcname(char *fname,int *tag1,int *tag2,char *opname)
   return unary;
 }
 
-static constvalue *find_tag_byval(int tag)
+constvalue *find_tag_byval(int tag)
 {
   constvalue *tagsym;
   tagsym=find_constval_byval(&tagname_tab,tag & ~PUBLICTAG);
