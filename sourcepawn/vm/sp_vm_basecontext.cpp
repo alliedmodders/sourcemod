@@ -113,7 +113,7 @@ int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys
 		return SP_ERROR_HEAPLOW;
 	}
 
-	addr = (cell_t *)(ctx->data + ctx->hp);
+	addr = (cell_t *)(ctx->memory + ctx->hp);
 	/* store size of allocation in cells */
 	*addr = (cell_t)cells;
 	addr++;
@@ -138,12 +138,12 @@ int BaseContext::HeapPop(cell_t local_addr)
 
 	/* check the bounds of this address */
 	local_addr -= sizeof(cell_t);
-	if (local_addr < ctx->heapbase || local_addr >= ctx->sp)
+	if (local_addr < ctx->heap_base || local_addr >= ctx->sp)
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
-	addr = (cell_t *)(ctx->data + local_addr);
+	addr = (cell_t *)(ctx->memory + local_addr);
 	cellcount = (*addr) * sizeof(cell_t);
 	/* check if this memory count looks valid */
 	if (ctx->hp - cellcount - sizeof(cell_t) != local_addr)
@@ -159,7 +159,7 @@ int BaseContext::HeapPop(cell_t local_addr)
 
 int BaseContext::HeapRelease(cell_t local_addr)
 {
-	if (local_addr < ctx->heapbase)
+	if (local_addr < ctx->heap_base)
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
@@ -394,14 +394,14 @@ int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 
 int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	if (phys_addr)
 	{
-		*phys_addr = (cell_t *)(ctx->data + local_addr);
+		*phys_addr = (cell_t *)(ctx->memory + local_addr);
 	}
 
 	return SP_ERROR_NONE;
@@ -415,7 +415,7 @@ int BaseContext::PushCell(cell_t value)
 	}
 
 	ctx->sp -= sizeof(cell_t);
-	*(cell_t *)(ctx->data + ctx->sp) = value;
+	*(cell_t *)(ctx->memory + ctx->sp) = value;
 	ctx->pushcount++;
 
 	return SP_ERROR_NONE;
@@ -470,12 +470,12 @@ int BaseContext::LocalToString(cell_t local_addr, char *buffer, size_t maxlength
 	int len = 0;
 	cell_t *src;
 
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
-	src = (cell_t *)(ctx->data + local_addr);
+	src = (cell_t *)(ctx->memory + local_addr);
 	while ((*src != '\0') && ((size_t)len < maxlength))
 	{
 		buffer[len++] = (char)*src++;
@@ -534,13 +534,13 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *sour
 	cell_t *dest;
 	int i, len;
 
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->memory))
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	len = strlen(source);
-	dest = (cell_t *)(ctx->data + local_addr);
+	dest = (cell_t *)(ctx->memory + local_addr);
 
 	if ((size_t)len >= chars)
 	{

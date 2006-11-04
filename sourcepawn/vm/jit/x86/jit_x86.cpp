@@ -1712,7 +1712,7 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
-	if (ctx->hp < ctx->heapbase)
+	if (ctx->hp < ctx->heap_base)
 	{
 		ctx->err = SP_ERROR_HEAPMIN;
 		return 0;
@@ -1724,7 +1724,7 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 		return 0;
 	}
 
-	if ((uint32_t)ctx->sp >= ctx->memory)
+	if ((uint32_t)ctx->sp >= ctx->mem_size)
 	{
 		ctx->err = SP_ERROR_STACKMIN;
 		return 0;
@@ -1936,12 +1936,12 @@ jit_rewind:
 	ctx->flags = (data->debug ? SPFLAG_PLUGIN_DEBUG : 0);
 
 	/* setup memory */
-	ctx->data = new uint8_t[plugin->memory];
-	memcpy(ctx->data, plugin->data, plugin->data_size);
-	ctx->memory = plugin->memory;
-	ctx->heapbase = plugin->data_size;
-	ctx->hp = ctx->heapbase;
-	ctx->sp = ctx->memory - sizeof(cell_t);
+	ctx->memory = new uint8_t[plugin->memory];
+	memcpy(ctx->memory, plugin->data, plugin->data_size);
+	ctx->mem_size = plugin->memory;
+	ctx->heap_base = plugin->data_size;
+	ctx->hp = ctx->heap_base;
+	ctx->sp = ctx->mem_size - sizeof(cell_t);
 
 	const char *strbase = plugin->info.stringbase;
 	uint32_t max, iter;
@@ -1960,7 +1960,7 @@ jit_rewind:
 	/* relocate pubvar info */
 	if ((max = plugin->info.pubvars_num))
 	{
-		uint8_t *dat = ctx->data;
+		uint8_t *dat = ctx->memory;
 		ctx->pubvars = new sp_pubvar_t[max];
 		for (iter=0; iter<max; iter++)
 		{
@@ -2065,7 +2065,7 @@ int JITX86::ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result)
 void JITX86::FreeContext(sp_context_t *ctx)
 {
 	engine->ExecFree(ctx->codebase);
-	delete [] ctx->data;
+	delete [] ctx->memory;
 	delete [] ctx->files;
 	delete [] ctx->lines;
 	delete [] ctx->natives;

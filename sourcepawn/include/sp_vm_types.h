@@ -218,9 +218,10 @@ typedef struct sp_context_s
 	uint32_t		flags;		/* compilation flags */
 	SPVM_DEBUGBREAK dbreak;		/* debug break function */
 	/* context runtime information */
-	ucell_t			memory;		/* total memory size; */
-	uint8_t			*data;		/* data chunk */
-	cell_t			heapbase;	/* heap base */
+	uint8_t			*memory;	/* data chunk */
+	ucell_t			mem_size;	/* total memory size; */
+	cell_t			data_size;	/* data chunk size, always starts at 0 */
+	cell_t			heap_base;	/* where the heap starts */
 	/* execution specific data */
 	cell_t			hp;			/* heap pointer */
 	cell_t			sp;			/* stack pointer */
