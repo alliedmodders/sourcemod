@@ -1003,11 +1003,11 @@ inline void WriteOp_GenArray(JitWriter *jit, bool autozero)
 		IA32_Mov_Rm_Reg(jit, AMX_REG_STK, AMX_REG_ALT, MOD_MEM_REG);
 		IA32_Lea_Reg_DispRegMult(jit, AMX_REG_ALT, AMX_REG_ALT, AMX_REG_TMP, SCALE4);
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_ALT, AMX_INFO_HEAP);
-		IA32_Add_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
-		IA32_Cmp_Rm_Reg(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
+		IA32_Add_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
+		IA32_Cmp_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
 		IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_heaplow);
 
-		/* :TODO: PUSH ECX ONTO TRACKER */
+		WriteOp_Tracker_Push_Reg(jit, REG_ECX);
 
 		if (autozero)
 		{
@@ -1024,8 +1024,8 @@ inline void WriteOp_GenArray(JitWriter *jit, bool autozero)
 			IA32_Push_Reg(jit, REG_EAX);
 			IA32_Push_Reg(jit, REG_EDI);
 			IA32_Xor_Reg_Rm(jit, REG_EAX, REG_EAX, MOD_REG);
-			IA32_Mov_Reg_Rm(jit, REG_EDI, REG_EDI, MOD_REG);
-			IA32_Add_Rm_Reg(jit, REG_EDI, REG_EBP, MOD_REG);
+			IA32_Mov_Reg_Rm(jit, REG_EDI, REG_EDI, MOD_MEM_REG);
+			IA32_Add_Reg_Rm(jit, REG_EDI, REG_EBP, MOD_REG);
 			IA32_Cld(jit);
 			IA32_Rep(jit);
 			IA32_Stosd(jit);
@@ -1624,11 +1624,11 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 	/* Push the value into the stack and increment pCur */
 	//mov edx, [eax+vm[]]
 	//mov ecx, [edx+pcur]
-	//mov [ecx], <val>
+	//mov [ecx], <val>*4	; we want the count in bytes not in cells
 	//add [edx+pcur], 4
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_EAX, offsetof(sp_context_t, vm[JITVARS_TRACKER]));
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, REG_EDX, offsetof(tracker_t, pCur));
-	IA32_Mov_Rm_Imm32(jit, AMX_REG_TMP, val, MOD_MEM_REG);
+	IA32_Mov_Rm_Imm32(jit, AMX_REG_TMP, val*4, MOD_MEM_REG);
 	IA32_Add_Rm_Imm8_Disp8(jit, REG_EDX, 4, offsetof(tracker_t, pCur));
 
 	/* Restore PRI & ALT */
@@ -1676,6 +1676,8 @@ inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, REG_EDX, offsetof(tracker_t, pCur));
 	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_TMP, MOD_MEM_REG);
 	IA32_Sub_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_TMP, AMX_INFO_HEAP);
+
+	Write_CheckHeap_Min(jit);
 
 	/* Restore PRI & ALT */
 	//pop edx
@@ -2038,7 +2040,7 @@ jit_rewind:
 	ctx->vm[JITVARS_TRACKER] = trk;
 	trk->pBase = (ucell_t *)malloc(1024);
 	trk->pCur = trk->pBase;
-	trk->size = 1024;
+	trk->size = 1024 / sizeof(cell_t);
 
 	/* clean up relocation+compilation memory */
 	AbortCompilation(co);

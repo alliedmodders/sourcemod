@@ -72,6 +72,11 @@ void Macro_PushN(JitWriter *jit, int i);
 void JIT_VerifyLowBoundTracker(sp_context_t *ctx);
 void JIT_VerifyOrAllocateTracker(sp_context_t *ctx);
 
+/** 
+* Writes the push into tracker function.
+*/
+void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg);
+
 /**
  * Legend for Statuses:
  * ****** *** ********
@@ -252,7 +257,7 @@ typedef enum
 	OP_SYSREQ_ND,			// !GEN UNSUPPORT
 	/* ----- */
 	OP_TRACKER_PUSH_C,		//DONE
-	OP_TRACKER_POP_SETHEAP,	//DONE
+	OP_TRACKER_POP_SETHEAP,	//VERIFIED
 	OP_GENARRAY,			//VERIFIED
 	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
 	/* ----- */
@@ -262,8 +267,8 @@ typedef enum
 /*
 * :TODO: List of ASM Opts
 *	from jit_x86.cpp 
-*       TODO: all new array opcodes (4 ATM)
 *       DONE: Rest of opcodes including the SYSREQ.N inlined version (rev2)
+*			  Including genarray and the 2 tracker ones
 *       DONE: ALL ungen opcodes (rev1)
 *	from opcode_helpers.cpp
 *       DONE: SYSREQ.N .C (rev2)

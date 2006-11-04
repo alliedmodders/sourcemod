@@ -107,7 +107,7 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	IA32_Sub_Reg_Rm(jit, REG_EDI, REG_EBP, MOD_REG);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_ESI, AMX_INFO_HEAP);
 	IA32_Mov_Rm_Reg_Disp8(jit, REG_ECX, REG_EDI, offsetof(sp_context_t, sp));
-	IA32_Mov_Rm_Reg(jit, REG_ECX, REG_EDX, MOD_REG);
+	IA32_Mov_Rm_Reg_Disp8(jit, REG_ECX, REG_EDX, offsetof(sp_context_t, hp));
 
 	//add esp, 4*NUM_INFO_PARAMS
 	//pop ebx
@@ -521,7 +521,7 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	//mov ecx, [edi+eax*4]	;get dimension size
 	//imul edx, ecx			;multiply by size
 	//add edx, ecx			;add size (indirection vector)
-	//inc eax				;increment
+	//add eax, 1			;increment
 	//jmp :loop				;jump back
 	//:done
 	IA32_Mov_Reg_Rm(jit, REG_EDX, AMX_REG_STK, MOD_MEM_REG);
@@ -531,8 +531,8 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	jitoffs_t done1 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, REG_ECX, AMX_REG_STK, REG_EAX, SCALE4);
 	IA32_IMul_Reg_Rm(jit, REG_EDX, REG_ECX, MOD_REG);
-	IA32_Add_Rm_Reg(jit, REG_EDX, REG_ECX, MOD_REG);
-	IA32_Inc_Reg(jit, REG_EAX);
+	IA32_Add_Reg_Rm(jit, REG_EDX, REG_ECX, MOD_REG);
+	IA32_Add_Rm_Imm8(jit, REG_EAX, 1, MOD_REG);
 	IA32_Write_Jump8(jit, IA32_Jump_Imm8(jit, loop1), loop1);
 	IA32_Send_Jump8_Here(jit, done1);
 
@@ -548,7 +548,7 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	IA32_Lea_Reg_DispRegMult(jit, REG_EAX, REG_EAX, REG_EDX, SCALE4);
 	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, ((CompData *)jit->data)->plugin->data_size);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_BE, ((CompData *)jit->data)->jit_error_array_too_big);
-	IA32_Add_Rm_Reg(jit, REG_EAX, AMX_REG_DAT, MOD_REG);
+	IA32_Add_Reg_Rm(jit, REG_EAX, AMX_REG_DAT, MOD_REG);
 	IA32_Cmp_Reg_Rm(jit, REG_EAX, AMX_REG_STK, MOD_REG);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_array_too_big);
 	
@@ -562,7 +562,7 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EBX, AMX_INFO_HEAP);
 	IA32_Push_Reg(jit, REG_EAX);
 
-	/* :TODO: Push EDX into tracker */
+	WriteOp_Tracker_Push_Reg(jit, REG_EDX);
 	
 	/* This part is too messy to do in straight assembly.
 	 * I'm letting the compiler handle it and thus it's in C.
@@ -686,6 +686,70 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
+void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
+{
+	CompData *data = (CompData *)jit->data;
+
+	//:TODO: optimize reg usage, i dont like it.
+
+	/* Save registers that may be damaged by the call */
+	//push eax
+	//push edx
+	//push ecx
+	//push <reg>
+	IA32_Push_Reg(jit, AMX_REG_PRI);
+	IA32_Push_Reg(jit, AMX_REG_ALT);
+	IA32_Push_Reg(jit, AMX_REG_TMP);
+	if (reg != REG_ECX)
+	{
+		IA32_Push_Reg(jit, reg);
+	}
+
+	/* Get the context ptr, push it and call the check */
+	//mov eax, [esi+context]
+	//push eax
+	//call JIT_VerifyOrAllocateTracker
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Push_Reg(jit, REG_EAX);
+	jitoffs_t call = IA32_Call_Imm32(jit, 0);
+	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyOrAllocateTracker);
+
+	/* Check for errors */
+	//pop eax
+	//cmp [eax+err], 0
+	//jnz :error
+	IA32_Pop_Reg(jit, REG_EAX);
+	IA32_Cmp_Rm_Disp8_Imm8(jit, REG_EAX, offsetof(sp_context_t, err), 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_error_tracker_bounds);
+
+	/* Push the register into the stack and increment pCur */
+	//pop ecx
+	//mov edx, [eax+vm[]]
+	//mov eax, [edx+pcur]
+	//lea ecx, [ecx*4]	; we want the count in bytes not in cells
+	//mov [eax], ecx
+	//add [edx+pcur], 4
+	IA32_Pop_Reg(jit, REG_ECX);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_EAX, offsetof(sp_context_t, vm[JITVARS_TRACKER]));
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EDX, offsetof(tracker_t, pCur));
+	IA32_Lea_Reg_RegMultImm32(jit, REG_ECX, REG_ECX, SCALE4, 0);
+	IA32_Mov_Rm_Reg(jit, REG_EAX, REG_ECX, MOD_MEM_REG);
+	IA32_Add_Rm_Imm8_Disp8(jit, REG_EDX, 4, offsetof(tracker_t, pCur));
+
+	/* Restore PRI, ALT and STK */
+	//pop ecx
+	//pop edx
+	//pop eax
+	if (reg != REG_ECX)
+	{
+		IA32_Pop_Reg(jit, AMX_REG_ALT);
+	} else {
+		IA32_Shr_Rm_Imm8(jit, REG_ECX, 2, MOD_REG);
+	}
+	IA32_Pop_Reg(jit, AMX_REG_TMP);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+}
+
 void JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
 {
 	tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
@@ -700,7 +764,7 @@ void JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
 	{
 		size_t disp = trk->size - 1;
 		trk->size *= 2;
-		trk->pBase = (ucell_t *)realloc(trk->pBase, trk->size);
+		trk->pBase = (ucell_t *)realloc(trk->pBase, trk->size * sizeof(cell_t));
 
 		if (!trk->pBase)
 		{
