@@ -2599,8 +2599,7 @@ static void dofuncenum(void)
 	int l = lex(&val,&str);
 	if (l != tSYMBOL)
 	{
-		/* Error should be: "expected tag name identifier" */
-		error(57);
+		error(93);
 	}
 
 	/* This tag can't already exist! */
@@ -2612,8 +2611,7 @@ static void dofuncenum(void)
 			/* Another bad one... */
 			if (!(cur->value & FUNCTAG))
 			{
-				/* Error should be: "function enumeration requires unique tag" */
-				error(213);
+				error(94);
 			}
 			break;
 		}
@@ -2733,8 +2731,7 @@ static void dofuncenum(void)
 					arg->ommittable = TRUE;
 					func.ommittable = TRUE;
 				} else if (func.ommittable) {
-					/* Error should be: "cannot have required parameters after optional parameters" */
-					error(1);
+					error(95);
 				}
 				func.argcount++;
 			} else if (l == tELLIPS) {
