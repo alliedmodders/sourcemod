@@ -2599,7 +2599,7 @@ static void dofuncenum(void)
 	int l = lex(&val,&str);
 	if (l != tSYMBOL)
 	{
-		/* Incomprehensible but it works for now! */
+		/* Error should be: "expected tag name identifier" */
 		error(57);
 	}
 
@@ -2612,6 +2612,7 @@ static void dofuncenum(void)
 			/* Another bad one... */
 			if (!(cur->value & FUNCTAG))
 			{
+				/* Error should be: "function enumeration requires unique tag" */
 				error(213);
 			}
 			break;
@@ -2641,7 +2642,7 @@ static void dofuncenum(void)
 		} else if (l == tPUBLIC) {
 			func.type = uPUBLIC;
 		} else {
-			error(1, "[forward,public]", str);
+			error(1, "-forward,public-", str);
 		}
 		needtoken('(');
 		do 
@@ -2732,7 +2733,8 @@ static void dofuncenum(void)
 					arg->ommittable = TRUE;
 					func.ommittable = TRUE;
 				} else if (func.ommittable) {
-					/* :TODO: ERROR HERE! */
+					/* Error should be: "cannot have required parameters after optional parameters" */
+					error(1);
 				}
 				func.argcount++;
 			} else if (l == tELLIPS) {
