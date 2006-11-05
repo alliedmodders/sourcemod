@@ -107,6 +107,11 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 			plugin->info.natives_num = secptr->size / sizeof(sp_file_natives_t);
 			plugin->info.natives = (sp_file_natives_t *)(base + secptr->dataoffs);
 		}
+		else if (!(plugin->info.lib) && !strcmp(nameptr, ".libraries"))
+		{
+			plugin->info.libraries_num = secptr->size / sizeof(sp_file_libraries_t);
+			plugin->info.lib = (sp_file_libraries_t *)(base + secptr->dataoffs);
+		}
 		else if (!(plugin->info.stringbase) && !strcmp(nameptr, ".names"))
 		{
 			plugin->info.stringbase = (const char *)(base + secptr->dataoffs);

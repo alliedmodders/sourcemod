@@ -91,6 +91,12 @@ typedef struct sp_file_natives_s
 	uint32_t	name;			/* name of native at index */
 } sp_file_natives_t;
 
+/* section is .libraries */
+typedef struct sp_file_libraries_s
+{
+	uint32_t	name;			/* index into nametable */
+} sp_file_libraries_t;
+
 /* section is .pubvars */
 typedef struct sp_file_pubvars_s
 {

@@ -16,6 +16,7 @@ enum FileSections
 	FS_Publics,
 	FS_Pubvars,
 	FS_Natives,
+	FS_Libraries,
 	FS_Nametable,		/* required */
 	FS_DbgFile,
 	FS_DbgSymbol,
@@ -47,7 +48,7 @@ int main(int argc, char *argv[])
 		sp_file_t *spf;
 		memfile_t *dbgtab = NULL;		//dbgcrab
 		unsigned char *dbgptr = NULL;
-		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0};
+		uint32_t sections[FS_Number] = {1,1,0,0,0,0,1,0,0,0,0,0,0};
 		FILE *fp;
 
 		if (bin_file == NULL)
@@ -86,6 +87,11 @@ int main(int argc, char *argv[])
 		if (sections[FS_Natives])
 		{
 			spfw_add_section(spf, ".natives");
+		}
+		sections[FS_Libraries] = (hdr->pubvars - hdr->libraries) / hdr->defsize;
+		if (sections[FS_Libraries])
+		{
+			spfw_add_section(spf, ".libraries");
 		}
 
 		spfw_add_section(spf, ".names");
@@ -248,6 +254,31 @@ int main(int argc, char *argv[])
 				sfwrite(nvtbl, sizeof(sp_file_natives_t), natives, spf);
 			}
 			free(nvtbl);
+			spfw_next_section(spf);
+		}
+
+		if (sections[FS_Libraries])
+		{
+			sp_file_libraries_t *libtbl;
+			AMX_FUNCSTUBNT *stub;
+			unsigned char *stubptr;
+			uint32_t libraries = sections[FS_Libraries];
+
+			libtbl = (sp_file_libraries_t *)malloc(sizeof(sp_file_libraries_t) * libraries);
+			stubptr = (unsigned char *)hdr + hdr->libraries;
+
+			for (i=0; i<libraries; i++)
+			{
+				stub = (AMX_FUNCSTUBNT *)stubptr;
+				libtbl[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
+
+				stubptr += hdr->defsize;
+			}
+			if (libraries)
+			{
+				sfwrite(libtbl, sizeof(sp_file_libraries_t), libraries, spf);
+			}
+			free(libtbl);
 			spfw_next_section(spf);
 		}
 
