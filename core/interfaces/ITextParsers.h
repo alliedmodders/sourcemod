@@ -5,6 +5,44 @@
 
 namespace SourceMod
 {
+	/**
+	 * The INI file format is defined as:
+	 * WHITESPACE: 0x20, \n, \t, \r
+	 * IDENTIFIER: A-Z a-z 0-9 _ - , + . $ ? / 
+	 * STRING: Any set of symbols
+	 * 
+	 * Basic syntax is comprised of SECTIONs.
+	 * A SECTION is defined as:
+	 * [SECTIONNAME]
+	 * OPTION
+	 * OPTION
+	 * OPTION...
+	 *
+	 * SECTIONNAME is an IDENTIFIER.
+	 * OPTION can be repeated any number of times, once per line.
+	 * OPTION is defined as one of:
+	 *  KEY = "VALUE"
+	 *  KEY = VALUE
+	 *  KEY
+	 * Where KEY is an IDENTIFIER and VALUE is a STRING.
+	 * 
+	 * WHITESPACE should always be omitted.
+	 * COMMENTS should be stripped, and are defined as text occuring in:
+	 * ;<TEXT>
+	 * 
+	 * Example file below.  Note that
+	 * The second line is technically invalid.  The event handler
+	 * must decide whether this should be allowed.
+	 * --FILE BELOW--
+	 * [gaben]
+	 * hi = clams
+	 * bye = "NO CLAMS"
+	 *
+	 * [valve]
+	 * cannot
+	 * maintain
+	 * products
+	 */
 	class ITextListener_INI
 	{
 	public:
@@ -24,14 +62,49 @@ namespace SourceMod
 		 * 
 		 * @param key			Name of key.
 		 * @param value			Name of value.
+		 * @param quotes		Whether value was enclosed in quotes.
 		 * @return				True to keep parsing, false otherwise.
 		 */
-		virtual bool ReadINI_KeyValue(const char *key, const char *value)
+		virtual bool ReadINI_KeyValue(const char *key, const char *value, bool quotes)
 		{
 			return true;
 		}
 	};
 
+	/**
+	 * :TODO: write this in CFG format so it makes sense
+	 * 
+	 * The SMC file format is defined as:
+	 * WHITESPACE: 0x20, \n, \t, \r
+	 * IDENTIFIER: Any ASCII character EXCLUDING ", ', :, WHITESPACE
+	 * STRING: Any set of symbols
+	 *
+	 * Basic syntax is comprised of SECTIONBLOCKs.
+	 * A SECTIONBLOCK defined as:
+	 *
+	 * SECTION: "SECTIONNAME"
+	 * {
+	 *    OPTION
+	 * }
+	 * 
+	 * OPTION can be repeated any number of times inside a SECTIONBLOCK.
+	 * A new line will terminate an OPTION, but there can be more than one OPTION per line.
+	 * OPTION is defined any of:
+	 * 	  "KEY"  "VALUE"
+	 *    "SINGLEKEY"
+	 *    SECTIONBLOCK
+	 *
+	 * SECTION is an IDENTIFIER
+	 * SECTIONNAME, KEY, VALUE, and SINGLEKEY are strings
+	 *
+	 * For an example, see configs/permissions.cfg
+	 *
+	 * WHITESPACE should be ignored.
+	 * Comments are text occuring inside the following tokens, and should be stripped
+	 * unless they are inside literal strings:
+	 *  ;<TEXT>
+	 *  //<TEXT>
+	 *  /*<TEXT> */
 	class ITextListener_SMC
 	{
 	public:
@@ -49,9 +122,13 @@ namespace SourceMod
 		 * @param name			Name of section, with the colon omitted.
 		 * @param option		Optional text after the colon, quotes removed.  NULL if none.
 		 * @param colon			Whether or not the required ':' was encountered.
+		 * @param start_token	Whether a start token was detected.
 		 * @return				SMCParseResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_NewSection(const char *name, const char *option, bool colon)
+		virtual SMCParseResult ReadSMC_NewSection(const char *name, 
+													const char *option, 
+													bool colon, 
+													bool start_token)
 		{
 			return SMCParse_Continue;
 		}
@@ -77,9 +154,10 @@ namespace SourceMod
 		/**
 		 * @brief Called when leaving the current section.
 		 *
+		 * @param end_token		Whether an end token was detected.
 		 * @return				SMCParseResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_LeavingSection()
+		virtual SMCParseResult ReadSMC_LeavingSection(bool end_token)
 		{
 			return SMCParse_Continue;
 		}
@@ -88,8 +166,36 @@ namespace SourceMod
 	class ITextParsers : public SMInterface
 	{
 	public:
-		virtual bool ParseFile_INI(const char *file, ITextListener_INI *ini_listener) =0;
-		virtual bool ParseFile_SMC(const char *file, ITextListener_SMC *smc_listener) =0;
+		/**
+		 * @brief Parses an INI-format file.
+		 *
+		 * @param file			Path to file.
+		 * @param ini_listener	Event handler for reading file.
+		 * @param line			If non-NULL, will contain last line parsed (0 if file could not be opened).
+		 * @param col			If non-NULL, will contain last column parsed (undefined if file could not be opened).
+		 * @return				True if parsing succeded, false if file couldn't be opened or there was a syntax error.
+		 */
+		virtual bool ParseFile_INI(const char *file, 
+									ITextListener_INI *ini_listener,
+									unsigned int *line,
+									unsigned int *col) =0;
+
+		/**
+		 * @brief Parses an SMC-format text file.
+		 * Note that the parser makes every effort to obey broken syntax.
+		 * For example, if an open brace is missing, but the section name has a colon,
+		 * it will let you know.  It is up to the event handlers to decide whether to be strict or not.
+		 *
+		 * @param file			Path to file.
+		 * @param smc_listener	Event handler for reading file.
+		 * @param line			If non-NULL, will contain last line parsed (0 if file could not be opened).
+		 * @param col			If non-NULL, will contain last column parsed (undefined if file could not be opened).
+		 * @return				True if parsing succeded, false if file couldn't be opened or there was a syntax error.
+		 */
+		virtual bool ParseFile_SMC(const char *file, 
+									ITextListener_SMC *smc_listener, 
+									unsigned int *line, 
+									unsigned int *col) =0;
 	};
 };
 
