@@ -1,6 +1,7 @@
 #include <oslink.h>
 #include "mm_api.h"
 #include "sm_version.h"
+#include "systems/LibrarySys.h"
 
 SourceMod_Core g_SourceMod;
 

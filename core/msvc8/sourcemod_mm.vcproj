@@ -40,8 +40,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\interfaces"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS"
+				AdditionalIncludeDirectories="..\interfaces;..\"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -117,8 +117,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\interfaces"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS"
+				AdditionalIncludeDirectories="..\interfaces;..\"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -193,6 +193,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_platform.h"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_version.h"
 				>
 			</File>
@@ -215,13 +219,33 @@
 				>
 			</File>
 			<File
-				RelativePath="..\interfaces\IPluginMngr.h"
+				RelativePath="..\interfaces\IPluginSys.h"
 				>
 			</File>
 			<File
 				RelativePath="..\interfaces\IShareSys.h"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Systems"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath="..\systems\LibrarySys.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath="..\systems\LibrarySys.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

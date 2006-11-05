@@ -11,6 +11,11 @@ namespace SourceMod
 	class ILibrary
 	{
 	public:
+		virtual ~ILibrary()
+		{
+			/* Calling delete will call CloseLibrary! */
+		};
+	public:
 		/**
 		 * @brief Closes dynamic library and invalidates pointer.
 		 */
@@ -30,6 +35,10 @@ namespace SourceMod
 	 */
 	class IDirectory
 	{
+	public:
+		virtual ~IDirectory()
+		{
+		}
 	public:
 		/**
 		 * @brief Returns true if there are more files to read, false otherwise.
@@ -90,7 +99,7 @@ namespace SourceMod
 		 * @param err_max	Maximum length of error buffer.
 		 * @return			Pointer to an IDirectory, NULL if failed.
 		 */
-		virtual IDirectory *OpenDirectory(const char *path, char *error, size_t err_max) =0;
+		virtual IDirectory *OpenDirectory(const char *path) =0;
 
 		/**
 		 * @brief Closes a directory and frees its handle.
@@ -98,6 +107,11 @@ namespace SourceMod
 		 * @param dir		Pointer to IDirectory.
 		 */
 		virtual void CloseDirectory(IDirectory *dir) =0;
+
+		/**
+		 * @brief Returns true if a path exists.
+		 */
+		virtual bool PathExists(const char *path) =0;
 
 		/**
 		 * @brief Returns true if the path is a normal file.
@@ -108,6 +122,17 @@ namespace SourceMod
 		 * @brief Returns true if the path is a normal directory.
 		 */
 		virtual bool IsPathDirectory(const char *path) =0;
+
+		/**
+		 * @brief Gets a platform-specific error message.
+		 * This should only be called when an ILibrary function fails.
+		 * Win32 equivalent: GetLastError() + FormatMessage()
+		 * POSIX equivalent: errno + strerror()
+		 *
+		 * @param error		Error message buffer.
+		 * @param err_max	Maximum length of error buffer.
+		 */
+		virtual void GetPlatformError(char *error, size_t err_max) =0;
 	};
 };
 
