@@ -3,7 +3,7 @@
 
 #include <ISmmPlugin.h>
 
-class SourceMod : public ISmmPlugin
+class SourceMod_Core : public ISmmPlugin
 {
 public:
 	bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
@@ -22,7 +22,7 @@ public:
 	const char *GetLogTag();
 };
 
-extern SourceMod g_SourceMod;
+extern SourceMod_Core g_SourceMod;
 
 PLUGIN_GLOBALVARS();
 

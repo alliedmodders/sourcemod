@@ -40,6 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				AdditionalIncludeDirectories="..\interfaces"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,6 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="..\interfaces"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -204,6 +206,22 @@
 		<Filter
 			Name="Interfaces"
 			>
+			<File
+				RelativePath="..\interfaces\ILibrarySys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\interfaces\IModuleSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\interfaces\IPluginMngr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\interfaces\IShareSys.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
