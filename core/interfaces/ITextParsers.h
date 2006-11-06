@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_SOURCEMOD_TEXTPARSERS_H_
-#define _INCLUDE_SOURCEMOD_TEXTPARSERS_H_
+#ifndef _INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_
+#define _INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_
 
 #include <IShareSys.h>
 
@@ -50,9 +50,18 @@ namespace SourceMod
 		 * @brief Called when a new section is encountered in an INI file.
 		 * 
 		 * @param section		Name of section in between the [ and ] characters.
+		 * @param invalid_tokens True if invalid tokens were detected in the name.
+		 * @param close_bracket	True if a closing bracket was detected, false otherwise.
+		 * @param extra_tokens	True if extra tokens were detected on the line.
+		 * @param curtok		Contains current token in the line where the section name starts.
+		 *						You can add to this offset when failing to point to a token.
 		 * @return				True to keep parsing, false otherwise.
 		 */
-		virtual bool ReadINI_NewSection(const char *section)
+		virtual bool ReadINI_NewSection(const char *section,
+										bool invalid_tokens,
+										bool close_bracket,
+										bool extra_tokens,
+										unsigned int *curtok)
 		{
 			return true;
 		}
@@ -61,11 +70,32 @@ namespace SourceMod
 		 * @brief Called when encountering a key/value pair in an INI file.
 		 * 
 		 * @param key			Name of key.
-		 * @param value			Name of value.
+		 * @param value			String containing value (with quotes stripped, if any).
+		 * @param invalid_tokens Whether or not the key contained invalid tokens.
+		 * @param equal_token	There was an '=' sign present (in case the value is missing).
 		 * @param quotes		Whether value was enclosed in quotes.
+		 * @param curtoken		Contains the token index of the start of the value string.  
+		 *						This can be changed when returning false.
 		 * @return				True to keep parsing, false otherwise.
 		 */
-		virtual bool ReadINI_KeyValue(const char *key, const char *value, bool quotes)
+		virtual bool ReadINI_KeyValue(const char *key, 
+									  const char *value, 
+									  bool invalid_tokens,
+									  bool equal_token,
+									  bool quotes,
+									  unsigned int *curtok)
+		{
+			return true;
+		}
+
+		/**
+		 * @brief Called after a line has been preprocessed, if it has text.
+		 *
+		 * @param line			Contents of line.
+		 * @param curtok		Pointer to optionally store failed position in string.
+		 * @return				True to keep parsing, false otherwise.
+		 */
+		virtual bool ReadINI_RawLine(const char *line, unsigned int *cutok)
 		{
 			return true;
 		}
@@ -163,8 +193,20 @@ namespace SourceMod
 		}
 	};	
 
+	#define SMINTERFACE_TEXTPARSERS_NAME		"ITextParsers"
+	#define SMINTERFACE_TEXTPARSERS_VERSION		1
+
 	class ITextParsers : public SMInterface
 	{
+	public:
+		virtual const char *GetInterfaceName()
+		{
+			return SMINTERFACE_TEXTPARSERS_NAME;
+		}
+		virtual unsigned int GetInterfaceVersion()
+		{
+			return SMINTERFACE_TEXTPARSERS_VERSION;
+		}
 	public:
 		/**
 		 * @brief Parses an INI-format file.
@@ -199,4 +241,4 @@ namespace SourceMod
 	};
 };
 
-#endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_H_
+#endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_

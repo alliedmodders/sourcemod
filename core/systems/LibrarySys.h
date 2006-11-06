@@ -48,7 +48,7 @@ private:
 	LibraryHandle m_lib;
 };
 
-class LibrarySystem
+class LibrarySystem : public ILibrarySys
 {
 public:
 	virtual ILibrary *OpenLibrary(const char *path, char *error, size_t err_max);
