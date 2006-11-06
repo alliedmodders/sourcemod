@@ -1624,12 +1624,12 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 	/* Push the value into the stack and increment pCur */
 	//mov edx, [eax+vm[]]
 	//mov ecx, [edx+pcur]
-	//mov [ecx], <val>*4	; we want the count in bytes not in cells
 	//add [edx+pcur], 4
+	//mov [ecx], <val>*4	; we want the count in bytes not in cells
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_EAX, offsetof(sp_context_t, vm[JITVARS_TRACKER]));
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, REG_EDX, offsetof(tracker_t, pCur));
-	IA32_Mov_Rm_Imm32(jit, AMX_REG_TMP, val*4, MOD_MEM_REG);
 	IA32_Add_Rm_Imm8_Disp8(jit, REG_EDX, 4, offsetof(tracker_t, pCur));
+	IA32_Mov_Rm_Imm32(jit, AMX_REG_TMP, val*4, MOD_MEM_REG);
 
 	/* Restore PRI & ALT */
 	//pop edx

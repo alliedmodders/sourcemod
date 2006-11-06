@@ -274,8 +274,8 @@ typedef enum
 *       DONE: SYSREQ.N .C (rev2)
 *			  MACRO OPCODES (rev2)
 *             ERROR CHECKS\{VERIFY ADDR} (rev2)
+*			  ARRAY STUFF
 *		TODO: BrkDebug
-*             ARRAY STUFF
 *			  EXEC FUNCTION
 *			  VERIFY ADDR
 *

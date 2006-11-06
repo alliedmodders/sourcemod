@@ -520,8 +520,8 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	//jae :done				;end loop if done
 	//mov ecx, [edi+eax*4]	;get dimension size
 	//imul edx, ecx			;multiply by size
-	//add edx, ecx			;add size (indirection vector)
 	//add eax, 1			;increment
+	//add edx, ecx			;add size (indirection vector)
 	//jmp :loop				;jump back
 	//:done
 	IA32_Mov_Reg_Rm(jit, REG_EDX, AMX_REG_STK, MOD_MEM_REG);
@@ -531,8 +531,8 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	jitoffs_t done1 = IA32_Jump_Cond_Imm8(jit, CC_AE, 0);
 	IA32_Mov_Reg_Rm_Disp_Reg(jit, REG_ECX, AMX_REG_STK, REG_EAX, SCALE4);
 	IA32_IMul_Reg_Rm(jit, REG_EDX, REG_ECX, MOD_REG);
-	IA32_Add_Reg_Rm(jit, REG_EDX, REG_ECX, MOD_REG);
 	IA32_Add_Rm_Imm8(jit, REG_EAX, 1, MOD_REG);
+	IA32_Add_Reg_Rm(jit, REG_EDX, REG_ECX, MOD_REG);
 	IA32_Write_Jump8(jit, IA32_Jump_Imm8(jit, loop1), loop1);
 	IA32_Send_Jump8_Here(jit, done1);
 
@@ -573,7 +573,7 @@ void WriteIntrinsic_GenArray(JitWriter *jit)
 	//push edi					;push dim array
 	//push ebx
 	//call GenerateArrayIndirectionVectors
-	//add esp, 4*3
+	//add esp, 4*4
 	IA32_Lea_Reg_DispRegMult(jit, REG_EBX, REG_EAX, REG_EBP, NOSCALE);
 	IA32_Push_Rm_Disp8_ESP(jit, 8);
 	IA32_Push_Rm_Disp8_ESP(jit, 8);
@@ -690,20 +690,18 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
 {
 	CompData *data = (CompData *)jit->data;
 
-	//:TODO: optimize reg usage, i dont like it.
-
 	/* Save registers that may be damaged by the call */
 	//push eax
-	//push edx
 	//push ecx
-	//push <reg>
+	//push edi
+	//lea edi, [<reg>*4]		; we want the count in bytes not in cells
 	IA32_Push_Reg(jit, AMX_REG_PRI);
-	IA32_Push_Reg(jit, AMX_REG_ALT);
-	IA32_Push_Reg(jit, AMX_REG_TMP);
-	if (reg != REG_ECX)
+	if (reg == REG_ECX)
 	{
-		IA32_Push_Reg(jit, reg);
+		IA32_Push_Reg(jit, AMX_REG_TMP);
 	}
+	IA32_Push_Reg(jit, AMX_REG_STK);
+	IA32_Lea_Reg_RegMultImm32(jit, REG_EDI, reg, SCALE4, 0);
 
 	/* Get the context ptr, push it and call the check */
 	//mov eax, [esi+context]
@@ -723,30 +721,24 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_error_tracker_bounds);
 
 	/* Push the register into the stack and increment pCur */
-	//pop ecx
 	//mov edx, [eax+vm[]]
 	//mov eax, [edx+pcur]
-	//lea ecx, [ecx*4]	; we want the count in bytes not in cells
-	//mov [eax], ecx
 	//add [edx+pcur], 4
-	IA32_Pop_Reg(jit, REG_ECX);
+	//mov [eax], edi
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EDX, REG_EAX, offsetof(sp_context_t, vm[JITVARS_TRACKER]));
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EDX, offsetof(tracker_t, pCur));
-	IA32_Lea_Reg_RegMultImm32(jit, REG_ECX, REG_ECX, SCALE4, 0);
-	IA32_Mov_Rm_Reg(jit, REG_EAX, REG_ECX, MOD_MEM_REG);
 	IA32_Add_Rm_Imm8_Disp8(jit, REG_EDX, 4, offsetof(tracker_t, pCur));
+	IA32_Mov_Rm_Reg(jit, REG_EAX, REG_EDI, MOD_MEM_REG);
 
 	/* Restore PRI, ALT and STK */
+	//pop edi
 	//pop ecx
-	//pop edx
 	//pop eax
-	if (reg != REG_ECX)
+	IA32_Pop_Reg(jit, AMX_REG_STK);
+	if (reg == REG_ECX)
 	{
-		IA32_Pop_Reg(jit, AMX_REG_ALT);
-	} else {
-		IA32_Shr_Rm_Imm8(jit, REG_ECX, 2, MOD_REG);
+		IA32_Pop_Reg(jit, AMX_REG_TMP);
 	}
-	IA32_Pop_Reg(jit, AMX_REG_TMP);
 	IA32_Pop_Reg(jit, AMX_REG_PRI);
 }
 
