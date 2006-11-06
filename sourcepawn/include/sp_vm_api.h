@@ -19,7 +19,7 @@ namespace SourcePawn
 		* Loads a named file from a file pointer.  
 		* Using this means base memory will be allocated by the VM.
 		* 
-		* @param fp		File pointer.  May be at any offset.  Not closed on return.
+		* @param fp			File pointer.  May be at any offset.  Not closed on return.
 		* @param err		Optional error code pointer.
 		* @return			A new plugin structure.
 		*/	
@@ -69,7 +69,7 @@ namespace SourcePawn
 		/**
 		 * Frees memory allocated with BaseAlloc.
 		 *
-		 * @param mem		Memory address to free.
+		 * @param memory	Memory address to free.
 		 */
 		virtual void BaseFree(void *memory) =0;
 
@@ -84,7 +84,7 @@ namespace SourcePawn
 		/**
 		 * Frees executable memory.
 		 *
-		 * @param mem		Address to free.
+		 * @param address	Address to free.
 		 */
 		virtual void ExecFree(void *address) =0;
 	};

@@ -154,7 +154,7 @@ namespace SourcePawn
 		 * Gets public function info by index.
 		 * 
 		 * @param index			Public function index number.
-		 * @param pblic			Optionally filled with pointer to public structure.
+		 * @param public		Optionally filled with pointer to public structure.
 		 */
 		virtual int GetPublicByIndex(uint32_t index, sp_public_t **publicptr) =0;
 
@@ -177,8 +177,6 @@ namespace SourcePawn
 		 *
 		 * @param name			Name of pubvar
 		 * @param index			Optionally filled with pubvar index number.
-		 * @param local_addr	Optionally filled with local address offset.
-		 * @param phys_addr		Optionally filled with relocated physical address.
 		 */
 		virtual int FindPubvarByName(const char *name, uint32_t *index) =0;
 
@@ -255,8 +253,7 @@ namespace SourcePawn
 		 *
 		 * @param local_addr	Filled with local address to release.
 		 * @param phys_addr		Optionally filled with physical address of new array.
-		 * @param array			Cell array to copy.
-		 * @param numcells		Number of cells in the array to copy.
+		 * @param string		Source string to push.
 		 */
 		virtual int PushString(cell_t *local_addr, cell_t **phys_addr, const char *string) =0;
 
@@ -278,6 +275,7 @@ namespace SourcePawn
 		 * 
 		 * @param natives		Array of natives.
 		 * @param num			Number of natives in array.
+		 * @param overwrite		Toggles overwrite.
 		 */
 		virtual int BindNatives(sp_nativeinfo_t *natives, unsigned int num, int overwrite) =0;
 

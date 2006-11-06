@@ -14,7 +14,7 @@ namespace SourcePawn
 		 * Note: The file handle position may be undefined on entry, and is
 		 *  always undefined on conclusion.
 		 * 
-		 * @param fp			File pointer.  May be at any offset.  Not closed on return.
+		 * @param fp		File pointer.  May be at any offset.  Not closed on return.
 		 * @param err		Optional error code pointer.
 		 * @return			A new plugin structure.
 		 */	
@@ -64,10 +64,9 @@ namespace SourcePawn
 		/**
 		 * Frees memory allocated with BaseAlloc.
 		 *
-		 * @param mem		Memory address to free.
+		 * @param memory	Memory address to free.
 		 */
 		void BaseFree(void *memory);
-
 
 		/**
 		 * Allocates executable memory.
@@ -80,7 +79,7 @@ namespace SourcePawn
 		/**
 		 * Frees executable memory.
 		 *
-		 * @param mem		Address to free.
+		 * @param address	Address to free.
 		 */
 		void ExecFree(void *address);
 	};
