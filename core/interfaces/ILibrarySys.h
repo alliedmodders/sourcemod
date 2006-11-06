@@ -95,8 +95,6 @@ namespace SourceMod
 		 * @brief Opens a directory for reading.
 		 *
 		 * @param path		Path to directory.
-		 * @param error		Buffer for any error message (may be NULL).
-		 * @param err_max	Maximum length of error buffer.
 		 * @return			Pointer to an IDirectory, NULL if failed.
 		 */
 		virtual IDirectory *OpenDirectory(const char *path) =0;
