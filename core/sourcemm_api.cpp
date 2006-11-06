@@ -1,23 +1,14 @@
 #include <oslink.h>
 #include "sourcemm_api.h"
 #include "sm_version.h"
-#include "CTextParsers.h"
 
 SourceMod_Core g_SourceMod;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod);
 
-class Test : public ITextListener_INI
-{
-public:
-};
-
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();
-
-	Test test;
-	bool result = g_TextParse.ParseFile_INI("c:\\gaben.ini", &test, NULL, NULL);
 
 	return true;
 }
