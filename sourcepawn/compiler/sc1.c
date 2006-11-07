@@ -2027,7 +2027,7 @@ static int declloc(int fstatic)
       if (all_constant) {
         /* Change the last dimension to be based on chars instead if we have a string */
         if (tag == pc_tag_string && dim[numdim-1])
-          dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
+          dim[numdim-1] = (dim[numdim-1] + sizeof(cell)-1) / sizeof(cell);
         /* Scrap the code generated */
         ident = iARRAY;
         stgdel(_index, _code);
