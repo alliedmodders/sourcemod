@@ -1741,6 +1741,7 @@ static int hier1(value *lval1)
   char *st;
   char close;
   symbol *sym;
+  int magic_string=0;
   symbol dummysymbol,*cursym;   /* for changing the index tags in case of enumerated pseudo-arrays */
 
   lvalue=primary(lval1);
@@ -1750,6 +1751,7 @@ restart:
   sym=cursym;
   if (matchtoken('[') || matchtoken('{') || matchtoken('(')) {
     tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
+    magic_string = (sym->tag == pc_tag_string && sym->dim.array.level == 0);
     if (sym==NULL && symtok!=tSYMBOL) {
       /* we do not have a valid symbol and we appear not to have read a valid
        * symbol name (so it is unlikely that we would have read a name of an
@@ -1834,7 +1836,7 @@ restart:
       } else {
         /* array index is not constant */
         lval1->arrayidx=NULL;           /* reset, so won't be checked */
-        if (close==']') {
+        if (close==']' && !magic_string) {
           if (sym->dim.array.length!=0)
             ffbounds(sym->dim.array.length-1);  /* run time check for array bounds */
           cell2addr();  /* normal array index */
@@ -1845,7 +1847,7 @@ restart:
         } /* if */
         popreg(sALT);
         ob_add();       /* base address was popped into secondary register */
-        if (close!=']')
+        if (close!=']' || magic_string)
           charalign();  /* align character index into array */
       } /* if */
       /* the indexed item may be another array (multi-dimensional arrays) */
