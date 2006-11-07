@@ -1782,7 +1782,7 @@ restart:
       if (lval2.ident==iARRAY || lval2.ident==iREFARRAY)
         error(33,lval2.sym->name);      /* array must be indexed */
       needtoken(close);
-      if (!matchtag(sym->x.tags.index,lval2.tag,TRUE))
+      if ((sym->usage & uENUMROOT) && !matchtag(sym->x.tags.index,lval2.tag,TRUE))
         error(213);
       if (lval2.ident==iCONSTEXPR) {    /* constant expression */
         stgdel(index,cidx);             /* scratch generated code */
