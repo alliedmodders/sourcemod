@@ -104,7 +104,7 @@ typedef enum
 	OP_LREF_S_PRI,			//VERIFIED
 	OP_LREF_S_ALT,			//~VERIFIED (lref.s.pri)
 	OP_LOAD_I,				//VERIFIED
-	OP_LODB_I,				// !GEN :TODO: - only used for pack access - drop support in compiler first
+	OP_LODB_I,				//VERIFIED
 	OP_CONST_PRI,			//VERIFIED
 	OP_CONST_ALT,			//~VERIFIED (const.pri)
 	OP_ADDR_PRI,			//VERIFIED
@@ -118,7 +118,7 @@ typedef enum
 	OP_SREF_S_PRI,			//VERIFIED
 	OP_SREF_S_ALT,			//~VERIFIED (stor.s.alt)
 	OP_STOR_I,				//VERIFIED
-	OP_STRB_I,				// !GEN :TODO: - only used for pack access, drop support in compiler first
+	OP_STRB_I,				//VERIFIED
 	OP_LIDX,				//VERIFIED
 	OP_LIDX_B,				//DONE
 	OP_IDXADDR,				//VERIFIED
@@ -127,7 +127,7 @@ typedef enum
 	OP_ALIGN_ALT,			// !GEN :TODO: - only used for pack access, drop support in compiler first
 	OP_LCTRL,				// !GEN
 	OP_SCTRL,				// !GEN
-	OP_MOVE_PRI,			//DONE
+	OP_MOVE_PRI,			//~VERIFIED (move.alt)
 	OP_MOVE_ALT,			//VERIFIED
 	OP_XCHG,				//DONE
 	OP_PUSH_PRI,			//DONE
@@ -139,7 +139,7 @@ typedef enum
 	OP_POP_PRI,				//VERIFIED
 	OP_POP_ALT,				//VERIFIED
 	OP_STACK,				//VERIFIED
-	OP_HEAP,				//DONE
+	OP_HEAP,				//VERIFIED
 	OP_PROC,				//VERIFIED
 	OP_RET,					// !GEN
 	OP_RETN,				//VERIFIED
@@ -211,7 +211,7 @@ typedef enum
 	OP_DEC,					//VERIFIED
 	OP_DEC_S,				//VERIFIED
 	OP_DEC_I,				//VERIFIED
-	OP_MOVS,				//DONE
+	OP_MOVS,				//VERIFIED
 	OP_CMPS,				// !GEN
 	OP_FILL,				//VERIFIED
 	OP_HALT,				//DONE

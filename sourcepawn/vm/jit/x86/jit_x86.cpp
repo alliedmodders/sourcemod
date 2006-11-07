@@ -1093,11 +1093,60 @@ inline void WriteOp_Load_I(JitWriter *jit)
 	IA32_Mov_Reg_RmEBP_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
 }
 
+inline void WriteOp_Lodb_I(JitWriter *jit)
+{
+	Write_Check_VerifyAddr(jit, AMX_REG_PRI);
+
+	//mov eax, [ebp+eax]
+	IA32_Mov_Reg_RmEBP_Disp_Reg(jit, AMX_REG_PRI, AMX_REG_DAT, AMX_REG_PRI, NOSCALE);
+
+	//and eax, <bitmask>
+	cell_t val = jit->read_cell();
+	switch(val)
+	{
+	case 1:
+		{
+			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x000000FF);
+			break;
+		}
+	case 2:
+		{
+			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x0000FFFF);
+			break;
+		}
+	}
+}
+
 inline void WriteOp_Stor_I(JitWriter *jit)
 {
 	//mov [ebp+edx], eax
 	Write_Check_VerifyAddr(jit, AMX_REG_ALT);
 	IA32_Mov_RmEBP_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+}
+
+inline void WriteOp_Strb_I(JitWriter *jit)
+{
+	Write_Check_VerifyAddr(jit, AMX_REG_ALT);
+	//mov [ebp+edx], eax
+	cell_t val = jit->read_cell();
+	switch (val)
+	{
+	case 1:
+		{
+			IA32_Mov_Rm8EBP_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+			break;
+		}
+	case 2:
+		{
+			IA32_Mov_Rm16EBP_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+			break;
+		}
+	case 4:
+		{
+			IA32_Mov_RmEBP_Reg_Disp_Reg(jit, AMX_REG_DAT, AMX_REG_ALT, NOSCALE, AMX_REG_PRI);
+			break;
+		}
+	}
 }
 
 inline void WriteOp_Lidx(JitWriter *jit)

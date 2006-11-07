@@ -465,7 +465,7 @@ int BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t ar
 	return SP_ERROR_NONE;
 }
 
-int BaseContext::LocalToString(cell_t local_addr, char *buffer, size_t maxlength, int *chars)
+int BaseContext::LocalToString(cell_t local_addr, char **addr)
 {
 	int len = 0;
 	cell_t *src;
@@ -474,26 +474,7 @@ int BaseContext::LocalToString(cell_t local_addr, char *buffer, size_t maxlength
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
-
-	src = (cell_t *)(ctx->memory + local_addr);
-	while ((*src != '\0') && ((size_t)len < maxlength))
-	{
-		buffer[len++] = (char)*src++;
-	}
-
-	if ((size_t)len >= maxlength)
-	{
-		len = maxlength - 1;
-	}
-	if (len >= 0)
-	{
-		buffer[len] = '\0';
-	}
-
-	if (chars)
-	{
-		*chars = len;
-	}
+	*addr = (char *)(ctx->memory + local_addr);
 
 	return SP_ERROR_NONE;
 }

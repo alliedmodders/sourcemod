@@ -31,7 +31,7 @@ namespace SourcePawn
 		virtual int GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr);
 		virtual uint32_t GetPubVarsNum();
 		virtual int LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr);
-		virtual int LocalToString(cell_t local_addr, char *buffer, size_t maxlength, int *chars);
+		virtual int LocalToString(cell_t local_addr, char **addr);
 		virtual int StringToLocal(cell_t local_addr, size_t chars, const char *source);
 		virtual int PushCell(cell_t value);
 		virtual int PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells);

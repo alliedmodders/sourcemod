@@ -508,9 +508,19 @@
 				WriteOp_Load_I(jit);
 				break;
 			}
+		case OP_LODB_I:
+			{
+				WriteOp_Lodb_I(jit);
+				break;
+			}
 		case OP_STOR_I:
 			{
 				WriteOp_Stor_I(jit);
+				break;
+			}
+		case OP_STRB_I:
+			{
+				WriteOp_Strb_I(jit);
 				break;
 			}
 		case OP_LIDX:

@@ -204,17 +204,15 @@ namespace SourcePawn
 		 */
 		virtual int LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr) =0;
 
-		/**
+		/**:TODO: FIX ALL PACKED STUFF COMMENTS!
 		 * Converts a local address to a physical string.
 		 * Note that SourcePawn does not support packed strings, as such this function is
 		 *  'cell to char' only.
 		 *
 		 * @param local_addr	Local address in plugin.
-		 * @param buffer		Destination output buffer.
-		 * @param maxlength		Maximum length of output buffer, including null terminator.
-		 * @param chars			Optionally filled with the number of characters written.
+		 * @param addr			Destination output pointer.
 		 */
-		virtual int LocalToString(cell_t local_addr, char *buffer, size_t maxlength, int *chars) =0;
+		virtual int LocalToString(cell_t local_addr, char **addr) =0;
 
 		/**
 		 * Converts a physical string to a local address.

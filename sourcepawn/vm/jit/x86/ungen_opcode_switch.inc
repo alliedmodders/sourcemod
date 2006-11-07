@@ -33,16 +33,6 @@
 				WriteOp_Align_Alt(jit);
 				break;
 			}
-		case OP_LODB_I:
-			{
-				WriteOp_Lodb_I(jit);
-				break;
-			}
-		case OP_STRB_I:
-			{
-				WriteOp_Strb_I(jit);
-				break;
-			}
 		case OP_LCTRL:
 			{
 				WriteOp_Lctrl(jit);
