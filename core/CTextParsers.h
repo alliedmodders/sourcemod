@@ -5,9 +5,26 @@
 
 using namespace SourceMod;
 
+inline unsigned int _GetUTF8CharBytes(const char *stream)
+{
+	unsigned char c = *(unsigned char *)stream;
+	if (c & (1<<7))
+	{
+		if (c & (1<<5))
+		{
+			if (c & (1<<4))
+			{
+				return 4;
+			}
+			return 3;
+		}
+		return 2;
+	}
+	return 1;
+}
+
 class CTextParsers : public ITextParsers
 {
-
 public:
 	CTextParsers();
 public:
@@ -20,6 +37,8 @@ public:
 		ITextListener_SMC *smc_listener, 
 		unsigned int *line, 
 		unsigned int *col);
+
+	virtual unsigned int GetUTF8CharBytes(const char *stream);
 };
 
 extern CTextParsers g_TextParse;

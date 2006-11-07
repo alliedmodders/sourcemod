@@ -238,6 +238,15 @@ namespace SourceMod
 									ITextListener_SMC *smc_listener, 
 									unsigned int *line, 
 									unsigned int *col) =0;
+	public:
+		/**
+		 * @brief Returns the number of bytes that a multi-byte character contains in a UTF-8 stream.
+		 * If the current character is not multi-byte, the function returns 1.
+		 *
+		 * @param stream		Pointer to multi-byte ANSI character string.
+		 * @return				Number of bytes in current character.
+		 */
+		virtual unsigned int GetUTF8CharBytes(const char *stream) =0;
 	};
 };
 

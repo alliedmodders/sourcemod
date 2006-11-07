@@ -1,6 +1,7 @@
 #include <oslink.h>
 #include "sourcemm_api.h"
 #include "sm_version.h"
+#include "CTextParsers.h"
 
 SourceMod_Core g_SourceMod;
 

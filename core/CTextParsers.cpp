@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <wctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include "CTextParsers.h"
 
 CTextParsers g_TextParse;
 
 static int g_ini_chartable1[255] = {0};
+static int g_ws_chartable[255] = {0};
 
 CTextParsers::CTextParsers()
 {
@@ -17,6 +20,17 @@ CTextParsers::CTextParsers()
 	g_ini_chartable1['$'] = 1;
 	g_ini_chartable1['?'] = 1;
 	g_ini_chartable1['/'] = 1;
+	g_ws_chartable['\n'] = 1;
+	g_ws_chartable['\v'] = 1;
+	g_ws_chartable['\r'] = 1;
+	g_ws_chartable['\t'] = 1;
+	g_ws_chartable['\f'] = 1;
+	g_ws_chartable[' '] = 1;
+}
+
+unsigned int CTextParsers::GetUTF8CharBytes(const char *stream)
+{
+	return _GetUTF8CharBytes(stream);
 }
 
 bool CTextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc_listener, unsigned int *line, unsigned int *col)
@@ -50,6 +64,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 	char buffer[2048];
 	char *ptr, *save_ptr;
 	bool in_quote;
+
 	while (!feof(fp))
 	{
 		curline++;
@@ -59,12 +74,26 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 		{
 			break;
 		}
-		
-		/* Preprocess the string before anything */
-		ptr = buffer;
-		
+
+		//:TODO: this will only run once, so find a nice way to move it out of the while loop
+		/* If this is the first line, check the first three bytes for BOM */
+		if (curline == 1 && 
+			buffer[0] == (char)0xEF && 
+			buffer[1] == (char)0xBB && 
+			buffer[2] == (char)0xBF)
+		{
+			/* We have a UTF-8 marked file... skip these bytes */
+			ptr = &buffer[3];
+		} else {
+			ptr = buffer;
+		}
+
+		/***************************************************
+		 * We preprocess the string before parsing tokens! *
+		 ***************************************************/
+
 		/* First strip beginning whitespace */
-		while ((*ptr != '\0') && isspace(*ptr))
+		while (*ptr != '\0' && g_ws_chartable[*ptr] != 0)
 		{
 			ptr++;
 		}
@@ -117,7 +146,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 		/* Lastly, strip ending whitespace off */
 		for (size_t i=len-1; i>=0 && i<len; i--)
 		{
-			if (isspace(ptr[i]))
+			if (g_ws_chartable[ptr[i]])
 			{
 				ptr[i] = '\0';
 				len--;
@@ -142,11 +171,25 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 			bool got_bracket = false;
 			bool extra_tokens = false;
 			char c;
+			bool alnum;
+			wchar_t wc;
 
 			for (size_t i=1; i<len; i++)
 			{
 				c = ptr[i];
-				if (!isalnum(c) && !g_ini_chartable1[c])
+				alnum = false;
+
+				if (c & (1<<7))
+				{
+					if (mbtowc(&wc, &ptr[i], len-i) != -1)
+					{
+						alnum = (iswalnum(wc) != 0);
+						i += _GetUTF8CharBytes(&ptr[i]) - 1;
+					}
+				} else {
+					alnum = (isalnum(c) != 0) || (g_ini_chartable1[c] != 0);
+				}
+				if (!alnum)
 				{
 					/* First check - is this a bracket? */
 					if (c == ']')
@@ -181,14 +224,28 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 			bool invalid_tokens = false;
 			bool equal_token = false;
 			bool quotes = false;
-			
+			bool alnum;
+			wchar_t wc;
+
 			for (size_t i=0; i<len; i++)
 			{
 				c = ptr[i];
+				alnum = false;
 				/* is this an invalid char? */
-				if (!isalnum(c) && !g_ini_chartable1[c])
+				if (c & (1<<7))
 				{
-					if (isspace(c))
+					if (mbtowc(&wc, &ptr[i], len-i) != -1)
+					{
+						alnum = (iswalnum(wc) != 0);
+						i += _GetUTF8CharBytes(&ptr[i]) - 1;
+					}
+				} else {
+					alnum = (isalnum(c) != 0) || (g_ini_chartable1[c] != 0);
+				}
+
+				if (!alnum)
+				{
+					if (g_ws_chartable[c])
 					{
 						/* if it's a space, keep track of the last space */
 						if (!first_space)
@@ -227,7 +284,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 			if (val_ptr)
 			{
 				/* eat up spaces! there shouldn't be any h*/
-				while ((*val_ptr != '\0') && isspace(*val_ptr))
+				while ((*val_ptr != '\0') && g_ws_chartable[*val_ptr] != 0)
 				{
 					val_ptr++;
 				}
