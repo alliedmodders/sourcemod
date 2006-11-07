@@ -568,7 +568,7 @@ SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
                          value *lval,int *resulttag);
 SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce);
 SC_FUNC int checktag(int tags[],int numtags,int exprtag);
-SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult);
+SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval);
 SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state);
 SC_FUNC cell array_totalsize(symbol *sym);
 SC_FUNC int matchtag_string(int ident, int tag);

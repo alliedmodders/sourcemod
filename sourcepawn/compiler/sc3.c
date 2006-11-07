@@ -890,7 +890,7 @@ static cell calc(cell left,void (*oper)(),cell right,char *boolresult)
   return 0;
 }
 
-SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult)
+SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult,value *_lval)
 {
   value lval={0};
   pushheaplist();
@@ -908,6 +908,8 @@ SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult)
     *symptr=lval.sym;
   if (chkfuncresult)
     checkfunction(&lval);
+  if (_lval)
+    *_lval=lval;
   return lval.ident;
 }
 
@@ -2723,7 +2725,7 @@ static int constant(value *lval)
        * on at this point */
       assert(staging);
       stgget(&index,&cidx);     /* mark position in code generator */
-      ident=expression(&item,&tag,NULL,FALSE);
+      ident=expression(&item,&tag,NULL,FALSE,NULL);
       stgdel(index,cidx);       /* scratch generated code */
       if (ident!=iCONSTEXPR)
         error(8);               /* must be constant expression */

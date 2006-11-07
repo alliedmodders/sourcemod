@@ -119,6 +119,8 @@ static void compound(int stmt_sameline,int starttok);
 static int test(int label,int parens,int invert);
 static int doexpr(int comma,int chkeffect,int allowarray,int mark_endexpr,
                   int *tag,symbol **symptr,int chkfuncresult);
+static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
+				  int *tag,symbol **symptr,int chkfuncresult,value *lval);
 static void doassert(void);
 static void doexit(void);
 static int doif(void);
@@ -1733,7 +1735,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
 #endif
       dim[numdim++]=(int)size;
     } /* while */
-    if (ident == iARRAY && tag == pc_tag_string)
+    if (ident == iARRAY && tag == pc_tag_string && dim[numdim-1])
       dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
     assert(sc_curstates==0);
     sc_curstates=getstates(name);
@@ -1944,7 +1946,7 @@ static int declloc(int fstatic)
   int idxtag[sDIMEN_MAX];
   char name[sNAMEMAX+1];
   symbol *sym;
-  constvalue *enumroot;
+  constvalue *enumroot=NULL;
   cell val,size;
   char *str;
   value lval = {0};
@@ -1980,44 +1982,63 @@ static int declloc(int fstatic)
     if ((sym=findloc(name))!=NULL && sym->compound!=nestlevel || findglb(name,sGLOBAL)!=NULL)
       error(219,name);                  /* variable shadows another symbol */
 	if (matchtoken('[')) {
-      do {
-        ident=iARRAY;
-        if (numdim == sDIMEN_MAX) {
-          error(53);                      /* exceeding maximum number of dimensions */
-          return ident;
-        } /* if */
-        size=needsub(&idxtag[numdim],&enumroot); /* get size; size==0 for "var[]" */
-        #if INT_MAX < LONG_MAX
-          if (size > INT_MAX)
-            error(105);                   /* overflow, exceeding capacity */
-        #endif
-        dim[numdim++]=(int)size;
-      } while (matchtoken('['));
-      /* Change the last dimension to be based on chars instead if we have a string */
-      if (tag == pc_tag_string)
-        dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
-    } else if (matchtoken('(')) {
+      int _index;
+      cell _code;
       int dim_ident;
       symbol *dim_sym;
+      value dim_val;
+      int all_constant = 1;
+      int _staging = staging;
+
+      if (!_staging)
+        stgset(TRUE);
+      stgget(&_index, &_code);
+
       do {
-        ident=iREFARRAY;
         if (numdim == sDIMEN_MAX) {
-          error(53);
-          return iREFARRAY;
+          error(53);                      /* exceeding maximum number of dimensions */
+          return (all_constant ? iARRAY : iREFARRAY);
         } /* if */
-        dim_ident = doexpr(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0);
-        dim[numdim] = 0;
-        if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION) {
+        if (matchtoken(']')) {
+          dim[numdim++] = 0;
+          continue;
+        }
+        dim_ident = doexpr2(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0,&dim_val);
+        if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION || dim_ident == iARRAYCELL) {
+          all_constant = 0;
           pushreg(sPRI);
         } else if (dim_ident == iCONSTEXPR) {
           pushreg(sPRI);
+          dim[numdim] = dim_val.constval;
+		  /* :TODO: :URGENT: Make sure this still works */
+          if (dim_sym && dim_sym->usage & uENUMROOT)
+            enumroot = dim_sym->dim.enumlist;
+		  idxtag[numdim] = dim_sym ? dim_sym->tag : 0;
+          #if INT_MAX < LONG_MAX
+		    if (dim[numdim] > INT_MAX)
+			  error(105);                   /* overflow, exceeding capacity */
+          #endif
         } else {
-          assert(0); //:TODO: make this an error
+          error(29); /* invalid expression, assumed 0 */
         }
-        needtoken(')');
         numdim++;
-      } while (matchtoken('('));
-      genarray(numdim, autozero);
+		needtoken(']');
+      } while (matchtoken('['));
+      if (all_constant) {
+        /* Change the last dimension to be based on chars instead if we have a string */
+        if (tag == pc_tag_string && dim[numdim-1])
+          dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
+        /* Scrap the code generated */
+        ident = iARRAY;
+        stgdel(_index, _code);
+      } else {
+        memset(dim, 0, sizeof(int)*sDIMEN_MAX);
+        ident = iREFARRAY;
+        genarray(numdim, autozero);
+      }
+      stgout(_index);
+      if (!_staging)
+        stgset(FALSE);
     }
     if (getstates(name))
       error(88,name);           /* local variables may not have states */
@@ -3369,7 +3390,7 @@ static void funcstub(int fnative)
     dim[numdim++]=(int)size;
   } /* while */
 
-  if (tag == pc_tag_string)
+  if (tag == pc_tag_string && dim[numdim-1])
     dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
 
   tok=lex(&val,&str);
@@ -5112,6 +5133,16 @@ static void compound(int stmt_sameline,int starttok)
 static int doexpr(int comma,int chkeffect,int allowarray,int mark_endexpr,
                   int *tag,symbol **symptr,int chkfuncresult)
 {
+  return doexpr2(comma,chkeffect,allowarray,mark_endexpr,tag,symptr,chkfuncresult,NULL);
+}
+
+/*  doexpr2
+ *
+ *  Global references: stgidx   (referred to only)
+ */
+static int doexpr2(int comma,int chkeffect,int allowarray,int mark_endexpr,
+                  int *tag,symbol **symptr,int chkfuncresult,value *lval)
+{
   int index,ident;
   int localstaging=FALSE;
   cell val;
@@ -5128,7 +5159,7 @@ static int doexpr(int comma,int chkeffect,int allowarray,int mark_endexpr,
     if (index!=stgidx)
       markexpr(sEXPR,NULL,0);
     sideeffect=FALSE;
-    ident=expression(&val,tag,symptr,chkfuncresult);
+    ident=expression(&val,tag,symptr,chkfuncresult,lval);
     if (!allowarray && (ident==iARRAY || ident==iREFARRAY))
       error(33,"-unknown-");    /* array must be indexed */
     if (chkeffect && !sideeffect)
@@ -5155,7 +5186,7 @@ SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr)
   stgset(TRUE);         /* start stage-buffering */
   stgget(&index,&cidx); /* mark position in code generator */
   errorset(sEXPRMARK,0);
-  ident=expression(val,tag,symptr,FALSE);
+  ident=expression(val,tag,symptr,FALSE,NULL);
   stgdel(index,cidx);   /* scratch generated code */
   stgset(FALSE);        /* stop stage-buffering */
   if (ident!=iCONSTEXPR) {
@@ -5214,7 +5245,7 @@ static int test(int label,int parens,int invert)
   do {
     stgget(&index,&cidx);       /* mark position (of last expression) in
                                  * code generator */
-    ident=expression(&constval,&tag,&sym,TRUE);
+    ident=expression(&constval,&tag,&sym,TRUE,NULL);
     tok=matchtoken(',');
     if (tok)
       markexpr(sEXPR,NULL,0);
@@ -5596,7 +5627,7 @@ static void doassert(void)
     stgset(TRUE);               /* start staging */
     stgget(&index,&cidx);       /* mark position in code generator */
     do {
-      expression(NULL,NULL,NULL,FALSE);
+      expression(NULL,NULL,NULL,FALSE,NULL);
       stgdel(index,cidx);       /* just scrap the code */
     } while (matchtoken(','));
     stgset(FALSE);              /* stop staging */
