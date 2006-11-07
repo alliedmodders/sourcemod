@@ -71,6 +71,7 @@
 #define VERSION_INT 0x0302
 
 int pc_functag = 0;
+int pc_tag_string = 0;
 
 static void resetglobals(void);
 static void initglobals(void);
@@ -683,7 +684,7 @@ static void initglobals(void)
   verbosity=1;          /* verbosity level, no copyright banner */
   sc_debug=sCHKBOUNDS|sSYMBOLIC;   /* sourcemod: full debug stuff */
   pc_optimize=sOPTIMIZE_DEFAULT;   /* sourcemod: full optimization */
-  sc_packstr=FALSE;     /* strings are unpacked by default */
+  sc_packstr=TRUE;     /* strings are packed by default */
   sc_compress=FALSE;	/* always disable compact encoding! */
   sc_needsemicolon=FALSE;/* semicolon required to terminate expressions? */
   sc_dataalign=sizeof(cell);
@@ -1248,6 +1249,7 @@ static void setconstants(void)
   append_constval(&tagname_tab,"_",0,0);/* "untagged" */
   append_constval(&tagname_tab,"bool",1,0);
   pc_functag = pc_addfunctag("Function");
+  pc_tag_string = pc_addtag("String");
 
   add_constant("true",1,sGLOBAL,1);     /* boolean flags */
   add_constant("false",0,sGLOBAL,1);
@@ -1731,6 +1733,8 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
 #endif
       dim[numdim++]=(int)size;
     } /* while */
+    if (ident == iARRAY && tag == pc_tag_string)
+      dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
     assert(sc_curstates==0);
     sc_curstates=getstates(name);
     if (sc_curstates<0) {
@@ -1989,6 +1993,9 @@ static int declloc(int fstatic)
         #endif
         dim[numdim++]=(int)size;
       } while (matchtoken('['));
+      /* Change the last dimension to be based on chars instead if we have a string */
+      if (tag == pc_tag_string)
+        dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
     } else if (matchtoken('(')) {
       int dim_ident;
       symbol *dim_sym;
@@ -2072,10 +2079,11 @@ static int declloc(int fstatic)
         /* simple variable, also supports initialization */
         int ctag = tag;         /* set to "tag" by default */
         int explicit_init=FALSE;/* is the variable explicitly initialized? */
+        int cident=ident;
         if (matchtoken('=')) {
           if (!autozero)
             error(10);
-          doexpr(FALSE,FALSE,FALSE,FALSE,&ctag,NULL,TRUE);
+          cident=doexpr(FALSE,FALSE,FALSE,FALSE,&ctag,NULL,TRUE);
           explicit_init=TRUE;
         } else {
           if (autozero)
@@ -2094,7 +2102,7 @@ static int declloc(int fstatic)
         assert(staging);        /* end staging phase (optimize expression) */
         stgout(staging_start);
         stgset(FALSE);
-        if (!matchtag(tag,ctag,TRUE))
+        if (!matchtag_string(cident, ctag) && !matchtag(tag,ctag,TRUE))
           error(213);           /* tag mismatch */
         /* if the variable was not explicitly initialized, reset the
          * "uWRITTEN" flag that store() set */
@@ -2501,7 +2509,7 @@ static cell init(int ident,int *tag,int *errorfound)
       error(6);         /* must be assigned to an array */
       litidx=1;         /* reset literal queue */
     } /* if */
-    *tag=0;
+    *tag=pc_tag_string;
   } else if (constexpr(&i,tag,NULL)){
     litadd(i);          /* store expression result in literal table */
   } else {
@@ -2702,6 +2710,7 @@ static void dofuncenum(void)
 				}
 				if (matchtoken('['))
 				{
+					cell size;
 					if (arg->ident == iREFERENCE)
 					{
 						error(67, str);
@@ -2709,7 +2718,6 @@ static void dofuncenum(void)
 					do 
 					{
 						constvalue *enumroot;
-						cell size;
 						int ignore_tag;
 						if (arg->dimcount == sDIMEN_MAX)
 						{
@@ -2720,6 +2728,11 @@ static void dofuncenum(void)
 						arg->dims[arg->dimcount] = size;
 						arg->dimcount += 1;
 					} while (matchtoken('['));
+					/* Handle strings */
+					if (arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
+					{
+						arg->dims[arg->dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
+					}
 					arg->ident=iREFARRAY;
 				} else if (arg->ident == 0) {
 					arg->ident = iVARIABLE;
@@ -2850,6 +2863,7 @@ static void decl_enum(int vclass)
       constexpr(&size,&fieldtag,NULL);  /* get size */
       needtoken(']');
     } /* if */
+    /* :TODO: do we need a size modifier here for pc_tag_string? */
     if (matchtoken('='))
       constexpr(&value,NULL,NULL);      /* get value */
     /* add_constant() checks whether a variable (global or local) or
@@ -3354,6 +3368,9 @@ static void funcstub(int fnative)
     #endif
     dim[numdim++]=(int)size;
   } /* while */
+
+  if (tag == pc_tag_string)
+    dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
 
   tok=lex(&val,&str);
   fpublic=(tok==tPUBLIC) || (tok==tSYMBOL && str[0]==PUBLIC_CHAR);
@@ -3933,6 +3950,8 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       arg->numdim+=1;
     } while (matchtoken('['));
     ident=iREFARRAY;            /* "reference to array" (is a pointer) */
+    if (checktag(tags, numtags, pc_tag_string))
+      arg->dim[arg->numdim - 1] = (size + sizeof(cell) - 1) / sizeof(cell);
     if (matchtoken('=')) {
       lexpush();                /* initials() needs the "=" token again */
       assert(litidx==0);        /* at the start of a function, this is reset */
@@ -5682,7 +5701,7 @@ static void doreturn(void)
     rettype|=uRETVALUE;                 /* function returns a value */
     /* check tagname with function tagname */
     assert(curfunc!=NULL);
-    if (!matchtag(curfunc->tag,tag,TRUE))
+    if (!matchtag_string(ident, tag) && !matchtag(curfunc->tag,tag,TRUE))
       error(213);                       /* tagname mismatch */
     if (ident==iARRAY || ident==iREFARRAY) {
       int dim[sDIMEN_MAX],numdim;

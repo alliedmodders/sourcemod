@@ -282,6 +282,44 @@ static void (*unopers[])(void) = { lneg, neg, user_inc, user_dec };
   return TRUE;
 }
 
+SC_FUNC int checktags_string(int tags[], int numtags, value *sym1)
+{
+  int i;
+  if (sym1->ident == iARRAY || sym1->ident == iREFARRAY)
+  {
+    return FALSE;
+  }
+  for (i=0; i<numtags; i++) {
+    if ((sym1->tag == pc_tag_string && tags[i] == 0) ||
+		(sym1->tag == 0 && tags[i] == pc_tag_string))
+      return TRUE;
+  }
+  return FALSE;
+}
+
+SC_FUNC int checktag_string(value *sym1, value *sym2)
+{
+  if (sym1->ident == iARRAY || sym2->ident == iARRAY
+	  || sym1->ident == iREFARRAY || sym2->ident == iREFARRAY)
+  {
+    return FALSE;
+  }
+  if ((sym1->tag == pc_tag_string && sym2->tag == 0)
+	  || (sym1->tag == 0 && sym2->tag == pc_tag_string))
+  {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+SC_FUNC int matchtag_string(int ident, int tag)
+{
+  if (ident == iARRAY || ident == iREFARRAY)
+    return FALSE;
+  return (tag == pc_tag_string) ? TRUE : FALSE;
+}
+
 SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
 {
   if (formaltag!=actualtag) {
@@ -781,7 +819,7 @@ static void plnge2(void (*oper)(void),
         error(213);             /* tagname mismatch */
       lval1->constval=calc(lval1->constval,oper,lval2->constval,&lval1->boolresult);
     } else {
-      if (!matchtag(lval1->tag,lval2->tag,FALSE))
+      if (!checktag_string(lval1, lval2) && !matchtag(lval1->tag,lval2->tag,FALSE))
         error(213);             /* tagname mismatch */
       (*oper)();                /* do the (signed) operation */
       lval1->ident=iEXPRESSION;
@@ -1205,7 +1243,7 @@ static int hier14(value *lval1)
     check_userop(NULL,lval2.tag,lval3.tag,2,&lval3,&lval2.tag);
     store(&lval3);      /* now, store the expression result */
   } /* if */
-  if (!oper && !matchtag(lval3.tag,lval2.tag,TRUE))
+  if (!oper && !checktag_string(&lval3, &lval2) && !matchtag(lval3.tag,lval2.tag,TRUE))
     error(213);         /* tagname mismatch (if "oper", warning already given in plunge2()) */
   if (lval3.sym)
     markusage(lval3.sym,uWRITTEN);
@@ -1658,6 +1696,10 @@ static int hier2(value *lval)
           popreg(sPRI);         /* restore PRI (result of rvalue()) */
         sideeffect=TRUE;
         return FALSE;
+/* This is temporarily disabled because we detect it automatically.
+ * Thus, it could be weird if both were used at once
+ */
+#if 0
       case tCHAR:               /* char (compute required # of cells */
         if (lval->ident==iCONSTEXPR) {
           lval->constval *= sCHARBITS/8;  /* from char to bytes */
@@ -1670,6 +1712,7 @@ static int hier2(value *lval)
           addr2cell();          /* truncate to number of cells */
         } /* if */
         return FALSE;
+#endif
       default:
         lexpush();
         return lvalue;
@@ -1745,7 +1788,7 @@ restart:
           assert(sym->dim.array.level>=0 && sym->dim.array.level<sDIMEN_MAX);
           lval1->arrayidx[sym->dim.array.level]=lval2.constval;
         } /* if */
-        if (close==']') {
+        if (close==']' && !(sym->tag == pc_tag_string && sym->dim.array.level == 0)) {
           /* normal array index */
           if (lval2.constval<0 || sym->dim.array.length!=0 && sym->dim.array.length<=lval2.constval)
             error(32,sym->name);        /* array index out of bounds */
@@ -1826,7 +1869,11 @@ restart:
       } /* if */
       assert(sym->dim.array.level==0);
       /* set type to fetch... INDIRECTLY */
-      lval1->ident= (char)((close==']') ? iARRAYCELL : iARRAYCHAR);
+      if (sym->tag == pc_tag_string) {
+        lval1->ident = iARRAYCHAR;
+      } else {
+        lval1->ident= (char)((close==']') ? iARRAYCELL : iARRAYCHAR);
+      }
       /* if the array index is a field from an enumeration, get the tag name
        * from the field and save the size of the field too. Otherwise, the
        * tag is the one from the array symbol.
@@ -2105,7 +2152,7 @@ static int findnamedarg(arginfo *arg,char *name)
   return -1;
 }
 
-static int checktag(int tags[],int numtags,int exprtag)
+int checktag(int tags[],int numtags,int exprtag)
 {
   int i;
 
@@ -2281,12 +2328,8 @@ static int nesting=0;
               heapalloc+=markheap(MEMUSE_STATIC, 1);
               nest_stkusage++;
             } /* if */
-          } else if (lval.ident==iCONSTEXPR || lval.ident==iEXPRESSION
-                     || lval.ident==iARRAYCHAR)
+          } else if (lval.ident==iCONSTEXPR || lval.ident==iEXPRESSION)
           {
-            /* fetch value if needed */
-            if (lval.ident==iARRAYCHAR)
-              rvalue(&lval);
             /* allocate a cell on the heap and store the
              * value (already in PRI) there */
             setheap_pri();        /* address of the value on the heap in PRI */
@@ -2297,7 +2340,8 @@ static int nesting=0;
           /* otherwise, the address is already in PRI */
           if (lval.sym!=NULL)
             markusage(lval.sym,uWRITTEN);
-          if (!checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
+          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval)
+              && !checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
             error(213);
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
@@ -2311,14 +2355,15 @@ static int nesting=0;
           /* otherwise, the expression result is already in PRI */
           assert(arg[argidx].numtags>0);
           check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
-          if (!checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
+          if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval)
+              && !checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
             error(213);
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           argidx++;               /* argument done */
           break;
         case iREFERENCE:
-          if (!lvalue || lval.ident==iARRAYCHAR)
+          if (!lvalue)
             error(35,argidx+1);   /* argument type mismatch */
           if (lval.sym!=NULL && (lval.sym->usage & uCONST)!=0 && (arg[argidx].usage & uCONST)==0)
             error(35,argidx+1);   /* argument type mismatch */
@@ -2343,7 +2388,7 @@ static int nesting=0;
           break;
         case iREFARRAY:
           if (lval.ident!=iARRAY && lval.ident!=iREFARRAY
-              && lval.ident!=iARRAYCELL)
+              && lval.ident!=iARRAYCELL && lval.ident!=iARRAYCHAR)
           {
             error(35,argidx+1);   /* argument type mismatch */
             break;
@@ -2354,7 +2399,7 @@ static int nesting=0;
            * A literal array always has a single dimension.
            * An iARRAYCELL parameter is also assumed to have a single dimension.
            */
-          if (lval.sym==NULL || lval.ident==iARRAYCELL) {
+          if (lval.sym==NULL || lval.ident==iARRAYCELL || lval.ident==iARRAYCHAR) {
             if (arg[argidx].numdim!=1) {
               error(48);        /* array dimensions must match */
             } else if (arg[argidx].dim[0]!=0) {
@@ -2372,14 +2417,14 @@ static int nesting=0;
                   error(47);      /* array sizes must match */
               } /* if */
             } /* if */
-            if (lval.ident!=iARRAYCELL) {
+            if (lval.ident!=iARRAYCELL && lval.ident!=iARRAYCHAR) {
               /* save array size, for default values with uSIZEOF flag */
               cell array_sz=lval.constval;
               assert(array_sz!=0);/* literal array must have a size */
               if (array_sz<0)
                 array_sz= -array_sz;
               append_constval(&arrayszlst,arg[argidx].name,array_sz,0);
-            } /* if */
+            }/* if */
           } else {
             symbol *sym=lval.sym;
             short level=0;
@@ -2669,6 +2714,7 @@ static int constant(value *lval)
                                  * value distinguishes between literal arrays
                                  * and literal strings (this was done for
                                  * array assignment). */
+	lval->tag=pc_tag_string;
   } else if (tok=='{') {
     int tag,lasttag=-1;
     val=litidx;

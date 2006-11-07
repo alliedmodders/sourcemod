@@ -567,9 +567,13 @@ SC_FUNC char *itoh(ucell val);
 SC_FUNC int check_userop(void (*oper)(void),int tag1,int tag2,int numparam,
                          value *lval,int *resulttag);
 SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce);
+SC_FUNC int checktag(int tags[],int numtags,int exprtag);
 SC_FUNC int expression(cell *val,int *tag,symbol **symptr,int chkfuncresult);
 SC_FUNC int sc_getstateid(constvalue **automaton,constvalue **state);
 SC_FUNC cell array_totalsize(symbol *sym);
+SC_FUNC int matchtag_string(int ident, int tag);
+SC_FUNC int checktag_string(value *sym1, value *sym2);
+SC_FUNC int checktags_string(int tags[], int numtags, value *sym1);
 
 /* function prototypes in SC4.C */
 SC_FUNC void writeleader(symbol *root);
@@ -809,6 +813,7 @@ SC_VDECL int sc_curstates;    /* ID of the current state list */
 SC_VDECL int pc_optimize;     /* (peephole) optimization level */
 SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
 SC_VDECL int pc_functag;      /* global function tag */
+SC_VDECL int pc_tag_string;   /* global string tag */
 
 SC_VDECL constvalue sc_automaton_tab; /* automaton table */
 SC_VDECL constvalue sc_state_tab;     /* state table */

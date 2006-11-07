@@ -1795,7 +1795,7 @@ static const unsigned char *packedstring(const unsigned char *lptr,int flags)
   int i;
   ucell val,c;
 
-  i=sizeof(ucell)-(sCHARBITS/8); /* start at most significant byte */
+  i=0; /* start at least significant byte */
   val=0;
   while (*lptr!='\"' && *lptr!='\0') {
     if (*lptr=='\a') {          /* ignore '\a' (which was inserted at a line concatenation) */
@@ -1806,14 +1806,16 @@ static const unsigned char *packedstring(const unsigned char *lptr,int flags)
     if (c>=(ucell)(1 << sCHARBITS))
       error(43);                /* character constant exceeds range */
     val |= (c << 8*i);
-    if (i==0) {
+    if (i==sizeof(ucell)-(sCHARBITS/8)) {
       litadd(val);
       val=0;
-    } /* if */
-    i=(i+sizeof(ucell)-(sCHARBITS/8)) % sizeof(ucell);
+      i=0;
+    } else {
+      i=i+1;
+    }
   } /* if */
   /* save last code; make sure there is at least one terminating zero character */
-  if (i!=(int)(sizeof(ucell)-(sCHARBITS/8)))
+  if (i!=0)
     litadd(val);        /* at least one zero character in "val" */
   else
     litadd(0);          /* add full cell of zeros */
@@ -1875,7 +1877,7 @@ char *sc_tokens[] = {
          "*=", "/=", "%=", "+=", "-=", "<<=", ">>>=", ">>=", "&=", "^=", "|=",
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
-         "assert", "*begin", "break", "case", "char", "const", "continue", "default",
+         "assert", "*begin", "break", "case", "chars", "const", "continue", "default",
          "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "funcenum", "goto",
          "if", "native", "new", "decl", "operator", "public", "return", "sizeof",
          "sleep", "state", "static", "stock", "switch", "tagof", "*then", "while",
@@ -2008,6 +2010,7 @@ SC_FUNC int lex(cell *lexvalue,char **lexsym)
     lptr+=1;            /* skip double quote */
     if ((stringflags & RAWMODE)!=0)
       lptr+=1;          /* skip "escape" character too */
+    /* Note that this should always be packedstring() for SourcePawn */
     lptr=sc_packstr ? packedstring(lptr,stringflags) : unpackedstring(lptr,stringflags);
     if (*lptr=='\"')
       lptr+=1;          /* skip final quote */

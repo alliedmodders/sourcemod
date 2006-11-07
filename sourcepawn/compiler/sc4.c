@@ -961,12 +961,16 @@ SC_FUNC void char2addr(void)
  * The ALIGN.pri/alt instructions must solve this machine dependence;
  * that is, on Big Endian computers, ALIGN.pri/alt shuold do nothing
  * and on Little Endian computers they should toggle the address.
+ *
+ * NOTE: For Source Pawn, this is fliped.  It will do nothing on Little-Endian.
  */
 SC_FUNC void charalign(void)
 {
+#if 0	/* TEMPORARILY DISABLED BECAUSE WE DON'T USE BIG ENDIAN */
   stgwrite("\talign.pri ");
   outval(sCHARBITS/8,TRUE);
   code_idx+=opcodes(1)+opargs(1);
+#endif
 }
 
 /*
