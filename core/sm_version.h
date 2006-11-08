@@ -1,6 +1,10 @@
 #ifndef _INCLUDE_SOURCEMOD_VERSION_H_
 #define _INCLUDE_SOURCEMOD_VERSION_H_
 
+/**
+ * @file Contains SourceMod version information.
+ */
+
 #define SOURCEMOD_VERSION	"0.0.0.0"
 #define SOURCEMOD_V_MAJOR	0
 #define SOURCEMOD_V_MINOR	0

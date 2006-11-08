@@ -3,6 +3,10 @@
 
 #include <ISmmPlugin.h>
 
+/**
+ * @file Contains wrappers around required Metamod:Source API exports
+ */
+
 class SourceMod_Core : public ISmmPlugin
 {
 public:

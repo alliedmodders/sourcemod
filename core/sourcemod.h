@@ -3,6 +3,10 @@
 
 #include "sm_globals.h"
 
+/**
+ * @brief Implements SourceMod's global overall management, API, and logic
+ */
+
 class SourceModBase
 {
 public:

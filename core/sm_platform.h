@@ -1,6 +1,10 @@
 #ifndef _INCLUDE_SOURCEMOD_PLATFORM_H_
 #define _INCLUDE_SOURCEMOD_PLATFORM_H_
 
+/**
+ * @file Contains platform-specific macros for abstraction.
+ */
+
 #if defined WIN32 || defined WIN64
 #define PLATFORM_WINDOWS
 #if !defined WIN32_LEAN_AND_MEAN
