@@ -22,7 +22,7 @@ public:
 	const char *GetLogTag();
 };
 
-extern SourceMod_Core g_SourceMod;
+extern SourceMod_Core g_SourceMod_Core;
 
 PLUGIN_GLOBALVARS();
 

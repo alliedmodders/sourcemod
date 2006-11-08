@@ -11,6 +11,7 @@
 #endif
 #include <windows.h>
 #include <direct.h>
+#define PLATFORM_LIB_EXT		"dll"
 #define PLATFORM_MAX_PATH		MAX_PATH
 #else if defined __linux__
 #define PLATFORM_LINUX
@@ -18,6 +19,7 @@
 #include <dirent.h>
 #include <errno.h>
 #define PLATFORM_MAX_PATH		PATH_MAX
+#define PLATFORM_LIB_EXT		"so"
 #endif
 
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_

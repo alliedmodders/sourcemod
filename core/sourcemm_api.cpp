@@ -1,17 +1,17 @@
 #include <oslink.h>
 #include "sourcemm_api.h"
 #include "sm_version.h"
-#include "CTextParsers.h"
+#include "sourcemod.h"
 
-SourceMod_Core g_SourceMod;
+SourceMod_Core g_SourceMod_Core;
 
-PLUGIN_EXPOSE(SourceMod, g_SourceMod);
+PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();
 
-	return true;
+	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }
 
 bool SourceMod_Core::Unload(char	*error, size_t maxlen)

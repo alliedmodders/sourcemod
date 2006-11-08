@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\interfaces;..\"
+				AdditionalIncludeDirectories="..\interfaces;..\;..\systems"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -186,6 +186,10 @@
 				RelativePath="..\sourcemm_api.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\sourcemod.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -194,6 +198,10 @@
 			>
 			<File
 				RelativePath="..\CTextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_globals.h"
 				>
 			</File>
 			<File
@@ -212,12 +220,6 @@
 				RelativePath="..\sourcemod.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="Interfaces"
@@ -409,6 +411,12 @@
 					RelativePath="..\vm\sp_vm_engine.cpp"
 					>
 				</File>
+			</Filter>
+			<Filter
+				Name="Resource Files"
+				Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+				UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+				>
 			</Filter>
 		</Filter>
 	</Files>
