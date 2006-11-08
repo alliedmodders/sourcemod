@@ -1751,7 +1751,7 @@ restart:
   sym=cursym;
   if (matchtoken('[') || matchtoken('{') || matchtoken('(')) {
     tok=tokeninfo(&val,&st);    /* get token read by matchtoken() */
-    magic_string = (sym->tag == pc_tag_string && sym->dim.array.level == 0);
+    magic_string = (sym && (sym->tag == pc_tag_string && sym->dim.array.level == 0));
     if (sym==NULL && symtok!=tSYMBOL) {
       /* we do not have a valid symbol and we appear not to have read a valid
        * symbol name (so it is unlikely that we would have read a name of an
