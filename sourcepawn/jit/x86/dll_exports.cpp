@@ -5,9 +5,11 @@
 SourcePawn::ISourcePawnEngine *engine = NULL;
 JITX86 jit;
 
-EXPORTFUNC void GiveEnginePointer(SourcePawn::ISourcePawnEngine *engine_p)
+EXPORTFUNC int GiveEnginePointer(SourcePawn::ISourcePawnEngine *engine_p)
 {
 	engine = engine_p;
+
+	return 0;
 }
 
 EXPORTFUNC unsigned int GetExportCount()
