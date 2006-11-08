@@ -36,7 +36,8 @@ public:
 	virtual bool ParseFile_SMC(const char *file, 
 		ITextListener_SMC *smc_listener, 
 		unsigned int *line, 
-		unsigned int *col);
+		unsigned int *col,
+		bool strict);
 
 	virtual unsigned int GetUTF8CharBytes(const char *stream);
 };

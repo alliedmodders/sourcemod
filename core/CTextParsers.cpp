@@ -33,13 +33,9 @@ unsigned int CTextParsers::GetUTF8CharBytes(const char *stream)
 	return _GetUTF8CharBytes(stream);
 }
 
-bool CTextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc_listener, unsigned int *line, unsigned int *col)
+bool CTextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc_listener, unsigned int *line, unsigned int *col, bool strict)
 {
-	/* :TODO: Implement this */
-	if (line)
-	{
-		*line = 0;
-	}
+	/* This beast is a lot more rigorous than our INI friend. */
 
 	return false;
 }
@@ -247,7 +243,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 				{
 					if (g_ws_chartable[c])
 					{
-						/* if it's a space, keep track of the last space */
+						/* if it's a space, keep track of the first occurring space */
 						if (!first_space)
 						{
 							first_space = i;

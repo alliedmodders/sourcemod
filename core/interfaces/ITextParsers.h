@@ -140,11 +140,28 @@ namespace SourceMod
 	public:
 		enum SMCParseResult
 		{
-			SMCParse_Continue,
-			SMCParse_SkipSection,
-			SMCParse_Halt,
-			SMCParse_HaltFail
+			SMCParse_Continue,		//continue parsing
+			SMCParse_SkipSection,	//skip the rest of the current section
+			SMCParse_Halt,			//stop parsing here
+			SMCParse_HaltFail		//stop parsing and return failure
 		};
+
+		/**
+		 * @brief Called when starting parsing.
+		 */
+		virtual void ReadSMC_ParseStart()
+		{
+		};
+
+		/**
+		 * @brief Called when ending parsing.
+		 *
+		 * @param halted			True if abnormally halted, false otherwise.
+		 * @param failed			True if parsing failed, false otherwise.
+		 */
+		virtual void ReadSMC_ParseEnd(bool halted, bool failed)
+		{
+		}
 
 		/**
 		 * @brief Called when entering a new section
@@ -152,13 +169,11 @@ namespace SourceMod
 		 * @param name			Name of section, with the colon omitted.
 		 * @param option		Optional text after the colon, quotes removed.  NULL if none.
 		 * @param colon			Whether or not the required ':' was encountered.
-		 * @param start_token	Whether a start token was detected.
 		 * @return				SMCParseResult directive.
 		 */
 		virtual SMCParseResult ReadSMC_NewSection(const char *name, 
 													const char *option, 
-													bool colon, 
-													bool start_token)
+													bool colon)
 		{
 			return SMCParse_Continue;
 		}
@@ -183,11 +198,23 @@ namespace SourceMod
 
 		/**
 		 * @brief Called when leaving the current section.
+		 * Note: Skipping the section has no meaning here.
 		 *
-		 * @param end_token		Whether an end token was detected.
 		 * @return				SMCParseResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_LeavingSection(bool end_token)
+		virtual SMCParseResult ReadSMC_LeavingSection()
+		{
+			return SMCParse_Continue;
+		}
+
+		/**
+		 * @brief Called after an input line has been preprocessed.
+		 *
+		 * @param line			String containing line input.
+		 * @param curline		Number of line in file.
+		 * @return				SMCParseResult directive.
+		 */
+		virtual SMCParseResult ReadSMC_RawLine(const char *line, unsigned int curline)
 		{
 			return SMCParse_Continue;
 		}
@@ -232,12 +259,14 @@ namespace SourceMod
 		 * @param smc_listener	Event handler for reading file.
 		 * @param line			If non-NULL, will contain last line parsed (0 if file could not be opened).
 		 * @param col			If non-NULL, will contain last column parsed (undefined if file could not be opened).
+		 * @param strict		If strict mode is enabled, the parsing rules are obeyed rigorously rather than loosely.
 		 * @return				True if parsing succeded, false if file couldn't be opened or there was a syntax error.
 		 */
 		virtual bool ParseFile_SMC(const char *file, 
 									ITextListener_SMC *smc_listener, 
 									unsigned int *line, 
-									unsigned int *col) =0;
+									unsigned int *col,
+									bool strict) =0;
 	public:
 		/**
 		 * @brief Returns the number of bytes that a multi-byte character contains in a UTF-8 stream.
