@@ -1747,13 +1747,20 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 	sp_native_t *native = &ctx->natives[native_idx];
 	
 	/* Technically both aren't needed, I guess */
-	if (native->status == SP_NATIVE_NONE)
+	if (native->status == SP_NATIVE_UNBOUND)
 	{
-		ctx->err = SP_ERROR_NATIVE_PENDING;
+		ctx->err = SP_ERROR_INVALID_NATIVE;
 		return 0;
 	}
 
 	return native->pfn(ctx, params);
+}
+
+cell_t InvalidNative(sp_context_t *ctx, cell_t *params)
+{
+	ctx->err = SP_ERROR_INVALID_NATIVE;
+
+	return 0;
 }
 
 cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
@@ -2002,7 +2009,9 @@ jit_rewind:
 		for (iter=0; iter<max; iter++)
 		{
 			ctx->publics[iter].name = strbase + plugin->info.publics[iter].name;
-			ctx->publics[iter].offs = RelocLookup(jit, plugin->info.publics[iter].address, false);
+			ctx->publics[iter].code_offs = RelocLookup(jit, plugin->info.publics[iter].address, false);
+			/* Encode the ID as a straight code offset */
+			ctx->publics[iter].funcid = (ctx->publics[iter].code_offs << 1);
 		}
 	}
 
@@ -2025,8 +2034,8 @@ jit_rewind:
 		for (iter=0; iter<max; iter++)
 		{
 			ctx->natives[iter].name = strbase + plugin->info.natives[iter].name;
-			ctx->natives[iter].pfn = NULL;
-			ctx->natives[iter].status = SP_NATIVE_NONE;
+			ctx->natives[iter].pfn = &InvalidNative;
+			ctx->natives[iter].status = SP_NATIVE_UNBOUND;
 		}
 	}
 

@@ -38,9 +38,9 @@ namespace SourcePawn
 		virtual int PushString(cell_t *local_addr, cell_t **phys_addr, const char *string);
 		virtual int PushCellsFromArray(cell_t array[], unsigned int numcells);
 		virtual int BindNatives(sp_nativeinfo_t *natives, unsigned int num, int overwrite);
-		virtual int BindNative(sp_nativeinfo_t *native, uint32_t status);
+		virtual int BindNative(sp_nativeinfo_t *native);
 		virtual int BindNativeToAny(SPVM_NATIVE_FUNC native);
-		virtual int Execute(uint32_t public_func, cell_t *result);
+		virtual int Execute(funcid_t funcid, cell_t *result);
 	public: //IPluginDebugInfo
 		virtual int LookupFile(ucell_t addr, const char **filename);
 		virtual int LookupFunction(ucell_t addr, const char **name);

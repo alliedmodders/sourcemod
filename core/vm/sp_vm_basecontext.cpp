@@ -48,17 +48,24 @@ IPluginDebugInfo *BaseContext::GetDebugInfo()
 	return this;
 }
 
-int BaseContext::Execute(uint32_t public_func, cell_t *result)
+int BaseContext::Execute(funcid_t funcid, cell_t *result)
 {
 	IVirtualMachine *vm = (IVirtualMachine *)ctx->vmbase;
 
 	uint32_t pushcount = ctx->pushcount;
-
+	uint32_t code_addr;
 	int err;
-	sp_public_t *pubfunc;
-	if ((err=GetPublicByIndex(public_func, &pubfunc)) != SP_ERROR_NONE)
+
+	if (funcid & 1)
 	{
-		return err;
+		sp_public_t *pubfunc;
+		if ((err=GetPublicByIndex((funcid>>1), &pubfunc)) != SP_ERROR_NONE)
+		{
+			return err;
+		}
+		code_addr = pubfunc->code_offs;
+	} else {
+		code_addr = funcid >> 1;
 	}
 
 	PushCell(pushcount++);
@@ -67,7 +74,7 @@ int BaseContext::Execute(uint32_t public_func, cell_t *result)
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
-	err = vm->ContextExecute(ctx, pubfunc->offs, result);
+	err = vm->ContextExecute(ctx, code_addr, result);
 	
 	/**
 	 * :TODO: turn this into an error check
@@ -338,7 +345,7 @@ int BaseContext::BindNatives(sp_nativeinfo_t *natives, unsigned int num, int ove
 
 	for (i=0; i<max; i++)
 	{
-		if ((ctx->natives[i].status == SP_NATIVE_OKAY) && !overwrite)
+		if ((ctx->natives[i].status == SP_NATIVE_BOUND) && !overwrite)
 		{
 			continue;
 		}
@@ -348,7 +355,7 @@ int BaseContext::BindNatives(sp_nativeinfo_t *natives, unsigned int num, int ove
 			if (!strcmp(ctx->natives[i].name, natives[j].name))
 			{
 				ctx->natives[i].pfn = natives[j].func;
-				ctx->natives[i].status = SP_NATIVE_OKAY;
+				ctx->natives[i].status = SP_NATIVE_BOUND;
 			}
 		}
 	}
@@ -356,7 +363,7 @@ int BaseContext::BindNatives(sp_nativeinfo_t *natives, unsigned int num, int ove
 	return SP_ERROR_NONE;
 }
 
-int BaseContext::BindNative(sp_nativeinfo_t *native, uint32_t status)
+int BaseContext::BindNative(sp_nativeinfo_t *native)
 {
 	uint32_t index;
 	int err;
@@ -367,7 +374,6 @@ int BaseContext::BindNative(sp_nativeinfo_t *native, uint32_t status)
 	}
 
 	ctx->natives[index].pfn = native->func;
-	ctx->natives[index].status = status;
 
 	return SP_ERROR_NONE;
 }
@@ -380,10 +386,9 @@ int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 
 	for (i=0; i<nativesnum; i++)
 	{
-		if (ctx->natives[i].status != SP_NATIVE_OKAY)
+		if (ctx->natives[i].status == SP_NATIVE_UNBOUND)
 		{
 			ctx->natives[i].pfn = native;
-			ctx->natives[i].status = SP_NATIVE_PENDING;
 		}
 	}
 

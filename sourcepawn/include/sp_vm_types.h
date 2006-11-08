@@ -5,6 +5,7 @@
 
 typedef	uint32_t	ucell_t;
 typedef int32_t		cell_t;
+typedef uint32_t	funcid_t;
 
 /**
  * Error codes
@@ -17,20 +18,20 @@ typedef int32_t		cell_t;
 #define SP_ERROR_INVALID_ADDRESS		5	/* A memory address was not valid */
 #define SP_ERROR_NOT_FOUND				6	/* The object in question was not found */
 #define SP_ERROR_INDEX					7	/* Invalid index parameter */
-#define SP_ERROR_NATIVE_PENDING			8	/* A script tried to exec an unbound native */
-#define SP_ERROR_STACKLOW				9	/* Nnot enough space left on the stack */
-#define SP_ERROR_NOTDEBUGGING			10	/* Debug mode was not on or debug section not found */
-#define SP_ERROR_INVALID_INSTRUCTION	11	/* Invalid instruction was encountered */
-#define SP_ERROR_MEMACCESS				12	/* Invalid memory access */
-#define SP_ERROR_STACKMIN				13	/* Stack went beyond its minimum value */
-#define SP_ERROR_HEAPMIN				14  /* Heap went beyond its minimum value */
-#define SP_ERROR_DIVIDE_BY_ZERO			15	/* Division by zero */
-#define SP_ERROR_ARRAY_BOUNDS			16	/* Array index is out of bounds */
-#define SP_ERROR_INSTRUCTION_PARAM		17	/* Instruction had an invalid parameter */
-#define SP_ERROR_STACKLEAK				18  /* A native leaked an item on the stack */
-#define SP_ERROR_HEAPLEAK				19  /* A native leaked an item on the heap */
-#define SP_ERROR_ARRAY_TOO_BIG			20	/* A dynamic array is too big */
-#define SP_ERROR_TRACKER_BOUNDS			21	/* Tracker stack is out of bounds */
+#define SP_ERROR_STACKLOW				8	/* Nnot enough space left on the stack */
+#define SP_ERROR_NOTDEBUGGING			9	/* Debug mode was not on or debug section not found */
+#define SP_ERROR_INVALID_INSTRUCTION	10	/* Invalid instruction was encountered */
+#define SP_ERROR_MEMACCESS				11	/* Invalid memory access */
+#define SP_ERROR_STACKMIN				12	/* Stack went beyond its minimum value */
+#define SP_ERROR_HEAPMIN				13  /* Heap went beyond its minimum value */
+#define SP_ERROR_DIVIDE_BY_ZERO			14	/* Division by zero */
+#define SP_ERROR_ARRAY_BOUNDS			15	/* Array index is out of bounds */
+#define SP_ERROR_INSTRUCTION_PARAM		16	/* Instruction had an invalid parameter */
+#define SP_ERROR_STACKLEAK				17  /* A native leaked an item on the stack */
+#define SP_ERROR_HEAPLEAK				18  /* A native leaked an item on the heap */
+#define SP_ERROR_ARRAY_TOO_BIG			19	/* A dynamic array is too big */
+#define SP_ERROR_TRACKER_BOUNDS			20	/* Tracker stack is out of bounds */
+#define SP_ERROR_INVALID_NATIVE			21	/* Native was pending or invalid */
 
 /**********************************************
  *** The following structures are reference structures.
@@ -117,7 +118,8 @@ typedef cell_t (*SPVM_NATIVE_FUNC)(struct sp_context_s *, cell_t *);
  */
 typedef struct sp_public_s
 {
-	uint32_t	offs;		/* code offset */
+	funcid_t	funcid;		/* encoded function id */
+	uint32_t	code_offs;	/* code offset */
 	const char *name;		/* name */
 } sp_public_t;
 
@@ -132,9 +134,8 @@ typedef struct sp_pubvar_s
 	const char *name;		/* name */
 } sp_pubvar_t;
 
-#define SP_NATIVE_NONE		(0)		/* Native is not yet found */
-#define SP_NATIVE_OKAY		(1)		/* Native has been added */
-#define SP_NATIVE_PENDING	(2)		/* Native is marked as usable but replaceable */
+#define SP_NATIVE_UNBOUND		(0)		/* Native is undefined */
+#define SP_NATIVE_BOUND			(1)		/* Native is bound */
 
 /** 
  * Native lookup table, by default names

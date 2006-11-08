@@ -8,6 +8,9 @@ namespace SourcePawn
 {
 	class IVirtualMachine;
 
+	/**
+	 * @brief Interface to managing a debug context at runtime.
+	 */
 	class IPluginDebugInfo
 	{
 	public:
@@ -36,6 +39,9 @@ namespace SourcePawn
 		virtual int LookupLine(ucell_t addr, uint32_t *line) =0;
 	};
 
+	/**
+	 * @brief Interface to managing a context at runtime.
+	 */
 	class IPluginContext
 	{
 	public:
@@ -260,7 +266,6 @@ namespace SourcePawn
 		/** 
 		 * Binds a list of native names and their function pointers to a context.
 		 * If num is 0, the list is read until an entry with a NULL name is reached.
-		 * All natives are assigned a status of SP_NATIVE_OKAY by default.
 		 * If overwrite is non-zero, already registered natives will be overwritten.
 		 * 
 		 * @param natives		Array of natives.
@@ -272,29 +277,31 @@ namespace SourcePawn
 		/**
 		 * Binds a single native.  Overwrites any existing bind.
 		 * If the context does not contain the native that will be binded the function will return
-		 *  with a SP_ERROR_OT_FOUND error.
+		 *  with a SP_ERROR_NOT_FOUND error.
 		 *
 		 * @param native		Pointer to native.
-		 * @param status		Status value to set (should be SP_NATIVE_OKAY).
 		 */
-		virtual int BindNative(sp_nativeinfo_t *native, uint32_t status) =0;
+		virtual int BindNative(sp_nativeinfo_t *native) =0;
 
 		/**
-		 * Binds a single native to any non-registered or pending native.
-		 * Status is automatically set to pending.
+		 * Binds a single native to any non-registered native.
 		 *
 		 * @param native		Native to bind.
 		 */
 		virtual int BindNativeToAny(SPVM_NATIVE_FUNC native) =0;
 
 		/**
-		 * Executes a public function.
+		 * Executes a function ID located in this context.
+		 *
+		 * @param funcid		Function id to execute.
+		 * @param result		Pointer to store the return value (required).
+		 * @return				Error code (if any) from the VM.
 		 */
-		virtual int Execute(uint32_t public_func, cell_t *result) =0;
+		virtual int Execute(uint32_t funcid, cell_t *result) =0;
 	};
 
 	/**
-	 * Contains helper functions used by VMs and the host app
+	 * @brief Contains helper functions used by VMs and the host app
 	 */
 	class ISourcePawnEngine
 	{
@@ -379,6 +386,9 @@ namespace SourcePawn
 		virtual ~ICompilation() { };
 	};
 
+	/** 
+	 * @brief Outlines the interface a Virtual Machine (JIT) must expose
+	 */
 	class IVirtualMachine
 	{
 	public:

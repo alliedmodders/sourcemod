@@ -1965,10 +1965,10 @@ restart:
         lval1->ident=iCONSTEXPR;
         /* Generate a quick pseudo-tag! */
         if (usage == uPUBLIC) {
-          lval1->constval=(n>>1)|(1<<1);
+          lval1->constval=(n<<1)|1;
           snprintf(faketag, sizeof(faketag)-1, "$Func@%d", n);
         } else {
-          lval1->constval=(code_addr>>1)|(1<<0);
+          lval1->constval=(code_addr<<1)|0;
           snprintf(faketag, sizeof(faketag)-1, "$Func!%d", code_addr);
         }
         lval1->tag=pc_addfunctag(faketag);
