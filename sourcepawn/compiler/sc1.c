@@ -88,8 +88,10 @@ static void dumpzero(int count);
 static void declfuncvar(int fpublic,int fstatic,int fstock,int fconst);
 static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,
                     int stock,int fconst);
+static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct);
 static int declloc(int fstatic);
 static void decl_const(int table);
+static void declstruct();
 static void decl_enum(int table);
 static cell needsub(int *tag,constvalue **enumroot);
 static void initials(int ident,int tag,cell *size,int dim[],int numdim,
@@ -326,6 +328,7 @@ int pc_compile(int argc, char *argv[])
       inst_datetime_defines();
     #endif
     resetglobals();
+    pstructs_free();
 	funcenums_free();
     sc_ctrlchar=sc_ctrlchar_org;
     sc_packstr=lcl_packstr;
@@ -388,6 +391,7 @@ int pc_compile(int argc, char *argv[])
   reduce_referrers(&glbtab);
   delete_symbols(&glbtab,0,TRUE,FALSE);
   funcenums_free();
+  pstructs_free();
   #if !defined NO_DEFINE
     delete_substtable();
     inst_datetime_defines();
@@ -1414,6 +1418,9 @@ static void parse(void)
     case tFUNCENUM:
       dofuncenum();
       break;
+    case tSTRUCT:
+      declstruct();
+      break;
     case tPUBLIC:
       /* This can be a public function or a public variable; see the comment
        * above (for static functions/variables) for details.
@@ -1627,12 +1634,19 @@ static void insert_docstring_separator(void)
 static void declfuncvar(int fpublic,int fstatic,int fstock,int fconst)
 {
   char name[sNAMEMAX+11];
-  int tok,tag;
+  int tok,tag=0;
   char *str;
   cell val;
   int invalidfunc;
+  pstruct_t *pstruct = NULL;
 
-  tag=pc_addtag(NULL);
+  tok=lex(&val,&str);
+  if (tok == tLABEL) {
+    pstruct=pstructs_find(str);
+    tag=pc_addtag(str);
+  } else {
+    lexpush();
+  }
   tok=lex(&val,&str);
   /* if we arrived here, this may not be a declaration of a native function
    * or variable
@@ -1664,9 +1678,207 @@ static void declfuncvar(int fpublic,int fstatic,int fstock,int fconst)
     invalidfunc= fconst || (fpublic && fstock);
     if (invalidfunc || !newfunc(name,tag,fpublic,fstatic,fstock)) {
       /* if not a function, try a global variable */
-      declglb(name,tag,fpublic,fstatic,fstock,fconst);
+      if (pstruct) {
+        declstructvar(name,fpublic,pstruct);
+      } else {
+        declglb(name,tag,fpublic,fstatic,fstock,fconst);
+      }
     } /* if */
   } /* if */
+}
+
+/* declstruct	- declare global struct symbols
+ * 
+ * global references: glb_declared		(altered)
+ */
+static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
+{
+	char name[sNAMEMAX+1];
+	int tok,i;
+	cell val;
+	char *str;
+	int cur_litidx = 0;
+	cell *values, *found;
+	int usage;
+	symbol *mysym;
+
+	strcpy(name, firstname);
+
+	values = (cell *)malloc(pstruct->argcount * sizeof(cell));
+	found = (cell *)malloc(pstruct->argcount * sizeof(cell));
+	
+	memset(found, 0, sizeof(cell) * pstruct->argcount);
+
+
+	/**
+	 * Lastly, very lastly, we will insert a copy of this variable.
+	 * This is soley to expose the pubvar.
+	 */
+	usage = uDEFINE|uREAD|uCONST;
+	if (fpublic)
+	{
+		usage |= uPUBLIC;
+	}
+	mysym=addsym(name, 0, iVARIABLE, sGLOBAL, pc_addtag(pstruct->name), usage);
+
+	/* Maybe error with "public struct requires initialization?" */
+	if (!needtoken('='))
+	{
+		matchtoken(';');
+		return;
+	}
+	needtoken('{');
+	do
+	{
+		structarg_t *arg;
+		/* Detect early exit */
+		if (matchtoken('}'))
+		{
+			lexpush();
+			break;
+		}
+		tok=lex(&val,&str);
+		if (tok != tSYMBOL)
+		{
+			error(1, "-identifier-", str);
+			continue;
+		}
+		arg=pstructs_getarg(pstruct,str);
+		if (arg == NULL)
+		{
+			/* :TODO: change to "Could not find member %s in struct %s" */
+			error(31);
+		}
+		needtoken('=');
+		cur_litidx = litidx;
+		tok=lex(&val,&str);
+		if (!arg)
+		{
+			continue;
+		}
+		if (tok == tSTRING)
+		{
+			assert(litidx != 0);
+			if (arg->dimcount != 1)
+			{
+				error(48);
+			} else if (arg->tag != pc_tag_string) {
+				error(213);
+			}
+			values[arg->index] = glb_declared * sizeof(cell);
+			glb_declared += (litidx-cur_litidx);
+			found[arg->index] = 1;
+		} else if (tok == tNUMBER || tok == tRATIONAL) {
+			/* eat optional 'f' */
+			matchtoken('f');
+			if (arg->ident != iVARIABLE && arg->ident != iREFERENCE)
+			{
+				error(23);
+			} else {
+				if (arg->tag == pc_addtag("Float") && tok == tNUMBER ||
+					arg->tag == 0 && tok == tRATIONAL)
+				{
+					error(213);
+				}
+				if (arg->ident == iVARIABLE)
+				{
+					values[arg->index] = val;
+				} else if (arg->ident == iREFERENCE) {
+					values[arg->index] = glb_declared * sizeof(cell);
+					glb_declared += 1;
+					litadd(val);
+					cur_litidx = litidx;
+				}
+				found[arg->index] = 1;
+			}
+		} else if (tok == tSYMBOL) {
+			symbol *sym = NULL;
+			for (sym=glbtab.next; sym!=NULL; sym=sym->next)
+			{
+				if (sym->vclass != sGLOBAL)
+				{
+					continue;
+				}
+				if (strcmp(sym->name, str) == 0)
+				{
+					if (arg->ident == iREFERENCE && sym->ident != iVARIABLE)
+					{
+						/* :TODO: Change to "symbol \"%s\" does not have a matching type */
+						error(20, str);
+					} else if (arg->ident == iARRAY) {
+						if (sym->ident != iARRAY)
+						{
+							/* :TODO: Change to "symbol \"%s\" does not have a matching type */
+							error(20, str);
+						} else {
+							/* :TODO: We should check dimension sizes here... */
+						}
+					} else if (arg->ident == iREFARRAY) {
+						if (sym->ident != iARRAY)
+						{
+							/* :TODO: Change to "symbol \"%s\" does not have a matching type */
+							error(20, str);
+						}
+						/* :TODO: Check dimension sizes! */
+					} else {
+						/* :TODO: Change to "symbol \"%s\" does not have a matching type */
+						error(20, str);
+					}
+					if (sym->tag != arg->tag)
+					{
+						error(213);
+					}
+					sym->usage |= uREAD;
+					values[arg->index] = sym->addr;
+					found[arg->index] = 1;
+					refer_symbol(sym, mysym);
+					break;
+				}
+			}
+			if (!sym)
+			{
+				error(17, str);
+			}
+		} else {
+			error(1, "-identifier-", str);
+		}
+	} while (matchtoken(','));
+	needtoken('}');
+	matchtoken(';');	/* eat up optional semicolon */
+
+	for (i=0; i<pstruct->argcount; i++)
+	{
+		if (!found[i])
+		{
+			structarg_t *arg = pstruct->args[i];
+			if (arg->ident == iREFARRAY)
+			{
+				values[arg->index] = glb_declared * sizeof(cell);
+				glb_declared += 1;
+				litadd(0);
+				cur_litidx = litidx;
+			} else if (arg->ident == iVARIABLE) {
+				values[arg->index] = 0;
+			} else {
+				/* :TODO: broken for iARRAY! (unused tho) */
+			}
+		}
+	}
+
+	mysym->addr = glb_declared * sizeof(cell);
+	glb_declared += pstruct->argcount;
+
+	for (i=0; i<pstruct->argcount; i++)
+	{
+		litadd(values[i]);
+	}
+
+	begdseg();
+	dumplits();
+	litidx=0;
+
+	free(found);
+	free(values);
 }
 
 /*  declglb     - declare global symbols
@@ -2612,8 +2824,110 @@ static void decl_const(int vclass)
   needtoken(tTERM);
 }
 
-/* dofuncenum - declare function enumerations
- * 
+/*
+ * declstruct - declare a struct type
+ */
+static void declstruct(void)
+{
+	cell val;
+	char *str;
+	int tok;
+	pstruct_t *pstruct;
+	int size;
+
+	/* get the explicit tag (required!) */
+	tok = lex(&val,&str);
+	if (tok != tSYMBOL)
+	{
+		error(93);
+	}
+
+	if (pstructs_find(str) != NULL)
+	{
+		/* :TODO: change to "struct requires unique struct name" */
+		error(58);
+	}
+
+	pstruct = pstructs_add(str);
+
+	needtoken('{');
+	do
+	{
+		structarg_t arg;
+		if (matchtoken('}'))
+		{
+			/* Quick exit */
+			lexpush();
+			break;
+		}
+		memset(&arg, 0, sizeof(structarg_t));
+		tok = lex(&val,&str);
+		if (tok == tCONST)
+		{
+			arg.fconst = 1;
+			tok = lex(&val,&str);
+		}
+		arg.ident = 0;
+		if (tok == '&')
+		{
+			arg.ident = iREFERENCE;
+			tok = lex(&val,&str);
+		}
+		if (tok == tLABEL)
+		{
+			arg.tag = pc_addtag(str);
+			tok = lex(&val,&str);
+		}
+		if (tok != tSYMBOL)
+		{
+			error(1, "-identifier-", str);
+			continue;
+		}
+		strcpy(arg.name, str);
+		if (matchtoken('['))
+		{
+			if (arg.ident == iREFERENCE)
+			{
+				error(67, arg.name);
+			}
+			arg.ident = iARRAY;
+			do 
+			{
+				constvalue *enumroot;
+				int ignore_tag;
+				if (arg.dimcount == sDIMEN_MAX)
+				{
+					error(53);
+					break;
+				}
+				size = needsub(&ignore_tag, &enumroot);
+				arg.dims[arg.dimcount++] = size;
+			} while (matchtoken('['));
+			/* Handle strings */
+			if (arg.tag == pc_tag_string && arg.dims[arg.dimcount-1])
+			{
+				arg.dims[arg.dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
+			}
+			if (arg.dimcount == 1 && !arg.dims[arg.dimcount-1])
+			{
+				arg.ident = iREFARRAY;
+			}
+		} else if (!arg.ident) {
+			arg.ident = iVARIABLE;
+		}
+		if (pstructs_addarg(pstruct, &arg) == NULL)
+		{
+			/* :TODO: change to "struct member name appears more than once" */
+			error(58);
+		}
+	} while (matchtoken(','));
+	needtoken('}');
+	matchtoken(';');	/* eat up optional semicolon */
+}
+
+
+/**
+ * dofuncenum - declare function enumerations
  */
 static void dofuncenum(void)
 {
@@ -2750,7 +3064,8 @@ static void dofuncenum(void)
 						arg->dimcount += 1;
 					} while (matchtoken('['));
 					/* Handle strings */
-					if (arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
+					if ((arg->tagcount == 1 && arg->tags[0] == pc_tag_string)
+						&& arg->dims[arg->dimcount-1])
 					{
 						arg->dims[arg->dimcount-1] = (size + sizeof(cell)-1) / sizeof(cell);
 					}

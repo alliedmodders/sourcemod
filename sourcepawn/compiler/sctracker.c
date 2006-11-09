@@ -8,6 +8,112 @@ memuse_list_t *heapusage = NULL;
 memuse_list_t *stackusage = NULL;
 funcenum_t *firstenum = NULL;
 funcenum_t *lastenum = NULL;
+pstruct_t *firststruct = NULL;
+pstruct_t *laststruct = NULL;
+
+structarg_t *pstructs_getarg(pstruct_t *pstruct, const char *member)
+{
+	int i;
+
+	for (i=0; i<pstruct->argcount; i++)
+	{
+		if (strcmp(pstruct->args[i]->name, member) == 0)
+		{
+			return pstruct->args[i];
+		}
+	}
+
+	return NULL;
+}
+
+pstruct_t *pstructs_add(const char *name)
+{
+	pstruct_t *p = (pstruct_t *)malloc(sizeof(pstruct_t));
+	
+	memset(p, 0, sizeof(pstruct_t));
+	strcpy(p->name, name);
+	
+	if (!firststruct)
+	{
+		firststruct = p;
+		laststruct = p;
+	} else {
+		laststruct->next = p;
+		laststruct = p;
+	}
+
+	return p;
+}
+
+void pstructs_free()
+{
+	pstruct_t *p, *next;
+
+	p = firststruct;
+	while (p)
+	{
+		while (p->argcount--)
+		{
+			free(p->args[p->argcount]);
+		}
+		free(p->args);
+		next = p->next;
+		free(p);
+		p = next;
+	}
+	firststruct = NULL;
+	laststruct = NULL;
+}
+
+pstruct_t *pstructs_find(const char *name)
+{
+	pstruct_t *p = firststruct;
+
+	while (p)
+	{
+		if (strcmp(p->name, name) == 0)
+		{
+			return p;
+		}
+		p = p->next;
+	}
+
+	return NULL;
+}
+
+structarg_t *pstructs_addarg(pstruct_t *pstruct, const structarg_t *arg)
+{
+	structarg_t *newarg;
+	int i;
+
+	for (i=0; i<pstruct->argcount; i++)
+	{
+		if (strcmp(pstruct->args[i]->name, arg->name) == 0)
+		{
+			/* Don't allow dup names */
+			return NULL;
+		}
+	}
+	
+	newarg = (structarg_t *)malloc(sizeof(structarg_t));
+
+	memcpy(newarg, arg, sizeof(structarg_t));
+
+	if (pstruct->argcount == 0)
+	{
+		pstruct->args = (structarg_t **)malloc(sizeof(structarg_t *) * 1);
+	} else {
+		pstruct->args = (structarg_t **)realloc(
+							pstruct->args,
+							sizeof(structarg_t *) * (pstruct->argcount + 1));
+	}
+
+	newarg->offs = pstruct->argcount * sizeof(cell);
+	newarg->index = pstruct->argcount;
+	pstruct->args[pstruct->argcount++] = newarg;
+
+	return newarg;
+}
 
 void funcenums_free()
 {

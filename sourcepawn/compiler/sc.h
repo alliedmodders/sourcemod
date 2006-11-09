@@ -285,7 +285,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    330    /* value of last multi-character match-able token */
+#define tLAST    331    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -343,38 +343,39 @@ typedef struct s_stringpair {
 #define tSTATE   308
 #define tSTATIC  309
 #define tSTOCK   310
-#define tSWITCH  311
-#define tTAGOF   312
-#define tTHEN    313
-#define tWHILE   314
+#define tSTRUCT  311
+#define tSWITCH  312
+#define tTAGOF   313
+#define tTHEN    314
+#define tWHILE   315
 /* compiler directives */
-#define tpASSERT 315    /* #assert */
-#define tpDEFINE 316
-#define tpELSE   317    /* #else */
-#define tpELSEIF 318    /* #elseif */
-#define tpEMIT   319
-#define tpENDIF  320
-#define tpENDINPUT 321
-#define tpENDSCRPT 322
-#define tpERROR  323
-#define tpFILE   324
-#define tpIF     325    /* #if */
-#define tINCLUDE 326
-#define tpLINE   327
-#define tpPRAGMA 328
-#define tpTRYINCLUDE 329
-#define tpUNDEF  330
+#define tpASSERT 316    /* #assert */
+#define tpDEFINE 317
+#define tpELSE   318    /* #else */
+#define tpELSEIF 319    /* #elseif */
+#define tpEMIT   320
+#define tpENDIF  321
+#define tpENDINPUT 322
+#define tpENDSCRPT 323
+#define tpERROR  324
+#define tpFILE   325
+#define tpIF     326    /* #if */
+#define tINCLUDE 327
+#define tpLINE   328
+#define tpPRAGMA 329
+#define tpTRYINCLUDE 330
+#define tpUNDEF  331
 /* semicolon is a special case, because it can be optional */
-#define tTERM    331    /* semicolon or newline */
-#define tENDEXPR 332    /* forced end of expression */
+#define tTERM    332    /* semicolon or newline */
+#define tENDEXPR 333    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  333    /* integer number */
-#define tRATIONAL 334   /* rational number */
-#define tSYMBOL  335
-#define tLABEL   336
-#define tSTRING  337
-#define tEXPR    338 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 339 /* endless loop, for assigment to "lastst" only */
+#define tNUMBER  334    /* integer number */
+#define tRATIONAL 335   /* rational number */
+#define tSYMBOL  336
+#define tLABEL   337
+#define tSTRING  338
+#define tEXPR    339 /* for assigment to "lastst" only (see SC1.C) */
+#define tENDLESS 340 /* endless loop, for assigment to "lastst" only */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01

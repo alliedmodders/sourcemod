@@ -86,7 +86,7 @@ static char *errmsg[] = {
 /*045*/  "too many function arguments\n",
 /*046*/  "unknown array size (variable \"%s\")\n",
 /*047*/  "array sizes do not match, or destination array is too small\n",
-/*048*/  "array dimensions do not match\n",
+/*048*/  "array (s do not match\n",
 /*049*/  "invalid line continuation\n",
 /*050*/  "invalid range\n",
 /*051*/  "invalid subscript, use \"[ ]\" operators on major dimensions\n",

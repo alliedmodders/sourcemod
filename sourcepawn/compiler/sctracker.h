@@ -46,6 +46,35 @@ typedef struct funcenum_s
   struct funcenum_s *next;
 } funcenum_t;
 
+typedef struct structarg_s
+{
+  int tag;
+  int dimcount;
+  cell dims[sDIMEN_MAX];
+  char name[sNAMEMAX+1];
+  int fconst;
+  int ident;
+  unsigned int offs;
+  int index;
+} structarg_t;
+
+typedef struct pstruct_s
+{
+  int argcount;
+  char name[sNAMEMAX+1];
+  structarg_t **args;
+  struct pstruct_s *next;
+} pstruct_t;
+
+/**
+ * Pawn Structs
+ */
+pstruct_t *pstructs_add(const char *name);
+void pstructs_free();
+pstruct_t *pstructs_find(const char *name);
+structarg_t *pstructs_addarg(pstruct_t *pstruct, const structarg_t *arg);
+structarg_t *pstructs_getarg(pstruct_t *pstruct, const char *member);
+
 /**
  * Function enumeration tags
  */
