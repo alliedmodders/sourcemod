@@ -1,6 +1,6 @@
 #include <sourcemod>
 
-public Plugin:myinfo
+public Plugin:myinfo = 
 {
 	name = "Test Plugin",
 	author = "BAILOPAN",
