@@ -2,7 +2,7 @@
 #define _INCLUDE_SOURCEMOD_PLUGINMNGR_INTERFACE_H_
 
 #include <IShareSys.h>
-#include <sp_vm_context.h>
+#include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINMANAGER_NAME		"IPluginManager"
 #define SMINTERFACE_PLUGINMANAGER_VERSION	1
@@ -27,6 +27,7 @@ namespace SourceMod
 	enum PluginStatus
 	{
 		Plugin_Running=0,		/* Plugin is running */
+		Plugin_Loaded,			/* Plugin is loaded but not initialized */
 		Plugin_Paused,			/* Plugin is paused */
 		Plugin_Stopped,			/* Plugin is paused for map changes, too */
 		Plugin_Error,			/* Plugin has a blocking error */
@@ -46,59 +47,66 @@ namespace SourceMod
 	/**
 	 * @brief Encapsulates a run-time plugin as maintained by SourceMod.
 	 */
-	class IPlugin : public IUnloadableParent
+	class IPlugin /*: public IUnloadableParent*/
 	{
 	public:
-		UnloadableParentType GetParentType()
+		/*UnloadableParentType GetParentType()
 		{
 			return ParentType_Module;
-		}
+		}*/
 	public:
 		/**
 		 * @brief Returns the lifetime of a plugin.
 		 */
-		virtual PluginLifetime GetLifetime() =0;
+		virtual PluginLifetime GetLifetime() const =0;
 
 		/**
 		 * @brief Returns the current API context being used in the plugin.
 		 *
 		 * @return	Pointer to an IPluginContext, or NULL if not loaded.
 		 */
-		virtual SourcePawn::IPluginContext *GetBaseContext() =0;
+		virtual SourcePawn::IPluginContext *GetBaseContext() const =0;
 
 		/**
 		 * @brief Returns the context structure being used in the plugin.
 		 *
-		 * @brief	Pointer to an sp_context_t, or NULL if not loaded.
+		 * @return	Pointer to an sp_context_t, or NULL if not loaded.
 		 */
-		virtual sp_context_t *GetContext() =0;
+		virtual sp_context_t *GetContext() const =0;
 
 		/**
-		 * @brief Returns information about the plugin.
+		 * @brief Returns the plugin file structure.
 		 *
-		 * @brief	Pointer to an sm_plugininfo_t, or NULL if not loaded.
+		 * @return	Pointer to an sp_plugin_t, or NULL if not loaded.
 		 */
-		virtual sm_plugininfo_t *GetPublicInfo() =0;
+		virtual const sp_plugin_t *GetPluginStructure() const =0;
+
+		/**
+		 * @brief Returns information about the plugin by reference.
+		 *
+		 * @return			Pointer to a sm_plugininfo_t object, NULL if plugin is not loaded.
+		 */
+		virtual const sm_plugininfo_t *GetPublicInfo() const =0;
 
 		/**
 		 * @brief Returns the plugin filename (relative to plugins dir).
 		 */
-		virtual const char *GetFilename() =0;
+		virtual const char *GetFilename() const =0;
 
 		/**
 		 * @brief Returns true if a plugin is in debug mode, false otherwise.
 		 */
-		virtual bool IsDebugging() =0;
+		virtual bool IsDebugging() const =0;
 
 		/**
 		 * @brief Returns the plugin status.
 		 */
-		virtual PluginStatus GetStatus() =0;
+		virtual PluginStatus GetStatus() const =0;
 		
 		/**
 		 * @brief Sets whether the plugin is paused or not.
 		 *
-		 * @return			True on successful pause, false otherwise.
+		 * @return			True on successful state change, false otherwise.
 		 */
 		virtual bool SetPauseState(bool paused) =0;
 
@@ -110,12 +118,12 @@ namespace SourceMod
 		/**
 		 * @brief Returns whether the plugin is locked from being updated on mapchange.
 		 */
-		virtual bool GetLockForUpdates() =0;
+		virtual bool GetLockForUpdates() const =0;
 
 		/**
 		 * @brief Returns the unique serial number of a plugin.
 		 */
-		virtual unsigned int GetSerial() =0;
+		virtual unsigned int GetSerial() const =0;
 	};
 
 
@@ -125,7 +133,7 @@ namespace SourceMod
 	class IPluginIterator
 	{
 	public:
-		virtual void ~IPluginIterator()
+		virtual ~IPluginIterator()
 		{
 		};
 	public:

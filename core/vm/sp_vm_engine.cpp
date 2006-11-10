@@ -56,11 +56,6 @@ IPluginContext *SourcePawnEngine::CreateBaseContext(sp_context_t *ctx)
 
 void SourcePawnEngine::FreeBaseContext(IPluginContext *ctx)
 {
-	sp_context_t *_ctx = ctx->GetContext();
-	IVirtualMachine *vm = ctx->GetVirtualMachine();
-	
-	vm->FreeContext(_ctx);
-
 	delete ctx;
 }
 

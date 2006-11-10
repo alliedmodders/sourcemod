@@ -52,7 +52,7 @@ forward bool:OnPluginLoad(Handle:myself, bool:late, String:error[], err_max);
  *
  * @noreturn
  */
-forward OnPluginRequirements();
+forward OnCreatePlugin();
 
 /**
  * Called when the plugin is about to be unloaded.

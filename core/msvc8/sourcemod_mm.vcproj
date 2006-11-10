@@ -255,12 +255,20 @@
 					RelativePath="..\systems\LibrarySys.h"
 					>
 				</File>
+				<File
+					RelativePath="..\systems\PluginSys.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Source Files"
 				>
 				<File
 					RelativePath="..\systems\LibrarySys.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\systems\PluginSys.cpp"
 					>
 				</File>
 			</Filter>

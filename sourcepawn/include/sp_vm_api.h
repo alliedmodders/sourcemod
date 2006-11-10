@@ -343,7 +343,7 @@ namespace SourcePawn
 		virtual IPluginContext *CreateBaseContext(sp_context_t *ctx) =0;
 
 		/** 
-		 * Frees a context.
+		 * Frees a base context.  Does not free the sp_context_t it holds.
 		 *
 		 * @param ctx		Context pointer to free.
 		 */
