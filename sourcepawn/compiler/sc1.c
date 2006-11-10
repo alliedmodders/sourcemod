@@ -1700,7 +1700,7 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 	int cur_litidx = 0;
 	cell *values, *found;
 	int usage;
-	symbol *mysym;
+	symbol *mysym,*sym;
 
 	strcpy(name, firstname);
 
@@ -1709,23 +1709,53 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 	
 	memset(found, 0, sizeof(cell) * pstruct->argcount);
 
+	//:TODO: Make this work with stock
 
 	/**
 	 * Lastly, very lastly, we will insert a copy of this variable.
 	 * This is soley to expose the pubvar.
 	 */
-	usage = uDEFINE|uREAD|uCONST;
+	usage = uREAD|uCONST|uSTRUCT;
 	if (fpublic)
 	{
 		usage |= uPUBLIC;
 	}
-	mysym=addsym(name, 0, iVARIABLE, sGLOBAL, pc_addtag(pstruct->name), usage);
+	mysym = NULL;
+	for (sym=glbtab.next; sym!=NULL; sym=sym->next)
+	{
+		if (strcmp(name, sym->name) == 0)
+		{
+			if ((sym->usage & uSTRUCT) && sym->vclass == sGLOBAL)
+			{
+				if (sym->usage & uDEFINE)
+				{
+					error(21, name);
+				} else {
+					if (sym->usage & uPUBLIC && !fpublic)
+					{
+ 						error(42);
+					}
+				}
+			} else {
+				error(21, name);
+			}
+			mysym = sym;
+			break;
+		}
+	}
+	if (!mysym)
+	{
+		mysym=addsym(name, 0, iVARIABLE, sGLOBAL, pc_addtag(pstruct->name), usage);
+	}
 
-	/* Maybe error with "public struct requires initialization?" */
-	if (!needtoken('='))
+	if (!matchtoken('='))
 	{
 		matchtoken(';');
+		/* Mark it as undefined instead */
+		mysym->usage = uSTOCK|uSTRUCT;
 		return;
+	} else {
+		mysym->usage = usage;
 	}
 	needtoken('{');
 	do
@@ -1792,7 +1822,6 @@ static void declstructvar(char *firstname,int fpublic, pstruct_t *pstruct)
 				found[arg->index] = 1;
 			}
 		} else if (tok == tSYMBOL) {
-			symbol *sym = NULL;
 			for (sym=glbtab.next; sym!=NULL; sym=sym->next)
 			{
 				if (sym->vclass != sGLOBAL)

@@ -214,6 +214,7 @@ typedef struct s_symbol {
 #define uENUMFIELD 0x040
 #define uMISSING  0x080
 #define uFORWARD  0x100
+#define uSTRUCT	  0x200 /* :TODO: make this an ident */
 /* uRETNONE is not stored in the "usage" field of a symbol. It is
  * used during parsing a function, to detect a mix of "return;" and
  * "return value;" in a few special cases.
