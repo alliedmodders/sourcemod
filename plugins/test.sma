@@ -1,16 +1,15 @@
 #include <sourcemod>
 
-/**
- * I don't know if I like this yet....
- */
-public String:PLUGIN_NAME[] = "Testcrab"
-public String:PLUGIN_AUTHOR[] = "BAILOPAN"
-public String:PLUGIN_VERSION[] = "0.0.0.0"
-public String:PLUGIN_URL[] = "http://www.sourcemod.net/"
-public String:PUBLIC_DESCRIPTION[] = "A test, fool"
+public Plugin:myinfo
+{
+	name = "Test Plugin",
+	author = "BAILOPAN",
+	description = "Tests Stuff",
+	version = "1.0.0.0",
+	url = "http://www.sourceomd.net/"
+}
 
 public OnPluginInit()
 {
 	/* just a test, mommy */
-	return 5
 }

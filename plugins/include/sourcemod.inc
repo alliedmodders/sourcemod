@@ -7,15 +7,26 @@
 #endif
 #define _sourcemod_included
 
-/**
- * Note: A plugin can define the following public strings for external information:
- * public String:PLUGIN_AUTHOR[]	- Author
- * public String:PLUGIN_NAME[]		- Name/Title
- * public String:PLUGIN_DESCRIPTION[]	- Short Description
- * public String:PLUGIN_VERSION[]	- Version information
- * public String:PLUGIN_URL[]		- Website URL
- */
+struct Plugin
+{
+   const String:name[],			/* Plugin Name */
+   const String:description[],		/* Plugin Description */
+   const String:author[],		/* Plugin Author */
+   const String:version[],		/* Plugin Version */
+   const String:url[],			/* Plugin URL */
+}
 
+/**
+ * Declare this as a struct in your plugin to expose its information.
+ * Example:
+ *
+ * public Plugin:myinfo =
+ * {
+ *    name = "My Plugin",
+ *    //etc
+ * };
+ */
+public Plugin:myinfo;
  
 /**
  * Called when the plugin is fully initialized and all known external references are resolved,
@@ -37,11 +48,11 @@ forward OnPluginInit();
 forward bool:OnPluginLoad(Handle:myself, bool:late, String:error[], err_max);
 
 /**
- * Called when the plugin is first mapped into memory.  Use this to set dynamic natives.
+ * Called when the plugin is first mapped into memory.  Use this to set dynamic natives ONLY.
  *
  * @noreturn
  */
-forward OnPluginCreated();
+forward OnPluginRequirements();
 
 /**
  * Called when the plugin is about to be unloaded.
