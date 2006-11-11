@@ -7,6 +7,8 @@ typedef	uint32_t	ucell_t;
 typedef int32_t		cell_t;
 typedef uint32_t	funcid_t;
 
+#define SP_MAX_EXEC_PARAMS				32	/* Maximum number of parameters in a function */
+
 /**
  * Error codes
  */
@@ -32,6 +34,7 @@ typedef uint32_t	funcid_t;
 #define SP_ERROR_ARRAY_TOO_BIG			19	/* A dynamic array is too big */
 #define SP_ERROR_TRACKER_BOUNDS			20	/* Tracker stack is out of bounds */
 #define SP_ERROR_INVALID_NATIVE			21	/* Native was pending or invalid */
+#define SP_ERROR_PARAMS_MAX				22	/* Maximum number of parameters reached */
 
 /**********************************************
  *** The following structures are reference structures.
