@@ -7,34 +7,6 @@ CPluginManager::CPluginManager()
 {
 }
 
-void CFunction::Set(funcid_t funcid, CPlugin *plugin)
-{
-	m_funcid = funcid;
-	m_pPlugin = plugin;
-}
-
-int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
-{
-	IPluginContext *ctx = m_pPlugin->m_ctx_current.base;
-
-	for (unsigned int i=0; i<num_params; i++)
-	{
-		ctx->PushCell(params[i]);
-	}
-
-	return ctx->Execute(m_funcid, result);
-}
-
-IPlugin *CFunction::GetParentPlugin()
-{
-	return m_pPlugin;
-}
-
-CFunction::CFunction(funcid_t funcid, CPlugin *plugin) : 
-	m_funcid(funcid), m_pPlugin(plugin)
-{
-}
-
 CPlugin *CPlugin::CreatePlugin(const char *file, 
 								bool debug_default, 
 								PluginType type, 
@@ -355,7 +327,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	{
 		for (uint32_t i=0; i<pPlugin->m_plugin->info.publics_num; i++)
 		{
-			delete pPlugin->m_pub_funcs[i];
+			g_PluginMngr.ReleaseFunctionToPool(pPlugin->m_pub_funcs[i]);
 		}
 		delete [] pPlugin->m_pub_funcs;
 		pPlugin->m_pub_funcs = NULL;
@@ -365,7 +337,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	{
 		for (unsigned int i=0; i<pPlugin->m_funcsnum; i++)
 		{
-			delete pPlugin->m_priv_funcs[i];
+			g_PluginMngr.ReleaseFunctionToPool(pPlugin->m_priv_funcs[i]);
 		}
 		delete [] pPlugin->m_priv_funcs;
 		pPlugin->m_priv_funcs = NULL;
@@ -435,6 +407,11 @@ void CPluginManager::ReleaseIterator(CPluginIterator *iter)
 
 void CPluginManager::ReleaseFunctionToPool(CFunction *func)
 {
+	if (!func)
+	{
+		return;
+	}
+	func->Cancel();
 	m_funcpool.push(func);
 }
 

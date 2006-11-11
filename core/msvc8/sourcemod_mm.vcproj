@@ -225,26 +225,6 @@
 			Name="Interfaces"
 			>
 			<File
-				RelativePath="..\interfaces\IForwardSys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\interfaces\ILibrarySys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\interfaces\IModuleSys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\interfaces\IPluginSys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\interfaces\IShareSys.h"
-				>
-			</File>
-			<File
 				RelativePath="..\interfaces\ITextParsers.h"
 				>
 			</File>
@@ -255,6 +235,14 @@
 			<Filter
 				Name="Header Files"
 				>
+				<File
+					RelativePath="..\systems\CFunction.h"
+					>
+				</File>
+				<File
+					RelativePath="..\systems\ForwardSys.h"
+					>
+				</File>
 				<File
 					RelativePath="..\systems\LibrarySys.h"
 					>
@@ -268,11 +256,43 @@
 				Name="Source Files"
 				>
 				<File
+					RelativePath="..\systems\CFunction.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\systems\LibrarySys.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\systems\PluginSys.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Interfaces"
+				>
+				<File
+					RelativePath="..\interfaces\IForwardSys.h"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\ILibrarySys.h"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\IModuleSys.h"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\IPluginFunction.h"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\IPluginSys.h"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\IShareSys.h"
 					>
 				</File>
 			</Filter>

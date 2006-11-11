@@ -111,12 +111,17 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 		return false;
 	}
 
+#if 0
 	g_SMAPI->PathFormat(file, sizeof(file), "%s/addons/sourcemod/plugins/test.smx", g_BaseDir.c_str());
 	IPlugin *pPlugin = g_PluginMngr.LoadPlugin(file, false, PluginType_Global, error, err_max);
-	IPluginFunction *func = pPlugin->GetFunctionByName("OnPluginInit");
-	cell_t result;
-	func->CallFunction(NULL, 0, &result);
+	IPluginFunction *func = pPlugin->GetFunctionByName("Test");
+	cell_t result = 2;
+	cell_t val = 6;
+	func->PushCell(1);
+	func->PushCellByRef(&val, SMFUNC_COPYBACK_ONCE);
+	func->Execute(&result, NULL);
 	g_PluginMngr.UnloadPlugin(pPlugin);
+#endif
 
 	return true;
 }

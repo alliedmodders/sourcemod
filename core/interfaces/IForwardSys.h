@@ -7,6 +7,11 @@
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
 #define SMINTERFACE_FORWARDMANAGER_VERSION	1
 
+/**
+ * There is some very important documentation at the bottom of this file.
+ * Readers interested in knowing more about the forward system, scrolling down is a must!
+ */
+
 namespace SourceMod
 {
 	enum ResultType
@@ -25,12 +30,14 @@ namespace SourceMod
 	};
 
 	/**
+	 * :TODO: finish this spec
 	 * @brief Abstracts multiple function calling.
-	 *
 	 * NOTE: Parameters should be pushed in forward order, unlike
 	 * the virtual machine/IPluginContext order.
+	 * NOTE: Some functions are repeated in here because their documentation differs
+	 * from their IPluginFunction equivalents.
 	 */
-	class IForward : public IPluginFunction
+	class IForward : public ICallable
 	{
 	public:
 		/**
@@ -39,61 +46,6 @@ namespace SourceMod
 		 * @return			Forward name.
 		 */
 		virtual const char *GetForwardName() =0;
-
-		/**
-		 * @brief Pushes a cell onto the current call.
-		 *
-		 * @param cell		Parameter value to push.
-		 * @return			True if successful, false if type or count mismatch.
-		 */
-		virtual bool PushCell(cell_t cell) =0;
-
-		/**
-		 * @brief Pushes a float onto the current call.
-		 *
-		 * @param float		Parameter value to push.
-		 * @return			True if successful, false if type or count mismatch.
-		 */
-		virtual bool PushFloat(float number) =0;
-
-		/**
-		 * @brief Pushes an array of cells onto the current call, each cell individually.
-		 * NOTE: This is essentially a crippled version of PushArray().
-		 *
-		 * @param array		Array of cells.
-		 * @param numcells	Number of cells in array.
-		 * @param each		Whether or not to push as an array or individual cells.
-		 * @return			True if successful, false if too many cells were pushed.
-		 */
-		virtual bool PushCells(cell_t array[], unsigned int numcells, bool each) =0;
-
-		/**
-		 * @brief Pushes an array of cells onto the current call.  
-		 *
-		 * @param array		Array to copy, NULL if no initial array should be copied.
-		 * @param cells		Number of cells to allocate and optionally read from the input array.
-		 * @param phys_addr	Optional return address for physical array.
-		 * @param copyback	Whether or not changes should be copied back to the input array.
-		 * @return			True if successful, false otherwise.
-		 */
-		virtual bool PushArray(cell_t *inarray, size_t cells, cell_t **phys_addr, bool copyback) =0;
-
-		/**
-		 * @brief Pushes a string onto the current call.
-		 *
-		 * @param string	String to push.
-		 * @return			True if successful, false if type or count mismatch.
-		 */
-		virtual bool PushString(const char *string) =0;
-
-		/**
-		 * @brief Executes the forward, resets the pushed parameter list, and performs any copybacks.
-		 *
-		 * @param result		Pointer to store return value in (dependent on forward type).
-		 * @param last_err		Pointer to store number of successful executions in.
-		 * @return				Error code, if any.
-		 */
-		virtual int Execute(cell_t *result, unsigned int *num_functions) =0;
 
 		/**
 		 * @brief Returns the number of functions in this forward.
@@ -105,9 +57,18 @@ namespace SourceMod
 		/**
 		 * @brief Returns the method of multi-calling this forward has.
 		 *
-		 * @return			ResultType of the forward.
+		 * @return			ExecType of the forward.
 		 */
-		virtual ResultType GetResultType() =0;
+		virtual ExecType GetExecType() =0;
+
+		/**
+		 * @brief Executes the forward.
+		 *
+		 * @param result		Pointer to store result in.
+		 * @param num_functions	Optionally filled with the number of function sucessfully executed.
+		 * @return				Error code, if any.
+		 */
+		virtual int Execute(cell_t *result, unsigned int *num_functions) =0;
 	};
 
 
@@ -127,24 +88,37 @@ namespace SourceMod
 		 * @param plugin	Plugin to remove instances of.
 		 * @return			Number of functions removed therein.
 		 */
-		virtual void RemoveFunctionsOfPlugin(IPlugin *plugin) =0;
+		virtual unsigned int RemoveFunctionsOfPlugin(IPlugin *plugin) =0;
 
 		/**
 		 * @brief Adds a function to the call list.
+		 * NOTE: Cannot be used during a call.
 		 *
 		 * @param func		Function to add.
+		 * @return			True on success, otherwise false.
 		 */
-		virtual void AddFunction(IPluginFunction *func) =0;
+		virtual bool AddFunction(IPluginFunction *func) =0;
+
+		/**
+		 * @brief Adds a function to the call list.
+		 * NOTE: Cannot be used during a call.
+		 *
+		 * @param ctx		Context to use as a look-up.
+		 * @param funcid	Function id to add.
+		 * @return			True on success, otherwise false.
+		 */
+		virtual bool AddFunction(sp_context_t *ctx, funcid_t index) =0;
 	};
 
 	enum ParamType
 	{
-		Param_Any = 0,
-		Param_Cell = 1,
-		Param_Float = 2,
-		Param_String = 3,
-		Param_Array = 4,
-		Param_VarArgs = 5,
+		Param_Any = 0,		//Any type will be accepted
+		Param_Cell = 1,		//Only a cell will be accepted
+		Param_Float = 2,	//Only a float value will be accepted
+		Param_String = 3,	//Only a string will be accepted
+		Param_Array = 4,	//Only a 1D array will be accepted
+		Param_VarArgs = 5,	//Anything will be accepted
+		ParamTypes_Total = 6,
 	};
 	
 	class IForwardManager : public SMInterface
@@ -174,7 +148,11 @@ namespace SourceMod
 		 * @param ...			If types is NULL, num_params ParamTypes should be pushed.
 		 * @return				A new IForward on success, NULL if type combination is impossible.
 		 */
-		virtual IForward *CreateForward(const char *name, ExecType et, int num_params, ParamType *types, ...) =0;
+		virtual IForward *CreateForward(const char *name, 
+										ExecType et, 
+										unsigned int num_params, 
+										ParamType *types, 
+										...) =0;
 
 		/**
 		 * @brief Creates an unmanaged forward.  This forward exists privately.
@@ -207,5 +185,82 @@ namespace SourceMod
 		virtual IForward *FindForward(const char *name, IChangeableForward **ifchng) =0;
 	};
 };
+
+/**
+ *  In the AMX Mod X model of forwarding, each forward contained a list of pairs, each pair containing
+ * a function ID and an AMX structure.  The forward structure itself did very little but hold parameter types.
+ * An execution call worked like this:
+ *  - executeForward() took in a function id and a list of parameters
+ *  - for each contained plugin:
+ *   - the list of parameters was preprocessed and pushed
+ *   - the call was made
+ *   - the list was freed and copybacks were made
+ *  - return
+ * 
+ *  The advantages to this is that the system is very easy to implement, and it's fast. The disadvantage is 
+ * varargs tend to be very unforgiving and inflexible, and thus weird problems arose with casting.  You also 
+ * lose flexibility, type checking, and the ability to reasonably use variable arguments lists in the VM.
+ *
+ *  SourceMod replaces this forward system with a far more advanced, but a bit bulkier one. The idea is that 
+ * each plugin has a table of functions, and each function is an ICallable object.  As well as being an ICallable, 
+ * each function is an IPluginFunction.  An ICallable simply describes the process of adding parameters to a 
+ * function call.  An IPluginFunction describes the process of actually calling a function and performing allocation, 
+ * copybacks, and deallocations.
+ *
+ * A very powerful forward system emerges: a Forward is just a collection of IPluginFunctions.  Thus, the same 
+ * API can be easily wrapped around a simple list, and it will look transparent to the user.
+ * Advantages:
+ * 1) "SP Forwards" from AMX Mod X are simply IPluginFunctions without a collection.
+ * 2) Forwards are function based, rather than plugin based, and are thus far more flexible at runtime..
+ * 3) [2] Individual functions can be paused and more than one function from the same plugin can be hooked.
+ * 4) [2] One hook type that used to map to many SP Forwards can now be centralized as one Forward.
+ *    This helps alleviate messes like Fakemeta.
+ * 5) Parameter pushing is type-checked and allows for variable arguments.
+ *
+ *  Note that while #2,3,4 could be added to AMX Mod X, the real binding property is #1, which makes the system
+ * object oriented, rather than AMX Mod X, which hides the objects behind static functions.  It is entirely a design
+ * issue, rather than a usability one.  The interesting part is when it gets to implementation, which is when the 
+ * problems for SourceMod arise.  Specifically, the implementation is easier in GENERAL -- the tough part is the oddball
+ * cases.
+ *
+ * Observe the calling process:
+ * - Each parameter is pushed using the ICallable interface.  For each parameter:
+ *  - For each function in the collection, the parameter is processed and pushed.
+ * - For each function in the collection:
+ *  - The call is made.
+ *  - Copy backs are performed.
+ * - Return
+ *
+ *  Astute readers will note the problems - the parameters are processed individually for each push,
+ * rather than for each call.  This means:
+ * 1) More memory is used.  Specifically, rather than N params of memory, you now have N params * M plugins.
+ *    This is because, again, parameters are processed per function object, per-push, before the call.
+ * 2) There are slightly more calls going around: one extra call for each parameter, since each push is manual.
+ * 3) Copybacks won't work as expected.  
+ *
+ *  Number 3 is hard to see.  For example, say a forward has two functions, and an array is pushed with copyback.
+ * The array gets pushed and copied into each plugin.  When the call is made, each plugin now has separate copies of 
+ * the array.  When the copyback is performed, it gets mirrored to the originall address, but not to the next plugin!
+
+ *  Implementing this is "difficult."  To be re-entrant, an IPluginFunction can't tell you anything
+ * about its copybacks after it has returned, because its internal states were reset long ago.
+ * 
+ *  In order to implement this feature, IPluginFunction::Execute function now lets you pass a listener in.
+ * This listener is notified each time an array parameter is about to be copied back.  Specifically, the forward 
+ * uses this to detect when it needs to push a new parameter out to the next plugin.  When the forward gets the 
+ * call back, it detects whether there is another plugin in the queue.  If there is, it grabs the address it will
+ * be using for the same arrays, and specifies it as the new copy-back point.  If no plugins are left, it allows
+ * the copyback to chain up to the original address.
+ * 
+ *  This wonderful little hack is somewhat reminiscent of how SourceHook parameter rewrite chains work.  It seems 
+ * ugly at first, but it is actually the correct design pattern to apply to an otherwise awful problem.
+ *
+ *  Note that there are other solutions to this that aren't based on a visitor-like pattern.  For example, the Function
+ * class could expose a "set new original address" function.  Then after arrays are pushed, the arrays are re-browsed,
+ * and function #1 gets function #2's original address, function #2 gets function #3's original address, et cetera.
+ * This extra browse step is a bit less efficient though, since the "visitor" method implies only taking action when
+ * necessary.  Furthermore, it would require exposing such a "set address" function, which should fire a red flag 
+ * that the API is doing something it shouldn't (namely, exposing the direct setting of very internal properties).
+ */
 
 #endif //_INCLUDE_SOURCEMOD_FORWARDINTERFACE_H_

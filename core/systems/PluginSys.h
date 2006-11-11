@@ -5,6 +5,7 @@
 #include <sh_list.h>
 #include <sh_stack.h>
 #include "sm_globals.h"
+#include "CFunction.h"
 
 using namespace SourceHook;
 
@@ -17,22 +18,6 @@ struct ContextPair
 	};
 	IPluginContext *base;
 	sp_context_t *ctx;
-};
-
-class CPlugin;
-
-class CFunction : public IPluginFunction
-{
-public:
-	CFunction(funcid_t funcid, CPlugin *plugin);
-public:
-	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
-	virtual IPlugin *GetParentPlugin();
-public:
-	void Set(funcid_t funcid, CPlugin *plugin);
-private:
-	funcid_t m_funcid;
-	CPlugin *m_pPlugin;
 };
 
 class CPlugin : public IPlugin

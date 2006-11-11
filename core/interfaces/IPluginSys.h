@@ -11,6 +11,8 @@
 
 namespace SourceMod
 {
+	class IPlugin;
+
 	/** 
 	 * @brief Encapsulates plugin public information.
 	 */
@@ -48,39 +50,7 @@ namespace SourceMod
 		PluginType_Global,			/* Plugin will never be unloaded or updated */
 	};
 
-
-	class IPlugin;
-
-
-	/**
-	 * @brief Encapsulates a basic function call.
-	 * NOTE: Function calls must be atomic to one execution context.
-	 * NOTE: This object should not be deleted.  It lives for the lifetime of the plugin.
-	 */
-	class IPluginFunction
-	{
-	public:
-		virtual ~IPluginFunction()
-		{
-		}
-
-		/**
-		 * @brief Executes the function with the given parameter array.
-		 * Parameters are read in forward order (i.e. index 0 is parameter #1)
-		 *
-		 * @param param			Array of cell parameters.
-		 * @param num_params	Number of parameters to push.
-		 * @param result		Pointer to store result of function on return.
-		 * @return				SourcePawn error code (if any).
-		 */
-		virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result) =0;
-
-		/**
-		 * @brief Returns which plugin this function belongs to.
-		 */
-		virtual IPlugin *GetParentPlugin() =0;
-	};
-
+	class IPluginFunction;
 
 	/**
 	 * @brief Encapsulates a run-time plugin as maintained by SourceMod.
