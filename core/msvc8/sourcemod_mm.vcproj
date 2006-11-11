@@ -225,6 +225,10 @@
 			Name="Interfaces"
 			>
 			<File
+				RelativePath="..\interfaces\IForwardSys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\interfaces\ILibrarySys.h"
 				>
 			</File>

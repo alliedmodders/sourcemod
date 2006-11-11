@@ -7,6 +7,8 @@
 #define SMINTERFACE_PLUGINMANAGER_NAME		"IPluginManager"
 #define SMINTERFACE_PLUGINMANAGER_VERSION	1
 
+#define SM_CONTEXTVAR_USER		3
+
 namespace SourceMod
 {
 	/** 
@@ -34,31 +36,66 @@ namespace SourceMod
 		Plugin_BadLoad,			/* Plugin failed to load */
 	};
 
+
 	/**
 	 * @brief Describes the object lifetime of a plugin.
 	 */
-	enum PluginLifetime
+	enum PluginType
 	{
-		PluginLifetime_Forever,			/* Plugin will never be unloaded */
-		PluginLifetime_Map				/* Plugin will be unloaded at mapchange */
+		PluginType_Private,			/* Plugin is privately managed and receives no forwards */
+		PluginType_MapUpdated,		/* Plugin will never be unloaded unless for updates on mapchange */
+		PluginType_MapOnly,			/* Plugin will be removed at mapchange */
+		PluginType_Global,			/* Plugin will never be unloaded or updated */
+	};
+
+
+	class IPlugin;
+
+
+	/**
+	 * @brief Encapsulates a basic function call.
+	 * NOTE: Function calls must be atomic to one execution context.
+	 * NOTE: This object should not be deleted.  It lives for the lifetime of the plugin.
+	 */
+	class IPluginFunction
+	{
+	public:
+		virtual ~IPluginFunction()
+		{
+		}
+
+		/**
+		 * @brief Executes the function with the given parameter array.
+		 * Parameters are read in forward order (i.e. index 0 is parameter #1)
+		 *
+		 * @param param			Array of cell parameters.
+		 * @param num_params	Number of parameters to push.
+		 * @param result		Pointer to store result of function on return.
+		 * @return				SourcePawn error code (if any).
+		 */
+		virtual int CallFunction(cell_t *params, unsigned int num_params, cell_t *result) =0;
+
+		/**
+		 * @brief Returns which plugin this function belongs to.
+		 */
+		virtual IPlugin *GetParentPlugin() =0;
 	};
 
 
 	/**
 	 * @brief Encapsulates a run-time plugin as maintained by SourceMod.
 	 */
-	class IPlugin /*: public IUnloadableParent*/
+	class IPlugin
 	{
 	public:
-		/*UnloadableParentType GetParentType()
+		virtual ~IPlugin()
 		{
-			return ParentType_Module;
-		}*/
-	public:
+		}
+
 		/**
 		 * @brief Returns the lifetime of a plugin.
 		 */
-		virtual PluginLifetime GetLifetime() const =0;
+		virtual PluginType GetType() const =0;
 
 		/**
 		 * @brief Returns the current API context being used in the plugin.
@@ -111,19 +148,25 @@ namespace SourceMod
 		virtual bool SetPauseState(bool paused) =0;
 
 		/**
-		 * @brief Locks or unlocks the plugin from being updated on mapchange.
-		 */
-		virtual void SetLockForUpdates(bool lock_status) =0;
-
-		/**
-		 * @brief Returns whether the plugin is locked from being updated on mapchange.
-		 */
-		virtual bool GetLockForUpdates() const =0;
-
-		/**
 		 * @brief Returns the unique serial number of a plugin.
 		 */
 		virtual unsigned int GetSerial() const =0;
+
+		/**
+		 * @brief Returns a function by name.
+		 *
+		 * @param public_name		Name of the function.
+		 * @return					A new IPluginFunction pointer, NULL if not found.
+		 */
+		virtual IPluginFunction *GetFunctionByName(const char *public_name) =0;
+
+		/**
+		 * @brief Returns a function by its id.
+		 *
+		 * @param func_id			Function ID.
+		 * @return					A new IPluginFunction pointer, NULL if not found.
+		 */
+		virtual IPluginFunction *GetFunctionById(funcid_t func_id) =0;
 	};
 
 
@@ -159,6 +202,42 @@ namespace SourceMod
 		virtual void Release() =0;
 	};
 
+	/**
+	 * @brief Listens for plugin-oriented events.
+	 */
+	class IPluginsListener
+	{
+	public:
+		/**
+		 * @brief Called when a plugin is created/mapped into memory.
+		 */
+		virtual void OnPluginCreated(IPlugin *plugin)
+		{
+		}
+
+		/**
+		 * @brief Called when a plugin is fully loaded successfully.
+		 */
+		virtual void OnPluginLoaded(IPlugin *plugin)
+		{
+		}
+
+		/**
+		 * @brief Called when a plugin is unloaded (only if fully loaded).
+		 */
+		virtual void OnPluginUnloaded(IPlugin *plugin)
+		{
+		}
+
+		/**
+		 * @brief Called when a plugin is destroyed.
+		 * NOTE: Always called if Created, even if load failed.
+		 */
+		virtual void OnPluginDestroyed(IPlugin *plugin)
+		{
+		}
+	};
+
 
 	/**
 	 * @brief Manages the runtime loading and unloading of plugins.
@@ -188,7 +267,7 @@ namespace SourceMod
 		 */
 		virtual IPlugin *LoadPlugin(const char *path, 
 									bool debug,
-									PluginLifetime lifetime,
+									PluginType type,
 									char error[],
 									size_t err_max) =0;
 
@@ -221,6 +300,20 @@ namespace SourceMod
 		 * Note: This pointer must be freed using EITHER delete OR IPluginIterator::Release().
 		 */
 		virtual IPluginIterator *GetPluginIterator() =0;
+
+		/** 
+		 * @brief Adds a plugin manager listener.
+		 *
+		 * @param listener	Pointer to a listener.
+		 */
+		virtual void AddPluginsListener(IPluginsListener *listener) =0;
+
+		/**
+		 * @brief Removes a plugin listener.
+		 * 
+		 * @param listener	Pointer to a listener.
+		 */
+		virtual void RemovePluginsListener(IPluginsListener *listener) =0;
 	};
 };
 
