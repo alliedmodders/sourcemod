@@ -19,9 +19,26 @@ struct ContextPair
 	sp_context_t *ctx;
 };
 
+class CPlugin;
+
+class CFunction : public IPluginFunction
+{
+public:
+	CFunction(funcid_t funcid, CPlugin *plugin);
+public:
+	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
+	virtual IPlugin *GetParentPlugin();
+public:
+	void Set(funcid_t funcid, CPlugin *plugin);
+private:
+	funcid_t m_funcid;
+	CPlugin *m_pPlugin;
+};
+
 class CPlugin : public IPlugin
 {
 	friend class CPluginManager;
+	friend class CFunction;
 public:
 	virtual PluginType GetType() const;
 	virtual SourcePawn::IPluginContext *GetBaseContext() const;
@@ -53,12 +70,17 @@ private:
 	unsigned int m_serial;
 	sm_plugininfo_t m_info;
 	sp_plugin_t *m_plugin;
+	unsigned int m_funcsnum;
+	CFunction **m_priv_funcs;
+	CFunction **m_pub_funcs;
 };
 
 class CPluginManager : public IPluginManager
 {
+	friend class CPlugin;
 public:
 	CPluginManager();
+	~CPluginManager();
 public:
 	class CPluginIterator : public IPluginIterator
 	{
@@ -90,10 +112,13 @@ public:
 	virtual void RemovePluginsListener(IPluginsListener *listener);
 protected:
 	void ReleaseIterator(CPluginIterator *iter);
+	CFunction *GetFunctionFromPool(funcid_t f, CPlugin *plugin);
+	void ReleaseFunctionToPool(CFunction *func);
 private:
 	List<IPluginsListener *> m_listeners;
 	List<IPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
+	CStack<CFunction *> m_funcpool;
 };
 
 extern CPluginManager g_PluginMngr;

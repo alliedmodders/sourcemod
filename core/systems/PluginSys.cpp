@@ -7,6 +7,34 @@ CPluginManager::CPluginManager()
 {
 }
 
+void CFunction::Set(funcid_t funcid, CPlugin *plugin)
+{
+	m_funcid = funcid;
+	m_pPlugin = plugin;
+}
+
+int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
+{
+	IPluginContext *ctx = m_pPlugin->m_ctx_current.base;
+
+	for (unsigned int i=0; i<num_params; i++)
+	{
+		ctx->PushCell(params[i]);
+	}
+
+	return ctx->Execute(m_funcid, result);
+}
+
+IPlugin *CFunction::GetParentPlugin()
+{
+	return m_pPlugin;
+}
+
+CFunction::CFunction(funcid_t funcid, CPlugin *plugin) : 
+	m_funcid(funcid), m_pPlugin(plugin)
+{
+}
+
 CPlugin *CPlugin::CreatePlugin(const char *file, 
 								bool debug_default, 
 								PluginType type, 
@@ -67,7 +95,87 @@ CPlugin *CPlugin::CreatePlugin(const char *file,
 
 	ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)(IPlugin *)pPlugin;
 
+	/* Build function information loosely */
+	pPlugin->m_funcsnum = g_pVM->FunctionCount(ctx);
+
+	if (pPlugin->m_funcsnum)
+	{
+		pPlugin->m_priv_funcs = new CFunction *[pPlugin->m_funcsnum];
+		memset(pPlugin->m_priv_funcs, 0, sizeof(CFunction *) * pPlugin->m_funcsnum);
+	} else {
+		pPlugin->m_priv_funcs = NULL;
+	}
+
+	if (pl->info.publics_num)
+	{
+		pPlugin->m_pub_funcs = new CFunction *[pl->info.publics_num];
+		memset(pPlugin->m_pub_funcs, 0, sizeof(CFunction *) * pl->info.publics_num);
+	} else {
+		pPlugin->m_pub_funcs = NULL;
+	}
+
 	return pPlugin;
+}
+
+IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
+{
+	CFunction *pFunc = NULL;
+	funcid_t save = func_id;
+
+	if (func_id & 1)
+	{
+		func_id >>= 1;
+		if (func_id >= m_plugin->info.publics_num)
+		{
+			return NULL;
+		}
+		pFunc = m_pub_funcs[func_id];
+		if (!pFunc)
+		{
+			pFunc = g_PluginMngr.GetFunctionFromPool(save, this);
+			m_pub_funcs[func_id] = pFunc;
+		}
+	} else {
+		func_id >>= 1;
+		unsigned int index;
+		if (!g_pVM->FunctionLookup(m_ctx_current.ctx, func_id, &index))
+		{
+			return NULL;
+		}
+		pFunc = m_priv_funcs[func_id];
+		if (!pFunc)
+		{
+			pFunc = g_PluginMngr.GetFunctionFromPool(save, this);
+			m_priv_funcs[func_id] = pFunc;
+		}
+	}
+
+	return pFunc;
+}
+
+IPluginFunction *CPlugin::GetFunctionByName(const char *public_name)
+{
+	uint32_t index;
+	IPluginContext *base = m_ctx_current.base;
+
+	if (base->FindPublicByName(public_name, &index) != SP_ERROR_NONE)
+	{
+		return NULL;
+	}
+
+	CFunction *pFunc = m_pub_funcs[index];
+	if (!pFunc)
+	{
+		sp_public_t *pub = NULL;
+		base->GetPublicByIndex(index, &pub);
+		if (pub)
+		{
+			pFunc = g_PluginMngr.GetFunctionFromPool(pub->funcid, this);
+			m_pub_funcs[index] = pFunc;
+		}
+	}
+
+	return pFunc;
 }
 
 void CPlugin::UpdateInfo()
@@ -242,6 +350,26 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pListener = (*iter);
 		pListener->OnPluginDestroyed(pPlugin);
 	}
+	
+	if (pPlugin->m_pub_funcs)
+	{
+		for (uint32_t i=0; i<pPlugin->m_plugin->info.publics_num; i++)
+		{
+			delete pPlugin->m_pub_funcs[i];
+		}
+		delete [] pPlugin->m_pub_funcs;
+		pPlugin->m_pub_funcs = NULL;
+	}
+
+	if (pPlugin->m_priv_funcs)
+	{
+		for (unsigned int i=0; i<pPlugin->m_funcsnum; i++)
+		{
+			delete pPlugin->m_priv_funcs[i];
+		}
+		delete [] pPlugin->m_priv_funcs;
+		pPlugin->m_priv_funcs = NULL;
+	}
 
 	if (pPlugin->m_ctx_current.base)
 	{
@@ -303,4 +431,27 @@ IPluginIterator *CPluginManager::GetPluginIterator()
 void CPluginManager::ReleaseIterator(CPluginIterator *iter)
 {
 	m_iters.push(iter);
+}
+
+void CPluginManager::ReleaseFunctionToPool(CFunction *func)
+{
+	m_funcpool.push(func);
+}
+
+CFunction *CPluginManager::GetFunctionFromPool(funcid_t f, CPlugin *plugin)
+{
+	if (m_funcpool.empty())
+	{
+		return new CFunction(f, plugin);
+	} else {
+		CFunction *func = m_funcpool.front();
+		m_funcpool.pop();
+		func->Set(f, plugin);
+		return func;
+	}
+}
+
+CPluginManager::~CPluginManager()
+{
+	//:TODO: we need a good way to free what we're holding
 }

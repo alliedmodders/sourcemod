@@ -4,6 +4,7 @@
 #include "systems/LibrarySys.h"
 #include "vm/sp_vm_engine.h"
 #include <sh_string.h>
+#include "PluginSys.h"
 
 SourcePawnEngine g_SourcePawn;
 SourceModBase g_SourceMod;
@@ -98,6 +99,24 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 		}
 		return false;
 	}
+
+	unsigned int api = g_pVM->GetAPIVersion();
+	if (api != SOURCEPAWN_VM_API_VERSION)
+	{
+		ShutdownJIT();
+		if (error && err_max)
+		{
+			snprintf(error, err_max, "JIT is not a compatible version");
+		}
+		return false;
+	}
+
+	g_SMAPI->PathFormat(file, sizeof(file), "%s/addons/sourcemod/plugins/test.smx", g_BaseDir.c_str());
+	IPlugin *pPlugin = g_PluginMngr.LoadPlugin(file, false, PluginType_Global, error, err_max);
+	IPluginFunction *func = pPlugin->GetFunctionByName("OnPluginInit");
+	cell_t result;
+	func->CallFunction(NULL, 0, &result);
+	g_PluginMngr.UnloadPlugin(pPlugin);
 
 	return true;
 }

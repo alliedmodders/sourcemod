@@ -73,7 +73,7 @@ namespace SourceMod
 		 * @param result		Pointer to store result of function on return.
 		 * @return				SourcePawn error code (if any).
 		 */
-		virtual int CallFunction(cell_t *params, unsigned int num_params, cell_t *result) =0;
+		virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result) =0;
 
 		/**
 		 * @brief Returns which plugin this function belongs to.
