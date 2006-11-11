@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include "sp_vm_types.h"
 
+#define SOURCEPAWN_VM_API_VERSION		1
+
 namespace SourcePawn
 {
 	class IVirtualMachine;
@@ -393,12 +395,17 @@ namespace SourcePawn
 	{
 	public:
 		/**
-		 * Returns the string name of a VM implementation.
+		 * @brief Returns the current API version.
+		 */
+		virtual unsigned int GetAPIVersion() =0;
+
+		/**
+		 * @brief Returns the string name of a VM implementation.
 		 */
 		virtual const char *GetVMName() =0;
 
 		/**
-		 * Begins a new compilation
+		 * @brief Begins a new compilation
 		 * 
 		 * @param plugin	Pointer to a plugin structure.
 		 * @return			New compilation pointer.
@@ -406,7 +413,7 @@ namespace SourcePawn
 		virtual ICompilation *StartCompilation(sp_plugin_t *plugin) =0;
 
 		/**
-		 * Sets a compilation option.
+		 * @brief Sets a compilation option.
 		 *
 		 * @param co		Pointer to a compilation.
 		 * @param key		Option key name.
@@ -416,7 +423,7 @@ namespace SourcePawn
 		virtual bool SetCompilationOption(ICompilation *co, const char *key, const char *val) =0;
 
 		/**
-		 * Finalizes a compilation into a new sp_context_t.
+		 * @brief Finalizes a compilation into a new sp_context_t.
 		 * Note: This will free the ICompilation pointer.
 		 *
 		 * @param co		Compilation pointer.
@@ -426,28 +433,46 @@ namespace SourcePawn
 		virtual sp_context_t *CompileToContext(ICompilation *co, int *err) =0;
 
 		/**
-		 * Aborts a compilation and frees the ICompilation pointer.
+		 * @brief Aborts a compilation and frees the ICompilation pointer.
 		 *
 		 * @param co		Compilation pointer.
 		 */
 		virtual void AbortCompilation(ICompilation *co) =0;
 
 		/**
-		 * Frees any internal variable usage on a context.
+		 * @brief Frees any internal variable usage on a context.
 		 *
 		 * @param ctx		Context structure pointer.
 		 */
 		virtual void FreeContext(sp_context_t *ctx) =0;
 
 		/**
-		 * Calls the "execute" function on a context.
+		 * @brief Calls the "execute" function on a context.
 		 *
 		 * @param ctx		Executes a function in a context.
-		 * @param code_idx	Index into the code section.
-		 * @param result	Pointer to store result in.
+		 * @param code_addr	Index into the code section.
+		 * @param result	Pointer to store result into.
 		 * @return			Error code (if any).
 		 */
-		virtual int ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result) =0;
+		virtual int ContextExecute(sp_context_t *ctx, uint32_t code_addr, cell_t *result) =0;
+
+		/**
+		 * @brief Given a context and a code address, returns the index of the function.
+		 * 
+		 * @param ctx		Context to search.
+		 * @param code_addr	Index into the code section.
+		 * @param result	Pointer to store result into.
+		 * @return			True if code index is valid, false otherwise.
+		 */
+		virtual bool FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result) =0;
+
+		/**
+		 * @brief Returns the number of functions defined in the context.
+		 *
+		 * @param ctx		Context to search.
+		 * @return			Number of functions.
+		 */
+		virtual unsigned int FunctionCount(const sp_context_t *ctx) =0;
 	};
 };
 

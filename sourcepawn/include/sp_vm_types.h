@@ -104,7 +104,7 @@ namespace SourcePawn
 
 struct sp_context_s;
 
-typedef cell_t (*SPVM_NATIVE_FUNC)(struct sp_context_s *, cell_t *);
+typedef cell_t (*SPVM_NATIVE_FUNC)(struct sp_context_s *, const cell_t *);
 
 /**********************************************
  *** The following structures are bound to the VM/JIT.

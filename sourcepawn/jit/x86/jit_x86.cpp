@@ -233,6 +233,7 @@ inline void WriteOp_Proc(JitWriter *jit)
 	 * Just in case, we guard this memory with INT3 to break into the debugger.
 	 */
 	jitoffs_t cur_offs = jit->get_outputpos();
+	CompData *co = (CompData *)jit->data;
 	if (cur_offs % 4)
 	{
 		cur_offs = 4 - (cur_offs % 4);
@@ -240,11 +241,25 @@ inline void WriteOp_Proc(JitWriter *jit)
 		{
 			jit->write_ubyte(IA32_INT3);
 		}
-		/* add this amt to the offset we relocated */
+	}
+
+	/* Write the info struct about this function */
+	jit->write_uint32(JIT_FUNCMAGIC);
+	jit->write_uint32(co->func_idx);
+
+	/* Now we have to backpatch our reloction offset! */
+	{
 		jitoffs_t offs = jit->get_inputpos() - sizeof(cell_t);
 		jitcode_t rebase = ((CompData *)jit->data)->rebase;
 		*(jitoffs_t *)((unsigned char  *)rebase + offs) = jit->get_outputpos();
 	}
+
+	/* Lastly, if we're writing, keep track of the function count */
+	if (jit->outbase)
+	{
+		co->func_idx++;
+	}
+
 	//push old frame on stack:
 	//mov ecx, [esi+frm]
 	//mov [edi-4], ecx
@@ -1756,7 +1771,7 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 	return native->pfn(ctx, params);
 }
 
-cell_t InvalidNative(sp_context_t *ctx, cell_t *params)
+cell_t InvalidNative(sp_context_t *ctx, const cell_t *params)
 {
 	ctx->err = SP_ERROR_INVALID_NATIVE;
 
@@ -1877,6 +1892,7 @@ sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 	JitWriter writer;
 	JitWriter *jit = &writer;
 	cell_t *endptr = (cell_t *)(end_cip);
+	uint32_t codemem = 0;
 
 	/* Initial code is written "blank,"
 	 * so we can check the exact memory usage.
@@ -1957,8 +1973,8 @@ jit_rewind:
 		WriteErrorRoutines(data, jit);
 
 		/* the total codesize is now known! */
-		uint32_t mem = writer.get_outputpos();
-		writer.outbase = (jitcode_t)engine->ExecAlloc(mem);
+		codemem = writer.get_outputpos();
+		writer.outbase = (jitcode_t)engine->ExecAlloc(codemem);
 		writer.outptr = writer.outbase;
 		/* go back for third pass */
 		goto jit_rewind;
@@ -2100,6 +2116,11 @@ jit_rewind:
 	trk->pCur = trk->pBase;
 	trk->size = 1024 / sizeof(cell_t);
 
+	functracker_t *fnc = new functracker_t;
+	ctx->vm[JITVARS_FUNCINFO] = fnc;
+	fnc->code_size = codemem;
+	fnc->num_functions = data->func_idx;
+
 	/* clean up relocation+compilation memory */
 	AbortCompilation(co);
 
@@ -2171,4 +2192,39 @@ bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char 
 	}
 
 	return false;
+}
+
+unsigned int JITX86::GetAPIVersion()
+{
+	return SOURCEPAWN_VM_API_VERSION;
+}
+
+bool JITX86::FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)
+{
+	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
+
+	if (code_addr >= fnc->code_size)
+	{
+		return false;
+	}
+
+	funcinfo_t *f = (funcinfo_t *)((char *)ctx->codebase + code_addr - sizeof(funcinfo_t));
+	if (f->magic != JIT_FUNCMAGIC || f->index >= fnc->num_functions)
+	{
+		return false;
+	}
+
+	if (result)
+	{
+		*result = f->index;
+	}
+
+	return true;
+}
+
+unsigned int JITX86::FunctionCount(const sp_context_t *ctx)
+{
+	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
+
+	return fnc->num_functions;
 }

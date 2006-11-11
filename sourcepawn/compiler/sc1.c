@@ -505,6 +505,8 @@ cleanup:
   delete_pathtable();
   delete_sourcefiletable();
   delete_dbgstringtable();
+  funcenums_free();
+  pstructs_free();
   #if !defined NO_DEFINE
     delete_substtable();
   #endif
