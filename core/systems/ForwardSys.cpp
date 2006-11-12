@@ -2,6 +2,30 @@
 #include "ForwardSys.h"
 #include "PluginSys.h"
 
+/**
+ * Gensis turns to its source, reduction occurs stepwise although the essence is all one.
+ * End of line.  FTL system check.
+ *
+ * :TODO: Implement the manager.  ho ho ho
+ *
+ * :TODO: WHAT NEEDS TO BE TESTED IN THIS BEAST (X=done, -=TODO)
+ * NORMAL FUNCTIONS:
+ * X Push cells
+ * X Push cells byref (copyback tested = yes)
+ * - Push floats (copyback tested = ??)
+ * - Push floats byref (copyback tested = ??)
+ * - Push arrays  (copyback tested = ??)
+ * - Push strings (copyback tested = ??)
+ * VARARG FUNCTIONS:
+ * - Pushing no varargs
+ * - Push vararg cells (copyback should be verified to not happen = ??)
+ * - Push vararg cells byref (copyback tested = ??)
+ * - Push vararg floats (copyback should be verified to not happen = ??)
+ * - Push vararg floats byref (copyback tested = ??)
+ * - Push vararg arrays  (copyback tested = ??)
+ * - Push vararg strings (copyback tested = ??)
+ */
+
 CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, va_list ap)
 {
 	ParamType _types[SP_MAX_EXEC_PARAMS];
@@ -50,46 +74,15 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 
 	if (num_params && types[num_params-1] == Param_VarArgs)
 	{
-		pForward->m_varargs = true;
+		pForward->m_varargs = num_params--;
 	} else {
 		pForward->m_varargs = false;
 	}
 
 	pForward->m_numparams = num_params;
 	pForward->m_errstate = SP_ERROR_NONE;
-	pForward->m_CopyBacks.numrecopy = 0;
 
 	return pForward;
-}
-
-bool CForward::OnCopybackArray(unsigned int param, 
-							   unsigned int cells, 
-							   cell_t *source_addr, 
-							   cell_t *orig_addr, 
-							   int flags)
-{
-	/* Check if the stack is empty, this should be an assertion */
-	if (m_NextStack.empty())
-	{
-		/* This should never happen! */
-		assert(!m_NextStack.empty());
-		return true;
-	}
-
-	/* Check if we even want to copy to the next plugin */
-	if (!(flags & SMFUNC_COPYBACK_ALWAYS))
-	{
-		return true;
-	}
-
-	/* Keep track of the copy back and save the info */
-	NextCallInfo &info = m_NextStack.front();
-	info.recopy[info.numrecopy++] = param;
-	info.orig_addrs[param] = orig_addr;
-	info.sizes[param] = cells;
-
-	/* We don't want to override the copy. */
-	return true;
 }
 
 int CForward::Execute(cell_t *result, IForwardFilter *filter)
@@ -100,9 +93,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		Cancel();
 		return err;
 	}
-
-	/* Reset marker */
-	m_curparam = 0;
 
 	if (filter)
 	{
@@ -116,53 +106,53 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	int err;
 	unsigned int failed=0, success=0;
 	unsigned int save_numcopy = 0;
+	unsigned int num_params = m_curparam;
+	FwdParamInfo temp_info[SP_MAX_EXEC_PARAMS];
+	FwdParamInfo *param;
+	ParamType type;
 
-	/** 
-	 * Save copyback into to start the chain, 
-	 * then reset it for re-entrancy
-	 */
-	m_NextStack.push(m_CopyBacks);
-	NextCallInfo &info = m_NextStack.front();
-	m_CopyBacks.numrecopy = 0;
-	
+	/* Save local, reset */
+	memcpy(temp_info, m_params, sizeof(m_params));
+	m_curparam = 0;
+
 	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 	{
 		func = (*iter);
-		
-		/**
-		 * Check if we need to copy a new array back into the plugin.
-		 */
-		if (info.numrecopy)
-		{
-			/* The last plugin has a chained copyback, we must redirect it here. */
-			unsigned int param;
-			cell_t *orig_addr, *targ_addr;
-			for (unsigned int i=0; i<info.numrecopy; i++)
-			{
-				/* Get the parameter info to copy */
-				param = info.recopy[i];
-				targ_addr = func->GetAddressOfPushedParam(param);
-				orig_addr = info.orig_addrs[param];
-				/* Only do the copy for valid targets */
-				if (targ_addr && orig_addr)
-				{
-					if (info.sizes[param] == 1)
-					{
-						*targ_addr = *orig_addr;
-					} else {
-						memcpy(targ_addr, orig_addr, info.sizes[param] * sizeof(cell_t));
-					}
-				}
-				/* If this failed, the plugin will most likely be failing as well. */
-			}
-			save_numcopy = info.numrecopy;
-			info.numrecopy = 0;
-		}
 
+		for (unsigned int i=0; i<num_params; i++)
+		{
+			param = &temp_info[i];
+			if (i >= m_numparams || m_types[i] == Param_Any)
+			{
+				type = param->pushedas;
+			} else {
+				type = m_types[i];
+			}
+			if ((i >= m_numparams) || (type & SP_PARAMFLAG_BYREF))
+			{
+				/* If we're byref or we're vararg, we always push everything by ref.
+				 * Even if they're byval, we must push them byref.
+				 */
+				if (type == Param_String) 
+				{
+					func->PushStringEx((char *)param->byref.orig_addr, param->byref.flags);
+				} else if (type == Param_Float || type == Param_Cell) {
+					func->PushCellByRef(&param->val, 0); 
+				} else {
+					func->PushArray(param->byref.orig_addr, param->byref.cells, NULL, param->byref.flags);
+					assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
+				}
+			} else {
+				/* If we're not byref or not vararg, our job is a bit easier. */
+				assert(type == Param_Cell || type == Param_Float);
+				func->PushCell(param->val);
+			}
+		}
+		
 		/* Call the function and deal with the return value.
 		 * :TODO: only pass reader if we know we have an array in the list
 		 */
-		if ((err=func->Execute(&cur_result, this)) != SP_ERROR_NONE)
+		if ((err=func->Execute(&cur_result)) != SP_ERROR_NONE)
 		{
 			bool handled = false;
 			if (filter)
@@ -173,10 +163,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 			{
 				/* :TODO: invoke global error reporting here */
 			}
-			/* If we failed, we're not quite done.  The copy chain has been broken.
-			 * We have to restore it so past changes will continue to get mirrored.
-			 */
-			info.numrecopy = save_numcopy;
 			failed++;
 		} else {
 			success++;
@@ -218,8 +204,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		}
 	}
 
-	m_NextStack.pop();
-
 	if (m_ExecType == ET_Event || m_ExecType == ET_Hook)
 	{
 		cur_result = high_result;
@@ -228,8 +212,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	}
 
 	*result = cur_result;
-
-	DumpAdditionQueue();
 
 	if (filter)
 	{
@@ -243,8 +225,10 @@ int CForward::PushCell(cell_t cell)
 {
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_Cell && m_types[m_curparam] != Param_Any)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_Cell;
+		} else if (m_types[m_curparam] != Param_Cell) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -252,17 +236,10 @@ int CForward::PushCell(cell_t cell)
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_Cell;
 	}
 
-	FuncIter iter;
-	IPluginFunction *func;
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-	{
-		func = (*iter);
-		func->PushCell(cell);
-	}
-
-	m_curparam++;
+	m_params[m_curparam++].val = cell;
 
 	return SP_ERROR_NONE;
 }
@@ -271,8 +248,10 @@ int CForward::PushFloat(float number)
 {
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_Float && m_types[m_curparam] != Param_Any)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_Float;
+		} else if (m_types[m_curparam] != Param_Float) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -280,17 +259,10 @@ int CForward::PushFloat(float number)
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_Float;
 	}
 
-	FuncIter iter;
-	IPluginFunction *func;
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-	{
-		func = (*iter);
-		func->PushFloat(number);
-	}
-
-	m_curparam++;
+	m_params[m_curparam++].val = *(cell_t *)&number;
 
 	return SP_ERROR_NONE;
 }
@@ -310,19 +282,7 @@ int CForward::PushCellByRef(cell_t *cell, int flags)
 		}
 	}
 
-	if (flags & SMFUNC_COPYBACK_ALWAYS)
-	{
-		_Int_PushArray(cell, 1, flags);
-	} else {
-		FuncIter iter;
-		IPluginFunction *func;
-		for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-		{
-			func = (*iter);
-			func->PushCellByRef(cell, flags);
-		}
-	}
-
+	_Int_PushArray(cell, 1, flags);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
@@ -343,93 +303,17 @@ int CForward::PushFloatByRef(float *num, int flags)
 		}
 	}
 
-	if (flags & SMFUNC_COPYBACK_ALWAYS)
-	{
-		_Int_PushArray((cell_t *)num, 1, flags);
-	} else {
-		FuncIter iter;
-		IPluginFunction *func;
-		for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-		{
-			func = (*iter);
-			func->PushFloatByRef(num, flags);
-		}
-	}
-
+	_Int_PushArray((cell_t *)num, 1, flags);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushCells(cell_t array[], unsigned int numcells, bool each)
-{
-	if (each)
-	{
-		/* Type check each cell if we need to! */
-		if (m_curparam + numcells >= m_numparams && !m_varargs)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		} else {
-			for (unsigned int i=m_curparam; i<m_numparams; i++)
-			{
-				if (m_types[i] != Param_Any || m_types[i] != Param_Cell)
-				{
-					return SetError(SP_ERROR_PARAM);
-				}
-			}
-		}
-	} else {
-		if (m_curparam < m_numparams)
-		{
-			if (m_types[m_curparam] != Param_Any || m_types[m_curparam] == Param_Array)
-			{
-				return SetError(SP_ERROR_PARAM);
-			}
-		} else {
-			if (!m_varargs || m_curparam > SP_MAX_EXEC_PARAMS)
-			{
-				return SetError(SP_ERROR_PARAMS_MAX);
-			}
-		}
-	}
-
-	FuncIter iter;
-	IPluginFunction *func;
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-	{
-		func = (*iter);
-		func->PushCells(array, numcells, each);
-	}
-
-	m_curparam += each ? numcells : 1;
-	
-	return SP_ERROR_NONE;
-}
-
 void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
 {
-	FuncIter iter;
-	IPluginFunction *func;
-	if (flags & SMFUNC_COPYBACK_ALWAYS)
-	{
-		/* As a special optimization, we create blank default arrays because they will be 
-		* copied over anyway!
-		*/
-		for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-		{
-			func = (*iter);
-			func->PushArray(inarray, cells, NULL, flags|SMFUNC_ARRAY_NOINIT);
-		}
-		m_CopyBacks.recopy[m_CopyBacks.numrecopy++] = m_curparam;
-		m_CopyBacks.orig_addrs[m_curparam] = inarray;
-		m_CopyBacks.sizes[m_curparam] = cells;
-	} else {
-		for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-		{
-			func = (*iter);
-			func->PushArray(inarray, cells, NULL, flags);
-		}
-	}
+	m_params[m_curparam].byref.cells = cells;
+	m_params[m_curparam].byref.flags = flags;
+	m_params[m_curparam].byref.orig_addr = inarray;
 }
 
 int CForward::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int flags)
@@ -442,8 +326,10 @@ int CForward::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr,
 
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_Any || m_types[m_curparam] == Param_Array)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_Array;
+		} else if (m_types[m_curparam] != Param_Array) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -451,6 +337,7 @@ int CForward::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr,
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_Array;
 	}
 
 	if (phys_addr)
@@ -469,8 +356,10 @@ int CForward::PushString(const char *string)
 {
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_Any || m_types[m_curparam] == Param_String)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_String;
+		} else if (m_types[m_curparam] == Param_String) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -478,27 +367,23 @@ int CForward::PushString(const char *string)
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_String;
 	}
 
-	FuncIter iter;
-	IPluginFunction *func;
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-	{
-		func = (*iter);
-		func->PushString(string);
-	}
-
+	_Int_PushArray((cell_t *)string, 0, 0);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushStringByRef(char *string, int flags)
+int CForward::PushStringEx(char *string, int flags)
 {
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_Any || m_types[m_curparam] == Param_String)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_String;
+		} else if (m_types[m_curparam] == Param_String) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -506,16 +391,10 @@ int CForward::PushStringByRef(char *string, int flags)
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_String;
 	}
 
-	FuncIter iter;
-	IPluginFunction *func;
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-	{
-		func = (*iter);
-		func->PushStringByRef(string, flags);
-	}
-
+	_Int_PushArray((cell_t *)string, 0, flags);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
@@ -528,18 +407,7 @@ void CForward::Cancel()
 		return;
 	}
 
-	FuncIter iter;
-	IPluginFunction *func;
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
-	{
-		func = (*iter);
-		func->Cancel();
-	}
-
-	m_CopyBacks.numrecopy = 0;
-
-	DumpAdditionQueue();
-
+	m_curparam = 0;
 	m_errstate = SP_ERROR_NONE;
 }
 
@@ -578,11 +446,8 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 		}
 	}
 
-	/* Just in case */
-	m_AddQueue.remove(func);
-	
 	/* Cancel a call, if any */
-	if (found && (!m_NextStack.empty() || m_curparam))
+	if (found || m_curparam)
 	{
 		func->Cancel();
 	}
@@ -607,30 +472,7 @@ unsigned int CForward::RemoveFunctionsOfPlugin(IPlugin *plugin)
 		}
 	}
 
-	for (iter=m_AddQueue.begin(); iter!=m_AddQueue.end();)
-	{
-		func = (*iter);
-		if (func->GetParentPlugin() == plugin)
-		{
-			/* Don't count these toward the total */
-			iter = m_functions.erase(iter);
-		} else {
-			iter++;
-		}
-	}
-
 	return removed;
-}
-
-void CForward::DumpAdditionQueue()
-{
-	FuncIter iter = m_AddQueue.begin();
-	while (iter != m_AddQueue.end())
-	{
-		m_functions.push_back((*iter));
-		//:TODO: eventually we will tell the plugin we're using it
-		iter = m_AddQueue.erase(iter);
-	}
 }
 
 bool CForward::AddFunction(IPluginFunction *func)
@@ -640,13 +482,8 @@ bool CForward::AddFunction(IPluginFunction *func)
 		return false;
 	}
 
-	if (!m_NextStack.empty())
-	{
-		m_AddQueue.push_back(func);
-	} else {
-		//:TODO: eventually we will tell the plugin we're using it
-		m_functions.push_back(func);
-	}
+	//:TODO: eventually we will tell the plugin we're using it
+	m_functions.push_back(func);
 
 	return true;
 }

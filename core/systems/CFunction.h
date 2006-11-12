@@ -28,9 +28,9 @@ public:
 	virtual int PushCells(cell_t array[], unsigned int numcells, bool each);
 	virtual int PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int copyback);
 	virtual int PushString(const char *string);
-	virtual int PushStringByRef(char *string, int flags);
+	virtual int PushStringEx(char *string, int flags);
 	virtual cell_t *GetAddressOfPushedParam(unsigned int param);
-	virtual int Execute(cell_t *result, IFunctionCopybackReader *reader);
+	virtual int Execute(cell_t *result);
 	virtual void Cancel();
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
 	virtual IPlugin *GetParentPlugin();

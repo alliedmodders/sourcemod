@@ -5,10 +5,7 @@
 
 namespace SourceMod
 {
-	#define SMFUNC_COPYBACK_NONE	(0)			/* Never copy an array back */
-	#define SMFUNC_COPYBACK_ONCE	(1<<0)		/* Copy an array back after call */
-	#define SMFUNC_COPYBACK_ALWAYS	(1<<1)		/* Copy an array back after subsequent calls (forwards) */
-	#define SMFUNC_ARRAY_NOINIT		(1<<2)		/* The array is not copied at first, but copyback is performed */
+	#define SM_FUNCFLAG_COPYBACK		(1<<0)		/* Copy an array/reference back after call */
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
@@ -27,6 +24,9 @@ namespace SourceMod
 		/**
 		 * @brief Pushes a cell by reference onto the current call.
 		 * NOTE: On Execute, the pointer passed will be modified if copyback is enabled.
+		 * NOTE: By reference parameters are cached and thus are not read until execution.
+		 *		 This means you cannot push a pointer, change it, and push it again and expect
+		 *       two different values to come out.
 		 *
 		 * @param cell		Address containing parameter value to push.
 		 * @param flags		Copy-back flags.
@@ -45,6 +45,9 @@ namespace SourceMod
 		/**
 		 * @brief Pushes a float onto the current call by reference.
 		 * NOTE: On Execute, the pointer passed will be modified if copyback is enabled.
+		 * NOTE: By reference parameters are cached and thus are not read until execution.
+		 *		 This means you cannot push a pointer, change it, and push it again and expect
+		 *       two different values to come out.
 		 *
 		 * @param float		Parameter value to push.
 		 & @param flags		Copy-back flags.
@@ -53,20 +56,12 @@ namespace SourceMod
 		virtual int PushFloatByRef(float *number, int flags) =0;
 
 		/**
-		 * @brief Pushes an array of cells onto the current call, each cell individually.
-		 * NOTE: This is essentially a crippled version of PushArray().
-		 *
-		 * @param array		Array of cells.
-		 * @param numcells	Number of cells in array.
-		 * @param each		Whether or not to push as an array or individual cells.
-		 * @return			Error code, if any.
-		 */
-		virtual int PushCells(cell_t array[], unsigned int numcells, bool each) =0;
-
-		/**
 		 * @brief Pushes an array of cells onto the current call.  
 		 * NOTE: On Execute, the pointer passed will be modified if non-NULL and copy-back
 		 * is enabled.
+		 * NOTE: By reference parameters are cached and thus are not read until execution.
+		 *		 This means you cannot push a pointer, change it, and push it again and expect
+		 *       two different values to come out.
 		 *
 		 * @param array		Array to copy, NULL if no initial array should be copied.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
@@ -77,7 +72,7 @@ namespace SourceMod
 		virtual int PushArray(cell_t *inarray, 
 								unsigned int cells, 
 								cell_t **phys_addr, 
-								int flags=SMFUNC_COPYBACK_NONE) =0;
+								int flags=0) =0;
 
 		/**
 		 * @brief Pushes a string onto the current call.
@@ -95,37 +90,13 @@ namespace SourceMod
 		 * @param flags		Copy-back flags.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushStringByRef(char *string, int flags) =0;
+		virtual int PushStringEx(char *string, int flags) =0;
 
 		/**
 		 * @brief Cancels a function call that is being pushed but not yet executed.
 		 * This can be used be reset for CallFunction() use.
 		 */
 		virtual void Cancel() =0;
-	};
-
-
-	/**
-	 * @brief Used for copy-back notification
-	 */
-	class IFunctionCopybackReader
-	{
-	public:
-		/**
-		 * @brief Called before an array is copied back.
-		 * 
-		 * @param param			Parameter index.
-		 * @param cells			Number of cells in the array.
-		 * @param source_addr	Source address in the plugin that will be copied.
-		 * @param orig_addr		Destination addres in plugin that will be overwritten.
-		 * @param flags			Copy flags.
-		 * @return				True to copy back, false otherwise.
-		 */
-		virtual bool OnCopybackArray(unsigned int param, 
-								unsigned int cells,
-								cell_t *source_addr,
-								cell_t *orig_addr,
-								int flags) =0;
 	};
 
 	/**
@@ -143,7 +114,7 @@ namespace SourceMod
 		 * @param reader		Copy-back listener.  NULL to specify 
 		 * @return				Error code, if any.
 		 */
-		virtual int Execute(cell_t *result, IFunctionCopybackReader *reader) =0;
+		virtual int Execute(cell_t *result) =0;
 
 		/**
 		 * @brief Executes the function with the given parameter array.
@@ -172,28 +143,6 @@ namespace SourceMod
 		 * @return				Address, or NULL if invalid parameter specified.
 		 */
 		virtual cell_t *GetAddressOfPushedParam(unsigned int param) =0;
-
-#if 0
-		/**
-		 * @brief Clones the function object.  This can be used to maintain a private copy.
-		 * The copy retains no push states and must be freeed with ReleaseCopy().
-		 */
-		virtual IPluginFunction *Copy() =0;
-
-		/**
-		 * @brief If this object is a clone, this function must be called to destroy it.
-		 */
-		virtual void ReleaseCopy() =0;
-
-		/**
-		 * @brief Returns original function pointer, if any.
-		 * Note: IsCopyOf() will return the original non-copy, even if used
-		 * from a copy.
-		 *
-		 * @return				The original object that this was sourced from.
-		 */
-		virtual IPluginFunction *IsCopyOf() =0;
-#endif
 	};
 };
 

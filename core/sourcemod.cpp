@@ -124,7 +124,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	fwd->AddFunction(func);
 	fwd->AddFunction(func2);
 	fwd->PushCell(1);
-	fwd->PushCellByRef(&val, SMFUNC_COPYBACK_ALWAYS);
+	fwd->PushCellByRef(&val, 0);
 	fwd->Execute(&result, NULL);
 	g_PluginMngr.UnloadPlugin(pPlugin);
 

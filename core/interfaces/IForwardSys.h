@@ -142,7 +142,7 @@ namespace SourceMod
 		virtual int PushArray(cell_t *inarray, 
 								unsigned int cells, 
 								cell_t **phys_addr, 
-								int flags=SMFUNC_COPYBACK_NONE) =0;
+								int flags=0) =0;
 	};
 
 
@@ -307,48 +307,33 @@ namespace SourceMod
  *
  *  Note that while #2,3,4 could be added to AMX Mod X, the real binding property is #1, which makes the system
  * object oriented, rather than AMX Mod X, which hides the objects behind static functions.  It is entirely a design
- * issue, rather than a usability one.  The interesting part is when it gets to implementation, which is when the 
- * problems for SourceMod arise.  Specifically, the implementation is easier in GENERAL -- the tough part is the oddball
- * cases.
+ * issue, rather than a usability one.  The interesting part is when it gets to implementation, which has to cache
+ * parameter pushing until execution.  Without this, multiple function calls can be started across one plugin, which
+ * will result in heap corruption given SourcePawn's implementation.
  *
- * Observe the calling process:
- * - Each parameter is pushed using the ICallable interface.  For each parameter:
- *  - For each function in the collection, the parameter is processed and pushed.
+ * Observe the new calling process:
+ * - Each parameter is pushed into a local cache using the ICallable interface.
  * - For each function in the collection:
+ *  - Each parameter is decoded and -pushed into the function.
  *  - The call is made.
- *  - Copy backs are performed.
  * - Return
  *
- *  Astute readers will note the problems - the parameters are processed individually for each push,
- * rather than for each call.  This means:
+ *  Astute readers will note the (minor) problems:
  * 1) More memory is used.  Specifically, rather than N params of memory, you now have N params * M plugins.
- *    This is because, again, parameters are processed per function object, per-push, before the call.
+ *    This is because, again, parameters are cached both per-function and per-forward.
  * 2) There are slightly more calls going around: one extra call for each parameter, since each push is manual.
- * 3) Copybacks won't work as expected.  
  *
- *  Number 3 is hard to see.  For example, say a forward has two functions, and an array is pushed with copyback.
- * The array gets pushed and copied into each plugin.  When the call is made, each plugin now has separate copies of 
- * the array.  When the copyback is performed, it gets mirrored to the originall address, but not to the next plugin!
-
- *  Implementing this is "difficult."  To be re-entrant, an IPluginFunction can't tell you anything
- * about its copybacks after it has returned, because its internal states were reset long ago.
- * 
- *  In order to implement this feature, IPluginFunction::Execute function now lets you pass a listener in.
- * This listener is notified each time an array parameter is about to be copied back.  Specifically, the forward 
- * uses this to detect when it needs to push a new parameter out to the next plugin.  When the forward gets the 
- * call back, it detects whether there is another plugin in the queue.  If there is, it grabs the address it will
- * be using for the same arrays, and specifies it as the new copy-back point.  If no plugins are left, it allows
- * the copyback to chain up to the original address.
- * 
- *  This wonderful little hack is somewhat reminiscent of how SourceHook parameter rewrite chains work.  It seems 
- * ugly at first, but it is actually the correct design pattern to apply to an otherwise awful problem.
- *
- *  Note that there are other solutions to this that aren't based on a visitor-like pattern.  For example, the Function
- * class could expose a "set new original address" function.  Then after arrays are pushed, the arrays are re-browsed,
- * and function #1 gets function #2's original address, function #2 gets function #3's original address, et cetera.
- * This extra browse step is a bit less efficient though, since the "visitor" method implies only taking action when
- * necessary.  Furthermore, it would require exposing such a "set address" function, which should fire a red flag 
- * that the API is doing something it shouldn't (namely, exposing the direct setting of very internal properties).
+ * HISTORICAL NOTES:
+ *  There used to be a # about copy backs.  
+ *  Note that originally, the Forward implementation was a thin wrapper around IForwards.  It did not cache pushes,
+ * and instead immediately fired them to each internal plugin.  This was to allow users to know that pointers would 
+ * be immediately resolved.  Unfortunately, this became extremely burdensome on the API and exposed many problems,
+ * the major (and breaking) one was that two separate Function objects cannot be in a calling process on the same 
+ * plugin at once. (:TODO: perhaps prevent that in the IPlugin object?) This is because heap functions lose their order
+ * and become impossible to re-arrange without some global heap tracking mechanis.  It also made iterative copy backs 
+ * for arrays/references overwhelmingly complex, since each plugin had to have its memory back-patched for each copy.
+ *  Therefore, this was scrapped for cached parameters (current implementation), which is the implementation AMX Mod X 
+ * uses.  It is both faster and works better.
  */
 
 #endif //_INCLUDE_SOURCEMOD_FORWARDINTERFACE_H_

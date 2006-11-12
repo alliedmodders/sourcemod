@@ -216,10 +216,10 @@ namespace SourcePawn
 		 * Converts a physical string to a local address.
 		 *
 		 * @param local_addr	Local address in plugin.
-		 * @param chars			Number of chars to write, including NULL terminator.
+		 * @param bytes			Number of chars to write, including NULL terminator.
 		 * @param source		Source string to copy.
 		 */
-		virtual int StringToLocal(cell_t local_addr, size_t chars, const char *source) =0;
+		virtual int StringToLocal(cell_t local_addr, size_t bytes, const char *source) =0;
 
 		/**
 		* Converts a physical UTF-8 string to a local address.
@@ -229,9 +229,12 @@ namespace SourcePawn
 		* @param local_addr		Local address in plugin.
 		* @param maxbytes		Number of bytes to write, including NULL terminator.
 		* @param source			Source string to copy.
-		* @param wrtnbytes		Optionally filled with the number of written bytes.
+		 * @param wrtnbytes		Optionally set to the number of actual bytes written.
 		*/
-		virtual int StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes) =0;
+		virtual int StringToLocalUTF8(cell_t local_addr, 
+									  size_t maxbytes, 
+									  const char *source, 
+									  size_t *wrtnbytes) =0;
 
 		/**
 		 * Pushes a cell onto the stack.  Increases the parameter count by one.

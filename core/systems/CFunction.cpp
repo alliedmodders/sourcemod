@@ -76,7 +76,7 @@ int CFunction::PushCells(cell_t array[], unsigned int numcells, bool each)
 {
 	if (!each)
 	{
-		return PushArray(array, numcells, NULL, SMFUNC_COPYBACK_NONE);
+		return PushArray(array, numcells, NULL, 0);
 	} else {
 		int err;
 		for (unsigned int i=0; i<numcells; i++)
@@ -106,7 +106,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 		return SetError(err);
 	}
 
-	info->flags = (inarray || (copyback & SMFUNC_COPYBACK_ALWAYS)) ? copyback : SMFUNC_COPYBACK_NONE;
+	info->flags = inarray ? copyback : 0;
 	info->marked = true;
 	info->size = cells;
 	m_params[m_curparam] = info->local_addr;
@@ -114,10 +114,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 
 	if (inarray)
 	{
-		if (!(copyback & SMFUNC_ARRAY_NOINIT))
-		{
-			memcpy(info->phys_addr, inarray, sizeof(cell_t) * cells);
-		}
+		memcpy(info->phys_addr, inarray, sizeof(cell_t) * cells);
 		info->orig_addr = inarray;
 	} else {
 		info->orig_addr = info->phys_addr;
@@ -133,10 +130,10 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 
 int CFunction::PushString(const char *string)
 {
-	return _PushString(string, SMFUNC_COPYBACK_NONE);
+	return _PushString(string, 0);
 }
 
-int CFunction::PushStringByRef(char *string, int flags)
+int CFunction::PushStringEx(char *string, int flags)
 {
 	return _PushString(string, flags);
 }
@@ -163,8 +160,7 @@ int CFunction::_PushString(const char *string, int flags)
 	m_params[m_curparam] = info->local_addr;
 	m_curparam++;	/* Prevent a leak */
 
-	//:TODO: Use UTF-8 version
-	if ((err=base->StringToLocal(info->local_addr, len, string)) != SP_ERROR_NONE)
+	if ((err=base->StringToLocalUTF8(info->local_addr, len, string, NULL)) != SP_ERROR_NONE)
 	{
 		return SetError(err);
 	}
@@ -197,7 +193,7 @@ void CFunction::Cancel()
 	m_errorstate = SP_ERROR_NONE;
 }
 
-int CFunction::Execute(cell_t *result, IFunctionCopybackReader *reader)
+int CFunction::Execute(cell_t *result)
 {
 	int err;
 	if (m_errorstate != SP_ERROR_NONE)
@@ -236,17 +232,6 @@ int CFunction::Execute(cell_t *result, IFunctionCopybackReader *reader)
 		}
 		if (docopies && temp_info[numparams].flags)
 		{
-			if (reader)
-			{
-				if (!reader->OnCopybackArray(numparams, 
-										temp_info[numparams].size, 
-										temp_info[numparams].phys_addr,
-										temp_info[numparams].orig_addr,
-										temp_info[numparams].flags))
-				{
-					goto _skipcopy;
-				}
-			}
 			if (temp_info[numparams].orig_addr)
 			{
 				if (temp_info[numparams].size == 1)
@@ -259,7 +244,6 @@ int CFunction::Execute(cell_t *result, IFunctionCopybackReader *reader)
 				}
 			}
 		}
-_skipcopy:
 		base->HeapPop(temp_info[numparams].local_addr);
 		temp_info[numparams].marked = false;
 	}

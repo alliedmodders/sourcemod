@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\interfaces;..\;..\systems"
+				AdditionalIncludeDirectories="..\interfaces;..\;..\systems;..\..\sourcepawn\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -302,26 +302,6 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="SDK"
-			>
-			<File
-				RelativePath="..\..\sourcepawn\include\sp_file_headers.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\sourcepawn\include\sp_vm_api.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\sourcepawn\include\sp_vm_base.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="zlib"
 			>
 			<Filter
@@ -449,10 +429,24 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="Resource Files"
-				Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-				UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+				Name="SDK"
 				>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_file_headers.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_api.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_base.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 	</Files>
