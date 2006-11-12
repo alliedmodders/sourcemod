@@ -16,7 +16,7 @@ typedef uint32_t	funcid_t;
 #define SP_ERROR_FILE_FORMAT			1	/* File format unrecognized */
 #define SP_ERROR_DECOMPRESSOR			2	/* A decompressor was not found */
 #define SP_ERROR_HEAPLOW				3	/* Not enough space left on the heap */
-#define SP_ERROR_PARAM					4	/* Invalid parameter */
+#define SP_ERROR_PARAM					4	/* Invalid parameter or parameter type */
 #define SP_ERROR_INVALID_ADDRESS		5	/* A memory address was not valid */
 #define SP_ERROR_NOT_FOUND				6	/* The object in question was not found */
 #define SP_ERROR_INDEX					7	/* Invalid index parameter */
