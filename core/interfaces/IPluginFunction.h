@@ -8,6 +8,7 @@ namespace SourceMod
 	#define SMFUNC_COPYBACK_NONE	(0)			/* Never copy an array back */
 	#define SMFUNC_COPYBACK_ONCE	(1<<0)		/* Copy an array back after call */
 	#define SMFUNC_COPYBACK_ALWAYS	(1<<1)		/* Copy an array back after subsequent calls (forwards) */
+	#define SMFUNC_ARRAY_NOINIT		(1<<2)		/* The array is not copied at first, but copyback is performed */
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.

@@ -114,7 +114,10 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 
 	if (inarray)
 	{
-		memcpy(info->phys_addr, inarray, sizeof(cell_t) * cells);
+		if (!(copyback & SMFUNC_ARRAY_NOINIT))
+		{
+			memcpy(info->phys_addr, inarray, sizeof(cell_t) * cells);
+		}
 		info->orig_addr = inarray;
 	} else {
 		info->orig_addr = info->phys_addr;
@@ -257,7 +260,7 @@ int CFunction::Execute(cell_t *result, IFunctionCopybackReader *reader)
 			}
 		}
 _skipcopy:
-		base->HeapRelease(temp_info[numparams].local_addr);
+		base->HeapPop(temp_info[numparams].local_addr);
 		temp_info[numparams].marked = false;
 	}
 

@@ -418,7 +418,7 @@ void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
 		for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 		{
 			func = (*iter);
-			func->PushArray(NULL, cells, NULL, flags);
+			func->PushArray(inarray, cells, NULL, flags|SMFUNC_ARRAY_NOINIT);
 		}
 		m_CopyBacks.recopy[m_CopyBacks.numrecopy++] = m_curparam;
 		m_CopyBacks.orig_addrs[m_curparam] = inarray;
