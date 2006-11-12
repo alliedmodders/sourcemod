@@ -481,22 +481,19 @@ int BaseContext::LocalToString(cell_t local_addr, char **addr)
 	return SP_ERROR_NONE;
 }
 
-int BaseContext::PushString(cell_t *local_addr, cell_t **phys_addr, const char *string)
+int BaseContext::PushString(cell_t *local_addr, char **phys_addr, const char *string)
 {
-	cell_t *ph_addr;
+	char *ph_addr;
 	int err;
-	unsigned int i, numcells = strlen(string);
+	unsigned int len, numcells = ((len=strlen(string)) + sizeof(cell_t)) / sizeof(cell_t);
 
-	if ((err = HeapAlloc(numcells+1, local_addr, &ph_addr)) != SP_ERROR_NONE)
+	if ((err = HeapAlloc(numcells, local_addr, (cell_t **)&ph_addr)) != SP_ERROR_NONE)
 	{
 		return err;
 	}
 
-	for (i=0; i<numcells; i++)
-	{
-		ph_addr[i] = (cell_t)string[i];
-	}
-	ph_addr[numcells] = '\0';
+	memcpy(ph_addr, string, len);
+	ph_addr[len] = '\0';
 
 	if ((err = PushCell(*local_addr)) != SP_ERROR_NONE)
 	{
@@ -514,8 +511,8 @@ int BaseContext::PushString(cell_t *local_addr, cell_t **phys_addr, const char *
 
 int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *source)
 {
-	cell_t *dest;
-	int i, len;
+	char *dest;
+	int len;
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
@@ -523,18 +520,96 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *sour
 	}
 
 	len = strlen(source);
-	dest = (cell_t *)(ctx->memory + local_addr);
+	dest = (char *)(ctx->memory + local_addr);
 
 	if ((size_t)len >= chars)
 	{
 		len = chars - 1;
 	}
-
-	for (i=0; i<len; i++)
+	if (len <= 0)
 	{
-		dest[i] = (cell_t)source[i];
+		return SP_ERROR_NONE;
+	}
+
+	memcpy(dest, source, len);
+	dest[len] = '\0';
+
+	return SP_ERROR_NONE;
+}
+
+inline int __CheckValidChar(char *c)
+{
+	int count;
+	int bytecount = 0;
+
+	for(count=1; (*c & 0xC0) == 0x80; count++)
+	{
+		c--;
+	}
+
+	switch (*c & 0xF0)
+	{
+	case 0xC0:
+	case 0xD0:
+		{
+			bytecount = 2;
+			break;
+		}
+	case 0xE0:
+		{
+			bytecount = 3;
+			break;
+		}
+	case 0xF0:
+		{
+			bytecount = 4;
+			break;
+		}
+	}
+
+	if (bytecount != count)
+	{
+		return count;
+	}
+
+	return 0;
+}
+
+int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes)
+{
+	char *dest;
+	int len;
+	bool needtocheck = false;
+
+	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
+	{
+		return SP_ERROR_INVALID_ADDRESS;
+	}
+
+	len = strlen(source);
+	dest = (char *)(ctx->memory + local_addr);
+
+	if ((size_t)len >= maxbytes)
+	{
+		len = maxbytes - 1;
+		needtocheck = true;
+	}
+	if (len <= 0)
+	{
+		return SP_ERROR_NONE;
+	}
+
+	memcpy(dest, source, len);
+	if ((dest[len] & 1<<7) && needtocheck)
+	{
+		len -= __CheckValidChar(dest+len-1);
 	}
 	dest[len] = '\0';
+
+	if (wrtnbytes)
+	{
+		*wrtnbytes = len;
+	}
 
 	return SP_ERROR_NONE;
 }

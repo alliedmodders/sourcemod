@@ -33,9 +33,10 @@ namespace SourcePawn
 		virtual int LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr);
 		virtual int LocalToString(cell_t local_addr, char **addr);
 		virtual int StringToLocal(cell_t local_addr, size_t chars, const char *source);
+		virtual int StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes);
 		virtual int PushCell(cell_t value);
 		virtual int PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells);
-		virtual int PushString(cell_t *local_addr, cell_t **phys_addr, const char *string);
+		virtual int PushString(cell_t *local_addr, char **phys_addr, const char *string);
 		virtual int PushCellsFromArray(cell_t array[], unsigned int numcells);
 		virtual int BindNatives(sp_nativeinfo_t *natives, unsigned int num, int overwrite);
 		virtual int BindNative(sp_nativeinfo_t *native);

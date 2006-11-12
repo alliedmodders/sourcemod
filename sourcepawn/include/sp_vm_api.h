@@ -204,10 +204,8 @@ namespace SourcePawn
 		 */
 		virtual int LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr) =0;
 
-		/**:TODO: FIX ALL PACKED STUFF COMMENTS!
+		/**
 		 * Converts a local address to a physical string.
-		 * Note that SourcePawn does not support packed strings, as such this function is
-		 *  'cell to char' only.
 		 *
 		 * @param local_addr	Local address in plugin.
 		 * @param addr			Destination output pointer.
@@ -216,13 +214,24 @@ namespace SourcePawn
 
 		/**
 		 * Converts a physical string to a local address.
-		 * Note that SourcePawn does not support packed strings.
 		 *
 		 * @param local_addr	Local address in plugin.
 		 * @param chars			Number of chars to write, including NULL terminator.
 		 * @param source		Source string to copy.
 		 */
 		virtual int StringToLocal(cell_t local_addr, size_t chars, const char *source) =0;
+
+		/**
+		* Converts a physical UTF-8 string to a local address.
+		* This function is the same as the ANSI version, except it will copy the maximum number of characters possible 
+		*  without accidentally chopping a multi-byte character.
+		*
+		* @param local_addr		Local address in plugin.
+		* @param maxbytes		Number of bytes to write, including NULL terminator.
+		* @param source			Source string to copy.
+		* @param wrtnbytes		Optionally filled with the number of written bytes.
+		*/
+		virtual int StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes) =0;
 
 		/**
 		 * Pushes a cell onto the stack.  Increases the parameter count by one.
@@ -253,7 +262,7 @@ namespace SourcePawn
 		 * @param phys_addr		Optionally filled with physical address of new array.
 		 * @param string		Source string to push.
 		 */
-		virtual int PushString(cell_t *local_addr, cell_t **phys_addr, const char *string) =0;
+		virtual int PushString(cell_t *local_addr, char **phys_addr, const char *string) =0;
 
 		/**
 		 * Individually pushes each cell of an array of cells onto the stack.  Increases the 
