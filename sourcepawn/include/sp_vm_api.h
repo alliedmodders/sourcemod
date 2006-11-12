@@ -229,7 +229,7 @@ namespace SourcePawn
 		* @param local_addr		Local address in plugin.
 		* @param maxbytes		Number of bytes to write, including NULL terminator.
 		* @param source			Source string to copy.
-		 * @param wrtnbytes		Optionally set to the number of actual bytes written.
+		* @param wrtnbytes		Optionally set to the number of actual bytes written.
 		*/
 		virtual int StringToLocalUTF8(cell_t local_addr, 
 									  size_t maxbytes, 

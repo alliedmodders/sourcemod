@@ -542,7 +542,7 @@ inline int __CheckValidChar(char *c)
 	int count;
 	int bytecount = 0;
 
-	for(count=1; (*c & 0xC0) == 0x80; count++)
+	for (count=1; (*c & 0xC0) == 0x80; count++)
 	{
 		c--;
 	}
@@ -600,7 +600,7 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	}
 
 	memcpy(dest, source, len);
-	if ((dest[len] & 1<<7) && needtocheck)
+	if ((dest[len-1] & 1<<7) && needtocheck)
 	{
 		len -= __CheckValidChar(dest+len-1);
 	}
