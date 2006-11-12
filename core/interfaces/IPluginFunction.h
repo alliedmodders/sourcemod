@@ -69,7 +69,7 @@ namespace SourceMod
 		 *
 		 * @param array		Array to copy, NULL if no initial array should be copied.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
-		 * @param phys_addr	Optional return address for physical array (if array was non-NULL, will be array).
+		 * @param phys_addr	Optional return address for physical array, if one was made.
 		 * @param flags		Whether or not changes should be copied back to the input array.
 		 * @return			Error code, if any.
 		 */
@@ -171,6 +171,28 @@ namespace SourceMod
 		 * @return				Address, or NULL if invalid parameter specified.
 		 */
 		virtual cell_t *GetAddressOfPushedParam(unsigned int param) =0;
+
+#if 0
+		/**
+		 * @brief Clones the function object.  This can be used to maintain a private copy.
+		 * The copy retains no push states and must be freeed with ReleaseCopy().
+		 */
+		virtual IPluginFunction *Copy() =0;
+
+		/**
+		 * @brief If this object is a clone, this function must be called to destroy it.
+		 */
+		virtual void ReleaseCopy() =0;
+
+		/**
+		 * @brief Returns original function pointer, if any.
+		 * Note: IsCopyOf() will return the original non-copy, even if used
+		 * from a copy.
+		 *
+		 * @return				The original object that this was sourced from.
+		 */
+		virtual IPluginFunction *IsCopyOf() =0;
+#endif
 	};
 };
 

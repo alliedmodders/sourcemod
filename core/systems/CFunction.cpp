@@ -106,7 +106,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 		return SetError(err);
 	}
 
-	info->flags = inarray ? copyback : SMFUNC_COPYBACK_NONE;
+	info->flags = (inarray || (copyback & SMFUNC_COPYBACK_ALWAYS)) ? copyback : SMFUNC_COPYBACK_NONE;
 	info->marked = true;
 	info->size = cells;
 	m_params[m_curparam] = info->local_addr;
@@ -246,9 +246,14 @@ int CFunction::Execute(cell_t *result, IFunctionCopybackReader *reader)
 			}
 			if (temp_info[numparams].orig_addr)
 			{
-				memcpy(temp_info[numparams].orig_addr, 
-						temp_info[numparams].phys_addr, 
-						temp_info[numparams].size * sizeof(cell_t));
+				if (temp_info[numparams].size == 1)
+				{
+					*temp_info[numparams].orig_addr = *temp_info[numparams].phys_addr;
+				} else {
+					memcpy(temp_info[numparams].orig_addr, 
+							temp_info[numparams].phys_addr, 
+							temp_info[numparams].size * sizeof(cell_t));
+				}
 			}
 		}
 _skipcopy:

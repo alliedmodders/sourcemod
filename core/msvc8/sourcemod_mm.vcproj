@@ -260,6 +260,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\systems\ForwardSys.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\systems\LibrarySys.cpp"
 					>
 				</File>

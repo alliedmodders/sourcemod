@@ -3,6 +3,7 @@
 
 #include <IForwardSys.h>
 #include <IPluginSys.h>
+#include <IPluginFunction.h>
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
 #define SMINTERFACE_FORWARDMANAGER_VERSION	1
@@ -24,18 +25,76 @@ namespace SourceMod
 	enum ExecType
 	{
 		ET_Ignore = 0,		/* Ignore all return values, return 0 */
-		ET_Single = 1,		/* Only return the first exec, ignore all others */
+		ET_Single = 1,		/* Only return the last exec, ignore all others */
 		ET_Event = 2,		/* Acts as an event with the ResultTypes above, no mid-Stops allowed, returns highest */
 		ET_Hook = 3,		/* Acts as a hook with the ResultTypes above, mid-Stops allowed, returns highest */
+		ET_Custom = 4,		/* Ignored or handled by an IForwardFilter */
+	};
+
+	class IForward;
+
+	class IForwardFilter
+	{
+	public:
+		/**
+		 * @brief Called when an error occurs executing a plugin.
+		 *
+		 * @param fwd		IForward pointer.
+		 * @param func		IPluginFunction pointer to the failed function.
+		 * @param err		Error code.
+		 * @return			True to handle, false to pass to global error reporter.
+		 */
+		virtual bool OnErrorReport(IForward *fwd,
+									IPluginFunction *func,
+									int err)
+		{
+			return false;
+		}
+
+		/** 
+		 * @brief Called after each function return during execution.
+		 * NOTE: Only used for ET_Custom.
+		 *
+		 * @param fwd		IForward pointer.
+		 * @param func		IPluginFunction pointer to the executed function.
+		 * @param retval	Pointer to current return value (can be modified).
+		 * @return			ResultType denoting the next action to take.
+		 */
+		virtual ResultType OnFunctionReturn(IForward *fwd,
+									  IPluginFunction *func,
+									  cell_t *retval)
+		{
+			return Pl_Continue;
+		}
+
+		/** 
+		 * @brief Called when execution begins.
+		 */
+		virtual void OnExecuteBegin()
+		{
+		};
+
+		/**
+		 * @brief Called when execution ends.
+		 * 
+		 * @param final_ret	Final return value (modifiable).
+		 * @param success	Number of successful execs.
+		 * @param failed	Number of failed execs.
+		 */
+		virtual void OnExecuteEnd(cell_t *final_ret, unsigned int success, unsigned int failed)
+		{
+		}
 	};
 
 	/**
-	 * :TODO: finish this spec
 	 * @brief Abstracts multiple function calling.
+	 * 
 	 * NOTE: Parameters should be pushed in forward order, unlike
-	 * the virtual machine/IPluginContext order.
-	 * NOTE: Some functions are repeated in here because their documentation differs
-	 * from their IPluginFunction equivalents.
+	 *       the virtual machine/IPluginContext order.
+	 * NOTE: Some functions are repeated in here because their 
+	 *       documentation differs from their IPluginFunction equivalents.
+	 *       Missing are the Push functions, whose only doc change is that 
+	 *       they throw SP_ERROR_PARAM on type mismatches.
 	 */
 	class IForward : public ICallable
 	{
@@ -65,10 +124,25 @@ namespace SourceMod
 		 * @brief Executes the forward.
 		 *
 		 * @param result		Pointer to store result in.
-		 * @param num_functions	Optionally filled with the number of function sucessfully executed.
+		 * @param filter		Optional pointer to an IForwardFilter.
 		 * @return				Error code, if any.
 		 */
-		virtual int Execute(cell_t *result, unsigned int *num_functions) =0;
+		virtual int Execute(cell_t *result, IForwardFilter *filter=NULL) =0;
+
+		/**
+		 * @brief Pushes an array of cells onto the current call.  Different rules than ICallable.
+		 * NOTE: On Execute, the pointer passed will be modified according to the copyback rule.
+		 *
+		 * @param array		Array to copy.  Cannot be NULL, unlike ICallable's version.
+		 * @param cells		Number of cells to allocate and optionally read from the input array.
+		 * @param phys_addr	Unused.  If a value is passed, it will be filled with NULL.
+		 * @param flags		Whether or not changes should be copied back to the input array.
+		 * @return			Error code, if any.
+		 */
+		virtual int PushArray(cell_t *inarray, 
+								unsigned int cells, 
+								cell_t **phys_addr, 
+								int flags=SMFUNC_COPYBACK_NONE) =0;
 	};
 
 
@@ -77,10 +151,12 @@ namespace SourceMod
 	public:
 		/** 
 		 * @brief Removes a function from the call list.
+		 * NOTE: Only removes one instance.
 		 *
 		 * @param func		Function to remove.
+		 * @return			Whether or not the function was removed.
 		 */
-		virtual void RemoveFunction(IPluginFunction *func) =0;
+		virtual bool RemoveFunction(IPluginFunction *func) =0;
 
 		/** 
 		 * @brief Removes all instances of a plugin from the call list.
@@ -92,7 +168,9 @@ namespace SourceMod
 
 		/**
 		 * @brief Adds a function to the call list.
-		 * NOTE: Cannot be used during a call.
+		 * NOTE: Cannot be used during an incompleted call.
+		 * NOTE: If used during a call, function is temporarily queued until calls are over.
+		 * NOTE: Adding mulitple copies of the same function is illegal.
 		 *
 		 * @param func		Function to add.
 		 * @return			True on success, otherwise false.
@@ -101,7 +179,8 @@ namespace SourceMod
 
 		/**
 		 * @brief Adds a function to the call list.
-		 * NOTE: Cannot be used during a call.
+		 * NOTE: Cannot be used during an incompleted call.
+		 * NOTE: If used during a call, function is temporarily queued until calls are over.
 		 *
 		 * @param ctx		Context to use as a look-up.
 		 * @param funcid	Function id to add.
@@ -110,15 +189,24 @@ namespace SourceMod
 		virtual bool AddFunction(sp_context_t *ctx, funcid_t index) =0;
 	};
 
+	#define SP_PARAMTYPE_ANY	0
+	#define SP_PARAMFLAG_BYREF	(1<<0)
+	#define SP_PARAMTYPE_CELL	(1<<1)
+	#define SP_PARAMTYPE_FLOAT	(2<<1)
+	#define SP_PARAMTYPE_STRING	(3<<1)|SP_PARAMFLAG_BYREF
+	#define SP_PARAMTYPE_ARRAY	(4<<1)|SP_PARAMFLAG_BYREF
+	#define SP_PARAMTYPE_VARARG	(5<<1)
+
 	enum ParamType
 	{
-		Param_Any = 0,		//Any type will be accepted
-		Param_Cell = 1,		//Only a cell will be accepted
-		Param_Float = 2,	//Only a float value will be accepted
-		Param_String = 3,	//Only a string will be accepted
-		Param_Array = 4,	//Only a 1D array will be accepted
-		Param_VarArgs = 5,	//Anything will be accepted
-		ParamTypes_Total = 6,
+		Param_Any = SP_PARAMTYPE_ANY,
+		Param_Cell = SP_PARAMTYPE_CELL,
+		Param_Float = SP_PARAMTYPE_FLOAT,
+		Param_String = SP_PARAMTYPE_STRING,
+		Param_Array = SP_PARAMTYPE_ARRAY,
+		Param_VarArgs = SP_PARAMTYPE_VARARG,
+		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,
+		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,
 	};
 	
 	class IForwardManager : public SMInterface
