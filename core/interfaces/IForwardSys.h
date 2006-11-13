@@ -133,7 +133,7 @@ namespace SourceMod
 		 * @brief Pushes an array of cells onto the current call.  Different rules than ICallable.
 		 * NOTE: On Execute, the pointer passed will be modified according to the copyback rule.
 		 *
-		 * @param array		Array to copy.  Cannot be NULL, unlike ICallable's version.
+		 * @param inarray	Array to copy.  Cannot be NULL, unlike ICallable's version.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
 		 * @param phys_addr	Unused.  If a value is passed, it will be filled with NULL.
 		 * @param flags		Whether or not changes should be copied back to the input array.

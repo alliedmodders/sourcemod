@@ -72,24 +72,6 @@ int CFunction::PushFloatByRef(float *number, int flags)
 	return PushCellByRef((cell_t *)number, flags);
 }
 
-int CFunction::PushCells(cell_t array[], unsigned int numcells, bool each)
-{
-	if (!each)
-	{
-		return PushArray(array, numcells, NULL, 0);
-	} else {
-		int err;
-		for (unsigned int i=0; i<numcells; i++)
-		{
-			if ((err=PushCell(array[i])) != SP_ERROR_NONE)
-			{
-				return SetError(err);
-			}
-		}
-		return SP_ERROR_NONE;
-	}
-}
-
 int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int copyback)
 {
 	if (m_curparam >= SP_MAX_EXEC_PARAMS)

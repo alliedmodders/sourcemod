@@ -25,7 +25,6 @@ public:
 	virtual int PushCellByRef(cell_t *cell, int flags);
 	virtual int PushFloat(float number);
 	virtual int PushFloatByRef(float *number, int flags);
-	virtual int PushCells(cell_t array[], unsigned int numcells, bool each);
 	virtual int PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int copyback);
 	virtual int PushString(const char *string);
 	virtual int PushStringEx(char *string, int flags);

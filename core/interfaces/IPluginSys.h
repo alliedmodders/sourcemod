@@ -230,7 +230,7 @@ namespace SourceMod
 		 *
 		 * @param path		Path and filename of plugin, relative to plugins folder.
 		 * @param debug		Whether or not to default the plugin into debug mode.
-		 * @param lifetime	Lifetime of the plugin.
+		 * @param type		Lifetime of the plugin.
 		 * @param error		Buffer to hold any error message.
 		 * @param err_max	Maximum length of error message buffer.
 		 * @return			A new plugin pointer on success, false otherwise.
@@ -244,7 +244,7 @@ namespace SourceMod
 		/**
 		 * @brief Attempts to unload a plugin.
 		 *
-		 * @param			Pointer to the plugin handle.
+		 * @param plugin	Pointer to the plugin handle.
 		 * @return			True on success, false otherwise.
 		 */
 		virtual bool UnloadPlugin(IPlugin *plugin) =0;
@@ -253,7 +253,7 @@ namespace SourceMod
 		 * @brief Finds a plugin by its context.
 		 * Note: This function should be considered O(1).
 		 *
-		 * @param			Pointer to an sp_context_t.
+		 * @param ctx		Pointer to an sp_context_t.
 		 * @return			Pointer to a matching IPlugin, or NULL if none found.
 		 */
 		virtual IPlugin *FindPluginByContext(const sp_context_t *ctx) =0;

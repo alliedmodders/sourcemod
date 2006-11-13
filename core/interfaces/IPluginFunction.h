@@ -63,7 +63,7 @@ namespace SourceMod
 		 *		 This means you cannot push a pointer, change it, and push it again and expect
 		 *       two different values to come out.
 		 *
-		 * @param array		Array to copy, NULL if no initial array should be copied.
+		 * @param inarray	Array to copy, NULL if no initial array should be copied.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
 		 * @param phys_addr	Optional return address for physical array, if one was made.
 		 * @param flags		Whether or not changes should be copied back to the input array.
@@ -111,7 +111,6 @@ namespace SourceMod
 		 * @brief Executes the forward, resets the pushed parameter list, and performs any copybacks.
 		 *
 		 * @param result		Pointer to store return value in.
-		 * @param reader		Copy-back listener.  NULL to specify 
 		 * @return				Error code, if any.
 		 */
 		virtual int Execute(cell_t *result) =0;
