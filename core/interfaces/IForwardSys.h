@@ -99,6 +99,10 @@ namespace SourceMod
 	class IForward : public ICallable
 	{
 	public:
+		virtual ~IForward()
+		{
+		}
+	public:
 		/**
 		 * @brief Returns the name of the forward.
 		 *
@@ -271,6 +275,13 @@ namespace SourceMod
 		 * @return				IForward pointer, or NULL if none found matching the name.
 		 */
 		virtual IForward *FindForward(const char *name, IChangeableForward **ifchng) =0;
+
+		/**
+		 * @brief Frees and destroys a forward object.
+		 *
+		 * @param forward		An IForward created by CreateForward() or CreateForwardEx().
+		 */
+		virtual void ReleaseForward(IForward *forward) =0;
 	};
 };
 

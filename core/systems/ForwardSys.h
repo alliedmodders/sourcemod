@@ -81,4 +81,31 @@ protected:
 	int m_errstate;
 };
 
+class CForwardManager : public IForwardManager
+{
+	friend class CForward;
+public:
+	virtual IForward *CreateForward(const char *name, 
+		ExecType et, 
+		unsigned int num_params, 
+		ParamType *types, 
+		...);
+	virtual IChangeableForward *CreateForwardEx(const char *name, 
+		ExecType et, 
+		int num_params, 
+		ParamType *types, 
+		...);
+	virtual IForward *FindForward(const char *name, IChangeableForward **ifchng);
+	virtual void ReleaseForward(IForward *forward);
+protected:
+	CForward *ForwardMake();
+	void ForwardFree(CForward *fwd);
+private:
+	CStack<CForward *> m_FreeForwards;
+	List<CForward *> m_managed;
+	List<CForward *> m_unmanaged;
+};
+
+extern CForwardManager g_Forwards;
+
 #endif //_INCLUDE_SOURCEMOD_FORWARDSYSTEM_H_

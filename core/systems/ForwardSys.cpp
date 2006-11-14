@@ -2,6 +2,8 @@
 #include "ForwardSys.h"
 #include "PluginSys.h"
 
+CForwardManager g_Forwards;
+
 /**
  * Gensis turns to its source, reduction occurs stepwise although the essence is all one.
  * End of line.  FTL system check.
@@ -12,7 +14,7 @@
  * NORMAL FUNCTIONS:
  * X Push cells
  * X Push cells byref (copyback tested = yes)
- * - Push floats (copyback tested = ??)
+ * - Push floats
  * - Push floats byref (copyback tested = ??)
  * - Push arrays  (copyback tested = ??)
  * - Push strings (copyback tested = ??)
@@ -25,6 +27,98 @@
  * - Push vararg arrays  (copyback tested = ??)
  * - Push vararg strings (copyback tested = ??)
  */
+
+IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, ...)
+{
+	CForward *fwd;
+	va_list ap;
+	va_start(ap, types);
+	
+	fwd = CForward::CreateForward(name, et, num_params, types, ap);
+
+	va_end(ap);
+
+	return fwd;
+}
+
+IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType et, int num_params, ParamType *types, ...)
+{
+	CForward *fwd;
+	va_list ap;
+	va_start(ap, types);
+
+	fwd = CForward::CreateForward(name, et, num_params, types, ap);
+
+	va_end(ap);
+
+	return fwd;
+}
+
+IForward *CForwardManager::FindForward(const char *name, IChangeableForward **ifchng)
+{
+	List<CForward *>::iterator iter;
+	CForward *fwd;
+
+	for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
+	{
+		fwd = (*iter);
+		if (strcmp(fwd->GetForwardName(), name) == 0)
+		{
+			if (ifchng)
+			{
+				*ifchng = NULL;
+			}
+			return fwd;
+		}
+	}
+
+	for (iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
+	{
+		fwd = (*iter);
+		if (strcmp(fwd->GetForwardName(), name) == 0)
+		{
+			if (ifchng)
+			{
+				*ifchng = fwd;
+			}
+			return fwd;
+		}
+	}
+
+	if (ifchng)
+	{
+		*ifchng = NULL;
+	}
+
+	return NULL;
+}
+
+void CForwardManager::ReleaseForward(IForward *forward)
+{
+	ForwardFree(static_cast<CForward *>(forward));
+}
+
+void CForwardManager::ForwardFree(CForward *fwd)
+{
+	m_FreeForwards.push(fwd);
+}
+
+CForward *CForwardManager::ForwardMake()
+{
+	CForward *fwd;
+	if (m_FreeForwards.empty())
+	{
+		fwd = new CForward;
+	} else {
+		fwd = m_FreeForwards.front();
+		m_FreeForwards.pop();
+	}
+	return fwd;
+}
+
+/*************************************
+ * ACTUAL FORWARD API IMPLEMENTATION *
+ *************************************/
 
 CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, va_list ap)
 {
@@ -62,7 +156,7 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 		return NULL;
 	}
 
-	CForward *pForward = new CForward;
+	CForward *pForward = g_Forwards.ForwardMake();
 	pForward->m_curparam = 0;
 	pForward->m_ExecType = et;
 	snprintf(pForward->m_name, FORWARDS_NAME_MAX, "%s", name ? name : "");
