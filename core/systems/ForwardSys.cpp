@@ -14,9 +14,9 @@ CForwardManager g_Forwards;
  * NORMAL FUNCTIONS:
  * X Push cells
  * X Push cells byref (copyback tested = yes)
- * - Push floats
- * - Push floats byref (copyback tested = ??)
- * - Push arrays  (copyback tested = ??)
+ * X Push floats
+ * X Push floats byref (copyback tested = yes)
+ * X Push arrays  (copyback tested = yes)
  * - Push strings (copyback tested = ??)
  * VARARG FUNCTIONS:
  * - Pushing no varargs
