@@ -17,7 +17,7 @@ CForwardManager g_Forwards;
  * X Push floats
  * X Push floats byref (copyback tested = yes)
  * X Push arrays  (copyback tested = yes)
- * - Push strings (copyback tested = ??)
+ * X Push strings (copyback tested = yes)
  * VARARG FUNCTIONS:
  * - Pushing no varargs
  * - Push vararg cells (copyback should be verified to not happen = ??)
@@ -453,7 +453,7 @@ int CForward::PushString(const char *string)
 		if (m_types[m_curparam] == Param_Any)
 		{
 			m_params[m_curparam].pushedas = Param_String;
-		} else if (m_types[m_curparam] == Param_String) {
+		} else if (m_types[m_curparam] != Param_String) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -477,7 +477,7 @@ int CForward::PushStringEx(char *string, int flags)
 		if (m_types[m_curparam] == Param_Any)
 		{
 			m_params[m_curparam].pushedas = Param_String;
-		} else if (m_types[m_curparam] == Param_String) {
+		} else if (m_types[m_curparam] != Param_String) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {

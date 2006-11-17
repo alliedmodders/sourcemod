@@ -130,7 +130,7 @@ int CFunction::_PushString(const char *string, int flags)
 	IPluginContext *base = m_pPlugin->m_ctx_current.base;
 	ParamInfo *info = &m_info[m_curparam];
 	size_t len = strlen(string);
-	size_t cells = (len + sizeof(cell_t) - 1) / sizeof(cell_t);
+	size_t cells = (len + sizeof(cell_t)) / sizeof(cell_t);
 	int err;
 
 	if ((err=base->HeapAlloc(cells, &info->local_addr, &info->phys_addr)) != SP_ERROR_NONE)
@@ -142,7 +142,7 @@ int CFunction::_PushString(const char *string, int flags)
 	m_params[m_curparam] = info->local_addr;
 	m_curparam++;	/* Prevent a leak */
 
-	if ((err=base->StringToLocalUTF8(info->local_addr, len, string, NULL)) != SP_ERROR_NONE)
+	if ((err=base->StringToLocalUTF8(info->local_addr, len+1, string, NULL)) != SP_ERROR_NONE)
 	{
 		return SetError(err);
 	}
