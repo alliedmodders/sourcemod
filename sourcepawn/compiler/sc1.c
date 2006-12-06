@@ -2269,7 +2269,7 @@ static int declloc(int fstatic)
       } while (matchtoken('['));
       if (all_constant) {
         /* Change the last dimension to be based on chars instead if we have a string */
-        if (tag == pc_tag_string && dim[numdim-1])
+        if (tag == pc_tag_string && numdim && dim[numdim-1])
           dim[numdim-1] = (dim[numdim-1] + sizeof(cell)-1) / sizeof(cell);
         /* Scrap the code generated */
         ident = iARRAY;
@@ -3736,7 +3736,7 @@ static void funcstub(int fnative)
     dim[numdim++]=(int)size;
   } /* while */
 
-  if (tag == pc_tag_string && dim[numdim-1])
+  if (tag == pc_tag_string && numdim && dim[numdim-1])
     dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
 
   tok=lex(&val,&str);
