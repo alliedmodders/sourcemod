@@ -118,12 +118,31 @@ inline unsigned char charval(char c)
 	return (unsigned char)c;
 }
 
-unsigned int x_check(Trie *trie, char c)
+bool sm_trie_grow(Trie *trie)
+{
+	/* The current # of nodes in the tree is trie->baseSize + 1 */
+	unsigned int curSize = trie->baseSize;
+	unsigned int newSize = curSize * 2;
+
+	//:TODO: Make functions calling this return failure if this fails 
+	trie->base = (TrieNode *)realloc(trie->base, (newSize + 1) * sizeof(TrieNode));
+	if (!trie->base)
+	{
+		return false;
+	}
+
+	memset(&trie->base[curSize+1], 0, (newSize - curSize) * sizeof(TrieNode));
+	trie->baseSize = newSize;
+
+	return true;
+}
+
+unsigned int x_check(Trie *trie, char c, unsigned int start=1)
 {
 	TrieNode *base = trie->base;
 	unsigned char _c = charval(c);
 	unsigned int to_check = trie->baseSize - _c;
-	for (unsigned int i=1; i<to_check; i++)
+	for (unsigned int i=start; i<=to_check; i++)
 	{
 		if (base[i+_c].mode == Node_Unused)
 		{
@@ -131,21 +150,18 @@ unsigned int x_check(Trie *trie, char c)
 		}
 	}
 
-	trie->base = (TrieNode *)realloc(trie->base, trie->baseSize * sizeof(TrieNode) * 2);
-	memset(trie->base + trie->baseSize, 0, trie->baseSize * sizeof(TrieNode));
-	to_check = trie->baseSize;
-	trie->baseSize *= 2;
+	sm_trie_grow(trie);
 
-	return to_check;
+	return x_check(trie, c, to_check+1);
 }
 
-unsigned int x_check2(Trie *trie, char c1, char c2)
+unsigned int x_check2(Trie *trie, char c1, char c2, unsigned int start=1)
 {
 	TrieNode *base = trie->base;
 	unsigned char _c1 = charval(c1);
 	unsigned char _c2 = charval(c2);
 	unsigned int to_check = trie->baseSize - (_c1 > _c2 ? _c1 : _c2);
-	for (unsigned int i=1; i<to_check; i++)
+	for (unsigned int i=start; i<=to_check; i++)
 	{
 		if (base[i+_c1].mode == Node_Unused
 			&& base[i+_c2].mode == Node_Unused)
@@ -154,22 +170,32 @@ unsigned int x_check2(Trie *trie, char c1, char c2)
 		}
 	}
 
-	trie->base = (TrieNode *)realloc(trie->base, trie->baseSize * sizeof(TrieNode) * 2);
-	memset(trie->base + trie->baseSize, 0, trie->baseSize * sizeof(TrieNode));
-	to_check = trie->baseSize;
-	trie->baseSize *= 2;
+	sm_trie_grow(trie);
 
-	return to_check;
+	return x_check2(trie, c1, c2, to_check+1);
 }
 
 unsigned int x_check_multi(Trie *trie, 
 							unsigned int offsets[], 
-							unsigned int count)
+							unsigned int count,
+							unsigned int start=1)
 {
 	TrieNode *base = trie->base;
 	TrieNode *cur;
 	unsigned int to_check = trie->baseSize;
-	for (unsigned int i=1; i<to_check; i++)
+	unsigned int highest = 0;
+
+	for (unsigned int i=0; i<count; i++)
+	{
+		if (offsets[i] > highest)
+		{
+			highest = offsets[i];
+		}
+	}
+
+	to_check -= highest;
+
+	for (unsigned int i=start; i<=to_check; i++)
 	{
 		bool okay = true;
 		for (unsigned int j=0; j<count; j++)
@@ -187,19 +213,16 @@ unsigned int x_check_multi(Trie *trie,
 		}
 	}
 
-	trie->base = (TrieNode *)realloc(trie->base, trie->baseSize * sizeof(TrieNode) * 2);
-	memset(trie->base + trie->baseSize, 0, trie->baseSize * sizeof(TrieNode));
-	to_check = trie->baseSize;
-	trie->baseSize *= 2;
+	sm_trie_grow(trie);
 
-	return to_check;
+	return x_check_multi(trie, offsets, count, to_check+1);
 }
 
 unsigned int x_addstring(Trie *trie, const char *ptr)
 {
 	size_t len = strlen(ptr) + 1;
 
-	if (len > trie->stSize)
+	if (trie->tail + len >= trie->stSize)
 	{		
 		while (trie->tail + len >= trie->stSize)
 		{
@@ -219,13 +242,13 @@ Trie *sm_trie_create()
 {
 	Trie *t = new Trie;
 
-	t->base = (TrieNode *)malloc(sizeof(TrieNode) * 256);
+	t->base = (TrieNode *)malloc(sizeof(TrieNode) * (256 + 1));
 	t->stringtab = (char *)malloc(sizeof(char) * 256);
 	t->baseSize = 256;
 	t->stSize = 256;
 	t->tail = 0;
 
-	memset(t->base, 0, sizeof(TrieNode) * 256);
+	memset(t->base, 0, sizeof(TrieNode) * (256 + 1));
 	memset(t->stringtab, 0, sizeof(char) * 256);
 
 	/* Sentinel root node */
@@ -373,6 +396,7 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 			/* Now we need to find all the arcs leaving our parent...
 			 * Note: the inconsistency is the base of our parent.  
 			 */
+			assert(base[node->parent].mode == Node_Arc);
 			unsigned int incoming_list[256];
 			unsigned int incoming_base = base[node->parent].idx;
 			unsigned int incoming_count = 0;
@@ -392,8 +416,11 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 			{
 				unsigned int q = x_check_multi(trie, incoming_list, incoming_count);
 
+				base = trie->base;
+				node = &base[curidx];
+
 				/* If we're incoming, we need to modify our parent */
-				base[incoming_base].idx = q;
+				base[node->parent].idx = q;
 
 				/* For each node in the "to move" list,
 				 * Relocate the node's info to the new position.
@@ -415,7 +442,7 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 					if (base[newidx].mode == Node_Arc)
 					{
 						TrieNode *check_base = &base[base[newidx].idx] + 1;
-						for (unsigned int i=1; i<=255; i++, check_base++)
+						for (unsigned int j=1; j<=255; j++, check_base++)
 						{
 							if (check_base->parent == oldidx)
 							{
@@ -426,6 +453,9 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 				}
 			} else {
 				unsigned int q = x_check_multi(trie, outgoing_list, outgoing_count);
+
+				base = trie->base;
+				node = &base[curidx];
 
 				/* If we're outgoing, we need to modify our own base */
 				base[lastidx].idx = q;
@@ -455,7 +485,7 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 					if (base[newidx].mode == Node_Arc)
 					{
 						TrieNode *check_base = &base[base[newidx].idx] + 1;
-						for (unsigned int i=1; i<=255; i++, check_base++)
+						for (unsigned int j=1; j<=255; j++, check_base++)
 						{
 							if (check_base->parent == oldidx)
 							{
@@ -505,12 +535,16 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 				 */
 				void *oldvalue = node->value;
 				bool oldvalset = node->valset;
+				if (*term == *keyptr)
+				{
 				while (*term == *keyptr)
 				{
 					/* Find the next free slot in the check array.
 					 * This is the "vector base" essentially
 					 */
 					q = x_check(trie, *term);
+						base = trie->base;
+						node = &base[curidx];
 					/* Point the node to the next new base */
 					node->idx = q;
 					node->mode = Node_Arc;
@@ -525,6 +559,9 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 					*term = '\0';	/* Unmark the string table here */
 					term++;
 					keyptr++;
+					}
+				} else {
+					node->valset = false;
 				}
 				/* We're done inserting new pairs.  If one of them is exhausted,
 				 * we take special shortcuts.
@@ -544,7 +581,11 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 					 * B,A,D,G,E,R*,H*->OUSE (* = value set).
 					 * NOTE: parent was last set at the end of the while loop.
 					 */
+					/* Get the new base and apply re-basing */
 					q = x_check(trie, *keyptr);
+					base = trie->base;
+					node = &base[curidx];
+
 					node->idx = q;
 					node->mode = Node_Arc;
 					lastidx = curidx;
@@ -570,7 +611,11 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 					node->valset = true;
 					node->value = value;
 
+					/* Get the new base and apply re-basing */
 					q = x_check(trie, *term);
+					base = trie->base;
+					node = &base[curidx];
+
 					node->idx = q;
 					node->mode = Node_Arc;
 					lastidx = curidx;
@@ -593,7 +638,11 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 					/* Finally, we have to create two new nodes instead of just one. */
 					node->mode = Node_Arc;
 					
+					/* Get the new base and apply re-basing */
 					q = x_check2(trie, *keyptr, *term);
+					base = trie->base;
+					node = &base[curidx];
+
 					node->idx = q;
 					lastidx = curidx;
 
