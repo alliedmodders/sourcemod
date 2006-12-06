@@ -27,7 +27,7 @@ public:
 	virtual int PushFloatByRef(float *number, int flags);
 	virtual int PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int copyback);
 	virtual int PushString(const char *string);
-	virtual int PushStringEx(char *string, int flags);
+	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
 	virtual cell_t *GetAddressOfPushedParam(unsigned int param);
 	virtual int Execute(cell_t *result);
 	virtual void Cancel();
@@ -36,7 +36,7 @@ public:
 public:
 	void Set(funcid_t funcid, CPlugin *plugin);
 private:
-	int _PushString(const char *string, int flags);
+	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	inline int SetError(int err)
 	{
 		m_errorstate = err;

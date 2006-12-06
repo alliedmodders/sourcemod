@@ -7,6 +7,9 @@ namespace SourceMod
 {
 	#define SM_FUNCFLAG_COPYBACK		(1<<0)		/* Copy an array/reference back after call */
 
+	#define SP_STRING_UTF8				(1<<0)		/* String should be UTF-8 handled */
+	#define SP_STRING_COPY				(1<<1)		/* String should be copied into the plugin */
+
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
 	 */
@@ -83,14 +86,16 @@ namespace SourceMod
 		virtual int PushString(const char *string) =0;
 
 		/**
-		 * @brief Pushes a string onto the current call.
+		 * @brief Pushes a string or string buffer.
 		 * NOTE: On Execute, the pointer passed will be modified if copy-back is enabled.
 		 *
-		 * @param string	String to push.
-		 * @param flags		Copy-back flags.
+		 * @param buffer	Pointer to string buffer.
+		 * @param length	Length of buffer.
+		 * @param sz_flags	String flags.
+		 * @param cp_flags	Copy-back flags.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushStringEx(char *string, int flags) =0;
+		virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags) =0;
 
 		/**
 		 * @brief Cancels a function call that is being pushed but not yet executed.

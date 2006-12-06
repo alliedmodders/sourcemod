@@ -19,6 +19,7 @@ struct ByrefInfo
 	unsigned int cells;
 	cell_t *orig_addr;
 	int flags;
+	int sz_flags;
 };
 
 struct FwdParamInfo
@@ -37,7 +38,7 @@ public: //ICallable
 	virtual int PushFloatByRef(float *number, int flags);
 	virtual int PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int flags);
 	virtual int PushString(const char *string);
-	virtual int PushStringEx(char *string, int flags);
+	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
 	virtual void Cancel();
 public: //IForward
 	virtual const char *GetForwardName();
@@ -57,6 +58,7 @@ public:
 								   va_list ap);
 private:
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
+	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
 	inline int SetError(int err)
 	{
 		m_errstate = err;

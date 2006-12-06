@@ -20,12 +20,12 @@ CForwardManager g_Forwards;
  * X Push strings (copyback tested = yes)
  * VARARG FUNCTIONS:
  * - Pushing no varargs
- * - Push vararg cells (copyback should be verified to not happen = ??)
- * - Push vararg cells byref (copyback tested = ??)
- * - Push vararg floats (copyback should be verified to not happen = ??)
- * - Push vararg floats byref (copyback tested = ??)
- * - Push vararg arrays  (copyback tested = ??)
- * - Push vararg strings (copyback tested = ??)
+ * X Push vararg cells (copyback should be verified to not happen = didnt happen)
+ * X Push vararg cells byref (copyback tested = yes)
+ * X Push vararg floats (copyback should be verified to not happen = didnt happen)
+ * X Push vararg floats byref (copyback tested = yes)
+ * X Push vararg arrays  (copyback tested = yes)
+ * X Push vararg strings (copyback tested = :TODO:)
  */
 
 IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, ...)
@@ -227,9 +227,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				/* If we're byref or we're vararg, we always push everything by ref.
 				 * Even if they're byval, we must push them byref.
 				 */
-				if (type == Param_String) 
+				if (type == Param_String)
 				{
-					func->PushStringEx((char *)param->byref.orig_addr, param->byref.flags);
+					func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
 				} else if (type == Param_Float || type == Param_Cell) {
 					func->PushCellByRef(&param->val, 0); 
 				} else {
@@ -365,8 +365,10 @@ int CForward::PushCellByRef(cell_t *cell, int flags)
 {
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_CellByRef && m_types[m_curparam] != Param_Any)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_CellByRef;
+		} else if (m_types[m_curparam] != Param_CellByRef) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -374,6 +376,7 @@ int CForward::PushCellByRef(cell_t *cell, int flags)
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_CellByRef;
 	}
 
 	_Int_PushArray(cell, 1, flags);
@@ -386,8 +389,10 @@ int CForward::PushFloatByRef(float *num, int flags)
 {
 	if (m_curparam < m_numparams)
 	{
-		if (m_types[m_curparam] != Param_FloatByRef && m_types[m_curparam] != Param_Any)
+		if (m_types[m_curparam] == Param_Any)
 		{
+			m_params[m_curparam].pushedas = Param_FloatByRef;
+		} else if (m_types[m_curparam] != Param_FloatByRef) {
 			return SetError(SP_ERROR_PARAM);
 		}
 	} else {
@@ -395,6 +400,7 @@ int CForward::PushFloatByRef(float *num, int flags)
 		{
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
+		m_params[m_curparam].pushedas = Param_FloatByRef;
 	}
 
 	_Int_PushArray((cell_t *)num, 1, flags);
@@ -446,6 +452,14 @@ int CForward::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr,
 	return SP_ERROR_NONE;
 }
 
+void CForward::_Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags)
+{
+	m_params[m_curparam].byref.cells = cells;	/* Notice this contains the char count not cell count */
+	m_params[m_curparam].byref.flags = cp_flags;
+	m_params[m_curparam].byref.orig_addr = inarray;
+	m_params[m_curparam].byref.sz_flags = sz_flags;
+}
+
 int CForward::PushString(const char *string)
 {
 	if (m_curparam < m_numparams)
@@ -464,13 +478,13 @@ int CForward::PushString(const char *string)
 		m_params[m_curparam].pushedas = Param_String;
 	}
 
-	_Int_PushArray((cell_t *)string, 0, 0);
+	_Int_PushString((cell_t *)string, strlen(string)+1, SP_STRING_COPY, 0);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushStringEx(char *string, int flags)
+int CForward::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
 {
 	if (m_curparam < m_numparams)
 	{
@@ -488,7 +502,7 @@ int CForward::PushStringEx(char *string, int flags)
 		m_params[m_curparam].pushedas = Param_String;
 	}
 
-	_Int_PushArray((cell_t *)string, 0, flags);
+	_Int_PushString((cell_t *)buffer, length, sz_flags, cp_flags);
 	m_curparam++;
 
 	return SP_ERROR_NONE;

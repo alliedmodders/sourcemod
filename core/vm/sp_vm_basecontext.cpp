@@ -374,6 +374,7 @@ int BaseContext::BindNative(sp_nativeinfo_t *native)
 	}
 
 	ctx->natives[index].pfn = native->func;
+	ctx->natives[index].status = SP_NATIVE_BOUND;
 
 	return SP_ERROR_NONE;
 }
@@ -389,6 +390,7 @@ int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 		if (ctx->natives[i].status == SP_NATIVE_UNBOUND)
 		{
 			ctx->natives[i].pfn = native;
+			ctx->natives[i].status = SP_NATIVE_BOUND;
 		}
 	}
 

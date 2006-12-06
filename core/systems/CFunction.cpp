@@ -112,15 +112,15 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 
 int CFunction::PushString(const char *string)
 {
-	return _PushString(string, 0);
+	return _PushString(string, SP_STRING_COPY, 0, strlen(string)+1);
 }
 
-int CFunction::PushStringEx(char *string, int flags)
+int CFunction::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
 {
-	return _PushString(string, flags);
+	return _PushString(buffer, sz_flags, cp_flags, length);
 }
 
-int CFunction::_PushString(const char *string, int flags)
+int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_t len)
 {
 	if (m_curparam >= SP_MAX_EXEC_PARAMS)
 	{
@@ -129,8 +129,7 @@ int CFunction::_PushString(const char *string, int flags)
 
 	IPluginContext *base = m_pPlugin->m_ctx_current.base;
 	ParamInfo *info = &m_info[m_curparam];
-	size_t len = strlen(string);
-	size_t cells = (len + sizeof(cell_t)) / sizeof(cell_t);
+	size_t cells = (len + sizeof(cell_t) - 1) / sizeof(cell_t);
 	int err;
 
 	if ((err=base->HeapAlloc(cells, &info->local_addr, &info->phys_addr)) != SP_ERROR_NONE)
@@ -142,12 +141,26 @@ int CFunction::_PushString(const char *string, int flags)
 	m_params[m_curparam] = info->local_addr;
 	m_curparam++;	/* Prevent a leak */
 
-	if ((err=base->StringToLocalUTF8(info->local_addr, len+1, string, NULL)) != SP_ERROR_NONE)
+	if (!(sz_flags & SP_STRING_COPY))
 	{
-		return SetError(err);
+		goto skip_localtostr;
 	}
 
-	info->flags = flags;
+	if (sz_flags & SP_STRING_UTF8)
+	{
+		if ((err=base->StringToLocalUTF8(info->local_addr, len, string, NULL)) != SP_ERROR_NONE)
+		{
+			return SetError(err);
+		}
+	} else {
+		if ((err=base->StringToLocal(info->local_addr, len, string)) != SP_ERROR_NONE)
+		{
+			return SetError(err);
+		}
+	}
+
+skip_localtostr:
+	info->flags = cp_flags;
 	info->orig_addr = (cell_t *)string;
 	info->size = cells;
 
