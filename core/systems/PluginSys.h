@@ -95,6 +95,8 @@ public:
 	virtual IPluginIterator *GetPluginIterator();
 	virtual void AddPluginsListener(IPluginsListener *listener);
 	virtual void RemovePluginsListener(IPluginsListener *listener);
+public:
+	virtual void RefreshOrLoadPlugins(const char *basedir);
 protected:
 	void ReleaseIterator(CPluginIterator *iter);
 	CFunction *GetFunctionFromPool(funcid_t f, CPlugin *plugin);

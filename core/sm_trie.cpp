@@ -115,8 +115,7 @@ struct Trie
 
 inline unsigned char charval(char c)
 {
-	unsigned char _c = (unsigned char)c;
-	return _c - 'A' + 2;
+	return (unsigned char)c;
 }
 
 unsigned int x_check(Trie *trie, char c)

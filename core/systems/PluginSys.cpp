@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "PluginSys.h"
+#include "LibrarySys.h"
 
 CPluginManager g_PluginMngr;
 
@@ -247,6 +248,7 @@ bool CPlugin::SetPauseState(bool paused)
 /*******************
  * PLUGIN ITERATOR *
  *******************/
+
 CPluginManager::CPluginIterator::CPluginIterator(List<IPlugin *> *_mylist)
 {
 	mylist = _mylist;
@@ -284,6 +286,21 @@ void CPluginManager::CPluginIterator::Reset()
 /******************
  * PLUGIN MANAGER *
  ******************/
+
+void CPluginManager::RefreshOrLoadPlugins(const char *basedir)
+{
+	IDirectory *dir = g_LibSys.OpenDirectory(basedir);
+	while (dir->MoreFiles())
+	{
+		if (dir->IsEntryDirectory() && (strcmp(dir->GetEntryName(), "disabled") != 0))
+		{
+			char path[PLATFORM_MAX_PATH+1];
+			g_SMAPI->PathFormat(path, sizeof(path)-1, "%s/%s", basedir, dir->GetEntryName());
+			RefreshOrLoadPlugins(basedir);
+		}
+	}
+	g_LibSys.CloseDirectory(dir);
+}
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
