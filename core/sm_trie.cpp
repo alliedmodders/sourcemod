@@ -290,7 +290,7 @@ bool sm_trie_retrieve(Trie *trie, const char *key, void **value)
 		keyptr++;
 
 		/* Check if this slot is supposed to be empty or is a collision */
-		if (node->mode == Node_Unused || node->parent != lastidx)
+		if ((curidx > trie->baseSize) || node->mode == Node_Unused || node->parent != lastidx)
 		{
 			return false;
 		} else if (node->mode == Node_Term) {
@@ -349,12 +349,24 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 		/* Check if this slot is supposed to be empty.  If so, we need to handle CASES 1/2:
 		 * Insertion without collisions
 		 */
-		if (node->mode == Node_Unused)
+		if ( (curidx > trie->baseSize) || (node->mode == Node_Unused) )
 		{
-			/* Assign backcheck reference */
+			if (curidx > trie->baseSize)
+			{
+				if (!sm_trie_grow(trie))
+				{
+					return false;
+				}
+				node = &trie->base[curidx];
+			}
 			node->parent = lastidx;
-			node->idx = x_addstring(trie, keyptr);
-			node->mode = Node_Term;
+			if (*keyptr == '\0')
+			{
+				node->mode = Node_Arc;
+			} else {
+				node->idx = x_addstring(trie, keyptr);
+				node->mode = Node_Term;
+			}
 			node->valset = true;
 			node->value = value;
 			
@@ -383,7 +395,14 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 			unsigned int outgoing_list[256];
 			unsigned int outgoing_count = 0;	/* count the current index here */
 			cur = &base[outgoing_base] + 1;
-			for (unsigned int i=1; i<=255; i++,cur++)
+			unsigned int outgoing_limit = 255;
+
+			if (outgoing_base + outgoing_limit > trie->baseSize)
+			{
+				outgoing_limit = trie->baseSize - outgoing_base;
+			}
+
+			for (unsigned int i=1; i<=outgoing_limit; i++,cur++)
 			{
 				if (cur->mode == Node_Unused || cur->parent != lastidx)
 				{
@@ -400,7 +419,14 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 			unsigned int incoming_list[256];
 			unsigned int incoming_base = base[node->parent].idx;
 			unsigned int incoming_count = 0;
+			unsigned int incoming_limit = 255;
 			cur = &base[incoming_base] + 1;
+
+			if (incoming_base + incoming_limit > trie->baseSize)
+			{
+				incoming_limit = trie->baseSize - incoming_limit;
+			}
+
 			for (unsigned int i=1; i<=255; i++,cur++)
 			{
 				if (cur->mode == Node_Arc || cur->mode == Node_Term)
@@ -437,6 +463,7 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 						lastidx = newidx;
 					}
 					base[newidx] = base[oldidx];
+					assert(base[base[newidx].parent].mode == Node_Arc);
 					memset(&base[oldidx], 0, sizeof(TrieNode));
 					/* If we are not a terminator, we have children we must take care of */
 					if (base[newidx].mode == Node_Arc)
@@ -480,6 +507,7 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 						lastidx = newidx;
 					}
 					base[newidx] = base[oldidx];
+					assert(base[base[newidx].parent].mode == Node_Arc);
 					memset(&base[oldidx], 0, sizeof(TrieNode));
 					/* If we are not a terminator, we have children we must take care of */
 					if (base[newidx].mode == Node_Arc)
