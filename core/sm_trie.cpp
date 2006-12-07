@@ -263,7 +263,7 @@ void sm_trie_destroy(Trie *trie)
 {
 	free(trie->base);
 	free(trie->stringtab);
-	free(trie);
+	delete trie;
 }
 
 bool sm_trie_retrieve(Trie *trie, const char *key, void **value)
@@ -424,8 +424,10 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 
 			if (incoming_base + incoming_limit > trie->baseSize)
 			{
-				incoming_limit = trie->baseSize - incoming_limit;
+				incoming_limit = trie->baseSize - incoming_base;
 			}
+
+			assert(incoming_limit > 0 && incoming_limit <= 255);
 
 			for (unsigned int i=1; i<=255; i++,cur++)
 			{
@@ -707,6 +709,8 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 
 				/* Phew! */
 				return true;
+			} else {
+				assert(node->mode == Node_Arc);
 			}
 		}
 		lastidx = curidx;
