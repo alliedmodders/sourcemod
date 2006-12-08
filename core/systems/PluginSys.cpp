@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "PluginSys.h"
 #include "LibrarySys.h"
+#include "sourcemm_api.h"
 
 CPluginManager g_PluginMngr;
 

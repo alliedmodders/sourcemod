@@ -102,17 +102,18 @@ namespace SourceMod
 	};
 
 	/**
-	 * :TODO: write this in CFG format so it makes sense
+	 * :TODO: write this in CFG (context free grammar) format so it makes sense
 	 * 
 	 * The SMC file format is defined as:
 	 * WHITESPACE: 0x20, \n, \t, \r
-	 * IDENTIFIER: Any ASCII character EXCLUDING ", ', :, WHITESPACE
-	 * STRING: Any set of symbols
+	 * IDENTIFIER: Any ASCII character EXCLUDING ", {, }, ;, //, /*, or WHITESPACE.
+	 * STRING: Any set of symbols enclosed in quotes.
+	 * Note: if a STRING does not have quotes, it is parsed as an IDENTIFIER.
 	 *
 	 * Basic syntax is comprised of SECTIONBLOCKs.
 	 * A SECTIONBLOCK defined as:
 	 *
-	 * SECTION: "SECTIONNAME"
+	 * SECTIONNAME
 	 * {
 	 *    OPTION
 	 * }
@@ -121,11 +122,14 @@ namespace SourceMod
 	 * A new line will terminate an OPTION, but there can be more than one OPTION per line.
 	 * OPTION is defined any of:
 	 * 	  "KEY"  "VALUE"
-	 *    "SINGLEKEY"
 	 *    SECTIONBLOCK
 	 *
-	 * SECTION is an IDENTIFIER
 	 * SECTIONNAME, KEY, VALUE, and SINGLEKEY are strings
+	 * SECTIONNAME cannot have trailing characters if quoted, but the quotes can be optionally removed.
+	 * If SECTIONNAME is not enclosed in quotes, the entire sectionname string is used (minus surrounding whitespace).
+	 * If KEY is not enclosed in quotes, the key is terminated at first whitespace.
+	 * If VALUE is not properly enclosed in quotes, the entire value string is used (minus surrounding whitespace).
+	 * The VALUE may have inner quotes, but the key string may not.
 	 *
 	 * For an example, see configs/permissions.cfg
 	 *
@@ -135,17 +139,33 @@ namespace SourceMod
 	 *  ;<TEXT>
 	 *  //<TEXT>
 	 *  /*<TEXT> */
+
+	enum SMCParseResult
+	{
+		SMCParse_Continue,		//continue parsing
+		SMCParse_Halt,			//stop parsing here
+		SMCParse_HaltFail		//stop parsing and return failure
+	};
+
+	enum SMCParseError
+	{
+		SMCParse_Okay,				//no error
+		SMCParse_StreamOpen,		//stream failed to open
+		SMCParse_StreamError,		//the stream died... somehow
+		SMCParse_Custom,			//a custom handler threw an error
+		SMCParse_InvalidSection1,	//a section was declared without quotes, and had extra tokens
+		SMCParse_InvalidSection2,	//a section was declared without any header
+		SMCParse_InvalidSection3,	//a section ending was declared with too many unknown tokens
+		SMCParse_InvalidSection4,	//a section ending has no matching beginning
+		SMCParse_InvalidSection5,	//a section beginning has no matching ending
+		SMCParse_InvalidTokens,		//there were too many unidentifiable strings on one line
+		SMCParse_TokenOverflow,		//the token buffer overflowed
+		SMCParse_InvalidProperty1,	//a property was declared outside of any section
+	};
+
 	class ITextListener_SMC
 	{
 	public:
-		enum SMCParseResult
-		{
-			SMCParse_Continue,		//continue parsing
-			SMCParse_SkipSection,	//skip the rest of the current section
-			SMCParse_Halt,			//stop parsing here
-			SMCParse_HaltFail		//stop parsing and return failure
-		};
-
 		/**
 		 * @brief Called when starting parsing.
 		 */
@@ -164,16 +184,24 @@ namespace SourceMod
 		}
 
 		/**
+		 * @brief Called when a warning occurs.
+		 * @param error				By-reference variable containing the error message of the warning.
+		 * @param tokens			Pointer to the token stream causing the error.
+		 * @return					SMCParseResult directive.
+		 */
+		virtual SMCParseResult ReadSMC_OnWarning(SMCParseError &error, const char *tokens)
+		{
+			return SMCParse_HaltFail;
+		}
+
+		/**
 		 * @brief Called when entering a new section
 		 *
 		 * @param name			Name of section, with the colon omitted.
-		 * @param option		Optional text after the colon, quotes removed.  NULL if none.
-		 * @param colon			Whether or not the required ':' was encountered.
+		 * @param opt_quotes	Whether or not the option string was enclosed in quotes.
 		 * @return				SMCParseResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_NewSection(const char *name, 
-													const char *option, 
-													bool colon)
+		virtual SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes)
 		{
 			return SMCParse_Continue;
 		}
@@ -198,7 +226,6 @@ namespace SourceMod
 
 		/**
 		 * @brief Called when leaving the current section.
-		 * Note: Skipping the section has no meaning here.
 		 *
 		 * @return				SMCParseResult directive.
 		 */
@@ -259,14 +286,12 @@ namespace SourceMod
 		 * @param smc_listener	Event handler for reading file.
 		 * @param line			If non-NULL, will contain last line parsed (0 if file could not be opened).
 		 * @param col			If non-NULL, will contain last column parsed (undefined if file could not be opened).
-		 * @param strict		If strict mode is enabled, the parsing rules are obeyed rigorously rather than loosely.
-		 * @return				True if parsing succeded, false if file couldn't be opened or there was a syntax error.
+		 * @return				An SMCParseError result code.
 		 */
-		virtual bool ParseFile_SMC(const char *file, 
+		virtual SMCParseError ParseFile_SMC(const char *file, 
 									ITextListener_SMC *smc_listener, 
 									unsigned int *line, 
-									unsigned int *col,
-									bool strict) =0;
+									unsigned int *col) =0;
 	public:
 		/**
 		 * @brief Returns the number of bytes that a multi-byte character contains in a UTF-8 stream.

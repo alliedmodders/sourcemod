@@ -3,13 +3,24 @@
 #include "sm_version.h"
 #include "sourcemod.h"
 
+#include "CTextParsers.h"
+
 SourceMod_Core g_SourceMod_Core;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
+class Parser : public ITextListener_SMC
+{
+public:
+};
+
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();
+
+	Parser p;
+
+	SMCParseError err = g_TextParse.ParseFile_SMC("c:\\debug.txt", &p, NULL, NULL);
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }

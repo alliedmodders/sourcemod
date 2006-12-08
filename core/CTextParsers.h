@@ -23,6 +23,15 @@ inline unsigned int _GetUTF8CharBytes(const char *stream)
 	return 1;
 }
 
+/**
+ * @param void *			IN: Stream pointer
+ * @param char *			IN/OUT: Stream buffer
+ * @param size_t			IN: Maximum size of buffer
+ * @param unsigned int *	OUT: Number of bytes read (0 = end of stream)
+ * @return					True on success, false on failure
+ */
+typedef bool (*STREAMREADER)(void *, char *, size_t, unsigned int *);
+
 class CTextParsers : public ITextParsers
 {
 public:
@@ -33,13 +42,23 @@ public:
 		unsigned int *line,
 		unsigned int *col);
 
-	virtual bool ParseFile_SMC(const char *file, 
+	virtual SMCParseError ParseFile_SMC(const char *file, 
 		ITextListener_SMC *smc_listener, 
 		unsigned int *line, 
-		unsigned int *col,
-		bool strict);
+		unsigned int *col);
 
 	virtual unsigned int GetUTF8CharBytes(const char *stream);
+private:
+	SMCParseError ParseString_SMC(const char *stream, 
+		ITextListener_SMC *smc,
+		unsigned int *line,
+		unsigned int *col);
+	SMCParseError ParseStream_SMC(void *stream, 
+		STREAMREADER srdr,
+		ITextListener_SMC *smc,
+		unsigned int *line, 
+		unsigned int *col);
+
 };
 
 extern CTextParsers g_TextParse;
