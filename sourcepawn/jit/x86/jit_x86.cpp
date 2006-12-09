@@ -1750,6 +1750,14 @@ inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 	IA32_Pop_Reg(jit, AMX_REG_PRI);
 }
 
+inline void WriteOp_Stradjust_Pri(JitWriter *jit)
+{
+	//add eax, 4
+	//sar eax, 2
+	IA32_Add_Rm_Imm8(jit, AMX_REG_PRI, 4, MOD_REG);
+	IA32_Sar_Rm_Imm8(jit, AMX_REG_PRI, 2, MOD_REG);
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************

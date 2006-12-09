@@ -260,6 +260,7 @@ typedef enum
 	OP_TRACKER_POP_SETHEAP,	//VERIFIED
 	OP_GENARRAY,			//VERIFIED
 	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
+	OP_STRADJUST_PRI,		//VERIFIED
 	/* ----- */
 	OP_NUM_OPCODES
 } OPCODE;

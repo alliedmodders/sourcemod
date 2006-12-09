@@ -673,6 +673,11 @@
 				WriteOp_GenArray(jit, true);
 				break;
 			}
+		case OP_STRADJUST_PRI:
+			{
+				WriteOp_Stradjust_Pri(jit);
+				break;
+			}
 #if defined USE_UNGEN_OPCODES
 		#include "ungen_opcode_switch.inc"
 #endif
