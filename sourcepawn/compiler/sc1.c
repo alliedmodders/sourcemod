@@ -2502,6 +2502,10 @@ static void initials(int ident,int tag,cell *size,int dim[],int numdim,
   int curlit=litidx;
   int err=0;
 
+  if (!autozero) {
+    return;
+  }
+
   if (!matchtoken('=')) {
     assert(ident!=iARRAY || numdim>0);
     if (ident==iARRAY && dim[numdim-1]==0) {
@@ -2662,12 +2666,12 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
                        constvalue *enumroot,int *errorfound)
 {
   cell prev1=0,prev2=0;
-  int ellips=FALSE,hadtoken=0;
+  int ellips=FALSE;
   int curlit=litidx;
   int rtag,ctag;
 
   assert(ident==iARRAY || ident==iREFARRAY);
-  if ((hadtoken=matchtoken('{')) && autozero) {
+  if (matchtoken('{')) {
     constvalue *enumfield=(enumroot!=NULL) ? enumroot->next : NULL;
     do {
       int fieldlit=litidx;
@@ -2729,11 +2733,6 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
-    if (hadtoken && !autozero) {
-      error(10);
-      lexclr(TRUE);           /* drop the rest of the line */
-      return 0;
-    }
     init(ident,&ctag,errorfound);
     if (!matchtag(tag,ctag,TRUE))
       error(213);               /* tagname mismatch */
