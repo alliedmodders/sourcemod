@@ -626,6 +626,7 @@ SC_FUNC void char2addr(void);
 SC_FUNC void charalign(void);
 SC_FUNC void addconst(cell value);
 SC_FUNC void setheap_save(cell value);
+SC_FUNC void stradjust(regid reg);
 
 /*  Code generation functions for arithmetic operators.
  *

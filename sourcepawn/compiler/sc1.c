@@ -2241,7 +2241,10 @@ static int declloc(int fstatic)
         if (numdim == sDIMEN_MAX) {
           error(53);                      /* exceeding maximum number of dimensions */
           return (all_constant ? iARRAY : iREFARRAY);
-        } /* if */
+        } else if (numdim) { /* if */
+          /* If we have a dimension on the stack, push it */
+          pushreg(sPRI);
+        }
         if (matchtoken(']')) {
           dim[numdim++] = 0;
           continue;
@@ -2249,9 +2252,7 @@ static int declloc(int fstatic)
         dim_ident = doexpr2(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0,&dim_val);
         if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION || dim_ident == iARRAYCELL) {
           all_constant = 0;
-          pushreg(sPRI);
         } else if (dim_ident == iCONSTEXPR) {
-          pushreg(sPRI);
           dim[numdim] = dim_val.constval;
 		  /* :TODO: :URGENT: Make sure this still works */
           if (dim_sym && dim_sym->usage & uENUMROOT)
@@ -2275,6 +2276,10 @@ static int declloc(int fstatic)
         ident = iARRAY;
         stgdel(_index, _code);
       } else {
+        if (tag == pc_tag_string && numdim && dim[numdim-1]) {
+          stradjust(sPRI);
+        }
+        pushreg(sPRI);
         memset(dim, 0, sizeof(int)*sDIMEN_MAX);
         ident = iREFARRAY;
         genarray(numdim, autozero);

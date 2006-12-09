@@ -602,6 +602,7 @@ static OPCODEC opcodelist[] = {
   { 15, "stor.pri",   sIN_CSEG, parm1 },
   { 18, "stor.s.alt", sIN_CSEG, parm1 },
   { 17, "stor.s.pri", sIN_CSEG, parm1 },
+  {164, "stradjust.pri", sIN_CSEG, parm0 },
   { 24, "strb.i",     sIN_CSEG, parm1 },
   { 79, "sub",        sIN_CSEG, parm0 },
   { 80, "sub.alt",    sIN_CSEG, parm0 },

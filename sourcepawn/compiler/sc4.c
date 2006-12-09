@@ -593,6 +593,13 @@ SC_FUNC void fillarray(symbol *sym,cell size,cell value)
   code_idx+=opcodes(2)+opargs(2);
 }
 
+SC_FUNC void stradjust(regid reg)
+{
+  assert(reg==sPRI);
+  stgwrite("\tstradjust.pri\n");
+  code_idx+=opcodes(1);
+}
+
 /* Instruction to get an immediate value into the primary or the alternate
  * register
  */
