@@ -13,6 +13,7 @@
 #if !defined snprintf
 #define snprintf _snprintf
 #endif
+#define strcasecmp strcmpi
 #include <windows.h>
 #include <direct.h>
 #define PLATFORM_LIB_EXT		"dll"

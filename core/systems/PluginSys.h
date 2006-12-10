@@ -6,6 +6,7 @@
 #include <sh_stack.h>
 #include "sm_globals.h"
 #include "CFunction.h"
+#include "PluginInfoDatabase.h"
 
 using namespace SourceHook;
 
@@ -60,6 +61,13 @@ private:
 	CFunction **m_pub_funcs;
 };
 
+struct PluginDBInfo
+{
+	bool pause;
+	PluginType lifetime;
+
+};
+
 class CPluginManager : public IPluginManager
 {
 	friend class CPlugin;
@@ -67,6 +75,7 @@ public:
 	CPluginManager();
 	~CPluginManager();
 public:
+	/* Implements iterator class */
 	class CPluginIterator : public IPluginIterator
 	{
 	public:
@@ -83,7 +92,7 @@ public:
 		List<IPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
-public:
+public: //IPluginManager
 	virtual IPlugin *LoadPlugin(const char *path, 
 								bool debug,
 								PluginType type,
@@ -96,7 +105,21 @@ public:
 	virtual void AddPluginsListener(IPluginsListener *listener);
 	virtual void RemovePluginsListener(IPluginsListener *listener);
 public:
-	virtual void RefreshOrLoadPlugins(const char *basedir);
+	/**
+	 * Refreshes and loads plugins, usually used on mapchange
+	 */
+	virtual void RefreshOrLoadPlugins(const char *config, const char *basedir);
+
+	/**
+	 * Tests a plugin file mask against a local folder.
+	 * The alias is searched backwards from localdir - i.e., given this input:
+	 *   csdm/ban        csdm/ban
+	 *   ban             csdm/ban
+	 *   csdm/ban        optional/csdm/ban
+	 * All of these will return true for an alias match.  
+	 * Wildcards are allowed in the filename.
+	 */
+	virtual bool TestAliasMatch(const char *alias, const char *localdir);
 protected:
 	void ReleaseIterator(CPluginIterator *iter);
 	CFunction *GetFunctionFromPool(funcid_t f, CPlugin *plugin);
@@ -106,6 +129,7 @@ private:
 	List<IPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
 	CStack<CFunction *> m_funcpool;
+	CPluginInfoDatabase m_PluginInfo;
 };
 
 extern CPluginManager g_PluginMngr;

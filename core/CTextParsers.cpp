@@ -587,6 +587,8 @@ failed:
 		*line = curline;
 	}
 
+	smc->ReadSMC_ParseEnd(true, (err == SMCParse_Custom));
+
 	if (col)
 	{
 		*col = curtok;

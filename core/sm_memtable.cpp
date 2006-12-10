@@ -1,0 +1,85 @@
+#include <string.h>
+#include <malloc.h>
+#include "sm_memtable.h"
+
+BaseMemTable::BaseMemTable(unsigned int init_size)
+{
+	membase = (unsigned char *)malloc(init_size);
+	size = init_size;
+}
+
+BaseMemTable::~BaseMemTable()
+{
+	free(membase);
+	membase = NULL;
+}
+
+int BaseMemTable::CreateMem(unsigned int addsize, void **addr)
+{
+	int idx = (int)tail;
+
+	if (idx < 0)
+	{
+		return -1;
+	}
+
+	while (tail + addsize >= size)
+	{
+		size *= 2;
+		membase = (unsigned char *)realloc(membase, size);
+	}
+
+	tail += addsize;
+
+	if (addr)
+	{
+		*addr = (void *)&membase[idx];
+	}
+
+	return idx;
+}
+
+void *BaseMemTable::GetAddress(int index)
+{
+	if (index < 0 || (unsigned int)index >= tail)
+	{
+		return NULL;
+	}
+
+	return &membase[index];
+}
+
+void BaseMemTable::Reset()
+{
+	tail = 0;
+}
+
+BaseStringTable::BaseStringTable(unsigned int init_size) : m_table(init_size)
+{
+}
+
+BaseStringTable::~BaseStringTable()
+{
+}
+
+int BaseStringTable::AddString(const char *string)
+{
+	size_t len = strlen(string) + 1;
+	int idx;
+	char *addr;
+
+	idx = m_table.CreateMem(len, (void **)&addr);
+	strcpy(addr, string);
+
+	return idx;
+}
+
+const char *BaseStringTable::GetString(int str)
+{
+	return (const char *)m_table.GetAddress(str);
+}
+
+void BaseStringTable::Reset()
+{
+	m_table.Reset();
+}

@@ -2,6 +2,7 @@
 #include "PluginSys.h"
 #include "LibrarySys.h"
 #include "sourcemm_api.h"
+#include "CTextParsers.h"
 
 CPluginManager g_PluginMngr;
 
@@ -288,9 +289,19 @@ void CPluginManager::CPluginIterator::Reset()
  * PLUGIN MANAGER *
  ******************/
 
-void CPluginManager::RefreshOrLoadPlugins(const char *basedir)
+void CPluginManager::RefreshOrLoadPlugins(const char *config, const char *basedir)
 {
-	IDirectory *dir = g_LibSys.OpenDirectory(basedir);
+	/* First read in the database of plugin settings */
+	SMCParseError err;
+	unsigned int line, col;
+	if ((err=g_TextParse.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
+	{
+		/* :TODO: log the error, don't bail out though */
+	}
+
+
+	//:TODO: move this to a separate recursive function and do stuff
+	/*IDirectory *dir = g_LibSys.OpenDirectory(basedir);
 	while (dir->MoreFiles())
 	{
 		if (dir->IsEntryDirectory() && (strcmp(dir->GetEntryName(), "disabled") != 0))
@@ -300,7 +311,7 @@ void CPluginManager::RefreshOrLoadPlugins(const char *basedir)
 			RefreshOrLoadPlugins(basedir);
 		}
 	}
-	g_LibSys.CloseDirectory(dir);
+	g_LibSys.CloseDirectory(dir);*/
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max)
@@ -444,6 +455,215 @@ CFunction *CPluginManager::GetFunctionFromPool(funcid_t f, CPlugin *plugin)
 		func->Set(f, plugin);
 		return func;
 	}
+}
+
+bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
+{
+	/* As an optimization, we do not call strlen, but compute the length in the first pass */
+	size_t alias_len = 0;
+	size_t local_len = 0;
+
+	const char *ptr = alias;
+	unsigned int alias_explicit_paths = 0;
+	unsigned int alias_path_end = 0;
+	while (*ptr != '\0')
+	{
+		if (*ptr == '\\' || *ptr == '/')
+		{
+			alias_explicit_paths++;
+			alias_path_end = alias_len;
+		}
+		alias_len++;
+		ptr++;
+	}
+
+	if (alias_path_end == alias_len - 1)
+	{
+		/* Trailing slash is totally invalid here */
+		return false;
+	}
+
+	ptr = localpath;
+	unsigned int local_explicit_paths = 0;
+	unsigned int local_path_end = 0;
+	while (*ptr != '\0')
+	{
+		if (*ptr == '\\' || *ptr == '/')
+		{
+			local_explicit_paths++;
+			local_path_end = local_len;
+		}
+		local_len++;
+		ptr++;
+	}
+
+	/* If the alias has more explicit paths than the real path,
+	 * no match will be possible.
+	 */
+	if (alias_explicit_paths > local_explicit_paths)
+	{
+		return false;
+	}
+
+	if (alias_explicit_paths)
+	{
+		/* We need to find if the paths match now.  For example, these should all match:
+		 * csdm     csdm
+		 * csdm     optional/csdm
+		 * csdm/ban optional/crab/csdm/ban
+		*/
+		const char *aliasptr = alias;
+		const char *localptr = localpath;
+		bool match = true;
+		do
+		{
+			if (*aliasptr != *localptr)
+			{
+				/* We have to knock one path off */
+				local_explicit_paths--;
+				if (alias_explicit_paths > local_explicit_paths)
+				{
+					/* Skip out if we're gonna have an impossible match */
+					return false;
+				}
+				/* Eat up localptr tokens until we get a result */
+				while (((localptr - localpath) < (int)local_path_end)
+					&& *localptr != '/'
+					&& *localptr != '\\')
+				{
+					localptr++;
+				}
+				/* Check if we hit the end of our searchable area.
+				 * This probably isn't possible because of the path 
+				 * count check, but it's a good idea anyway.
+				 */
+				if ((localptr - localpath) >= (int)local_path_end)
+				{
+					return false;
+				} else {
+					/* Consume the slash token */
+					localptr++;
+				}
+				/* Reset the alias pointer so we can continue consuming */
+				aliasptr = alias;
+				match = false;
+				continue;
+			}
+			/* Note:
+			 * This is safe because if localptr terminates early, aliasptr will too
+			 */
+			do
+			{
+				/* We should never reach the end of the string because of this check. */
+				bool aliasend = (aliasptr - alias) > (int)alias_path_end;
+				bool localend = (localptr - localpath) > (int)local_path_end;
+				if (aliasend || localend)
+				{
+					if (aliasend && localend)
+					{
+						/* we matched, and we can break out now */
+						match = true;
+						break;
+					}
+					/* Otherwise, we've hit the end somehow and rest won't match up.  Break out. */
+					match = false;
+					break;
+				}
+
+				/* If we got here, it's safe to compare the next two tokens */
+				if (*localptr != *aliasptr)
+				{
+					match = false;
+					break;
+				}
+				localptr++;
+				aliasptr++;
+			} while (true);
+		} while (!match);
+	}
+
+	/* If we got here, it's time to compare filenames */
+	const char *aliasptr = alias;
+	const char *localptr = localpath;
+
+	if (alias_explicit_paths)
+	{
+		aliasptr = &alias[alias_path_end + 1];
+	}
+
+	if (local_explicit_paths)
+	{
+		localptr = &localpath[local_path_end + 1];
+	}
+
+	while (true)
+	{
+		if (*aliasptr == '*')
+		{
+			/* First, see if this is the last character */
+			if (aliasptr - alias == alias_len - 1)
+			{
+				/* If so, there's no need to match anything else */
+				return true;
+			}
+			/* Otherwise, we need to search for an appropriate matching sequence in local.
+			 * Note that we only need to search up to the next asterisk.
+			 */
+			aliasptr++;
+			bool match = true;
+			const char *local_orig = localptr;
+			do
+			{
+				match = true;
+				while (*aliasptr != '\0' && *aliasptr != '*')
+				{
+					/* Since aliasptr is never '\0', localptr hitting the end will fail */
+					if (*aliasptr != *localptr)
+					{
+						match = false;
+						break;
+					}
+					aliasptr++;
+					localptr++;
+				}
+				if (!match)
+				{
+					/* If we didn't get a match, we need to advance the search stream.
+					 * This will let us skip tokens while still searching for another match.
+					 */
+					localptr = ++local_orig;
+					/* Make sure we don't go out of bounds */
+					if (*localptr == '\0')
+					{
+						break;
+					}
+				}
+			} while (!match);
+
+			if (!match)
+			{
+				return false;
+			} else {
+				/* If we got a match, move on to the next token */
+				continue;
+			}
+		} else if (*aliasptr == '\0') {
+			if (*localptr == '\0'
+				||
+				strcmp(localptr, ".smx") == 0)
+			{
+				return true;
+			} else {
+				return false;
+			}
+		} else if (*aliasptr != *localptr) {
+			return false;
+		}
+		aliasptr++;
+		localptr++;
+	}
+
+	return true;
 }
 
 CPluginManager::~CPluginManager()
