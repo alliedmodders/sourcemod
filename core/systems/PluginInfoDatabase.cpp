@@ -69,14 +69,16 @@ unsigned int CPluginInfoDatabase::GetSettingsNum()
 PluginSettings *CPluginInfoDatabase::GetSettingsIfMatch(unsigned int index, const char *filename)
 {
 	BaseMemTable *memtab = m_strtab->GetMemTable();
-	PluginSettings *table = (PluginSettings *)memtab->GetAddress(m_infodb);
+	int *table = (int *)memtab->GetAddress(m_infodb);
 
 	if (!table || index >= m_infodb_count)
 	{
 		return NULL;
 	}
 
-	const char *name = m_strtab->GetString(table[index].name);
+	PluginSettings *plugin = (PluginSettings *)memtab->GetAddress(table[index]);
+
+	const char *name = m_strtab->GetString(plugin->name);
 
 	if (!name)
 	{
@@ -88,7 +90,7 @@ PluginSettings *CPluginInfoDatabase::GetSettingsIfMatch(unsigned int index, cons
 		return NULL;
 	}
 
-	return &table[index];
+	return plugin;
 }
 
 void CPluginInfoDatabase::GetOptionsForPlugin(PluginSettings *settings, unsigned int opt_num, const char **key, const char **val)
@@ -189,7 +191,7 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_LeavingSection()
 {
 	if (in_plugins)
 	{
-		if (cur_plugin == -1)
+		if (cur_plugin != -1)
 		{
 			if (in_options)
 			{
