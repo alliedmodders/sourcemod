@@ -233,8 +233,7 @@ SMCParseError CTextParsers::ParseStream_SMC(void *stream,
 	{
 		if (!read)
 		{
-			err = SMCParse_StreamError;
-			goto failed;
+			break;
 		}
 
 		/* :TODO: do this outside of the main loop somehow
