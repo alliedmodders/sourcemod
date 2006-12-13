@@ -131,6 +131,18 @@ namespace SourceMod
 		 * @param err_max	Maximum length of error buffer.
 		 */
 		virtual void GetPlatformError(char *error, size_t err_max) =0;
+
+		/**
+		 * @brief Formats a string similar to snprintf(), except
+		 * corrects all non-platform compatible path separators to be
+		 * the correct platform character.
+		 *
+		 * @param buffer	Output buffer pointer.
+		 * @param maxlength	Output buffer size.
+		 * @param pathfmt	Format string of path.
+		 * @param ...		Format string arguments.
+		 */
+		virtual void PathFormat(char *buffer, size_t maxlength, const char *pathfmt, ...) =0;
 	};
 };
 
