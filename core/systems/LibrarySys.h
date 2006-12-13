@@ -58,6 +58,7 @@ public:
 	virtual bool IsPathFile(const char *path);
 	virtual bool IsPathDirectory(const char *path);
 	virtual void GetPlatformError(char *error, size_t err_max);
+	virtual void PathFormat(char *buffer, size_t len, const char *fmt, ...);
 };
 
 extern LibrarySystem g_LibSys;

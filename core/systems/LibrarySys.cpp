@@ -276,3 +276,19 @@ ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t err_m
 
 	return new CLibrary(lib);
 }
+
+void LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap,fmt);
+	size_t mylen = vsnprintf(buffer, len, fmt, ap);
+	va_end(ap);
+
+	for (size_t i=0; i<mylen; i++)
+	{
+		if (buffer[i] == PLATFORM_SEP_ALTCHAR)
+		{
+			buffer[i] = PLATFORM_SEP_CHAR;
+		}
+	}
+}
