@@ -18,6 +18,8 @@
 #include <direct.h>
 #define PLATFORM_LIB_EXT		"dll"
 #define PLATFORM_MAX_PATH		MAX_PATH
+#define PLATFORM_SEP_CHAR		'\\'
+#define PLATFORM_SEP_ALTCHAR	'/'
 #else if defined __linux__
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX
@@ -25,6 +27,8 @@
 #include <errno.h>
 #define PLATFORM_MAX_PATH		PATH_MAX
 #define PLATFORM_LIB_EXT		"so"
+#define PLATFORM_SEP_CHAR		'/'
+#define PLATFORM_SEP_ALTCHAR	'\\'
 #endif
 
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_
