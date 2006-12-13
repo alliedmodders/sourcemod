@@ -6,6 +6,7 @@ BaseMemTable::BaseMemTable(unsigned int init_size)
 {
 	membase = (unsigned char *)malloc(init_size);
 	size = init_size;
+	tail = 0;
 }
 
 BaseMemTable::~BaseMemTable()
@@ -17,11 +18,6 @@ BaseMemTable::~BaseMemTable()
 int BaseMemTable::CreateMem(unsigned int addsize, void **addr)
 {
 	int idx = (int)tail;
-
-	if (idx < 0)
-	{
-		return -1;
-	}
 
 	while (tail + addsize >= size)
 	{
