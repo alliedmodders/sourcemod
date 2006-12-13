@@ -2,6 +2,7 @@
 #include "PluginSys.h"
 #include "LibrarySys.h"
 #include "sourcemm_api.h"
+#include "sourcemod.h"
 #include "CTextParsers.h"
 
 CPluginManager g_PluginMngr;
@@ -10,86 +11,204 @@ CPluginManager::CPluginManager()
 {
 }
 
-CPlugin *CPlugin::CreatePlugin(const char *file, 
-								bool debug_default, 
-								PluginType type, 
-								char *error, 
-								size_t maxlen)
+CPlugin::CPlugin(const char *file)
 {
-	static unsigned int MySerial = 0;
-	FILE *fp = fopen(file, "rb");
+	static int MySerial = 0;
+
+	m_type = PluginType_Private;
+	m_status = Plugin_Uncompiled;
+	m_serial = ++MySerial;
+	m_plugin = NULL;
+	m_funcsnum = 0;
+	m_priv_funcs = NULL;
+	m_pub_funcs = NULL;
+	m_errormsg[256] = '\0';
+	snprintf(m_filename, sizeof(m_filename), "%s", file);
+}
+
+CPlugin::~CPlugin()
+{
+	if (m_ctx.base)
+	{
+		g_pSourcePawn->FreeBaseContext(m_ctx.base);
+		m_ctx.base = NULL;
+	}
+	if (m_ctx.ctx)
+	{
+		m_ctx.vm->FreeContext(m_ctx.ctx);
+		m_ctx.ctx = NULL;
+	}
+	if (m_ctx.co)
+	{
+		m_ctx.vm->AbortCompilation(m_ctx.co);
+		m_ctx.co = NULL;
+	}
+
+	if (m_plugin)
+	{
+		g_pSourcePawn->FreeFromMemory(m_plugin);
+		m_plugin = NULL;
+	}
+
+	if (m_pub_funcs)
+	{
+		for (uint32_t i=0; i<m_plugin->info.publics_num; i++)
+		{
+			g_PluginMngr.ReleaseFunctionToPool(m_pub_funcs[i]);
+		}
+		delete [] m_pub_funcs;
+		m_pub_funcs = NULL;
+	}
+
+	if (m_priv_funcs)
+	{
+		for (unsigned int i=0; i<m_funcsnum; i++)
+		{
+			g_PluginMngr.ReleaseFunctionToPool(m_priv_funcs[i]);
+		}
+		delete [] m_priv_funcs;
+		m_priv_funcs = NULL;
+	}
+}
+
+CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
+{
+	char fullpath[PLATFORM_MAX_PATH+1];
+	g_LibSys.PathFormat(fullpath, sizeof(fullpath), "%s/plugins/%s", g_SourceMod.GetSMBaseDir(), file);
+	FILE *fp = fopen(fullpath, "rb");
 
 	if (!fp)
 	{
-		snprintf(error, maxlen, "Could not open file");
-		return NULL;
+		if (error)
+		{
+			snprintf(error, maxlength, "Unable to open file");
+			return NULL;
+		} else {
+			CPlugin *pPlugin = new CPlugin(file);
+			snprintf(pPlugin->m_errormsg, sizeof(pPlugin->m_errormsg), "Unable to open file");
+			pPlugin->m_status = Plugin_BadLoad;
+			return pPlugin;
+		}
 	}
 
 	int err;
 	sp_plugin_t *pl = g_pSourcePawn->LoadFromFilePointer(fp, &err);
 	if (pl == NULL)
 	{
-		snprintf(error, maxlen, "Could not load plugin, error %d", err);
-		return NULL;
+		fclose(fp);
+		if (error)
+		{
+			snprintf(error, maxlength, "Error %d while parsing plugin", err);
+			return NULL;
+		} else {
+			CPlugin *pPlugin = new CPlugin(file);
+			snprintf(pPlugin->m_errormsg, sizeof(pPlugin->m_errormsg), "Error %d while parsing plugin", err);
+			pPlugin->m_status = Plugin_BadLoad;
+			return pPlugin;
+		}
 	}
 
 	fclose(fp);
 
-	ICompilation *co = g_pVM->StartCompilation(pl);
-	
-	if (debug_default)
-	{
-		if (!g_pVM->SetCompilationOption(co, "debug", "1"))
-		{
-			g_pVM->AbortCompilation(co);
-			snprintf(error, maxlen, "Could not set plugin to debug mode");
-			return NULL;
-		}
-	}
+	CPlugin *pPlugin = new CPlugin(file);
+	pPlugin->m_plugin = pl;
+	return pPlugin;
+}
 
-	sp_context_t *ctx = g_pVM->CompileToContext(co, &err);
-	if (ctx == NULL)
+ICompilation *CPlugin::StartMyCompile(IVirtualMachine *vm)
+{
+	if (!m_plugin)
 	{
-		snprintf(error, maxlen, "Plugin failed to load, JIT error: %d", err);
 		return NULL;
 	}
 
-	IPluginContext *base = g_pSourcePawn->CreateBaseContext(ctx);
-	CPlugin *pPlugin = new CPlugin;
-
-	snprintf(pPlugin->m_filename, PLATFORM_MAX_PATH, "%s", file);
-	pPlugin->m_debugging = debug_default;
-	pPlugin->m_ctx_current.base = base;
-	pPlugin->m_ctx_current.ctx = ctx;
-	pPlugin->m_type = type;
-	pPlugin->m_serial = ++MySerial;
-	pPlugin->m_status = Plugin_Loaded;
-	pPlugin->m_plugin = pl;
-
-	pPlugin->UpdateInfo();
-
-	ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)(IPlugin *)pPlugin;
-
-	/* Build function information loosely */
-	pPlugin->m_funcsnum = g_pVM->FunctionCount(ctx);
-
-	if (pPlugin->m_funcsnum)
+	/* :NOTICE: We will eventually need to change these natives
+	 * for swapping in new contexts
+	 */
+	if (m_ctx.co || m_ctx.ctx)
 	{
-		pPlugin->m_priv_funcs = new CFunction *[pPlugin->m_funcsnum];
-		memset(pPlugin->m_priv_funcs, 0, sizeof(CFunction *) * pPlugin->m_funcsnum);
-	} else {
-		pPlugin->m_priv_funcs = NULL;
+		return NULL;
 	}
 
-	if (pl->info.publics_num)
+	m_status = Plugin_Uncompiled;
+
+	m_ctx.vm = vm;
+	m_ctx.co = vm->StartCompilation(m_plugin);
+
+	return m_ctx.co;
+}
+
+void CPlugin::CancelMyCompile()
+{
+	if (!m_ctx.co)
 	{
-		pPlugin->m_pub_funcs = new CFunction *[pl->info.publics_num];
-		memset(pPlugin->m_pub_funcs, 0, sizeof(CFunction *) * pl->info.publics_num);
-	} else {
-		pPlugin->m_pub_funcs = NULL;
+		return;
 	}
 
-	return pPlugin;
+	m_ctx.vm->AbortCompilation(m_ctx.co);
+	m_ctx.co = NULL;
+	m_ctx.vm = NULL;
+}
+
+bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
+{
+	if (!m_ctx.co)
+	{
+		return false;
+	}
+
+	int err;
+	m_ctx.ctx = m_ctx.vm->CompileToContext(m_ctx.co, &err);
+	if (!m_ctx.ctx)
+	{
+		memset(&m_ctx, 0, sizeof(m_ctx));
+		if (!error)
+		{
+			SetErrorState(Plugin_Error, "Failed to compile (error %d)", err);
+		} else {
+			snprintf(error, maxlength, "Failed to compile (error %d)", err);
+		}
+		return false;
+	}
+
+	m_ctx.base = g_pSourcePawn->CreateBaseContext(m_ctx.ctx);
+	m_ctx.ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)this;
+
+	m_funcsnum = m_ctx.vm->FunctionCount(m_ctx.ctx);
+
+	/**
+	 * Note: Since the m_plugin member will never change,
+	 * it is safe to assume the function count will never change
+	 */
+	if (m_funcsnum && m_priv_funcs == NULL)
+	{
+		m_priv_funcs = new CFunction *[m_funcsnum];
+		memset(m_priv_funcs, 0, sizeof(CFunction *) * m_funcsnum);
+	} else {
+		m_priv_funcs = NULL;
+	}
+
+	if (m_plugin->info.publics_num && m_pub_funcs == NULL)
+	{
+		m_pub_funcs = new CFunction *[m_plugin->info.publics_num];
+		memset(m_pub_funcs, 0, sizeof(CFunction *) * m_plugin->info.publics_num);
+	} else {
+		m_pub_funcs = NULL;
+	}
+
+	UpdateInfo();
+
+	return true;
+}
+
+void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
+{
+	m_status = status;
+
+	va_list ap;
+	va_start(ap, error_fmt);
+	vsnprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
+	va_end(ap);
 }
 
 IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
@@ -113,7 +232,7 @@ IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
 	} else {
 		func_id >>= 1;
 		unsigned int index;
-		if (!g_pVM->FunctionLookup(m_ctx_current.ctx, func_id, &index))
+		if (!g_pVM->FunctionLookup(m_ctx.ctx, func_id, &index))
 		{
 			return NULL;
 		}
@@ -131,7 +250,7 @@ IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
 IPluginFunction *CPlugin::GetFunctionByName(const char *public_name)
 {
 	uint32_t index;
-	IPluginContext *base = m_ctx_current.base;
+	IPluginContext *base = m_ctx.base;
 
 	if (base->FindPublicByName(public_name, &index) != SP_ERROR_NONE)
 	{
@@ -195,12 +314,12 @@ const sp_plugin_t *CPlugin::GetPluginStructure() const
 
 IPluginContext *CPlugin::GetBaseContext() const
 {
-	return m_ctx_current.base;
+	return m_ctx.base;
 }
 
 sp_context_t *CPlugin::GetContext() const
 {
-	return m_ctx_current.ctx;
+	return m_ctx.ctx;
 }
 
 const char *CPlugin::GetFilename() const
@@ -230,7 +349,12 @@ PluginStatus CPlugin::GetStatus() const
 
 bool CPlugin::IsDebugging() const
 {
-	return m_debugging;
+	if (!m_ctx.ctx)
+	{
+		return false;
+	}
+
+	return ((m_ctx.ctx->flags & SP_FLAG_DEBUG) == SP_FLAG_DEBUG);
 }
 
 bool CPlugin::SetPauseState(bool paused)
@@ -299,30 +423,158 @@ void CPluginManager::RefreshOrLoadPlugins(const char *config, const char *basedi
 		/* :TODO: log the error, don't bail out though */
 	}
 
+	LoadPluginsFromDir(basedir, NULL);
+}
 
-	//:TODO: move this to a separate recursive function and do stuff
-	/*IDirectory *dir = g_LibSys.OpenDirectory(basedir);
+void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
+{
+	char base_path[PLATFORM_MAX_PATH+1];
+
+	/* Form the current path to start reading from */
+	if (localpath == NULL)
+	{
+		g_LibSys.PathFormat(base_path, sizeof(base_path), "%s", basedir);
+	} else {
+		g_LibSys.PathFormat(base_path, sizeof(base_path), "%s/%s", basedir, localpath);
+	}
+
+	IDirectory *dir = g_LibSys.OpenDirectory(base_path);
+
+	if (!dir)
+	{
+		//:TODO: write a logger and LOG THIS UP, BABY
+		//g_LibSys.GetPlatformError(error, err_max);
+		return;
+	}
+
 	while (dir->MoreFiles())
 	{
-		if (dir->IsEntryDirectory() && (strcmp(dir->GetEntryName(), "disabled") != 0))
+		if (dir->IsEntryDirectory() 
+			&& (strcmp(dir->GetEntryName(), ".") != 0)
+			&& (strcmp(dir->GetEntryName(), "..") != 0)
+			&& (strcmp(dir->GetEntryName(), "disabled") != 0)
+			&& (strcmp(dir->GetEntryName(), "optional") != 0))
 		{
-			char path[PLATFORM_MAX_PATH+1];
-			g_SMAPI->PathFormat(path, sizeof(path)-1, "%s/%s", basedir, dir->GetEntryName());
-			RefreshOrLoadPlugins(basedir);
+			char new_local[PLATFORM_MAX_PATH+1];
+			if (localpath == NULL)
+			{
+				/* If no path yet, don't add a former slash */
+				snprintf(new_local, sizeof(new_local), "%s", dir->GetEntryName());
+			} else {
+				g_LibSys.PathFormat(new_local, sizeof(new_local), "%s/%s", localpath, dir->GetEntryName());
+			}
+			LoadPluginsFromDir(basedir, new_local);
+		} else if (dir->IsEntryFile()) {
+			const char *name = dir->GetEntryName();
+			size_t len = strlen(name);
+			if (len < 4
+				|| strcmp(&name[len-4], ".smx") != 0)
+			{
+				continue;
+			}
+			/* If the filename matches, load the plugin */
+			char plugin[PLATFORM_MAX_PATH+1];
+			if (localpath == NULL)
+			{
+				snprintf(plugin, sizeof(plugin), "%s", name);
+			} else {
+				g_LibSys.PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
+			}
+			LoadAutoPlugin(plugin);
+		}
+		dir->NextEntry();
+	}
+	g_LibSys.CloseDirectory(dir);
+}
+
+void CPluginManager::LoadAutoPlugin(const char *file)
+{
+	CPlugin *pPlugin = CPlugin::CreatePlugin(file, NULL, 0);
+
+	assert(pPlugin != NULL);
+
+	pPlugin->m_type = PluginType_MapUpdated;
+
+	ICompilation *co = NULL;
+
+	if (pPlugin->m_status == Plugin_Uncompiled)
+	{
+		co = pPlugin->StartMyCompile(g_pVM);
+	}
+
+	PluginSettings *pset;
+	unsigned int setcount = m_PluginInfo.GetSettingsNum();
+	for (unsigned int i=0; i<setcount; i++)
+	{
+		pset = m_PluginInfo.GetSettingsIfMatch(i, file);
+		if (!pset)
+		{
+			continue;
+		}
+		pPlugin->m_type = pset->type_val;
+		if (co)
+		{
+			for (unsigned int j=0; j<pset->opts_num; j++)
+			{
+				const char *key, *val;
+				m_PluginInfo.GetOptionsForPlugin(pset, j, &key, &val);
+				if (!key || !val)
+				{
+					continue;
+				}
+				if (!g_pVM->SetCompilationOption(co, key, val))
+				{
+					pPlugin->SetErrorState(Plugin_Error, "Unable to set option (key \"%s\") (value \"%s\")", key, val);
+					pPlugin->CancelMyCompile();
+					co = NULL;
+					break;
+				}
+			}
 		}
 	}
-	g_LibSys.CloseDirectory(dir);*/
+
+	if (co)
+	{
+		pPlugin->FinishMyCompile(NULL, 0);
+		co = NULL;
+	}
+
+	InitAndAddPlugin(pPlugin);
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
-	CPlugin *pPlugin = CPlugin::CreatePlugin(path, debug, type, error, err_max);
+	CPlugin *pPlugin = CPlugin::CreatePlugin(path, error, err_max);
 
 	if (!pPlugin)
 	{
 		return NULL;
 	}
 
+	ICompilation *co = pPlugin->StartMyCompile(g_pVM);
+	if (!co || (debug && !g_pVM->SetCompilationOption(co, "debug", "1")))
+	{
+		snprintf(error, err_max, "Unable to start%s compilation", debug ? " debug" : "");
+		pPlugin->CancelMyCompile();
+		delete pPlugin;
+		return NULL;
+	}
+
+	if (!pPlugin->FinishMyCompile(error, err_max))
+	{
+		delete pPlugin;
+		return NULL;
+	}
+
+	pPlugin->m_type = type;
+
+	InitAndAddPlugin(pPlugin);
+
+	return pPlugin;
+}
+
+void CPluginManager::InitAndAddPlugin(CPlugin *pPlugin)
+{
 	m_plugins.push_back(pPlugin);
 
 	List<IPluginsListener *>::iterator iter;
@@ -334,8 +586,6 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	}
 
 	/* :TODO: a lot more... */
-
-	return pPlugin;
 }
 
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
@@ -352,45 +602,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pListener->OnPluginDestroyed(pPlugin);
 	}
 	
-	if (pPlugin->m_pub_funcs)
-	{
-		for (uint32_t i=0; i<pPlugin->m_plugin->info.publics_num; i++)
-		{
-			g_PluginMngr.ReleaseFunctionToPool(pPlugin->m_pub_funcs[i]);
-		}
-		delete [] pPlugin->m_pub_funcs;
-		pPlugin->m_pub_funcs = NULL;
-	}
-
-	if (pPlugin->m_priv_funcs)
-	{
-		for (unsigned int i=0; i<pPlugin->m_funcsnum; i++)
-		{
-			g_PluginMngr.ReleaseFunctionToPool(pPlugin->m_priv_funcs[i]);
-		}
-		delete [] pPlugin->m_priv_funcs;
-		pPlugin->m_priv_funcs = NULL;
-	}
-
-	if (pPlugin->m_ctx_current.base)
-	{
-		g_pSourcePawn->FreeBaseContext(pPlugin->m_ctx_current.base);
-	}
-	if (pPlugin->m_ctx_backup.base)
-	{
-		g_pSourcePawn->FreeBaseContext(pPlugin->m_ctx_backup.base);
-	}
-	if (pPlugin->m_ctx_current.ctx)
-	{
-		pPlugin->m_ctx_current.ctx->vmbase->FreeContext(pPlugin->m_ctx_current.ctx);
-	}
-	if (pPlugin->m_ctx_backup.ctx)
-	{
-		pPlugin->m_ctx_backup.ctx->vmbase->FreeContext(pPlugin->m_ctx_backup.ctx);
-	}
-
-	g_pSourcePawn->FreeFromMemory(pPlugin->m_plugin);
-
 	delete pPlugin;
 
 	return true;
@@ -477,7 +688,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 		ptr++;
 	}
 
-	if (alias_path_end == alias_len - 1)
+	if (alias_explicit_paths && alias_path_end == alias_len - 1)
 	{
 		/* Trailing slash is totally invalid here */
 		return false;

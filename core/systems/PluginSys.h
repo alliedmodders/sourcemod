@@ -10,21 +10,47 @@
 
 using namespace SourceHook;
 
+/**
+ * NOTES:
+ *
+ *  Currently this system needs a lot of work but it's good skeletally.  Plugin creation 
+ * is done without actually compiling anything.  This is done by Load functions in the 
+ * manager.  This will need a rewrite when we add context switching.
+ *
+ *  The plugin object itself has a few things to note.  The most important is that it stores
+ * a table of function objects.  The manager marshals allocation and freeing of these objects.
+ * The plugin object can be in erroneous states, they are:
+ *   Plugin_Error   --> Some error occurred any time during or after compilation.
+ *						This error can be cleared since the plugin itself is valid.
+ *						However, the state itself being set prevents any runtime action.
+ *   Plugin_BadLoad	--> The plugin failed to load entirely and nothing can be done to save it.
+ *
+ *  If a plugin fails to load externally, it is never added to the internal tracker.  However, 
+ * plugins that failed to load from the internal loading mechanism are always tracked.  This 
+ * allows users to see which automatically loaded plugins failed, and makes the interface a bit
+ * more flexible.
+ */
+
 #define SM_CONTEXTVAR_MYSELF	0
 
 struct ContextPair
 {
-	ContextPair() : base(NULL), ctx(NULL)
+	ContextPair() : base(NULL), ctx(NULL), co(NULL)
 	{
 	};
 	IPluginContext *base;
 	sp_context_t *ctx;
+	ICompilation *co;
+	IVirtualMachine *vm;
 };
 
 class CPlugin : public IPlugin
 {
 	friend class CPluginManager;
 	friend class CFunction;
+public:
+	CPlugin(const char *file);
+	~CPlugin();
 public:
 	virtual PluginType GetType() const;
 	virtual SourcePawn::IPluginContext *GetBaseContext() const;
@@ -39,18 +65,34 @@ public:
 	virtual IPluginFunction *GetFunctionByName(const char *public_name);
 	virtual IPluginFunction *GetFunctionById(funcid_t func_id);
 public:
-	static CPlugin *CreatePlugin(const char *file, 
-								bool debug_default, 
-								PluginType life, 
-								char *error, 
-								size_t maxlen);
+	/**
+	 * Creates a plugin object with default values.
+	 *   If an error buffer is specified, and an error occurs, the error will be copied to the buffer
+	 * and NULL will be returned.
+	 *   If an error buffer is not specified, the error will be copied to an internal buffer and 
+	 * a valid (but error-stated) CPlugin will be returned.
+	 */
+	static CPlugin *CreatePlugin(const char *file, char *error, size_t maxlength);
+public:
+	/**
+	 * Starts the initial compilation of a plugin.
+	 * Returns false if another compilation exists or there is a current context set.
+	 */
+	ICompilation *StartMyCompile(IVirtualMachine *vm);
+	/** 
+	 * Finalizes a compilation.  If error buffer is NULL, the error is saved locally.
+	 */
+	bool FinishMyCompile(char *error, size_t maxlength);
+	void CancelMyCompile();
+	/**
+	 * Sets an error state on the plugin
+	 */
+	void SetErrorState(PluginStatus status, const char *error_fmt, ...);
 protected:
 	void UpdateInfo();
 private:
-	ContextPair m_ctx_current;
-	ContextPair m_ctx_backup;
+	ContextPair m_ctx;
 	PluginType m_type;
-	bool m_debugging;
 	char m_filename[PLATFORM_MAX_PATH+1];
 	PluginStatus m_status;
 	unsigned int m_serial;
@@ -59,13 +101,7 @@ private:
 	unsigned int m_funcsnum;
 	CFunction **m_priv_funcs;
 	CFunction **m_pub_funcs;
-};
-
-struct PluginDBInfo
-{
-	bool pause;
-	PluginType lifetime;
-
+	char m_errormsg[256];
 };
 
 class CPluginManager : public IPluginManager
@@ -108,7 +144,7 @@ public:
 	/**
 	 * Refreshes and loads plugins, usually used on mapchange
 	 */
-	virtual void RefreshOrLoadPlugins(const char *config, const char *basedir);
+	void RefreshOrLoadPlugins(const char *config, const char *basedir);
 
 	/**
 	 * Tests a plugin file mask against a local folder.
@@ -119,8 +155,27 @@ public:
 	 * All of these will return true for an alias match.  
 	 * Wildcards are allowed in the filename.
 	 */
-	virtual bool TestAliasMatch(const char *alias, const char *localdir);
+	bool TestAliasMatch(const char *alias, const char *localdir);
+private:
+	/**
+	 * Recursively loads all plugins in the given directory.
+	 */
+	void LoadPluginsFromDir(const char *basedir, const char *localdir);
+
+	/**
+	 * Loads a plugin using automatic information.
+	 * The file must be relative to the plugins folder.
+	 */
+	void LoadAutoPlugin(const char *file);
+
+	/**
+	 * Adds and initializes a plugin object.  This is wrapped by LoadPlugin functions.
+	 */
+	void InitAndAddPlugin(CPlugin *pPlugin);
 protected:
+	/**
+	 * Caching internal objects
+	 */
 	void ReleaseIterator(CPluginIterator *iter);
 	CFunction *GetFunctionFromPool(funcid_t f, CPlugin *plugin);
 	void ReleaseFunctionToPool(CFunction *func);

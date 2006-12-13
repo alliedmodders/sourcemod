@@ -7,6 +7,8 @@
 #include "PluginSys.h"
 #include "ForwardSys.h"
 
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+
 SourcePawnEngine g_SourcePawn;
 SourceModBase g_SourceMod;
 
@@ -31,16 +33,21 @@ void ShutdownJIT()
 	g_pJIT->CloseLibrary();
 }
 
+SourceModBase::SourceModBase()
+{
+	m_IsMapLoading = false;
+}
+
 bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 {
-	//:TODO: we need a localinfo system!
 	g_BaseDir.assign(g_SMAPI->GetBaseDir());
+	g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/addons/sourcemod", g_BaseDir.c_str());
 
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];
 	char myerror[255];
-	g_SMAPI->PathFormat(file, sizeof(file), "%s/addons/sourcemod/bin/sourcepawn.jit.x86.%s",
-		g_BaseDir.c_str(),
+	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/sourcepawn.jit.x86.%s",
+		GetSMBaseDir(),
 		PLATFORM_LIB_EXT
 		);
 
@@ -112,21 +119,49 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 		return false;
 	}
 
-	g_SMAPI->PathFormat(file, sizeof(file), "%s/addons/sourcemod/plugins/test.smx", g_BaseDir.c_str());
-	IPlugin *pPlugin = g_PluginMngr.LoadPlugin(file, false, PluginType_Global, error, err_max);
-	IPluginFunction *func = pPlugin->GetFunctionByName("Test");
-	IPluginFunction *func2 = pPlugin->GetFunctionByName("Test2");
-	cell_t result = 2;
-	cell_t val = 6;
-	ParamType types[] = {Param_Cell, Param_CellByRef};
-	va_list ap = va_start(ap, late);
-	CForward *fwd = CForward::CreateForward(NULL, ET_Custom, 2, types, ap);
-	fwd->AddFunction(func);
-	fwd->AddFunction(func2);
-	fwd->PushCell(1);
-	fwd->PushCellByRef(&val, 0);
-	fwd->Execute(&result, NULL);
-	g_PluginMngr.UnloadPlugin(pPlugin);
+	StartSourceMod(late);
 
 	return true;
+}
+
+void SourceModBase::StartSourceMod(bool late)
+{
+	/* First initialize the global hooks we need */
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
+
+	/* If we're late, automatically load plugins now */
+	DoGlobalPluginLoads();
+}
+
+bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+{
+	m_IsMapLoading = true;
+
+	DoGlobalPluginLoads();
+
+	m_IsMapLoading = false;
+
+	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+void SourceModBase::DoGlobalPluginLoads()
+{
+	char config_path[PLATFORM_MAX_PATH];
+	char plugins_path[PLATFORM_MAX_PATH];
+
+	g_SMAPI->PathFormat(config_path, 
+		sizeof(config_path),
+		"%s/configs/plugin_settings.cfg",
+		GetSMBaseDir());
+	g_SMAPI->PathFormat(plugins_path,
+		sizeof(plugins_path),
+		"%s/plugins",
+		GetSMBaseDir());
+
+	g_PluginMngr.RefreshOrLoadPlugins(config_path, plugins_path);
+}
+
+const char *SourceModBase::GetSMBaseDir()
+{
+	return m_SMBaseDir;
 }

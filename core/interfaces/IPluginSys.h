@@ -33,8 +33,8 @@ namespace SourceMod
 		Plugin_Running=0,		/* Plugin is running */
 		Plugin_Loaded,			/* Plugin is loaded but not initialized */
 		Plugin_Paused,			/* Plugin is paused */
-		Plugin_Stopped,			/* Plugin is paused for map changes, too */
 		Plugin_Error,			/* Plugin has a blocking error */
+		Plugin_Uncompiled,		/* Plugin is not yet compiled by the JIT */
 		Plugin_BadLoad,			/* Plugin failed to load */
 	};
 

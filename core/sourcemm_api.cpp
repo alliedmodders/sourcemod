@@ -4,12 +4,16 @@
 #include "sourcemod.h"
 
 SourceMod_Core g_SourceMod_Core;
+IVEngineServer *engine = NULL;
+IServerGameDLL *gamedll = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	PLUGIN_SAVEVARS();
+
+	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }

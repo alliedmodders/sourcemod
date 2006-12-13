@@ -15,7 +15,7 @@ void CFunction::Set(funcid_t funcid, CPlugin *plugin)
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
-	IPluginContext *ctx = m_pPlugin->m_ctx_current.base;
+	IPluginContext *ctx = m_pPlugin->m_ctx.base;
 
 	while (num_params--)
 	{
@@ -79,7 +79,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 		return SetError(SP_ERROR_PARAMS_MAX);
 	}
 
-	IPluginContext *ctx = m_pPlugin->m_ctx_current.base;
+	IPluginContext *ctx = m_pPlugin->m_ctx.base;
 	ParamInfo *info = &m_info[m_curparam];
 	int err;
 
@@ -127,7 +127,7 @@ int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_
 		return SetError(SP_ERROR_PARAMS_MAX);
 	}
 
-	IPluginContext *base = m_pPlugin->m_ctx_current.base;
+	IPluginContext *base = m_pPlugin->m_ctx.base;
 	ParamInfo *info = &m_info[m_curparam];
 	size_t cells = (len + sizeof(cell_t) - 1) / sizeof(cell_t);
 	int err;
@@ -174,7 +174,7 @@ void CFunction::Cancel()
 		return;
 	}
 
-	IPluginContext *base = m_pPlugin->m_ctx_current.base;
+	IPluginContext *base = m_pPlugin->m_ctx.base;
 
 	while (m_curparam--)
 	{
@@ -217,7 +217,7 @@ int CFunction::Execute(cell_t *result)
 		docopies = false;
 	}
 
-	IPluginContext *base = m_pPlugin->m_ctx_current.base;
+	IPluginContext *base = m_pPlugin->m_ctx.base;
 
 	while (numparams--)
 	{

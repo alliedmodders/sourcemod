@@ -2,6 +2,7 @@
 #define _INCLUDE_SOURCEMOD_MM_API_H_
 
 #include <ISmmPlugin.h>
+#include <eiface.h>
 
 /**
  * @file Contains wrappers around required Metamod:Source API exports
@@ -27,6 +28,8 @@ public:
 };
 
 extern SourceMod_Core g_SourceMod_Core;
+extern IVEngineServer *engine;
+extern IServerGameDLL *gamedll;
 
 PLUGIN_GLOBALVARS();
 
