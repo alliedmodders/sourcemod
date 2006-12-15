@@ -444,7 +444,7 @@ bool CPlugin::SetPauseState(bool paused)
  * PLUGIN ITERATOR *
  *******************/
 
-CPluginManager::CPluginIterator::CPluginIterator(List<IPlugin *> *_mylist)
+CPluginManager::CPluginIterator::CPluginIterator(List<CPlugin *> *_mylist)
 {
 	mylist = _mylist;
 }
@@ -495,7 +495,7 @@ CPluginManager::~CPluginManager()
 }
 
 
-void CPluginManager::LoadAll_FirstPass( const char *config, const char *basedir )
+void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */
 	SMCParseError err;
@@ -730,6 +730,21 @@ void CPluginManager::AddPlugin(CPlugin *pPlugin)
 	}
 }
 
+void CPluginManager::LoadAll_SecondPass()
+{
+	List<CPlugin *>::iterator iter;
+	CPlugin *pPlugin;
+
+	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
+	{
+		pPlugin = (*iter);
+		if (pPlugin->GetStatus() == Plugin_Loaded)
+		{
+			RunSecondPass(pPlugin);
+		}
+	}
+}
+
 void CPluginManager::RunSecondPass(CPlugin *pPlugin)
 {
 	/* Tell this plugin to finish initializing itself */
@@ -776,7 +791,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pListener->OnPluginDestroyed(pPlugin);
 	}
 
-	m_plugins.remove(plugin);
+	m_plugins.remove(pPlugin);
 	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
 	
 	delete pPlugin;

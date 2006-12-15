@@ -164,6 +164,9 @@ void SourceModBase::DoGlobalPluginLoads()
 		GetSMBaseDir());
 
 	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);
+
+	/* No modules yet, it's safe to call this from here */
+	g_PluginSys.LoadAll_SecondPass();
 }
 
 bool SourceModBase::IsLateLoadInMap()

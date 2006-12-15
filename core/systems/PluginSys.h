@@ -161,7 +161,7 @@ public:
 	class CPluginIterator : public IPluginIterator
 	{
 	public:
-		CPluginIterator(List<IPlugin *> *mylist);
+		CPluginIterator(List<CPlugin *> *mylist);
 		virtual ~CPluginIterator();
 		virtual bool MorePlugins();
 		virtual IPlugin *GetPlugin();
@@ -170,8 +170,8 @@ public:
 	public:
 		void Reset();
 	private:
-		List<IPlugin *> *mylist;
-		List<IPlugin *>::iterator current;
+		List<CPlugin *> *mylist;
+		List<CPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IPluginManager
@@ -252,7 +252,7 @@ protected:
 	void ReleaseFunctionToPool(CFunction *func);
 private:
 	List<IPluginsListener *> m_listeners;
-	List<IPlugin *> m_plugins;
+	List<CPlugin *> m_plugins;
 	List<sp_nativeinfo_t *> m_natives;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
 	CStack<CFunction *> m_funcpool;
