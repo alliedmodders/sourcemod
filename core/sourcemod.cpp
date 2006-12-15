@@ -129,10 +129,27 @@ void SourceModBase::StartSourceMod(bool late)
 	/* First initialize the global hooks we need */
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 
+	m_IsLateLoadInMap = late;
+
+	/* Notify! */
+	SMGlobalClass *pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModStartup(m_IsLateLoadInMap);
+		pBase = pBase->m_pGlobalClassNext;
+	}
+
+	/* Notify! */
+	pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModAllInitialized();
+		pBase = pBase->m_pGlobalClassNext;
+	}
+
 	/* If we're late, automatically load plugins now */
 	if (late)
 	{
-		m_IsLateLoadInMap = late;
 		DoGlobalPluginLoads();
 	}
 }
