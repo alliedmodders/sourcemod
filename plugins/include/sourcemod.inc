@@ -29,15 +29,22 @@ struct Plugin
 public Plugin:myinfo;
  
 /**
- * Called when the plugin is fully initialized and all known external references are resolved,
- * such as dynamic natives.
+ * Called when the plugin is fully initialized and all known external references are resolved.
+ * This is called even if the plugin type is "private."
+ * NOTE: Errors in this function will cause the plugin to stop running.
  *
  * @noreturn
  */
-forward OnPluginInit();
+forward OnPluginInit(Handle:myself);
  
 /**
- * Called before OnPluginInit, in case the plugin wants to check for load failure.
+ *   Called before OnPluginInit, in case the plugin wants to check for load failure.
+ * This is called even if the plugin type is "private."  Any natives from modules are 
+ * not available at this point.  Thus, this forward should only be used for explicit 
+ * pre-emptive things, such as adding dynamic natives, or setting certain types of load filters.
+ * 
+ * NOTE: It is not safe to call externally resolved natives until OnPluginInit().
+ * NOTE: Any sort of RTE in this function will cause the plugin to fail loading.
  *
  * @param myself	Handle to the plugin.
  * @param late		Whether or not the plugin was loaded "late" (after map load).
@@ -45,14 +52,7 @@ forward OnPluginInit();
  * @param err_max	Maximum number of characters for error message buffer.
  * @return		True if load success, false otherwise.
  */
-forward bool:OnPluginLoad(Handle:myself, bool:late, String:error[], err_max);
-
-/**
- * Called when the plugin is first mapped into memory.  Use this to set dynamic natives ONLY.
- *
- * @noreturn
- */
-forward OnCreatePlugin();
+forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
 
 /**
  * Called when the plugin is about to be unloaded.

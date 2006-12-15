@@ -9,16 +9,21 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 }
 
-public Test(num, &num2)
+copy(String:dest[], maxlength, const String:source[])
 {
-	num2 += num
+	new len
 	
-	return num
+	while (source[len] != '\0' && len < maxlength)
+	{
+		dest[len] = source[len]
+		len++
+	}
+	
+	dest[len] = '\0'
 }
 
-public Test2(num, &num2)
+public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
-	num2 += num
-	
-	return num
+	copy(error, err_max, "I don't like food anymore!")
+	return false
 }
