@@ -28,6 +28,16 @@ CForwardManager g_Forwards;
  * X Push vararg strings (copyback tested = :TODO:)
  */
 
+void CForwardManager::OnSourceModAllInitialized()
+{
+	g_PluginSys.AddPluginsListener(this);
+}
+
+void CForwardManager::OnSourceModShutdown()
+{
+	g_PluginSys.RemovePluginsListener(this);
+}
+
 IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, ...)
 {
 	CForward *fwd;
@@ -37,6 +47,11 @@ IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned
 	fwd = CForward::CreateForward(name, et, num_params, types, ap);
 
 	va_end(ap);
+
+	if (fwd)
+	{
+		m_managed.push_back(fwd);
+	}
 
 	return fwd;
 }
@@ -51,7 +66,41 @@ IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType 
 
 	va_end(ap);
 
+	if (fwd)
+	{
+		m_unmanaged.push_back(fwd);
+	}
+
 	return fwd;
+}
+
+void CForwardManager::OnPluginLoaded(IPlugin *plugin)
+{
+	/* Attach any globally managed forwards */
+	List<CForward *>::iterator iter;
+	CForward *fwd;
+
+	for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
+	{
+		fwd = (*iter);
+		IPluginFunction *pFunc = plugin->GetFunctionByName(fwd->GetForwardName());
+		if (pFunc)
+		{
+			fwd->AddFunction(pFunc);
+		}
+	}
+}
+
+void CForwardManager::OnPluginUnloaded(IPlugin *plugin)
+{
+	List<CForward *>::iterator iter;
+	CForward *fwd;
+
+	for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
+	{
+		fwd = (*iter);
+		fwd->RemoveFunctionsOfPlugin(plugin);
+	}
 }
 
 IForward *CForwardManager::FindForward(const char *name, IChangeableForward **ifchng)
@@ -243,9 +292,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 			}
 		}
 		
-		/* Call the function and deal with the return value.
-		 * :TODO: only pass reader if we know we have an array in the list
-		 */
+		/* Call the function and deal with the return value. */
 		if ((err=func->Execute(&cur_result)) != SP_ERROR_NONE)
 		{
 			bool handled = false;
@@ -478,7 +525,7 @@ int CForward::PushString(const char *string)
 		m_params[m_curparam].pushedas = Param_String;
 	}
 
-	_Int_PushString((cell_t *)string, strlen(string)+1, SP_STRING_COPY, 0);
+	_Int_PushString((cell_t *)string, strlen(string)+1, SM_PARAM_STRING_COPY, 0);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
@@ -521,7 +568,7 @@ void CForward::Cancel()
 
 bool CForward::AddFunction(sp_context_t *ctx, funcid_t index)
 {
-	IPlugin *pPlugin = g_PluginMngr.FindPluginByContext(ctx);
+	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(ctx);
 	if (!pPlugin)
 	{
 		return false;
@@ -590,7 +637,7 @@ bool CForward::AddFunction(IPluginFunction *func)
 		return false;
 	}
 
-	//:TODO: eventually we will tell the plugin we're using it
+	//:TODO: eventually we will tell the plugin we're using it [?]
 	m_functions.push_back(func);
 
 	return true;

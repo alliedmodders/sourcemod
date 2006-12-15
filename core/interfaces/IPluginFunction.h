@@ -5,10 +5,10 @@
 
 namespace SourceMod
 {
-	#define SM_FUNCFLAG_COPYBACK		(1<<0)		/* Copy an array/reference back after call */
+	#define SM_PARAM_COPYBACK		(1<<0)		/* Copy an array/reference back after call */
 
-	#define SP_STRING_UTF8				(1<<0)		/* String should be UTF-8 handled */
-	#define SP_STRING_COPY				(1<<1)		/* String should be copied into the plugin */
+	#define SM_PARAM_STRING_UTF8	(1<<0)		/* String should be UTF-8 handled */
+	#define SM_PARAM_STRING_COPY	(1<<1)		/* String should be copied into the plugin */
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.

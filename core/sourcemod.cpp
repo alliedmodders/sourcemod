@@ -130,12 +130,17 @@ void SourceModBase::StartSourceMod(bool late)
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 
 	/* If we're late, automatically load plugins now */
-	DoGlobalPluginLoads();
+	if (late)
+	{
+		m_IsLateLoadInMap = late;
+		DoGlobalPluginLoads();
+	}
 }
 
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
 	m_IsMapLoading = true;
+	m_IsLateLoadInMap = false;
 
 	DoGlobalPluginLoads();
 
@@ -158,10 +163,23 @@ void SourceModBase::DoGlobalPluginLoads()
 		"%s/plugins",
 		GetSMBaseDir());
 
-	g_PluginMngr.RefreshOrLoadPlugins(config_path, plugins_path);
+	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);
+}
+
+bool SourceModBase::IsLateLoadInMap()
+{
+	return m_IsLateLoadInMap;
 }
 
 const char *SourceModBase::GetSMBaseDir()
 {
 	return m_SMBaseDir;
+}
+
+SMGlobalClass *SMGlobalClass::head = NULL;
+
+SMGlobalClass::SMGlobalClass()
+{
+	m_pGlobalClassNext = SMGlobalClass::head;
+	SMGlobalClass::head = this;
 }

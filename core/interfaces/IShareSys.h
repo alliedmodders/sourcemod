@@ -1,8 +1,11 @@
 #ifndef _INCLUDE_SOURCEMOD_IFACE_SHARE_SYS_H_
 #define _INCLUDE_SOURCEMOD_IFACE_SHARE_SYS_H_
 
+#include <sp_vm_types.h>
+
 namespace SourceMod
 {
+	typedef unsigned int		IdentityToken_t;
 	/**
 	 * @brief Defines the base functionality required by a shared interface.
 	 */
@@ -37,48 +40,6 @@ namespace SourceMod
 		}
 	};
 
-	enum UnloadableParentType
-	{
-		ParentType_Module,
-		ParentType_Plugin
-	};
-
-	/**
-	 * @brief Denotes a top-level unloadable object.
-	 */
-	class IUnloadableParent
-	{
-	public:
-		virtual UnloadableParentType GetParentType() =0;
-
-		virtual void *GetParentToken() =0;
-	
-		/**
-		 * @brief Called when an interface this object has requested is removed.
-		 *
-		 * @param pIface		Interface being removed.
-		 */
-		virtual void OnInterfaceUnlink(SMInterface *pIface) =0;
-	protected:
-		void *m_parent_token;
-	};
-
-	/**
-	 * @brief Listens for unlinked objects.
-	 */
-	class IUnlinkListener
-	{
-	public:
-		/**
-		 * @brief Called when a parent object is unloaded.
-		 *
-		 * @param parent		The parent object which is dying.
-		 */
-		virtual void OnParentUnlink(IUnloadableParent *parent)
-		{
-		}
-	};
-
 	/**
 	 * @brief Tracks dependencies and fires dependency listeners.
 	 */
@@ -89,9 +50,9 @@ namespace SourceMod
 		 * @brief Adds an interface to the global interface system
 		 *
 		 * @param iface			Interface pointer (must be unique).
-		 * @param parent		Parent unloadable token given to the module/interface.
+		 * @param token			Parent token of the module/interface.
 		 */
-		virtual bool AddInterface(SMInterface *iface, IUnloadableParent *parent) =0;
+		virtual bool AddInterface(SMInterface *iface, IdentityToken_t token) =0;
 
 		/**
 		 * @brief Requests an interface from the global interface system.
@@ -99,36 +60,21 @@ namespace SourceMod
 		 *
 		 * @param iface_name	Interface name.
 		 * @param iface_vers	Interface version to attempt to match.
-		 * @param me			Object requesting this interface, in order to track dependencies.
+		 * @param token			Object requesting this interface, in order to track dependencies.
 		 * @param pIface		Pointer to store the return value in.
 		 */
 		virtual bool RequestInterface(const char *iface_name, 
-										unsigned int iface_vers, 
-										IUnloadableParent *me,
+										unsigned int iface_vers,
+										IdentityToken_t token,
 										void **pIface) =0;
 
 		/**
-		 * @brief Unloads an interface.
-		 *
-		 * @param iface			Interface pointer.
-		 * @param parent		Security token, trivial measure to prevent accidental unloads.
-		 *                      This token must match the one used with AddInterface().
+		 * @brief Adds a list of natives to the global native pool.
+		 * 
+		 * @param token			Identity token of parent object.
+		 * @param natives		Array of natives to add, NULL terminated.
 		 */
-		virtual void RemoveInterface(SMInterface *iface, IUnloadableParent *parent) =0;
-
-		/**
-		 * @brief Adds an unlink listener.
-		 *
-		 * @param pListener		Listener pointer.
-		 */
-		virtual void AddUnlinkListener(IUnlinkListener *pListener) =0;
-
-		/**
-		 * @brief Removes an unlink listener.
-		 *
-		 * @param pListener		Listener pointer.
-		 */
-		virtual void RemoveUnlinkListener(IUnlinkListener *pListener) =0;
+		virtual void AddNatives(IdentityToken_t token, const sp_nativeinfo_t *natives[]) =0;
 	};
 };
 

@@ -5,11 +5,7 @@
 #include "sourcemod.h"
 #include "CTextParsers.h"
 
-CPluginManager g_PluginMngr;
-
-CPluginManager::CPluginManager()
-{
-}
+CPluginManager g_PluginSys;
 
 CPlugin::CPlugin(const char *file)
 {
@@ -54,7 +50,7 @@ CPlugin::~CPlugin()
 	{
 		for (uint32_t i=0; i<m_plugin->info.publics_num; i++)
 		{
-			g_PluginMngr.ReleaseFunctionToPool(m_pub_funcs[i]);
+			g_PluginSys.ReleaseFunctionToPool(m_pub_funcs[i]);
 		}
 		delete [] m_pub_funcs;
 		m_pub_funcs = NULL;
@@ -64,7 +60,7 @@ CPlugin::~CPlugin()
 	{
 		for (unsigned int i=0; i<m_funcsnum; i++)
 		{
-			g_PluginMngr.ReleaseFunctionToPool(m_priv_funcs[i]);
+			g_PluginSys.ReleaseFunctionToPool(m_priv_funcs[i]);
 		}
 		delete [] m_priv_funcs;
 		m_priv_funcs = NULL;
@@ -196,6 +192,8 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 		m_pub_funcs = NULL;
 	}
 
+	m_status = Plugin_Created;
+
 	UpdateInfo();
 
 	return true;
@@ -226,7 +224,7 @@ IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
 		pFunc = m_pub_funcs[func_id];
 		if (!pFunc)
 		{
-			pFunc = g_PluginMngr.GetFunctionFromPool(save, this);
+			pFunc = g_PluginSys.GetFunctionFromPool(save, this);
 			m_pub_funcs[func_id] = pFunc;
 		}
 	} else {
@@ -239,7 +237,7 @@ IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
 		pFunc = m_priv_funcs[func_id];
 		if (!pFunc)
 		{
-			pFunc = g_PluginMngr.GetFunctionFromPool(save, this);
+			pFunc = g_PluginSys.GetFunctionFromPool(save, this);
 			m_priv_funcs[func_id] = pFunc;
 		}
 	}
@@ -264,7 +262,7 @@ IPluginFunction *CPlugin::GetFunctionByName(const char *public_name)
 		base->GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			pFunc = g_PluginMngr.GetFunctionFromPool(pub->funcid, this);
+			pFunc = g_PluginSys.GetFunctionFromPool(pub->funcid, this);
 			m_pub_funcs[index] = pFunc;
 		}
 	}
@@ -305,6 +303,77 @@ void CPlugin::UpdateInfo()
 	m_info.name = m_info.name ? m_info.name : "";
 	m_info.url = m_info.url ? m_info.url : "";
 	m_info.version = m_info.version ? m_info.version : "";
+}
+
+void CPlugin::Call_OnPluginInit()
+{
+	if (m_status != Plugin_Loaded)
+	{
+		return;
+	}
+
+	m_status = Plugin_Running;
+
+	int err;
+	cell_t result;
+	IPluginFunction *pFunction = GetFunctionByName("OnPluginInit");
+	if (!pFunction)
+	{
+		return;
+	}
+
+	/* :TODO: push our own handle */
+	pFunction->PushCell(0);
+	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
+	{
+		/* :TODO: log into debugger instead */
+		SetErrorState(Plugin_Error, "Runtime error %d", err);
+	}
+}
+
+bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
+{
+	if (m_status != Plugin_Created)
+	{
+		return false;
+	}
+
+	if (!error)
+	{
+		error = m_errormsg;
+		maxlength = sizeof(m_errormsg);
+	}
+
+	int err;
+	cell_t result;
+	IPluginFunction *pFunction = GetFunctionByName("AskPluginLoad");
+
+	if (!pFunction)
+	{
+		return true;
+	}
+
+	pFunction->PushCell(0);		//:TODO: handle to ourself
+	pFunction->PushCell(g_PluginSys.IsLateLoadTime() ? 1 : 0);
+	pFunction->PushStringEx(error, maxlength, 0, SM_PARAM_COPYBACK);
+	pFunction->PushCell(maxlength);
+	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
+	{
+		/* :TODO: debugging system */
+		snprintf(error, maxlength, "Plugin load returned run time error %d", err);
+		m_status = Plugin_Error;
+		return false;
+	}
+
+	if (!result)
+	{
+		m_status = Plugin_Error;
+		return false;
+	}
+
+	m_status = Plugin_Loaded;
+
+	return true;
 }
 
 const sp_plugin_t *CPlugin::GetPluginStructure() const
@@ -397,7 +466,7 @@ void CPluginManager::CPluginIterator::NextPlugin()
 
 void CPluginManager::CPluginIterator::Release()
 {
-	g_PluginMngr.ReleaseIterator(this);
+	g_PluginSys.ReleaseIterator(this);
 }
 
 CPluginManager::CPluginIterator::~CPluginIterator()
@@ -413,7 +482,20 @@ void CPluginManager::CPluginIterator::Reset()
  * PLUGIN MANAGER *
  ******************/
 
-void CPluginManager::RefreshOrLoadPlugins(const char *config, const char *basedir)
+CPluginManager::CPluginManager()
+{
+	m_LoadLookup = sm_trie_create();
+	m_AllPluginsLoaded = false;
+}
+
+CPluginManager::~CPluginManager()
+{
+	//:TODO: we need a good way to free what we're holding
+	sm_trie_destroy(m_LoadLookup);
+}
+
+
+void CPluginManager::LoadAll_FirstPass( const char *config, const char *basedir )
 {
 	/* First read in the database of plugin settings */
 	SMCParseError err;
@@ -467,29 +549,51 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 		} else if (dir->IsEntryFile()) {
 			const char *name = dir->GetEntryName();
 			size_t len = strlen(name);
-			if (len < 4
-				|| strcmp(&name[len-4], ".smx") != 0)
+			if (len >= 4
+				&& strcmp(&name[len-4], ".smx") == 0)
 			{
-				continue;
+				/* If the filename matches, load the plugin */
+				char plugin[PLATFORM_MAX_PATH+1];
+				if (localpath == NULL)
+				{
+					snprintf(plugin, sizeof(plugin), "%s", name);
+				} else {
+					g_LibSys.PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
+				}
+				LoadAutoPlugin(plugin);
 			}
-			/* If the filename matches, load the plugin */
-			char plugin[PLATFORM_MAX_PATH+1];
-			if (localpath == NULL)
-			{
-				snprintf(plugin, sizeof(plugin), "%s", name);
-			} else {
-				g_LibSys.PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
-			}
-			LoadAutoPlugin(plugin);
 		}
 		dir->NextEntry();
 	}
 	g_LibSys.CloseDirectory(dir);
 }
 
+//well i have discovered that gabe newell is very fat, so i wrote this comment now
+//:TODO: remove this function, create a better wrapper for LoadPlugin()/LoadAutoPlugin()
 void CPluginManager::LoadAutoPlugin(const char *file)
 {
-	CPlugin *pPlugin = CPlugin::CreatePlugin(file, NULL, 0);
+	/**
+	 * Does this plugin already exist?
+	 */
+	CPlugin *pPlugin;
+	if (sm_trie_retrieve(m_LoadLookup, file, (void **)&pPlugin))
+	{
+		/* First check the type */
+		PluginType type = pPlugin->GetType();
+		if (type == PluginType_Private
+			|| type == PluginType_Global)
+		{
+			return;
+		}
+		/* Check to see if we should try reloading it */
+		if (pPlugin->GetStatus() == Plugin_BadLoad
+			|| pPlugin->GetStatus() == Plugin_Error)
+		{
+			UnloadPlugin(pPlugin);
+		}
+	}
+
+	pPlugin = CPlugin::CreatePlugin(file, NULL, 0);
 
 	assert(pPlugin != NULL);
 
@@ -539,12 +643,36 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 		co = NULL;
 	}
 
-	InitAndAddPlugin(pPlugin);
+	/* We don't care about the return value */
+	if (pPlugin->GetStatus() == Plugin_Created)
+	{
+		AddCoreNativesToPlugin(pPlugin);
+		pPlugin->Call_AskPluginLoad(NULL, 0);
+	}
+
+	AddPlugin(pPlugin);
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
-	CPlugin *pPlugin = CPlugin::CreatePlugin(path, error, err_max);
+	/* See if this plugin is already loaded... reformat to get sep chars right */
+	char checkpath[PLATFORM_MAX_PATH+1];
+	g_LibSys.PathFormat(checkpath, sizeof(checkpath), "%s", path);
+
+	/**
+	 * In manually loading a plugin, any sort of load error causes a deletion.
+	 * This is because it's assumed manually loaded plugins will not be managed.
+	 * For managed plugins, we need the UI to report them properly.
+	 */
+
+	CPlugin *pPlugin;
+	if (sm_trie_retrieve(m_LoadLookup, checkpath, (void **)&pPlugin))
+	{
+		snprintf(error, err_max, "Plugin file is alread loaded");
+		return NULL;
+	}
+
+	pPlugin = CPlugin::CreatePlugin(path, error, err_max);
 
 	if (!pPlugin)
 	{
@@ -568,14 +696,24 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 	pPlugin->m_type = type;
 
-	InitAndAddPlugin(pPlugin);
+	AddCoreNativesToPlugin(pPlugin);
+
+	/* Finally, ask the plugin if it wants to be loaded */
+	if (!pPlugin->Call_AskPluginLoad(error, err_max))
+	{
+		delete pPlugin;
+		return NULL;
+	}
+
+	AddPlugin(pPlugin);
 
 	return pPlugin;
 }
 
-void CPluginManager::InitAndAddPlugin(CPlugin *pPlugin)
+void CPluginManager::AddPlugin(CPlugin *pPlugin)
 {
 	m_plugins.push_back(pPlugin);
+	sm_trie_insert(m_LoadLookup, pPlugin->m_filename, pPlugin);
 
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
@@ -585,7 +723,43 @@ void CPluginManager::InitAndAddPlugin(CPlugin *pPlugin)
 		pListener->OnPluginCreated(pPlugin);
 	}
 
-	/* :TODO: a lot more... */
+	/* If the second pass was already completed, we have to run the pass on this plugin */
+	if (m_AllPluginsLoaded && pPlugin->GetStatus() == Plugin_Loaded)
+	{
+		RunSecondPass(pPlugin);
+	}
+}
+
+void CPluginManager::RunSecondPass(CPlugin *pPlugin)
+{
+	/* Tell this plugin to finish initializing itself */
+	pPlugin->Call_OnPluginInit();
+
+	/* Finish by telling all listeners */
+	List<IPluginsListener *>::iterator iter;
+	IPluginsListener *pListener;
+	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnPluginLoaded(pPlugin);
+	}
+}
+
+void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
+{
+	List<sp_nativeinfo_t *>::iterator iter;
+
+	for (iter=m_natives.begin(); iter!=m_natives.end(); iter++)
+	{
+		sp_nativeinfo_t *natives = (*iter);
+		IPluginContext *ctx = pPlugin->GetBaseContext();
+		unsigned int i=0;
+		/* Attempt to bind every native! */
+		while (natives[i].func != NULL)
+		{
+			ctx->BindNative(&natives[i++]);
+		}
+	}
 }
 
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
@@ -601,6 +775,9 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pListener = (*iter);
 		pListener->OnPluginDestroyed(pPlugin);
 	}
+
+	m_plugins.remove(plugin);
+	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
 	
 	delete pPlugin;
 
@@ -877,7 +1054,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 	return true;
 }
 
-CPluginManager::~CPluginManager()
+bool CPluginManager::IsLateLoadTime()
 {
-	//:TODO: we need a good way to free what we're holding
+	return (m_AllPluginsLoaded || g_SourceMod.IsLateLoadInMap());
 }

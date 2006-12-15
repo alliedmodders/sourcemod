@@ -187,6 +187,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_trie.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sourcemm_api.cpp"
 				>
 			</File>
@@ -214,6 +218,10 @@
 			</File>
 			<File
 				RelativePath="..\sm_platform.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_trie.h"
 				>
 			</File>
 			<File

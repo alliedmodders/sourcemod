@@ -1,12 +1,14 @@
 #ifndef _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 #define _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 
+#include <time.h>
 #include <IPluginSys.h>
 #include <sh_list.h>
 #include <sh_stack.h>
 #include "sm_globals.h"
 #include "CFunction.h"
 #include "PluginInfoDatabase.h"
+#include "sm_trie.h"
 
 using namespace SourceHook;
 
@@ -29,6 +31,31 @@ using namespace SourceHook;
  * plugins that failed to load from the internal loading mechanism are always tracked.  This 
  * allows users to see which automatically loaded plugins failed, and makes the interface a bit
  * more flexible.
+ *
+ *  Once a plugin is compiled, it sets its own state to Plugin_Created.  This state is still invalid
+ * for execution.  SourceMod is a two pass system, and even though the second pass is not implemented
+ * yet, it is structured so Plugin_Created must be switched to Plugin_Running in the second pass.  When
+ * implemented, a Created plugin will be switched to Error in the second pass if it not loadable.
+ *
+ *  The two pass loading mechanism is described below.  Modules/natives are not implemented yet.
+ * PASS ONE: All loadable plugins are found and have the following steps performed:
+ *			 1.  Loading and compilation is attempted.
+ *			 2.  If successful, all natives from Core are added.
+ *			 3.  OnPluginLoad() is called.
+ *			 4.  If failed, any user natives are scrapped and the process halts here.
+ *			 5.  If successful, the plugin is ready for Pass 2.
+ * INTERMEDIATE:
+ *			 1.  All forced modules are loaded.
+ * PASS TWO: All loaded plugins are found and have these steps performed:
+ *			 1. Any modules referenced in the plugin that are not already loaded, are loaded.
+ *			 2. If any module fails to load and the plugin requires it, load fails and jump to step 6.
+ *			 3. If any natives are unresolved, check if they are found in the user-natives pool.
+ *			 4. If yes, load succeeds.  If not, natives are passed through a native acceptance filter.
+ *			 5. If the filter fails, the plugin is marked as failed.
+ *			 6. If the plugin has failed to load at this point, any dynamic natives it has added are scrapped.
+ *			    Furthermore, any plugin that referenced these natives must now have pass 2 re-ran.
+ * PASS THREE (not a real pass):
+ *			 7. Once all plugins are deemed to be loaded, OnPluginInit() is called
  */
 
 #define SM_CONTEXTVAR_MYSELF	0
@@ -88,6 +115,24 @@ public:
 	 * Sets an error state on the plugin
 	 */
 	void SetErrorState(PluginStatus status, const char *error_fmt, ...);
+
+	/**
+	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
+	 * NOTE: Valid pre-states are: Plugin_Created
+	 * If validated, plugin state is changed to Plugin_Loaded
+	 *
+	 * If the error buffer is NULL, the error message is cached locally.
+	 */
+	bool Call_AskPluginLoad(char *error, size_t maxlength);
+
+	/**
+	 * Calls the OnPluginInit function.
+	 * NOTE: Valid pre-states are: Plugin_Created
+	 * NOTE: Pre-state will be changed to Plugin_Running
+	 */
+	void Call_OnPluginInit();
+public:
+	time_t HasUpdatedFile();
 protected:
 	void UpdateInfo();
 private:
@@ -102,6 +147,7 @@ private:
 	CFunction **m_priv_funcs;
 	CFunction **m_pub_funcs;
 	char m_errormsg[256];
+	time_t m_LastAccess;
 };
 
 class CPluginManager : public IPluginManager
@@ -142,9 +188,14 @@ public: //IPluginManager
 	virtual void RemovePluginsListener(IPluginsListener *listener);
 public:
 	/**
-	 * Refreshes and loads plugins, usually used on mapchange
+	 * Loads all plugins not yet loaded
 	 */
-	void RefreshOrLoadPlugins(const char *config, const char *basedir);
+	void LoadAll_FirstPass(const char *config, const char *basedir);
+
+	/**
+	 * Runs the second loading pass for all plugins
+	 */
+	void LoadAll_SecondPass();
 
 	/**
 	 * Tests a plugin file mask against a local folder.
@@ -156,6 +207,16 @@ public:
 	 * Wildcards are allowed in the filename.
 	 */
 	bool TestAliasMatch(const char *alias, const char *localdir);
+
+	/**
+	 * Registers natives in core itself ONLY.
+	 */
+	void RegisterGlobalNatives(sp_nativeinfo_t *info[]);
+
+	/** 
+	 * Returns whether anything loaded will be a late load.
+	 */
+	bool IsLateLoadTime();
 private:
 	/**
 	 * Recursively loads all plugins in the given directory.
@@ -169,9 +230,19 @@ private:
 	void LoadAutoPlugin(const char *file);
 
 	/**
-	 * Adds and initializes a plugin object.  This is wrapped by LoadPlugin functions.
+	 * Adds a plugin object.  This is wrapped by LoadPlugin functions.
 	 */
-	void InitAndAddPlugin(CPlugin *pPlugin);
+	void AddPlugin(CPlugin *pPlugin);
+
+	/**
+	 * Runs the second loading pass on a plugin.
+	 */
+	void RunSecondPass(CPlugin *pPlugin);
+
+	/**
+	 * Adds any globally registered natives to a plugin
+	 */
+	void AddCoreNativesToPlugin(CPlugin *pPlugin);
 protected:
 	/**
 	 * Caching internal objects
@@ -182,11 +253,14 @@ protected:
 private:
 	List<IPluginsListener *> m_listeners;
 	List<IPlugin *> m_plugins;
+	List<sp_nativeinfo_t *> m_natives;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
 	CStack<CFunction *> m_funcpool;
 	CPluginInfoDatabase m_PluginInfo;
+	Trie *m_LoadLookup;
+	bool m_AllPluginsLoaded;
 };
 
-extern CPluginManager g_PluginMngr;
+extern CPluginManager g_PluginSys;
 
 #endif //_INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_

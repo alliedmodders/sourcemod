@@ -85,7 +85,7 @@ PluginSettings *CPluginInfoDatabase::GetSettingsIfMatch(unsigned int index, cons
 		return NULL;
 	}
 
-	if (!g_PluginMngr.TestAliasMatch(name, filename))
+	if (!g_PluginSys.TestAliasMatch(name, filename))
 	{
 		return NULL;
 	}

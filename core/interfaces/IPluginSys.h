@@ -25,15 +25,19 @@ namespace SourceMod
 		const char *url;
 	} sm_plugininfo_t;
 
+
 	/**
 	 * @brief Describes the usability status of a plugin.
 	 */
 	enum PluginStatus
 	{
 		Plugin_Running=0,		/* Plugin is running */
-		Plugin_Loaded,			/* Plugin is loaded but not initialized */
-		Plugin_Paused,			/* Plugin is paused */
+		/* All states below are unexecutable */
+		Plugin_Paused,			/* Plugin is loaded but paused */
+		/* All states below do not have all natives */
+		Plugin_Loaded,			/* Plugin has passed loading and can be finalized */
 		Plugin_Error,			/* Plugin has a blocking error */
+		Plugin_Created,			/* Plugin is created but not initialized */
 		Plugin_Uncompiled,		/* Plugin is not yet compiled by the JIT */
 		Plugin_BadLoad,			/* Plugin failed to load */
 	};

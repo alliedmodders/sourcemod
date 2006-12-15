@@ -13,6 +13,9 @@
 #if !defined snprintf
 #define snprintf _snprintf
 #endif
+#if !defined stat
+#define stat _stat
+#endif
 #define strcasecmp strcmpi
 #include <windows.h>
 #include <direct.h>

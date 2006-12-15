@@ -266,6 +266,56 @@ void sm_trie_destroy(Trie *trie)
 	delete trie;
 }
 
+bool sm_trie_delete(Trie *trie, const char *key)
+{
+	unsigned int lastidx = 1;		/* the last node index */
+	unsigned int curidx;			/* current node index */
+	const char *keyptr = key;		/* input stream at current token */
+	TrieNode *node = NULL;			/* current node being processed */
+	TrieNode *base = trie->base;
+
+	if (!*key)
+	{
+		return false;
+	}
+
+	/* Start traversing at the root node */
+	do
+	{
+		/* Find where the next character is, then advance */
+		curidx = base[lastidx].idx;
+		node = &base[curidx];
+		curidx += charval(*keyptr);
+		node = &base[curidx];
+		keyptr++;
+
+		/* Check if this slot is supposed to be empty or is a collision */
+		if ((curidx > trie->baseSize) || node->mode == Node_Unused || node->parent != lastidx)
+		{
+			return false;
+		} else if (node->mode == Node_Term) {
+			char *term = &trie->stringtab[node->idx];
+			if (strcmp(keyptr, term) == 0)
+			{
+				break;
+			}
+		}
+		lastidx = curidx;
+	} while (*keyptr != '\0');
+
+	assert(node != NULL);
+
+	if (!node->valset)
+	{
+		return false;
+	}
+
+	node->valset = false;
+	node->value = NULL;
+
+	return true;
+}
+
 bool sm_trie_retrieve(Trie *trie, const char *key, void **value)
 {
 	unsigned int lastidx = 1;		/* the last node index */

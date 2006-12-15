@@ -112,7 +112,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 
 int CFunction::PushString(const char *string)
 {
-	return _PushString(string, SP_STRING_COPY, 0, strlen(string)+1);
+	return _PushString(string, SM_PARAM_STRING_COPY, 0, strlen(string)+1);
 }
 
 int CFunction::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
@@ -141,12 +141,12 @@ int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_
 	m_params[m_curparam] = info->local_addr;
 	m_curparam++;	/* Prevent a leak */
 
-	if (!(sz_flags & SP_STRING_COPY))
+	if (!(sz_flags & SM_PARAM_STRING_COPY))
 	{
 		goto skip_localtostr;
 	}
 
-	if (sz_flags & SP_STRING_UTF8)
+	if (sz_flags & SM_PARAM_STRING_UTF8)
 	{
 		if ((err=base->StringToLocalUTF8(info->local_addr, len, string, NULL)) != SP_ERROR_NONE)
 		{

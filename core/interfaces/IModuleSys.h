@@ -8,16 +8,12 @@ namespace SourceMod
 {
 	class IModuleInterface;
 
-	class IModule : public IUnloadableParent
+	class IModule
 	{
-	public:
-		virtual UnloadableParentType GetParentType()
-		{
-			return ParentType_Module;
-		}
 	public:
 		virtual IModuleInterface *GetModuleInfo() =0;
 		virtual const char *GetFilename() =0;
+		virtual IdentityToken_t GetIdentityToken() =0;
 	};
 
 	class IModuleInterface
@@ -27,13 +23,19 @@ namespace SourceMod
 		 * @brief Called when the module is loaded.
 		 * 
 		 * @param me		Pointer back to module.
+		 * @param token		Identity token handle.
 		 * @param sys		Pointer to interface sharing system of SourceMod.
 		 * @param error		Error buffer to print back to, if any.
 		 * @param err_max	Maximum size of error buffer.
 		 * @param late		If this module was loaded "late" (i.e. manually).
 		 * @return			True if load should continue, false otherwise.
 		 */
-		virtual bool OnModuleLoad(IModule *me, IShareSys *sys, char *error, size_t err_max, bool late) =0;
+		virtual bool OnModuleLoad(IModule *me,
+								  IdentityToken_t token,
+								  IShareSys *sys, 
+								  char *error, 
+								  size_t err_max, 
+								  bool late) =0;
 
 		/**
 		 * @brief Called when the module is unloaded.
@@ -51,7 +53,6 @@ namespace SourceMod
 		 * @param pause		True if pausing, false if unpausing.
 		 */
 		virtual void OnPauseChange(bool pause) =0;
-
 	public:
 		virtual const char *GetModuleName() =0;
 		virtual const char *GetModuleVersion() =0;

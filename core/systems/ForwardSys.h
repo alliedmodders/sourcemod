@@ -6,6 +6,7 @@
 #include "sm_globals.h"
 #include <sh_list.h>
 #include <sh_stack.h>
+#include "sourcemod.h"
 
 using namespace SourceHook;
 
@@ -83,10 +84,13 @@ protected:
 	int m_errstate;
 };
 
-class CForwardManager : public IForwardManager
+class CForwardManager : 
+	public IForwardManager,
+	public IPluginsListener,
+	public SMGlobalClass
 {
 	friend class CForward;
-public:
+public: //IForwardManager
 	virtual IForward *CreateForward(const char *name, 
 		ExecType et, 
 		unsigned int num_params, 
@@ -99,6 +103,12 @@ public:
 		...);
 	virtual IForward *FindForward(const char *name, IChangeableForward **ifchng);
 	virtual void ReleaseForward(IForward *forward);
+public: //IPluginsListener
+	virtual void OnPluginLoaded(IPlugin *plugin);
+	virtual void OnPluginUnloaded(IPlugin *plugin);
+public: //SMGlobalClass
+	virtual void OnSourceModAllInitialized();
+	virtual void OnSourceModShutdown();
 protected:
 	CForward *ForwardMake();
 	void ForwardFree(CForward *fwd);
