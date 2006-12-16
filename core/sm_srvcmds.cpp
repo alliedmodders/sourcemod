@@ -14,6 +14,25 @@ bool ConVarAccessor::RegisterConCommandBase(ConCommandBase *pCommand)
 	return true;
 }
 
+inline const char *StatusToStr(PluginStatus st)
+{
+	switch (st)
+	{
+	case Plugin_Running:
+		return "Running";
+	case Plugin_Paused:
+		return "Paused";
+	case Plugin_Error:
+		return "Error";
+	case Plugin_Uncompiled:
+		return "Uncompiled";
+	case Plugin_BadLoad:
+		return "Bad Load";
+	default:
+		return "-";
+	}
+}
+
 CON_COMMAND(sm, "SourceMod Menu")
 {
 	int argnum = engine->Cmd_Argc();
@@ -43,11 +62,12 @@ CON_COMMAND(sm, "SourceMod Menu")
 					IPluginIterator *iter = g_PluginSys.GetPluginIterator();
 					for (; iter->MorePlugins(); iter->NextPlugin(), id++)
 					{
-						assert(iter->GetPlugin()->GetStatus() != Plugin_Created);
+						IPlugin *pl = iter->GetPlugin();
+						assert(pl->GetStatus() != Plugin_Created);
 						int len = 0;
-						const sm_plugininfo_t *info = iter->GetPlugin()->GetPublicInfo();
+						const sm_plugininfo_t *info = pl->GetPublicInfo();
 
-						len += snprintf(&buffer[len], sizeof(buffer)-len, "  %02d <%s>", id, "status"); //:TODO: status
+						len += snprintf(&buffer[len], sizeof(buffer)-len, "  %02d <%s>", id, StatusToStr(pl->GetStatus()));
 						len += snprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (info->name) ? info->name : iter->GetPlugin()->GetFilename());
 						if (info->version)
 						{
@@ -69,7 +89,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 						return;
 					}
 
-					char error[100];
+					char error[128];
 					const char *filename = engine->Cmd_Argv(3);
 					IPlugin *pl = g_PluginSys.LoadPlugin(filename, false, PluginType_MapUpdated, error, sizeof(error));
 
