@@ -268,6 +268,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\systems\HandleSys.h"
+					>
+				</File>
+				<File
 					RelativePath="..\systems\LibrarySys.h"
 					>
 				</File>
@@ -292,6 +296,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\systems\HandleSys.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\systems\LibrarySys.cpp"
 					>
 				</File>
@@ -309,6 +317,10 @@
 				>
 				<File
 					RelativePath="..\interfaces\IForwardSys.h"
+					>
+				</File>
+				<File
+					RelativePath="..\interfaces\IHandleSys.h"
 					>
 				</File>
 				<File

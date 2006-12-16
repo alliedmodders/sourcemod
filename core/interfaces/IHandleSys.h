@@ -15,6 +15,19 @@ namespace SourceMod
 	typedef unsigned int HandleType_t;
 	typedef unsigned int Handle_t;
 
+	/**
+	 * About type checking:
+	 * Types can be inherited - a Parent type ("Supertype") can have child types.
+	 * When accessing handles, type checking is done.  This table shows how this is resolved:
+	 *
+	 * HANDLE		CHECK		->  RESULT
+	 * ------		-----			------
+	 * Parent		Parent			Success
+	 * Parent		Child			Fail
+	 * Child		Parent			Success
+	 * Child		Child			Success
+	 */
+
 	enum HandleError
 	{
 		HandleError_None = 0,		/* No error */
@@ -27,12 +40,12 @@ namespace SourceMod
 
 	struct HandleAccess
 	{
-		HandleAccess() : canRead(true), canDelete(true), canInherit(true)
+		HandleAccess() : canRead(true), canDelete(true), canInherit(true), canCreate(true)
 		{
 		}
-		bool canCreate;		/* Instances can be created by other objects */
-		bool canRead;		/* Handle and type can be read by other objects */
-		bool canDelete;		/* Handle can be deleted by other objects */
+		bool canCreate;		/* Instances can be created by other objects (this makes it searchable) */
+		bool canRead;		/* Handles can be read by other objects */
+		bool canDelete;		/* Handles can be deleted by other objects */
 		bool canInherit;	/* Handle type can be inherited */
 	};
 
@@ -87,7 +100,8 @@ namespace SourceMod
 		 * @param name		Name of handle type (NULL or "" to be anonymous)
 		 * @param dispatch	Pointer to a valid IHandleTypeDispatch object.
 		 * @param parent	Parent handle to inherit from, 0 for none.
-		 * @param security	Pointer to a temporary HandleSecurity object, NULL to use defaults.
+		 * @param security	Pointer to a temporary HandleSecurity object, NULL to use default 
+		 *					or inherited permissions.
 		 * @return			A new HandleType_t unique ID.
 		 */
 		virtual HandleType_t CreateTypeEx(const char *name,
@@ -135,13 +149,13 @@ namespace SourceMod
 		 * 
 		 * @param type		Type to use on the handle.
 		 * @param object	Object to bind to the handle.
-		 * @param owner		Identity token for object using this handle.
+		 * @param source	Identity token for object using this handle (for example, a script).
 		 * @param ident		Identity token if any security rights are needed.
 		 * @return			A new Handle_t, or 0 on failure.
 		 */
-		virtual Handle_t CreateHandleEx(HandleType_t type, 
+		virtual Handle_t CreateHandle(HandleType_t type, 
 										void *object, 
-										IdentityToken_t owner, 
+										IdentityToken_t source, 
 										IdentityToken_t ident) =0;
 
 		/**
@@ -151,27 +165,33 @@ namespace SourceMod
 		 * @param type		Type to use on the handle.
 		 * @param object	Object to bind to the handle.
 		 * @param ctx		Plugin context that will own this handle.  NULL for none.
+		 * @param ident		Identity token if any security rights are needed.
 		 * @return			A new Handle_t.
 		 */
-		virtual Handle_t CreateScriptHandle(HandleType_t type, void *object, sp_context_t *ctx) =0;
+		virtual Handle_t CreateScriptHandle(HandleType_t type, 
+											void *object, 
+											sp_context_t *ctx,
+											IdentityToken_t ident) =0;
 
 		/**
 		 * @brief Destroys a handle.
 		 *
 		 * @param type		Handle_t identifier to destroy.
+		 * @param ident		Identity token, for destroying secure handles (0 for none).
 		 * @return			A HandleError error code.
 		 */
-		virtual HandleError DestroyHandle(Handle_t handle) =0;
+		virtual HandleError DestroyHandle(Handle_t handle, IdentityToken_t ident) =0;
 
 		/**
 		 * @brief Retrieves the contents of a handle.
 		 *
 		 * @param handle	Handle_t from which to retrieve contents.
 		 * @param type		Expected type to read as.
+		 * @param ident		Identity token to validate as.
 		 * @param object	Address to store object in.
 		 * @return			HandleError error code.
 		 */
-		virtual HandleError ReadHandle(Handle_t handle, HandleType_t type, void **object) =0;
+		virtual HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t ident, void **object) =0;
 	};
 };
 
