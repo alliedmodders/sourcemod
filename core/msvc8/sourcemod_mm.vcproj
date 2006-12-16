@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="sourcemod_mm"
 	ProjectGUID="{E39527CD-7CAB-4420-97CC-DA1B93B260BC}"
 	RootNamespace="sourcemod_mm"
@@ -61,7 +61,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tier0.lib"
+				AdditionalDependencies="tier0.lib tier1.lib vstdlib.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -136,7 +136,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tier0.lib"
+				AdditionalDependencies="tier0.lib tier1.lib vstdlib.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -187,6 +187,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_srvcmds.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_trie.cpp"
 				>
 			</File>
@@ -218,6 +222,10 @@
 			</File>
 			<File
 				RelativePath="..\sm_platform.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_srvcmds.h"
 				>
 			</File>
 			<File

@@ -603,6 +603,12 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 				/* Do an initial browsing to make sure they're not the same string */
 				if (strcmp(keyptr, term) == 0)
 				{
+					if (!node->valset)
+					{
+						node->valset = true;
+						node->value = value;
+						return true;
+					}
 					/* Same string.  We can't insert. */
 					return false;
 				}

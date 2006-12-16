@@ -40,12 +40,6 @@ CPlugin::~CPlugin()
 		m_ctx.co = NULL;
 	}
 
-	if (m_plugin)
-	{
-		g_pSourcePawn->FreeFromMemory(m_plugin);
-		m_plugin = NULL;
-	}
-
 	if (m_pub_funcs)
 	{
 		for (uint32_t i=0; i<m_plugin->info.publics_num; i++)
@@ -54,6 +48,12 @@ CPlugin::~CPlugin()
 		}
 		delete [] m_pub_funcs;
 		m_pub_funcs = NULL;
+	}
+
+	if (m_plugin)
+	{
+		g_pSourcePawn->FreeFromMemory(m_plugin);
+		m_plugin = NULL;
 	}
 
 	if (m_priv_funcs)
@@ -193,6 +193,7 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 	}
 
 	m_status = Plugin_Created;
+	m_ctx.co = NULL;
 
 	UpdateInfo();
 
@@ -344,6 +345,8 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		maxlength = sizeof(m_errormsg);
 	}
 
+	m_status = Plugin_Loaded;
+
 	int err;
 	cell_t result;
 	IPluginFunction *pFunction = GetFunctionByName("AskPluginLoad");
@@ -370,8 +373,6 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		m_status = Plugin_Error;
 		return false;
 	}
-
-	m_status = Plugin_Loaded;
 
 	return true;
 }
@@ -447,6 +448,7 @@ bool CPlugin::SetPauseState(bool paused)
 CPluginManager::CPluginIterator::CPluginIterator(List<CPlugin *> *_mylist)
 {
 	mylist = _mylist;
+	Reset();
 }
 
 IPlugin *CPluginManager::CPluginIterator::GetPlugin()
@@ -500,6 +502,7 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	/* First read in the database of plugin settings */
 	SMCParseError err;
 	unsigned int line, col;
+	m_AllPluginsLoaded = false;
 	if ((err=g_TextParse.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
 	{
 		/* :TODO: log the error, don't bail out though */
@@ -668,7 +671,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	CPlugin *pPlugin;
 	if (sm_trie_retrieve(m_LoadLookup, checkpath, (void **)&pPlugin))
 	{
-		snprintf(error, err_max, "Plugin file is alread loaded");
+		snprintf(error, err_max, "Plugin file is already loaded");
 		return NULL;
 	}
 
@@ -743,6 +746,7 @@ void CPluginManager::LoadAll_SecondPass()
 			RunSecondPass(pPlugin);
 		}
 	}
+	m_AllPluginsLoaded = true;
 }
 
 void CPluginManager::RunSecondPass(CPlugin *pPlugin)
@@ -828,6 +832,7 @@ IPluginIterator *CPluginManager::GetPluginIterator()
 	} else {
 		CPluginIterator *iter = m_iters.front();
 		m_iters.pop();
+		iter->Reset();
 		return iter;
 	}
 }
