@@ -3,6 +3,8 @@
 
 #include <sp_vm_types.h>
 
+#define	DEFAULT_IDENTITY		0
+
 namespace SourceMod
 {
 	typedef unsigned int		IdentityToken_t;
