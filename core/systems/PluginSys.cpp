@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include "PluginSys.h"
 #include "LibrarySys.h"
+#include "HandleSys.h"
 #include "sourcemm_api.h"
 #include "sourcemod.h"
 #include "CTextParsers.h"
 
 CPluginManager g_PluginSys;
+HandleType_t g_PluginType = 0;
 
 CPlugin::CPlugin(const char *file)
 {
@@ -20,6 +22,8 @@ CPlugin::CPlugin(const char *file)
 	m_pub_funcs = NULL;
 	m_errormsg[256] = '\0';
 	snprintf(m_filename, sizeof(m_filename), "%s", file);
+	/* :TODO: ShareSys token */
+	m_handle = g_HandleSys.CreateHandle(g_PluginType, this, DEFAULT_IDENTITY, 1);
 }
 
 CPlugin::~CPlugin()
@@ -439,6 +443,11 @@ bool CPlugin::SetPauseState(bool paused)
 	/* :TODO: execute some forwards or some crap */
 
 	return true;
+}
+
+IdentityToken_t CPlugin::GetIdentity()
+{
+	return 0;
 }
 
 /*******************
@@ -1077,4 +1086,26 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 bool CPluginManager::IsLateLoadTime()
 {
 	return (m_AllPluginsLoaded || g_SourceMod.IsLateLoadInMap());
+}
+
+void CPluginManager::OnSourceModAllInitialized()
+{
+	HandleSecurity sec;
+
+	sec.owner = 1;	/* :TODO: implement ShareSys */
+	sec.all.canCreate = false;
+	sec.all.canDelete = false;
+	sec.all.canInherit = false;
+	
+	g_PluginType = g_HandleSys.CreateTypeEx("IPlugin", this, 0, &sec);
+}
+
+void CPluginManager::OnSourceModShutdown()
+{
+	g_HandleSys.RemoveType(g_PluginType, 1);
+}
+
+void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)
+{
+	/* We don't care about the internal object, actually */
 }

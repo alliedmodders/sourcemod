@@ -3,12 +3,14 @@
 
 #include <time.h>
 #include <IPluginSys.h>
+#include <IHandleSys.h>
 #include <sh_list.h>
 #include <sh_stack.h>
 #include "sm_globals.h"
 #include "CFunction.h"
 #include "PluginInfoDatabase.h"
 #include "sm_trie.h"
+#include "sourcemod.h"
 
 using namespace SourceHook;
 
@@ -91,6 +93,7 @@ public:
 	virtual const sp_plugin_t *GetPluginStructure() const;
 	virtual IPluginFunction *GetFunctionByName(const char *public_name);
 	virtual IPluginFunction *GetFunctionById(funcid_t func_id);
+	virtual IdentityToken_t GetIdentity();
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -148,9 +151,13 @@ private:
 	CFunction **m_pub_funcs;
 	char m_errormsg[256];
 	time_t m_LastAccess;
+	Handle_t m_handle;
 };
 
-class CPluginManager : public IPluginManager
+class CPluginManager : 
+	public IPluginManager,
+	public SMGlobalClass,
+	public IHandleTypeDispatch
 {
 	friend class CPlugin;
 public:
@@ -186,6 +193,11 @@ public: //IPluginManager
 	virtual IPluginIterator *GetPluginIterator();
 	virtual void AddPluginsListener(IPluginsListener *listener);
 	virtual void RemovePluginsListener(IPluginsListener *listener);
+public: //SMGlobalClass
+	virtual void OnSourceModAllInitialized();
+	virtual void OnSourceModShutdown();
+public: //IHandleTypeDispatch
+	virtual void OnHandleDestroy(HandleType_t type, void *object);
 public:
 	/**
 	 * Loads all plugins not yet loaded
