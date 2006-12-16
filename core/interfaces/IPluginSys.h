@@ -4,8 +4,8 @@
 #include <IShareSys.h>
 #include <sp_vm_api.h>
 
-#define SMINTERFACE_PLUGINMANAGER_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINMANAGER_VERSION	1
+#define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	1
 
 #define SM_CONTEXTVAR_USER		3
 
@@ -141,6 +141,11 @@ namespace SourceMod
 		 * @return					A new IPluginFunction pointer, NULL if not found.
 		 */
 		virtual IPluginFunction *GetFunctionById(funcid_t func_id) =0;
+
+		/**
+		 * @brief Returns a plugin's identity token.
+		 */
+		virtual IdentityToken_t GetIdentity() =0;
 	};
 
 
@@ -221,12 +226,12 @@ namespace SourceMod
 	public:
 		virtual const char *GetInterfaceName()
 		{
-			return SMINTERFACE_PLUGINMANAGER_NAME;
+			return SMINTERFACE_PLUGINSYSTEM_NAME;
 		}
 
 		virtual unsigned int GetInterfaceVersion()
 		{
-			return SMINTERFACE_PLUGINMANAGER_VERSION;
+			return SMINTERFACE_PLUGINSYSTEM_VERSION;
 		}
 	public:
 		/**
