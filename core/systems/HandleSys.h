@@ -7,7 +7,7 @@
 #include "sourcemod.h"
 #include "sm_memtable.h"
 
-#define HANDLESYS_MAX_HANDLES		(1<<16)
+#define HANDLESYS_MAX_HANDLES		(1<<14)
 #define HANDLESYS_MAX_TYPES			(1<<9)
 #define HANDLESYS_MAX_SUBTYPES		0xF
 #define HANDLESYS_SUBTYPE_MASK		0xF
@@ -18,12 +18,14 @@
 
 struct QHandle
 {
-	HandleType_t type;
-	void *object;
-	unsigned int freeID;
-	IdentityToken_t source;
-	bool set;
-	unsigned int serial;
+	HandleType_t type;			/* Handle type */
+	void *object;				/* Unmaintained object pointer */
+	unsigned int freeID;		/* ID of a free handle in the free handle chain */
+	IdentityToken_t source;		/* Identity of object which owns this */
+	unsigned int serial;		/* Serial no. for sanity checking */
+	unsigned int refcount;		/* Reference count for safe destruction */
+	Handle_t clone;				/* If non-zero, this is our cloned parent */
+	bool set;					/* Whether or not this handle is set */
 };
 
 struct QHandleType
@@ -56,8 +58,29 @@ public: //IHandleSystem
 							IdentityToken_t source, 
 							IdentityToken_t ident);
 	Handle_t CreateScriptHandle(HandleType_t type, void *object, sp_context_t *ctx, IdentityToken_t ident);
-	HandleError DestroyHandle(Handle_t handle, IdentityToken_t ident);
+	HandleError FreeHandle(Handle_t handle, IdentityToken_t ident);
+	HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t source, IdentityToken_t ident);
 	HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t ident, void **object);
+private:
+	/**
+	 * Decodes a handle with sanity and security checking.
+	 */
+	HandleError GetHandle(Handle_t handle, 
+						  IdentityToken_t ident, 
+						  QHandle **pHandle, 
+						  unsigned int *index,
+						  HandleAccessRight access);
+
+	/**
+	 * Creates a basic handle and sets its reference count to 1.
+	 * Does not do any type or security checking.
+	 */
+	HandleError MakePrimHandle(HandleType_t type, QHandle **pHandle, unsigned int *index, HandleType_t *handle);
+
+	/**
+	 * Frees a primitive handle.  Does no object freeing, only reference count and bookkeepping.
+	 */
+	void ReleasePrimHandle(unsigned int index);
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;

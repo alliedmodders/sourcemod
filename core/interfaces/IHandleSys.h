@@ -36,29 +36,39 @@ namespace SourceMod
 		HandleError_Freed,			/* The handle has been freed */
 		HandleError_Index,			/* generic internal indexing error */
 		HandleError_Access,			/* No access permitted to free this handle */
+		HandleError_Limit,			/* The limited number of handles has been reached */
 	};
 
-	struct HandleAccess
+	enum HandleAccessRight
 	{
-		HandleAccess() : canRead(true), canDelete(true), canInherit(true), canCreate(true)
-		{
-		}
-		bool canCreate;		/* Instances can be created by other objects (this makes it searchable) */
-		bool canRead;		/* Handles can be read by other objects */
-		bool canDelete;		/* Handles can be deleted by other objects */
-		bool canInherit;	/* Handle type can be inherited */
+		HandleAccess_Create,		/* TYPE: Instances can be created by other objects (this makes it searchable) */
+		HandleAccess_Read,			/* HANDLES: Can be read by other objects */
+		HandleAccess_Delete,		/* HANDLES: Can be deleted by other objects */
+		HandleAccess_Inherit,		/* TYPE: Can be inherited by new types */
+		HandleAccess_Clone,			/* HANDLES: Can be cloned */
+		/* ------------- */
+		HandleAccess_TOTAL,			/* Total number of access rights */
 	};
 
 	struct HandleSecurity
 	{
-		IdentityToken_t owner;		/* Owner of the handle */
-		HandleAccess all;			/* Access permissions of everyone */
+		HandleSecurity()
+		{
+			owner = 0;
+			access[HandleAccess_Create] = true;
+			access[HandleAccess_Read] = true;
+			access[HandleAccess_Delete] = true;
+			access[HandleAccess_Inherit] = true;
+			access[HandleAccess_Clone] = true;
+		}
+		IdentityToken_t owner;				/* Owner of the handle */
+		bool access[HandleAccess_TOTAL];	/* World access rights */
 	};
 
 	class IHandleTypeDispatch
 	{
 	public:
-		virtual unsigned int GetInterfaceVersion()
+		virtual unsigned int GetDispatchVersion()
 		{
 			return SMINTERFACE_HANDLESYSTEM_VERSION;
 		}
@@ -174,13 +184,27 @@ namespace SourceMod
 											IdentityToken_t ident) =0;
 
 		/**
-		 * @brief Destroys a handle.
+		 * @brief Frees the memory associated with a handle and calls any destructors.
+		 * NOTE: This function will decrement the internal reference counter.  It will
+		 * only perform any further action if the counter hits 0.
 		 *
 		 * @param type		Handle_t identifier to destroy.
 		 * @param ident		Identity token, for destroying secure handles (0 for none).
 		 * @return			A HandleError error code.
 		 */
-		virtual HandleError DestroyHandle(Handle_t handle, IdentityToken_t ident) =0;
+		virtual HandleError FreeHandle(Handle_t handle, IdentityToken_t ident) =0;
+
+		/**
+		 * @brief Clones a handle by adding to its internal reference count.  Its data,
+		 * type, and security permissions remain the same.
+		 *
+		 * @param handle	Handle to duplicate.  Any non-free handle target is valid.
+		 * @param newhandle	If non-NULL, stores the duplicated handle in the pointer.
+		 * @param source	New source of cloned handle.
+		 * @param ident		Security token, if needed.
+		 * @return			A HandleError error code.
+		 */
+		virtual HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t source, IdentityToken_t ident) =0;
 
 		/**
 		 * @brief Retrieves the contents of a handle.

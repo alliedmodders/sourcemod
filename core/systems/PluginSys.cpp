@@ -54,12 +54,6 @@ CPlugin::~CPlugin()
 		m_pub_funcs = NULL;
 	}
 
-	if (m_plugin)
-	{
-		g_pSourcePawn->FreeFromMemory(m_plugin);
-		m_plugin = NULL;
-	}
-
 	if (m_priv_funcs)
 	{
 		for (unsigned int i=0; i<m_funcsnum; i++)
@@ -69,6 +63,14 @@ CPlugin::~CPlugin()
 		delete [] m_priv_funcs;
 		m_priv_funcs = NULL;
 	}
+
+	if (m_plugin)
+	{
+		g_pSourcePawn->FreeFromMemory(m_plugin);
+		m_plugin = NULL;
+	}
+
+	g_HandleSys.FreeHandle(m_handle, g_PluginType);
 }
 
 CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
@@ -328,7 +330,7 @@ void CPlugin::Call_OnPluginInit()
 	}
 
 	/* :TODO: push our own handle */
-	pFunction->PushCell(0);
+	pFunction->PushCell(m_handle);
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
 		/* :TODO: log into debugger instead */
@@ -360,7 +362,7 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		return true;
 	}
 
-	pFunction->PushCell(0);		//:TODO: handle to ourself
+	pFunction->PushCell(m_handle);
 	pFunction->PushCell(g_PluginSys.IsLateLoadTime() ? 1 : 0);
 	pFunction->PushStringEx(error, maxlength, 0, SM_PARAM_COPYBACK);
 	pFunction->PushCell(maxlength);
@@ -1093,9 +1095,10 @@ void CPluginManager::OnSourceModAllInitialized()
 	HandleSecurity sec;
 
 	sec.owner = 1;	/* :TODO: implement ShareSys */
-	sec.all.canCreate = false;
-	sec.all.canDelete = false;
-	sec.all.canInherit = false;
+	sec.access[HandleAccess_Create] = false;
+	sec.access[HandleAccess_Delete] = false;
+	sec.access[HandleAccess_Inherit] = false;
+	sec.access[HandleAccess_Clone] = false;
 	
 	g_PluginType = g_HandleSys.CreateTypeEx("IPlugin", this, 0, &sec);
 }
