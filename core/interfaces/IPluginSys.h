@@ -28,6 +28,8 @@ namespace SourceMod
 
 	/**
 	 * @brief Describes the usability status of a plugin.
+	 * Note: The status "Loaded" and "Created" are only reachable
+	 * during map load.
 	 */
 	enum PluginStatus
 	{

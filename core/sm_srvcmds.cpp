@@ -29,11 +29,11 @@ inline const char *StatusToStr(PluginStatus st)
 	case Plugin_BadLoad:
 		return "Bad Load";
 	default:
+		assert(false);
 		return "-";
 	}
 }
 
-#define IS_STR_FILLED(var) (var[0] != '\0')
 CON_COMMAND(sm, "SourceMod Menu")
 {
 	int argnum = engine->Cmd_Argc();
@@ -69,12 +69,12 @@ CON_COMMAND(sm, "SourceMod Menu")
 						const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 						len += snprintf(&buffer[len], sizeof(buffer)-len, "  %02d <%s>", id, StatusToStr(pl->GetStatus()));
-						len += snprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
-						if (IS_STR_FILLED(info->version))
+						len += snprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (info->name) ? info->name : iter->GetPlugin()->GetFilename());
+						if (info->version)
 						{
 							len += snprintf(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
 						}
-						if (IS_STR_FILLED(info->author))
+						if (info->author)
 						{
 							snprintf(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
 						}
@@ -102,6 +102,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 					}
 
 					return;
+
 				} else if (!strcmp("unload", cmd2)) {
 					if (argnum < 4)
 					{
@@ -109,6 +110,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 						return;
 					}
 
+					IPlugin *pl = NULL;
 					int id = 1;
 					int num = atoi(engine->Cmd_Argv(3));
 					if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
@@ -119,11 +121,11 @@ CON_COMMAND(sm, "SourceMod Menu")
 
 					IPluginIterator *iter = g_PluginSys.GetPluginIterator();
 					for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
-					IPlugin *pl = iter->GetPlugin();
+					pl = iter->GetPlugin();
 
 					char name[64];
 					const sm_plugininfo_t *info = pl->GetPublicInfo();
-					strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+					strcpy(name, (info->name) ? info->name : pl->GetFilename());
 
 					if (g_PluginSys.UnloadPlugin(pl))
 					{
@@ -134,6 +136,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 
 					iter->Release();
 					return;
+
 				} else if (!strcmp("info", cmd2)) {
 					if (argnum < 4)
 					{
@@ -141,6 +144,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 						return;
 					}
 
+					IPlugin *pl = NULL;
 					int id = 1;
 					int num = atoi(engine->Cmd_Argv(3));
 					if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
@@ -151,28 +155,27 @@ CON_COMMAND(sm, "SourceMod Menu")
 
 					IPluginIterator *iter = g_PluginSys.GetPluginIterator();
 					for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
-
-					IPlugin *pl = iter->GetPlugin();
+					pl = iter->GetPlugin();
 					const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 					META_CONPRINTF("  Filename: %s\n", pl->GetFilename());
-					if (IS_STR_FILLED(info->name))
+					if (info->name)
 					{
 						META_CONPRINTF("  Title: %s\n", info->name);
 					}
-					if (IS_STR_FILLED(info->author))
+					if (info->author)
 					{
 						META_CONPRINTF("  Author: %s\n", info->author);
 					}
-					if (IS_STR_FILLED(info->version))
+					if (info->version)
 					{
 						META_CONPRINTF("  Version: %s\n", info->version);
 					}
-					if (IS_STR_FILLED(info->description))
+					if (info->description)
 					{
 						META_CONPRINTF("  Description: %s\n", info->description);
 					}
-					if (IS_STR_FILLED(info->url))
+					if (info->url)
 					{
 						META_CONPRINTF("  URL: %s\n", info->url);
 					}
