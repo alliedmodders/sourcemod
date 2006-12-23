@@ -1776,11 +1776,12 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 		return 0;
 	}
 
-	return native->pfn(ctx, params);
+	return native->pfn(ctx->context, params);
 }
 
-cell_t InvalidNative(sp_context_t *ctx, const cell_t *params)
+static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
 {
+	sp_context_t *ctx = pCtx->GetContext();
 	ctx->err = SP_ERROR_INVALID_NATIVE;
 
 	return 0;
