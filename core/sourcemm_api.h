@@ -30,6 +30,7 @@ public:
 extern SourceMod_Core g_SourceMod_Core;
 extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
+extern IServerGameClients *serverClients;
 
 PLUGIN_GLOBALVARS();
 

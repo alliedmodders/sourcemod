@@ -1,19 +1,11 @@
 #include <math.h>
 #include <string.h>
 #include "sp_vm_api.h"
+#include "sp_vm_typeutil.h"
 
 using namespace SourcePawn;
 
 #define PI 3.14159265358979323846
-
-inline cell_t ftoc(float val)
-{
-	return *(cell_t *)&val;
-}
-inline float ctof(cell_t val)
-{
-	return *(float *)&val;
-}
 
 inline float AngleToRadians(float val, int mode)
 {

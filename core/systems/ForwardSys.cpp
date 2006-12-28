@@ -28,6 +28,9 @@ CForwardManager g_Forwards;
  * X Push vararg strings (copyback tested = :TODO:)
  */
 
+// :TODO: IMPORTANT!!! The result pointer arg in the execute function maybe invalid if the forward fails
+// so later evaluation of this result may cause problems on higher levels of abstraction. DOCUMENT OR FIX ALL FORWARDS!
+
 void CForwardManager::OnSourceModAllInitialized()
 {
 	g_PluginSys.AddPluginsListener(this);

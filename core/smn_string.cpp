@@ -1,7 +1,9 @@
 #include "sm_platform.h"
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 #include "sp_vm_api.h"
+#include "sp_vm_typeutil.h"
 
 using namespace SourcePawn;
 
@@ -41,6 +43,18 @@ inline const char *_strstr(const char *str, const char *substr)
 #elif PLATFORM_LINUX
 	return (const char *)strstr(str, substr);
 #endif
+}
+
+inline int StrConvInt(const char *str)
+{
+	char *dummy;
+	return strtol(str, &dummy, 10);
+}
+
+inline float StrConvFloat(const char *str)
+{
+	char *dummy;
+	return (float)strtod(str, &dummy);
 }
 
 /*********************************************
@@ -108,4 +122,36 @@ static cell_t sm_strcopy(IPluginContext *pCtx, const cell_t *params)
 	*dest = '\0';
 
 	return (dest - start);
+}
+
+static cell_t sm_strtonum(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str;
+	pCtx->LocalToString(params[1], &str);
+
+	return StrConvInt(str);
+}
+
+static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str;
+	pCtx->LocalToString(params[2], &str);
+
+	return snprintf(str, params[3], "%d", params[1]);
+}
+
+static cell_t sm_strtofloat(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str;
+	pCtx->LocalToString(params[1], &str);
+
+	return ftoc(StrConvFloat(str));
+}
+
+static cell_t sm_floattostr(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str;
+	pCtx->LocalToString(params[2], &str);
+
+	return snprintf(str, params[3], "%f", ctof(params[1]));
 }

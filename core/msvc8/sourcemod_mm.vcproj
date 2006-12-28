@@ -179,6 +179,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\CPlayerManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CTextParsers.cpp"
 				>
 			</File>
@@ -216,6 +220,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\CPlayerManager.h"
+				>
+			</File>
 			<File
 				RelativePath="..\CTextParsers.h"
 				>
@@ -497,6 +505,10 @@
 				</File>
 				<File
 					RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_typeutil.h"
 					>
 				</File>
 			</Filter>

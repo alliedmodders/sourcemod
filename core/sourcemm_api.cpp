@@ -6,6 +6,7 @@
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
 IServerGameDLL *gamedll = NULL;
+IServerGameClients *serverClients = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -15,11 +16,12 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+	GET_V_IFACE_CURRENT(serverFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }
 
-bool SourceMod_Core::Unload(char	*error, size_t maxlen)
+bool SourceMod_Core::Unload(char *error, size_t maxlen)
 {
 	return true;
 }
