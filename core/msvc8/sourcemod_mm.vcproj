@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_stringutil.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_trie.cpp"
 				>
 			</File>
@@ -242,6 +246,10 @@
 			</File>
 			<File
 				RelativePath="..\sm_srvcmds.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_stringutil.h"
 				>
 			</File>
 			<File
