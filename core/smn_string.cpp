@@ -1,40 +1,10 @@
 #include "sm_platform.h"
-#include <ctype.h>
 #include <string.h>
-#include <stdlib.h>
 #include "sp_vm_api.h"
 #include "sp_vm_typeutil.h"
+#include "sm_stringutil.h"
 
 using namespace SourcePawn;
-
-const char *stristr(const char *str, const char *substr)
-{
-	if (!*substr)
-	{
-		return ((char *)str);
-	}
-
-	char *needle = (char *)substr;
-	char *prevloc = (char *)str;
-	char *haystack = (char *)str;
-
-	while (*haystack)
-	{
-		if (tolower(*haystack) == tolower(*needle))
-		{
-			haystack++;
-			if (!*++needle)
-			{
-				return prevloc;
-			}
-		} else {
-			haystack = ++prevloc;
-			needle = (char *)substr;
-		}
-	}
-
-	return NULL;
-}
 
 inline const char *_strstr(const char *str, const char *substr)
 {
@@ -45,17 +15,6 @@ inline const char *_strstr(const char *str, const char *substr)
 #endif
 }
 
-inline int StrConvInt(const char *str)
-{
-	char *dummy;
-	return strtol(str, &dummy, 10);
-}
-
-inline float StrConvFloat(const char *str)
-{
-	char *dummy;
-	return (float)strtod(str, &dummy);
-}
 
 /*********************************************
 *                                            *
@@ -107,21 +66,12 @@ static cell_t sm_equal(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t sm_strcopy(IPluginContext *pCtx, const cell_t *params)
 {
-	char *dest, *src, *start;
-	int len;
+	char *dest, *src;
 
 	pCtx->LocalToString(params[1], &dest);
 	pCtx->LocalToString(params[3], &src);
-	len = params[2];
 
-	start = dest;
-	while ((*src) && (len--))
-	{
-		*dest++ = *src++;
-	}
-	*dest = '\0';
-
-	return (dest - start);
+	return strncopy(dest, src, params[2]);
 }
 
 static cell_t sm_strtonum(IPluginContext *pCtx, const cell_t *params)

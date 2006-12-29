@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <ctype.h>
 #include "sm_stringutil.h"
 
 #define ALT				0x00000001		/* alternate form */
@@ -262,7 +264,7 @@ size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext
 	int n;
 	char sign;
 	const char *fmt;
-	size_t llen = maxlen;
+	size_t llen = maxlen - 1;
 
 	buf_p = buffer;
 	arg = *param;
@@ -337,7 +339,7 @@ reswitch:
 		case 'c':
 			{
 				CHECK_ARGS(0);
-				if (llen <= 1)
+				if (!llen)
 				{
 					goto done;
 				}
@@ -387,7 +389,7 @@ reswitch:
 			}
 		case '%':
 			{
-				if (llen <= 1)
+				if (!llen)
 				{
 					goto done;
 				}
@@ -397,7 +399,7 @@ reswitch:
 			}
 		case '\0':
 			{
-				if (llen <= 1)
+				if (!llen)
 				{
 					goto done;
 				}
@@ -407,7 +409,7 @@ reswitch:
 			}
 		default:
 			{
-				if (llen <= 1)
+				if (!llen)
 				{
 					goto done;
 				}
@@ -422,4 +424,62 @@ done:
 	*buf_p = '\0';
 	*param = arg;
 	return (maxlen - llen);
+}
+
+const char *stristr(const char *str, const char *substr)
+{
+	if (!*substr)
+	{
+		return ((char *)str);
+	}
+
+	char *needle = (char *)substr;
+	char *prevloc = (char *)str;
+	char *haystack = (char *)str;
+
+	while (*haystack)
+	{
+		if (tolower(*haystack) == tolower(*needle))
+		{
+			haystack++;
+			if (!*++needle)
+			{
+				return prevloc;
+			}
+		} else {
+			haystack = ++prevloc;
+			needle = (char *)substr;
+		}
+	}
+
+	return NULL;
+}
+
+inline int StrConvInt(const char *str)
+{
+	char *dummy;
+	return strtol(str, &dummy, 10);
+}
+
+inline float StrConvFloat(const char *str)
+{
+	char *dummy;
+	return (float)strtod(str, &dummy);
+}
+
+int strncopy(char *dest, const char *src, size_t count)
+{
+	if (!count)
+	{
+		return 0;
+	}
+
+	char *start = dest;
+	while ((*src) && (--count))
+	{
+		*dest++ = *src++;
+	}
+	*dest = '\0';
+
+	return (dest - start);
 }
