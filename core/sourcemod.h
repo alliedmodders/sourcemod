@@ -52,40 +52,6 @@ private:
 	bool m_IsLateLoadInMap;
 };
 
-/** 
- * @brief Any class deriving from this will be automatically initiated/shutdown by SourceMod
- */
-class SMGlobalClass
-{
-	friend class SourceModBase;
-public:
-	SMGlobalClass();
-public:
-	/**
-	 * @brief Called when SourceMod is initially loading
-	 */
-	virtual void OnSourceModStartup(bool late)
-	{
-	}
-
-	/**
-	 * @brief Called after all global classes have initialized
-	 */
-	virtual void OnSourceModAllInitialized()
-	{
-	}
-
-	/**
-	 * @brief Called when SourceMod is shutting down
-	 */
-	virtual void OnSourceModShutdown()
-	{
-	}
-private:
-	SMGlobalClass *m_pGlobalClassNext;
-	static SMGlobalClass *head;
-};
-
 extern SourceModBase g_SourceMod;
 
 #endif //_INCLUDE_SOURCEMOD_GLOBALHEADER_H_

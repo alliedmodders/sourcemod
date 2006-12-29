@@ -7,6 +7,8 @@
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
 #define SMINTERFACE_HANDLESYSTEM_VERSION		1
 
+#define DEFAULT_IDENTITY			NULL
+
 namespace SourceMod
 {
 	/**
@@ -37,6 +39,7 @@ namespace SourceMod
 		HandleError_Index,			/* generic internal indexing error */
 		HandleError_Access,			/* No access permitted to free this handle */
 		HandleError_Limit,			/* The limited number of handles has been reached */
+		HandleError_Identity,		/* The identity token was not usable */
 	};
 
 	enum HandleAccessRight
@@ -54,14 +57,14 @@ namespace SourceMod
 	{
 		HandleSecurity()
 		{
-			owner = 0;
+			owner = NULL;
 			access[HandleAccess_Create] = true;
 			access[HandleAccess_Read] = true;
 			access[HandleAccess_Delete] = true;
 			access[HandleAccess_Inherit] = true;
 			access[HandleAccess_Clone] = true;
 		}
-		IdentityToken_t owner;				/* Owner of the handle */
+		IdentityToken_t *owner;				/* Owner of the handle */
 		bool access[HandleAccess_TOTAL];	/* World access rights */
 	};
 
@@ -112,12 +115,14 @@ namespace SourceMod
 		 * @param parent	Parent handle to inherit from, 0 for none.
 		 * @param security	Pointer to a temporary HandleSecurity object, NULL to use default 
 		 *					or inherited permissions.
+		 * @param ident		Security token for any permissions.
 		 * @return			A new HandleType_t unique ID.
 		 */
 		virtual HandleType_t CreateTypeEx(const char *name,
 										  IHandleTypeDispatch *dispatch,
 										  HandleType_t parent,
-										  const HandleSecurity *security) =0;
+										  const HandleSecurity *security,
+										  IdentityToken_t *ident) =0;
 
 
 		/**
@@ -143,7 +148,7 @@ namespace SourceMod
 		 * @param type		Type chain to remove.
 		 * @return			True on success, false on failure.
 		 */
-		virtual bool RemoveType(HandleType_t type, IdentityToken_t ident) =0;
+		virtual bool RemoveType(HandleType_t type, IdentityToken_t *ident) =0;
 
 		/**
 		 * @brief Finds a handle type by name.
@@ -159,14 +164,14 @@ namespace SourceMod
 		 * 
 		 * @param type		Type to use on the handle.
 		 * @param object	Object to bind to the handle.
-		 * @param source	Identity token for object using this handle (for example, a script).
+		 * @param owner		Owner for the handle.
 		 * @param ident		Identity token if any security rights are needed.
 		 * @return			A new Handle_t, or 0 on failure.
 		 */
 		virtual Handle_t CreateHandle(HandleType_t type, 
 										void *object, 
-										IdentityToken_t source, 
-										IdentityToken_t ident) =0;
+										IdentityToken_t *owner, 
+										IdentityToken_t *ident) =0;
 
 		/**
 		 * @brief Creates a new handle.
@@ -181,7 +186,7 @@ namespace SourceMod
 		virtual Handle_t CreateScriptHandle(HandleType_t type, 
 											void *object, 
 											sp_context_t *ctx,
-											IdentityToken_t ident) =0;
+											IdentityToken_t *ident) =0;
 
 		/**
 		 * @brief Frees the memory associated with a handle and calls any destructors.
@@ -192,7 +197,7 @@ namespace SourceMod
 		 * @param ident		Identity token, for destroying secure handles (0 for none).
 		 * @return			A HandleError error code.
 		 */
-		virtual HandleError FreeHandle(Handle_t handle, IdentityToken_t ident) =0;
+		virtual HandleError FreeHandle(Handle_t handle, IdentityToken_t *ident) =0;
 
 		/**
 		 * @brief Clones a handle by adding to its internal reference count.  Its data,
@@ -200,11 +205,11 @@ namespace SourceMod
 		 *
 		 * @param handle	Handle to duplicate.  Any non-free handle target is valid.
 		 * @param newhandle	If non-NULL, stores the duplicated handle in the pointer.
-		 * @param source	New source of cloned handle.
+		 * @param owner		New owner of cloned handle.
 		 * @param ident		Security token, if needed.
 		 * @return			A HandleError error code.
 		 */
-		virtual HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t source, IdentityToken_t ident) =0;
+		virtual HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t *owner, IdentityToken_t *ident) =0;
 
 		/**
 		 * @brief Retrieves the contents of a handle.
@@ -215,7 +220,7 @@ namespace SourceMod
 		 * @param object	Address to store object in.
 		 * @return			HandleError error code.
 		 */
-		virtual HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t ident, void **object) =0;
+		virtual HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t *ident, void **object) =0;
 	};
 };
 

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "PluginSys.h"
+#include "ShareSys.h"
 #include "LibrarySys.h"
 #include "HandleSys.h"
 #include "sourcemm_api.h"
@@ -8,6 +9,7 @@
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
+IdentityType_t g_PluginIdent = 0;
 
 CPlugin::CPlugin(const char *file)
 {
@@ -22,8 +24,8 @@ CPlugin::CPlugin(const char *file)
 	m_pub_funcs = NULL;
 	m_errormsg[256] = '\0';
 	snprintf(m_filename, sizeof(m_filename), "%s", file);
-	/* :TODO: ShareSys token */
-	m_handle = g_HandleSys.CreateHandle(g_PluginType, this, DEFAULT_IDENTITY, 1);
+	m_handle = 0;
+	m_ident = NULL;
 }
 
 CPlugin::~CPlugin()
@@ -70,7 +72,20 @@ CPlugin::~CPlugin()
 		m_plugin = NULL;
 	}
 
-	g_HandleSys.FreeHandle(m_handle, g_PluginType);
+	if (m_handle)
+	{
+		g_HandleSys.FreeHandle(m_handle, g_PluginSys.GetIdentity());
+		g_ShareSys.DestroyIdentity(m_ident);
+	}
+}
+
+void CPlugin::InitIdentity()
+{
+	if (!m_handle)
+	{
+		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent);
+		m_handle = g_HandleSys.CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity());
+	}
 }
 
 CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
@@ -447,9 +462,9 @@ bool CPlugin::SetPauseState(bool paused)
 	return true;
 }
 
-IdentityToken_t CPlugin::GetIdentity()
+IdentityToken_t *CPlugin::GetIdentity()
 {
-	return 0;
+	return m_ident;
 }
 
 /*******************
@@ -499,6 +514,7 @@ CPluginManager::CPluginManager()
 {
 	m_LoadLookup = sm_trie_create();
 	m_AllPluginsLoaded = false;
+	m_MyIdent = NULL;
 }
 
 CPluginManager::~CPluginManager()
@@ -661,6 +677,7 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 	if (pPlugin->GetStatus() == Plugin_Created)
 	{
 		AddCoreNativesToPlugin(pPlugin);
+		pPlugin->InitIdentity();
 		pPlugin->Call_AskPluginLoad(NULL, 0);
 	}
 
@@ -711,6 +728,8 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	pPlugin->m_type = type;
 
 	AddCoreNativesToPlugin(pPlugin);
+
+	pPlugin->InitIdentity();
 
 	/* Finally, ask the plugin if it wants to be loaded */
 	if (!pPlugin->Call_AskPluginLoad(error, err_max))
@@ -1092,20 +1111,25 @@ bool CPluginManager::IsLateLoadTime()
 
 void CPluginManager::OnSourceModAllInitialized()
 {
+	m_MyIdent = g_ShareSys.CreateCoreIdentity();
+
 	HandleSecurity sec;
 
-	sec.owner = 1;	/* :TODO: implement ShareSys */
+	sec.owner = m_MyIdent;	/* :TODO: implement ShareSys */
 	sec.access[HandleAccess_Create] = false;
 	sec.access[HandleAccess_Delete] = false;
 	sec.access[HandleAccess_Inherit] = false;
 	sec.access[HandleAccess_Clone] = false;
 	
-	g_PluginType = g_HandleSys.CreateTypeEx("IPlugin", this, 0, &sec);
+	g_PluginType = g_HandleSys.CreateTypeEx("IPlugin", this, 0, &sec, NULL);
+	g_PluginIdent = g_ShareSys.CreateIdentType("PLUGIN");
 }
 
 void CPluginManager::OnSourceModShutdown()
 {
-	g_HandleSys.RemoveType(g_PluginType, 1);
+	g_HandleSys.RemoveType(g_PluginType, m_MyIdent);
+	g_ShareSys.DestroyIdentType(g_PluginIdent);
+	g_ShareSys.DestroyIdentity(m_MyIdent);
 }
 
 void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)

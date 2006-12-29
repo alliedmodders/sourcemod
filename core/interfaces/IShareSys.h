@@ -3,11 +3,13 @@
 
 #include <sp_vm_types.h>
 
-#define	DEFAULT_IDENTITY		0
+#define	NO_IDENTITY		0
 
 namespace SourceMod
 {
-	typedef unsigned int		IdentityToken_t;
+	struct IdentityToken_t;
+	typedef unsigned int		HandleType_t;
+	typedef HandleType_t		IdentityType_t;
 	/**
 	 * @brief Defines the base functionality required by a shared interface.
 	 */
@@ -49,12 +51,13 @@ namespace SourceMod
 	{
 	public:
 		/**
-		 * @brief Adds an interface to the global interface system
+		 * @brief Adds an interface to the global interface system.
 		 *
 		 * @param iface			Interface pointer (must be unique).
 		 * @param token			Parent token of the module/interface.
+		 * @return				True on success, false otherwise.
 		 */
-		virtual bool AddInterface(SMInterface *iface, IdentityToken_t token) =0;
+		virtual bool AddInterface(SMInterface *iface, IdentityToken_t *token) =0;
 
 		/**
 		 * @brief Requests an interface from the global interface system.
@@ -67,8 +70,8 @@ namespace SourceMod
 		 */
 		virtual bool RequestInterface(const char *iface_name, 
 										unsigned int iface_vers,
-										IdentityToken_t token,
-										void **pIface) =0;
+										IdentityToken_t *token,
+										SMInterface **pIface) =0;
 
 		/**
 		 * @brief Adds a list of natives to the global native pool.
@@ -76,7 +79,54 @@ namespace SourceMod
 		 * @param token			Identity token of parent object.
 		 * @param natives		Array of natives to add, NULL terminated.
 		 */
-		virtual void AddNatives(IdentityToken_t token, const sp_nativeinfo_t *natives[]) =0;
+		virtual void AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *natives[]) =0;
+
+		/**
+		 * @brief Creates a new identity type.
+		 * NOTE: Module authors should never need to use this.  Due to the current implementation,
+		 * there is a hardcoded limit of 15 types.  Core uses up a few, so think carefully!
+		 *
+		 * @param name			String containing type name.  Must not be empty or NULL.
+		 * @return				A new HandleType_t identifier, or 0 on failure.
+		 */
+		virtual IdentityType_t CreateIdentType(const char *name) =0;
+
+		/**
+		 * @brief Finds an identity type by name.
+		 * DEFAULT IDENTITY TYPES:
+		 *  "PLUGIN"	- An IPlugin object.
+		 *  "MODULE"	- An IModule object.
+		 *  "CORE"		- An SMGlobalClass or other singleton.
+		 * 
+		 * @param name			String containing type name to search for.
+		 * @return				A HandleType_t identifier if found, 0 otherwise.
+		 */
+		virtual IdentityType_t FindIdentType(const char *name) =0;
+
+		/**
+		 * @brief Creates a new identity token.  This token is guaranteed to be unique
+		 * amongst all other open identities.
+		 *
+		 * @param type			Identity type.
+		 * @return				A new IdentityToken_t identifier.
+		 */
+		virtual IdentityToken_t *CreateIdentity(IdentityType_t type) =0;
+
+		/** 
+		 * @brief Destroys an identity type.  Note that this will delete any identities
+		 * that are under this type.  
+		 *
+		 * @param type			Identity type.
+		 */
+		virtual void DestroyIdentType(IdentityType_t type) =0;
+
+		/**
+		 * @brief Destroys an identity token.  Any handles being owned by this token, or
+		 * any handles being 
+		 *
+		 * @param identity		Identity to remove.
+		 */
+		virtual void DestroyIdentity(IdentityToken_t *identity) =0;
 	};
 };
 

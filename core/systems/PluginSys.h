@@ -93,7 +93,7 @@ public:
 	virtual const sp_plugin_t *GetPluginStructure() const;
 	virtual IPluginFunction *GetFunctionByName(const char *public_name);
 	virtual IPluginFunction *GetFunctionById(funcid_t func_id);
-	virtual IdentityToken_t GetIdentity();
+	virtual IdentityToken_t *GetIdentity();
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -114,10 +114,16 @@ public:
 	 */
 	bool FinishMyCompile(char *error, size_t maxlength);
 	void CancelMyCompile();
+
 	/**
 	 * Sets an error state on the plugin
 	 */
 	void SetErrorState(PluginStatus status, const char *error_fmt, ...);
+
+	/**
+	 * Initializes the plugin's identity information
+	 */
+	void InitIdentity();
 
 	/**
 	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
@@ -151,6 +157,7 @@ private:
 	CFunction **m_pub_funcs;
 	char m_errormsg[256];
 	time_t m_LastAccess;
+	IdentityToken_t *m_ident;
 	Handle_t m_handle;
 };
 
@@ -262,6 +269,10 @@ protected:
 	void ReleaseIterator(CPluginIterator *iter);
 	CFunction *GetFunctionFromPool(funcid_t f, CPlugin *plugin);
 	void ReleaseFunctionToPool(CFunction *func);
+	inline IdentityToken_t *GetIdentity()
+	{
+		return m_MyIdent;
+	}
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
@@ -271,6 +282,7 @@ private:
 	CPluginInfoDatabase m_PluginInfo;
 	Trie *m_LoadLookup;
 	bool m_AllPluginsLoaded;
+	IdentityToken_t *m_MyIdent;
 };
 
 extern CPluginManager g_PluginSys;

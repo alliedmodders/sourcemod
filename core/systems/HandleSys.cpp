@@ -1,8 +1,21 @@
 #include "HandleSys.h"
+#include "ShareSys.h"
 #include "PluginSys.h"
 #include <assert.h>
 
 HandleSystem g_HandleSys;
+
+QHandle *ignore_handle;
+
+inline HandleType_t TypeParent(HandleType_t type)
+{
+	return (type & ~HANDLESYS_SUBTYPE_MASK);
+}
+
+inline HandleError IdentityHandle(IdentityToken_t *token, unsigned int *index)
+{
+	return g_HandleSys.GetHandle(token->ident, g_ShareSys.GetIdentRoot(), &ignore_handle, index, HandleAccess_Read);
+}
 
 HandleSystem::HandleSystem()
 {
@@ -28,18 +41,19 @@ HandleSystem::~HandleSystem()
 
 HandleType_t HandleSystem::CreateType(const char *name, IHandleTypeDispatch *dispatch)
 {
-	return CreateTypeEx(name, dispatch, 0, NULL);
+	return CreateTypeEx(name, dispatch, 0, NULL, NULL);
 }
 
 HandleType_t HandleSystem::CreateChildType(const char *name, HandleType_t parent, IHandleTypeDispatch *dispatch)
 {
-	return CreateTypeEx(name, dispatch, parent, NULL);
+	return CreateTypeEx(name, dispatch, parent, NULL, NULL);
 }
 
 HandleType_t HandleSystem::CreateTypeEx(const char *name, 
 										IHandleTypeDispatch *dispatch, 
 										HandleType_t parent, 
-										const HandleSecurity *security)
+										const HandleSecurity *security,
+										IdentityToken_t *ident)
 {
 	if (!dispatch)
 	{
@@ -56,8 +70,9 @@ HandleType_t HandleSystem::CreateTypeEx(const char *name,
 			return 0;
 		}
 		if (parent >= HANDLESYS_TYPEARRAY_SIZE
-			|| m_Types[parent].dispatch != NULL
-			|| m_Types[parent].sec.access[HandleAccess_Inherit] == false)
+			|| m_Types[parent].dispatch == NULL
+			|| (m_Types[parent].sec.access[HandleAccess_Inherit] == false
+				&& m_Types[parent].sec.owner != ident))
 		{
 			return 0;
 		}
@@ -163,8 +178,16 @@ bool HandleSystem::FindHandleType(const char *name, HandleType_t *type)
 HandleError HandleSystem::MakePrimHandle(HandleType_t type, 
 						   QHandle **in_pHandle, 
 						   unsigned int *in_index, 
-						   Handle_t *in_handle)
+						   Handle_t *in_handle,
+						   IdentityToken_t *owner)
 {
+	unsigned int owner_index = 0;
+
+	if (owner && (IdentityHandle(owner, &owner_index) != HandleError_None))
+	{
+		return HandleError_Identity;
+	}
+
 	unsigned int handle;
 	if (m_FreeHandles == 0)
 	{
@@ -187,10 +210,12 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	}
 
 	/* Set essential information */
-	pHandle->set = true;
+	pHandle->set = HandleSet_Used;;
 	pHandle->refcount = 1;
 	pHandle->type = type;
 	pHandle->serial = m_HSerial;
+	pHandle->owner = owner;
+	pHandle->ch_next = 0;
 
 	/* Create the hash value */
 	Handle_t hash = pHandle->serial;
@@ -205,10 +230,44 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	*in_index = handle;
 	*in_handle = hash;
 
+	/* Decode the identity token */
+	if (owner)
+	{
+		QHandle *pIdentity = &m_Handles[owner_index];
+		if (pIdentity->ch_prev == 0)
+		{
+			pIdentity->ch_prev = handle;
+			pIdentity->ch_next = handle;
+			pHandle->ch_prev = 0;
+		} else {
+			/* Link previous node to us (forward) */
+			m_Handles[pIdentity->ch_next].ch_next = handle;
+			/* Link us to previous node (backwards) */
+			pHandle->ch_prev = pIdentity->ch_next;
+			/* Set new tail */
+			pIdentity->ch_next = handle;
+		}
+		pIdentity->refcount++;
+	} else {
+		pHandle->ch_prev = 0;
+	}
+
 	return HandleError_None;
 }
 
-Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityToken_t source, IdentityToken_t ident)
+void HandleSystem::SetTypeSecurityOwner(HandleType_t type, IdentityToken_t *pToken)
+{
+	if (!type
+		|| type >= HANDLESYS_TYPEARRAY_SIZE
+		|| m_Types[type].dispatch == NULL)
+	{
+		return;
+	}
+
+	m_Types[type].sec.owner = pToken;
+}
+
+Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityToken_t *source, IdentityToken_t *ident)
 {
 	if (!type 
 		|| type >= HANDLESYS_TYPEARRAY_SIZE
@@ -230,12 +289,11 @@ Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityTok
 	QHandle *pHandle;
 	HandleError err;
 
-	if ((err=MakePrimHandle(type, &pHandle, &index, &handle)) != HandleError_None)
+	if ((err=MakePrimHandle(type, &pHandle, &index, &handle, source)) != HandleError_None)
 	{
 		return 0;
 	}
 
-	pHandle->source = source;
 	pHandle->object = object;
 	pHandle->clone = 0;
 
@@ -245,15 +303,35 @@ Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityTok
 Handle_t HandleSystem::CreateScriptHandle(HandleType_t type, 
 										  void *object, 
 										  sp_context_t *ctx, 
-										  IdentityToken_t ident)
+										  IdentityToken_t *ident)
 {
 	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(ctx);
 
 	return CreateHandle(type, object, pPlugin->GetIdentity(), ident);
 }
 
+bool HandleSystem::TypeCheck(HandleType_t intype, HandleType_t outtype)
+{
+	/* Check the type inheritance */
+	if (intype & HANDLESYS_SUBTYPE_MASK)
+	{
+		if (intype != outtype
+			&& (TypeParent(intype) != TypeParent(outtype)))
+		{
+			return false;
+		}
+	} else {
+		if (intype != outtype)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 HandleError HandleSystem::GetHandle(Handle_t handle,
-									IdentityToken_t ident, 
+									IdentityToken_t *ident, 
 									QHandle **in_pHandle, 
 									unsigned int *in_index,
 									HandleAccessRight access)
@@ -277,6 +355,11 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 	if (!pHandle->set)
 	{
 		return HandleError_Freed;
+	} else if (pHandle->set == HandleSet_Identity
+			   && ident != g_ShareSys.GetIdentRoot())
+	{
+		/* Only IdentityHandle() can read this! */
+		return HandleError_Identity;
 	}
 	if (pHandle->serial != serial)
 	{
@@ -289,7 +372,7 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 	return HandleError_None;
 }
 
-HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, IdentityToken_t source, IdentityToken_t ident)
+HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, IdentityToken_t *source, IdentityToken_t *ident)
 {
 	HandleError err;
 	QHandle *pHandle;
@@ -307,13 +390,12 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, 
 	QHandle *pNewHandle;
 	Handle_t new_handle;
 
-	if ((err=MakePrimHandle(pHandle->type, &pNewHandle, &new_index, &new_handle)) != HandleError_None)
+	if ((err=MakePrimHandle(pHandle->type, &pNewHandle, &new_index, &new_handle, source)) != HandleError_None)
 	{
 		return err;
 	}
 
 	pNewHandle->clone = index;
-	pNewHandle->source = source;
 
 	if (out_newhandle)
 	{
@@ -323,7 +405,7 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, 
 	return HandleError_None;
 }
 
-HandleError HandleSystem::FreeHandle(Handle_t handle, IdentityToken_t ident)
+HandleError HandleSystem::FreeHandle(Handle_t handle, IdentityToken_t *ident)
 {
 	unsigned int index;
 	QHandle *pHandle;
@@ -361,14 +443,9 @@ HandleError HandleSystem::FreeHandle(Handle_t handle, IdentityToken_t ident)
 	return HandleError_None;
 }
 
-inline HandleType_t TypeParent(HandleType_t type)
-{
-	return (type & ~HANDLESYS_SUBTYPE_MASK);
-}
-
 HandleError HandleSystem::ReadHandle(Handle_t handle, 
 									 HandleType_t type, 
-									 IdentityToken_t ident, 
+									 IdentityToken_t *ident, 
 									 void **object)
 {
 	unsigned int index;
@@ -412,12 +489,59 @@ void HandleSystem::ReleasePrimHandle(unsigned int index)
 {
 	QHandle *pHandle = &m_Handles[index];
 	
-	pHandle->set = false;
+	pHandle->set = HandleSet_None;
 	m_Types[pHandle->type].opened--;
 	m_Handles[++m_FreeHandles].freeID = index;
+
+	/* Unlink us if necessary */
+	if (pHandle->owner)
+	{
+		unsigned int ident_index;
+		if (IdentityHandle(pHandle->owner, &ident_index) != HandleError_None)
+		{
+			/* Uh-oh! */
+			assert(pHandle->owner == 0);
+			return;
+		}
+		/* Note that since 0 is an invalid handle, if any of these links are 0,
+		 * the data can still be set.
+		 */
+		QHandle *pIdentity = &m_Handles[ident_index];
+
+		/* Unlink case: We're the head AND tail node */
+		if (index == pIdentity->ch_prev && index == pIdentity->ch_next)
+		{
+			pIdentity->ch_prev = 0;
+			pIdentity->ch_next = 0;
+		}
+		/* Unlink case: We're the head node */
+		else if (index == pIdentity->ch_prev) {
+			/* Link us to the next in the chain */
+			pIdentity->ch_prev = pHandle->ch_next;
+			/* Patch up the previous link */
+			m_Handles[pHandle->ch_next].ch_prev = 0;
+		}
+		/* Unlink case: We're the tail node */
+		else if (index == pIdentity->ch_next) {
+			/* Link us to the previous in the chain */
+			pIdentity->ch_next = pHandle->ch_prev;
+			/* Patch up the next link */
+			m_Handles[pHandle->ch_prev].ch_next = 0;
+		}
+		/* Unlink case: We're in the middle! */
+		else {
+			/* Patch the forward reference */
+			m_Handles[pHandle->ch_next].ch_prev = pHandle->ch_prev;
+			/* Patch the backward reference */
+			m_Handles[pHandle->ch_prev].ch_next = pHandle->ch_next;
+		}
+
+		/* Lastly, decrease the reference count */
+		pIdentity->refcount--;
+	}
 }
 
-bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t ident)
+bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 {
 	if (type == 0 || type >= HANDLESYS_TYPEARRAY_SIZE)
 	{
@@ -498,4 +622,17 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t ident)
 	}
 
 	return true;
+}
+
+void HandleSystem::MarkHandleAsIdentity(Handle_t handle)
+{
+	QHandle *pHandle;
+	unsigned int index;
+
+	if (GetHandle(handle, g_ShareSys.GetIdentRoot(), &pHandle, &index, HandleAccess_Read) != HandleError_None)
+	{
+		return;
+	}
+
+	pHandle->set = HandleSet_Identity;
 }
