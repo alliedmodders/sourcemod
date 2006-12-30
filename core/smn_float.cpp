@@ -5,46 +5,6 @@
 
 using namespace SourcePawn;
 
-#define PI 3.14159265358979323846
-
-inline float AngleToRadians(float val, int mode)
-{
-	switch (mode)
-	{
-	case 1:
-		{
-			return (float)((val * PI) / 180.0);
-		}
-	case 2:
-		{
-			return (float)((val * PI) / 200.0);
-		}
-	default:
-		{
-			return val;
-		}
-	}
-}
-
-inline float RadiansToAngle(float val, int mode)
-{
-	switch (mode)
-	{
-	case 1:
-		{
-			return (float)((val / PI) * 180.0);
-		}
-	case 2:
-		{
-			return (float)((val / PI) * 200.0);
-		}
-	default:
-		{
-			return val;
-		}
-	}
-}
-
 
 /****************************************
 *                                       *
@@ -217,7 +177,7 @@ static cell_t sm_floatfract(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_floatsin(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
-	val = sin(AngleToRadians(val, params[2]));
+	val = sin(val);
 
 	return sp_ftoc(val);
 }
@@ -225,7 +185,7 @@ static cell_t sm_floatsin(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_floatcos(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
-	val = cos(AngleToRadians(val, params[2]));
+	val = cos(val);
 
 	return sp_ftoc(val);
 }
@@ -233,7 +193,7 @@ static cell_t sm_floatcos(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_floattan(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
-	val = tan(AngleToRadians(val, params[2]));
+	val = tan(val);
 
 	return sp_ftoc(val);
 }
@@ -243,7 +203,7 @@ static cell_t sm_floatasin(IPluginContext *pCtx, const cell_t *params)
 	float val = sp_ctof(params[1]);
 	val = asin(val);
 
-	return sp_ftoc(RadiansToAngle(val, params[2]));
+	return sp_ftoc(val);
 }
 
 static cell_t sm_floatacos(IPluginContext *pCtx, const cell_t *params)
@@ -251,7 +211,7 @@ static cell_t sm_floatacos(IPluginContext *pCtx, const cell_t *params)
 	float val = sp_ctof(params[1]);
 	val = acos(val);
 
-	return sp_ftoc(RadiansToAngle(val, params[2]));
+	return sp_ftoc(val);
 }
 
 static cell_t sm_floatatan(IPluginContext *pCtx, const cell_t *params)
@@ -259,7 +219,7 @@ static cell_t sm_floatatan(IPluginContext *pCtx, const cell_t *params)
 	float val = sp_ctof(params[1]);
 	val = atan(val);
 
-	return sp_ftoc(RadiansToAngle(val, params[2]));
+	return sp_ftoc(val);
 }
 
 static cell_t sm_floatatan2(IPluginContext *pCtx, const cell_t *params)
@@ -268,5 +228,5 @@ static cell_t sm_floatatan2(IPluginContext *pCtx, const cell_t *params)
 	float val2 = sp_ctof(params[2]);
 	val1 = atan2(val1, val2);
 
-	return sp_ftoc(RadiansToAngle(val1, params[3]));
+	return sp_ftoc(val1);
 }

@@ -455,18 +455,6 @@ const char *stristr(const char *str, const char *substr)
 	return NULL;
 }
 
-inline int StrConvInt(const char *str)
-{
-	char *dummy;
-	return strtol(str, &dummy, 10);
-}
-
-inline float StrConvFloat(const char *str)
-{
-	char *dummy;
-	return (float)strtod(str, &dummy);
-}
-
 unsigned int strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)
