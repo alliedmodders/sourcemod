@@ -227,15 +227,15 @@ public:
 	 */
 	bool TestAliasMatch(const char *alias, const char *localdir);
 
-	/**
-	 * Registers natives in core itself ONLY.
-	 */
-	void RegisterGlobalNatives(sp_nativeinfo_t *info[]);
-
 	/** 
 	 * Returns whether anything loaded will be a late load.
 	 */
 	bool IsLateLoadTime();
+
+	/**
+	 * Adds natives from core into the native pool.
+	 */
+	void RegisterNativesFromCore(sp_nativeinfo_t *natives);
 private:
 	/**
 	 * Recursively loads all plugins in the given directory.

@@ -50,4 +50,6 @@ private:
 extern ISourcePawnEngine *g_pSourcePawn;
 extern IVirtualMachine *g_pVM;
 
+#include "sm_autonatives.h"
+
 #endif //_INCLUDE_SOURCEMOD_GLOBALS_H_

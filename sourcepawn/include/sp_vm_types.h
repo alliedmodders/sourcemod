@@ -7,6 +7,8 @@ typedef	uint32_t	ucell_t;
 typedef int32_t		cell_t;
 typedef uint32_t	funcid_t;
 
+#include "sp_typeutil.h"
+
 #define SP_MAX_EXEC_PARAMS				32	/* Maximum number of parameters in a function */
 
 /**

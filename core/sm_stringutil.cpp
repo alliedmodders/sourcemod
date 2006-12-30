@@ -374,7 +374,7 @@ reswitch:
 				CHECK_ARGS(0);
 				cell_t *value;
 				pCtx->LocalToPhysAddr(params[arg], &value);
-				AddFloat(&buf_p, llen, ctof(*value), width, prec);
+				AddFloat(&buf_p, llen, sp_ctof(*value), width, prec);
 				arg++;
 				break;
 			}
@@ -467,7 +467,7 @@ inline float StrConvFloat(const char *str)
 	return (float)strtod(str, &dummy);
 }
 
-int strncopy(char *dest, const char *src, size_t count)
+unsigned int strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)
 	{

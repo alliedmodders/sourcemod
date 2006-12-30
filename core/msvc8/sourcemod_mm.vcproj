@@ -187,6 +187,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_autonatives.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_memtable.cpp"
 				>
 			</File>
@@ -230,6 +234,10 @@
 			</File>
 			<File
 				RelativePath="..\CTextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_autonatives.h"
 				>
 			</File>
 			<File
@@ -479,6 +487,10 @@
 			<Filter
 				Name="Header Files"
 				>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_typeutil.h"
+					>
+				</File>
 				<File
 					RelativePath="..\vm\sp_vm_basecontext.h"
 					>

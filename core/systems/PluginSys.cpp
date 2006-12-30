@@ -1136,3 +1136,8 @@ void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	/* We don't care about the internal object, actually */
 }
+
+void CPluginManager::RegisterNativesFromCore(sp_nativeinfo_t *natives)
+{
+	m_natives.push_back(natives);
+}

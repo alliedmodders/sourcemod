@@ -3,11 +3,11 @@
 
 #include "sp_vm_types.h"
 
-inline cell_t ftoc(float val)
+inline cell_t sp_ftoc(float val)
 {
 	return *(cell_t *)&val;
 }
-inline float ctof(cell_t val)
+inline float sp_ctof(cell_t val)
 {
 	return *(float *)&val;
 }
