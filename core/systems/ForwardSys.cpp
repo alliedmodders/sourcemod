@@ -104,6 +104,12 @@ void CForwardManager::OnPluginUnloaded(IPlugin *plugin)
 		fwd = (*iter);
 		fwd->RemoveFunctionsOfPlugin(plugin);
 	}
+
+	for (iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
+	{
+		fwd = (*iter);
+		fwd->RemoveFunctionsOfPlugin(plugin);
+	}
 }
 
 IForward *CForwardManager::FindForward(const char *name, IChangeableForward **ifchng)
