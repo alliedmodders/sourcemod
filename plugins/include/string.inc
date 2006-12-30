@@ -57,9 +57,9 @@ native StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=t
  * 					If false, comparison is case insensitive.
  * @return			True if equal, false otherwise.
  */
-stock StrEqual(const String:str1[], const String:str2[], bool:caseSensitive=true)
+stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive=true)
 {
-	return (StrCompare(str1, str2, caseSensitive));
+	return (StrCompare(str1, str2, caseSensitive) == 0);
 }
 
 /**
@@ -107,5 +107,6 @@ native Float:StringToFloat(const String:str[]);
  * @param str			Buffer to store string in.
  * @param maxlength		Maximum length of string buffer.
  * @param num			Floating point number to convert.
+ * @return			Number of cells written to buffer.
  */
-native Float:FloatToString(String:str[], maxlength, Float:num);
+native FloatToString(String:str[], maxlength, Float:num);
