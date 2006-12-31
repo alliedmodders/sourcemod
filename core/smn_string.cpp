@@ -106,6 +106,55 @@ static cell_t sm_floattostr(IPluginContext *pCtx, const cell_t *params)
 	return snprintf(str, params[3], "%f", sp_ctof(params[1]));
 }
 
+static cell_t sm_formatex(IPluginContext *pCtx, const cell_t *params)
+{
+	char *buf, *fmt;
+	size_t res;
+	int arg = 4;
+
+	pCtx->LocalToString(params[1], &buf);
+	pCtx->LocalToString(params[3], &fmt);
+	res = atcprintf(buf, static_cast<size_t>(params[2]), fmt, pCtx, params, &arg);
+
+	return static_cast<cell_t>(res);
+}
+
+static char g_formatbuf[2048];
+static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
+{
+	char *buf, *fmt, *destbuf;
+	cell_t start_addr, end_addr, maxparam;
+	size_t res, maxlen;
+	int arg = 4;
+	bool copy = false;
+
+	pCtx->LocalToString(params[1], &destbuf);
+	pCtx->LocalToString(params[3], &fmt);
+
+	maxlen = static_cast<size_t>(params[2]);
+	start_addr = params[1];
+	end_addr = params[1] + maxlen;
+	maxparam = params[0];
+
+	for (cell_t i=3; i<=maxparam; i++)
+	{
+		if ((params[i] >= start_addr) && (params[i] <= end_addr))
+		{
+			copy = true;
+			break;
+		}
+	}
+	buf = (copy) ? g_formatbuf : destbuf;
+	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
+
+	if (copy)
+	{
+		memcpy(destbuf, g_formatbuf, res+1);
+	}
+
+	return static_cast<cell_t>(res);
+}
+
 REGISTER_NATIVES(basicstrings)
 {
 	{"strlen",				sm_strlen},

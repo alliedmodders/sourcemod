@@ -423,7 +423,7 @@ reswitch:
 done:
 	*buf_p = '\0';
 	*param = arg;
-	return (maxlen - llen);
+	return (maxlen - llen - 1);
 }
 
 const char *stristr(const char *str, const char *substr)
