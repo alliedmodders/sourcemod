@@ -314,6 +314,67 @@ namespace SourcePawn
 		virtual int Execute(uint32_t funcid, cell_t *result) =0;
 	};
 
+	struct ErrorTraceInfo
+	{
+		const char *filename;
+		unsigned int line;
+		const char *function;
+	};
+
+	class IContextErrorInfo
+	{
+		/**
+		 * @brief Returns the integer error code.
+		 *
+		 * @return			Integer error code.
+		 */
+		virtual int GetErrorCode() =0;
+
+		/**
+		 * @brief Returns a string describing the error.
+		 *
+		 * @return			Error string.
+		 */
+		virtual const char *GetErrorString() =0;
+
+		/**
+		 * @brief Returns whether debug info is available.
+		 *
+		 * @return			True if debug info is available, false otherwise.
+		 */
+		virtual bool DebugInfoAvailable() =0;
+
+		/**
+		 * @brief Returns a custom error message.
+		 *
+		 * @return			A pointer to a custom error message, or NULL otherwise.
+		 */
+		virtual const char *GetCustomErrorString() =0;
+
+		/**
+		 * @brief Returns the number of calls in the call backtrace.
+		 * NOTE: Tracers are ordered from 0 to N-1, where 0 is the top of the trace.
+		 *
+		 * @return			Number of calls in the trace.
+		 */
+		virtual unsigned int TraceCallCount() =0;
+
+		/**
+		 * @brief Returns trace info for a specific point in the backtrace.
+		 *
+		 * @param call		The call trace index (from 0 to N-1).
+		 * @param trace		An ErrorTraceInfo buffer to store information.
+		 * @return			True if successful, false otherwise.
+		 */
+		virtual bool GetTraceInfo(unsigned int call, ErrorTraceInfo *trace) =0;
+	};
+
+	class IDebugListener
+	{
+	public:
+		virtual void OnContextExecuteError(IPluginContext *ctx, IContextErrorInfo *error) =0;
+	};
+
 	/**
 	 * @brief Contains helper functions used by VMs and the host app
 	 */
@@ -321,17 +382,17 @@ namespace SourcePawn
 	{
 	public:
 		/**
-		* Loads a named file from a file pointer.  
-		* Using this means base memory will be allocated by the VM.
-		* 
-		* @param fp			File pointer.  May be at any offset.  Not closed on return.
-		* @param err		Optional error code pointer.
-		* @return			A new plugin structure.
-		*/	
+		 * @brief Loads a named file from a file pointer.  
+		 * Note: Using this means the memory will be allocated by the VM.
+		 * 
+		 * @param fp			File pointer.  May be at any offset.  Not closed on return.
+		 * @param err		Optional error code pointer.
+		 * @return			A new plugin structure.
+		 */	
 		virtual sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err) =0;
 	
 		/**
-		 * Loads a file from a base memory address.
+		 * @brief Loads a file from a base memory address.
 		 *	
 		 * @param base		Base address of the plugin's memory region.
 		 * @param plugin	If NULL, a new plugin pointer is returned.
@@ -349,7 +410,7 @@ namespace SourcePawn
 		virtual int FreeFromMemory(sp_plugin_t *plugin) =0;
 
 		/**
-		 * Creates a new IContext from a context handle.
+		 * @brief Creates a new IContext from a context handle.
 		 *
 		 * @param ctx		Context to use as a basis for the IPluginContext.
 		 * @return			New IPluginContext handle.
@@ -357,14 +418,14 @@ namespace SourcePawn
 		virtual IPluginContext *CreateBaseContext(sp_context_t *ctx) =0;
 
 		/** 
-		 * Frees a base context.  Does not free the sp_context_t it holds.
+		 * @brief Frees a base context.  Does not free the sp_context_t it holds.
 		 *
 		 * @param ctx		Context pointer to free.
 		 */
 		virtual void FreeBaseContext(IPluginContext *ctx) =0;
 
 		/**
-		 * Allocates large blocks of temporary memory.
+		 * @brief Allocates large blocks of temporary memory.
 		 * 
 		 * @param size		Size of memory to allocate.
 		 * @return			Pointer to memory, NULL if allocation failed.
@@ -372,14 +433,14 @@ namespace SourcePawn
 		virtual void *BaseAlloc(size_t size) =0;
 
 		/**
-		 * Frees memory allocated with BaseAlloc.
+		 * @brief Frees memory allocated with BaseAlloc.
 		 *
 		 * @param memory	Memory address to free.
 		 */
 		virtual void BaseFree(void *memory) =0;
 
 		/**
-		 * Allocates executable memory.
+		 * @brief Allocates executable memory.
 		 *
 		 * @param size		Size of memory to allocate.
 		 * @return			Pointer to memory, NULL if allocation failed.
@@ -387,13 +448,50 @@ namespace SourcePawn
 		virtual void *ExecAlloc(size_t size) =0;
 
 		/**
-		 * Frees executable memory.
+		 * @brief Frees executable memory.
 		 *
 		 * @param address	Address to free.
 		 */
 		virtual void ExecFree(void *address) =0;
+
+		/**
+		 * @brief Sets the debug listener. 
+		 *
+		 * @param listener	Pointer to an IDebugListener.
+		 * @return			Old IDebugListener, or NULL if none.
+		 */
+		virtual IDebugListener *SetDebugListener(IDebugListener *pListener) =0;
+		
+		/**
+		 * @brief Returns the number of plugins on the call stack.
+		 *
+		 * @return			Number of contexts in the call stack.
+		 */
+		virtual unsigned int GetContextCallCount() =0;
+
+		/**
+		 * @brief Throws an error and halts any current execution.
+		 *
+		 * @param error		The error number to set.
+		 * @param msg		Custom error message format.  NULL to use default.
+		 * @param ...		Message format arguments, if any.
+		 */
+		virtual void ThrowNativeErrorEx(int error, const char *msg, ...) =0;
+
+		/**
+		 * @brief Throws a native error and halts any current execution.
+		 * NOTE: This is a wrapper around ThrowError() for convenience.
+		 *
+		 * @param msg		Custom error message format.  NULL to set no message.
+		 * @param ...		Message format arguments, if any.
+		 * @return			0 for convenience.
+		 */
+		virtual void ThrowNativeError(const char *msg, ...) =0;
 	};
 
+	/**
+	 * @brief Dummy class for encapsulating private compilation data.
+	 */
 	class ICompilation
 	{
 	public:

@@ -69,8 +69,8 @@ void Macro_PushN(JitWriter *jit, int i);
 /** 
 * Bound checking for the tracker stack,
 */
-void JIT_VerifyLowBoundTracker(sp_context_t *ctx);
-void JIT_VerifyOrAllocateTracker(sp_context_t *ctx);
+int JIT_VerifyLowBoundTracker(sp_context_t *ctx);
+int JIT_VerifyOrAllocateTracker(sp_context_t *ctx);
 
 /** 
 * Writes the push into tracker function.

@@ -3,6 +3,8 @@
 
 #include <sp_vm_api.h>
 
+/* :TODO: rename this to sp_vm_linkage.h */
+
 #if defined WIN32
 #define EXPORT_LINK		extern "C" __declspec(dllexport)
 #else if defined __GNUC__

@@ -1631,7 +1631,7 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//cmp [ecx+err], 0
 	//jnz :error
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, n_err), 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
@@ -1678,12 +1678,14 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyOrAllocateTracker);
 
 	/* Check for errors */
-	//pop eax
-	//cmp [eax+err], 0
+	//cmp eax, 0
 	//jnz :error
+	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
+
+	/* Restore */
+	//pop eax
 	IA32_Pop_Reg(jit, REG_EAX);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, REG_EAX, offsetof(sp_context_t, err), 0);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_error_tracker_bounds);
 
 	/* Push the value into the stack and increment pCur */
 	//mov edx, [eax+vm[]]
@@ -1722,12 +1724,14 @@ inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyLowBoundTracker);
 
 	/* Check for errors */
-	//pop eax
-	//cmp [eax+err], 0
+	//cmp eax, 0
 	//jnz :error
+	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
+
+	/* Restore */
+	//pop eax
 	IA32_Pop_Reg(jit, REG_EAX);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, REG_EAX, offsetof(sp_context_t, err), 0);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_error_tracker_bounds);
 
 	/* Pop the value from the stack and decrease the heap by it*/
 	//mov edx, [eax+vm[]]
@@ -1768,11 +1772,13 @@ inline void WriteOp_Stradjust_Pri(JitWriter *jit)
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
 	sp_native_t *native = &ctx->natives[native_idx];
+
+	ctx->n_idx = native_idx;
 	
 	/* Technically both aren't needed, I guess */
 	if (native->status == SP_NATIVE_UNBOUND)
 	{
-		ctx->err = SP_ERROR_INVALID_NATIVE;
+		ctx->n_err = SP_ERROR_INVALID_NATIVE;
 		return 0;
 	}
 
@@ -1782,7 +1788,7 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
 {
 	sp_context_t *ctx = pCtx->GetContext();
-	ctx->err = SP_ERROR_INVALID_NATIVE;
+	ctx->n_err = SP_ERROR_INVALID_NATIVE;
 
 	return 0;
 }
@@ -1792,37 +1798,39 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
+	ctx->n_idx = native_idx;
+
 	if (ctx->hp < ctx->heap_base)
 	{
-		ctx->err = SP_ERROR_HEAPMIN;
+		ctx->n_err = SP_ERROR_HEAPMIN;
 		return 0;
 	}
 
 	if (ctx->hp + STACK_MARGIN > ctx->sp)
 	{
-		ctx->err = SP_ERROR_STACKLOW;
+		ctx->n_err = SP_ERROR_STACKLOW;
 		return 0;
 	}
 
 	if ((uint32_t)ctx->sp >= ctx->mem_size)
 	{
-		ctx->err = SP_ERROR_STACKMIN;
+		ctx->n_err = SP_ERROR_STACKMIN;
 		return 0;
 	}
 
 	cell_t result = NativeCallback(ctx, native_idx, params);
 	
-	if (ctx->err != SP_ERROR_NONE)
+	if (ctx->n_err != SP_ERROR_NONE)
 	{
 		return result;
 	}
 
 	if (save_sp != ctx->sp)
 	{
-		ctx->err = SP_ERROR_STACKLEAK;
+		ctx->n_err = SP_ERROR_STACKLEAK;
 		return result;
 	} else if (save_hp != ctx->hp) {
-		ctx->err = SP_ERROR_HEAPLEAK;
+		ctx->n_err = SP_ERROR_HEAPLEAK;
 		return result;
 	}
 

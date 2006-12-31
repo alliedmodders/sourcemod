@@ -146,7 +146,7 @@ void Write_BreakDebug(JitWriter *jit)
 	//add esp, 8
 	//popad
 	IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_FRAME); //:TODO: move to regs and push? and dont disp for 0
-	IA32_Push_Rm_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, context));
+	IA32_Push_Reg(jit, AMX_REG_TMP);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_TMP, offsetof(sp_context_t, dbreak));
 	IA32_Call_Reg(jit, AMX_REG_TMP);
 	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*2, MOD_REG);
@@ -166,7 +166,7 @@ void Write_GetError(JitWriter *jit)
 	//mov eax, [eax+ctx.error]
 	//jmp [jit_return]
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EAX, offsetof(sp_context_t, err));
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EAX, offsetof(sp_context_t, n_err));
 	IA32_Jump_Imm32_Abs(jit, data->jit_return);
 }
 
@@ -435,7 +435,7 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	//cmp [ecx+err], 0
 	//jnz :error
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, n_err), 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
@@ -662,7 +662,7 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	//cmp [ecx+err], 0
 	//jnz :error
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, err), 0);
+	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, n_err), 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
@@ -713,13 +713,15 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
 	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyOrAllocateTracker);
 
 	/* Check for errors */
-	//pop eax
-	//cmp [eax+err], 0
+	//cmp eax, 0
 	//jnz :error
-	IA32_Pop_Reg(jit, REG_EAX);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, REG_EAX, offsetof(sp_context_t, err), 0);
+	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_error_tracker_bounds);
 
+	/* Restore */
+	//pop eax
+	IA32_Pop_Reg(jit, REG_EAX);
+	
 	/* Push the register into the stack and increment pCur */
 	//mov edx, [eax+vm[]]
 	//mov eax, [edx+pcur]
@@ -742,14 +744,13 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
 	IA32_Pop_Reg(jit, AMX_REG_PRI);
 }
 
-void JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
+int JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
 {
 	tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
 
 	if ((size_t)(trk->pCur - trk->pBase) >= trk->size)
 	{
-		ctx->err = SP_ERROR_TRACKER_BOUNDS;
-		return;
+		return SP_ERROR_TRACKER_BOUNDS;
 	}
 
 	if (trk->pCur+1 - (trk->pBase + trk->size) == 0)
@@ -760,20 +761,23 @@ void JIT_VerifyOrAllocateTracker(sp_context_t *ctx)
 
 		if (!trk->pBase)
 		{
-			ctx->err = SP_ERROR_TRACKER_BOUNDS;
-			return;
+			return SP_ERROR_TRACKER_BOUNDS;
 		}
 
 		trk->pCur = trk->pBase + disp;
 	}
+
+	return SP_ERROR_NONE;
 }
 
-void JIT_VerifyLowBoundTracker(sp_context_t *ctx)
+int JIT_VerifyLowBoundTracker(sp_context_t *ctx)
 {
 	tracker_t *trk = (tracker_t *)(ctx->vm[JITVARS_TRACKER]);
 
 	if (trk->pCur <= trk->pBase)
 	{
-		ctx->err = SP_ERROR_TRACKER_BOUNDS;
+		return SP_ERROR_TRACKER_BOUNDS;
 	}
+
+	return SP_ERROR_NONE;
 }

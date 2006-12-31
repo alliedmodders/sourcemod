@@ -37,6 +37,7 @@ typedef uint32_t	funcid_t;
 #define SP_ERROR_TRACKER_BOUNDS			20	/* Tracker stack is out of bounds */
 #define SP_ERROR_INVALID_NATIVE			21	/* Native was pending or invalid */
 #define SP_ERROR_PARAMS_MAX				22	/* Maximum number of parameters reached */
+#define SP_ERROR_NATIVE					23	/* Error originates from a native */
 
 /**********************************************
  *** The following structures are reference structures.
@@ -204,7 +205,7 @@ typedef struct sp_debug_symbol_s
  *  [1] - frm
  *  [2] - cip
  */
-typedef int (*SPVM_DEBUGBREAK)(SourcePawn::IPluginContext *, uint32_t, uint32_t);
+typedef int (*SPVM_DEBUGBREAK)(struct sp_context_s *, uint32_t, uint32_t);
 
 #define SPFLAG_PLUGIN_DEBUG		(1<<0)		/* plugin is in debug mode */
 
@@ -234,8 +235,9 @@ typedef struct sp_context_s
 	cell_t			hp;			/* heap pointer */
 	cell_t			sp;			/* stack pointer */
 	cell_t			frm;		/* frame pointer */
-	int32_t			err;		/* error code */
 	uint32_t		pushcount;	/* push count */
+	int32_t			n_err;		/* error code set by a native */
+	uint32_t		n_idx;		/* current native index being executed */
 	/* context rebased database */
 	sp_public_t		*publics;	/* public functions table */
 	sp_pubvar_t		*pubvars;	/* public variables table */
