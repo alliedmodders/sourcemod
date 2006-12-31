@@ -59,7 +59,6 @@ public:
 	jitoffs_t jit_error_heaplow;
 	jitoffs_t jit_error_heapmin;
 	jitoffs_t jit_error_array_too_big;
-	jitoffs_t jit_error_tracker_bounds;
 	jitoffs_t jit_extern_error;		/* returning generic error */
 	jitoffs_t jit_sysreq_c;			/* old version! */
 	uint32_t codesize;				/* total codesize */

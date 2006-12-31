@@ -140,7 +140,7 @@ void Write_BreakDebug(JitWriter *jit)
 	IA32_Pushad(jit);
 
 	//push [esi+frm]
-	//push [ecx+context]
+	//push ctx
 	//mov ecx, [ecx+dbreak]
 	//call ecx
 	//add esp, 8
@@ -715,8 +715,8 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
 	/* Check for errors */
 	//cmp eax, 0
 	//jnz :error
-	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, 0);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_error_tracker_bounds);
+	IA32_Cmp_Rm_Imm8(jit, MOD_REG, REG_EAX, 0);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
 
 	/* Restore */
 	//pop eax

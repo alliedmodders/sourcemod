@@ -1680,7 +1680,7 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 	/* Check for errors */
 	//cmp eax, 0
 	//jnz :error
-	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, 0);
+	IA32_Cmp_Rm_Imm8(jit, MOD_REG, REG_EAX, 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
 
 	/* Restore */
@@ -1726,7 +1726,7 @@ inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 	/* Check for errors */
 	//cmp eax, 0
 	//jnz :error
-	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_EAX, 0);
+	IA32_Cmp_Rm_Imm8(jit, MOD_REG, REG_EAX, 0);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
 
 	/* Restore */
@@ -1883,9 +1883,6 @@ void WriteErrorRoutines(CompData *data, JitWriter *jit)
 
 	data->jit_error_array_too_big = jit->get_outputpos();
 	Write_SetError(jit, SP_ERROR_ARRAY_TOO_BIG);
-
-	data->jit_error_tracker_bounds = jit->get_outputpos();
-	Write_SetError(jit, SP_ERROR_TRACKER_BOUNDS);
 
 	data->jit_extern_error = jit->get_outputpos();
 	Write_GetError(jit);
