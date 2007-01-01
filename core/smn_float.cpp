@@ -5,6 +5,7 @@
 
 using namespace SourcePawn;
 
+//:TODO: these need to be registered....
 
 /****************************************
 *                                       *
