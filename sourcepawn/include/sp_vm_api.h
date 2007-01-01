@@ -397,7 +397,7 @@ namespace SourcePawn
 		 * @brief Retrieves the name of the last native called.
 		 * Returns NULL if there was no native that caused the error.
 		 *
-		 * @param index		Opterional pointer to store index.
+		 * @param index		Optional pointer to store index.
 		 * @return			Native name, or NULL if none.
 		 */
 		virtual const char *GetLastNative(uint32_t *index) =0;
