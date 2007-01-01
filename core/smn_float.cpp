@@ -150,7 +150,7 @@ static cell_t sm_floatround(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 
-	return sp_ftoc(val);
+	return static_cast<int>(val);
 }
 
 static cell_t sm_floatstr(IPluginContext *pCtx, const cell_t *params)

@@ -14,7 +14,7 @@ struct Plugin
    const String:author[],		/* Plugin Author */
    const String:version[],		/* Plugin Version */
    const String:url[],			/* Plugin URL */
-}
+};
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -50,7 +50,7 @@ forward OnPluginInit(Handle:myself);
  * @param late		Whether or not the plugin was loaded "late" (after map load).
  * @param error		Error message buffer in case load failed.
  * @param err_max	Maximum number of characters for error message buffer.
- * @return		True if load success, false otherwise.
+ * @return			True if load success, false otherwise.
  */
 forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
 
@@ -67,3 +67,130 @@ forward OnPluginUnload();
  * @noreturn
  */
 forward OnPluginPauseChange(bool:pause);
+
+/**
+ * Called on client connection.
+ *
+ * @param client		Player index.
+ * @param rejectmsg		Buffer to store the rejection message when the connection is refused.
+ * @param maxlen		Maximum number of characters for rejection buffer.
+ * @return				True to validate client's connection, false to refuse it.
+ */
+forward bool:OnClientConnect(client, String:rejectmsg[], maxlen);
+
+/**
+ * Called when a client is entering to the game.
+ *
+ * @param client		Player index.
+ * @noreturn
+ */
+forward OnClientPutInServer(client);
+
+/**
+ * Called when a client is disconnecting from the server.
+ *
+ * @param client		Player index.
+ * @noreturn
+ */
+forward OnClientDisconnect(client);
+
+/**
+ * Called when a client is disconnected from the server.
+ *
+ * @param client		Player index.
+ * @noreturn
+ */
+forward OnClientDisconnect_Post(client);
+
+/**
+ * Called when a client is sending a command.
+ *
+ * @param client		Player index.
+ * @noreturn
+ */
+forward OnClientCommand(client);
+
+/**
+ * Called whenever the client's settings are changed.
+ *
+ * @param client		Player index.
+ * @noreturn
+ */
+forward OnClientSettingsChanged(client);
+
+/**
+ * Returns the maximum number of clients allowed on the server.
+ *
+ * @return				Maximum number of clients allowed.
+ */
+native GetMaxClients();
+
+/**
+ * Returns the client count put in the server.
+ *
+ * @param inGameOnly	If false connecting players are also counted.
+ * @return				Client count in the server.
+ */
+native GetClientCount(bool:inGameOnly=true);
+
+/**
+ * Returns the client's name.
+ *
+ * @param client		Player index.
+ * @param name			Buffer to store the client's name.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @noreturn
+ */
+native GetClientName(client, String:name[], maxlen);
+
+/**
+ * Returns the client's Ip address.
+ *
+ * @param client		Player index.
+ * @param name			Buffer to store the client's ip address.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @noreturn
+ */
+native GetClientIp(client, String:ip[], maxlen);
+
+/**
+ * Returns the client's authindex.
+ *
+ * @param client		Player index.
+ * @param auth			Buffer to store the client's auth string.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @return				Returns 0 on failure, non-zero otherwise.
+ */
+native GetClientAuthString(client, String:auth[], maxlen);
+
+/**
+ * Returns if a certain player is connected.
+ *
+ * @param client		Player index.
+ * @return				True if player is connected to the server, false otherwise.
+ */
+native bool:IsPlayerConnected(client);
+
+/**
+ * Returns if a certain player has entered the game.
+ *
+ * @param client		Player index.
+ * @return				True if player has entered the game, false otherwise.
+ */
+native bool:IsPlayerInGame(client);
+
+/**
+ * Returns if a certain player has been authenticated.
+ *
+ * @param client		Player index.
+ * @return				True if player has been authenticated, false otherwise.
+ */
+native bool:IsPlayerAuthorized(client);
+
+/**
+ * Returns if a certain player is a fake client.
+ *
+ * @param client		Player index.
+ * @return				True if player is a fake client, false otherwise.
+ */
+native bool:IsPlayerFakeClient(client);

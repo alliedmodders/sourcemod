@@ -1,10 +1,13 @@
 #include "CPlayerManager.h"
 #include "ForwardSys.h"
 
+CPlayerManager g_PlayerManager;
+
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
+SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 
 void CPlayerManager::OnSourceModAllInitialized()
 {
@@ -13,6 +16,7 @@ void CPlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect_Post, true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &CPlayerManager::OnClientCommand, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &CPlayerManager::OnClientSettingsChanged, true);
 
 	/* Register OnClientConnect */
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
@@ -31,8 +35,16 @@ void CPlayerManager::OnSourceModAllInitialized()
 	/* Register OnClientCommand */
 	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 1, p2);
 
+	/* Register OnClientSettingsChanged */
+	m_clinfochanged = g_Forwards.CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
+
 	/* Register OnClientAuthorized */
 	//:TODO:
+
+	/* Initialize all players */
+	m_maxClients = g_SMAPI->pGlobals()->maxClients;
+	m_PlayerCount = 0;
+	m_Players = new CPlayer[m_maxClients];
 }
 
 void CPlayerManager::OnSourceModShutdown()
@@ -42,6 +54,7 @@ void CPlayerManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect_Post, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &CPlayerManager::OnClientCommand, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &CPlayerManager::OnClientSettingsChanged, true);
 
 	/* Release forwards */
 	g_Forwards.ReleaseForward(m_clconnect);
@@ -49,13 +62,18 @@ void CPlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_cldisconnect);
 	g_Forwards.ReleaseForward(m_cldisconnect_post);
 	g_Forwards.ReleaseForward(m_clcommand);
+	g_Forwards.ReleaseForward(m_clinfochanged);
+
+	delete [] m_Players;
 }
 
 bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	cell_t res = 1;
+	int client = engine->IndexOfEdict(pEntity);
 
-	m_clconnect->PushCell(engine->IndexOfEdict(pEntity));
+	m_Players[client].Initialize(pszName, pszAddress, pEntity);
+	m_clconnect->PushCell(client);
 	m_clconnect->PushStringEx(reject, maxrejectlen, SM_PARAM_STRING_UTF8, SM_PARAM_COPYBACK);
 	m_clconnect->PushCell(maxrejectlen);
 	m_clconnect->Execute(&res, NULL);
@@ -66,8 +84,11 @@ bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, cons
 void CPlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
 {
 	cell_t res;
+	int client = engine->IndexOfEdict(pEntity);
 
-	m_clputinserver->PushCell(engine->IndexOfEdict(pEntity));
+	m_Players[client].Connect();
+	m_PlayerCount++;
+	m_clputinserver->PushCell(client);
 	m_clputinserver->Execute(&res, NULL);
 }
 
@@ -79,9 +100,18 @@ void CPlayerManager::OnClientAuthorized()
 void CPlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
 	cell_t res;
+	int client = engine->IndexOfEdict(pEntity);
 
-	m_cldisconnect->PushCell(engine->IndexOfEdict(pEntity));
-	m_cldisconnect->Execute(&res, NULL);
+	if (m_Players[client].IsPlayerConnected())
+	{
+		m_cldisconnect->PushCell(client);
+		m_cldisconnect->Execute(&res, NULL);
+	}
+	if (m_Players[client].IsPlayerInGame())
+	{
+		m_PlayerCount--;
+	}
+	m_Players[client].Disconnect();
 }
 
 void CPlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
@@ -98,4 +128,19 @@ void CPlayerManager::OnClientCommand(edict_t *pEntity)
 
 	m_clcommand->PushCell(engine->IndexOfEdict(pEntity));
 	m_clcommand->Execute(&res, NULL);
+
+	//:TODO: res should be evaluated here for something, DOCUMENT this in the INC FILE!
+}
+
+void CPlayerManager::OnClientSettingsChanged(edict_t *pEntity)
+{
+	cell_t res;
+	int client = engine->IndexOfEdict(pEntity);
+
+	m_clinfochanged->PushCell(engine->IndexOfEdict(pEntity));
+	m_clinfochanged->Execute(&res, NULL);
+	if (m_Players[client].IsPlayerInGame())
+	{
+		m_Players[client].SetName(engine->GetClientConVarValue(client, "name"));
+	}
 }
