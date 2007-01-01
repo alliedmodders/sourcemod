@@ -199,7 +199,7 @@ native Float:ArcSine(Float:angle);
  * @param y				Vertical value.
  * @return				atan2(value) in radians.
  */
-native Float:ArcAtan2(Float:x, Float:y);
+native Float:ArcTangent2(Float:x, Float:y);
 
 /**
  * User defined operators.
