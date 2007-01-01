@@ -49,6 +49,7 @@ private:
 
 extern ISourcePawnEngine *g_pSourcePawn;
 extern IVirtualMachine *g_pVM;
+extern IdentityToken_t *g_pCoreIdent;
 
 #include "sm_autonatives.h"
 

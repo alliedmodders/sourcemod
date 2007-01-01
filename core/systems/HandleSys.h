@@ -90,7 +90,7 @@ public: //IHandleSystem
 							void *object, 
 							IdentityToken_t *source, 
 							IdentityToken_t *ident);
-	Handle_t CreateScriptHandle(HandleType_t type, void *object, sp_context_t *ctx, IdentityToken_t *ident);
+	Handle_t CreateScriptHandle(HandleType_t type, void *object, IPluginContext *pContext, IdentityToken_t *ident);
 	HandleError FreeHandle(Handle_t handle, IdentityToken_t *ident);
 	HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t *source, IdentityToken_t *ident);
 	HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t *ident, void **object);

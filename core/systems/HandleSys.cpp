@@ -302,10 +302,10 @@ Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityTok
 
 Handle_t HandleSystem::CreateScriptHandle(HandleType_t type, 
 										  void *object, 
-										  sp_context_t *ctx, 
+										  IPluginContext *pContext, 
 										  IdentityToken_t *ident)
 {
-	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(ctx);
+	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
 
 	return CreateHandle(type, object, pPlugin->GetIdentity(), ident);
 }

@@ -93,6 +93,11 @@ void CDirectory::NextEntry()
 #endif
 }
 
+bool CDirectory::IsEntryValid()
+{
+	return IsValid();
+}
+
 bool CDirectory::IsEntryDirectory()
 {
 #if defined PLATFORM_WINDOWS

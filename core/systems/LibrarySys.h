@@ -23,6 +23,7 @@ public:
 	virtual const char *GetEntryName();
 	virtual bool IsEntryDirectory();
 	virtual bool IsEntryFile();
+	virtual bool IsEntryValid();
 public:
 	bool IsValid();
 private:

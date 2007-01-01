@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_filesystem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_float.cpp"
 				>
 			</File>

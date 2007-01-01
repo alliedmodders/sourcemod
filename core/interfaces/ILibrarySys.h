@@ -64,6 +64,12 @@ namespace SourceMod
 		 * @brief Returns whether the current entry is a file.
 		 */
 		virtual bool IsEntryFile() =0;
+
+		/**
+		 * @brief Returns true if the current entry is valid
+		 *        (Used similarly to MoreFiles).
+		 */
+		virtual bool IsEntryValid() =0;
 	};
 
 	/**

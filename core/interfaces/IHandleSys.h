@@ -17,6 +17,8 @@ namespace SourceMod
 	typedef unsigned int HandleType_t;
 	typedef unsigned int Handle_t;
 
+	class SourcePawn::IPluginContext;
+
 	/**
 	 * About type checking:
 	 * Types can be inherited - a Parent type ("Supertype") can have child types.
@@ -179,13 +181,13 @@ namespace SourceMod
 		 * 
 		 * @param type		Type to use on the handle.
 		 * @param object	Object to bind to the handle.
-		 * @param ctx		Plugin context that will own this handle.  NULL for none.
+		 * @param pOwner	Plugin context that will own this handle.  NULL for none.
 		 * @param ident		Identity token if any security rights are needed.
 		 * @return			A new Handle_t.
 		 */
 		virtual Handle_t CreateScriptHandle(HandleType_t type, 
 											void *object, 
-											sp_context_t *ctx,
+											SourcePawn::IPluginContext *pOwner,
 											IdentityToken_t *ident) =0;
 
 		/**

@@ -5,7 +5,7 @@
 #include "vm/sp_vm_engine.h"
 #include <sh_string.h>
 #include "PluginSys.h"
-#include "ForwardSys.h"
+#include "ShareSys.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 
@@ -16,6 +16,7 @@ ILibrary *g_pJIT = NULL;
 SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = &g_SourcePawn;
 IVirtualMachine *g_pVM;
+IdentityToken_t *g_pCoreIdent = NULL;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
 typedef unsigned int (*GETEXPORTCOUNT)();
@@ -138,6 +139,9 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase->OnSourceModStartup(m_IsLateLoadInMap);
 		pBase = pBase->m_pGlobalClassNext;
 	}
+
+	/* Make the global core identity */
+	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
 
 	/* Notify! */
 	pBase = SMGlobalClass::head;
