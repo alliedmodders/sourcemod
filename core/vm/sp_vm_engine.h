@@ -11,7 +11,6 @@ namespace SourcePawn
 		uint32_t frm;
 		sp_context_t *ctx;
 		TracedCall *next;
-		TracedCall *prev;
 		unsigned int chain;
 	};
 
@@ -19,7 +18,7 @@ namespace SourcePawn
 	class CContextTrace : public IContextTrace
 	{
 	public:
-		CContextTrace(TracedCall *pStart, int error, const char *msg);
+		CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native);
 	public:
 		virtual int GetErrorCode();
 		virtual const char *GetErrorString();
@@ -27,11 +26,13 @@ namespace SourcePawn
 		virtual const char *GetCustomErrorString();
 		virtual bool GetTraceInfo(CallStackInfo *trace);
 		virtual void ResetTrace();
+		virtual const char *GetLastNative(uint32_t *index);
 	private:
 		TracedCall *m_pStart;
 		TracedCall *m_pIterator;
 		const char *m_pMsg;
 		int m_Error;
+		uint32_t m_Native;
 	};
 
 

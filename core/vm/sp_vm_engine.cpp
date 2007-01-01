@@ -63,7 +63,7 @@ SourcePawnEngine::~SourcePawnEngine()
 	while (m_FreedCalls)
 	{
 		pTemp = m_FreedCalls->next;
-		delete pTemp;
+		delete m_FreedCalls;
 		m_FreedCalls = pTemp;
 	}
 }
@@ -386,15 +386,10 @@ TracedCall *SourcePawnEngine::MakeTracedCall(bool new_chain)
 		/* Unlink the head node from the free list */
 		pCall = m_FreedCalls;
 		m_FreedCalls = m_FreedCalls->next;
-		if (m_FreedCalls)
-		{
-			m_FreedCalls->prev = NULL;
-		}
 	}
 
 	/* Link as the head node into the call stack */
 	pCall->next = m_CallStack;
-	pCall->prev = NULL;
 
 	if (new_chain)
 	{
@@ -403,10 +398,6 @@ TracedCall *SourcePawnEngine::MakeTracedCall(bool new_chain)
 		pCall->chain = m_CurChain;
 	}
 
-	if (m_CallStack)
-	{
-		m_CallStack->prev = pCall;
-	}
 	m_CallStack = pCall;
 
 	return pCall;
@@ -418,10 +409,6 @@ void SourcePawnEngine::FreeTracedCall(TracedCall *pCall)
 	if (pCall == m_CallStack)
 	{
 		m_CallStack = m_CallStack->next;
-		if (m_CallStack)
-		{
-			m_CallStack->prev = NULL;
-		}
 	}
 
 	/* Add this to our linked list of freed calls */
@@ -429,11 +416,8 @@ void SourcePawnEngine::FreeTracedCall(TracedCall *pCall)
 	{
 		m_FreedCalls = pCall;
 		m_FreedCalls->next = NULL;
-		m_FreedCalls->prev = NULL;
 	} else {
 		pCall->next = m_FreedCalls;
-		pCall->prev = NULL;
-		m_FreedCalls->prev = pCall;
 		m_FreedCalls = pCall;
 	}
 }
@@ -465,6 +449,7 @@ void SourcePawnEngine::RunTracer(sp_context_t *ctx, uint32_t frame, uint32_t cod
 			 * so we have to push a new call onto our list.
 			 */
 			TracedCall *pCall = MakeTracedCall(false);
+			pCall->ctx = ctx;
 			pCall->frm = frame;
 		} else if (m_CallStack->frm < frame) {
 			/* The last frame has moved up the stack,
@@ -483,7 +468,14 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 
 	if (error != SP_ERROR_NONE && m_pDebugHook)
 	{
-		CContextTrace trace(m_CallStack, error, msg);
+		uint32_t native = INVALID_CIP;
+
+		if (m_CallStack->ctx->n_err)
+		{
+			native = m_CallStack->ctx->n_idx;
+		}
+
+		CContextTrace trace(m_CallStack, error, msg, native);
 		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx->context, &trace);
 	}
 
@@ -496,8 +488,8 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 	m_CurChain--;
 }
 
-CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg) : 
- m_Error(error), m_pMsg(msg), m_pStart(pStart), m_pIterator(pStart)
+CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native) : 
+ m_Error(error), m_pMsg(msg), m_pStart(pStart), m_pIterator(pStart), m_Native(native)
 {
 }
 
@@ -534,7 +526,7 @@ void CContextTrace::ResetTrace()
 
 bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 {
-	if (m_pIterator->chain != m_pStart->chain)
+	if (!m_pIterator || (m_pIterator->chain != m_pStart->chain))
 	{
 		return false;
 	}
@@ -547,8 +539,6 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 	IPluginContext *pContext = m_pIterator->ctx->context;
 	IPluginDebugInfo *pInfo = pContext->GetDebugInfo();
 
-	m_pIterator = m_pIterator->next;
-
 	if (!pInfo)
 	{
 		return false;
@@ -556,6 +546,7 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 
 	if (!trace)
 	{
+		m_pIterator = m_pIterator->next;
 		return true;
 	}
 
@@ -574,5 +565,28 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 		trace->line = 0;
 	}
 
+	m_pIterator = m_pIterator->next;
+
 	return true;
+}
+
+const char *CContextTrace::GetLastNative(uint32_t *index)
+{
+	if (m_Native == INVALID_CIP)
+	{
+		return NULL;
+	}
+
+	sp_native_t *native;
+	if (m_pIterator->ctx->context->GetNativeByIndex(m_Native, &native) != SP_ERROR_NONE)
+	{
+		return NULL;
+	}
+
+	if (index)
+	{
+		*index = m_Native;
+	}
+
+	return native->name;
 }

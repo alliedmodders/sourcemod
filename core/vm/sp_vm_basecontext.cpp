@@ -767,7 +767,8 @@ int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
 		return SP_ERROR_NOT_FOUND;
 	}
 
-	*line = ctx->lines[low].line;
+	/* Since the CIP occurs BEFORE the line, we have to add one */
+	*line = ctx->lines[low].line + 1;
 
 	return SP_ERROR_NONE;
 }
