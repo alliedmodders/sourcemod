@@ -236,6 +236,11 @@ public:
 	 * Adds natives from core into the native pool.
 	 */
 	void RegisterNativesFromCore(sp_nativeinfo_t *natives);
+
+	/**
+	 * Converts a Handle to an IPlugin if possible.
+	 */
+	IPlugin *PluginFromHandle(Handle_t handle, HandleError *err);
 private:
 	/**
 	 * Recursively loads all plugins in the given directory.

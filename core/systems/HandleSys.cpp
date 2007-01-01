@@ -465,7 +465,7 @@ HandleError HandleSystem::ReadHandle(Handle_t handle,
 		{
 			return HandleError_Type;
 		}
-	} else {
+	} else if (type) {
 		if (pHandle->type != type)
 		{
 			return HandleError_Type;

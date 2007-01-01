@@ -1141,3 +1141,21 @@ void CPluginManager::RegisterNativesFromCore(sp_nativeinfo_t *natives)
 {
 	m_natives.push_back(natives);
 }
+
+IPlugin *CPluginManager::PluginFromHandle(Handle_t handle, HandleError *err)
+{
+	IPlugin *pPlugin;
+	HandleError _err;
+
+	if ((_err=g_HandleSys.ReadHandle(handle, g_PluginType, m_MyIdent, (void **)&pPlugin)) != HandleError_None)
+	{
+		pPlugin = NULL;
+	}
+
+	if (err)
+	{
+		*err = _err;
+	}
+
+	return pPlugin;
+}

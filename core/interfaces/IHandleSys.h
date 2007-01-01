@@ -194,7 +194,7 @@ namespace SourceMod
 		 * only perform any further action if the counter hits 0.
 		 *
 		 * @param type		Handle_t identifier to destroy.
-		 * @param ident		Identity token, for destroying secure handles (0 for none).
+		 * @param ident		Identity token, for destroying secure handles (NULL for none).
 		 * @return			A HandleError error code.
 		 */
 		virtual HandleError FreeHandle(Handle_t handle, IdentityToken_t *ident) =0;
@@ -215,9 +215,9 @@ namespace SourceMod
 		 * @brief Retrieves the contents of a handle.
 		 *
 		 * @param handle	Handle_t from which to retrieve contents.
-		 * @param type		Expected type to read as.
+		 * @param type		Expected type to read as.  0 ignores typing rules.
 		 * @param ident		Identity token to validate as.
-		 * @param object	Address to store object in.
+		 * @param object	Optional address to store object in.
 		 * @return			HandleError error code.
 		 */
 		virtual HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t *ident, void **object) =0;
