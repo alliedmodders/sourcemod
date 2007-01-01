@@ -16,6 +16,7 @@ enum FileType
 	FileType_File = 2,		/* File is a file */
 };
 
+#define PLATFORM_MAX_PATH		256
 
 /**
  * @brief Opens a directory/folder for contents enumeration.
@@ -39,4 +40,4 @@ native Handle:OpenDirectory(const String:path[]);
  * @return			True on success, false if there are no more files to read.
  * @error				Invalid or corrupt Handle. 
  */
-native bool:ReadDirEntry(Handle:dir, String:buffer[], maxlength, &FileType:type=0);
+native bool:ReadDirEntry(Handle:dir, String:buffer[], maxlength, &FileType:type=FileType_Unknown);

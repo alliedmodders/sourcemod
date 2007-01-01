@@ -19,6 +19,7 @@ struct Plugin
 #include <float>
 #include <handles>
 #include <string>
+#include <files>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -143,9 +144,9 @@ native GetClientCount(bool:inGameOnly=true);
  * @param client		Player index.
  * @param name			Buffer to store the client's name.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @noreturn
+ * @return			True on success, false otherwise.
  */
-native GetClientName(client, String:name[], maxlen);
+native bool:GetClientName(client, String:name[], maxlen);
 
 /**
  * Retrieves a client's IP address.
@@ -153,9 +154,9 @@ native GetClientName(client, String:name[], maxlen);
  * @param client		Player index.
  * @param name			Buffer to store the client's ip address.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @noreturn
+ * @return			True on success, false otherwise.
  */
-native GetClientIP(client, String:ip[], maxlen);
+native bool:GetClientIP(client, String:ip[], maxlen);
 
 /**
  * Retrieves a client's authentication string (SteamID).
@@ -163,9 +164,9 @@ native GetClientIP(client, String:ip[], maxlen);
  * @param client		Player index.
  * @param auth			Buffer to store the client's auth string.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @return				Returns 0 on failure, non-zero otherwise.
+ * @return			True on success, false otherwise.
  */
-native GetClientAuthString(client, String:auth[], maxlen);
+native bool:GetClientAuthString(client, String:auth[], maxlen);
 
 /**
  * Returns if a certain player is connected.

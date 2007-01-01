@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <handles>
 
 public Plugin:myinfo = 
 {
@@ -7,22 +8,23 @@ public Plugin:myinfo =
 	description = "Tests Stuff",
 	version = "1.0.0.0",
 	url = "http://www.sourcemod.net/"
-}
+};
 
-copy(String:dest[], maxlength, const String:source[])
-{
-	new len
-	
-	while (source[len] != '\0' && len < maxlength)
-	{
-		dest[len] = source[len]
-		len++
-	}
-	
-	dest[len] = '\0'
-}
+native PrintStuff(const String:buffer[]);
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
-	return true
+	new String:buffer[PLATFORM_MAX_PATH];
+	new FileType:type;
+	
+	new Handle:dir = OpenDirectory("addons/stripper");
+	while (ReadDirEntry(dir, buffer, sizeof(buffer), type))
+	{
+		decl String:stuff[1024];
+		Format(stuff, sizeof(stuff), "Type: %d Dir: %s", _:type, buffer)
+		PrintStuff(stuff);
+	}
+	CloseHandle(dir);
+	
+	return true;
 }

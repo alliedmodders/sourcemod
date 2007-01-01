@@ -75,6 +75,28 @@ stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive
 native StrCopy(String:dest[], destLen, const String:source[]);
 
 /**
+ * Formats a string according to the SourceMod format rules (see documentation).
+ *
+ * @param buffer		Destination string buffer.
+ * @param maxlength		Maximum length of output string buffer.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ */
+native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Formats a string according to the SourceMod format rules (see documentation).
+ * @note This is the same as Format(), except none of the input buffers can overlap the same
+ *	    memory as the output buffer.  Since this security check is removed, it is slightly faster.
+ *
+ * @param buffer		Destination string buffer.
+ * @param maxlength		Maximum length of output string buffer.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ */
+native FormatEx(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
+
+/**
  * Converts a string to an integer.
  *
  * @param str			String to convert.
