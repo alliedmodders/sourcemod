@@ -145,6 +145,7 @@ native GetClientCount(bool:inGameOnly=true);
  * @param name			Buffer to store the client's name.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @return			True on success, false otherwise.
+ * @error			If the client is not connected an error will be thrown.
  */
 native bool:GetClientName(client, String:name[], maxlen);
 
@@ -155,6 +156,7 @@ native bool:GetClientName(client, String:name[], maxlen);
  * @param name			Buffer to store the client's ip address.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @return			True on success, false otherwise.
+ * @error			If the client is not connected an error will be thrown.
  */
 native bool:GetClientIP(client, String:ip[], maxlen);
 
@@ -165,6 +167,7 @@ native bool:GetClientIP(client, String:ip[], maxlen);
  * @param auth			Buffer to store the client's auth string.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @return			True on success, false otherwise.
+ * @error			If the client is not connected an error will be thrown.
  */
 native bool:GetClientAuthString(client, String:auth[], maxlen);
 
