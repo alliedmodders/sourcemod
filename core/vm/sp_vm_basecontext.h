@@ -42,12 +42,19 @@ namespace SourcePawn
 		virtual int BindNative(sp_nativeinfo_t *native);
 		virtual int BindNativeToAny(SPVM_NATIVE_FUNC native);
 		virtual int Execute(funcid_t funcid, cell_t *result);
+		virtual void ThrowNativeErrorEx(int error, const char *msg, ...);
+		virtual cell_t ThrowNativeError(const char *msg, ...);
 	public: //IPluginDebugInfo
 		virtual int LookupFile(ucell_t addr, const char **filename);
 		virtual int LookupFunction(ucell_t addr, const char **name);
 		virtual int LookupLine(ucell_t addr, uint32_t *line);
 	private:
+		void SetErrorMessage(const char *msg, va_list ap);
+	private:
 		sp_context_t *ctx;
+		char m_MsgCache[1024];
+		bool m_CustomMsg;
+		bool m_InExec;
 	};
 };
 

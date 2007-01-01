@@ -1,18 +1,32 @@
 #include <string.h>
+#include <stdarg.h>
 #include <assert.h>
 #include <limits.h>
 #include "sp_vm_api.h"
 #include "sp_vm_basecontext.h"
+#include "sp_vm_engine.h"
 
 using namespace SourcePawn;
 
+extern SourcePawnEngine g_SourcePawn;
+
 #define CELLBOUNDMAX	(INT_MAX/sizeof(cell_t))
 #define STACKMARGIN		((cell_t)(16*sizeof(cell_t)))
+
+int GlobalDebugBreak(sp_context_t *ctx, uint32_t frm, uint32_t cip)
+{
+	g_SourcePawn.RunTracer(ctx, frm, cip);
+
+	return SP_ERROR_NONE;
+}
 
 BaseContext::BaseContext(sp_context_t *_ctx)
 {
 	ctx = _ctx;
 	ctx->context = this;
+	ctx->dbreak = GlobalDebugBreak;
+	m_InExec = false;
+	m_CustomMsg = false;
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()
@@ -74,11 +88,26 @@ int BaseContext::Execute(funcid_t funcid, cell_t *result)
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
+	bool wasExec = m_InExec;
+
+	/* Clear the error state, if any */
+	ctx->n_err = SP_ERROR_NONE;
+	ctx->n_idx = 0;
+	m_InExec = true;
+	m_MsgCache[0] = '\0';
+	m_CustomMsg = false;
+
+	g_SourcePawn.PushTracer(ctx);
+
 	err = vm->ContextExecute(ctx, code_addr, result);
-	
+
+	m_InExec = wasExec;
+
 	/**
-	 * :TODO: turn this into an error check
+	 * :TODO: Calling from a plugin in here will erase the cached message...
+	 * Should that be documented?
 	 */
+	g_SourcePawn.PopTracer(err, m_CustomMsg ? m_MsgCache : NULL);
 
 #if defined _DEBUG
 	if (err == SP_ERROR_NONE)
@@ -94,6 +123,51 @@ int BaseContext::Execute(funcid_t funcid, cell_t *result)
 	}
 
 	return err;
+}
+
+void BaseContext::SetErrorMessage(const char *msg, va_list ap)
+{
+	m_CustomMsg = true;
+
+	vsnprintf(m_MsgCache, sizeof(m_MsgCache), msg, ap);
+}
+
+void BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
+{
+	if (!m_InExec)
+	{
+		return;
+	}
+
+	ctx->n_err = error;
+	
+	if (msg)
+	{
+		va_list ap;
+		va_start(ap, msg);
+		SetErrorMessage(msg, ap);
+		va_end(ap);
+	}
+}
+
+cell_t BaseContext::ThrowNativeError(const char *msg, ...)
+{
+	if (!m_InExec)
+	{
+		return 0;
+	}
+
+	ctx->n_err = SP_ERROR_NATIVE;
+
+	if (msg)
+	{
+		va_list ap;
+		va_start(ap, msg);
+		SetErrorMessage(msg, ap);
+		va_end(ap);
+	}
+
+	return 0;
 }
 
 int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_addr)

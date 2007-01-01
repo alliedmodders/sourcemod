@@ -1,5 +1,6 @@
 #include <malloc.h>
 #include <string.h>
+#include <assert.h>
 #include "sp_file_headers.h"
 #include "sp_vm_types.h"
 #include "sp_vm_engine.h"
@@ -13,7 +14,59 @@
  #include <sys/mman.h>
 #endif
 
+#define INVALID_CIP			0xFFFFFFFF
+
 using namespace SourcePawn;
+
+#define ERROR_MESSAGE_MAX		23
+static const char *g_ErrorMsgTable[] = 
+{
+	NULL,
+	"Unrecognizable file format",
+	"Decompressor was not found",
+	"Not enough space on the heap",
+	"Invalid parameter or parameter type",
+	"Invalid plugin address",
+	"Object or index not found",
+	"Invalid index or index not found",
+	"Not enough space on the stack",
+	"Debug section not found or debug not enabled",
+	"Invalid instruction",
+	"Invalid memory access",
+	"Stack went below stack boundary",
+	"Heap went below heap boundary",
+	"Divide by zero",
+	"Array index is out of bounds",
+	"Instruction contained invalid parameter",
+	"Stack memory leaked by native",
+	"Heap memory leaked by native",
+	"Dynamic array is too big",
+	"Tracker stack is out of bounds",
+	"Native was never bound",
+	"Maximum number of parameters reached",
+	"Native detected error",
+};
+
+SourcePawnEngine::SourcePawnEngine()
+{
+	m_pDebugHook = NULL;
+	m_CallStack = NULL;
+	m_FreedCalls = NULL;
+	m_CurChain = 0;
+}
+
+SourcePawnEngine::~SourcePawnEngine()
+{
+	assert(m_CallStack == NULL);
+
+	TracedCall *pTemp;
+	while (m_FreedCalls)
+	{
+		pTemp = m_FreedCalls->next;
+		delete pTemp;
+		m_FreedCalls = pTemp;
+	}
+}
 
 void *SourcePawnEngine::ExecAlloc(size_t size)
 {
@@ -301,4 +354,225 @@ int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
 	}
 
 	return SP_ERROR_NONE;
+}
+
+IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
+{
+	IDebugListener *old = m_pDebugHook;
+
+	m_pDebugHook = pListener;
+
+	return old;
+}
+
+unsigned int SourcePawnEngine::GetContextCallCount()
+{
+	if (!m_CallStack)
+	{
+		return 0;
+	}
+
+	return m_CallStack->chain;
+}
+
+TracedCall *SourcePawnEngine::MakeTracedCall(bool new_chain)
+{
+	TracedCall *pCall;
+
+	if (!m_FreedCalls)
+	{
+		pCall = new TracedCall;
+	} else {
+		/* Unlink the head node from the free list */
+		pCall = m_FreedCalls;
+		m_FreedCalls = m_FreedCalls->next;
+		if (m_FreedCalls)
+		{
+			m_FreedCalls->prev = NULL;
+		}
+	}
+
+	/* Link as the head node into the call stack */
+	pCall->next = m_CallStack;
+	pCall->prev = NULL;
+
+	if (new_chain)
+	{
+		pCall->chain = ++m_CurChain;
+	} else {
+		pCall->chain = m_CurChain;
+	}
+
+	if (m_CallStack)
+	{
+		m_CallStack->prev = pCall;
+	}
+	m_CallStack = pCall;
+
+	return pCall;
+}
+
+void SourcePawnEngine::FreeTracedCall(TracedCall *pCall)
+{
+	/* Check if this is the top of the call stack */
+	if (pCall == m_CallStack)
+	{
+		m_CallStack = m_CallStack->next;
+		if (m_CallStack)
+		{
+			m_CallStack->prev = NULL;
+		}
+	}
+
+	/* Add this to our linked list of freed calls */
+	if (!m_FreedCalls)
+	{
+		m_FreedCalls = pCall;
+		m_FreedCalls->next = NULL;
+		m_FreedCalls->prev = NULL;
+	} else {
+		pCall->next = m_FreedCalls;
+		pCall->prev = NULL;
+		m_FreedCalls->prev = pCall;
+		m_FreedCalls = pCall;
+	}
+}
+
+void SourcePawnEngine::PushTracer(sp_context_t *ctx)
+{
+	TracedCall *pCall = MakeTracedCall(true);
+
+	pCall->cip = INVALID_CIP;
+	pCall->ctx = ctx;
+	pCall->frm = INVALID_CIP;
+}
+
+void SourcePawnEngine::RunTracer(sp_context_t *ctx, uint32_t frame, uint32_t codeip)
+{
+	assert(m_CallStack != NULL);
+	assert(m_CallStack->ctx == ctx);
+	assert(m_CallStack->chain == m_CurChain);
+
+	if (m_CallStack->cip == INVALID_CIP)
+	{
+		/* We aren't logging anything yet, so begin the trace */
+		m_CallStack->cip = codeip;
+		m_CallStack->frm = frame;
+	} else {
+		if (m_CallStack->frm > frame)
+		{
+			/* The last frame has moved down the stack, 
+			 * so we have to push a new call onto our list.
+			 */
+			TracedCall *pCall = MakeTracedCall(false);
+			pCall->frm = frame;
+		} else if (m_CallStack->frm < frame) {
+			/* The last frame has moved up the stack,
+			 * so we have to pop the call from our list.
+			 */
+			FreeTracedCall(m_CallStack);
+		}
+		/* no matter where we are, update the cip */
+		m_CallStack->cip = codeip;
+	}
+}
+
+void SourcePawnEngine::PopTracer(int error, const char *msg)
+{
+	assert(m_CallStack != NULL);
+
+	if (error != SP_ERROR_NONE && m_pDebugHook)
+	{
+		CContextTrace trace(m_CallStack, error, msg);
+		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx->context, &trace);
+	}
+
+	/* Now pop the error chain  */
+	while (m_CallStack && m_CallStack->chain == m_CurChain)
+	{
+		FreeTracedCall(m_CallStack);
+	}
+
+	m_CurChain--;
+}
+
+CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg) : 
+ m_Error(error), m_pMsg(msg), m_pStart(pStart), m_pIterator(pStart)
+{
+}
+
+bool CContextTrace::DebugInfoAvailable()
+{
+	return ((m_pStart->ctx->flags & SP_FLAG_DEBUG) == SP_FLAG_DEBUG);
+}
+
+const char *CContextTrace::GetCustomErrorString()
+{
+	return m_pMsg;
+}
+
+int CContextTrace::GetErrorCode()
+{
+	return m_Error;
+}
+
+const char *CContextTrace::GetErrorString()
+{
+	if (m_Error > ERROR_MESSAGE_MAX || 
+		m_Error < 1)
+	{
+		return "Invalid error code";
+	} else {
+		return g_ErrorMsgTable[m_Error];
+	}
+}
+
+void CContextTrace::ResetTrace()
+{
+	m_pIterator = m_pStart;
+}
+
+bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
+{
+	if (m_pIterator->chain != m_pStart->chain)
+	{
+		return false;
+	}
+
+	if (m_pIterator->cip == INVALID_CIP)
+	{
+		return false;
+	}
+
+	IPluginContext *pContext = m_pIterator->ctx->context;
+	IPluginDebugInfo *pInfo = pContext->GetDebugInfo();
+
+	m_pIterator = m_pIterator->next;
+
+	if (!pInfo)
+	{
+		return false;
+	}
+
+	if (!trace)
+	{
+		return true;
+	}
+
+	if (pInfo->LookupFile(m_pIterator->cip, &(trace->filename)) != SP_ERROR_NONE)
+	{
+		trace->filename = NULL;
+	}
+
+	if (pInfo->LookupFunction(m_pIterator->cip, &(trace->function)) != SP_ERROR_NONE)
+	{
+		trace->function = NULL;
+	}
+
+	if (pInfo->LookupLine(m_pIterator->cip, &(trace->line)) != SP_ERROR_NONE)
+	{
+		trace->line = 0;
+	}
+
+	return true;
 }

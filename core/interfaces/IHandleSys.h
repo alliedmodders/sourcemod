@@ -100,7 +100,7 @@ namespace SourceMod
 		 *
 		 * @param name		Name of handle type (NULL or "" to be anonymous)
 		 * @param dispatch	Pointer to a valid IHandleTypeDispatch object.
-		 * @return			A new HandleType_t unique ID.
+		 * @return			A new HandleType_t unique ID, or 0 on failure.
 		 */
 		virtual HandleType_t CreateType(const char *name, 
 										IHandleTypeDispatch *dispatch) =0;
@@ -116,7 +116,7 @@ namespace SourceMod
 		 * @param security	Pointer to a temporary HandleSecurity object, NULL to use default 
 		 *					or inherited permissions.
 		 * @param ident		Security token for any permissions.
-		 * @return			A new HandleType_t unique ID.
+		 * @return			A new HandleType_t unique ID, or 0 on failure.
 		 */
 		virtual HandleType_t CreateTypeEx(const char *name,
 										  IHandleTypeDispatch *dispatch,

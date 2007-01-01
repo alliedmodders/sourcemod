@@ -488,10 +488,6 @@
 				Name="Header Files"
 				>
 				<File
-					RelativePath="..\..\sourcepawn\include\sp_typeutil.h"
-					>
-				</File>
-				<File
 					RelativePath="..\vm\sp_vm_basecontext.h"
 					>
 				</File>
@@ -520,6 +516,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\sourcepawn\include\sp_typeutil.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\sourcepawn\include\sp_vm_api.h"
 					>
 				</File>
@@ -529,10 +529,6 @@
 				</File>
 				<File
 					RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_typeutil.h"
 					>
 				</File>
 			</Filter>
