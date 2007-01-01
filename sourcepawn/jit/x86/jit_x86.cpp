@@ -1306,11 +1306,12 @@ inline void WriteOp_Break(JitWriter *jit)
 	CompData *data = (CompData *)jit->data;
 	if (data->debug)
 	{
+		jit->write_ubyte(IA32_INT3);
 		//mov ecx, <cip>
 		jitoffs_t wr = IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, 0);
 		jitoffs_t save = jit->get_outputpos();
 		jit->set_outputpos(wr);
-		jit->write_uint32((uint32_t)(jit->outbase + wr));
+		jit->write_uint32((uint32_t)(wr));
 		jit->set_outputpos(save);
 		
 		wr = IA32_Call_Imm32(jit, 0);
@@ -1849,8 +1850,8 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 			 */
 			pcode_offs += jit->get_inputpos();
 		}
-		/* Offset must always be 1)positive and 2)less than the codesize */
-		assert(pcode_offs >= 0 && (uint32_t)pcode_offs < data->codesize);
+		/* Offset must always be 1)positive and 2)less than or equal to the codesize */
+		assert(pcode_offs >= 0 && (uint32_t)pcode_offs <= data->codesize);
 		/* Do the lookup in the native dictionary. */
 		return *(jitoffs_t *)(data->rebase + pcode_offs);
 	} else {
@@ -1916,7 +1917,8 @@ sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
 	writer.inbase = (cell_t *)code;
 	writer.outptr = NULL;
 	writer.outbase = NULL;
-	data->rebase = (jitcode_t)engine->BaseAlloc(plugin->pcode_size);
+	/* Allocate relocation.  One extra cell for final CIP. */
+	data->rebase = (jitcode_t)engine->BaseAlloc(plugin->pcode_size + sizeof(cell_t));
 
 	/* We will jump back here for second pass */
 jit_rewind:
@@ -1933,6 +1935,13 @@ jit_rewind:
 	{
 		data->jit_sysreq_n = jit->get_outputpos();
 		WriteOp_Sysreq_N_Function(jit);
+	}
+
+	/* Write the debug section if we need it */
+	if (data->debug == true)
+	{
+		data->jit_break = jit->get_outputpos();
+		Write_BreakDebug(jit);
 	}
 
 	/* Plugins compiled with -O0 will need this! */
@@ -1985,6 +1994,11 @@ jit_rewind:
 		}
 		/* Write these last because error jumps should be unpredicted, and thus forward */
 		WriteErrorRoutines(data, jit);
+
+		/* Write the final CIP to the last position in the reloc array */
+		pcode_offs = (jitoffs_t)((uint8_t *)writer.inptr - code);
+		native_offs = jit->get_outputpos();
+		*((jitoffs_t *)(data->rebase + pcode_offs)) = native_offs;
 
 		/* the total codesize is now known! */
 		codemem = writer.get_outputpos();
@@ -2196,7 +2210,12 @@ bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char 
 
 	if (strcmp(key, "debug") == 0)
 	{
-		data->debug = (atoi(val) == 1);
+		if ((atoi(val) == 1) || !strcmp(val, "yes"))
+		{
+			data->debug = true;
+		} else {
+			data->debug = false;
+		}
 		if (data->debug && !(data->plugin->flags & SP_FLAG_DEBUG))
 		{
 			data->debug = false;

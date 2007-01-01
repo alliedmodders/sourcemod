@@ -127,24 +127,26 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 
 void Write_BreakDebug(JitWriter *jit)
 {
-	//push ecx
+	//push edi
+	//mov edi, ecx
 	//mov ecx, [esi+ctx]
 	//cmp [ecx+dbreak], 0
 	//jnz :nocall
-	IA32_Push_Reg(jit, AMX_REG_TMP);
+	IA32_Push_Reg(jit, REG_EDI);
+	IA32_Mov_Reg_Rm(jit, REG_EDI, REG_ECX, MOD_REG);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
 	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, dbreak), 0);
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
+	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_Z, 0);
 
+	/* NOTE, Hack! PUSHAD pushes EDI last which still has the CIP */
 	//pushad
-	IA32_Pushad(jit);
-
 	//push [esi+frm]
 	//push ctx
 	//mov ecx, [ecx+dbreak]
 	//call ecx
 	//add esp, 8
 	//popad
+	IA32_Pushad(jit);
 	IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_FRAME); //:TODO: move to regs and push? and dont disp for 0
 	IA32_Push_Reg(jit, AMX_REG_TMP);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_TMP, offsetof(sp_context_t, dbreak));
@@ -153,8 +155,10 @@ void Write_BreakDebug(JitWriter *jit)
 	IA32_Popad(jit);
 
 	//:nocall
+	//pop edi
+	//ret
+	IA32_Pop_Reg(jit, REG_EDI);
 	IA32_Send_Jump8_Here(jit, jmp);
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*1, MOD_REG);
 	IA32_Return(jit);
 }
 
