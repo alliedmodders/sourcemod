@@ -608,6 +608,20 @@ namespace SourcePawn
 		 * @return			Number of functions.
 		 */
 		virtual unsigned int FunctionCount(const sp_context_t *ctx) =0;
+
+		/**
+		 * @brief Returns a version string.
+		 *
+		 * @return			Versioning string.
+		 */
+		virtual const char *GetVersionString() =0;
+
+		/**
+		 * @brief Returns a string describing optimizations.
+		 *
+		 * @return			String describing CPU specific optimizations.
+		 */
+		virtual const char *GetCPUOptimizations() =0;
 	};
 };
 

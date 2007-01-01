@@ -2119,8 +2119,23 @@ jit_rewind:
 		{
 			sym = (sp_fdbg_symbol_t *)cursor;
 
-			ctx->symbols[iter].codestart = RelocLookup(jit, sym->codestart, false);
-			ctx->symbols[iter].codeend = RelocLookup(jit, sym->codeend, false);
+			/**
+			 * @brief There is an "issue" where the compiler will give totally bogus code 
+			 * address because codegeneration is still being calculated.  A simple fix for 
+			 * this is to coerce the codestart value to 0 when it's invalid.
+			 */
+			if (sym->codestart > data->codesize)
+			{
+				ctx->symbols[iter].codestart = 0;
+			} else {
+				ctx->symbols[iter].codestart = RelocLookup(jit, sym->codestart, false);
+			}
+			if (sym->codeend > data->codesize)
+			{
+				ctx->symbols[iter].codeend = data->codesize;
+			} else {
+				ctx->symbols[iter].codeend = RelocLookup(jit, sym->codeend, false);
+			}
 			ctx->symbols[iter].name = strbase + sym->name;
 			ctx->symbols[iter].sym = sym;
 
@@ -2260,4 +2275,14 @@ unsigned int JITX86::FunctionCount(const sp_context_t *ctx)
 	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
 
 	return fnc->num_functions;
+}
+
+const char *JITX86::GetVersionString()
+{
+	return "1.0.0.0";
+}
+
+const char *JITX86::GetCPUOptimizations()
+{
+	return "Generic 80486";
 }

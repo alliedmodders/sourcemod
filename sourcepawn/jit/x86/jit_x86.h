@@ -81,6 +81,8 @@ public:
 	unsigned int GetAPIVersion();
 	bool FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result);
 	unsigned int FunctionCount(const sp_context_t *ctx);
+	const char *GetVersionString();
+	const char *GetCPUOptimizations();
 };
 
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
