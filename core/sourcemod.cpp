@@ -200,6 +200,11 @@ const char *SourceModBase::GetSMBaseDir()
 	return m_SMBaseDir;
 }
 
+const char *SourceModBase::GetBaseDir()
+{
+	return g_BaseDir.c_str();
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

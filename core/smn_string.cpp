@@ -165,5 +165,7 @@ REGISTER_NATIVES(basicstrings)
 	{"IntToString",			sm_numtostr},
 	{"StringToFloat",		sm_strtofloat},
 	{"FloatToString",		sm_floattostr},
+	{"Format",				sm_format},
+	{"FormatEx",			sm_formatex},
 	{NULL,					NULL},
 };

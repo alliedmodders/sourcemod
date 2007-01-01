@@ -38,6 +38,11 @@ public:
 	const char *GetSMBaseDir();
 
 	/**
+	 * @brief Returns the base folder for file natives.
+	 */
+	const char *GetBaseDir();
+
+	/**
 	 * @brief Returns whether our load in this map is late.
 	 */
 	bool IsLateLoadInMap();

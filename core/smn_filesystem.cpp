@@ -51,7 +51,10 @@ cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	IDirectory *pDir = g_LibSys.OpenDirectory(path);
+	char realpath[PLATFORM_MAX_PATH+1];
+	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), path);
+
+	IDirectory *pDir = g_LibSys.OpenDirectory(realpath);
 	if (!pDir)
 	{
 		return 0;
@@ -95,20 +98,36 @@ cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 	}
 
 	const char *path = pDir->GetEntryName();
-	if ((err=pContext->StringToLocalUTF8(params[2], params[3],path, NULL))
+	if ((err=pContext->StringToLocalUTF8(params[2], params[3], path, NULL))
 		!= SP_ERROR_NONE)
 	{
 		pContext->ThrowNativeErrorEx(err, NULL);
 		return 0;
 	}
 
+	pDir->NextEntry();
+
 	return true;
 }
 
+cell_t PrintStuff(IPluginContext *pContext, const cell_t *params)
+{
+	char *stuff;
+	pContext->LocalToString(params[1], &stuff);
+
+	FILE *fp = fopen("c:\\debug.txt", "at");
+	fprintf(fp, "%s\n", stuff);
+	fclose(fp);
+
+	return 0;
+}
+
+static FileNatives s_FileNatives;
 
 REGISTER_NATIVES(filesystem)
 {
 	{"OpenDirectory",			sm_OpenDirectory},
 	{"ReadDirEntry",			sm_ReadDirEntry},
+	{"PrintStuff",				PrintStuff},
 	{NULL,						NULL},
 };
