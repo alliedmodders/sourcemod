@@ -258,6 +258,7 @@ int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 	high = ctx->plugin->info.natives_num - 1;
 	low = 0;
 
+#if 0
 	while (low <= high)
 	{
 		mid = (low + high) / 2;
@@ -275,6 +276,19 @@ int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 			high = mid - 1;
 		}
 	}
+#else
+	for (uint32_t i=0; i<ctx->plugin->info.natives_num; i++)
+	{
+		if (strcmp(ctx->natives[i].name, name) == 0)
+		{
+			if (index)
+			{
+				*index = i;
+			}
+			return SP_ERROR_NONE;
+		}
+	}
+#endif
 
 	return SP_ERROR_NOT_FOUND;
 }
