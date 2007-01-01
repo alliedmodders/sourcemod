@@ -144,17 +144,17 @@ native GetClientCount(bool:inGameOnly=true);
 native GetClientName(client, String:name[], maxlen);
 
 /**
- * Returns the client's Ip address.
+ * Retrieves a client's IP address.
  *
  * @param client		Player index.
  * @param name			Buffer to store the client's ip address.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @noreturn
  */
-native GetClientIp(client, String:ip[], maxlen);
+native GetClientIP(client, String:ip[], maxlen);
 
 /**
- * Returns the client's authindex.
+ * Retrieves a client's authentication string (SteamID).
  *
  * @param client		Player index.
  * @param auth			Buffer to store the client's auth string.
