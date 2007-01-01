@@ -349,6 +349,7 @@ namespace SourcePawn
 	 */
 	class IContextTrace
 	{
+	public:
 		/**
 		 * @brief Returns the integer error code.
 		 *
@@ -391,6 +392,15 @@ namespace SourcePawn
 		 * @brief Resets the trace to its original position (the call on the top of the stack).
 		 */
 		virtual void ResetTrace() =0;
+
+		/**
+		 * @brief Retrieves the name of the last native called.
+		 * Returns NULL if there was no native that caused the error.
+		 *
+		 * @param index		Opterional pointer to store index.
+		 * @return			Native name, or NULL if none.
+		 */
+		virtual const char *GetLastNative(uint32_t *index) =0;
 	};
 
 
@@ -484,7 +494,10 @@ namespace SourcePawn
 		virtual void ExecFree(void *address) =0;
 
 		/**
-		 * @brief Sets the debug listener. 
+		 * @brief Sets the debug listener.  This should only be called once.
+		 * If called successively (using manual chaining), only the last function should
+		 * attempt to call back into the same plugin.  Otherwise, globally cached states
+		 * can be accidentally overwritten.
 		 *
 		 * @param listener	Pointer to an IDebugListener.
 		 * @return			Old IDebugListener, or NULL if none.
