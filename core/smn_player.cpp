@@ -1,5 +1,7 @@
 #include "CPlayerManager.h"
 
+//:TODO: register these and use the same capitalization conventions as the natives
+
 static cell_t sm_getclientcount(IPluginContext *pCtx, const cell_t *params)
 {
 	if (params[1])
