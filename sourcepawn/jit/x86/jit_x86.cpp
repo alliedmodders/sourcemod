@@ -1306,7 +1306,7 @@ inline void WriteOp_Break(JitWriter *jit)
 	CompData *data = (CompData *)jit->data;
 	if (data->debug)
 	{
-		jit->write_ubyte(IA32_INT3);
+		//jit->write_ubyte(IA32_INT3);
 		//mov ecx, <cip>
 		jitoffs_t wr = IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, 0);
 		jitoffs_t save = jit->get_outputpos();
