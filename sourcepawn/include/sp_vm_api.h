@@ -312,16 +312,42 @@ namespace SourcePawn
 		 * @return				Error code (if any) from the VM.
 		 */
 		virtual int Execute(uint32_t funcid, cell_t *result) =0;
+
+
+		/**
+		 * @brief Throws a error and halts any current execution.
+		 *
+		 * @param error		The error number to set.
+		 * @param msg		Custom error message format.  NULL to use default.
+		 * @param ...		Message format arguments, if any.
+		 */
+		virtual void ThrowNativeErrorEx(int error, const char *msg, ...) =0;
+
+		/**
+		 * @brief Throws a generic native error and halts any current execution.
+		 *
+		 * @param msg		Custom error message format.  NULL to set no message.
+		 * @param ...		Message format arguments, if any.
+		 * @return			0 for convenience.
+		 */
+		virtual cell_t ThrowNativeError(const char *msg, ...) =0;
 	};
 
-	struct ErrorTraceInfo
+
+	/**
+	 * @brief Information about a position in a call stack.
+	 */
+	struct CallStackInfo
 	{
-		const char *filename;
-		unsigned int line;
-		const char *function;
+		const char *filename;		/* NULL if not found */
+		unsigned int line;			/* 0 if not found */
+		const char *function;		/* NULL if not found */
 	};
 
-	class IContextErrorInfo
+	/**
+	 * @brief Retrieves error information from a debug hook.
+	 */
+	class IContextTrace
 	{
 		/**
 		 * @brief Returns the integer error code.
@@ -352,28 +378,31 @@ namespace SourcePawn
 		virtual const char *GetCustomErrorString() =0;
 
 		/**
-		 * @brief Returns the number of calls in the call backtrace.
-		 * NOTE: Tracers are ordered from 0 to N-1, where 0 is the top of the trace.
+		 * @brief Returns trace info for a specific point in the backtrace, if any.
+		 * The next subsequent call to GetTraceInfo() will return the next item in the call stack.
+		 * Calls are retrieved in descending order (i.e. the first item is at the top of the stack/call sequence).
 		 *
-		 * @return			Number of calls in the trace.
+		 * @param trace		An ErrorTraceInfo buffer to store information (NULL to ignore).
+		 * @return			True if successful, false if there are no more traces.
 		 */
-		virtual unsigned int TraceCallCount() =0;
+		virtual bool GetTraceInfo(CallStackInfo *trace) =0;
 
 		/**
-		 * @brief Returns trace info for a specific point in the backtrace.
-		 *
-		 * @param call		The call trace index (from 0 to N-1).
-		 * @param trace		An ErrorTraceInfo buffer to store information.
-		 * @return			True if successful, false otherwise.
+		 * @brief Resets the trace to its original position (the call on the top of the stack).
 		 */
-		virtual bool GetTraceInfo(unsigned int call, ErrorTraceInfo *trace) =0;
+		virtual void ResetTrace() =0;
 	};
 
+
+	/**
+	 * @brief Provides callbacks for debug information.
+	 */
 	class IDebugListener
 	{
 	public:
-		virtual void OnContextExecuteError(IPluginContext *ctx, IContextErrorInfo *error) =0;
+		virtual void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error) =0;
 	};
+
 
 	/**
 	 * @brief Contains helper functions used by VMs and the host app
@@ -468,26 +497,8 @@ namespace SourcePawn
 		 * @return			Number of contexts in the call stack.
 		 */
 		virtual unsigned int GetContextCallCount() =0;
-
-		/**
-		 * @brief Throws an error and halts any current execution.
-		 *
-		 * @param error		The error number to set.
-		 * @param msg		Custom error message format.  NULL to use default.
-		 * @param ...		Message format arguments, if any.
-		 */
-		virtual void ThrowNativeErrorEx(int error, const char *msg, ...) =0;
-
-		/**
-		 * @brief Throws a native error and halts any current execution.
-		 * NOTE: This is a wrapper around ThrowError() for convenience.
-		 *
-		 * @param msg		Custom error message format.  NULL to set no message.
-		 * @param ...		Message format arguments, if any.
-		 * @return			0 for convenience.
-		 */
-		virtual void ThrowNativeError(const char *msg, ...) =0;
 	};
+
 
 	/**
 	 * @brief Dummy class for encapsulating private compilation data.
@@ -497,6 +508,7 @@ namespace SourcePawn
 	public:
 		virtual ~ICompilation() { };
 	};
+
 
 	/** 
 	 * @brief Outlines the interface a Virtual Machine (JIT) must expose

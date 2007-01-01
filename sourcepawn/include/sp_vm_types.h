@@ -13,6 +13,7 @@ typedef uint32_t	funcid_t;
 
 /**
  * Error codes
+ * NOTE: Be sure to update the error string table when changing these
  */
 #define SP_ERROR_NONE					0
 #define SP_ERROR_FILE_FORMAT			1	/* File format unrecognized */
