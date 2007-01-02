@@ -81,6 +81,7 @@ native StrCopy(String:dest[], destLen, const String:source[]);
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
+ * @return			Number of cells written.
  */
 native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
 
@@ -93,6 +94,7 @@ native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,S
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
+ * @return			Number of cells written.
  */
 native FormatEx(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
 
