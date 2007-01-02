@@ -298,3 +298,15 @@ stock bool:operator!(Float:oper)
 forward operator%(Float:oper1, Float:oper2);
 forward operator%(Float:oper1, oper2);
 forward operator%(oper1, Float:oper2);
+
+#define FLOAT_PI 3.1415926535897932384626433832795
+
+stock Float:DegToRad(Float:angle)
+{
+	return (angle*FLOAT_PI)/180;
+}
+
+stock Float:RadToDeg(Float:angle)
+{
+	return (angle*180)/FLOAT_PI;
+}
