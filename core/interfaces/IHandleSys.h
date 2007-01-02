@@ -42,13 +42,15 @@ namespace SourceMod
 		HandleError_Access,			/* No access permitted to free this handle */
 		HandleError_Limit,			/* The limited number of handles has been reached */
 		HandleError_Identity,		/* The identity token was not usable */
+		HandleError_Owner,			/* Owners do not match for this operation */
 	};
 
 	enum HandleAccessRight
 	{
 		HandleAccess_Create,		/* TYPE: Instances can be created by other objects (this makes it searchable) */
 		HandleAccess_Read,			/* HANDLES: Can be read by other objects */
-		HandleAccess_Delete,		/* HANDLES: Can be deleted by other objects */
+		HandleAccess_IdentDelete,	/* HANDLES: Can be deleted by other identities */
+		HandleAccess_OwnerDelete,	/* HANDLES: Can be deleted by other owners */
 		HandleAccess_Inherit,		/* TYPE: Can be inherited by new types */
 		HandleAccess_Clone,			/* HANDLES: Can be cloned */
 		/* ------------- */
@@ -62,9 +64,10 @@ namespace SourceMod
 			owner = NULL;
 			access[HandleAccess_Create] = true;
 			access[HandleAccess_Read] = true;
-			access[HandleAccess_Delete] = true;
+			access[HandleAccess_IdentDelete] = true;
 			access[HandleAccess_Inherit] = true;
 			access[HandleAccess_Clone] = true;
+			access[HandleAccess_OwnerDelete] = false;
 		}
 		IdentityToken_t *owner;				/* Owner of the handle */
 		bool access[HandleAccess_TOTAL];	/* World access rights */
@@ -166,7 +169,7 @@ namespace SourceMod
 		 * 
 		 * @param type		Type to use on the handle.
 		 * @param object	Object to bind to the handle.
-		 * @param owner		Owner for the handle.
+		 * @param owner		Owner for the handle.  NULL means anonymous (no owner).
 		 * @param ident		Identity token if any security rights are needed.
 		 * @return			A new Handle_t, or 0 on failure.
 		 */
@@ -196,10 +199,11 @@ namespace SourceMod
 		 * only perform any further action if the counter hits 0.
 		 *
 		 * @param type		Handle_t identifier to destroy.
+		 * @param owner		Owner of handle (NULL for none).
 		 * @param ident		Identity token, for destroying secure handles (NULL for none).
 		 * @return			A HandleError error code.
 		 */
-		virtual HandleError FreeHandle(Handle_t handle, IdentityToken_t *ident) =0;
+		virtual HandleError FreeHandle(Handle_t handle, IdentityToken_t *owner, IdentityToken_t *ident) =0;
 
 		/**
 		 * @brief Clones a handle by adding to its internal reference count.  Its data,

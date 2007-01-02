@@ -36,8 +36,9 @@
 enum HandleSet
 {
 	HandleSet_None = 0,
-	HandleSet_Used,
-	HandleSet_Identity
+	HandleSet_Used,			/* The Handle is in use */
+	HandleSet_Freed,		/* The "master" Handle of a clone chain is freed */
+	HandleSet_Identity,		/* The Handle is a special identity */
 };
 
 struct QHandle
@@ -91,7 +92,7 @@ public: //IHandleSystem
 							IdentityToken_t *source, 
 							IdentityToken_t *ident);
 	Handle_t CreateScriptHandle(HandleType_t type, void *object, IPluginContext *pContext, IdentityToken_t *ident);
-	HandleError FreeHandle(Handle_t handle, IdentityToken_t *ident);
+	HandleError FreeHandle(Handle_t handle, IdentityToken_t *owner, IdentityToken_t *ident);
 	HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t *source, IdentityToken_t *ident);
 	HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t *ident, void **object);
 	bool TypeCheck(HandleType_t intype, HandleType_t outtype);
@@ -103,7 +104,8 @@ protected:
 						  IdentityToken_t *ident, 
 						  QHandle **pHandle, 
 						  unsigned int *index,
-						  HandleAccessRight access);
+						  HandleAccessRight access,
+						  bool ignoreFree=false);
 
 	/**
 	 * Creates a basic handle and sets its reference count to 1.

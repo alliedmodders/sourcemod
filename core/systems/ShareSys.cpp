@@ -27,7 +27,7 @@ void ShareSystem::OnSourceModStartup(bool late)
 
 	sec.owner = GetIdentRoot();
 	sec.access[HandleAccess_Inherit] = false;
-	sec.access[HandleAccess_Delete] = false;
+	sec.access[HandleAccess_IdentDelete] = false;
 	
 	m_TypeRoot = g_HandleSys.CreateTypeEx("Identity", this, 0, &sec, NULL);
 	m_IfaceType = g_HandleSys.CreateTypeEx("Interface", this, 0, &sec, NULL);
@@ -184,7 +184,7 @@ void ShareSystem::AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *nati
 
 void ShareSystem::DestroyIdentity(IdentityToken_t *identity)
 {
-	g_HandleSys.FreeHandle(identity->ident, GetIdentRoot());
+	g_HandleSys.FreeHandle(identity->ident, NULL, GetIdentRoot());
 	delete identity;
 }
 

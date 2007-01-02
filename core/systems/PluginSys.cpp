@@ -74,7 +74,7 @@ CPlugin::~CPlugin()
 
 	if (m_handle)
 	{
-		g_HandleSys.FreeHandle(m_handle, g_PluginSys.GetIdentity());
+		g_HandleSys.FreeHandle(m_handle, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity());
 		g_ShareSys.DestroyIdentity(m_ident);
 	}
 }
@@ -1117,7 +1117,7 @@ void CPluginManager::OnSourceModAllInitialized()
 
 	sec.owner = m_MyIdent;	/* :TODO: implement ShareSys */
 	sec.access[HandleAccess_Create] = false;
-	sec.access[HandleAccess_Delete] = false;
+	sec.access[HandleAccess_IdentDelete] = false;
 	sec.access[HandleAccess_Inherit] = false;
 	sec.access[HandleAccess_Clone] = false;
 	

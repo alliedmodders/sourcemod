@@ -334,7 +334,8 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 									IdentityToken_t *ident, 
 									QHandle **in_pHandle, 
 									unsigned int *in_index,
-									HandleAccessRight access)
+									HandleAccessRight access,
+									bool ignoreFree)
 {
 	unsigned int serial = (handle >> 16);
 	unsigned int index = (handle & HANDLESYS_HANDLE_MASK);
@@ -352,7 +353,8 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 	{
 		return HandleError_Access;
 	}
-	if (!pHandle->set)
+	if (!pHandle->set
+		|| (pHandle->set == HandleSet_Freed && !ignoreFree))
 	{
 		return HandleError_Freed;
 	} else if (pHandle->set == HandleSet_Identity
@@ -383,6 +385,12 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, 
 		return err;
 	}
 
+	/* Identities cannot be cloned */
+	if (pHandle->set == HandleSet_Identity)
+	{
+		return HandleError_Identity;
+	}
+
 	QHandleType *pType = &m_Types[pHandle->type];
 
 	/* Get a new Handle ID */
@@ -395,7 +403,8 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, 
 		return err;
 	}
 
-	pNewHandle->clone = index;
+	pNewHandle->clone = handle;
+	pHandle->refcount++;
 
 	if (out_newhandle)
 	{
@@ -405,39 +414,58 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *out_newhandle, 
 	return HandleError_None;
 }
 
-HandleError HandleSystem::FreeHandle(Handle_t handle, IdentityToken_t *ident)
+HandleError HandleSystem::FreeHandle(Handle_t handle, IdentityToken_t *pOwner, IdentityToken_t *ident)
 {
 	unsigned int index;
 	QHandle *pHandle;
 	HandleError err;
 
-	if ((err=GetHandle(handle, ident, &pHandle, &index, HandleAccess_Delete)) != HandleError_None)
+	if ((err=GetHandle(handle, ident, &pHandle, &index, HandleAccess_IdentDelete)) != HandleError_None)
 	{
 		return err;
 	}
 
 	QHandleType *pType = &m_Types[pHandle->type];
 
+	if (pType->sec.access[HandleAccess_OwnerDelete] == false
+		&& pHandle->owner
+		&& pHandle->owner != pOwner)
+	{
+		return HandleError_Access;
+	}
+
 	bool dofree = false;
 	if (pHandle->clone)
 	{
-		/* If we're a clone, there's not a lot to do. */
-		if (FreeHandle(pHandle->clone, ident) != HandleError_None)
+		/* If we're a clone, decrease the parent reference count */
+		QHandle *pMaster;
+		unsigned int master;
+
+		/* This call should not return an error, it'd be a corruption sign */
+		err = GetHandle(pHandle->clone, ident, &pMaster, &master, HandleAccess_IdentDelete, true);
+		assert(err == HandleError_None);
+
+		/* Release the clone now */
+		ReleasePrimHandle(index);
+
+		/* Decrement the master's reference count */
+		if (--pMaster->refcount == 0)
 		{
-			assert(false);
+			/* Type should be the same but do this anyway... */
+			pType = &m_Types[pMaster->type];
+			pType->dispatch->OnHandleDestroy(pMaster->type, pMaster->object);
+			ReleasePrimHandle(master);
 		}
-		dofree = true;
 	} else {
+		/* Decrement, free if necessary */
 		if (--pHandle->refcount == 0)
 		{
-			dofree = true;
 			pType->dispatch->OnHandleDestroy(pHandle->type, pHandle->object);
+			ReleasePrimHandle(index);
+		} else {
+			/* We must be cloned, so mark ourselves as freed */
+			pHandle->set = HandleSet_Freed;
 		}
-	}
-
-	if (dofree)
-	{
-		ReleasePrimHandle(index);
 	}
 
 	return HandleError_None;
@@ -477,7 +505,8 @@ HandleError HandleSystem::ReadHandle(Handle_t handle,
 		/* if we're a clone, the rules change - object is ONLY in our reference */
 		if (pHandle->clone)
 		{
-			pHandle = &m_Handles[pHandle->clone];
+			/* :TODO: optimize this */
+			return ReadHandle(pHandle->clone, pHandle->type, ident, object);
 		}
 		*object = pHandle->object;
 	}
