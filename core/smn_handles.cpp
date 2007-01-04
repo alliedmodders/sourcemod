@@ -20,10 +20,6 @@ static cell_t sm_IsValidHandle(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_CloseHandle(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
-
-	/* :TODO: make this a little bit cleaner, eh? */
-	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
-
 	HandleSecurity sec;
 
 	sec.pIdentity = NULL;
@@ -45,22 +41,23 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t new_hndl;
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
-	IPlugin *pPlugin;
 	HandleError err;
+	IdentityToken_t *pNewOwner;
 	
 	if (params[2] == 0)
 	{
-		pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+		pNewOwner = pContext->GetIdentity();
 	} else {
 		Handle_t hPlugin = static_cast<Handle_t>(params[2]);
-		pPlugin = g_PluginSys.PluginFromHandle(hPlugin, &err);
+		IPlugin *pPlugin = g_PluginSys.PluginFromHandle(hPlugin, &err);
 		if (!pPlugin)
 		{
 			return pContext->ThrowNativeError("Plugin handle %x is invalid (error %d)", hndl, err);
 		}
+		pNewOwner = pPlugin->GetIdentity();
 	}
 
-	err = g_HandleSys.CloneHandle(hndl, &new_hndl, pPlugin->GetIdentity(), NULL);
+	err = g_HandleSys.CloneHandle(hndl, &new_hndl, pNewOwner, NULL);
 
 	if (err == HandleError_Access)
 	{
