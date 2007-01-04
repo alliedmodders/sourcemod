@@ -45,6 +45,9 @@ void CPluginInfoDatabase::ReadSMC_ParseStart()
 	in_plugins = false;
 	cur_plugin = -1;
 	in_options = false;
+	m_infodb_size = 0;
+	m_infodb_count = 0;
+	m_infodb = -1;
 }
 
 SMCParseResult CPluginInfoDatabase::MakeError(const char *fmt, ...)
