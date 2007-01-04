@@ -12,13 +12,8 @@ class FileNatives :
 public:
 	virtual void OnSourceModAllInitialized()
 	{
-		HandleSecurity sec;
-		sec.owner = g_pCoreIdent;
-		sec.access[HandleAccess_Inherit] = false;
-		sec.access[HandleAccess_Create] = false;
-
-		g_FileType = g_HandleSys.CreateTypeEx("File", this, 0, &sec, NULL);
-		g_DirType = g_HandleSys.CreateTypeEx("Directory", this, 0, &sec, NULL);
+		g_FileType = g_HandleSys.CreateType("File", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_DirType = g_HandleSys.CreateType("Directory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	virtual void OnSourceModShutdown()
 	{
@@ -60,17 +55,21 @@ cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	return g_HandleSys.CreateScriptHandle(g_DirType, pDir, pContext, g_pCoreIdent);
+	return g_HandleSys.CreateHandle(g_DirType, pDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
-
 	IDirectory *pDir;
 	HandleError herr;
+	HandleSecurity sec;
 	int err;
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DirType, g_pCoreIdent, (void **)&pDir))
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_DirType, &sec, (void **)&pDir))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);

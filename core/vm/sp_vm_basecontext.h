@@ -44,6 +44,10 @@ namespace SourcePawn
 		virtual int Execute(funcid_t funcid, cell_t *result);
 		virtual void ThrowNativeErrorEx(int error, const char *msg, ...);
 		virtual cell_t ThrowNativeError(const char *msg, ...);
+#if defined SOURCEMOD_BUILD
+		virtual SourceMod::IdentityToken_t *GetIdentity();
+		void SetIdentity(SourceMod::IdentityToken_t *token);
+#endif
 	public: //IPluginDebugInfo
 		virtual int LookupFile(ucell_t addr, const char **filename);
 		virtual int LookupFunction(ucell_t addr, const char **name);
@@ -52,6 +56,9 @@ namespace SourcePawn
 		void SetErrorMessage(const char *msg, va_list ap);
 	private:
 		sp_context_t *ctx;
+#if defined SOURCEMOD_BUILD
+		SourceMod::IdentityToken_t *m_pToken;
+#endif
 		char m_MsgCache[1024];
 		bool m_CustomMsg;
 		bool m_InExec;

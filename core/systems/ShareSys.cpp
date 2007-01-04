@@ -23,17 +23,16 @@ IdentityToken_t *ShareSystem::CreateCoreIdentity()
 
 void ShareSystem::OnSourceModStartup(bool late)
 {
-	HandleSecurity sec;
+	TypeAccess sec;
 
-	sec.owner = GetIdentRoot();
-	sec.access[HandleAccess_Inherit] = false;
-	sec.access[HandleAccess_IdentDelete] = false;
-	
-	m_TypeRoot = g_HandleSys.CreateTypeEx("Identity", this, 0, &sec, NULL);
-	m_IfaceType = g_HandleSys.CreateTypeEx("Interface", this, 0, &sec, NULL);
+	g_HandleSys.InitAccessDefaults(&sec, NULL);
+	sec.ident = GetIdentRoot();
+
+	m_TypeRoot = g_HandleSys.CreateType("Identity", this, 0, &sec, NULL, NULL, NULL);
+	m_IfaceType = g_HandleSys.CreateType("Interface", this, 0, NULL, NULL, GetIdentRoot(), NULL);
 
 	/* Initialize our static identity handle */
-	m_IdentRoot.ident = g_HandleSys.CreateHandle(m_TypeRoot, NULL, NULL, NULL);
+	m_IdentRoot.ident = g_HandleSys.CreateHandle(m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
 }
 
 void ShareSystem::OnSourceModShutdown()
@@ -69,7 +68,7 @@ IdentityType_t ShareSystem::CreateIdentType(const char *name)
 		return 0;
 	}
 
-	return g_HandleSys.CreateTypeEx(name, this, m_TypeRoot, NULL, GetIdentRoot());
+	return g_HandleSys.CreateType(name, this, m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
 }
 
 void ShareSystem::OnHandleDestroy(HandleType_t type, void *object)
@@ -86,7 +85,7 @@ IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
 
 	/* :TODO: Cache? */
 	IdentityToken_t *pToken = new IdentityToken_t;
-	pToken->ident = g_HandleSys.CreateHandle(type, NULL, NULL, GetIdentRoot());
+	pToken->ident = g_HandleSys.CreateHandle(type, NULL, GetIdentRoot(), GetIdentRoot(), NULL);
 
 	return pToken;
 }
@@ -106,7 +105,7 @@ bool ShareSystem::AddInterface(SMInterface *iface, IdentityToken_t *token)
 	if (token)
 	{
 		/* If we're an external object, we have to do this */
-		info.handle = g_HandleSys.CreateHandle(m_IfaceType, iface, token, GetIdentRoot());
+		info.handle = g_HandleSys.CreateHandle(m_IfaceType, iface, token, GetIdentRoot(), NULL);
 	} else {
 		info.handle = 0;
 	}
@@ -125,7 +124,12 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 	 * HORRIBLE PERSON passed in a token that we don't recognize....
 	 * <b>Punish them.</b>
 	 */
-	if (!g_HandleSys.ReadHandle(token->ident, m_TypeRoot, GetIdentRoot(), NULL))
+	HandleSecurity sec;
+
+	sec.pIdentity = GetIdentRoot();
+	sec.pOwner = NULL;
+
+	if (!g_HandleSys.ReadHandle(token->ident, m_TypeRoot, &sec, NULL))
 	{
 		return false;
 	}
@@ -162,7 +166,7 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 	if (iface_owner)
 	{
 		Handle_t newhandle;
-		if (g_HandleSys.CloneHandle(iface_handle, &newhandle, token, GetIdentRoot())
+		if (g_HandleSys.CloneHandle(iface_handle, &newhandle, token, &sec)
 			!= HandleError_None)
 		{
 			return false;
@@ -184,7 +188,12 @@ void ShareSystem::AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *nati
 
 void ShareSystem::DestroyIdentity(IdentityToken_t *identity)
 {
-	g_HandleSys.FreeHandle(identity->ident, NULL, GetIdentRoot());
+	HandleSecurity sec;
+
+	sec.pOwner = GetIdentRoot();
+	sec.pIdentity = GetIdentRoot();
+
+	g_HandleSys.FreeHandle(identity->ident, &sec);
 	delete identity;
 }
 

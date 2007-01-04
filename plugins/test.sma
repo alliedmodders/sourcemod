@@ -12,7 +12,7 @@ public Plugin:myinfo =
 
 native PrintStuff(const String:buffer[]);
 
-public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+DoItAll()
 {
 	new String:buffer[PLATFORM_MAX_PATH];
 	new FileType:type;
@@ -24,7 +24,14 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 		Format(stuff, sizeof(stuff), "Type: %d Dir: %s", _:type, buffer)
 		PrintStuff(stuff);
 	}
+	new Handle:copy = CloneHandle(dir);
+	CloseHandle(copy);
 	CloseHandle(dir);
+}
+
+public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+{
+	DoItAll();
 	
 	return true;
 }

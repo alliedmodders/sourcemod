@@ -48,7 +48,7 @@ struct QHandle
 	IdentityToken_t *owner;		/* Identity of object which owns this */
 	unsigned int serial;		/* Serial no. for sanity checking */
 	unsigned int refcount;		/* Reference count for safe destruction */
-	Handle_t clone;				/* If non-zero, this is our cloned parent */
+	unsigned int clone;			/* If non-zero, this is our cloned parent index */
 	HandleSet set;				/* Information about the handle's state */
 	/* The following variables are unrelated to the Handle array, and used 
 	 * as an inlined chain of information */
@@ -64,7 +64,8 @@ struct QHandleType
 	IHandleTypeDispatch *dispatch;
 	unsigned int freeID;
 	unsigned int children;
-	HandleSecurity sec;
+	TypeAccess typeSec;
+	HandleAccess hndlSec;
 	unsigned int opened;
 	int nameIdx;
 };
@@ -78,23 +79,38 @@ public:
 	HandleSystem();
 	~HandleSystem();
 public: //IHandleSystem
-	HandleType_t CreateType(const char *name, IHandleTypeDispatch *dispatch);
-	HandleType_t CreateTypeEx(const char *name,	
-							  IHandleTypeDispatch *dispatch, 
-							  HandleType_t parent, 
-							  const HandleSecurity *security,
-							  IdentityToken_t *ident);
-	HandleType_t CreateChildType(const char *name, HandleType_t parent, IHandleTypeDispatch *dispatch);
+
+	HandleType_t CreateType(const char *name,
+		IHandleTypeDispatch *dispatch,
+		HandleType_t parent,
+		const TypeAccess *typeAccess,
+		const HandleAccess *hndlAccess,
+		IdentityToken_t *ident,
+		HandleError *err);
+
 	bool RemoveType(HandleType_t type, IdentityToken_t *ident);
+
 	bool FindHandleType(const char *name, HandleType_t *type);
+
 	Handle_t CreateHandle(HandleType_t type, 
-							void *object, 
-							IdentityToken_t *source, 
-							IdentityToken_t *ident);
-	Handle_t CreateScriptHandle(HandleType_t type, void *object, IPluginContext *pContext, IdentityToken_t *ident);
-	HandleError FreeHandle(Handle_t handle, IdentityToken_t *owner, IdentityToken_t *ident);
-	HandleError CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t *source, IdentityToken_t *ident);
-	HandleError ReadHandle(Handle_t handle, HandleType_t type, IdentityToken_t *ident, void **object);
+		void *object,
+		IdentityToken_t *owner,
+		IdentityToken_t *ident,
+		HandleError *err);
+	HandleError FreeHandle(Handle_t handle, const HandleSecurity *pSecurity);
+
+	HandleError CloneHandle(Handle_t handle, 
+		Handle_t *newhandle, 
+		IdentityToken_t *newOwner,
+		const HandleSecurity *pSecurity);
+
+	HandleError ReadHandle(Handle_t handle, 
+		HandleType_t type, 
+		const HandleSecurity *pSecurity,
+		void **object);
+
+	bool InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHandleAccess);
+
 	bool TypeCheck(HandleType_t intype, HandleType_t outtype);
 protected:
 	/**
@@ -104,7 +120,6 @@ protected:
 						  IdentityToken_t *ident, 
 						  QHandle **pHandle, 
 						  unsigned int *index,
-						  HandleAccessRight access,
 						  bool ignoreFree=false);
 
 	/**
@@ -133,6 +148,8 @@ protected:
 	 * This prevents it from being tampered with by outside stuff
 	 */
 	void MarkHandleAsIdentity(Handle_t handle);
+
+	bool CheckAccess(QHandle *pHandle, HandleAccessRight right, const HandleSecurity *pSecurity);
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;

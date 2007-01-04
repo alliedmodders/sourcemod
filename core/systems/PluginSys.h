@@ -7,6 +7,7 @@
 #include <sh_list.h>
 #include <sh_stack.h>
 #include "sm_globals.h"
+#include "vm/sp_vm_basecontext.h"
 #include "CFunction.h"
 #include "PluginInfoDatabase.h"
 #include "sm_trie.h"
@@ -67,7 +68,7 @@ struct ContextPair
 	ContextPair() : base(NULL), ctx(NULL), co(NULL)
 	{
 	};
-	IPluginContext *base;
+	BaseContext *base;
 	sp_context_t *ctx;
 	ICompilation *co;
 	IVirtualMachine *vm;

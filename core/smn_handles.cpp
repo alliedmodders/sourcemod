@@ -24,7 +24,12 @@ static cell_t sm_CloseHandle(IPluginContext *pContext, const cell_t *params)
 	/* :TODO: make this a little bit cleaner, eh? */
 	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
 
-	HandleError err = g_HandleSys.FreeHandle(hndl, pPlugin->GetIdentity(), NULL);
+	HandleSecurity sec;
+
+	sec.pIdentity = NULL;
+	sec.pOwner = pContext->GetIdentity();
+
+	HandleError err = g_HandleSys.FreeHandle(hndl, &sec);
   
 	if (err == HandleError_None)
 	{

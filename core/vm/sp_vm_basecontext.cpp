@@ -252,11 +252,9 @@ int BaseContext::HeapRelease(cell_t local_addr)
 
 int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 {
-	int diff, high, low;
-	uint32_t mid;
+	int high;
 
 	high = ctx->plugin->info.natives_num - 1;
-	low = 0;
 
 #if 0
 	while (low <= high)
@@ -786,3 +784,15 @@ int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
 
 	return SP_ERROR_NONE;
 }
+
+#if defined SOURCEMOD_BUILD
+SourceMod::IdentityToken_t *BaseContext::GetIdentity()
+{
+	return m_pToken;
+}
+
+void BaseContext::SetIdentity(SourceMod::IdentityToken_t *token)
+{
+	m_pToken = token;
+}
+#endif

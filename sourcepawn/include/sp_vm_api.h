@@ -6,6 +6,13 @@
 
 #define SOURCEPAWN_VM_API_VERSION		1
 
+#if defined SOURCEMOD_BUILD
+namespace SourceMod
+{
+	struct IdentityToken_t;
+};
+#endif
+
 namespace SourcePawn
 {
 	class IVirtualMachine;
@@ -331,6 +338,16 @@ namespace SourcePawn
 		 * @return			0 for convenience.
 		 */
 		virtual cell_t ThrowNativeError(const char *msg, ...) =0;
+
+#if defined SOURCEMOD_BUILD
+		/**
+		 * @brief Returns the identity token for this context.
+		 * Note: This is a helper function for native calls and the Handle System.
+		 *
+		 * @return			Identity token.
+		 */
+		virtual SourceMod::IdentityToken_t *GetIdentity() =0;
+#endif
 	};
 
 
@@ -447,21 +464,6 @@ namespace SourcePawn
 		 *  itself are not freed (so this may end up doing nothing).
 		 */
 		virtual int FreeFromMemory(sp_plugin_t *plugin) =0;
-
-		/**
-		 * @brief Creates a new IContext from a context handle.
-		 *
-		 * @param ctx		Context to use as a basis for the IPluginContext.
-		 * @return			New IPluginContext handle.
-		 */
-		virtual IPluginContext *CreateBaseContext(sp_context_t *ctx) =0;
-
-		/** 
-		 * @brief Frees a base context.  Does not free the sp_context_t it holds.
-		 *
-		 * @param ctx		Context pointer to free.
-		 */
-		virtual void FreeBaseContext(IPluginContext *ctx) =0;
 
 		/**
 		 * @brief Allocates large blocks of temporary memory.

@@ -32,7 +32,7 @@ CPlugin::~CPlugin()
 {
 	if (m_ctx.base)
 	{
-		g_pSourcePawn->FreeBaseContext(m_ctx.base);
+		delete m_ctx.base;
 		m_ctx.base = NULL;
 	}
 	if (m_ctx.ctx)
@@ -74,7 +74,11 @@ CPlugin::~CPlugin()
 
 	if (m_handle)
 	{
-		g_HandleSys.FreeHandle(m_handle, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity());
+		HandleSecurity sec;
+		sec.pOwner = g_PluginSys.GetIdentity();
+		sec.pIdentity = sec.pOwner;
+
+		g_HandleSys.FreeHandle(m_handle, &sec);
 		g_ShareSys.DestroyIdentity(m_ident);
 	}
 }
@@ -84,7 +88,8 @@ void CPlugin::InitIdentity()
 	if (!m_handle)
 	{
 		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent);
-		m_handle = g_HandleSys.CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity());
+		m_handle = g_HandleSys.CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
+		m_ctx.base->SetIdentity(m_ident);
 	}
 }
 
@@ -188,7 +193,7 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 		return false;
 	}
 
-	m_ctx.base = g_pSourcePawn->CreateBaseContext(m_ctx.ctx);
+	m_ctx.base = new BaseContext(m_ctx.ctx);
 	m_ctx.ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)this;
 
 	m_funcsnum = m_ctx.vm->FunctionCount(m_ctx.ctx);
@@ -1113,15 +1118,13 @@ void CPluginManager::OnSourceModAllInitialized()
 {
 	m_MyIdent = g_ShareSys.CreateCoreIdentity();
 
-	HandleSecurity sec;
+	HandleAccess sec;
+	g_HandleSys.InitAccessDefaults(NULL, &sec);
 
-	sec.owner = m_MyIdent;	/* :TODO: implement ShareSys */
-	sec.access[HandleAccess_Create] = false;
-	sec.access[HandleAccess_IdentDelete] = false;
-	sec.access[HandleAccess_Inherit] = false;
-	sec.access[HandleAccess_Clone] = false;
-	
-	g_PluginType = g_HandleSys.CreateTypeEx("IPlugin", this, 0, &sec, NULL);
+	sec.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
+	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
+
+	g_PluginType = g_HandleSys.CreateType("Plugin", this, 0, NULL, &sec, m_MyIdent, NULL);
 	g_PluginIdent = g_ShareSys.CreateIdentType("PLUGIN");
 }
 
@@ -1147,7 +1150,12 @@ IPlugin *CPluginManager::PluginFromHandle(Handle_t handle, HandleError *err)
 	IPlugin *pPlugin;
 	HandleError _err;
 
-	if ((_err=g_HandleSys.ReadHandle(handle, g_PluginType, m_MyIdent, (void **)&pPlugin)) != HandleError_None)
+	HandleSecurity sec;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = m_MyIdent;
+
+	if ((_err=g_HandleSys.ReadHandle(handle, g_PluginType, &sec, (void **)&pPlugin)) != HandleError_None)
 	{
 		pPlugin = NULL;
 	}
