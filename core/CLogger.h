@@ -25,7 +25,7 @@ enum LoggingMode
 class CLogger
 {
 public:
-	CLogger() : m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false) {}
+	CLogger() : m_PrntMapname(false), m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false) {}
 public:
 	void InitLogger(LoggingMode mode, bool startlogging);
 	void CloseLogger();
@@ -46,6 +46,7 @@ private:
 	String m_CurMapName;
 	LoggingMode m_mode;
 	int m_CurDay;
+	bool m_PrntMapname;
 	bool m_ErrMapStart;
 	bool m_Active;
 	bool m_DelayedStart;

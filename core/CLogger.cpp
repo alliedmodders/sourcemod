@@ -39,7 +39,11 @@ void CLogger::_NewMapFile()
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 		fprintf(fp, "L %s: SourceMod log file started (file \"L%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SOURCEMOD_VERSION);
-		fprintf(fp, "L %s: Info (map \"%s\")\n", date, m_CurMapName.c_str());
+		if (m_PrntMapname)
+		{
+			fprintf(fp, "L %s: Info (map \"%s\")\n", date, m_CurMapName.c_str());
+			m_PrntMapname = false;
+		}
 		fclose(fp);
 	}
 }
@@ -249,6 +253,7 @@ void CLogger::LogMessageEx(LogType type, const char *vafmt, ...)
 void CLogger::MapChange(const char *mapname)
 {
 	m_CurMapName.assign(mapname);
+	m_PrntMapname = true;
 
 	switch (m_mode)
 	{

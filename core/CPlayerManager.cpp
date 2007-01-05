@@ -8,6 +8,7 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
+SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
 void CPlayerManager::OnSourceModAllInitialized()
 {
@@ -17,6 +18,7 @@ void CPlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect_Post, true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &CPlayerManager::OnClientCommand, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &CPlayerManager::OnClientSettingsChanged, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &CPlayerManager::OnServerActivate, true);
 
 	/* Register OnClientConnect */
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
@@ -40,11 +42,6 @@ void CPlayerManager::OnSourceModAllInitialized()
 
 	/* Register OnClientAuthorized */
 	//:TODO:
-
-	/* Initialize all players */
-	m_maxClients = g_SMAPI->pGlobals()->maxClients;
-	m_PlayerCount = 0;
-	m_Players = new CPlayer[m_maxClients];
 }
 
 void CPlayerManager::OnSourceModShutdown()
@@ -55,6 +52,7 @@ void CPlayerManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect_Post, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &CPlayerManager::OnClientCommand, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &CPlayerManager::OnClientSettingsChanged, true);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &CPlayerManager::OnServerActivate, true);
 
 	/* Release forwards */
 	g_Forwards.ReleaseForward(m_clconnect);
@@ -65,6 +63,14 @@ void CPlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_clinfochanged);
 
 	delete [] m_Players;
+}
+
+void CPlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	/* Initialize all players */
+	m_maxClients = clientMax;
+	m_PlayerCount = 0;
+	m_Players = new CPlayer[m_maxClients + 1];
 }
 
 bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)

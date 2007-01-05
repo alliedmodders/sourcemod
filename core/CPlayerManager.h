@@ -27,6 +27,8 @@ public:
 	void OnClientCommand(edict_t *pEntity);
 	void OnClientSettingsChanged(edict_t *pEntity);
 private:
+	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+private:
 	IForward *m_clconnect;
 	IForward *m_cldisconnect;
 	IForward *m_cldisconnect_post;
