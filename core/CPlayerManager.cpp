@@ -67,10 +67,14 @@ void CPlayerManager::OnSourceModShutdown()
 
 void CPlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	/* Initialize all players */
-	m_maxClients = clientMax;
-	m_PlayerCount = 0;
-	m_Players = new CPlayer[m_maxClients + 1];
+	if (m_FirstPass)
+	{
+		/* Initialize all players */
+		m_maxClients = clientMax;
+		m_PlayerCount = 0;
+		m_Players = new CPlayer[m_maxClients + 1];
+		m_FirstPass = false;
+	}
 }
 
 bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)

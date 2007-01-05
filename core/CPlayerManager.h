@@ -11,6 +11,8 @@ class CPlayer;
 
 class CPlayerManager : public SMGlobalClass
 {
+public:
+	CPlayerManager() : m_FirstPass(true) {}
 public: //SMGlobalClass
 	virtual void OnSourceModAllInitialized();
 	virtual void OnSourceModShutdown();
@@ -38,6 +40,7 @@ private:
 	CPlayer *m_Players;
 	int m_maxClients;
 	int m_PlayerCount;
+	bool m_FirstPass;
 };
 
 extern CPlayerManager g_PlayerManager;
