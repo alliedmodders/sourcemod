@@ -1,4 +1,5 @@
 #include "sm_srvcmds.h"
+#include "sm_version.h"
 
 ConVarAccessor g_ConCmdAccessor;
 
@@ -183,8 +184,24 @@ CON_COMMAND(sm, "SourceMod Menu")
 					return;
 				}
 			}
-			//:TODO: print plugins cmd list
+
+			META_CONPRINT(" SourceMod Plugin Menu:\n");
+			META_CONPRINT("    list   - Show loaded plugins\n");
+			META_CONPRINT("    load   - Load a plugin\n");
+			META_CONPRINT("    unload - Unload a plugin\n");
+			META_CONPRINT("    info   - Information about a plugin\n");
+			return;
+		} else if (!strcmp("version", cmd)) {
+			META_CONPRINT(" SourceMod Version Information:\n");
+			META_CONPRINTF("    SourceMod Version: \"%s\"\n", SOURCEMOD_VERSION);
+			META_CONPRINTF("    JIT Version: %s (%s)\n", g_pVM->GetVMName(), g_pVM->GetVersionString());
+			META_CONPRINTF("    JIT Settings: %s\n", g_pVM->GetCPUOptimizations());
+			META_CONPRINTF("    http://www.sourcemod.net/\n");
+			return;
 		}
 	}
-	//:TODO: print cmd list or something
+	META_CONPRINT(" SourceMod Menu:\n");
+	META_CONPRINT(" Usage: sm <command> [arguments]\n");
+	META_CONPRINT("    plugins - Plugins menu\n");
+	META_CONPRINT("    version - Display version information\n");
 }
