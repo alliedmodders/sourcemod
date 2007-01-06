@@ -37,17 +37,19 @@ class CTextParsers : public ITextParsers
 public:
 	CTextParsers();
 public:
-	virtual bool ParseFile_INI(const char *file, 
+	bool ParseFile_INI(const char *file, 
 		ITextListener_INI *ini_listener,
 		unsigned int *line,
 		unsigned int *col);
 
-	virtual SMCParseError ParseFile_SMC(const char *file, 
+	SMCParseError ParseFile_SMC(const char *file, 
 		ITextListener_SMC *smc_listener, 
 		unsigned int *line, 
 		unsigned int *col);
 
-	virtual unsigned int GetUTF8CharBytes(const char *stream);
+	unsigned int GetUTF8CharBytes(const char *stream);
+
+	const char *GetSMCErrorString(SMCParseError err);
 private:
 	SMCParseError ParseString_SMC(const char *stream, 
 		ITextListener_SMC *smc,
@@ -61,6 +63,6 @@ private:
 
 };
 
-extern CTextParsers g_TextParse;
+extern CTextParsers g_TextParser;
 
 #endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_H_

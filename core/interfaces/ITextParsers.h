@@ -149,7 +149,7 @@ namespace SourceMod
 
 	enum SMCParseError
 	{
-		SMCParse_Okay,				//no error
+		SMCParse_Okay = 0,			//no error
 		SMCParse_StreamOpen,		//stream failed to open
 		SMCParse_StreamError,		//the stream died... somehow
 		SMCParse_Custom,			//a custom handler threw an error
@@ -292,6 +292,15 @@ namespace SourceMod
 									ITextListener_SMC *smc_listener, 
 									unsigned int *line, 
 									unsigned int *col) =0;
+
+		/**
+		 * @brief Converts an SMCParseError to a stirng.
+		 *
+		 * @param err			SMCParseError.
+		 * @return				String error message, or NULL if none.
+		 */
+		virtual const char *GetSMCErrorString(SMCParseError err) =0;
+
 	public:
 		/**
 		 * @brief Returns the number of bytes that a multi-byte character contains in a UTF-8 stream.

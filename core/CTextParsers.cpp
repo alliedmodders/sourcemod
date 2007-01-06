@@ -6,7 +6,7 @@
 #include <assert.h>
 #include "CTextParsers.h"
 
-CTextParsers g_TextParse;
+CTextParsers g_TextParser;
 
 static int g_ini_chartable1[255] = {0};
 static int g_ws_chartable[255] = {0};
@@ -897,4 +897,29 @@ event_failed:
 	fclose(fp);
 
 	return false;
+}
+
+const char *CTextParsers::GetSMCErrorString(SMCParseError err)
+{
+	static const char *s_errors[] = 
+	{
+		NULL,
+		"Stream failed to open",
+		"Stream returned read error",
+		NULL,
+		"Un-quoted section has invalid tokens",
+		"Section declared without header",
+		"Section declared with unknown tokens",
+		"Section ending without a matching section beginning",
+		"Line contained too many invalid tokens",
+		"Token buffer overflowed",
+		"A property was declared outside of a section",
+	};
+
+	if (err < SMCParse_Okay || err > SMCParse_InvalidProperty1)
+	{
+		return NULL;
+	}
+
+	return s_errors[err];
 }
