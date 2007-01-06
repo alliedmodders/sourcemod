@@ -535,7 +535,7 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	SMCParseError err;
 	unsigned int line, col;
 	m_AllPluginsLoaded = false;
-	if ((err=g_TextParse.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
+	if ((err=g_TextParser.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
 	{
 		/* :TODO: log the error, don't bail out though */
 	}
