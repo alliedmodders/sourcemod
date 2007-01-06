@@ -1,6 +1,7 @@
 #ifndef _INCLUDE_SOURCEMOD_CLOGGER_H_
 #define _INCLUDE_SOURCEMOD_CLOGGER_H_
 
+#include "sm_globals.h"
 #include <time.h>
 #include "sourcemm_api.h"
 #include <sh_string.h>
@@ -32,7 +33,7 @@ public:
 	void EnableLogging();
 	void DisableLogging();
 	void LogMessage(const char *msg, ...);
-	void LogMessageEx(LogType type, const char *msg, ...);
+	void LogError(const char *msg, ...);
 	void MapChange(const char *mapname);
 	const char *GetLogFileName(LogType type);
 	LoggingMode GetLoggingMode();

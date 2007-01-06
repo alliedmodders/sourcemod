@@ -71,7 +71,7 @@ void CLogger::_CloseFile()
 	if (fp)
 	{
 		fseek(fp, 0, SEEK_END);
-		LogMessageEx(LogType_Error, "Error log file session closed.");
+		LogError("Error log file session closed.");
 		fclose(fp);
 	}
 	m_ErrFileName.clear();
@@ -192,16 +192,10 @@ print_error:
 	m_Active = false;
 }
 
-void CLogger::LogMessageEx(LogType type, const char *vafmt, ...)
+void CLogger::LogError(const char *vafmt, ...)
 {
 	if (!m_Active)
 	{
-		return;
-	}
-
-	if (type == LogType_Normal)
-	{
-		LogMessage(vafmt);
 		return;
 	}
 
@@ -266,7 +260,7 @@ void CLogger::MapChange(const char *mapname)
 
 	if (m_ErrMapStart)
 	{
-		LogMessageEx(LogType_Error, "Error log file session closed.");
+		LogError("Error log file session closed.");
 	}
 	m_ErrMapStart = false;
 }
