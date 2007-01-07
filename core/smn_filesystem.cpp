@@ -265,7 +265,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 	return 0;
-#elif PLATFORM_LINUX
+#else if defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(realpath, &s) != 0)
 	{
@@ -301,7 +301,7 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 
 #ifdef PLATFORM_WINDOWS
 	return (MoveFileA(old_realpath, new_realpath)) ? 1 : 0;
-#elif PLATFORM_LINUX
+#else if defined PLATFORM_POSIX
 	return (rename(old_realpath, new_realpath)) ? 0 : 1;
 #endif
 }
@@ -329,7 +329,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 	return 0;
-#elif PLATFORM_LINUX
+#else if defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(realpath, &s) != 0)
 	{
@@ -366,7 +366,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		return static_cast<cell_t>(s.st_size);
 	}
 	return -1;
-#elif PLATFORM_LINUX
+#else if defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(realpath, &s) != 0)
 	{
