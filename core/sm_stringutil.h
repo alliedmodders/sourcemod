@@ -10,6 +10,7 @@ using namespace SourcePawn;
 size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext *pCtx, const cell_t *params, int *param);
 const char *stristr(const char *str, const char *substr);
 unsigned int strncopy(char *dest, const char *src, size_t count);
+size_t gnprintf(char *buffer, size_t maxlen, const char *format, void **args);
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_

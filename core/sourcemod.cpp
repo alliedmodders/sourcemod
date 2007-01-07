@@ -150,12 +150,6 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase->OnSourceModAllInitialized();
 		pBase = pBase->m_pGlobalClassNext;
 	}
-
-	/* If we're late, automatically load plugins now */
-	if (late)
-	{
-		DoGlobalPluginLoads();
-	}
 }
 
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
