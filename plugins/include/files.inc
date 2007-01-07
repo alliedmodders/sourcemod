@@ -152,4 +152,4 @@ native bool:RemoveDir(const String:path[]);
  * @param ...			Variable number of format parameters.
  * @return			True on success, false otherwise.
  */
-native bool:WriteFileLine(Handle:hndl, const String:format[], ...);
+native bool:WriteFileLine(Handle:hndl, const String:format[], {Handle,Float,String,_}:...);
