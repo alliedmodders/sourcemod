@@ -289,6 +289,8 @@ void LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 	size_t mylen = vsnprintf(buffer, len, fmt, ap);
 	va_end(ap);
 
+	mylen = (mylen >= len) ? (len - 1) : mylen;
+
 	for (size_t i=0; i<mylen; i++)
 	{
 		if (buffer[i] == PLATFORM_SEP_ALTCHAR)

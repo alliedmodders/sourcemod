@@ -1,5 +1,6 @@
 #include "sm_srvcmds.h"
 #include "sm_version.h"
+#include "sm_stringutil.h"
 
 ConVarAccessor g_ConCmdAccessor;
 
@@ -70,15 +71,15 @@ CON_COMMAND(sm, "SourceMod Menu")
 						int len = 0;
 						const sm_plugininfo_t *info = pl->GetPublicInfo();
 
-						len += snprintf(&buffer[len], sizeof(buffer)-len, "  %02d <%s>", id, StatusToStr(pl->GetStatus()));
-						len += snprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+						len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, StatusToStr(pl->GetStatus()));
+						len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 						if (IS_STR_FILLED(info->version))
 						{
-							len += snprintf(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+							len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
 						}
 						if (IS_STR_FILLED(info->author))
 						{
-							snprintf(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+							UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
 						}
 						META_CONPRINTF("%s\n", buffer);
 					}

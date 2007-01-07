@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <ctype.h>
+#include <stdarg.h>
 #include "sm_stringutil.h"
 
 #define ALT				0x00000001		/* alternate form */
@@ -470,4 +471,14 @@ unsigned int strncopy(char *dest, const char *src, size_t count)
 	*dest = '\0';
 
 	return (dest - start);
+}
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+	va_end(ap);
+
+	return (len >= maxlength) ? (maxlength - 1) : len;
 }

@@ -35,6 +35,7 @@ void CLogger::_NewMapFile()
 	{
 		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
 		m_Active = false;
+		return;
 	} else {
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
@@ -125,7 +126,10 @@ void CLogger::LogMessage(const char *vafmt, ...)
 
 	if (m_mode == LoggingMode_HL2)
 	{
-		_PrintToHL2Log(vafmt);
+		va_list ap;
+		va_start(ap, vafmt);
+		_PrintToHL2Log(vafmt, ap);
+		va_end(ap);
 		return;
 	}
 
@@ -135,7 +139,7 @@ void CLogger::LogMessage(const char *vafmt, ...)
 		_NewMapFile();
 	}
 
-	static char msg[3072];
+	char msg[3072];
 	va_list ap;
 	va_start(ap, vafmt);
 	vsnprintf(msg, sizeof(msg), vafmt, ap);
@@ -215,7 +219,7 @@ void CLogger::LogError(const char *vafmt, ...)
 		m_ErrMapStart = false;
 	}
 
-	static char msg[3072];
+	char msg[3072];
 	va_list ap;
 	va_start(ap, vafmt);
 	vsnprintf(msg, sizeof(msg), vafmt, ap);
@@ -235,6 +239,7 @@ void CLogger::LogError(const char *vafmt, ...)
 	} else {
 		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
 		m_Active = false;
+		return;
 	}
 
 	g_SMAPI->ConPrintf("L %s: %s\n", date, msg);
@@ -265,17 +270,16 @@ void CLogger::MapChange(const char *mapname)
 	m_ErrMapStart = false;
 }
 
-void CLogger::_PrintToHL2Log(const char *fmt, ...)
+void CLogger::_PrintToHL2Log(const char *fmt, va_list ap)
 {
-	static char msg[3072];
+	char msg[3072];
 	size_t len;
 
-	va_list ap;
-	va_start(ap, fmt);
-	len = vsnprintf(msg, sizeof(msg)-1, fmt, ap);
+	len = vsnprintf(msg, sizeof(msg)-2, fmt, ap);
+	len = (len >= sizeof(msg)) ? (sizeof(msg) - 2) : len;
+
 	msg[len++] = '\n';
 	msg[len] = '\0';
-	va_end(ap);
 
 	engine->LogPrint(msg);
 }

@@ -40,7 +40,7 @@ public:
 private:
 	void _CloseFile();
 	void _NewMapFile();
-	void _PrintToHL2Log(const char *fmt, ...);
+	void _PrintToHL2Log(const char *fmt, va_list ap);
 private:
 	String m_NrmFileName;
 	String m_ErrFileName;

@@ -84,8 +84,9 @@ static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str;
 	pCtx->LocalToString(params[2], &str);
+	size_t res = UTIL_Format(str, params[3], "%d", params[1]);
 
-	return snprintf(str, params[3], "%d", params[1]);
+	return static_cast<cell_t>(res);
 }
 
 static cell_t sm_strtofloat(IPluginContext *pCtx, const cell_t *params)
@@ -102,8 +103,9 @@ static cell_t sm_floattostr(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str;
 	pCtx->LocalToString(params[2], &str);
+	size_t res = UTIL_Format(str, params[3], "%f", sp_ctof(params[1]));
 
-	return snprintf(str, params[3], "%f", sp_ctof(params[1]));
+	return static_cast<cell_t>(res);
 }
 
 static cell_t sm_formatex(IPluginContext *pCtx, const cell_t *params)
