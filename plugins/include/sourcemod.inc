@@ -155,10 +155,11 @@ native bool:GetClientName(client, String:name[], maxlen);
  * @param client		Player index.
  * @param name			Buffer to store the client's ip address.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @param remport		Remove client's port from the ip string (true by default).
  * @return			True on success, false otherwise.
  * @error			If the client is not connected an error will be thrown.
  */
-native bool:GetClientIP(client, String:ip[], maxlen);
+native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
 
 /**
  * Retrieves a client's authentication string (SteamID).
@@ -202,3 +203,23 @@ native bool:IsPlayerAuthorized(client);
  * @return				True if player is a fake client, false otherwise.
  */
 native bool:IsPlayerFakeClient(client);
+
+/**
+ * Sends a message to the server console.
+ *
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+native PrintToServer(const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Sends a message to a client's console.
+ *
+ * @param client		Player index.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error			If the client is not connected an error will be thrown.
+ */
+native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...);

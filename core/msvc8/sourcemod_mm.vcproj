@@ -204,6 +204,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_hl2utils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_memtable.cpp"
 				>
 			</File>

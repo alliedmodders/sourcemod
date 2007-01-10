@@ -35,8 +35,8 @@ public:
 	void LogMessage(const char *msg, ...);
 	void LogError(const char *msg, ...);
 	void MapChange(const char *mapname);
-	const char *GetLogFileName(LogType type);
-	LoggingMode GetLoggingMode();
+	const char *GetLogFileName(LogType type) const;
+	LoggingMode GetLoggingMode() const;
 private:
 	void _CloseFile();
 	void _NewMapFile();
@@ -55,7 +55,7 @@ private:
 
 extern CLogger g_Logger;
 
-inline const char *CLogger::GetLogFileName(LogType type)
+inline const char *CLogger::GetLogFileName(LogType type) const
 {
 	switch (type)
 	{
@@ -74,7 +74,7 @@ inline const char *CLogger::GetLogFileName(LogType type)
 	}
 }
 
-inline LoggingMode CLogger::GetLoggingMode()
+inline LoggingMode CLogger::GetLoggingMode() const
 {
 	return m_mode;
 }
