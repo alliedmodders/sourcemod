@@ -69,6 +69,7 @@ forward OnPluginUnload();
 /**
  * Called when the plugin's pause status is changing.
  *
+ * @param pause		True if the plugin is being paused, false otherwise.
  * @noreturn
  */
 forward OnPluginPauseChange(bool:pause);
