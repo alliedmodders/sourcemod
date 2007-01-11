@@ -1,0 +1,11 @@
+things to do for a release, in priority
+    X finish plugin unloading
+    - URGENT: fix compiler's sizeof(), add countof
+    - do module api
+    - finish plugin pausing/unpausing, forwards must block execution
+    - do admin api
+    - add debugging output to logger
+    - finish ML api, expose through interface
+    - add error messages to format routine
+    - finish global unloading
+    - add hex format specifier
