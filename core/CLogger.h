@@ -23,10 +23,13 @@ enum LoggingMode
 	LoggingMode_HL2
 };
 
-class CLogger
+class CLogger : public SMGlobalClass
 {
 public:
 	CLogger() : m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false) {}
+public: //SMGlobalClass
+	void OnSourceModStartup(bool late);
+	void OnSourceModAllShutdown();
 public:
 	void InitLogger(LoggingMode mode, bool startlogging);
 	void CloseLogger();

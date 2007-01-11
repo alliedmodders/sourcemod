@@ -3,6 +3,17 @@
 
 CLogger g_Logger;
 
+void CLogger::OnSourceModStartup(bool late)
+{
+	//:TODO: read these options from a file, dont hardcode them
+	InitLogger(LoggingMode_PerMap, true);
+}
+
+void CLogger::OnSourceModAllShutdown()
+{
+	CloseLogger();
+}
+
 void CLogger::_NewMapFile()
 {
 	if (!m_Active)

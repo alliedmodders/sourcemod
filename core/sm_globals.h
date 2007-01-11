@@ -42,6 +42,13 @@ public:
 	virtual void OnSourceModShutdown()
 	{
 	}
+
+	/**
+	* @brief Called after SourceMod is completely shutted down
+	*/
+	virtual void OnSourceModAllShutdown()
+	{
+	}
 private:
 	SMGlobalClass *m_pGlobalClassNext;
 	static SMGlobalClass *head;

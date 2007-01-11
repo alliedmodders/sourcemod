@@ -6,6 +6,7 @@
 #include <sh_string.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
+#include "CLogger.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 
@@ -156,6 +157,8 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 {
 	m_IsMapLoading = true;
 	m_IsLateLoadInMap = false;
+
+	g_Logger.MapChange(pMapName);
 
 	DoGlobalPluginLoads();
 
