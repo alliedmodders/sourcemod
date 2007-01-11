@@ -192,6 +192,16 @@ CON_COMMAND(sm, "SourceMod Menu")
 			META_CONPRINT("    unload - Unload a plugin\n");
 			META_CONPRINT("    info   - Information about a plugin\n");
 			return;
+		} else if (!strcmp("credits", cmd)) {
+			META_CONPRINTF(" SourceMod was developed by AlliedModders, LLC.\n");
+			META_CONPRINTF(" Development would not have been possible without the following people:\n");
+			META_CONPRINTF("  David \"BAILOPAN\" Anderson, lead developer\n");
+			META_CONPRINTF("  Borja \"faluco\" Ferrer, Core developer\n");
+			META_CONPRINTF("  Scott \"Damaged Soul\" Ehlert, SourceMM developer\n");
+			META_CONPRINTF("  Pavol \"PM OnoTo\" Marko, SourceHook developer\n");
+			META_CONPRINTF(" Special thanks to Viper of GameConnect, and Mani\n");
+			META_CONPRINTF(" http://www.sourcemod.net/\n");
+			return;
 		} else if (!strcmp("version", cmd)) {
 			META_CONPRINT(" SourceMod Version Information:\n");
 			META_CONPRINTF("    SourceMod Version: \"%s\"\n", SOURCEMOD_VERSION);
@@ -203,6 +213,7 @@ CON_COMMAND(sm, "SourceMod Menu")
 	}
 	META_CONPRINT(" SourceMod Menu:\n");
 	META_CONPRINT(" Usage: sm <command> [arguments]\n");
+	META_CONPRINT("    credits - Credits listing\n");
 	META_CONPRINT("    plugins - Plugins menu\n");
 	META_CONPRINT("    version - Display version information\n");
 }

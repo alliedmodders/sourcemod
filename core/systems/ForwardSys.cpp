@@ -8,24 +8,9 @@ CForwardManager g_Forwards;
  * Gensis turns to its source, reduction occurs stepwise although the essence is all one.
  * End of line.  FTL system check.
  *
- * :TODO: Implement the manager.  ho ho ho
- *
- * :TODO: WHAT NEEDS TO BE TESTED IN THIS BEAST (X=done, -=TODO)
- * NORMAL FUNCTIONS:
- * X Push cells
- * X Push cells byref (copyback tested = yes)
- * X Push floats
- * X Push floats byref (copyback tested = yes)
- * X Push arrays  (copyback tested = yes)
- * X Push strings (copyback tested = yes)
+ * :TODO: WHAT NEEDS TO BE TESTED IN THIS BEAST
  * VARARG FUNCTIONS:
  * - Pushing no varargs
- * X Push vararg cells (copyback should be verified to not happen = didnt happen)
- * X Push vararg cells byref (copyback tested = yes)
- * X Push vararg floats (copyback should be verified to not happen = didnt happen)
- * X Push vararg floats byref (copyback tested = yes)
- * X Push vararg arrays  (copyback tested = yes)
- * X Push vararg strings (copyback tested = :TODO:)
  */
 
 // :TODO: IMPORTANT!!! The result pointer arg in the execute function maybe invalid if the forward fails
@@ -646,7 +631,7 @@ bool CForward::AddFunction(IPluginFunction *func)
 		return false;
 	}
 
-	//:TODO: eventually we will tell the plugin we're using it [?]
+	//:IDEA: eventually we will tell the plugin we're using it [?]
 	m_functions.push_back(func);
 
 	return true;

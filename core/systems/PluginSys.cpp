@@ -6,6 +6,7 @@
 #include "sourcemm_api.h"
 #include "sourcemod.h"
 #include "CTextParsers.h"
+#include "CLogger.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -186,7 +187,7 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 		memset(&m_ctx, 0, sizeof(m_ctx));
 		if (!error)
 		{
-			SetErrorState(Plugin_Error, "Failed to compile (error %d)", err);
+			SetErrorState(Plugin_Failed, "Failed to compile (error %d)", err);
 		} else {
 			snprintf(error, maxlength, "Failed to compile (error %d)", err);
 		}
@@ -341,7 +342,6 @@ void CPlugin::Call_OnPluginInit()
 
 	m_status = Plugin_Running;
 
-	int err;
 	cell_t result;
 	IPluginFunction *pFunction = GetFunctionByName("OnPluginInit");
 	if (!pFunction)
@@ -349,13 +349,25 @@ void CPlugin::Call_OnPluginInit()
 		return;
 	}
 
-	/* :TODO: push our own handle */
 	pFunction->PushCell(m_handle);
-	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
+	pFunction->Execute(&result);
+}
+
+void CPlugin::Call_OnPluginUnload()
+{
+	if (m_status < Plugin_Paused)
 	{
-		/* :TODO: log into debugger instead */
-		SetErrorState(Plugin_Error, "Runtime error %d", err);
+		return;
 	}
+
+	cell_t result;
+	IPluginFunction *pFunction = GetFunctionByName("OnPluginUnload");
+	if (!pFunction)
+	{
+		return;
+	}
+
+	pFunction->Execute(&result);
 }
 
 bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
@@ -388,15 +400,13 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	pFunction->PushCell(maxlength);
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
-		/* :TODO: debugging system */
-		snprintf(error, maxlength, "Plugin load returned run time error %d", err);
-		m_status = Plugin_Error;
+		m_status = Plugin_Failed;
 		return false;
 	}
 
-	if (!result)
+	if (!result || m_status != Plugin_Loaded)
 	{
-		m_status = Plugin_Error;
+		m_status = Plugin_Failed;
 		return false;
 	}
 
@@ -461,8 +471,14 @@ bool CPlugin::SetPauseState(bool paused)
 	} else if (!paused && GetStatus() != Plugin_Running) {
 		return false;
 	}
-	
-	/* :TODO: execute some forwards or some crap */
+
+	IPluginFunction *pFunction = GetFunctionByName("OnPluginPauseChange");
+	if (pFunction)
+	{
+		cell_t result;
+		pFunction->PushCell(paused ? 1 : 0);
+		pFunction->Execute(&result);
+	}
 
 	return true;
 }
@@ -524,7 +540,11 @@ CPluginManager::CPluginManager()
 
 CPluginManager::~CPluginManager()
 {
-	//:TODO: we need a good way to free what we're holding
+	/* :NOTICE: 
+	 * Ignore the fact that there might be plugins in the cache.
+	 * This usually means that Core is not being unloaded properly, and everything
+	 * will crash anyway.  YAY
+	 */
 	sm_trie_destroy(m_LoadLookup);
 }
 
@@ -537,7 +557,12 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	m_AllPluginsLoaded = false;
 	if ((err=g_TextParser.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
 	{
-		/* :TODO: log the error, don't bail out though */
+		g_Logger.LogError("[SOURCEMOD] Encountered fatal error parsing file \"%s\"", config);
+		const char *err_msg = g_TextParser.GetSMCErrorString(err);
+		if (err_msg)
+		{
+			g_Logger.LogError("[SOURCEMOD] Parse error encountered: \"%s\"", err_msg);
+		}
 	}
 
 	LoadPluginsFromDir(basedir, NULL);
@@ -559,8 +584,10 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 
 	if (!dir)
 	{
-		//:TODO: write a logger and LOG THIS UP, BABY
-		//g_LibSys.GetPlatformError(error, err_max);
+		char error[256];
+		g_LibSys.GetPlatformError(error, sizeof(error));
+		g_Logger.LogError("[SOURCEMOD] Failure reading from plugins path: %s", localpath);
+		g_Logger.LogError("[SOURCEMOD] Platform returned error: %s", error);
 		return;
 	}
 
@@ -622,7 +649,8 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 		}
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
-			|| pPlugin->GetStatus() == Plugin_Error)
+			|| pPlugin->GetStatus() == Plugin_Error
+			|| pPlugin->GetStatus() == Plugin_Failed)
 		{
 			UnloadPlugin(pPlugin);
 		}
@@ -663,7 +691,7 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 				}
 				if (!g_pVM->SetCompilationOption(co, key, val))
 				{
-					pPlugin->SetErrorState(Plugin_Error, "Unable to set option (key \"%s\") (value \"%s\")", key, val);
+					pPlugin->SetErrorState(Plugin_Failed, "Unable to set option (key \"%s\") (value \"%s\")", key, val);
 					pPlugin->CancelMyCompile();
 					co = NULL;
 					break;
@@ -819,20 +847,33 @@ void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
-
-	/* :TODO: More */
-
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
+
+	if (pPlugin->GetStatus() >= Plugin_Error)
+	{
+		/* Notify listeners of unloading */
+		for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
+		{
+			pListener = (*iter);
+			pListener->OnPluginUnloaded(pPlugin);
+		}
+		/* Notify plugin */
+		pPlugin->Call_OnPluginUnload();
+	}
+
 	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
 	{
+		/* Notify listeners of destruction */
 		pListener = (*iter);
 		pListener->OnPluginDestroyed(pPlugin);
 	}
 
+	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
 	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
 	
+	/* Tell the plugin to delete itself */
 	delete pPlugin;
 
 	return true;

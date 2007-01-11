@@ -129,7 +129,7 @@ public:
 	/**
 	 * Calls the OnPluginLoad function, and sets any failed states if necessary.
 	 * NOTE: Valid pre-states are: Plugin_Created
-	 * If validated, plugin state is changed to Plugin_Loaded
+	 * NOTE: If validated, plugin state is changed to Plugin_Loaded
 	 *
 	 * If the error buffer is NULL, the error message is cached locally.
 	 */
@@ -138,11 +138,21 @@ public:
 	/**
 	 * Calls the OnPluginInit function.
 	 * NOTE: Valid pre-states are: Plugin_Created
-	 * NOTE: Pre-state will be changed to Plugin_Running
+	 * NOTE: Post-state will be Plugin_Running
 	 */
 	void Call_OnPluginInit();
+
+	/**
+	 * Calls the OnPluginUnload function.
+	 */
+	void Call_OnPluginUnload();
 public:
 	time_t HasUpdatedFile();
+
+	/** 
+	 * Returns true if the plugin was running, but is now invalid.
+	 */
+	bool WasRunning();
 protected:
 	void UpdateInfo();
 private:
@@ -160,6 +170,7 @@ private:
 	time_t m_LastAccess;
 	IdentityToken_t *m_ident;
 	Handle_t m_handle;
+	bool m_WasRunning;
 };
 
 class CPluginManager : 
@@ -181,7 +192,7 @@ public:
 		virtual bool MorePlugins();
 		virtual IPlugin *GetPlugin();
 		virtual void NextPlugin();
-		virtual void Release();
+		void Release();
 	public:
 		void Reset();
 	private:
@@ -190,22 +201,22 @@ public:
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IPluginManager
-	virtual IPlugin *LoadPlugin(const char *path, 
+	IPlugin *LoadPlugin(const char *path, 
 								bool debug,
 								PluginType type,
 								char error[],
 								size_t err_max);
-	virtual bool UnloadPlugin(IPlugin *plugin);
-	virtual IPlugin *FindPluginByContext(const sp_context_t *ctx);
-	virtual unsigned int GetPluginCount();
-	virtual IPluginIterator *GetPluginIterator();
-	virtual void AddPluginsListener(IPluginsListener *listener);
-	virtual void RemovePluginsListener(IPluginsListener *listener);
+	bool UnloadPlugin(IPlugin *plugin);
+	IPlugin *FindPluginByContext(const sp_context_t *ctx);
+	unsigned int GetPluginCount();
+	IPluginIterator *GetPluginIterator();
+	void AddPluginsListener(IPluginsListener *listener);
+	void RemovePluginsListener(IPluginsListener *listener);
 public: //SMGlobalClass
-	virtual void OnSourceModAllInitialized();
-	virtual void OnSourceModShutdown();
+	void OnSourceModAllInitialized();
+	void OnSourceModShutdown();
 public: //IHandleTypeDispatch
-	virtual void OnHandleDestroy(HandleType_t type, void *object);
+	void OnHandleDestroy(HandleType_t type, void *object);
 public:
 	/**
 	 * Loads all plugins not yet loaded

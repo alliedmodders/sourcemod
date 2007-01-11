@@ -65,7 +65,7 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 	} else if (err == HandleError_None) {
 		return new_hndl;
 	} else {
-		return pContext->ThrowNativeError("Handle to clone %x is invalid (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Handle %x cannot be cloned because it is invalid (error %d)", hndl, err);
 	}
 }
 
