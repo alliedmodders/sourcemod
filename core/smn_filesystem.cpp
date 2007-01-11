@@ -428,26 +428,12 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-//:TODO: DEBUG CODE HERE
-cell_t PrintStuff(IPluginContext *pContext, const cell_t *params)
-{
-	char *stuff;
-	pContext->LocalToString(params[1], &stuff);
-
-	FILE *fp = fopen("c:\\debug.txt", "at");
-	fprintf(fp, "%s\n", stuff);
-	fclose(fp);
-
-	return 0;
-}
-
 static FileNatives s_FileNatives;
 
 REGISTER_NATIVES(filesystem)
 {
 	{"OpenDirectory",			sm_OpenDirectory},
 	{"ReadDirEntry",			sm_ReadDirEntry},
-	{"PrintStuff",				PrintStuff},//:TODO: remove this when no longer needed
 	{"OpenFile",				sm_OpenFile},
 	{"DeleteFile",				sm_DeleteFile},
 	{"ReadFileLine",			sm_ReadFileLine},

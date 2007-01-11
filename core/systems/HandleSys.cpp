@@ -231,7 +231,8 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 						   QHandle **in_pHandle, 
 						   unsigned int *in_index, 
 						   Handle_t *in_handle,
-						   IdentityToken_t *owner)
+						   IdentityToken_t *owner,
+						   bool identity)
 {
 	unsigned int owner_index = 0;
 
@@ -262,7 +263,7 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	}
 
 	/* Set essential information */
-	pHandle->set = HandleSet_Used;;
+	pHandle->set = identity ? HandleSet_Identity : HandleSet_Used;
 	pHandle->refcount = 1;
 	pHandle->type = type;
 	pHandle->serial = m_HSerial;
@@ -282,8 +283,10 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	*in_index = handle;
 	*in_handle = hash;
 
-	/* Decode the identity token */
-	if (owner)
+	/* Decode the identity token 
+	 * For now, we don't allow nested ownership
+	 */
+	if (owner && !identity)
 	{
 		QHandle *pIdentity = &m_Handles[owner_index];
 		if (pIdentity->ch_prev == 0)
@@ -319,7 +322,7 @@ void HandleSystem::SetTypeSecurityOwner(HandleType_t type, IdentityToken_t *pTok
 	m_Types[type].typeSec.ident = pToken;
 }
 
-Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err)
+Handle_t HandleSystem::CreateHandleEx(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err, bool identity)
 {
 	if (!type 
 		|| type >= HANDLESYS_TYPEARRAY_SIZE
@@ -335,8 +338,8 @@ Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityTok
 	/* Check to see if we're allowed to create this handle type */
 	QHandleType *pType = &m_Types[type];
 	if (!pType->typeSec.access[HTypeAccess_Create]
-		&& (!pType->typeSec.ident
-			|| pType->typeSec.ident != ident))
+	&& (!pType->typeSec.ident
+		|| pType->typeSec.ident != ident))
 	{
 		if (err)
 		{
@@ -350,7 +353,7 @@ Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityTok
 	QHandle *pHandle;
 	HandleError _err;
 
-	if ((_err=MakePrimHandle(type, &pHandle, &index, &handle, owner)) != HandleError_None)
+	if ((_err=MakePrimHandle(type, &pHandle, &index, &handle, owner, identity)) != HandleError_None)
 	{
 		if (err)
 		{
@@ -363,6 +366,11 @@ Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityTok
 	pHandle->clone = 0;
 
 	return handle;
+}
+
+Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err)
+{
+	return CreateHandleEx(type, object, owner, ident, err, false);
 }
 
 bool HandleSystem::TypeCheck(HandleType_t intype, HandleType_t outtype)
@@ -453,6 +461,27 @@ bool HandleSystem::CheckAccess(QHandle *pHandle, HandleAccessRight right, const 
 	return true;
 }
 
+HandleError HandleSystem::CloneHandle(QHandle *pHandle, unsigned int index, Handle_t *newhandle, IdentityToken_t *newOwner)
+{
+	/* Get a new Handle ID */
+	unsigned int new_index;
+	QHandle *pNewHandle;
+	Handle_t new_handle;
+	HandleError err;
+
+	if ((err=MakePrimHandle(pHandle->type, &pNewHandle, &new_index, &new_handle, newOwner)) != HandleError_None)
+	{
+		return err;
+	}
+
+	pNewHandle->clone = index;
+	pHandle->refcount++;
+
+	*newhandle = new_handle;
+
+	return HandleError_None;
+}
+
 HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *newhandle, IdentityToken_t *newOwner, const HandleSecurity *pSecurity)
 {
 	HandleError err;
@@ -477,20 +506,63 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *newhandle, Iden
 		return HandleError_Access;
 	}
 
-	/* Get a new Handle ID */
-	unsigned int new_index;
-	QHandle *pNewHandle;
-	Handle_t new_handle;
-
-	if ((err=MakePrimHandle(pHandle->type, &pNewHandle, &new_index, &new_handle, newOwner)) != HandleError_None)
+	/* Make sure we're not cloning a clone */
+	if (pHandle->clone)
 	{
-		return err;
+		QHandle *pParent = &m_Handles[pHandle->clone];
+		return CloneHandle(pParent, pHandle->clone, newhandle, newOwner);
 	}
 
-	pNewHandle->clone = index;
-	pHandle->refcount++;
+	return CloneHandle(pHandle, index, newhandle, newOwner);
+}
 
-	*newhandle = new_handle;
+HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
+{
+	QHandleType *pType = &m_Types[pHandle->type];
+
+	if (pHandle->clone)
+	{
+		/* If we're a clone, decrease the parent reference count */
+		QHandle *pMaster;
+		unsigned int master;
+
+		/* Note that if we ever have per-handle security, we would need to re-check
+		* the access on this Handle. */
+		master = pHandle->clone;
+		pMaster = &m_Handles[master];
+
+		/* Release the clone now */
+		ReleasePrimHandle(index);
+
+		/* Decrement the master's reference count */
+		if (--pMaster->refcount == 0)
+		{
+			/* Type should be the same but do this anyway... */
+			pType = &m_Types[pMaster->type];
+			pType->dispatch->OnHandleDestroy(pMaster->type, pMaster->object);
+			ReleasePrimHandle(master);
+		}
+	} else if (pHandle->set == HandleSet_Identity) {
+		/* If we're an identity, skip all this stuff!
+		 * NOTE: SHARESYS DOES NOT CARE ABOUT THE DESTRUCTOR
+		 */
+		ReleasePrimHandle(index);
+	} else {
+		/* Decrement, free if necessary */
+		if (--pHandle->refcount == 0)
+		{
+			pType->dispatch->OnHandleDestroy(pHandle->type, pHandle->object);
+			ReleasePrimHandle(index);
+		} else {
+			/* We must be cloned, so mark ourselves as freed */
+			pHandle->set = HandleSet_Freed;
+			/* Now, unlink us, so we're not being tracked by the owner */
+			if (pHandle->owner)
+			{
+				UnlinkHandleFromOwner(pHandle, index);
+			}
+		}
+	}
 
 	return HandleError_None;
 }
@@ -512,44 +584,7 @@ HandleError HandleSystem::FreeHandle(Handle_t handle, const HandleSecurity *pSec
 		return HandleError_Access;
 	}
 
-	QHandleType *pType = &m_Types[pHandle->type];
-
-	bool dofree = false;
-	if (pHandle->clone)
-	{
-		/* If we're a clone, decrease the parent reference count */
-		QHandle *pMaster;
-		unsigned int master;
-
-		/* Note that if we ever have per-handle security, we would need to re-check
-		 * the access on this Handle. */
-		master = pHandle->clone;
-		pMaster = &m_Handles[master];
-
-		/* Release the clone now */
-		ReleasePrimHandle(index);
-
-		/* Decrement the master's reference count */
-		if (--pMaster->refcount == 0)
-		{
-			/* Type should be the same but do this anyway... */
-			pType = &m_Types[pMaster->type];
-			pType->dispatch->OnHandleDestroy(pMaster->type, pMaster->object);
-			ReleasePrimHandle(master);
-		}
-	} else {
-		/* Decrement, free if necessary */
-		if (--pHandle->refcount == 0)
-		{
-			pType->dispatch->OnHandleDestroy(pHandle->type, pHandle->object);
-			ReleasePrimHandle(index);
-		} else {
-			/* We must be cloned, so mark ourselves as freed */
-			pHandle->set = HandleSet_Freed;
-		}
-	}
-
-	return HandleError_None;
+	return FreeHandle(pHandle, index);
 }
 
 HandleError HandleSystem::ReadHandle(Handle_t handle, HandleType_t type, const HandleSecurity *pSecurity, void **object)
@@ -597,60 +632,84 @@ HandleError HandleSystem::ReadHandle(Handle_t handle, HandleType_t type, const H
 	return HandleError_None;
 }
 
+void HandleSystem::UnlinkHandleFromOwner(QHandle *pHandle, unsigned int index)
+{
+	/* Unlink us if necessary */
+	unsigned int ident_index;
+	if (IdentityHandle(pHandle->owner, &ident_index) != HandleError_None)
+	{
+		/* Uh-oh! */
+		assert(pHandle->owner == 0);
+		return;
+	}
+	/* Note that since 0 is an invalid handle, if any of these links are 0,
+	* the data can still be set.
+	*/
+	QHandle *pIdentity = &m_Handles[ident_index];
+
+	/* Unlink case: We're the head AND tail node */
+	if (index == pIdentity->ch_prev && index == pIdentity->ch_next)
+	{
+		pIdentity->ch_prev = 0;
+		pIdentity->ch_next = 0;
+	}
+	/* Unlink case: We're the head node */
+	else if (index == pIdentity->ch_prev) {
+		/* Link us to the next in the chain */
+		pIdentity->ch_prev = pHandle->ch_next;
+		/* Patch up the previous link */
+		m_Handles[pHandle->ch_next].ch_prev = 0;
+	}
+	/* Unlink case: We're the tail node */
+	else if (index == pIdentity->ch_next) {
+		/* Link us to the previous in the chain */
+		pIdentity->ch_next = pHandle->ch_prev;
+		/* Patch up the next link */
+		m_Handles[pHandle->ch_prev].ch_next = 0;
+	}
+	/* Unlink case: We're in the middle! */
+	else {
+		/* Patch the forward reference */
+		m_Handles[pHandle->ch_next].ch_prev = pHandle->ch_prev;
+		/* Patch the backward reference */
+		m_Handles[pHandle->ch_prev].ch_next = pHandle->ch_next;
+	}
+
+	/* Lastly, decrease the reference count */
+	pIdentity->refcount--;
+}
+
 void HandleSystem::ReleasePrimHandle(unsigned int index)
 {
 	QHandle *pHandle = &m_Handles[index];
-	
+	HandleSet set = pHandle->set;
+
+	if (pHandle->owner && (set != HandleSet_Identity))
+	{
+		UnlinkHandleFromOwner(pHandle, index);
+	}
+
+	/* Were we an identity ourself? */
+	QHandle *pLocal;
+	if (set == HandleSet_Identity)
+	{
+		/* Extra work to do.  We need to find everything connected to this identity and release it. */
+		unsigned int ch_index, old_index = 0;
+		while ((ch_index = pHandle->ch_next) != 0)
+		{
+			pLocal = &m_Handles[ch_index];
+#if defined _DEBUG
+			assert(old_index != ch_index);
+			assert(pLocal->set == HandleSet_Used);
+			old_index = ch_index;
+#endif
+			FreeHandle(pLocal, ch_index);
+		}
+	}
+
 	pHandle->set = HandleSet_None;
 	m_Types[pHandle->type].opened--;
 	m_Handles[++m_FreeHandles].freeID = index;
-
-	/* Unlink us if necessary */
-	if (pHandle->owner)
-	{
-		unsigned int ident_index;
-		if (IdentityHandle(pHandle->owner, &ident_index) != HandleError_None)
-		{
-			/* Uh-oh! */
-			assert(pHandle->owner == 0);
-			return;
-		}
-		/* Note that since 0 is an invalid handle, if any of these links are 0,
-		 * the data can still be set.
-		 */
-		QHandle *pIdentity = &m_Handles[ident_index];
-
-		/* Unlink case: We're the head AND tail node */
-		if (index == pIdentity->ch_prev && index == pIdentity->ch_next)
-		{
-			pIdentity->ch_prev = 0;
-			pIdentity->ch_next = 0;
-		}
-		/* Unlink case: We're the head node */
-		else if (index == pIdentity->ch_prev) {
-			/* Link us to the next in the chain */
-			pIdentity->ch_prev = pHandle->ch_next;
-			/* Patch up the previous link */
-			m_Handles[pHandle->ch_next].ch_prev = 0;
-		}
-		/* Unlink case: We're the tail node */
-		else if (index == pIdentity->ch_next) {
-			/* Link us to the previous in the chain */
-			pIdentity->ch_next = pHandle->ch_prev;
-			/* Patch up the next link */
-			m_Handles[pHandle->ch_prev].ch_next = 0;
-		}
-		/* Unlink case: We're in the middle! */
-		else {
-			/* Patch the forward reference */
-			m_Handles[pHandle->ch_next].ch_prev = pHandle->ch_prev;
-			/* Patch the backward reference */
-			m_Handles[pHandle->ch_prev].ch_next = pHandle->ch_next;
-		}
-
-		/* Lastly, decrease the reference count */
-		pIdentity->refcount--;
-	}
 }
 
 bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
@@ -735,19 +794,6 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 	}
 
 	return true;
-}
-
-void HandleSystem::MarkHandleAsIdentity(Handle_t handle)
-{
-	QHandle *pHandle;
-	unsigned int index;
-
-	if (GetHandle(handle, g_ShareSys.GetIdentRoot(), &pHandle, &index) != HandleError_None)
-	{
-		return;
-	}
-
-	pHandle->set = HandleSet_Identity;
 }
 
 bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHandleAccess)

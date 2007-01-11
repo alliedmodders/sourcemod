@@ -73,7 +73,7 @@ IdentityType_t ShareSystem::CreateIdentType(const char *name)
 
 void ShareSystem::OnHandleDestroy(HandleType_t type, void *object)
 {
-	/* We don't care here */
+	/* THIS WILL NEVER BE CALLED FOR ANYTHING WITH THE IDENTITY TYPE */
 }
 
 IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
@@ -85,7 +85,7 @@ IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
 
 	/* :TODO: Cache? */
 	IdentityToken_t *pToken = new IdentityToken_t;
-	pToken->ident = g_HandleSys.CreateHandle(type, NULL, GetIdentRoot(), GetIdentRoot(), NULL);
+	pToken->ident = g_HandleSys.CreateHandleEx(type, NULL, GetIdentRoot(), GetIdentRoot(), NULL, true);
 
 	return pToken;
 }

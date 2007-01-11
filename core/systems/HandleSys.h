@@ -55,8 +55,8 @@ struct QHandle
 	unsigned int freeID;		/* ID of a free handle in the free handle chain */
 	/* Indexes into the handle array for owner membership.
 	 * For identity roots, these are treated as the head/tail. */
-	unsigned int ch_prev;		/* chained previous handle or HEAD */
-	unsigned int ch_next;		/* chained next handle or TAIL */
+	unsigned int ch_prev;		/* chained previous handle */
+	unsigned int ch_next;		/* chained next handle */
 };
 
 struct QHandleType
@@ -97,6 +97,7 @@ public: //IHandleSystem
 		IdentityToken_t *owner,
 		IdentityToken_t *ident,
 		HandleError *err);
+
 	HandleError FreeHandle(Handle_t handle, const HandleSecurity *pSecurity);
 
 	HandleError CloneHandle(Handle_t handle, 
@@ -130,26 +131,33 @@ protected:
 							   QHandle **pHandle, 
 							   unsigned int *index, 
 							   HandleType_t *handle,
-							   IdentityToken_t *owner);
+							   IdentityToken_t *owner,
+							   bool identity=false);
 
 	/**
 	 * Frees a primitive handle.  Does no object freeing, only reference count, bookkeepping, 
 	 * and linked list maintenance.
+	 * If used on an Identity handle, destroys all Handles under that identity.
 	 */
 	void ReleasePrimHandle(unsigned int index);
 
 	/**
-	 * Sets the security owner of a type
+	 * Sets the security owner of a type.
 	 */
 	void SetTypeSecurityOwner(HandleType_t type, IdentityToken_t *pToken);
 
-	/** 
-	 * Marks a handle as an identity.
-	 * This prevents it from being tampered with by outside stuff
+	/**
+	 * Helper function to check access rights.
 	 */
-	void MarkHandleAsIdentity(Handle_t handle);
-
 	bool CheckAccess(QHandle *pHandle, HandleAccessRight right, const HandleSecurity *pSecurity);
+
+	/** 
+	 * Some wrappers for internal functions, so we can pass indexes instead of encoded handles.
+	 */
+	HandleError FreeHandle(QHandle *pHandle, unsigned int index);
+	void UnlinkHandleFromOwner(QHandle *pHandle, unsigned int index);
+	HandleError CloneHandle(QHandle *pHandle, unsigned int index, Handle_t *newhandle, IdentityToken_t *newOwner);
+	Handle_t CreateHandleEx(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err, bool identity);
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;

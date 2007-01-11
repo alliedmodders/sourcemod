@@ -204,10 +204,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\sm_hl2utils.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\sm_memtable.cpp"
 				>
 			</File>
@@ -397,6 +393,10 @@
 				Name="Interfaces"
 				>
 				<File
+					RelativePath="..\interfaces\IExtensionSys.h"
+					>
+				</File>
+				<File
 					RelativePath="..\interfaces\IForwardSys.h"
 					>
 				</File>
@@ -406,10 +406,6 @@
 				</File>
 				<File
 					RelativePath="..\interfaces\ILibrarySys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\IModuleSys.h"
 					>
 				</File>
 				<File

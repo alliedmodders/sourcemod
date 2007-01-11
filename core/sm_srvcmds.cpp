@@ -30,6 +30,8 @@ inline const char *StatusToStr(PluginStatus st)
 		return "Uncompiled";
 	case Plugin_BadLoad:
 		return "Bad Load";
+	case Plugin_Failed:
+		return "Failed";
 	default:
 		assert(false);
 		return "-";
