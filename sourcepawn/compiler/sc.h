@@ -138,6 +138,7 @@ typedef struct s_symbol {
     constvalue *enumlist;/* list of names for the "root" of an enumeration */
     struct {
       cell length;      /* arrays: length (size) */
+      cell slength;		/* if a string index, this will be set to the original size */
       short level;      /* number of dimensions below this level */
     } array;
   } dim;                /* for 'dimension', both functions and arrays */
@@ -223,6 +224,7 @@ typedef struct s_symbol {
 
 #define flgDEPRECATED 0x01  /* symbol is deprecated (avoid use) */
 
+#define uCOUNTOF  0x20  /* set in the "hasdefault" field of the arginfo struct */
 #define uTAGOF    0x40  /* set in the "hasdefault" field of the arginfo struct */
 #define uSIZEOF   0x80  /* set in the "hasdefault" field of the arginfo struct */
 
@@ -286,7 +288,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    331    /* value of last multi-character match-able token */
+#define tLAST    332    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -318,65 +320,66 @@ typedef struct s_stringpair {
 #define tBEGIN   282
 #define tBREAK   283
 #define tCASE    284
-#define tCHAR    285
-#define tCONST   286
-#define tCONTINUE 287
-#define tDEFAULT 288
-#define tDEFINED 289
-#define tDO      290
-#define tELSE    291
-#define tEND     292
-#define tENUM    293
-#define tEXIT    294
-#define tFOR     295
-#define tFORWARD 296
-#define tFUNCENUM 297
-#define tGOTO    298
-#define tIF      299
-#define tNATIVE  300
-#define tNEW     301
-#define tDECL    302
-#define tOPERATOR 303
-#define tPUBLIC  304
-#define tRETURN  305
-#define tSIZEOF  306
-#define tSLEEP   307
-#define tSTATE   308
-#define tSTATIC  309
-#define tSTOCK   310
-#define tSTRUCT  311
-#define tSWITCH  312
-#define tTAGOF   313
-#define tTHEN    314
-#define tWHILE   315
+#define tCELLSOF 285
+#define tCHAR    286
+#define tCONST   287
+#define tCONTINUE 288
+#define tDEFAULT 289
+#define tDEFINED 290
+#define tDO      291
+#define tELSE    292
+#define tEND     293
+#define tENUM    294
+#define tEXIT    295
+#define tFOR     296
+#define tFORWARD 297
+#define tFUNCENUM 298
+#define tGOTO    299
+#define tIF      300
+#define tNATIVE  301
+#define tNEW     302
+#define tDECL    303
+#define tOPERATOR 304
+#define tPUBLIC  305
+#define tRETURN  306
+#define tSIZEOF  307
+#define tSLEEP   308
+#define tSTATE   309
+#define tSTATIC  310
+#define tSTOCK   311
+#define tSTRUCT  312
+#define tSWITCH  313
+#define tTAGOF   314
+#define tTHEN    315
+#define tWHILE   316
 /* compiler directives */
-#define tpASSERT 316    /* #assert */
-#define tpDEFINE 317
-#define tpELSE   318    /* #else */
-#define tpELSEIF 319    /* #elseif */
-#define tpEMIT   320
-#define tpENDIF  321
-#define tpENDINPUT 322
-#define tpENDSCRPT 323
-#define tpERROR  324
-#define tpFILE   325
-#define tpIF     326    /* #if */
-#define tINCLUDE 327
-#define tpLINE   328
-#define tpPRAGMA 329
-#define tpTRYINCLUDE 330
-#define tpUNDEF  331
+#define tpASSERT 317    /* #assert */
+#define tpDEFINE 318
+#define tpELSE   319    /* #else */
+#define tpELSEIF 320    /* #elseif */
+#define tpEMIT   321
+#define tpENDIF  322
+#define tpENDINPUT 323
+#define tpENDSCRPT 324
+#define tpERROR  325
+#define tpFILE   326
+#define tpIF     327    /* #if */
+#define tINCLUDE 328
+#define tpLINE   329
+#define tpPRAGMA 330
+#define tpTRYINCLUDE 331
+#define tpUNDEF  332
 /* semicolon is a special case, because it can be optional */
-#define tTERM    332    /* semicolon or newline */
-#define tENDEXPR 333    /* forced end of expression */
+#define tTERM    333    /* semicolon or newline */
+#define tENDEXPR 334    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  334    /* integer number */
-#define tRATIONAL 335   /* rational number */
-#define tSYMBOL  336
-#define tLABEL   337
-#define tSTRING  338
-#define tEXPR    339 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 340 /* endless loop, for assigment to "lastst" only */
+#define tNUMBER  335    /* integer number */
+#define tRATIONAL 336   /* rational number */
+#define tSYMBOL  337
+#define tLABEL   338
+#define tSTRING  339
+#define tEXPR    340 /* for assigment to "lastst" only (see SC1.C) */
+#define tENDLESS 341 /* endless loop, for assigment to "lastst" only */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
@@ -562,6 +565,8 @@ SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,
                        int usage);
 SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[]);
+SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
+							 int dim[],int numdim,int idxtag[],int slength);
 SC_FUNC int getlabel(void);
 SC_FUNC char *itoh(ucell val);
 

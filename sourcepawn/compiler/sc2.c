@@ -1877,7 +1877,7 @@ char *sc_tokens[] = {
          "*=", "/=", "%=", "+=", "-=", "<<=", ">>>=", ">>=", "&=", "^=", "|=",
          "||", "&&", "==", "!=", "<=", ">=", "<<", ">>>", ">>", "++", "--",
          "...", "..", "::",
-         "assert", "*begin", "break", "case", "chars", "const", "continue", "default",
+         "assert", "*begin", "break", "case", "cellsof", "chars", "const", "continue", "default",
          "defined", "do", "else", "*end", "enum", "exit", "for", "forward", "funcenum", "goto",
          "if", "native", "new", "decl", "operator", "public", "return", "sizeof",
          "sleep", "state", "static", "stock", "struct", "switch", "tagof", "*then", "while",
@@ -2794,6 +2794,12 @@ SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,i
 SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
                             int dim[],int numdim,int idxtag[])
 {
+  return addvariable2(name,addr,ident,vclass,tag,dim,numdim,idxtag,0);
+}
+
+SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int tag,
+                            int dim[],int numdim,int idxtag[],int slength)
+{
   symbol *sym;
 
   /* global variables may only be defined once
@@ -2814,6 +2820,10 @@ SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int 
     for (level=0; level<numdim; level++) {
       top=addsym(name,addr,ident,vclass,tag,uDEFINE);
       top->dim.array.length=dim[level];
+      if (tag == pc_tag_string && level == numdim - 1)
+        top->dim.array.slength=slength;
+	  else
+        top->dim.array.slength=0;
       top->dim.array.level=(short)(numdim-level-1);
       top->x.tags.index=idxtag[level];
       top->parent=parent;

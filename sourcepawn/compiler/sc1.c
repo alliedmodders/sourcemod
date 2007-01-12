@@ -1930,6 +1930,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
   char *str;
   int dim[sDIMEN_MAX];
   int numdim;
+  int slength=0;
   short filenum;
   symbol *sym;
   constvalue *enumroot;
@@ -1978,8 +1979,10 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
 #endif
       dim[numdim++]=(int)size;
     } /* while */
-    if (ident == iARRAY && tag == pc_tag_string && dim[numdim-1])
+    if (ident == iARRAY && tag == pc_tag_string && dim[numdim-1]) {
+      slength=dim[numdim-1];
       dim[numdim-1] = (size + sizeof(cell)-1) / sizeof(cell);
+    }
     assert(sc_curstates==0);
     sc_curstates=getstates(name);
     if (sc_curstates<0) {
@@ -2142,7 +2145,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
     } /* if */
     litidx=0;
     if (sym==NULL) {    /* define only if not yet defined */
-      sym=addvariable(name,address,ident,sGLOBAL,tag,dim,numdim,idxtag);
+      sym=addvariable2(name,address,ident,sGLOBAL,tag,dim,numdim,idxtag,slength);
       if (sc_curstates>0)
         attachstatelist(sym,sc_curstates);
     } else {            /* if declared but not yet defined, adjust the variable's address */
@@ -2198,6 +2201,7 @@ static int declloc(int fstatic)
   int numdim;
   int fconst;
   int staging_start;
+  int slength = 0;
 
   fconst=matchtoken(tCONST);
   do {
@@ -2270,8 +2274,10 @@ static int declloc(int fstatic)
       } while (matchtoken('['));
       if (all_constant) {
         /* Change the last dimension to be based on chars instead if we have a string */
-        if (tag == pc_tag_string && numdim && dim[numdim-1])
+        if (tag == pc_tag_string && numdim && dim[numdim-1]) {
+          slength = dim[numdim-1];
           dim[numdim-1] = (dim[numdim-1] + sizeof(cell)-1) / sizeof(cell);
+        }
         /* Scrap the code generated */
         ident = iARRAY;
         stgdel(_index, _code);
@@ -2307,12 +2313,12 @@ static int declloc(int fstatic)
       /* write zeros for uninitialized fields */
       while (litidx<cur_lit+size)
         litadd(0);
-      sym=addvariable(name,(cur_lit+glb_declared)*sizeof(cell),ident,sSTATIC,
-                      tag,dim,numdim,idxtag);
+      sym=addvariable2(name,(cur_lit+glb_declared)*sizeof(cell),ident,sSTATIC,
+                      tag,dim,numdim,idxtag,slength);
     } else if (ident!=iREFARRAY) {
       declared+=(int)size;      /* variables are put on stack, adjust "declared" */
-      sym=addvariable(name,-declared*sizeof(cell),ident,sLOCAL,tag,
-                      dim,numdim,idxtag);
+      sym=addvariable2(name,-declared*sizeof(cell),ident,sLOCAL,tag,
+                      dim,numdim,idxtag,slength);
       if (ident==iVARIABLE) {
         assert(!staging);
         stgset(TRUE);           /* start stage-buffering */
@@ -3248,6 +3254,7 @@ static void decl_enum(int vclass)
     sym->x.tags.field=fieldtag;
     sym->dim.array.length=size;
     sym->dim.array.level=0;
+    sym->dim.array.slength=0;
     sym->parent=enumsym;
     /* add the constant to a separate list as well */
     if (enumroot!=NULL) {
@@ -4082,7 +4089,7 @@ static int argcompare(arginfo *a1,arginfo *a2)
        * Pawn currently does not forbid them) */
     } else {
       if (result) {
-        if ((a1->hasdefault & uSIZEOF)!=0 || (a1->hasdefault & uTAGOF)!=0)
+        if ((a1->hasdefault & uSIZEOF)!=0 || (a1->hasdefault & uTAGOF)!=0 || (a1->hasdefault & uCOUNTOF)!=0)
           result= a1->hasdefault==a2->hasdefault
                   && strcmp(a1->defvalue.size.symname,a2->defvalue.size.symname)==0
                   && a1->defvalue.size.level==a2->defvalue.size.level;
@@ -4198,7 +4205,7 @@ static int declargs(symbol *sym,int chkshadow)
           if (arg.ident==iREFARRAY && arg.hasdefault)
             free(arg.defvalue.array.data);
           else if (arg.ident==iVARIABLE
-                   && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0))
+                   && ((arg.hasdefault & uSIZEOF)!=0 || (arg.hasdefault & uTAGOF)!=0) || (arg.hasdefault & uCOUNTOF)!=0)
             free(arg.defvalue.size.symname);
           free(arg.tags);
         } /* if */
@@ -4245,7 +4252,9 @@ static int declargs(symbol *sym,int chkshadow)
   assert(sym->dim.arglist!=NULL);
   arglist=sym->dim.arglist;
   for (idx=0; idx<argcnt && arglist[idx].ident!=0; idx++) {
-    if ((arglist[idx].hasdefault & uSIZEOF)!=0 || (arglist[idx].hasdefault & uTAGOF)!=0) {
+    if ((arglist[idx].hasdefault & uSIZEOF)!=0 
+         || (arglist[idx].hasdefault & uTAGOF)!=0 
+         || (arglist[idx].hasdefault & uCOUNTOF)!=0) {
       int altidx;
       /* Find the argument with the name mentioned after the "sizeof". Note
        * that we cannot use findloc here because we need the arginfo struct,
@@ -4267,7 +4276,9 @@ static int declargs(symbol *sym,int chkshadow)
          * or a iREFERENCE, this is always 1 (so the code is redundant)
          */
         assert(arglist[altidx].ident!=iVARARGS);
-        if (arglist[altidx].ident!=iREFARRAY && (arglist[idx].hasdefault & uSIZEOF)!=0) {
+        if (arglist[altidx].ident!=iREFARRAY 
+            && (((arglist[idx].hasdefault & uSIZEOF)!=0)
+                  || (arglist[idx].hasdefault & uCOUNTOF)!=0)) {
           if ((arglist[idx].hasdefault & uTAGOF)!=0) {
             error(81,arglist[idx].name);  /* cannot take "tagof" an indexed array */
           } else {
@@ -4298,6 +4309,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
   symbol *argsym;
   constvalue *enumroot;
   cell size;
+  int slength=0;
 
   strcpy(arg->name,name);
   arg->hasdefault=FALSE;        /* preset (most common case) */
@@ -4321,8 +4333,10 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       arg->numdim+=1;
     } while (matchtoken('['));
     ident=iREFARRAY;            /* "reference to array" (is a pointer) */
-    if (checktag(tags, numtags, pc_tag_string))
+    if (checktag(tags, numtags, pc_tag_string)) {
+      slength = arg->dim[arg->numdim - 1];
       arg->dim[arg->numdim - 1] = (size + sizeof(cell) - 1) / sizeof(cell);
+    }
     if (matchtoken('=')) {
       lexpush();                /* initials() needs the "=" token again */
       assert(litidx==0);        /* at the start of a function, this is reset */
@@ -4354,6 +4368,8 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       size_tag_token=(unsigned char)(matchtoken(tSIZEOF) ? uSIZEOF : 0);
       if (size_tag_token==0)
         size_tag_token=(unsigned char)(matchtoken(tTAGOF) ? uTAGOF : 0);
+      if (size_tag_token==0)
+        size_tag_token=(unsigned char)(matchtoken(tCELLSOF) ? uCOUNTOF : 0);
       if (size_tag_token!=0) {
         int paranthese;
         if (ident==iREFERENCE)
@@ -4369,7 +4385,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
           if ((arg->defvalue.size.symname=duplicatestring(name)) == NULL)
             error(103);         /* insufficient memory */
           arg->defvalue.size.level=0;
-          if (size_tag_token==uSIZEOF) {
+          if (size_tag_token==uSIZEOF || size_tag_token==uCOUNTOF) {
             while (matchtoken('[')) {
               arg->defvalue.size.level+=(short)1;
               needtoken(']');
@@ -4403,8 +4419,8 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       error(219,name);          /* variable shadows another symbol */
     /* add details of type and address */
     assert(numtags>0);
-    argsym=addvariable(name,offset,ident,sLOCAL,tags[0],
-                       arg->dim,arg->numdim,arg->idxtag);
+    argsym=addvariable2(name,offset,ident,sLOCAL,tags[0],
+                       arg->dim,arg->numdim,arg->idxtag,slength);
     argsym->compound=0;
     if (ident==iREFERENCE)
       argsym->usage|=uREAD;     /* because references are passed back */

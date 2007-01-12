@@ -992,7 +992,7 @@ static cell array_levelsize(symbol *sym,int level)
     sym=finddepend(sym);
     assert(sym!=NULL);
   } /* if */
-  return sym->dim.array.length;
+  return (sym->dim.array.slength ? sym->dim.array.slength : sym->dim.array.length);
 }
 
 /*  hier14
@@ -1559,12 +1559,67 @@ static int hier2(value *lval)
         if (subsym!=NULL)
           subsym=finddepend(subsym);
       } /* for */
-      if (level>sym->dim.array.level+1)
+	  if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
-      else if (level==sym->dim.array.level+1)
+      } else if (level==sym->dim.array.level+1) {
         lval->constval= (idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
-      else
+      } else {
         lval->constval=array_levelsize(sym,level);
+      }
+      if (lval->constval==0 && strchr((char *)lptr,PREPROC_TERM)==NULL)
+        error(224,st);          /* indeterminate array size in "sizeof" expression */
+    } /* if */
+    ldconst(lval->constval,sPRI);
+    while (paranthese--)
+      needtoken(')');
+    return FALSE;
+  case tCELLSOF:
+    paranthese=0;
+    while (matchtoken('('))
+      paranthese++;
+    tok=lex(&val,&st);
+    if (tok!=tSYMBOL)
+      return error(20,st);      /* illegal symbol name */
+    sym=findloc(st);
+    if (sym==NULL)
+      sym=findglb(st,sSTATEVAR);
+    if (sym==NULL)
+      return error(17,st);      /* undefined symbol */
+    if (sym->ident==iCONSTEXPR)
+      error(39);                /* constant symbol has no size */
+    else if (sym->ident==iFUNCTN || sym->ident==iREFFUNC)
+      error(72);                /* "function" symbol has no size */
+    else if ((sym->usage & uDEFINE)==0)
+      return error(17,st);      /* undefined symbol (symbol is in the table, but it is "used" only) */
+    clear_value(lval);
+    lval->ident=iCONSTEXPR;
+    lval->constval=1;           /* preset */
+    if (sym->ident==iARRAY || sym->ident==iREFARRAY) {
+      int level;
+      symbol *idxsym=NULL;
+      symbol *subsym=sym;
+      for (level=0; matchtoken('['); level++) {
+        idxsym=NULL;
+        if (subsym!=NULL && level==subsym->dim.array.level && matchtoken(tSYMBOL)) {
+          char *idxname;
+          int cmptag=subsym->x.tags.index;
+          tokeninfo(&val,&idxname);
+          if ((idxsym=findconst(idxname,&cmptag))==NULL)
+            error(80,idxname);  /* unknown symbol, or non-constant */
+          else if (cmptag>1)
+            error(91,idxname);  /* ambiguous constant */
+        } /* if */
+        needtoken(']');
+        if (subsym!=NULL)
+          subsym=finddepend(subsym);
+      } /* for */
+	  if (level>sym->dim.array.level+1) {
+        error(28,sym->name);  /* invalid subscript */
+      } else if (level==sym->dim.array.level+1) {
+        lval->constval= (idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
+      } else {
+        lval->constval=array_levelsize(sym,level);
+      }
       if (lval->constval==0 && strchr((char *)lptr,PREPROC_TERM)==NULL)
         error(224,st);          /* indeterminate array size in "sizeof" expression */
     } /* if */
