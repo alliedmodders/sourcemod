@@ -1,6 +1,6 @@
 things to do for a release, in priority
     X finish plugin unloading
-    - URGENT: fix compiler's sizeof(), add countof
+    X URGENT: fix compiler's sizeof(), add cellsof
     - do module api
     - finish plugin pausing/unpausing, forwards must block execution
     - do admin api
