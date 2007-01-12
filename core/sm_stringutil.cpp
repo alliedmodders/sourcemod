@@ -2,20 +2,18 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include "sm_stringutil.h"
+#include "CLogger.h"
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
 #define to_digit(c)		((c) - '0')
 #define is_digit(c)		((unsigned)to_digit(c) <= 9)
 
-//:TODO: fix this macro when we have a debugger
-
-#define CHECK_ARGS(n)/* \
-	if ((arg+n) > args) { \
-	LogError(amx, AMX_ERR_PARAMS, "String formatted incorrectly - parameter %d (total %d)", arg, args); \
-	return 0; \
+#define CHECK_ARGS(x) \
+	if ((arg+x) > args) { \
+		g_Logger.LogError("String formatted incorrectly - parameter %d (total %d)", arg, args); \
+		return 0; \
 	}
-*/
 
 //:TODO: review this code before we choose a license
 
@@ -421,8 +419,7 @@ size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext
 	}
 
 	int arg;
-	//int args = params[0] / sizeof(cell); //:TODO: wrong, i think params[0] has now the param count not the byte count
-	// either way this is only used when the above macro is fixed, until then not needed
+	int args = params[0];
 	char *buf_p;
 	char ch;
 	int flags;

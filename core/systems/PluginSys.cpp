@@ -472,6 +472,8 @@ bool CPlugin::SetPauseState(bool paused)
 		return false;
 	}
 
+	m_status = (paused) ? Plugin_Paused : Plugin_Running;
+
 	IPluginFunction *pFunction = GetFunctionByName("OnPluginPauseChange");
 	if (pFunction)
 	{

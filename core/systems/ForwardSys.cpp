@@ -255,6 +255,10 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 	{
 		func = (*iter);
+		if (func->GetParentPlugin()->GetStatus() == Plugin_Paused)
+		{
+			continue;
+		}
 
 		for (unsigned int i=0; i<num_params; i++)
 		{

@@ -2,10 +2,10 @@ things to do for a release, in priority
     X finish plugin unloading
     X URGENT: fix compiler's sizeof(), add cellsof
     - do module api
-    - finish plugin pausing/unpausing, forwards must block execution
+    X finish plugin pausing/unpausing, forwards must block execution
     - do admin api
-    - add debugging output to logger
+    X add debugging output to logger
     - finish ML api, expose through interface
-    - add error messages to format routine
+    X add error messages to format routine
     - finish global unloading
     - add hex format specifier
