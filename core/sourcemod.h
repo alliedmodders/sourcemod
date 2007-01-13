@@ -22,6 +22,11 @@ public:
 	 */
 	void StartSourceMod(bool late);
 
+	/** 
+	* @brief Shuts down all SourceMod components
+	*/
+	void CloseSourceMod();
+
 	/**
 	 * @brief Map change hook
 	 */

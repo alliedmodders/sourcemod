@@ -187,6 +187,28 @@ void SourceModBase::DoGlobalPluginLoads()
 	g_PluginSys.LoadAll_SecondPass();
 }
 
+void SourceModBase::CloseSourceMod()
+{
+	/* Notify! */
+	SMGlobalClass *pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModShutdown();
+		pBase = pBase->m_pGlobalClassNext;
+	}
+
+	/* Notify! */
+	pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModAllShutdown();
+		pBase = pBase->m_pGlobalClassNext;
+	}
+
+	/* Rest In Peace */
+	ShutdownJIT();
+}
+
 bool SourceModBase::IsLateLoadInMap()
 {
 	return m_IsLateLoadInMap;

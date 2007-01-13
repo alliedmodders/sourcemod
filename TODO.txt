@@ -7,5 +7,5 @@ things to do for a release, in priority
     X add debugging output to logger
     - finish ML api, expose through interface
     X add error messages to format routine
-    - finish global unloading
+    X finish global unloading
     - add hex format specifier

@@ -23,6 +23,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 
 bool SourceMod_Core::Unload(char *error, size_t maxlen)
 {
+	g_SourceMod.CloseSourceMod();
 	return true;
 }
 
