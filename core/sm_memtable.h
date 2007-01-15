@@ -46,7 +46,10 @@ public:
 	/**
 	 * Given an index into the string table, returns the associated string.
 	 */
-	const char *GetString(int str);
+	inline const char *GetString(int str)
+	{
+		return (const char *)m_table.GetAddress(str);
+	}
 
 	/**
 	 * Scraps the string table.  For caching purposes, the memory

@@ -70,10 +70,10 @@ int BaseStringTable::AddString(const char *string)
 	return idx;
 }
 
-const char *BaseStringTable::GetString(int str)
+/*const char *BaseStringTable::GetString(int str)
 {
 	return (const char *)m_table.GetAddress(str);
-}
+}*/
 
 void BaseStringTable::Reset()
 {

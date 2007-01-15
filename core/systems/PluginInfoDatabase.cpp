@@ -168,6 +168,8 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key,
 					plugin->opts_size *= 2;
 				}
 				int newidx = memtab->CreateMem(plugin->opts_size * sizeof(PluginOpts), (void **)&table);
+				/* in case it resized */
+				plugin = (PluginSettings *)memtab->GetAddress(cur_plugin);
 				if (plugin->optarray != -1)
 				{
 					void *oldtable = memtab->GetAddress(plugin->optarray);
