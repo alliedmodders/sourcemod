@@ -116,6 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
@@ -196,6 +197,14 @@
 			<File
 				RelativePath="..\pawncc.c"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AssemblerOutput="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\sc1.c"

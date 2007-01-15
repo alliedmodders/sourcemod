@@ -440,7 +440,7 @@ int main(int argc, char *argv[])
 			proper = (unsigned char *)pOrig->base + header_size;
 
 			/* get initial size estimate */
-			pHdr->disksize = (uint32_t)compressBound(pHdr->imagesize);
+			pHdr->disksize = (uint32_t)compressBound(pHdr->imagesize) * 2;
 			zcmp = (Bytef *)malloc(pHdr->disksize);
 
 			if ((err=compress2(zcmp, 
@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
 				!= Z_OK)
 			{
 				free(zcmp);
-				pc_printf("Unable to compress (Z): error %d", err);
+				pc_printf("Unable to compress (Z): error %d\n", err);
 				pc_printf("Falling back to no compression.");
 				memfile_write(bin_file, 
 							proper,
