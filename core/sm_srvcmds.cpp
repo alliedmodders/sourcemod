@@ -227,10 +227,11 @@ CON_COMMAND(sm, "SourceMod Menu")
 
 					if (pl->ToggleDebugMode(debug))
 					{
-						META_CONPRINTF("Toggled debug mode on plugin %s successfully.\n", pl->GetFilename());
+						META_CONPRINTF("Successfully toggled debug mode on plugin %s.\n", pl->GetFilename());
 						return;
 					} else {
-						META_CONPRINTF("Could not toggle debug mode in plugin %s.\n", pl->GetFilename());
+						/* :TODO: ... we should be getting an actual error message here */
+						META_CONPRINTF("Could not toggle debug mode on plugin %s.\n", pl->GetFilename());
 						return;
 					}
 				}

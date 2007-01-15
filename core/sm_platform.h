@@ -23,6 +23,7 @@
 #define PLATFORM_MAX_PATH		MAX_PATH
 #define PLATFORM_SEP_CHAR		'\\'
 #define PLATFORM_SEP_ALTCHAR	'/'
+#define PLATFORM_EXTERN_C		extern "C" __declspec(dllexport)
 #else if defined __linux__
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX
@@ -32,6 +33,7 @@
 #define PLATFORM_LIB_EXT		"so"
 #define PLATFORM_SEP_CHAR		'/'
 #define PLATFORM_SEP_ALTCHAR	'\\'
+#define PLATFORM_EXTERN_C		extern "C" __attribute__((visibility("default")))
 #endif
 
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_

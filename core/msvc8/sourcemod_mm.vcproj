@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sourcemod_mm"
 	ProjectGUID="{E39527CD-7CAB-4420-97CC-DA1B93B260BC}"
 	RootNamespace="sourcemod_mm"
@@ -118,8 +118,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\interfaces;..\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\interfaces;..\;..\systems;..\..\sourcepawn\include"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -341,6 +341,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\systems\ExtensionSys.h"
+					>
+				</File>
+				<File
 					RelativePath="..\systems\ForwardSys.h"
 					>
 				</File>
@@ -370,6 +374,10 @@
 				>
 				<File
 					RelativePath="..\systems\CFunction.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\systems\ExtensionSys.cpp"
 					>
 				</File>
 				<File
@@ -426,6 +434,58 @@
 				</File>
 				<File
 					RelativePath="..\interfaces\IShareSys.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="SourcePawn"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath="..\vm\sp_vm_basecontext.h"
+					>
+				</File>
+				<File
+					RelativePath="..\vm\sp_vm_engine.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath="..\vm\sp_vm_basecontext.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\vm\sp_vm_engine.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="SDK"
+				>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_file_headers.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_typeutil.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_api.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_base.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
 					>
 				</File>
 			</Filter>
@@ -526,58 +586,6 @@
 				</File>
 				<File
 					RelativePath="..\zlib\zutil.c"
-					>
-				</File>
-			</Filter>
-		</Filter>
-		<Filter
-			Name="SourcePawn"
-			>
-			<Filter
-				Name="Header Files"
-				>
-				<File
-					RelativePath="..\vm\sp_vm_basecontext.h"
-					>
-				</File>
-				<File
-					RelativePath="..\vm\sp_vm_engine.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				>
-				<File
-					RelativePath="..\vm\sp_vm_basecontext.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\vm\sp_vm_engine.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="SDK"
-				>
-				<File
-					RelativePath="..\..\sourcepawn\include\sp_file_headers.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\sourcepawn\include\sp_typeutil.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_api.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_base.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
 					>
 				</File>
 			</Filter>
