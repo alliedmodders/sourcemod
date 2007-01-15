@@ -148,7 +148,7 @@ namespace SourceMod
 		/**
 		 * @brief Returns a plugin's identity token.
 		 */
-		virtual IdentityToken_t *GetIdentity() =0;
+		virtual IdentityToken_t *GetIdentity() const =0;
 	};
 
 

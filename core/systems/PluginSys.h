@@ -94,7 +94,7 @@ public:
 	virtual const sp_plugin_t *GetPluginStructure() const;
 	virtual IPluginFunction *GetFunctionByName(const char *public_name);
 	virtual IPluginFunction *GetFunctionById(funcid_t func_id);
-	virtual IdentityToken_t *GetIdentity();
+	virtual IdentityToken_t *GetIdentity() const;
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -146,6 +146,16 @@ public:
 	 * Calls the OnPluginUnload function.
 	 */
 	void Call_OnPluginUnload();
+
+	/**
+	* Toggles debug mode in the plugin
+	*/
+	bool ToggleDebugMode(bool debug);
+
+	/**
+	* Returns true if a plugin is usable.
+	*/
+	bool IsRunnable() const;
 public:
 	time_t HasUpdatedFile();
 
@@ -242,7 +252,7 @@ public:
 	/** 
 	 * Returns whether anything loaded will be a late load.
 	 */
-	bool IsLateLoadTime();
+	bool IsLateLoadTime() const;
 
 	/**
 	 * Adds natives from core into the native pool.
@@ -253,6 +263,11 @@ public:
 	 * Converts a Handle to an IPlugin if possible.
 	 */
 	IPlugin *PluginFromHandle(Handle_t handle, HandleError *err);
+
+	/**
+	* Finds a plugin based on its index. (starts on index 1)
+	*/
+	CPlugin *GetPluginByOrder(int num);
 private:
 	/**
 	 * Recursively loads all plugins in the given directory.

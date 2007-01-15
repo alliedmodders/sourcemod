@@ -52,6 +52,8 @@ namespace SourcePawn
 		virtual int LookupFile(ucell_t addr, const char **filename);
 		virtual int LookupFunction(ucell_t addr, const char **name);
 		virtual int LookupLine(ucell_t addr, uint32_t *line);
+	public:
+		void SetContext(sp_context_t *_ctx);
 	private:
 		void SetErrorMessage(const char *msg, va_list ap);
 	private:

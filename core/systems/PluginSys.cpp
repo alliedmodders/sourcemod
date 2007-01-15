@@ -485,9 +485,51 @@ bool CPlugin::SetPauseState(bool paused)
 	return true;
 }
 
-IdentityToken_t *CPlugin::GetIdentity()
+IdentityToken_t *CPlugin::GetIdentity() const
 {
 	return m_ident;
+}
+
+bool CPlugin::ToggleDebugMode(bool debug)
+{
+	int err;
+
+	if (!IsRunnable())
+	{
+		return false;
+	}
+
+	if ((debug && IsDebugging()) || (!debug && !IsDebugging()))
+	{
+		return false;
+	}
+	ICompilation *co = g_pVM->StartCompilation(m_ctx.ctx->plugin);
+	if (!g_pVM->SetCompilationOption(co, "debug", (debug) ? "1" : "0"))
+	{
+		return false;
+	}
+	sp_context_t *new_ctx = g_pVM->CompileToContext(co, &err);
+
+	memcpy(new_ctx->memory, m_ctx.ctx->memory, m_ctx.ctx->mem_size);
+	new_ctx->hp = m_ctx.ctx->hp;
+	new_ctx->sp = m_ctx.ctx->sp;
+	new_ctx->frm = m_ctx.ctx->frm;
+	new_ctx->dbreak = m_ctx.ctx->dbreak;
+	new_ctx->context = m_ctx.ctx->context;
+	memcpy(new_ctx->user, m_ctx.ctx->user, sizeof(m_ctx.ctx->user));
+
+	g_pVM->FreeContext(m_ctx.ctx);
+	m_ctx.ctx = new_ctx;
+	m_ctx.base->SetContext(new_ctx);
+
+	UpdateInfo();
+
+	return true;
+}
+
+bool CPlugin::IsRunnable() const
+{
+	return (m_status <= Plugin_Paused) ? true : false;
 }
 
 /*******************
@@ -1152,7 +1194,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 	return true;
 }
 
-bool CPluginManager::IsLateLoadTime()
+bool CPluginManager::IsLateLoadTime() const
 {
 	return (m_AllPluginsLoaded || g_SourceMod.IsLateLoadInMap());
 }
@@ -1209,4 +1251,23 @@ IPlugin *CPluginManager::PluginFromHandle(Handle_t handle, HandleError *err)
 	}
 
 	return pPlugin;
+}
+
+CPlugin *CPluginManager::GetPluginByOrder(int num)
+{
+	if (num < 1 || num > (int)GetPluginCount())
+	{
+		return NULL;
+	}
+
+	CPlugin *pl;
+	int id = 1;
+
+	IPluginIterator *iter = GetPluginIterator();
+	for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
+
+	pl = (CPlugin *)(iter->GetPlugin());
+	iter->Release();
+
+	return pl;
 }

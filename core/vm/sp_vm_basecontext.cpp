@@ -29,6 +29,15 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	m_CustomMsg = false;
 }
 
+void BaseContext::SetContext(sp_context_t *_ctx)
+{
+	if (!_ctx)
+	{
+		return;
+	}
+	ctx = _ctx;
+}
+
 IVirtualMachine *BaseContext::GetVirtualMachine()
 {
 	return (IVirtualMachine *)ctx->vmbase;

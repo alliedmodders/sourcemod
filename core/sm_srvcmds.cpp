@@ -185,6 +185,54 @@ CON_COMMAND(sm, "SourceMod Menu")
 
 					iter->Release();
 					return;
+				} else if (!strcmp("debug", cmd2)) {
+					if (argnum < 5)
+					{
+						META_CONPRINT("Usage: sm plugins debug <#> [on|off]\n");
+						return;
+					}
+
+					int num = atoi(engine->Cmd_Argv(3));
+					if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
+					{
+						META_CONPRINT("Plugin index not found.\n");
+						return;
+					}
+
+					int res;
+					char *mode = engine->Cmd_Argv(4);
+					if ((res=strcmp("on", mode)) && strcmp("off", mode))
+					{
+						META_CONPRINT("The only possible options are on and off.\n");
+						return;
+					}
+
+					bool debug;
+					if (!res)
+					{
+						debug = true;
+					} else {
+						debug = false;
+					}
+
+					CPlugin *pl = g_PluginSys.GetPluginByOrder(num);
+					if (debug && pl->IsDebugging())
+					{
+						META_CONPRINT("This plugin is already in debug mode.\n");
+						return;
+					} else if (!debug && !pl->IsDebugging()) {
+						META_CONPRINT("Debug mode is already disabled in this plugin.\n");
+						return;
+					}
+
+					if (pl->ToggleDebugMode(debug))
+					{
+						META_CONPRINTF("Toggled debug mode on plugin %s successfully.\n", pl->GetFilename());
+						return;
+					} else {
+						META_CONPRINTF("Could not toggle debug mode in plugin %s.\n", pl->GetFilename());
+						return;
+					}
 				}
 			}
 
@@ -193,23 +241,24 @@ CON_COMMAND(sm, "SourceMod Menu")
 			META_CONPRINT("    load   - Load a plugin\n");
 			META_CONPRINT("    unload - Unload a plugin\n");
 			META_CONPRINT("    info   - Information about a plugin\n");
+			META_CONPRINT("    debug  - Toggles debug mode in a plugin\n");
 			return;
 		} else if (!strcmp("credits", cmd)) {
-			META_CONPRINTF(" SourceMod was developed by AlliedModders, LLC.\n");
-			META_CONPRINTF(" Development would not have been possible without the following people:\n");
-			META_CONPRINTF("  David \"BAILOPAN\" Anderson, lead developer\n");
-			META_CONPRINTF("  Borja \"faluco\" Ferrer, Core developer\n");
-			META_CONPRINTF("  Scott \"Damaged Soul\" Ehlert, SourceMM developer\n");
-			META_CONPRINTF("  Pavol \"PM OnoTo\" Marko, SourceHook developer\n");
-			META_CONPRINTF(" Special thanks to Viper of GameConnect, and Mani\n");
-			META_CONPRINTF(" http://www.sourcemod.net/\n");
+			META_CONPRINT(" SourceMod was developed by AlliedModders, LLC.\n");
+			META_CONPRINT(" Development would not have been possible without the following people:\n");
+			META_CONPRINT("  David \"BAILOPAN\" Anderson, lead developer\n");
+			META_CONPRINT("  Borja \"faluco\" Ferrer, Core developer\n");
+			META_CONPRINT("  Scott \"Damaged Soul\" Ehlert, SourceMM developer\n");
+			META_CONPRINT("  Pavol \"PM OnoTo\" Marko, SourceHook developer\n");
+			META_CONPRINT(" Special thanks to Viper of GameConnect, and Mani\n");
+			META_CONPRINT(" http://www.sourcemod.net/\n");
 			return;
 		} else if (!strcmp("version", cmd)) {
 			META_CONPRINT(" SourceMod Version Information:\n");
 			META_CONPRINTF("    SourceMod Version: \"%s\"\n", SOURCEMOD_VERSION);
 			META_CONPRINTF("    JIT Version: %s (%s)\n", g_pVM->GetVMName(), g_pVM->GetVersionString());
 			META_CONPRINTF("    JIT Settings: %s\n", g_pVM->GetCPUOptimizations());
-			META_CONPRINTF("    http://www.sourcemod.net/\n");
+			META_CONPRINT("    http://www.sourcemod.net/\n");
 			return;
 		}
 	}
