@@ -1,5 +1,9 @@
+#include <time.h>
+#include "sourcemod.h"
+#include "sourcemm_api.h"
 #include "CLogger.h"
 #include "systems/Librarysys.h"
+#include "sm_version.h"
 
 CLogger g_Logger;
 
@@ -293,4 +297,48 @@ void CLogger::_PrintToHL2Log(const char *fmt, va_list ap)
 	msg[len] = '\0';
 
 	engine->LogPrint(msg);
+}
+
+const char *CLogger::GetLogFileName(LogType type) const
+{
+	switch (type)
+	{
+	case LogType_Normal:
+		{
+			return m_NrmFileName.c_str();
+		}
+	case LogType_Error:
+		{
+			return m_ErrFileName.c_str();
+		}
+	default:
+		{
+			return "";
+		}
+	}
+}
+
+LoggingMode CLogger::GetLoggingMode() const
+{
+	return m_mode;
+}
+
+void CLogger::EnableLogging()
+{
+	if (m_Active)
+	{
+		return;
+	}
+	m_Active = true;
+	LogMessage("Logging enabled manually by user.");
+}
+
+void CLogger::DisableLogging()
+{
+	if (!m_Active)
+	{
+		return;
+	}
+	LogMessage("Logging disabled manually by user.");
+	m_Active = false;
 }

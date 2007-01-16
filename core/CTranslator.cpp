@@ -1,9 +1,11 @@
 #include <stdarg.h>
+#include <stdlib.h>
 #include "CTranslator.h"
 #include "CLogger.h"
 #include "CTextParsers.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
+#include "sourcemod.h"
 
 CTranslator g_Translator;
 
