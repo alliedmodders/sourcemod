@@ -756,7 +756,7 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 	if (pType->opened)
 	{
 		QHandle *pHandle;
-		for (unsigned int i=1; i<m_HandleTail; i++)
+		for (unsigned int i=1; i<=m_HandleTail; i++)
 		{
 			pHandle = &m_Handles[i];
 			if (!pHandle->set || pHandle->type != type)
