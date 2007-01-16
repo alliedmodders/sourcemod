@@ -11,7 +11,7 @@ struct ParamInfo
 	cell_t local_addr;	/* Local address to free */
 	cell_t *phys_addr;	/* Physical address of our copy */
 	cell_t *orig_addr;	/* Original address to copy back to */
-	ucell_t size;		/* Size of array in cells */
+	ucell_t size;		/* Size of array in bytes */
 };
 
 class CPlugin;

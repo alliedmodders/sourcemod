@@ -90,7 +90,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 
 	info->flags = inarray ? copyback : 0;
 	info->marked = true;
-	info->size = cells;
+	info->size = cells * sizeof(cell_t);
 	m_params[m_curparam] = info->local_addr;
 	m_curparam++;
 
@@ -162,7 +162,7 @@ int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_
 skip_localtostr:
 	info->flags = cp_flags;
 	info->orig_addr = (cell_t *)string;
-	info->size = cells;
+	info->size = len;
 
 	return SP_ERROR_NONE;
 }
@@ -229,13 +229,13 @@ int CFunction::Execute(cell_t *result)
 		{
 			if (temp_info[numparams].orig_addr)
 			{
-				if (temp_info[numparams].size == 1)
+				if (temp_info[numparams].size == sizeof(cell_t))
 				{
 					*temp_info[numparams].orig_addr = *temp_info[numparams].phys_addr;
 				} else {
 					memcpy(temp_info[numparams].orig_addr, 
 							temp_info[numparams].phys_addr, 
-							temp_info[numparams].size * sizeof(cell_t));
+							temp_info[numparams].size);
 				}
 			}
 		}
