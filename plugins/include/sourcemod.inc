@@ -16,10 +16,10 @@ struct Plugin
    const String:url[],			/* Plugin URL */
 };
 
+#include <core>
 #include <float>
 #include <handles>
 #include <string>
-#include <files>
 
 /**
  * Declare this as a struct in your plugin to expose its information.

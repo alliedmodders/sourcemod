@@ -269,16 +269,14 @@ public:
 	*/
 	CPlugin *GetPluginByOrder(int num);
 private:
+	bool _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);
+
+	void LoadAutoPlugin(const char *plugin);
+
 	/**
 	 * Recursively loads all plugins in the given directory.
 	 */
 	void LoadPluginsFromDir(const char *basedir, const char *localdir);
-
-	/**
-	 * Loads a plugin using automatic information.
-	 * The file must be relative to the plugins folder.
-	 */
-	void LoadAutoPlugin(const char *file);
 
 	/**
 	 * Adds a plugin object.  This is wrapped by LoadPlugin functions.
@@ -288,7 +286,7 @@ private:
 	/**
 	 * Runs the second loading pass on a plugin.
 	 */
-	void RunSecondPass(CPlugin *pPlugin);
+	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**
 	 * Adds any globally registered natives to a plugin

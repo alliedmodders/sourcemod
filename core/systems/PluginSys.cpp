@@ -7,6 +7,7 @@
 #include "sourcemod.h"
 #include "CTextParsers.h"
 #include "CLogger.h"
+#include "ExtensionSys.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -31,6 +32,16 @@ CPlugin::CPlugin(const char *file)
 
 CPlugin::~CPlugin()
 {
+	if (m_handle)
+	{
+		HandleSecurity sec;
+		sec.pOwner = g_PluginSys.GetIdentity();
+		sec.pIdentity = sec.pOwner;
+
+		g_HandleSys.FreeHandle(m_handle, &sec);
+		g_ShareSys.DestroyIdentity(m_ident);
+	}
+
 	if (m_ctx.base)
 	{
 		delete m_ctx.base;
@@ -72,16 +83,6 @@ CPlugin::~CPlugin()
 		g_pSourcePawn->FreeFromMemory(m_plugin);
 		m_plugin = NULL;
 	}
-
-	if (m_handle)
-	{
-		HandleSecurity sec;
-		sec.pOwner = g_PluginSys.GetIdentity();
-		sec.pIdentity = sec.pOwner;
-
-		g_HandleSys.FreeHandle(m_handle, &sec);
-		g_ShareSys.DestroyIdentity(m_ident);
-	}
 }
 
 void CPlugin::InitIdentity()
@@ -100,18 +101,16 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 	g_LibSys.PathFormat(fullpath, sizeof(fullpath), "%s/plugins/%s", g_SourceMod.GetSMBaseDir(), file);
 	FILE *fp = fopen(fullpath, "rb");
 
+	CPlugin *pPlugin = new CPlugin(file);
+
 	if (!fp)
 	{
 		if (error)
 		{
 			snprintf(error, maxlength, "Unable to open file");
-			return NULL;
-		} else {
-			CPlugin *pPlugin = new CPlugin(file);
-			snprintf(pPlugin->m_errormsg, sizeof(pPlugin->m_errormsg), "Unable to open file");
-			pPlugin->m_status = Plugin_BadLoad;
-			return pPlugin;
 		}
+		pPlugin->m_status = Plugin_BadLoad;
+		return pPlugin;
 	}
 
 	int err;
@@ -122,19 +121,15 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 		if (error)
 		{
 			snprintf(error, maxlength, "Error %d while parsing plugin", err);
-			return NULL;
-		} else {
-			CPlugin *pPlugin = new CPlugin(file);
-			snprintf(pPlugin->m_errormsg, sizeof(pPlugin->m_errormsg), "Error %d while parsing plugin", err);
-			pPlugin->m_status = Plugin_BadLoad;
-			return pPlugin;
 		}
+		pPlugin->m_status = Plugin_BadLoad;
+		return pPlugin;
 	}
 
 	fclose(fp);
 
-	CPlugin *pPlugin = new CPlugin(file);
 	pPlugin->m_plugin = pl;
+
 	return pPlugin;
 }
 
@@ -185,10 +180,8 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 	if (!m_ctx.ctx)
 	{
 		memset(&m_ctx, 0, sizeof(m_ctx));
-		if (!error)
+		if (error)
 		{
-			SetErrorState(Plugin_Failed, "Failed to compile (error %d)", err);
-		} else {
 			snprintf(error, maxlength, "Failed to compile (error %d)", err);
 		}
 		return false;
@@ -375,12 +368,6 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	if (m_status != Plugin_Created)
 	{
 		return false;
-	}
-
-	if (!error)
-	{
-		error = m_errormsg;
-		maxlength = sizeof(m_errormsg);
 	}
 
 	m_status = Plugin_Loaded;
@@ -676,20 +663,20 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 
 //well i have discovered that gabe newell is very fat, so i wrote this comment now
 //:TODO: remove this function, create a better wrapper for LoadPlugin()/LoadAutoPlugin()
-void CPluginManager::LoadAutoPlugin(const char *file)
+bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
 	/**
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
-	if (sm_trie_retrieve(m_LoadLookup, file, (void **)&pPlugin))
+	if (sm_trie_retrieve(m_LoadLookup, path, (void **)&pPlugin))
 	{
 		/* First check the type */
 		PluginType type = pPlugin->GetType();
 		if (type == PluginType_Private
 			|| type == PluginType_Global)
 		{
-			return;
+			return true;
 		}
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
@@ -700,7 +687,7 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 		}
 	}
 
-	pPlugin = CPlugin::CreatePlugin(file, NULL, 0);
+	pPlugin = CPlugin::CreatePlugin(path, error, err_max);
 
 	assert(pPlugin != NULL);
 
@@ -717,8 +704,7 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 	unsigned int setcount = m_PluginInfo.GetSettingsNum();
 	for (unsigned int i=0; i<setcount; i++)
 	{
-		pset = m_PluginInfo.GetSettingsIfMatch(i, file);
-		if (!pset)
+		if ((pset=m_PluginInfo.GetSettingsIfMatch(i, path)) == NULL)
 		{
 			continue;
 		}
@@ -735,8 +721,12 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 				}
 				if (!g_pVM->SetCompilationOption(co, key, val))
 				{
-					pPlugin->SetErrorState(Plugin_Failed, "Unable to set option (key \"%s\") (value \"%s\")", key, val);
+					if (error)
+					{
+						snprintf(error, err_max, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
+					}
 					pPlugin->CancelMyCompile();
+					pPlugin->m_status = Plugin_Failed;
 					co = NULL;
 					break;
 				}
@@ -744,100 +734,71 @@ void CPluginManager::LoadAutoPlugin(const char *file)
 		}
 	}
 
+	/* Do the actual compiling */
 	if (co)
 	{
 		pPlugin->FinishMyCompile(NULL, 0);
 		co = NULL;
 	}
 
-	/* We don't care about the return value */
+	/* Get the status */
 	if (pPlugin->GetStatus() == Plugin_Created)
 	{
 		AddCoreNativesToPlugin(pPlugin);
 		pPlugin->InitIdentity();
-		pPlugin->Call_AskPluginLoad(NULL, 0);
+		pPlugin->Call_AskPluginLoad(error, err_max);
 	}
 
-	AddPlugin(pPlugin);
+	if (_plugin)
+	{
+		*_plugin = pPlugin;
+	}
+
+	return (pPlugin->GetStatus() == Plugin_Loaded);
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
-	/* See if this plugin is already loaded... reformat to get sep chars right */
-	char checkpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(checkpath, sizeof(checkpath), "%s", path);
+	CPlugin *pl;
 
-	/**
-	 * In manually loading a plugin, any sort of load error causes a deletion.
-	 * This is because it's assumed manually loaded plugins will not be managed.
-	 * For managed plugins, we need the UI to report them properly.
-	 */
-
-	CPlugin *pPlugin;
-	if (sm_trie_retrieve(m_LoadLookup, checkpath, (void **)&pPlugin))
+	if (!_LoadPlugin(&pl, path, debug, type, error, err_max))
 	{
-		snprintf(error, err_max, "Plugin file is already loaded");
+		delete pl;
 		return NULL;
 	}
 
-	pPlugin = CPlugin::CreatePlugin(path, error, err_max);
+	AddPlugin(pl);
 
-	if (!pPlugin)
+	return pl;
+}
+
+void CPluginManager::LoadAutoPlugin(const char *plugin)
+{
+	CPlugin *pl;
+	char error[255] = "Unknown error";
+
+	if (!_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error)))
 	{
-		return NULL;
+		g_Logger.LogError("[SOURCEMOD] Failed to load plugin \"%s\": %s", plugin, error);
+		pl->SetErrorState(Plugin_Failed, "%s", error);
 	}
 
-	ICompilation *co = pPlugin->StartMyCompile(g_pVM);
-	if (!co || (debug && !g_pVM->SetCompilationOption(co, "debug", "1")))
-	{
-		snprintf(error, err_max, "Unable to start%s compilation", debug ? " debug" : "");
-		pPlugin->CancelMyCompile();
-		delete pPlugin;
-		return NULL;
-	}
-
-	if (!pPlugin->FinishMyCompile(error, err_max))
-	{
-		delete pPlugin;
-		return NULL;
-	}
-
-	pPlugin->m_type = type;
-
-	AddCoreNativesToPlugin(pPlugin);
-
-	pPlugin->InitIdentity();
-
-	/* Finally, ask the plugin if it wants to be loaded */
-	if (!pPlugin->Call_AskPluginLoad(error, err_max))
-	{
-		delete pPlugin;
-		return NULL;
-	}
-
-	AddPlugin(pPlugin);
-
-	return pPlugin;
+	AddPlugin(pl);
 }
 
 void CPluginManager::AddPlugin(CPlugin *pPlugin)
 {
-	m_plugins.push_back(pPlugin);
-	sm_trie_insert(m_LoadLookup, pPlugin->m_filename, pPlugin);
-
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
+
 	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnPluginCreated(pPlugin);
 	}
 
-	/* If the second pass was already completed, we have to run the pass on this plugin */
-	if (m_AllPluginsLoaded && pPlugin->GetStatus() == Plugin_Loaded)
-	{
-		RunSecondPass(pPlugin);
-	}
+	m_plugins.push_back(pPlugin);
+	sm_trie_insert(m_LoadLookup, pPlugin->m_filename, pPlugin);
 }
 
 void CPluginManager::LoadAll_SecondPass()
@@ -850,16 +811,77 @@ void CPluginManager::LoadAll_SecondPass()
 		pPlugin = (*iter);
 		if (pPlugin->GetStatus() == Plugin_Loaded)
 		{
-			RunSecondPass(pPlugin);
+			/* :TODO: fix */
+			RunSecondPass(pPlugin, NULL, 0);
 		}
 	}
+
 	m_AllPluginsLoaded = true;
 }
 
-void CPluginManager::RunSecondPass(CPlugin *pPlugin)
+bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
 {
-	/* Tell this plugin to finish initializing itself */
-	pPlugin->Call_OnPluginInit();
+	/* Find any extensions this plugin needs */
+	struct _ext
+	{
+		cell_t name;
+		cell_t file;
+		cell_t autoload;
+		cell_t required;
+	} *ext;
+
+	IPluginContext *pBase = pPlugin->GetBaseContext();
+	uint32_t num = pBase->GetPubVarsNum();
+	sp_pubvar_t *pubvar;
+	IExtension *pExt;
+	char path[PLATFORM_MAX_PATH+1];
+	char *file, *name;
+	for (uint32_t i=0; i<num; i++)
+	{
+		if (pBase->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
+		{
+			continue;
+		}
+		if (strncmp(pubvar->name, "__ext_", 6) == 0)
+		{
+			ext = (_ext *)pubvar->offs;
+			if (!ext->required && !ext->autoload)
+			{
+				continue;
+			}
+			if (pBase->LocalToString(ext->file, &file) != SP_ERROR_NONE)
+			{
+				continue;
+			}
+			if (pBase->LocalToString(ext->name, &name) != SP_ERROR_NONE)
+			{
+				continue;
+			}
+			snprintf(path, PLATFORM_MAX_PATH, "%s.%s", file, PLATFORM_LIB_EXT);
+			pExt = NULL;
+			/* Attempt to auto-load if necessary */
+			if (ext->autoload)
+			{
+				pExt = g_Extensions.LoadAutoExtension(path);
+			}
+			if (ext->required && !pExt)
+			{
+				if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
+				{
+					pExt = g_Extensions.FindExtensionByName(name);
+				}
+			}
+			if (ext->required && (!pExt || !pExt->IsLoaded()))
+			{
+				if (error)
+				{
+					snprintf(error, maxlength, "Required extension \"%s\" (file \"%s\") not found", name, file);
+				}
+				pPlugin->m_status = Plugin_Failed;
+				return false;
+			}
+		}
+	}
 
 	/* Finish by telling all listeners */
 	List<IPluginsListener *>::iterator iter;
@@ -869,6 +891,11 @@ void CPluginManager::RunSecondPass(CPlugin *pPlugin)
 		pListener = (*iter);
 		pListener->OnPluginLoaded(pPlugin);
 	}
+	
+	/* Tell this plugin to finish initializing itself */
+	pPlugin->Call_OnPluginInit();
+
+	return true;
 }
 
 void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
@@ -891,6 +918,13 @@ void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
+
+	/* This prevents removal during insertion or anything else weird */
+	if (m_plugins.find(pPlugin) == m_plugins.end())
+	{
+		return false;
+	}
+
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
 
@@ -1215,6 +1249,12 @@ void CPluginManager::OnSourceModAllInitialized()
 
 void CPluginManager::OnSourceModShutdown()
 {
+	List<CPlugin *>::iterator iter;
+	while ( (iter = m_plugins.begin()) != m_plugins.end() )
+	{
+		UnloadPlugin((*iter));
+	}
+
 	g_HandleSys.RemoveType(g_PluginType, m_MyIdent);
 	g_ShareSys.DestroyIdentType(g_PluginIdent);
 	g_ShareSys.DestroyIdentity(m_MyIdent);

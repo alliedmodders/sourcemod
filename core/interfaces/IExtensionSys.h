@@ -15,6 +15,11 @@ namespace SourceMod
 	{
 	public:
 		/**
+		 * @brief Returns whether or not the extension is properly loaded.
+		 */
+		virtual bool IsLoaded() =0;
+
+		/**
 		 * @brief Returns the extension's API interface
 		 *
 		 * @return			An IExtensionInterface pointer.
@@ -128,7 +133,7 @@ namespace SourceMod
 		 * @param err_max	Maximum error buffer length.
 		 * @return			New IExtension on success, NULL on failure.
 		 */
-		virtual IExtension *LoadModule(const char *path, 
+		virtual IExtension *LoadExtension(const char *path, 
 									ExtensionLifetime lifetime, 
 									char *error,
 									size_t err_max) =0;
@@ -158,7 +163,7 @@ namespace SourceMod
 		 * @param pExt		IExtension pointer.
 		 * @return			True if successful, false otherwise.
 		 */
-		virtual bool UnloadModule(IExtension *pExt) =0;
+		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
 };
 
