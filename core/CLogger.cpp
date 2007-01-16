@@ -48,7 +48,7 @@ void CLogger::_NewMapFile()
 	FILE *fp = fopen(m_NrmFileName.c_str(), "w");
 	if (!fp)
 	{
-		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
+		g_SMAPI->ConPrint("[SOURCEMOD] Unexpected fatal logging error. SourceMod logging disabled.\n");
 		m_Active = false;
 		return;
 	} else {
@@ -207,7 +207,7 @@ void CLogger::LogMessage(const char *vafmt, ...)
 	g_SMAPI->ConPrintf("L %s: %s\n", date, msg);
 	return;
 print_error:
-	g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
+	g_SMAPI->ConPrint("[SOURCEMOD] Unexpected fatal logging error. SourceMod logging disabled.\n");
 	m_Active = false;
 }
 
@@ -252,7 +252,7 @@ void CLogger::LogError(const char *vafmt, ...)
 		fprintf(fp, "L %s: %s\n", date, msg);
 		fclose(fp);
 	} else {
-		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
+		g_SMAPI->ConPrint("[SOURCEMOD] Unexpected fatal logging error. SourceMod logging disabled.\n");
 		m_Active = false;
 		return;
 	}
