@@ -2,14 +2,39 @@
 #include "sm_version.h"
 #include "sm_stringutil.h"
 
-ConVarAccessor g_ConCmdAccessor;
+RootConsoleMenu g_RootMenu;
 
-void ConVarAccessor::OnSourceModStartup(bool late)
+RootConsoleMenu::RootConsoleMenu()
 {
-	ConCommandBaseMgr::OneTimeInit(&g_ConCmdAccessor);
+	m_pCommands = sm_trie_create();
 }
 
-bool ConVarAccessor::RegisterConCommandBase(ConCommandBase *pCommand)
+RootConsoleMenu::~RootConsoleMenu()
+{
+	sm_trie_destroy(m_pCommands);
+
+	List<ConsoleEntry *>::iterator iter;
+	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_Menu.clear();
+}
+
+void RootConsoleMenu::OnSourceModStartup(bool late)
+{
+	ConCommandBaseMgr::OneTimeInit(this);
+	AddRootConsoleCommand("version", "Display version information", this);
+	AddRootConsoleCommand("credits", "Display credits listing", this);
+}
+
+void RootConsoleMenu::OnSourceModShutdown()
+{
+	RemoveRootConsoleCommand("credits", this);
+	RemoveRootConsoleCommand("version", this);
+}
+
+bool RootConsoleMenu::RegisterConCommandBase(ConCommandBase *pCommand)
 {
 	META_REGCVAR(pCommand);
 
@@ -38,234 +63,176 @@ inline const char *StatusToStr(PluginStatus st)
 	}
 }
 
-#define IS_STR_FILLED(var) (var[0] != '\0')
-CON_COMMAND(sm, "SourceMod Menu")
+void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 {
-	int argnum = engine->Cmd_Argc();
+	char buffer[512];
+
+	va_list ap;
+	va_start(ap, fmt);
+	size_t len = vsnprintf(buffer, sizeof(buffer), fmt, ap);
+	va_end(ap);
+
+	if (len >= sizeof(buffer))
+	{
+		buffer[510] = '\n';
+		buffer[511] = '\0';
+	} else {
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+	}
+	
+	META_CONPRINT(buffer);
+}
+
+bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler)
+{
+	if (sm_trie_retrieve(m_pCommands, cmd, NULL))
+	{
+		return false;
+	}
+
+	sm_trie_insert(m_pCommands, cmd, pHandler);
+
+	/* Sort this into the menu */
+	List<ConsoleEntry *>::iterator iter = m_Menu.begin();
+	ConsoleEntry *pEntry;
+	bool inserted = false;
+	while (iter != m_Menu.end())
+	{
+		pEntry = (*iter);
+		if (strcmp(cmd, pEntry->command.c_str()) < 0)
+		{
+			ConsoleEntry *pNew = new ConsoleEntry;
+			pNew->command.assign(cmd);
+			pNew->description.assign(text);
+			m_Menu.insert(iter, pNew);
+			inserted = true;
+			break;
+		}
+		iter++;
+	}
+
+	if (!inserted)
+	{
+		ConsoleEntry *pNew = new ConsoleEntry;
+		pNew->command.assign(cmd);
+		pNew->description.assign(text);
+		m_Menu.push_back(pNew);
+	}
+
+	return true;
+}
+
+bool RootConsoleMenu::RemoveRootConsoleCommand(const char *cmd, IRootConsoleCommand *pHandler)
+{
+	/* Sanity tests */
+	IRootConsoleCommand *object;
+	if (sm_trie_retrieve(m_pCommands, cmd, (void **)&object))
+	{
+		if (object != pHandler)
+		{
+			return false;
+		}
+	} else {
+		return false;
+	}
+
+	sm_trie_delete(m_pCommands, cmd);
+
+	List<ConsoleEntry *>::iterator iter;
+	ConsoleEntry *pEntry;
+	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
+	{
+		pEntry = (*iter);
+		if (pEntry->command.compare(cmd) == 0)
+		{
+			delete pEntry;
+			m_Menu.erase(iter);
+			break;
+		}
+	}
+
+	return true;
+}
+
+void RootConsoleMenu::GotRootCmd()
+{
+	unsigned int argnum = GetArgumentCount();
 
 	if (argnum >= 2)
 	{
-		const char *cmd = engine->Cmd_Argv(1);
-		if (!strcmp("plugins", cmd))
+		const char *cmd = GetArgument(1);
+		IRootConsoleCommand *pHandler;
+		if (sm_trie_retrieve(m_pCommands, cmd, (void **)&pHandler))
 		{
-			if (argnum >= 3)
-			{
-				const char *cmd2 = engine->Cmd_Argv(2);
-				if (!strcmp("list", cmd2))
-				{
-					char buffer[256];
-					unsigned int id = 1;
-					int plnum = g_PluginSys.GetPluginCount();
-
-					if (!plnum)
-					{
-						META_CONPRINT("[SM] No plugins loaded\n");
-						return;
-					} else {
-						META_CONPRINTF("[SM] Displaying %d plugin%s:\n", g_PluginSys.GetPluginCount(), (plnum > 1) ? "s" : "");
-					}
-
-					IPluginIterator *iter = g_PluginSys.GetPluginIterator();
-					for (; iter->MorePlugins(); iter->NextPlugin(), id++)
-					{
-						IPlugin *pl = iter->GetPlugin();
-						assert(pl->GetStatus() != Plugin_Created);
-						int len = 0;
-						const sm_plugininfo_t *info = pl->GetPublicInfo();
-
-						len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, StatusToStr(pl->GetStatus()));
-						len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
-						if (IS_STR_FILLED(info->version))
-						{
-							len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
-						}
-						if (IS_STR_FILLED(info->author))
-						{
-							UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
-						}
-						META_CONPRINTF("%s\n", buffer);
-					}
-
-					iter->Release();
-					return;
-				} else if (!strcmp("load", cmd2)) {
-					if (argnum < 4)
-					{
-						META_CONPRINT("Usage: sm plugins load <file>\n");
-						return;
-					}
-
-					char error[128];
-					const char *filename = engine->Cmd_Argv(3);
-					IPlugin *pl = g_PluginSys.LoadPlugin(filename, false, PluginType_MapUpdated, error, sizeof(error));
-
-					if (pl)
-					{
-						META_CONPRINTF("Loaded plugin %s successfully.\n", filename);
-					} else {
-						META_CONPRINTF("Plugin %s failed to load: %s.\n", filename, error);
-					}
-
-					return;
-				} else if (!strcmp("unload", cmd2)) {
-					if (argnum < 4)
-					{
-						META_CONPRINT("Usage: sm plugins unload <#>\n");
-						return;
-					}
-
-					int id = 1;
-					int num = atoi(engine->Cmd_Argv(3));
-					if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
-					{
-						META_CONPRINT("Plugin index not found.\n");
-						return;
-					}
-
-					IPluginIterator *iter = g_PluginSys.GetPluginIterator();
-					for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
-					IPlugin *pl = iter->GetPlugin();
-
-					char name[64];
-					const sm_plugininfo_t *info = pl->GetPublicInfo();
-					strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
-
-					if (g_PluginSys.UnloadPlugin(pl))
-					{
-						META_CONPRINTF("Plugin %s unloaded successfully.\n", name);
-					} else {
-						META_CONPRINTF("Failed to unload plugin %s.\n", name);
-					}
-
-					iter->Release();
-					return;
-				} else if (!strcmp("info", cmd2)) {
-					if (argnum < 4)
-					{
-						META_CONPRINT("Usage: sm plugins info <#>\n");
-						return;
-					}
-
-					int id = 1;
-					int num = atoi(engine->Cmd_Argv(3));
-					if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
-					{
-						META_CONPRINT("Plugin index not found.\n");
-						return;
-					}
-
-					IPluginIterator *iter = g_PluginSys.GetPluginIterator();
-					for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
-
-					IPlugin *pl = iter->GetPlugin();
-					const sm_plugininfo_t *info = pl->GetPublicInfo();
-
-					META_CONPRINTF("  Filename: %s\n", pl->GetFilename());
-					if (IS_STR_FILLED(info->name))
-					{
-						META_CONPRINTF("  Title: %s\n", info->name);
-					}
-					if (IS_STR_FILLED(info->author))
-					{
-						META_CONPRINTF("  Author: %s\n", info->author);
-					}
-					if (IS_STR_FILLED(info->version))
-					{
-						META_CONPRINTF("  Version: %s\n", info->version);
-					}
-					if (IS_STR_FILLED(info->description))
-					{
-						META_CONPRINTF("  Description: %s\n", info->description);
-					}
-					if (IS_STR_FILLED(info->url))
-					{
-						META_CONPRINTF("  URL: %s\n", info->url);
-					}
-					//:TODO: write if it's in debug mode, or do it inside LIST ?
-
-					iter->Release();
-					return;
-				} else if (!strcmp("debug", cmd2)) {
-					if (argnum < 5)
-					{
-						META_CONPRINT("Usage: sm plugins debug <#> [on|off]\n");
-						return;
-					}
-
-					int num = atoi(engine->Cmd_Argv(3));
-					if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
-					{
-						META_CONPRINT("Plugin index not found.\n");
-						return;
-					}
-
-					int res;
-					char *mode = engine->Cmd_Argv(4);
-					if ((res=strcmp("on", mode)) && strcmp("off", mode))
-					{
-						META_CONPRINT("The only possible options are on and off.\n");
-						return;
-					}
-
-					bool debug;
-					if (!res)
-					{
-						debug = true;
-					} else {
-						debug = false;
-					}
-
-					CPlugin *pl = g_PluginSys.GetPluginByOrder(num);
-					if (debug && pl->IsDebugging())
-					{
-						META_CONPRINT("This plugin is already in debug mode.\n");
-						return;
-					} else if (!debug && !pl->IsDebugging()) {
-						META_CONPRINT("Debug mode is already disabled in this plugin.\n");
-						return;
-					}
-
-					if (pl->ToggleDebugMode(debug))
-					{
-						META_CONPRINTF("Successfully toggled debug mode on plugin %s.\n", pl->GetFilename());
-						return;
-					} else {
-						/* :TODO: ... we should be getting an actual error message here */
-						META_CONPRINTF("Could not toggle debug mode on plugin %s.\n", pl->GetFilename());
-						return;
-					}
-				}
-			}
-
-			META_CONPRINT(" SourceMod Plugin Menu:\n");
-			META_CONPRINT("    list   - Show loaded plugins\n");
-			META_CONPRINT("    load   - Load a plugin\n");
-			META_CONPRINT("    unload - Unload a plugin\n");
-			META_CONPRINT("    info   - Information about a plugin\n");
-			META_CONPRINT("    debug  - Toggles debug mode in a plugin\n");
-			return;
-		} else if (!strcmp("credits", cmd)) {
-			META_CONPRINT(" SourceMod was developed by AlliedModders, LLC.\n");
-			META_CONPRINT(" Development would not have been possible without the following people:\n");
-			META_CONPRINT("  David \"BAILOPAN\" Anderson, lead developer\n");
-			META_CONPRINT("  Borja \"faluco\" Ferrer, Core developer\n");
-			META_CONPRINT("  Scott \"Damaged Soul\" Ehlert, SourceMM developer\n");
-			META_CONPRINT("  Pavol \"PM OnoTo\" Marko, SourceHook developer\n");
-			META_CONPRINT(" Special thanks to Viper of GameConnect, and Mani\n");
-			META_CONPRINT(" http://www.sourcemod.net/\n");
-			return;
-		} else if (!strcmp("version", cmd)) {
-			META_CONPRINT(" SourceMod Version Information:\n");
-			META_CONPRINTF("    SourceMod Version: \"%s\"\n", SOURCEMOD_VERSION);
-			META_CONPRINTF("    JIT Version: %s (%s)\n", g_pVM->GetVMName(), g_pVM->GetVersionString());
-			META_CONPRINTF("    JIT Settings: %s\n", g_pVM->GetCPUOptimizations());
-			META_CONPRINT("    http://www.sourcemod.net/\n");
+			pHandler->OnRootConsoleCommand(cmd, argnum);
 			return;
 		}
 	}
-	META_CONPRINT(" SourceMod Menu:\n");
-	META_CONPRINT(" Usage: sm <command> [arguments]\n");
-	META_CONPRINT("    credits - Credits listing\n");
-	META_CONPRINT("    plugins - Plugins menu\n");
-	META_CONPRINT("    version - Display version information\n");
+
+	ConsolePrint("SourceMod Menu:");
+	ConsolePrint("Usage: sm <command> [arguments]");
+
+	List<ConsoleEntry *>::iterator iter;
+	ConsoleEntry *pEntry;
+	char buffer[255];
+	size_t len;
+	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
+	{
+		pEntry = (*iter);
+		len = snprintf(buffer, sizeof(buffer), "    %s", pEntry->command.c_str());
+		if (pEntry->command.size() < 16)
+		{
+			size_t num = 16 - pEntry->command.size();
+			for (size_t i = 0; i < num; i++)
+			{
+				buffer[len++] = ' ';
+			}
+		}
+		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", pEntry->description.c_str());
+		ConsolePrint("%s", buffer);
+	}
+}
+
+const char *RootConsoleMenu::GetArgument(unsigned int argno)
+{
+	return engine->Cmd_Argv(argno);
+}
+
+const char *RootConsoleMenu::GetArguments()
+{
+	return engine->Cmd_Args();
+}
+
+unsigned int RootConsoleMenu::GetArgumentCount()
+{
+	return engine->Cmd_Argc();
+}
+
+void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
+{
+	if (strcmp(cmd, "credits") == 0)
+	{
+		ConsolePrint(" SourceMod was developed by AlliedModders, LLC.");
+		ConsolePrint(" Development would not have been possible without the following people:");
+		ConsolePrint("  David \"BAILOPAN\" Anderson, lead developer");
+		ConsolePrint("  Borja \"faluco\" Ferrer, Core developer");
+		ConsolePrint("  Scott \"Damaged Soul\" Ehlert, SourceMM developer");
+		ConsolePrint("  Pavol \"PM OnoTo\" Marko, SourceHook developer");
+		ConsolePrint(" Special thanks to Viper of GameConnect");
+		ConsolePrint(" Special thanks to Mani of Mani-Admin-Plugin");
+		ConsolePrint(" http://www.sourcemod.net/");
+	} else if (strcmp(cmd, "version") == 0) {
+		ConsolePrint(" SourceMod Version Information:");
+		ConsolePrint("    SourceMod Version: %s", SOURCEMOD_VERSION);
+		ConsolePrint("    JIT Version: %s, %s", g_pVM->GetVMName(), g_pVM->GetVersionString());
+		ConsolePrint("    JIT Settings: %s", g_pVM->GetCPUOptimizations());
+		ConsolePrint("    http://www.sourcemod.net/");
+	}
+}
+
+#define IS_STR_FILLED(var) (var[0] != '\0')
+CON_COMMAND(sm, "SourceMod Menu")
+{
+	g_RootMenu.GotRootCmd();
 }

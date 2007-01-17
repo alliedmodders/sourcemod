@@ -326,6 +326,10 @@
 			Name="Interfaces"
 			>
 			<File
+				RelativePath="..\interfaces\IRootConsoleMenu.h"
+				>
+			</File>
+			<File
 				RelativePath="..\interfaces\ITextParsers.h"
 				>
 			</File>
