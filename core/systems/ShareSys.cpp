@@ -34,6 +34,9 @@ void ShareSystem::OnSourceModStartup(bool late)
 
 	/* Initialize our static identity handle */
 	m_IdentRoot.ident = g_HandleSys.CreateHandle(m_TypeRoot, NULL, NULL, GetIdentRoot(), NULL);
+
+	/* Add the Handle System... it's too innocent and pure to do it itself */
+	AddInterface(NULL, &g_HandleSys);
 }
 
 void ShareSystem::OnSourceModShutdown()

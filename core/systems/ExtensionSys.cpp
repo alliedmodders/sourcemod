@@ -3,6 +3,7 @@
 #include "ShareSys.h"
 #include "CLogger.h"
 #include "sourcemm_api.h"
+#include "PluginSys.h"
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -92,6 +93,16 @@ CExtension::~CExtension()
 	{
 		m_pLib->CloseLibrary();
 	}
+}
+
+void CExtension::AddPlugin(IPlugin *pPlugin)
+{
+	m_Plugins.push_back(pPlugin);
+}
+
+void CExtension::RemovePlugin(IPlugin *pPlugin)
+{
+	m_Plugins.remove(pPlugin);
 }
 
 void CExtension::SetError(const char *error)
@@ -197,10 +208,12 @@ void CExtension::AddInterface(SMInterface *pInterface)
 void CExtensionManager::OnSourceModAllInitialized()
 {
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
+	g_PluginSys.AddPluginsListener(this);
 }
 
 void CExtensionManager::OnSourceModShutdown()
 {
+	g_PluginSys.RemovePluginsListener(this);
 	g_ShareSys.DestroyIdentType(g_ExtType);
 }
 
@@ -217,7 +230,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 
 	if (!p->IsLoaded())
 	{
-		g_Logger.LogError("[SOURCEMOD] Unable to load extension \"%s\": %s", path, error);
+		g_Logger.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
 		p->SetError(error);
 	}
 
@@ -316,6 +329,23 @@ void CExtensionManager::AddInterface(IExtension *pOwner, SMInterface *pInterface
 	pExt->AddInterface(pInterface);
 }
 
+void CExtensionManager::BindChildPlugin(IExtension *pParent, IPlugin *pPlugin)
+{
+	CExtension *pExt = (CExtension *)pParent;
+
+	pExt->AddPlugin(pPlugin);
+}
+
+void CExtensionManager::OnPluginDestroyed(IPlugin *plugin)
+{
+	List<CExtension *>::iterator iter;
+
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		(*iter)->RemovePlugin(plugin);
+	}
+}
+
 bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 {
 	if (!_pExt)
@@ -339,6 +369,15 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 	/* Handle dependencies */
 	if (pExt->IsLoaded())
 	{
+		/* Unload any dependent plugins */
+		List<IPlugin *>::iterator p_iter = pExt->m_Plugins.begin();
+		while (p_iter != pExt->m_Plugins.end())
+		{
+			g_PluginSys.UnloadPlugin((*p_iter));
+			/* It should already have been removed! */
+			assert(pExt->m_Plugins.find((*p_iter)) != pExt->m_Plugins.end());
+		}
+
 		/* Notify and/or unload all dependencies */
 		List<CExtension *>::iterator c_iter;
 		CExtension *pDep;

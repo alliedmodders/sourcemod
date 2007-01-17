@@ -588,11 +588,11 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	m_AllPluginsLoaded = false;
 	if ((err=g_TextParser.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
 	{
-		g_Logger.LogError("[SOURCEMOD] Encountered fatal error parsing file \"%s\"", config);
+		g_Logger.LogError("[SM] Encountered fatal error parsing file \"%s\"", config);
 		const char *err_msg = g_TextParser.GetSMCErrorString(err);
 		if (err_msg)
 		{
-			g_Logger.LogError("[SOURCEMOD] Parse error encountered: \"%s\"", err_msg);
+			g_Logger.LogError("[SM] Parse error encountered: \"%s\"", err_msg);
 		}
 	}
 
@@ -617,8 +617,8 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	{
 		char error[256];
 		g_LibSys.GetPlatformError(error, sizeof(error));
-		g_Logger.LogError("[SOURCEMOD] Failure reading from plugins path: %s", localpath);
-		g_Logger.LogError("[SOURCEMOD] Platform returned error: %s", error);
+		g_Logger.LogError("[SM] Failure reading from plugins path: %s", localpath);
+		g_Logger.LogError("[SM] Platform returned error: %s", error);
 		return;
 	}
 
@@ -779,7 +779,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 	if (!_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error)))
 	{
-		g_Logger.LogError("[SOURCEMOD] Failed to load plugin \"%s\": %s", plugin, error);
+		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s", plugin, error);
 		pl->SetErrorState(Plugin_Failed, "%s", error);
 	}
 
@@ -864,6 +864,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			{
 				pExt = g_Extensions.LoadAutoExtension(path);
 			}
+			/* See if we can find a similar extension */
 			if (ext->required && !pExt)
 			{
 				if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
@@ -871,6 +872,12 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 					pExt = g_Extensions.FindExtensionByName(name);
 				}
 			}
+			/* If we're requiring and got an extension and it's loaded, bind it */
+			if (ext->required && pExt && pExt->IsLoaded())
+			{
+				g_Extensions.BindChildPlugin(pExt, pPlugin);
+			}
+			/* If we're requiring and we didn't get an extension or it's not loaded, error */
 			if (ext->required && (!pExt || !pExt->IsLoaded()))
 			{
 				if (error)

@@ -8,6 +8,7 @@
 #include "sm_globals.h"
 #include "ShareSys.h"
 #include <ISmmAPI.h>
+#include <IPluginSys.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -30,6 +31,8 @@ public:
 	void SetError(const char *error);
 	void AddDependency(IfaceInfo *pInfo);
 	void AddInterface(SMInterface *pInterface);
+	void AddPlugin(IPlugin *pPlugin);
+	void RemovePlugin(IPlugin *pPlugin);
 private:
 	IdentityToken_t *m_pIdentToken;
 	IExtensionInterface *m_pAPI;
@@ -38,12 +41,14 @@ private:
 	String m_Error;
 	List<IfaceInfo> m_Deps;
 	List<SMInterface *> m_Interfaces;
+	List<IPlugin *> m_Plugins;
 	PluginId m_PlId;
 };
 
 class CExtensionManager : 
 	public IExtensionManager,
-	public SMGlobalClass
+	public SMGlobalClass,
+	IPluginsListener
 {
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -56,10 +61,13 @@ public: //IExtensionManager
 	bool UnloadExtension(IExtension *pExt);
 	IExtension *FindExtensionByFile(const char *file);
 	IExtension *FindExtensionByName(const char *ext);
+public: //IPluginsListener
+	void OnPluginDestroyed(IPlugin *plugin);
 public:
 	IExtension *LoadAutoExtension(const char *path);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
+	void BindChildPlugin(IExtension *pParent, IPlugin *pPlugin);
 private:
 	List<CExtension *> m_Libs;
 };
