@@ -63,11 +63,11 @@ void CPhraseFile::ParseWarning(const char *message, ...)
 
 	if (!m_FileLogged)
 	{
-		g_Logger.LogError("[SOURCEMOD] Warning(s) encountered in translation file \"%s\"", m_File.c_str());
+		g_Logger.LogError("[SM] Warning(s) encountered in translation file \"%s\"", m_File.c_str());
 		m_FileLogged;
 	}
 
-	g_Logger.LogError("[SOURCEMOD] %s", message);
+	g_Logger.LogError("[SM] %s", message);
 }
 
 void CPhraseFile::ReparseFile()
@@ -98,8 +98,8 @@ void CPhraseFile::ReparseFile()
 			msg = m_ParseError.c_str();
 		}
 
-		g_Logger.LogError("[SOURCEMOD] Fatal error encountered parsing translation file \"%s\"", m_File.c_str());
-		g_Logger.LogError("[SOURCEMOD] Error (line %d, column %d): %s", line, col, msg);
+		g_Logger.LogError("[SM] Fatal error encountered parsing translation file \"%s\"", m_File.c_str());
+		g_Logger.LogError("[SM] Error (line %d, column %d): %s", line, col, msg);
 	}
 }
 
@@ -652,13 +652,13 @@ void CTranslator::RebuildLanguageDatabase(const char *lang_header_file)
 			str_err = m_CustomError.c_str();
 		}
 
-		g_Logger.LogError("[SOURCEMOD] Failed to parse language header file: \"%s\"", lang_header_file);
-		g_Logger.LogError("[SOURCEMOD] Parse error (line %d, column %d): %s", line, col, str_err);
+		g_Logger.LogError("[SM] Failed to parse language header file: \"%s\"", lang_header_file);
+		g_Logger.LogError("[SM] Parse error (line %d, column %d): %s", line, col, str_err);
 	}
 
 	if (!m_Languages.size())
 	{
-		g_Logger.LogError("[SOURCEMOD] Fatal error, no languages found! Translation will not work.");
+		g_Logger.LogError("[SM] Fatal error, no languages found! Translation will not work.");
 	}
 
 	for (size_t i=0; i<m_Files.size(); i++)
@@ -685,7 +685,7 @@ SMCParseResult CTranslator::ReadSMC_NewSection(const char *name, bool opt_quotes
 
 	if (!m_InLanguageSection)
 	{
-		g_Logger.LogError("[SOURCEMOD] Warning: Unrecognized section \"%s\" in languages.cfg");
+		g_Logger.LogError("[SM] Warning: Unrecognized section \"%s\" in languages.cfg");
 	}
 
 	return SMCParse_Continue;
@@ -704,8 +704,8 @@ SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value,
 
 	if (len != 2)
 	{
-		g_Logger.LogError("[SOURCEMOD] Warning encountered parsing languages.cfg file.");
-		g_Logger.LogError("[SOURCEMOD] Invalid language code \"%s\" is being ignored.");
+		g_Logger.LogError("[SM] Warning encountered parsing languages.cfg file.");
+		g_Logger.LogError("[SM] Invalid language code \"%s\" is being ignored.");
 	}
 
 	Language *pLanguage = new Language;
