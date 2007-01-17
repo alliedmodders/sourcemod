@@ -15,7 +15,7 @@ void CDbgReporter::OnContextExecuteError(IPluginContext *ctx, IContextTrace *err
 
 	if (n_err != SP_ERROR_NATIVE)
 	{
-		g_Logger.LogError("[SOURCEMOD] Plugin \"%s\" encountered error %d: %s",
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s",
 			plname,
 			n_err,
 			error->GetErrorString());
@@ -26,26 +26,26 @@ void CDbgReporter::OnContextExecuteError(IPluginContext *ctx, IContextTrace *err
 		const char *custerr;
 		if ((custerr=error->GetCustomErrorString()) != NULL)
 		{
-			g_Logger.LogError("[SOURCEMOD] Native \"%s\" reported: \"%s\"", lastname, custerr);
+			g_Logger.LogError("[SM] Native \"%s\" reported: \"%s\"", lastname, custerr);
 		} else {
-			g_Logger.LogError("[SOURCEMOD] Native \"%s\" encountered a generic error.", lastname);
+			g_Logger.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
 		}
 	}
 
 	if (!error->DebugInfoAvailable())
 	{
-		g_Logger.LogError("[SOURCEMOD] Debug mode is not enabled for this plugin.");
-		g_Logger.LogError("[SOURCEMOD] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
+		g_Logger.LogError("[SM] Debug mode is not enabled for this plugin.");
+		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
 			_GetPluginIndex(ctx));
 		return;
 	}
 
 	CallStackInfo stk_info;
 	int i = 0;
-	g_Logger.LogError("[SOURCEMOD] Displaying call stack trace:");
+	g_Logger.LogError("[SM] Displaying call stack trace:");
 	while (error->GetTraceInfo(&stk_info))
 	{
-		g_Logger.LogError("[SOURCEMOD]   [%d]  Line %d, %s::%s()",
+		g_Logger.LogError("[SM]   [%d]  Line %d, %s::%s()",
 			i++,
 			stk_info.line,
 			stk_info.filename,
