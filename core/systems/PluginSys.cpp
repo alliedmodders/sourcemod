@@ -8,6 +8,8 @@
 #include "CTextParsers.h"
 #include "CLogger.h"
 #include "ExtensionSys.h"
+#include "sm_srvcmds.h"
+#include "sm_stringutil.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -477,39 +479,68 @@ IdentityToken_t *CPlugin::GetIdentity() const
 	return m_ident;
 }
 
-bool CPlugin::ToggleDebugMode(bool debug)
+bool CPlugin::ToggleDebugMode(bool debug, char *error, size_t maxlength)
 {
 	int err;
 
 	if (!IsRunnable())
 	{
+		if (error)
+		{
+			snprintf(error, maxlength, "Plugin is not runnable.");
+		}
 		return false;
 	}
 
-	if ((debug && IsDebugging()) || (!debug && !IsDebugging()))
+	if (debug && IsDebugging())
 	{
+		if (error)
+		{
+			snprintf(error, maxlength, "Plugin is already in debug mode.");
+		}
+		return false;
+	} else if (!debug && !IsDebugging()) {
+		if (error)
+		{
+			snprintf(error, maxlength, "Plugins is already in production mode.");
+		}
 		return false;
 	}
+
 	ICompilation *co = g_pVM->StartCompilation(m_ctx.ctx->plugin);
 	if (!g_pVM->SetCompilationOption(co, "debug", (debug) ? "1" : "0"))
 	{
+		if (error)
+		{
+			snprintf(error, maxlength, "Failed to change plugin mode (JIT failure).");
+		}
 		return false;
 	}
+
 	sp_context_t *new_ctx = g_pVM->CompileToContext(co, &err);
 
-	memcpy(new_ctx->memory, m_ctx.ctx->memory, m_ctx.ctx->mem_size);
-	new_ctx->hp = m_ctx.ctx->hp;
-	new_ctx->sp = m_ctx.ctx->sp;
-	new_ctx->frm = m_ctx.ctx->frm;
-	new_ctx->dbreak = m_ctx.ctx->dbreak;
-	new_ctx->context = m_ctx.ctx->context;
-	memcpy(new_ctx->user, m_ctx.ctx->user, sizeof(m_ctx.ctx->user));
+	if (new_ctx)
+	{
+		memcpy(new_ctx->memory, m_ctx.ctx->memory, m_ctx.ctx->mem_size);
+		new_ctx->hp = m_ctx.ctx->hp;
+		new_ctx->sp = m_ctx.ctx->sp;
+		new_ctx->frm = m_ctx.ctx->frm;
+		new_ctx->dbreak = m_ctx.ctx->dbreak;
+		new_ctx->context = m_ctx.ctx->context;
+		memcpy(new_ctx->user, m_ctx.ctx->user, sizeof(m_ctx.ctx->user));
 
-	g_pVM->FreeContext(m_ctx.ctx);
-	m_ctx.ctx = new_ctx;
-	m_ctx.base->SetContext(new_ctx);
+		g_pVM->FreeContext(m_ctx.ctx);
+		m_ctx.ctx = new_ctx;
+		m_ctx.base->SetContext(new_ctx);
 
-	UpdateInfo();
+		UpdateInfo();
+	} else {
+		if (error)
+		{
+			snprintf(error, maxlength, "Failed to recompile plugin (JIT error %d).", err);
+		}
+		return false;
+	}
 
 	return true;
 }
@@ -1252,10 +1283,14 @@ void CPluginManager::OnSourceModAllInitialized()
 
 	g_PluginType = g_HandleSys.CreateType("Plugin", this, 0, NULL, &sec, m_MyIdent, NULL);
 	g_PluginIdent = g_ShareSys.CreateIdentType("PLUGIN");
+
+	g_RootMenu.AddRootConsoleCommand("plugins", "Manage Plugins", this);
 }
 
 void CPluginManager::OnSourceModShutdown()
 {
+	g_RootMenu.RemoveRootConsoleCommand("plugins", this);
+
 	List<CPlugin *>::iterator iter;
 	while ( (iter = m_plugins.begin()) != m_plugins.end() )
 	{
@@ -1317,4 +1352,233 @@ CPlugin *CPluginManager::GetPluginByOrder(int num)
 	iter->Release();
 
 	return pl;
+}
+
+const char *CPluginManager::GetStatusText(PluginStatus st)
+{
+	switch (st)
+	{
+	case Plugin_Running:
+		return "Running";
+	case Plugin_Paused:
+		return "Paused";
+	case Plugin_Error:
+		return "Error";
+	case Plugin_Uncompiled:
+		return "Uncompiled";
+	case Plugin_BadLoad:
+		return "Bad Load";
+	case Plugin_Failed:
+		return "Failed";
+	default:
+		assert(false);
+		return "-";
+	}
+}
+
+#define IS_STR_FILLED(var) (var[0] != '\0')
+void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
+{
+	if (argcount >= 3)
+	{
+		const char *cmd = g_RootMenu.GetArgument(2);
+		if (strcmp(cmd, "list") == 0)
+		{
+			char buffer[256];
+			unsigned int id = 1;
+			int plnum = GetPluginCount();
+
+			if (!plnum)
+			{
+				g_RootMenu.ConsolePrint("[SM] No plugins loaded");
+				return;
+			} else {
+				g_RootMenu.ConsolePrint("[SM] Displaying %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
+			}
+
+			IPluginIterator *iter = GetPluginIterator();
+			for (; iter->MorePlugins(); iter->NextPlugin(), id++)
+			{
+				IPlugin *pl = iter->GetPlugin();
+				assert(pl->GetStatus() != Plugin_Created);
+				int len = 0;
+				const sm_plugininfo_t *info = pl->GetPublicInfo();
+
+				len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+				len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+				if (IS_STR_FILLED(info->version))
+				{
+					len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+				}
+				if (IS_STR_FILLED(info->author))
+				{
+					UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+				}
+				g_RootMenu.ConsolePrint("%s", buffer);
+			}
+
+			iter->Release();
+			return;
+		} else if (strcmp(cmd, "load") == 0) {
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("Usage: sm plugins load <file>");
+				return;
+			}
+
+			char error[128];
+			const char *filename = g_RootMenu.GetArgument(3);
+			IPlugin *pl = LoadPlugin(filename, false, PluginType_MapUpdated, error, sizeof(error));
+
+			if (pl)
+			{
+				g_RootMenu.ConsolePrint("[SM] Loaded plugin %s successfully.", filename);
+			} else {
+				g_RootMenu.ConsolePrint("[SM] Plugin %s failed to load: %s.", filename, error);
+			}
+
+			return;
+		} else if (strcmp(cmd, "unload") == 0) {
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("Usage: sm plugins unload <#>");
+				return;
+			}
+
+			int id = 1;
+			int num = atoi(g_RootMenu.GetArgument(3));
+			if (num < 1 || num > (int)GetPluginCount())
+			{
+				g_RootMenu.ConsolePrint("Plugin index %d not found.", num);
+				return;
+			}
+
+			IPluginIterator *iter = GetPluginIterator();
+			for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++)
+				;
+			IPlugin *pl = iter->GetPlugin();
+
+			char name[PLATFORM_MAX_PATH+1];
+			const sm_plugininfo_t *info = pl->GetPublicInfo();
+			strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+
+			if (UnloadPlugin(pl))
+			{
+				g_RootMenu.ConsolePrint("Plugin %s unloaded successfully.", name);
+			} else {
+				g_RootMenu.ConsolePrint("Failed to unload plugin %s.", name);
+			}
+
+			iter->Release();
+			return;
+		} else if (strcmp(cmd, "info") == 0) {
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("Usage: sm plugins info <#>");
+				return;
+			}
+
+			int id = 1;
+			int num = atoi(g_RootMenu.GetArgument(3));
+			if (num < 1 || num > (int)GetPluginCount())
+			{
+				g_RootMenu.ConsolePrint("Plugin index not found.");
+				return;
+			}
+
+			IPluginIterator *iter = GetPluginIterator();
+			for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
+
+			IPlugin *pl = iter->GetPlugin();
+			const sm_plugininfo_t *info = pl->GetPublicInfo();
+
+			g_RootMenu.ConsolePrint("  Filename: %s", pl->GetFilename());
+			if (IS_STR_FILLED(info->name))
+			{
+				g_RootMenu.ConsolePrint("  Title: %s", info->name);
+			}
+			if (IS_STR_FILLED(info->author))
+			{
+				g_RootMenu.ConsolePrint("  Author: %s", info->author);
+			}
+			if (IS_STR_FILLED(info->version))
+			{
+				g_RootMenu.ConsolePrint("  Version: %s", info->version);
+			}
+			if (IS_STR_FILLED(info->description))
+			{
+				g_RootMenu.ConsolePrint("  Description: %s", info->description);
+			}
+			if (IS_STR_FILLED(info->url))
+			{
+				g_RootMenu.ConsolePrint("  URL: %s", info->url);
+			}
+			if (pl->GetStatus() >= Plugin_Error)
+			{
+				g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "yes" : "no");
+			}
+
+			iter->Release();
+
+			return;
+		} else if (strcmp(cmd, "debug") == 0) {
+			if (argcount < 5)
+			{
+				g_RootMenu.ConsolePrint("Usage: sm plugins debug <#> [on|off]");
+				return;
+			}
+
+			int num = atoi(g_RootMenu.GetArgument(3));
+			if (num < 1 || num > (int)GetPluginCount())
+			{
+				g_RootMenu.ConsolePrint("Plugin index not found.");
+				return;
+			}
+
+			int res;
+			const char *mode = g_RootMenu.GetArgument(4);
+			if ((res=strcmp("on", mode)) && strcmp("off", mode))
+			{
+				g_RootMenu.ConsolePrint("The only possible options are \"on\" and \"off.\"");
+				return;
+			}
+
+			bool debug;
+			if (!res)
+			{
+				debug = true;
+			} else {
+				debug = false;
+			}
+
+			CPlugin *pl = GetPluginByOrder(num);
+			if (debug && pl->IsDebugging())
+			{
+				g_RootMenu.ConsolePrint("[SM] This plugin is already in debug mode.");
+				return;
+			} else if (!debug && !pl->IsDebugging()) {
+				g_RootMenu.ConsolePrint("[SM] Debug mode is already disabled in this plugin.");
+				return;
+			}
+
+			char error[256];
+			if (pl->ToggleDebugMode(debug, error, sizeof(error)))
+			{
+				g_RootMenu.ConsolePrint("Successfully toggled debug mode on plugin %s.", pl->GetFilename());
+				return;
+			} else {
+				g_RootMenu.ConsolePrint("[SM] Could not toggle debug mode on plugin %s.", pl->GetFilename());
+				g_RootMenu.ConsolePrint("[SM] Plugin returned error: %s", error);
+				return;
+			}
+		}
+	}
+
+	/* Draw the main menu */
+	g_RootMenu.ConsolePrint("SourceMod Plugins Menu:");
+	g_RootMenu.DrawGenericOption("list", "Show loaded plugins");
+	g_RootMenu.DrawGenericOption("load", "Load a plugin");
+	g_RootMenu.DrawGenericOption("unload", "Unload a plugin");
+	g_RootMenu.DrawGenericOption("info", "Information about a plugin");
+	g_RootMenu.DrawGenericOption("debug", "Toggle debug mode on a plugin");
 }

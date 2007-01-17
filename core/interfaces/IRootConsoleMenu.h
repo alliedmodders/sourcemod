@@ -71,6 +71,17 @@ namespace SourceMod
 		 * @return				String containing all arguments.
 		 */
 		virtual const char *GetArguments() =0;
+
+		/**
+		 * @brief Draws a generic command/description pair.
+		 * NOTE: The pair is currently four spaces indented and 16-N spaces of separation,
+		 * N being the length of the command name.  This is subject to change in case we
+		 * account for Valve's font choices.
+		 *
+		 * @param option		String containing the command option.
+		 * @param description	String containing the command description.
+		 */
+		virtual void DrawGenericOption(const char *cmd, const char *text) =0;
 	};
 };
 

@@ -12,6 +12,7 @@
 #include "PluginInfoDatabase.h"
 #include "sm_trie.h"
 #include "sourcemod.h"
+#include <IRootConsoleMenu.h>
 
 using namespace SourceHook;
 
@@ -150,7 +151,7 @@ public:
 	/**
 	* Toggles debug mode in the plugin
 	*/
-	bool ToggleDebugMode(bool debug);
+	bool ToggleDebugMode(bool debug, char *error, size_t maxlength);
 
 	/**
 	* Returns true if a plugin is usable.
@@ -186,7 +187,8 @@ private:
 class CPluginManager : 
 	public IPluginManager,
 	public SMGlobalClass,
-	public IHandleTypeDispatch
+	public IHandleTypeDispatch,
+	public IRootConsoleCommand
 {
 	friend class CPlugin;
 public:
@@ -227,6 +229,8 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
+public: //IRootConsoleCommand
+	void OnRootConsoleCommand(const char *command, unsigned int argcount);
 public:
 	/**
 	 * Loads all plugins not yet loaded
@@ -265,9 +269,14 @@ public:
 	IPlugin *PluginFromHandle(Handle_t handle, HandleError *err);
 
 	/**
-	* Finds a plugin based on its index. (starts on index 1)
-	*/
+	 * Finds a plugin based on its index. (starts on index 1)
+	 */
 	CPlugin *GetPluginByOrder(int num);
+
+	/**
+	 * Gets status text for a status code 
+	 */
+	const char *GetStatusText(PluginStatus status);
 private:
 	bool _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);
 

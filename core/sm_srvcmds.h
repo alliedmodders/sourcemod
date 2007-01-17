@@ -42,6 +42,7 @@ public: //IRootConsole
 	const char *GetArgument(unsigned int argno);
 	unsigned int GetArgumentCount();
 	const char *GetArguments();
+	void DrawGenericOption(const char *cmd, const char *text);
 public:
 	void GotRootCmd();
 private:

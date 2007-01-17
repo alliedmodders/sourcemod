@@ -41,28 +41,6 @@ bool RootConsoleMenu::RegisterConCommandBase(ConCommandBase *pCommand)
 	return true;
 }
 
-inline const char *StatusToStr(PluginStatus st)
-{
-	switch (st)
-	{
-	case Plugin_Running:
-		return "Running";
-	case Plugin_Paused:
-		return "Paused";
-	case Plugin_Error:
-		return "Error";
-	case Plugin_Uncompiled:
-		return "Uncompiled";
-	case Plugin_BadLoad:
-		return "Bad Load";
-	case Plugin_Failed:
-		return "Failed";
-	default:
-		assert(false);
-		return "-";
-	}
-}
-
 void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 {
 	char buffer[512];
@@ -155,6 +133,24 @@ bool RootConsoleMenu::RemoveRootConsoleCommand(const char *cmd, IRootConsoleComm
 	return true;
 }
 
+void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
+{
+	char buffer[255];
+	size_t len, cmdlen = strlen(cmd);
+
+	len = snprintf(buffer, sizeof(buffer), "    %s", cmd);
+	if (cmdlen < 16)
+	{
+		size_t num = 16 - cmdlen;
+		for (size_t i = 0; i < num; i++)
+		{
+			buffer[len++] = ' ';
+		}
+		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
+		ConsolePrint("%s", buffer);
+	}
+}
+
 void RootConsoleMenu::GotRootCmd()
 {
 	unsigned int argnum = GetArgumentCount();
@@ -175,22 +171,10 @@ void RootConsoleMenu::GotRootCmd()
 
 	List<ConsoleEntry *>::iterator iter;
 	ConsoleEntry *pEntry;
-	char buffer[255];
-	size_t len;
 	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
 	{
 		pEntry = (*iter);
-		len = snprintf(buffer, sizeof(buffer), "    %s", pEntry->command.c_str());
-		if (pEntry->command.size() < 16)
-		{
-			size_t num = 16 - pEntry->command.size();
-			for (size_t i = 0; i < num; i++)
-			{
-				buffer[len++] = ' ';
-			}
-		}
-		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", pEntry->description.c_str());
-		ConsolePrint("%s", buffer);
+		DrawGenericOption(pEntry->command.c_str(), pEntry->description.c_str());
 	}
 }
 
@@ -231,7 +215,6 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcoun
 	}
 }
 
-#define IS_STR_FILLED(var) (var[0] != '\0')
 CON_COMMAND(sm, "SourceMod Menu")
 {
 	g_RootMenu.GotRootCmd();
