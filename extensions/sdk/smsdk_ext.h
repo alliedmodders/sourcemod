@@ -118,7 +118,7 @@ private:
 extern SDKExtension *g_pExtensionIface;
 
 extern IShareSys *g_pShareSys;
-extern IdentityToken_t *myself;
+extern IExtension *myself;
 extern IHandleSys *g_pHandleSys;
 
 #if defined SMEXT_CONF_METAMOD

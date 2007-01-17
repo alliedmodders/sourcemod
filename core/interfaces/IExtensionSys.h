@@ -7,6 +7,7 @@
 namespace SourceMod
 {
 	class IExtensionInterface;
+	typedef void *		ITERATOR;
 
 	/** 
 	 * @brief Encapsulates an IExtension.
@@ -40,6 +41,32 @@ namespace SourceMod
 		 * @return			An IdentityToken_t pointer.
 		 */
 		virtual IdentityToken_t *GetIdentity() =0;
+
+		/**
+		 * @brief Retrieves the extension dependency list for this extension.
+		 *
+		 * @param pOwner		Optional pointer to store the first interface's owner.
+		 * @param pInterface	Optional pointer to store the first interface.
+		 * @return				An ITERATOR pointer for the results, or NULL if no results at all.
+		 */
+		virtual ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface) =0;
+
+		/**
+		 * @brief Finds the next dependency in the dependency list.
+		 *
+		 * @param iter			Pointer to iterator from FindFirstDependency.
+		 * @param pOwner		Optional pointer to store the interface's owner.
+		 * @param pInterface	Optional pointer to store the interface.
+		 * @return				True if there are more results after this, false otherwise.
+		 */
+		virtual bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface) =0;
+
+		/**
+		 * @brief Frees an ITERATOR handle from FindFirstDependency.
+		 *
+		 * @param iter			Pointer to iterator to free.
+		 */
+		virtual void FreeDependencyIterator(ITERATOR *iter) =0;
 	};
 
 	#define SMINTERFACE_EXTENSIONAPI_VERSION	1
@@ -49,6 +76,11 @@ namespace SourceMod
 	 */
 	class IExtensionInterface
 	{
+	public:
+		virtual unsigned int GetExtensionVersion()
+		{
+			return SMINTERFACE_EXTENSIONAPI_VERSION;
+		}
 	public:
 		/**
 		 * @brief Called when the extension is loaded.
@@ -84,16 +116,29 @@ namespace SourceMod
 		 */
 		virtual void OnExtensionPauseChange(bool pause) =0;
 
-		virtual unsigned int GetExtensionVersion()
+		/**
+		 * @brief Asks the extension whether it's safe to remove an external interface it's using.
+		 * If it's not safe, return false, and the extension will be unloaded afterwards.
+		 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean up resources.
+		 *
+		 * @param pInterface		Pointer to interface being dropped.
+		 * @return					True to continue, false to unload this extension afterwards.
+		 */
+		virtual bool QueryInterfaceDrop(SMInterface *pInterface)
 		{
-			return SMINTERFACE_EXTENSIONAPI_VERSION;
+			return true;
 		}
 
 		/**
-		 * @brief Returns true if the extension is Metamod-dependent.
+		 * @brief Notifies the extension that an external interface it uses is being removed.
+		 *
+		 * @param pInterface		Pointer to interface being dropped.
 		 */
-		virtual bool IsMetamodExtension() =0;
+		virtual void NotifyInterfaceDrop(SMInterface *pInterface)
+		{
+		}
 	public:
+		virtual bool IsMetamodExtension() =0;
 		virtual const char *GetExtensionName() =0;
 		virtual const char *GetExtensionURL() =0;
 		virtual const char *GetExtensionTag() =0;
@@ -137,25 +182,6 @@ namespace SourceMod
 									ExtensionLifetime lifetime, 
 									char *error,
 									size_t err_max) =0;
-
-		/**
-		 * @brief Returns the number of plugins that will be unloaded when this
-		 * module is unloaded.
-		 *
-		 * @param pExt		IExtension pointer.
-		 * @param optional	Optional pointer to be filled with # of plugins that 
-		 *					are dependent, but will continue safely.  NOT YET USED.
-		 * @return			Total number of dependent plugins.
-		 */
-		virtual unsigned int NumberOfPluginDependents(IExtension *pExt, unsigned int *optional) =0;
-
-		/**
-		 * @brief Returns whether or not the extension can be unloaded.
-		 *
-		 * @param pExt		IExtension pointer.
-		 * @return			True if unloading is possible, false otherwise.
-		 */
-		virtual bool IsExtensionUnloadable(IExtension *pExtension) =0;
 
 		/**
 		 * @brief Attempts to unload a module.

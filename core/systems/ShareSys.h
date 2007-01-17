@@ -20,8 +20,7 @@ namespace SourceMod
 struct IfaceInfo
 {
 	SMInterface *iface;
-	IdentityToken_t *token;
-	Handle_t handle;
+	IExtension *owner;
 };
 
 class ShareSystem : 
@@ -32,10 +31,10 @@ class ShareSystem :
 public:
 	ShareSystem();
 public: //IShareSys
-	bool AddInterface(SMInterface *iface, IdentityToken_t *token);
+	bool AddInterface(IExtension *myself, SMInterface *pIface);
 	bool RequestInterface(const char *iface_name, 
 		unsigned int iface_vers,
-		IdentityToken_t *token,
+		IExtension *mysql,
 		SMInterface **pIface);
 	void AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *natives[]);
 	IdentityType_t CreateIdentType(const char *name);
@@ -51,6 +50,7 @@ public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public:
 	IdentityToken_t *CreateCoreIdentity();
+	void RemoveInterfaces(IExtension *pExtension);
 public:
 	inline IdentityToken_t *GetIdentRoot()
 	{

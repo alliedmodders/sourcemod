@@ -1,5 +1,6 @@
 #include "ShareSys.h"
 #include "HandleSys.h"
+#include "ExtensionSys.h"
 
 ShareSystem g_ShareSys;
 
@@ -90,7 +91,7 @@ IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
 	return pToken;
 }
 
-bool ShareSystem::AddInterface(SMInterface *iface, IdentityToken_t *token)
+bool ShareSystem::AddInterface(IExtension *myself, SMInterface *iface)
 {
 	if (!iface)
 	{
@@ -99,17 +100,9 @@ bool ShareSystem::AddInterface(SMInterface *iface, IdentityToken_t *token)
 
 	IfaceInfo info;
 
+	info.owner = myself;
 	info.iface = iface;
-	info.token = token;
 	
-	if (token)
-	{
-		/* If we're an external object, we have to do this */
-		info.handle = g_HandleSys.CreateHandle(m_IfaceType, iface, token, GetIdentRoot(), NULL);
-	} else {
-		info.handle = 0;
-	}
-
 	m_Interfaces.push_back(info);
 
 	return true;
@@ -117,28 +110,13 @@ bool ShareSystem::AddInterface(SMInterface *iface, IdentityToken_t *token)
 
 bool ShareSystem::RequestInterface(const char *iface_name, 
 								   unsigned int iface_vers, 
-								   IdentityToken_t *token, 
+								   IExtension *mysql, 
 								   SMInterface **pIface)
 {
-	/* If Some yahoo.... SOME HOOLIGAN... some NO GOOD DIRTY 
-	 * HORRIBLE PERSON passed in a token that we don't recognize....
-	 * <b>Punish them.</b>
-	 */
-	HandleSecurity sec;
-
-	sec.pIdentity = GetIdentRoot();
-	sec.pOwner = NULL;
-
-	if (!g_HandleSys.ReadHandle(token->ident, m_TypeRoot, &sec, NULL))
-	{
-		return false;
-	}
-
 	/* See if the interface exists */
 	List<IfaceInfo>::iterator iter;
 	SMInterface *iface;
-	IdentityToken_t *iface_owner;
-	Handle_t iface_handle;
+	IExtension *iface_owner;
 	bool found = false;
 	for (iter=m_Interfaces.begin(); iter!=m_Interfaces.end(); iter++)
 	{
@@ -149,8 +127,7 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 			if (iface->GetInterfaceVersion() == iface_vers
 				|| iface->IsVersionCompatible(iface_vers))
 			{
-				iface_owner = info.token;
-				iface_handle = info.handle;
+				iface_owner = info.owner;
 				found = true;
 				break;
 			}
@@ -162,23 +139,21 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 		return false;
 	}
 
-	/* If something external owns this, we need to track it. */
+	/* Add a dependency node */
 	if (iface_owner)
 	{
-		Handle_t newhandle;
-		if (g_HandleSys.CloneHandle(iface_handle, &newhandle, token, &sec)
-			!= HandleError_None)
-		{
-			return false;
-		}
-		/** 
-		 * Now we can deny module loads based on dependencies.
-		 */
+		IfaceInfo info;
+		info.iface = iface;
+		info.owner = iface_owner;
+		g_Extensions.BindDependency(iface_owner, &info);
 	}
 
-	/* :TODO: finish */
+	if (pIface)
+	{
+		*pIface = iface;
+	}
 
-	return NULL;
+	return true;
 }
 
 void ShareSystem::AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *natives[])
@@ -202,3 +177,17 @@ void ShareSystem::DestroyIdentType(IdentityType_t type)
 	g_HandleSys.RemoveType(type, GetIdentRoot());
 }
 
+void ShareSystem::RemoveInterfaces(IExtension *pExtension)
+{
+	List<IfaceInfo>::iterator iter = m_Interfaces.begin();
+
+	while (iter != m_Interfaces.end())
+	{
+		if ((*iter).owner == pExtension)
+		{
+			iter = m_Interfaces.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+}

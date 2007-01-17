@@ -7,6 +7,7 @@
 
 namespace SourceMod
 {
+	class IExtension;
 	struct IdentityToken_t;
 	typedef unsigned int		HandleType_t;
 	typedef HandleType_t		IdentityType_t;
@@ -53,11 +54,11 @@ namespace SourceMod
 		/**
 		 * @brief Adds an interface to the global interface system.
 		 *
+		 * @param myself		Object adding this interface, in order to track dependencies.
 		 * @param iface			Interface pointer (must be unique).
-		 * @param token			Parent token of the module/interface.
 		 * @return				True on success, false otherwise.
 		 */
-		virtual bool AddInterface(SMInterface *iface, IdentityToken_t *token) =0;
+		virtual bool AddInterface(IExtension *myself, SMInterface *iface) =0;
 
 		/**
 		 * @brief Requests an interface from the global interface system.
@@ -65,12 +66,12 @@ namespace SourceMod
 		 *
 		 * @param iface_name	Interface name.
 		 * @param iface_vers	Interface version to attempt to match.
-		 * @param token			Object requesting this interface, in order to track dependencies.
+		 * @param myself		Object requesting this interface, in order to track dependencies.
 		 * @param pIface		Pointer to store the return value in.
 		 */
 		virtual bool RequestInterface(const char *iface_name, 
 										unsigned int iface_vers,
-										IdentityToken_t *token,
+										IExtension *myself,
 										SMInterface **pIface) =0;
 
 		/**

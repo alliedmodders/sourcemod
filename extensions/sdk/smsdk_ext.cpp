@@ -2,7 +2,7 @@
 #include "smsdk_ext.h"
 
 IShareSys *g_pShareSys = NULL;
-IdentityToken_t *myself = NULL;
+IExtension *myself = NULL;
 IHandleSys *g_pHandleSys = NULL;
 
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -22,7 +22,9 @@ SDKExtension::SDKExtension()
 bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t err_max, bool late)
 {
 	g_pShareSys = sys;
-	myself = me->GetIdentity();
+	myself = me;
+
+	m_WeAreUnloaded = true;
 
 #if defined SMEXT_CONF_METAMOD
 	if (!m_SourceMMLoaded)
@@ -37,7 +39,13 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 
 	SM_GET_IFACE(HANDLESYSTEM, g_pHandleSys);
 
-	return SDK_OnLoad(error, err_max, late);
+	if (SDK_OnLoad(error, err_max, late))
+	{
+		m_WeAreUnloaded = true;
+		return true;
+	}
+
+	return false;
 }
 
 bool SDKExtension::IsMetamodExtension()
@@ -51,7 +59,9 @@ bool SDKExtension::IsMetamodExtension()
 
 void SDKExtension::OnExtensionPauseChange(bool state)
 {
+#if defined SMEXT_CONF_METAMOD
 	m_WeGotPauseChange = true;
+#endif
 	SDK_OnPauseChange(state);
 }
 
@@ -62,7 +72,9 @@ void SDKExtension::OnExtensionsAllLoaded()
 
 void SDKExtension::OnExtensionUnload()
 {
+#if defined SMEXT_CONF_METAMOD
 	m_WeAreUnloaded = true;
+#endif
 	SDK_OnUnload();
 }
 

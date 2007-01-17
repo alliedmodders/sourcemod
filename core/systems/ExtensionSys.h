@@ -6,12 +6,15 @@
 #include <sh_list.h>
 #include <sh_string.h>
 #include "sm_globals.h"
+#include "ShareSys.h"
+#include <ISmmAPI.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
 
 class CExtension : public IExtension
 {
+	friend class CExtensionManager;
 public:
 	CExtension(const char *filename, char *error, size_t maxlen);
 	~CExtension();
@@ -20,14 +23,22 @@ public: //IExtension
 	const char *GetFilename();
 	IdentityToken_t *GetIdentity();
 	bool IsLoaded();
+	ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface);
+	bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface);
+	void FreeDependencyIterator(ITERATOR *iter);
 public:
 	void SetError(const char *error);
+	void AddDependency(IfaceInfo *pInfo);
+	void AddInterface(SMInterface *pInterface);
 private:
 	IdentityToken_t *m_pIdentToken;
 	IExtensionInterface *m_pAPI;
 	String m_File;
 	ILibrary *m_pLib;
 	String m_Error;
+	List<IfaceInfo> m_Deps;
+	List<SMInterface *> m_Interfaces;
+	PluginId m_PlId;
 };
 
 class CExtensionManager : 
@@ -42,13 +53,13 @@ public: //IExtensionManager
 		ExtensionLifetime lifetime, 
 		char *error,
 		size_t err_max);
-	unsigned int NumberOfPluginDependents(IExtension *pExt, unsigned int *optional);
-	bool IsExtensionUnloadable(IExtension *pExtension);
 	bool UnloadExtension(IExtension *pExt);
 	IExtension *FindExtensionByFile(const char *file);
 	IExtension *FindExtensionByName(const char *ext);
 public:
 	IExtension *LoadAutoExtension(const char *path);
+	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
+	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
 private:
 	List<CExtension *> m_Libs;
 };

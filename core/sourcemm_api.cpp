@@ -7,6 +7,7 @@ SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
 IServerGameDLL *gamedll = NULL;
 IServerGameClients *serverClients = NULL;
+ISmmPluginManager *g_pMMPlugins = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -17,6 +18,15 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 	GET_V_IFACE_CURRENT(serverFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
+
+	if ((g_pMMPlugins = (ISmmPluginManager *)g_SMAPI->MetaFactory(MMIFACE_PLMANAGER, NULL, NULL)) == NULL)
+	{
+		if (error)
+		{
+			snprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
+		}
+		return false;
+	}
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }
