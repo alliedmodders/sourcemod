@@ -1,9 +1,10 @@
 things to do for a release, in priority
     X finish plugin unloading
     X URGENT: fix compiler's sizeof(), add cellsof
-    - do module api
+    X do module api
     X finish plugin pausing/unpausing, forwards must block execution
     - do admin api
+    - make "mapupdated" plugins work as intended (reload on mapchange if newer)
     X add debugging output to logger
     - finish ML api, expose through interface
     X add error messages to format routine

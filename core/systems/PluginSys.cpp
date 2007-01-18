@@ -693,7 +693,6 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 }
 
 //well i have discovered that gabe newell is very fat, so i wrote this comment now
-//:TODO: remove this function, create a better wrapper for LoadPlugin()/LoadAutoPlugin()
 bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
 	/**
@@ -777,7 +776,11 @@ bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug
 	{
 		AddCoreNativesToPlugin(pPlugin);
 		pPlugin->InitIdentity();
-		pPlugin->Call_AskPluginLoad(error, err_max);
+		if (pPlugin->Call_AskPluginLoad(error, err_max))
+		{
+			/* Autoload any modules */
+			LoadOrRequireExtensions(pPlugin, 1, error, err_max);
+		}
 	}
 
 	if (_plugin)
@@ -799,6 +802,16 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	}
 
 	AddPlugin(pl);
+
+	/* Run second pass if we need to */
+	if (IsLateLoadTime() && pl->GetStatus() == Plugin_Loaded)
+	{
+		if (!RunSecondPass(pl, error, err_max))
+		{
+			UnloadPlugin(pl);
+			return NULL;
+		}
+	}
 
 	return pl;
 }
@@ -837,20 +850,25 @@ void CPluginManager::LoadAll_SecondPass()
 	List<CPlugin *>::iterator iter;
 	CPlugin *pPlugin;
 
+	char error[256];
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
 	{
 		pPlugin = (*iter);
 		if (pPlugin->GetStatus() == Plugin_Loaded)
 		{
-			/* :TODO: fix */
-			RunSecondPass(pPlugin, NULL, 0);
+			error[0] = '\0';
+			if (!RunSecondPass(pPlugin, error, sizeof(error)))
+			{
+				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), error);
+				pPlugin->SetErrorState(Plugin_Failed, "%s", error);
+			}
 		}
 	}
 
 	m_AllPluginsLoaded = true;
 }
 
-bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
+bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength)
 {
 	/* Find any extensions this plugin needs */
 	struct _ext
@@ -888,36 +906,75 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			{
 				continue;
 			}
-			snprintf(path, PLATFORM_MAX_PATH, "%s.%s", file, PLATFORM_LIB_EXT);
-			pExt = NULL;
-			/* Attempt to auto-load if necessary */
-			if (ext->autoload)
+			if (pass == 1)
 			{
-				pExt = g_Extensions.LoadAutoExtension(path);
-			}
-			/* See if we can find a similar extension */
-			if (ext->required && !pExt)
-			{
-				if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
+				/* Attempt to auto-load if necessary */
+				if (ext->autoload)
 				{
-					pExt = g_Extensions.FindExtensionByName(name);
+					g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
+					g_Extensions.LoadAutoExtension(path);
+				}
+			} else if (pass == 2) {
+				/* Is this required? */
+				if (ext->required)
+				{
+					g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
+					if ((pExt = g_Extensions.FindExtensionByFile(path)) == NULL)
+					{
+						pExt = g_Extensions.FindExtensionByName(name);
+					}
+					/* :TODO: should we bind to unloaded extensions?
+					 * Currently the extension manager will ignore this.
+					 */
+					if (!pExt || !pExt->IsRunning(NULL, 0))
+					{
+						if (error)
+						{
+							snprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
+						}
+						pPlugin->m_status = Plugin_Failed;
+						return false;
+					} else {
+						g_Extensions.BindChildPlugin(pExt, pPlugin);
+					}
 				}
 			}
-			/* If we're requiring and got an extension and it's loaded, bind it */
-			if (ext->required && pExt && pExt->IsLoaded())
+		}
+	}
+
+	return true;
+}
+
+bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength)
+{
+	/* Second pass for extension requirements */
+	if (!LoadOrRequireExtensions(pPlugin, 2, error, maxlength))
+	{
+		return false;
+	}
+
+	/* Bind all extra natives */
+	g_Extensions.BindAllNativesToPlugin(pPlugin);
+
+	/* Find any unbound natives
+	 * Right now, these are not allowed
+	 */
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	uint32_t num = pContext->GetNativesNum();
+	sp_native_t *native;
+	for (unsigned int i=0; i<num; i++)
+	{
+		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
+		{
+			break;
+		}
+		if (native->status == SP_NATIVE_UNBOUND)
+		{
+			if (error)
 			{
-				g_Extensions.BindChildPlugin(pExt, pPlugin);
+				snprintf(error, maxlength, "Native \"%s\" was not found.", native->name);
 			}
-			/* If we're requiring and we didn't get an extension or it's not loaded, error */
-			if (ext->required && (!pExt || !pExt->IsLoaded()))
-			{
-				if (error)
-				{
-					snprintf(error, maxlength, "Required extension \"%s\" (file \"%s\") not found", name, file);
-				}
-				pPlugin->m_status = Plugin_Failed;
-				return false;
-			}
+			return false;
 		}
 	}
 
@@ -1268,7 +1325,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 
 bool CPluginManager::IsLateLoadTime() const
 {
-	return (m_AllPluginsLoaded || g_SourceMod.IsLateLoadInMap());
+	return (m_AllPluginsLoaded || !g_SourceMod.IsMapLoading());
 }
 
 void CPluginManager::OnSourceModAllInitialized()
@@ -1486,39 +1543,48 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				return;
 			}
 
-			IPluginIterator *iter = GetPluginIterator();
-			for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
-
-			IPlugin *pl = iter->GetPlugin();
+			CPlugin *pl = GetPluginByOrder(num);
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 			g_RootMenu.ConsolePrint("  Filename: %s", pl->GetFilename());
-			if (IS_STR_FILLED(info->name))
+			if (pl->GetStatus() <= Plugin_Error)
 			{
-				g_RootMenu.ConsolePrint("  Title: %s", info->name);
-			}
-			if (IS_STR_FILLED(info->author))
-			{
-				g_RootMenu.ConsolePrint("  Author: %s", info->author);
-			}
-			if (IS_STR_FILLED(info->version))
-			{
-				g_RootMenu.ConsolePrint("  Version: %s", info->version);
-			}
-			if (IS_STR_FILLED(info->description))
-			{
-				g_RootMenu.ConsolePrint("  Description: %s", info->description);
-			}
-			if (IS_STR_FILLED(info->url))
-			{
-				g_RootMenu.ConsolePrint("  URL: %s", info->url);
-			}
-			if (pl->GetStatus() >= Plugin_Error)
-			{
+				if (IS_STR_FILLED(info->name))
+				{
+					g_RootMenu.ConsolePrint("  Title: %s", info->name);
+				}
+				if (IS_STR_FILLED(info->version))
+				{
+					g_RootMenu.ConsolePrint("  Version: %s", info->version);
+				}
+				if (IS_STR_FILLED(info->url))
+				{
+					g_RootMenu.ConsolePrint("  URL: %s", info->url);
+				}
+				if (IS_STR_FILLED(info->author))
+				{
+					g_RootMenu.ConsolePrint("  Author: %s", info->author);
+				}
+				if (IS_STR_FILLED(info->version))
+				{
+					g_RootMenu.ConsolePrint("  Version: %s", info->version);
+				}
+				if (IS_STR_FILLED(info->description))
+				{
+					g_RootMenu.ConsolePrint("  Description: %s", info->description);
+				}	
 				g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "yes" : "no");
+				g_RootMenu.ConsolePrint("  Paused: %s", pl->GetStatus() == Plugin_Running ? "yes" : "no");
+			} else {
+				g_RootMenu.ConsolePrint("  Load error: %s", pl->m_errormsg);
+				g_RootMenu.ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
+										info->name ? info->name : "<none>",
+										info->version ? info->version : "<none>");
+				if (IS_STR_FILLED(info->url))
+				{
+					g_RootMenu.ConsolePrint("  File URL: %s", info->url);
+				}
 			}
-
-			iter->Release();
 
 			return;
 		} else if (strcmp(cmd, "debug") == 0) {

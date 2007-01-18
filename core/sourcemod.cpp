@@ -7,6 +7,7 @@
 #include "PluginSys.h"
 #include "ShareSys.h"
 #include "CLogger.h"
+#include "ExtensionSys.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 
@@ -131,13 +132,11 @@ void SourceModBase::StartSourceMod(bool late)
 	/* First initialize the global hooks we need */
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 
-	m_IsLateLoadInMap = late;
-
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
 	while (pBase)
 	{
-		pBase->OnSourceModStartup(m_IsLateLoadInMap);
+		pBase->OnSourceModStartup(false);
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
@@ -156,7 +155,6 @@ void SourceModBase::StartSourceMod(bool late)
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
 	m_IsMapLoading = true;
-	m_IsLateLoadInMap = false;
 
 	g_Logger.MapChange(pMapName);
 
@@ -165,6 +163,11 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	m_IsMapLoading = false;
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+bool SourceModBase::IsMapLoading()
+{
+	return m_IsMapLoading;
 }
 
 void SourceModBase::DoGlobalPluginLoads()
@@ -181,10 +184,17 @@ void SourceModBase::DoGlobalPluginLoads()
 		"%s/plugins",
 		GetSMBaseDir());
 
+	/* Run the first pass */
 	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);
+
+	/* Mark any extensions as loaded */
+	g_Extensions.MarkAllLoaded();
 
 	/* No modules yet, it's safe to call this from here */
 	g_PluginSys.LoadAll_SecondPass();
+
+	/* Re-mark any extensions as loaded */
+	g_Extensions.MarkAllLoaded();
 }
 
 void SourceModBase::CloseSourceMod()
@@ -207,11 +217,6 @@ void SourceModBase::CloseSourceMod()
 
 	/* Rest In Peace */
 	ShutdownJIT();
-}
-
-bool SourceModBase::IsLateLoadInMap()
-{
-	return m_IsLateLoadInMap;
 }
 
 const char *SourceModBase::GetSMBaseDir()

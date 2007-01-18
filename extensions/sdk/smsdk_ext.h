@@ -13,6 +13,7 @@
 #endif
 
 using namespace SourceMod;
+using namespace SourcePawn;
 
 class SDKExtension : 
 #if defined SMEXT_CONF_METAMOD

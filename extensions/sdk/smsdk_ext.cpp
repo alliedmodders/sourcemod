@@ -24,9 +24,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	g_pShareSys = sys;
 	myself = me;
 
+#if defined SMEXT_CONF_METAMOD
 	m_WeAreUnloaded = true;
 
-#if defined SMEXT_CONF_METAMOD
 	if (!m_SourceMMLoaded)
 	{
 		if (error)
@@ -41,7 +41,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 
 	if (SDK_OnLoad(error, err_max, late))
 	{
+#if defined SMEXT_CONF_METAMOD
 		m_WeAreUnloaded = true;
+#endif
 		return true;
 	}
 

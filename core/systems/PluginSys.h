@@ -149,13 +149,13 @@ public:
 	void Call_OnPluginUnload();
 
 	/**
-	* Toggles debug mode in the plugin
-	*/
+	 * Toggles debug mode in the plugin
+	 */
 	bool ToggleDebugMode(bool debug, char *error, size_t maxlength);
 
 	/**
-	* Returns true if a plugin is usable.
-	*/
+	 * Returns true if a plugin is usable.
+	 */
 	bool IsRunnable() const;
 public:
 	time_t HasUpdatedFile();
@@ -277,6 +277,7 @@ public:
 	 * Gets status text for a status code 
 	 */
 	const char *GetStatusText(PluginStatus status);
+
 private:
 	bool _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);
 
@@ -301,6 +302,11 @@ private:
 	 * Adds any globally registered natives to a plugin
 	 */
 	void AddCoreNativesToPlugin(CPlugin *pPlugin);
+
+	/**
+	 * Runs an extension pass on a plugin.
+	 */
+	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
 protected:
 	/**
 	 * Caching internal objects

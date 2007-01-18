@@ -46,11 +46,6 @@ public:
 	 * @brief Returns the base folder for file natives.
 	 */
 	const char *GetBaseDir();
-
-	/**
-	 * @brief Returns whether our load in this map is late.
-	 */
-	bool IsLateLoadInMap();
 private:
 	/**
 	 * @brief Loading plugins
@@ -59,7 +54,6 @@ private:
 private:
 	char m_SMBaseDir[PLATFORM_MAX_PATH+1];
 	bool m_IsMapLoading;
-	bool m_IsLateLoadInMap;
 };
 
 extern SourceModBase g_SourceMod;

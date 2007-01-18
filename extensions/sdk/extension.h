@@ -27,6 +27,7 @@ public:
 
 	/**
 	 * @brief This is called once all known extensions have been loaded.
+	 * Note: It is is a good idea to add natives here, if any are provided.
 	 */
 	//virtual void SDK_OnAllLoaded();
 
@@ -34,6 +35,15 @@ public:
 	 * @brief Called when the pause state is changed.
 	 */
 	//virtual void SDK_OnPauseChange(bool paused);
+
+	/**
+	 * @brief this is called when Core wants to know if your extension is working.
+	 *
+	 * @param error		Error message buffer.
+	 * @param err_max	Size of error message buffer.
+	 * @return			True if working, false otherwise.
+	 */
+	//virtual void QueryRunning(char *error, size_t maxlength);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**

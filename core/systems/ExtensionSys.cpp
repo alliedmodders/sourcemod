@@ -17,6 +17,7 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 	m_pIdentToken = NULL;
 	m_PlId = 0;
 	unload_code = 0;
+	m_FullyLoaded = false;
 
 	char path[PLATFORM_MAX_PATH+1];
 	g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s/extensions/%s", g_SourceMod.GetSMBaseDir(), filename);
@@ -56,7 +57,7 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 
 	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType);
 
-	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, err_max, g_SourceMod.IsLateLoadInMap()))
+	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, err_max, !g_SourceMod.IsMapLoading()))
 	{
 		if (m_pAPI->IsMetamodExtension())
 		{
@@ -73,6 +74,12 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 		g_ShareSys.DestroyIdentity(m_pIdentToken);
 		m_pIdentToken = NULL;
 		return;
+	} else {
+		/* Check if we're past load time */
+		if (!g_SourceMod.IsMapLoading())
+		{
+			m_pAPI->OnExtensionsAllLoaded();
+		}
 	}
 }
 
@@ -95,6 +102,16 @@ CExtension::~CExtension()
 	if (m_pLib)
 	{
 		m_pLib->CloseLibrary();
+	}
+}
+
+void CExtension::MarkAllLoaded()
+{
+	assert(m_FullyLoaded == false);
+	if (!m_FullyLoaded)
+	{
+		m_FullyLoaded = true;
+		m_pAPI->OnExtensionsAllLoaded();
 	}
 }
 
@@ -204,6 +221,20 @@ void CExtension::AddInterface(SMInterface *pInterface)
 	m_Interfaces.push_back(pInterface);
 }
 
+bool CExtension::IsRunning(char *error, size_t maxlength)
+{
+	if (!IsLoaded())
+	{
+		if (error)
+		{
+			snprintf(error, maxlength, "%s", m_Error.c_str());
+		}
+		return false;
+	}
+
+	return m_pAPI->QueryRunning(error, maxlength);
+}
+
 /*********************
  * EXTENSION MANAGER *
  *********************/
@@ -224,6 +255,13 @@ void CExtensionManager::OnSourceModShutdown()
 
 IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 {
+	if (!strstr(path, "." PLATFORM_LIB_EXT))
+	{
+		char newpath[PLATFORM_MAX_PATH+1];
+		snprintf(newpath, PLATFORM_MAX_PATH, "%s.%s", path, PLATFORM_LIB_EXT);
+		return LoadAutoExtension(newpath);
+	}
+
 	IExtension *pAlready;
 	if ((pAlready=FindExtensionByFile(path)) != NULL)
 	{
@@ -248,6 +286,13 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 {
 	List<CExtension *>::iterator iter;
 	CExtension *pExt;
+
+	if (!strstr(file, "." PLATFORM_LIB_EXT))
+	{
+		char path[PLATFORM_MAX_PATH];
+		snprintf(path, PLATFORM_MAX_PATH, "%s.%s", file, PLATFORM_LIB_EXT);
+		return FindExtensionByFile(path);
+	}
 
 	/* Make sure the file direction is right */
 	char path[PLATFORM_MAX_PATH+1];
@@ -315,6 +360,8 @@ IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime
 		return NULL;
 	}
 
+	/* :TODO: do QueryRunning check if the map is loaded */
+
 	m_Libs.push_back(pExt);
 
 	return pExt;
@@ -370,6 +417,47 @@ CExtension *CExtensionManager::FindByOrder(unsigned int num)
 	}
 
 	return NULL;
+}
+
+void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
+{
+	List<CExtension *>::iterator iter;
+	CExtension *pExt;
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		pExt = (*iter);
+		if (!pExt->IsLoaded())
+		{
+			continue;
+		}
+		if (!pExt->m_Natives.size())
+		{
+			continue;
+		}
+		bool set = false;
+		List<const sp_nativeinfo_t *>::iterator n_iter;
+		const sp_nativeinfo_t *natives;
+		for (n_iter = pExt->m_Natives.begin();
+			 n_iter != pExt->m_Natives.end();
+			 n_iter++)
+		{
+			natives = (*n_iter);
+			unsigned int i=0;
+			while (natives[i].func != NULL && natives[i].name != NULL)
+			{
+				if (pContext->BindNative(&natives[i++]) == SP_ERROR_NONE)
+				{
+					set = true;
+				}
+			}
+		}
+		if (set && (pExt->m_Plugins.find(pPlugin) == pExt->m_Plugins.end()))
+		{
+			/* For now, mark this plugin as a requirement.  Later we'll introduce native filtering. */
+			pExt->m_Plugins.push_back(pPlugin);
+		}
+	}
 }
 
 bool CExtensionManager::UnloadExtension(IExtension *_pExt)
@@ -449,6 +537,33 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 	return true;
 }
 
+void CExtensionManager::AddNatives(IExtension *pOwner, const sp_nativeinfo_t *natives)
+{
+	CExtension *pExt = (CExtension *)pOwner;
+
+	pExt->m_Natives.push_back(natives);
+}
+
+void CExtensionManager::MarkAllLoaded()
+{
+	List<CExtension *>::iterator iter;
+	CExtension *pExt;
+
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		pExt = (*iter);
+		if (!pExt->IsLoaded())
+		{
+			continue;
+		}
+		if (pExt->m_FullyLoaded)
+		{
+			continue;
+		}
+		pExt->MarkAllLoaded();
+	}
+}
+
 void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
 {
 	if (argcount >= 3)
@@ -482,11 +597,17 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				pExt = (*iter);
 				if (pExt->IsLoaded())
 				{
-					IExtensionInterface *pAPI = pExt->GetAPI();
-					const char *name = pAPI->GetExtensionName();
-					const char *version = pAPI->GetExtensionVerString();
-					const char *descr = pAPI->GetExtensionDescription();
-					g_RootMenu.ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
+					char error[255];
+					if (!pExt->IsRunning(error, sizeof(error)))
+					{
+						g_RootMenu.ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), error);
+					} else {
+						IExtensionInterface *pAPI = pExt->GetAPI();
+						const char *name = pAPI->GetExtensionName();
+						const char *version = pAPI->GetExtensionVerString();
+						const char *descr = pAPI->GetExtensionDescription();
+						g_RootMenu.ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
+					}
 				} else {
 					g_RootMenu.ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
 				}
@@ -542,13 +663,21 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
 				g_RootMenu.ConsolePrint(" Loaded: No (%s)", pExt->m_Error.c_str());
 			} else {
-				IExtensionInterface *pAPI = pExt->GetAPI();
-				g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
-				g_RootMenu.ConsolePrint(" Loaded: Yes (version %s)", pAPI->GetExtensionVerString());
-				g_RootMenu.ConsolePrint(" Name: %s (%s)", pAPI->GetExtensionName(), pAPI->GetExtensionDescription());
-				g_RootMenu.ConsolePrint(" Author: %s (%s)", pAPI->GetExtensionAuthor(), pAPI->GetExtensionURL());
-				g_RootMenu.ConsolePrint(" Binary info: API version %d (compiled %s)", pAPI->GetExtensionVersion(), pAPI->GetExtensionDateString());
-				g_RootMenu.ConsolePrint(" Metamod enabled: %s", pAPI->IsMetamodExtension() ? "yes" : "no");
+				char error[255];
+				if (!pExt->IsRunning(error, sizeof(error)))
+				{
+					g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
+					g_RootMenu.ConsolePrint(" Loaded: Yes");
+					g_RootMenu.ConsolePrint(" Running: No (%s)", error);
+				} else {
+					IExtensionInterface *pAPI = pExt->GetAPI();
+					g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
+					g_RootMenu.ConsolePrint(" Loaded: Yes (version %s)", pAPI->GetExtensionVerString());
+					g_RootMenu.ConsolePrint(" Name: %s (%s)", pAPI->GetExtensionName(), pAPI->GetExtensionDescription());
+					g_RootMenu.ConsolePrint(" Author: %s (%s)", pAPI->GetExtensionAuthor(), pAPI->GetExtensionURL());
+					g_RootMenu.ConsolePrint(" Binary info: API version %d (compiled %s)", pAPI->GetExtensionVersion(), pAPI->GetExtensionDateString());
+					g_RootMenu.ConsolePrint(" Metamod enabled: %s", pAPI->IsMetamodExtension() ? "yes" : "no");
+				}
 			}
 			return;
 		} else if (strcmp(cmd, "unload") == 0) {

@@ -67,6 +67,15 @@ namespace SourceMod
 		 * @param iter			Pointer to iterator to free.
 		 */
 		virtual void FreeDependencyIterator(ITERATOR *iter) =0;
+
+		/**
+		 * @brief Queries the extension to see its run state.
+		 *
+		 * @param error			Error buffer (may be NULL).
+		 * @param maxlength		Maximum length of buffer.
+		 * @return				True if extension is okay, false if not okay.
+		 */
+		virtual bool IsRunning(char *error, size_t maxlength) =0;
 	};
 
 	#define SMINTERFACE_EXTENSIONAPI_VERSION	1
