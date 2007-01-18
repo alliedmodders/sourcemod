@@ -36,7 +36,7 @@ public: //IShareSys
 		unsigned int iface_vers,
 		IExtension *mysql,
 		SMInterface **pIface);
-	void AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *natives[]);
+	void AddNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 	IdentityType_t CreateIdentType(const char *name);
 	IdentityType_t FindIdentType(const char *name);
 	IdentityToken_t *CreateIdentity(IdentityType_t type);

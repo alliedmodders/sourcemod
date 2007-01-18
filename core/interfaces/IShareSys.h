@@ -78,9 +78,9 @@ namespace SourceMod
 		 * @brief Adds a list of natives to the global native pool.
 		 * 
 		 * @param token			Identity token of parent object.
-		 * @param natives		Array of natives to add, NULL terminated.
+		 * @param natives		Array of natives to add.  The last entry must have NULL members.
 		 */
-		virtual void AddNatives(IdentityToken_t *token, const sp_nativeinfo_t *natives[]) =0;
+		virtual void AddNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;
 
 		/**
 		 * @brief Creates a new identity type.
