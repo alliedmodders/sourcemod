@@ -137,6 +137,18 @@ namespace SourceMod
 		virtual void NotifyInterfaceDrop(SMInterface *pInterface)
 		{
 		}
+
+		/**
+		 * @brief Return false to tell Core that your extension should be considered unsable.
+		 *
+		 * @param error				Error buffer.
+		 * @param maxlength			Size of error buffer.
+		 * @return					True on success, false otherwise.
+		 */
+		virtual bool QueryRunning(char *error, size_t maxlength)
+		{
+			return true;
+		}
 	public:
 		virtual bool IsMetamodExtension() =0;
 		virtual const char *GetExtensionName() =0;
