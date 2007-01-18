@@ -966,7 +966,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
 
-	if (pPlugin->GetStatus() >= Plugin_Error)
+	if (pPlugin->GetStatus() <= Plugin_Error)
 	{
 		/* Notify listeners of unloading */
 		for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)

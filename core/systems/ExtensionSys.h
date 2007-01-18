@@ -44,6 +44,7 @@ private:
 	List<SMInterface *> m_Interfaces;
 	List<IPlugin *> m_Plugins;
 	PluginId m_PlId;
+	unsigned int unload_code;
 };
 
 class CExtensionManager : 
@@ -72,6 +73,8 @@ public:
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
 	void BindChildPlugin(IExtension *pParent, IPlugin *pPlugin);
+private:
+	CExtension *FindByOrder(unsigned int num);
 private:
 	List<CExtension *> m_Libs;
 };

@@ -113,7 +113,7 @@ bool ShareSystem::AddInterface(IExtension *myself, SMInterface *iface)
 
 bool ShareSystem::RequestInterface(const char *iface_name, 
 								   unsigned int iface_vers, 
-								   IExtension *mysql, 
+								   IExtension *myself, 
 								   SMInterface **pIface)
 {
 	/* See if the interface exists */
@@ -148,7 +148,7 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 		IfaceInfo info;
 		info.iface = iface;
 		info.owner = iface_owner;
-		g_Extensions.BindDependency(iface_owner, &info);
+		g_Extensions.BindDependency(myself, &info);
 	}
 
 	if (pIface)
