@@ -1422,7 +1422,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		} else if (strcmp(cmd, "load") == 0) {
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("Usage: sm plugins load <file>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins load <file>");
 				return;
 			}
 
@@ -1441,7 +1441,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		} else if (strcmp(cmd, "unload") == 0) {
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("Usage: sm plugins unload <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins unload <#>");
 				return;
 			}
 
@@ -1449,7 +1449,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			int num = atoi(g_RootMenu.GetArgument(3));
 			if (num < 1 || num > (int)GetPluginCount())
 			{
-				g_RootMenu.ConsolePrint("Plugin index %d not found.", num);
+				g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", num);
 				return;
 			}
 
@@ -1464,9 +1464,9 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 
 			if (UnloadPlugin(pl))
 			{
-				g_RootMenu.ConsolePrint("Plugin %s unloaded successfully.", name);
+				g_RootMenu.ConsolePrint("[SM] Plugin %s unloaded successfully.", name);
 			} else {
-				g_RootMenu.ConsolePrint("Failed to unload plugin %s.", name);
+				g_RootMenu.ConsolePrint("[SM] Failed to unload plugin %s.", name);
 			}
 
 			iter->Release();
@@ -1474,7 +1474,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		} else if (strcmp(cmd, "info") == 0) {
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("Usage: sm plugins info <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins info <#>");
 				return;
 			}
 
@@ -1482,7 +1482,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			int num = atoi(g_RootMenu.GetArgument(3));
 			if (num < 1 || num > (int)GetPluginCount())
 			{
-				g_RootMenu.ConsolePrint("Plugin index not found.");
+				g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
 				return;
 			}
 
@@ -1524,14 +1524,14 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		} else if (strcmp(cmd, "debug") == 0) {
 			if (argcount < 5)
 			{
-				g_RootMenu.ConsolePrint("Usage: sm plugins debug <#> [on|off]");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins debug <#> [on|off]");
 				return;
 			}
 
 			int num = atoi(g_RootMenu.GetArgument(3));
 			if (num < 1 || num > (int)GetPluginCount())
 			{
-				g_RootMenu.ConsolePrint("Plugin index not found.");
+				g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
 				return;
 			}
 
@@ -1539,7 +1539,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			const char *mode = g_RootMenu.GetArgument(4);
 			if ((res=strcmp("on", mode)) && strcmp("off", mode))
 			{
-				g_RootMenu.ConsolePrint("The only possible options are \"on\" and \"off.\"");
+				g_RootMenu.ConsolePrint("[SM] The only possible options are \"on\" and \"off.\"");
 				return;
 			}
 
@@ -1564,7 +1564,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			char error[256];
 			if (pl->ToggleDebugMode(debug, error, sizeof(error)))
 			{
-				g_RootMenu.ConsolePrint("Successfully toggled debug mode on plugin %s.", pl->GetFilename());
+				g_RootMenu.ConsolePrint("[SM] Successfully toggled debug mode on plugin %s.", pl->GetFilename());
 				return;
 			} else {
 				g_RootMenu.ConsolePrint("[SM] Could not toggle debug mode on plugin %s.", pl->GetFilename());

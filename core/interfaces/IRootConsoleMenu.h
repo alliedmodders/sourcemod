@@ -4,6 +4,8 @@
 /**
  * @brief Note: This interface is not exposed.
  * The reason should be obvious: we do not want users touching the "root" console menu.
+ * If we exposed this, every little plugin would be dropping down a silly set of user commands,
+ * whereas this menu is explicitly provided for stuff that only Core itself is capable of managing.
  */
 
 namespace SourceMod
@@ -18,7 +20,7 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Manages the root console menu.
+	 * @brief Manages the root console menu - the "sm" command for servers.
 	 */
 	class IRootConsole
 	{

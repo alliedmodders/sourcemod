@@ -4,6 +4,7 @@
 #include "CLogger.h"
 #include "sourcemm_api.h"
 #include "PluginSys.h"
+#include "sm_srvcmds.h"
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -209,10 +210,12 @@ void CExtensionManager::OnSourceModAllInitialized()
 {
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
 	g_PluginSys.AddPluginsListener(this);
+	g_RootMenu.AddRootConsoleCommand("exts", "Manage extensions", this);
 }
 
 void CExtensionManager::OnSourceModShutdown()
 {
+	g_RootMenu.RemoveRootConsoleCommand("exts", this);
 	g_PluginSys.RemovePluginsListener(this);
 	g_ShareSys.DestroyIdentType(g_ExtType);
 }
@@ -417,4 +420,114 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 	}
 
 	return true;
+}
+
+void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
+{
+	if (argcount >= 3)
+	{
+		const char *cmd = g_RootMenu.GetArgument(2);
+		if (strcmp(cmd, "list") == 0)
+		{
+			List<CExtension *>::iterator iter;
+			CExtension *pExt;
+			unsigned int num = 1;
+			switch (m_Libs.size())
+			{
+			case 1:
+				{
+					g_RootMenu.ConsolePrint("[SM] Displaying 1 extension:");
+					break;
+				}
+			case 0:
+				{
+					g_RootMenu.ConsolePrint("[SM] No extensions are loaded.");
+					break;
+				}
+			default:
+				{
+					g_RootMenu.ConsolePrint("[SM] Displaying %d extensions:", m_Libs.size());
+					break;
+				}
+			}
+			for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++,num++)
+			{
+				pExt = (*iter);
+				if (pExt->IsLoaded())
+				{
+					IExtensionInterface *pAPI = pExt->GetAPI();
+					const char *name = pAPI->GetExtensionName();
+					const char *version = pAPI->GetExtensionVerString();
+					const char *descr = pAPI->GetExtensionDescription();
+					g_RootMenu.ConsolePrint("[%02d] %s (%s): %s", num, name, version, descr);
+				} else {
+					g_RootMenu.ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), pExt->m_Error.c_str());
+				}
+			}
+			return;
+		} else if (strcmp(cmd, "info") == 0) {
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
+				return;
+			}
+
+			const char *sId = g_RootMenu.GetArgument(3);
+			unsigned int id = atoi(sId);
+			if (id <= 0)
+			{
+				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
+				return;
+			}
+
+			if (m_Libs.size() == 0)
+			{
+				g_RootMenu.ConsolePrint("[SM] No extensions are loaded.");
+				return;
+			}
+
+			if (id > m_Libs.size())
+			{
+				g_RootMenu.ConsolePrint("[SM] No extension was found with id %d.", id);
+				return;
+			}
+
+			List<CExtension *>::iterator iter = m_Libs.begin();
+			CExtension *pExt = NULL;
+			while (iter != m_Libs.end())
+			{
+				if (--id == 0)
+				{
+					pExt = (*iter);
+					break;
+				}
+				iter++;
+			}
+			/* This should never happen */
+			if (!pExt)
+			{
+				g_RootMenu.ConsolePrint("[SM] No extension was found with id %d.", id);
+				return;
+			}
+
+			if (!pExt->IsLoaded())
+			{
+				g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
+				g_RootMenu.ConsolePrint(" Loaded: No (%s)", pExt->m_Error.c_str());
+			} else {
+				IExtensionInterface *pAPI = pExt->GetAPI();
+				g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
+				g_RootMenu.ConsolePrint(" Loaded: Yes (version %s)", pAPI->GetExtensionVerString());
+				g_RootMenu.ConsolePrint(" Name: %s (%s)", pAPI->GetExtensionName(), pAPI->GetExtensionDescription());
+				g_RootMenu.ConsolePrint(" Author: %s (%s)", pAPI->GetExtensionAuthor(), pAPI->GetExtensionURL());
+				g_RootMenu.ConsolePrint(" Binary info: API version %d (compiled %s)", pAPI->GetExtensionVersion(), pAPI->GetExtensionDateString());
+				g_RootMenu.ConsolePrint(" Metamod enabled: %s", pAPI->IsMetamodExtension() ? "yes" : "no");
+			}
+			return;
+		}
+	}
+
+	g_RootMenu.ConsolePrint("SourceMod Extensions Menu:");
+	g_RootMenu.DrawGenericOption("info", "Extra extension information");
+	g_RootMenu.DrawGenericOption("list", "List extensions");
 }

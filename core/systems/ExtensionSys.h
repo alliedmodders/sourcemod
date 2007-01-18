@@ -9,6 +9,7 @@
 #include "ShareSys.h"
 #include <ISmmAPI.h>
 #include <IPluginSys.h>
+#include <IRootConsoleMenu.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -48,7 +49,8 @@ private:
 class CExtensionManager : 
 	public IExtensionManager,
 	public SMGlobalClass,
-	IPluginsListener
+	public IPluginsListener,
+	public IRootConsoleCommand
 {
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -63,6 +65,8 @@ public: //IExtensionManager
 	IExtension *FindExtensionByName(const char *ext);
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
+public: //IRootConsoleCommand
+	void OnRootConsoleCommand(const char *cmd, unsigned int argcount);
 public:
 	IExtension *LoadAutoExtension(const char *path);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
