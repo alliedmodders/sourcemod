@@ -432,7 +432,7 @@ uint32_t BaseContext::GetPubVarsNum()
 	return ctx->plugin->info.pubvars_num;
 }
 
-int BaseContext::BindNatives(sp_nativeinfo_t *natives, unsigned int num, int overwrite)
+int BaseContext::BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite)
 {
 	uint32_t i, j, max;
 
@@ -458,7 +458,7 @@ int BaseContext::BindNatives(sp_nativeinfo_t *natives, unsigned int num, int ove
 	return SP_ERROR_NONE;
 }
 
-int BaseContext::BindNative(sp_nativeinfo_t *native)
+int BaseContext::BindNative(const sp_nativeinfo_t *native)
 {
 	uint32_t index;
 	int err;

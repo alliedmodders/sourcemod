@@ -294,7 +294,7 @@ namespace SourcePawn
 		 * @param num			Number of natives in array.
 		 * @param overwrite		Toggles overwrite.
 		 */
-		virtual int BindNatives(sp_nativeinfo_t *natives, unsigned int num, int overwrite) =0;
+		virtual int BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite) =0;
 
 		/**
 		 * @brief Binds a single native.  Overwrites any existing bind.
@@ -303,7 +303,7 @@ namespace SourcePawn
 		 *
 		 * @param native		Pointer to native.
 		 */
-		virtual int BindNative(sp_nativeinfo_t *native) =0;
+		virtual int BindNative(const sp_nativeinfo_t *native) =0;
 
 		/**
 		 * @brief Binds a single native to any non-registered native.

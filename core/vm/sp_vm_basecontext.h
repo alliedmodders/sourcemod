@@ -38,8 +38,8 @@ namespace SourcePawn
 		virtual int PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells);
 		virtual int PushString(cell_t *local_addr, char **phys_addr, const char *string);
 		virtual int PushCellsFromArray(cell_t array[], unsigned int numcells);
-		virtual int BindNatives(sp_nativeinfo_t *natives, unsigned int num, int overwrite);
-		virtual int BindNative(sp_nativeinfo_t *native);
+		virtual int BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite);
+		virtual int BindNative(const sp_nativeinfo_t *native);
 		virtual int BindNativeToAny(SPVM_NATIVE_FUNC native);
 		virtual int Execute(funcid_t funcid, cell_t *result);
 		virtual void ThrowNativeErrorEx(int error, const char *msg, ...);

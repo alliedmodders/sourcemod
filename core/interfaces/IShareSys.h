@@ -75,7 +75,9 @@ namespace SourceMod
 										SMInterface **pIface) =0;
 
 		/**
-		 * @brief Adds a list of natives to the global native pool.
+		 * @brief Adds a list of natives to the global native pool, to be bound on plugin load.
+		 * NOTE: Adding natives currently does not bind them to any loaded plugins.
+		 * You must manually bind late natives.
 		 * 
 		 * @param token			Identity token of parent object.
 		 * @param natives		Array of natives to add.  The last entry must have NULL members.

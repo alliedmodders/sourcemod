@@ -161,7 +161,7 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 
 void ShareSystem::AddNatives(IExtension *myself, const sp_nativeinfo_t *natives)
 {
-	/* :TODO: implement */
+	
 }
 
 void ShareSystem::DestroyIdentity(IdentityToken_t *identity)
