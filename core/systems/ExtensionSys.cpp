@@ -564,6 +564,12 @@ void CExtensionManager::MarkAllLoaded()
 	}
 }
 
+void CExtensionManager::AddDependency(IExtension *pSource, const char *file, bool required, bool autoload)
+{
+	/* :TODO: implement */
+	return;
+}
+
 void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
 {
 	if (argcount >= 3)

@@ -194,3 +194,9 @@ void ShareSystem::RemoveInterfaces(IExtension *pExtension)
 		}
 	}
 }
+
+void ShareSystem::AddDependency(IExtension *myself, const char *filename, bool require, bool autoload)
+{
+	g_Extensions.AddDependency(myself, filename, require, autoload);
+}
+

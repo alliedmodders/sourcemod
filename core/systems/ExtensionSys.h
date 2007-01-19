@@ -80,6 +80,7 @@ public:
 	void AddNatives(IExtension *pOwner, const sp_nativeinfo_t *natives);
 	void BindAllNativesToPlugin(IPlugin *pPlugin);
 	void MarkAllLoaded();
+	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
 private:
 	CExtension *FindByOrder(unsigned int num);
 private:

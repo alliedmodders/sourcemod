@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_SOURCEMOD_TEXTPARSERS_H_
 #define _INCLUDE_SOURCEMOD_TEXTPARSERS_H_
 
-#include "interfaces/ITextParsers.h"
+#include <ITextParsers.h>
 
 using namespace SourceMod;
 

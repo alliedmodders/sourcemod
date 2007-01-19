@@ -8,7 +8,7 @@
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
 #include "sm_platform.h"
-#include "interfaces/IShareSys.h"
+#include <IShareSys.h>
 
 using namespace SourcePawn;
 using namespace SourceMod;

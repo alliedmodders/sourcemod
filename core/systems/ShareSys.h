@@ -42,6 +42,7 @@ public: //IShareSys
 	IdentityToken_t *CreateIdentity(IdentityType_t type);
 	void DestroyIdentType(IdentityType_t type);
 	void DestroyIdentity(IdentityToken_t *identity);
+	void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload);
 public: //SMGlobalClass
 	/* Pre-empt in case anything tries to register idents early */
 	void OnSourceModStartup(bool late);

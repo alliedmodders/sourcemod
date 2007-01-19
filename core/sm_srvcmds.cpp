@@ -50,7 +50,7 @@ void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 	size_t len = vsnprintf(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
-	if (len >= sizeof(buffer))
+	if (len >= sizeof(buffer) - 1)
 	{
 		buffer[510] = '\n';
 		buffer[511] = '\0';
