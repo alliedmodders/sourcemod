@@ -2,12 +2,13 @@
 #define _INCLUDE_SOURCEMOD_GLOBALHEADER_H_
 
 #include "sm_globals.h"
+#include <ISourceMod.h>
 
 /**
  * @brief Implements SourceMod's global overall management, API, and logic
  */
 
-class SourceModBase
+class SourceModBase : public ISourceMod
 {
 public:
 	SourceModBase();
@@ -37,15 +38,12 @@ public:
 	 */
 	bool IsMapLoading();
 
-	/**
-	 * @brief Returns the base SourceMod folder.
-	 */
-	const char *GetSMBaseDir();
-
-	/**
-	 * @brief Returns the base folder for file natives.
-	 */
-	const char *GetBaseDir();
+public: //ISourceMod
+	const char *GetModPath();
+	const char *GetSourceModPath();
+	size_t BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...);
+	void LogMessage(IExtension *pExt, const char *format, ...);
+	void LogError(IExtension *pExt, const char *format, ...);
 private:
 	/**
 	 * @brief Loading plugins

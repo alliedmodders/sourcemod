@@ -148,7 +148,7 @@ namespace SourceMod
 		 * @param pathfmt	Format string of path.
 		 * @param ...		Format string arguments.
 		 */
-		virtual void PathFormat(char *buffer, size_t maxlength, const char *pathfmt, ...) =0;
+		virtual size_t PathFormat(char *buffer, size_t maxlength, const char *pathfmt, ...) =0;
 	};
 };
 

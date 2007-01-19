@@ -50,7 +50,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	char file[PLATFORM_MAX_PATH];
 	char myerror[255];
 	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/sourcepawn.jit.x86.%s",
-		GetSMBaseDir(),
+		GetSourceModPath(),
 		PLATFORM_LIB_EXT
 		);
 
@@ -150,6 +150,9 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase->OnSourceModAllInitialized();
 		pBase = pBase->m_pGlobalClassNext;
 	}
+
+	/* Add us now... */
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
@@ -175,14 +178,12 @@ void SourceModBase::DoGlobalPluginLoads()
 	char config_path[PLATFORM_MAX_PATH];
 	char plugins_path[PLATFORM_MAX_PATH];
 
-	g_SMAPI->PathFormat(config_path, 
+	BuildPath(Path_SM, config_path, 
 		sizeof(config_path),
-		"%s/configs/plugin_settings.cfg",
-		GetSMBaseDir());
-	g_SMAPI->PathFormat(plugins_path,
+		"configs/plugin_settings.cfg");
+	BuildPath(Path_SM, plugins_path,
 		sizeof(plugins_path),
-		"%s/plugins",
-		GetSMBaseDir());
+		"plugins");
 
 	/* Run the first pass */
 	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);
@@ -195,6 +196,31 @@ void SourceModBase::DoGlobalPluginLoads()
 
 	/* Re-mark any extensions as loaded */
 	g_Extensions.MarkAllLoaded();
+}
+
+size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...)
+{
+	char _buffer[PLATFORM_MAX_PATH+1];
+	va_list ap;
+
+	va_start(ap, format);
+	vsnprintf(_buffer, PLATFORM_MAX_PATH, format, ap);
+	va_end(ap);
+
+	const char *base = NULL;
+	if (type == Path_Game)
+	{
+		base = GetModPath();
+	} else if (type == Path_SM) {
+		base = GetSourceModPath();
+	}
+
+	if (base)
+	{
+		return g_LibSys.PathFormat(buffer, maxlength, "%s/%s", base, _buffer);
+	} else {
+		return g_LibSys.PathFormat(buffer, maxlength, "%s", _buffer);
+	}
 }
 
 void SourceModBase::CloseSourceMod()
@@ -219,12 +245,50 @@ void SourceModBase::CloseSourceMod()
 	ShutdownJIT();
 }
 
-const char *SourceModBase::GetSMBaseDir()
+void SourceModBase::LogMessage(IExtension *pExt, const char *format, ...)
+{
+	IExtensionInterface *pAPI = pExt->GetAPI();
+	const char *tag = pAPI->GetExtensionTag();
+	char buffer[2048];
+	va_list ap;
+
+	va_start(ap, format);
+	vsnprintf(buffer, sizeof(buffer), format, ap);
+	va_end(ap);
+
+	if (tag)
+	{
+		g_Logger.LogMessage("[%s] %s", tag, buffer);
+	} else {
+		g_Logger.LogMessage("%s", buffer);
+	}
+}
+
+void SourceModBase::LogError(IExtension *pExt, const char *format, ...)
+{
+	IExtensionInterface *pAPI = pExt->GetAPI();
+	const char *tag = pAPI->GetExtensionTag();
+	char buffer[2048];
+	va_list ap;
+
+	va_start(ap, format);
+	vsnprintf(buffer, sizeof(buffer), format, ap);
+	va_end(ap);
+
+	if (tag)
+	{
+		g_Logger.LogError("[%s] %s", tag, buffer);
+	} else {
+		g_Logger.LogError("%s", buffer);
+	}
+}
+
+const char *SourceModBase::GetSourceModPath()
 {
 	return m_SMBaseDir;
 }
 
-const char *SourceModBase::GetBaseDir()
+const char *SourceModBase::GetModPath()
 {
 	return g_BaseDir.c_str();
 }

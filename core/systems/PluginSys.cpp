@@ -100,7 +100,7 @@ void CPlugin::InitIdentity()
 CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 {
 	char fullpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(fullpath, sizeof(fullpath), "%s/plugins/%s", g_SourceMod.GetSMBaseDir(), file);
+	g_SourceMod.BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", file);
 	FILE *fp = fopen(fullpath, "rb");
 
 	CPlugin *pPlugin = new CPlugin(file);

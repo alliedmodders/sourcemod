@@ -282,7 +282,7 @@ ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t err_m
 	return new CLibrary(lib);
 }
 
-void LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
+size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap,fmt);
@@ -298,4 +298,6 @@ void LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 			buffer[i] = PLATFORM_SEP_CHAR;
 		}
 	}
+
+	return mylen;
 }

@@ -20,7 +20,7 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 	m_FullyLoaded = false;
 
 	char path[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s/extensions/%s", g_SourceMod.GetSMBaseDir(), filename);
+	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
 
 	m_pLib = g_LibSys.OpenLibrary(path, error, err_max);
 

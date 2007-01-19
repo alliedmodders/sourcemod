@@ -87,7 +87,7 @@ void CPhraseFile::ReparseFile()
 
 	SMCParseError err;
 	char path[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s/translations/%s", g_SourceMod.GetSMBaseDir(), m_File.c_str());
+	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
 	unsigned int line=0, col=0;
 
 	if ((err=g_TextParser.ParseFile_SMC(path, this, &line, &col)) != SMCParse_Okay)

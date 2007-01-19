@@ -49,7 +49,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), path);
+	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
 
 	IDirectory *pDir = g_LibSys.OpenDirectory(realpath);
 	if (!pDir)
@@ -127,7 +127,7 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), name);
+	g_SourceMod.BuildPath(Path_SM, realpath, sizeof(realpath), "%s", name);
 
 	FILE *pFile = fopen(realpath, mode);
 	if (!pFile)
@@ -149,7 +149,7 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), name);
+	g_SourceMod.BuildPath(Path_SM, realpath, sizeof(realpath), "%s", name);
 
 	return (unlink(realpath)) ? 0 : 1;
 }
@@ -253,7 +253,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), name);
+	g_SourceMod.BuildPath(Path_SM, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(realpath, &s) != 0)
@@ -295,9 +295,9 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char new_realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(new_realpath, sizeof(new_realpath), "%s/%s", g_SourceMod.GetBaseDir(), newpath);
+	g_SourceMod.BuildPath(Path_SM, new_realpath, sizeof(new_realpath), "%s", newpath);
 	char old_realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(old_realpath, sizeof(old_realpath), "%s/%s", g_SourceMod.GetBaseDir(), oldpath);
+	g_SourceMod.BuildPath(Path_SM, old_realpath, sizeof(old_realpath), "%s", oldpath);
 
 #ifdef PLATFORM_WINDOWS
 	return (MoveFileA(old_realpath, new_realpath)) ? 1 : 0;
@@ -317,7 +317,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), name);
+	g_SourceMod.BuildPath(Path_SM, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(realpath, &s) != 0)
@@ -354,7 +354,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), name);
+	g_SourceMod.BuildPath(Path_SM, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(realpath, &s) != 0)
@@ -391,7 +391,7 @@ static cell_t sm_RemoveDir(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH+1];
-	g_LibSys.PathFormat(realpath, sizeof(realpath), "%s/%s", g_SourceMod.GetBaseDir(), name);
+	g_SourceMod.BuildPath(Path_SM, realpath, sizeof(realpath), "%s", name);
 
 	return (rmdir(realpath)) ? 0 : 1;
 }

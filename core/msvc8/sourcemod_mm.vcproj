@@ -330,6 +330,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\interfaces\ISourceMod.h"
+				>
+			</File>
+			<File
 				RelativePath="..\interfaces\ITextParsers.h"
 				>
 			</File>
