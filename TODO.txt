@@ -11,3 +11,4 @@ things to do for a release, in priority
     X add error messages to format routine
     X finish global unloading
     - add hex format specifier
+    - linux building (oh god)
