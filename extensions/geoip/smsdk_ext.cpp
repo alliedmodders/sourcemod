@@ -4,6 +4,7 @@
 IShareSys *g_pShareSys = NULL;
 IExtension *myself = NULL;
 IHandleSys *g_pHandleSys = NULL;
+ISourceMod *g_pSM = NULL;
 
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
 {
@@ -38,6 +39,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 
 	SM_GET_IFACE(HANDLESYSTEM, g_pHandleSys);
+	SM_GET_IFACE(SOURCEMOD, g_pSM);
 
 	if (SDK_OnLoad(error, err_max, late))
 	{

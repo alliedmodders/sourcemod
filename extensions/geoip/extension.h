@@ -58,4 +58,6 @@ public:
 #endif
 };
 
+extern const sp_nativeinfo_t geoip_natives[];
+
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

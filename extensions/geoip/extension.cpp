@@ -8,15 +8,20 @@ SMEXT_LINK(&g_GeoIP);
 
 bool GeoIP_Extension::SDK_OnLoad(char *error, size_t err_max, bool late)
 {
-	char *path = "GeoIP.dat"; //:TODO: build a real path here
-	//:TODO: log any errors on load.
+	char path[PLATFORM_MAX_PATH+1];
+
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/geoip/GeoIP.dat");
 	gi = GeoIP_open(path, GEOIP_MEMORY_CACHE);
 
 	if (!gi)
 	{
-		//:TODO: log
+		snprintf(error, err_max, "Failed to instantiate GeoIP!");
 		return false;
 	}
+
+	g_pShareSys->AddNatives(myself, geoip_natives);
+	g_pSM->LogMessage(myself, "GeoIP database info: %s", GeoIP_database_info(gi));
+
 	return true;
 }
 
@@ -81,3 +86,11 @@ static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
 
 	return 1;
 }
+
+const sp_nativeinfo_t geoip_natives[] = 
+{
+	{"GeoipCode2",			sm_Geoip_Code2},
+	{"GeoipCode3",			sm_Geoip_Code3},
+	{"GeoipCountry",		sm_Geoip_Country},
+	{NULL,					NULL},
+};
