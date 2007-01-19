@@ -130,6 +130,19 @@ namespace SourceMod
 		 * @param identity		Identity to remove.
 		 */
 		virtual void DestroyIdentity(IdentityToken_t *identity) =0;
+
+
+		/**
+		 * @brief Requires an extension.  This tells SourceMod that without this extension,
+		 * your extension should not be loaded.  The name should not include the ".dll" or
+		 * the ".so" part of the file name.
+		 *
+		 * @param myself		IExtension pointer to yourself.
+		 * @param filename		File of extension to require.
+		 * @param require		Whether or not this extension is a required dependency.
+		 * @param autoload		Whether or not to autoload this extension.
+		 */
+		virtual void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload) =0;
 	};
 };
 
