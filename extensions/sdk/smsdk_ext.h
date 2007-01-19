@@ -6,6 +6,7 @@
 #include <IHandleSys.h>
 #include <sp_vm_api.h>
 #include <sm_platform.h>
+#include <ISourceMod.h>
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -121,6 +122,7 @@ extern SDKExtension *g_pExtensionIface;
 extern IShareSys *g_pShareSys;
 extern IExtension *myself;
 extern IHandleSys *g_pHandleSys;
+extern ISourceMod *g_pSM;
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();
