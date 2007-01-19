@@ -71,7 +71,7 @@ void CForwardManager::OnPluginLoaded(IPlugin *plugin)
 	for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
 	{
 		fwd = (*iter);
-		IPluginFunction *pFunc = plugin->GetFunctionByName(fwd->GetForwardName());
+		IPluginFunction *pFunc = plugin->GetBaseContext()->GetFunctionByName(fwd->GetForwardName());
 		if (pFunc)
 		{
 			fwd->AddFunction(pFunc);
@@ -256,7 +256,8 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 	{
 		func = (*iter);
-		if (func->GetParentPlugin()->GetStatus() == Plugin_Paused)
+		/* Ugh... */
+		if (!func->GetParentContext()->IsRunnable())
 		{
 			continue;
 		}
@@ -565,15 +566,10 @@ void CForward::Cancel()
 	m_errstate = SP_ERROR_NONE;
 }
 
-bool CForward::AddFunction(sp_context_t *ctx, funcid_t index)
+bool CForward::AddFunction(IPluginContext *pContext, funcid_t index)
 {
-	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(ctx);
-	if (!pPlugin)
-	{
-		return false;
-	}
+	IPluginFunction *pFunc = pContext->GetFunctionById(index);
 
-	IPluginFunction *pFunc = pPlugin->GetFunctionById(index);
 	if (!pFunc)
 	{
 		return false;
@@ -614,10 +610,11 @@ unsigned int CForward::RemoveFunctionsOfPlugin(IPlugin *plugin)
 	FuncIter iter;
 	IPluginFunction *func;
 	unsigned int removed = 0;
+	IPluginContext *pContext = plugin->GetBaseContext();
 	for (iter=m_functions.begin(); iter!=m_functions.end();)
 	{
 		func = (*iter);
-		if (func->GetParentPlugin() == plugin)
+		if (func->GetParentContext() == pContext)
 		{
 			iter = m_functions.erase(iter);
 			removed++;

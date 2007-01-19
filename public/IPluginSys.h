@@ -57,8 +57,6 @@ namespace SourceMod
 		PluginType_Global,			/* Plugin will never be unloaded or updated */
 	};
 
-	class IPluginFunction;
-
 	/**
 	 * @brief Encapsulates a run-time plugin as maintained by SourceMod.
 	 */
@@ -128,22 +126,6 @@ namespace SourceMod
 		 * @brief Returns the unique serial number of a plugin.
 		 */
 		virtual unsigned int GetSerial() const =0;
-
-		/**
-		 * @brief Returns a function by name.
-		 *
-		 * @param public_name		Name of the function.
-		 * @return					A new IPluginFunction pointer, NULL if not found.
-		 */
-		virtual IPluginFunction *GetFunctionByName(const char *public_name) =0;
-
-		/**
-		 * @brief Returns a function by its id.
-		 *
-		 * @param func_id			Function ID.
-		 * @return					A new IPluginFunction pointer, NULL if not found.
-		 */
-		virtual IPluginFunction *GetFunctionById(funcid_t func_id) =0;
 
 		/**
 		 * @brief Returns a plugin's identity token.

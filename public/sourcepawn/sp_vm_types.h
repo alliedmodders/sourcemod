@@ -39,6 +39,7 @@ typedef uint32_t	funcid_t;
 #define SP_ERROR_INVALID_NATIVE			21	/* Native was pending or invalid */
 #define SP_ERROR_PARAMS_MAX				22	/* Maximum number of parameters reached */
 #define SP_ERROR_NATIVE					23	/* Error originates from a native */
+#define SP_ERROR_NOT_RUNNABLE			24	/* Function or plugin is not runnable */
 
 /**********************************************
  *** The following structures are reference structures.

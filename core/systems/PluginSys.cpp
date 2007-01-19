@@ -23,9 +23,6 @@ CPlugin::CPlugin(const char *file)
 	m_status = Plugin_Uncompiled;
 	m_serial = ++MySerial;
 	m_plugin = NULL;
-	m_funcsnum = 0;
-	m_priv_funcs = NULL;
-	m_pub_funcs = NULL;
 	m_errormsg[256] = '\0';
 	snprintf(m_filename, sizeof(m_filename), "%s", file);
 	m_handle = 0;
@@ -58,26 +55,6 @@ CPlugin::~CPlugin()
 	{
 		m_ctx.vm->AbortCompilation(m_ctx.co);
 		m_ctx.co = NULL;
-	}
-
-	if (m_pub_funcs)
-	{
-		for (uint32_t i=0; i<m_plugin->info.publics_num; i++)
-		{
-			g_PluginSys.ReleaseFunctionToPool(m_pub_funcs[i]);
-		}
-		delete [] m_pub_funcs;
-		m_pub_funcs = NULL;
-	}
-
-	if (m_priv_funcs)
-	{
-		for (unsigned int i=0; i<m_funcsnum; i++)
-		{
-			g_PluginSys.ReleaseFunctionToPool(m_priv_funcs[i]);
-		}
-		delete [] m_priv_funcs;
-		m_priv_funcs = NULL;
 	}
 
 	if (m_plugin)
@@ -190,29 +167,8 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 	}
 
 	m_ctx.base = new BaseContext(m_ctx.ctx);
+	m_ctx.base->SetRunnable(false);
 	m_ctx.ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)this;
-
-	m_funcsnum = m_ctx.vm->FunctionCount(m_ctx.ctx);
-
-	/**
-	 * Note: Since the m_plugin member will never change,
-	 * it is safe to assume the function count will never change
-	 */
-	if (m_funcsnum && m_priv_funcs == NULL)
-	{
-		m_priv_funcs = new CFunction *[m_funcsnum];
-		memset(m_priv_funcs, 0, sizeof(CFunction *) * m_funcsnum);
-	} else {
-		m_priv_funcs = NULL;
-	}
-
-	if (m_plugin->info.publics_num && m_pub_funcs == NULL)
-	{
-		m_pub_funcs = new CFunction *[m_plugin->info.publics_num];
-		memset(m_pub_funcs, 0, sizeof(CFunction *) * m_plugin->info.publics_num);
-	} else {
-		m_pub_funcs = NULL;
-	}
 
 	m_status = Plugin_Created;
 	m_ctx.co = NULL;
@@ -230,67 +186,11 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 	va_start(ap, error_fmt);
 	vsnprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
-}
 
-IPluginFunction *CPlugin::GetFunctionById(funcid_t func_id)
-{
-	CFunction *pFunc = NULL;
-	funcid_t save = func_id;
-
-	if (func_id & 1)
+	if (m_ctx.base)
 	{
-		func_id >>= 1;
-		if (func_id >= m_plugin->info.publics_num)
-		{
-			return NULL;
-		}
-		pFunc = m_pub_funcs[func_id];
-		if (!pFunc)
-		{
-			pFunc = g_PluginSys.GetFunctionFromPool(save, this);
-			m_pub_funcs[func_id] = pFunc;
-		}
-	} else {
-		func_id >>= 1;
-		unsigned int index;
-		if (!g_pVM->FunctionLookup(m_ctx.ctx, func_id, &index))
-		{
-			return NULL;
-		}
-		pFunc = m_priv_funcs[func_id];
-		if (!pFunc)
-		{
-			pFunc = g_PluginSys.GetFunctionFromPool(save, this);
-			m_priv_funcs[func_id] = pFunc;
-		}
+		m_ctx.base->SetRunnable(false);
 	}
-
-	return pFunc;
-}
-
-IPluginFunction *CPlugin::GetFunctionByName(const char *public_name)
-{
-	uint32_t index;
-	IPluginContext *base = m_ctx.base;
-
-	if (base->FindPublicByName(public_name, &index) != SP_ERROR_NONE)
-	{
-		return NULL;
-	}
-
-	CFunction *pFunc = m_pub_funcs[index];
-	if (!pFunc)
-	{
-		sp_public_t *pub = NULL;
-		base->GetPublicByIndex(index, &pub);
-		if (pub)
-		{
-			pFunc = g_PluginSys.GetFunctionFromPool(pub->funcid, this);
-			m_pub_funcs[index] = pFunc;
-		}
-	}
-
-	return pFunc;
 }
 
 void CPlugin::UpdateInfo()
@@ -338,7 +238,7 @@ void CPlugin::Call_OnPluginInit()
 	m_status = Plugin_Running;
 
 	cell_t result;
-	IPluginFunction *pFunction = GetFunctionByName("OnPluginInit");
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginInit");
 	if (!pFunction)
 	{
 		return;
@@ -356,7 +256,7 @@ void CPlugin::Call_OnPluginUnload()
 	}
 
 	cell_t result;
-	IPluginFunction *pFunction = GetFunctionByName("OnPluginUnload");
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginUnload");
 	if (!pFunction)
 	{
 		return;
@@ -373,10 +273,11 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	}
 
 	m_status = Plugin_Loaded;
+	m_ctx.base->SetRunnable(true);
 
 	int err;
 	cell_t result;
-	IPluginFunction *pFunction = GetFunctionByName("AskPluginLoad");
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("AskPluginLoad");
 
 	if (!pFunction)
 	{
@@ -389,13 +290,11 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	pFunction->PushCell(maxlength);
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
-		m_status = Plugin_Failed;
 		return false;
 	}
 
 	if (!result || m_status != Plugin_Loaded)
 	{
-		m_status = Plugin_Failed;
 		return false;
 	}
 
@@ -463,7 +362,7 @@ bool CPlugin::SetPauseState(bool paused)
 
 	m_status = (paused) ? Plugin_Paused : Plugin_Running;
 
-	IPluginFunction *pFunction = GetFunctionByName("OnPluginPauseChange");
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginPauseChange");
 	if (pFunction)
 	{
 		cell_t result;
@@ -756,7 +655,6 @@ bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug
 						snprintf(error, err_max, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
 					}
 					pPlugin->CancelMyCompile();
-					pPlugin->m_status = Plugin_Failed;
 					co = NULL;
 					break;
 				}
@@ -932,7 +830,6 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 						{
 							snprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
 						}
-						pPlugin->m_status = Plugin_Failed;
 						return false;
 					} else {
 						g_Extensions.BindChildPlugin(pExt, pPlugin);
@@ -1089,29 +986,6 @@ IPluginIterator *CPluginManager::GetPluginIterator()
 void CPluginManager::ReleaseIterator(CPluginIterator *iter)
 {
 	m_iters.push(iter);
-}
-
-void CPluginManager::ReleaseFunctionToPool(CFunction *func)
-{
-	if (!func)
-	{
-		return;
-	}
-	func->Cancel();
-	m_funcpool.push(func);
-}
-
-CFunction *CPluginManager::GetFunctionFromPool(funcid_t f, CPlugin *plugin)
-{
-	if (m_funcpool.empty())
-	{
-		return new CFunction(f, plugin);
-	} else {
-		CFunction *func = m_funcpool.front();
-		m_funcpool.pop();
-		func->Set(f, plugin);
-		return func;
-	}
 }
 
 bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)

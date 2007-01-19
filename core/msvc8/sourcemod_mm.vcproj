@@ -342,10 +342,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\public\IPluginFunction.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\public\IPluginSys.h"
 				>
 			</File>
@@ -372,10 +368,6 @@
 			<Filter
 				Name="Header Files"
 				>
-				<File
-					RelativePath="..\systems\CFunction.h"
-					>
-				</File>
 				<File
 					RelativePath="..\systems\ExtensionSys.h"
 					>
@@ -408,10 +400,6 @@
 			<Filter
 				Name="Source Files"
 				>
-				<File
-					RelativePath="..\systems\CFunction.cpp"
-					>
-				</File>
 				<File
 					RelativePath="..\systems\ExtensionSys.cpp"
 					>
@@ -456,6 +444,10 @@
 					RelativePath="..\vm\sp_vm_engine.h"
 					>
 				</File>
+				<File
+					RelativePath="..\vm\sp_vm_function.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="Source Files"
@@ -468,28 +460,32 @@
 					RelativePath="..\vm\sp_vm_engine.cpp"
 					>
 				</File>
+				<File
+					RelativePath="..\vm\sp_vm_function.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="SDK"
 				>
 				<File
-					RelativePath="..\..\sourcepawn\include\sp_file_headers.h"
+					RelativePath="..\..\public\sourcepawn\sp_file_headers.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\sourcepawn\include\sp_typeutil.h"
+					RelativePath="..\..\public\sourcepawn\sp_typeutil.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_api.h"
+					RelativePath="..\..\public\sourcepawn\sp_vm_api.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_base.h"
+					RelativePath="..\..\public\sourcepawn\sp_vm_base.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\sourcepawn\include\sp_vm_types.h"
+					RelativePath="..\..\public\sourcepawn\sp_vm_types.h"
 					>
 				</File>
 			</Filter>

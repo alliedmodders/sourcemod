@@ -2,6 +2,11 @@
 #define _INCLUDE_SOURCEPAWN_BASECONTEXT_H_
 
 #include "sp_vm_api.h"
+#include "sp_vm_function.h"
+
+/**
+ * :TODO: Make functions allocate as a lump instead of individual allocations!
+ */
 
 namespace SourcePawn
 {
@@ -11,6 +16,7 @@ namespace SourcePawn
 	{
 	public:
 		BaseContext(sp_context_t *ctx);
+		~BaseContext();
 	public: //IPluginContext
 		IVirtualMachine *GetVirtualMachine();
 		sp_context_t *GetContext();
@@ -44,9 +50,13 @@ namespace SourcePawn
 		virtual int Execute(funcid_t funcid, cell_t *result);
 		virtual void ThrowNativeErrorEx(int error, const char *msg, ...);
 		virtual cell_t ThrowNativeError(const char *msg, ...);
+		virtual IPluginFunction *GetFunctionByName(const char *public_name);
+		virtual IPluginFunction *GetFunctionById(funcid_t func_id);
 #if defined SOURCEMOD_BUILD
 		virtual SourceMod::IdentityToken_t *GetIdentity();
 		void SetIdentity(SourceMod::IdentityToken_t *token);
+		bool IsRunnable();
+		void SetRunnable(bool runnable);
 #endif
 	public: //IPluginDebugInfo
 		virtual int LookupFile(ucell_t addr, const char **filename);
@@ -56,6 +66,7 @@ namespace SourcePawn
 		void SetContext(sp_context_t *_ctx);
 	private:
 		void SetErrorMessage(const char *msg, va_list ap);
+		void FlushFunctionCache();
 	private:
 		sp_context_t *ctx;
 #if defined SOURCEMOD_BUILD
@@ -64,6 +75,10 @@ namespace SourcePawn
 		char m_MsgCache[1024];
 		bool m_CustomMsg;
 		bool m_InExec;
+		bool m_Runnable;
+		unsigned int m_funcsnum;
+		CFunction **m_priv_funcs;
+		CFunction **m_pub_funcs;
 	};
 };
 

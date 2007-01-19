@@ -5,33 +5,31 @@
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(funcid_t funcid, CPlugin *plugin)
+void CFunction::Set(funcid_t funcid, IPluginContext *plugin)
 {
 	m_funcid = funcid;
-	m_pPlugin = plugin;
+	m_pContext = plugin;
 	m_curparam = 0;
 	m_errorstate = SP_ERROR_NONE;
 }
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
-	IPluginContext *ctx = m_pPlugin->m_ctx.base;
-
 	while (num_params--)
 	{
-		ctx->PushCell(params[num_params]);
+		m_pContext->PushCell(params[num_params]);
 	}
 
-	return ctx->Execute(m_funcid, result);
+	return m_pContext->Execute(m_funcid, result);
 }
 
-IPlugin *CFunction::GetParentPlugin()
+IPluginContext *CFunction::GetParentContext()
 {
-	return m_pPlugin;
+	return m_pContext;
 }
 
-CFunction::CFunction(funcid_t funcid, CPlugin *plugin) : 
-	m_funcid(funcid), m_pPlugin(plugin), m_curparam(0), 
+CFunction::CFunction(funcid_t funcid, IPluginContext *plugin) : 
+	m_funcid(funcid), m_pContext(plugin), m_curparam(0), 
 	m_errorstate(SP_ERROR_NONE)
 {
 }
@@ -79,11 +77,10 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 		return SetError(SP_ERROR_PARAMS_MAX);
 	}
 
-	IPluginContext *ctx = m_pPlugin->m_ctx.base;
 	ParamInfo *info = &m_info[m_curparam];
 	int err;
 
-	if ((err=ctx->HeapAlloc(cells, &info->local_addr, &info->phys_addr)) != SP_ERROR_NONE)
+	if ((err=m_pContext->HeapAlloc(cells, &info->local_addr, &info->phys_addr)) != SP_ERROR_NONE)
 	{
 		return SetError(err);
 	}
@@ -127,12 +124,11 @@ int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_
 		return SetError(SP_ERROR_PARAMS_MAX);
 	}
 
-	IPluginContext *base = m_pPlugin->m_ctx.base;
 	ParamInfo *info = &m_info[m_curparam];
 	size_t cells = (len + sizeof(cell_t) - 1) / sizeof(cell_t);
 	int err;
 
-	if ((err=base->HeapAlloc(cells, &info->local_addr, &info->phys_addr)) != SP_ERROR_NONE)
+	if ((err=m_pContext->HeapAlloc(cells, &info->local_addr, &info->phys_addr)) != SP_ERROR_NONE)
 	{
 		return SetError(err);
 	}
@@ -148,12 +144,12 @@ int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_
 
 	if (sz_flags & SM_PARAM_STRING_UTF8)
 	{
-		if ((err=base->StringToLocalUTF8(info->local_addr, len, string, NULL)) != SP_ERROR_NONE)
+		if ((err=m_pContext->StringToLocalUTF8(info->local_addr, len, string, NULL)) != SP_ERROR_NONE)
 		{
 			return SetError(err);
 		}
 	} else {
-		if ((err=base->StringToLocal(info->local_addr, len, string)) != SP_ERROR_NONE)
+		if ((err=m_pContext->StringToLocal(info->local_addr, len, string)) != SP_ERROR_NONE)
 		{
 			return SetError(err);
 		}
@@ -174,13 +170,11 @@ void CFunction::Cancel()
 		return;
 	}
 
-	IPluginContext *base = m_pPlugin->m_ctx.base;
-
 	while (m_curparam--)
 	{
 		if (m_info[m_curparam].marked)
 		{
-			base->HeapRelease(m_info[m_curparam].local_addr);
+			m_pContext->HeapRelease(m_info[m_curparam].local_addr);
 			m_info[m_curparam].marked = false;
 		}
 	}
@@ -217,8 +211,6 @@ int CFunction::Execute(cell_t *result)
 		docopies = false;
 	}
 
-	IPluginContext *base = m_pPlugin->m_ctx.base;
-
 	while (numparams--)
 	{
 		if (!temp_info[numparams].marked)
@@ -239,7 +231,7 @@ int CFunction::Execute(cell_t *result)
 				}
 			}
 		}
-		base->HeapPop(temp_info[numparams].local_addr);
+		m_pContext->HeapPop(temp_info[numparams].local_addr);
 		temp_info[numparams].marked = false;
 	}
 

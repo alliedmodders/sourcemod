@@ -8,7 +8,6 @@
 #include <sh_stack.h>
 #include "sm_globals.h"
 #include "vm/sp_vm_basecontext.h"
-#include "CFunction.h"
 #include "PluginInfoDatabase.h"
 #include "sm_trie.h"
 #include "sourcemod.h"
@@ -93,8 +92,6 @@ public:
 	virtual bool SetPauseState(bool paused);
 	virtual unsigned int GetSerial() const;
 	virtual const sp_plugin_t *GetPluginStructure() const;
-	virtual IPluginFunction *GetFunctionByName(const char *public_name);
-	virtual IPluginFunction *GetFunctionById(funcid_t func_id);
 	virtual IdentityToken_t *GetIdentity() const;
 public:
 	/**
@@ -174,9 +171,6 @@ private:
 	unsigned int m_serial;
 	sm_plugininfo_t m_info;
 	sp_plugin_t *m_plugin;
-	unsigned int m_funcsnum;
-	CFunction **m_priv_funcs;
-	CFunction **m_pub_funcs;
 	char m_errormsg[256];
 	time_t m_LastAccess;
 	IdentityToken_t *m_ident;
@@ -312,8 +306,6 @@ protected:
 	 * Caching internal objects
 	 */
 	void ReleaseIterator(CPluginIterator *iter);
-	CFunction *GetFunctionFromPool(funcid_t f, CPlugin *plugin);
-	void ReleaseFunctionToPool(CFunction *func);
 	inline IdentityToken_t *GetIdentity()
 	{
 		return m_MyIdent;
@@ -323,7 +315,6 @@ private:
 	List<CPlugin *> m_plugins;
 	List<sp_nativeinfo_t *> m_natives;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
-	CStack<CFunction *> m_funcpool;
 	CPluginInfoDatabase m_PluginInfo;
 	Trie *m_LoadLookup;
 	bool m_AllPluginsLoaded;

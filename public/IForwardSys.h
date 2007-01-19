@@ -3,7 +3,9 @@
 
 #include <IForwardSys.h>
 #include <IPluginSys.h>
-#include <IPluginFunction.h>
+#include <sp_vm_api.h>
+
+using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
 #define SMINTERFACE_FORWARDMANAGER_VERSION	1
@@ -190,7 +192,7 @@ namespace SourceMod
 		 * @param funcid	Function id to add.
 		 * @return			True on success, otherwise false.
 		 */
-		virtual bool AddFunction(sp_context_t *ctx, funcid_t index) =0;
+		virtual bool AddFunction(IPluginContext *ctx, funcid_t index) =0;
 	};
 
 	#define SP_PARAMTYPE_ANY	0

@@ -53,6 +53,9 @@ SourcePawnEngine::SourcePawnEngine()
 	m_CallStack = NULL;
 	m_FreedCalls = NULL;
 	m_CurChain = 0;
+#if 0
+	m_pFreeFuncs = NULL;
+#endif
 }
 
 SourcePawnEngine::~SourcePawnEngine()
@@ -66,6 +69,16 @@ SourcePawnEngine::~SourcePawnEngine()
 		delete m_FreedCalls;
 		m_FreedCalls = pTemp;
 	}
+
+#if 0
+	CFunction *pNext;
+	while (m_pFreeFuncs)
+	{
+		pNext = m_pFreeFuncs->m_pNext;
+		delete m_pFreeFuncs;
+		m_pFreeFuncs = pNext;
+	}
+#endif
 }
 
 void *SourcePawnEngine::ExecAlloc(size_t size)
@@ -355,6 +368,32 @@ int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
 
 	return SP_ERROR_NONE;
 }
+
+#if 0
+void SourcePawnEngine::ReleaseFunctionToPool(CFunction *func)
+{
+	if (!func)
+	{
+		return;
+	}
+	func->Cancel();
+	func->m_pNext = m_pFreeFuncs;
+	m_pFreeFuncs = func;
+}
+
+CFunction *SourcePawnEngine::GetFunctionFromPool(funcid_t f, IPluginContext *plugin)
+{
+	if (!m_pFreeFuncs)
+	{
+		return new CFunction(f, plugin);
+	} else {
+		CFunction *pFunc = m_pFreeFuncs;
+		m_pFreeFuncs = m_pFreeFuncs->m_pNext;
+		pFunc->Set(f, plugin);
+		return pFunc;
+	}
+}
+#endif
 
 IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 {

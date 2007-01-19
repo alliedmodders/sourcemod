@@ -27,6 +27,60 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	ctx->dbreak = GlobalDebugBreak;
 	m_InExec = false;
 	m_CustomMsg = false;
+	m_Runnable = true;
+	m_funcsnum = ctx->vmbase->FunctionCount(ctx);
+	m_priv_funcs = NULL;
+	m_pub_funcs = NULL;
+
+	/**
+	 * Note: Since the m_plugin member will never change,
+	 * it is safe to assume the function count will never change
+	 */
+	if (m_funcsnum && m_priv_funcs == NULL)
+	{
+		m_priv_funcs = new CFunction *[m_funcsnum];
+		memset(m_priv_funcs, 0, sizeof(CFunction *) * m_funcsnum);
+	} else {
+		m_priv_funcs = NULL;
+	}
+
+	if (ctx->plugin->info.publics_num && m_pub_funcs == NULL)
+	{
+		m_pub_funcs = new CFunction *[ctx->plugin->info.publics_num];
+		memset(m_pub_funcs, 0, sizeof(CFunction *) * ctx->plugin->info.publics_num);
+	} else {
+		m_pub_funcs = NULL;
+	}
+}
+
+void BaseContext::FlushFunctionCache()
+{
+	if (m_pub_funcs)
+	{
+		for (uint32_t i=0; i<ctx->plugin->info.publics_num; i++)
+		{
+			delete m_pub_funcs[i];
+			m_pub_funcs[i] = NULL;
+		}
+	}
+
+	if (m_priv_funcs)
+	{
+		for (unsigned int i=0; i<m_funcsnum; i++)
+		{
+			delete m_priv_funcs[i];
+			m_priv_funcs[i] = NULL;
+		}
+	}
+}
+
+BaseContext::~BaseContext()
+{
+	FlushFunctionCache();
+	delete [] m_pub_funcs;
+	m_pub_funcs = NULL;
+	delete [] m_priv_funcs;
+	m_priv_funcs = NULL;
 }
 
 void BaseContext::SetContext(sp_context_t *_ctx)
@@ -36,6 +90,9 @@ void BaseContext::SetContext(sp_context_t *_ctx)
 		return;
 	}
 	ctx = _ctx;
+	ctx->context = this;
+	ctx->dbreak = GlobalDebugBreak;
+	FlushFunctionCache();
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()
@@ -73,6 +130,11 @@ IPluginDebugInfo *BaseContext::GetDebugInfo()
 
 int BaseContext::Execute(funcid_t funcid, cell_t *result)
 {
+	if (!m_Runnable)
+	{
+		return SP_ERROR_NOT_RUNNABLE;
+	}
+
 	IVirtualMachine *vm = (IVirtualMachine *)ctx->vmbase;
 
 	uint32_t pushcount = ctx->pushcount;
@@ -794,6 +856,63 @@ int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
 	return SP_ERROR_NONE;
 }
 
+IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
+{
+	CFunction *pFunc = NULL;
+	funcid_t save = func_id;
+
+	if (func_id & 1)
+	{
+		func_id >>= 1;
+		if (func_id >= ctx->plugin->info.publics_num)
+		{
+			return NULL;
+		}
+		pFunc = m_pub_funcs[func_id];
+		if (!pFunc)
+		{
+			m_pub_funcs[func_id] = new CFunction(save, this);
+		}
+	} else {
+		func_id >>= 1;
+		unsigned int index;
+		if (!g_pVM->FunctionLookup(ctx, func_id, &index))
+		{
+			return NULL;
+		}
+		pFunc = m_priv_funcs[func_id];
+		if (!pFunc)
+		{
+			m_priv_funcs[func_id] = new CFunction(save, this);
+		}
+	}
+
+	return pFunc;
+}
+
+IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
+{
+	uint32_t index;
+
+	if (FindPublicByName(public_name, &index) != SP_ERROR_NONE)
+	{
+		return NULL;
+	}
+
+	CFunction *pFunc = m_pub_funcs[index];
+	if (!pFunc)
+	{
+		sp_public_t *pub = NULL;
+		GetPublicByIndex(index, &pub);
+		if (pub)
+		{
+			m_pub_funcs[index] = new CFunction(pub->funcid, this);
+		}
+	}
+
+	return pFunc;
+}
+
 #if defined SOURCEMOD_BUILD
 SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 {
@@ -803,5 +922,15 @@ SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 void BaseContext::SetIdentity(SourceMod::IdentityToken_t *token)
 {
 	m_pToken = token;
+}
+
+bool BaseContext::IsRunnable()
+{
+	return m_Runnable;
+}
+
+void BaseContext::SetRunnable(bool runnable)
+{
+	m_Runnable = runnable;
 }
 #endif
