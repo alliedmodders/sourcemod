@@ -135,7 +135,7 @@ namespace SourceMod
 		 */
 		virtual bool QueryInterfaceDrop(SMInterface *pInterface)
 		{
-			return true;
+			return false;
 		}
 
 		/**
