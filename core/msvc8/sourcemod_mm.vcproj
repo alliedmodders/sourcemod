@@ -294,7 +294,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\sm_platform.h"
+				RelativePath="..\..\public\sm_platform.h"
 				>
 			</File>
 			<File
@@ -326,15 +326,43 @@
 			Name="Interfaces"
 			>
 			<File
-				RelativePath="..\interfaces\IRootConsoleMenu.h"
+				RelativePath="..\..\public\IExtensionSys.h"
 				>
 			</File>
 			<File
-				RelativePath="..\interfaces\ISourceMod.h"
+				RelativePath="..\..\public\IForwardSys.h"
 				>
 			</File>
 			<File
-				RelativePath="..\interfaces\ITextParsers.h"
+				RelativePath="..\..\public\IHandleSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\ILibrarySys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IPluginFunction.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IPluginSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IRootConsoleMenu.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IShareSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\ISourceMod.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\ITextParsers.h"
 				>
 			</File>
 		</Filter>
@@ -410,38 +438,6 @@
 				</File>
 				<File
 					RelativePath="..\systems\ShareSys.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Interfaces"
-				>
-				<File
-					RelativePath="..\interfaces\IExtensionSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\IForwardSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\IHandleSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\ILibrarySys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\IPluginFunction.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\IPluginSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\interfaces\IShareSys.h"
 					>
 				</File>
 			</Filter>
