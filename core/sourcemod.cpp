@@ -10,6 +10,7 @@
 #include "ExtensionSys.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 
 SourcePawnEngine g_SourcePawn;
 SourceModBase g_SourceMod;
@@ -39,6 +40,7 @@ void ShutdownJIT()
 SourceModBase::SourceModBase()
 {
 	m_IsMapLoading = false;
+	m_ExecPluginReload = false;
 }
 
 bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
@@ -131,6 +133,7 @@ void SourceModBase::StartSourceMod(bool late)
 {
 	/* First initialize the global hooks we need */
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -158,6 +161,7 @@ void SourceModBase::StartSourceMod(bool late)
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
 	m_IsMapLoading = true;
+	m_ExecPluginReload = true;
 
 	g_Logger.MapChange(pMapName);
 
@@ -166,6 +170,15 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	m_IsMapLoading = false;
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+void SourceModBase::LevelShutdown()
+{
+	if (m_ExecPluginReload)
+	{
+		g_PluginSys.ReloadOrUnloadPlugins();
+		m_ExecPluginReload = false;
+	}
 }
 
 bool SourceModBase::IsMapLoading()
@@ -240,6 +253,9 @@ void SourceModBase::CloseSourceMod()
 		pBase->OnSourceModAllShutdown();
 		pBase = pBase->m_pGlobalClassNext;
 	}
+
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
 
 	/* Rest In Peace */
 	ShutdownJIT();

@@ -2,6 +2,8 @@
 #define _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 
 #include <time.h>
+#include <errno.h>
+#include <sys/stat.h>
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <sh_list.h>
@@ -155,7 +157,15 @@ public:
 	 */
 	bool IsRunnable() const;
 public:
-	time_t HasUpdatedFile();
+	/**
+	* Returns the modification time during last plugin load.
+	*/
+	time_t GetTimeStamp() const;
+
+	/**
+	* Returns the current modification time of the plugin file.
+	*/
+	time_t GetFileTimeStamp();
 
 	/** 
 	 * Returns true if the plugin was running, but is now invalid.
@@ -163,6 +173,7 @@ public:
 	bool WasRunning();
 protected:
 	void UpdateInfo();
+	void SetTimeStamp(time_t t);
 private:
 	ContextPair m_ctx;
 	PluginType m_type;
@@ -271,6 +282,11 @@ public:
 	 * Gets status text for a status code 
 	 */
 	const char *GetStatusText(PluginStatus status);
+
+	/**
+	* Reload or update plugins on level shutdown.
+	*/
+	void ReloadOrUnloadPlugins();
 
 private:
 	bool _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);

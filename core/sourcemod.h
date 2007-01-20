@@ -33,6 +33,11 @@ public:
 	 */
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 
+	/**
+	* @brief Level shutdown hook
+	*/
+	void LevelShutdown();
+
 	/** 
 	 * @brief Returns whether or not a mapload is in progress
 	 */
@@ -52,6 +57,7 @@ private:
 private:
 	char m_SMBaseDir[PLATFORM_MAX_PATH+1];
 	bool m_IsMapLoading;
+	bool m_ExecPluginReload;
 };
 
 extern SourceModBase g_SourceMod;

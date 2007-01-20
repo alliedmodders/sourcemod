@@ -449,6 +449,35 @@ bool CPlugin::IsRunnable() const
 	return (m_status <= Plugin_Paused) ? true : false;
 }
 
+time_t CPlugin::GetFileTimeStamp()
+{
+	char path[PLATFORM_MAX_PATH+1];
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "plugins/%s", m_filename);
+#ifdef PLATFORM_WINDOWS
+	struct _stat s;
+	if (_stat(path, &s) != 0)
+#else if defined PLATFORM_POSIX
+	struct stat s;
+	if (stat(path, &s) != 0)
+#endif
+	{
+		g_Logger.LogError("Could not obtain plugin time stamp, error: %d", errno);
+		return 0;
+	} else {
+		return s.st_mtime;
+	}
+}
+
+time_t CPlugin::GetTimeStamp() const
+{
+	return m_LastAccess;
+}
+
+void CPlugin::SetTimeStamp(time_t t)
+{
+	m_LastAccess = t;
+}
+
 /*******************
  * PLUGIN ITERATOR *
  *******************/
@@ -680,6 +709,10 @@ bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug
 			LoadOrRequireExtensions(pPlugin, 1, error, err_max);
 		}
 	}
+
+	/* Save the time stamp */
+	time_t t = pPlugin->GetFileTimeStamp();
+	pPlugin->SetTimeStamp(t);
 
 	if (_plugin)
 	{
@@ -1521,4 +1554,32 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 	g_RootMenu.DrawGenericOption("unload", "Unload a plugin");
 	g_RootMenu.DrawGenericOption("info", "Information about a plugin");
 	g_RootMenu.DrawGenericOption("debug", "Toggle debug mode on a plugin");
+}
+
+void CPluginManager::ReloadOrUnloadPlugins()
+{
+	List<CPlugin *>::iterator iter;
+	List<CPlugin *> tmp_list = m_plugins;
+	CPlugin *pl;
+	time_t t;
+
+	for (iter=tmp_list.begin(); iter!=tmp_list.end(); iter++)
+	{
+		pl = (*iter);
+		if (pl->GetType() ==  PluginType_MapOnly)
+		{
+			UnloadPlugin((IPlugin *)pl);
+		} else if (pl->GetType() == PluginType_MapUpdated) {
+			t=pl->GetFileTimeStamp();
+			if (!t)
+			{
+				continue;
+			}
+			if (t > pl->GetTimeStamp())
+			{
+				pl->SetTimeStamp(t);
+				UnloadPlugin((IPlugin *)pl);
+			}
+		}
+	}
 }

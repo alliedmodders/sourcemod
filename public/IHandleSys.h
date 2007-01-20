@@ -17,7 +17,6 @@ namespace SourceMod
 	typedef unsigned int HandleType_t;
 	typedef unsigned int Handle_t;
 
-	class SourcePawn::IPluginContext;
 
 	/**
 	 * About type checking:
