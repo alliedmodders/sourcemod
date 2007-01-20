@@ -64,7 +64,7 @@ void CPhraseFile::ParseWarning(const char *message, ...)
 	if (!m_FileLogged)
 	{
 		g_Logger.LogError("[SM] Warning(s) encountered in translation file \"%s\"", m_File.c_str());
-		m_FileLogged;
+		m_FileLogged = true;
 	}
 
 	g_Logger.LogError("[SM] %s", message);
@@ -685,7 +685,7 @@ SMCParseResult CTranslator::ReadSMC_NewSection(const char *name, bool opt_quotes
 
 	if (!m_InLanguageSection)
 	{
-		g_Logger.LogError("[SM] Warning: Unrecognized section \"%s\" in languages.cfg");
+		g_Logger.LogError("[SM] Warning: Unrecognized section \"%s\" in languages.cfg", name);
 	}
 
 	return SMCParse_Continue;
@@ -705,7 +705,7 @@ SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value,
 	if (len != 2)
 	{
 		g_Logger.LogError("[SM] Warning encountered parsing languages.cfg file.");
-		g_Logger.LogError("[SM] Invalid language code \"%s\" is being ignored.");
+		g_Logger.LogError("[SM] Invalid language code \"%s\" is being ignored.", key);
 	}
 
 	Language *pLanguage = new Language;
