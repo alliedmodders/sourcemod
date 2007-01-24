@@ -246,17 +246,23 @@ Trie *sm_trie_create()
 	t->stringtab = (char *)malloc(sizeof(char) * 256);
 	t->baseSize = 256;
 	t->stSize = 256;
-	t->tail = 0;
 
-	memset(t->base, 0, sizeof(TrieNode) * (256 + 1));
-	memset(t->stringtab, 0, sizeof(char) * 256);
-
-	/* Sentinel root node */
-	t->base[1].idx = 1;
-	t->base[1].mode = Node_Arc;
-	t->base[1].parent = 1;
+	sm_trie_clear(t);
 
 	return t;
+}
+
+void sm_trie_clear(Trie *trie)
+{
+	trie->tail = 0;
+
+	memset(trie->base, 0, sizeof(TrieNode) * (trie->baseSize + 1));
+	memset(trie->stringtab, 0, sizeof(char) * trie->stSize);
+
+	/* Sentinel root node */
+	trie->base[1].idx = 1;
+	trie->base[1].mode = Node_Arc;
+	trie->base[1].parent = 1;
 }
 
 void sm_trie_destroy(Trie *trie)

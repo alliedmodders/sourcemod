@@ -242,7 +242,7 @@ namespace SourceMod
 		 *
 		 * @param pTypeAccess	Optional TypeAccess buffer to initialize with the default values.
 		 * @param pHandleAccess	Optional HandleAccess buffer to initialize with the default values.
-		 * @return			True on success, false if version is unsupported.
+		 * @return				True on success, false if version is unsupported.
 		 */
 		virtual bool InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHandleAccess) =0;
 	};

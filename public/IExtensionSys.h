@@ -194,7 +194,7 @@ namespace SourceMod
 		 * @brief Loads a extension into the extension system.
 		 *
 		 * @param path		Path to extension file, relative to the extensions folder.
-		 * @param lifetime	Lifetime of the extension.
+		 * @param lifetime	Lifetime of the extension (currently ignored).
 		 * @param error		Error buffer.
 		 * @param err_max	Maximum error buffer length.
 		 * @return			New IExtension on success, NULL on failure.
