@@ -1249,6 +1249,8 @@ void CPluginManager::OnSourceModAllInitialized()
 	g_PluginIdent = g_ShareSys.CreateIdentType("PLUGIN");
 
 	g_RootMenu.AddRootConsoleCommand("plugins", "Manage Plugins", this);
+
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 void CPluginManager::OnSourceModShutdown()

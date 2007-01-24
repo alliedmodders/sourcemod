@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\public\smn_admin.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_filesystem.cpp"
 				>
 			</File>

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "CTextParsers.h"
+#include "ShareSys.h"
 
 CTextParsers g_TextParser;
 
@@ -27,6 +28,11 @@ CTextParsers::CTextParsers()
 	g_ws_chartable['\t'] = 1;
 	g_ws_chartable['\f'] = 1;
 	g_ws_chartable[' '] = 1;
+}
+
+void CTextParsers::OnSourceModAllInitialized()
+{
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 unsigned int CTextParsers::GetUTF8CharBytes(const char *stream)

@@ -244,6 +244,7 @@ void CExtensionManager::OnSourceModAllInitialized()
 	g_ExtType = g_ShareSys.CreateIdentType("EXTENSION");
 	g_PluginSys.AddPluginsListener(this);
 	g_RootMenu.AddRootConsoleCommand("exts", "Manage extensions", this);
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 void CExtensionManager::OnSourceModShutdown()

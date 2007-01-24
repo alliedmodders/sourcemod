@@ -3,8 +3,12 @@
 
 #include "sm_memtable.h"
 #include <sm_trie.h>
+#include <sh_list.h>
 #include <IAdminSystem.h>
 #include "sm_globals.h"
+#include <IForwardSys.h>
+
+using namespace SourceHook;
 
 #define GRP_MAGIC_SET		0xDEADFADE
 #define GRP_MAGIC_UNSET		0xFACEFACE
@@ -36,27 +40,29 @@ public:
 	~AdminCache();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
+	void OnSourceModShutdown();
 public: //IAdminSystem
 	/** Command cache stuff */
 	void AddCommandOverride(const char *cmd, OverrideType type, AdminFlag flag);
 	bool GetCommandOverride(const char *cmd, OverrideType type, AdminFlag *pFlag);
 	void UnsetCommandOverride(const char *cmd, OverrideType type);
-	void DumpCommandOverrideCache(OverrideType type);
 	/** Group cache stuff */
 	GroupId AddGroup(const char *group_name);
 	GroupId FindGroupByName(const char *group_name);
 	void SetGroupAddFlag(GroupId id, AdminFlag flag, bool enabled);
 	bool GetGroupAddFlag(GroupId id, AdminFlag flag);
-	unsigned int GetGroupAddFlags(GroupId Id, AdminFlag flags[], unsigned int total);
+	unsigned int GetGroupAddFlagBits(GroupId id, bool flags[], unsigned int total);
 	void SetGroupGenericImmunity(GroupId id, ImmunityType type, bool enabled);
 	bool GetGroupGenericImmunity(GroupId id, ImmunityType type);
 	void InvalidateGroup(GroupId id);
-	void InvalidateGroupCache();
 	void AddGroupImmunity(GroupId id, GroupId other_id);
 	unsigned int GetGroupImmunityCount(GroupId id);
 	GroupId GetGroupImmunity(GroupId id, unsigned int number);
 	void AddGroupCommandOverride(GroupId id, const char *name, OverrideType type, OverrideRule rule);
 	bool GetGroupCommandOverride(GroupId id, const char *name, OverrideType type, OverrideRule *pRule);
+	void DumpAdminCache(int cache_flags, bool rebuild);
+	void AddAdminListener(IAdminListener *pListener);
+	void RemoveAdminListener(IAdminListener *pListener);
 private:
 	void _AddCommandOverride(const char *cmd, AdminFlag flag);
 	void _AddCommandGroupOverride(const char *group, AdminFlag flag);
@@ -64,6 +70,8 @@ private:
 	bool _GetCommandGroupOverride(const char *group, AdminFlag *pFlag);
 	void _UnsetCommandOverride(const char *cmd);
 	void _UnsetCommandGroupOverride(const char *group);
+	void InvalidateGroupCache();
+	void DumpCommandOverrideCache(OverrideType type);
 public:
 	BaseStringTable *m_pStrings;
 	BaseMemTable *m_pMemory;
@@ -73,6 +81,8 @@ public:
 	int m_LastGroup;
 	int m_FreeGroupList;
 	Trie *m_pGroups;
+	List<IAdminListener *> m_hooks;
+	IForward *m_pCacheFwd;
 };
 
 extern AdminCache g_Admins;

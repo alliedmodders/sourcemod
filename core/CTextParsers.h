@@ -2,6 +2,7 @@
 #define _INCLUDE_SOURCEMOD_TEXTPARSERS_H_
 
 #include <ITextParsers.h>
+#include "sm_globals.h"
 
 using namespace SourceMod;
 
@@ -32,10 +33,14 @@ inline unsigned int _GetUTF8CharBytes(const char *stream)
  */
 typedef bool (*STREAMREADER)(void *, char *, size_t, unsigned int *);
 
-class CTextParsers : public ITextParsers
+class CTextParsers : 
+	public ITextParsers,
+	public SMGlobalClass
 {
 public:
 	CTextParsers();
+public: //SMGlobalClass
+	void OnSourceModAllInitialized();
 public:
 	bool ParseFile_INI(const char *file, 
 		ITextListener_INI *ini_listener,

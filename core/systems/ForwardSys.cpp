@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "ForwardSys.h"
 #include "PluginSys.h"
+#include "ShareSys.h"
 
 CForwardManager g_Forwards;
 
@@ -19,6 +20,7 @@ CForwardManager g_Forwards;
 void CForwardManager::OnSourceModAllInitialized()
 {
 	g_PluginSys.AddPluginsListener(this);
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 void CForwardManager::OnSourceModShutdown()

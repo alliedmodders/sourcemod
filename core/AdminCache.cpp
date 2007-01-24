@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "AdminCache.h"
 #include "ShareSys.h"
+#include "ForwardSys.h"
 
 AdminCache g_Admins;
 
@@ -13,6 +14,7 @@ AdminCache::AdminCache()
 	m_pMemory = m_pStrings->GetMemTable();
 	m_FreeGroupList = m_FirstGroup = m_LastGroup = INVALID_GROUP_ID;
 	m_pGroups = sm_trie_create();
+	m_pCacheFwd = NULL;
 }
 
 AdminCache::~AdminCache()
@@ -39,7 +41,14 @@ AdminCache::~AdminCache()
 
 void AdminCache::OnSourceModAllInitialized()
 {
+	m_pCacheFwd = g_Forwards.CreateForward("OnRebuildAdminCache", ET_Ignore, 1, NULL, Param_Cell);
 	g_ShareSys.AddInterface(NULL, this);
+}
+
+void AdminCache::OnSourceModShutdown()
+{
+	g_Forwards.ReleaseForward(m_pCacheFwd);
+	m_pCacheFwd = NULL;
 }
 
 void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, AdminFlag flag)
@@ -273,7 +282,7 @@ bool AdminCache::GetGroupAddFlag(GroupId id, AdminFlag flag)
 	return pGroup->addflags[flag];
 }
 
-unsigned int AdminCache::GetGroupAddFlags(GroupId id, AdminFlag flags[], unsigned int total)
+unsigned int AdminCache::GetGroupAddFlagBits(GroupId id, bool flags[], unsigned int total)
 {
 	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
 	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
@@ -281,19 +290,16 @@ unsigned int AdminCache::GetGroupAddFlags(GroupId id, AdminFlag flags[], unsigne
 		return 0;
 	}
 
-	unsigned int r = 0;
+	unsigned int i;
 
-	for (unsigned int i = Admin_None + 1;
-		 i < AdminFlags_TOTAL && r < total;
+	for (i = Admin_None;
+		 i < AdminFlags_TOTAL && i < total;
 		 i++)
 	{
-		if (pGroup->addflags[i])
-		{
-			flags[r++] = (AdminFlag)i;
-		}
+		flags[i] = pGroup->addflags[i];
 	}
 
-	return r;
+	return i;
 }
 
 void AdminCache::SetGroupGenericImmunity(GroupId id, ImmunityType type, bool enabled)
@@ -565,4 +571,47 @@ void AdminCache::InvalidateGroupCache()
 
 	/* Reset the memory table */
 	m_pMemory->Reset();
+}
+
+void AdminCache::AddAdminListener(IAdminListener *pListener)
+{
+	m_hooks.push_back(pListener);
+}
+
+void AdminCache::RemoveAdminListener(IAdminListener *pListener)
+{
+	m_hooks.remove(pListener);
+}
+
+void AdminCache::DumpAdminCache(int cache_flags, bool rebuild)
+{
+	if (cache_flags & ADMIN_CACHE_OVERRIDES)
+	{
+		DumpCommandOverrideCache(Override_Command);
+		DumpCommandOverrideCache(Override_CommandGroup);
+	}
+
+	if ((cache_flags & ADMIN_CACHE_ADMINS) ||
+		(cache_flags & ADMIN_CACHE_GROUPS))
+	{
+		/* Make sure the flag is set */
+		cache_flags |= ADMIN_CACHE_ADMINS;
+		/* :TODO: Dump admin cache */
+	}
+
+	if (cache_flags & ADMIN_CACHE_GROUPS)
+	{
+		InvalidateGroupCache();
+	}
+
+	if (rebuild)
+	{
+		List<IAdminListener *>::iterator iter;
+		IAdminListener *pListener;
+		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		{
+			pListener = (*iter);
+			pListener->OnRebuildAdminCache(cache_flags);
+		}
+	}
 }

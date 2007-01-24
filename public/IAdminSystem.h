@@ -62,13 +62,29 @@ namespace SourceMod
 
 	enum ImmunityType
 	{
-		Immunity_Default = 1,		/* Immune from everyone with no immunity */
+		Immunity_Default = 1,	/* Immune from everyone with no immunity */
 		Immunity_Global,		/* Immune from everyone (except root admins) */
 	};
 
 	typedef int		GroupId;
 
+	#define ADMIN_CACHE_OVERRIDES	(1<<0)
+	#define ADMIN_CACHE_ADMINS		(1<<1)
+	#define ADMIN_CACHE_GROUPS		((1<<2)|ADMIN_CACHE_ADMINS)
+
 	#define INVALID_GROUP_ID	-1
+
+	class IAdminListener
+	{
+	public:
+		/**
+		 * Called when part of the admin cache needs to be rebuilt.  
+		 * Groups should always be rebuilt before admins.
+		 *
+		 * @param cache_flags	Flags for which cache to dump.
+		 */
+		virtual void OnRebuildAdminCache(int cache_flags) =0;
+	};
 
 	/**
 	 * @brief This is the administration options cache.
@@ -114,13 +130,6 @@ namespace SourceMod
 		virtual void UnsetCommandOverride(const char *cmd, OverrideType type) =0;
 
 		/**
-		 * @brief Dumps the global command override cache (unset all).
-		 * 
-		 * @param type			Override type (specific command or group).
-		 */
-		virtual void DumpCommandOverrideCache(OverrideType type) =0;
-
-		/**
 		 * @brief Adds a new group.  Name must be unique.
 		 *
 		 * @param group_name	String containing the group name.
@@ -156,15 +165,15 @@ namespace SourceMod
 		virtual bool GetGroupAddFlag(GroupId id, AdminFlag flag) =0;
 
 		/**
-		 * @brief Returns the flag set that is added to a user from their group.
+		 * @brief Returns an array of flag bits that are added to a user from their group.
 		 * Note: These are called "add flags" because they add to a user's flags.
 		 *
 		 * @param id			GroupId of the group.
-		 * @param flags			Array to store flags in.
+		 * @param flags			Array to store flags bits in.
 		 * @param total			Total number of flags that can be stored in the array.
 		 * @return				Number of flags that were written to the array.
 		 */
-		virtual unsigned int GetGroupAddFlags(GroupId id, AdminFlag flags[], unsigned int total) =0;
+		virtual unsigned int GetGroupAddFlagBits(GroupId id, bool flags[], unsigned int total) =0;
 
 		/**
 		 * @brief Toggles a generic immunity type.
@@ -244,10 +253,27 @@ namespace SourceMod
 		virtual void InvalidateGroup(GroupId id) =0;
 
 		/**
-		 * @brief Invalidates the entire group cache.  WARNING: This will trigger 
-		 * an admin cache dump as well!
+		 * @brief Tells the admin system to dump a portion of the cache.  
+		 * This calls into plugin forwards to rebuild the cache.
+		 *
+		 * @param cache_flags	Flags for which cache to dump.  Specifying groups also dumps admins.
+		 * @param rebuild		If true, the rebuild forwards/events will fire.
 		 */
-		virtual void InvalidateGroupCache() =0;
+		virtual void DumpAdminCache(int cache_flags, bool rebuild) =0;
+
+		/**
+		 * @brief Adds an admin interface listener.
+		 *
+		 * @param pListener		Pointer to an IAdminListener to add.
+		 */
+		virtual void AddAdminListener(IAdminListener *pListener) =0;
+
+		/**
+		 * @brief Removes an admin interface listener.
+		 *
+		 * @param pListener		Pointer to an IAdminListener to remove.
+		 */
+		virtual void RemoveAdminListener(IAdminListener *pListener) =0;
 	};
 };
 
