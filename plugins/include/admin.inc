@@ -19,6 +19,7 @@ enum AdminFlag
 	Admin_Password,			/* Set a server password */
 	Admin_RCON,				/* Use RCON */
 	Admin_Cheats,			/* Change sv_cheats and use its commands */
+	Admin_Root,				/* Root access */
 	/* --- */
 	AdminFlags_TOTAL,
 };

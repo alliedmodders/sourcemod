@@ -19,7 +19,7 @@ class CFunction : public IPluginFunction
 {
 	friend class SourcePawnEngine;
 public:
-	CFunction(funcid_t funcid, IPluginContext *pContext);
+	CFunction(uint32_t code_addr, IPluginContext *pContext);
 public:
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
@@ -34,7 +34,7 @@ public:
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
 	virtual IPluginContext *GetParentContext();
 public:
-	void Set(funcid_t funcid, IPluginContext *plugin);
+	void Set(uint32_t code_addr, IPluginContext *plugin);
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	inline int SetError(int err)
@@ -43,7 +43,7 @@ private:
 		return err;
 	}
 private:
-	funcid_t m_funcid;
+	uint32_t m_codeaddr;
 	IPluginContext *m_pContext;
 	cell_t m_params[SP_MAX_EXEC_PARAMS];
 	ParamInfo m_info[SP_MAX_EXEC_PARAMS];

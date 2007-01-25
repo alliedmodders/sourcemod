@@ -5,9 +5,9 @@
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(funcid_t funcid, IPluginContext *plugin)
+void CFunction::Set(uint32_t code_addr, IPluginContext *plugin)
 {
-	m_funcid = funcid;
+	m_codeaddr = code_addr;
 	m_pContext = plugin;
 	m_curparam = 0;
 	m_errorstate = SP_ERROR_NONE;
@@ -20,7 +20,7 @@ int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_
 		m_pContext->PushCell(params[num_params]);
 	}
 
-	return m_pContext->Execute(m_funcid, result);
+	return m_pContext->Execute(m_codeaddr, result);
 }
 
 IPluginContext *CFunction::GetParentContext()
@@ -28,8 +28,8 @@ IPluginContext *CFunction::GetParentContext()
 	return m_pContext;
 }
 
-CFunction::CFunction(funcid_t funcid, IPluginContext *plugin) : 
-	m_funcid(funcid), m_pContext(plugin), m_curparam(0), 
+CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin) : 
+	m_codeaddr(code_addr), m_pContext(plugin), m_curparam(0), 
 	m_errorstate(SP_ERROR_NONE)
 {
 }

@@ -47,7 +47,7 @@ namespace SourcePawn
 		virtual int BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite);
 		virtual int BindNative(const sp_nativeinfo_t *native);
 		virtual int BindNativeToAny(SPVM_NATIVE_FUNC native);
-		virtual int Execute(funcid_t funcid, cell_t *result);
+		virtual int Execute(uint32_t code_addr, cell_t *result);
 		virtual void ThrowNativeErrorEx(int error, const char *msg, ...);
 		virtual cell_t ThrowNativeError(const char *msg, ...);
 		virtual IPluginFunction *GetFunctionByName(const char *public_name);

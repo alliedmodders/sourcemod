@@ -461,12 +461,11 @@ namespace SourcePawn
 		/**
 		 * @brief Executes a function ID located in this context.
 		 *
-		 * @param funcid		Function id to execute.
+		 * @param code_addr		Address to execute at.
 		 * @param result		Pointer to store the return value (required).
 		 * @return				Error code (if any) from the VM.
 		 */
-		virtual int Execute(uint32_t funcid, cell_t *result) =0;
-
+		virtual int Execute(uint32_t code_addr, cell_t *result) =0;
 
 		/**
 		 * @brief Throws a error and halts any current execution.

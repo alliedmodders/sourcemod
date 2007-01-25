@@ -128,7 +128,7 @@ IPluginDebugInfo *BaseContext::GetDebugInfo()
 	return this;
 }
 
-int BaseContext::Execute(funcid_t funcid, cell_t *result)
+int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 {
 	if (!m_Runnable)
 	{
@@ -138,24 +138,7 @@ int BaseContext::Execute(funcid_t funcid, cell_t *result)
 	IVirtualMachine *vm = (IVirtualMachine *)ctx->vmbase;
 
 	uint32_t pushcount = ctx->pushcount;
-	uint32_t code_addr;
 	int err;
-
-	if (funcid & 1)
-	{
-		sp_public_t *pubfunc;
-		if ((err=GetPublicByIndex((funcid>>1), &pubfunc)) != SP_ERROR_NONE)
-		{
-			return err;
-		}
-		code_addr = pubfunc->code_offs;
-	} else {
-#if 0
-		code_addr = funcid >> 1;
-#endif
-		assert(false);
-		return SP_ERROR_INVALID_ADDRESS;
-	}
 
 	PushCell(pushcount++);
 	ctx->pushcount = 0;
@@ -331,25 +314,6 @@ int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 
 	high = ctx->plugin->info.natives_num - 1;
 
-#if 0
-	while (low <= high)
-	{
-		mid = (low + high) / 2;
-		diff = strcmp(ctx->natives[mid].name, name);
-		if (diff == 0)
-		{
-			if (index)
-			{
-				*index = mid;
-			}
-			return SP_ERROR_NONE;
-		} else if (diff < 0) {
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-	}
-#else
 	for (uint32_t i=0; i<ctx->plugin->info.natives_num; i++)
 	{
 		if (strcmp(ctx->natives[i].name, name) == 0)
@@ -361,7 +325,6 @@ int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 			return SP_ERROR_NONE;
 		}
 	}
-#endif
 
 	return SP_ERROR_NOT_FOUND;
 }
@@ -863,7 +826,6 @@ int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
 IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 {
 	CFunction *pFunc = NULL;
-	funcid_t save = func_id;
 
 	if (func_id & 1)
 	{
@@ -875,10 +837,11 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		pFunc = m_pub_funcs[func_id];
 		if (!pFunc)
 		{
-			m_pub_funcs[func_id] = new CFunction(save, this);
+			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, this);
 			pFunc = m_pub_funcs[func_id];
 		}
 	} else {
+		/* :TODO: currently not used */
 #if 0
 		func_id >>= 1;
 		unsigned int index;
@@ -892,7 +855,7 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 			m_priv_funcs[func_id] = new CFunction(save, this);
 			pFunc = m_priv_funcs[func_id];
 		}
-#endif
+#endif 0
 		assert(false);
 	}
 
@@ -915,7 +878,7 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			m_pub_funcs[index] = new CFunction(pub->funcid, this);
+			m_pub_funcs[index] = new CFunction(pub->code_offs, this);
 		}
 		pFunc = m_pub_funcs[index];
 	}

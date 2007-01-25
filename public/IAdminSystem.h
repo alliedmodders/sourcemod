@@ -44,6 +44,7 @@ namespace SourceMod
 		Admin_Password,			/* Set a server password */
 		Admin_RCON,				/* Use RCON */
 		Admin_Cheats,			/* Change sv_cheats and use its commands */
+		Admin_Root,				/* All access by default */
 		/* --- */
 		AdminFlags_TOTAL,
 	};
