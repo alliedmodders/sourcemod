@@ -3,6 +3,9 @@
 #include "HandleSys.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
+#include "CLogger.h"
+#include "PluginSys.h"
+#include "sourcemm_api.h"
 
 HandleType_t g_FileType;
 HandleType_t g_DirType;
@@ -440,6 +443,47 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 	return g_SourceMod.BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
 }
 
+static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+
+	if (len >= sizeof(buffer)-2)
+	{
+		buffer[1022] = '\n';
+		buffer[1023] = '\0';
+	} else {
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+	}
+
+	engine->LogPrint(buffer);
+
+	return 1;
+}
+
+static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+
+	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
+
+	return 1;
+}
+
+static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+
+	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
+
+	return 1;
+}
+
 static FileNatives s_FileNatives;
 
 REGISTER_NATIVES(filesystem)
@@ -459,5 +503,8 @@ REGISTER_NATIVES(filesystem)
 	{"RemoveDir",				sm_RemoveDir},
 	{"WriteFileLine",			sm_WriteFileLine},
 	{"BuildPath",				sm_BuildPath},
+	{"LogToGame",			sm_LogToGame},
+	{"LogMessage",			sm_LogMessage},
+	{"LogError",				sm_LogError},
 	{NULL,						NULL},
 };

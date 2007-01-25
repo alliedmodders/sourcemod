@@ -226,3 +226,30 @@ native PrintToServer(const String:format[], {Handle,Float,String,_}:...);
  * @error			If the client is not connected an error will be thrown.
  */
 native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Logs a generic message to the HL2 logs.
+ *
+ * @param format	String format.
+ * @param ...		Format arguments.
+ * @noreturn
+ */
+native LogToGame(const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Logs a plugin message to the SourceMod logs.
+ *
+ * @param format	String format.
+ * @param ...		Format arguments.
+ * @noreturn
+ */
+native LogMessage(const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Logs a plugin error message to the SourceMod logs.
+ *
+ * @param format	String format.
+ * @param ...		Format arguments.
+ * @noreturn
+ */
+native LogError(const String:format[], {Handle,Float,String,_}:...);

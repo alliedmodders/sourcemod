@@ -69,6 +69,22 @@ namespace SourceMod
 		 * @param ...		Message format parameters.
 		 */
 		virtual void LogError(IExtension *pExt, const char *format, ...) =0;
+
+		/**
+		 * @brief Formats a string from a native.
+		 *
+		 * @param buffer		Buffer to store message.
+		 * @param maxlength		Maximum length of buffer (inculding null terminator).
+		 * @param pContext		Pointer to the plugin's context.
+		 * @param params		Parameter array that was passed to the native.
+		 * @param param			Parameter index where format string and variable arguments begin.
+		 * @return				Number of bytes written, not including the null terminator.
+		 */
+		virtual size_t FormatString(char *buffer, 
+									size_t maxlength, 
+									IPluginContext *pContext,
+									const cell_t *params,
+									unsigned int param) =0;
 	};
 };
 

@@ -7,6 +7,10 @@
 
 CLogger g_Logger;
 
+/**
+ * :TODO: This should be creating the log folder if it doesn't exist
+ */
+
 void CLogger::OnSourceModStartup(bool late)
 {
 	//:TODO: read these options from a file, dont hardcode them
@@ -34,7 +38,7 @@ void CLogger::_NewMapFile()
 
 	while (true)
 	{
-		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%02d%02d%03d.log", curtime->tm_mon + 1, curtime->tm_mday, i);
+		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d%03d.log", curtime->tm_mon + 1, curtime->tm_mday, i);
 		FILE *fp = fopen(_filename, "r");
 		if (!fp)
 		{
@@ -54,7 +58,7 @@ void CLogger::_NewMapFile()
 	} else {
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-		fprintf(fp, "L %s: SourceMod log file started (file \"L%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SOURCEMOD_VERSION);
+		fprintf(fp, "L %s: SourceMod log file started (file \"logs_%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SOURCEMOD_VERSION);
 		fclose(fp);
 	}
 }
@@ -119,7 +123,7 @@ void CLogger::InitLogger(LoggingMode mode, bool startlogging)
 		}
 	case LoggingMode_Daily:
 		{
-			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
+			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
 			m_NrmFileName.assign(_filename);
 			m_DailyPrintHdr = true;
 			break;
@@ -183,7 +187,7 @@ void CLogger::LogMessage(const char *vafmt, ...)
 		if (m_CurDay != curtime->tm_mday)
 		{
 			char _filename[256];
-			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
+			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
 			m_NrmFileName.assign(_filename);
 			m_CurDay = curtime->tm_mday;
 			m_DailyPrintHdr = true;
@@ -196,7 +200,7 @@ void CLogger::LogMessage(const char *vafmt, ...)
 		if (m_DailyPrintHdr)
 		{
 			m_DailyPrintHdr = false;
-			fprintf(fp, "L %s: SourceMod log file session started (file \"L%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, SOURCEMOD_VERSION);
+			fprintf(fp, "L %s: SourceMod log file session started (file \"logs_%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, SOURCEMOD_VERSION);
 		}
 		fprintf(fp, "L %s: %s\n", date, msg);
 		fclose(fp);

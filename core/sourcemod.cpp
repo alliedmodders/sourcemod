@@ -9,6 +9,7 @@
 #include "CLogger.h"
 #include "ExtensionSys.h"
 #include "AdminCache.h"
+#include "sm_stringutil.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -303,6 +304,17 @@ void SourceModBase::LogError(IExtension *pExt, const char *format, ...)
 	} else {
 		g_Logger.LogError("%s", buffer);
 	}
+}
+
+size_t SourceModBase::FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param)
+{
+	char *fmt;
+
+	pContext->LocalToString(params[param], &fmt);
+
+	int lparam = ++param;
+
+	return atcprintf(buffer, maxlength, fmt, pContext, params, &lparam);
 }
 
 const char *SourceModBase::GetSourceModPath()
