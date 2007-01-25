@@ -1,4 +1,5 @@
 #include <sp_vm_api.h>
+#include <malloc.h>
 #include "jit_x86.h"
 #include "dll_exports.h"
 
@@ -33,3 +34,30 @@ EXPORTFUNC SourcePawn::IVirtualMachine *GetExport(unsigned int exportnum)
 
 	return &jit;
 }
+
+#if defined __linux__
+extern "C" void __cxa_pure_virtual(void)
+{
+}
+
+void *operator new(size_t size)
+{
+	return malloc(size);
+}
+
+void *operator new[](size_t size) 
+{
+	return malloc(size);
+}
+
+void operator delete(void *ptr) 
+{
+	free(ptr);
+}
+
+void operator delete[](void * ptr)
+{
+	free(ptr);
+}
+#endif
+

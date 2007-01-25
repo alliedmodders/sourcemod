@@ -429,9 +429,9 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
 	if (!data->debug)
 	{
-		IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
 	} else {
-		IA32_Write_Jump32_Abs(jit, call, NativeCallback_Debug);
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug);
 	}
 
 	/* Test for error */
@@ -656,9 +656,9 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
 	if (!data->debug)
 	{
-		IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
 	} else {
-		IA32_Write_Jump32_Abs(jit, call, NativeCallback_Debug);
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug);
 	}
 
 	/* Test for error */
@@ -714,7 +714,7 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg)
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyOrAllocateTracker);
+	IA32_Write_Jump32_Abs(jit, call, (void *)JIT_VerifyOrAllocateTracker);
 
 	/* Check for errors */
 	//cmp eax, 0

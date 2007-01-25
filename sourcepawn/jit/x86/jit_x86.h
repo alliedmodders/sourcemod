@@ -3,7 +3,7 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
-#include "..\jit_helpers.h"
+#include "../jit_helpers.h"
 
 using namespace SourcePawn;
 
@@ -45,7 +45,11 @@ public:
 	};
 public:
 	sp_plugin_t *plugin;			/* plugin handle */
+	bool debug;						/* whether to compile debug mode */
+	int inline_level;				/* inline optimization level */
 	jitcode_t rebase;				/* relocation map */
+	int error_set;					/* error code to halt process */
+	unsigned int func_idx;			/* current function index */
 	jitoffs_t jit_return;			/* point in main call to return to */
 	jitoffs_t jit_verify_addr_eax;
 	jitoffs_t jit_verify_addr_edx;
@@ -63,10 +67,6 @@ public:
 	jitoffs_t jit_extern_error;		/* returning generic error */
 	jitoffs_t jit_sysreq_c;			/* old version! */
 	uint32_t codesize;				/* total codesize */
-	unsigned int func_idx;			/* current function index */
-	int inline_level;				/* inline optimization level */
-	int error_set;					/* error code to halt process */
-	bool debug;						/* whether to compile debug mode */
 };
 
 class JITX86 : public IVirtualMachine

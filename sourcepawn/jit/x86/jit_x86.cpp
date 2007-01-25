@@ -1622,9 +1622,9 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
 	if (!data->debug)
 	{
-		IA32_Write_Jump32_Abs(jit, call, NativeCallback);
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
 	} else {
-		IA32_Write_Jump32_Abs(jit, call, NativeCallback_Debug);
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug);
 	}
 	
 	/* check for errors */
@@ -1676,7 +1676,7 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyOrAllocateTracker);
+	IA32_Write_Jump32_Abs(jit, call, (void *)JIT_VerifyOrAllocateTracker);
 
 	/* Check for errors */
 	//cmp eax, 0
@@ -1722,7 +1722,7 @@ inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, JIT_VerifyLowBoundTracker);
+	IA32_Write_Jump32_Abs(jit, call, (void *)JIT_VerifyLowBoundTracker);
 
 	/* Check for errors */
 	//cmp eax, 0
@@ -2198,7 +2198,7 @@ void JITX86::FreeContext(sp_context_t *ctx)
 	delete [] ctx->symbols;
 	engine->BaseFree(ctx->vm[JITVARS_REBASE]);
 	free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
-	delete ctx->vm[JITVARS_TRACKER];	
+	delete (tracker_t *)ctx->vm[JITVARS_TRACKER];	
 	delete ctx;
 }
 

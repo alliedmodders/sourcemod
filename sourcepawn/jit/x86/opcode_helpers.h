@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_SOURCEPAWN_JIT_X86_OPCODE_INFO_H_
 #define _INCLUDE_SOURCEPAWN_JIT_X86_OPCODE_INFO_H_
 
-#include "..\jit_helpers.h"
+#include "../jit_helpers.h"
 
 /**
  * This outputs the execution function for a plugin.
