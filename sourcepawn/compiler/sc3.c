@@ -359,7 +359,7 @@ SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
 				{
 					usage = uPUBLIC;
 				} else if (v->name[5] = '!') {
-					usage = uFORWARD;
+					usage = uSTOCK;
 				}
 
 				index = atoi(&v->name[6]);
@@ -379,7 +379,7 @@ SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
 							}
 						}
 					}
-				} else if (usage == uFORWARD) {
+				} else if (usage == uSTOCK) {
 					for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
 						if (sym->ident==iFUNCTN && (sym->vclass == sGLOBAL))
 						{

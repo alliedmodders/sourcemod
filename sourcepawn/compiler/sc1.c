@@ -133,7 +133,7 @@ static void doswitch(void);
 static void dogoto(void);
 static void dolabel(void);
 static void doreturn(void);
-static void dofuncenum(void);
+static void dofuncenum(int listmode);
 static void dobreak(void);
 static void docont(void);
 static void dosleep(void);
@@ -1418,7 +1418,10 @@ static void parse(void)
       decl_enum(sGLOBAL);
       break;
     case tFUNCENUM:
-      dofuncenum();
+      dofuncenum(TRUE);
+      break;
+    case tFUNCTAG:
+      dofuncenum(FALSE);
       break;
     case tSTRUCT:
       declstruct();
@@ -2970,7 +2973,7 @@ static void declstruct(void)
 /**
  * dofuncenum - declare function enumerations
  */
-static void dofuncenum(void)
+static void dofuncenum(int listmode)
 {
 	cell val;
 	char *str,*ptr;
@@ -3005,11 +3008,14 @@ static void dofuncenum(void)
 
 	fenum = funcenums_add(tagname);
 
-	needtoken('{');
+	if (listmode)
+	{
+		needtoken('{');
+	}
 	do
 	{
 		functag_t func;
-		if (matchtoken('}'))
+		if (listmode && matchtoken('}'))
 		{
 			/* Quick exit */
 			lexpush();
@@ -3018,13 +3024,13 @@ static void dofuncenum(void)
 		memset(&func, 0, sizeof(func));
 		func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
 		l = lex(&val, &str);
-		if (l == tFORWARD)
+		if (l == tSTOCK)
 		{
-			func.type = uFORWARD;
+			func.type = uSTOCK;
 		} else if (l == tPUBLIC) {
 			func.type = uPUBLIC;
 		} else {
-			error(1, "-forward,public-", str);
+			error(1, "-stock,public-", str);
 		}
 		needtoken('(');
 		do 
@@ -3145,8 +3151,15 @@ static void dofuncenum(void)
 			}
 		}
 		functags_add(fenum, &func);
+		if (!listmode)
+		{
+			break;
+		}
 	} while (matchtoken(','));
-	needtoken('}');
+	if (listmode)
+	{
+		needtoken('}');
+	}
 	matchtoken(';'); /* eat an optional semicolon.  nom nom nom */
 	errorset(sRESET, 0);
 }
@@ -4130,7 +4143,7 @@ static int declargs(symbol *sym,int chkshadow)
   ident=iVARIABLE;
   numtags=0;
   fconst=FALSE;
-  fpublic= (sym->usage & uPUBLIC)!=0;
+  fpublic= (sym->usage & (uPUBLIC|uSTOCK))!=0;
   /* the '(' parantheses has already been parsed */
   if (!matchtoken(')')){
     do {                                /* there are arguments; process them */
@@ -4188,7 +4201,8 @@ static int declargs(symbol *sym,int chkshadow)
          * So the offset of each argument is "(argcnt+3) * sizeof(cell)".
          */
         doarg(name,ident,(argcnt+3)*sizeof(cell),tags,numtags,fpublic,fconst,chkshadow,&arg);
-        if (fpublic && arg.hasdefault)
+        /* :TODO: fix this so stocks that are func pointers can't have default arguments? */
+        if ((sym->usage & uPUBLIC) && arg.hasdefault)
           error(59,name);       /* arguments of a public function may not have a default value */
         if ((sym->usage & uPROTOTYPED)==0) {
           /* redimension the argument list, add the entry */

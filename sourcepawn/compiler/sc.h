@@ -288,7 +288,7 @@ typedef struct s_stringpair {
  */
 #define tFIRST   256    /* value of first multi-character operator */
 #define tMIDDLE  280    /* value of last multi-character operator */
-#define tLAST    332    /* value of last multi-character match-able token */
+#define tLAST    333    /* value of last multi-character match-able token */
 /* multi-character operators */
 #define taMULT   256    /* *= */
 #define taDIV    257    /* /= */
@@ -334,41 +334,42 @@ typedef struct s_stringpair {
 #define tFOR     296
 #define tFORWARD 297
 #define tFUNCENUM 298
-#define tGOTO    299
-#define tIF      300
-#define tNATIVE  301
-#define tNEW     302
-#define tDECL    303
-#define tOPERATOR 304
-#define tPUBLIC  305
-#define tRETURN  306
-#define tSIZEOF  307
-#define tSLEEP   308
-#define tSTATE   309
-#define tSTATIC  310
-#define tSTOCK   311
-#define tSTRUCT  312
-#define tSWITCH  313
-#define tTAGOF   314
-#define tTHEN    315
-#define tWHILE   316
+#define tFUNCTAG 299
+#define tGOTO    300
+#define tIF      301
+#define tNATIVE  302
+#define tNEW     303
+#define tDECL    304
+#define tOPERATOR 305
+#define tPUBLIC  306
+#define tRETURN  307
+#define tSIZEOF  308
+#define tSLEEP   309
+#define tSTATE   310
+#define tSTATIC  311
+#define tSTOCK   312
+#define tSTRUCT  313
+#define tSWITCH  314
+#define tTAGOF   315
+#define tTHEN    316
+#define tWHILE   317
 /* compiler directives */
-#define tpASSERT 317    /* #assert */
-#define tpDEFINE 318
-#define tpELSE   319    /* #else */
-#define tpELSEIF 320    /* #elseif */
-#define tpEMIT   321
-#define tpENDIF  322
-#define tpENDINPUT 323
-#define tpENDSCRPT 324
-#define tpERROR  325
-#define tpFILE   326
-#define tpIF     327    /* #if */
-#define tINCLUDE 328
-#define tpLINE   329
-#define tpPRAGMA 330
-#define tpTRYINCLUDE 331
-#define tpUNDEF  332
+#define tpASSERT 318    /* #assert */
+#define tpDEFINE 319
+#define tpELSE   320    /* #else */
+#define tpELSEIF 321    /* #elseif */
+#define tpEMIT   322
+#define tpENDIF  323
+#define tpENDINPUT 324
+#define tpENDSCRPT 325
+#define tpERROR  326
+#define tpFILE   327
+#define tpIF     328    /* #if */
+#define tINCLUDE 329
+#define tpLINE   330
+#define tpPRAGMA 331
+#define tpTRYINCLUDE 332
+#define tpUNDEF  333
 /* semicolon is a special case, because it can be optional */
 #define tTERM    333    /* semicolon or newline */
 #define tENDEXPR 334    /* forced end of expression */
