@@ -19,7 +19,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc5.c 3579 2006-06-06 13:35:29Z thiadmer $
+ *  Version: $Id$
  */
 #include <assert.h>
 #if defined	__WIN32__ || defined _WIN32 || defined __MSDOS__

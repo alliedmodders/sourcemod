@@ -21,7 +21,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amxdbg.h 3612 2006-07-22 09:59:46Z thiadmer $
+ *  Version: $Id$
  */
 
 #ifndef AMXDBG_H_INCLUDED

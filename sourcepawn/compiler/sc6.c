@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc6.c 3633 2006-08-11 16:20:18Z thiadmer $
+ *  Version: $Id$
  */
 #include <assert.h>
 #include <stdio.h>

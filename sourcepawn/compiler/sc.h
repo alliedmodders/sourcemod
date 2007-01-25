@@ -25,7 +25,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc.h 3636 2006-08-14 15:42:05Z thiadmer $
+ *  Version: $Id$
  */
 #ifndef SC_H_INCLUDED
 #define SC_H_INCLUDED

@@ -22,7 +22,7 @@
  *
  *  3. This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: scmemfil.c 3579 2006-06-06 13:35:29Z thiadmer $
+ *  Version: $Id$
  */
 
 #include <assert.h>

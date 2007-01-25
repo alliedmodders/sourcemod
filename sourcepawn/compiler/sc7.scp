@@ -19,7 +19,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: sc7.sch 3577 2006-06-02 16:22:52Z thiadmer $
+ *  Version: $Id$
  */
 
 SC_FUNC int strexpand(char *dest, unsigned char *source, int maxlen, unsigned char pairtable[128][2]);

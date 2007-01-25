@@ -18,7 +18,7 @@
  *      misrepresented as being the original software.
  *  3.  This notice may not be removed or altered from any source distribution.
  *
- *  Version: $Id: amx.h 3633 2006-08-11 16:20:18Z thiadmer $
+ *  Version: $Id$
  */
 
 #ifndef AMX_H_INCLUDED
