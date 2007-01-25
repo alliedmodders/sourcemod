@@ -3024,13 +3024,25 @@ static void dofuncenum(int listmode)
 		memset(&func, 0, sizeof(func));
 		func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
 		l = lex(&val, &str);
-		if (l == tSTOCK)
+		/* :TODO:
+		 * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
+		 * because the address isn't known until the final reparse.  Unfortunately, you can write code
+		 * before the address is known, because Pawn's compiler isn't truly multipass.
+		 *
+		 * When you call a function, there's no problem, because it does not write the address.
+		 * The assembly looks like this:
+		 *   call MyFunction
+		 * Then, only at assembly time (once all passes are done), does it know the address.
+		 * I do not see any solution to this because there is no way I know to inject the function name
+		 * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
+		 */
+		/*if (l == tSTOCK)
 		{
 			func.type = uSTOCK;
-		} else if (l == tPUBLIC) {
+		} else */if (l == tPUBLIC) {
 			func.type = uPUBLIC;
 		} else {
-			error(1, "-stock,public-", str);
+			error(1, "-public-", str);
 		}
 		needtoken('(');
 		do 

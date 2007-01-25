@@ -2028,6 +2028,7 @@ restart:
         }
         lval1->tag=pc_addfunctag(faketag);
         oldsym->usage |= uREAD;
+		sym->usage |= uREAD;
       } else {
         error(76);                /* invalid function call, or syntax error */
       } /* if */
