@@ -2,6 +2,7 @@
 #define _INCLUDE_SOURCEMOD_MAIN_HELPER_INTERFACE_H_
 
 #include <IShareSys.h>
+#include <sp_vm_api.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
 #define SMINTERFACE_SOURCEMOD_VERSION	1
@@ -82,7 +83,7 @@ namespace SourceMod
 		 */
 		virtual size_t FormatString(char *buffer, 
 									size_t maxlength, 
-									IPluginContext *pContext,
+									SourcePawn::IPluginContext *pContext,
 									const cell_t *params,
 									unsigned int param) =0;
 	};
