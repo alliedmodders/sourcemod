@@ -1487,7 +1487,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 					g_RootMenu.ConsolePrint("  Description: %s", info->description);
 				}	
 				g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "yes" : "no");
-				g_RootMenu.ConsolePrint("  Paused: %s", pl->GetStatus() == Plugin_Running ? "yes" : "no");
+				g_RootMenu.ConsolePrint("  Paused: %s", pl->GetStatus() == Plugin_Running ? "no" : "yes");
 			} else {
 				g_RootMenu.ConsolePrint("  Load error: %s", pl->m_errormsg);
 				g_RootMenu.ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 

@@ -48,6 +48,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 {
 	g_BaseDir.assign(g_SMAPI->GetBaseDir());
 	g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/addons/sourcemod", g_BaseDir.c_str());
+	g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "addons/sourcemod");
 
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];
@@ -229,6 +230,8 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 		base = GetModPath();
 	} else if (type == Path_SM) {
 		base = GetSourceModPath();
+	} else if (type == Path_SM_Rel) {
+		base = m_SMRelDir;
 	}
 
 	if (base)

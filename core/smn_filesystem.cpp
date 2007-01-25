@@ -428,6 +428,18 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
+{
+	char path[PLATFORM_MAX_PATH], *fmt, *buffer;
+	int arg = 4;
+	pContext->LocalToString(params[2], &buffer);
+	pContext->LocalToString(params[4], &fmt);
+
+	atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
+
+	return g_SourceMod.BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
+}
+
 static FileNatives s_FileNatives;
 
 REGISTER_NATIVES(filesystem)
@@ -446,5 +458,6 @@ REGISTER_NATIVES(filesystem)
 	{"FileSize",				sm_FileSize},
 	{"RemoveDir",				sm_RemoveDir},
 	{"WriteFileLine",			sm_WriteFileLine},
+	{"BuildPath",				sm_BuildPath},
 	{NULL,						NULL},
 };

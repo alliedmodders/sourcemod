@@ -56,6 +56,7 @@ private:
 	void DoGlobalPluginLoads();
 private:
 	char m_SMBaseDir[PLATFORM_MAX_PATH+1];
+	char m_SMRelDir[PLATFORM_MAX_PATH+1];
 	bool m_IsMapLoading;
 	bool m_ExecPluginReload;
 };

@@ -13,6 +13,7 @@ namespace SourceMod
 		Path_None = 0,
 		Path_Game,
 		Path_SM,
+		Path_SM_Rel,
 	};
 
 	class ISourceMod : public SMInterface

@@ -144,7 +144,7 @@ native bool:GetAdmGroupAddFlag(GroupId:id, AdminFlag:flag);
  * @param total			Total number of flags that can be stored in the array (AdminFlags_TOTAL, usually).
  * @return				Number of flags that were written to the array.
  */
-native GetAdmGroupAddFlagBits(GroupId:id, bool flags[], total);
+native GetAdmGroupAddFlagBits(GroupId:id, bool:flags[], total);
 
 /**
  * Toggles a generic immunity type.

@@ -21,6 +21,7 @@ struct Plugin
 #include <handles>
 #include <string>
 #include <admin>
+#include <files>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -41,7 +42,7 @@ public Plugin:myinfo;
  *
  * @noreturn
  */
-forward OnPluginInit(Handle:myself);
+forward OnPluginStart(Handle:myself);
  
 /**
  *   Called before OnPluginInit, in case the plugin wants to check for load failure.
@@ -65,7 +66,7 @@ forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
  *
  * @noreturn
  */
-forward OnPluginUnload();
+forward OnPluginEnd();
 
 /**
  * Called when the plugin's pause status is changing.

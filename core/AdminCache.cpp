@@ -608,10 +608,13 @@ void AdminCache::DumpAdminCache(int cache_flags, bool rebuild)
 	{
 		List<IAdminListener *>::iterator iter;
 		IAdminListener *pListener;
+		cell_t result;
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnRebuildAdminCache(cache_flags);
 		}
+		m_pCacheFwd->PushCell(cache_flags);
+		m_pCacheFwd->Execute(&result);
 	}
 }

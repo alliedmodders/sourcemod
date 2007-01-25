@@ -228,7 +228,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\public\smn_admin.cpp"
+				RelativePath="..\smn_admin.cpp"
 				>
 			</File>
 			<File
