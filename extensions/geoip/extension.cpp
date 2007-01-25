@@ -94,3 +94,4 @@ const sp_nativeinfo_t geoip_natives[] =
 	{"GeoipCountry",		sm_Geoip_Country},
 	{NULL,					NULL},
 };
+

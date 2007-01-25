@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <malloc.h>
 #include "smsdk_ext.h"
 
 IShareSys *g_pShareSys = NULL;
 IExtension *myself = NULL;
 IHandleSys *g_pHandleSys = NULL;
 ISourceMod *g_pSM = NULL;
+IForwardManager *g_pForwards = NULL;
 
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
 {
@@ -40,6 +42,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 
 	SM_GET_IFACE(HANDLESYSTEM, g_pHandleSys);
 	SM_GET_IFACE(SOURCEMOD, g_pSM);
+	SM_GET_IFACE(FORWARDMANAGER, g_pForwards);
 
 	if (SDK_OnLoad(error, err_max, late))
 	{
@@ -277,3 +280,31 @@ bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t err
 }
 
 #endif
+
+/* Overload a few things to prevent libstdc++ linking */
+#if defined __linux__
+extern "C" void __cxa_pure_virtual(void)
+{
+}
+
+void *operator new(size_t size)
+{
+	return malloc(size);
+}
+
+void *operator new[](size_t size) 
+{
+	return malloc(size);
+}
+
+void operator delete(void *ptr) 
+{
+	free(ptr);
+}
+
+void operator delete[](void * ptr)
+{
+	free(ptr);
+}
+#endif
+

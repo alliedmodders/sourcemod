@@ -7,6 +7,7 @@
 #include <sp_vm_api.h>
 #include <sm_platform.h>
 #include <ISourceMod.h>
+#include <IForwardSys.h>
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -123,6 +124,7 @@ extern IShareSys *g_pShareSys;
 extern IExtension *myself;
 extern IHandleSys *g_pHandleSys;
 extern ISourceMod *g_pSM;
+extern IForwardManager *g_pForwards;
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();
