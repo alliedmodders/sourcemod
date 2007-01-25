@@ -695,6 +695,9 @@ void HandleSystem::ReleasePrimHandle(unsigned int index)
 	{
 		/* Extra work to do.  We need to find everything connected to this identity and release it. */
 		unsigned int ch_index;
+#if defined _DEBUG
+		unsigned int old_index = 0;
+#endif
 		while ((ch_index = pHandle->ch_next) != 0)
 		{
 			pLocal = &m_Handles[ch_index];

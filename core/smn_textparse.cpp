@@ -142,7 +142,7 @@ public:
 
 TextParseGlobals g_TextParseGlobals;
 
-static cell_t SMC_CreateParse(IPluginContext *pContext, const cell_t *params)
+static cell_t SMC_CreateParser(IPluginContext *pContext, const cell_t *params)
 {
 	ParseInfo *pInfo = new ParseInfo();
 
@@ -274,7 +274,7 @@ static cell_t SMC_GetErrorString(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(textNatives)
 {
-	{"SMC_CreateParse",				SMC_CreateParse},
+	{"SMC_CreateParser",			SMC_CreateParser},
 	{"SMC_ParseFile",				SMC_ParseFile},
 	{"SMC_GetErrorString",			SMC_GetErrorString},
 	{"SMC_SetParseStart",			SMC_SetParseStart},

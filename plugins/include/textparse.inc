@@ -38,7 +38,7 @@ enum SMCError
  *
  * @return			A new Handle to an SMC Parse structure.
  */
-native Handle:SMC_CreateParse();
+native Handle:SMC_CreateParser();
 
 /**
  * Parses an SMC file.
