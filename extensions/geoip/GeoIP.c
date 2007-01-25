@@ -611,8 +611,6 @@ unsigned long _GeoIP_lookupaddress (const char *host) {
 	struct hostent phe2;
 	struct hostent * phe = &phe2;
 	char *buf = NULL;
-	int buflength = 16384;
-	int herr = 0;
 	int result = 0;
 #ifdef HAVE_GETHOSTBYNAME_R
 	buf = malloc(buflength);
@@ -923,7 +921,7 @@ char *_get_name (GeoIP* gi, unsigned long ipnum) {
 		org_buf = malloc(len);
 		strncpy(org_buf, buf, len);
 	} else {
-		buf_pointer = gi->cache + (long)record_pointer;
+		buf_pointer = (char *)(gi->cache + (long)record_pointer);
 		len = sizeof(char) * (strlen(buf_pointer)+1);
 		org_buf = malloc(len);
 		strncpy(org_buf, buf_pointer, len);

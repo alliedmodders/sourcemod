@@ -45,10 +45,10 @@ CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ifeq "$(DEBUG)" "true"
 	BIN_DIR = Debug
-	CFLAGS = $(C_DEBUG_FLAGS)
+	CFLAGS += $(C_DEBUG_FLAGS)
 else
 	BIN_DIR = Release
-	CFLAGS = $(C_OPT_FLAGS)
+	CFLAGS += $(C_OPT_FLAGS)
 endif
 
 
