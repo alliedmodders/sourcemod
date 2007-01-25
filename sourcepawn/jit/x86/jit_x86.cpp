@@ -2161,10 +2161,12 @@ jit_rewind:
 
 	functracker_t *fnc = new functracker_t;
 	ctx->vm[JITVARS_FUNCINFO] = fnc;
+	ctx->vm[JITVARS_REBASE] = data->rebase;
 	fnc->code_size = codemem;
 	fnc->num_functions = data->func_idx;
 
 	/* clean up relocation+compilation memory */
+	data->rebase = NULL;
 	AbortCompilation(co);
 
 	*err = SP_ERROR_NONE;
@@ -2194,6 +2196,7 @@ void JITX86::FreeContext(sp_context_t *ctx)
 	delete [] ctx->publics;
 	delete [] ctx->pubvars;
 	delete [] ctx->symbols;
+	engine->BaseFree(ctx->vm[JITVARS_REBASE]);
 	free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
 	delete ctx->vm[JITVARS_TRACKER];	
 	delete ctx;
@@ -2247,15 +2250,51 @@ unsigned int JITX86::GetAPIVersion()
 	return SOURCEPAWN_VM_API_VERSION;
 }
 
-bool JITX86::FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)
+bool JITX86::FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)
 {
-	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
+	uint8_t *rebase = (uint8_t *)ctx->vm[JITVARS_REBASE];
 
+	/* Is this within the pcode bounds? */
+	if (code_addr >= ctx->plugin->pcode_size - sizeof(uint32_t))
+	{
+		return false;
+	}
+
+	/* Relocate this */
+	code_addr = *(jitoffs_t *)(rebase + code_addr);
+
+	/* Check if this is in the relocation bounds */
+	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
 	if (code_addr >= fnc->code_size)
 	{
 		return false;
 	}
 
+	/* Get the function info and sanity check */
+	funcinfo_t *f = (funcinfo_t *)((char *)ctx->codebase + code_addr - sizeof(funcinfo_t));
+	if (f->magic != JIT_FUNCMAGIC || f->index >= fnc->num_functions)
+	{
+		return false;
+	}
+
+	if (result)
+	{
+		*result = f->index;
+	}
+
+	return true;
+}
+
+bool JITX86::FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)
+{
+	/* Check if this is in the relocation bounds */
+	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
+	if (code_addr >= fnc->code_size)
+	{
+		return false;
+	}
+
+	/* Get the function info and sanity check */
 	funcinfo_t *f = (funcinfo_t *)((char *)ctx->codebase + code_addr - sizeof(funcinfo_t));
 	if (f->magic != JIT_FUNCMAGIC || f->index >= fnc->num_functions)
 	{

@@ -14,6 +14,7 @@ using namespace SourcePawn;
 
 #define JITVARS_TRACKER				0		//important: don't change this to avoid trouble
 #define JITVARS_FUNCINFO			1		//important: don't change this aWOAWOGJQG I LIKE HAM
+#define JITVARS_REBASE				2		//important: hi, i'm bail
 
 typedef struct tracker_s
 {
@@ -80,6 +81,7 @@ public:
 	int ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result);
 	unsigned int GetAPIVersion();
 	bool FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result);
+	bool FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result);
 	unsigned int FunctionCount(const sp_context_t *ctx);
 	const char *GetVersionString();
 	const char *GetCPUOptimizations();

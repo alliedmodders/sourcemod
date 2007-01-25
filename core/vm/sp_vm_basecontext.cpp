@@ -150,7 +150,11 @@ int BaseContext::Execute(funcid_t funcid, cell_t *result)
 		}
 		code_addr = pubfunc->code_offs;
 	} else {
+#if 0
 		code_addr = funcid >> 1;
+#endif
+		assert(false);
+		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	PushCell(pushcount++);
@@ -875,6 +879,7 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 			pFunc = m_pub_funcs[func_id];
 		}
 	} else {
+#if 0
 		func_id >>= 1;
 		unsigned int index;
 		if (!g_pVM->FunctionLookup(ctx, func_id, &index))
@@ -887,6 +892,8 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 			m_priv_funcs[func_id] = new CFunction(save, this);
 			pFunc = m_priv_funcs[func_id];
 		}
+#endif
+		assert(false);
 	}
 
 	return pFunc;

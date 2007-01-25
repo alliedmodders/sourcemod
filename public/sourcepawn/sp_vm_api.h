@@ -794,6 +794,16 @@ namespace SourcePawn
 		 * @return			String describing CPU specific optimizations.
 		 */
 		virtual const char *GetCPUOptimizations() =0;
+
+		/**
+		 * @brief Given a context and a p-code address, returns the index of the function.
+		 * 
+		 * @param ctx		Context to search.
+		 * @param code_addr	Index into the p-code section.
+		 * @param result	Pointer to store result into.
+		 * @return			True if code index is valid, false otherwise.
+		 */
+		virtual bool FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result) =0;
 	};
 };
 

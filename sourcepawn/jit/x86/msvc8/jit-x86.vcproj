@@ -247,19 +247,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\include\sp_file_headers.h"
+				RelativePath="..\..\..\..\public\sourcepawn\sp_file_headers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\include\sp_vm_api.h"
+				RelativePath="..\..\..\..\public\sourcepawn\sp_typeutil.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\include\sp_vm_base.h"
+				RelativePath="..\..\..\..\public\sourcepawn\sp_vm_api.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\include\sp_vm_types.h"
+				RelativePath="..\..\..\..\public\sourcepawn\sp_vm_base.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\public\sourcepawn\sp_vm_types.h"
 				>
 			</File>
 		</Filter>
