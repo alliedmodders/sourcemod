@@ -252,6 +252,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_textparse.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sourcemm_api.cpp"
 				>
 			</File>

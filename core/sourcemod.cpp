@@ -8,6 +8,7 @@
 #include "ShareSys.h"
 #include "CLogger.h"
 #include "ExtensionSys.h"
+#include "AdminCache.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -168,6 +169,8 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	DoGlobalPluginLoads();
 
 	m_IsMapLoading = false;
+
+	g_Admins.DumpAdminCache(ADMIN_CACHE_GROUPS|ADMIN_CACHE_ADMINS|ADMIN_CACHE_OVERRIDES, true);
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }

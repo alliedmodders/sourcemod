@@ -238,7 +238,7 @@ void CPlugin::Call_OnPluginInit()
 	m_status = Plugin_Running;
 
 	cell_t result;
-	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginInit");
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginStart");
 	if (!pFunction)
 	{
 		return;
@@ -256,7 +256,7 @@ void CPlugin::Call_OnPluginUnload()
 	}
 
 	cell_t result;
-	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginUnload");
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginEnd");
 	if (!pFunction)
 	{
 		return;
@@ -1369,8 +1369,12 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				assert(pl->GetStatus() != Plugin_Created);
 				int len = 0;
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-
-				len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+				if (pl->GetStatus() != Pl_Running)
+				{
+					len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+				} else {
+					len += UTIL_Format(buffer, sizeof(buffer), "  %02d", id);
+				}
 				len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 				if (IS_STR_FILLED(info->version))
 				{
