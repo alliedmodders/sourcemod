@@ -20,6 +20,7 @@ struct Plugin
 #include <float>
 #include <handles>
 #include <string>
+#include <admin>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
