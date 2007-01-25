@@ -65,13 +65,15 @@ public:
 		pthread_mutex_t m_mutex;
 	};
 public:
-	virtual IMutex *MakeMutex();
-	virtual void MakeThread(IThread *pThread);
-	virtual IThreadHandle *MakeThread(IThread *pThread, ThreadFlags flags);
-	virtual IThreadHandle *MakeThread(IThread *pThread, const ThreadParams *params);
-	virtual void GetPriorityBounds(ThreadPriority &max, ThreadPriority &min);
-	virtual void ThreadSleep(unsigned int ms);
-	virtual IEventSignal *MakeEventSignal();
+	IMutex *MakeMutex();
+	void MakeThread(IThread *pThread);
+	IThreadHandle *MakeThread(IThread *pThread, ThreadFlags flags);
+	IThreadHandle *MakeThread(IThread *pThread, const ThreadParams *params);
+	void GetPriorityBounds(ThreadPriority &max, ThreadPriority &min);
+	void ThreadSleep(unsigned int ms);
+	IEventSignal *MakeEventSignal();
+	IThreadWorker *MakeWorker(bool threaded);
+	void DestroyWorker(IThreadWorker *pWorker);
 };
 
 #if defined SM_DEFAULT_THREADER && !defined SM_MAIN_THREADER

@@ -1,5 +1,21 @@
 #include <unistd.h>
 #include "PosixThreads.h"
+#include "ThreadWorker.h"
+
+IThreadWorker *PosixThreader::MakeWorker(bool threaded)
+{
+	if (threaded)
+	{
+		return new ThreadWorker(this, DEFAULT_THINK_TIME_MS);
+	} else {
+		return new BaseWorker();
+	}
+}
+
+void PosixThreader::DestroyWorker(IThreadWorker *pWorker)
+{
+	delete pWorker;
+}
 
 void PosixThreader::ThreadSleep(unsigned int ms)
 {
