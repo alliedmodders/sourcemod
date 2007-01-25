@@ -872,6 +872,7 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		if (!pFunc)
 		{
 			m_pub_funcs[func_id] = new CFunction(save, this);
+			pFunc = m_pub_funcs[func_id];
 		}
 	} else {
 		func_id >>= 1;
@@ -884,6 +885,7 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		if (!pFunc)
 		{
 			m_priv_funcs[func_id] = new CFunction(save, this);
+			pFunc = m_priv_funcs[func_id];
 		}
 	}
 
@@ -908,6 +910,7 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 		{
 			m_pub_funcs[index] = new CFunction(pub->funcid, this);
 		}
+		pFunc = m_pub_funcs[index];
 	}
 
 	return pFunc;
