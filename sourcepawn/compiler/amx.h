@@ -36,7 +36,9 @@
 
 #if defined __GNUC__
   #include <stdint.h>
-  #define HAVE_STDINT_H
+  #if !defined HAVE_STDINT_H
+    #define HAVE_STDINT_H
+  #endif
 #elif !defined HAVE_STDINT_H
   #if defined __LCC__ || defined __DMC__ || defined LINUX || (defined __WATCOMC__ && __WATCOMC__ >= 1200)
     #if defined HAVE_INTTYPES_H
