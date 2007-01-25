@@ -285,7 +285,7 @@ int BaseContext::HeapPop(cell_t local_addr)
 	addr = (cell_t *)(ctx->memory + local_addr);
 	cellcount = (*addr) * sizeof(cell_t);
 	/* check if this memory count looks valid */
-	if (ctx->hp - cellcount - sizeof(cell_t) != local_addr)
+	if ((signed)(ctx->hp - cellcount - sizeof(cell_t)) != local_addr)
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
@@ -596,8 +596,6 @@ int BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t ar
 
 int BaseContext::LocalToString(cell_t local_addr, char **addr)
 {
-	int len = 0;
-
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
@@ -855,7 +853,7 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 			m_priv_funcs[func_id] = new CFunction(save, this);
 			pFunc = m_priv_funcs[func_id];
 		}
-#endif 0
+#endif
 		assert(false);
 	}
 

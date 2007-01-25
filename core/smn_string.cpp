@@ -10,7 +10,7 @@ inline const char *_strstr(const char *str, const char *substr)
 {
 #ifdef PLATFORM_WINDOWS
 	return strstr(str, substr);
-#elif PLATFORM_LINUX
+#elif defined PLATFORM_LINUX
 	return (const char *)strstr(str, substr);
 #endif
 }

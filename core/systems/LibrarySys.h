@@ -8,7 +8,7 @@ using namespace SourceMod;
 
 #if defined PLATFORM_WINDOWS
 typedef HMODULE		LibraryHandle;
-#else if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 typedef void *		LibraryHandle;
 #endif
 
@@ -30,7 +30,7 @@ private:
 #if defined PLATFORM_WINDOWS
 	HANDLE m_dir;
 	WIN32_FIND_DATAA m_fd;
-#else if defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	DIR *m_dir;
 	struct dirent *ep;
 	char m_origpath[PLATFORM_MAX_PATH];

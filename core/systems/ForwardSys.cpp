@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <stdarg.h>
+#include <string.h>
 #include "ForwardSys.h"
 #include "PluginSys.h"
 #include "ShareSys.h"
@@ -179,7 +181,7 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	{
 		for (unsigned int i=0; i<num_params; i++)
 		{
-			_types[i] = va_arg(ap, ParamType);
+			_types[i] = (ParamType)va_arg(ap, int);
 			if (_types[i] == Param_VarArgs && (i != num_params - 1))
 			{
 				return NULL;
@@ -245,7 +247,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	cell_t high_result = 0;
 	int err;
 	unsigned int failed=0, success=0;
-	unsigned int save_numcopy = 0;
 	unsigned int num_params = m_curparam;
 	FwdParamInfo temp_info[SP_MAX_EXEC_PARAMS];
 	FwdParamInfo *param;
@@ -341,6 +342,10 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 							iter = m_functions.end();
 						}
 					}
+					break;
+				}
+			default:
+				{
 					break;
 				}
 			}
@@ -584,7 +589,6 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 {
 	bool found = false;
 	FuncIter iter;
-	IPluginFunction *pNext = NULL;
 
 	for (iter=m_functions.begin(); iter!=m_functions.end();)
 	{

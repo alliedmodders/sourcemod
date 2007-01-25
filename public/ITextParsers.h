@@ -106,7 +106,7 @@ namespace SourceMod
 	 * 
 	 * The SMC file format is defined as:
 	 * WHITESPACE: 0x20, \n, \t, \r
-	 * IDENTIFIER: Any ASCII character EXCLUDING ", {, }, ;, //, /*, or WHITESPACE.
+	 * IDENTIFIER: Any ASCII character EXCLUDING ", {, }, ;, //, / *, or WHITESPACE.
 	 * STRING: Any set of symbols enclosed in quotes.
 	 * Note: if a STRING does not have quotes, it is parsed as an IDENTIFIER.
 	 *
@@ -138,7 +138,7 @@ namespace SourceMod
 	 * unless they are inside literal strings:
 	 *  ;<TEXT>
 	 *  //<TEXT>
-	 *  /*<TEXT> */
+	 *  / *<TEXT> */
 
 	enum SMCParseResult
 	{

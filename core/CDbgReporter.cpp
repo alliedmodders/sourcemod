@@ -71,3 +71,4 @@ int CDbgReporter::_GetPluginIndex(IPluginContext *ctx)
 	iter->Release();
 	return -1;
 }
+

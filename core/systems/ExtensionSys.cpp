@@ -707,7 +707,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 			if (argcount > 4 && pExt->unload_code)
 			{
 				const char *unload = g_RootMenu.GetArgument(4);
-				if (pExt->unload_code == atoi(unload))
+				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH+1];
 					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());

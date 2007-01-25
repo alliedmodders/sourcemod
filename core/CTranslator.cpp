@@ -1,5 +1,6 @@
 #include <stdarg.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "CTranslator.h"
 #include "CLogger.h"
 #include "CTextParsers.h"
@@ -336,7 +337,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 						*out_ptr++ = '%';
 					}
 					/* Check length ... */
-					if (out_ptr - fmt_buf >= sizeof(fmt_buf) - 1)
+					if ((unsigned)(out_ptr - fmt_buf) >= sizeof(fmt_buf) - 1)
 					{
 						ParseWarning("Format property contains format string that exceeds maximum length on line %d, phrase will be ignored.",
 									 m_CurLine);

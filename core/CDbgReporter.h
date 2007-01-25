@@ -17,3 +17,4 @@ private:
 };
 
 #endif // _INCLUDE_SOURCEMOD_CDBGREPORTER_H_
+

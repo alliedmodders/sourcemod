@@ -10,7 +10,7 @@
 #if defined WIN32
  #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
-#else if defined __GNUC__
+#elif defined __GNUC__
  #include <sys/mman.h>
 #endif
 
@@ -85,7 +85,7 @@ void *SourcePawnEngine::ExecAlloc(size_t size)
 {
 #if defined WIN32
 	return VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-#else if defined __GNUC__
+#elif defined __GNUC__
 	void *base = memalign(sysconf(_SC_PAGESIZE), size);
 	if (mprotect(base, size, PROT_READ|PROT_WRITE|PROT_EXEC) != 0)
 	{
@@ -100,7 +100,7 @@ void SourcePawnEngine::ExecFree(void *address)
 {
 #if defined WIN32
 	VirtualFree(address, 0, MEM_RELEASE);
-#else if defined __GNUC__
+#elif defined __GNUC__
 	free(address);
 #endif
 }

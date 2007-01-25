@@ -24,16 +24,23 @@
 #define PLATFORM_SEP_CHAR		'\\'
 #define PLATFORM_SEP_ALTCHAR	'/'
 #define PLATFORM_EXTERN_C		extern "C" __declspec(dllexport)
-#else if defined __linux__
+#elif defined __linux__
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX
+#include <unistd.h>
 #include <dirent.h>
 #include <errno.h>
+#include <dlfcn.h>
+#include <sys/stat.h>
 #define PLATFORM_MAX_PATH		PATH_MAX
 #define PLATFORM_LIB_EXT		"so"
 #define PLATFORM_SEP_CHAR		'/'
 #define PLATFORM_SEP_ALTCHAR	'\\'
 #define PLATFORM_EXTERN_C		extern "C" __attribute__((visibility("default")))
+#endif
+
+#if !defined SOURCEMOD_BUILD
+#define SOURCEMOD_BUILD
 #endif
 
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_

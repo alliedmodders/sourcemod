@@ -2,7 +2,7 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "CLogger.h"
-#include "systems/Librarysys.h"
+#include "systems/LibrarySys.h"
 #include "sm_version.h"
 
 CLogger g_Logger;
@@ -126,6 +126,11 @@ void CLogger::InitLogger(LoggingMode mode, bool startlogging)
 			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
 			m_NrmFileName.assign(_filename);
 			m_DailyPrintHdr = true;
+			break;
+		}
+	default:
+		{
+			/* do nothing... */
 			break;
 		}
 	}
@@ -278,6 +283,11 @@ void CLogger::MapChange(const char *mapname)
 	case LoggingMode_PerMap:
 		{
 			_NewMapFile();
+			break;
+		}
+	default:
+		{
+			/* Do nothing... */
 			break;
 		}
 	}

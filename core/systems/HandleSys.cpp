@@ -2,6 +2,7 @@
 #include "ShareSys.h"
 #include "PluginSys.h"
 #include <assert.h>
+#include <string.h>
 
 HandleSystem g_HandleSys;
 
@@ -408,7 +409,6 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 	}
 
 	QHandle *pHandle = &m_Handles[index];
-	QHandleType *pType = &m_Types[pHandle->type];
 
 	if (!pHandle->set
 		|| (pHandle->set == HandleSet_Freed && !ignoreFree))
@@ -694,7 +694,7 @@ void HandleSystem::ReleasePrimHandle(unsigned int index)
 	if (set == HandleSet_Identity)
 	{
 		/* Extra work to do.  We need to find everything connected to this identity and release it. */
-		unsigned int ch_index, old_index = 0;
+		unsigned int ch_index;
 		while ((ch_index = pHandle->ch_next) != 0)
 		{
 			pLocal = &m_Handles[ch_index];

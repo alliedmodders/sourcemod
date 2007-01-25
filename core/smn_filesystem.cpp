@@ -268,7 +268,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 	return 0;
-#else if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(realpath, &s) != 0)
 	{
@@ -304,7 +304,7 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 
 #ifdef PLATFORM_WINDOWS
 	return (MoveFileA(old_realpath, new_realpath)) ? 1 : 0;
-#else if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 	return (rename(old_realpath, new_realpath)) ? 0 : 1;
 #endif
 }
@@ -332,7 +332,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 	return 0;
-#else if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(realpath, &s) != 0)
 	{
@@ -369,7 +369,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		return static_cast<cell_t>(s.st_size);
 	}
 	return -1;
-#else if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(realpath, &s) != 0)
 	{
@@ -465,7 +465,7 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
 	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
@@ -476,7 +476,7 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
 	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);

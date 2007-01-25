@@ -456,7 +456,7 @@ time_t CPlugin::GetFileTimeStamp()
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(path, &s) != 0)
-#else if defined PLATFORM_POSIX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 	if (stat(path, &s) != 0)
 #endif
@@ -1165,7 +1165,7 @@ bool CPluginManager::TestAliasMatch(const char *alias, const char *localpath)
 		if (*aliasptr == '*')
 		{
 			/* First, see if this is the last character */
-			if (aliasptr - alias == alias_len - 1)
+			if ((unsigned)(aliasptr - alias) == alias_len - 1)
 			{
 				/* If so, there's no need to match anything else */
 				return true;
@@ -1369,7 +1369,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				assert(pl->GetStatus() != Plugin_Created);
 				int len = 0;
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-				if (pl->GetStatus() != Pl_Running)
+				if (pl->GetStatus() != Plugin_Running)
 				{
 					len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
 				} else {
@@ -1448,7 +1448,6 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				return;
 			}
 
-			int id = 1;
 			int num = atoi(g_RootMenu.GetArgument(3));
 			if (num < 1 || num > (int)GetPluginCount())
 			{

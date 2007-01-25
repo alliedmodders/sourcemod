@@ -64,7 +64,7 @@ private:
 	int m_errmsg;
 	bool in_plugins;
 	bool in_options;
-	unsigned int m_infodb;
+	int m_infodb;
 	size_t m_infodb_count;
 	size_t m_infodb_size;
 	int cur_plugin;

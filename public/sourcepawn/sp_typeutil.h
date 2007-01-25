@@ -13,3 +13,4 @@ inline float sp_ctof(cell_t val)
 }
 
 #endif //_INCLUDE_SOURCEPAWN_VM_TYPEUTIL_H_
+

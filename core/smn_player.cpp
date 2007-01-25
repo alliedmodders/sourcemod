@@ -200,3 +200,4 @@ REGISTER_NATIVES(playernatives)
 	{"PrintToConsole",			sm_PrintToConsole},
 	{NULL,						NULL}
 };
+

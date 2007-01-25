@@ -27,10 +27,10 @@ public:
 	virtual void ResetTrace();
 	virtual const char *GetLastNative(uint32_t *index);
 private:
+	int m_Error;
+	const char *m_pMsg;
 	TracedCall *m_pStart;
 	TracedCall *m_pIterator;
-	const char *m_pMsg;
-	int m_Error;
 	uint32_t m_Native;
 };
 

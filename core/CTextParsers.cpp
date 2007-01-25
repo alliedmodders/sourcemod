@@ -14,20 +14,20 @@ static int g_ws_chartable[255] = {0};
 
 CTextParsers::CTextParsers()
 {
-	g_ini_chartable1['_'] = 1;
-	g_ini_chartable1['-'] = 1;
-	g_ini_chartable1[','] = 1;
-	g_ini_chartable1['+'] = 1;
-	g_ini_chartable1['.'] = 1;
-	g_ini_chartable1['$'] = 1;
-	g_ini_chartable1['?'] = 1;
-	g_ini_chartable1['/'] = 1;
-	g_ws_chartable['\n'] = 1;
-	g_ws_chartable['\v'] = 1;
-	g_ws_chartable['\r'] = 1;
-	g_ws_chartable['\t'] = 1;
-	g_ws_chartable['\f'] = 1;
-	g_ws_chartable[' '] = 1;
+	g_ini_chartable1[(unsigned)'_'] = 1;
+	g_ini_chartable1[(unsigned)'-'] = 1;
+	g_ini_chartable1[(unsigned)','] = 1;
+	g_ini_chartable1[(unsigned)'+'] = 1;
+	g_ini_chartable1[(unsigned)'.'] = 1;
+	g_ini_chartable1[(unsigned)'$'] = 1;
+	g_ini_chartable1[(unsigned)'?'] = 1;
+	g_ini_chartable1[(unsigned)'/'] = 1;
+	g_ws_chartable[(unsigned)'\n'] = 1;
+	g_ws_chartable[(unsigned)'\v'] = 1;
+	g_ws_chartable[(unsigned)'\r'] = 1;
+	g_ws_chartable[(unsigned)'\t'] = 1;
+	g_ws_chartable[(unsigned)'\f'] = 1;
+	g_ws_chartable[(unsigned)' '] = 1;
 }
 
 void CTextParsers::OnSourceModAllInitialized()
@@ -121,10 +121,10 @@ SMCParseError CTextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *s
 struct StringInfo
 {
 	StringInfo() : quoted(false), ptr(NULL), end(NULL), special(false) { }
+	bool quoted;
 	char *ptr;
 	char *end;
 	bool special;
-	bool quoted;
 };
 
 const char *FixupString(StringInfo &data)
@@ -366,13 +366,13 @@ SMCParseError CTextParsers::ParseStream_SMC(void *stream,
 				}
 			} else {
 				/* Check if we're whitespace or not */
-				if (!g_ws_chartable[c])
+				if (!g_ws_chartable[(unsigned)c])
 				{
 					bool restage = false;
 					/* Check various special tokens:
 					 * ;
 					 * //
-					 * /*
+					 * / *
 					 * {
 					 * }
 					 */
@@ -402,7 +402,7 @@ SMCParseError CTextParsers::ParseStream_SMC(void *stream,
 								ignoring = true;
 								ml_comment = true;
 								/* yes, we restage, meaning that:
-								 * STR/*stuff* /ING  (space because ml comments don't nest in C++)
+								 * STR/ *stuff* /ING  (space because ml comments don't nest in C++)
 								 * will not generate 'STRING', but rather 'STR' and 'ING'.
 								 * This should be a rare occurrence and is done here for convenience.
 								 */
@@ -656,7 +656,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 		 ***************************************************/
 
 		/* First strip beginning whitespace */
-		while (*ptr != '\0' && g_ws_chartable[*ptr] != 0)
+		while (*ptr != '\0' && g_ws_chartable[(unsigned)*ptr] != 0)
 		{
 			ptr++;
 		}
@@ -709,7 +709,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 		/* Lastly, strip ending whitespace off */
 		for (size_t i=len-1; i>=0 && i<len; i--)
 		{
-			if (g_ws_chartable[ptr[i]])
+			if (g_ws_chartable[(unsigned)ptr[i]])
 			{
 				ptr[i] = '\0';
 				len--;
@@ -750,7 +750,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 						i += _GetUTF8CharBytes(&ptr[i]) - 1;
 					}
 				} else {
-					alnum = (isalnum(c) != 0) || (g_ini_chartable1[c] != 0);
+					alnum = (isalnum(c) != 0) || (g_ini_chartable1[(unsigned)c] != 0);
 				}
 				if (!alnum)
 				{
@@ -803,12 +803,12 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 						i += _GetUTF8CharBytes(&ptr[i]) - 1;
 					}
 				} else {
-					alnum = (isalnum(c) != 0) || (g_ini_chartable1[c] != 0);
+					alnum = (isalnum(c) != 0) || (g_ini_chartable1[(unsigned)c] != 0);
 				}
 
 				if (!alnum)
 				{
-					if (g_ws_chartable[c])
+					if (g_ws_chartable[(unsigned)c])
 					{
 						/* if it's a space, keep track of the first occurring space */
 						if (!first_space)
@@ -847,7 +847,7 @@ bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listen
 			if (val_ptr)
 			{
 				/* eat up spaces! there shouldn't be any h*/
-				while ((*val_ptr != '\0') && g_ws_chartable[*val_ptr] != 0)
+				while ((*val_ptr != '\0') && g_ws_chartable[(unsigned)*val_ptr] != 0)
 				{
 					val_ptr++;
 				}
