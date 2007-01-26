@@ -240,10 +240,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\thread\IThreader.h"
-					>
-				</File>
-				<File
 					RelativePath="..\thread\PosixThreads.h"
 					>
 				</File>
