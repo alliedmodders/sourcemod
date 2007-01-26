@@ -1,16 +1,42 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_IFACE_SHARE_SYS_H_
 #define _INCLUDE_SOURCEMOD_IFACE_SHARE_SYS_H_
 
+/**
+ * @file IShareSys.h
+ * @brief Defines the Share System, responsible for shared resources and dependencies.
+ *
+ *  The Share System also manages the Identity_t data type, although this is internally
+ * implemented with the Handle System.
+ */
+
 #include <sp_vm_types.h>
 
-#define	NO_IDENTITY		0
 
 namespace SourceMod
 {
 	class IExtension;
 	struct IdentityToken_t;
+
+	/** Forward declaration from IHandleSys.h */
 	typedef unsigned int		HandleType_t;
+
+	/** Forward declaration from IHandleSys.h */
 	typedef HandleType_t		IdentityType_t;
+
 	/**
 	 * @brief Defines the base functionality required by a shared interface.
 	 */
@@ -79,7 +105,7 @@ namespace SourceMod
 		 * NOTE: Adding natives currently does not bind them to any loaded plugins.
 		 * You must manually bind late natives.
 		 * 
-		 * @param token			Identity token of parent object.
+		 * @param myself		Identity token of parent object.
 		 * @param natives		Array of natives to add.  The last entry must have NULL members.
 		 */
 		virtual void AddNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;

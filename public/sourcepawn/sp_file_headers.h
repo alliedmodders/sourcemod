@@ -1,26 +1,46 @@
+/**
+ * ================================================================
+ * SourcePawn (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ================================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SPFILE_HEADERS_H
 #define _INCLUDE_SPFILE_HEADERS_H
+
+/** 
+ * @file sp_file_headers.h
+ * @brief Defines the structure present in a SourcePawn compiled binary.
+ *
+ * Note: These structures should be 1-byte packed to match the file format.
+ */
 
 #include <stddef.h>
 #if defined __GNUC__ || defined HAVE_STDINT_
 #include <stdint.h>
 #else
  #if !defined HAVE_STDINT_H
-	typedef unsigned __int64	uint64_t;
-	typedef __int64				int64_t;
-	typedef unsigned __int32	uint32_t;
-	typedef __int32				int32_t;
-	typedef unsigned __int16	uint16_t;
-	typedef __int16				int16_t;
-	typedef unsigned __int8		uint8_t;
-	typedef __int8				int8_t;
+	typedef unsigned __int64	uint64_t;		/**< 64bit unsigned integer */
+	typedef __int64				int64_t;		/**< 64bit signed integer */
+	typedef unsigned __int32	uint32_t;		/**< 32bit unsigned integer */
+	typedef __int32				int32_t;		/**< 32bit signed integer */
+	typedef unsigned __int16	uint16_t;		/**< 16bit unsigned integer */
+	typedef __int16				int16_t;		/**< 16bit signed integer */
+	typedef unsigned __int8		uint8_t;		/**< 8bit unsigned integer */
+	typedef __int8				int8_t;			/**< 8bit signed integer */
  #define HAVE_STDINT_H
  #endif
 #endif
 
-#define SPFILE_MAGIC	0x53504646		/* Source Pawn File Format (SPFF) */
-//#define SPFILE_VERSION	0x0100
-#define SPFILE_VERSION	0x0101			/* Uncompressed bytecode */
+#define SPFILE_MAGIC	0x53504646		/**< Source Pawn File Format (SPFF) */
+#define SPFILE_VERSION	0x0101			/**< Uncompressed bytecode */
 
 //:TODO: better compiler/nix support
 #if defined __linux__
@@ -30,78 +50,92 @@
 	#pragma pack(1)         /* structures must be packed (byte-aligned) */
 #endif
 
-#define SPFILE_COMPRESSION_NONE		0
-#define SPFILE_COMPRESSION_GZ		1
+#define SPFILE_COMPRESSION_NONE		0		/**< No compression in file */
+#define SPFILE_COMPRESSION_GZ		1		/**< GZ compression */
 
+/**
+ * @brief File section header format.
+ */
 typedef struct sp_file_section_s
 {
-	uint32_t	nameoffs;	/* rel offset into global string table */
-	uint32_t	dataoffs;
-	uint32_t	size;
+	uint32_t	nameoffs;	/**< Relative offset into global string table */
+	uint32_t	dataoffs;	/**< Offset into the data section of the file */
+	uint32_t	size;		/**< Size of the section's entry in the data section */
 } sp_file_section_t;
 
 /**
- * If compression is 0, then
- *  disksize may be 0 to mean that
- *  only the imagesize is needed.
+ * @brief File header format.  If compression is 0, then disksize may be 0 
+ * to mean that only the imagesize is needed.
  */
 typedef struct sp_file_hdr_s
 {
-	uint32_t	magic;		/* magic number */
-	uint16_t	version;	/* version code */
-	uint8_t		compression;/* compression algorithm */
-	uint32_t	disksize;	/* size on disk */
-	uint32_t	imagesize;	/* size in memory */
-	uint8_t		sections;	/* number of sections */
-	uint32_t	stringtab;	/* offset to string table */
-	uint32_t	dataoffs;	/* offset to file proper (any compression starts here) */
+	uint32_t	magic;		/**< Magic number */
+	uint16_t	version;	/**< Version code */
+	uint8_t		compression;/**< Compression algorithm */
+	uint32_t	disksize;	/**< Size on disk */
+	uint32_t	imagesize;	/**< Size in memory */
+	uint8_t		sections;	/**< Number of sections */
+	uint32_t	stringtab;	/**< Offset to string table */
+	uint32_t	dataoffs;	/**< Offset to file proper (any compression starts here) */
 } sp_file_hdr_t;
 
-#define SP_FLAG_DEBUG	(1<<0)
+#define SP_FLAG_DEBUG	(1<<0)		/**< Debug information is present in the file */
 
-/* section is ".code" */
+/**
+ * @brief File-encoded format of the ".code" section.
+ */
 typedef struct sp_file_code_s
 {
-	uint32_t	codesize;		/* codesize in bytes */
-	uint8_t		cellsize;		/* cellsize in bytes */
-	uint8_t		codeversion;	/* version of opcodes supported */
-	uint16_t	flags;			/* flags */
-	uint32_t	main;			/* address to "main" if any */
-	uint32_t	code;			/* rel offset to code */
+	uint32_t	codesize;		/**< Codesize in bytes */
+	uint8_t		cellsize;		/**< Cellsize in bytes */
+	uint8_t		codeversion;	/**< Version of opcodes supported */
+	uint16_t	flags;			/**< Flags */
+	uint32_t	main;			/**< Address to "main," if any */
+	uint32_t	code;			/**< Relative offset to code */
 } sp_file_code_t;
 
-/* section is .data */
+/** 
+ * @brief File-encoded format of the ".data" section.
+ */
 typedef struct sp_file_data_s
 {
-	uint32_t	datasize;		/* size of data section in memory */
-	uint32_t	memsize;		/* total mem required (includes data) */
-	uint32_t	data;			/* file offset to data (helper) */
+	uint32_t	datasize;		/**< Size of data section in memory */
+	uint32_t	memsize;		/**< Total mem required (includes data) */
+	uint32_t	data;			/**< File offset to data (helper) */
 } sp_file_data_t;
 
-/* section is .publics */
+/**
+ * @brief File-encoded format of the ".publics" section.
+ */
 typedef struct sp_file_publics_s
 {
-	uint32_t	address;		/* address rel to code section */
-	uint32_t	name;			/* index into nametable */
+	uint32_t	address;		/**< Address relative to code section */
+	uint32_t	name;			/**< Index into nametable */
 } sp_file_publics_t;
 
-/* section is .natives */
+/**
+ * @brief File-encoded format of the ".natives" section.
+ */
 typedef struct sp_file_natives_s
 {
-	uint32_t	name;			/* name of native at index */
+	uint32_t	name;			/**< Index into nametable */
 } sp_file_natives_t;
 
-/* section is .libraries */
+/**
+ * @brief File-encoded format of the ".libraries" section (UNUSED).
+ */
 typedef struct sp_file_libraries_s
 {
-	uint32_t	name;			/* index into nametable */
+	uint32_t	name;			/**< Index into nametable */
 } sp_file_libraries_t;
 
-/* section is .pubvars */
+/**
+ * @brief File-encoded format of the ".pubvars" section.
+ */
 typedef struct sp_file_pubvars_s
 {
-	uint32_t	address;		/* address rel to dat section */
-	uint32_t	name;			/* index into nametable */
+	uint32_t	address;		/**< Address relative to the DAT section */
+	uint32_t	name;			/**< Index into nametable */
 } sp_file_pubvars_t;
 
 #if defined __linux__
@@ -110,54 +144,66 @@ typedef struct sp_file_pubvars_s
 	#pragma pack(pop) /* reset previous packing */
 #endif
 
+/**
+ * @brief File-encoded debug information table.
+ */
 typedef struct sp_fdbg_info_s
 {
-	uint32_t	num_files;	/* number of files */
-	uint32_t	num_lines;	/* number of lines */
-	uint32_t	num_syms;	/* number of symbols */
-	uint32_t	num_arrays;	/* number of symbols which are arrays */
+	uint32_t	num_files;	/**< number of files */
+	uint32_t	num_lines;	/**< number of lines */
+	uint32_t	num_syms;	/**< number of symbols */
+	uint32_t	num_arrays;	/**< number of symbols which are arrays */
 } sp_fdbg_info_t;
 
 /**
- * Debug information structures
+ * @brief File-encoded debug file table.
  */
 typedef struct sp_fdbg_file_s
 {
-	uint32_t	addr;		/* address into code */
-	uint32_t	name;		/* offset into debug nametable */
+	uint32_t	addr;		/**< Address into code */
+	uint32_t	name;		/**< Offset into debug nametable */
 } sp_fdbg_file_t;
 
+/**
+ * @brief File-encoded debug line table.
+ */
 typedef struct sp_fdbg_line_s
 {
-	uint32_t	addr;		/* address into code */
-	uint32_t	line;		/* line number */
+	uint32_t	addr;		/**< Address into code */
+	uint32_t	line;		/**< Line number */
 } sp_fdbg_line_t;
 
-#define SP_SYM_VARIABLE  1  /* cell that has an address and that can be fetched directly (lvalue) */
-#define SP_SYM_REFERENCE 2  /* VARIABLE, but must be dereferenced */
-#define SP_SYM_ARRAY     3
-#define SP_SYM_REFARRAY  4  /* an array passed by reference (i.e. a pointer) */
-#define SP_SYM_FUNCTION	 9
+#define SP_SYM_VARIABLE  1  /**< Cell that has an address and that can be fetched directly (lvalue) */
+#define SP_SYM_REFERENCE 2  /**< VARIABLE, but must be dereferenced */
+#define SP_SYM_ARRAY     3	/**< Symbol is an array */
+#define SP_SYM_REFARRAY  4  /**< An array passed by reference (i.e. a pointer) */
+#define SP_SYM_FUNCTION	 9  /**< Symbol is a function */
 
+/**
+ * @brief File-encoded debug symbol information.
+ */
 typedef struct sp_fdbg_symbol_s
 {
-	int32_t		addr;		/* address rel to DAT or stack frame */
-	int16_t		tagid;		/* tag id */
-	uint32_t	codestart;	/* start scope validity in code */
-	uint32_t	codeend;	/* end scope validity in code */
-	uint8_t		ident;		/* variable type */
-	uint8_t		vclass;		/* scope class (local vs global) */
-	uint16_t	dimcount;	/* dimension count (for arrays) */
-	uint32_t	name;		/* offset into debug nametable */
+	int32_t		addr;		/**< Address rel to DAT or stack frame */
+	int16_t		tagid;		/**< Tag id */
+	uint32_t	codestart;	/**< Start scope validity in code */
+	uint32_t	codeend;	/**< End scope validity in code */
+	uint8_t		ident;		/**< Variable type */
+	uint8_t		vclass;		/**< Scope class (local vs global) */
+	uint16_t	dimcount;	/**< Dimension count (for arrays) */
+	uint32_t	name;		/**< Offset into debug nametable */
 } sp_fdbg_symbol_t;
 
+/**
+ * @brief File-encoded debug symbol array dimension info.
+ */
 typedef struct sp_fdbg_arraydim_s
 {
-	int16_t		tagid;		/* tag id */
-	uint32_t	size;		/* size of dimension */
+	int16_t		tagid;		/**< Tag id */
+	uint32_t	size;		/**< Size of dimension */
 } sp_fdbg_arraydim_t;
 
-/* section is .names */
+/** Typedef for .names table */
 typedef char * sp_file_nametab_t;
 
 #endif //_INCLUDE_SPFILE_HEADERS_H

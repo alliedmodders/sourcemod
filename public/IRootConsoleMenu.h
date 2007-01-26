@@ -1,11 +1,29 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
 #define _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
 
 /**
- * @brief Note: This interface is not exposed.
- * The reason should be obvious: we do not want users touching the "root" console menu.
- * If we exposed this, every little plugin would be dropping down a silly set of user commands,
- * whereas this menu is explicitly provided for stuff that only Core itself is capable of managing.
+ * @file IRootConsoleMenu.h
+ * @brief Defines the interface for adding options to the "sm" console command.
+ *
+ *  This interface is not yet exported.  It will be eventually.  The initial reason should 
+ * be obvious: we do not want users actually touching it.  If we exposed this, every little 
+ * plugin would be dropping down a silly set of user commands, and exploiting/cluttering the menu.
+ * Since this menu is explicitly provided for stuff that only Core itself is capable of managing,
+ * we won't expose it until a legitimate reason comes up.
  */
 
 namespace SourceMod
@@ -80,8 +98,8 @@ namespace SourceMod
 		 * N being the length of the command name.  This is subject to change in case we
 		 * account for Valve's font choices.
 		 *
-		 * @param option		String containing the command option.
-		 * @param description	String containing the command description.
+		 * @param cmd		String containing the command option.
+		 * @param text		String containing the command description.
 		 */
 		virtual void DrawGenericOption(const char *cmd, const char *text) =0;
 	};

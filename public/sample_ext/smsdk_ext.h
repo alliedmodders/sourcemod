@@ -1,5 +1,24 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_BASESDK_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_BASESDK_H_
+
+/**
+ * @file smsdk_ext.h
+ * @brief Contains wrappers for making Extensions easier to write.
+ */
 
 #include "smsdk_config.h"
 #include <IExtensionSys.h>
@@ -24,6 +43,7 @@ class SDKExtension :
 	public IExtensionInterface
 {
 public:
+	/** Constructor */
 	SDKExtension();
 public:
 	/**
@@ -88,28 +108,56 @@ public: //IExtensionInterface
 	virtual bool OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t err_max, bool late);
 	virtual void OnExtensionUnload();
 	virtual void OnExtensionsAllLoaded();
+
+	/** Returns whether or not this is a Metamod-based extension */
 	virtual bool IsMetamodExtension();
+
+	/**
+	 * @brief Called when the pause state changes.
+	 * 
+	 * @param state			True if being paused, false if being unpaused.
+	 */
 	virtual void OnExtensionPauseChange(bool state);
+
+	/** Returns name */
 	virtual const char *GetExtensionName();
+	/** Returns URL */
 	virtual const char *GetExtensionURL();
+	/** Returns log tag */
 	virtual const char *GetExtensionTag();
+	/** Returns author */
 	virtual const char *GetExtensionAuthor();
+	/** Returns version string */
 	virtual const char *GetExtensionVerString();
+	/** Returns description string */
 	virtual const char *GetExtensionDescription();
+	/** Returns date string */
 	virtual const char *GetExtensionDateString();
 #if defined SMEXT_CONF_METAMOD
 public: //ISmmPlugin
+	/** Called when the extension is attached to Metamod. */
 	virtual bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlength, bool late);
+	/** Returns the author to MM */
 	virtual const char *GetAuthor();
+	/** Returns the name to MM */
 	virtual const char *GetName();
+	/** Returns the description to MM */
 	virtual const char *GetDescription();
+	/** Returns the URL to MM */
 	virtual const char *GetURL();
+	/** Returns the license to MM */
 	virtual const char *GetLicense();
+	/** Returns the version string to MM */
 	virtual const char *GetVersion();
+	/** Returns the date string to MM */
 	virtual const char *GetDate();
+	/** Returns the logtag to MM */
 	virtual const char *GetLogTag();
+	/** Called on unload */
 	virtual bool Unload(char *error, size_t maxlen);
+	/** Called on pause */
 	virtual bool Pause(char *error, size_t maxlen);
+	/** Called on unpause */
 	virtual bool Unpause(char *error, size_t maxlen);
 private:
 	bool m_SourceMMLoaded;
@@ -132,7 +180,9 @@ extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
 #endif
 
+/** Creates a SourceMod interface macro pair */
 #define SM_MKIFACE(name) SMINTERFACE_##name##_NAME, SMINTERFACE_##name##_VERSION
+/** Automates retrieving SourceMod interfaces */
 #define SM_GET_IFACE(prefix,addr) \
 	if (!g_pShareSys->RequestInterface(SM_MKIFACE(prefix), myself, (SMInterface **)&addr)) { \
 	 if (error) { \

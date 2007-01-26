@@ -1,3 +1,17 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_ADMINISTRATION_SYSTEM_H_
 #define _INCLUDE_SOURCEMOD_ADMINISTRATION_SYSTEM_H_
 
@@ -7,8 +21,9 @@
 #define SMINTERFACE_ADMINSYS_VERSION	1
 
 /**
- * Detailed notes:
- * ---------------
+ * @file IAdminSystem.h
+ * @brief Defines the interface to manage the Admin Users/Groups and Override caches.
+ *
  *   The administration system is more of a volatile cache than a system.  It is designed to be 
  * temporary rather than permanent, in order to compensate for more storage methods.  For example,
  * a flat file might be read into the cache all at once.  But a MySQL-based system might only cache
@@ -28,53 +43,74 @@
 
 namespace SourceMod
 {
+	/**
+	 * @brief Access levels (flags) for admins.
+	 */
 	enum AdminFlag
 	{
 		Admin_None = 0,
-		Admin_Reservation,		/* Reserved slot */
-		Admin_Kick,				/* Kick another user */
-		Admin_Ban,				/* Ban another user */
-		Admin_Unban,			/* Unban another user */
-		Admin_Slay,				/* Slay/kill/damage another user */
-		Admin_Changemap,		/* Change the map */
-		Admin_Convars,			/* Change basic convars */
-		Admin_Configs,			/* Change configs */
-		Admin_Chat,				/* Special chat privileges */
-		Admin_Vote,				/* Special vote privileges */
-		Admin_Password,			/* Set a server password */
-		Admin_RCON,				/* Use RCON */
-		Admin_Cheats,			/* Change sv_cheats and use its commands */
-		Admin_Root,				/* All access by default */
+		Admin_Reservation,		/**< Reserved slot */
+		Admin_Kick,				/**< Kick another user */
+		Admin_Ban,				/**< Ban another user */
+		Admin_Unban,			/**< Unban another user */
+		Admin_Slay,				/**< Slay/kill/damage another user */
+		Admin_Changemap,		/**< Change the map */
+		Admin_Convars,			/**< Change basic convars */
+		Admin_Configs,			/**< Change configs */
+		Admin_Chat,				/**< Special chat privileges */
+		Admin_Vote,				/**< Special vote privileges */
+		Admin_Password,			/**< Set a server password */
+		Admin_RCON,				/**< Use RCON */
+		Admin_Cheats,			/**< Change sv_cheats and use its commands */
+		Admin_Root,				/**< All access by default */
 		/* --- */
 		AdminFlags_TOTAL,
 	};
 
+	/**
+	 * @brief Specifies which type of command to override (command or command group).
+	 */
 	enum OverrideType
 	{
-		Override_Command = 1,	/* Command */
-		Override_CommandGroup,	/* Command group */
+		Override_Command = 1,	/**< Command */
+		Override_CommandGroup,	/**< Command group */
 	};
 
+	/**
+	 * @brief Specifies how a command is overridden for a user group.
+	 */
 	enum OverrideRule
 	{
-		Command_Deny = 0,
-		Command_Allow = 1,
+		Command_Deny = 0,		/**< Deny access */
+		Command_Allow = 1,		/**< Allow access */
 	};
 
+	/**
+	 * @brief Specifies a generic immunity type.
+	 */
 	enum ImmunityType
 	{
-		Immunity_Default = 1,	/* Immune from everyone with no immunity */
-		Immunity_Global,		/* Immune from everyone (except root admins) */
+		Immunity_Default = 1,	/**< Immune from everyone with no immunity */
+		Immunity_Global,		/**< Immune from everyone (except root admins) */
 	};
 
+	/**
+	 * @brief Represents an index to one group.
+	 */
 	typedef int		GroupId;
 
 	#define ADMIN_CACHE_OVERRIDES	(1<<0)
 	#define ADMIN_CACHE_ADMINS		(1<<1)
 	#define ADMIN_CACHE_GROUPS		((1<<2)|ADMIN_CACHE_ADMINS)
 
+	/**
+	 * @brief Represents an invalid/nonexistant group or an erroneous operation.
+	 */
 	#define INVALID_GROUP_ID	-1
 
+	/**
+	 * @brief Provides callbacks for admin cache operations.
+	 */
 	class IAdminListener
 	{
 	public:
@@ -88,7 +124,7 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief This is the administration options cache.
+	 * @brief Provides functions for manipulating the admin options cache.
 	 */
 	class IAdminSystem : public SMInterface
 	{
@@ -238,7 +274,7 @@ namespace SourceMod
 		 * @param id			Group id.
 		 * @param name			String containing command name (case sensitive).
 		 * @param type			Override type (specific command or group).
-		 * @param rule			Optional pointer to store allow/deny setting.
+		 * @param pRule			Optional pointer to store allow/deny setting.
 		 * @return				True if an override exists, false otherwise.
 		 */
 		virtual bool GetGroupCommandOverride(GroupId id,

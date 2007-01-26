@@ -1,16 +1,35 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_MODULE_INTERFACE_H_
 #define _INCLUDE_SOURCEMOD_MODULE_INTERFACE_H_
 
 #include <IShareSys.h>
 #include <ILibrarySys.h>
 
+/**
+ * @file IExtensionSys.h
+ * @brief Defines the interface for loading/unloading/managing extensions.
+ */
+
 namespace SourceMod
 {
 	class IExtensionInterface;
-	typedef void *		ITERATOR;
+	typedef void *		ITERATOR;		/**< Generic pointer for dependency iterators */
 
 	/** 
-	 * @brief Encapsulates an IExtension.
+	 * @brief Encapsulates an IExtensionInterface and its dependencies.
 	 */
 	class IExtension
 	{
@@ -78,6 +97,9 @@ namespace SourceMod
 		virtual bool IsRunning(char *error, size_t maxlength) =0;
 	};
 
+	/**
+	 * @brief Version code of the IExtensionInterface API itself.
+	 */
 	#define SMINTERFACE_EXTENSIONAPI_VERSION	1
 
 	/**
@@ -86,6 +108,7 @@ namespace SourceMod
 	class IExtensionInterface
 	{
 	public:
+		/** Returns the interface API version */
 		virtual unsigned int GetExtensionVersion()
 		{
 			return SMINTERFACE_EXTENSIONAPI_VERSION;
@@ -172,12 +195,18 @@ namespace SourceMod
 	#define SMINTERFACE_EXTENSIONMANAGER_NAME			"IExtensionManager"
 	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		1
 
+	/**
+	 * @brief Not currently used.
+	 */
 	enum ExtensionLifetime
 	{
 		ExtLifetime_Forever,			//Extension will never be unloaded automatically
 		ExtLifetime_Map,				//Extension will be unloaded at the end of the map
 	};
 
+	/**
+	 * @brief Manages the loading/unloading of extensions.
+	 */
 	class IExtensionManager : public SMInterface
 	{
 	public:

@@ -1,13 +1,33 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #include <stdio.h>
 #include <malloc.h>
 #include "smsdk_ext.h"
 
-IShareSys *g_pShareSys = NULL;
-IExtension *myself = NULL;
-IHandleSys *g_pHandleSys = NULL;
-ISourceMod *g_pSM = NULL;
-IForwardManager *g_pForwards = NULL;
+/**
+ * @file smsdk_ext.cpp
+ * @brief Contains wrappers for making Extensions easier to write.
+ */
 
+IShareSys *g_pShareSys = NULL;			/**< Share system */
+IExtension *myself = NULL;				/**< Ourself */
+IHandleSys *g_pHandleSys = NULL;		/**< Handle system */
+ISourceMod *g_pSM = NULL;				/**< SourceMod helpers */
+IForwardManager *g_pForwards = NULL;	/**< Forward system */
+
+/** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
 {
 	return g_pExtensionIface;
@@ -139,14 +159,15 @@ void SDKExtension::SDK_OnAllLoaded()
 
 #if defined SMEXT_CONF_METAMOD
 
-PluginId g_PLID = 0;
-ISmmPlugin *g_PLAPI = NULL;
-SourceHook::ISourceHook *g_SHPtr = NULL;
-ISmmAPI *g_SMAPI = NULL;
+PluginId g_PLID = 0;						/**< Metamod plugin ID */
+ISmmPlugin *g_PLAPI = NULL;					/**< Metamod plugin API */
+SourceHook::ISourceHook *g_SHPtr = NULL;	/**< SourceHook pointer */
+ISmmAPI *g_SMAPI = NULL;					/**< SourceMM API pointer */
 
-IVEngineServer *engine = NULL;
-IServerGameDLL *gamedll = NULL;
+IVEngineServer *engine = NULL;				/**< IVEngineServer pointer */
+IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 
+/** Exposes the extension to Metamod */
 SMM_API void *PL_EXPOSURE(const char *name, int *code)
 {
 	if (name && !strcmp(name, PLAPI_NAME))

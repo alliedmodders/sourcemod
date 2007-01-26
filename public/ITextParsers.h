@@ -1,5 +1,24 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_
 #define _INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_
+
+/**
+ * @file ITextParsers.h
+ * @brief Defines various text/file parsing functions, as well as UTF-8 support code.
+ */
 
 #include <IShareSys.h>
 
@@ -43,6 +62,10 @@ namespace SourceMod
 	 * maintain
 	 * products
 	 */
+
+	/**
+	 * @brief Contains parse events for INI files.
+	 */
 	class ITextListener_INI
 	{
 	public:
@@ -74,7 +97,7 @@ namespace SourceMod
 		 * @param invalid_tokens Whether or not the key contained invalid tokens.
 		 * @param equal_token	There was an '=' sign present (in case the value is missing).
 		 * @param quotes		Whether value was enclosed in quotes.
-		 * @param curtoken		Contains the token index of the start of the value string.  
+		 * @param curtok		Contains the token index of the start of the value string.  
 		 *						This can be changed when returning false.
 		 * @return				True to keep parsing, false otherwise.
 		 */
@@ -95,7 +118,7 @@ namespace SourceMod
 		 * @param curtok		Pointer to optionally store failed position in string.
 		 * @return				True to keep parsing, false otherwise.
 		 */
-		virtual bool ReadINI_RawLine(const char *line, unsigned int *cutok)
+		virtual bool ReadINI_RawLine(const char *line, unsigned int *curtok)
 		{
 			return true;
 		}
@@ -140,29 +163,38 @@ namespace SourceMod
 	 *  //<TEXT>
 	 *  / *<TEXT> */
 
+	/**
+	 * @brief Lists actions to take when an SMC parse hook is done.
+	 */
 	enum SMCParseResult
 	{
-		SMCParse_Continue,		//continue parsing
-		SMCParse_Halt,			//stop parsing here
-		SMCParse_HaltFail		//stop parsing and return failure
+		SMCParse_Continue,		/**< Continue parsing */
+		SMCParse_Halt,			/**< Stop parsing here */
+		SMCParse_HaltFail		/**< Stop parsing and return SMCParseError_Custom */
 	};
 
+	/**
+	 * @brief Lists error codes possible from parsing an SMC file.
+	 */
 	enum SMCParseError
 	{
-		SMCParse_Okay = 0,			//no error
-		SMCParse_StreamOpen,		//stream failed to open
-		SMCParse_StreamError,		//the stream died... somehow
-		SMCParse_Custom,			//a custom handler threw an error
-		SMCParse_InvalidSection1,	//a section was declared without quotes, and had extra tokens
-		SMCParse_InvalidSection2,	//a section was declared without any header
-		SMCParse_InvalidSection3,	//a section ending was declared with too many unknown tokens
-		SMCParse_InvalidSection4,	//a section ending has no matching beginning
-		SMCParse_InvalidSection5,	//a section beginning has no matching ending
-		SMCParse_InvalidTokens,		//there were too many unidentifiable strings on one line
-		SMCParse_TokenOverflow,		//the token buffer overflowed
-		SMCParse_InvalidProperty1,	//a property was declared outside of any section
+		SMCParse_Okay = 0,			/**< No error */
+		SMCParse_StreamOpen,		/**< Stream failed to open */
+		SMCParse_StreamError,		/**< The stream died... somehow */
+		SMCParse_Custom,			/**< A custom handler threw an error */
+		SMCParse_InvalidSection1,	/**< A section was declared without quotes, and had extra tokens */
+		SMCParse_InvalidSection2,	/**< A section was declared without any header */
+		SMCParse_InvalidSection3,	/**< A section ending was declared with too many unknown tokens */
+		SMCParse_InvalidSection4,	/**< A section ending has no matching beginning */
+		SMCParse_InvalidSection5,	/**< A section beginning has no matching ending */
+		SMCParse_InvalidTokens,		/**< There were too many unidentifiable strings on one line */
+		SMCParse_TokenOverflow,		/**< The token buffer overflowed */
+		SMCParse_InvalidProperty1,	/**< A property was declared outside of any section */
 	};
 
+	/**
+	 * @brief Describes the events available for reading an SMC stream.
+	 */
 	class ITextListener_SMC
 	{
 	public:
@@ -250,6 +282,9 @@ namespace SourceMod
 	#define SMINTERFACE_TEXTPARSERS_NAME		"ITextParsers"
 	#define SMINTERFACE_TEXTPARSERS_VERSION		1
 
+	/**
+	 * @brief Contains various text stream parsing functions.
+	 */
 	class ITextParsers : public SMInterface
 	{
 	public:

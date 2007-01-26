@@ -1,7 +1,14 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 
+/**
+ * @file extension.h
+ * @brief Sample extension code header.
+ */
+
+
 #include "smsdk_ext.h"
+
 
 /**
  * @brief Sample implementation of the SDK Extension.

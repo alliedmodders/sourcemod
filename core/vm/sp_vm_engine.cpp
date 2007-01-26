@@ -58,6 +58,7 @@ static const char *g_ErrorMsgTable[] =
 	"Native was never bound",
 	"Maximum number of parameters reached",
 	"Native detected error",
+	"Plugin not runnable",
 };
 
 SourcePawnEngine::SourcePawnEngine()

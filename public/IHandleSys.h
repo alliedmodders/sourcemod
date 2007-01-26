@@ -1,5 +1,35 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_HANDLESYSTEM_INTERFACE_H_
 #define _INCLUDE_SOURCEMOD_HANDLESYSTEM_INTERFACE_H_
+
+/**
+ * @file IHandleSys.h
+ * @brief Defines the interface for creating, reading, and removing Handles.
+ * 
+ *  The Handle system abstracts generic pointers into typed objects represented by 
+ * 32bit codes.  This is extremely useful for verifying data integrity and cross-platform
+ * support in SourcePawn scripts.  When a Plugin unloads, all its Handles are freed, ensuring 
+ * that no memory leaks are present,  They have reference counts and thus can be duplicated, 
+ * or cloned, and are safe to pass between Plugins even if one is unloaded.
+ *
+ *  Handles are created with a given type (custom types may be created).  They can have
+ * per-Identity permissions for deletion, reading, and cloning.  They also support generic
+ * operations.  For example, deleting a Handle will call that type's destructor on the generic
+ * pointer, making cleanup easier for users and eliminating memory leaks.
+ */
 
 #include <IShareSys.h>
 #include <sp_vm_types.h>
@@ -7,18 +37,27 @@
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
 #define SMINTERFACE_HANDLESYSTEM_VERSION		1
 
+/** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
+/** Specifies no Type.  This is invalid for everything but reading a Handle. */
+#define NO_HANDLE_TYPE				0
+/** Specifies an invalid/NULL Handle */
+#define BAD_HANDLE					0
 
 namespace SourceMod
 {
 	/**
-	 * Both of these types have invalid values of '0' for error checking.
+	 * @brief Represents a Handle Type ID.
 	 */
 	typedef unsigned int HandleType_t;
+
+	/**
+	 * @brief Represents a Handle ID.
+	 */
 	typedef unsigned int Handle_t;
 
 
-	/**
+	/*
 	 * About type checking:
 	 * Types can be inherited - a Parent type ("Supertype") can have child types.
 	 * When accessing handles, type checking is done.  This table shows how this is resolved:
@@ -31,88 +70,100 @@ namespace SourceMod
 	 * Child		Child			Success
 	 */
 
+	/**
+	 * @brief Lists the possible handle error codes.
+	 */
 	enum HandleError
 	{
-		HandleError_None = 0,		/* No error */
-		HandleError_Changed,		/* The handle has been freed and reassigned */
-		HandleError_Type,			/* The handle has a different type registered */
-		HandleError_Freed,			/* The handle has been freed */
-		HandleError_Index,			/* generic internal indexing error */
-		HandleError_Access,			/* No access permitted to free this handle */
-		HandleError_Limit,			/* The limited number of handles has been reached */
-		HandleError_Identity,		/* The identity token was not usable */
-		HandleError_Owner,			/* Owners do not match for this operation */
-		HandleError_Version,		/* Unrecognized security structure version */
-		HandleError_Parameter,		/* An invalid parameter was passed */
-		HandleError_NoInherit,		/* This type cannot be inherited */
+		HandleError_None = 0,		/**< No error */
+		HandleError_Changed,		/**< The handle has been freed and reassigned */
+		HandleError_Type,			/**< The handle has a different type registered */
+		HandleError_Freed,			/**< The handle has been freed */
+		HandleError_Index,			/**< generic internal indexing error */
+		HandleError_Access,			/**< No access permitted to free this handle */
+		HandleError_Limit,			/**< The limited number of handles has been reached */
+		HandleError_Identity,		/**< The identity token was not usable */
+		HandleError_Owner,			/**< Owners do not match for this operation */
+		HandleError_Version,		/**< Unrecognized security structure version */
+		HandleError_Parameter,		/**< An invalid parameter was passed */
+		HandleError_NoInherit,		/**< This type cannot be inherited */
 	};
 
 	/**
-	 * Access rights specific to a type
+	 * @brief Lists access rights specific to a type.
 	 */
 	enum HTypeAccessRight
 	{
-		HTypeAccess_Create = 0,		/* Handles of this type can be created (DEFAULT=false) */
-		HTypeAccess_Inherit,		/* Sub-types can inherit this type (DEFAULT=false) */
+		HTypeAccess_Create = 0,		/**< Handles of this type can be created (DEFAULT=false) */
+		HTypeAccess_Inherit,		/**< Sub-types can inherit this type (DEFAULT=false) */
 		/* -------------- */
-		HTypeAccess_TOTAL,			/* Total number of type access rights */
+		HTypeAccess_TOTAL,			/**< Total number of type access rights */
 	};
 
 	/**
-	 * Access rights specific to a Handle.  These rights are exclusive.
-	 * For example, you do not need "read" access to delete or clone.
+	 * @brief Lists access rights specific to a Handle.  
+	 * 
+	 * These rights are exclusive. For example, you do not need "read" access to delete or clone.
 	 */
 	enum HandleAccessRight
 	{
-		HandleAccess_Read,			/* Can be read (DEFAULT=ident only) */
-		HandleAccess_Delete,		/* Can be deleted (DEFAULT=owner only) */
-		HandleAccess_Clone,			/* Can be cloned (DEFAULT=any) */
+		HandleAccess_Read,			/**< Can be read (DEFAULT=ident only) */
+		HandleAccess_Delete,		/**< Can be deleted (DEFAULT=owner only) */
+		HandleAccess_Clone,			/**< Can be cloned (DEFAULT=any) */
 		/* ------------- */
-		HandleAccess_TOTAL,			/* Total number of access rights */
+		HandleAccess_TOTAL,			/**< Total number of access rights */
 	};
 
-	#define HANDLE_RESTRICT_IDENTITY	(1<<0)	/* Access is restricted to the identity */
-	#define HANDLE_RESTRICT_OWNER		(1<<1)	/* Access is restricted to the owner */
+	/** Access is restricted to the identity */
+	#define HANDLE_RESTRICT_IDENTITY	(1<<0)	
+	/** Access is restricted to the owner */
+	#define HANDLE_RESTRICT_OWNER		(1<<1)
 
 	/**
-	 * This is used to define per-type access rights.
+	 * @brief This is used to define per-type access rights.
 	 */
 	struct TypeAccess
 	{
+		/** Constructor */
 		TypeAccess()
 		{
 			hsVersion = SMINTERFACE_HANDLESYSTEM_VERSION;
 		}
-		unsigned int hsVersion;
-		IdentityToken_t *ident;
-		bool access[HTypeAccess_TOTAL];
+		unsigned int hsVersion;			/**< Handle API version */
+		IdentityToken_t *ident;			/**< Identity owning this type */
+		bool access[HTypeAccess_TOTAL];	/**< Access array */
 	};
 
 	/**
-	 * This is used to define per-Handle access rights.
+	 * @brief This is used to define per-Handle access rights.
 	 */
 	struct HandleAccess
 	{
+		/** Constructor */
 		HandleAccess()
 		{
 			hsVersion = SMINTERFACE_HANDLESYSTEM_VERSION;
 		}
-		unsigned int hsVersion;
-		unsigned int access[HandleAccess_TOTAL];
+		unsigned int hsVersion;						/**< Handle API version */
+		unsigned int access[HandleAccess_TOTAL];	/**< Access array */
 	};
 
 	/**
-	 * This pair of tokens is used for identification.
+	 * @brief This pair of tokens is used for identification.
 	 */
 	struct HandleSecurity
 	{
-		IdentityToken_t *pOwner;			/* Owner of the Handle */
-		IdentityToken_t *pIdentity;			/* Owner of the Type */
+		IdentityToken_t *pOwner;			/**< Owner of the Handle */
+		IdentityToken_t *pIdentity;			/**< Owner of the Type */
 	};
 
+	/**
+	 * @brief Hooks type-specific Handle operations.
+	 */
 	class IHandleTypeDispatch
 	{
 	public:
+		/** Returns the Handle API version */
 		virtual unsigned int GetDispatchVersion()
 		{
 			return SMINTERFACE_HANDLESYSTEM_VERSION;
@@ -124,6 +175,9 @@ namespace SourceMod
 		virtual void OnHandleDestroy(HandleType_t type, void *object) =0;
 	};
 
+	/**
+	 * @brief Provides functions for managing Handles.
+	 */
 	class IHandleSys : public SMInterface
 	{
 	public:
@@ -202,7 +256,7 @@ namespace SourceMod
 		 * NOTE: This function will decrement the internal reference counter.  It will
 		 * only perform any further action if the counter hits 0.
 		 *
-		 * @param type		Handle_t identifier to destroy.
+		 * @param handle	Handle_t identifier to destroy.
 		 * @param pSecurity	Security information struct (may be NULL).
 		 * @return			A HandleError error code.
 		 */

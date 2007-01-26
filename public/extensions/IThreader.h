@@ -1,5 +1,24 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_THREADER_H
 #define _INCLUDE_SOURCEMOD_THREADER_H
+
+/**
+ * @file IThreader.h
+ * @brief Contains platform independent routines for threading.
+ */
 
 #include <IShareSys.h>
 
@@ -15,13 +34,14 @@ namespace SourceMod
 	{
 		Thread_Default = 0,
 		/**
-		 * Auto-release handle on finish
+		 * @brief Auto-release handle on finish
+		 *
 		 * You are not guaranteed the handle for this is valid after
 		 * calling MakeThread(), so never use it until OnTerminate is called.
 		 */
 		Thread_AutoRelease = 1,
 		/**
-		 * Thread is created "suspended", meaning it is inactive until unpaused.
+		 * @brief Thread is created "suspended", meaning it is inactive until unpaused.
 		 */
 		Thread_CreateSuspended = 2,
 	};
@@ -53,13 +73,14 @@ namespace SourceMod
 	 */
 	struct ThreadParams
 	{
+		/** Constructor */
 		ThreadParams() : 
 			flags(Thread_Default), 
 			prio(ThreadPrio_Normal)
 		{
 		};
-		ThreadFlags flags;
-		ThreadPriority prio;
+		ThreadFlags flags;		/**< Flags to set on the thread */
+		ThreadPriority prio;	/**< Priority to set on the thread */
 	};
 
 	class IThreadCreator;
@@ -70,6 +91,7 @@ namespace SourceMod
 	class IThreadHandle
 	{
 	public:
+		/** Virtual destructor */
 		virtual ~IThreadHandle() { };
 	public:
 		/**
@@ -94,7 +116,7 @@ namespace SourceMod
 		/**
 		 * @brief Returns the thread states.
 		 *
-		 * @param ptparmas	Pointer to a ThreadParams buffer.
+		 * @param ptparams	Pointer to a ThreadParams buffer.
 		 */
 		virtual void GetParams(ThreadParams *ptparams) =0;
 
@@ -135,6 +157,7 @@ namespace SourceMod
 	class IThread
 	{
 	public:
+		/** Virtual destructor */
 		virtual ~IThread() { };
 	public:
 		/**
@@ -145,8 +168,7 @@ namespace SourceMod
 		virtual void RunThread(IThreadHandle *pHandle) =0;
 
 		/**
-		 * @param Called when the thread terminates.
-		 * Note: This occurs inside the thread as well.
+		 * @brief Called when the thread terminates.  This occurs inside the thread as well.
 		 *
 		 * @param pHandle		Pointer to the thread's handle.
 		 * @param cancel		True if the thread did not finish, false otherwise.
@@ -161,6 +183,7 @@ namespace SourceMod
 	class IThreadCreator
 	{
 	public:
+		/** Virtual Destructor */
 		virtual ~IThreadCreator() { };
 	public:
 		/**
@@ -204,6 +227,7 @@ namespace SourceMod
 	class IMutex
 	{
 	public:
+		/** Virtual Destructor */
 		virtual ~IMutex() { };
 	public:
 		/**
@@ -235,6 +259,7 @@ namespace SourceMod
 	class IEventSignal
 	{
 	public:
+		/** Virtual Destructor */
 		virtual ~IEventSignal() { };
 	public:
 		/**
@@ -271,6 +296,7 @@ namespace SourceMod
 	class IThreadWorker : public IThreadCreator
 	{
 	public:
+		/** Virtual Destructor */
 		virtual ~IThreadWorker()
 		{
 		};

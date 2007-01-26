@@ -1,5 +1,24 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_MAIN_HELPER_INTERFACE_H_
 #define _INCLUDE_SOURCEMOD_MAIN_HELPER_INTERFACE_H_
+
+/**
+ * @file ISourceMod.h
+ * @brief Defines miscellanious helper functions useful to extensions.
+ */
 
 #include <IShareSys.h>
 #include <sp_vm_api.h>
@@ -9,14 +28,20 @@
 
 namespace SourceMod
 {
+	/**
+	 * @brief Describes various ways of formatting a base path.
+	 */
 	enum PathType
 	{
-		Path_None = 0,
-		Path_Game,
-		Path_SM,
-		Path_SM_Rel,
+		Path_None = 0,			/**< No base path */
+		Path_Game,				/**< Base path is absolute mod folder */
+		Path_SM,				/**< Base path is absolute to SourceMod */
+		Path_SM_Rel,			/**< Base path is relative to SourceMod */
 	};
 
+	/**
+	 * @brief Contains miscellanious helper functions.
+	 */
 	class ISourceMod : public SMInterface
 	{
 	public:
@@ -58,6 +83,7 @@ namespace SourceMod
 		/**
 		 * @brief Logs a message to the SourceMod logs.
 		 *
+		 * @param pExt		Extension calling this function.
 		 * @param format	Message format.
 		 * @param ...		Message format parameters.
 		 */
@@ -66,6 +92,7 @@ namespace SourceMod
 		/**
 		 * @brief Logs a message to the SourceMod error logs.
 		 *
+		 * @param pExt		Extension calling this function.
 		 * @param format	Message format.
 		 * @param ...		Message format parameters.
 		 */

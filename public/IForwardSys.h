@@ -1,5 +1,31 @@
+/**
+ * ===============================================================
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_FORWARDINTERFACE_H_
 #define _INCLUDE_SOURCEMOD_FORWARDINTERFACE_H_
+
+/**
+ * @file IForwardSys.h
+ * @brief Defines the interface for managing collections ("forwards") of plugin calls.
+ *
+ *   The Forward System is responsible for managing automated collections of IPluginFunctions.  
+ * It thus provides wrappers to calling many functions at once.  There are two types of such 
+ * wrappers: Managed and Unmanaged.  Confusingly, these terms refer to whether the user manages
+ * the forwards, not Core.  Managed forwards are completely managed by the user, and are custom
+ * editable collections.  Unmanaged forwards are the opposite, and will only work on a single global
+ * function name in all plugins.
+ */
 
 #include <IForwardSys.h>
 #include <IPluginSys.h>
@@ -10,31 +36,40 @@ using namespace SourcePawn;
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
 #define SMINTERFACE_FORWARDMANAGER_VERSION	1
 
-/**
+/*
  * There is some very important documentation at the bottom of this file.
  * Readers interested in knowing more about the forward system, scrolling down is a must!
  */
 
 namespace SourceMod
 {
+	/**
+	 * @brief Defines the event hook result types plugins can return.
+	 */
 	enum ResultType
 	{
-		Pl_Continue = 0,	/* No result */
-		Pl_Handled = 1,		/* Result was handled, stop at the end */
-		Pl_Stop = 2,		/* Result was handled, stop now */
+		Pl_Continue = 0,	/**< No result */
+		Pl_Handled = 1,		/**< Result was handled, stop at the end */
+		Pl_Stop = 2,		/**< Result was handled, stop now */
 	};
 
+	/**
+	 * @brief Defines how a forward iterates through plugin functions.
+	 */
 	enum ExecType
 	{
-		ET_Ignore = 0,		/* Ignore all return values, return 0 */
-		ET_Single = 1,		/* Only return the last exec, ignore all others */
-		ET_Event = 2,		/* Acts as an event with the ResultTypes above, no mid-Stops allowed, returns highest */
-		ET_Hook = 3,		/* Acts as a hook with the ResultTypes above, mid-Stops allowed, returns highest */
-		ET_Custom = 4,		/* Ignored or handled by an IForwardFilter */
+		ET_Ignore = 0,		/**< Ignore all return values, return 0 */
+		ET_Single = 1,		/**< Only return the last exec, ignore all others */
+		ET_Event = 2,		/**< Acts as an event with the ResultTypes above, no mid-Stops allowed, returns highest */
+		ET_Hook = 3,		/**< Acts as a hook with the ResultTypes above, mid-Stops allowed, returns highest */
+		ET_Custom = 4,		/**< Ignored or handled by an IForwardFilter */
 	};
 
 	class IForward;
 
+	/**
+	 * @brief Allows interception of how the Forward System executes functions.
+	 */
 	class IForwardFilter
 	{
 	public:
@@ -89,18 +124,16 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Abstracts multiple function calling.
+	 * @brief Unmanaged Forward, abstracts calling multiple functions as "forwards," or collections of functions.
 	 * 
-	 * NOTE: Parameters should be pushed in forward order, unlike
-	 *       the virtual machine/IPluginContext order.
-	 * NOTE: Some functions are repeated in here because their 
-	 *       documentation differs from their IPluginFunction equivalents.
-	 *       Missing are the Push functions, whose only doc change is that 
-	 *       they throw SP_ERROR_PARAM on type mismatches.
+	 *  Parameters should be pushed in forward order, unlike the virtual machine/IPluginContext order.
+	 * Some functions are repeated in here because their documentation differs from their IPluginFunction equivalents.
+	 * Missing are the Push functions, whose only doc change is that they throw SP_ERROR_PARAM on type mismatches.
 	 */
 	class IForward : public ICallable
 	{
 	public:
+		/** Virtual Destructor */
 		virtual ~IForward()
 		{
 		}
@@ -151,7 +184,9 @@ namespace SourceMod
 								int flags=0) =0;
 	};
 
-
+	/**
+	 * @brief Managed Forward, same as IForward, except the collection can be modified.
+	 */
 	class IChangeableForward : public IForward
 	{
 	public:
@@ -189,7 +224,7 @@ namespace SourceMod
 		 * NOTE: If used during a call, function is temporarily queued until calls are over.
 		 *
 		 * @param ctx		Context to use as a look-up.
-		 * @param funcid	Function id to add.
+		 * @param index		Function id to add.
 		 * @return			True on success, otherwise false.
 		 */
 		virtual bool AddFunction(IPluginContext *ctx, funcid_t index) =0;
@@ -203,18 +238,24 @@ namespace SourceMod
 	#define SP_PARAMTYPE_ARRAY	(4<<1)|SP_PARAMFLAG_BYREF
 	#define SP_PARAMTYPE_VARARG	(5<<1)
 
+	/**
+	 * @brief Describes the various ways to pass parameters to plugins.
+	 */
 	enum ParamType
 	{
-		Param_Any = SP_PARAMTYPE_ANY,
-		Param_Cell = SP_PARAMTYPE_CELL,
-		Param_Float = SP_PARAMTYPE_FLOAT,
-		Param_String = SP_PARAMTYPE_STRING,
-		Param_Array = SP_PARAMTYPE_ARRAY,
-		Param_VarArgs = SP_PARAMTYPE_VARARG,
-		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,
-		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,
+		Param_Any = SP_PARAMTYPE_ANY,				/**< Any data type can be pushed */
+		Param_Cell = SP_PARAMTYPE_CELL,				/**< Only basic cells can be pushed */
+		Param_Float = SP_PARAMTYPE_FLOAT,			/**< Only floats can be pushed */
+		Param_String = SP_PARAMTYPE_STRING,			/**< Only strings can be pushed */
+		Param_Array = SP_PARAMTYPE_ARRAY,			/**< Only arrays can be pushed */
+		Param_VarArgs = SP_PARAMTYPE_VARARG,		/**< Same as "..." in plugins, anything can be pushed, but it will always be byref */
+		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,		/**< Only a cell by reference can be pushed */
+		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,	/**< Only a float by reference can be pushed */
 	};
 	
+	/**
+	 * @brief Provides functions for creating/destroying managed and unmanaged forwards.
+	 */
 	class IForwardManager : public SMInterface
 	{
 	public:
@@ -287,7 +328,7 @@ namespace SourceMod
 	};
 };
 
-/**
+/*
  *  In the AMX Mod X model of forwarding, each forward contained a list of pairs, each pair containing
  * a function ID and an AMX structure.  The forward structure itself did very little but hold parameter types.
  * An execution call worked like this:

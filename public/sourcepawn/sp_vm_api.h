@@ -1,9 +1,29 @@
+/**
+ * ================================================================
+ * SourcePawn (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * ================================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
+ * or modified under the Terms and Conditions of its License Agreement, which is found 
+ * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
+ * may change at any time.  To view the latest information, see:
+ *   http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEPAWN_VM_API_H_
 #define _INCLUDE_SOURCEPAWN_VM_API_H_
+
+/**
+ * @file sp_vm_api.h
+ * @brief Contains all of the object structures used in the SourcePawn API.
+ */
 
 #include <stdio.h>
 #include "sp_vm_types.h"
 
+/** SourcePawn VM API Version */
 #define SOURCEPAWN_VM_API_VERSION		1
 
 #if defined SOURCEMOD_BUILD
@@ -17,10 +37,9 @@ namespace SourcePawn
 {
 	class IVirtualMachine;
 
-	#define SM_PARAM_COPYBACK		(1<<0)		/* Copy an array/reference back after call */
-
-	#define SM_PARAM_STRING_UTF8	(1<<0)		/* String should be UTF-8 handled */
-	#define SM_PARAM_STRING_COPY	(1<<1)		/* String should be copied into the plugin */
+	#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
+	#define SM_PARAM_STRING_UTF8	(1<<0)		/**< String should be UTF-8 handled */
+	#define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
@@ -52,7 +71,7 @@ namespace SourcePawn
 		/**
 		 * @brief Pushes a float onto the current call.
 		 *
-		 * @param float		Parameter value to push.
+		 * @param number	Parameter value to push.
 		 * @return			Error code, if any.
 		 */
 		virtual int PushFloat(float number) =0;
@@ -64,7 +83,7 @@ namespace SourcePawn
 		 *		 This means you cannot push a pointer, change it, and push it again and expect
 		 *       two different values to come out.
 		 *
-		 * @param float		Parameter value to push.
+		 * @param number	Parameter value to push.
 		 & @param flags		Copy-back flags.
 		 * @return			Error code, if any.
 		 */
@@ -119,6 +138,7 @@ namespace SourcePawn
 
 	/**
 	 * @brief Encapsulates a function call in a plugin.
+	 *
 	 * NOTE: Function calls must be atomic to one execution context.
 	 * NOTE: This object should not be deleted.  It lives for the lifetime of the plugin.
 	 */
@@ -139,7 +159,7 @@ namespace SourcePawn
 		 * NOTE: You will get an error if you attempt to use CallFunction() with
 		 * previously pushed parameters.
 		 *
-		 * @param param			Array of cell parameters.
+		 * @param params		Array of cell parameters.
 		 * @param num_params	Number of parameters to push.
 		 * @param result		Pointer to store result of function on return.
 		 * @return				SourcePawn error code (if any).
@@ -156,7 +176,7 @@ namespace SourcePawn
 		/**
 		 * @brief Returns the physical address of a by-reference parameter.
 		 *
-		 * @param				Parameter index to read (beginning at 0).
+		 * @param param			Parameter index to read (beginning at 0).
 		 * @return				Address, or NULL if invalid parameter specified.
 		 */
 		virtual cell_t *GetAddressOfPushedParam(unsigned int param) =0;
@@ -200,6 +220,7 @@ namespace SourcePawn
 	class IPluginContext
 	{
 	public:
+		/** Virtual destructr */
 		virtual ~IPluginContext() { };
 	public:
 		/** 
@@ -525,9 +546,9 @@ namespace SourcePawn
 	 */
 	struct CallStackInfo
 	{
-		const char *filename;		/* NULL if not found */
-		unsigned int line;			/* 0 if not found */
-		const char *function;		/* NULL if not found */
+		const char *filename;		/**< NULL if not found */
+		unsigned int line;			/**< 0 if not found */
+		const char *function;		/**< NULL if not found */
 	};
 
 	/**
@@ -690,6 +711,7 @@ namespace SourcePawn
 	class ICompilation
 	{
 	public:
+		/** Virtual destructor */
 		virtual ~ICompilation() { };
 	};
 
