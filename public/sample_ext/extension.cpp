@@ -1,3 +1,4 @@
+// vim: set ts=4 :
 #include "extension.h"
 
 /**
