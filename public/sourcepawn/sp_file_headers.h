@@ -126,14 +126,6 @@ typedef struct sp_file_natives_s
 } sp_file_natives_t;
 
 /**
- * @brief File-encoded format of the ".libraries" section (UNUSED).
- */
-typedef struct sp_file_libraries_s
-{
-	uint32_t	name;			/**< Index into nametable */
-} sp_file_libraries_t;
-
-/**
  * @brief File-encoded format of the ".pubvars" section.
  */
 typedef struct sp_file_pubvars_s

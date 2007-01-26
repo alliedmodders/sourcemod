@@ -82,9 +82,7 @@ typedef struct sp_plugin_infotab_s
 	uint32_t	natives_num;	/**< number of natives */
 	sp_file_natives_t *natives; /**< native table */
 	uint32_t	pubvars_num;	/**< number of pubvars */
-	sp_file_pubvars_t *pubvars;	/**< pubvars table */	
-	uint32_t libraries_num;		/**< number of libraries */
-	sp_file_libraries_t *lib;	/**< library table */
+	sp_file_pubvars_t *pubvars;	/**< pubvars table */
 } sp_plugin_infotab_t;
 
 /**
