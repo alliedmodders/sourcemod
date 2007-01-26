@@ -538,33 +538,35 @@ void CPhraseFile::ReadSMC_ParseEnd(bool halted, bool failed)
 	}
 }
 
-const char *CPhraseFile::GetTranslation(const Translation *pTrans, int **fmt_order, unsigned int *fmt_count)
+TransError CPhraseFile::GetTranslation(const char *szPhrase, unsigned int lang_id, Translation *pTrans)
 {
-	if (pTrans->lang_id >= m_LangCount)
+	if (lang_id >= m_LangCount)
 	{
-		return NULL;
+		return Trans_BadLanguage;
 	}
 
 	void *object;
-	if (!sm_trie_retrieve(m_pPhraseLookup, pTrans->szPhrase, &object))
+	if (!sm_trie_retrieve(m_pPhraseLookup, szPhrase, &object))
 	{
-		return NULL;
+		return Trans_BadPhrase;
 	}
 
 	phrase_t *pPhrase = (phrase_t *)m_pMemory->GetAddress(reinterpret_cast<int>(object));
 	trans_t *trans = (trans_t *)m_pMemory->GetAddress(pPhrase->trans_tbl);
 
-	trans = &trans[pTrans->lang_id];
+	trans = &trans[lang_id];
 
 	if (trans->stridx == -1)
 	{
-		return NULL;
+		return Trans_BadPhraseLanguage;
 	}
 
-	*fmt_order = (int *)m_pMemory->GetAddress(trans->fmt_order);
-	*fmt_count = pPhrase->fmt_count;
+	pTrans->fmt_order = (int *)m_pMemory->GetAddress(trans->fmt_order);
+	pTrans->fmt_count = pPhrase->fmt_count;
 
-	return m_pStringTab->GetString(trans->stridx);
+	pTrans->szPhrase = m_pStringTab->GetString(trans->stridx);
+
+	return Trans_Okay;
 }
 
 const char *CPhraseFile::GetFilename()
@@ -735,30 +737,15 @@ SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value,
 	return SMCParse_Continue;
 }
 
-size_t CTranslator::Translate(char *buffer, size_t maxlength, const Translation *pTrans)
+size_t CTranslator::Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans)
 {
-	if (pTrans->file_id >= m_Files.size())
-	{
-		return 0;
-	}
-
-	CPhraseFile *pFile = m_Files[pTrans->file_id];
-	unsigned int count;
-	int *order_table;
-	const char *str;
-
-	if ((str=pFile->GetTranslation(pTrans, &order_table, &count)) == NULL)
-	{
-		return 0;
-	}
-
-	void *params[MAX_TRANSLATE_PARAMS];
+	void *new_params[MAX_TRANSLATE_PARAMS];
 
 	/* Rewrite the parameter order */
-	for (unsigned int i=0; i<count; i++)
+	for (unsigned int i=0; i<pTrans->fmt_count; i++)
 	{
-		params[i] = pTrans->params[order_table[i]];
+		new_params[i] = params[pTrans->fmt_order[i]];
 	}
 
-	return gnprintf(buffer, maxlength, str, params);
+	return gnprintf(buffer, maxlength, pTrans->szPhrase, new_params);
 }

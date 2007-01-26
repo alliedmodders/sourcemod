@@ -43,10 +43,17 @@ struct Language
 
 struct Translation
 {
-	const char *szPhrase;
-	unsigned int lang_id;
-	unsigned int file_id;
-	void **params;
+	const char *szPhrase;		/**< Translated phrase. */
+	unsigned int fmt_count;		/**< Number of format parameters. */
+	int *fmt_order;				/**< Format phrase order. */
+};
+
+enum TransError
+{
+	Trans_Okay = 0,
+	Trans_BadLanguage = 1,
+	Trans_BadPhrase = 2,
+	Trans_BadPhraseLanguage = 3
 };
 
 class CPhraseFile : public ITextListener_SMC
@@ -57,7 +64,7 @@ public:
 public:
 	void ReparseFile();
 	const char *GetFilename();
-	const char *GetTranslation(const Translation *pTrans, int **fmt_order, unsigned int *fmt_count);
+	TransError GetTranslation(const char *szPhrase, unsigned int lang_id, Translation *pTrans);
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
 	void ReadSMC_ParseEnd(bool halted, bool failed);
@@ -99,7 +106,8 @@ public:
 	BaseStringTable *GetStringTable();
 	unsigned int GetLanguageCount();
 	bool GetLanguageByCode(const char *code, unsigned int *index);
-	size_t Translate(char *buffer, size_t maxlength, const Translation *pTrans);
+	size_t Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans);
+	CPhraseFile *GetFileByIndex(unsigned int index);
 private:
 	CVector<Language *> m_Languages;
 	CVector<CPhraseFile *> m_Files;
