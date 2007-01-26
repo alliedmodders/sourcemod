@@ -381,10 +381,6 @@
 				RelativePath="..\..\public\ITextParsers.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\public\extensions\IThreader.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Systems"
