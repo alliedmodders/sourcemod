@@ -1,0 +1,150 @@
+0. Preamble
+
+   This license is designed to address various issues that came up with AMX Mod X. 
+SourceMod is Freeware and has fairly unrestrictive terms for redistribution.  You 
+may use it commercially, but you may not sell SourceMod redistributions or 
+derivatives.  
+
+   Derivative works created with the SourceMod SDK are required to be licensed
+under the GNU General Public License (GPL), unless with explicit written permission 
+of AlliedModders LLC.  This affects both Extensions and Plugins.  A copy of the GPL 
+is distributed in GPL.txt.
+   
+   While there are sections of this license that restrict your usage, there are
+many entries to explicitly grant rights that were ambiguous with prior products.
+
+1. COPYRIGHT INFORMATION
+
+ SourceMod is Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ SourcePawn is Copyright (C) 2006-2007 AlliedModders LLC.  All rights reserved.
+ Pawn and SMALL are Copyright (C) 1997-2007 ITB CompuPhase.
+ Source is Copyright (C) Valve Corporation.
+ All trademarks are property of their respective in the US and other countries.
+
+2. LICENSE AGREEMENT
+
+   The copyright owner and Licensor of SourceMod is "AlliedModders LLC."   
+   SourceMod is Freeware, and does not require payment of any license fee.  
+   This license is a binding legal agreement between the individual who downloads 
+   SourceMod ("you") and the Licensor.  AlliedModders hereby grants you a 
+   non-exclusive, transferable license to use SourceMod and its accompanying 
+   documentation and source code.  As a condition for granting You a license to 
+   download or use SourceMod, you agree to all of the Terms and Conditions.  
+   If you fail to adhere to the Terms and Conditions, your license to use SourceMod 
+   is automatically revoked without any action on behalf of the Licensor.
+
+   This License may be updated at any time.  Each revision is differentiated by a 
+   date version.  This License was created on Jan-25-2007.
+
+   With this License, you may:
+
+   a. Use SourceMod on any number of computers;
+
+   b. Redistribute or copy SourceMod (subject to requirements in Section 3);
+
+   c. Alter SourceMod files (both binary and text) for personal use;
+
+   d. Disassemble, decompile, reverse engineer, or otherwise reduce SourceMod
+      to human readable form for personal use, documentation, research, or to
+      report bugs or security issues.
+
+   e. Create derivate works using the provided SDK, subject to the SDK Terms 
+      and Conditions (Section 4).
+
+3. LIMITATIONS ON DISTRIBUTION.  
+
+   Redistribution granted in Section 2.b is subject to the following restrictions:
+
+   a. You may alter certain files under the following restrictions:
+
+     (i) You may not alter any binary object file for redistribution.
+
+     (ii) You may alter any text, configuration, or database file, if you
+          mark the files explicitly as altered from their original.
+
+     (iii) SourceMod may come with files under their own licenses (for example, 
+           the GeoIP database by MaxMind).  You must obey the licenses for
+           third-party files.
+   
+   b. You may not sell SourceMod, alter its License, or sell/rent licenses to 
+      third parties (by payment of money or otherwise).  
+
+     (i) You may charge for the media transfer of its files only.
+  
+     (ii) You may not sell individual files derived from or directly from SourceMod
+          without explicit written permission of AlliedModders LLC.
+
+     (iii) You may sell or offer services related to installing, configuring,
+           servicing, coding for, or troubleshooting SourceMod.
+
+     (iv) You may sell or offer services where SourceMod is offered, permitted, or
+          pre-installed on game servers you provide.  You may charge a nominal fee
+          for such services in relation to SourceMod.  However, it must be clear 
+          that you are not charging for a SourceMod License itself, but a service
+          related to it.
+
+     (v) You may sell or charge for the service of using SourceMod in-game or 
+         remotely.  Such services are considered not to be related to SourceMod,
+         but to the VALVe (R) Source Engine, and thus are not related to this
+         License or its Terms and Conditions.
+
+   c. You may not remove this or any copyright notice from SourceMod, or any files 
+      distributed with SourceMod.  
+
+   d. You may remove files or otherwise reorganize the SourceMod distribution
+      as long as you explicitly mark it as altered from the original, and maintain
+      all Copyright and License information.
+
+4. SDK TERMS AND CONDITIONS.  
+
+   You may create derivative works using the
+   provided SourceMod SDK.  In order to create such works, you must agree to the
+   terms and conditions below.  Failure to adhere to these conditions 
+   automatically revokes your License to use the SourceMod SDK.
+
+   a. You may redistribute the SourceMod SDK or any derivative works in object
+      or source code form, provided you use one of the following open source 
+      licenses.  In this case, "use" means "adhere to the terms and conditions of."
+      The alternate license does not replace the SourceMod SDK License, but
+      applies to your redistribution of the SourceMod SDK in altered form.
+
+     (i) GNU General Public License ("GPL") Version 2 or higher.  A copy of the 
+         GPL is provided in GPL.txt.  You are granted explicit permission to link
+         your GPL SourceMod SDK code against both SourceMod and the Source SDK
+         from VALVe (R).
+     
+   b. Usage of alternate licenses, terms, or conditions specified in Section 4.a 
+      is not allowed unless given explicit written permission from AlliedModders 
+      LLC.  You may, however, use more than one of the alternate licenses under a
+      multi-license scheme.
+
+   c. You may alter any file in the SourceMod SDK and redistribute as long as it
+      is explicitly marked as altered, and all License or Copyright information
+      remains unaltered.
+
+   d. You may use the SourceMod SDK freely to write competing works, to reverse
+      engineer SourceMod, or to otherwise write works unrelated to SourceMod, 
+      under the normal conditions specified by Section 4.a.
+
+5. NO WARRANTY
+
+   BECAUSE SOURCEMOD IS LICENSED FREE OF CHARGE, THERE IS NO WARRANT, TO THE 
+   EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING
+   ALLIEDMODDERS LLC AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT 
+   WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED 
+   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+   PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS 
+   WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL 
+   NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+   IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL
+   ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR REDISTRIBUTE
+   THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+   GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+   USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA
+   OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+   OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH
+   HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+
+ 
