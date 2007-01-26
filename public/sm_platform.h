@@ -1,7 +1,8 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * All rights reserved.
  * ===============================================================
  *
  *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
