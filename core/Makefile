@@ -13,7 +13,7 @@ OPT_FLAGS = -O3 -funroll-loops -s -pipe -fno-strict-aliasing
 GCC4_FLAGS = -fvisibility=hidden -fvisibility-inlines-hidden
 DEBUG_FLAGS = -g -ggdb3
 CPP = gcc-4.1
-BINARY = sourcemod_mm.so
+BINARY = sourcemod_mm_i486.so
 
 HL2PUB = $(HL2SDK)/public
 HL2LIB = $(HL2SDK)/linux_sdk
