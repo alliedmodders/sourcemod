@@ -27,3 +27,9 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 
 	return 1;
 }
+
+REGISTER_NATIVES(langNativeS)
+{
+	{"LoadTranslations",			sm_LoadTranslations},
+	{NULL,							NULL},
+};

@@ -737,6 +737,16 @@ SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value,
 	return SMCParse_Continue;
 }
 
+CPhraseFile *CTranslator::GetFileByIndex(unsigned int index)
+{
+	if (index >= m_Files.size())
+	{
+		return NULL;
+	}
+
+	return m_Files[index];
+}
+
 size_t CTranslator::Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans)
 {
 	void *new_params[MAX_TRANSLATE_PARAMS];
