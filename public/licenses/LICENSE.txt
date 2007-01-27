@@ -19,7 +19,7 @@ many entries to explicitly grant rights that were ambiguous with prior products.
  SourcePawn is Copyright (C) 2006-2007 AlliedModders LLC.  All rights reserved.
  Pawn and SMALL are Copyright (C) 1997-2007 ITB CompuPhase.
  Source is Copyright (C) Valve Corporation.
- All trademarks are property of their respective in the US and other countries.
+ All trademarks are property of their respective owners in the US and other countries.
 
 2. LICENSE AGREEMENT
 
@@ -28,13 +28,13 @@ many entries to explicitly grant rights that were ambiguous with prior products.
    This license is a binding legal agreement between the individual who downloads 
    SourceMod ("you") and the Licensor.  AlliedModders hereby grants you a 
    non-exclusive, transferable license to use SourceMod and its accompanying 
-   documentation and source code.  As a condition for granting You a license to 
+   documentation and source code.  As a condition for granting you a license to 
    download or use SourceMod, you agree to all of the Terms and Conditions.  
    If you fail to adhere to the Terms and Conditions, your license to use SourceMod 
    is automatically revoked without any action on behalf of the Licensor.
 
-   This License may be updated at any time.  Each revision is differentiated by a 
-   date version.  This License was created on Jan-25-2007.
+   This License may be updated at any time, without prior notice..  Each revision 
+   is differentiated by a date version.  This License was created on Jan-27-2007.
 
    With this License, you may:
 
@@ -128,11 +128,11 @@ many entries to explicitly grant rights that were ambiguous with prior products.
 
 5. NO WARRANTY
 
-   BECAUSE SOURCEMOD IS LICENSED FREE OF CHARGE, THERE IS NO WARRANT, TO THE 
-   EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING
+   BECAUSE SOURCEMOD IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY, TO THE 
+   EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING,
    ALLIEDMODDERS LLC AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT 
    WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED 
-   TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+   TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
    PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS 
    WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL 
    NECESSARY SERVICING, REPAIR OR CORRECTION.
