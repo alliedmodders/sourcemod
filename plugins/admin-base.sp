@@ -30,7 +30,7 @@ new bool:g_LoggedFileName = false;			/* Whether or not the file name has been lo
 
 public OnPluginStart()
 {
-	g_hLevelParser = SMC_CreateParse();
+	g_hLevelParser = SMC_CreateParser();
 	SMC_SetReaders(g_hLevelParser, 
 				   ReadLevels_NewSection,
 				   ReadLevels_KeyValue,
