@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="sourcemod_mm"
 	ProjectGUID="{E39527CD-7CAB-4420-97CC-DA1B93B260BC}"
 	RootNamespace="sourcemod_mm"
@@ -241,6 +241,10 @@
 			</File>
 			<File
 				RelativePath="..\smn_handles.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_lang.cpp"
 				>
 			</File>
 			<File

@@ -491,6 +491,21 @@ void CPlugin::SetTimeStamp(time_t t)
 	m_LastAccess = t;
 }
 
+void CPlugin::AddLangFile(unsigned int index)
+{
+	m_PhraseFiles.push_back(index);
+}
+
+size_t CPlugin::GetLangFileCount() const
+{
+	return m_PhraseFiles.size();
+}
+
+unsigned int CPlugin::GetFileByIndex(unsigned int index) const
+{
+	return m_PhraseFiles.at(index);
+}
+
 /*******************
  * PLUGIN ITERATOR *
  *******************/

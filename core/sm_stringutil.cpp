@@ -16,6 +16,8 @@
 #include <stdarg.h>
 #include "sm_stringutil.h"
 #include "CLogger.h"
+#include "PluginSys.h"
+#include "CTranslator.h"
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
@@ -27,6 +29,47 @@
 		g_Logger.LogError("String formatted incorrectly - parameter %d (total %d)", arg, args); \
 		return 0; \
 	}
+
+size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *key, cell_t target, const cell_t *params, int *arg)
+{
+	unsigned int langid;
+	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
+	size_t langcount = pl->GetLangFileCount();
+
+	if (!g_Translator.GetLanguageByCode("en", &langid)) 	//:TODO: hardcoded this just for testing
+	{
+		//:TODO: error out something
+	}
+
+	CPhraseFile *phrfl;
+	TransError err = Trans_Okay;
+	Translation pTrans;
+
+	for (size_t i=0; i<langcount && err!=Trans_Okay; i++)
+	{
+		phrfl = g_Translator.GetFileByIndex(pl->GetFileByIndex(i));
+		err = phrfl->GetTranslation(key, langid, &pTrans);
+	}
+
+	if (err != Trans_Okay)
+	{
+		//:TODO: we didnt find our translation in any file :o
+	}
+
+	void *new_params[MAX_TRANSLATE_PARAMS];
+	unsigned int max_params = pTrans.fmt_count;
+	for (size_t i=0; i<max_params; i++)
+	{
+		pCtx->LocalToPhysAddr(params[*arg], reinterpret_cast<cell_t **>(&new_params[i]));
+		(*arg)++;
+		if ((*arg) + i > (size_t)params[0])
+		{
+			//:TODO: we are missing arguments zOMG
+		}
+	}
+
+	return g_Translator.Translate(buffer, maxlen, new_params, &pTrans);
+}
 
 //:TODO: review this code before we choose a license
 
@@ -562,6 +605,16 @@ reswitch:
 				pCtx->LocalToString(params[arg], &str);
 				AddString(&buf_p, llen, str, width, prec);
 				arg++;
+				break;
+			}
+		case 'T':
+			{
+				CHECK_ARGS(0);
+				char *key;
+				cell_t target = params[arg++];
+				pCtx->LocalToString(params[arg++], &key);
+				llen -= Translate(buf_p, llen, pCtx, key, target, params, &arg);
+				buf_p += llen;
 				break;
 			}
 		case '%':

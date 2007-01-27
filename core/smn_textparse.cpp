@@ -268,6 +268,9 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[3], &c_line);
 	pContext->LocalToPhysAddr(params[4], &c_col);
 
+	*c_line = line;
+	*c_col = col;
+
 	return (cell_t)p_err;
 }
 

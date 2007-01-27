@@ -21,6 +21,7 @@
 #include <IHandleSys.h>
 #include <sh_list.h>
 #include <sh_stack.h>
+#include <sh_vector.h>
 #include "sm_globals.h"
 #include "vm/sp_vm_basecontext.h"
 #include "PluginInfoDatabase.h"
@@ -176,6 +177,21 @@ public:
 	 * Returns true if a plugin is usable.
 	 */
 	bool IsRunnable() const;
+
+	/**
+	* Adds a language file index to the plugin's list.
+	*/
+	void AddLangFile(unsigned int index);
+
+	/**
+	* Get language file count for this plugin.
+	*/
+	size_t GetLangFileCount() const;
+
+	/**
+	* Get language file index based on the vector index.
+	*/
+	unsigned int GetFileByIndex(unsigned int index) const;
 public:
 	/**
 	* Returns the modification time during last plugin load.
@@ -207,6 +223,7 @@ private:
 	IdentityToken_t *m_ident;
 	Handle_t m_handle;
 	bool m_WasRunning;
+	CVector<unsigned int> m_PhraseFiles;
 };
 
 class CPluginManager : 
