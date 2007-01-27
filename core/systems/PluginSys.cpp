@@ -634,7 +634,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 }
 
 //well i have discovered that gabe newell is very fat, so i wrote this comment now
-bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t err_max)
+LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t err_max)
 {
 	/**
 	 * Does this plugin already exist?
@@ -642,19 +642,18 @@ bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug
 	CPlugin *pPlugin;
 	if (sm_trie_retrieve(m_LoadLookup, path, (void **)&pPlugin))
 	{
-		/* First check the type */
-		PluginType type = pPlugin->GetType();
-		if (type == PluginType_Private
-			|| type == PluginType_Global)
-		{
-			return true;
-		}
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
 			|| pPlugin->GetStatus() == Plugin_Error
 			|| pPlugin->GetStatus() == Plugin_Failed)
 		{
 			UnloadPlugin(pPlugin);
+		} else {
+			if (_plugin)
+			{
+				*_plugin = pPlugin;
+			}
+			return LoadRes_AlreadyLoaded;
 		}
 	}
 
@@ -732,17 +731,25 @@ bool CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug
 		*_plugin = pPlugin;
 	}
 
-	return (pPlugin->GetStatus() == Plugin_Loaded);
+	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : LoadRes_Failure;
 }
 
-IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max)
+IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max, bool *wasloaded)
 {
 	CPlugin *pl;
+	LoadRes res;
 
-	if (!_LoadPlugin(&pl, path, debug, type, error, err_max))
+	*wasloaded = false;
+	if ((res=_LoadPlugin(&pl, path, debug, type, error, err_max)) == LoadRes_Failure)
 	{
 		delete pl;
 		return NULL;
+	}
+
+	if (res == LoadRes_AlreadyLoaded)
+	{
+		*wasloaded = true;
+		return pl;
 	}
 
 	AddPlugin(pl);
@@ -763,15 +770,19 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 void CPluginManager::LoadAutoPlugin(const char *plugin)
 {
 	CPlugin *pl;
+	LoadRes res;
 	char error[255] = "Unknown error";
 
-	if (!_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error)))
+	if ((res=_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s", plugin, error);
 		pl->SetErrorState(Plugin_Failed, "%s", error);
 	}
 
-	AddPlugin(pl);
+	if (res == LoadRes_Successful)
+	{
+		AddPlugin(pl);
+	}
 }
 
 void CPluginManager::AddPlugin(CPlugin *pPlugin)
@@ -1410,8 +1421,15 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			}
 
 			char error[128];
+			bool wasloaded;
 			const char *filename = g_RootMenu.GetArgument(3);
-			IPlugin *pl = LoadPlugin(filename, false, PluginType_MapUpdated, error, sizeof(error));
+			IPlugin *pl = LoadPlugin(filename, false, PluginType_MapUpdated, error, sizeof(error), &wasloaded);
+
+			if (wasloaded)
+			{
+				g_RootMenu.ConsolePrint("[SM] Plugin %s is already loaded.", filename);
+				return;
+			}
 
 			if (pl)
 			{

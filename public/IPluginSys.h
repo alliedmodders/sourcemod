@@ -251,13 +251,15 @@ namespace SourceMod
 		 * @param type		Lifetime of the plugin.
 		 * @param error		Buffer to hold any error message.
 		 * @param err_max	Maximum length of error message buffer.
+		 * @param wasloaded	Stores if the plugin is already loaded.
 		 * @return			A new plugin pointer on success, false otherwise.
 		 */
 		virtual IPlugin *LoadPlugin(const char *path, 
 									bool debug,
 									PluginType type,
 									char error[],
-									size_t err_max) =0;
+									size_t err_max,
+									bool *wasloaded) =0;
 
 		/**
 		 * @brief Attempts to unload a plugin.

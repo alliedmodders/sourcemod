@@ -89,6 +89,13 @@ struct ContextPair
 	IVirtualMachine *vm;
 };
 
+enum LoadRes
+{
+	LoadRes_Successful,
+	LoadRes_AlreadyLoaded,
+	LoadRes_Failure
+};
+
 class CPlugin : public IPlugin
 {
 	friend class CPluginManager;
@@ -235,7 +242,8 @@ public: //IPluginManager
 								bool debug,
 								PluginType type,
 								char error[],
-								size_t err_max);
+								size_t err_max,
+								bool *wasloaded);
 	bool UnloadPlugin(IPlugin *plugin);
 	IPlugin *FindPluginByContext(const sp_context_t *ctx);
 	unsigned int GetPluginCount();
@@ -302,7 +310,7 @@ public:
 	void ReloadOrUnloadPlugins();
 
 private:
-	bool _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);
+	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);
 
 	void LoadAutoPlugin(const char *plugin);
 
