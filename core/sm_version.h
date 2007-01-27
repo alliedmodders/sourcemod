@@ -18,11 +18,12 @@
  * @file Contains SourceMod version information.
  */
 
+#include "svn_version.h"
+
 #define SOURCEMOD_V_MAJOR	1
 #define SOURCEMOD_V_MINOR	0
 #define SOURCEMOD_V_REV		0
-#define SOURCEMOD_V_BUILD	308
 
-#define SOURCEMOD_VERSION	"1.0.0.308"
+#define SOURCEMOD_VERSION	"1.0.0." SVN_REVISION_STRING
 
 #endif //_INCLUDE_SOURCEMOD_VERSION_H_
