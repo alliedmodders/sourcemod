@@ -990,8 +990,8 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       i=atoi(ptr+1);
       add_constant(str,i,sGLOBAL,0);
     } else {
-      strlcpy(str,argv[arg],sizeof(str)-5); /* -5 because default extension is ".psrc" */
-      set_extension(str,".psrc",FALSE);
+      strlcpy(str,argv[arg],sizeof(str)-5); /* -5 because default extension is ".sp" */
+      set_extension(str,".sp",FALSE);
       insert_sourcefile(str);
       /* The output name is the first input name with a different extension,
        * but it is stored in a different directory
