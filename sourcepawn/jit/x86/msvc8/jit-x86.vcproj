@@ -209,11 +209,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\jit_version.h"
+				>
+			</File>
+			<File
 				RelativePath="..\jit_x86.h"
 				>
 			</File>
 			<File
 				RelativePath="..\opcode_helpers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\svn_version.h"
 				>
 			</File>
 			<File
@@ -236,6 +244,10 @@
 			</File>
 			<File
 				RelativePath="..\ungen_opcode_switch.inc"
+				>
+			</File>
+			<File
+				RelativePath="..\version.rc"
 				>
 			</File>
 		</Filter>

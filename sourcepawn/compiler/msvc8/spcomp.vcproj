@@ -309,7 +309,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\svnrev.h"
+				RelativePath="..\svn_version.h"
 				>
 			</File>
 		</Filter>

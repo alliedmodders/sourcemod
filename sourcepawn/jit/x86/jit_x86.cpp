@@ -17,6 +17,7 @@
 #include "jit_x86.h"
 #include "opcode_helpers.h"
 #include "x86_macros.h"
+#include "jit_version.h"
 
 #if defined USE_UNGEN_OPCODES
 #include "ungen_opcodes.h"
@@ -2331,7 +2332,7 @@ unsigned int JITX86::FunctionCount(const sp_context_t *ctx)
 
 const char *JITX86::GetVersionString()
 {
-	return "1.0.0.0";
+	return JIT_VERSION;
 }
 
 const char *JITX86::GetCPUOptimizations()

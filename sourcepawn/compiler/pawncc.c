@@ -260,31 +260,6 @@ int main(int argc, char *argv[])
 			spfw_next_section(spf);
 		}
 
-		if (sections[FS_Libraries])
-		{
-			sp_file_libraries_t *libtbl;
-			AMX_FUNCSTUBNT *stub;
-			unsigned char *stubptr;
-			uint32_t libraries = sections[FS_Libraries];
-
-			libtbl = (sp_file_libraries_t *)malloc(sizeof(sp_file_libraries_t) * libraries);
-			stubptr = (unsigned char *)hdr + hdr->libraries;
-
-			for (i=0; i<libraries; i++)
-			{
-				stub = (AMX_FUNCSTUBNT *)stubptr;
-				libtbl[i].name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
-
-				stubptr += hdr->defsize;
-			}
-			if (libraries)
-			{
-				sfwrite(libtbl, sizeof(sp_file_libraries_t), libraries, spf);
-			}
-			free(libtbl);
-			spfw_next_section(spf);
-		}
-
 		if (sections[FS_Nametable])
 		{
 			unsigned char *base;

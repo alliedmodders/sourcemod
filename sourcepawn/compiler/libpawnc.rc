@@ -4,7 +4,7 @@
 #else
 #  include <ver.h>
 #endif
-#include "svnrev.h"
+#include "svn_version.h"
 
 AppIcon ICON "pawn.ico"
 
@@ -13,10 +13,10 @@ AppIcon ICON "pawn.ico"
  *  All strings MUST have an explicit \0. See the Windows SDK documentation
  *  for details on version information and the VERSIONINFO structure.
  */
-#define VERSION              SMC_VERSION
-#define REVISION             SMC_REVISION
-#define BUILD                SMC_BUILD
-#define VERSIONSTR           SMC_VERSTRING
+#define VERSION              1
+#define REVISION             0
+#define BUILD                SVN_REVISION
+#define VERSIONSTR           SVN_REVISION_STRING
 #define VERSIONNAME          "smcomp.exe\0"
 #define VERSIONDESCRIPTION   "SourcePawn Compiler\0"
 #define VERSIONPRODUCTNAME   "smcomp\0"

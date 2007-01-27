@@ -65,9 +65,9 @@
 
 #include "lstring.h"
 #include "sc.h"
-#include "svnrev.h"
+#include "svn_version.h"
 #include "sctracker.h"
-#define VERSION_STR "3.2." SVN_REVSTR
+#define VERSION_STR "3.2.3636"
 #define VERSION_INT 0x0302
 
 int pc_functag = 0;
@@ -1179,7 +1179,7 @@ static void setconfig(char *root)
 
 static void setcaption(void)
 {
-  pc_printf("SourcePawn Compiler " SMC_VERSTRING "\n");
+  pc_printf("SourcePawn Compiler 1.0.0." SVN_REVISION_STRING "\n");
   pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2006 AlliedModders, LLC\n\n");
 }
 
