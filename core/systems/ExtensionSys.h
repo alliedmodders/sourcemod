@@ -94,6 +94,7 @@ public:
 	void BindAllNativesToPlugin(IPlugin *pPlugin);
 	void MarkAllLoaded();
 	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
+	void TryAutoload();
 private:
 	CExtension *FindByOrder(unsigned int num);
 private:

@@ -216,6 +216,9 @@ void SourceModBase::DoGlobalPluginLoads()
 		sizeof(plugins_path),
 		"plugins");
 
+	/* Load any auto extensions */
+	g_Extensions.TryAutoload();
+
 	/* Run the first pass */
 	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);
 

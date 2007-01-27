@@ -11,6 +11,7 @@
  * Version: $Id$
  */
 
+#include <stdlib.h>
 #include "ExtensionSys.h"
 #include "LibrarySys.h"
 #include "ShareSys.h"
@@ -18,7 +19,7 @@
 #include "sourcemm_api.h"
 #include "PluginSys.h"
 #include "sm_srvcmds.h"
-#include <stdlib.h>
+#include "sm_stringutil.h"
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -265,6 +266,52 @@ void CExtensionManager::OnSourceModShutdown()
 	g_RootMenu.RemoveRootConsoleCommand("exts", this);
 	g_PluginSys.RemovePluginsListener(this);
 	g_ShareSys.DestroyIdentType(g_ExtType);
+}
+
+void CExtensionManager::TryAutoload()
+{
+	char path[PLATFORM_MAX_PATH];
+
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "extensions");
+
+	IDirectory *pDir = g_LibSys.OpenDirectory(path);
+	if (!pDir)
+	{
+		return;
+	}
+
+	const char *lfile;
+	size_t len;
+	while (pDir->MoreFiles())
+	{
+		if (pDir->IsEntryDirectory())
+		{
+			pDir->NextEntry();
+			continue;
+		}
+
+		lfile = pDir->GetEntryName();
+		len = strlen(lfile);
+		if (len <= 9) /* size of ".autoload" */
+		{
+			pDir->NextEntry();
+			continue;
+		}
+
+		if (strcmp(&lfile[len - 9], ".autoload") != 0)
+		{
+			pDir->NextEntry();
+			continue;
+		}
+
+		char file[PLATFORM_MAX_PATH];
+		len = UTIL_Format(file, sizeof(file), "%s", lfile);
+		strcpy(&file[len - 9], ".ext." PLATFORM_LIB_EXT);
+
+		LoadAutoExtension(file);
+		
+		pDir->NextEntry();
+	}
 }
 
 IExtension *CExtensionManager::LoadAutoExtension(const char *path)
