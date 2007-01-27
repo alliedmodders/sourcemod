@@ -17,6 +17,6 @@
 
 #include "svn_version.h"
 
-#define JIT_VERSION			"1.0.0" SVN_REVISION_STRING
+#define JIT_VERSION			"1.0.0." SVN_REVISION_STRING
 
 #endif //_INCLUDE_JIT_VERSION_H_
