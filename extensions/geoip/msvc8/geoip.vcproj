@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="geoip"
 	ProjectGUID="{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
 	RootNamespace="geoip"
@@ -333,15 +333,15 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\extension.cpp"
+				RelativePath="..\extension.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\GeoIP.c"
+				RelativePath="..\GeoIP.c"
 				>
 			</File>
 			<File
-				RelativePath=".\smsdk_ext.cpp"
+				RelativePath="..\smsdk_ext.cpp"
 				>
 			</File>
 		</Filter>
@@ -351,19 +351,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\extension.h"
+				RelativePath="..\extension.h"
 				>
 			</File>
 			<File
-				RelativePath=".\GeoIP.h"
+				RelativePath="..\GeoIP.h"
 				>
 			</File>
 			<File
-				RelativePath=".\smsdk_config.h"
+				RelativePath="..\smsdk_config.h"
 				>
 			</File>
 			<File
-				RelativePath=".\smsdk_ext.h"
+				RelativePath="..\smsdk_ext.h"
 				>
 			</File>
 		</Filter>
