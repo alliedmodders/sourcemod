@@ -57,7 +57,7 @@ namespace builder
 			/* Now build it */
 			info.WorkingDirectory = path;
 			info.FileName = cfg.BuilderPath;
-			info.Arguments = "Release";
+			info.Arguments = "";
 			info.UseShellExecute = false;
 			p = Process.Start(info);
 			p.WaitForExit();
@@ -68,22 +68,6 @@ namespace builder
 				return false;
 			}
 			
-			/* Now verify the binary */
-			info.WorkingDirectory = "/bin";			/* :TODO: Fix this */
-			info.FileName = "dlsym";
-			info.Arguments = binpath;
-			info.UseShellExecute = false;
-			info.RedirectStandardOutput = true;
-			p = Process.Start(info);
-			string output = p.StandardOutput.ReadToEnd();
-			p.WaitForExit();
-			p.Close();
-
-			if (output.IndexOf("Handle:") == -1)
-			{
-				return false;
-			}
-
 			_binName = binName;
 			_binPath = binpath;
 
