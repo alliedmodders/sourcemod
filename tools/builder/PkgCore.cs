@@ -13,6 +13,17 @@ namespace builder
 			return "base/addons/sourcemod";
 		}
 
+		public override void GetCompressBases(ref string path, ref string folder)
+		{
+			path = "base";
+			folder = "addons";
+		}
+
+		public override string GetPackageName()
+		{
+			return "sourcemod-core";
+		}
+
 		/** 
 		 * Must return the list of folders to create.
 		 */
@@ -34,7 +45,7 @@ namespace builder
 		/**
 		 * Called when file to file copies must be performed
 		 */
-		public override void OnCopyFiles()
+		public override void OnCopyFiles(ABuilder builder)
 		{
 		}
 
@@ -51,6 +62,7 @@ namespace builder
 			builder.CopyFolder(this, "plugins", "scripting", plugin_omits);
 			builder.CopyFolder(this, "plugins/include", "scripting/include", null);
 			builder.CopyFolder(this, "translations", "translations", null);
+			builder.CopyFolder(this, "public/licenses", null, null);
 		}
 
 		/**

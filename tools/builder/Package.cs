@@ -24,7 +24,12 @@ namespace builder
 	public abstract class Package
 	{
 		/**
-		 * Must return the base package folder.
+		 * Must return the root compression point.
+		 */
+		public abstract void GetCompressBases(ref string path, ref string folder);
+
+		/**
+		 * Must return the base package output folder.
 		 */
 		public abstract string GetBaseFolder();
 
@@ -36,7 +41,7 @@ namespace builder
 		/**
 		 * Called when file to file copies must be performed
 		 */
-		public abstract void OnCopyFiles();
+		public abstract void OnCopyFiles(ABuilder builder);
 
 		/**
 		 * Called when dir to dir copies must be performed
@@ -47,5 +52,10 @@ namespace builder
 		 * Called to build libraries
 		 */
 		public abstract Library [] GetLibraries();
+
+		/**
+		 * Called to get package name
+		 */
+		public abstract string GetPackageName();
 	}
 }

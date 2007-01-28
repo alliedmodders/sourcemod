@@ -15,10 +15,10 @@ namespace builder
 		public string SourceBase;
 		public string OutputBase;
 		public string BuilderPath;
-		public string CompressPath;
 		public string CompressOptions;
 		public string SVNVersion;
 		public string ProductVersion;
+		public string Compressor;
 		public builder.BasePlatform Platform;
 
 		public Config()
@@ -84,10 +84,6 @@ namespace builder
 						{
 							BuilderPath = val;
 						} 
-						else if (key.CompareTo("CompressPath") == 0) 
-						{
-							CompressPath = val;
-						} 
 						else if (key.CompareTo("CompressOptions") == 0) 
 						{
 							CompressOptions = val;
@@ -99,6 +95,10 @@ namespace builder
 						else if (key.CompareTo("ProductVersion") == 0)
 						{
 							ProductVersion = val;
+						} 
+						else if (key.CompareTo("Compressor") == 0) 
+						{
+							Compressor = val;
 						}
 					}
 				}
