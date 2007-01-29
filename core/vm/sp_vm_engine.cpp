@@ -74,8 +74,6 @@ SourcePawnEngine::SourcePawnEngine()
 
 SourcePawnEngine::~SourcePawnEngine()
 {
-	assert(m_CallStack == NULL);
-
 	TracedCall *pTemp;
 	while (m_FreedCalls)
 	{

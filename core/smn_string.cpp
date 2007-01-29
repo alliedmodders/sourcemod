@@ -170,6 +170,58 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(res);
 }
 
+static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
+{
+	int vargPos = static_cast<int>(params[4]);
+
+	/* Get the parent parameter array */
+	sp_context_t *ctx = pContext->GetContext();
+	cell_t *local_params = (cell_t *)(ctx->memory + ctx->frm + (2 * sizeof(cell_t)));
+
+	cell_t max = local_params[0];
+	if (vargPos > (int)max + 1)
+	{
+		return pContext->ThrowNativeError("Argument index is invalid: %d", vargPos);
+	}
+
+	cell_t addr_start = params[1];
+	cell_t addr_end = addr_start + params[2];
+	bool copy = false;
+	for (int i=vargPos; i<=max; i++)
+	{
+		/* Does this clip bounds? */
+		if ((local_params[i] >= addr_start)
+			&& (local_params[i] <= addr_end))
+		{
+			copy = true;
+			break;
+		}
+	}
+
+	/* Get destination info */
+	char *format, *destination;
+	size_t maxlen = static_cast<size_t>(params[2]);
+
+	if (copy)
+	{
+		destination = g_formatbuf;
+	} else {
+		pContext->LocalToString(params[1], &destination);
+	}
+
+	pContext->LocalToString(params[3], &format);
+
+	size_t total = atcprintf(destination, maxlen, format, pContext, local_params, &vargPos);
+
+	/* Perform copy-on-write if we need to */
+	if (copy)
+	{
+		pContext->StringToLocal(params[1], maxlen, g_formatbuf);
+	}
+
+	return total;
+}
+
 REGISTER_NATIVES(basicstrings)
 {
 	{"strlen",				sm_strlen},
@@ -182,5 +234,6 @@ REGISTER_NATIVES(basicstrings)
 	{"FloatToString",		sm_floattostr},
 	{"Format",				sm_format},
 	{"FormatEx",			sm_formatex},
+	{"VFormat",				sm_vformat},
 	{NULL,					NULL},
 };
