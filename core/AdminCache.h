@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -61,7 +62,7 @@ struct UserAuth
 
 struct AdminUser
 {
-	int magic;						/* Magic flag, for memory validation */
+	uint32_t magic;						/* Magic flag, for memory validation */
 	bool flags[AdminFlags_TOTAL];	/* Base flags */
 	bool eflags[AdminFlags_TOTAL];	/* Effective flags */
 	int nameidx;					/* Name index */
