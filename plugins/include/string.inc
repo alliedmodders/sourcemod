@@ -64,8 +64,8 @@ native StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=t
  * @param str1			First string (left).
  * @param str2			Second string (right).
  * @param caseSensitive	If true (default), comparison is case sensitive.
- * 					If false, comparison is case insensitive.
- * @return			True if equal, false otherwise.
+ * 						If false, comparison is case insensitive.
+ * @return				True if equal, false otherwise.
  */
 stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive=true)
 {
@@ -80,7 +80,7 @@ stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive
  * @param dest			Destination string buffer to copy to.
  * @param destlen		Destination buffer length (includes null terminator).
  * @param source		Source string buffer to copy from.
- * @return			Number of cells written.
+ * @return				Number of cells written.
  */
 native StrCopy(String:dest[], destLen, const String:source[]);
 
@@ -91,7 +91,7 @@ native StrCopy(String:dest[], destLen, const String:source[]);
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @return			Number of cells written.
+ * @return				Number of cells written.
  */
 native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
 
@@ -104,16 +104,31 @@ native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,S
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
- * @return			Number of cells written.
+ * @return				Number of cells written.
  */
 native FormatEx(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Formats a string according to the SourceMod format rules (see documentation).
+ * @note This is the same as Format(), except it grabs parameters from a parent parameter
+ * stack, rather than a local.  This is useful for implementing your own variable argument
+ * functions.
+ *
+ * @param buffer		Destination string buffer.
+ * @param maxlength		Maximum length of output string buffer.
+ * @param format		Formatting rules.
+ * @param varpos		Argument number which contains the '...' symbol.
+ *						Note: Arguments start at 1.
+ * @return 				Number of bytes written.
+ */
+native VFormat(String:buffer[], maxlength, const String:format[], varpos);
 
 /**
  * Converts a string to an integer.
  *
  * @param str			String to convert.
- * @param nBase		Numerical base to use.  10 is default.
- * @return			Integer conversion of string, or 0 on failure.
+ * @param nBase			Numerical base to use.  10 is default.
+ * @return				Integer conversion of string, or 0 on failure.
  */
 native StringToInt(const String:str[], nBase=10);
 
@@ -123,7 +138,7 @@ native StringToInt(const String:str[], nBase=10);
  * @param str			Buffer to store string in.
  * @param maxlength		Maximum length of string buffer.
  * @param num			Integer to convert.
- * @return			Number of cells written to buffer.
+ * @return				Number of cells written to buffer.
  */
 native IntToString(String:str[], maxlength, num);
 
@@ -131,7 +146,7 @@ native IntToString(String:str[], maxlength, num);
  * Converts a string to a floating point number.
  *
  * @param str			String to convert to a foat.
- * @return			Floating point result, or 0.0 on error.
+ * @return				Floating point result, or 0.0 on error.
  */
 native Float:StringToFloat(const String:str[]);
 
@@ -141,6 +156,6 @@ native Float:StringToFloat(const String:str[]);
  * @param str			Buffer to store string in.
  * @param maxlength		Maximum length of string buffer.
  * @param num			Floating point number to convert.
- * @return			Number of cells written to buffer.
+ * @return				Number of cells written to buffer.
  */
 native FloatToString(String:str[], maxlength, Float:num);
