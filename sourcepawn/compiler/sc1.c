@@ -170,6 +170,8 @@ static int *wqptr;              /* pointer to next entry */
   static HWND hwndFinish = 0;
 #endif
 
+char g_tmpfile[_MAX_PATH] = {0};
+
 /*  "main" of the compiler
  */
 #if defined __cplusplus
@@ -263,20 +265,22 @@ int pc_compile(int argc, char *argv[])
       unsigned char tstring[128];
       fsrc=(FILE*)pc_opensrc(sname);
       if (fsrc==NULL) {
+        pc_closesrc(ftmp);
+        remove(tname);
         strcpy(inpfname,sname); /* avoid invalid filename */
         error(100,sname);
       } /* if */
-      pc_writesrc(ftmp,(unsigned char*)"#file ");
+      pc_writesrc(ftmp,(unsigned char*)"#file \"");
       pc_writesrc(ftmp,(unsigned char*)sname);
-      pc_writesrc(ftmp,(unsigned char*)"\n");
-      while (!pc_eofsrc(fsrc)) {
-        pc_readsrc(fsrc,tstring,sizeof tstring);
+      pc_writesrc(ftmp,(unsigned char*)"\"\n");
+      while (!pc_eofsrc(fsrc) && pc_readsrc(fsrc,tstring,sizeof tstring)) {
         pc_writesrc(ftmp,tstring);
       } /* while */
       pc_closesrc(fsrc);
     } /* for */
     pc_closesrc(ftmp);
     strcpy(inpfname,tname);
+	strcpy(g_tmpfile,tname);
     free(tname);
   } else {
     strcpy(inpfname,get_sourcefile(0));
@@ -481,9 +485,10 @@ cleanup:
     } /* if */
   #endif
 
+  if (g_tmpfile[0] != '\0') {
+    remove(g_tmpfile);
+  }
   if (inpfname!=NULL) {
-    if (get_sourcefile(1)!=NULL)
-      remove(inpfname);         /* the "input file" was in fact a temporary file */
     free(inpfname);
   } /* if */
   if (litq!=NULL)
