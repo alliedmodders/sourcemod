@@ -39,6 +39,8 @@ public:
 	 * begin at the first index again.
 	 */
 	void Reset();
+
+
 private:
 	unsigned char *membase;
 	unsigned int size;

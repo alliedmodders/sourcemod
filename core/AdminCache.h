@@ -17,6 +17,7 @@
 #include "sm_memtable.h"
 #include <sm_trie.h>
 #include <sh_list.h>
+#include <sh_string.h>
 #include <IAdminSystem.h>
 #include "sm_globals.h"
 #include <IForwardSys.h>
@@ -25,6 +26,8 @@ using namespace SourceHook;
 
 #define GRP_MAGIC_SET		0xDEADFADE
 #define GRP_MAGIC_UNSET		0xFACEFACE
+#define USR_MAGIC_SET		0xDEADFACE
+#define USR_MAGIC_UNSET		0xFADEDEAD
 
 struct AdminGroup
 {
@@ -44,6 +47,35 @@ struct AdminGroup
 	bool addflags[AdminFlags_TOTAL];	/* Additive flags */
 };
 
+struct AuthMethod
+{
+	String name;
+	Trie *table;
+};
+
+struct UserAuth
+{
+	unsigned int index;				/* Index into auth table */
+	int identidx;					/* Index into the string table */
+};
+
+struct AdminUser
+{
+	int magic;						/* Magic flag, for memory validation */
+	bool flags[AdminFlags_TOTAL];	/* Base flags */
+	bool eflags[AdminFlags_TOTAL];	/* Effective flags */
+	int nameidx;					/* Name index */
+	int password;					/* Password index */
+	unsigned int grp_count;			/* Number of groups */
+	unsigned int grp_size;			/* Size of groups table */
+	int grp_table;					/* Group table itself */
+	int next_user;					/* Next user in ze list */
+	int prev_user;					/* Prev user in the list */
+	unsigned int auth_count;		/* Number of auth methods */
+	unsigned int auth_size;			/* Size of auth table */
+	int auth_table;					/* Auth table itself */
+};
+
 class AdminCache : 
 	public IAdminSystem,
 	public SMGlobalClass
@@ -52,6 +84,7 @@ public:
 	AdminCache();
 	~AdminCache();
 public: //SMGlobalClass
+	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public: //IAdminSystem
@@ -76,6 +109,21 @@ public: //IAdminSystem
 	void DumpAdminCache(int cache_flags, bool rebuild);
 	void AddAdminListener(IAdminListener *pListener);
 	void RemoveAdminListener(IAdminListener *pListener);
+	/** User stuff */
+	void RegisterAuthIdentType(const char *name);
+	AdminId CreateAdmin(const char *name);
+	const char *GetAdminName(AdminId id);
+	bool BindAdminIdentity(AdminId id, const char *auth, const char *ident);
+	virtual void SetAdminFlag(AdminId id, AdminFlag flag, bool enabled);
+	bool GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode);
+	unsigned int GetAdminFlags(AdminId id, bool flags[], unsigned int total, AccessMode mode);
+	bool AdminInheritGroup(AdminId id, GroupId gid);
+	unsigned int GetAdminGroupCount(AdminId id);
+	GroupId GetAdminGroup(AdminId id, unsigned int index, const char **name);
+	void SetAdminPassword(AdminId id, const char *password);
+	const char *GetAdminPassword(AdminId id);
+	AdminId FindAdminByIdentity(const char *auth, const char *identity);
+	bool InvalidateAdmin(AdminId id);
 private:
 	void _AddCommandOverride(const char *cmd, AdminFlag flag);
 	void _AddCommandGroupOverride(const char *group, AdminFlag flag);
@@ -84,7 +132,9 @@ private:
 	void _UnsetCommandOverride(const char *cmd);
 	void _UnsetCommandGroupOverride(const char *group);
 	void InvalidateGroupCache();
+	void InvalidateAdminCache(bool unlink_admins);
 	void DumpCommandOverrideCache(OverrideType type);
+	Trie *GetMethodByIndex(unsigned int index);
 public:
 	BaseStringTable *m_pStrings;
 	BaseMemTable *m_pMemory;
@@ -95,7 +145,12 @@ public:
 	int m_FreeGroupList;
 	Trie *m_pGroups;
 	List<IAdminListener *> m_hooks;
+	List<AuthMethod> m_AuthMethods;
+	Trie *m_pAuthTables;
 	IForward *m_pCacheFwd;
+	int m_FirstUser;
+	int m_LastUser;
+	int m_FreeUserList;
 };
 
 extern AdminCache g_Admins;
