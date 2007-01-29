@@ -1,40 +1,20 @@
-#include <sourcemod>
-#include <textparse>
-
-public Plugin:myinfo = 
-{
-	name = "Admin Base",
-	author = "AlliedModders LLC",
-	description = "Reads admin files",
-	version = "1.0.0.0",
-	url = "http://www.sourcemod.net/"
-};
-
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
 #define LEVEL_STATE_FLAGS		2
-#define LEVEL_STATE_OVERRIDES	3
 
-
-/** Parser handles */
 new Handle:g_hLevelParser = INVALID_HANDLE;
-
-/** Parser states */
 new g_LevelState = LEVEL_STATE_NONE;
 
-/** Globals for levels */
-new AdminFlag:g_FlagLetters[26];			/* Maps the flag letters */		
-new bool:g_ReadOverrides = false;			/* Whether or not to read overrides */
-new bool:g_LoggedFileName = false;			/* Whether or not the file name has been logged */
-
-
-public OnPluginStart()
+InitializeLevelParser()
 {
-	g_hLevelParser = SMC_CreateParser();
-	SMC_SetReaders(g_hLevelParser, 
-				   ReadLevels_NewSection,
-				   ReadLevels_KeyValue,
-				   ReadLevels_EndSection);
+	if (g_hLevelParser == INVALID_HANDLE)
+	{
+		g_hLevelParser = SMC_CreateParser();
+		SMC_SetReaders(g_hLevelParser, 
+				   	ReadLevels_NewSection,
+				   	ReadLevels_KeyValue,
+				   	ReadLevels_EndSection);
+	}
 }
 
 LoadDefaultLetters()
@@ -69,8 +49,6 @@ public SMCResult:ReadLevels_NewSection(Handle:smc, const String:name[], bool:opt
 		if (StrEqual(name, "Flags"))
 		{
 			g_LevelState = LEVEL_STATE_FLAGS;
-		} else if (StrEqual(name, "Overrides")) {
-			g_LevelState = LEVEL_STATE_OVERRIDES;
 		} else {
 			/* :TODO: log error */
 		}
@@ -131,13 +109,6 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 		}
 		
 		g_FlagLetters[chr] = flag;
-		
-	
-	} else if (g_LevelState == LEVEL_STATE_OVERRIDES) {
-		if (!g_ReadOverrides)
-		{
-			return SMCParse_Continue;
-		}
 	}
 	
 	return SMCParse_Continue;
@@ -148,23 +119,9 @@ public SMCResult:ReadLevels_EndSection(Handle:smc)
 	if (g_LevelState == LEVEL_STATE_FLAGS)
 	{
 		g_LevelState = LEVEL_STATE_LEVELS;
-	} else if (g_LevelState == LEVEL_STATE_OVERRIDES) {
-		g_LevelState = LEVEL_STATE_OVERRIDES;
 	} else if (g_LevelState == LEVEL_STATE_LEVELS) {
 		g_LevelState = LEVEL_STATE_NONE;
 	}
-}
-
-public OnRebuildAdminCache(cache_flags)
-{
-	if (cache_flags & ADMIN_CACHE_OVERRIDES)
-	{
-		g_ReadOverrides = true;
-	} else {
-		g_ReadOverrides = false;
-	}
-	
-	RefreshLevels();
 }
 
 RefreshLevels()
@@ -172,6 +129,7 @@ RefreshLevels()
 	new String:path[PLATFORM_MAX_PATH];
 	
 	LoadDefaultLetters();
+	InitializeLevelParser();
 	
 	BuildPath(Path_SM, path, sizeof(path), "configs/admin_levels.cfg");
 	
