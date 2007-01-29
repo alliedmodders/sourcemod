@@ -108,6 +108,7 @@ namespace SourceMod
 		 * @param pContext		Pointer to the plugin's context.
 		 * @param params		Parameter array that was passed to the native.
 		 * @param param			Parameter index where format string and variable arguments begin.
+		 *						Note: parameter indexes start at 1.
 		 * @return				Number of bytes written, not including the null terminator.
 		 */
 		virtual size_t FormatString(char *buffer, 
