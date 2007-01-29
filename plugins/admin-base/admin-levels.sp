@@ -5,6 +5,8 @@
 new Handle:g_hLevelParser = INVALID_HANDLE;
 new g_LevelState = LEVEL_STATE_NONE;
 
+/* :TODO: log line numbers? */
+
 InitializeLevelParser()
 {
 	if (g_hLevelParser == INVALID_HANDLE)
@@ -35,6 +37,21 @@ LoadDefaultLetters()
 	g_FlagLetters['z'-'a'] = Admin_Root;
 }
 
+stock LogLevelError(const String:format[], {Handle,String,Float,_}:...)
+{
+	decl String:buffer[512];
+	
+	if (!g_LoggedFileName)
+	{
+		LogError("Error(s) detected parsing admin_level.cfg:");
+		g_LoggedFileName = true;
+	}
+	
+	VFormat(buffer, sizeof(buffer), format, 2);
+	
+	LogError(" (%d) %s", ++g_ErrorCount, buffer);
+}
+
 public SMCResult:ReadLevels_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
 	if (g_LevelState == LEVEL_STATE_NONE)
@@ -42,18 +59,12 @@ public SMCResult:ReadLevels_NewSection(Handle:smc, const String:name[], bool:opt
 		if (StrEqual(name, "Levels"))
 		{
 			g_LevelState = LEVEL_STATE_LEVELS;
-		} else {
-			/* :TODO: log error */
 		}
 	} else if (g_LevelState == LEVEL_STATE_LEVELS) {
 		if (StrEqual(name, "Flags"))
 		{
 			g_LevelState = LEVEL_STATE_FLAGS;
-		} else {
-			/* :TODO: log error */
 		}
-	} else {
-		/* :TODO: Log error */
 	}
 	
 	return SMCParse_Continue;
@@ -67,7 +78,7 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 		
 		if (chr < 'a' || chr > 'z')
 		{
-			/* :TODO: log error */
+			LogLevelError("Unrecognized character: \"%s\"", value);
 			return SMCParse_Continue;
 		}
 		
@@ -105,7 +116,7 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 		} else if (StrEqual(key, "root")) {
 			flag = Admin_Root;
 		} else {
-			/* :TODO: log error */
+			LogLevelError("Unrecognized flag type: %s", key);
 		}
 		
 		g_FlagLetters[chr] = flag;
@@ -136,10 +147,17 @@ RefreshLevels()
 	/* Set states */
 	g_LevelState = LEVEL_STATE_NONE;
 	g_LoggedFileName = false;
+	g_ErrorCount = 0;
 		
 	new SMCError:err = SMC_ParseFile(g_hLevelParser, path);
 	if (err != SMCError_Okay)
 	{
-		/* :TODO: log error */
+		decl String:buffer[64];
+		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
+		{
+			LogLevelError("%s", buffer);
+		} else {
+			LogLevelError("Fatal parse error");
+		}
 	}
 }
