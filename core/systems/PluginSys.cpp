@@ -213,6 +213,8 @@ void CPlugin::UpdateInfo()
 	IPluginContext *base = GetBaseContext();
 	int err = base->FindPubvarByName("myinfo", &idx);
 
+	memset(&m_info, 0, sizeof(m_info));
+
 	if (err == SP_ERROR_NONE)
 	{
 		struct sm_plugininfo_c_t
