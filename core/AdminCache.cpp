@@ -30,6 +30,7 @@ AdminCache::AdminCache()
 	m_pGroups = sm_trie_create();
 	m_pCacheFwd = NULL;
 	m_FirstGroup = -1;
+	m_pAuthTables = sm_trie_create();
 }
 
 AdminCache::~AdminCache()
@@ -44,12 +45,22 @@ AdminCache::~AdminCache()
 		sm_trie_destroy(m_pCmdOverrides);
 	}
 
-	InvalidateGroupCache();
+	DumpAdminCache(0xFFFFFFFF, false);
 
 	if (m_pGroups)
 	{
 		sm_trie_destroy(m_pGroups);
 	}
+
+	List<AuthMethod>::iterator iter;
+	for (iter=m_AuthMethods.begin();
+		 iter!=m_AuthMethods.end();
+		 iter++)
+	{
+		sm_trie_destroy((*iter).table);
+	}
+
+	sm_trie_destroy(m_pAuthTables);
 
 	delete m_pStrings;
 }
@@ -220,16 +231,15 @@ AdminId AdminCache::CreateAdmin(const char *name)
 		id = m_pMemory->CreateMem(sizeof(AdminUser), (void **)&pUser);
 		pUser->grp_size = 0;
 		pUser->grp_table = -1;
-		pUser->auth_size = 0;
-		pUser->auth_table = -1;
 	}
 
 	memset(pUser->flags, 0, sizeof(pUser->flags));
 	memset(pUser->eflags, 0, sizeof(pUser->flags));
 	pUser->grp_count = 0;
-	pUser->auth_count = 0;
 	pUser->password = -1;
 	pUser->magic = USR_MAGIC_SET;
+	pUser->auth.identidx = -1;
+	pUser->auth.index = 0;
 
 	if (m_FirstUser == INVALID_ADMIN_ID)
 	{
@@ -599,25 +609,18 @@ bool AdminCache::InvalidateAdmin(AdminId id)
 	}
 
 	/* Unlink from auth tables */
-	if (pUser->auth_count > 0)
+	if (pUser->auth.identidx != -1)
 	{
-		UserAuth *pAuth = (UserAuth *)m_pMemory->GetAddress(pUser->auth_table);
-		Trie *pTrie;
-		for (unsigned int i=0; i<pUser->auth_count; i++)
+		Trie *pTrie = GetMethodByIndex(pUser->auth.index);
+		if (pTrie)
 		{
-			pTrie = GetMethodByIndex(pAuth[i].index);
-			if (!pTrie)
-			{
-				continue;
-			}
-			sm_trie_delete(pTrie, m_pStrings->GetString(pAuth->identidx));
+			sm_trie_delete(pTrie, m_pStrings->GetString(pUser->auth.identidx));
 		}
 	}
 
 	/* Clear table counts */
 	pUser->grp_count = 0;
-	pUser->auth_count = 0;
-
+	
 	/* Link into free list */
 	pUser->magic = USR_MAGIC_UNSET;
 	pUser->next_user = m_FreeUserList;
@@ -791,9 +794,16 @@ void AdminCache::InvalidateAdminCache(bool unlink_admins)
 		sm_trie_clear((*iter).table);
 	}
 	
-	while (m_FirstUser != INVALID_ADMIN_ID)
+	if (unlink_admins)
 	{
-		InvalidateAdmin(m_FirstUser);
+		while (m_FirstUser != INVALID_ADMIN_ID)
+		{
+			InvalidateAdmin(m_FirstUser);
+		}
+	} else {
+		m_FirstUser = -1;
+		m_LastUser = -1;
+		m_FreeUserList = -1;
 	}
 }
 
@@ -844,6 +854,24 @@ const char *AdminCache::GetAdminName(AdminId id)
 	return m_pStrings->GetString(pUser->nameidx);
 }
 
+bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
+{
+	List<AuthMethod>::iterator iter;
+	unsigned int index = 0;
+	for (iter=m_AuthMethods.begin();
+		 iter!=m_AuthMethods.end();
+		 iter++,index++)
+	{
+		if ((*iter).name.compare(name) == 0)
+		{
+			*_index = index;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ident)
 {
 	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
@@ -862,6 +890,9 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 	{
 		return false;
 	}
+
+	pUser->auth.identidx = m_pStrings->AddString(ident);
+	GetMethodIndex(auth, &pUser->auth.index);
 
 	return sm_trie_insert(pTable, ident, (void **)id);
 }
@@ -958,7 +989,7 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 	}
 
 	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(gid);
-	if (!pGroup || pGroup->magic != USR_MAGIC_SET)
+	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
 	{
 		return false;
 	}

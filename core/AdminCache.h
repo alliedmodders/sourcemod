@@ -71,9 +71,7 @@ struct AdminUser
 	int grp_table;					/* Group table itself */
 	int next_user;					/* Next user in ze list */
 	int prev_user;					/* Prev user in the list */
-	unsigned int auth_count;		/* Number of auth methods */
-	unsigned int auth_size;			/* Size of auth table */
-	int auth_table;					/* Auth table itself */
+	UserAuth auth;					/* Auth method for this user */
 };
 
 class AdminCache : 
@@ -135,6 +133,7 @@ private:
 	void InvalidateAdminCache(bool unlink_admins);
 	void DumpCommandOverrideCache(OverrideType type);
 	Trie *GetMethodByIndex(unsigned int index);
+	bool GetMethodIndex(const char *name, unsigned int *_index);
 public:
 	BaseStringTable *m_pStrings;
 	BaseMemTable *m_pMemory;
