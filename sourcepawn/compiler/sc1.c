@@ -2510,10 +2510,6 @@ static void initials(int ident,int tag,cell *size,int dim[],int numdim,
   int curlit=litidx;
   int err=0;
 
-  if (!autozero) {
-    return;
-  }
-
   if (!matchtoken('=')) {
     assert(ident!=iARRAY || numdim>0);
     if (ident==iARRAY && dim[numdim-1]==0) {
