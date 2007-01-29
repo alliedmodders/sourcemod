@@ -1005,6 +1005,7 @@ static int command(void)
         inpfname=duplicatestring(pathname);
         if (inpfname==NULL)
           error(103);           /* insufficient memory */
+        fline=0;
       } /* if */
     } /* if */
     check_empty(lptr);
