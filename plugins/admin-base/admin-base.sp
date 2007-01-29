@@ -18,4 +18,8 @@ new g_ErrorCount = 0;
 public OnRebuildAdminCache(cache_flags)
 {
 	RefreshLevels();
+	if (cache_flags & ADMIN_CACHE_OVERRIDES)
+	{
+		ReadOverrides();
+	}
 }

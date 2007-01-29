@@ -2,25 +2,19 @@
 #define LEVEL_STATE_LEVELS		1
 #define LEVEL_STATE_FLAGS		2
 
-new Handle:g_hLevelParser = INVALID_HANDLE;
-new g_LevelState = LEVEL_STATE_NONE;
+static Handle:g_hLevelParser = INVALID_HANDLE;
+static g_LevelState = LEVEL_STATE_NONE;
 
 /* :TODO: log line numbers? */
 
-InitializeLevelParser()
-{
-	if (g_hLevelParser == INVALID_HANDLE)
-	{
-		g_hLevelParser = SMC_CreateParser();
-		SMC_SetReaders(g_hLevelParser, 
-				   	ReadLevels_NewSection,
-				   	ReadLevels_KeyValue,
-				   	ReadLevels_EndSection);
-	}
-}
-
 LoadDefaultLetters()
 {
+	/* Clear letters first */
+	for (new i='a'; i<='z'; i++)
+	{
+		g_FlagLetters[i-'a'] = Admin_None;
+	}
+	
 	g_FlagLetters['a'-'a'] = Admin_Reservation;
 	g_FlagLetters['b'-'a'] = Admin_Kick;
 	g_FlagLetters['c'-'a'] = Admin_Ban;
@@ -37,13 +31,13 @@ LoadDefaultLetters()
 	g_FlagLetters['z'-'a'] = Admin_Root;
 }
 
-stock LogLevelError(const String:format[], {Handle,String,Float,_}:...)
+static LogLevelError(const String:format[], {Handle,String,Float,_}:...)
 {
 	decl String:buffer[512];
 	
 	if (!g_LoggedFileName)
 	{
-		LogError("Error(s) detected parsing admin_level.cfg:");
+		LogError("Error(s) detected parsing admin_levels.cfg:");
 		g_LoggedFileName = true;
 	}
 	
@@ -129,9 +123,25 @@ public SMCResult:ReadLevels_EndSection(Handle:smc)
 {
 	if (g_LevelState == LEVEL_STATE_FLAGS)
 	{
+		/* We're totally done parsing */
 		g_LevelState = LEVEL_STATE_LEVELS;
+		return SMCParse_Halt;
 	} else if (g_LevelState == LEVEL_STATE_LEVELS) {
 		g_LevelState = LEVEL_STATE_NONE;
+	}
+	
+	return SMCParse_Continue;
+}
+
+static InitializeLevelParser()
+{
+	if (g_hLevelParser == INVALID_HANDLE)
+	{
+		g_hLevelParser = SMC_CreateParser();
+		SMC_SetReaders(g_hLevelParser, 
+				   	ReadLevels_NewSection,
+				   	ReadLevels_KeyValue,
+				   	ReadLevels_EndSection);
 	}
 }
 
