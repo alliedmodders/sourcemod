@@ -10,7 +10,8 @@ SRCDS = ~/srcds
 ### EDIT BELOW FOR OTHER PROJECTS ###
 
 OPT_FLAGS = -O3 -funroll-loops -s -pipe -fno-strict-aliasing
-GCC4_FLAGS = -fvisibility=hidden -fvisibility-inlines-hidden
+GCC4_FLAGS = -fvisibility=hidden 
+GCC4_CPP_FLAGS = -fvisibility-inlines-hidden
 DEBUG_FLAGS = -g -ggdb3
 CPP = gcc-4.1
 BINARY = sourcemod_mm_i486.so
@@ -27,7 +28,7 @@ OBJECTS = sourcemm_api.cpp sourcemod.cpp AdminCache.cpp CDbgReporter.cpp CLogger
 	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp \
 	  systems/PluginSys.cpp systems/ShareSys.cpp vm/sp_vm_basecontext.cpp \
 	  vm/sp_vm_engine.cpp vm/sp_vm_function.cpp
-OBJECTS += zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
+OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
 
@@ -52,16 +53,17 @@ CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnic
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ifeq "$(GCC_VERSION)" "4"
-	CPPFLAGS += $(GCC4_FLAGS)
+	CFLAGS += $(GCC4_FLAGS)
+	CPPFLAGS += $(GCC4_CPP_FLAGS)
 endif
 
-OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
-OBJ_LINUX := $(OBJECTS:%.c=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.ox)
+OBJ_LINUX_C := $(OBJECTS_C:%.c=$(BIN_DIR)/%.oc)
 
-$(BIN_DIR)/%.o: %.cpp
+$(BIN_DIR)/%.ox: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-$(BIN_DIR)/%.o: %.c
+$(BIN_DIR)/%.oc: %.c
 	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 all:
@@ -74,8 +76,8 @@ all:
 	rm -rf $(BINARY)
 	ln -sf $(BIN_DIR)/$(BINARY) $(BINARY)
 
-sourcemod: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug:	
 	$(MAKE) all DEBUG=true
@@ -83,8 +85,12 @@ debug:
 default: all
 
 clean:
-	rm -rf Release/*.o
+	rm -rf Release/*.ox
+	rm -rf Release/systems/*.ox
+	rm -rf Release/zlib/*.oc
 	rm -rf Release/$(BINARY)
-	rm -rf Debug/*.o
+	rm -rf Debug/*.ox
+	rm -rf DEbug/systems/*.ox
+	rm -rf Debug/zlib/*.oc
 	rm -rf Debug/$(BINARY)
 
