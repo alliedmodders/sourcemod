@@ -18,6 +18,7 @@
 #include "CLogger.h"
 #include "PluginSys.h"
 #include "CTranslator.h"
+#include "CPlayerManager.h"
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
@@ -26,34 +27,86 @@
 
 #define CHECK_ARGS(x) \
 	if ((arg+x) > args) { \
-		g_Logger.LogError("String formatted incorrectly - parameter %d (total %d)", arg, args); \
+		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, "String formatted incorrectly - parameter %d (total %d)", arg, args); \
 		return 0; \
 	}
 
-size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *key, cell_t target, const cell_t *params, int *arg)
+inline bool TryServerLanguage(const char *serverlang, unsigned int *langid)
 {
-	unsigned int langid;
-	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
-	size_t langcount = pl->GetLangFileCount();
-
-	if (!g_Translator.GetLanguageByCode("en", &langid)) 	//:TODO: hardcoded this just for testing
+	if (!g_Translator.GetLanguageByCode(serverlang, langid))
 	{
-		//:TODO: error out something
+		if (!g_Translator.GetLanguageByCode("en", langid))
+		{
+			return false;
+		}
 	}
+	return true;
+}
 
+inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, unsigned int langcount, Translation *pTrans)
+{
+	TransError err = Trans_BadLanguage;
 	CPhraseFile *phrfl;
-	TransError err = Trans_Okay;
-	Translation pTrans;
 
 	for (size_t i=0; i<langcount && err!=Trans_Okay; i++)
 	{
 		phrfl = g_Translator.GetFileByIndex(pl->GetFileByIndex(i));
-		err = phrfl->GetTranslation(key, langid, &pTrans);
+		err = phrfl->GetTranslation(key, langid, pTrans);
 	}
 
-	if (err != Trans_Okay)
+	return (err == Trans_Okay) ? true : false;
+}
+
+size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *key, cell_t target, const cell_t *params, int *arg, bool *error)
+{
+	unsigned int langid;
+	char *langname = NULL;
+	*error = false;
+
+try_serverlang:
+	if (target == LANG_SERVER)
 	{
-		//:TODO: we didnt find our translation in any file :o
+		langname = "en"; //:TODO: read serverlang
+		if (!TryServerLanguage(langname ? langname : "en", &langid))
+		{
+			pCtx->ThrowNativeError("Translation failure: English language not found.");
+			goto error_out;
+		}
+	} else if ((target >= 1) && (target <= g_PlayerManager.GetMaxClients())) {
+		langname = "en"; //:TODO: read player's lang
+		if (!langname || !g_Translator.GetLanguageByCode(langname, &langid))
+		{
+			if (langname && !strcmp(langname, "en"))
+			{
+				pCtx->ThrowNativeError("Translation failure: English language not found.");
+				goto error_out;
+			}
+			target = LANG_SERVER;
+			goto try_serverlang;
+		}
+	} else {
+		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
+		goto error_out;
+	}
+
+	Translation pTrans;
+	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
+	size_t langcount = pl->GetLangFileCount();
+
+	if (!TryTranslation(pl, key, langid, langcount, &pTrans))
+	{
+		if (target != LANG_SERVER)
+		{
+			target = LANG_SERVER;
+			goto try_serverlang;
+		} else {
+			if (!g_Translator.GetLanguageByCode("en", &langid)
+				|| !TryTranslation(pl, key, langid, langcount, &pTrans))
+			{
+				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
+				goto error_out;
+			}
+		}
 	}
 
 	void *new_params[MAX_TRANSLATE_PARAMS];
@@ -64,11 +117,15 @@ size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *
 		(*arg)++;
 		if ((*arg) + i > (size_t)params[0])
 		{
-			//:TODO: we are missing arguments zOMG
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, "Translation string formatted incorrectly - parameter %d (total %d)", (*arg) + i, params[0]);
+			goto error_out;
 		}
 	}
 
 	return g_Translator.Translate(buffer, maxlen, new_params, &pTrans);
+error_out:
+	*error = true;
+	return 0;
 }
 
 //:TODO: review this code before we choose a license
@@ -611,10 +668,34 @@ reswitch:
 			{
 				CHECK_ARGS(0);
 				char *key;
+				bool error;
+				size_t res;
 				cell_t target = params[arg++];
 				pCtx->LocalToString(params[arg++], &key);
-				llen -= Translate(buf_p, llen, pCtx, key, target, params, &arg);
-				buf_p += llen;
+				res = Translate(buf_p, llen, pCtx, key, target, params, &arg, &error);
+				if (error)
+				{
+					return 0;
+				}
+				buf_p += res;
+				llen -= res;
+				break;
+			}
+		case 't':
+			{
+				CHECK_ARGS(0);
+				char *key;
+				bool error;
+				size_t res;
+				cell_t target = g_SourceMod.GetGlobalTarget();
+				pCtx->LocalToString(params[arg++], &key);
+				res = Translate(buf_p, llen, pCtx, key, target, params, &arg, &error);
+				if (error)
+				{
+					return 0;
+				}
+				buf_p += res;
+				llen -= res;
 				break;
 			}
 		case '%':

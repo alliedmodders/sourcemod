@@ -343,6 +343,16 @@ const char *SourceModBase::GetModPath()
 	return g_BaseDir.c_str();
 }
 
+void SourceModBase::SetGlobalTarget(unsigned int index)
+{
+	m_target = index;
+}
+
+unsigned int SourceModBase::GetGlobalTarget() const
+{
+	return m_target;
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

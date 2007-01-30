@@ -56,6 +56,16 @@ public:
 	 */
 	bool IsMapLoading();
 
+	/** 
+	* @brief Stores the global target index.
+	*/
+	void SetGlobalTarget(unsigned int index);
+
+	/** 
+	* @brief Returns the global target index.
+	*/
+	unsigned int GetGlobalTarget() const;
+
 public: //ISourceMod
 	const char *GetModPath();
 	const char *GetSourceModPath();
@@ -73,6 +83,7 @@ private:
 	char m_SMRelDir[PLATFORM_MAX_PATH+1];
 	bool m_IsMapLoading;
 	bool m_ExecPluginReload;
+	unsigned int m_target;
 };
 
 extern SourceModBase g_SourceMod;
