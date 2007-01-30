@@ -5,7 +5,7 @@
 static Handle:g_hOverrideParser = INVALID_HANDLE;
 static g_OverrideState = OVERRIDE_STATE_NONE;
 
-LogOverrideError(const String:format[], {Handle,String,Float,_}:...)
+static LogOverrideError(const String:format[], {Handle,String,Float,_}:...)
 {
 	decl String:buffer[512];
 	

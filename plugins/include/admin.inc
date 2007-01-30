@@ -62,6 +62,12 @@ enum GroupId
 	INVALID_GROUP_ID = -1,
 };
 
+/** Note: These are not Handles */
+enum AdminId
+{
+	INVALID_ADMIN_ID = -1,
+};
+
 #define ADMIN_CACHE_OVERRIDES	(1<<0)
 #define ADMIN_CACHE_ADMINS		(1<<1)
 #define ADMIN_CACHE_GROUPS		((1<<2)|ADMIN_CACHE_ADMINS)
