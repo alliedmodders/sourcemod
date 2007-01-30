@@ -133,7 +133,7 @@ native GroupId:CreateAdmGroup(const String:group_name[]);
  * @param group_name	String containing the group name.
  * @return				A group id, or INVALID_GROUP_ID if not found.
  */
-native FindAdmGroup(const String:group_name[]);
+native GroupId:FindAdmGroup(const String:group_name[]);
 
 /**
  * Adds or removes a flag from a group's flag set.

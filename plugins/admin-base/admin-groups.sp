@@ -9,8 +9,13 @@ static Handle:g_hGroupParser = INVALID_HANDLE;
 static GroupId:g_CurGrp = INVALID_GROUP_ID;
 static g_GroupState = GROUP_STATE_NONE;
 static g_GroupPass = 0
+static bool:g_NeedReparse = false;
 
-static LevelGroupError(const String:buffer[], {Handle,String,Float,_}:...)
+//:TODO: immunity needs to self-check itself for redundancy in core
+//:TODO: invalidating groups internally needs to check immunities
+//:TODO: reparsing
+
+static LogGroupError(const String:fmt[], {Handle,String,Float,_}:...)
 {
 	decl String:buffer[512];
 	
@@ -20,7 +25,7 @@ static LevelGroupError(const String:buffer[], {Handle,String,Float,_}:...)
 		g_LoggedFileName = true;
 	}
 	
-	VFormat(buffer, sizeof(buffer), format, 2);
+	VFormat(buffer, sizeof(buffer), fmt, 2);
 	
 	LogError(" (%d) %s", ++g_ErrorCount, buffer);
 }
@@ -62,28 +67,71 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 	
 	new AdminFlag:flag;
 	
-	if (StrEqual(key, "flags"))
+	if (g_GroupPass == GROUP_PASS_FIRST)
 	{
-		new len = strlen(value);
-		for (new i=0; i<len; i++)
+		if (g_GroupState == GROUP_STATE_INGROUP)
 		{
-			if (value[i] < 'a' || value[i] > 'z')
+			if (StrEqual(key, "flags"))
 			{
-				continue;
+				new len = strlen(value);
+				for (new i=0; i<len; i++)
+				{
+					if (value[i] < 'a' || value[i] > 'z')
+					{
+						continue;
+					}
+					flag = g_FlagLetters[value[i] - 'a'];
+					if (flag == Admin_None)
+					{
+						continue;
+					}
+					SetAdmGroupAddFlag(g_CurGrp, flag, true);
+				}
+			} else if (StrEqual(key, "immunity")) {
+				/* If it's a value we know about, use it */
+				if (StrEqual(value, "*"))
+				{
+					SetAdmGroupImmunity(g_CurGrp, Immunity_Global, true);
+				} else if (StrEqual(value, "$")) {
+					SetAdmGroupImmunity(g_CurGrp, Immunity_Default, true);
+				} else {
+					/* If we can't find the group, we'll need to schedule a reparse */
+					new GroupId:id = FindAdmGroup(value);
+					if (id == INVALID_GROUP_ID)
+					{
+						SetAdmGroupImmuneFrom(g_CurGrp, id);
+					} else {
+						g_NeedReparse = true;
+					}
+				}
 			}
-			flag = g_FlagLetters[value[i] - 'a'];
-			if (flag == Admin_None)
+		} else if (g_GroupState == GROUP_STATE_OVERRIDES) {
+			new OverrideRule:rule = Command_Deny;
+			
+			if (StrEqual(value, "allow", false))
 			{
-				continue;
+				rule = Command_Allow;
 			}
-			SetAdmGroupAddFlag(g_CurGrp, flag, true);
+			
+			if (key[0] == '@')
+			{
+				AddAdmGroupCmdOverride(g_CurGrp, key[1], Override_CommandGroup, rule);
+			} else {
+				AddAdmGroupCmdOverride(g_CurGrp, key, Override_Command, rule);
+			}
 		}
-	} else if (StrEqual(key, "immunity")) {
-		if (StrEqual(value, "*"))
+	} else if (g_GroupPass == GROUP_PASS_SECOND
+			   && g_GroupState == GROUP_STATE_INGROUP) {
+		/* Check for immunity again, core should handle double inserts */
+		if (StrEqual(key, "immunity"))
 		{
-			SetAdmGroupImmunity(g_CurGrp, Immunity_Global, true);
-		} else if (StrEqual(value, "$")) {
-			SetAdmGroupImmunity(g_CurGrp, Immunity_Default, true);
+			new GroupId:id = FindAdmGroup(value);
+			if (id != INVALID_GROUP_ID)
+			{
+				SetAdmGroupImmuneFrom(g_CurGrp, id);
+			} else {
+				LogGroupError("Unable to find group: \"%s\"", value);
+			}
 		}
 	}
 	
@@ -111,9 +159,9 @@ static InitializeGroupParser()
 	{
 		g_hGroupParser = SMC_CreateParser();
 		SMC_SetReaders(g_hGroupParser,
-					   ReadGroup_NewSection,
-					   ReadGroup_KeyValue,
-					   ReadGroup_EndSection);
+					   ReadGroups_NewSection,
+					   ReadGroups_KeyValue,
+					   ReadGroups_EndSection);
 	}
 }
 
@@ -131,6 +179,7 @@ ReadGroups()
 	g_ErrorCount = 0;
 	g_CurGrp = INVALID_GROUP_ID;
 	g_GroupPass = GROUP_PASS_FIRST;
+	g_NeedReparse = false;
 		
 	new SMCError:err = SMC_ParseFile(g_hGroupParser, path);
 	if (err != SMCError_Okay)

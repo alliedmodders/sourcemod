@@ -17,6 +17,7 @@ new g_ErrorCount = 0;
 
 #include "admin-levels.sp"
 #include "admin-overrides.sp"
+#include "admin-groups.sp"
 
 public OnRebuildAdminCache(cache_flags)
 {
@@ -24,5 +25,9 @@ public OnRebuildAdminCache(cache_flags)
 	if (cache_flags & ADMIN_CACHE_OVERRIDES)
 	{
 		ReadOverrides();
+	}
+	if (cache_flags & ADMIN_CACHE_GROUPS)
+	{
+		ReadGroups();
 	}
 }
