@@ -3,9 +3,9 @@ things to do for a release, in priority
     X URGENT: fix compiler's sizeof(), add cellsof
     X do module api
     X finish plugin pausing/unpausing, forwards must block execution
-    - do admin api
+    X do admin api
     - finish cross extension dependencies (ShareSys::AddDepency)
-    - make "mapupdated" plugins work as intended (reload on mapchange if newer)
+    X make "mapupdated" plugins work as intended (reload on mapchange if newer)
     X add debugging output to logger
     - finish ML api, expose through interface
     X add error messages to format routine
