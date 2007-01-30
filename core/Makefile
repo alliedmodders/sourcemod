@@ -90,7 +90,7 @@ clean:
 	rm -rf Release/zlib/*.oc
 	rm -rf Release/$(BINARY)
 	rm -rf Debug/*.ox
-	rm -rf DEbug/systems/*.ox
+	rm -rf Debug/systems/*.ox
 	rm -rf Debug/zlib/*.oc
 	rm -rf Debug/$(BINARY)
 
