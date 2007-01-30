@@ -52,6 +52,12 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 	
 	new AdminFlag:flag = Admin_None;
 	
+	if (strlen(value) > 1)
+	{
+		LogOverrideError("Unrecognized access level: %s", value);
+		return SMCParse_Continue;
+	}
+	
 	if (value[0] >= 'a' && value[0] <= 'z')
 	{
 		flag = g_FlagLetters[value[0] - 'a'];
