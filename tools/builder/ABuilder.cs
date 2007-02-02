@@ -22,7 +22,7 @@ namespace builder
 
 			info.WorkingDirectory = path;
 			info.FileName = cfg.SVNVersion;
-			info.Arguments = "--committed " + path;
+			info.Arguments = "--committed \"" + path + "\"";
 			info.UseShellExecute = false;
 			info.RedirectStandardOutput = true;
 
