@@ -823,7 +823,7 @@ void AdminCache::DumpAdminCache(int cache_flags, bool rebuild)
 
 	/* If we only requested an admin rebuild, re-use the internal memory */
 	if (((cache_flags & ADMIN_CACHE_ADMINS) == ADMIN_CACHE_ADMINS)
-		&& (cache_flags & (1<<2) != (1<<2)))
+		&& ((cache_flags & (1<<2)) != (1<<2)))
 	{
 		InvalidateAdminCache(true);
 	}

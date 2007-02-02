@@ -2971,7 +2971,8 @@ static void declstruct(void)
 static void dofuncenum(int listmode)
 {
 	cell val;
-	char *str,*ptr;
+	char *str;
+	// char *ptr;
 	char tagname[sNAMEMAX+1];
 	constvalue *cur;
 	funcenum_t *fenum = NULL;
