@@ -243,7 +243,7 @@ void CPlugin::UpdateInfo()
 	m_info.version = m_info.version ? m_info.version : "";
 }
 
-void CPlugin::Call_OnPluginInit()
+void CPlugin::Call_OnPluginStart()
 {
 	if (m_status != Plugin_Loaded)
 	{
@@ -263,7 +263,7 @@ void CPlugin::Call_OnPluginInit()
 	pFunction->Execute(&result);
 }
 
-void CPlugin::Call_OnPluginUnload()
+void CPlugin::Call_OnPluginEnd()
 {
 	if (m_status < Plugin_Paused)
 	{
@@ -959,7 +959,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	}
 	
 	/* Tell this plugin to finish initializing itself */
-	pPlugin->Call_OnPluginInit();
+	pPlugin->Call_OnPluginStart();
 
 	return true;
 }
@@ -1003,7 +1003,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 			pListener->OnPluginUnloaded(pPlugin);
 		}
 		/* Notify plugin */
-		pPlugin->Call_OnPluginUnload();
+		pPlugin->Call_OnPluginEnd();
 	}
 
 	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)

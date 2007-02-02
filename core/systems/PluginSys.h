@@ -74,7 +74,7 @@ using namespace SourceHook;
  *			 6. If the plugin has failed to load at this point, any dynamic natives it has added are scrapped.
  *			    Furthermore, any plugin that referenced these natives must now have pass 2 re-ran.
  * PASS THREE (not a real pass):
- *			 7. Once all plugins are deemed to be loaded, OnPluginInit() is called
+ *			 7. Once all plugins are deemed to be loaded, OnPluginStart() is called
  */
 
 #define SM_CONTEXTVAR_MYSELF	0
@@ -157,16 +157,16 @@ public:
 	bool Call_AskPluginLoad(char *error, size_t maxlength);
 
 	/**
-	 * Calls the OnPluginInit function.
+	 * Calls the OnPluginStart function.
 	 * NOTE: Valid pre-states are: Plugin_Created
 	 * NOTE: Post-state will be Plugin_Running
 	 */
-	void Call_OnPluginInit();
+	void Call_OnPluginStart();
 
 	/**
-	 * Calls the OnPluginUnload function.
+	 * Calls the OnPluginEnd function.
 	 */
-	void Call_OnPluginUnload();
+	void Call_OnPluginEnd();
 
 	/**
 	 * Toggles debug mode in the plugin

@@ -55,12 +55,12 @@ public Plugin:myinfo;
 forward OnPluginStart(Handle:myself);
  
 /**
- *   Called before OnPluginInit, in case the plugin wants to check for load failure.
+ *   Called before OnPluginStart, in case the plugin wants to check for load failure.
  * This is called even if the plugin type is "private."  Any natives from modules are 
  * not available at this point.  Thus, this forward should only be used for explicit 
  * pre-emptive things, such as adding dynamic natives, or setting certain types of load filters.
  * 
- * NOTE: It is not safe to call externally resolved natives until OnPluginInit().
+ * NOTE: It is not safe to call externally resolved natives until OnPluginStart().
  * NOTE: Any sort of RTE in this function will cause the plugin to fail loading.
  *
  * @param myself	Handle to the plugin.
