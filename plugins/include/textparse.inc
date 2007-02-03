@@ -176,4 +176,4 @@ functag SMC_RawLine SMCResult:public(Handle:smc, const String:line[], lineno);
  * @param func		SMC_RawLine function.
  * @noreturn
  */
-native SMC_SetRawLine(Handle:smc, SMC_Rawline:func);
+native SMC_SetRawLine(Handle:smc, SMC_RawLine:func);
