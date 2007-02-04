@@ -355,6 +355,8 @@ private:
 	 * Runs an extension pass on a plugin.
 	 */
 	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
+
+	void _SetPauseState(CPlugin *pPlugin, bool pause);
 protected:
 	/**
 	 * Caching internal objects

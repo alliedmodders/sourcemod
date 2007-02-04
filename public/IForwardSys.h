@@ -31,7 +31,6 @@
  * function name in all plugins.
  */
 
-#include <IForwardSys.h>
 #include <IPluginSys.h>
 #include <sp_vm_api.h>
 
@@ -147,21 +146,21 @@ namespace SourceMod
 		 *
 		 * @return			Forward name.
 		 */
-		virtual const char *GetForwardName() =0;
+		virtual const char *GetForwardName() const =0;
 
 		/**
 		 * @brief Returns the number of functions in this forward.
 		 *
 		 * @return			Number of functions in forward.
 		 */
-		virtual unsigned int GetFunctionCount() =0;
+		virtual unsigned int GetFunctionCount() const =0;
 
 		/**
 		 * @brief Returns the method of multi-calling this forward has.
 		 *
 		 * @return			ExecType of the forward.
 		 */
-		virtual ExecType GetExecType() =0;
+		virtual ExecType GetExecType() const =0;
 
 		/**
 		 * @brief Executes the forward.

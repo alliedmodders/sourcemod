@@ -27,8 +27,8 @@ class CPlayerManager : public SMGlobalClass
 public:
 	CPlayerManager() : m_FirstPass(true) {}
 public: //SMGlobalClass
-	virtual void OnSourceModAllInitialized();
-	virtual void OnSourceModShutdown();
+	void OnSourceModAllInitialized();
+	void OnSourceModShutdown();
 public:
 	int GetMaxClients() const;
 	CPlayer *GetPlayerByIndex(int client) const;

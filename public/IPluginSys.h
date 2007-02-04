@@ -211,6 +211,13 @@ namespace SourceMod
 		}
 
 		/**
+		* @brief Called when a plugin is paused or unpaused.
+		*/
+		virtual void OnPluginPauseChange(IPlugin *plugin, bool paused)
+		{
+		}
+
+		/**
 		 * @brief Called when a plugin is unloaded (only if fully loaded).
 		 */
 		virtual void OnPluginUnloaded(IPlugin *plugin)

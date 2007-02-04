@@ -55,9 +55,9 @@ public: //ICallable
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
 	virtual void Cancel();
 public: //IForward
-	virtual const char *GetForwardName();
-	virtual unsigned int GetFunctionCount();
-	virtual ExecType GetExecType();
+	virtual const char *GetForwardName() const;
+	virtual unsigned int GetFunctionCount() const;
+	virtual ExecType GetExecType() const;
 	virtual int Execute(cell_t *result, IForwardFilter *filter);
 public: //IChangeableForward
 	virtual bool RemoveFunction(IPluginFunction *func);
@@ -70,6 +70,8 @@ public:
 								   unsigned int num_params, 
 								   ParamType *types, 
 								   va_list ap);
+	void PushPausedFunctions(IPlugin *plugin);
+	void PopPausedFunctions(IPlugin *plugin);
 private:
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
 	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
@@ -83,6 +85,7 @@ protected:
 	 * Destroying these things and using new/delete for their members feels bad.
 	 */
 	List<IPluginFunction *> m_functions;
+	List<IPluginFunction *> m_paused;
 
 	/* Type and name information */
 	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];
@@ -104,24 +107,25 @@ class CForwardManager :
 {
 	friend class CForward;
 public: //IForwardManager
-	virtual IForward *CreateForward(const char *name, 
+	IForward *CreateForward(const char *name, 
 		ExecType et, 
 		unsigned int num_params, 
 		ParamType *types, 
 		...);
-	virtual IChangeableForward *CreateForwardEx(const char *name, 
+	IChangeableForward *CreateForwardEx(const char *name, 
 		ExecType et, 
 		int num_params, 
 		ParamType *types, 
 		...);
-	virtual IForward *FindForward(const char *name, IChangeableForward **ifchng);
-	virtual void ReleaseForward(IForward *forward);
+	IForward *FindForward(const char *name, IChangeableForward **ifchng);
+	void ReleaseForward(IForward *forward);
 public: //IPluginsListener
-	virtual void OnPluginLoaded(IPlugin *plugin);
-	virtual void OnPluginUnloaded(IPlugin *plugin);
+	void OnPluginLoaded(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin);
+	void OnPluginPauseChange(IPlugin *plugin, bool paused);
 public: //SMGlobalClass
-	virtual void OnSourceModAllInitialized();
-	virtual void OnSourceModShutdown();
+	void OnSourceModAllInitialized();
+	void OnSourceModShutdown();
 protected:
 	CForward *ForwardMake();
 	void ForwardFree(CForward *fwd);

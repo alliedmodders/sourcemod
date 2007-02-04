@@ -177,6 +177,37 @@ CForward *CForwardManager::ForwardMake()
 	return fwd;
 }
 
+void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
+{
+	List<CForward *>::iterator iter;
+	CForward *fwd;
+
+	if (paused)
+	{
+		for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
+		{
+			fwd = (*iter);
+			fwd->PushPausedFunctions(plugin);
+		}
+		for (iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
+		{
+			fwd = (*iter);
+			fwd->PushPausedFunctions(plugin);
+		}
+	} else {
+		for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
+		{
+			fwd = (*iter);
+			fwd->PopPausedFunctions(plugin);
+		}
+		for (iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
+		{
+			fwd = (*iter);
+			fwd->PopPausedFunctions(plugin);
+		}
+	}
+}
+
 /*************************************
  * ACTUAL FORWARD API IMPLEMENTATION *
  *************************************/
@@ -272,11 +303,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 	{
 		func = (*iter);
-		/* Ugh... */
-		if (!func->GetParentContext()->IsRunnable())
-		{
-			continue;
-		}
 
 		for (unsigned int i=0; i<num_params; i++)
 		{
@@ -602,16 +628,22 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 {
 	bool found = false;
 	FuncIter iter;
+	List<IPluginFunction *> *lst;
 
-	for (iter=m_functions.begin(); iter!=m_functions.end();)
+	if (func->GetParentContext()->IsRunnable())
+	{
+		lst = &m_functions;
+	} else {
+		lst = &m_paused;
+	}
+
+	for (iter=lst->begin(); iter!=lst->end(); iter++)
 	{
 		if ((*iter) == func)
 		{
 			found = true;
-			/* If this iterator is being used, swap in a new one !*/
-			iter = m_functions.erase(iter);
-		} else {
-			iter++;
+			lst->erase(iter);
+			break;
 		}
 	}
 
@@ -653,22 +685,65 @@ bool CForward::AddFunction(IPluginFunction *func)
 	}
 
 	//:IDEA: eventually we will tell the plugin we're using it [?]
-	m_functions.push_back(func);
+	if (func->GetParentContext()->IsRunnable())
+	{
+		m_functions.push_back(func);
+	} else {
+		m_paused.push_back(func);
+	}
 
 	return true;
 }
 
-const char *CForward::GetForwardName()
+const char *CForward::GetForwardName() const
 {
 	return m_name;
 }
 
-unsigned int CForward::GetFunctionCount()
+unsigned int CForward::GetFunctionCount() const
 {
 	return m_functions.size();
 }
 
-ExecType CForward::GetExecType()
+ExecType CForward::GetExecType() const
 {
 	return m_ExecType;
+}
+
+void CForward::PushPausedFunctions(IPlugin *plugin)
+{
+	FuncIter iter;
+	IPluginFunction *func;
+	IPluginContext *pContext = plugin->GetBaseContext();
+
+	for (iter=m_functions.begin(); iter!=m_functions.end();)
+	{
+		func = (*iter);
+		if (func->GetParentContext() == pContext)
+		{
+			m_paused.push_back(func);
+			iter = m_functions.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+}
+
+void CForward::PopPausedFunctions(IPlugin *plugin)
+{
+	FuncIter iter;
+	IPluginFunction *func;
+	IPluginContext *pContext = plugin->GetBaseContext();
+
+	for (iter=m_paused.begin(); iter!=m_paused.end();)
+	{
+		func = (*iter);
+		if (func->GetParentContext() == pContext)
+		{
+			m_functions.push_back(func);
+			iter = m_paused.erase(iter);
+		} else {
+			iter++;
+		}
+	}
 }

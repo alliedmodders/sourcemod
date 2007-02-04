@@ -385,6 +385,8 @@ bool CPlugin::SetPauseState(bool paused)
 		pFunction->Execute(&result);
 	}
 
+	g_PluginSys._SetPauseState(this, paused);
+
 	return true;
 }
 
@@ -1635,4 +1637,15 @@ void CPluginManager::ReloadOrUnloadPlugins()
 			}
 		}
 	}
+}
+
+void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
+{
+	List<IPluginsListener *>::iterator iter;
+	IPluginsListener *pListener;
+	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
+	{
+		pListener = (*iter);
+		pListener->OnPluginPauseChange(pl, paused);
+	}	
 }
