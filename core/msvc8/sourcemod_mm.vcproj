@@ -192,10 +192,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CPlayer.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\CPlayerManager.cpp"
 				>
 			</File>
@@ -286,10 +282,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CPlayer.h"
-				>
-			</File>
-			<File
 				RelativePath="..\CPlayerManager.h"
 				>
 			</File>
@@ -363,6 +355,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\ILibrarySys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IPlayerHelpers.h"
 				>
 			</File>
 			<File

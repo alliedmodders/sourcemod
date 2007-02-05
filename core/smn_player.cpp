@@ -18,26 +18,26 @@ static cell_t sm_GetClientCount(IPluginContext *pCtx, const cell_t *params)
 {
 	if (params[1])
 	{
-		return g_PlayerManager.GetPlayerCount();
+		return g_PlayerManager.NumPlayers();
 	}
 
-	int maxplayers = g_PlayerManager.GetMaxClients();
+	int maxplayers = g_PlayerManager.MaxClients();
 	int count = 0;
 	for (int i=1; i<=maxplayers; ++i)
 	{
 		CPlayer *pPlayer = g_PlayerManager.GetPlayerByIndex(i);
-		if ((pPlayer->IsPlayerConnected()) && !(pPlayer->IsPlayerInGame()))
+		if ((pPlayer->IsConnected()) && !(pPlayer->IsInGame()))
 		{
 			count++;
 		}
 	}
 
-	return (g_PlayerManager.GetPlayerCount() + count);
+	return (g_PlayerManager.NumPlayers() + count);
 }
 
 static cell_t sm_GetMaxClients(IPluginContext *pCtx, const cell_t *params)
 {
-	return g_PlayerManager.GetMaxClients();
+	return g_PlayerManager.MaxClients();
 }
 
 static cell_t sm_GetClientName(IPluginContext *pCtx, const cell_t *params)
@@ -49,12 +49,12 @@ static cell_t sm_GetClientName(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	CPlayer *pPlayer = g_PlayerManager.GetPlayerByIndex(index);
-	if (!pPlayer->IsPlayerConnected())
+	if (!pPlayer->IsConnected())
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected.", index);
 	}
 
-	pCtx->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pPlayer->PlayerName(), NULL);
+	pCtx->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pPlayer->GetName(), NULL);
 	return 1;
 }
 
@@ -67,13 +67,13 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	CPlayer *pPlayer = g_PlayerManager.GetPlayerByIndex(index);
-	if (!pPlayer->IsPlayerConnected())
+	if (!pPlayer->IsConnected())
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected.", index);
 	}
 
 	char buf[64], *ptr;
-	strcpy(buf, pPlayer->PlayerIP());
+	strcpy(buf, pPlayer->GetIPAddress());
 
 	if (params[4] && (ptr = strchr(buf, ':')))
 	{
@@ -93,12 +93,12 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	CPlayer *pPlayer = g_PlayerManager.GetPlayerByIndex(index);
-	if (!pPlayer->IsPlayerConnected())
+	if (!pPlayer->IsConnected())
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected.", index);
 	}
 
-	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), pPlayer->PlayerAuthString());
+	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), pPlayer->GetAuthString());
 	return 1;
 }
 
@@ -110,7 +110,7 @@ static cell_t sm_IsPlayerConnected(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid client index %d.", index);
 	}
 
-	return (g_PlayerManager.GetPlayerByIndex(index)->IsPlayerConnected()) ? 1 : 0;
+	return (g_PlayerManager.GetPlayerByIndex(index)->IsConnected()) ? 1 : 0;
 }
 
 static cell_t sm_IsPlayerIngame(IPluginContext *pCtx, const cell_t *params)
@@ -121,7 +121,7 @@ static cell_t sm_IsPlayerIngame(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid client index %d.", index);
 	}
 
-	return (g_PlayerManager.GetPlayerByIndex(index)->IsPlayerInGame()) ? 1 : 0;
+	return (g_PlayerManager.GetPlayerByIndex(index)->IsInGame()) ? 1 : 0;
 }
 
 static cell_t sm_IsPlayerAuthorized(IPluginContext *pCtx, const cell_t *params)
@@ -132,7 +132,7 @@ static cell_t sm_IsPlayerAuthorized(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid client index %d.", index);
 	}
 
-	return (g_PlayerManager.GetPlayerByIndex(index)->IsPlayerAuthorized()) ? 1 : 0;
+	return (g_PlayerManager.GetPlayerByIndex(index)->IsAuthorized()) ? 1 : 0;
 }
 
 static cell_t sm_IsPlayerFakeClient(IPluginContext *pCtx, const cell_t *params)
@@ -144,12 +144,12 @@ static cell_t sm_IsPlayerFakeClient(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	CPlayer *pPlayer = g_PlayerManager.GetPlayerByIndex(index);
-	if (!pPlayer->IsPlayerConnected())
+	if (!pPlayer->IsConnected())
 	{
 		return pCtx->ThrowNativeError("Client %d is not connected.", index);
 	}
 
-	return (pPlayer->IsPlayerFakeClient()) ? 1 : 0;
+	return (pPlayer->IsFakeClient()) ? 1 : 0;
 }
 
 static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
@@ -178,7 +178,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	CPlayer *pPlayer = g_PlayerManager.GetPlayerByIndex(index);
-	if (!pPlayer->IsPlayerInGame())
+	if (!pPlayer->IsInGame())
 	{
 		return pCtx->ThrowNativeError("Client %d is not in game.", index);
 	}
@@ -193,7 +193,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
 
-	engine->ClientPrintf(pPlayer->GetPlayerEdict(), buffer);
+	engine->ClientPrintf(pPlayer->GetEdict(), buffer);
 
 	return 1;
 }
