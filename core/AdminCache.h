@@ -73,6 +73,8 @@ struct AdminUser
 	int next_user;					/* Next user in ze list */
 	int prev_user;					/* Prev user in the list */
 	UserAuth auth;					/* Auth method for this user */
+	bool immune_global;				/* Whether globally immune */
+	bool immune_default;			/* Whether defaultly immune */
 };
 
 class AdminCache : 
@@ -127,6 +129,8 @@ public: //IAdminSystem
 	FlagBits FlagBitArrayToBits(const bool array[], unsigned int maxSize);
 	FlagBits FlagArrayToBits(const AdminFlag array[], unsigned int numFlags);
 	unsigned int FlagBitsToArray(FlagBits bits, AdminFlag array[], unsigned int maxSize);
+	bool CheckAdminFlags(AdminId id, FlagBits bits);
+	bool CanAdminTarget(AdminId id, AdminId target);
 private:
 	void _UnsetCommandOverride(const char *cmd);
 	void _UnsetCommandGroupOverride(const char *group);

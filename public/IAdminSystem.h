@@ -416,7 +416,7 @@ namespace SourceMod
 		virtual bool GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode) =0;
 
 		/**
-		 * @brief Returns a bitarray of flags enabled on an admin.
+		 * @brief Returns the bitstring of access flags on an admin.
 		 *
 		 * @param id		AdminId index of the admin.
 		 * @param mode		Access mode to use.
@@ -524,6 +524,35 @@ namespace SourceMod
 		 * @return			Number of flags written.
 		 */
 		virtual unsigned int FlagBitsToArray(FlagBits bits, AdminFlag array[], unsigned int maxSize) =0;
+
+		/**
+		 * @brief Checks whether a user has access to a given set of flag bits.
+		 * Note: This is a wrapper around GetAdminFlags().
+		 *
+		 * @param id		AdminId index of admin.
+		 * @param flags		Bitstring containing the permissions to check.
+		 * @return			True if user has permission, false otherwise.
+		 */
+		virtual bool CheckAdminFlags(AdminId id, FlagBits bits) =0;
+
+		/**
+		 * @brief Checks whether an AdminId can target another AdminId.
+		 * 
+		 * Zeroth, if the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
+		 * First, if the targetted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+		 * Second, if the targeting admin is root, targeting suceeds.
+		 * Third, if the targetted admin has global immunity, targeting fails.
+		 * Fourth, if the targetted admin has default immunity,
+		 *  and the admin belongs to no groups, targeting fails.
+		 * Fifth, if the targetted admin has specific immunity from the
+		 *  targeting admin via group immunities, targeting fails.
+		 * Sixth, targeting succeeds if it passes these tests.
+		 *
+		 * @param id		AdminId index of admin doing the targeting.  Can be INVALID_ADMIN_ID.
+		 * @param target	AdminId index of the target admin.  Can be INVALID_ADMIN_ID.
+		 * @return			True if this admin has permission to target the other admin.
+		 */
+		virtual bool CanAdminTarget(AdminId id, AdminId target) =0;
 	};
 }
 

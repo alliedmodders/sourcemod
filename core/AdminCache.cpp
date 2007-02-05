@@ -35,15 +35,8 @@ AdminCache::AdminCache()
 
 AdminCache::~AdminCache()
 {
-	if (m_pCmdGrpOverrides)
-	{
-		sm_trie_destroy(m_pCmdGrpOverrides);
-	}
-
-	if (m_pCmdOverrides)
-	{
-		sm_trie_destroy(m_pCmdOverrides);
-	}
+	sm_trie_destroy(m_pCmdGrpOverrides);
+	sm_trie_destroy(m_pCmdOverrides);
 
 	DumpAdminCache(0xFFFFFFFF, false);
 
@@ -193,6 +186,8 @@ AdminId AdminCache::CreateAdmin(const char *name)
 	pUser->magic = USR_MAGIC_SET;
 	pUser->auth.identidx = -1;
 	pUser->auth.index = 0;
+	pUser->immune_default = false;
+	pUser->immune_global = false;
 
 	if (m_FirstUser == INVALID_ADMIN_ID)
 	{
@@ -986,8 +981,17 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 	table[pUser->grp_count] = gid;
 	pUser->grp_count++;
 
-	/* Compute new effective flags */
+	/* Compute new effective permissions */
 	pUser->eflags |= pGroup->addflags;
+
+	if (pGroup->immune_default)
+	{
+		pUser->immune_default = true;
+	}
+	if (pGroup->immune_global)
+	{
+		pUser->immune_global = true;
+	}
 
 	return true;
 }
@@ -1086,4 +1090,101 @@ unsigned int AdminCache::FlagBitsToArray(FlagBits bits, AdminFlag array[], unsig
 	}
 
 	return num;
+}
+
+bool AdminCache::CheckAdminFlags(AdminId id, FlagBits bits)
+{
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	if (!pUser || pUser->magic != USR_MAGIC_SET)
+	{
+		return false;
+	}
+
+	return ((pUser->eflags & bits) == bits);
+}
+
+bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
+{
+	/** 
+	 * Zeroth, if the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
+	 * First, if the targetted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+	 */
+
+	if (id == INVALID_ADMIN_ID)
+	{
+		return false;
+	}
+
+	if (target == INVALID_ADMIN_ID)
+	{
+		return true;
+	}
+
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	if (!pUser || pUser->magic != USR_MAGIC_SET)
+	{
+		return false;
+	}
+
+	AdminUser *pTarget = (AdminUser *)m_pMemory->GetAddress(target);
+	if (!pTarget || pTarget->magic != USR_MAGIC_SET)
+	{
+		return false;
+	}
+
+	/** 
+	 * Second, if the targeting admin is root, targeting suceeds.
+	 */
+	if (pUser->eflags & ADMFLAG_ROOT)
+	{
+		return true;
+	}
+
+	/** Fourth, if the targetted admin has global immunity, targeting fails. */
+	if (pTarget->immune_global)
+	{
+		return false;
+	}
+
+	/** 
+	 * Fifth, if the targetted admin has default immunity 
+	 *  and the admin belongs to no groups, targeting fails.
+	 */
+	if (pTarget->immune_default && pUser->grp_count < 1)
+	{
+		return false;
+	}
+
+	/** 
+	 * Sixth, if the targetted admin has specific immunity from the
+	 *  targeting admin via group immunities, targeting fails.
+	 */
+	//:TODO: speed this up... maybe with trie hacks.
+	//idea is to insert %d.%d in the trie after computing this and use it as a cache lookup.
+	//problem is the trie cannot delete prefixes, so we'd have a problem with invalidations.
+	if (pTarget->grp_count > 0 && pUser->grp_count > 0)
+	{
+		int *grp_table = (int *)m_pMemory->GetAddress(pTarget->grp_table);
+		int *src_table = (int *)m_pMemory->GetAddress(pUser->grp_table);
+		GroupId id, other;
+		unsigned int num;
+		for (unsigned int i=0; i<pTarget->grp_count; i++)
+		{
+			id = grp_table[i];
+			num = GetGroupImmunityCount(id);
+			for (unsigned int j=0; j<num; i++)
+			{
+				other = GetGroupImmunity(id, j);
+				for (unsigned int k=0; k<pUser->grp_count; k++)
+				{
+					if (other == src_table[k])
+					{
+						return false;
+					}
+				}
+			}
+		}
+	}
+	
+	return true;
 }
