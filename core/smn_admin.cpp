@@ -34,11 +34,11 @@ static cell_t AddCommandOverride(IPluginContext *pContext, const cell_t *params)
 static cell_t GetCommandOverride(IPluginContext *pContext, const cell_t *params)
 {
 	char *cmd;
-	AdminFlag flag;
+	FlagBits flags;
 
 	pContext->LocalToString(params[1], &cmd);
 
-	if (!g_Admins.GetCommandOverride(cmd, (OverrideType)params[2], &flag))
+	if (!g_Admins.GetCommandOverride(cmd, (OverrideType)params[2], &flags))
 	{
 		return 0;
 	}
@@ -46,7 +46,7 @@ static cell_t GetCommandOverride(IPluginContext *pContext, const cell_t *params)
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[3], &addr);
 
-	*addr = (cell_t)flag;
+	*addr = (cell_t)flags;
 
 	return 1;
 }
@@ -177,24 +177,10 @@ static cell_t GetAdmGroupCmdOverride(IPluginContext *pContext, const cell_t *par
 	return 1;
 }
 
-static cell_t GetAdmGroupAddFlagBits(IPluginContext *pContext, const cell_t *params)
+static cell_t GetAdmGroupAddFlags(IPluginContext *pContext, const cell_t *params)
 {
 	GroupId id = (GroupId)params[1];
-	bool flags[AdminFlags_TOTAL];
-	unsigned int num = g_Admins.GetGroupAddFlagBits(id, flags, AdminFlags_TOTAL);
-	unsigned int i;
-
-	cell_t *addr;
-	pContext->LocalToPhysAddr(params[2], &addr);
-
-	for (i=0;
-		i < num && i < (unsigned int)params[3];
-		i++)
-	{
-		addr[i] = flags[i] ? 1 : 0;
-	}
-
-	return i;
+	return g_Admins.GetGroupAddFlags(id);
 }
 
 REGISTER_NATIVES(adminNatives)
@@ -214,6 +200,6 @@ REGISTER_NATIVES(adminNatives)
 	{"GetAdmGroupImmuneCount",	GetAdmGroupImmuneCount},
 	{"AddAdmGroupCmdOverride",	AddAdmGroupCmdOverride},
 	{"GetAdmGroupCmdOverride",	GetAdmGroupCmdOverride},
-	{"GetAdmGroupAddFlagBits",	GetAdmGroupAddFlagBits},
+	{"GetAdmGroupAddFlags",		GetAdmGroupAddFlags},
 	{NULL,						NULL},
 };

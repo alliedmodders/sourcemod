@@ -21,8 +21,8 @@ AdminCache g_Admins;
 
 AdminCache::AdminCache()
 {
-	m_pCmdOverrides = NULL;
-	m_pCmdGrpOverrides = NULL;
+	m_pCmdOverrides = sm_trie_create();
+	m_pCmdGrpOverrides = sm_trie_create();
 	m_pStrings = new BaseStringTable(1024);
 	m_pMemory = m_pStrings->GetMemTable();
 	m_FreeGroupList = m_FirstGroup = m_LastGroup = INVALID_GROUP_ID;
@@ -84,23 +84,42 @@ void AdminCache::OnSourceModShutdown()
 	m_pCacheFwd = NULL;
 }
 
-void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, AdminFlag flag)
+void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits flags)
 {
+	Trie *pTrie = NULL;
 	if (type == Override_Command)
 	{
-		_AddCommandOverride(cmd, flag);
+		pTrie = m_pCmdOverrides;
 	} else if (type == Override_CommandGroup) {
-		_AddCommandGroupOverride(cmd, flag);
+		pTrie = m_pCmdGrpOverrides;
+	} else {
+		return;
 	}
+
+	sm_trie_insert(pTrie, cmd, (void *)(unsigned int)flags);
 }
 
-bool AdminCache::GetCommandOverride(const char *cmd, OverrideType type, AdminFlag *pFlag)
+bool AdminCache::GetCommandOverride(const char *cmd, OverrideType type, FlagBits *pFlags)
 {
+	Trie *pTrie = NULL;
+
 	if (type == Override_Command)
 	{
-		return _GetCommandOverride(cmd, pFlag);
+		pTrie = m_pCmdOverrides;
 	} else if (type == Override_CommandGroup) {
-		return _GetCommandGroupOverride(cmd, pFlag);
+		pTrie = m_pCmdGrpOverrides;
+	} else {
+		return false;
+	}
+
+	void *object;
+	if (sm_trie_retrieve(pTrie, cmd, &object))
+	{
+		if (pFlags)
+		{
+			*pFlags = (FlagBits)object;
+		}
+		return true;
 	}
 
 	return false;
@@ -113,72 +132,6 @@ void AdminCache::UnsetCommandOverride(const char *cmd, OverrideType type)
 		return _UnsetCommandOverride(cmd);
 	} else if (type == Override_CommandGroup) {
 		return _UnsetCommandGroupOverride(cmd);
-	}
-}
-
-void AdminCache::_AddCommandGroupOverride(const char *group, AdminFlag flag)
-{
-	if (!m_pCmdGrpOverrides)
-	{
-		m_pCmdGrpOverrides = sm_trie_create();
-	}
-
-	/* :TODO: Notify command system */
-
-	sm_trie_insert(m_pCmdGrpOverrides, group, (void *)flag);
-}
-
-void AdminCache::_AddCommandOverride(const char *cmd, AdminFlag flag)
-{
-	if (!m_pCmdOverrides)
-	{
-		m_pCmdOverrides = sm_trie_create();
-	}
-
-	/* :TODO: Notify command system */
-
-	sm_trie_insert(m_pCmdOverrides, cmd, (void *)flag);
-}
-
-bool AdminCache::_GetCommandGroupOverride(const char *cmd, AdminFlag *pFlag)
-{
-	if (!m_pCmdGrpOverrides)
-	{
-		return false;
-	}
-
-	if (!pFlag)
-	{
-		return sm_trie_retrieve(m_pCmdGrpOverrides, cmd, NULL);
-	} else {
-		void *object;
-		bool ret;
-		if (ret=sm_trie_retrieve(m_pCmdGrpOverrides, cmd, &object))
-		{
-			*pFlag = (AdminFlag)(int)object;
-		}
-		return ret;
-	}
-}
-
-bool AdminCache::_GetCommandOverride(const char *cmd, AdminFlag *pFlag)
-{
-	if (!m_pCmdOverrides)
-	{
-		return false;
-	}
-
-	if (!pFlag)
-	{
-		return sm_trie_retrieve(m_pCmdOverrides, cmd, NULL);
-	} else {
-		void *object;
-		bool ret;
-		if (ret=sm_trie_retrieve(m_pCmdOverrides, cmd, &object))
-		{
-			*pFlag = (AdminFlag)(int)object;
-		}
-		return ret;
 	}
 }
 
@@ -233,8 +186,8 @@ AdminId AdminCache::CreateAdmin(const char *name)
 		pUser->grp_table = -1;
 	}
 
-	memset(pUser->flags, 0, sizeof(pUser->flags));
-	memset(pUser->eflags, 0, sizeof(pUser->flags));
+	pUser->flags = 0;
+	pUser->eflags = 0;
 	pUser->grp_count = 0;
 	pUser->password = -1;
 	pUser->magic = USR_MAGIC_SET;
@@ -286,7 +239,7 @@ GroupId AdminCache::AddGroup(const char *group_name)
 	pGroup->next_grp = INVALID_GROUP_ID;
 	pGroup->pCmdGrpTable = NULL;
 	pGroup->pCmdTable = NULL;
-	memset(pGroup->addflags, 0, sizeof(AdminFlag) * AdminFlags_TOTAL);
+	pGroup->addflags = 0;
 
 	if (m_FirstGroup == INVALID_GROUP_ID)
 	{
@@ -336,12 +289,12 @@ void AdminCache::SetGroupAddFlag(GroupId id, AdminFlag flag, bool enabled)
 		return;
 	}
 
-	if (flag < Admin_None || flag >= AdminFlags_TOTAL)
+	if (flag < Admin_Reservation || flag >= AdminFlags_TOTAL)
 	{
 		return;
 	}
 
-	pGroup->addflags[flag] = enabled;
+	pGroup->addflags |= (1<<(unsigned int)flag);
 }
 
 bool AdminCache::GetGroupAddFlag(GroupId id, AdminFlag flag)
@@ -352,15 +305,16 @@ bool AdminCache::GetGroupAddFlag(GroupId id, AdminFlag flag)
 		return false;
 	}
 
-	if (flag < Admin_None || flag >= AdminFlags_TOTAL)
+	if (flag < Admin_Reservation || flag >= AdminFlags_TOTAL)
 	{
 		return false;
 	}
 
-	return pGroup->addflags[flag];
+	FlagBits bit = 1<<(FlagBits)flag;
+	return ((pGroup->addflags & bit) == bit);
 }
 
-unsigned int AdminCache::GetGroupAddFlagBits(GroupId id, bool flags[], unsigned int total)
+FlagBits AdminCache::GetGroupAddFlags(GroupId id)
 {
 	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
 	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
@@ -368,16 +322,7 @@ unsigned int AdminCache::GetGroupAddFlagBits(GroupId id, bool flags[], unsigned 
 		return 0;
 	}
 
-	unsigned int i;
-
-	for (i = Admin_None;
-		 i < AdminFlags_TOTAL && i < total;
-		 i++)
-	{
-		flags[i] = pGroup->addflags[i];
-	}
-
-	return i;
+	return pGroup->addflags;
 }
 
 void AdminCache::SetGroupGenericImmunity(GroupId id, ImmunityType type, bool enabled)
@@ -436,8 +381,16 @@ void AdminCache::AddGroupImmunity(GroupId id, GroupId other_id)
 		table[0] = 0;
 	} else {
 		int *old_table = (int *)m_pMemory->GetAddress(pOther->immune_table);
+		/* Break out if this group is already in the list */
+		for (int i=0; i<old_table[0]; i++)
+		{
+			if (old_table[1+i] == other_id)
+			{
+				return;
+			}
+		}
 		tblidx = m_pMemory->CreateMem(sizeof(int) * (old_table[0] + 2), (void **)&table);
-		/* Get the old address again in caes of resize */
+		/* Get the old address again in case of resize */
 		old_table = (int *)m_pMemory->GetAddress(pOther->immune_table);
 		table[0] = old_table[0];
 		for (unsigned int i=1; i<=(unsigned int)old_table[0]; i++)
@@ -702,14 +655,11 @@ void AdminCache::InvalidateGroup(GroupId id)
 					/* Decrease count */
 					pUser->grp_count--;
 					/* Recalculate effective flags */
-					memset(pUser->eflags, 0, sizeof(pUser->eflags));
+					pUser->eflags = pUser->flags;
 					for (unsigned int j=0; j<pUser->grp_count; j++)
 					{
 						pOther = (AdminGroup *)m_pMemory->GetAddress(table[j]);
-						for (unsigned int k=0; k<AdminFlags_TOTAL; k++)
-						{
-							pUser->eflags[k] = (pUser->flags[k] || pOther->addflags[k]);
-						}
+						pUser->eflags |= pOther->addflags;
 					}
 					/* Break now, duplicates aren't allowed */
 					break;
@@ -922,13 +872,14 @@ void AdminCache::SetAdminFlag(AdminId id, AdminFlag flag, bool enabled)
 		return;
 	}
 
-	if (flag < Admin_None
+	if (flag < Admin_Reservation
 		|| flag >= AdminFlags_TOTAL)
 	{
 		return;
 	}
 
-	pUser->flags[enabled] = false;
+	pUser->flags |= (1<<(FlagBits)flag);
+	pUser->eflags |= (1<<(FlagBits)flag);
 }
 
 bool AdminCache::GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode)
@@ -939,23 +890,25 @@ bool AdminCache::GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode)
 		return false;
 	}
 
-	if (flag < Admin_None
+	if (flag < Admin_Reservation
 		|| flag >= AdminFlags_TOTAL)
 	{
 		return false;
 	}
 
+	FlagBits bit = (1<<(FlagBits)flag);
+
 	if (mode == Access_Real)
 	{
-		return pUser->flags[flag];
+		return ((pUser->flags & bit) == bit);
 	} else if (mode == Access_Effective) {
-		return (pUser->flags[flag] || pUser->eflags[flag]);
+		return ((pUser->eflags & bit) == bit);
 	}
 
 	return false;
 }
 
-unsigned int AdminCache::GetAdminFlags(AdminId id, bool flags[], unsigned int total, AccessMode mode)
+FlagBits AdminCache::GetAdminFlags(AdminId id, AccessMode mode)
 {
 	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
 	if (!pUser || pUser->magic != USR_MAGIC_SET)
@@ -963,21 +916,14 @@ unsigned int AdminCache::GetAdminFlags(AdminId id, bool flags[], unsigned int to
 		return 0;
 	}
 
-	unsigned int i = 0;
 	if (mode == Access_Real)
 	{
-		for (i=0; i<AdminFlags_TOTAL && i<total; i++)
-		{
-			flags[i] = pUser->flags[i];
-		}
+		return pUser->flags;
 	} else if (mode == Access_Effective) {
-		for (i=0; i<AdminFlags_TOTAL && i<total; i++)
-		{
-			flags[i] = (pUser->flags[i] || pUser->eflags[i]);
-		}
+		return pUser->eflags;
 	}
 
-	return i;
+	return 0;
 }
 
 bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
@@ -992,6 +938,19 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
 	{
 		return false;
+	}
+
+	/* First check for duplicates */
+	if (pUser->grp_count != 0)
+	{
+		int *temp_table = (int *)m_pMemory->GetAddress(pUser->grp_table);
+		for (unsigned int i=0; i<pUser->grp_count; i++)
+		{
+			if (temp_table[i] == gid)
+			{
+				return false;
+			}
+		}
 	}
 
 	int *table;
@@ -1024,28 +983,11 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 		table = (int *)m_pMemory->GetAddress(pUser->grp_table);
 	}
 
-	for (unsigned int i=0; i<pUser->grp_count; i++)
-	{
-		if (table[i] == gid)
-		{
-			return false;
-		}
-	}
-
 	table[pUser->grp_count] = gid;
 	pUser->grp_count++;
 
 	/* Compute new effective flags */
-	for (unsigned int i=Admin_None;
-		 i<AdminFlags_TOTAL;
-		 i++)
-	{
-		/* Only inherit flags additive flags we don't have */
-		if (!pUser->eflags[i])
-		{
-			pUser->eflags[i] = pGroup->addflags[i];
-		}
-	}
+	pUser->eflags |= pGroup->addflags;
 
 	return true;
 }
@@ -1096,3 +1038,52 @@ void AdminCache::SetAdminPassword(AdminId id, const char *password)
 	pUser->password = m_pStrings->AddString(password);
 }
 
+unsigned int AdminCache::FlagBitsToBitArray(FlagBits bits, bool array[], unsigned int maxSize)
+{
+	unsigned int i;
+	for (i=0; i<maxSize && i<AdminFlags_TOTAL; i++)
+	{
+		array[i] = ((bits & (1<<i)) == (1<<i));
+	}
+
+	return i;
+}
+
+FlagBits AdminCache::FlagBitArrayToBits(const bool array[], unsigned int maxSize)
+{
+	FlagBits bits = 0;
+	for (unsigned int i=0; i<maxSize && i<AdminFlags_TOTAL; i++)
+	{
+		if (array[i])
+		{
+			bits |= (1<<i);
+		}
+	}
+
+	return bits;
+}
+
+FlagBits AdminCache::FlagArrayToBits(const AdminFlag array[], unsigned int numFlags)
+{
+	FlagBits bits = 0;
+	for (unsigned int i=0; i<numFlags && i<AdminFlags_TOTAL; i++)
+	{
+		bits |= (1 << (FlagBits)array[i]);
+	}
+
+	return bits;
+}
+
+unsigned int AdminCache::FlagBitsToArray(FlagBits bits, AdminFlag array[], unsigned int maxSize)
+{
+	unsigned int i, num=0;
+	for (i=0; i<maxSize && i<AdminFlags_TOTAL; i++)
+	{
+		if ((bits & (1<<i)) == (1<<i))
+		{
+			array[num++] = (AdminFlag)i;
+		}
+	}
+
+	return num;
+}

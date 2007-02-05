@@ -17,26 +17,70 @@
 #endif
 #define _admin_included
 
+/**
+ * Access levels (flags) for admins.
+ */
 enum AdminFlag
 {
-	Admin_None = 0,			/* Unused */
-	Admin_Reservation,		/* Reserved slot */
-	Admin_Kick,				/* Kick another user */
-	Admin_Ban,				/* Ban another user */
-	Admin_Unban,			/* Unban another user */
-	Admin_Slay,				/* Slay/kill/damage another user */
-	Admin_Changemap,		/* Change the map */
-	Admin_Convars,			/* Change basic convars */
-	Admin_Configs,			/* Change configs */
-	Admin_Chat,				/* Special chat privileges */
-	Admin_Vote,				/* Special vote privileges */
-	Admin_Password,			/* Set a server password */
-	Admin_RCON,				/* Use RCON */
-	Admin_Cheats,			/* Change sv_cheats and use its commands */
-	Admin_Root,				/* Root access */
+	Admin_Reservation = 0,	/**< Reserved slot */
+	Admin_Generic,			/**< Generic admin abilities */
+	Admin_Kick,				/**< Kick another user */
+	Admin_Ban,				/**< Ban another user */
+	Admin_Unban,			/**< Unban another user */
+	Admin_Slay,				/**< Slay/kill/damage another user */
+	Admin_Changemap,		/**< Change the map */
+	Admin_Convars,			/**< Change basic convars */
+	Admin_Config,			/**< Change configuration */
+	Admin_Chat,				/**< Special chat privileges */
+	Admin_Vote,				/**< Special vote privileges */
+	Admin_Password,			/**< Set a server password */
+	Admin_RCON,				/**< Use RCON */
+	Admin_Cheats,			/**< Change sv_cheats and use its commands */
+	Admin_Root,				/**< All access by default */
+	Admin_Custom1,			/**< First custom flag type */
+	Admin_Custom2,			/**< Second custom flag type */
+	Admin_Custom3,			/**< Third custom flag type */
+	Admin_Custom4,			/**< Fourth custom flag type */
+	Admin_Custom5,			/**< Fifth custom flag type */
+	Admin_Custom6,			/**< Sixth custom flag type */
 	/* --- */
 	AdminFlags_TOTAL,
 };
+
+/**
+ * These define bitwise values for bitstrings (numbers containing bitwise flags).
+ */
+#define ADMFLAG_RESERVATION			(1<<0)		/**< Convenience macro for Admin_Reservation as a FlagBit */
+#define ADMFLAG_GENERIC				(1<<1)		/**< Convenience macro for Admin_Generic as a FlagBit */
+#define ADMFLAG_KICK				(1<<2)		/**< Convenience macro for Admin_Kick as a FlagBit */
+#define ADMFLAG_BAN					(1<<3)		/**< Convenience macro for Admin_Ban as a FlagBit */
+#define ADMFLAG_UNBAN				(1<<4)		/**< Convenience macro for Admin_Unban as a FlagBit */
+#define ADMFLAG_SLAY				(1<<5)		/**< Convenience macro for Admin_Slay as a FlagBit */
+#define ADMFLAG_CHANGEMAP			(1<<6)		/**< Convenience macro for Admin_Changemap as a FlagBit */
+#define ADMFLAG_CONVARS				(1<<7)		/**< Convenience macro for Admin_Convars as a FlagBit */
+#define ADMFLAG_CONFIG				(1<<8)		/**< Convenience macro for Admin_Config as a FlagBit */
+#define ADMFLAG_CHAT				(1<<9)		/**< Convenience macro for Admin_Chat as a FlagBit */
+#define ADMFLAG_VOTE				(1<<10)		/**< Convenience macro for Admin_Vote as a FlagBit */
+#define ADMFLAG_PASSWORD			(1<<11)		/**< Convenience macro for Admin_Password as a FlagBit */
+#define ADMFLAG_RCON				(1<<12)		/**< Convenience macro for Admin_RCON as a FlagBit */
+#define ADMFLAG_CHEATS				(1<<13)		/**< Convenience macro for Admin_Cheats as a FlagBit */
+#define ADMFLAG_ROOT				(1<<14)		/**< Convenience macro for Admin_Root as a FlagBit */
+#define ADMFLAG_CUSTOM1				(1<<15)		/**< Convenience macro for Admin_Custom1 as a FlagBit */
+#define ADMFLAG_CUSTOM2				(1<<16)		/**< Convenience macro for Admin_Custom2 as a FlagBit */
+#define ADMFLAG_CUSTOM3				(1<<17)		/**< Convenience macro for Admin_Custom3 as a FlagBit */
+#define ADMFLAG_CUSTOM4				(1<<18)		/**< Convenience macro for Admin_Custom4 as a FlagBit */
+#define ADMFLAG_CUSTOM5				(1<<19)		/**< Convenience macro for Admin_Custom5 as a FlagBit */
+#define ADMFLAG_CUSTOM6				(1<<20)		/**< Convenience macro for Admin_Custom6 as a FlagBit */
+
+stock FlagToBit(AdminFlag:flag)
+{
+	return (1<<_:flag);
+}
+
+stock AdminFlag:BitToFlag(bit)
+{
+	/* :TODO: implement */
+}
 
 enum OverrideType
 {
@@ -95,20 +139,20 @@ native DumpAdminCache(cache_flags, bool:rebuild);
  *
  * @param cmd			String containing command name (case sensitive).
  * @param type			Override type (specific command or group).
- * @param flag			New admin flag.
+ * @param flags			New admin flag.
  * @noreturn
  */
-native AddCommandOverride(const String:cmd[], OverrideType:type, AdminFlag:flag);
+native AddCommandOverride(const String:cmd[], OverrideType:type, flags);
 
 /**
  * Returns a command override.
  *
  * @param cmd			String containing command name (case sensitive).
  * @param type			Override type (specific command or group).
- * @param pFlag			By-reference cell to store the flag (undefined if not found).
+ * @param flags			By-reference cell to store the flag (undefined if not found).
  * @return				True if there is an override, false otherwise.
  */
-native bool:GetCommandOverride(const String:cmd[], OverrideType:type, &AdminFlag:flag);
+native bool:GetCommandOverride(const String:cmd[], OverrideType:type, &flags);
 
 /**
  * Unsets a command override.
@@ -161,11 +205,9 @@ native bool:GetAdmGroupAddFlag(GroupId:id, AdminFlag:flag);
  * @note These are called "add flags" because they add to a user's flags.
  *
  * @param id			GroupId of the group.
- * @param flags			Array to store flags in.
- * @param total			Total number of flags that can be stored in the array (AdminFlags_TOTAL, usually).
- * @return				Number of flags that were written to the array.
+ * @return				Bitstring containing the flags enabled.
  */
-native GetAdmGroupAddFlagBits(GroupId:id, bool:flags[], total);
+native GetAdmGroupAddFlags(GroupId:id);
 
 /**
  * Toggles a generic immunity type.

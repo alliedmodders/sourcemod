@@ -45,7 +45,7 @@ struct AdminGroup
 	int next_grp;					/* Next group in the chain */
 	int prev_grp;					/* Previous group in the chain */
 	int nameidx;					/* Name */
-	bool addflags[AdminFlags_TOTAL];	/* Additive flags */
+	FlagBits addflags;				/* Additive flags */
 };
 
 struct AuthMethod
@@ -62,9 +62,9 @@ struct UserAuth
 
 struct AdminUser
 {
-	uint32_t magic;						/* Magic flag, for memory validation */
-	bool flags[AdminFlags_TOTAL];	/* Base flags */
-	bool eflags[AdminFlags_TOTAL];	/* Effective flags */
+	uint32_t magic;					/* Magic flag, for memory validation */
+	FlagBits flags;					/* Flags */
+	FlagBits eflags;				/* Effective flags */
 	int nameidx;					/* Name index */
 	int password;					/* Password index */
 	unsigned int grp_count;			/* Number of groups */
@@ -88,15 +88,15 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 public: //IAdminSystem
 	/** Command cache stuff */
-	void AddCommandOverride(const char *cmd, OverrideType type, AdminFlag flag);
-	bool GetCommandOverride(const char *cmd, OverrideType type, AdminFlag *pFlag);
+	void AddCommandOverride(const char *cmd, OverrideType type, FlagBits flags);
+	bool GetCommandOverride(const char *cmd, OverrideType type, FlagBits *flags);
 	void UnsetCommandOverride(const char *cmd, OverrideType type);
 	/** Group cache stuff */
 	GroupId AddGroup(const char *group_name);
 	GroupId FindGroupByName(const char *group_name);
 	void SetGroupAddFlag(GroupId id, AdminFlag flag, bool enabled);
 	bool GetGroupAddFlag(GroupId id, AdminFlag flag);
-	unsigned int GetGroupAddFlagBits(GroupId id, bool flags[], unsigned int total);
+	FlagBits GetGroupAddFlags(GroupId id);
 	void SetGroupGenericImmunity(GroupId id, ImmunityType type, bool enabled);
 	bool GetGroupGenericImmunity(GroupId id, ImmunityType type);
 	void InvalidateGroup(GroupId id);
@@ -115,7 +115,7 @@ public: //IAdminSystem
 	bool BindAdminIdentity(AdminId id, const char *auth, const char *ident);
 	virtual void SetAdminFlag(AdminId id, AdminFlag flag, bool enabled);
 	bool GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode);
-	unsigned int GetAdminFlags(AdminId id, bool flags[], unsigned int total, AccessMode mode);
+	FlagBits GetAdminFlags(AdminId id, AccessMode mode);
 	bool AdminInheritGroup(AdminId id, GroupId gid);
 	unsigned int GetAdminGroupCount(AdminId id);
 	GroupId GetAdminGroup(AdminId id, unsigned int index, const char **name);
@@ -123,11 +123,11 @@ public: //IAdminSystem
 	const char *GetAdminPassword(AdminId id);
 	AdminId FindAdminByIdentity(const char *auth, const char *identity);
 	bool InvalidateAdmin(AdminId id);
+	unsigned int FlagBitsToBitArray(FlagBits bits, bool array[], unsigned int maxSize);
+	FlagBits FlagBitArrayToBits(const bool array[], unsigned int maxSize);
+	FlagBits FlagArrayToBits(const AdminFlag array[], unsigned int numFlags);
+	unsigned int FlagBitsToArray(FlagBits bits, AdminFlag array[], unsigned int maxSize);
 private:
-	void _AddCommandOverride(const char *cmd, AdminFlag flag);
-	void _AddCommandGroupOverride(const char *group, AdminFlag flag);
-	bool _GetCommandOverride(const char *cmd, AdminFlag *pFlag);
-	bool _GetCommandGroupOverride(const char *group, AdminFlag *pFlag);
 	void _UnsetCommandOverride(const char *cmd);
 	void _UnsetCommandGroupOverride(const char *group);
 	void InvalidateGroupCache();

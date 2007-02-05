@@ -341,10 +341,6 @@
 				RelativePath="..\sourcemod.h"
 				>
 			</File>
-			<File
-				RelativePath="..\svn_version.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Interfaces"
@@ -387,6 +383,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\ITextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\svn_version.h"
 				>
 			</File>
 		</Filter>
