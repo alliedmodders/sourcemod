@@ -174,6 +174,6 @@ namespace SourceMod
 		 */
 		virtual void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_IFACE_SHARE_SYS_H_

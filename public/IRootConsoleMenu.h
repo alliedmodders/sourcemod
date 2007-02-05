@@ -107,6 +107,6 @@ namespace SourceMod
 		 */
 		virtual void DrawGenericOption(const char *cmd, const char *text) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_

@@ -245,6 +245,6 @@ namespace SourceMod
 		 */
 		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_MODULE_INTERFACE_H_

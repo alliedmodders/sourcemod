@@ -464,6 +464,6 @@ namespace SourceMod
 		 */
 		virtual bool InvalidateAdmin(AdminId id) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_ADMINISTRATION_SYSTEM_H_

@@ -304,6 +304,6 @@ namespace SourceMod
 		 */
 		virtual bool InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHandleAccess) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_INTERFACE_H_

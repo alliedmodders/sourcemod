@@ -174,6 +174,6 @@ namespace SourceMod
 		 */
 		virtual size_t PathFormat(char *buffer, size_t maxlength, const char *pathfmt, ...) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_LIBRARY_INTERFACE_SYS_H_

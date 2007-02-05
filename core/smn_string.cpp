@@ -11,13 +11,10 @@
  * Version: $Id$
  */
 
-#include "sm_platform.h"
 #include <string.h>
 #include <stdlib.h>
 #include "sm_globals.h"
 #include "sm_stringutil.h"
-
-using namespace SourcePawn;
 
 inline const char *_strstr(const char *str, const char *substr)
 {

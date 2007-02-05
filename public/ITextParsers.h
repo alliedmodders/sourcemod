@@ -350,6 +350,6 @@ namespace SourceMod
 		 */
 		virtual unsigned int GetUTF8CharBytes(const char *stream) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_

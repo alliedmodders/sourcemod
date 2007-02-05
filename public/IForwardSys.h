@@ -329,7 +329,7 @@ namespace SourceMod
 		 */
 		virtual void ReleaseForward(IForward *forward) =0;
 	};
-};
+}
 
 /*
  *  In the AMX Mod X model of forwarding, each forward contained a list of pairs, each pair containing
@@ -387,7 +387,7 @@ namespace SourceMod
  * be immediately resolved.  Unfortunately, this became extremely burdensome on the API and exposed many problems,
  * the major (and breaking) one was that two separate Function objects cannot be in a calling process on the same 
  * plugin at once. (:TODO: perhaps prevent that in the IPlugin object?) This is because heap functions lose their order
- * and become impossible to re-arrange without some global heap tracking mechanis.  It also made iterative copy backs 
+ * and become impossible to re-arrange without some global heap tracking mechanism.  It also made iterative copy backs 
  * for arrays/references overwhelmingly complex, since each plugin had to have its memory back-patched for each copy.
  *  Therefore, this was scrapped for cached parameters (current implementation), which is the implementation AMX Mod X 
  * uses.  It is both faster and works better.

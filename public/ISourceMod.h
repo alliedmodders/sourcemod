@@ -117,6 +117,6 @@ namespace SourceMod
 									const cell_t *params,
 									unsigned int param) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_MAIN_HELPER_INTERFACE_H_

@@ -312,6 +312,6 @@ namespace SourceMod
 		 */
 		virtual void RemovePluginsListener(IPluginsListener *listener) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_PLUGINMNGR_INTERFACE_H_
