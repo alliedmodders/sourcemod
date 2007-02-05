@@ -308,13 +308,6 @@ namespace SourceMod
 											 OverrideRule *pRule) =0;
 
 		/**
-		 * @brief Invalidates and removes a group from the group cache.
-		 *
-		 * @param id			Group id.
-		 */
-		virtual void InvalidateGroup(GroupId id) =0;
-
-		/**
 		 * @brief Tells the admin system to dump a portion of the cache.  
 		 * This calls into plugin forwards to rebuild the cache.
 		 *
