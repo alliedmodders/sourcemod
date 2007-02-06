@@ -40,7 +40,7 @@ ParseError(const String:format[], {Handle,String,Float,_}:...)
 	
 	if (!g_LoggedFileName)
 	{
-		LogError("Error(s) detected parsing admin_levels.cfg:");
+		LogError("Error(s) detected parsing %s", g_Filename);
 		g_LoggedFileName = true;
 	}
 	
