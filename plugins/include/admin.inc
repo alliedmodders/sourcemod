@@ -44,8 +44,9 @@ enum AdminFlag
 	Admin_Custom5,			/**< Fifth custom flag type */
 	Admin_Custom6,			/**< Sixth custom flag type */
 	/* --- */
-	AdminFlags_TOTAL,
 };
+
+#define AdminFlags_TOTAL	21
 
 /**
  * These define bitwise values for bitstrings (numbers containing bitwise flags).

@@ -11,6 +11,7 @@ public Plugin:myinfo =
 };
 
 /** Various globals */
+new bool:g_FlagsSet[26];					/* Maps whether flags are set */
 new AdminFlag:g_FlagLetters[26];			/* Maps the flag letters */		
 new bool:g_LoggedFileName = false;			/* Whether or not the file name has been logged */
 new g_ErrorCount = 0;

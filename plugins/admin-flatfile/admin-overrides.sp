@@ -50,24 +50,33 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 		return SMCParse_Continue;
 	}
 	
-	new AdminFlag:flag;
+	new AdminFlag:array[AdminFlags_TOTAL];
+	new flags_total;
 	
-	if (strlen(value) > 1)
+	new len = strlen(value);
+	for (new i=0; i<len; i++)
 	{
-		LogOverrideError("Unrecognized access level: %s", value);
-		return SMCParse_Continue;
+		if (value[i] < 'a' || value[i] > 'z')
+		{
+			LogOverrideError("Invalid flag detected: %c", value[i]);
+			continue;
+		}
+		new val = value[i] - 'a';
+		if (!g_FlagsSet[val])
+		{
+			LogOverrideError("Invalid flag detected: %c", value[i]);
+			continue;
+		}
+		array[flags_total++] = g_FlagLetters[val];
 	}
 	
-	if (value[0] >= 'a' && value[0] <= 'z')
-	{
-		flag = g_FlagLetters[value[0] - 'a'];
-	}
+	new flags = FlagArrayToBits(array, flags_total);
 	
 	if (key[0] == '@')
 	{
-		AddCommandOverride(key[1], Override_CommandGroup, FlagToBit(flag));
+		AddCommandOverride(key[1], Override_CommandGroup, flags);
 	} else {
-		AddCommandOverride(key, Override_Command, FlagToBit(flag));
+		AddCommandOverride(key, Override_Command, flags);
 	}
 	
 	return SMCParse_Continue;

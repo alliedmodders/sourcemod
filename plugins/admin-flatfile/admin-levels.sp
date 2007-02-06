@@ -9,6 +9,11 @@ static g_LevelState = LEVEL_STATE_NONE;
 
 LoadDefaultLetters()
 {
+	for (new i='t'; i<'z'; i++)
+	{
+		g_FlagsSet[i-'a'] = false;
+	}
+	
 	g_FlagLetters['a'-'a'] = Admin_Reservation;
 	g_FlagLetters['b'-'a'] = Admin_Kick;
 	g_FlagLetters['c'-'a'] = Admin_Ban;
@@ -19,9 +24,15 @@ LoadDefaultLetters()
 	g_FlagLetters['h'-'a'] = Admin_Config;
 	g_FlagLetters['i'-'a'] = Admin_Chat;
 	g_FlagLetters['j'-'a'] = Admin_Vote;
-	g_FlagLetters['h'-'a'] = Admin_Password;
-	g_FlagLetters['i'-'a'] = Admin_RCON;
-	g_FlagLetters['j'-'a'] = Admin_Cheats;
+	g_FlagLetters['k'-'a'] = Admin_Password;
+	g_FlagLetters['l'-'a'] = Admin_RCON;
+	g_FlagLetters['m'-'a'] = Admin_Cheats;
+	g_FlagLetters['n'-'a'] = Admin_Custom1;
+	g_FlagLetters['o'-'a'] = Admin_Custom2;
+	g_FlagLetters['p'-'a'] = Admin_Custom3;
+	g_FlagLetters['q'-'a'] = Admin_Custom4;
+	g_FlagLetters['r'-'a'] = Admin_Custom5;
+	g_FlagLetters['s'-'a'] = Admin_Custom6;
 	g_FlagLetters['z'-'a'] = Admin_Root;
 }
 
@@ -103,11 +114,24 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 			flag = Admin_Cheats;
 		} else if (StrEqual(key, "root")) {
 			flag = Admin_Root;
+		} else if (StrEqual(key, "custom1")) {
+			flag = Admin_Custom1;
+		} else if (StrEqual(key, "custom2")) {
+			flag = Admin_Custom2;
+		} else if (StrEqual(key, "custom3")) {
+			flag = Admin_Custom3;
+		} else if (StrEqual(key, "custom4")) {
+			flag = Admin_Custom4;
+		} else if (StrEqual(key, "custom5")) {
+			flag = Admin_Custom5;
+		} else if (StrEqual(key, "custom6")) {
+			flag = Admin_Custom6;
 		} else {
 			LogLevelError("Unrecognized flag type: %s", key);
 		}
 		
 		g_FlagLetters[chr] = flag;
+		g_FlagsSet[chr] = true;
 	}
 	
 	return SMCParse_Continue;

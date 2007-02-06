@@ -80,6 +80,10 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 					{
 						continue;
 					}
+					if (!g_FlagsSet[value[i] - 'a'])
+					{
+						continue;
+					}
 					flag = g_FlagLetters[value[i] - 'a'];
 					SetAdmGroupAddFlag(g_CurGrp, flag, true);
 				}
