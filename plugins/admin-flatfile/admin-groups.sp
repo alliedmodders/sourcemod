@@ -11,32 +11,23 @@ static g_GroupState = GROUP_STATE_NONE;
 static g_GroupPass = 0
 static bool:g_NeedReparse = false;
 
-//:TODO: immunity needs to self-check itself for redundancy in core
-//:TODO: invalidating groups internally needs to check immunities
 //:TODO: reparsing
-
-static LogGroupError(const String:fmt[], {Handle,String,Float,_}:...)
-{
-	decl String:buffer[512];
-	
-	if (!g_LoggedFileName)
-	{
-		LogError("Error(s) detected parsing admin_groups.cfg:");
-		g_LoggedFileName = true;
-	}
-	
-	VFormat(buffer, sizeof(buffer), fmt, 2);
-	
-	LogError(" (%d) %s", ++g_ErrorCount, buffer);
-}
 
 public SMCResult:ReadGroups_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel++;
+		return SMCParse_Continue;
+	}
+	
 	if (g_GroupState == GROUP_STATE_NONE)
 	{
 		if (StrEqual(name, "Groups"))
 		{
 			g_GroupState = GROUP_STATE_GROUPS;
+		} else {
+			g_IgnoreLevel++;
 		}
 	} else if (g_GroupState == GROUP_STATE_GROUPS) {
 		if ((g_CurGrp = CreateAdmGroup(name)) == INVALID_GROUP_ID)
@@ -48,7 +39,11 @@ public SMCResult:ReadGroups_NewSection(Handle:smc, const String:name[], bool:opt
 		if (StrEqual(name, "Overrides"))
 		{
 			g_GroupState = GROUP_STATE_OVERRIDES;
+		} else {
+			g_IgnoreLevel++;
 		}
+	} else {
+		g_IgnoreLevel++;
 	}
 	
 	return SMCParse_Continue;
@@ -60,7 +55,8 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 										bool:key_quotes, 
 										bool:value_quotes)
 {
-	if (g_CurGrp == INVALID_GROUP_ID)
+	if (g_CurGrp == INVALID_GROUP_ID
+		|| g_IgnoreLevel)
 	{
 		return SMCParse_Continue;
 	}
@@ -130,7 +126,7 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 			{
 				SetAdmGroupImmuneFrom(g_CurGrp, id);
 			} else {
-				LogGroupError("Unable to find group: \"%s\"", value);
+				ParseError("Unable to find group: \"%s\"", value);
 			}
 		}
 	}
@@ -140,6 +136,13 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 
 public SMCResult:ReadGroups_EndSection(Handle:smc)
 {
+	/* If we're ignoring, skip out */
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel--;
+		return SMCParse_Continue;
+	}
+	
 	if (g_GroupState == GROUP_STATE_OVERRIDES)
 	{
 		g_GroupState = GROUP_STATE_INGROUP;
@@ -165,20 +168,13 @@ static InitializeGroupParser()
 	}
 }
 
-ReadGroups()
+InternalReadGroups(const String:path[], pass)
 {
-	new String:path[PLATFORM_MAX_PATH];
-	
-	InitializeGroupParser();
-	
-	BuildPath(Path_SM, path, sizeof(path), "configs/admin_groups.cfg");
-	
 	/* Set states */
+	InitGlobalStates();
 	g_GroupState = GROUP_STATE_NONE;
-	g_LoggedFileName = false;
-	g_ErrorCount = 0;
 	g_CurGrp = INVALID_GROUP_ID;
-	g_GroupPass = GROUP_PASS_FIRST;
+	g_GroupPass = pass;
 	g_NeedReparse = false;
 		
 	new SMCError:err = SMC_ParseFile(g_hGroupParser, path);
@@ -187,10 +183,23 @@ ReadGroups()
 		decl String:buffer[64];
 		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
 		{
-			LogGroupError("%s", buffer);
+			ParseError("%s", buffer);
 		} else {
-			LogGroupError("Fatal parse error");
+			ParseError("Fatal parse error");
 		}
+	}
+}
+
+ReadGroups()
+{
+	InitializeGroupParser();
+	
+	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admin_groups.cfg");
+	
+	InternalReadGroups(g_Filename, GROUP_PASS_FIRST);
+	if (g_NeedReparse)
+	{
+		InternalReadGroups(g_Filename, GROUP_PASS_SECOND);
 	}
 }
 

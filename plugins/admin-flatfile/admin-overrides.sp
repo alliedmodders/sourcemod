@@ -5,35 +5,31 @@
 static Handle:g_hOverrideParser = INVALID_HANDLE;
 static g_OverrideState = OVERRIDE_STATE_NONE;
 
-static LogOverrideError(const String:format[], {Handle,String,Float,_}:...)
-{
-	decl String:buffer[512];
-	
-	if (!g_LoggedFileName)
-	{
-		LogError("Error(s) detected parsing admin_levels.cfg:");
-		g_LoggedFileName = true;
-	}
-	
-	VFormat(buffer, sizeof(buffer), format, 2);
-	
-	LogError(" (%d) %s", ++g_ErrorCount, buffer);
-}
-
-
 public SMCResult:ReadOverrides_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel++;
+		return SMCParse_Continue;
+	}
+	
 	if (g_OverrideState == OVERRIDE_STATE_NONE)
 	{
 		if (StrEqual(name, "Levels"))
 		{
 			g_OverrideState = OVERRIDE_STATE_LEVELS;
+		} else {
+			g_IgnoreLevel++;
 		}
 	} else if (g_OverrideState == OVERRIDE_STATE_LEVELS) {
 		if (StrEqual(name, "Overrides"))
 		{
 			g_OverrideState = OVERRIDE_STATE_OVERRIDES;
+		} else {
+			g_IgnoreLevel++;
 		}
+	} else {
+		g_IgnoreLevel++;
 	}
 	
 	return SMCParse_Continue;
@@ -45,7 +41,8 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 										bool:key_quotes, 
 										bool:value_quotes)
 {
-	if (g_OverrideState != OVERRIDE_STATE_OVERRIDES)
+	if (g_OverrideState != OVERRIDE_STATE_OVERRIDES
+		|| g_IgnoreLevel)
 	{
 		return SMCParse_Continue;
 	}
@@ -58,13 +55,13 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 	{
 		if (value[i] < 'a' || value[i] > 'z')
 		{
-			LogOverrideError("Invalid flag detected: %c", value[i]);
+			ParseError("Invalid flag detected: %c", value[i]);
 			continue;
 		}
 		new val = value[i] - 'a';
 		if (!g_FlagsSet[val])
 		{
-			LogOverrideError("Invalid flag detected: %c", value[i]);
+			ParseError("Invalid flag detected: %c", value[i]);
 			continue;
 		}
 		array[flags_total++] = g_FlagLetters[val];
@@ -84,6 +81,13 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 
 public SMCResult:ReadOverrides_EndSection(Handle:smc)
 {
+	/* If we're ignoring, skip out */
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel--;
+		return SMCParse_Continue;
+	}
+	
 	if (g_OverrideState == OVERRIDE_STATE_LEVELS)
 	{
 		g_OverrideState = OVERRIDE_STATE_NONE;
@@ -110,27 +114,23 @@ static InitializeOverrideParser()
 
 ReadOverrides()
 {
-	new String:path[PLATFORM_MAX_PATH];
-	
 	InitializeOverrideParser();
 	
-	BuildPath(Path_SM, path, sizeof(path), "configs/admin_levels.cfg");
+	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admin_levels.cfg");
 	
 	/* Set states */
+	InitGlobalStates();
 	g_OverrideState = OVERRIDE_STATE_NONE;
-	g_LoggedFileName = false;
-	g_ErrorCount = 0;
 		
-	new SMCError:err = SMC_ParseFile(g_hOverrideParser, path);
+	new SMCError:err = SMC_ParseFile(g_hOverrideParser, g_Filename);
 	if (err != SMCError_Okay)
 	{
 		decl String:buffer[64];
 		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
 		{
-			LogOverrideError("%s", buffer);
+			ParseError("%s", buffer);
 		} else {
-			LogOverrideError("Fatal parse error");
+			ParseError("Fatal parse error");
 		}
 	}
 }
-

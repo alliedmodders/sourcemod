@@ -36,34 +36,31 @@ LoadDefaultLetters()
 	g_FlagLetters['z'-'a'] = Admin_Root;
 }
 
-static LogLevelError(const String:format[], {Handle,String,Float,_}:...)
-{
-	decl String:buffer[512];
-	
-	if (!g_LoggedFileName)
-	{
-		LogError("Error(s) detected parsing admin_levels.cfg:");
-		g_LoggedFileName = true;
-	}
-	
-	VFormat(buffer, sizeof(buffer), format, 2);
-	
-	LogError(" (%d) %s", ++g_ErrorCount, buffer);
-}
-
 public SMCResult:ReadLevels_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel++;
+		return SMCParse_Continue;
+	}
+	
 	if (g_LevelState == LEVEL_STATE_NONE)
 	{
 		if (StrEqual(name, "Levels"))
 		{
 			g_LevelState = LEVEL_STATE_LEVELS;
+		} else {
+			g_IgnoreLevel++;
 		}
 	} else if (g_LevelState == LEVEL_STATE_LEVELS) {
 		if (StrEqual(name, "Flags"))
 		{
 			g_LevelState = LEVEL_STATE_FLAGS;
+		} else {
+			g_IgnoreLevel++;
 		}
+	} else {
+		g_IgnoreLevel++;
 	}
 	
 	return SMCParse_Continue;
@@ -71,13 +68,13 @@ public SMCResult:ReadLevels_NewSection(Handle:smc, const String:name[], bool:opt
 
 public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const String:value[], bool:key_quotes, bool:value_quotes)
 {
-	if (g_LevelState == LEVEL_STATE_FLAGS)
+	if (g_LevelState == LEVEL_STATE_FLAGS && !g_IgnoreLevel)
 	{
 		new chr = value[0];
 		
 		if (chr < 'a' || chr > 'z')
 		{
-			LogLevelError("Unrecognized character: \"%s\"", value);
+			ParseError("Unrecognized character: \"%s\"", value);
 			return SMCParse_Continue;
 		}
 		
@@ -127,7 +124,7 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 		} else if (StrEqual(key, "custom6")) {
 			flag = Admin_Custom6;
 		} else {
-			LogLevelError("Unrecognized flag type: %s", key);
+			ParseError("Unrecognized flag type: %s", key);
 		}
 		
 		g_FlagLetters[chr] = flag;
@@ -139,6 +136,13 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 
 public SMCResult:ReadLevels_EndSection(Handle:smc)
 {
+	/* If we're ignoring, skip out */
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel--;
+		return SMCParse_Continue;
+	}
+	
 	if (g_LevelState == LEVEL_STATE_FLAGS)
 	{
 		/* We're totally done parsing */
@@ -165,27 +169,24 @@ static InitializeLevelParser()
 
 RefreshLevels()
 {
-	new String:path[PLATFORM_MAX_PATH];
-	
 	LoadDefaultLetters();
 	InitializeLevelParser();
 	
-	BuildPath(Path_SM, path, sizeof(path), "configs/admin_levels.cfg");
+	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admin_levels.cfg");
 	
 	/* Set states */
+	InitGlobalStates();
 	g_LevelState = LEVEL_STATE_NONE;
-	g_LoggedFileName = false;
-	g_ErrorCount = 0;
 		
-	new SMCError:err = SMC_ParseFile(g_hLevelParser, path);
+	new SMCError:err = SMC_ParseFile(g_hLevelParser, g_Filename);
 	if (err != SMCError_Okay)
 	{
 		decl String:buffer[64];
 		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
 		{
-			LogLevelError("%s", buffer);
+			ParseError("%s", buffer);
 		} else {
-			LogLevelError("Fatal parse error");
+			ParseError("Fatal parse error");
 		}
 	}
 }
