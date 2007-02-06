@@ -342,6 +342,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\public\IDataPack.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\public\IExtensionSys.h"
 				>
 			</File>

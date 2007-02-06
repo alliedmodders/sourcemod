@@ -116,6 +116,35 @@ namespace SourceMod
 									SourcePawn::IPluginContext *pContext,
 									const cell_t *params,
 									unsigned int param) =0;
+
+#if 0
+		/**
+		 * @brief Creates a data pack object.
+		 *
+		 * @return			A new IDataPack object.
+		 */
+		virtual IDataPack *CreateDataPack() =0;
+
+		/**
+		 * @brief Releases a data pack's resources so it can be re-used.
+		 *
+		 * @param pack		An IDataPack object to release.
+		 */
+		virtual void FreeDataPack(IDataPack *pack) =0;
+
+		/**
+		 * @brief Returns the automated data pack handle type.
+		 *
+		 * The readonly data type is the parent of the writable type.  
+		 * Note that calling CloseHandle() on either type will release the data pack.
+		 * The readonly type is inheritable, but due to limitations of the Handle System,
+		 * the writable type is not.
+		 *
+		 * @param readonly	If true, the readonly type will be returned.
+		 * @return			The Handle type for storing generic data packs.
+		 */
+		 virtual HandleType_t GetDataPackHandleType(bool readonly=false) =0;
+#endif
 	};
 }
 
