@@ -81,10 +81,6 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 						continue;
 					}
 					flag = g_FlagLetters[value[i] - 'a'];
-					if (flag == Admin_None)
-					{
-						continue;
-					}
 					SetAdmGroupAddFlag(g_CurGrp, flag, true);
 				}
 			} else if (StrEqual(key, "immunity")) {

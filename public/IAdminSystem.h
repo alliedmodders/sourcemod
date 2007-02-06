@@ -147,10 +147,6 @@ namespace SourceMod
 	 */
 	typedef int		AdminId;
 
-	#define ADMIN_CACHE_OVERRIDES	(1<<0)
-	#define ADMIN_CACHE_ADMINS		(1<<1)
-	#define ADMIN_CACHE_GROUPS		((1<<2)|ADMIN_CACHE_ADMINS)
-
 	/**
 	 * @brief Represents an invalid/nonexistant group or an erroneous operation.
 	 */
@@ -162,18 +158,42 @@ namespace SourceMod
 	#define INVALID_ADMIN_ID	-1
 
 	/**
+	 * @brief Represents the various cache regions.
+	 */
+	enum AdminCachePart
+	{
+		AdminCache_Overrides = 0,		/**< Global overrides */
+		AdminCache_Groups = 1,			/**< All groups (automatically invalidates admins too) */
+		AdminCache_Admins = 2,			/**< All admins */
+	};
+
+	/**
 	 * @brief Provides callbacks for admin cache operations.
 	 */
 	class IAdminListener
 	{
 	public:
+		virtual unsigned int GetInterfaceVersion()
+		{
+			return SMINTERFACE_ADMINSYS_VERSION;
+		}
+	public:
 		/**
-		 * Called when part of the admin cache needs to be rebuilt.  
-		 * Groups should always be rebuilt before admins.
+		 * @brief Called when the admin cache needs to be rebuilt.  
 		 *
-		 * @param cache_flags	Flags for which cache to dump.
+		 * @param auto_rebuild		True if this is being called because of a group rebuild.
 		 */
-		virtual void OnRebuildAdminCache(int cache_flags) =0;
+		virtual void OnRebuildAdminCache(bool auto_rebuild) =0;
+
+		/**
+		 * @brief Called when the group cache needs to be rebuilt.
+		 */
+		virtual void OnRebuildGroupCache() =0;
+		
+		/**
+		 * @brief Called when the global override cache needs to be rebuilt.
+		 */
+		virtual void OnRebuildOverrideCache() =0;
 	};
 
 	typedef unsigned int FlagBits;
@@ -339,10 +359,10 @@ namespace SourceMod
 		 * @brief Tells the admin system to dump a portion of the cache.  
 		 * This calls into plugin forwards to rebuild the cache.
 		 *
-		 * @param cache_flags	Flags for which cache to dump.  Specifying groups also dumps admins.
+		 * @param part			Portion of the cache to dump.
 		 * @param rebuild		If true, the rebuild forwards/events will fire.
 		 */
-		virtual void DumpAdminCache(int cache_flags, bool rebuild) =0;
+		virtual void DumpAdminCache(AdminCachePart part, bool rebuild) =0;
 
 		/**
 		 * @brief Adds an admin interface listener.

@@ -50,7 +50,7 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 		return SMCParse_Continue;
 	}
 	
-	new AdminFlag:flag = Admin_None;
+	new AdminFlag:flag;
 	
 	if (strlen(value) > 1)
 	{
@@ -65,9 +65,9 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 	
 	if (key[0] == '@')
 	{
-		AddCommandOverride(key[1], Override_CommandGroup, flag);
+		AddCommandOverride(key[1], Override_CommandGroup, FlagToBit(flag));
 	} else {
-		AddCommandOverride(key, Override_Command, flag);
+		AddCommandOverride(key, Override_Command, FlagToBit(flag));
 	}
 	
 	return SMCParse_Continue;

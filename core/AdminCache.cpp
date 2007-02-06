@@ -35,10 +35,11 @@ AdminCache::AdminCache()
 
 AdminCache::~AdminCache()
 {
+	DumpAdminCache(AdminCache_Overrides, false);
+	DumpAdminCache(AdminCache_Groups, false);
+
 	sm_trie_destroy(m_pCmdGrpOverrides);
 	sm_trie_destroy(m_pCmdOverrides);
-
-	DumpAdminCache(0xFFFFFFFF, false);
 
 	if (m_pGroups)
 	{
@@ -759,39 +760,52 @@ void AdminCache::InvalidateAdminCache(bool unlink_admins)
 	}
 }
 
-void AdminCache::DumpAdminCache(int cache_flags, bool rebuild)
+void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 {
-	if (cache_flags & ADMIN_CACHE_OVERRIDES)
+	List<IAdminListener *>::iterator iter;
+	IAdminListener *pListener;
+	cell_t result;
+
+	if (part == AdminCache_Overrides)
 	{
 		DumpCommandOverrideCache(Override_Command);
 		DumpCommandOverrideCache(Override_CommandGroup);
-	}
-
-	/* This will auto-invalidate the admin cache */
-	if (cache_flags & ADMIN_CACHE_GROUPS)
-	{
-		InvalidateGroupCache();
-	}
-
-	/* If we only requested an admin rebuild, re-use the internal memory */
-	if (((cache_flags & ADMIN_CACHE_ADMINS) == ADMIN_CACHE_ADMINS)
-		&& ((cache_flags & (1<<2)) != (1<<2)))
-	{
-		InvalidateAdminCache(true);
-	}
-
-	if (rebuild)
-	{
-		List<IAdminListener *>::iterator iter;
-		IAdminListener *pListener;
-		cell_t result;
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		if (rebuild)
 		{
-			pListener = (*iter);
-			pListener->OnRebuildAdminCache(cache_flags);
+			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			{
+				pListener = (*iter);
+				pListener->OnRebuildOverrideCache();
+			}
+			m_pCacheFwd->PushCell(part);
+			m_pCacheFwd->Execute(&result);
 		}
-		m_pCacheFwd->PushCell(cache_flags);
-		m_pCacheFwd->Execute(&result);
+	} else if (part == AdminCache_Groups || part == AdminCache_Admins) {
+		if (part == AdminCache_Groups)
+		{
+			InvalidateGroupCache();
+			if (rebuild)
+			{
+				for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+				{
+					pListener = (*iter);
+					pListener->OnRebuildGroupCache();
+				}
+				m_pCacheFwd->PushCell(part);
+				m_pCacheFwd->Execute(&result);
+			}
+		}
+		InvalidateAdminCache(true);
+		if (rebuild)
+		{
+			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			{
+				pListener = (*iter);
+				pListener->OnRebuildAdminCache((part == AdminCache_Groups));
+			}
+			m_pCacheFwd->PushCell(AdminCache_Admins);
+			m_pCacheFwd->Execute(&result);
+		}
 	}
 }
 

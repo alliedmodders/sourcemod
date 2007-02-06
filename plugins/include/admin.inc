@@ -113,26 +113,31 @@ enum AdmAccessMode
 	Access_Effective,	/**< Access the user has from their groups */
 };
 
-#define ADMIN_CACHE_OVERRIDES	(1<<0)
-#define ADMIN_CACHE_ADMINS		(1<<1)
-#define ADMIN_CACHE_GROUPS		((1<<2)|ADMIN_CACHE_ADMINS)
+/**
+ * @brief Represents the various cache regions.
+ */
+enum AdminCachePart
+{
+	AdminCache_Overrides = 0,		/**< Global overrides */
+	AdminCache_Groups = 1,			/**< All groups (automatically invalidates admins too) */
+	AdminCache_Admins = 2,			/**< All admins */
+};
 
 /**
- * Called when part of the admin cache needs to be rebuilt.
- * @note Groups should always be rebuilt before admins.
+ * Called when part of the cache which needs to be rebuilt.
  *
- * @param cache_flags	Flags for which cache to dump.
+ * @param part		Part of the admin cache to rebuild.
  */
-forward OnRebuildAdminCache(cache_flags);
+forward OnRebuildAdminCache(AdminCachePart:part);
 
 /**
  * Tells the admin system to dump a portion of the cache.
  *
- * @param cache_flags	Flags for which cache to dump.  Specifying groups also dumps admins.
+ * @param part			Part of the cache to dump.  Specifying groups also dumps admins.
  * @param rebuild		If true, the rebuild forwards will fire.
  * @noreturn
  */
-native DumpAdminCache(cache_flags, bool:rebuild);
+native DumpAdminCache(AdminCachePart:part, bool:rebuild);
 
 /**
  * Adds a global command flag override.  Any command registered with this name

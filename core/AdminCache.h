@@ -107,7 +107,7 @@ public: //IAdminSystem
 	GroupId GetGroupImmunity(GroupId id, unsigned int number);
 	void AddGroupCommandOverride(GroupId id, const char *name, OverrideType type, OverrideRule rule);
 	bool GetGroupCommandOverride(GroupId id, const char *name, OverrideType type, OverrideRule *pRule);
-	void DumpAdminCache(int cache_flags, bool rebuild);
+	void DumpAdminCache(AdminCachePart part, bool rebuild);
 	void AddAdminListener(IAdminListener *pListener);
 	void RemoveAdminListener(IAdminListener *pListener);
 	/** User stuff */

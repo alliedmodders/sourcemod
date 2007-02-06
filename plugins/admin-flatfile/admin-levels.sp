@@ -9,12 +9,6 @@ static g_LevelState = LEVEL_STATE_NONE;
 
 LoadDefaultLetters()
 {
-	/* Clear letters first */
-	for (new i='a'; i<='z'; i++)
-	{
-		g_FlagLetters[i-'a'] = Admin_None;
-	}
-	
 	g_FlagLetters['a'-'a'] = Admin_Reservation;
 	g_FlagLetters['b'-'a'] = Admin_Kick;
 	g_FlagLetters['c'-'a'] = Admin_Ban;
@@ -22,7 +16,7 @@ LoadDefaultLetters()
 	g_FlagLetters['e'-'a'] = Admin_Slay;
 	g_FlagLetters['f'-'a'] = Admin_Changemap;
 	g_FlagLetters['g'-'a'] = Admin_Convars;
-	g_FlagLetters['h'-'a'] = Admin_Configs;
+	g_FlagLetters['h'-'a'] = Admin_Config;
 	g_FlagLetters['i'-'a'] = Admin_Chat;
 	g_FlagLetters['j'-'a'] = Admin_Vote;
 	g_FlagLetters['h'-'a'] = Admin_Password;
@@ -78,7 +72,7 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 		
 		chr -= 'a';
 		
-		new AdminFlag:flag = Admin_None;
+		new AdminFlag:flag;
 		
 		if (StrEqual(key, "reservation"))
 		{
@@ -95,8 +89,8 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 			flag = Admin_Changemap;
 		} else if (StrEqual(key, "cvars")) {
 			flag = Admin_Convars;
-		} else if (StrEqual(key, "configs")) {
-			flag = Admin_Configs;
+		} else if (StrEqual(key, "config")) {
+			flag = Admin_Config;
 		} else if (StrEqual(key, "chat")) {
 			flag = Admin_Chat;
 		} else if (StrEqual(key, "vote")) {

@@ -185,7 +185,8 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	m_IsMapLoading = false;
 
-	g_Admins.DumpAdminCache(ADMIN_CACHE_GROUPS|ADMIN_CACHE_ADMINS|ADMIN_CACHE_OVERRIDES, true);
+	g_Admins.DumpAdminCache(AdminCache_Overrides, true);
+	g_Admins.DumpAdminCache(AdminCache_Groups, true);
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }

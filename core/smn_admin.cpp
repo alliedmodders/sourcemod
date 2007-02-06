@@ -17,7 +17,7 @@
 
 static cell_t DumpAdminCache(IPluginContext *pContext, const cell_t *params)
 {
-	g_Admins.DumpAdminCache(params[1], (params[2] == 1) ? true : false);
+	g_Admins.DumpAdminCache((AdminCachePart)params[1], (params[2] == 1) ? true : false);
 	return 1;
 }
 
