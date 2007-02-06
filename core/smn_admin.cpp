@@ -183,6 +183,241 @@ static cell_t GetAdmGroupAddFlags(IPluginContext *pContext, const cell_t *params
 	return g_Admins.GetGroupAddFlags(id);
 }
 
+static cell_t RegisterAuthIdentType(IPluginContext *pContext, const cell_t *params)
+{
+	char *type;
+	pContext->LocalToString(params[1], &type);
+
+	g_Admins.RegisterAuthIdentType(type);
+
+	return 1;
+}
+
+static cell_t CreateAdmin(IPluginContext *pContext, const cell_t *params)
+{
+	char *admin;
+	pContext->LocalToString(params[1], &admin);
+
+	if (admin[0] == '\0')
+	{
+		admin = NULL;
+	}
+
+	return g_Admins.CreateAdmin(admin);
+}
+
+static cell_t GetAdminUsername(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	size_t written;
+	const char *name = g_Admins.GetAdminName(id);
+
+	if (!name)
+	{
+		return 0;
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], name, &written);
+
+	return written;
+}
+
+static cell_t BindAdminIdentity(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	char *auth, *ident;
+
+	pContext->LocalToString(params[2], &auth);
+	pContext->LocalToString(params[3], &ident);
+
+	return g_Admins.BindAdminIdentity(id, auth, ident);
+}
+
+static cell_t SetAdminFlag(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	AdminFlag flag = (AdminFlag)params[2];
+	bool enabled = params[3] ? true : false;
+
+	g_Admins.SetAdminFlag(id, flag, enabled);
+
+	return 1;
+}
+
+static cell_t GetAdminFlag(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	AdminFlag flag = (AdminFlag)params[2];
+	AccessMode mode = (AccessMode)params[3];
+
+	return g_Admins.GetAdminFlag(id, flag, mode);
+}
+
+static cell_t GetAdminFlags(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	AccessMode mode = (AccessMode)params[2];
+
+	return g_Admins.GetAdminFlags(id, mode);
+}
+
+static cell_t AdminInheritGroup(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	GroupId gid = params[2];
+
+	return g_Admins.AdminInheritGroup(id, gid);
+}
+
+static cell_t GetAdminGroupCount(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+
+	return g_Admins.GetAdminGroupCount(id);
+}
+
+static cell_t GetAdminGroup(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	unsigned int index = params[2];
+	const char *name;
+	GroupId gid;
+
+	if ((gid=g_Admins.GetAdminGroup(id, index, &name)) == INVALID_GROUP_ID)
+	{
+		return gid;
+	}
+
+	if (name == NULL)
+	{
+		name = "";
+	}
+
+	pContext->StringToLocalUTF8(params[3], params[4], name, NULL);
+
+	return gid;
+}
+
+static cell_t SetAdminPassword(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	char *password;
+
+	pContext->LocalToString(params[2], &password);
+
+	g_Admins.SetAdminPassword(id, password);
+
+	return 1;
+}
+
+static cell_t GetAdminPassword(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	const char *password = g_Admins.GetAdminPassword(id);
+
+	if (!password)
+	{
+		return 0;
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], password, NULL);
+
+	return 1;
+}
+
+static cell_t FindAdminByIdentity(IPluginContext *pContext, const cell_t *params)
+{
+	char *auth, *ident;
+
+	pContext->LocalToString(params[1], &auth);
+	pContext->LocalToString(params[2], &ident);
+
+	return g_Admins.FindAdminByIdentity(auth, ident);
+}
+
+static cell_t RemoveAdmin(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+
+	return g_Admins.InvalidateAdmin(id);
+}
+
+static cell_t FlagBitsToBitArray(IPluginContext *pContext, const cell_t *params)
+{
+	FlagBits bits = (FlagBits)params[1];
+	bool array[AdminFlags_TOTAL];
+	cell_t *addr;
+	unsigned int numWr = g_Admins.FlagBitsToBitArray(bits, array, AdminFlags_TOTAL);
+
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	unsigned int i;
+	for (i=0; i<numWr && i<(unsigned int)params[3]; i++)
+	{
+		addr[i] = array[i] ? 1 : 0;
+	}
+
+	return i;
+}
+
+static cell_t FlagBitArrayToBits(IPluginContext *pContext, const cell_t *params)
+{
+	bool array[AdminFlags_TOTAL];
+	unsigned int num = ((unsigned int)params[2] > AdminFlags_TOTAL ? params[2] : AdminFlags_TOTAL);
+	cell_t *addr;
+
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	for (unsigned int i=0; i<num; i++)
+	{
+		array[i] = addr[i] ? true : false;
+	}
+
+	return g_Admins.FlagBitArrayToBits(array, num);
+}
+
+static cell_t FlagArrayToBits(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	if (sizeof(AdminFlag) == sizeof(cell_t))
+	{
+		return g_Admins.FlagArrayToBits((const AdminFlag *)addr, params[2]);
+	} else {
+		AdminFlag flags[AdminFlags_TOTAL];
+		unsigned int num = ((unsigned)params[2] > AdminFlags_TOTAL ? AdminFlags_TOTAL : params[2]);
+
+		for (unsigned int i=0; i<num; i++)
+		{
+			flags[i] = (AdminFlag)addr[i];
+		}
+		return g_Admins.FlagArrayToBits(flags, num);
+	}
+}
+
+static cell_t FlagBitsToArray(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	if (sizeof(AdminFlag) == sizeof(cell_t))
+	{
+		return g_Admins.FlagBitsToArray(params[1], (AdminFlag *)addr, params[3]);
+	} else {
+		AdminFlag flags[AdminFlags_TOTAL];
+		unsigned int num = ((unsigned)params[2] > AdminFlags_TOTAL ? AdminFlags_TOTAL : params[2]);
+		num = g_Admins.FlagBitsToArray(params[1], flags, num);
+
+		for (unsigned int i=0; i<num; i++)
+		{
+			addr[i] = flags[i];
+		}
+
+		return num;
+	}
+}
+
 REGISTER_NATIVES(adminNatives)
 {
 	{"DumpAdminCache",			DumpAdminCache},
@@ -201,5 +436,24 @@ REGISTER_NATIVES(adminNatives)
 	{"AddAdmGroupCmdOverride",	AddAdmGroupCmdOverride},
 	{"GetAdmGroupCmdOverride",	GetAdmGroupCmdOverride},
 	{"GetAdmGroupAddFlags",		GetAdmGroupAddFlags},
+	{"RegisterAuthIdentType",	RegisterAuthIdentType},
+	{"CreateAdmin",				CreateAdmin},
+	{"GetAdminUsername",		GetAdminUsername},
+	{"BindAdminIdentity",		BindAdminIdentity},
+	{"SetAdminFlag",			SetAdminFlag},
+	{"GetAdminFlag",			GetAdminFlag},
+	{"GetAdminFlags",			GetAdminFlags},
+	{"AdminInheritGroup",		AdminInheritGroup},
+	{"GetAdminGroupCount",		GetAdminGroupCount},
+	{"GetAdminGroup",			GetAdminGroup},
+	{"SetAdminPassword",		SetAdminPassword},
+	{"GetAdminPassword",		GetAdminPassword},
+	{"FindAdminByIdentity",		FindAdminByIdentity},
+	{"RemoveAdmin",				RemoveAdmin},
+	{"FlagBitsToBitArray",		FlagBitsToBitArray},
+	{"FlagBitArrayToBits",		FlagBitArrayToBits},
+	{"FlagArrayToBits",			FlagArrayToBits},
+	{"FlagBitsToArray",			FlagBitsToArray},
+	/* -------------------------------------------------- */
 	{NULL,						NULL},
 };

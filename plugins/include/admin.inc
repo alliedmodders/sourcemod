@@ -72,15 +72,9 @@ enum AdminFlag
 #define ADMFLAG_CUSTOM5				(1<<19)		/**< Convenience macro for Admin_Custom5 as a FlagBit */
 #define ADMFLAG_CUSTOM6				(1<<20)		/**< Convenience macro for Admin_Custom6 as a FlagBit */
 
-stock FlagToBit(AdminFlag:flag)
-{
-	return (1<<_:flag);
-}
-
-stock AdminFlag:BitToFlag(bit)
-{
-	/* :TODO: implement */
-}
+#define AUTHMETHOD_STEAM			"steam"
+#define AUTHMETHOD_IP				"ip"
+#define AUTHMETHOD_NAME				"name"
 
 enum OverrideType
 {
@@ -100,16 +94,23 @@ enum ImmunityType
 	Immunity_Global,		/* Immune from everyone (except root admins) */
 };
 
-/** Note: Groups are not Handles, nor are they indexes */
+/** Identifies a unique entry in the group permissions cache.  These are not Handles. */
 enum GroupId
 {
 	INVALID_GROUP_ID = -1,
 };
 
-/** Note: These are not Handles */
+/** Identifies a unique entry in the admin permissions cache.  These are not Handles. */
 enum AdminId
 {
 	INVALID_ADMIN_ID = -1,
+};
+
+/** Defines user access modes. */
+enum AdmAccessMode
+{
+	Access_Real,		/**< Access the user has inherently */
+	Access_Effective,	/**< Access the user has from their groups */
 };
 
 #define ADMIN_CACHE_OVERRIDES	(1<<0)
@@ -275,3 +276,200 @@ native AddAdmGroupCmdOverride(GroupId:id, const String:name[], OverrideType:type
  * @return				True if an override exists, false otherwise.
  */
 native bool:GetAdmGroupCmdOverride(GroupId:id, const String:name[], OverrideType:type, &OverrideRule:rule);
+
+/**
+ * Registers an authentication identity type.  You normally never need to call this except for 
+ * very specific systems.
+ *
+ * @param codename		Codename to use for your authentication type.
+ * @noreturn
+ */
+native RegisterAuthIdentType(const String:name[]);
+
+/**
+ * Creates a new admin entry in the permissions cache.
+ *
+ * @param name			Name for this entry (does not have to be unique).
+ * 						Specify an empty string for an anonymous admin.
+ */
+native AdminId:CreateAdmin(const String:name[]="");
+
+/**
+ * Retrieves an admin's user name as made with CreateAdmin().
+ *
+ * NOTE: This function can return UTF-8 strings, and will safely chop UTF-8 strings.
+ *
+ * @param id			AdminId of the admin.
+ * @param name			String buffer to store name.
+ * @param maxlength		Maximum size of string buffer.
+ * @return				Number of bytes written.
+ */
+native GetAdminUsername(AdminId:id, const String:name[], maxlength);
+
+/**
+ * Binds an admin to an identity for fast lookup later on.  The bind must be unique.
+ *
+ * @param id			AdminId of the admin.
+ * @param auth			Auth method to use, predefined or from RegisterAuthIdentType().
+ * @param ident			String containing the arbitrary, unique identity.
+ * @return				True on success, false if the auth method was not found,
+ *						or ident was already taken.
+ */
+native bool:BindAdminIdentity(AdminId:id, const String:auth[], const String:ident[]);
+
+/**
+ * Sets whether or not a flag is enabled on an admin.
+ *
+ * @param id		AdminId index of the admin.
+ * @param flag		Admin flag to use.
+ * @param enabled	True to enable, false to disable.
+ * @noreturn
+ */
+native SetAdminFlag(AdminId:id, AdminFlag:flag, bool:enabled);
+
+/**
+ * Returns whether or not a flag is enabled on an admin.
+ *
+ * @param id		AdminId index of the admin.
+ * @param flag		Admin flag to use.
+ * @param mode		Access mode to check.
+ * @return			True if enabled, false otherwise.
+ */
+native bool:GetAdminFlag(AdminId:id, AdminFlag:flag, AdmAccessMode:mode);
+
+/**
+ * Returns the bitstring of access flags on an admin.
+ *
+ * @param id		AdminId index of the admin.
+ * @param mode		Access mode to use.
+ * @return			A bitstring containing which flags are enabled.
+ */
+native GetAdminFlags(AdminId:id, AdmAccessMode:mode);
+
+/**
+ * Adds a group to an admin's inherited group list.  Any flags the group has 
+ * will be added to the admin's effective flags.
+ *
+ * @param id		AdminId index of the admin.
+ * @param gid		GroupId index of the group.
+ * @return			True on success, false on invalid input or duplicate membership.
+ */
+native bool:AdminInheritGroup(AdminId:id, GroupId:gid);
+
+/**
+ * Returns the number of groups this admin is a member of.
+ * 
+ * @param id		AdminId index of the admin.
+ * @return			Number of groups this admin is a member of.
+ */
+native GetAdminGroupCount(AdminId:id);
+
+/**
+ * Returns group information from an admin.
+ *
+ * @param id		AdminId index of the admin.
+ * @param index		Group number to retrieve, from 0 to N-1, where N
+ *					is the value of GetAdminGroupCount(id).
+ * @param name		Buffer to store the group's name.
+ *					Note: This will safely chop UTF-8 strings.
+ * @param maxlength	Maximum size of the output name buffer.
+ * @return			A GroupId index and a name pointer, or
+ *					INVALID_GROUP_ID and NULL if an error occurred.
+*/
+native GroupId:GetAdminGroup(AdminId:id, index, const String:name[], maxlength) =0;
+
+/**
+ * Sets a password on an admin.
+ *
+ * @param id		AdminId index of the admin.
+ * @param passwd	String containing the password.
+ * @noreturn
+ */
+native SetAdminPassword(AdminId:id, const String:password[]);
+
+/**
+ * Gets an admin's password.
+ *
+ * @param id		AdminId index of the admin.
+ * @param name		Optional buffer to store the admin's password.
+ * @param maxlength	Maximum size of the output name buffer.
+ *					Note: This will safely chop UTF-8 strings.
+ * @return			True if there was a password set, false otherwise.
+ */
+native bool:GetAdminPassword(AdminId:id, const String:buffer[]="", maxlength=0);
+
+/**
+ * Attempts to find an admin by an auth method and an identity.
+ *
+ * @param auth		Auth method to try.
+ * @param identity	Identity string to look up.
+ * @return			An AdminId index if found, INVALID_ADMIN_ID otherwise.
+ */
+native AdminId:FindAdminByIdentity(const String:auth[], const String:identity[]);
+
+/**
+ * Removes an admin entry from the cache.
+ *
+ * Note: This will remove any bindings to a specific user.
+ *
+ * @param id		AdminId index to remove/invalidate.
+ * @return			True on success, false otherwise.
+ */
+native bool:RemoveAdmin(AdminId:id);
+
+/**
+ * Converts a flag bit string to a bit array.
+ *
+ * @param bits		Bit string containing the flags.
+ * @param array		Array to write the flags to.  Enabled flags will be 'true'.
+ * @param maxSize	Maximum number of flags the array can store.
+ * @return			Number of flags written.
+ */
+native FlagBitsToBitArray(bits, bool:array[], maxSize);
+
+/**
+ * Converts a flag array to a bit string.
+ *
+ * @param array		Array containing true or false for each AdminFlag.
+ * @param maxSize	Maximum size of the flag array.
+ * @return			A bit string composed of the array bits.
+ */
+native FlagBitArrayToBits(const bool:array[], maxSize);
+
+/**
+ * Converts an array of flags to bits.
+ *
+ * @param array		Array containing flags that are enabled.
+ * @param numFlags	Number of flags in the array.
+ * @return			A bit string composed of the array flags.
+ */
+native FlagArrayToBits(const AdminFlag:array[], numFlags) =0;
+
+/**
+ * Converts a bit string to an array of flags.
+ *
+ * @param bits		Bit string containing the flags.
+ * @param array		Output array to write flags.
+ * @param maxSize	Maximum size of the flag array.
+ * @return			Number of flags written.
+ */
+native FlagBitsToArray(bits, AdminFlag:array[], maxSize) =0;
+
+
+stock FlagToBit(AdminFlag:flag)
+{
+	return (1<<_:flag);
+}
+
+stock bool:BitToFlag(bit, &AdminFlag:flag)
+{
+	new AdminFlag:array[1];
+	
+	if (FlagBitsToArray(bit, array, 1))
+	{
+		flag = array[0];
+		return true;
+	}
+	
+	return false;
+}

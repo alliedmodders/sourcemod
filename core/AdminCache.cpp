@@ -289,7 +289,14 @@ void AdminCache::SetGroupAddFlag(GroupId id, AdminFlag flag, bool enabled)
 		return;
 	}
 
-	pGroup->addflags |= (1<<(unsigned int)flag);
+	FlagBits bits = (1<<(FlagBits)flag);
+
+	if (enabled)
+	{
+		pGroup->addflags |= bits;
+	} else {
+		pGroup->addflags &= ~bits;
+	}
 }
 
 bool AdminCache::GetGroupAddFlag(GroupId id, AdminFlag flag)
@@ -872,9 +879,17 @@ void AdminCache::SetAdminFlag(AdminId id, AdminFlag flag, bool enabled)
 	{
 		return;
 	}
+	
+	FlagBits bits = (1<<(FlagBits)flag);
 
-	pUser->flags |= (1<<(FlagBits)flag);
-	pUser->eflags |= (1<<(FlagBits)flag);
+	if (enabled)
+	{
+		pUser->flags |= bits;
+		pUser->eflags |= bits;
+	} else {
+		pUser->flags &= ~bits;
+		pUser->eflags &= ~bits;
+	}
 }
 
 bool AdminCache::GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode)
