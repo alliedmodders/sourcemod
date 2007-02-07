@@ -391,14 +391,19 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		}
 	}
 
-	if (m_ExecType == ET_Event || m_ExecType == ET_Hook)
+	if (success)
 	{
-		cur_result = high_result;
-	} else if (m_ExecType == ET_Ignore) {
-		cur_result = 0;
+		if (m_ExecType == ET_Event || m_ExecType == ET_Hook)
+		{
+			cur_result = high_result;
+		} else if (m_ExecType == ET_Ignore) {
+			cur_result = 0;
+		}
+		if (result)
+		{
+			*result = cur_result;
+		}
 	}
-
-	*result = cur_result;
 
 	if (filter)
 	{

@@ -165,7 +165,7 @@ namespace SourceMod
 		/**
 		 * @brief Executes the forward.
 		 *
-		 * @param result		Pointer to store result in.
+		 * @param result		Optional pointer to store result in.
 		 * @param filter		Optional pointer to an IForwardFilter.
 		 * @return				Error code, if any.
 		 */
