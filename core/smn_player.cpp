@@ -98,7 +98,13 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Client %d is not connected.", index);
 	}
 
+	if (!pPlayer->IsAuthorized())
+	{
+		return 0;
+	}
+
 	pCtx->StringToLocal(params[2], static_cast<size_t>(params[3]), pPlayer->GetAuthString());
+
 	return 1;
 }
 
