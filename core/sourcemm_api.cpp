@@ -21,6 +21,7 @@ IVEngineServer *engine = NULL;
 IServerGameDLL *gamedll = NULL;
 IServerGameClients *serverClients = NULL;
 ISmmPluginManager *g_pMMPlugins = NULL;
+CGlobalVars *gpGlobals = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -40,6 +41,8 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 		}
 		return false;
 	}
+
+	gpGlobals = ismm->pGlobals();
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }

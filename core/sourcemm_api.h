@@ -45,6 +45,7 @@ extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
 extern IServerGameClients *serverClients;
 extern ISmmPluginManager *g_pMMPlugins;
+extern CGlobalVars *gpGlobals;
 
 PLUGIN_GLOBALVARS();
 

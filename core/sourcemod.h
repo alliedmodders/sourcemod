@@ -37,8 +37,8 @@ public:
 	void StartSourceMod(bool late);
 
 	/** 
-	* @brief Shuts down all SourceMod components
-	*/
+	 * @brief Shuts down all SourceMod components
+	 */
 	void CloseSourceMod();
 
 	/**
@@ -47,8 +47,8 @@ public:
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 
 	/**
-	* @brief Level shutdown hook
-	*/
+	 * @brief Level shutdown hook
+	 */
 	void LevelShutdown();
 
 	/** 
@@ -57,15 +57,14 @@ public:
 	bool IsMapLoading();
 
 	/** 
-	* @brief Stores the global target index.
-	*/
+	 * @brief Stores the global target index.
+	 */
 	void SetGlobalTarget(unsigned int index);
 
 	/** 
-	* @brief Returns the global target index.
-	*/
+	 * @brief Returns the global target index.
+	 */
 	unsigned int GetGlobalTarget() const;
-
 public: //ISourceMod
 	const char *GetModPath();
 	const char *GetSourceModPath();
@@ -73,17 +72,20 @@ public: //ISourceMod
 	void LogMessage(IExtension *pExt, const char *format, ...);
 	void LogError(IExtension *pExt, const char *format, ...);
 	size_t FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param);
+	void SetAuthChecking(bool set);
 private:
 	/**
 	 * @brief Loading plugins
 	 */
 	void DoGlobalPluginLoads();
+	void GameFrame(bool simulating);
 private:
 	char m_SMBaseDir[PLATFORM_MAX_PATH+1];
 	char m_SMRelDir[PLATFORM_MAX_PATH+1];
 	bool m_IsMapLoading;
 	bool m_ExecPluginReload;
 	unsigned int m_target;
+	bool m_CheckingAuth;
 };
 
 extern SourceModBase g_SourceMod;

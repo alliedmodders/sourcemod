@@ -137,6 +137,15 @@ forward OnClientCommand(client);
 forward OnClientSettingsChanged(client);
 
 /**
+ * Called when a client receives a Steam ID.
+ * @note This is called by bots, but the ID will be "BOT"
+ *
+ * @param client		Player index.
+ * @param auth			Player auth string.
+ */
+forward OnClientAuthorized(client, const String:auth[]);
+
+/**
  * Returns the maximum number of clients allowed on the server.
  *
  * @return				Maximum number of clients allowed.

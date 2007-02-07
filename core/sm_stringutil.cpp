@@ -72,7 +72,7 @@ try_serverlang:
 			pCtx->ThrowNativeError("Translation failure: English language not found.");
 			goto error_out;
 		}
-	} else if ((target >= 1) && (target <= g_PlayerManager.GetMaxClients())) {
+	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
 		langname = "en"; //:TODO: read player's lang
 		if (!langname || !g_Translator.GetLanguageByCode(langname, &langid))
 		{

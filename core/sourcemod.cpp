@@ -23,9 +23,11 @@
 #include "ExtensionSys.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
+#include "CPlayerManager.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
+SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 
 SourcePawnEngine g_SourcePawn;
 SourceModBase g_SourceMod;
@@ -35,6 +37,8 @@ SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = &g_SourcePawn;
 IVirtualMachine *g_pVM;
 IdentityToken_t *g_pCoreIdent = NULL;
+float g_LastTime = 0.0f;
+float g_LastAuthCheck = 0.0f;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
 typedef unsigned int (*GETEXPORTCOUNT)();
@@ -150,6 +154,7 @@ void SourceModBase::StartSourceMod(bool late)
 	/* First initialize the global hooks we need */
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -178,6 +183,8 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 {
 	m_IsMapLoading = true;
 	m_ExecPluginReload = true;
+	g_LastTime = 0.0f;
+	g_LastAuthCheck = 0.0f;
 
 	g_Logger.MapChange(pMapName);
 
@@ -189,6 +196,25 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_Admins.DumpAdminCache(AdminCache_Groups, true);
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+void SourceModBase::GameFrame(bool simulating)
+{
+	/**
+	 * Note: This is all hardcoded rather than delegated to save
+	 * precious CPU cycles.
+	 */
+	float curtime = gpGlobals->curtime;
+	if (curtime - g_LastTime > 0.1f)
+	{
+		if (m_CheckingAuth
+			&& (gpGlobals->curtime - g_LastAuthCheck > 0.7f))
+		{
+			g_LastAuthCheck = gpGlobals->curtime;
+			g_Players.RunAuthChecks();
+		}
+		g_LastTime = curtime;
+	}
 }
 
 void SourceModBase::LevelShutdown()
@@ -280,6 +306,7 @@ void SourceModBase::CloseSourceMod()
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
 
 	/* Rest In Peace */
 	ShutdownJIT();
@@ -347,6 +374,11 @@ const char *SourceModBase::GetModPath()
 void SourceModBase::SetGlobalTarget(unsigned int index)
 {
 	m_target = index;
+}
+
+void SourceModBase::SetAuthChecking(bool set)
+{
+	m_CheckingAuth = set;
 }
 
 unsigned int SourceModBase::GetGlobalTarget() const

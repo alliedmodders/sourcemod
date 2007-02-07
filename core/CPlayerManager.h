@@ -21,6 +21,7 @@
 #include <IPlayerHelpers.h>
 #include <sh_string.h>
 #include <sh_list.h>
+#include <sh_vector.h>
 
 using namespace SourceHook;
 
@@ -51,7 +52,7 @@ private:
 	String m_Name;
 	String m_Ip;
 	String m_AuthID;
-	edict_t *m_PlayerEdict;
+	edict_t *m_pEdict;
 };
 
 class CPlayerManager : 
@@ -59,12 +60,14 @@ class CPlayerManager :
 	public IPlayerManager
 {
 public:
-	CPlayerManager() : m_FirstPass(true) {}
+	CPlayerManager();
+	~CPlayerManager();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
+	void RunAuthChecks();
 public:
 	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
@@ -100,12 +103,14 @@ private:
 	IForward *m_clputinserver;
 	IForward *m_clcommand;
 	IForward *m_clinfochanged;
+	IForward *m_clauth;
 	CPlayer *m_Players;
 	int m_maxClients;
 	int m_PlayerCount;
 	bool m_FirstPass;
+	unsigned int *m_AuthQueue;
 };
 
-extern CPlayerManager g_PlayerManager;
+extern CPlayerManager g_Players;
 
 #endif //_INCLUDE_SOURCEMOD_CPLAYERMANAGER_H_

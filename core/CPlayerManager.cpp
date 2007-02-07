@@ -15,7 +15,7 @@
 #include "ForwardSys.h"
 #include "ShareSys.h"
 
-CPlayerManager g_PlayerManager;
+CPlayerManager g_Players;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -23,6 +23,17 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
+
+CPlayerManager::CPlayerManager()
+{
+	m_AuthQueue = NULL;
+	m_FirstPass = true;
+}
+
+CPlayerManager::~CPlayerManager()
+{
+	delete [] m_AuthQueue;
+}
 
 void CPlayerManager::OnSourceModAllInitialized()
 {
@@ -37,28 +48,17 @@ void CPlayerManager::OnSourceModAllInitialized()
 
 	g_ShareSys.AddInterface(NULL, this);
 
-	/* Register OnClientConnect */
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
-	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_Event, 3, p1);
-
-	/* Register OnClientPutInServer */
 	ParamType p2[] = {Param_Cell};
+	ParamType p3[] = {Param_Cell, Param_String};
+
+	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_Event, 3, p1);
 	m_clputinserver = g_Forwards.CreateForward("OnClientPutInServer", ET_Ignore, 1, p2);
-
-	/* Register OnClientDisconnect */
 	m_cldisconnect = g_Forwards.CreateForward("OnClientDisconnect", ET_Ignore, 1, p2);
-
-	/* Register OnClientDisconnect_Post */
 	m_cldisconnect_post = g_Forwards.CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
-
-	/* Register OnClientCommand */
 	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 1, p2);
-
-	/* Register OnClientSettingsChanged */
 	m_clinfochanged = g_Forwards.CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
-
-	/* Register OnClientAuthorized */
-	//:TODO:
+	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, p2);
 }
 
 void CPlayerManager::OnSourceModShutdown()
@@ -78,6 +78,7 @@ void CPlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_cldisconnect_post);
 	g_Forwards.ReleaseForward(m_clcommand);
 	g_Forwards.ReleaseForward(m_clinfochanged);
+	g_Forwards.ReleaseForward(m_clauth);
 
 	delete [] m_Players;
 }
@@ -90,7 +91,79 @@ void CPlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int c
 		m_maxClients = clientMax;
 		m_PlayerCount = 0;
 		m_Players = new CPlayer[m_maxClients + 1];
+		m_AuthQueue = new unsigned int[m_maxClients + 1];
 		m_FirstPass = false;
+
+		memset(m_AuthQueue, 0, sizeof(unsigned int) * (m_maxClients + 1));
+	}
+}
+
+void CPlayerManager::RunAuthChecks()
+{
+	CPlayer *pPlayer;
+	const char *authstr;
+	unsigned int removed = 0;
+	for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
+	{
+		pPlayer = GetPlayerByIndex(m_AuthQueue[i]);
+		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
+		if (authstr && authstr[0] != '\0'
+			&& (strcmp(authstr, "STEAM_ID_PENDING") != 0))
+		{
+			/* Set authorization */
+			pPlayer->m_AuthID.assign(authstr);
+			pPlayer->m_IsAuthorized = true;
+
+			/* Send to extensions */
+			List<IClientListener *>::iterator iter;
+			IClientListener *pListener;
+			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			{
+				pListener = (*iter);
+				pListener->OnClientAuthorized(m_AuthQueue[i], authstr);
+			}
+
+			/* Send to plugins */
+			if (m_clauth->GetFunctionCount())
+			{
+				m_clauth->PushCell(m_AuthQueue[i]);
+				m_clauth->PushString(authstr);
+				m_clauth->Execute(NULL);
+			}
+
+			/* Mark as removed from queue */
+			m_AuthQueue[i] = 0;
+			removed++;
+		}
+	}
+
+	/* Clean up the queue */
+	if (removed)
+	{
+		/* We don't have to compcat the list if it's empty */
+		if (removed != m_AuthQueue[0])
+		{
+			unsigned int diff = 0;
+			for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
+			{
+				/* If this member is removed... */
+				if (m_AuthQueue[i] == 0)
+				{
+					/* Increase the differential */
+					diff++;
+				} else {
+					/* diff cannot increase faster than i+1 */
+					assert(i > diff);
+					assert(i - diff >= 1);
+					/* move this index down */
+					m_AuthQueue[i - diff] = m_AuthQueue[i];
+				}
+			}
+			m_AuthQueue[0] -= removed;
+		} else {
+			m_AuthQueue[0] = 0;
+			g_SourceMod.SetAuthChecking(false);
+		}
 	}
 }
 
@@ -117,6 +190,12 @@ bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, cons
 	m_clconnect->PushCell(maxrejectlen);
 	m_clconnect->Execute(&res, NULL);
 
+	if (res)
+	{
+		m_AuthQueue[++m_AuthQueue[0]] = client;
+		g_SourceMod.SetAuthChecking(true);
+	}
+
 	return (res) ? true : false;
 }
 
@@ -142,6 +221,25 @@ void CPlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playernam
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+
+	CPlayer *pPlayer = GetPlayerByIndex(client);
+	if (!pPlayer->IsConnected())
+	{
+		/* Run manual connection routines */
+		char error[255];
+		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
+		{
+			/* :TODO: kick the bot if it's rejected */
+			return;
+		}
+		List<IClientListener *>::iterator iter;
+		IClientListener *pListener = NULL;
+		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		{
+			pListener = (*iter);
+			pListener->OnClientConnected(client);
+		}
+	}
 
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
@@ -184,6 +282,27 @@ void CPlayerManager::OnClientDisconnect(edict_t *pEntity)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnecting(client);
+	}
+
+	/**
+	 * Remove client from auth queue if necessary
+	 */
+	if (!m_Players[client].IsAuthorized())
+	{
+		for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
+		{
+			if (m_AuthQueue[i] == client)
+			{
+				/* Move everything ahead of us back by one */
+				for (unsigned int j=i+1; j<=m_AuthQueue[0]; j++)
+				{
+					m_AuthQueue[j-1] = m_AuthQueue[j];
+				}
+				/* Remove us and break */
+				m_AuthQueue[0]--;
+				break;
+			}
+		}
 	}
 
 	m_Players[client].Disconnect();
@@ -275,7 +394,7 @@ CPlayer::CPlayer()
 	m_IsConnected = false;
 	m_IsInGame = false;
 	m_IsAuthorized = false;
-	m_PlayerEdict = NULL;
+	m_pEdict = NULL;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -283,7 +402,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_IsConnected = true;
 	m_Name.assign(name);
 	m_Ip.assign(ip);
-	m_PlayerEdict = pEntity;
+	m_pEdict = pEntity;
 }
 
 void CPlayer::Connect()
@@ -305,7 +424,7 @@ void CPlayer::Disconnect()
 	m_Name.clear();
 	m_Ip.clear();
 	m_AuthID.clear();
-	m_PlayerEdict = NULL;
+	m_pEdict = NULL;
 }
 
 void CPlayer::SetName(const char *name)
@@ -330,7 +449,7 @@ const char *CPlayer::GetAuthString() const
 
 edict_t *CPlayer::GetEdict() const
 {
-	return m_PlayerEdict;
+	return m_pEdict;
 }
 
 bool CPlayer::IsInGame() const
