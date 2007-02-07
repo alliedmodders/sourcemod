@@ -111,7 +111,7 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 				} else {
 					/* If we can't find the group, we'll need to schedule a reparse */
 					new GroupId:id = FindAdmGroup(value);
-					if (id == INVALID_GROUP_ID)
+					if (id != INVALID_GROUP_ID)
 					{
 						SetAdmGroupImmuneFrom(g_CurGrp, id);
 					} else {
