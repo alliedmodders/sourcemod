@@ -478,7 +478,6 @@ time_t CPlugin::GetFileTimeStamp()
 	if (stat(path, &s) != 0)
 #endif
 	{
-		g_Logger.LogError("Could not obtain plugin time stamp, error: %d", errno);
 		return 0;
 	} else {
 		return s.st_mtime;
@@ -1625,12 +1624,8 @@ void CPluginManager::ReloadOrUnloadPlugins()
 		{
 			UnloadPlugin((IPlugin *)pl);
 		} else if (pl->GetType() == PluginType_MapUpdated) {
-			t=pl->GetFileTimeStamp();
-			if (!t)
-			{
-				continue;
-			}
-			if (t > pl->GetTimeStamp())
+			t = pl->GetFileTimeStamp();
+			if (!t || t > pl->GetTimeStamp())
 			{
 				pl->SetTimeStamp(t);
 				UnloadPlugin((IPlugin *)pl);
