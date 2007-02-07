@@ -35,24 +35,25 @@ LoadDefaultLetters()
 	}
 	
 	g_FlagLetters['a'-'a'] = Admin_Reservation;
-	g_FlagLetters['b'-'a'] = Admin_Kick;
-	g_FlagLetters['c'-'a'] = Admin_Ban;
-	g_FlagLetters['d'-'a'] = Admin_Unban;
-	g_FlagLetters['e'-'a'] = Admin_Slay;
-	g_FlagLetters['f'-'a'] = Admin_Changemap;
-	g_FlagLetters['g'-'a'] = Admin_Convars;
-	g_FlagLetters['h'-'a'] = Admin_Config;
-	g_FlagLetters['i'-'a'] = Admin_Chat;
-	g_FlagLetters['j'-'a'] = Admin_Vote;
-	g_FlagLetters['k'-'a'] = Admin_Password;
-	g_FlagLetters['l'-'a'] = Admin_RCON;
-	g_FlagLetters['m'-'a'] = Admin_Cheats;
-	g_FlagLetters['n'-'a'] = Admin_Custom1;
-	g_FlagLetters['o'-'a'] = Admin_Custom2;
-	g_FlagLetters['p'-'a'] = Admin_Custom3;
-	g_FlagLetters['q'-'a'] = Admin_Custom4;
-	g_FlagLetters['r'-'a'] = Admin_Custom5;
-	g_FlagLetters['s'-'a'] = Admin_Custom6;
+	g_FlagLetters['b'-'a'] = Admin_Generic;
+	g_FlagLetters['c'-'a'] = Admin_Kick;
+	g_FlagLetters['d'-'a'] = Admin_Ban;
+	g_FlagLetters['e'-'a'] = Admin_Unban;
+	g_FlagLetters['f'-'a'] = Admin_Slay;
+	g_FlagLetters['g'-'a'] = Admin_Changemap;
+	g_FlagLetters['h'-'a'] = Admin_Convars;
+	g_FlagLetters['i'-'a'] = Admin_Config;
+	g_FlagLetters['j'-'a'] = Admin_Chat;
+	g_FlagLetters['k'-'a'] = Admin_Vote;
+	g_FlagLetters['l'-'a'] = Admin_Password;
+	g_FlagLetters['m'-'a'] = Admin_RCON;
+	g_FlagLetters['n'-'a'] = Admin_Cheats;
+	g_FlagLetters['o'-'a'] = Admin_Custom1;
+	g_FlagLetters['p'-'a'] = Admin_Custom2;
+	g_FlagLetters['q'-'a'] = Admin_Custom3;
+	g_FlagLetters['r'-'a'] = Admin_Custom4;
+	g_FlagLetters['s'-'a'] = Admin_Custom5;
+	g_FlagLetters['t'-'a'] = Admin_Custom6;
 	g_FlagLetters['z'-'a'] = Admin_Root;
 }
 
@@ -107,6 +108,8 @@ public SMCResult:ReadLevels_KeyValue(Handle:smc, const String:key[], const Strin
 			flag = Admin_Reservation;
 		} else if (StrEqual(key, "kick")) {
 			flag = Admin_Kick;
+		} else if (StrEqual(key, "generic")) {
+			flag = Admin_Generic;
 		} else if (StrEqual(key, "ban")) {
 			flag = Admin_Ban;
 		} else if (StrEqual(key, "unban")) {

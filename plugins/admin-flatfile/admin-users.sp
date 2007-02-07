@@ -158,7 +158,7 @@ ReadUsers()
 {
 	InitializeUserParser();
 	
-	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admims.cfg");
+	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admins.cfg");
 
 	/* Set states */
 	InitGlobalStates();
