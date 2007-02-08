@@ -227,6 +227,17 @@ native bool:IsPlayerAuthorized(client);
 native bool:IsPlayerFakeClient(client);
 
 /**
+ * Retrieves values from client replicated keys.
+ *
+ * @param client		Player's index.
+ * @param key			Key string.
+ * @param value			Buffer to store value.
+ * @param maxlen		Maximum length of valve (UTF-8 safe).
+ * @return 				True on success, false otherwise.
+ */
+native bool:GetClientInfo(client, const String:key[], String:value[], maxlen);
+
+/**
  * Sends a message to the server console.
  *
  * @param format		Formatting rules.

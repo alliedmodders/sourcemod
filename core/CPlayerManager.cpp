@@ -350,7 +350,7 @@ int CPlayerManager::GetMaxClients()
 
 CPlayer *CPlayerManager::GetPlayerByIndex(int client) const
 {
-	if (client > m_maxClients || client < 0)
+	if (client > m_maxClients || client < 1)
 	{
 		return NULL;
 	}

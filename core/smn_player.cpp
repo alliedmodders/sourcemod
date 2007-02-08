@@ -175,6 +175,32 @@ static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_GetClientInfo(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+
+	char *key;
+	pContext->LocalToString(params[2], &key);
+
+	const char *val = engine->GetClientConVarValue(client, key);
+	if (!val)
+	{
+		return false;
+	}
+
+	pContext->StringToLocalUTF8(params[3], params[4], val, NULL);
+	return 1;
+}
+
 static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
@@ -217,6 +243,7 @@ REGISTER_NATIVES(playernatives)
 	{"IsPlayerFakeClient",		sm_IsPlayerFakeClient},
 	{"PrintToServer",			sm_PrintToServer},
 	{"PrintToConsole",			sm_PrintToConsole},
+	{"GetClientInfo",			sm_GetClientInfo},
 	{NULL,						NULL}
 };
 
