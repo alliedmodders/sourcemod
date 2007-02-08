@@ -331,8 +331,6 @@ void CPlayerManager::OnClientCommand(edict_t *pEntity)
 
 	m_clcommand->PushCell(engine->IndexOfEdict(pEntity));
 	m_clcommand->Execute(&res, NULL);
-
-	//:TODO: res should be evaluated here for something, DOCUMENT this in the INC FILE!
 }
 
 void CPlayerManager::OnClientSettingsChanged(edict_t *pEntity)
