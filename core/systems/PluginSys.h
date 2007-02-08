@@ -28,6 +28,7 @@
 #include "sm_trie.h"
 #include "sourcemod.h"
 #include <IRootConsoleMenu.h>
+#include "convar_sm.h"
 
 using namespace SourceHook;
 
@@ -191,7 +192,7 @@ public:
 	/**
 	* Get language file index based on the vector index.
 	*/
-	unsigned int GetFileByIndex(unsigned int index) const;
+	unsigned int GetLangFileByIndex(unsigned int index) const;
 public:
 	/**
 	* Returns the modification time during last plugin load.
@@ -207,6 +208,21 @@ public:
 	 * Returns true if the plugin was running, but is now invalid.
 	 */
 	bool WasRunning();
+
+	/**
+	 * Adds a convar to the plugin's list
+	 */
+	void AddConVar(ConVar *convar);
+
+	/**
+	* Get convar count for this plugin.
+	*/
+	size_t GetConVarCount() const;
+
+	/**
+	* Get convar pointer based on the vector index.
+	*/
+	ConVar *GetConVarByIndex(size_t index) const;
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);
@@ -224,6 +240,7 @@ private:
 	Handle_t m_handle;
 	bool m_WasRunning;
 	CVector<unsigned int> m_PhraseFiles;
+	CVector<ConVar *> m_ConVarList;
 };
 
 class CPluginManager : 
@@ -315,6 +332,14 @@ public:
 	 * Finds a plugin based on its index. (starts on index 1)
 	 */
 	CPlugin *GetPluginByOrder(int num);
+
+	/** 
+	 * Internal version of FindPluginByContext()
+	 */
+	inline CPlugin *GetPluginByCtx(const sp_context_t *ctx)
+	{
+		return reinterpret_cast<CPlugin *>(ctx->user[SM_CONTEXTVAR_MYSELF]);
+	}
 
 	/**
 	 * Gets status text for a status code 

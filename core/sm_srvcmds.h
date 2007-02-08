@@ -18,7 +18,6 @@
 #include <IRootConsoleMenu.h>
 #include "PluginSys.h"
 #include "sourcemm_api.h"
-#include <convar.h>
 #include <sh_list.h>
 #include <sh_string.h>
 #include "sm_trie.h"

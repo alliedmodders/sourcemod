@@ -32,6 +32,7 @@ struct Plugin
 #include <string>
 #include <admin>
 #include <files>
+#include <console>
 
 /**
  * Declare this as a struct in your plugin to expose its information.

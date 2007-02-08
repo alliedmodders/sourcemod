@@ -50,7 +50,7 @@ inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, un
 
 	for (size_t i=0; i<langcount && err!=Trans_Okay; i++)
 	{
-		phrfl = g_Translator.GetFileByIndex(pl->GetFileByIndex(i));
+		phrfl = g_Translator.GetFileByIndex(pl->GetLangFileByIndex(i));
 		err = phrfl->GetTranslation(key, langid, pTrans);
 	}
 

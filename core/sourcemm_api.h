@@ -14,8 +14,10 @@
 #ifndef _INCLUDE_SOURCEMOD_MM_API_H_
 #define _INCLUDE_SOURCEMOD_MM_API_H_
 
+#include "convar_sm.h"
 #include <ISmmPlugin.h>
 #include <eiface.h>
+#include <icvar.h>
 #include <igameevents.h>
 
 /**
@@ -45,6 +47,7 @@ extern SourceMod_Core g_SourceMod_Core;
 extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
 extern IServerGameClients *serverClients;
+extern ICvar *icvar;
 extern ISmmPluginManager *g_pMMPlugins;
 extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
