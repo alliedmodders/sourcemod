@@ -135,12 +135,12 @@ native StringToInt(const String:str[], nBase=10);
 /**
  * Converts an integer to a string.
  *
+ * @param num			Integer to convert.
  * @param str			Buffer to store string in.
  * @param maxlength		Maximum length of string buffer.
- * @param num			Integer to convert.
  * @return				Number of cells written to buffer.
  */
-native IntToString(String:str[], maxlength, num);
+native IntToString(num, String:str[], maxlength);
 
 /** 
  * Converts a string to a floating point number.
