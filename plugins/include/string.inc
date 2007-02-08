@@ -153,9 +153,9 @@ native Float:StringToFloat(const String:str[]);
 /**
  * Converts a floating point number to a string.
  *
+ * @param num			Floating point number to convert.
  * @param str			Buffer to store string in.
  * @param maxlength		Maximum length of string buffer.
- * @param num			Floating point number to convert.
  * @return				Number of cells written to buffer.
  */
-native FloatToString(String:str[], maxlength, Float:num);
+native FloatToString(Float:num, String:str[], maxlength);
