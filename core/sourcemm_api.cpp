@@ -22,6 +22,7 @@ IServerGameDLL *gamedll = NULL;
 IServerGameClients *serverClients = NULL;
 ISmmPluginManager *g_pMMPlugins = NULL;
 CGlobalVars *gpGlobals = NULL;
+IGameEventManager2 *gameevents = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -32,6 +33,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 	GET_V_IFACE_CURRENT(serverFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
+	GET_V_IFACE_CURRENT(engineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 
 	if ((g_pMMPlugins = (ISmmPluginManager *)g_SMAPI->MetaFactory(MMIFACE_PLMANAGER, NULL, NULL)) == NULL)
 	{

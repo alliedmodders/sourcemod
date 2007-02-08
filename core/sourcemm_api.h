@@ -16,6 +16,7 @@
 
 #include <ISmmPlugin.h>
 #include <eiface.h>
+#include <igameevents.h>
 
 /**
  * @file Contains wrappers around required Metamod:Source API exports
@@ -46,6 +47,7 @@ extern IServerGameDLL *gamedll;
 extern IServerGameClients *serverClients;
 extern ISmmPluginManager *g_pMMPlugins;
 extern CGlobalVars *gpGlobals;
+extern IGameEventManager2 *gameevents;
 
 PLUGIN_GLOBALVARS();
 
