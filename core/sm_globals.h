@@ -57,7 +57,7 @@ public:
 	}
 
 	/**
-	* @brief Called after SourceMod is completely shutted down
+	* @brief Called after SourceMod is completely shut down
 	*/
 	virtual void OnSourceModAllShutdown()
 	{

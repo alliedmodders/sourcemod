@@ -134,6 +134,6 @@ namespace SourceMod
 		 */
 		virtual size_t CreateMemory(size_t size, void **addr) =0;
 	};
-};
+}
 
 #endif //_INCLUDE_SOURCEMOD_INTERFACE_DATAPACK_H_
