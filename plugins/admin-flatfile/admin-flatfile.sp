@@ -24,7 +24,7 @@
 
 public Plugin:myinfo = 
 {
-	name = "Admin Base",
+	name = "Admin File Reader",
 	author = "AlliedModders LLC",
 	description = "Reads admin files",
 	version = "1.0.0.0",

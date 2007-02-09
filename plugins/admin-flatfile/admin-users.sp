@@ -76,7 +76,7 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 	{
 		auth = true;
 		StrCopy(g_CurAuth, sizeof(g_CurAuth), value);
-	} else if (StrEqual(key, "ident")) {
+	} else if (StrEqual(key, "identity")) {
 		auth = true;
 		StrCopy(g_CurIdent, sizeof(g_CurIdent), value);
 	} else if (StrEqual(key, "password")) {

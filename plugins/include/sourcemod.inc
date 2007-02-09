@@ -164,9 +164,9 @@ native GetClientCount(bool:inGameOnly=true);
 /**
  * Returns the client's name.
  *
- * @param client		Player index.
- * @param name			Buffer to store the client's name.
- * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @param client	Player index.
+ * @param name		Buffer to store the client's name.
+ * @param maxlen	Maximum length of string buffer (includes NULL terminator).
  * @return			True on success, false otherwise.
  * @error			If the client is not connected an error will be thrown.
  */
@@ -179,8 +179,8 @@ native bool:GetClientName(client, String:name[], maxlen);
  * @param name			Buffer to store the client's ip address.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
  * @param remport		Remove client's port from the ip string (true by default).
- * @return			True on success, false otherwise.
- * @error			If the client is not connected an error will be thrown.
+ * @return				True on success, false otherwise.
+ * @error				If the client is not connected or the index is invalid.
  */
 native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
 
@@ -190,10 +190,20 @@ native bool:GetClientIP(client, String:ip[], maxlen, bool:remport=true);
  * @param client		Player index.
  * @param auth			Buffer to store the client's auth string.
  * @param maxlen		Maximum length of string buffer (includes NULL terminator).
- * @return			True on success, false otherwise.
- * @error			If the client is not connected an error will be thrown.
+ * @return				True on success, false otherwise.
+ * @error				If the client is not connected or the index is invalid.
  */
 native bool:GetClientAuthString(client, String:auth[], maxlen);
+
+/**
+ * Retrieves a client's user id, which is an index incremented for every client
+ * that joins the server.
+ *
+ * @param client		Player index.
+ * @return				User id of the client.
+ * @error 				If the client is not connected or the index is invalid.
+ */
+native GetClientUserId(client);
 
 /**
  * Returns if a certain player is connected.
@@ -347,3 +357,5 @@ native LogMessage(const String:format[], {Handle,Float,String,_}:...);
  * @noreturn
  */
 native LogError(const String:format[], {Handle,Float,String,_}:...);
+
+#include <helpers>

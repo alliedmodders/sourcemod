@@ -59,7 +59,7 @@ void CPlayerManager::OnSourceModAllInitialized()
 	m_cldisconnect_post = g_Forwards.CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
 	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 1, p2);
 	m_clinfochanged = g_Forwards.CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
-	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, p2);
+	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, p3);
 }
 
 void CPlayerManager::OnSourceModShutdown()

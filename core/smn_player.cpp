@@ -375,6 +375,22 @@ static cell_t GetUserFlagBits(IPluginContext *pContext, const cell_t *params)
 	return g_Admins.GetAdminFlags(id, Access_Effective);
 }
 
+static cell_t GetClientUserId(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+
+	return engine->GetPlayerUserId(pPlayer->GetEdict());
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"GetMaxClients",			sm_GetMaxClients},
@@ -394,6 +410,7 @@ REGISTER_NATIVES(playernatives)
 	{"RemoveUserFlags",			RemoveUserFlags},
 	{"SetUserFlagBits",			SetUserFlagBits},
 	{"GetUserFlagBits",			GetUserFlagBits},
+	{"GetClientUserId",			GetClientUserId},
 	{NULL,						NULL}
 };
 
