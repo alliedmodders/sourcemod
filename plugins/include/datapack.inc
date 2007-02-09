@@ -36,6 +36,26 @@ native Handle:CreateDataPack();
 native WritePackCell(Handle:pack, cell);
 
 /**
+ * Packs a float into a data pack.
+ *
+ * @param pack		Handle to the data pack.
+ * @param val		Float to add.
+ * @noreturn
+ * @error			Invalid handle.
+ */
+native WritePackFloat(Handle:pack, Float:val);
+
+/**
+ * Packs a string into a data pack.
+ *
+ * @param pack		Handle to the data pack.
+ * @param str		String to add.
+ * @noreturn
+ * @error			Invalid handle.
+ */
+native WritePackString(Handle:pack, String:str[]);
+
+/**
  * Reads a cell from a data pack.
  *
  * @param pack		Handle to the data pack.
@@ -45,11 +65,32 @@ native WritePackCell(Handle:pack, cell);
 native ReadPackCell(Handle:pack);
 
 /**
+ * Reads a float from a data pack.
+ *
+ * @param pack		Handle to the data pack.
+ * @return			Float value.
+ * @error			Invalid handle, or bounds error.
+ */
+native Float:ReadPackFloat(Handle:pack);
+
+/**
+ * Reads a string from a data pack.
+ *
+ * @param pack		Handle to the data pack.
+ * @param buffer	Destination string buffer.
+ * @param maxlen	Maximum length of output string buffer.
+ * @noreturn
+ * @error			Invalid handle, or bounds error.
+ */
+native ReadPackString(Handle:pack, String:buffer[], maxlen);
+
+/**
  * Resets the position in a data pack.
  *
  * @param pack		Handle to the data pack.
  * @param clear		If true, clears the contained data.
  * @noreturn
+ * @error		Invalid handle.
  */
 native ResetPack(Handle:pack, bool:clear=false);
 
@@ -58,6 +99,7 @@ native ResetPack(Handle:pack, bool:clear=false);
  *
  * @param pack		Handle to the data pack.
  * @return			Numerical position in the data pack.
+ * @error		Invalid handle.
  */
 native GetPackPosition(Handle:pack);
 
@@ -67,6 +109,17 @@ native GetPackPosition(Handle:pack);
  * @param pack		Handle to the data pack.
  * @param position	New position to set.
  * @noreturn
- * @error			Position is beyond the pack bounds.
+ * @error			Invalid handle, or position is beyond the pack bounds.
  */
 native SetPackPosition(Handle:pack, position);
+
+/**
+ * Returns whether or not a specified number of bytes from the data pack
+ *  position to the end can be read.
+ *
+ * @param pack		Handle to the data pack.
+ * @param bytes		Number of bytes to simulate reading.
+ * @return		True if can be read, false otherwise.
+ * @error		Invalid handle.
+ */
+native bool:IsPackReadable(Handle:pack, bytes);
