@@ -20,6 +20,7 @@
 #define _INCLUDE_SOURCEMOD_INTERFACE_IPLAYERHELPERS_H_
 
 #include <IShareSys.h>
+#include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
 #define SMINTERFACE_PLAYERMANAGER_VERSION	1
@@ -92,6 +93,21 @@ namespace SourceMod
 		 * @return		True if a fake client, false otherwise.
 		 */
 		virtual bool IsFakeClient() const =0;
+
+		/**
+		 * @brief Returns the client's AdminId, if any.
+		 *
+		 * @return		AdminId, or INVALID_ADMIN_ID if none.
+		 */
+		virtual AdminId GetAdminId() const =0;
+
+		/**
+		 * @brief Sets the client's AdminId.
+		 *
+		 * @param id	AdminId to set.
+		 * @param temp	If true, the id will be invalidated on disconnect.
+		 */
+		virtual void SetAdminId(AdminId id, bool temp) =0;
 	};
 
 	/**

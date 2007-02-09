@@ -445,6 +445,15 @@ namespace SourceMod
 		virtual FlagBits GetAdminFlags(AdminId id, AccessMode mode) =0;
 
 		/**
+		 * @brief Sets the bitstring of access flags on an admin.
+		 *
+		 * @param id		AdminId index of the admin.
+		 * @param mode		Access mode to use (real affects both).
+		 * @param bits		Bitstring to set.
+		 */
+		virtual void SetAdminFlags(AdminId id, AccessMode mode, FlagBits bits) =0;
+
+		/**
 		 * @brief Adds a group to an admin's inherited group list.  
 		 * Any flags the group has will be added to the admin's effective flags.
 		 *

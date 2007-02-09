@@ -12,6 +12,7 @@
  */
 
 #include "CPlayerManager.h"
+#include "AdminCache.h"
 #include "sm_stringutil.h"
 
 static cell_t sm_GetClientCount(IPluginContext *pCtx, const cell_t *params)
@@ -230,6 +231,150 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetUserAdmin(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+	if (!g_Admins.IsValidAdmin(params[2]))
+	{
+		return pContext->ThrowNativeError("AdminId %x is not valid.", params[2]);
+	}
+
+	pPlayer->SetAdminId(params[2], params[3] ? true : false);
+
+	return 1;
+}
+
+static cell_t GetUserAdmin(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+
+	return pPlayer->GetAdminId();
+}
+
+static cell_t AddUserFlags(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+
+	AdminId id;
+	if ((id=pPlayer->GetAdminId()) == INVALID_ADMIN_ID)
+	{
+		id = g_Admins.CreateAdmin(NULL);
+		pPlayer->SetAdminId(id, true);
+	}
+
+	cell_t *addr;
+	for (int i=2; i<=params[0]; i++)
+	{
+		pContext->LocalToPhysAddr(params[i], &addr);
+		g_Admins.SetAdminFlag(id, (AdminFlag)*addr, true);
+	}
+
+	return 1;
+}
+
+static cell_t RemoveUserFlags(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+	
+	AdminId id;
+	if ((id=pPlayer->GetAdminId()) == INVALID_ADMIN_ID)
+	{
+		return 0;
+	}
+
+	cell_t *addr;
+	for (int i=2; i<=params[0]; i++)
+	{
+		pContext->LocalToPhysAddr(params[i], &addr);
+		g_Admins.SetAdminFlag(id, (AdminFlag)*addr, false);
+	}
+
+	return 1;
+}
+
+static cell_t SetUserFlagBits(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+
+	AdminId id;
+	if ((id=pPlayer->GetAdminId()) == INVALID_ADMIN_ID)
+	{
+		id = g_Admins.CreateAdmin(NULL);
+		pPlayer->SetAdminId(id, true);
+	}
+
+	g_Admins.SetAdminFlags(id, Access_Effective, params[2]);
+
+	return 1;
+}
+
+static cell_t GetUserFlagBits(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d.", client);
+	}
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected.", client);
+	}
+
+	AdminId id;
+	if ((id=pPlayer->GetAdminId()) == INVALID_ADMIN_ID)
+	{
+		return 0;
+	}
+
+	return g_Admins.GetAdminFlags(id, Access_Effective);
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"GetMaxClients",			sm_GetMaxClients},
@@ -244,6 +389,11 @@ REGISTER_NATIVES(playernatives)
 	{"PrintToServer",			sm_PrintToServer},
 	{"PrintToConsole",			sm_PrintToConsole},
 	{"GetClientInfo",			sm_GetClientInfo},
+	{"SetUserAdmin",			SetUserAdmin},
+	{"AddUserFlags",			AddUserFlags},
+	{"RemoveUserFlags",			RemoveUserFlags},
+	{"SetUserFlagBits",			SetUserFlagBits},
+	{"GetUserFlagBits",			GetUserFlagBits},
 	{NULL,						NULL}
 };
 

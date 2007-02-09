@@ -16,6 +16,7 @@
 #include "AdminCache.h"
 #include "ShareSys.h"
 #include "ForwardSys.h"
+#include "CPlayerManager.h"
 
 AdminCache g_Admins;
 
@@ -31,6 +32,7 @@ AdminCache::AdminCache()
 	m_pCacheFwd = NULL;
 	m_FirstGroup = -1;
 	m_pAuthTables = sm_trie_create();
+	m_InvalidatingAdmins = false;
 }
 
 AdminCache::~AdminCache()
@@ -544,6 +546,11 @@ bool AdminCache::InvalidateAdmin(AdminId id)
 		return false;
 	}
 
+	if (!m_InvalidatingAdmins)
+	{
+		g_Players.ClearAdminId(id);
+	}
+
 	/* Unlink from the dbl link list */
 	if (id == m_FirstUser && id == m_LastUser)
 	{
@@ -738,6 +745,8 @@ void AdminCache::RegisterAuthIdentType(const char *name)
 
 void AdminCache::InvalidateAdminCache(bool unlink_admins)
 {
+	m_InvalidatingAdmins = true;
+	g_Players.ClearAllAdmins();
 	/* Wipe the identity cache first */
 	List<AuthMethod>::iterator iter;
 	for (iter=m_AuthMethods.begin();
@@ -758,6 +767,7 @@ void AdminCache::InvalidateAdminCache(bool unlink_admins)
 		m_LastUser = -1;
 		m_FreeUserList = -1;
 	}
+	m_InvalidatingAdmins = false;
 }
 
 void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
@@ -950,6 +960,23 @@ FlagBits AdminCache::GetAdminFlags(AdminId id, AccessMode mode)
 	return 0;
 }
 
+void AdminCache::SetAdminFlags(AdminId id, AccessMode mode, FlagBits bits)
+{
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	if (!pUser || pUser->magic != USR_MAGIC_SET)
+	{
+		return;
+	}
+
+	if (mode == Access_Real)
+	{
+		pUser->flags = bits;
+		pUser->eflags = bits;
+	} else if (mode == Access_Effective) {
+		pUser->eflags = bits;
+	}
+}
+
 bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 {
 	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
@@ -1023,6 +1050,12 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 	}
 
 	return true;
+}
+
+bool AdminCache::IsValidAdmin(AdminId id)
+{
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	return (pUser != NULL && pUser->magic == USR_MAGIC_SET);
 }
 
 unsigned int AdminCache::GetAdminGroupCount(AdminId id)

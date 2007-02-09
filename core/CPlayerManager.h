@@ -19,6 +19,7 @@
 #include "sourcemm_api.h"
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
+#include <IAdminSystem.h>
 #include <sh_string.h>
 #include <sh_list.h>
 #include <sh_vector.h>
@@ -39,12 +40,15 @@ public:
 	bool IsConnected() const;
 	bool IsAuthorized() const;
 	bool IsFakeClient() const;
+	void SetAdminId(AdminId id, bool temporary);
+	AdminId GetAdminId() const;
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
 	void Authorize(const char *steamid);
 	void Disconnect();
 	void SetName(const char *name);
+	void DumpAdmin(bool deleting);
 private:
 	bool m_IsConnected;
 	bool m_IsInGame;
@@ -52,6 +56,8 @@ private:
 	String m_Name;
 	String m_Ip;
 	String m_AuthID;
+	AdminId m_Admin;
+	bool m_TempAdmin;
 	edict_t *m_pEdict;
 };
 
@@ -68,6 +74,8 @@ public: //SMGlobalClass
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
+	void ClearAdminId(AdminId id);
+	void ClearAllAdmins();
 public:
 	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
 	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);

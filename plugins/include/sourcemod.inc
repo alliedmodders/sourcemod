@@ -235,8 +235,71 @@ native bool:IsPlayerFakeClient(client);
  * @param value			Buffer to store value.
  * @param maxlen		Maximum length of valve (UTF-8 safe).
  * @return 				True on success, false otherwise.
+ * @error				Invalid client index, or client not connected.
  */
 native bool:GetClientInfo(client, const String:key[], String:value[], maxlen);
+
+/**
+ * Sets a client's AdminId.  
+ *
+ * @param client		Player's index.
+ * @param id			AdminId to set.  INVALID_ADMIN_ID removes admin permissions.
+ * @param temp			True if the id should be freed on disconnect.
+ * @noreturn
+ * @error				Invalid client index, client not connected, or bogus AdminId.
+ */
+native SetUserAdmin(client, AdminId:id, bool:temp=false);
+
+/**
+ * Retrieves a client's AdminId.
+ *
+ * @param client		Player's index.
+ * @return				AdminId of the client, or INVALID_ADMIN_ID if none.
+ * @error				Invalid client index, or client not connected.
+ */
+native AdminId:GetUserAdmin(client);
+
+/**
+ * Sets access flags on a client.  If the client is not an admin,
+ * a temporary, anonymous AdminId is given.
+ *
+ * @param client		Player's index.
+ * @param ...			Flags to set on the client.
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native AddUserFlags(client, {AdminFlag}:...);
+
+/**
+ * Removes flags from a client.  If the client is not an admin,
+ * this has no effect.
+ *
+ * @param client		Player's index.
+ * @param ...			Flags to remove from the client.
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native RemoveUserFlags(client, {AdminFlag}:...);
+
+/** 
+ * Sets access flags on a client using bits instead of flags.  If the
+ * client is not an admin, and flags not 0, a temporary, anonymous AdminId is given.
+ *
+ * @param client		Player's index.
+ * @param flags			Bitstring of flags to set on client.
+ * @noreturn
+ */
+native SetUserFlagBits(client, flags);
+
+/**
+ * Returns client access flags.  If the client is not an admin,
+ * the result is always 0.
+ * 
+ * @param client		Player's index.
+ * @return				Flags
+ * @error				Invalid client index, or client not connected.
+ */
+native GetUserFlagBits(client);
 
 /**
  * Sends a message to the server console.

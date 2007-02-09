@@ -14,6 +14,7 @@
 #include "CPlayerManager.h"
 #include "ForwardSys.h"
 #include "ShareSys.h"
+#include "AdminCache.h"
 
 CPlayerManager g_Players;
 
@@ -383,6 +384,26 @@ IGamePlayer *CPlayerManager::GetGamePlayer(int client)
 	return GetPlayerByIndex(client);
 }
 
+void CPlayerManager::ClearAdminId(AdminId id)
+{
+	for (int i=1; i<=m_maxClients; i++)
+	{
+		if (m_Players[i].m_Admin == id)
+		{
+			m_Players[i].DumpAdmin(true);
+		}
+	}
+}
+
+void CPlayerManager::ClearAllAdmins()
+{
+	for (int i=1; i<=m_maxClients; i++)
+	{
+		m_Players[i].DumpAdmin(true);
+	}
+}
+
+
 /*******************
  *** PLAYER CODE ***
  *******************/
@@ -393,6 +414,8 @@ CPlayer::CPlayer()
 	m_IsInGame = false;
 	m_IsAuthorized = false;
 	m_pEdict = NULL;
+	m_Admin = INVALID_ADMIN_ID;
+	m_TempAdmin = false;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -416,6 +439,7 @@ void CPlayer::Authorize(const char *steamid)
 
 void CPlayer::Disconnect()
 {
+	DumpAdmin(false);
 	m_IsConnected = false;
 	m_IsInGame = false;
 	m_IsAuthorized = false;
@@ -468,4 +492,35 @@ bool CPlayer::IsAuthorized() const
 bool CPlayer::IsFakeClient() const
 {
 	return (strcmp(m_AuthID.c_str(), "BOT") == 0);
+}
+
+void CPlayer::SetAdminId(AdminId id, bool temporary)
+{
+	if (!m_IsConnected)
+	{
+		return;
+	}
+
+	DumpAdmin(false);
+
+	m_Admin = id;
+	m_TempAdmin = temporary;
+}
+
+AdminId CPlayer::GetAdminId() const
+{
+	return m_Admin;
+}
+
+void CPlayer::DumpAdmin(bool deleting)
+{
+	if (m_Admin != INVALID_ADMIN_ID)
+	{
+		if (m_TempAdmin && !deleting)
+		{
+			g_Admins.InvalidateAdmin(m_Admin);
+		}
+		m_Admin = INVALID_ADMIN_ID;
+		m_TempAdmin = false;
+	}
 }

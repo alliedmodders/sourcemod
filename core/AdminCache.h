@@ -131,6 +131,9 @@ public: //IAdminSystem
 	unsigned int FlagBitsToArray(FlagBits bits, AdminFlag array[], unsigned int maxSize);
 	bool CheckAdminFlags(AdminId id, FlagBits bits);
 	bool CanAdminTarget(AdminId id, AdminId target);
+	void SetAdminFlags(AdminId id, AccessMode mode, FlagBits bits);
+public:
+	bool IsValidAdmin(AdminId id);
 private:
 	void _UnsetCommandOverride(const char *cmd);
 	void _UnsetCommandGroupOverride(const char *group);
@@ -155,6 +158,7 @@ public:
 	int m_FirstUser;
 	int m_LastUser;
 	int m_FreeUserList;
+	bool m_InvalidatingAdmins;
 };
 
 extern AdminCache g_Admins;
