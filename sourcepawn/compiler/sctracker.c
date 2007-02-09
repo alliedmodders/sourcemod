@@ -402,12 +402,15 @@ void genheapfree(int stop_id)
   }
 }
 
-void popstacklist()
+void popstacklist(int codegen)
 {
   memuse_list_t *oldlist;
   assert(stackusage != NULL);
 
-  _stack_genusage(stackusage, 1);
+  if (codegen)
+  {
+    _stack_genusage(stackusage, 1);
+  }
   assert(stackusage->head==NULL);
 
   oldlist = stackusage->prev;

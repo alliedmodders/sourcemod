@@ -95,7 +95,7 @@ int markheap(int type, int size);
  * Stack functions
  */
 void pushstacklist();
-void popstacklist();
+void popstacklist(int codegen);
 int markstack(int type, int size);
 /**
  * Generates code to free mem usage, but does not pop the list.  

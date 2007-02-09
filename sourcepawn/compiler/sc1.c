@@ -4041,7 +4041,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
      * has only a single statement in its body (no compound block) and that
      * statement declares a new variable
      */
-    popstacklist();
+    popstacklist(1);
     declared=0;
   } /* if */
   if ((lastst!=tRETURN) && (lastst!=tGOTO)){
@@ -5503,8 +5503,11 @@ static void compound(int stmt_sameline,int starttok)
   if (lastst!=tRETURN)
     destructsymbols(&loctab,nestlevel);
   if (lastst!=tRETURN && lastst!=tGOTO) {
-    popheaplist();
-    popstacklist();
+    popheaplist(1);
+    popstacklist(1);
+  } else {
+    popheaplist(0);
+    popstacklist(0);
   }
   testsymbols(&loctab,nestlevel,FALSE,TRUE);        /* look for unused block locals */
   declared=save_decl;
@@ -5845,7 +5848,7 @@ static int dofor(void)
      * variable in "expr1".
      */
     destructsymbols(&loctab,nestlevel);
-    popstacklist();
+    popstacklist(1);
     testsymbols(&loctab,nestlevel,FALSE,TRUE);  /* look for unused block locals */
     declared=save_decl;
     delete_symbols(&loctab,nestlevel,FALSE,TRUE);
