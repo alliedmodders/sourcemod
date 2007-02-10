@@ -1,0 +1,15 @@
+CS = /usr/mono/bin/mcs
+NAME = builder
+BINARY = $(NAME).exe
+
+OBJECTS = ABuilder.cs AssemblyInfo.cs Config.cs LinuxBuilder.cs Win32Builder.cs \
+	Package.cs PkgCore.cs Main.cs
+
+default: all
+
+all:	$(OBJECTS)
+	$(CS) $(OBJECTS) -o $(BINARY)
+
+clean:
+	rm -rf $(BINARY)
+
