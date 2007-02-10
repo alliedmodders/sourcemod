@@ -15,6 +15,8 @@
 #include "CLogger.h"
 #include "PluginSys.h"
 
+CDbgReporter g_DbgReporter;
+
 void CDbgReporter::OnSourceModAllInitialized()
 {
 	g_pSourcePawn->SetDebugListener(this);

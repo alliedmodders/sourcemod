@@ -29,5 +29,7 @@ private:
 	int _GetPluginIndex(IPluginContext *ctx);
 };
 
+extern CDbgReporter g_DbgReporter;
+
 #endif // _INCLUDE_SOURCEMOD_CDBGREPORTER_H_
 
