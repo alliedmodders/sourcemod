@@ -19,8 +19,8 @@ BINARY = sourcemod_mm_i486.so
 HL2PUB = $(HL2SDK)/public
 HL2LIB = $(HL2SDK)/linux_sdk
 
-OBJECTS = sourcemm_api.cpp sourcemod.cpp AdminCache.cpp CDbgReporter.cpp CLogger.cpp \
-	  CPlayerManager.cpp CTextParsers.cpp CTranslator.cpp \
+OBJECTS = sourcemm_api.cpp sourcemod.cpp AdminCache.cpp CConVarManager.cpp CDbgReporter.cpp \
+	  CLogger.cpp CPlayerManager.cpp CTextParsers.cpp CTranslator.cpp \
 	  sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_trie.cpp \
 	  sm_stringutil.cpp smn_filesystem.cpp smn_float.cpp smn_handles.cpp \
 	  smn_player.cpp smn_string.cpp smn_textparse.cpp smn_convar.cpp smn_admin.cpp \

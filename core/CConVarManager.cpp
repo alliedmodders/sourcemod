@@ -362,3 +362,4 @@ void CConVarManager::OnConVarChanged(ConVar *cvar, const char *oldValue)
 	fwd->PushString(oldValue);
 	fwd->Execute(NULL);
 }
+
