@@ -224,7 +224,7 @@ namespace SourcePawn
 	class IPluginContext
 	{
 	public:
-		/** Virtual destructr */
+		/** Virtual destructor */
 		virtual ~IPluginContext() { };
 	public:
 		/** 
@@ -265,7 +265,7 @@ namespace SourcePawn
 		virtual IPluginDebugInfo *GetDebugInfo() =0;
 
 		/**
-		 * @brief Allocs memory on the secondary stack of a plugin.
+		 * @brief Allocates memory on the secondary stack of a plugin.
 		 * Note that although called a heap, it is in fact a stack.
 		 * 
 		 * @param cells			Number of cells to allocate.

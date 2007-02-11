@@ -25,8 +25,7 @@ static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 	// While the engine seems to accept a blank convar name, it causes a crash upon server quit
 	if (name == NULL || strcmp(name, "") == 0)
 	{
-		pContext->ThrowNativeError("Null or blank convar name is not allowed.");
-		return BAD_HANDLE;
+		return pContext->ThrowNativeError("Null or blank convar name is not allowed.");
 	}
 
 	pContext->LocalToString(params[2], &defaultVal);
@@ -53,6 +52,40 @@ static cell_t sm_FindConVar(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return g_ConVarManager.FindConVar(name);
+}
+
+static cell_t sm_HookConVarChange(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *cvar;
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&cvar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+	}
+
+	g_ConVarManager.HookConVarChange(pContext, cvar, static_cast<funcid_t>(params[2]));
+
+	return 1;
+}
+
+static cell_t sm_UnhookConVarChange(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *cvar;
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&cvar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+	}
+
+	g_ConVarManager.UnhookConVarChange(pContext, cvar, static_cast<funcid_t>(params[2]));
+
+	return 1;
 }
 
 static cell_t sm_GetConVarBool(IPluginContext *pContext, const cell_t *params)
@@ -255,6 +288,23 @@ static cell_t sm_GetConVarMax(IPluginContext *pContext, const cell_t *params)
 	return hasMax;
 }
 
+static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *cvar;
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&cvar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], cvar->GetName(), NULL);
+
+	return 1;
+}
+
 static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -274,20 +324,23 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(convarNatives)
 {
-	{"CreateConVar",	sm_CreateConVar},
-	{"FindConVar",		sm_FindConVar},
-	{"GetConVarBool",	sm_GetConVarBool},
-	{"SetConVarBool",	sm_SetConVarNum},
-	{"GetConVarInt",	sm_GetConVarInt},
-	{"SetConVarInt",	sm_SetConVarNum},
-	{"GetConVarFloat",	sm_GetConVarFloat},
-	{"SetConVarFloat",	sm_SetConVarFloat},
-	{"GetConVarString",	sm_GetConVarString},
-	{"SetConVarString",	sm_SetConVarString},
-	{"GetConVarFlags",	sm_GetConVarFlags},
-	{"SetConVarFlags",	sm_SetConVarFlags},
-	{"GetConVarMin",	sm_GetConVarMin},
-	{"GetConVarMax",	sm_GetConVarMax},
-	{"ResetConVar",		sm_ResetConVar},
-	{NULL,				NULL}
+	{"CreateConVar",		sm_CreateConVar},
+	{"FindConVar",			sm_FindConVar},
+	{"HookConVarChange",	sm_HookConVarChange},
+	{"UnhookConVarChange",	sm_UnhookConVarChange},
+	{"GetConVarBool",		sm_GetConVarBool},
+	{"SetConVarBool",		sm_SetConVarNum},
+	{"GetConVarInt",		sm_GetConVarInt},
+	{"SetConVarInt",		sm_SetConVarNum},
+	{"GetConVarFloat",		sm_GetConVarFloat},
+	{"SetConVarFloat",		sm_SetConVarFloat},
+	{"GetConVarString",		sm_GetConVarString},
+	{"SetConVarString",		sm_SetConVarString},
+	{"GetConVarFlags",		sm_GetConVarFlags},
+	{"SetConVarFlags",		sm_SetConVarFlags},
+	{"GetConVarName",		sm_GetConVarName},
+	{"GetConVarMin",		sm_GetConVarMin},
+	{"GetConVarMax",		sm_GetConVarMax},
+	{"ResetConVar",			sm_ResetConVar},
+	{NULL,					NULL}
 };

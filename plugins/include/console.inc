@@ -75,6 +75,36 @@ native Handle:CreateConVar(const String:name[], const String:defaultValue[], con
 native Handle:FindConVar(const String:name[]);
 
 /**
+ * Called when a console variable's value is changed.
+ *
+ * @param convar        Handle to the convar that was changed.
+ * @param oldValue      String containing the value of the convar before it was changed.
+ * @param newValue      String containing the new value of the convar.
+ * @noreturn
+ */
+functag OnConVarChanged public(Handle:convar, const String:oldValue[], const String:newValue[]);
+
+/**
+ * Creates a hook for when a console variable's value is changed.
+ *
+ * @param convar        Handle to the convar.
+ * @param callback      An OnConVarChanged function pointer.
+ * @noreturn
+ * @error               Invalid or corrupt Handle.
+ */
+native HookConVarChange(Handle:convar, OnConVarChanged:callback);
+
+/**
+ * Removes a hook for when a console variable's value is changed.
+ *
+ * @param convar        Handle to the convar.
+ * @param callback      An OnConVarChanged function pointer.
+ * @return              True on success, false otherwise.
+ * @error               Invalid or corrupt Handle.
+ */
+native bool:UnhookConVarChange(Handle:convar, OnConVarChanged:callback);
+
+/**
  * Returns the boolean value of a console variable.
  *
  * @param convar        Handle to the convar.
@@ -136,11 +166,11 @@ native SetConVarFloat(Handle:convar, Float:value);
  *
  * @param convar        Handle to the convar.
  * @param value         Buffer to store the value of the convar.
- * @param maxlen        Maximum length of string buffer.
+ * @param maxlength     Maximum length of string buffer.
  * @noreturn
  * @error               Invalid or corrupt Handle.     
  */
-native GetConVarString(Handle:convar, String:value[], maxlen);
+native GetConVarString(Handle:convar, String:value[], maxlength);
 
 /**
  * Sets the string value of a console variable.
@@ -170,6 +200,17 @@ native GetConVarFlags(Handle:convar);
  * @error               Invalid or corrupt Handle.
  */
 native SetConVarFlags(Handle:convar, flags);
+
+/**
+ * Retrieves the name of a console variable.
+ *
+ * @param convar        Handle to the convar.
+ * @param value         Buffer to store the name of the convar.
+ * @param maxlength     Maximum length of string buffer.
+ * @noreturn
+ * @error               Invalid or corrupt Handle.     
+ */
+native GetConVarName(Handle:convar, const String:name[], maxlength);
 
 /**
  * Retrieves the minimum floating point value that a console variable can contain.
