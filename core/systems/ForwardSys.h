@@ -84,7 +84,7 @@ protected:
 	/* :TODO: I want a caching list type here.
 	 * Destroying these things and using new/delete for their members feels bad.
 	 */
-	List<IPluginFunction *> m_functions;
+	mutable List<IPluginFunction *> m_functions;
 	List<IPluginFunction *> m_paused;
 
 	/* Type and name information */

@@ -1659,3 +1659,4 @@ void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
 		pListener->OnPluginPauseChange(pl, paused);
 	}	
 }
+

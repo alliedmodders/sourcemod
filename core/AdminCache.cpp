@@ -1109,7 +1109,7 @@ unsigned int AdminCache::FlagBitsToBitArray(FlagBits bits, bool array[], unsigne
 	unsigned int i;
 	for (i=0; i<maxSize && i<AdminFlags_TOTAL; i++)
 	{
-		array[i] = ((bits & (1<<i)) == (1<<i));
+		array[i] = ((bits & (1<<i)) == (unsigned)(1<<i));
 	}
 
 	return i;
@@ -1145,7 +1145,7 @@ unsigned int AdminCache::FlagBitsToArray(FlagBits bits, AdminFlag array[], unsig
 	unsigned int i, num=0;
 	for (i=0; i<maxSize && i<AdminFlags_TOTAL; i++)
 	{
-		if ((bits & (1<<i)) == (1<<i))
+		if ((bits & (1<<i)) == (unsigned)(1<<i))
 		{
 			array[num++] = (AdminFlag)i;
 		}

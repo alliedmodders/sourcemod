@@ -406,6 +406,7 @@ REGISTER_NATIVES(playernatives)
 	{"PrintToConsole",			sm_PrintToConsole},
 	{"GetClientInfo",			sm_GetClientInfo},
 	{"SetUserAdmin",			SetUserAdmin},
+	{"GetUserAdmin",			GetUserAdmin},
 	{"AddUserFlags",			AddUserFlags},
 	{"RemoveUserFlags",			RemoveUserFlags},
 	{"SetUserFlagBits",			SetUserFlagBits},

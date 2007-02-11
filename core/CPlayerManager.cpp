@@ -292,7 +292,7 @@ void CPlayerManager::OnClientDisconnect(edict_t *pEntity)
 	{
 		for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
 		{
-			if (m_AuthQueue[i] == client)
+			if (m_AuthQueue[i] == (unsigned)client)
 			{
 				/* Move everything ahead of us back by one */
 				for (unsigned int j=i+1; j<=m_AuthQueue[0]; j++)

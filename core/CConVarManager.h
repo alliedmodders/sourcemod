@@ -52,3 +52,4 @@ private:
 extern CConVarManager g_ConVarManager;
 
 #endif // _INCLUDE_SOURCEMOD_CCONVARMANAGER_H_
+

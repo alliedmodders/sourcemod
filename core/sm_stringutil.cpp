@@ -62,6 +62,11 @@ size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *
 	unsigned int langid;
 	char *langname = NULL;
 	*error = false;
+	Translation pTrans;
+	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
+	size_t langcount = pl->GetLangFileCount();
+	void *new_params[MAX_TRANSLATE_PARAMS];
+	unsigned int max_params = 0;
 
 try_serverlang:
 	if (target == LANG_SERVER)
@@ -89,9 +94,7 @@ try_serverlang:
 		goto error_out;
 	}
 
-	Translation pTrans;
-	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
-	size_t langcount = pl->GetLangFileCount();
+	max_params = pTrans.fmt_count;
 
 	if (!TryTranslation(pl, key, langid, langcount, &pTrans))
 	{
@@ -109,8 +112,6 @@ try_serverlang:
 		}
 	}
 
-	void *new_params[MAX_TRANSLATE_PARAMS];
-	unsigned int max_params = pTrans.fmt_count;
 	for (size_t i=0; i<max_params; i++)
 	{
 		pCtx->LocalToPhysAddr(params[*arg], reinterpret_cast<cell_t **>(&new_params[i]));

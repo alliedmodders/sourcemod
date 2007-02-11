@@ -20,10 +20,10 @@ HL2PUB = $(HL2SDK)/public
 HL2LIB = $(HL2SDK)/linux_sdk
 
 OBJECTS = sourcemm_api.cpp sourcemod.cpp AdminCache.cpp CDbgReporter.cpp CLogger.cpp \
-	  CPlayer.cpp CPlayerManager.cpp CTextParsers.cpp CTranslator.cpp \
+	  CPlayerManager.cpp CTextParsers.cpp CTranslator.cpp \
 	  sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_trie.cpp \
 	  sm_stringutil.cpp smn_filesystem.cpp smn_float.cpp smn_handles.cpp \
-	  smn_player.cpp smn_string.cpp smn_textparse.cpp \
+	  smn_player.cpp smn_string.cpp smn_textparse.cpp smn_convar.cpp smn_admin.cpp \
 	  systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
 	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp \
 	  systems/PluginSys.cpp systems/ShareSys.cpp vm/sp_vm_basecontext.cpp \
