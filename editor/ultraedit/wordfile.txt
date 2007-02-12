@@ -1,0 +1,65 @@
+/L20"SourcePawn" Line Comment = // Block Comment On = /* Block Comment Off = */ Escape Char = \ String Chars = "' File Extensions = INC SP
+/Delimiters = ~!@%^&*()-+=|\/{}[]:;"'<> ,	.?
+/Function String = "%^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"
+/Function String 1 = "%[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"
+/Function String 2 = "%^{native^}^{forward^}[ ^t]+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"
+/Function String 3 = "%^{native^}^{forward^}[ ^t]+[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"
+/Function String 4 = "%^{public^}^{stock^}[ ^t]+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"
+/Function String 5 = "%^{public^}^{stock^}[ ^t]+[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"/
+/Indent Strings = "{"
+/Unindent Strings = "}"
+/C1"Keywords"
+assert
+break
+case const continue
+decl default do
+else enum exit
+for forward functag
+goto
+if
+native new
+operator
+public
+return
+sleep static stock struct switch
+while
+/C2"Directives"
+#assert #define #else #elseif #emit #endif #endinput #endscript #if #include #pragma #error #tryinclude #undef
+align
+ctrlchar
+defined dynamic
+library
+pack
+rational
+semicolon
+tabsize
+/C3"Operators"
++
+-
+=
+// /
+%
+&
+>
+<
+^
+!
+|
+~
+:
+?
+cellof chars
+sizeof
+tagof
+/C4"Tags"
+bool
+Float Function
+Handle
+Plugin
+String
+/C5"Constants"
+//TODO
+/C6"Stocks"
+//TODO
+/C7"Natives"
+//TODO

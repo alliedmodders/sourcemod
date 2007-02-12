@@ -50,7 +50,7 @@
 #define FCVAR_ARCHIVE_XBOX		(1<<24)	/**< Cvar written to config.cfg on the Xbox. */
 #define FCVAR_INPUTSYSTEM		(1<<25)	/**< Defined by the inputsystem DLL. */
 #define FCVAR_NETWORKSYSTEM		(1<<26)	/**< Defined by the network system. */
-#define FCVAR_VPHYSICS			(1<<27)/**< Defined by vphysics. */
+#define FCVAR_VPHYSICS			(1<<27)	/**< Defined by vphysics. */
 
 /**
  * Creates a new console variable.
