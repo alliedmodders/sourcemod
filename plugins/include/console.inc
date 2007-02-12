@@ -63,6 +63,7 @@
  * @param hasMax        Optional boolean that determines if the convar has a maximum value.
  * @param max           Maximum floating point value that the convar can have if hasMax is true.
  * @return				A handle to the newly created convar. If the convar already exists, INVALID_HANDLE is returned.
+ * @error               Convar name is blank or is the same as a console command.
  */
 native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:helpText[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
 
@@ -90,7 +91,7 @@ functag OnConVarChanged public(Handle:convar, const String:oldValue[], const Str
  * @param convar        Handle to the convar.
  * @param callback      An OnConVarChanged function pointer.
  * @noreturn
- * @error               Invalid or corrupt Handle.
+ * @error               Invalid or corrupt Handle or invalid callback function.
  */
 native HookConVarChange(Handle:convar, OnConVarChanged:callback);
 
@@ -100,7 +101,7 @@ native HookConVarChange(Handle:convar, OnConVarChanged:callback);
  * @param convar        Handle to the convar.
  * @param callback      An OnConVarChanged function pointer.
  * @noreturn
- * @error               Invalid or corrupt Handle.
+ * @error               Invalid or corrupt Handle, invalid callback function, or no active hook on convar.
  */
 native UnhookConVarChange(Handle:convar, OnConVarChanged:callback);
 
