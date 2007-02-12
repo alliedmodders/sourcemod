@@ -29,11 +29,6 @@ namespace builder
 			info.Arguments = "zcvf \"" + name + "\" \"" + ltarget + "\"";
 			info.UseShellExecute = false;
 
-			if (cfg.BuildOptions != null)
-			{
-				info.Arguments += " " + cfg.BuildOptions;
-			}
-
 			Process p = Process.Start(info);
 			p.WaitForExit();
 
@@ -96,6 +91,12 @@ namespace builder
 			info.FileName = cfg.BuilderPath;
 			info.Arguments = "";
 			info.UseShellExecute = false;
+
+			if (cfg.BuildOptions != null)
+			{
+				info.Arguments += " " + cfg.BuildOptions;
+			}
+
 			p = Process.Start(info);
 			p.WaitForExit();
 			p.Close();

@@ -29,11 +29,6 @@ namespace builder
 			info.Arguments = "-r \"" + name + "\" \"" + ltarget + "\"";
 			info.UseShellExecute = false;
 
-			if (cfg.BuildOptions != null)
-			{
-				info.Arguments += " " + cfg.BuildOptions;
-			}
-
 			Process p = Process.Start(info);
 			p.WaitForExit();
 
@@ -82,6 +77,11 @@ namespace builder
 			info.FileName = cfg.BuilderPath;
 			info.Arguments = "/rebuild " + lib.ReleaseBuild + " " + projectFile;
 			info.UseShellExecute = false;
+
+			if (cfg.BuildOptions != null)
+			{
+				info.Arguments += " " + cfg.BuildOptions;
+			}
 
 			Process p = Process.Start(info);
 			p.WaitForExit();
