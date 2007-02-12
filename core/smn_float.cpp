@@ -88,7 +88,7 @@ static cell_t sm_Logarithm(IPluginContext *pCtx, const cell_t *params)
 
 	if ((val <= 0) || (base <= 0))
 	{
-		return pCtx->ThrowNativeError("Cannot evaluate the logarithm of zero or a negative number (val:%f base:%f).", val, base);
+		return pCtx->ThrowNativeError("Cannot evaluate the logarithm of zero or a negative number (val:%f base:%f)", val, base);
 	}
 	if (base == 10.0)
 	{
@@ -121,7 +121,7 @@ static cell_t sm_SquareRoot(IPluginContext *pCtx, const cell_t *params)
 
 	if (val < 0.0)
 	{
-		return pCtx->ThrowNativeError("Cannot evaluate the square root of a negative number (val:%f).", val);
+		return pCtx->ThrowNativeError("Cannot evaluate the square root of a negative number (val:%f)", val);
 	}
 
 	return sp_ftoc(sqrt(val));

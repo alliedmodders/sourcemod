@@ -46,13 +46,13 @@ static cell_t sm_GetClientName(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 	if (!pPlayer->IsConnected())
 	{
-		return pCtx->ThrowNativeError("Client %d is not connected.", index);
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
 
 	pCtx->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pPlayer->GetName(), NULL);
@@ -64,13 +64,13 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 	if (!pPlayer->IsConnected())
 	{
-		return pCtx->ThrowNativeError("Client %d is not connected.", index);
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
 
 	char buf[64], *ptr;
@@ -90,13 +90,13 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 	if (!pPlayer->IsConnected())
 	{
-		return pCtx->ThrowNativeError("Client %d is not connected.", index);
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
 
 	if (!pPlayer->IsAuthorized())
@@ -114,7 +114,7 @@ static cell_t sm_IsPlayerConnected(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	return (g_Players.GetPlayerByIndex(index)->IsConnected()) ? 1 : 0;
@@ -125,7 +125,7 @@ static cell_t sm_IsPlayerIngame(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	return (g_Players.GetPlayerByIndex(index)->IsInGame()) ? 1 : 0;
@@ -136,7 +136,7 @@ static cell_t sm_IsPlayerAuthorized(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	return (g_Players.GetPlayerByIndex(index)->IsAuthorized()) ? 1 : 0;
@@ -147,13 +147,13 @@ static cell_t sm_IsPlayerFakeClient(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 	if (!pPlayer->IsConnected())
 	{
-		return pCtx->ThrowNativeError("Client %d is not connected.", index);
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
 	}
 
 	return (pPlayer->IsFakeClient()) ? 1 : 0;
@@ -182,11 +182,11 @@ static cell_t sm_GetClientInfo(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	char *key;
@@ -207,13 +207,13 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d.", index);
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 	if (!pPlayer->IsInGame())
 	{
-		return pCtx->ThrowNativeError("Client %d is not in game.", index);
+		return pCtx->ThrowNativeError("Client %d is not in game", index);
 	}
 
 	char buffer[1024];
@@ -237,15 +237,15 @@ static cell_t SetUserAdmin(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 	if (!g_Admins.IsValidAdmin(params[2]))
 	{
-		return pContext->ThrowNativeError("AdminId %x is not valid.", params[2]);
+		return pContext->ThrowNativeError("AdminId %x is not valid", params[2]);
 	}
 
 	pPlayer->SetAdminId(params[2], params[3] ? true : false);
@@ -259,11 +259,11 @@ static cell_t GetUserAdmin(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	return pPlayer->GetAdminId();
@@ -275,11 +275,11 @@ static cell_t AddUserFlags(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	AdminId id;
@@ -305,11 +305,11 @@ static cell_t RemoveUserFlags(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 	
 	AdminId id;
@@ -334,11 +334,11 @@ static cell_t SetUserFlagBits(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	AdminId id;
@@ -359,11 +359,11 @@ static cell_t GetUserFlagBits(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	AdminId id;
@@ -381,11 +381,11 @@ static cell_t GetClientUserId(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d.", client);
+		return pContext->ThrowNativeError("Invalid client index %d", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Client %d is not connected.", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	return engine->GetPlayerUserId(pPlayer->GetEdict());

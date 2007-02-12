@@ -74,7 +74,7 @@ try_serverlang:
 		langname = "en"; //:TODO: read serverlang
 		if (!TryServerLanguage(langname ? langname : "en", &langid))
 		{
-			pCtx->ThrowNativeError("Translation failure: English language not found.");
+			pCtx->ThrowNativeError("Translation failure: English language not found");
 			goto error_out;
 		}
 	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
@@ -83,7 +83,7 @@ try_serverlang:
 		{
 			if (langname && !strcmp(langname, "en"))
 			{
-				pCtx->ThrowNativeError("Translation failure: English language not found.");
+				pCtx->ThrowNativeError("Translation failure: English language not found");
 				goto error_out;
 			}
 			target = LANG_SERVER;
