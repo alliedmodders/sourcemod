@@ -99,10 +99,10 @@ native HookConVarChange(Handle:convar, OnConVarChanged:callback);
  *
  * @param convar        Handle to the convar.
  * @param callback      An OnConVarChanged function pointer.
- * @return              True on success, false otherwise.
+ * @noreturn
  * @error               Invalid or corrupt Handle.
  */
-native bool:UnhookConVarChange(Handle:convar, OnConVarChanged:callback);
+native UnhookConVarChange(Handle:convar, OnConVarChanged:callback);
 
 /**
  * Returns the boolean value of a console variable.
