@@ -259,7 +259,7 @@ void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *cvar, fu
 	// This shouldn't happen...
 	if (func == NULL)
 	{
-		pContext->ThrowNativeError("Invalid function: %d", funcid);
+		pContext->ThrowNativeError("Invalid function specified");
 		return;
 	}
 
@@ -302,7 +302,7 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, 
 	// This shouldn't happen...
 	if (func == NULL)
 	{
-		pContext->ThrowNativeError("Invalid function: %d", funcid);
+		pContext->ThrowNativeError("Invalid function specified");
 		return;
 	}
 
@@ -315,14 +315,14 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, 
 		// If the forward doesn't exist, we can't unhook anything
 		if (fwd == NULL)
 		{
-			pContext->ThrowNativeError("Convar \"%s\" has no active hook.", cvar->GetName());
+			pContext->ThrowNativeError("Convar \"%s\" has no active hook", cvar->GetName());
 			return;
 		}
 
 		// Remove the function from the forward's list
 		if (!fwd->RemoveFunction(func))
 		{
-			pContext->ThrowNativeError("Function %d is not a valid hook callback for convar \"%s\"", funcid, cvar->GetName());
+			pContext->ThrowNativeError("Invalid hook callback specified for convar \"%s\"", cvar->GetName());
 			return;
 		}
 
@@ -362,4 +362,3 @@ void CConVarManager::OnConVarChanged(ConVar *cvar, const char *oldValue)
 	fwd->PushString(oldValue);
 	fwd->Execute(NULL);
 }
-

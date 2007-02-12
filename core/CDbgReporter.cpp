@@ -41,7 +41,7 @@ void CDbgReporter::OnContextExecuteError(IPluginContext *ctx, IContextTrace *err
 		const char *custerr;
 		if ((custerr=error->GetCustomErrorString()) != NULL)
 		{
-			g_Logger.LogError("[SM] Native \"%s\" reported: \"%s\"", lastname, custerr);
+			g_Logger.LogError("[SM] Native \"%s\" reported: %s", lastname, custerr);
 		} else {
 			g_Logger.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
 		}

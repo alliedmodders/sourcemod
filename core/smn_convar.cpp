@@ -25,7 +25,7 @@ static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 	// While the engine seems to accept a blank convar name, it causes a crash upon server quit
 	if (name == NULL || strcmp(name, "") == 0)
 	{
-		return pContext->ThrowNativeError("Null or blank convar name is not allowed.");
+		return pContext->ThrowNativeError("Null or blank convar name is not allowed");
 	}
 
 	pContext->LocalToString(params[2], &defaultVal);
