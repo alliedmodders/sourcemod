@@ -930,6 +930,7 @@ const char *CTextParsers::GetSMCErrorString(SMCParseError err)
 		"Section declared without header",
 		"Section declared with unknown tokens",
 		"Section ending without a matching section beginning",
+		"Section beginning without a matching ending",
 		"Line contained too many invalid tokens",
 		"Token buffer overflowed",
 		"A property was declared outside of a section",
