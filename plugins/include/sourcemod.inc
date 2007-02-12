@@ -313,26 +313,6 @@ native SetUserFlagBits(client, flags);
 native GetUserFlagBits(client);
 
 /**
- * Sends a message to the server console.
- *
- * @param format		Formatting rules.
- * @param ...			Variable number of format parameters.
- * @noreturn
- */
-native PrintToServer(const String:format[], {Handle,Float,String,_}:...);
-
-/**
- * Sends a message to a client's console.
- *
- * @param client		Player index.
- * @param format		Formatting rules.
- * @param ...			Variable number of format parameters.
- * @noreturn
- * @error			If the client is not connected an error will be thrown.
- */
-native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...);
-
-/**
  * Logs a generic message to the HL2 logs.
  *
  * @param format		String format.
