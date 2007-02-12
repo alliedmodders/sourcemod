@@ -94,8 +94,6 @@ try_serverlang:
 		goto error_out;
 	}
 
-	max_params = pTrans.fmt_count;
-
 	if (!TryTranslation(pl, key, langid, langcount, &pTrans))
 	{
 		if (target != LANG_SERVER)
@@ -111,6 +109,8 @@ try_serverlang:
 			}
 		}
 	}
+
+	max_params = pTrans.fmt_count;
 
 	for (size_t i=0; i<max_params; i++)
 	{
