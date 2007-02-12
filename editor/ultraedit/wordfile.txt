@@ -10,18 +10,17 @@
 /Unindent Strings = "}"
 /C1"Keywords"
 assert
-break
+begin break
 case const continue
 decl default do
 else enum exit
-for forward functag
-goto
+for forward funcenum functag
 if
 native new
 operator
 public
 return
-sleep static stock struct switch
+static stock struct switch
 while
 /C2"Directives"
 #assert #define #else #elseif #emit #endif #endinput #endscript #if #include #pragma #error #tryinclude #undef
@@ -48,7 +47,7 @@ tabsize
 ~
 :
 ?
-cellof chars
+cellsof chars
 sizeof
 tagof
 /C4"Tags"
@@ -58,7 +57,10 @@ Handle
 Plugin
 String
 /C5"Constants"
-//TODO
+cellbits cellmax cellmin charbits charmax
+myinfo
+__version
+INVALID_HANDLE
 /C6"Stocks"
 //TODO
 /C7"Natives"
