@@ -75,13 +75,14 @@ namespace builder
 
 			info.WorkingDirectory = path;
 			info.FileName = cfg.BuilderPath;
-			info.Arguments = "/rebuild " + lib.ReleaseBuild + " " + projectFile;
 			info.UseShellExecute = false;
 
 			if (cfg.BuildOptions != null)
 			{
-				info.Arguments += " " + cfg.BuildOptions;
+				info.Arguments = cfg.BuildOptions + " ";
 			}
+
+			info.Arguments += "/rebuild " + lib.ReleaseBuild + " " + projectFile;
 
 			Process p = Process.Start(info);
 			p.WaitForExit();
