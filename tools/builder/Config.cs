@@ -19,6 +19,7 @@ namespace builder
 		public string SVNVersion;
 		public string ProductVersion;
 		public string Compressor;
+		public string BuildOptions;
 		public builder.BasePlatform Platform;
 
 		public Config()
@@ -99,6 +100,10 @@ namespace builder
 						else if (key.CompareTo("Compressor") == 0) 
 						{
 							Compressor = val;
+						} 
+						else if (key.CompareTo("BuildOptions") == 0) 
+						{
+							BuildOptions = val;
 						}
 					}
 				}
