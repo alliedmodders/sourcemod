@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -20,7 +21,7 @@
 struct Plugin
 {
    const String:name[],			/* Plugin Name */
-   const String:description[],		/* Plugin Description */
+   const String:description[],	/* Plugin Description */
    const String:author[],		/* Plugin Author */
    const String:version[],		/* Plugin Version */
    const String:url[],			/* Plugin URL */
@@ -82,7 +83,7 @@ forward OnPluginEnd();
 /**
  * Called when the plugin's pause status is changing.
  *
- * @param pause		True if the plugin is being paused, false otherwise.
+ * @param pause			True if the plugin is being paused, false otherwise.
  * @noreturn
  */
 forward OnPluginPauseChange(bool:pause);
@@ -164,11 +165,11 @@ native GetClientCount(bool:inGameOnly=true);
 /**
  * Returns the client's name.
  *
- * @param client	Player index.
- * @param name		Buffer to store the client's name.
- * @param maxlen	Maximum length of string buffer (includes NULL terminator).
- * @return			True on success, false otherwise.
- * @error			If the client is not connected an error will be thrown.
+ * @param client		Player index.
+ * @param name			Buffer to store the client's name.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @return				True on success, false otherwise.
+ * @error				If the client is not connected an error will be thrown.
  */
 native bool:GetClientName(client, String:name[], maxlen);
 
@@ -334,8 +335,8 @@ native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...
 /**
  * Logs a generic message to the HL2 logs.
  *
- * @param format	String format.
- * @param ...		Format arguments.
+ * @param format		String format.
+ * @param ...			Format arguments.
  * @noreturn
  */
 native LogToGame(const String:format[], {Handle,Float,String,_}:...);
@@ -343,8 +344,8 @@ native LogToGame(const String:format[], {Handle,Float,String,_}:...);
 /**
  * Logs a plugin message to the SourceMod logs.
  *
- * @param format	String format.
- * @param ...		Format arguments.
+ * @param format		String format.
+ * @param ...			Format arguments.
  * @noreturn
  */
 native LogMessage(const String:format[], {Handle,Float,String,_}:...);
@@ -352,8 +353,8 @@ native LogMessage(const String:format[], {Handle,Float,String,_}:...);
 /**
  * Logs a plugin error message to the SourceMod logs.
  *
- * @param format	String format.
- * @param ...		Format arguments.
+ * @param format		String format.
+ * @param ...			Format arguments.
  * @noreturn
  */
 native LogError(const String:format[], {Handle,Float,String,_}:...);

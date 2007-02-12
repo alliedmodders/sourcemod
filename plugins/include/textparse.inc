@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -26,25 +27,25 @@
 
 enum SMCResult
 {
-	SMCParse_Continue,		//continue parsing
-	SMCParse_Halt,			//stop parsing here
-	SMCParse_HaltFail		//stop parsing and return failure
+	SMCParse_Continue,			/**< Continue parsing */
+	SMCParse_Halt,				/**< Stop parsing here */
+	SMCParse_HaltFail			/**< Stop parsing and return failure */
 };
 
 enum SMCError
 {
-	SMCError_Okay = 0,			//no error
-	SMCError_StreamOpen,		//stream failed to open
-	SMCError_StreamError,		//the stream died... somehow
-	SMCError_Custom,			//a custom handler threw an error
-	SMCError_InvalidSection1,	//a section was declared without quotes, and had extra tokens
-	SMCError_InvalidSection2,	//a section was declared without any header
-	SMCError_InvalidSection3,	//a section ending was declared with too many unknown tokens
-	SMCError_InvalidSection4,	//a section ending has no matching beginning
-	SMCError_InvalidSection5,	//a section beginning has no matching ending
-	SMCError_InvalidTokens,		//there were too many unidentifiable strings on one line
-	SMCError_TokenOverflow,		//the token buffer overflowed
-	SMCError_InvalidProperty1,	//a property was declared outside of any section
+	SMCError_Okay = 0,			/**< No error */
+	SMCError_StreamOpen,		/**< Stream failed to open */
+	SMCError_StreamError,		/**< The stream died... somehow */
+	SMCError_Custom,			/**< A custom handler threw an error */
+	SMCError_InvalidSection1,	/**< A section was declared without quotes, and had extra tokens */
+	SMCError_InvalidSection2,	/**< A section was declared without any header */
+	SMCError_InvalidSection3,	/**< A section ending was declared with too many unknown tokens */
+	SMCError_InvalidSection4,	/**< A section ending has no matching beginning */
+	SMCError_InvalidSection5,	/**< A section beginning has no matching ending */
+	SMCError_InvalidTokens,		/**< There were too many unidentifiable strings on one line */
+	SMCError_TokenOverflow,		/**< The token buffer overflowed */
+	SMCError_InvalidProperty1,	/**< A property was declared outside of any section */
 };
 
 /**
@@ -57,12 +58,12 @@ native Handle:SMC_CreateParser();
 /**
  * Parses an SMC file.
  *
- * @param smc		A Handle to an SMC Parse structure.
- * @param file		A string containing the file path.
- * @param line		An optional by reference cell to store the last line number read.
- * @param col		An optional by reference cell to store the last column number read.
- * @return			An SMCParseError result.
- * @error			Invalid or corrupt Handle. 
+ * @param smc			A Handle to an SMC Parse structure.
+ * @param file			A string containing the file path.
+ * @param line			An optional by reference cell to store the last line number read.
+ * @param col			An optional by reference cell to store the last column number read.
+ * @return				An SMCParseError result.
+ * @error				Invalid or corrupt Handle. 
  */
 native SMCError:SMC_ParseFile(Handle:smc, const String:file[], &line=0, &col=0);
 
@@ -71,10 +72,10 @@ native SMCError:SMC_ParseFile(Handle:smc, const String:file[], &line=0, &col=0);
  * @note SMCError_Okay returns false.
  * @note SMCError_Custom (which is thrown on SMCParse_HaltFail) returns false.
  *
- * @param error		The SMCParseError code.
- * @param buffer	A string buffer for the error (contents undefined on failure).
- * @param buf_max	The maximum size of the buffer.
- * @return			True on success, false otherwise.
+ * @param error			The SMCParseError code.
+ * @param buffer		A string buffer for the error (contents undefined on failure).
+ * @param buf_max		The maximum size of the buffer.
+ * @return				True on success, false otherwise.
  */
 native bool:SMC_GetErrorString(SMCError:error, String:buffer[], buf_max);
 
@@ -89,10 +90,10 @@ functag SMC_ParseStart public(Handle:smc);
 /**
  * Sets the SMC_ParseStart function of a parse Handle.
  *
- * @param smc		Handle to an SMC Parse.
- * @param func		SMC_ParseStart function.
+ * @param smc			Handle to an SMC Parse.
+ * @param func			SMC_ParseStart function.
  * @noreturn
- * @error			Invalid or corrupt Handle. 
+ * @error				Invalid or corrupt Handle. 
  */
 native SMC_SetParseStart(Handle:smc, SMC_ParseStart:func);
 
@@ -100,8 +101,8 @@ native SMC_SetParseStart(Handle:smc, SMC_ParseStart:func);
  * Called when parsing is halted.
  *
  * @param smc			The SMC Parse Handle.
- * @param halted			True if abnormally halted, false otherwise.
- * @param failed			True if parsing failed, false otherwise.
+ * @param halted		True if abnormally halted, false otherwise.
+ * @param failed		True if parsing failed, false otherwise.
  * @noreturn
  */
 functag SMC_ParseEnd public(Handle:smc, bool:halted, bool:failed);
@@ -109,10 +110,10 @@ functag SMC_ParseEnd public(Handle:smc, bool:halted, bool:failed);
 /**
  * Sets the SMC_ParseEnd of a parse handle.
  *
- * @param smc		Handle to an SMC Parse.
- * @param func		SMC_ParseEnd function.
+ * @param smc			Handle to an SMC Parse.
+ * @param func			SMC_ParseEnd function.
  * @noreturn
- * @error			Invalid or corrupt Handle. 
+ * @error				Invalid or corrupt Handle. 
  */
 native SMC_SetParseEnd(Handle:smc, SMC_ParseEnd:func);
 
@@ -172,8 +173,8 @@ functag SMC_RawLine SMCResult:public(Handle:smc, const String:line[], lineno);
 /**
  * Sets a raw line reader on an SMC parser Handle.
  *
- * @param smc		Handle to an SMC Parse.
- * @param func		SMC_RawLine function.
+ * @param smc			Handle to an SMC Parse.
+ * @param func			SMC_RawLine function.
  * @noreturn
  */
 native SMC_SetRawLine(Handle:smc, SMC_RawLine:func);

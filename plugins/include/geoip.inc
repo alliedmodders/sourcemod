@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -70,4 +71,3 @@ public Extension:__ext_geoip =
 	required = 0,
 #endif
 };
-

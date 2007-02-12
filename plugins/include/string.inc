@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -27,8 +28,8 @@
 /**
  * Calculates the length of a string.
  *
- * @param str		String to check.
- * @return		Length of string, in cells (NOT characters).
+ * @param str			String to check.
+ * @return				Length of string, in cells (NOT characters).
  */
 native strlen(const String:str[]);
 
@@ -38,9 +39,9 @@ native strlen(const String:str[]);
  * @param str			String to search in.
  * @param substr		Substring to find inside the original string.
  * @param caseSensitive	If true (default), search is case sensitive.
- * 					If false, search is case insensitive.
- * @return			-1 on failure (no match found).  Any other value
- *					indicates a position in the string where the match starts.
+ *						If false, search is case insensitive.
+ * @return				-1 on failure (no match found). Any other value
+ *						indicates a position in the string where the match starts.
  */
 native StrContains(const String:str[], const String:substr[], bool:caseSensitive=true);
 
@@ -50,10 +51,10 @@ native StrContains(const String:str[], const String:substr[], bool:caseSensitive
  * @param str1			First string (left).
  * @param str2			Second string (right).
  * @param caseSensitive	If true (default), comparison is case sensitive.
- * 					If false, comparison is case insensitive.
- * @return			-1 if str1 < str2
- *					0 if str1 == str2
- * 					1 if str1 > str2
+ *						If false, comparison is case insensitive.
+ * @return				-1 if str1 < str2
+ *						0 if str1 == str2
+ *						1 if str1 > str2
  */
 native StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=true);
 

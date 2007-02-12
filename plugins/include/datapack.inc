@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -21,7 +22,7 @@
 /**
  * Creates a new data pack.
  *
- * @return		A Handle to the data pack.  Must be closed with CloseHandle().
+ * @return			A Handle to the data pack.  Must be closed with CloseHandle().
  */
 native Handle:CreateDataPack();
 
@@ -90,7 +91,7 @@ native ReadPackString(Handle:pack, String:buffer[], maxlen);
  * @param pack		Handle to the data pack.
  * @param clear		If true, clears the contained data.
  * @noreturn
- * @error		Invalid handle.
+ * @error			Invalid handle.
  */
 native ResetPack(Handle:pack, bool:clear=false);
 
@@ -99,7 +100,7 @@ native ResetPack(Handle:pack, bool:clear=false);
  *
  * @param pack		Handle to the data pack.
  * @return			Numerical position in the data pack.
- * @error		Invalid handle.
+ * @error			Invalid handle.
  */
 native GetPackPosition(Handle:pack);
 
@@ -119,7 +120,7 @@ native SetPackPosition(Handle:pack, position);
  *
  * @param pack		Handle to the data pack.
  * @param bytes		Number of bytes to simulate reading.
- * @return		True if can be read, false otherwise.
- * @error		Invalid handle.
+ * @return			True if can be read, false otherwise.
+ * @error			Invalid handle.
  */
 native bool:IsPackReadable(Handle:pack, bytes);

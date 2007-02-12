@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * ===============================================================
@@ -29,7 +30,7 @@ enum Handle
  *       This is provided for situations only where testing for handle validity is needed.
  *
  * @param hndl		Handle to test for validity.
- * @return		True if handle is valid, false otherwise.
+ * @return			True if handle is valid, false otherwise.
  */
 native bool:IsValidHandle(Handle:hndl);
 
@@ -41,7 +42,7 @@ native bool:IsValidHandle(Handle:hndl);
  *       sure you read the documentation on whatever provided the Handle.
  *
  * @param hndl		Handle to close.
- * @return		True if successful, false if not closeable.
+ * @return			True if successful, false if not closeable.
  * @error			Invalid handles will cause a run time error.
  */
 native bool:CloseHandle(Handle:hndl);
@@ -59,9 +60,8 @@ native bool:CloseHandle(Handle:hndl);
  *
  * @param hndl		Handle to clone/duplicate.
  * @param plugin	Optional Handle to another plugin to mark as the new owner.
- *				If no owner is passed, the owner becomes the calling plugin.
- * @return		Handle on success, INVALID_HANDLE if not cloneable.
+ *					If no owner is passed, the owner becomes the calling plugin.
+ * @return			Handle on success, INVALID_HANDLE if not cloneable.
  * @error			Invalid handles will cause a run time error.
  */
 native Handle:CloneHandle(Handle:hndl, Handle:plugin=INVALID_HANDLE);
-
