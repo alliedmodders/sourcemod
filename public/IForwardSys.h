@@ -52,8 +52,8 @@ namespace SourceMod
 	enum ResultType
 	{
 		Pl_Continue = 0,	/**< No result */
-		Pl_Handled = 1,		/**< Result was handled, stop at the end */
-		Pl_Stop = 2,		/**< Result was handled, stop now */
+		Pl_Handled = 3,		/**< Result was handled, stop at the end */
+		Pl_Stop = 4,		/**< Result was handled, stop now */
 	};
 
 	/**
