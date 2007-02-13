@@ -40,6 +40,7 @@ CPlugin::CPlugin(const char *file)
 	snprintf(m_filename, sizeof(m_filename), "%s", file);
 	m_handle = 0;
 	m_ident = NULL;
+	m_pProps = sm_trie_create();
 }
 
 CPlugin::~CPlugin()
@@ -74,6 +75,10 @@ CPlugin::~CPlugin()
 	{
 		g_pSourcePawn->FreeFromMemory(m_plugin);
 		m_plugin = NULL;
+	}
+	if (!m_pProps)
+	{
+		sm_trie_destroy(m_pProps);
 	}
 }
 
@@ -123,6 +128,23 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 	pPlugin->m_plugin = pl;
 
 	return pPlugin;
+}
+
+bool CPlugin::GetProperty(const char *prop, void **ptr, bool remove/* =false */)
+{
+	bool exists = sm_trie_retrieve(m_pProps, prop, ptr);
+
+	if (exists && remove)
+	{
+		sm_trie_delete(m_pProps, prop);
+	}
+
+	return exists;
+}
+
+bool CPlugin::SetProperty(const char *prop, void *ptr)
+{
+	return sm_trie_insert(m_pProps, prop, ptr);
 }
 
 ICompilation *CPlugin::StartMyCompile(IVirtualMachine *vm)

@@ -28,7 +28,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	1
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	2
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -154,6 +154,28 @@ namespace SourceMod
 		 * @brief Returns a plugin's identity token.
 		 */
 		virtual IdentityToken_t *GetIdentity() const =0;
+
+		/**
+		 * @brief Sets a property on this plugin.  This is used for per-plugin
+		 * data from extensions or other parts of core.  The property's value must 
+		 * be manually destructed when the plugin is destroyed.
+		 *
+		 * @param prop		String containing name of the property.
+		 * @param ptr		Generic pointer to set.
+		 * @return			True on success, false if the property is already set.
+		 */
+		virtual bool SetProperty(const char *prop, void *ptr) =0;
+
+		/**
+		 * @brief Gets a property from a plugin.
+		 *
+		 * @param prop		String containing the property's name.
+		 * @param ptr		Optional pointer to the generic pointer.
+		 * @param remove	Optional boolean value; if true, property is removed
+		 *					(so it can be set again).
+		 * @return			True if the property existed, false otherwise.
+		 */
+		virtual bool GetProperty(const char *prop, void **ptr, bool remove=false) =0;
 	};
 
 

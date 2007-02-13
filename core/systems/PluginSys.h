@@ -117,6 +117,8 @@ public:
 	virtual unsigned int GetSerial() const;
 	virtual const sp_plugin_t *GetPluginStructure() const;
 	virtual IdentityToken_t *GetIdentity() const;
+	virtual bool SetProperty(const char *prop, void *ptr);
+	virtual bool GetProperty(const char *prop, void **ptr, bool remove=false);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -241,6 +243,7 @@ private:
 	bool m_WasRunning;
 	CVector<unsigned int> m_PhraseFiles;
 	CVector<ConVar *> m_ConVarList;
+	Trie *m_pProps;
 };
 
 class CPluginManager : 
