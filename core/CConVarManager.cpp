@@ -54,7 +54,7 @@ void CConVarManager::OnSourceModAllInitialized()
 	m_ConVarType = g_HandleSys.CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 
 	// Add the 'cvars' option to the 'sm' console command
-	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
+	g_RootMenu.AddRootConsoleCommand("convars", "View convars created by a plugin", this);
 }
 
 void CConVarManager::OnSourceModShutdown()
@@ -75,7 +75,7 @@ void CConVarManager::OnSourceModShutdown()
 	}
 
 	// Remove the 'cvars' option from the 'sm' console command
-	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
+	g_RootMenu.RemoveRootConsoleCommand("convars", this);
 
 	// Remove the 'ConVar' handle type
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
@@ -125,7 +125,7 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			return;
 		}
 
-		g_RootMenu.ConsolePrint("[SM] Displaying convars for \"%s\":", pl->GetPublicInfo()->name);
+		g_RootMenu.ConsolePrint("[SM] Displaying convars for \"%s\"", pl->GetPublicInfo()->name);
 
 		// Iterate convar list and display each one
 		for (int i = 0; i < convarnum; i++, id++)
@@ -138,7 +138,7 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 	}
 
 	// Display usage of subcommand
-	g_RootMenu.ConsolePrint("[SM] Usage: sm cvars <#>");
+	g_RootMenu.ConsolePrint("[SM] Usage: sm convars <#>");
 }
 
 Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *helpText, int flags, bool hasMin, float min, bool hasMax, float max)
