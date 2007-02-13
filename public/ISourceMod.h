@@ -24,6 +24,7 @@
 
 #include <IShareSys.h>
 #include <sp_vm_api.h>
+#include <IDataPack.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
 #define SMINTERFACE_SOURCEMOD_VERSION	1
@@ -42,7 +43,7 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Contains miscellanious helper functions.
+	 * @brief Contains miscellaneous helper functions.
 	 */
 	class ISourceMod : public SMInterface
 	{
@@ -61,14 +62,14 @@ namespace SourceMod
 		 *
 		 * @return			A string containing the full mod path.
 		 */
-		virtual const char *GetModPath() =0;
+		virtual const char *GetModPath() const =0;
 
 		/**
 		 * @brief Returns the full path to the SourceMod directory.
 		 *
 		 * @return			A string containing the full SourceMod path.
 		 */
-		virtual const char *GetSourceModPath() =0;
+		virtual const char *GetSourceModPath() const =0;
 
 		/**
 		 * @brief Builds a platform path for a specific target base path.
@@ -117,7 +118,6 @@ namespace SourceMod
 									const cell_t *params,
 									unsigned int param) =0;
 
-#if 0
 		/**
 		 * @brief Creates a data pack object.
 		 *
@@ -144,7 +144,6 @@ namespace SourceMod
 		 * @return			The Handle type for storing generic data packs.
 		 */
 		 virtual HandleType_t GetDataPackHandleType(bool readonly=false) =0;
-#endif
 	};
 }
 

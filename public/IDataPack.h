@@ -70,7 +70,8 @@ namespace SourceMod
 		virtual float ReadFloat() const =0;
 
 		/**
-		 * @brief Returns whether or not a specified number of bytes can be read.
+		 * @brief Returns whether or not a specified number of bytes from the current stream
+		 *  position to the end can be read.
 		 * 
 		 * @param bytes		Number of bytes to simulate reading.
 		 * @return			True if can be read, false otherwise.
@@ -94,11 +95,16 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Specifices a data pack that can only be written.
+	 * @brief Specifies a data pack that can only be written.
 	 */
 	class IDataPack : public IDataReader
 	{
 	public:
+		/**
+		* @brief Resets the used size of the stream back to zero.
+		*/
+		virtual void ResetSize() =0;
+
 		/**
 		 * @brief Packs one cell into the data stream.
 		 *

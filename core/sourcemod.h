@@ -16,6 +16,10 @@
 
 #include "sm_globals.h"
 #include <ISourceMod.h>
+#include <sh_stack.h>
+#include "CDataPack.h"
+
+using namespace SourceHook;
 
 /**
  * @brief Implements SourceMod's global overall management, API, and logic
@@ -52,9 +56,9 @@ public:
 	void LevelShutdown();
 
 	/** 
-	 * @brief Returns whether or not a mapload is in progress
+	 * @brief Returns whether or not a map load is in progress
 	 */
-	bool IsMapLoading();
+	bool IsMapLoading() const;
 
 	/** 
 	 * @brief Stores the global target index.
@@ -65,14 +69,21 @@ public:
 	 * @brief Returns the global target index.
 	 */
 	unsigned int GetGlobalTarget() const;
+	
+	/** 
+	* @brief Sets whether if SoureMod needs to check player auths.
+	*/
+	void SetAuthChecking(bool set);
 public: //ISourceMod
-	const char *GetModPath();
-	const char *GetSourceModPath();
+	const char *GetModPath() const;
+	const char *GetSourceModPath() const;
 	size_t BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...);
 	void LogMessage(IExtension *pExt, const char *format, ...);
 	void LogError(IExtension *pExt, const char *format, ...);
 	size_t FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param);
-	void SetAuthChecking(bool set);
+	IDataPack *CreateDataPack();
+	void FreeDataPack(IDataPack *pack);
+	HandleType_t GetDataPackHandleType(bool readonly=false);
 private:
 	/**
 	 * @brief Loading plugins
@@ -80,6 +91,7 @@ private:
 	void DoGlobalPluginLoads();
 	void GameFrame(bool simulating);
 private:
+	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH+1];
 	char m_SMRelDir[PLATFORM_MAX_PATH+1];
 	bool m_IsMapLoading;

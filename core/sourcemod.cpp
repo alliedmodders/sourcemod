@@ -226,7 +226,7 @@ void SourceModBase::LevelShutdown()
 	}
 }
 
-bool SourceModBase::IsMapLoading()
+bool SourceModBase::IsMapLoading() const
 {
 	return m_IsMapLoading;
 }
@@ -296,6 +296,16 @@ void SourceModBase::CloseSourceMod()
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	/* Delete all data packs */
+	CStack<CDataPack *>::iterator iter;
+	CDataPack *pd;
+	for (iter=m_freepacks.begin(); iter!=m_freepacks.end(); iter++)
+	{
+		pd = (*iter);
+		delete pd;
+	}
+	m_freepacks.popall();
+
 	/* Notify! */
 	pBase = SMGlobalClass::head;
 	while (pBase)
@@ -361,12 +371,12 @@ size_t SourceModBase::FormatString(char *buffer, size_t maxlength, IPluginContex
 	return atcprintf(buffer, maxlength, fmt, pContext, params, &lparam);
 }
 
-const char *SourceModBase::GetSourceModPath()
+const char *SourceModBase::GetSourceModPath() const
 {
 	return m_SMBaseDir;
 }
 
-const char *SourceModBase::GetModPath()
+const char *SourceModBase::GetModPath() const
 {
 	return g_BaseDir.c_str();
 }
@@ -384,6 +394,31 @@ void SourceModBase::SetAuthChecking(bool set)
 unsigned int SourceModBase::GetGlobalTarget() const
 {
 	return m_target;
+}
+
+IDataPack *SourceModBase::CreateDataPack()
+{
+	CDataPack *pack;
+	if (m_freepacks.empty())
+	{
+		pack = new CDataPack;
+	} else {
+		pack = m_freepacks.front();
+		m_freepacks.pop();
+		pack->Initialize();
+	}
+	return pack;
+}
+
+void SourceModBase::FreeDataPack(IDataPack *pack)
+{
+	m_freepacks.push(static_cast<CDataPack *>(pack));
+}
+
+Handle_t SourceModBase::GetDataPackHandleType(bool readonly)
+{
+	//:TODO:
+	return 0;
 }
 
 SMGlobalClass *SMGlobalClass::head = NULL;
