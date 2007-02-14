@@ -212,7 +212,7 @@ native GetClientUserId(client);
  * @param client		Player index.
  * @return				True if player is connected to the server, false otherwise.
  */
-native bool:IsPlayerConnected(client);
+native bool:IsClientConnected(client);
 
 /**
  * Returns if a certain player has entered the game.
@@ -228,7 +228,7 @@ native bool:IsPlayerInGame(client);
  * @param client		Player index.
  * @return				True if player has been authenticated, false otherwise.
  */
-native bool:IsPlayerAuthorized(client);
+native bool:IsClientAuthorized(client);
 
 /**
  * Returns if a certain player is a fake client.
@@ -236,7 +236,7 @@ native bool:IsPlayerAuthorized(client);
  * @param client		Player index.
  * @return				True if player is a fake client, false otherwise.
  */
-native bool:IsPlayerFakeClient(client);
+native bool:IsFakeClient(client);
 
 /**
  * Retrieves values from client replicated keys.
