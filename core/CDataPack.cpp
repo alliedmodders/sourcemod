@@ -2,7 +2,7 @@
 #include <string.h>
 #include "CDataPack.h"
 
-#define DATAPACK_INITIAL_SIZE		4//512
+#define DATAPACK_INITIAL_SIZE		512
 
 CDataPack::CDataPack()
 {
