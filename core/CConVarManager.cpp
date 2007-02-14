@@ -372,6 +372,13 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, 
 
 void CConVarManager::OnConVarChanged(ConVar *cvar, const char *oldValue)
 {
+	// If the values are the same...
+	if (strcmp(cvar->GetString(), oldValue) == 0)
+	{
+		// Exit early in order to not trigger callbacks
+		return;
+	}
+
 	Trie *cache = g_ConVarManager.GetConVarCache();
 	ConVarInfo *info;
 
