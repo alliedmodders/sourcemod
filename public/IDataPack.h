@@ -92,6 +92,14 @@ namespace SourceMod
 		 * @return			Pointer to the memory.
 		 */
 		virtual void *GetMemory() const =0;
+
+		/**
+		* @brief Reads the current position as a generic data type.
+		*
+		* @param size		Optional pointer to store the size of the data type.
+		* @return			Pointer to the data, or NULL if out of bounds.
+		*/
+		virtual void *ReadMemory(size_t *size) const =0;
 	};
 
 	/**

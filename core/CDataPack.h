@@ -33,6 +33,7 @@ public: //IDataReader
 	bool IsReadable(size_t bytes) const;
 	const char *ReadString(size_t *len) const;
 	void *GetMemory() const;
+	void *ReadMemory(size_t *size) const;
 public: //IDataPack
 	void ResetSize();
 	void PackCell(cell_t cell);

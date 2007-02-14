@@ -2,7 +2,7 @@
 #include <string.h>
 #include "CDataPack.h"
 
-#define DATAPACK_INITIAL_SIZE		512
+#define DATAPACK_INITIAL_SIZE		4//512
 
 CDataPack::CDataPack()
 {
@@ -45,36 +45,47 @@ void CDataPack::ResetSize()
 
 size_t CDataPack::CreateMemory(size_t size, void **addr)
 {
+	CheckSize(sizeof(size_t) + size);
 	size_t pos = m_curptr - m_pBase;
 
-	m_pBase = (char *)realloc(m_pBase, size);
-	m_curptr = m_pBase + pos;
-	m_capacity = size;
+	*(size_t *)m_curptr = size;
+	m_curptr += sizeof(size_t);
 
 	if (addr)
 	{
-		*addr = m_pBase;
+		*addr = m_curptr;
 	}
+
+	m_curptr += size;
+	m_size += sizeof(size_t) + size;
 
 	return pos;
 }
 
 void CDataPack::PackCell(cell_t cell)
 {
-	CheckSize(sizeof(cell_t));
+	CheckSize(sizeof(size_t) + sizeof(cell_t));
+
+	*(size_t *)m_curptr = sizeof(cell_t);
+	m_curptr += sizeof(size_t);
 
 	*(cell_t *)m_curptr = cell;
 	m_curptr += sizeof(cell_t);
-	m_size += sizeof(cell_t);
+
+	m_size += sizeof(size_t) + sizeof(cell_t);
 }
 
 void CDataPack::PackFloat(float val)
 {
-	CheckSize(sizeof(float));
+	CheckSize(sizeof(size_t) + sizeof(float));
+
+	*(size_t *)m_curptr = sizeof(float);
+	m_curptr += sizeof(size_t);
 
 	*(float *)m_curptr = val;
 	m_curptr += sizeof(float);
-	m_size += sizeof(float);
+
+	m_size += sizeof(size_t) + sizeof(float);
 }
 
 void CDataPack::PackString(const char *string)
@@ -118,10 +129,17 @@ bool CDataPack::SetPosition(size_t pos) const
 
 cell_t CDataPack::ReadCell() const
 {
-	if (!IsReadable(sizeof(cell_t)))
+	if (!IsReadable(sizeof(size_t) + sizeof(cell_t)))
 	{
 		return 0;
 	}
+	if (*reinterpret_cast<size_t *>(m_curptr) != sizeof(cell_t))
+	{
+		return 0;
+	}
+
+	m_curptr += sizeof(size_t);
+
 	cell_t val = *reinterpret_cast<cell_t *>(m_curptr);
 	m_curptr += sizeof(cell_t);
 	return val;
@@ -129,10 +147,17 @@ cell_t CDataPack::ReadCell() const
 
 float CDataPack::ReadFloat() const
 {
-	if (!IsReadable(sizeof(float)))
+	if (!IsReadable(sizeof(size_t) + sizeof(float)))
 	{
 		return 0;
 	}
+	if (*reinterpret_cast<size_t *>(m_curptr) != sizeof(float))
+	{
+		return 0;
+	}
+
+	m_curptr += sizeof(size_t);
+
 	float val = *reinterpret_cast<float *>(m_curptr);
 	m_curptr += sizeof(float);
 	return val;
@@ -147,7 +172,7 @@ const char *CDataPack::ReadString(size_t *len) const
 {
 	if (!IsReadable(sizeof(size_t)))
 	{
-		return 0;
+		return NULL;
 	}
 
 	size_t real_len = *(size_t *)m_curptr;
@@ -173,4 +198,31 @@ const char *CDataPack::ReadString(size_t *len) const
 void *CDataPack::GetMemory() const
 {
 	return m_curptr;
+}
+
+void *CDataPack::ReadMemory(size_t *size) const
+{
+	if (!IsReadable(sizeof(size_t)))
+	{
+		return NULL;
+	}
+
+	size_t bytecount = *(size_t *)m_curptr;
+	m_curptr += sizeof(size_t);
+
+	if (!IsReadable(bytecount))
+	{
+		return NULL;
+	}
+
+	void *ptr = m_curptr;
+
+	if (size)
+	{
+		*size = bytecount;
+	}
+
+	m_curptr += bytecount;
+
+	return ptr;
 }
