@@ -40,7 +40,7 @@
  *
  *   The second vector is the identity linked list.  An identity has its own handle, so
  * these handles are used as sentinel nodes for index linking.  They point to the first and last
- * index into the handle array.  Each subsequent Handle who is owned by that indentity is mapped into
+ * index into the handle array.  Each subsequent Handle who is owned by that identity is mapped into
  * that list.  This lets owning identities be unloaded in O(n) time.
  *
  *   Eventually, there may be a third list for type chains.

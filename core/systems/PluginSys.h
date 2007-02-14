@@ -210,21 +210,6 @@ public:
 	 * Returns true if the plugin was running, but is now invalid.
 	 */
 	bool WasRunning();
-
-	/**
-	 * Adds a convar to the plugin's list
-	 */
-	void AddConVar(ConVar *convar);
-
-	/**
-	* Get convar count for this plugin.
-	*/
-	size_t GetConVarCount() const;
-
-	/**
-	* Get convar pointer based on the vector index.
-	*/
-	ConVar *GetConVarByIndex(size_t index) const;
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);
@@ -242,7 +227,6 @@ private:
 	Handle_t m_handle;
 	bool m_WasRunning;
 	CVector<unsigned int> m_PhraseFiles;
-	CVector<ConVar *> m_ConVarList;
 	Trie *m_pProps;
 };
 

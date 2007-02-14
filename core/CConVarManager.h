@@ -16,10 +16,11 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-#include "HandleSys.h"
-#include "ForwardSys.h"
 #include "sm_trie.h"
 #include <sh_list.h>
+#include <IPluginSys.h>
+#include <IForwardSys.h>
+#include <IHandleSys.h>
 #include <IRootConsoleMenu.h>
 
 using namespace SourceHook;
@@ -38,6 +39,7 @@ struct ConVarInfo
 class CConVarManager :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
+	public IPluginsListener,
 	public IRootConsoleCommand
 {
 public:
@@ -48,6 +50,8 @@ public: // SMGlobalClass
 	void OnSourceModShutdown();
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
+public: // IPluginsListener
+	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *command, unsigned int argcount);
 public:

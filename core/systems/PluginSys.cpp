@@ -531,21 +531,6 @@ unsigned int CPlugin::GetLangFileByIndex(unsigned int index) const
 	return m_PhraseFiles.at(index);
 }
 
-void CPlugin::AddConVar(ConVar *convar)
-{
-	m_ConVarList.push_back(convar);
-}
-
-size_t CPlugin::GetConVarCount() const
-{
-	return m_ConVarList.size();
-}
-
-ConVar *CPlugin::GetConVarByIndex(size_t index) const
-{
-	return m_ConVarList.at(index);
-}
-
 /*******************
  * PLUGIN ITERATOR *
  *******************/

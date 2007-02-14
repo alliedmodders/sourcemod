@@ -12,10 +12,12 @@
 */
 
 #include "CConVarManager.h"
-#include "CLogger.h"
 #include "PluginSys.h"
+#include "ForwardSys.h"
+#include "HandleSys.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
+#include <sh_vector.h>
 
 CConVarManager g_ConVarManager;
 
@@ -81,6 +83,17 @@ void CConVarManager::OnSourceModShutdown()
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
 }
 
+void CConVarManager::OnPluginDestroyed(IPlugin *plugin)
+{
+	CVector<ConVar *> *cvarList;
+
+	// If plugin has a convar list, free its memory
+	if (plugin->GetProperty("ConVar", reinterpret_cast<void **>(&cvarList), true))
+	{
+		delete cvarList;
+	}
+}
+
 void CConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	ConVarInfo *info;
@@ -116,10 +129,13 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		// Get plugin object
 		CPlugin *pl = g_PluginSys.GetPluginByOrder(num);
 
-		// Get number of convars created by plugin
-		int convarnum = pl->GetConVarCount();
+		CVector<ConVar *> *cvarList = NULL;
 
-		if (convarnum == 0)
+		// Get convar list from 'ConVar' property
+		pl->GetProperty("ConVar", reinterpret_cast<void **>(&cvarList));
+
+		// If no cvar list...
+		if (cvarList == NULL)
 		{
 			g_RootMenu.ConsolePrint("[SM] No convars for \"%s\"", pl->GetPublicInfo()->name);
 			return;
@@ -128,9 +144,9 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		g_RootMenu.ConsolePrint("[SM] Displaying convars for \"%s\"", pl->GetPublicInfo()->name);
 
 		// Iterate convar list and display each one
-		for (int i = 0; i < convarnum; i++, id++)
+		for (size_t i = 0; i < cvarList->size(); i++, id++)
 		{
-			ConVar *cvar = pl->GetConVarByIndex(i);
+			ConVar *cvar = (*cvarList)[i];
 			g_RootMenu.ConsolePrint("  %02d \"%s\" = \"%s\"", id, cvar->GetName(), cvar->GetString()); 
 		}
 
@@ -145,6 +161,7 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 {
 	ConVar *cvar = NULL;
 	ConVarInfo *info = NULL;
+	CVector<ConVar *> *cvarList = NULL;
 	Handle_t hndl = 0;
 
 	// Find out if the convar exists already
@@ -190,8 +207,22 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 	// Since we didn't find an existing convar (or concmd with the same name), now we can finally create it!
 	cvar = new ConVar(name, defaultVal, flags, helpText, hasMin, min, hasMax, max);
 
+	// Find plugin creating convar
+	IPlugin *pl = g_PluginSys.FindPluginByContext(pContext->GetContext());
+
+	// Get convar list from 'ConVar' property of plugin
+	pl->GetProperty("ConVar", reinterpret_cast<void **>(&cvarList));
+
+	// If 'ConVar' property doesn't exist...
+	if (cvarList == NULL)
+	{
+		// Then create it
+		cvarList = new CVector<ConVar *>;
+		pl->SetProperty("ConVar", cvarList);
+	}
+
 	// Add new convar to plugin's list
-	g_PluginSys.GetPluginByCtx(pContext->GetContext())->AddConVar(cvar);
+	cvarList->push_back(cvar);
 
 	// Create a handle from the new convar
 	hndl = g_HandleSys.CreateHandle(m_ConVarType, cvar, NULL, g_pCoreIdent, NULL);
