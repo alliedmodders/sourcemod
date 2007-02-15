@@ -8,6 +8,8 @@
 /Function String 5 = "%^{public^}^{stock^}[ ^t]+[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9^[^]-]++)"/
 /Indent Strings = "{"
 /Unindent Strings = "}"
+/Open Fold Strings = "{"
+/Close Fold Strings = "}"
 /C1"Keywords"
 assert
 begin break
@@ -57,11 +59,13 @@ Handle
 Plugin
 String
 /C5"Constants"
-cellbits cellmax cellmin charbits charmax
+__Pawn __version
+cellbits cellmax cellmin charbits charmax charmin
+debug
 myinfo
-__version
+ucharmax
 INVALID_HANDLE
 /C6"Stocks"
-//TODO
+# TODO
 /C7"Natives"
-//TODO
+# TODO
