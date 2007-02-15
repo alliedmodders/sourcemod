@@ -156,6 +156,8 @@ void SourceModBase::StartSourceMod(bool late)
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
 
+	enginePatch = SH_GET_CALLCLASS(engine);
+
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
 	while (pBase)
@@ -312,6 +314,12 @@ void SourceModBase::CloseSourceMod()
 	{
 		pBase->OnSourceModAllShutdown();
 		pBase = pBase->m_pGlobalClassNext;
+	}
+
+	if (enginePatch)
+	{
+		SH_RELEASE_CALLCLASS(enginePatch);
+		enginePatch = NULL;
 	}
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);

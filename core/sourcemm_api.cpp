@@ -24,6 +24,7 @@ ISmmPluginManager *g_pMMPlugins = NULL;
 CGlobalVars *gpGlobals = NULL;
 ICvar *icvar = NULL;
 IGameEventManager2 *gameevents = NULL;
+CallClass<IVEngineServer> *enginePatch = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 

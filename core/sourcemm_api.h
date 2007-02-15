@@ -51,6 +51,9 @@ extern ICvar *icvar;
 extern ISmmPluginManager *g_pMMPlugins;
 extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
+extern SourceHook::CallClass<IVEngineServer> *enginePatch;
+
+#define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 
 PLUGIN_GLOBALVARS();
 
