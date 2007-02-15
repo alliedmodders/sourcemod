@@ -74,6 +74,78 @@ native PrintToServer(const String:format[], {Handle,Float,String,_}:...);
 native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...);
 
 /**
+ * Called when a server-only command is invoked.  
+ *
+ * @return				A Result value.  Not handling the command
+ *						means that Source will report it as "not found."
+ */
+functag SrvCmd Action:public();
+
+/**
+ * Creates a server-only console command, or hooks an already existing one.  
+ *
+ * @param cmd			Name of the command to hook or create.
+ * @param callback		A function to use as a callback for when the command is invoked.
+ * @param description	Optional description to use for command creation.
+ * @param flags			Optional flags to use for command creation.
+ * @noreturn
+ */
+native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:description[]="", flags=0);
+
+#if 0
+/**
+ * Called when a generic console command is invoked.
+ *
+ * @param client		Index of the client, or 0 from the server.
+ * @return				A Result value.  Not handling the command
+ *						means that Source will report it as "not found."
+ */
+functag ConCmd Action:public(client);
+
+/**
+ * Creates a console command, or hooks an already existing one.
+ *
+ * @param cmd			Name of the command to hook or create.
+ * @param callback		A function to use as a callback for when the command is invoked.
+ * @param description	Optional description to use for command creation.
+ * @param flags			Optional flags to use for command creation.
+ * @noreturn
+ */
+native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:description[]="", flags=0);
+
+/**
+ * Hooks a specific client-only command.
+ *
+ * @param cmd			String to match against the beginning of each client command.
+ * @param callback		A function to use as a callback for when the command is invoked.
+ * @param description	Optional description string to use for help.
+ * @noreturn
+ */
+native RegClientCmd(const String:cmd[], ConCmd:callback, const String:description[]="");
+
+/**
+ * Creates a console command as an administrative command.  If the command does not exist,
+ * it is created.  This command cannot be used to create duplicate admin commands.
+ *
+ * @param cmd			String containing command to register.
+ * @param callback		A function to use as a callback for when the command is invoked.
+ * @param adminflags	Administrative flags (bitstring) to use for permissions.
+ * @param group			String containing the command group to use.  If empty,
+ * 						the plugin's filename will be used instead.
+ * @param description	Optional description to use for help.
+ * @param flags			Optional console flags.
+ * @noreturn
+ * @error				If this command has already been registered as an admin command.
+ */
+native RegAdminCmd(const String:cmd[], 
+						ConCmd:callback, 
+						adminflags, 
+						const String:group[]="", 
+						const String:description[]="", 
+						flags=0);
+#endif
+
+/**
  * Creates a new console variable.
  *
  * @param name			Name of new convar.

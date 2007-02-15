@@ -15,6 +15,7 @@
 #include "sourcemm_api.h"
 #include "HandleSys.h"
 #include "CConVarManager.h"
+#include "CConCmdManager.h"
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
@@ -322,6 +323,25 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
+{
+	char *name,*help;
+	IPluginFunction *pFunction;
+
+	pContext->LocalToString(params[1], &name);
+	pContext->LocalToString(params[3], &help);
+	pFunction = pContext->GetFunctionById(params[2]);
+
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+	}
+
+	g_ConCmds.AddServerCommand(pFunction, name, help, params[4]);
+
+	return 1;
+}
+
 REGISTER_NATIVES(convarNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -342,5 +362,6 @@ REGISTER_NATIVES(convarNatives)
 	{"GetConVarMin",		sm_GetConVarMin},
 	{"GetConVarMax",		sm_GetConVarMax},
 	{"ResetConVar",			sm_ResetConVar},
+	{"RegServerCmd",		sm_RegServerCmd},
 	{NULL,					NULL}
 };
