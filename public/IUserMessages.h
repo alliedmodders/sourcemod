@@ -111,6 +111,16 @@ namespace SourceMod
 		virtual bool HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false) =0;
 
 		/**
+		 * @brief Unhooks a user message.
+		 *
+		 * @param msg_id		Message Id.
+		 * @param pListener		Pointer to an IUserMessageListener.
+		 * @param intercept		If true, removed message will from interception pool rather than normal hook pool.
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false) =0;
+
+		/**
 		 * @brief Wrapper around UserMessageBegin for more options.
 		 * 
 		 * @param mgs_id		Message Id.

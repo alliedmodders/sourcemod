@@ -39,24 +39,28 @@ native UserMsg:GetUserMessageId(const String:msg[]);
 /**
  * Starts a usermessage (network message).
  * @note Only one message can be active at a time.
+ * @note It is illegal to send any message while a non-intercept hook is in progress.
  *
  * @param msgname		Message name to start.
  * @param clients		Array containing player indexes to broadcast to.
  * @param numClients	Number of players in the array.
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
+ * @error				Invalid message name or unable to start a message.
  */
 native Handle:StartMessage(String:msgname[], clients[], numClients, flags);
 
 /**
  * Starts a usermessage (network message).
  * @note Only one message can be active at a time.
+ * @note It is illegal to send any message while a non-intercept hook is in progress.
  *
  * @param msg			Message index to start.
  * @param clients		Array containing player indexes to broadcast to.
  * @param numClients	Number of players in the array.
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
+ * @error				Invalid message name or unable to start a message.
  */
 native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags);
 
@@ -68,7 +72,72 @@ native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags);
 native EndMessage();
 
 /**
+ * @brief Called when a message is hooked
+ *
+ * @param msg_id		Message index.
+ * @param players		Array containing player indexes.
+ * @param playersNum	Number of players in the array.
+ * @param reliable		True if message is reliable, false otherwise.
+ * @param init			True if message is an initmsg, false otherwise.
+ * @return				Ignored for normal hooks.  For intercept hooks, false blocks 
+ *						the message from being sent, and true continues.
+ */
+functag MsgHook bool:public(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
+
+/**
+ * @brief Hooks a user message.
+ *
+ * @param msg_id		Message index.
+ * @param hook			Function to use as a hook.
+ * @param intercept		If intercept is true, message will be fully intercepted,
+ * 						allowing the user to block the message.  Otherwise,
+ *						the hook is normal and ignores the return value.
+ * @noreturn
+ * @error				Invalid message index.
+ */
+native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
+
+/**
+ * @brief Removes one usermessage hook.
+ *
+ * @param msg_id		Message index.
+ * @param hook			Function used for the hook.
+ * @param intercept		Specifies whether the hook was an intercept hook or not.
+ * @noreturn
+ * @error				Invalid message index.
+ */
+native UnHookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
+
+/**
+ * @brief Called when a message is finished sending.
+ *
+ * @param msg_id		Message index.
+ */
+functag MsgSentNotify public(UserMsg:msg_id);
+
+/**
+ * @brief Notifies when a message has finished sending.
+ *
+ * @param msg_id		Message index.
+ * @param notify		Notification function.
+ * @noreturn
+ * @error				Invalid message index.
+ */
+native NotifyUserMessage(UserMsg:msg_id, MsgSentNotify:notify);
+
+/**
+ * @brief Removes a user message notification.
+ *
+ * @param msg_id		Message index.
+ * @param notify		Notification function.
+ * @noreturn
+ * @error				Invalid message index.
+ */
+native RemoveNotifyUserMessage(UserMsg:msg_id, MsgSentNotify:notify);
+
+/**
  * Starts a usermessage (network message) that broadcasts to all clients.
+ * @note See StartMessage or StartMessageEx().
  *
  * @param msgname		Message name to start.
  * @param flags			Optional flags to set.
@@ -92,6 +161,7 @@ stock Handle:StartMessageAll(String:msgname[], flags=0)
 
 /**
  * Starts a simpler usermessage (network message) for one client.
+ * @note See StartMessage or StartMessageEx().
  *
  * @param msgname		Message name to start.
  * @param client		Client to send to.
