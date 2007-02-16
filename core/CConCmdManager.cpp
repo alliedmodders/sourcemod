@@ -40,6 +40,7 @@ void CConCmdManager::OnSourceModAllInitialized()
 
 void CConCmdManager::OnSourceModShutdown()
 {
+	/* All commands should already be removed by the time we're done */
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &CConCmdManager::SetCommandClient, false);
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
 	g_PluginSys.RemovePluginsListener(this);
@@ -53,6 +54,7 @@ void CConCmdManager::OnPluginLoaded(IPlugin *plugin)
 void CConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 {
 	CmdList *pList;
+	List<ConCmdInfo *> removed;
 	if (plugin->GetProperty("CommandList", (void **)&pList, true))
 	{
 		CmdList::iterator iter;
@@ -65,14 +67,25 @@ void CConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 				|| cmd.type == Cmd_Console)
 			{
 				ConCmdInfo *pInfo = cmd.pInfo;
+				/* See if this is being removed */
+				if (removed.find(pInfo) != removed.end())
+				{
+					continue;
+				}
 				/* See if there are still hooks */
 				if (pInfo->srvhooks
 					&& pInfo->srvhooks->GetFunctionCount())
 				{
 					continue;
 				}
+				if (pInfo->conhooks
+					&& pInfo->conhooks->GetFunctionCount())
+				{
+					continue;
+				}
 				/* Remove the command */
 				RemoveConCmd(pInfo);
+				removed.push_back(pInfo);
 			}
 		}
 		delete pList;
@@ -89,12 +102,39 @@ void CConCmdManager::SetCommandClient(int client)
 	m_CmdClient = client + 1;
 }
 
+ResultType CConCmdManager::DispatchClientCommand(int client, ResultType type)
+{
+	const char *cmd = engine->Cmd_Argv(0);
+	int args = engine->Cmd_Argc() - 1;
+
+	ConCmdInfo *pInfo;
+	if (sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
+	{
+		cell_t result = type;
+		if (pInfo->conhooks && pInfo->conhooks->GetFunctionCount())
+		{
+			pInfo->conhooks->PushCell(client);
+			pInfo->conhooks->PushCell(args);
+			pInfo->conhooks->Execute(&result);
+		}
+		if (result >= Pl_Stop)
+		{
+			return Pl_Stop;
+		}
+		type = (ResultType)result;
+	}
+
+	return type;
+}
+
 void CConCmdManager::InternalDispatch()
 {
-	if (m_CmdClient)
-	{
-		return;
-	}
+	/**
+	 * Note: Console commands will EITHER go through IServerGameDLL::ClientCommand,
+	 * OR this dispatch.  They will NEVER go through both.
+	 * -- 
+	 * Whether or not it goes through the callback is determined by FCVAR_GAMEDLL
+	 */
 
 	const char *cmd = engine->Cmd_Argv(0);
 	ConCmdInfo *pInfo;
@@ -104,9 +144,33 @@ void CConCmdManager::InternalDispatch()
 	}
 
 	cell_t result = Pl_Continue;
-	if (pInfo->srvhooks)
+	int args = engine->Cmd_Argc() - 1;
+
+	if (m_CmdClient == 0)
 	{
-		pInfo->srvhooks->Execute(&result);
+		if (pInfo->srvhooks && pInfo->srvhooks->GetFunctionCount())
+		{
+			pInfo->srvhooks->PushCell(args);
+			pInfo->srvhooks->Execute(&result);
+		}
+	
+		/* Check if there's an early stop */
+		if (result >= Pl_Stop)
+		{
+			if (!pInfo->sourceMod)
+			{
+				RETURN_META(MRES_SUPERCEDE);
+			}
+			return;
+		}
+	}
+
+	/* Execute console command hooks */
+	if (pInfo->conhooks && pInfo->conhooks->GetFunctionCount())
+	{
+		pInfo->conhooks->PushCell(m_CmdClient);
+		pInfo->conhooks->PushCell(args);
+		pInfo->conhooks->Execute(&result);
 	}
 
 	if (result >= Pl_Handled)
@@ -117,6 +181,34 @@ void CConCmdManager::InternalDispatch()
 		}
 		return;
 	}
+}
+
+void CConCmdManager::AddConsoleCommand(IPluginFunction *pFunction, 
+									   const char *name, 
+									   const char *description, 
+									   int flags)
+{
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+
+	if (!pInfo->conhooks)
+	{
+		pInfo->conhooks = g_Forwards.CreateForwardEx(NULL, ET_Hook, 2, NULL, Param_Cell, Param_Cell);
+	}
+
+	pInfo->conhooks->AddFunction(pFunction);
+
+	/* Add to the plugin */
+	CmdList *pList;
+	IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+	if (!pPlugin->GetProperty("CommandList", (void **)&pList))
+	{
+		pList = new CmdList();
+		pPlugin->SetProperty("CommandList", pList);
+	}
+	PlCmdInfo info;
+	info.pInfo = pInfo;
+	info.type = Cmd_Console;
+	pList->push_back(info);
 }
 
 void CConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
@@ -144,7 +236,7 @@ void CConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	}
 	PlCmdInfo info;
 	info.pInfo = pInfo;
-	info.type = Cmd_Console;
+	info.type = Cmd_Server;
 	pList->push_back(info);
 }
 
@@ -310,8 +402,7 @@ void CConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			}
 			name = cmd.pInfo->pCmd->GetName();
 			help = cmd.pInfo->pCmd->GetHelpText();
-			g_RootMenu.ConsolePrint(" %-17.16s %-12.11s %s", name, type, help);
-				
+			g_RootMenu.ConsolePrint(" %-17.16s %-12.11s %s", name, type, help);		
 		}
 
 		return;

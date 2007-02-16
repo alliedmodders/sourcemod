@@ -342,6 +342,25 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
+{
+	char *name,*help;
+	IPluginFunction *pFunction;
+
+	pContext->LocalToString(params[1], &name);
+	pContext->LocalToString(params[3], &help);
+	pFunction = pContext->GetFunctionById(params[2]);
+
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+	}
+
+	g_ConCmds.AddConsoleCommand(pFunction, name, help, params[4]);
+
+	return 1;
+}
+
 REGISTER_NATIVES(convarNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -363,5 +382,6 @@ REGISTER_NATIVES(convarNatives)
 	{"GetConVarMax",		sm_GetConVarMax},
 	{"ResetConVar",			sm_ResetConVar},
 	{"RegServerCmd",		sm_RegServerCmd},
+	{"RegConsoleCmd",		sm_RegConsoleCmd},
 	{NULL,					NULL}
 };

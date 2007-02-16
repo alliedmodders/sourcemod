@@ -38,10 +38,12 @@ struct ConCmdInfo
 		sourceMod = false;
 		pCmd = NULL;
 		srvhooks = NULL;
+		conhooks = NULL;
 	}
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	IChangeableForward *srvhooks;	/**< Hooks on this name as a server command */
+	IChangeableForward *conhooks;	/**< Hooks on this name as a console command */
 };
 
 class CConCmdManager :
@@ -63,6 +65,8 @@ public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *command, unsigned int argcount);
 public:
 	void AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	void AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	ResultType DispatchClientCommand(int client, ResultType type);
 private:
 	void InternalDispatch();
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);

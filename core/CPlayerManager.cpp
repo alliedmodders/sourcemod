@@ -15,6 +15,7 @@
 #include "ForwardSys.h"
 #include "ShareSys.h"
 #include "AdminCache.h"
+#include "CConCmdManager.h"
 
 CPlayerManager g_Players;
 
@@ -51,15 +52,14 @@ void CPlayerManager::OnSourceModAllInitialized()
 
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
 	ParamType p2[] = {Param_Cell};
-	ParamType p3[] = {Param_Cell, Param_String};
 
 	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_Event, 3, p1);
 	m_clputinserver = g_Forwards.CreateForward("OnClientPutInServer", ET_Ignore, 1, p2);
 	m_cldisconnect = g_Forwards.CreateForward("OnClientDisconnect", ET_Ignore, 1, p2);
 	m_cldisconnect_post = g_Forwards.CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
-	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 1, p2);
+	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 2, NULL, Param_Cell, Param_Cell);
 	m_clinfochanged = g_Forwards.CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
-	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, p3);
+	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
 }
 
 void CPlayerManager::OnSourceModShutdown()
@@ -197,6 +197,7 @@ bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, cons
 		g_SourceMod.SetAuthChecking(true);
 	}
 
+	//:todo: this must meta return
 	return (res) ? true : false;
 }
 
@@ -328,10 +329,26 @@ void CPlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 
 void CPlayerManager::OnClientCommand(edict_t *pEntity)
 {
-	cell_t res;
+	cell_t res = Pl_Continue;
+	int client = engine->IndexOfEdict(pEntity);
 
-	m_clcommand->PushCell(engine->IndexOfEdict(pEntity));
+	int args = engine->Cmd_Argc() - 1;
+
+	m_clcommand->PushCell(client);
+	m_clcommand->PushCell(args);
 	m_clcommand->Execute(&res, NULL);
+
+	if (res >= Pl_Stop)
+	{
+		RETURN_META(MRES_SUPERCEDE);
+	}
+
+	res = g_ConCmds.DispatchClientCommand(client, (ResultType)res);
+
+	if (res >= Pl_Handled)
+	{
+		RETURN_META(MRES_SUPERCEDE);
+	}
 }
 
 void CPlayerManager::OnClientSettingsChanged(edict_t *pEntity)

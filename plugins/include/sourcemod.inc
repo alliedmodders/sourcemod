@@ -128,7 +128,7 @@ forward OnClientDisconnect_Post(client);
  * @param client		Player index.
  * @noreturn
  */
-forward OnClientCommand(client);
+forward OnClientCommand(client, argCount);
 
 /**
  * Called whenever the client's settings are changed.

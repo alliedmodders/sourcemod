@@ -79,7 +79,7 @@ native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...
  * @return				A Result value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag SrvCmd Action:public();
+functag SrvCmd Action:public(argCount);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  
@@ -92,7 +92,6 @@ functag SrvCmd Action:public();
  */
 native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:description[]="", flags=0);
 
-#if 0
 /**
  * Called when a generic console command is invoked.
  *
@@ -100,7 +99,7 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
  * @return				A Result value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag ConCmd Action:public(client);
+functag ConCmd Action:public(client, argCount);
 
 /**
  * Creates a console command, or hooks an already existing one.
@@ -113,6 +112,7 @@ functag ConCmd Action:public(client);
  */
 native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:description[]="", flags=0);
 
+#if 0
 /**
  * Hooks a specific client-only command.
  *
