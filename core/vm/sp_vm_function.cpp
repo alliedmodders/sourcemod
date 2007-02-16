@@ -25,6 +25,7 @@ void CFunction::Set(uint32_t code_addr, IPluginContext *plugin)
 	m_pContext = plugin;
 	m_curparam = 0;
 	m_errorstate = SP_ERROR_NONE;
+	m_Invalid = false;
 }
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
@@ -46,6 +47,7 @@ CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin) :
 	m_codeaddr(code_addr), m_pContext(plugin), m_curparam(0), 
 	m_errorstate(SP_ERROR_NONE)
 {
+	m_Invalid = false;
 }
 
 int CFunction::PushCell(cell_t cell)

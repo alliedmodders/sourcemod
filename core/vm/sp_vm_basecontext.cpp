@@ -66,14 +66,19 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	}
 }
 
-void BaseContext::FlushFunctionCache()
+void BaseContext::FlushFunctionCache(bool remove)
 {
 	if (m_pub_funcs)
 	{
 		for (uint32_t i=0; i<ctx->plugin->info.publics_num; i++)
 		{
-			delete m_pub_funcs[i];
-			m_pub_funcs[i] = NULL;
+			if (remove)
+			{
+				delete m_pub_funcs[i];
+				m_pub_funcs[i] = NULL;
+			} else if (m_pub_funcs[i]) {
+				m_pub_funcs[i]->Invalidate();
+			}
 		}
 	}
 
@@ -81,15 +86,20 @@ void BaseContext::FlushFunctionCache()
 	{
 		for (unsigned int i=0; i<m_funcsnum; i++)
 		{
-			delete m_priv_funcs[i];
-			m_priv_funcs[i] = NULL;
+			if (remove)
+			{
+				delete m_priv_funcs[i];
+				m_priv_funcs[i] = NULL;
+			} else if (m_priv_funcs[i]) {
+				m_priv_funcs[i]->Invalidate();
+			}
 		}
 	}
 }
 
 BaseContext::~BaseContext()
 {
-	FlushFunctionCache();
+	FlushFunctionCache(true);
 	delete [] m_pub_funcs;
 	m_pub_funcs = NULL;
 	delete [] m_priv_funcs;
@@ -105,7 +115,7 @@ void BaseContext::SetContext(sp_context_t *_ctx)
 	ctx = _ctx;
 	ctx->context = this;
 	ctx->dbreak = GlobalDebugBreak;
-	FlushFunctionCache();
+	FlushFunctionCache(false);
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()
@@ -850,6 +860,8 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		{
 			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, this);
 			pFunc = m_pub_funcs[func_id];
+		} else if (pFunc->IsInvalidated()) {
+			pFunc->Set(ctx->publics[func_id].code_offs, this);
 		}
 	} else {
 		/* :TODO: currently not used */
@@ -892,6 +904,15 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 			m_pub_funcs[index] = new CFunction(pub->code_offs, this);
 		}
 		pFunc = m_pub_funcs[index];
+	} else if (pFunc->IsInvalidated()) {
+		sp_public_t *pub = NULL;
+		GetPublicByIndex(index, &pub);
+		if (pub)
+		{
+			pFunc->Set(pub->code_offs, this);
+		} else {
+			pFunc = NULL;
+		}
 	}
 
 	return pFunc;

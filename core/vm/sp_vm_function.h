@@ -46,6 +46,14 @@ public:
 	virtual void Cancel();
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
 	virtual IPluginContext *GetParentContext();
+	inline bool IsInvalidated()
+	{
+		return m_Invalid;
+	}
+	inline void Invalidate()
+	{
+		m_Invalid = true;
+	}
 public:
 	void Set(uint32_t code_addr, IPluginContext *plugin);
 private:
@@ -63,6 +71,7 @@ private:
 	unsigned int m_curparam;
 	int m_errorstate;
 	CFunction *m_pNext;
+	bool m_Invalid;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

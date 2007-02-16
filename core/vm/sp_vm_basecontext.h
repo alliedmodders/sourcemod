@@ -79,7 +79,7 @@ namespace SourcePawn
 		void SetContext(sp_context_t *_ctx);
 	private:
 		void SetErrorMessage(const char *msg, va_list ap);
-		void FlushFunctionCache();
+		void FlushFunctionCache(bool remove);
 	private:
 		sp_context_t *ctx;
 #if defined SOURCEMOD_BUILD
