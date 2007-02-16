@@ -10,7 +10,7 @@
  * may change at any time.  To view the latest information, see:
  *   http://www.sourcemod.net/license.php
  *
- * Version: $Id: sourcemod.inc 432 2007-02-02 22:47:14Z damagedsoul $
+ * Version: $Id$
  */
 
 #if defined _sourcemod_included
