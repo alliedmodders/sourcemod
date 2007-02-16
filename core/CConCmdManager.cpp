@@ -245,22 +245,16 @@ void CConCmdManager::AddToCmdList(ConCmdInfo *info)
 	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
 	ConCmdInfo *pInfo;
 	bool inserted = false;
-	const char *orig;
+	const char *orig = NULL;
 
-	if (info->pCmd)
-	{
-		orig = info->pCmd->GetName();
-	}
+	orig = info->pCmd->GetName();
 
 	/* Insert this into the help list, SORTED alphabetically. */
 	while (iter != m_CmdList.end())
 	{
 		const char *cmd = NULL;
 		pInfo = (*iter);
-		if (pInfo->pCmd)
-		{
-			cmd = pInfo->pCmd->GetName();
-		}
+		cmd = pInfo->pCmd->GetName();
 		if (strcmp(orig, cmd) < 0)
 		{
 			m_CmdList.insert(iter, info);
@@ -278,7 +272,9 @@ void CConCmdManager::AddToCmdList(ConCmdInfo *info)
 
 void CConCmdManager::RemoveConCmd(ConCmdInfo *info)
 {
-	/* Remove console-specific information */
+	/* Remove console-specific information
+	 * This should always be true as of right now
+	 */
 	if (info->pCmd)
 	{
 		/* Remove from the trie */

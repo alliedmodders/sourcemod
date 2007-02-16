@@ -21,9 +21,10 @@ HL2LIB = $(HL2SDK)/linux_sdk
 
 OBJECTS = sourcemm_api.cpp sourcemod.cpp AdminCache.cpp CConVarManager.cpp CDataPack.cpp \
           CDbgReporter.cpp CLogger.cpp CPlayerManager.cpp CTextParsers.cpp CTranslator.cpp \
+	  CConCmdManager.cpp \
 	  sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_trie.cpp \
 	  sm_stringutil.cpp smn_filesystem.cpp smn_float.cpp smn_handles.cpp \
-	  smn_player.cpp smn_string.cpp smn_textparse.cpp smn_convar.cpp smn_admin.cpp \
+	  smn_player.cpp smn_string.cpp smn_textparse.cpp smn_console.cpp smn_admin.cpp \
 	  smn_datapacks.cpp smn_lang.cpp \
 	  systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
 	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp \
