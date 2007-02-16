@@ -114,16 +114,6 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
 
 #if 0
 /**
- * Hooks a specific client-only command.
- *
- * @param cmd			String to match against the beginning of each client command.
- * @param callback		A function to use as a callback for when the command is invoked.
- * @param description	Optional description string to use for help.
- * @noreturn
- */
-native RegClientCmd(const String:cmd[], ConCmd:callback, const String:description[]="");
-
-/**
  * Creates a console command as an administrative command.  If the command does not exist,
  * it is created.  This command cannot be used to create duplicate admin commands.
  *
