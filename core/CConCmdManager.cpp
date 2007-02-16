@@ -266,4 +266,56 @@ ConCmdInfo *CConCmdManager::AddOrFindCommand(const char *name, const char *descr
 
 void CConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
 {
+	if (argcount >= 3)
+	{
+		const char *text = engine->Cmd_Argv(2);
+		int id = atoi(text);
+		CPlugin *pPlugin = g_PluginSys.GetPluginByOrder(id);
+
+		if (!pPlugin)
+		{
+			g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
+			return;
+		}
+
+		CmdList *pList;
+		if (!pPlugin->GetProperty("CommandList", (void **)&pList))
+		{
+			g_RootMenu.ConsolePrint("[SM] No commands found for %s", pPlugin->GetFilename());
+			return;
+		}
+		if (!pList->size())
+		{
+			g_RootMenu.ConsolePrint("[SM] No commands found for %s", pPlugin->GetFilename());
+			return;
+		}
+
+		CmdList::iterator iter;
+		const char *type = NULL;
+		const char *name;
+		const char *help;
+		g_RootMenu.ConsolePrint(" %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
+		for (iter=pList->begin();
+			 iter!=pList->end();
+			 iter++)
+		{
+			PlCmdInfo &cmd = (*iter);
+			if (cmd.type == Cmd_Server)
+			{
+				type = "server";
+			} else if (cmd.type == Cmd_Console) {
+				type = "console";
+			} else if (cmd.type == Cmd_Client) {
+				type = "client";
+			}
+			name = cmd.pInfo->pCmd->GetName();
+			help = cmd.pInfo->pCmd->GetHelpText();
+			g_RootMenu.ConsolePrint(" %-17.16s %-12.11s %s", name, type, help);
+				
+		}
+
+		return;
+	}
+
+	g_RootMenu.ConsolePrint("[SM] Usage: sm cmds <plugin #>");
 }

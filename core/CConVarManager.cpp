@@ -122,7 +122,7 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		// If invalid plugin index...
 		if (num < 1 || num > (int)g_PluginSys.GetPluginCount())
 		{
-			g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
+			g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", num);
 			return;
 		}
 
@@ -154,7 +154,7 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 	}
 
 	// Display usage of subcommand
-	g_RootMenu.ConsolePrint("[SM] Usage: sm convars <#>");
+	g_RootMenu.ConsolePrint("[SM] Usage: sm convars <plugin #>");
 }
 
 Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *helpText, int flags, bool hasMin, float min, bool hasMax, float max)
