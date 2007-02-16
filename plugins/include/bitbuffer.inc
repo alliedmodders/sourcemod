@@ -12,49 +12,11 @@
  *
  * Version: $Id$
  */
- 
-#if defined _eventsmsgs_included
+
+#if defined _bitbuffer_included
  #endinput
 #endif
-#define _eventsmsgs_included
-
-enum UserMsg
-{
-	INVALID_MESSAGE_ID = -1,
-};
-
-#define USERMSG_PASSTHRU		(1<<0)		/**< Message will pass through other SourceMM plugins */
-#define USERMSG_PASSTHRU_ALL	(1<<1)		/**< Message will pass through other SourceMM plugins AND SourceMod */
-
-//:NOTE: none of this is implemented yet, remove this notice and add to sourcemod.inc once it's done!
-//:NOTE: for DS, add main event natives below EndMessage but above bf_ stuff
-
-/**
- * Returns the ID of a given message, or -1 on failure.
- *
- * @param msg			String containing message name (case sensitive).
- * @return				A message index, or INVALID_MESSAGE_ID on failure.
- */
-native UserMsg:GetUserMessageId(const String:msg[]);
-
-/**
- * Starts a usermessage (network message).
- * @note Only one message can be active at a time.
- *
- * @param msg			Message index to start.  
- * @param clients		Array containing player indexes to broadcast to.
- * @param numClients	Number of players in the array.
- * @return				A handle to a bf_write bit packing structure, or
- *						INVALID_HANDLE on failure.
- */
-native Handle:StartMessage(UserMsg:msg, clients[], numClients, flags);
-
-/**
- * Ends a previously started user message (network message).
- *
- * @noreturn
- */
-native EndMessage();
+#define _bitbuffer_included
 
 /** 
  * Writes a single bit to a writable bitbuffer (bf_write).
@@ -197,44 +159,3 @@ native BfWriteVecNormal(Handle:bf, Float:vec[3]);
  * @error				Invalid or incorrect Handle.
  */
 native BfWriteAngles(Handle:bf, Float:angles[3]);
-
-/**
- * Starts a usermessage (network message) that broadcasts to all clients.
- *
- * @param msg			Message index to start.
- * @param flags			Optional flags to set.
- * @return				A handle to a bf_write bit packing structure, or
- *						INVALID_HANDLE on failure.
- */
-stock Handle:StartMessageAll(UserMsg:msg, flags=0)
-{
-	new maxClients = GetMaxClients();
-	new total = 0;
-	new clients[maxClients];
-	for (new i=1; i<=maxClients; i++)
-	{
-		if (IsClientConnected(i))
-		{
-			clients[total++] = i;
-		}
-	}
-	return StartMessage(msg, clients, total, flags);
-}
-
-/**
- * Starts a simpler usermessage (network message) for one client.
- *
- * @param msg			Message index to start.
- * @param client		Client to send to.
- * @param flags			Optional flags to set.
- * @return				A handle to a bf_write bit packing structure, or
- *						INVALID_HANDLE on failure.
- */
-stock Handle:StartMessageOne(UserMsg:msg, client, flags=0)
-{
-	new players[1];
-	
-	players[0] = client;
-	
-	return StartMsesage(msg, players, 1, flags);
-}

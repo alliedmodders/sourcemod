@@ -101,5 +101,6 @@ private:
 };
 
 extern SourceModBase g_SourceMod;
+extern HandleType_t g_WrBitBufType;
 
 #endif //_INCLUDE_SOURCEMOD_GLOBALHEADER_H_

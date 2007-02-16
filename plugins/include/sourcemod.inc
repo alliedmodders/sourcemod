@@ -34,6 +34,8 @@ struct Plugin
 #include <admin>
 #include <files>
 #include <console>
+#include <usermessages>
+#include <bitbuffer>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
