@@ -794,3 +794,9 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 	return (len >= maxlength) ? (maxlength - 1) : len;
 }
 
+char *sm_strdup(const char *str)
+{
+	char *ptr = new char[strlen(str)+1];
+	strcpy(ptr, str);
+	return ptr;
+}

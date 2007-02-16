@@ -1,5 +1,19 @@
+/**
+* ===============================================================
+* SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+* ===============================================================
+*
+* This file is not open source and may not be copied without explicit
+* written permission of AlliedModders LLC.  This file may not be redistributed 
+* in whole or significant part.
+* For information, see LICENSE.txt or http://www.sourcemod.net/license.php
+*
+* Version: $Id$
+*/
+
 #include "CConCmdManager.h"
 #include "sm_srvcmds.h"
+#include "sm_stringutil.h"
 
 CConCmdManager g_ConCmds;
 
@@ -13,13 +27,6 @@ struct PlCmdInfo
 };
 
 typedef List<PlCmdInfo> CmdList;
-
-char *sm_strdup(const char *str)
-{
-	char *ptr = new char[strlen(str)+1];
-	strcpy(ptr, str);
-	return ptr;
-}
 
 CConCmdManager::CConCmdManager()
 {
