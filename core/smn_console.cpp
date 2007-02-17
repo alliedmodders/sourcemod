@@ -391,6 +391,29 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
+{
+	return engine->Cmd_Argc() - 1;
+}
+
+static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
+{
+	const char *arg = engine->Cmd_Argv(params[1]);
+	
+	pContext->StringToLocalUTF8(params[2], params[3], arg, NULL);
+
+	return 1;
+}
+
+static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
+{
+	const char *args = engine->Cmd_Args();
+
+	pContext->StringToLocalUTF8(params[1], params[2], args, NULL);
+
+	return 1;
+}
+
 REGISTER_NATIVES(convarNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -413,5 +436,8 @@ REGISTER_NATIVES(convarNatives)
 	{"ResetConVar",			sm_ResetConVar},
 	{"RegServerCmd",		sm_RegServerCmd},
 	{"RegConsoleCmd",		sm_RegConsoleCmd},
+	{"GetCmdArgString",		sm_GetCmdArgString},
+	{"GetCmdArgs",			sm_GetCmdArgs},
+	{"GetCmdArg",			sm_GetCmdArg},
 	{NULL,					NULL}
 };

@@ -131,6 +131,36 @@ native RegAdminCmd(const String:cmd[],
 					const String:description[]="",
 					const String:group[]="",
 					flags=0);
+					
+/**
+ * Returns the number of arguments from the current console or server command.
+ * @note Unlike the HL2 engine call, this does not include the command itself.
+ *
+ * @return				Number of arguments to the current command.
+ */
+native GetCmdArgs();
+
+/**
+ * Retrieves a command argument given its index, from the current console or 
+ * server command.
+ * @note Argument indexes start at 1; 0 retrieves the command name.
+ *
+ * @param argnum		Argument number to retrieve.
+ * @param buffer		Buffer to use for storing the string.
+ * @param maxlength		Maximum length of the buffer.
+ * @noreturn
+ */
+native GetCmdArg(argnum, String:buffer[], maxlength);
+
+/**
+ * Retrieves the entire command argument string in one lump from the current 
+ * console or server command.
+ *
+ * @param buffer		Buffer to use for storing the string.
+ * @param maxlength		Maximum length of the buffer.
+ * @noreturn
+ */
+native GetCmdArgString(String:buffer[], maxlength);
 
 /**
  * Creates a new console variable.
