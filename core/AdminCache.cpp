@@ -17,6 +17,7 @@
 #include "ShareSys.h"
 #include "ForwardSys.h"
 #include "CPlayerManager.h"
+#include "CConCmdManager.h"
 
 AdminCache g_Admins;
 
@@ -93,6 +94,8 @@ void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits
 	}
 
 	sm_trie_insert(pTrie, cmd, (void *)(unsigned int)flags);
+
+	g_ConCmds.UpdateAdminCmdFlags(cmd, type, flags);
 }
 
 bool AdminCache::GetCommandOverride(const char *cmd, OverrideType type, FlagBits *pFlags)
@@ -138,9 +141,9 @@ void AdminCache::_UnsetCommandGroupOverride(const char *group)
 		return;
 	}
 
-	/* :TODO: Notify command system */
-
 	sm_trie_delete(m_pCmdGrpOverrides, group);
+
+	g_ConCmds.UpdateAdminCmdFlags(group, Override_CommandGroup, 0);
 }
 
 void AdminCache::_UnsetCommandOverride(const char *cmd)
@@ -150,9 +153,9 @@ void AdminCache::_UnsetCommandOverride(const char *cmd)
 		return;
 	}
 
-	/* :TODO: Notify command system */
-
 	sm_trie_delete(m_pCmdOverrides, cmd);
+
+	g_ConCmds.UpdateAdminCmdFlags(cmd, Override_Command, 0);
 }
 
 void AdminCache::DumpCommandOverrideCache(OverrideType type)

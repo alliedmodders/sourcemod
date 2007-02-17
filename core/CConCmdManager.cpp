@@ -15,6 +15,8 @@
 #include "sm_srvcmds.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
+#include "CPlayerManager.h"
+#include "CTranslator.h"
 
 CConCmdManager g_ConCmds;
 
@@ -149,10 +151,13 @@ ResultType CConCmdManager::DispatchClientCommand(int client, ResultType type)
 			 iter++)
 		{
 			pHook = (*iter);
-			if (pHook->pAdmin
-				&& pHook->pAdmin->eflags)
+			if (pHook->pAdmin && !CheckAccess(client, cmd, pHook->pAdmin))
 			{
-				/* :TODO: admin calculations */
+				if (result < Pl_Handled)
+				{
+					result = Pl_Handled;
+				}
+				continue;
 			}
 			pHook->pf->PushCell(client);
 			pHook->pf->PushCell(args);
@@ -241,9 +246,13 @@ void CConCmdManager::InternalDispatch()
 			pHook = (*iter);
 			if (m_CmdClient 
 				&& pHook->pAdmin
-				&& pHook->pAdmin->eflags)
+				&& !CheckAccess(m_CmdClient, cmd, pHook->pAdmin))
 			{
-				/* :TODO: check admin stuff */
+				if (result < Pl_Handled)
+				{
+					result = Pl_Handled;
+				}
+				continue;
 			}
 			pHook->pf->PushCell(m_CmdClient);
 			pHook->pf->PushCell(args);
@@ -271,9 +280,67 @@ void CConCmdManager::InternalDispatch()
 	}
 }
 
-ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args)
+bool CConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
 {
-	return Pl_Continue;
+	FlagBits cmdflags = pAdmin->eflags;
+	if (cmdflags == 0)
+	{
+		return true;
+	}
+
+	CPlayer *player = g_Players.GetPlayerByIndex(client);
+	if (!player)
+	{
+		return false;
+	}
+
+	AdminId adm = player->GetAdminId();
+	if (adm != INVALID_ADMIN_ID)
+	{
+		FlagBits bits = g_Admins.GetAdminFlags(adm, Access_Effective);
+
+		/* root knows all, WHOA */
+		if ((bits & ADMFLAG_ROOT) == ADMFLAG_ROOT)
+		{
+			return true;
+		}
+
+		/* See if our other flags match */
+		if ((bits & cmdflags) != cmdflags)
+		{
+			return true;
+		}
+
+		/* Check for overrides */
+		unsigned int groups = g_Admins.GetAdminGroupCount(adm);
+		GroupId gid;
+		OverrideRule rule;
+		bool override = false;
+		for (unsigned int i=0; i<groups; i++)
+		{
+			gid = g_Admins.GetAdminGroup(adm, i, NULL);
+			/* First get group-level override */
+			override = g_Admins.GetGroupCommandOverride(gid, cmd, Override_CommandGroup, &rule);
+			/* Now get the specific command override */
+			if (g_Admins.GetGroupCommandOverride(gid, cmd, Override_Command, &rule))
+			{
+				override = true;
+			}
+			if (override)
+			{
+				if (rule == Command_Allow)
+				{
+					return true;
+				} else if (rule == Command_Deny) {
+					break;
+				}
+			}
+		}
+	}
+
+	/* If we got here, the command failed... */
+	/* :TODO: send a message to the client about this! */
+	return false;
 }
 
 void CConCmdManager::AddConsoleCommand(IPluginFunction *pFunction, 
@@ -464,6 +531,66 @@ void CConCmdManager::AddToCmdList(ConCmdInfo *info)
 	if (!inserted)
 	{
 		m_CmdList.push_back(info);
+	}
+}
+
+void CConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits)
+{
+	ConCmdInfo *pInfo;
+
+	if (type == Override_Command)
+	{
+		if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
+		{
+			return;
+		}
+
+		List<CmdHook *>::iterator iter;
+		CmdHook *pHook;
+
+		for (iter=pInfo->conhooks.begin(); iter!=pInfo->conhooks.end(); iter++)
+		{
+			pHook = (*iter);
+			if (pHook->pAdmin)
+			{
+				if (bits)
+				{
+					pHook->pAdmin->eflags = bits;
+				} else {
+					pHook->pAdmin->eflags = pHook->pAdmin->flags;
+				}
+			}
+		}
+	} else if (type == Override_CommandGroup) {
+		void *object;
+		if (!sm_trie_retrieve(m_pCmdGrps, cmd, &object))
+		{
+			return;
+		}
+		int grpid = (int)object;
+
+		/* This is bad :( loop through all commands */
+		List<ConCmdInfo *>::iterator iter;
+		CmdHook *pHook;
+		for (iter=m_CmdList.begin(); iter!=m_CmdList.end(); iter++)
+		{
+			pInfo = (*iter);
+			for (List<CmdHook *>::iterator citer=pInfo->conhooks.begin();
+				 citer!=pInfo->conhooks.end();
+				 citer++)
+			{
+				pHook = (*citer);
+				if (pHook->pAdmin && pHook->pAdmin->cmdGrpId == grpid)
+				{
+					if (bits)
+					{
+						pHook->pAdmin->eflags = bits;
+					} else {
+						pHook->pAdmin->eflags = pHook->pAdmin->flags;
+					}
+				}
+			}
+		}
 	}
 }
 

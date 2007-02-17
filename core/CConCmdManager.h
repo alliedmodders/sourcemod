@@ -98,6 +98,7 @@ public:
 						 const char *description, 
 						 int flags);
 	ResultType DispatchClientCommand(int client, ResultType type);
+	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
 private:
 	void InternalDispatch();
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
@@ -106,10 +107,11 @@ private:
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info);
 	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
+	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
 private:
 	Trie *m_pCmds;					/* command lookup */
 	Trie *m_pCmdGrps;				/* command group lookup */
-	List<ConCmdInfo *> m_CmdList;	/* command list, currently unused */
+	List<ConCmdInfo *> m_CmdList;	/* command list */
 	int m_CmdClient;				/* current client */
 	BaseStringTable m_Strings;		/* string table */
 };

@@ -16,6 +16,7 @@
 #include "HandleSys.h"
 #include "CConVarManager.h"
 #include "CConCmdManager.h"
+#include "PluginSys.h"
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
@@ -357,6 +358,35 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 	}
 
 	g_ConCmds.AddConsoleCommand(pFunction, name, help, params[4]);
+
+	return 1;
+}
+
+static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
+{
+	char *name,*help;
+	const char *group;
+	IPluginFunction *pFunction;
+	FlagBits flags = params[3];
+	int cmdflags = params[6];
+
+	pContext->LocalToString(params[1], &name);
+	pContext->LocalToString(params[4], &help);
+	pContext->LocalToString(params[5], (char **)&group);
+	pFunction = pContext->GetFunctionById(params[2]);
+
+	if (group[0] == '\0')
+	{
+		CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+		group = pPlugin->GetFilename();
+	}
+
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+	}
+
+	g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags);
 
 	return 1;
 }

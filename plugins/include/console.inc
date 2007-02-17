@@ -112,7 +112,6 @@ functag ConCmd Action:public(client, argCount);
  */
 native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:description[]="", flags=0);
 
-#if 0
 /**
  * Creates a console command as an administrative command.  If the command does not exist,
  * it is created. 
@@ -126,13 +125,12 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * @param flags			Optional console flags.
  * @noreturn
  */
-native RegAdminCmd(const String:cmd[], 
-						ConCmd:callback, 
-						adminflags, 
-						const String:group[]="", 
-						const String:description[]="", 
-						flags=0);
-#endif
+native RegAdminCmd(const String:cmd[],
+					ConCmd:callback,
+					adminflags,
+					const String:description[]="",
+					const String:group[]="",
+					flags=0);
 
 /**
  * Creates a new console variable.
