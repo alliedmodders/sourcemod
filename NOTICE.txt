@@ -2,10 +2,10 @@ We now use svn:keywords "Id" on all .c/.cpp/.h/.sp/.inc files.  Please make sure
 
 WINDOWS:
  Open your Application Data folder.  
- Windows XP/2000: C:\Documents and Settings\<user>\Application Data
- Windows Vista: 	 C:\Users\<user>\Application Data
+ Windows XP/2000:	C:\Documents and Settings\<user>\Application Data
+ Windows Vista:		C:\Users\<user>\AppData\Roaming
 
- Under Application Data, go to Subversion.  Open the "config" file with a text editor.
+ Now go to Subversion.  Open the "config" file with a text editor.
 
 LINUX: 
  Open ~/.subversion/config with your favorite text editor.
