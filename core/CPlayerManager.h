@@ -82,7 +82,6 @@ public:
 	void OnClientPutInServer(edict_t *pEntity, char const *playername);
 	void OnClientDisconnect(edict_t *pEntity);
 	void OnClientDisconnect_Post(edict_t *pEntity);
-	void OnClientAuthorized(); //:TODO: any args needed?
 	void OnClientCommand(edict_t *pEntity);
 	void OnClientSettingsChanged(edict_t *pEntity);
 public: //IPlayerManager

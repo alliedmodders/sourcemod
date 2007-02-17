@@ -195,10 +195,11 @@ bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, cons
 	{
 		m_AuthQueue[++m_AuthQueue[0]] = client;
 		g_SourceMod.SetAuthChecking(true);
+	} else {
+		RETURN_META_VALUE(MRES_SUPERCEDE, false);
 	}
 
-	//:todo: this must meta return
-	return (res) ? true : false;
+	return true;
 }
 
 bool CPlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
@@ -255,11 +256,6 @@ void CPlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playernam
 	m_PlayerCount++;
 	m_clputinserver->PushCell(client);
 	m_clputinserver->Execute(&res, NULL);
-}
-
-void CPlayerManager::OnClientAuthorized()
-{
-	//:TODO:
 }
 
 void CPlayerManager::OnClientDisconnect(edict_t *pEntity)
