@@ -37,6 +37,16 @@ enum UserMsg
 native UserMsg:GetUserMessageId(const String:msg[]);
 
 /**
+ * Retrieves the name of a message by ID.
+ *
+ * @param msg_id		Message index.
+ * @param msg			Buffer to store the name of the message.
+ * @param maxlength		Maximum length of string buffer.
+ * @return				True if message index is valid, false otherwise.
+ */
+native bool:GetUserMessageName(UserMsg:msg_id, String:msg[], maxlength);
+
+/**
  * Starts a usermessage (network message).
  * @note Only one message can be active at a time.
  * @note It is illegal to send any message while a non-intercept hook is in progress.

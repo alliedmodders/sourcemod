@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sourcemod_mm"
 	ProjectGUID="{E39527CD-7CAB-4420-97CC-DA1B93B260BC}"
 	RootNamespace="sourcemod_mm"
@@ -200,6 +200,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CGameEventManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CLogger.cpp"
 				>
 			</File>
@@ -274,6 +278,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CGameEventManager.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CLogger.h"
 				>
 			</File>
@@ -333,6 +341,10 @@
 				RelativePath="..\sourcemod.h"
 				>
 			</File>
+			<File
+				RelativePath="..\svn_version.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Interfaces"
@@ -383,10 +395,6 @@
 			</File>
 			<File
 				RelativePath="..\..\public\ITextParsers.h"
-				>
-			</File>
-			<File
-				RelativePath="..\svn_version.h"
 				>
 			</File>
 		</Filter>
@@ -651,6 +659,10 @@
 			</File>
 			<File
 				RelativePath="..\smn_datapacks.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_events.cpp"
 				>
 			</File>
 			<File
