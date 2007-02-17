@@ -170,6 +170,7 @@ static int *wqptr;              /* pointer to next entry */
   static HWND hwndFinish = 0;
 #endif
 
+SC_VDECL int glbstringread = 0;
 char g_tmpfile[_MAX_PATH] = {0};
 
 /*  "main" of the compiler
@@ -2044,6 +2045,9 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
     } /* if */
     assert(litidx==0);  /* literal queue should be empty (again) */
     initials(ident,tag,&size,dim,numdim,enumroot);/* stores values in the literal queue */
+    if (tag == pc_tag_string && (numdim == 1) && !dim[numdim-1]) {
+      slength = glbstringread;
+    }
     assert(size>=litidx);
     if (numdim==1)
       dim[0]=(int)size;
@@ -2209,6 +2213,7 @@ static int declloc(int fstatic)
   do {
     ident=iVARIABLE;
     size=1;
+    slength=0;
     numdim=0;                           /* no dimensions */
     tag=pc_addtag(NULL);
     if (lex(&val,&str)!=tSYMBOL)        /* read in (new) token */
@@ -2304,7 +2309,12 @@ static int declloc(int fstatic)
         sc_alignnext=FALSE;
       } /* if */
       cur_lit=litidx;           /* save current index in the literal table */
+      if (numdim && !dim[numdim-1])
+        size = 0;
       initials(ident,tag,&size,dim,numdim,enumroot);
+      if (tag == pc_tag_string && (numdim == 1) && !dim[numdim-1]) {
+        slength = glbstringread;
+      }
       if (size==0)
         return ident;           /* error message already given */
       if (numdim==1)

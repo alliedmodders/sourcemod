@@ -1798,6 +1798,7 @@ static const unsigned char *packedstring(const unsigned char *lptr,int flags)
 
   i=0; /* start at least significant byte */
   val=0;
+  glbstringread=1;
   while (*lptr!='\"' && *lptr!='\0') {
     if (*lptr=='\a') {          /* ignore '\a' (which was inserted at a line concatenation) */
       lptr++;
@@ -1807,6 +1808,7 @@ static const unsigned char *packedstring(const unsigned char *lptr,int flags)
     if (c>=(ucell)(1 << sCHARBITS))
       error(43);                /* character constant exceeds range */
     val |= (c << 8*i);
+    glbstringread++;
     if (i==sizeof(ucell)-(sCHARBITS/8)) {
       litadd(val);
       val=0;
@@ -2821,10 +2823,14 @@ SC_FUNC symbol *addvariable2(const char *name,cell addr,int ident,int vclass,int
     for (level=0; level<numdim; level++) {
       top=addsym(name,addr,ident,vclass,tag,uDEFINE);
       top->dim.array.length=dim[level];
-      if (tag == pc_tag_string && level == numdim - 1)
-        top->dim.array.slength=slength;
-	  else
+      if (tag == pc_tag_string && level == numdim - 1) {
+        if (slength == 0)
+          top->dim.array.length=dim[level] * sizeof(cell);
+        else
+          top->dim.array.slength=slength;
+      } else {
         top->dim.array.slength=0;
+      }
       top->dim.array.level=(short)(numdim-level-1);
       top->x.tags.index=idxtag[level];
       top->parent=parent;
