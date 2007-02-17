@@ -24,6 +24,7 @@
 #include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "CPlayerManager.h"
+#include "CTranslator.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -189,6 +190,11 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_LastAuthCheck = 0.0f;
 
 	g_Logger.MapChange(pMapName);
+
+	/* Refresh language stuff */
+	char path[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
+	g_Translator.RebuildLanguageDatabase(path);
 
 	DoGlobalPluginLoads();
 

@@ -436,21 +436,25 @@ static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
-	if ((index < 1) || (index > g_Players.GetMaxClients()))
+	if ((index < 0) || (index > g_Players.GetMaxClients()))
 	{
 		return pCtx->ThrowNativeError("Invalid client index %d", index);
 	}
 
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
-	if (!pPlayer->IsInGame())
+	CPlayer *pPlayer = NULL;
+	if (index != 0)
 	{
-		return pCtx->ThrowNativeError("Client %d is not in game", index);
-	}
-	
-	/* Silent fail on bots, engine will crash */
-	if (pPlayer->IsFakeClient())
-	{
-		return 0;
+		pPlayer = g_Players.GetPlayerByIndex(index);
+		if (!pPlayer->IsInGame())
+		{
+			return pCtx->ThrowNativeError("Client %d is not in game", index);
+		}
+		
+		/* Silent fail on bots, engine will crash */
+		if (pPlayer->IsFakeClient())
+		{
+			return 0;
+		}
 	}
 
 	char buffer[1024];
@@ -463,7 +467,12 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	buffer[res++] = '\n';
 	buffer[res] = '\0';
 
-	engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+	if (index != 0)
+	{
+		engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+	} else {
+		META_CONPRINT(buffer);
+	}
 
 	return 1;
 }
@@ -495,5 +504,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetCmdArg",			sm_GetCmdArg},
 	{"PrintToServer",		sm_PrintToServer},
 	{"PrintToConsole",		sm_PrintToConsole},
+	{"RegAdminCmd",			sm_RegAdminCmd},
 	{NULL,					NULL}
 };

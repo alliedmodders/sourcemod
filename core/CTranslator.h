@@ -53,7 +53,8 @@ enum TransError
 	Trans_Okay = 0,
 	Trans_BadLanguage = 1,
 	Trans_BadPhrase = 2,
-	Trans_BadPhraseLanguage = 3
+	Trans_BadPhraseLanguage = 3,
+	Trans_BadPhraseFile = 4,
 };
 
 class CPhraseFile : public ITextListener_SMC
@@ -112,6 +113,14 @@ public:
 	bool GetLanguageByCode(const char *code, unsigned int *index);
 	size_t Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans);
 	CPhraseFile *GetFileByIndex(unsigned int index);
+	TransError CoreTrans(int client, 
+						 char *buffer, 
+						 size_t maxlength, 
+						 const char *phrase, 
+						 void **params, 
+						 size_t *outlen=NULL);
+private:
+	bool AddLanguage(const char *langcode, const char *description);
 private:
 	CVector<Language *> m_Languages;
 	CVector<CPhraseFile *> m_Files;

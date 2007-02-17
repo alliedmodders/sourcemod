@@ -306,7 +306,7 @@ bool CConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdm
 		}
 
 		/* See if our other flags match */
-		if ((bits & cmdflags) != cmdflags)
+		if ((bits & cmdflags) == cmdflags)
 		{
 			return true;
 		}
@@ -338,8 +338,25 @@ bool CConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdm
 		}
 	}
 
+	if (player->IsFakeClient()
+		|| player->GetEdict() == NULL)
+	{
+		return false;
+	}
+	
 	/* If we got here, the command failed... */
-	/* :TODO: send a message to the client about this! */
+	char buffer[128];
+	if (g_Translator.CoreTrans(client, buffer, sizeof(buffer), "No Access", NULL, NULL)
+		!= Trans_Okay)
+	{
+		snprintf(buffer, sizeof(buffer), "You do not have access to this command");
+	}
+
+	char fullbuffer[192];
+	snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
+
+	engine->ClientPrintf(player->GetEdict(), fullbuffer);
+	
 	return false;
 }
 
@@ -403,7 +420,7 @@ bool CConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	}
 
 	pAdmin->cmdGrpId = grpid;
-	pAdmin->flags = flags;
+	pAdmin->flags = adminflags;
 
 	/* First get the command group override, if any */
 	bool override = g_Admins.GetCommandOverride(group, 

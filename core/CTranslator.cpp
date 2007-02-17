@@ -604,6 +604,7 @@ CTranslator::~CTranslator()
 
 void CTranslator::OnSourceModAllInitialized()
 {
+	AddLanguage("en", "English");
 	unsigned int id = FindOrAddPhraseFile("core.cfg");
 	g_pCorePhrases = GetFileByIndex(id);
 }
@@ -735,17 +736,31 @@ SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value,
 		g_Logger.LogError("[SM] Invalid language code \"%s\" is being ignored.", key);
 	}
 
+	AddLanguage(key, value);
+
+	return SMCParse_Continue;
+}
+
+bool CTranslator::AddLanguage(const char *langcode, const char *description)
+{
+	if (sm_trie_retrieve(m_pLCodeLookup, langcode, NULL))
+	{
+		return false;
+	}
+
 	Language *pLanguage = new Language;
 	unsigned int idx = m_Languages.size();
 
-	strcpy(pLanguage->m_code2, key);
-	pLanguage->m_FullName = m_pStringTab->AddString(value);
+	pLanguage->m_code2[0] = langcode[0];
+	pLanguage->m_code2[1] = langcode[1];
+	pLanguage->m_code2[2] = langcode[2];
+	pLanguage->m_FullName = m_pStringTab->AddString(description);
 
-	sm_trie_insert(m_pLCodeLookup, key, reinterpret_cast<void *>(idx));
+	sm_trie_insert(m_pLCodeLookup, langcode, reinterpret_cast<void *>(idx));
 
 	m_Languages.push_back(pLanguage);
 
-	return SMCParse_Continue;
+	return true;
 }
 
 CPhraseFile *CTranslator::GetFileByIndex(unsigned int index)
@@ -769,4 +784,35 @@ size_t CTranslator::Translate(char *buffer, size_t maxlength, void **params, con
 	}
 
 	return gnprintf(buffer, maxlength, pTrans->szPhrase, new_params);
+}
+
+TransError CTranslator::CoreTrans(int client, 
+								  char *buffer, 
+								  size_t maxlength, 
+								  const char *phrase, 
+								  void **params, 
+								  size_t *outlen)
+{
+	/* :TODO: do language stuff here */
+
+	if (!g_pCorePhrases)
+	{
+		return Trans_BadPhraseFile;
+	}
+
+	Translation trans;
+	TransError err;
+	if ((err=g_pCorePhrases->GetTranslation(phrase, 0, &trans)) != Trans_Okay)
+	{
+		return err;
+	}
+
+	size_t len = Translate(buffer, maxlength, params, &trans);
+
+	if (outlen)
+	{
+		*outlen = len;
+	}
+
+	return Trans_Okay;
 }

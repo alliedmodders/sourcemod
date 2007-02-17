@@ -34,10 +34,12 @@ AdminCache::AdminCache()
 	m_FirstGroup = -1;
 	m_pAuthTables = sm_trie_create();
 	m_InvalidatingAdmins = false;
+	m_destroying = false;
 }
 
 AdminCache::~AdminCache()
 {
+	m_destroying = true;
 	DumpAdminCache(AdminCache_Overrides, false);
 	DumpAdminCache(AdminCache_Groups, false);
 
@@ -549,7 +551,7 @@ bool AdminCache::InvalidateAdmin(AdminId id)
 		return false;
 	}
 
-	if (!m_InvalidatingAdmins)
+	if (!m_InvalidatingAdmins && !m_destroying)
 	{
 		g_Players.ClearAdminId(id);
 	}
@@ -749,7 +751,10 @@ void AdminCache::RegisterAuthIdentType(const char *name)
 void AdminCache::InvalidateAdminCache(bool unlink_admins)
 {
 	m_InvalidatingAdmins = true;
-	g_Players.ClearAllAdmins();
+	if (!m_destroying)
+	{
+		g_Players.ClearAllAdmins();
+	}
 	/* Wipe the identity cache first */
 	List<AuthMethod>::iterator iter;
 	for (iter=m_AuthMethods.begin();
@@ -783,7 +788,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 	{
 		DumpCommandOverrideCache(Override_Command);
 		DumpCommandOverrideCache(Override_CommandGroup);
-		if (rebuild)
+		if (rebuild && !m_destroying)
 		{
 			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
@@ -797,7 +802,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 		if (part == AdminCache_Groups)
 		{
 			InvalidateGroupCache();
-			if (rebuild)
+			if (rebuild && !m_destroying)
 			{
 				for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 				{
@@ -809,7 +814,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 			}
 		}
 		InvalidateAdminCache(true);
-		if (rebuild)
+		if (rebuild && !m_destroying)
 		{
 			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{

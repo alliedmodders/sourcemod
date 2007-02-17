@@ -76,10 +76,11 @@ native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...
 /**
  * Called when a server-only command is invoked.  
  *
+ * @params args			Number of arguments that were in the argument string.
  * @return				A Result value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag SrvCmd Action:public(argCount);
+functag SrvCmd Action:public(args);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  
@@ -96,10 +97,11 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
  * Called when a generic console command is invoked.
  *
  * @param client		Index of the client, or 0 from the server.
+ * @param args			Number of arguments that were in the argument string.
  * @return				A Result value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag ConCmd Action:public(client, argCount);
+functag ConCmd Action:public(client, args);
 
 /**
  * Creates a console command, or hooks an already existing one.
@@ -114,7 +116,8 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
 
 /**
  * Creates a console command as an administrative command.  If the command does not exist,
- * it is created. 
+ * it is created.  When this command is invoked, the access rights of the player are 
+ * automatically checked before allowing it to continue.
  *
  * @param cmd			String containing command to register.
  * @param callback		A function to use as a callback for when the command is invoked.

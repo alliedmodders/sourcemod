@@ -159,6 +159,7 @@ public:
 	int m_LastUser;
 	int m_FreeUserList;
 	bool m_InvalidatingAdmins;
+	bool m_destroying;
 };
 
 extern AdminCache g_Admins;
