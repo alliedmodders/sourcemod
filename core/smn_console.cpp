@@ -446,6 +446,12 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	{
 		return pCtx->ThrowNativeError("Client %d is not in game", index);
 	}
+	
+	/* Silent fail on bots, engine will crash */
+	if (pPlayer->IsFakeClient())
+	{
+		return 0;
+	}
 
 	char buffer[1024];
 	char *fmt;
