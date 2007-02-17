@@ -115,7 +115,7 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
 #if 0
 /**
  * Creates a console command as an administrative command.  If the command does not exist,
- * it is created.  This command cannot be used to create duplicate admin commands.
+ * it is created. 
  *
  * @param cmd			String containing command to register.
  * @param callback		A function to use as a callback for when the command is invoked.
@@ -125,7 +125,6 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * @param description	Optional description to use for help.
  * @param flags			Optional console flags.
  * @noreturn
- * @error				If this command has already been registered as an admin command.
  */
 native RegAdminCmd(const String:cmd[], 
 						ConCmd:callback, 

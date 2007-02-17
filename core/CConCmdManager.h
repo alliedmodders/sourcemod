@@ -19,8 +19,11 @@
 #include "sourcemm_api.h"
 #include "ForwardSys.h"
 #include "sm_trie.h"
+#include "sm_memtable.h"
 #include <sh_list.h>
+#include <sh_string.h>
 #include <IRootConsoleMenu.h>
+#include <IAdminSystem.h>
 
 using namespace SourceHook;
 
@@ -28,7 +31,32 @@ enum CmdType
 {
 	Cmd_Server,
 	Cmd_Console,
-	Cmd_Client
+	Cmd_Admin,
+};
+
+struct AdminCmdInfo
+{
+	AdminCmdInfo()
+	{
+		cmdGrpId = -1;
+		flags = 0;
+		eflags = 0;
+	}
+	int cmdGrpId;			/* index into cmdgroup string table */
+	FlagBits flags;			/* default flags */
+	FlagBits eflags;		/* effective flags */
+};
+
+struct CmdHook
+{
+	CmdHook()
+	{
+		pf = NULL;
+		pAdmin = NULL;
+	}
+	IPluginFunction *pf;	/* function hook */
+	String helptext;		/* help text */
+	AdminCmdInfo *pAdmin;	/* admin requirements, if any */
 };
 
 struct ConCmdInfo
@@ -37,13 +65,11 @@ struct ConCmdInfo
 	{
 		sourceMod = false;
 		pCmd = NULL;
-		srvhooks = NULL;
-		conhooks = NULL;
 	}
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
 	ConCommand *pCmd;				/**< Pointer to the command itself */
-	IChangeableForward *srvhooks;	/**< Hooks on this name as a server command */
-	IChangeableForward *conhooks;	/**< Hooks on this name as a console command */
+	List<CmdHook *> srvhooks;		/**< Hooks as a server command */
+	List<CmdHook *> conhooks;		/**< Hooks as a console command */
 };
 
 class CConCmdManager :
@@ -59,24 +85,33 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public: //IPluginsListener
-	void OnPluginLoaded(IPlugin *plugin);
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *command, unsigned int argcount);
 public:
 	void AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
 	void AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	bool AddAdminCommand(IPluginFunction *pFunction, 
+						 const char *name, 
+						 const char *group,
+						 int adminflags,
+						 const char *description, 
+						 int flags);
 	ResultType DispatchClientCommand(int client, ResultType type);
 private:
 	void InternalDispatch();
+	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	void SetCommandClient(int client);
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info);
+	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
 private:
-	Trie *m_pCmds;
-	List<ConCmdInfo *> m_CmdList;
-	int m_CmdClient;
+	Trie *m_pCmds;					/* command lookup */
+	Trie *m_pCmdGrps;				/* command group lookup */
+	List<ConCmdInfo *> m_CmdList;	/* command list, currently unused */
+	int m_CmdClient;				/* current client */
+	BaseStringTable m_Strings;		/* string table */
 };
 
 extern CConCmdManager g_ConCmds;

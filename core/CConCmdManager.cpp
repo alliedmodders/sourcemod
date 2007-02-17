@@ -13,6 +13,7 @@
 
 #include "CConCmdManager.h"
 #include "sm_srvcmds.h"
+#include "AdminCache.h"
 #include "sm_stringutil.h"
 
 CConCmdManager g_ConCmds;
@@ -23,19 +24,22 @@ SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int
 struct PlCmdInfo
 {
 	ConCmdInfo *pInfo;
+	CmdHook *pHook;
 	CmdType type;
 };
-
 typedef List<PlCmdInfo> CmdList;
+void AddToPlCmdList(CmdList *pList, const PlCmdInfo &info);
 
-CConCmdManager::CConCmdManager()
+CConCmdManager::CConCmdManager() : m_Strings(1024)
 {
 	m_pCmds = sm_trie_create();
+	m_pCmdGrps = sm_trie_create();
 }
 
 CConCmdManager::~CConCmdManager()
 {
 	sm_trie_destroy(m_pCmds);
+	sm_trie_destroy(m_pCmdGrps);
 }
 
 void CConCmdManager::OnSourceModAllInitialized()
@@ -53,9 +57,23 @@ void CConCmdManager::OnSourceModShutdown()
 	g_PluginSys.RemovePluginsListener(this);
 }
 
-void CConCmdManager::OnPluginLoaded(IPlugin *plugin)
+void CConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext)
 {
-	/* Nothing yet... */
+	List<CmdHook *>::iterator iter = cmdlist.begin();
+	CmdHook *pHook;
+
+	while (iter != cmdlist.end())
+	{
+		pHook = (*iter);
+		if (pHook->pf->GetParentContext() == pContext)
+		{
+			delete pHook->pAdmin;
+			delete pHook;
+			iter = cmdlist.erase(iter);
+		} else {
+			iter++;
+		}
+	}
 }
 
 void CConCmdManager::OnPluginDestroyed(IPlugin *plugin)
@@ -64,36 +82,41 @@ void CConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 	List<ConCmdInfo *> removed;
 	if (plugin->GetProperty("CommandList", (void **)&pList, true))
 	{
+		IPluginContext *pContext = plugin->GetBaseContext();
 		CmdList::iterator iter;
+		/* First pass!
+	 	 * Only bother if there's an actual command list on this plugin... 
+	 	 */
 		for (iter=pList->begin();
-			 iter!=pList->end();
-			 iter++)
+			iter!=pList->end();
+			iter++)
 		{
 			PlCmdInfo &cmd = (*iter);
-			if (cmd.type == Cmd_Server
-				|| cmd.type == Cmd_Console)
+			ConCmdInfo *pInfo = cmd.pInfo;
+
+			/* Has this chain already been fully cleaned/removed? */
+			if (removed.find(pInfo) != removed.end())
 			{
-				ConCmdInfo *pInfo = cmd.pInfo;
-				/* See if this is being removed */
-				if (removed.find(pInfo) != removed.end())
-				{
-					continue;
-				}
-				/* See if there are still hooks */
-				if (pInfo->srvhooks
-					&& pInfo->srvhooks->GetFunctionCount())
-				{
-					continue;
-				}
-				if (pInfo->conhooks
-					&& pInfo->conhooks->GetFunctionCount())
-				{
-					continue;
-				}
-				/* Remove the command */
-				RemoveConCmd(pInfo);
-				removed.push_back(pInfo);
+				continue;
 			}
+
+			/* Remove any hooks from us on this command */
+			RemoveConCmds(pInfo->conhooks, pContext);
+			RemoveConCmds(pInfo->srvhooks, pContext);
+
+			/* See if there are still hooks */
+			if (pInfo->srvhooks.size())
+			{
+				continue;
+			}
+			if (pInfo->conhooks.size())
+			{
+				continue;
+			}
+
+			/* Remove the command, it should be safe now */
+			RemoveConCmd(pInfo);
+			removed.push_back(pInfo);
 		}
 		delete pList;
 	}
@@ -118,15 +141,32 @@ ResultType CConCmdManager::DispatchClientCommand(int client, ResultType type)
 	if (sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
 	{
 		cell_t result = type;
-		if (pInfo->conhooks && pInfo->conhooks->GetFunctionCount())
+		cell_t tempres = result;
+		List<CmdHook *>::iterator iter;
+		CmdHook *pHook;
+		for (iter=pInfo->conhooks.begin();
+			 iter!=pInfo->conhooks.end();
+			 iter++)
 		{
-			pInfo->conhooks->PushCell(client);
-			pInfo->conhooks->PushCell(args);
-			pInfo->conhooks->Execute(&result);
-		}
-		if (result >= Pl_Stop)
-		{
-			return Pl_Stop;
+			pHook = (*iter);
+			if (pHook->pAdmin
+				&& pHook->pAdmin->eflags)
+			{
+				/* :TODO: admin calculations */
+			}
+			pHook->pf->PushCell(client);
+			pHook->pf->PushCell(args);
+			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
+			{
+				if (tempres > result)
+				{
+					result = tempres;
+				}
+				if (result == Pl_Stop)
+				{
+					break;
+				}
+			}
 		}
 		type = (ResultType)result;
 	}
@@ -153,12 +193,30 @@ void CConCmdManager::InternalDispatch()
 	cell_t result = Pl_Continue;
 	int args = engine->Cmd_Argc() - 1;
 
-	if (m_CmdClient == 0)
+	List<CmdHook *>::iterator iter;
+	CmdHook *pHook;
+
+	/* Execute server-only commands if viable */
+	if (m_CmdClient == 0 && pInfo->srvhooks.size())
 	{
-		if (pInfo->srvhooks && pInfo->srvhooks->GetFunctionCount())
+		cell_t tempres = result;
+		for (iter=pInfo->srvhooks.begin();
+			 iter!=pInfo->srvhooks.end();
+			 iter++)
 		{
-			pInfo->srvhooks->PushCell(args);
-			pInfo->srvhooks->Execute(&result);
+			pHook = (*iter);
+			pHook->pf->PushCell(args);
+			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
+			{
+				if (tempres > result)
+				{
+					result = tempres;
+				}
+				if (result == Pl_Stop)
+				{
+					break;
+				}
+			}
 		}
 	
 		/* Check if there's an early stop */
@@ -172,12 +230,35 @@ void CConCmdManager::InternalDispatch()
 		}
 	}
 
-	/* Execute console command hooks */
-	if (pInfo->conhooks && pInfo->conhooks->GetFunctionCount())
+	/* Execute console commands */
+	if (pInfo->conhooks.size())
 	{
-		pInfo->conhooks->PushCell(m_CmdClient);
-		pInfo->conhooks->PushCell(args);
-		pInfo->conhooks->Execute(&result);
+		cell_t tempres = result;
+		for (iter=pInfo->conhooks.begin();
+			iter!=pInfo->conhooks.end();
+			iter++)
+		{
+			pHook = (*iter);
+			if (m_CmdClient 
+				&& pHook->pAdmin
+				&& pHook->pAdmin->eflags)
+			{
+				/* :TODO: check admin stuff */
+			}
+			pHook->pf->PushCell(m_CmdClient);
+			pHook->pf->PushCell(args);
+			if (pHook->pf->Execute(&tempres) != SP_ERROR_NONE)
+			{
+				if (tempres > result)
+				{
+					result = tempres;
+				}
+				if (result == Pl_Stop)
+				{
+					break;
+				}
+			}
+		}
 	}
 
 	if (result >= Pl_Handled)
@@ -190,19 +271,25 @@ void CConCmdManager::InternalDispatch()
 	}
 }
 
+ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args)
+{
+	return Pl_Continue;
+}
+
 void CConCmdManager::AddConsoleCommand(IPluginFunction *pFunction, 
 									   const char *name, 
 									   const char *description, 
 									   int flags)
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	CmdHook *pHook = new CmdHook();
 
-	if (!pInfo->conhooks)
+	pHook->pf = pFunction;
+	if (description && description[0])
 	{
-		pInfo->conhooks = g_Forwards.CreateForwardEx(NULL, ET_Hook, 2, NULL, Param_Cell, Param_Cell);
+		pHook->helptext.assign(description);
 	}
-
-	pInfo->conhooks->AddFunction(pFunction);
+	pInfo->conhooks.push_back(pHook);
 
 	/* Add to the plugin */
 	CmdList *pList;
@@ -215,7 +302,79 @@ void CConCmdManager::AddConsoleCommand(IPluginFunction *pFunction,
 	PlCmdInfo info;
 	info.pInfo = pInfo;
 	info.type = Cmd_Console;
-	pList->push_back(info);
+	info.pHook = pHook;
+	AddToPlCmdList(pList, info);
+}
+
+bool CConCmdManager::AddAdminCommand(IPluginFunction *pFunction, 
+									 const char *name, 
+									 const char *group,
+									 int adminflags,
+									 const char *description, 
+									 int flags)
+{
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+
+	CmdHook *pHook = new CmdHook();
+	AdminCmdInfo *pAdmin = new AdminCmdInfo();
+
+	pHook->pf = pFunction;
+	if (description && description[0])
+	{
+		pHook->helptext.assign(description);
+	}
+	pHook->pAdmin = pAdmin;
+
+	void *object;
+	int grpid;
+	if (!sm_trie_retrieve(m_pCmdGrps, group, (void **)&object))
+	{
+		grpid = m_Strings.AddString(group);
+		sm_trie_insert(m_pCmdGrps, group, (void *)grpid);
+	} else {
+		grpid = (int)object;
+	}
+
+	pAdmin->cmdGrpId = grpid;
+	pAdmin->flags = flags;
+
+	/* First get the command group override, if any */
+	bool override = g_Admins.GetCommandOverride(group, 
+		Override_CommandGroup,
+		&(pAdmin->eflags));
+
+	/* Next get the command override, if any */
+	if (g_Admins.GetCommandOverride(name,
+		Override_Command,
+		&(pAdmin->eflags)))
+	{
+		override = true;
+	}
+
+	/* Assign normal flags if there were no overrides */
+	if (!override)
+	{
+		pAdmin->eflags = pAdmin->flags;
+	}
+
+	/* Finally, add the hook */
+	pInfo->conhooks.push_back(pHook);
+
+	/* Now add to the plugin */
+	CmdList *pList;
+	IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
+	if (!pPlugin->GetProperty("CommandList", (void **)&pList))
+	{
+		pList = new CmdList();
+		pPlugin->SetProperty("CommandList", pList);
+	}
+	PlCmdInfo info;
+	info.pInfo = pInfo;
+	info.type = Cmd_Admin;
+	info.pHook = pHook;
+	AddToPlCmdList(pList, info);
+
+	return true;
 }
 
 void CConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
@@ -225,13 +384,15 @@ void CConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	CmdHook *pHook = new CmdHook();
 
-	if (!pInfo->srvhooks)
+	pHook->pf = pFunction;
+	if (description && description[0])
 	{
-		pInfo->srvhooks = g_Forwards.CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_Cell);
+		pHook->helptext.assign(description);
 	}
 
-	pInfo->srvhooks->AddFunction(pFunction);
+	pInfo->srvhooks.push_back(pHook);
 
 	/* Add to the plugin */
 	CmdList *pList;
@@ -244,7 +405,36 @@ void CConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	PlCmdInfo info;
 	info.pInfo = pInfo;
 	info.type = Cmd_Server;
-	pList->push_back(info);
+	info.pHook = pHook;
+	AddToPlCmdList(pList, info);
+}
+
+void AddToPlCmdList(CmdList *pList, const PlCmdInfo &info)
+{
+	CmdList::iterator iter = pList->begin();
+	bool inserted = false;
+	const char *orig = NULL;
+
+	orig = info.pInfo->pCmd->GetName();
+
+	/* Insert this into the help list, SORTED alphabetically. */
+	while (iter != pList->end())
+	{
+		PlCmdInfo &obj = (*iter);
+		const char *cmd = obj.pInfo->pCmd->GetName();
+		if (strcmp(orig, cmd) < 0)
+		{
+			pList->insert(iter, info);
+			inserted = true;
+			break;
+		}
+		iter++;
+	}
+
+	if (!inserted)
+	{
+		pList->push_back(info);
+	}
 }
 
 void CConCmdManager::AddToCmdList(ConCmdInfo *info)
@@ -305,12 +495,8 @@ void CConCmdManager::RemoveConCmd(ConCmdInfo *info)
 	
 	/* Remove from list */
 	m_CmdList.remove(info);
-	
-	/* Free forwards */
-	if (info->srvhooks)
-	{
-		g_Forwards.ReleaseForward(info->srvhooks);
-	}
+
+	delete info;
 }
 
 ConCmdInfo *CConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
@@ -400,11 +586,16 @@ void CConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				type = "server";
 			} else if (cmd.type == Cmd_Console) {
 				type = "console";
-			} else if (cmd.type == Cmd_Client) {
-				type = "client";
+			} else if (cmd.type == Cmd_Admin) {
+				type = "admin";
 			}
 			name = cmd.pInfo->pCmd->GetName();
-			help = cmd.pInfo->pCmd->GetHelpText();
+			if (cmd.pHook->helptext.size())
+			{
+				help = cmd.pHook->helptext.c_str();
+			} else {
+				help = cmd.pInfo->pCmd->GetHelpText();
+			}
 			g_RootMenu.ConsolePrint(" %-17.16s %-12.11s %s", name, type, help);		
 		}
 
