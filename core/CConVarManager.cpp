@@ -97,7 +97,7 @@ void CConVarManager::OnPluginDestroyed(IPlugin *plugin)
 void CConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	ConVarInfo *info;
-	ConCommandBase *cvar = static_cast<ConCommandBase *>(object);
+	ConVar *cvar = static_cast<ConVar *>(object);
 
 	// Find convar in lookup trie
 	sm_trie_retrieve(m_ConVarCache, cvar->GetName(), reinterpret_cast<void **>(&info));
@@ -105,6 +105,11 @@ void CConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 	// If convar was created by SourceMod plugin...
 	if (info->sourceMod)
 	{
+		// Delete string allocations
+		delete [] cvar->GetName(); 
+		delete [] cvar->GetDefault();
+		delete [] cvar->GetHelpText();
+
 		// Then unregister it
 		g_SMAPI->UnregisterConCmdBase(g_PLAPI, cvar);
 	}
@@ -205,7 +210,7 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 	}
 
 	// Since we didn't find an existing convar (or concmd with the same name), now we can finally create it!
-	cvar = new ConVar(name, defaultVal, flags, helpText, hasMin, min, hasMax, max);
+	cvar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(helpText), hasMin, min, hasMax, max);
 
 	// Find plugin creating convar
 	IPlugin *pl = g_PluginSys.FindPluginByContext(pContext->GetContext());

@@ -12,10 +12,10 @@
 * Version: $Id$
 */
 
-#include <bitbuf.h>
-#include <vector.h>
 #include "sourcemod.h"
 #include "HandleSys.h"
+#include <bitbuf.h>
+#include <vector.h>
 
 static cell_t smn_BfWriteBool(IPluginContext *pCtx, const cell_t *params)
 {
