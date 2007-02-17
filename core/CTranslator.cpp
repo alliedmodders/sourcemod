@@ -22,6 +22,7 @@
 #include "sourcemod.h"
 
 CTranslator g_Translator;
+CPhraseFile *g_pCorePhrases = NULL;
 
 struct trans_t
 {
@@ -574,6 +575,10 @@ const char *CPhraseFile::GetFilename()
 	return m_File.c_str();
 }
 
+/**************************
+ ** MAIN TRANSLATOR CODE **
+ **************************/
+
 CTranslator::CTranslator()
 {
 	m_pStringTab = new BaseStringTable(2048);
@@ -595,6 +600,12 @@ CTranslator::~CTranslator()
 	sm_trie_destroy(m_pLCodeLookup);
 
 	delete m_pStringTab;
+}
+
+void CTranslator::OnSourceModAllInitialized()
+{
+	unsigned int id = FindOrAddPhraseFile("core.cfg");
+	g_pCorePhrases = GetFileByIndex(id);
 }
 
 bool CTranslator::GetLanguageByCode(const char *code, unsigned int *index)

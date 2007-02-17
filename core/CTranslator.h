@@ -90,11 +90,15 @@ private:
 	bool m_FileLogged;
 };
 
-class CTranslator : public ITextListener_SMC
+class CTranslator : 
+	public ITextListener_SMC,
+	public SMGlobalClass
 {
 public:
 	CTranslator();
 	~CTranslator();
+public: //SMGlobalClass
+	void OnSourceModAllInitialized();
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
@@ -117,6 +121,7 @@ private:
 	String m_CustomError;
 };
 
+extern CPhraseFile *g_pCorePhrases;
 extern CTranslator g_Translator;
 
 #endif //_INCLUDE_SOURCEMOD_TRANSLATOR_H_
