@@ -159,23 +159,6 @@ static cell_t sm_IsPlayerFakeClient(IPluginContext *pCtx, const cell_t *params)
 	return (pPlayer->IsFakeClient()) ? 1 : 0;
 }
 
-static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
-{
-	char buffer[1024];
-	char *fmt;
-	int arg = 2;
-
-	pCtx->LocalToString(params[1], &fmt);
-	size_t res = atcprintf(buffer, sizeof(buffer)-2, fmt, pCtx, params, &arg);
-
-	buffer[res++] = '\n';
-	buffer[res] = '\0';
-
-	META_CONPRINT(buffer);
-
-	return 1;
-}
-
 static cell_t sm_GetClientInfo(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
@@ -199,35 +182,6 @@ static cell_t sm_GetClientInfo(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->StringToLocalUTF8(params[3], params[4], val, NULL);
-	return 1;
-}
-
-static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
-{
-	int index = params[1];
-	if ((index < 1) || (index > g_Players.GetMaxClients()))
-	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
-	}
-
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
-	if (!pPlayer->IsInGame())
-	{
-		return pCtx->ThrowNativeError("Client %d is not in game", index);
-	}
-
-	char buffer[1024];
-	char *fmt;
-	int arg = 3;
-
-	pCtx->LocalToString(params[2], &fmt);
-	size_t res = atcprintf(buffer, sizeof(buffer)-2, fmt, pCtx, params, &arg);
-
-	buffer[res++] = '\n';
-	buffer[res] = '\0';
-
-	engine->ClientPrintf(pPlayer->GetEdict(), buffer);
-
 	return 1;
 }
 
@@ -402,8 +356,6 @@ REGISTER_NATIVES(playernatives)
 	{"IsPlayerInGame",			sm_IsPlayerIngame},
 	{"IsClientAuthorized",		sm_IsPlayerAuthorized},
 	{"IsFakeClient",			sm_IsPlayerFakeClient},
-	{"PrintToServer",			sm_PrintToServer},
-	{"PrintToConsole",			sm_PrintToConsole},
 	{"GetClientInfo",			sm_GetClientInfo},
 	{"SetUserAdmin",			SetUserAdmin},
 	{"GetUserAdmin",			GetUserAdmin},

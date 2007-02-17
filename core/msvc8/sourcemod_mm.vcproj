@@ -200,10 +200,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CGameEventManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\CLogger.cpp"
 				>
 			</File>
@@ -659,10 +655,6 @@
 			</File>
 			<File
 				RelativePath="..\smn_datapacks.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_events.cpp"
 				>
 			</File>
 			<File

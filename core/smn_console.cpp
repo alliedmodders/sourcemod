@@ -17,6 +17,8 @@
 #include "CConVarManager.h"
 #include "CConCmdManager.h"
 #include "PluginSys.h"
+#include "sm_stringutil.h"
+#include "CPlayerManager.h"
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
@@ -414,7 +416,53 @@ static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-REGISTER_NATIVES(convarNatives)
+static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
+{
+	char buffer[1024];
+	char *fmt;
+	int arg = 2;
+
+	pCtx->LocalToString(params[1], &fmt);
+	size_t res = atcprintf(buffer, sizeof(buffer)-2, fmt, pCtx, params, &arg);
+
+	buffer[res++] = '\n';
+	buffer[res] = '\0';
+
+	META_CONPRINT(buffer);
+
+	return 1;
+}
+
+static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
+{
+	int index = params[1];
+	if ((index < 1) || (index > g_Players.GetMaxClients()))
+	{
+		return pCtx->ThrowNativeError("Invalid client index %d", index);
+	}
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
+	if (!pPlayer->IsInGame())
+	{
+		return pCtx->ThrowNativeError("Client %d is not in game", index);
+	}
+
+	char buffer[1024];
+	char *fmt;
+	int arg = 3;
+
+	pCtx->LocalToString(params[2], &fmt);
+	size_t res = atcprintf(buffer, sizeof(buffer)-2, fmt, pCtx, params, &arg);
+
+	buffer[res++] = '\n';
+	buffer[res] = '\0';
+
+	engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+
+	return 1;
+}
+
+REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
 	{"FindConVar",			sm_FindConVar},
@@ -439,5 +487,7 @@ REGISTER_NATIVES(convarNatives)
 	{"GetCmdArgString",		sm_GetCmdArgString},
 	{"GetCmdArgs",			sm_GetCmdArgs},
 	{"GetCmdArg",			sm_GetCmdArg},
+	{"PrintToServer",		sm_PrintToServer},
+	{"PrintToConsole",		sm_PrintToConsole},
 	{NULL,					NULL}
 };
