@@ -477,6 +477,41 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
+
+	/* One byte for null terminator, one for newline */
+	buffer[len++] = '\n';
+	buffer[len] = '\0';
+
+	engine->ServerCommand(buffer);
+
+	return 1;
+}
+
+static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
+
+	/* One byte for null terminator, one for newline */
+	buffer[len++] = '\n';
+	buffer[len] = '\0';
+
+	engine->InsertServerCommand(buffer);
+
+	return 1;
+}
+
+static cell_t sm_ServerExecute(IPluginContext *pContext, const cell_t *params)
+{
+	engine->ServerExecute();
+
+	return 1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -505,5 +540,8 @@ REGISTER_NATIVES(consoleNatives)
 	{"PrintToServer",		sm_PrintToServer},
 	{"PrintToConsole",		sm_PrintToConsole},
 	{"RegAdminCmd",			sm_RegAdminCmd},
+	{"ServerCommand",		sm_ServerCommand},
+	{"InsertServerCommand",	sm_InsertServerCommand},
+	{"ServerExecute",		sm_ServerExecute},
 	{NULL,					NULL}
 };

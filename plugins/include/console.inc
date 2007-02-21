@@ -52,6 +52,30 @@
 #define FCVAR_NETWORKSYSTEM		(1<<26)	/**< Defined by the network system. */
 #define FCVAR_VPHYSICS			(1<<27)	/**< Defined by vphysics. */
 
+/**
+ * Executes a server command as if it were on the server console (or RCON)
+ *
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+native ServerCommand(const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Inserts a server command at the beginning of the server command buffer.
+ *
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+native InsertServerCommand(const String:format[], {Handle,Float,String,_}:...);
+
+/**
+ * Executes every command in the server's command buffer, rather than once per frame.
+ *
+ * @noreturn
+ */
+native ServerExecute();
 
 /**
  * Sends a message to the server console.
