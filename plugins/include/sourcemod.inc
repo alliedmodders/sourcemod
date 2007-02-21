@@ -34,7 +34,6 @@ struct Plugin
 #include <admin>
 #include <files>
 #include <console>
-#include <usermessages>
 #include <bitbuffer>
 
 /**
@@ -341,4 +340,5 @@ native LogMessage(const String:format[], {Handle,Float,String,_}:...);
  */
 native LogError(const String:format[], {Handle,Float,String,_}:...);
 
+#include <usermessages>
 #include <helpers>
