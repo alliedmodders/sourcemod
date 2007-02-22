@@ -278,11 +278,6 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	{
 		func = (*iter);
 
-		if (!func->IsRunnable())
-		{
-			continue;
-		}
-
 		for (unsigned int i=0; i<num_params; i++)
 		{
 			param = &temp_info[i];
@@ -612,13 +607,21 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 {
 	bool found = false;
 	FuncIter iter;
+	List<IPluginFunction *> *lst;
+
+	if (func->IsRunnable())
+	{
+		lst = &m_functions;
+	} else {
+		lst = &m_paused;
+	}
 
 	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 	{
 		if ((*iter) == func)
 		{
 			found = true;
-			m_functions.erase(iter);
+			lst->erase(iter);
 			break;
 		}
 	}
@@ -660,7 +663,12 @@ bool CForward::AddFunction(IPluginFunction *func)
 		return false;
 	}
 
-	m_functions.push_back(func);
+	if (func->IsRunnable())
+	{
+		m_functions.push_back(func);
+	} else {
+		m_paused.push_back(func);
+	}
 
 	return true;
 }

@@ -83,6 +83,7 @@ protected:
 	 * Destroying these things and using new/delete for their members feels bad.
 	 */
 	mutable List<IPluginFunction *> m_functions;
+	mutable List<IPluginFunction *> m_paused;
 
 	/* Type and name information */
 	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];
