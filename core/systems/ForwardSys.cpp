@@ -179,33 +179,7 @@ CForward *CForwardManager::ForwardMake()
 
 void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
 {
-	List<CForward *>::iterator iter;
-	CForward *fwd;
-
-	if (paused)
-	{
-		for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
-		{
-			fwd = (*iter);
-			fwd->PushPausedFunctions(plugin);
-		}
-		for (iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
-		{
-			fwd = (*iter);
-			fwd->PushPausedFunctions(plugin);
-		}
-	} else {
-		for (iter=m_managed.begin(); iter!=m_managed.end(); iter++)
-		{
-			fwd = (*iter);
-			fwd->PopPausedFunctions(plugin);
-		}
-		for (iter=m_unmanaged.begin(); iter!=m_unmanaged.end(); iter++)
-		{
-			fwd = (*iter);
-			fwd->PopPausedFunctions(plugin);
-		}
-	}
+	/* No longer used */
 }
 
 /*************************************
@@ -704,42 +678,4 @@ unsigned int CForward::GetFunctionCount() const
 ExecType CForward::GetExecType() const
 {
 	return m_ExecType;
-}
-
-void CForward::PushPausedFunctions(IPlugin *plugin)
-{
-	FuncIter iter;
-	IPluginFunction *func;
-	IPluginContext *pContext = plugin->GetBaseContext();
-
-	for (iter=m_functions.begin(); iter!=m_functions.end();)
-	{
-		func = (*iter);
-		if (func->GetParentContext() == pContext)
-		{
-			m_paused.push_back(func);
-			iter = m_functions.erase(iter);
-		} else {
-			iter++;
-		}
-	}
-}
-
-void CForward::PopPausedFunctions(IPlugin *plugin)
-{
-	FuncIter iter;
-	IPluginFunction *func;
-	IPluginContext *pContext = plugin->GetBaseContext();
-
-	for (iter=m_paused.begin(); iter!=m_paused.end();)
-	{
-		func = (*iter);
-		if (func->GetParentContext() == pContext)
-		{
-			m_functions.push_back(func);
-			iter = m_paused.erase(iter);
-		} else {
-			iter++;
-		}
-	}
 }

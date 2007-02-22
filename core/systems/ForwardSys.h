@@ -70,8 +70,6 @@ public:
 								   unsigned int num_params, 
 								   ParamType *types, 
 								   va_list ap);
-	void PushPausedFunctions(IPlugin *plugin);
-	void PopPausedFunctions(IPlugin *plugin);
 private:
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
 	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
@@ -85,7 +83,6 @@ protected:
 	 * Destroying these things and using new/delete for their members feels bad.
 	 */
 	mutable List<IPluginFunction *> m_functions;
-	List<IPluginFunction *> m_paused;
 
 	/* Type and name information */
 	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];
