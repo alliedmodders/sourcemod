@@ -54,6 +54,7 @@ public:
 	{
 		m_Invalid = true;
 	}
+	bool IsRunnable();
 public:
 	void Set(uint32_t code_addr, IPluginContext *plugin);
 private:
@@ -66,6 +67,7 @@ private:
 private:
 	uint32_t m_codeaddr;
 	IPluginContext *m_pContext;
+	sp_context_t *m_pCtx;
 	cell_t m_params[SP_MAX_EXEC_PARAMS];
 	ParamInfo m_info[SP_MAX_EXEC_PARAMS];
 	unsigned int m_curparam;

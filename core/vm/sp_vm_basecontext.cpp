@@ -40,7 +40,6 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	ctx->dbreak = GlobalDebugBreak;
 	m_InExec = false;
 	m_CustomMsg = false;
-	m_Runnable = true;
 	m_funcsnum = ctx->vmbase->FunctionCount(ctx);
 	m_priv_funcs = NULL;
 	m_pub_funcs = NULL;
@@ -153,7 +152,7 @@ IPluginDebugInfo *BaseContext::GetDebugInfo()
 
 int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 {
-	if (!m_Runnable)
+	if ((ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
 	{
 		return SP_ERROR_NOT_RUNNABLE;
 	}
@@ -927,15 +926,5 @@ SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 void BaseContext::SetIdentity(SourceMod::IdentityToken_t *token)
 {
 	m_pToken = token;
-}
-
-bool BaseContext::IsRunnable()
-{
-	return m_Runnable;
-}
-
-void BaseContext::SetRunnable(bool runnable)
-{
-	m_Runnable = runnable;
 }
 #endif

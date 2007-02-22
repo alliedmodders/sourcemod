@@ -184,6 +184,13 @@ namespace SourcePawn
 		 * @return				Address, or NULL if invalid parameter specified.
 		 */
 		virtual cell_t *GetAddressOfPushedParam(unsigned int param) =0;
+
+		/**
+		 * @brief Returns whether the parent plugin is paused.
+		 *
+		 * @return				True if runnable, false otherwise.
+		 */
+		virtual bool IsRunnable() =0;
 	};
 
 
@@ -534,13 +541,6 @@ namespace SourcePawn
 		 * @return			Identity token.
 		 */
 		virtual SourceMod::IdentityToken_t *GetIdentity() =0;
-
-		/**
-		 * @brief Returns whether the identity is runnable.
-		 *
-		 * @return			True if runnable, false otherwise.
-		 */
-		virtual bool IsRunnable() =0;
 #endif
 	};
 

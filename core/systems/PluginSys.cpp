@@ -202,7 +202,6 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 	}
 
 	m_ctx.base = new BaseContext(m_ctx.ctx);
-	m_ctx.base->SetRunnable(false);
 	m_ctx.ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)this;
 
 	m_status = Plugin_Created;
@@ -222,9 +221,9 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 	vsnprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
 
-	if (m_ctx.base)
+	if (m_ctx.ctx)
 	{
-		m_ctx.base->SetRunnable(false);
+		m_ctx.ctx->flags |= SPFLAG_PLUGIN_PAUSED;
 	}
 }
 
@@ -310,7 +309,6 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	}
 
 	m_status = Plugin_Loaded;
-	m_ctx.base->SetRunnable(true);
 
 	int err;
 	cell_t result;
@@ -397,14 +395,21 @@ bool CPlugin::SetPauseState(bool paused)
 		return false;
 	}
 
-	m_status = (paused) ? Plugin_Paused : Plugin_Running;
-
 	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginPauseChange");
 	if (pFunction)
 	{
 		cell_t result;
 		pFunction->PushCell(paused ? 1 : 0);
 		pFunction->Execute(&result);
+	}
+
+	if (paused)
+	{
+		m_status = Plugin_Paused;
+		m_ctx.ctx->flags |= SPFLAG_PLUGIN_PAUSED;
+	} else {
+		m_status = Plugin_Running;
+		m_ctx.ctx->flags &= ~SPFLAG_PLUGIN_PAUSED;
 	}
 
 	g_PluginSys._SetPauseState(this, paused);

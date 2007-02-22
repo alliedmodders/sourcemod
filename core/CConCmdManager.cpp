@@ -151,6 +151,10 @@ ResultType CConCmdManager::DispatchClientCommand(int client, ResultType type)
 			 iter++)
 		{
 			pHook = (*iter);
+			if (!pHook->pf->IsRunnable())
+			{
+				continue;
+			}
 			if (pHook->pAdmin && !CheckAccess(client, cmd, pHook->pAdmin))
 			{
 				if (result < Pl_Handled)
@@ -210,6 +214,10 @@ void CConCmdManager::InternalDispatch()
 			 iter++)
 		{
 			pHook = (*iter);
+			if (!pHook->pf->IsRunnable())
+			{
+				continue;
+			}
 			pHook->pf->PushCell(args);
 			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
 			{
@@ -244,6 +252,10 @@ void CConCmdManager::InternalDispatch()
 			iter++)
 		{
 			pHook = (*iter);
+			if (!pHook->pf->IsRunnable())
+			{
+				continue;
+			}
 			if (m_CmdClient 
 				&& pHook->pAdmin
 				&& !CheckAccess(m_CmdClient, cmd, pHook->pAdmin))

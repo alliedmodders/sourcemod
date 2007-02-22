@@ -229,6 +229,7 @@ typedef struct sp_debug_symbol_s
 typedef int (*SPVM_DEBUGBREAK)(struct sp_context_s *, uint32_t, uint32_t);
 
 #define SPFLAG_PLUGIN_DEBUG		(1<<0)		/**< plugin is in debug mode */
+#define SPFLAG_PLUGIN_PAUSED	(1<<1)		/**< plugin is "paused" (blocked from executing) */
 
 /**
  * @brief This is the heart of the VM.  It contains all of the runtime 

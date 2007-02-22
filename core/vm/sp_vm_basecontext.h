@@ -68,8 +68,6 @@ namespace SourcePawn
 #if defined SOURCEMOD_BUILD
 		virtual SourceMod::IdentityToken_t *GetIdentity();
 		void SetIdentity(SourceMod::IdentityToken_t *token);
-		bool IsRunnable();
-		void SetRunnable(bool runnable);
 #endif
 	public: //IPluginDebugInfo
 		virtual int LookupFile(ucell_t addr, const char **filename);
@@ -88,7 +86,6 @@ namespace SourcePawn
 		char m_MsgCache[1024];
 		bool m_CustomMsg;
 		bool m_InExec;
-		bool m_Runnable;
 		unsigned int m_funcsnum;
 		CFunction **m_priv_funcs;
 		CFunction **m_pub_funcs;
