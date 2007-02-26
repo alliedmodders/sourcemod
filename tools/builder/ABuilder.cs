@@ -154,12 +154,12 @@ namespace builder
 		public string PackageBuildName(Package pkg)
 		{
 			return pkg.GetPackageName() 
-				+ "-"
-				+ DateTime.Now.Day.ToString("00")
-				+ DateTime.Now.Month.ToString("00")
-				+ DateTime.Now.Year
 				+ "-r"
-				+ GetRevsionOfPath(cfg.SourceBase);
+				+ GetRevsionOfPath(cfg.SourceBase)
+				+ "-"
+				+ DateTime.Now.Year
+				+ DateTime.Now.Month.ToString("00")
+				+ DateTime.Now.Day.ToString("00");
 		}
 
 		public void BuildPackage(Package pkg)
