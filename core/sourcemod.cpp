@@ -25,6 +25,7 @@
 #include "sm_stringutil.h"
 #include "CPlayerManager.h"
 #include "CTranslator.h"
+#include "ForwardSys.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -40,6 +41,7 @@ IVirtualMachine *g_pVM;
 IdentityToken_t *g_pCoreIdent = NULL;
 float g_LastTime = 0.0f;
 float g_LastAuthCheck = 0.0f;
+IForward *g_pOnGameFrame = NULL;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
 typedef unsigned int (*GETEXPORTCOUNT)();
@@ -203,6 +205,11 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_Admins.DumpAdminCache(AdminCache_Overrides, true);
 	g_Admins.DumpAdminCache(AdminCache_Groups, true);
 
+	if (!g_pOnGameFrame)
+	{
+		g_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
+	}
+
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
@@ -222,6 +229,11 @@ void SourceModBase::GameFrame(bool simulating)
 			g_Players.RunAuthChecks();
 		}
 		g_LastTime = curtime;
+	}
+	
+	if (g_pOnGameFrame && g_pOnGameFrame->GetFunctionCount())
+	{
+		g_pOnGameFrame->Execute(NULL);
 	}
 }
 
@@ -296,6 +308,11 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 
 void SourceModBase::CloseSourceMod()
 {
+	if (g_pOnGameFrame)
+	{
+		g_Forwards.ReleaseForward(g_pOnGameFrame);
+	}
+
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
 	while (pBase)

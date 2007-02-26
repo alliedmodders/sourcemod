@@ -149,6 +149,13 @@ forward OnClientSettingsChanged(client);
 forward OnClientAuthorized(client, const String:auth[]);
 
 /**
+ * Called before every server frame.  Note that you should avoid
+ * doing expensive computations here, and you should declare large
+ * local arrays using 'decl' instead of 'new'.
+ */
+forward OnGameFrame();
+
+/**
  * Returns the maximum number of clients allowed on the server.
  *
  * @return				Maximum number of clients allowed.
