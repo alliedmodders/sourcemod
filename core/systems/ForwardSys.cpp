@@ -209,6 +209,7 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	} else {
 		for (unsigned int i=0; i<num_params; i++)
 		{
+			_types[i] = types[i];
 			if (types[i] == Param_VarArgs && (i != num_params - 1))
 			{
 				return NULL;
@@ -217,7 +218,7 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	}
 
 	/* First parameter can never be varargs */
-	if (types[0] == Param_VarArgs)
+	if (num_params && _types[0] == Param_VarArgs)
 	{
 		return NULL;
 	}
@@ -229,10 +230,10 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	
 	for (unsigned int i=0; i<num_params; i++)
 	{
-		pForward->m_types[i] = types[i];
+		pForward->m_types[i] = _types[i];
 	}
 
-	if (num_params && types[num_params-1] == Param_VarArgs)
+	if (num_params && _types[num_params-1] == Param_VarArgs)
 	{
 		pForward->m_varargs = num_params--;
 	} else {
