@@ -35,6 +35,7 @@ struct Plugin
 #include <files>
 #include <console>
 #include <bitbuffer>
+#include <sorting>
 
 /**
  * Declare this as a struct in your plugin to expose its information.

@@ -660,7 +660,12 @@ reswitch:
 			{
 				CHECK_ARGS(0);
 				char *str;
-				pCtx->LocalToString(params[arg], &str);
+				int err;
+				if ((err=pCtx->LocalToString(params[arg], &str)) != SP_ERROR_NONE)
+				{
+					pCtx->ThrowNativeErrorEx(err, "Could not deference string");
+					return 0;
+				}
 				AddString(&buf_p, llen, str, width, prec);
 				arg++;
 				break;

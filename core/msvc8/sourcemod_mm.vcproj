@@ -682,6 +682,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_sorting.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_string.cpp"
 				>
 			</File>
