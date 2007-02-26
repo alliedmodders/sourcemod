@@ -2257,7 +2257,9 @@ static int declloc(int fstatic)
           pushreg(sPRI);
         }
         if (matchtoken(']')) {
-          dim[numdim++] = 0;
+          idxtag[numdim] = 0;
+          dim[numdim] = 0;
+		  numdim++;
           continue;
         }
         dim_ident = doexpr2(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0,&dim_val);
