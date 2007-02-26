@@ -94,5 +94,6 @@ REGISTER_NATIVES(handles)
 	{"IsValidHandle",			sm_IsValidHandle},
 	{"CloseHandle",				sm_CloseHandle},
 	{"CloneHandle",				sm_CloneHandle},
+	{"GetMyHandle",				sm_GetMyHandle},
 	{NULL,						NULL},
 };
