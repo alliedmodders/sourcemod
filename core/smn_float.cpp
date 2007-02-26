@@ -163,19 +163,6 @@ static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<int>(val);
 }
 
-static cell_t sm_FloatStr(IPluginContext *pCtx, const cell_t *params)
-{
-	char *str;
-
-	pCtx->LocalToString(params[1], &str);
-	if (!strlen(str))
-	{
-		return 0;
-	}
-
-	return sp_ftoc((float)atof(str));
-}
-
 static cell_t sm_FloatFraction(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
@@ -244,7 +231,6 @@ static cell_t sm_ArcTangent2(IPluginContext *pCtx, const cell_t *params)
 REGISTER_NATIVES(floatnatives)
 {
 	{"float",			sm_float},
-	{"FloatStr",		sm_FloatStr},
 	{"FloatMul",		sm_FloatMul},
 	{"FloatDiv",		sm_FloatDiv},
 	{"FloatAdd",		sm_FloatAdd},

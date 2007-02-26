@@ -42,14 +42,6 @@ enum floatround_method
 native Float:float(value);
 
 /**
- * Converts a string into a floating point value.
- *
- * @param str			String to convert.
- * @return				Converted floating point number.
- */
-native Float:FloatStr(const String:str[]);
-
-/**
  * Multiplies two floats together.
  *
  * @param oper1			First value.
