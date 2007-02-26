@@ -92,6 +92,11 @@ void CPlugin::InitIdentity()
 	}
 }
 
+Handle_t CPlugin::GetMyHandle()
+{
+	return m_handle;
+}
+
 CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 {
 	char fullpath[PLATFORM_MAX_PATH+1];
@@ -280,7 +285,6 @@ void CPlugin::Call_OnPluginStart()
 		return;
 	}
 
-	pFunction->PushCell(m_handle);
 	pFunction->Execute(&result);
 }
 

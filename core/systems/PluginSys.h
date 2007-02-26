@@ -182,34 +182,36 @@ public:
 	bool IsRunnable() const;
 
 	/**
-	* Adds a language file index to the plugin's list.
-	*/
+	 * Adds a language file index to the plugin's list.
+	 */
 	void AddLangFile(unsigned int index);
 
 	/**
-	* Get language file count for this plugin.
-	*/
+	 * Get language file count for this plugin.
+	 */
 	size_t GetLangFileCount() const;
 
 	/**
-	* Get language file index based on the vector index.
-	*/
+	 * Get language file index based on the vector index.
+	 */
 	unsigned int GetLangFileByIndex(unsigned int index) const;
 public:
 	/**
-	* Returns the modification time during last plugin load.
-	*/
+	 * Returns the modification time during last plugin load.
+	 */
 	time_t GetTimeStamp() const;
 
 	/**
-	* Returns the current modification time of the plugin file.
-	*/
+	 * Returns the current modification time of the plugin file.
+	 */
 	time_t GetFileTimeStamp();
 
 	/** 
 	 * Returns true if the plugin was running, but is now invalid.
 	 */
 	bool WasRunning();
+
+	Handle_t GetMyHandle();
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);

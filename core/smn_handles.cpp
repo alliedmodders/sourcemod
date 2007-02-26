@@ -82,6 +82,13 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 	}
 }
 
+static cell_t sm_GetMyHandle(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	return pPlugin->GetMyHandle();
+}
+
 REGISTER_NATIVES(handles)
 {
 	{"IsValidHandle",			sm_IsValidHandle},

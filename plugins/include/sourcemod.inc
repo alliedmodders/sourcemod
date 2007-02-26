@@ -56,7 +56,7 @@ public Plugin:myinfo;
  *
  * @noreturn
  */
-forward OnPluginStart(Handle:myself);
+forward OnPluginStart();
  
 /**
  *   Called before OnPluginStart, in case the plugin wants to check for load failure.
@@ -155,6 +155,13 @@ forward OnClientAuthorized(client, const String:auth[]);
  * local arrays using 'decl' instead of 'new'.
  */
 forward OnGameFrame();
+
+/**
+ * Returns the calling plugin's Handle.
+ *
+ * @return				Handle of the calling plugin.
+ */
+native Handle:GetMyHandle();
 
 /**
  * Returns the maximum number of clients allowed on the server.
