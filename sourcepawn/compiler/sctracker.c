@@ -410,8 +410,8 @@ void popstacklist(int codegen)
   if (codegen)
   {
     _stack_genusage(stackusage, 1);
+    assert(stackusage->head==NULL);
   }
-  assert(stackusage->head==NULL);
 
   oldlist = stackusage->prev;
   free(stackusage);
