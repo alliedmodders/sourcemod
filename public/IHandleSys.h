@@ -39,7 +39,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		1
+#define SMINTERFACE_HANDLESYSTEM_VERSION		2
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
@@ -303,6 +303,23 @@ namespace SourceMod
 		 * @return				True on success, false if version is unsupported.
 		 */
 		virtual bool InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHandleAccess) =0;
+
+		/**
+		 * @brief Creates a new handle.
+		 * 
+		 * @param type		Type to use on the handle.
+		 * @param object	Object to bind to the handle.
+		 * @param pSec		Security pointer; pOwner is written as the owner,
+		 *					pIdent is used as the parent identity for authorization.
+		 * @param pAccess	Access right descriptor for the Handle; NULL for type defaults.
+		 * @param err		Optional pointer to store an error code.
+		 * @return			A new Handle_t, or 0 on failure.
+		 */
+		virtual Handle_t CreateHandleEx(HandleType_t type, 
+										void *object,
+										const HandleSecurity *pSec,
+										const HandleAccess *pAccess,
+										HandleError *err) =0;
 	};
 }
 

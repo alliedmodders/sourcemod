@@ -63,6 +63,8 @@ struct QHandle
 	unsigned int refcount;		/* Reference count for safe destruction */
 	unsigned int clone;			/* If non-zero, this is our cloned parent index */
 	HandleSet set;				/* Information about the handle's state */
+	bool access_special;		/* Whether or not access rules are special or type-derived */
+	HandleAccess sec;			/* Security rules */
 	/* The following variables are unrelated to the Handle array, and used 
 	 * as an inlined chain of information */
 	unsigned int freeID;		/* ID of a free handle in the free handle chain */
@@ -126,6 +128,12 @@ public: //IHandleSystem
 	bool InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHandleAccess);
 
 	bool TypeCheck(HandleType_t intype, HandleType_t outtype);
+
+	virtual Handle_t CreateHandleEx(HandleType_t type, 
+		void *object,
+		const HandleSecurity *pSec,
+		const HandleAccess *pAccess,
+		HandleError *err);
 protected:
 	/**
 	 * Decodes a handle with sanity and security checking.
@@ -170,7 +178,7 @@ protected:
 	HandleError FreeHandle(QHandle *pHandle, unsigned int index);
 	void UnlinkHandleFromOwner(QHandle *pHandle, unsigned int index);
 	HandleError CloneHandle(QHandle *pHandle, unsigned int index, Handle_t *newhandle, IdentityToken_t *newOwner);
-	Handle_t CreateHandleEx(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err, bool identity);
+	Handle_t CreateHandleInt(HandleType_t type, void *object, const HandleSecurity *pSec, HandleError *err, const HandleAccess *pAccess, bool identity);
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;

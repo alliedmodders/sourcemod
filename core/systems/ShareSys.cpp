@@ -104,7 +104,11 @@ IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
 
 	/* :TODO: Cache? */
 	IdentityToken_t *pToken = new IdentityToken_t;
-	pToken->ident = g_HandleSys.CreateHandleEx(type, NULL, GetIdentRoot(), GetIdentRoot(), NULL, true);
+
+	HandleSecurity sec;
+	sec.pOwner = sec.pIdentity = GetIdentRoot();
+
+	pToken->ident = g_HandleSys.CreateHandleInt(type, NULL, &sec, NULL, NULL, true);
 
 	return pToken;
 }

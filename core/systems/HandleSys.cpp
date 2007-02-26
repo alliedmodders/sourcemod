@@ -283,6 +283,7 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	pHandle->serial = m_HSerial;
 	pHandle->owner = owner;
 	pHandle->ch_next = 0;
+	pHandle->access_special = false;
 
 	/* Create the hash value */
 	Handle_t hash = pHandle->serial;
@@ -336,8 +337,25 @@ void HandleSystem::SetTypeSecurityOwner(HandleType_t type, IdentityToken_t *pTok
 	m_Types[type].typeSec.ident = pToken;
 }
 
-Handle_t HandleSystem::CreateHandleEx(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err, bool identity)
+Handle_t HandleSystem::CreateHandleInt(HandleType_t type, 
+									   void *object, 
+									   const HandleSecurity *pSec,
+									   HandleError *err, 
+									   const HandleAccess *pAccess,
+									   bool identity)
 {
+	IdentityToken_t *ident;
+	IdentityToken_t *owner;
+
+	if (pSec)
+	{
+		ident = pSec->pIdentity;
+		owner = pSec->pOwner;
+	} else {
+		ident = NULL;
+		owner = NULL;
+	}
+
 	if (!type 
 		|| type >= HANDLESYS_TYPEARRAY_SIZE
 		|| m_Types[type].dispatch == NULL)
@@ -376,15 +394,31 @@ Handle_t HandleSystem::CreateHandleEx(HandleType_t type, void *object, IdentityT
 		return 0;
 	}
 
+	if (pAccess)
+	{
+		pHandle->access_special = true;
+		pHandle->sec = *pAccess;
+	}
+
 	pHandle->object = object;
 	pHandle->clone = 0;
 
 	return handle;
 }
 
+Handle_t HandleSystem::CreateHandleEx(HandleType_t type, void *object, const HandleSecurity *pSec, const HandleAccess *pAccess, HandleError *err)
+{
+	return CreateHandleInt(type, object, pSec, err, pAccess, false);
+}
+
 Handle_t HandleSystem::CreateHandle(HandleType_t type, void *object, IdentityToken_t *owner, IdentityToken_t *ident, HandleError *err)
 {
-	return CreateHandleEx(type, object, owner, ident, err, false);
+	HandleSecurity sec;
+
+	sec.pIdentity = ident;
+	sec.pOwner = owner;
+
+	return CreateHandleEx(type, object, &sec, NULL, err);
 }
 
 bool HandleSystem::TypeCheck(HandleType_t intype, HandleType_t outtype)
@@ -447,7 +481,14 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 bool HandleSystem::CheckAccess(QHandle *pHandle, HandleAccessRight right, const HandleSecurity *pSecurity)
 {
 	QHandleType *pType = &m_Types[pHandle->type];
-	unsigned int access = pType->hndlSec.access[right];
+	unsigned int access;
+
+	if (pHandle->access_special)
+	{
+		access = pHandle->sec.access[right];
+	} else {
+		access = pType->hndlSec.access[right];
+	}
 
 	/* Check if the type's identity matches */
 	if (access & HANDLE_RESTRICT_IDENTITY)
@@ -485,6 +526,13 @@ HandleError HandleSystem::CloneHandle(QHandle *pHandle, unsigned int index, Hand
 	if ((err=MakePrimHandle(pHandle->type, &pNewHandle, &new_index, &new_handle, newOwner)) != HandleError_None)
 	{
 		return err;
+	}
+
+	/* Assign permissions from parent */
+	if (pHandle->access_special)
+	{
+		pNewHandle->access_special = true;
+		pNewHandle->sec = pHandle->sec;
 	}
 
 	pNewHandle->clone = index;
