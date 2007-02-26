@@ -53,9 +53,11 @@ extern ISmmPluginManager *g_pMMPlugins;
 extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
+extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
 extern IUniformRandomStream *engrandom;
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
+#define SERVER_CALL(func)		SH_CALL(gamedllPatch, &IServerGameDLL::func)
 
 PLUGIN_GLOBALVARS();
 

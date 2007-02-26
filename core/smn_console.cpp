@@ -512,6 +512,28 @@ static cell_t sm_ServerExecute(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer)-1, pContext, params, 2);
+
+	engine->ClientCommand(pPlayer->GetEdict(), "%s", buffer);
+
+	return 1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -543,5 +565,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"ServerCommand",		sm_ServerCommand},
 	{"InsertServerCommand",	sm_InsertServerCommand},
 	{"ServerExecute",		sm_ServerExecute},
+	{"ClientCommand",		sm_ClientCommand},
 	{NULL,					NULL}
 };

@@ -26,6 +26,7 @@ ICvar *icvar = NULL;
 IGameEventManager2 *gameevents = NULL;
 IUniformRandomStream *engrandom = NULL;
 CallClass<IVEngineServer> *enginePatch = NULL;
+CallClass<IServerGameDLL> *gamedllPatch = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 

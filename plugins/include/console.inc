@@ -78,6 +78,18 @@ native InsertServerCommand(const String:format[], {Handle,Float,String,_}:...);
 native ServerExecute();
 
 /**
+ * Executes a client command.  Note that this will not work on clients unless
+ * they have cl_restrict_server_commands set to 0.
+ *
+ * @param client		Index of the client.
+ * @param fmt			Format of the client command.
+ * @param ...			Format parameters/
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native ClientCommand(client, const String:fmt[], {String,Float,Handle,_}:...);
+
+/**
  * Sends a message to the server console.
  *
  * @param format		Formatting rules.

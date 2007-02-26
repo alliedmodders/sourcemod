@@ -373,6 +373,112 @@ native Float:GetRandomFloat(Float:fMin=0.0, Float:fMax=1.0);
  */
 native GetRandomInt(nmin, nmax);
 
+/**
+ * Returns whether a map is valid or not.
+ * 
+ * @param 				Map name, excluding .bsp extension.
+ * @return				True if valid, false otherwise.
+ */
+native bool:IsMapValid(const String:map[]);
+
+/**
+ * Returns whether the server is dedicated.
+ *
+ * @return				True if dedicated, false otherwise.
+ */
+native bool:IsDedicatedServer();
+
+/**
+ * Returns the number of entities in the server.
+ *
+ * @return				Number of entities in the server.
+ */
+native GetEntityCount();
+
+/**
+ * Returns whether or not an entity is valid.
+ *
+ * @param entity		Index of the entity.
+ * @return				True if valid, false otherwise.
+ */
+native bool:IsValidEntity(entity);
+
+/**
+ * Creates a new edict (the basis of a networkable entity)
+ *
+ * @return				Index of the entity, 0 on failure.
+ */
+native CreateEdict();
+
+/** 
+ * Removes an edict from the world.
+ *
+ * @param entity		Index of the entity.
+ * @noreturn
+ * @error				Invalid entity index.
+ */
+native RemoveEntity(entity);
+
+/**
+ * Returns a high-precision time value for profiling the engine.
+ *
+ * @return				A floating point time value.
+ */
+native Float:GetEngineTime();
+
+/** 
+ * Returns the game time based on the game tick.
+ *
+ * @return				Game tick time.
+ */
+native Float:GetGameTime();
+
+/** 
+ * Creates a fake client.
+ *
+ * @param name			Name to use.
+ * @return				Client index on success, 0 otherwise.
+ */
+native CreateFakeClient(const String:name[]);
+
+/**
+ * Sets a convar value on a fake client.
+ *
+ * @param client		Client index.
+ * @param cvar			ConVar name.
+ * @param value			ConVar value.
+ * @noreturn
+ * @error				Invalid client index, client not connected,
+ *						or client not a fake client.
+ */
+native SetFakeClientConVar(client, const String:cvar[], const String:value[]);
+
+/**
+ * Returns the game description from the mod.
+ *
+ * @param buffer		Buffer to store the description.
+ * @param maxlength		Maximum size of the buffer.
+ * @param original		If true, retrieves the original game description,
+ *						ignoring any potential hooks from plugins.
+ * @return				Number of bytes written to the buffer (UTF-8 safe).
+ */
+native GetGameDescription(String:buffer[], maxlength, bool:original=false);
+
+/**
+ * Returns the maximum number of entities.
+ *
+ * @return				Maximum number of entities.
+ */
+native GetMaxEntities();
+
+/**
+ * Returns the current map name.
+ *
+ * @param buffer		Buffer to store map name.
+ * @param maxlength		Maximum length of buffer.
+ * @return				Number of bytes written (UTF-8 safe).
+ */
+native GetCurrentMap(String:buffer[], maxlength);
 
 #include <usermessages>
 #include <helpers>
