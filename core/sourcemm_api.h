@@ -19,6 +19,7 @@
 #include <eiface.h>
 #include <icvar.h>
 #include <igameevents.h>
+#include <random.h>
 
 /**
  * @file Contains wrappers around required Metamod:Source API exports
@@ -52,6 +53,7 @@ extern ISmmPluginManager *g_pMMPlugins;
 extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
+extern IUniformRandomStream *engrandom;
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 

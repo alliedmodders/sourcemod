@@ -666,6 +666,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_halflife.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_handles.cpp"
 				>
 			</File>

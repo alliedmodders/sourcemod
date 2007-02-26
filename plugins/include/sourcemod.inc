@@ -340,5 +340,32 @@ native LogMessage(const String:format[], {Handle,Float,String,_}:...);
  */
 native LogError(const String:format[], {Handle,Float,String,_}:...);
 
+/**
+ * Sets the seed value for the global Half-Life 2 Random Stream
+ *
+ * @param seed			Seed value.
+ * @noreturn	
+ */
+native SetRandomSeed(seed);
+
+/**
+ * Returns a random floating point number from the Half-Life 2 Random Stream
+ *
+ * @param fMin			Minimum random bound.
+ * @param fMax			Maximum random bound.
+ * @return				A random number between (inclusive) fMin and fMax.
+ */
+native Float:GetRandomFloat(Float:fMin=0.0, Float:fMax=1.0);
+
+/**
+ * Returns a random number from the Half-Life 2 Random Stream
+ *
+ * @param nmin			Minimum random bound.
+ * @param nmax			Maximum random bound.
+ * @return				A random number between (inclusive) nmin and nmax.
+ */
+native GetRandomInt(nmin, nmax);
+
+
 #include <usermessages>
 #include <helpers>
