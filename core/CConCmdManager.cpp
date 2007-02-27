@@ -268,7 +268,7 @@ void CConCmdManager::InternalDispatch()
 			}
 			pHook->pf->PushCell(m_CmdClient);
 			pHook->pf->PushCell(args);
-			if (pHook->pf->Execute(&tempres) != SP_ERROR_NONE)
+			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
 			{
 				if (tempres > result)
 				{
