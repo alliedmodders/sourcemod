@@ -22,6 +22,7 @@
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
+#define UPPERDIGITS		0x00000100		/* make alpha digits uppercase */
 #define to_digit(c)		((c) - '0')
 #define is_digit(c)		((unsigned)to_digit(c) <= 9)
 
@@ -358,6 +359,65 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 	*buf_p = buf;
 }
 
+void AddHex(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
+{
+	char text[32];
+	int digits;
+	char *buf;
+	char digit;
+	int hexadjust;
+
+	if (flags & UPPERDIGITS)
+	{
+		hexadjust = 'A' - '9' - 1;
+	} else {
+		hexadjust = 'a' - '9' - 1;
+	}
+
+	digits = 0;
+	do 
+	{
+		digit = ('0' + val % 16);
+		if (digit > '9')
+		{
+			digit += hexadjust;
+		}
+
+		text[digits++] = digit;
+		val /= 16;
+	} while(val);
+
+	buf = *buf_p;
+
+	if (!(flags & LADJUST))
+	{
+		while (digits < width && maxlen)
+		{
+			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
+			width--;
+			maxlen--;
+		}
+	}
+
+	while (digits-- && maxlen)
+	{
+		*buf++ = text[digits];
+		width--;
+		maxlen--;
+	}
+
+	if (flags & LADJUST)
+	{
+		while (width-- && maxlen)
+		{
+			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
+			maxlen--;
+		}
+	}
+
+	*buf_p = buf;
+}
+
 size_t gnprintf(char *buffer, size_t maxlen, const char *format, void **args)
 {
 	if (!buffer || !maxlen)
@@ -483,6 +543,21 @@ reswitch:
 			{
 				const char *str = (const char *)args[arg];
 				AddString(&buf_p, llen, str, width, prec);
+				arg++;
+				break;
+			}
+		case 'X':
+			{
+				unsigned int *value = (unsigned int *)args[arg];
+				flags |= UPPERDIGITS;
+				AddHex(&buf_p, llen, *value, width, flags);
+				arg++;
+				break;
+			}
+		case 'x':
+			{
+				unsigned int *value = (unsigned int *)args[arg];
+				AddHex(&buf_p, llen, *value, width, flags);
 				arg++;
 				break;
 			}
@@ -702,6 +777,25 @@ reswitch:
 				}
 				buf_p += res;
 				llen -= res;
+				break;
+			}
+		case 'X':
+			{
+				CHECK_ARGS(0);
+				cell_t *value;
+				pCtx->LocalToPhysAddr(params[arg], &value);
+				flags |= UPPERDIGITS;
+				AddHex(&buf_p, llen, static_cast<unsigned int>(*value), width, flags);
+				arg++;
+				break;
+			}
+		case 'x':
+			{
+				CHECK_ARGS(0);
+				cell_t *value;
+				pCtx->LocalToPhysAddr(params[arg], &value);
+				AddHex(&buf_p, llen, static_cast<unsigned int>(*value), width, flags);
+				arg++;
 				break;
 			}
 		case '%':
