@@ -116,7 +116,7 @@ namespace SourceMod
 	class IClientListener
 	{
 	public:
-		virtual unsigned int GetInterfaceVersion()
+		virtual unsigned int GetClientListenerVersion()
 		{
 			return SMINTERFACE_PLAYERMANAGER_VERSION;
 		}
