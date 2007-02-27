@@ -9,7 +9,7 @@ SOURCEMM = ../../../../sourcemm
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = sample
+PROJECT = batsupport
 
 #Uncomment for SourceMM-enabled extensions
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
@@ -60,13 +60,9 @@ endif
 BINARY = $(PROJECT).ext.so
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
-OBJ_LINUX := $(OBJECTS:%.c=$(BIN_DIR)/%.o)
 
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
-
-$(BIN_DIR)/%.o: %.c
-	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 all:
 	mkdir -p $(BIN_DIR)
