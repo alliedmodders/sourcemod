@@ -462,12 +462,33 @@ native FlagArrayToBits(const AdminFlag:array[], numFlags) =0;
  */
 native FlagBitsToArray(bits, AdminFlag:array[], maxSize) =0;
 
+/**
+ * Tests whether one admin can target another.
+ *
+ * @param admin			Admin doing the targetting (may be INVALID_ADMIN_ID).
+ * @param target		Target admin (may be INVALID_ADMIN_ID).
+ * @return				True if targetable, false if immune.
+ */
+native CanAdminTarget(AdminId:admin, AdminId:target);
 
+/**
+ * Converts a flag to its single bit.
+ * 
+ * @param flag			Flag to convert.
+ * @return				Bit representation of the flag.
+ */
 stock FlagToBit(AdminFlag:flag)
 {
 	return (1<<_:flag);
 }
 
+/**
+ * Converts a bit to an AdminFlag.
+ *
+ * @param bit			Bit to convert.
+ * @param flag			Stores the converted flag by reference.
+ * @return				True on success, false otherwise.
+ */
 stock bool:BitToFlag(bit, &AdminFlag:flag)
 {
 	new AdminFlag:array[1];

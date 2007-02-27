@@ -329,6 +329,17 @@ native SetUserFlagBits(client, flags);
 native GetUserFlagBits(client);
 
 /**
+ * Returns whether a user can target another user.
+ * This is a helper function for CanAdminTarget.
+ *
+ * @param client		Player's index.
+ * @param target		Target player's index.
+ * @return				True if target is targettable by the player, false otherwise.
+ * @error				Invalid or unconnected player indexers.
+ */
+native bool:CanUserTarget(client, target);
+
+/**
  * Logs a generic message to the HL2 logs.
  *
  * @param format		String format.

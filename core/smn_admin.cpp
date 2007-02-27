@@ -418,6 +418,11 @@ static cell_t FlagBitsToArray(IPluginContext *pContext, const cell_t *params)
 	}
 }
 
+static cell_t CanAdminTarget(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Admins.CanAdminTarget(params[1], params[2]) ? 1 : 0;
+}
+
 REGISTER_NATIVES(adminNatives)
 {
 	{"DumpAdminCache",			DumpAdminCache},
@@ -454,6 +459,7 @@ REGISTER_NATIVES(adminNatives)
 	{"FlagBitArrayToBits",		FlagBitArrayToBits},
 	{"FlagArrayToBits",			FlagArrayToBits},
 	{"FlagBitsToArray",			FlagBitsToArray},
+	{"CanAdminTarget",			CanAdminTarget},
 	/* -------------------------------------------------- */
 	{NULL,						NULL},
 };

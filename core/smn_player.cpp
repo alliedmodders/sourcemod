@@ -345,6 +345,30 @@ static cell_t GetClientUserId(IPluginContext *pContext, const cell_t *params)
 	return engine->GetPlayerUserId(pPlayer->GetEdict());
 }
 
+static cell_t CanUserTarget(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	int target = params[2];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsConnected()) {
+		return pContext->ThrowNativeError("Player %d is not connected", client);
+	}
+
+	CPlayer *pTarget = g_Players.GetPlayerByIndex(target);
+	if (!pTarget)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", target);
+	} else if (!pTarget->IsConnected()) {
+		return pContext->ThrowNativeError("Player %d is not connected", target);
+	}
+
+	return g_Admins.CanAdminTarget(pPlayer->GetAdminId(), pTarget->GetAdminId()) ? 1 : 0;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"GetMaxClients",			sm_GetMaxClients},
@@ -364,6 +388,7 @@ REGISTER_NATIVES(playernatives)
 	{"SetUserFlagBits",			SetUserFlagBits},
 	{"GetUserFlagBits",			GetUserFlagBits},
 	{"GetClientUserId",			GetClientUserId},
+	{"CanUserTarget",			CanUserTarget},
 	{NULL,						NULL}
 };
 
