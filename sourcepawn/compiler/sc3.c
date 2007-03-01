@@ -1266,7 +1266,7 @@ static int hier14(value *lval1)
  *   (a() ? return_array() : return_array()) ? return_array() : return_array()
  */
 
-void dynarray_from_heaplist(memuse_list_t *heap)
+long dynarray_from_heaplist(memuse_list_t *heap)
 {
   memuse_t *use=heap->head;
   memuse_t *tmp;
@@ -1281,6 +1281,7 @@ void dynarray_from_heaplist(memuse_list_t *heap)
   free(heap);
   if (total)
     setheap_save(-total*sizeof(cell));
+  return total;
 }
 
 static int hier13(value *lval)
@@ -1291,6 +1292,7 @@ static int hier13(value *lval)
     int flab2=getlabel();
     value lval2={0};
     int array1,array2;
+    long total1,total2;
     memuse_list_t *heap;
     
     pushheaplist();
@@ -1309,7 +1311,7 @@ static int hier13(value *lval)
       ldconst(lval->constval,sPRI);
     sc_allowtags=(short)POPSTK_I();     /* restore */
     heap=popsaveheaplist();
-    dynarray_from_heaplist(heap);
+    total1=dynarray_from_heaplist(heap);
     pushheaplist();
     jumplabel(flab2);
     setlabel(flab1);
@@ -1331,9 +1333,9 @@ static int hier13(value *lval)
     if (!matchtag(lval->tag,lval2.tag,FALSE))
       error(213);               /* tagname mismatch ('true' and 'false' expressions) */
     heap=popsaveheaplist();
-    dynarray_from_heaplist(heap);
+    total2=dynarray_from_heaplist(heap);
     setlabel(flab2);
-    if (array1 && array2) {
+    if ((array1 && array2) && (total1 && total2)) {
       markheap(MEMUSE_DYNAMIC, 0);
     }
     if (lval->ident==iARRAY)
