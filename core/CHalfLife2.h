@@ -39,7 +39,10 @@ public:
 	void OnSourceModAllShutdown();*/
 public:
 	SendProp *FindInSendTable(const char *classname, const char *offset);
-public:
+	ServerClass *FindServerClass(const char *classname);
+private:
+	DataTableInfo *_FindServerClass(const char *classname);
+private:
 	Trie *m_pClasses;
 	List<DataTableInfo *> m_Tables;
 };

@@ -73,7 +73,18 @@ SendProp *UTIL_FindInSendTable(SendTable *pTable, const char *name)
 	return NULL;
 }
 
-SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
+ServerClass *CHalfLife2::FindServerClass(const char *classname)
+{
+	DataTableInfo *pInfo = _FindServerClass(classname);
+	if (!pInfo)
+	{
+		return NULL;
+	}
+
+	return pInfo->sc;
+}
+
+DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 {
 	DataTableInfo *pInfo = NULL;
 
@@ -96,6 +107,18 @@ SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
 		{
 			return NULL;
 		}
+	}
+
+	return pInfo;
+}
+
+SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
+{
+	DataTableInfo *pInfo = _FindServerClass(classname);
+
+	if (!pInfo)
+	{
+		return NULL;
 	}
 
 	SendProp *pProp;
