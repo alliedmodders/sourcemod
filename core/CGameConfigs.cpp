@@ -31,6 +31,7 @@ char g_mod[255];
 #define PSTATE_GAMEDEFS					2
 #define PSTATE_GAMEDEFS_OFFSETS			3
 #define PSTATE_GAMEDEFS_OFFSETS_OFFSET	4
+#define PSTATE_GAMEDEFS_KEYS			5
 
 #if defined PLATFORM_WINDOWS
 #define PLATFORM_NAME	"windows"
@@ -43,13 +44,17 @@ CGameConfig::CGameConfig(const char *file)
 	m_pFile = sm_strdup(file);
 	m_pOffsets = sm_trie_create();
 	m_pProps = sm_trie_create();
+	m_pKeys = sm_trie_create();
+	m_pStrings = new BaseStringTable(512);
 }
 
 CGameConfig::~CGameConfig()
 {
 	sm_trie_destroy(m_pOffsets);
 	sm_trie_destroy(m_pProps);
+	sm_trie_destroy(m_pKeys);
 	delete [] m_pFile;
+	delete m_pStrings;
 }
 
 SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes)
@@ -88,6 +93,8 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 			if (strcmp(name, "Offsets") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_OFFSETS;
+			} else if (strcmp(name, "Keys") == 0) {
+				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			} else {
 				m_IgnoreLevel++;
 			}
@@ -103,6 +110,7 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 		}
 	/* No sub-sections allowed:
 	 case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
+	 case PSTATE_GAMEDEFS_KEYS:
 	 */
 	default:
 		{
@@ -133,6 +141,9 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 			int val = atoi(value);
 			sm_trie_insert(m_pOffsets, m_offset, (void *)val);
 		}
+	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
+		int id = m_pStrings->AddString(value);
+		sm_trie_insert(m_pKeys, key, (void *)id);
 	}
 
 	return SMCParse_Continue;
@@ -158,6 +169,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			m_ParseState = PSTATE_GAMES;
 			break;
 		}
+	case PSTATE_GAMEDEFS_KEYS:
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
 			m_ParseState = PSTATE_GAMEDEFS;
@@ -203,10 +215,14 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "configs/gamedata/%s.txt", m_pFile);
 
-	/* Initialize states */
+	/* Initialize parse states */
 	m_IgnoreLevel = 0;
 	m_ParseState = PSTATE_NONE;
+	/* Reset cached data */
+	m_pStrings->Reset();
 	sm_trie_clear(m_pOffsets);
+	sm_trie_clear(m_pProps);
+	sm_trie_clear(m_pKeys);
 
 	if ((err=g_TextParser.ParseFile_SMC(path, this, NULL, NULL))
 		!= SMCParse_Okay)
@@ -238,8 +254,12 @@ bool CGameConfig::GetOffset(const char *key, int *value)
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	/* :TODO: implement */
-	return false;
+	void *obj;
+	if (!sm_trie_retrieve(m_pKeys, key, &obj))
+	{
+		return NULL;
+	}
+	return m_pStrings->GetString((int)obj);
 }
 
 SendProp *CGameConfig::GetSendProp(const char *key)

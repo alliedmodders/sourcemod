@@ -20,6 +20,7 @@
 #include <sh_list.h>
 #include "sm_trie.h"
 #include "sm_globals.h"
+#include "sm_memtable.h"
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -47,9 +48,11 @@ public:
 	void IncRefCount();
 	unsigned int DecRefCount();
 private:
+	BaseStringTable *m_pStrings;
 	char *m_pFile;
 	Trie *m_pOffsets;
 	Trie *m_pProps;
+	Trie *m_pKeys;
 	unsigned int m_RefCount;
 	/* Parse states */
 	int m_ParseState;

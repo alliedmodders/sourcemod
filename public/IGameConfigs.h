@@ -68,13 +68,21 @@ namespace SourceMod
 		virtual bool GetOffset(const char *key, int *value) =0;
 
 		/**
-		 * @brief Returns information about a property.
+		 * @brief Returns information about a dynamic offset.
 		 *
 		 * @param key			Key to retrieve from the property section.
 		 * @param value			Pointer to store the offset value.  Will be -1 on failure.
 		 * @return				A PropError error code.
 		 */
 		virtual SendProp *GetSendProp(const char *key) =0;
+
+		/**
+		 * @brief Returns the value of a key from the "Keys" section.
+		 *
+		 * @param key			Key to retrieve from the Keys section.
+		 * @return				String containing the value, or NULL if not found.
+		 */
+		virtual const char *GetKeyValue(const char *key) =0;
 	};
 
 	/**
