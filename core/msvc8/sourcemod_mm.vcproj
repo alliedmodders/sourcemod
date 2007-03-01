@@ -200,6 +200,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CGameConfigs.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\CHalfLife2.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CLogger.cpp"
 				>
 			</File>
@@ -274,7 +282,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CGameEventManager.h"
+				RelativePath="..\CGameConfigs.h"
+				>
+			</File>
+			<File
+				RelativePath="..\CHalfLife2.h"
 				>
 			</File>
 			<File
@@ -359,6 +371,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\IForwardSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IGameConfigs.h"
 				>
 			</File>
 			<File

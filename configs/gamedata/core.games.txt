@@ -1,0 +1,14 @@
+"Games"
+{
+	"*"
+	{
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"13"
+				"linux"			"14"
+			}
+		}
+	}
+}
