@@ -230,7 +230,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 		if (error && (err != SMCParse_Custom))
 		{
 			const char *str = g_TextParser.GetSMCErrorString(err);
-			snprintf(error, maxlength, "%s", err);
+			snprintf(error, maxlength, "%s", str);
 		}
 		return false;
 	}
