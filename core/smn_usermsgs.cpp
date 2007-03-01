@@ -52,6 +52,7 @@ void UsrMessageNatives::OnSourceModShutdown()
 	g_PluginSys.RemovePluginsListener(this);
 	g_WrBitBufType = 0;
 }
+
 void UsrMessageNatives::OnHandleDestroy(HandleType_t type, void *object)
 {
 }
@@ -131,6 +132,7 @@ MsgListenerWrapper *UsrMessageNatives::FindListener(int msgid, IPluginContext *p
 
 	return (found) ? listener : NULL;
 }
+
 bool UsrMessageNatives::RemoveListener(IPluginContext *pCtx, MsgListenerWrapper *listener, bool intercept)
 {
 	List<MsgListenerWrapper *> *wrapper_list;
@@ -166,6 +168,21 @@ static cell_t smn_GetUserMessageId(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	return g_UserMsgs.GetMessageIndex(msgname);
+}
+
+static cell_t smn_GetUserMessageName(IPluginContext *pCtx, const cell_t *params)
+{
+	char *msgname;
+
+	pCtx->LocalToPhysAddr(params[2], (cell_t **)&msgname);
+
+	if (!g_UserMsgs.GetMessageName(params[1], msgname, params[3]))
+	{
+		msgname = "";
+		return 0;
+	}
+
+	return 1;
 }
 
 static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
@@ -269,6 +286,7 @@ static cell_t smn_HookUserMessage(IPluginContext *pCtx, const cell_t *params)
 	intercept = (params[3]) ? true : false;
 	listener = s_UsrMessageNatives.GetNewListener(pCtx);
 	listener->InitListener(msgid, pHook, pNotify, intercept);
+
 	g_UserMsgs.HookUserMessage(msgid, listener, intercept);
 
 	return 1;
@@ -312,6 +330,7 @@ static cell_t smn_UnHookUserMessage(IPluginContext *pCtx, const cell_t *params)
 REGISTER_NATIVES(usrmsgnatives)
 {
 	{"GetUserMessageId",			smn_GetUserMessageId},
+	{"GetUserMessageName",			smn_GetUserMessageName},
 	{"StartMessage",				smn_StartMessage},
 	{"StartMessageEx",				smn_StartMessageEx},
 	{"EndMessage",					smn_EndMessage},

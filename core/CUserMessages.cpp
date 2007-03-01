@@ -19,6 +19,8 @@ CUserMessages g_UserMsgs;
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
 
+//:TODO: USE NEW MM IFACE TO SEARCH FOR MESSAGE NAMES ETC! faluco--> i'll do this when i have some spare time
+
 CUserMessages::CUserMessages() : m_InterceptBuffer(m_pBase, 2500)
 {
 	m_Names = sm_trie_create();
@@ -69,6 +71,13 @@ int CUserMessages::GetMessageIndex(const char *msg)
 	}
 
 	return msgid;
+}
+
+bool CUserMessages::GetMessageName(int msgid, char *buffer, size_t maxlen) const
+{
+	int dummy;
+
+	return gamedll->GetUserMessageInfo(msgid, buffer, maxlen, dummy);
 }
 
 bf_write *CUserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)
