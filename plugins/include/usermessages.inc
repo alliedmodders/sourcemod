@@ -85,6 +85,7 @@ native EndMessage();
  * @brief Called when a message is hooked
  *
  * @param msg_id		Message index.
+ * @param bf			Handle to the input bit buffer of the message.
  * @param players		Array containing player indexes.
  * @param playersNum	Number of players in the array.
  * @param reliable		True if message is reliable, false otherwise.
@@ -92,7 +93,14 @@ native EndMessage();
  * @return				Ignored for normal hooks.  For intercept hooks, false blocks 
  *						the message from being sent, and true continues.
  */
-functag MsgHook bool:public(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
+functag MsgHook Action:public(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
+
+/**
+ * @brief Called when a message is finished sending.
+ *
+ * @param msg_id		Message index.
+ */
+functag MsgSentNotify public(UserMsg:msg_id);
 
 /**
  * @brief Hooks a user message.
@@ -102,10 +110,11 @@ functag MsgHook bool:public(UserMsg:msg_id, Handle:bf, const players[], playersN
  * @param intercept		If intercept is true, message will be fully intercepted,
  * 						allowing the user to block the message.  Otherwise,
  *						the hook is normal and ignores the return value.
+ * @param notify		Notification function.
  * @noreturn
  * @error				Invalid message index.
  */
-native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
+native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgSentNotify:notify=MsgSentNotify:-1);
 
 /**
  * @brief Removes one usermessage hook.
@@ -117,33 +126,6 @@ native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
  * @error				Invalid message index.
  */
 native UnHookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
-
-/**
- * @brief Called when a message is finished sending.
- *
- * @param msg_id		Message index.
- */
-functag MsgSentNotify public(UserMsg:msg_id);
-
-/**
- * @brief Notifies when a message has finished sending.
- *
- * @param msg_id		Message index.
- * @param notify		Notification function.
- * @noreturn
- * @error				Invalid message index.
- */
-native NotifyUserMessage(UserMsg:msg_id, MsgSentNotify:notify);
-
-/**
- * @brief Removes a user message notification.
- *
- * @param msg_id		Message index.
- * @param notify		Notification function.
- * @noreturn
- * @error				Invalid message index.
- */
-native RemoveNotifyUserMessage(UserMsg:msg_id, MsgSentNotify:notify);
 
 /**
  * Starts a usermessage (network message) that broadcasts to all clients.

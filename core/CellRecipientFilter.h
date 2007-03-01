@@ -21,7 +21,7 @@
 class CellRecipientFilter : public IRecipientFilter
 {
 public:
-	CellRecipientFilter() : m_Reliable(false), m_InitMessage(false), m_Size(0), m_CellRecipients(NULL) {}
+	CellRecipientFilter() : m_Reliable(false), m_InitMessage(false), m_Size(0) {}
 	~CellRecipientFilter() {}
 public: //IRecipientFilter
 	bool IsReliable() const;
@@ -34,10 +34,10 @@ public:
 	void SetInitMessage(bool isinitmsg);
 	void ResetFilter();
 private:
+	cell_t m_CellRecipients[255];
 	bool m_Reliable;
 	bool m_InitMessage;
 	size_t m_Size;
-	cell_t *m_CellRecipients;
 };
 
 inline void CellRecipientFilter::ResetFilter()
@@ -45,7 +45,6 @@ inline void CellRecipientFilter::ResetFilter()
 	m_Reliable = false;
 	m_InitMessage = false;
 	m_Size = 0;
-	m_CellRecipients = NULL;
 }
 
 inline bool CellRecipientFilter::IsReliable() const
@@ -84,7 +83,7 @@ inline void CellRecipientFilter::SetReliable(bool isreliable)
 
 inline void CellRecipientFilter::SetRecipientPtr(cell_t *ptr, size_t count)
 {
-	m_CellRecipients = ptr;
+	memcpy(m_CellRecipients, ptr, count * sizeof(cell_t));
 	m_Size = count;
 }
 

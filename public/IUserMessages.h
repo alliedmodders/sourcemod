@@ -19,7 +19,9 @@
 #ifndef _INCLUDE_SOURCEMOD_INTERFACE_USERMESSAGES_H_
 #define _INCLUDE_SOURCEMOD_INTERFACE_USERMESSAGES_H_
 
+#include <IShareSys.h>
 #include <sp_vm_api.h>
+#include <IForwardSys.h>
 #include <bitbuf.h>
 #include <irecipientfilter.h>
 
@@ -59,9 +61,9 @@ namespace SourceMod
 		 * @param pFtiler		Recipient filter.
 		 * @return				True to allow message, false to scrap it.
 		 */
-		virtual bool InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+		virtual ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 		{
-			return true;
+			return Pl_Continue;
 		}
 
 		/**
@@ -72,6 +74,11 @@ namespace SourceMod
 		{
 		}
 	};
+
+	#define USERMSG_PASSTHRU			(1<<0)		/**< Message will pass through other SourceMM plugins */
+	#define USERMSG_PASSTHRU_ALL		(1<<1)		/**< Message will pass through other SourceMM plugins AND SourceMod */
+	#define USERMSG_RELIABLE			(1<<2)		/**< Message will be set to reliable */
+	#define USERMSG_INITMSG				(1<<3)		/**< Message will be considered to be an initmsg */
 
 	/**
 	 * @brief Contains functions for hooking user messages.
@@ -127,14 +134,15 @@ namespace SourceMod
 		 * @param players		Array containing player indexes.
 		 * @param playersNum	Number of players in the array.
 		 * @param flags			Flags to use for sending the message.
-		 * @return				bf_write structure to write message with.
+		 * @return				bf_write structure to write message with, or NULL on failure.
 		 */
 		virtual bf_write *StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags) =0;
 
 		/**
 		 * @brief Wrapper around UserMessageEnd for use with StartMessage().
+		 * @return				True on success, false otherwise.
 		 */
-		virtual void EndMessage() =0;
+		virtual bool EndMessage() =0;
 	};
 }
 
