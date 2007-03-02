@@ -51,50 +51,6 @@ static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 	return engine->IsDedicatedServer();
 }
 
-static cell_t GetEntityCount(IPluginContext *pContext, const cell_t *params)
-{
-	return engine->GetEntityCount();
-}
-
-static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
-{
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
-
-	if (!pEdict)
-	{
-		return 0;
-	}
-
-	/* Shouldn't be necessary... not sure though */
-	return pEdict->IsFree() ? 0 : 1;
-}
-
-static cell_t CreateEdict(IPluginContext *pContext, const cell_t *params)
-{
-	edict_t *pEdict = engine->CreateEdict();
-
-	if (!pEdict)
-	{
-		return 0;
-	}
-
-	return engine->IndexOfEdict(pEdict);
-}
-
-static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
-{
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
-
-	if (!pEdict)
-	{
-		return pContext->ThrowNativeError("Edict %d is not a valid edict", params[1]);
-	}
-
-	engine->RemoveEdict(pEdict);
-
-	return 1;
-}
-
 static cell_t GetEngineTime(IPluginContext *pContext, const cell_t *params)
 {
 	float fTime = engine->Time();
@@ -171,11 +127,6 @@ static cell_t GetGameDescription(IPluginContext *pContext, const cell_t *params)
 	return numBytes;
 }
 
-static cell_t GetMaxEntities(IPluginContext *pContext, const cell_t *params)
-{
-	return gpGlobals->maxEntities;
-}
-
 static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 {
 	size_t bytes;
@@ -185,20 +136,15 @@ static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(halflifeNatives)
 {
-	{"CreateEdict",				CreateEdict},
 	{"CreateFakeClient",		CreateFakeClient},
 	{"GetCurrentMap",			GetCurrentMap},
 	{"GetEngineTime",			GetEngineTime},
-	{"GetEntityCount",			GetEntityCount},
 	{"GetGameDescription",		GetGameDescription},
 	{"GetGameTime",				GetGameTime},
-	{"GetMaxEntities",			GetMaxEntities},
 	{"GetRandomFloat",			GetRandomFloat},
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},
 	{"IsMapValid",				IsMapValid},
-	{"IsValidEntity",			IsValidEntity},
-	{"RemoveEdict",				RemoveEdict},
 	{"SetFakeClientConVar",		SetFakeClientConVar},
 	{"SetRandomSeed",			SetRandomSeed},
 	{NULL,						NULL},

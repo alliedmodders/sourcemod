@@ -37,6 +37,7 @@ struct Plugin
 #include <bitbuffer>
 #include <sorting>
 #include <clients>
+#include <entity>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -174,37 +175,6 @@ native bool:IsMapValid(const String:map[]);
 native bool:IsDedicatedServer();
 
 /**
- * Returns the number of entities in the server.
- *
- * @return				Number of entities in the server.
- */
-native GetEntityCount();
-
-/**
- * Returns whether or not an entity is valid.
- *
- * @param entity		Index of the entity.
- * @return				True if valid, false otherwise.
- */
-native bool:IsValidEntity(entity);
-
-/**
- * Creates a new edict (the basis of a networkable entity)
- *
- * @return				Index of the entity, 0 on failure.
- */
-native CreateEdict();
-
-/** 
- * Removes an edict from the world.
- *
- * @param entity		Index of the entity.
- * @noreturn
- * @error				Invalid entity index.
- */
-native RemoveEntity(entity);
-
-/**
  * Returns a high-precision time value for profiling the engine.
  *
  * @return				A floating point time value.
@@ -228,13 +198,6 @@ native Float:GetGameTime();
  * @return				Number of bytes written to the buffer (UTF-8 safe).
  */
 native GetGameDescription(String:buffer[], maxlength, bool:original=false);
-
-/**
- * Returns the maximum number of entities.
- *
- * @return				Maximum number of entities.
- */
-native GetMaxEntities();
 
 /**
  * Returns the current map name.
