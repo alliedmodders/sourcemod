@@ -43,7 +43,7 @@ void CForwardManager::OnSourceModShutdown()
 	g_PluginSys.RemovePluginsListener(this);
 }
 
-IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, ...)
+IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, const ParamType *types, ...)
 {
 	CForward *fwd;
 	va_list ap;
@@ -61,7 +61,7 @@ IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned
 	return fwd;
 }
 
-IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType et, int num_params, ParamType *types, ...)
+IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType et, int num_params, const ParamType *types, ...)
 {
 	CForward *fwd;
 	va_list ap;
@@ -186,7 +186,7 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
  * ACTUAL FORWARD API IMPLEMENTATION *
  *************************************/
 
-CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int num_params, ParamType *types, va_list ap)
+CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int num_params, const ParamType *types, va_list ap)
 {
 	ParamType _types[SP_MAX_EXEC_PARAMS];
 

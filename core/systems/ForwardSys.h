@@ -68,7 +68,7 @@ public:
 	static CForward *CreateForward(const char *name, 
 								   ExecType et, 
 								   unsigned int num_params, 
-								   ParamType *types, 
+								   const ParamType *types, 
 								   va_list ap);
 private:
 	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
@@ -108,12 +108,12 @@ public: //IForwardManager
 	IForward *CreateForward(const char *name, 
 		ExecType et, 
 		unsigned int num_params, 
-		ParamType *types, 
+		const ParamType *types, 
 		...);
 	IChangeableForward *CreateForwardEx(const char *name, 
 		ExecType et, 
 		int num_params, 
-		ParamType *types, 
+		const ParamType *types, 
 		...);
 	IForward *FindForward(const char *name, IChangeableForward **ifchng);
 	void ReleaseForward(IForward *forward);

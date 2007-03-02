@@ -289,7 +289,7 @@ namespace SourceMod
 		virtual IForward *CreateForward(const char *name, 
 										ExecType et, 
 										unsigned int num_params, 
-										ParamType *types, 
+										const ParamType *types, 
 										...) =0;
 
 		/**
@@ -309,7 +309,7 @@ namespace SourceMod
 		virtual IChangeableForward *CreateForwardEx(const char *name, 
 													ExecType et, 
 													int num_params, 
-													ParamType *types, 
+													const ParamType *types, 
 													...) =0;
 
 		/**
