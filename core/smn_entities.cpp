@@ -35,6 +35,30 @@ inline edict_t *GetEdict(cell_t num)
 	return pEdict;
 }
 
+inline edict_t *GetEntity(cell_t num, CBaseEntity **pData)
+{
+	edict_t *pEdict = engine->PEntityOfEntIndex(num);
+	if (!pEdict || pEdict->IsFree())
+	{
+		return NULL;
+	}
+	if (num > 0 && num < g_Players.GetMaxClients())
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(num);
+		if (!pPlayer || !pPlayer->IsConnected())
+		{
+			return NULL;
+		}
+	}
+	IServerUnknown *pUnk;
+	if ((pUnk=pEdict->GetUnknown()) == NULL)
+	{
+		return NULL;
+	}
+	*pData = pUnk->GetBaseEntity();
+	return pEdict;
+}
+
 static cell_t GetMaxEntities(IPluginContext *pContext, const cell_t *params)
 {
 	return gpGlobals->maxEntities;
@@ -184,11 +208,244 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetEntData(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	switch (params[3])
+	{
+	case 4:
+		return *(int *)((uint8_t *)pEntity + offset);
+	case 2:
+		return *(short *)((uint8_t *)pEntity + offset);
+	case 1:
+		return *((uint8_t *)pEntity + offset);
+	default:
+		return pContext->ThrowNativeError("Integer size %d is invalid", params[3]);
+	}
+}
+
+static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	switch (params[4])
+	{
+	case 4:
+		{
+			*(int *)((uint8_t *)pEntity + offset) = params[3];
+			break;
+		}
+	case 2:
+		{
+			*(short *)((uint8_t *)pEntity + offset) = params[3];
+			break;
+		}
+	case 1:
+		{
+			*((uint8_t *)pEntity + offset) = params[3];
+			break;
+		}
+	default:
+		return pContext->ThrowNativeError("Integer size %d is invalid", params[4]);
+	}
+
+	return 1;
+}
+
+static cell_t GetEntDataFloat(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	float f = *(float *)((uint8_t *)pEntity + offset);
+
+	return sp_ftoc(f);
+}
+
+static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	*(float *)((uint8_t *)pEntity + offset) = sp_ctof(params[3]);
+
+	return 1;
+}
+
+static cell_t GetEntDataVector(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	Vector *v = (Vector *)((uint8_t *)pEntity + offset);
+
+	cell_t *vec;
+	pContext->LocalToPhysAddr(params[3], &vec);
+
+	vec[0] = v->x;
+	vec[1] = v->y;
+	vec[2] = v->z;
+
+	return 1;
+}
+
+static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	Vector *v = (Vector *)((uint8_t *)pEntity + offset);
+
+	cell_t *vec;
+	pContext->LocalToPhysAddr(params[3], &vec);
+
+	v->x = vec[0];
+	v->y = vec[1];
+	v->z = vec[2];
+
+	return 1;
+}
+
+static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+
+	if (!hndl.IsValid())
+	{
+		return 0;
+	}
+
+	/* :TODO: check serial no.? */
+
+	return hndl.GetEntryIndex();
+}
+
+static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+
+	if (params[3] == 0)
+	{
+		hndl.Set(NULL);
+	} else {
+		edict_t *pEdict = GetEdict(params[3]);
+		if (!pEdict)
+		{
+			return pContext->ThrowNativeError("Entity %d is invalid", params[3]);
+		}
+		IServerEntity *pEntOther = pEdict->GetIServerEntity();
+		hndl.Set(pEntOther);
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"CreateEdict",				CreateEdict},
 	{"GetEdictClassname",		GetEdictClassname},
 	{"GetEdictFlags",			GetEdictFlags},
+	{"GetEntData",				GetEntData},
+	{"GetEntDataEnt",			GetEntDataEnt},
+	{"GetEntDataFloat",			GetEntDataFloat},
+	{"GetEntDataVector",		GetEntDataVector},
 	{"GetEntityNetClass",		GetEntityNetClass},
 	{"GetMaxEntities",			GetMaxEntities},
 	{"IsEntNetworkable",		IsEntNetworkable},
@@ -196,4 +453,8 @@ REGISTER_NATIVES(entityNatives)
 	{"IsValidEntity",			IsValidEntity},
 	{"RemoveEdict",				RemoveEdict},
 	{"SetEdictFlags",			SetEdictFlags},
+	{"SetEntData",				SetEntData},
+	{"SetEntDataEnt",			SetEntDataEnt},
+	{"SetEntDataFloat",			SetEntDataFloat},
+	{"SetEntDataVector",		SetEntDataVector},
 };

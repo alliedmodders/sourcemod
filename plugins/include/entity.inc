@@ -129,3 +129,123 @@ native bool:GetEdictClassname(edict, String:clsname[], maxlength);
  * @error				Invalid edict index.
  */
 native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
+
+/**
+ * @section Entity offset functions
+ *
+ * Offsets should be specified in byte distance from the CBaseEntity 
+ * structure, not short (double byte) or integer (four byte) multiples.  
+ * It is somewhat common practice to use offsets aligned to their final 
+ * type, and thus make sure you are not falling to this error in SourceMod.
+ * For example, if your "integer-aligned" offset was 119, your byte-aligned
+ * offset is 119*4, or 476.
+ 
+ * Specifying incorrect offsets or the incorrect data type for an offset
+ * can have fatal consequences.  If you are hardcoding offsets, and the 
+ * layout of CBaseEntity does not match, you can easily crash the server.
+ *
+ * The reasonable bounds for offsets is greater than or equal to 0 and 
+ * below 32768.  Offsets out of these bounds will throw an error.  However,
+ * this does not represent any real range, it is simply a sanity check for
+ * illegal values.  Any range outside of the CBaseEntity structure's private
+ * size will cause undefined behaviour or even crash.
+ */
+
+/**
+ * Peeks into an entity's object data and retrieves the integer value at 
+ * the given offset.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param size			Number of bytes to read (valid values are 1, 2, or 4).
+ * @return				Value at the given memory location.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native GetEntData(entity, offset, size=4);
+
+/**
+ * Peeks into an entity's object data and sets the integer value at 
+ * the given offset.
+ *
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param size			Number of bytes to write (valid values are 1, 2, or 4).
+ * @return				Value at the given memory location.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ * @noreturn
+ */
+native SetEntData(entity, offset, value, size=4);
+
+/**
+ * Peeks into an entity's object data and retrieves the float value at 
+ * the given offset.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @return				Value at the given memory location.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native Float:GetEntDataFloat(entity, offset);
+
+/**
+ * Peeks into an entity's object data and sets the integer value at 
+ * the given offset.
+ *
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @return				Value at the given memory location.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ * @noreturn
+ */
+native SetEntDataFloat(entity, offset, Float:value);
+
+/**
+ * Peeks into an entity's object data and retrieves the entity handle
+ * info at the given offset.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @return				Entity index at the given location, or 0 if none.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native GetEntDataEnt(entity, offset);
+
+/**
+ * Peeks into an entity's object data and sest the entity handle info
+ * at the given offset.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param other			Entity index to set, or 0 to clear.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native SetEntDataEnt(entity, offset, other);
+
+/**
+ * Peeks into an entity's object data and retrieves the vector at the 
+ * given offset.
+ * @note Both a Vector and a QAngle are three floats.  This is a 
+ * convenience function and will work with both types.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param vec			Vector buffer to store data in.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native GetEntDataVector(entity, offset, Float:vec[3]);
+
+/**
+ * Peeks into an entity's object data and sets the vector at the given 
+ * offset.
+ * @note Both a Vector and a QAngle are three floats.  This is a 
+ * convenience function and will work with both types.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param vec			Vector to set.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native SetEntDataVector(entity, offset, const Float:vec[3]);
