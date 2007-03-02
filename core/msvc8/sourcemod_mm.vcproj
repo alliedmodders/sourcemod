@@ -682,6 +682,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_core.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_datapacks.cpp"
 				>
 			</File>

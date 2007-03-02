@@ -31,7 +31,7 @@
 
 using namespace SourcePawn;
 
-#define ERROR_MESSAGE_MAX		23
+#define ERROR_MESSAGE_MAX		25
 static const char *g_ErrorMsgTable[] = 
 {
 	NULL,
@@ -59,6 +59,7 @@ static const char *g_ErrorMsgTable[] =
 	"Maximum number of parameters reached",
 	"Native detected error",
 	"Plugin not runnable",
+	"Call was aborted",
 };
 
 SourcePawnEngine::SourcePawnEngine()

@@ -62,6 +62,7 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 #define SP_ERROR_PARAMS_MAX				22	/**< Maximum number of parameters reached */
 #define SP_ERROR_NATIVE					23	/**< Error originates from a native */
 #define SP_ERROR_NOT_RUNNABLE			24	/**< Function or plugin is not runnable */
+#define SP_ERROR_ABORTED				25	/**< Function call was aborted */
 //Hey you! Update the string table if you add to the end of me! */
 
 /**********************************************

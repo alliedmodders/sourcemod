@@ -37,7 +37,6 @@ struct Plugin
 #include <bitbuffer>
 #include <sorting>
 #include <clients>
-#include <entity>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -105,6 +104,18 @@ forward OnGameFrame();
  * @return				Handle of the calling plugin.
  */
 native Handle:GetMyHandle();
+
+
+/**
+ * Aborts the current callback and throws an error.  This function
+ * does not return in that no code is executed following it.
+ *
+ * @param format		String format.
+ * @param ...			Format arguments.
+ * @noreturn
+ * @error				Always!
+ */
+native ThrowError(const String:fmt[], {Handle,Float,String,_}:...);
 
 /**
  * Logs a generic message to the HL2 logs.
@@ -210,3 +221,4 @@ native GetCurrentMap(String:buffer[], maxlength);
 
 #include <usermessages>
 #include <helpers>
+#include <entity>
