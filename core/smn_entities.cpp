@@ -16,6 +16,7 @@
 #include "sourcemm_api.h"
 #include "server_class.h"
 #include "CPlayerManager.h"
+#include "CHalfLife2.h"
 
 inline edict_t *GetEdict(cell_t num)
 {
@@ -253,6 +254,11 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
 
+	if (params[5])
+	{
+		pEdict->StateChanged(offset);
+	}
+
 	switch (params[4])
 	{
 	case 4:
@@ -316,6 +322,11 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 
 	*(float *)((uint8_t *)pEntity + offset) = sp_ctof(params[3]);
 
+	if (params[4])
+	{
+		pEdict->StateChanged(offset);
+	}
+
 	return 1;
 }
 
@@ -371,6 +382,11 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	v->x = vec[0];
 	v->y = vec[1];
 	v->z = vec[2];
+
+	if (params[4])
+	{
+		pEdict->StateChanged(offset);
+	}
 
 	return 1;
 }
@@ -434,6 +450,11 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 		hndl.Set(pEntOther);
 	}
 
+	if (params[4])
+	{
+		pEdict->StateChanged(offset);
+	}
+
 	return 1;
 }
 
@@ -468,10 +489,27 @@ static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t FindSendPropOffs(IPluginContext *pContext, const cell_t *params)
+{
+	char *cls, *prop;
+	pContext->LocalToString(params[1], &cls);
+	pContext->LocalToString(params[2], &prop);
+
+	SendProp *pSend = g_HL2.FindInSendTable(cls, prop);
+
+	if (!pSend)
+	{
+		return -1;
+	}
+
+	return pSend->GetOffset();
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
 	{"CreateEdict",				CreateEdict},
+	{"FindSendPropOffs",		FindSendPropOffs},
 	{"GetEdictClassname",		GetEdictClassname},
 	{"GetEdictFlags",			GetEdictFlags},
 	{"GetEntData",				GetEntData},

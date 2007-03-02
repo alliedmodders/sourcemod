@@ -183,11 +183,12 @@ native GetEntData(entity, offset, size=4);
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param size			Number of bytes to write (valid values are 1, 2, or 4).
+ * @param changeState	If true, change will be sent over the network.
  * @return				Value at the given memory location.
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-native SetEntData(entity, offset, value, size=4);
+native SetEntData(entity, offset, value, size=4, bool:changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the float value at 
@@ -206,11 +207,12 @@ native Float:GetEntDataFloat(entity, offset);
  *
  * @param entity		Edict index.
  * @param offset		Offset to use.
+ * @param changeState	If true, change will be sent over the network.
  * @return				Value at the given memory location.
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-native SetEntDataFloat(entity, offset, Float:value);
+native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the entity handle
@@ -230,10 +232,11 @@ native GetEntDataEnt(entity, offset);
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param other			Entity index to set, or 0 to clear.
+ * @param changeState	If true, change will be sent over the network.
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native SetEntDataEnt(entity, offset, other);
+native SetEntDataEnt(entity, offset, other, bool:changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the vector at the 
@@ -258,7 +261,191 @@ native GetEntDataVector(entity, offset, Float:vec[3]);
  * @param entity		Edict index.
  * @param offset		Offset to use.
  * @param vec			Vector to set.
+ * @param changeState	If true, change will be sent over the network.
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-native SetEntDataVector(entity, offset, const Float:vec[3]);
+native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=false);
+
+/**
+ * Given a ServerClass name, finds a networkable send property offset.
+ * This information is cached for future calls.
+ *
+ * @param cls			Classname.
+ * @param prop			Property name.
+ * @return				An offset, or -1 on failure.
+ */
+native FindSendPropOffs(const String:cls[], const String:prop[]);
+
+/**
+ * Wrapper function for finding a send property for a particular entity.
+ *
+ * @param ent			Entity index.
+ * @param prop			Property name.
+ * @return				An offset, or -1 on failure.
+ */
+stock GetEntSendPropOffs(ent, const String:prop[])
+{
+	decl String:cls[64];
+	
+	if (!GetEntityNetClass(ent, cls, sizeof(cls)))
+	{
+		return -1;
+	}
+	
+	return FindSendPropOffs(cls, prop);
+}
+
+/**
+ * Gets a network property as an integer; wrapper around GetEntData().
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @param size			Number of bytes to read (valid values are 1, 2, or 4).
+ * @return				Value at the given property offset.
+ * @error				Invalid entity or property not found.
+ */
+stock GetEntProp(entity, const String:prop[], size=4)
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return GetEntData(entity, offs, size);
+}
+
+/**
+ * Sets a network property as an integer; wrapper around GetEntData().
+ *
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @param size			Number of bytes to write (valid values are 1, 2, or 4).
+ * @error				Invalid entity or offset out of reasonable bounds.
+ * @noreturn
+ */
+stock SetEntProp(entity, const String:prop[], value, size=4)
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return SetEntData(entity, offs, value, size, true);
+}
+
+/**
+ * Gets a network property as a float; wrapper around GetEntDataFloat().
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @return				Value at the given property offset..
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+stock Float:GetEntPropFloat(entity, const String:prop[])
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return GetEntDataFloat(entity, offs);
+}
+
+/**
+ * Sets a network property as a float; wrapper around SetEntDataFloat().
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @param value			Value to set.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+stock SetEntPropFloat(entity, const String:prop[], Float:value)
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return SetEntDataFloat(entity, offs, value, true);
+}
+
+/**
+ * Gets a network property as a handle entity; wrapper around GetEntDataEnt().
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @return				Entity index at the given property, or 0 if none.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+stock GetEntPropEnt(entity, const String:prop[])
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return GetEntDataEnt(entity, offs);
+}
+
+/**
+ * Sets a network property as a handle entity; wrapper around SetEntDataEnt().
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @param other			Entity index to set, or 0 to unset.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+stock SetEntPropEnt(entity, const String:prop[], other)
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return SetEntDataEnt(entity, offs, other, true);
+}
+
+/**
+ * Gets a network property as a vector; wrapper around GetEntDataVector().
+ * @note Both a Vector and a QAngle are three floats.  This is a 
+ * convenience function and will work with both types.
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @param vec			Vector buffer to store data in.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+stock GetEntPropVector(entity, const String:prop[], Float:vec[3])
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return GetEntDataVector(entity, offs, vec);
+}
+
+/**
+ * Sets a network property as a vector; wrapper around SetEntDataVector().
+ * @note Both a Vector and a QAngle are three floats.  This is a 
+ * convenience function and will work with both types.
+ * 
+ * @param entity		Edict index.
+ * @param prop			Property to use.
+ * @param vec			Vector to set.
+ * @noreturn
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+stock SetEntPropVector(entity, const String:prop[], const Float:vec[3])
+{
+	new offs = GetEntSendPropOffs(entity, prop);
+	if (offs == -1)
+	{
+		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
+	}
+	return SetEntDataVector(entity, offs, vec, true);
+}
