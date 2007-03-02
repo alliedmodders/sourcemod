@@ -150,6 +150,19 @@ native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
  * illegal values.  Any range outside of the CBaseEntity structure's private
  * size will cause undefined behaviour or even crash.
  */
+ 
+/**
+ * Marks an entity as state changed.  This can be useful if you set an offset 
+ * and wish for it to be immediately changed over the network.  By default this 
+ * is not done for offset setting functions.  
+ *
+ * @param edict			Index to the edict.
+ * @param offset		Offset to mark as changed.  If 0, 
+ *						the entire edict is marked as changed.
+ * @noreturn
+ * @error				Invalid entity or offset out of bounds.
+ */
+native ChangeEdictState(edict, offset = 0);
 
 /**
  * Peeks into an entity's object data and retrieves the integer value at 
