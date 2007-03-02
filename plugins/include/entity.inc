@@ -18,6 +18,22 @@
 #endif
 #define _entity_included
 
+
+/**
+ * For more information on these, see the HL2SDK (public/edict.h)
+ */
+#define FL_EDICT_CHANGED	(1<<0)	/**< Game DLL sets this when the entity state changes
+										 Mutually exclusive with FL_EDICT_PARTIAL_CHANGE. */
+#define FL_EDICT_FREE		(1<<1)	/**< this edict if free for reuse */
+#define FL_EDICT_FULL		(1<<2)	/**< this is a full server entity */
+#define FL_EDICT_FULLCHECK	(0<<0)  /**< call ShouldTransmit() each time, this is a fake flag */
+#define FL_EDICT_ALWAYS		(1<<3)	/**< always transmit this entity */
+#define FL_EDICT_DONTSEND	(1<<4)	/**< don't transmit this entity */
+#define FL_EDICT_PVSCHECK	(1<<5)	/**< always transmit entity, but cull against PVS */
+#define FL_EDICT_PENDING_DORMANT_CHECK	(1<<6)
+#define FL_EDICT_DIRTY_PVS_INFORMATION	(1<<7)
+#define FL_FULL_EDICT_CHANGED			(1<<8)
+
 /**
  * Returns the maximum number of entities.
  *
@@ -36,7 +52,7 @@ native GetEntityCount();
  * Returns whether or not an entity is valid.  Returns false
  * if there is no matching CBaseEntity for this edict index.
  *
- * @param edict			Index of the entity.
+ * @param edict			Index of the entity/edict.
  * @return				True if valid, false otherwise.
  */
 native bool:IsValidEntity(edict);
@@ -50,17 +66,44 @@ native bool:IsValidEntity(edict);
 native bool:IsValidEdict(edict);
 
 /**
+ * Returns whether or not an entity is a valid networkable edict.
+ *
+ * @param edict			Index of the edict.
+ * @return				True if networkable, false if invalid or not networkable.
+ */
+native bool:IsEntNetworkable(edict);
+
+/**
  * Creates a new edict (the basis of a networkable entity)
  *
- * @return				Index of the entity, 0 on failure.
+ * @return				Index of the edict, 0 on failure.
  */
 native CreateEdict();
 
 /** 
  * Removes an edict from the world.
  *
- * @param edict			Index of the entity.
+ * @param edict			Index of the edict.
  * @noreturn
- * @error				Invalid entity index.
+ * @error				Invalid edict index.
  */
 native RemoveEdict(edict);
+
+/**
+ * Returns the flags on an edict.  These are not the same as entity flags.
+ *
+ * @param edict			Index of the entity.
+ * @return				Edict flags.
+ * @error				Invalid edict index.
+ */
+native GetEdictFlags(edict);
+
+/**
+ * Sets the flags on an edict.  These are not the same as entity flags.
+ *
+ * @param edict			Index of the entity.
+ * @param flags			Flags to set.
+ * @noreturn
+ * @error				Invalid edict index.
+ */
+native SetEdictFlags(edict, flags);
