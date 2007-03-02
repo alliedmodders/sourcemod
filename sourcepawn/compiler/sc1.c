@@ -2576,7 +2576,7 @@ static void initials(int ident,int tag,cell *size,int dim[],int numdim,
       /* now initialize the sub-arrays */
       memset(counteddim,0,sizeof counteddim);
       initarray(ident,tag,dim,numdim,0,curlit,counteddim,&lastdim,enumroot,&errorfound);
-      /* check the specified array dimensions with the initialler counts */
+      /* check the specified array dimensions with the initializer counts */
       for (idx=0; idx<numdim-1; idx++) {
         if (dim[idx]==0) {
           dim[idx]=counteddim[idx];
@@ -2637,7 +2637,7 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
      * to the newly detected sub-array into the indirection table; i.e.
      * this table needs to be expanded and updated.
      * In the current design, the indirection vectors for a multi-dimensional
-     * array are adjusted after parsing all initiallers. Hence, it is only
+     * array are adjusted after parsing all initializers. Hence, it is only
      * necessary at this point to reserve space for an extra cell in the
      * indirection vector.
      */
@@ -2719,7 +2719,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
        * zeros, and toggle the tag
        */
       if (enumroot!=NULL && enumfield==NULL)
-        error(227);             /* more initiallers than enum fields */
+        error(227);             /* more initializers than enum fields */
       rtag=tag;                 /* preset, may be overridden by enum field tag */
       if (enumfield!=NULL) {
         cell step;
@@ -2730,7 +2730,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
         assert(symfield!=NULL);
         assert(fieldlit<litidx);
         if (litidx-fieldlit>symfield->dim.array.length)
-          error(228);           /* length of initialler exceeds size of the enum field */
+          error(228);           /* length of initializer exceeds size of the enum field */
         if (ellips) {
           step=prev1-prev2;
         } else {
