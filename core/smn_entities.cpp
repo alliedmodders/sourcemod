@@ -14,6 +14,8 @@
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
+#include "server_class.h"
+#include "CPlayerManager.h"
 
 inline edict_t *GetEdict(cell_t num)
 {
@@ -21,6 +23,14 @@ inline edict_t *GetEdict(cell_t num)
 	if (!pEdict || pEdict->IsFree())
 	{
 		return NULL;
+	}
+	if (num > 0 && num < g_Players.GetMaxClients())
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(num);
+		if (!pPlayer || !pPlayer->IsConnected())
+		{
+			return NULL;
+		}
 	}
 	return pEdict;
 }
@@ -58,7 +68,7 @@ static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsValidEdict(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = GetEdict(params[1]);
 
 	if (!pEdict)
 	{
@@ -71,9 +81,9 @@ static cell_t IsValidEdict(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = GetEdict(params[1]);
 
-	if (!pEdict || pEdict->IsFree())
+	if (!pEdict)
 	{
 		return 0;
 	}
@@ -90,9 +100,9 @@ static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsEntNetworkable(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = GetEdict(params[1]);
 
-	if (!pEdict || pEdict->IsFree())
+	if (!pEdict)
 	{
 		return 0;
 	}
@@ -131,11 +141,55 @@ static cell_t SetEdictFlags(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetEdictClassname(IPluginContext *pContext, const cell_t *params)
+{
+	edict_t *pEdict = GetEdict(params[1]);
+
+	if (!pEdict)
+	{
+		return pContext->ThrowNativeError("Invalid edict (%d)", params[1]);
+	}
+
+	const char *cls = pEdict->GetClassName();
+
+	if (!cls || cls[0] == '\0')
+	{
+		return 0;
+	}
+
+	pContext->StringToLocal(params[2], params[3], cls);
+
+	return 1;
+}
+
+static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
+{
+	edict_t *pEdict = GetEdict(params[1]);
+
+	if (!pEdict)
+	{
+		return pContext->ThrowNativeError("Invalid edict (%d)", params[1]);
+	}
+
+	IServerNetworkable *pNet = pEdict->GetNetworkable();
+	if (!pNet)
+	{
+		return 0;
+	}
+
+	ServerClass *pClass = pNet->GetServerClass();
+
+	pContext->StringToLocal(params[2], params[3], pClass->GetName());
+
+	return 1;
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"CreateEdict",				CreateEdict},
+	{"GetEdictClassname",		GetEdictClassname},
 	{"GetEdictFlags",			GetEdictFlags},
-	{"GetEntityCount",			GetEntityCount},
+	{"GetEntityNetClass",		GetEntityNetClass},
 	{"GetMaxEntities",			GetMaxEntities},
 	{"IsEntNetworkable",		IsEntNetworkable},
 	{"IsValidEdict",			IsValidEdict},

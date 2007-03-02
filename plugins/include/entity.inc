@@ -107,3 +107,25 @@ native GetEdictFlags(edict);
  * @error				Invalid edict index.
  */
 native SetEdictFlags(edict, flags);
+
+/**
+ * Retrieves an edict classname.
+ *
+ * @param edict			Index of the entity.
+ * @param clsname		Buffer to store the classname.
+ * @param maxlength		Maximum length of the buffer.
+ * @return				True on success, false if there is no classname set.
+ */
+native bool:GetEdictClassname(edict, String:clsname[], maxlength);
+
+/**
+ * Retrieves an entity's networkable serverclass name.
+ * This is not the same as the classname and is used for networkable state changes.
+ *
+ * @param edict			Index of the entity.
+ * @param clsname		Buffer to store the serverclass name.
+ * @param maxlength		Maximum lnegth of the buffer.
+ * @return				True on success, false if the edict is not networkable.
+ * @error				Invalid edict index.
+ */
+native bool:GetEntityNetClass(edict, String:clsname[], maxlength);
