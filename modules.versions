@@ -12,3 +12,8 @@ out = sm_version.h
 folder = sourcepawn/jit/x86
 in = jit_version.tpl
 out = jit_version.h
+
+[geoip]
+folder = extensions/geoip
+in = svn_version.tpl
+out = svn_version.h

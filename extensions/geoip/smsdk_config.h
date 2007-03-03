@@ -20,10 +20,12 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 
+#include "svn_version.h"
+
 /* Basic information exposed publically */
 #define SMEXT_CONF_NAME			"GeoIP"
 #define SMEXT_CONF_DESCRIPTION	"NO IDEA WHAT THIS MODULE DOES" //:TODO:
-#define SMEXT_CONF_VERSION		"0.0.0.0"
+#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"GEOIP"

@@ -151,7 +151,6 @@ sub GetRevision
 	} else {
 		$rev = `svnversion --committed $path`;
 	}
-	print "$path $rev\n";
 	if ($rev =~ /exported/)
 	{
 		die "Path specified is not a working copy\n";
