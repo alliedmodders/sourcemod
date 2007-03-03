@@ -60,13 +60,9 @@ endif
 BINARY = $(PROJECT).ext.so
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
-OBJ_LINUX := $(OBJECTS:%.c=$(BIN_DIR)/%.o)
 
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
-
-$(BIN_DIR)/%.o: %.c
-	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 all:
 	mkdir -p $(BIN_DIR)
