@@ -36,6 +36,11 @@ CUserMessages::~CUserMessages()
 	sm_trie_destroy(m_Names);
 }
 
+void CUserMessages::OnSourceModAllInitialized()
+{
+	g_ShareSys.AddInterface(NULL, this);
+}
+
 void CUserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)

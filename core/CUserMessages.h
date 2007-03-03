@@ -15,9 +15,8 @@
 #ifndef _INCLUDE_SOURCEMOD_CUSERMESSAGES_H_
 #define _INCLUDE_SOURCEMOD_CUSERMESSAGES_H_
 
-#include "sm_globals.h"
+#include "ShareSys.h"
 #include <IUserMessages.h>
-#include <sh_list.h>
 #include "sourcemm_api.h"
 #include "sm_trie.h"
 #include "CellRecipientFilter.h"
@@ -37,6 +36,7 @@ public:
 	CUserMessages();
 	~CUserMessages();
 public: //SMGlobalClass
+	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
 public: //IUserMessages
 	int GetMessageIndex(const char *msg);
