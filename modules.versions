@@ -17,3 +17,8 @@ out = jit_version.h
 folder = extensions/geoip
 in = svn_version.tpl
 out = svn_version.h
+
+[threader]
+folder = extensions/threader
+in = svn_version.tpl
+out = svn_version.h
