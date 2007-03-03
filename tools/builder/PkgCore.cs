@@ -59,6 +59,9 @@ namespace builder
 			string [] plugin_omits = new string[1];
 			plugin_omits[0] = "spcomp.exe";
 
+			string [] include_omits = new string[1];
+			include_omits[1] = "version.tpl";
+
 			builder.CopyFolder(this, "plugins", "scripting", plugin_omits);
 			builder.CopyFolder(this, "plugins/include", "scripting/include", null);
 			builder.CopyFolder(this, "translations", "translations", null);
