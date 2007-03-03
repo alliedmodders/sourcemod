@@ -17,7 +17,7 @@
 
 RootConsoleMenu g_RootMenu;
 
-ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
+ConVar sourcemod_version("sourcemod_version", SVN_FULL_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
 
 RootConsoleMenu::RootConsoleMenu()
 {
@@ -223,7 +223,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcoun
 		ConsolePrint(" http://www.sourcemod.net/");
 	} else if (strcmp(cmd, "version") == 0) {
 		ConsolePrint(" SourceMod Version Information:");
-		ConsolePrint("    SourceMod Version: %s", SOURCEMOD_VERSION);
+		ConsolePrint("    SourceMod Version: %s", SVN_FULL_VERSION);
 		ConsolePrint("    JIT Version: %s, %s", g_pVM->GetVMName(), g_pVM->GetVersionString());
 		ConsolePrint("    JIT Settings: %s", g_pVM->GetCPUOptimizations());
 		ConsolePrint("    http://www.sourcemod.net/");

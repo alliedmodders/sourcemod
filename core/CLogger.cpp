@@ -71,7 +71,7 @@ void CLogger::_NewMapFile()
 	} else {
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-		fprintf(fp, "L %s: SourceMod log file started (file \"logs_%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SOURCEMOD_VERSION);
+		fprintf(fp, "L %s: SourceMod log file started (file \"logs_%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SVN_FULL_VERSION);
 		fclose(fp);
 	}
 }
@@ -218,8 +218,8 @@ void CLogger::LogMessage(const char *vafmt, ...)
 		if (m_DailyPrintHdr)
 		{
 			m_DailyPrintHdr = false;
-			fprintf(fp, "L %s: SourceMod log file session started (file \"logs_%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, SOURCEMOD_VERSION);
-		}
+			fprintf(fp, "L %s: SourceMod log file session started (file \"logs_%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, SVN_FULL_VERSION);
+	 	}
 		fprintf(fp, "L %s: %s\n", date, msg);
 		fclose(fp);
 	} else {

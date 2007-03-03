@@ -2332,7 +2332,7 @@ unsigned int JITX86::FunctionCount(const sp_context_t *ctx)
 
 const char *JITX86::GetVersionString()
 {
-	return JIT_VERSION;
+	return SVN_FULL_VERSION;
 }
 
 const char *JITX86::GetCPUOptimizations()

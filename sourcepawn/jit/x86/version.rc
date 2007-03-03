@@ -46,12 +46,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "SourcePawn JIT"
             VALUE "FileDescription", "SourcePawn JIT/Virtual Machine"
-            VALUE "FileVersion", SVN_REVISION_STRING
+            VALUE "FileVersion", SVN_FULL_VERSION
             VALUE "InternalName", "sourcemod"
             VALUE "LegalCopyright", "Copyright (c) 2004-2007, AlliedModders LLC"
             VALUE "OriginalFilename", "sourcepawn.jit.x86.dll"
             VALUE "ProductName", "SourcePawn JIT"
-            VALUE "ProductVersion", JIT_VERSION
+            VALUE "ProductVersion", SVN_FULL_VERSION
         END
     END
     BLOCK "VarFileInfo"

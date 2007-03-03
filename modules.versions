@@ -1,0 +1,14 @@
+[PRODUCT]
+major = 1
+minor = 0
+revision = 0
+
+[core]
+folder = core
+in = sm_version.tpl
+out = sm_version.h
+
+[jitx86]
+folder = sourcepawn/jit/x86
+in = jit_version.tpl
+out = jit_version.h
