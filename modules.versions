@@ -8,6 +8,11 @@ folder = core
 in = sm_version.tpl
 out = sm_version.h
 
+[plugins]
+folder = plugins/include
+in = version.tpl
+out = version.inc
+
 [jitx86]
 folder = sourcepawn/jit/x86
 in = jit_version.tpl

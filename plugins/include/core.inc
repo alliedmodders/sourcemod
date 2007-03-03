@@ -18,10 +18,13 @@
 #endif
 #define _core_included
 
-#define SOURCEMOD_PLUGINAPI_VERSION		1
+#include <version>
+
+#define SOURCEMOD_PLUGINAPI_VERSION		2
 struct PlVers
 {
 	version,
+	String:filevers[],
 };
 
 /**
@@ -37,6 +40,7 @@ enum Action
 public PlVers:__version = 
 {
 	version = SOURCEMOD_PLUGINAPI_VERSION,
+	filevers = SOURCEMOD_VERSION
 };
 
 struct Extension
