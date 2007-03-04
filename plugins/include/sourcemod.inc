@@ -37,6 +37,8 @@ struct Plugin
 #include <bitbuffer>
 #include <sorting>
 #include <clients>
+#include <usermessages>
+#include <events>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -219,6 +221,5 @@ native GetGameDescription(String:buffer[], maxlength, bool:original=false);
  */
 native GetCurrentMap(String:buffer[], maxlength);
 
-#include <usermessages>
 #include <helpers>
 #include <entity>

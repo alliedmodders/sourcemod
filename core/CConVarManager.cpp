@@ -88,7 +88,7 @@ void CConVarManager::OnPluginDestroyed(IPlugin *plugin)
 	CVector<ConVar *> *cvarList;
 
 	// If plugin has a convar list, free its memory
-	if (plugin->GetProperty("ConVar", reinterpret_cast<void **>(&cvarList), true))
+	if (plugin->GetProperty("ConVarList", reinterpret_cast<void **>(&cvarList), true))
 	{
 		delete cvarList;
 	}
@@ -97,21 +97,21 @@ void CConVarManager::OnPluginDestroyed(IPlugin *plugin)
 void CConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	ConVarInfo *info;
-	ConVar *cvar = static_cast<ConVar *>(object);
+	ConVar *pConVar = static_cast<ConVar *>(object);
 
 	// Find convar in lookup trie
-	sm_trie_retrieve(m_ConVarCache, cvar->GetName(), reinterpret_cast<void **>(&info));
+	sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), reinterpret_cast<void **>(&info));
 
 	// If convar was created by SourceMod plugin...
 	if (info->sourceMod)
 	{
 		// Delete string allocations
-		delete [] cvar->GetName(); 
-		delete [] cvar->GetDefault();
-		delete [] cvar->GetHelpText();
+		delete [] pConVar->GetName(); 
+		delete [] pConVar->GetDefault();
+		delete [] pConVar->GetHelpText();
 
-		// Then unregister it
-		g_SMAPI->UnregisterConCmdBase(g_PLAPI, cvar);
+		// Then unlink it from SourceMM
+		g_SMAPI->UnregisterConCmdBase(g_PLAPI, pConVar);
 	}
 }
 
@@ -151,8 +151,8 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		// Iterate convar list and display each one
 		for (size_t i = 0; i < cvarList->size(); i++, id++)
 		{
-			ConVar *cvar = (*cvarList)[i];
-			g_RootMenu.ConsolePrint("  %02d \"%s\" = \"%s\"", id, cvar->GetName(), cvar->GetString()); 
+			ConVar *pConVar = (*cvarList)[i];
+			g_RootMenu.ConsolePrint("  %02d \"%s\" = \"%s\"", id, pConVar->GetName(), pConVar->GetString()); 
 		}
 
 		return;
@@ -164,16 +164,16 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 
 Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *helpText, int flags, bool hasMin, float min, bool hasMax, float max)
 {
-	ConVar *cvar = NULL;
+	ConVar *pConVar = NULL;
 	ConVarInfo *info = NULL;
 	CVector<ConVar *> *cvarList = NULL;
 	Handle_t hndl = 0;
 
 	// Find out if the convar exists already
-	cvar = icvar->FindVar(name);
+	pConVar = icvar->FindVar(name);
 
 	// If the convar already exists...
-	if (cvar != NULL)
+	if (pConVar != NULL)
 	{
 		// First check if we already have a handle to it
 		if (sm_trie_retrieve(m_ConVarCache, name, reinterpret_cast<void **>(&info)))
@@ -182,13 +182,13 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 			return info->handle;
 		} else {
 			// If we don't, then create a new handle from the convar
-			hndl = g_HandleSys.CreateHandle(m_ConVarType, cvar, NULL, g_pCoreIdent, NULL);
+			hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
 
 			info = new ConVarInfo;
 			info->handle = hndl;
 			info->sourceMod = false;
 			info->changeForward = NULL;
-			info->origCallback = cvar->GetCallback();
+			info->origCallback = pConVar->GetCallback();
 
 			m_ConVars.push_back(info);
 
@@ -210,27 +210,27 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 	}
 
 	// Since we didn't find an existing convar (or concmd with the same name), now we can finally create it!
-	cvar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(helpText), hasMin, min, hasMax, max);
+	pConVar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(helpText), hasMin, min, hasMax, max);
 
 	// Find plugin creating convar
 	IPlugin *pl = g_PluginSys.FindPluginByContext(pContext->GetContext());
 
 	// Get convar list from 'ConVar' property of plugin
-	pl->GetProperty("ConVar", reinterpret_cast<void **>(&cvarList));
+	pl->GetProperty("ConVarList", reinterpret_cast<void **>(&cvarList));
 
 	// If 'ConVar' property doesn't exist...
 	if (cvarList == NULL)
 	{
 		// Then create it
 		cvarList = new CVector<ConVar *>;
-		pl->SetProperty("ConVar", cvarList);
+		pl->SetProperty("ConVarList", cvarList);
 	}
 
 	// Add new convar to plugin's list
-	cvarList->push_back(cvar);
+	cvarList->push_back(pConVar);
 
 	// Create a handle from the new convar
-	hndl = g_HandleSys.CreateHandle(m_ConVarType, cvar, NULL, g_pCoreIdent, NULL);
+	hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
 
 	info = new ConVarInfo;
 	info->handle = hndl;
@@ -248,15 +248,15 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 
 Handle_t CConVarManager::FindConVar(const char *name)
 {
-	ConVar *cvar = NULL;
+	ConVar *pConVar = NULL;
 	ConVarInfo *info = NULL;
 	Handle_t hndl = 0;
 
 	// Search for convar
-	cvar = icvar->FindVar(name);
+	pConVar = icvar->FindVar(name);
 
 	// If it doesn't exist, then return an invalid handle
-	if (cvar == NULL)
+	if (pConVar == NULL)
 	{
 		return BAD_HANDLE;
 	}
@@ -269,13 +269,13 @@ Handle_t CConVarManager::FindConVar(const char *name)
 	}
 
 	// If we don't, then create a new handle from the convar
-	hndl = g_HandleSys.CreateHandle(m_ConVarType, cvar, NULL, g_pCoreIdent, NULL);
+	hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
 
 	info = new ConVarInfo;
 	info->handle = hndl;
 	info->sourceMod = false;
 	info->changeForward = NULL;
-	info->origCallback = cvar->GetCallback();
+	info->origCallback = pConVar->GetCallback();
 
 	m_ConVars.push_back(info);
 
@@ -285,7 +285,7 @@ Handle_t CConVarManager::FindConVar(const char *name)
 	return hndl;
 }
 
-void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *cvar, funcid_t funcid)
+void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid)
 {
 	IPluginFunction *func = pContext->GetFunctionById(funcid);
 	IChangeableForward *fwd = NULL;
@@ -300,7 +300,7 @@ void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *cvar, fu
 	}
 
 	// Create a forward name
-	UTIL_Format(fwdName, sizeof(fwdName), "ConVar.%s", cvar->GetName());
+	UTIL_Format(fwdName, sizeof(fwdName), "ConVar.%s", pConVar->GetName());
 
 	// First find out if the forward already exists
 	g_Forwards.FindForward(fwdName, &fwd);
@@ -315,13 +315,13 @@ void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *cvar, fu
 		fwd = g_Forwards.CreateForwardEx(fwdName, ET_Ignore, 3, p);
 
 		// Find the convar in the lookup trie
-		if (sm_trie_retrieve(m_ConVarCache, cvar->GetName(), reinterpret_cast<void **>(&info)))
+		if (sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), reinterpret_cast<void **>(&info)))
 		{
 			// Set the convar's forward to the newly created one
 			info->changeForward = fwd;
 
 			// Set the convar's callback to our static one
-			cvar->InstallChangeCallback(OnConVarChanged);
+			pConVar->InstallChangeCallback(OnConVarChanged);
 		}
 	}
 
@@ -329,7 +329,7 @@ void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *cvar, fu
 	fwd->AddFunction(func);
 }
 
-void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, funcid_t funcid)
+void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid)
 {
 	IPluginFunction *func = pContext->GetFunctionById(funcid);
 	IChangeableForward *fwd = NULL;
@@ -343,7 +343,7 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, 
 	}
 
 	// Find the convar in the lookup trie
-	if (sm_trie_retrieve(m_ConVarCache, cvar->GetName(), reinterpret_cast<void **>(&info)))
+	if (sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), reinterpret_cast<void **>(&info)))
 	{
 		// Get the forward
 		fwd = info->changeForward;
@@ -351,14 +351,14 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, 
 		// If the forward doesn't exist, we can't unhook anything
 		if (fwd == NULL)
 		{
-			pContext->ThrowNativeError("Convar \"%s\" has no active hook", cvar->GetName());
+			pContext->ThrowNativeError("Convar \"%s\" has no active hook", pConVar->GetName());
 			return;
 		}
 
 		// Remove the function from the forward's list
 		if (!fwd->RemoveFunction(func))
 		{
-			pContext->ThrowNativeError("Invalid hook callback specified for convar \"%s\"", cvar->GetName());
+			pContext->ThrowNativeError("Invalid hook callback specified for convar \"%s\"", pConVar->GetName());
 			return;
 		}
 
@@ -370,15 +370,15 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, 
 			info->changeForward = NULL;
 
 			// Put the back the original convar callback
-			cvar->InstallChangeCallback(info->origCallback);
+			pConVar->InstallChangeCallback(info->origCallback);
 		}
 	}
 }
 
-void CConVarManager::OnConVarChanged(ConVar *cvar, const char *oldValue)
+void CConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 {
 	// If the values are the same...
-	if (strcmp(cvar->GetString(), oldValue) == 0)
+	if (strcmp(pConVar->GetString(), oldValue) == 0)
 	{
 		// Exit early in order to not trigger callbacks
 		return;
@@ -388,7 +388,7 @@ void CConVarManager::OnConVarChanged(ConVar *cvar, const char *oldValue)
 	ConVarInfo *info;
 
 	// Find the convar in the lookup trie
-	sm_trie_retrieve(cache, cvar->GetName(), reinterpret_cast<void **>(&info));
+	sm_trie_retrieve(cache, pConVar->GetName(), reinterpret_cast<void **>(&info));
 
 	FnChangeCallback origCallback = info->origCallback;
 	IChangeableForward *fwd = info->changeForward;
@@ -396,12 +396,12 @@ void CConVarManager::OnConVarChanged(ConVar *cvar, const char *oldValue)
 	// If there was a change callback installed previously, call it
 	if (origCallback)
 	{
-		origCallback(cvar, oldValue);
+		origCallback(pConVar, oldValue);
 	}
 
 	// Now call forwards in plugins that have hooked this
 	fwd->PushCell(info->handle);
-	fwd->PushString(cvar->GetString());
+	fwd->PushString(pConVar->GetString());
 	fwd->PushString(oldValue);
 	fwd->Execute(NULL);
 }

@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\EventManager.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_autonatives.cpp"
 				>
 			</File>
@@ -315,6 +319,10 @@
 			</File>
 			<File
 				RelativePath="..\CUserMessages.h"
+				>
+			</File>
+			<File
+				RelativePath="..\EventManager.h"
 				>
 			</File>
 			<File
@@ -687,6 +695,10 @@
 			</File>
 			<File
 				RelativePath="..\smn_entities.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_events.cpp"
 				>
 			</File>
 			<File

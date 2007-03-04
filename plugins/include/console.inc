@@ -207,7 +207,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @param name			Name of new convar.
  * @param defaultValue	String containing the default value of new convar.
  * @param helpText		Optional description of the convar.
- * @param flags			Optional bitstream of flags determining how the convar should be handled. (See FCVAR_* constants for more details)
+ * @param flags			Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
  * @param hasMin		Optional boolean that determines if the convar has a minimum value.
  * @param min			Minimum floating point value that the convar can have if hasMin is true.
  * @param hasMax		Optional boolean that determines if the convar has a maximum value.

@@ -85,17 +85,17 @@ public:
 	/**
 	 * Add a function to call when the specified convar changes.
 	 */
-	void HookConVarChange(IPluginContext *pContext, ConVar *cvar, funcid_t funcid);
+	void HookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid);
 
 	/**
 	 * Remove a function from the forward that will be called when the specified convar changes.
 	 */
-	void UnhookConVarChange(IPluginContext *pContext, ConVar *cvar, funcid_t funcid);
+	void UnhookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid);
 private:
 	/**
-	* Static callback that Valve's ConVar class executes when the convar's value changes.
-	*/
-	static void OnConVarChanged(ConVar *cvar, const char *oldValue);
+	 * Static callback that Valve's ConVar class executes when the convar's value changes.
+	 */
+	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
 private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;
