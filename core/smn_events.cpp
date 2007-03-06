@@ -98,7 +98,7 @@ static cell_t sm_FireEvent(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Game event \"%s\" could not be fired because it was not created by this plugin", pInfo->pEvent->GetName());
 	}
 
-	g_EventManager.FireEvent(pContext, pInfo, params[2], params[3] ? true : false);
+	g_EventManager.FireEvent(pInfo, params[2], params[3] ? true : false);
 
 	/* Free handle on game event */
 	HandleSecurity sec = {pContext->GetIdentity(), g_pCoreIdent};

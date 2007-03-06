@@ -301,7 +301,7 @@ EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name)
 	return NULL;
 }
 
-void EventManager::FireEvent(IPluginContext *pContext, EventInfo *pInfo, int flags, bool bDontBroadcast)
+void EventManager::FireEvent(EventInfo *pInfo, int flags, bool bDontBroadcast)
 {
 	/* Should SourceMod plugins be notified of this event? */
 	m_NotifyPlugins = (flags & EVENT_PASSTHRU_ALL) ? true : false;
