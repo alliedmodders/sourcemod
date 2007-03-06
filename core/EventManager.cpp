@@ -25,7 +25,7 @@ typedef List<EventHook *> EventHookList;
 
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
 
-EventManager::EventManager() : m_EventCopy(NULL), m_NotifyPlugins(true)
+EventManager::EventManager() : m_EventType(0), m_NotifyPlugins(true), m_EventCopy(NULL)
 {
 	/* Create an event lookup trie */
 	m_EventHooks = sm_trie_create();

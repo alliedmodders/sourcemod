@@ -100,10 +100,10 @@ private: // IGameEventManager2 hooks
 	bool OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast);
 private:
 	HandleType_t m_EventType;
-	Trie *m_EventHooks;
 	bool m_NotifyPlugins;
-	IGameEvent *m_EventCopy;
 	const char *m_EventName;
+	IGameEvent *m_EventCopy;
+	Trie *m_EventHooks;
 	CStack<EventInfo *> m_FreeEvents;
 };
 

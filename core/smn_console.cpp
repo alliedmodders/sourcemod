@@ -67,7 +67,7 @@ static cell_t sm_HookConVarChange(IPluginContext *pContext, const cell_t *params
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	g_ConVarManager.HookConVarChange(pContext, pConVar, static_cast<funcid_t>(params[2]));
@@ -84,7 +84,7 @@ static cell_t sm_UnhookConVarChange(IPluginContext *pContext, const cell_t *para
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	g_ConVarManager.UnhookConVarChange(pContext, pConVar, static_cast<funcid_t>(params[2]));
@@ -101,7 +101,7 @@ static cell_t sm_GetConVarBool(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	return pConVar->GetBool();
@@ -116,7 +116,7 @@ static cell_t sm_GetConVarInt(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	return pConVar->GetInt();
@@ -132,7 +132,7 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	pConVar->SetValue(params[2]);
@@ -149,7 +149,7 @@ static cell_t sm_GetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 	
 	float value = pConVar->GetFloat();
@@ -166,7 +166,7 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	float value = sp_ctof(params[2]);
@@ -184,7 +184,7 @@ static cell_t sm_GetConVarString(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetString(), NULL);
@@ -201,7 +201,7 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	char *value;
@@ -221,7 +221,7 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	return pConVar->GetFlags();
@@ -236,7 +236,7 @@ static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	pConVar->SetFlags(params[2]);
@@ -253,7 +253,7 @@ static cell_t sm_GetConVarMin(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	cell_t *addr;
@@ -277,7 +277,7 @@ static cell_t sm_GetConVarMax(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	cell_t *addr;
@@ -301,7 +301,7 @@ static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetName(), NULL);
@@ -318,7 +318,7 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
 		!= HandleError_None)
 	{
-		return pContext->ThrowNativeError("Invalid ConVar Handle %x (error %d)", hndl, err);
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
 	pConVar->Revert();
