@@ -184,10 +184,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CConVarManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\CDataPack.cpp"
 				>
 			</File>
@@ -209,6 +205,10 @@
 			</File>
 			<File
 				RelativePath="..\ConCmdManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ConVarManager.cpp"
 				>
 			</File>
 			<File
@@ -270,10 +270,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CConVarManager.h"
-				>
-			</File>
-			<File
 				RelativePath="..\CDataPack.h"
 				>
 			</File>
@@ -303,6 +299,10 @@
 			</File>
 			<File
 				RelativePath="..\ConCmdManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ConVarManager.h"
 				>
 			</File>
 			<File

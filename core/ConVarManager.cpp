@@ -11,7 +11,7 @@
 * Version: $Id$
 */
 
-#include "CConVarManager.h"
+#include "ConVarManager.h"
 #include "PluginSys.h"
 #include "ForwardSys.h"
 #include "HandleSys.h"
@@ -19,31 +19,31 @@
 #include "sm_stringutil.h"
 #include <sh_vector.h>
 
-CConVarManager g_ConVarManager;
+ConVarManager g_ConVarManager;
 
-CConVarManager::CConVarManager() : m_ConVarType(0)
+ConVarManager::ConVarManager() : m_ConVarType(0)
 {
 	// Create a convar lookup trie
 	m_ConVarCache = sm_trie_create();
 }
 
-CConVarManager::~CConVarManager()
+ConVarManager::~ConVarManager()
 {
-	List<ConVarInfo *>::iterator i;
+	List<ConVarInfo *>::iterator iter;
 
 	// Destroy our convar lookup trie
 	sm_trie_destroy(m_ConVarCache);
 
 	// Destroy all the ConVarInfo structures
-	for (i = m_ConVars.begin(); i != m_ConVars.end(); i++)
+	for (iter = m_ConVars.begin(); iter != m_ConVars.end(); iter++)
 	{
-		delete (*i);
+		delete (*iter);
 	}
 
 	m_ConVars.clear();
 }
 
-void CConVarManager::OnSourceModAllInitialized()
+void ConVarManager::OnSourceModAllInitialized()
 {
 	HandleAccess sec;
 
@@ -59,7 +59,7 @@ void CConVarManager::OnSourceModAllInitialized()
 	g_RootMenu.AddRootConsoleCommand("convars", "View convars created by a plugin", this);
 }
 
-void CConVarManager::OnSourceModShutdown()
+void ConVarManager::OnSourceModShutdown()
 {
 	IChangeableForward *fwd;
 	List<ConVarInfo *>::iterator i;
@@ -83,7 +83,7 @@ void CConVarManager::OnSourceModShutdown()
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
 }
 
-void CConVarManager::OnPluginDestroyed(IPlugin *plugin)
+void ConVarManager::OnPluginDestroyed(IPlugin *plugin)
 {
 	CVector<ConVar *> *cvarList;
 
@@ -94,7 +94,7 @@ void CConVarManager::OnPluginDestroyed(IPlugin *plugin)
 	}
 }
 
-void CConVarManager::OnHandleDestroy(HandleType_t type, void *object)
+void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	ConVarInfo *info;
 	ConVar *pConVar = static_cast<ConVar *>(object);
@@ -115,7 +115,7 @@ void CConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
-void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
+void ConVarManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
 {
 	if (argcount >= 3)
 	{
@@ -162,7 +162,7 @@ void CConVarManager::OnRootConsoleCommand(const char *command, unsigned int argc
 	g_RootMenu.ConsolePrint("[SM] Usage: sm convars <plugin #>");
 }
 
-Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *helpText, int flags, bool hasMin, float min, bool hasMax, float max)
+Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *helpText, int flags, bool hasMin, float min, bool hasMax, float max)
 {
 	ConVar *pConVar = NULL;
 	ConVarInfo *info = NULL;
@@ -246,7 +246,7 @@ Handle_t CConVarManager::CreateConVar(IPluginContext *pContext, const char *name
 	return hndl;
 }
 
-Handle_t CConVarManager::FindConVar(const char *name)
+Handle_t ConVarManager::FindConVar(const char *name)
 {
 	ConVar *pConVar = NULL;
 	ConVarInfo *info = NULL;
@@ -285,7 +285,7 @@ Handle_t CConVarManager::FindConVar(const char *name)
 	return hndl;
 }
 
-void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid)
+void ConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid)
 {
 	IPluginFunction *func = pContext->GetFunctionById(funcid);
 	IChangeableForward *fwd = NULL;
@@ -329,7 +329,7 @@ void CConVarManager::HookConVarChange(IPluginContext *pContext, ConVar *pConVar,
 	fwd->AddFunction(func);
 }
 
-void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid)
+void ConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid)
 {
 	IPluginFunction *func = pContext->GetFunctionById(funcid);
 	IChangeableForward *fwd = NULL;
@@ -375,7 +375,7 @@ void CConVarManager::UnhookConVarChange(IPluginContext *pContext, ConVar *pConVa
 	}
 }
 
-void CConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
+void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 {
 	// If the values are the same...
 	if (strcmp(pConVar->GetString(), oldValue) == 0)

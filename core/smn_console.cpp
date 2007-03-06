@@ -14,7 +14,7 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "HandleSys.h"
-#include "CConVarManager.h"
+#include "ConVarManager.h"
 #include "ConCmdManager.h"
 #include "PluginSys.h"
 #include "sm_stringutil.h"

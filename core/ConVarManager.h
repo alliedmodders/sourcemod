@@ -11,8 +11,8 @@
 * Version: $Id$
 */
 
-#ifndef _INCLUDE_SOURCEMOD_CCONVARMANAGER_H_
-#define _INCLUDE_SOURCEMOD_CCONVARMANAGER_H_
+#ifndef _INCLUDE_SOURCEMOD_CONVARMANAGER_H_
+#define _INCLUDE_SOURCEMOD_CONVARMANAGER_H_
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
@@ -36,15 +36,15 @@ struct ConVarInfo
 	FnChangeCallback origCallback;		/**< The original callback function */
 };
 
-class CConVarManager :
+class ConVarManager :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public IPluginsListener,
 	public IRootConsoleCommand
 {
 public:
-	CConVarManager();
-	~CConVarManager();
+	ConVarManager();
+	~ConVarManager();
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -102,7 +102,7 @@ private:
 	Trie *m_ConVarCache;
 };
 
-extern CConVarManager g_ConVarManager;
+extern ConVarManager g_ConVarManager;
 
-#endif // _INCLUDE_SOURCEMOD_CCONVARMANAGER_H_
+#endif // _INCLUDE_SOURCEMOD_CONVARMANAGER_H_
 
