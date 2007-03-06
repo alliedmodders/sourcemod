@@ -15,7 +15,7 @@
 #include "sourcemm_api.h"
 #include "HandleSys.h"
 #include "CConVarManager.h"
-#include "CConCmdManager.h"
+#include "ConCmdManager.h"
 #include "PluginSys.h"
 #include "sm_stringutil.h"
 #include "CPlayerManager.h"
@@ -340,7 +340,10 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	g_ConCmds.AddServerCommand(pFunction, name, help, params[4]);
+	if (!g_ConCmds.AddServerCommand(pFunction, name, help, params[4]))
+	{
+		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
+	}
 
 	return 1;
 }
@@ -359,7 +362,10 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	g_ConCmds.AddConsoleCommand(pFunction, name, help, params[4]);
+	if (!g_ConCmds.AddConsoleCommand(pFunction, name, help, params[4]))
+	{
+		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
+	}
 
 	return 1;
 }
@@ -388,7 +394,10 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags);
+	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, flags, help, cmdflags))
+	{
+		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
+	}
 
 	return 1;
 }

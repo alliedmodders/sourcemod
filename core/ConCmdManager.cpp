@@ -11,14 +11,14 @@
  * Version: $Id$
  */
 
-#include "CConCmdManager.h"
+#include "ConCmdManager.h"
 #include "sm_srvcmds.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "CPlayerManager.h"
 #include "CTranslator.h"
 
-CConCmdManager g_ConCmds;
+ConCmdManager g_ConCmds;
 
 SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
@@ -32,34 +32,34 @@ struct PlCmdInfo
 typedef List<PlCmdInfo> CmdList;
 void AddToPlCmdList(CmdList *pList, const PlCmdInfo &info);
 
-CConCmdManager::CConCmdManager() : m_Strings(1024)
+ConCmdManager::ConCmdManager() : m_Strings(1024)
 {
 	m_pCmds = sm_trie_create();
 	m_pCmdGrps = sm_trie_create();
 }
 
-CConCmdManager::~CConCmdManager()
+ConCmdManager::~ConCmdManager()
 {
 	sm_trie_destroy(m_pCmds);
 	sm_trie_destroy(m_pCmdGrps);
 }
 
-void CConCmdManager::OnSourceModAllInitialized()
+void ConCmdManager::OnSourceModAllInitialized()
 {
 	g_PluginSys.AddPluginsListener(this);
 	g_RootMenu.AddRootConsoleCommand("cmds", "List console commands", this);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &CConCmdManager::SetCommandClient, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
 }
 
-void CConCmdManager::OnSourceModShutdown()
+void ConCmdManager::OnSourceModShutdown()
 {
 	/* All commands should already be removed by the time we're done */
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &CConCmdManager::SetCommandClient, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
 	g_PluginSys.RemovePluginsListener(this);
 }
 
-void CConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext)
+void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext)
 {
 	List<CmdHook *>::iterator iter = cmdlist.begin();
 	CmdHook *pHook;
@@ -78,7 +78,7 @@ void CConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pCo
 	}
 }
 
-void CConCmdManager::OnPluginDestroyed(IPlugin *plugin)
+void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 {
 	CmdList *pList;
 	List<ConCmdInfo *> removed;
@@ -129,12 +129,12 @@ void CommandCallback()
 	g_ConCmds.InternalDispatch();
 }
 
-void CConCmdManager::SetCommandClient(int client)
+void ConCmdManager::SetCommandClient(int client)
 {
 	m_CmdClient = client + 1;
 }
 
-ResultType CConCmdManager::DispatchClientCommand(int client, ResultType type)
+ResultType ConCmdManager::DispatchClientCommand(int client, ResultType type)
 {
 	const char *cmd = engine->Cmd_Argv(0);
 	int args = engine->Cmd_Argc() - 1;
@@ -183,7 +183,7 @@ ResultType CConCmdManager::DispatchClientCommand(int client, ResultType type)
 	return type;
 }
 
-void CConCmdManager::InternalDispatch()
+void ConCmdManager::InternalDispatch()
 {
 	/**
 	 * Note: Console commands will EITHER go through IServerGameDLL::ClientCommand,
@@ -292,7 +292,7 @@ void CConCmdManager::InternalDispatch()
 	}
 }
 
-bool CConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
+bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
 {
 	FlagBits cmdflags = pAdmin->eflags;
 	if (cmdflags == 0)
@@ -372,12 +372,18 @@ bool CConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdm
 	return false;
 }
 
-void CConCmdManager::AddConsoleCommand(IPluginFunction *pFunction, 
+bool ConCmdManager::AddConsoleCommand(IPluginFunction *pFunction, 
 									   const char *name, 
 									   const char *description, 
 									   int flags)
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+
+	if (!pInfo)
+	{
+		return false;
+	}
+
 	CmdHook *pHook = new CmdHook();
 
 	pHook->pf = pFunction;
@@ -400,9 +406,11 @@ void CConCmdManager::AddConsoleCommand(IPluginFunction *pFunction,
 	info.type = Cmd_Console;
 	info.pHook = pHook;
 	AddToPlCmdList(pList, info);
+
+	return true;
 }
 
-bool CConCmdManager::AddAdminCommand(IPluginFunction *pFunction, 
+bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction, 
 									 const char *name, 
 									 const char *group,
 									 int adminflags,
@@ -410,6 +418,11 @@ bool CConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 									 int flags)
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+
+	if (!pInfo)
+	{
+		return false;
+	}
 
 	CmdHook *pHook = new CmdHook();
 	AdminCmdInfo *pAdmin = new AdminCmdInfo();
@@ -473,13 +486,19 @@ bool CConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	return true;
 }
 
-void CConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
+bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
 									  const char *name, 
 									  const char *description, 
 									  int flags)
 
 {
 	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+
+	if (!pInfo)
+	{
+		return false;
+	}
+
 	CmdHook *pHook = new CmdHook();
 
 	pHook->pf = pFunction;
@@ -503,6 +522,8 @@ void CConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	info.type = Cmd_Server;
 	info.pHook = pHook;
 	AddToPlCmdList(pList, info);
+
+	return true;
 }
 
 void AddToPlCmdList(CmdList *pList, const PlCmdInfo &info)
@@ -533,7 +554,7 @@ void AddToPlCmdList(CmdList *pList, const PlCmdInfo &info)
 	}
 }
 
-void CConCmdManager::AddToCmdList(ConCmdInfo *info)
+void ConCmdManager::AddToCmdList(ConCmdInfo *info)
 {
 	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
 	ConCmdInfo *pInfo;
@@ -563,7 +584,7 @@ void CConCmdManager::AddToCmdList(ConCmdInfo *info)
 	}
 }
 
-void CConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits)
+void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits)
 {
 	ConCmdInfo *pInfo;
 
@@ -623,7 +644,7 @@ void CConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Fla
 	}
 }
 
-void CConCmdManager::RemoveConCmd(ConCmdInfo *info)
+void ConCmdManager::RemoveConCmd(ConCmdInfo *info)
 {
 	/* Remove console-specific information
 	 * This should always be true as of right now
@@ -655,7 +676,7 @@ void CConCmdManager::RemoveConCmd(ConCmdInfo *info)
 	delete info;
 }
 
-ConCmdInfo *CConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
+ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
 {
 	ConCmdInfo *pInfo;
 	if (!sm_trie_retrieve(m_pCmds, name, (void **)&pInfo))
@@ -666,9 +687,14 @@ ConCmdInfo *CConCmdManager::AddOrFindCommand(const char *name, const char *descr
 		ConCommand *pCmd = NULL;
 		while (pBase)
 		{
-			if (pBase->IsCommand()
-				&& (strcmp(pBase->GetName(), name) == 0))
+			if (strcmp(pBase->GetName(), name) == 0)
 			{
+				/* Don't want to return convar with same name */
+				if (!pBase->IsCommand())
+				{
+					return NULL;
+				}
+
 				pCmd = (ConCommand *)pBase;
 				break;
 			}
@@ -701,7 +727,7 @@ ConCmdInfo *CConCmdManager::AddOrFindCommand(const char *name, const char *descr
 	return pInfo;
 }
 
-void CConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
+void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
 {
 	if (argcount >= 3)
 	{

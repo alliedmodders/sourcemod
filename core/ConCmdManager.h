@@ -12,8 +12,8 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_CCONCMDMANAGER_H_
-#define _INCLUDE_SOURCEMOD_CCONCMDMANAGER_H_
+#ifndef _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
+#define _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
@@ -72,15 +72,15 @@ struct ConCmdInfo
 	List<CmdHook *> conhooks;		/**< Hooks as a console command */
 };
 
-class CConCmdManager :
+class ConCmdManager :
 	public SMGlobalClass,
 	public IRootConsoleCommand,
 	public IPluginsListener
 {
 	friend void CommandCallback();
 public:
-	CConCmdManager();
-	~CConCmdManager();
+	ConCmdManager();
+	~ConCmdManager();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -89,8 +89,8 @@ public: //IPluginsListener
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *command, unsigned int argcount);
 public:
-	void AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
-	void AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	bool AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
 	bool AddAdminCommand(IPluginFunction *pFunction, 
 						 const char *name, 
 						 const char *group,
@@ -116,7 +116,6 @@ private:
 	BaseStringTable m_Strings;		/* string table */
 };
 
-extern CConCmdManager g_ConCmds;
+extern ConCmdManager g_ConCmds;
 
-#endif // _INCLUDE_SOURCEMOD_CCONCMDMANAGER_H_
-
+#endif // _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_

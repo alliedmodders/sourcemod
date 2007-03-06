@@ -126,6 +126,7 @@ functag SrvCmd Action:public(args);
  * @param description	Optional description to use for command creation.
  * @param flags			Optional flags to use for command creation.
  * @noreturn
+ * @error				Command name is the same as an existing convar.
  */
 native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:description[]="", flags=0);
 
@@ -147,6 +148,7 @@ functag ConCmd Action:public(client, args);
  * @param description	Optional description to use for command creation.
  * @param flags			Optional flags to use for command creation.
  * @noreturn
+ * @error				Command name is the same as an existing convar.
  */
 native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:description[]="", flags=0);
 
@@ -163,6 +165,7 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * @param description	Optional description to use for help.
  * @param flags			Optional console flags.
  * @noreturn
+ * @error				Command name is the same as an existing convar.
  */
 native RegAdminCmd(const String:cmd[],
 					ConCmd:callback,
@@ -213,7 +216,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @param hasMax		Optional boolean that determines if the convar has a maximum value.
  * @param max			Maximum floating point value that the convar can have if hasMax is true.
  * @return				A handle to the newly created convar. If the convar already exists, INVALID_HANDLE is returned.
- * @error				Convar name is blank or is the same as a console command.
+ * @error				Convar name is blank or is the same as an existing console command.
  */
 native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:helpText[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
 
