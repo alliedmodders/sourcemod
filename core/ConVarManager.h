@@ -51,7 +51,7 @@ public: // SMGlobalClass
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public: // IPluginsListener
-	void OnPluginDestroyed(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *command, unsigned int argcount);
 public:
@@ -74,8 +74,8 @@ public:
 	/**
 	 * Create a convar and return a handle to it.
 	 */
-	Handle_t CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *helpText,
-	                      int flags, bool hasMin, float min, bool hasMax, float max);
+	Handle_t CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal,
+	                      const char *description, int flags, bool hasMin, float min, bool hasMax, float max);
 
 	/**
 	 * Searches for a convar and returns a handle to it
@@ -85,13 +85,18 @@ public:
 	/**
 	 * Add a function to call when the specified convar changes.
 	 */
-	void HookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid);
+	void HookConVarChange(ConVar *pConVar, IPluginFunction *pFunction);
 
 	/**
 	 * Remove a function from the forward that will be called when the specified convar changes.
 	 */
-	void UnhookConVarChange(IPluginContext *pContext, ConVar *pConVar, funcid_t funcid);
+	void UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFunction);
 private:
+	/**
+	 * Adds a convar to a plugin's list.
+	 */
+	static void AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar);
+
 	/**
 	 * Static callback that Valve's ConVar class executes when the convar's value changes.
 	 */

@@ -11,8 +11,8 @@
 * Version: $Id$
 */
 
-#ifndef _INCLUDE_SOURCEMOD_CGAMEEVENTMANAGER_H_
-#define _INCLUDE_SOURCEMOD_CGAMEEVENTMANAGER_H_
+#ifndef _INCLUDE_SOURCEMOD_EVENTMANAGER_H_
+#define _INCLUDE_SOURCEMOD_EVENTMANAGER_H_
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
@@ -109,4 +109,4 @@ private:
 
 extern EventManager g_EventManager;
 
-#endif // _INCLUDE_SOURCEMOD_CGAMEEVENTMANAGER_H_
+#endif // _INCLUDE_SOURCEMOD_EVENTMANAGER_H_

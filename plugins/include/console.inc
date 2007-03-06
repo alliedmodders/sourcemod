@@ -209,7 +209,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  *
  * @param name			Name of new convar.
  * @param defaultValue	String containing the default value of new convar.
- * @param helpText		Optional description of the convar.
+ * @param description	Optional description of the convar.
  * @param flags			Optional bitstring of flags determining how the convar should be handled. See FCVAR_* constants for more details.
  * @param hasMin		Optional boolean that determines if the convar has a minimum value.
  * @param min			Minimum floating point value that the convar can have if hasMin is true.
@@ -218,7 +218,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @return				A handle to the newly created convar. If the convar already exists, INVALID_HANDLE is returned.
  * @error				Convar name is blank or is the same as an existing console command.
  */
-native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:helpText[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
+native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
 
 /**
  * Searches for a console variable.
@@ -236,7 +236,7 @@ native Handle:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-functag OnConVarChanged public(Handle:convar, const String:oldValue[], const String:newValue[]);
+functag ConVarChanged public(Handle:convar, const String:oldValue[], const String:newValue[]);
 
 /**
  * Creates a hook for when a console variable's value is changed.
@@ -246,7 +246,7 @@ functag OnConVarChanged public(Handle:convar, const String:oldValue[], const Str
  * @noreturn
  * @error				Invalid or corrupt Handle or invalid callback function.
  */
-native HookConVarChange(Handle:convar, OnConVarChanged:callback);
+native HookConVarChange(Handle:convar, ConVarChanged:callback);
 
 /**
  * Removes a hook for when a console variable's value is changed.
@@ -256,7 +256,7 @@ native HookConVarChange(Handle:convar, OnConVarChanged:callback);
  * @noreturn
  * @error				Invalid or corrupt Handle, invalid callback function, or no active hook on convar.
  */
-native UnhookConVarChange(Handle:convar, OnConVarChanged:callback);
+native UnhookConVarChange(Handle:convar, ConVarChanged:callback);
 
 /**
  * Returns the boolean value of a console variable.

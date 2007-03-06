@@ -741,15 +741,18 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 			return;
 		}
 
+		const sm_plugininfo_t *plinfo = pPlugin->GetPublicInfo();
+		const char *plname = IS_STR_FILLED(plinfo->name) ? plinfo->name : pPlugin->GetFilename();
+
 		CmdList *pList;
 		if (!pPlugin->GetProperty("CommandList", (void **)&pList))
 		{
-			g_RootMenu.ConsolePrint("[SM] No commands found for %s", pPlugin->GetFilename());
+			g_RootMenu.ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 		if (!pList->size())
 		{
-			g_RootMenu.ConsolePrint("[SM] No commands found for %s", pPlugin->GetFilename());
+			g_RootMenu.ConsolePrint("[SM] No commands found for: %s", plname);
 			return;
 		}
 
@@ -757,10 +760,11 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 		const char *type = NULL;
 		const char *name;
 		const char *help;
-		g_RootMenu.ConsolePrint(" %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
+		g_RootMenu.ConsolePrint("[SM] Listing %d commands for: %s", pList->size(), plname);
+		g_RootMenu.ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
 		for (iter=pList->begin();
 			 iter!=pList->end();
-			 iter++)
+			 iter++, id++)
 		{
 			PlCmdInfo &cmd = (*iter);
 			if (cmd.type == Cmd_Server)
@@ -778,7 +782,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 			} else {
 				help = cmd.pInfo->pCmd->GetHelpText();
 			}
-			g_RootMenu.ConsolePrint(" %-17.16s %-12.11s %s", name, type, help);		
+			g_RootMenu.ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		
 		}
 
 		return;

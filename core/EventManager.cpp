@@ -21,9 +21,8 @@ EventManager g_EventManager;
 
 SH_DECL_HOOK2(IGameEventManager2, FireEvent, SH_NOATTRIB, 0, bool, IGameEvent *, bool);
 
-typedef List<EventHook *> EventHookList;
-
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
+typedef List<EventHook *> EventHookList;
 
 EventManager::EventManager() : m_EventType(0), m_NotifyPlugins(true), m_EventCopy(NULL)
 {
@@ -93,12 +92,13 @@ void EventManager::OnHandleDestroy(HandleType_t type, void *object)
 void EventManager::OnPluginUnloaded(IPlugin *plugin)
 {
 	EventHookList *pHookList;
+	EventHookList::iterator iter;
 	EventHook *pHook;
 
 	// If plugin has an event hook list...
 	if (plugin->GetProperty("EventHooks", reinterpret_cast<void **>(&pHookList), true))
 	{
-		for (EventHookList::iterator iter = pHookList->begin(); iter != pHookList->end(); iter++)
+		for (iter = pHookList->begin(); iter != pHookList->end(); iter++)
 		{
 			pHook = (*iter);
 

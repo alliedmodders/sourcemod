@@ -1415,7 +1415,6 @@ const char *CPluginManager::GetStatusText(PluginStatus st)
 	}
 }
 
-#define IS_STR_FILLED(var) (var[0] != '\0')
 void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
 {
 	if (argcount >= 3)
@@ -1432,7 +1431,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				g_RootMenu.ConsolePrint("[SM] No plugins loaded");
 				return;
 			} else {
-				g_RootMenu.ConsolePrint("[SM] Displaying %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
+				g_RootMenu.ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
 			}
 
 			IPluginIterator *iter = GetPluginIterator();

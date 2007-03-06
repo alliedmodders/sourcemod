@@ -29,7 +29,7 @@ static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 	// While the engine seems to accept a blank convar name, it causes a crash upon server quit
 	if (name == NULL || strcmp(name, "") == 0)
 	{
-		return pContext->ThrowNativeError("Null or blank convar name is not allowed");
+		return pContext->ThrowNativeError("Convar with blank name is not permitted");
 	}
 
 	pContext->LocalToString(params[2], &defaultVal);
@@ -40,7 +40,14 @@ static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 	float min = sp_ctof(params[6]);
 	float max = sp_ctof(params[8]);
 
-	return g_ConVarManager.CreateConVar(pContext, name, defaultVal, helpText, params[4], hasMin, min, hasMax, max);
+	Handle_t hndl = g_ConVarManager.CreateConVar(pContext, name, defaultVal, helpText, params[4], hasMin, min, hasMax, max);
+
+	if (hndl == BAD_HANDLE)
+	{
+		return pContext->ThrowNativeError("Convar \"%s\" was not created. A console command with the same name already exists.", name);
+	}
+
+	return hndl;
 }
 
 static cell_t sm_FindConVar(IPluginContext *pContext, const cell_t *params)
@@ -48,12 +55,6 @@ static cell_t sm_FindConVar(IPluginContext *pContext, const cell_t *params)
 	char *name;
 
 	pContext->LocalToString(params[1], &name);
-
-	// While the engine seems to accept a blank convar name, it causes a crash upon server quit
-	if (name == NULL || strcmp(name, "") == 0)
-	{
-		return BAD_HANDLE;
-	}
 
 	return g_ConVarManager.FindConVar(name);
 }
@@ -70,7 +71,14 @@ static cell_t sm_HookConVarChange(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	g_ConVarManager.HookConVarChange(pContext, pConVar, static_cast<funcid_t>(params[2]));
+	IPluginFunction *pFunction = pContext->GetFunctionById(params[2]);
+
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+	}
+
+	g_ConVarManager.HookConVarChange(pConVar, pFunction);
 
 	return 1;
 }
@@ -87,7 +95,14 @@ static cell_t sm_UnhookConVarChange(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	g_ConVarManager.UnhookConVarChange(pContext, pConVar, static_cast<funcid_t>(params[2]));
+	IPluginFunction *pFunction = pContext->GetFunctionById(params[2]);
+
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+	}
+
+	g_ConVarManager.UnhookConVarChange(pConVar, pFunction);
 
 	return 1;
 }
