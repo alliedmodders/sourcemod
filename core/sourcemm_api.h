@@ -17,7 +17,6 @@
 #include "convar_sm.h"
 #include <ISmmPlugin.h>
 #include <eiface.h>
-#include <icvar.h>
 #include <igameevents.h>
 #include <random.h>
 

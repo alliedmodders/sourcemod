@@ -25,7 +25,7 @@ typedef List<EventHook *> EventHookList;
 
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
 
-EventManager::EventManager() : m_EventCopy(NULL), m_NotifyState(true)
+EventManager::EventManager() : m_EventCopy(NULL), m_NotifyPlugins(true)
 {
 	/* Create an event lookup trie */
 	m_EventHooks = sm_trie_create();
@@ -34,6 +34,15 @@ EventManager::EventManager() : m_EventCopy(NULL), m_NotifyState(true)
 EventManager::~EventManager()
 {
 	sm_trie_destroy(m_EventHooks);
+
+	/* Free memory used by EventInfo structs if any */
+	CStack<EventInfo *>::iterator iter;
+	for (iter = m_FreeEvents.begin(); iter != m_FreeEvents.end(); iter++)
+	{
+		delete (*iter);
+	}
+
+	m_FreeEvents.popall();
 }
 
 void EventManager::OnSourceModAllInitialized()
@@ -68,15 +77,16 @@ void EventManager::OnSourceModShutdown()
 
 void EventManager::OnHandleDestroy(HandleType_t type, void *object)
 {
-	if (type == m_EventType)
-	{
-		EventInfo *pInfo = static_cast<EventInfo *>(object);
+	EventInfo *pInfo = static_cast<EventInfo *>(object);
 
-		if (pInfo->canDelete)
-		{
-			gameevents->FreeEvent(pInfo->pEvent);
-			delete pInfo;
-		}
+	/* Should only free event when created by a plugin */
+	if (pInfo->pOwner)
+	{
+		/* Free IGameEvent */
+		gameevents->FreeEvent(pInfo->pEvent);
+
+		/* Add EventInfo struct to free event stack */
+		m_FreeEvents.push(pInfo);
 	}
 }
 
@@ -266,6 +276,46 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 	return EventHookErr_Okay;
 }
 
+EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name)
+{
+	EventInfo *pInfo;
+	IGameEvent *pEvent = gameevents->CreateEvent(name, true);
+
+	if (pEvent)
+	{
+		if (m_FreeEvents.empty())
+		{
+			pInfo = new EventInfo();
+		} else {
+			pInfo = m_FreeEvents.front();
+			m_FreeEvents.pop();
+		}
+
+
+		pInfo->pEvent = pEvent;
+		pInfo->pOwner = pContext->GetIdentity();
+
+		return pInfo;
+	}
+
+	return NULL;
+}
+
+void EventManager::FireEvent(IPluginContext *pContext, EventInfo *pInfo, int flags, bool bDontBroadcast)
+{
+	/* Should SourceMod plugins be notified of this event? */
+	m_NotifyPlugins = (flags & EVENT_PASSTHRU_ALL) ? true : false;
+
+	/* Actually fire event now */
+	gameevents->FireEvent(pInfo->pEvent, bDontBroadcast);
+
+	/* IGameEvent is free at this point, so no one owns this */
+	pInfo->pOwner = NULL;
+
+	/* Add EventInfo struct to free event stack */
+	m_FreeEvents.push(pInfo);
+}
+
 /* IGameEventManager2::FireEvent hook */
 bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 {
@@ -273,7 +323,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	cell_t res = Pl_Continue;
 
-	if (!m_NotifyState)
+	if (!m_NotifyPlugins)
 	{
 		RETURN_META_VALUE(MRES_IGNORED, true);
 	}
@@ -321,9 +371,11 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	Handle_t hndl;
 
-	if (!m_NotifyState)
+	if (!m_NotifyPlugins)
 	{
-		m_NotifyState = true;
+		/* Reset plugin notification state */
+		m_NotifyPlugins = true;
+
 		RETURN_META_VALUE(MRES_IGNORED, true);
 	}
 

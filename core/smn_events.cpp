@@ -65,20 +65,15 @@ static cell_t sm_UnhookEvent(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_CreateEvent(IPluginContext *pContext, const cell_t *params)
 {
-	IGameEvent *pEvent;
-	EventInfo *pInfo;
 	char *name;
+	EventInfo *pInfo;
 
 	pContext->LocalToString(params[1], &name);
 
-	pEvent = gameevents->CreateEvent(name, true);
+	pInfo = g_EventManager.CreateEvent(pContext, name);
 
-	if (pEvent)
+	if (pInfo)
 	{
-		pInfo = new EventInfo;
-		pInfo->pEvent = pEvent;
-		pInfo->canDelete = true;
-
 		return g_HandleSys.CreateHandle(g_EventManager.GetHandleType(), pInfo, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	}
 
@@ -97,23 +92,17 @@ static cell_t sm_FireEvent(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid GameEvent Handle %x (error %d)", hndl, err);
 	}
 
-	if ((params[3] & EVENT_PASSTHRU_ALL) == false)
+	/* If identities do not match, don't fire event */
+	if (pContext->GetIdentity() != pInfo->pOwner)
 	{
-		/* Set whether or not SourceMod plugins should be notified */
-		g_EventManager.SetNotifyState(false);
+		return pContext->ThrowNativeError("Game event \"%s\" could not be fired because it was not created by this plugin", pInfo->pEvent->GetName());
 	}
 
-	/* Fire game event */
-	gameevents->FireEvent(pInfo->pEvent, params[2] ? true : false);
-
-	pInfo->canDelete = false;
+	g_EventManager.FireEvent(pContext, pInfo, params[2], params[3] ? true : false);
 
 	/* Free handle on game event */
-	HandleSecurity sec = { pContext->GetIdentity(), g_pCoreIdent };
+	HandleSecurity sec = {pContext->GetIdentity(), g_pCoreIdent};
 	g_HandleSys.FreeHandle(hndl, &sec);
-
-	/* Free EventInfo memory */
-	delete pInfo;
 
 	return 1;
 }
@@ -130,13 +119,14 @@ static cell_t sm_CancelCreatedEvent(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Invalid GameEvent Handle %x (error %d)", hndl, err);
 	}
 
-	gameevents->FreeEvent(pInfo->pEvent);
+	/* If identities do not match, don't cancel event */
+	if (pContext->GetIdentity() != pInfo->pOwner)
+	{
+		return pContext->ThrowNativeError("Game event \"%s\" could not be canceled because it was not created by this plugin", pInfo->pEvent->GetName());
+	}
 
-	// Free GameEventInfo memory
-	delete pInfo;
-
-	// Free handle on game event
-	HandleSecurity sec = { pContext->GetIdentity(), g_pCoreIdent };
+	/* Free handle on game event */
+	HandleSecurity sec = {pContext->GetIdentity(), g_pCoreIdent};
 	g_HandleSys.FreeHandle(hndl, &sec);
 
 	return 1;

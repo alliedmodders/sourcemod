@@ -91,12 +91,12 @@ native Handle:CreateEvent(const String:name[]);
  * Fires a game event.
  *
  * @param event			Handle to the event.
- * @param dontBroadcast	Optional boolean that determines if event should be broadcast to clients.
  * @param flags			Optional bitstring flags. See EVENT_* constants for more details.
+ * @param dontBroadcast	Optional boolean that determines if event should be broadcast to clients.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native FireEvent(Handle:event, bool:dontBroadcast=false, flags=0);
+native FireEvent(Handle:event, flags=0, bool:dontBroadcast=false);
 
 /**
  * Cancels a previously created game event that has not been fired.

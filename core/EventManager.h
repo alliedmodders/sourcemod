@@ -8,7 +8,7 @@
 * in whole or significant part.
 * For information, see LICENSE.txt or http://www.sourcemod.net/license.php
 *
-* Version: $$
+* Version: $Id$
 */
 
 #ifndef _INCLUDE_SOURCEMOD_CGAMEEVENTMANAGER_H_
@@ -18,6 +18,7 @@
 #include "sourcemm_api.h"
 #include "sm_trie.h"
 #include <sh_list.h>
+#include <sh_stack.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPluginSys.h>
@@ -30,7 +31,7 @@ using namespace SourceHook;
 struct EventInfo
 {
 	IGameEvent *pEvent;
-	bool canDelete;
+	IdentityToken_t *pOwner;
 };
 
 struct EventHook
@@ -87,31 +88,23 @@ public:
 	 */
 	inline HandleType_t GetHandleType()
 	{
-		return EventManager::m_EventType;
-	}
-
-	/**
-	 * Sets the current SourceMod event notification state.
-	 *
-	 * If notify is set to true, SourceMod plugins will be notified of events. If false, they will not.
-	 * This is temporarily used to make EVENT_PASSTHRU work when firing events from plugins.
-	 */
-	inline void SetNotifyState(bool notify)
-	{
-		m_NotifyState = notify;
+		return m_EventType;
 	}
 public:
 	EventHookError HookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
 	EventHookError UnhookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
+	EventInfo *CreateEvent(IPluginContext *pContext, const char *name);
+	void FireEvent(IPluginContext *pContext, EventInfo *pInfo, int flags=0, bool bDontBroadcast=false);
 private: // IGameEventManager2 hooks
 	bool OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast);
 	bool OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast);
 private:
 	HandleType_t m_EventType;
 	Trie *m_EventHooks;
-	bool m_NotifyState;
+	bool m_NotifyPlugins;
 	IGameEvent *m_EventCopy;
 	const char *m_EventName;
+	CStack<EventInfo *> m_FreeEvents;
 };
 
 extern EventManager g_EventManager;
