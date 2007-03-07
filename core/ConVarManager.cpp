@@ -169,7 +169,6 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 {
 	ConVar *pConVar = NULL;
 	ConVarInfo *pInfo = NULL;
-	ConVarList *pConVarList = NULL;
 	Handle_t hndl = 0;
 
 	/* Find out if the convar exists already */

@@ -15,7 +15,7 @@
 #include "ForwardSys.h"
 #include "ShareSys.h"
 #include "AdminCache.h"
-#include "CConCmdManager.h"
+#include "ConCmdManager.h"
 
 CPlayerManager g_Players;
 
