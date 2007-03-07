@@ -70,7 +70,7 @@ namespace SourcePawn
 		 * @param flags		Copy-back flags.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushCellByRef(cell_t *cell, int flags) =0;
+		virtual int PushCellByRef(cell_t *cell) =0;
 
 		/**
 		 * @brief Pushes a float onto the current call.
@@ -91,7 +91,7 @@ namespace SourcePawn
 		 & @param flags		Copy-back flags.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushFloatByRef(float *number, int flags) =0;
+		virtual int PushFloatByRef(float *number) =0;
 
 		/**
 		 * @brief Pushes an array of cells onto the current call.  
@@ -505,8 +505,9 @@ namespace SourcePawn
 		 * @param error		The error number to set.
 		 * @param msg		Custom error message format.  NULL to use default.
 		 * @param ...		Message format arguments, if any.
+		 * @return			0 for convenience.
 		 */
-		virtual void ThrowNativeErrorEx(int error, const char *msg, ...) =0;
+		virtual cell_t ThrowNativeErrorEx(int error, const char *msg, ...) =0;
 
 		/**
 		 * @brief Throws a generic native error and halts any current execution.

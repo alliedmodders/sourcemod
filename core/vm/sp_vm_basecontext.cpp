@@ -212,11 +212,11 @@ void BaseContext::SetErrorMessage(const char *msg, va_list ap)
 	vsnprintf(m_MsgCache, sizeof(m_MsgCache), msg, ap);
 }
 
-void BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
+cell_t BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 {
 	if (!m_InExec)
 	{
-		return;
+		return 0;
 	}
 
 	ctx->n_err = error;
@@ -228,6 +228,8 @@ void BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 		SetErrorMessage(msg, ap);
 		va_end(ap);
 	}
+
+	return 0;
 }
 
 cell_t BaseContext::ThrowNativeError(const char *msg, ...)

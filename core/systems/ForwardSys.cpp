@@ -297,7 +297,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				{
 					func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
 				} else if (type == Param_Float || type == Param_Cell) {
-					func->PushCellByRef(&param->val, 0); 
+					func->PushCellByRef(&param->val); 
 				} else {
 					func->PushArray(param->byref.orig_addr, param->byref.cells, NULL, param->byref.flags);
 					assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
@@ -434,7 +434,7 @@ int CForward::PushFloat(float number)
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushCellByRef(cell_t *cell, int flags)
+int CForward::PushCellByRef(cell_t *cell)
 {
 	if (m_curparam < m_numparams)
 	{
@@ -452,13 +452,13 @@ int CForward::PushCellByRef(cell_t *cell, int flags)
 		m_params[m_curparam].pushedas = Param_CellByRef;
 	}
 
-	_Int_PushArray(cell, 1, flags);
+	_Int_PushArray(cell, 1, SM_PARAM_COPYBACK);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushFloatByRef(float *num, int flags)
+int CForward::PushFloatByRef(float *num)
 {
 	if (m_curparam < m_numparams)
 	{
@@ -476,7 +476,7 @@ int CForward::PushFloatByRef(float *num, int flags)
 		m_params[m_curparam].pushedas = Param_FloatByRef;
 	}
 
-	_Int_PushArray((cell_t *)num, 1, flags);
+	_Int_PushArray((cell_t *)num, 1, SM_PARAM_COPYBACK);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
