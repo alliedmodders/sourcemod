@@ -434,7 +434,7 @@ int CForward::PushFloat(float number)
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushCellByRef(cell_t *cell)
+int CForward::PushCellByRef(cell_t *cell, int flags)
 {
 	if (m_curparam < m_numparams)
 	{
@@ -452,13 +452,13 @@ int CForward::PushCellByRef(cell_t *cell)
 		m_params[m_curparam].pushedas = Param_CellByRef;
 	}
 
-	_Int_PushArray(cell, 1, SM_PARAM_COPYBACK);
+	_Int_PushArray(cell, 1, flags);
 	m_curparam++;
 
 	return SP_ERROR_NONE;
 }
 
-int CForward::PushFloatByRef(float *num)
+int CForward::PushFloatByRef(float *num, int flags)
 {
 	if (m_curparam < m_numparams)
 	{
@@ -476,7 +476,7 @@ int CForward::PushFloatByRef(float *num)
 		m_params[m_curparam].pushedas = Param_FloatByRef;
 	}
 
-	_Int_PushArray((cell_t *)num, 1, SM_PARAM_COPYBACK);
+	_Int_PushArray((cell_t *)num, 1, flags);
 	m_curparam++;
 
 	return SP_ERROR_NONE;

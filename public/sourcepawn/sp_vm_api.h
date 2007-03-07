@@ -70,7 +70,7 @@ namespace SourcePawn
 		 * @param flags		Copy-back flags.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushCellByRef(cell_t *cell) =0;
+		virtual int PushCellByRef(cell_t *cell, int flags=SM_PARAM_COPYBACK) =0;
 
 		/**
 		 * @brief Pushes a float onto the current call.
@@ -91,7 +91,7 @@ namespace SourcePawn
 		 & @param flags		Copy-back flags.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushFloatByRef(float *number) =0;
+		virtual int PushFloatByRef(float *number, int flags=SM_PARAM_COPYBACK) =0;
 
 		/**
 		 * @brief Pushes an array of cells onto the current call.  

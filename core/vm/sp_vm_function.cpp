@@ -79,14 +79,14 @@ int CFunction::PushCell(cell_t cell)
 	return SP_ERROR_NONE;
 }
 
-int CFunction::PushCellByRef(cell_t *cell)
+int CFunction::PushCellByRef(cell_t *cell, int flags)
 {
 	if (m_curparam >= SP_MAX_EXEC_PARAMS)
 	{
 		return SetError(SP_ERROR_PARAMS_MAX);
 	}
 
-	return PushArray(cell, 1, NULL, SM_PARAM_COPYBACK);
+	return PushArray(cell, 1, NULL, flags);
 }
 
 int CFunction::PushFloat(float number)
@@ -96,9 +96,9 @@ int CFunction::PushFloat(float number)
 	return PushCell(val);
 }
 
-int CFunction::PushFloatByRef(float *number)
+int CFunction::PushFloatByRef(float *number, int flags)
 {
-	return PushCellByRef((cell_t *)number);
+	return PushCellByRef((cell_t *)number, flags);
 }
 
 int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int copyback)

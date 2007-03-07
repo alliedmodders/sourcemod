@@ -47,9 +47,9 @@ class CForward : public IChangeableForward
 {
 public: //ICallable
 	virtual int PushCell(cell_t cell);
-	virtual int PushCellByRef(cell_t *cell);
+	virtual int PushCellByRef(cell_t *cell, int flags);
 	virtual int PushFloat(float number);
-	virtual int PushFloatByRef(float *number);
+	virtual int PushFloatByRef(float *number, int flags);
 	virtual int PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int flags);
 	virtual int PushString(const char *string);
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
