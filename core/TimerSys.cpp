@@ -12,7 +12,7 @@
 * Version: $Id$
 */
 
-#include "CTimerSys.h"
+#include "TimerSys.h"
 
 CTimerSystem g_Timers;
 

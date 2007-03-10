@@ -19,7 +19,7 @@
 #include <sh_string.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
-#include "CLogger.h"
+#include "Logger.h"
 #include "ExtensionSys.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"

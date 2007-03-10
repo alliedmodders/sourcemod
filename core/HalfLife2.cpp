@@ -11,7 +11,7 @@
  * Version: $Id$
  */
 
-#include "CHalfLife2.h"
+#include "HalfLife2.h"
 #include "sourcemm_api.h"
 
 CHalfLife2 g_HL2;

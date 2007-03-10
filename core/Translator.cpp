@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include "Translator.h"
-#include "CLogger.h"
+#include "Logger.h"
 #include "TextParsers.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"

@@ -16,7 +16,7 @@
 #include "HandleSys.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
-#include "CLogger.h"
+#include "Logger.h"
 #include "PluginSys.h"
 #include "sourcemm_api.h"
 

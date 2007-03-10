@@ -11,8 +11,8 @@
  * Version: $Id$
  */
 
-#include "CDbgReporter.h"
-#include "CLogger.h"
+#include "DebugReporter.h"
+#include "Logger.h"
 #include "PluginSys.h"
 
 CDbgReporter g_DbgReporter;

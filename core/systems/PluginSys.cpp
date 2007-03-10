@@ -19,7 +19,7 @@
 #include "sourcemm_api.h"
 #include "sourcemod.h"
 #include "TextParsers.h"
-#include "CLogger.h"
+#include "Logger.h"
 #include "ExtensionSys.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"

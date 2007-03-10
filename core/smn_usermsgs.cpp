@@ -14,7 +14,7 @@
 
 #include "HandleSys.h"
 #include "PluginSys.h"
-#include "CUserMessages.h"
+#include "UserMessages.h"
 #include "smn_usermsgs.h"
 
 HandleType_t g_WrBitBufType;

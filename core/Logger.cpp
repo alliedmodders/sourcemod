@@ -14,7 +14,7 @@
 #include <time.h>
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "CLogger.h"
+#include "Logger.h"
 #include "systems/LibrarySys.h"
 #include "sm_version.h"
 

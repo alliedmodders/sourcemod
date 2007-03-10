@@ -15,7 +15,7 @@
 #include "ExtensionSys.h"
 #include "LibrarySys.h"
 #include "ShareSys.h"
-#include "CLogger.h"
+#include "Logger.h"
 #include "sourcemm_api.h"
 #include "PluginSys.h"
 #include "sm_srvcmds.h"

@@ -12,7 +12,7 @@
 * Version: $Id$
 */
 
-#include "CUserMessages.h"
+#include "UserMessages.h"
 
 CUserMessages g_UserMsgs;
 

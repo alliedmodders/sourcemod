@@ -188,22 +188,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CDbgReporter.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CGameConfigs.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CHalfLife2.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CLogger.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\ConCmdManager.cpp"
 				>
 			</File>
@@ -212,15 +196,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CTimerSys.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CUserMessages.cpp"
+				RelativePath="..\DebugReporter.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\EventManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\GameConfigs.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\HalfLife2.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Logger.cpp"
 				>
 			</File>
 			<File
@@ -260,7 +252,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\TimerSys.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Translator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\UserMessages.cpp"
 				>
 			</File>
 		</Filter>
@@ -278,23 +278,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CDbgReporter.h"
-				>
-			</File>
-			<File
 				RelativePath="..\CellRecipientFilter.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CGameConfigs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CHalfLife2.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CLogger.h"
 				>
 			</File>
 			<File
@@ -306,15 +290,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CTimerSys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CUserMessages.h"
+				RelativePath="..\DebugReporter.h"
 				>
 			</File>
 			<File
 				RelativePath="..\EventManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\GameConfigs.h"
+				>
+			</File>
+			<File
+				RelativePath="..\HalfLife2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Logger.h"
 				>
 			</File>
 			<File
@@ -370,7 +362,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\TimerSys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Translator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\UserMessages.h"
 				>
 			</File>
 		</Filter>

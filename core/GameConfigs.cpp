@@ -13,13 +13,13 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include "CGameConfigs.h"
+#include "GameConfigs.h"
 #include "TextParsers.h"
 #include "sm_stringutil.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "CHalfLife2.h"
-#include "CLogger.h"
+#include "HalfLife2.h"
+#include "Logger.h"
 #include "ShareSys.h"
 
 CGameConfigManager g_GameConfigs;

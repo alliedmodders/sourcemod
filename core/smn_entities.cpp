@@ -16,7 +16,7 @@
 #include "sourcemm_api.h"
 #include "server_class.h"
 #include "PlayerManager.h"
-#include "CHalfLife2.h"
+#include "HalfLife2.h"
 
 inline edict_t *GetEdict(cell_t num)
 {
