@@ -135,7 +135,7 @@ int CFunction::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr
 		*phys_addr = info->phys_addr;
 	}
 
-	return true;
+	return SP_ERROR_NONE;
 }
 
 int CFunction::PushString(const char *string)
