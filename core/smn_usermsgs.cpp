@@ -15,7 +15,7 @@
 #include "HandleSys.h"
 #include "PluginSys.h"
 #include "CUserMessages.h"
-#include "CMsgListenerWrapper.h"
+#include "smn_usermsgs.h"
 
 HandleType_t g_WrBitBufType;
 Handle_t g_CurMsgHandle;
@@ -149,11 +149,119 @@ bool UsrMessageNatives::RemoveListener(IPluginContext *pCtx, MsgListenerWrapper 
 	return true;
 }
 
-/**************************************
-*                                     *
-* USER MESSAGE NATIVE IMPLEMENTATIONS *
-*                                     *
-***************************************/
+/***************************************
+ *                                     *
+ * USER MESSAGE WRAPPER IMPLEMENTATION *
+ *                                     *
+ ***************************************/
+
+size_t MsgListenerWrapper::PreparePlArray(int *pl_array, IRecipientFilter *pFilter)
+{
+	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
+
+	for (size_t i=0; i<size; i++)
+	{
+		pl_array[i] = pFilter->GetRecipientIndex(i);
+	}
+
+	return size;
+}
+
+bool MsgListenerWrapper::IsInterceptHook() const
+{
+	return m_IsInterceptHook;
+}
+
+int MsgListenerWrapper::GetMessageId() const
+{
+	return m_MsgId;
+}
+
+IPluginFunction *MsgListenerWrapper::GetHookedFunction() const
+{
+	if (m_Hook)
+	{
+		return m_Hook;
+	} else {
+		return m_Intercept;
+	}
+}
+
+IPluginFunction *MsgListenerWrapper::GetNotifyFunction() const
+{
+	return m_Notify;
+}
+
+void MsgListenerWrapper::InitListener(int msgid, IPluginFunction *hook, IPluginFunction *notify, bool intercept)
+{
+	if (intercept)
+	{
+		m_Intercept = hook;
+		m_Hook = NULL;
+	} else {
+		m_Hook = hook;
+		m_Intercept = NULL;
+	}
+
+	if (notify)
+	{
+		m_Notify = notify;
+	} else {
+		m_Notify = NULL;
+	}
+
+	m_MsgId = msgid;
+	m_IsInterceptHook = intercept;
+}
+
+void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+{
+	cell_t res;
+	size_t size = PreparePlArray(g_MsgPlayers, pFilter);
+
+	m_Hook->PushCell(msg_id);
+	m_Hook->PushCell(0); //:TODO: push handle!
+	m_Hook->PushArray(g_MsgPlayers, size);
+	m_Hook->PushCell(size);
+	m_Hook->PushCell(pFilter->IsReliable());
+	m_Hook->PushCell(pFilter->IsInitMessage());
+	m_Hook->Execute(&res);
+}
+
+ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+{
+	cell_t res = static_cast<cell_t>(Pl_Continue);
+	size_t size = PreparePlArray(g_MsgPlayers, pFilter);
+
+	m_Intercept->PushCell(msg_id);
+	m_Intercept->PushCell(0); //:TODO: push handle!
+	m_Intercept->PushArray(g_MsgPlayers, size);
+	m_Intercept->PushCell(size);
+	m_Intercept->PushCell(pFilter->IsReliable());
+	m_Intercept->PushCell(pFilter->IsInitMessage());
+	m_Intercept->Execute(&res);
+
+	return static_cast<ResultType>(res);
+}
+
+void MsgListenerWrapper::OnUserMessageSent(int msg_id)
+{
+	cell_t res;
+
+	if (!m_Notify)
+	{
+		return;
+	}
+
+	m_Notify->PushCell(msg_id);
+	m_Notify->Execute(&res);
+}
+
+/***************************************
+ *                                     *
+ * USER MESSAGE NATIVE IMPLEMENTATIONS *
+ *                                     *
+ ***************************************/
 
 static UsrMessageNatives s_UsrMessageNatives;
 
