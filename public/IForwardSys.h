@@ -37,7 +37,7 @@
 using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
-#define SMINTERFACE_FORWARDMANAGER_VERSION	1
+#define SMINTERFACE_FORWARDMANAGER_VERSION	2
 
 /*
  * There is some very important documentation at the bottom of this file.
@@ -177,14 +177,10 @@ namespace SourceMod
 		 *
 		 * @param inarray	Array to copy.  Cannot be NULL, unlike ICallable's version.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
-		 * @param phys_addr	Unused.  If a value is passed, it will be filled with NULL.
 		 * @param flags		Whether or not changes should be copied back to the input array.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushArray(cell_t *inarray, 
-								unsigned int cells, 
-								cell_t **phys_addr, 
-								int flags=0) =0;
+		virtual int PushArray(cell_t *inarray, unsigned int cells, int flags=0) =0;
 	};
 
 	/**
@@ -269,6 +265,14 @@ namespace SourceMod
 		virtual unsigned int GetInterfaceVersion()
 		{
 			return SMINTERFACE_FORWARDMANAGER_VERSION;
+		}
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < 2 || version > GetInterfaceVersion())
+			{
+				return false;
+			}
+			return true;
 		}
 	public:
 		/**

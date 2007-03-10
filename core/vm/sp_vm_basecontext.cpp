@@ -167,6 +167,7 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
+	uint32_t n_idx = ctx->n_idx;
 
 	bool wasExec = m_InExec;
 
@@ -201,6 +202,8 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 		ctx->sp = save_sp;
 		ctx->hp = save_hp;
 	}
+
+	ctx->n_idx = n_idx;
 
 	return err;
 }

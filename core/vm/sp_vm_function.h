@@ -24,6 +24,11 @@ struct ParamInfo
 	cell_t *phys_addr;	/* Physical address of our copy */
 	cell_t *orig_addr;	/* Original address to copy back to */
 	ucell_t size;		/* Size of array in bytes */
+	struct
+	{
+		bool is_sz;		/* is a string */
+		int sz_flags;	/* has sz flags */
+	} str;
 };
 
 class CPlugin;
@@ -38,10 +43,9 @@ public:
 	virtual int PushCellByRef(cell_t *cell, int flags);
 	virtual int PushFloat(float number);
 	virtual int PushFloatByRef(float *number, int flags);
-	virtual int PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int copyback);
+	virtual int PushArray(cell_t *inarray, unsigned int cells, int copyback);
 	virtual int PushString(const char *string);
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
-	virtual cell_t *GetAddressOfPushedParam(unsigned int param);
 	virtual int Execute(cell_t *result);
 	virtual void Cancel();
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);

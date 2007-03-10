@@ -105,7 +105,7 @@ inline void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipie
 
 	m_Hook->PushCell(msg_id);
 	m_Hook->PushCell(0); //:TODO: push handle!
-	m_Hook->PushArray(g_MsgPlayers, size, NULL);
+	m_Hook->PushArray(g_MsgPlayers, size);
 	m_Hook->PushCell(size);
 	m_Hook->PushCell(pFilter->IsReliable());
 	m_Hook->PushCell(pFilter->IsInitMessage());
@@ -119,7 +119,7 @@ inline ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write 
 
 	m_Intercept->PushCell(msg_id);
 	m_Intercept->PushCell(0); //:TODO: push handle!
-	m_Intercept->PushArray(g_MsgPlayers, size, NULL);
+	m_Intercept->PushArray(g_MsgPlayers, size);
 	m_Intercept->PushCell(size);
 	m_Intercept->PushCell(pFilter->IsReliable());
 	m_Intercept->PushCell(pFilter->IsInitMessage());

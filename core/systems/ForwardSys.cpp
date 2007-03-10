@@ -299,7 +299,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				} else if (type == Param_Float || type == Param_Cell) {
 					func->PushCellByRef(&param->val); 
 				} else {
-					func->PushArray(param->byref.orig_addr, param->byref.cells, NULL, param->byref.flags);
+					func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
 					assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
 				}
 			} else {
@@ -489,7 +489,7 @@ void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
 	m_params[m_curparam].byref.orig_addr = inarray;
 }
 
-int CForward::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr, int flags)
+int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
 {
 	/* We don't allow this here */
 	if (!inarray)
@@ -511,11 +511,6 @@ int CForward::PushArray(cell_t *inarray, unsigned int cells, cell_t **phys_addr,
 			return SetError(SP_ERROR_PARAMS_MAX);
 		}
 		m_params[m_curparam].pushedas = Param_Array;
-	}
-
-	if (phys_addr)
-	{
-		*phys_addr = NULL;
 	}
 
 	_Int_PushArray(inarray, cells, flags);

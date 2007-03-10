@@ -94,23 +94,21 @@ namespace SourcePawn
 		virtual int PushFloatByRef(float *number, int flags=SM_PARAM_COPYBACK) =0;
 
 		/**
-		 * @brief Pushes an array of cells onto the current call.  
-		 * NOTE: On Execute, the pointer passed will be modified if non-NULL and copy-back
-		 * is enabled.
-		 * NOTE: By reference parameters are cached and thus are not read until execution.
-		 *		 This means you cannot push a pointer, change it, and push it again and expect
-		 *       two different values to come out.
+		 * @brief Pushes an array of cells onto the current call. 
+		 *
+		 * On Execute, the pointer passed will be modified if non-NULL and copy-back
+		 * is enabled.  
+		 *
+		 * By reference parameters are cached and thus are not read until execution.
+		 * This means you cannot push a pointer, change it, and push it again and expect
+		 * two different values to come out.
 		 *
 		 * @param inarray	Array to copy, NULL if no initial array should be copied.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
-		 * @param phys_addr	Optional return address for physical array, if one was made.
 		 * @param flags		Whether or not changes should be copied back to the input array.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushArray(cell_t *inarray, 
-								unsigned int cells, 
-								cell_t **phys_addr, 
-								int flags=0) =0;
+		virtual int PushArray(cell_t *inarray, unsigned int cells, int flags=0) =0;
 
 		/**
 		 * @brief Pushes a string onto the current call.
@@ -176,14 +174,6 @@ namespace SourcePawn
 		 * @return				IPluginContext pointer to parent plugin.
 		 */
 		virtual IPluginContext *GetParentContext() =0;
-
-		/**
-		 * @brief Returns the physical address of a by-reference parameter.
-		 *
-		 * @param param			Parameter index to read (beginning at 0).
-		 * @return				Address, or NULL if invalid parameter specified.
-		 */
-		virtual cell_t *GetAddressOfPushedParam(unsigned int param) =0;
 
 		/**
 		 * @brief Returns whether the parent plugin is paused.
