@@ -12,7 +12,7 @@
  */
 
 #include "sm_globals.h"
-#include "CTextParsers.h"
+#include "TextParsers.h"
 #include "HandleSys.h"
 
 HandleType_t g_TypeSMC = 0;

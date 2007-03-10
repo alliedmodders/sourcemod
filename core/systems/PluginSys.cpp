@@ -18,7 +18,7 @@
 #include "HandleSys.h"
 #include "sourcemm_api.h"
 #include "sourcemod.h"
-#include "CTextParsers.h"
+#include "TextParsers.h"
 #include "CLogger.h"
 #include "ExtensionSys.h"
 #include "sm_srvcmds.h"

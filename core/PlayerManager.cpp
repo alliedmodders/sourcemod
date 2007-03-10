@@ -11,7 +11,7 @@
  * Version: $Id$
  */
 
-#include "CPlayerManager.h"
+#include "PlayerManager.h"
 #include "ForwardSys.h"
 #include "ShareSys.h"
 #include "AdminCache.h"

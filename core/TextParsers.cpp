@@ -17,7 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "CTextParsers.h"
+#include "TextParsers.h"
 #include "ShareSys.h"
 
 CTextParsers g_TextParser;

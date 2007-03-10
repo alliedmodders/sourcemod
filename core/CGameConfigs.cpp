@@ -14,7 +14,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include "CGameConfigs.h"
-#include "CTextParsers.h"
+#include "TextParsers.h"
 #include "sm_stringutil.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"

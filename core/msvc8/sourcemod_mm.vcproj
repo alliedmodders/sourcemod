@@ -212,19 +212,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CPlayerManager.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CTextParsers.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\CTimerSys.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\CTranslator.cpp"
 				>
 			</File>
 			<File
@@ -233,6 +221,10 @@
 			</File>
 			<File
 				RelativePath="..\EventManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PlayerManager.cpp"
 				>
 			</File>
 			<File
@@ -261,6 +253,14 @@
 			</File>
 			<File
 				RelativePath="..\sourcemod.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\TextParsers.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Translator.cpp"
 				>
 			</File>
 		</Filter>
@@ -306,19 +306,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\CPlayerManager.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CTextParsers.h"
-				>
-			</File>
-			<File
 				RelativePath="..\CTimerSys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\CTranslator.h"
 				>
 			</File>
 			<File
@@ -327,6 +315,10 @@
 			</File>
 			<File
 				RelativePath="..\EventManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PlayerManager.h"
 				>
 			</File>
 			<File
@@ -371,6 +363,14 @@
 			</File>
 			<File
 				RelativePath="..\sourcemod.h"
+				>
+			</File>
+			<File
+				RelativePath="..\TextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Translator.h"
 				>
 			</File>
 		</Filter>

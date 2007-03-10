@@ -16,7 +16,7 @@
 #include "AdminCache.h"
 #include "ShareSys.h"
 #include "ForwardSys.h"
-#include "CPlayerManager.h"
+#include "PlayerManager.h"
 #include "ConCmdManager.h"
 
 AdminCache g_Admins;

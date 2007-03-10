@@ -14,7 +14,7 @@
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "CPlayerManager.h"
+#include "PlayerManager.h"
 
 static cell_t SetRandomSeed(IPluginContext *pContext, const cell_t *params)
 {

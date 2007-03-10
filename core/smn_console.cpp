@@ -18,7 +18,7 @@
 #include "ConCmdManager.h"
 #include "PluginSys.h"
 #include "sm_stringutil.h"
-#include "CPlayerManager.h"
+#include "PlayerManager.h"
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {

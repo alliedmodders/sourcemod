@@ -14,9 +14,9 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include "CTranslator.h"
+#include "Translator.h"
 #include "CLogger.h"
-#include "CTextParsers.h"
+#include "TextParsers.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
 #include "sourcemod.h"

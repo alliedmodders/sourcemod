@@ -12,7 +12,7 @@
  */
 
 #include "PluginSys.h"
-#include "CTranslator.h"
+#include "Translator.h"
 
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {

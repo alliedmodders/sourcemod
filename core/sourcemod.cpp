@@ -23,8 +23,8 @@
 #include "ExtensionSys.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
-#include "CPlayerManager.h"
-#include "CTranslator.h"
+#include "PlayerManager.h"
+#include "Translator.h"
 #include "ForwardSys.h"
 #include "CTimerSys.h"
 

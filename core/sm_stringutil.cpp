@@ -17,8 +17,8 @@
 #include "sm_stringutil.h"
 #include "CLogger.h"
 #include "PluginSys.h"
-#include "CTranslator.h"
-#include "CPlayerManager.h"
+#include "Translator.h"
+#include "PlayerManager.h"
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */

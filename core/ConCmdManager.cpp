@@ -15,8 +15,8 @@
 #include "sm_srvcmds.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
-#include "CPlayerManager.h"
-#include "CTranslator.h"
+#include "PlayerManager.h"
+#include "Translator.h"
 
 ConCmdManager g_ConCmds;
 
