@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="sourcemod_mm"
 	ProjectGUID="{E39527CD-7CAB-4420-97CC-DA1B93B260BC}"
 	RootNamespace="sourcemod_mm"
@@ -220,6 +220,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CTimerSys.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CTranslator.cpp"
 				>
 			</File>
@@ -311,6 +315,10 @@
 			</File>
 			<File
 				RelativePath="..\CTextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\CTimerSys.h"
 				>
 			</File>
 			<File
@@ -419,6 +427,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\ITextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\ITimerSystem.h"
 				>
 			</File>
 			<File

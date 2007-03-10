@@ -26,6 +26,7 @@
 #include "CPlayerManager.h"
 #include "CTranslator.h"
 #include "ForwardSys.h"
+#include "CTimerSys.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -193,6 +194,7 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_LastAuthCheck = 0.0f;
 
 	g_Logger.MapChange(pMapName);
+	g_Timers.MapChange();
 
 	/* Refresh language stuff */
 	char path[PLATFORM_MAX_PATH];
@@ -221,7 +223,7 @@ void SourceModBase::GameFrame(bool simulating)
 	 * precious CPU cycles.
 	 */
 	float curtime = gpGlobals->curtime;
-	if (curtime - g_LastTime > 0.1f)
+	if (curtime - g_LastTime >= 0.1f)
 	{
 		if (m_CheckingAuth
 			&& (gpGlobals->curtime - g_LastAuthCheck > 0.7f))
@@ -229,9 +231,11 @@ void SourceModBase::GameFrame(bool simulating)
 			g_LastAuthCheck = gpGlobals->curtime;
 			g_Players.RunAuthChecks();
 		}
+
+		g_Timers.RunFrame();
 		g_LastTime = curtime;
 	}
-	
+
 	if (g_pOnGameFrame && g_pOnGameFrame->GetFunctionCount())
 	{
 		g_pOnGameFrame->Execute(NULL);

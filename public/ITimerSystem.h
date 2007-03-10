@@ -20,11 +20,10 @@
 #define _INCLUDE_SOURCEMOD_TIMER_SYSTEM_H_
 
 #include <IShareSys.h>
+#include <IForwardSys.h>
 
-//:TODO: this is a placeholder and not yet implemented
-//remove these lines and uncomment once we're done!
-//#define SMINTERFACE_TIMERSYS_NAME		"ITimerSys"
-//#define SMINTERFACE_TIMERSYS_VERSION	1
+#define SMINTERFACE_TIMERSYS_NAME		"ITimerSys"
+#define SMINTERFACE_TIMERSYS_VERSION	1
 
 namespace SourceMod
 {
@@ -41,9 +40,7 @@ namespace SourceMod
 		 *
 		 * @param pTimer		Pointer to the timer instance.
 		 * @param pData			Private pointer passed from host.
-		 * @return				Pl_Handle to stop timer, Pl_Continue to continue.
-		 *						Passing Pl_Continue when a timer's repeat count
-		 *						has been exhausted will not extend it.
+		 * @return				Pl_Stop to stop timer, Pl_Continue to continue.
 		 */
 		virtual ResultType OnTimer(ITimer *pTimer, void *pData) =0;
 
@@ -53,7 +50,7 @@ namespace SourceMod
 		 * @param pTimer		Pointer to the timer instance.
 		 * @param pData			Private data pointer passed from host.
 		 */
-		virtual void OnTimerEnd() =0;
+		virtual void OnTimerEnd(ITimer *pTimer, void *pData) =0;
 	};
 
 	#define TIMER_FLAG_REPEAT		(1<<0)
