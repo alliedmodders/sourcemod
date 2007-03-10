@@ -527,4 +527,5 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntDataEnt",			SetEntDataEnt},
 	{"SetEntDataFloat",			SetEntDataFloat},
 	{"SetEntDataVector",		SetEntDataVector},
+	{NULL,						NULL}
 };
