@@ -133,7 +133,7 @@ native BfWriteCoord(Handle:bf, Float:coord);
 /**
  * Writes a 3D vector of coordinates to a writable bitbuffer (bf_write).
  *
- * @param bif			bf_write handle to write to.
+ * @param bf			bf_write handle to write to.
  * @param coord			Coordinate array to write.
  * @noreturn
  * @error				Invalid or incorrect Handle.
@@ -143,7 +143,7 @@ native BfWriteVecCoord(Handle:bf, Float:coord[3]);
 /**
  * Writes a 3D normal vector to a writable bitbuffer (bf_write).
  *
- * @param bif			bf_write handle to write to.
+ * @param bf			bf_write handle to write to.
  * @param vec			Vector to write.
  * @noreturn
  * @error				Invalid or incorrect Handle.
@@ -153,9 +153,143 @@ native BfWriteVecNormal(Handle:bf, Float:vec[3]);
 /**
  * Writes a 3D angle vector to a writable bitbuffer (bf_write).
  *
- * @param bif			bf_write handle to write to.
+ * @param bf			bf_write handle to write to.
  * @param angles		Angle vector to write.
  * @noreturn
  * @error				Invalid or incorrect Handle.
  */
 native BfWriteAngles(Handle:bf, Float:angles[3]);
+
+/** 
+ * Reads a single bit from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Bit value read.
+ * @error				Invalid or incorrect Handle.
+ */
+native bool:BfReadBool(Handle:bf);
+
+/**
+ * Reads a byte from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Byte value read (read as 8bit).
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadByte(Handle:bf);
+
+/**
+ * Reads a character from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Character value read.
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadChar(Handle:bf);
+
+/**
+ * Reads a 16bit integer from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Integer value read (read as 16bit).
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadShort(Handle:bf);
+
+/**
+ * Reads a 16bit unsigned integer from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Integer value read (read as 16bit).
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadWord(Handle:bf);
+
+/**
+ * Reads a normal integer to a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Integer value read (read as 32bit).
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadNum(Handle:bf);
+
+/**
+ * Reads a floating point number from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Floating point value read.
+ * @error				Invalid or incorrect Handle.
+ */
+native Float:BfReadFloat(Handle:bf);
+
+/**
+ * Reads a string from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @param buffer		Destination string buffer.
+ * @param maxlength		Maximum length of output string buffer.
+ * @param Line			If true the buffer will be copied until it reaches a '\n' or a null terminator.
+ * @noreturn
+ * @error				Invalid or incorrect Handle, destination string buffer was too short.
+ */
+native BfReadString(Handle:bf, String:buffer[], maxlength, bool:Line=false);
+
+/**
+ * Reads an entity from a readable bitbuffer (bf_read).
+ * @note This is a wrapper around BfReadShort().
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Entity index read.
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadEntity(Handle:bf);
+
+/**
+ * Reads a bit angle from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @param numBits		Optional number of bits to use.
+ * @return			Angle read.
+ * @error				Invalid or incorrect Handle.
+ */
+native Float:BfReadAngle(Handle:bf, numBits=8);
+
+/**
+ * Reads a coordinate from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return			Coordinate read.
+ * @error				Invalid or incorrect Handle.
+ */
+native Float:BfReadCoord(Handle:bf);
+
+/**
+ * Reads a 3D vector of coordinates from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @param coord			Destination coordinate array.
+ * @noreturn
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadVecCoord(Handle:bf, Float:coord[3]);
+
+/**
+ * Reads a 3D normal vector from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @param vec			Destination vector array.
+ * @noreturn
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadVecNormal(Handle:bf, Float:vec[3]);
+
+/**
+ * Reads a 3D angle vector from a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @param angles		Destination angle vector.
+ * @noreturn
+ * @error				Invalid or incorrect Handle.
+ */
+native BfReadAngles(Handle:bf, Float:angles[3]);

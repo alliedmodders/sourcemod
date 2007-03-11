@@ -59,7 +59,7 @@ namespace SourceMod
 		 * @param msg_id		Message Id.
 		 * @param bf			bf_write structure containing written bytes.
 		 * @param pFtiler		Recipient filter.
-		 * @return				True to allow message, false to scrap it.
+		 * @return				Pl_Continue to allow message, Pl_Stop or Pl_Handled to scrap it.
 		 */
 		virtual ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 		{

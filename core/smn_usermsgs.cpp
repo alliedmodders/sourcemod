@@ -18,7 +18,11 @@
 #include "smn_usermsgs.h"
 
 HandleType_t g_WrBitBufType;
+HandleType_t g_RdBitBufType;
 Handle_t g_CurMsgHandle;
+Handle_t g_ReadBufHandle;
+bf_read g_ReadBitBuf;
+
 int g_MsgPlayers[256];
 bool g_IsMsgInExec = false;
 
@@ -45,15 +49,30 @@ private:
 
 void UsrMessageNatives::OnSourceModAllInitialized()
 {
+	HandleAccess sec;
+	sec.access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTITY;
+
 	g_WrBitBufType = g_HandleSys.CreateType("BitBufWriter", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+	g_RdBitBufType = g_HandleSys.CreateType("BitBufReader", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+
+	g_ReadBufHandle = g_HandleSys.CreateHandle(g_RdBitBufType, &g_ReadBitBuf, NULL, g_pCoreIdent, NULL);
+
 	g_PluginSys.AddPluginsListener(this);
 }
 
 void UsrMessageNatives::OnSourceModShutdown()
 {
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+
+	g_HandleSys.FreeHandle(g_ReadBufHandle, &sec);
+
 	g_HandleSys.RemoveType(g_WrBitBufType, g_pCoreIdent);
+	g_HandleSys.RemoveType(g_RdBitBufType, g_pCoreIdent);
+
 	g_PluginSys.RemovePluginsListener(this);
 	g_WrBitBufType = 0;
+	g_RdBitBufType = 0;
 }
 
 void UsrMessageNatives::OnHandleDestroy(HandleType_t type, void *object)
@@ -221,8 +240,10 @@ void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilte
 	cell_t res;
 	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
 
+	g_ReadBitBuf.StartReading(bf->GetBasePointer(), bf->GetNumBytesWritten());
+
 	m_Hook->PushCell(msg_id);
-	m_Hook->PushCell(0); //:TODO: push handle!
+	m_Hook->PushCell(g_ReadBufHandle);
 	m_Hook->PushArray(g_MsgPlayers, size);
 	m_Hook->PushCell(size);
 	m_Hook->PushCell(pFilter->IsReliable());
@@ -235,8 +256,10 @@ ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IR
 	cell_t res = static_cast<cell_t>(Pl_Continue);
 	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
 
+	g_ReadBitBuf.StartReading(bf->GetBasePointer(), bf->GetNumBytesWritten());
+
 	m_Intercept->PushCell(msg_id);
-	m_Intercept->PushCell(0); //:TODO: push handle!
+	m_Intercept->PushCell(g_ReadBufHandle);
 	m_Intercept->PushArray(g_MsgPlayers, size);
 	m_Intercept->PushCell(size);
 	m_Intercept->PushCell(pFilter->IsReliable());

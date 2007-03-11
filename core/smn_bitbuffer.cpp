@@ -328,7 +328,310 @@ static cell_t smn_BfWriteAngles(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-REGISTER_NATIVES(wrbitbufnatives)
+static cell_t smn_BfReadBool(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->ReadOneBit() ? 1 : 0;
+}
+
+static cell_t smn_BfReadByte(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->ReadByte();
+}
+
+static cell_t smn_BfReadChar(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->ReadChar();
+}
+
+static cell_t smn_BfReadShort(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->ReadShort();
+}
+
+static cell_t smn_BfReadWord(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->ReadWord();
+}
+
+static cell_t smn_BfReadNum(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return static_cast<cell_t>(pBitBuf->ReadLong());
+}
+
+static cell_t smn_BfReadFloat(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return sp_ftoc(pBitBuf->ReadFloat());
+}
+
+static cell_t smn_BfReadString(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+	char *buf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	pCtx->LocalToPhysAddr(params[2], (cell_t **)&buf);
+	if (!pBitBuf->ReadString(buf, params[3], params[4] ? true : false))
+	{
+		return pCtx->ThrowNativeError("Destination string buffer is too short, try increasing its size");
+	}
+
+	return 1;
+}
+
+static cell_t smn_BfReadEntity(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->ReadShort();
+}
+
+static cell_t smn_BfReadAngle(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return sp_ftoc(pBitBuf->ReadBitAngle(params[2]));
+}
+
+static cell_t smn_BfReadCoord(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return sp_ftoc(pBitBuf->ReadBitCoord());
+}
+
+static cell_t smn_BfReadVecCoord(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	cell_t *pVec;
+	pCtx->LocalToPhysAddr(params[2], &pVec);
+
+	Vector vec;
+	pBitBuf->ReadBitVec3Coord(vec);
+
+	pVec[0] = sp_ftoc(vec.x);
+	pVec[1] = sp_ftoc(vec.y);
+	pVec[2] = sp_ftoc(vec.z);
+
+	return 1;
+}
+
+static cell_t smn_BfReadVecNormal(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	cell_t *pVec;
+	pCtx->LocalToPhysAddr(params[2], &pVec);
+
+	Vector vec;
+	pBitBuf->ReadBitVec3Normal(vec);
+
+	pVec[0] = sp_ftoc(vec.x);
+	pVec[1] = sp_ftoc(vec.y);
+	pVec[2] = sp_ftoc(vec.z);
+
+	return 1;
+}
+
+static cell_t smn_BfReadAngles(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	cell_t *pAng;
+	pCtx->LocalToPhysAddr(params[2], &pAng);
+
+	QAngle ang;
+	pBitBuf->ReadBitAngles(ang);
+
+	pAng[0] = sp_ftoc(ang.x);
+	pAng[1] = sp_ftoc(ang.y);
+	pAng[2] = sp_ftoc(ang.z);
+
+	return 1;
+}
+
+REGISTER_NATIVES(bitbufnatives)
 {
 	{"BfWriteBool",				smn_BfWriteBool},
 	{"BfWriteByte",				smn_BfWriteByte},
@@ -344,5 +647,19 @@ REGISTER_NATIVES(wrbitbufnatives)
 	{"BfWriteVecCoord",			smn_BfWriteVecCoord},
 	{"BfWriteVecNormal",		smn_BfWriteVecNormal},
 	{"BfWriteAngles",			smn_BfWriteAngles},
+	{"BfReadBool",				smn_BfReadBool},
+	{"BfReadByte",				smn_BfReadByte},
+	{"BfReadChar",				smn_BfReadChar},
+	{"BfReadShort",				smn_BfReadShort},
+	{"BfReadWord",				smn_BfReadWord},
+	{"BfReadNum",				smn_BfReadNum},
+	{"BfReadFloat",				smn_BfReadFloat},
+	{"BfReadString",			smn_BfReadString},
+	{"BfReadEntity",			smn_BfReadEntity},
+	{"BfReadAngle",				smn_BfReadAngle},
+	{"BfReadCoord",				smn_BfReadCoord},
+	{"BfReadVecCoord",			smn_BfReadVecCoord},
+	{"BfReadVecNormal",			smn_BfReadVecNormal},
+	{"BfReadAngles",			smn_BfReadAngles},
 	{NULL,						NULL}
 };
