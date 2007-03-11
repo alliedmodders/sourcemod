@@ -297,9 +297,10 @@ void CUserMessages::OnMessageEnd_Post()
 	}
 
 	pList = &m_msgHooks[m_CurId];
-	for (iter=pList->begin(); iter!=pList->end(); iter++)
+	for (iter=pList->begin(); iter!=pList->end(); )
 	{
 		pInfo = (*iter);
+		pInfo->IsHooked = true;
 		pInfo->Callback->OnUserMessageSent(m_CurId);
 
 		if (pInfo->KillMe)
@@ -413,6 +414,7 @@ void CUserMessages::OnMessageEnd_Pre()
 			continue;
 		}
 
+		pInfo->IsHooked = false;
 		iter++;
 	}
 
