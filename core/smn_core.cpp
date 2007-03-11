@@ -11,6 +11,7 @@
  * Version: $Id$
  */
 
+#include <time.h>
 #include "sm_globals.h"
 #include "sourcemod.h"
 
@@ -28,8 +29,20 @@ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
+{
+	time_t t = time(NULL);
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	*(time_t *)addr = t;
+
+	return static_cast<cell_t>(t);
+}
+
 REGISTER_NATIVES(coreNatives)
 {
+	{"GetTime",				GetTime},
 	{"ThrowError",			ThrowError},
 	{NULL,					NULL},
 };

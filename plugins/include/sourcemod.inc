@@ -147,6 +147,14 @@ native LogMessage(const String:format[], {Handle,Float,String,_}:...);
 native LogError(const String:format[], {Handle,Float,String,_}:...);
 
 /**
+ * Gets the system time as a unix timestamp.
+ *
+ * @param bigStamp		Optional array to store the 64bit timestamp in.
+ * @return				32bit timestamp (number of seconds since unix epoch).
+ */
+native GetTime(bigStamp[2]={0,0});
+
+/**
  * Sets the seed value for the global Half-Life 2 Random Stream
  *
  * @param seed			Seed value.
