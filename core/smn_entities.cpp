@@ -351,9 +351,9 @@ static cell_t GetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	cell_t *vec;
 	pContext->LocalToPhysAddr(params[3], &vec);
 
-	vec[0] = v->x;
-	vec[1] = v->y;
-	vec[2] = v->z;
+	vec[0] = sp_ftoc(v->x);
+	vec[1] = sp_ftoc(v->y);
+	vec[2] = sp_ftoc(v->z);
 
 	return 1;
 }
@@ -379,9 +379,9 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	cell_t *vec;
 	pContext->LocalToPhysAddr(params[3], &vec);
 
-	v->x = vec[0];
-	v->y = vec[1];
-	v->z = vec[2];
+	v->x = sp_ctof(vec[0]);
+	v->y = sp_ctof(vec[1]);
+	v->z = sp_ctof(vec[2]);
 
 	if (params[4])
 	{

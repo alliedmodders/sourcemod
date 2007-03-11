@@ -244,6 +244,7 @@ bf_write *CUserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_ty
 	m_CurId = msg_type;
 	m_CurRecFilter = filter;
 	m_InHook = true;
+	m_BlockEndPost = false;
 
 	if (!is_intercept_empty)
 	{
@@ -268,7 +269,7 @@ bf_write *CUserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_t
 
 void CUserMessages::OnMessageEnd_Post()
 {
-	if (!m_InHook || (META_RESULT_STATUS == MRES_SUPERCEDE))
+	if (!m_InHook || m_BlockEndPost)
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -340,6 +341,8 @@ void CUserMessages::OnMessageEnd_Pre()
 		pInfo->IsHooked = true;
 		res = pInfo->Callback->InterceptUserMessage(m_CurId, &m_InterceptBuffer, m_CurRecFilter);
 
+		intercepted = true;
+
 		switch (res)
 		{
 		case Pl_Stop:
@@ -375,10 +378,10 @@ void CUserMessages::OnMessageEnd_Pre()
 					_DecRefCounter();
 					continue;
 				}
+				break;
 			}
 		}
 		pInfo->IsHooked = false;
-		intercepted = true;
 		iter++;
 	}
 
@@ -395,8 +398,6 @@ void CUserMessages::OnMessageEnd_Pre()
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();
-
-		goto supercede;
 	}
 
 	pList = &m_msgHooks[m_CurId];
@@ -418,8 +419,9 @@ void CUserMessages::OnMessageEnd_Pre()
 		iter++;
 	}
 
-	RETURN_META(MRES_IGNORED);
+	RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
 supercede:
 	m_InHook = false;
+	m_BlockEndPost = true;
 	RETURN_META(MRES_SUPERCEDE);
 }

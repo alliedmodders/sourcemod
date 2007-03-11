@@ -71,6 +71,7 @@ private:
 	bf_read m_ReadBuffer;
 	size_t m_HookCount;
 	bool m_InHook;
+	bool m_BlockEndPost;
 
 	Trie *m_Names;
 	CellRecipientFilter m_CellRecFilter;
