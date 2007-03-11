@@ -139,7 +139,6 @@ int CFunction::_PushString(const char *string, int sz_flags, int cp_flags, size_
 	}
 
 	ParamInfo *info = &m_info[m_curparam];
-	size_t cells = (len + sizeof(cell_t) - 1) / sizeof(cell_t);
 
 	info->marked = true;
 	info->orig_addr = (cell_t *)string;
