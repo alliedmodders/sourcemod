@@ -22,6 +22,9 @@ Handle_t g_CurMsgHandle;
 int g_MsgPlayers[256];
 bool g_IsMsgInExec = false;
 
+typedef List<MsgListenerWrapper *> MsgWrapperList;
+typedef List<MsgListenerWrapper *>::iterator MsgWrapperIter;
+
 class UsrMessageNatives :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
@@ -33,9 +36,9 @@ public: //SMGlobalClass, IHandleTypeDispatch, IPluginListener
 	void OnHandleDestroy(HandleType_t type, void *object);
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
-	MsgListenerWrapper *GetNewListener(IPluginContext *pCtx);
-	MsgListenerWrapper *FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept);
-	bool RemoveListener(IPluginContext *pCtx, MsgListenerWrapper *listener, bool intercept);
+	MsgListenerWrapper *CreateListener(IPluginContext *pCtx);
+	MsgWrapperIter FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept);
+	bool DeleteListener(IPluginContext *pCtx, MsgWrapperIter iter);
 private:
 	CStack<MsgListenerWrapper *> m_FreeListeners;
 };
@@ -59,92 +62,91 @@ void UsrMessageNatives::OnHandleDestroy(HandleType_t type, void *object)
 
 void UsrMessageNatives::OnPluginUnloaded(IPlugin *plugin)
 {
-	List<MsgListenerWrapper *> *wrapper_list;
+	MsgWrapperList *pList;
 
-	if (plugin->GetProperty("MsgListeners", reinterpret_cast<void **>(&wrapper_list), true))
+	if (plugin->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList), true))
 	{
-		List<MsgListenerWrapper *>::iterator iter;
-		MsgListenerWrapper *listener;
+		MsgWrapperIter iter;
+		MsgListenerWrapper *pListener;
 
-		for (iter=wrapper_list->begin(); iter!=wrapper_list->end(); iter++)
+		for (iter=pList->begin(); iter!=pList->end(); iter++)
 		{
-			listener = (*iter);
-			if (g_UserMsgs.UnhookUserMessage(listener->GetMessageId(), listener, listener->IsInterceptHook()))
+			pListener = (*iter);
+			if (g_UserMsgs.UnhookUserMessage(pListener->GetMessageId(), pListener, pListener->IsInterceptHook()))
 			{
-				m_FreeListeners.push(listener);
+				m_FreeListeners.push(pListener);
 			}
 		}
 
-		delete wrapper_list;
+		delete pList;
 	}
 }
 
-MsgListenerWrapper *UsrMessageNatives::GetNewListener(IPluginContext *pCtx)
+MsgListenerWrapper *UsrMessageNatives::CreateListener(IPluginContext *pCtx)
 {
-	MsgListenerWrapper *listener_wrapper;
+	MsgWrapperList *pList;
+	MsgListenerWrapper *pListener;
+	IPlugin *pl = g_PluginSys.FindPluginByContext(pCtx->GetContext());
 
 	if (m_FreeListeners.empty())
 	{
-		listener_wrapper = new MsgListenerWrapper;
+		pListener = new MsgListenerWrapper;
 	} else {
-		listener_wrapper = m_FreeListeners.front();
+		pListener = m_FreeListeners.front();
 		m_FreeListeners.pop();
 	}
 
-	List<MsgListenerWrapper *> *wrapper_list;
-	IPlugin *pl = g_PluginSys.FindPluginByContext(pCtx->GetContext());
-
-	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&wrapper_list)))
+	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{
-		wrapper_list = new List<MsgListenerWrapper *>;
-		pl->SetProperty("MsgListeners", wrapper_list);
+		pList = new List<MsgListenerWrapper *>;
+		pl->SetProperty("MsgListeners", pList);
 	}
 
-	wrapper_list->push_back(listener_wrapper);
+	pList->push_back(pListener);
 
-	return listener_wrapper;
+	return pListener;
 }
 
-MsgListenerWrapper *UsrMessageNatives::FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept)
+MsgWrapperIter UsrMessageNatives::FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept)
 {
-	MsgListenerWrapper *listener;
-	List<MsgListenerWrapper *> *wrapper_list;
-	List<MsgListenerWrapper *>::iterator iter;
+	MsgWrapperList *pList;
+	MsgWrapperIter iter;
+	MsgListenerWrapper *pListener;
 	IPlugin *pl = g_PluginSys.FindPluginByContext(pCtx->GetContext());
-	bool found = false;
 
-	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&wrapper_list)))
+	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{
 		return NULL;
 	}
 
-	for (iter=wrapper_list->begin(); iter!=wrapper_list->end(); iter++)
+	for (iter=pList->begin(); iter!=pList->end(); iter++)
 	{
-		listener = (*iter);
-		if ((msgid == listener->GetMessageId()) 
-			&& (intercept == listener->IsInterceptHook()) 
-			&& (pHook == listener->GetHookedFunction()))
+		pListener = (*iter);
+		if ((msgid == pListener->GetMessageId()) 
+			&& (intercept == pListener->IsInterceptHook()) 
+			&& (pHook == pListener->GetHookedFunction()))
 		{
-			found = true;
-			break;
+			return iter;
 		}
 	}
 
-	return (found) ? listener : NULL;
+	return NULL;
 }
 
-bool UsrMessageNatives::RemoveListener(IPluginContext *pCtx, MsgListenerWrapper *listener, bool intercept)
+bool UsrMessageNatives::DeleteListener(IPluginContext *pCtx, MsgWrapperIter iter)
 {
-	List<MsgListenerWrapper *> *wrapper_list;
+	MsgWrapperList *pList;
+	MsgListenerWrapper *pListener;
 	IPlugin *pl = g_PluginSys.FindPluginByContext(pCtx->GetContext());
 
-	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&wrapper_list)))
+	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{
 		return false;
 	}
 
-	wrapper_list->remove(listener);
-	m_FreeListeners.push(listener);
+	pListener = (*iter);
+	pList->erase(iter);
+	m_FreeListeners.push(pListener);
 
 	return true;
 }
@@ -155,7 +157,29 @@ bool UsrMessageNatives::RemoveListener(IPluginContext *pCtx, MsgListenerWrapper 
  *                                     *
  ***************************************/
 
-size_t MsgListenerWrapper::PreparePlArray(int *pl_array, IRecipientFilter *pFilter)
+void MsgListenerWrapper::Initialize(int msgid, IPluginFunction *hook, IPluginFunction *notify, bool intercept)
+{
+	if (intercept)
+	{
+		m_Intercept = hook;
+		m_Hook = NULL;
+	} else {
+		m_Hook = hook;
+		m_Intercept = NULL;
+	}
+
+	if (notify)
+	{
+		m_Notify = notify;
+	} else {
+		m_Notify = NULL;
+	}
+
+	m_MsgId = msgid;
+	m_IsInterceptHook = intercept;
+}
+
+size_t MsgListenerWrapper::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 {
 	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
 
@@ -192,32 +216,10 @@ IPluginFunction *MsgListenerWrapper::GetNotifyFunction() const
 	return m_Notify;
 }
 
-void MsgListenerWrapper::InitListener(int msgid, IPluginFunction *hook, IPluginFunction *notify, bool intercept)
-{
-	if (intercept)
-	{
-		m_Intercept = hook;
-		m_Hook = NULL;
-	} else {
-		m_Hook = hook;
-		m_Intercept = NULL;
-	}
-
-	if (notify)
-	{
-		m_Notify = notify;
-	} else {
-		m_Notify = NULL;
-	}
-
-	m_MsgId = msgid;
-	m_IsInterceptHook = intercept;
-}
-
 void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 {
 	cell_t res;
-	size_t size = PreparePlArray(g_MsgPlayers, pFilter);
+	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
 
 	m_Hook->PushCell(msg_id);
 	m_Hook->PushCell(0); //:TODO: push handle!
@@ -231,7 +233,7 @@ void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilte
 ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 {
 	cell_t res = static_cast<cell_t>(Pl_Continue);
-	size_t size = PreparePlArray(g_MsgPlayers, pFilter);
+	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
 
 	m_Intercept->PushCell(msg_id);
 	m_Intercept->PushCell(0); //:TODO: push handle!
@@ -246,13 +248,12 @@ ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IR
 
 void MsgListenerWrapper::OnUserMessageSent(int msg_id)
 {
-	cell_t res;
-
 	if (!m_Notify)
 	{
 		return;
 	}
 
+	cell_t res;
 	m_Notify->PushCell(msg_id);
 	m_Notify->Execute(&res);
 }
@@ -319,6 +320,10 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[2], &cl_array);
 
 	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, params[3], params[4]);
+	if (!pBitBuf)
+	{
+		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
+	}
 
 	g_CurMsgHandle = g_HandleSys.CreateHandle(g_WrBitBufType, pBitBuf, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 	g_IsMsgInExec = true;
@@ -345,6 +350,10 @@ static cell_t smn_StartMessageEx(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[2], &cl_array);
 
 	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, params[3], params[4]);
+	if (!pBitBuf)
+	{
+		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
+	}
 
 	g_CurMsgHandle = g_HandleSys.CreateHandle(g_WrBitBufType, pBitBuf, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 	g_IsMsgInExec = true;
@@ -375,7 +384,7 @@ static cell_t smn_EndMessage(IPluginContext *pCtx, const cell_t *params)
 static cell_t smn_HookUserMessage(IPluginContext *pCtx, const cell_t *params)
 {
 	IPluginFunction *pHook, *pNotify;
-	MsgListenerWrapper *listener;
+	MsgListenerWrapper *pListener;
 	bool intercept;
 	int msgid = params[1];
 
@@ -390,12 +399,12 @@ static cell_t smn_HookUserMessage(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 	pNotify = pCtx->GetFunctionById(params[4]);
-
 	intercept = (params[3]) ? true : false;
-	listener = s_UsrMessageNatives.GetNewListener(pCtx);
-	listener->InitListener(msgid, pHook, pNotify, intercept);
 
-	g_UserMsgs.HookUserMessage(msgid, listener, intercept);
+	pListener = s_UsrMessageNatives.CreateListener(pCtx);
+	pListener->Initialize(msgid, pHook, pNotify, intercept);
+
+	g_UserMsgs.HookUserMessage(msgid, pListener, intercept);
 
 	return 1;
 }
@@ -403,7 +412,8 @@ static cell_t smn_HookUserMessage(IPluginContext *pCtx, const cell_t *params)
 static cell_t smn_UnHookUserMessage(IPluginContext *pCtx, const cell_t *params)
 {
 	IPluginFunction *pFunc;
-	MsgListenerWrapper *listener;
+	MsgListenerWrapper *pListener;
+	MsgWrapperIter iter;
 	bool intercept;
 	int msgid = params[1];
 
@@ -417,20 +427,21 @@ static cell_t smn_UnHookUserMessage(IPluginContext *pCtx, const cell_t *params)
 	{
 		return pCtx->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
-
 	intercept = (params[3]) ? true : false;
-	listener = s_UsrMessageNatives.FindListener(msgid, pCtx, pFunc, intercept);
-	if (!listener)
+
+	iter = s_UsrMessageNatives.FindListener(msgid, pCtx, pFunc, intercept);
+	if (iter == NULL)
 	{
 		return pCtx->ThrowNativeError("Unable to unhook the current user message");
 	}
 
-	if (!g_UserMsgs.UnhookUserMessage(msgid, listener, intercept))
+	pListener = (*iter);
+	if (!g_UserMsgs.UnhookUserMessage(msgid, pListener, intercept))
 	{
 		return pCtx->ThrowNativeError("Unable to unhook the current user message");
 	}
 
-	s_UsrMessageNatives.RemoveListener(pCtx, listener, intercept);
+	s_UsrMessageNatives.DeleteListener(pCtx, iter);
 
 	return 1;
 }

@@ -20,7 +20,7 @@ extern int g_MsgPlayers[256];
 class MsgListenerWrapper : public IUserMessageListener
 {
 public:
-	void InitListener(int msgid, IPluginFunction *hook, IPluginFunction *notify, bool intercept);
+	void Initialize(int msgid, IPluginFunction *hook, IPluginFunction *notify, bool intercept);
 	bool IsInterceptHook() const;
 	int GetMessageId() const;
 	IPluginFunction *GetHookedFunction() const;
@@ -30,7 +30,7 @@ public: //IUserMessageListener
 	ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
 	void OnUserMessageSent(int msg_id);
 private:
-	size_t PreparePlArray(int *pl_array, IRecipientFilter *pFilter);
+	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 private:
 	IPluginFunction *m_Hook;
 	IPluginFunction *m_Intercept;

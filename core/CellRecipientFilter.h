@@ -21,7 +21,7 @@
 class CellRecipientFilter : public IRecipientFilter
 {
 public:
-	CellRecipientFilter() : m_Reliable(false), m_InitMessage(false), m_Size(0) {}
+	CellRecipientFilter() : m_IsReliable(false), m_IsInitMessage(false), m_Size(0) {}
 	~CellRecipientFilter() {}
 public: //IRecipientFilter
 	bool IsReliable() const;
@@ -29,32 +29,32 @@ public: //IRecipientFilter
 	int GetRecipientCount() const;
 	int GetRecipientIndex(int slot) const;
 public:
-	void SetRecipientPtr(cell_t *ptr, size_t count);
-	void SetReliable(bool isreliable);
-	void SetInitMessage(bool isinitmsg);
-	void ResetFilter();
+	void Initialize(cell_t *ptr, size_t count);
+	void SetToReliable(bool isreliable);
+	void SetToInit(bool isinitmsg);
+	void Reset();
 private:
-	cell_t m_CellRecipients[255];
-	bool m_Reliable;
-	bool m_InitMessage;
+	cell_t m_Players[255];
+	bool m_IsReliable;
+	bool m_IsInitMessage;
 	size_t m_Size;
 };
 
-inline void CellRecipientFilter::ResetFilter()
+inline void CellRecipientFilter::Reset()
 {
-	m_Reliable = false;
-	m_InitMessage = false;
+	m_IsReliable = false;
+	m_IsInitMessage = false;
 	m_Size = 0;
 }
 
 inline bool CellRecipientFilter::IsReliable() const
 {
-	return m_Reliable;
+	return m_IsReliable;
 }
 
 inline bool CellRecipientFilter::IsInitMessage() const
 {
-	return m_InitMessage;
+	return m_IsInitMessage;
 }
 
 inline int CellRecipientFilter::GetRecipientCount() const
@@ -68,22 +68,22 @@ inline int CellRecipientFilter::GetRecipientIndex(int slot) const
 	{
 		return -1;
 	}
-	return static_cast<int>(m_CellRecipients[slot]);
+	return static_cast<int>(m_Players[slot]);
 }
 
-inline void CellRecipientFilter::SetInitMessage(bool isinitmsg)
+inline void CellRecipientFilter::SetToInit(bool isinitmsg)
 {
-	m_InitMessage = isinitmsg;
+	m_IsInitMessage = isinitmsg;
 }
 
-inline void CellRecipientFilter::SetReliable(bool isreliable)
+inline void CellRecipientFilter::SetToReliable(bool isreliable)
 {
-	m_Reliable = isreliable;
+	m_IsReliable = isreliable;
 }
 
-inline void CellRecipientFilter::SetRecipientPtr(cell_t *ptr, size_t count)
+inline void CellRecipientFilter::Initialize(cell_t *ptr, size_t count)
 {
-	memcpy(m_CellRecipients, ptr, count * sizeof(cell_t));
+	memcpy(m_Players, ptr, count * sizeof(cell_t));
 	m_Size = count;
 }
 

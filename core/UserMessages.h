@@ -26,7 +26,15 @@ using namespace SourceMod;
 
 #define INVALID_MESSAGE_ID -1
 
-typedef List<IUserMessageListener *>::iterator MsgIter;
+struct ListenerInfo
+{
+	IUserMessageListener *Callback;
+	bool IsHooked;
+	bool KillMe;
+};
+
+typedef List<ListenerInfo *> MsgList;
+typedef List<ListenerInfo *>::iterator MsgIter;
 
 class CUserMessages : 
 	public IUserMessages,
@@ -51,8 +59,11 @@ public:
 	void OnMessageEnd_Pre();
 	void OnMessageEnd_Post();
 private:
-	List<IUserMessageListener *> m_msgHooks[255];
-	List<IUserMessageListener *> m_msgIntercepts[255];
+	void _DecRefCounter();
+private:
+	List<ListenerInfo *> m_msgHooks[255];
+	List<ListenerInfo *> m_msgIntercepts[255];
+	CStack<ListenerInfo *> m_FreeListeners;
 	unsigned char m_pBase[2500];
 	IRecipientFilter *m_CurRecFilter;
 	bf_write m_InterceptBuffer;

@@ -88,8 +88,8 @@ bool CUserMessages::GetMessageName(int msgid, char *buffer, size_t maxlen) const
 bf_write *CUserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)
 {
 	bf_write *buffer;
-	
-	if (m_InExec)
+
+	if (m_InExec || m_InHook)
 	{
 		return NULL;
 	}
@@ -98,16 +98,16 @@ bf_write *CUserMessages::StartMessage(int msg_id, cell_t players[], unsigned int
 		return NULL;
 	}
 
-	m_CellRecFilter.SetRecipientPtr(players, playersNum);
+	m_CellRecFilter.Initialize(players, playersNum);
 
 	m_CurFlags = flags;
 	if (m_CurFlags & USERMSG_INITMSG)
 	{
-		m_CellRecFilter.SetInitMessage(true);
+		m_CellRecFilter.SetToInit(true);
 	}
 	if (m_CurFlags & USERMSG_RELIABLE)
 	{
-		m_CellRecFilter.SetReliable(true);
+		m_CellRecFilter.SetToReliable(true);
 	}
 
 	m_InExec = true;
@@ -138,7 +138,7 @@ bool CUserMessages::EndMessage()
 
 	m_InExec = false;
 	m_CurFlags = 0;
-	m_CellRecFilter.ResetFilter();
+	m_CellRecFilter.Reset();
 
 	return true;
 }
@@ -150,6 +150,19 @@ bool CUserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener,
 		return false;
 	}
 
+	ListenerInfo *pInfo;
+	if (m_FreeListeners.empty())
+	{
+		pInfo = new ListenerInfo;
+	} else {
+		pInfo = m_FreeListeners.front();
+		m_FreeListeners.pop();
+	}
+
+	pInfo->Callback = pListener;
+	pInfo->IsHooked = false;
+	pInfo->KillMe = false;
+
 	if (!m_HookCount++)
 	{
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Pre, false);
@@ -160,20 +173,19 @@ bool CUserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener,
 
 	if (intercept)
 	{
-		m_msgIntercepts[msg_id].push_back(pListener);
+		m_msgIntercepts[msg_id].push_back(pInfo);
 	} else {
-		m_msgHooks[msg_id].push_back(pListener);
+		m_msgHooks[msg_id].push_back(pInfo);
 	}
 
 	return true;
 }
 
 bool CUserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
-{
-	//:TODO: restrict user from unhooking stuff during a message hook to avoid iterator mess
-	List<IUserMessageListener *> *lst;
-	IUserMessageListener *listener;
+{	
+	MsgList *pList;
 	MsgIter iter;
+	ListenerInfo *pInfo;
 	bool deleted = false;
 
 	if (msg_id < 0 || msg_id >= 255)
@@ -181,27 +193,40 @@ bool CUserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListene
 		return false;
 	}
 
-	lst = (intercept) ? &m_msgIntercepts[msg_id] : &m_msgHooks[msg_id];
-	for (iter=lst->begin(); iter!=lst->end(); iter++)
+	pList = (intercept) ? &m_msgIntercepts[msg_id] : &m_msgHooks[msg_id];
+	for (iter=pList->begin(); iter!=pList->end(); iter++)
 	{
-		listener = (*iter);
-		if (listener == pListener)
+		pInfo = (*iter);
+		if (pInfo->Callback == pListener)
 		{
-			lst->erase(iter);
+			if (pInfo->IsHooked)
+			{
+				pInfo->KillMe = true;
+				return true;
+			}
+			pList->erase(iter);
 			deleted = true;
 			break;
 		}
 	}
 
-	if (deleted && !(--m_HookCount))
+	if (deleted)
+	{
+		_DecRefCounter();
+	}
+
+	return deleted;
+}
+
+void CUserMessages::_DecRefCounter()
+{
+	if (--m_HookCount == 0)
 	{
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Post, true);
 	}
-
-	return (deleted) ? true : false;
 }
 
 bf_write *CUserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type)
@@ -209,13 +234,8 @@ bf_write *CUserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_ty
 	bool is_intercept_empty = m_msgIntercepts[msg_type].empty();
 	bool is_hook_empty = m_msgHooks[msg_type].empty();
 
-	if (is_intercept_empty && is_hook_empty)
-	{
-		m_InHook = false;
-		RETURN_META_VALUE(MRES_IGNORED, NULL);
-	}
-
-	if ((m_InExec) && !(m_CurFlags & USERMSG_PASSTHRU_ALL))
+	if ((is_intercept_empty && is_hook_empty)
+		|| (m_InExec && !(m_CurFlags & USERMSG_PASSTHRU_ALL)))
 	{
 		m_InHook = false;
 		RETURN_META_VALUE(MRES_IGNORED, NULL);
@@ -223,11 +243,11 @@ bf_write *CUserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_ty
 
 	m_CurId = msg_type;
 	m_CurRecFilter = filter;
-	m_InterceptBuffer.Reset();
 	m_InHook = true;
 
 	if (!is_intercept_empty)
 	{
+		m_InterceptBuffer.Reset();
 		RETURN_META_VALUE(MRES_SUPERCEDE, &m_InterceptBuffer);
 	}
 
@@ -253,23 +273,48 @@ void CUserMessages::OnMessageEnd_Post()
 		RETURN_META(MRES_IGNORED);
 	}
 
-	List<IUserMessageListener *> *lst;
-	IUserMessageListener *listener;
+	MsgList *pList;
 	MsgIter iter;
+	ListenerInfo *pInfo;
 
-	lst = &m_msgIntercepts[m_CurId];
-	for (iter=lst->begin(); iter!=lst->end(); iter++)
+	pList = &m_msgIntercepts[m_CurId];
+	for (iter=pList->begin(); iter!=pList->end(); )
 	{
-		listener = (*iter);
-		listener->OnUserMessageSent(m_CurId);
+		pInfo = (*iter);
+		pInfo->IsHooked = true;
+		pInfo->Callback->OnUserMessageSent(m_CurId);
+
+		if (pInfo->KillMe)
+		{
+			iter = pList->erase(iter);
+			m_FreeListeners.push(pInfo);
+			_DecRefCounter();
+			continue;
+		}
+
+		pInfo->IsHooked = false;
+		iter++;
 	}
 
-	lst = &m_msgHooks[m_CurId];
-	for (iter=lst->begin(); iter!=lst->end(); iter++)
+	pList = &m_msgHooks[m_CurId];
+	for (iter=pList->begin(); iter!=pList->end(); iter++)
 	{
-		listener = (*iter);
-		listener->OnUserMessageSent(m_CurId);
+		pInfo = (*iter);
+		pInfo->Callback->OnUserMessageSent(m_CurId);
+
+		if (pInfo->KillMe)
+		{
+			iter = pList->erase(iter);
+			m_FreeListeners.push(pInfo);
+			_DecRefCounter();
+			continue;
+		}
+
+		pInfo->IsHooked = false;
+		iter++;
 	}
+
+	m_InHook = false;
 }
 
 void CUserMessages::OnMessageEnd_Pre()
@@ -279,26 +324,61 @@ void CUserMessages::OnMessageEnd_Pre()
 		RETURN_META(MRES_IGNORED);
 	}
 
-	List<IUserMessageListener *> *lst;
-	IUserMessageListener *listener;
-	bf_write *engine_bfw;
+	MsgList *pList;
 	MsgIter iter;
+	ListenerInfo *pInfo;
+
 	ResultType res;
 	bool intercepted = false;
 	bool handled = false;
 
-	lst = &m_msgIntercepts[m_CurId];
-	for (iter=lst->begin(); iter!=lst->end(); iter++)
+	pList = &m_msgIntercepts[m_CurId];
+	for (iter=pList->begin(); iter!=pList->end(); )
 	{
-		listener = (*iter);
-		res = listener->InterceptUserMessage(m_CurId, &m_InterceptBuffer, m_CurRecFilter);
-		if (res == Pl_Stop)
+		pInfo = (*iter);
+		pInfo->IsHooked = true;
+		res = pInfo->Callback->InterceptUserMessage(m_CurId, &m_InterceptBuffer, m_CurRecFilter);
+
+		switch (res)
 		{
-			goto supercede;
-		} else if (res == Pl_Handled) {
-			handled = true;
+		case Pl_Stop:
+			{
+				if (pInfo->KillMe)
+				{
+					pList->erase(iter);
+					m_FreeListeners.push(pInfo);
+					_DecRefCounter();
+					goto supercede;
+				}
+				pInfo->IsHooked = false;
+				goto supercede;
+			}
+		case Pl_Handled:
+			{
+				handled = true;
+				if (pInfo->KillMe)
+				{
+					iter = pList->erase(iter);
+					m_FreeListeners.push(pInfo);
+					_DecRefCounter();
+					continue;
+				}
+				break;
+			}
+		default:
+			{
+				if (pInfo->KillMe)
+				{
+					iter = pList->erase(iter);
+					m_FreeListeners.push(pInfo);
+					_DecRefCounter();
+					continue;
+				}
+			}
 		}
+		pInfo->IsHooked = false;
 		intercepted = true;
+		iter++;
 	}
 
 	if (handled)
@@ -308,21 +388,36 @@ void CUserMessages::OnMessageEnd_Pre()
 
 	if (intercepted)
 	{
+		bf_write *engine_bfw;
+
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId);
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();
+
 		goto supercede;
 	}
 
-	lst = &m_msgHooks[m_CurId];
-	for (iter=lst->begin(); iter!=lst->end(); iter++)
+	pList = &m_msgHooks[m_CurId];
+	for (iter=pList->begin(); iter!=pList->end(); )
 	{
-		listener = (*iter);
-		listener->OnUserMessage(m_CurId, m_OrigBuffer, m_CurRecFilter);
+		pInfo = (*iter);
+		pInfo->IsHooked = true;
+		pInfo->Callback->OnUserMessage(m_CurId, m_OrigBuffer, m_CurRecFilter);
+
+		if (pInfo->KillMe)
+		{
+			iter = pList->erase(iter);
+			m_FreeListeners.push(pInfo);
+			_DecRefCounter();
+			continue;
+		}
+
+		iter++;
 	}
 
 	RETURN_META(MRES_IGNORED);
 supercede:
+	m_InHook = false;
 	RETURN_META(MRES_SUPERCEDE);
 }
