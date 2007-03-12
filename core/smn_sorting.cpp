@@ -14,6 +14,7 @@
 #include "sm_globals.h"
 #include <IHandleSys.h>
 #include <stdlib.h>
+#include <string.h>
 
 /***********************************
  *   About the double array hack   *

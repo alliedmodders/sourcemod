@@ -516,6 +516,7 @@ REGISTER_NATIVES(entityNatives)
 	{"GetEntDataEnt",			GetEntDataEnt},
 	{"GetEntDataFloat",			GetEntDataFloat},
 	{"GetEntDataVector",		GetEntDataVector},
+	{"GetEntityCount",			GetEntityCount},
 	{"GetEntityNetClass",		GetEntityNetClass},
 	{"GetMaxEntities",			GetMaxEntities},
 	{"IsEntNetworkable",		IsEntNetworkable},

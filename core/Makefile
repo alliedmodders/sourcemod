@@ -19,16 +19,19 @@ BINARY = sourcemod_mm_i486.so
 HL2PUB = $(HL2SDK)/public
 HL2LIB = $(HL2SDK)/linux_sdk
 
-OBJECTS = sourcemm_api.cpp sourcemod.cpp AdminCache.cpp ConVarManager.cpp CDataPack.cpp \
-          DebugReporter.cpp Logger.cpp PlayerManager.cpp TextParsers.cpp Translator.cpp \
-	  sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_trie.cpp \
-	  sm_stringutil.cpp smn_filesystem.cpp smn_float.cpp smn_handles.cpp \
-	  smn_player.cpp smn_string.cpp smn_textparse.cpp smn_console.cpp smn_admin.cpp \
-	  smn_datapacks.cpp smn_lang.cpp \
-	  systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
-	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp \
-	  systems/PluginSys.cpp systems/ShareSys.cpp vm/sp_vm_basecontext.cpp \
-	  vm/sp_vm_engine.cpp vm/sp_vm_function.cpp ConCmdManager.cpp TimerSys.cpp 
+OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp \
+	DebugReporter.cpp EventManager.cpp GameConfigs.cpp HalfLife2.cpp Logger.cpp \
+	PlayerManager.cpp TextParsers.cpp TimerSys.cpp Translator.cpp UserMessages.cpp \
+	sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_stringutil.cpp sm_trie.cpp \
+	sourcemm_api.cpp sourcemod.cpp
+OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
+	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
+	smn_filesystem.cpp smn_float.cpp smn_halflife.cpp smn_handles.cpp smn_lang.cpp \
+	smn_player.cpp smn_sorting.cpp smn_textparse.cpp smn_usermsgs.cpp
+OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
+	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
+	  systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
+	  vm/sp_vm_function.cpp 
 OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c

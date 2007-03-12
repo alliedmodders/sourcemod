@@ -369,7 +369,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 {
 	EventHook *pHook;
 	IChangeableForward *pForward;
-	Handle_t hndl;
+	Handle_t hndl = 0;
 
 	if (!m_NotifyPlugins)
 	{
