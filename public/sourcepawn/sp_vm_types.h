@@ -136,6 +136,12 @@ struct sp_context_s;
  */
 typedef cell_t (*SPVM_NATIVE_FUNC)(SourcePawn::IPluginContext *, const cell_t *);
 
+/**
+ * @brief Fake native callback prototype, passed a context, parameter stack, and private data.
+ * A cell must be returned.
+ */
+typedef cell_t (*SPVM_FAKENATIVE_FUNC)(SourcePawn::IPluginContext *, const cell_t *, void *);
+
 /**********************************************
  *** The following structures are bound to the VM/JIT.
  *** Changing them will result in necessary recompilation.

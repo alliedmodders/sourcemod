@@ -2188,6 +2188,52 @@ jit_rewind:
 	return ctx;
 }
 
+SPVM_NATIVE_FUNC JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
+{
+	JitWriter jw;
+	JitWriter *jit = &jw;
+
+	jw.outbase = NULL;
+	jw.outptr = NULL;
+	jw.data = NULL;
+
+	/* First pass, calculate size */
+rewind:
+	//push pData		;push pData
+	//push [esp+12]		;push params
+	//push [esp+12]		;push ctx
+	//call [callback]	;invoke the meta-callback
+	//add esp, 12		;restore the stack
+	//ret				;return
+	IA32_Push_Imm32(jit, (jit_int32_t)pData);
+	IA32_Push_Rm_Disp8_ESP(jit, 12);
+	IA32_Push_Rm_Disp8_ESP(jit, 12);
+	uint32_t call = IA32_Call_Imm32(jit, 0);
+	IA32_Write_Jump32_Abs(jit, call, (void *)callback);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 12, MOD_REG);
+	IA32_Return(jit);
+
+	if (jw.outbase == NULL)
+	{
+		/* Second pass: Actually write */
+		jw.outbase = (jitcode_t)engine->ExecAlloc(jw.get_outputpos());
+		if (!jw.outbase)
+		{
+			return NULL;
+		}
+		jw.outptr = jw.outbase;
+	
+		goto rewind;
+	}
+	
+	return (SPVM_NATIVE_FUNC)jw.outbase;
+}
+
+void JITX86::DestroyFakenative(SPVM_NATIVE_FUNC func)
+{
+	engine->ExecFree(func);
+}
+
 const char *JITX86::GetVMName()
 {
 	return "JIT (x86)";

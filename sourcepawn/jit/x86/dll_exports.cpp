@@ -17,7 +17,7 @@
 #include "dll_exports.h"
 
 SourcePawn::ISourcePawnEngine *engine = NULL;
-JITX86 jit;
+JITX86 g_jit;
 
 EXPORTFUNC int GiveEnginePointer(SourcePawn::ISourcePawnEngine *engine_p)
 {
@@ -45,7 +45,7 @@ EXPORTFUNC SourcePawn::IVirtualMachine *GetExport(unsigned int exportnum)
 		return NULL;
 	}
 
-	return &jit;
+	return &g_jit;
 }
 
 #if defined __linux__

@@ -22,6 +22,7 @@
 #include <sh_list.h>
 #include <sh_stack.h>
 #include <sh_vector.h>
+#include <sh_string.h>
 #include "sm_globals.h"
 #include "vm/sp_vm_basecontext.h"
 #include "PluginInfoDatabase.h"
@@ -232,6 +233,14 @@ private:
 	Trie *m_pProps;
 };
 
+struct FakeNative
+{
+	IPluginContext *ctx;
+	IPluginFunction *call;
+	String name;
+	SPVM_NATIVE_FUNC func;
+};
+
 class CPluginManager : 
 	public IPluginManager,
 	public SMGlobalClass,
@@ -380,6 +389,10 @@ protected:
 	{
 		return m_MyIdent;
 	}
+public:
+	bool AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func);
+private:
+	void AddFakeNativesToPlugin(CPlugin *pPlugin);
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
@@ -389,6 +402,11 @@ private:
 	Trie *m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
+
+	/* Dynamic native stuff */
+	List<FakeNative *> m_Natives;
+	Trie *m_pNativeLookup;
+
 };
 
 extern CPluginManager g_PluginSys;

@@ -28,7 +28,7 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		1
+#define SOURCEPAWN_VM_API_VERSION		2
 
 #if defined SOURCEMOD_BUILD
 namespace SourceMod
@@ -820,6 +820,23 @@ namespace SourcePawn
 		 * @return			True if code index is valid, false otherwise.
 		 */
 		virtual bool FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result) =0;
+
+		/**
+		 * @brief Creates a fake native and binds it to a general callback function.
+		 *
+		 * @param callback	Callback function to bind the native to.
+		 * @param pData		Private data to pass to the callback when the native is invoked.
+		 * @return			A new fake native function as a wrapper around the callback.
+		 */
+		virtual SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData) =0;
+
+		/**
+		 * @brief Destroys a fake native function wrapper.  
+		 *
+		 * @param function	Pointer to the fake native created by CreateFakeNative.
+		 * @noreturn
+		 */
+		virtual void DestroyFakenative(SPVM_NATIVE_FUNC func) =0;
 	};
 };
 

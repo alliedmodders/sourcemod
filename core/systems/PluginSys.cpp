@@ -588,6 +588,7 @@ CPluginManager::CPluginManager()
 	m_LoadLookup = sm_trie_create();
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
+	m_pNativeLookup = sm_trie_create();
 }
 
 CPluginManager::~CPluginManager()
@@ -598,8 +599,8 @@ CPluginManager::~CPluginManager()
 	 * will crash anyway.  YAY
 	 */
 	sm_trie_destroy(m_LoadLookup);
+	sm_trie_destroy(m_pNativeLookup);
 }
-
 
 void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
@@ -958,6 +959,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 
 	/* Bind all extra natives */
 	g_Extensions.BindAllNativesToPlugin(pPlugin);
+	AddFakeNativesToPlugin(pPlugin);
 
 	/* Find any unbound natives
 	 * Right now, these are not allowed
@@ -1009,6 +1011,32 @@ void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 		while (natives[i].func != NULL)
 		{
 			ctx->BindNative(&natives[i++]);
+		}
+	}
+}
+
+void CPluginManager::AddFakeNativesToPlugin(CPlugin *pPlugin)
+{
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	sp_nativeinfo_t native;
+
+	List<FakeNative *>::iterator iter;
+	FakeNative *pNative;
+	sp_context_t *ctx;
+	for (iter = m_Natives.begin(); iter != m_Natives.end(); iter++)
+	{
+		pNative = (*iter);
+		ctx = pNative->ctx->GetContext();
+		if ((ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
+		{
+			/* Ignore natives in paused plugins */
+			continue;
+		}
+		native.name = pNative->name.c_str();
+		native.func = pNative->func;
+		if (pContext->BindNative(&native) == SP_ERROR_NONE)
+		{
+			/* :TODO: add to dependency list */
 		}
 	}
 }
@@ -1675,3 +1703,28 @@ void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
 	}	
 }
 
+bool CPluginManager::AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func)
+{
+	if (sm_trie_retrieve(m_pNativeLookup, name, NULL))
+	{
+		return false;
+	}
+
+	FakeNative *pNative = new FakeNative;
+
+	pNative->func = g_pVM->CreateFakeNative(func, pNative);
+	if (!pNative->func)
+	{
+		delete pNative;
+		return false;
+	}
+
+	pNative->call = pFunction;
+	pNative->name.assign(name);
+	pNative->ctx = pFunction->GetParentContext();
+
+	m_Natives.push_back(pNative);
+	sm_trie_insert(m_pNativeLookup, name,pNative);
+
+	return true;
+}

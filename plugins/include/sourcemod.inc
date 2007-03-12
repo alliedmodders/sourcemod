@@ -39,6 +39,7 @@ struct Plugin
 #include <clients>
 #include <usermessages>
 #include <events>
+#include <functions>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
