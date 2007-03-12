@@ -28,7 +28,7 @@
 
 #define CHECK_ARGS(x) \
 	if ((arg+x) > args) { \
-		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, "String formatted incorrectly - parameter %d (total %d)", arg, args); \
+		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "String formatted incorrectly - parameter %d (total %d)", arg, args); \
 		return 0; \
 	}
 
