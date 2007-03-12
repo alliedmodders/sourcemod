@@ -99,7 +99,7 @@ public:
 	const char *GetVersionString();
 	const char *GetCPUOptimizations();
 	SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
-	void DestroyFakenative(SPVM_NATIVE_FUNC func);
+	void DestroyFakeNative(SPVM_NATIVE_FUNC func);
 };
 
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);

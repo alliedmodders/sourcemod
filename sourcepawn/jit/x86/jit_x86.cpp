@@ -2229,7 +2229,7 @@ rewind:
 	return (SPVM_NATIVE_FUNC)jw.outbase;
 }
 
-void JITX86::DestroyFakenative(SPVM_NATIVE_FUNC func)
+void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
 	engine->ExecFree((void *)func);
 }

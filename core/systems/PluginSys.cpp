@@ -41,6 +41,7 @@ CPlugin::CPlugin(const char *file)
 	m_handle = 0;
 	m_ident = NULL;
 	m_pProps = sm_trie_create();
+	m_FakeNativesMissing = false;
 }
 
 CPlugin::~CPlugin()
@@ -219,7 +220,14 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 
 void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 {
+	PluginStatus old_status = m_status;
 	m_status = status;
+
+	if (old_status == Plugin_Running)
+	{
+		/* Tell everyone we're now paused */
+		g_PluginSys._SetPauseState(this, true);
+	}
 
 	va_list ap;
 	va_start(ap, error_fmt);
@@ -538,6 +546,47 @@ size_t CPlugin::GetLangFileCount() const
 unsigned int CPlugin::GetLangFileByIndex(unsigned int index) const
 {
 	return m_PhraseFiles.at(index);
+}
+
+void CPlugin::DependencyDropped(CPlugin *pOwner)
+{
+	if (!m_ctx.ctx)
+	{
+		return;
+	}
+
+	IPluginContext *pContext = pOwner->GetBaseContext();
+	List<FakeNative *>::iterator iter;
+	FakeNative *pNative;
+	sp_native_t *native;
+	uint32_t idx;
+	unsigned int unbound = 0;
+
+	for (iter = pOwner->m_fakeNatives.begin();
+		 iter != pOwner->m_fakeNatives.end();
+		 iter++)
+	{
+		pNative = (*iter);
+		/* Find this native! */
+		if (m_ctx.base->FindNativeByName(pNative->name.c_str(), &idx) != SP_ERROR_NONE)
+		{
+			continue;
+		}
+		/* Unbind it */
+		m_ctx.base->GetNativeByIndex(idx, &native);
+		native->pfn = NULL;
+		native->status = SP_NATIVE_UNBOUND;
+		unbound++;
+	}
+
+	/* :IDEA: in the future, add native trapping? */
+	if (unbound)
+	{
+		m_FakeNativesMissing = true;
+		SetErrorState(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
+	}
+
+	m_dependsOn.remove(pOwner);
 }
 
 /*******************
@@ -995,6 +1044,24 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	/* Tell this plugin to finish initializing itself */
 	pPlugin->Call_OnPluginStart();
 
+	/* Now, if we have fake natives, go through all plugins that might need rebinding */
+	if (pPlugin->m_fakeNatives.size())
+	{
+		List<CPlugin *>::iterator pl_iter;
+		CPlugin *pOther;
+		for (pl_iter = m_plugins.begin();
+			 pl_iter != m_plugins.end();
+			 pl_iter++)
+		{
+			pOther = (*pl_iter);
+			if (pOther->GetStatus() == Plugin_Error
+				&& pOther->m_FakeNativesMissing)
+			{
+				TryRefreshNatives(pOther);
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -1012,6 +1079,40 @@ void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 		{
 			ctx->BindNative(&natives[i++]);
 		}
+	}
+}
+
+void CPluginManager::TryRefreshNatives(CPlugin *pPlugin)
+{
+	assert(pPlugin->GetBaseContext() != NULL);
+
+	AddFakeNativesToPlugin(pPlugin);
+
+	/* Find any unbound natives
+	 * Right now, these are not allowed
+	 */
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	uint32_t num = pContext->GetNativesNum();
+	sp_native_t *native;
+	for (unsigned int i=0; i<num; i++)
+	{
+		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
+		{
+			break;
+		}
+		if (native->status == SP_NATIVE_UNBOUND)
+		{
+			pPlugin->SetErrorState(Plugin_Error, "Native not found: %s", native->name);
+			return;
+		}
+	}
+
+	/* If we got here, all natives are okay again! */
+	pPlugin->m_status = Plugin_Running;
+	if ((pPlugin->m_ctx.ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
+	{
+		pPlugin->m_ctx.ctx->flags &= ~SPFLAG_PLUGIN_PAUSED;
+		_SetPauseState(pPlugin, false);
 	}
 }
 
@@ -1036,7 +1137,19 @@ void CPluginManager::AddFakeNativesToPlugin(CPlugin *pPlugin)
 		native.func = pNative->func;
 		if (pContext->BindNative(&native) == SP_ERROR_NONE)
 		{
-			/* :TODO: add to dependency list */
+			/* Add us as a dependency, but we're careful not to do this circularly! */
+			if (pNative->ctx != pContext)
+			{
+				CPlugin *pOther = GetPluginByCtx(ctx);
+				if (pOther->m_dependents.find(pPlugin) == pOther->m_dependents.end())
+				{
+					pOther->m_dependents.push_back(pPlugin);
+				}
+				if (pPlugin->m_dependsOn.find(pOther) == pPlugin->m_dependsOn.end())
+				{
+					pPlugin->m_dependsOn.push_back(pOther);
+				}
+			}
 		}
 	}
 }
@@ -1049,6 +1162,44 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	if (m_plugins.find(pPlugin) == m_plugins.end())
 	{
 		return false;
+	}
+
+	/* Remove us from the lookup table and linked list */
+	m_plugins.remove(pPlugin);
+	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
+
+	/* Go through all dependent plugins and tell them this plugin is now gone */
+	List<CPlugin *>::iterator pl_iter;
+	CPlugin *pOther;
+	for (pl_iter = pPlugin->m_dependents.begin();
+		 pl_iter != pPlugin->m_dependents.end();
+		 pl_iter++)
+	{
+		pOther = (*pl_iter);
+		pOther->DependencyDropped(pPlugin);
+	}
+
+	/* Tell everyone we depend on that we no longer exist */
+	for (pl_iter = pPlugin->m_dependsOn.begin();
+		 pl_iter != pPlugin->m_dependsOn.end();
+		 pl_iter++)
+	{
+		pOther = (*pl_iter);
+		pOther->m_dependents.remove(pPlugin);
+	}
+
+	/* Remove all of our native functions */
+	List<FakeNative *>::iterator fn_iter;
+	FakeNative *pNative;
+	for (fn_iter = pPlugin->m_fakeNatives.begin();
+		 fn_iter != pPlugin->m_fakeNatives.end();
+		 fn_iter++)
+	{
+		pNative = (*fn_iter);
+		m_Natives.remove(pNative);
+		sm_trie_delete(m_pNativeLookup, pNative->name.c_str());
+		g_pVM->DestroyFakeNative(pNative->func);
+		delete pNative;
 	}
 
 	List<IPluginsListener *>::iterator iter;
@@ -1072,10 +1223,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pListener = (*iter);
 		pListener->OnPluginDestroyed(pPlugin);
 	}
-
-	/* Remove us from the lookup table and linked list */
-	m_plugins.remove(pPlugin);
-	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
 	
 	/* Tell the plugin to delete itself */
 	delete pPlugin;
@@ -1570,15 +1717,12 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			{
 				if (IS_STR_FILLED(info->name))
 				{
-					g_RootMenu.ConsolePrint("  Title: %s", info->name);
-				}
-				if (IS_STR_FILLED(info->version))
-				{
-					g_RootMenu.ConsolePrint("  Version: %s", info->version);
-				}
-				if (IS_STR_FILLED(info->url))
-				{
-					g_RootMenu.ConsolePrint("  URL: %s", info->url);
+					if (IS_STR_FILLED(info->description))
+					{
+						g_RootMenu.ConsolePrint("  Title: %s (%s)", info->name, info->description);
+					} else {
+						g_RootMenu.ConsolePrint("  Title: %s", info->name);
+					}
 				}
 				if (IS_STR_FILLED(info->author))
 				{
@@ -1588,12 +1732,17 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				{
 					g_RootMenu.ConsolePrint("  Version: %s", info->version);
 				}
-				if (IS_STR_FILLED(info->description))
+				if (IS_STR_FILLED(info->url))
 				{
-					g_RootMenu.ConsolePrint("  Description: %s", info->description);
-				}	
-				g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "yes" : "no");
-				g_RootMenu.ConsolePrint("  Paused: %s", pl->GetStatus() == Plugin_Running ? "no" : "yes");
+					g_RootMenu.ConsolePrint("  URL: %s", info->url);
+				}
+				if (pl->GetStatus() == Plugin_Error)
+				{
+					g_RootMenu.ConsolePrint("  Error: %s", pl->m_errormsg);
+				} else {
+					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "yes" : "no");
+					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "yes" : "no");
+				}
 			} else {
 				g_RootMenu.ConsolePrint("  Load error: %s", pl->m_errormsg);
 				g_RootMenu.ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
@@ -1725,6 +1874,9 @@ bool CPluginManager::AddFakeNative(IPluginFunction *pFunction, const char *name,
 
 	m_Natives.push_back(pNative);
 	sm_trie_insert(m_pNativeLookup, name,pNative);
+
+	CPlugin *pPlugin = GetPluginByCtx(pNative->ctx->GetContext());
+	pPlugin->m_fakeNatives.push_back(pNative);
 
 	return true;
 }

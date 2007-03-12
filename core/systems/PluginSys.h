@@ -92,6 +92,14 @@ struct ContextPair
 	IVirtualMachine *vm;
 };
 
+struct FakeNative
+{
+	IPluginContext *ctx;
+	IPluginFunction *call;
+	String name;
+	SPVM_NATIVE_FUNC func;
+};
+
 enum LoadRes
 {
 	LoadRes_Successful,
@@ -216,6 +224,7 @@ public:
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);
+	void DependencyDropped(CPlugin *pOwner);
 private:
 	ContextPair m_ctx;
 	PluginType m_type;
@@ -230,15 +239,11 @@ private:
 	Handle_t m_handle;
 	bool m_WasRunning;
 	CVector<unsigned int> m_PhraseFiles;
+	List<CPlugin *> m_dependents;
+	List<CPlugin *> m_dependsOn;
+	List<FakeNative *> m_fakeNatives;
 	Trie *m_pProps;
-};
-
-struct FakeNative
-{
-	IPluginContext *ctx;
-	IPluginFunction *call;
-	String name;
-	SPVM_NATIVE_FUNC func;
+	bool m_FakeNativesMissing;
 };
 
 class CPluginManager : 
@@ -393,6 +398,7 @@ public:
 	bool AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func);
 private:
 	void AddFakeNativesToPlugin(CPlugin *pPlugin);
+	void TryRefreshNatives(CPlugin *pOther);
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
