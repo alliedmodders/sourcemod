@@ -802,12 +802,6 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 	 */
 	assert(node->mode == Node_Arc);
 
-	/* Furthermore, if this is the last arc label in an arc, we should have a value set. */
-	if (node->idx == 0)
-	{
-		assert(node->valset == true);
-	}
-
 	if (!node->valset)
 	{
 		/* Insert is only possible if we have no production */
