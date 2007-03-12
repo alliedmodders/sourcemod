@@ -2231,7 +2231,7 @@ rewind:
 
 void JITX86::DestroyFakenative(SPVM_NATIVE_FUNC func)
 {
-	engine->ExecFree(func);
+	engine->ExecFree((void *)func);
 }
 
 const char *JITX86::GetVMName()
