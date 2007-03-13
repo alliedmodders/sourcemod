@@ -555,7 +555,6 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		return;
 	}
 
-	IPluginContext *pContext = pOwner->GetBaseContext();
 	List<FakeNative *>::iterator iter;
 	FakeNative *pNative;
 	sp_native_t *native;
