@@ -122,6 +122,7 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	}
 
 	g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec);
+	DeleteTimerInfo(pInfo);
 }
 
 /*******************************
