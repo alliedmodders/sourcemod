@@ -22,7 +22,7 @@
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
-#define UPPERDIGITS		0x00000100		/* make alpha digits uppercase */
+#define UPPERDIGITS		0x00000200		/* make alpha digits uppercase */
 #define to_digit(c)		((c) - '0')
 #define is_digit(c)		((unsigned)to_digit(c) <= 9)
 
