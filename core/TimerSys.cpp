@@ -44,10 +44,7 @@ void CTimerSystem::RunFrame()
 		{
 			pTimer->m_InExec = true;
 			pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
-			if (pTimer->m_KillMe)
-			{
-				pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-			}
+			pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 			iter = m_SingleTimers.erase(iter);
 			m_FreeTimers.push(pTimer);
 		} else {
@@ -144,9 +141,12 @@ void CTimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 		m_SingleTimers.remove(pTimer);
 		m_FreeTimers.push(pTimer);
 	} else {
-		if (delayExec && (res != Pl_Stop) && !pTimer->m_KillMe)
+		if ((res != Pl_Stop) && !pTimer->m_KillMe)
 		{
-			pTimer->m_ToExec = gpGlobals->curtime + pTimer->m_Interval;
+			if (delayExec)
+			{
+				pTimer->m_ToExec = gpGlobals->curtime + pTimer->m_Interval;
+			}
 			pTimer->m_InExec = false;
 			return;
 		}

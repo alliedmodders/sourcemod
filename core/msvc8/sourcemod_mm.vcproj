@@ -754,6 +754,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_timers.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_usermsgs.cpp"
 				>
 			</File>
