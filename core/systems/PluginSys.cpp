@@ -16,6 +16,7 @@
 #include "ShareSys.h"
 #include "LibrarySys.h"
 #include "HandleSys.h"
+#include "ForwardSys.h"
 #include "sourcemm_api.h"
 #include "sourcemod.h"
 #include "TextParsers.h"
@@ -1878,4 +1879,26 @@ bool CPluginManager::AddFakeNative(IPluginFunction *pFunction, const char *name,
 	pPlugin->m_fakeNatives.push_back(pNative);
 
 	return true;
+}
+
+void CPluginManager::AddFunctionsToForward(const char *name, IChangeableForward *pForward)
+{
+	List<CPlugin *>::iterator iter;
+	CPlugin *pPlugin;
+	IPluginFunction *pFunction;
+
+	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+	{
+		pPlugin = (*iter);
+
+		if (pPlugin->GetStatus() <= Plugin_Paused)
+		{
+			pFunction = pPlugin->GetBaseContext()->GetFunctionByName(name);
+
+			if (pFunction)
+			{
+				pForward->AddFunction(pFunction);
+			}
+		}
+	}
 }

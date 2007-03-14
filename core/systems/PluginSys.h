@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <IPluginSys.h>
 #include <IHandleSys.h>
+#include <IForwardSys.h>
 #include <sh_list.h>
 #include <sh_stack.h>
 #include <sh_vector.h>
@@ -353,6 +354,12 @@ public:
 	* Reload or update plugins on level shutdown.
 	*/
 	void ReloadOrUnloadPlugins();
+
+	/**
+	 * Add public functions from all running or paused
+	 * plugins to the specified forward if the names match.
+	 */
+	void AddFunctionsToForward(const char *name, IChangeableForward *pForward);
 
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);

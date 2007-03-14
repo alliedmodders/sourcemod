@@ -55,6 +55,8 @@ IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned
 
 	if (fwd)
 	{
+		g_PluginSys.AddFunctionsToForward(name, fwd);
+
 		m_managed.push_back(fwd);
 	}
 
