@@ -837,7 +837,7 @@ void _IntExt_CallYams()
 	{
 		if (strcasecmp(arg, "mock") == 0)
 		{
-			g_RootMenu.ConsolePrint("You mock BAILOPAN's pronounciation.  In a fit of range, ");
+			g_RootMenu.ConsolePrint("You mock BAILOPAN's pronounciation.  In a fit of rage, ");
 			g_RootMenu.ConsolePrint("he sticks an INT 3 call into your chest, rendering you broken.");
 			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
 			g_yam_state = 0;
@@ -863,7 +863,7 @@ void _IntExt_CallYams()
 		} else if (strcasecmp(arg, "die") == 0) {
 			g_RootMenu.ConsolePrint("For no reason, you suddenly catch fire.  Alfred and Yeti find this");
 			g_RootMenu.ConsolePrint("deeply disturbing, and cover your flaming corpse with Episode 2");
-			g_RootMenu.ConsolePrint("advertisments.  Coming soon, with Team Fortress 2, and Portal!");
+			g_RootMenu.ConsolePrint("advertisements.  Coming soon, with Team Fortress 2, and Portal!");
 			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
 			g_yam_state = 0;
 		} else if (strcasecmp(arg, "spray") == 0) {
