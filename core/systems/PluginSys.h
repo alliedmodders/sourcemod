@@ -116,17 +116,17 @@ public:
 	CPlugin(const char *file);
 	~CPlugin();
 public:
-	virtual PluginType GetType() const;
-	virtual SourcePawn::IPluginContext *GetBaseContext() const;
-	virtual sp_context_t *GetContext() const;
-	virtual const sm_plugininfo_t *GetPublicInfo() const;
-	virtual const char *GetFilename() const;
-	virtual bool IsDebugging() const;
-	virtual PluginStatus GetStatus() const;
+	virtual PluginType GetType();
+	virtual SourcePawn::IPluginContext *GetBaseContext();
+	virtual sp_context_t *GetContext();
+	virtual const sm_plugininfo_t *GetPublicInfo();
+	virtual const char *GetFilename();
+	virtual bool IsDebugging();
+	virtual PluginStatus GetStatus();
 	virtual bool SetPauseState(bool paused);
-	virtual unsigned int GetSerial() const;
-	virtual const sp_plugin_t *GetPluginStructure() const;
-	virtual IdentityToken_t *GetIdentity() const;
+	virtual unsigned int GetSerial();
+	virtual const sp_plugin_t *GetPluginStructure();
+	virtual IdentityToken_t *GetIdentity();
 	virtual bool SetProperty(const char *prop, void *ptr);
 	virtual bool GetProperty(const char *prop, void **ptr, bool remove=false);
 public:
@@ -189,7 +189,7 @@ public:
 	/**
 	 * Returns true if a plugin is usable.
 	 */
-	bool IsRunnable() const;
+	bool IsRunnable();
 
 	/**
 	 * Adds a language file index to the plugin's list.
@@ -199,17 +199,17 @@ public:
 	/**
 	 * Get language file count for this plugin.
 	 */
-	size_t GetLangFileCount() const;
+	size_t GetLangFileCount();
 
 	/**
 	 * Get language file index based on the vector index.
 	 */
-	unsigned int GetLangFileByIndex(unsigned int index) const;
+	unsigned int GetLangFileByIndex(unsigned int index);
 public:
 	/**
 	 * Returns the modification time during last plugin load.
 	 */
-	time_t GetTimeStamp() const;
+	time_t GetTimeStamp();
 
 	/**
 	 * Returns the current modification time of the plugin file.

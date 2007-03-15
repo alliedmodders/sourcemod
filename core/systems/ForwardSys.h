@@ -55,9 +55,9 @@ public: //ICallable
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
 	virtual void Cancel();
 public: //IForward
-	virtual const char *GetForwardName() const;
-	virtual unsigned int GetFunctionCount() const;
-	virtual ExecType GetExecType() const;
+	virtual const char *GetForwardName();
+	virtual unsigned int GetFunctionCount();
+	virtual ExecType GetExecType();
 	virtual int Execute(cell_t *result, IForwardFilter *filter);
 public: //IChangeableForward
 	virtual bool RemoveFunction(IPluginFunction *func);

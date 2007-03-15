@@ -45,7 +45,7 @@ namespace SourceMod
 		 * @return		String containing the player's name,
 		 *				or NULL if unavailable.
 		 */
-		virtual const char *GetName() const =0;
+		virtual const char *GetName() =0;
 
 		/**
 		 * @brief Returns the player's IP address.
@@ -53,7 +53,7 @@ namespace SourceMod
 		 * @return		String containing the player's IP address,
 		 *				or NULL if unavailable.
 		 */
-		virtual const char *GetIPAddress() const =0;
+		virtual const char *GetIPAddress() =0;
 
 		/**
 		 * @brief Returns the player's authentication string.
@@ -61,21 +61,21 @@ namespace SourceMod
 		 * @return		String containing the player's auth string.
 		 *				May be NULL if unavailable.
 		 */
-		virtual const char *GetAuthString() const =0;
+		virtual const char *GetAuthString() =0;
 
 		/**
 		 * @brief Returns the player's edict_t structure.
 		 *
 		 * @return		edict_t pointer, or NULL if unavailable.
 		 */
-		virtual edict_t *GetEdict() const =0;
+		virtual edict_t *GetEdict() =0;
 
 		/**
 		 * @brief Returns whether the player is in game (putinserver).
 		 *
 		 * @return		True if in game, false otherwise.
 		 */
-		virtual bool IsInGame() const =0;
+		virtual bool IsInGame() =0;
 
 		/**
 		 * @brief Returns whether the player is connected.
@@ -85,21 +85,21 @@ namespace SourceMod
 		 *
 		 * @return		True if connected, false otherwise.
 		 */
-		virtual bool IsConnected() const =0;
+		virtual bool IsConnected() =0;
 
 		/**
 		 * @brief Returns whether the player is a fake client.
 		 *
 		 * @return		True if a fake client, false otherwise.
 		 */
-		virtual bool IsFakeClient() const =0;
+		virtual bool IsFakeClient() =0;
 
 		/**
 		 * @brief Returns the client's AdminId, if any.
 		 *
 		 * @return		AdminId, or INVALID_ADMIN_ID if none.
 		 */
-		virtual AdminId GetAdminId() const =0;
+		virtual AdminId GetAdminId() =0;
 
 		/**
 		 * @brief Sets the client's AdminId.

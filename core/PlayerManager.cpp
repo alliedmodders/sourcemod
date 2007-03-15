@@ -467,42 +467,42 @@ void CPlayer::SetName(const char *name)
 	m_Name.assign(name);
 }
 
-const char *CPlayer::GetName() const
+const char *CPlayer::GetName()
 {
 	return m_Name.c_str();
 }
 
-const char *CPlayer::GetIPAddress() const
+const char *CPlayer::GetIPAddress()
 {
 	return m_Ip.c_str();
 }
 
-const char *CPlayer::GetAuthString() const
+const char *CPlayer::GetAuthString()
 {
 	return m_AuthID.c_str();
 }
 
-edict_t *CPlayer::GetEdict() const
+edict_t *CPlayer::GetEdict()
 {
 	return m_pEdict;
 }
 
-bool CPlayer::IsInGame() const
+bool CPlayer::IsInGame()
 {
 	return m_IsInGame;
 }
 
-bool CPlayer::IsConnected() const
+bool CPlayer::IsConnected()
 {
 	return m_IsConnected;
 }
 
-bool CPlayer::IsAuthorized() const
+bool CPlayer::IsAuthorized()
 {
 	return m_IsAuthorized;
 }
 
-bool CPlayer::IsFakeClient() const
+bool CPlayer::IsFakeClient()
 {
 	return (strcmp(m_AuthID.c_str(), "BOT") == 0);
 }
@@ -520,7 +520,7 @@ void CPlayer::SetAdminId(AdminId id, bool temporary)
 	m_TempAdmin = temporary;
 }
 
-AdminId CPlayer::GetAdminId() const
+AdminId CPlayer::GetAdminId()
 {
 	return m_Admin;
 }

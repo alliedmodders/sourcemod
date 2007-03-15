@@ -671,17 +671,17 @@ bool CForward::AddFunction(IPluginFunction *func)
 	return true;
 }
 
-const char *CForward::GetForwardName() const
+const char *CForward::GetForwardName()
 {
 	return m_name;
 }
 
-unsigned int CForward::GetFunctionCount() const
+unsigned int CForward::GetFunctionCount()
 {
 	return m_functions.size();
 }
 
-ExecType CForward::GetExecType() const
+ExecType CForward::GetExecType()
 {
 	return m_ExecType;
 }

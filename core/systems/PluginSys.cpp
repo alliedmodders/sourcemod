@@ -349,47 +349,47 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	return true;
 }
 
-const sp_plugin_t *CPlugin::GetPluginStructure() const
+const sp_plugin_t *CPlugin::GetPluginStructure()
 {
 	return m_plugin;
 }
 
-IPluginContext *CPlugin::GetBaseContext() const
+IPluginContext *CPlugin::GetBaseContext()
 {
 	return m_ctx.base;
 }
 
-sp_context_t *CPlugin::GetContext() const
+sp_context_t *CPlugin::GetContext()
 {
 	return m_ctx.ctx;
 }
 
-const char *CPlugin::GetFilename() const
+const char *CPlugin::GetFilename()
 {
 	return m_filename;
 }
 
-PluginType CPlugin::GetType() const
+PluginType CPlugin::GetType()
 {
 	return m_type;
 }
 
-const sm_plugininfo_t *CPlugin::GetPublicInfo() const
+const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
 	return &m_info;
 }
 
-unsigned int CPlugin::GetSerial() const
+unsigned int CPlugin::GetSerial()
 {
 	return m_serial;
 }
 
-PluginStatus CPlugin::GetStatus() const
+PluginStatus CPlugin::GetStatus()
 {
 	return m_status;
 }
 
-bool CPlugin::IsDebugging() const
+bool CPlugin::IsDebugging()
 {
 	if (!m_ctx.ctx)
 	{
@@ -430,7 +430,7 @@ bool CPlugin::SetPauseState(bool paused)
 	return true;
 }
 
-IdentityToken_t *CPlugin::GetIdentity() const
+IdentityToken_t *CPlugin::GetIdentity()
 {
 	return m_ident;
 }
@@ -501,7 +501,7 @@ bool CPlugin::ToggleDebugMode(bool debug, char *error, size_t maxlength)
 	return true;
 }
 
-bool CPlugin::IsRunnable() const
+bool CPlugin::IsRunnable()
 {
 	return (m_status <= Plugin_Paused) ? true : false;
 }
@@ -524,7 +524,7 @@ time_t CPlugin::GetFileTimeStamp()
 	}
 }
 
-time_t CPlugin::GetTimeStamp() const
+time_t CPlugin::GetTimeStamp()
 {
 	return m_LastAccess;
 }
@@ -539,12 +539,12 @@ void CPlugin::AddLangFile(unsigned int index)
 	m_PhraseFiles.push_back(index);
 }
 
-size_t CPlugin::GetLangFileCount() const
+size_t CPlugin::GetLangFileCount()
 {
 	return m_PhraseFiles.size();
 }
 
-unsigned int CPlugin::GetLangFileByIndex(unsigned int index) const
+unsigned int CPlugin::GetLangFileByIndex(unsigned int index)
 {
 	return m_PhraseFiles.at(index);
 }

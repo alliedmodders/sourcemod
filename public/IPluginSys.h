@@ -93,50 +93,50 @@ namespace SourceMod
 		/**
 		 * @brief Returns the lifetime of a plugin.
 		 */
-		virtual PluginType GetType() const =0;
+		virtual PluginType GetType() =0;
 
 		/**
 		 * @brief Returns the current API context being used in the plugin.
 		 *
 		 * @return	Pointer to an IPluginContext, or NULL if not loaded.
 		 */
-		virtual SourcePawn::IPluginContext *GetBaseContext() const =0;
+		virtual SourcePawn::IPluginContext *GetBaseContext() =0;
 
 		/**
 		 * @brief Returns the context structure being used in the plugin.
 		 *
 		 * @return	Pointer to an sp_context_t, or NULL if not loaded.
 		 */
-		virtual sp_context_t *GetContext() const =0;
+		virtual sp_context_t *GetContext() =0;
 
 		/**
 		 * @brief Returns the plugin file structure.
 		 *
 		 * @return	Pointer to an sp_plugin_t, or NULL if not loaded.
 		 */
-		virtual const sp_plugin_t *GetPluginStructure() const =0;
+		virtual const sp_plugin_t *GetPluginStructure() =0;
 
 		/**
 		 * @brief Returns information about the plugin by reference.
 		 *
 		 * @return			Pointer to a sm_plugininfo_t object, NULL if plugin is not loaded.
 		 */
-		virtual const sm_plugininfo_t *GetPublicInfo() const =0;
+		virtual const sm_plugininfo_t *GetPublicInfo() =0;
 
 		/**
 		 * @brief Returns the plugin filename (relative to plugins dir).
 		 */
-		virtual const char *GetFilename() const =0;
+		virtual const char *GetFilename() =0;
 
 		/**
 		 * @brief Returns true if a plugin is in debug mode, false otherwise.
 		 */
-		virtual bool IsDebugging() const =0;
+		virtual bool IsDebugging() =0;
 
 		/**
 		 * @brief Returns the plugin status.
 		 */
-		virtual PluginStatus GetStatus() const =0;
+		virtual PluginStatus GetStatus() =0;
 		
 		/**
 		 * @brief Sets whether the plugin is paused or not.
@@ -148,12 +148,12 @@ namespace SourceMod
 		/**
 		 * @brief Returns the unique serial number of a plugin.
 		 */
-		virtual unsigned int GetSerial() const =0;
+		virtual unsigned int GetSerial() =0;
 
 		/**
 		 * @brief Returns a plugin's identity token.
 		 */
-		virtual IdentityToken_t *GetIdentity() const =0;
+		virtual IdentityToken_t *GetIdentity() =0;
 
 		/**
 		 * @brief Sets a property on this plugin.  This is used for per-plugin

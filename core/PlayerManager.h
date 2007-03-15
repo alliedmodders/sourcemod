@@ -32,16 +32,16 @@ class CPlayer : public IGamePlayer
 public:
 	CPlayer();
 public:
-	const char *GetName() const;
-	const char *GetIPAddress() const;
-	const char *GetAuthString() const;
-	edict_t *GetEdict() const;
-	bool IsInGame() const;
-	bool IsConnected() const;
-	bool IsAuthorized() const;
-	bool IsFakeClient() const;
+	const char *GetName();
+	const char *GetIPAddress();
+	const char *GetAuthString();
+	edict_t *GetEdict();
+	bool IsInGame();
+	bool IsConnected();
+	bool IsAuthorized();
+	bool IsFakeClient();
 	void SetAdminId(AdminId id, bool temporary);
-	AdminId GetAdminId() const;
+	AdminId GetAdminId();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
