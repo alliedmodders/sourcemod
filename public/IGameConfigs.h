@@ -22,7 +22,7 @@
 #include <IShareSys.h>
 
 /**
- * @file IGameConfig.h
+ * @file IGameConfigs.h
  * @brief Abstracts game private data configuration.
  */
 
@@ -43,6 +43,9 @@ namespace SourceMod
 		PropType_Data = 2,			/**< Property type is a data/save property */
 	};
 
+	/**
+	 * @brief Details the property states.
+	 */
 	enum PropError
 	{
 		PropError_Okay = 0,			/**< No error */
@@ -71,7 +74,6 @@ namespace SourceMod
 		 * @brief Returns information about a dynamic offset.
 		 *
 		 * @param key			Key to retrieve from the property section.
-		 * @param value			Pointer to store the offset value.  Will be -1 on failure.
 		 * @return				A PropError error code.
 		 */
 		virtual SendProp *GetSendProp(const char *key) =0;

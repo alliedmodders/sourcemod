@@ -19,6 +19,12 @@
 #ifndef _INCLUDE_SOURCEMOD_TIMER_SYSTEM_H_
 #define _INCLUDE_SOURCEMOD_TIMER_SYSTEM_H_
 
+/**
+ * @file ITimerSystem.h
+ * @brief Contains functions for creating and managing timers.
+ */
+
+
 #include <IShareSys.h>
 #include <IForwardSys.h>
 

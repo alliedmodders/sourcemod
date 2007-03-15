@@ -833,8 +833,7 @@ namespace SourcePawn
 		/**
 		 * @brief Destroys a fake native function wrapper.  
 		 *
-		 * @param function	Pointer to the fake native created by CreateFakeNative.
-		 * @noreturn
+		 * @param func		Pointer to the fake native created by CreateFakeNative.
 		 */
 		virtual void DestroyFakeNative(SPVM_NATIVE_FUNC func) =0;
 	};

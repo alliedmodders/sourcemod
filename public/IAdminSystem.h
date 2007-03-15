@@ -196,6 +196,9 @@ namespace SourceMod
 		virtual void OnRebuildOverrideCache() =0;
 	};
 
+	/**
+	 * @brief Admin permission levels.
+	 */
 	typedef unsigned int FlagBits;
 
 	/**
@@ -487,7 +490,7 @@ namespace SourceMod
 		 * @brief Sets a password on an admin.
 		 *
 		 * @param id		AdminId index of the admin.
-		 * @param passwd	String containing the password.
+		 * @param password	String containing the password.
 		 */
 		virtual void SetAdminPassword(AdminId id, const char *password) =0;
 
@@ -559,7 +562,7 @@ namespace SourceMod
 		 * Note: This is a wrapper around GetAdminFlags().
 		 *
 		 * @param id		AdminId index of admin.
-		 * @param flags		Bitstring containing the permissions to check.
+		 * @param bits		Bitstring containing the permissions to check.
 		 * @return			True if user has permission, false otherwise.
 		 */
 		virtual bool CheckAdminFlags(AdminId id, FlagBits bits) =0;
