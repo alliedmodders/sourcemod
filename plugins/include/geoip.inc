@@ -21,8 +21,7 @@
 #include <core>
 
 /**
- * @GLOBAL@
- *   IP address can contain ports, the ports will be stripped out.
+ * @section IP addresses can contain ports, the ports will be stripped out.
  */
 
 /**
@@ -52,6 +51,10 @@ native GeoipCode3(const String:ip[], String:ccode[4]);
  * @noreturn
  */
 native GeoipCountry(const String:ip[], String:name[], len=45);
+
+/**
+ * @endsection
+ */
 
 /**
  * Do not edit below this line!

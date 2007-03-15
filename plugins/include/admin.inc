@@ -47,10 +47,10 @@ enum AdminFlag
 	/* --- */
 };
 
-#define AdminFlags_TOTAL	21
+#define AdminFlags_TOTAL	21		/**< Total number of admin flags */
 
 /**
- * These define bitwise values for bitstrings (numbers containing bitwise flags).
+ * @section These define bitwise values for bitstrings (numbers containing bitwise flags).
  */
 #define ADMFLAG_RESERVATION			(1<<0)		/**< Convenience macro for Admin_Reservation as a FlagBit */
 #define ADMFLAG_GENERIC				(1<<1)		/**< Convenience macro for Admin_Generic as a FlagBit */
@@ -74,22 +74,42 @@ enum AdminFlag
 #define ADMFLAG_CUSTOM5				(1<<19)		/**< Convenience macro for Admin_Custom5 as a FlagBit */
 #define ADMFLAG_CUSTOM6				(1<<20)		/**< Convenience macro for Admin_Custom6 as a FlagBit */
 
+/**
+ * @endsection
+ */
+
+/**
+ * @section Hardcoded authentication methods 
+ */
 #define AUTHMETHOD_STEAM			"steam"
 #define AUTHMETHOD_IP				"ip"
 #define AUTHMETHOD_NAME				"name"
 
+/**
+ * @endsection
+ */
+
+/**
+ * Override types.
+ */
 enum OverrideType
 {
 	Override_Command = 1,	/* Command */
 	Override_CommandGroup,	/* Command group */
 };
 
+/**
+ * Override rules.
+ */
 enum OverrideRule
 {
 	Command_Deny = 0,
 	Command_Allow = 1,
 };
 
+/**
+ * Immunity types.
+ */
 enum ImmunityType
 {
 	Immunity_Default = 1,	/* Immune from everyone with no immunity */
@@ -303,8 +323,7 @@ native AdminId:CreateAdmin(const String:name[]="");
 
 /**
  * Retrieves an admin's user name as made with CreateAdmin().
- *
- * NOTE: This function can return UTF-8 strings, and will safely chop UTF-8 strings.
+ * @note This function can return UTF-8 strings, and will safely chop UTF-8 strings.
  *
  * @param id			AdminId of the admin.
  * @param name			String buffer to store name.
@@ -416,8 +435,7 @@ native AdminId:FindAdminByIdentity(const String:auth[], const String:identity[])
 
 /**
  * Removes an admin entry from the cache.
- *
- * Note: This will remove any bindings to a specific user.
+ * @note This will remove any bindings to a specific user.
  *
  * @param id			AdminId index to remove/invalidate.
  * @return				True on success, false otherwise.

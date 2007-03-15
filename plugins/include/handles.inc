@@ -18,6 +18,9 @@
 #endif
 #define _handles_included
 
+/**
+ * Handle helper macros.
+ */
 enum Handle
 {
 	INVALID_HANDLE = 0,

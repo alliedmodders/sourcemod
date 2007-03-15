@@ -19,8 +19,8 @@
 #define _console_included
 
 /**
- * Flags for console commands and console variables
- * @note The descriptions for each constant come directly from the Source SDK.
+ * @section Flags for console commands and console variables.  The descriptions 
+ * for each constant come directly from the Source SDK.
  */
 #define FCVAR_NONE				0		/**< The default, no flags at all */
 #define FCVAR_UNREGISTERED		(1<<0)	/**< If this is set, don't add to linked list, etc. */
@@ -51,6 +51,10 @@
 #define FCVAR_INPUTSYSTEM		(1<<25)	/**< Defined by the inputsystem DLL. */
 #define FCVAR_NETWORKSYSTEM		(1<<26)	/**< Defined by the network system. */
 #define FCVAR_VPHYSICS			(1<<27)	/**< Defined by vphysics. */
+
+/**
+ * @endsection
+ */
 
 /**
  * Executes a server command as if it were on the server console (or RCON)

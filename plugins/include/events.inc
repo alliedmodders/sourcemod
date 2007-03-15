@@ -33,6 +33,9 @@ enum EventHookMode
 	EventHookMode_PostNoCopy			/**< Hook callback fired after event is fired, but event data won't be copied */
 };
 
+/**
+ * Hook function types for events.
+ */
 funcenum EventHook
 {
 	/**

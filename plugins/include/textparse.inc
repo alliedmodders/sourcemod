@@ -25,6 +25,9 @@
  * The file format itself is nearly identical to Valve's KeyValues format.
  ********************************/
 
+/**
+ * Parse result directive.
+ */
 enum SMCResult
 {
 	SMCParse_Continue,			/**< Continue parsing */
@@ -32,6 +35,9 @@ enum SMCResult
 	SMCParse_HaltFail			/**< Stop parsing and return failure */
 };
 
+/**
+ * Parse error codes.
+ */
 enum SMCError
 {
 	SMCError_Okay = 0,			/**< No error */

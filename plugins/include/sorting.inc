@@ -20,7 +20,7 @@
 #define _sorting_included
 
 /**
- * @brief Contains sorting orders.
+ * Contains sorting orders.
  */
 enum SortOrder
 {

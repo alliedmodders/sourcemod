@@ -18,6 +18,9 @@
 #endif
 #define _eventsmsgs_included
 
+/**
+ * UserMsg helper values.
+ */
 enum UserMsg
 {
 	INVALID_MESSAGE_ID = -1,

@@ -18,8 +18,11 @@
 #endif
 #define _files_included
 
-/* @note All paths in SourceMod natives are relative to the mod folder unless otherwise noted. */
- 
+/* @global All paths in SourceMod natives are relative to the mod folder unless otherwise noted. */
+
+/**
+ * File inode types.
+ */
 enum FileType
 {
 	FileType_Unknown = 0,	/* Unknown file type (device/socket) */
@@ -27,15 +30,18 @@ enum FileType
 	FileType_File = 2,		/* File is a file */
 };
 
-#define PLATFORM_MAX_PATH		256
+#define PLATFORM_MAX_PATH		256		/**< Maximum path length. */
 
-#define SEEK_SET 0
-#define SEEK_CUR 1
-#define SEEK_END 2
+#define SEEK_SET 0						/**< Seek from start. */
+#define SEEK_CUR 1						/**< Seek from current position. */
+#define SEEK_END 2						/**< Seek from end position. */
 
+/**
+ * Path types.
+ */
 enum PathType
 {
-	Path_SM,		/* SourceMod root folder */	
+	Path_SM,		/**< SourceMod root folder */	
 };
 
 /**

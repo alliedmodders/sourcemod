@@ -254,7 +254,6 @@ native GetUserFlagBits(client);
  */
 native bool:CanUserTarget(client, target);
 
-
 /** 
  * Creates a fake client.
  *

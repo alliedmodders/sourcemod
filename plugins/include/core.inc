@@ -72,6 +72,9 @@ enum PluginInfo
 	PlInfo_URL,				/**< Plugin URL */
 };
 
+/**
+ * Defines how an extension must expose itself for autoloading.
+ */
 struct Extension
 {
 	const String:name[],	/* Short name */

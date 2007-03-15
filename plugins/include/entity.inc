@@ -276,6 +276,10 @@ native GetEntDataVector(entity, offset, Float:vec[3]);
 native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=false);
 
 /**
+ * @endsection
+ */
+
+/**
  * Given a ServerClass name, finds a networkable send property offset.
  * This information is cached for future calls.
  *

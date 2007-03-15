@@ -19,10 +19,9 @@
 #define _string_included
 
 /**
- * @GLOBAL@
- *   Unless otherwise noted, all string functions which take in a writable buffer and maximum length
- * should have the null terminator INCLUDED in the length.  This means that this is valid:
- *   StrCopy(string, sizeof(string), ...)
+ * @global Unless otherwise noted, all string functions which take in a writable buffer 
+ * and maximum length should have the null terminator INCLUDED in the length.  This means 
+ * that this is valid: StrCopy(string, sizeof(string), ...)
  */
 
 /**
@@ -75,8 +74,8 @@ stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive
 
 /**
  * Copies one string to another string.
- * NOTE: If the destination buffer is too small to hold the source string,
- * the destination will be truncated.
+ * @note If the destination buffer is too small to hold the source string, the 
+ *       destination will be truncated.
  *
  * @param dest			Destination string buffer to copy to.
  * @param destlen		Destination buffer length (includes null terminator).
@@ -99,7 +98,7 @@ native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,S
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
  * @note This is the same as Format(), except none of the input buffers can overlap the same
- *	    memory as the output buffer.  Since this security check is removed, it is slightly faster.
+ *	     memory as the output buffer.  Since this security check is removed, it is slightly faster.
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
@@ -112,8 +111,8 @@ native FormatEx(String:buffer[], maxlength, const String:format[], {Handle,Float
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
  * @note This is the same as Format(), except it grabs parameters from a parent parameter
- * stack, rather than a local.  This is useful for implementing your own variable argument
- * functions.
+ *       stack, rather than a local.  This is useful for implementing your own variable 
+ *       argument functions.
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.

@@ -19,18 +19,14 @@
 #define _float_included
 
 /**
- * @GLOBAL@
- *   All the trigonometric functions take in or return its values in RADIANS.
- *   Use DegToRad or RadToDeg stocks to convert the radix units.
+ * Different methods of rounding.
  */
-
-/* Different methods of rounding */
 enum floatround_method
 {
-	floatround_round = 0,
-	floatround_floor,
-	floatround_ceil,
-	floatround_tozero
+	floatround_round = 0,		/**< Standard IEEE rounding */
+	floatround_floor,			/**< Next lowest integer value. */
+	floatround_ceil,			/**< Next highest integer value. */
+	floatround_tozero			/** Closest integer to zero. */
 };
 
 /**
@@ -164,10 +160,10 @@ native Float:Cosine(Float:value);
 native Float:Tangent(Float:value);
 
 /**
- * Returns the absolute value.
+ * Returns an absolute value.
  *
  * @param value			Input value.
- * @return				abs(value).
+ * @return				Absolute value of the input.
  */
 native Float:FloatAbs(Float:value);
 
@@ -304,11 +300,23 @@ forward operator%(oper1, Float:oper2);
 
 #define FLOAT_PI 3.1415926535897932384626433832795
 
+/**
+ * Converts degrees to radians.
+ *
+ * @param angle		Degrees.
+ * @return			Radians.
+ */
 stock Float:DegToRad(Float:angle)
 {
 	return (angle*FLOAT_PI)/180;
 }
 
+/**
+ * Converts degrees to radians.
+ *
+ * @param angle		Radians.
+ * @return			Degrees.
+ */
 stock Float:RadToDeg(Float:angle)
 {
 	return (angle*180)/FLOAT_PI;
