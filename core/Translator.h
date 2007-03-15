@@ -26,7 +26,7 @@
 /* :TODO: write a templatized version of tries? */
 
 using namespace SourceHook;
-class CTranslator;
+class Translator;
 
 enum PhraseParseState
 {
@@ -60,7 +60,7 @@ enum TransError
 class CPhraseFile : public ITextListener_SMC
 {
 public:
-	CPhraseFile(CTranslator *pTranslator, const char *file);
+	CPhraseFile(Translator *pTranslator, const char *file);
 	~CPhraseFile();
 public:
 	void ReparseFile();
@@ -79,7 +79,7 @@ private:
 private:
 	Trie *m_pPhraseLookup;
 	String m_File;
-	CTranslator *m_pTranslator;
+	Translator *m_pTranslator;
 	PhraseParseState m_ParseState;
 	int m_CurPhrase;
 	BaseMemTable *m_pMemory;
@@ -91,13 +91,13 @@ private:
 	bool m_FileLogged;
 };
 
-class CTranslator : 
+class Translator : 
 	public ITextListener_SMC,
 	public SMGlobalClass
 {
 public:
-	CTranslator();
-	~CTranslator();
+	Translator();
+	~Translator();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 public: //ITextListener_SMC
@@ -131,6 +131,6 @@ private:
 };
 
 extern CPhraseFile *g_pCorePhrases;
-extern CTranslator g_Translator;
+extern Translator g_Translator;
 
 #endif //_INCLUDE_SOURCEMOD_TRANSLATOR_H_

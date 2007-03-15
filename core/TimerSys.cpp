@@ -14,7 +14,7 @@
 
 #include "TimerSys.h"
 
-CTimerSystem g_Timers;
+TimerSystem g_Timers;
 
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
 {
@@ -27,12 +27,12 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 	m_KillMe = false;
 }
 
-void CTimerSystem::OnSourceModAllInitialized()
+void TimerSystem::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
 }
 
-void CTimerSystem::RunFrame()
+void TimerSystem::RunFrame()
 {
 	ITimer *pTimer;
 	TimerIter iter;
@@ -76,7 +76,7 @@ void CTimerSystem::RunFrame()
 	m_LastExecTime = gpGlobals->curtime;
 }
 
-ITimer *CTimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
+ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
 {
 	ITimer *pTimer;
 	TimerIter iter;
@@ -123,7 +123,7 @@ return_timer:
 	return pTimer;
 }
 
-void CTimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
+void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 {
 	ResultType res;
 
@@ -156,7 +156,7 @@ void CTimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 	}
 }
 
-void CTimerSystem::KillTimer(ITimer *pTimer)
+void TimerSystem::KillTimer(ITimer *pTimer)
 {
 	TimerList *pList;
 
@@ -180,7 +180,7 @@ void CTimerSystem::KillTimer(ITimer *pTimer)
 	m_FreeTimers.push(pTimer);
 }
 
-void CTimerSystem::MapChange()
+void TimerSystem::MapChange()
 {
 	ITimer *pTimer;
 	TimerIter iter;

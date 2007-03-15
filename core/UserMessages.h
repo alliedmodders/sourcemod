@@ -36,13 +36,13 @@ struct ListenerInfo
 typedef List<ListenerInfo *> MsgList;
 typedef List<ListenerInfo *>::iterator MsgIter;
 
-class CUserMessages : 
+class UserMessages : 
 	public IUserMessages,
 	public SMGlobalClass
 {
 public:
-	CUserMessages();
-	~CUserMessages();
+	UserMessages();
+	~UserMessages();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
@@ -80,6 +80,6 @@ private:
 	int m_CurId;
 };
 
-extern CUserMessages g_UserMsgs;
+extern UserMessages g_UserMsgs;
 
 #endif //_INCLUDE_SOURCEMOD_CUSERMESSAGES_H_

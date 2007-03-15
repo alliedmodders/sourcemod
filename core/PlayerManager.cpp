@@ -17,7 +17,7 @@
 #include "AdminCache.h"
 #include "ConCmdManager.h"
 
-CPlayerManager g_Players;
+PlayerManager g_Players;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -26,27 +26,27 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *)
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
-CPlayerManager::CPlayerManager()
+PlayerManager::PlayerManager()
 {
 	m_AuthQueue = NULL;
 	m_FirstPass = true;
 }
 
-CPlayerManager::~CPlayerManager()
+PlayerManager::~PlayerManager()
 {
 	delete [] m_AuthQueue;
 }
 
-void CPlayerManager::OnSourceModAllInitialized()
+void PlayerManager::OnSourceModAllInitialized()
 {
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &CPlayerManager::OnClientConnect, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &CPlayerManager::OnClientConnect_Post, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &CPlayerManager::OnClientPutInServer, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect_Post, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &CPlayerManager::OnClientCommand, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &CPlayerManager::OnClientSettingsChanged, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &CPlayerManager::OnServerActivate, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect_Post, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect_Post, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &PlayerManager::OnClientCommand, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &PlayerManager::OnClientSettingsChanged, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &PlayerManager::OnServerActivate, true);
 
 	g_ShareSys.AddInterface(NULL, this);
 
@@ -62,15 +62,15 @@ void CPlayerManager::OnSourceModAllInitialized()
 	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
 }
 
-void CPlayerManager::OnSourceModShutdown()
+void PlayerManager::OnSourceModShutdown()
 {
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &CPlayerManager::OnClientConnect, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &CPlayerManager::OnClientPutInServer, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &CPlayerManager::OnClientDisconnect_Post, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &CPlayerManager::OnClientCommand, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &CPlayerManager::OnClientSettingsChanged, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &CPlayerManager::OnServerActivate, true);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect_Post, true);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &PlayerManager::OnClientCommand, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &PlayerManager::OnClientSettingsChanged, true);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &PlayerManager::OnServerActivate, true);
 
 	/* Release forwards */
 	g_Forwards.ReleaseForward(m_clconnect);
@@ -84,7 +84,7 @@ void CPlayerManager::OnSourceModShutdown()
 	delete [] m_Players;
 }
 
-void CPlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	if (m_FirstPass)
 	{
@@ -99,7 +99,7 @@ void CPlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int c
 	}
 }
 
-void CPlayerManager::RunAuthChecks()
+void PlayerManager::RunAuthChecks()
 {
 	CPlayer *pPlayer;
 	const char *authstr;
@@ -168,7 +168,7 @@ void CPlayerManager::RunAuthChecks()
 	}
 }
 
-bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = engine->IndexOfEdict(pEntity);
 
@@ -202,7 +202,7 @@ bool CPlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, cons
 	return true;
 }
 
-bool CPlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = engine->IndexOfEdict(pEntity);
 	bool orig_value = META_RESULT_ORIG_RET(bool);
@@ -220,7 +220,7 @@ bool CPlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName,
 	return true;
 }
 
-void CPlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
+void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
@@ -258,7 +258,7 @@ void CPlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playernam
 	m_clputinserver->Execute(&res, NULL);
 }
 
-void CPlayerManager::OnClientDisconnect(edict_t *pEntity)
+void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
@@ -306,7 +306,7 @@ void CPlayerManager::OnClientDisconnect(edict_t *pEntity)
 	m_Players[client].Disconnect();
 }
 
-void CPlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
+void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
@@ -323,7 +323,7 @@ void CPlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	}
 }
 
-void CPlayerManager::OnClientCommand(edict_t *pEntity)
+void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
 	cell_t res = Pl_Continue;
 	int client = engine->IndexOfEdict(pEntity);
@@ -347,7 +347,7 @@ void CPlayerManager::OnClientCommand(edict_t *pEntity)
 	}
 }
 
-void CPlayerManager::OnClientSettingsChanged(edict_t *pEntity)
+void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
@@ -357,12 +357,12 @@ void CPlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	m_Players[client].SetName(engine->GetClientConVarValue(client, "name"));
 }
 
-int CPlayerManager::GetMaxClients()
+int PlayerManager::GetMaxClients()
 {
 	return m_maxClients;
 }
 
-CPlayer *CPlayerManager::GetPlayerByIndex(int client) const
+CPlayer *PlayerManager::GetPlayerByIndex(int client) const
 {
 	if (client > m_maxClients || client < 1)
 	{
@@ -371,33 +371,33 @@ CPlayer *CPlayerManager::GetPlayerByIndex(int client) const
 	return &m_Players[client];
 }
 
-int CPlayerManager::GetNumPlayers()
+int PlayerManager::GetNumPlayers()
 {
 	return m_PlayerCount;
 }
 
-void CPlayerManager::AddClientListener(IClientListener *listener)
+void PlayerManager::AddClientListener(IClientListener *listener)
 {
 	m_hooks.push_back(listener);
 }
 
-void CPlayerManager::RemoveClientListener(IClientListener *listener)
+void PlayerManager::RemoveClientListener(IClientListener *listener)
 {
 	m_hooks.remove(listener);
 }
 
-IGamePlayer *CPlayerManager::GetGamePlayer(edict_t *pEdict)
+IGamePlayer *PlayerManager::GetGamePlayer(edict_t *pEdict)
 {
 	int index = engine->IndexOfEdict(pEdict);
 	return GetGamePlayer(index);
 }
 
-IGamePlayer *CPlayerManager::GetGamePlayer(int client)
+IGamePlayer *PlayerManager::GetGamePlayer(int client)
 {
 	return GetPlayerByIndex(client);
 }
 
-void CPlayerManager::ClearAdminId(AdminId id)
+void PlayerManager::ClearAdminId(AdminId id)
 {
 	for (int i=1; i<=m_maxClients; i++)
 	{
@@ -408,7 +408,7 @@ void CPlayerManager::ClearAdminId(AdminId id)
 	}
 }
 
-void CPlayerManager::ClearAllAdmins()
+void PlayerManager::ClearAllAdmins()
 {
 	for (int i=1; i<=m_maxClients; i++)
 	{

@@ -28,7 +28,7 @@ using namespace SourceHook;
 
 class CPlayer : public IGamePlayer
 {
-	friend class CPlayerManager;
+	friend class PlayerManager;
 public:
 	CPlayer();
 public:
@@ -61,13 +61,13 @@ private:
 	edict_t *m_pEdict;
 };
 
-class CPlayerManager : 
+class PlayerManager : 
 	public SMGlobalClass,
 	public IPlayerManager
 {
 public:
-	CPlayerManager();
-	~CPlayerManager();
+	PlayerManager();
+	~PlayerManager();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -118,6 +118,6 @@ private:
 	unsigned int *m_AuthQueue;
 };
 
-extern CPlayerManager g_Players;
+extern PlayerManager g_Players;
 
 #endif //_INCLUDE_SOURCEMOD_CPLAYERMANAGER_H_

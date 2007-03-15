@@ -17,7 +17,7 @@
 #include "sp_vm_api.h"
 #include "sm_globals.h"
 
-class CDbgReporter : 
+class DebugReport : 
 	public SMGlobalClass, 
 	public IDebugListener
 {
@@ -29,7 +29,7 @@ private:
 	int _GetPluginIndex(IPluginContext *ctx);
 };
 
-extern CDbgReporter g_DbgReporter;
+extern DebugReport g_DbgReporter;
 
 #endif // _INCLUDE_SOURCEMOD_CDBGREPORTER_H_
 

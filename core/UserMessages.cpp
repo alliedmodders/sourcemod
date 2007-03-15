@@ -14,14 +14,14 @@
 
 #include "UserMessages.h"
 
-CUserMessages g_UserMsgs;
+UserMessages g_UserMsgs;
 
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
 
 //:TODO: USE NEW MM IFACE TO SEARCH FOR MESSAGE NAMES ETC! faluco--> i'll do this when i have some spare time
 
-CUserMessages::CUserMessages() : m_InterceptBuffer(m_pBase, 2500)
+UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
 {
 	m_Names = sm_trie_create();
 	m_HookCount = 0;
@@ -31,29 +31,29 @@ CUserMessages::CUserMessages() : m_InterceptBuffer(m_pBase, 2500)
 	m_CurId = INVALID_MESSAGE_ID;
 }
 
-CUserMessages::~CUserMessages()
+UserMessages::~UserMessages()
 {
 	sm_trie_destroy(m_Names);
 }
 
-void CUserMessages::OnSourceModAllInitialized()
+void UserMessages::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
 }
 
-void CUserMessages::OnSourceModAllShutdown()
+void UserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Post, true);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Post, true);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
 	}
 	m_HookCount = 0;
 }
 
-int CUserMessages::GetMessageIndex(const char *msg)
+int UserMessages::GetMessageIndex(const char *msg)
 {
 	int msgid;
 	if (!sm_trie_retrieve(m_Names, msg, reinterpret_cast<void **>(&msgid)))
@@ -78,14 +78,14 @@ int CUserMessages::GetMessageIndex(const char *msg)
 	return msgid;
 }
 
-bool CUserMessages::GetMessageName(int msgid, char *buffer, size_t maxlen) const
+bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlen) const
 {
 	int dummy;
 
 	return gamedll->GetUserMessageInfo(msgid, buffer, maxlen, dummy);
 }
 
-bf_write *CUserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)
+bf_write *UserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)
 {
 	bf_write *buffer;
 
@@ -122,7 +122,7 @@ bf_write *CUserMessages::StartMessage(int msg_id, cell_t players[], unsigned int
 	return buffer;
 }
 
-bool CUserMessages::EndMessage()
+bool UserMessages::EndMessage()
 {
 	if (!m_InExec)
 	{
@@ -143,7 +143,7 @@ bool CUserMessages::EndMessage()
 	return true;
 }
 
-bool CUserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
+bool UserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
 {
 	if (msg_id < 0 || msg_id >= 255)
 	{
@@ -165,10 +165,10 @@ bool CUserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener,
 
 	if (!m_HookCount++)
 	{
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Post, true);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Pre, false);
-		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Post, true);
+		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
+		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
+		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
+		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
 	}
 
 	if (intercept)
@@ -181,7 +181,7 @@ bool CUserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener,
 	return true;
 }
 
-bool CUserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
+bool UserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
 {	
 	MsgList *pList;
 	MsgIter iter;
@@ -218,18 +218,18 @@ bool CUserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListene
 	return deleted;
 }
 
-void CUserMessages::_DecRefCounter()
+void UserMessages::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &CUserMessages::OnStartMessage_Post, true);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Pre, false);
-		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &CUserMessages::OnMessageEnd_Post, true);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
 	}
 }
 
-bf_write *CUserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type)
+bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type)
 {
 	bool is_intercept_empty = m_msgIntercepts[msg_type].empty();
 	bool is_hook_empty = m_msgHooks[msg_type].empty();
@@ -255,7 +255,7 @@ bf_write *CUserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_ty
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
-bf_write *CUserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type)
+bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type)
 {
 	if (!m_InHook)
 	{
@@ -267,7 +267,7 @@ bf_write *CUserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_t
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
-void CUserMessages::OnMessageEnd_Post()
+void UserMessages::OnMessageEnd_Post()
 {
 	if (!m_InHook || m_BlockEndPost)
 	{
@@ -319,7 +319,7 @@ void CUserMessages::OnMessageEnd_Post()
 	m_InHook = false;
 }
 
-void CUserMessages::OnMessageEnd_Pre()
+void UserMessages::OnMessageEnd_Pre()
 {
 	if (!m_InHook)
 	{

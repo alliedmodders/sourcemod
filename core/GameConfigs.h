@@ -63,13 +63,13 @@ private:
 	char m_mod[255];
 };
 
-class CGameConfigManager : 
+class GameConfigManager : 
 	public IGameConfigManager,
 	public SMGlobalClass
 {
 public:
-	CGameConfigManager();
-	~CGameConfigManager();
+	GameConfigManager();
+	~GameConfigManager();
 public: //IGameConfigManager
 	bool LoadGameConfigFile(const char *file, IGameConfig **pConfig, char *error, size_t maxlength);
 	void CloseGameConfigFile(IGameConfig *cfg);
@@ -82,7 +82,7 @@ private:
 	Trie *m_pLookup;
 };
 
-extern CGameConfigManager g_GameConfigs;
+extern GameConfigManager g_GameConfigs;
 extern IGameConfig *g_pGameConf;
 
 #endif //_INCLUDE_SOURCEMOD_CGAMECONFIGS_H_

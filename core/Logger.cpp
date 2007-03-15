@@ -18,24 +18,24 @@
 #include "systems/LibrarySys.h"
 #include "sm_version.h"
 
-CLogger g_Logger;
+Logger g_Logger;
 
 /**
  * :TODO: This should be creating the log folder if it doesn't exist
  */
 
-void CLogger::OnSourceModStartup(bool late)
+void Logger::OnSourceModStartup(bool late)
 {
 	//:TODO: read these options from a file, dont hardcode them
 	InitLogger(LoggingMode_Daily, true);
 }
 
-void CLogger::OnSourceModAllShutdown()
+void Logger::OnSourceModAllShutdown()
 {
 	CloseLogger();
 }
 
-void CLogger::_NewMapFile()
+void Logger::_NewMapFile()
 {
 	if (!m_Active)
 	{
@@ -76,7 +76,7 @@ void CLogger::_NewMapFile()
 	}
 }
 
-void CLogger::_CloseFile()
+void Logger::_CloseFile()
 {
 	if (!m_Active)
 	{
@@ -110,7 +110,7 @@ void CLogger::_CloseFile()
 	m_ErrFileName.clear();
 }
 
-void CLogger::InitLogger(LoggingMode mode, bool startlogging)
+void Logger::InitLogger(LoggingMode mode, bool startlogging)
 {
 	m_mode = mode;
 	m_Active = startlogging;
@@ -149,12 +149,12 @@ void CLogger::InitLogger(LoggingMode mode, bool startlogging)
 	}
 }
 
-void CLogger::CloseLogger()
+void Logger::CloseLogger()
 {
 	_CloseFile();
 }
 
-void CLogger::LogMessage(const char *vafmt, ...)
+void Logger::LogMessage(const char *vafmt, ...)
 {
 	if (!m_Active)
 	{
@@ -233,7 +233,7 @@ print_error:
 	m_Active = false;
 }
 
-void CLogger::LogError(const char *vafmt, ...)
+void Logger::LogError(const char *vafmt, ...)
 {
 	if (!m_Active)
 	{
@@ -282,7 +282,7 @@ void CLogger::LogError(const char *vafmt, ...)
 	g_SMAPI->ConPrintf("L %s: %s\n", date, msg);
 }
 
-void CLogger::MapChange(const char *mapname)
+void Logger::MapChange(const char *mapname)
 {
 	m_CurMapName.assign(mapname);
 
@@ -312,7 +312,7 @@ void CLogger::MapChange(const char *mapname)
 	m_ErrMapStart = false;
 }
 
-void CLogger::_PrintToHL2Log(const char *fmt, va_list ap)
+void Logger::_PrintToHL2Log(const char *fmt, va_list ap)
 {
 	char msg[3072];
 	size_t len;
@@ -326,7 +326,7 @@ void CLogger::_PrintToHL2Log(const char *fmt, va_list ap)
 	engine->LogPrint(msg);
 }
 
-const char *CLogger::GetLogFileName(LogType type) const
+const char *Logger::GetLogFileName(LogType type) const
 {
 	switch (type)
 	{
@@ -345,12 +345,12 @@ const char *CLogger::GetLogFileName(LogType type) const
 	}
 }
 
-LoggingMode CLogger::GetLoggingMode() const
+LoggingMode Logger::GetLoggingMode() const
 {
 	return m_mode;
 }
 
-void CLogger::EnableLogging()
+void Logger::EnableLogging()
 {
 	if (m_Active)
 	{
@@ -360,7 +360,7 @@ void CLogger::EnableLogging()
 	LogMessage("Logging enabled manually by user.");
 }
 
-void CLogger::DisableLogging()
+void Logger::DisableLogging()
 {
 	if (!m_Active)
 	{

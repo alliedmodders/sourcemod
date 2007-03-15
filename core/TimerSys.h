@@ -40,7 +40,7 @@ public:
 	bool m_KillMe;
 };
 
-class CTimerSystem : 
+class TimerSystem : 
 	public ITimerSystem,
 	public SMGlobalClass
 {
@@ -60,6 +60,6 @@ private:
 	float m_LastExecTime;
 };
 
-extern CTimerSystem g_Timers;
+extern TimerSystem g_Timers;
 
 #endif //_INCLUDE_SOURCEMOD_CTIMERSYS_H_

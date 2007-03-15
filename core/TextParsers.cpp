@@ -20,12 +20,12 @@
 #include "TextParsers.h"
 #include "ShareSys.h"
 
-CTextParsers g_TextParser;
+TextParsers g_TextParser;
 
 static int g_ini_chartable1[255] = {0};
 static int g_ws_chartable[255] = {0};
 
-CTextParsers::CTextParsers()
+TextParsers::TextParsers()
 {
 	g_ini_chartable1[(unsigned)'_'] = 1;
 	g_ini_chartable1[(unsigned)'-'] = 1;
@@ -43,12 +43,12 @@ CTextParsers::CTextParsers()
 	g_ws_chartable[(unsigned)' '] = 1;
 }
 
-void CTextParsers::OnSourceModAllInitialized()
+void TextParsers::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
 }
 
-unsigned int CTextParsers::GetUTF8CharBytes(const char *stream)
+unsigned int TextParsers::GetUTF8CharBytes(const char *stream)
 {
 	return _GetUTF8CharBytes(stream);
 }
@@ -83,7 +83,7 @@ bool CharStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int
 	return true;
 }
 
-SMCParseError CTextParsers::ParseString_SMC(const char *stream, 
+SMCParseError TextParsers::ParseString_SMC(const char *stream, 
 					 ITextListener_SMC *smc,
 					 unsigned int *line,
 					 unsigned int *col)
@@ -111,7 +111,7 @@ bool FileStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int
 	return (ferror((FILE *)stream) == 0);
 }
 
-SMCParseError CTextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc, unsigned int *line, unsigned int *col)
+SMCParseError TextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc, unsigned int *line, unsigned int *col)
 {
 	FILE *fp = fopen(file, "rt");
 
@@ -220,7 +220,7 @@ char *lowstring(StringInfo info[3])
 	return NULL;
 }
 
-SMCParseError CTextParsers::ParseStream_SMC(void *stream, 
+SMCParseError TextParsers::ParseStream_SMC(void *stream, 
 								   STREAMREADER srdr, 
 								   ITextListener_SMC *smc, 
 								   unsigned int *line, 
@@ -620,7 +620,7 @@ failed:
  * INI parser 
  */
 
-bool CTextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listener, unsigned int *line, unsigned int *col)
+bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listener, unsigned int *line, unsigned int *col)
 {
 	FILE *fp = fopen(file, "rt");
 	unsigned int curline = 0;
@@ -918,7 +918,7 @@ event_failed:
 	return false;
 }
 
-const char *CTextParsers::GetSMCErrorString(SMCParseError err)
+const char *TextParsers::GetSMCErrorString(SMCParseError err)
 {
 	static const char *s_errors[] = 
 	{

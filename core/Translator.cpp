@@ -21,7 +21,7 @@
 #include "sm_stringutil.h"
 #include "sourcemod.h"
 
-CTranslator g_Translator;
+Translator g_Translator;
 CPhraseFile *g_pCorePhrases = NULL;
 
 struct trans_t
@@ -39,7 +39,7 @@ struct phrase_t
 	unsigned int translations;
 };
 
-CPhraseFile::CPhraseFile(CTranslator *pTranslator, const char *file)
+CPhraseFile::CPhraseFile(Translator *pTranslator, const char *file)
 {
 	m_pStringTab = pTranslator->GetStringTable();
 	m_pMemory = m_pStringTab->GetMemTable();
@@ -579,13 +579,13 @@ const char *CPhraseFile::GetFilename()
  ** MAIN TRANSLATOR CODE **
  **************************/
 
-CTranslator::CTranslator()
+Translator::Translator()
 {
 	m_pStringTab = new BaseStringTable(2048);
 	m_pLCodeLookup = sm_trie_create();
 }
 
-CTranslator::~CTranslator()
+Translator::~Translator()
 {
 	for (size_t i=0; i<m_Files.size(); i++)
 	{
@@ -602,14 +602,14 @@ CTranslator::~CTranslator()
 	delete m_pStringTab;
 }
 
-void CTranslator::OnSourceModAllInitialized()
+void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");
 	unsigned int id = FindOrAddPhraseFile("core.cfg");
 	g_pCorePhrases = GetFileByIndex(id);
 }
 
-bool CTranslator::GetLanguageByCode(const char *code, unsigned int *index)
+bool Translator::GetLanguageByCode(const char *code, unsigned int *index)
 {
 	void *_index;
 
@@ -626,17 +626,17 @@ bool CTranslator::GetLanguageByCode(const char *code, unsigned int *index)
 	return true;
 }
 
-unsigned int CTranslator::GetLanguageCount()
+unsigned int Translator::GetLanguageCount()
 {
 	return (unsigned int)m_Languages.size();
 }
 
-BaseStringTable *CTranslator::GetStringTable()
+BaseStringTable *Translator::GetStringTable()
 {
 	return m_pStringTab;
 }
 
-unsigned int CTranslator::FindOrAddPhraseFile(const char *phrase_file)
+unsigned int Translator::FindOrAddPhraseFile(const char *phrase_file)
 {
 	for (size_t i=0; i<m_Files.size(); i++)
 	{
@@ -656,7 +656,7 @@ unsigned int CTranslator::FindOrAddPhraseFile(const char *phrase_file)
 	return idx;
 }
 
-void CTranslator::RebuildLanguageDatabase(const char *lang_header_file)
+void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 {
 	/* Erase everything we have */
 	sm_trie_destroy(m_pLCodeLookup);
@@ -695,13 +695,13 @@ void CTranslator::RebuildLanguageDatabase(const char *lang_header_file)
 	}
 }
 
-void CTranslator::ReadSMC_ParseStart()
+void Translator::ReadSMC_ParseStart()
 {
 	m_InLanguageSection = false;
 	m_CustomError.clear();
 }
 
-SMCParseResult CTranslator::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCParseResult Translator::ReadSMC_NewSection(const char *name, bool opt_quotes)
 {
 	if (!m_InLanguageSection)
 	{
@@ -719,14 +719,14 @@ SMCParseResult CTranslator::ReadSMC_NewSection(const char *name, bool opt_quotes
 	return SMCParse_Continue;
 }
 
-SMCParseResult CTranslator::ReadSMC_LeavingSection()
+SMCParseResult Translator::ReadSMC_LeavingSection()
 {
 	m_InLanguageSection = false;
 
 	return SMCParse_Continue;
 }
 
-SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCParseResult Translator::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
 {
 	size_t len = strlen(key);
 
@@ -741,7 +741,7 @@ SMCParseResult CTranslator::ReadSMC_KeyValue(const char *key, const char *value,
 	return SMCParse_Continue;
 }
 
-bool CTranslator::AddLanguage(const char *langcode, const char *description)
+bool Translator::AddLanguage(const char *langcode, const char *description)
 {
 	if (sm_trie_retrieve(m_pLCodeLookup, langcode, NULL))
 	{
@@ -763,7 +763,7 @@ bool CTranslator::AddLanguage(const char *langcode, const char *description)
 	return true;
 }
 
-CPhraseFile *CTranslator::GetFileByIndex(unsigned int index)
+CPhraseFile *Translator::GetFileByIndex(unsigned int index)
 {
 	if (index >= m_Files.size())
 	{
@@ -773,7 +773,7 @@ CPhraseFile *CTranslator::GetFileByIndex(unsigned int index)
 	return m_Files[index];
 }
 
-size_t CTranslator::Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans)
+size_t Translator::Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans)
 {
 	void *new_params[MAX_TRANSLATE_PARAMS];
 
@@ -786,7 +786,7 @@ size_t CTranslator::Translate(char *buffer, size_t maxlength, void **params, con
 	return gnprintf(buffer, maxlength, pTrans->szPhrase, new_params);
 }
 
-TransError CTranslator::CoreTrans(int client, 
+TransError Translator::CoreTrans(int client, 
 								  char *buffer, 
 								  size_t maxlength, 
 								  const char *phrase, 

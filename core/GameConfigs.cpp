@@ -22,7 +22,7 @@
 #include "Logger.h"
 #include "ShareSys.h"
 
-CGameConfigManager g_GameConfigs;
+GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
 char g_mod[255];
 
@@ -285,17 +285,17 @@ unsigned int CGameConfig::DecRefCount()
 	return m_RefCount;
 }
 
-CGameConfigManager::CGameConfigManager()
+GameConfigManager::GameConfigManager()
 {
 	m_pLookup = sm_trie_create();
 }
 
-CGameConfigManager::~CGameConfigManager()
+GameConfigManager::~GameConfigManager()
 {
 	sm_trie_destroy(m_pLookup);
 }
 
-void CGameConfigManager::OnSourceModStartup(bool late)
+void GameConfigManager::OnSourceModStartup(bool late)
 {
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
@@ -323,7 +323,7 @@ void CGameConfigManager::OnSourceModStartup(bool late)
 	}
 }
 
-void CGameConfigManager::OnSourceModAllInitialized()
+void GameConfigManager::OnSourceModAllInitialized()
 {
 	/* NOW initialize the game file */
 	CGameConfig *pGameConf = (CGameConfig *)g_pGameConf;
@@ -337,12 +337,12 @@ void CGameConfigManager::OnSourceModAllInitialized()
 	g_ShareSys.AddInterface(NULL, this);
 }
 
-void CGameConfigManager::OnSourceModAllShutdown()
+void GameConfigManager::OnSourceModAllShutdown()
 {
 	CloseGameConfigFile(g_pGameConf);
 }
 
-bool CGameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pConfig, char *error, size_t maxlength)
+bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pConfig, char *error, size_t maxlength)
 {
 	CGameConfig *pConfig;
 
@@ -372,7 +372,7 @@ bool CGameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCo
 	return retval;
 }
 
-void CGameConfigManager::CloseGameConfigFile(IGameConfig *cfg)
+void GameConfigManager::CloseGameConfigFile(IGameConfig *cfg)
 {
 	CGameConfig *pConfig = (CGameConfig *)cfg;
 

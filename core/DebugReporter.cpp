@@ -15,14 +15,14 @@
 #include "Logger.h"
 #include "PluginSys.h"
 
-CDbgReporter g_DbgReporter;
+DebugReport g_DbgReporter;
 
-void CDbgReporter::OnSourceModAllInitialized()
+void DebugReport::OnSourceModAllInitialized()
 {
 	g_pSourcePawn->SetDebugListener(this);
 }
 
-void CDbgReporter::OnContextExecuteError(IPluginContext *ctx, IContextTrace *error)
+void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *error)
 {
 	const char *lastname;
 	const char *plname = g_PluginSys.FindPluginByContext(ctx->GetContext())->GetFilename();
@@ -68,7 +68,7 @@ void CDbgReporter::OnContextExecuteError(IPluginContext *ctx, IContextTrace *err
 	}
 }
 
-int CDbgReporter::_GetPluginIndex(IPluginContext *ctx)
+int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 {
 	int id = 1;
 	IPluginIterator *iter = g_PluginSys.GetPluginIterator();

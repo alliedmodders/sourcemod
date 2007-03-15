@@ -32,10 +32,10 @@ enum LoggingMode
 	LoggingMode_HL2
 };
 
-class CLogger : public SMGlobalClass
+class Logger : public SMGlobalClass
 {
 public:
-	CLogger() : m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false) {}
+	Logger() : m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false) {}
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllShutdown();
@@ -65,6 +65,6 @@ private:
 	bool m_DailyPrintHdr;
 };
 
-extern CLogger g_Logger;
+extern Logger g_Logger;
 
 #endif // _INCLUDE_SOURCEMOD_CLOGGER_H_

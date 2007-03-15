@@ -46,12 +46,12 @@ inline unsigned int _GetUTF8CharBytes(const char *stream)
  */
 typedef bool (*STREAMREADER)(void *, char *, size_t, unsigned int *);
 
-class CTextParsers : 
+class TextParsers : 
 	public ITextParsers,
 	public SMGlobalClass
 {
 public:
-	CTextParsers();
+	TextParsers();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 public:
@@ -81,6 +81,6 @@ private:
 
 };
 
-extern CTextParsers g_TextParser;
+extern TextParsers g_TextParser;
 
 #endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_H_
