@@ -108,6 +108,74 @@ forward OnGameFrame();
  */
 native Handle:GetMyHandle();
 
+/**
+ * Returns an iterator that can be used to search through plugins.
+ *
+ * @return				Handle to iterate with.  Must be closed via 
+ * 						CloseHandle().
+ * @error				Invalid Handle.
+ */
+native Handle:GetPluginIterator();
+
+/**
+ * Returns whether there are more plugins available in the iterator.
+ *
+ * @param iter			Handle to the plugin iterator.
+ * @return				True on more plugins, false otherwise.
+ * @error				Invalid Handle.
+ */
+native bool:MorePlugins(Handle:iter);
+
+/**
+ * Returns the current plugin in the iterator and advances the iterator.
+ *
+ * @param iter			Handle to the plugin iterator.
+ * @return				Current plugin the iterator is at, before
+ *						the iterator is advanced.
+ * @error				Invalid Handle.
+ */
+native Handle:ReadPlugin(Handle:iter);
+
+/**
+ * Returns a plugin's status.
+ *
+ * @param plugin		Plugin Handle (INVALID_HANDLE uses the calling plugin).
+ * @return				Status code for the plugin.
+ * @error				Invalid Handle.
+ */
+native PluginStatus:GetPluginStatus(Handle:plugin);
+
+/**
+ * Retrieves a plugin's file name relative to the plugins folder.
+ *
+ * @param plugin		Plugin Handle (INVALID_HANDLE uses the calling plugin).
+ * @param buffer		Buffer to the store the file name.
+ * @param maxlength		Maximum length of the name buffer.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native GetPluginFilename(Handle:plugin, String:buffer[], maxlength);
+
+/**
+ * Retrieves whether or not a plugin is being debugged.
+ *
+ * @param plugin		Plugin Handle (INVALID_HANDLE uses the calling plugin).
+ * @return				True if being debugged, false otherwise.
+ * @error				Invalid Handle.
+ */
+native bool:IsPluginDebugging(Handle:hndl);
+
+/**
+ * Retrieves a plugin's public info.
+ *
+ * @param plugin		Plugin Handle (INVALID_HANDLE uses the calling plugin).
+ * @param info			Plugin info property to retrieve.
+ * @param buffer		Buffer to store info in.
+ * @param maxlength		Maximum length of buffer.
+ * @return				True on success, false if property is not available.
+ * @error				Invalid Handle.
+ */
+native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxlength);
 
 /**
  * Aborts the current callback and throws an error.  This function

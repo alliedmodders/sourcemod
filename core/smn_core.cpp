@@ -14,6 +14,36 @@
 #include <time.h>
 #include "sm_globals.h"
 #include "sourcemod.h"
+#include "PluginSys.h"
+#include "HandleSys.h"
+
+HandleType_t g_PlIter;
+
+
+class CoreNativeHelpers : 
+	public SMGlobalClass,
+	public IHandleTypeDispatch
+{
+public:
+	void OnSourceModAllInitialized()
+	{
+		HandleAccess hacc;
+		g_HandleSys.InitAccessDefaults(NULL,  &hacc);
+		hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
+
+		g_PlIter = g_HandleSys.CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+	}
+	void OnHandleDestroy(HandleType_t type, void *object)
+	{
+		IPluginIterator *iter = (IPluginIterator *)object;
+		iter->Release();
+	}
+	void OnSourceModShutdown()
+	{
+		g_HandleSys.RemoveType(g_PlIter, g_pCoreIdent);
+	}
+} g_CoreNativeHelpers;
+
 
 static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
@@ -40,9 +70,191 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 	return static_cast<cell_t>(t);
 }
 
+static cell_t GetPluginIterator(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
+
+	Handle_t hndl = g_HandleSys.CreateHandle(g_PlIter, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		iter->Release();
+	}
+
+	return hndl;
+}
+
+static cell_t MorePlugins(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IPluginIterator *pIter;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	return pIter->MorePlugins() ? 1 : 0;
+}
+
+static cell_t ReadPlugin(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IPluginIterator *pIter;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	CPlugin *pPlugin = (CPlugin *)pIter->GetPlugin();
+	if (!pPlugin)
+	{
+		return BAD_HANDLE;
+	}
+
+	pIter->NextPlugin();
+
+	return pPlugin->GetMyHandle();
+}
+
+CPlugin *GetPluginFromHandle(IPluginContext *pContext, Handle_t hndl)
+{
+	if (hndl == BAD_HANDLE)
+	{
+		return g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	} else {
+		HandleError err;
+		CPlugin *pPlugin = (CPlugin *)g_PluginSys.PluginFromHandle(hndl, &err);
+		if (!pPlugin)
+		{
+			pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+		}
+		return pPlugin;
+	}
+}
+
+static cell_t GetPluginStatus(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	if (!pPlugin)
+	{
+		return 0;
+	}
+
+	return pPlugin->GetStatus();
+}
+
+static cell_t GetPluginFilename(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	if (!pPlugin)
+	{
+		return 0;
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], pPlugin->GetFilename(), NULL);
+
+	return 1;
+}
+
+static cell_t IsPluginDebugging(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	if (!pPlugin)
+	{
+		return 0;
+	}
+
+	return pPlugin->IsDebugging() ? 1 : 0;
+}
+
+/* Local to plugins only */
+enum PluginInfo
+{
+	PlInfo_Name,			/**< Plugin name */
+	PlInfo_Author,			/**< Plugin author */
+	PlInfo_Description,		/**< Plugin description */
+	PlInfo_Version,			/**< Plugin verison */
+	PlInfo_URL,				/**< Plugin URL */
+};
+
+static cell_t GetPluginInfo(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+	if (!pPlugin)
+	{
+		return 0;
+	}
+
+	const sm_plugininfo_t *info = pPlugin->GetPublicInfo();
+
+	if (!info)
+	{
+		return 0;
+	}
+
+	const char *str = NULL;
+
+	switch ((PluginInfo)params[2])
+	{
+	case PlInfo_Name:
+		{
+			str = info->name;
+			break;
+		}
+	case PlInfo_Author:
+		{
+			str = info->author;
+			break;
+		}
+	case PlInfo_Description:
+		{
+			str = info->description;
+			break;
+		}
+	case PlInfo_Version:
+		{
+			str = info->version;
+			break;
+		}
+	case PlInfo_URL:
+		{
+			str = info->url;
+			break;
+		}
+	}
+
+	if (!str || str[0] == '\0')
+	{
+		return 0;
+	}
+
+	pContext->StringToLocalUTF8(params[3], params[4], str, NULL);
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
+	{"GetPluginFilename",	GetPluginFilename},
+	{"GetPluginInfo",		GetPluginInfo},
+	{"GetPluginIterator",	GetPluginIterator},
+	{"GetPluginStatus",		GetPluginStatus},
 	{"GetTime",				GetTime},
+	{"IsPluginDebugging",	IsPluginDebugging},
+	{"MorePlugins",			MorePlugins},
+	{"ReadPlugin",			ReadPlugin},
 	{"ThrowError",			ThrowError},
 	{NULL,					NULL},
 };
