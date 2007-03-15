@@ -166,6 +166,8 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 	}
 }
 
+extern void _IntExt_EnableYams();
+
 void RootConsoleMenu::GotRootCmd()
 {
 	unsigned int argnum = GetArgumentCount();
@@ -173,6 +175,11 @@ void RootConsoleMenu::GotRootCmd()
 	if (argnum >= 2)
 	{
 		const char *cmd = GetArgument(1);
+		if (strcmp(cmd, "text") == 0)
+		{
+			_IntExt_EnableYams();
+			return;
+		}
 		IRootConsoleCommand *pHandler;
 		if (sm_trie_retrieve(m_pCommands, cmd, (void **)&pHandler))
 		{

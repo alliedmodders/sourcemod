@@ -790,3 +790,134 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 
 	g_RootMenu.ConsolePrint("[SM] Usage: sm cmds <plugin #>");
 }
+
+static int g_yam_state = 0;
+void _YamState(int state)
+{
+	if (state == 0)
+	{
+		g_RootMenu.ConsolePrint("Welcome to the SourceMod Text Adventure.");
+		g_RootMenu.ConsolePrint("Type sm_text to see the last message.");
+		g_RootMenu.ConsolePrint("Type sm_text <word> to follow a capital word.");
+		g_RootMenu.ConsolePrint("-------------------------------");
+		g_RootMenu.ConsolePrint("You are at VALVE HEADQUARTERS.");
+		g_RootMenu.ConsolePrint("To your LEFT is BAILOPAN, rearranging the letters to spell");
+		g_RootMenu.ConsolePrint("\"A HARD VEAL QUEST\".  FORWARD is the entrance to the building.");
+		g_RootMenu.ConsolePrint("To your RIGHT is your last chance to flee in terror.");
+	} else if (state == 1) {
+		g_RootMenu.ConsolePrint("BAILOPAN tells you that his name his pronounced");
+		g_RootMenu.ConsolePrint("\"bye low pahn,\" not \"bay low pan.\"  Do you ");
+		g_RootMenu.ConsolePrint("MOCK him, or NOD quietly?");
+	} else if (state == 2) {
+		g_RootMenu.ConsolePrint("You enter the Valve building.  You hear screams coming from within.");
+		g_RootMenu.ConsolePrint("A grotesque figure lumbers up to greet you; it is Gabe Newell.");
+		g_RootMenu.ConsolePrint("\"Welcome,\" he belches, \"to my lair.\"");
+		g_RootMenu.ConsolePrint("Do you SHAKE Gaben's hand, WALK past him, or OFFER a donut?");
+	} else if (state == 3) {
+		g_RootMenu.ConsolePrint("You walk into the break room.  Alfred \"Adolf\" Reynolds and");
+		g_RootMenu.ConsolePrint("Yahn \"Yeti\" Bernier are discussing something (you overhear ");
+		g_RootMenu.ConsolePrint("the phrase \"and next Steam update, here's what we should break\").");
+		g_RootMenu.ConsolePrint("Should you DIE in a fire, REPORT a bug, REQUEST a feature, or ");
+		g_RootMenu.ConsolePrint("SPRAY them with butter?");
+	}
+	g_yam_state = state;
+}
+
+void _IntExt_CallYams()
+{
+	const char *arg = engine->Cmd_Argv(1);
+
+	/* should be impossible */
+	if (!arg || arg[0] == '\0')
+	{
+		_YamState(g_yam_state);
+	}
+
+	if (g_yam_state == 1)
+	{
+		if (strcasecmp(arg, "mock") == 0)
+		{
+			g_RootMenu.ConsolePrint("You mock BAILOPAN's pronounciation.  In a fit of range, ");
+			g_RootMenu.ConsolePrint("he sticks an INT 3 call into your chest, rendering you broken.");
+			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
+			g_yam_state = 0;
+		} else if (strcasecmp(arg, "nod") == 0) {
+			g_RootMenu.ConsolePrint("You nod quietly, and then slowly back away into the Valve headquarters.");
+			_YamState(2);
+		} else {
+			g_RootMenu.ConsolePrint("Commands are MOCK and NOD.");
+		}
+	} else if (g_yam_state == 3) {
+		if (strcasecmp(arg, "report") == 0)
+		{
+			g_RootMenu.ConsolePrint("You report a bug to Alfred and Yeti.  Immediately, both fall asleep.");
+			g_RootMenu.ConsolePrint("You decay in the break room for two years while they sleep.");
+			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
+			g_yam_state = 0;
+		} else if (strcasecmp(arg, "request") == 0) {
+			g_RootMenu.ConsolePrint("You request a feature to Alfred and Yeti.  They both mutter something");
+			g_RootMenu.ConsolePrint("about it being implemented \"soon.\"  Then, by accident, someone sends");
+			g_RootMenu.ConsolePrint("a message over \"Friends.\"  The entire building catches fire.");
+			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
+			g_yam_state = 0;
+		} else if (strcasecmp(arg, "die") == 0) {
+			g_RootMenu.ConsolePrint("For no reason, you suddenly catch fire.  Alfred and Yeti find this");
+			g_RootMenu.ConsolePrint("deeply disturbing, and cover your flaming corpse with Episode 2");
+			g_RootMenu.ConsolePrint("advertisments.  Coming soon, with Team Fortress 2, and Portal!");
+			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
+			g_yam_state = 0;
+		} else if (strcasecmp(arg, "spray") == 0) {
+			g_RootMenu.ConsolePrint("You spray Alfred and Yeti with butter.  Like Jack Thompson to an");
+			g_RootMenu.ConsolePrint("ambulance, Gabe Newell instantly appears and devours them both.");
+			g_RootMenu.ConsolePrint("You run away, just in time, as Gabe Newell explodes, registering ");
+			g_RootMenu.ConsolePrint("a 5.6 earthquake.  Outside, world peace is achieved.");
+			g_RootMenu.ConsolePrint("YOU HAVE WON.");
+			g_yam_state = 0;
+		}
+	} else if (g_yam_state == 2) {
+		if (strcasecmp(arg, "shake") == 0)
+		{
+			g_RootMenu.ConsolePrint("You shake Gaben's hand.  It is a terrifying and disgusting experience.");
+			g_RootMenu.ConsolePrint("However, you survive, and continue on.");
+			_YamState(3);
+		} else if (strcasecmp(arg, "offer") == 0) {
+			g_RootMenu.ConsolePrint("You offer Gabe Newell one (1) donut.  With a gleam in his eyes, ");
+			g_RootMenu.ConsolePrint("he picks you up and devours you whole.");
+			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
+			g_yam_state = 0;
+		} else if (strcasecmp(arg, "walk") == 0) {
+			g_RootMenu.ConsolePrint("You walk past Gabe Newell.  He can't keep up with your pace!");
+			_YamState(3);
+		} else {
+			g_RootMenu.ConsolePrint("Commands are SHAKE, OFFER, and WALK.");
+		}
+	} else if (g_yam_state == 0) {
+		if (strcasecmp(arg, "left") == 0)
+		{
+			_YamState(1);
+		} else if (strcasecmp(arg, "right") == 0) {
+			g_RootMenu.ConsolePrint("You run away from the Valve headquarters in sheer terror.");
+			g_RootMenu.ConsolePrint("While running, you smash into an unknown person, who turns out to be your soul mate.");
+			g_RootMenu.ConsolePrint("You marry and raise a family of 3 kids.");
+			g_RootMenu.ConsolePrint("Many years later, you look back, and realize this was your best choice.");
+			g_RootMenu.ConsolePrint("YOU HAVE WON.");
+			g_yam_state = 0;
+		} else if (strcasecmp(arg, "forward") == 0) {
+			_YamState(2);
+		} else if (arg[0] != '\0') {
+			g_RootMenu.ConsolePrint("Commands are FORWARD, LEFT, and RIGHT.");
+		}
+	}
+}
+
+void _IntExt_EnableYams()
+{
+	static ConCommand *pCmd = NULL;
+	if (!pCmd)
+	{
+		pCmd = new ConCommand("sm_text", _IntExt_CallYams, "Fountain of Yams Adventure Game", FCVAR_GAMEDLL);
+		g_RootMenu.ConsolePrint("Something is now enabled...");
+	} else {
+		g_RootMenu.ConsolePrint("Something is already enabled...");
+	}
+}
