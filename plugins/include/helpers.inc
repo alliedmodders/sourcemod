@@ -49,7 +49,7 @@ stock FormatUserLogText(client, String:buffer[], maxlength)
  * Returns plugin handle from plugin filename.
  *
  * @param filename		Filename of the plugin to search for.
- * @Returns				Handle to plugin if found, INVALID_HANDLE otherwise.
+ * @return				Handle to plugin if found, INVALID_HANDLE otherwise.
  */
 stock Handle:FindPluginByFile(const String:filename[])
 {
