@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include "sm_globals.h"
 #include "sm_stringutil.h"
+#include "TextParsers.h"
 
 inline const char *_strstr(const char *str, const char *substr)
 {
@@ -219,9 +220,99 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 	return total;
 }
 
-REGISTER_NATIVES(basicstrings)
+/* :TODO: make this UTF8 safe */
+static cell_t StrBreak(IPluginContext *pContext, const cell_t *params)
+{
+	const char *input;
+	char *out;
+	size_t outMax;
+
+	/* Get parameters */
+	pContext->LocalToString(params[1], (char **)&input);
+	pContext->LocalToString(params[2], &out);
+	outMax = params[3];
+
+	const char *inptr = input;
+	/* Eat up whitespace */
+	while (*inptr != '\0' && IsWhitespace(inptr))
+	{
+		inptr++;
+	}
+
+	if (*inptr == '\0')
+	{
+		if (outMax)
+		{
+			*out = '\0';
+		}
+		return -1;
+	}
+
+	const char *start, *end = NULL;
+
+	bool quoted = (*inptr == '"');
+	if (quoted)
+	{
+		inptr++;
+		start = inptr;
+		/* Read input until we reach a quote. */
+		while (*inptr != '\0' && *inptr != '"')
+		{
+			/* Update the end point, increment the stream. */
+			end = inptr++;
+		}
+		/* Read one more token if we reached an end quote */
+		if (*inptr == '"')
+		{
+			inptr++;
+		}
+	} else {
+		start = inptr;
+		/* Read input until we reach a space */
+		while (*inptr != '\0' && !IsWhitespace(inptr))
+		{
+			/* Update the end point, increment the stream. */
+			end = inptr++;
+		}
+	}
+
+	/* Copy the string we found, if necessary */
+	if (end == NULL)
+	{
+		if (outMax)
+		{
+			*out = '\0';
+		}
+	} else if (outMax) {
+		char *outptr = out;
+		outMax--;
+		for (const char *ptr=start;
+			(ptr <= end) && ((unsigned)(outptr - out) < (outMax));
+			ptr++, outptr++)
+			{
+			*outptr = *ptr;
+		}
+		*outptr = '\0';
+	}
+
+	/* Consume more of the string until we reach non-whitespace */
+	while (*inptr != '\0' && IsWhitespace(inptr))
+	{
+		inptr++;
+	}
+
+	if (*inptr == '\0')
+	{
+		return -1;
+	}
+
+	return inptr - input;
+}
+
+REGISTER_NATIVES(basicStrings)
 {
 	{"strlen",				sm_strlen},
+	{"StrBreak",			StrBreak},
 	{"StrContains",			sm_contain},
 	{"StrCompare",			sm_strcmp},
 	{"StrCopy",				sm_strcopy},

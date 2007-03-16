@@ -25,6 +25,11 @@ TextParsers g_TextParser;
 static int g_ini_chartable1[255] = {0};
 static int g_ws_chartable[255] = {0};
 
+bool IsWhitespace(const char *stream)
+{
+	return g_ws_chartable[(unsigned)*stream] == 1;
+}
+
 TextParsers::TextParsers()
 {
 	g_ini_chartable1[(unsigned)'_'] = 1;

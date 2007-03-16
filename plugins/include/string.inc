@@ -23,7 +23,7 @@
  * and maximum length should have the null terminator INCLUDED in the length.  This means 
  * that this is valid: StrCopy(string, sizeof(string), ...)
  */
-
+ 
 /**
  * Calculates the length of a string.
  *
@@ -159,3 +159,17 @@ native Float:StringToFloat(const String:str[]);
  * @return				Number of cells written to buffer.
  */
 native FloatToString(Float:num, String:str[], maxlength);
+
+/**
+ * Finds the first "argument" in a string; either a set of space
+ * terminated characters, or a fully quoted string.  After the 
+ * argument is found, whitespace is read until the next portion
+ * of the string is reached.  If nothing remains, -1 is returned.
+ * Otherwise, the index to the first character is returned.
+ *
+ * @param source		Source input string.
+ * @param arg			Stores argument read from string.
+ * @param argLen		Maximum length of argument buffer.
+ * @return				Index to next piece of string, or -1 if none.
+ */
+native StrBreak(const String:source[], String:arg[], argLen);

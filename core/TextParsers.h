@@ -37,6 +37,8 @@ inline unsigned int _GetUTF8CharBytes(const char *stream)
 	return 1;
 }
 
+bool IsWhitespace(const char *stream);
+
 /**
  * @param void *			IN: Stream pointer
  * @param char *			IN/OUT: Stream buffer
