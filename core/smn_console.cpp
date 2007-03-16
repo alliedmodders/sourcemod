@@ -435,6 +435,11 @@ static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 {
 	const char *args = engine->Cmd_Args();
 
+	if (!args)
+	{
+		args = "";
+	}
+
 	pContext->StringToLocalUTF8(params[1], params[2], args, NULL);
 
 	return 1;
