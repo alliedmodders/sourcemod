@@ -109,7 +109,7 @@ native Function:GetFunctionByName(Handle:plugin, const String:name[]);
  * @return 					Handle to new global forward.
  * @error					More than 32 paramater types passed.
  */
-native Handle:CreateGlobalForward(const String:name[], ExecType:type, {ParamType}:...);
+native Handle:CreateGlobalForward(const String:name[], ExecType:type, ParamType:...);
 
 /**
  * Creates a private forward.
@@ -121,7 +121,7 @@ native Handle:CreateGlobalForward(const String:name[], ExecType:type, {ParamType
  * @return 					Handle to new private forward.
  * @error					More than 32 paramater types passed.
  */
-native Handle:CreateForward(ExecType:type, {ParamType}:...);
+native Handle:CreateForward(ExecType:type, ParamType:...);
 
 /**
  * Returns the number of functions in a global or private forward's call list.
@@ -348,7 +348,7 @@ native CreateNative(const String:name[], NativeCall:func);
  * @param fmt				Error message format.
  * @param ...				Format arguments.
  */
-native ThrowNativeError(error, const String:fmt[], {Handle,Float,String,Function,_}:...);
+native ThrowNativeError(error, const String:fmt[], any:...);
 
 /**
  * Retrieves the string length from a native parameter string.  This is useful 

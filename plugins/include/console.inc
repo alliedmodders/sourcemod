@@ -63,7 +63,7 @@
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native ServerCommand(const String:format[], {Handle,Float,String,_}:...);
+native ServerCommand(const String:format[], any:...);
 
 /**
  * Inserts a server command at the beginning of the server command buffer.
@@ -72,7 +72,7 @@ native ServerCommand(const String:format[], {Handle,Float,String,_}:...);
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native InsertServerCommand(const String:format[], {Handle,Float,String,_}:...);
+native InsertServerCommand(const String:format[], any:...);
 
 /**
  * Executes every command in the server's command buffer, rather than once per frame.
@@ -91,7 +91,7 @@ native ServerExecute();
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native ClientCommand(client, const String:fmt[], {String,Float,Handle,Function,_}:...);
+native ClientCommand(client, const String:fmt[], any:...);
 
 /**
  * Sends a message to the server console.
@@ -100,7 +100,7 @@ native ClientCommand(client, const String:fmt[], {String,Float,Handle,Function,_
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native PrintToServer(const String:format[], {Handle,Float,String,Function,_}:...);
+native PrintToServer(const String:format[], any:...);
 
 /**
  * Sends a message to a client's console.
@@ -111,7 +111,7 @@ native PrintToServer(const String:format[], {Handle,Float,String,Function,_}:...
  * @noreturn
  * @error			If the client is not connected an error will be thrown.
  */
-native PrintToConsole(client, const String:format[], {Handle,Float,String,Function,_}:...);
+native PrintToConsole(client, const String:format[], any:...);
 
 /**
  * Called when a server-only command is invoked.  

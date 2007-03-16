@@ -189,7 +189,7 @@ native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxle
  * @noreturn
  * @error				Always!
  */
-native ThrowError(const String:fmt[], {Handle,Float,String,Function,_}:...);
+native ThrowError(const String:fmt[], any:...);
 
 /**
  * Logs a generic message to the HL2 logs.
@@ -198,7 +198,7 @@ native ThrowError(const String:fmt[], {Handle,Float,String,Function,_}:...);
  * @param ...			Format arguments.
  * @noreturn
  */
-native LogToGame(const String:format[], {Handle,Float,String,Function,_}:...);
+native LogToGame(const String:format[], any:...);
 
 /**
  * Logs a plugin message to the SourceMod logs.
@@ -207,7 +207,7 @@ native LogToGame(const String:format[], {Handle,Float,String,Function,_}:...);
  * @param ...			Format arguments.
  * @noreturn
  */
-native LogMessage(const String:format[], {Handle,Float,String,Function,_}:...);
+native LogMessage(const String:format[], any:...);
 
 /**
  * Logs a plugin error message to the SourceMod logs.
@@ -216,7 +216,7 @@ native LogMessage(const String:format[], {Handle,Float,String,Function,_}:...);
  * @param ...			Format arguments.
  * @noreturn
  */
-native LogError(const String:format[], {Handle,Float,String,Function,_}:...);
+native LogError(const String:format[], any:...);
 
 /**
  * Gets the system time as a unix timestamp.

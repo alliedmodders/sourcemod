@@ -210,7 +210,7 @@ native AdminId:GetUserAdmin(client);
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native AddUserFlags(client, {AdminFlag}:...);
+native AddUserFlags(client, AdminFlag:...);
 
 /**
  * Removes flags from a client.  If the client is not an admin,
@@ -221,7 +221,7 @@ native AddUserFlags(client, {AdminFlag}:...);
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native RemoveUserFlags(client, {AdminFlag}:...);
+native RemoveUserFlags(client, AdminFlag:...);
 
 /** 
  * Sets access flags on a client using bits instead of flags.  If the
