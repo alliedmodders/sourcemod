@@ -55,6 +55,9 @@ all:
 spcomp: $(OBJ_LINUX)
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
+debug: 
+	$(MAKE) all DEBUG=true
+
 default: all
 
 clean:
