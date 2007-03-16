@@ -70,6 +70,7 @@
 #define VERSION_STR "3.2.3636"
 #define VERSION_INT 0x0302
 
+int pc_anytag = 0;
 int pc_functag = 0;
 int pc_tag_string = 0;
 
@@ -1256,6 +1257,8 @@ static void setconstants(void)
   assert(sc_status==statIDLE);
   append_constval(&tagname_tab,"_",0,0);/* "untagged" */
   append_constval(&tagname_tab,"bool",1,0);
+
+  pc_anytag = pc_addtag("any");
   pc_functag = pc_addfunctag("Function");
   pc_tag_string = pc_addtag("String");
 

@@ -327,6 +327,11 @@ SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
      * tag is "coerced" to zero
      */
     if (!allowcoerce || formaltag!=0 || (actualtag & FIXEDTAG)!=0) {
+		if (formaltag == pc_anytag)
+		{
+			return TRUE;
+		}
+
 		if (formaltag & FUNCTAG)
 		{
 			if (actualtag == pc_functag || (formaltag == pc_functag && actualtag & FUNCTAG))

@@ -823,6 +823,7 @@ SC_VDECL int pc_optimize;     /* (peephole) optimization level */
 SC_VDECL int pc_memflags;     /* special flags for the stack/heap usage */
 SC_VDECL int pc_functag;      /* global function tag */
 SC_VDECL int pc_tag_string;   /* global string tag */
+SC_VDECL int pc_anytag;       /* global any tag */
 SC_VDECL int glbstringread;	  /* last global string read */
 
 SC_VDECL constvalue sc_automaton_tab; /* automaton table */
