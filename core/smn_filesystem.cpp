@@ -194,7 +194,10 @@ static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	fgets(buf, params[3], pFile);
+	if (fgets(buf, params[3], pFile) == NULL)
+	{
+		return 0;
+	}
 
 	return 1;
 }
