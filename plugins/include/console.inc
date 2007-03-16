@@ -91,7 +91,7 @@ native ServerExecute();
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native ClientCommand(client, const String:fmt[], {String,Float,Handle,_}:...);
+native ClientCommand(client, const String:fmt[], {String,Float,Handle,Function,_}:...);
 
 /**
  * Sends a message to the server console.
@@ -100,7 +100,7 @@ native ClientCommand(client, const String:fmt[], {String,Float,Handle,_}:...);
  * @param ...			Variable number of format parameters.
  * @noreturn
  */
-native PrintToServer(const String:format[], {Handle,Float,String,_}:...);
+native PrintToServer(const String:format[], {Handle,Float,String,Function,_}:...);
 
 /**
  * Sends a message to a client's console.
@@ -111,7 +111,7 @@ native PrintToServer(const String:format[], {Handle,Float,String,_}:...);
  * @noreturn
  * @error			If the client is not connected an error will be thrown.
  */
-native PrintToConsole(client, const String:format[], {Handle,Float,String,_}:...);
+native PrintToConsole(client, const String:format[], {Handle,Float,String,Function,_}:...);
 
 /**
  * Called when a server-only command is invoked.  

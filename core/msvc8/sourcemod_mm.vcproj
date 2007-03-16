@@ -726,6 +726,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_functions.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_halflife.cpp"
 				>
 			</File>

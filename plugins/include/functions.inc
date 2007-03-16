@@ -13,6 +13,48 @@
  * Version: $Id$
  */
  
+#define SP_PARAMFLAG_BYREF	(1<<0)	/**< Internal use only. */
+
+/**
+ * Describes the various ways to pass parameters to functions or forwards.
+ */
+enum ParamType
+{
+	Param_Any			= 0,							/**< Any data type can be pushed */
+	Param_Cell			= (1<<1),						/**< Only basic cells can be pushed */
+	Param_Float			= (2<<1),						/**< Only floats can be pushed */
+	Param_String		= (3<<1)|SP_PARAMFLAG_BYREF,	/**< Only strings can be pushed */
+	Param_Array			= (4<<1)|SP_PARAMFLAG_BYREF,	/**< Only arrays can be pushed */
+	Param_VarArgs		= (5<<1),						/**< Same as "..." in plugins, anything can be pushed, but it will always be byref */
+	Param_CellByRef		= (1<<1)|SP_PARAMFLAG_BYREF,	/**< Only a cell by reference can be pushed */
+	Param_FloatByRef	= (2<<1)|SP_PARAMFLAG_BYREF		/**< Only a float by reference can be pushed */
+};
+
+/**
+ * Defines how a forward iterates through plugin functions.
+ */
+enum ExecType
+{
+	ET_Ignore	= 0,	/**< Ignore all return values, return 0 */
+	ET_Single	= 1,	/**< Only return the last exec, ignore all others */
+	ET_Event	= 2,	/**< Acts as an event with the Actions defined in core.inc, no mid-Stops allowed, returns highest */
+	ET_Hook		= 3		/**< Acts as a hook with the Actions defined in core.inc, mid-Stops allowed, returns highest */
+};
+
+/**
+ * @section Flags that are used with Call_PushArrayEx() and Call_PushStringEx()
+ */
+#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
+#define SM_PARAM_STRING_UTF8	(1<<0)		/**< String should be UTF-8 handled */
+#define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
+
+/**
+ * @endsection
+ */
+
+/**
+ * @section Error codes
+ */
 #define SP_ERROR_NONE					0	/**< No error occurred */
 #define SP_ERROR_FILE_FORMAT			1	/**< File format unrecognized */
 #define SP_ERROR_DECOMPRESSOR			2	/**< A decompressor was not found */
@@ -39,6 +81,243 @@
 #define SP_ERROR_NATIVE					23	/**< Error originates from a native */
 #define SP_ERROR_NOT_RUNNABLE			24	/**< Function or plugin is not runnable */
 #define SP_ERROR_ABORTED				25	/**< Function call was aborted */
+
+/**
+ * @endsection
+ */
+
+/**
+ * Gets a function id from a function name. 
+ *
+ * @param plugin			Handle of the plugin that contains the function.
+							Pass INVALID_HANDLE to search in the calling plugin.
+ * @param name				Name of the function.
+ * @return 					Function id or INVALID_FUNCTION if not found.
+ * @error					Invalid or corrupt plugin handle.
+ */
+native Function:GetFunctionByName(Handle:plugin, const String:name[]);
+
+/**
+ * Creates a global forward.
+ *
+ * @note The name used to create the forward is used as its public function in all target plugins.
+ * @note This is ideal for global, static forwards that are never changed.
+ *
+ * @param name				Name of public function to use in forward.
+ * @param type				Execution type to be used.
+ * @param ...				Variable number of parameter types (up to 32).
+ * @return 					Handle to new global forward.
+ * @error					More than 32 paramater types passed.
+ */
+native Handle:CreateGlobalForward(const String:name[], ExecType:type, {ParamType}:...);
+
+/**
+ * Creates a private forward.
+ *
+ * @note No functions are automatically added. Use AddToForward() to do this.
+ *
+ * @param type				Execution type to be used.
+ * @param ...				Variable number of parameter types (up to 32).
+ * @return 					Handle to new private forward.
+ * @error					More than 32 paramater types passed.
+ */
+native Handle:CreateForward(ExecType:type, {ParamType}:...);
+
+/**
+ * Returns the number of functions in a global or private forward's call list.
+ *
+ * @param fwd				Handle to global or private forward.
+ * @return					Number of functions in forward.
+ * @error					Invalid or corrupt forward handle.
+ */
+native GetForwardFunctionCount(Handle:fwd);
+
+/**
+ * Adds a function to a private forward's call list.
+ *
+ * @note Cannot be used during an incompleted call.
+ *
+ * @param fwd				Handle to private forward.
+ * @param plugin			Handle of the plugin that contains the function.
+ *							Pass INVALID_HANDLE to specify the calling plugin.
+ * @param func				Function to add to forward.
+ * @return					True on success, false otherwise.
+ * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
+ */
+native bool:AddToForward(Handle:fwd, Handle:plugin, Function:func);
+
+/**
+ * Removes a function from a private forward's call list.
+ *
+ * @note Only removes one instance.
+ * @note Functions will be removed automatically if their parent plugin is unloaded.
+ *
+ * @param fwd				Handle to private forward.
+ * @param plugin			Handle of the plugin that contains the function.
+ *							Pass INVALID_HANDLE to specify the calling plugin.
+ * @param func				Function to remove from forward.
+ * @return					True on success, false otherwise.
+ * @error					Invalid or corrupt private forward handle, invalid or corrupt plugin handle, or invalid function.
+ */
+native bool:RemoveFromForward(Handle:fwd, Handle:plugin, Function:func);
+
+/**
+ * Removes all instances of a plugin from a private forward's call list.
+ *
+ * @note Functions will be removed automatically if their parent plugin is unloaded.
+ *
+ * @param fwd				Handle to private forward.
+ * @param plugin			Handle of the plugin to remove instances of.
+ *							Pass INVALID_HANDLE to specify the calling plugin.
+ * @return					Number of functions removed from forward.
+ * @error					Invalid or corrupt private forward handle or invalid or corrupt plugin handle.
+ */
+native RemoveAllFromForward(Handle:fwd, Handle:plugin);
+
+/**
+ * Starts a call to functions in a forward's call list.
+ *
+ * @note Cannot be used during an incompleted call.
+ *
+ * @param fwd				Handle to global or private forward.
+ * @noreturn
+ * @error					Invalid or corrupt forward handle or called before another call has completed.
+ */
+native Call_StartForward(Handle:fwd);
+
+/**
+ * Starts a call to a function.
+ *
+ * @note Cannot be used during an incompleted call.
+ *
+ * @param plugin			Handle of the plugin that contains the function.
+ *							Pass INVALID_HANDLE to specify the calling plugin.
+ * @param func				Function to call.
+ * @noreturn
+ * @error					Invalid or corrupt plugin handle, invalid function, or called before another call has completed.
+ */
+native Call_StartFunction(Handle:plugin, Function:func);
+
+/**
+ * Pushes a cell onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				Cell value to push.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushCell({Handle,Function,_}:value);
+
+/**
+ * Pushes a cell by reference onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				Cell reference to push.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushCellRef(&{Handle,Function,_}:value);
+
+
+/**
+ * Pushes a float onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				Floating point value to push.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushFloat(Float:value);
+
+/**
+ * Pushes a float by reference onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				Floating point reference to push.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushFloatRef(&Float:value);
+
+/**
+ * Pushes an array onto the current call.
+ *
+ * @note Changes to array are not copied back to caller. Use PushArrayEx() to do this.
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				Array to push.
+ * @param size				Size of array.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushArray(const {Handle,Float,Function,_}:value[], size);
+
+/**
+ * Pushes an array onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				Array to push.
+ * @param size				Size of array.
+ * @param cpflags			Whether or not changes should be copied back to the input array.
+ *							See SP_PARAM_* constants for details.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushArrayEx({Handle,Float,Function,_}:value[], size, cpflags);
+
+/**
+ * Pushes a string onto the current call.
+ *
+ * @note Changes to string are not copied back to caller. Use PushStringEx() to do this.
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				String to push.
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushString(const String:value[]);
+
+/**
+ * Pushes a string onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value				String to push.
+ * @param length			Length of string buffer.
+ * @param szflags			Flags determining how string should be handled.
+ *							See SP_PARAM_STRING_* constants for details.
+ * @param cpflags			Whether or not changes should be copied back to the input array.
+ *							See SP_PARAM_* constants for details.		
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_PushStringEx(String:value[], length, szflags, cpflags);
+
+/**
+ * Completes a call to a function or forward's call list.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param result			Return value of function or forward's call list.		
+ * @return					SP_ERROR_NONE on success, any other integer on failure.
+ * @error					Called before a call has been started.
+ */
+native Call_Finish(&result);
+
+/**
+ * Cancels a call to a function or forward's call list.
+ *
+ * @note Cannot be used before a call has been started.
+ *		
+ * @noreturn
+ * @error					Called before a call has been started.
+ */
+native Call_Cancel();
 
 /**
  * Defines a native function.
@@ -69,7 +348,7 @@ native CreateNative(const String:name[], NativeCall:func);
  * @param fmt				Error message format.
  * @param ...				Format arguments.
  */
-native ThrowNativeError(error, const String:fmt[], {Handle,Float,String,_}:...);
+native ThrowNativeError(error, const String:fmt[], {Handle,Float,String,Function,_}:...);
 
 /**
  * Retrieves the string length from a native parameter string.  This is useful 
@@ -78,7 +357,7 @@ native ThrowNativeError(error, const String:fmt[], {Handle,Float,String,_}:...);
  *
  * @param param				Parameter number, starting from 1.
  * @param length			Stores the length of the string.
- * @return					SP_ERROR_NONE on sucecss, any other integer on failure.
+ * @return					SP_ERROR_NONE on success, any other integer on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
 native GetNativeStringLength(param, &length);
@@ -137,7 +416,7 @@ native GetNativeCellRef(param);
  * @noreturn
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeCellRef(param, {Float,Handle,_}:value);
+native SetNativeCellRef(param, {Float,Function,Handle,_}:value);
 
 /**
  * Gets an array from a native parameter (always by reference).
@@ -148,7 +427,7 @@ native SetNativeCellRef(param, {Float,Handle,_}:value);
  * @return					SP_ERROR_NONE on success, anything else on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeArray(param, {Float,Handle,_}:local[], size);
+native GetNativeArray(param, {Float,Function,Handle,_}:local[], size);
 
 /**
  * Copies a local array into a native parameter array (always by reference).
@@ -159,7 +438,7 @@ native GetNativeArray(param, {Float,Handle,_}:local[], size);
  * @return					SP_ERROR_NONE on success, anything else on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeArray(param, const {Float,Handle,_}:local[], size);
+native SetNativeArray(param, const {Float,Function,Handle,_}:local[], size);
 
 /**
  * Formats a string using parameters from a native.

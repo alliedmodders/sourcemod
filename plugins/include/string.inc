@@ -93,7 +93,7 @@ native StrCopy(String:dest[], destLen, const String:source[]);
  * @param ...			Variable number of format parameters.
  * @return				Number of cells written.
  */
-native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
+native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,String,Function,_}:...);
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
@@ -106,7 +106,7 @@ native Format(String:buffer[], maxlength, const String:format[], {Handle,Float,S
  * @param ...			Variable number of format parameters.
  * @return				Number of cells written.
  */
-native FormatEx(String:buffer[], maxlength, const String:format[], {Handle,Float,String,_}:...);
+native FormatEx(String:buffer[], maxlength, const String:format[], {Handle,Float,String,Function,_}:...);
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).

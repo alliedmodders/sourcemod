@@ -44,3 +44,30 @@ stock FormatUserLogText(client, String:buffer[], maxlength)
 	
 	Format(buffer, maxlength, "\"%s<%d><%s><>\"", name, userid, auth);
 }
+
+/**
+ * Returns plugin handle from plugin filename.
+ *
+ * @param filename		Filename of the plugin to search for.
+ * @Returns				Handle to plugin if found, INVALID_HANDLE otherwise.
+ */
+stock Handle:FindPluginByFile(const String:filename[])
+{
+	decl String:buffer[256];
+	
+	new Handle:iter = GetPluginIterator();
+	new Handle:pl;
+	
+	while (MorePlugins(iter))
+	{
+		pl = ReadPlugin(iter);
+		
+		GetPluginFilename(pl, buffer, sizeof(buffer));
+		if (StrCompare(buffer, filename) == 0)
+		{
+			return pl;
+		}
+	}
+	
+	return INVALID_HANDLE;
+}

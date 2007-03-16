@@ -54,7 +54,7 @@ enum PathType
  * @param ...			Format arguments.
  * @return				Number of bytes written to buffer (not including null terminator).
  */
-native BuildPath(PathType:type, String:buffer[], maxlength, const String:fmt[], ...);
+native BuildPath(PathType:type, String:buffer[], maxlength, const String:fmt[], {Handle,Float,String,Function,_}:...);
 
 /**
  * @brief Opens a directory/folder for contents enumeration.
@@ -186,4 +186,4 @@ native bool:RemoveDir(const String:path[]);
  * @param ...			Variable number of format parameters.
  * @return				True on success, false otherwise.
  */
-native bool:WriteFileLine(Handle:hndl, const String:format[], {Handle,Float,String,_}:...);
+native bool:WriteFileLine(Handle:hndl, const String:format[], {Handle,Float,String,Function,_}:...);

@@ -601,6 +601,18 @@ bool CForward::AddFunction(IPluginContext *pContext, funcid_t index)
 	return AddFunction(pFunc);
 }
 
+bool CForward::RemoveFunction(IPluginContext *pContext, funcid_t index)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(index);
+
+	if (!pFunc)
+	{
+		return false;
+	}
+
+	return RemoveFunction(pFunc);
+}
+
 bool CForward::RemoveFunction(IPluginFunction *func)
 {
 	bool found = false;

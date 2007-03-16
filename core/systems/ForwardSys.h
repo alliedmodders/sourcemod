@@ -64,6 +64,7 @@ public: //IChangeableForward
 	virtual unsigned int RemoveFunctionsOfPlugin(IPlugin *plugin);
 	virtual bool AddFunction(IPluginFunction *func);
 	virtual bool AddFunction(IPluginContext *ctx, funcid_t index);
+	virtual bool RemoveFunction(IPluginContext *ctx, funcid_t index);
 public:
 	static CForward *CreateForward(const char *name, 
 								   ExecType et, 

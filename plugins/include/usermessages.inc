@@ -57,11 +57,12 @@ native bool:GetUserMessageName(UserMsg:msg_id, String:msg[], maxlength);
  * @param msgname		Message name to start.
  * @param clients		Array containing player indexes to broadcast to.
  * @param numClients	Number of players in the array.
+ * @param flags			Optional flags to set.
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
  * @error				Invalid message name or unable to start a message.
  */
-native Handle:StartMessage(String:msgname[], clients[], numClients, flags);
+native Handle:StartMessage(String:msgname[], clients[], numClients, flags=0);
 
 /**
  * Starts a usermessage (network message).
@@ -71,11 +72,12 @@ native Handle:StartMessage(String:msgname[], clients[], numClients, flags);
  * @param msg			Message index to start.
  * @param clients		Array containing player indexes to broadcast to.
  * @param numClients	Number of players in the array.
+ * @param flags			Optional flags to set.
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
  * @error				Invalid message name or unable to start a message.
  */
-native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags);
+native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags=0);
 
 /**
  * Ends a previously started user message (network message).

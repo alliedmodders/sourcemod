@@ -227,6 +227,16 @@ namespace SourceMod
 		 * @return			True on success, otherwise false.
 		 */
 		virtual bool AddFunction(IPluginContext *ctx, funcid_t index) =0;
+
+		/** 
+		* @brief Removes a function from the call list.
+		* NOTE: Only removes one instance.
+		*
+		* @param ctx		Context to use as a look-up.
+		* @param index		Function id to add.
+		* @return			Whether or not the function was removed.
+		*/
+		virtual bool RemoveFunction(IPluginContext *ctx, funcid_t index) =0;
 	};
 
 	#define SP_PARAMTYPE_ANY	0

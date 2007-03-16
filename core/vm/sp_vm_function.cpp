@@ -81,11 +81,6 @@ int CFunction::PushCell(cell_t cell)
 
 int CFunction::PushCellByRef(cell_t *cell, int flags)
 {
-	if (m_curparam >= SP_MAX_EXEC_PARAMS)
-	{
-		return SetError(SP_ERROR_PARAMS_MAX);
-	}
-
 	return PushArray(cell, 1, flags);
 }
 
