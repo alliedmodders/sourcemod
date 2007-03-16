@@ -439,7 +439,7 @@ void _YamagramPrinterTwoPointOhOh(int yamagram)
 	case 5:
 		g_RootMenu.ConsolePrint("Question Go (5)");
 		g_RootMenu.ConsolePrint("What is a fundamental concept in the game of Go?");
-		g_RootMenu.ConsolePrint("Hint: POET SELL FIRM HEADBAND");
+		g_RootMenu.ConsolePrint("Hint: AD LADEN THIEF");
 		break;
 	case 6:
 		g_RootMenu.ConsolePrint("Question Roku (6)");
@@ -484,7 +484,7 @@ void _IntExt_CallYamagrams()
 		correct = !strcasecmp(arg, "kaitei no kairan");
 		break;
 	case 5:
-		correct = !strcasecmp(arg, "life and death problems");
+		correct = !strcasecmp(arg, "life and death");
 		break;
 	case 6:
 		correct = !strcasecmp(arg, "because gabe wanted it that way");
