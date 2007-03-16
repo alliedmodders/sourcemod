@@ -22,6 +22,9 @@
 #include <sourcemod>
 #include <textparse>
 
+/* We like semicolons */
+#pragma semicolon 1
+
 public Plugin:myinfo = 
 {
 	name = "Admin File Reader",
@@ -43,6 +46,7 @@ new String:g_Filename[PLATFORM_MAX_PATH];	/* Used for error messages */
 #include "admin-overrides.sp"
 #include "admin-groups.sp"
 #include "admin-users.sp"
+#include "admin-simple.sp"
 
 public OnRebuildAdminCache(AdminCachePart:part)
 {
@@ -54,6 +58,7 @@ public OnRebuildAdminCache(AdminCachePart:part)
 		ReadGroups();
 	} else if (part == AdminCache_Admins) {
 		ReadUsers();
+		ReadSimpleUsers();
 	}
 }
 

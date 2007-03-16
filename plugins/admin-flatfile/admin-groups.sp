@@ -28,7 +28,7 @@
 static Handle:g_hGroupParser = INVALID_HANDLE;
 static GroupId:g_CurGrp = INVALID_GROUP_ID;
 static g_GroupState = GROUP_STATE_NONE;
-static g_GroupPass = 0
+static g_GroupPass = 0;
 static bool:g_NeedReparse = false;
 
 public SMCResult:ReadGroups_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
