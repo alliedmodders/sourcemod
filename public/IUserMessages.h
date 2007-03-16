@@ -130,7 +130,7 @@ namespace SourceMod
 		/**
 		 * @brief Wrapper around UserMessageBegin for more options.
 		 * 
-		 * @param mgs_id		Message Id.
+		 * @param msg_id		Message Id.
 		 * @param players		Array containing player indexes.
 		 * @param playersNum	Number of players in the array.
 		 * @param flags			Flags to use for sending the message.
