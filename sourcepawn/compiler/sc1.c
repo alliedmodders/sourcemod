@@ -6417,8 +6417,8 @@ static void addwhile(int *ptr)
 {
   int k;
 
-  ptr[wqBRK]=(int)declared;     /* stack pointer (for "break") */
-  ptr[wqCONT]=(int)declared;    /* for "continue", possibly adjusted later */
+  ptr[wqBRK]=stackusage->list_id;     /* stack pointer (for "break") */
+  ptr[wqCONT]=stackusage->list_id;    /* for "continue", possibly adjusted later */
   ptr[wqLOOP]=getlabel();
   ptr[wqEXIT]=getlabel();
   if (wqptr>=(wq+wqTABSZ-wqSIZE))
