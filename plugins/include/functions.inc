@@ -102,6 +102,8 @@ native Function:GetFunctionByName(Handle:plugin, const String:name[]);
  *
  * @note The name used to create the forward is used as its public function in all target plugins.
  * @note This is ideal for global, static forwards that are never changed.
+ * @note Global forwards cannot be cloned.
+ * @note Use CloseHandle() to destroy these.
  *
  * @param name				Name of public function to use in forward.
  * @param type				Execution type to be used.
@@ -115,6 +117,8 @@ native Handle:CreateGlobalForward(const String:name[], ExecType:type, ParamType:
  * Creates a private forward.
  *
  * @note No functions are automatically added. Use AddToForward() to do this.
+ * @note Private forwards can be cloned.
+ * @note Use CloseHandle() to destroy these.
  *
  * @param type				Execution type to be used.
  * @param ...				Variable number of parameter types (up to 32).
