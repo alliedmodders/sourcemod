@@ -13,9 +13,7 @@ new Handle:g_GlobalFwd = INVALID_HANDLE;
 new Handle:g_PrivateFwd = INVALID_HANDLE;
 
 public OnPluginStart()
-{
-	PrintToServer("OnPluginStart: %d", OnPluginStart);
-	
+{	
 	RegServerCmd("test_create_gforward", Command_CreateGlobalForward);
 	RegServerCmd("test_create_pforward", Command_CreatePrivateForward);
 	RegServerCmd("test_exec_gforward", Command_ExecGlobalForward);
