@@ -17,8 +17,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
-ReadSimpleUsers()
+ 
+public ReadSimpleUsers()
 {
 	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admins_simple.ini");
 	
@@ -32,7 +32,10 @@ ReadSimpleUsers()
 	while (!IsEndOfFile(file))
 	{
 		decl String:line[255];
-		ReadFileLine(file, line, sizeof(line));
+		if (!ReadFileLine(file, line, sizeof(line)))
+		{
+			break;
+		}
 		
 		if ((line[0] == '/' && line[1] == '/')
 			|| (line[0] == ';' || line[0] == '\0'))
