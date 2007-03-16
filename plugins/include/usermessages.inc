@@ -130,7 +130,7 @@ native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgSe
  * @noreturn
  * @error				Invalid message index.
  */
-native UnHookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
+native UnhookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
 
 /**
  * Starts a usermessage (network message) that broadcasts to all clients.

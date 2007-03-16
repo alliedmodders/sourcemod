@@ -432,7 +432,7 @@ static cell_t smn_HookUserMessage(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-static cell_t smn_UnHookUserMessage(IPluginContext *pCtx, const cell_t *params)
+static cell_t smn_UnhookUserMessage(IPluginContext *pCtx, const cell_t *params)
 {
 	IPluginFunction *pFunc;
 	MsgListenerWrapper *pListener;
@@ -477,6 +477,6 @@ REGISTER_NATIVES(usrmsgnatives)
 	{"StartMessageEx",				smn_StartMessageEx},
 	{"EndMessage",					smn_EndMessage},
 	{"HookUserMessage",				smn_HookUserMessage},
-	{"UnHookUserMessage",			smn_UnHookUserMessage},
+	{"UnhookUserMessage",			smn_UnhookUserMessage},
 	{NULL,							NULL}
 };

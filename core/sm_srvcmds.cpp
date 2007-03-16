@@ -223,7 +223,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcoun
 		ConsolePrint(" Development would not have been possible without the following people:");
 		ConsolePrint("  David \"BAILOPAN\" Anderson, lead developer");
 		ConsolePrint("  Borja \"faluco\" Ferrer, Core developer");
-		ConsolePrint("  Scott \"Damaged Soul\" Ehlert, SourceMM developer");
+		ConsolePrint("  Scott \"Damaged Soul\" Ehlert, Core developer");
 		ConsolePrint("  Pavol \"PM OnoTo\" Marko, SourceHook developer");
 		ConsolePrint(" Special thanks to Viper of GameConnect");
 		ConsolePrint(" Special thanks to Mani of Mani-Admin-Plugin");
