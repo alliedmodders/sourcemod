@@ -442,7 +442,7 @@ static cell_t sm_CallPushArray(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToPhysAddr(params[1], &addr);
 
-	err = s_pCallable->PushArray(addr, params[2], NULL);
+	err = s_pCallable->PushArray(addr, params[2]);
 
 	if (err)
 	{
@@ -528,7 +528,7 @@ static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params
 
 static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
+	int err = SP_ERROR_NOT_RUNNABLE;
 	cell_t *result;
 
 	if (!s_CallStarted)
