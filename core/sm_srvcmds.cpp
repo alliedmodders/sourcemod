@@ -36,11 +36,16 @@ RootConsoleMenu::~RootConsoleMenu()
 	m_Menu.clear();
 }
 
+extern void _IntExt_OnHostnameChanged(ConVar *pConVar, char const *oldValue);
+
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
 	ConCommandBaseMgr::OneTimeInit(this);
 	AddRootConsoleCommand("version", "Display version information", this);
 	AddRootConsoleCommand("credits", "Display credits listing", this);
+
+	ConVar *pHost = icvar->FindVar("hostname");
+	pHost->InstallChangeCallback(_IntExt_OnHostnameChanged);
 }
 
 void RootConsoleMenu::OnSourceModShutdown()
