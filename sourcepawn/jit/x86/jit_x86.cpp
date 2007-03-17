@@ -2258,7 +2258,8 @@ void JITX86::FreeContext(sp_context_t *ctx)
 	delete [] ctx->symbols;
 	engine->BaseFree(ctx->vm[JITVARS_REBASE]);
 	free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
-	delete (tracker_t *)ctx->vm[JITVARS_TRACKER];	
+	delete (tracker_t *)ctx->vm[JITVARS_TRACKER];
+	delete (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
 	delete ctx;
 }
 

@@ -264,7 +264,6 @@ void CExtensionManager::OnSourceModAllInitialized()
 void CExtensionManager::OnSourceModShutdown()
 {
 	g_RootMenu.RemoveRootConsoleCommand("exts", this);
-	g_PluginSys.RemovePluginsListener(this);
 	g_ShareSys.DestroyIdentType(g_ExtType);
 }
 

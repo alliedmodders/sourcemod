@@ -105,6 +105,8 @@ class CForwardManager :
 	public SMGlobalClass
 {
 	friend class CForward;
+public:
+	~CForwardManager();
 public: //IForwardManager
 	IForward *CreateForward(const char *name, 
 		ExecType et, 
@@ -124,7 +126,6 @@ public: //IPluginsListener
 	void OnPluginPauseChange(IPlugin *plugin, bool paused);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
-	void OnSourceModShutdown();
 protected:
 	CForward *ForwardMake();
 	void ForwardFree(CForward *fwd);

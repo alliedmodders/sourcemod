@@ -56,7 +56,6 @@ void ConCmdManager::OnSourceModShutdown()
 	/* All commands should already be removed by the time we're done */
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
-	g_PluginSys.RemovePluginsListener(this);
 }
 
 void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext)

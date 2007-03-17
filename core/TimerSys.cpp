@@ -27,6 +27,16 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 	m_KillMe = false;
 }
 
+TimerSystem::~TimerSystem()
+{
+	CStack<ITimer *>::iterator iter;
+	for (iter=m_FreeTimers.begin(); iter!=m_FreeTimers.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_FreeTimers.popall();
+}
+
 void TimerSystem::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);

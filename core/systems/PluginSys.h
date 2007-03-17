@@ -116,19 +116,19 @@ public:
 	CPlugin(const char *file);
 	~CPlugin();
 public:
-	virtual PluginType GetType();
-	virtual SourcePawn::IPluginContext *GetBaseContext();
-	virtual sp_context_t *GetContext();
-	virtual const sm_plugininfo_t *GetPublicInfo();
-	virtual const char *GetFilename();
-	virtual bool IsDebugging();
-	virtual PluginStatus GetStatus();
-	virtual bool SetPauseState(bool paused);
-	virtual unsigned int GetSerial();
-	virtual const sp_plugin_t *GetPluginStructure();
-	virtual IdentityToken_t *GetIdentity();
-	virtual bool SetProperty(const char *prop, void *ptr);
-	virtual bool GetProperty(const char *prop, void **ptr, bool remove=false);
+	PluginType GetType();
+	SourcePawn::IPluginContext *GetBaseContext();
+	sp_context_t *GetContext();
+	const sm_plugininfo_t *GetPublicInfo();
+	const char *GetFilename();
+	bool IsDebugging();
+	PluginStatus GetStatus();
+	bool SetPauseState(bool paused);
+	unsigned int GetSerial();
+	const sp_plugin_t *GetPluginStructure();
+	IdentityToken_t *GetIdentity();
+	bool SetProperty(const char *prop, void *ptr);
+	bool GetProperty(const char *prop, void **ptr, bool remove=false);
 public:
 	/**
 	 * Creates a plugin object with default values.

@@ -32,15 +32,20 @@ CForwardManager g_Forwards;
 // :TODO: IMPORTANT!!! The result pointer arg in the execute function maybe invalid if the forward fails
 // so later evaluation of this result may cause problems on higher levels of abstraction. DOCUMENT OR FIX ALL FORWARDS!
 
+CForwardManager::~CForwardManager()
+{
+	CStack<CForward *>::iterator iter;
+	for (iter=m_FreeForwards.begin(); iter!=m_FreeForwards.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_FreeForwards.popall();
+}
+
 void CForwardManager::OnSourceModAllInitialized()
 {
 	g_PluginSys.AddPluginsListener(this);
 	g_ShareSys.AddInterface(NULL, this);
-}
-
-void CForwardManager::OnSourceModShutdown()
-{
-	g_PluginSys.RemovePluginsListener(this);
 }
 
 IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned int num_params, const ParamType *types, ...)

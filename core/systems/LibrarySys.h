@@ -31,12 +31,12 @@ public:
 	CDirectory(const char *path);
 	~CDirectory();
 public:
-	virtual bool MoreFiles();
-	virtual void NextEntry();
-	virtual const char *GetEntryName();
-	virtual bool IsEntryDirectory();
-	virtual bool IsEntryFile();
-	virtual bool IsEntryValid();
+	bool MoreFiles();
+	void NextEntry();
+	const char *GetEntryName();
+	bool IsEntryDirectory();
+	bool IsEntryFile();
+	bool IsEntryValid();
 public:
 	bool IsValid();
 private:
@@ -56,8 +56,8 @@ public:
 	CLibrary(LibraryHandle me);
 	~CLibrary();
 public:
-	virtual void CloseLibrary();
-	virtual void *GetSymbolAddress(const char *symname);
+	void CloseLibrary();
+	void *GetSymbolAddress(const char *symname);
 private:
 	LibraryHandle m_lib;
 };
@@ -65,14 +65,14 @@ private:
 class LibrarySystem : public ILibrarySys
 {
 public:
-	virtual ILibrary *OpenLibrary(const char *path, char *error, size_t err_max);
-	virtual IDirectory *OpenDirectory(const char *path);
-	virtual void CloseDirectory(IDirectory *dir);
-	virtual bool PathExists(const char *path);
-	virtual bool IsPathFile(const char *path);
-	virtual bool IsPathDirectory(const char *path);
-	virtual void GetPlatformError(char *error, size_t err_max);
-	virtual size_t PathFormat(char *buffer, size_t len, const char *fmt, ...);
+	ILibrary *OpenLibrary(const char *path, char *error, size_t err_max);
+	IDirectory *OpenDirectory(const char *path);
+	void CloseDirectory(IDirectory *dir);
+	bool PathExists(const char *path);
+	bool IsPathFile(const char *path);
+	bool IsPathDirectory(const char *path);
+	void GetPlatformError(char *error, size_t err_max);
+	size_t PathFormat(char *buffer, size_t len, const char *fmt, ...);
 };
 
 extern LibrarySystem g_LibSys;

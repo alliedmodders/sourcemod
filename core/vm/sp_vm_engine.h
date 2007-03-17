@@ -32,13 +32,13 @@ class CContextTrace : public IContextTrace
 public:
 	CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native);
 public:
-	virtual int GetErrorCode();
-	virtual const char *GetErrorString();
-	virtual bool DebugInfoAvailable();
-	virtual const char *GetCustomErrorString();
-	virtual bool GetTraceInfo(CallStackInfo *trace);
-	virtual void ResetTrace();
-	virtual const char *GetLastNative(uint32_t *index);
+	int GetErrorCode();
+	const char *GetErrorString();
+	bool DebugInfoAvailable();
+	const char *GetCustomErrorString();
+	bool GetTraceInfo(CallStackInfo *trace);
+	void ResetTrace();
+	const char *GetLastNative(uint32_t *index);
 private:
 	int m_Error;
 	const char *m_pMsg;
@@ -46,7 +46,6 @@ private:
 	TracedCall *m_pIterator;
 	uint32_t m_Native;
 };
-
 
 class SourcePawnEngine : public ISourcePawnEngine
 {

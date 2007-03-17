@@ -34,6 +34,8 @@ class UsrMessageNatives :
 	public IHandleTypeDispatch,
 	public IPluginsListener
 {
+public:
+	~UsrMessageNatives();
 public: //SMGlobalClass, IHandleTypeDispatch, IPluginListener
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -46,6 +48,16 @@ public:
 private:
 	CStack<MsgListenerWrapper *> m_FreeListeners;
 };
+
+UsrMessageNatives::~UsrMessageNatives()
+{
+	CStack<MsgListenerWrapper *>::iterator iter;
+	for (iter=m_FreeListeners.begin(); iter!=m_FreeListeners.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_FreeListeners.popall();
+}
 
 void UsrMessageNatives::OnSourceModAllInitialized()
 {
@@ -70,7 +82,6 @@ void UsrMessageNatives::OnSourceModShutdown()
 	g_HandleSys.RemoveType(g_WrBitBufType, g_pCoreIdent);
 	g_HandleSys.RemoveType(g_RdBitBufType, g_pCoreIdent);
 
-	g_PluginSys.RemovePluginsListener(this);
 	g_WrBitBufType = 0;
 	g_RdBitBufType = 0;
 }

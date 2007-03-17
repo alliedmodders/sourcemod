@@ -34,6 +34,8 @@ class TimerNatives :
 	public IHandleTypeDispatch,
 	public ITimedEvent
 {
+public:
+	~TimerNatives();
 public: //ITimedEvent
 	ResultType OnTimer(ITimer *pTimer, void *pData);
 	void OnTimerEnd(ITimer *pTimer, void *pData);
@@ -48,6 +50,16 @@ public:
 private:
 	CStack<TimerInfo *> m_FreeTimers;
 };
+
+TimerNatives::~TimerNatives()
+{
+	CStack<TimerInfo *>::iterator iter;
+	for (iter=m_FreeTimers.begin(); iter!=m_FreeTimers.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_FreeTimers.popall();
+}
 
 void TimerNatives::OnSourceModAllInitialized()
 {

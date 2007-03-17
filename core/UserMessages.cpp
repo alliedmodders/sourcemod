@@ -34,6 +34,13 @@ UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
 UserMessages::~UserMessages()
 {
 	sm_trie_destroy(m_Names);
+
+	CStack<ListenerInfo *>::iterator iter;
+	for (iter=m_FreeListeners.begin(); iter!=m_FreeListeners.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_FreeListeners.popall();
 }
 
 void UserMessages::OnSourceModAllInitialized()

@@ -78,7 +78,7 @@ CPlugin::~CPlugin()
 		g_pSourcePawn->FreeFromMemory(m_plugin);
 		m_plugin = NULL;
 	}
-	if (!m_pProps)
+	if (m_pProps)
 	{
 		sm_trie_destroy(m_pProps);
 	}
@@ -649,6 +649,13 @@ CPluginManager::~CPluginManager()
 	 */
 	sm_trie_destroy(m_LoadLookup);
 	sm_trie_destroy(m_pNativeLookup);
+
+	CStack<CPluginManager::CPluginIterator *>::iterator iter;
+	for (iter=m_iters.begin(); iter!=m_iters.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_iters.popall();
 }
 
 void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)

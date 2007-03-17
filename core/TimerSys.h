@@ -44,6 +44,8 @@ class TimerSystem :
 	public ITimerSystem,
 	public SMGlobalClass
 {
+public:
+	~TimerSystem();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 public: //ITimerSystem

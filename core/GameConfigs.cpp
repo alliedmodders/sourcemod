@@ -46,6 +46,7 @@ CGameConfig::CGameConfig(const char *file)
 	m_pProps = sm_trie_create();
 	m_pKeys = sm_trie_create();
 	m_pStrings = new BaseStringTable(512);
+	m_RefCount = 0;
 }
 
 CGameConfig::~CGameConfig()
