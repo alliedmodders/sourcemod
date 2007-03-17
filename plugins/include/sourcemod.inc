@@ -43,6 +43,7 @@ struct Plugin
 #include <usermessages>
 #include <events>
 #include <functions>
+#include <timers>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
@@ -103,6 +104,13 @@ forward OnPluginPauseChange(bool:pause);
  * local arrays using 'decl' instead of 'new'.
  */
 forward OnGameFrame();
+
+/**
+ * Called when the map is loaded and configs have been parsed.
+ * Note that commands are processed per-frame, and thus config
+ * files may not be fully loaded until a few seconds later.
+ */
+forward OnServerLoad();
 
 /**
  * Returns the calling plugin's Handle.

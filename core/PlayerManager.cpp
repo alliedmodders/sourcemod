@@ -60,6 +60,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clcommand = g_Forwards.CreateForward("OnClientCommand", ET_Hook, 2, NULL, Param_Cell, Param_Cell);
 	m_clinfochanged = g_Forwards.CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
 	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
+	m_onActivate = g_Forwards.CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 }
 
 void PlayerManager::OnSourceModShutdown()
@@ -80,6 +81,7 @@ void PlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_clcommand);
 	g_Forwards.ReleaseForward(m_clinfochanged);
 	g_Forwards.ReleaseForward(m_clauth);
+	g_Forwards.ReleaseForward(m_onActivate);
 
 	delete [] m_Players;
 }
@@ -97,6 +99,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 		memset(m_AuthQueue, 0, sizeof(unsigned int) * (m_maxClients + 1));
 	}
+	m_onActivate->Execute(NULL);
 }
 
 void PlayerManager::RunAuthChecks()
