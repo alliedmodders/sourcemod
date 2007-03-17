@@ -67,7 +67,7 @@ funcenum Timer
  * @param flags				Flags to set (such as repeatability or auto-Handle closing).
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-native Handle:CreateTimer(Float:interval, Timer:func, {Handle,_}:value, flags=0);
+native Handle:CreateTimer(Float:interval, Timer:func, {Handle,_}:value=INVALID_HANDLE, flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
