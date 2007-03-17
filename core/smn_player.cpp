@@ -369,26 +369,48 @@ static cell_t CanUserTarget(IPluginContext *pContext, const cell_t *params)
 	return g_Admins.CanAdminTarget(pPlayer->GetAdminId(), pTarget->GetAdminId()) ? 1 : 0;
 }
 
+static cell_t GetClientTeam(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	return pInfo->GetTeamIndex();
+}
+
 REGISTER_NATIVES(playernatives)
 {
-	{"GetMaxClients",			sm_GetMaxClients},
-	{"GetClientCount",			sm_GetClientCount},
-	{"GetClientName",			sm_GetClientName},
-	{"GetClientIP",				sm_GetClientIP},
-	{"GetClientAuthString",		sm_GetClientAuthStr},
-	{"IsClientConnected",		sm_IsPlayerConnected},
-	{"IsPlayerInGame",			sm_IsPlayerIngame},
-	{"IsClientAuthorized",		sm_IsPlayerAuthorized},
-	{"IsFakeClient",			sm_IsPlayerFakeClient},
-	{"GetClientInfo",			sm_GetClientInfo},
-	{"SetUserAdmin",			SetUserAdmin},
-	{"GetUserAdmin",			GetUserAdmin},
 	{"AddUserFlags",			AddUserFlags},
-	{"RemoveUserFlags",			RemoveUserFlags},
-	{"SetUserFlagBits",			SetUserFlagBits},
-	{"GetUserFlagBits",			GetUserFlagBits},
-	{"GetClientUserId",			GetClientUserId},
 	{"CanUserTarget",			CanUserTarget},
+	{"GetClientAuthString",		sm_GetClientAuthStr},
+	{"GetClientCount",			sm_GetClientCount},
+	{"GetClientInfo",			sm_GetClientInfo},
+	{"GetClientIP",				sm_GetClientIP},
+	{"GetClientName",			sm_GetClientName},
+	{"GetClientTeam",			GetClientTeam},
+	{"GetClientUserId",			GetClientUserId},
+	{"GetMaxClients",			sm_GetMaxClients},
+	{"GetUserAdmin",			GetUserAdmin},
+	{"GetUserFlagBits",			GetUserFlagBits},
+	{"IsClientAuthorized",		sm_IsPlayerAuthorized},
+	{"IsClientConnected",		sm_IsPlayerConnected},
+	{"IsFakeClient",			sm_IsPlayerFakeClient},
+	{"IsPlayerInGame",			sm_IsPlayerIngame},
+	{"RemoveUserFlags",			RemoveUserFlags},
+	{"SetUserAdmin",			SetUserAdmin},
+	{"SetUserFlagBits",			SetUserFlagBits},
 	{NULL,						NULL}
 };
 

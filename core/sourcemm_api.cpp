@@ -27,6 +27,7 @@ IGameEventManager2 *gameevents = NULL;
 IUniformRandomStream *engrandom = NULL;
 CallClass<IVEngineServer> *enginePatch = NULL;
 CallClass<IServerGameDLL> *gamedllPatch = NULL;
+IPlayerInfoManager *playerinfo = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -40,6 +41,9 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	GET_V_IFACE_CURRENT(engineFactory, icvar, ICvar, VENGINE_CVAR_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(engineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 	GET_V_IFACE_CURRENT(engineFactory, engrandom, IUniformRandomStream, VENGINE_SERVER_RANDOM_INTERFACE_VERSION);
+
+	/* :TODO: Make this optional and... make it find earlier versions [?] */
+	GET_V_IFACE_CURRENT(serverFactory, playerinfo, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
 
 	if ((g_pMMPlugins = (ISmmPluginManager *)g_SMAPI->MetaFactory(MMIFACE_PLMANAGER, NULL, NULL)) == NULL)
 	{

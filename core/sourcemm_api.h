@@ -18,6 +18,7 @@
 #include <ISmmPlugin.h>
 #include <eiface.h>
 #include <igameevents.h>
+#include <iplayerinfo.h>
 #include <random.h>
 
 /**
@@ -54,6 +55,7 @@ extern IGameEventManager2 *gameevents;
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
 extern IUniformRandomStream *engrandom;
+extern IPlayerInfoManager *playerinfo;
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 #define SERVER_CALL(func)		SH_CALL(gamedllPatch, &IServerGameDLL::func)

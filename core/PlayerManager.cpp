@@ -196,8 +196,11 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 
 	if (res)
 	{
-		m_AuthQueue[++m_AuthQueue[0]] = client;
-		g_SourceMod.SetAuthChecking(true);
+		if (!m_Players[client].IsAuthorized())
+		{
+			m_AuthQueue[++m_AuthQueue[0]] = client;
+			g_SourceMod.SetAuthChecking(true);
+		}
 	} else {
 		RETURN_META_VALUE(MRES_SUPERCEDE, false);
 	}
@@ -229,10 +232,13 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	int client = engine->IndexOfEdict(pEntity);
 
 	CPlayer *pPlayer = GetPlayerByIndex(client);
+	/* If they're not connected, they're a bot */
 	if (!pPlayer->IsConnected())
 	{
 		/* Run manual connection routines */
 		char error[255];
+		const char *authid = engine->GetPlayerNetworkIDString(pEntity);
+		pPlayer->Authorize(authid);
 		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
 		{
 			/* :TODO: kick the bot if it's rejected */
@@ -244,7 +250,35 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		{
 			pListener = (*iter);
 			pListener->OnClientConnected(client);
+			/* See if bot was kicked */
+			if (!pPlayer->IsConnected())
+			{
+				return;
+			}
 		}
+		/* Now do authorization */
+		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		{
+			pListener = (*iter);
+			pListener->OnClientAuthorized(client, authid);
+			/* See if bot was kicked */
+			if (!pPlayer->IsConnected())
+			{
+				return;
+			}
+		}
+		/* Finally, tell plugins */
+		if (m_clauth->GetFunctionCount())
+		{
+			m_clauth->PushCell(client);
+			m_clauth->PushString(authid);
+			m_clauth->Execute(NULL);
+		}
+	}
+
+	if (playerinfo)
+	{
+		pPlayer->m_Info = playerinfo->GetPlayerInfo(pEntity);
 	}
 
 	List<IClientListener *>::iterator iter;
@@ -253,6 +287,11 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	{
 		pListener = (*iter);
 		pListener->OnClientPutInServer(client);
+		/* See if player was kicked */
+		if (!pPlayer->IsConnected())
+		{
+			return;
+		}
 	}
 
 	m_Players[client].Connect();
@@ -432,6 +471,7 @@ CPlayer::CPlayer()
 	m_pEdict = NULL;
 	m_Admin = INVALID_ADMIN_ID;
 	m_TempAdmin = false;
+	m_Info = NULL;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -463,6 +503,7 @@ void CPlayer::Disconnect()
 	m_Ip.clear();
 	m_AuthID.clear();
 	m_pEdict = NULL;
+	m_Info = NULL;
 }
 
 void CPlayer::SetName(const char *name)
@@ -503,6 +544,11 @@ bool CPlayer::IsConnected()
 bool CPlayer::IsAuthorized()
 {
 	return m_IsAuthorized;
+}
+
+IPlayerInfo *CPlayer::GetPlayerInfo()
+{
+	return m_Info;
 }
 
 bool CPlayer::IsFakeClient()

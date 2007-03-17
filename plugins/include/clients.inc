@@ -182,6 +182,15 @@ native bool:IsFakeClient(client);
 native bool:GetClientInfo(client, const String:key[], String:value[], maxlen);
 
 /**
+ * Retrieves a client's team index.
+ *
+ * @param client		Player's index.
+ * @return				Team index the client is on (mod specific).
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientTeam(client);
+ 
+/**
  * Sets a client's AdminId.  
  *
  * @param client		Player's index.

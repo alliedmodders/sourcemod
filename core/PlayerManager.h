@@ -42,6 +42,8 @@ public:
 	bool IsFakeClient();
 	void SetAdminId(AdminId id, bool temporary);
 	AdminId GetAdminId();
+public:
+	IPlayerInfo *GetPlayerInfo();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
@@ -59,6 +61,7 @@ private:
 	AdminId m_Admin;
 	bool m_TempAdmin;
 	edict_t *m_pEdict;
+	IPlayerInfo *m_Info;
 };
 
 class PlayerManager : 
