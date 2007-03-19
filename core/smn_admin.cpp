@@ -423,6 +423,15 @@ static cell_t CanAdminTarget(IPluginContext *pContext, const cell_t *params)
 	return g_Admins.CanAdminTarget(params[1], params[2]) ? 1 : 0;
 }
 
+static cell_t CreateAuthMethod(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	pContext->LocalToString(params[1], &name);
+	g_Admins.RegisterAuthIdentType(name);
+
+	return 1;
+}
+
 REGISTER_NATIVES(adminNatives)
 {
 	{"DumpAdminCache",			DumpAdminCache},
@@ -460,6 +469,7 @@ REGISTER_NATIVES(adminNatives)
 	{"FlagArrayToBits",			FlagArrayToBits},
 	{"FlagBitsToArray",			FlagBitsToArray},
 	{"CanAdminTarget",			CanAdminTarget},
+	{"CreateAuthMethod",		CreateAuthMethod},
 	/* -------------------------------------------------- */
 	{NULL,						NULL},
 };

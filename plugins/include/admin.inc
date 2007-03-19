@@ -490,6 +490,15 @@ native FlagBitsToArray(bits, AdminFlag:array[], maxSize) =0;
 native CanAdminTarget(AdminId:admin, AdminId:target);
 
 /**
+ * Creates an admin auth method.  This does not need to be called more than once
+ * per method, ever.
+ *
+ * @param method		Name of the authentication method.
+ * @return				True on success, false on failure.
+ */
+native bool:CreateAuthMethod(const String:method[]);
+
+/**
  * Converts a flag to its single bit.
  * 
  * @param flag			Flag to convert.
