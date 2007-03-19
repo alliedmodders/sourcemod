@@ -109,6 +109,7 @@ forward OnGameFrame();
  * Called when the map is loaded and configs have been parsed.
  * Note that commands are processed per-frame, and thus config
  * files may not be fully loaded until a few seconds later.
+ * This function will be called on each mapchange.
  */
 forward OnServerLoad();
 

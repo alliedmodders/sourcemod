@@ -158,7 +158,7 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 	char buffer[255];
 	size_t len, cmdlen = strlen(cmd);
 
-	len = snprintf(buffer, sizeof(buffer), "    %s", cmd);
+	len = UTIL_Format(buffer, sizeof(buffer), "    %s", cmd);
 	if (cmdlen < 16)
 	{
 		size_t num = 16 - cmdlen;
