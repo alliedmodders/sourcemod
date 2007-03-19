@@ -119,7 +119,7 @@ void PlayerManager::RunAuthChecks()
 			pPlayer->m_IsAuthorized = true;
 
 			/* Mark as removed from queue */
-			unsigned int client = i;
+			unsigned int client = m_AuthQueue[i];
 			m_AuthQueue[i] = 0;
 			removed++;
 
