@@ -118,6 +118,10 @@ void PlayerManager::RunAuthChecks()
 			pPlayer->m_AuthID.assign(authstr);
 			pPlayer->m_IsAuthorized = true;
 
+			/* Mark as removed from queue */
+			m_AuthQueue[i] = 0;
+			removed++;
+
 			/* Send to extensions */
 			List<IClientListener *>::iterator iter;
 			IClientListener *pListener;
@@ -125,19 +129,20 @@ void PlayerManager::RunAuthChecks()
 			{
 				pListener = (*iter);
 				pListener->OnClientAuthorized(m_AuthQueue[i], authstr);
+				if (!pPlayer->IsConnected())
+				{
+					break;
+				}
 			}
 
-			/* Send to plugins */
-			if (m_clauth->GetFunctionCount())
+			/* Send to plugins if player is still connected */
+			if (pPlayer->IsConnected() && m_clauth->GetFunctionCount())
 			{
+				/* :TODO: handle the case of a player disconnecting in the middle */
 				m_clauth->PushCell(m_AuthQueue[i]);
 				m_clauth->PushString(authstr);
 				m_clauth->Execute(NULL);
 			}
-
-			/* Mark as removed from queue */
-			m_AuthQueue[i] = 0;
-			removed++;
 		}
 	}
 
