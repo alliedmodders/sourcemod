@@ -69,5 +69,7 @@ stock Handle:FindPluginByFile(const String:filename[])
 		}
 	}
 	
+	CloseHandle(iter);
+	
 	return INVALID_HANDLE;
 }
