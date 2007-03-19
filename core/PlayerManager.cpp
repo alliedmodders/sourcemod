@@ -119,6 +119,7 @@ void PlayerManager::RunAuthChecks()
 			pPlayer->m_IsAuthorized = true;
 
 			/* Mark as removed from queue */
+			unsigned int client = i;
 			m_AuthQueue[i] = 0;
 			removed++;
 
@@ -128,7 +129,7 @@ void PlayerManager::RunAuthChecks()
 			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
-				pListener->OnClientAuthorized(m_AuthQueue[i], authstr);
+				pListener->OnClientAuthorized(client, authstr);
 				if (!pPlayer->IsConnected())
 				{
 					break;
@@ -139,7 +140,7 @@ void PlayerManager::RunAuthChecks()
 			if (pPlayer->IsConnected() && m_clauth->GetFunctionCount())
 			{
 				/* :TODO: handle the case of a player disconnecting in the middle */
-				m_clauth->PushCell(m_AuthQueue[i]);
+				m_clauth->PushCell(client);
 				m_clauth->PushString(authstr);
 				m_clauth->Execute(NULL);
 			}
