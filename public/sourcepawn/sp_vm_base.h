@@ -1,4 +1,5 @@
 /**
+ * vim: set ts=4 :
  * ================================================================
  * SourcePawn, Copyright (C) 2004-2007 AlliedModders LLC. 
  * All rights reserved.
