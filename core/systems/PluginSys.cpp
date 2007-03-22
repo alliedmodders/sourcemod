@@ -101,7 +101,7 @@ Handle_t CPlugin::GetMyHandle()
 
 CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 {
-	char fullpath[PLATFORM_MAX_PATH+1];
+	char fullpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", file);
 	FILE *fp = fopen(fullpath, "rb");
 
@@ -508,7 +508,7 @@ bool CPlugin::IsRunnable()
 
 time_t CPlugin::GetFileTimeStamp()
 {
-	char path[PLATFORM_MAX_PATH+1];
+	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "plugins/%s", m_filename);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
@@ -679,7 +679,7 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 
 void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpath)
 {
-	char base_path[PLATFORM_MAX_PATH+1];
+	char base_path[PLATFORM_MAX_PATH];
 
 	/* Form the current path to start reading from */
 	if (localpath == NULL)
@@ -708,7 +708,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			&& (strcmp(dir->GetEntryName(), "disabled") != 0)
 			&& (strcmp(dir->GetEntryName(), "optional") != 0))
 		{
-			char new_local[PLATFORM_MAX_PATH+1];
+			char new_local[PLATFORM_MAX_PATH];
 			if (localpath == NULL)
 			{
 				/* If no path yet, don't add a former slash */
@@ -724,7 +724,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				&& strcmp(&name[len-4], ".smx") == 0)
 			{
 				/* If the filename matches, load the plugin */
-				char plugin[PLATFORM_MAX_PATH+1];
+				char plugin[PLATFORM_MAX_PATH];
 				if (localpath == NULL)
 				{
 					snprintf(plugin, sizeof(plugin), "%s", name);
@@ -944,7 +944,7 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 	uint32_t num = pBase->GetPubVarsNum();
 	sp_pubvar_t *pubvar;
 	IExtension *pExt;
-	char path[PLATFORM_MAX_PATH+1];
+	char path[PLATFORM_MAX_PATH];
 	char *file, *name;
 	for (uint32_t i=0; i<num; i++)
 	{
@@ -1689,7 +1689,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				;
 			IPlugin *pl = iter->GetPlugin();
 
-			char name[PLATFORM_MAX_PATH+1];
+			char name[PLATFORM_MAX_PATH];
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
 			strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 

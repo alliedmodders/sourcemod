@@ -64,7 +64,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
 
 	IDirectory *pDir = g_LibSys.OpenDirectory(realpath);
@@ -142,7 +142,7 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 	FILE *pFile = fopen(realpath, mode);
@@ -164,7 +164,7 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 	return (unlink(realpath)) ? 0 : 1;
@@ -271,7 +271,7 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
@@ -313,9 +313,9 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char new_realpath[PLATFORM_MAX_PATH+1];
+	char new_realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
-	char old_realpath[PLATFORM_MAX_PATH+1];
+	char old_realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
 
 #ifdef PLATFORM_WINDOWS
@@ -335,7 +335,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
@@ -372,7 +372,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
@@ -409,7 +409,7 @@ static cell_t sm_RemoveDir(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	char realpath[PLATFORM_MAX_PATH+1];
+	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 	return (rmdir(realpath)) ? 0 : 1;

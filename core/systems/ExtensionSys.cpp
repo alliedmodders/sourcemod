@@ -33,7 +33,7 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 	unload_code = 0;
 	m_FullyLoaded = false;
 
-	char path[PLATFORM_MAX_PATH+1];
+	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
 
 	m_pLib = g_LibSys.OpenLibrary(path, error, err_max);
@@ -317,7 +317,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 {
 	if (!strstr(path, "." PLATFORM_LIB_EXT))
 	{
-		char newpath[PLATFORM_MAX_PATH+1];
+		char newpath[PLATFORM_MAX_PATH];
 		snprintf(newpath, PLATFORM_MAX_PATH, "%s.%s", path, PLATFORM_LIB_EXT);
 		return LoadAutoExtension(newpath);
 	}
@@ -355,7 +355,7 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 	}
 
 	/* Make sure the file direction is right */
-	char path[PLATFORM_MAX_PATH+1];
+	char path[PLATFORM_MAX_PATH];
 	g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
 
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
@@ -768,7 +768,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				const char *unload = g_RootMenu.GetArgument(4);
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
-					char filename[PLATFORM_MAX_PATH+1];
+					char filename[PLATFORM_MAX_PATH];
 					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
 					UnloadExtension(pExt);
 					g_RootMenu.ConsolePrint("[SM] Extension %s is now unloaded.", filename);
@@ -781,7 +781,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 			if (!pExt->IsLoaded() 
 				|| (!pExt->m_Deps.size() && !pExt->m_Plugins.size()))
 			{
-				char filename[PLATFORM_MAX_PATH+1];
+				char filename[PLATFORM_MAX_PATH];
 				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
 				UnloadExtension(pExt);
 				g_RootMenu.ConsolePrint("[SM] Extension %s is now unloaded.", filename);

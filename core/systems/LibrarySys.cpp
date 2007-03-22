@@ -301,11 +301,15 @@ ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t err_m
 size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 {
 	va_list ap;
-	va_start(ap,fmt);
+	va_start(ap, fmt);
 	size_t mylen = vsnprintf(buffer, len, fmt, ap);
 	va_end(ap);
 
-	mylen = (mylen >= len) ? len : mylen;
+	if (mylen >= len)
+	{
+		mylen = len - 1;
+		buffer[mylen] = '\0';
+	}
 
 	for (size_t i=0; i<mylen; i++)
 	{

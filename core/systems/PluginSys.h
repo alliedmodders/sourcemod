@@ -229,7 +229,7 @@ protected:
 private:
 	ContextPair m_ctx;
 	PluginType m_type;
-	char m_filename[PLATFORM_MAX_PATH+1];
+	char m_filename[PLATFORM_MAX_PATH];
 	PluginStatus m_status;
 	unsigned int m_serial;
 	sm_plugininfo_t m_info;

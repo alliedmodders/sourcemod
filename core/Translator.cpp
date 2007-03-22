@@ -101,7 +101,7 @@ void CPhraseFile::ReparseFile()
 	}
 
 	SMCParseError err;
-	char path[PLATFORM_MAX_PATH+1];
+	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
 	unsigned int line=0, col=0;
 

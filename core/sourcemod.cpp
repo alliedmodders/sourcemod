@@ -286,7 +286,7 @@ void SourceModBase::DoGlobalPluginLoads()
 
 size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...)
 {
-	char _buffer[PLATFORM_MAX_PATH+1];
+	char _buffer[PLATFORM_MAX_PATH];
 	va_list ap;
 
 	va_start(ap, format);

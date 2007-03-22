@@ -92,8 +92,8 @@ private:
 	void GameFrame(bool simulating);
 private:
 	CStack<CDataPack *> m_freepacks;
-	char m_SMBaseDir[PLATFORM_MAX_PATH+1];
-	char m_SMRelDir[PLATFORM_MAX_PATH+1];
+	char m_SMBaseDir[PLATFORM_MAX_PATH];
+	char m_SMRelDir[PLATFORM_MAX_PATH];
 	bool m_IsMapLoading;
 	bool m_ExecPluginReload;
 	unsigned int m_target;
