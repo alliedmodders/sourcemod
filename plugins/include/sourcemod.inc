@@ -310,5 +310,82 @@ native GetGameDescription(String:buffer[], maxlength, bool:original=false);
  */
 native GetCurrentMap(String:buffer[], maxlength);
 
+/**
+ * Precaches a given model.
+ *
+ * @param model			Name of the model to precache.
+ * @param preload		If preload is true the file will be precached before level startup.
+ * @return			Returns the model index, 0 for error.
+ */
+native PrecacheModel(const String:model[], bool:preload=false);
+
+/**
+ * Precaches a given sentence file.
+ *
+ * @param file			Name of the sentence file to precache.
+ * @param preload		If preload is true the file will be precached before level startup.
+ * @return			Returns a sentence file index.
+ */
+native PrecacheSentenceFile(const String:file[], bool:preload=false);
+
+/**
+ * Precaches a given decal.
+ *
+ * @param decal			Name of the decal to precache.
+ * @param preload		If preload is true the file will be precached before level startup.
+ * @return			Returns a decal index.
+ */
+native PrecacheDecal(const String:decal[], bool:preload=false);
+
+/**
+ * Precaches a given generic file.
+ *
+ * @param generic		Name of the generic file to precache.
+ * @param preload		If preload is true the file will be precached before level startup.
+ * @return			Returns a generic file index.
+ */
+native PrecacheGeneric(const String:generic[], bool:preload=false);
+
+/**
+ * Returns if a given model is precached.
+ *
+ * @param model			Name of the model to check.
+ * @return			True if precached, false otherwise.
+ */
+native bool:IsModelPrecached(const String:model[]);
+
+/**
+ * Returns if a given decal is precached.
+ *
+ * @param decal			Name of the decal to check.
+ * @return			True if precached, false otherwise.
+ */
+native bool:IsDecalPrecached(const String:decal[]);
+
+/**
+ * Returns if a given generic file is precached.
+ *
+ * @param decal			Name of the generic file to check.
+ * @return			True if precached, false otherwise.
+ */
+native bool:IsGenericPrecached(const String:generic[]);
+
+/**
+ * Precaches a given sound.
+ *
+ * @param sound			Name of the sound to precache.
+ * @param preload		If preload is true the file will be precached before level startup.
+ * @return			True if successfully precached, false otherwise.
+ */
+native bool:PrecacheSound(const String:sound[], bool:preload=false);
+
+/**
+ * Returns if a given sound is precached.
+ *
+ * @param sound			Name of the sound to check.
+ * @return			True if precached, false otherwise.
+ */
+native bool:IsSoundPrecached(const String:sound[]);
+
 #include <helpers>
 #include <entity>

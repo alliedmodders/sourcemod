@@ -135,6 +135,78 @@ static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 	return bytes;
 }
 
+static cell_t PrecacheModel(IPluginContext *pContext, const cell_t *params)
+{
+	char *model;
+	pContext->LocalToString(params[1], &model);
+
+	return engine->PrecacheModel(model, params[2] ? true : false);
+}
+
+static cell_t PrecacheSentenceFile(IPluginContext *pContext, const cell_t *params)
+{
+	char *sentencefile;
+	pContext->LocalToString(params[1], &sentencefile);
+
+	return engine->PrecacheSentenceFile(sentencefile, params[2] ? true : false);
+}
+
+static cell_t PrecacheDecal(IPluginContext *pContext, const cell_t *params)
+{
+	char *decal;
+	pContext->LocalToString(params[1], &decal);
+
+	return engine->PrecacheDecal(decal, params[2] ? true : false);
+}
+
+static cell_t PrecacheGeneric(IPluginContext *pContext, const cell_t *params)
+{
+	char *generic;
+	pContext->LocalToString(params[1], &generic);
+
+	return engine->PrecacheGeneric(generic, params[2] ? true : false);
+}
+
+static cell_t IsModelPrecached(IPluginContext *pContext, const cell_t *params)
+{
+	char *model;
+	pContext->LocalToString(params[1], &model);
+
+	return engine->IsModelPrecached(model) ? 1 : 0;
+}
+
+static cell_t IsDecalPrecached(IPluginContext *pContext, const cell_t *params)
+{
+	char *decal;
+	pContext->LocalToString(params[1], &decal);
+
+	return engine->IsDecalPrecached(decal) ? 1 : 0;
+}
+
+static cell_t IsGenericPrecached(IPluginContext *pContext, const cell_t *params)
+{
+	char *generic;
+	pContext->LocalToString(params[1], &generic);
+
+	return engine->IsGenericPrecached(generic) ? 1 : 0;
+}
+
+static cell_t PrecacheSound(IPluginContext *pContext, const cell_t *params)
+{
+	char *sample;
+	pContext->LocalToString(params[1], &sample);
+
+	return enginesound->PrecacheSound(sample, params[2] ? true : false) ? 1 : 0;
+}
+
+static cell_t IsSoundPrecached(IPluginContext *pContext, const cell_t *params)
+{
+	char *sample;
+	pContext->LocalToString(params[1], &sample);
+
+	return enginesound->IsSoundPrecached(sample) ? 1 : 0;
+}
+
 REGISTER_NATIVES(halflifeNatives)
 {
 	{"CreateFakeClient",		CreateFakeClient},
@@ -148,5 +220,14 @@ REGISTER_NATIVES(halflifeNatives)
 	{"IsMapValid",				IsMapValid},
 	{"SetFakeClientConVar",		SetFakeClientConVar},
 	{"SetRandomSeed",			SetRandomSeed},
+	{"PrecacheModel",			PrecacheModel},
+	{"PrecacheSentenceFile",	PrecacheSentenceFile},
+	{"PrecacheDecal",			PrecacheDecal},
+	{"PrecacheGeneric",			PrecacheGeneric},
+	{"IsModelPrecached",		IsModelPrecached},
+	{"IsDecalPrecached",		IsDecalPrecached},
+	{"IsGenericPrecached",		IsGenericPrecached},
+	{"PrecacheSound",			PrecacheSound},
+	{"IsSoundPrecached",		IsSoundPrecached},
 	{NULL,						NULL},
 };
