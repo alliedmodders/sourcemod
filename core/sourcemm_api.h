@@ -21,6 +21,7 @@
 #include <igameevents.h>
 #include <iplayerinfo.h>
 #include <random.h>
+#include <filesystem.h>
 
 /**
  * @file Contains wrappers around required Metamod:Source API exports
@@ -57,6 +58,7 @@ extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
 extern IUniformRandomStream *engrandom;
 extern IPlayerInfoManager *playerinfo;
+extern IBaseFileSystem *basefilesystem;
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 #define SERVER_CALL(func)		SH_CALL(gamedllPatch, &IServerGameDLL::func)
