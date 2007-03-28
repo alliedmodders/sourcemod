@@ -121,5 +121,5 @@ const char *SourceMod_Core::GetDate()
 
 const char *SourceMod_Core::GetLogTag()
 {
-	return "SRCMOD";
+	return "SM";
 }

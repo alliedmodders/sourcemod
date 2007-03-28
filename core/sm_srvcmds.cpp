@@ -59,6 +59,13 @@ bool RootConsoleMenu::RegisterConCommandBase(ConCommandBase *pCommand)
 {
 	META_REGCVAR(pCommand);
 
+	/* Override values of convars created by SourceMod convar manager if specified on command line */
+	const char *cmdLineValue = icvar->GetCommandLineValue(pCommand->GetName());
+	if (cmdLineValue && !pCommand->IsCommand())
+	{
+		static_cast<ConVar *>(pCommand)->SetValue(cmdLineValue);
+	}
+
 	return true;
 }
 
