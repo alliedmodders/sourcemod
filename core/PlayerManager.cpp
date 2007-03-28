@@ -520,7 +520,7 @@ void CPlayer::SetName(const char *name)
 
 const char *CPlayer::GetName()
 {
-	return m_Name.c_str();
+	return (m_Info) ? m_Info->GetName(): m_Name.c_str();
 }
 
 const char *CPlayer::GetIPAddress()

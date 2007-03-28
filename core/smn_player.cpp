@@ -391,6 +391,252 @@ static cell_t GetClientTeam(IPluginContext *pContext, const cell_t *params)
 	return pInfo->GetTeamIndex();
 }
 
+static cell_t GetFragCount(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	return pInfo->GetFragCount();
+}
+
+static cell_t GetDeathCount(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	return pInfo->GetDeathCount();
+}
+
+static cell_t GetArmorValue(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	return pInfo->GetArmorValue();
+}
+
+static cell_t GetAbsOrigin(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	cell_t *pVec;
+	pContext->LocalToPhysAddr(params[2], &pVec);
+
+	Vector vec = pInfo->GetAbsOrigin();
+	pVec[0] = sp_ftoc(vec.x);
+	pVec[1] = sp_ftoc(vec.y);
+	pVec[2] = sp_ftoc(vec.z);
+
+	return 1;
+}
+
+static cell_t GetAbsAngles(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	cell_t *pAng;
+	pContext->LocalToPhysAddr(params[2], &pAng);
+
+	QAngle ang = pInfo->GetAbsAngles();
+	pAng[0] = sp_ftoc(ang.x);
+	pAng[1] = sp_ftoc(ang.y);
+	pAng[2] = sp_ftoc(ang.z);
+
+	return 1;
+}
+
+static cell_t GetPlayerMins(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	cell_t *pVec;
+	pContext->LocalToPhysAddr(params[2], &pVec);
+
+	Vector vec = pInfo->GetPlayerMins();
+	pVec[0] = sp_ftoc(vec.x);
+	pVec[1] = sp_ftoc(vec.y);
+	pVec[2] = sp_ftoc(vec.z);
+
+	return 1;
+}
+
+static cell_t GetPlayerMaxs(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	cell_t *pVec;
+	pContext->LocalToPhysAddr(params[2], &pVec);
+
+	Vector vec = pInfo->GetPlayerMaxs();
+	pVec[0] = sp_ftoc(vec.x);
+	pVec[1] = sp_ftoc(vec.y);
+	pVec[2] = sp_ftoc(vec.z);
+
+	return 1;
+}
+
+static cell_t GetWeaponName(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pInfo->GetWeaponName(), NULL);
+
+	return 1;
+}
+
+static cell_t GetModelName(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pInfo->GetModelName(), NULL);
+
+	return 1;
+}
+
+static cell_t GetHealth(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	return pInfo->GetHealth();
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -412,6 +658,15 @@ REGISTER_NATIVES(playernatives)
 	{"RemoveUserFlags",			RemoveUserFlags},
 	{"SetUserAdmin",			SetUserAdmin},
 	{"SetUserFlagBits",			SetUserFlagBits},
+	{"GetClientDeaths",			GetDeathCount},
+	{"GetClientFrags",			GetFragCount},
+	{"GetClientArmor",			GetArmorValue},
+	{"GetClientAbsOrigin",		GetAbsOrigin},
+	{"GetClientAbsAngles",		GetAbsAngles},
+	{"GetClientMins",			GetPlayerMins},
+	{"GetClientMaxs",			GetPlayerMaxs},
+	{"GetClientWeapon",			GetWeaponName},
+	{"GetClientModel",			GetModelName},
+	{"GetClientHealth",			GetHealth},
 	{NULL,						NULL}
 };
-

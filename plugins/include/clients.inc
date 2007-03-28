@@ -282,3 +282,101 @@ native CreateFakeClient(const String:name[]);
  *						or client not a fake client.
  */
 native SetFakeClientConVar(client, const String:cvar[], const String:value[]);
+
+/**
+ * Returns the client's health.
+ *
+ * @param client		Player's index.
+ * @return				Health value.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientHealth(client);
+
+/**
+ * Returns the client's model name.
+ *
+ * @param client		Player's index.
+ * @param model			Buffer to store the client's model name.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientModel(client, String:model[], maxlen);
+
+/**
+ * Returns the client's weapon name.
+ *
+ * @param client		Player's index.
+ * @param weapon		Buffer to store the client's weapon name.
+ * @param maxlen		Maximum length of string buffer (includes NULL terminator).
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientWeapon(client, String:weapon[], maxlen);
+
+/**
+ * Returns the client's max size vector.
+ *
+ * @param client		Player's index.
+ * @param vec			Destination vector to store the client's max size.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientMaxs(client, Float:vec[3]);
+
+/**
+ * Returns the client's min size vector.
+ *
+ * @param client		Player's index.
+ * @param vec			Destination vector to store the client's min size.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientMins(client, Float:vec[3]);
+
+/**
+ * Returns the client's position angle.
+ *
+ * @param client		Player's index.
+ * @param ang			Destination vector to store the client's position angle.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientAbsAngles(client, Float:ang[3]);
+
+/**
+ * Returns the client's origin vector.
+ *
+ * @param client		Player's index.
+ * @param vec			Destination vector to store the client's origin vector.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientAbsOrigin(client, Float:vec[3]);
+
+/**
+ * Returns the client's armor.
+ *
+ * @param client		Player's index.
+ * @return				Armor value.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientArmor(client);
+
+/**
+ * Returns the client's death count.
+ *
+ * @param client		Player's index.
+ * @return				Death count.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientDeaths(client);
+
+/**
+ * Returns the client's frag count.
+ *
+ * @param client		Player's index.
+ * @return				Frag count.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientFrags(client);
