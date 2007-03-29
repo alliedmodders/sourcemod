@@ -31,6 +31,7 @@ CallClass<IServerGameDLL> *gamedllPatch = NULL;
 IPlayerInfoManager *playerinfo = NULL;
 IBaseFileSystem *basefilesystem = NULL;
 IEngineSound *enginesound = NULL;
+IServerPluginHelpers *serverpluginhelpers = NULL;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -46,6 +47,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	GET_V_IFACE_CURRENT(engineFactory, engrandom, IUniformRandomStream, VENGINE_SERVER_RANDOM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(fileSystemFactory, basefilesystem, IBaseFileSystem, BASEFILESYSTEM_INTERFACE_VERSION);
 	GET_V_IFACE_CURRENT(engineFactory, enginesound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
+	GET_V_IFACE_CURRENT(engineFactory, serverpluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
 
 	/* :TODO: Make this optional and... make it find earlier versions [?] */
 	GET_V_IFACE_CURRENT(serverFactory, playerinfo, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);

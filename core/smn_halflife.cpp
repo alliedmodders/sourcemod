@@ -207,6 +207,28 @@ static cell_t IsSoundPrecached(IPluginContext *pContext, const cell_t *params)
 	return enginesound->IsSoundPrecached(sample) ? 1 : 0;
 }
 
+static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer)-1, pContext, params, 2);
+
+	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
+
+	return 1;
+}
+
 REGISTER_NATIVES(halflifeNatives)
 {
 	{"CreateFakeClient",		CreateFakeClient},
@@ -229,5 +251,6 @@ REGISTER_NATIVES(halflifeNatives)
 	{"IsGenericPrecached",		IsGenericPrecached},
 	{"PrecacheSound",			PrecacheSound},
 	{"IsSoundPrecached",		IsSoundPrecached},
+	{"FakeClientCommand",		FakeClientCommand},
 	{NULL,						NULL},
 };
