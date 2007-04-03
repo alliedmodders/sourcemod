@@ -33,7 +33,7 @@ namespace builder
 
 			folders[0] = "bin";
 			folders[1] = "plugins/disabled";
-			folders[2] = "configs";
+			folders[2] = "configs/gamedata";
 			folders[3] = "translations";
 			folders[4] = "logs";
 			folders[5] = "extensions";
@@ -55,6 +55,7 @@ namespace builder
 		public override void OnCopyFolders(ABuilder builder)
 		{
 			builder.CopyFolder(this, "configs", "configs", null);
+			builder.CopyFolder(this, "configs/gamedata", "configs/gamedata", null);
 			
 			string [] plugin_omits = new string[1];
 			plugin_omits[0] = "spcomp.exe";
