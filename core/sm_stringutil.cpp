@@ -73,9 +73,9 @@ size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *
 try_serverlang:
 	if (target == LANG_SERVER)
 	{
-		langid = g_Translator.GetServerLanguageCode();
+		langid = g_Translator.GetServerLanguage();
  	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
-		langid = g_Translator.GetServerLanguageCode();
+		langid = g_Translator.GetServerLanguage();
 	} else {
 		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
 		goto error_out;
@@ -736,9 +736,11 @@ reswitch:
 				char *key;
 				bool error;
 				size_t res;
-				cell_t target = params[arg++];
+				cell_t *target;
+				pCtx->LocalToPhysAddr(params[arg++], &target);
 				pCtx->LocalToString(params[arg++], &key);
-				res = Translate(buf_p, llen, pCtx, key, target, params, &arg, &error);
+				printf("target = %d\n", target);
+				res = Translate(buf_p, llen, pCtx, key, *target, params, &arg, &error);
 				if (error)
 				{
 					return 0;

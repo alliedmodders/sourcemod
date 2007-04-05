@@ -34,10 +34,11 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 {
 	if (strcasecmp(key, "Logging") == 0)
 	{
-		bool state = true;
+		bool state;
 
 		if (strcasecmp(value, "on") == 0)
 		{
+			state = true;
 		} else if (strcasecmp(value, "off") == 0) {
 			state = false;
 		} else {
@@ -47,12 +48,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 
 		if (source == ConfigSource_Console)
 		{
-			if (state && !m_Active)
-			{
-				EnableLogging();
-			} else if (!state && m_Active) {
-				DisableLogging();
-			}
+			state ? EnableLogging() : DisableLogging();
 		} else {
 			m_InitialState = state;
 		}
@@ -412,7 +408,7 @@ void Logger::EnableLogging()
 		return;
 	}
 	m_Active = true;
-	LogMessage("Logging enabled manually by user.");
+	LogMessage("[SM] Logging enabled manually by user.");
 }
 
 void Logger::DisableLogging()
@@ -421,7 +417,7 @@ void Logger::DisableLogging()
 	{
 		return;
 	}
-	LogMessage("Logging disabled manually by user.");
+	LogMessage("[SM] Logging disabled manually by user.");
 	m_Active = false;
 }
 

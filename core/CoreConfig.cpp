@@ -47,13 +47,13 @@ void CoreConfig::OnRootConsoleCommand(const char *command, unsigned int argcount
 
 		char error[255];
 
-		ConfigResult err = SetConfigOption(option, value, ConfigSource_Console, error, sizeof(error));
+		ConfigResult res = SetConfigOption(option, value, ConfigSource_Console, error, sizeof(error));
 
-		if (err == ConfigResult_Reject)
+		if (res == ConfigResult_Reject)
 		{
-			g_RootMenu.ConsolePrint("Could not set config option \"%s\" to \"%s\" (%s)", option, value, error);
-		} else if (err == ConfigResult_Ignore) {
-			g_RootMenu.ConsolePrint("No such config option \"%s\" exists.", option);
+			g_RootMenu.ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\" (%s)", option, value, error);
+		} else if (res == ConfigResult_Ignore) {
+			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
 			g_RootMenu.ConsolePrint("Config option \"%s\" successfully set to \"%s.\"", option, value);
 		}
@@ -82,8 +82,7 @@ void CoreConfig::Initialize()
 	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetModPath(), corecfg);
 
 	/* Parse config file */
-	if ((err=g_TextParser.ParseFile_SMC(filePath, this, NULL, NULL))
-		!= SMCParse_Okay)
+	if ((err=g_TextParser.ParseFile_SMC(filePath, this, NULL, NULL)) != SMCParse_Okay)
 	{
  		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
 		const char *error = g_TextParser.GetSMCErrorString(err);

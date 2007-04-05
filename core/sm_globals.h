@@ -28,19 +28,22 @@ using namespace SourcePawn;
 using namespace SourceMod;
 
 /**
- * @brief Lists error codes possible from attempting to set a core configuration option.
+ * @brief Lists result codes possible from attempting to set a core configuration option.
  */
 enum ConfigResult
 {
-	ConfigResult_Accept = 0,
-	ConfigResult_Reject = 1,
-	ConfigResult_Ignore = 2
+	ConfigResult_Accept = 0,	/**< Config option was successfully set */
+	ConfigResult_Reject = 1,	/**< Config option was given an invalid value and was rejected */
+	ConfigResult_Ignore = 2		/**< Config option was invalid, but ignored */
 };
 
+/**
+ * @brief Lists possible sources of a config option change
+ */
 enum ConfigSource
 {
-	ConfigSource_File = 0,
-	ConfigSource_Console = 1,
+	ConfigSource_File = 0,		/**< Config option was set from config file (core.cfg) */
+	ConfigSource_Console = 1,	/**< Config option was set from console command (sm config) */
 };
 
 /** 

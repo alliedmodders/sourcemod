@@ -127,7 +127,7 @@ public:
 						 const char *phrase, 
 						 void **params, 
 						 size_t *outlen=NULL);
-	unsigned int GetServerLanguageCode();
+	unsigned int GetServerLanguage();
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:
@@ -137,7 +137,8 @@ private:
 	Trie *m_pLCodeLookup;
 	bool m_InLanguageSection;
 	String m_CustomError;
-	char m_ServerLangCode[3];
+	unsigned int m_ServerLang;
+	char m_InitialLang[3];
 };
 
 extern CPhraseFile *g_pCorePhrases;

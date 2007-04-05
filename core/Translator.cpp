@@ -580,11 +580,11 @@ const char *CPhraseFile::GetFilename()
  ** MAIN TRANSLATOR CODE **
  **************************/
 
-Translator::Translator()
+Translator::Translator() : m_ServerLang(LANGUAGE_ENGLISH)
 {
 	m_pStringTab = new BaseStringTable(2048);
 	m_pLCodeLookup = sm_trie_create();
-	strncopy(m_ServerLangCode, "en", sizeof(m_ServerLangCode));
+	strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 }
 
 Translator::~Translator()
@@ -620,9 +620,11 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 				UTIL_Format(error, maxlength, "Language code \"%s\" is not registered", value);
 				return ConfigResult_Reject;
 			}
-		}
 
-		strncopy(m_ServerLangCode, value, sizeof(m_ServerLangCode));
+			m_ServerLang = index;
+		} else {
+			strncopy(m_InitialLang, value, sizeof(m_InitialLang));
+		}
 
 		return ConfigResult_Accept;
 	}
@@ -711,6 +713,18 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 		g_Logger.LogError("[SM] Failed to parse language header file: \"%s\"", lang_header_file);
 		g_Logger.LogError("[SM] Parse error (line %d, column %d): %s", line, col, str_err);
 	}
+
+	void *serverLang;
+
+	if (!sm_trie_retrieve(m_pLCodeLookup, m_InitialLang, &serverLang))
+	{
+		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English", m_InitialLang);
+
+		strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
+		m_ServerLang = LANGUAGE_ENGLISH;
+	}
+
+	m_ServerLang = reinterpret_cast<unsigned int>(serverLang);
 
 	if (!m_Languages.size())
 	{
@@ -829,15 +843,11 @@ TransError Translator::CoreTrans(int client,
 	}
 
 	/* Using server lang temporarily until client lang stuff is implemented */
-	unsigned int serverLang;
-	if (!sm_trie_retrieve(m_pLCodeLookup, m_ServerLangCode, (void **)&serverLang))
-	{
-		return Trans_BadLanguage;
-	}
+	unsigned int serverLang = GetServerLanguage();
 
 	Translation trans;
 	TransError err;
-	if ((err=g_pCorePhrases->GetTranslation(phrase, serverLang, &trans)) != Trans_Okay)
+	if ((err=g_pCorePhrases->GetTranslation(phrase, m_ServerLang, &trans)) != Trans_Okay)
 	{
 		return err;
 	}
@@ -852,20 +862,7 @@ TransError Translator::CoreTrans(int client,
 	return Trans_Okay;
 }
 
-unsigned int Translator::GetServerLanguageCode()
+unsigned int Translator::GetServerLanguage()
 {
-	void *serverLang;
-
-	/* :TODO: there is absolutely no reason this shouldn't be cached
-	 * I don't even know why it was returning a string originally
-	 */
-
-	if (!sm_trie_retrieve(m_pLCodeLookup, m_ServerLangCode, &serverLang))
-	{
-		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English", m_ServerLangCode);
-		strncopy(m_ServerLangCode, "en", sizeof(m_ServerLangCode));
-		return LANGUAGE_ENGLISH;
-	}
-
-	return (unsigned int)serverLang;
+	return m_ServerLang;
 }
