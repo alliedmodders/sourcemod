@@ -739,7 +739,6 @@ reswitch:
 				cell_t *target;
 				pCtx->LocalToPhysAddr(params[arg++], &target);
 				pCtx->LocalToString(params[arg++], &key);
-				printf("target = %d\n", target);
 				res = Translate(buf_p, llen, pCtx, key, *target, params, &arg, &error);
 				if (error)
 				{
