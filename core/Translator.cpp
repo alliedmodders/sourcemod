@@ -862,9 +862,9 @@ unsigned int Translator::GetServerLanguageCode()
 
 	if (!sm_trie_retrieve(m_pLCodeLookup, m_ServerLangCode, &serverLang))
 	{
-		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English");
+		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English", m_ServerLangCode);
 		strncopy(m_ServerLangCode, "en", sizeof(m_ServerLangCode));
-		return 0;
+		return LANGUAGE_ENGLISH;
 	}
 
 	return (unsigned int)serverLang;
