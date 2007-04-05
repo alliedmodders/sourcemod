@@ -584,6 +584,7 @@ Translator::Translator()
 {
 	m_pStringTab = new BaseStringTable(2048);
 	m_pLCodeLookup = sm_trie_create();
+	strncopy(m_ServerLangCode, "en", sizeof(m_ServerLangCode));
 }
 
 Translator::~Translator()
@@ -601,6 +602,17 @@ Translator::~Translator()
 	sm_trie_destroy(m_pLCodeLookup);
 
 	delete m_pStringTab;
+}
+
+CoreConfigErr Translator::OnSourceModConfigChanged(const char *option, const char *value)
+{
+	if (strcasecmp(option, "ServerLang") == 0)
+	{
+		strncopy(m_ServerLangCode, value, sizeof(m_ServerLangCode));
+		return CoreConfig_Okay;
+	}
+
+	return CoreConfig_InvalidOption;
 }
 
 void Translator::OnSourceModAllInitialized()
@@ -801,9 +813,16 @@ TransError Translator::CoreTrans(int client,
 		return Trans_BadPhraseFile;
 	}
 
+	/* Using server lang temporarily until client lang stuff is implemented */
+	unsigned int serverLang;
+	if (!sm_trie_retrieve(m_pLCodeLookup, m_ServerLangCode, (void **)&serverLang))
+	{
+		return Trans_BadLanguage;
+	}
+
 	Translation trans;
 	TransError err;
-	if ((err=g_pCorePhrases->GetTranslation(phrase, 0, &trans)) != Trans_Okay)
+	if ((err=g_pCorePhrases->GetTranslation(phrase, serverLang, &trans)) != Trans_Okay)
 	{
 		return err;
 	}
@@ -816,4 +835,9 @@ TransError Translator::CoreTrans(int client,
 	}
 
 	return Trans_Okay;
+}
+
+const char *Translator::GetServerLanguageCode() const
+{
+	return m_ServerLangCode;
 }

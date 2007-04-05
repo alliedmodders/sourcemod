@@ -25,10 +25,51 @@ Logger g_Logger;
  * :TODO: This should be creating the log folder if it doesn't exist
  */
 
+CoreConfigErr Logger::OnSourceModConfigChanged(const char *option, const char *value)
+{
+	if (strcasecmp(option, "Logging") == 0)
+	{
+		bool state = true;
+
+		if (strcasecmp(value, "on") == 0)
+		{
+			state = true;
+		} else if (strcasecmp(value, "off") == 0) {
+			state = false;
+		} else {
+			return CoreConfig_InvalidValue;
+		}
+
+		if (m_FirstPass)
+		{
+			m_InitialState = state;
+			m_FirstPass = false;
+		} else {
+			state ? g_Logger.EnableLogging() : g_Logger.DisableLogging();
+		}
+
+		return CoreConfig_Okay;
+	} else if (strcasecmp(option, "LogMode") == 0) {
+		if (strcasecmp(value, "daily") == 0) 
+		{
+			m_Mode = LoggingMode_Daily;
+		} else if (strcasecmp(value, "map") == 0) {
+			m_Mode = LoggingMode_PerMap;
+		} else if (strcasecmp(value, "game") == 0) {
+			m_Mode = LoggingMode_Game;
+		} else {
+			return CoreConfig_InvalidValue;
+		}
+
+		return CoreConfig_Okay;
+	}
+
+	return CoreConfig_InvalidOption;
+}
+
 void Logger::OnSourceModStartup(bool late)
 {
-	//:TODO: read these options from a file, dont hardcode them
-	InitLogger(LoggingMode_Daily, true);
+	InitLogger(m_Mode, m_InitialState);
 }
 
 void Logger::OnSourceModAllShutdown()
@@ -42,6 +83,9 @@ void Logger::_NewMapFile()
 	{
 		return;
 	}
+
+	/* Append "Log file closed" to previous log file */
+	_CloseFile();
 	
 	char _filename[256];
 	int i = 0;
@@ -113,7 +157,7 @@ void Logger::_CloseFile()
 
 void Logger::InitLogger(LoggingMode mode, bool startlogging)
 {
-	m_mode = mode;
+	m_Mode = mode;
 	m_Active = startlogging;
 
 	time_t t;
@@ -125,7 +169,7 @@ void Logger::InitLogger(LoggingMode mode, bool startlogging)
 	g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%02d%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday, curtime->tm_year - 100);
 	m_ErrFileName.assign(_filename);
 
-	switch (m_mode)
+	switch (m_Mode)
 	{
 	case LoggingMode_PerMap:
 		{
@@ -162,11 +206,11 @@ void Logger::LogMessage(const char *vafmt, ...)
 		return;
 	}
 
-	if (m_mode == LoggingMode_HL2)
+	if (m_Mode == LoggingMode_Game)
 	{
 		va_list ap;
 		va_start(ap, vafmt);
-		_PrintToHL2Log(vafmt, ap);
+		_PrintToGameLog(vafmt, ap);
 		va_end(ap);
 		return;
 	}
@@ -190,7 +234,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 
 	FILE *fp = NULL;
-	if (m_mode == LoggingMode_PerMap)
+	if (m_Mode == LoggingMode_PerMap)
 	{
 		fp = fopen(m_NrmFileName.c_str(), "a+");
 		if (!fp)
@@ -287,7 +331,7 @@ void Logger::MapChange(const char *mapname)
 {
 	m_CurMapName.assign(mapname);
 
-	switch (m_mode)
+	switch (m_Mode)
 	{
 	case LoggingMode_Daily:
 		{
@@ -313,7 +357,7 @@ void Logger::MapChange(const char *mapname)
 	m_ErrMapStart = false;
 }
 
-void Logger::_PrintToHL2Log(const char *fmt, va_list ap)
+void Logger::_PrintToGameLog(const char *fmt, va_list ap)
 {
 	char msg[3072];
 	size_t len;
@@ -348,7 +392,7 @@ const char *Logger::GetLogFileName(LogType type) const
 
 LoggingMode Logger::GetLoggingMode() const
 {
-	return m_mode;
+	return m_Mode;
 }
 
 void Logger::EnableLogging()

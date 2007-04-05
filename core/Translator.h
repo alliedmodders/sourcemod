@@ -99,9 +99,10 @@ class Translator :
 public:
 	Translator();
 	~Translator();
-public: //SMGlobalClass
+public: // SMGlobalClass
+	CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value);
 	void OnSourceModAllInitialized();
-public: //ITextListener_SMC
+public: // ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
 	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
@@ -120,6 +121,7 @@ public:
 						 const char *phrase, 
 						 void **params, 
 						 size_t *outlen=NULL);
+	const char *GetServerLanguageCode() const;
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:
@@ -129,6 +131,7 @@ private:
 	Trie *m_pLCodeLookup;
 	bool m_InLanguageSection;
 	String m_CustomError;
+	char m_ServerLangCode[3];
 };
 
 extern CPhraseFile *g_pCorePhrases;

@@ -62,7 +62,7 @@ inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, un
 size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *key, cell_t target, const cell_t *params, int *arg, bool *error)
 {
 	unsigned int langid;
-	char *langname = NULL;
+	const char *langname = NULL;
 	*error = false;
 	Translation pTrans;
 	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
@@ -73,14 +73,14 @@ size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *
 try_serverlang:
 	if (target == LANG_SERVER)
 	{
-		langname = "en"; //:TODO: read serverlang
+		langname = g_Translator.GetServerLanguageCode();
 		if (!TryServerLanguage(langname ? langname : "en", &langid))
 		{
 			pCtx->ThrowNativeError("Translation failure: English language not found");
 			goto error_out;
 		}
 	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
-		langname = "en"; //:TODO: read player's lang
+		langname = g_Translator.GetServerLanguageCode(); /* :TODO: read player's lang */
 		if (!langname || !g_Translator.GetLanguageByCode(langname, &langid))
 		{
 			if (langname && !strcmp(langname, "en"))

@@ -30,14 +30,15 @@ enum LoggingMode
 {
 	LoggingMode_Daily,
 	LoggingMode_PerMap,
-	LoggingMode_HL2
+	LoggingMode_Game
 };
 
 class Logger : public SMGlobalClass
 {
 public:
-	Logger() : m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false) {}
+	Logger() : m_Mode(LoggingMode_Daily), m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false), m_InitialState(true), m_FirstPass(true) {}
 public: //SMGlobalClass
+	CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value);
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllShutdown();
 public:
@@ -53,17 +54,19 @@ public:
 private:
 	void _CloseFile();
 	void _NewMapFile();
-	void _PrintToHL2Log(const char *fmt, va_list ap);
+	void _PrintToGameLog(const char *fmt, va_list ap);
 private:
 	String m_NrmFileName;
 	String m_ErrFileName;
 	String m_CurMapName;
-	LoggingMode m_mode;
+	LoggingMode m_Mode;
 	int m_CurDay;
 	bool m_ErrMapStart;
 	bool m_Active;
 	bool m_DelayedStart;
 	bool m_DailyPrintHdr;
+	bool m_InitialState;
+	bool m_FirstPass;
 };
 
 extern Logger g_Logger;

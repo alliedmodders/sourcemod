@@ -27,12 +27,26 @@
 using namespace SourcePawn;
 using namespace SourceMod;
 
+/**
+* @brief Lists error codes possible from attempting to set a core configuration option.
+*/
+enum CoreConfigErr
+{
+	CoreConfig_Okay = 0,			/**< No error */
+	CoreConfig_NoRuntime = 1,		/**< Cannot set config option while SourceMod is running */
+	CoreConfig_InvalidValue = 2,	/**< Invalid value specified for config option */
+	CoreConfig_InvalidOption = 3,	/**< Invalid config option specified */
+	/* -------------------- */
+	CoreConfig_TOTAL				/**< Total number of core config error codes */
+};
+
 /** 
  * @brief Any class deriving from this will be automatically initiated/shutdown by SourceMod
  */
 class SMGlobalClass
 {
 	friend class SourceModBase;
+	friend class CoreConfig;
 public:
 	SMGlobalClass();
 public:
@@ -58,10 +72,20 @@ public:
 	}
 
 	/**
-	* @brief Called after SourceMod is completely shut down
-	*/
+	 * @brief Called after SourceMod is completely shut down
+	 */
 	virtual void OnSourceModAllShutdown()
 	{
+	}
+
+	/**
+	 * @brief Called when a core config option is changed.
+	 * @note This is called once BEFORE OnSourceModStartup() when SourceMod is loading
+	 * @note It can then be called again when the 'sm config' command is used
+	 */
+	virtual CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value)
+	{
+		return CoreConfig_InvalidOption;
 	}
 private:
 	SMGlobalClass *m_pGlobalClassNext;

@@ -20,6 +20,7 @@
 #include <sh_string.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
+#include "CoreConfig.h"
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include "AdminCache.h"
@@ -65,13 +66,43 @@ SourceModBase::SourceModBase()
 {
 	m_IsMapLoading = false;
 	m_ExecPluginReload = false;
+	m_GotBasePath = false;
+}
+
+CoreConfigErr SourceModBase::OnSourceModConfigChanged(const char *option, const char *value)
+{
+	if (strcasecmp(option, "BasePath") == 0)
+	{
+		if (!m_GotBasePath)
+		{
+			g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), value);
+			g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), value);
+
+			m_GotBasePath = true;
+
+			return CoreConfig_Okay;
+		} else {
+			return CoreConfig_NoRuntime;
+		}
+	}
+
+	return CoreConfig_InvalidOption;
 }
 
 bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 {
 	g_BaseDir.assign(g_SMAPI->GetBaseDir());
-	g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/addons/sourcemod", g_BaseDir.c_str());
-	g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "addons/sourcemod");
+
+	/* Initialize CoreConfig so we can get SourceMod base path properly - this basically parses core.cfg */
+	g_CoreConfig.Initialize();
+
+	/* This shouldn't happen, but can't hurt to be safe */
+	if (!m_GotBasePath || !g_LibSys.PathExists(m_SMBaseDir))
+	{
+		g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/addons/sourcemod", g_BaseDir.c_str());
+		g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "addons/sourcemod");
+		m_GotBasePath = true;
+	}
 
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];

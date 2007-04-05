@@ -26,7 +26,9 @@ using namespace SourceHook;
  * @brief Implements SourceMod's global overall management, API, and logic
  */
 
-class SourceModBase : public ISourceMod
+class SourceModBase : 
+	public ISourceMod,
+	public SMGlobalClass
 {
 public:
 	SourceModBase();
@@ -75,7 +77,9 @@ public:
 	* @brief Sets whether if SoureMod needs to check player auths.
 	*/
 	void SetAuthChecking(bool set);
-public: //ISourceMod
+public: // SMGlobalClass
+	CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value);
+public: // ISourceMod
 	const char *GetModPath() const;
 	const char *GetSourceModPath() const;
 	size_t BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...);
@@ -90,6 +94,10 @@ private:
 	 * @brief Loading plugins
 	 */
 	void DoGlobalPluginLoads();
+
+	/**
+	 * @brief GameFrame hook
+	 */
 	void GameFrame(bool simulating);
 private:
 	CStack<CDataPack *> m_freepacks;
@@ -99,6 +107,7 @@ private:
 	bool m_ExecPluginReload;
 	unsigned int m_target;
 	bool m_CheckingAuth;
+	bool m_GotBasePath;
 };
 
 extern SourceModBase g_SourceMod;
