@@ -51,7 +51,11 @@ void CoreConfig::OnRootConsoleCommand(const char *command, unsigned int argcount
 
 		if (err == ConfigResult_Reject)
 		{
-			g_Logger.LogError("Could not set config option \"%s\" to \"%s\" (error: %s)", option, value, error);
+			g_RootMenu.ConsolePrint("Could not set config option \"%s\" to \"%s\" (%s)", option, value, error);
+		} else if (err == ConfigResult_Ignore) {
+			g_RootMenu.ConsolePrint("No such config option \"%s\" exists.", option);
+		} else {
+			g_RootMenu.ConsolePrint("Config option \"%s\" successfully set to \"%s.\"", option, value);
 		}
 
 		return;
@@ -81,7 +85,7 @@ void CoreConfig::Initialize()
 	if ((err=g_TextParser.ParseFile_SMC(filePath, this, NULL, NULL))
 		!= SMCParse_Okay)
 	{
-		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
+ 		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
 		const char *error = g_TextParser.GetSMCErrorString(err);
 		g_Logger.LogFatal("[SM] Error encountered parsing core config file: %s", error ? error : "");
 	}
@@ -95,7 +99,7 @@ SMCParseResult CoreConfig::ReadSMC_KeyValue(const char *key, const char *value, 
 	if (err == ConfigResult_Reject)
 	{
 		/* This is a fatal error */
-		g_Logger.LogFatal("%s", error);
+		g_Logger.LogFatal("Config error (key: %s) (value: %s) %s", key, value, error);
 	}
 
 	return SMCParse_Continue;

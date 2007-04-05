@@ -610,7 +610,7 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 									  char *error, 
 									  size_t maxlength)
 {
-	if (strcasecmp(value, "ServerLang") == 0)
+	if (strcasecmp(key, "ServerLang") == 0)
 	{
 		if (source == ConfigSource_Console)
 		{

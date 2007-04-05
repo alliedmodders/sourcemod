@@ -427,6 +427,11 @@ void Logger::DisableLogging()
 
 void Logger::LogFatal(const char *msg, ...)
 {
+	/* :TODO: make this print all pretty-like
+	 * In fact, the pretty log printing function should be abstracted. 
+	 * It's already implemented twice which is bad.
+	 */
+
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
 	FILE *fp = fopen(path, "at");

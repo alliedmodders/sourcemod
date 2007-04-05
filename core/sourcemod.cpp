@@ -75,7 +75,7 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 									  char *error, 
 									  size_t maxlength)
 {
-	if (strcasecmp(value, "BasePath") == 0)
+	if (strcasecmp(key, "BasePath") == 0)
 	{
 		if (source == ConfigSource_Console)
 		{
