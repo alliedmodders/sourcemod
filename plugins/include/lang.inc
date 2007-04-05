@@ -18,6 +18,8 @@
 #endif
 #define _lang_included
 
+#define LANG_SERVER		0		/**< Translate using the server's language */
+
 /**
  * @brief Loads a translation file for the plugin calling this native.
  *
