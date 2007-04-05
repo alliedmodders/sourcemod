@@ -49,6 +49,8 @@ struct Translation
 	int *fmt_order;				/**< Format phrase order. */
 };
 
+#define LANGUAGE_ENGLISH			0
+
 enum TransError
 {
 	Trans_Okay = 0,
@@ -100,7 +102,11 @@ public:
 	Translator();
 	~Translator();
 public: // SMGlobalClass
-	CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value);
+	ConfigResult OnSourceModConfigChanged(const char *key, 
+		const char *value, 
+		ConfigSource source, 
+		char *error, 
+		size_t maxlength);
 	void OnSourceModAllInitialized();
 public: // ITextListener_SMC
 	void ReadSMC_ParseStart();
@@ -121,7 +127,7 @@ public:
 						 const char *phrase, 
 						 void **params, 
 						 size_t *outlen=NULL);
-	const char *GetServerLanguageCode() const;
+	unsigned int GetServerLanguageCode();
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:

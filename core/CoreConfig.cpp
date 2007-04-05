@@ -22,7 +22,7 @@
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
-#else
+#elif defined PLATFORM_LINUX
 ConVar sm_corecfgfile("sm_corecfgfile", "addons/sourcemod/configs/core.cfg", 0, "SourceMod core configuration file");
 #endif
 
@@ -45,21 +45,13 @@ void CoreConfig::OnRootConsoleCommand(const char *command, unsigned int argcount
 		const char *option = engine->Cmd_Argv(2);
 		const char *value = engine->Cmd_Argv(3);
 
-		CoreConfigErr err = SetConfigOption(option, value);
+		char error[255];
 
-		switch (err)
+		ConfigResult err = SetConfigOption(option, value, ConfigSource_Console, error, sizeof(error));
+
+		if (err == ConfigResult_Reject)
 		{
-		case CoreConfig_NoRuntime:
-			g_RootMenu.ConsolePrint("[SM] Cannot set \"%s\" while SourceMod is running.", option);
-			break;
-		case CoreConfig_InvalidValue:
-			g_RootMenu.ConsolePrint("[SM] Invalid value \"%s\" specified for configuration option \"%s\"", value, option);
-			break;
-		case CoreConfig_InvalidOption:
-			g_RootMenu.ConsolePrint("[SM] Invalid configuration option specified: %s", option);
-			break;
-		default:
-			break;
+			g_Logger.LogError("Could not set config option \"%s\" to \"%s\" (error: %s)", option, value, error);
 		}
 
 		return;
@@ -90,44 +82,39 @@ void CoreConfig::Initialize()
 		!= SMCParse_Okay)
 	{
 		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
-		g_Logger.LogError("[SM] Error encountered parsing core config file: %s", g_TextParser.GetSMCErrorString(err));
+		const char *error = g_TextParser.GetSMCErrorString(err);
+		g_Logger.LogFatal("[SM] Error encountered parsing core config file: %s", error ? error : "");
 	}
 }
 
 SMCParseResult CoreConfig::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
 {
-	CoreConfigErr err = SetConfigOption(key, value);
+	char error[255];
+	ConfigResult err = SetConfigOption(key, value, ConfigSource_File, error, sizeof(error));
 
-	if (err == CoreConfig_InvalidOption)
+	if (err == ConfigResult_Reject)
 	{
-		g_Logger.LogError("[SM] Warning: Ignoring invalid option \"%s\" in configuration file.", key);
-	} else if (err == CoreConfig_InvalidValue) {
-		g_Logger.LogError("[SM] Warning encountered parsing core configuration file.");
-		g_Logger.LogError("[SM] Invalid value \"%s\" specified for option \"%s\"", value, key);
+		/* This is a fatal error */
+		g_Logger.LogFatal("%s", error);
 	}
 
 	return SMCParse_Continue;
 }
 
-CoreConfigErr CoreConfig::SetConfigOption(const char *option, const char *value)
+ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, ConfigSource source, char *error, size_t maxlength)
 {
-	CoreConfigErr err = CoreConfig_TOTAL;
-	CoreConfigErr currentErr;
+	ConfigResult result;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
 	while (pBase)
 	{
-		currentErr = pBase->OnSourceModConfigChanged(option, value);
-
-		/* Lowest error code has priority */
-		if (currentErr < err)
+		if ((result = pBase->OnSourceModConfigChanged(option, value, source, error, maxlength)) != ConfigResult_Ignore)
 		{
-			err = currentErr;
+			return result;
 		}
-
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
-	return err;
+	return ConfigResult_Ignore;
 }

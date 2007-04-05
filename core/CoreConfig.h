@@ -42,7 +42,7 @@ private:
 	/**
 	 * Sets configuration option by notifying SourceMod components that rely on core.cfg
 	 */
-	CoreConfigErr SetConfigOption(const char *option, const char *value);
+	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
 };
 
 extern CoreConfig g_CoreConfig;

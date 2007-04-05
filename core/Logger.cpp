@@ -15,6 +15,7 @@
 #include <time.h>
 #include "sourcemod.h"
 #include "sourcemm_api.h"
+#include "sm_stringutil.h"
 #include "Logger.h"
 #include "systems/LibrarySys.h"
 #include "sm_version.h"
@@ -25,31 +26,39 @@ Logger g_Logger;
  * :TODO: This should be creating the log folder if it doesn't exist
  */
 
-CoreConfigErr Logger::OnSourceModConfigChanged(const char *option, const char *value)
+ConfigResult Logger::OnSourceModConfigChanged(const char *key, 
+									  const char *value, 
+									  ConfigSource source,
+									  char *error, 
+									  size_t maxlength)
 {
-	if (strcasecmp(option, "Logging") == 0)
+	if (strcasecmp(key, "Logging") == 0)
 	{
 		bool state = true;
 
 		if (strcasecmp(value, "on") == 0)
 		{
-			state = true;
 		} else if (strcasecmp(value, "off") == 0) {
 			state = false;
 		} else {
-			return CoreConfig_InvalidValue;
+			UTIL_Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			return ConfigResult_Reject;
 		}
 
-		if (m_FirstPass)
+		if (source == ConfigSource_Console)
 		{
-			m_InitialState = state;
-			m_FirstPass = false;
+			if (state && !m_Active)
+			{
+				EnableLogging();
+			} else if (!state && m_Active) {
+				DisableLogging();
+			}
 		} else {
-			state ? g_Logger.EnableLogging() : g_Logger.DisableLogging();
+			m_InitialState = state;
 		}
 
-		return CoreConfig_Okay;
-	} else if (strcasecmp(option, "LogMode") == 0) {
+		return ConfigResult_Accept;
+	} else if (strcasecmp(key, "LogMode") == 0) {
 		if (strcasecmp(value, "daily") == 0) 
 		{
 			m_Mode = LoggingMode_Daily;
@@ -58,18 +67,19 @@ CoreConfigErr Logger::OnSourceModConfigChanged(const char *option, const char *v
 		} else if (strcasecmp(value, "game") == 0) {
 			m_Mode = LoggingMode_Game;
 		} else {
-			return CoreConfig_InvalidValue;
+			UTIL_Format(error, maxlength, "Invalid value: must be [daily|map|game]");
+			return ConfigResult_Reject;
 		}
 
-		return CoreConfig_Okay;
+		return ConfigResult_Accept;
 	}
 
-	return CoreConfig_InvalidOption;
+	return ConfigResult_Ignore;
 }
 
 void Logger::OnSourceModStartup(bool late)
 {
-	InitLogger(m_Mode, m_InitialState);
+	InitLogger(m_Mode);
 }
 
 void Logger::OnSourceModAllShutdown()
@@ -155,10 +165,10 @@ void Logger::_CloseFile()
 	m_ErrFileName.clear();
 }
 
-void Logger::InitLogger(LoggingMode mode, bool startlogging)
+void Logger::InitLogger(LoggingMode mode)
 {
 	m_Mode = mode;
-	m_Active = startlogging;
+	m_Active = m_InitialState;
 
 	time_t t;
 	time(&t);
@@ -173,7 +183,7 @@ void Logger::InitLogger(LoggingMode mode, bool startlogging)
 	{
 	case LoggingMode_PerMap:
 		{
-			if (!startlogging)
+			if (!m_Active)
 			{
 				m_DelayedStart = true;
 			}
@@ -413,4 +423,25 @@ void Logger::DisableLogging()
 	}
 	LogMessage("Logging disabled manually by user.");
 	m_Active = false;
+}
+
+void Logger::LogFatal(const char *msg, ...)
+{
+	char path[PLATFORM_MAX_PATH];
+	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
+	FILE *fp = fopen(path, "at");
+	if (!fp)
+	{
+		/* We're just doomed, aren't we... */
+		return;
+	}
+
+	va_list ap;
+	va_start(ap, msg);
+	vfprintf(fp, msg, ap);
+	va_end(ap);
+
+	fputs("\n", fp);
+	
+	fclose(fp);
 }

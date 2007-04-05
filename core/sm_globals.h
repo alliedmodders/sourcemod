@@ -28,16 +28,19 @@ using namespace SourcePawn;
 using namespace SourceMod;
 
 /**
-* @brief Lists error codes possible from attempting to set a core configuration option.
-*/
-enum CoreConfigErr
+ * @brief Lists error codes possible from attempting to set a core configuration option.
+ */
+enum ConfigResult
 {
-	CoreConfig_Okay = 0,			/**< No error */
-	CoreConfig_NoRuntime = 1,		/**< Cannot set config option while SourceMod is running */
-	CoreConfig_InvalidValue = 2,	/**< Invalid value specified for config option */
-	CoreConfig_InvalidOption = 3,	/**< Invalid config option specified */
-	/* -------------------- */
-	CoreConfig_TOTAL				/**< Total number of core config error codes */
+	ConfigResult_Accept = 0,
+	ConfigResult_Reject = 1,
+	ConfigResult_Ignore = 2
+};
+
+enum ConfigSource
+{
+	ConfigSource_File = 0,
+	ConfigSource_Console = 1,
 };
 
 /** 
@@ -83,9 +86,13 @@ public:
 	 * @note This is called once BEFORE OnSourceModStartup() when SourceMod is loading
 	 * @note It can then be called again when the 'sm config' command is used
 	 */
-	virtual CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value)
+	virtual ConfigResult OnSourceModConfigChanged(const char *key, 
+												  const char *value, 
+												  ConfigSource source,
+												  char *error, 
+												  size_t maxlength)
 	{
-		return CoreConfig_InvalidOption;
+		return ConfigResult_Ignore;
 	}
 private:
 	SMGlobalClass *m_pGlobalClassNext;

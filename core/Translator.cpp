@@ -604,15 +604,30 @@ Translator::~Translator()
 	delete m_pStringTab;
 }
 
-CoreConfigErr Translator::OnSourceModConfigChanged(const char *option, const char *value)
+ConfigResult Translator::OnSourceModConfigChanged(const char *key, 
+									  const char *value, 
+									  ConfigSource source, 
+									  char *error, 
+									  size_t maxlength)
 {
-	if (strcasecmp(option, "ServerLang") == 0)
+	if (strcasecmp(value, "ServerLang") == 0)
 	{
+		if (source == ConfigSource_Console)
+		{
+			unsigned int index;
+			if (!GetLanguageByCode(value, &index))
+			{
+				UTIL_Format(error, maxlength, "Language code \"%s\" is not registered", value);
+				return ConfigResult_Reject;
+			}
+		}
+
 		strncopy(m_ServerLangCode, value, sizeof(m_ServerLangCode));
-		return CoreConfig_Okay;
+
+		return ConfigResult_Accept;
 	}
 
-	return CoreConfig_InvalidOption;
+	return ConfigResult_Ignore;
 }
 
 void Translator::OnSourceModAllInitialized()
@@ -837,7 +852,20 @@ TransError Translator::CoreTrans(int client,
 	return Trans_Okay;
 }
 
-const char *Translator::GetServerLanguageCode() const
+unsigned int Translator::GetServerLanguageCode()
 {
-	return m_ServerLangCode;
+	void *serverLang;
+
+	/* :TODO: there is absolutely no reason this shouldn't be cached
+	 * I don't even know why it was returning a string originally
+	 */
+
+	if (!sm_trie_retrieve(m_pLCodeLookup, m_ServerLangCode, &serverLang))
+	{
+		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English");
+		strncopy(m_ServerLangCode, "en", sizeof(m_ServerLangCode));
+		return 0;
+	}
+
+	return (unsigned int)serverLang;
 }

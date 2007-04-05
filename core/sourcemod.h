@@ -78,7 +78,11 @@ public:
 	*/
 	void SetAuthChecking(bool set);
 public: // SMGlobalClass
-	CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value);
+	ConfigResult OnSourceModConfigChanged(const char *key, 
+										  const char *value, 
+										  ConfigSource source, 
+										  char *error, 
+										  size_t maxlength);
 public: // ISourceMod
 	const char *GetModPath() const;
 	const char *GetSourceModPath() const;

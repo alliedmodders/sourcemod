@@ -73,24 +73,9 @@ size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *
 try_serverlang:
 	if (target == LANG_SERVER)
 	{
-		langname = g_Translator.GetServerLanguageCode();
-		if (!TryServerLanguage(langname ? langname : "en", &langid))
-		{
-			pCtx->ThrowNativeError("Translation failure: English language not found");
-			goto error_out;
-		}
-	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
-		langname = g_Translator.GetServerLanguageCode(); /* :TODO: read player's lang */
-		if (!langname || !g_Translator.GetLanguageByCode(langname, &langid))
-		{
-			if (langname && !strcmp(langname, "en"))
-			{
-				pCtx->ThrowNativeError("Translation failure: English language not found");
-				goto error_out;
-			}
-			target = LANG_SERVER;
-			goto try_serverlang;
-		}
+		langid = g_Translator.GetServerLanguageCode();
+ 	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
+		langid = g_Translator.GetServerLanguageCode();
 	} else {
 		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
 		goto error_out;
@@ -102,9 +87,8 @@ try_serverlang:
 		{
 			target = LANG_SERVER;
 			goto try_serverlang;
-		} else {
-			if (!g_Translator.GetLanguageByCode("en", &langid)
-				|| !TryTranslation(pl, key, langid, langcount, &pTrans))
+		} else if (langid != LANGUAGE_ENGLISH) {
+			if (!TryTranslation(pl, key, LANGUAGE_ENGLISH, langcount, &pTrans))
 			{
 				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 				goto error_out;
@@ -890,6 +874,19 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 	va_start(ap, fmt);
 	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
 	va_end(ap);
+
+	if (len >= maxlength)
+	{
+		buffer[maxlength - 1] = '\0';
+		return (maxlength - 1);
+	} else {
+		return len;
+	}
+}
+
+size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap)
+{
+	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
 
 	if (len >= maxlength)
 	{

@@ -36,18 +36,27 @@ enum LoggingMode
 class Logger : public SMGlobalClass
 {
 public:
-	Logger() : m_Mode(LoggingMode_Daily), m_ErrMapStart(false), m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false), m_InitialState(true), m_FirstPass(true) {}
+	Logger() : m_Mode(LoggingMode_Daily), m_ErrMapStart(false), 
+		m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false), 
+		m_InitialState(true)
+	{
+	}
 public: //SMGlobalClass
-	CoreConfigErr OnSourceModConfigChanged(const char *option, const char *value);
+	ConfigResult OnSourceModConfigChanged(const char *key, 
+		const char *value, 
+		ConfigSource source,
+		char *error, 
+		size_t maxlength);
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllShutdown();
 public:
-	void InitLogger(LoggingMode mode, bool startlogging);
+	void InitLogger(LoggingMode mode);
 	void CloseLogger();
 	void EnableLogging();
 	void DisableLogging();
 	void LogMessage(const char *msg, ...);
 	void LogError(const char *msg, ...);
+	void LogFatal(const char *msg, ...);
 	void MapChange(const char *mapname);
 	const char *GetLogFileName(LogType type) const;
 	LoggingMode GetLoggingMode() const;
@@ -66,7 +75,6 @@ private:
 	bool m_DelayedStart;
 	bool m_DailyPrintHdr;
 	bool m_InitialState;
-	bool m_FirstPass;
 };
 
 extern Logger g_Logger;

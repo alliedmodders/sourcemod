@@ -69,24 +69,32 @@ SourceModBase::SourceModBase()
 	m_GotBasePath = false;
 }
 
-CoreConfigErr SourceModBase::OnSourceModConfigChanged(const char *option, const char *value)
+ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key, 
+									  const char *value, 
+									  ConfigSource source, 
+									  char *error, 
+									  size_t maxlength)
 {
-	if (strcasecmp(option, "BasePath") == 0)
+	if (strcasecmp(value, "BasePath") == 0)
 	{
+		if (source == ConfigSource_Console)
+		{
+			UTIL_Format(error, maxlength, "Cannot be set at runtime");
+			return ConfigResult_Reject;
+		}
+
 		if (!m_GotBasePath)
 		{
 			g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), value);
 			g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), value);
 
 			m_GotBasePath = true;
-
-			return CoreConfig_Okay;
-		} else {
-			return CoreConfig_NoRuntime;
 		}
+
+		return ConfigResult_Accept;
 	}
 
-	return CoreConfig_InvalidOption;
+	return ConfigResult_Ignore;
 }
 
 bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
@@ -97,7 +105,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	g_CoreConfig.Initialize();
 
 	/* This shouldn't happen, but can't hurt to be safe */
-	if (!m_GotBasePath || !g_LibSys.PathExists(m_SMBaseDir))
+	if (!g_LibSys.PathExists(m_SMBaseDir) || !m_GotBasePath)
 	{
 		g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/addons/sourcemod", g_BaseDir.c_str());
 		g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "addons/sourcemod");
