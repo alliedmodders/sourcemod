@@ -842,11 +842,10 @@ TransError Translator::CoreTrans(int client,
 		return Trans_BadPhraseFile;
 	}
 
-	/* Using server lang temporarily until client lang stuff is implemented */
-	unsigned int serverLang = GetServerLanguage();
-
 	Translation trans;
 	TransError err;
+	
+	/* Using server lang temporarily until client lang stuff is implemented */
 	if ((err=g_pCorePhrases->GetTranslation(phrase, m_ServerLang, &trans)) != Trans_Okay)
 	{
 		return err;
