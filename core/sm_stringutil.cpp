@@ -62,7 +62,6 @@ inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, un
 size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *key, cell_t target, const cell_t *params, int *arg, bool *error)
 {
 	unsigned int langid;
-	const char *langname = NULL;
 	*error = false;
 	Translation pTrans;
 	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
