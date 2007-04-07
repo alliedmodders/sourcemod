@@ -108,6 +108,7 @@ public: // SMGlobalClass
 		char *error, 
 		size_t maxlength);
 	void OnSourceModAllInitialized();
+	void OnSourceModLevelChange(const char *mapName);
 public: // ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);

@@ -233,20 +233,25 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_LastTime = 0.0f;
 	g_LastAuthCheck = 0.0f;
 
-	g_Logger.MapChange(pMapName);
-	g_Timers.MapChange();
-
-	/* Refresh language stuff */
-	char path[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
-	g_Translator.RebuildLanguageDatabase(path);
+	/* Notify! */
+	SMGlobalClass *pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModLevelChange(pMapName);
+		pBase = pBase->m_pGlobalClassNext;
+	}
 
 	DoGlobalPluginLoads();
 
 	m_IsMapLoading = false;
 
-	g_Admins.DumpAdminCache(AdminCache_Overrides, true);
-	g_Admins.DumpAdminCache(AdminCache_Groups, true);
+	/* Notify! */
+	pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModPluginsLoaded();
+		pBase = pBase->m_pGlobalClassNext;
+	}
 
 	if (!g_pOnGameFrame)
 	{

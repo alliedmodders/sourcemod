@@ -42,6 +42,11 @@ void TimerSystem::OnSourceModAllInitialized()
 	g_ShareSys.AddInterface(NULL, this);
 }
 
+void TimerSystem::OnSourceModLevelChange(const char *mapName)
+{
+	MapChange();
+}
+
 void TimerSystem::RunFrame()
 {
 	ITimer *pTimer;

@@ -49,6 +49,7 @@ public: //SMGlobalClass
 		size_t maxlength);
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllShutdown();
+	void OnSourceModLevelChange(const char *mapName);
 public:
 	void InitLogger(LoggingMode mode);
 	void CloseLogger();

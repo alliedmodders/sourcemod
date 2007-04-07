@@ -632,6 +632,14 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
+void Translator::OnSourceModLevelChange(const char *mapName)
+{
+	/* Refresh language stuff */
+	char path[PLATFORM_MAX_PATH];
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
+	RebuildLanguageDatabase(path);
+}
+
 void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");

@@ -83,6 +83,11 @@ void Logger::OnSourceModAllShutdown()
 	CloseLogger();
 }
 
+void Logger::OnSourceModLevelChange(const char *mapName)
+{
+	MapChange(mapName);
+}
+
 void Logger::_NewMapFile()
 {
 	if (!m_Active)

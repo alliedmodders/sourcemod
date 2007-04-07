@@ -97,6 +97,20 @@ public:
 	{
 		return ConfigResult_Ignore;
 	}
+
+	/**
+	 * @brief Called when the level changes.
+	 */
+	virtual void OnSourceModLevelChange(const char *mapName)
+	{
+	}
+
+	/**
+	 * @brief Called after plugins are loaded on mapchange.
+	 */
+	virtual void OnSourceModPluginsLoaded()
+	{
+	}
 private:
 	SMGlobalClass *m_pGlobalClassNext;
 	static SMGlobalClass *head;

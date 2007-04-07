@@ -48,6 +48,7 @@ public:
 	~TimerSystem();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
+	void OnSourceModLevelChange(const char *mapName);
 public: //ITimerSystem
 	ITimer *CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags);
 	void KillTimer(ITimer *pTimer);

@@ -84,6 +84,12 @@ void AdminCache::OnSourceModShutdown()
 	m_pCacheFwd = NULL;
 }
 
+void AdminCache::OnSourceModPluginsLoaded()
+{
+	DumpAdminCache(AdminCache_Overrides, true);
+	DumpAdminCache(AdminCache_Groups, true);
+}
+
 void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits flags)
 {
 	Trie *pTrie = NULL;

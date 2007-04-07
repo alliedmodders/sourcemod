@@ -88,6 +88,7 @@ public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModPluginsLoaded();
 public: //IAdminSystem
 	/** Command cache stuff */
 	void AddCommandOverride(const char *cmd, OverrideType type, FlagBits flags);
