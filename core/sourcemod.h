@@ -74,8 +74,8 @@ public:
 	unsigned int GetGlobalTarget() const;
 	
 	/** 
-	* @brief Sets whether if SoureMod needs to check player auths.
-	*/
+	 * @brief Sets whether if SoureMod needs to check player auths.
+	 */
 	void SetAuthChecking(bool set);
 public: // SMGlobalClass
 	ConfigResult OnSourceModConfigChanged(const char *key, 

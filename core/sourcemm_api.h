@@ -28,7 +28,9 @@
  * @file Contains wrappers around required Metamod:Source API exports
  */
 
-class SourceMod_Core : public ISmmPlugin
+class SourceMod_Core : 
+	public ISmmPlugin,
+	public IMetamodListener
 {
 public:
 	bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
@@ -45,6 +47,8 @@ public:
 	const char *GetVersion();
 	const char *GetDate();
 	const char *GetLogTag();
+public:
+	void OnVSPListening(IServerPluginCallbacks *iface);
 };
 
 extern SourceMod_Core g_SourceMod_Core;

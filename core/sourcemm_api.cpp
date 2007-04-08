@@ -16,6 +16,7 @@
 #include "sourcemm_api.h"
 #include "sm_version.h"
 #include "sourcemod.h"
+#include "Logger.h"
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -62,6 +63,9 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	}
 
 	gpGlobals = ismm->pGlobals();
+	
+	ismm->AddListener(this, this);
+	ismm->EnableVSPListener();
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }
@@ -124,4 +128,22 @@ const char *SourceMod_Core::GetDate()
 const char *SourceMod_Core::GetLogTag()
 {
 	return "SM";
+}
+
+void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
+{
+	/* This shouldn't happen */
+	if (!iface)
+	{
+		g_Logger.LogFatal("Metamod:Source version is out of date. SourceMod requires 1.4 or greater.");
+		return;
+	}
+
+	/* Notify! */
+	SMGlobalClass *pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModVSPReceived(iface);
+		pBase = pBase->m_pGlobalClassNext;
+	}
 }

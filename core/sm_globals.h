@@ -27,6 +27,8 @@
 using namespace SourcePawn;
 using namespace SourceMod;
 
+class IServerPluginCallbacks;
+
 /**
  * @brief Lists result codes possible from attempting to set a core configuration option.
  */
@@ -51,6 +53,7 @@ enum ConfigSource
  */
 class SMGlobalClass
 {
+	friend class SourceMod_Core;
 	friend class SourceModBase;
 	friend class CoreConfig;
 public:
@@ -109,6 +112,13 @@ public:
 	 * @brief Called after plugins are loaded on mapchange.
 	 */
 	virtual void OnSourceModPluginsLoaded()
+	{
+	}
+
+	/**
+	 * @brief Called when SourceMod receives a pointer to IServerPluginCallbacks from SourceMM
+	 */
+	virtual void OnSourceModVSPReceived(IServerPluginCallbacks *iface)
 	{
 	}
 private:
