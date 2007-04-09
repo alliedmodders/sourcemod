@@ -198,7 +198,7 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 
 	m_SourceMMLoaded = true;
 
-	return SDK_OnMetamodLoad(error, maxlen, late);
+	return SDK_OnMetamodLoad(ismm, error, maxlen, late);
 }
 
 bool SDKExtension::Unload(char *error, size_t maxlen)
@@ -287,7 +287,7 @@ const char *SDKExtension::GetVersion()
 	return GetExtensionVerString();
 }
 
-bool SDKExtension::SDK_OnMetamodLoad(char *error, size_t err_max, bool late)
+bool SDKExtension::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
 	return true;
 }

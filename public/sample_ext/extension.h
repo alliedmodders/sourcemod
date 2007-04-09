@@ -58,7 +58,7 @@ public:
 	 * Read smext_base.h for documentation on these.
 	 */
 
-	//virtual bool SDK_OnMetamodLoad(char *error, size_t err_max, bool late);
+	//virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);
 	//virtual bool SDK_OnMetamodUnload(char *error, size_t err_max);
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t err_max);
 #endif

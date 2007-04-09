@@ -9,3 +9,4 @@
 Sample g_Sample;		/**< Global singleton for your extension's main interface */
 
 SMEXT_LINK(&g_Sample);
+

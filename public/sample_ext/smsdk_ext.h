@@ -82,7 +82,7 @@ public:
 	 * @param late			Whether or not Metamod considers this a late load.
 	 * @return				True to succeed, false to fail.
 	 */
-	virtual bool SDK_OnMetamodLoad(char *error, size_t err_max, bool late);
+	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);
 
 	/**
 	 * @brief Called when Metamod is detaching, after the extension version is called.
