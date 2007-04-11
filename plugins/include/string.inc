@@ -55,7 +55,29 @@ native StrContains(const String:str[], const String:substr[], bool:caseSensitive
  *						0 if str1 == str2
  *						1 if str1 > str2
  */
-native StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=true);
+native strcmp(const String:str1[], const String:str2[], bool:caseSensitive=true);
+
+/**
+ * Compares two strings parts lexographically.
+ *
+ * @param str1			First string (left).
+ * @param str2			Second string (right).
+ * @param num			Number of characters to compare.
+ * @param caseSensitive	If true (default), comparison is case sensitive.
+ *						If false, comparison is case insensitive.
+ * @return				-1 if str1 < str2
+ *						0 if str1 == str2
+ *						1 if str1 > str2
+ */
+native strncmp(const String:str1[], const String:str2[], num, bool:caseSensitive=true);
+
+/**
+ * Backwards compatible stock - StrCompare is now strcmp
+ */
+stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=true)
+{
+	return strcmp(str1, str2, caseSensitive);
+}
 
 /**
  * Returns whether two strings are equal.

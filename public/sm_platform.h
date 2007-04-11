@@ -34,6 +34,7 @@
 #define stat _stat
 #endif
 #define strcasecmp strcmpi
+#define strncasecmp strnicmp
 #include <windows.h>
 #include <direct.h>
 #define PLATFORM_LIB_EXT		"dll"

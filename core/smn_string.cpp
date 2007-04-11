@@ -74,6 +74,21 @@ static cell_t sm_strcmp(IPluginContext *pCtx, const cell_t *params)
 	return (func(str1, str2));
 }
 
+static cell_t sm_strncmp(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str1, *str2;
+
+	pCtx->LocalToString(params[1], &str1);
+	pCtx->LocalToString(params[2], &str2);
+	
+	if  (params[4])
+	{
+		return strncmp(str1, str2, (size_t)params[3]);
+	} else {
+		return strncasecmp(str1, str2, (size_t)params[3]);
+	}
+}
+
 static cell_t sm_strcopy(IPluginContext *pCtx, const cell_t *params)
 {
 	char *dest, *src;
@@ -316,6 +331,7 @@ REGISTER_NATIVES(basicStrings)
 	{"StrBreak",			StrBreak},
 	{"StrContains",			sm_contain},
 	{"StrCompare",			sm_strcmp},
+	{"StrCompareN",			sm_strncmp},
 	{"StrCopy",				sm_strcopy},
 	{"StringToInt",			sm_strconvint},
 	{"IntToString",			sm_numtostr},
