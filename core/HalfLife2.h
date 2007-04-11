@@ -29,14 +29,14 @@ struct DataTableInfo
 	Trie *lookup;
 };
 
-class CHalfLife2
+class CHalfLife2 : public SMGlobalClass
 {
 public:
 	CHalfLife2();
 	~CHalfLife2();
 public:
-	/*void OnSourceModStartup(bool late);
-	void OnSourceModAllShutdown();*/
+	void OnSourceModStartup(bool late);
+	/*void OnSourceModAllShutdown();*/
 public:
 	SendProp *FindInSendTable(const char *classname, const char *offset);
 	ServerClass *FindServerClass(const char *classname);

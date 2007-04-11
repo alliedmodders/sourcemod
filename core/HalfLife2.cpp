@@ -38,11 +38,17 @@ CHalfLife2::~CHalfLife2()
 	m_Tables.clear();
 }
 
-#if 0
+CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
+
 void CHalfLife2::OnSourceModStartup(bool late)
 {
+	if (!g_pSharedChangeInfo)
+	{
+		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
+	}
 }
 
+#if 0
 void CHalfLife2::OnSourceModAllShutdown()
 {
 }

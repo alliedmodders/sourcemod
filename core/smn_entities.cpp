@@ -464,8 +464,6 @@ IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 	return engine->GetChangeAccessor( (const edict_t *)this );
 }
 
-CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
-
 static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 {
 	edict_t *pEdict = GetEdict(params[1]);
@@ -473,11 +471,6 @@ static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 	if (!pEdict)
 	{
 		return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
-	}
-
-	if (!g_pSharedChangeInfo)
-	{
-		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
 
 	if (params[2])
