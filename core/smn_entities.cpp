@@ -459,11 +459,6 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
-{
-	return engine->GetChangeAccessor( (const edict_t *)this );
-}
-
 static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 {
 	edict_t *pEdict = GetEdict(params[1]);

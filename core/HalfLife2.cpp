@@ -48,6 +48,11 @@ void CHalfLife2::OnSourceModStartup(bool late)
 	}
 }
 
+IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
+{
+	return engine->GetChangeAccessor( (const edict_t *)this );
+}
+
 #if 0
 void CHalfLife2::OnSourceModAllShutdown()
 {
