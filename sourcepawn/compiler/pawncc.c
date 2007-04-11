@@ -16,7 +16,6 @@ enum FileSections
 	FS_Publics,
 	FS_Pubvars,
 	FS_Natives,
-	FS_Libraries,
 	FS_Nametable,		/* required */
 	FS_DbgFile,
 	FS_DbgSymbol,
@@ -26,6 +25,7 @@ enum FileSections
 	FS_DbgState,
 	FS_DbgStrings,
 	FS_DbgInfo,
+	FS_Tags,
 	/* --- */
 	FS_Number,
 };
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 		sp_file_t *spf;
 		memfile_t *dbgtab = NULL;		//dbgcrab
 		unsigned char *dbgptr = NULL;
-		uint32_t sections[FS_Number] = {1,1,0,0,0,0,1,0,0,0,0,0,0};
+		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0,0};
 		FILE *fp;
 
 		if (bin_file == NULL)
@@ -91,10 +91,10 @@ int main(int argc, char *argv[])
 		{
 			spfw_add_section(spf, ".natives");
 		}
-		sections[FS_Libraries] = (hdr->pubvars - hdr->libraries) / hdr->defsize;
-		if (sections[FS_Libraries])
+		sections[FS_Tags] = (hdr->nametable - hdr->tags) / hdr->defsize;
+		if (sections[FS_Tags])
 		{
-			spfw_add_section(spf, ".libraries");
+			spfw_add_section(spf, ".tags");
 		}
 
 		spfw_add_section(spf, ".names");
@@ -257,6 +257,22 @@ int main(int argc, char *argv[])
 				sfwrite(nvtbl, sizeof(sp_file_natives_t), natives, spf);
 			}
 			free(nvtbl);
+			spfw_next_section(spf);
+		}
+
+		if (sections[FS_Tags])
+		{
+			uint32_t numTags = (uint32_t)sections[FS_Tags];
+			AMX_FUNCSTUBNT *stub;
+			sp_file_tag_t tag;
+
+			for (i=0; i<numTags; i++)
+			{
+				stub = (AMX_FUNCSTUBNT *)((unsigned char *)hdr + hdr->tags + (i * hdr->defsize));
+				tag.tag_id = stub->address;
+				tag.name = stub->nameofs - (hdr->nametable + sizeof(uint16_t));
+				sfwrite(&tag, sizeof(sp_file_tag_t), 1, spf);
+			}
 			spfw_next_section(spf);
 		}
 

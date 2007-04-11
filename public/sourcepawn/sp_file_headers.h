@@ -134,6 +134,15 @@ typedef struct sp_file_pubvars_s
 	uint32_t	name;			/**< Index into nametable */
 } sp_file_pubvars_t;
 
+/**
+ * @brief File-encoded tag info.
+ */
+typedef struct sp_file_tag_s
+{
+	uint32_t	tag_id;			/**< Tag ID from compiler */
+	uint32_t	name;			/**< Index into nametable */
+} sp_file_tag_t;
+
 #if defined __linux__
 	#pragma pack()    /* reset default packing */
 #else

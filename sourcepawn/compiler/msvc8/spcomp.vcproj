@@ -305,7 +305,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\include\sp_file_headers.h"
+				RelativePath="..\..\..\public\sourcepawn\sp_file_headers.h"
 				>
 			</File>
 			<File
