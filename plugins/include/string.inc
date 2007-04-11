@@ -73,6 +73,7 @@ native strncmp(const String:str1[], const String:str2[], num, bool:caseSensitive
 
 /**
  * Backwards compatible stock - StrCompare is now strcmp
+ * @deprecated		Renamed to strcmp
  */
 stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=true)
 {
@@ -104,7 +105,16 @@ stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive
  * @param source		Source string buffer to copy from.
  * @return				Number of cells written.
  */
-native StrCopy(String:dest[], destLen, const String:source[]);
+native strcopy(String:dest[], destLen, const String:source[]);
+
+/**
+ * Backwards compatibility stock - use strcopy
+ * @deprecated			Renamed to strcopy
+ */
+stock StrCopy(String:dest[], destLen, const String:source[])
+{
+	return strcopy(dest, destLen, source);
+}
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).

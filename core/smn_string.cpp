@@ -330,9 +330,11 @@ REGISTER_NATIVES(basicStrings)
 	{"strlen",				sm_strlen},
 	{"StrBreak",			StrBreak},
 	{"StrContains",			sm_contain},
-	{"StrCompare",			sm_strcmp},
-	{"StrCompareN",			sm_strncmp},
-	{"StrCopy",				sm_strcopy},
+	{"strcmp",				sm_strcmp},
+	{"StrCompare",			sm_strcmp},			/* Backwards compat shim */
+	{"strncmp",				sm_strncmp},
+	{"strcopy",				sm_strcopy},
+	{"StrCopy",				sm_strcopy},		/* Backwards compat shim */
 	{"StringToInt",			sm_strconvint},
 	{"IntToString",			sm_numtostr},
 	{"StringToFloat",		sm_strtofloat},
