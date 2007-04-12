@@ -76,6 +76,8 @@ namespace builder
 			info.WorkingDirectory = path;
 			info.FileName = cfg.BuilderPath;
 			info.UseShellExecute = false;
+			info.RedirectStandardOutput = true;
+			info.RedirectStandardError = true;
 
 			if (cfg.BuildOptions != null)
 			{
@@ -85,6 +87,7 @@ namespace builder
 			info.Arguments += "/rebuild " + lib.ReleaseBuild + " " + projectFile;
 
 			Process p = Process.Start(info);
+			Console.WriteLine(p.StandardOutput.ReadToEnd());
 			p.WaitForExit();
 			p.Close();
 

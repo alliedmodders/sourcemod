@@ -33,7 +33,14 @@ namespace builder
 				bld = new Win32Builder(cfg);
 			}
 
-			bld.BuildPackage(new PkgCore());
+			try
+			{
+				bld.BuildPackage(new PkgCore());
+			} 
+			catch (System.Exception e) 
+			{
+				Console.WriteLine("Build failed: " + e.Message);
+			}
 		}
 	}
 }
