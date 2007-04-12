@@ -42,11 +42,13 @@ struct EventHook
 		pPreHook = NULL;
 		pPostHook = NULL;
 		postCopy = false;
+		pEventCopy = NULL;
 		refCount = 0;
 	}
 	IChangeableForward *pPreHook;
 	IChangeableForward *pPostHook;
 	bool postCopy;
+	IGameEvent *pEventCopy;
 	unsigned int refCount;
 };
 
@@ -102,10 +104,9 @@ private: // IGameEventManager2 hooks
 private:
 	HandleType_t m_EventType;
 	bool m_NotifyPlugins;
-	const char *m_EventName;
-	IGameEvent *m_EventCopy;
 	Trie *m_EventHooks;
 	CStack<EventInfo *> m_FreeEvents;
+	CStack<const char *> m_EventNames;
 };
 
 extern EventManager g_EventManager;

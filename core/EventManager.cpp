@@ -25,7 +25,7 @@ SH_DECL_HOOK2(IGameEventManager2, FireEvent, SH_NOATTRIB, 0, bool, IGameEvent *,
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
 typedef List<EventHook *> EventHookList;
 
-EventManager::EventManager() : m_EventType(0), m_NotifyPlugins(true), m_EventCopy(NULL)
+EventManager::EventManager() : m_EventType(0), m_NotifyPlugins(true)
 {
 	/* Create an event lookup trie */
 	m_EventHooks = sm_trie_create();
@@ -322,6 +322,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 {
 	EventHook *pHook;
 	IChangeableForward *pForward;
+	const char *name;
 	cell_t res = Pl_Continue;
 
 	if (!m_NotifyPlugins)
@@ -330,9 +331,11 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	}
 	
 	/* Get the event name, we're going to need this for passing to post hooks */
-	m_EventName = pEvent->GetName();
+	name = pEvent->GetName();
 
-	if (sm_trie_retrieve(m_EventHooks, m_EventName, reinterpret_cast<void **>(&pHook)))
+	m_EventNames.push(name);
+
+	if (sm_trie_retrieve(m_EventHooks, name, reinterpret_cast<void **>(&pHook)))
 	{
 		pForward = pHook->pPreHook;
 
@@ -342,7 +345,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 
 			Handle_t hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 			pForward->PushCell(hndl);
-			pForward->PushString(m_EventName);
+			pForward->PushString(name);
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(&res, NULL);
 
@@ -352,7 +355,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 
 		if (pHook->postCopy)
 		{
-			m_EventCopy = gameevents->DuplicateEvent(pEvent);
+			pHook->pEventCopy = gameevents->DuplicateEvent(pEvent);
 		}
 
 		if (res)
@@ -368,8 +371,10 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 /* IGameEventManager2::FireEvent post hook */
 bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 {
+	IGameEvent *pEventCopy;
 	EventHook *pHook;
 	IChangeableForward *pForward;
+	const char *name;
 	Handle_t hndl = 0;
 
 	if (!m_NotifyPlugins)
@@ -380,7 +385,9 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		RETURN_META_VALUE(MRES_IGNORED, true);
 	}
 
-	if (sm_trie_retrieve(m_EventHooks, m_EventName, reinterpret_cast<void **>(&pHook)))
+	name = m_EventNames.front();
+
+	if (sm_trie_retrieve(m_EventHooks, name, reinterpret_cast<void **>(&pHook)))
 	{
 		pForward = pHook->pPostHook;
 
@@ -388,14 +395,17 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		{
 			if (pHook->postCopy)
 			{
-				EventInfo info = {m_EventCopy, false};
+				pEventCopy = pHook->pEventCopy;
+
+				EventInfo info = {pEventCopy, false};
 				hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
+
 				pForward->PushCell(hndl);
 			} else {
 				pForward->PushCell(BAD_HANDLE);
 			}
 
-			pForward->PushString(m_EventName);
+			pForward->PushString(name);
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(NULL);
 
@@ -406,11 +416,13 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				g_HandleSys.FreeHandle(hndl, &sec);
 
 				/* Free event structure */
-				gameevents->FreeEvent(m_EventCopy);
-				m_EventCopy = NULL;
+				gameevents->FreeEvent(pEventCopy);
+				pHook->pEventCopy = NULL;
 			}
 		}
 	}
+
+	m_EventNames.pop();
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
