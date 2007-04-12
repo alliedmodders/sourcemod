@@ -745,11 +745,11 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   /* count number of public tags */
   numtags=0;
   for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    if ((constptr->value & PUBLICTAG)!=0) {
+    /*if ((constptr->value & PUBLICTAG)!=0) {*/
       assert(strlen(constptr->name)>0);
       numtags++;
       nametablesize+=strlen(constptr->name)+1;
-    } /* if */
+    /*} if */
   } /* for */
 
   /* pad the header to sc_dataalign
@@ -915,7 +915,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   /* write the public tagnames table */
   count=0;
   for (constptr=tagname_tab.next; constptr!=NULL; constptr=constptr->next) {
-    if ((constptr->value & PUBLICTAG)!=0) {
+    /*if ((constptr->value & PUBLICTAG)!=0) {*/
       assert(strlen(constptr->name)>0);
       func.address=constptr->value & TAGMASK;
       func.nameofs=nameofs;
@@ -929,7 +929,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
       pc_writebin(fout,constptr->name,strlen(constptr->name)+1);
       nameofs+=strlen(constptr->name)+1;
       count++;
-    } /* if */
+    /*} if */
   } /* for */
 
   /* write the "maximum name length" field in the name table */
