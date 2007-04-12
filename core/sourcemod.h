@@ -116,7 +116,7 @@ private:
 };
 
 extern SourceModBase g_SourceMod;
-extern HandleType_t g_WrBitBufType;
-extern HandleType_t g_RdBitBufType;
+extern HandleType_t g_WrBitBufType;		//:TODO: find a better place for this
+extern HandleType_t g_RdBitBufType;		//:TODO: find a better place for this
 
 #endif //_INCLUDE_SOURCEMOD_GLOBALHEADER_H_

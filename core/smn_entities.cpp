@@ -298,7 +298,7 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 
 	if (params[5])
 	{
-		pEdict->StateChanged(offset);
+		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
 	switch (params[4])
@@ -366,7 +366,7 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 
 	if (params[4])
 	{
-		pEdict->StateChanged(offset);
+		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
 	return 1;
@@ -427,7 +427,7 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 
 	if (params[4])
 	{
-		pEdict->StateChanged(offset);
+		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
 	return 1;
@@ -494,7 +494,7 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 
 	if (params[4])
 	{
-		pEdict->StateChanged(offset);
+		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
 	return 1;
@@ -509,12 +509,7 @@ static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
 	}
 
-	if (params[2])
-	{
-		pEdict->StateChanged(params[2]);
-	} else {
-		pEdict->StateChanged();
-	}
+	g_HL2.SetEdictStateChanged(pEdict, params[2]);
 
 	return 1;
 }

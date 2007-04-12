@@ -16,6 +16,7 @@
 #include "sourcemm_api.h"
 
 CHalfLife2 g_HL2;
+bool g_IsOriginalEngine = false;
 
 namespace SourceHook
 {
@@ -69,7 +70,7 @@ CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
 
 void CHalfLife2::OnSourceModStartup(bool late)
 {
-	if (!g_pSharedChangeInfo)
+	if (!g_IsOriginalEngine && !g_pSharedChangeInfo)
 	{
 		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
@@ -79,12 +80,6 @@ IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
 	return engine->GetChangeAccessor( (const edict_t *)this );
 }
-
-#if 0
-void CHalfLife2::OnSourceModAllShutdown()
-{
-}
-#endif
 
 SendProp *UTIL_FindInSendTable(SendTable *pTable, const char *name)
 {
@@ -216,4 +211,19 @@ typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset
 	}
 
 	return td;
+}
+
+void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
+{
+	if (!g_IsOriginalEngine)
+	{
+		if (offset)
+		{
+			pEdict->StateChanged(offset);
+		} else {
+			pEdict->StateChanged();
+		}
+	} else {
+		pEdict->m_fStateFlags |= FL_EDICT_CHANGED;
+	}
 }
