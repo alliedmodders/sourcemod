@@ -45,6 +45,7 @@ IdentityToken_t *g_pCoreIdent = NULL;
 float g_LastTime = 0.0f;
 float g_LastAuthCheck = 0.0f;
 IForward *g_pOnGameFrame = NULL;
+bool g_Loaded = false;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
 typedef unsigned int (*GETEXPORTCOUNT)();
@@ -188,15 +189,20 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 		return false;
 	}
 
-	StartSourceMod(late);
+	/* Hook this now so we can detect startup without calling StartSourceMod() */
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
+
+	/* Only load if we're not late */
+	if (!late)
+	{
+		StartSourceMod(false);
+	}
 
 	return true;
 }
 
 void SourceModBase::StartSourceMod(bool late)
 {
-	/* First initialize the global hooks we need */
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
 
@@ -224,10 +230,20 @@ void SourceModBase::StartSourceMod(bool late)
 
 	/* Add us now... */
 	g_ShareSys.AddInterface(NULL, this);
+
+	/* We're loaded! */
+	g_Loaded = true;
 }
 
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
+	/* If we're not loaded... */
+	if (!g_Loaded)
+	{
+		/* Do all global initialization now */
+		StartSourceMod(true);
+	}
+
 	m_IsMapLoading = true;
 	m_ExecPluginReload = true;
 	g_LastTime = 0.0f;
@@ -358,52 +374,56 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 
 void SourceModBase::CloseSourceMod()
 {
-	if (g_pOnGameFrame)
-	{
-		g_Forwards.ReleaseForward(g_pOnGameFrame);
-	}
-
-	/* Notify! */
-	SMGlobalClass *pBase = SMGlobalClass::head;
-	while (pBase)
-	{
-		pBase->OnSourceModShutdown();
-		pBase = pBase->m_pGlobalClassNext;
-	}
-
-	/* Delete all data packs */
-	CStack<CDataPack *>::iterator iter;
-	CDataPack *pd;
-	for (iter=m_freepacks.begin(); iter!=m_freepacks.end(); iter++)
-	{
-		pd = (*iter);
-		delete pd;
-	}
-	m_freepacks.popall();
-
-	/* Notify! */
-	pBase = SMGlobalClass::head;
-	while (pBase)
-	{
-		pBase->OnSourceModAllShutdown();
-		pBase = pBase->m_pGlobalClassNext;
-	}
-
-	if (enginePatch)
-	{
-		SH_RELEASE_CALLCLASS(enginePatch);
-		enginePatch = NULL;
-	}
-
-	if (gamedllPatch)
-	{
-		SH_RELEASE_CALLCLASS(gamedllPatch);
-		gamedllPatch = NULL;
-	}
-
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
+
+	if (g_Loaded)
+	{
+		if (g_pOnGameFrame)
+		{
+			g_Forwards.ReleaseForward(g_pOnGameFrame);
+		}
+	
+		/* Notify! */
+		SMGlobalClass *pBase = SMGlobalClass::head;
+		while (pBase)
+		{
+			pBase->OnSourceModShutdown();
+			pBase = pBase->m_pGlobalClassNext;
+		}
+	
+		/* Delete all data packs */
+		CStack<CDataPack *>::iterator iter;
+		CDataPack *pd;
+		for (iter=m_freepacks.begin(); iter!=m_freepacks.end(); iter++)
+		{
+			pd = (*iter);
+			delete pd;
+		}
+		m_freepacks.popall();
+	
+		/* Notify! */
+		pBase = SMGlobalClass::head;
+		while (pBase)
+		{
+			pBase->OnSourceModAllShutdown();
+			pBase = pBase->m_pGlobalClassNext;
+		}
+	
+		if (enginePatch)
+		{
+			SH_RELEASE_CALLCLASS(enginePatch);
+			enginePatch = NULL;
+		}
+	
+		if (gamedllPatch)
+		{
+			SH_RELEASE_CALLCLASS(gamedllPatch);
+			gamedllPatch = NULL;
+		}
+
+		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
+		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
+	}
 
 	/* Rest In Peace */
 	ShutdownJIT();
