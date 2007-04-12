@@ -98,6 +98,7 @@ public:
 	EventHookError UnhookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
 	EventInfo *CreateEvent(IPluginContext *pContext, const char *name);
 	void FireEvent(EventInfo *pInfo, int flags=0, bool bDontBroadcast=false);
+	void CancelCreatedEvent(EventInfo *pInfo);
 private: // IGameEventManager2 hooks
 	bool OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast);
 	bool OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast);

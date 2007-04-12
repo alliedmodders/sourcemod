@@ -317,6 +317,18 @@ void EventManager::FireEvent(EventInfo *pInfo, int flags, bool bDontBroadcast)
 	m_FreeEvents.push(pInfo);
 }
 
+void EventManager::CancelCreatedEvent(EventInfo *pInfo)
+{
+	/* Free event from IGameEventManager2 */
+	gameevents->FreeEvent(pInfo->pEvent);
+
+	/* IGameEvent is free at this point, so no one owns this */
+	pInfo->pOwner = NULL;
+
+	/* Add EventInfo struct to free event stack */
+	m_FreeEvents.push(pInfo);
+}
+
 /* IGameEventManager2::FireEvent hook */
 bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 {

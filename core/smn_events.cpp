@@ -126,6 +126,8 @@ static cell_t sm_CancelCreatedEvent(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Game event \"%s\" could not be canceled because it was not created by this plugin", pInfo->pEvent->GetName());
 	}
 
+	g_EventManager.CancelCreatedEvent(pInfo);
+
 	/* Free handle on game event */
 	HandleSecurity sec = {pContext->GetIdentity(), g_pCoreIdent};
 	g_HandleSys.FreeHandle(hndl, &sec);
