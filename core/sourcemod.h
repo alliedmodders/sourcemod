@@ -93,6 +93,7 @@ public: // ISourceMod
 	IDataPack *CreateDataPack();
 	void FreeDataPack(IDataPack *pack);
 	HandleType_t GetDataPackHandleType(bool readonly=false);
+	KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false);
 private:
 	/**
 	 * @brief Loading plugins

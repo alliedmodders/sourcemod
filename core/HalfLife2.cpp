@@ -17,6 +17,21 @@
 
 CHalfLife2 g_HL2;
 
+namespace SourceHook
+{
+	template<>
+	int HashFunction<datamap_t *>(datamap_t * const &k)
+	{
+		return reinterpret_cast<int>(k);
+	}
+
+	template<>
+	int Compare<datamap_t *>(datamap_t * const &k1, datamap_t * const &k2)
+	{
+		return (k1-k2);
+	}
+}
+
 CHalfLife2::CHalfLife2()
 {
 	m_pClasses = sm_trie_create();
@@ -36,6 +51,18 @@ CHalfLife2::~CHalfLife2()
 	}
 
 	m_Tables.clear();
+
+	THash<datamap_t *, DataMapTrie>::iterator h_iter;
+	for (h_iter=m_Maps.begin(); h_iter!=m_Maps.end(); h_iter++)
+	{
+		if (h_iter->val.trie)
+		{
+			sm_trie_destroy(h_iter->val.trie);
+			h_iter->val.trie = NULL;
+		}
+	}
+
+	m_Maps.clear();
 }
 
 CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
@@ -85,6 +112,31 @@ SendProp *UTIL_FindInSendTable(SendTable *pTable, const char *name)
 	return NULL;
 }
 
+typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name)
+{
+	while (pMap)
+	{
+		for (int i=0; i<pMap->dataNumFields; i++)
+		{
+			if (strcmp(name, pMap->dataDesc[i].fieldName) == 0)
+			{
+				return &(pMap->dataDesc[i]);
+			}
+			if (pMap->dataDesc[i].td)
+			{
+				typedescription_t *_td;
+				if ((_td=UTIL_FindInDataMap(pMap->dataDesc[i].td, name)) != NULL)
+				{
+					return _td;
+				}
+			}
+		}
+		pMap = pMap->baseMap;
+	}
+
+	return NULL; 
+}
+
 ServerClass *CHalfLife2::FindServerClass(const char *classname)
 {
 	DataTableInfo *pInfo = _FindServerClass(classname);
@@ -111,6 +163,7 @@ DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 				pInfo->lookup = sm_trie_create();
 				pInfo->sc = sc;
 				sm_trie_insert(m_pClasses, classname, pInfo);
+				m_Tables.push_back(pInfo);
 				break;
 			}
 			sc = sc->m_pNext;
@@ -133,7 +186,7 @@ SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
 		return NULL;
 	}
 
-	SendProp *pProp;
+	SendProp *pProp = NULL;
 	if (!sm_trie_retrieve(pInfo->lookup, offset, (void **)&pProp))
 	{
 		if ((pProp = UTIL_FindInSendTable(pInfo->sc->m_pTable, offset)) != NULL)
@@ -143,4 +196,24 @@ SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
 	}
 
 	return pProp;
+}
+
+typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset)
+{
+	typedescription_t *td = NULL;
+	DataMapTrie &val = m_Maps[pMap];
+
+	if (!val.trie)
+	{
+		val.trie = sm_trie_create();
+	}
+	if (!sm_trie_retrieve(val.trie, offset, (void **)&td))
+	{
+		if ((td = UTIL_FindInDataMap(pMap, offset)) != NULL)
+		{
+			sm_trie_insert(val.trie, offset, td);
+		}
+	}
+
+	return td;
 }

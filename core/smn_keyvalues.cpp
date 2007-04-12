@@ -48,6 +48,33 @@ public:
 	}
 };
 
+KeyValues *SourceModBase::ReadKeyValuesHandle(Handle_t hndl, HandleError *err, bool root)
+{
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		if (err)
+		{
+			*err = herr;
+		}
+		return NULL;
+	}
+
+	if (err)
+	{
+		*err = HandleError_None;
+	}
+
+	return (root) ? pStk->pBase : pStk->pCurRoot.front();
+}
+
 static cell_t smn_KvSetString(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);

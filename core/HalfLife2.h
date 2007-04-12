@@ -16,10 +16,12 @@
 #define _INCLUDE_SOURCEMOD_CHALFLIFE2_H_
 
 #include <sh_list.h>
+#include <sh_tinyhash.h>
 #include "sm_trie.h"
 #include "sm_globals.h"
 #include "dt_send.h"
 #include "server_class.h"
+#include "datamap.h"
 
 using namespace SourceHook;
 
@@ -27,6 +29,12 @@ struct DataTableInfo
 {
 	ServerClass *sc;
 	Trie *lookup;
+};
+
+struct DataMapTrie
+{
+	DataMapTrie() : trie(NULL) {}
+	Trie *trie;
 };
 
 class CHalfLife2 : public SMGlobalClass
@@ -40,11 +48,13 @@ public:
 public:
 	SendProp *FindInSendTable(const char *classname, const char *offset);
 	ServerClass *FindServerClass(const char *classname);
+	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
 	Trie *m_pClasses;
 	List<DataTableInfo *> m_Tables;
+	THash<datamap_t *, DataMapTrie> m_Maps;
 };
 
 extern CHalfLife2 g_HL2;

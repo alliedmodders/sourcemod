@@ -290,6 +290,16 @@ native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=fal
 native FindSendPropOffs(const String:cls[], const String:prop[]);
 
 /**
+ * Given an entity, finds a datamap property offset.
+ * This information is cached for future calls.
+ *
+ * @param entity		Entity index.
+ * @param prop			Property name.
+ * @return				An offset, or -1 on failure.
+ */
+native FindDataMapOffs(entity, const String:prop[]);
+
+/**
  * Wrapper function for finding a send property for a particular entity.
  *
  * @param ent			Entity index.
@@ -320,11 +330,29 @@ stock GetEntSendPropOffs(ent, const String:prop[])
  */
 stock GetEntProp(entity, PropType:type, const String:prop[], size=4)
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return GetEntData(entity, offs, size);
 }
 
@@ -340,11 +368,29 @@ stock GetEntProp(entity, PropType:type, const String:prop[], size=4)
  */
 stock SetEntProp(entity, PropType:type, const String:prop[], value, size=4)
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return SetEntData(entity, offs, value, size, true);
 }
 
@@ -359,11 +405,29 @@ stock SetEntProp(entity, PropType:type, const String:prop[], value, size=4)
  */
 stock Float:GetEntPropFloat(entity, PropType:type, const String:prop[])
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return GetEntDataFloat(entity, offs);
 }
 
@@ -379,11 +443,29 @@ stock Float:GetEntPropFloat(entity, PropType:type, const String:prop[])
  */
 stock SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value)
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return SetEntDataFloat(entity, offs, value, true);
 }
 
@@ -398,11 +480,29 @@ stock SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value)
  */
 stock GetEntPropEnt(entity, PropType:type, const String:prop[])
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return GetEntDataEnt(entity, offs);
 }
 
@@ -418,11 +518,29 @@ stock GetEntPropEnt(entity, PropType:type, const String:prop[])
  */
 stock SetEntPropEnt(entity, PropType:type, const String:prop[], other)
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return SetEntDataEnt(entity, offs, other, true);
 }
 
@@ -440,11 +558,29 @@ stock SetEntPropEnt(entity, PropType:type, const String:prop[], other)
  */
 stock GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3])
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return GetEntDataVector(entity, offs, vec);
 }
 
@@ -462,10 +598,28 @@ stock GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3])
  */
 stock SetEntPropVector(entity, PropType:type, const String:prop[], const Float:vec[3])
 {
-	new offs = GetEntSendPropOffs(entity, prop);
+	new offs;
+
+	switch (type)
+	{
+		case Prop_Send:
+		{
+			offs = GetEntSendPropOffs(entity, prop);
+		}
+		case Prop_Data:
+		{
+			offs = FindDataMapOffs(entity, prop);
+		}
+		default:
+		{
+			ThrowError("Invalid Property type %d", type);
+		}
+	}
+
 	if (offs == -1)
 	{
 		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
 	}
+
 	return SetEntDataVector(entity, offs, vec, true);
 }

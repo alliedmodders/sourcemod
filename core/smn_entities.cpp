@@ -18,6 +18,7 @@
 #include "server_class.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
+#include "GameConfigs.h"
 
 inline edict_t *GetEdict(cell_t num)
 {
@@ -59,6 +60,46 @@ inline edict_t *GetEntity(cell_t num, CBaseEntity **pData)
 	}
 	*pData = pUnk->GetBaseEntity();
 	return pEdict;
+}
+
+class VEmptyClass {};
+datamap_t *VGetDataDescMap(CBaseEntity *pThisPtr, int offset)
+{
+	void **this_ptr = *reinterpret_cast<void ***>(&pThisPtr);
+	void **vtable = *reinterpret_cast<void ***>(pThisPtr);
+	void *vfunc = vtable[offset];
+
+	union
+	{
+		datamap_t *(VEmptyClass::*mfpnew)();
+#ifndef PLATFORM_POSIX
+		void *addr;
+	} u;
+	u.addr = vfunc;
+#else
+		struct  
+		{
+			void *addr;
+			intptr_t adjustor;
+		} s;
+	} u;
+	u.s.addr = vfunc;
+	u.s.adjustor = 0;
+#endif
+
+	return (datamap_t *)(reinterpret_cast<VEmptyClass *>(this_ptr)->*u.mfpnew)();
+}
+
+inline datamap_t *CBaseEntity_GetDataDescMap(CBaseEntity *pEntity)
+{
+	int offset;
+
+	if (!g_pGameConf->GetOffset("GetDataDescMap", &offset) || !offset)
+	{
+		return NULL;
+	}
+
+	return VGetDataDescMap(pEntity, offset);
 }
 
 static cell_t GetMaxEntities(IPluginContext *pContext, const cell_t *params)
@@ -494,6 +535,33 @@ static cell_t FindSendPropOffs(IPluginContext *pContext, const cell_t *params)
 	return pSend->GetOffset();
 }
 
+static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	datamap_t *pMap;
+	typedescription_t *td;
+	char *offset;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+	{
+		return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
+	}
+
+	pContext->LocalToString(params[2], &offset);
+	if ((td=g_HL2.FindInDataMap(pMap, offset)) == NULL)
+	{
+		return -1;
+	}
+
+	return td->fieldOffset[TD_OFFSET_NORMAL];
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
@@ -517,5 +585,6 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntDataEnt",			SetEntDataEnt},
 	{"SetEntDataFloat",			SetEntDataFloat},
 	{"SetEntDataVector",		SetEntDataVector},
+	{"FindDataMapOffs",			FindDataMapOffs},
 	{NULL,						NULL}
 };

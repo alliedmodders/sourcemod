@@ -16,6 +16,18 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "PlayerManager.h"
+#include "HandleSys.h"
+
+IServerPluginCallbacks *g_VSP = NULL;
+
+class HalfLifeNatives : public SMGlobalClass
+{
+public: //SMGlobalClass
+	void OnSourceModVSPReceived(IServerPluginCallbacks *iface)
+	{
+		g_VSP = iface;
+	}
+};
 
 static cell_t SetRandomSeed(IPluginContext *pContext, const cell_t *params)
 {
@@ -229,6 +241,36 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
+{
+	KeyValues *pKV;
+	HandleError herr;
+	Handle_t hndl = static_cast<Handle_t>(params[2]);
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	pKV = g_SourceMod.ReadKeyValuesHandle(hndl, &herr, true);
+	if (herr != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	serverpluginhelpers->CreateMessage(pPlayer->GetEdict(), static_cast<DIALOG_TYPE>(params[3]), pKV, g_VSP);
+
+	return 1;
+}
+
+static HalfLifeNatives s_HalfLifeNatives;
+
 REGISTER_NATIVES(halflifeNatives)
 {
 	{"CreateFakeClient",		CreateFakeClient},
@@ -252,5 +294,6 @@ REGISTER_NATIVES(halflifeNatives)
 	{"PrecacheSound",			PrecacheSound},
 	{"IsSoundPrecached",		IsSoundPrecached},
 	{"FakeClientCommand",		FakeClientCommand},
+	{"CreateDialog",			smn_CreateDialog},
 	{NULL,						NULL},
 };

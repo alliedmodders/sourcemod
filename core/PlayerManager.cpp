@@ -31,11 +31,15 @@ PlayerManager::PlayerManager()
 {
 	m_AuthQueue = NULL;
 	m_FirstPass = true;
+
+	m_UserIdLookUp = new int[USHRT_MAX];
+	memset(m_UserIdLookUp, 0, sizeof(int) * USHRT_MAX);
 }
 
 PlayerManager::~PlayerManager()
 {
 	delete [] m_AuthQueue;
+	delete [] m_UserIdLookUp;
 }
 
 void PlayerManager::OnSourceModAllInitialized()
@@ -212,6 +216,8 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		RETURN_META_VALUE(MRES_SUPERCEDE, false);
 	}
 
+	m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;
+
 	return true;
 }
 
@@ -353,6 +359,7 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 	}
 
 	m_Players[client].Disconnect();
+	m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = 0;
 }
 
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
@@ -423,6 +430,11 @@ CPlayer *PlayerManager::GetPlayerByIndex(int client) const
 int PlayerManager::GetNumPlayers()
 {
 	return m_PlayerCount;
+}
+
+int PlayerManager::GetClientOfUserId(int userid)
+{
+	return (userid < 0 || userid > USHRT_MAX) ? 0 : m_UserIdLookUp[userid];
 }
 
 void PlayerManager::AddClientListener(IClientListener *listener)

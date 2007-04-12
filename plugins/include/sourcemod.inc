@@ -45,6 +45,14 @@ struct Plugin
 #include <functions>
 #include <timers>
 
+enum DialogType
+{
+	DialogType_Msg = 0,		/**< just an on screen message */
+	DialogType_Menu, 		/**< an options menu */
+	DialogType_Text, 		/**< a richtext dialog */
+	DialogType_Entry 		/**< an entry box */
+};
+
 /**
  * Declare this as a struct in your plugin to expose its information.
  * Example:
@@ -388,15 +396,15 @@ native bool:PrecacheSound(const String:sound[], bool:preload=false);
 native bool:IsSoundPrecached(const String:sound[]);
 
 /**
- * Executes a client command on the server without being networked.
+ * Creates different types of ingame messages.
  *
  * @param client		Index of the client.
- * @param fmt			Format of the client command.
- * @param ...			Format parameters
+ * @param kv			KeyValues handle to set the menu keys and options. (Check iserverplugin.h for more information).
+ * @param type			Message type to display ingame.
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native FakeClientCommand(client, const String:fmt[], any:...);
+native CreateDialog(client, Handle:kv, DialogType:type);
 
 #include <helpers>
 #include <entity>

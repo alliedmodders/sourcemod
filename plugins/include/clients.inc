@@ -18,6 +18,13 @@
 #endif
 #define _clients_included
 
+enum NetFlow
+{
+	NetFlow_Outgoing = 0,		/**< Outgoing traffic */
+	NetFlow_Incoming,		/**< Incoming traffic */
+	NetFlow_Both			/**< Incoming and outgoing traffic */
+};
+
 /**
  * Called on client connection.
  *
@@ -380,3 +387,110 @@ native GetClientDeaths(client);
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native GetClientFrags(client);
+
+/**
+ * Returns the client's send data rate in bytes/sec.
+ *
+ * @param client		Player's index.
+ * @return				Data rate.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native GetDataRate(client);
+
+/**
+ * Returns if a client is timing out
+ *
+ * @param client		Player's index.
+ * @return				True if client is timing out, false otherwise.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native bool:IsTimingOut(client);
+
+/**
+ * Returns the client's connection time in seconds.
+ *
+ * @param client		Player's index.
+ * @return				Connection time.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetTimeConnected(client);
+
+/**
+ * Returns the client's current latency (RTT), more accurate than GetAvgLatency but jittering.
+ *
+ * @param client		Player's index.
+ * @param flow			Traffic flowing direction.
+ * @return				Latency.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetLatency(client, NetFlow:flow);
+
+/**
+ * Returns the client's average packet latency in seconds.
+ *
+ * @param client		Player's index.
+ * @param flow			Traffic flowing direction.
+ * @return				Average latency.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetAvgLatency(client, NetFlow:flow);
+
+/**
+ * Returns the client's average packet loss, values go from 0 to 1 (for percentages).
+ *
+ * @param client		Player's index.
+ * @param flow			Traffic flowing direction.
+ * @return				Average packet loss.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetAvgLoss(client, NetFlow:flow);
+
+/**
+ * Returns the client's average packet choke, values go from 0 to 1 (for percentages).
+ *
+ * @param client		Player's index.
+ * @param flow			Traffic flowing direction.
+ * @return				Average packet choke.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetAvgChoke(client, NetFlow:flow);
+
+/**
+ * Returns the client's data flow in bytes/sec.
+ *
+ * @param client		Player's index.
+ * @param flow			Traffic flowing direction.
+ * @return				Data flow.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetAvgData(client, NetFlow:flow);
+
+/**
+ * Returns the client's average packet frequency in packets/sec.
+ *
+ * @param client		Player's index.
+ * @param flow			Traffic flowing direction.
+ * @return				Packet frequency.
+ * @error				Invalid client index, client not in game, or fake client.
+ */
+native Float:GetAvgPackets(client, NetFlow:flow);
+
+/**
+ * Translates an userid index to the real player index.
+ *
+ * @param userid		Userid value.
+ * @return				Client value.
+ * @error				Returns 0 if invalid userid.
+ */
+native GetClientOfUserId(userid);
+
+/**
+ * Executes a client command on the server without being networked.
+ *
+ * @param client		Index of the client.
+ * @param fmt			Format of the client command.
+ * @param ...			Format parameters
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native FakeClientCommand(client, const String:fmt[], any:...);

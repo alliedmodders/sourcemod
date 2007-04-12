@@ -95,6 +95,7 @@ public: //IPlayerManager
 	IGamePlayer *GetGamePlayer(edict_t *pEdict);
 	int GetMaxClients();
 	int GetNumPlayers();
+	int GetClientOfUserId(int userid);
 public:
 	inline int MaxClients()
 	{
@@ -117,6 +118,7 @@ private:
 	IForward *m_clauth;
 	IForward *m_onActivate;
 	CPlayer *m_Players;
+	int *m_UserIdLookUp;
 	int m_maxClients;
 	int m_PlayerCount;
 	bool m_FirstPass;

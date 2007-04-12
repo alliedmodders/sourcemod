@@ -244,6 +244,14 @@ namespace SourceMod
 		 * @return				Current number of connected clients.
 		 */
 		virtual int GetNumPlayers() =0;
+
+		/**
+		 * @brief Returns the client index by its userid.
+		 *
+		 * @param userid		Userid of the client.
+		 * @return				Client index, or 0 if invalid userid passed.
+		 */
+		virtual int GetClientOfUserId(int userid) =0;
 	};
 }
 

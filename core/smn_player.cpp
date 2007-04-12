@@ -15,6 +15,7 @@
 #include "PlayerManager.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
+#include <inetchannelinfo.h>
 
 static cell_t sm_GetClientCount(IPluginContext *pCtx, const cell_t *params)
 {
@@ -637,6 +638,182 @@ static cell_t GetHealth(IPluginContext *pContext, const cell_t *params)
 	return pInfo->GetHealth();
 }
 
+static cell_t GetTimeConnected(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetTimeConnected());
+}
+
+static cell_t GetDataRate(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return pInfo->GetDataRate();
+}
+
+static cell_t IsTimingOut(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return pInfo->IsTimingOut() ? 1 : 0;
+}
+
+static cell_t GetLatency(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetLatency(params[2]));
+}
+
+static cell_t GetAvgLatency(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetAvgLatency(params[2]));
+}
+
+static cell_t GetAvgLoss(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetAvgLoss(params[2]));
+}
+
+static cell_t GetAvgChoke(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetAvgChoke(params[2]));
+}
+
+static cell_t GetAvgData(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetAvgData(params[2]));
+}
+
+static cell_t GetAvgPackets(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Player %d is not in game", client);
+	} else if (pPlayer->IsFakeClient()) {
+		return pContext->ThrowNativeError("Player %d is a bot", client);
+	}
+
+	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	return sp_ftoc(pInfo->GetAvgPackets(params[2]));
+}
+
+static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Players.GetClientOfUserId(params[1]);
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -668,5 +845,15 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientWeapon",			GetWeaponName},
 	{"GetClientModel",			GetModelName},
 	{"GetClientHealth",			GetHealth},
+	{"GetTimeConnected",		GetTimeConnected},
+	{"GetDataRate",				GetDataRate},
+	{"IsTimingOut",				IsTimingOut},
+	{"GetLatency",				GetLatency},
+	{"GetAvgLatency",			GetAvgLatency},
+	{"GetAvgLoss",				GetAvgLoss},
+	{"GetAvgChoke",				GetAvgChoke},
+	{"GetAvgData",				GetAvgData},
+	{"GetAvgPackets",			GetAvgPackets},
+	{"GetClientOfUserId",		GetClientOfUserId},
 	{NULL,						NULL}
 };
