@@ -42,9 +42,12 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	m_InExec = false;
 	m_CustomMsg = false;
 	m_funcsnum = ctx->vmbase->FunctionCount(ctx);
+#if 0
 	m_priv_funcs = NULL;
+#endif
 	m_pub_funcs = NULL;
 
+#if 0
 	/**
 	 * Note: Since the m_plugin member will never change,
 	 * it is safe to assume the function count will never change
@@ -56,6 +59,7 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	} else {
 		m_priv_funcs = NULL;
 	}
+#endif
 
 	if (ctx->plugin->info.publics_num && m_pub_funcs == NULL)
 	{
@@ -66,44 +70,72 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	}
 }
 
-void BaseContext::FlushFunctionCache(bool remove)
+void BaseContext::FlushFunctionCache()
 {
 	if (m_pub_funcs)
 	{
 		for (uint32_t i=0; i<ctx->plugin->info.publics_num; i++)
 		{
-			if (remove)
-			{
-				delete m_pub_funcs[i];
-				m_pub_funcs[i] = NULL;
-			} else if (m_pub_funcs[i]) {
-				m_pub_funcs[i]->Invalidate();
-			}
+			delete m_pub_funcs[i];
+			m_pub_funcs[i] = NULL;
 		}
 	}
 
+#if 0
 	if (m_priv_funcs)
 	{
 		for (unsigned int i=0; i<m_funcsnum; i++)
 		{
-			if (remove)
-			{
-				delete m_priv_funcs[i];
-				m_priv_funcs[i] = NULL;
-			} else if (m_priv_funcs[i]) {
-				m_priv_funcs[i]->Invalidate();
-			}
+			delete m_priv_funcs[i];
+			m_priv_funcs[i] = NULL;
 		}
 	}
+#endif
+}
+
+void BaseContext::RefreshFunctionCache()
+{
+	if (m_pub_funcs)
+	{
+		sp_public_t *pub;
+		for (uint32_t i=0; i<ctx->plugin->info.publics_num; i++)
+		{
+			if (!m_pub_funcs[i])
+			{
+				continue;
+			}
+			if (GetPublicByIndex(i, &pub) != SP_ERROR_NONE)
+			{
+				continue;
+			}
+			m_pub_funcs[i]->Set(pub->code_offs, this);
+		}
+	}
+
+#if 0
+	if (m_priv_funcs)
+	{
+		for (unsigned int i=0; i<m_funcsnum; i++)
+		{
+			if (!m_priv_funcs[i])
+			{
+				continue;
+			}
+			g_pVM->
+		}
+	}
+#endif
 }
 
 BaseContext::~BaseContext()
 {
-	FlushFunctionCache(true);
+	FlushFunctionCache();
 	delete [] m_pub_funcs;
 	m_pub_funcs = NULL;
+#if 0
 	delete [] m_priv_funcs;
 	m_priv_funcs = NULL;
+#endif
 }
 
 void BaseContext::SetContext(sp_context_t *_ctx)
@@ -115,7 +147,7 @@ void BaseContext::SetContext(sp_context_t *_ctx)
 	ctx = _ctx;
 	ctx->context = this;
 	ctx->dbreak = GlobalDebugBreak;
-	FlushFunctionCache(false);
+	RefreshFunctionCache();
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()

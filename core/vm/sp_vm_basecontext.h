@@ -78,7 +78,8 @@ namespace SourcePawn
 		void SetContext(sp_context_t *_ctx);
 	private:
 		void SetErrorMessage(const char *msg, va_list ap);
-		void FlushFunctionCache(bool remove);
+		void FlushFunctionCache();
+		void RefreshFunctionCache();
 	private:
 		sp_context_t *ctx;
 #if defined SOURCEMOD_BUILD
@@ -88,7 +89,9 @@ namespace SourcePawn
 		bool m_CustomMsg;
 		bool m_InExec;
 		unsigned int m_funcsnum;
+#if 0
 		CFunction **m_priv_funcs;
+#endif
 		CFunction **m_pub_funcs;
 	};
 };
