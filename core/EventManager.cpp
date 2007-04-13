@@ -383,7 +383,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 /* IGameEventManager2::FireEvent post hook */
 bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 {
-	IGameEvent *pEventCopy;
+	IGameEvent *pEventCopy = NULL;
 	EventHook *pHook;
 	IChangeableForward *pForward;
 	const char *name;
