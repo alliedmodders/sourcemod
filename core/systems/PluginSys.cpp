@@ -486,6 +486,13 @@ bool CPlugin::ToggleDebugMode(bool debug, char *error, size_t maxlength)
 		new_ctx->context = m_ctx.ctx->context;
 		memcpy(new_ctx->user, m_ctx.ctx->user, sizeof(m_ctx.ctx->user));
 
+		uint32_t nativeCount = m_plugin->info.natives_num;
+		for (uint32_t i=0; i<nativeCount; i++)
+		{
+			new_ctx->natives[i].pfn = m_ctx.ctx->natives[i].pfn;
+			new_ctx->natives[i].status = m_ctx.ctx->natives[i].status;
+		}
+
 		g_pVM->FreeContext(m_ctx.ctx);
 		m_ctx.ctx = new_ctx;
 		m_ctx.base->SetContext(new_ctx);
