@@ -693,26 +693,27 @@ int BaseContext::PushString(cell_t *local_addr, char **phys_addr, const char *st
 	return SP_ERROR_NONE;
 }
 
-int BaseContext::StringToLocal(cell_t local_addr, size_t chars, const char *source)
+int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source)
 {
 	char *dest;
-	int len;
+	size_t len;
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
+	if (bytes == 0)
+	{
+		return SP_ERROR_NONE;
+	}
+
 	len = strlen(source);
 	dest = (char *)(ctx->memory + local_addr);
 
-	if ((size_t)len >= chars)
+	if ((size_t)len >= bytes)
 	{
-		len = chars - 1;
-	}
-	if (len <= 0)
-	{
-		return SP_ERROR_NONE;
+		len = bytes - 1;
 	}
 
 	memcpy(dest, source, len);
@@ -762,12 +763,17 @@ inline int __CheckValidChar(char *c)
 int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const char *source, size_t *wrtnbytes)
 {
 	char *dest;
-	int len;
+	size_t len;
 	bool needtocheck = false;
 
 	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
+	}
+	
+	if (maxbytes == 0)
+	{
+		return SP_ERROR_NONE;
 	}
 
 	len = strlen(source);
@@ -777,10 +783,6 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	{
 		len = maxbytes - 1;
 		needtocheck = true;
-	}
-	if (len <= 0)
-	{
-		return SP_ERROR_NONE;
 	}
 
 	memcpy(dest, source, len);
