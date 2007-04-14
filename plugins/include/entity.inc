@@ -234,7 +234,7 @@ native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
 native GetEntDataEnt(entity, offset);
 
 /**
- * Peeks into an entity's object data and sest the entity handle info
+ * Peeks into an entity's object data and sets the entity handle info
  * at the given offset.
  * 
  * @param entity		Edict index.
@@ -274,6 +274,33 @@ native GetEntDataVector(entity, offset, Float:vec[3]);
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 native SetEntDataVector(entity, offset, const Float:vec[3], bool:changeState=false);
+
+/**
+ * Peeks into an entity's object data and retrieves the string at 
+ * the given offset.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param buffer		Destination string buffer.
+ * @param maxlen		Maximum length of output string buffer.
+ * @return			Number of non-null bytes written.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native GetEntDataString(entity, offset, String:buffer[], maxlen);
+
+/**
+ * Peeks into an entity's object data and sets the string at 
+ * the given offset.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param buffer		String to set.
+ * @param maxlen		Maximum length of bytes to write.
+ * @param changeState	If true, change will be sent over the network.
+ * @return			Number of non-null bytes written.
+ * @error				Invalid entity or offset out of reasonable bounds.
+ */
+native SetEntDataString(entity, offset, const String:buffer[], maxlen, bool:changeState=false);
 
 /**
  * @endsection
@@ -400,7 +427,7 @@ stock SetEntProp(entity, PropType:type, const String:prop[], value, size=4)
  * @param entity		Edict index.
  * @param type			Property type.
  * @param prop			Property to use.
- * @return				Value at the given property offset..
+ * @return				Value at the given property offset.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 stock Float:GetEntPropFloat(entity, PropType:type, const String:prop[])
@@ -623,3 +650,28 @@ stock SetEntPropVector(entity, PropType:type, const String:prop[], const Float:v
 
 	return SetEntDataVector(entity, offs, vec, true);
 }
+
+/**
+ * Gets a network property as a string.
+ * 
+ * @param entity		Edict index.
+ * @param type			Property type.
+ * @param prop			Property to use.
+ * @param buffer		Destination string buffer.
+ * @param maxlen		Maximum length of output string buffer.		
+ * @return				Number of non-null bytes written.
+ * @error				Invalid entity, offset out of reasonable bounds, or property is not a valid string.
+ */
+native GetEntPropString(entity, PropType:type, const String:prop[], String:buffer[], maxlen);
+
+/**
+ * Sets a network property as a string.
+ * 
+ * @param entity		Edict index.
+ * @param type			Property type.
+ * @param prop			Property to use.
+ * @param buffer		String to set.		
+ * @return				Number of non-null bytes written.
+ * @error				Invalid entity, offset out of reasonable bounds, or property is not a valid string.
+ */
+native SetEntPropString(entity, PropType:type, const String:prop[], const String:buffer[]);

@@ -19,6 +19,13 @@
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 #include "GameConfigs.h"
+#include "sm_stringutil.h"
+
+enum PropType
+{
+	Prop_Send = 0,
+	Prop_Data
+};
 
 inline edict_t *GetEdict(cell_t num)
 {
@@ -557,6 +564,207 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 	return td->fieldOffset[TD_OFFSET_NORMAL];
 }
 
+static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	size_t len;
+	char *src = (char *)((uint8_t *)pEntity + offset);
+	pContext->StringToLocalUTF8(params[3], params[4], src, &len);
+
+	return len;
+}
+
+static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset < 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	char *src;
+	char *dest = (char *)((uint8_t *)pEntity + offset);
+
+	pContext->LocalToString(params[3], &src);
+	size_t len = strncopy(dest, src, params[4]);
+
+	if (params[5])
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
+
+	return len;
+}
+
+static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			datamap_t *pMap;
+			typedescription_t *td;
+			if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+			{
+				return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
+			}
+			pContext->LocalToString(params[3], &prop);
+			if ((td=g_HL2.FindInDataMap(pMap, prop)) == NULL)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+			}
+			if (td->fieldType != FIELD_CHARACTER)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
+			}
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			char *prop;
+			IServerNetworkable *pNet = pEdict->GetNetworkable();
+			if (!pNet)
+			{
+				return pContext->ThrowNativeError("The edict is not networkable");
+			}
+			pContext->LocalToString(params[3], &prop);
+			SendProp *pSend = g_HL2.FindInSendTable(pNet->GetServerClass()->GetName(), prop);
+			if (!pSend)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+			}
+			if (pSend->GetType() != DPT_String)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
+			}
+			offset = pSend->GetOffset();
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	size_t len;
+	char *src = (char *)((uint8_t *)pEntity + offset);
+	pContext->StringToLocalUTF8(params[4], params[5], src, &len);
+
+	return len;
+}
+
+static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	int maxlen;
+	bool is_sendprop = false;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			datamap_t *pMap;
+			typedescription_t *td;
+			if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+			{
+				return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
+			}
+			pContext->LocalToString(params[3], &prop);
+			if ((td=g_HL2.FindInDataMap(pMap, prop)) == NULL)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+			}
+			if (td->fieldType != FIELD_CHARACTER)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
+			}
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			maxlen = td->fieldSize;
+			break;
+		}
+	case Prop_Send:
+		{
+			char *prop;
+			IServerNetworkable *pNet = pEdict->GetNetworkable();
+			if (!pNet)
+			{
+				return pContext->ThrowNativeError("The edict is not networkable");
+			}
+			pContext->LocalToString(params[3], &prop);
+			SendProp *pSend = g_HL2.FindInSendTable(pNet->GetServerClass()->GetName(), prop);
+			if (!pSend)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+			}
+			if (pSend->GetType() != DPT_String)
+			{
+				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
+			}
+			offset = pSend->GetOffset();
+			maxlen = DT_MAX_STRING_BUFFERSIZE;
+			is_sendprop = true;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	char *src;
+	char *dest = (char *)((uint8_t *)pEntity + offset);
+
+	pContext->LocalToString(params[4], &src);
+	size_t len = strncopy(dest, src, maxlen);
+
+	if (is_sendprop)
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
+
+	return len;
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
@@ -581,5 +789,9 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntDataFloat",			SetEntDataFloat},
 	{"SetEntDataVector",		SetEntDataVector},
 	{"FindDataMapOffs",			FindDataMapOffs},
+	{"GetEntDataString",		GetEntDataString},
+	{"SetEntDataString",		SetEntDataString},
+	{"GetEntPropString",		GetEntPropString},
+	{"SetEntPropString",		SetEntPropString},
 	{NULL,						NULL}
 };
