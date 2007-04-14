@@ -369,9 +369,15 @@ static cell_t sm_QueryClientConVar(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
 	}
 
-	if (!pPlayer->IsConnected() || pPlayer->IsFakeClient())
+	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Player %d is either not connected or a bot", params[1]);
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	/* Trying a query on a bot results in callback not be fired, so don't bother */
+	if (pPlayer->IsFakeClient())
+	{
+		return 0;
 	}
 
 	pContext->LocalToString(params[2], &name);

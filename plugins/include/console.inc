@@ -19,6 +19,14 @@
 #define _console_included
 
 /**
+ * Console variable query helper values.
+ */
+enum QueryCookie
+{
+	QUERYCOOKIE_FAILED = 0,
+}
+
+/**
  * Console variable query result values.
  */
 enum ConVarQueryResult
@@ -447,6 +455,7 @@ funcenum ConVarQueryFinished
  * @param name			Name of client convar to query.
  * @param callback		A function to use as a callback when the query has finished.
  * @param value			Optional value to pass to the callback function.
- * @return				A cookie that uniquely identifies the query.
+ * @return				A cookie that uniquely identifies the query. 
+ *						Returns QUERYCOOKIE_FAILED on failure, such as when used on a bot.
  */
 native QueryCookie:QueryClientConVar(client, const String:cvarName[], ConVarQueryFinished:callback, any:value=0);
