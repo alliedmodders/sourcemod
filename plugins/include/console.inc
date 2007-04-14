@@ -19,6 +19,17 @@
 #define _console_included
 
 /**
+ * Console variable query result values.
+ */
+enum ConVarQueryResult
+{
+	ConVarQuery_Okay = 0,				/**< Retrieval of client convar value was successful. */
+	ConVarQuery_NotFound,				/**< Client convar was not found. */
+	ConVarQuery_NotValid,				/**< A console command with the same name was found, but there is no convar. */
+	ConVarQuery_Protected				/**< Client convar was found, but it is protected. The server cannot retrieve its value. */
+};
+
+/**
  * @section Flags for console commands and console variables.  The descriptions 
  * for each constant come directly from the Source SDK.
  */
@@ -398,3 +409,44 @@ native bool:GetConVarMax(Handle:convar, &Float:max);
  * @error				Invalid or corrupt Handle.
  */
 native ResetConVar(Handle:convar);
+
+funcenum ConVarQueryFinished
+{	
+	/**
+	 * Called when a query to retrieve a client's console variable has finished.
+	 *
+	 * @param cookie		Unique identifier of query.
+	 * @param client		Player index.
+	 * @param result		Result of query that tells one whether or not query was successful.
+	 *						See ConVarQueryResult enum for more details.
+	 * @param convarName	Name of client convar that was queried.
+	 * @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
+	 * @param value			Value that was passed when query was started.
+	 * @noreturn
+	 */
+	public(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[], any:value),
+	
+	/**
+	 * Called when a query to retrieve a client's console variable has finished.
+	 *
+	 * @param cookie		Unique identifier of query.
+	 * @param client		Player index.
+	 * @param result		Result of query that tells one whether or not query was successful.
+	 *						See ConVarQueryResult enum for more details.
+	 * @param convarName	Name of client convar that was queried.
+	 * @param convarValue	Value of client convar that was queried if successful. This will be "" if it was not.
+	 * @noreturn
+	 */
+	public(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
+};
+
+/**
+ * Starts a query to retrieve the value of a client's console variable.
+ *
+ * @param client		Player index.
+ * @param name			Name of client convar to query.
+ * @param callback		A function to use as a callback when the query has finished.
+ * @param value			Optional value to pass to the callback function.
+ * @return				A cookie that uniquely identifies the query.
+ */
+native QueryCookie:QueryClientConVar(client, const String:cvarName[], ConVarQueryFinished:callback, any:value=0);

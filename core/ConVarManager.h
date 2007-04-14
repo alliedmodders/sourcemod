@@ -33,8 +33,18 @@ struct ConVarInfo
 {
 	Handle_t handle;					/**< Handle to convar */
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
-	IChangeableForward *changeForward;	/**< Forward associated with convar */
+	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
 	FnChangeCallback origCallback;		/**< The original callback function */
+};
+
+/**
+ * Holds information about a client convar query
+ */
+struct ConVarQuery
+{
+	QueryCvarCookie_t cookie;			/**< Cookie that identifies query */
+	IPluginFunction *pCallback;			/**< Function that will be called when query is finished */
+	cell_t value;						/**< Optional value passed to query function */
 };
 
 class ConVarManager :
@@ -49,6 +59,7 @@ public:
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModVSPReceived(IServerPluginCallbacks *iface);
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public: // IPluginsListener
@@ -92,6 +103,12 @@ public:
 	 * Remove a function from the forward that will be called when the specified convar changes.
 	 */
 	void UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFunction);
+
+	/**
+	 * Starts a query to find the value of a client convar.
+	 */
+	QueryCvarCookie_t QueryClientConVar(edict_t *pPlayer, const char *name, IPluginFunction *pCallback,
+	                                    Handle_t hndl);
 private:
 	/**
 	 * Adds a convar to a plugin's list.
@@ -99,13 +116,22 @@ private:
 	static void AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar);
 
 	/**
-	 * Static callback that Valve's ConVar class executes when the convar's value changes.
+	 * Static callback that Valve's ConVar object executes when the convar's value changes.
 	 */
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
+
+	/**
+	 * Callback for when StartQueryCvarValue() has finished.
+	 */
+	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue);
 private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;
+	List<ConVarQuery> m_ConVarQueries;
 	Trie *m_ConVarCache;
+	IServerPluginCallbacks *m_VSPIface;
+	bool m_CanQueryConVars;
 };
 
 extern ConVarManager g_ConVarManager;

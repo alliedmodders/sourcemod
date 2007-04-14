@@ -13,6 +13,7 @@
  */
 
 #include "sm_globals.h"
+#include "HalfLife2.h"
 #include "sourcemm_api.h"
 #include "HandleSys.h"
 #include "ConVarManager.h"
@@ -342,6 +343,48 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static bool s_QueryAlreadyWarned = false;
+
+static cell_t sm_QueryClientConVar(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *pPlayer;
+	char *name;
+	IPluginFunction *pCallback;
+
+	if (g_IsOriginalEngine)
+	{
+		if (!s_QueryAlreadyWarned)
+		{
+			s_QueryAlreadyWarned = true;
+			return pContext->ThrowNativeError("Game does not support client convar querying (one time warning)");
+		}
+
+		return 0;
+	}
+
+	pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected() || pPlayer->IsFakeClient())
+	{
+		return pContext->ThrowNativeError("Player %d is either not connected or a bot", params[1]);
+	}
+
+	pContext->LocalToString(params[2], &name);
+	pCallback = pContext->GetFunctionById(params[3]);
+
+	if (!pCallback)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+	}
+
+	return g_ConVarManager.QueryClientConVar(pPlayer->GetEdict(), name, pCallback, params[4]);
+}
+
 static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 {
 	char *name,*help;
@@ -584,6 +627,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetConVarMin",		sm_GetConVarMin},
 	{"GetConVarMax",		sm_GetConVarMax},
 	{"ResetConVar",			sm_ResetConVar},
+	{"QueryClientConVar",	sm_QueryClientConVar},
 	{"RegServerCmd",		sm_RegServerCmd},
 	{"RegConsoleCmd",		sm_RegConsoleCmd},
 	{"GetCmdArgString",		sm_GetCmdArgString},

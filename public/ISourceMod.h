@@ -28,7 +28,7 @@
 #include <IDataPack.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	1
+#define SMINTERFACE_SOURCEMOD_VERSION	2
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -138,29 +138,36 @@ namespace SourceMod
 		 */
 		virtual void FreeDataPack(IDataPack *pack) =0;
 
-		 /**
-		  * @brief Returns the automated data pack handle type.
-		  *
-		  * The readonly data type is the parent of the writable type.  
-		  * Note that calling CloseHandle() on either type will release the data pack.
-		  * The readonly type is inheritable, but due to limitations of the Handle System,
-		  * the writable type is not.
-		  *
-		  * @param readonly	If true, the readonly type will be returned.
-		  * @return			The Handle type for storing generic data packs.
-		  */
-		 virtual HandleType_t GetDataPackHandleType(bool readonly=false) =0;
+		/**
+		 * @brief Returns the automated data pack handle type.
+		 *
+		 * The readonly data type is the parent of the writable type.  
+		 * Note that calling CloseHandle() on either type will release the data pack.
+		 * The readonly type is inheritable, but due to limitations of the Handle System,
+		 * the writable type is not.
+		 *
+		 * @param readonly	If true, the readonly type will be returned.
+		 * @return			The Handle type for storing generic data packs.
+		 */
+		virtual HandleType_t GetDataPackHandleType(bool readonly=false) =0;
 
-		 /**
-		  * @brief Retrieves a KeyValues pointer from a handle.
-		  *
-		  * @param hndl		Handle_t from which to retrieve contents.
-		  * @param err		Optional address to store a possible handle error.
-		  * @param root		If true it will return the root KeyValues pointer for the whole structure.
-		  *
-		  * @return			The KeyValues pointer, or NULL for any error encountered.
-		  */
-		 virtual KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false) =0;
+		/**
+		 * @brief Retrieves a KeyValues pointer from a handle.
+		 *
+		 * @param hndl		Handle_t from which to retrieve contents.
+		 * @param err		Optional address to store a possible handle error.
+		 * @param root		If true it will return the root KeyValues pointer for the whole structure.
+		 *
+		 * @return			The KeyValues pointer, or NULL for any error encountered.
+		 */
+		virtual KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false) =0;
+
+		/**
+		 * @brief Returns the name of the directory in which the mod or game's gameinfo.txt resides.
+		 *
+		 * @return			A string containing the name of the mod directory.
+		 */
+		virtual const char *GetModFolderName() const =0;
 	};
 }
 

@@ -13,6 +13,7 @@
  */
 
 #include "HalfLife2.h"
+#include "sourcemod.h"
 #include "sourcemm_api.h"
 
 CHalfLife2 g_HL2;
@@ -70,8 +71,12 @@ CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
 
 void CHalfLife2::OnSourceModStartup(bool late)
 {
-	if (!g_IsOriginalEngine && !g_pSharedChangeInfo)
+	/* The Ship currently is the only known game to use an older version of the engine */
+	if (strcasecmp(g_SourceMod.GetModFolderName(), "ship") == 0)
 	{
+		/* :TODO: Better engine versioning - perhaps something added to SourceMM? */
+		g_IsOriginalEngine = true;
+	} else if (!g_pSharedChangeInfo) {
 		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
 }

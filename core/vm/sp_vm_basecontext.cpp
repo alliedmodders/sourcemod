@@ -711,7 +711,7 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *sour
 	len = strlen(source);
 	dest = (char *)(ctx->memory + local_addr);
 
-	if ((size_t)len >= bytes)
+	if (len >= bytes)
 	{
 		len = bytes - 1;
 	}

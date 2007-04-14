@@ -28,7 +28,7 @@ struct PlVers
 };
 
 /**
- * Function helper values
+ * Function helper values.
  */
 enum Function
 {

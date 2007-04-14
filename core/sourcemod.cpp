@@ -100,7 +100,21 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 
 bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 {
-	g_BaseDir.assign(g_SMAPI->GetBaseDir());
+	const char *gamepath = g_SMAPI->GetBaseDir();
+
+	/* Store full path to game */
+	g_BaseDir.assign(gamepath);
+
+	/* Store name of game directory by itself */
+	size_t len = strlen(gamepath);
+	for (size_t i = len - 1; i >= 0; i--)
+	{
+		if (gamepath[i] == PLATFORM_SEP_CHAR)
+		{
+			strncopy(m_ModDir, &gamepath[++i], sizeof(m_ModDir));
+			break;
+		}
+	}
 
 	/* Initialize CoreConfig so we can get SourceMod base path properly - this basically parses core.cfg */
 	g_CoreConfig.Initialize();
@@ -526,6 +540,11 @@ Handle_t SourceModBase::GetDataPackHandleType(bool readonly)
 {
 	//:TODO:
 	return 0;
+}
+
+const char *SourceModBase::GetModFolderName() const
+{
+	return m_ModDir;
 }
 
 SMGlobalClass *SMGlobalClass::head = NULL;

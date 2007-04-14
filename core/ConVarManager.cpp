@@ -13,6 +13,7 @@
  */
 
 #include "ConVarManager.h"
+#include "HalfLife2.h"
 #include "PluginSys.h"
 #include "ForwardSys.h"
 #include "HandleSys.h"
@@ -22,10 +23,13 @@
 
 ConVarManager g_ConVarManager;
 
+SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
+SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
+
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
 
-ConVarManager::ConVarManager() : m_ConVarType(0)
+ConVarManager::ConVarManager() : m_ConVarType(0), m_VSPIface(NULL), m_CanQueryConVars(false)
 {
 	/* Create a convar lookup trie */
 	m_ConVarCache = sm_trie_create();
@@ -49,6 +53,13 @@ ConVarManager::~ConVarManager()
 
 void ConVarManager::OnSourceModAllInitialized()
 {
+	/* Only valid with ServerGameDLL006 or greater */
+	if (g_SMAPI->GetGameDLLVersion() >= 6)
+	{
+		SH_ADD_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		m_CanQueryConVars = true;
+	}
+
 	HandleAccess sec;
 
 	/* Set up access rights for the 'ConVar' handle type */
@@ -65,13 +76,19 @@ void ConVarManager::OnSourceModAllInitialized()
 
 void ConVarManager::OnSourceModShutdown()
 {
+	if (m_CanQueryConVars)
+	{
+		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, m_VSPIface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+	}
+
 	IChangeableForward *fwd;
 	List<ConVarInfo *>::iterator i;
 
 	/* Iterate list of ConVarInfo structures */
 	for (i = m_ConVars.begin(); i != m_ConVars.end(); i++)
 	{
-		fwd = (*i)->changeForward;
+		fwd = (*i)->pChangeForward;
 
 		/* Free any convar-change forwards that still exist */
 		if (fwd)
@@ -85,6 +102,29 @@ void ConVarManager::OnSourceModShutdown()
 
 	/* Remove the 'ConVar' handle type */
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
+}
+
+void ConVarManager::OnSourceModVSPReceived(IServerPluginCallbacks *iface)
+{
+	/* This will be called after OnSourceModAllInitialized(), so...
+	 *
+	 * If we haven't been able to hook the IServerGameDLL version at this point,
+	 * then use hook IServerPluginCallbacks version from the engine.
+	 */
+
+	/* The Ship currently only supports ServerPluginCallbacks001, but we need 002 */
+	if (g_IsOriginalEngine)
+	{
+		return;
+	}
+
+	if (!m_CanQueryConVars)
+	{
+		m_VSPIface = iface;
+
+		SH_ADD_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, iface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		m_CanQueryConVars = true;
+	}
 }
 
 void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
@@ -190,7 +230,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 			pInfo = new ConVarInfo();
 			pInfo->handle = hndl;
 			pInfo->sourceMod = false;
-			pInfo->changeForward = NULL;
+			pInfo->pChangeForward = NULL;
 			pInfo->origCallback = pConVar->GetCallback();
 
 			/* Insert struct into caches */
@@ -201,7 +241,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 		}
 	}
 
-	// To prevent creating a convar that has the same name as a console command... ugh
+	/* To prevent creating a convar that has the same name as a console command... ugh */
 	ConCommandBase *pBase = icvar->GetCommands();
 
 	while (pBase)
@@ -227,7 +267,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo = new ConVarInfo();
 	pInfo->handle = hndl;
 	pInfo->sourceMod = true;
-	pInfo->changeForward = NULL;
+	pInfo->pChangeForward = NULL;
 	pInfo->origCallback = NULL;
 
 	/* Insert struct into caches */
@@ -265,7 +305,7 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	pInfo = new ConVarInfo();
 	pInfo->handle = hndl;
 	pInfo->sourceMod = false;
-	pInfo->changeForward = NULL;
+	pInfo->pChangeForward = NULL;
 	pInfo->origCallback = pConVar->GetCallback();
 
 	/* Insert struct into our caches */
@@ -284,13 +324,13 @@ void ConVarManager::HookConVarChange(ConVar *pConVar, IPluginFunction *pFunction
 	if (sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), (void **)&pInfo))
 	{
 		/* Get the forward */
-		pForward = pInfo->changeForward;
+		pForward = pInfo->pChangeForward;
 
 		/* If forward does not exist, create it */
 		if (!pForward)
 		{
 			pForward = g_Forwards.CreateForwardEx(NULL, ET_Ignore, 3, CONVARCHANGE_PARAMS);
-			pInfo->changeForward = pForward;
+			pInfo->pChangeForward = pForward;
 
 			/* Install our own callback */
 			pConVar->InstallChangeCallback(OnConVarChanged);
@@ -311,7 +351,7 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 	if (sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), (void **)&pInfo))
 	{
 		/* Get the forward */
-		pForward = pInfo->changeForward;
+		pForward = pInfo->pChangeForward;
 
 		/* If the forward doesn't exist, we can't unhook anything */
 		if (!pForward)
@@ -332,12 +372,30 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 		{
 			/* Free this forward */
 			g_Forwards.ReleaseForward(pForward);
-			pInfo->changeForward = NULL;
+			pInfo->pChangeForward = NULL;
 
 			/* Put back the original convar callback */
 			pConVar->InstallChangeCallback(pInfo->origCallback);
 		}
 	}
+}
+
+QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char *name, IPluginFunction *pCallback, Handle_t hndl)
+{
+	QueryCvarCookie_t cookie;
+
+	/* Call StartQueryCvarValue() in either the IVEngineServer or IServerPluginHelpers depending on situation */
+	if (!m_VSPIface)
+	{
+		cookie = engine->StartQueryCvarValue(pPlayer, name);	
+	} else {
+		cookie = serverpluginhelpers->StartQueryCvarValue(pPlayer, name);
+	}
+
+	ConVarQuery query = {cookie, pCallback, hndl};
+	m_ConVarQueries.push_back(query);
+
+	return cookie;
 }
 
 void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar)
@@ -388,7 +446,7 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 	sm_trie_retrieve(pCache, pConVar->GetName(), (void **)&pInfo);
 
 	FnChangeCallback origCallback = pInfo->origCallback;
-	IChangeableForward *pForward = pInfo->changeForward;
+	IChangeableForward *pForward = pInfo->pChangeForward;
 
 	/* If there was a change callback installed previously, call it */
 	if (origCallback)
@@ -402,6 +460,49 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 	pForward->PushString(pConVar->GetString());
 	pForward->Execute(NULL);
 }
+
+void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
+{
+	IPluginFunction *pCallback = NULL;
+	cell_t value = 0;
+	List<ConVarQuery>::iterator iter;
+
+	for (iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end(); iter++)
+	{
+		ConVarQuery &query = (*iter);
+		
+		if (query.cookie == cookie)
+		{
+			pCallback = query.pCallback;
+			value = query.value;
+
+			break;
+		}
+	}
+
+	if (pCallback)
+	{
+		cell_t ret;
+
+		pCallback->PushCell(cookie);
+		pCallback->PushCell(engine->IndexOfEdict(pPlayer));
+		pCallback->PushCell(result);
+		pCallback->PushString(cvarName);
+
+		if (result == eQueryCvarValueStatus_ValueIntact)
+		{
+			pCallback->PushString(cvarValue);
+		} else {
+			pCallback->PushString("\0");
+		}
+
+		pCallback->PushCell(value);
+		pCallback->Execute(&ret);
+
+		m_ConVarQueries.erase(iter);
+	}
+}
+
 
 static int s_YamagramState = 0;
 

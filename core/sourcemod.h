@@ -94,6 +94,7 @@ public: // ISourceMod
 	void FreeDataPack(IDataPack *pack);
 	HandleType_t GetDataPackHandleType(bool readonly=false);
 	KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false);
+	const char *GetModFolderName() const;
 private:
 	/**
 	 * @brief Loading plugins
@@ -108,6 +109,7 @@ private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
+	char m_ModDir[32];
 	bool m_IsMapLoading;
 	bool m_ExecPluginReload;
 	unsigned int m_target;

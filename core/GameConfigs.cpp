@@ -301,28 +301,7 @@ void GameConfigManager::OnSourceModStartup(bool late)
 {
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
-	char mod[255];
-	engine->GetGameDir(mod, sizeof(mod));
-
-	g_mod[0] = '\0';
-	size_t len = strlen(mod);
-	for (size_t i=len-1; i>=0 && i<len; i++)
-	{
-		if (mod[i] == '/')
-		{
-			if (i == len-1)
-			{
-				mod[i] = '\0';
-				continue;
-			}
-			strcpy(g_mod, &mod[i]);
-			break;
-		}
-	}
-	if (g_mod[0] != '\0')
-	{
-		strcpy(g_mod, mod);
-	}
+	strncopy(g_mod, g_SourceMod.GetModFolderName(), sizeof(g_mod));
 }
 
 void GameConfigManager::OnSourceModAllInitialized()
