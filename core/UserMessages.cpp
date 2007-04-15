@@ -19,8 +19,6 @@ UserMessages g_UserMsgs;
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
 
-//:TODO: USE NEW MM IFACE TO SEARCH FOR MESSAGE NAMES ETC! faluco--> i'll do this when i have some spare time
-
 UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
 {
 	m_Names = sm_trie_create();
@@ -63,33 +61,18 @@ void UserMessages::OnSourceModAllShutdown()
 int UserMessages::GetMessageIndex(const char *msg)
 {
 	int msgid;
+
 	if (!sm_trie_retrieve(m_Names, msg, reinterpret_cast<void **>(&msgid)))
 	{
-		char buf[255];
-		int dummy;
-		msgid = 0;
+		msgid = g_SMAPI->FindUserMessage(msg);
 
-		while (gamedll->GetUserMessageInfo(msgid, buf, sizeof(buf), dummy))
+		if (msgid != INVALID_MESSAGE_ID)
 		{
-			if (strcmp(msg, buf) == 0)
-			{
-				sm_trie_insert(m_Names, msg, reinterpret_cast<void *>(msgid));
-				return msgid;
-			}
-			msgid++;
+			sm_trie_insert(m_Names, msg, reinterpret_cast<void *>(msgid));
 		}
-
-		return INVALID_MESSAGE_ID;
 	}
 
 	return msgid;
-}
-
-bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlen) const
-{
-	int dummy;
-
-	return gamedll->GetUserMessageInfo(msgid, buffer, maxlen, dummy);
 }
 
 bf_write *UserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)

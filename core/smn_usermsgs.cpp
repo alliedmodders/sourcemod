@@ -303,27 +303,21 @@ static UsrMessageNatives s_UsrMessageNatives;
 static cell_t smn_GetUserMessageId(IPluginContext *pCtx, const cell_t *params)
 {
 	char *msgname;
-	int err;
-	if ((err=pCtx->LocalToString(params[1], &msgname)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToString(params[1], &msgname);
 
 	return g_UserMsgs.GetMessageIndex(msgname);
 }
 
 static cell_t smn_GetUserMessageName(IPluginContext *pCtx, const cell_t *params)
 {
-	char *msgname;
+	const char *msgname = g_SMAPI->GetUserMessage(params[1]);
 
-	pCtx->LocalToPhysAddr(params[2], (cell_t **)&msgname);
-
-	if (!g_UserMsgs.GetMessageName(params[1], msgname, params[3]))
+	if (msgname == NULL)
 	{
-		msgname = "";
 		return 0;
 	}
+
+	pCtx->StringToLocalUTF8(params[2], params[3], msgname, NULL);
 
 	return 1;
 }
@@ -332,7 +326,7 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 {
 	char *msgname;
 	cell_t *cl_array;
-	int msgid, err;
+	int msgid;
 	bf_write *pBitBuf;
 
 	if (g_IsMsgInExec)
@@ -340,11 +334,7 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Unable to execute a new message, there is already one in progress");
 	}
 
-	if ((err=pCtx->LocalToString(params[1], &msgname)) != SP_ERROR_NONE)
-	{
-		pCtx->ThrowNativeErrorEx(err, NULL);
-		return 0;
-	}
+	pCtx->LocalToString(params[1], &msgname);
 
 	if ((msgid=g_UserMsgs.GetMessageIndex(msgname)) == INVALID_MESSAGE_ID)
 	{

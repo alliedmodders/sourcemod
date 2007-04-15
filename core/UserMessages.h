@@ -48,7 +48,6 @@ public: //SMGlobalClass
 	void OnSourceModAllShutdown();
 public: //IUserMessages
 	int GetMessageIndex(const char *msg);
-	bool GetMessageName(int msgid, char *buffer, size_t maxlen) const;
 	bool HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bf_write *StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags);

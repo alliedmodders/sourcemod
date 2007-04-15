@@ -97,10 +97,6 @@ namespace SourceMod
 	public:
 		/**
 		 * @brief Finds a message id by name.
-		 * 
-		 * Note: due to a bug in Valve's earlier SDK versions, this
-		 * may cause crashes alongside IServerGameDLL003 if the message is
-		 * not found.
 		 *
 		 * @param msg		Case-sensitive string containing the message.
 		 * @return			A message index, or -1 on failure.
