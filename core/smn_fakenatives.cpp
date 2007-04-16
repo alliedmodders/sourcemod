@@ -79,10 +79,10 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 	}
 
 	/* Restore everything from the stack if necessary */
+	s_curnative = pSaveNative;
+	s_curcaller = pSaveCaller;
 	if (pSaveNative != NULL)
 	{
-		s_curnative = pSaveNative;
-		s_curcaller = pSaveCaller;
 		for (cell_t i=0; i<=save_params[0]; i++)
 		{
 			s_curparams[i] = save_params[i];
