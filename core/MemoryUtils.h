@@ -28,13 +28,9 @@ struct DynLibInfo
 class MemoryUtils : public IMemoryUtils
 {
 public:
-	MemoryUtils();
-public:
-	void *FindPattern(void *libPtr, const char *pattern, size_t len);
+	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
 private:
-	 bool GetLibraryInfo(void *libPtr, DynLibInfo &lib);
-private:
-	size_t m_PageSize;
+	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
 };
 
 extern MemoryUtils g_MemUtils;

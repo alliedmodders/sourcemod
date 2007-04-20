@@ -21,17 +21,15 @@
 
 MemoryUtils g_MemUtils;
 
+#if 0
 MemoryUtils::MemoryUtils()
 {
 #ifdef PLATFORM_WINDOWS
 
-	/* This might be used in the future? */
-	#if 0
 	SYSTEM_INFO info;
 	GetSystemInfo(&info);
 
 	m_PageSize = info.dwPageSize;
-	#endif
 
 #elif defined PLATFORM_POSIX
 
@@ -39,8 +37,9 @@ MemoryUtils::MemoryUtils()
 
 #endif
 }
+#endif
 
-void *MemoryUtils::FindPattern(void *libPtr, const char *pattern, size_t len)
+void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t len)
 {
 	DynLibInfo lib;
 	bool found;
@@ -77,7 +76,7 @@ void *MemoryUtils::FindPattern(void *libPtr, const char *pattern, size_t len)
 	return NULL;
 }
 
-bool MemoryUtils::GetLibraryInfo(void *libPtr, DynLibInfo &lib)
+bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 {
 	unsigned long baseAddr;
 

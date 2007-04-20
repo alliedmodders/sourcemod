@@ -46,7 +46,7 @@ namespace SourceMod
 		 * @param len		Size of the pattern in bytes.
 		 * @return			Pointer to pattern found in memory, NULL if not found.
 		 */
-		virtual void *FindPattern(void *libPtr, const char *pattern, size_t len) =0;
+		virtual void *FindPattern(const void *libPtr, const char *pattern, size_t len) =0;
 	};
 }
 
