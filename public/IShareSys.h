@@ -58,7 +58,7 @@ namespace SourceMod
 		virtual const char *GetInterfaceName() =0;
 
 		/**
-		 * @brief Must return whether the requested version number is backwards comaptible.
+		 * @brief Must return whether the requested version number is backwards compatible.
 		 * Note: This can be overridden for breaking changes or custom versioning.
 		 * 
 		 * @param version		Version number to compare against.
