@@ -16,6 +16,7 @@
 #define _INCLUDE_SOURCEMOD_MEMORYUTILS_H_
 
 #include <IMemoryUtils.h>
+#include "sm_globals.h"
 
 using namespace SourceMod;
 
@@ -25,9 +26,13 @@ struct DynLibInfo
 	size_t memorySize;
 };
 
-class MemoryUtils : public IMemoryUtils
+class MemoryUtils : 
+	public IMemoryUtils,
+	public SMGlobalClass
 {
-public:
+public: // SMGlobalClass
+	void OnSourceModAllInitialized();
+public: // IMemoryUtils
 	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
 private:
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
