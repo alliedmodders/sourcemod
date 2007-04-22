@@ -762,6 +762,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_gameconfigs.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_halflife.cpp"
 				>
 			</File>

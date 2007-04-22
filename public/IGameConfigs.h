@@ -34,28 +34,6 @@ class SendProp;
 namespace SourceMod
 {
 	/**
-	 * @brief Details the property types.
-	 */
-	enum PropType
-	{
-		PropType_Unknown = 0,		/**< Property type is not known */
-		PropType_Send = 1,			/**< Property type is a networkable property */
-		PropType_Data = 2,			/**< Property type is a data/save property */
-	};
-
-	/**
-	 * @brief Details the property states.
-	 */
-	enum PropError
-	{
-		PropError_Okay = 0,			/**< No error */
-		PropError_NotSet,			/**< Property is not set in the config file */
-		PropError_NotFound,			/**< Property was not found in the game */
-	};
-
-	#define INVALID_PROPERTY_VALUE		-1		/**< Property value is not valid */
-
-	/**
 	 * @brief Describes a game private data config file
 	 */
 	class IGameConfig
@@ -74,7 +52,7 @@ namespace SourceMod
 		 * @brief Returns information about a dynamic offset.
 		 *
 		 * @param key			Key to retrieve from the property section.
-		 * @return				A PropError error code.
+		 * @return				A SendProp pointer, or NULL if not found.
 		 */
 		virtual SendProp *GetSendProp(const char *key) =0;
 
@@ -106,7 +84,7 @@ namespace SourceMod
 		 * @brief Loads or finds an already loaded game config file.  
 		 *
 		 * @param file		File to load.  The path must be relative to the 'gamedata'
-		 *					folder under the config folder, and the extension should be ommitted.
+		 *					folder under the config folder, and the extension should be omitted.
 		 * @param pConfig	Pointer to store the game config pointer.  Pointer will be valid even on failure.
 		 * @param error		Optional error message buffer.
 		 * @param maxlength	Maximum length of the error buffer.

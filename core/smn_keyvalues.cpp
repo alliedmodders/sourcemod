@@ -26,7 +26,7 @@ struct KeyValueStack
 	CStack<KeyValues *> pCurRoot;
 };
 
-class KeyValuekNatives : 
+class KeyValueNatives : 
 	public SMGlobalClass,
 	public IHandleTypeDispatch
 {
@@ -636,7 +636,7 @@ static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *param
 	return 1;
 }
 
-static KeyValuekNatives s_KeyValuekNatives;
+static KeyValueNatives s_KeyValueNatives;
 
 REGISTER_NATIVES(keyvaluenatives)
 {

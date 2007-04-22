@@ -406,5 +406,34 @@ native bool:IsSoundPrecached(const String:sound[]);
  */
 native CreateDialog(client, Handle:kv, DialogType:type);
 
+/**
+ * Loads a game config file.
+ *
+ * @param file			File to load.  The path must be relative to the 'gamedata' folder under the config folder 
+ *					and the extension should be omitted.
+ * @return			A handle to the game config file or INVALID_HANDLE in failure.
+ */
+native Handle:LoadGameConfigFile(const String:file[]);
+
+/**
+ * Returns an offset value.
+ *
+ * @param gc			Game config handle.
+ * @param key			Key to retrieve from the offset section.
+ * @return			An offset, or -1 on failure.
+ */
+native GameConfGetOffset(Handle:gc, const String:key[]);
+
+/**
+ * Gets the value of a key from the "Keys" section.
+ *
+ * @param gc			Game config handle.
+ * @param key			Key to retrieve from the Keys section.
+ * @param buffer		Destination string buffer.
+ * @param maxlen		Maximum length of output string buffer.
+ * @return			True if key existed, false otherwise.
+ */
+native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], maxlen);
+
 #include <helpers>
 #include <entity>
