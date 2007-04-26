@@ -17,7 +17,7 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
-#include "../jit_helpers.h"
+#include <jit_helpers.h>
 
 using namespace SourcePawn;
 

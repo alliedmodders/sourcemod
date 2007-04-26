@@ -209,6 +209,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\public\jit\jit_helpers.h"
+				>
+			</File>
+			<File
 				RelativePath="..\jit_version.h"
 				>
 			</File>
@@ -225,7 +229,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\x86_macros.h"
+				RelativePath="..\..\..\..\public\jit\x86\x86_macros.h"
 				>
 			</File>
 		</Filter>
