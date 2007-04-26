@@ -19,7 +19,8 @@ OBJECTS = dll_exports.cpp jit_x86.cpp opcode_helpers.cpp
 
 LINK = -static-libgcc
 
-INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
+INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn \
+	-I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86
 
 ifeq "$(DEBUG)" "true"
 	BIN_DIR = Debug
