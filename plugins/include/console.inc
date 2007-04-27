@@ -136,7 +136,7 @@ native PrintToConsole(client, const String:format[], any:...);
  * Called when a server-only command is invoked.  
  *
  * @params args			Number of arguments that were in the argument string.
- * @return				A Result value.  Not handling the command
+ * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
 functag SrvCmd Action:public(args);
@@ -158,7 +158,7 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
  *
  * @param client		Index of the client, or 0 from the server.
  * @param args			Number of arguments that were in the argument string.
- * @return				A Result value.  Not handling the command
+ * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
 functag ConCmd Action:public(client, args);
