@@ -277,10 +277,10 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 	return EventHookErr_Okay;
 }
 
-EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name)
+EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name, bool force)
 {
 	EventInfo *pInfo;
-	IGameEvent *pEvent = gameevents->CreateEvent(name, true);
+	IGameEvent *pEvent = gameevents->CreateEvent(name, force);
 
 	if (pEvent)
 	{

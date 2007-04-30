@@ -71,7 +71,7 @@ static cell_t sm_CreateEvent(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &name);
 
-	pInfo = g_EventManager.CreateEvent(pContext, name);
+	pInfo = g_EventManager.CreateEvent(pContext, name, params[2] ? true : false);
 
 	if (pInfo)
 	{

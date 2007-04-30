@@ -81,9 +81,12 @@ native UnhookEvent(const String:name[], EventHook:callback, EventHookMode:mode=E
  * Creates a game event to be fired later.
  *
  * @param name			Name of event.
- * @return				Handle to event or INVALID_HANDLE if event doesn't exist.
+ * @param force			If set to true, this forces the event to be created even if it's not being hooked.
+ *						Note that this will not force it if the event doesn't exist at all.
+ * @return				Handle to event. INVALID_HANDLE is returned if the event doesn't exist or isn't 
+						being hooked (unless force is true).
  */
-native Handle:CreateEvent(const String:name[]);
+native Handle:CreateEvent(const String:name[], bool:force=false);
 
 /**
  * Fires a game event.

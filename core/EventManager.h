@@ -93,7 +93,7 @@ public:
 public:
 	EventHookError HookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
 	EventHookError UnhookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
-	EventInfo *CreateEvent(IPluginContext *pContext, const char *name);
+	EventInfo *CreateEvent(IPluginContext *pContext, const char *name, bool force=false);
 	void FireEvent(EventInfo *pInfo, bool bDontBroadcast=false);
 	void CancelCreatedEvent(EventInfo *pInfo);
 private: // IGameEventManager2 hooks
