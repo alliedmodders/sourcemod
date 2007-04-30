@@ -19,11 +19,6 @@
 #define _events_included
 
 /**
- * Flags for firing game events
- */
-#define EVENT_PASSTHRU_ALL	(1<<1)		/**< Event will pass through other SourceMM plugins AND SourceMod */
-
-/**
  * Event hook modes determining how hooking should be handled
  */
 enum EventHookMode
@@ -94,12 +89,11 @@ native Handle:CreateEvent(const String:name[]);
  * Fires a game event.
  *
  * @param event			Handle to the event.
- * @param flags			Optional bitstring flags. See EVENT_* constants for more details.
  * @param dontBroadcast	Optional boolean that determines if event should be broadcast to clients.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native FireEvent(Handle:event, flags=0, bool:dontBroadcast=false);
+native FireEvent(Handle:event, bool:dontBroadcast=false);
 
 /**
  * Cancels a previously created game event that has not been fired.

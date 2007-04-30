@@ -25,7 +25,7 @@ SH_DECL_HOOK2(IGameEventManager2, FireEvent, SH_NOATTRIB, 0, bool, IGameEvent *,
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
 typedef List<EventHook *> EventHookList;
 
-EventManager::EventManager() : m_EventType(0), m_NotifyPlugins(true)
+EventManager::EventManager() : m_EventType(0)
 {
 	/* Create an event lookup trie */
 	m_EventHooks = sm_trie_create();
@@ -302,11 +302,8 @@ EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name)
 	return NULL;
 }
 
-void EventManager::FireEvent(EventInfo *pInfo, int flags, bool bDontBroadcast)
+void EventManager::FireEvent(EventInfo *pInfo, bool bDontBroadcast)
 {
-	/* Should SourceMod plugins be notified of this event? */
-	m_NotifyPlugins = (flags & EVENT_PASSTHRU_ALL) ? true : false;
-
 	/* Actually fire event now */
 	gameevents->FireEvent(pInfo->pEvent, bDontBroadcast);
 
@@ -336,11 +333,6 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	const char *name;
 	cell_t res = Pl_Continue;
-
-	if (!m_NotifyPlugins)
-	{
-		RETURN_META_VALUE(MRES_IGNORED, true);
-	}
 	
 	/* Get the event name, we're going to need this for passing to post hooks */
 	name = pEvent->GetName();
@@ -388,14 +380,6 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	const char *name;
 	Handle_t hndl = 0;
-
-	if (!m_NotifyPlugins)
-	{
-		/* Reset plugin notification state */
-		m_NotifyPlugins = true;
-
-		RETURN_META_VALUE(MRES_IGNORED, true);
-	}
 
 	name = m_EventNames.front();
 

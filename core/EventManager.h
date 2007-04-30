@@ -26,9 +26,6 @@
 
 using namespace SourceHook;
 
-//#define EVENT_PASSTHRU	(1<<0)
-#define EVENT_PASSTHRU_ALL	(1<<1)
-
 struct EventInfo
 {
 	IGameEvent *pEvent;
@@ -97,14 +94,13 @@ public:
 	EventHookError HookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
 	EventHookError UnhookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode=EventHookMode_Post);
 	EventInfo *CreateEvent(IPluginContext *pContext, const char *name);
-	void FireEvent(EventInfo *pInfo, int flags=0, bool bDontBroadcast=false);
+	void FireEvent(EventInfo *pInfo, bool bDontBroadcast=false);
 	void CancelCreatedEvent(EventInfo *pInfo);
 private: // IGameEventManager2 hooks
 	bool OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast);
 	bool OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast);
 private:
 	HandleType_t m_EventType;
-	bool m_NotifyPlugins;
 	Trie *m_EventHooks;
 	CStack<EventInfo *> m_FreeEvents;
 	CStack<const char *> m_EventNames;
