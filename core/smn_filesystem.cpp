@@ -451,7 +451,7 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 {
 	char path[PLATFORM_MAX_PATH], *fmt, *buffer;
-	int arg = 4;
+	int arg = 5;
 	pContext->LocalToString(params[2], &buffer);
 	pContext->LocalToString(params[4], &fmt);
 
