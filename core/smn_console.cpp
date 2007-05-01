@@ -22,6 +22,12 @@
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 
+enum ConVarBounds
+{
+	ConVarBound_Upper = 0,
+	ConVarBound_Lower
+};
+
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
 	char *name, *defaultVal, *helpText;
@@ -261,7 +267,7 @@ static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t sm_GetConVarMin(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_GetConVarBounds(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError err;
@@ -274,18 +280,28 @@ static cell_t sm_GetConVarMin(IPluginContext *pContext, const cell_t *params)
 	}
 
 	cell_t *addr;
-	bool hasMin;
-	float min;
+	bool hasBound;
+	float bound;
 
-	pContext->LocalToPhysAddr(params[2], &addr);
+	switch (params[2])
+	{
+	case ConVarBound_Upper:
+		hasBound = pConVar->GetMax(bound);
+		break;
+	case ConVarBound_Lower:
+		hasBound = pConVar->GetMin(bound);
+		break;
+	default:
+		return pContext->ThrowNativeError("Invalid ConVarBounds value %d");
+	}
+	
+	pContext->LocalToPhysAddr(params[3], &addr);
+	*addr = sp_ftoc(bound);
 
-	hasMin = pConVar->GetMin(min);
-	*addr = sp_ftoc(min);
-
-	return hasMin;
+	return hasBound;
 }
 
-static cell_t sm_GetConVarMax(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_SetConVarBounds(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError err;
@@ -297,16 +313,19 @@ static cell_t sm_GetConVarMax(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	cell_t *addr;
-	bool hasMax;
-	float max;
+	switch (params[2])
+	{
+	case ConVarBound_Upper:
+		pConVar->SetMax(params[3] ? true : false, sp_ctof(params[4]));
+		break;
+	case ConVarBound_Lower:
+		pConVar->SetMin(params[3] ? true : false, sp_ctof(params[4]));
+		break;
+	default:
+		return pContext->ThrowNativeError("Invalid ConVarBounds value %d");
+	}
 
-	pContext->LocalToPhysAddr(params[2], &addr);
-
-	hasMax = pConVar->GetMax(max);
-	*addr = sp_ftoc(max);
-
-	return hasMax;
+	return 1;
 }
 
 static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
@@ -630,8 +649,8 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetConVarFlags",		sm_GetConVarFlags},
 	{"SetConVarFlags",		sm_SetConVarFlags},
 	{"GetConVarName",		sm_GetConVarName},
-	{"GetConVarMin",		sm_GetConVarMin},
-	{"GetConVarMax",		sm_GetConVarMax},
+	{"GetConVarBounds",		sm_GetConVarBounds},
+	{"SetConVarBounds",		sm_SetConVarBounds},
 	{"ResetConVar",			sm_ResetConVar},
 	{"QueryClientConVar",	sm_QueryClientConVar},
 	{"RegServerCmd",		sm_RegServerCmd},

@@ -19,6 +19,15 @@
 #define _console_included
 
 /**
+ * Console variable bound values used with Get/SetConVarBounds()
+ */
+enum ConVarBounds
+{
+	ConVarBound_Upper = 0,
+	ConVarBound_Lower
+};
+
+/**
  * Console variable query helper values.
  */
 enum QueryCookie
@@ -379,6 +388,29 @@ native GetConVarFlags(Handle:convar);
 native SetConVarFlags(Handle:convar, flags);
 
 /**
+ * Retrieves the specified bound of a console variable.
+ *
+ * @param convar		Handle to the convar.
+ * @param type			Type of bound to retrieve, ConVarBound_Lower or ConVarBound_Upper.
+ * @param value			By-reference cell to store the specified floating point bound value.
+ * @return				True if the convar has the specified bound set, false otherwise.
+ * @error				Invalid or corrupt Handle.
+ */
+native bool:GetConVarBounds(Handle:convar, ConVarBounds:type, &Float:value);
+
+/**
+ * Sets the specified bound of a console variable.
+ *
+ * @param convar		Handle to the convar.
+ * @param type			Type of bound to set, ConVarBound_Lower or ConVarBound_Upper
+ * @param set			If set to true, convar will use specified bound. If false, bound will be removed.
+ * @param value			Floating point value to use as the specified bound.
+ * @noreturn
+ * @error				Invalid or corrupt Handle.
+ */
+native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0.0);
+
+/**
  * Retrieves the name of a console variable.
  *
  * @param convar		Handle to the convar.
@@ -388,26 +420,6 @@ native SetConVarFlags(Handle:convar, flags);
  * @error				Invalid or corrupt Handle.     
  */
 native GetConVarName(Handle:convar, const String:name[], maxlength);
-
-/**
- * Retrieves the minimum floating point value that a console variable can contain.
- *
- * @param convar		Handle to the convar.
- * @param min			By-reference cell to store the minimum floating point value.
- * @return				True if the convar has a minimum value set, false otherwise.
- * @error				Invalid or corrupt Handle.
- */
-native bool:GetConVarMin(Handle:convar, &Float:min);
-
-/**
- * Retrieves the maximum floating point value that a console variable can contain.
- *
- * @param convar		Handle to the convar.
- * @param min			By-reference cell to store the maximum floating point value.
- * @return				True if the convar has a maximum value set, false otherwise.
- * @error				Invalid or corrupt Handle.
- */
-native bool:GetConVarMax(Handle:convar, &Float:max);
 
 /**
  * Resets the console variable to its default value.
