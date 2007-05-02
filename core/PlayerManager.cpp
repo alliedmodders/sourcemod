@@ -475,6 +475,7 @@ int PlayerManager::GetClientOfUserId(int userid)
 		}
 		if (engine->GetPlayerUserId(player->GetEdict()) == userid)
 		{
+			m_UserIdLookUp[userid] = i;
 			return i;
 		}
 	}
