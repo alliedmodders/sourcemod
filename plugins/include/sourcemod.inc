@@ -116,7 +116,7 @@ forward OnGameFrame();
 /**
  * Called when the map is loaded.
  *
- * Note: This used to be OnServerLoad(), which is now deprecated.
+ * @note This used to be OnServerLoad(), which is now deprecated.
  * Plugins still using the old forward will work.
  */
 forward OnMapStart();
@@ -125,6 +125,16 @@ forward OnMapStart();
  * Called right before a map ends.
  */
 forward OnMapEnd();
+
+/**
+ * Called when the map has loaded and the servercfgfile has finished
+ * executing.  This is usually 'server.cfg' but most mods allow it to
+ * be set via 'servercfgfile'.  
+ *
+ * @note If server.cfg is executed more than once per map, this forward
+ * will only be called the first time (per map).
+ */
+forward OnServerCfg();
 
 /**
  * Returns the calling plugin's Handle.

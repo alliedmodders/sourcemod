@@ -84,6 +84,7 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModPluginsLoaded();
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
@@ -99,6 +100,7 @@ public:
 						 int flags);
 	ResultType DispatchClientCommand(int client, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
+	void NotifyExecDone(const char *file);
 private:
 	void InternalDispatch();
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
@@ -108,12 +110,17 @@ private:
 	void RemoveConCmd(ConCmdInfo *info);
 	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
+	void OnExecCmd();
 private:
 	Trie *m_pCmds;					/* command lookup */
 	Trie *m_pCmdGrps;				/* command group lookup */
 	List<ConCmdInfo *> m_CmdList;	/* command list */
 	int m_CmdClient;				/* current client */
 	BaseStringTable m_Strings;		/* string table */
+	ConVar *m_pServerCfgFile;		/* servercfgfile cvar */
+	ConCommand *m_pExecCmd;			/* "exec" command */
+	IForward *m_pServerCfgFwd;		/* server config forward */
+	bool m_bServerCfgDone;			/* marks whether a servercfg was detected */
 };
 
 extern ConCmdManager g_ConCmds;
