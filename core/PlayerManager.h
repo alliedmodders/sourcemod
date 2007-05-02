@@ -117,6 +117,7 @@ private:
 	IForward *m_clinfochanged;
 	IForward *m_clauth;
 	IForward *m_onActivate;
+	IForward *m_onActivate2;
 	CPlayer *m_Players;
 	int *m_UserIdLookUp;
 	int m_maxClients;

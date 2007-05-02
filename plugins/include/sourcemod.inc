@@ -114,12 +114,12 @@ forward OnPluginPauseChange(bool:pause);
 forward OnGameFrame();
 
 /**
- * Called when the map is loaded and configs have been parsed.
- * Note that commands are processed per-frame, and thus config
- * files may not be fully loaded until a few seconds later.
- * This function will be called on each mapchange.
+ * Called when the map is loaded.
+ *
+ * Note: This used to be OnServerLoad(), which is now deprecated.
+ * Plugins still using the old forward will work.
  */
-forward OnServerLoad();
+forward OnMapStart();
 
 /**
  * Returns the calling plugin's Handle.
