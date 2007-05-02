@@ -315,6 +315,16 @@ native Float:GetGameTime();
 native GetGameDescription(String:buffer[], maxlength, bool:original=false);
 
 /**
+ * Returns the name of the game's directory.
+ *
+ * @param buffer		Buffer to store the directory name.
+ * @param maxlength		Maximum size of the buffer.
+ *
+ * return				Number of bytes written to the buffer (UTF-8 safe).
+ */
+native GetGameFolderName(String:buffer[], maxlength);
+
+/**
  * Returns the current map name.
  *
  * @param buffer		Buffer to store map name.

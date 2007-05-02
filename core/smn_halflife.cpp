@@ -140,6 +140,16 @@ static cell_t GetGameDescription(IPluginContext *pContext, const cell_t *params)
 	return numBytes;
 }
 
+static cell_t GetGameFolderName(IPluginContext *pContext, const cell_t *params)
+{
+	const char *name = g_SourceMod.GetModFolderName();
+	size_t numBytes;
+
+	pContext->StringToLocalUTF8(params[1], params[2], name, &numBytes);
+
+	return numBytes;
+}
+
 static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 {
 	size_t bytes;
@@ -277,6 +287,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetCurrentMap",			GetCurrentMap},
 	{"GetEngineTime",			GetEngineTime},
 	{"GetGameDescription",		GetGameDescription},
+	{"GetGameFolderName",		GetGameFolderName},
 	{"GetGameTime",				GetGameTime},
 	{"GetRandomFloat",			GetRandomFloat},
 	{"GetRandomInt",			GetRandomInt},
