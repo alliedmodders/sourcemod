@@ -43,7 +43,7 @@ enum KvDataTypes
  * @param firstValue	If firstKey is non-empty, specifies the first key's value.
  * @return				A Handle to a new KeyValues structure.
  */
-native Handle:CreateKeyValues(const String:name[], const String:firstkey[], const String:firstValue[]);
+native Handle:CreateKeyValues(const String:name[], const String:firstkey[]="", const String:firstValue[]="");
 
 /** 
  * Sets a string value of a KeyValues key.
