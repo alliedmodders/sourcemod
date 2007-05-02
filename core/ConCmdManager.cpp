@@ -801,7 +801,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 			const char *num = engine->Cmd_Argv(3);
 			if (atoi(num) == 1)
 			{
-				g_ConCmds.NotifyExecDone(NULL);
+				NotifyExecDone(NULL);
 			}
 		}
 
