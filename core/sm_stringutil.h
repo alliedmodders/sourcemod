@@ -32,5 +32,6 @@ size_t gnprintf(char *buffer, size_t maxlen, const char *format, void **args);
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 char *sm_strdup(const char *str);
+size_t CorePlayerTranslate(int client, char *buffer, size_t maxlength, const char *phrase, void **params);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_

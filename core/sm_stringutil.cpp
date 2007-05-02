@@ -33,16 +33,23 @@
 		return 0; \
 	}
 
-inline bool TryServerLanguage(const char *serverlang, unsigned int *langid)
+size_t CorePlayerTranslate(int client, char *buffer, size_t maxlength, const char *phrase, void **params)
 {
-	if (!g_Translator.GetLanguageByCode(serverlang, langid))
+	Translation pTrans;
+	TransError err;
+
+	err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetServerLanguage(), &pTrans);
+	if (err != Trans_Okay && g_Translator.GetServerLanguage() != LANG_ENGLISH)
 	{
-		if (!g_Translator.GetLanguageByCode("en", langid))
-		{
-			return false;
-		}
+		err = g_pCorePhrases->GetTranslation(phrase, LANG_ENGLISH, &pTrans);
 	}
-	return true;
+
+	if (err != Trans_Okay)
+	{
+		return UTIL_Format(buffer, maxlength, "%s", phrase);
+	}
+
+	return g_Translator.Translate(buffer, maxlength, params, &pTrans);
 }
 
 inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, unsigned int langcount, Translation *pTrans)
