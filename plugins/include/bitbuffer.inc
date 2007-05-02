@@ -229,11 +229,11 @@ native Float:BfReadFloat(Handle:bf);
  * @param bf			bf_read handle to read from.
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
- * @param Line			If true the buffer will be copied until it reaches a '\n' or a null terminator.
+ * @param line			If true the buffer will be copied until it reaches a '\n' or a null terminator.
  * @noreturn
  * @error				Invalid or incorrect Handle, destination string buffer was too short.
  */
-native BfReadString(Handle:bf, String:buffer[], maxlength, bool:Line=false);
+native BfReadString(Handle:bf, String:buffer[], maxlength, bool:line=false);
 
 /**
  * Reads an entity from a readable bitbuffer (bf_read).

@@ -46,7 +46,7 @@ funcenum Timer
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	Action:public(Handle:timer, value),
+	Action:public(Handle:timer, any:value),
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -67,7 +67,7 @@ funcenum Timer
  * @param flags				Flags to set (such as repeatability or auto-Handle closing).
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-native Handle:CreateTimer(Float:interval, Timer:func, {Handle,_}:value=INVALID_HANDLE, flags=0);
+native Handle:CreateTimer(Float:interval, Timer:func, any:value=INVALID_HANDLE, flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
@@ -99,7 +99,7 @@ native TriggerTimer(Handle:timer, bool:reset=false);
  * @param flags				Timer flags.
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-stock Handle:CreateDataTimer(Float:interval, Timer:func, &Handle:data, flags)
+stock Handle:CreateDataTimer(Float:interval, Timer:func, &Handle:data, flags=0)
 {
 	data = CreateDataPack();
 	flags |= TIMER_HNDL_CLOSE;
