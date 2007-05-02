@@ -45,6 +45,7 @@ IdentityToken_t *g_pCoreIdent = NULL;
 float g_LastTime = 0.0f;
 float g_LastAuthCheck = 0.0f;
 IForward *g_pOnGameFrame = NULL;
+IForward *g_pOnMapEnd = NULL;
 bool g_Loaded = false;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
@@ -288,6 +289,11 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 		g_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
 	}
 
+	if (!g_pOnMapEnd)
+	{
+		g_pOnMapEnd = g_Forwards.CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
+	}
+
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
@@ -319,6 +325,11 @@ void SourceModBase::GameFrame(bool simulating)
 
 void SourceModBase::LevelShutdown()
 {
+	if (g_pOnMapEnd)
+	{
+		g_pOnMapEnd->Execute(NULL);
+	}
+
 	if (m_ExecPluginReload)
 	{
 		g_PluginSys.ReloadOrUnloadPlugins();
@@ -395,6 +406,11 @@ void SourceModBase::CloseSourceMod()
 		if (g_pOnGameFrame)
 		{
 			g_Forwards.ReleaseForward(g_pOnGameFrame);
+		}
+
+		if (g_pOnMapEnd)
+		{
+			g_Forwards.ReleaseForward(g_pOnMapEnd);
 		}
 	
 		/* Notify! */

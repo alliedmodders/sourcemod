@@ -122,6 +122,11 @@ forward OnGameFrame();
 forward OnMapStart();
 
 /**
+ * Called right before a map ends.
+ */
+forward OnMapEnd();
+
+/**
  * Returns the calling plugin's Handle.
  *
  * @return				Handle of the calling plugin.
