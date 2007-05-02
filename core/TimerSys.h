@@ -27,6 +27,13 @@ using namespace SourceMod;
 typedef List<ITimer *> TimerList;
 typedef List<ITimer *>::iterator TimerIter;
 
+struct TickInfo
+{
+	bool ticking;				/* true=game is ticking, false=we're ticking */
+	unsigned int tickcount;		/* number of simulated ticks we've done */
+	float ticktime;				/* tick time we're maintaining */
+};
+
 class SourceMod::ITimer
 {
 public:
@@ -64,5 +71,6 @@ private:
 };
 
 extern TimerSystem g_Timers;
+extern TickInfo g_SimTicks;
 
 #endif //_INCLUDE_SOURCEMOD_CTIMERSYS_H_

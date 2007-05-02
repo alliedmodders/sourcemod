@@ -15,6 +15,17 @@
 #include "TimerSys.h"
 
 TimerSystem g_Timers;
+TickInfo g_SimTicks;
+
+inline float GetSimulatedTime()
+{
+	if (g_SimTicks.ticking)
+	{
+		return gpGlobals->curtime;
+	} else {
+		return g_SimTicks.ticktime;
+	}
+}
 
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
 {
@@ -52,10 +63,11 @@ void TimerSystem::RunFrame()
 	ITimer *pTimer;
 	TimerIter iter;
 
+	float curtime = GetSimulatedTime();
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
 	{
 		pTimer = (*iter);
-		if (gpGlobals->curtime >= pTimer->m_ToExec)
+		if (curtime >= pTimer->m_ToExec)
 		{
 			pTimer->m_InExec = true;
 			pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
@@ -71,7 +83,7 @@ void TimerSystem::RunFrame()
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); )
 	{
 		pTimer = (*iter);
-		if (gpGlobals->curtime >= pTimer->m_ToExec)
+		if (curtime >= pTimer->m_ToExec)
 		{
 			pTimer->m_InExec = true;
 			res = pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
@@ -83,19 +95,19 @@ void TimerSystem::RunFrame()
 				continue;
 			}
 			pTimer->m_InExec = false;
-			pTimer->m_ToExec = gpGlobals->curtime + pTimer->m_Interval;
+			pTimer->m_ToExec = curtime + pTimer->m_Interval;
 		}
 		iter++;
 	}
 
-	m_LastExecTime = gpGlobals->curtime;
+	m_LastExecTime = curtime;
 }
 
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
 {
 	ITimer *pTimer;
 	TimerIter iter;
-	float to_exec = gpGlobals->curtime + fInterval;
+	float to_exec = GetSimulatedTime() + fInterval;
 
 	if (m_FreeTimers.empty())
 	{
@@ -160,7 +172,7 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 		{
 			if (delayExec)
 			{
-				pTimer->m_ToExec = gpGlobals->curtime + pTimer->m_Interval;
+				pTimer->m_ToExec = GetSimulatedTime() + pTimer->m_Interval;
 			}
 			pTimer->m_InExec = false;
 			return;
@@ -203,12 +215,14 @@ void TimerSystem::MapChange()
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + gpGlobals->curtime;
+		pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
 	}
 
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + gpGlobals->curtime;
+		pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
 	}
+
+	m_LastExecTime = GetSimulatedTime();
 }

@@ -47,6 +47,8 @@ float g_LastAuthCheck = 0.0f;
 IForward *g_pOnGameFrame = NULL;
 IForward *g_pOnMapEnd = NULL;
 bool g_Loaded = false;
+int g_StillFrames = 0;
+float g_StillTime = 0.0f;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
 typedef unsigned int (*GETEXPORTCOUNT)();
@@ -263,6 +265,10 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	m_ExecPluginReload = true;
 	g_LastTime = 0.0f;
 	g_LastAuthCheck = 0.0f;
+	g_SimTicks.ticking = true;
+	g_SimTicks.tickcount = 0;
+	g_StillTime = 0.0f;
+	g_StillFrames = 0;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -297,6 +303,27 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
+void StartTickSimulation()
+{
+	g_SimTicks.ticking = false;
+	g_SimTicks.tickcount = 0;
+	g_SimTicks.ticktime = gpGlobals->curtime;
+}
+
+void StopTickSimulation()
+{
+	g_SimTicks.ticking = true;
+	g_Timers.MapChange();
+	g_StillFrames = 0;
+	g_LastTime = gpGlobals->curtime;
+}
+
+void SimulateTick()
+{
+	g_SimTicks.tickcount++;
+	g_SimTicks.ticktime = g_StillTime + (g_SimTicks.tickcount * gpGlobals->interval_per_tick);
+}
+
 void SourceModBase::GameFrame(bool simulating)
 {
 	/**
@@ -304,6 +331,46 @@ void SourceModBase::GameFrame(bool simulating)
 	 * precious CPU cycles.
 	 */
 	float curtime = gpGlobals->curtime;
+	int framecount = gpGlobals->framecount;
+
+	/* Verify that we're still ticking */
+	if (g_SimTicks.ticking)
+	{
+		if (g_StillFrames == 0)
+		{
+			g_StillFrames = framecount;
+			g_StillTime = curtime;
+		} else {
+			/* Try to detect when we've stopped ticking.
+			 * We do this once 10 frames pass and there have been no ticks.
+			 */
+			if (g_StillTime == curtime)
+			{
+				if (framecount - g_StillFrames >= 5)
+				{
+					StartTickSimulation();
+					return;
+				}
+			} else {
+				/* We're definitely ticking we get here, 
+				 * but update everything as a precaution */
+				g_StillFrames = framecount;
+				g_StillTime = curtime;
+			}
+		}
+	} else {
+		/* We need to make sure we should still be simulating. */
+		if (g_StillTime != curtime)
+		{
+			/* Wow, we're ticking again! It's time to revert. */
+			StopTickSimulation();
+			return;
+		}
+		/* Nope, not ticking.  Simulate! */
+		SimulateTick();
+		curtime = g_SimTicks.ticktime;
+	}
+
 	if (curtime - g_LastTime >= 0.1f)
 	{
 		if (m_CheckingAuth
