@@ -108,9 +108,6 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	}
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
-
-	static int g_userid_test = 1;
-	int client = GetClientOfUserId(++g_userid_test);
 }
 
 void PlayerManager::RunAuthChecks()
