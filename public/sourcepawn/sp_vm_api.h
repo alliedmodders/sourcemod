@@ -30,6 +30,10 @@
 /** SourcePawn VM API Version */
 #define SOURCEPAWN_VM_API_VERSION		2
 
+#if !defined SOURCEMOD_BUILD
+#define SOURCEMOD_BUILD
+#endif
+
 #if defined SOURCEMOD_BUILD
 namespace SourceMod
 {
