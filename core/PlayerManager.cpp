@@ -108,6 +108,9 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	}
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
+
+	static int g_userid_test = 1;
+	int client = GetClientOfUserId(++g_userid_test);
 }
 
 void PlayerManager::RunAuthChecks()
@@ -437,7 +440,46 @@ int PlayerManager::GetNumPlayers()
 
 int PlayerManager::GetClientOfUserId(int userid)
 {
-	return (userid < 0 || userid > USHRT_MAX) ? 0 : m_UserIdLookUp[userid];
+	if (userid < 0 || userid > USHRT_MAX)
+	{
+		return 0;
+	}
+	
+	int client = m_UserIdLookUp[userid];
+
+	/* Verify the userid.  The cache can get messed up with older
+	 * Valve engines.  :TODO: If this gets fixed, do an old engine 
+	 * check before invoking this backwards compat code.
+	 */
+	if (client)
+	{
+		CPlayer *player = GetPlayerByIndex(client);
+		if (player && player->IsConnected())
+		{
+			int realUserId = engine->GetPlayerUserId(player->GetEdict());
+			if (realUserId == userid)
+			{
+				return client;
+			}
+		}
+	}
+
+	/* If we can't verify the userid, we have to do a manual loop */
+	CPlayer *player;
+	for (int i = 1; i <= m_maxClients; i++)
+	{
+		player = GetPlayerByIndex(i);
+		if (!player || !player->IsConnected())
+		{
+			continue;
+		}
+		if (engine->GetPlayerUserId(player->GetEdict()) == userid)
+		{
+			return i;
+		}
+	}
+
+	return 0;
 }
 
 void PlayerManager::AddClientListener(IClientListener *listener)
