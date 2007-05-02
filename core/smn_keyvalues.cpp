@@ -378,7 +378,8 @@ static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &name);
 
-	KeyValues *pSubKey = pStk->pBase->FindKey(name, (params[3]) ? true : false);
+	KeyValues *pSubKey = pStk->pCurRoot.front();
+	pSubKey = pSubKey->FindKey(name, (params[3]) ? true : false);
 	if (!pSubKey)
 	{
 		return 0;
