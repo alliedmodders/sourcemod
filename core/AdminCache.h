@@ -35,7 +35,7 @@ struct AdminGroup
 	uint32_t magic;					/* Magic flag, for memory validation (ugh) */
 	bool immune_global;				/* Global immunity? */
 	bool immune_default;			/* Default immunity? */
-	/* Immune from target table (-1 = nonexistant)
+	/* Immune from target table (-1 = nonexistent)
 	 * [0] = number of entries
 	 * [1...N] = immune targets
 	 */
@@ -70,8 +70,8 @@ struct AdminUser
 	unsigned int grp_count;			/* Number of groups */
 	unsigned int grp_size;			/* Size of groups table */
 	int grp_table;					/* Group table itself */
-	int next_user;					/* Next user in ze list */
-	int prev_user;					/* Prev user in the list */
+	int next_user;					/* Next user in the list */
+	int prev_user;					/* Previous user in the list */
 	UserAuth auth;					/* Auth method for this user */
 	bool immune_global;				/* Whether globally immune */
 	bool immune_default;			/* Whether defaultly immune */

@@ -208,9 +208,9 @@ namespace SourceMod
 
 		/**
 		 * @brief Adds a function to the call list.
-		 * NOTE: Cannot be used during an incompleted call.
+		 * NOTE: Cannot be used during an incomplete call.
 		 * NOTE: If used during a call, function is temporarily queued until calls are over.
-		 * NOTE: Adding mulitple copies of the same function is illegal.
+		 * NOTE: Adding multiple copies of the same function is illegal.
 		 *
 		 * @param func		Function to add.
 		 * @return			True on success, otherwise false.
@@ -219,7 +219,7 @@ namespace SourceMod
 
 		/**
 		 * @brief Adds a function to the call list.
-		 * NOTE: Cannot be used during an incompleted call.
+		 * NOTE: Cannot be used during an incomplete call.
 		 * NOTE: If used during a call, function is temporarily queued until calls are over.
 		 *
 		 * @param ctx		Context to use as a look-up.

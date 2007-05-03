@@ -84,7 +84,7 @@ public: // SMGlobalClass
 										  char *error, 
 										  size_t maxlength);
 public: // ISourceMod
-	const char *GetModPath() const;
+	const char *GetGamePath() const;
 	const char *GetSourceModPath() const;
 	size_t BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...);
 	void LogMessage(IExtension *pExt, const char *format, ...);
@@ -94,7 +94,7 @@ public: // ISourceMod
 	void FreeDataPack(IDataPack *pack);
 	HandleType_t GetDataPackHandleType(bool readonly=false);
 	KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false);
-	const char *GetModFolderName() const;
+	const char *GetGameFolderName() const;
 private:
 	/**
 	 * @brief Loading plugins

@@ -21,7 +21,7 @@
  * Double Array Trie algorithm, based on:
  * An Efficient Implementation of Trie Structures, by
  *  Jun-ichi Aoe and Katsushi Maromoto, and Takashi Sato
- * from Sofiware - Practice and Experience, Vol. 22(9), 695-721 (September 1992)
+ * from Software - Practice and Experience, Vol. 22(9), 695-721 (September 1992)
  *
  *  A Trie is a simple data structure which stores strings as DFAs, with each 
  * transition state being a string entry.  For example, observe the following strings:
@@ -47,7 +47,7 @@
  *
  *  BASE[] is an array where each member is a node in the Trie.  The node can either be UNUSED (empty), an ARC
  * (containing an offset to the next set of ARCs), or a TERMINATOR (contains the rest of a string).
- * Each node has an index which must be interpeted based on the node type.  If the node is a TERMINATOR, then the
+ * Each node has an index which must be interpreted based on the node type.  If the node is a TERMINATOR, then the
  * index is an index into a string table, to find the rest of the string.  
  *  If the node is an ARC, the index is another index into BASE.  For each possible token that can follow the
  * current token, the value of those tokens can be added to the index given in the ARC.  Thus, given a current

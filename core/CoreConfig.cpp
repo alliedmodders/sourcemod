@@ -79,7 +79,7 @@ void CoreConfig::Initialize()
 	}
 
 	/* Format path to config file */
-	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetModPath(), corecfg);
+	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 
 	/* Parse config file */
 	if ((err=g_TextParser.ParseFile_SMC(filePath, this, NULL, NULL)) != SMCParse_Okay)

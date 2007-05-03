@@ -157,7 +157,7 @@ protected:
 							   bool identity=false);
 
 	/**
-	 * Frees a primitive handle.  Does no object freeing, only reference count, bookkeepping, 
+	 * Frees a primitive handle.  Does no object freeing, only reference count, bookkeeping, 
 	 * and linked list maintenance.
 	 * If used on an Identity handle, destroys all Handles under that identity.
 	 */

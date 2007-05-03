@@ -142,7 +142,7 @@ static cell_t GetGameDescription(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetGameFolderName(IPluginContext *pContext, const cell_t *params)
 {
-	const char *name = g_SourceMod.GetModFolderName();
+	const char *name = g_SourceMod.GetGameFolderName();
 	size_t numBytes;
 
 	pContext->StringToLocalUTF8(params[1], params[2], name, &numBytes);

@@ -72,7 +72,7 @@ CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
 void CHalfLife2::OnSourceModStartup(bool late)
 {
 	/* The Ship currently is the only known game to use an older version of the engine */
-	if (strcasecmp(g_SourceMod.GetModFolderName(), "ship") == 0)
+	if (strcasecmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
 	{
 		/* :TODO: Better engine versioning - perhaps something added to SourceMM? */
 		g_IsOriginalEngine = true;

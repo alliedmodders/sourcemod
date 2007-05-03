@@ -301,7 +301,7 @@ void GameConfigManager::OnSourceModStartup(bool late)
 {
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
-	strncopy(g_mod, g_SourceMod.GetModFolderName(), sizeof(g_mod));
+	strncopy(g_mod, g_SourceMod.GetGameFolderName(), sizeof(g_mod));
 }
 
 void GameConfigManager::OnSourceModAllInitialized()

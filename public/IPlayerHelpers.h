@@ -176,7 +176,7 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Called when a client has recieved authorization.
+		 * @brief Called when a client has received authorization.
 		 *
 		 * @param client		Index of the client.
 		 * @param authstring	Authorization string.

@@ -50,7 +50,7 @@ namespace SourceMod
 	 * Where KEY is an IDENTIFIER and VALUE is a STRING.
 	 * 
 	 * WHITESPACE should always be omitted.
-	 * COMMENTS should be stripped, and are defined as text occuring in:
+	 * COMMENTS should be stripped, and are defined as text occurring in:
 	 * ;<TEXT>
 	 * 
 	 * Example file below.  Note that
@@ -161,7 +161,7 @@ namespace SourceMod
 	 * For an example, see configs/permissions.cfg
 	 *
 	 * WHITESPACE should be ignored.
-	 * Comments are text occuring inside the following tokens, and should be stripped
+	 * Comments are text occurring inside the following tokens, and should be stripped
 	 * unless they are inside literal strings:
 	 *  ;<TEXT>
 	 *  //<TEXT>
@@ -308,7 +308,7 @@ namespace SourceMod
 		 * @param ini_listener	Event handler for reading file.
 		 * @param line			If non-NULL, will contain last line parsed (0 if file could not be opened).
 		 * @param col			If non-NULL, will contain last column parsed (undefined if file could not be opened).
-		 * @return				True if parsing succeded, false if file couldn't be opened or there was a syntax error.
+		 * @return				True if parsing succeeded, false if file couldn't be opened or there was a syntax error.
 		 */
 		virtual bool ParseFile_INI(const char *file, 
 									ITextListener_INI *ini_listener,
@@ -333,7 +333,7 @@ namespace SourceMod
 									unsigned int *col) =0;
 
 		/**
-		 * @brief Converts an SMCParseError to a stirng.
+		 * @brief Converts an SMCParseError to a string.
 		 *
 		 * @param err			SMCParseError.
 		 * @return				String error message, or NULL if none.

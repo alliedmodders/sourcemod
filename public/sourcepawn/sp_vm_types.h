@@ -45,7 +45,7 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 #define SP_ERROR_INVALID_ADDRESS		5	/**< A memory address was not valid */
 #define SP_ERROR_NOT_FOUND				6	/**< The object in question was not found */
 #define SP_ERROR_INDEX					7	/**< Invalid index parameter */
-#define SP_ERROR_STACKLOW				8	/**< Nnot enough space left on the stack */
+#define SP_ERROR_STACKLOW				8	/**< Not enough space left on the stack */
 #define SP_ERROR_NOTDEBUGGING			9	/**< Debug mode was not on or debug section not found */
 #define SP_ERROR_INVALID_INSTRUCTION	10	/**< Invalid instruction was encountered */
 #define SP_ERROR_MEMACCESS				11	/**< Invalid memory access */
@@ -220,7 +220,7 @@ typedef sp_fdbg_arraydim_t	sp_debug_arraydim_t;
 typedef struct sp_debug_symbol_s
 {
 	uint32_t		codestart;	/**< Relocated code address */
-	uint32_t		codeend;	/**< relocated code end address */
+	uint32_t		codeend;	/**< Relocated code end address */
 	const char *	name;		/**< Relocated name */
 	sp_debug_arraydim_t *dims;	/**< Relocated dimension struct, if any */
 	sp_fdbg_symbol_t	*sym;	/**< Pointer to original symbol */

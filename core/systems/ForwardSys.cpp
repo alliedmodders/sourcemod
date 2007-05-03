@@ -1,4 +1,4 @@
-/**
+Genesis/**
  * vim: set ts=4 :
  * ===============================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
@@ -22,7 +22,7 @@
 CForwardManager g_Forwards;
 
 /**
- * Gensis turns to its source, reduction occurs stepwise although the essence is all one.
+ * Genesis turns to its source, reduction occurs stepwise although the essence is all one.
  * End of line.  FTL system check.
  *
  * :TODO: WHAT NEEDS TO BE TESTED IN THIS BEAST

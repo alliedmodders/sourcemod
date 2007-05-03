@@ -158,7 +158,7 @@ void PlayerManager::RunAuthChecks()
 	/* Clean up the queue */
 	if (removed)
 	{
-		/* We don't have to compcat the list if it's empty */
+		/* We don't have to compact the list if it's empty */
 		if (removed != m_AuthQueue[0])
 		{
 			unsigned int diff = 0;

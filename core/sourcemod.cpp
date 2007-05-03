@@ -449,7 +449,7 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 	const char *base = NULL;
 	if (type == Path_Game)
 	{
-		base = GetModPath();
+		base = GetGamePath();
 	} else if (type == Path_SM) {
 		base = GetSourceModPath();
 	} else if (type == Path_SM_Rel) {
@@ -580,7 +580,7 @@ const char *SourceModBase::GetSourceModPath() const
 	return m_SMBaseDir;
 }
 
-const char *SourceModBase::GetModPath() const
+const char *SourceModBase::GetGamePath() const
 {
 	return g_BaseDir.c_str();
 }
@@ -625,7 +625,7 @@ Handle_t SourceModBase::GetDataPackHandleType(bool readonly)
 	return 0;
 }
 
-const char *SourceModBase::GetModFolderName() const
+const char *SourceModBase::GetGameFolderName() const
 {
 	return m_ModDir;
 }

@@ -1184,7 +1184,7 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 {
 	/** 
 	 * Zeroth, if the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
-	 * First, if the targetted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+	 * First, if the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
 	 */
 
 	if (id == INVALID_ADMIN_ID)
@@ -1210,21 +1210,21 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 	}
 
 	/** 
-	 * Second, if the targeting admin is root, targeting suceeds.
+	 * Second, if the targeting admin is root, targeting succeeds.
 	 */
 	if (pUser->eflags & ADMFLAG_ROOT)
 	{
 		return true;
 	}
 
-	/** Fourth, if the targetted admin has global immunity, targeting fails. */
+	/** Fourth, if the targeted admin has global immunity, targeting fails. */
 	if (pTarget->immune_global)
 	{
 		return false;
 	}
 
 	/** 
-	 * Fifth, if the targetted admin has default immunity 
+	 * Fifth, if the targeted admin has default immunity 
 	 *  and the admin belongs to no groups, targeting fails.
 	 */
 	if (pTarget->immune_default && pUser->grp_count < 1)
@@ -1233,7 +1233,7 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 	}
 
 	/** 
-	 * Sixth, if the targetted admin has specific immunity from the
+	 * Sixth, if the targeted admin has specific immunity from the
 	 *  targeting admin via group immunities, targeting fails.
 	 */
 	//:TODO: speed this up... maybe with trie hacks.

@@ -175,7 +175,7 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Return false to tell Core that your extension should be considered unsable.
+		 * @brief Return false to tell Core that your extension should be considered usable.
 		 *
 		 * @param error				Error buffer.
 		 * @param maxlength			Size of error buffer.

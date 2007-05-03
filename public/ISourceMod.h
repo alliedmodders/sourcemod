@@ -20,7 +20,7 @@
 
 /**
  * @file ISourceMod.h
- * @brief Defines miscellanious helper functions useful to extensions.
+ * @brief Defines miscellaneous helper functions useful to extensions.
  */
 
 #include <IHandleSys.h>
@@ -64,11 +64,11 @@ namespace SourceMod
 		}
 	public:
 		/**
-		 * @brief Returns the full path to the mod directory.
+		 * @brief Returns the full path to the game directory.
 		 *
-		 * @return			A string containing the full mod path.
+		 * @return			A string containing the full game path.
 		 */
-		virtual const char *GetModPath() const =0;
+		virtual const char *GetGamePath() const =0;
 
 		/**
 		 * @brief Returns the full path to the SourceMod directory.
@@ -111,7 +111,7 @@ namespace SourceMod
 		 * @brief Formats a string from a native.
 		 *
 		 * @param buffer		Buffer to store message.
-		 * @param maxlength		Maximum length of buffer (inculding null terminator).
+		 * @param maxlength		Maximum length of buffer (including null terminator).
 		 * @param pContext		Pointer to the plugin's context.
 		 * @param params		Parameter array that was passed to the native.
 		 * @param param			Parameter index where format string and variable arguments begin.
@@ -141,12 +141,12 @@ namespace SourceMod
 		/**
 		 * @brief Returns the automated data pack handle type.
 		 *
-		 * The readonly data type is the parent of the writable type.  
+		 * The read-only data type is the parent of the writable type.  
 		 * Note that calling CloseHandle() on either type will release the data pack.
-		 * The readonly type is inheritable, but due to limitations of the Handle System,
+		 * The read-only type is inheritable, but due to limitations of the Handle System,
 		 * the writable type is not.
 		 *
-		 * @param readonly	If true, the readonly type will be returned.
+		 * @param readonly	If true, the read-only type will be returned.
 		 * @return			The Handle type for storing generic data packs.
 		 */
 		virtual HandleType_t GetDataPackHandleType(bool readonly=false) =0;
@@ -163,11 +163,11 @@ namespace SourceMod
 		virtual KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false) =0;
 
 		/**
-		 * @brief Returns the name of the directory in which the mod or game's gameinfo.txt resides.
+		 * @brief Returns the name of the game directory.
 		 *
-		 * @return			A string containing the name of the mod directory.
+		 * @return			A string containing the name of the game directory.
 		 */
-		virtual const char *GetModFolderName() const =0;
+		virtual const char *GetGameFolderName() const =0;
 	};
 }
 

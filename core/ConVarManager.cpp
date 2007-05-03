@@ -301,7 +301,7 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	/* If we don't have a handle, then create a new one */
 	hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
 
-	/* Create and initilize ConVarInfo structure */
+	/* Create and initialize ConVarInfo structure */
 	pInfo = new ConVarInfo();
 	pInfo->handle = hndl;
 	pInfo->sourceMod = false;

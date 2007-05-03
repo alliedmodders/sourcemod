@@ -910,7 +910,7 @@ void _IntExt_CallYams()
 	{
 		if (strcasecmp(arg, "mock") == 0)
 		{
-			g_RootMenu.ConsolePrint("You mock BAILOPAN's pronounciation.  In a fit of rage, ");
+			g_RootMenu.ConsolePrint("You mock BAILOPAN's pronunciation.  In a fit of rage, ");
 			g_RootMenu.ConsolePrint("he sticks an INT 3 call into your chest, rendering you broken.");
 			g_RootMenu.ConsolePrint("YOU HAVE DIED.  GAME OVER.");
 			g_yam_state = 0;

@@ -148,12 +148,12 @@ namespace SourceMod
 	typedef int		AdminId;
 
 	/**
-	 * @brief Represents an invalid/nonexistant group or an erroneous operation.
+	 * @brief Represents an invalid/nonexistent group or an erroneous operation.
 	 */
 	#define INVALID_GROUP_ID	-1
 
 	/**
-	 * @brief Represents an invalid/nonexistant user or an erroneous operation.
+	 * @brief Represents an invalid/nonexistent user or an erroneous operation.
 	 */
 	#define INVALID_ADMIN_ID	-1
 
@@ -571,12 +571,12 @@ namespace SourceMod
 		 * @brief Checks whether an AdminId can target another AdminId.
 		 * 
 		 * Zeroth, if the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
-		 * First, if the targetted AdminId is INVALID_ADMIN_ID, targeting succeeds.
-		 * Second, if the targeting admin is root, targeting suceeds.
-		 * Third, if the targetted admin has global immunity, targeting fails.
-		 * Fourth, if the targetted admin has default immunity,
+		 * First, if the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+		 * Second, if the targeting admin is root, targeting succeeds.
+		 * Third, if the targeted admin has global immunity, targeting fails.
+		 * Fourth, if the targeted admin has default immunity,
 		 *  and the admin belongs to no groups, targeting fails.
-		 * Fifth, if the targetted admin has specific immunity from the
+		 * Fifth, if the targeted admin has specific immunity from the
 		 *  targeting admin via group immunities, targeting fails.
 		 * Sixth, targeting succeeds if it passes these tests.
 		 *
