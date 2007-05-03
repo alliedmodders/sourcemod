@@ -39,9 +39,9 @@ size_t CorePlayerTranslate(int client, char *buffer, size_t maxlength, const cha
 	TransError err;
 
 	err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetServerLanguage(), &pTrans);
-	if (err != Trans_Okay && g_Translator.GetServerLanguage() != LANG_ENGLISH)
+	if (err != Trans_Okay && g_Translator.GetServerLanguage() != CORELANG_ENGLISH)
 	{
-		err = g_pCorePhrases->GetTranslation(phrase, LANG_ENGLISH, &pTrans);
+		err = g_pCorePhrases->GetTranslation(phrase, CORELANG_ENGLISH, &pTrans);
 	}
 
 	if (err != Trans_Okay)

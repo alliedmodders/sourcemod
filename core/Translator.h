@@ -23,7 +23,7 @@
 #include "ITextParsers.h"
 
 #define MAX_TRANSLATE_PARAMS		32
-#define LANG_ENGLISH				0
+#define CORELANG_ENGLISH			0
 
 /* :TODO: write a templatized version of tries? */
 
