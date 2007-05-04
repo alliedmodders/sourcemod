@@ -300,7 +300,7 @@ void CPlugin::Call_OnPluginStart()
 
 void CPlugin::Call_OnPluginEnd()
 {
-	if (m_status < Plugin_Paused)
+	if (m_status > Plugin_Paused)
 	{
 		return;
 	}
