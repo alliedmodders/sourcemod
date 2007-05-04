@@ -803,6 +803,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 			{
 				NotifyExecDone(NULL);
 			}
+			return;
 		}
 
 		int id = atoi(text);
