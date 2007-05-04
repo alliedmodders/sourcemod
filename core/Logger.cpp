@@ -107,7 +107,7 @@ void Logger::_NewMapFile()
 
 	while (true)
 	{
-		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d%03d.log", curtime->tm_mon + 1, curtime->tm_mday, i);
+		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%02d%02d%03d.log", curtime->tm_mon + 1, curtime->tm_mday, i);
 		FILE *fp = fopen(_filename, "r");
 		if (!fp)
 		{
@@ -127,7 +127,7 @@ void Logger::_NewMapFile()
 	} else {
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-		fprintf(fp, "L %s: SourceMod log file started (file \"logs_%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SVN_FULL_VERSION);
+		fprintf(fp, "L %s: SourceMod log file started (file \"L%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SVN_FULL_VERSION);
 		fclose(fp);
 	}
 }
@@ -177,7 +177,7 @@ void Logger::InitLogger(LoggingMode mode)
 	m_CurDay = curtime->tm_mday;
 
 	char _filename[256];
-	g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%02d%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday, curtime->tm_year - 100);
+	g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 	m_ErrFileName.assign(_filename);
 
 	switch (m_Mode)
@@ -192,7 +192,7 @@ void Logger::InitLogger(LoggingMode mode)
 		}
 	case LoggingMode_Daily:
 		{
-			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
+			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 			m_NrmFileName.assign(_filename);
 			m_DailyPrintHdr = true;
 			break;
@@ -261,7 +261,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 		if (m_CurDay != curtime->tm_mday)
 		{
 			char _filename[256];
-			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/logs_%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
+			g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 			m_NrmFileName.assign(_filename);
 			m_CurDay = curtime->tm_mday;
 			m_DailyPrintHdr = true;
@@ -274,7 +274,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 		if (m_DailyPrintHdr)
 		{
 			m_DailyPrintHdr = false;
-			fprintf(fp, "L %s: SourceMod log file session started (file \"logs_%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, SVN_FULL_VERSION);
+			fprintf(fp, "L %s: SourceMod log file session started (file \"L%04d%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday, SVN_FULL_VERSION);
 	 	}
 		fprintf(fp, "L %s: %s\n", date, msg);
 		fclose(fp);
@@ -306,7 +306,7 @@ void Logger::LogError(const char *vafmt, ...)
 	if (curtime->tm_mday != m_CurDay)
 	{
 		char _filename[256];
-		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%02d%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday, curtime->tm_year - 100);
+		g_SourceMod.BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 		m_ErrFileName.assign(_filename);
 		m_CurDay = curtime->tm_mday;
 		m_ErrMapStart = false;
@@ -324,7 +324,7 @@ void Logger::LogError(const char *vafmt, ...)
 		if (!m_ErrMapStart)
 		{
 			fprintf(fp, "L %s: SourceMod error session started\n", date);
-			fprintf(fp, "L %s: Info (map \"%s\") (log file \"errors_%02d%02d%02d.log\")\n", date, m_CurMapName.c_str(), curtime->tm_mon + 1, curtime->tm_mday, curtime->tm_year - 100);
+			fprintf(fp, "L %s: Info (map \"%s\") (file \"errors_%04d%02d%02d.log\")\n", date, m_CurMapName.c_str(), curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 			m_ErrMapStart = true;
 		}
 		fprintf(fp, "L %s: %s\n", date, msg);
