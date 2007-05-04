@@ -28,7 +28,7 @@
 #include <IDataPack.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	2
+#define SMINTERFACE_SOURCEMOD_VERSION	3
 
 /**
 * @brief Forward declaration of the KeyValues class.
