@@ -168,6 +168,20 @@ namespace SourceMod
 		 * @return			A string containing the name of the game directory.
 		 */
 		virtual const char *GetGameFolderName() const =0;
+
+		/**
+		 * @brief Returns the scripting engine interface.
+		 *
+		 * @return			A pointer to the scripting engine interface.
+		 */
+		virtual SourcePawn::ISourcePawnEngine *GetScriptingEngine() =0;
+
+		/**
+		 * @brief Returns the JIT interface.
+		 *
+		 * @return			A pointer to the JIT interface.
+		 */
+		virtual SourcePawn::IVirtualMachine *GetScriptingVM() =0;
 	};
 }
 

@@ -95,6 +95,8 @@ public: // ISourceMod
 	HandleType_t GetDataPackHandleType(bool readonly=false);
 	KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false);
 	const char *GetGameFolderName() const;
+	ISourcePawnEngine *GetScriptingEngine();
+	IVirtualMachine *GetScriptingVM();
 private:
 	/**
 	 * @brief Loading plugins

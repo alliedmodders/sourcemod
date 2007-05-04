@@ -630,6 +630,16 @@ const char *SourceModBase::GetGameFolderName() const
 	return m_ModDir;
 }
 
+ISourcePawnEngine *SourceModBase::GetScriptingEngine()
+{
+	return g_pSourcePawn;
+}
+
+IVirtualMachine *SourceModBase::GetScriptingVM()
+{
+	return g_pVM;
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()
