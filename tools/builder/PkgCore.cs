@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[7];
+			string [] folders = new string[8];
 
 			folders[0] = "bin";
 			folders[1] = "plugins/disabled";
@@ -38,6 +38,7 @@ namespace builder
 			folders[4] = "logs";
 			folders[5] = "extensions";
 			folders[6] = "scripting/include";
+			folders[7] = "data";
 
 			return folders;
 		}
