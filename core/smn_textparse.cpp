@@ -47,7 +47,7 @@ public:
 		if (parse_end)
 		{
 			cell_t result;
-			parse_start->PushCell(handle);
+			parse_end->PushCell(handle);
 			parse_end->PushCell(halted ? 1 : 0);
 			parse_end->PushCell(failed ? 1 : 0);
 			parse_end->Execute(&result);
