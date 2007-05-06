@@ -2674,9 +2674,12 @@ static int nesting=0;
     if ((sym->usage & uNATIVE)==0)
       totalsize++;                    /* add "call" opcode */
     totalsize+=nest_stkusage;
-    assert(curfunc!=NULL);
-    if (curfunc->x.stacksize<totalsize)
-      curfunc->x.stacksize=totalsize;
+    if (curfunc != NULL) {
+      if (curfunc->x.stacksize<totalsize)
+        curfunc->x.stacksize=totalsize;
+    } else {
+      error(10);
+    }
     nest_stkusage-=nargs+heapalloc+1; /* stack/heap space, +1 for argcount param */
     /* if there is a syntax error in the script, the stack calculation is
      * probably incorrect; but we may not allow it to drop below zero

@@ -3985,7 +3985,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
   if (matchtoken(';')) {
     sym->usage|=uFORWARD;
     if (!sc_needsemicolon)
-      error(218);       /* old style prototypes used with optional semicolumns */
+      error(10);       /* old style prototypes used with optional semicolumns */
     delete_symbols(&loctab,0,TRUE,TRUE);  /* prototype is done; forget everything */
     return TRUE;
   } /* if */
