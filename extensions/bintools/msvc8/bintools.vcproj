@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="bintools"
 	ProjectGUID="{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
 	RootNamespace="bintools"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\extensions;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;BINTOOLS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\extensions;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;BINTOOLS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"

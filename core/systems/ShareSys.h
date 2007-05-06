@@ -48,7 +48,7 @@ public: //IShareSys
 	bool AddInterface(IExtension *myself, SMInterface *pIface);
 	bool RequestInterface(const char *iface_name, 
 		unsigned int iface_vers,
-		IExtension *mysql,
+		IExtension *myself,
 		SMInterface **pIface);
 	void AddNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 	IdentityType_t CreateIdentType(const char *name);
