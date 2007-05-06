@@ -637,6 +637,72 @@ static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *param
 	return 1;
 }
 
+static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	if (pStk->pCurRoot.size() < 2)
+	{
+		return 0;
+	}
+
+	KeyValues *pValues = pStk->pCurRoot.front();
+	pStk->pCurRoot.pop();
+	pStk->pCurRoot.front()->RemoveSubKey(pValues);
+	pValues->deleteThis();
+
+	return 1;
+}
+
+static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	if (pStk->pCurRoot.size() < 2)
+	{
+		return 0;
+	}
+
+	char *keyName;
+	pContext->LocalToString(params[2], &keyName);
+
+	KeyValues *pRoot = pStk->pCurRoot.front();
+	KeyValues *pValues = pRoot->FindKey(keyName);
+	if (!pValues)
+	{
+		return 0;
+	}
+
+	pRoot->RemoveSubKey(pValues);
+	pValues->deleteThis();
+
+	return 1;
+}
+
 static KeyValueNatives s_KeyValueNatives;
 
 REGISTER_NATIVES(keyvaluenatives)
@@ -663,5 +729,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KeyValuesToFile",			smn_KeyValuesToFile},
 	{"FileToKeyValues",			smn_FileToKeyValues},
 	{"KvSetEscapeSequences",	smn_KvSetEscapeSequences},
+	{"KvDeleteThis",			smn_KvDeleteThis},
+	{"KvDeleteKey",				smn_KvDeleteKey},
 	{NULL,						NULL}
 };

@@ -193,6 +193,26 @@ native bool:KvJumpFirstSubKey(Handle:kv);
 native bool:KvJumpNextSubKey(Handle:kv);
 
 /**
+ * Removes the given key from the current position.
+ *
+ * @param kv			KeyValues Handle.
+ * @param key			Name of the key.
+ * @return				True on success, false if key did not exist.
+ * @error				Invalid Handle.
+ */
+native bool:KvDeleteKey(Handle:kv, const String:key[]);
+
+/**
+ * Removes the current sub-key and jumps back one position, using the previous
+ * position as the search point.  This will not work if used on the root node.
+ *
+ * @param kv			KeyValues Handle.
+ * @return				True on success, false if there was no sub key.
+ * @error				Invalid Handle.
+ */
+native bool:KvDeleteThis(Handle:kv);
+
+/**
  * Jumps back to the previous position.  Returns false if there are no
  * previous positions (i.e., at the root node).  This should be called
  * once for each successful Jump call, in order to return to the top node.
