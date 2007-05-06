@@ -509,7 +509,7 @@ void JIT_Compile(CallWrapper *pWrapper, FuncAddrMethod method)
 
 jit_rewind:
 	/* Write function prologue */
-	Write_Execution_Prologue(jit, (pRet) ? false : true, (ParamCount) ? true : false);
+	Write_Execution_Prologue(jit, (pRet) ? false : true, (ParamCount || Convention == CallConv_ThisCall));
 
 	/* Write parameter push code */
 	for (jit_int32_t i=ParamCount-1; i>=0; i--)
