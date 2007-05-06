@@ -19,9 +19,10 @@
 #define _string_included
 
 /**
- * @global Unless otherwise noted, all string functions which take in a writable buffer 
- * and maximum length should have the null terminator INCLUDED in the length.  This means 
- * that this is valid: StrCopy(string, sizeof(string), ...)
+ * @global Unless otherwise noted, all string functions which take in a 
+ * writable buffer and maximum length should have the null terminator INCLUDED
+ * in the length.  This means that this is valid: 
+ * StrCopy(string, sizeof(string), ...)
  */
  
 /**
@@ -129,8 +130,9 @@ native Format(String:buffer[], maxlength, const String:format[], any:...);
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
- * @note This is the same as Format(), except none of the input buffers can overlap the same
- *	     memory as the output buffer.  Since this security check is removed, it is slightly faster.
+ * @note This is the same as Format(), except none of the input buffers can 
+ *       overlap the same memory as the output buffer.  Since this security 
+ *       check is removed, it is slightly faster.
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
@@ -142,9 +144,9 @@ native FormatEx(String:buffer[], maxlength, const String:format[], any:...);
 
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
- * @note This is the same as Format(), except it grabs parameters from a parent parameter
- *       stack, rather than a local.  This is useful for implementing your own variable 
- *       argument functions.
+ * @note This is the same as Format(), except it grabs parameters from a 
+ *       parent parameter stack, rather than a local.  This is useful for 
+ *       implementing your own variable argument functions.
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
@@ -205,3 +207,106 @@ native FloatToString(Float:num, String:str[], maxlength);
  * @return				Index to next piece of string, or -1 if none.
  */
 native StrBreak(const String:source[], String:arg[], argLen);
+
+/** 
+ * Returns the number of bytes a character is using.  This is
+ * for multi-byte characters (UTF-8).  For normal ASCII characters,
+ * this will return 1.
+ *
+ * @param source		Source input string.
+ * @return				Number of bytes the current character uses.
+ */
+native GetCharBytes(const String:source[]);
+
+/**
+ * Returns whether a character is an ASCII alphabet character.
+ *
+ * @note Multi-byte characters will always return false.
+ *
+ * @param char			Character to test.
+ * @return				True if character is alphabetical, otherwise false.
+ */
+native bool:IsCharAlpha(chr);
+
+/**
+ * Returns whether a character is numeric.
+ *
+ * @note Multi-byte characters will always return false.
+ *
+ * @param char			Character to test.
+ * @return				True if character is numeric, otherwise false.
+ */
+native bool:IsCharNumeric(chr);
+
+/**
+ * Returns whether a character is whitespace.
+ *
+ * @note Multi-byte characters will always return false.
+ *
+ * @param char			Character to test.
+ * @return				True if character is whitespace, otherwise false.
+ */
+native bool:IsCharSpace(chr);
+
+/**
+ * Returns if a character is multi-byte or not.
+ *
+ * @param char			Character to test.
+ * @return				0 for a normal 7-bit ASCII character,
+ *						otherwise number of bytes in multi-byte character.
+ */
+native IsCharMB(chr);
+
+/**
+ * Returns whether an alphabetic character is uppercase.
+ *
+ * @note Multi-byte characters will always return false.
+ *
+ * @param char			Character to test.
+ * @return				True if character is uppercase, otherwise false.
+ */
+native bool:IsCharUpper(chr);
+
+/**
+ * Returns whether an alphabetic character is lowercase.
+ *
+ * @note Multi-byte characters will always return false.
+ *
+ * @param char			Character to test.
+ * @return				True if character is lowercase, otherwise false.
+ */
+native bool:IsCharLower(chr);
+
+/**
+ * Returns an uppercase character to a lowercase character.
+ *
+ * @param chr			Characer to convert.
+ * @return				Lowercase character on success, 
+ *						no change on failure.
+ */
+stock CharToUpper(chr)
+{
+	if (IsCharLower(chr))
+	{
+		return (chr & ~(1<<5));
+	}
+	return chr;
+}
+
+/**
+ * Returns a lowercase character to an uppercase character.
+ *
+ * @param chr			Characer to convert.
+ * @return				Uppercase character on success, 
+ *						no change on failure.
+ */
+stock CharToLower(chr)
+{
+	if (IsCharUpper(chr))
+	{
+		return (chr | (1<<5));
+	}
+	return chr;
+}
+
+

@@ -17,6 +17,7 @@
 #include "sm_globals.h"
 #include "sm_stringutil.h"
 #include "TextParsers.h"
+#include <ctype.h>
 
 inline const char *_strstr(const char *str, const char *substr)
 {
@@ -325,8 +326,97 @@ static cell_t StrBreak(IPluginContext *pContext, const cell_t *params)
 	return inptr - input;
 }
 
+static cell_t GetCharBytes(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[1], &str);
+
+	return _GetUTF8CharBytes(str);
+};
+
+static cell_t IsCharAlpha(IPluginContext *pContext, const cell_t *params)
+{
+	char chr = params[1];
+
+	if (_GetUTF8CharBytes(&chr) != 1)
+	{
+		return 0;
+	}
+
+	return isalpha(chr);
+}
+
+static cell_t IsCharNumeric(IPluginContext *pContext, const cell_t *params)
+{
+	char chr = params[1];
+
+	if (_GetUTF8CharBytes(&chr) != 1)
+	{
+		return 0;
+	}
+
+	return isdigit(chr);
+}
+
+static cell_t IsCharSpace(IPluginContext *pContext, const cell_t *params)
+{
+	char chr = params[1];
+
+	if (_GetUTF8CharBytes(&chr) != 1)
+	{
+		return 0;
+	}
+
+	return isspace(chr);
+}
+
+static cell_t IsCharMB(IPluginContext *pContext, const cell_t *params)
+{
+	char chr = params[1];
+
+	unsigned int bytes = _GetUTF8CharBytes(&chr);
+	if (bytes == 1)
+	{
+		return 0;
+	}
+
+	return bytes;
+}
+
+static cell_t IsCharUpper(IPluginContext  *pContext, const cell_t *params)
+{
+	char chr = params[1];
+
+	if (_GetUTF8CharBytes(&chr) != 1)
+	{
+		return 0;
+	}
+
+	return isupper(chr);
+}
+
+static cell_t IsCharLower(IPluginContext  *pContext, const cell_t *params)
+{
+	char chr = params[1];
+
+	if (_GetUTF8CharBytes(&chr) != 1)
+	{
+		return 0;
+	}
+
+	return islower(chr);
+}
+
 REGISTER_NATIVES(basicStrings)
 {
+	{"GetCharBytes",		GetCharBytes},
+	{"IntToString",			sm_numtostr},
+	{"IsCharAlpha",			IsCharAlpha},
+	{"IsCharLower",			IsCharLower},
+	{"IsCharMB",			IsCharMB},
+	{"IsCharNumeric",		IsCharNumeric},
+	{"IsCharSpace",			IsCharSpace},
+	{"IsCharUpper",			IsCharUpper},
 	{"strlen",				sm_strlen},
 	{"StrBreak",			StrBreak},
 	{"StrContains",			sm_contain},
@@ -336,7 +426,6 @@ REGISTER_NATIVES(basicStrings)
 	{"strcopy",				sm_strcopy},
 	{"StrCopy",				sm_strcopy},		/* Backwards compat shim */
 	{"StringToInt",			sm_strconvint},
-	{"IntToString",			sm_numtostr},
 	{"StringToFloat",		sm_strtofloat},
 	{"FloatToString",		sm_floattostr},
 	{"Format",				sm_format},
