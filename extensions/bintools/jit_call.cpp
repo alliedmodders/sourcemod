@@ -503,13 +503,14 @@ void JIT_Compile(CallWrapper *pWrapper, FuncAddrMethod method)
 	CallConvention Convention = pWrapper->GetCallConvention();
 	jit_uint32_t ParamCount = pWrapper->GetParamCount();
 	const PassInfo *pRet = pWrapper->GetReturnInfo();
+	bool hasParams = (ParamCount || Convention == CallConv_ThisCall);
 
 	writer.outbase = NULL;
 	writer.outptr = NULL;
 
 jit_rewind:
 	/* Write function prologue */
-	Write_Execution_Prologue(jit, (pRet) ? false : true, (ParamCount || Convention == CallConv_ThisCall));
+	Write_Execution_Prologue(jit, (pRet) ? false : true, hasParams);
 
 	/* Write parameter push code */
 	for (jit_int32_t i=ParamCount-1; i>=0; i--)
@@ -593,7 +594,7 @@ skip_retbuffer:
 	}
 
 	/* Write Function Epilogue */
-	Write_Function_Epilogue(jit, (pRet) ? false : true, (ParamCount) ? true : false);
+	Write_Function_Epilogue(jit, (pRet) ? false : true, hasParams);
 
 	if (writer.outbase == NULL)
 	{
