@@ -208,20 +208,6 @@ native FloatToString(Float:num, String:str[], maxlength);
  */
 native StrBreak(const String:source[], String:arg[], argLen);
 
-/**
- * Finds the first "argument" in a string; either a set of space
- * terminated characters, or a fully quoted string.  After the 
- * argument is found, whitespace is read until the next portion
- * of the string is reached.  If nothing remains, -1 is returned.
- * Otherwise, the index to the first character is returned.
- *
- * @param source		Source input string.
- * @param arg			Stores argument read from string.
- * @param argLen		Maximum length of argument buffer.
- * @return				Index to next piece of string, or -1 if none.
- */
-native StrBreak(const String:source[], String:arg[], argLen);
-
 /** 
  * Returns the number of bytes a character is using.  This is
  * for multi-byte characters (UTF-8).  For normal ASCII characters,
