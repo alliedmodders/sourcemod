@@ -298,3 +298,14 @@ native bool:FileToKeyValues(Handle:kv, const String:file[]);
  * @error				Invalid Handle.
  */
 native KvSetEscapeSequences(Handle:kv, bool:useEscapes);
+
+/**
+ * Returns the position in the jump stack; I.e. the number of calls
+ * required for KvGoBack to return to the root node.  If at the root node,
+ * 0 is returned.
+ *
+ * @param kv			KeyValues Handle.
+ * @return				Number of non-root nodes in the jump stack.
+ * @error				Invalid Handle.
+ */
+native KvNodesInStack(Handle:kv);
