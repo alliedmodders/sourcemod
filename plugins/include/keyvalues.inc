@@ -176,21 +176,37 @@ native bool:KvJumpToKey(Handle:kv, const String:key[], bool:create=false);
 
 /**
  * Sets the current position in the KeyValues tree to the first sub key.
+ * This native adds to the internal traversal stack.
  *
  * @param kv			KeyValues Handle.
+ * @param keyOnly		If false, non-keys will be traversed (values).
  * @return				True on success, false if there was no first sub key.
  * @error				Invalid Handle.
  */
-native bool:KvJumpFirstSubKey(Handle:kv);
+native bool:KvGotoFirstSubKey(Handle:kv, bool:keyOnly=true);
 
 /**
  * Sets the current position in the KeyValues tree to the next sub key.
+ * This native does NOT add to the internal traversal stack, and thus
+ * KvGoBack() is not needed for each successive call to this function.
  *
  * @param kv			KeyValues Handle.
+ * @param keyOnly		If false, non-keys will be traversed (values).
  * @return				True on success, false if there was no next sub key.
  * @error				Invalid Handle.
  */
-native bool:KvJumpNextSubKey(Handle:kv);
+native bool:KvGotoNextKey(Handle:kv, bool:keyOnly=true);
+
+/**
+ * Saves the current position in the traversal stack onto the traversal
+ * stack.  This can be useful if you wish to use KvGotoNextKey() and 
+ * have the previous key saved for backwards traversal.
+ *
+ * @param kv			KeyValues Handle.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native KvSavePosition(Handle:kv);
 
 /**
  * Removes the given key from the current position.
@@ -203,19 +219,27 @@ native bool:KvJumpNextSubKey(Handle:kv);
 native bool:KvDeleteKey(Handle:kv, const String:key[]);
 
 /**
- * Removes the current sub-key and jumps back one position, using the previous
- * position as the search point.  This will not work if used on the root node.
+ * Removes the current sub-key and attempts to set the position
+ * to the sub-key after the removed one.  If no such sub-key exists,
+ * the position will be the parent key in the traversal stack.
+ * Given the sub-key having position "N" in the traversal stack, the 
+ * removal will always take place from position "N-1."
  *
  * @param kv			KeyValues Handle.
- * @return				True on success, false if there was no sub key.
+ * @return				1 if removal succeeded and there was another key.
+ *						0 if the current node was not contained in the
+ *						  previous node, or no previous node exists.
+ *						-1 if removal succeeded and there were no more keys,
+ *						  thus the state is as if KvGoBack() was called.
  * @error				Invalid Handle.
  */
-native bool:KvDeleteThis(Handle:kv);
+native KvDeleteThis(Handle:kv);
 
 /**
  * Jumps back to the previous position.  Returns false if there are no
  * previous positions (i.e., at the root node).  This should be called
  * once for each successful Jump call, in order to return to the top node.
+ * This function pops one node off the internal traversal stack.
  *
  * @param kv			KeyValues Handle.
  * @return				True on success, false if there is no higher node.

@@ -389,7 +389,7 @@ static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-static cell_t smn_KvJumpFirstSubKey(IPluginContext *pCtx, const cell_t *params)
+static cell_t smn_KvGotoFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
@@ -406,7 +406,14 @@ static cell_t smn_KvJumpFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	KeyValues *pSubKey = pStk->pCurRoot.front();
-	KeyValues *pFirstSubKey = pSubKey->GetFirstSubKey();
+	KeyValues *pFirstSubKey;
+	if (params[2])
+	{
+		pFirstSubKey = pSubKey->GetFirstTrueSubKey();
+	} else {
+		pFirstSubKey = pSubKey->GetFirstSubKey();
+	}
+
 	if (!pFirstSubKey)
 	{
 		return 0;
@@ -414,6 +421,39 @@ static cell_t smn_KvJumpFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 	pStk->pCurRoot.push(pFirstSubKey);
 
 	return 1;
+}
+
+static cell_t smn_KvGotoNextKey(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	KeyValues *pSubKey = pStk->pCurRoot.front();
+	if (params[2])
+	{
+		pSubKey = pSubKey->GetNextKey();
+	} else {
+		pSubKey = pSubKey->GetNextTrueSubKey();
+	}
+	if (!pSubKey)
+	{
+		return 0;
+	}
+	pStk->pCurRoot.pop();
+	pStk->pCurRoot.push(pSubKey);
+
+	return 1;	
 }
 
 static cell_t smn_KvJumpNextSubKey(IPluginContext *pCtx, const cell_t *params)
@@ -679,10 +719,35 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 
 	KeyValues *pValues = pStk->pCurRoot.front();
 	pStk->pCurRoot.pop();
-	pStk->pCurRoot.front()->RemoveSubKey(pValues);
-	pValues->deleteThis();
+	KeyValues *pRoot = pStk->pCurRoot.front();
 
-	return 1;
+	/* We have to manually verify this since Valve sucks
+	 * :TODO: make our own KeyValues.h file and make
+	 * the sub stuff private so we can do this ourselves!
+ 	 */
+	KeyValues *sub = pRoot->GetFirstSubKey();
+	while (sub)
+	{
+		if (sub == pValues)
+		{
+			KeyValues *pNext = pValues->GetNextKey();
+			pRoot->RemoveSubKey(pValues);
+			pValues->deleteThis();
+			if (pNext)
+			{
+				pStk->pCurRoot.push(pNext);
+				return 1;
+			} else {
+				return -1;
+			}
+		}
+		sub = sub->GetNextKey();
+	}
+
+	/* Push this back on :( */
+	pStk->pCurRoot.push(pValues);
+
+	return 0;
 }
 
 static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
@@ -722,6 +787,33 @@ static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_KvSavePosition(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	if (pStk->pCurRoot.size() < 2)
+	{
+		return 0;
+	}
+
+	KeyValues *pValues = pStk->pCurRoot.front();
+	pStk->pCurRoot.push(pValues);
+
+	return 1;
+}
+
 static KeyValueNatives s_KeyValueNatives;
 
 REGISTER_NATIVES(keyvaluenatives)
@@ -738,8 +830,10 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvGetUint64",				smn_KvGetUint64},
 	{"CreateKeyValues",			smn_CreateKeyValues},
 	{"KvJumpToKey",				smn_KvJumpToKey},
-	{"KvJumpFirstSubKey",		smn_KvJumpFirstSubKey},
-	{"KvJumpNextSubKey",		smn_KvJumpNextSubKey},
+	{"KvGotoNextKey",			smn_KvGotoNextKey},
+	{"KvJumpFirstSubKey",		smn_KvGotoFirstSubKey},		/* BACKWARDS COMPAT SHIM */
+	{"KvGotoFirstSubKey",		smn_KvGotoFirstSubKey},
+	{"KvJumpNextSubKey",		smn_KvJumpNextSubKey},		/* BACKWARDS COMPAT SHIM */
 	{"KvGoBack",				smn_KvGoBack},
 	{"KvRewind",				smn_KvRewind},
 	{"KvGetSectionName",		smn_KvGetSectionName},
@@ -751,5 +845,6 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvDeleteThis",			smn_KvDeleteThis},
 	{"KvDeleteKey",				smn_KvDeleteKey},
 	{"KvNodesInStack",			smn_KvNodesInStack},
+	{"KvSavePosition",			smn_KvSavePosition},
 	{NULL,						NULL}
 };
