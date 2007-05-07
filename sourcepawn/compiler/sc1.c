@@ -5868,6 +5868,8 @@ static int dofor(void)
     declared=save_decl;
     delete_symbols(&loctab,nestlevel,FALSE,TRUE);
     nestlevel=save_nestlevel;     /* reset 'compound statement' nesting level */
+  } else {
+    popstacklist(0);
   } /* if */
 
   index=endlessloop ? tENDLESS : tFOR;
