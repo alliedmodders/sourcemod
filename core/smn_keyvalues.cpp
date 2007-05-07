@@ -653,7 +653,7 @@ static cell_t smn_KvNodesInStack(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	return pStk->pCurRoot.size();
+	return pStk->pCurRoot.size() - 1;
 }
 
 static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
