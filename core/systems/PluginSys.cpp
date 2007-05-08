@@ -748,7 +748,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 }
 
 //well i have discovered that gabe newell is very fat, so i wrote this comment now
-LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t err_max)
+LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
 	/**
 	 * Does this plugin already exist?
@@ -771,7 +771,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		}
 	}
 
-	pPlugin = CPlugin::CreatePlugin(path, error, err_max);
+	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 
 	assert(pPlugin != NULL);
 
@@ -807,7 +807,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 				{
 					if (error)
 					{
-						snprintf(error, err_max, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
+						snprintf(error, maxlength, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
 					}
 					pPlugin->CancelMyCompile();
 					co = NULL;
@@ -829,10 +829,10 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	{
 		AddCoreNativesToPlugin(pPlugin);
 		pPlugin->InitIdentity();
-		if (pPlugin->Call_AskPluginLoad(error, err_max))
+		if (pPlugin->Call_AskPluginLoad(error, maxlength))
 		{
 			/* Autoload any modules */
-			LoadOrRequireExtensions(pPlugin, 1, error, err_max);
+			LoadOrRequireExtensions(pPlugin, 1, error, maxlength);
 		}
 	}
 
@@ -848,13 +848,13 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : LoadRes_Failure;
 }
 
-IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t err_max, bool *wasloaded)
+IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t maxlength, bool *wasloaded)
 {
 	CPlugin *pl;
 	LoadRes res;
 
 	*wasloaded = false;
-	if ((res=_LoadPlugin(&pl, path, debug, type, error, err_max)) == LoadRes_Failure)
+	if ((res=_LoadPlugin(&pl, path, debug, type, error, maxlength)) == LoadRes_Failure)
 	{
 		delete pl;
 		return NULL;
@@ -871,7 +871,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	/* Run second pass if we need to */
 	if (IsLateLoadTime() && pl->GetStatus() == Plugin_Loaded)
 	{
-		if (!RunSecondPass(pl, error, err_max))
+		if (!RunSecondPass(pl, error, maxlength))
 		{
 			UnloadPlugin(pl);
 			return NULL;

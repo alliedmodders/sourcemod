@@ -116,10 +116,10 @@ namespace SourceMod
 		 * 
 		 * @param path		Path to library file (.dll/.so).
 		 * @param error		Buffer for any error message (may be NULL).
-		 * @param err_max	Maximum length of error buffer.
+		 * @param maxlength	Maximum length of error buffer.
 		 * @return			Pointer to an ILibrary, NULL if failed.
 		 */
-		virtual ILibrary *OpenLibrary(const char *path, char *error, size_t err_max) =0;
+		virtual ILibrary *OpenLibrary(const char *path, char *error, size_t maxlength) =0;
 
 		/**
 		 * @brief Opens a directory for reading.
@@ -158,9 +158,9 @@ namespace SourceMod
 		 * POSIX equivalent: errno + strerror()
 		 *
 		 * @param error		Error message buffer.
-		 * @param err_max	Maximum length of error buffer.
+		 * @param maxlength	Maximum length of error buffer.
 		 */
-		virtual void GetPlatformError(char *error, size_t err_max) =0;
+		virtual void GetPlatformError(char *error, size_t maxlength) =0;
 
 		/**
 		 * @brief Formats a string similar to snprintf(), except

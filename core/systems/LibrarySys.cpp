@@ -252,9 +252,9 @@ IDirectory *LibrarySystem::OpenDirectory(const char *path)
 	return dir;
 }
 
-void LibrarySystem::GetPlatformError(char *error, size_t err_max)
+void LibrarySystem::GetPlatformError(char *error, size_t maxlength)
 {
-	if (error && err_max)
+	if (error && maxlength)
 	{
 #if defined PLATFORM_WINDOWS
 		DWORD dw = GetLastError();
@@ -264,10 +264,10 @@ void LibrarySystem::GetPlatformError(char *error, size_t err_max)
 			dw,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			(LPSTR)error,
-			err_max,
+			maxlength,
 			NULL);
 #elif defined PLATFORM_POSIX
-		snprintf(error, err_max, "%s", strerror(errno));
+		snprintf(error, maxlength, "%s", strerror(errno));
 #endif
 	}
 }
@@ -277,21 +277,21 @@ void LibrarySystem::CloseDirectory(IDirectory *dir)
 	delete dir;
 }
 
-ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t err_max)
+ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxlength)
 {
 	LibraryHandle lib;
 #if defined PLATFORM_WINDOWS
 	lib = LoadLibraryA(path);
 	if (!lib)
 	{
-		GetPlatformError(error, err_max);
+		GetPlatformError(error, maxlength);
 		return false;
 	}
 #elif defined PLATFORM_POSIX
 	lib = dlopen(path, RTLD_NOW);
 	if (!lib)
 	{
-		GetPlatformError(error, err_max);
+		GetPlatformError(error, maxlength);
 		return false;
 	}
 #endif

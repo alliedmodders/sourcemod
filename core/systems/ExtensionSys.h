@@ -78,7 +78,7 @@ public: //IExtensionManager
 	IExtension *LoadExtension(const char *path, 
 		ExtensionLifetime lifetime, 
 		char *error,
-		size_t err_max);
+		size_t maxlength);
 	bool UnloadExtension(IExtension *pExt);
 	IExtension *FindExtensionByFile(const char *file);
 	IExtension *FindExtensionByName(const char *ext);

@@ -101,7 +101,7 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
-bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
+bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late)
 {
 	const char *gamepath = g_SMAPI->GetBaseDir();
 
@@ -141,9 +141,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	g_pJIT = g_LibSys.OpenLibrary(file, myerror, sizeof(myerror));
 	if (!g_pJIT)
 	{
-		if (error && err_max)
+		if (error && maxlength)
 		{
-			snprintf(error, err_max, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
+			snprintf(error, maxlength, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
 				myerror,
 				PLATFORM_LIB_EXT);
 		}
@@ -155,9 +155,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	if (!jit_init)
 	{
 		ShutdownJIT();
-		if (error && err_max)
+		if (error && maxlength)
 		{
-			snprintf(error, err_max, "Failed to find GiveEnginePointer in JIT!");
+			snprintf(error, maxlength, "Failed to find GiveEnginePointer in JIT!");
 		}
 		return false;
 	}
@@ -165,9 +165,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	if ((err=jit_init(g_pSourcePawn)) != 0)
 	{
 		ShutdownJIT();
-		if (error && err_max)
+		if (error && maxlength)
 		{
-			snprintf(error, err_max, "GiveEnginePointer returned %d in the JIT", err);
+			snprintf(error, maxlength, "GiveEnginePointer returned %d in the JIT", err);
 		}
 		return false;
 	}
@@ -177,9 +177,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	if (!jit_get)
 	{
 		ShutdownJIT();
-		if (error && err_max)
+		if (error && maxlength)
 		{
-			snprintf(error, err_max, "JIT is missing a necessary export!");
+			snprintf(error, maxlength, "JIT is missing a necessary export!");
 		}
 		return false;
 	}
@@ -188,9 +188,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	if (!num || ((g_pVM=jit_get(0)) == NULL))
 	{
 		ShutdownJIT();
-		if (error && err_max)
+		if (error && maxlength)
 		{
-			snprintf(error, err_max, "JIT did not export any virtual machines!");
+			snprintf(error, maxlength, "JIT did not export any virtual machines!");
 		}
 		return false;
 	}
@@ -199,9 +199,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t err_max, bool late)
 	if (api != SOURCEPAWN_VM_API_VERSION)
 	{
 		ShutdownJIT();
-		if (error && err_max)
+		if (error && maxlength)
 		{
-			snprintf(error, err_max, "JIT is not a compatible version");
+			snprintf(error, maxlength, "JIT is not a compatible version");
 		}
 		return false;
 	}

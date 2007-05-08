@@ -66,13 +66,13 @@ private:
 class LibrarySystem : public ILibrarySys
 {
 public:
-	ILibrary *OpenLibrary(const char *path, char *error, size_t err_max);
+	ILibrary *OpenLibrary(const char *path, char *error, size_t maxlength);
 	IDirectory *OpenDirectory(const char *path);
 	void CloseDirectory(IDirectory *dir);
 	bool PathExists(const char *path);
 	bool IsPathFile(const char *path);
 	bool IsPathDirectory(const char *path);
-	void GetPlatformError(char *error, size_t err_max);
+	void GetPlatformError(char *error, size_t maxlength);
 	size_t PathFormat(char *buffer, size_t len, const char *fmt, ...);
 };
 

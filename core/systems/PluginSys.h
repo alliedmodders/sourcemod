@@ -281,7 +281,7 @@ public: //IPluginManager
 								bool debug,
 								PluginType type,
 								char error[],
-								size_t err_max,
+								size_t maxlength,
 								bool *wasloaded);
 	bool UnloadPlugin(IPlugin *plugin);
 	IPlugin *FindPluginByContext(const sp_context_t *ctx);
@@ -363,7 +363,7 @@ public:
 	void AddFunctionsToForward(const char *name, IChangeableForward *pForward);
 
 private:
-	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t err_max);
+	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 
 	void LoadAutoPlugin(const char *plugin);
 

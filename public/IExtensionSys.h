@@ -124,14 +124,14 @@ namespace SourceMod
 		 * @param me		Pointer back to extension.
 		 * @param sys		Pointer to interface sharing system of SourceMod.
 		 * @param error		Error buffer to print back to, if any.
-		 * @param err_max	Maximum size of error buffer.
+		 * @param maxlength	Maximum size of error buffer.
 		 * @param late		If this extension was loaded "late" (i.e. manually).
 		 * @return			True if load should continue, false otherwise.
 		 */
 		virtual bool OnExtensionLoad(IExtension *me,
 								  IShareSys *sys, 
 								  char *error, 
-								  size_t err_max, 
+								  size_t maxlength, 
 								  bool late) =0;
 
 		/**
@@ -175,7 +175,7 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Return false to tell Core that your extension should be considered usable.
+		 * @brief Return false to tell Core that your extension should be considered unusable.
 		 *
 		 * @param error				Error buffer.
 		 * @param maxlength			Size of error buffer.
@@ -229,13 +229,13 @@ namespace SourceMod
 		 * @param path		Path to extension file, relative to the extensions folder.
 		 * @param lifetime	Lifetime of the extension (currently ignored).
 		 * @param error		Error buffer.
-		 * @param err_max	Maximum error buffer length.
+		 * @param maxlength	Maximum error buffer length.
 		 * @return			New IExtension on success, NULL on failure.
 		 */
 		virtual IExtension *LoadExtension(const char *path, 
 									ExtensionLifetime lifetime, 
 									char *error,
-									size_t err_max) =0;
+									size_t maxlength) =0;
 
 		/**
 		 * @brief Attempts to unload a module.

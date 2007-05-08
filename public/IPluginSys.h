@@ -279,7 +279,7 @@ namespace SourceMod
 		 * @param debug		Whether or not to default the plugin into debug mode.
 		 * @param type		Lifetime of the plugin.
 		 * @param error		Buffer to hold any error message.
-		 * @param err_max	Maximum length of error message buffer.
+		 * @param maxlength	Maximum length of error message buffer.
 		 * @param wasloaded	Stores if the plugin is already loaded.
 		 * @return			A new plugin pointer on success, false otherwise.
 		 */
@@ -287,7 +287,7 @@ namespace SourceMod
 									bool debug,
 									PluginType type,
 									char error[],
-									size_t err_max,
+									size_t maxlength,
 									bool *wasloaded) =0;
 
 		/**

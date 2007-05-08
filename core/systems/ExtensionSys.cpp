@@ -25,7 +25,7 @@
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
 
-CExtension::CExtension(const char *filename, char *error, size_t err_max)
+CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 {
 	m_File.assign(filename);
 	m_pAPI = NULL;
@@ -37,7 +37,7 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
 
-	m_pLib = g_LibSys.OpenLibrary(path, error, err_max);
+	m_pLib = g_LibSys.OpenLibrary(path, error, maxlength);
 
 	if (m_pLib == NULL)
 	{
@@ -51,7 +51,7 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 	{
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		snprintf(error, err_max, "Unable to find extension entry point");
+		snprintf(error, maxlength, "Unable to find extension entry point");
 		return;
 	}
 
@@ -60,19 +60,19 @@ CExtension::CExtension(const char *filename, char *error, size_t err_max)
 	{
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		snprintf(error, err_max, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
+		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
 		return;
 	}
 
 	if (m_pAPI->IsMetamodExtension())
 	{
 		bool already;
-		m_PlId = g_pMMPlugins->Load(path, g_PLID, already, error, err_max);
+		m_PlId = g_pMMPlugins->Load(path, g_PLID, already, error, maxlength);
 	}
 
 	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType);
 
-	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, err_max, !g_SourceMod.IsMapLoading()))
+	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !g_SourceMod.IsMapLoading()))
 	{
 		if (m_pAPI->IsMetamodExtension())
 		{
@@ -403,7 +403,7 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 	return NULL;
 }
 
-IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime lifetime, char *error, size_t err_max)
+IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime lifetime, char *error, size_t maxlength)
 {
 	IExtension *pAlready;
 	if ((pAlready=FindExtensionByFile(file)) != NULL)
@@ -411,7 +411,7 @@ IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime
 		return pAlready;
 	}
 
-	CExtension *pExt = new CExtension(file, error, err_max);
+	CExtension *pExt = new CExtension(file, error, maxlength);
 
 	/* :NOTE: lifetime is currently ignored */
 

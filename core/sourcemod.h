@@ -36,7 +36,7 @@ public:
 	/**
 	 * @brief Initializes SourceMod, or returns an error on failure.
 	 */
-	bool InitializeSourceMod(char *error, size_t err_max, bool late);
+	bool InitializeSourceMod(char *error, size_t maxlength, bool late);
 
 	/** 
 	 * @brief Starts everything SourceMod needs to run
