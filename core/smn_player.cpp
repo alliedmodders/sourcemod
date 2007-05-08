@@ -589,7 +589,8 @@ static cell_t GetWeaponName(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
 	}
 
-	pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pInfo->GetWeaponName(), NULL);
+	const char *weapon = pInfo->GetWeaponName();
+	pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), weapon ? weapon : "", NULL);
 
 	return 1;
 }
@@ -612,7 +613,8 @@ static cell_t GetModelName(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
 	}
 
-	pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), pInfo->GetModelName(), NULL);
+	const char *model = pInfo->GetModelName();
+	pContext->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), model ? model : "", NULL);
 
 	return 1;
 }
