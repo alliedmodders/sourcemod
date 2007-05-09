@@ -566,7 +566,7 @@ static void inst_datetime_defines(void)
 
   time(&td);
   curtime = localtime(&td);
-  strftime(date, 31, "\"%m/%d%Y\"", curtime);
+  strftime(date, 31, "\"%m/%d%/Y\"", curtime);
   strftime(ltime, 31, "\"%H:%M:%S\"", curtime);
 
   insert_subst("__DATE__", date, 8);
