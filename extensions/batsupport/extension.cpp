@@ -1,4 +1,26 @@
-// vim: set ts=4 :
+/**
+ * vim: set ts=4 :
+ * ===============================================================
+ * SourceMod BAT Support Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
+ * ===============================================================
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Version: $Id$
+ */
+
 #include <IAdminSystem.h>
 #include <IPlayerHelpers.h>
 #include "extension.h"
@@ -8,7 +30,7 @@ IAdminSystem *admins = NULL;
 IPlayerManager *players = NULL;
 SMEXT_LINK(&g_BatSupport);
 
-bool BatSupport::SDK_OnLoad(char *error, size_t err_max, bool late)
+bool BatSupport::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	SM_GET_IFACE(ADMINSYS, admins);
 	SM_GET_IFACE(PLAYERMANAGER, players);
@@ -35,7 +57,7 @@ void BatSupport::SDK_OnUnload()
 	m_hooks.clear();
 }
 
-bool BatSupport::SDK_OnMetamodLoad(char *error, size_t err_max, bool late)
+bool BatSupport::SDK_OnMetamodLoad(char *error, size_t maxlength, bool late)
 {
 	g_SMAPI->AddListener(this, this);
 

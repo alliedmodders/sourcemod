@@ -1,13 +1,17 @@
 /**
+ * vim: set ts=4 :
  * ===============================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * All rights reserved.
  * ===============================================================
  *
- *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
- * or modified under the Terms and Conditions of its License Agreement, which is found 
- * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
- * may change at any time.  To view the latest information, see:
- *   http://www.sourcemod.net/license.php
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be 
+ * used or modified under the Terms and Conditions of its License Agreement, 
+ * which is found in public/licenses/LICENSE.txt.  As of this notice, derivative 
+ * works must be licensed under the GNU General Public License (version 2 or 
+ * greater).  A copy of the GPL is included under public/licenses/GPL.txt.
+ * 
+ * To view the latest information, see: http://www.sourcemod.net/license.php
  *
  * Version: $Id$
  */
@@ -16,12 +20,18 @@
 #include <malloc.h>
 #include "smsdk_ext.h"
 
-IShareSys *g_pShareSys = NULL;
-IExtension *myself = NULL;
-IHandleSys *g_pHandleSys = NULL;
-ISourceMod *g_pSM = NULL;
-IForwardManager *g_pForwards = NULL;
+/**
+ * @file smsdk_ext.cpp
+ * @brief Contains wrappers for making Extensions easier to write.
+ */
 
+IShareSys *g_pShareSys = NULL;			/**< Share system */
+IExtension *myself = NULL;				/**< Ourself */
+IHandleSys *g_pHandleSys = NULL;		/**< Handle system */
+ISourceMod *g_pSM = NULL;				/**< SourceMod helpers */
+IForwardManager *g_pForwards = NULL;	/**< Forward system */
+
+/** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
 {
 	return g_pExtensionIface;
@@ -36,7 +46,7 @@ SDKExtension::SDKExtension()
 #endif
 }
 
-bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t err_max, bool late)
+bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t maxlength, bool late)
 {
 	g_pShareSys = sys;
 	myself = me;
@@ -48,7 +58,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	{
 		if (error)
 		{
-			snprintf(error, err_max, "Metamod attach failed");
+			snprintf(error, maxlength, "Metamod attach failed");
 		}
 		return false;
 	}
@@ -58,7 +68,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	SM_GET_IFACE(SOURCEMOD, g_pSM);
 	SM_GET_IFACE(FORWARDMANAGER, g_pForwards);
 
-	if (SDK_OnLoad(error, err_max, late))
+	if (SDK_OnLoad(error, maxlength, late))
 	{
 #if defined SMEXT_CONF_METAMOD
 		m_WeAreUnloaded = true;
@@ -134,7 +144,7 @@ const char *SDKExtension::GetExtensionURL()
 	return SMEXT_CONF_URL;
 }
 
-bool SDKExtension::SDK_OnLoad(char *error, size_t err_max, bool late)
+bool SDKExtension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	return true;
 }
@@ -153,14 +163,15 @@ void SDKExtension::SDK_OnAllLoaded()
 
 #if defined SMEXT_CONF_METAMOD
 
-PluginId g_PLID = 0;
-ISmmPlugin *g_PLAPI = NULL;
-SourceHook::ISourceHook *g_SHPtr = NULL;
-ISmmAPI *g_SMAPI = NULL;
+PluginId g_PLID = 0;						/**< Metamod plugin ID */
+ISmmPlugin *g_PLAPI = NULL;					/**< Metamod plugin API */
+SourceHook::ISourceHook *g_SHPtr = NULL;	/**< SourceHook pointer */
+ISmmAPI *g_SMAPI = NULL;					/**< SourceMM API pointer */
 
-IVEngineServer *engine = NULL;
-IServerGameDLL *gamedll = NULL;
+IVEngineServer *engine = NULL;				/**< IVEngineServer pointer */
+IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 
+/** Exposes the extension to Metamod */
 SMM_API void *PL_EXPOSURE(const char *name, int *code)
 {
 	if (name && !strcmp(name, PLAPI_NAME))
@@ -189,7 +200,7 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 
 	m_SourceMMLoaded = true;
 
-	return SDK_OnMetamodLoad(error, maxlen, late);
+	return SDK_OnMetamodLoad(ismm, error, maxlen, late);
 }
 
 bool SDKExtension::Unload(char *error, size_t maxlen)
@@ -278,17 +289,17 @@ const char *SDKExtension::GetVersion()
 	return GetExtensionVerString();
 }
 
-bool SDKExtension::SDK_OnMetamodLoad(char *error, size_t err_max, bool late)
+bool SDKExtension::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)
 {
 	return true;
 }
 
-bool SDKExtension::SDK_OnMetamodUnload(char *error, size_t err_max)
+bool SDKExtension::SDK_OnMetamodUnload(char *error, size_t maxlength)
 {
 	return true;
 }
 
-bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t err_max)
+bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength)
 {
 	return true;
 }
@@ -321,4 +332,3 @@ void operator delete[](void * ptr)
 	free(ptr);
 }
 #endif
-

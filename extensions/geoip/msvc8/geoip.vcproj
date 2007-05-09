@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="geoip"
-	ProjectGUID="{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
+	ProjectGUID="{698EAEE7-0EFC-4017-9B88-ECCAAF42FD5F}"
 	RootNamespace="geoip"
 	Keyword="Win32Proj"
 	>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;geoip_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;geoip_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -188,10 +188,6 @@
 				RelativePath="..\GeoIP.c"
 				>
 			</File>
-			<File
-				RelativePath="..\smsdk_ext.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -207,14 +203,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\smsdk_config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\smsdk_ext.h"
-				>
-			</File>
-			<File
 				RelativePath="..\svn_version.h"
 				>
 			</File>
@@ -226,6 +214,22 @@
 			>
 			<File
 				RelativePath="..\version.rc"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="SourceMod SDK"
+			>
+			<File
+				RelativePath="..\sdk\smsdk_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\smsdk_ext.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\smsdk_ext.h"
 				>
 			</File>
 		</Filter>

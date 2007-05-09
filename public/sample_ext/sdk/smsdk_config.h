@@ -1,4 +1,21 @@
-// vim: set ts=4 :
+/**
+ * vim: set ts=4 :
+ * ===============================================================
+ * SourceMod, Copyright (C) 2004-2007 AlliedModders LLC. 
+ * All rights reserved.
+ * ===============================================================
+ *
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be 
+ * used or modified under the Terms and Conditions of its License Agreement, 
+ * which is found in public/licenses/LICENSE.txt.  As of this notice, derivative 
+ * works must be licensed under the GNU General Public License (version 2 or 
+ * greater).  A copy of the GPL is included under public/licenses/GPL.txt.
+ * 
+ * To view the latest information, see: http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
+ */
+
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 
@@ -7,7 +24,7 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
-/* Basic information exposed publically */
+/* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Sample Extension"
 #define SMEXT_CONF_DESCRIPTION	"Sample extension to help developers"
 #define SMEXT_CONF_VERSION		"0.0.0.0"
@@ -25,9 +42,7 @@
 /**
  * @brief Sets whether or not this plugin required Metamod.
  * NOTE: Uncomment to enable, comment to disable.
- * NOTE: This is enabled automatically if a Metamod build is chosen in 
- *		 the Visual Studio project.
  */
 //#define SMEXT_CONF_METAMOD		
 
-#endif //_INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
+#endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

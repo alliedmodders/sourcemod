@@ -1,17 +1,22 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * SourceMod, Copyright (C) 2004-2007 AlliedModders LLC. 
- * All rights reserved.
+ * SourceMod BinTools Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
  * ===============================================================
  *
- *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be 
- * used or modified under the Terms and Conditions of its License Agreement, 
- * which is found in public/licenses/LICENSE.txt.  As of this notice, derivative 
- * works must be licensed under the GNU General Public License (version 2 or 
- * greater).  A copy of the GPL is included under public/licenses/GPL.txt.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * To view the latest information, see: http://www.sourcemod.net/license.php
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * Version: $Id$
  */
@@ -24,12 +29,11 @@
  * @brief Sample extension code header.
  */
 
-
 #include "smsdk_ext.h"
 
 
 /**
- * @brief Sample implementation of the SDK Extension.
+ * @brief Implementation of the BinTools extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
 class BinTools : public SDKExtension
@@ -39,11 +43,11 @@ public:
 	 * @brief This is called after the initial loading sequence has been processed.
 	 *
 	 * @param error		Error message buffer.
-	 * @param err_max	Size of error message buffer.
+	 * @param maxlength	Size of error message buffer.
 	 * @param late		Whether or not the module was loaded after map load.
 	 * @return			True to succeed loading, false to fail.
 	 */
-	virtual bool SDK_OnLoad(char *error, size_t err_max, bool late);
+	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late);
 	
 	/**
 	 * @brief This is called right before the extension is unloaded.
@@ -65,22 +69,45 @@ public:
 	 * @brief this is called when Core wants to know if your extension is working.
 	 *
 	 * @param error		Error message buffer.
-	 * @param err_max	Size of error message buffer.
+	 * @param maxlength	Size of error message buffer.
 	 * @return			True if working, false otherwise.
 	 */
-	//virtual void QueryRunning(char *error, size_t maxlength);
+	//virtual bool QueryRunning(char *error, size_t maxlength);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
-	 * Read smext_base.h for documentation on these.
+	 * @brief Called when Metamod is attached, before the extension version is called.
+	 *
+	 * @param error			Error buffer.
+	 * @param maxlength		Maximum size of error buffer.
+	 * @param late			Whether or not Metamod considers this a late load.
+	 * @return				True to succeed, false to fail.
 	 */
+	//virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
 
-	//virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);
-	//virtual bool SDK_OnMetamodUnload(char *error, size_t err_max);
-	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t err_max);
+	/**
+	 * @brief Called when Metamod is detaching, after the extension version is called.
+	 * NOTE: By default this is blocked unless sent from SourceMod.
+	 *
+	 * @param error			Error buffer.
+	 * @param maxlength		Maximum size of error buffer.
+	 * @return				True to succeed, false to fail.
+	 */
+	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlength);
+
+	/**
+	 * @brief Called when Metamod's pause state is changing.
+	 * NOTE: By default this is blocked unless sent from SourceMod.
+	 *
+	 * @param paused		Pause state being set.
+	 * @param error			Error buffer.
+	 * @param maxlength		Maximum size of error buffer.
+	 * @return				True to succeed, false to fail.
+	 */
+	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
 };
 
 extern ISourcePawnEngine *g_SPEngine;
 
-#endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
+#endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

@@ -1,5 +1,9 @@
 /**
- * SourceMod Threading Extension, (C)2007 AlliedModders LLC.  All rights reserved.
+ * vim: set ts=4 :
+ * ===============================================================
+ * SourceMod Threading Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
+ * ===============================================================
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,12 +24,17 @@
 #include "extension.h"
 #include "thread/ThreadSupport.h"
 
+/**
+ * @file extension.cpp
+ * @brief Implements threader extension code.
+ */
+
 Sample g_Sample;
 MainThreader g_Threader;
 
 SMEXT_LINK(&g_Sample);
 
-bool Sample::SDK_OnLoad(char *error, size_t err_max, bool late)
+bool Sample::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	g_pShareSys->AddInterface(myself, &g_Threader);
 

@@ -5,11 +5,13 @@
  * All rights reserved.
  * ===============================================================
  *
- *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
- * or modified under the Terms and Conditions of its License Agreement, which is found 
- * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
- * may change at any time.  To view the latest information, see:
- *   http://www.sourcemod.net/license.php
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be 
+ * used or modified under the Terms and Conditions of its License Agreement, 
+ * which is found in public/licenses/LICENSE.txt.  As of this notice, derivative 
+ * works must be licensed under the GNU General Public License (version 2 or 
+ * greater).  A copy of the GPL is included under public/licenses/GPL.txt.
+ * 
+ * To view the latest information, see: http://www.sourcemod.net/license.php
  *
  * Version: $Id$
  */
@@ -44,7 +46,7 @@ SDKExtension::SDKExtension()
 #endif
 }
 
-bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t err_max, bool late)
+bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t maxlength, bool late)
 {
 	g_pShareSys = sys;
 	myself = me;
@@ -56,7 +58,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	{
 		if (error)
 		{
-			snprintf(error, err_max, "Metamod attach failed");
+			snprintf(error, maxlength, "Metamod attach failed");
 		}
 		return false;
 	}
@@ -66,7 +68,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	SM_GET_IFACE(SOURCEMOD, g_pSM);
 	SM_GET_IFACE(FORWARDMANAGER, g_pForwards);
 
-	if (SDK_OnLoad(error, err_max, late))
+	if (SDK_OnLoad(error, maxlength, late))
 	{
 #if defined SMEXT_CONF_METAMOD
 		m_WeAreUnloaded = true;
@@ -142,7 +144,7 @@ const char *SDKExtension::GetExtensionURL()
 	return SMEXT_CONF_URL;
 }
 
-bool SDKExtension::SDK_OnLoad(char *error, size_t err_max, bool late)
+bool SDKExtension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	return true;
 }
@@ -198,7 +200,7 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 
 	m_SourceMMLoaded = true;
 
-	return SDK_OnMetamodLoad(error, maxlen, late);
+	return SDK_OnMetamodLoad(ismm, error, maxlen, late);
 }
 
 bool SDKExtension::Unload(char *error, size_t maxlen)
@@ -215,7 +217,7 @@ bool SDKExtension::Unload(char *error, size_t maxlen)
 	return SDK_OnMetamodUnload(error, maxlen);
 }
 
-bool SDKExtension::Pause(char *error, size_t maxlen)
+bool SDKExtension::Pause(char *error, size_t maxlength)
 {
 	if (!m_WeGotPauseChange)
 	{
@@ -287,17 +289,17 @@ const char *SDKExtension::GetVersion()
 	return GetExtensionVerString();
 }
 
-bool SDKExtension::SDK_OnMetamodLoad(char *error, size_t err_max, bool late)
+bool SDKExtension::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)
 {
 	return true;
 }
 
-bool SDKExtension::SDK_OnMetamodUnload(char *error, size_t err_max)
+bool SDKExtension::SDK_OnMetamodUnload(char *error, size_t maxlength)
 {
 	return true;
 }
 
-bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t err_max)
+bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength)
 {
 	return true;
 }
@@ -330,4 +332,3 @@ void operator delete[](void * ptr)
 	free(ptr);
 }
 #endif
-

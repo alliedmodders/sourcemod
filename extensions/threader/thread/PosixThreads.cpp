@@ -1,5 +1,9 @@
 /**
- * SourceMod Threader API (C)2007 AlliedModders LLC.  All rights reserved.
+ * vim: set ts=4 :
+ * ===============================================================
+ * SourceMod Threader API
+ * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
+ * ===============================================================
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -295,4 +299,3 @@ void PosixThreader::PosixEventSignal::DestroyThis()
 {
         delete this;
 }
-

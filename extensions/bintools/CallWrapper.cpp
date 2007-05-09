@@ -1,17 +1,22 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * SourceMod, Copyright (C) 2004-2007 AlliedModders LLC. 
- * All rights reserved.
+ * SourceMod BinTools Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
  * ===============================================================
  *
- *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be 
- * used or modified under the Terms and Conditions of its License Agreement, 
- * which is found in public/licenses/LICENSE.txt.  As of this notice, derivative 
- * works must be licensed under the GNU General Public License (version 2 or 
- * greater).  A copy of the GPL is included under public/licenses/GPL.txt.
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  * 
- * To view the latest information, see: http://www.sourcemod.net/license.php
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  *
  * Version: $Id$
  */

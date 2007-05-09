@@ -5,11 +5,13 @@
  * All rights reserved.
  * ===============================================================
  *
- *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be used 
- * or modified under the Terms and Conditions of its License Agreement, which is found 
- * in LICENSE.txt.  The Terms and Conditions for making SourceMod extensions/plugins 
- * may change at any time.  To view the latest information, see:
- *   http://www.sourcemod.net/license.php
+ *  This file is part of the SourceMod/SourcePawn SDK.  This file may only be 
+ * used or modified under the Terms and Conditions of its License Agreement, 
+ * which is found in public/licenses/LICENSE.txt.  As of this notice, derivative 
+ * works must be licensed under the GNU General Public License (version 2 or 
+ * greater).  A copy of the GPL is included under public/licenses/GPL.txt.
+ * 
+ * To view the latest information, see: http://www.sourcemod.net/license.php
  *
  * Version: $Id$
  */
@@ -52,11 +54,11 @@ public:
 	 * @brief This is called after the initial loading sequence has been processed.
 	 *
 	 * @param error		Error message buffer.
-	 * @param err_max	Size of error message buffer.
+	 * @param maxlength	Size of error message buffer.
 	 * @param late		Whether or not the module was loaded after map load.
 	 * @return			True to succeed loading, false to fail.
 	 */
-	virtual bool SDK_OnLoad(char *error, size_t err_max, bool late);
+	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late);
 	
 	/**
 	 * @brief This is called right before the extension is unloaded.
@@ -78,21 +80,21 @@ public:
 	 * @brief Called when Metamod is attached, before the extension version is called.
 	 *
 	 * @param error			Error buffer.
-	 * @param err_max		Maximum size of error buffer.
+	 * @param maxlength		Maximum size of error buffer.
 	 * @param late			Whether or not Metamod considers this a late load.
 	 * @return				True to succeed, false to fail.
 	 */
-	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);
+	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
 
 	/**
 	 * @brief Called when Metamod is detaching, after the extension version is called.
 	 * NOTE: By default this is blocked unless sent from SourceMod.
 	 *
 	 * @param error			Error buffer.
-	 * @param err_max		Maximum size of error buffer.
+	 * @param maxlength		Maximum size of error buffer.
 	 * @return				True to succeed, false to fail.
 	 */
-	virtual bool SDK_OnMetamodUnload(char *error, size_t err_max);
+	virtual bool SDK_OnMetamodUnload(char *error, size_t maxlength);
 
 	/**
 	 * @brief Called when Metamod's pause state is changing.
@@ -100,14 +102,14 @@ public:
 	 *
 	 * @param paused		Pause state being set.
 	 * @param error			Error buffer.
-	 * @param err_max		Maximum size of error buffer.
+	 * @param maxlength		Maximum size of error buffer.
 	 * @return				True to succeed, false to fail.
 	 */
-	virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t err_max);
+	virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
 
-public: //IExtensionInterface
-	virtual bool OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t err_max, bool late);
+public: // IExtensionInterface
+	virtual bool OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t maxlength, bool late);
 	virtual void OnExtensionUnload();
 	virtual void OnExtensionsAllLoaded();
 
@@ -136,9 +138,9 @@ public: //IExtensionInterface
 	/** Returns date string */
 	virtual const char *GetExtensionDateString();
 #if defined SMEXT_CONF_METAMOD
-public: //ISmmPlugin
+public: // ISmmPlugin
 	/** Called when the extension is attached to Metamod. */
-	virtual bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlength, bool late);
+	virtual bool Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late);
 	/** Returns the author to MM */
 	virtual const char *GetAuthor();
 	/** Returns the name to MM */
@@ -185,12 +187,27 @@ extern IServerGameDLL *gamedll;
 /** Creates a SourceMod interface macro pair */
 #define SM_MKIFACE(name) SMINTERFACE_##name##_NAME, SMINTERFACE_##name##_VERSION
 /** Automates retrieving SourceMod interfaces */
-#define SM_GET_IFACE(prefix,addr) \
-	if (!g_pShareSys->RequestInterface(SM_MKIFACE(prefix), myself, (SMInterface **)&addr)) { \
-	 if (error) { \
-		snprintf(error, err_max, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
-	 } \
-	 return false; \
+#define SM_GET_IFACE(prefix, addr) \
+	if (!g_pShareSys->RequestInterface(SM_MKIFACE(prefix), myself, (SMInterface **)&addr)) \
+	{ \
+		if (error) \
+		{ \
+			snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
+			return false; \
+		} \
+	}
+/** Automates retrieving SourceMod interfaces when needed outside of SDK_OnLoad() */
+#define SM_GET_LATE_IFACE(prefix, addr) \
+	g_pShareSys->RequestInterface(SM_MKIFACE(prefix), myself, (SMInterface **)&addr)
+/** Validates a SourceMod interface pointer */
+#define SM_CHECK_IFACE(prefix, addr) \
+	if (!addr) \
+	{ \
+		if (error) \
+		{ \
+			snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
+			return false; \
+		} \
 	}
 
-#endif //_INCLUDE_SOURCEMOD_EXTENSION_BASESDK_H_
+#endif // _INCLUDE_SOURCEMOD_EXTENSION_BASESDK_H_

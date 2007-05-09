@@ -14,7 +14,7 @@ PROJECT = threader
 #Uncomment for SourceMM-enabled extensions
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
 
-OBJECTS = extension.cpp smsdk_ext.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp \
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp \
 	  thread/ThreadWorker.cpp
 
 ##############################################
@@ -33,7 +33,7 @@ SMM_TRUNK = $(SOURCEMM)/trunk
 
 LINK = $(LINK_HL2) -lpthread -static-libgcc
 
-INCLUDE = -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
+INCLUDE = -I. -I.. -Isdk -Ithread -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
           -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(SMM_TRUNK) -I$(SMM_TRUNK)/sourcehook -I$(SMM_TRUNK)/sourcemm \
 	  -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
 
@@ -61,20 +61,16 @@ endif
 BINARY = $(PROJECT).ext.so
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
-OBJ_LINUX := $(OBJECTS:%.c=$(BIN_DIR)/%.o)
 
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-$(BIN_DIR)/%.o: %.c
-	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
-
 all:
+	mkdir -p $(BIN_DIR)/sdk
 	mkdir -p $(BIN_DIR)/thread
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
 	$(MAKE) extension
-	rm -rf $(BINARY)
 
 extension: $(OBJ_LINUX)
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
@@ -86,7 +82,10 @@ default: all
 
 clean:
 	rm -rf Release/*.o
+	rm -rf Release/sdk/*.o
+	rm -rf Release/thread/*.o
 	rm -rf Release/$(BINARY)
 	rm -rf Debug/*.o
+	rm -rf Debug/sdk/*.o
+	rm -rf Debug/thread/*.o
 	rm -rf Debug/$(BINARY)
-

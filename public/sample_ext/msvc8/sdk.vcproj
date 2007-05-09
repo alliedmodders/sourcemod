@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -182,10 +182,6 @@
 				RelativePath="..\extension.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\smsdk_ext.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -196,20 +192,29 @@
 				RelativePath="..\extension.h"
 				>
 			</File>
-			<File
-				RelativePath="..\smsdk_config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\smsdk_ext.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+		</Filter>
+		<Filter
+			Name="SourceMod SDK"
+			UniqueIdentifier="{31958233-BB2D-4e41-A8F9-CE8A4684F436}"
+			>
+			<File
+				RelativePath="..\sdk\smsdk_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\smsdk_ext.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\smsdk_ext.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

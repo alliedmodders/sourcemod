@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;THREADER_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;THREADER_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SM_DEFAULT_THREADER"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -176,7 +176,7 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			UniqueIdentifier="{AF1F0882-7834-4b25-8FF4-8AE88FF3D230}"
 			>
 			<File
 				RelativePath="..\extension.cpp"
@@ -186,7 +186,7 @@
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			UniqueIdentifier="{58F53513-7C9D-4829-8207-87DB91891933}"
 			>
 			<File
 				RelativePath="..\extension.h"
@@ -200,7 +200,7 @@
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			UniqueIdentifier="{30794439-9707-4eb8-856E-1C744BC92016}"
 			>
 			<File
 				RelativePath="..\version.rc"
@@ -208,26 +208,30 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="SDK"
+			Name="SourceMod SDK"
+			UniqueIdentifier="{E312F93E-1E7F-4eda-B714-99948F5010E4}"
 			>
 			<File
-				RelativePath="..\smsdk_config.h"
+				RelativePath="..\sdk\smsdk_config.h"
 				>
 			</File>
 			<File
-				RelativePath="..\smsdk_ext.cpp"
+				RelativePath="..\sdk\smsdk_ext.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\smsdk_ext.h"
+				RelativePath="..\sdk\smsdk_ext.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Threader"
+			UniqueIdentifier="{D832C58B-B863-4673-9DD4-9C6AC8090957}"
 			>
 			<Filter
 				Name="Source Files"
+				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+				UniqueIdentifier="{2C648E20-AD2B-40db-B8ED-43D383549B98}"
 				>
 				<File
 					RelativePath="..\thread\BaseWorker.cpp"
@@ -244,6 +248,8 @@
 			</Filter>
 			<Filter
 				Name="Header Files"
+				Filter="h;hpp;hxx;hm;inl;inc;xsd"
+				UniqueIdentifier="{A68ED1BF-A883-4cdf-AF82-6E82ACFF1752}"
 				>
 				<File
 					RelativePath="..\thread\BaseWorker.h"
@@ -266,6 +272,15 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="Interfaces"
+			UniqueIdentifier="{71DC7197-8B2B-4eec-9598-83C6AA9454FF}"
+			>
+			<File
+				RelativePath="..\..\..\public\extensions\IThreader.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

@@ -1,5 +1,9 @@
 /**
- * GeoIP SourceMod Extension, (C)2007 AlliedModders LLC.  All rights reserved.
+ * vim: set ts=4 :
+ * ===============================================================
+ * SourceMod GeoIP Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
+ * ===============================================================
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,21 +24,25 @@
 #include "extension.h"
 #include "GeoIP.h"
 
+/**
+ * @file extension.cpp
+ * @brief Implement extension code here.
+ */
 GeoIP_Extension g_GeoIP;
 GeoIP *gi = NULL;
 
 SMEXT_LINK(&g_GeoIP);
 
-bool GeoIP_Extension::SDK_OnLoad(char *error, size_t err_max, bool late)
+bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	char path[PLATFORM_MAX_PATH+1];
+	char path[PLATFORM_MAX_PATH];
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/geoip/GeoIP.dat");
 	gi = GeoIP_open(path, GEOIP_MEMORY_CACHE);
 
 	if (!gi)
 	{
-		snprintf(error, err_max, "Failed to instantiate GeoIP!");
+		snprintf(error, maxlength, "Failed to instantiate GeoIP!");
 		return false;
 	}
 
@@ -113,4 +121,3 @@ const sp_nativeinfo_t geoip_natives[] =
 	{"GeoipCountry",		sm_Geoip_Country},
 	{NULL,					NULL},
 };
-

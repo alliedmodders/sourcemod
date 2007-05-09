@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8.00"
 	Name="bintools"
-	ProjectGUID="{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
+	ProjectGUID="{E38F65D9-74B2-4373-B46A-DBB76F579F98}"
 	RootNamespace="bintools"
 	Keyword="Win32Proj"
 	>
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\extensions;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;BINTOOLS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\public;..\..\..\public\extensions;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;BINTOOLS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
@@ -176,46 +176,37 @@
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			UniqueIdentifier="{0318D835-E129-4fe0-9B9C-C810AC179F31}"
 			>
 			<File
 				RelativePath="..\extension.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smsdk_ext.cpp"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			UniqueIdentifier="{9021A2EF-600E-4028-AE3E-9DDA4C94264C}"
 			>
 			<File
 				RelativePath="..\extension.h"
-				>
-			</File>
-			<File
-				RelativePath="..\smsdk_config.h"
-				>
-			</File>
-			<File
-				RelativePath="..\smsdk_ext.h"
 				>
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			UniqueIdentifier="{C06F7BFF-18EE-4994-8572-D6383011354B}"
 			>
 		</Filter>
 		<Filter
 			Name="BinTools"
+			UniqueIdentifier="{7BD12831-E179-4961-A3B0-BA9FCF311C7E}"
 			>
 			<Filter
 				Name="Header Files"
+				Filter="h;hpp;hxx;hm;inl;inc;xsd"
+				UniqueIdentifier="{2B033553-ECC7-42cc-AD11-D1D985D8BC5A}"
 				>
 				<File
 					RelativePath="..\CallMaker.h"
@@ -232,6 +223,8 @@
 			</Filter>
 			<Filter
 				Name="Source Files"
+				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+				UniqueIdentifier="{F70EA5AC-224C-448f-A72D-11C2D06208B3}"
 				>
 				<File
 					RelativePath="..\CallMaker.cpp"
@@ -246,6 +239,32 @@
 					>
 				</File>
 			</Filter>
+		</Filter>
+		<Filter
+			Name="SourceMod SDK"
+			UniqueIdentifier="{6183251D-B1E4-4cc6-93B2-A0111B2115BA}"
+			>
+			<File
+				RelativePath="..\sdk\smsdk_config.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\smsdk_ext.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\smsdk_ext.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Interfaces"
+			UniqueIdentifier="{7DE81EA3-99D9-4f34-823A-B314791F3514}"
+			>
+			<File
+				RelativePath="..\..\..\public\extensions\IBinTools.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
