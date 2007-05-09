@@ -43,6 +43,10 @@ struct CustomFlag
 	FlagBits bit;
 };
 
+/**
+ * @brief Implementation of the BAT Support extension.
+ * Note: Uncomment one of the pre-defined virtual functions in order to use it.
+ */
 class BatSupport : 
 	public SDKExtension,
 	public IMetamodListener,

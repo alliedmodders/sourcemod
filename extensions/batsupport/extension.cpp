@@ -25,6 +25,11 @@
 #include <IPlayerHelpers.h>
 #include "extension.h"
 
+/**
+ * @file extension.cpp
+ * @brief Implements BAT Support extension code.
+ */
+
 BatSupport g_BatSupport;		/**< Global singleton for your extension's main interface */
 IAdminSystem *admins = NULL;
 IPlayerManager *players = NULL;
