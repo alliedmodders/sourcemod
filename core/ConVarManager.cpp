@@ -218,6 +218,9 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	/* If the convar already exists... */
 	if (pConVar)
 	{
+		/* Add convar to plugin's list */
+		AddConVarToPluginList(pContext, pConVar);
+
 		/* First find out if we already have a handle to it */
 		if (sm_trie_retrieve(m_ConVarCache, name, (void **)&pInfo))
 		{

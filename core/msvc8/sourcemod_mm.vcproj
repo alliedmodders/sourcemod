@@ -400,6 +400,7 @@
 		</Filter>
 		<Filter
 			Name="Interfaces"
+			UniqueIdentifier="{10C69360-9E8E-4a43-BCEF-E9373B3641BC}"
 			>
 			<File
 				RelativePath="..\..\public\IAdminSystem.h"
@@ -472,9 +473,12 @@
 		</Filter>
 		<Filter
 			Name="Systems"
+			UniqueIdentifier="{63775418-DF3F-4198-BFB1-738B19EE3EE0}"
 			>
 			<Filter
 				Name="Header Files"
+				Filter="h;hpp;hxx;hm;inl;inc;xsd"
+				UniqueIdentifier="{7D3AB33D-C1AD-46ee-B505-FEA8B6EF18E4}"
 				>
 				<File
 					RelativePath="..\systems\ExtensionSys.h"
@@ -507,6 +511,8 @@
 			</Filter>
 			<Filter
 				Name="Source Files"
+				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+				UniqueIdentifier="{D1864A10-FF5F-4672-A70E-57C9F7486F92}"
 				>
 				<File
 					RelativePath="..\systems\ExtensionSys.cpp"
@@ -540,9 +546,12 @@
 		</Filter>
 		<Filter
 			Name="SourcePawn"
+			UniqueIdentifier="{C3C3DC6E-E392-4916-B893-7ACB92192DE0}"
 			>
 			<Filter
 				Name="Header Files"
+				Filter="h;hpp;hxx;hm;inl;inc;xsd"
+				UniqueIdentifier="{D06F7D18-C940-4200-990B-2D0CF72F91AB}"
 				>
 				<File
 					RelativePath="..\vm\sp_vm_basecontext.h"
@@ -559,6 +568,8 @@
 			</Filter>
 			<Filter
 				Name="Source Files"
+				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+				UniqueIdentifier="{605A5261-30CD-4cca-BBE2-23BB190DA44E}"
 				>
 				<File
 					RelativePath="..\vm\sp_vm_basecontext.cpp"
@@ -575,6 +586,7 @@
 			</Filter>
 			<Filter
 				Name="SDK"
+				UniqueIdentifier="{A76160D7-4623-42c7-9587-62049792B924}"
 				>
 				<File
 					RelativePath="..\..\public\sourcepawn\sp_file_headers.h"
@@ -600,9 +612,12 @@
 		</Filter>
 		<Filter
 			Name="zlib"
+			UniqueIdentifier="{27E223C9-0208-4c7d-BBAA-DE4BF1745020}"
 			>
 			<Filter
 				Name="Header Files"
+				Filter="h;hpp;hxx;hm;inl;inc;xsd"
+				UniqueIdentifier="{65A17C3B-0B6E-450f-96B8-661D47876D4B}"
 				>
 				<File
 					RelativePath="..\zlib\crc32.h"
@@ -647,6 +662,8 @@
 			</Filter>
 			<Filter
 				Name="Source Files"
+				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+				UniqueIdentifier="{9279E65A-C154-4296-AE23-949EB8C62BEB}"
 				>
 				<File
 					RelativePath="..\zlib\adler32.c"
@@ -700,6 +717,8 @@
 		</Filter>
 		<Filter
 			Name="Resources"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{2A750240-7C10-455f-A900-B9A9D362356C}"
 			>
 			<File
 				RelativePath="..\version.rc"
@@ -708,6 +727,7 @@
 		</Filter>
 		<Filter
 			Name="HL2SDK"
+			UniqueIdentifier="{80B56842-7A9F-4d5d-8149-767C285D0EB4}"
 			>
 			<File
 				RelativePath="..\convar_sm.h"
@@ -716,6 +736,7 @@
 		</Filter>
 		<Filter
 			Name="Natives"
+			UniqueIdentifier="{052D6D9B-7B50-4c3c-9B82-32CA908DEF24}"
 			>
 			<File
 				RelativePath="..\smn_admin.cpp"
