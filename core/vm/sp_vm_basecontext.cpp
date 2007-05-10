@@ -20,6 +20,10 @@
 #include "sp_vm_basecontext.h"
 #include "sp_vm_engine.h"
 
+#ifdef SOURCEMOD_BUILD
+#include "Logger.h"
+#endif
+
 using namespace SourcePawn;
 
 extern SourcePawnEngine g_SourcePawn;
@@ -223,11 +227,24 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	 */
 	g_SourcePawn.PopTracer(err, m_CustomMsg ? m_MsgCache : NULL);
 
-#if defined _DEBUG
+#if 1//defined _DEBUG
+	//:TODO: debug code for leak detection, remove before the release?
 	if (err == SP_ERROR_NONE)
 	{
-		assert(ctx->sp - pushcount * sizeof(cell_t) == save_sp);
-		assert(ctx->hp == save_hp);
+		if ((ctx->sp - pushcount * sizeof(cell_t)) != save_sp)
+		{
+			const char *name;
+			ctx->context->GetDebugInfo()->LookupFunction(code_addr, &name);
+			g_Logger.LogError("Stack leak detected: sp:%d should be %d on function %s", ctx->sp, save_sp, name);
+		}
+		if (ctx->hp != save_hp)
+		{
+			const char *name;
+			ctx->context->GetDebugInfo()->LookupFunction(code_addr, &name);
+			g_Logger.LogError("Heap leak detected: hp:%d should be %d on function %s", ctx->hp, save_hp, name);
+		}
+		//assert(ctx->sp - pushcount * sizeof(cell_t) == save_sp);
+		//assert(ctx->hp == save_hp);
 	}
 #endif
 	if (err != SP_ERROR_NONE)
