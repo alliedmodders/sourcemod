@@ -231,7 +231,7 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	//:TODO: debug code for leak detection, remove before the release?
 	if (err == SP_ERROR_NONE)
 	{
-		if ((ctx->sp - pushcount * sizeof(cell_t)) != save_sp)
+		if ((ctx->sp - (cell_t)(pushcount * sizeof(cell_t))) != save_sp)
 		{
 			const char *name;
 			ctx->context->GetDebugInfo()->LookupFunction(code_addr, &name);
