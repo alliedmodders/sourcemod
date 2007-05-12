@@ -17,6 +17,7 @@
 #include "ShareSys.h"
 #include "AdminCache.h"
 #include "ConCmdManager.h"
+#include "MenuStyle_Valve.h"
 
 PlayerManager g_Players;
 
@@ -396,6 +397,12 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	if (res >= Pl_Stop)
 	{
 		RETURN_META(MRES_SUPERCEDE);
+	}
+
+	bool result = g_ValveMenuStyle.OnClientCommand(client);
+	if (result)
+	{
+		res = Pl_Handled;
 	}
 
 	res = g_ConCmds.DispatchClientCommand(client, (ResultType)res);

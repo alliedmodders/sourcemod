@@ -42,6 +42,7 @@ ConCmdManager::ConCmdManager() : m_Strings(1024)
 	m_pExecCmd = NULL;
 	m_pServerCfgFile = NULL;
 	m_pServerCfgFwd = NULL;
+	m_CmdClient = 0;
 }
 
 ConCmdManager::~ConCmdManager()

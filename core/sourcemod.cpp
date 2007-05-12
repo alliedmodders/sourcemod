@@ -29,6 +29,7 @@
 #include "Translator.h"
 #include "ForwardSys.h"
 #include "TimerSys.h"
+#include "MenuStyle_Valve.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -43,6 +44,7 @@ ISourcePawnEngine *g_pSourcePawn = &g_SourcePawn;
 IVirtualMachine *g_pVM;
 IdentityToken_t *g_pCoreIdent = NULL;
 float g_LastTime = 0.0f;
+float g_LastMenuTime = 0.0f;
 float g_LastAuthCheck = 0.0f;
 IForward *g_pOnGameFrame = NULL;
 IForward *g_pOnMapEnd = NULL;
@@ -264,6 +266,7 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	m_IsMapLoading = true;
 	m_ExecPluginReload = true;
 	g_LastTime = 0.0f;
+	g_LastMenuTime = 0.0f;
 	g_LastAuthCheck = 0.0f;
 	g_SimTicks.ticking = true;
 	g_SimTicks.tickcount = 0;
@@ -382,6 +385,12 @@ void SourceModBase::GameFrame(bool simulating)
 
 		g_Timers.RunFrame();
 		g_LastTime = curtime;
+	}
+
+	if (g_SimTicks.tickcount && (curtime - g_LastMenuTime >= 1.0f))
+	{
+		g_ValveMenuStyle.ProcessWatchList();
+		g_LastMenuTime = curtime;
 	}
 
 	if (g_pOnGameFrame && g_pOnGameFrame->GetFunctionCount())

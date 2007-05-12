@@ -111,6 +111,11 @@ private:
 	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
 	void OnExecCmd();
+public:
+	inline int GetCommandClient()
+	{
+		return m_CmdClient;
+	}
 private:
 	Trie *m_pCmds;					/* command lookup */
 	Trie *m_pCmdGrps;				/* command group lookup */

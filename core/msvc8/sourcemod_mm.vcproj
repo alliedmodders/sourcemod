@@ -228,6 +228,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\MenuManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\MenuStyle_Base.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\MenuStyle_Valve.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PlayerManager.cpp"
 				>
 			</File>
@@ -334,11 +346,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\MenuManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MenuStyle_Base.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MenuStyle_Valve.h"
+				>
+			</File>
+			<File
 				RelativePath="..\PlayerManager.h"
 				>
 			</File>
 			<File
 				RelativePath="..\sm_autonatives.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_fastlink.h"
 				>
 			</File>
 			<File
@@ -436,6 +464,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\IMemoryUtils.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IMenuManager.h"
 				>
 			</File>
 			<File
