@@ -11,6 +11,7 @@
  *
  * Version: $Id$
  */
+
 #include <stdarg.h>
 #include "sm_stringutil.h"
 #include "MenuStyle_Base.h"
