@@ -339,7 +339,7 @@ functag NativeCall public(Handle:plugin, numParams);
  * else you risk not having your native shared with other plugins.
  *
  * @param name				Name of the dynamic native; must be unique amongst
- *							all other registered dynamic native.s
+ *							all other registered dynamic natives.
  * @param func				Function to use as the dynamic native.
  * @noreturn
  */
