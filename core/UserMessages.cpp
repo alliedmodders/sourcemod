@@ -103,11 +103,10 @@ bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) con
 {
 	if (m_FallbackSearch)
 	{
-		printf("hello");
 		int size;
 		return gamedll->GetUserMessageInfo(msgid, buffer, maxlength, size);
 	}
-	printf("hello2");
+
 	const char *msg = g_SMAPI->GetUserMessage(msgid);
 
 	if (msg)
