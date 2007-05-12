@@ -44,10 +44,12 @@ public:
 	UserMessages();
 	~UserMessages();
 public: //SMGlobalClass
+	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
 public: //IUserMessages
 	int GetMessageIndex(const char *msg);
+	bool GetMessageName(int msgid, char *buffer, size_t maxlength) const;
 	bool HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bf_write *StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags);
@@ -71,6 +73,7 @@ private:
 	size_t m_HookCount;
 	bool m_InHook;
 	bool m_BlockEndPost;
+	bool m_FallbackSearch;
 
 	Trie *m_Names;
 	CellRecipientFilter m_CellRecFilter;

@@ -13,6 +13,7 @@
  */
 
 #include "UserMessages.h"
+#include "sm_stringutil.h"
 
 UserMessages g_UserMsgs;
 
@@ -41,6 +42,12 @@ UserMessages::~UserMessages()
 	m_FreeListeners.popall();
 }
 
+void UserMessages::OnSourceModStartup(bool late)
+{
+	/* -1 means SourceMM was unable to get the user message list */
+	m_FallbackSearch = (g_SMAPI->GetUserMessageCount() == -1);
+}
+
 void UserMessages::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
@@ -64,6 +71,23 @@ int UserMessages::GetMessageIndex(const char *msg)
 
 	if (!sm_trie_retrieve(m_Names, msg, reinterpret_cast<void **>(&msgid)))
 	{
+		if (m_FallbackSearch)
+		{
+			char msgbuf[64];
+			int size;
+			msgid = 0;
+
+			while (gamedll->GetUserMessageInfo(msgid, msgbuf, sizeof(msgbuf), size))
+			{
+				if (strcmp(msgbuf, msg) == 0)
+				{
+					sm_trie_insert(m_Names, msg, reinterpret_cast<void *>(msgid));
+					return msgid;
+				}
+				msgid++;
+			}
+		}
+
 		msgid = g_SMAPI->FindUserMessage(msg);
 
 		if (msgid != INVALID_MESSAGE_ID)
@@ -73,6 +97,26 @@ int UserMessages::GetMessageIndex(const char *msg)
 	}
 
 	return msgid;
+}
+
+bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) const
+{
+	if (m_FallbackSearch)
+	{
+		printf("hello");
+		int size;
+		return gamedll->GetUserMessageInfo(msgid, buffer, maxlength, size);
+	}
+	printf("hello2");
+	const char *msg = g_SMAPI->GetUserMessage(msgid);
+
+	if (msg)
+	{
+		strncopy(buffer, msg, maxlength);
+		return true;
+	}
+
+	return false;
 }
 
 bf_write *UserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)

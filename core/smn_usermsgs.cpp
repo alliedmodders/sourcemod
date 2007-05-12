@@ -310,16 +310,11 @@ static cell_t smn_GetUserMessageId(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t smn_GetUserMessageName(IPluginContext *pCtx, const cell_t *params)
 {
-	const char *msgname = g_SMAPI->GetUserMessage(params[1]);
+	char *msgname;
 
-	if (msgname == NULL)
-	{
-		return 0;
-	}
+	pCtx->LocalToPhysAddr(params[2], (cell_t **)&msgname);
 
-	pCtx->StringToLocalUTF8(params[2], params[3], msgname, NULL);
-
-	return 1;
+	return g_UserMsgs.GetMessageName(params[1], msgname, params[3]);
 }
 
 static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
