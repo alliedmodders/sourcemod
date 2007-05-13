@@ -83,7 +83,7 @@ namespace SourceMod
 	#define ITEMDRAW_RAWLINE		(1<<1)	/**< Item should be a raw line, without a slot */
 	#define ITEMDRAW_NOTEXT			(1<<2)	/**< No text should be drawn */
 	#define ITEMDRAW_SPACER			(1<<3)	/**< Item should be drawn as a spacer, if possible */
-	#define ITEMDRAW_IGNORE	((1<<1)|(1<<2))	/**< Item should be completely ignored (rawline + notext)
+	#define ITEMDRAW_IGNORE	((1<<1)|(1<<2))	/**< Item should be completely ignored (rawline + notext) */
 
 	/**
 	 * @brief Information about item drawing.
@@ -99,8 +99,8 @@ namespace SourceMod
 			: display(DISPLAY), style(STYLE)
 		{
 		}
-		unsigned int style;				/**< ITEMDRAW style flags */
 		const char *display;			/**< Display text (NULL for none) */
+		unsigned int style;				/**< ITEMDRAW style flags */
 	};
 
 	/**
@@ -114,7 +114,7 @@ namespace SourceMod
 		MenuCancel_NoDisplay = -4,	/** Menu could not be displayed to the client */
 	};
 
-	#define MENU_NO_PAGINATION			-1		/**< Menu should not be paginated (10 items max) */
+	#define MENU_NO_PAGINATION			0		/**< Menu should not be paginated (10 items max) */
 	#define MENU_TIME_FOREVER			0		/**< Menu should be displayed as long as possible */
 
 	/**
