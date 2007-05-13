@@ -1462,6 +1462,9 @@ inline void WriteOp_Switch(JitWriter *jit)
 			} else {
 				IA32_Lea_DispRegImm32(jit, AMX_REG_TMP, AMX_REG_PRI, low_bound);
 			}
+		} else {
+			//mov ecx, eax
+			IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_PRI, MOD_REG);
 		}
 		cell_t high_bound = abs(cases[0].val - cases[num_cases-1].val);
 		//cmp ecx, <UPPER BOUND BOUND>
