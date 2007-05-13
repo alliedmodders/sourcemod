@@ -71,7 +71,7 @@ public: //IMenuStyle
 private:
 	bool RedoClientMenu(int client, ItemOrder order);
 	void HookCreateMessage(edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
-	void _CancelMenu(int client, bool bAutoIgnore=false);
+	void _CancelMenu(int client, bool bAutoIgnore=false, MenuCancelReason reason=MenuCancel_Interrupt);
 private:
 	CValveMenuPlayer *m_players;
 	FastLink<int> m_WatchList;

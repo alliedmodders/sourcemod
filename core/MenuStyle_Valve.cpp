@@ -51,39 +51,6 @@ bool ValveMenuStyle::OnClientCommand(int client)
 		return true;
 	}
 
-	if (strcmp(cmd, "sm_test") == 0)
-	{
-		IBaseMenu *menu = g_ValveMenuStyle.CreateMenu();
-		menu->AppendItem("test1", ItemDrawInfo("Test #1", 0));
-		menu->AppendItem("test2", ItemDrawInfo("Test #2", 0));
-		menu->AppendItem("test3", ItemDrawInfo("Test #3", 0));
-		menu->AppendItem("test4", ItemDrawInfo("Test #4", 0));
-		menu->AppendItem("test5", ItemDrawInfo("Test #5", 0));
-		menu->AppendItem("test6", ItemDrawInfo("Test #6", 0));
-		menu->AppendItem("test7", ItemDrawInfo("Test #7", 0));
-		menu->AppendItem("test8", ItemDrawInfo("Test #8", 0));
-		menu->AppendItem("test9", ItemDrawInfo("Test #9", 0));
-		menu->AppendItem("test10", ItemDrawInfo("Test #10", 0));
-		menu->AppendItem("test11", ItemDrawInfo("Test #11", 0));
-		menu->AppendItem("test12", ItemDrawInfo("Test #12", 0));
-		menu->AppendItem("test13", ItemDrawInfo("Test #13", 0));
-		menu->AppendItem("test14", ItemDrawInfo("Test #14", 0));
-		menu->AppendItem("test15", ItemDrawInfo("Test #15", 0));
-		menu->AppendItem("test16", ItemDrawInfo("Test #16", 0));
-		menu->AppendItem("test17", ItemDrawInfo("Test #17", 0));
-		menu->AppendItem("test18", ItemDrawInfo("Test #18", 0));
-		menu->AppendItem("test19", ItemDrawInfo("Test #19", 0));
-		menu->AppendItem("test20", ItemDrawInfo("Test #20", 0));
-
-		menu->Display(client, new TestHandler, 20);
-		return true;
-	} else if (strcmp(cmd, "gaben") == 0) {
-		KeyValues *kv = new KeyValues("menu");
-		kv->SetString("msg", "hi");
-		serverpluginhelpers->CreateMessage(engine->PEntityOfEntIndex(client), DIALOG_MENU, kv, g_pVSPHandle);
-		kv->deleteThis();
-	}
-
 	return false;
 }
 
@@ -109,14 +76,7 @@ void ValveMenuStyle::OnClientDisconnected(int client)
 		return;
 	}
 
-	menu_states_t &states = player->states;
-	states.mh->OnMenuCancel(states.menu, client, MenuCancel_Disconnect);
-	states.mh->OnMenuEnd(states.menu);
-
-	if (player->menuHoldTime)
-	{
-		m_WatchList.remove(client);
-	}
+	_CancelMenu(client, true, MenuCancel_Disconnect);
 
 	player->bInMenu = false;
 }
@@ -214,7 +174,7 @@ void ValveMenuStyle::ProcessWatchList()
 	}
 }
 
-void ValveMenuStyle::_CancelMenu(int client, bool bAutoIgnore)
+void ValveMenuStyle::_CancelMenu(int client, bool bAutoIgnore, MenuCancelReason reason)
 {
 	CValveMenuPlayer *player = &m_players[client];
 	menu_states_t &states = player->states;
@@ -237,7 +197,7 @@ void ValveMenuStyle::_CancelMenu(int client, bool bAutoIgnore)
 	}
 
 	/* Fire callbacks */
-	mh->OnMenuCancel(menu, client, MenuCancel_Interrupt);
+	mh->OnMenuCancel(menu, client, reason);
 	mh->OnMenuEnd(menu);
 
 	if (bAutoIgnore)
@@ -447,13 +407,7 @@ bool ValveMenuStyle::DoClientMenu(int client, CValveMenu *menu, IMenuHandler *mh
 	menu_states_t &states = player->states;
 	if (player->bInMenu)
 	{
-		/* We need to cancel the old menu */
-		if (player->menuHoldTime)
-		{
-			m_WatchList.remove(client);
-		}
-		states.mh->OnMenuCancel(states.menu, client, MenuCancel_Interrupt);
-		states.mh->OnMenuEnd(states.menu);
+		_CancelMenu(client, true);
 	}
 
 	states.firstItem = 0;
