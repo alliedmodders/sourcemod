@@ -73,6 +73,7 @@ SourceModBase::SourceModBase()
 {
 	m_IsMapLoading = false;
 	m_ExecPluginReload = false;
+	m_ExecOnMapEnd = false;
 	m_GotBasePath = false;
 }
 
@@ -266,6 +267,7 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	m_IsMapLoading = true;
 	m_ExecPluginReload = true;
+	m_ExecOnMapEnd = true;
 	g_LastTime = 0.0f;
 	g_LastMenuTime = 0.0f;
 	g_LastAuthCheck = 0.0f;
@@ -403,9 +405,10 @@ void SourceModBase::GameFrame(bool simulating)
 
 void SourceModBase::LevelShutdown()
 {
-	if (g_pOnMapEnd)
+	if (g_pOnMapEnd && m_ExecOnMapEnd)
 	{
 		g_pOnMapEnd->Execute(NULL);
+		m_ExecOnMapEnd = false;
 	}
 
 	if (m_ExecPluginReload)

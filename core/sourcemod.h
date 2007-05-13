@@ -114,6 +114,7 @@ private:
 	char m_ModDir[32];
 	bool m_IsMapLoading;
 	bool m_ExecPluginReload;
+	bool m_ExecOnMapEnd;
 	unsigned int m_target;
 	bool m_CheckingAuth;
 	bool m_GotBasePath;
