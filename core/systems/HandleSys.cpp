@@ -285,6 +285,7 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	pHandle->owner = owner;
 	pHandle->ch_next = 0;
 	pHandle->access_special = false;
+	pHandle->is_destroying = false;
 
 	/* Create the hash value */
 	Handle_t hash = pHandle->serial;
@@ -601,6 +602,7 @@ HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 		{
 			/* Type should be the same but do this anyway... */
 			pType = &m_Types[pMaster->type];
+			pMaster->is_destroying = true;
 			pType->dispatch->OnHandleDestroy(pMaster->type, pMaster->object);
 			ReleasePrimHandle(master);
 		}
@@ -613,6 +615,7 @@ HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 		/* Decrement, free if necessary */
 		if (--pHandle->refcount == 0)
 		{
+			pHandle->is_destroying = true;
 			pType->dispatch->OnHandleDestroy(pHandle->type, pHandle->object);
 			ReleasePrimHandle(index);
 		} else {
@@ -644,6 +647,14 @@ HandleError HandleSystem::FreeHandle(Handle_t handle, const HandleSecurity *pSec
 	if (!CheckAccess(pHandle, HandleAccess_Delete, pSecurity))
 	{
 		return HandleError_Access;
+	}
+
+	if (pHandle->is_destroying)
+	{
+		/* Someone tried to free this recursively.  
+		 * We'll just ignore this safely.
+		 */
+		return HandleError_None;
 	}
 
 	return FreeHandle(pHandle, index);
