@@ -122,6 +122,12 @@ MenuSource BaseMenuStyle::GetClientMenu(int client, void **object)
 
 		return MenuSource_Display;
 	} else if (player->bInExternMenu) {
+		if (player->menuHoldTime != 0
+			&& (gpGlobals->curtime > player->menuStartTime + player->menuHoldTime))
+		{
+			player->bInExternMenu = false;
+			return MenuSource_None;
+		}
 		return MenuSource_External;
 	}
 
