@@ -111,7 +111,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-static cell_t sm_IsPlayerConnected(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_IsClientConnected(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
@@ -122,7 +122,7 @@ static cell_t sm_IsPlayerConnected(IPluginContext *pCtx, const cell_t *params)
 	return (g_Players.GetPlayerByIndex(index)->IsConnected()) ? 1 : 0;
 }
 
-static cell_t sm_IsPlayerIngame(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_IsClientInGame(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
@@ -133,7 +133,7 @@ static cell_t sm_IsPlayerIngame(IPluginContext *pCtx, const cell_t *params)
 	return (g_Players.GetPlayerByIndex(index)->IsInGame()) ? 1 : 0;
 }
 
-static cell_t sm_IsPlayerAuthorized(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_IsClientAuthorized(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
@@ -144,7 +144,7 @@ static cell_t sm_IsPlayerAuthorized(IPluginContext *pCtx, const cell_t *params)
 	return (g_Players.GetPlayerByIndex(index)->IsAuthorized()) ? 1 : 0;
 }
 
-static cell_t sm_IsPlayerFakeClient(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_IsClientFakeClient(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
@@ -830,10 +830,11 @@ REGISTER_NATIVES(playernatives)
 	{"GetMaxClients",			sm_GetMaxClients},
 	{"GetUserAdmin",			GetUserAdmin},
 	{"GetUserFlagBits",			GetUserFlagBits},
-	{"IsClientAuthorized",		sm_IsPlayerAuthorized},
-	{"IsClientConnected",		sm_IsPlayerConnected},
-	{"IsFakeClient",			sm_IsPlayerFakeClient},
-	{"IsPlayerInGame",			sm_IsPlayerIngame},
+	{"IsClientAuthorized",		sm_IsClientAuthorized},
+	{"IsClientConnected",		sm_IsClientConnected},
+	{"IsFakeClient",			sm_IsClientFakeClient},
+	{"IsPlayerInGame",			sm_IsClientInGame},			/* Backwards compat shim */
+	{"IsClientInGame",			sm_IsClientInGame},
 	{"RemoveUserFlags",			RemoveUserFlags},
 	{"SetUserAdmin",			SetUserAdmin},
 	{"SetUserFlagBits",			SetUserFlagBits},

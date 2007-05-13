@@ -158,7 +158,16 @@ native bool:IsClientConnected(client);
  * @param client		Player index.
  * @return				True if player has entered the game, false otherwise.
  */
-native bool:IsPlayerInGame(client);
+native bool:IsClientInGame(client);
+
+/**
+ * Backwards compatibility stock - use IsClientInGame
+ * @deprecated			Renamed to IsClientInGame
+ */
+stock bool:IsPlayerInGame(client)
+{
+	return IsClientInGame(client);
+}
 
 /**
  * Returns if a certain player has been authenticated.
