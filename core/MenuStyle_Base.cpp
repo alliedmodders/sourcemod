@@ -15,9 +15,403 @@
 #include <stdarg.h>
 #include "sm_stringutil.h"
 #include "MenuStyle_Base.h"
+#include "PlayerManager.h"
+#include "MenuManager.h"
+
+BaseMenuStyle::BaseMenuStyle() : m_WatchList(256)
+{
+}
+
+void BaseMenuStyle::AddClientToWatch(int client)
+{
+	m_WatchList.push_back(client);
+}
+
+void BaseMenuStyle::RemoveClientFromWatch(int client)
+{
+	m_WatchList.remove(client);
+}
+
+void BaseMenuStyle::_CancelClientMenu(int client, bool bAutoIgnore/* =false */, MenuCancelReason reason/* =MenuCancel_Interrupt */)
+{
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+	menu_states_t &states = player->states;
+
+	bool bOldIgnore = player->bAutoIgnore;
+	if (bAutoIgnore)
+	{
+		player->bAutoIgnore = true;
+	}
+
+	/* Save states */
+	IMenuHandler *mh = states.mh;
+	IBaseMenu *menu = states.menu;
+
+	/* Clear menu */
+	player->bInMenu = false;
+	if (player->menuHoldTime)
+	{
+		RemoveClientFromWatch(client);
+	}
+
+	/* Fire callbacks */
+	mh->OnMenuCancel(menu, client, reason);
+	mh->OnMenuEnd(menu);
+
+	if (bAutoIgnore)
+	{
+		player->bAutoIgnore = bOldIgnore;
+	}
+}
+
+void BaseMenuStyle::CancelMenu(CBaseMenu *menu)
+{
+	int maxClients = g_Players.GetMaxClients();
+	for (int i=1; i<=maxClients; i++)
+	{
+		CBaseMenuPlayer *player = GetMenuPlayer(i);
+		if (player->bInMenu)
+		{
+			menu_states_t &states = player->states;
+			if (states.menu == menu)
+			{
+				_CancelClientMenu(i);
+			}
+		}
+	}
+}
+
+bool BaseMenuStyle::CancelClientMenu(int client, bool autoIgnore)
+{
+	if (client < 1 || client > g_Players.MaxClients())
+	{
+		return false;
+	}
+
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+	if (!player->bInMenu)
+	{
+		return false;
+	}
+
+	_CancelClientMenu(client, autoIgnore);
+
+	return true;
+}
+
+MenuSource BaseMenuStyle::GetClientMenu(int client, void **object)
+{
+	if (client < 1 || client > g_Players.GetMaxClients())
+	{
+		return MenuSource_None;
+	}
+
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+
+	if (player->bInMenu)
+	{
+		IBaseMenu *menu;
+		if ((menu=player->states.menu) != NULL)
+		{
+			if (object)
+			{
+				*object = menu;
+			}
+			return MenuSource_BaseMenu;
+		}
+
+		return MenuSource_Display;
+	} else {
+		return GetClientExternMenu(client, object);
+	}
+}
+
+MenuSource BaseMenuStyle::GetClientExternMenu(int client, void **object)
+{
+	return MenuSource_None;
+}
+
+void BaseMenuStyle::OnClientDisconnected(int client)
+{
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+	if (!player->bInMenu)
+	{
+		return;
+	}
+
+	_CancelClientMenu(client, true, MenuCancel_Disconnect);
+
+	player->bInMenu = false;
+}
+
+static int do_lookup[256];
+void BaseMenuStyle::ProcessWatchList()
+{
+	if (!m_WatchList.size())
+	{
+		return;
+	}
+
+	unsigned int total = 0;
+	for (FastLink<int>::iterator iter=m_WatchList.begin(); iter!=m_WatchList.end(); ++iter)
+	{
+		do_lookup[total++] = (*iter);
+	}
+
+	int client;
+	CBaseMenuPlayer *player;
+	float curTime = gpGlobals->curtime;
+	for (unsigned int i=0; i<total; i++)
+	{
+		client = do_lookup[i];
+		player = GetMenuPlayer(client);
+		if (!player->bInMenu || !player->menuHoldTime)
+		{
+			m_WatchList.remove(i);
+			continue;
+		}
+		if (curTime > player->menuStartTime + player->menuHoldTime)
+		{
+			_CancelClientMenu(client, false);
+		}
+	}
+}
+
+void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
+{
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+
+	/* First question: Are we in a menu? */
+	if (!player->bInMenu)
+	{
+		return;
+	}
+
+	bool cancel = false;
+	unsigned int item = 0;
+	MenuCancelReason reason = MenuCancel_Exit;
+	menu_states_t &states = player->states;
+
+	assert(states.mh != NULL);
+
+	if (states.menu == NULL)
+	{
+		item = key_press;
+	} else if (key_press < 1 ||  key_press > 8) {
+		cancel = true;
+	} else {
+		ItemSelection type = states.slots[key_press].type;
+
+		/* For navigational items, we're going to redisplay */
+		if (type == ItemSel_Back)
+		{
+			if (!RedoClientMenu(client, ItemOrder_Descending))
+			{
+				cancel = true;
+				reason = MenuCancel_NoDisplay;
+			} else {
+				return;
+			}
+		} else if (type == ItemSel_Next) {
+			if (!RedoClientMenu(client, ItemOrder_Ascending))
+			{
+				cancel = true;						/* I like Saltines. */
+				reason = MenuCancel_NoDisplay;
+			} else {
+				return;
+			}
+		} else if (type == ItemSel_Exit || type == ItemSel_None) {
+			cancel = true;
+		} else {
+			item = states.slots[key_press].item;
+		}
+	}
+
+	/* Save variables */
+	IMenuHandler *mh = states.mh;
+	IBaseMenu *menu = states.menu;
+
+	/* Clear states */
+	player->bInMenu = false;
+	if (player->menuHoldTime)
+	{
+		m_WatchList.remove(client);
+	}
+
+	if (cancel)
+	{
+		mh->OnMenuCancel(menu, client, reason);
+	} else {
+		mh->OnMenuSelect(menu, client, item);
+	}
+
+	mh->OnMenuEnd(menu);
+}
+
+bool BaseMenuStyle::DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time)
+{
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
+	{
+		return false;
+	}
+
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+	if (player->bAutoIgnore)
+	{
+		return false;
+	}
+
+	/* For the duration of this, we are going to totally ignore whether
+	* the player is already in a menu or not (except to cancel the old one).
+	* Instead, we are simply going to ignore any further menu displays, so
+	* this display can't be interrupted.
+	*/
+	player->bAutoIgnore = true;
+
+	/* Cancel any old menus */
+	menu_states_t &states = player->states;
+	if (player->bInMenu)
+	{
+		/* We need to cancel the old menu */
+		if (player->menuHoldTime)
+		{
+			RemoveClientFromWatch(client);
+		}
+		states.mh->OnMenuCancel(states.menu, client, MenuCancel_Interrupt);
+		states.mh->OnMenuEnd(states.menu);
+	}
+
+	states.firstItem = 0;
+	states.lastItem = 0;
+	states.menu = NULL;
+	states.mh = mh;
+	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;
+	player->bInMenu = true;
+	player->menuStartTime = gpGlobals->curtime;
+	player->menuHoldTime = time;
+
+	if (time)
+	{
+		AddClientToWatch(client);
+	}
+
+	/* Draw the display */
+	SendDisplay(client, menu);
+
+	/* We can be interrupted again! */
+	player->bAutoIgnore = false;
+
+	return true;
+}
+
+bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time)
+{
+	mh->OnMenuStart(menu);
+
+	if (!mh)
+	{
+		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
+		mh->OnMenuEnd(menu);
+		return false;
+	}
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
+	{
+		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
+		mh->OnMenuEnd(menu);
+		return false;
+	}
+
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+	if (player->bAutoIgnore)
+	{
+		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
+		mh->OnMenuEnd(menu);
+		return false;
+	}
+
+	/* For the duration of this, we are going to totally ignore whether
+	* the player is already in a menu or not (except to cancel the old one).
+	* Instead, we are simply going to ignore any further menu displays, so
+	* this display can't be interrupted.
+	*/
+	player->bAutoIgnore = true;
+
+	/* Cancel any old menus */
+	menu_states_t &states = player->states;
+	if (player->bInMenu)
+	{
+		_CancelClientMenu(client, true);
+	}
+
+	states.firstItem = 0;
+	states.lastItem = 0;
+	states.menu = menu;
+	states.mh = mh;
+	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;
+
+	IMenuDisplay *display = g_Menus.RenderMenu(client, states, ItemOrder_Ascending);
+	if (!display)
+	{
+		player->bAutoIgnore = false;
+		player->bInMenu = false;
+		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
+		mh->OnMenuEnd(menu);
+		return false;
+	}
+
+	/* Finally, set our states */
+	player->bInMenu = true;
+	player->menuStartTime = gpGlobals->curtime;
+	player->menuHoldTime = time;
+
+	if (time)
+	{
+		AddClientToWatch(client);
+	}
+
+	/* Draw the display */
+	SendDisplay(client, display);
+
+	/* Free the display pointer */
+	delete display;
+
+	/* We can be interrupted again! */
+	player->bAutoIgnore = false;
+
+	return true;
+}
+
+bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
+{
+	CBaseMenuPlayer *player = GetMenuPlayer(client);
+	menu_states_t &states = player->states;
+
+	player->bAutoIgnore = true;
+	IMenuDisplay *display = g_Menus.RenderMenu(client, states, order);
+	if (!display)
+	{
+		if (player->menuHoldTime)
+		{
+			m_WatchList.remove(client);
+		}
+		player->bAutoIgnore = false;
+		return false;
+	}
+
+	SendDisplay(client, display);
+
+	delete display;
+
+	player->bAutoIgnore = false;
+
+	return true;
+}
 
 CBaseMenu::CBaseMenu(IMenuStyle *pStyle) : 
-m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true)
+m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true), m_bShouldDelete(false), m_bCancelling(false)
 {
 }
 
@@ -161,3 +555,32 @@ bool CBaseMenu::SetExitButton(bool set)
 	m_ExitButton = set;
 	return true;
 }
+
+void CBaseMenu::Cancel()
+{
+	if (m_bCancelling)
+	{
+		return;
+	}
+
+	m_bCancelling = true;
+	Cancel_Finally();
+	m_bCancelling = false;
+
+	if (m_bShouldDelete)
+	{
+		delete this;
+	}
+}
+
+void CBaseMenu::Destroy()
+{
+	if (!m_bCancelling || m_bShouldDelete)
+	{
+		Cancel();
+		delete this;
+	} else {
+		m_bShouldDelete = true;
+	}
+}
+

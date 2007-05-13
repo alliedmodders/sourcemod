@@ -36,8 +36,13 @@ public:
 	}
 };
 
-ValveMenuStyle::ValveMenuStyle() : m_players(new CValveMenuPlayer[256+1]), m_WatchList(256)
+ValveMenuStyle::ValveMenuStyle() : m_players(new CValveMenuPlayer[256+1])
 {
+}
+
+CBaseMenuPlayer *ValveMenuStyle::GetMenuPlayer(int client)
+{
+	return &m_players[client];
 }
 
 bool ValveMenuStyle::OnClientCommand(int client)
@@ -66,19 +71,6 @@ void ValveMenuStyle::OnSourceModShutdown()
 	SH_RELEASE_CALLCLASS(g_pSPHCC);
 	SH_REMOVE_HOOK_MEMFUNC(IServerPluginHelpers, CreateMessage, serverpluginhelpers, this, &ValveMenuStyle::HookCreateMessage, false);
 	g_Players.RemoveClientListener(this);
-}
-
-void ValveMenuStyle::OnClientDisconnected(int client)
-{
-	CValveMenuPlayer *player = &m_players[client];
-	if (!player->bInMenu)
-	{
-		return;
-	}
-
-	_CancelMenu(client, true, MenuCancel_Disconnect);
-
-	player->bInMenu = false;
 }
 
 void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
@@ -112,7 +104,7 @@ void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
 		 * day to avenge its grandfather, killed in the great Menu Interruption
 		 * battle.
 		 */
-		_CancelMenu(client, true);
+		_CancelClientMenu(client, true);
 	}
 }
 
@@ -141,360 +133,34 @@ unsigned int ValveMenuStyle::GetMaxPageItems()
 	return 8;
 }
 
-static int do_lookup[256];
-void ValveMenuStyle::ProcessWatchList()
+void ValveMenuStyle::SendDisplay(int client, IMenuDisplay *display)
 {
-	if (!m_WatchList.size())
-	{
-		return;
-	}
-
-	unsigned int total = 0;
-	for (FastLink<int>::iterator iter=m_WatchList.begin(); iter!=m_WatchList.end(); ++iter)
-	{
-		do_lookup[total++] = (*iter);
-	}
-
-	int client;
-	CValveMenuPlayer *player;
-	float curTime = gpGlobals->curtime;
-	for (unsigned int i=0; i<total; i++)
-	{
-		client = do_lookup[i];
-		player = &m_players[client];
-		if (!player->bInMenu || !player->menuHoldTime)
-		{
-			m_WatchList.remove(i);
-			continue;
-		}
-		if (curTime > player->menuStartTime + player->menuHoldTime)
-		{
-			_CancelMenu(client, false);
-		}
-	}
-}
-
-void ValveMenuStyle::_CancelMenu(int client, bool bAutoIgnore, MenuCancelReason reason)
-{
-	CValveMenuPlayer *player = &m_players[client];
-	menu_states_t &states = player->states;
-
-	bool bOldIgnore = player->bAutoIgnore;
-	if (bAutoIgnore)
-	{
-		player->bAutoIgnore = true;
-	}
-
-	/* Save states */
-	IMenuHandler *mh = states.mh;
-	IBaseMenu *menu = states.menu;
-
-	/* Clear menu */
-	player->bInMenu = false;
-	if (player->menuHoldTime)
-	{
-		m_WatchList.remove(client);
-	}
-
-	/* Fire callbacks */
-	mh->OnMenuCancel(menu, client, reason);
-	mh->OnMenuEnd(menu);
-
-	if (bAutoIgnore)
-	{
-		player->bAutoIgnore = bOldIgnore;
-	}
-}
-
-void ValveMenuStyle::CancelMenu(CValveMenu *menu)
-{
-	int maxClients = g_Players.GetMaxClients();
-	for (int i=1; i<=maxClients; i++)
-	{
-		if (m_players[i].bInMenu)
-		{
-			menu_states_t &states = m_players[i].states;
-			if (states.menu == menu)
-			{
-				_CancelMenu(i);
-			}
-		}
-	}
-}
-
-bool ValveMenuStyle::CancelClientMenu(int client, bool autoIgnore)
-{
-	if (client < 1 || client > 256 || !m_players[client].bInMenu)
-	{
-		return false;
-	}
-
-	_CancelMenu(client, autoIgnore);
-
-	return true;
-}
-
-
-void ValveMenuStyle::ClientPressedKey(int client, unsigned int key_press)
-{
-	CValveMenuPlayer *player = &m_players[client];
-
-	/* First question: Are we in a menu? */
-	if (!player->bInMenu)
-	{
-		return;
-	}
-
-	bool cancel = false;
-	unsigned int item = 0;
-	MenuCancelReason reason = MenuCancel_Exit;
-	menu_states_t &states = player->states;
-
-	assert(states.mh != NULL);
-
-	if (states.menu == NULL)
-	{
-		item = key_press;
-	} else if (key_press < 1 ||  key_press > 8) {
-		cancel = true;
-	} else {
-		ItemSelection type = states.slots[key_press].type;
-
-		/* For navigational items, we're going to redisplay */
-		if (type == ItemSel_Back)
-		{
-			if (!RedoClientMenu(client, ItemOrder_Descending))
-			{
-				cancel = true;
-				reason = MenuCancel_NoDisplay;
-			} else {
-				return;
-			}
-		} else if (type == ItemSel_Next) {
-			if (!RedoClientMenu(client, ItemOrder_Ascending))
-			{
-				cancel = true;						/* I like Saltines. */
-				reason = MenuCancel_NoDisplay;
-			} else {
-				return;
-			}
-		} else if (type == ItemSel_Exit || type == ItemSel_None) {
-			cancel = true;
-		} else {
-			item = states.slots[key_press].item;
-		}
-	}
-
-	/* Save variables */
-	IMenuHandler *mh = states.mh;
-	IBaseMenu *menu = states.menu;
-
-	/* Clear states */
-	player->bInMenu = false;
-	if (player->menuHoldTime)
-	{
-		m_WatchList.remove(client);
-	}
-
-	if (cancel)
-	{
-		mh->OnMenuCancel(menu, client, reason);
-	} else {
-		mh->OnMenuSelect(menu, client, item);
-	}
-
-	mh->OnMenuEnd(menu);
-}
-
-bool ValveMenuStyle::DoClientMenu(int client, CValveMenuDisplay *menu, IMenuHandler *mh, unsigned int time)
-{
-	if (!g_pVSPHandle || !mh)
-	{
-		return false;
-	}
-
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
-	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
-	{
-		return false;
-	}
-
-	CValveMenuPlayer *player = &m_players[client];
-	if (player->bAutoIgnore)
-	{
-		return false;
-	}
-
-	/* For the duration of this, we are going to totally ignore whether
-	 * the player is already in a menu or not (except to cancel the old one).
-	 * Instead, we are simply going to ignore any further menu displays, so
-	 * this display can't be interrupted.
-	 */
-	player->bAutoIgnore = true;
-
-	/* Cancel any old menus */
-	menu_states_t &states = player->states;
-	if (player->bInMenu)
-	{
-		/* We need to cancel the old menu */
-		if (player->menuHoldTime)
-		{
-			m_WatchList.remove(client);
-		}
-		states.mh->OnMenuCancel(states.menu, client, MenuCancel_Interrupt);
-		states.mh->OnMenuEnd(states.menu);
-	}
-
-	states.firstItem = 0;
-	states.lastItem = 0;
-	states.menu = NULL;
-	states.mh = mh;
-	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;
-	player->curPrioLevel--;
-	player->bInMenu = true;
-	player->menuStartTime = gpGlobals->curtime;
-	player->menuHoldTime = time;
-
-	if (time)
-	{
-		m_WatchList.push_back(client);
-	}
-
-	/* Draw the display */
-	menu->SendRawDisplay(client, player->curPrioLevel, time);
-
-	/* We can be interrupted again! */
-	player->bAutoIgnore = false;
-
-	return true;
-}
-
-bool ValveMenuStyle::DoClientMenu(int client, CValveMenu *menu, IMenuHandler *mh, unsigned int time)
-{
-	mh->OnMenuStart(menu);
-
-	if (!g_pVSPHandle || !mh)
-	{
-		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
-		return false;
-	}
-
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
-	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
-	{
-		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
-		return false;
-	}
-
-	CValveMenuPlayer *player = &m_players[client];
-	if (player->bAutoIgnore)
-	{
-		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
-		return false;
-	}
-
-	/* For the duration of this, we are going to totally ignore whether
-	 * the player is already in a menu or not (except to cancel the old one).
-	 * Instead, we are simply going to ignore any further menu displays, so
-	 * this display can't be interrupted.
-	 */
-	player->bAutoIgnore = true;
-
-	/* Cancel any old menus */
-	menu_states_t &states = player->states;
-	if (player->bInMenu)
-	{
-		_CancelMenu(client, true);
-	}
-
-	states.firstItem = 0;
-	states.lastItem = 0;
-	states.menu = menu;
-	states.mh = mh;
-	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;
-
-	IMenuDisplay *display = g_Menus.RenderMenu(client, states, ItemOrder_Ascending);
-	if (!display)
-	{
-		player->bAutoIgnore = false;
-		player->bInMenu = false;
-		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
-		return false;
-	}
-
-	/* Finally, set our states */
-	player->curPrioLevel--;
-	player->bInMenu = true;
-	player->menuStartTime = gpGlobals->curtime;
-	player->menuHoldTime = time;
-
-	if (time)
-	{
-		m_WatchList.push_back(client);
-	}
-
-	/* Draw the display */
+	m_players[client].curPrioLevel--;
 	CValveMenuDisplay *vDisplay = (CValveMenuDisplay *)display;
-	vDisplay->SendRawDisplay(client, player->curPrioLevel, time);
-
-	/* Free the display pointer */
-	delete display;
-
-	/* We can be interrupted again! */
-	player->bAutoIgnore = false;
-
-	return true;
+	vDisplay->SendRawDisplay(client, m_players[client].curPrioLevel, m_players[client].menuHoldTime);
 }
 
-bool ValveMenuStyle::RedoClientMenu(int client, ItemOrder order)
+bool ValveMenuStyle::DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time)
 {
-	CValveMenuPlayer *player = &m_players[client];
-	menu_states_t &states = player->states;
-
-	player->bAutoIgnore = true;
-	IMenuDisplay *display = g_Menus.RenderMenu(client, states, order);
-	if (!display)
+	if (!g_pVSPHandle)
 	{
-		if (player->menuHoldTime)
-		{
-			m_WatchList.remove(client);
-		}
-		player->bAutoIgnore = false;
 		return false;
 	}
 
-	CValveMenuDisplay *vDisplay = (CValveMenuDisplay *)display;
-	vDisplay->SendRawDisplay(client, --player->curPrioLevel, player->menuHoldTime);
-
-	delete display;
-
-	player->bAutoIgnore = false;
-
-	return true;
+	return BaseMenuStyle::DoClientMenu(client, menu, mh, time);
 }
 
-MenuSource ValveMenuStyle::GetClientMenu(int client, void **object)
+bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time)
 {
-	if (client < 1 || client > 256 || !m_players[client].bInMenu)
+	if (!g_pVSPHandle)
 	{
-		return MenuSource_None;
+		mh->OnMenuStart(menu);
+		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
+		mh->OnMenuEnd(menu);
+		return false;
 	}
 
-	IBaseMenu *menu;
-	if ((menu=m_players[client].states.menu) != NULL)
-	{
-		if (object)
-		{
-			*object = menu;
-		}
-		return MenuSource_BaseMenu;
-	}
-
-	return MenuSource_Display;
+	return BaseMenuStyle::DoClientMenu(client, menu, mh, time);
 }
 
 CValveMenuDisplay::CValveMenuDisplay()
@@ -541,6 +207,9 @@ bool CValveMenuDisplay::SetExtOption(MenuOption option, const void *valuePtr)
 	} else if (option == MenuOption_IntroColor) {
 		int *array = (int *)valuePtr;
 		m_pKv->SetColor("color", Color(array[0], array[1], array[2], array[3]));
+		return true;
+	} else if (option == MenuOption_Priority) {
+		m_pKv->SetInt("level", *(int *)valuePtr);
 		return true;
 	}
 
@@ -626,7 +295,7 @@ bool CValveMenuDisplay::DrawRawLine(const char *rawline)
 void CValveMenuDisplay::SendRawDisplay(int client, int priority, unsigned int time)
 {
 	m_pKv->SetInt("level", priority);
-	m_pKv->SetInt("time", time);
+	m_pKv->SetInt("time", time ? time : 200);
 
 	SH_CALL(g_pSPHCC, &IServerPluginHelpers::CreateMessage)(
 		engine->PEntityOfEntIndex(client),
@@ -641,38 +310,15 @@ bool CValveMenuDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned 
 }
 
 CValveMenu::CValveMenu() : CBaseMenu(&g_ValveMenuStyle), 
-	m_IntroColor(255, 0, 0, 255), m_bShouldDelete(false), m_bCancelling(false)
+	m_IntroColor(255, 0, 0, 255)
 {
 	strcpy(m_IntroMsg, "You have a menu, press ESC");
 	m_Pagination = 5;
 }
 
-void CValveMenu::Cancel()
+void CValveMenu::Cancel_Finally()
 {
-	if (m_bCancelling)
-	{
-		return;
-	}
-
-	m_bCancelling = true;
 	g_ValveMenuStyle.CancelMenu(this);
-	m_bCancelling = false;
-
-	if (m_bShouldDelete)
-	{
-		delete this;
-	}
-}
-
-void CValveMenu::Destroy()
-{
-	if (!m_bCancelling || m_bShouldDelete)
-	{
-		Cancel();
-		delete this;
-	} else {
-		m_bShouldDelete = true;
-	}
 }
 
 bool CValveMenu::SetPagination(unsigned int itemsPerPage)

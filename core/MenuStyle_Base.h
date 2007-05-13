@@ -16,9 +16,11 @@
 #define _INCLUDE_MENUSTYLE_BASE_H
 
 #include <IMenuManager.h>
+#include <IPlayerHelpers.h>
 #include <sh_string.h>
 #include <sh_vector.h>
 #include "sm_memtable.h"
+#include "sm_fastlink.h"
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -36,6 +38,52 @@ public:
 	int infoString;
 	int displayString;
 	unsigned int style;
+};
+
+class CBaseMenuPlayer
+{
+public:
+	CBaseMenuPlayer() : bInMenu(false), bAutoIgnore(false)
+	{
+	}
+	menu_states_t states;
+	bool bInMenu;
+	bool bAutoIgnore;
+	float menuStartTime;
+	unsigned int menuHoldTime;
+};
+
+class CBaseMenu;
+
+class BaseMenuStyle : 
+	public IMenuStyle,
+	public IClientListener
+{
+public:
+	BaseMenuStyle();
+public: //IMenuStyle
+	bool CancelClientMenu(int client, bool autoIgnore/* =false */);
+	MenuSource GetClientMenu(int client, void **object);
+public: //IClientListener
+	void OnClientDisconnected(int client);
+public: //what derived must implement
+	virtual CBaseMenuPlayer *GetMenuPlayer(int client) =0;
+	virtual void SendDisplay(int client, IMenuDisplay *display) =0;
+public: //what derived may implement 
+	virtual bool DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time);
+	virtual bool DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time);
+	virtual void AddClientToWatch(int client);
+	virtual void RemoveClientFromWatch(int client);
+	virtual void ProcessWatchList();
+	virtual MenuSource GetClientExternMenu(int client, void **object);
+public: //helpers
+	void CancelMenu(CBaseMenu *menu);
+	void ClientPressedKey(int client, unsigned int key_press);
+protected:
+	void _CancelClientMenu(int client, bool bAutoIgnore=false, MenuCancelReason reason=MenuCancel_Interrupt);
+	bool RedoClientMenu(int client, ItemOrder order);
+protected:
+	FastLink<int> m_WatchList;
 };
 
 class CBaseMenu : public IBaseMenu
@@ -57,6 +105,9 @@ public:
 	virtual const char *GetDefaultTitle();
 	virtual bool GetExitButton();
 	virtual bool SetExitButton(bool set);
+	virtual void Cancel();
+	virtual void Destroy();
+	virtual void Cancel_Finally() =0;
 protected:
 	String m_Title;
 	IMenuStyle *m_pStyle;
@@ -64,6 +115,8 @@ protected:
 	CVector<CItem> m_items;
 	BaseStringTable m_Strings;
 	bool m_ExitButton;
+	bool m_bCancelling;
+	bool m_bShouldDelete;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H

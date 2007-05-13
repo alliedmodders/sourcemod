@@ -20,23 +20,17 @@
 #include "MenuStyle_Base.h"
 #include "sourcemm_api.h"
 #include "KeyValues.h"
-#include <IPlayerHelpers.h>
 #include "sm_fastlink.h"
 
 using namespace SourceMod;
 
-class CValveMenuPlayer
+class CValveMenuPlayer : public CBaseMenuPlayer
 {
 public:
-	CValveMenuPlayer() : bInMenu(false), bAutoIgnore(false), curPrioLevel(1)
+	CValveMenuPlayer() : curPrioLevel(1)
 	{
 	}
-	menu_states_t states;
-	bool bInMenu;
-	bool bAutoIgnore;
 	int curPrioLevel;
-	float menuStartTime;
-	unsigned int menuHoldTime;
 };
 
 class CValveMenu;
@@ -44,37 +38,29 @@ class CValveMenuDisplay;
 
 class ValveMenuStyle : 
 	public SMGlobalClass,
-	public IMenuStyle,
-	public IClientListener
+	public BaseMenuStyle
 {
 public:
 	ValveMenuStyle();
-	bool DoClientMenu(int client, CValveMenu *menu, IMenuHandler *mh, unsigned int time);
-	bool DoClientMenu(int client, CValveMenuDisplay *menu, IMenuHandler *mh, unsigned int time);
-	void ClientPressedKey(int client, unsigned int key_press);
 	bool OnClientCommand(int client);
-	void CancelMenu(CValveMenu *menu);
-	void ProcessWatchList();
+public: //BaseMenuStyle
+	CBaseMenuPlayer *GetMenuPlayer(int client);
+	void SendDisplay(int client, IMenuDisplay *display);
+	bool DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time);
+	bool DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModVSPReceived(IServerPluginCallbacks *iface);
-public: //IClientListener
-	void OnClientDisconnected(int client);
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuDisplay *CreateDisplay();
 	IBaseMenu *CreateMenu();
 	unsigned int GetMaxPageItems();
-	MenuSource GetClientMenu(int client, void **object);
-	bool CancelClientMenu(int client, bool autoIgnore=false);
 private:
-	bool RedoClientMenu(int client, ItemOrder order);
 	void HookCreateMessage(edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
-	void _CancelMenu(int client, bool bAutoIgnore=false, MenuCancelReason reason=MenuCancel_Interrupt);
 private:
 	CValveMenuPlayer *m_players;
-	FastLink<int> m_WatchList;
 };
 
 class CValveMenu;
@@ -113,13 +99,10 @@ public:
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);
 	bool Display(int client, IMenuHandler *handler, unsigned int time);
-	void Cancel();
-	void Destroy();
+	void Cancel_Finally();
 private:
 	Color m_IntroColor;
 	char m_IntroMsg[128];
-	bool m_bCancelling;
-	bool m_bShouldDelete;
 };
 
 extern ValveMenuStyle g_ValveMenuStyle;
