@@ -93,11 +93,11 @@ public:
 	public:
 		bool operator ==(const iterator &where) const
 		{
-			return (link == link && position == position);
+			return (link == where.link && position == where.position);
 		}
 		bool operator !=(const iterator &where) const
 		{
-			return (link != link || position != position);
+			return (link != where.link || position != where.position);
 		}
 		T & operator *()
 		{

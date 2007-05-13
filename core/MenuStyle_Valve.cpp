@@ -189,10 +189,8 @@ void ValveMenuStyle::ProcessWatchList()
 		return;
 	}
 
-	FastLink<int>::iterator iter;
-
 	unsigned int total = 0;
-	for (iter=m_WatchList.begin(); iter!=m_WatchList.end(); ++iter)
+	for (FastLink<int>::iterator iter=m_WatchList.begin(); iter!=m_WatchList.end(); ++iter)
 	{
 		do_lookup[total++] = (*iter);
 	}
@@ -211,7 +209,7 @@ void ValveMenuStyle::ProcessWatchList()
 		}
 		if (curTime > player->menuStartTime + player->menuHoldTime)
 		{
-			_CancelMenu(i, false);
+			_CancelMenu(client, false);
 		}
 	}
 }
