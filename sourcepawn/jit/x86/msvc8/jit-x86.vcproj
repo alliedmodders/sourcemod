@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\..\..\..\public\jit;..\..\..\..\public\jit\x86;..\..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\..\..\..\public\jit;..\..\..\..\public\jit\x86;..\..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS"
 				RuntimeLibrary="0"
 				UsePrecompiledHeader="0"
