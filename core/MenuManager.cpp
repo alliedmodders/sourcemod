@@ -20,6 +20,7 @@
 #include "sourcemm_api.h"
 #include "PlayerManager.h"
 #include "MenuStyle_Valve.h"
+#include "ShareSys.h"
 
 MenuManager g_Menus;
 
@@ -148,6 +149,7 @@ MenuManager::MenuManager()
 
 void MenuManager::OnSourceModAllInitialized()
 {
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 void MenuManager::OnSourceModAllShutdown()
