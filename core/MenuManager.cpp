@@ -142,28 +142,12 @@ void VoteHandler::OnBroadcastEnd(IBaseMenu *menu)
 
 MenuManager::MenuManager()
 {
-	m_ShowMenu = -1;
-	m_pDefaultStyle = NULL;
+	m_Styles.push_back(&g_ValveMenuStyle);
+	SetDefaultStyle(&g_ValveMenuStyle);
 }
 
 void MenuManager::OnSourceModAllInitialized()
 {
-	int num = g_SMAPI->GetUserMessageCount();
-	if (num >= 1)
-	{
-		for (int i=0; i<num; i++)
-		{
-			if (strcmp(g_SMAPI->GetUserMessage(i, NULL), "ShowMenu") == 0)
-			{
-				m_ShowMenu = i;
-				break;
-			}
-		}
-	}
-
-	/* :TODO: styles */
-	m_Styles.push_back(&g_ValveMenuStyle);
-	SetDefaultStyle(&g_ValveMenuStyle);
 }
 
 void MenuManager::OnSourceModAllShutdown()
@@ -201,6 +185,11 @@ IMenuStyle *MenuManager::GetStyle(unsigned int index)
 	}
 
 	return m_Styles[index];
+}
+
+void MenuManager::AddStyle(IMenuStyle *style)
+{
+	m_Styles.push_back(style);
 }
 
 unsigned int MenuManager::GetStyleCount()

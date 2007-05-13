@@ -617,14 +617,6 @@ namespace SourceMod
 		 */
 		virtual IMenuStyle *GetDefaultStyle() =0;
 
-		/** 
-		 * @brief Sets the default draw style Core uses.
-		 *
-		 * @param style			Menu style.
-		 * @return				True on success, false on failure.
-		 */
-		virtual bool SetDefaultStyle(IMenuStyle *style) =0;
-
 		/**
 		 * @brief Given a set of menu states, converts it to an IDisplay object.
 		 *

@@ -10,5 +10,40 @@
 				"linux"			"14"
 			}
 		}
+
+	}
+
+	"cstrike"
+	{
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
+
+	"dod"
+	{
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
+
+
+	"sourceforts"
+	{
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
+
+
+	"insurgency"
+	{
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
 	}
 }

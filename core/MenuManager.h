@@ -92,6 +92,7 @@ public:
 		unsigned int numClients,
 		unsigned int time);
 	IMenuStyle *GetDefaultStyle();
+	void AddStyle(IMenuStyle *style);
 	bool SetDefaultStyle(IMenuStyle *style);
 	IMenuDisplay *RenderMenu(int client, menu_states_t &states, ItemOrder order);
 protected:

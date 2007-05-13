@@ -43,7 +43,7 @@ public:
 class CBaseMenuPlayer
 {
 public:
-	CBaseMenuPlayer() : bInMenu(false), bAutoIgnore(false)
+	CBaseMenuPlayer() : bInMenu(false), bAutoIgnore(false), bInExternMenu(false)
 	{
 	}
 	menu_states_t states;
@@ -51,6 +51,7 @@ public:
 	bool bAutoIgnore;
 	float menuStartTime;
 	unsigned int menuHoldTime;
+	bool bInExternMenu;
 };
 
 class CBaseMenu;
@@ -75,7 +76,6 @@ public: //what derived may implement
 	virtual void AddClientToWatch(int client);
 	virtual void RemoveClientFromWatch(int client);
 	virtual void ProcessWatchList();
-	virtual MenuSource GetClientExternMenu(int client, void **object);
 public: //helpers
 	void CancelMenu(CBaseMenu *menu);
 	void ClientPressedKey(int client, unsigned int key_press);

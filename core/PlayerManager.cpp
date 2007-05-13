@@ -18,6 +18,7 @@
 #include "AdminCache.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
+#include "MenuStyle_Radio.h"
 
 PlayerManager g_Players;
 
@@ -385,24 +386,36 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 
 void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
-	cell_t res = Pl_Continue;
 	int client = engine->IndexOfEdict(pEntity);
-
-	int args = engine->Cmd_Argc() - 1;
-
-	m_clcommand->PushCell(client);
-	m_clcommand->PushCell(args);
-	m_clcommand->Execute(&res, NULL);
-
-	if (res >= Pl_Stop)
-	{
-		RETURN_META(MRES_SUPERCEDE);
-	}
+	cell_t res = Pl_Continue;
 
 	bool result = g_ValveMenuStyle.OnClientCommand(client);
 	if (result)
 	{
 		res = Pl_Handled;
+	} else {
+		result = g_RadioMenuStyle.OnClientCommand(client);
+		if (result)
+		{
+			res = Pl_Handled;
+		}
+	}
+
+	int args = engine->Cmd_Argc() - 1;
+
+	cell_t res2 = Pl_Continue;
+	m_clcommand->PushCell(client);
+	m_clcommand->PushCell(args);
+	m_clcommand->Execute(&res2, NULL);
+
+	if (res2 > res)
+	{
+		res = res2;
+	}
+
+	if (res >= Pl_Stop)
+	{
+		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	res = g_ConCmds.DispatchClientCommand(client, (ResultType)res);

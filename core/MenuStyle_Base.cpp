@@ -121,13 +121,10 @@ MenuSource BaseMenuStyle::GetClientMenu(int client, void **object)
 		}
 
 		return MenuSource_Display;
-	} else {
-		return GetClientExternMenu(client, object);
+	} else if (player->bInExternMenu) {
+		return MenuSource_External;
 	}
-}
 
-MenuSource BaseMenuStyle::GetClientExternMenu(int client, void **object)
-{
 	return MenuSource_None;
 }
 

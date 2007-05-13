@@ -236,6 +236,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\MenuStyle_Radio.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\MenuStyle_Valve.cpp"
 				>
 			</File>
@@ -351,6 +355,10 @@
 			</File>
 			<File
 				RelativePath="..\MenuStyle_Base.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MenuStyle_Radio.h"
 				>
 			</File>
 			<File

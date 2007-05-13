@@ -30,6 +30,7 @@
 #include "ForwardSys.h"
 #include "TimerSys.h"
 #include "MenuStyle_Valve.h"
+#include "MenuStyle_Radio.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -390,6 +391,7 @@ void SourceModBase::GameFrame(bool simulating)
 	if (g_SimTicks.tickcount && (curtime - g_LastMenuTime >= 1.0f))
 	{
 		g_ValveMenuStyle.ProcessWatchList();
+		g_RadioMenuStyle.ProcessWatchList();
 		g_LastMenuTime = curtime;
 	}
 
