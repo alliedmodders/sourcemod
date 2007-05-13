@@ -20,13 +20,20 @@
 extern const char *g_RadioNumTable[];
 CRadioStyle g_RadioMenuStyle;
 int g_ShowMenuId = -1;
+bool g_bRadioInit = false;
 
 CRadioStyle::CRadioStyle() : m_players(new CBaseMenuPlayer[256+1])
 {
 }
 
-void CRadioStyle::OnSourceModAllInitialized()
+void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 {
+	if (g_bRadioInit)
+	{
+		return;
+	}
+
+	g_bRadioInit = true;
 	const char *msg = g_pGameConf->GetKeyValue("HudRadioMenuMsg");
 	if (!msg || msg[0] == '\0')
 	{
@@ -66,8 +73,10 @@ bool CRadioStyle::OnClientCommand(int client)
 		{
 			return false;
 		}
+
 		int arg = atoi(engine->Cmd_Argv(1));
 		ClientPressedKey(client, arg);
+		return true;
 	}
 
 	return false;
@@ -161,6 +170,7 @@ void CRadioDisplay::Reset()
 	m_BufferText.assign("");
 	m_Title.assign("");
 	m_NextPos = 1;
+	keys = 0;
 }
 
 bool CRadioDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned int time)
@@ -198,25 +208,27 @@ unsigned int CRadioDisplay::DrawItem(const ItemDrawInfo &item)
 	{
 		if (item.style & ITEMDRAW_SPACER)
 		{
-			m_BufferText.append("\n");
+			m_BufferText.append(" \n");
 		} else {
 			m_BufferText.append(item.display);
 			m_BufferText.append("\n");
 		}
 		return 0;
 	} else if (item.style & ITEMDRAW_SPACER) {
-		m_BufferText.append("\n");
+		m_BufferText.append(" \n");
+		return m_NextPos++;
+	} else if (item.style & ITEMDRAW_NOTEXT) {
 		return m_NextPos++;
 	}
 
 	if (item.style & ITEMDRAW_DISABLED)
 	{
 		m_BufferText.append(g_RadioNumTable[m_NextPos]);
-		m_BufferText.append(". ");
 		m_BufferText.append(item.display);
 		m_BufferText.append("\n");
 	} else {
-		m_BufferText.append("->. ");
+		m_BufferText.append("->");
+		m_BufferText.append(g_RadioNumTable[m_NextPos]);
 		m_BufferText.append(item.display);
 		m_BufferText.append("\n");
 		keys |= (1<<(m_NextPos-1));
@@ -228,6 +240,11 @@ unsigned int CRadioDisplay::DrawItem(const ItemDrawInfo &item)
 bool CRadioDisplay::CanDrawItem(unsigned int drawFlags)
 {
 	if ((drawFlags & ITEMDRAW_IGNORE) == ITEMDRAW_IGNORE)
+	{
+		return false;
+	}
+
+	if ((drawFlags & ITEMDRAW_DISABLED) && (drawFlags & ITEMDRAW_CONTROL))
 	{
 		return false;
 	}
@@ -301,5 +318,5 @@ void CRadioMenu::Cancel_Finally()
 
 const char *g_RadioNumTable[11] = 
 {
-	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"
+	"0. ", "1. ", "2. ", "3. ", "4. ", "5. ", "6. ", "7. ", "8. ", "9. ", "0. "
 };

@@ -200,7 +200,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	if (states.menu == NULL)
 	{
 		item = key_press;
-	} else if (key_press < 1 ||  key_press > 8) {
+	} else if (key_press < 1 || key_press > GetMaxPageItems()) {
 		cancel = true;
 	} else {
 		ItemSelection type = states.slots[key_press].type;

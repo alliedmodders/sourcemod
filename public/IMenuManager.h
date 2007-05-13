@@ -84,6 +84,7 @@ namespace SourceMod
 	#define ITEMDRAW_NOTEXT			(1<<2)	/**< No text should be drawn */
 	#define ITEMDRAW_SPACER			(1<<3)	/**< Item should be drawn as a spacer, if possible */
 	#define ITEMDRAW_IGNORE	((1<<1)|(1<<2))	/**< Item should be completely ignored (rawline + notext) */
+	#define ITEMDRAW_CONTROL		(1<<4)	/**< Item is control text (back/next/exit) */
 
 	/**
 	 * @brief Information about item drawing.

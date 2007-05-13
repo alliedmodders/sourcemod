@@ -27,15 +27,6 @@ extern const char *g_OptionCmdTable[];
 IServerPluginCallbacks *g_pVSPHandle = NULL;
 CallClass<IServerPluginHelpers> *g_pSPHCC = NULL;
 
-class TestHandler : public IMenuHandler
-{
-public:
-	virtual void OnMenuEnd(IBaseMenu *menu)
-	{
-		menu->Destroy();
-	}
-};
-
 ValveMenuStyle::ValveMenuStyle() : m_players(new CValveMenuPlayer[256+1])
 {
 }

@@ -468,7 +468,7 @@ skip_search:
 	/* Now, we need to check if we need to add anything extra */
 	if (pgn != MENU_NO_PAGINATION)
 	{
-		bool canDrawDisabled = display->CanDrawItem(ITEMDRAW_DISABLED);
+		bool canDrawDisabled = display->CanDrawItem(ITEMDRAW_DISABLED|ITEMDRAW_CONTROL);
 		bool exitButton = menu->GetExitButton();
 		char text[50];
 
@@ -517,34 +517,48 @@ skip_search:
 			display->DrawItem(draw);
 		}
 
-		/* PREVIOUS */
 		ItemDrawInfo dr(text, 0);
-		if (displayPrev || canDrawDisabled)
+		/**
+		 * If we have one or the other, we need to have spacers for both.
+		 */
+		if (displayPrev || displayNext)
 		{
-			CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
-			dr.style = displayPrev ? 0 : ITEMDRAW_DISABLED;
-			position = display->DrawItem(dr);
-			slots[position].type = ItemSel_Back;
-		} else if ((displayNext || canDrawDisabled) || exitButton) {
-			/* If we can't display this, 
-			 * but there is a "next" or "exit" button, we need to pad!
-			 */
-			position = display->DrawItem(padItem);
-			slots[position].type = ItemSel_None;
-		}
+			/* PREVIOUS */
+			ItemDrawInfo padCtrlItem(NULL, ITEMDRAW_SPACER|ITEMDRAW_CONTROL);
+			if (displayPrev || canDrawDisabled)
+			{
+				CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
+				dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
+				position = display->DrawItem(dr);
+				slots[position].type = ItemSel_Back;
+			} else if (displayNext || exitButton) {
+				/* If we can't display this, and there is an exit button,
+				 * we need to pad!
+				 */
+				position = display->DrawItem(padCtrlItem);
+				slots[position].type = ItemSel_None;
+			}
 
-		/* NEXT */
-		if (displayNext || canDrawDisabled)
-		{
-			CorePlayerTranslate(client, text, sizeof(text), "Next", NULL);
-			dr.style = displayNext ? 0 : ITEMDRAW_DISABLED;
-			position = display->DrawItem(dr);
-			slots[position].type = ItemSel_Next;
-		} else if (exitButton) {
-			/* If we can't display this,
-			 * but there is an exit button, we need to pad!
-			 */
-			position = display->DrawItem(padItem);
+			/* NEXT */
+			if (displayNext || canDrawDisabled)
+			{
+				CorePlayerTranslate(client, text, sizeof(text), "Next", NULL);
+				dr.style = (displayNext ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
+				position = display->DrawItem(dr);
+				slots[position].type = ItemSel_Next;
+			} else if (exitButton) {
+				/* If we can't display this,
+				 * but there is an "exit" button, we need to pad!
+				 */
+				position = display->DrawItem(padCtrlItem);
+				slots[position].type = ItemSel_None;
+			}
+		} else {
+			/* Otherwise, bump to two slots! */
+			ItemDrawInfo numBump(NULL, ITEMDRAW_NOTEXT);
+			position = display->DrawItem(numBump);
+			slots[position].type = ItemSel_None;
+			position = display->DrawItem(numBump);
 			slots[position].type = ItemSel_None;
 		}
 
@@ -552,7 +566,7 @@ skip_search:
 		if (exitButton)
 		{
 			CorePlayerTranslate(client, text, sizeof(text), "Exit", NULL);
-			dr.style = 0;
+			dr.style = ITEMDRAW_CONTROL;
 			position = display->DrawItem(dr);
 			slots[position].type = ItemSel_Exit;
 		}
