@@ -81,6 +81,7 @@ public:
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	bool CanDrawItem(unsigned int drawFlags);
 	void SendRawDisplay(int client, int priority, unsigned int time);
+	void DeleteThis();
 private:
 	KeyValues *m_pKv;
 	unsigned int m_NextPos;
@@ -92,13 +93,14 @@ class CValveMenu : public CBaseMenu
 	friend class CValveMenuDisplay;
 public:
 	CValveMenu();
-public:
+public: //IBaseMenu
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuDisplay *CreateDisplay();
 	bool GetExitButton();
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);
 	bool Display(int client, IMenuHandler *handler, unsigned int time);
+public: //CBaseMenu
 	void Cancel_Finally();
 private:
 	Color m_IntroColor;

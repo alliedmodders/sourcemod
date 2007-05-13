@@ -177,6 +177,11 @@ CValveMenuDisplay::CValveMenuDisplay(CValveMenu *pMenu)
 	m_pKv->SetString("title", pMenu->m_IntroMsg);
 }
 
+void CValveMenuDisplay::DeleteThis()
+{
+	delete this;
+}
+
 CValveMenuDisplay::~CValveMenuDisplay()
 {
 	m_pKv->deleteThis();

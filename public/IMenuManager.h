@@ -117,20 +117,18 @@ namespace SourceMod
 	#define MENU_NO_PAGINATION			-1		/**< Menu should not be paginated (10 items max) */
 	#define MENU_TIME_FOREVER			0		/**< Menu should be displayed as long as possible */
 
-	#define MENU_DETAIL_NOITEMCOLORS	(1<<0)	/**< Disables extended colors; menus will be white only */
-
 	/**
 	 * @brief Extended menu options.
 	 */
 	enum MenuOption
 	{
-		MenuOption_DetailFlags,					/**< INT *: A combination of MENU_DETAIL properties (default=0) */
 		MenuOption_IntroMessage,				/**< CONST CHAR *: Valve menus only; defaults to:
 													 "You have a menu, hit ESC"
 													 */
 		MenuOption_IntroColor,					/**< INT[4]: Valve menus only; specifies the intro message colour
 													 using R,G,B,A (defaults to 255,0,0,255)
 													 */
+		MenuOption_Priority,					/**< INT *: Valve menus only; priority (less is higher) */
 	};
 
 	/**
@@ -151,10 +149,6 @@ namespace SourceMod
 	 */
 	class IMenuDisplay
 	{
-	public:
-		virtual ~IMenuDisplay()
-		{
-		}
 	public:
 		/**
 		 * @brief Returns the parent IMenuStyle pointer.
@@ -223,6 +217,11 @@ namespace SourceMod
 		 * @return				True on success, false otherwise.
 		 */
 		virtual bool SendDisplay(int client, IMenuHandler *handler, unsigned int time) =0;
+
+		/**
+		 * @brief Destroys the display object.
+		 */
+		virtual void DeleteThis() =0;
 	};
 
 	/**
@@ -252,7 +251,7 @@ namespace SourceMod
 		/**
 		 * @brief Creates an IMenuDisplay object.
 		 *
-		 * Note: the object should be freed using delete.
+		 * Note: the object should be freed using ::DeleteThis.
 		 *
 		 * @return				IMenuDisplay object.
 		 */
@@ -400,7 +399,7 @@ namespace SourceMod
 		 * @brief Creates a new IMenuDisplay object using extended options specific
 		 * to the IMenuStyle parent.  Titles, items, etc, are not copied.
 		 *
-		 * Note: The object should be freed with delete.
+		 * Note: The object should be freed with IMenuDisplay::DeleteThis.
 		 *
 		 * @return				IMenuDisplay pointer.
 		 */
@@ -638,7 +637,7 @@ namespace SourceMod
 		 * @return				IDisplay pointer, or NULL if no items could be 
 		 *						found in the IBaseMenu pointer, or NULL if any
 		 *						other error occurred.  Any valid pointer must
-		 *						be freed using delete.
+		 *						be freed using IMenuDisplay::DeleteThis.
 		 */
 		virtual IMenuDisplay *RenderMenu(int client, menu_states_t &states, ItemOrder order) =0;
 	};

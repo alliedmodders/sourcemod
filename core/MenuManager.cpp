@@ -368,7 +368,7 @@ IMenuDisplay *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder o
 	/* There were no items to draw! */
 	if (!foundItems)
 	{
-		delete display;
+		display->DeleteThis();
 		return NULL;
 	}
 
@@ -520,9 +520,15 @@ skip_search:
 				slots[position].type = ItemSel_None;
 			}
 		}
-		ItemDrawInfo dr(text, 0);
+
+		/* Put a fake spacer before control stuff, if possible */
+		{
+			ItemDrawInfo draw("", ITEMDRAW_RAWLINE|ITEMDRAW_SPACER);
+			display->DrawItem(draw);
+		}
 
 		/* PREVIOUS */
+		ItemDrawInfo dr(text, 0);
 		if (displayPrev || canDrawDisabled)
 		{
 			CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);

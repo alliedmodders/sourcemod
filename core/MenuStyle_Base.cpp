@@ -376,7 +376,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	SendDisplay(client, display);
 
 	/* Free the display pointer */
-	delete display;
+	display->DeleteThis();
 
 	/* We can be interrupted again! */
 	player->bAutoIgnore = false;
@@ -403,7 +403,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 
 	SendDisplay(client, display);
 
-	delete display;
+	display->DeleteThis();
 
 	player->bAutoIgnore = false;
 
