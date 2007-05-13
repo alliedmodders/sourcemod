@@ -69,10 +69,10 @@ public: //IClientListener
 	void OnClientDisconnected(int client);
 public: //what derived must implement
 	virtual CBaseMenuPlayer *GetMenuPlayer(int client) =0;
-	virtual void SendDisplay(int client, IMenuDisplay *display) =0;
+	virtual void SendDisplay(int client, IMenuPanel *display) =0;
 public: //what derived may implement 
 	virtual bool DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time);
-	virtual bool DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time);
+	virtual bool DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time);
 	virtual void AddClientToWatch(int client);
 	virtual void RemoveClientFromWatch(int client);
 	virtual void ProcessWatchList();

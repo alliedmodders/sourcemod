@@ -30,7 +30,7 @@ class BroadcastHandler : public IMenuHandler
 public:
 	BroadcastHandler(IMenuHandler *handler);
 public: //IMenuHandler
-	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuDisplay *display);
+	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
 	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
 	void OnMenuEnd(IBaseMenu *menu);
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
@@ -94,7 +94,7 @@ public:
 	IMenuStyle *GetDefaultStyle();
 	void AddStyle(IMenuStyle *style);
 	bool SetDefaultStyle(IMenuStyle *style);
-	IMenuDisplay *RenderMenu(int client, menu_states_t &states, ItemOrder order);
+	IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order);
 protected:
 	void FreeBroadcastHandler(BroadcastHandler *bh);
 	void FreeVoteHandler(VoteHandler *vh);

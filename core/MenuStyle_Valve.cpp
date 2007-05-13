@@ -104,7 +104,7 @@ void ValveMenuStyle::OnSourceModVSPReceived(IServerPluginCallbacks *iface)
 	g_pVSPHandle = iface;
 }
 
-IMenuDisplay *ValveMenuStyle::CreateDisplay()
+IMenuPanel *ValveMenuStyle::CreatePanel()
 {
 	return new CValveMenuDisplay();
 }
@@ -124,14 +124,14 @@ unsigned int ValveMenuStyle::GetMaxPageItems()
 	return 8;
 }
 
-void ValveMenuStyle::SendDisplay(int client, IMenuDisplay *display)
+void ValveMenuStyle::SendDisplay(int client, IMenuPanel *display)
 {
 	m_players[client].curPrioLevel--;
 	CValveMenuDisplay *vDisplay = (CValveMenuDisplay *)display;
 	vDisplay->SendRawDisplay(client, m_players[client].curPrioLevel, m_players[client].menuHoldTime);
 }
 
-bool ValveMenuStyle::DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time)
+bool ValveMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time)
 {
 	if (!g_pVSPHandle)
 	{
@@ -354,7 +354,7 @@ bool CValveMenu::Display(int client, IMenuHandler *handler, unsigned int time)
 	return g_ValveMenuStyle.DoClientMenu(client, this, handler, time);
 }
 
-IMenuDisplay *CValveMenu::CreateDisplay()
+IMenuPanel *CValveMenu::CreatePanel()
 {
 	return new CValveMenuDisplay(this);
 }

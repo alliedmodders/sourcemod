@@ -117,13 +117,13 @@ void CRadioStyle::OnUserMessageSent(int msg_id)
 	g_last_client_count = 0;
 }
 
-void CRadioStyle::SendDisplay(int client, IMenuDisplay *display)
+void CRadioStyle::SendDisplay(int client, IMenuPanel *display)
 {
 	CRadioDisplay *rDisplay = (CRadioDisplay *)display;
 	rDisplay->SendRawDisplay(client, m_players[client].menuHoldTime);
 }
 
-IMenuDisplay *CRadioStyle::CreateDisplay()
+IMenuPanel *CRadioStyle::CreatePanel()
 {
 	return new CRadioDisplay();
 }
@@ -301,7 +301,7 @@ bool CRadioMenu::SetExtOption(MenuOption option, const void *valuePtr)
 	return false;
 }
 
-IMenuDisplay *CRadioMenu::CreateDisplay()
+IMenuPanel *CRadioMenu::CreatePanel()
 {
 	return new CRadioDisplay(this);
 }

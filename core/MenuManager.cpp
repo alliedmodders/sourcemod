@@ -44,7 +44,7 @@ void BroadcastHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReaso
 	m_pHandler->OnMenuCancel(menu, client, reason);
 }
 
-void BroadcastHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuDisplay *display)
+void BroadcastHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display)
 {
 	numClients++;
 	m_pHandler->OnMenuDisplay(menu, client, display);
@@ -214,7 +214,7 @@ IMenuStyle *MenuManager::FindStyleByName(const char *name)
 	return NULL;
 }
 
-inline bool IsSlotItem(IMenuDisplay *display,
+inline bool IsSlotItem(IMenuPanel *display,
 					   unsigned int style)
 {
 	if (!display->CanDrawItem(style))
@@ -233,7 +233,7 @@ inline bool IsSlotItem(IMenuDisplay *display,
 	return true;
 }
 
-IMenuDisplay *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder order)
+IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder order)
 {
 	IBaseMenu *menu = md.menu;
 
@@ -290,7 +290,7 @@ IMenuDisplay *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder o
 	}
 
 	/* Get our Display pointer and initialize some crap */
-	IMenuDisplay *display = menu->CreateDisplay();
+	IMenuPanel *display = menu->CreatePanel();
 	IMenuHandler *mh = md.mh;
 	bool foundExtra = false;
 	unsigned int extraItem = 0;

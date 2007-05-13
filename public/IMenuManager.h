@@ -62,7 +62,7 @@ namespace SourceMod
 	};
 
 	class IBaseMenu;
-	class IMenuDisplay;
+	class IMenuPanel;
 	class IMenuHandler;
 
 	/**
@@ -109,10 +109,10 @@ namespace SourceMod
 	 */
 	enum MenuCancelReason
 	{
-		MenuCancel_Disconnect = -1,	/** Client dropped from the server */
-		MenuCancel_Interrupt = -2,	/** Client was interrupted with another menu */
-		MenuCancel_Exit = -3,		/** Client selected "exit" on a paginated menu */
-		MenuCancel_NoDisplay = -4,	/** Menu could not be displayed to the client */
+		MenuCancel_Disconnect = -1,	/**< Client dropped from the server */
+		MenuCancel_Interrupt = -2,	/**< Client was interrupted with another menu */
+		MenuCancel_Exit = -3,		/**< Client selected "exit" on a paginated menu */
+		MenuCancel_NoDisplay = -4,	/**< Menu could not be displayed to the client */
 	};
 
 	#define MENU_NO_PAGINATION			0		/**< Menu should not be paginated (10 items max) */
@@ -140,7 +140,7 @@ namespace SourceMod
 		MenuSource_None = 0,					/**< No menu is being displayed */
 		MenuSource_External = 1,				/**< External menu, no pointer */
 		MenuSource_BaseMenu = 2,				/**< An IBaseMenu pointer. */
-		MenuSource_Display = 3,					/**< IMenuDisplay source, no pointer */
+		MenuSource_Display = 3,					/**< IMenuPanel source, no pointer */
 	};
 
 	class IMenuStyle;
@@ -148,7 +148,7 @@ namespace SourceMod
 	/**
 	 * @brief Sets how a raw menu should be drawn.
 	 */
-	class IMenuDisplay
+	class IMenuPanel
 	{
 	public:
 		/**
@@ -250,13 +250,13 @@ namespace SourceMod
 		virtual const char *GetStyleName() =0;
 
 		/**
-		 * @brief Creates an IMenuDisplay object.
+		 * @brief Creates an IMenuPanel object.
 		 *
 		 * Note: the object should be freed using ::DeleteThis.
 		 *
-		 * @return				IMenuDisplay object.
+		 * @return				IMenuPanel object.
 		 */
-		virtual IMenuDisplay *CreateDisplay() =0;
+		virtual IMenuPanel *CreatePanel() =0;
 
 		/**
 		 * @brief Creates an IBaseMenu object of this style.
@@ -397,14 +397,14 @@ namespace SourceMod
 		virtual bool SetExtOption(MenuOption option, const void *valuePtr) =0;
 
 		/**
-		 * @brief Creates a new IMenuDisplay object using extended options specific
+		 * @brief Creates a new IMenuPanel object using extended options specific
 		 * to the IMenuStyle parent.  Titles, items, etc, are not copied.
 		 *
-		 * Note: The object should be freed with IMenuDisplay::DeleteThis.
+		 * Note: The object should be freed with IMenuPanel::DeleteThis.
 		 *
-		 * @return				IMenuDisplay pointer.
+		 * @return				IMenuPanel pointer.
 		 */
-		virtual IMenuDisplay *CreateDisplay() =0;
+		virtual IMenuPanel *CreatePanel() =0;
 
 		/**
 		 * @brief Returns whether or not the menu should have an "Exit" button for
@@ -479,9 +479,9 @@ namespace SourceMod
 		 *
 		 * @param menu			Menu pointer.
 		 * @param client		Client index.
-		 * @param display		IMenuDisplay pointer.
+		 * @param display		IMenuPanel pointer.
 		 */
-		virtual void OnMenuDisplay(IBaseMenu *menu, int client, IMenuDisplay *display)
+		virtual void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display)
 		{
 		}
 
@@ -630,9 +630,9 @@ namespace SourceMod
 		 * @return				IDisplay pointer, or NULL if no items could be 
 		 *						found in the IBaseMenu pointer, or NULL if any
 		 *						other error occurred.  Any valid pointer must
-		 *						be freed using IMenuDisplay::DeleteThis.
+		 *						be freed using IMenuPanel::DeleteThis.
 		 */
-		virtual IMenuDisplay *RenderMenu(int client, menu_states_t &states, ItemOrder order) =0;
+		virtual IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order) =0;
 	};
 }
 

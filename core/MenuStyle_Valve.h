@@ -45,16 +45,16 @@ public:
 	bool OnClientCommand(int client);
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
-	void SendDisplay(int client, IMenuDisplay *display);
+	void SendDisplay(int client, IMenuPanel *display);
 	bool DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time);
-	bool DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time);
+	bool DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModVSPReceived(IServerPluginCallbacks *iface);
 public: //IMenuStyle
 	const char *GetStyleName();
-	IMenuDisplay *CreateDisplay();
+	IMenuPanel *CreatePanel();
 	IBaseMenu *CreateMenu();
 	unsigned int GetMaxPageItems();
 private:
@@ -65,7 +65,7 @@ private:
 
 class CValveMenu;
 
-class CValveMenuDisplay : public IMenuDisplay
+class CValveMenuDisplay : public IMenuPanel
 {
 public:
 	CValveMenuDisplay();
@@ -95,7 +95,7 @@ public:
 	CValveMenu();
 public: //IBaseMenu
 	bool SetExtOption(MenuOption option, const void *valuePtr);
-	IMenuDisplay *CreateDisplay();
+	IMenuPanel *CreatePanel();
 	bool GetExitButton();
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);

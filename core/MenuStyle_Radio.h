@@ -37,10 +37,10 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
-	void SendDisplay(int client, IMenuDisplay *display);
+	void SendDisplay(int client, IMenuPanel *display);
 public: //IMenuStyle
 	const char *GetStyleName();
-	IMenuDisplay *CreateDisplay();
+	IMenuPanel *CreatePanel();
 	IBaseMenu *CreateMenu();
 	unsigned int GetMaxPageItems();
 public: //IUserMessageListener
@@ -55,12 +55,12 @@ private:
 
 class CRadioMenu;
 
-class CRadioDisplay : public IMenuDisplay
+class CRadioDisplay : public IMenuPanel
 {
 public:
 	CRadioDisplay();
 	CRadioDisplay(CRadioMenu *menu);
-public: //IMenuDisplay
+public: //IMenuPanel
 	IMenuStyle *GetParentStyle();
 	void Reset();
 	void DrawTitle(const char *text, bool onlyIfEmpty=false);
@@ -84,7 +84,7 @@ public:
 	CRadioMenu();
 public:
 	bool SetExtOption(MenuOption option, const void *valuePtr);
-	IMenuDisplay *CreateDisplay();
+	IMenuPanel *CreatePanel();
 	bool Display(int client, IMenuHandler *handler, unsigned int time);
 	void Cancel_Finally();
 };

@@ -251,7 +251,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	mh->OnMenuEnd(menu);
 }
 
-bool BaseMenuStyle::DoClientMenu(int client, IMenuDisplay *menu, IMenuHandler *mh, unsigned int time)
+bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time)
 {
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
@@ -355,7 +355,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	states.mh = mh;
 	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;
 
-	IMenuDisplay *display = g_Menus.RenderMenu(client, states, ItemOrder_Ascending);
+	IMenuPanel *display = g_Menus.RenderMenu(client, states, ItemOrder_Ascending);
 	if (!display)
 	{
 		player->bAutoIgnore = false;
@@ -393,7 +393,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	menu_states_t &states = player->states;
 
 	player->bAutoIgnore = true;
-	IMenuDisplay *display = g_Menus.RenderMenu(client, states, order);
+	IMenuPanel *display = g_Menus.RenderMenu(client, states, order);
 	if (!display)
 	{
 		if (player->menuHoldTime)
