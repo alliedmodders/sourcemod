@@ -421,7 +421,7 @@ CBaseMenu::~CBaseMenu()
 
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 {
-	if (m_Pagination == MENU_NO_PAGINATION
+	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
 		&& m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
@@ -444,7 +444,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 
 bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
 {
-	if (m_Pagination == MENU_NO_PAGINATION
+	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
 		&& m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;

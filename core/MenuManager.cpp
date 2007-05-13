@@ -513,7 +513,6 @@ skip_search:
 		if (exitButton || (displayNext || displayPrev))
 		{
 			/* Add spacers so we can pad to the end */
-			unsigned int null_pos = 0;
 			for (unsigned int i=0; i<padding; i++)
 			{
 				position = display->DrawItem(padItem);

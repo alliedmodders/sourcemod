@@ -22,8 +22,8 @@
 SH_DECL_HOOK4_void(IServerPluginHelpers, CreateMessage, SH_NOATTRIB, false, edict_t *, DIALOG_TYPE, KeyValues *, IServerPluginCallbacks *);
 
 ValveMenuStyle g_ValveMenuStyle;
-const char *g_OptionNumTable[];
-const char *g_OptionCmdTable[];
+extern const char *g_OptionNumTable[];
+extern const char *g_OptionCmdTable[];
 IServerPluginCallbacks *g_pVSPHandle = NULL;
 CallClass<IServerPluginHelpers> *g_pSPHCC = NULL;
 
@@ -378,12 +378,12 @@ bool CValveMenu::SetExitButton(bool set)
 	return false;
 }
 
-static const char *g_OptionNumTable[11] = 
+const char *g_OptionNumTable[] = 
 {
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"
 };
 
-static const char *g_OptionCmdTable[11] = 
+const char *g_OptionCmdTable[] = 
 {
 	"sm_vmenuselect 0", /* INVALID! */
 	"sm_vmenuselect 1",

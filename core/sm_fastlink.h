@@ -183,8 +183,8 @@ public:
 private:
 	size_t m_Size;
 	unsigned int m_FirstLink;
-	unsigned int m_LastLink;
 	unsigned int m_FreeNodes;
+	unsigned int m_LastLink;
 	unsigned int m_MaxSize;
 	FastLinkNode *m_Nodes;
 };

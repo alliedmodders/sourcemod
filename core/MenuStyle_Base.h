@@ -111,12 +111,12 @@ public:
 protected:
 	String m_Title;
 	IMenuStyle *m_pStyle;
+	BaseStringTable m_Strings;
 	unsigned int m_Pagination;
 	CVector<CItem> m_items;
-	BaseStringTable m_Strings;
 	bool m_ExitButton;
-	bool m_bCancelling;
 	bool m_bShouldDelete;
+	bool m_bCancelling;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H
