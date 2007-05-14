@@ -124,7 +124,6 @@ public:
 	 */
 	virtual void OnPluginUnloaded(IPlugin *plugin)
 	{
-		IPluginContext *pContext = plugin->GetBaseContext();
 		for (size_t i = 0; i < m_PanelHandlers.size(); i++)
 		{
 			if (m_PanelHandlers[i]->m_pPlugin == plugin)

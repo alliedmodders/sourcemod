@@ -122,9 +122,9 @@ protected:
 	bool m_ExitButton;
 	bool m_bShouldDelete;
 	bool m_bCancelling;
+	IdentityToken_t *m_pOwner;
 	bool m_bDeleting;
 	bool m_bWillFreeHandle;
-	IdentityToken_t *m_pOwner;
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 };
