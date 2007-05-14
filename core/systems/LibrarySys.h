@@ -74,6 +74,7 @@ public:
 	bool IsPathDirectory(const char *path);
 	void GetPlatformError(char *error, size_t maxlength);
 	size_t PathFormat(char *buffer, size_t len, const char *fmt, ...);
+	const char *GetFileExtension(const char *filename);
 };
 
 extern LibrarySystem g_LibSys;

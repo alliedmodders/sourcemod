@@ -29,7 +29,7 @@
 namespace SourceMod
 {
 	#define SMINTERFACE_LIBRARYSYS_NAME		"ILibrarySys"
-	#define SMINTERFACE_LIBRARYSYS_VERSION	1
+	#define SMINTERFACE_LIBRARYSYS_VERSION	2
 
 	class ILibrary
 	{
@@ -173,6 +173,14 @@ namespace SourceMod
 		 * @param ...		Format string arguments.
 		 */
 		virtual size_t PathFormat(char *buffer, size_t maxlength, const char *pathfmt, ...) =0;
+
+		/**
+		 * @brief Returns a pointer to the extension in a filename.
+		 *
+		 * @param filename	Name of file from which the extension should be extracted.
+		 * @return			Pointer to file extension.
+		 */
+		virtual const char *GetFileExtension(const char *filename) =0;
 	};
 }
 

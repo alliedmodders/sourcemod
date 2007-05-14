@@ -1661,19 +1661,24 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			char error[128];
 			bool wasloaded;
 			const char *filename = g_RootMenu.GetArgument(3);
-			IPlugin *pl = LoadPlugin(filename, false, PluginType_MapUpdated, error, sizeof(error), &wasloaded);
+
+			char pluginfile[256];
+			const char *ext = g_LibSys.GetFileExtension(filename) ? "" : ".smx";
+			UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", filename, ext);
+
+			IPlugin *pl = LoadPlugin(pluginfile, false, PluginType_MapUpdated, error, sizeof(error), &wasloaded);
 
 			if (wasloaded)
 			{
-				g_RootMenu.ConsolePrint("[SM] Plugin %s is already loaded.", filename);
+				g_RootMenu.ConsolePrint("[SM] Plugin %s is already loaded.", pluginfile);
 				return;
 			}
 
 			if (pl)
 			{
-				g_RootMenu.ConsolePrint("[SM] Loaded plugin %s successfully.", filename);
+				g_RootMenu.ConsolePrint("[SM] Loaded plugin %s successfully.", pluginfile);
 			} else {
-				g_RootMenu.ConsolePrint("[SM] Plugin %s failed to load: %s.", filename, error);
+				g_RootMenu.ConsolePrint("[SM] Plugin %s failed to load: %s.", pluginfile, error);
 			}
 
 			return;
