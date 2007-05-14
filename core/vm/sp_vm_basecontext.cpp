@@ -194,6 +194,13 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 		return SP_ERROR_NOT_RUNNABLE;
 	}
 
+	/* tada, prevent a crash */
+	cell_t _ignore_result;
+	if (!result)
+	{
+		result = &_ignore_result;
+	}
+
 	IVirtualMachine *vm = (IVirtualMachine *)ctx->vmbase;
 
 	uint32_t pushcount = ctx->pushcount;

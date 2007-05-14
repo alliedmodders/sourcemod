@@ -59,10 +59,13 @@ private:
 
 class MenuManager : 
 	public IMenuManager,
-	public SMGlobalClass
+	public SMGlobalClass,
+	public IHandleTypeDispatch
 {
 	friend class BroadcastHandler;
 	friend class VoteHandler;
+	friend class CBaseMenu;
+	friend class BaseMenuStyle;
 public:
 	MenuManager();
 public: //SMGlobalClass
@@ -95,15 +98,24 @@ public:
 	void AddStyle(IMenuStyle *style);
 	bool SetDefaultStyle(IMenuStyle *style);
 	IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order);
+public: //IHandleTypeDispatch
+	void OnHandleDestroy(HandleType_t type, void *object);
+public:
+	HandleError ReadMenuHandle(Handle_t handle, IBaseMenu **menu);
+	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);
 protected:
 	void FreeBroadcastHandler(BroadcastHandler *bh);
 	void FreeVoteHandler(VoteHandler *vh);
+	Handle_t CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner);
+	Handle_t CreateStyleHandle(IMenuStyle *style);
 private:
 	int m_ShowMenu;
 	IMenuStyle *m_pDefaultStyle;
 	CStack<BroadcastHandler *> m_BroadcastHandlers;
 	CStack<VoteHandler *> m_VoteHandlers;
 	CVector<IMenuStyle *> m_Styles;
+	HandleType_t m_StyleType;
+	HandleType_t m_MenuType;
 };
 
 extern MenuManager g_Menus;

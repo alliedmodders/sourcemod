@@ -17,9 +17,21 @@
 #include "MenuStyle_Base.h"
 #include "PlayerManager.h"
 #include "MenuManager.h"
+#include "HandleSys.h"
 
-BaseMenuStyle::BaseMenuStyle() : m_WatchList(256)
+BaseMenuStyle::BaseMenuStyle() : m_WatchList(256), m_hHandle(BAD_HANDLE)
 {
+}
+
+Handle_t BaseMenuStyle::GetHandle()
+{
+	/* Don't create the handle until we need it */
+	if (m_hHandle == BAD_HANDLE)
+	{
+		m_hHandle = g_Menus.CreateStyleHandle(this);
+	}
+
+	return m_hHandle;
 }
 
 void BaseMenuStyle::AddClientToWatch(int client)
@@ -56,7 +68,12 @@ void BaseMenuStyle::_CancelClientMenu(int client, bool bAutoIgnore/* =false */, 
 
 	/* Fire callbacks */
 	mh->OnMenuCancel(menu, client, reason);
-	mh->OnMenuEnd(menu);
+	
+	/* Only fire end if there's a valid menu */
+	if (menu)
+	{
+		mh->OnMenuEnd(menu);
+	}
 
 	if (bAutoIgnore)
 	{
@@ -145,6 +162,7 @@ void BaseMenuStyle::OnClientDisconnected(int client)
 	_CancelClientMenu(client, true, MenuCancel_Disconnect);
 
 	player->bInMenu = false;
+	player->bInExternMenu = false;
 }
 
 static int do_lookup[256];
@@ -248,7 +266,11 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 		mh->OnMenuSelect(menu, client, item);
 	}
 
-	mh->OnMenuEnd(menu);
+	/* Only fire end for valid menus */
+	if (menu)
+	{
+		mh->OnMenuEnd(menu);
+	}
 }
 
 bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time)
@@ -276,13 +298,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 	menu_states_t &states = player->states;
 	if (player->bInMenu)
 	{
-		/* We need to cancel the old menu */
-		if (player->menuHoldTime)
-		{
-			RemoveClientFromWatch(client);
-		}
-		states.mh->OnMenuCancel(states.menu, client, MenuCancel_Interrupt);
-		states.mh->OnMenuEnd(states.menu);
+		_CancelClientMenu(client, true);
 	}
 
 	states.firstItem = 0;
@@ -291,6 +307,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 	states.mh = mh;
 	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;
 	player->bInMenu = true;
+	player->bInExternMenu = false;
 	player->menuStartTime = gpGlobals->curtime;
 	player->menuHoldTime = time;
 
@@ -367,6 +384,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 
 	/* Finally, set our states */
 	player->bInMenu = true;
+	player->bInExternMenu = false;
 	player->menuStartTime = gpGlobals->curtime;
 	player->menuHoldTime = time;
 
@@ -413,13 +431,25 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	return true;
 }
 
-CBaseMenu::CBaseMenu(IMenuStyle *pStyle) : 
-m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true), m_bShouldDelete(false), m_bCancelling(false)
+CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
+m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true), 
+m_bShouldDelete(false), m_bCancelling(false), m_pOwner(pOwner ? pOwner : g_pCoreIdent), 
+m_bDeleting(false), m_bWillFreeHandle(false), m_hHandle(BAD_HANDLE), m_pHandler(pHandler)
 {
 }
 
 CBaseMenu::~CBaseMenu()
 {
+}
+
+Handle_t CBaseMenu::GetHandle()
+{
+	if (!m_hHandle)
+	{
+		m_hHandle = g_Menus.CreateMenuHandle(this, m_pOwner);
+	}
+
+	return m_hHandle;
 }
 
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
@@ -572,18 +602,48 @@ void CBaseMenu::Cancel()
 
 	if (m_bShouldDelete)
 	{
-		delete this;
+		InternalDelete();
 	}
 }
 
-void CBaseMenu::Destroy()
+void CBaseMenu::Destroy(bool releaseHandle)
 {
+	/* Check if we shouldn't be here */
+	if (m_bDeleting)
+	{
+		return;
+	}
+
+	/* Save the destruction hint about our handle */
+	m_bWillFreeHandle = releaseHandle;
+
+	/* Now actually do stuff */
 	if (!m_bCancelling || m_bShouldDelete)
 	{
 		Cancel();
-		delete this;
+		InternalDelete();
 	} else {
 		m_bShouldDelete = true;
 	}
+}
+
+void CBaseMenu::InternalDelete()
+{
+	if (m_bWillFreeHandle && m_hHandle != BAD_HANDLE)
+	{
+		Handle_t hndl = m_hHandle;
+		HandleSecurity sec;
+
+		sec.pOwner = m_pOwner;
+		sec.pIdentity = g_pCoreIdent;
+
+		m_hHandle = BAD_HANDLE;
+		m_bDeleting = true;
+		g_HandleSys.FreeHandle(hndl, &sec);
+	}
+
+	m_pHandler->OnMenuDestroy(this);
+
+	delete this;
 }
 

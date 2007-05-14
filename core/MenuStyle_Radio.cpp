@@ -56,6 +56,12 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 void CRadioStyle::OnSourceModShutdown()
 {
 	g_UserMsgs.UnhookUserMessage(g_ShowMenuId, this, false);
+
+	while (!m_FreeDisplays.empty())
+	{
+		delete m_FreeDisplays.front();
+		m_FreeDisplays.pop();
+	}
 }
 
 bool CRadioStyle::IsSupported()
@@ -125,12 +131,12 @@ void CRadioStyle::SendDisplay(int client, IMenuPanel *display)
 
 IMenuPanel *CRadioStyle::CreatePanel()
 {
-	return new CRadioDisplay();
+	return g_RadioMenuStyle.MakeRadioDisplay();
 }
 
-IBaseMenu *CRadioStyle::CreateMenu()
+IBaseMenu *CRadioStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner)
 {
-	return new CRadioMenu();
+	return new CRadioMenu(pHandler, pOwner);
 }
 
 unsigned int CRadioStyle::GetMaxPageItems()
@@ -146,6 +152,25 @@ const char *CRadioStyle::GetStyleName()
 CBaseMenuPlayer *CRadioStyle::GetMenuPlayer(int client)
 {
 	return &m_players[client];
+}
+
+CRadioDisplay *CRadioStyle::MakeRadioDisplay(CRadioMenu *menu)
+{
+	CRadioDisplay *display;
+	if (m_FreeDisplays.empty())
+	{
+		display = new CRadioDisplay();
+	} else {
+		display = m_FreeDisplays.front();
+		m_FreeDisplays.pop();
+		display->Reset();
+	}
+	return display;
+}
+
+void CRadioStyle::FreeRadioDisplay(CRadioDisplay *display)
+{
+	m_FreeDisplays.push(display);
 }
 
 CRadioDisplay::CRadioDisplay()
@@ -292,7 +317,8 @@ void CRadioDisplay::DeleteThis()
 	delete this;
 }
 
-CRadioMenu::CRadioMenu() : CBaseMenu(&g_RadioMenuStyle)
+CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
+CBaseMenu(pHandler, &g_RadioMenuStyle, pOwner)
 {
 }
 
@@ -303,12 +329,12 @@ bool CRadioMenu::SetExtOption(MenuOption option, const void *valuePtr)
 
 IMenuPanel *CRadioMenu::CreatePanel()
 {
-	return new CRadioDisplay(this);
+	return g_RadioMenuStyle.MakeRadioDisplay(this);
 }
 
-bool CRadioMenu::Display(int client, IMenuHandler *handler, unsigned int time)
+bool CRadioMenu::Display(int client, unsigned int time)
 {
-	return g_RadioMenuStyle.DoClientMenu(client, this, handler, time);
+	return g_RadioMenuStyle.DoClientMenu(client, this, m_pHandler, time);
 }
 
 void CRadioMenu::Cancel_Finally()

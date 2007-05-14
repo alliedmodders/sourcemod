@@ -22,8 +22,12 @@
 #include <IPlayerHelpers.h>
 #include <IUserMessages.h>
 #include "sm_fastlink.h"
+#include <sh_stack.h>
 
 using namespace SourceMod;
+
+class CRadioDisplay;
+class CRadioMenu;
 
 class CRadioStyle : 
 	public BaseMenuStyle,
@@ -41,7 +45,7 @@ public: //BaseMenuStyle
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
-	IBaseMenu *CreateMenu();
+	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
 	unsigned int GetMaxPageItems();
 public: //IUserMessageListener
 	void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
@@ -49,14 +53,17 @@ public: //IUserMessageListener
 public:
 	bool IsSupported();
 	bool OnClientCommand(int client);
+public:
+	CRadioDisplay *MakeRadioDisplay(CRadioMenu *menu=NULL);
+	void FreeRadioDisplay(CRadioDisplay *display);
 private:
 	CBaseMenuPlayer *m_players;
+	CStack<CRadioDisplay *> m_FreeDisplays;
 };
-
-class CRadioMenu;
 
 class CRadioDisplay : public IMenuPanel
 {
+	friend class CRadioStyle;
 public:
 	CRadioDisplay();
 	CRadioDisplay(CRadioMenu *menu);
@@ -81,11 +88,11 @@ private:
 class CRadioMenu : public CBaseMenu
 {
 public:
-	CRadioMenu();
+	CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
 public:
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuPanel *CreatePanel();
-	bool Display(int client, IMenuHandler *handler, unsigned int time);
+	bool Display(int client, unsigned int time);
 	void Cancel_Finally();
 };
 

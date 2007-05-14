@@ -65,6 +65,7 @@ public:
 public: //IMenuStyle
 	bool CancelClientMenu(int client, bool autoIgnore/* =false */);
 	MenuSource GetClientMenu(int client, void **object);
+	Handle_t GetHandle();
 public: //IClientListener
 	void OnClientDisconnected(int client);
 public: //what derived must implement
@@ -84,12 +85,13 @@ protected:
 	bool RedoClientMenu(int client, ItemOrder order);
 protected:
 	FastLink<int> m_WatchList;
+	Handle_t m_hHandle;
 };
 
 class CBaseMenu : public IBaseMenu
 {
 public:
-	CBaseMenu(IMenuStyle *pStyle);
+	CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner);
 	virtual ~CBaseMenu();
 public:
 	virtual bool AppendItem(const char *info, const ItemDrawInfo &draw);
@@ -106,8 +108,11 @@ public:
 	virtual bool GetExitButton();
 	virtual bool SetExitButton(bool set);
 	virtual void Cancel();
-	virtual void Destroy();
+	virtual void Destroy(bool releaseHandle);
 	virtual void Cancel_Finally() =0;
+	virtual Handle_t GetHandle();
+private:
+	void InternalDelete();
 protected:
 	String m_Title;
 	IMenuStyle *m_pStyle;
@@ -117,6 +122,11 @@ protected:
 	bool m_ExitButton;
 	bool m_bShouldDelete;
 	bool m_bCancelling;
+	bool m_bDeleting;
+	bool m_bWillFreeHandle;
+	IdentityToken_t *m_pOwner;
+	Handle_t m_hHandle;
+	IMenuHandler *m_pHandler;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H

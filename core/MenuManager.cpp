@@ -21,6 +21,7 @@
 #include "PlayerManager.h"
 #include "MenuStyle_Valve.h"
 #include "ShareSys.h"
+#include "HandleSys.h"
 
 MenuManager g_Menus;
 
@@ -150,10 +151,24 @@ MenuManager::MenuManager()
 void MenuManager::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
+
+	HandleAccess access;
+	g_HandleSys.InitAccessDefaults(NULL, &access);
+
+	/* Deny cloning to menus */
+	access.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
+	m_MenuType = g_HandleSys.CreateType("IBaseMenu", this, 0, NULL, &access, g_pCoreIdent, NULL);
+
+	/* Also deny deletion to styles */
+	access.access[HandleAccess_Delete] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
+	m_StyleType = g_HandleSys.CreateType("IMenuStyle", this, 0, NULL, &access, g_pCoreIdent, NULL);
 }
 
 void MenuManager::OnSourceModAllShutdown()
 {
+	g_HandleSys.RemoveType(m_MenuType, g_pCoreIdent);
+	g_HandleSys.RemoveType(m_StyleType, g_pCoreIdent);
+
 	while (!m_BroadcastHandlers.empty())
 	{
 		delete m_BroadcastHandlers.front();
@@ -165,6 +180,57 @@ void MenuManager::OnSourceModAllShutdown()
 		delete m_VoteHandlers.front();
 		m_VoteHandlers.pop();
 	}
+}
+
+void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
+{
+	if (type == m_MenuType)
+	{
+		IBaseMenu *menu = (IBaseMenu *)object;
+		menu->Destroy(false);
+	} else if (type == m_StyleType) {
+		/* Do nothing */
+	}
+}
+
+Handle_t MenuManager::CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner)
+{
+	if (m_MenuType == NO_HANDLE_TYPE)
+	{
+		return BAD_HANDLE;
+	}
+
+	return g_HandleSys.CreateHandle(m_MenuType, menu, pOwner, g_pCoreIdent, NULL);
+}
+
+Handle_t MenuManager::CreateStyleHandle(IMenuStyle *style)
+{
+	if (m_StyleType == NO_HANDLE_TYPE)
+	{
+		return BAD_HANDLE;
+	}
+
+	return g_HandleSys.CreateHandle(m_StyleType, style, g_pCoreIdent, g_pCoreIdent, NULL);
+}
+
+HandleError MenuManager::ReadMenuHandle(Handle_t handle, IBaseMenu **menu)
+{
+	HandleSecurity sec;
+
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = NULL;
+
+	return g_HandleSys.ReadHandle(handle, m_MenuType, &sec, (void **)menu);
+}
+
+HandleError MenuManager::ReadStyleHandle(Handle_t handle, IMenuStyle **style)
+{
+	HandleSecurity sec;
+
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = g_pCoreIdent;
+
+	return g_HandleSys.ReadHandle(handle, m_StyleType, &sec, (void **)style);
 }
 
 bool MenuManager::SetDefaultStyle(IMenuStyle *style)
@@ -503,6 +569,13 @@ skip_search:
 		ItemDrawInfo padItem(NULL, ITEMDRAW_SPACER);
 		if (exitButton || (displayNext || displayPrev))
 		{
+			/* If there are no control options,
+			 * Instead just pad with invisible slots.
+			 */
+			if (!displayPrev && !displayPrev)
+			{
+				padItem.style = ITEMDRAW_NOTEXT;
+			}
 			/* Add spacers so we can pad to the end */
 			for (unsigned int i=0; i<padding; i++)
 			{
@@ -585,6 +658,7 @@ skip_search:
 	return display;
 }
 
+#if 0
 unsigned int MenuManager::BroadcastMenu(IBaseMenu *menu, 
 										IMenuHandler *handler, 
 										int clients[], 
@@ -683,6 +757,7 @@ unsigned int MenuManager::VoteMenu(IBaseMenu *menu,
 
 	return total;
 }
+#endif
 
 void MenuManager::FreeBroadcastHandler(BroadcastHandler *bh)
 {

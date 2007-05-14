@@ -109,9 +109,9 @@ IMenuPanel *ValveMenuStyle::CreatePanel()
 	return new CValveMenuDisplay();
 }
 
-IBaseMenu *ValveMenuStyle::CreateMenu()
+IBaseMenu *ValveMenuStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner)
 {
-	return new CValveMenu();
+	return new CValveMenu(pHandler, pOwner);
 }
 
 const char *ValveMenuStyle::GetStyleName()
@@ -305,7 +305,8 @@ bool CValveMenuDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned 
 	return g_ValveMenuStyle.DoClientMenu(client, this, handler, time);
 }
 
-CValveMenu::CValveMenu() : CBaseMenu(&g_ValveMenuStyle), 
+CValveMenu::CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
+CBaseMenu(pHandler, &g_ValveMenuStyle, pOwner), 
 	m_IntroColor(255, 0, 0, 255)
 {
 	strcpy(m_IntroMsg, "You have a menu, press ESC");
@@ -344,14 +345,14 @@ bool CValveMenu::SetExtOption(MenuOption option, const void *valuePtr)
 	return false;
 }
 
-bool CValveMenu::Display(int client, IMenuHandler *handler, unsigned int time)
+bool CValveMenu::Display(int client, unsigned int time)
 {
 	if (m_bCancelling)
 	{
 		return false;
 	}
 
-	return g_ValveMenuStyle.DoClientMenu(client, this, handler, time);
+	return g_ValveMenuStyle.DoClientMenu(client, this, m_pHandler, time);
 }
 
 IMenuPanel *CValveMenu::CreatePanel()

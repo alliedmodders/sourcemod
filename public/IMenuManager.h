@@ -20,6 +20,7 @@
 #define _INCLUDE_SOURCEMOD_MENU_SYSTEM_H_
 
 #include <IShareSys.h>
+#include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
 #define SMINTERFACE_MENUMANAGER_VERSION		1
@@ -263,9 +264,12 @@ namespace SourceMod
 		 *
 		 * Note: the object should be freed using IBaseMenu::Destroy.
 		 *
+		 * @param handler		IMenuHandler pointer.
+		 * @param pOwner		Optional IdentityToken_t owner for handle 
+		 *						creation.
 		 * @return				An IBaseMenu pointer.
 		 */
-		virtual IBaseMenu *CreateMenu() =0;
+		virtual IBaseMenu *CreateMenu(IMenuHandler *handler, IdentityToken_t *pOwner=NULL) =0;
 
 		/**
 		 * @brief Returns the maximum number of items per page.
@@ -293,6 +297,13 @@ namespace SourceMod
 		 * @return				True if a menu was cancelled, false otherwise.
 		 */
 		virtual bool CancelClientMenu(int client, bool autoIgnore=false) =0;
+
+		/**
+		 * @brief Returns a Handle the IMenuStyle object.
+		 *
+		 * @return				Handle_t pointing to this object.
+		 */
+		virtual Handle_t GetHandle() =0;
 	};
 
 	/**
@@ -428,16 +439,20 @@ namespace SourceMod
 		 * @brief Sends the menu to a client.
 		 *
 		 * @param client		Client index to display to.
-		 * @param handler		Menu handler to use.
 		 * @param time			Time to hold menu for.
 		 * @return				True on success, false otherwise.
 		 */
-		virtual bool Display(int client, IMenuHandler *handler, unsigned int time) =0;
+		virtual bool Display(int client, unsigned int time) =0;
 
 		/**
-		 * @brief Destroys the menu and frees all associated resources.1
+		 * @brief Destroys the menu and frees all associated resources.
+		 *
+		 * @param releaseHandle	If true, the Handle will be released
+		 *						in the destructor.  This should be set
+		 *						to true except for IHandleTypeDispatch
+		 *						destructors.
 		 */
-		virtual void Destroy() =0;
+		virtual void Destroy(bool releaseHandle=true) =0;
 
 		/**
 		 * @brief Cancels the menu on all client's displays.  While the menu is
@@ -446,6 +461,14 @@ namespace SourceMod
 		 * @return				Number of menus cancelled.
 		 */
 		virtual void Cancel() =0;
+
+		/**
+		 * @brief Returns the menu's Handle.  The Handle is automatically
+		 * removed when the menu is destroyed.
+		 *
+		 * @return				Handle_t handle value.
+		 */
+		virtual Handle_t GetHandle() =0;
 	};
 
 	/** 
@@ -517,6 +540,15 @@ namespace SourceMod
 		}
 
 		/**
+		 * @brief Called when the menu object is destroyed.
+		 *
+		 * @param menu			Menu pointer.
+		 */
+		virtual void OnMenuDestroy(IBaseMenu *menu)
+		{
+		}
+
+		/**
 		 * @brief Called when requesting how to render an item.
 		 *
 		 * @param menu			Menu pointer.
@@ -579,11 +611,11 @@ namespace SourceMod
 		 */
 		virtual IMenuStyle *FindStyleByName(const char *name) =0;
 
+#if 0
 		/**
 		 * @brief Broadcasts a menu to a number of clients.
 		 *
 		 * @param menu			Menu pointer.
-		 * @param handler		IMenuHandler pointer.
 		 * @param clients		Array of client indexes.
 		 * @param numClients	Number of clients in the array.
 		 * @param time			Time to hold the menu.
@@ -610,6 +642,7 @@ namespace SourceMod
 									int clients[], 
 									unsigned int numClients,
 									unsigned int time) =0;
+#endif
 
 		/**
 		 * @brief Returns the default draw style Core is using.

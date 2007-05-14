@@ -843,6 +843,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_menus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_player.cpp"
 				>
 			</File>

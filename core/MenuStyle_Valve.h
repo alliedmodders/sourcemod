@@ -55,7 +55,7 @@ public: //SMGlobalClass
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
-	IBaseMenu *CreateMenu();
+	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
 	unsigned int GetMaxPageItems();
 private:
 	void HookCreateMessage(edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
@@ -92,14 +92,14 @@ class CValveMenu : public CBaseMenu
 {
 	friend class CValveMenuDisplay;
 public:
-	CValveMenu();
+	CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
 public: //IBaseMenu
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuPanel *CreatePanel();
 	bool GetExitButton();
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);
-	bool Display(int client, IMenuHandler *handler, unsigned int time);
+	bool Display(int client, unsigned int time);
 public: //CBaseMenu
 	void Cancel_Finally();
 private:
