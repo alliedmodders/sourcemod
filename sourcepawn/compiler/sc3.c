@@ -322,12 +322,12 @@ SC_FUNC int matchtag_string(int ident, int tag)
 
 SC_FUNC int matchtag(int formaltag,int actualtag,int allowcoerce)
 {
-  if (formaltag!=actualtag) {
+  if (formaltag != actualtag) {
     /* if the formal tag is zero and the actual tag is not "fixed", the actual
      * tag is "coerced" to zero
      */
     if (!allowcoerce || formaltag!=0 || (actualtag & FIXEDTAG)!=0) {
-		if (formaltag == pc_anytag)
+		if (formaltag == pc_anytag || actualtag == pc_anytag)
 		{
 			return TRUE;
 		}
