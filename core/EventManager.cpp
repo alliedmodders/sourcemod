@@ -345,7 +345,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 
 		if (pForward)
 		{
-			EventInfo info = {pEvent, false};
+			EventInfo info = { pEvent, NULL };
 
 			Handle_t hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 			pForward->PushCell(hndl);
@@ -389,11 +389,10 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 
 		if (pForward)
 		{
+			EventInfo info = { pHook->pEventCopy, NULL };
+
 			if (pHook->postCopy)
 			{
-				pEventCopy = pHook->pEventCopy;
-
-				EventInfo info = {pEventCopy, false};
 				hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 
 				pForward->PushCell(hndl);
