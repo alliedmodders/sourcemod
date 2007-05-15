@@ -1180,8 +1180,8 @@ static void setconfig(char *root)
 
 static void setcaption(void)
 {
-  pc_printf("SourcePawn Compiler 1.0.0." SVN_REVISION_STRING "\n");
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2006 AlliedModders, LLC\n\n");
+  pc_printf("SourcePawn Compiler " SVN_FULL_VERSION "\n");
+  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2007 AlliedModders, LLC\n\n");
 }
 
 static void about(void)

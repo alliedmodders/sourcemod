@@ -330,6 +330,10 @@
 				RelativePath="..\sc7.scp"
 				>
 			</File>
+			<File
+				RelativePath="..\svn_version.tpl"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="zlib"

@@ -19,7 +19,7 @@
  * @file Contains SourceMod version information.
  */
 
-#define SVN_FULL_VERSION	"1.0.0.800"
-#define SVN_FILE_VERSION	1,0,0,800
+#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$.$GLOBAL_BUILD$"
+#define SVN_FILE_VERSION	$PMAJOR$,$PMINOR$,$PREVISION$,$GLOBAL_BUILD$
 
 #endif //_INCLUDE_SOURCEMOD_VERSION_H_

@@ -13,17 +13,14 @@ AppIcon ICON "pawn.ico"
  *  All strings MUST have an explicit \0. See the Windows SDK documentation
  *  for details on version information and the VERSIONINFO structure.
  */
-#define VERSION              1
-#define REVISION             0
-#define BUILD                SVN_REVISION
-#define VERSIONSTR           SVN_REVISION_STRING
+
 #define VERSIONNAME          "smcomp.exe\0"
 #define VERSIONDESCRIPTION   "SourcePawn Compiler\0"
 #define VERSIONPRODUCTNAME   "smcomp\0"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION    VERSION, REVISION, BUILD, 0
-PRODUCTVERSION VERSION, REVISION, BUILD, 0
+FILEVERSION    SVN_FILE_VERSION
+PRODUCTVERSION SVN_FILE_VERSION
 FILEFLAGSMASK  0x0000003FL
 FILEFLAGS      0
 #if defined(WIN32)
@@ -39,12 +36,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName",      "(C)1998-2006 ITB CompuPhase, AlliedModders LLC\0"
             VALUE "FileDescription",  VERSIONDESCRIPTION
-            VALUE "FileVersion",      VERSIONSTR
+            VALUE "FileVersion",      SVN_FULL_VERSION
             VALUE "InternalName",     VERSIONNAME
             VALUE "LegalCopyright",   "(C)1998-2006 ITB CompuPhase, AlliedModders LLC\0"
             VALUE "OriginalFilename", VERSIONNAME
             VALUE "ProductName",      VERSIONPRODUCTNAME
-            VALUE "ProductVersion",   VERSIONSTR
+            VALUE "ProductVersion",   SVN_FULL_VERSION
         END
     END
 
