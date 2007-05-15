@@ -585,6 +585,7 @@ skip_search:
 		}
 
 		/* Put a fake spacer before control stuff, if possible */
+		if ((displayPrev || displayNext) || exitButton)
 		{
 			ItemDrawInfo draw("", ITEMDRAW_RAWLINE|ITEMDRAW_SPACER);
 			display->DrawItem(draw);
