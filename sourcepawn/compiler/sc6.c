@@ -676,6 +676,7 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   constvalue *constptr;
   cell mainaddr;
   char nullchar;
+  char testalias[sNAMEMAX+1];
 
   /* if compression failed, restart the assembly with compaction switched off */
   if (setjmp(compact_err)!=0) {
@@ -706,8 +707,9 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
   for (sym=glbtab.next; sym!=NULL; sym=sym->next) {
     int match=0;
     if (sym->ident==iFUNCTN) {
-      if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr>=0)
+      if ((sym->usage & uNATIVE)!=0 && (sym->usage & uREAD)!=0 && sym->addr>=0) {
         match=++numnatives;
+      }
       if ((sym->usage & uPUBLIC)!=0 && (sym->usage & uDEFINE)!=0)
         match=++numpublics;
       if (strcmp(sym->name,uMAINFUNC)==0) {
@@ -719,13 +721,12 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
         match=++numpubvars;
     } /* if */
     if (match) {
-      char alias[sNAMEMAX+1];
+      const char *aliasptr = sym->name;
       assert(sym!=NULL);
-      if ((sym->usage & uNATIVE)==0 || !lookup_alias(alias,sym->name)) {
-        assert(strlen(sym->name)<=sNAMEMAX);
-        strcpy(alias,sym->name);
+      if (((sym->usage & uNATIVE)!=0) && lookup_alias(testalias,sym->name)) {
+        aliasptr = "@";
       } /* if */
-      nametablesize+=strlen(alias)+1;
+      nametablesize+=strlen(aliasptr)+1;
     } /* if */
   } /* for */
   assert(numnatives==ntv_funcid);
@@ -843,13 +844,13 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
     } /* for */
     count=0;
     for (i=0; i<numnatives; i++) {
-      char alias[sNAMEMAX+1];
+      const char *aliasptr;
       sym=nativelist[i];
       assert(sym!=NULL);
-      if (!lookup_alias(alias,sym->name)) {
-        assert(strlen(sym->name)<=sNAMEMAX);
-        strcpy(alias,sym->name);
-      } /* if */
+      aliasptr = sym->name;
+      if (lookup_alias(testalias,sym->name)) {
+        aliasptr = "@";
+      }
       assert(sym->vclass==sGLOBAL);
       func.address=0;
       func.nameofs=nameofs;
@@ -860,8 +861,8 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
       pc_resetbin(fout,hdr.natives+count*sizeof(AMX_FUNCSTUBNT));
       pc_writebin(fout,&func,sizeof func);
       pc_resetbin(fout,nameofs);
-      pc_writebin(fout,alias,strlen(alias)+1);
-      nameofs+=strlen(alias)+1;
+      pc_writebin(fout,(void *)aliasptr,strlen(aliasptr)+1);
+      nameofs+=strlen(aliasptr)+1;
       count++;
     } /* for */
     free(nativelist);

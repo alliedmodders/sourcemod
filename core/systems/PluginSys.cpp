@@ -1037,7 +1037,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			break;
 		}
-		if (native->status == SP_NATIVE_UNBOUND)
+		if (native->status == SP_NATIVE_UNBOUND
+			&& native->name[0] != '@')
 		{
 			if (error)
 			{

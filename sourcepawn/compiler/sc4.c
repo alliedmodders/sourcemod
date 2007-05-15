@@ -738,6 +738,7 @@ SC_FUNC void ffcase(cell value,char *labelname,int newtable)
 SC_FUNC void ffcall(symbol *sym,const char *label,int numargs)
 {
   char symname[2*sNAMEMAX+16];
+  char aliasname[sNAMEMAX+1];
 
   assert(sym!=NULL);
   assert(sym->ident==iFUNCTN);
@@ -749,6 +750,14 @@ SC_FUNC void ffcall(symbol *sym,const char *label,int numargs)
     if (sc_status==statWRITE && (sym->usage & uREAD)==0 && sym->addr>=0)
       sym->addr=ntv_funcid++;
     stgwrite("\tsysreq.c ");
+    /* Look for an alias */
+    if (lookup_alias(aliasname, sym->name)) {
+      symbol *asym = findglb(aliasname, sGLOBAL);
+      if (asym && asym->ident==iFUNCTN && ((sym->usage & uNATIVE) != 0)) {
+        sym = asym;
+      }
+    }
+    assert(sym->addr != 0x1d);
     outval(sym->addr,FALSE);
     if (sc_asmfile) {
       stgwrite("\t; ");
