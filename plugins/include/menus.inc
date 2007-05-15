@@ -36,7 +36,7 @@ enum MenuAction
 	MenuAction_Start = (1<<0),		/**< A menu has been started (nothing passed) */
 	MenuAction_Display = (1<<1),	/**< A menu is about to be displayed (param1=client, param2=MenuPanel Handle) */
 	MenuAction_Select = (1<<2),		/**< An item was selected (param1=client, param2=item) */
-	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=item) */
+	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=reason) */
 	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed). */
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has ended (param1=chosen item) */
 };
