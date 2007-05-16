@@ -70,11 +70,12 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 	cell_t result = 0;
 	native->call->PushCell(pCaller->GetMyHandle());
 	native->call->PushCell(params[0]);
-	if (native->call->Execute(&result) != SP_ERROR_NONE)
+	int error;
+	if ((error=native->call->Execute(&result)) != SP_ERROR_NONE)
 	{
 		if (pContext->GetContext()->n_err == SP_ERROR_NONE)
 		{
-			pContext->ThrowNativeError("Error encountered while processing a dynamic native");
+			pContext->ThrowNativeErrorEx(error, "Error encountered while processing a dynamic native");
 		}
 	}
 
