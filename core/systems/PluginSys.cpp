@@ -204,7 +204,7 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 		memset(&m_ctx, 0, sizeof(m_ctx));
 		if (error)
 		{
-			snprintf(error, maxlength, "Failed to compile (error %d)", err);
+			snprintf(error, maxlength, "JIT failed to compile (error %d)", err);
 		}
 		return false;
 	}
@@ -820,7 +820,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	/* Do the actual compiling */
 	if (co)
 	{
-		pPlugin->FinishMyCompile(NULL, 0);
+		pPlugin->FinishMyCompile(error, maxlength);
 		co = NULL;
 	}
 
