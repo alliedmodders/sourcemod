@@ -80,7 +80,7 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	//mov ecx, [eax+<offs>] - copy memsize to temp var
 	//add ecx, ebp			- relocate
 	//mov [esi+x], ecx		- store relocated
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, memory));
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, mem_size));
 	IA32_Add_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_DAT, MOD_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP);
 
