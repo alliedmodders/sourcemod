@@ -173,25 +173,28 @@ namespace builder
 			}
 
 			string pkg_file = null;
-			if ((pkg_file=CompressPackage(pkg)) == null)
+			if (cfg.Compressor != null)
 			{
-				throw new System.Exception("Failed to compress package: " + pkg.GetPackageName());
+				if ((pkg_file=CompressPackage(pkg)) == null)
+				{
+					throw new System.Exception("Failed to compress package: " + pkg.GetPackageName());
+				}
+	
+				string lpath = null, ltarget = null;
+				pkg.GetCompressBases(ref lpath, ref ltarget);
+				lpath = Config.PathFormat("{0}/{1}/{2}",
+					cfg.OutputBase,
+					lpath,
+					pkg_file);
+				ltarget = Config.PathFormat("{0}/{1}", cfg.OutputBase, pkg_file);
+	
+				if (File.Exists(ltarget))
+				{
+					File.Delete(ltarget);
+				}
+
+				File.Move(lpath, ltarget);
 			}
-
-			string lpath = null, ltarget = null;
-			pkg.GetCompressBases(ref lpath, ref ltarget);
-			lpath = Config.PathFormat("{0}/{1}/{2}",
-				cfg.OutputBase,
-				lpath,
-				pkg_file);
-			ltarget = Config.PathFormat("{0}/{1}", cfg.OutputBase, pkg_file);
-
-			if (File.Exists(ltarget))
-			{
-				File.Delete(ltarget);
-			}
-
-			File.Move(lpath, ltarget);
 		}
 	}
 }
