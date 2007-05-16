@@ -38,6 +38,26 @@ static cell_t sm_HookEvent(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_HookEventEx(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	IPluginFunction *pFunction;
+
+	pContext->LocalToString(params[1], &name);
+
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+	}
+
+	if (g_EventManager.HookEvent(name, pFunction, static_cast<EventHookMode>(params[3])) == EventHookErr_InvalidEvent)
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
 static cell_t sm_UnhookEvent(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -313,6 +333,7 @@ static cell_t sm_SetEventString(IPluginContext *pContext, const cell_t *params)
 REGISTER_NATIVES(gameEventNatives)
 {
 	{"HookEvent",			sm_HookEvent},
+	{"HookEventEx",			sm_HookEventEx},
 	{"UnhookEvent",			sm_UnhookEvent},
 	{"CreateEvent",			sm_CreateEvent},
 	{"FireEvent",			sm_FireEvent},

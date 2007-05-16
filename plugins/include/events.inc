@@ -67,6 +67,17 @@ funcenum EventHook
 native HookEvent(const String:name[], EventHook:callback, EventHookMode:mode=EventHookMode_Post);
 
 /**
+ * Creates a hook for when a game event is fired.
+ *
+ * @param name			Name of event.
+ * @param callback		An EventHook function pointer.
+ * @param mode			Optional EventHookMode determining the type of hook.
+ * @return				True if event exists and was hooked successfully, false otherwise.
+ * @error				Invalid callback function.
+ */
+native bool:HookEventEx(const String:name[], EventHook:callback, EventHookMode:mode=EventHookMode_Post);
+
+/**
  * Removes a hook for when a game event is fired.
  *
  * @param name			Name of event.
