@@ -739,6 +739,7 @@ SC_FUNC void ffcall(symbol *sym,const char *label,int numargs)
 {
   char symname[2*sNAMEMAX+16];
   char aliasname[sNAMEMAX+1];
+  int wasAlias = 0;
 
   assert(sym!=NULL);
   assert(sym->ident==iFUNCTN);
@@ -747,17 +748,20 @@ SC_FUNC void ffcall(symbol *sym,const char *label,int numargs)
   if ((sym->usage & uNATIVE)!=0) {
     /* reserve a SYSREQ id if called for the first time */
     assert(label==NULL);
+    stgwrite("\tsysreq.c ");
     if (sc_status==statWRITE && (sym->usage & uREAD)==0 && sym->addr>=0)
       sym->addr=ntv_funcid++;
-    stgwrite("\tsysreq.c ");
     /* Look for an alias */
     if (lookup_alias(aliasname, sym->name)) {
       symbol *asym = findglb(aliasname, sGLOBAL);
       if (asym && asym->ident==iFUNCTN && ((sym->usage & uNATIVE) != 0)) {
         sym = asym;
+        if (sc_status==statWRITE && (sym->usage & uREAD)==0 && sym->addr>=0) {
+          sym->addr=ntv_funcid++;
+          markusage(sym, uREAD);
+        }
       }
     }
-    assert(sym->addr != 0x1d);
     outval(sym->addr,FALSE);
     if (sc_asmfile) {
       stgwrite("\t; ");
