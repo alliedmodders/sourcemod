@@ -44,6 +44,7 @@ static cell_t sm_HookEventEx(IPluginContext *pContext, const cell_t *params)
 	IPluginFunction *pFunction;
 
 	pContext->LocalToString(params[1], &name);
+	pFunction = pContext->GetFunctionById(params[2]);
 
 	if (!pFunction)
 	{
