@@ -70,8 +70,8 @@ namespace builder
 			builder.CopyFolder(this, "plugins/include", "scripting/include", include_omits);
 			builder.CopyFolder(this, "translations", "translations", null);
 			builder.CopyFolder(this, "public/licenses", null, null);
-			builder.CopyFolder(this, "plugins/admin-flatfile", "scripting/admin-flatfile");
-			builder.CopyFolder(this, "plugins/testsuite", "scripting/testsuite");
+			builder.CopyFolder(this, "plugins/admin-flatfile", "scripting/admin-flatfile", null);
+			builder.CopyFolder(this, "plugins/testsuite", "scripting/testsuite", null);
 		}
 
 		/**
