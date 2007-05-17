@@ -19,5 +19,3 @@ Under [auto-props], add these lines:
 *.h = svn:keywords=Id
 *.sp = svn:keywords=Id
 *.inc = svn:keywords=Id
-
-This is a pointless commit.
