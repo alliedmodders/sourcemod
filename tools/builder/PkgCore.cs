@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[8];
+			string [] folders = new string[10];
 
 			folders[0] = "bin";
 			folders[1] = "plugins/disabled";
@@ -39,6 +39,8 @@ namespace builder
 			folders[5] = "extensions";
 			folders[6] = "scripting/include";
 			folders[7] = "data";
+			folders[8] = "scripting/admin-flatfile";
+			folders[9] = "scripting/testsuite";
 
 			return folders;
 		}
@@ -68,6 +70,8 @@ namespace builder
 			builder.CopyFolder(this, "plugins/include", "scripting/include", include_omits);
 			builder.CopyFolder(this, "translations", "translations", null);
 			builder.CopyFolder(this, "public/licenses", null, null);
+			builder.CopyFolder(this, "plugins/admin-flatfile", "scripting/admin-flatfile");
+			builder.CopyFolder(this, "plugins/testsuite", "scripting/testsuite");
 		}
 
 		/**
