@@ -462,3 +462,4 @@ native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], 
 
 #include <helpers>
 #include <entity>
+#include <menus>
