@@ -50,7 +50,7 @@ enum AdminFlag
 #define AdminFlags_TOTAL	21		/**< Total number of admin flags */
 
 /**
- * @section These define bitwise values for bitstrings (numbers containing bitwise flags).
+ * @section Bitwise values definitions for admin flags.
  */
 #define ADMFLAG_RESERVATION			(1<<0)		/**< Convenience macro for Admin_Reservation as a FlagBit */
 #define ADMFLAG_GENERIC				(1<<1)		/**< Convenience macro for Admin_Generic as a FlagBit */
@@ -81,25 +81,25 @@ enum AdminFlag
 /**
  * @section Hardcoded authentication methods 
  */
-#define AUTHMETHOD_STEAM			"steam"
-#define AUTHMETHOD_IP				"ip"
-#define AUTHMETHOD_NAME				"name"
+#define AUTHMETHOD_STEAM			"steam"		/**< SteamID based authentication */
+#define AUTHMETHOD_IP				"ip"		/**< IP based authentication */
+#define AUTHMETHOD_NAME				"name"		/**< Name based authentication */
 
 /**
  * @endsection
  */
 
 /**
- * Override types.
+ * Access override types.
  */
 enum OverrideType
 {
-	Override_Command = 1,	/* Command */
-	Override_CommandGroup,	/* Command group */
+	Override_Command = 1,	/**< Command */
+	Override_CommandGroup,	/**< Command group */
 };
 
 /**
- * Override rules.
+ * Access override rules.
  */
 enum OverrideRule
 {
@@ -112,23 +112,29 @@ enum OverrideRule
  */
 enum ImmunityType
 {
-	Immunity_Default = 1,	/* Immune from everyone with no immunity */
-	Immunity_Global,		/* Immune from everyone (except root admins) */
+	Immunity_Default = 1,	/**< Immune from everyone with no immunity */
+	Immunity_Global,		/**< Immune from everyone (except root admins) */
 };
 
-/** Identifies a unique entry in the group permissions cache.  These are not Handles. */
+/** 
+ * Identifies a unique entry in the group permissions cache.  These are not Handles.
+ */
 enum GroupId
 {
-	INVALID_GROUP_ID = -1,
+	INVALID_GROUP_ID = -1,	/**< An invalid/nonexistant group */
 };
 
-/** Identifies a unique entry in the admin permissions cache.  These are not Handles. */
+/** 
+ * Identifies a unique entry in the admin permissions cache.  These are not Handles.
+ */
 enum AdminId
 {
-	INVALID_ADMIN_ID = -1,
+	INVALID_ADMIN_ID = -1,	/**< An invalid/nonexistant admin */
 };
 
-/** Defines user access modes. */
+/**
+ * Methods of computing access permissions.
+ */
 enum AdmAccessMode
 {
 	Access_Real,		/**< Access the user has inherently */
@@ -323,6 +329,7 @@ native AdminId:CreateAdmin(const String:name[]="");
 
 /**
  * Retrieves an admin's user name as made with CreateAdmin().
+ *
  * @note This function can return UTF-8 strings, and will safely chop UTF-8 strings.
  *
  * @param id			AdminId of the admin.
@@ -435,6 +442,7 @@ native AdminId:FindAdminByIdentity(const String:auth[], const String:identity[])
 
 /**
  * Removes an admin entry from the cache.
+ *
  * @note This will remove any bindings to a specific user.
  *
  * @param id			AdminId index to remove/invalidate.
@@ -528,3 +536,4 @@ stock bool:BitToFlag(bit, &AdminFlag:flag)
 	
 	return false;
 }
+
