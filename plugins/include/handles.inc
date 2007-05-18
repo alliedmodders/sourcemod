@@ -27,7 +27,7 @@ enum Handle
 };
 
 /**
- * @brief Returns if a handle is valid or not.
+ * Returns if a handle is valid or not.
  * @note It is not a good idea to call this on every Handle.  If you code properly,
  *       all of your Handles will either be valid or will expose important bugs to fix.
  *       This is provided for situations only where testing for handle validity is needed.
@@ -38,7 +38,7 @@ enum Handle
 native bool:IsValidHandle(Handle:hndl);
 
 /**
- * @brief Closes a Handle.  If the handle has multiple copies open, 
+ * Closes a Handle.  If the handle has multiple copies open, 
  * it is not destroyed unless all copies are closed.
  * 
  * @note Closing a Handle has a different meaning for each Handle type.  Make
@@ -51,7 +51,7 @@ native bool:IsValidHandle(Handle:hndl);
 native bool:CloseHandle(Handle:hndl);
 
 /**
- * @brief Clones a Handle.  When passing handles in between plugins, caching handles
+ * Clones a Handle.  When passing handles in between plugins, caching handles
  * can result in accidental invalidation when one plugin releases the Handle, or is its owner
  * is unloaded from memory.  To prevent this, the Handle may be "cloned" with a new owner.
  * 

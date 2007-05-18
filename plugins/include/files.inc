@@ -45,7 +45,7 @@ enum PathType
 };
 
 /**
- * @brief Builds a path relative to the SourceMod folder.
+ * Builds a path relative to the SourceMod folder.
  *
  * @param type			Type of path to build as the base.
  * @param buffer		Buffer to store the path.
@@ -57,7 +57,7 @@ enum PathType
 native BuildPath(PathType:type, String:buffer[], maxlength, const String:fmt[], any:...);
 
 /**
- * @brief Opens a directory/folder for contents enumeration.
+ * Opens a directory/folder for contents enumeration.
  * @note Directories are closed with CloseHandle().
  * @note Directories Handles can be cloned.
  *
@@ -67,7 +67,7 @@ native BuildPath(PathType:type, String:buffer[], maxlength, const String:fmt[], 
 native Handle:OpenDirectory(const String:path[]);
 
 /**
- * @brief Reads the current directory entry as a local filename, then moves to the next file.
+ * Reads the current directory entry as a local filename, then moves to the next file.
  * @note Contents of buffers are undefined when returning false.
  * @note Both the '.' and '..' automatic directory entries will be retrieved for Windows and Linux.
  * 
@@ -81,7 +81,7 @@ native Handle:OpenDirectory(const String:path[]);
 native bool:ReadDirEntry(Handle:dir, String:buffer[], maxlength, &FileType:type=FileType_Unknown);
 
 /**
- * @brief Opens a file.
+ * Opens a file.
  * @note Files are closed with CloseHandle().
  * @note File Handles can be cloned.
  *
@@ -92,7 +92,7 @@ native bool:ReadDirEntry(Handle:dir, String:buffer[], maxlength, &FileType:type=
 native Handle:OpenFile(const String:file[], const String:mode[]);
 
 /**
- * @brief Deletes a file.
+ * Deletes a file.
  *
  * @param path			Path of the file to delete.
  * @return				True on success, false otherwise.
@@ -100,7 +100,7 @@ native Handle:OpenFile(const String:file[], const String:mode[]);
 native bool:DeleteFile(const String:path[]);
 
 /**
- * @brief Reads a line from a text file.
+ * Reads a line from a text file.
  *
  * @param hndl			Handle to the file.
  * @param buffer		String buffer to hold the line.
@@ -110,7 +110,7 @@ native bool:DeleteFile(const String:path[]);
 native bool:ReadFileLine(Handle:hndl, String:buffer[], maxlength);
 
 /**
- * @brief Tests if the end of file has been reached.
+ * Tests if the end of file has been reached.
  *
  * @param file			Handle to the file.
  * @return				True if end of file has been reached, false otherwise.
@@ -118,7 +118,7 @@ native bool:ReadFileLine(Handle:hndl, String:buffer[], maxlength);
 native bool:IsEndOfFile(Handle:file);
 
 /**
- * @brief Sets the file position indicator.
+ * Sets the file position indicator.
  *
  * @param file			Handle to the file.
  * @param position		Position relative to what is specified in whence.
@@ -128,7 +128,7 @@ native bool:IsEndOfFile(Handle:file);
 native bool:FileSeek(Handle:file, position, whence);
 
 /**
- * @brief Get current position in the file.
+ * Get current position in the file.
  *
  * @param file			Handle to the file.
  * @return				Value for the file position indicator.
@@ -136,7 +136,7 @@ native bool:FileSeek(Handle:file, position, whence);
 native FilePosition(Handle:file);
 
 /**
- * @brief Checks if a file exists.
+ * Checks if a file exists.
  *
  * @param path			Path to the file.
  * @return				True if the file exists, false otherwise.
@@ -144,7 +144,7 @@ native FilePosition(Handle:file);
 native bool:FileExists(const String:path[]);
 
 /**
- * @brief Renames a file.
+ * Renames a file.
  *
  * @param newpath		New path to the file.
  * @param oldpath		Path to the existing file.
@@ -153,7 +153,7 @@ native bool:FileExists(const String:path[]);
 native bool:RenameFile(const String:newpath[], const String:oldpath[]);
 
 /**
- * @brief Checks if a directory exists.
+ * Checks if a directory exists.
  *
  * @param path			Path to the directory.
  * @return				True if the directory exists, false otherwise.
@@ -161,7 +161,7 @@ native bool:RenameFile(const String:newpath[], const String:oldpath[]);
 native bool:DirExists(const String:path[]);
 
 /**
- * @brief Get the file size in bytes.
+ * Get the file size in bytes.
  *
  * @param path			Path to the file.
  * @return				File size in bytes, -1 if file not found.
@@ -169,7 +169,7 @@ native bool:DirExists(const String:path[]);
 native FileSize(const String:path[]);
 
 /**
- * @brief Removes a directory.
+ * Removes a directory.
  * @note On most Operating Systems you cannot remove a directory which has files inside it.
  *
  * @param path			Path to the directory.
@@ -178,7 +178,7 @@ native FileSize(const String:path[]);
 native bool:RemoveDir(const String:path[]);
 
 /**
- * @brief Writes a line of text in a file.
+ * Writes a line of text in a file.
  * @note This native will append the newline character.
  *
  * @param hndl			Handle to the file.

@@ -90,7 +90,7 @@ native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags=0);
 native EndMessage();
 
 /**
- * @brief Called when a message is hooked
+ * Called when a message is hooked
  *
  * @param msg_id		Message index.
  * @param bf			Handle to the input bit buffer of the message.
@@ -104,14 +104,14 @@ native EndMessage();
 functag MsgHook Action:public(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
 
 /**
- * @brief Called when a message is finished sending.
+ * Called when a message is finished sending.
  *
  * @param msg_id		Message index.
  */
 functag MsgSentNotify public(UserMsg:msg_id);
 
 /**
- * @brief Hooks a user message.
+ * Hooks a user message.
  *
  * @param msg_id		Message index.
  * @param hook			Function to use as a hook.
@@ -125,7 +125,7 @@ functag MsgSentNotify public(UserMsg:msg_id);
 native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgSentNotify:notify=MsgSentNotify:-1);
 
 /**
- * @brief Removes one usermessage hook.
+ * Removes one usermessage hook.
  *
  * @param msg_id		Message index.
  * @param hook			Function used for the hook.

@@ -136,7 +136,7 @@ enum AdmAccessMode
 };
 
 /**
- * @brief Represents the various cache regions.
+ * Represents the various cache regions.
  */
 enum AdminCachePart
 {
@@ -200,7 +200,7 @@ native UnsetCommandOverride(const String:cmd[], OverrideType:type);
 native GroupId:CreateAdmGroup(const String:group_name[]);
 
 /**
- * @brief Finds a group by name.
+ * Finds a group by name.
  *
  * @param group_name	String containing the group name.
  * @return				A group id, or INVALID_GROUP_ID if not found.
