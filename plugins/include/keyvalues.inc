@@ -76,7 +76,7 @@ native KvSetNum(Handle:kv, const String:key[], value);
  * @noreturn
  * @error				Invalid Handle.
  */
-native KvSetUint64(Handle:kv, const String:key[], const value[2]);
+native KvSetUInt64(Handle:kv, const String:key[], const value[2]);
 
 /** 
  * Sets a floating point value of a KeyValues key.
@@ -162,7 +162,7 @@ native KvGetColor(Handle:kv, const String:key[], &r, &g, &b, &a);
  * @noreturn
  * @error				Invalid Handle.
  */
-native KvGetUint64(Handle:kv, const String:key[], value[2], defvalue[2]={0,0});
+native KvGetUInt64(Handle:kv, const String:key[], value[2], defvalue[2]={0,0});
 
 /**
  * Sets the current position in the KeyValues tree to the given key.

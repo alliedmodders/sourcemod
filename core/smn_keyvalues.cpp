@@ -124,7 +124,7 @@ static cell_t smn_KvSetNum(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-static cell_t smn_KvSetUint64(IPluginContext *pCtx, const cell_t *params)
+static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
@@ -312,7 +312,7 @@ static cell_t smn_KvGetColor(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
-static cell_t smn_KvGetUint64(IPluginContext *pCtx, const cell_t *params)
+static cell_t smn_KvGetUInt64(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
@@ -820,14 +820,14 @@ REGISTER_NATIVES(keyvaluenatives)
 {
 	{"KvSetString",				smn_KvSetString},
 	{"KvSetNum",				smn_KvSetNum},
-	{"KvSetUint64",				smn_KvSetUint64},
+	{"KvSetUInt64",				smn_KvSetUInt64},
 	{"KvSetFloat",				smn_KvSetFloat},
 	{"KvSetColor",				smn_KvSetColor},
 	{"KvGetString",				smn_KvGetString},
 	{"KvGetNum",				smn_KvGetNum},
 	{"KvGetFloat",				smn_KvGetFloat},
 	{"KvGetColor",				smn_KvGetColor},
-	{"KvGetUint64",				smn_KvGetUint64},
+	{"KvGetUInt64",				smn_KvGetUInt64},
 	{"CreateKeyValues",			smn_CreateKeyValues},
 	{"KvJumpToKey",				smn_KvJumpToKey},
 	{"KvGotoNextKey",			smn_KvGotoNextKey},
