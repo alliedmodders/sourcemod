@@ -409,7 +409,7 @@ native GetAdminGroupCount(AdminId:id);
  * @return				A GroupId index and a name pointer, or
  *						INVALID_GROUP_ID and NULL if an error occurred.
 */
-native GroupId:GetAdminGroup(AdminId:id, index, const String:name[], maxlength) =0;
+native GroupId:GetAdminGroup(AdminId:id, index, const String:name[], maxlength);
 
 /**
  * Sets a password on an admin.
@@ -476,7 +476,7 @@ native FlagBitArrayToBits(const bool:array[], maxSize);
  * @param numFlags		Number of flags in the array.
  * @return				A bit string composed of the array flags.
  */
-native FlagArrayToBits(const AdminFlag:array[], numFlags) =0;
+native FlagArrayToBits(const AdminFlag:array[], numFlags);
 
 /**
  * Converts a bit string to an array of flags.
@@ -486,7 +486,7 @@ native FlagArrayToBits(const AdminFlag:array[], numFlags) =0;
  * @param maxSize		Maximum size of the flag array.
  * @return				Number of flags written.
  */
-native FlagBitsToArray(bits, AdminFlag:array[], maxSize) =0;
+native FlagBitsToArray(bits, AdminFlag:array[], maxSize);
 
 /**
  * Tests whether one admin can target another.
