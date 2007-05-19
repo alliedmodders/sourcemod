@@ -211,7 +211,7 @@ native Call_StartFunction(Handle:plugin, Function:func);
  * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushCell({Handle,Function,_}:value);
+native Call_PushCell(any:value);
 
 /**
  * Pushes a cell by reference onto the current call.
@@ -222,7 +222,7 @@ native Call_PushCell({Handle,Function,_}:value);
  * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushCellRef(&{Handle,Function,_}:value);
+native Call_PushCellRef(&any:value);
 
 
 /**
@@ -258,7 +258,7 @@ native Call_PushFloatRef(&Float:value);
  * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushArray(const {Handle,Float,Function,_}:value[], size);
+native Call_PushArray(const any:value[], size);
 
 /**
  * Pushes an array onto the current call.
@@ -272,7 +272,7 @@ native Call_PushArray(const {Handle,Float,Function,_}:value[], size);
  * @noreturn
  * @error					Called before a call has been started.
  */
-native Call_PushArrayEx({Handle,Float,Function,_}:value[], size, cpflags);
+native Call_PushArrayEx(any:value[], size, cpflags);
 
 /**
  * Pushes a string onto the current call.
@@ -420,7 +420,7 @@ native GetNativeCellRef(param);
  * @noreturn
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeCellRef(param, {Float,Function,Handle,_}:value);
+native SetNativeCellRef(param, any:value);
 
 /**
  * Gets an array from a native parameter (always by reference).
@@ -431,7 +431,7 @@ native SetNativeCellRef(param, {Float,Function,Handle,_}:value);
  * @return					SP_ERROR_NONE on success, anything else on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeArray(param, {Float,Function,Handle,_}:local[], size);
+native GetNativeArray(param, any:local[], size);
 
 /**
  * Copies a local array into a native parameter array (always by reference).
@@ -442,7 +442,7 @@ native GetNativeArray(param, {Float,Function,Handle,_}:local[], size);
  * @return					SP_ERROR_NONE on success, anything else on failure.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native SetNativeArray(param, const {Float,Function,Handle,_}:local[], size);
+native SetNativeArray(param, const any:local[], size);
 
 /**
  * Formats a string using parameters from a native.

@@ -33,7 +33,7 @@ enum ConVarBounds
 enum QueryCookie
 {
 	QUERYCOOKIE_FAILED = 0,
-}
+};
 
 /**
  * Console variable query result values.

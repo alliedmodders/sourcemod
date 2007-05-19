@@ -212,83 +212,135 @@ native Float:operator+(Float:oper1, Float:oper2) = FloatAdd;
 native Float:operator-(Float:oper1, Float:oper2) = FloatSub;
 
 stock Float:operator++(Float:oper)
+{
 	return oper+1.0;
+}
 
 stock Float:operator--(Float:oper)
+{
 	return oper-1.0;
+}
 
 stock Float:operator-(Float:oper)
+{
 	return oper^Float:((-1)^((-1)/2));				/* IEEE values are sign/magnitude */
+}
 
 stock Float:operator*(Float:oper1, oper2)
+{
 	return FloatMul(oper1, float(oper2));			/* "*" is commutative */
+}
 
 stock Float:operator/(Float:oper1, oper2)
+{
 	return FloatDiv(oper1, float(oper2));
+}
 
 stock Float:operator/(oper1, Float:oper2)
+{
 	return FloatDiv(float(oper1), oper2);
+}
 
 stock Float:operator+(Float:oper1, oper2)
+{
 	return FloatAdd(oper1, float(oper2));			/* "+" is commutative */
+}
 
 stock Float:operator-(Float:oper1, oper2)
+{
 	return FloatSub(oper1, float(oper2));
+}
 
 stock Float:operator-(oper1, Float:oper2)
+{
 	return FloatSub(float(oper1), oper2);
+}
 
 stock bool:operator==(Float:oper1, Float:oper2)
+{
 	return FloatCompare(oper1, oper2) == 0;
+}
 
 stock bool:operator==(Float:oper1, oper2)
+{
 	return FloatCompare(oper1, float(oper2)) == 0; 	/* "==" is commutative */
+}
 
 stock bool:operator!=(Float:oper1, Float:oper2)
+{
 	return FloatCompare(oper1, oper2) != 0;
+}
 
 stock bool:operator!=(Float:oper1, oper2)
+{
 	return FloatCompare(oper1, float(oper2)) != 0; 	/* "==" is commutative */
+}
 
 stock bool:operator>(Float:oper1, Float:oper2)
+{
 	return FloatCompare(oper1, oper2) > 0;
+}
 
 stock bool:operator>(Float:oper1, oper2)
+{
 	return FloatCompare(oper1, float(oper2)) > 0;
+}
 
 stock bool:operator>(oper1, Float:oper2)
+{
 	return FloatCompare(float(oper1), oper2) > 0;
+}
 
 stock bool:operator>=(Float:oper1, Float:oper2)
+{
 	return FloatCompare(oper1, oper2) >= 0;
+}
 
 stock bool:operator>=(Float:oper1, oper2)
+{
 	return FloatCompare(oper1, float(oper2)) >= 0;
+}
 
 stock bool:operator>=(oper1, Float:oper2)
+{
 	return FloatCompare(float(oper1), oper2) >= 0;
+}
 
 stock bool:operator<(Float:oper1, Float:oper2)
+{
 	return FloatCompare(oper1, oper2) < 0;
+}
 
 stock bool:operator<(Float:oper1, oper2)
+{
 	return FloatCompare(oper1, float(oper2)) < 0;
+}
 
 stock bool:operator<(oper1, Float:oper2)
+{
 	return FloatCompare(float(oper1), oper2) < 0;
+}
 
 stock bool:operator<=(Float:oper1, Float:oper2)
+{
 	return FloatCompare(oper1, oper2) <= 0;
+}
 
 stock bool:operator<=(Float:oper1, oper2)
+{
 	return FloatCompare(oper1, float(oper2)) <= 0;
+}
 
 stock bool:operator<=(oper1, Float:oper2)
+{
 	return FloatCompare(float(oper1), oper2) <= 0;
+}
 
 stock bool:operator!(Float:oper)
+{
 	return (_:oper & ((-1)/2)) == 0;		/* -1 = all bits to 1; /2 = remove most significant bit (sign)
 											works on both 32bit and 64bit systems; no constant required */
+}
 
 /**
  * Forbidden operators.

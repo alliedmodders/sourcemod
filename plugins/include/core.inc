@@ -43,7 +43,7 @@ enum Action
 	Plugin_Continue = 0,	/**< Continue with the original action */
 	Plugin_Handled = 3,		/**< Handle the action at the end (don't call it) */
 	Plugin_Stop = 4,		/**< Immediately stop the hook chain and handle the original */
-}
+};
 
 public PlVers:__version = 
 {
