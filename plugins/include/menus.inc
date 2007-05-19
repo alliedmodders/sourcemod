@@ -340,7 +340,7 @@ stock BroadcastMenuToAll(Handle:menu, MenuHandler:handler, time)
  * @return					Number of clients that the vote will wait upon.
  * @error					Invalid Handle.
  */
-native VoteMenuToAll(Handle:menu, MenuHandler:handler, time)
+stock VoteMenuToAll(Handle:menu, MenuHandler:handler, time)
 {
 	new num = GetMaxClients();
 	new total;
