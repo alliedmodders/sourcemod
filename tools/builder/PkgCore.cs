@@ -29,18 +29,19 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[10];
+			string [] folders = new string[11];
 
 			folders[0] = "bin";
 			folders[1] = "plugins/disabled";
 			folders[2] = "configs/gamedata";
-			folders[3] = "translations";
-			folders[4] = "logs";
-			folders[5] = "extensions";
-			folders[6] = "scripting/include";
+			folders[3] = "configs/geoip";
+			folders[4] = "translations";
+			folders[5] = "logs";
+			folders[6] = "extensions";
 			folders[7] = "data";
-			folders[8] = "scripting/admin-flatfile";
-			folders[9] = "scripting/testsuite";
+			folders[8] = "scripting/include";
+			folders[9] = "scripting/admin-flatfile";
+			folders[10] = "scripting/testsuite";
 
 			return folders;
 		}
@@ -59,6 +60,7 @@ namespace builder
 		{
 			builder.CopyFolder(this, "configs", "configs", null);
 			builder.CopyFolder(this, "configs/gamedata", "configs/gamedata", null);
+			builder.CopyFolder(this, "configs/geoip", "configs/geoip", null);
 			
 			string [] plugin_omits = new string[1];
 			plugin_omits[0] = "spcomp.exe";
