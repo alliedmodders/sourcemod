@@ -169,6 +169,15 @@ native bool:DirExists(const String:path[]);
 native FileSize(const String:path[]);
 
 /**
+ * Flushes a file's buffered output; any buffered output
+ * is immediately written to the file.
+ *
+ * @param file			Handle to the file.
+ * @return				True on success, false on failure.
+ */
+native FlushFile(Handle:file);
+
+/**
  * Removes a directory.
  * @note On most Operating Systems you cannot remove a directory which has files inside it.
  *

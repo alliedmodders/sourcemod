@@ -448,6 +448,25 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_FlushFile(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	FILE *pFile;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	return (fflush(pFile) == 0) ? 1 : 0;
+}
+
 static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 {
 	char path[PLATFORM_MAX_PATH], *fmt, *buffer;
@@ -523,5 +542,6 @@ REGISTER_NATIVES(filesystem)
 	{"LogToGame",				sm_LogToGame},
 	{"LogMessage",				sm_LogMessage},
 	{"LogError",				sm_LogError},
+	{"FlushFile",				sm_FlushFile},
 	{NULL,						NULL},
 };
