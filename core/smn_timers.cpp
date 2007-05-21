@@ -227,10 +227,22 @@ static cell_t smn_TriggerTimer(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *simulating;
+	pContext->LocalToPhysAddr(params[1], &simulating);
+
+	*simulating = g_SimTicks.ticking ? 0 : 1;
+
+	float t = g_SimTicks.ticking ? gpGlobals->curtime : g_SimTicks.ticktime;
+	return sp_ftoc(t);
+}
+
 REGISTER_NATIVES(timernatives)
 {
 	{"CreateTimer",				smn_CreateTimer},
 	{"KillTimer",				smn_KillTimer},
 	{"TriggerTimer",			smn_TriggerTimer},
+	{"GetTickedTime",			smn_GetTickedTime},
 	{NULL,						NULL}
 };
