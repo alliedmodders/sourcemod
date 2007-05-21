@@ -692,6 +692,7 @@ stock GetEntDataArray(entity, offset, value, array[], arraySize, dataSize=4)
 	for (new i=0; i<arraySize; i++)
 	{
 		array[i] = GetEntData(entity, offset, dataSize)
+		offset += dataSize;
 	}
 }
 
@@ -712,6 +713,7 @@ stock SetEntDataArray(entity, offset, value, const array[], arraySize, dataSize=
 {
 	for (new i=0; i<arraySize; i++)
 	{
-		SetEntData(entity, offset, array[i], dataSize, changeState)
+		SetEntData(entity, real_offset, array[i], dataSize, changeState);
+		offset += dataSize;
 	}
 }
