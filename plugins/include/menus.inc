@@ -480,6 +480,17 @@ native DrawPanelText(Handle:panel, const String:text[]);
 native CanPanelDrawFlags(Handle:panel, style);
 
 /**
+ * Sets the selectable key map of a panel.  This is not supported by
+ * all styles (only by Radio, as of this writing).  
+ *
+ * @param keys			An integer where each bit N allows key
+ *						N+1 to be selected.  If no keys are selectable,
+ *						then key 0 (bit 9) is automatically set.
+ * @return 				True if supported, false otherwise.
+ */
+native bool:SetPanelKeys(Handle:panel, keys);
+
+/**
  * Sends a panel to a client.  Unlike full menus, the handler
  * function will only receive the following actions, both of 
  * which will have INVALID_HANDLE for a menu, and the client

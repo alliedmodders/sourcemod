@@ -78,6 +78,7 @@ public: //IMenuPanel
 	bool SendDisplay(int client, IMenuHandler *handler, unsigned int time);
 	void DeleteThis();
 	void SendRawDisplay(int client, unsigned int time);
+	bool SetSelectableKeys(unsigned int keymap);
 private:
 	String m_BufferText;
 	String m_Title;

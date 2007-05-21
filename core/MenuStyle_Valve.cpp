@@ -305,6 +305,11 @@ bool CValveMenuDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned 
 	return g_ValveMenuStyle.DoClientMenu(client, this, handler, time);
 }
 
+bool CValveMenuDisplay::SetSelectableKeys(unsigned int keymap)
+{
+	return false;
+}
+
 CValveMenu::CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
 CBaseMenu(pHandler, &g_ValveMenuStyle, pOwner), 
 	m_IntroColor(255, 0, 0, 255)

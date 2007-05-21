@@ -855,6 +855,20 @@ static cell_t SendPanelToClient(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetPanelKeys(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMenuPanel *panel;
+
+	if ((err=ReadPanelHandle(hndl, &panel)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return panel->SetSelectableKeys(params[2]);
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -885,5 +899,6 @@ REGISTER_NATIVES(menuNatives)
 	{"SetMenuPagination",		SetMenuPagination},
 	{"SetMenuTitle",			SetMenuTitle},
 	{"SetPanelTitle",			SetPanelTitle},
+	{"SetPanelKeys",			SetPanelKeys},
 	{NULL,						NULL},
 };

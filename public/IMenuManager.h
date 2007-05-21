@@ -224,6 +224,18 @@ namespace SourceMod
 		 * @brief Destroys the display object.
 		 */
 		virtual void DeleteThis() =0;
+
+		/**
+		 * @brief Sets the selectable key map.  Returns false if the function 
+		 * is not supported.
+		 * 
+		 * @param keys			A bit string where each bit N-1 specifies 
+		 *						that key N is selectable (key 0 is bit 9).  
+		 *						If the selectable key map is 0, it will be
+		 *						automatically set to allow 0.
+		 * @return				True on success, false if not supported.
+		 */
+		virtual bool SetSelectableKeys(unsigned int keymap) =0;
 	};
 
 	/**

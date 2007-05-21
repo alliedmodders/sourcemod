@@ -82,6 +82,7 @@ public:
 	bool CanDrawItem(unsigned int drawFlags);
 	void SendRawDisplay(int client, int priority, unsigned int time);
 	void DeleteThis();
+	bool SetSelectableKeys(unsigned int keymap);
 private:
 	KeyValues *m_pKv;
 	unsigned int m_NextPos;

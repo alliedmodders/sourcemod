@@ -286,6 +286,8 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 
 	cell_t players[1] = {client};
 
+	int _sel_keys = (keys == 0) ? (1<<9) : keys;
+
 	char *ptr = buffer;
 	char save = 0;
 	while (true)
@@ -296,7 +298,7 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 			ptr[240] = '\0';
 		}
 		bf_write *buffer = g_UserMsgs.StartMessage(g_ShowMenuId, players, 1, 0);
-		buffer->WriteWord(keys);
+		buffer->WriteWord(_sel_keys);
 		buffer->WriteChar(time ? time : -1);
 		buffer->WriteByte( (len > 240) ? 1 : 0 );
 		buffer->WriteString(ptr);
@@ -315,6 +317,11 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 void CRadioDisplay::DeleteThis()
 {
 	delete this;
+}
+
+bool CRadioDisplay::SetSelectableKeys(unsigned int keymap)
+{
+	keys = (signed)keymap;
 }
 
 CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
