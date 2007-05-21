@@ -188,7 +188,7 @@ void BaseMenuStyle::ProcessWatchList()
 		player = GetMenuPlayer(client);
 		if (!player->bInMenu || !player->menuHoldTime)
 		{
-			m_WatchList.remove(i);
+			m_WatchList.remove(client);
 			continue;
 		}
 		if (curTime > player->menuStartTime + player->menuHoldTime)
