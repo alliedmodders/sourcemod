@@ -548,7 +548,7 @@ unsigned int CBaseMenu::GetItemCount()
 
 bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
 {
-	if (itemsPerPage > 7)
+	if (itemsPerPage > 7 || itemsPerPage == 1)
 	{
 		return false;
 	}

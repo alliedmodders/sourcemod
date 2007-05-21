@@ -325,14 +325,12 @@ void CValveMenu::Cancel_Finally()
 
 bool CValveMenu::SetPagination(unsigned int itemsPerPage)
 {
-	if (itemsPerPage < 1 || itemsPerPage > 5)
+	if (itemsPerPage > 5)
 	{
 		return false;
 	}
 
-	CBaseMenu::SetPagination(itemsPerPage);
-
-	return true;
+	return CBaseMenu::SetPagination(itemsPerPage);
 }
 
 bool CValveMenu::SetExtOption(MenuOption option, const void *valuePtr)

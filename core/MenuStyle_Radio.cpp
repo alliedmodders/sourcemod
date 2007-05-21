@@ -322,6 +322,7 @@ void CRadioDisplay::DeleteThis()
 bool CRadioDisplay::SetSelectableKeys(unsigned int keymap)
 {
 	keys = (signed)keymap;
+	return true;
 }
 
 CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
