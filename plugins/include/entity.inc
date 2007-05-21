@@ -687,7 +687,7 @@ native SetEntPropString(entity, PropType:type, const String:prop[], const String
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock GetEntDataArray(entity, offset, value, array[], arraySize, dataSize=4)
+stock GetEntDataArray(entity, offset, array[], arraySize, dataSize=4)
 {
 	for (new i=0; i<arraySize; i++)
 	{
