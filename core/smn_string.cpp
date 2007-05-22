@@ -479,6 +479,40 @@ static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
 	return bytes;
 }
 
+static cell_t SplitString(IPluginContext *pContext, const cell_t *params)
+{
+	char *text, *split;
+	
+	pContext->LocalToString(params[1], &text);
+	pContext->LocalToString(params[2], &split);
+
+	size_t maxLen = (size_t)params[4];
+	size_t textLen = strlen(text);
+	size_t splitLen = strlen(split);
+
+	if (splitLen > textLen)
+	{
+		return -1;
+	}
+
+	for (size_t i=0; i<textLen - splitLen; i++)
+	{
+		if (strncmp(&text[i], split, splitLen) == 0)
+		{
+			/* Split hereeeee */
+			if (i >= maxLen)
+			{
+				pContext->StringToLocalUTF8(params[3], maxLen, text, NULL);
+			} else {
+				pContext->StringToLocalUTF8(params[3], i+1, text, NULL);
+			}
+			return (cell_t)(i + splitLen);
+		}
+	}
+
+	return -1;
+}
+
 REGISTER_NATIVES(basicStrings)
 {
 	{"BreakString",			BreakString},
@@ -495,6 +529,7 @@ REGISTER_NATIVES(basicStrings)
 	{"IsCharUpper",			IsCharUpper},
 	{"ReplaceString",		ReplaceString},
 	{"ReplaceStringEx",		ReplaceStringEx},
+	{"SplitString",			SplitString},
 	{"strlen",				sm_strlen},
 	{"StrBreak",			BreakString},		/* Backwards compat shim */
 	{"StrContains",			sm_contain},

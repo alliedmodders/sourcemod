@@ -217,6 +217,19 @@ stock StrBreak(const String:source[], String:arg[], argLen)
 }
 
 /**
+ * Returns text in a string up until a certain character sequence is reached.
+ *
+ * @param source		Source input string.
+ * @param part			Buffer to store string part.
+ * @param partLen		Maximum length of the string part buffer.
+ * @param split			A string which specifies a search point to break at.
+ * @return				-1 if no match was found; otherwise, an index into source
+ *						marking the first index after the searched text.  The
+ *						index is always relative to the start of the input string.
+ */
+native SplitString(const String:source[], const String:split[], String:part[], partLen);
+
+/**
  * Given a string, replaces all occurrences of a search string with a 
  * replacement string.
  *
@@ -373,3 +386,79 @@ stock StrCat(String:buffer[], maxlength, const String:source[])
  * @return				Number of bytes written (UTF-8 safe).
  */
 native TrimString(String:str[]);
+
+/**
+ * Breaks a string into pieces and stores each piece into an array of buffers.
+ *
+ * @param text				The string to split.
+ * @param split				The string to use as a split delimiter.
+ * @param buffers			An array of string buffers (2D array).
+ * @param maxStrings		Number of string buffers (first dimension size).
+ * @param maxStringLength	Maximum length of each string buffer.
+ * @return					Number of strings retrieved.
+ */
+stock ExplodeString(const String:text[], const String:split[], String:buffers[][], maxStrings, maxStringLength)
+{
+	new reloc_idx, idx, total;
+	
+	if (maxStrings < 1 || split[0] == '\0')
+	{
+		return 0;
+	}
+	
+	while ((idx = SplitString(text[reloc_idx], split, buffers[total], maxStringLength)) != -1)
+	{
+		reloc_idx += idx;
+		if (text[reloc_idx] == '\0')
+		{
+			break;
+		}
+		if (++total >= maxStrings)
+		{
+			return total;
+		}
+	}
+	
+	if (text[reloc_idx] != '\0' && total <= maxStrings - 1)
+	{
+		strcopy(buffers[total++], maxStringLength, text[reloc_idx]);
+	}
+	
+	return total;
+}
+
+/**
+ * Joins an array of strings into one string, with a "join" string inserted in
+ * between each given string.  This function complements ExplodeString.
+ *
+ * @param strings		An array of strings.
+ * @param numStrings	Number of strings in the array.
+ * @param join			The join string to insert between each string.
+ * @param buffer		Output buffer to write the joined string to.
+ * @param maxLength		Maximum length of the output buffer.
+ * @return				Number of bytes written to the output buffer.
+ */
+stock ImplodeStrings(const String:strings[][], numStrings, const String:join[], String:buffer[], maxLength)
+{
+	new total, length, part_length;
+	new join_length = strlen(join);
+	for (new i=0; i<numStrings; i++)
+	{
+		length = strcopy(buffer[total], maxLength-total, strings[i]);
+		total += length;
+		if (length < part_length)
+		{
+			break;
+		}
+		if (i != numStrings - 1)
+		{
+			length = strcopy(buffer[total], maxLength-total, join);
+			total += length;
+			if (length < join_length)
+			{
+				break;
+			}
+		}
+	}
+	return total;
+}
