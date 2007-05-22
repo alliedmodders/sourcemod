@@ -238,7 +238,7 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 }
 
 /* :TODO: make this UTF8 safe */
-static cell_t StrBreak(IPluginContext *pContext, const cell_t *params)
+static cell_t BreakString(IPluginContext *pContext, const cell_t *params)
 {
 	const char *input;
 	char *out;
@@ -383,7 +383,7 @@ static cell_t IsCharMB(IPluginContext *pContext, const cell_t *params)
 	return bytes;
 }
 
-static cell_t IsCharUpper(IPluginContext  *pContext, const cell_t *params)
+static cell_t IsCharUpper(IPluginContext *pContext, const cell_t *params)
 {
 	char chr = params[1];
 
@@ -395,7 +395,7 @@ static cell_t IsCharUpper(IPluginContext  *pContext, const cell_t *params)
 	return isupper(chr);
 }
 
-static cell_t IsCharLower(IPluginContext  *pContext, const cell_t *params)
+static cell_t IsCharLower(IPluginContext *pContext, const cell_t *params)
 {
 	char chr = params[1];
 
@@ -405,6 +405,41 @@ static cell_t IsCharLower(IPluginContext  *pContext, const cell_t *params)
 	}
 
 	return islower(chr);
+}
+
+static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[1], &str);
+
+	size_t chars = strlen(str);
+
+	if (chars == 0)
+	{
+		return 0;
+	}
+
+	char *end = str + chars - 1;
+
+	/* Iterate backwards through string until we reach first non-whitespace char */
+	while (end >= str && IsWhitespace(end))
+	{
+		end--;
+	}
+
+	/* Replace first whitespace char (at the end) with null terminator */
+	*(end + 1) = '\0';
+
+	/* Iterate forwards through string until first non-whitespace char is reached */
+	while (IsWhitespace(str))
+	{
+		str++;
+	}
+
+	size_t bytes;
+	pContext->StringToLocalUTF8(params[1], chars + 1, str, &bytes);
+
+	return bytes;
 }
 
 REGISTER_NATIVES(basicStrings)
@@ -418,7 +453,8 @@ REGISTER_NATIVES(basicStrings)
 	{"IsCharSpace",			IsCharSpace},
 	{"IsCharUpper",			IsCharUpper},
 	{"strlen",				sm_strlen},
-	{"StrBreak",			StrBreak},
+	{"StrBreak",			BreakString},		/* Backwards compat shim */
+	{"BreakString",			BreakString},
 	{"StrContains",			sm_contain},
 	{"strcmp",				sm_strcmp},
 	{"StrCompare",			sm_strcmp},			/* Backwards compat shim */
@@ -431,5 +467,6 @@ REGISTER_NATIVES(basicStrings)
 	{"Format",				sm_format},
 	{"FormatEx",			sm_formatex},
 	{"VFormat",				sm_vformat},
+	{"TrimString",			TrimString},
 	{NULL,					NULL},
 };

@@ -84,7 +84,6 @@ stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=tr
 /**
  * Returns whether two strings are equal.
  *
- *
  * @param str1			First string (left).
  * @param str2			Second string (right).
  * @param caseSensitive	If true (default), comparison is case sensitive.
@@ -206,7 +205,16 @@ native FloatToString(Float:num, String:str[], maxlength);
  * @param argLen		Maximum length of argument buffer.
  * @return				Index to next piece of string, or -1 if none.
  */
-native StrBreak(const String:source[], String:arg[], argLen);
+native BreakString(const String:source[], String:arg[], argLen);
+
+/**
+ * Backwards compatibility stock - use BreakString
+ * @deprecated			Renamed to BreakString.
+ */
+stock StrBreak(const String:source[], String:arg[], argLen)
+{
+	return BreakString(source, arg, argLen);
+}
 
 /** 
  * Returns the number of bytes a character is using.  This is
@@ -327,3 +335,11 @@ stock StrCat(String:buffer[], maxlength, const String:source[])
 	
 	return Format(buffer[len], maxlength-len, "%s", source);
 }
+
+/**
+ * Removes whitespace characters from the beginning and end of a string.
+ *
+ * @param str			The string to trim.
+ * @return				Number of bytes written (UTF-8 safe).
+ */
+native TrimString(String:str[]);
