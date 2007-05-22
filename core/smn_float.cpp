@@ -230,6 +230,42 @@ static cell_t sm_ArcTangent2(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(val1);
 }
 
+static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
+{
+	float val = sp_ctof(params[1]);
+
+	switch (params[2])
+	{
+	case 1:
+		{
+			val = floor(val);
+			break;
+		}
+	case 2:
+		{
+			val = ceil(val);
+			break;
+		}
+	case 3:
+		{
+			if (val >= 0.0f)
+			{
+				val = floor(val);
+			} else {
+				val = ceil(val);
+			}
+			break;
+		}
+	default:
+		{
+			val = (float)floor(val + 0.5f);
+			break;
+		}
+	}
+
+	return static_cast<int>(val);
+}
+
 REGISTER_NATIVES(floatnatives)
 {
 	{"float",			sm_float},
@@ -255,5 +291,6 @@ REGISTER_NATIVES(floatnatives)
 	{"ArcCosine",		sm_ArcCosine},
 	{"ArcSine",			sm_ArcSine},
 	{"ArcTangent2",		sm_ArcTangent2},
+	{"FloatRound",		sm_FloatRound},			/* Backwards compat shim */
 	{NULL,				NULL}
 };

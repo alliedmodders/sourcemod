@@ -213,6 +213,23 @@ native Float:ArcSine(Float:angle);
 native Float:ArcTangent2(Float:x, Float:y);
 
 /**
+ * Different methods of rounding.
+ */
+enum floatround_method
+{
+	floatround_round = 0,		/**< Standard IEEE rounding */
+	floatround_floor,			/**< Next lowest integer value. */
+	floatround_ceil,			/**< Next highest integer value. */
+	floatround_tozero			/** Closest integer to zero. */
+};
+
+/**
+ * Backwards compatibility - use RoundToNearest or any of the other rounding natives.
+ * @deprecated
+ */
+native FloatRound(Float:value, floatround_method:method=floatround_round);
+
+/**
  * User defined operators.
  *
  */
