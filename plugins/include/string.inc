@@ -216,6 +216,36 @@ stock StrBreak(const String:source[], String:arg[], argLen)
 	return BreakString(source, arg, argLen);
 }
 
+/**
+ * Given a string, replaces all occurrences of a search string with a 
+ * replacement string.
+ *
+ * @param text			String to perform search and replacements on.
+ * @param maxlength		Maximum length of the string buffer.
+ * @param search		String to search for.
+ * @param replace		String to replace the search string with.
+ * @return				Number of replacements that were performed.
+ */
+native ReplaceString(String:text[], maxlength, const String:search[], const String:replace[]);
+
+/**
+ * Given a string, replaces the first occurrence of a search string with a 
+ * replacement string.
+ *
+ * @param text			String to perform search and replacements on.
+ * @param maxlength		Maximum length of the string buffer.
+ * @param search		String to search for.
+ * @param replace		String to replace the search string with.
+ * @param searchLen		If higher than -1, its value will be used instead of
+ *						a strlen() call on the search parameter.
+ * @param replaceLen	If higher than -1, its value will be used instead of
+ *						a strlen() call on the replace parameter.
+ * @return				Index into the buffer (relative to the start) from where
+ *						the last replacement ended, or -1 if no replacements were
+ *						made.
+ */
+native ReplaceStringEx(String:text[], maxlength, const String:search[], const String:replace[], searchLen=-1, replaceLen=-1);
+
 /** 
  * Returns the number of bytes a character is using.  This is
  * for multi-byte characters (UTF-8).  For normal ASCII characters,

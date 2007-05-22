@@ -407,6 +407,43 @@ static cell_t IsCharLower(IPluginContext *pContext, const cell_t *params)
 	return islower(chr);
 }
 
+static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
+{
+	char *text, *search, *replace;
+	size_t maxlength;
+	
+	pContext->LocalToString(params[1], &text);
+	pContext->LocalToString(params[3], &search);
+	pContext->LocalToString(params[4], &replace);
+	maxlength = (size_t)params[2];
+
+
+	return  UTIL_ReplaceAll(text, maxlength, search, replace);
+}
+
+static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
+{
+	char *text, *search, *replace;
+	size_t maxlength;
+
+	pContext->LocalToString(params[1], &text);
+	pContext->LocalToString(params[3], &search);
+	pContext->LocalToString(params[4], &replace);
+	maxlength = (size_t)params[2];
+
+	size_t searchLen = (params[5] == -1) ? strlen(search) : (size_t)params[5];
+	size_t replaceLen = (params[6] == -1) ? strlen(replace) : (size_t)params[6];
+
+	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen);
+
+	if (ptr == NULL)
+	{
+		return -1;
+	}
+
+	return ptr - text;
+}
+
 static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
 {
 	char *str;
@@ -444,6 +481,10 @@ static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(basicStrings)
 {
+	{"BreakString",			BreakString},
+	{"FloatToString",		sm_floattostr},
+	{"Format",				sm_format},
+	{"FormatEx",			sm_formatex},
 	{"GetCharBytes",		GetCharBytes},
 	{"IntToString",			sm_numtostr},
 	{"IsCharAlpha",			IsCharAlpha},
@@ -452,9 +493,10 @@ REGISTER_NATIVES(basicStrings)
 	{"IsCharNumeric",		IsCharNumeric},
 	{"IsCharSpace",			IsCharSpace},
 	{"IsCharUpper",			IsCharUpper},
+	{"ReplaceString",		ReplaceString},
+	{"ReplaceStringEx",		ReplaceStringEx},
 	{"strlen",				sm_strlen},
 	{"StrBreak",			BreakString},		/* Backwards compat shim */
-	{"BreakString",			BreakString},
 	{"StrContains",			sm_contain},
 	{"strcmp",				sm_strcmp},
 	{"StrCompare",			sm_strcmp},			/* Backwards compat shim */
@@ -463,10 +505,7 @@ REGISTER_NATIVES(basicStrings)
 	{"StrCopy",				sm_strcopy},		/* Backwards compat shim */
 	{"StringToInt",			sm_strconvint},
 	{"StringToFloat",		sm_strtofloat},
-	{"FloatToString",		sm_floattostr},
-	{"Format",				sm_format},
-	{"FormatEx",			sm_formatex},
-	{"VFormat",				sm_vformat},
 	{"TrimString",			TrimString},
+	{"VFormat",				sm_vformat},
 	{NULL,					NULL},
 };
