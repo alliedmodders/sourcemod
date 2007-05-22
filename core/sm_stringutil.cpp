@@ -963,7 +963,6 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 		/* See if we get a comparison */
 		if (strncmp(ptr, search, searchLen) == 0)
 		{
-			char *retPtr = NULL;
 			if (replaceLen > searchLen)
 			{
 				/* First, see if we have enough space to do this operation */
