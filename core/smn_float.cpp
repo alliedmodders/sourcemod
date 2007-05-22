@@ -34,7 +34,7 @@ static cell_t sm_float(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_FloatAbs(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
-	val = (val >= 0) ? val : -val;
+	val = (val >= 0.0f) ? val : -val;
 
 	return sp_ftoc(val);
 }
@@ -87,11 +87,11 @@ static cell_t sm_Logarithm(IPluginContext *pCtx, const cell_t *params)
 	float val = sp_ctof(params[1]);
 	float base = sp_ctof(params[2]);
 
-	if ((val <= 0) || (base <= 0))
+	if ((val <= 0.0f) || (base <= 0.0f))
 	{
 		return pCtx->ThrowNativeError("Cannot evaluate the logarithm of zero or a negative number (val:%f base:%f)", val, base);
 	}
-	if (base == 10.0)
+	if (base == 10.0f)
 	{
 		val = log10(val);
 	} else {
@@ -120,7 +120,7 @@ static cell_t sm_SquareRoot(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
 
-	if (val < 0.0)
+	if (val < 0.0f)
 	{
 		return pCtx->ThrowNativeError("Cannot evaluate the square root of a negative number (val:%f)", val);
 	}
@@ -128,37 +128,38 @@ static cell_t sm_SquareRoot(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(sqrt(val));
 }
 
-static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_RountToNearest(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
+	val = (float)floor(val + 0.5f);
 
-	switch (params[2])
+	return static_cast<int>(val);
+}
+
+static cell_t sm_RoundToFloor(IPluginContext *pCtx, const cell_t *params)
+{
+	float val = sp_ctof(params[1]);
+	val = floor(val);
+
+	return static_cast<int>(val);
+}
+
+static cell_t sm_RoundToCeil(IPluginContext *pCtx, const cell_t *params)
+{
+	float val = sp_ctof(params[1]);
+	val = ceil(val);
+
+	return static_cast<int>(val);
+}
+
+static cell_t sm_RoundToZero(IPluginContext *pCtx, const cell_t *params)
+{
+	float val = sp_ctof(params[1]);
+	if (val >= 0.0f)
 	{
-	case 1:
-		{
-			val = floor(val);
-			break;
-		}
-	case 2:
-		{
-			val = ceil(val);
-			break;
-		}
-	case 3:
-		{
-			if (val >= 0.0)
-			{
-				val = floor(val);
-			} else {
-				val = ceil(val);
-			}
-			break;
-		}
-	default:
-		{
-			val = (float)floor(val + 0.5);
-			break;
-		}
+		val = floor(val);
+	} else {
+		val = ceil(val);
 	}
 
 	return static_cast<int>(val);
@@ -237,7 +238,10 @@ REGISTER_NATIVES(floatnatives)
 	{"FloatAdd",		sm_FloatAdd},
 	{"FloatSub",		sm_FloatSub},
 	{"FloatFraction",	sm_FloatFraction},
-	{"FloatRound",		sm_FloatRound},
+	{"RoundToZero",		sm_RoundToZero},
+	{"RoundToCeil",		sm_RoundToCeil},
+	{"RoundToFloor",	sm_RoundToFloor},
+	{"RountToNearest",	sm_RountToNearest},
 	{"FloatCompare",	sm_FloatCompare},
 	{"SquareRoot",		sm_SquareRoot},
 	{"Pow",				sm_Pow},

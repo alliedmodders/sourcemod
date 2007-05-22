@@ -678,6 +678,61 @@
 				WriteOp_Stradjust_Pri(jit);
 				break;
 			}
+		case OP_FABS:
+			{
+				WriteOp_FloatAbs(jit);
+				break;
+			}
+		case OP_FLOAT:
+			{
+				WriteOp_Float(jit);
+				break;
+			}
+		case OP_FLOATADD:
+			{
+				WriteOp_FloatAdd(jit);
+				break;
+			}
+		case OP_FLOATSUB:
+			{
+				WriteOp_FloatSub(jit);
+				break;
+			}
+		case OP_FLOATMUL:
+			{
+				WriteOp_FloatMul(jit);
+				break;
+			}
+		case OP_FLOATDIV:
+			{
+				WriteOp_FloatDiv(jit);
+				break;
+			}
+		case OP_RND_TO_NEAREST:
+			{
+				WriteOp_RountToNearest(jit);
+				break;
+			}
+		case OP_RND_TO_FLOOR:
+			{
+				WriteOp_RoundToFloor(jit);
+				break;
+			}
+		case OP_RND_TO_ZERO:
+			{
+				WriteOp_RoundToZero(jit);
+				break;
+			}
+		case OP_RND_TO_CEIL:
+			{
+				WriteOp_RoundToCeil(jit);
+				break;
+			}
+		case OP_FLOATCMP:
+			{
+				WriteOp_FloatCompare(jit);
+				break;
+			}
 #if defined USE_UNGEN_OPCODES
 		#include "ungen_opcode_switch.inc"
 #endif
@@ -686,5 +741,3 @@
 				data->error_set = SP_ERROR_INVALID_INSTRUCTION;
 				break;
 			}
-			
-

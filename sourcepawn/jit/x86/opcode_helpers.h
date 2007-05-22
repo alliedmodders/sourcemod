@@ -91,6 +91,11 @@ int JIT_VerifyOrAllocateTracker(sp_context_t *ctx);
 */
 void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg);
 
+/** 
+* Writes the rounding table for the float compare opcode.
+*/
+void Write_RoundingTable(JitWriter *jit);
+
 /**
  * Legend for Statuses:
  * ****** *** ********
@@ -275,6 +280,17 @@ typedef enum
 	OP_GENARRAY,			//VERIFIED
 	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
 	OP_STRADJUST_PRI,		//VERIFIED
+	OP_FABS,				//VERIFIED
+	OP_FLOAT,				//VERIFIED
+	OP_FLOATADD,			//VERIFIED
+	OP_FLOATSUB,			//VERIFIED
+	OP_FLOATMUL,			//VERIFIED
+	OP_FLOATDIV,			//VERIFIED
+	OP_RND_TO_NEAREST,		//VERIFIED
+	OP_RND_TO_FLOOR,		//VERIFIED
+	OP_RND_TO_CEIL,			//VERIFIED
+	OP_RND_TO_ZERO,			//VERIFIED
+	OP_FLOATCMP,			//VERIFIED
 	/* ----- */
 	OP_NUM_OPCODES
 } OPCODE;
@@ -294,7 +310,7 @@ typedef enum
 *			  EXEC FUNCTION
 *			  VERIFY ADDR
 *
-*	Oh and ALIGN all stuff that is called via CALL like what's done with PROC.
+*	Oh and ALIGN to 16BYTES all stuff that is called via CALL and frequently used jump labels like what's done with PROC.
 */
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_OPCODE_INFO_H_

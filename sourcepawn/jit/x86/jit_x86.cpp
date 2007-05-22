@@ -1136,12 +1136,12 @@ inline void WriteOp_Lodb_I(JitWriter *jit)
 	{
 	case 1:
 		{
-			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x000000FF);
+			IA32_And_Eax_Imm32(jit, 0x000000FF);
 			break;
 		}
 	case 2:
 		{
-			IA32_And_Rm_Imm32(jit, AMX_REG_PRI, 0x0000FFFF);
+			IA32_And_Eax_Imm32(jit, 0x0000FFFF);
 			break;
 		}
 	}
@@ -1328,7 +1328,6 @@ inline void WriteOp_Break(JitWriter *jit)
 		jit->set_outputpos(wr);
 		jit->write_uint32((uint32_t)(wr));
 		jit->set_outputpos(save);
-		
 		wr = IA32_Call_Imm32(jit, 0);
 		IA32_Write_Jump32(jit, wr, data->jit_break);
 	}
@@ -1781,6 +1780,323 @@ inline void WriteOp_Stradjust_Pri(JitWriter *jit)
 	IA32_Sar_Rm_Imm8(jit, AMX_REG_PRI, 2, MOD_REG);
 }
 
+inline void WriteOp_FloatAbs(JitWriter *jit)
+{
+	//mov eax, [edi]
+	//and eax, 0x7FFFFFFF
+	IA32_Mov_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_STK, MOD_MEM_REG);
+	IA32_And_Eax_Imm32(jit, 0x7FFFFFFF);
+
+	/* Rectify the stack */
+	//add edi, 4
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+}
+
+inline void WriteOp_Float(JitWriter *jit)
+{
+	//fild [edi]
+	//push eax
+	//fstp [esp]
+	//pop eax
+	IA32_Fild_Mem32(jit, AMX_REG_STK);
+	IA32_Push_Reg(jit, AMX_REG_PRI);
+	IA32_Fstp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+
+	/* Rectify the stack */
+	//add edi, 4
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+}
+
+inline void WriteOp_FloatAdd(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+	//fadd [edi+4]
+	//fstp [esp]
+	//pop eax
+	IA32_Push_Reg(jit, AMX_REG_PRI);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+	IA32_Fadd_Mem32_Disp8(jit, AMX_REG_STK, 4);
+	IA32_Fstp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+
+	/* Rectify the stack */
+	//add edi, 8
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+}
+
+inline void WriteOp_FloatSub(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+	//fsub [edi+4]
+	//fstp [esp]
+	//pop eax
+	IA32_Push_Reg(jit, AMX_REG_PRI);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+	IA32_Fsub_Mem32_Disp8(jit, AMX_REG_STK, 4);
+	IA32_Fstp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+
+	/* Rectify the stack */
+	//add edi, 8
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+}
+
+inline void WriteOp_FloatMul(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+	//fmul [edi+4]
+	//fstp [esp]
+	//pop eax
+	IA32_Push_Reg(jit, AMX_REG_PRI);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+	IA32_Fmul_Mem32_Disp8(jit, AMX_REG_STK, 4);
+	IA32_Fstp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+
+	/* Rectify the stack */
+	//add edi, 8
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+}
+
+inline void WriteOp_FloatDiv(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+	//fdiv [edi+4]
+	//fstp [esp]
+	//pop eax
+	IA32_Push_Reg(jit, AMX_REG_PRI);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+	IA32_Fdiv_Mem32_Disp8(jit, AMX_REG_STK, 4);
+	IA32_Fstp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+
+	/* Rectify the stack */
+	//add edi, 8
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+}
+
+inline void WriteOp_RountToNearest(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+
+	//fstcw [esp]
+	//mov eax, [esp]
+	//push eax
+
+	//mov [esp+4], 0x3FF
+	//fadd st(0), st(0)
+	//fldcw [esp+4]
+
+	//push eax	
+	//push 0x3F000000 ; 0.5f
+	//fadd [esp]
+	//fistp [esp+4]
+	//pop eax
+	//pop eax
+
+	//pop ecx
+	//sar eax, 1
+	//mov [esp], ecx
+	//fldcw [esp]
+	//add esp, 4
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+
+	IA32_Fstcw_Mem16_ESP(jit);
+	IA32_Mov_Reg_RmESP(jit, REG_EAX);
+	IA32_Push_Reg(jit, REG_EAX);
+
+	IA32_Mov_ESP_Disp8_Imm32(jit, 4, 0x3FF);
+	IA32_Fadd_FPUreg_ST0(jit, 0);
+	IA32_Fldcw_Mem16_Disp8_ESP(jit, 4);
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Push_Imm32(jit, 0x3F000000);
+	IA32_Fadd_Mem32_ESP(jit);
+	IA32_Fistp_Mem32_Disp8_Esp(jit, 4);
+	IA32_Pop_Reg(jit, REG_EAX);
+	IA32_Pop_Reg(jit, AMX_REG_PRI);
+
+	IA32_Pop_Reg(jit, REG_ECX);
+	IA32_Sar_Rm_1(jit, REG_EAX, MOD_REG);
+	IA32_Mov_RmESP_Reg(jit, REG_ECX);
+	IA32_Fldcw_Mem16_ESP(jit);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
+	/* Rectify the stack */
+	//add edi, 4
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+}
+
+inline void WriteOp_RoundToFloor(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+
+	//fstcw [esp]
+	//mov eax, [esp]
+	//push eax
+
+	//mov [esp+4], 0x7FF
+	//fldcw [esp+4]
+
+	//push eax	
+	//fistp [esp]
+	//pop eax
+
+	//pop ecx
+	//mov [esp], ecx
+	//fldcw [esp]
+	//add esp, 4
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+
+	IA32_Fstcw_Mem16_ESP(jit);
+	IA32_Mov_Reg_RmESP(jit, REG_EAX);
+	IA32_Push_Reg(jit, REG_EAX);
+
+	IA32_Mov_ESP_Disp8_Imm32(jit, 4, 0x7FF);
+	IA32_Fldcw_Mem16_Disp8_ESP(jit, 4);
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fistp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, REG_EAX);
+
+	IA32_Pop_Reg(jit, REG_ECX);
+	IA32_Mov_RmESP_Reg(jit, REG_ECX);
+	IA32_Fldcw_Mem16_ESP(jit);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
+	/* Rectify the stack */
+	//add edi, 4
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+}
+
+inline void WriteOp_RoundToCeil(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+
+	//fstcw [esp]
+	//mov eax, [esp]
+	//push eax
+
+	//mov [esp+4], 0xBFF
+	//fldcw [esp+4]
+
+	//push eax	
+	//fistp [esp]
+	//pop eax
+
+	//pop ecx
+	//mov [esp], ecx
+	//fldcw [esp]
+	//add esp, 4
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+
+	IA32_Fstcw_Mem16_ESP(jit);
+	IA32_Mov_Reg_RmESP(jit, REG_EAX);
+	IA32_Push_Reg(jit, REG_EAX);
+
+	IA32_Mov_ESP_Disp8_Imm32(jit, 4, 0xBFF);
+	IA32_Fldcw_Mem16_Disp8_ESP(jit, 4);
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fistp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, REG_EAX);
+
+	IA32_Pop_Reg(jit, REG_ECX);
+	IA32_Mov_RmESP_Reg(jit, REG_ECX);
+	IA32_Fldcw_Mem16_ESP(jit);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
+	/* Rectify the stack */
+	//add edi, 4
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+}
+
+inline void WriteOp_RoundToZero(JitWriter *jit)
+{
+	//push eax
+	//fld [edi]
+
+	//fstcw [esp]
+	//mov eax, [esp]
+	//push eax
+
+	//mov [esp+4], 0xFFF
+	//fldcw [esp+4]
+
+	//push eax	
+	//fistp [esp]
+	//pop eax
+
+	//pop ecx
+	//mov [esp], ecx
+	//fldcw [esp]
+	//add esp, 4
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+
+	IA32_Fstcw_Mem16_ESP(jit);
+	IA32_Mov_Reg_RmESP(jit, REG_EAX);
+	IA32_Push_Reg(jit, REG_EAX);
+
+	IA32_Mov_ESP_Disp8_Imm32(jit, 4, 0xFFF);
+	IA32_Fldcw_Mem16_Disp8_ESP(jit, 4);
+
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Fistp_Mem32_ESP(jit);
+	IA32_Pop_Reg(jit, REG_EAX);
+
+	IA32_Pop_Reg(jit, REG_ECX);
+	IA32_Mov_RmESP_Reg(jit, REG_ECX);
+	IA32_Fldcw_Mem16_ESP(jit);
+	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
+	/* Rectify the stack */
+	//add edi, 4
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 4, MOD_REG);
+}
+
+inline void WriteOp_FloatCompare(JitWriter *jit)
+{
+	CompData *data = (CompData *)jit->data;
+
+	//fld [edi]
+	//fld [edi+4]
+	//fucomip st(0), st(1)
+	//mov ecx, <round_table>
+	//cmovz eax, [ecx+4]
+	//cmovb eax, [ecx+8]
+	//cmova eax, [ecx]
+	//fstp st(0)
+
+	IA32_Fld_Mem32(jit, AMX_REG_STK);
+	IA32_Fld_Mem32_Disp8(jit, AMX_REG_STK, 4);
+	IA32_Fucomip_ST0_FPUreg(jit, 1);
+	IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, (jit_int32_t)jit->outbase + data->jit_rounding_table);
+	IA32_CmovCC_Rm_Disp8(jit, AMX_REG_TMP, CC_Z, 4);
+	IA32_CmovCC_Rm_Disp8(jit, AMX_REG_TMP, CC_B, 8);
+	IA32_CmovCC_Rm(jit, AMX_REG_TMP, CC_A);
+	IA32_Fstp_FPUreg(jit, 0);
+
+	/* Rectify the stack */
+	//add edi, 8
+	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -1979,6 +2295,10 @@ jit_rewind:
 		Write_Check_VerifyAddr(jit, REG_EDX);
 	}
 
+	/* Write the rounding table for the float compare opcode */
+	data->jit_rounding_table = jit->get_outputpos();
+	Write_RoundingTable(jit);
+
 	/* Actual code generation! */
 	if (writer.outbase == NULL)
 	{
@@ -1998,6 +2318,22 @@ jit_rewind:
 
 			/* Now read the opcode and continue. */
 			op = (OPCODE)writer.read_cell();
+
+			/* Patch the floating point natives with our opcodes */
+			if (op == OP_SYSREQ_N)
+			{
+				cell_t idx = writer.read_cell();
+				if (data->jit_float_table[idx].found)
+				{
+					writer.inptr -= 2;
+					*(writer.inptr++) = data->jit_float_table[idx].index;
+					*(writer.inptr++) = OP_NOP;
+					*(writer.inptr++) = OP_NOP;
+					op = (OPCODE)data->jit_float_table[idx].index;
+				} else {
+					writer.inptr--;
+				}
+			}
 			switch (op)
 			{
 				#include "opcode_switch.inc"
@@ -2270,10 +2606,53 @@ void JITX86::FreeContext(sp_context_t *ctx)
 ICompilation *JITX86::StartCompilation(sp_plugin_t *plugin)
 {
 	CompData *data = new CompData;
+	uint32_t max_natives = plugin->info.natives_num;
+	const char *strbase = plugin->info.stringbase;
 
 	data->plugin = plugin;
 	data->inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
 	data->error_set = SP_ERROR_NONE;
+
+	data->jit_float_table = new floattbl_t[max_natives];
+	for (uint32_t i=0; i<max_natives; i++)
+	{
+		const char *name = strbase + plugin->info.natives[i].name;
+		if (!strcmp(name, "FloatAbs"))
+		{
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FABS;
+		} else if (!strcmp(name, "FloatAdd")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FLOATADD;
+		} else if (!strcmp(name, "FloatSub")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FLOATSUB;
+		} else if (!strcmp(name, "FloatMul")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FLOATMUL;
+		} else if (!strcmp(name, "FloatDiv")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FLOATDIV;
+		} else if (!strcmp(name, "float")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FLOAT;
+		} else if (!strcmp(name, "FloatCompare")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_FLOATCMP;
+		} else if (!strcmp(name, "RoundToZero")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_RND_TO_ZERO;
+		} else if (!strcmp(name, "RoundToCeil")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_RND_TO_CEIL;
+		} else if (!strcmp(name, "RoundToFloor")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_RND_TO_FLOOR;
+		} else if (!strcmp(name, "RountToNearest")) {
+			data->jit_float_table[i].found = true;
+			data->jit_float_table[i].index = OP_RND_TO_NEAREST;
+		}
+	}
 
 	return data;
 }
@@ -2284,6 +2663,7 @@ void JITX86::AbortCompilation(ICompilation *co)
 	{
 		engine->BaseFree(((CompData *)co)->rebase);
 	}
+	delete [] ((CompData *)co)->jit_float_table;
 	delete (CompData *)co;
 }
 

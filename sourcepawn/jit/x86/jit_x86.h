@@ -49,6 +49,17 @@ typedef struct functracker_s
 	unsigned int code_size;
 } functracker_t;
 
+struct floattbl_t
+{
+	floattbl_t()
+	{
+		found = false;
+		index = 0;
+	}
+	bool found;
+	unsigned int index;
+};
+
 class CompData : public ICompilation
 {
 public:
@@ -80,6 +91,8 @@ public:
 	jitoffs_t jit_error_array_too_big;
 	jitoffs_t jit_extern_error;		/* returning generic error */
 	jitoffs_t jit_sysreq_c;			/* old version! */
+	jitoffs_t jit_rounding_table;
+	floattbl_t *jit_float_table;
 	uint32_t codesize;				/* total codesize */
 };
 

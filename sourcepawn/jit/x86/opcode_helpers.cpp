@@ -799,3 +799,10 @@ int JIT_VerifyLowBoundTracker(sp_context_t *ctx)
 
 	return SP_ERROR_NONE;
 }
+
+void Write_RoundingTable(JitWriter *jit)
+{
+	jit->write_int32(-1);
+	jit->write_int32(0);
+	jit->write_int32(1);
+}

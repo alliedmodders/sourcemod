@@ -116,17 +116,15 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 		{
 		case 1:
 			{
-				//xor reg, reg
-				//mov reg, BYTE PTR [ebx+<offset>]
+				//movzx reg, BYTE PTR [ebx+<offset>]
 				//push reg
-				IA32_Xor_Reg_Rm(jit, reg, reg, MOD_REG);
 				if (pEnc->offset < SCHAR_MAX)
 				{
-					IA32_Mov_Reg8_Rm8_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
+					IA32_Movzx_Reg32_Rm8_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
 				} else if (!pEnc->offset) {
-					IA32_Mov_Reg8_Rm8(jit, reg, REG_EBX, MOD_MEM_REG);
+					IA32_Movzx_Reg32_Rm8(jit, reg, REG_EBX, MOD_MEM_REG);
 				} else {
-					IA32_Mov_Reg8_Rm8_Disp32(jit, reg, REG_EBX, pEnc->offset);
+					IA32_Movzx_Reg32_Rm8_Disp32(jit, reg, REG_EBX, pEnc->offset);
 				}
 				IA32_Push_Reg(jit, reg);
 
@@ -135,18 +133,16 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 			}
 		case 2:
 			{
-				//xor reg, reg
-				//mov reg, WORD PTR [ebx+<offset>]
+				//movzx reg, WORD PTR [ebx+<offset>]
 				//push reg
-				IA32_Xor_Reg_Rm(jit, reg, reg, MOD_REG);
 				jit->write_ubyte(IA32_16BIT_PREFIX);
 				if (pEnc->offset < SCHAR_MAX)
 				{
-					IA32_Mov_Reg_Rm_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
+					IA32_Movzx_Reg32_Rm16_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
 				} else if (!pEnc->offset) {
-					IA32_Mov_Reg_Rm(jit, reg, REG_EBX, MOD_MEM_REG);
+					IA32_Movzx_Reg32_Rm16(jit, reg, REG_EBX, MOD_MEM_REG);
 				} else {
-					IA32_Mov_Reg_Rm_Disp32(jit, reg, REG_EBX, pEnc->offset);
+					IA32_Movzx_Reg32_Rm16_Disp32(jit, reg, REG_EBX, pEnc->offset);
 				}
 				IA32_Push_Reg(jit, reg);
 
@@ -234,11 +230,13 @@ inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
 				if (pEnc->offset < SCHAR_MAX)
 				{
 					IA32_Fld_Mem32_Disp8(jit, REG_EBX, (jit_int8_t)pEnc->offset);
+				} else if (!pEnc->offset) {
+					IA32_Fld_Mem32(jit, REG_EBX);
 				} else {
 					IA32_Fld_Mem32_Disp32(jit, REG_EBX, pEnc->offset);
 				}
 				IA32_Push_Reg(jit, _DecodeRegister3(g_RegDecoder++));
-				IA32_Fstp_Mem32(jit, REG_ESP, REG_NOIDX, NOSCALE);
+				IA32_Fstp_Mem32_ESP(jit);
 				g_StackUsage += 4;
 				break;
 			}
@@ -250,11 +248,13 @@ inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
 				if (pEnc->offset < SCHAR_MAX)
 				{
 					IA32_Fld_Mem64_Disp8(jit, REG_EBX, (jit_int8_t)pEnc->offset);
+				} else if (!pEnc->offset) {
+					IA32_Fld_Mem64(jit, REG_EBX);
 				} else {
 					IA32_Fld_Mem64_Disp32(jit, REG_EBX, pEnc->offset);
 				}
 				IA32_Sub_Rm_Imm8(jit, REG_ESP, 8, MOD_REG);
-				IA32_Fstp_Mem64(jit, REG_ESP, REG_NOIDX, NOSCALE);
+				IA32_Fstp_Mem64_ESP(jit);
 				g_StackUsage += 8;
 				break;
 			}
@@ -449,13 +449,13 @@ inline void Write_MovRet2Buf(JitWriter *jit, const PassInfo *pRet)
 		case 4:
 			{
 				//fstp DWORD PTR [edi]
-				IA32_Fstp_Mem32(jit, REG_EDI, REG_NOIDX, NOSCALE);
+				IA32_Fstp_Mem32(jit, REG_EDI);
 				break;
 			}
 		case 8:
 			{
 				//fstp QWORD PTR [edi]
-				IA32_Fstp_Mem64(jit, REG_EDI, REG_NOIDX, NOSCALE);
+				IA32_Fstp_Mem64(jit, REG_EDI);
 				break;
 			}
 		}

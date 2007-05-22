@@ -19,17 +19,6 @@
 #define _float_included
 
 /**
- * Different methods of rounding.
- */
-enum floatround_method
-{
-	floatround_round = 0,		/**< Standard IEEE rounding */
-	floatround_floor,			/**< Next lowest integer value. */
-	floatround_ceil,			/**< Next highest integer value. */
-	floatround_tozero			/** Closest integer to zero. */
-};
-
-/**
  * Converts an integer into a floating point value.
  *
  * @param value			Integer to convert.
@@ -82,13 +71,36 @@ native Float:FloatSub(Float:oper1, Float:oper2);
 native Float:FloatFraction(Float:value);
 
 /**
- * Rounds a float into an integer number.
+ * Rounds a float to the closest integer to zero.
  *
  * @param value			Input value to be rounded.
- * @param method		Rounding method to use.
  * @return				Rounded value.
  */
-native FloatRound(Float:value, floatround_method:method=floatround_round);
+native RoundToZero(Float:value);
+
+/**
+ * Rounds a float to the next highest integer value.
+ *
+ * @param value			Input value to be rounded.
+ * @return				Rounded value.
+ */
+native RoundToCeil(Float:value);
+
+/**
+ * Rounds a float to the next lowest integer value.
+ *
+ * @param value			Input value to be rounded.
+ * @return				Rounded value.
+ */
+native RoundToFloor(Float:value);
+
+/**
+ * Standard IEEE rounding.
+ *
+ * @param value			Input value to be rounded.
+ * @return				Rounded value.
+ */
+native RountToNearest(Float:value);
 
 /**
  * Compares two floats.
