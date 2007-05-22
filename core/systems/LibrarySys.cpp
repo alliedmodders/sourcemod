@@ -325,16 +325,21 @@ size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 
 const char *LibrarySystem::GetFileExtension(const char *filename)
 {
-	size_t len = strlen(filename);
+	size_t end = strlen(filename) - 1;
 
-	for (size_t i = len - 1; i >= 0; i--)
+	for (size_t i = end; i >= 0; i--)
 	{
-		if (filename[i] == PLATFORM_SEP_CHAR || filename[i] == PLATFORM_SEP_ALTCHAR)
+		if (i > end)
 		{
-			return NULL;
+			break;
 		}
 
-		if (filename[i] == '.' && i != len - 1)
+		if (filename[i] == PLATFORM_SEP_CHAR || filename[i] == PLATFORM_SEP_ALTCHAR)
+		{
+			break;
+		}
+
+		if (filename[i] == '.' && i != end)
 		{
 			return &filename[++i];
 		}
