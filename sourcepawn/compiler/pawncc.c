@@ -404,7 +404,6 @@ int main(int argc, char *argv[])
 		 * do compression
 		 * new block for scoping only
 		 */
-		if (1)
 		{
 			memfile_t *pOrig = (memfile_t *)spf->handle;
 			sp_file_hdr_t *pHdr;
@@ -434,7 +433,8 @@ int main(int argc, char *argv[])
 			proper = (unsigned char *)pOrig->base + header_size;
 
 			/* get initial size estimate */
-			pHdr->disksize = (uint32_t)compressBound(pHdr->imagesize) * 2;
+			disksize = compressBound(pHdr->imagesize);
+			pHdr->disksize = (uint32_t)disksize;
 			zcmp = (Bytef *)malloc(pHdr->disksize);
 
 			if ((err=compress2(zcmp, 
