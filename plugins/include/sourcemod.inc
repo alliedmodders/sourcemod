@@ -218,7 +218,7 @@ native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxle
  *
  * @param string		Message to print.
  * @noreturn
- * @error				Always.
+ * @error				Always throws SP_ERROR_ABORT.
  */
 native SetFailState(const String:string[]);
 

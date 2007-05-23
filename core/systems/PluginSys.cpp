@@ -295,7 +295,11 @@ void CPlugin::Call_OnPluginStart()
 		return;
 	}
 
-	pFunction->Execute(&result);
+	int err;
+	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
+	{
+		SetErrorState(Plugin_Error, "Error detected in plugin startup (see error logs)");
+	}
 }
 
 void CPlugin::Call_OnPluginEnd()
@@ -1061,7 +1065,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->Call_OnPluginStart();
 
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->m_fakeNatives.size())
+	if (pPlugin->GetStatus() >= Plugin_Paused && pPlugin->m_fakeNatives.size())
 	{
 		List<CPlugin *>::iterator pl_iter;
 		CPlugin *pOther;
