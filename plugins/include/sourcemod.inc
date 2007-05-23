@@ -133,6 +133,8 @@ forward OnMapEnd();
  *
  * @note If server.cfg is executed more than once per map, this forward
  * will only be called the first time (per map).
+ * @note It is not guaranteed that this will be called on all mods. If
+ * a mod does not appear to support it, please file a SourceMod bug report.
  */
 forward OnServerCfg();
 
