@@ -92,13 +92,13 @@ static short lastfile;
       return 0;
   } /* if */
 
-  if (number<100){
+  if (number<120){
     msg=errmsg[number-1];
     pre=prefix[0];
     errflag=TRUE;       /* set errflag (skip rest of erroneous expression) */
     errnum++;
   } else if (number<200){
-    msg=fatalmsg[number-100];
+    msg=fatalmsg[number-120];
     pre=prefix[1];
     errnum++;           /* a fatal error also counts as an error */
   } else {
@@ -138,7 +138,7 @@ static short lastfile;
   } /* if */
   va_end(argptr);
 
-  if (number>=100 && number<200 || errnum>25){
+  if (number>=120 && number<200 || errnum>25){
     if (strlen(errfname)==0) {
       va_start(argptr,number);
       pc_error(0,"\nCompilation aborted.",NULL,0,0,argptr);
@@ -160,7 +160,7 @@ static short lastfile;
   if (number<200)
     errorcount++;
   if (errorcount>=3)
-    error(107);         /* too many error/warning messages on one line */
+    error(127);         /* too many error/warning messages on one line */
 
   return 0;
 }
