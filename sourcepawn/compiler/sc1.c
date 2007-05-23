@@ -2449,8 +2449,7 @@ static cell calc_arraysize(int dim[],int numdim,int cur)
     return 0;
   subsize=calc_arraysize(dim,numdim,cur+1);
   newsize=dim[cur]+dim[cur]*subsize;
-  if ((ucell)subsize>=CELL_MAX || newsize>=CELL_MAX || newsize<(ucell)subsize
-      || newsize*sizeof(cell)>=CELL_MAX)
+  if ((ucell)subsize>=CELL_MAX || newsize>=CELL_MAX || newsize*sizeof(cell)>=CELL_MAX)
     return CELL_MAX;
   return newsize;
 }
