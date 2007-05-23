@@ -128,7 +128,7 @@ static cell_t sm_SquareRoot(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(sqrt(val));
 }
 
-static cell_t sm_RountToNearest(IPluginContext *pCtx, const cell_t *params)
+static cell_t sm_RoundToNearest(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
 	val = (float)floor(val + 0.5f);
@@ -277,7 +277,7 @@ REGISTER_NATIVES(floatnatives)
 	{"RoundToZero",		sm_RoundToZero},
 	{"RoundToCeil",		sm_RoundToCeil},
 	{"RoundToFloor",	sm_RoundToFloor},
-	{"RountToNearest",	sm_RountToNearest},
+	{"RoundToNearest",	sm_RoundToNearest},
 	{"FloatCompare",	sm_FloatCompare},
 	{"SquareRoot",		sm_SquareRoot},
 	{"Pow",				sm_Pow},

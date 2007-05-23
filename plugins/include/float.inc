@@ -100,7 +100,7 @@ native RoundToFloor(Float:value);
  * @param value			Input value to be rounded.
  * @return				Rounded value.
  */
-native RountToNearest(Float:value);
+native RoundToNearest(Float:value);
 
 /**
  * Compares two floats.
