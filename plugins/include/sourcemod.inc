@@ -213,6 +213,16 @@ native bool:IsPluginDebugging(Handle:hndl);
 native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxlength);
 
 /**
+ * Causes the plugin to enter a failed state.  An error will be thrown and
+ * the plugin will be paused until it is unloaded or reloaded.
+ *
+ * @param string		Message to print.
+ * @noreturn
+ * @error				Always.
+ */
+native SetFailState(const String:string[]);
+
+/**
  * Aborts the current callback and throws an error.  This function
  * does not return in that no code is executed following it.
  *

@@ -246,6 +246,17 @@ static cell_t GetPluginInfo(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[1], &str);
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	pPlugin->SetErrorState(Plugin_Error, "%s", str);
+
+	return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"GetPluginFilename",	GetPluginFilename},
@@ -257,5 +268,6 @@ REGISTER_NATIVES(coreNatives)
 	{"MorePlugins",			MorePlugins},
 	{"ReadPlugin",			ReadPlugin},
 	{"ThrowError",			ThrowError},
+	{"SetFailState",		SetFailState},
 	{NULL,					NULL},
 };
