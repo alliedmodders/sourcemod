@@ -198,6 +198,23 @@ void CRadioDisplay::Reset()
 	keys = 0;
 }
 
+unsigned int CRadioDisplay::GetCurrentKey()
+{
+	return m_NextPos;
+}
+
+bool CRadioDisplay::SetCurrentKey(unsigned int key)
+{
+	if (key < m_NextPos || m_NextPos > 10)
+	{
+		return false;
+	}
+
+	m_NextPos = key;
+
+	return true;
+}
+
 bool CRadioDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned int time)
 {
 	return g_RadioMenuStyle.DoClientMenu(client, this, handler, time);

@@ -83,6 +83,8 @@ public:
 	void SendRawDisplay(int client, int priority, unsigned int time);
 	void DeleteThis();
 	bool SetSelectableKeys(unsigned int keymap);
+	unsigned int GetCurrentKey();
+	bool SetCurrentKey(unsigned int key);
 private:
 	KeyValues *m_pKv;
 	unsigned int m_NextPos;

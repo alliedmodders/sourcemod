@@ -236,6 +236,23 @@ namespace SourceMod
 		 * @return				True on success, false if not supported.
 		 */
 		virtual bool SetSelectableKeys(unsigned int keymap) =0;
+
+		/**
+		 * @brief Returns the current key position.
+		 *
+		 * @return				Current key position starting at 1.
+		 */
+		virtual unsigned int GetCurrentKey() =0;
+
+		/**
+		 * @brief Sets the next key position.  This cannot be used
+		 * to traverse backwards.
+		 *
+		 * @param key			Key that is greater or equal to
+		 *						GetCurrentKey().
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool SetCurrentKey(unsigned int key) =0;
 	};
 
 	/**

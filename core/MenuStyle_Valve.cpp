@@ -194,6 +194,23 @@ void CValveMenuDisplay::Reset()
 	m_TitleDrawn = false;
 }
 
+unsigned int CValveMenuDisplay::GetCurrentKey()
+{
+	return m_NextPos;
+}
+
+bool CValveMenuDisplay::SetCurrentKey(unsigned int key)
+{
+	if (key < m_NextPos || key > 9)
+	{
+		return false;
+	}
+
+	m_NextPos = key;
+
+	return true;
+}
+
 bool CValveMenuDisplay::SetExtOption(MenuOption option, const void *valuePtr)
 {
 	if (option == MenuOption_IntroMessage)

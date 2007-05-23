@@ -509,3 +509,24 @@ native bool:SetPanelKeys(Handle:panel, keys);
  * @error				Invalid Handle.
  */
 native bool:SendPanelToClient(Handle:panel, client, MenuHandler:handler, time);
+
+/**
+ * @brief Returns the current key position.
+ *
+ * @param panel			A MenuPanel Handle.
+ * @return				Current key position starting at 1.
+ * @error				Invalid Handle.
+ */
+native GetPanelCurrentKey(Handle:panel);
+
+/**
+ * @brief Sets the next key position.  This cannot be used
+ * to traverse backwards.
+ *
+ * @param panel			A MenuPanel Handle.
+ * @param key			Key that is greater or equal to
+ *						GetPanelCurrentKey().
+ * @return				True on success, false otherwise.
+ * @error				Invalid Handle.
+ */
+native bool:SetPanelCurrentKey(Handle:panel, key);

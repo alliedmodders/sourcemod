@@ -869,6 +869,34 @@ static cell_t SetPanelKeys(IPluginContext *pContext, const cell_t *params)
 	return panel->SetSelectableKeys(params[2]);
 }
 
+static cell_t GetPanelCurrentKey(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMenuPanel *panel;
+
+	if ((err=ReadPanelHandle(hndl, &panel)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return panel->GetCurrentKey();
+}
+
+static cell_t SetPanelCurrentKey(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMenuPanel *panel;
+
+	if ((err=ReadPanelHandle(hndl, &panel)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return panel->SetCurrentKey(params[2]) ? 1 : 0;
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -890,6 +918,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetMenuPagination",		GetMenuPagination},
 	{"GetMenuStyle",			GetMenuStyle},
 	{"GetMenuStyleHandle",		GetMenuStyleHandle},
+	{"GetPanelCurrentKey",		GetPanelCurrentKey},
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},
 	{"RemoveAllMenuItems",		RemoveAllMenuItems},
@@ -898,6 +927,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SetMenuExitButton",		SetMenuExitButton},
 	{"SetMenuPagination",		SetMenuPagination},
 	{"SetMenuTitle",			SetMenuTitle},
+	{"SetPanelCurrentKey",		SetPanelCurrentKey},
 	{"SetPanelTitle",			SetPanelTitle},
 	{"SetPanelKeys",			SetPanelKeys},
 	{NULL,						NULL},
