@@ -25,6 +25,8 @@
 #include "ExtensionSys.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
+#include "ConCmdManager.h"
+#include "PlayerManager.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -299,6 +301,21 @@ void CPlugin::Call_OnPluginStart()
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
 		SetErrorState(Plugin_Error, "Error detected in plugin startup (see error logs)");
+	} else {
+		if (g_OnMapStarted)
+		{
+			if ((pFunction = m_ctx.base->GetFunctionByName("OnMapStart")) != NULL)
+			{
+				pFunction->Execute(NULL);
+			}
+		}
+		if (g_ConCmds.IsServerCfgDone())
+		{
+			if ((pFunction = m_ctx.base->GetFunctionByName("OnServerCfg")) != NULL)
+			{
+				pFunction->Execute(NULL);
+			}
+		}
 	}
 }
 

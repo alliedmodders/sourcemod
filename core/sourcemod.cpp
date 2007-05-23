@@ -411,6 +411,8 @@ void SourceModBase::LevelShutdown()
 		m_ExecOnMapEnd = false;
 	}
 
+	g_OnMapStarted = false;
+
 	if (m_ExecPluginReload)
 	{
 		g_PluginSys.ReloadOrUnloadPlugins();

@@ -21,6 +21,7 @@
 #include "MenuStyle_Radio.h"
 
 PlayerManager g_Players;
+bool g_OnMapStarted = false;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -110,6 +111,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	}
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
+
+	g_OnMapStarted = true;
 }
 
 void PlayerManager::RunAuthChecks()

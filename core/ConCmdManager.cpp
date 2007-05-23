@@ -92,7 +92,7 @@ void ConCmdManager::OnSourceModShutdown()
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
 }
 
-void ConCmdManager::OnSourceModPluginsLoaded()
+void ConCmdManager::OnSourceModLevelChange(const char *mapName)
 {
 	m_bServerCfgDone = false;
 }

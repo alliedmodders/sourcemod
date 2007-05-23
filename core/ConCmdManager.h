@@ -84,7 +84,7 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
-	void OnSourceModPluginsLoaded();
+	void OnSourceModLevelChange(const char *mapName);
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
@@ -115,6 +115,10 @@ public:
 	inline int GetCommandClient()
 	{
 		return m_CmdClient;
+	}
+	inline bool IsServerCfgDone()
+	{
+		return m_bServerCfgDone;
 	}
 private:
 	Trie *m_pCmds;					/* command lookup */

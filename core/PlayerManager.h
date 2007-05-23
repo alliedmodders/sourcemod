@@ -127,5 +127,6 @@ private:
 };
 
 extern PlayerManager g_Players;
+extern bool g_OnMapStarted;
 
 #endif //_INCLUDE_SOURCEMOD_CPLAYERMANAGER_H_
