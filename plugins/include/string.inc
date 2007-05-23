@@ -217,12 +217,20 @@ stock StrBreak(const String:source[], String:arg[], argLen)
 }
 
 /**
+ * Removes whitespace characters from the beginning and end of a string.
+ *
+ * @param str			The string to trim.
+ * @return				Number of bytes written (UTF-8 safe).
+ */
+native TrimString(String:str[]);
+
+/**
  * Returns text in a string up until a certain character sequence is reached.
  *
  * @param source		Source input string.
+ * @param split			A string which specifies a search point to break at.
  * @param part			Buffer to store string part.
  * @param partLen		Maximum length of the string part buffer.
- * @param split			A string which specifies a search point to break at.
  * @return				-1 if no match was found; otherwise, an index into source
  *						marking the first index after the searched text.  The
  *						index is always relative to the start of the input string.
@@ -378,14 +386,6 @@ stock StrCat(String:buffer[], maxlength, const String:source[])
 	
 	return Format(buffer[len], maxlength-len, "%s", source);
 }
-
-/**
- * Removes whitespace characters from the beginning and end of a string.
- *
- * @param str			The string to trim.
- * @return				Number of bytes written (UTF-8 safe).
- */
-native TrimString(String:str[]);
 
 /**
  * Breaks a string into pieces and stores each piece into an array of buffers.
