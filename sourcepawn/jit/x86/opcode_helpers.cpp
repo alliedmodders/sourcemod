@@ -806,3 +806,17 @@ void Write_RoundingTable(JitWriter *jit)
 	jit->write_int32(0);
 	jit->write_int32(1);
 }
+
+void AlignMe(JitWriter *jit)
+{
+	jitoffs_t cur_offs = jit->get_outputpos();
+	jitoffs_t offset = ((cur_offs & 0xFFFFFFF0) + 16) - cur_offs;
+
+	if (offset)
+	{
+		for (jit_uint32_t i=0; i<offset; i++)
+		{
+			jit->write_ubyte(IA32_INT3);
+		}
+	}
+}

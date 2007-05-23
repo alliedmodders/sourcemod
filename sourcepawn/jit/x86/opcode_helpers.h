@@ -96,6 +96,11 @@ void WriteOp_Tracker_Push_Reg(JitWriter *jit, uint8_t reg);
 */
 void Write_RoundingTable(JitWriter *jit);
 
+/** 
+* Aligns the current code position to 16 bytes.
+*/
+void AlignMe(JitWriter *jit);
+
 /**
  * Legend for Statuses:
  * ****** *** ********

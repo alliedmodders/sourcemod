@@ -242,17 +242,18 @@ inline void WriteOp_Sub_Alt(JitWriter *jit)
 
 inline void WriteOp_Proc(JitWriter *jit)
 {
-	/* align this to four byte boundaries!
-	 * This is a decent optimization - x86 likes calls to be properly aligned, otherwise there's an alignment exception
-	 * Since all calls are jumped to by relocation, the nops/garbage will never be hit by the runtime process.
-	 * Just in case, we guard this memory with INT3 to break into the debugger.
-	 */
-	jitoffs_t cur_offs = jit->get_outputpos();
 	CompData *co = (CompData *)jit->data;
-	if (cur_offs % 4)
+
+	/* Specialized code to align this taking in account the function magic number */
+	jitoffs_t cur_offs = jit->get_outputpos();
+	jitoffs_t offset = ((cur_offs & 0xFFFFFFF8) + 8) - cur_offs;
+	if (!((offset + cur_offs) & 8))
 	{
-		cur_offs = 4 - (cur_offs % 4);
-		for (unsigned int i=0; i<cur_offs; i++)
+		offset += 8;
+	}
+	if (offset)
+	{
+		for (jit_uint32_t i=0; i<offset; i++)
 		{
 			jit->write_ubyte(IA32_INT3);
 		}
@@ -1301,6 +1302,8 @@ inline void WriteOp_Bounds(JitWriter *jit)
 
 inline void WriteOp_Halt(JitWriter *jit)
 {
+	AlignMe(jit);
+
 	//mov ecx, [esi+ret]
 	//mov [ecx], eax
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_RETVAL);
@@ -2195,6 +2198,8 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 
 void WriteErrorRoutines(CompData *data, JitWriter *jit)
 {
+	AlignMe(jit);
+
 	data->jit_error_divzero = jit->get_outputpos();
 	Write_SetError(jit, SP_ERROR_DIVIDE_BY_ZERO);
 
@@ -2267,6 +2272,7 @@ jit_rewind:
 	/* Write the SYSREQ.N opcode if we need to */
 	if (!(data->inline_level & JIT_INLINE_NATIVES))
 	{
+		AlignMe(jit);
 		data->jit_sysreq_n = jit->get_outputpos();
 		WriteOp_Sysreq_N_Function(jit);
 	}
@@ -2274,23 +2280,28 @@ jit_rewind:
 	/* Write the debug section if we need it */
 	if (data->debug == true)
 	{
+		AlignMe(jit);
 		data->jit_break = jit->get_outputpos();
 		Write_BreakDebug(jit);
 	}
 
 	/* Plugins compiled with -O0 will need this! */
+	AlignMe(jit);
 	data->jit_sysreq_c = jit->get_outputpos();
 	WriteOp_Sysreq_C_Function(jit);
 
+	AlignMe(jit);
 	data->jit_genarray = jit->get_outputpos();
 	WriteIntrinsic_GenArray(jit);
 
 	/* Write error checking routines that are called to */
 	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
 	{
+		AlignMe(jit);
 		data->jit_verify_addr_eax = jit->get_outputpos();
 		Write_Check_VerifyAddr(jit, REG_EAX);
 	
+		AlignMe(jit);
 		data->jit_verify_addr_edx = jit->get_outputpos();
 		Write_Check_VerifyAddr(jit, REG_EDX);
 	}
@@ -2648,7 +2659,7 @@ ICompilation *JITX86::StartCompilation(sp_plugin_t *plugin)
 		} else if (!strcmp(name, "RoundToFloor")) {
 			data->jit_float_table[i].found = true;
 			data->jit_float_table[i].index = OP_RND_TO_FLOOR;
-		} else if (!strcmp(name, "RountToNearest")) {
+		} else if (!strcmp(name, "RoundToNearest")) {
 			data->jit_float_table[i].found = true;
 			data->jit_float_table[i].index = OP_RND_TO_NEAREST;
 		}
@@ -2768,5 +2779,5 @@ const char *JITX86::GetVersionString()
 
 const char *JITX86::GetCPUOptimizations()
 {
-	return "Generic 80486";
+	return "Generic i686";
 }
