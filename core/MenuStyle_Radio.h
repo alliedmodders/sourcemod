@@ -37,6 +37,7 @@ class CRadioStyle :
 public:
 	CRadioStyle();
 public: //SMGlobalClass
+	void OnSourceModAllInitialized();
 	void OnSourceModLevelChange(const char *mapName);
 	void OnSourceModShutdown();
 public: //BaseMenuStyle

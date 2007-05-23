@@ -16,6 +16,7 @@
 #include "sm_stringutil.h"
 #include "UserMessages.h"
 #include "GameConfigs.h"
+#include "PlayerManager.h"
 
 extern const char *g_RadioNumTable[];
 CRadioStyle g_RadioMenuStyle;
@@ -24,6 +25,11 @@ bool g_bRadioInit = false;
 
 CRadioStyle::CRadioStyle() : m_players(new CBaseMenuPlayer[256+1])
 {
+}
+
+void CRadioStyle::OnSourceModAllInitialized()
+{
+	g_Players.AddClientListener(this);
 }
 
 void CRadioStyle::OnSourceModLevelChange(const char *mapName)
@@ -55,6 +61,7 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 
 void CRadioStyle::OnSourceModShutdown()
 {
+	g_Players.RemoveClientListener(this);
 	g_UserMsgs.UnhookUserMessage(g_ShowMenuId, this, false);
 
 	while (!m_FreeDisplays.empty())
