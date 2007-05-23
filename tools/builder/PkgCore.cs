@@ -115,6 +115,19 @@ namespace builder
 
 			return libs;
 		}
+
+		/**
+		 * Called to build plugins
+		 */
+		public override Plugin [] GetPlugins()
+		{
+			Plugin [] plugins = new Plugin[2];
+
+			plugins[0] = new Plugin("admin-auth");
+			plugins[1] = new Plugin("admin-flatfile", "admin-flatfile");
+
+			return plugins;
+		}
 	}
 }
 

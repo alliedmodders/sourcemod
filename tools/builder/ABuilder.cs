@@ -16,6 +16,62 @@ namespace builder
 
 		public abstract bool BuildLibrary(Package pkg, Library lib, ref string _binName, ref string _binPath);
 
+		public abstract string GetPawnCompilerName();
+
+		public bool CompilePlugin(Package pkg, Plugin pl)
+		{
+			string local_dir = Config.PathFormat("{0}/{1}/scripting", cfg.OutputBase, pkg.GetBaseFolder());
+
+			string filepath = null;
+			if (pl.Folder != null)
+			{
+				filepath = Config.PathFormat("{0}/{1}", pl.Folder, pl.Source);
+			} 
+			else 
+			{
+				filepath = pl.Source;
+			}
+
+			ProcessStartInfo info = new ProcessStartInfo();
+			info.WorkingDirectory = local_dir;
+			info.FileName = Config.PathFormat("{0}/{1}", local_dir, GetPawnCompilerName());
+			info.Arguments = filepath + ".sp";
+			info.UseShellExecute = false;
+			info.RedirectStandardOutput = true;
+			info.RedirectStandardError = true;
+
+			Process p = Process.Start(info);
+			string output = p.StandardOutput.ReadToEnd() + "\n";
+			output += p.StandardError.ReadToEnd();
+			p.WaitForExit();
+			p.Close();
+
+			Console.WriteLine(output);
+
+			string binary = Config.PathFormat("{0}/{1}/scripting/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+			if (!File.Exists(binary))
+			{
+				return false;
+			}
+			string new_loc = Config.PathFormat("{0}/{1}/plugins/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+
+			try
+			{
+				if (File.Exists(new_loc))
+				{
+					File.Delete(new_loc);
+				}
+				File.Move(binary, new_loc);
+			}
+			catch (System.Exception e)
+			{
+				Console.WriteLine(e.Message);
+				return false;
+			}
+
+			return true;
+		}
+
 		public string GetRevsionOfPath(string path)
 		{
 			ProcessStartInfo info = new ProcessStartInfo();
@@ -169,6 +225,19 @@ namespace builder
 				else 
 				{
 					throw new System.Exception("Failed to compile library: " + libs[i].Name);
+				}
+			}
+
+			/* Do plugins */
+			Plugin [] plugins = pkg.GetPlugins();
+			if (plugins != null)
+			{
+				for (int i=0; i<plugins.Length; i++)
+				{
+					if (!CompilePlugin(pkg, plugins[i]))
+					{
+						throw new System.Exception("Failed to compile plugin: " + plugins[i].Source);
+					}
 				}
 			}
 

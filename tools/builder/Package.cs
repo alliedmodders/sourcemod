@@ -7,7 +7,6 @@ namespace builder
 		public Library()
 		{
 			PlatformExt = false;
-			ProjectFile = null;
 			IsExecutable = false;
 			ReleaseBuild = "Release";
 		}
@@ -19,6 +18,21 @@ namespace builder
 		public string ProjectFile;	/* Project file, NULL for standard */
 		public bool IsExecutable;	/* If this is an EXE instead of a DLL */
 		//string DebugBuild;		/* Debug build name */
+	};
+
+	public class Plugin
+	{
+		public Plugin(string file)
+		{
+			Source = file;
+		}
+		public Plugin (string file, string folder)
+		{
+			Source = file;
+			Folder = folder;
+		}
+		public string Folder;		/* Source folder relative to scripting (null for default) */
+		public string Source;		/* Source file name */
 	};
 
 	public abstract class Package
@@ -57,5 +71,10 @@ namespace builder
 		 * Called to get package name
 		 */
 		public abstract string GetPackageName();
+
+		/**
+		 * Called to get a plugin list
+		 */
+		public abstract Plugin [] GetPlugins();
 	}
 }

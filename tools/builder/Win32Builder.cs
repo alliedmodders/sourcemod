@@ -11,6 +11,11 @@ namespace builder
 			cfg = _cfg;
 		}
 
+		public override string GetPawnCompilerName()
+		{
+			return "spcomp.exe";
+		}
+
 		public override string CompressPackage(Package pkg)
 		{
 			string lpath = null, ltarget = null;
