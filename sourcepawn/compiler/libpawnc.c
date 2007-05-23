@@ -67,8 +67,16 @@ static char *prefix[3]={ "error", "fatal error", "warning" };
 
 	if (number!=0) {
 		char *pre;
+		int idx;
 
-		pre=prefix[number/100];
+		if (number < 120)
+			idx = 0;
+		else if (number < 200)
+			idx = 1;
+		else
+			idx = 2;
+
+		pre=prefix[idx];
 		if (firstline>=0)
 			fprintf(stderr,"%s(%d -- %d) : %s %03d: ",filename,firstline,lastline,pre,number);
 		else

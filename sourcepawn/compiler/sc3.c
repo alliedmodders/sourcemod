@@ -2424,7 +2424,12 @@ static int nesting=0;
           check_userop(NULL,lval.tag,arg[argidx].tags[0],2,NULL,&lval.tag);
           if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval)
               && !checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
-            error(213);
+		  {
+			if (arg[argidx].numtags == 1 && arg[argidx].tags[0] & FUNCTAG)
+              error(100);         /* error - function prototypes do not match */
+			else
+              error(213);         /* warning - tag mismatch */
+		  }
           if (lval.tag!=0)
             append_constval(&taglst,arg[argidx].name,lval.tag,0);
           argidx++;               /* argument done */

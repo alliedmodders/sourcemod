@@ -2390,7 +2390,12 @@ static int declloc(int fstatic)
         stgout(staging_start);
         stgset(FALSE);
         if (!matchtag_string(cident, ctag) && !matchtag(tag,ctag,TRUE))
-          error(213);           /* tag mismatch */
+		{
+		  if (tag & FUNCTAG)
+		    error(100);      /* error - function prototypes do not match */
+		  else
+		    error(213);      /* warning - tag mismatch */
+		}
         /* if the variable was not explicitly initialized, reset the
          * "uWRITTEN" flag that store() set */
         if (!explicit_init)
@@ -2550,7 +2555,12 @@ static void initials(int ident,int tag,cell *size,int dim[],int numdim,
     assert(*size==1);
     init(ident,&ctag,NULL);
     if (!matchtag(tag,ctag,TRUE))
-      error(213);       /* tag mismatch */
+	{
+	  if (tag & FUNCTAG)
+	    error(100);     /* error - function prototypes do not match */
+	  else
+        error(213);     /* warning - tag mismatch */
+	}
   } else {
     assert(numdim>0);
     if (numdim==1) {
@@ -2742,7 +2752,12 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
         enumfield=enumfield->next;
       } /* if */
       if (!matchtag(rtag,ctag,TRUE))
-        error(213);             /* tag mismatch */
+	  {
+	    if (rtag & FUNCTAG)
+		  error(100);           /* error - function prototypes do not match */
+		else
+		  error(213);           /* warning - tag mismatch */
+	  }
     } while (matchtoken(',')); /* do */
     needtoken('}');
   } else {
