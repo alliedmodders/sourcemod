@@ -81,7 +81,7 @@ static short lastfile;
    * the error reporting is enabled only in the second pass (and only when
    * actually producing output). Fatal errors may never be ignored.
    */
-  if ((errflag || sc_status!=statWRITE) && (number<100 || number>=200))
+  if ((errflag || sc_status!=statWRITE) && (number<120 || number>=200))
     return 0;
 
   /* also check for disabled warnings */
