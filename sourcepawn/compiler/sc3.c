@@ -2005,7 +2005,7 @@ restart:
     assert(sym->ident==iFUNCTN);
     if (sc_allowproccall) {
       callfunction(sym,lval1,FALSE);
-    } else {
+    } else if ((sym->usage & uNATIVE) != uNATIVE) {
       symbol *oldsym=sym;
       int n=-1,iter=0;
       int usage = ((sym->usage & uPUBLIC) == uPUBLIC) ? uPUBLIC : 0;
@@ -2040,7 +2040,9 @@ restart:
         error(76);                /* invalid function call, or syntax error */
       } /* if */
       return FALSE;
-    }
+	} else {
+	  error(76);                  /* invalid function call, or syntax error */
+	}
   } /* if */
   return lvalue;
 }
