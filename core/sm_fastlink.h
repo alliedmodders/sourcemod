@@ -16,6 +16,8 @@
 #ifndef _INCLUDE_SOURCEMOD_FASTLINK_H_
 #define _INCLUDE_SOURCEMOD_FASTLINK_H_
 
+#include <assert.h>
+
 template <typename T>
 class FastLink
 {
@@ -158,13 +160,13 @@ public:
 		else if (index == m_FirstLink)
 		{
 			m_FirstLink = m_Nodes[index].next;
-			m_Nodes[index].prev = 0;
+			m_Nodes[m_FirstLink].prev = 0;
 		}
 		/* We're the TAIL */
 		else if (index == m_LastLink)
 		{
 			m_LastLink = m_Nodes[index].prev;
-			m_Nodes[index].next = 0;
+			m_Nodes[m_LastLink].next = 0;
 		}
 		/* We're in the middle! */
 		else
@@ -177,6 +179,8 @@ public:
 
 		/* Add us to the free list */
 		m_Nodes[++m_FreeNodes].freeNode = index;
+
+		m_Size--;
 
 		return iter;
 	}
