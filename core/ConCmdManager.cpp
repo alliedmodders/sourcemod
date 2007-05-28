@@ -330,7 +330,17 @@ void ConCmdManager::InternalDispatch()
 				}
 				continue;
 			}
-			pHook->pf->PushCell(m_CmdClient);
+
+			/* On a listen server, sometimes the server host's client index can be set as 0.
+			 * So index 1 is passed to the command callback to correct this potential problem.
+			 */
+			if (m_CmdClient == 0 && !engine->IsDedicatedServer())
+			{
+				pHook->pf->PushCell(1);
+			} else {
+				pHook->pf->PushCell(m_CmdClient);
+			}
+
 			pHook->pf->PushCell(args);
 			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
 			{
@@ -360,6 +370,12 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 {
 	FlagBits cmdflags = pAdmin->eflags;
 	if (cmdflags == 0)
+	{
+		return true;
+	}
+
+	/* If running listen server, then client 1 is the server host and should have 'root' access */
+	if (client == 1 && !engine->IsDedicatedServer())
 	{
 		return true;
 	}
