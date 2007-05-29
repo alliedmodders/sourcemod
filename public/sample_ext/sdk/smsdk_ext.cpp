@@ -25,11 +25,26 @@
  * @brief Contains wrappers for making Extensions easier to write.
  */
 
-IShareSys *g_pShareSys = NULL;			/**< Share system */
 IExtension *myself = NULL;				/**< Ourself */
-IHandleSys *g_pHandleSys = NULL;		/**< Handle system */
+IShareSys *g_pShareSys = NULL;			/**< Share system */
+IShareSys *sharesys = NULL;				/**< Share system */
 ISourceMod *g_pSM = NULL;				/**< SourceMod helpers */
+ISourceMod *smutils = NULL;				/**< SourceMod helpers */
+
+#if defined SMEXT_ENABLE_FORWARDSYS
 IForwardManager *g_pForwards = NULL;	/**< Forward system */
+IForwardManager *forwards = NULL;		/**< Forward system */
+#endif
+#if defined SMEXT_ENABLE_HANDLESYS
+IHandleSys *g_pHandleSys = NULL;		/**< Handle system */
+IHandleSys *handlesys = NULL;			/**< Handle system */
+#endif
+#if defined SMEXT_ENABLE_PLAYERHELPERS
+IPlayerHelpers *playerhelpers = NULL;	/**< Player helpers */
+#endif //SMEXT_ENABLE_PLAYERHELPERS
+#if defined SMEXT_ENABLE_DBMANAGER
+IDBManager *dbi = NULL;					/**< DB Manager */
+#endif //SMEXT_ENABLE_DBMANAGER
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -48,7 +63,7 @@ SDKExtension::SDKExtension()
 
 bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, size_t maxlength, bool late)
 {
-	g_pShareSys = sys;
+	g_pShareSys = sharesys = sys;
 	myself = me;
 
 #if defined SMEXT_CONF_METAMOD
@@ -63,10 +78,22 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 		return false;
 	}
 #endif
-
-	SM_GET_IFACE(HANDLESYSTEM, g_pHandleSys);
 	SM_GET_IFACE(SOURCEMOD, g_pSM);
+	smutils = g_pSM;
+#if defined SMEXT_ENABLE_HANDLESYS
+	SM_GET_IFACE(HANDLESYSTEM, g_pHandleSys);
+	handlesys = g_pHandleSys;
+#endif
+#if defined SMEXT_ENABLE_FORWARDSYS
 	SM_GET_IFACE(FORWARDMANAGER, g_pForwards);
+	forwards = g_pForwards;
+#endif
+#if defined SMEXT_ENABLE_PLAYERHELPERS
+	SM_GET_IFACE(PLAYERMANAGER, playerhelpers);
+#endif
+#if defined SMEXT_ENABLE_DBMANAGER
+	SM_GET_IFACE(DBI, dbi);
+#endif
 
 	if (SDK_OnLoad(error, maxlength, late))
 	{
