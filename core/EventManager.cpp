@@ -353,7 +353,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(&res, NULL);
 
-			HandleSecurity sec = { NULL, g_pCoreIdent };
+			HandleSecurity sec(NULL, g_pCoreIdent);
 			g_HandleSys.FreeHandle(hndl, &sec);
 		}
 
@@ -407,7 +407,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 			if (pHook->postCopy)
 			{
 				/* Free handle */
-				HandleSecurity sec = { NULL, g_pCoreIdent };
+				HandleSecurity sec(NULL, g_pCoreIdent);
 				g_HandleSys.FreeHandle(hndl, &sec);
 
 				/* Free event structure */

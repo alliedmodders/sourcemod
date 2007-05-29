@@ -123,7 +123,7 @@ static cell_t sm_FireEvent(IPluginContext *pContext, const cell_t *params)
 	g_EventManager.FireEvent(pInfo, params[2] ? true : false);
 
 	/* Free handle on game event */
-	HandleSecurity sec = {pContext->GetIdentity(), g_pCoreIdent};
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 	g_HandleSys.FreeHandle(hndl, &sec);
 
 	return 1;
@@ -150,7 +150,7 @@ static cell_t sm_CancelCreatedEvent(IPluginContext *pContext, const cell_t *para
 	g_EventManager.CancelCreatedEvent(pInfo);
 
 	/* Free handle on game event */
-	HandleSecurity sec = {pContext->GetIdentity(), g_pCoreIdent};
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 	g_HandleSys.FreeHandle(hndl, &sec);
 
 	return 1;

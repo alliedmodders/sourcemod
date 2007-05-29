@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include "PluginSys.h"
+#include "sp_vm_function.h"
 
 /********************
 * FUNCTION CALLING *

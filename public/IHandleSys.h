@@ -157,6 +157,13 @@ namespace SourceMod
 	 */
 	struct HandleSecurity
 	{
+		HandleSecurity()
+		{
+		}
+		HandleSecurity(IdentityToken_t *owner, IdentityToken_t *identity)
+			: pOwner(owner), pIdentity(identity)
+		{
+		}
 		IdentityToken_t *pOwner;			/**< Owner of the Handle */
 		IdentityToken_t *pIdentity;			/**< Owner of the Type */
 	};
