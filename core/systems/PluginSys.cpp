@@ -1785,7 +1785,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "Yes" : "No");
 					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "Yes" : "No");
 
-					const char *typestr;
+					const char *typestr = "";
 					switch (pl->GetType())
 					{
 					case PluginType_MapUpdated:
