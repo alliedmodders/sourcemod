@@ -1782,8 +1782,25 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				{
 					g_RootMenu.ConsolePrint("  Error: %s", pl->m_errormsg);
 				} else {
-					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "yes" : "no");
-					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "yes" : "no");
+					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "Yes" : "No");
+					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "Yes" : "No");
+
+					const char *typestr;
+					switch (pl->GetType())
+					{
+					case PluginType_MapUpdated:
+						typestr = "Map Change if Updated";
+						break;
+					case PluginType_MapOnly:
+						typestr = "Map Change";
+						break;
+					case PluginType_Private:
+					case PluginType_Global:
+						typestr = "Never";
+						break;
+					}
+
+					g_RootMenu.ConsolePrint("  Reloads: %s", typestr);
 				}
 			} else {
 				g_RootMenu.ConsolePrint("  Load error: %s", pl->m_errormsg);
