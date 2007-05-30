@@ -38,10 +38,10 @@ private:
 	void *CopyBlob(unsigned int param, const void *blobptr, size_t length);
 private:
 	MYSQL *m_mysql;
+	MyDatabase *m_pParent;
 	MYSQL_STMT *m_stmt;
 	MYSQL_BIND *m_bind;
 	MYSQL_RES *m_pRes;
-	MyDatabase *m_pParent;
 	ParamBind *m_pushinfo;
 	unsigned int m_Params;
 	MyBoundResults *m_rs;

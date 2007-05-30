@@ -100,7 +100,7 @@ bool CompareField(const char *str1, const char *str2)
 		return true;
 	}
 
-	return (strcmp(str1, str2) == NULL);
+	return (strcmp(str1, str2) == 0);
 }
 
 IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)

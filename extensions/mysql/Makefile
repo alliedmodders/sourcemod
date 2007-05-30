@@ -3,18 +3,22 @@
 
 SMSDK = ../..
 SRCDS = ~/srcds
-SOURCEMM = ../../../../sourcemm
+SOURCEMM = ../../../sourcemm
+MYSQL = ../../../mysql-5.0
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = sample
+PROJECT = dbi.mysql
 
 #Uncomment for SourceMM-enabled extensions
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp \
+	mysql/MyBasicResults.cpp mysql/MyDatabase.cpp \
+	mysql/MyBoundResults.cpp mysql/MyDriver.cpp \
+	mysql/MyStatement.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -30,13 +34,15 @@ HL2LIB = $(HL2SDK)/linux_sdk
 HL2SDK = $(SOURCEMM)/hl2sdk
 SMM_TRUNK = $(SOURCEMM)/trunk
 
-LINK = $(LINK_HL2) -static-libgcc
+LINK = $(LINK_HL2) -L$(MYSQL)/lib -lmysqlclient -lz -static-libgcc
 
-INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-          -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(SMM_TRUNK) -I$(SMM_TRUNK)/sourcehook -I$(SMM_TRUNK)/sourcemm \
-	  -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
+INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine \
+	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 \
+	-I$(SMM_TRUNK) -I$(SMM_TRUNK)/sourcehook -I$(SMM_TRUNK)/sourcemm \
+	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
+	-I$(MYSQL)/include
 
-CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -fPIC -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H
+CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -fPIC -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -Wno-switch-enum
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
@@ -66,6 +72,7 @@ $(BIN_DIR)/%.o: %.cpp
 
 all:
 	mkdir -p $(BIN_DIR)/sdk
+	mkdir -p $(BIN_DIR)/mysql
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
 	$(MAKE) extension
@@ -81,7 +88,10 @@ default: all
 clean:
 	rm -rf Release/*.o
 	rm -rf Release/sdk/*.o
+	rm -rf Release/mysql/*.o
 	rm -rf Release/$(BINARY)
 	rm -rf Debug/*.o
 	rm -rf Debug/sdk/*.o
+	rm -rf Debug/mysql/*.o
 	rm -rf Debug/$(BINARY)
+

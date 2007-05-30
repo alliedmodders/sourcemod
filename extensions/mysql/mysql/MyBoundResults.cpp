@@ -29,6 +29,10 @@ enum_field_types GetTheirType(DBType type)
 		{
 			return MYSQL_TYPE_BLOB;
 		}
+	case DBType_Unknown:
+		{
+			return MYSQL_TYPE_STRING;
+		}
 	}
 
 	return MYSQL_TYPE_STRING;
@@ -171,7 +175,7 @@ IResultRow *MyBoundResults::FetchRow()
 	if (!MoreRows())
 	{
 		m_CurRow = m_RowCount + 1;
-		NULL;
+		return NULL;
 	}
 
 	m_CurRow++;
