@@ -14,6 +14,7 @@
 
 #include "Database.h"
 #include "HandleSys.h"
+#include "ShareSys.h"
 #include "sourcemod.h"
 
 DBManager g_DBMan;
@@ -28,6 +29,8 @@ void DBManager::OnSourceModAllInitialized()
 	
 	m_DriverType = g_HandleSys.CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 	m_DatabaseType = g_HandleSys.CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 void DBManager::OnSourceModShutdown()

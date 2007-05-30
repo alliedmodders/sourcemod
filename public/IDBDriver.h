@@ -225,6 +225,14 @@ namespace SourceMod
 		virtual IResultRow *FetchRow() =0;
 
 		/**
+		 * @brief Returns a pointer to the current row.
+		 *
+		 * @return				IResultRow pointer to the current row,
+		 *						or NULL if the current row is invalid.
+		 */
+		virtual IResultRow *CurrentRow() =0;
+
+		/**
 		 * @brief Rewinds back to the beginning of the row iteration.
 		 * 
 		 * @return				True on success, false otherwise.
