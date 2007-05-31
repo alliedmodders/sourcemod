@@ -415,6 +415,9 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	{
 		pConVarList = new ConVarList();
 		plugin->SetProperty("ConVarList", pConVarList);
+	} else if (pConVarList->find(pConVar) != pConVarList->end()) {
+		/* If convar is already in list, then don't add it */
+		return;
 	}
 
 	/* Insert convar into list which is sorted alphabetically */
