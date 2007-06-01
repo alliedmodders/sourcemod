@@ -15,8 +15,10 @@
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "PlayerManager.h"
 #include "HandleSys.h"
+#include "PlayerManager.h"
+#include "HalfLife2.h"
+#include <shareddefs.h>
 
 IServerPluginCallbacks *g_VSP = NULL;
 
@@ -244,7 +246,7 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[256];
-	g_SourceMod.FormatString(buffer, sizeof(buffer)-1, pContext, params, 2);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
 
@@ -279,6 +281,52 @@ static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	g_HL2.TextMsg(client, HUD_PRINTTALK, buffer);
+
+	return 1;
+}
+
+static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	g_HL2.TextMsg(client, HUD_PRINTCENTER, buffer);
+
+	return 1;
+}
+
 static HalfLifeNatives s_HalfLifeNatives;
 
 REGISTER_NATIVES(halflifeNatives)
@@ -306,5 +354,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"IsSoundPrecached",		IsSoundPrecached},
 	{"FakeClientCommand",		FakeClientCommand},
 	{"CreateDialog",			smn_CreateDialog},
+	{"PrintToChat",				PrintToChat},
+	{"PrintCenterText",			PrintCenterText},
 	{NULL,						NULL},
 };

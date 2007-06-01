@@ -15,6 +15,7 @@
 #include "HalfLife2.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
+#include "UserMessages.h"
 
 CHalfLife2 g_HL2;
 bool g_IsOriginalEngine = false;
@@ -79,6 +80,11 @@ void CHalfLife2::OnSourceModStartup(bool late)
 	} else if (!g_pSharedChangeInfo) {
 		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
+}
+
+void CHalfLife2::OnSourceModAllInitialized()
+{
+	m_MsgTextMsg = g_UserMsgs.GetMessageIndex("TextMsg");
 }
 
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
@@ -235,4 +241,15 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 	} else {
 		pEdict->m_fStateFlags |= FL_EDICT_CHANGED;
 	}
+}
+
+void CHalfLife2::TextMsg(int client, int dest, const char *msg)
+{
+	bf_write *pBitBuf = NULL;
+	cell_t players[] = {client};
+
+	pBitBuf = g_UserMsgs.StartMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE);
+	pBitBuf->WriteByte(dest);
+	pBitBuf->WriteString(msg);
+	g_UserMsgs.EndMessage();
 }

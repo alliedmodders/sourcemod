@@ -18,7 +18,6 @@
 #endif
 #define _datapack_included
 
-
 /**
  * Creates a new data pack.
  *

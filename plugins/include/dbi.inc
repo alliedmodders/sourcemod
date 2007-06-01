@@ -452,4 +452,3 @@ native SQL_BindParamString(Handle:statement, param, const String:value[], bool:c
  * @error				Invalid statement Handle.
  */
 native bool:SQL_Execute(Handle:statement);
-

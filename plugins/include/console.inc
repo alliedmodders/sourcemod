@@ -137,7 +137,7 @@ native PrintToServer(const String:format[], any:...);
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
  * @noreturn
- * @error			If the client is not connected an error will be thrown.
+ * @error				If the client is not connected an error will be thrown.
  */
 native PrintToConsole(client, const String:format[], any:...);
 

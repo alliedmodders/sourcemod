@@ -282,7 +282,7 @@ native CancelMenu(Handle:menu);
  * @param players			Array of players to broadcast to.
  * @param numPlayers		Number of players in the array.
  * @param time				Maximum time to leave menu on the screen.
-  * @return					Number of clients that broadcast will wait upon.
+ * @return					Number of clients that broadcast will wait upon.
  * @error					Invalid Handle.
  */
 native BroadcastMenu(Handle:menu, MenuHandler:handler, players[], numPlayers, time);

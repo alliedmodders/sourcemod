@@ -19,10 +19,10 @@
 #include <sh_tinyhash.h>
 #include "sm_trie.h"
 #include "sm_globals.h"
-#include "dt_send.h"
-#include "server_class.h"
-#include "datamap.h"
-#include "edict.h"
+#include <dt_send.h>
+#include <server_class.h>
+#include <datamap.h>
+#include <edict.h>
 
 using namespace SourceHook;
 
@@ -45,18 +45,21 @@ public:
 	~CHalfLife2();
 public:
 	void OnSourceModStartup(bool late);
+	void OnSourceModAllInitialized();
 	/*void OnSourceModAllShutdown();*/
 public:
 	SendProp *FindInSendTable(const char *classname, const char *offset);
 	ServerClass *FindServerClass(const char *classname);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
+	void TextMsg(int client, int dest, const char *msg);
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
 	Trie *m_pClasses;
 	List<DataTableInfo *> m_Tables;
 	THash<datamap_t *, DataMapTrie> m_Maps;
+	int m_MsgTextMsg;
 };
 
 extern CHalfLife2 g_HL2;

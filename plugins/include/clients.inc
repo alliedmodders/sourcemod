@@ -20,7 +20,7 @@
 
 enum NetFlow
 {
-	NetFlow_Outgoing = 0,		/**< Outgoing traffic */
+	NetFlow_Outgoing = 0,	/**< Outgoing traffic */
 	NetFlow_Incoming,		/**< Incoming traffic */
 	NetFlow_Both			/**< Incoming and outgoing traffic */
 };

@@ -625,7 +625,7 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[256];
-	g_SourceMod.FormatString(buffer, sizeof(buffer)-1, pContext, params, 2);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	engine->ClientCommand(pPlayer->GetEdict(), "%s", buffer);
 
