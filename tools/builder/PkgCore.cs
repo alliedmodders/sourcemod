@@ -81,7 +81,7 @@ namespace builder
 		 */
 		public override Library [] GetLibraries()
 		{
-			Library [] libs = new Library[5];
+			Library [] libs = new Library[6];
 
 			for (int i=0; i<libs.Length; i++)
 			{
@@ -112,6 +112,11 @@ namespace builder
 			libs[4].LocalPath = "extensions/threader";
 			libs[4].Name = "threader.ext";
 			libs[4].ProjectFile = "threader";
+
+			libs[5].Destination = "extensions";
+			libs[5].LocalPath = "extensions/mysql";
+			libs[5].Name = "dbi.mysql.ext";
+			libs[5].ProjectFile = "sm_mysql";
 
 			return libs;
 		}
