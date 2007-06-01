@@ -224,7 +224,6 @@ native Call_PushCell(any:value);
  */
 native Call_PushCellRef(&any:value);
 
-
 /**
  * Pushes a float onto the current call.
  *
@@ -401,7 +400,7 @@ native SetNativeString(param, const String:source[], maxlength, bool:utf8=true, 
  * @return					Cell value at the parameter number.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeCell(param);
+native any:GetNativeCell(param);
 
 /**
  * Gets a cell from a native parameter, by reference.
@@ -410,7 +409,7 @@ native GetNativeCell(param);
  * @return					Cell value at the parameter number.
  * @error					Invalid parameter number or calling from a non-native function.
  */
-native GetNativeCellRef(param);
+native any:GetNativeCellRef(param);
 
 /**
  * Sets a cell from a native parameter, by reference.
@@ -468,6 +467,11 @@ native FormatNativeString(out_param,
 						  String:out_string[]="",
 						  const String:fmt_string[]="");
 
+/**
+ * Backwards compatibility stock - use GetNativeCell or GetNativeCellRef
+ *
+ * @deprecated
+ */
 stock Float:GetNativeFloat(param, bool:byref)
 {
 	if (!byref)
@@ -477,6 +481,12 @@ stock Float:GetNativeFloat(param, bool:byref)
 		return Float:GetNativeCellRef(param);
 	}
 }
+
+/**
+ * Backwards compatibility stock - use GetNativeCell or GetNativeCellRef
+ *
+ * @deprecated
+ */
 stock Handle:GetNativeHandle(param, bool:byref)
 {
 	if (!byref)
