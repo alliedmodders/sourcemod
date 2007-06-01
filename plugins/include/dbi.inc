@@ -260,9 +260,19 @@ native bool:SQL_HasResultSet(Handle:query);
  * Retrieves the number of rows in the last result set.
  * 
  * @param query			A query (or statement) Handle.
+ * @return				Number of rows in the current result set.
  * @error				Invalid query Handle.
  */
 native SQL_GetRowCount(Handle:query);
+
+/**
+ * Retrieves the number of fields in the last result set.
+ * 
+ * @param query			A query (or statement) Handle.
+ * @return				Number of fields in the current result set.
+ * @error				Invalid query Handle.
+ */
+native SQL_GetFieldCount(Handle:query);
 
 /**
  * Retrieves the name of a field by index.

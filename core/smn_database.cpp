@@ -26,7 +26,7 @@ public:
 		tacc.ident = g_pCoreIdent;
 
 		hQueryType = g_HandleSys.CreateType("IQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
-		hStmtType = g_HandleSys.CreateType("IPreparedQuery", this, hQueryType, &tacc, &acc, NULL, NULL);
+		hStmtType = g_HandleSys.CreateType("IPreparedQuery", this, hQueryType, &tacc, &acc, g_pCoreIdent, NULL);
 	}
 
 	virtual void OnSourceModShutdown()

@@ -123,7 +123,7 @@ SMCParseResult DBManager::ReadSMC_NewSection(const char *name, bool opt_quotes)
 		}
 	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
 		s_CurInfo = ConfDbInfo();
-		s_CurInfo.database = m_StrTab.AddString(name);
+		s_CurInfo.name = m_StrTab.AddString(name);
 		m_ParseState = DBPARSE_LEVEL_DATABASE;
 	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
 		m_ParseLevel++;
@@ -229,6 +229,7 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 		return false;
 	}
 
+	const char *dname = pInfo->info.driver;
 	if (!pInfo->realDriver)
 	{
 		/* Try to assign a real driver pointer */
@@ -238,6 +239,7 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 			{
 				m_pDefault = FindOrLoadDriver(m_DefDriver.c_str());
 			}
+			dname = m_DefDriver.size() ? m_DefDriver.c_str() : "default";
 			pInfo->realDriver = m_pDefault;
 		} else {
 			pInfo->realDriver = FindOrLoadDriver(pInfo->info.driver);
@@ -260,7 +262,7 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 	}
 	*pdb = NULL;
 
-	UTIL_Format(error, maxlength, "Driver \"%s\" not found", pInfo->driver);
+	UTIL_Format(error, maxlength, "Driver \"%s\" not found", dname);
 
 	return false;
 }
@@ -334,7 +336,7 @@ HandleError DBManager::ReadHandle(Handle_t hndl, DBHandleType dtype, void **ptr)
 
 	HandleSecurity sec(NULL, g_pCoreIdent);
 
-	return g_HandleSys.ReadHandle(hndl, dtype, &sec, ptr);
+	return g_HandleSys.ReadHandle(hndl, type, &sec, ptr);
 }
 
 HandleError DBManager::ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token)
@@ -397,7 +399,7 @@ IDBDriver *DBManager::FindOrLoadDriver(const char *name)
 	}
 
 	char filename[PLATFORM_MAX_PATH];
-	UTIL_Format(filename, sizeof(filename), "dbi.%s", name);
+	UTIL_Format(filename, sizeof(filename), "dbi.%s.ext", name);
 
 	IExtension *pExt = g_Extensions.LoadAutoExtension(filename);
 	if (!pExt || !pExt->IsLoaded() || m_drivers.size() <= last_size)
