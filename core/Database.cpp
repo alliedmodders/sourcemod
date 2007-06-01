@@ -16,8 +16,22 @@
 #include "HandleSys.h"
 #include "ShareSys.h"
 #include "sourcemod.h"
+#include "sm_stringutil.h"
+#include "TextParsers.h"
+#include "Logger.h"
+#include "ExtensionSys.h"
+#include <stdlib.h>
+
+#define DBPARSE_LEVEL_NONE		0
+#define DBPARSE_LEVEL_MAIN		1
+#define DBPARSE_LEVEL_DATABASE	2
 
 DBManager g_DBMan;
+
+DBManager::DBManager() 
+: m_StrTab(512), m_ParseLevel(0), m_ParseState(0), m_pDefault(NULL)
+{
+}
 
 void DBManager::OnSourceModAllInitialized()
 {
@@ -31,6 +45,23 @@ void DBManager::OnSourceModAllInitialized()
 	m_DatabaseType = g_HandleSys.CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
 	g_ShareSys.AddInterface(NULL, this);
+
+	g_SourceMod.BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
+}
+
+void DBManager::OnSourceModLevelChange(const char *mapName)
+{
+	SMCParseError err;
+	unsigned int line = 0;
+	if ((err = g_TextParser.ParseFile_SMC(m_Filename, this, &line, NULL)) != SMCParse_Okay)
+	{
+		g_Logger.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
+		if (err != SMCParse_Custom)
+		{
+			const char *txt = g_TextParser.GetSMCErrorString(err);
+			g_Logger.LogError("[SM] Line %d: %s", line, txt);
+		}
+	}
 }
 
 void DBManager::OnSourceModShutdown()
@@ -64,22 +95,172 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
-bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
+void DBManager::ReadSMC_ParseStart()
 {
-	const DatabaseInfo *pInfo = FindDatabaseConf(name);
+	m_confs.clear();
+	m_ParseLevel = 0;
+	m_ParseState = DBPARSE_LEVEL_NONE;
+	m_StrTab.Reset();
+	m_DefDriver.clear();
+}
 
-	for (size_t i=0; i<m_drivers.size(); i++)
+ConfDbInfo s_CurInfo;
+SMCParseResult DBManager::ReadSMC_NewSection(const char *name, bool opt_quotes)
+{
+	if (m_ParseLevel)
 	{
-		if (strcasecmp(pInfo->driver, m_drivers[i]->GetIdentifier()) == 0)
+		m_ParseLevel++;
+		return SMCParse_Continue;
+	}
+
+	if (m_ParseState == DBPARSE_LEVEL_NONE)
+	{
+		if (strcmp(name, "Databases") == 0)
 		{
-			*pdr = m_drivers[i];
-			*pdb = m_drivers[i]->Connect(pInfo, persistent, error, maxlength);
-			return (*pdb == NULL);
+			m_ParseState = DBPARSE_LEVEL_MAIN;
+		} else {
+			m_ParseLevel++;
+		}
+	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
+		s_CurInfo = ConfDbInfo();
+		s_CurInfo.database = m_StrTab.AddString(name);
+		m_ParseState = DBPARSE_LEVEL_DATABASE;
+	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
+		m_ParseLevel++;
+	}
+
+	return SMCParse_Continue;
+}
+
+SMCParseResult DBManager::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+{
+	if (m_ParseLevel)
+	{
+		return SMCParse_Continue;
+	}
+
+	if (m_ParseState == DBPARSE_LEVEL_MAIN)
+	{
+		if (strcmp(key, "driver_default") == 0)
+		{
+			m_DefDriver.assign(value);
+		}
+	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
+		if (strcmp(key, "driver") == 0)
+		{
+			if (strcmp(value, "default") != 0)
+			{
+				s_CurInfo.driver = m_StrTab.AddString(value);
+			}
+		} else if (strcmp(key, "database") == 0) {
+			s_CurInfo.database = m_StrTab.AddString(value);
+		} else if (strcmp(key, "host") == 0) {
+			s_CurInfo.host = m_StrTab.AddString(value);
+		} else if (strcmp(key, "user") == 0) {
+			s_CurInfo.user = m_StrTab.AddString(value);
+		} else if (strcmp(key, "pass") == 0) {
+			s_CurInfo.pass = m_StrTab.AddString(value);
+		} else if (strcmp(key, "timeout") == 0) {
+			s_CurInfo.info.maxTimeout = atoi(value);
+		} else if (strcmp(key, "port") == 0) {
+			s_CurInfo.info.port = atoi(value);
 		}
 	}
 
-	*pdr = NULL;
+	return SMCParse_Continue;
+}
+
+#define ASSIGN_VAR(var) \
+	if (s_CurInfo.var == -1) { \
+		s_CurInfo.info.var = ""; \
+	} else { \
+		s_CurInfo.info.var = m_StrTab.GetString(s_CurInfo.var); \
+	}
+
+SMCParseResult DBManager::ReadSMC_LeavingSection()
+{
+	if (m_ParseLevel)
+	{
+		m_ParseLevel--;
+		return SMCParse_Continue;
+	}
+
+	if (m_ParseState == DBPARSE_LEVEL_DATABASE)
+	{
+		/* Set all of the info members to either a blank string
+		 * or the string pointer from the string table.
+		 */
+		ASSIGN_VAR(driver);
+		ASSIGN_VAR(database);
+		ASSIGN_VAR(host);
+		ASSIGN_VAR(user);
+		ASSIGN_VAR(pass);
+		
+		/* Save it.. */
+		m_confs.push_back(s_CurInfo);
+
+		/* Go up one level */
+		m_ParseState = DBPARSE_LEVEL_MAIN;
+	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
+		m_ParseState = DBPARSE_LEVEL_NONE;
+		return SMCParse_Halt;
+	}
+
+	return SMCParse_Continue;
+}
+#undef ASSIGN_VAR
+
+void DBManager::ReadSMC_ParseEnd(bool halted, bool failed)
+{
+}
+
+bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
+{
+	ConfDbInfo *pInfo = GetDatabaseConf(name);
+
+	if (!pInfo)
+	{
+		if (pdr)
+		{
+			*pdr = NULL;
+		}
+		*pdb = NULL;
+		UTIL_Format(error, maxlength, "Configuration \"%s\" not found", name);
+		return false;
+	}
+
+	if (!pInfo->realDriver)
+	{
+		/* Try to assign a real driver pointer */
+		if (pInfo->info.driver[0] == '\0')
+		{
+			if (!m_pDefault && m_DefDriver.size() > 0)
+			{
+				m_pDefault = FindOrLoadDriver(m_DefDriver.c_str());
+			}
+			pInfo->realDriver = m_pDefault;
+		} else {
+			pInfo->realDriver = FindOrLoadDriver(pInfo->info.driver);
+		}
+	}
+
+	if (pInfo->realDriver)
+	{
+		if (pdr)
+		{
+			*pdr = pInfo->realDriver;
+		}
+		*pdb = pInfo->realDriver->Connect(&pInfo->info, persistent, error, maxlength);
+		return (*pdb != NULL);
+	}
+
+	if (pdr)
+	{
+		*pdr = NULL;
+	}
 	*pdb = NULL;
+
+	UTIL_Format(error, maxlength, "Driver \"%s\" not found", pInfo->driver);
 
 	return false;
 }
@@ -99,6 +280,27 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 			return;
 		}
 	}
+
+	/* Make sure NOTHING references this! */
+	List<ConfDbInfo>::iterator iter;
+	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
+	{
+		ConfDbInfo &db = (*iter);
+		if (db.realDriver == pDriver)
+		{
+			db.realDriver = NULL;
+		}
+	}
+}
+
+IDBDriver *DBManager::GetDefaultDriver()
+{
+	if (!m_pDefault && m_DefDriver.size() > 0)
+	{
+		m_pDefault = FindOrLoadDriver(m_DefDriver.c_str());
+	}
+
+	return m_pDefault;
 }
 
 Handle_t DBManager::CreateHandle(DBHandleType dtype, void *ptr, IdentityToken_t *pToken)
@@ -158,6 +360,58 @@ IDBDriver *DBManager::GetDriver(unsigned int index)
 
 const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 {
-	/* :TODO: */
+	ConfDbInfo *info = GetDatabaseConf(name);
+	if (!info)
+	{
+		return NULL;
+	}
+
+	return &info->info;
+}
+
+ConfDbInfo *DBManager::GetDatabaseConf(const char *name)
+{
+	List<ConfDbInfo>::iterator iter;
+
+	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
+	{
+		ConfDbInfo &conf = (*iter);
+		if (strcmp(m_StrTab.GetString(conf.name), name) == 0)
+		{
+			return &conf;
+		}
+	}
+
+	return NULL;
+}
+
+IDBDriver *DBManager::FindOrLoadDriver(const char *name)
+{
+	size_t last_size = m_drivers.size();
+	for (size_t i=0; i<last_size; i++)
+	{
+		if (strcmp(m_drivers[i]->GetIdentifier(), name) == 0)
+		{
+			return m_drivers[i];
+		}
+	}
+
+	char filename[PLATFORM_MAX_PATH];
+	UTIL_Format(filename, sizeof(filename), "dbi.%s", name);
+
+	IExtension *pExt = g_Extensions.LoadAutoExtension(filename);
+	if (!pExt || !pExt->IsLoaded() || m_drivers.size() <= last_size)
+	{
+		return NULL;
+	}
+
+	/* last_size is now gauranteed to be a valid index.
+	 * The identifier must match the name.
+	 */
+	if (strcmp(m_drivers[last_size]->GetIdentifier(), name) == 0)
+	{
+		return m_drivers[last_size];
+	}
+
 	return NULL;
 }

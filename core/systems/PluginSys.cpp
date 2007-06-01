@@ -91,7 +91,7 @@ void CPlugin::InitIdentity()
 {
 	if (!m_handle)
 	{
-		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent);
+		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
 		m_handle = g_HandleSys.CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
 		m_ctx.base->SetIdentity(m_ident);
 	}

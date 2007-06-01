@@ -24,7 +24,7 @@
 #include <string.h>
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		1
+#define SMINTERFACE_DBI_VERSION		2
 
 namespace SourceMod
 {
@@ -561,7 +561,8 @@ namespace SourceMod
 		virtual Handle_t GetHandle() =0;
 
 		/**
-		 * @brief Returns the driver's controlling identity.
+		 * @brief Returns the driver's controlling identity (must be the same 
+		 * as from IExtension::GetIdentity).
 		 *
 		 * @return				An IdentityToken_t identity.
 		 */
@@ -601,7 +602,8 @@ namespace SourceMod
 		virtual void RemoveDriver(IDBDriver *pDriver) =0;
 
 		/**
-		 * @brief Searches for database info by name.
+		 * @brief Searches for database info by name.  Both the return pointer
+		 * and all pointers contained therein should be considered volatile.
 		 *
 		 * @param name			Named database info.
 		 * @return				DatabaseInfo pointer.
@@ -648,7 +650,8 @@ namespace SourceMod
 		 * @brief Creates a Handle_t of the IDBDriver type.
 		 *
 		 * @param type			A DBHandleType value.
-		 * @param ptr			A pointer corrresponding to a DBHandleType object.
+		 * @param ptr			A pointer corrresponding to a DBHandleType 
+		 *						object.
 		 * @param token			Identity pointer of the owning identity.
 		 * @return				A new Handle_t handle, or 0 on failure.
 		 */
@@ -673,6 +676,22 @@ namespace SourceMod
 		 * @return				HandleError value.
 		 */
 		virtual HandleError ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token) =0;
+
+		/**
+		 * @brief Given a driver name, attempts to find it.  If it is not found, SourceMod
+		 * will attempt to load it.
+		 *
+		 * @param name			Driver identifier name.
+		 * @return				IDBDriver pointer on success, NULL otherwise.
+		 */
+		virtual IDBDriver *FindOrLoadDriver(const char *driver) =0;
+
+		/**
+		 * @brief Returns the default driver, or NULL if none is set.
+		 *
+		 * @return				IDBDriver pointer on success, NULL otherwise.
+		 */
+		virtual IDBDriver *GetDefaultDriver() =0;
 	};
 }
 

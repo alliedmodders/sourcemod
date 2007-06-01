@@ -797,6 +797,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_database.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_datapacks.cpp"
 				>
 			</File>

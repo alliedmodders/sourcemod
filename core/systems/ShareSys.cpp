@@ -34,7 +34,7 @@ IdentityToken_t *ShareSystem::CreateCoreIdentity()
 		m_CoreType = CreateIdentType("CORE");
 	}
 
-	return CreateIdentity(m_CoreType);
+	return CreateIdentity(m_CoreType, this);
 }
 
 void ShareSystem::OnSourceModStartup(bool late)
@@ -96,7 +96,7 @@ void ShareSystem::OnHandleDestroy(HandleType_t type, void *object)
 	/* THIS WILL NEVER BE CALLED FOR ANYTHING WITH THE IDENTITY TYPE */
 }
 
-IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
+IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type, void *ptr)
 {
 	if (!m_TypeRoot)
 	{
@@ -110,6 +110,8 @@ IdentityToken_t *ShareSystem::CreateIdentity(IdentityType_t type)
 	sec.pOwner = sec.pIdentity = GetIdentRoot();
 
 	pToken->ident = g_HandleSys.CreateHandleInt(type, NULL, &sec, NULL, NULL, true);
+	pToken->ptr = ptr;
+	pToken->type = type;
 
 	return pToken;
 }

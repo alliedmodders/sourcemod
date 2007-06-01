@@ -28,6 +28,8 @@ namespace SourceMod
 	struct IdentityToken_t
 	{
 		Handle_t ident;
+		void *ptr;
+		IdentityType_t type;
 	};
 };
 
@@ -53,7 +55,7 @@ public: //IShareSys
 	void AddNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 	IdentityType_t CreateIdentType(const char *name);
 	IdentityType_t FindIdentType(const char *name);
-	IdentityToken_t *CreateIdentity(IdentityType_t type);
+	IdentityToken_t *CreateIdentity(IdentityType_t type, void *ptr);
 	void DestroyIdentType(IdentityType_t type);
 	void DestroyIdentity(IdentityToken_t *identity);
 	void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload);

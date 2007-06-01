@@ -70,7 +70,7 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 		m_PlId = g_pMMPlugins->Load(path, g_PLID, already, error, maxlength);
 	}
 
-	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType);
+	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType, this);
 
 	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !g_SourceMod.IsMapLoading()))
 	{
@@ -132,7 +132,11 @@ void CExtension::MarkAllLoaded()
 
 void CExtension::AddPlugin(IPlugin *pPlugin)
 {
-	m_Plugins.push_back(pPlugin);
+	/* Unfortunately we have to do this :( */
+	if (m_Plugins.find(pPlugin) != m_Plugins.end())
+	{
+		m_Plugins.push_back(pPlugin);
+	}
 }
 
 void CExtension::RemovePlugin(IPlugin *pPlugin)
@@ -865,4 +869,14 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 	g_RootMenu.DrawGenericOption("info", "Extra extension information");
 	g_RootMenu.DrawGenericOption("list", "List extensions");
 	g_RootMenu.DrawGenericOption("unload", "Unload an extension");
+}
+
+CExtension *CExtensionManager::GetExtensionFromIdent(IdentityToken_t *ptr)
+{
+	if (ptr->type == g_ExtType)
+	{
+		return (CExtension *)(ptr->ptr);
+	}
+
+	return NULL;
 }

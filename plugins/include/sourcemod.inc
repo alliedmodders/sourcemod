@@ -44,6 +44,7 @@ struct Plugin
 #include <events>
 #include <functions>
 #include <timers>
+#include <dbi>
 
 enum DialogType
 {

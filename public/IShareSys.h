@@ -137,13 +137,14 @@ namespace SourceMod
 		virtual IdentityType_t FindIdentType(const char *name) =0;
 
 		/**
-		 * @brief Creates a new identity token.  This token is guaranteed to be unique
-		 * amongst all other open identities.
+		 * @brief Creates a new identity token.  This token is guaranteed to be 
+		 * unique amongst all other open identities.
 		 *
 		 * @param type			Identity type.
-		 * @return				A new IdentityToken_t identifier.
+		 * @param ptr			Private data pointer (cannot be NULL).
+		 * @return				A new IdentityToken_t pointer, or NULL on failure.
 		 */
-		virtual IdentityToken_t *CreateIdentity(IdentityType_t type) =0;
+		virtual IdentityToken_t *CreateIdentity(IdentityType_t type, void *ptr) =0;
 
 		/** 
 		 * @brief Destroys an identity type.  Note that this will delete any identities
@@ -160,7 +161,6 @@ namespace SourceMod
 		 * @param identity		Identity to remove.
 		 */
 		virtual void DestroyIdentity(IdentityToken_t *identity) =0;
-
 
 		/**
 		 * @brief Requires an extension.  This tells SourceMod that without this extension,

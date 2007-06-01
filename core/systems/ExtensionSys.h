@@ -96,6 +96,8 @@ public:
 	void MarkAllLoaded();
 	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
 	void TryAutoload();
+public:
+	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 private:
 	CExtension *FindByOrder(unsigned int num);
 private:
