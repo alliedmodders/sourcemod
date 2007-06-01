@@ -94,6 +94,13 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 		return BAD_HANDLE;
 	}
 
+	Handle_t hndl = g_DBMan.CreateHandle(DBHandle_Database, db, pContext->GetIdentity());
+	if (!hndl)
+	{
+		db->Close();
+		return BAD_HANDLE;
+	}
+
 	/* HACK! Add us to the dependency list */
 	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
@@ -101,7 +108,7 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 		g_Extensions.BindChildPlugin(pExt, g_PluginSys.FindPluginByContext(pContext->GetContext()));
 	}
 
-	return db->GetHandle();
+	return hndl;
 }
 
 static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
@@ -146,6 +153,13 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 
 	if (db)
 	{
+		Handle_t hndl = g_DBMan.CreateHandle(DBHandle_Database, db, pContext->GetIdentity());
+		if (!hndl)
+		{
+			db->Close();
+			return BAD_HANDLE;
+		}
+
 		/* HACK! Add us to the dependency list */
 		CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 		if (pExt)
@@ -153,7 +167,7 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 			g_Extensions.BindChildPlugin(pExt, g_PluginSys.FindPluginByContext(pContext->GetContext()));
 		}
 
-		return db->GetHandle();
+		return hndl;
 	}
 	
 	return BAD_HANDLE;

@@ -56,7 +56,7 @@ DBType GetOurType(enum_field_types type)
 }
 
 MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
-: m_mysql(mysql), m_refcount(1), m_handle(BAD_HANDLE), m_bPersistent(persistent)
+: m_mysql(mysql), m_refcount(1), m_bPersistent(persistent)
 {
 	m_Host.assign(info->host);
 	m_Database.assign(info->database);
@@ -83,21 +83,11 @@ void MyDatabase::IncRefCount()
 	m_refcount++;
 }
 
-bool MyDatabase::Close(bool fromHndlSys)
+bool MyDatabase::Close()
 {
 	if (m_refcount > 1)
 	{
 		m_refcount--;
-		return false;
-	}
-
-	/* If we don't have a Handle and the Handle is
-	 * is from the Handle System, it means we need
-	 * to block a re-entrant call from our own 
-	 * FreeHandle().
-	 */
-	if (fromHndlSys && (m_handle == BAD_HANDLE))
-	{
 		return false;
 	}
 
@@ -107,30 +97,10 @@ bool MyDatabase::Close(bool fromHndlSys)
 		g_MyDriver.RemoveFromList(this, true);
 	}
 
-	/* If we're not from the Handle system, and
-	 * we have a Handle, we need to free it first.
-	 */
-	if (!fromHndlSys && m_handle != BAD_HANDLE)
-	{
-		Handle_t hndl = m_handle;
-		m_handle = BAD_HANDLE;
-		dbi->ReleaseHandle(hndl, DBHandle_Database, myself->GetIdentity());
-	}
-
 	/* Finally, free our resource(s) */
 	delete this;
 
 	return true;
-}
-
-Handle_t MyDatabase::GetHandle()
-{
-	if (m_handle == BAD_HANDLE)
-	{
-		m_handle = dbi->CreateHandle(DBHandle_Database, this, myself->GetIdentity());
-	}
-
-	return m_handle;
 }
 
 const DatabaseInfo &MyDatabase::GetInfo()

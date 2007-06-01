@@ -24,7 +24,7 @@
 #include <string.h>
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		2
+#define SMINTERFACE_DBI_VERSION		3
 
 namespace SourceMod
 {
@@ -409,13 +409,11 @@ namespace SourceMod
 		 *
 		 * It is guaranteed that an IDatabase pointer won't be destroyed until
 		 * all open IQuery or IPreparedQuery pointers are closed.
-		 *
-		 * @param				Only pass true if being called from an 
-		 *						IHandleTypeDispatch destructor.
+		 * 
 		 * @return				True if object was destroyed, false if 
 		 *						references are remaining.
 		 */
-		virtual bool Close(bool fromHndlSys=false) =0;
+		virtual bool Close() =0;
 
 		/**
 		 * @brief Error code and string returned by the last operation on this
@@ -486,13 +484,6 @@ namespace SourceMod
 		 * @return				Row insertion ID of the last execute, if any.
 		 */
 		virtual unsigned int GetInsertID() =0;
-
-		/**
-		 * @brief Returns an IDatabase Handle to this IDatabase.
-		 *
-		 * @return				Handle_t of type IDatabase.
-		 */
-		virtual Handle_t GetHandle() =0;
 	};
 
 	/** 

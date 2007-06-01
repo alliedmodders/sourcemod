@@ -14,7 +14,7 @@ public:
 	MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent);
 	~MyDatabase();
 public: //IDatabase
-	bool Close(bool fromHndlSys=false);
+	bool Close();
 	const char *GetError(int *errorCode=NULL);
 	bool DoSimpleQuery(const char *query);
 	IQuery *DoQuery(const char *query);
@@ -22,14 +22,12 @@ public: //IDatabase
 	bool QuoteString(const char *str, char buffer[], size_t maxlen, size_t *newSize);
 	unsigned int GetAffectedRows();
 	unsigned int GetInsertID();
-	Handle_t GetHandle();
 public:
 	const DatabaseInfo &GetInfo();
 	void IncRefCount();
 private:
 	MYSQL *m_mysql;
 	unsigned int m_refcount;
-	Handle_t m_handle;
 
 	/* ---------- */
 	DatabaseInfo m_Info;
