@@ -18,7 +18,9 @@
 #include "HandleSys.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
-#include <shareddefs.h>
+
+#define HUD_PRINTTALK		3
+#define HUD_PRINTCENTER		4
 
 IServerPluginCallbacks *g_VSP = NULL;
 

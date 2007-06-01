@@ -906,7 +906,7 @@ REGISTER_NATIVES(menuNatives)
 	{"CreateMenu",				CreateMenu},
 	{"CreateMenuEx",			CreateMenuEx},
 	{"CreatePanel",				CreatePanel},
-	{"CreatePanelFromMenu",		CreatePanelFromMenu},\
+	{"CreatePanelFromMenu",		CreatePanelFromMenu},
 	{"DisplayMenu",				DisplayMenu},
 	{"DrawPanelItem",			DrawPanelItem},
 	{"DrawPanelText",			DrawPanelText},
