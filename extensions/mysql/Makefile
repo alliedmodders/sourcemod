@@ -3,7 +3,7 @@
 
 SMSDK = ../..
 SRCDS = ~/srcds
-SOURCEMM = ../../../sourcemm
+SOURCEMM = ../../../../sourcemm
 MYSQL = ../../../mysql-5.0
 
 #####################################
