@@ -758,16 +758,6 @@
 			</Filter>
 		</Filter>
 		<Filter
-			Name="Resources"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{2A750240-7C10-455f-A900-B9A9D362356C}"
-			>
-			<File
-				RelativePath="..\version.rc"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="HL2SDK"
 			UniqueIdentifier="{80B56842-7A9F-4d5d-8149-767C285D0EB4}"
 			>
@@ -874,6 +864,16 @@
 			</File>
 			<File
 				RelativePath="..\smn_usermsgs.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Resources"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
+			UniqueIdentifier="{2A750240-7C10-455f-A900-B9A9D362356C}"
+			>
+			<File
+				RelativePath="..\version.rc"
 				>
 			</File>
 		</Filter>

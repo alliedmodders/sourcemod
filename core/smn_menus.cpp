@@ -38,6 +38,7 @@ enum MenuAction
 	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=item) */
 	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed). */
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has ended (param1=chosen item) */
+	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started */
 };
 
 class CPanelHandler : public IMenuHandler
@@ -66,10 +67,14 @@ public:
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
 	void OnMenuEnd(IBaseMenu *menu);
 	void OnMenuDestroy(IBaseMenu *menu);
+	void OnMenuVoteStart(IBaseMenu *menu);
+	void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item);
 #if 0
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
 #endif
+private:
+	void DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2);
 private:
 	IPluginFunction *m_pBasic;
 	int m_Flags;
@@ -232,11 +237,7 @@ void CMenuHandler::OnMenuStart(IBaseMenu *menu)
 {
 	if ((m_Flags & (int)MenuAction_Start) == (int)MenuAction_Start)
 	{
-		m_pBasic->PushCell(menu->GetHandle());
-		m_pBasic->PushCell(MenuAction_Start);
-		m_pBasic->PushCell(0);
-		m_pBasic->PushCell(0);
-		m_pBasic->Execute(NULL);
+		DoAction(menu, MenuAction_Start, 0, 0);
 	}
 }
 
@@ -254,11 +255,7 @@ void CMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *panel)
 
 		Handle_t hndl =  g_HandleSys.CreateHandleEx(g_MenuHelpers.GetPanelType(), panel, &sec, &access, NULL);
 
-		m_pBasic->PushCell(menu->GetHandle());
-		m_pBasic->PushCell(MenuAction_Display);
-		m_pBasic->PushCell(client);
-		m_pBasic->PushCell(hndl);
-		m_pBasic->Execute(NULL);
+		DoAction(menu, MenuAction_Display, client, hndl);
 
 		g_HandleSys.FreeHandle(hndl, &sec);
 	}
@@ -266,34 +263,41 @@ void CMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *panel)
 
 void CMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
 {
-	m_pBasic->PushCell(menu->GetHandle());
-	m_pBasic->PushCell(MenuAction_Select);
-	m_pBasic->PushCell(client);
-	m_pBasic->PushCell(item);
-	m_pBasic->Execute(NULL);
+	DoAction(menu, MenuAction_Select, client, item);
 }
 
 void CMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
 {
-	m_pBasic->PushCell(menu->GetHandle());
-	m_pBasic->PushCell(MenuAction_Cancel);
-	m_pBasic->PushCell(client);
-	m_pBasic->PushCell(reason);
-	m_pBasic->Execute(NULL);
+	DoAction(menu, MenuAction_Cancel, client, (cell_t)reason);
 }
 
 void CMenuHandler::OnMenuEnd(IBaseMenu *menu)
 {
-	m_pBasic->PushCell(menu->GetHandle());
-	m_pBasic->PushCell(MenuAction_End);
-	m_pBasic->PushCell(0);
-	m_pBasic->PushCell(0);
-	m_pBasic->Execute(NULL);
+	DoAction(menu, MenuAction_End, 0, 0);
 }
 
 void CMenuHandler::OnMenuDestroy(IBaseMenu *menu)
 {
 	g_MenuHelpers.FreeMenuHandler(this);
+}
+
+void CMenuHandler::OnMenuVoteStart(IBaseMenu *menu)
+{
+	DoAction(menu, MenuAction_VoteStart, 0, 0);
+}
+
+void CMenuHandler::OnMenuVoteEnd(IBaseMenu *menu, unsigned int item)
+{
+	DoAction(menu, MenuAction_VoteEnd, item, 0);
+}
+
+void CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2)
+{
+	m_pBasic->PushCell(menu->GetHandle());
+	m_pBasic->PushCell((cell_t)action);
+	m_pBasic->PushCell(param1);
+	m_pBasic->PushCell(param2);
+	m_pBasic->Execute(NULL);
 }
 
 /**
@@ -373,6 +377,23 @@ static cell_t DisplayMenu(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return menu->Display(params[2], params[3]) ? 1 : 0;
+}
+
+static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	return menu->BroadcastVote(addr, params[3], params[4]);
 }
 
 static cell_t AddMenuItem(IPluginContext *pContext, const cell_t *params)
@@ -930,5 +951,6 @@ REGISTER_NATIVES(menuNatives)
 	{"SetPanelCurrentKey",		SetPanelCurrentKey},
 	{"SetPanelTitle",			SetPanelTitle},
 	{"SetPanelKeys",			SetPanelKeys},
+	{"VoteMenu",				VoteMenu},
 	{NULL,						NULL},
 };

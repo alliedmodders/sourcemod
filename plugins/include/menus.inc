@@ -39,6 +39,7 @@ enum MenuAction
 	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=reason) */
 	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed). */
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has ended (param1=chosen item) */
+	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started */
 };
 
 /** Default menu actions */
@@ -273,45 +274,34 @@ native bool:SetMenuExitButton(Handle:menu, bool:button);
  */
 native CancelMenu(Handle:menu);
 
-#if 0
 /**
- * Broadcasts a menu to a list of clients.
+ * Broadcasts a menu to a list of clients.  The most selected item will be 
+ * returned through MenuAction_End.  On a tie, a random item will be returned 
+ * from a list of the tied items.
+ *
+ * Note that MenuAction_VoteEnd and MenuAction_VoteStart are both
+ * default callbacks and do not need to be enabled.
  *
  * @param menu				Menu Handle.
- * @param handler			MenuHandler callback to receive actions.
- * @param players			Array of players to broadcast to.
- * @param numPlayers		Number of players in the array.
+ * @param clients			Array of clients to broadcast to.
+ * @param numClients		Number of clients in the array.
  * @param time				Maximum time to leave menu on the screen.
- * @return					Number of clients that broadcast will wait upon.
+ * @return					True on success, false if this menu already has a vote session
+ *							in progress.
  * @error					Invalid Handle.
  */
-native BroadcastMenu(Handle:menu, MenuHandler:handler, players[], numPlayers, time);
+native bool:VoteMenu(Handle:menu, clients[], numClients, time);
 
 /**
- * Broadcasts a menu to a list of clients.  The most selected
- * item will be returned through MenuAction_End.  On a tie, a random
- * item will be returned.
+ * Sends a vote menu to all clients.  See VoteMenu() for more information.
  *
  * @param menu				Menu Handle.
- * @param handler			MenuHandler callback to receive actions.
- * @param players			Array of players to broadcast to.
- * @param numPlayers		Number of players in the array.
  * @param time				Maximum time to leave menu on the screen.
- * @return					Number of clients that vote will wait upon.
+ * @return					True on success, false if this menu already has a vote session
+ *							in progress.
  * @error					Invalid Handle.
  */
-native VoteMenu(Handle:menu, MenuHandler:handler, players[], numPlayers, time);
-
-/**
- * Broadcasts a menu to all clients.
- *
- * @param menu				Menu Handle.
- * @param handler			MenuHandler callback to receive actions.
- * @param time				Maximum time to leave menu on the screen.
- * @return					Number of clients that broadcast will wait upon.
- * @error					Invalid Handle.
- */
-stock BroadcastMenuToAll(Handle:menu, MenuHandler:handler, time)
+stock VoteMenuToAll(Handle:menu, time)
 {
 	new num = GetMaxClients();
 	new total;
@@ -326,38 +316,8 @@ stock BroadcastMenuToAll(Handle:menu, MenuHandler:handler, time)
 		players[total++] = i;
 	}
 	
-	return BroadcastMenu(menu, handler, players, total, time);
+	return VoteMenu(menu, players, total, time);
 }
-
-/**
- * Broadcasts a menu to all clients.  The most selected item will 
- * be returned through MenuAction_End.  On a tie, a random item 
- * will be returned.
- *
- * @param menu				Menu Handle.
- * @param handler			MenuHandler callback to receive actions.
- * @param time				Maximum time to leave menu on the screen.
- * @return					Number of clients that the vote will wait upon.
- * @error					Invalid Handle.
- */
-stock VoteMenuToAll(Handle:menu, MenuHandler:handler, time)
-{
-	new num = GetMaxClients();
-	new total;
-	decl players[num];
-	
-	for (new i=1; i<=num; i++)
-	{
-		if (!IsClientConnected(i))
-		{
-			continue;
-		}
-		players[total++] = i;
-	}
-	
-	return VoteMenu(menu, handler, players, total, time);
-}
-#endif
 
 /**
  * Returns a style's global Handle.
