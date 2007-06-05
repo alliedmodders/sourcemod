@@ -23,7 +23,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		1
+#define SMINTERFACE_MENUMANAGER_VERSION		2
 
 /**
  * @file IMenuManager.h
@@ -498,6 +498,23 @@ namespace SourceMod
 		 * @return				Handle_t handle value.
 		 */
 		virtual Handle_t GetHandle() =0;
+
+		/**
+		 * @brief Sends a menu to multiple clients as a vote menu.  All callbacks
+		 * will be sent as normal, except two extras, OnMenuVoteStart and 
+		 * OnMenuVoteEnd, will be called.
+		 *
+		 * @param clients		Array of client indexes.
+		 * @param numClients	Number of client indexes in the array.
+		 * @param maxTime		Maximum amount of time to hold the vote.
+		 * @param flags			Optional voting flags (currently unused).
+		 * @return				True on success, false if a vote is already in
+		 *						progress (the menu must be cancelled first).
+		 */
+		virtual bool BroadcastVote(int clients[], 
+			unsigned int numClients, 
+			unsigned int maxTime,
+			unsigned int flags=0) =0;
 	};
 
 	/** 
@@ -600,21 +617,55 @@ namespace SourceMod
 		virtual void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display)
 		{
 		}
-	};
 
-	/** 
-	 * @brief Handles a vote menu.
-	 */
-	class IMenuVoteHandler : public IMenuHandler
-	{
-	public:
 		/**
-		 * @brief Called when a vote ends.
+		 * @brief Called when a vote has been started and displayed to 
+		 * clients.  This is called after OnMenuStart() and OnMenuDisplay(),
+		 * but before OnMenuSelect().
+		 *
+		 * @param menu			Menu pointer.
+		 */
+		virtual void OnMenuVoteStart(IBaseMenu *menu)
+		{
+		}
+
+		/**
+		 * @brief Called when a vote ends.  This is automatically called by the 
+		 * wrapper, and never needs to called from a style implementation.
 		 *
 		 * @param menu			Menu pointer.
 		 * @param item			Item position that was chosen by a majority.
 		 */
-		virtual void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item) =0;
+		virtual void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item)
+		{
+		}
+	};
+
+	/**
+	 * @brief Contains functions for managing a vote handler.
+	 */
+	class IVoteMenuHandler : public IMenuHandler
+	{
+	public:
+		/**
+		 * @brief Returns whether or not a vote is in progress.
+		 *
+		 * @return				True if a vote is in progress, false otherwise.
+		 */
+		virtual bool IsVoteInProgress() =0;
+
+		/**
+		 * @brief Use this to mark the vote as in progress (start).
+		 *
+		 * @param menu			Menu pointer.
+		 */
+		virtual void InitializeVoting(IBaseMenu *menu) =0;
+
+		/**
+		 * @brief Use this to notify that all clients' displays have been
+		 * processed (i.e., there are no more clients to display to).
+		 */
+		virtual void StartVoting() =0;
 	};
 
 	/**
@@ -640,39 +691,6 @@ namespace SourceMod
 		 */
 		virtual IMenuStyle *FindStyleByName(const char *name) =0;
 
-#if 0
-		/**
-		 * @brief Broadcasts a menu to a number of clients.
-		 *
-		 * @param menu			Menu pointer.
-		 * @param clients		Array of client indexes.
-		 * @param numClients	Number of clients in the array.
-		 * @param time			Time to hold the menu.
-		 * @return				Number of clients the menu will be waiting on.
-		 */
-		virtual unsigned int BroadcastMenu(IBaseMenu *menu, 
-									IMenuHandler *handler,
-									int clients[], 
-									unsigned int numClients,
-									unsigned int time) =0;
-
-		/**
-		 * @brief Broadcasts a menu to a number of clients as a vote menu.
-		 *
-		 * @param menu			Menu pointer.
-		 * @param handler		IMenuHandler pointer.
-		 * @param clients		Array of client indexes.
-		 * @param numClients	Number of clients in the array.
-		 * @param time			Time to hold the menu.
-		 * @return				Number of clients the menu will be waiting on.
-		 */
-		virtual unsigned int VoteMenu(IBaseMenu *menu, 
-									IMenuVoteHandler *handler,
-									int clients[], 
-									unsigned int numClients,
-									unsigned int time) =0;
-#endif
-
 		/**
 		 * @brief Returns the default draw style Core is using.
 		 *
@@ -695,6 +713,27 @@ namespace SourceMod
 		 *						be freed using IMenuPanel::DeleteThis.
 		 */
 		virtual IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order) =0;
+
+		/**
+		 * @brief Creates a standard voting wrapper.  The wrapper is not 
+		 * re-entrant; a second menu cannot be displayed on the same handler
+		 * at the same time.
+		 *
+		 * @param mh			Menu handler to wrap around.
+		 * @return				An IMenuHandler pointer that is a wrapper
+		 *						around IMenuHandler callbacks to invoke
+		 *						voting related callbacks.
+		 */
+		virtual IVoteMenuHandler *CreateVoteWrapper(IMenuHandler *mh) =0;
+
+		/**
+		 * @brief Frees a standard voting wrapper.
+		 *
+		 * @param mh			Menu handler pointer created by 
+		 *						CreateVoteWrapper().  NULL values will be 
+		 *						safely ignored.
+		 */
+		virtual void ReleaseVoteWrapper(IVoteMenuHandler *mh) =0;
 	};
 }
 

@@ -25,36 +25,36 @@
 using namespace SourceMod;
 using namespace SourceHook;
 
-class BroadcastHandler : public IMenuHandler
+class VoteMenuHandler : public IVoteMenuHandler
 {
-public:
-	BroadcastHandler(IMenuHandler *handler);
 public: //IMenuHandler
+	unsigned int GetMenuAPIVersion2();
+	void OnMenuStart(IBaseMenu *menu);
 	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
 	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
-	void OnMenuEnd(IBaseMenu *menu);
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
-	unsigned int GetMenuAPIVersion2();
+	void OnMenuEnd(IBaseMenu *menu);
+	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
+	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
+public: //IVoteMenuHandler
+	bool IsVoteInProgress();
+	void InitializeVoting(IBaseMenu *menu);
+	void StartVoting();
 public:
-	virtual void OnBroadcastEnd(IBaseMenu *menu);
-public:
-	IMenuHandler *m_pHandler;
-	unsigned int numClients;
-};
-
-class VoteHandler : public BroadcastHandler
-{
-public:
-	VoteHandler(IMenuVoteHandler *handler);
-public:
-	void Initialize(IBaseMenu *menu);
-	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
-	void OnBroadcastEnd(IBaseMenu *menu);
+	void Reset(IMenuHandler *mh);
 private:
-	CVector<unsigned int> m_counts;
-	CVector<unsigned int> m_ties;
-	unsigned int numItems;
-	IMenuVoteHandler *m_pVoteHandler;
+	void DecrementPlayerCount();
+	void EndVoting();
+	void InternalReset();
+private:
+	IMenuHandler *m_pHandler;
+	unsigned int m_Clients;
+	unsigned int m_Items;
+	CVector<unsigned int> m_Votes;
+	CVector<unsigned int> m_Dups;
+	IBaseMenu *m_pCurMenu;
+	bool m_bStarted;
+	unsigned int m_NumVotes;
 };
 
 class MenuManager : 
@@ -84,35 +84,24 @@ public:
 	unsigned int GetStyleCount();
 	IMenuStyle *GetStyle(unsigned int index);
 	IMenuStyle *FindStyleByName(const char *name);
-	unsigned int BroadcastMenu(IBaseMenu *menu, 
-		IMenuHandler *handler,
-		int clients[], 
-		unsigned int numClients,
-		unsigned int time);
-	unsigned int VoteMenu(IBaseMenu *menu, 
-		IMenuVoteHandler *handler,
-		int clients[], 
-		unsigned int numClients,
-		unsigned int time);
 	IMenuStyle *GetDefaultStyle();
 	void AddStyle(IMenuStyle *style);
 	bool SetDefaultStyle(IMenuStyle *style);
 	IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order);
+	IVoteMenuHandler *CreateVoteWrapper(IMenuHandler *mh);
+	void ReleaseVoteWrapper(IVoteMenuHandler *mh);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public:
 	HandleError ReadMenuHandle(Handle_t handle, IBaseMenu **menu);
 	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);
 protected:
-	void FreeBroadcastHandler(BroadcastHandler *bh);
-	void FreeVoteHandler(VoteHandler *vh);
 	Handle_t CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner);
 	Handle_t CreateStyleHandle(IMenuStyle *style);
 private:
 	int m_ShowMenu;
 	IMenuStyle *m_pDefaultStyle;
-	CStack<BroadcastHandler *> m_BroadcastHandlers;
-	CStack<VoteHandler *> m_VoteHandlers;
+	CStack<VoteMenuHandler *> m_VoteHandlers;
 	CVector<IMenuStyle *> m_Styles;
 	HandleType_t m_StyleType;
 	HandleType_t m_MenuType;

@@ -103,6 +103,7 @@ public: //IBaseMenu
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);
 	bool Display(int client, unsigned int time);
+	void VoteDisplay(int client, unsigned int maxTime);
 public: //CBaseMenu
 	void Cancel_Finally();
 private:

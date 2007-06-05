@@ -434,12 +434,14 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
 m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true), 
 m_bShouldDelete(false), m_bCancelling(false), m_pOwner(pOwner ? pOwner : g_pCoreIdent), 
-m_bDeleting(false), m_bWillFreeHandle(false), m_hHandle(BAD_HANDLE), m_pHandler(pHandler)
+m_bDeleting(false), m_bWillFreeHandle(false), m_hHandle(BAD_HANDLE), m_pHandler(pHandler),
+m_pVoteHandler(NULL)
 {
 }
 
 CBaseMenu::~CBaseMenu()
 {
+	g_Menus.ReleaseVoteWrapper(m_pVoteHandler);
 }
 
 Handle_t CBaseMenu::GetHandle()
@@ -647,3 +649,24 @@ void CBaseMenu::InternalDelete()
 	delete this;
 }
 
+bool CBaseMenu::BroadcastVote(int clients[], 
+							  unsigned int numClients, 
+							  unsigned int maxTime,
+							  unsigned int flags)
+{
+	if (!m_pVoteHandler)
+	{
+		m_pVoteHandler = g_Menus.CreateVoteWrapper(m_pHandler);
+	} else if (m_pVoteHandler->IsVoteInProgress()) {
+		return false;
+	}
+
+	m_pVoteHandler->InitializeVoting(this);
+
+	for (unsigned int i=0; i<numClients; i++)
+	{
+		VoteDisplay(clients[i], maxTime);
+	}
+
+	m_pVoteHandler->StartVoting();
+}

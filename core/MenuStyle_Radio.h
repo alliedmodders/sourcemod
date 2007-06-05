@@ -98,6 +98,7 @@ public:
 	IMenuPanel *CreatePanel();
 	bool Display(int client, unsigned int time);
 	void Cancel_Finally();
+	void VoteDisplay(int client, unsigned int maxTime);
 };
 
 extern CRadioStyle g_RadioMenuStyle;

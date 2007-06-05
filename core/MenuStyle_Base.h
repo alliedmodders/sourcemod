@@ -111,6 +111,12 @@ public:
 	virtual void Destroy(bool releaseHandle);
 	virtual void Cancel_Finally() =0;
 	virtual Handle_t GetHandle();
+	bool BroadcastVote(int clients[], 
+		unsigned int numClients, 
+		unsigned int maxTime,
+		unsigned int flags=0);
+public:
+	virtual void VoteDisplay(int client, unsigned int maxTime) =0;
 private:
 	void InternalDelete();
 protected:
@@ -127,6 +133,7 @@ protected:
 	bool m_bWillFreeHandle;
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
+	IVoteMenuHandler *m_pVoteHandler;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H

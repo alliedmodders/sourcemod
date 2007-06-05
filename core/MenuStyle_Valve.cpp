@@ -375,6 +375,16 @@ bool CValveMenu::Display(int client, unsigned int time)
 	return g_ValveMenuStyle.DoClientMenu(client, this, m_pHandler, time);
 }
 
+void CValveMenu::VoteDisplay(int client, unsigned int maxTime)
+{
+	if (m_bCancelling)
+	{
+		return;
+	}
+
+	g_ValveMenuStyle.DoClientMenu(client, this, m_pVoteHandler, maxTime);
+}
+
 IMenuPanel *CValveMenu::CreatePanel()
 {
 	return new CValveMenuDisplay(this);

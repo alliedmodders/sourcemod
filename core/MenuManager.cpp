@@ -12,9 +12,9 @@
  * Version: $Id$
  */
 
-
-#include <stdarg.h>
 #include <time.h>
+#include <stdarg.h>
+#include <stdlib.h>
 #include "MenuManager.h"
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
@@ -25,115 +25,188 @@
 
 MenuManager g_Menus;
 
-/*************************************
- *************************************
- **** BROADCAST HANDLING WRAPPERS ****
- *************************************
- *************************************/
+/*******************************
+ *******************************
+ ******** VOTE HANDLER *********
+ *******************************
+ *******************************/
 
-BroadcastHandler::BroadcastHandler(IMenuHandler *handler) : m_pHandler(handler), numClients(0)
-{
-}
-
-unsigned int BroadcastHandler::GetMenuAPIVersion2()
+unsigned int VoteMenuHandler::GetMenuAPIVersion2()
 {
 	return m_pHandler->GetMenuAPIVersion2();
 }
 
-void BroadcastHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
+bool VoteMenuHandler::IsVoteInProgress()
+{
+	return (m_pCurMenu != NULL);
+}
+
+void VoteMenuHandler::InitializeVoting(IBaseMenu *menu)
+{
+	m_Items = menu->GetItemCount();
+
+	if (m_Votes.size() < (size_t)m_Items)
+	{
+		/* Only clear the items we need to... */
+		size_t size = m_Votes.size();
+		for (size_t i=0; i<size; i++)
+		{
+			m_Votes[i] = 0;
+		}
+		m_Votes.resize(m_Items, 0);
+	} else {
+		for (unsigned int i=0; i<m_Items; i++)
+		{
+			m_Votes[i] = 0;
+		}
+	}
+
+	m_pCurMenu = menu;
+
+	m_pHandler->OnMenuStart(m_pCurMenu);
+}
+
+void VoteMenuHandler::StartVoting()
+{
+	m_bStarted = true;
+
+	m_pHandler->OnMenuVoteStart(m_pCurMenu);
+
+	/* By now we know how many clients were set.  
+	 * If there are none, we should end IMMEDIATELY.
+	 */
+	if (m_Clients == 0)
+	{
+		EndVoting();
+	}
+}
+
+void VoteMenuHandler::DecrementPlayerCount()
+{
+	assert(m_Clients > 0);
+
+	m_Clients--;
+
+	if (m_bStarted && m_Clients == 0)
+	{
+		EndVoting();
+	}
+}
+
+void VoteMenuHandler::EndVoting()
+{
+	unsigned int chosen = 0;
+
+	/* If we got zero votes, take a shortcut. */
+	if (m_NumVotes == 0)
+	{
+		/* Pick a random item and then jump far, far away. */
+		srand((unsigned int)(time(NULL)));
+		chosen = (unsigned int)rand() % static_cast<unsigned int>(m_Votes.size());
+		goto picked_item;
+	}
+
+	/* We can't have more dups than this!
+	 * This is the max number of players.
+	 */
+	unsigned int dup_array[256];
+	unsigned int dup_count = 0;
+
+	size_t highest = 0;
+	for (size_t i=1; i<m_Votes.size(); i++)
+	{
+		if (m_Votes[i] > m_Votes[highest])
+		{
+			/* If we have a new highest count, mark it and trash the duplicate
+			 * list by setting the total to 0.
+			 */
+			highest = i;
+			dup_count = 0;
+		} else if (m_Votes[i] == m_Votes[highest]) {
+			/* If they're equal, mark it in the duplicate list.
+			 * We'll add in the original later.
+			 */
+			dup_array[dup_count++] = i;
+		}
+	}
+
+	/* Check if we need to pick from the duplicate list */
+	if (dup_count)
+	{
+		/* Re-add the original to the list because it's not in there. */
+		dup_array[dup_count++] = (unsigned int)highest;
+
+		/* Pick a random slot. */
+		srand((unsigned int)(time(NULL)));
+		unsigned int r = (unsigned int)rand() % dup_count;
+
+		/* Pick the item. */
+		chosen = dup_array[r];
+	} else {
+		chosen = (unsigned int)highest;
+	}
+
+picked_item:
+	m_pHandler->OnMenuVoteEnd(m_pCurMenu, chosen);
+	m_pHandler->OnMenuEnd(m_pCurMenu);
+	InternalReset();
+}
+
+void VoteMenuHandler::OnMenuStart(IBaseMenu *menu)
+{
+	m_Clients++;
+}
+
+void VoteMenuHandler::OnMenuEnd(IBaseMenu *menu)
+{
+	DecrementPlayerCount();
+}
+
+void VoteMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
 {
 	m_pHandler->OnMenuCancel(menu, client, reason);
 }
 
-void BroadcastHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display)
+void VoteMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display)
 {
-	numClients++;
 	m_pHandler->OnMenuDisplay(menu, client, display);
 }
 
-void BroadcastHandler::OnBroadcastEnd(IBaseMenu *menu)
+void VoteMenuHandler::OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display)
 {
-	g_Menus.FreeBroadcastHandler(this);
+	m_pHandler->OnMenuDisplayItem(menu, client, item, display);
 }
 
-void BroadcastHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
+void VoteMenuHandler::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)
 {
+	m_pHandler->OnMenuDrawItem(menu, client, item, style);
+}
+
+void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
+{
+	/* Check by our item count, NOT the vote array size */
+	if (item < m_Items)
+	{
+		m_Votes[item]++;
+		m_NumVotes++;
+	}
+
 	m_pHandler->OnMenuSelect(menu, client, item);
 }
 
-void BroadcastHandler::OnMenuEnd(IBaseMenu *menu)
+void VoteMenuHandler::Reset(IMenuHandler *mh)
 {
-	assert(numClients > 0);
-
-	/* Only fire if all clients have gotten a menu end */
-	if (--numClients == 0)
-	{
-		IMenuHandler *pHandler = m_pHandler;
-		OnBroadcastEnd(menu);
-		pHandler->OnMenuEnd(menu);
-	}
+	m_pHandler = mh;
+	InternalReset();
 }
 
-VoteHandler::VoteHandler(IMenuVoteHandler *handler) 
-: BroadcastHandler(handler), m_pVoteHandler(handler)
+void VoteMenuHandler::InternalReset()
 {
-}
-
-void VoteHandler::Initialize(IBaseMenu *menu)
-{
-	unsigned int numItems = menu->GetItemCount();
-
-	if (m_counts.size() >= numItems)
-	{
-		for (size_t i=0; i<numItems; i++)
-		{
-			m_counts[i] = 0;
-		}
-	} else {
-		for (size_t i=0; i<m_counts.size(); i++)
-		{
-			m_counts[i] = 0;
-		}
-		m_counts.resize(numItems, 0);
-	}
-}
-
-void VoteHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
-{
-	if (item < numItems)
-	{
-		m_counts[item]++;
-	}
-
-	BroadcastHandler::OnMenuSelect(menu, client, item);
-}
-
-void VoteHandler::OnBroadcastEnd(IBaseMenu *menu)
-{
-	m_ties.clear();
-
-	size_t highest = 0;
-	for (size_t i=1; i<numItems; i++)
-	{
-		if (m_counts[i] > m_counts[highest])
-		{
-			m_ties.clear();
-			highest = i;
-		} else if (m_counts[i] == m_counts[highest]) {
-			m_ties.push_back(i);
-		}
-	}
-
-	if (m_ties.size())
-	{
-		m_ties.push_back(highest);
-		srand(static_cast<unsigned int>(time(NULL)));
-		highest = m_ties[rand() % m_ties.size()];
-	}
-
-	m_pVoteHandler->OnMenuVoteEnd(menu, highest);
-
-	g_Menus.FreeVoteHandler(this);
+	m_Clients = 0;
+	m_Items = 0;
+	m_bStarted = false;
+	m_pCurMenu = NULL;
+	m_NumVotes = 0;
 }
 
 /*******************************
@@ -168,12 +241,6 @@ void MenuManager::OnSourceModAllShutdown()
 {
 	g_HandleSys.RemoveType(m_MenuType, g_pCoreIdent);
 	g_HandleSys.RemoveType(m_StyleType, g_pCoreIdent);
-
-	while (!m_BroadcastHandlers.empty())
-	{
-		delete m_BroadcastHandlers.front();
-		m_BroadcastHandlers.pop();
-	}
 
 	while (!m_VoteHandlers.empty())
 	{
@@ -659,119 +726,34 @@ skip_search:
 	return display;
 }
 
-#if 0
-unsigned int MenuManager::BroadcastMenu(IBaseMenu *menu, 
-										IMenuHandler *handler, 
-										int clients[], 
-										unsigned int numClients, 
-										unsigned int time)
-{
-	BroadcastHandler *bh;
-
-	if (m_BroadcastHandlers.empty())
-	{
-		bh = new BroadcastHandler(handler);
-	} else {
-		bh = m_BroadcastHandlers.front();
-		m_BroadcastHandlers.pop();
-		bh->m_pHandler = handler;
-		bh->numClients = 0;
-	}
-
-	handler->OnMenuStart(menu);
-
-	unsigned int total = 0;
-	for (unsigned int i=0; i<numClients; i++)
-	{
-		/* Only continue if displaying works */
-		if (!menu->Display(clients[i], bh, time))
-		{
-			continue;
-		}
-
-		/* :TODO: Allow sourcetv only, not all bots */
-		CPlayer *player = g_Players.GetPlayerByIndex(clients[i]);
-		if (player->IsFakeClient())
-		{
-			continue;
-		}
-
-		total++;
-	}
-
-	if (!total)
-	{
-		/* End the broadcast here */
-		handler->OnMenuEnd(menu);
-		FreeBroadcastHandler(bh);
-	}
-
-	return total;
-}
-
-unsigned int MenuManager::VoteMenu(IBaseMenu *menu,
-								   IMenuVoteHandler *handler,
-								   int clients[],
-								   unsigned int numClients,
-								   unsigned int time)
-{
-	VoteHandler *vh;
-
-	if (m_VoteHandlers.empty())
-	{
-		vh = new VoteHandler(handler);
-	} else {
-		vh = m_VoteHandlers.front();
-		m_VoteHandlers.pop();
-		vh->m_pHandler = handler;
-		vh->numClients = 0;
-	}
-
-	vh->Initialize(menu);
-	handler->OnMenuStart(menu);
-
-	unsigned int total = 0;
-	for (unsigned int i=0; i<numClients; i++)
-	{
-		/* Only continue if displaying works */
-		if (!menu->Display(clients[i], vh, time))
-		{
-			continue;
-		}
-
-		/* :TODO: Allow sourcetv only, not all bots */
-		CPlayer *player = g_Players.GetPlayerByIndex(clients[i]);
-		if (player->IsFakeClient())
-		{
-			continue;
-		}
-
-		total++;
-	}
-
-	if (!total)
-	{
-		/* End the broadcast here */
-		handler->OnMenuEnd(menu);
-		FreeVoteHandler(vh);
-	}
-
-	return total;
-}
-#endif
-
-void MenuManager::FreeBroadcastHandler(BroadcastHandler *bh)
-{
-	m_BroadcastHandlers.push(bh);
-}
-
-void MenuManager::FreeVoteHandler(VoteHandler *vh)
-{
-	m_VoteHandlers.push(vh);
-}
-
 IMenuStyle *MenuManager::GetDefaultStyle()
 {
 	return m_pDefaultStyle;
 }
 
+IVoteMenuHandler *MenuManager::CreateVoteWrapper(IMenuHandler *mh)
+{
+	VoteMenuHandler *vh = NULL;
+
+	if (m_VoteHandlers.empty())
+	{
+		vh = new VoteMenuHandler;
+	} else {
+		vh = m_VoteHandlers.front();
+		m_VoteHandlers.pop();
+	}
+
+	vh->Reset(mh);
+
+	return vh;
+}
+
+void MenuManager::ReleaseVoteWrapper(IVoteMenuHandler *mh)
+{
+	if (mh == NULL)
+	{
+		return;
+	}
+
+	m_VoteHandlers.push((VoteMenuHandler *)mh);
+}

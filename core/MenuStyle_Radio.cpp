@@ -366,7 +366,22 @@ IMenuPanel *CRadioMenu::CreatePanel()
 
 bool CRadioMenu::Display(int client, unsigned int time)
 {
+	if (m_bCancelling)
+	{
+		return false;
+	}
+
 	return g_RadioMenuStyle.DoClientMenu(client, this, m_pHandler, time);
+}
+
+void CRadioMenu::VoteDisplay(int client, unsigned int maxTime)
+{
+	if (m_bCancelling)
+	{
+		return;
+	}
+
+	g_RadioMenuStyle.DoClientMenu(client, this, m_pVoteHandler, maxTime);
 }
 
 void CRadioMenu::Cancel_Finally()
