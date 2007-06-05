@@ -669,4 +669,7 @@ bool CBaseMenu::BroadcastVote(int clients[],
 	}
 
 	m_pVoteHandler->StartVoting();
+
+	return true;
 }
+

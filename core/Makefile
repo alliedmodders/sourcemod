@@ -1,7 +1,7 @@
 #(C)2004-2006 SourceMM Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMM_BASE = ../../../sourcemm
+SMM_BASE = ../../sourcemm
 SMM_TRUNK = $(SMM_BASE)/trunk
 HL2SDK = $(SMM_BASE)/hl2sdk
 SMSDK = ..

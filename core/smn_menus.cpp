@@ -393,7 +393,7 @@ static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
 
-	return menu->BroadcastVote(addr, params[3], params[4]);
+	return menu->BroadcastVote(addr, params[3], params[4]) ? 1 : 0;
 }
 
 static cell_t AddMenuItem(IPluginContext *pContext, const cell_t *params)
