@@ -95,6 +95,19 @@ void VoteMenuHandler::DecrementPlayerCount()
 
 void VoteMenuHandler::EndVoting()
 {
+	if (m_bCancelled)
+	{
+		/* If we were cancelled, don't bother tabulating anything.
+		 * Reset just in case someone tries to redraw, which means
+		 * we need to save our states.
+		 */
+		IBaseMenu *menu = m_pCurMenu;
+		InternalReset();
+		m_pHandler->OnMenuVoteCancel(menu);
+		m_pHandler->OnMenuEnd(menu);
+		return;
+	}
+
 	unsigned int chosen = 0;
 	unsigned int highest = 0;
 	unsigned int dup_count = 0;
@@ -104,7 +117,7 @@ void VoteMenuHandler::EndVoting()
 	{
 		/* Pick a random item and then jump far, far away. */
 		srand((unsigned int)(time(NULL)));
-		chosen = (unsigned int)rand() % static_cast<unsigned int>(m_Votes.size());
+		chosen = (unsigned int)rand() % m_Items;
 		goto picked_item;
 	}
 
@@ -207,6 +220,12 @@ void VoteMenuHandler::InternalReset()
 	m_bStarted = false;
 	m_pCurMenu = NULL;
 	m_NumVotes = 0;
+	m_bCancelled = false;
+}
+
+void VoteMenuHandler::CancelVoting()
+{
+	m_bCancelled = true;
 }
 
 /*******************************

@@ -23,7 +23,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		2
+#define SMINTERFACE_MENUMANAGER_VERSION		3
 
 /**
  * @file IMenuManager.h
@@ -486,6 +486,7 @@ namespace SourceMod
 		/**
 		 * @brief Cancels the menu on all client's displays.  While the menu is
 		 * being cancelled, the menu may not be re-displayed to any clients.
+		 * If a vote menu is currently active, it will be cancelled as well.
 		 *
 		 * @return				Number of menus cancelled.
 		 */
@@ -515,6 +516,13 @@ namespace SourceMod
 			unsigned int numClients, 
 			unsigned int maxTime,
 			unsigned int flags=0) =0;
+
+		/**
+		 * @brief Returns whether a vote menu is active.
+		 *
+		 * @return				True if a vote menu is active, false otherwise.
+		 */
+		virtual bool IsVoteInProgress() =0;
 	};
 
 	/** 
@@ -631,12 +639,27 @@ namespace SourceMod
 
 		/**
 		 * @brief Called when a vote ends.  This is automatically called by the 
-		 * wrapper, and never needs to called from a style implementation.
+		 * wrapper, and never needs to called from a style implementation.  
+		 *
+		 * This function does not replace OnMenuEnd(), nor does it have the 
+		 * same meaning as OnMenuEnd(), meaning you should not destroy a menu
+		 * while it is in this function.
 		 *
 		 * @param menu			Menu pointer.
 		 * @param item			Item position that was chosen by a majority.
 		 */
 		virtual void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item)
+		{
+		}
+
+		/**
+		 * @brief Called when a vote is cancelled.  If this is called, then 
+		 * OnMenuVoteEnd() will not be called.  In both cases, OnMenuEnd will 
+		 * always be called.
+		 *
+		 * @param menu			Menu pointer.
+		 */
+		virtual void OnMenuVoteCancel(IBaseMenu *menu)
 		{
 		}
 	};
@@ -666,6 +689,16 @@ namespace SourceMod
 		 * processed (i.e., there are no more clients to display to).
 		 */
 		virtual void StartVoting() =0;
+
+		/**
+		 * @brief Notifies the vote handler that the voting should be 
+		 * cancelled.  
+		 *
+		 * Cancellation is not immediate and will only occur once every menu 
+		 * has been cancelled from clients.  Thus this should only be called
+		 * from the beginning of IBaseMenu::Cancel.
+		 */
+		virtual void CancelVoting() =0;
 	};
 
 	/**

@@ -673,3 +673,7 @@ bool CBaseMenu::BroadcastVote(int clients[],
 	return true;
 }
 
+bool CBaseMenu::IsVoteInProgress()
+{
+	return (m_pVoteHandler && m_pVoteHandler->IsVoteInProgress());
+}

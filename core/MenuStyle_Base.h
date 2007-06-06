@@ -115,6 +115,7 @@ public:
 		unsigned int numClients, 
 		unsigned int maxTime,
 		unsigned int flags=0);
+	bool IsVoteInProgress();
 public:
 	virtual void VoteDisplay(int client, unsigned int maxTime) =0;
 private:

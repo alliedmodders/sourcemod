@@ -40,6 +40,7 @@ public: //IVoteMenuHandler
 	bool IsVoteInProgress();
 	void InitializeVoting(IBaseMenu *menu);
 	void StartVoting();
+	void CancelVoting();
 public:
 	void Reset(IMenuHandler *mh);
 private:
@@ -51,9 +52,9 @@ private:
 	unsigned int m_Clients;
 	unsigned int m_Items;
 	CVector<unsigned int> m_Votes;
-	CVector<unsigned int> m_Dups;
 	IBaseMenu *m_pCurMenu;
 	bool m_bStarted;
+	bool m_bCancelled;
 	unsigned int m_NumVotes;
 };
 
