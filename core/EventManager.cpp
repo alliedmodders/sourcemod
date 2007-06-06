@@ -164,7 +164,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 		if (mode == EventHookMode_Pre)
 		{
 			/* Create forward for a pre hook */
-			pHook->pPreHook = g_Forwards.CreateForwardEx(NULL, ET_Event, 3, GAMEEVENT_PARAMS);
+			pHook->pPreHook = g_Forwards.CreateForwardEx(NULL, ET_Hook, 3, GAMEEVENT_PARAMS);
 			/* Add to forward list */
 			pHook->pPreHook->AddFunction(pFunction);
 		} else {
