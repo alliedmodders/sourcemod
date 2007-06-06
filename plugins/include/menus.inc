@@ -37,9 +37,10 @@ enum MenuAction
 	MenuAction_Display = (1<<1),	/**< A menu is about to be displayed (param1=client, param2=MenuPanel Handle) */
 	MenuAction_Select = (1<<2),		/**< An item was selected (param1=client, param2=item) */
 	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=reason) */
-	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed). */
-	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has ended (param1=chosen item) */
-	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started */
+	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed) */
+	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item) */
+	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
+	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
 };
 
 /** Default menu actions */
@@ -268,11 +269,21 @@ native bool:SetMenuExitButton(Handle:menu, bool:button);
  * The menu may still exist on the client's screen after this command.
  * This simply verifies that the menu is not being used anywhere.
  *
+ * If any vote is in progress on a menu, it will be cancelled.
+ *
  * @param menu				Menu Handle.
  * @noreturn
  * @error					Invalid Handle.
  */
 native CancelMenu(Handle:menu);
+
+/**
+ * Returns whether a vote is in progress on the given menu.
+ *
+ * @param menu				Menu Handle.
+ * @return					True if a vote is in progress, false otherwise.
+ */
+native bool:IsVoteInProgress(Handle:menu);
 
 /**
  * Broadcasts a menu to a list of clients.  The most selected item will be 

@@ -39,6 +39,7 @@ enum MenuAction
 	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed). */
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has ended (param1=chosen item) */
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started */
+	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
 };
 
 class CPanelHandler : public IMenuHandler
@@ -69,6 +70,7 @@ public:
 	void OnMenuDestroy(IBaseMenu *menu);
 	void OnMenuVoteStart(IBaseMenu *menu);
 	void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item);
+	void OnMenuVoteCancel(IBaseMenu *menu);
 #if 0
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
@@ -289,6 +291,11 @@ void CMenuHandler::OnMenuVoteStart(IBaseMenu *menu)
 void CMenuHandler::OnMenuVoteEnd(IBaseMenu *menu, unsigned int item)
 {
 	DoAction(menu, MenuAction_VoteEnd, item, 0);
+}
+
+void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)
+{
+	DoAction(menu, MenuAction_VoteCancel, 0, 0);
 }
 
 void CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2)
@@ -623,6 +630,20 @@ static cell_t CancelMenu(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t IsVoteInProgress(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return menu->IsVoteInProgress() ? 1 : 0;
+}
+
 static cell_t GetMenuStyle(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -942,6 +963,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetPanelCurrentKey",		GetPanelCurrentKey},
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},
+	{"IsVoteInProgress",		IsVoteInProgress},
 	{"RemoveAllMenuItems",		RemoveAllMenuItems},
 	{"RemoveMenuItem",			RemoveMenuItem},
 	{"SendPanelToClient",		SendPanelToClient},
