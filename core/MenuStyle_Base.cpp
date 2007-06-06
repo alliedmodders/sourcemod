@@ -256,7 +256,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	player->bInMenu = false;
 	if (player->menuHoldTime)
 	{
-		m_WatchList.remove(client);
+		RemoveClientFromWatch(client);
 	}
 
 	if (cancel)
@@ -416,7 +416,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	{
 		if (player->menuHoldTime)
 		{
-			m_WatchList.remove(client);
+			RemoveClientFromWatch(client);
 		}
 		player->bAutoIgnore = false;
 		return false;
