@@ -96,7 +96,7 @@ void VoteMenuHandler::DecrementPlayerCount()
 void VoteMenuHandler::EndVoting()
 {
 	unsigned int chosen = 0;
-	size_t highest = 0;
+	unsigned int highest = 0;
 	unsigned int dup_count = 0;
 
 	/* If we got zero votes, take a shortcut. */
@@ -113,7 +113,7 @@ void VoteMenuHandler::EndVoting()
 	 */
 	unsigned int dup_array[256];
 
-	for (size_t i=1; i<m_Votes.size(); i++)
+	for (size_t i=1; i<m_Items; i++)
 	{
 		if (m_Votes[i] > m_Votes[highest])
 		{
@@ -134,7 +134,7 @@ void VoteMenuHandler::EndVoting()
 	if (dup_count)
 	{
 		/* Re-add the original to the list because it's not in there. */
-		dup_array[dup_count++] = (unsigned int)highest;
+		dup_array[dup_count++] = highest;
 
 		/* Pick a random slot. */
 		srand((unsigned int)(time(NULL)));
@@ -143,7 +143,7 @@ void VoteMenuHandler::EndVoting()
 		/* Pick the item. */
 		chosen = dup_array[r];
 	} else {
-		chosen = (unsigned int)highest;
+		chosen = highest;
 	}
 
 picked_item:
