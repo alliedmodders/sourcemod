@@ -26,6 +26,9 @@
 
 using namespace SourceHook;
 
+#define HUD_PRINTTALK		3
+#define HUD_PRINTCENTER		4
+
 struct DataTableInfo
 {
 	ServerClass *sc;

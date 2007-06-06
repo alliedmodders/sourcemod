@@ -18,6 +18,8 @@
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "Translator.h"
+#include "HalfLife2.h"
+#include "ChatTriggers.h"
 
 ConCmdManager g_ConCmds;
 
@@ -448,10 +450,17 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 		snprintf(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
-	char fullbuffer[192];
-	snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
-
-	engine->ClientPrintf(player->GetEdict(), fullbuffer);
+	unsigned int replyto = g_ChatTriggers.GetReplyTo();
+	if (replyto == SM_REPLY_CONSOLE)
+	{
+		char fullbuffer[192];
+		snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
+		engine->ClientPrintf(player->GetEdict(), fullbuffer);
+	} else if (replyto == SM_REPLY_CHAT) {
+		char fullbuffer[192];
+		snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
+		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
+	}
 	
 	return false;
 }

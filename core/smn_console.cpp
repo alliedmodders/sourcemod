@@ -29,8 +29,6 @@ enum ConVarBounds
 	ConVarBound_Lower
 };
 
-#define HUD_PRINTTALK		3
-
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
 	char *name, *defaultVal, *helpText;
