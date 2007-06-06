@@ -18,8 +18,15 @@
 #include "PluginSys.h"
 #include "HandleSys.h"
 
-HandleType_t g_PlIter;
+#if defined PLATFORM_WINDOWS
+#include <windows.h>
+#elif defined PLATFORM_LINUX
+#include <limits.h>
+#include <unistd.h>
+#include <sys/times.h>
+#endif
 
+HandleType_t g_PlIter;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -257,12 +264,32 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 	return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
 }
 
+static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
+{
+#if defined PLATFORM_WINDOWS
+	return (cell_t)GetTickCount();
+#elif defined PLATFORM_LINUX
+	tms tm;
+	clock_t ticks = times(&tm);
+	long ticks_per_sec = sysconf(_SC_CLK_TCK);
+	double ftcks = (double)ticks / (double)ticks_per_sec;
+	fticks *= 1000.0f;
+	if (fticks > INT_MAX)
+	{
+		double r = (int)(fticks / INT_MAX) * (double)INT_MAX;
+		fticks -= r;
+	}
+	return (cell_t)fticks;
+#endif
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"GetPluginFilename",	GetPluginFilename},
 	{"GetPluginInfo",		GetPluginInfo},
 	{"GetPluginIterator",	GetPluginIterator},
 	{"GetPluginStatus",		GetPluginStatus},
+	{"GetSysTickCount",		GetSysTickCount},
 	{"GetTime",				GetTime},
 	{"IsPluginDebugging",	IsPluginDebugging},
 	{"MorePlugins",			MorePlugins},

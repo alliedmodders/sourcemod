@@ -281,9 +281,18 @@ native GameConfGetOffset(Handle:gc, const String:key[]);
  * @param key			Key to retrieve from the Keys section.
  * @param buffer		Destination string buffer.
  * @param maxlen		Maximum length of output string buffer.
- * @return			True if key existed, false otherwise.
+ * @return				True if key existed, false otherwise.
  */
 native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], maxlen);
+
+/**
+ * Returns the operating system's "tick count," which is a number of 
+ * milliseconds since the operating system loaded.  This can be used
+ * for basic benchmarks.
+ *
+ * @return				Tick count in milliseconds.
+ */
+native GetSysTickCount();
 
 #include <helpers>
 #include <entity>
