@@ -58,13 +58,17 @@ void ConCmdManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
 
 	ConCommandBase *pCmd = icvar->GetCommands();
+	const char *name;
 	while (pCmd)
 	{
-		if (pCmd->IsCommand() 
-			&& strcmp(pCmd->GetName(), "exec") == 0)
+		if (pCmd->IsCommand())
 		{
-			m_pExecCmd = (ConCommand *)pCmd;
-			break;
+			name = pCmd->GetName();
+			if (strcmp(name, "exec") == 0)
+			{
+				m_pExecCmd = (ConCommand *)pCmd;
+				break;
+			}
 		}
 		pCmd = const_cast<ConCommandBase *>(pCmd->GetNext());
 	}
@@ -754,6 +758,18 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info)
 	m_CmdList.remove(info);
 
 	delete info;
+}
+
+bool ConCmdManager::LookForSourceModCommand(const char *cmd)
+{
+	ConCmdInfo *pInfo;
+
+	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
+	{
+		return false;
+	}
+
+	return pInfo->sourceMod && (pInfo->conhooks.size() > 0);
 }
 
 ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)

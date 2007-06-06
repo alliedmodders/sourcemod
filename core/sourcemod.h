@@ -97,6 +97,7 @@ public: // ISourceMod
 	const char *GetGameFolderName() const;
 	ISourcePawnEngine *GetScriptingEngine();
 	IVirtualMachine *GetScriptingVM();
+	void AllPluginsLoaded();
 private:
 	/**
 	 * @brief Loading plugins

@@ -133,13 +133,28 @@ native PrintToServer(const String:format[], any:...);
 /**
  * Sends a message to a client's console.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
  * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native PrintToConsole(client, const String:format[], any:...);
+
+/**
+ * Reples to a message in a command.
+ *
+ * A client index of 0 will use PrintToServer().
+ * If the command was from the console, PrintToConsole() is used.
+ * If the command was from chat, PrintToChat() is used.
+ *
+ * @param client		Client index, or 0 for server.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error				If the client is not connected or invalid.
+ */
+native ReplyToCommand(client, const String:fornmat[], any:...);
 
 /**
  * Called when a server-only command is invoked.  

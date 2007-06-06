@@ -101,6 +101,7 @@ public:
 	ResultType DispatchClientCommand(int client, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
 	void NotifyExecDone(const char *file);
+	bool LookForSourceModCommand(const char *cmd);
 private:
 	void InternalDispatch();
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);

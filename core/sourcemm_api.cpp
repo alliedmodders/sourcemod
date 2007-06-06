@@ -88,6 +88,7 @@ bool SourceMod_Core::Unpause(char *error, size_t maxlen)
 
 void SourceMod_Core::AllPluginsLoaded()
 {
+	g_SourceMod.AllPluginsLoaded();
 }
 
 const char *SourceMod_Core::GetAuthor()

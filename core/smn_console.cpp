@@ -21,12 +21,15 @@
 #include "PluginSys.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
+#include "ChatTriggers.h"
 
 enum ConVarBounds
 {
 	ConVarBound_Upper = 0,
 	ConVarBound_Lower
 };
+
+#define HUD_PRINTTALK		3
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
@@ -632,6 +635,77 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+
+static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+	}
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	unsigned int old = g_ChatTriggers.SetReplyTo(SM_REPLY_CONSOLE);
+	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
+	g_ChatTriggers.SetReplyTo(old);
+
+	return 1;
+}
+
+static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
+{
+	/* Build the format string */
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 2);
+
+	/* If we're printing to the server, shortcut out */
+	if (params[1] == 0)
+	{
+		/* Print */
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+		META_CONPRINT(buffer);
+		return 1;
+	}
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+
+	unsigned int replyto = g_ChatTriggers.GetReplyTo();
+	if (replyto == SM_REPLY_CONSOLE)
+	{
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+		engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+	} else if (replyto == SM_REPLY_CHAT) {
+		if (len >= 191)
+		{
+			len = 191;
+		}
+		buffer[len] = '\0';
+		g_HL2.TextMsg(params[1], HUD_PRINTTALK, buffer);
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -665,5 +739,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"InsertServerCommand",	sm_InsertServerCommand},
 	{"ServerExecute",		sm_ServerExecute},
 	{"ClientCommand",		sm_ClientCommand},
+	{"FakeClientCommand",	FakeClientCommand},
+	{"ReplyToCommand",		ReplyToCommand},
 	{NULL,					NULL}
 };

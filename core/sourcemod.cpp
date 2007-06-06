@@ -656,6 +656,16 @@ IVirtualMachine *SourceModBase::GetScriptingVM()
 	return g_pVM;
 }
 
+void SourceModBase::AllPluginsLoaded()
+{
+	SMGlobalClass *base = SMGlobalClass::head;
+	while (base)
+	{
+		base->OnSourceModGameInitialized();
+		base = base->m_pGlobalClassNext;
+	}
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

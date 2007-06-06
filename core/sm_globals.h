@@ -121,6 +121,13 @@ public:
 	virtual void OnSourceModVSPReceived(IServerPluginCallbacks *iface)
 	{
 	}
+
+	/**
+	 * @brief Called once all MM:S plugins are loaded.
+	 */
+	virtual void OnSourceModGameInitialized()
+	{
+	}
 private:
 	SMGlobalClass *m_pGlobalClassNext;
 	static SMGlobalClass *head;

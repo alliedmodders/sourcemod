@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ChatTriggers.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ConCmdManager.cpp"
 				>
 			</File>
@@ -309,6 +313,10 @@
 			</File>
 			<File
 				RelativePath="..\CellRecipientFilter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ChatTriggers.h"
 				>
 			</File>
 			<File
