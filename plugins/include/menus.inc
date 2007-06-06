@@ -320,7 +320,7 @@ stock VoteMenuToAll(Handle:menu, time)
 	
 	for (new i=1; i<=num; i++)
 	{
-		if (!IsClientConnected(i))
+		if (!IsClientInGame(i))
 		{
 			continue;
 		}

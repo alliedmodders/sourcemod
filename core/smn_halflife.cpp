@@ -264,12 +264,12 @@ static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client %d is not valid", params[1]);
 	}
 
-	if (!pPlayer->IsConnected())
+	if (!pPlayer->IsInGame())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
 	pKV = g_SourceMod.ReadKeyValuesHandle(hndl, &herr, true);
@@ -290,12 +290,12 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client %d is not valid", params[1]);
 	}
 
-	if (!pPlayer->IsConnected())
+	if (!pPlayer->IsInGame())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
 	char buffer[256];
@@ -313,12 +313,12 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client %d is not valid", params[1]);
 	}
 
-	if (!pPlayer->IsConnected())
+	if (!pPlayer->IsInGame())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
 	char buffer[256];
