@@ -18,6 +18,13 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 	m_PrivTriggerSize = 1;
 }
 
+ChatTriggers::~ChatTriggers()
+{
+	delete [] m_PubTrigger;
+	m_PubTrigger = NULL;
+	delete [] m_PrivTrigger;
+	m_PrivTrigger = NULL;
+}
 
 ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key, 
 													const char *value, 
@@ -43,6 +50,7 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 
 void ChatTriggers::OnSourceModGameInitialized()
 {
+	unsigned int total = 2;
 	ConCommandBase *pCmd = icvar->GetCommands();
 	const char *name;
 	while (pCmd)
@@ -50,10 +58,19 @@ void ChatTriggers::OnSourceModGameInitialized()
 		if (pCmd->IsCommand())
 		{
 			name = pCmd->GetName();
-			if (strcmp(name, "say") == 0)
+			if (!m_pSayCmd && strcmp(name, "say") == 0)
 			{
 				m_pSayCmd = (ConCommand *)pCmd;
-				break;
+				if (--total == 0)
+				{
+					break;
+				}
+			} else if (!m_pSayTeamCmd && strcmp(name, "say_team") == 0) {
+				m_pSayTeamCmd = (ConCommand *)pCmd;
+				if (--total == 0)
+				{
+					break;
+				}
 			}
 		}
 		pCmd = const_cast<ConCommandBase *>(pCmd->GetNext());
@@ -64,10 +81,20 @@ void ChatTriggers::OnSourceModGameInitialized()
 		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
 		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Post, true);
 	}
+	if (m_pSayTeamCmd)
+	{
+		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
+		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Post, true);
+	}
 }
 
 void ChatTriggers::OnSourceModShutdown()
 {
+	if (m_pSayTeamCmd)
+	{
+		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Post, true);
+		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayTeamCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
+	}
 	if (m_pSayCmd)
 	{
 		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Post, true);

@@ -11,6 +11,7 @@ class ChatTriggers : public SMGlobalClass
 {
 public:
 	ChatTriggers();
+	~ChatTriggers();
 public: //SMGlobalClass
 	void OnSourceModGameInitialized();
 	void OnSourceModShutdown();
@@ -29,6 +30,7 @@ private:
 	bool ProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
 private:
 	ConCommand *m_pSayCmd;
+	ConCommand *m_pSayTeamCmd;
 	char *m_PubTrigger;
 	size_t m_PubTriggerSize;
 	char *m_PrivTrigger;
