@@ -164,7 +164,12 @@ SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes
 	
 			pPhrase->fmt_count = 0;
 			pPhrase->fmt_list = -1;
-			pPhrase->trans_tbl = m_pMemory->CreateMem(sizeof(trans_t) * m_LangCount, (void **)&pTrans);
+
+			int trans_tbl = m_pMemory->CreateMem(sizeof(trans_t) * m_LangCount, (void **)&pTrans);
+			/* Update the pointer! */
+			pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
+			pPhrase->trans_tbl = trans_tbl;
+
 			pPhrase->translations = 0;
 			pPhrase->fmt_bytes = 0;
 	
