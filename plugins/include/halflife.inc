@@ -125,7 +125,7 @@ native GetCurrentMap(String:buffer[], maxlength);
  *
  * @param model			Name of the model to precache.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return			Returns the model index, 0 for error.
+ * @return				Returns the model index, 0 for error.
  */
 native PrecacheModel(const String:model[], bool:preload=false);
 
@@ -134,7 +134,7 @@ native PrecacheModel(const String:model[], bool:preload=false);
  *
  * @param file			Name of the sentence file to precache.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return			Returns a sentence file index.
+ * @return				Returns a sentence file index.
  */
 native PrecacheSentenceFile(const String:file[], bool:preload=false);
 
@@ -143,7 +143,7 @@ native PrecacheSentenceFile(const String:file[], bool:preload=false);
  *
  * @param decal			Name of the decal to precache.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return			Returns a decal index.
+ * @return				Returns a decal index.
  */
 native PrecacheDecal(const String:decal[], bool:preload=false);
 
@@ -152,7 +152,7 @@ native PrecacheDecal(const String:decal[], bool:preload=false);
  *
  * @param generic		Name of the generic file to precache.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return			Returns a generic file index.
+ * @return				Returns a generic file index.
  */
 native PrecacheGeneric(const String:generic[], bool:preload=false);
 
@@ -160,7 +160,7 @@ native PrecacheGeneric(const String:generic[], bool:preload=false);
  * Returns if a given model is precached.
  *
  * @param model			Name of the model to check.
- * @return			True if precached, false otherwise.
+ * @return				True if precached, false otherwise.
  */
 native bool:IsModelPrecached(const String:model[]);
 
@@ -168,7 +168,7 @@ native bool:IsModelPrecached(const String:model[]);
  * Returns if a given decal is precached.
  *
  * @param decal			Name of the decal to check.
- * @return			True if precached, false otherwise.
+ * @return				True if precached, false otherwise.
  */
 native bool:IsDecalPrecached(const String:decal[]);
 
@@ -176,7 +176,7 @@ native bool:IsDecalPrecached(const String:decal[]);
  * Returns if a given generic file is precached.
  *
  * @param decal			Name of the generic file to check.
- * @return			True if precached, false otherwise.
+ * @return				True if precached, false otherwise.
  */
 native bool:IsGenericPrecached(const String:generic[]);
 
@@ -185,7 +185,7 @@ native bool:IsGenericPrecached(const String:generic[]);
  *
  * @param sound			Name of the sound to precache.
  * @param preload		If preload is true the file will be precached before level startup.
- * @return			True if successfully precached, false otherwise.
+ * @return				True if successfully precached, false otherwise.
  */
 native bool:PrecacheSound(const String:sound[], bool:preload=false);
 
@@ -193,7 +193,7 @@ native bool:PrecacheSound(const String:sound[], bool:preload=false);
  * Returns if a given sound is precached.
  *
  * @param sound			Name of the sound to check.
- * @return			True if precached, false otherwise.
+ * @return				True if precached, false otherwise.
  */
 native bool:IsSoundPrecached(const String:sound[]);
 
@@ -209,9 +209,9 @@ native bool:IsSoundPrecached(const String:sound[]);
 native CreateDialog(client, Handle:kv, DialogType:type);
 
 /**
- * Prints a message in a client's chat area.
+ * Prints a message to a specific client in the chat area.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
  * @noreturn
@@ -220,12 +220,58 @@ native CreateDialog(client, Handle:kv, DialogType:type);
 native PrintToChat(client, const String:format[], any:...);
 
 /**
- * Prints a message in the center of a client's screen.
+ * Prints a message to all clients in the chat area.
  *
- * @param client		Player index.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+stock PrintToChatAll(const String:format[], any:...)
+{
+	new num = GetMaxClients();
+	decl buffer[256];
+	
+	VFormat(buffer, sizeof(buffer), format, 2);
+	
+	for (new i = 1; i < num; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			PrintToChat(i, "%s", buffer);
+		}
+	}
+}
+
+/**
+ * Prints a message to a specific client in the center of the screen.
+ *
+ * @param client		Client index.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
  * @noreturn
  * @error				If the client is not connected an error will be thrown.
  */
 native PrintCenterText(client, const String:format[], any:...);
+
+/**
+ * Prints a message to all clients in the center of the screen.
+ *
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+stock PrintCenterTextAll(const String:format[], any:...)
+{
+	new num = GetMaxClients();
+	decl buffer[256];
+	
+	VFormat(buffer, sizeof(buffer), format, 2);
+	
+	for (new i = 1; i < num; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			PrintCenterText(i, "%s", buffer);
+		}
+	}
+}
