@@ -24,7 +24,7 @@ OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreC
 	MemoryUtils.cpp PlayerManager.cpp TextParsers.cpp TimerSys.cpp Translator.cpp UserMessages.cpp \
 	sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_stringutil.cpp sm_trie.cpp \
 	sourcemm_api.cpp sourcemod.cpp MenuStyle_Base.cpp MenuStyle_Valve.cpp MenuManager.cpp \
-	MenuStyle_Radio.cpp
+	MenuStyle_Radio.cpp ChatTriggers.cpp
 OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
 	smn_filesystem.cpp smn_float.cpp smn_functions.cpp smn_gameconfigs.cpp smn_halflife.cpp smn_handles.cpp smn_keyvalues.cpp \
