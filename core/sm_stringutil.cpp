@@ -738,13 +738,13 @@ reswitch:
 			}
 		case 'T':
 			{
-				CHECK_ARGS(0);
+				CHECK_ARGS(1);
 				char *key;
 				bool error;
 				size_t res;
 				cell_t *target;
-				pCtx->LocalToPhysAddr(params[arg++], &target);
 				pCtx->LocalToString(params[arg++], &key);
+				pCtx->LocalToPhysAddr(params[arg++], &target);
 				res = Translate(buf_p, llen, pCtx, key, *target, params, &arg, &error);
 				if (error)
 				{
