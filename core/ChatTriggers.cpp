@@ -18,6 +18,29 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 	m_PrivTriggerSize = 1;
 }
 
+
+ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key, 
+													const char *value, 
+													ConfigSource source,
+													char *error, 
+													size_t maxlength)
+{
+	if (strcmp(key, "PublicChatTrigger") == 0)
+	{
+		delete [] m_PubTrigger;
+		m_PubTrigger = sm_strdup(value);
+		m_PubTriggerSize = strlen(m_PubTrigger);
+		return ConfigResult_Accept;
+	} else if (strcmp(key, "SilentChatTrigger") == 0) {
+		delete [] m_PrivTrigger;
+		m_PrivTrigger = sm_strdup(value);
+		m_PrivTriggerSize = strlen(m_PrivTrigger);
+		return ConfigResult_Accept;
+	}
+
+	return ConfigResult_Ignore;
+}
+
 void ChatTriggers::OnSourceModGameInitialized()
 {
 	ConCommandBase *pCmd = icvar->GetCommands();

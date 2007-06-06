@@ -14,6 +14,11 @@ public:
 public: //SMGlobalClass
 	void OnSourceModGameInitialized();
 	void OnSourceModShutdown();
+	ConfigResult OnSourceModConfigChanged(const char *key, 
+		const char *value, 
+		ConfigSource source,
+		char *error, 
+		size_t maxlength);
 private: //ConCommand
 	void OnSayCommand_Pre();
 	void OnSayCommand_Post();
