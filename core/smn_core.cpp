@@ -272,7 +272,7 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 	tms tm;
 	clock_t ticks = times(&tm);
 	long ticks_per_sec = sysconf(_SC_CLK_TCK);
-	double ftcks = (double)ticks / (double)ticks_per_sec;
+	double fticks = (double)ticks / (double)ticks_per_sec;
 	fticks *= 1000.0f;
 	if (fticks > INT_MAX)
 	{
