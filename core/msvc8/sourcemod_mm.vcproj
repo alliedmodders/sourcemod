@@ -855,6 +855,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_profiler.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_sorting.cpp"
 				>
 			</File>
