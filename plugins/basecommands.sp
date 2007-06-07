@@ -38,6 +38,24 @@ public OnPluginStart()
 	LoadTranslations("common.cfg");
 	RegAdminCmd("sm_kick", Command_Kick, ADMFLAG_KICK, "sm_kick <#userid|name> [reason]");
 	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");
+	RegAdminCmd("sm_rcon", Command_Rcon, ADMFLAG_RCON, "sm_rcon <args>");
+}
+
+public Action:Command_Rcon(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_rcon <args>");
+		return Plugin_Handled;
+	}
+	
+	decl String:argstring[255];
+	GetCmdArgString(argstring, sizeof(argstring));
+	
+	LogMessage("\"%L\" console command (cmdline \"%s\")", client, argstring);
+	ServerCommand("%s", argstring);
+	
+	return Plugin_Handled;
 }
 
 public Action:Command_Map(client, args)
@@ -61,7 +79,7 @@ public Action:Command_Map(client, args)
 	ShowActivity(client, "%t", "Changing map", map);
 	ReplyToCommand(client, "%t", "Changing map", map);
 	
-	new Handle:dp
+	new Handle:dp;
 	CreateDataTimer(3.0, Timer_ChangeMap, dp);
 	WritePackString(dp, map);
 	
