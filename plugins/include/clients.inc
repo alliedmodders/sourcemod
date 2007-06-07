@@ -25,6 +25,8 @@ enum NetFlow
 	NetFlow_Both			/**< Incoming and outgoing traffic */
 };
 
+#define MAXPLAYERS		64	/**< Maximum number of players that can be in server */
+
 /**
  * Called on client connection.
  *

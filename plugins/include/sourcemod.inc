@@ -48,8 +48,6 @@ struct Plugin
 #include <menus>
 #include <halflife>
 
-#define MAXPLAYERS		64		/**< Maximum number of players that can be in server */
-
 /**
  * Declare this as a struct in your plugin to expose its information.
  * Example:
