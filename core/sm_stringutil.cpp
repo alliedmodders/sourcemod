@@ -100,7 +100,7 @@ try_serverlang:
 				goto error_out;
 			}
 		} else {
-			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language prhase \"%s\" not found", key);
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 			goto error_out;
 		}
 	}
