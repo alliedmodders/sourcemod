@@ -1,6 +1,6 @@
 /**
- * admin-flatfile.sp
- * Manages the standard flat files for admins.  This is the file to compile.
+ * admin-auth.sp
+ * Authenticates admins.
  * This file is part of SourceMod, Copyright (C) 2004-2007 AlliedModders LLC
  *
  * This program is free software; you can redistribute it and/or
@@ -26,7 +26,7 @@ public Plugin:myinfo =
 	name = "Admin Auth",
 	author = "AlliedModders LLC",
 	description = "Authenticates Admins",
-	version = "1.0.0.0",
+	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
 };
 

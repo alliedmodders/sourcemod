@@ -73,3 +73,70 @@ stock Handle:FindPluginByFile(const String:filename[])
 	
 	return INVALID_HANDLE;
 }
+
+/**
+ * Searches for clients that match an input string.
+ *
+ * Allowed patterns: 
+ *  1) #<userid> or #<exact name>
+ *  2) <partial or full name>
+ */
+stock SearchForClients(const String:pattern[], clients[], maxClients)
+{
+	new maxclients = GetMaxClients();
+	new total = 0;
+	
+	if (maxClients == 0)
+	{
+		return 0;
+	}
+	
+	if (pattern[0] == '#')
+	{
+		new input = StringToInt(pattern[1]);
+		if (!input)
+		{
+			decl String:name[65]
+			for (new i=1; i<=maxclients; i++)
+			{
+				if (!IsClientInGame(i))
+				{
+					continue;
+				}
+				GetClientName(i, name, sizeof(name));
+				if (StrEqual(name, pattern, false))
+				{
+					clients[0] = i;
+					return 1;
+				}
+			}
+		} else {
+			new client = GetClientOfUserId(input);
+			if (client)
+			{
+				clients[0] = client;
+				return 1;
+			}
+		}
+	}
+	
+	decl String:name[65]
+	for (new i=1; i<=maxclients; i++)
+	{
+		if (!IsClientInGame(i))
+		{
+			continue;
+		}
+		GetClientName(i, name, sizeof(name));
+		if (StrContains(name, pattern, false) != -1)
+		{
+			clients[total++] = i;
+			if (total >= maxClients)
+			{
+				break;
+			}
+		}
+	}
+	
+	return total;
+}

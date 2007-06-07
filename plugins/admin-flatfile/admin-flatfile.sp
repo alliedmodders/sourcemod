@@ -30,7 +30,7 @@ public Plugin:myinfo =
 	name = "Admin File Reader",
 	author = "AlliedModders LLC",
 	description = "Reads admin files",
-	version = "1.0.0.0",
+	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
 };
 
