@@ -229,7 +229,7 @@ native PrintToChat(client, const String:format[], any:...);
 stock PrintToChatAll(const String:format[], any:...)
 {
 	new num = GetMaxClients();
-	decl buffer[256];
+	decl String:buffer[192];
 	
 	VFormat(buffer, sizeof(buffer), format, 2);
 	
@@ -263,7 +263,7 @@ native PrintCenterText(client, const String:format[], any:...);
 stock PrintCenterTextAll(const String:format[], any:...)
 {
 	new num = GetMaxClients();
-	decl buffer[256];
+	decl String:buffer[192];
 	
 	VFormat(buffer, sizeof(buffer), format, 2);
 	

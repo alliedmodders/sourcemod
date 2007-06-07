@@ -40,13 +40,15 @@ struct Plugin
 #include <admin>
 #include <dbi>
 #include <sorting>
-#include <halflife>
 #include <clients>
 #include <console>
 #include <events>
 #include <bitbuffer>
 #include <usermessages>
 #include <menus>
+#include <halflife>
+
+#define MAXPLAYERS		64		/**< Maximum number of players that can be in server */
 
 /**
  * Declare this as a struct in your plugin to expose its information.
