@@ -228,12 +228,12 @@ native PrintToChat(client, const String:format[], any:...);
  */
 stock PrintToChatAll(const String:format[], any:...)
 {
-	new num = GetMaxClients();
+	new maxClients = GetMaxClients();
 	decl String:buffer[192];
 	
 	VFormat(buffer, sizeof(buffer), format, 2);
 	
-	for (new i = 1; i < num; i++)
+	for (new i = 1; i <= maxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -262,12 +262,12 @@ native PrintCenterText(client, const String:format[], any:...);
  */
 stock PrintCenterTextAll(const String:format[], any:...)
 {
-	new num = GetMaxClients();
+	new maxClients = GetMaxClients();
 	decl String:buffer[192];
 	
 	VFormat(buffer, sizeof(buffer), format, 2);
 	
-	for (new i = 1; i < num; i++)
+	for (new i = 1; i <= maxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
