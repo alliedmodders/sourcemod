@@ -36,9 +36,86 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	LoadTranslations("common.cfg");
+	LoadTranslations("plugin.basecommands.cfg");
 	RegAdminCmd("sm_kick", Command_Kick, ADMFLAG_KICK, "sm_kick <#userid|name> [reason]");
 	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");
 	RegAdminCmd("sm_rcon", Command_Rcon, ADMFLAG_RCON, "sm_rcon <args>");
+	RegAdminCmd("sm_cvar", Command_Cvar, ADMFLAG_CONVARS, "sm_cvar <cvar> [value]");
+}
+
+public Action:Command_Cvar(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_cvar <cvar> [value]");
+		return Plugin_Handled;
+	}
+	
+	new String:cvarname[33];
+	GetCmdArg(1, cvarname, sizeof(cvarname));
+	
+	new Handle:hndl = FindConVar(cvarname);
+	if (hndl == INVALID_HANDLE)
+	{
+		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
+		return Plugin_Handled;
+	}
+	
+	new bool:allowed = false;
+	if (GetConVarFlags(hndl) & FCVAR_PROTECTED)
+	{
+		/* If they're root, allow anything */
+		if ((GetUserFlagBits(client) & ADMFLAG_ROOT) == ADMFLAG_ROOT)
+		{
+			allowed = true;
+		}
+		/* If they're not root, and getting sv_password, see if they have ADMFLAG_PASSWORD */
+		else if (StrEqual(cvarname, "sv_password") && (GetUserFlagBits(client) & ADMFLAG_PASSWORD))
+		{
+			allowed = true;
+		}
+	} 
+	/* Do a check for the cheat cvar */
+	else if (StrEqual(cvarname, "sv_cheats"))
+	{
+		if (GetUserFlagBits(client) & ADMFLAG_CHEATS)
+		{
+			allowed = true;
+		}
+	}
+	/* If we drop down to here, it was a normal cvar. */
+	else
+	{
+		allowed = true;
+	}
+	
+	if (!allowed)
+	{
+		ReplyToCommand(client, "[SM] %t", "No access to cvar");
+		return Plugin_Handled;
+	}
+	
+	decl String:value[255];
+	if (args < 2)
+	{
+		GetConVarString(hndl, value, sizeof(value));
+		
+		ReplyToCommand(client, "[SM] %t", "Value of cvar", cvarname, value);
+		return Plugin_Handled;
+	}
+	
+	GetCmdArg(2, value, sizeof(value));
+	
+	LogMessage("\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
+	if ((GetConVarFlags(hndl) & FCVAR_PROTECTED) != FCVAR_PROTECTED)
+	{
+		ShowActivity(client, "%t", "Cvar changed", cvarname, value);
+	}
+	
+	SetConVarString(hndl, value);
+	ReplyToCommand(client, "[SM] %t", "Cvar changed", cvarname, value);
+		
+	return Plugin_Handled;
 }
 
 public Action:Command_Rcon(client, args)
