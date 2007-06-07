@@ -89,7 +89,7 @@ try_serverlang:
 
 	if (!TryTranslation(pl, key, langid, langcount, &pTrans))
 	{
-		if (target != LANG_SERVER)
+		if (target != LANG_SERVER && langid != g_Translator.GetServerLanguage())
 		{
 			target = LANG_SERVER;
 			goto try_serverlang;
@@ -99,19 +99,31 @@ try_serverlang:
 				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 				goto error_out;
 			}
+		} else {
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language prhase \"%s\" not found", key);
+			goto error_out;
 		}
 	}
 
 	max_params = pTrans.fmt_count;
-
-	for (size_t i=0; i<max_params; i++)
+	
+	if (max_params)
 	{
-		pCtx->LocalToPhysAddr(params[*arg], reinterpret_cast<cell_t **>(&new_params[i]));
-		(*arg)++;
-		if ((*arg) + i > (size_t)params[0])
+		/* Check if we're going to over the limit */
+		if ((*arg) + (max_params - 1) > (size_t)params[0])
 		{
-			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, "Translation string formatted incorrectly - parameter %d (total %d)", (*arg) + i, params[0]);
+			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, 
+				"Translation string formatted incorrectly - missing at least %d parameters", 
+				((*arg + (max_params - 1)) - params[0])
+				);
 			goto error_out;
+		}
+
+		/* Translate the parameters to raw pointers */
+		for (size_t i=0; i<max_params; i++)
+		{
+			pCtx->LocalToPhysAddr(params[*arg], reinterpret_cast<cell_t **>(&new_params[i]));
+			(*arg)++;
 		}
 	}
 
