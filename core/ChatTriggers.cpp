@@ -5,7 +5,12 @@
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does */
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+
+#if PLAPI_VERSION >= 11
 extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+#else
+extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+#endif
 
 ChatTriggers g_ChatTriggers;
 
