@@ -727,24 +727,31 @@ reswitch:
 				CHECK_ARGS(0);
 				cell_t *value;
 				pCtx->LocalToPhysAddr(params[arg], &value);
-				CPlayer *player = g_Players.GetPlayerByIndex(*value);
-				if (!player || !player->IsConnected())
-				{
-					return pCtx->ThrowNativeError("Client index %d is invalid", *value);
-				}
 				char buffer[255];
-				const char *auth = player->GetAuthString();
-				if (!auth || auth[0] == '\0')
+				if (*value)
 				{
-					auth = "STEAM_ID_PENDING";
+					CPlayer *player = g_Players.GetPlayerByIndex(*value);
+					if (!player || !player->IsConnected())
+					{
+						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
+					}
+					const char *auth = player->GetAuthString();
+					if (!auth || auth[0] == '\0')
+					{
+						auth = "STEAM_ID_PENDING";
+					}
+					int userid = engine->GetPlayerUserId(player->GetEdict());
+					UTIL_Format(buffer, 
+						sizeof(buffer), 
+						"%s<%d><%s><>", 
+						player->GetName(),
+						userid,
+						auth);
+				} else {
+					UTIL_Format(buffer,
+						sizeof(buffer),
+						"Console<0><Console><Console>");
 				}
-				int userid = engine->GetPlayerUserId(player->GetEdict());
-				UTIL_Format(buffer, 
-					sizeof(buffer), 
-					"%s<%d><%s><>", 
-					player->GetName(),
-					userid,
-					auth);
 				AddString(&buf_p, llen, buffer, width, prec);
 				arg++;
 				break;
