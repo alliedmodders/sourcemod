@@ -16,6 +16,7 @@
 #define _INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
 
 #include <IHandleSys.h>
+#include <stdio.h>
 #include "sm_globals.h"
 #include "sm_trie.h"
 #include "sourcemod.h"
@@ -136,6 +137,8 @@ public: //IHandleSystem
 		const HandleSecurity *pSec,
 		const HandleAccess *pAccess,
 		HandleError *err);
+
+	void Dump(FILE *fp);
 protected:
 	/**
 	 * Decodes a handle with sanity and security checking.

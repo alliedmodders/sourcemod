@@ -1961,3 +1961,13 @@ void CPluginManager::AddFunctionsToForward(const char *name, IChangeableForward 
 		}
 	}
 }
+
+CPlugin *CPluginManager::GetPluginFromIdentity(IdentityToken_t *pToken)
+{
+	if (pToken->type != g_PluginIdent)
+	{
+		return NULL;
+	}
+
+	return (CPlugin *)(pToken->ptr);
+}

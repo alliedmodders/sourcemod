@@ -15,6 +15,7 @@
 #include "HandleSys.h"
 #include "ShareSys.h"
 #include "PluginSys.h"
+#include "ExtensionSys.h"
 #include <assert.h>
 #include <string.h>
 
@@ -898,4 +899,53 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 	}
 
 	return true;
+}
+
+void HandleSystem::Dump(FILE *fp)
+{
+	fprintf(fp, "%-10.10s\t%-20.20s\t%-20.20s\n", "Handle", "Owner", "Type");
+	fprintf(fp, "---------------------------------------------\n");
+	for (unsigned int i=1; i<=m_HandleTail; i++)
+	{
+		if (m_Handles[i].set == HandleSet_Freed
+			|| m_Handles[i].set == HandleSet_Identity)
+		{
+			continue;
+		}
+		/* Get the index */
+		unsigned int index = (m_Handles[i].serial << 16) | i;
+		/* Determine the owner */
+		const char *owner = "UNKNOWN";
+		if (m_Handles[i].owner)
+		{
+			IdentityToken_t *pOwner = m_Handles[i].owner;
+			if (pOwner == g_pCoreIdent)
+			{
+				owner = "CORE";
+			} else if (pOwner == g_PluginSys.GetIdentity()) {
+				owner = "PLUGINSYS";
+			} else {
+				CExtension *ext = g_Extensions.GetExtensionFromIdent(pOwner);
+				if (ext)
+				{
+					owner = ext->GetFilename();
+				} else {
+					CPlugin *pPlugin = g_PluginSys.GetPluginFromIdentity(pOwner);
+					if (pPlugin)
+					{
+						owner = pPlugin->GetFilename();
+					}
+				}
+			}
+		} else {
+			owner = "NONE";
+		}
+		const char *type = "ANON";
+		QHandleType *pType = &m_Types[m_Handles[i].type];
+		if (pType->nameIdx != -1)
+		{
+			type = m_strtab->GetString(pType->nameIdx);
+		}
+		fprintf(fp, "0x%08x\t%-20.20s\t%-20.20s\n", index, owner, type);
+	}
 }

@@ -362,6 +362,8 @@ public:
 	 */
 	void AddFunctionsToForward(const char *name, IChangeableForward *pForward);
 
+	CPlugin *GetPluginFromIdentity(IdentityToken_t *pToken);
+
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 
@@ -398,6 +400,7 @@ protected:
 	 * Caching internal objects
 	 */
 	void ReleaseIterator(CPluginIterator *iter);
+public:
 	inline IdentityToken_t *GetIdentity()
 	{
 		return m_MyIdent;

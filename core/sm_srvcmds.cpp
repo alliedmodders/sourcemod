@@ -15,6 +15,7 @@
 #include "sm_srvcmds.h"
 #include "sm_version.h"
 #include "sm_stringutil.h"
+#include "HandleSys.h"
 
 RootConsoleMenu g_RootMenu;
 
@@ -253,4 +254,25 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcoun
 CON_COMMAND(sm, "SourceMod Menu")
 {
 	g_RootMenu.GotRootCmd();
+}
+
+CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle leaks")
+{
+	if (engine->Cmd_Argc() < 2)
+	{
+		g_RootMenu.ConsolePrint("Usage: sm_dump_handles <file>");
+		return;
+	}
+
+	const char *arg = engine->Cmd_Argv(1);
+	FILE *fp = fopen(arg, "wt");
+	if (!fp)
+	{
+		g_RootMenu.ConsolePrint("Could not find file \"%s\"", arg);
+		return;
+	}
+
+	g_HandleSys.Dump(fp);
+
+	fclose(fp);
 }
