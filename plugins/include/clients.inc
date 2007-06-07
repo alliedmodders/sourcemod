@@ -492,14 +492,3 @@ native Float:GetClientAvgPackets(client, NetFlow:flow);
  * @error				Returns 0 if invalid userid.
  */
 native GetClientOfUserId(userid);
-
-/**
- * Executes a client command on the server without being networked.
- *
- * @param client		Index of the client.
- * @param fmt			Format of the client command.
- * @param ...			Format parameters
- * @noreturn
- * @error				Invalid client index, or client not connected.
- */
-native FakeClientCommand(client, const String:fmt[], any:...);

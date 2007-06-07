@@ -122,6 +122,17 @@ native ServerExecute();
 native ClientCommand(client, const String:fmt[], any:...);
 
 /**
+ * Executes a client command on the server without being networked.
+ *
+ * @param client		Index of the client.
+ * @param fmt			Format of the client command.
+ * @param ...			Format parameters
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native FakeClientCommand(client, const String:fmt[], any:...);
+
+/**
  * Sends a message to the server console.
  *
  * @param format		Formatting rules.
