@@ -35,8 +35,49 @@ public Plugin:myinfo =
 
 public OnPluginStart()
 {
-	LoadTranslations("core.cfg");
+	LoadTranslations("common.cfg");
 	RegAdminCmd("sm_kick", Command_Kick, ADMFLAG_KICK, "sm_kick <#userid|name> [reason]");
+	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");
+}
+
+public Action:Command_Map(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_map <map>");
+		return Plugin_Handled;
+	}
+	
+	new String:map[64];
+	GetCmdArg(1, map, sizeof(map));
+	
+	if (!IsMapValid(map))
+	{
+		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
+		return Plugin_Handled;
+	}
+	
+	LogMessage("\"%L\" changed map to \"%s\"", client, map);
+	ShowActivity(client, "%t", "Changing map", map);
+	ReplyToCommand(client, "%t", "Changing map", map);
+	
+	new Handle:dp
+	CreateDataTimer(3.0, Timer_ChangeMap, dp);
+	WritePackString(dp, map);
+	
+	return Plugin_Handled;
+}
+
+public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
+{
+	new String:map[65];
+	
+	ResetPack(dp);
+	ReadPackString(dp, map, sizeof(map));
+	
+	ServerCommand("changelevel \"%s\"", map);
+	
+	return Plugin_Stop;
 }
 
 public Action:Command_Kick(client, args)
@@ -86,7 +127,7 @@ public Action:Command_Kick(client, args)
 		ServerCommand("kickid %d \"%s\"", userid, reason);
 	}
 	
-	ReplyToCommand(client, "[SM] Client \"%s\" kicked.", name);
+	ReplyToCommand(client, "[SM] %t", "Client kicked", name);
 	
 	return Plugin_Handled;
 }
