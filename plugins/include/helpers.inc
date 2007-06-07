@@ -80,6 +80,11 @@ stock Handle:FindPluginByFile(const String:filename[])
  * Allowed patterns: 
  *  1) #<userid> or #<exact name>
  *  2) <partial or full name>
+ *
+ * @param pattern		Pattern to search for.
+ * @param clients		Array to store matching clients in.
+ * @param maxClients	Maximum clients in the array.
+ * @return				Number of clients found.
  */
 stock SearchForClients(const String:pattern[], clients[], maxClients)
 {
