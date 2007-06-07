@@ -951,7 +951,12 @@ bool AdminCache::GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode)
 	{
 		return ((pUser->flags & bit) == bit);
 	} else if (mode == Access_Effective) {
-		return ((pUser->eflags & bit) == bit);
+		bool has_bit = ((pUser->eflags & bit) == bit);
+		if (!has_bit && flag != Admin_Root && ((pUser->eflags & ADMFLAG_ROOT) == ADMFLAG_ROOT))
+		{
+			has_bit = true;
+		}
+		return has_bit;
 	}
 
 	return false;
