@@ -256,6 +256,7 @@ void SourceModBase::StartSourceMod(bool late)
 	g_Loaded = true;
 }
 
+static bool g_LevelEndBarrier = false;
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
 	/* If we're not loaded... */
@@ -305,6 +306,8 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	{
 		g_pOnMapEnd = g_Forwards.CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
 	}
+
+	g_LevelEndBarrier = true;
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -405,6 +408,17 @@ void SourceModBase::GameFrame(bool simulating)
 
 void SourceModBase::LevelShutdown()
 {
+	if (g_LevelEndBarrier)
+	{
+		SMGlobalClass *next = SMGlobalClass::head;
+		while (next)
+		{
+			next->OnSourceModLevelEnd();
+			next = next->m_pGlobalClassNext;
+		}
+		g_LevelEndBarrier = false;
+	}
+
 	if (g_pOnMapEnd && m_ExecOnMapEnd)
 	{
 		g_pOnMapEnd->Execute(NULL);

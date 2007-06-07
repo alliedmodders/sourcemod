@@ -75,6 +75,7 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModLevelEnd();
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();

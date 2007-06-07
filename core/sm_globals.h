@@ -109,6 +109,13 @@ public:
 	}
 
 	/**
+	 * @brief Called when the level ends.
+	 */
+	virtual void OnSourceModLevelEnd()
+	{
+	}
+
+	/**
 	 * @brief Called after plugins are loaded on mapchange.
 	 */
 	virtual void OnSourceModPluginsLoaded()

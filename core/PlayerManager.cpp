@@ -321,6 +321,18 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	m_clputinserver->Execute(&res, NULL);
 }
 
+void PlayerManager::OnSourceModLevelEnd()
+{
+	/* Disconnect all bots still in game */
+	for (int i=1; i<=m_maxClients; i++)
+	{
+		if (m_Players[i].IsConnected() && m_Players[i].IsFakeClient())
+		{
+			OnClientDisconnect(m_Players[i].GetEdict());
+		}
+	}
+}
+
 void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
 	cell_t res;
