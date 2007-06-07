@@ -1,6 +1,6 @@
 /**
- * admincmds-basic.sp
- * Manages the standard flat files for admins.  This is the file to compile.
+ * basecommands.sp
+ * Implements basic admin commands.
  * This file is part of SourceMod, Copyright (C) 2004-2007 AlliedModders LLC
  *
  * This program is free software; you can redistribute it and/or
@@ -16,9 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * Version: $Id$
  */
 
 #include <sourcemod>
+
+#pragma semicolon 1
 
 public Plugin:myinfo = 
 {
@@ -63,7 +67,7 @@ public Action:Command_Kick(client, args)
 	
 	GetClientName(clients[0], name, sizeof(name));
 	
-	decl String:reason[256]
+	decl String:reason[256];
 	if (args < 2)
 	{
 		/* Safely null terminate */

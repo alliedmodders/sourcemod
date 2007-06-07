@@ -39,14 +39,16 @@ struct Plugin
 #include <timers>
 #include <admin>
 #include <dbi>
+#include <lang>
 #include <sorting>
+#include <textparse>
 #include <clients>
 #include <console>
 #include <events>
 #include <bitbuffer>
 #include <usermessages>
+#include <keyvalues>
 #include <menus>
-#include <lang>
 #include <halflife>
 
 /**
