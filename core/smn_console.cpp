@@ -686,6 +686,8 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
+	g_SourceMod.SetGlobalTarget(params[1]);
+
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
 	if (replyto == SM_REPLY_CONSOLE)
 	{

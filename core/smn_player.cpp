@@ -15,7 +15,11 @@
 #include "PlayerManager.h"
 #include "AdminCache.h"
 #include "sm_stringutil.h"
+#include "HalfLife2.h"
+#include "sourcemod.h"
 #include <inetchannelinfo.h>
+
+ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
 
 static cell_t sm_GetClientCount(IPluginContext *pCtx, const cell_t *params)
 {
@@ -816,6 +820,84 @@ static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
 	return g_Players.GetClientOfUserId(params[1]);
 }
 
+static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
+{
+	int value = sm_show_activity.GetInt();
+
+	if (!value)
+	{
+		return 0;
+	}
+
+	int client = params[1];
+
+	const char *name = "Console";
+	const char *sign = "ADMIN";
+	if (client != 0)
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+		if (!pPlayer || !pPlayer->IsConnected())
+		{
+			return pContext->ThrowNativeError("Client index %d is invalid", client);
+		}
+		name = pPlayer->GetName();
+		AdminId id = pPlayer->GetAdminId();
+		if (id == INVALID_ADMIN_ID
+			|| !g_Admins.GetAdminFlag(id, Admin_Generic, Access_Effective))
+		{
+			sign = "PLAYER";
+		}
+	}
+
+	char message[255];
+	char buffer[255];
+	int maxClients = g_Players.GetMaxClients();
+	for (int i=1; i<=maxClients; i++)
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(i);
+		if (!pPlayer->IsInGame() || pPlayer->IsFakeClient())
+		{
+			continue;
+		}
+		AdminId id = pPlayer->GetAdminId();
+		g_SourceMod.SetGlobalTarget(i);
+		if (id == INVALID_ADMIN_ID
+			|| !g_Admins.GetAdminFlag(id, Admin_Generic, Access_Effective))
+		{
+			/* Treat this as a normal user */
+			if ((value & 1) || (value & 2))
+			{
+				const char *newsign = sign;
+				if (value & 2)
+				{
+					newsign = name;
+				}
+				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+				UTIL_Format(message, sizeof(message), "[SM] %s: %s", newsign, buffer);
+				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
+			}
+		} else {
+			/* Treat this as an admin user */
+			bool is_root = g_Admins.GetAdminFlag(id, Admin_Root, Access_Effective);
+			if ((value & 4) 
+				|| (value & 8)
+				|| ((value & 16) && is_root))
+			{
+				const char *newsign = sign;
+				if ((value & 8) || ((value & 16) && is_root))
+				{
+					newsign = name;
+				}
+				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+				UTIL_Format(message, sizeof(message), "[SM] %s: %s", newsign, buffer);
+				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
+			}
+		}
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -858,5 +940,6 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientAvgData",		GetAvgData},
 	{"GetClientAvgPackets",		GetAvgPackets},
 	{"GetClientOfUserId",		GetClientOfUserId},
+	{"ShowActivity",			ShowActivity},
 	{NULL,						NULL}
 };

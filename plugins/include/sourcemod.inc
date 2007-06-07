@@ -46,6 +46,7 @@ struct Plugin
 #include <bitbuffer>
 #include <usermessages>
 #include <menus>
+#include <lang>
 #include <halflife>
 
 /**

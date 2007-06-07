@@ -165,7 +165,19 @@ native PrintToConsole(client, const String:format[], any:...);
  * @noreturn
  * @error				If the client is not connected or invalid.
  */
-native ReplyToCommand(client, const String:fornmat[], any:...);
+native ReplyToCommand(client, const String:format[], any:...);
+
+/**
+ * Displays usage of an admin command to users depending on the 
+ * setting of the sm_show_activity cvar.
+ *
+ * @param client		Client index doing the action, or 0 for server.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error
+ */
+native ShowActivity(client, const String:format[], any:...);
 
 /**
  * Called when a server-only command is invoked.  
