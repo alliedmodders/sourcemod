@@ -19,6 +19,7 @@
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
+#include "sm_stringutil.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -115,6 +116,24 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	g_OnMapStarted = true;
 }
 
+bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
+{
+	const char *password = g_Admins.GetAdminPassword(id);
+	if (password != NULL)
+	{
+		/* Whoa... the user needs a password! */
+		const char *given = engine->GetClientConVarValue(index, "_password");
+		if (!given || strcmp(given, password) != 0)
+		{
+			return false;
+		}
+	}
+
+	pPlayer->SetAdminId(id, false);
+
+	return true;
+}
+
 void PlayerManager::RunAuthChecks()
 {
 	CPlayer *pPlayer;
@@ -135,6 +154,13 @@ void PlayerManager::RunAuthChecks()
 			unsigned int client = m_AuthQueue[i];
 			m_AuthQueue[i] = 0;
 			removed++;
+
+			/* Do admin lookups */
+			AdminId id = g_Admins.FindAdminByIdentity("steam", authstr);
+			if (id != INVALID_ADMIN_ID)
+			{
+				CheckSetAdmin(client, pPlayer, id);
+			}
 
 			/* Send to extensions */
 			List<IClientListener *>::iterator iter;
@@ -233,6 +259,7 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 {
 	int client = engine->IndexOfEdict(pEntity);
 	bool orig_value = META_RESULT_ORIG_RET(bool);
+	CPlayer *pPlayer = GetPlayerByIndex(client);
 	if (orig_value)
 	{
 		List<IClientListener *>::iterator iter;
@@ -241,6 +268,27 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 		{
 			pListener = (*iter);
 			pListener->OnClientConnected(client);
+			if (!pPlayer->IsConnected())
+			{
+				break;
+			}
+		}
+	}
+
+	if (pPlayer->IsConnected())
+	{
+		/* Do an ip based lookup */
+		char ip[24], *ptr;
+		strncopy(ip, pszAddress, sizeof(ip));
+		if ((ptr = strchr(ip, ':')) != NULL)
+		{
+			*ptr = '\0';
+		}
+		
+		AdminId id = g_Admins.FindAdminByIdentity("ip", pPlayer->GetIPAddress());
+		if (id != INVALID_ADMIN_ID)
+		{
+			CheckSetAdmin(client, pPlayer, id);
 		}
 	}
 

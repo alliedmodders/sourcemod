@@ -49,8 +49,8 @@ public OnPluginStart()
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
-	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_ROOT, "sm_addban <time> <steamid> [reason]");
-	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_ROOT, "sm_banip <time> <ip> [reason]");
+	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
+	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_RCON, "sm_banip <time> <ip> [reason]");
 	
 	hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String);
 	hAddBanForward = CreateGlobalForward("OnBanAdded", ET_Ignore, Param_Cell, Param_String, Param_Cell, Param_String);
