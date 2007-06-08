@@ -156,10 +156,13 @@ void PlayerManager::RunAuthChecks()
 			removed++;
 
 			/* Do admin lookups */
-			AdminId id = g_Admins.FindAdminByIdentity("steam", authstr);
-			if (id != INVALID_ADMIN_ID)
+			if (pPlayer->GetAdminId() == INVALID_ADMIN_ID)
 			{
-				CheckSetAdmin(client, pPlayer, id);
+				AdminId id = g_Admins.FindAdminByIdentity("steam", authstr);
+				if (id != INVALID_ADMIN_ID)
+				{
+					CheckSetAdmin(client, pPlayer, id);
+				}
 			}
 
 			/* Send to extensions */
@@ -285,7 +288,7 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 			*ptr = '\0';
 		}
 		
-		AdminId id = g_Admins.FindAdminByIdentity("ip", pPlayer->GetIPAddress());
+		AdminId id = g_Admins.FindAdminByIdentity("ip", ip);
 		if (id != INVALID_ADMIN_ID)
 		{
 			CheckSetAdmin(client, pPlayer, id);
