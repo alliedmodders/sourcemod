@@ -19,7 +19,7 @@
 #include "sourcemod.h"
 #include <inetchannelinfo.h>
 
-ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY, "Activity display setting (see sourcemod.cfg)");
+ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY|FCVAR_PROTECTED, "Activity display setting (see sourcemod.cfg)");
 
 static cell_t sm_GetClientCount(IPluginContext *pCtx, const cell_t *params)
 {

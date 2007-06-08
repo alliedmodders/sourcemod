@@ -42,6 +42,116 @@ public OnPluginStart()
 	RegAdminCmd("sm_rcon", Command_Rcon, ADMFLAG_RCON, "sm_rcon <args>");
 	RegAdminCmd("sm_cvar", Command_Cvar, ADMFLAG_CONVARS, "sm_cvar <cvar> [value]");
 	RegAdminCmd("sm_execcfg", Command_ExecCfg, ADMFLAG_CONFIG, "sm_execcfg <filename>");
+	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
+}
+
+#define FLAG_STRINGS		14
+new String:g_FlagNames[FLAG_STRINGS][20] =
+{
+	"reservation",
+	"admin",
+	"kick",
+	"ban",
+	"unban",
+	"slay",
+	"map",
+	"cvars",
+	"cfg",
+	"chat",
+	"vote",
+	"pass",
+	"rcon",
+	"cheat"
+};
+
+FlagsToString(String:buffer[], maxlength, flags)
+{
+	new String:joins[FLAG_STRINGS][20];
+	new total;
+	
+	for (new i=0; i<FLAG_STRINGS; i++)
+	{
+		if (flags & (1<<i))
+		{
+			strcopy(joins[total++], 20, g_FlagNames[i]);
+		}
+	}
+	
+	ImplodeStrings(joins, total, ", ", buffer, maxlength);
+}
+
+public Action:Command_Who(client, args)
+{
+	if (args < 1)
+	{
+		/* Display header */
+		new String:t_access[16], String:t_name[16];
+		Format(t_access, sizeof(t_access), "%t", "Access", client);
+		Format(t_name, sizeof(t_name), "%t", "Name", client);
+		
+		PrintToConsole(client, "%-24.23s %s", t_name, t_access);
+		
+		/* List all players */
+		new maxClients = GetMaxClients();
+		new String:flagstring[255];
+				
+		for (new i=1; i<=maxClients; i++)
+		{
+			if (!IsClientInGame(i))
+			{
+				continue;
+			}
+			new flags = GetUserFlagBits(i);
+			if (flags == 0)
+			{
+				strcopy(flagstring, sizeof(flagstring), "none");
+			} else if (flags & ADMFLAG_ROOT) {
+				strcopy(flagstring, sizeof(flagstring), "root");
+			} else {
+				FlagsToString(flagstring, sizeof(flagstring), flags);
+			}
+			decl String:name[65];
+			GetClientName(i, name, sizeof(name));
+			PrintToConsole(client, "%d. %-24.23s %s", i, name, flagstring);
+		}
+		
+		if (GetCmdReplySource() == SM_REPLY_TO_CHAT)
+		{
+			ReplyToCommand(client, "[SM] %t", "See console for output");
+		}
+		
+		return Plugin_Handled;
+	}
+	
+	new String:arg[65];
+	GetCmdArg(1, arg, sizeof(arg));
+	
+	new clients[2];
+	new numClients = SearchForClients(arg, clients, 2);
+	
+	if (numClients == 0)
+	{
+		ReplyToCommand(client, "[SM] %t", "No matching client");
+		return Plugin_Handled;
+	} else if (numClients > 1) {
+		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
+		return Plugin_Handled;
+	}
+	
+	new flags = GetUserFlagBits(clients[0]);
+	new String:flagstring[255];
+	if (flags == 0)
+	{
+		strcopy(flagstring, sizeof(flagstring), "none");
+	} else if (flags & ADMFLAG_ROOT) {
+		strcopy(flagstring, sizeof(flagstring), "root");
+	} else {
+		FlagsToString(flagstring, sizeof(flagstring), flags);
+	}
+	
+	ReplyToCommand(client, "[SM] %t: %s", "Access", flagstring);
+	
+	return Plugin_Handled;
 }
 
 public Action:Command_ExecCfg(client, args)

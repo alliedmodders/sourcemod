@@ -706,6 +706,11 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetCmdReplyTarget(IPluginContext *pContext, const cell_t *params)
+{
+	return g_ChatTriggers.GetReplyTo();
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -741,5 +746,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"ClientCommand",		sm_ClientCommand},
 	{"FakeClientCommand",	FakeClientCommand},
 	{"ReplyToCommand",		ReplyToCommand},
+	{"GetCmdReplySource",	GetCmdReplyTarget},
 	{NULL,					NULL}
 };

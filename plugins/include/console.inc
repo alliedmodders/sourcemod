@@ -36,6 +36,15 @@ enum QueryCookie
 };
 
 /**
+ * Reply sources for commands.
+ */
+enum ReplySource
+{
+	SM_REPLY_TO_CONSOLE = 0,
+	SM_REPLY_TO_CHAT = 1,
+};
+
+/**
  * Console variable query result values.
  */
 enum ConVarQueryResult
@@ -166,6 +175,13 @@ native PrintToConsole(client, const String:format[], any:...);
  * @error				If the client is not connected or invalid.
  */
 native ReplyToCommand(client, const String:format[], any:...);
+
+/**
+ * Returns the current reply source of a command.
+ *
+ * @return				ReplySource value.
+ */
+native ReplySource:GetCmdReplySource();
 
 /**
  * Displays usage of an admin command to users depending on the 
