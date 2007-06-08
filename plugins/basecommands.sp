@@ -224,6 +224,8 @@ public Action:Command_Kick(client, args)
 	} else if (numClients > 1) {
 		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
 		return Plugin_Handled;
+	} else if (!CanUserTarget(client, clients[0])) {
+		ReplyToCommand(client, "[SM] %t", "Unable to target");
 	}
 	
 	new userid = GetClientUserId(clients[0]);
