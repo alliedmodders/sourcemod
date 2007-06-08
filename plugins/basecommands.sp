@@ -44,6 +44,33 @@ public OnPluginStart()
 	RegAdminCmd("sm_execcfg", Command_ExecCfg, ADMFLAG_CONFIG, "sm_execcfg <filename>");
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
+	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
+}
+
+public Action:Command_Unban(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_unban <steamid>");
+		return Plugin_Handled;
+	}
+	
+	new String:arg[50], start=0;
+	GetCmdArgString(arg, sizeof(arg));
+	
+	if (strncmp(arg, "STEAM_0:", 8) == 0)
+	{
+		start = 8;
+	} else if (strncmp(arg, "0:1:", 4) == 0 || strncmp(arg, "0:0:", 4) == 0)
+	{
+		start = 2;
+	}
+	
+	LogMessage("\"%L\" removed ban (filter \"%s\")", arg[start]);
+	ServerCommand("removeid \"%s\"", arg[start]);
+	ReplyToCommand(client, "[SM] %t", "Removed bans matching", arg);
+	
+	return Plugin_Handled;
 }
 
 public Action:Command_Ban(client, args)
