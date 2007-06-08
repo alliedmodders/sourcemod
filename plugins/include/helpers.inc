@@ -19,6 +19,15 @@
 #define _helpers_included
 
 /**
+ * Provided by basecommands.sp when sm_ban is called.
+ *
+ * @param admin			Admin client index.
+ * @param client		Client index which will be banned.
+ * @param reason		Ban reason (may be empty if none exists).
+ */
+forward OnClientBanned(admin, client, const String:reason[]);
+
+/**
  * Formats a user's info as log text.
  *
  * @param client		Client index.

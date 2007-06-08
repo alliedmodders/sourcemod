@@ -33,6 +33,8 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+new Handle:hBanForward = INVALID_HANDLE;
+
 public OnPluginStart()
 {
 	LoadTranslations("common.cfg");
@@ -45,6 +47,8 @@ public OnPluginStart()
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
+	
+	hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_String);
 }
 
 public Action:Command_Unban(client, args)
@@ -137,6 +141,13 @@ public Action:Command_Ban(client, args)
 	
 	LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, clients[0], time, reason);
 	
+	/* Fire the ban forward */
+	Call_StartForward(hBanForward);
+	Call_PushCell(client);
+	Call_PushCell(clients[0]);
+	Call_PushString(reason);
+	Call_Finish();
+
 	if (reason[0] == '\0')
 	{
 		strcopy(reason, sizeof(reason), "Banned");
