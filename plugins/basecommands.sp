@@ -41,6 +41,34 @@ public OnPluginStart()
 	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");
 	RegAdminCmd("sm_rcon", Command_Rcon, ADMFLAG_RCON, "sm_rcon <args>");
 	RegAdminCmd("sm_cvar", Command_Cvar, ADMFLAG_CONVARS, "sm_cvar <cvar> [value]");
+	RegAdminCmd("sm_execcfg", Command_ExecCfg, ADMFLAG_CONFIG, "sm_execcfg <filename>");
+}
+
+public Action:Command_ExecCfg(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_execcfg <filename>");
+		return Plugin_Handled;
+	}
+	
+	new String:path[64] = "cfg/";
+	GetCmdArg(1, path[4], sizeof(path)-4);
+	
+	if (!FileExists(path))
+	{
+		ReplyToCommand(client, "[SM] %t", "Config not found", path[4]);
+		return Plugin_Handled;
+	}
+	
+	LogMessage("\"%L\" executed config (file \"%s\")", client, path[4]);
+	ShowActivity(client, "%t", "Executed config", path[4]);
+		
+	ServerCommand("exec \"%s\"", path[4]);
+	
+	ReplyToCommand(client, "[SM] %t", "Executed config", path[4]);
+	
+	return Plugin_Handled;
 }
 
 public Action:Command_Cvar(client, args)
