@@ -422,7 +422,8 @@ public Action:Command_Cvar(client, args)
 	/* Do a check for the cheat cvar */
 	else if (StrEqual(cvarname, "sv_cheats"))
 	{
-		if (GetUserFlagBits(client) & ADMFLAG_CHEATS)
+		if (GetUserFlagBits(client) & ADMFLAG_CHEATS
+			|| GetUserFlagBits(client) & ADMFLAG_ROOT)
 		{
 			allowed = true;
 		}
