@@ -43,6 +43,87 @@ public OnPluginStart()
 	RegAdminCmd("sm_cvar", Command_Cvar, ADMFLAG_CONVARS, "sm_cvar <cvar> [value]");
 	RegAdminCmd("sm_execcfg", Command_ExecCfg, ADMFLAG_CONFIG, "sm_execcfg <filename>");
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
+	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
+}
+
+public Action:Command_Ban(client, args)
+{
+	if (args < 2)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
+		return Plugin_Handled;
+	}
+	
+	new String:arg[65];
+	GetCmdArg(1, arg, sizeof(arg));
+	
+	new clients[2];
+	new numClients = SearchForClients(arg, clients, 2);
+	
+	if (numClients == 0)
+	{
+		ReplyToCommand(client, "[SM] %t", "No matching client");
+		return Plugin_Handled;
+	} else if (numClients > 1) {
+		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
+		return Plugin_Handled;
+	} else if (!CanUserTarget(client, clients[0])) {
+		ReplyToCommand(client, "[SM] %t", "Unable to target");
+		return Plugin_Handled;
+	} else if (IsFakeClient(clients[0])) {
+		ReplyToCommand(client, "[SM] %t", "Cannot target bot");
+		return Plugin_Handled;
+	}
+	
+	new String:s_time[12];
+	GetCmdArg(2, s_time, sizeof(s_time));
+	
+	new time = StringToInt(s_time);
+	
+	decl String:reason[128];
+	if (args >= 3)
+	{
+		GetCmdArg(3, reason, sizeof(reason));
+	} else {
+		reason[0] = '\0';
+	}
+	
+	new userid = GetClientUserId(clients[0]);
+	GetClientName(clients[0], arg, sizeof(arg));
+	
+	if (time)
+	{
+		if (reason[0] == '\0')
+		{
+			ShowActivity(client, "%t", "Permabanned player", arg);
+		} else {
+			ShowActivity(client, "%t", "Permabanned player reason", arg, reason);
+		}
+	} else {
+		if (reason[0] == '\0')
+		{
+			ShowActivity(client, "%t", "Banned player", arg, time);
+		} else {
+			ShowActivity(client, "%t", "Banned player reason", arg, time, reason);
+		}
+	}
+	
+	LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, clients[0], time, reason);
+	
+	if (reason[0] == '\0')
+	{
+		strcopy(reason, sizeof(reason), "Banned");
+	}
+	
+	ServerCommand("banid %d %d", time, userid);
+	ServerCommand("kickid %d \"%s\"", userid, reason);
+	
+	if (time == 0)
+	{
+		ServerCommand("writeid");
+	}
+	
+	return Plugin_Handled;
 }
 
 #define FLAG_STRINGS		14
@@ -171,12 +252,11 @@ public Action:Command_ExecCfg(client, args)
 		return Plugin_Handled;
 	}
 	
-	LogMessage("\"%L\" executed config (file \"%s\")", client, path[4]);
 	ShowActivity(client, "%t", "Executed config", path[4]);
+	
+	LogMessage("\"%L\" executed config (file \"%s\")", client, path[4]);
 		
 	ServerCommand("exec \"%s\"", path[4]);
-	
-	ReplyToCommand(client, "[SM] %t", "Executed config", path[4]);
 	
 	return Plugin_Handled;
 }
@@ -244,14 +324,16 @@ public Action:Command_Cvar(client, args)
 	
 	GetCmdArg(2, value, sizeof(value));
 	
-	LogMessage("\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 	if ((GetConVarFlags(hndl) & FCVAR_PROTECTED) != FCVAR_PROTECTED)
 	{
 		ShowActivity(client, "%t", "Cvar changed", cvarname, value);
+	} else {
+		ReplyToCommand(client, "[SM] %t", "Cvar changed", cvarname, value);
 	}
 	
+	LogMessage("\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
+	
 	SetConVarString(hndl, value);
-	ReplyToCommand(client, "[SM] %t", "Cvar changed", cvarname, value);
 		
 	return Plugin_Handled;
 }
@@ -268,6 +350,7 @@ public Action:Command_Rcon(client, args)
 	GetCmdArgString(argstring, sizeof(argstring));
 	
 	LogMessage("\"%L\" console command (cmdline \"%s\")", client, argstring);
+	
 	ServerCommand("%s", argstring);
 	
 	return Plugin_Handled;
@@ -290,9 +373,9 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 	
-	LogMessage("\"%L\" changed map to \"%s\"", client, map);
 	ShowActivity(client, "%t", "Changing map", map);
-	ReplyToCommand(client, "%t", "Changing map", map);
+	
+	LogMessage("\"%L\" changed map to \"%s\"", client, map);
 	
 	new Handle:dp;
 	CreateDataTimer(3.0, Timer_ChangeMap, dp);
@@ -336,6 +419,7 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	} else if (!CanUserTarget(client, clients[0])) {
 		ReplyToCommand(client, "[SM] %t", "Unable to target");
+		return Plugin_Handled;
 	}
 	
 	new userid = GetClientUserId(clients[0]);
@@ -352,8 +436,9 @@ public Action:Command_Kick(client, args)
 		GetCmdArg(2, reason, sizeof(reason));
 	}
 	
-	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, clients[0], reason);
 	ShowActivity(client, "%t", "Kicked player", name);
+	
+	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, clients[0], reason);
 	
 	if (args < 2)
 	{
@@ -361,8 +446,6 @@ public Action:Command_Kick(client, args)
 	} else {
 		ServerCommand("kickid %d \"%s\"", userid, reason);
 	}
-	
-	ReplyToCommand(client, "[SM] %t", "Client kicked", name);
 	
 	return Plugin_Handled;
 }

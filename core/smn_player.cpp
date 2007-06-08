@@ -18,6 +18,7 @@
 #include "HalfLife2.h"
 #include "sourcemod.h"
 #include <inetchannelinfo.h>
+#include "ChatTriggers.h"
 
 ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY|FCVAR_PROTECTED, "Activity display setting (see sourcemod.cfg)");
 
@@ -822,17 +823,15 @@ static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
 
 static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 {
+	char message[255];
+	char buffer[255];
 	int value = sm_show_activity.GetInt();
-
-	if (!value)
-	{
-		return 0;
-	}
-
+	unsigned int replyto = g_ChatTriggers.GetReplyTo();
 	int client = params[1];
 
 	const char *name = "Console";
 	const char *sign = "ADMIN";
+	bool display_in_chat = false;
 	if (client != 0)
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
@@ -847,15 +846,35 @@ static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 		{
 			sign = "PLAYER";
 		}
+
+		/* Display the message to the client? */
+		if (replyto == SM_REPLY_CONSOLE)
+		{
+			g_SourceMod.SetGlobalTarget(client);
+			g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+			UTIL_Format(message, sizeof(message), "[SM] %s\n", buffer);
+			engine->ClientPrintf(pPlayer->GetEdict(), message);
+			display_in_chat = true;
+		}
+	} else {
+		g_SourceMod.SetGlobalTarget(LANG_SERVER);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+		UTIL_Format(message, sizeof(message), "[SM] %s\n", buffer);
+		META_CONPRINT(message);
 	}
 
-	char message[255];
-	char buffer[255];
+	if (!value)
+	{
+		return 1;
+	}
+
 	int maxClients = g_Players.GetMaxClients();
 	for (int i=1; i<=maxClients; i++)
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(i);
-		if (!pPlayer->IsInGame() || pPlayer->IsFakeClient())
+		if (!pPlayer->IsInGame() 
+			|| pPlayer->IsFakeClient()
+			|| (display_in_chat && i == client))
 		{
 			continue;
 		}

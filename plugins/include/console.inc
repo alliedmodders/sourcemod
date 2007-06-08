@@ -185,7 +185,9 @@ native ReplySource:GetCmdReplySource();
 
 /**
  * Displays usage of an admin command to users depending on the 
- * setting of the sm_show_activity cvar.
+ * setting of the sm_show_activity cvar.  Additionally, the client
+ * who typed the command will receive the same text without any
+ * client name prefix (as a confirmation).
  *
  * @param client		Client index doing the action, or 0 for server.
  * @param format		Formatting rules.
