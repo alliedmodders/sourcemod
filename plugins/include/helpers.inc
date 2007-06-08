@@ -21,11 +21,30 @@
 /**
  * Provided by basecommands.sp when sm_ban is called.
  *
- * @param admin			Admin client index.
+ * @param admin			Admin client index (0 for server).
  * @param client		Client index which will be banned.
+ * @param time			Minutes banned for (0 is permanent).
  * @param reason		Ban reason (may be empty if none exists).
  */
-forward OnClientBanned(admin, client, const String:reason[]);
+forward OnClientBanned(admin, client, time, const String:reason[]);
+
+/**
+ * Provided by basecommands.sp when sm_addban or sm_banip is called.
+ *
+ * @param admin			Admin client index (0 for server).
+ * @param info			User info (either steamid or ip).
+ * @param time			Minutes banned for (0 is permanent).
+ * @param reason		Ban reason (may be empty if none exists).
+ */
+forward OnBanAdded(admin, const String:info[], time, const String:reason[]);
+
+/**
+ * Provided by basecommands.sp when sm_unban or sm_unbanip is called.
+ *
+ * @param admin			Admin client index (0 for server).
+ * @param info 			User info (either steamid or ip).
+ */
+forward OnBanRemoved(admin, const String:info[]);
 
 /**
  * Formats a user's info as log text.

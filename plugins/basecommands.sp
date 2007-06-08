@@ -34,6 +34,8 @@ public Plugin:myinfo =
 };
 
 new Handle:hBanForward = INVALID_HANDLE;
+new Handle:hAddBanForward = INVALID_HANDLE;
+new Handle:hBanRemoved = INVALID_HANDLE;
 
 public OnPluginStart()
 {
@@ -47,8 +49,84 @@ public OnPluginStart()
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
+	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_ROOT, "sm_addban <time> <steamid> [reason]");
+	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_ROOT, "sm_banip <time> <ip> [reason]");
 	
-	hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_String);
+	hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String);
+	hAddBanForward = CreateGlobalForward("OnBanAdded", ET_Ignore, Param_Cell, Param_String, Param_Cell, Param_String);
+	hBanRemoved = CreateGlobalForward("OnBanRemoved", ET_Ignore, Param_Cell, Param_String);
+}
+
+public Action:Command_BanIp(client, args)
+{
+	if (args < 2)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_banip <time> <ip> [reason]");
+		return Plugin_Handled;
+	}
+	
+	new String:arg[50], String:time[20];
+	GetCmdArg(1, time, sizeof(time));
+	GetCmdArg(2, arg, sizeof(arg));
+	
+	new minutes = StringToInt(time);
+	
+	new String:reason[128];
+	if (args >= 3)
+	{
+		GetCmdArg(3, reason, sizeof(reason));
+	}
+	
+	LogMessage("\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", client, minutes, arg, reason);
+	
+	Call_StartForward(hAddBanForward);
+	Call_PushCell(client);
+	Call_PushString(arg);
+	Call_PushCell(minutes);
+	Call_PushString(reason);
+	Call_Finish();
+	
+	ServerCommand("banip %d %s", minutes, arg);
+	ServerCommand("writeip");
+	ReplyToCommand(client, "[SM] %t", "Ban added");
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_AddBan(client, args)
+{
+	if (args < 2)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_addban <time> <steamid> [reason]");
+		return Plugin_Handled;
+	}
+	
+	new String:arg[50], String:time[20];
+	GetCmdArg(1, time, sizeof(time));
+	GetCmdArg(2, arg, sizeof(arg));
+	
+	new minutes = StringToInt(time);
+	
+	new String:reason[128];
+	if (args >= 3)
+	{
+		GetCmdArg(3, reason, sizeof(reason));
+	}
+	
+	LogMessage("\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")", client, minutes, arg, reason);
+	
+	Call_StartForward(hAddBanForward);
+	Call_PushCell(client);
+	Call_PushString(arg);
+	Call_PushCell(minutes);
+	Call_PushString(reason);
+	Call_Finish();
+	
+	ServerCommand("banid %d %s", minutes, arg);
+	ServerCommand("writeid");
+	ReplyToCommand(client, "[SM] %t", "Ban added");
+	
+	return Plugin_Handled;
 }
 
 public Action:Command_Unban(client, args)
@@ -60,6 +138,7 @@ public Action:Command_Unban(client, args)
 	}
 	
 	new String:arg[50], start=0;
+	new String:new_arg[50];
 	GetCmdArgString(arg, sizeof(arg));
 	
 	if (strncmp(arg, "STEAM_0:", 8) == 0)
@@ -71,7 +150,15 @@ public Action:Command_Unban(client, args)
 	}
 	
 	LogMessage("\"%L\" removed ban (filter \"%s\")", arg[start]);
+	
+	Format(new_arg, sizeof(new_arg), "STEAM_0:%s", arg[start]);
+	Call_StartForward(hBanRemoved);
+	Call_PushCell(client);
+	Call_PushString(new_arg);
+	Call_Finish();
+	
 	ServerCommand("removeid \"%s\"", arg[start]);
+	ServerCommand("writeid");
 	ReplyToCommand(client, "[SM] %t", "Removed bans matching", arg);
 	
 	return Plugin_Handled;
@@ -145,6 +232,7 @@ public Action:Command_Ban(client, args)
 	Call_StartForward(hBanForward);
 	Call_PushCell(client);
 	Call_PushCell(clients[0]);
+	Call_PushCell(time);
 	Call_PushString(reason);
 	Call_Finish();
 
