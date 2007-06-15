@@ -360,10 +360,15 @@ native bool:GetConVarBool(Handle:convar);
  *
  * @param convar		Handle to the convar.
  * @param value			New boolean value.
+ * @param replicate		If set to true, the new convar value will be set on all clients.
+ *						This will only work if the convar has the FCVAR_REPLICATED flag
+ *						and actually exists on clients.
+ * @param notify		If set to true, clients will be notified that the convar has changed.
+ *						This will only work if the convar has the FCVAR_NOTIFY flag.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarBool(Handle:convar, bool:value);
+native SetConVarBool(Handle:convar, bool:value, bool:replicate=false, bool:notify=false);
 
 /**
  * Returns the integer value of a console variable.
@@ -379,10 +384,15 @@ native GetConVarInt(Handle:convar);
  *
  * @param convar		Handle to the convar.
  * @param value			New integer value.
+ * @param replicate		If set to true, the new convar value will be set on all clients.
+ *						This will only work if the convar has the FCVAR_REPLICATED flag
+ *						and actually exists on clients.
+ * @param notify		If set to true, clients will be notified that the convar has changed.
+ *						This will only work if the convar has the FCVAR_NOTIFY flag.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarInt(Handle:convar, value);
+native SetConVarInt(Handle:convar, value, bool:replicate=false, bool:notify=false);
 
 /**
  * Returns the floating point value of a console variable.
@@ -398,10 +408,15 @@ native Float:GetConVarFloat(Handle:convar);
  *
  * @param convar		Handle to the convar.
  * @param value			New floating point value.
+ * @param replicate		If set to true, the new convar value will be set on all clients.
+ *						This will only work if the convar has the FCVAR_REPLICATED flag
+ *						and actually exists on clients.
+ * @param notify		If set to true, clients will be notified that the convar has changed.
+ *						This will only work if the convar has the FCVAR_NOTIFY flag.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarFloat(Handle:convar, Float:value);
+native SetConVarFloat(Handle:convar, Float:value, bool:replicate=false, bool:notify=false);
 
 /**
  * Retrieves the string value of a console variable.
@@ -419,10 +434,15 @@ native GetConVarString(Handle:convar, String:value[], maxlength);
  *
  * @param convar		Handle to the convar.
  * @param value			New string value.
+ * @param replicate		If set to true, the new convar value will be set on all clients.
+ *						This will only work if the convar has the FCVAR_REPLICATED flag
+ *						and actually exists on clients.
+ * @param notify		If set to true, clients will be notified that the convar has changed.
+ *						This will only work if the convar has the FCVAR_NOTIFY flag.
  * @noreturn
  * @error				Invalid or corrupt Handle.
  */
-native SetConVarString(Handle:convar, const String:value[]);
+native SetConVarString(Handle:convar, const String:value[], bool:replicate=false, bool:notify=false);
 
 /**
  * Returns the bitstring of flags on a console variable.

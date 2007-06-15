@@ -22,12 +22,54 @@
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "ChatTriggers.h"
+#include <inetchannel.h>
+#include <bitbuf.h>
+
+#define NET_SETCONVAR	5
 
 enum ConVarBounds
 {
 	ConVarBound_Upper = 0,
 	ConVarBound_Lower
 };
+
+static void ReplicateConVar(ConVar *pConVar)
+{
+	int maxClients = g_Players.GetMaxClients();
+
+	char data[256];
+	bf_write buffer(data, sizeof(data));
+
+	buffer.WriteUBitLong(NET_SETCONVAR, 5);
+	buffer.WriteByte(1);
+	buffer.WriteString(pConVar->GetName());
+	buffer.WriteString(pConVar->GetString());
+
+	for (int i = 1; i <= maxClients; i++)
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(i);
+
+		if (pPlayer && pPlayer->IsInGame() && !pPlayer->IsFakeClient())
+		{
+			INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(i));
+			netchan->SendData(buffer);
+		}
+	}
+}
+
+static void NotifyConVar(ConVar *pConVar)
+{
+	IGameEvent *pEvent = gameevents->CreateEvent("server_cvar");
+	pEvent->SetString("cvarname", pConVar->GetName());
+	if (pConVar->IsBitSet(FCVAR_PROTECTED))
+	{
+		pEvent->SetString("cvarvalue", "***PROTECTED***");
+	} else {
+		pEvent->SetString("cvarvalue", pConVar->GetString());
+	}
+
+	gameevents->FireEvent(pEvent);
+}
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
@@ -161,6 +203,18 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(params[2]);
 
+	/* Should we replicate it? */
+	if (params[3] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	{
+		ReplicateConVar(pConVar);
+	}
+
+	/* Should we notify clients? */
+	if (params[4] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	{
+		NotifyConVar(pConVar);
+	}
+
 	return 1;
 }
 
@@ -195,6 +249,18 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 
 	float value = sp_ctof(params[2]);
 	pConVar->SetValue(value);
+
+	/* Should we replicate it? */
+	if (params[3] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	{
+		ReplicateConVar(pConVar);
+	}
+
+	/* Should we notify clients? */
+	if (params[4] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	{
+		NotifyConVar(pConVar);
+	}
 
 	return 1;
 }
@@ -232,6 +298,18 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &value);
 
 	pConVar->SetValue(value);
+
+	/* Should we replicate it? */
+	if (params[3] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	{
+		ReplicateConVar(pConVar);
+	}
+
+	/* Should we notify clients? */
+	if (params[4] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	{
+		NotifyConVar(pConVar);
+	}
 
 	return 1;
 }
