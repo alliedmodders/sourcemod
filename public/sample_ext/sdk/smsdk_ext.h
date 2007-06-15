@@ -39,6 +39,9 @@
 #if defined SMEXT_ENABLE_DBMANAGER
 #include <IDBDriver.h>
 #endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMECONF
+#include <IGameConfigs.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -196,10 +199,13 @@ extern IHandleSys *g_pHandleSys;
 extern IHandleSys *handlesys;			/* Note: Newer name */
 #endif //SMEXT_ENABLE_HANDLESYS
 #if defined SMEXT_ENABLE_PLAYERHELPERS
-extern IPlayerHelpers *playerhelpers;
+extern IPlayerManager *playerhelpers;
 #endif //SMEXT_ENABLE_PLAYERHELPERS
 #if defined SMEXT_ENABLE_DBMANAGER
 extern IDBManager *dbi;
+#endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMECONF
+extern IGameConfigManager *gameconfs;
 #endif //SMEXT_ENABLE_DBMANAGER
 
 #if defined SMEXT_CONF_METAMOD

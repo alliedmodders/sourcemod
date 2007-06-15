@@ -40,10 +40,13 @@ IHandleSys *g_pHandleSys = NULL;		/**< Handle system */
 IHandleSys *handlesys = NULL;			/**< Handle system */
 #endif
 #if defined SMEXT_ENABLE_PLAYERHELPERS
-IPlayerHelpers *playerhelpers = NULL;	/**< Player helpers */
+IPlayerManager *playerhelpers = NULL;	/**< Player helpers */
 #endif //SMEXT_ENABLE_PLAYERHELPERS
 #if defined SMEXT_ENABLE_DBMANAGER
 IDBManager *dbi = NULL;					/**< DB Manager */
+#endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMECONF
+IGameConfigManager *gameconfs = NULL;	/**< Game config manager */
 #endif //SMEXT_ENABLE_DBMANAGER
 
 /** Exports the main interface */
@@ -93,6 +96,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_DBMANAGER
 	SM_GET_IFACE(DBI, dbi);
+#endif
+#if defined SMEXT_ENABLE_GAMECONF
+	SM_GET_IFACE(GAMECONFIG, gameconfs);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
