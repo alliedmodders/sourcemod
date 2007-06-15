@@ -195,7 +195,7 @@ SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes
 SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
 {
 	/* See if we are ignoring a phrase */
-	if (!m_CurPhrase)
+	if (m_CurPhrase == -1)
 	{
 		return SMCParse_Continue;
 	}
@@ -227,6 +227,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 		ParseStates state = Parse_None;
 
 		const char *old_value = value;
+		const char *last_value = value;
 		while (*value != '\0')
 		{
 			if (state == Parse_None)
@@ -248,7 +249,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 				if (*value == ':')
 				{
 					state = Parse_Format;
-					if (value - old_value >= 15)
+					if (value - last_value >= 15)
 					{
 						ParseWarning("Too many digits in format index on line %d, phrase will be ignored.", m_CurLine);
 						m_CurPhrase = -1;
@@ -269,6 +270,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 				if (*value == '}')
 				{
 					state = Parse_None;
+					last_value = value + 1;
 				}
 			}
 			value++;
