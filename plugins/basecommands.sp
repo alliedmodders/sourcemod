@@ -460,7 +460,7 @@ public Action:Command_Cvar(client, args)
 	
 	LogMessage("\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 	
-	SetConVarString(hndl, value);
+	SetConVarString(hndl, value, true);
 		
 	return Plugin_Handled;
 }
