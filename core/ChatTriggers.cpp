@@ -206,6 +206,7 @@ bool ChatTriggers::ProcessTrigger(edict_t *pEdict, const char *args, bool is_quo
 	const char *inptr = args;
 	while (*inptr != '\0' 
 			&& !IsWhitespace(inptr) 
+			&& *inptr != '"'
 			&& cmd_len < sizeof(cmd_buf) - 1)
 	{
 		cmd_buf[cmd_len++] = *inptr++;
