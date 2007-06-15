@@ -72,6 +72,17 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	} else {
 		m_pub_funcs = NULL;
 	}
+
+	/* Initialize the null references */
+	uint32_t index;
+	if (FindPubvarByName("NULL_VECTOR", &index) == SP_ERROR_NONE)
+	{
+		sp_pubvar_t *pubvar;
+		GetPubvarByIndex(index, &pubvar);
+		m_pNullVec = pubvar->offs;
+	} else {
+		m_pNullVec = NULL;
+	}
 }
 
 void BaseContext::FlushFunctionCache()
@@ -990,5 +1001,15 @@ SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 void BaseContext::SetIdentity(SourceMod::IdentityToken_t *token)
 {
 	m_pToken = token;
+}
+
+cell_t *BaseContext::GetNullRef(SP_NULL_TYPE type)
+{
+	if (type == SP_NULL_VECTOR)
+	{
+		return m_pNullVec;
+	}
+
+	return NULL;
 }
 #endif

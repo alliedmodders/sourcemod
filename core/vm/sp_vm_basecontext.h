@@ -69,6 +69,7 @@ namespace SourcePawn
 #if defined SOURCEMOD_BUILD
 		SourceMod::IdentityToken_t *GetIdentity();
 		void SetIdentity(SourceMod::IdentityToken_t *token);
+		cell_t *GetNullRef(SP_NULL_TYPE type);
 #endif
 	public: //IPluginDebugInfo
 		int LookupFile(ucell_t addr, const char **filename);
@@ -84,6 +85,7 @@ namespace SourcePawn
 		sp_context_t *ctx;
 #if defined SOURCEMOD_BUILD
 		SourceMod::IdentityToken_t *m_pToken;
+		cell_t *m_pNullVec;
 #endif
 		char m_MsgCache[1024];
 		bool m_CustomMsg;

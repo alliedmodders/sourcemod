@@ -200,7 +200,8 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	}
 
 	unsigned int api = g_pVM->GetAPIVersion();
-	if (api != SOURCEPAWN_VM_API_VERSION)
+	/* :TODO: clean this up (see amb398) */
+	if (api > SOURCEPAWN_VM_API_VERSION || api < 2)
 	{
 		ShutdownJIT();
 		if (error && maxlength)

@@ -85,11 +85,13 @@ enum PluginInfo
  */
 struct Extension
 {
-	const String:name[],	/* Short name */
-	const String:file[],	/* Default file name */
-	bool:autoload,			/* Whether or not to auto-load */
-	bool:required,			/* Whether or not to require */
+	const String:name[],	/**< Short name */
+	const String:file[],	/**< Default file name */
+	bool:autoload,			/**< Whether or not to auto-load */
+	bool:required,			/**< Whether or not to require */
 };
+
+public Float:NULL_VECTOR[3];	/**< Pass this into certain functions to act as a C++ NULL */
 
 #define AUTOLOAD_EXTENSIONS
 #define REQUIRE_EXTENSIONS

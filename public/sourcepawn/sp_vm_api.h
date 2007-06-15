@@ -28,7 +28,7 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		2
+#define SOURCEPAWN_VM_API_VERSION		3
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -48,6 +48,16 @@ namespace SourcePawn
 	#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
 	#define SM_PARAM_STRING_UTF8	(1<<0)		/**< String should be UTF-8 handled */
 	#define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
+
+#if defined SOURCEMOD_BUILD
+	/**
+	 * @brief Pseudo-NULL reference types.
+	 */
+	enum SP_NULL_TYPE
+	{
+		SP_NULL_VECTOR = 0,		/**< Float[3] reference */
+	};
+#endif
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
@@ -536,6 +546,15 @@ namespace SourcePawn
 		 * @return			Identity token.
 		 */
 		virtual SourceMod::IdentityToken_t *GetIdentity() =0;
+
+		/**
+		 * @brief Returns a NULL reference based on one of the available NULL
+		 * reference types.
+		 *
+		 * @param type		NULL reference type.
+		 * @return			cell_t address to compare to.
+		 */
+		virtual cell_t *GetNullRef(SP_NULL_TYPE type) =0;
 #endif
 	};
 
