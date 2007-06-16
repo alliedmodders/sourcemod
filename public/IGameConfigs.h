@@ -27,7 +27,7 @@
  */
 
 #define SMINTERFACE_GAMECONFIG_NAME			"IGameConfigManager"
-#define SMINTERFACE_GAMECONFIG_VERSION		1
+#define SMINTERFACE_GAMECONFIG_VERSION		2
 
 class SendProp;
 
@@ -63,6 +63,16 @@ namespace SourceMod
 		 * @return				String containing the value, or NULL if not found.
 		 */
 		virtual const char *GetKeyValue(const char *key) =0;
+
+		/**
+		 * @brief Retrieves a cached memory signature.
+		 *
+		 * @param key			Name of the signature.
+		 * @param addr			Pointer to store the memory address in.
+		 * @return				A MemorySignature pointer on success, or NULL 
+		 *						if the key was not found.
+		 */
+		virtual bool GetMemSig(const char *key, void **addr) =0;
 	};
 
 	/**

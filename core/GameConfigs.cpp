@@ -22,6 +22,12 @@
 #include "HalfLife2.h"
 #include "Logger.h"
 #include "ShareSys.h"
+#include "MemoryUtils.h"
+#include "LibrarySys.h"
+
+#if defined PLATFORM_LINUX
+#include <dlfcn.h>
+#endif
 
 GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
@@ -33,6 +39,9 @@ char g_mod[255];
 #define PSTATE_GAMEDEFS_OFFSETS			3
 #define PSTATE_GAMEDEFS_OFFSETS_OFFSET	4
 #define PSTATE_GAMEDEFS_KEYS			5
+#define PSTATE_GAMEDEFS_SUPPORTED		6
+#define PSTATE_GAMEDEFS_SIGNATURES		7
+#define PSTATE_GAMEDEFS_SIGNATURES_SIG	8
 
 #if defined PLATFORM_WINDOWS
 #define PLATFORM_NAME	"windows"
@@ -40,12 +49,24 @@ char g_mod[255];
 #define PLATFORM_NAME	"linux"
 #endif
 
+struct TempSigInfo
+{
+	void Reset()
+	{
+		library[0] = '\0';
+		sig[0] = '\0';
+	}
+	char sig[512];
+	char library[64];
+} s_TempSig;
+
 CGameConfig::CGameConfig(const char *file)
 {
 	m_pFile = sm_strdup(file);
 	m_pOffsets = sm_trie_create();
 	m_pProps = sm_trie_create();
 	m_pKeys = sm_trie_create();
+	m_pSigs = sm_trie_create();
 	m_pStrings = new BaseStringTable(512);
 	m_RefCount = 0;
 }
@@ -55,6 +76,7 @@ CGameConfig::~CGameConfig()
 	sm_trie_destroy(m_pOffsets);
 	sm_trie_destroy(m_pProps);
 	sm_trie_destroy(m_pKeys);
+	sm_trie_destroy(m_pSigs);
 	delete [] m_pFile;
 	delete m_pStrings;
 }
@@ -66,6 +88,7 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 		m_IgnoreLevel++;
 		return SMCParse_Continue;
 	}
+
 	switch (m_ParseState)
 	{
 	case PSTATE_NONE:
@@ -81,6 +104,7 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 	case PSTATE_GAMES:
 		{
 			if ((strcmp(name, "*") == 0)
+				|| (strcmp(name, "#default") == 0)
 				|| (strcmp(name, g_mod) == 0))
 			{
 				m_ParseState = PSTATE_GAMEDEFS;
@@ -95,9 +119,24 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 			if (strcmp(name, "Offsets") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_OFFSETS;
-			} else if (strcmp(name, "Keys") == 0) {
+			}
+			else if (strcmp(name, "Keys") == 0)
+			{
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
-			} else {
+			}
+			else if ((strcmp(name, "#supported") == 0)
+					 && (strcmp(m_mod, "#default") == 0))
+			{
+				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
+				/* Ignore this section unless we get a game. */
+				bShouldBeReadingDefault = false;
+			}
+			else if (strcmp(name, "Signatures") == 0)
+			{
+				m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
+			}
+			else
+			{
 				m_IgnoreLevel++;
 			}
 			break;
@@ -110,9 +149,18 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS_OFFSET;
 			break;
 		}
+	case PSTATE_GAMEDEFS_SIGNATURES:
+		{
+			strncopy(m_offset, name, sizeof(m_offset));
+			s_TempSig.Reset();
+			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES_SIG;
+			break;
+		}
 	/* No sub-sections allowed:
 	 case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 	 case PSTATE_GAMEDEFS_KEYS:
+	 case PSTATE_GAMEDEFS_SUPPORTED:
+	 case PSTATE_GAMEDEFS_SIGNATURES_SIG:
 	 */
 	default:
 		{
@@ -146,6 +194,19 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		int id = m_pStrings->AddString(value);
 		sm_trie_insert(m_pKeys, key, (void *)id);
+	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
+		if (strcmp(key, "game") == 0
+			&& strcmp(value, g_mod) == 0)
+		{
+			bShouldBeReadingDefault = true;
+		}
+	} else if (m_ParseState == PSTATE_GAMEDEFS_SIGNATURES_SIG) {
+		if (strcmp(key, PLATFORM_NAME) == 0)
+		{
+			strncopy(s_TempSig.sig, value, sizeof(s_TempSig.sig));
+		} else if (strcmp(key, "library") == 0) {
+			strncopy(s_TempSig.library, value, sizeof(s_TempSig.library));
+		}
 	}
 
 	return SMCParse_Continue;
@@ -191,7 +252,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 					sm_trie_insert(m_pProps, m_offset, pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
-					if ((strcmp(m_mod, "*") != 0)
+					if (((strcmp(m_mod, "*") != 0) && strcmp(m_mod, "#default") != 0)
 						&& (!sm_trie_retrieve(m_pOffsets, m_offset, NULL)))
 					{
 						g_Logger.LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
@@ -205,6 +266,132 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS;
 			break;
 		}
+	case PSTATE_GAMEDEFS_SUPPORTED:
+		{
+			if (!bShouldBeReadingDefault)
+			{
+				/* If we shouldn't read the rest of this section, set the ignore level. */
+				m_IgnoreLevel = 1;
+			}
+			m_ParseState = PSTATE_GAMEDEFS;
+			break;
+		}
+	case PSTATE_GAMEDEFS_SIGNATURES_SIG:
+		{
+			if (s_TempSig.library[0] == '\0')
+			{
+				/* assume server */
+				strncopy(s_TempSig.library, "server", sizeof(s_TempSig.library));
+			}
+			void *addrInBase = NULL;
+			if (strcmp(s_TempSig.library, "server") == 0)
+			{
+				addrInBase = g_SMAPI->serverFactory(false);
+			} else if (strcmp(s_TempSig.library, "engine") == 0) {
+				addrInBase = g_SMAPI->engineFactory(false);
+			}
+			void *final_addr = NULL;
+			if (addrInBase == NULL)
+			{
+				g_Logger.LogError("[SM] Unrecognized library \"%s\" (gameconf \"%s\")", 
+					s_TempSig.library, 
+					m_pFile);
+			} else {
+#if defined PLATFORM_LINUX
+				if (s_TempSig.sig_lin[0] == '@')
+				{
+					Dl_info info;
+					/* GNU only: returns 0 on error, inconsistent! >:[ */
+					if (dladdr(addrInBase, &info) == 0)
+					{
+						void *handle = dlopen(info.dli_fname, RTLD_NOW);
+						if (handle)
+						{
+							final_addr = dlsym(handle, &s_TempSig.sig_lin[1]);
+							dlclose(handle);
+						} else {
+							g_Logger.LogError("[SM] Unable to load library \"%s\" (gameconf \"%s\")",
+								s_TempSig.library,
+								m_pFile);
+						}
+					} else {
+						g_Logger.LogError("[SM] Unable to find library \"%s\" in memory (gameconf \"%s\")",
+							s_TempSig.library,
+							m_pFile);
+					}
+					if (!final_addr)
+					{
+						g_Logger.LogError("[SM] Unable to find named symbol (symbol \"%s\") (library \"%s\") (gameconf \"%s\")",
+							&s_TempSig.sig_lin[1],
+							s_TempSig.library,
+							m_pFile);
+					}
+				}
+				if (final_addr)
+				{
+					goto skip_find;
+				}
+#endif
+				/* First, preprocess the signature */
+				char real_sig[255];
+				size_t real_bytes;
+				size_t length;
+
+				real_bytes = 0;
+				length = strlen(s_TempSig.sig);
+
+				for (size_t i=0; i<length; i++)
+				{
+					if (real_bytes >= sizeof(real_sig))
+					{
+						break;
+					}
+					real_sig[real_bytes++] = s_TempSig.sig[i];
+					if (s_TempSig.sig[i] == '\\'
+						&& s_TempSig.sig[i+1] == 'x')
+					{
+						if (i + 3 >= length)
+						{
+							continue;
+						}
+						/* Get the hex part */
+						char s_byte[3];
+						int r_byte;
+						s_byte[0] = s_TempSig.sig[i+2];
+						s_byte[1] = s_TempSig.sig[i+3];
+						s_byte[2] = '\0';
+						/* Read it as an integer */
+						sscanf(s_byte, "%x", &r_byte);
+						/* Save the value */
+						real_sig[real_bytes-1] = r_byte;
+						/* Adjust index */
+						i += 3;
+					}
+				}
+
+				if (real_bytes < 1)
+				{
+					g_Logger.LogError("[SM] Invalid signature length of 1 (name \"%s\") (gameconf \"%s\")",
+						m_offset,
+						m_pFile);
+				} else {
+					final_addr = g_MemUtils.FindPattern(addrInBase, real_sig, real_bytes);
+					if (!final_addr)
+					{
+						g_Logger.LogError("[SM] Unable to find signature (name \"%s\") (gameconf \"%s\")", 
+							m_offset,
+							m_pFile);
+					}
+				}
+			}
+
+#if defined PLATFORM_LINUX
+skip_find:
+#endif
+			sm_trie_insert(m_pSigs, m_offset, final_addr);
+
+			break;
+		}
 	}
 
 	return SMCParse_Continue;
@@ -215,10 +402,16 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	SMCParseError err;
 
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "configs/gamedata/%s.txt", m_pFile);
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s.txt", m_pFile);
+	/* Backwards compatibility */
+	if (!g_LibSys.PathExists(path))
+	{
+		g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "configs/gamedata/%s.txt", m_pFile);
+	}
 
 	/* Initialize parse states */
 	m_IgnoreLevel = 0;
+	bShouldBeReadingDefault = true;
 	m_ParseState = PSTATE_NONE;
 	/* Reset cached data */
 	m_pStrings->Reset();
@@ -274,6 +467,11 @@ SendProp *CGameConfig::GetSendProp(const char *key)
 	}
 
 	return pProp;
+}
+
+bool CGameConfig::GetMemSig(const char *key, void **addr)
+{
+	return sm_trie_retrieve(m_pSigs, key, addr);
 }
 
 void CGameConfig::IncRefCount()

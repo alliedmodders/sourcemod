@@ -44,6 +44,7 @@ public: //IGameConfig
 	const char *GetKeyValue(const char *key);
 	bool GetOffset(const char *key, int *value);
 	SendProp *GetSendProp(const char *key);
+	bool GetMemSig(const char *key, void **addr);
 public:
 	void IncRefCount();
 	unsigned int DecRefCount();
@@ -53,6 +54,7 @@ private:
 	Trie *m_pOffsets;
 	Trie *m_pProps;
 	Trie *m_pKeys;
+	Trie *m_pSigs;
 	unsigned int m_RefCount;
 	/* Parse states */
 	int m_ParseState;
@@ -61,6 +63,7 @@ private:
 	char m_prop[64];
 	char m_offset[64];
 	char m_mod[255];
+	bool bShouldBeReadingDefault;
 };
 
 class GameConfigManager : 
