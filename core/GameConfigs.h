@@ -76,6 +76,9 @@ public:
 public: //IGameConfigManager
 	bool LoadGameConfigFile(const char *file, IGameConfig **pConfig, char *error, size_t maxlength);
 	void CloseGameConfigFile(IGameConfig *cfg);
+	IGameConfig *ReadHandle(Handle_t hndl,
+		IdentityToken_t *ident,
+		HandleError *err);
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();

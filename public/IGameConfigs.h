@@ -20,6 +20,7 @@
 #define _INCLUDE_SOURCEMOD_GAMECONFIG_SYSTEM_H_
 
 #include <IShareSys.h>
+#include <IHandleSys.h>
 
 /**
  * @file IGameConfigs.h
@@ -27,7 +28,7 @@
  */
 
 #define SMINTERFACE_GAMECONFIG_NAME			"IGameConfigManager"
-#define SMINTERFACE_GAMECONFIG_VERSION		2
+#define SMINTERFACE_GAMECONFIG_VERSION		3
 
 class SendProp;
 
@@ -69,8 +70,9 @@ namespace SourceMod
 		 *
 		 * @param key			Name of the signature.
 		 * @param addr			Pointer to store the memory address in.
-		 * @return				A MemorySignature pointer on success, or NULL 
-		 *						if the key was not found.
+		 * @return				True if the key was found, false otherwise.
+		 *						Note that true is a valid return even if the
+		 *						address is NULL.
 		 */
 		virtual bool GetMemSig(const char *key, void **addr) =0;
 	};
@@ -93,23 +95,40 @@ namespace SourceMod
 		/**
 		 * @brief Loads or finds an already loaded game config file.  
 		 *
-		 * @param file		File to load.  The path must be relative to the 'gamedata'
-		 *					folder under the config folder, and the extension should be omitted.
-		 * @param pConfig	Pointer to store the game config pointer.  Pointer will be valid even on failure.
+		 * @param file		File to load.  The path must be relative to the 
+		 *					'gamedata' folder and the extension should be 
+		 *					omitted.
+		 * @param pConfig	Pointer to store the game config pointer.  Pointer 
+		 *					will be valid even on failure.
 		 * @param error		Optional error message buffer.
 		 * @param maxlength	Maximum length of the error buffer.
 		 * @return			True on success, false if the file failed.
 		 */
-		virtual bool LoadGameConfigFile(const char *file, IGameConfig **pConfig, char *error, size_t maxlength) =0;
+		virtual bool LoadGameConfigFile(const char *file, 
+			IGameConfig **pConfig, 
+			char *error, 
+			size_t maxlength) =0;
 
 		/**
-		 * @brief Closes an IGameConfig pointer.  Since a file can be loaded more than once,
-		 * the file will not actually be removed from memory until it is closed once for each
-		 * call to LoadGameConfigfile().
+		 * @brief Closes an IGameConfig pointer.  Since a file can be loaded 
+		 * more than once, the file will not actually be removed from memory 
+		 * until it is closed once for each call to LoadGameConfigfile().
 		 *
 		 * @param cfg		Pointer to the IGameConfig to close.
 		 */
 		virtual void CloseGameConfigFile(IGameConfig *cfg) =0;
+
+		/**
+		 * @brief Reads an GameConfig Handle.
+		 *
+		 * @param hndl		Handle to read.
+		 * @param ident		Identity of the owner (can be NULL).
+		 * @param err		Optional error buffer.
+		 * @return			IGameConfig pointer on success, NULL otherwise.
+		 */
+		virtual IGameConfig *ReadHandle(Handle_t hndl,
+			IdentityToken_t *ident,
+			HandleError *err) =0;										
 	};
 }
 

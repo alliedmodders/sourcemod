@@ -24,6 +24,7 @@
 #include "ShareSys.h"
 #include "MemoryUtils.h"
 #include "LibrarySys.h"
+#include "HandleSys.h"
 
 #if defined PLATFORM_LINUX
 #include <dlfcn.h>
@@ -559,4 +560,20 @@ void GameConfigManager::CloseGameConfigFile(IGameConfig *cfg)
 	{
 		delete pConfig;
 	}
+}
+
+extern HandleType_t g_GameConfigsType;
+
+IGameConfig *GameConfigManager::ReadHandle(Handle_t hndl, IdentityToken_t *ident, HandleError *err)
+{
+	HandleSecurity sec(ident, g_pCoreIdent);
+	IGameConfig *conf = NULL;
+	HandleError _err = g_HandleSys.ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&conf);
+
+	if (err)
+	{
+		*err = _err;
+	}
+
+	return conf;
 }
