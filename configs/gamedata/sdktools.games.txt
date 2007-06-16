@@ -1,0 +1,19 @@
+"Games"
+{
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+		}
+		
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"329"
+				"linux"		"330"
+			}
+		}
+	}
+}
