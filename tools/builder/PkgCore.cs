@@ -33,7 +33,7 @@ namespace builder
 
 			folders[0] = "bin";
 			folders[1] = "plugins/disabled";
-			folders[2] = "configs/gamedata";
+			folders[2] = "gamedata";
 			folders[3] = "configs/geoip";
 			folders[4] = "translations";
 			folders[5] = "logs";
@@ -59,7 +59,6 @@ namespace builder
 		public override void OnCopyFolders(ABuilder builder)
 		{
 			builder.CopyFolder(this, "configs", "configs", null);
-			builder.CopyFolder(this, "configs/gamedata", "configs/gamedata", null);
 			builder.CopyFolder(this, "configs/geoip", "configs/geoip", null);
 			
 			string [] plugin_omits = new string[1];
@@ -68,6 +67,7 @@ namespace builder
 			string [] include_omits = new string[1];
 			include_omits[0] = "version.tpl";
 
+			builder.CopyFolder(this, "gamedata", "gamedata", null);
 			builder.CopyFolder(this, "plugins", "scripting", plugin_omits);
 			builder.CopyFolder(this, "plugins/include", "scripting/include", include_omits);
 			builder.CopyFolder(this, "translations", "translations", null);
@@ -109,9 +109,9 @@ namespace builder
 			libs[3].ProjectFile = "geoip";
 
 			libs[4].Destination = "extensions";
-			libs[4].LocalPath = "extensions/threader";
-			libs[4].Name = "threader.ext";
-			libs[4].ProjectFile = "threader";
+			libs[4].LocalPath = "extensions/bintools";
+			libs[4].Name = "bintools.ext";
+			libs[4].ProjectFile = "bintools";
 
 			libs[5].Destination = "extensions";
 			libs[5].LocalPath = "extensions/mysql";
