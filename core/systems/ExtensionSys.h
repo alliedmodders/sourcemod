@@ -51,9 +51,12 @@ public:
 	void RemovePlugin(IPlugin *pPlugin);
 	void MarkAllLoaded();
 private:
+	bool Load(char *error, size_t maxlength);
+private:
 	IdentityToken_t *m_pIdentToken;
 	IExtensionInterface *m_pAPI;
 	String m_File;
+	String m_Path;
 	ILibrary *m_pLib;
 	String m_Error;
 	List<IfaceInfo> m_Deps;

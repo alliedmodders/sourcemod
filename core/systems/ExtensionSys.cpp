@@ -36,12 +36,18 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
+	m_Path.assign(path);
 
-	m_pLib = g_LibSys.OpenLibrary(path, error, maxlength);
+	m_pLib = NULL;
+}
+
+bool CExtension::Load(char *error, size_t maxlength)
+{
+	m_pLib = g_LibSys.OpenLibrary(m_Path.c_str(), error, maxlength);
 
 	if (m_pLib == NULL)
 	{
-		return;
+		return false;
 	}
 
 	typedef IExtensionInterface *(*GETAPI)();
@@ -52,7 +58,7 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
 		snprintf(error, maxlength, "Unable to find extension entry point");
-		return;
+		return false;
 	}
 
 	m_pAPI = pfnGetAPI();
@@ -61,13 +67,13 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
 		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
-		return;
+		return false;
 	}
 
 	if (m_pAPI->IsMetamodExtension())
 	{
 		bool already;
-		m_PlId = g_pMMPlugins->Load(path, g_PLID, already, error, maxlength);
+		m_PlId = g_pMMPlugins->Load(m_Path.c_str(), g_PLID, already, error, maxlength);
 	}
 
 	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType, this);
@@ -88,7 +94,7 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 		m_pLib = NULL;
 		g_ShareSys.DestroyIdentity(m_pIdentToken);
 		m_pIdentToken = NULL;
-		return;
+		return false;
 	} else {
 		/* Check if we're past load time */
 		if (!g_SourceMod.IsMapLoading())
@@ -96,6 +102,8 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 			m_pAPI->OnExtensionsAllLoaded();
 		}
 	}
+
+	return true;
 }
 
 CExtension::~CExtension()
@@ -336,13 +344,16 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 	char error[256];
 	CExtension *p = new CExtension(path, error, sizeof(error));
 
-	if (!p->IsLoaded())
+	/* We put us in the list beforehand so extensions that check for each other
+	 * won't recursively load each other.
+	 */
+	m_Libs.push_back(p);
+
+	if (!p->Load(error, sizeof(error)) || !p->IsLoaded())
 	{
 		g_Logger.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
 		p->SetError(error);
 	}
-
-	m_Libs.push_back(p);
 
 	return p;
 }
@@ -419,7 +430,7 @@ IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime
 
 	/* :NOTE: lifetime is currently ignored */
 
-	if (!pExt->IsLoaded())
+	if (!pExt->Load(error, maxlength) || !pExt->IsLoaded())
 	{
 		delete pExt;
 		return NULL;
@@ -631,8 +642,14 @@ void CExtensionManager::MarkAllLoaded()
 
 void CExtensionManager::AddDependency(IExtension *pSource, const char *file, bool required, bool autoload)
 {
-	/* :TODO: implement */
-	return;
+	/* This function doesn't really need to do anything now.  We make sure the 
+	 * other extension is loaded, but handling of dependencies is really done 
+	 * by the interface fetcher.
+	 */
+	if (required || autoload)
+	{
+		LoadAutoExtension(file);
+	}
 }
 
 void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
