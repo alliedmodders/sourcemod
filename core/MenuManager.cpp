@@ -126,6 +126,7 @@ void VoteMenuHandler::EndVoting()
 	 */
 	unsigned int dup_array[256];
 
+	unsigned int total = m_Votes[0];
 	for (size_t i=1; i<m_Items; i++)
 	{
 		if (m_Votes[i] > m_Votes[highest])
@@ -141,6 +142,7 @@ void VoteMenuHandler::EndVoting()
 			 */
 			dup_array[dup_count++] = i;
 		}
+		total += m_Votes[i];
 	}
 
 	/* Check if we need to pick from the duplicate list */
@@ -160,7 +162,7 @@ void VoteMenuHandler::EndVoting()
 	}
 
 picked_item:
-	m_pHandler->OnMenuVoteEnd(m_pCurMenu, chosen);
+	m_pHandler->OnMenuVoteEnd(m_pCurMenu, chosen, m_Votes[highest], total);
 	m_pHandler->OnMenuEnd(m_pCurMenu);
 	InternalReset();
 }

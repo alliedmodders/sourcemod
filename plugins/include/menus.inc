@@ -501,3 +501,17 @@ native GetPanelCurrentKey(Handle:panel);
  * @error				Invalid Handle.
  */
 native bool:SetPanelCurrentKey(Handle:panel, key);
+
+/**
+ * Retrieves voting information from MenuAction_VoteEnd.
+ *
+ * @param param2		Second parameter of MenuAction_VoteEnd.
+ * @param winningVotes	Number of votes received by the winning option.
+ * @param totalVotes	Number of total votes received.
+ * @noreturn
+ */
+stock GetMenuVoteInfo(param2, &winningVotes, &totalVotes)
+{
+	winningVotes = param2 & 0xFFFF;
+	totalVotes = param2 >> 16;
+}

@@ -69,7 +69,10 @@ public:
 	void OnMenuEnd(IBaseMenu *menu);
 	void OnMenuDestroy(IBaseMenu *menu);
 	void OnMenuVoteStart(IBaseMenu *menu);
-	void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item);
+	void OnMenuVoteEnd(IBaseMenu *menu,
+		unsigned int item, 
+		unsigned int winningVotes,
+		unsigned int totalVotes);
 	void OnMenuVoteCancel(IBaseMenu *menu);
 #if 0
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
@@ -288,9 +291,12 @@ void CMenuHandler::OnMenuVoteStart(IBaseMenu *menu)
 	DoAction(menu, MenuAction_VoteStart, 0, 0);
 }
 
-void CMenuHandler::OnMenuVoteEnd(IBaseMenu *menu, unsigned int item)
+void CMenuHandler::OnMenuVoteEnd(IBaseMenu *menu,
+								 unsigned int item,
+								 unsigned int winningVotes,
+								 unsigned int totalVotes)
 {
-	DoAction(menu, MenuAction_VoteEnd, item, 0);
+	DoAction(menu, MenuAction_VoteEnd, item, (totalVotes << 16) | (totalVotes & 0xFFFF));
 }
 
 void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)

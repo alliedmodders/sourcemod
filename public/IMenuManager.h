@@ -23,7 +23,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		3
+#define SMINTERFACE_MENUMANAGER_VERSION		4
 
 /**
  * @file IMenuManager.h
@@ -647,8 +647,13 @@ namespace SourceMod
 		 *
 		 * @param menu			Menu pointer.
 		 * @param item			Item position that was chosen by a majority.
+		 * @param winningVotes	Number of votes from the winning item.
+		 * @param totalVotes	Number of votes total.
 		 */
-		virtual void OnMenuVoteEnd(IBaseMenu *menu, unsigned int item)
+		virtual void OnMenuVoteEnd(IBaseMenu *menu,
+			unsigned int item, 
+			unsigned int winningVotes,
+			unsigned int totalVotes)
 		{
 		}
 
@@ -714,6 +719,14 @@ namespace SourceMod
 		virtual unsigned int GetInterfaceVersion()
 		{
 			return SMINTERFACE_MENUMANAGER_VERSION;
+		}
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < 4 || version > GetInterfaceVersion())
+			{
+				return false;
+			}
+			return true;
 		}
 	public:
 		/**
