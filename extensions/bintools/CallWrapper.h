@@ -49,6 +49,7 @@ public: //ICallWrapper
 	const PassInfo *GetReturnInfo();
 	unsigned int GetParamCount();
 	void Execute(void *vParamStack, void *retBuffer);
+	void Destroy();
 public:
 	inline void deleteThis() { delete this; }
 	void *m_Addrs[4];

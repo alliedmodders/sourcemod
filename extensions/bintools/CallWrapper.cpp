@@ -68,6 +68,11 @@ CallWrapper::~CallWrapper()
 	g_SPEngine->ExecFree(m_Addrs[ADDR_CODEBASE]);
 }
 
+void CallWrapper::Destroy()
+{
+	delete this;
+}
+
 CallConvention CallWrapper::GetCallConvention()
 {
 	return m_Cv;

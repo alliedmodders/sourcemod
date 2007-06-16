@@ -22,7 +22,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_BINTOOLS_NAME		"IBinTools"
-#define SMINTERFACE_BINTOOLS_VERSION	1
+#define SMINTERFACE_BINTOOLS_VERSION	2
 
 /**
  * @brief Function calling encoding utilities
@@ -105,13 +105,23 @@ namespace SourceMod
 
 		/**
 		 * @brief Returns the number of parameters.
+		 *
+		 * @return				Number of parameters.
 		 */
 		virtual unsigned int GetParamCount() =0;
 
 		/**
 		 * @brief Execute the contained function.
+		 *
+		 * @param vParamStack	A blob of memory containing stack data.
+		 * @param retBuffer		Buffer to store return value.
 		 */
 		virtual void Execute(void *vParamStack, void *retBuffer) =0;
+
+		/**
+		 * @brief Destroys all resources used by this object.
+		 */
+		virtual void Destroy() =0;
 	};
 
 	/**
