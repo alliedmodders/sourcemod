@@ -173,10 +173,89 @@ static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params
 	return engine->IndexOfEdict(pEdict);
 }
 
+static cell_t IgnitePlayer(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[4];
+		InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("Ignite", ValveCall_Player, NULL, pass, 4, &pCall))
+		{
+			return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	DECODE_VALVE_PARAM(4, vparams, 2);
+	DECODE_VALVE_PARAM(5, vparams, 3);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
+static cell_t ExtinguishPlayer(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		if (!CreateBaseCall("Extinguish", ValveCall_Player, NULL, NULL, 0, &pCall))
+		{
+			return pContext->ThrowNativeError("\"Extinguish\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"Extinguish\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
+static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("Teleport", ValveCall_Player, NULL, pass, 3, &pCall))
+		{
+			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"Teleport\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	DECODE_VALVE_PARAM(4, vparams, 2);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
-	{"RemovePlayerItem",	RemovePlayerItem},
+	{"ExtinguishPlayer",	ExtinguishPlayer},
 	{"GivePlayerItem",		GiveNamedItem},
 	{"GetPlayerWeaponSlot",	GetPlayerWeaponSlot},
+	{"IgnitePlayer",		IgnitePlayer},
+	{"RemovePlayerItem",	RemovePlayerItem},
+	{"TeleportPlayer",		TeleportPlayer},
 	{NULL,					NULL},
 };

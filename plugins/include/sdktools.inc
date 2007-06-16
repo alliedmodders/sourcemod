@@ -50,6 +50,7 @@ enum SDKType
 	SDKType_Float,			/**< Float (any) */
 	SDKType_Edict,			/**< edict_t (always as pointer) */
 	SDKType_String,			/**< NULL-terminated string (always as pointer) */
+	SDKType_Bool,			/**< Boolean (any) */
 };
 
 enum SDKPassMethod
