@@ -27,7 +27,7 @@
 
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"GeoIP"
-#define SMEXT_CONF_DESCRIPTION	"NO IDEA WHAT THIS MODULE DOES" //:TODO:
+#define SMEXT_CONF_DESCRIPTION	"Geographical IP information"
 #define SMEXT_CONF_VERSION		SVN_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
@@ -45,5 +45,12 @@
  * NOTE: Uncomment to enable, comment to disable.
  */
 //#define SMEXT_CONF_METAMOD		
+
+/** Enable interfaces you want to use here by uncommenting lines */
+//#define SMEXT_ENABLE_FORWARDSYS
+//#define SMEXT_ENABLE_HANDLESYS
+//#define SMEXT_ENABLE_PLAYERHELPERS
+//#define SMEXT_ENABLE_DBMANAGER
+//#define SMEXT_ENABLE_GAMECONF
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

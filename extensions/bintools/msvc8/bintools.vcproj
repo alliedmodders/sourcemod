@@ -200,6 +200,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{C06F7BFF-18EE-4994-8572-D6383011354B}"
 			>
+			<File
+				RelativePath="..\version.rc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="BinTools"
