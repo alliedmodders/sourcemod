@@ -9,7 +9,7 @@ SOURCEMM = ../../../../sourcemm
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = sdktools.ext
+PROJECT = sdktools
 
 #Uncomment for SourceMM-enabled extensions
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
