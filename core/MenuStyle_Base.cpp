@@ -598,6 +598,11 @@ void CBaseMenu::Cancel()
 		return;
 	}
 
+	if (m_pVoteHandler && m_pVoteHandler->IsVoteInProgress())
+	{
+		m_pVoteHandler->CancelVoting();
+	}
+
 	m_bCancelling = true;
 	Cancel_Finally();
 	m_bCancelling = false;
