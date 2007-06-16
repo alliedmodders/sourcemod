@@ -145,9 +145,9 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			cell_t *addr;
 			pContext->LocalToPhysAddr(param, &addr);
 
-			addr[0] = v->x;
-			addr[1] = v->y;
-			addr[2] = v->z;
+			addr[0] = sp_ftoc(v->x);
+			addr[1] = sp_ftoc(v->y);
+			addr[2] = sp_ftoc(v->z);
 
 			return Data_Okay;
 		}
@@ -165,9 +165,9 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			cell_t *addr;
 			pContext->LocalToPhysAddr(param, &addr);
 
-			addr[0] = q->x;
-			addr[1] = q->y;
-			addr[2] = q->z;
+			addr[0] = sp_ftoc(q->x);
+			addr[1] = sp_ftoc(q->y);
+			addr[2] = sp_ftoc(q->z);
 
 			return Data_Okay;
 		}
@@ -380,7 +380,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				pContext->ThrowNativeError("Entity index %d is not a valid client", param);
 				return Data_Fail;
 			}
-			CBaseEntity *pEntity;
+			CBaseEntity *pEntity = NULL;
 			if (pEdict)
 			{
 				IServerUnknown *pUnknown = pEdict->GetUnknown();
@@ -395,8 +395,6 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					pContext->ThrowNativeError("Entity %d is not a CBaseEntity");
 					return Data_Fail;
 				}
-			} else {
-				pEdict = NULL;
 			}
 
 			CBaseEntity **ebuf = (CBaseEntity **)buffer;
@@ -450,7 +448,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					return Data_Fail;
 				}
 			}
-			CBaseEntity *pEntity;
+			CBaseEntity *pEntity = NULL;
 			if (pEdict)
 			{
 				IServerUnknown *pUnknown = pEdict->GetUnknown();
@@ -465,8 +463,6 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					pContext->ThrowNativeError("Entity %d is not a CBaseEntity");
 					return Data_Fail;
 				}
-			} else {
-				pEdict = NULL;
 			}
 
 			CBaseEntity **ebuf = (CBaseEntity **)buffer;
