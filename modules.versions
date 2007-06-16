@@ -32,3 +32,8 @@ out = svn_version.h
 folder = sourcepawn/compiler
 in = svn_version.tpl
 out = svn_version.h
+
+[bintools]
+folder = extensions/bintools
+in = svn_version.tpl
+out = svn_version.h
