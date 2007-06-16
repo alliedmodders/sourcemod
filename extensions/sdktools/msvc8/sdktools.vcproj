@@ -62,6 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="vstdlib.lib tier0.lib tier1.lib"
 				OutputFile="$(OutDir)\sdktools.ext.dll"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
@@ -184,6 +185,18 @@
 				RelativePath="..\extension.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\vcallbuilder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vcaller.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vdecoder.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -192,6 +205,14 @@
 			>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vcallbuilder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vdecoder.h"
 				>
 			</File>
 		</Filter>

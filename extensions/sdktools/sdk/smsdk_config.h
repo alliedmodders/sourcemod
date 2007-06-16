@@ -26,7 +26,7 @@
 
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"SDK Tools"
-#define SMEXT_CONF_DESCRIPTION	"Sample extension to help developers" /* :TODO: Describe this, heh */
+#define SMEXT_CONF_DESCRIPTION	"Source SDK Tools"
 #define SMEXT_CONF_VERSION		"0.0.0.0"
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
@@ -44,5 +44,13 @@
  * NOTE: Uncomment to enable, comment to disable.
  */
 #define SMEXT_CONF_METAMOD		
+
+/** Enable interfaces you want to use here by uncommenting lines */
+//#define SMEXT_ENABLE_FORWARDSYS
+#define SMEXT_ENABLE_HANDLESYS
+#define SMEXT_ENABLE_PLAYERHELPERS
+//#define SMEXT_ENABLE_DBMANAGER
+#define SMEXT_ENABLE_GAMECONF
+#define SMEXT_ENABLE_MEMUTILS
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

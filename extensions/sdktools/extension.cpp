@@ -22,6 +22,7 @@
  */
 
 #include "extension.h"
+#include "vcallbuilder.h"
 
 /**
  * @file extension.cpp
@@ -31,17 +32,40 @@
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
 IBinTools *g_pBinTools = NULL;
-IPlayerManager *g_pPlayers = NULL;
+IGameConfig *g_pGameConf = NULL;
+HandleType_t g_CallHandle = 0;
 
 SMEXT_LINK(&g_SdkTools);
 
+extern sp_nativeinfo_t g_CallNatives[];
+
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	SM_GET_IFACE(PLAYERMANAGER, g_pPlayers);
+	sharesys->AddDependency(myself, "bintools.ext", true, true);
+	sharesys->AddNatives(myself, g_CallNatives);
 
-	g_pShareSys->AddDependency(myself, "bintools.ext", true, true);
+	if (!gameconfs->LoadGameConfigFile("sdktools.games", &g_pGameConf, error, maxlength))
+	{
+		return false;
+	}
+
+	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
 	return true;
+}
+
+void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
+{
+	if (type == g_CallHandle)
+	{
+		ValveCall *v = (ValveCall *)object;
+		delete v;
+	}
+}
+
+void SDKTools::SDK_OnUnload()
+{
+	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
