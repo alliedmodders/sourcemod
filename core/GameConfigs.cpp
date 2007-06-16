@@ -287,9 +287,9 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			void *addrInBase = NULL;
 			if (strcmp(s_TempSig.library, "server") == 0)
 			{
-				addrInBase = g_SMAPI->serverFactory(false);
+				addrInBase = (void *)g_SMAPI->serverFactory(false);
 			} else if (strcmp(s_TempSig.library, "engine") == 0) {
-				addrInBase = g_SMAPI->engineFactory(false);
+				addrInBase = (void *)g_SMAPI->engineFactory(false);
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
@@ -299,7 +299,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 					m_pFile);
 			} else {
 #if defined PLATFORM_LINUX
-				if (s_TempSig.sig_lin[0] == '@')
+				if (s_TempSig.sig[0] == '@')
 				{
 					Dl_info info;
 					/* GNU only: returns 0 on error, inconsistent! >:[ */
@@ -308,7 +308,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 						void *handle = dlopen(info.dli_fname, RTLD_NOW);
 						if (handle)
 						{
-							final_addr = dlsym(handle, &s_TempSig.sig_lin[1]);
+							final_addr = dlsym(handle, &s_TempSig.sig[1]);
 							dlclose(handle);
 						} else {
 							g_Logger.LogError("[SM] Unable to load library \"%s\" (gameconf \"%s\")",
@@ -323,7 +323,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 					if (!final_addr)
 					{
 						g_Logger.LogError("[SM] Unable to find named symbol (symbol \"%s\") (library \"%s\") (gameconf \"%s\")",
-							&s_TempSig.sig_lin[1],
+							&s_TempSig.sig[1],
 							s_TempSig.library,
 							m_pFile);
 					}
