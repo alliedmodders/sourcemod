@@ -197,6 +197,10 @@
 				RelativePath="..\vdecoder.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\vnatives.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -213,6 +217,10 @@
 			</File>
 			<File
 				RelativePath="..\vdecoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vnatives.h"
 				>
 			</File>
 		</Filter>

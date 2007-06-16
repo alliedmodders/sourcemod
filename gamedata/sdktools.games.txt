@@ -14,6 +14,16 @@
 				"windows"	"329"
 				"linux"		"330"
 			}
+			"RemovePlayerItem"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"224"
+				"linux"		"225"
+			}
 		}
 	}
 }

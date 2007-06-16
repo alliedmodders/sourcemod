@@ -23,6 +23,7 @@
 
 #include "extension.h"
 #include "vcallbuilder.h"
+#include "vnatives.h"
 
 /**
  * @file extension.cpp
@@ -43,6 +44,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_CallNatives);
+	sharesys->AddNatives(myself, g_Natives);
 
 	if (!gameconfs->LoadGameConfigFile("sdktools.games", &g_pGameConf, error, maxlength))
 	{
@@ -65,6 +67,15 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 
 void SDKTools::SDK_OnUnload()
 {
+	List<ValveCall *>::iterator iter;
+	for (iter = g_RegCalls.begin();
+		 iter != g_RegCalls.end();
+		 iter++)
+	{
+		delete (*iter);
+	}
+	g_RegCalls.clear();
+
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
 

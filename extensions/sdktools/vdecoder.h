@@ -21,6 +21,7 @@ enum ValveType
 	Valve_Float,			/**< Float */
 	Valve_Edict,			/**< Edict */
 	Valve_String,			/**< String */
+	Valve_Bool,				/**< Boolean */
 };
 
 enum DataStatus
@@ -35,6 +36,31 @@ enum DataStatus
 #define VDECODE_FLAG_BYREF			(1<<3)		/**< Floats/ints by reference */
 
 #define VENCODE_FLAG_COPYBACK		(1<<0)		/**< Copy back data */
+
+#define PASSFLAG_ASPOINTER			(1<<30)		/**< Not an actual passflag, used internally */
+
+/**
+ * @brief Valve pre-defined calling types
+ */
+enum ValveCallType
+{
+	ValveCall_Static,	/**< Static call */
+	ValveCall_Entity,	/**< Thiscall (CBaseEntity implicit first parameter) */
+	ValveCall_Player,	/**< Thiscall (CBasePlayer implicit first parameter) */
+};
+
+/**
+ * @brief Valve parameter info
+ */
+struct ValvePassInfo
+{
+	ValveType vtype;		/**< IN: Valve type */
+	unsigned int decflags;	/**< IN: VDECODE_FLAG_* */
+	unsigned int encflags;	/**< IN: VENCODE_FLAG_* */
+	PassType type;			/**< IN: Pass information */
+	unsigned int flags;		/**< IN: Pass flags */
+	size_t offset;			/**< OUT: stack offset */
+};
 
 /**
  * @brief Converts a valve parameter to a bintools parameter.
@@ -59,16 +85,12 @@ size_t ValveParamToBinParam(ValveType type,
  *
  * @param pContext		Plugin context.
  * @param param			Parameter value from params array.
- * @param type			Valve type.
- * @param pass			Pass info from bin tools.
  * @param buffer		Buffer space in the virutal stack.
  * @return				True on success, false otherwise.
  */
 DataStatus DecodeValveParam(IPluginContext *pContext,
 					  cell_t param,
-					  ValveType type,
-					  unsigned int vflags,
-					  PassType pass,
+					  const ValvePassInfo *vdata,
 					  void *buffer);
 
 /**
@@ -79,15 +101,12 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
  *
  * @param pContext		Plugin context.
  * @param param			Parameter value from params array.
- * @param type			Valve type.
- * @param pass			Pass info from bin tools.
  * @param buffer		Buffer space in the virutal stack.
  * @return				True on success, false otherwise.
  */
 DataStatus EncodeValveParam(IPluginContext *pContext,
 					  cell_t param,
-					  ValveType type,
-					  PassType pass,
+					  const ValvePassInfo *vdata,
 					  const void *buffer);
 
 #endif //_INCLUDE_SOURCEMOD_VDECODER_H_

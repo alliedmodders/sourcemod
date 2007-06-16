@@ -68,12 +68,10 @@ size_t ValveParamToBinParam(ValveType type,
 		}
 	case Valve_CBaseEntity:
 	case Valve_CBasePlayer:
-	case Valve_POD:
 	case Valve_Edict:
 	case Valve_String:
 		{
-			if (pass != PassType_Basic
-				|| (info->flags & PASSFLAG_BYREF))
+			if (pass != PassType_Basic || (info->flags & PASSFLAG_BYREF))
 			{
 				return 0;
 			}
@@ -82,12 +80,44 @@ size_t ValveParamToBinParam(ValveType type,
 			info->size = sizeof(void *);
 			return sizeof(void *);
 		}
+	case Valve_POD:
+		{
+			info->type = PassType_Basic;
+			info->flags = flags;
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				info->size = sizeof(int *);
+				return sizeof(int *) + sizeof(int);
+			} else {
+				info->size = sizeof(int);
+				return sizeof(int);
+			}
+		}
+	case Valve_Bool:
+		{
+			info->type = PassType_Basic;
+			info->flags = flags;
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				info->size = sizeof(bool *);
+				return sizeof(bool *) + sizeof(bool);
+			} else {
+				info->size = sizeof(bool);
+				return sizeof(bool);
+			}
+		}
 	case Valve_Float:
 		{
 			info->type = PassType_Float;
 			info->flags = flags;
-			info->size = sizeof(float);
-			return sizeof(float);
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				info->size = sizeof(float *);
+				return sizeof(float *) + sizeof(float);
+			} else {
+				info->size = sizeof(float);
+				return sizeof(float);
+			}
 		}
 	}
 
@@ -96,20 +126,19 @@ size_t ValveParamToBinParam(ValveType type,
 
 DataStatus EncodeValveParam(IPluginContext *pContext,
 							cell_t param, 
-							ValveType type, 
-							PassType pass, 
+							const ValvePassInfo *data,
 							const void *buffer)
 {
-	switch (type)
+	switch (data->vtype)
 	{
 	case Valve_Vector:
 		{
 			Vector *v = NULL;
 
-			if (pass == PassType_Basic)
+			if (data->type == PassType_Basic)
 			{
 				v = *(Vector **)((unsigned char *)buffer + sizeof(Vector *));
-			} else if (pass == PassType_Object) {
+			} else if (data->type == PassType_Object) {
 				v = (Vector *)buffer;
 			}
 
@@ -126,10 +155,10 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 		{
 			QAngle *q = NULL;
 
-			if (pass == PassType_Basic)
+			if (data->type == PassType_Basic)
 			{
 				q = *(QAngle **)((unsigned char *)buffer + sizeof(QAngle *));
-			} else if (pass == PassType_Object) {
+			} else if (data->type == PassType_Object) {
 				q = (QAngle *)buffer;
 			}
 
@@ -180,7 +209,26 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			cell_t *addr;
 			pContext->LocalToPhysAddr(param, &addr);
 
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				buffer = (char *)buffer + sizeof(void *);
+			}
+
 			*addr = *(cell_t *)buffer;
+
+			return Data_Okay;
+		}
+	case Valve_Bool:
+		{
+			cell_t *addr;
+			pContext->LocalToPhysAddr(param, &addr);
+
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				buffer = (char *)buffer + sizeof(bool *);
+			}
+
+			*addr = *(bool *)buffer ? 1 : 0;
 
 			return Data_Okay;
 		}
@@ -191,12 +239,10 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 DataStatus DecodeValveParam(IPluginContext *pContext,
 					  cell_t param,
-					  ValveType vtype,
-					  unsigned int vflags,
-					  PassType type,
+					  const ValvePassInfo *data,
 					  void *buffer)
 {
-	switch (vtype)
+	switch (data->vtype)
 	{
 	case Valve_Vector:
 		{
@@ -205,7 +251,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			err = pContext->LocalToPhysAddr(param, &addr);
 
 			unsigned char *mem = (unsigned char *)buffer;
-			if (type == PassType_Basic)
+			if (data->type == PassType_Basic)
 			{
 				/* Store the object in the next N bytes, and store
 				 * a pointer to that object right beforehand.
@@ -214,7 +260,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 
 				if (addr == pContext->GetNullRef(SP_NULL_VECTOR))
 				{
-					if (vflags & VDECODE_FLAG_ALLOWNULL)
+					if (data->decflags & VDECODE_FLAG_ALLOWNULL)
 					{
 						*realPtr = NULL;
 						return Data_Okay;
@@ -252,7 +298,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			err = pContext->LocalToPhysAddr(param, &addr);
 
 			unsigned char *mem = (unsigned char *)buffer;
-			if (type == PassType_Basic)
+			if (data->type == PassType_Basic)
 			{
 				/* Store the object in the next N bytes, and store
 				 * a pointer to that object right beforehand.
@@ -261,7 +307,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 
 				if (addr == pContext->GetNullRef(SP_NULL_VECTOR))
 				{
-					if (!(vflags & VDECODE_FLAG_ALLOWNULL))
+					if (!(data->decflags & VDECODE_FLAG_ALLOWNULL))
 					{
 						pContext->ThrowNativeError("NULL not allowed");
 						return Data_Fail;
@@ -295,7 +341,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_CBasePlayer:
 		{
 			edict_t *pEdict;
-			if (vflags & VDECODE_FLAG_BYREF)
+			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
 				cell_t *addr;
 				pContext->LocalToPhysAddr(param, &addr);
@@ -304,7 +350,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (param >= 1 && param <= playerhelpers->GetMaxClients())
 			{
 				IGamePlayer *player = playerhelpers->GetGamePlayer(param);
-				if ((vflags & VDECODE_FLAG_ALLOWNOTINGAME)
+				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
 					&& !player->IsConnected())
 				{
 					pContext->ThrowNativeError("Client %d is not connected", param);
@@ -315,7 +361,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				}
 				pEdict = player->GetEdict();
 			} else if (param == -1) {
-				if (vflags & VDECODE_FLAG_ALLOWNULL)
+				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
 				{
 					pEdict = NULL;
 				} else {
@@ -323,7 +369,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					return Data_Fail;
 				}
 			} else if (param == 0) {
-				if (vflags & VDECODE_FLAG_ALLOWWORLD)
+				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
 					pEdict = engine->PEntityOfEntIndex(0);
 				} else {
@@ -361,7 +407,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_CBaseEntity:
 		{
 			edict_t *pEdict;
-			if (vflags & VDECODE_FLAG_BYREF)
+			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
 				cell_t *addr;
 				pContext->LocalToPhysAddr(param, &addr);
@@ -370,7 +416,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (param >= 1 && param <= playerhelpers->GetMaxClients())
 			{
 				IGamePlayer *player = playerhelpers->GetGamePlayer(param);
-				if ((vflags & VDECODE_FLAG_ALLOWNOTINGAME)
+				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
 					&& !player->IsConnected())
 				{
 					pContext->ThrowNativeError("Client %d is not connected", param);
@@ -381,7 +427,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				}
 				pEdict = player->GetEdict();
 			} else if (param == -1) {
-				if (vflags & VDECODE_FLAG_ALLOWNULL)
+				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
 				{
 					pEdict = NULL;
 				} else {
@@ -389,7 +435,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					return Data_Fail;
 				}
 			} else if (param == 0) {
-				if (vflags & VDECODE_FLAG_ALLOWWORLD)
+				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
 					pEdict = engine->PEntityOfEntIndex(0);
 				} else {
@@ -431,7 +477,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_Edict:
 		{
 			edict_t *pEdict;
-			if (vflags & VDECODE_FLAG_BYREF)
+			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
 				cell_t *addr;
 				pContext->LocalToPhysAddr(param, &addr);
@@ -440,7 +486,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (param >= 1 && param <= playerhelpers->GetMaxClients())
 			{
 				IGamePlayer *player = playerhelpers->GetGamePlayer(param);
-				if ((vflags & VDECODE_FLAG_ALLOWNOTINGAME)
+				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
 					&& !player->IsConnected())
 				{
 					pContext->ThrowNativeError("Client %d is not connected", param);
@@ -451,7 +497,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				}
 				pEdict = player->GetEdict();
 			} else if (param == -1) {
-				if (vflags & VDECODE_FLAG_ALLOWNULL)
+				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
 				{
 					pEdict = NULL;
 				} else {
@@ -459,7 +505,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					return Data_Fail;
 				}
 			} else if (param == 0) {
-				if (vflags & VDECODE_FLAG_ALLOWWORLD)
+				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
 					pEdict = engine->PEntityOfEntIndex(0);
 				} else {
@@ -483,13 +529,34 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_POD:
 	case Valve_Float:
 		{
-			if (vflags & VDECODE_FLAG_BYREF)
+			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
 				cell_t *addr;
 				pContext->LocalToPhysAddr(param, &addr);
 				param = *addr;
 			}
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				*(void **)buffer = (char *)buffer + sizeof(void *);
+				buffer = *(void **)buffer;
+			}
 			*(cell_t *)buffer = param;
+			return Data_Okay;
+		}
+	case Valve_Bool:
+		{
+			if (data->decflags & VDECODE_FLAG_BYREF)
+			{
+				cell_t *addr;
+				pContext->LocalToPhysAddr(param, &addr);
+				param = *addr;
+			}
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				*(bool **)buffer = (bool *)((char *)buffer + sizeof(bool *));
+				buffer = *(bool **)buffer;
+			}
+			*(bool *)buffer = param ? true : false;
 			return Data_Okay;
 		}
 	case Valve_String:

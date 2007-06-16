@@ -9,29 +9,6 @@ using namespace SourceMod;
 using namespace SourceHook;
 
 /**
- * @brief Valve pre-defined calling types
- */
-enum ValveCallType
-{
-	ValveCall_Static,	/**< Static call */
-	ValveCall_Entity,	/**< Thiscall (CBaseEntity implicit first parameter) */
-	ValveCall_Player,	/**< Thiscall (CBasePlayer implicit first parameter) */
-};
-
-/**
- * @brief Valve parameter info
- */
-struct ValvePassInfo
-{
-	ValveType vtype;		/**< IN: Valve type */
-	unsigned int decflags;	/**< IN: VDECODE_FLAG_* */
-	unsigned int encflags;	/**< IN: VENCODE_FLAG_* */
-	PassType type;			/**< IN: Pass information */
-	unsigned int flags;		/**< IN: Pass flags */
-	size_t offset;			/**< OUT: stack offset */
-};
-
-/**
  * @brief Info necessary to call a Valve function
  */
 struct ValveCall

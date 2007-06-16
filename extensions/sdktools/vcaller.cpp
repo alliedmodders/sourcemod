@@ -29,9 +29,10 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 	{
 		type = PassType_Basic;
 		if (vtype == Valve_POD
-			|| vtype == Valve_Float)
+			|| vtype == Valve_Float
+			|| vtype == Valve_Bool)
 		{
-			flags = PASSFLAG_BYREF;
+			flags = PASSFLAG_ASPOINTER;
 		} else {
 			flags = PASSFLAG_BYVAL;
 		}
@@ -169,7 +170,7 @@ static cell_t PrepSDKCall_AddParameter(IPluginContext *pContext, const cell_t *p
 	ValvePassInfo *info = &s_params[s_numparams++];
 	info->vtype = (ValveType)params[1];
 	DecodePassMethod(info->vtype, (SDKPassMethod)params[2], info->type, info->flags);
-	info->decflags = params[3];
+	info->decflags = params[3] | VDECODE_FLAG_BYREF;
 	info->encflags = params[4];
 
 	return 1;
@@ -227,9 +228,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 		}
 		if (DecodeValveParam(pContext, 
 			params[startparam], 
-			vc->thisinfo->vtype, 
-			vc->thisinfo->decflags | VDECODE_FLAG_BYREF,
-			vc->thisinfo->type,
+			vc->thisinfo,
 			ptr) == Data_Fail)
 		{
 			vc->stk_put(ptr);
@@ -264,9 +263,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 		}
 		if (DecodeValveParam(pContext,
 			params[p],
-			vc->vparams[i].vtype,
-			vc->vparams[i].decflags | VDECODE_FLAG_BYREF,
-			vc->vparams[i].type,
+			&(vc->vparams[i]),
 			ptr + vc->vparams[i].offset) == Data_Fail)
 		{
 			vc->stk_put(ptr);
@@ -290,8 +287,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			{
 				if (EncodeValveParam(pContext, 
 					startparam + i, 
-					vc->vparams[i].vtype, 
-					vc->vparams[i].type, 
+					&vc->vparams[i],
 					ptr + vc->vparams[i].offset) == Data_Fail)
 				{
 					vc->stk_put(ptr);
@@ -325,7 +321,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			{
 				return pContext->ThrowNativeError("Expected argument (2) for Float[3] storage");
 			}
-			if (EncodeValveParam(pContext, params[retparam], vc->retinfo->vtype, vc->retinfo->type, vc->retbuf)
+			if (EncodeValveParam(pContext, params[retparam], vc->retinfo, vc->retbuf)
 				== Data_Fail)
 			{
 				return 0;
@@ -351,6 +347,13 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				return -1;
 			}
 			return engine->IndexOfEdict(pEdict);
+		} else if (vc->retinfo->vtype == Valve_Bool) {
+			bool *addr = (bool  *)vc->retbuf;
+			if (vc->retinfo->flags & PASSFLAG_BYREF)
+			{
+				addr = *(bool **)addr;
+			}
+			return *addr ? 1 : 0;
 		} else {
 			cell_t *addr = (cell_t *)vc->retbuf;
 			if (vc->retinfo->flags & PASSFLAG_BYREF)
