@@ -251,6 +251,8 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	pForward->m_numparams = num_params;
 	pForward->m_errstate = SP_ERROR_NONE;
 
+	pForward->m_functions.clear();
+
 	return pForward;
 }
 
