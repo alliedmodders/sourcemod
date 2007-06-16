@@ -111,6 +111,7 @@ void VoteMenuHandler::EndVoting()
 	unsigned int chosen = 0;
 	unsigned int highest = 0;
 	unsigned int dup_count = 0;
+	unsigned int total = m_Votes.size() ? m_Votes[0] : 0;
 
 	/* If we got zero votes, take a shortcut. */
 	if (m_NumVotes == 0)
@@ -126,7 +127,6 @@ void VoteMenuHandler::EndVoting()
 	 */
 	unsigned int dup_array[256];
 
-	unsigned int total = m_Votes[0];
 	for (size_t i=1; i<m_Items; i++)
 	{
 		if (m_Votes[i] > m_Votes[highest])
