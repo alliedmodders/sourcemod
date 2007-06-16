@@ -35,6 +35,8 @@ CallWrapper::CallWrapper(CallConvention cv, const PassInfo *paramInfo, const Pas
 		{
 			m_Params[i].info = paramInfo[i];
 		}
+	} else {
+		m_Params = NULL;
 	}
 
 	if (retInfo)
