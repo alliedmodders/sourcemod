@@ -181,6 +181,8 @@ static cell_t EndPrepSDKCall(IPluginContext *pContext, const cell_t *params)
 	if (s_vtbl_index)
 	{
 		vc = CreateValveVCall(s_vtbl_index, s_vcalltype, s_has_return ? &s_return : NULL, s_params, s_numparams);
+	} else if (s_call_addr) {
+		vc = CreateValveCall(s_call_addr, s_vcalltype, s_has_return ? &s_return : NULL, s_params, s_numparams);
 	}
 
 	if (!vc)

@@ -55,4 +55,10 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 							const ValvePassInfo *params,
 							unsigned int numParams);
 
+ValveCall *CreateValveCall(void *addr,
+							ValveCallType vcalltype,
+							const ValvePassInfo *retInfo,
+							const ValvePassInfo *params,
+							unsigned int numParams);
+
 #endif //_INCLUDE_SOURCEMOD_VALVE_CALLER_H_

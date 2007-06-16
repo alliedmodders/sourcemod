@@ -255,8 +255,8 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (type == PassType_Basic)
 			{
 				/* Store the object in the next N bytes, and store
-				* a pointer to that object right beforehand.
-				*/
+				 * a pointer to that object right beforehand.
+				 */
 				QAngle **realPtr = (QAngle **)buffer;
 
 				if (addr == pContext->GetNullRef(SP_NULL_VECTOR))
@@ -282,9 +282,9 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			}
 
 			/* Use placement new to initialize the object cleanly
-			* This has no destructor so we don't need to do 
-			* DestroyValveParam() or something :]
-			*/
+			 * This has no destructor so we don't need to do 
+			 * DestroyValveParam() or something :]
+			 */
 			QAngle *v = new (mem) QAngle(
 				sp_ctof(addr[0]),
 				sp_ctof(addr[1]),
