@@ -18,7 +18,10 @@ ValveCall::~ValveCall()
 		delete [] ptr;
 		stk.pop();
 	}
-	call->Destroy();
+	if (call)
+	{
+		call->Destroy();
+	}
 	delete [] retbuf;
 	delete [] vparams;
 }
