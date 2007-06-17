@@ -27,7 +27,7 @@ size_t ValveParamToBinParam(ValveType type,
 			size_t mySize = sizeof(Vector *);
 			if (pass == PassType_Basic)
 			{
-				if (info->flags & PASSFLAG_BYREF)
+				if (flags & PASSFLAG_BYREF)
 				{
 					return 0;
 				}
@@ -49,7 +49,7 @@ size_t ValveParamToBinParam(ValveType type,
 			size_t mySize = sizeof(QAngle *);
 			if (pass == PassType_Basic)
 			{
-				if (info->flags & PASSFLAG_BYREF)
+				if (flags & PASSFLAG_BYREF)
 				{
 					return 0;
 				}
@@ -71,7 +71,7 @@ size_t ValveParamToBinParam(ValveType type,
 	case Valve_Edict:
 	case Valve_String:
 		{
-			if (pass != PassType_Basic || (info->flags & PASSFLAG_BYREF))
+			if (pass != PassType_Basic || (flags & PASSFLAG_BYREF))
 			{
 				return 0;
 			}
