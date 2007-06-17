@@ -1,6 +1,15 @@
 #include "vcallbuilder.h"
 #include "extension.h"
 
+ValveCall::ValveCall()
+{
+	call = NULL;
+	vparams = NULL;
+	retinfo = NULL;
+	thisinfo = NULL;
+	retbuf = NULL;
+}
+
 ValveCall::~ValveCall()
 {
 	while (!stk.empty())

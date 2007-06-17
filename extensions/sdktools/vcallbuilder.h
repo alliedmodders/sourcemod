@@ -23,6 +23,7 @@ struct ValveCall
 
 	unsigned char *stk_get();
 	void stk_put(unsigned char *ptr);
+	ValveCall();
 	~ValveCall();
 };
 
