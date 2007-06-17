@@ -17,6 +17,9 @@
 #include "UserMessages.h"
 #include "GameConfigs.h"
 #include "PlayerManager.h"
+#if defined MENU_DEBUG
+#include "Logger.h"
+#endif
 
 extern const char *g_RadioNumTable[];
 CRadioStyle g_RadioMenuStyle;
@@ -120,6 +123,11 @@ void CRadioStyle::OnUserMessageSent(int msg_id)
 	for (unsigned int i=0; i<g_last_client_count; i++)
 	{
 		int client = g_last_clients[i];
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] CRadioStyle got ShowMenu (client %d) (bInMenu %d)",
+			client,
+			m_players[client].bInExternMenu);
+#endif
 		if (m_players[client].bInMenu)
 		{
 			_CancelClientMenu(client, true);
@@ -366,6 +374,12 @@ IMenuPanel *CRadioMenu::CreatePanel()
 
 bool CRadioMenu::Display(int client, unsigned int time)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
+		this,
+		client,
+		time);
+#endif
 	if (m_bCancelling)
 	{
 		return false;
@@ -376,6 +390,12 @@ bool CRadioMenu::Display(int client, unsigned int time)
 
 void CRadioMenu::VoteDisplay(int client, unsigned int maxTime)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CRadioMenu::VoteDisplay(%p) (client %d) (time %d)",
+		this,
+		client,
+		maxTime);
+#endif
 	if (m_bCancelling)
 	{
 		return;

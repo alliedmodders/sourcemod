@@ -19,6 +19,9 @@
 #include "MenuStyle_Radio.h"
 #include "HandleSys.h"
 #include "PluginSys.h"
+#if defined MENU_DEBUG
+#include "Logger.h"
+#endif
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -306,6 +309,14 @@ void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)
 
 void CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CMenuHandler::DoAction() (menu %p/%08x) (action %d) (param1 %d) (param2 %d)",
+		menu,
+		menu->GetHandle(),
+		action,
+		param1,
+		param2);
+#endif
 	m_pBasic->PushCell(menu->GetHandle());
 	m_pBasic->PushCell((cell_t)action);
 	m_pBasic->PushCell(param1);

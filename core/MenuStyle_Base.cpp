@@ -18,6 +18,9 @@
 #include "PlayerManager.h"
 #include "MenuManager.h"
 #include "HandleSys.h"
+#if defined MENU_DEBUG
+#include "Logger.h"
+#endif
 
 BaseMenuStyle::BaseMenuStyle() : m_WatchList(256), m_hHandle(BAD_HANDLE)
 {
@@ -36,16 +39,25 @@ Handle_t BaseMenuStyle::GetHandle()
 
 void BaseMenuStyle::AddClientToWatch(int client)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] AddClientToWatch(%d)", client);
+#endif
 	m_WatchList.push_back(client);
 }
 
 void BaseMenuStyle::RemoveClientFromWatch(int client)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] RemoveClientFromWatch(%d)", client);
+#endif
 	m_WatchList.remove(client);
 }
 
 void BaseMenuStyle::_CancelClientMenu(int client, bool bAutoIgnore/* =false */, MenuCancelReason reason/* =MenuCancel_Interrupt */)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] _CancelClientMenu() (client %d) (bAutoIgnore %d) (reason %d)", client, bAutoIgnore, reason);
+#endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	menu_states_t &states = player->states;
 
@@ -83,6 +95,9 @@ void BaseMenuStyle::_CancelClientMenu(int client, bool bAutoIgnore/* =false */, 
 
 void BaseMenuStyle::CancelMenu(CBaseMenu *menu)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CancelMenu() (menu %p)", menu);
+#endif
 	int maxClients = g_Players.GetMaxClients();
 	for (int i=1; i<=maxClients; i++)
 	{
@@ -100,6 +115,9 @@ void BaseMenuStyle::CancelMenu(CBaseMenu *menu)
 
 bool BaseMenuStyle::CancelClientMenu(int client, bool autoIgnore)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CancelClientMenu() (client %d) (bAutoIgnore %d)", client, autoIgnore);
+#endif
 	if (client < 1 || client > g_Players.MaxClients())
 	{
 		return false;
@@ -153,6 +171,9 @@ MenuSource BaseMenuStyle::GetClientMenu(int client, void **object)
 
 void BaseMenuStyle::OnClientDisconnected(int client)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] OnClientDisconnected(%d)", client);
+#endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	if (!player->bInMenu)
 	{
@@ -179,6 +200,13 @@ void BaseMenuStyle::ProcessWatchList()
 		do_lookup[total++] = (*iter);
 	}
 
+#if defined MENU_DEBUG
+	if (total)
+	{
+		g_Logger.LogMessage("[SM_MENU] ProcessWatchList() found %d clients", total);
+	}
+#endif
+
 	int client;
 	CBaseMenuPlayer *player;
 	float curTime = gpGlobals->curtime;
@@ -186,8 +214,19 @@ void BaseMenuStyle::ProcessWatchList()
 	{
 		client = do_lookup[i];
 		player = GetMenuPlayer(client);
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] ProcessWatchList() (client %d) (bInMenu %d) (menuHoldTime %d) (curTime %f) (menuStartTime %f)",
+			client,
+			player->bInMenu,
+			player->menuHoldTime,
+			curTime,
+			player->menuStartTime);
+#endif
 		if (!player->bInMenu || !player->menuHoldTime)
 		{
+#if defined MENU_DEBUG
+			g_Logger.LogMessage("[SM_MENU] ProcessWatchList() removing client %d", client);
+#endif
 			m_WatchList.remove(client);
 			continue;
 		}
@@ -200,6 +239,9 @@ void BaseMenuStyle::ProcessWatchList()
 
 void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] ClientPressedKey() (client %d) (key_press %d)", client, key_press);
+#endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 
 	/* First question: Are we in a menu? */
@@ -275,6 +317,13 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 
 bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] DoClientMenu() (client %d) (panel %p) (mh %p) (time %d)",
+		client,
+		menu,
+		mh,
+		time);
+#endif
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
 	{
@@ -327,18 +376,21 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 
 bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] DoClientMenu() (client %d) (menu %p) (mh %p) (time %d)",
+		client,
+		menu,
+		mh,
+		time);
+#endif
 	mh->OnMenuStart(menu);
-
-	if (!mh)
-	{
-		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
-		return false;
-	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
 	{
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Failed to display to client %d", client);
+#endif
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
 		mh->OnMenuEnd(menu);
 		return false;
@@ -347,6 +399,9 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	if (player->bAutoIgnore)
 	{
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Client %d is autoIgnoring", client);
+#endif
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
 		mh->OnMenuEnd(menu);
 		return false;
@@ -363,6 +418,9 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	menu_states_t &states = player->states;
 	if (player->bInMenu)
 	{
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Cancelling old menu to client %d", client);
+#endif
 		_CancelClientMenu(client, true);
 	}
 
@@ -375,6 +433,9 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	IMenuPanel *display = g_Menus.RenderMenu(client, states, ItemOrder_Ascending);
 	if (!display)
 	{
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Failed to render to client %d", client);
+#endif
 		player->bAutoIgnore = false;
 		player->bInMenu = false;
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
@@ -402,11 +463,18 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	/* We can be interrupted again! */
 	player->bAutoIgnore = false;
 
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] DoClientMenu() finished successfully (client %d)", client);
+#endif
+
 	return true;
 }
 
 bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] RedoClientMenu() (client %d) (order %d)", client, order);
+#endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	menu_states_t &states = player->states;
 
@@ -414,6 +482,9 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	IMenuPanel *display = g_Menus.RenderMenu(client, states, order);
 	if (!display)
 	{
+#if defined MENU_DEBUG
+		g_Logger.LogMessage("[SM_MENU] RedoClientMenu(): Failed to render menu");
+#endif
 		if (player->menuHoldTime)
 		{
 			RemoveClientFromWatch(client);
@@ -427,6 +498,10 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	display->DeleteThis();
 
 	player->bAutoIgnore = false;
+
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] RedoClientMenu(): Succeeded to client %d", client);
+#endif
 
 	return true;
 }
@@ -598,6 +673,14 @@ void CBaseMenu::Cancel()
 		return;
 	}
 
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CBaseMenu::Cancel(%p) (m_pVote %p) (inVote %d) (m_bShouldDelete %d)",
+		this,
+		m_pVoteHandler,
+		m_pVoteHandler ? m_pVoteHandler->IsVoteInProgress() : false,
+		m_bShouldDelete);
+#endif
+
 	if (m_pVoteHandler && m_pVoteHandler->IsVoteInProgress())
 	{
 		m_pVoteHandler->CancelVoting();
@@ -620,6 +703,14 @@ void CBaseMenu::Destroy(bool releaseHandle)
 	{
 		return;
 	}
+
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CBaseMenu::Destroy(%p) (release %d) (m_bCancelling %d) (m_bShouldDelete %d)",
+		this,
+		releaseHandle,
+		m_bCancelling,
+		m_bShouldDelete);
+#endif
 
 	/* Save the destruction hint about our handle */
 	m_bWillFreeHandle = releaseHandle;
@@ -659,6 +750,14 @@ bool CBaseMenu::BroadcastVote(int clients[],
 							  unsigned int maxTime,
 							  unsigned int flags)
 {
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("[SM_MENU] CBaseMenu::BroadcastVote(%p) (maxTime %d) (numClients %d) (m_pVote %p) (inVote %d)",
+		this,
+		maxTime,
+		numClients,
+		m_pVoteHandler,
+		m_pVoteHandler ? m_pVoteHandler->IsVoteInProgress() : false);
+#endif
 	if (!m_pVoteHandler)
 	{
 		m_pVoteHandler = g_Menus.CreateVoteWrapper(m_pHandler);
