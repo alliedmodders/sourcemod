@@ -109,6 +109,12 @@ inline datamap_t *CBaseEntity_GetDataDescMap(CBaseEntity *pEntity)
 	return VGetDataDescMap(pEntity, offset);
 }
 
+/* :TODO: Move this! */
+datamap_t *CHalfLife2::GetDataMap(CBaseEntity *pEntity)
+{
+	return CBaseEntity_GetDataDescMap(pEntity);
+}
+
 static cell_t GetMaxEntities(IPluginContext *pContext, const cell_t *params)
 {
 	return gpGlobals->maxEntities;

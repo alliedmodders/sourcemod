@@ -19,12 +19,10 @@
 #include <sh_tinyhash.h>
 #include "sm_trie.h"
 #include "sm_globals.h"
-#include <dt_send.h>
-#include <server_class.h>
-#include <datamap.h>
-#include <edict.h>
+#include <IGameHelpers.h>
 
 using namespace SourceHook;
+using namespace SourceMod;
 
 #define HUD_PRINTTALK		3
 #define HUD_PRINTCENTER		4
@@ -41,7 +39,9 @@ struct DataMapTrie
 	Trie *trie;
 };
 
-class CHalfLife2 : public SMGlobalClass
+class CHalfLife2 : 
+	public SMGlobalClass,
+	public IGameHelpers
 {
 public:
 	CHalfLife2();
@@ -50,8 +50,9 @@ public:
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	/*void OnSourceModAllShutdown();*/
-public:
+public: //IGameHelpers
 	SendProp *FindInSendTable(const char *classname, const char *offset);
+	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);

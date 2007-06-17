@@ -85,6 +85,7 @@ void CHalfLife2::OnSourceModStartup(bool late)
 void CHalfLife2::OnSourceModAllInitialized()
 {
 	m_MsgTextMsg = g_UserMsgs.GetMessageIndex("TextMsg");
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()

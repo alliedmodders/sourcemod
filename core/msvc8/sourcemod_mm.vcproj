@@ -473,6 +473,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\public\IGameHelpers.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\public\IHandleSys.h"
 				>
 			</File>
