@@ -42,6 +42,9 @@
 #if defined SMEXT_ENABLE_GAMECONF
 #include <IGameConfigs.h>
 #endif
+#if defined SMEXT_ENABLE_MEMUTILS
+#include <IMemoryUtils.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -207,6 +210,9 @@ extern IDBManager *dbi;
 #if defined SMEXT_ENABLE_GAMECONF
 extern IGameConfigManager *gameconfs;
 #endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_MEMUTILS
+extern IMemoryUtils *memutils;
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();

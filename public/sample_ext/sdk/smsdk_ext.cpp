@@ -48,6 +48,9 @@ IDBManager *dbi = NULL;					/**< DB Manager */
 #if defined SMEXT_ENABLE_GAMECONF
 IGameConfigManager *gameconfs = NULL;	/**< Game config manager */
 #endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_MEMUTILS
+IMemoryUtils *memutils = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -99,6 +102,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_GAMECONF
 	SM_GET_IFACE(GAMECONFIG, gameconfs);
+#endif
+#if defined SMEXT_ENABLE_MEMUTILS
+	SM_GET_IFACE(MEMORYUTILS, memutils);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
