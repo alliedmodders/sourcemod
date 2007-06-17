@@ -277,6 +277,11 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			m_ParseState = PSTATE_GAMEDEFS;
 			break;
 		}
+	case PSTATE_GAMEDEFS_SIGNATURES:
+		{
+			m_ParseState = PSTATE_GAMEDEFS;
+			break;
+		}
 	case PSTATE_GAMEDEFS_SIGNATURES_SIG:
 		{
 			if (s_TempSig.library[0] == '\0')
@@ -372,7 +377,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 
 				if (real_bytes < 1)
 				{
-					g_Logger.LogError("[SM] Invalid signature length of 1 (name \"%s\") (gameconf \"%s\")",
+					g_Logger.LogError("[SM] Invalid signature (name \"%s\") (gameconf \"%s\")",
 						m_offset,
 						m_pFile);
 				} else {
