@@ -394,7 +394,7 @@ void SourceModBase::GameFrame(bool simulating)
 		g_LastTime = curtime;
 	}
 
-	if (g_SimTicks.tickcount && (curtime - g_LastMenuTime >= 1.0f))
+	if (g_SimTicks.ticking && curtime - g_LastMenuTime >= 1.0f)
 	{
 		g_ValveMenuStyle.ProcessWatchList();
 		g_RadioMenuStyle.ProcessWatchList();
