@@ -564,6 +564,7 @@ void GameConfigManager::CloseGameConfigFile(IGameConfig *cfg)
 
 	if (pConfig->DecRefCount() == 0)
 	{
+		sm_trie_delete(m_pLookup, pConfig->m_pFile);
 		delete pConfig;
 	}
 }

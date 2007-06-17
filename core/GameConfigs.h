@@ -31,6 +31,7 @@ class CGameConfig :
 	public ITextListener_SMC,
 	public IGameConfig
 {
+	friend class GameConfigManager;
 public:
 	CGameConfig(const char *file);
 	~CGameConfig();
