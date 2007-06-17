@@ -186,6 +186,8 @@ static cell_t EndPrepSDKCall(IPluginContext *pContext, const cell_t *params)
 		vc = CreateValveCall(s_call_addr, s_vcalltype, s_has_return ? &s_return : NULL, s_params, s_numparams);
 	}
 
+	vc->thisinfo->decflags |= VDECODE_FLAG_BYREF;
+
 	if (!vc)
 	{
 		return BAD_HANDLE;
