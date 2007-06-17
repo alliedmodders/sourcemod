@@ -308,7 +308,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 				{
 					Dl_info info;
 					/* GNU only: returns 0 on error, inconsistent! >:[ */
-					if (dladdr(addrInBase, &info) == 0)
+					if (dladdr(addrInBase, &info) != 0)
 					{
 						void *handle = dlopen(info.dli_fname, RTLD_NOW);
 						if (handle)
