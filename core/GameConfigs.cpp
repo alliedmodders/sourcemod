@@ -390,6 +390,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 skip_find:
 #endif
 			sm_trie_insert(m_pSigs, m_offset, final_addr);
+			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 
 			break;
 		}
