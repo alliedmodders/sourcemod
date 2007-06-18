@@ -299,7 +299,7 @@ void CMenuHandler::OnMenuVoteEnd(IBaseMenu *menu,
 								 unsigned int winningVotes,
 								 unsigned int totalVotes)
 {
-	DoAction(menu, MenuAction_VoteEnd, item, (totalVotes << 16) | (totalVotes & 0xFFFF));
+	DoAction(menu, MenuAction_VoteEnd, item, (totalVotes << 16) | (winningVotes & 0xFFFF));
 }
 
 void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)
