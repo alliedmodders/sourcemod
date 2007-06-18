@@ -51,35 +51,59 @@ native GivePlayerItem(client, const String:item[], iSubType=0);
 native GetPlayerWeaponSlot(client, slot);
 
 /**
- * Ignites a player on fire.
+ * Ignites an entity on fire.
  *
- * @param client		Client index.
+ * @param entity		Entity index.
  * @param time			Number of seconds to set on fire.
  * @param npc			True to only affect NPCs.
  * @param size			Unknown.
  * @param level			Unknown.
  * @noreturn
- * @error				Invalid client or client not in game, or lack of mod support.
+ * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:level=false);
+native IgniteEntity(entity, Float:time, bool:npc=false, Float:size=0.0, bool:level=false);
 
 /**
  * Extinguishes a player that is on fire.
  *
- * @param client		Client index.
+ * @param entity		Entity index.
  * @noreturn
- * @error				Invalid client or client not in game, or lack of mod support.
+ * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native ExtinguishPlayer(client);
+native ExtinguishEntity(client);
 
 /**
- * Teleports a player.
+ * Teleports an entity.
  *
- * @param client		Client index.
+ * @param entity		Client index.
  * @param origin		New origin, or NULL_VECTOR for no change.
  * @param angles		New angles, or NULL_VECTOR for no change.
  * @param velocity		New velocity, or NULL_VECTOR for no change.
  * @noreturn
- * @error				Invalid client or client not in game, or lack of mod support.
+ * @error				Invalid entity or client not in game, or lack of mod support.
  */
-native TeleportPlayer(client, const Float:origin[3], const Float:angles[3], const Float:velocity[3]);
+native TeleportEntity(entity, const Float:origin[3], const Float:angles[3], const Float:velocity[3]);
+
+/**
+ * @deprecated
+ */
+stock IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:level=false)
+{
+	return IgniteEntity(client, time, npc, size, level);
+}
+
+/**
+ * @deprecated
+ */
+stock ExtinguishClient(client)
+{
+	return ExtinguishEntity(client);
+}
+
+/**
+ * @deprecated
+ */
+stock TeleportPlayer(client, const Float:origin[3], const Float:angles[3], const Float:velocity[3])
+{
+	return TeleportEntity(client, origin, angles, velocity);
+}

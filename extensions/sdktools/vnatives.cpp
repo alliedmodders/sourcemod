@@ -183,7 +183,7 @@ static cell_t IgnitePlayer(IPluginContext *pContext, const cell_t *params)
 		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("Ignite", ValveCall_Player, NULL, pass, 4, &pCall))
+		if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
 		} else if (!pCall) {
@@ -207,7 +207,7 @@ static cell_t ExtinguishPlayer(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		if (!CreateBaseCall("Extinguish", ValveCall_Player, NULL, NULL, 0, &pCall))
+		if (!CreateBaseCall("Extinguish", ValveCall_Entity, NULL, NULL, 0, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Extinguish\" not supported by this mod");
 		} else if (!pCall) {
@@ -231,7 +231,7 @@ static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
 		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("Teleport", ValveCall_Player, NULL, pass, 3, &pCall))
+		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, 3, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
 		} else if (!pCall) {
@@ -252,10 +252,14 @@ static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",	ExtinguishPlayer},
+	{"ExtinguishEntity",	ExtinguishPlayer},
 	{"GivePlayerItem",		GiveNamedItem},
 	{"GetPlayerWeaponSlot",	GetPlayerWeaponSlot},
 	{"IgnitePlayer",		IgnitePlayer},
+	{"IgniteEntity",		IgnitePlayer},
 	{"RemovePlayerItem",	RemovePlayerItem},
 	{"TeleportPlayer",		TeleportPlayer},
+	{"TeleportEntity",		TeleportPlayer},
 	{NULL,					NULL},
 };
+
