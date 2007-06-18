@@ -209,7 +209,7 @@ public Action:Command_Ban(client, args)
 	new userid = GetClientUserId(clients[0]);
 	GetClientName(clients[0], arg, sizeof(arg));
 	
-	if (time)
+	if (!time)
 	{
 		if (reason[0] == '\0')
 		{
