@@ -73,7 +73,7 @@ public Plugin:myinfo;
 forward OnPluginStart();
  
 /**
- *   Called before OnPluginStart, in case the plugin wants to check for load failure.
+ * Called before OnPluginStart, in case the plugin wants to check for load failure.
  * This is called even if the plugin type is "private."  Any natives from modules are 
  * not available at this point.  Thus, this forward should only be used for explicit 
  * pre-emptive things, such as adding dynamic natives, or setting certain types of load filters.
@@ -135,6 +135,11 @@ forward OnMapEnd();
  * @noreturn
  */
 forward OnConfigsExecuted();
+
+/**
+ * @deprecated Use OnConfigsExecuted() instead.
+ */
+forward OnServerCfg();
 
 /**
  * Returns the calling plugin's Handle.
