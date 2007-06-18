@@ -310,7 +310,7 @@ native Call_PushStringEx(String:value[], length, szflags, cpflags);
  * @return					SP_ERROR_NONE on success, any other integer on failure.
  * @error					Called before a call has been started.
  */
-native Call_Finish(&result=0);
+native Call_Finish(&any:result=0);
 
 /**
  * Cancels a call to a function or forward's call list.

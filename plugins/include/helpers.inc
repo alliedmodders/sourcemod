@@ -25,8 +25,9 @@
  * @param client		Client index which will be banned.
  * @param time			Minutes banned for (0 is permanent).
  * @param reason		Ban reason (may be empty if none exists).
+ * @return				Pl_Handled to block output, Pl_Stop to block output and action.
  */
-forward OnClientBanned(admin, client, time, const String:reason[]);
+forward Action:OnClientBanned(admin, client, time, const String:reason[]);
 
 /**
  * Provided by basecommands.sp when sm_addban or sm_banip is called.
@@ -35,19 +36,22 @@ forward OnClientBanned(admin, client, time, const String:reason[]);
  * @param info			User info (either steamid or ip).
  * @param time			Minutes banned for (0 is permanent).
  * @param reason		Ban reason (may be empty if none exists).
+ * @return				Pl_Handled to block output, Pl_Stop to block output and action.
  */
-forward OnBanAdded(admin, const String:info[], time, const String:reason[]);
+forward Action:OnBanAdded(admin, const String:info[], time, const String:reason[]);
 
 /**
  * Provided by basecommands.sp when sm_unban or sm_unbanip is called.
  *
  * @param admin			Admin client index (0 for server).
  * @param info 			User info (either steamid or ip).
+ * @return				Pl_Handled to block output, Pl_Stop to block output and action.
  */
-forward OnBanRemoved(admin, const String:info[]);
+forward Action:OnBanRemoved(admin, const String:info[]);
 
 /**
- * Formats a user's info as log text.
+ * Formats a user's info as log text.  This is usually not needed because
+ * %L can be used to auto-format client information into a string.
  *
  * @param client		Client index.
  * @param buffer		Buffer for text.
@@ -93,6 +97,7 @@ stock Handle:FindPluginByFile(const String:filename[])
 		GetPluginFilename(pl, buffer, sizeof(buffer));
 		if (StrCompare(buffer, filename) == 0)
 		{
+			CloseHandle(iter);
 			return pl;
 		}
 	}

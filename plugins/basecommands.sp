@@ -52,9 +52,9 @@ public OnPluginStart()
 	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
 	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_RCON, "sm_banip <time> <ip> [reason]");
 	
-	hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String);
-	hAddBanForward = CreateGlobalForward("OnBanAdded", ET_Ignore, Param_Cell, Param_String, Param_Cell, Param_String);
-	hBanRemoved = CreateGlobalForward("OnBanRemoved", ET_Ignore, Param_Cell, Param_String);
+	hBanForward = CreateGlobalForward("OnClientBanned", ET_Hook, Param_Cell, Param_Cell, Param_Cell, Param_String);
+	hAddBanForward = CreateGlobalForward("OnBanAdded", ET_Hook, Param_Cell, Param_String, Param_Cell, Param_String);
+	hBanRemoved = CreateGlobalForward("OnBanRemoved", ET_Hook, Param_Cell, Param_String);
 }
 
 public Action:Command_BanIp(client, args)
@@ -77,18 +77,25 @@ public Action:Command_BanIp(client, args)
 		GetCmdArg(3, reason, sizeof(reason));
 	}
 	
-	LogMessage("\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", client, minutes, arg, reason);
-	
+	new Action:act = Plugin_Continue;
 	Call_StartForward(hAddBanForward);
 	Call_PushCell(client);
 	Call_PushString(arg);
 	Call_PushCell(minutes);
 	Call_PushString(reason);
-	Call_Finish();
+	Call_Finish(act);
 	
-	ServerCommand("banip %d %s", minutes, arg);
-	ServerCommand("writeip");
-	ReplyToCommand(client, "[SM] %t", "Ban added");
+	if (act < Plugin_Handled)
+	{
+		LogMessage("\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", client, minutes, arg, reason);
+		ReplyToCommand(client, "[SM] %t", "Ban added");
+	}
+	
+	if (act < Plugin_Stop)
+	{
+		ServerCommand("banip %d %s", minutes, arg);
+		ServerCommand("writeip");
+	}
 	
 	return Plugin_Handled;
 }
@@ -113,18 +120,25 @@ public Action:Command_AddBan(client, args)
 		GetCmdArg(3, reason, sizeof(reason));
 	}
 	
-	LogMessage("\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")", client, minutes, arg, reason);
-	
+	new Action:act = Plugin_Continue;
 	Call_StartForward(hAddBanForward);
 	Call_PushCell(client);
 	Call_PushString(arg);
 	Call_PushCell(minutes);
 	Call_PushString(reason);
-	Call_Finish();
+	Call_Finish(act);
 	
-	ServerCommand("banid %d %s", minutes, arg);
-	ServerCommand("writeid");
-	ReplyToCommand(client, "[SM] %t", "Ban added");
+	if (act < Plugin_Handled)
+	{
+		LogMessage("\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")", client, minutes, arg, reason);
+		ReplyToCommand(client, "[SM] %t", "Ban added");
+	}
+	
+	if (act < Plugin_Stop)
+	{
+		ServerCommand("banid %d %s", minutes, arg);
+		ServerCommand("writeid");
+	}
 	
 	return Plugin_Handled;
 }
@@ -149,17 +163,25 @@ public Action:Command_Unban(client, args)
 		start = 2;
 	}
 	
-	LogMessage("\"%L\" removed ban (filter \"%s\")", arg[start]);
-	
 	Format(new_arg, sizeof(new_arg), "STEAM_0:%s", arg[start]);
+	
+	new Action:act = Plugin_Continue;
 	Call_StartForward(hBanRemoved);
 	Call_PushCell(client);
 	Call_PushString(new_arg);
 	Call_Finish();
 	
-	ServerCommand("removeid \"%s\"", arg[start]);
-	ServerCommand("writeid");
-	ReplyToCommand(client, "[SM] %t", "Removed bans matching", arg);
+	if (act < Plugin_Handled)
+	{
+		LogMessage("\"%L\" removed ban (filter \"%s\")", client, arg[start]);
+		ReplyToCommand(client, "[SM] %t", "Removed bans matching", arg);
+	}
+	
+	if (act < Plugin_Stop)
+	{
+		ServerCommand("removeid \"%s\"", arg[start]);
+		ServerCommand("writeid");
+	}
 	
 	return Plugin_Handled;
 }
@@ -209,44 +231,50 @@ public Action:Command_Ban(client, args)
 	new userid = GetClientUserId(clients[0]);
 	GetClientName(clients[0], arg, sizeof(arg));
 	
-	if (!time)
-	{
-		if (reason[0] == '\0')
-		{
-			ShowActivity(client, "%t", "Permabanned player", arg);
-		} else {
-			ShowActivity(client, "%t", "Permabanned player reason", arg, reason);
-		}
-	} else {
-		if (reason[0] == '\0')
-		{
-			ShowActivity(client, "%t", "Banned player", arg, time);
-		} else {
-			ShowActivity(client, "%t", "Banned player reason", arg, time, reason);
-		}
-	}
-	
-	LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, clients[0], time, reason);
-	
 	/* Fire the ban forward */
+	new Action:act = Plugin_Continue;
 	Call_StartForward(hBanForward);
 	Call_PushCell(client);
 	Call_PushCell(clients[0]);
 	Call_PushCell(time);
 	Call_PushString(reason);
 	Call_Finish();
-
-	if (reason[0] == '\0')
+	
+	if (act < Plugin_Handled)
 	{
-		strcopy(reason, sizeof(reason), "Banned");
+		if (!time)
+		{
+			if (reason[0] == '\0')
+			{
+				ShowActivity(client, "%t", "Permabanned player", arg);
+			} else {
+				ShowActivity(client, "%t", "Permabanned player reason", arg, reason);
+			}
+		} else {
+			if (reason[0] == '\0')
+			{
+				ShowActivity(client, "%t", "Banned player", arg, time);
+			} else {
+				ShowActivity(client, "%t", "Banned player reason", arg, time, reason);
+			}
+		}
+		LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, clients[0], time, reason);
 	}
-	
-	ServerCommand("banid %d %d", time, userid);
-	ServerCommand("kickid %d \"%s\"", userid, reason);
-	
-	if (time == 0)
+
+	if (act < Plugin_Stop)
 	{
-		ServerCommand("writeid");
+		if (reason[0] == '\0')
+		{
+			strcopy(reason, sizeof(reason), "Banned");
+		}
+		
+		ServerCommand("banid %d %d", time, userid);
+		ServerCommand("kickid %d \"%s\"", userid, reason);
+		
+		if (time == 0)
+		{
+			ServerCommand("writeid");
+		}
 	}
 	
 	return Plugin_Handled;
