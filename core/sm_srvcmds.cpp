@@ -16,6 +16,7 @@
 #include "sm_version.h"
 #include "sm_stringutil.h"
 #include "HandleSys.h"
+#include "CoreConfig.h"
 
 RootConsoleMenu g_RootMenu;
 
@@ -24,6 +25,7 @@ ConVar sourcemod_version("sourcemod_version", SVN_FULL_VERSION, FCVAR_SPONLY|FCV
 RootConsoleMenu::RootConsoleMenu()
 {
 	m_pCommands = sm_trie_create();
+	m_CfgExecDone = false;
 }
 
 RootConsoleMenu::~RootConsoleMenu()
@@ -193,7 +195,23 @@ void RootConsoleMenu::GotRootCmd()
 		{
 			_IntExt_EnableYams();
 			return;
+		} else if (strcmp(cmd, "internal") == 0) {
+			if (argnum >= 3)
+			{
+				const char *arg = GetArgument(2);
+				if (strcmp(arg, "1") == 0)
+				{
+					SM_ConfigsExecuted_Global();
+				} else if (strcmp(arg, "2") == 0) {
+					if (argnum >= 4)
+					{
+						SM_ConfigsExecuted_Plugin(atoi(GetArgument(3)));
+					}
+				}
+			}
+			return;
 		}
+
 		IRootConsoleCommand *pHandler;
 		if (sm_trie_retrieve(m_pCommands, cmd, (void **)&pHandler))
 		{

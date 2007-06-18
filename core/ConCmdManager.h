@@ -84,7 +84,6 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
-	void OnSourceModLevelChange(const char *mapName);
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
@@ -100,7 +99,6 @@ public:
 						 int flags);
 	ResultType DispatchClientCommand(int client, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
-	void NotifyExecDone(const char *file);
 	bool LookForSourceModCommand(const char *cmd);
 private:
 	void InternalDispatch();
@@ -111,15 +109,10 @@ private:
 	void RemoveConCmd(ConCmdInfo *info);
 	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
-	void OnExecCmd();
 public:
 	inline int GetCommandClient()
 	{
 		return m_CmdClient;
-	}
-	inline bool IsServerCfgDone()
-	{
-		return m_bServerCfgDone;
 	}
 private:
 	Trie *m_pCmds;					/* command lookup */
@@ -127,10 +120,6 @@ private:
 	List<ConCmdInfo *> m_CmdList;	/* command list */
 	int m_CmdClient;				/* current client */
 	BaseStringTable m_Strings;		/* string table */
-	ConVar *m_pServerCfgFile;		/* servercfgfile cvar */
-	ConCommand *m_pExecCmd;			/* "exec" command */
-	IForward *m_pServerCfgFwd;		/* server config forward */
-	bool m_bServerCfgDone;			/* marks whether a servercfg was detected */
 };
 
 extern ConCmdManager g_ConCmds;

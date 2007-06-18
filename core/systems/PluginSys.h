@@ -109,6 +109,13 @@ enum LoadRes
 	LoadRes_Failure
 };
 
+struct AutoConfig
+{
+	String autocfg;
+	String folder;
+	bool create;
+};
+
 class CPlugin : public IPlugin
 {
 	friend class CPluginManager;
@@ -223,6 +230,10 @@ public:
 	bool WasRunning();
 
 	Handle_t GetMyHandle();
+
+	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
+	unsigned int GetConfigCount();
+	AutoConfig *GetConfig(unsigned int i);
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);
@@ -246,6 +257,7 @@ private:
 	List<FakeNative *> m_fakeNatives;
 	Trie *m_pProps;
 	bool m_FakeNativesMissing;
+	CVector<AutoConfig *> m_configs;
 };
 
 class CPluginManager : 
@@ -395,6 +407,8 @@ private:
 	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
 
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
+
+	void ExecAndGenPluginConfs();
 protected:
 	/**
 	 * Caching internal objects

@@ -16,6 +16,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sm_platform.h>
+#include "sm_stringutil.h"
 #include "LibrarySys.h"
 
 LibrarySystem g_LibSys;
@@ -346,4 +347,35 @@ const char *LibrarySystem::GetFileExtension(const char *filename)
 	}
 
 	return NULL;
+}
+
+bool LibrarySystem::CreateDirectory(const char *path)
+{
+#if defined PLATFORM_WINDOWS
+	return (mkdir(path) != -1);
+#elif defined PLATFORM_POSIX
+	return (mkdir(path, 0775) != -1);
+#endif
+}
+
+size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char *path)
+{
+	size_t length = strlen(path);
+
+	for (size_t i = length - 1;
+		 i >= 0 && i <= length - 1;
+		 i++)
+	{
+		if (path[i] == '/' 
+#if defined PLATFORM_WINDOWS
+			|| path[i] == '\\'
+#endif
+			)
+		{
+			return UTIL_Format(buffer, maxlength, "%s", &path[i+1]);
+		}
+	}
+
+	/* We scanned and found no path separator */
+	return UTIL_Format(buffer, maxlength, "%s", path);
 }

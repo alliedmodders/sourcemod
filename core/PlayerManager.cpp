@@ -20,6 +20,7 @@
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
 #include "sm_stringutil.h"
+#include "CoreConfig.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -114,6 +115,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	m_onActivate2->Execute(NULL);
 
 	g_OnMapStarted = true;
+
+	SM_ExecuteAllConfigs();
 }
 
 bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)

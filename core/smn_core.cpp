@@ -13,10 +13,13 @@
  */
 
 #include <time.h>
+#include <string.h>
+#include "sm_stringutil.h"
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "PluginSys.h"
 #include "HandleSys.h"
+#include "LibrarySys.h"
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -283,8 +286,39 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 #endif
 }
 
+static cell_t AutoExecConfig(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *plugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	char *cfg, *folder;
+	pContext->LocalToString(params[2], &cfg);
+	pContext->LocalToString(params[3], &folder);
+
+	if (cfg[0] == '\0')
+	{
+		static char temp_str[255];
+		static char temp_file[PLATFORM_MAX_PATH];
+		char *ptr;
+
+		g_LibSys.GetFileFromPath(temp_str, sizeof(temp_str), plugin->GetFilename());
+		if ((ptr = strstr(temp_str, ".smx")) != NULL)
+		{
+			*ptr = '\0';
+		}
+
+		/* We have the raw filename! */
+		UTIL_Format(temp_file, sizeof(temp_file), "plugin.%s", temp_str);
+		cfg = temp_file;
+	}
+
+	plugin->AddConfig(params[1] ? true : false, cfg, folder);
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
+	{"AutoExecConfig",		AutoExecConfig},
 	{"GetPluginFilename",	GetPluginFilename},
 	{"GetPluginInfo",		GetPluginInfo},
 	{"GetPluginIterator",	GetPluginIterator},

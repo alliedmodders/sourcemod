@@ -40,10 +40,6 @@ ConCmdManager::ConCmdManager() : m_Strings(1024)
 {
 	m_pCmds = sm_trie_create();
 	m_pCmdGrps = sm_trie_create();
-	m_bServerCfgDone = true;
-	m_pExecCmd = NULL;
-	m_pServerCfgFile = NULL;
-	m_pServerCfgFwd = NULL;
 	m_CmdClient = 0;
 }
 
@@ -58,75 +54,13 @@ void ConCmdManager::OnSourceModAllInitialized()
 	g_PluginSys.AddPluginsListener(this);
 	g_RootMenu.AddRootConsoleCommand("cmds", "List console commands", this);
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
-
-	ConCommandBase *pCmd = icvar->GetCommands();
-	const char *name;
-	while (pCmd)
-	{
-		if (pCmd->IsCommand())
-		{
-			name = pCmd->GetName();
-			if (strcmp(name, "exec") == 0)
-			{
-				m_pExecCmd = (ConCommand *)pCmd;
-				break;
-			}
-		}
-		pCmd = const_cast<ConCommandBase *>(pCmd->GetNext());
-	}
-
-	if (m_pExecCmd)
-	{
-		m_pServerCfgFile = (ConVar *)icvar->FindVar("servercfgfile");
-		SH_ADD_HOOK_MEMFUNC(ConCommand, Dispatch, m_pExecCmd, this, &ConCmdManager::OnExecCmd, true);
-		m_pServerCfgFwd = g_Forwards.CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
-	}
 }
 
 void ConCmdManager::OnSourceModShutdown()
 {
-	if (m_pExecCmd)
-	{
-		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pExecCmd, this, &ConCmdManager::OnExecCmd, true);
-		g_Forwards.ReleaseForward(m_pServerCfgFwd);
-		m_pServerCfgFwd = NULL;
-		m_pExecCmd = NULL;
-	}
-
 	/* All commands should already be removed by the time we're done */
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, SetCommandClient, serverClients, this, &ConCmdManager::SetCommandClient, false);
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
-}
-
-void ConCmdManager::OnSourceModLevelChange(const char *mapName)
-{
-	m_bServerCfgDone = false;
-}
-
-void ConCmdManager::OnExecCmd()
-{
-	const char *arg = engine->Cmd_Argv(1);
-	const char *cfgfile = "server.cfg";
-
-	if (m_pServerCfgFile)
-	{
-		cfgfile = m_pServerCfgFile->GetString();
-	}
-
-	if (strcmp(arg, cfgfile) == 0)
-	{
-		engine->ServerCommand("sm cmds internal 1\n");
-	}
-}
-
-void ConCmdManager::NotifyExecDone(const char *file)
-{
-	if (file == NULL && !m_bServerCfgDone)
-	{
-		/* Server-cfg file */
-		m_bServerCfgDone = true;
-		m_pServerCfgFwd->Execute(NULL);
-	}
 }
 
 void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext)
@@ -837,16 +771,6 @@ void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argco
 	if (argcount >= 3)
 	{
 		const char *text = engine->Cmd_Argv(2);
-
-		if (strcmp(text, "internal") == 0)
-		{
-			const char *num = engine->Cmd_Argv(3);
-			if (atoi(num) == 1)
-			{
-				NotifyExecDone(NULL);
-			}
-			return;
-		}
 
 		int id = atoi(text);
 		CPlugin *pPlugin = g_PluginSys.GetPluginByOrder(id);

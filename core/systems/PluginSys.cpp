@@ -27,6 +27,7 @@
 #include "sm_stringutil.h"
 #include "ConCmdManager.h"
 #include "PlayerManager.h"
+#include "CoreConfig.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -85,6 +86,11 @@ CPlugin::~CPlugin()
 	{
 		sm_trie_destroy(m_pProps);
 	}
+	for (size_t i=0; i<m_configs.size(); i++)
+	{
+		delete m_configs[i];
+	}
+	m_configs.clear();
 }
 
 void CPlugin::InitIdentity()
@@ -309,12 +315,9 @@ void CPlugin::Call_OnPluginStart()
 				pFunction->Execute(NULL);
 			}
 		}
-		if (g_ConCmds.IsServerCfgDone())
+		if (SM_AreConfigsExecuted())
 		{
-			if ((pFunction = m_ctx.base->GetFunctionByName("OnServerCfg")) != NULL)
-			{
-				pFunction->Execute(NULL);
-			}
+			SM_ExecuteForPlugin(GetBaseContext());
 		}
 	}
 }
@@ -616,6 +619,32 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	}
 
 	m_dependsOn.remove(pOwner);
+}
+
+unsigned int CPlugin::GetConfigCount()
+{
+	return (unsigned int)m_configs.size();
+}
+
+AutoConfig *CPlugin::GetConfig(unsigned int i)
+{
+	if (i >= GetConfigCount())
+	{
+		return NULL;
+	}
+
+	return m_configs[i];
+}
+
+void CPlugin::AddConfig(bool autoCreate, const char *cfg, const char *folder)
+{
+	AutoConfig *c = new AutoConfig;
+
+	c->autocfg = cfg;
+	c->folder = folder;
+	c->create = autoCreate;
+
+	m_configs.push_back(c);
 }
 
 /*******************
@@ -1970,4 +1999,11 @@ CPlugin *CPluginManager::GetPluginFromIdentity(IdentityToken_t *pToken)
 	}
 
 	return (CPlugin *)(pToken->ptr);
+}
+
+void CPluginManager::ExecAndGenPluginConfs()
+{
+	List<CPlugin *>::iterator iter;
+
+	//for (iter = 
 }

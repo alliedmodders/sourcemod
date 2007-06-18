@@ -29,6 +29,7 @@ class CoreConfig :
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModLevelChange(const char *mapName);
 public: // ITextListener_SMC
 	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
 public: // IRootConsoleCommand
@@ -44,6 +45,12 @@ private:
 	 */
 	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
 };
+
+extern bool SM_AreConfigsExecuted();
+extern void SM_ExecuteAllConfigs();
+extern void SM_ExecuteForPlugin(IPluginContext *ctx);
+extern void SM_ConfigsExecuted_Global();
+extern void SM_ConfigsExecuted_Plugin(unsigned int serial);
 
 extern CoreConfig g_CoreConfig;
 

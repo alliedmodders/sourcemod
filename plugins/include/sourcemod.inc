@@ -125,16 +125,16 @@ forward OnMapStart();
 forward OnMapEnd();
 
 /**
- * Called when the map has loaded and the servercfgfile has finished
- * executing.  This is usually 'server.cfg' but most mods allow it to
- * be set via 'servercfgfile'.  
+ * Called when the map has loaded, servercfgfile (server.cfg) has been 
+ * executed, and all plugin configs are done executing.  This is the best
+ * place to inialize plugin functions which are based on cvar data.  
  *
- * @note If server.cfg is executed more than once per map, this forward
- * will only be called the first time (per map).
- * @note It is not guaranteed that this will be called on all mods. If
- * a mod does not appear to support it, please file a SourceMod bug report.
+ * @note This will always be called once and only once per map.  It will be 
+ * called after OnMapStart().
+ *
+ * @noreturn
  */
-forward OnServerCfg();
+forward OnConfigsExecuted();
 
 /**
  * Returns the calling plugin's Handle.
@@ -296,6 +296,21 @@ native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], 
  * @return				Tick count in milliseconds.
  */
 native GetSysTickCount();
+
+/**
+ * Specifies that the given config file should be executed after plugin load.
+ * OnConfigsExecuted() will not be called until the config file has executed, 
+ * but it will be called if the execution fails.
+ *
+ * @param autoCreate	If true, and the config file does not exist, such a config
+ *						file will be automatically created and populated with
+ *						information from the plugin's registered cvars.
+ * @param name			Name of the config file, excluding the .cfg extension.
+ *						If empty, <plugin.filename.cfg> is assumed.
+ * @param folder		Folder under cfg/ to use.  By default this is "sourcemod."
+ * @noreturn
+ */
+native AutoExecConfig(bool:autoCreate=true, const String:name[]="", const String:folder[]="sourcemod");
 
 #include <helpers>
 #include <entity>

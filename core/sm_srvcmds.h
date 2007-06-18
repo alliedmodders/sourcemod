@@ -59,6 +59,7 @@ public: //IRootConsole
 public:
 	void GotRootCmd();
 private:
+	bool m_CfgExecDone;
 	Trie *m_pCommands;
 	List<ConsoleEntry *> m_Menu;
 };
