@@ -20,7 +20,7 @@ namespace builder
 
 		public bool CompilePlugin(Package pkg, Plugin pl)
 		{
-			string local_dir = Config.PathFormat("{0}/{1}/scripting", cfg.OutputBase, pkg.GetBaseFolder());
+			string local_dir = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting", cfg.OutputBase, pkg.GetBaseFolder());
 
 			string filepath = null;
 			if (pl.Folder != null)
@@ -48,12 +48,12 @@ namespace builder
 
 			Console.WriteLine(output);
 
-			string binary = Config.PathFormat("{0}/{1}/scripting/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+			string binary = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
 			if (!File.Exists(binary))
 			{
 				return false;
 			}
-			string new_loc = Config.PathFormat("{0}/{1}/plugins/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+			string new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
 
 			try
 			{
