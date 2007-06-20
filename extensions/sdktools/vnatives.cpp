@@ -4,9 +4,9 @@
 
 List<ValveCall *> g_RegCalls;
 
-inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags)
+inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
 {
-	info.decflags = 0;
+	info.decflags = decflags;
 	info.encflags = 0;
 	info.flags = flags;
 	info.type = type;
@@ -228,9 +228,9 @@ static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
 	if (!pCall)
 	{
 		ValvePassInfo pass[3];
-		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
+		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
+		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, 3, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
