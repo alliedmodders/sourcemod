@@ -84,7 +84,7 @@ public OnClientAuthorized(client, const String:auth[])
 		}
 		
 		/* Kick player because there are no public slots left */
-		ServerCommand("kickid %s %T", auth, "Slot reserved", client);
+		KickClient(client, "%T", "Slot reserved", client);
 	}
 }
 
