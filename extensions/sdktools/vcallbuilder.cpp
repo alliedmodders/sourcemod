@@ -245,7 +245,7 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 	if (vcalltype == ValveCall_Entity)
 	{
 		vc->thisinfo->vtype = Valve_CBaseEntity;
-		vc->thisinfo->decflags |= VDECODE_FLAG_ALLOWWORLD;
+		vc->thisinfo->decflags = VDECODE_FLAG_ALLOWWORLD;
 	} else if (vcalltype == ValveCall_Player) {
 		vc->thisinfo->vtype = Valve_CBasePlayer;
 		vc->thisinfo->decflags = 0;
