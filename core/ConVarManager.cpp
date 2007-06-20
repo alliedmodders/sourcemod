@@ -71,7 +71,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	m_ConVarType = g_HandleSys.CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 
 	/* Add the 'convars' option to the 'sm' console command */
-	g_RootMenu.AddRootConsoleCommand("convars", "View convars created by a plugin", this);
+	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
 }
 
 void ConVarManager::OnSourceModShutdown()
@@ -98,7 +98,7 @@ void ConVarManager::OnSourceModShutdown()
 	}
 
 	/* Remove the 'convars' option from the 'sm' console command */
-	g_RootMenu.RemoveRootConsoleCommand("convars", this);
+	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
 
 	/* Remove the 'ConVar' handle type */
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
