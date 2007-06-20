@@ -100,17 +100,17 @@ static cell_t SetFakeClientConVar(IPluginContext *pContext, const cell_t *params
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
 	}
 
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
 	if (!pPlayer->IsFakeClient())
 	{
-		return pContext->ThrowNativeError("Player %d is not a fake client", params[1]);
+		return pContext->ThrowNativeError("Client %d is not a fake client", params[1]);
 	}
 
 	char *cvar, *value;
@@ -239,7 +239,7 @@ static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Client %d is not valid", params[1]);
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
 	}
 
 	if (!pPlayer->IsInGame())
@@ -265,7 +265,7 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Client %d is not valid", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 
 	if (!pPlayer->IsInGame())
@@ -288,7 +288,7 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Client %d is not valid", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 
 	if (!pPlayer->IsInGame())

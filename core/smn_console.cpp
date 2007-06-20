@@ -464,12 +464,12 @@ static cell_t sm_QueryClientConVar(IPluginContext *pContext, const cell_t *param
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
 	}
 
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
 	/* Trying a query on a bot results in callback not be fired, so don't bother */
@@ -615,7 +615,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 0) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	CPlayer *pPlayer = NULL;
@@ -695,12 +695,12 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
 	}
 
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
 	char buffer[256];
@@ -718,12 +718,12 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid player", params[1]);
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
 	}
 
 	if (!pPlayer->IsConnected())
 	{
-		return pContext->ThrowNativeError("Player %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
 	char buffer[256];

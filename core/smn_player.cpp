@@ -55,7 +55,7 @@ static cell_t sm_GetClientName(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
@@ -73,7 +73,7 @@ static cell_t sm_GetClientIP(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
@@ -99,7 +99,7 @@ static cell_t sm_GetClientAuthStr(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
@@ -123,7 +123,7 @@ static cell_t sm_IsClientConnected(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	return (g_Players.GetPlayerByIndex(index)->IsConnected()) ? 1 : 0;
@@ -134,7 +134,7 @@ static cell_t sm_IsClientInGame(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	return (g_Players.GetPlayerByIndex(index)->IsInGame()) ? 1 : 0;
@@ -145,7 +145,7 @@ static cell_t sm_IsClientAuthorized(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	return (g_Players.GetPlayerByIndex(index)->IsAuthorized()) ? 1 : 0;
@@ -156,7 +156,7 @@ static cell_t sm_IsClientFakeClient(IPluginContext *pCtx, const cell_t *params)
 	int index = params[1];
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
-		return pCtx->ThrowNativeError("Invalid client index %d", index);
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
 	}
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
@@ -174,7 +174,7 @@ static cell_t sm_GetClientInfo(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -200,7 +200,7 @@ static cell_t SetUserAdmin(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -208,7 +208,7 @@ static cell_t SetUserAdmin(IPluginContext *pContext, const cell_t *params)
 	}
 	if (!g_Admins.IsValidAdmin(params[2]))
 	{
-		return pContext->ThrowNativeError("AdminId %x is not valid", params[2]);
+		return pContext->ThrowNativeError("AdminId %x is invalid", params[2]);
 	}
 
 	pPlayer->SetAdminId(params[2], params[3] ? true : false);
@@ -222,7 +222,7 @@ static cell_t GetUserAdmin(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -238,7 +238,7 @@ static cell_t AddUserFlags(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -268,7 +268,7 @@ static cell_t RemoveUserFlags(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -297,7 +297,7 @@ static cell_t SetUserFlagBits(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -322,7 +322,7 @@ static cell_t GetUserFlagBits(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -344,7 +344,7 @@ static cell_t GetClientUserId(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 	if (!pPlayer->IsConnected())
 	{
@@ -362,17 +362,17 @@ static cell_t CanUserTarget(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsConnected()) {
-		return pContext->ThrowNativeError("Player %d is not connected", client);
+		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
 	CPlayer *pTarget = g_Players.GetPlayerByIndex(target);
 	if (!pTarget)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", target);
+		return pContext->ThrowNativeError("Client index %d is invalid", target);
 	} else if (!pTarget->IsConnected()) {
-		return pContext->ThrowNativeError("Player %d is not connected", target);
+		return pContext->ThrowNativeError("Client %d is not connected", target);
 	}
 
 	return g_Admins.CanAdminTarget(pPlayer->GetAdminId(), pTarget->GetAdminId()) ? 1 : 0;
@@ -385,9 +385,9 @@ static cell_t GetClientTeam(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -406,9 +406,9 @@ static cell_t GetFragCount(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -427,9 +427,9 @@ static cell_t GetDeathCount(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -448,9 +448,9 @@ static cell_t GetArmorValue(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -469,9 +469,9 @@ static cell_t GetAbsOrigin(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -498,9 +498,9 @@ static cell_t GetAbsAngles(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -527,9 +527,9 @@ static cell_t GetPlayerMins(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -556,9 +556,9 @@ static cell_t GetPlayerMaxs(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -585,9 +585,9 @@ static cell_t GetWeaponName(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -609,9 +609,9 @@ static cell_t GetModelName(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -633,9 +633,9 @@ static cell_t GetHealth(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
 	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
@@ -654,11 +654,11 @@ static cell_t GetTimeConnected(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -673,11 +673,11 @@ static cell_t GetDataRate(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -692,11 +692,11 @@ static cell_t IsTimingOut(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -711,11 +711,11 @@ static cell_t GetLatency(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -730,11 +730,11 @@ static cell_t GetAvgLatency(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -749,11 +749,11 @@ static cell_t GetAvgLoss(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -768,11 +768,11 @@ static cell_t GetAvgChoke(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -787,11 +787,11 @@ static cell_t GetAvgData(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -806,11 +806,11 @@ static cell_t GetAvgPackets(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Player %d is not a valid client", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsInGame()) {
-		return pContext->ThrowNativeError("Player %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	} else if (pPlayer->IsFakeClient()) {
-		return pContext->ThrowNativeError("Player %d is a bot", client);
+		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
@@ -926,7 +926,7 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Client %d is invalid", client);
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	} else if (!pPlayer->IsConnected()) {
 		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
