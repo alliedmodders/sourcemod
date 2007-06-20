@@ -27,7 +27,7 @@
 
 /**
  * @file extension.cpp
- * @brief Implement extension code here.
+ * @brief Implements SDK Tools extension code.
  */
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
