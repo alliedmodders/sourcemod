@@ -17,8 +17,10 @@
 #include "sm_stringutil.h"
 #include "HalfLife2.h"
 #include "sourcemod.h"
-#include <inetchannelinfo.h>
 #include "ChatTriggers.h"
+#include "GameConfigs.h"
+#include <inetchannel.h>
+#include <iclient.h>
 
 ConVar sm_show_activity("sm_show_activity", "13", FCVAR_SPONLY|FCVAR_PROTECTED, "Activity display setting (see sourcemod.cfg)");
 
@@ -917,6 +919,40 @@ static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client %d is invalid", client);
+	} else if (!pPlayer->IsConnected()) {
+		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	if (pPlayer->IsFakeClient())
+	{
+		char kickcmd[64];
+
+		/* :TODO: Define BotKickCmd in core.games.txt so that "bot_kick" can be used in CS:S */
+		UTIL_Format(kickcmd, sizeof(kickcmd), "kick %s\n", pPlayer->GetName());
+
+		engine->ServerCommand(kickcmd);
+		return 1;
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	pClient->Disconnect("%s", buffer);
+
+	return 1;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -960,5 +996,6 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientAvgPackets",		GetAvgPackets},
 	{"GetClientOfUserId",		GetClientOfUserId},
 	{"ShowActivity",			ShowActivity},
+	{"KickClient",				KickClient},
 	{NULL,						NULL}
 };

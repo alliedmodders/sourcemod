@@ -494,3 +494,15 @@ native Float:GetClientAvgPackets(client, NetFlow:flow);
  * @error				Returns 0 if invalid userid.
  */
 native GetClientOfUserId(userid);
+
+/**
+ * Disconnects a client from the server.
+ *
+ * @param client		Client index.
+ * @param format		Optional formatting rules for disconnect reason.
+ *                      Note that a period is automatically appended to the string by the engine.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native DisconnectClient(client, const String:format[]="", any:...);
