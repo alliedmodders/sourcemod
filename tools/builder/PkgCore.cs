@@ -133,11 +133,12 @@ namespace builder
 		 */
 		public override Plugin [] GetPlugins()
 		{
-			Plugin [] plugins = new Plugin[3];
+			Plugin [] plugins = new Plugin[4];
 
 			plugins[0] = new Plugin("admin-flatfile", "admin-flatfile");
-			plugins[1] = new Plugin("basecommands");
-			plugins[2] = new Plugin("antiflood");
+			plugins[1] = new Plugin("antiflood");
+			plugins[2] = new Plugin("basecommands");
+			plugins[3] = new Plugin("reservedslots");
 
 			return plugins;
 		}
