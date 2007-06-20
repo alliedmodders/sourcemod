@@ -20,9 +20,9 @@
  * Version: $Id$
  */
 
-#include <sourcemod>
-
 #pragma semicolon 1
+
+#include <sourcemod>
 
 public Plugin:myinfo = 
 {
