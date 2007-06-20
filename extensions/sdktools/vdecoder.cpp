@@ -1,13 +1,14 @@
 #include "smsdk_ext.h"
 #include "extension.h"
 #include "vdecoder.h"
+#include "vcallbuilder.h"
 
 using namespace SourceMod;
 using namespace SourcePawn;
 
 /**
  * For object pointers, the data looks like this instead:
- * 4 bytes: POINTER TO NEXT FOUR BYTES
+ * 4 bytes: POINTER TO LATER
  * + bytes: Object internal data
  *
  * We use the virtual stack as extra fake stack space and create a temp object.
@@ -18,8 +19,10 @@ using namespace SourcePawn;
 size_t ValveParamToBinParam(ValveType type, 
 						  PassType pass,
 						  unsigned int flags,
-						  PassInfo *info)
+						  PassInfo *info,
+						  bool &needs_extra)
 {
+	needs_extra = false;
 	switch (type)
 	{
 	case Valve_Vector:
@@ -34,7 +37,8 @@ size_t ValveParamToBinParam(ValveType type,
 				info->type = PassType_Basic;
 				info->flags = flags;
 				info->size = sizeof(Vector *);
-				mySize += sizeof(Vector);
+				mySize = sizeof(Vector);
+				needs_extra = true;
 			} else if (pass == PassType_Object) {
 				info->type = PassType_Object;
 				info->flags = flags | PASSFLAG_OASSIGNOP | PASSFLAG_OCTOR;
@@ -56,7 +60,8 @@ size_t ValveParamToBinParam(ValveType type,
 				info->type = PassType_Basic;
 				info->flags = flags;
 				info->size = sizeof(QAngle *);
-				mySize += sizeof(QAngle);
+				mySize = sizeof(QAngle);
+				needs_extra = true;
 			} else if (pass == PassType_Object) {
 				info->type = PassType_Object;
 				info->flags = flags | PASSFLAG_OASSIGNOP | PASSFLAG_OCTOR;
@@ -126,9 +131,11 @@ size_t ValveParamToBinParam(ValveType type,
 
 DataStatus EncodeValveParam(IPluginContext *pContext,
 							cell_t param, 
+							const ValveCall *pCall,
 							const ValvePassInfo *data,
-							const void *buffer)
+							const void *_buffer)
 {
+	const void *buffer = (const unsigned char *)_buffer + data->offset;
 	switch (data->vtype)
 	{
 	case Valve_Vector:
@@ -239,9 +246,11 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 DataStatus DecodeValveParam(IPluginContext *pContext,
 					  cell_t param,
+					  const ValveCall *pCall,
 					  const ValvePassInfo *data,
-					  void *buffer)
+					  void *_buffer)
 {
+	void *buffer = (unsigned char *)_buffer + data->offset;
 	switch (data->vtype)
 	{
 	case Valve_Vector:
@@ -269,7 +278,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 						return Data_Fail;
 					}
 				} else {
-					mem += sizeof(Vector *);
+					mem = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
 					*realPtr = (Vector *)mem;
 				}
 			}
@@ -316,7 +325,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 						return Data_Okay;
 					}
 				} else {
-					mem += sizeof(QAngle *);
+					mem = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
 					*realPtr = (QAngle *)mem;
 				}
 			}

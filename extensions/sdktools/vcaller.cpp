@@ -232,7 +232,8 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Expected 1 parameter for entity pointer; found none");
 		}
 		if (DecodeValveParam(pContext, 
-			params[startparam], 
+			params[startparam],
+			vc,
 			vc->thisinfo,
 			ptr) == Data_Fail)
 		{
@@ -268,8 +269,9 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 		}
 		if (DecodeValveParam(pContext,
 			params[p],
+			vc,
 			&(vc->vparams[i]),
-			ptr + vc->vparams[i].offset) == Data_Fail)
+			ptr) == Data_Fail)
 		{
 			vc->stk_put(ptr);
 			return 0;
@@ -292,8 +294,9 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			{
 				if (EncodeValveParam(pContext, 
 					startparam + i, 
+					vc,
 					&vc->vparams[i],
-					ptr + vc->vparams[i].offset) == Data_Fail)
+					ptr) == Data_Fail)
 				{
 					vc->stk_put(ptr);
 					return 0;
@@ -326,7 +329,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			{
 				return pContext->ThrowNativeError("Expected argument (2) for Float[3] storage");
 			}
-			if (EncodeValveParam(pContext, params[retparam], vc->retinfo, vc->retbuf)
+			if (EncodeValveParam(pContext, params[retparam], vc, vc->retinfo, vc->retbuf)
 				== Data_Fail)
 			{
 				return 0;

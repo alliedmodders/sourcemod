@@ -60,17 +60,22 @@ ValveCall *CreateValveCall(void *addr,
 	size_t size = 0;
 	vc->stackSize = 0;
 
-	/* Get return information - encode only*/
+	/* Get return information - encode only */
 	PassInfo retBuf;
 	size_t retBufSize = 0;
+	bool retbuf_needs_extra;
 	if (retInfo)
 	{
-		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf)) == 0)
+		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
 		{
 			delete vc;
 			return NULL;
 		}
-		retBufSize = size;
+		retBufSize = retBuf.size;
+		if (retbuf_needs_extra)
+		{
+			retBufSize += size;
+		}
 	}
 
 	/* Get thisinfo if needed */
@@ -98,14 +103,29 @@ ValveCall *CreateValveCall(void *addr,
 
 	/* Get parameter info */
 	PassInfo paramBuf[32];
+	size_t sizes[32];
+	size_t normSize = 0;
+	size_t extraSize = 0;
 	for (unsigned int i=0; i<numParams; i++)
 	{
-		if ((size = ValveParamToBinParam(params[i].vtype, params[i].type, params[i].flags, &paramBuf[i])) == 0)
+		bool needs_extra;
+		if ((size = ValveParamToBinParam(params[i].vtype, 
+			params[i].type,
+			params[i].flags,
+			&paramBuf[i],
+			needs_extra)) == 0)
 		{
 			delete vc;
 			return NULL;
 		}
-		vc->stackSize += size;
+		if (needs_extra)
+		{
+			sizes[i] = size;
+		} else {
+			sizes[i] = 0;
+		}
+		normSize += paramBuf[i].size;
+		extraSize += sizes[i];
 	}
 
 	/* Now we can try creating the call */
@@ -135,6 +155,7 @@ ValveCall *CreateValveCall(void *addr,
 		vc->retinfo = &(vc->vparams[numParams]);
 		*vc->retinfo = *retInfo;
 		vc->retinfo->offset = 0;
+		vc->retinfo->obj_offset = retbuf_needs_extra ? sizeof(void *) : 0;
 		/* Allocate stack space */
 		vc->retbuf = new unsigned char[retBufSize];
 	} else {
@@ -148,17 +169,24 @@ ValveCall *CreateValveCall(void *addr,
 		vc->thisinfo = &(vc->vparams[numParams + 1]);
 		*vc->thisinfo = *thisinfo;
 		vc->thisinfo->offset = 0;
+		vc->thisinfo->obj_offset = 0;
 	} else {
 		vc->thisinfo = NULL;
 	}
 
 	/* Now, save info about each parameter. */
+	size_t last_extra_offset = 0;
 	for (unsigned int i=0; i<numParams; i++)
 	{
 		/* Copy */
 		vc->vparams[i] = params[i];
 		vc->vparams[i].offset = vc->call->GetParamInfo(i)->offset;
+		vc->vparams[i].obj_offset = last_extra_offset;
+		last_extra_offset += sizes[i];
 	}
+
+	vc->stackSize = normSize + extraSize;
+	vc->stackEnd = normSize;
 
 	return vc;
 }
@@ -179,29 +207,49 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 	size_t size = 0;
 	vc->stackSize = 0;
 
-	/* Get return information - encode only*/
+	/* Get return information - encode only */
 	PassInfo retBuf;
 	size_t retBufSize = 0;
+	bool retbuf_needs_extra;
 	if (retInfo)
 	{
-		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf)) == 0)
+		if ((size = ValveParamToBinParam(retInfo->vtype, retInfo->type, retInfo->flags, &retBuf, retbuf_needs_extra)) == 0)
 		{
 			delete vc;
 			return NULL;
 		}
-		retBufSize = size;
+		retBufSize = retBuf.size;
+		if (retbuf_needs_extra)
+		{
+			retBufSize += size;
+		}
 	}
 
 	/* Get parameter info */
 	PassInfo paramBuf[32];
+	size_t sizes[32];
+	size_t normSize = 0;
+	size_t extraSize = 0;
 	for (unsigned int i=0; i<numParams; i++)
 	{
-		if ((size = ValveParamToBinParam(params[i].vtype, params[i].type, params[i].flags, &paramBuf[i])) == 0)
+		bool needs_extra;
+		if ((size = ValveParamToBinParam(params[i].vtype, 
+										params[i].type,
+										params[i].flags,
+										&paramBuf[i],
+										needs_extra)) == 0)
 		{
 			delete vc;
 			return NULL;
 		}
-		vc->stackSize += size;
+		if (needs_extra)
+		{
+			sizes[i] = size;
+		} else {
+			sizes[i] = 0;
+		}
+		normSize += paramBuf[i].size;
+		extraSize += sizes[i];
 	}
 
 	/* Now we can try creating the call */
@@ -232,6 +280,7 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 		vc->retinfo = &(vc->vparams[numParams]);
 		*vc->retinfo = *retInfo;
 		vc->retinfo->offset = 0;
+		vc->retinfo->obj_offset = retbuf_needs_extra ? sizeof(void *) : 0;
 		/* Allocate stack space */
 		vc->retbuf = new unsigned char[retBufSize];
 	} else {
@@ -253,15 +302,22 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 	vc->thisinfo->encflags = 0;
 	vc->thisinfo->flags = PASSFLAG_BYVAL;
 	vc->thisinfo->offset = 0;
-	vc->stackSize += sizeof(void *);
+	vc->thisinfo->obj_offset = 0;
+	normSize += sizeof(void *);
 
 	/* Now, save info about each parameter. */
+	size_t last_extra_offset = 0;
 	for (unsigned int i=0; i<numParams; i++)
 	{
 		/* Copy */
 		vc->vparams[i] = params[i];
 		vc->vparams[i].offset = vc->call->GetParamInfo(i)->offset;
+		vc->vparams[i].obj_offset = last_extra_offset;
+		last_extra_offset += sizes[i];
 	}
+
+	vc->stackSize = normSize + extraSize;
+	vc->stackEnd = normSize;
 
 	return vc;
 }

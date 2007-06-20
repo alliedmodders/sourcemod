@@ -23,8 +23,9 @@ inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsign
 #define ENCODE_VALVE_PARAM(num, which, vnum) \
 	if (EncodeValveParam(pContext, \
 			params[num], \
+			pCall, \
 			&pCall->which[vnum], \
-			vptr + pCall->which[vnum].offset) \
+			vptr) \
 		== Data_Fail) \
 	{ \
 		return 0; \
@@ -33,8 +34,9 @@ inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsign
 #define DECODE_VALVE_PARAM(num, which, vnum) \
 	if (DecodeValveParam(pContext, \
 			params[num], \
+			pCall, \
 			&pCall->which[vnum], \
-			vptr + pCall->which[vnum].offset) \
+			vptr) \
 		== Data_Fail) \
 	{ \
 		return 0; \

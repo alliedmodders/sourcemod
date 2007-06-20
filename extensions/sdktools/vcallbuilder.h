@@ -18,6 +18,7 @@ struct ValveCall
 	ValvePassInfo *retinfo;		/**< Return buffer info */
 	ValvePassInfo *thisinfo;	/**< Thiscall info */
 	size_t stackSize;			/**< Stack size */
+	size_t stackEnd;			/**< End of the bintools stack */
 	unsigned char *retbuf;		/**< Return buffer */
 	CStack<unsigned char *> stk; /**< Parameter stack */
 

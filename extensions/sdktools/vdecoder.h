@@ -60,7 +60,10 @@ struct ValvePassInfo
 	PassType type;			/**< IN: Pass information */
 	unsigned int flags;		/**< IN: Pass flags */
 	size_t offset;			/**< OUT: stack offset */
+	size_t obj_offset;		/**< OUT: object offset at end of the stack */
 };
+
+struct ValveCall;
 
 /**
  * @brief Converts a valve parameter to a bintools parameter.
@@ -75,7 +78,8 @@ struct ValvePassInfo
 size_t ValveParamToBinParam(ValveType type, 
 					  PassType pass,
 					  unsigned int flags,
-					  PassInfo *info);
+					  PassInfo *info,
+					  bool &needs_extra);
 
 /**
  * @brief Decodes data from a plugin to native data.
@@ -90,6 +94,7 @@ size_t ValveParamToBinParam(ValveType type,
  */
 DataStatus DecodeValveParam(IPluginContext *pContext,
 					  cell_t param,
+					  const ValveCall *pCall,
 					  const ValvePassInfo *vdata,
 					  void *buffer);
 
@@ -106,6 +111,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
  */
 DataStatus EncodeValveParam(IPluginContext *pContext,
 					  cell_t param,
+					  const ValveCall *pCall,
 					  const ValvePassInfo *vdata,
 					  const void *buffer);
 
