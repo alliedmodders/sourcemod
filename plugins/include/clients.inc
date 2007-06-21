@@ -505,4 +505,4 @@ native GetClientOfUserId(userid);
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native DisconnectClient(client, const String:format[]="", any:...);
+native KickClient(client, const String:format[]="", any:...);
