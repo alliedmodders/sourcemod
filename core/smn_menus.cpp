@@ -69,7 +69,7 @@ public:
 	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
 	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
-	void OnMenuEnd(IBaseMenu *menu);
+	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDestroy(IBaseMenu *menu);
 	void OnMenuVoteStart(IBaseMenu *menu);
 	void OnMenuVoteEnd(IBaseMenu *menu,
@@ -279,9 +279,9 @@ void CMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason re
 	DoAction(menu, MenuAction_Cancel, client, (cell_t)reason);
 }
 
-void CMenuHandler::OnMenuEnd(IBaseMenu *menu)
+void CMenuHandler::OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 {
-	DoAction(menu, MenuAction_End, 0, 0);
+	DoAction(menu, MenuAction_End, reason, 0);
 }
 
 void CMenuHandler::OnMenuDestroy(IBaseMenu *menu)

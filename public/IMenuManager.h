@@ -23,7 +23,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		4
+#define SMINTERFACE_MENUMANAGER_VERSION		5
 
 /**
  * @file IMenuManager.h
@@ -115,6 +115,19 @@ namespace SourceMod
 		MenuCancel_Exit = -3,		/**< Client selected "exit" on a paginated menu */
 		MenuCancel_NoDisplay = -4,	/**< Menu could not be displayed to the client */
 	};
+
+	/**
+	 * @brief Reasons a menu ended.
+	 */
+	enum MenuEndReason
+	{
+		MenuEnd_Cancelled = -1,				/**< Menu was cancelled, reason was passed in MenuAction_Cancel */
+		MenuEnd_Exit = -2,					/**< Menu was cleanly exited (but cancelled) */
+		MenuEnd_Selected = -3,				/**< Menu item was selected and thus the menu is finished */
+		MenuEnd_VotingDone = -4,			/**< Voting finished */
+		MenuEnd_VotingCancelled = -5,		/**< Voting was cancelled */
+	};
+
 
 	#define MENU_NO_PAGINATION			0		/**< Menu should not be paginated (10 items max) */
 	#define MENU_TIME_FOREVER			0		/**< Menu should be displayed as long as possible */
@@ -589,7 +602,7 @@ namespace SourceMod
 		 *
 		 * @param menu			Menu pointer.
 		 */
-		virtual void OnMenuEnd(IBaseMenu *menu)
+		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
 		}
 
@@ -722,7 +735,7 @@ namespace SourceMod
 		}
 		virtual bool IsVersionCompatible(unsigned int version)
 		{
-			if (version < 4 || version > GetInterfaceVersion())
+			if (version < 5 || version > GetInterfaceVersion())
 			{
 				return false;
 			}

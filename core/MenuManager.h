@@ -33,7 +33,7 @@ public: //IMenuHandler
 	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
 	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
-	void OnMenuEnd(IBaseMenu *menu);
+	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
 public: //IVoteMenuHandler

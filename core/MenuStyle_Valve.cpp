@@ -147,7 +147,7 @@ bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh,
 	{
 		mh->OnMenuStart(menu);
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
+		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
 		return false;
 	}
 

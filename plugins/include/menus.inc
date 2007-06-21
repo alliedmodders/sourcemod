@@ -37,7 +37,7 @@ enum MenuAction
 	MenuAction_Display = (1<<1),	/**< A menu is about to be displayed (param1=client, param2=MenuPanel Handle) */
 	MenuAction_Select = (1<<2),		/**< An item was selected (param1=client, param2=item) */
 	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=reason) */
-	MenuAction_End = (1<<4),		/**< A menu's display/selection cycle is complete (nothing passed) */
+	MenuAction_End = (1<<4),		/**< A menu display has fully ended (param1=reason) */
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item) */
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
@@ -68,6 +68,18 @@ enum
 	MenuCancel_Interrupt = -2,			/**< Client was interrupted with another menu */
 	MenuCancel_Exit = -3,				/**< Client selected "exit" on a paginated menu */
 	MenuCancel_NoDisplay = -4,			/**< Menu could not be displayed to the client */
+};
+
+/**
+ * Reasons a menu ended.
+ */
+enum
+{
+	MenuEnd_Cancelled = -1,				/**< Menu was cancelled, reason was passed in MenuAction_Cancel */
+	MenuEnd_Exit = -2,					/**< Menu was cleanly exited (but cancelled) */
+	MenuEnd_Selected = -3,				/**< Menu item was selected and thus the menu is finished */
+	MenuEnd_VotingDone = -4,			/**< Voting finished */
+	MenuEnd_VotingCancelled = -5,		/**< Voting was cancelled */
 };
 
 /**

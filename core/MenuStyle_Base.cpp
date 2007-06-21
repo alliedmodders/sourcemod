@@ -84,7 +84,7 @@ void BaseMenuStyle::_CancelClientMenu(int client, bool bAutoIgnore/* =false */, 
 	/* Only fire end if there's a valid menu */
 	if (menu)
 	{
-		mh->OnMenuEnd(menu);
+		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
 	}
 
 	if (bAutoIgnore)
@@ -311,7 +311,15 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	/* Only fire end for valid menus */
 	if (menu)
 	{
-		mh->OnMenuEnd(menu);
+		MenuEndReason end_reason = 
+			(cancel ? 
+				MenuEnd_Selected
+				: 
+				(reason == MenuCancel_Exit ? 
+					MenuEnd_Exit
+					: 
+					MenuEnd_Cancelled));
+		mh->OnMenuEnd(menu, end_reason);
 	}
 }
 
@@ -392,7 +400,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Failed to display to client %d", client);
 #endif
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
+		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
 		return false;
 	}
 
@@ -403,7 +411,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Client %d is autoIgnoring", client);
 #endif
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
+		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
 		return false;
 	}
 
@@ -439,7 +447,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 		player->bAutoIgnore = false;
 		player->bInMenu = false;
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
-		mh->OnMenuEnd(menu);
+		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
 		return false;
 	}
 

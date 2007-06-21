@@ -104,7 +104,7 @@ void VoteMenuHandler::EndVoting()
 		IBaseMenu *menu = m_pCurMenu;
 		InternalReset();
 		m_pHandler->OnMenuVoteCancel(menu);
-		m_pHandler->OnMenuEnd(menu);
+		m_pHandler->OnMenuEnd(menu, MenuEnd_VotingCancelled);
 		return;
 	}
 
@@ -163,7 +163,7 @@ void VoteMenuHandler::EndVoting()
 
 picked_item:
 	m_pHandler->OnMenuVoteEnd(m_pCurMenu, chosen, m_Votes[highest], total);
-	m_pHandler->OnMenuEnd(m_pCurMenu);
+	m_pHandler->OnMenuEnd(m_pCurMenu, MenuEnd_VotingDone);
 	InternalReset();
 }
 
@@ -172,7 +172,7 @@ void VoteMenuHandler::OnMenuStart(IBaseMenu *menu)
 	m_Clients++;
 }
 
-void VoteMenuHandler::OnMenuEnd(IBaseMenu *menu)
+void VoteMenuHandler::OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 {
 	DecrementPlayerCount();
 }
