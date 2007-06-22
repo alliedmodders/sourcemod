@@ -442,9 +442,9 @@ static cell_t smn_KvGotoNextKey(IPluginContext *pCtx, const cell_t *params)
 	KeyValues *pSubKey = pStk->pCurRoot.front();
 	if (params[2])
 	{
-		pSubKey = pSubKey->GetNextKey();
-	} else {
 		pSubKey = pSubKey->GetNextTrueSubKey();
+	} else {
+		pSubKey = pSubKey->GetNextKey();
 	}
 	if (!pSubKey)
 	{
