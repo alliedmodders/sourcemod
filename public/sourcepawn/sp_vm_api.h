@@ -56,6 +56,7 @@ namespace SourcePawn
 	enum SP_NULL_TYPE
 	{
 		SP_NULL_VECTOR = 0,		/**< Float[3] reference */
+		SP_NULL_STRING = 1,		/**< const String[1] reference */
 	};
 #endif
 
@@ -555,6 +556,15 @@ namespace SourcePawn
 		 * @return			cell_t address to compare to.
 		 */
 		virtual cell_t *GetNullRef(SP_NULL_TYPE type) =0;
+
+		/**
+		 * @brief Converts a local address to a physical string, and allows
+		 * for NULL_STRING to be set.
+		 *
+		 * @param local_addr	Local address in plugin.
+		 * @param addr			Destination output pointer.
+		 */
+		virtual int LocalToStringNULL(cell_t local_addr, char **addr) =0;
 #endif
 	};
 

@@ -92,7 +92,7 @@ static cell_t smn_KvSetString(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	char *key, *value;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToString(params[3], &value);
 
 	pStk->pCurRoot.front()->SetString(key, value);
@@ -117,7 +117,7 @@ static cell_t smn_KvSetNum(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	char *key;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 
 	pStk->pCurRoot.front()->SetInt(key, params[3]);
 
@@ -143,7 +143,7 @@ static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 	char *key;
 	cell_t *addr;
 	uint64 value;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToPhysAddr(params[3], &addr);
 
 	value = static_cast<uint64>(*addr);
@@ -169,7 +169,7 @@ static cell_t smn_KvSetFloat(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	char *key;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 
 	pStk->pCurRoot.front()->SetFloat(key, sp_ctof(params[3]));
 
@@ -193,7 +193,7 @@ static cell_t smn_KvSetColor(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	char *key;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 
 	Color color(params[3], params[4], params[5], params[6]);
 	pStk->pCurRoot.front()->SetColor(key, color);
@@ -219,7 +219,7 @@ static cell_t smn_KvGetString(IPluginContext *pCtx, const cell_t *params)
 
 	const char *value;
 	char *key, *defvalue;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToString(params[5], &defvalue);
 
 	value = pStk->pCurRoot.front()->GetString(key, defvalue);
@@ -246,7 +246,7 @@ static cell_t smn_KvGetNum(IPluginContext *pCtx, const cell_t *params)
 
 	int value;
 	char *key;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 
 	value = pStk->pCurRoot.front()->GetInt(key, params[3]);
 
@@ -271,7 +271,7 @@ static cell_t smn_KvGetFloat(IPluginContext *pCtx, const cell_t *params)
 
 	float value;
 	char *key;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 
 	value = pStk->pCurRoot.front()->GetFloat(key, sp_ctof(params[3]));
 
@@ -297,7 +297,7 @@ static cell_t smn_KvGetColor(IPluginContext *pCtx, const cell_t *params)
 	Color color;
 	char *key;
 	cell_t *r, *g, *b, *a;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToPhysAddr(params[3], &r);
 	pCtx->LocalToPhysAddr(params[4], &g);
 	pCtx->LocalToPhysAddr(params[5], &b);
@@ -331,7 +331,7 @@ static cell_t smn_KvGetUInt64(IPluginContext *pCtx, const cell_t *params)
 	char *key;
 	cell_t *addr, *defvalue;
 	uint64 value;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToPhysAddr(params[3], &addr);
 	pCtx->LocalToPhysAddr(params[4], &defvalue);
 

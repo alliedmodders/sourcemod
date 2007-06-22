@@ -83,6 +83,15 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	} else {
 		m_pNullVec = NULL;
 	}
+
+	if (FindPubvarByName("NULL_STRING", &index) == SP_ERROR_NONE)
+	{
+		sp_pubvar_t *pubvar;
+		GetPubvarByIndex(index, &pubvar);
+		m_pNullString = pubvar->offs;
+	} else {
+		m_pNullString = NULL;
+	}
 }
 
 void BaseContext::FlushFunctionCache()
@@ -990,6 +999,22 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 	}
 
 	return pFunc;
+}
+
+int BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
+{
+	int err;
+	if ((err = LocalToString(local_addr, addr)) != SP_ERROR_NONE)
+	{
+		return err;
+	}
+
+	if ((cell_t *)*addr == m_pNullString)
+	{
+		*addr = NULL;
+	}
+
+	return SP_ERROR_NONE;
 }
 
 #if defined SOURCEMOD_BUILD

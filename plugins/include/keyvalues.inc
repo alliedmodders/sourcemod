@@ -49,7 +49,7 @@ native Handle:CreateKeyValues(const String:name[], const String:firstkey[]="", c
  * Sets a string value of a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param value			String value.
  * @noreturn
  * @error				Invalid Handle.
@@ -60,7 +60,7 @@ native KvSetString(Handle:kv, const String:key[], const String:value[]);
  * Sets an integer value of a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param value			Value number.
  * @noreturn
  * @error				Invalid Handle.
@@ -71,7 +71,7 @@ native KvSetNum(Handle:kv, const String:key[], value);
  * Sets a large integer value of a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param value			Large integer value (0=High bits, 1=Low bits)
  * @noreturn
  * @error				Invalid Handle.
@@ -82,7 +82,7 @@ native KvSetUInt64(Handle:kv, const String:key[], const value[2]);
  * Sets a floating point value of a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param value			Floating point value.
  * @noreturn
  * @error				Invalid Handle.
@@ -93,7 +93,7 @@ native KvSetFloat(Handle:kv, const String:key[], Float:value);
  * Sets a set of color values of a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param r				Red value.
  * @param g				Green value.
  * @param b				Blue value.
@@ -107,7 +107,7 @@ native KvSetColor(Handle:kv, const String:key[], r, g, b, a=0);
  * Retrieves a string value from a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param value			Buffer to store key value in.
  * @param maxlength		Maximum length of the value buffer.
  * @param defvalue		Optional default value to use if the key is not found.
@@ -120,7 +120,7 @@ native KvGetString(Handle:kv, const String:key[], String:value[], maxlength, con
  * Retrieves an integer value from a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param defvalue		Optional default value to use if the key is not found.
  * @return				Integer value of the key.
  * @error				Invalid Handle.
@@ -131,7 +131,7 @@ native KvGetNum(Handle:kv, const String:key[], defvalue=0);
  * Retrieves a floating point value from a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param defvalue		Optional default value to use if the key is not found.
  * @return				Floating point value of the key.
  * @error				Invalid Handle.
@@ -142,7 +142,7 @@ native Float:KvGetFloat(Handle:kv, const String:key[], Float:defvalue=0.0);
  * Retrieves a set of color values from a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param r				Red value, set by reference.
  * @param g				Green value, set by reference. 
  * @param b				Blue value, set by reference. 
@@ -156,7 +156,7 @@ native KvGetColor(Handle:kv, const String:key[], &r, &g, &b, &a);
  * Retrieves a large integer value from a KeyValues key.
  *
  * @param kv			KeyValues Handle.
- * @param key			Name of the key.
+ * @param key			Name of the key, or NULL_STRING.
  * @param value			Array to represent the large integer.
  * @param defvalue		Optional default value to use if the key is not found.
  * @noreturn

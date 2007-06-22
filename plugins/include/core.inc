@@ -91,7 +91,8 @@ struct Extension
 	bool:required,			/**< Whether or not to require */
 };
 
-public Float:NULL_VECTOR[3];	/**< Pass this into certain functions to act as a C++ NULL */
+public Float:NULL_VECTOR[3];		/**< Pass this into certain functions to act as a C++ NULL */
+public const String:NULL_STRING[1];	/**< pass this into certain functions to act as a C++ NULL */
 
 #define AUTOLOAD_EXTENSIONS
 #define REQUIRE_EXTENSIONS
