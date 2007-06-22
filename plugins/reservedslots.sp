@@ -100,7 +100,7 @@ SetVisibleMaxSlots(clients, limit)
 {
 	new num = clients + 1;
 	
-	if (clients == g_MaxClients || clients > limit)
+	if (clients == g_MaxClients)
 	{
 		num = g_MaxClients;
 	} else if (clients < limit) {
