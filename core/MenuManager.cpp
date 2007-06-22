@@ -594,7 +594,6 @@ skip_search:
 		for (unsigned int i=0; i<foundItems; i++)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
-			menu->GetItemInfo(drawItems[i].position, &dr);
 			mh->OnMenuDisplayItem(menu, client, drawItems[i].position, &(dr.display));
 			if ((position = display->DrawItem(dr)) != 0)
 			{
@@ -610,7 +609,6 @@ skip_search:
 		while (i--)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
-			menu->GetItemInfo(drawItems[i].position, &dr);
 			mh->OnMenuDisplayItem(menu, client, drawItems[i].position, &(dr.display));
 			if ((position = display->DrawItem(dr)) != 0)
 			{

@@ -43,6 +43,7 @@ enum MenuAction
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has ended (param1=chosen item) */
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
+	MenuAction_DrawItem = (1<<8),	/**< A style is being drawn; return the new style (param1=client, param2=item) */
 };
 
 class CPanelHandler : public IMenuHandler
@@ -77,12 +78,13 @@ public:
 		unsigned int winningVotes,
 		unsigned int totalVotes);
 	void OnMenuVoteCancel(IBaseMenu *menu);
+	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 #if 0
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
 #endif
 private:
-	void DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2);
+	cell_t DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2, cell_t def_res=0);
 private:
 	IPluginFunction *m_pBasic;
 	int m_Flags;
@@ -307,7 +309,16 @@ void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)
 	DoAction(menu, MenuAction_VoteCancel, 0, 0);
 }
 
-void CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2)
+void CMenuHandler::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)
+{
+	if ((m_Flags & (int)MenuAction_DrawItem) == (int)MenuAction_DrawItem)
+	{
+		cell_t result = DoAction(menu, MenuAction_DrawItem, client, item, style);
+		style = (unsigned int)result;
+	}
+}
+
+cell_t CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2, cell_t def_res)
 {
 #if defined MENU_DEBUG
 	g_Logger.LogMessage("[SM_MENU] CMenuHandler::DoAction() (menu %p/%08x) (action %d) (param1 %d) (param2 %d)",
@@ -317,11 +328,13 @@ void CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, c
 		param1,
 		param2);
 #endif
+	cell_t res = def_res;
 	m_pBasic->PushCell(menu->GetHandle());
 	m_pBasic->PushCell((cell_t)action);
 	m_pBasic->PushCell(param1);
 	m_pBasic->PushCell(param2);
-	m_pBasic->Execute(NULL);
+	m_pBasic->Execute(&res);
+	return res;
 }
 
 /**
