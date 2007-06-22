@@ -18,7 +18,6 @@
 #include "HalfLife2.h"
 #include "sourcemod.h"
 #include "ChatTriggers.h"
-#include "GameConfigs.h"
 #include <inetchannel.h>
 #include <iclient.h>
 
@@ -166,6 +165,27 @@ static cell_t sm_IsClientFakeClient(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	return (pPlayer->IsFakeClient()) ? 1 : 0;
+}
+
+static cell_t IsClientObserver(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	return pInfo->IsObserver() ? 1 : 0;
 }
 
 static cell_t sm_GetClientInfo(IPluginContext *pContext, const cell_t *params)
@@ -970,6 +990,7 @@ REGISTER_NATIVES(playernatives)
 	{"IsFakeClient",			sm_IsClientFakeClient},
 	{"IsPlayerInGame",			sm_IsClientInGame},			/* Backwards compat shim */
 	{"IsClientInGame",			sm_IsClientInGame},
+	{"IsClientObserver",		IsClientObserver},
 	{"RemoveUserFlags",			RemoveUserFlags},
 	{"SetUserAdmin",			SetUserAdmin},
 	{"SetUserFlagBits",			SetUserFlagBits},

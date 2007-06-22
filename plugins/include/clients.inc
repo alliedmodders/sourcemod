@@ -188,6 +188,14 @@ native bool:IsClientAuthorized(client);
 native bool:IsFakeClient(client);
 
 /**
+ * Returns if a certain player is an observer/spectator.
+ *
+ * @param client		Player index.
+ * @return				True if player is an obverser, false otherwise.
+ */
+native bool:IsClientObserver(client);
+
+/**
  * Retrieves values from client replicated keys.
  *
  * @param client		Player's index.
