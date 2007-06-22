@@ -81,7 +81,7 @@ public: //helpers
 	void CancelMenu(CBaseMenu *menu);
 	void ClientPressedKey(int client, unsigned int key_press);
 protected:
-	void _CancelClientMenu(int client, bool bAutoIgnore=false, MenuCancelReason reason=MenuCancel_Interrupt);
+	void _CancelClientMenu(int client, MenuCancelReason reason, bool bAutoIgnore=false);
 	bool RedoClientMenu(int client, ItemOrder order);
 protected:
 	FastLink<int> m_WatchList;
@@ -111,11 +111,13 @@ public:
 	virtual void Destroy(bool releaseHandle);
 	virtual void Cancel_Finally() =0;
 	virtual Handle_t GetHandle();
-	bool BroadcastVote(int clients[], 
+	virtual bool BroadcastVote(int clients[], 
 		unsigned int numClients, 
 		unsigned int maxTime,
 		unsigned int flags=0);
-	bool IsVoteInProgress();
+	virtual bool IsVoteInProgress();
+	virtual bool GetExitBackButton();
+	virtual void SetExitBackButton(bool set);
 public:
 	virtual void VoteDisplay(int client, unsigned int maxTime) =0;
 private:
@@ -135,6 +137,7 @@ protected:
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 	IVoteMenuHandler *m_pVoteHandler;
+	bool m_ExitBackButton;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H

@@ -23,7 +23,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		5
+#define SMINTERFACE_MENUMANAGER_VERSION		6
 
 /**
  * @file IMenuManager.h
@@ -38,10 +38,11 @@ namespace SourceMod
 	enum ItemSelection
 	{
 		ItemSel_None,					/**< Invalid selection */
-		ItemSel_Back,					/**< Go back one page */
+		ItemSel_Back,					/**< Go back one page (really "Previous") */
 		ItemSel_Next,					/**< Go forward one page */
 		ItemSel_Exit,					/**< Menu was exited */
 		ItemSel_Item,					/**< Valid item selection */
+		ItemSel_ExitBack,				/**< Sends MenuEnd_ExitBack */
 	};
 
 	/**
@@ -110,10 +111,12 @@ namespace SourceMod
 	 */
 	enum MenuCancelReason
 	{
-		MenuCancel_Disconnect = -1,	/**< Client dropped from the server */
-		MenuCancel_Interrupt = -2,	/**< Client was interrupted with another menu */
-		MenuCancel_Exit = -3,		/**< Client selected "exit" on a paginated menu */
-		MenuCancel_NoDisplay = -4,	/**< Menu could not be displayed to the client */
+		MenuCancel_Disconnected = -1,	/**< Client dropped from the server */
+		MenuCancel_Interrupted = -2,	/**< Client was interrupted with another menu */
+		MenuCancel_Exit = -3,			/**< Client selected "exit" on a paginated menu */
+		MenuCancel_NoDisplay = -4,		/**< Menu could not be displayed to the client */
+		MenuCancel_Timeout = -5,		/**< Menu timed out */
+		MenuCancel_ExitBack = -6,		/**< Client selected "exit back" on a paginated menu */
 	};
 
 	/**
@@ -121,11 +124,12 @@ namespace SourceMod
 	 */
 	enum MenuEndReason
 	{
-		MenuEnd_Cancelled = -1,				/**< Menu was cancelled, reason was passed in MenuAction_Cancel */
-		MenuEnd_Exit = -2,					/**< Menu was cleanly exited (but cancelled) */
-		MenuEnd_Selected = -3,				/**< Menu item was selected and thus the menu is finished */
-		MenuEnd_VotingDone = -4,			/**< Voting finished */
-		MenuEnd_VotingCancelled = -5,		/**< Voting was cancelled */
+		MenuEnd_Selected = 0,				/**< Menu item was selected */
+		MenuEnd_VotingDone = -1,			/**< Voting finished */
+		MenuEnd_VotingCancelled = -2,		/**< Voting was cancelled */
+		MenuEnd_Cancelled = -3,				/**< Menu was uncleanly cancelled */
+		MenuEnd_Exit = -4,					/**< Menu was cleanly exited via "exit" */
+		MenuEnd_ExitBack = -5,				/**< Menu was cleanly exited via "back" */
 	};
 
 
@@ -536,6 +540,22 @@ namespace SourceMod
 		 * @return				True if a vote menu is active, false otherwise.
 		 */
 		virtual bool IsVoteInProgress() =0;
+
+		/**
+		 * @brief Returns whether to draw a "Back" button on the first page.
+		 * ExitBack buttons are disabled by default.
+		 *
+		 * @return				True if enabled, false otherwise.
+		 */
+		virtual bool GetExitBackButton() =0;
+
+		/**
+		 * @brief Sets whether to draw a "Back" button on the first page.
+		 * ExitBack buttons are disabled by default.
+		 *
+		 * @param set			True to enable, false to disable.
+		 */
+		virtual void SetExitBackButton(bool set) =0;
 	};
 
 	/** 

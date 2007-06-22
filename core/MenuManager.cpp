@@ -625,6 +625,7 @@ skip_search:
 	{
 		bool canDrawDisabled = display->CanDrawItem(ITEMDRAW_DISABLED|ITEMDRAW_CONTROL);
 		bool exitButton = menu->GetExitButton();
+		bool exitBackButton = menu->GetExitBackButton();
 		char text[50];
 
 		/* Calculate how many items we are allowed for control stuff */
@@ -649,6 +650,17 @@ skip_search:
 
 		/* Subtract two slots for the displayNext/displayPrev padding */
 		padding -= 2;
+
+		/* If we have an "Exit Back" button and the space to draw it, do so. */
+		if (exitBackButton)
+		{
+			if (!displayPrev)
+			{
+				displayPrev = true;
+			} else {
+				exitBackButton = false;
+			}
+		}
 
 		/**
 		 * We allow next/prev to be undrawn if neither exists.
@@ -690,10 +702,18 @@ skip_search:
 			ItemDrawInfo padCtrlItem(NULL, ITEMDRAW_SPACER|ITEMDRAW_CONTROL);
 			if (displayPrev || canDrawDisabled)
 			{
-				CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
-				dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
-				position = display->DrawItem(dr);
-				slots[position].type = ItemSel_Back;
+				if (exitBackButton)
+				{
+					CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
+					dr.style = ITEMDRAW_CONTROL;
+					position = display->DrawItem(dr);
+					slots[position].type = ItemSel_ExitBack;
+				} else {
+					CorePlayerTranslate(client, text, sizeof(text), "Previous", NULL);
+					dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
+					position = display->DrawItem(dr);
+					slots[position].type = ItemSel_Back;
+				}
 			} else if (displayNext || exitButton) {
 				/* If we can't display this, and there is an exit button,
 				 * we need to pad!

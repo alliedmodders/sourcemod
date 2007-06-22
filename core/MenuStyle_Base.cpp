@@ -53,7 +53,7 @@ void BaseMenuStyle::RemoveClientFromWatch(int client)
 	m_WatchList.remove(client);
 }
 
-void BaseMenuStyle::_CancelClientMenu(int client, bool bAutoIgnore/* =false */, MenuCancelReason reason/* =MenuCancel_Interrupt */)
+void BaseMenuStyle::_CancelClientMenu(int client, MenuCancelReason reason, bool bAutoIgnore/* =false */)
 {
 #if defined MENU_DEBUG
 	g_Logger.LogMessage("[SM_MENU] _CancelClientMenu() (client %d) (bAutoIgnore %d) (reason %d)", client, bAutoIgnore, reason);
@@ -107,7 +107,7 @@ void BaseMenuStyle::CancelMenu(CBaseMenu *menu)
 			menu_states_t &states = player->states;
 			if (states.menu == menu)
 			{
-				_CancelClientMenu(i);
+				_CancelClientMenu(i, MenuCancel_Interrupted);
 			}
 		}
 	}
@@ -129,7 +129,7 @@ bool BaseMenuStyle::CancelClientMenu(int client, bool autoIgnore)
 		return false;
 	}
 
-	_CancelClientMenu(client, autoIgnore);
+	_CancelClientMenu(client, MenuCancel_Interrupted, autoIgnore);
 
 	return true;
 }
@@ -180,7 +180,7 @@ void BaseMenuStyle::OnClientDisconnected(int client)
 		return;
 	}
 
-	_CancelClientMenu(client, true, MenuCancel_Disconnect);
+	_CancelClientMenu(client, MenuCancel_Disconnected, true);
 
 	player->bInMenu = false;
 	player->bInExternMenu = false;
@@ -232,7 +232,7 @@ void BaseMenuStyle::ProcessWatchList()
 		}
 		if (curTime > player->menuStartTime + player->menuHoldTime)
 		{
-			_CancelClientMenu(client, false);
+			_CancelClientMenu(client, MenuCancel_Timeout, false);
 		}
 	}
 }
@@ -253,6 +253,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	bool cancel = false;
 	unsigned int item = 0;
 	MenuCancelReason reason = MenuCancel_Exit;
+	MenuEndReason end_reason = MenuEnd_Selected;
 	menu_states_t &states = player->states;
 
 	assert(states.mh != NULL);
@@ -272,6 +273,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 			{
 				cancel = true;
 				reason = MenuCancel_NoDisplay;
+				end_reason = MenuEnd_Cancelled;
 			} else {
 				return;
 			}
@@ -280,11 +282,18 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 			{
 				cancel = true;						/* I like Saltines. */
 				reason = MenuCancel_NoDisplay;
+				end_reason = MenuEnd_Cancelled;
 			} else {
 				return;
 			}
 		} else if (type == ItemSel_Exit || type == ItemSel_None) {
 			cancel = true;
+			reason = MenuCancel_Exit;
+			end_reason = MenuEnd_Exit;
+		} else if (type == ItemSel_ExitBack) {
+			cancel = true;
+			reason = MenuCancel_ExitBack;
+			end_reason = MenuEnd_ExitBack;
 		} else {
 			item = states.slots[key_press].item;
 		}
@@ -311,14 +320,6 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	/* Only fire end for valid menus */
 	if (menu)
 	{
-		MenuEndReason end_reason = 
-			(cancel ? 
-				MenuEnd_Selected
-				: 
-				(reason == MenuCancel_Exit ? 
-					MenuEnd_Exit
-					: 
-					MenuEnd_Cancelled));
 		mh->OnMenuEnd(menu, end_reason);
 	}
 }
@@ -355,7 +356,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 	menu_states_t &states = player->states;
 	if (player->bInMenu)
 	{
-		_CancelClientMenu(client, true);
+		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
 
 	states.firstItem = 0;
@@ -429,7 +430,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 #if defined MENU_DEBUG
 		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Cancelling old menu to client %d", client);
 #endif
-		_CancelClientMenu(client, true);
+		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
 
 	states.firstItem = 0;
@@ -518,7 +519,7 @@ CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t
 m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true), 
 m_bShouldDelete(false), m_bCancelling(false), m_pOwner(pOwner ? pOwner : g_pCoreIdent), 
 m_bDeleting(false), m_bWillFreeHandle(false), m_hHandle(BAD_HANDLE), m_pHandler(pHandler),
-m_pVoteHandler(NULL)
+m_pVoteHandler(NULL), m_ExitBackButton(false)
 {
 }
 
@@ -788,4 +789,14 @@ bool CBaseMenu::BroadcastVote(int clients[],
 bool CBaseMenu::IsVoteInProgress()
 {
 	return (m_pVoteHandler && m_pVoteHandler->IsVoteInProgress());
+}
+
+bool CBaseMenu::GetExitBackButton()
+{
+	return m_ExitBackButton;
+}
+
+void CBaseMenu::SetExitBackButton(bool set)
+{
+	m_ExitBackButton = set;
 }

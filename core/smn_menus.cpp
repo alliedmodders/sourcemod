@@ -617,6 +617,20 @@ static cell_t GetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 	return menu->GetExitButton() ? 1 : 0;
 }
 
+static cell_t GetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return menu->GetExitBackButton() ? 1 : 0;
+}
+
 static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -629,6 +643,22 @@ static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return menu->SetExitButton(params[2] ? true : false) ? 1 : 0;
+}
+
+static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	menu->SetExitBackButton(params[2] ? true : false);
+
+	return 1;
 }
 
 static cell_t CancelMenu(IPluginContext *pContext, const cell_t *params)
@@ -971,6 +1001,7 @@ REGISTER_NATIVES(menuNatives)
 	{"DrawPanelText",			DrawPanelText},
 	{"GetClientMenu",			GetClientMenu},
 	{"GetMaxPageItems",			GetMaxPageItems},
+	{"GetMenuExitBackButton",	GetMenuExitBackButton},
 	{"GetMenuExitButton",		GetMenuExitButton},
 	{"GetMenuItem",				GetMenuItem},
 	{"GetMenuItemCount",		GetMenuItemCount},
@@ -984,6 +1015,7 @@ REGISTER_NATIVES(menuNatives)
 	{"RemoveAllMenuItems",		RemoveAllMenuItems},
 	{"RemoveMenuItem",			RemoveMenuItem},
 	{"SendPanelToClient",		SendPanelToClient},
+	{"SetMenuExitBackButton",	SetMenuExitBackButton},
 	{"SetMenuExitButton",		SetMenuExitButton},
 	{"SetMenuPagination",		SetMenuPagination},
 	{"SetMenuTitle",			SetMenuTitle},

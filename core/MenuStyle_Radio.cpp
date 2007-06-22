@@ -130,7 +130,7 @@ void CRadioStyle::OnUserMessageSent(int msg_id)
 #endif
 		if (m_players[client].bInMenu)
 		{
-			_CancelClientMenu(client, true);
+			_CancelClientMenu(client, MenuCancel_Interrupted, true);
 		}
 		m_players[client].bInExternMenu = true;
 		m_players[client].menuHoldTime = g_last_holdtime;

@@ -37,7 +37,7 @@ enum MenuAction
 	MenuAction_Display = (1<<1),	/**< A menu is about to be displayed (param1=client, param2=MenuPanel Handle) */
 	MenuAction_Select = (1<<2),		/**< An item was selected (param1=client, param2=item) */
 	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=reason) */
-	MenuAction_End = (1<<4),		/**< A menu display has fully ended (param1=reason) */
+	MenuAction_End = (1<<4),		/**< A menu display has fully ended (param1=reason, param2=cancel reason) */
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item) */
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
@@ -64,22 +64,25 @@ enum MenuAction
  */
 enum
 {
-	MenuCancel_Disconnect = -1,			/**< Client dropped from the server */
-	MenuCancel_Interrupt = -2,			/**< Client was interrupted with another menu */
-	MenuCancel_Exit = -3,				/**< Client selected "exit" on a paginated menu */
-	MenuCancel_NoDisplay = -4,			/**< Menu could not be displayed to the client */
+	MenuCancel_Disconnected = -1,	/**< Client dropped from the server */
+	MenuCancel_Interrupted = -2,	/**< Client was interrupted with another menu */
+	MenuCancel_Exit = -3,			/**< Client exited via "exit" */
+	MenuCancel_NoDisplay = -4,		/**< Menu could not be displayed to the client */
+	MenuCancel_Timeout = -5,		/**< Menu timed out */
+	MenuCancel_ExitBack = -6,		/**< Client selected "exit back" on a paginated menu */
 };
 
 /**
  * Reasons a menu ended.
  */
-enum
+enum MenuEndReason
 {
-	MenuEnd_Cancelled = -1,				/**< Menu was cancelled, reason was passed in MenuAction_Cancel */
-	MenuEnd_Exit = -2,					/**< Menu was cleanly exited (but cancelled) */
-	MenuEnd_Selected = -3,				/**< Menu item was selected and thus the menu is finished */
-	MenuEnd_VotingDone = -4,			/**< Voting finished */
-	MenuEnd_VotingCancelled = -5,		/**< Voting was cancelled */
+	MenuEnd_Selected = 0,			/**< Menu item was selected */
+	MenuEnd_VotingDone = -1,		/**< Voting finished */
+	MenuEnd_VotingCancelled = -2,	/**< Voting was cancelled */
+	MenuEnd_Cancelled = -3,			/**< Menu was cancelled (reason in param2) */
+	MenuEnd_Exit = -4,				/**< Menu was cleanly exited via "exit" */
+	MenuEnd_ExitBack = -5,			/**< Menu was cleanly exited via "back" */
 };
 
 /**
@@ -272,6 +275,31 @@ native bool:GetMenuExitButton(Handle:menu);
  * @error					Invalid Handle.
  */
 native bool:SetMenuExitButton(Handle:menu, bool:button);
+
+/**
+ * Returns whether or not the menu has an "exit back" button.
+ * By default, menus do not have an exit back button.
+ * Exit Back buttons appear as "Back" on page 1 of paginated menus and
+ * have functionality defined by the user in MenuEnd_ExitBack.
+ *
+ * @param menu				Menu Handle.
+ * @return 					True if the menu has an exit back button; false otherwise.
+ * @error					Invalid Handle.
+ */
+native bool:GetMenuExitBackButton(Handle:menu);
+
+/**
+ * Sets whether or not the menu has an "exit back" button.
+ * By default, menus do not have an exit back button.
+ * Exit Back buttons appear as "Back" on page 1 of paginated menus and
+ * have functionality defined by the user in MenuEnd_ExitBack.
+ *
+ * @param menu				Menu Handle.
+ * @param button			True to enable the button, false to remove it.
+ * @error					Invalid Handle.
+ */
+native SetMenuExitBackButton(Handle:menu, bool:button);
+
 
 /**
  * Cancels a menu from displaying on all clients.  While the

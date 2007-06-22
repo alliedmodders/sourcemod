@@ -95,7 +95,7 @@ void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
 		 * day to avenge its grandfather, killed in the great Menu Interruption
 		 * battle.
 		 */
-		_CancelClientMenu(client, true);
+		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
 }
 
