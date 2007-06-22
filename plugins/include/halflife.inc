@@ -36,7 +36,7 @@ enum DialogType
 native LogToGame(const String:format[], any:...);
 
 /**
- * Sets the seed value for the global Half-Life 2 Random Stream
+ * Sets the seed value for the global Half-Life 2 Random Stream.
  *
  * @param seed			Seed value.
  * @noreturn	
@@ -44,7 +44,7 @@ native LogToGame(const String:format[], any:...);
 native SetRandomSeed(seed);
 
 /**
- * Returns a random floating point number from the Half-Life 2 Random Stream
+ * Returns a random floating point number from the Half-Life 2 Random Stream.
  *
  * @param fMin			Minimum random bound.
  * @param fMax			Maximum random bound.
@@ -53,7 +53,7 @@ native SetRandomSeed(seed);
 native Float:GetRandomFloat(Float:fMin=0.0, Float:fMax=1.0);
 
 /**
- * Returns a random number from the Half-Life 2 Random Stream
+ * Returns a random number from the Half-Life 2 Random Stream.
  *
  * @param nmin			Minimum random bound.
  * @param nmax			Maximum random bound.
