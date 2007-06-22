@@ -933,9 +933,7 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 
 	if (pPlayer->IsFakeClient())
 	{
-		char kickcmd[64];
-
-		/* :TODO: Define BotKickCmd in core.games.txt so that "bot_kick" can be used in CS:S */
+		char kickcmd[40];
 		UTIL_Format(kickcmd, sizeof(kickcmd), "kick %s\n", pPlayer->GetName());
 
 		engine->ServerCommand(kickcmd);

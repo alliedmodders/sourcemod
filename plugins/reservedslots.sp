@@ -59,7 +59,7 @@ public OnConfigsExecuted()
 {
 	if (GetConVarBool(sm_hide_slots))
 	{
-		SetConVarInt(sv_visiblemaxplayers, g_MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
 	}	
 }
 
@@ -73,28 +73,39 @@ public OnClientAuthorized(client, const String:auth[])
 		new limit = g_MaxClients - reserved;
 		new flags = GetUserFlagBits(client);
 		
-		if (flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION || clients <= limit)
+		if (clients <= limit || IsFakeClient(client) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
 		{
 			if (GetConVarBool(sm_hide_slots))
 			{
-				SetConVarInt(sv_visiblemaxplayers, (clients == g_MaxClients) ? g_MaxClients : ++limit);
+				SetVisibleMaxSlots(clients, limit);
 			}
 			
 			return;
 		}
-		
+
 		/* Kick player because there are no public slots left */
 		KickClient(client, "%T", "Slot reserved", client);
 	}
 }
 
-public OnClientDisconnect(client)
+public OnClientDisconnect_Post(client)
 {
 	if (GetConVarBool(sm_hide_slots))
-	{
-		new clients = GetClientCount(false);
-		new limit = g_MaxClients - GetConVarInt(sm_reserved_slots);
-		
-		SetConVarInt(sv_visiblemaxplayers, (clients == g_MaxClients) ? g_MaxClients : limit);
+	{		
+		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
 	}
+}
+
+SetVisibleMaxSlots(clients, limit)
+{
+	new num = clients + 1;
+	
+	if (clients == g_MaxClients || clients > limit)
+	{
+		num = g_MaxClients;
+	} else if (clients < limit) {
+		num = limit;
+	}
+	
+	SetConVarInt(sv_visiblemaxplayers, num);
 }
