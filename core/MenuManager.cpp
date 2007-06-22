@@ -568,7 +568,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 				goto skip_search;
 			}
 			lastItem--;
-			while (lastItem-- != 0)
+			while (lastItem != 0)
 			{
 				if (menu->GetItemInfo(lastItem, &dr) != NULL)
 				{
@@ -580,6 +580,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 						break;
 					}
 				}
+				lastItem--;
 			}
 		}
 	}
