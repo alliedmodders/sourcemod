@@ -105,10 +105,18 @@ void CPhraseFile::ReparseFile()
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
 
-	/* :HACKHACK: If we're looking for a .txt, see if a .cfg also exists if our .txt does not. */
+	//backwards compatibility shim
+	/* :HACKHACK: Change .cfg/.txt and vice versa for compatibility */
 	if (!g_LibSys.PathExists(path))
 	{
-		UTIL_ReplaceAll(path, sizeof(path), ".txt", ".cfg");
+		if (m_File.compare("common.cfg") == 0)
+		{
+			UTIL_ReplaceAll(path, sizeof(path), "common.cfg", "common.phrases.txt");
+		} else if (strstr(path, ".cfg")) {
+			UTIL_ReplaceAll(path, sizeof(path), ".cfg", ".txt");
+		} else if (strstr(path, ".txt")) {
+			UTIL_ReplaceAll(path, sizeof(path), ".txt", ".cfg");
+		}
 	}
 
 	unsigned int line=0, col=0;
@@ -660,6 +668,7 @@ void Translator::OnSourceModAllInitialized()
 
 	unsigned int id;
 
+	//backwards compatibility shim
 	/* hack -- if core.cfg exists, exec it instead. */
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "translations/core.cfg");
