@@ -14,6 +14,8 @@
 
 #include "PluginSys.h"
 #include "Translator.h"
+#include "LibrarySys.h"
+#include "sm_stringutil.h"
 
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {
@@ -22,6 +24,16 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
 
 	pCtx->LocalToString(params[1], &filename);
+
+	/* Check if there is no extension */
+	const char *ext = g_LibSys.GetFileExtension(filename);
+	if (!ext || (strcmp(ext, "cfg") && strcmp(ext, "txt")))
+	{
+		/* Append one */
+		static char new_file[PLATFORM_MAX_PATH];
+		UTIL_Format(new_file, sizeof(new_file), "%s.txt", filename);
+		filename = new_file;
+	}
 
 	index = g_Translator.FindOrAddPhraseFile(filename);
 	pl->AddLangFile(index);
