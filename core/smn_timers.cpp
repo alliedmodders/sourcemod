@@ -181,7 +181,7 @@ static cell_t smn_KillTimer(IPluginContext *pCtx, const cell_t *params)
 	HandleSecurity sec;
 	TimerInfo *pInfo;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_TimerType, &sec, (void **)&pInfo))
