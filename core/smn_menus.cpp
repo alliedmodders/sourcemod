@@ -19,6 +19,7 @@
 #include "MenuStyle_Radio.h"
 #include "HandleSys.h"
 #include "PluginSys.h"
+#include "sm_stringutil.h"
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
@@ -586,6 +587,8 @@ static cell_t SetMenuTitle(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
+
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
 
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);

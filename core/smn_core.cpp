@@ -60,6 +60,8 @@ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
 
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	if (pContext->GetContext()->n_err == SP_ERROR_NONE)

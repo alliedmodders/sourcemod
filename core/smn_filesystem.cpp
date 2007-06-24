@@ -481,6 +481,8 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 {
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
@@ -500,6 +502,8 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 {
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
@@ -511,6 +515,8 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 {
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 

@@ -963,6 +963,8 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
 	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 
+	g_SourceMod.SetGlobalTarget(client);
+
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 

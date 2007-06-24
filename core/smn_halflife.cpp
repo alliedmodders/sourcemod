@@ -273,6 +273,8 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
+	g_SourceMod.SetGlobalTarget(client);
+
 	char buffer[192];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
@@ -295,6 +297,8 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
+
+	g_SourceMod.SetGlobalTarget(client);
 
 	char buffer[192];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
