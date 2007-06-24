@@ -107,6 +107,7 @@
 #define IA32_JCC_IMM32_1		0x0F	// opcode part 1
 #define IA32_JCC_IMM32_2		0x80	// encoding is +cc <imm32>
 #define IA32_RET				0xC3	// no extra encoding
+#define IA32_RETN				0xC2	// encoding is <imm16> 
 #define IA32_NEG_RM				0xF7	// encoding is /3
 #define IA32_INC_REG			0x40	// encoding is +r
 #define IA32_INC_RM				0xFF	// encoding is /0
@@ -1347,6 +1348,12 @@ inline void IA32_Send_Jump32_Here(JitWriter *jit, jitoffs_t jmp)
 inline void IA32_Return(JitWriter *jit)
 {
 	jit->write_ubyte(IA32_RET);
+}
+
+inline void IA32_Return_Popstack(JitWriter *jit, unsigned short bytes)
+{
+	jit->write_ubyte(IA32_RETN);
+	jit->write_ushort(bytes);
 }
 
 inline void IA32_Test_Rm_Reg(JitWriter *jit, jit_uint8_t reg1, jit_uint8_t reg2, jit_uint8_t mode)

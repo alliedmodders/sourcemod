@@ -62,6 +62,14 @@ public:
 		}
 		outptr++;
 	}
+	inline void write_ushort(unsigned short c)
+	{
+		if (outbase)
+		{
+			*(unsigned short *)outptr = c;
+		}
+		outptr += sizeof(unsigned short);
+	}
 	inline void write_byte(jit_int8_t c)
 	{
 		if (outbase)
