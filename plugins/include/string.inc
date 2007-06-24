@@ -22,7 +22,7 @@
  * @global Unless otherwise noted, all string functions which take in a 
  * writable buffer and maximum length should have the null terminator INCLUDED
  * in the length.  This means that this is valid: 
- * StrCopy(string, sizeof(string), ...)
+ * strcopy(string, sizeof(string), ...)
  */
  
 /**

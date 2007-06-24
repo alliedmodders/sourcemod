@@ -691,8 +691,7 @@ stock GetEntDataArray(entity, offset, array[], arraySize, dataSize=4)
 {
 	for (new i=0; i<arraySize; i++)
 	{
-		array[i] = GetEntData(entity, offset, dataSize)
-		offset += dataSize;
+		array[i] = GetEntData(entity, offset + i*dataSize, dataSize)
 	}
 }
 
@@ -709,11 +708,10 @@ stock GetEntDataArray(entity, offset, array[], arraySize, dataSize=4)
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock SetEntDataArray(entity, offset, value, const array[], arraySize, dataSize=4, bool:changeState=false)
+stock SetEntDataArray(entity, offset, const array[], arraySize, dataSize=4, bool:changeState=false)
 {
 	for (new i=0; i<arraySize; i++)
 	{
-		SetEntData(entity, real_offset, array[i], dataSize, changeState);
-		offset += dataSize;
+		SetEntData(entity, offset + i*dataSize, array[i], dataSize, changeState);
 	}
 }

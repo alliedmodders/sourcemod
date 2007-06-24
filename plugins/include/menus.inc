@@ -76,7 +76,7 @@ enum
 /**
  * Reasons a menu ended.
  */
-enum MenuEndReason
+enum
 {
 	MenuEnd_Selected = 0,			/**< Menu item was selected */
 	MenuEnd_VotingDone = -1,		/**< Voting finished */
