@@ -104,6 +104,13 @@ void CPhraseFile::ReparseFile()
 	SMCParseError err;
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
+
+	/* :HACKHACK: If we're looking for a .txt, see if a .cfg also exists if our .txt does not. */
+	if (!g_LibSys.PathExists(path))
+	{
+		UTIL_ReplaceAll(path, sizeof(path), ".txt", ".cfg");
+	}
+
 	unsigned int line=0, col=0;
 
 	if ((err=g_TextParser.ParseFile_SMC(path, this, &line, &col)) != SMCParse_Okay)
@@ -650,7 +657,20 @@ void Translator::OnSourceModLevelChange(const char *mapName)
 void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");
-	unsigned int id = FindOrAddPhraseFile("core.cfg");
+
+	unsigned int id;
+
+	/* hack -- if core.cfg exists, exec it instead. */
+	char path[PLATFORM_MAX_PATH];
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "translations/core.cfg");
+	
+	if (g_LibSys.PathExists(path))
+	{
+		id = FindOrAddPhraseFile("core.cfg");
+	} else {
+		id = FindOrAddPhraseFile("core.phrases.txt");
+	}
+
 	g_pCorePhrases = GetFileByIndex(id);
 }
 
