@@ -50,6 +50,12 @@ IGameConfigManager *gameconfs = NULL;	/**< Game config manager */
 #endif //SMEXT_ENABLE_DBMANAGER
 #if defined SMEXT_ENABLE_MEMUTILS
 IMemoryUtils *memutils = NULL;
+#endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMEHELPERS
+IGameHelpers *gamehelpers = NULL;
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+ITimerSystem *timersys = NULL;
 #endif
 
 /** Exports the main interface */
@@ -105,6 +111,12 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_MEMUTILS
 	SM_GET_IFACE(MEMORYUTILS, memutils);
+#endif
+#if defined SMEXT_ENABLE_GAMEHELPERS
+	SM_GET_IFACE(GAMEHELPERS, gamehelpers);
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+	SM_GET_IFACE(TIMERSYS, timersys);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
