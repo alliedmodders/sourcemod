@@ -278,6 +278,12 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 	char buffer[192];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
+	/* Check for an error before printing to the client */
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
 	g_HL2.TextMsg(client, HUD_PRINTTALK, buffer);
 
 	return 1;
@@ -302,6 +308,12 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 
 	char buffer[192];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	/* Check for an error before printing to the client */
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
 
 	g_HL2.TextMsg(client, HUD_PRINTCENTER, buffer);
 
