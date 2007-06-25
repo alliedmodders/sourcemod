@@ -53,7 +53,7 @@ native WritePackFloat(Handle:pack, Float:val);
  * @noreturn
  * @error			Invalid handle.
  */
-native WritePackString(Handle:pack, String:str[]);
+native WritePackString(Handle:pack, const String:str[]);
 
 /**
  * Reads a cell from a data pack.
