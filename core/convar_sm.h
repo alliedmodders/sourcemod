@@ -200,7 +200,7 @@ protected:
 	static IConCommandBaseAccessor	*s_pAccessor;
 	
 public: // Hackalicous
-	inline int GetFlags()
+	inline int GetFlags() const
 	{
 		return m_nFlags;
 	}
@@ -252,7 +252,7 @@ private:
 	FnCommandCompletionCallback	m_fnCompletionCallback;
 	bool						m_bHasCompletionCallback;
 public: // Hackalicous
-	inline FnCommandCallback GetCallback()
+	inline FnCommandCallback GetCallback() const
 	{ 
 		return m_fnCommandCallback; 
 	}
@@ -369,16 +369,16 @@ private:
 	// Call this function when ConVar changes
 	FnChangeCallback			m_fnChangeCallback;
 public: // Hackalicous
-	inline FnChangeCallback	GetCallback()
+	inline FnChangeCallback	GetCallback() const
 	{
 		return m_fnChangeCallback;
 	}
-	inline void SetMin(bool set, float min)
+	inline void SetMin(bool set, float min=0.0)
 	{ 
 		m_bHasMin = set; 
 		m_fMinVal = min; 
 	}
-	inline void SetMax(bool set, float max)
+	inline void SetMax(bool set, float max=0.0)
 	{
 		m_bHasMax = set;
 		m_fMaxVal = max; 

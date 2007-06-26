@@ -247,8 +247,7 @@ bool SM_ExecuteConfig(CPlugin *pl, AutoConfig *cfg, bool can_create)
 				float x;
 				for (iter = convars->begin(); iter != convars->end(); iter++)
 				{
-					//:TODO: GetFlags should probably be const so we don't have to do this!
-					ConVar *cvar = (ConVar *)(*iter);
+					const ConVar *cvar = (*iter);
 
 					if ((cvar->GetFlags() & FCVAR_DONTRECORD) == FCVAR_DONTRECORD)
 					{
