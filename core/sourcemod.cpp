@@ -498,6 +498,15 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 
 void SourceModBase::CloseSourceMod()
 {
+	/* Force a level end */
+	LevelShutdown();
+
+	/* Unload plugins */
+	g_PluginSys.Shutdown();
+
+	/* Unload extensions */
+	g_Extensions.Shutdown();
+
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);
 
 	if (g_Loaded)

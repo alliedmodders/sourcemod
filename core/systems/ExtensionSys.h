@@ -101,6 +101,7 @@ public:
 	void TryAutoload();
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
+	void Shutdown();
 private:
 	CExtension *FindByOrder(unsigned int num);
 private:

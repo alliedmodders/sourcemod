@@ -376,6 +376,8 @@ public:
 
 	CPlugin *GetPluginFromIdentity(IdentityToken_t *pToken);
 
+	void Shutdown();
+
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 

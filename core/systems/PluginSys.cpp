@@ -716,6 +716,16 @@ CPluginManager::~CPluginManager()
 	m_iters.popall();
 }
 
+void CPluginManager::Shutdown()
+{
+	List<CPlugin *>::iterator iter;
+
+	while ((iter = m_plugins.begin()) != m_plugins.end())
+	{
+		UnloadPlugin(*iter);
+	}
+}
+
 void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */

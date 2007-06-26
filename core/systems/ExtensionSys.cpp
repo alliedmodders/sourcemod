@@ -280,6 +280,16 @@ void CExtensionManager::OnSourceModShutdown()
 	g_ShareSys.DestroyIdentType(g_ExtType);
 }
 
+void CExtensionManager::Shutdown()
+{
+	List<CExtension *>::iterator iter;
+
+	while ((iter = m_Libs.begin()) != m_Libs.end())
+	{
+		UnloadExtension((*iter));
+	}
+}
+
 void CExtensionManager::TryAutoload()
 {
 	char path[PLATFORM_MAX_PATH];
@@ -602,6 +612,8 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			}
 		}
 	}
+
+	delete pExt;
 
 	List<CExtension *>::iterator iter;
 	for (iter=UnloadQueue.begin(); iter!=UnloadQueue.end(); iter++)
