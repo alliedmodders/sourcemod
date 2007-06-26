@@ -262,7 +262,16 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 		IPlugin *plugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
 
 		/* Get plugin's event hook list */
-		plugin->GetProperty("EventHooks", (void**)&pHookList);
+		if (!plugin->GetProperty("EventHooks", (void**)&pHookList))
+		{
+			return EventHookErr_NotActive;
+		}
+
+		/* Make sure the event was actually being hooked */
+		if (pHookList->find(pHook) == pHookList->end())
+		{
+			return EventHookErr_NotActive;
+		}
 
 		/* Remove current structure from plugin's list */
 		pHookList->remove(pHook);
