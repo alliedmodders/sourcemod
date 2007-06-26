@@ -47,6 +47,8 @@ public:
 	virtual void SDK_OnAllLoaded();
 	//virtual void SDK_OnPauseChange(bool paused);
 	virtual bool QueryRunning(char *error, size_t maxlength);
+	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
+	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
 public:
 #if defined SMEXT_CONF_METAMOD
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);

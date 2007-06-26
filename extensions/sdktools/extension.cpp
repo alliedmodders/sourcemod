@@ -97,3 +97,26 @@ bool SDKTools::QueryRunning(char *error, size_t maxlength)
 
 	return true;
 }
+
+bool SDKTools::QueryInterfaceDrop(SMInterface *pInterface)
+{
+	if (pInterface == g_pBinTools)
+	{
+		return false;
+	}
+
+	return IExtensionInterface::QueryInterfaceDrop(pInterface);
+}
+
+void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
+{
+	List<ValveCall *>::iterator iter;
+	for (iter = g_RegCalls.begin();
+		iter != g_RegCalls.end();
+		iter++)
+	{
+		delete (*iter);
+	}
+	g_RegCalls.clear();
+
+}
