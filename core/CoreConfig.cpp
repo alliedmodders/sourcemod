@@ -367,7 +367,7 @@ void SM_ExecuteAllConfigs()
 		return;
 	}
 
-	engine->ServerCommand("exec cfg/sourcemod/sourcemod.cfg\n");
+	engine->ServerCommand("exec sourcemod/sourcemod.cfg\n");
 
 	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
 	while (iter->MorePlugins())
