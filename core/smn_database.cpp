@@ -663,7 +663,7 @@ static cell_t SQL_FetchFloat(IPluginContext *pContext, const cell_t *params)
 	}
 
 	cell_t *addr;
-	pContext->LocalToPhysAddr(params[5], &addr);
+	pContext->LocalToPhysAddr(params[3], &addr);
 	*addr = (cell_t)res;
 
 	return sp_ftoc(f);
@@ -702,7 +702,7 @@ static cell_t SQL_FetchInt(IPluginContext *pContext, const cell_t *params)
 	}
 
 	cell_t *addr;
-	pContext->LocalToPhysAddr(params[5], &addr);
+	pContext->LocalToPhysAddr(params[3], &addr);
 	*addr = (cell_t)res;
 
 	return iv;
