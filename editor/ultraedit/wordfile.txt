@@ -1,11 +1,9 @@
 /L20"SourcePawn" Line Comment = // Block Comment On = /* Block Comment Off = */ Escape Char = \ String Chars = "' File Extensions = INC SP
 /Delimiters = ~!@%^&*()-+=|\/{}[]:;"'<> ,	.?
-/Function String = "%^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9{}^[^]-]++)"
-/Function String 1 = "%[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9{}^[^]-]++)"
-/Function String 2 = "%^{native^}^{forward^}[ ^t]+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9{}^[^]-]++)"
-/Function String 3 = "%^{native^}^{forward^}[ ^t]+[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9{}^[^]-]++)"
-/Function String 4 = "%^{public^}^{stock^}[ ^t]+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9{}^[^]-]++)"
-/Function String 5 = "%^{public^}^{stock^}[ ^t]+[a-zA-Z_0-9]+:+^([a-zA-Z_@0-9]+^)[ ^t]++([a-zA-Z_:&=^^'^"., 0-9{}^[^]-]++)"/
+/Regexp Type = Perl
+/Function String = "^(?:(?:public|stock|native|forward)[ \t]+|(?:))(?:[\w\d_]+:|(?:))([\w\d_@]+)\([\w\d \t.,_:&='"\[\]{}]*\)"
+/Function String 1 = "^functag[ \t]+([\w\d_]+)[ \t]+(?:[\w\d_]+:|(?:))public\([\w\d \t.,_:&='"\[\]{}]*\)"
+/Function String 2 = "^funcenum[ \t]+([\w\d_]+)$"
 /Indent Strings = "{"
 /Unindent Strings = "}"
 /Open Fold Strings = "{"
@@ -53,6 +51,7 @@ cellsof chars
 sizeof
 tagof
 /C4"Tags"
+any
 bool
 Float Function
 Handle
