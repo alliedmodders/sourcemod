@@ -24,10 +24,12 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
+#include "svn_version.h"
+
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"SDK Tools"
 #define SMEXT_CONF_DESCRIPTION	"Source SDK Tools"
-#define SMEXT_CONF_VERSION		"0.0.0.0"
+#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"SDKTOOLS"

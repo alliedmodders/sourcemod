@@ -37,3 +37,13 @@ out = svn_version.h
 folder = extensions/bintools
 in = svn_version.tpl
 out = svn_version.h
+
+[sdktools]
+folder = extensions/sdktools
+in = svn_version.tpl
+out = svn_version.h
+
+[mysql]
+folder = extensions/mysql
+in = svn_version.tpl
+out = svn_version.h

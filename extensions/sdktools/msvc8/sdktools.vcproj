@@ -229,6 +229,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{4B7443F9-4DC9-4e59-BC1B-465800502EBC}"
 			>
+			<File
+				RelativePath="..\version.rc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="SourceMod SDK"
