@@ -186,6 +186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ADTFactory.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\CDataPack.cpp"
 				>
 			</File>
@@ -305,6 +309,10 @@
 			>
 			<File
 				RelativePath="..\AdminCache.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ADTFactory.h"
 				>
 			</File>
 			<File
@@ -450,6 +458,10 @@
 			>
 			<File
 				RelativePath="..\..\public\IAdminSystem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\IADTFactory.h"
 				>
 			</File>
 			<File

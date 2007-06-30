@@ -45,6 +45,15 @@
 #if defined SMEXT_ENABLE_MEMUTILS
 #include <IMemoryUtils.h>
 #endif
+#if defined SMEXT_ENABLE_GAMEHELPERS
+#include <IGameHelpers.h>
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+#include <ITimerSystem.h>
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+#include <IADTFactory.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -212,6 +221,15 @@ extern IGameConfigManager *gameconfs;
 #endif
 #if defined SMEXT_ENABLE_MEMUTILS
 extern IMemoryUtils *memutils;
+#endif
+#if defined SMEXT_ENABLE_GAMEHELPERS
+extern IGameHelpers *gamehelpers;
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+extern ITimerSystem *timersys;
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+extern IADTFactory *adtfactory;
 #endif
 
 #if defined SMEXT_CONF_METAMOD

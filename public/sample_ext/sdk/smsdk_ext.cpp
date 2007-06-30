@@ -57,6 +57,9 @@ IGameHelpers *gamehelpers = NULL;
 #if defined SMEXT_ENABLE_TIMERSYS
 ITimerSystem *timersys = NULL;
 #endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+IADTFactory *adtfactory = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -117,6 +120,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_TIMERSYS
 	SM_GET_IFACE(TIMERSYS, timersys);
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+	SM_GET_IFACE(ADTFACTORY, adtfactory);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
