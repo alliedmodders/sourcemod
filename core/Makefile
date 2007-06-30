@@ -24,7 +24,7 @@ OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreC
 	MemoryUtils.cpp PlayerManager.cpp TextParsers.cpp TimerSys.cpp Translator.cpp UserMessages.cpp \
 	sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_stringutil.cpp sm_trie.cpp \
 	sourcemm_api.cpp sourcemod.cpp MenuStyle_Base.cpp MenuStyle_Valve.cpp MenuManager.cpp \
-	MenuStyle_Radio.cpp ChatTriggers.cpp
+	MenuStyle_Radio.cpp ChatTriggers.cpp ADTFactory.cpp
 OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
 	smn_filesystem.cpp smn_float.cpp smn_functions.cpp smn_gameconfigs.cpp smn_halflife.cpp smn_handles.cpp smn_keyvalues.cpp \
@@ -33,7 +33,7 @@ OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
 	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
 	  systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
-	  vm/sp_vm_function.cpp 
+	  vm/sp_vm_function.cpp
 OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
