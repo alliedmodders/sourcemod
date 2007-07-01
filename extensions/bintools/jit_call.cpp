@@ -585,7 +585,7 @@ skip_retbuffer:
 		jit_uint32_t total = (Needs_Retbuf) ? g_StackUsage + sizeof(void *) : g_StackUsage;
 		Write_RectifyStack(jit, total);
 #elif defined PLATFORM_POSIX
-	if (ParamCount)
+	if (hasParams)
 	{
 		/* Pop all parameters from the stack */
 		Write_RectifyStack(jit, g_StackUsage);
