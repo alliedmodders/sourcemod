@@ -62,7 +62,7 @@ int TempEntityInfo::_FindOffset(const char *name, int *size)
 	offset = prop->GetOffset();
 	if (size)
 	{
-		*size = prop->m_nBits
+		*size = prop->m_nBits;
 	}
 
 	return offset;

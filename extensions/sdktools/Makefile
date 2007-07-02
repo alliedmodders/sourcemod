@@ -15,7 +15,7 @@ PROJECT = sdktools
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
 
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp vdecoder.cpp vcallbuilder.cpp \
-	vcaller.cpp vnatives.cpp
+	vcaller.cpp vnatives.cpp tenatives.cpp tempents.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
