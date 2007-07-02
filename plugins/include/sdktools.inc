@@ -20,6 +20,7 @@
 
 #include <core>
 #include <sdktools_functions>
+#include <sdktools_tempents>
 
 enum SDKCallType
 {

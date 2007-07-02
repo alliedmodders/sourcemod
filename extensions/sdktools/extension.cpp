@@ -24,6 +24,7 @@
 #include "extension.h"
 #include "vcallbuilder.h"
 #include "vnatives.h"
+#include "tempents.h"
 
 /**
  * @file extension.cpp
@@ -34,17 +35,22 @@ SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
 IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
+IGameHelpers *g_pGameHelpers = NULL;
 HandleType_t g_CallHandle = 0;
 
 SMEXT_LINK(&g_SdkTools);
 
 extern sp_nativeinfo_t g_CallNatives[];
+extern sp_nativeinfo_t g_TENatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_CallNatives);
 	sharesys->AddNatives(myself, g_Natives);
+	sharesys->AddNatives(myself, g_TENatives);
+
+	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
 	if (!gameconfs->LoadGameConfigFile("sdktools.games", &g_pGameConf, error, maxlength))
 	{
@@ -76,6 +82,8 @@ void SDKTools::SDK_OnUnload()
 	}
 	g_RegCalls.clear();
 
+	g_TEManager.Shutdown();
+
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
 
@@ -89,6 +97,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 void SDKTools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
+	g_TEManager.Initialize();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)
@@ -119,4 +128,5 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 	}
 	g_RegCalls.clear();
 
+	g_TEManager.Shutdown();
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="sdktools"
 	ProjectGUID="{7A740927-C751-4312-BF9D-6367F8C508F8}"
 	RootNamespace="sdk"
@@ -186,6 +186,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\tempents.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\tenatives.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\vcallbuilder.cpp"
 				>
 			</File>
@@ -208,7 +216,15 @@
 			UniqueIdentifier="{046AC4F8-1F40-462f-B652-698F87CDCA5F}"
 			>
 			<File
+				RelativePath="..\CellRecipientFilter.h"
+				>
+			</File>
+			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\tempents.h"
 				>
 			</File>
 			<File

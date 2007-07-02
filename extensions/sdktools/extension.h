@@ -32,6 +32,7 @@
 #include "smsdk_ext.h"
 #include <IBinTools.h>
 #include <IPlayerHelpers.h>
+#include <IGameHelpers.h>
 
 /**
  * @brief Implementation of the SDK Tools extension.
@@ -60,6 +61,7 @@ public:
 extern IServerGameEnts *gameents;
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
+extern IGameHelpers *g_pGameHelpers;
 extern HandleType_t g_CallHandle;
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
