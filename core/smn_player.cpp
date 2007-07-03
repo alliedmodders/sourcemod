@@ -379,6 +379,11 @@ static cell_t CanUserTarget(IPluginContext *pContext, const cell_t *params)
 	int client = params[1];
 	int target = params[2];
 
+	if (client == 0)
+	{
+		return 1;
+	}
+
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
