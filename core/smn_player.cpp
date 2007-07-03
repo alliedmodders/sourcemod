@@ -973,10 +973,34 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t ChangeClientTeam(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	IPlayerInfo *pInfo = pPlayer->GetPlayerInfo();
+	if (!pInfo)
+	{
+		return pContext->ThrowNativeError("IPlayerInfo not supported by game");
+	}
+
+	pInfo->ChangeTeam(params[2]);
+
+	return 1;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
 	{"CanUserTarget",			CanUserTarget},
+	{"ChangeClientTeam",		ChangeClientTeam},
 	{"GetClientAuthString",		sm_GetClientAuthStr},
 	{"GetClientCount",			sm_GetClientCount},
 	{"GetClientInfo",			sm_GetClientInfo},

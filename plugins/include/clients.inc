@@ -514,3 +514,15 @@ native GetClientOfUserId(userid);
  * @error				Invalid client index, or client not connected.
  */
 native KickClient(client, const String:format[]="", any:...);
+
+/**
+ * Changes a client's team through the mod's generic team changing function.
+ * On CS:S, this will kill the player.
+ *
+ * @param client		Client index.
+ * @param team			Mod-specific team index.
+ * @noreturn
+ * @error				Invalid client index, client not connected, or lack of 
+ *						mod support.
+ */
+native ChangeClientTeam(client, team);
