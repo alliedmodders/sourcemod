@@ -41,8 +41,16 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_SetGlobalTransTarget(IPluginContext *pContext, const cell_t *params)
+{
+	g_SourceMod.SetGlobalTarget(params[1]);
+
+	return 1;
+}
+
 REGISTER_NATIVES(langNativeS)
 {
 	{"LoadTranslations",			sm_LoadTranslations},
+	{"SetGlobalTransTarget",		sm_SetGlobalTransTarget},
 	{NULL,							NULL},
 };

@@ -28,3 +28,14 @@
  * @noreturn
  */
 native LoadTranslations(const String:file[]);
+
+/**
+ * Sets the global language target.  This is useful for creating functions
+ * that will be compatible with the %t format specifier.  Note that invalid
+ * indexes can be specified but the error will occur during translation,
+ * not during this function call.
+ *
+ * @param client	Client index or LANG_SERVER.
+ * @noreturn
+ */
+native SetGlobalTransTarget(client);
