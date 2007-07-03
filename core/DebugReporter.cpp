@@ -31,8 +31,7 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 
 	if (n_err != SP_ERROR_NATIVE)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s",
-			plname,
+		g_Logger.LogError("[SM] Plugin encountered error %d: %s",
 			n_err,
 			error->GetErrorString());
 	}
@@ -50,7 +49,7 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 
 	if (!error->DebugInfoAvailable())
 	{
-		g_Logger.LogError("[SM] Debug mode is not enabled for this plugin.");
+		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
 		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
 			_GetPluginIndex(ctx));
 		return;
