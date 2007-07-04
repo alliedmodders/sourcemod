@@ -269,7 +269,7 @@ public Action:Command_Ban(client, args)
 		}
 		
 		ServerCommand("banid %d %d", time, userid);
-		ServerCommand("kickid %d \"%s\"", userid, reason);
+		KickClient(clients[0], "%s", reason);
 		
 		if (time == 0)
 		{
@@ -577,7 +577,6 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	}
 	
-	new userid = GetClientUserId(clients[0]);
 	new String:name[65];
 	
 	GetClientName(clients[0], name, sizeof(name));
@@ -595,12 +594,7 @@ public Action:Command_Kick(client, args)
 	
 	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, clients[0], reason);
 	
-	if (args < 2)
-	{
-		ServerCommand("kickid %d", userid);
-	} else {
-		ServerCommand("kickid %d \"%s\"", userid, reason);
-	}
+	KickClient(clients[0], "%s", reason);
 	
 	return Plugin_Handled;
 }
