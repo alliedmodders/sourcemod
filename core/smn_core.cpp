@@ -83,6 +83,18 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 	return static_cast<cell_t>(t);
 }
 
+static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
+{
+	char *format, *buffer;
+	pContext->LocalToString(params[1], &buffer);
+	pContext->LocalToString(params[3], &format);
+
+	time_t t = time(NULL);
+	strftime(buffer, params[2], format, localtime(&t));
+
+	return 1;
+}
+
 static cell_t GetPluginIterator(IPluginContext *pContext, const cell_t *params)
 {
 	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
@@ -332,5 +344,6 @@ REGISTER_NATIVES(coreNatives)
 	{"ReadPlugin",			ReadPlugin},
 	{"ThrowError",			ThrowError},
 	{"SetFailState",		SetFailState},
+	{"FormatTime",			FormatTime},
 	{NULL,					NULL},
 };

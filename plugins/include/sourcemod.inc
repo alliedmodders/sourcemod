@@ -265,6 +265,16 @@ native LogError(const String:format[], any:...);
 native GetTime(bigStamp[2]={0,0});
 
 /**
+ * Format date and time.
+ *
+ * @param buffer		Destination string buffer.
+ * @param maxlength		Maximum length of output string buffer.
+ * @param format		Formatting rules.
+ * @noreturn
+ */
+native FormatTime(String:buffer[], maxlength, const String:format[]);
+
+/**
  * Loads a game config file.
  *
  * @param file			File to load.  The path must be relative to the 'gamedata' folder under the config folder 
