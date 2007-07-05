@@ -38,7 +38,7 @@ enum SDKPassMethod
 	SDKPass_ByRef,			/**< Pass an object by reference */
 };
 
-int s_vtbl_index = 0;
+int s_vtbl_index = -1;
 void *s_call_addr = NULL;
 ValveCallType s_vcalltype = ValveCall_Static;
 bool s_has_return = false;
@@ -86,7 +86,7 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 static cell_t StartPrepSDKCall(IPluginContext *pContext, const cell_t *params)
 {
 	s_numparams = 0;
-	s_vtbl_index = 0;
+	s_vtbl_index = -1;
 	s_call_addr = NULL;
 	s_has_return = false;
 	s_vcalltype = (ValveCallType)params[1];
@@ -202,7 +202,7 @@ static cell_t PrepSDKCall_AddParameter(IPluginContext *pContext, const cell_t *p
 static cell_t EndPrepSDKCall(IPluginContext *pContext, const cell_t *params)
 {
 	ValveCall *vc = NULL;
-	if (s_vtbl_index)
+	if (s_vtbl_index > -1)
 	{
 		vc = CreateValveVCall(s_vtbl_index, s_vcalltype, s_has_return ? &s_return : NULL, s_params, s_numparams);
 	} else if (s_call_addr) {
