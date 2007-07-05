@@ -270,9 +270,10 @@ native GetTime(bigStamp[2]={0,0});
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules.
+ * @param stamp			Optional time stamp.
  * @noreturn
  */
-native FormatTime(String:buffer[], maxlength, const String:format[]);
+native FormatTime(String:buffer[], maxlength, const String:format[], stamp=-1);
 
 /**
  * Loads a game config file.

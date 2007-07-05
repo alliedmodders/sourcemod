@@ -89,7 +89,7 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &buffer);
 	pContext->LocalToString(params[3], &format);
 
-	time_t t = time(NULL);
+	time_t t = (params[4] == -1) ? time(NULL) : (time_t)params[4];
 	strftime(buffer, params[2], format, localtime(&t));
 
 	return 1;
