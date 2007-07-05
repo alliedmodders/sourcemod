@@ -19,6 +19,47 @@
 #define _te_stocks_included
 
 /**
+ * @section TE Explosion flags.
+ */
+#define TE_EXPLFLAG_NONE		0x0	/**< all flags clear makes default Half-Life explosion */
+#define TE_EXPLFLAG_NOADDITIVE		0x1	/**< sprite will be drawn opaque (ensure that the sprite you send is a non-additive sprite) */
+#define TE_EXPLFLAG_NODLIGHTS		0x2	/**< do not render dynamic lights */
+#define TE_EXPLFLAG_NOSOUND		0x4	/**< do not play client explosion sound */
+#define TE_EXPLFLAG_NOPARTICLES		0x8	/**< do not draw particles */
+#define TE_EXPLFLAG_DRAWALPHA		0x10	/**< sprite will be drawn alpha */
+#define TE_EXPLFLAG_ROTATE		0x20	/**< rotate the sprite randomly */
+#define TE_EXPLFLAG_NOFIREBALL		0x40	/**< do not draw a fireball */
+#define TE_EXPLFLAG_NOFIREBALLSMOKE	0x80	/**< do not draw smoke with the fireball */
+
+/**
+ * @endsection
+ */
+
+/**
+ * @section TE Beam flags.
+ */
+#define FBEAM_STARTENTITY 	0x00000001
+#define	FBEAM_ENDENTITY		0x00000002
+#define	FBEAM_FADEIN		0x00000004
+#define	FBEAM_FADEOUT		0x00000008
+#define	FBEAM_SINENOISE		0x00000010
+#define	FBEAM_SOLID		0x00000020
+#define	FBEAM_SHADEIN		0x00000040
+#define	FBEAM_SHADEOUT		0x00000080
+#define	FBEAM_ONLYNOISEONCE	0x00000100 	/**< Only calculate our noise once */
+#define	FBEAM_NOTILE		0x00000200
+#define	FBEAM_USE_HITBOXES	0x00000400	/**< Attachment indices represent hitbox indices instead when this is set. */
+#define	FBEAM_STARTVISIBLE	0x00000800	/**< Has this client actually seen this beam's start entity yet? */
+#define	FBEAM_ENDVISIBLE	0x00001000	/**< Has this client actually seen this beam's end entity yet? */
+#define	FBEAM_ISACTIVE		0x00002000
+#define	FBEAM_FOREVER		0x00004000
+#define	FBEAM_HALOBEAM		0x00008000	/**< When drawing a beam with a halo, don't ignore the segments and endwidth */
+
+/**
+ * @endsection
+ */
+
+/**
  * Sets up a sparks effect.
  *
  * @param pos			Position of the sparks.
@@ -154,7 +195,6 @@ stock TE_SetupGlowSprite(const Float:pos[3], Model, Float:Life, Float:Size, Brig
 	TE_WriteNum("m_nBrightness", Brightness);
 }
 
-/* :TODO: expose the flags */
 /**
  * Sets up a explosion effect.
  *
@@ -208,7 +248,6 @@ stock TE_SetupBloodSprite(const Float:pos[3], const Float:dir[3], const color[4]
 	TE_WriteNum("m_nDropModel", BloodDropModel);
 }
 
-/* :TODO: expose flags */
 /**
  * Sets up a beam ring point effect.
  *

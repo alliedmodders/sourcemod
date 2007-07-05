@@ -26,13 +26,20 @@ enum UserMsg
 	INVALID_MESSAGE_ID = -1,
 };
 
+/**
+ * @section Message Flags.
+ */
 #define USERMSG_PASSTHRU		(1<<0)		/**< (DEPRECATED, NO EFFECT) */
-#define USERMSG_PASSTHRU_ALL	(1<<1)		/**< (DEPRECATED, NO EFFECT) */
+#define USERMSG_PASSTHRU_ALL		(1<<1)		/**< (DEPRECATED, NO EFFECT) */
 #define USERMSG_RELIABLE		(1<<2)		/**< Message will be set on the reliable stream */
 #define USERMSG_INITMSG			(1<<3)		/**< Message will be considered to be an initmsg */
 #define USERMSG_BLOCK_MM		(1<<4)		/**< Message will be blocked from going through MM:S hooks */
 #define USERMSG_BLOCK_SM		(1<<5)		/**< Message will be blocked from going through SourceMod hooks */
 #define USERMSG_BLOCK_ALL		(1<<6)		/**< Message will be blocked from going through any hooks */
+
+/**
+ * @endsection
+ */
 
 /**
  * Returns the ID of a given message, or -1 on failure.
