@@ -63,7 +63,7 @@ native TE_WriteFloat(const String:prop[], Float:value);
  * @noreturn
  * @error		Property not found.
  */
-native TE_WriteVector(const String:prop[], Float:vector[3]);
+native TE_WriteVector(const String:prop[], const Float:vector[3]);
 
 /**
  * Sets a QAngle in the current temp entity.
@@ -73,7 +73,18 @@ native TE_WriteVector(const String:prop[], Float:vector[3]);
  * @return		True on success, otherwise false.
  * @error		Property not found.
  */
-native TE_WriteAngles(const String:prop[], Float:angles[3]);
+native TE_WriteAngles(const String:prop[], const Float:angles[3]);
+
+/**
+ * Sets an array of floats in the current temp entity.
+ *
+ * @param prop		Property to use.
+ * @param array		Array of values to copy.
+ * @param arraySize	Number of values to copy.
+ * @return		True on success, otherwise false.
+ * @error		Property not found.
+ */
+native TE_WriteFloatArray(const String:prop[], const Float:array[], arraySize);
 
 /**
  * Sends the current temp entity to one or more clients.

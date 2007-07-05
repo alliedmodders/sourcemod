@@ -116,6 +116,31 @@ static cell_t smn_TEWriteVector(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_TEWriteFloatArray(IPluginContext *pContext, const cell_t *params)
+{
+	if (!g_TEManager.IsAvailable())
+	{
+		return pContext->ThrowNativeError("TempEntity System unsupported or not available, file a bug report");
+	}
+	if (!g_CurrentTE)
+	{
+		return pContext->ThrowNativeError("No TempEntity call is in progress");
+	}
+
+	char *prop;
+	pContext->LocalToString(params[1], &prop);
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	if (!g_CurrentTE->TE_SetEntDataFloatArray(prop, addr, params[3]))
+	{
+		return pContext->ThrowNativeError("Temp entity property \"%s\" not found", prop);
+	}
+
+	return 1;
+}
+
 static cell_t smn_TESend(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_TEManager.IsAvailable())
@@ -165,5 +190,6 @@ sp_nativeinfo_t g_TENatives[] =
 	{"TE_WriteAngles",			smn_TEWriteVector},
 	{"TE_Send",					smn_TESend},
 	{"TE_IsValidProp",			smn_TEIsValidProp},
+	{"TE_WriteFloatArray",		smn_TEWriteFloatArray},
 	{NULL,						NULL}
 };

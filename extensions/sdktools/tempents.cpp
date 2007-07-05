@@ -126,9 +126,28 @@ bool TempEntityInfo::TE_SetEntDataVector(const char *name, float vector[3])
 	return true;
 }
 
+bool TempEntityInfo::TE_SetEntDataFloatArray(const char *name, cell_t *array, int size)
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	float *base = (float *)((uint8_t *)m_Me + offset);
+	for (int i=0; i<size; i++)
+	{
+		base[i] = sp_ctof(array[i]);
+	}
+
+	return true;
+}
+
 void TempEntityInfo::Send(IRecipientFilter &filter, float delay)
 {
-	engine->PlaybackTempEntity(filter, delay, (void *)m_Me, m_Sc->m_pTable, m_Sc->m_ClassID);
+	engine->PlaybackTempEntity(filter, delay, m_Me, m_Sc->m_pTable, m_Sc->m_ClassID);
 }
 
 /**********************

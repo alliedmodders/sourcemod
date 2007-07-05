@@ -41,6 +41,7 @@ public:
 	bool TE_SetEntData(const char *name, int value);
 	bool TE_SetEntDataFloat(const char *name, float value);
 	bool TE_SetEntDataVector(const char *name, float vector[3]);
+	bool TE_SetEntDataFloatArray(const char *name, cell_t *array, int size);
 	void Send(IRecipientFilter &filter, float delay);
 private:
 	int _FindOffset(const char *name, int *size=NULL);

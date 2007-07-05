@@ -21,6 +21,7 @@
 #include <core>
 #include <sdktools_functions>
 #include <sdktools_tempents>
+#include <sdktools_tempents_stocks>
 
 enum SDKCallType
 {
