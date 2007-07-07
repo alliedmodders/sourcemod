@@ -61,6 +61,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
+	ConCommandBaseMgr::OneTimeInit(this);
+
 	return true;
 }
 
@@ -132,4 +134,9 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 	g_RegCalls.clear();
 
 	g_TEManager.Shutdown();
+}
+
+bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
+{
+	return g_SMAPI->RegisterConCmdBase(g_PLAPI, pVar);
 }

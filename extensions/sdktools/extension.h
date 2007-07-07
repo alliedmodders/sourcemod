@@ -34,16 +34,20 @@
 #include <IPlayerHelpers.h>
 #include <IGameHelpers.h>
 #include <IEngineSound.h>
+#include <convar.h>
 
 /**
  * @brief Implementation of the SDK Tools extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class SDKTools : public SDKExtension, public IHandleTypeDispatch
+class SDKTools : 
+	public SDKExtension, 
+	public IHandleTypeDispatch,
+	public IConCommandBaseAccessor
 {
-public:
+public: //public IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
-public:
+public: //public SDKExtension
 	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late);
 	virtual void SDK_OnUnload();
 	virtual void SDK_OnAllLoaded();
@@ -57,6 +61,8 @@ public:
 	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlen);
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlen);
 #endif
+public: //IConCommandBaseAccessor
+	bool RegisterConCommandBase(ConCommandBase *pVar);
 };
 
 extern IServerGameEnts *gameents;

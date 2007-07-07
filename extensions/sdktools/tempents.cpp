@@ -26,6 +26,42 @@
 TempEntityManager g_TEManager;
 ICallWrapper *g_GetServerClass = NULL;
 
+CON_COMMAND(sm_print_telist, "Prints the temp entity list")
+{
+	if (!g_TEManager.IsAvailable())
+	{
+		META_CONPRINT("The tempent portion of SDKTools failed to load.\n");
+		META_CONPRINT("Check that you have the latest sdktools.games.txt file!\n");
+		return;
+	}
+	g_TEManager.DumpList();
+}
+
+CON_COMMAND(sm_dump_teprops, "Dumps tempentity props to a file")
+{
+	if (!g_TEManager.IsAvailable())
+	{
+		META_CONPRINT("The tempent portion of SDKTools failed to load.\n");
+		META_CONPRINT("Check that you have the latest sdktools.games.txt file!\n");
+		return;
+	}
+	int argc = engine->Cmd_Argc();
+	if (argc < 2)
+	{
+		META_CONPRINT("Usage: sm_dump_teprops <file>\n");
+		return;
+	}
+	const char *arg = engine->Cmd_Argv(1);
+	FILE *fp = NULL;
+	if (!arg || arg[0] == '\0' || ((fp = fopen(arg, "wt")) == NULL))
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", arg);
+		return;
+	}
+	g_TEManager.DumpProps(fp);
+	fclose(fp);
+}
+
 /*************************
 *                        *
 * Temp Entities Wrappers *
@@ -42,6 +78,11 @@ TempEntityInfo::TempEntityInfo(const char *name, void *me)
 const char *TempEntityInfo::GetName()
 {
 	return m_Name.c_str();
+}
+
+ServerClass *TempEntityInfo::GetServerClass()
+{
+	return m_Sc;
 }
 
 bool TempEntityInfo::IsValidProp(const char *name)
@@ -262,4 +303,96 @@ TempEntityInfo *TempEntityManager::GetTempEntityInfo(const char *name)
 	}
 
 	return te;
+}
+
+void TempEntityManager::DumpList()
+{
+	unsigned int index = 0;
+	META_CONPRINT("Listing temp entities:\n");
+	void *iter = m_ListHead;
+	while (iter)
+	{
+		const char *realname = *(const char **)((unsigned char *)iter + m_NameOffs);
+		if (!realname)
+		{
+			break;
+		}
+		TempEntityInfo *info = GetTempEntityInfo(realname);
+		if (!info)
+		{
+			continue;
+		}
+		ServerClass *sc = info->GetServerClass();
+		META_CONPRINTF("[%02d] %s (%s)\n", index++, realname, sc->GetName());
+		iter = *(void **)((unsigned char *)iter + m_NextOffs);
+	}
+	META_CONPRINTF("%d tempent%s found.\n", index, (index == 1) ? " was" : "s were");
+}
+
+const char *SendPropTypeToString(SendPropType type)
+{
+	if (type == DPT_Int)
+	{
+		return "int";
+	} else if (type == DPT_Float) {
+		return "float";
+	} else if (type == DPT_Vector) {
+		return "vector";
+	} else if (type == DPT_String) {
+		return "string";
+	} else if (type == DPT_Array) {
+		return "array";
+	} else if (type == DPT_DataTable) {
+		return "datatable";
+	} else {
+		return "unknown";
+	}
+}
+
+void _DumpProps(FILE *fp, SendTable *pTable)
+{
+	SendTable *pOther;
+	for (int i=0; i<pTable->GetNumProps(); i++)
+	{
+		SendProp *prop = pTable->GetProp(i);
+		if ((pOther = prop->GetDataTable()) != NULL)
+		{
+			_DumpProps(fp, pOther);
+		} else {
+			fprintf(fp, "\t\t\t\"%s\"\t\t\"%s\"\n", 
+				prop->GetName() ? prop->GetName() : "unknown",
+				SendPropTypeToString(prop->GetType()));
+		}
+	}
+}
+
+void TempEntityManager::DumpProps(FILE *fp)
+{
+	unsigned int index = 0;
+	void *iter = m_ListHead;
+	fprintf(fp, "\"TempEnts\"\n{\n");
+	while (iter)
+	{
+		const char *realname = *(const char **)((unsigned char *)iter + m_NameOffs);
+		if (!realname)
+		{
+			break;
+		}
+		TempEntityInfo *info = GetTempEntityInfo(realname);
+		if (!info)
+		{
+			continue;
+		}
+		ServerClass *sc = info->GetServerClass();
+		fprintf(fp, "\t\"%s\"\n", sc->GetName());
+		fprintf(fp, "\t{\n");
+		fprintf(fp, "\t\t\"name\"\t\t\"%s\"\n", realname);
+		fprintf(fp, "\t\t\"index\"\t\t\"%d\"\n", index++);
+		fprintf(fp, "\t\t\"SendTable\"\n\t\t{\n");
+		_DumpProps(fp, sc->m_pTable);
+		fprintf(fp, "\t\t}\n\t}\n");
+		iter = *(void **)((unsigned char *)iter + m_NextOffs);
+	}
+	fprintf(fp, "}\n");
+	META_CONPRINTF("%d tempent%s written to file.\n", index, (index == 1) ? " was" : "s were");
 }

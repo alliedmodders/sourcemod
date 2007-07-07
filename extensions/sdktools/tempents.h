@@ -28,6 +28,7 @@
 #include <irecipientfilter.h>
 #include <sh_list.h>
 #include <sh_string.h>
+#include <stdio.h>
 
 using namespace SourceHook;
 
@@ -37,6 +38,7 @@ public:
 	TempEntityInfo(const char *name, void *me);
 public:
 	const char *GetName();
+	ServerClass *GetServerClass();
 	bool IsValidProp(const char *name);
 	bool TE_SetEntData(const char *name, int value);
 	bool TE_SetEntDataFloat(const char *name, float value);
@@ -61,6 +63,9 @@ public:
 	void Shutdown();
 public:
 	TempEntityInfo *GetTempEntityInfo(const char *name);
+public:
+	void DumpList();
+	void DumpProps(FILE *fp);
 private:
 	List<TempEntityInfo *> m_TEList;
 	IBasicTrie *m_TempEntInfo;
