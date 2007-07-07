@@ -327,13 +327,6 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 							s_TempSig.library,
 							m_pFile);
 					}
-					if (!final_addr)
-					{
-						g_Logger.LogError("[SM] Unable to find named symbol (symbol \"%s\") (library \"%s\") (gameconf \"%s\")",
-							&s_TempSig.sig[1],
-							s_TempSig.library,
-							m_pFile);
-					}
 				}
 				if (final_addr)
 				{
@@ -384,12 +377,6 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 						m_pFile);
 				} else {
 					final_addr = g_MemUtils.FindPattern(addrInBase, real_sig, real_bytes);
-					if (!final_addr)
-					{
-						g_Logger.LogError("[SM] Unable to find signature (name \"%s\") (gameconf \"%s\")", 
-							m_offset,
-							m_pFile);
-					}
 				}
 			}
 
