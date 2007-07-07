@@ -2174,8 +2174,6 @@ static void setdefarray(cell *string,cell size,cell array_sz,cell *dataaddr,int 
    * the default array data is "dumped" into the data segment only once (on the
    * first use).
    */
-  assert(string!=NULL);
-  assert(size>0);
   /* check whether to dump the default array */
   assert(dataaddr!=NULL);
   if (sc_status==statWRITE && *dataaddr<0) {
@@ -2189,7 +2187,7 @@ static void setdefarray(cell *string,cell size,cell array_sz,cell *dataaddr,int 
    * does not modify the default value), directly pass the address of the
    * array in the data segment.
    */
-  if (fconst) {
+  if (fconst || !string) {
     ldconst(*dataaddr,sPRI);
   } else {
     /* Generate the code:
@@ -2577,20 +2575,22 @@ static int nesting=0;
                     arg[argidx].defvalue.array.arraysize,
                     &arg[argidx].defvalue.array.addr,
                     (arg[argidx].usage & uCONST)!=0);
-        if ((arg[argidx].usage & uCONST)==0) {
-          heapalloc+=arg[argidx].defvalue.array.arraysize;
-          nest_stkusage+=arg[argidx].defvalue.array.arraysize;
-        } /* if */
-        /* keep the lengths of all dimensions of a multi-dimensional default array */
-        assert(arg[argidx].numdim>0);
-        if (arg[argidx].numdim==1) {
-          append_constval(&arrayszlst,arg[argidx].name,arg[argidx].defvalue.array.arraysize,0);
-        } else {
-          for (level=0; level<arg[argidx].numdim; level++) {
-            assert(level<sDIMEN_MAX);
-            append_constval(&arrayszlst,arg[argidx].name,arg[argidx].dim[level],level);
-          } /* for */
-        } /* if */
+        if (arg[argidx].defvalue.array.data != NULL) {
+          if ((arg[argidx].usage & uCONST)==0) {
+            heapalloc+=arg[argidx].defvalue.array.arraysize;
+            nest_stkusage+=arg[argidx].defvalue.array.arraysize;
+          } /* if */
+          /* keep the lengths of all dimensions of a multi-dimensional default array */
+          assert(arg[argidx].numdim>0);
+          if (arg[argidx].numdim==1) {
+            append_constval(&arrayszlst,arg[argidx].name,arg[argidx].defvalue.array.arraysize,0);
+          } else {
+            for (level=0; level<arg[argidx].numdim; level++) {
+              assert(level<sDIMEN_MAX);
+              append_constval(&arrayszlst,arg[argidx].name,arg[argidx].dim[level],level);
+            } /* for */
+          } /* if */
+        }
       } else if (arg[argidx].ident==iREFERENCE) {
         setheap(arg[argidx].defvalue.val);
         /* address of the value on the heap in PRI */
