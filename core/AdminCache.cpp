@@ -1163,7 +1163,7 @@ FlagBits AdminCache::FlagArrayToBits(const AdminFlag array[], unsigned int numFl
 unsigned int AdminCache::FlagBitsToArray(FlagBits bits, AdminFlag array[], unsigned int maxSize)
 {
 	unsigned int i, num=0;
-	for (i=0; i<maxSize && i<AdminFlags_TOTAL; i++)
+	for (i=0; num<maxSize && i<AdminFlags_TOTAL; i++)
 	{
 		if ((bits & (1<<i)) == (unsigned)(1<<i))
 		{
