@@ -273,8 +273,10 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			{
 				/* If we shouldn't read the rest of this section, set the ignore level. */
 				m_IgnoreLevel = 1;
+				m_ParseState = PSTATE_GAMES;
+			} else {
+				m_ParseState = PSTATE_GAMEDEFS;
 			}
-			m_ParseState = PSTATE_GAMEDEFS;
 			break;
 		}
 	case PSTATE_GAMEDEFS_SIGNATURES:
