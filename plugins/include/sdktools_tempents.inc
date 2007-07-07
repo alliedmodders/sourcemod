@@ -143,7 +143,7 @@ stock TE_SendToAll(Float:delay=0.0)
  * @noreturn
  * @error		Invalid client index or client not in game.
  */
-stock TE_SendToOne(client, Float:delay=0.0)
+stock TE_SendToClient(client, Float:delay=0.0)
 {
 	new players[1];
 
