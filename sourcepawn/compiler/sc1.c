@@ -2517,11 +2517,11 @@ static int base;
  *  Global references: litidx (altered)
  */
 static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
-                     constvalue *enumroot, int eq_match_override)
+                     constvalue *enumroot, int eq_match_override, int curlit_override)
 {
   int ctag;
   cell tablesize;
-  int curlit=litidx;
+  int curlit=(curlit_override == -1) ? litidx : curlit_override;
   int err=0;
 
   if (eq_match_override == -1) {
@@ -2633,7 +2633,7 @@ static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
 static void initials(int ident,int tag,cell *size,int dim[],int numdim,
 					 constvalue *enumroot)
 {
-  initials2(ident, tag, size, dim, numdim, enumroot, -1);
+  initials2(ident, tag, size, dim, numdim, enumroot, -1, -1);
 }
 
 static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
@@ -4417,7 +4417,7 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
           }
         }
       } else {
-        initials2(ident,tags[0],&size,arg->dim,arg->numdim,enumroot, 1);
+        initials2(ident,tags[0],&size,arg->dim,arg->numdim,enumroot, 1, 0);
         assert(size>=litidx);
         /* allocate memory to hold the initial values */
         arg->defvalue.array.data=(cell *)malloc(litidx*sizeof(cell));
