@@ -33,6 +33,7 @@
 #include <IBinTools.h>
 #include <IPlayerHelpers.h>
 #include <IGameHelpers.h>
+#include <IEngineSound.h>
 
 /**
  * @brief Implementation of the SDK Tools extension.
@@ -63,5 +64,6 @@ extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern IGameHelpers *g_pGameHelpers;
 extern HandleType_t g_CallHandle;
+extern IEngineSound *engsound;
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

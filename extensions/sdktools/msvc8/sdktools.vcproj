@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sdktools"
 	ProjectGUID="{7A740927-C751-4312-BF9D-6367F8C508F8}"
 	RootNamespace="sdk"
@@ -65,6 +65,7 @@
 				AdditionalDependencies="vstdlib.lib tier0.lib tier1.lib"
 				OutputFile="$(OutDir)\sdktools.ext.dll"
 				LinkIncremental="2"
+				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -139,6 +140,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="vstdlib.lib tier0.lib tier1.lib"
 				OutputFile="$(OutDir)\sdktools.ext.dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
@@ -207,6 +209,10 @@
 			</File>
 			<File
 				RelativePath="..\vnatives.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vsound.cpp"
 				>
 			</File>
 		</Filter>

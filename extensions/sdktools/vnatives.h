@@ -28,5 +28,6 @@
 
 extern List<ValveCall *> g_RegCalls;
 extern sp_nativeinfo_t g_Natives[];
+extern sp_nativeinfo_t g_SoundNatives[];
 
 #endif //_INCLUDE_SDKTOOLS_VNATIVES_H_

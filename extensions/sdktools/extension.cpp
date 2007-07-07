@@ -36,6 +36,7 @@ IServerGameEnts *gameents = NULL;
 IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
 IGameHelpers *g_pGameHelpers = NULL;
+IEngineSound *engsound = NULL;
 HandleType_t g_CallHandle = 0;
 
 SMEXT_LINK(&g_SdkTools);
@@ -49,6 +50,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_CallNatives);
 	sharesys->AddNatives(myself, g_Natives);
 	sharesys->AddNatives(myself, g_TENatives);
+	sharesys->AddNatives(myself, g_SoundNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -89,7 +91,8 @@ void SDKTools::SDK_OnUnload()
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
-	GET_V_IFACE_CURRENT(serverFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
+	GET_V_IFACE_ANY(serverFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
+	GET_V_IFACE_ANY(engineFactory, engsound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
 
 	return true;
 }
