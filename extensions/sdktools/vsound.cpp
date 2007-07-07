@@ -147,7 +147,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 	 * intelligently redirect each sound.
 	 */
 
-	if (entity == SOUND_FROM_LOCAL_PLAYER && engine->IsDedicatedServer())
+	if (entity == -2 && engine->IsDedicatedServer())
 	{
 		for (cell_t i=0; i<params[2]; i++)
 		{

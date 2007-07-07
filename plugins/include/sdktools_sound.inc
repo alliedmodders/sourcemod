@@ -19,9 +19,14 @@
 #define _sdktools_sound_included
 
 /**
- * Sound is from the client.
+ * Sound should be from the target client.
  */
-#define SOUND_FROM_PLAYER		-1
+#define SOUND_FROM_PLAYER		-2
+
+/**
+ * Sound should be from the listen server player.
+ */
+#define SOUND_FROM_LOCAL_PLAYER	-1
 
 /**
  * Sound is from the world.
@@ -184,7 +189,7 @@ native StopSound(entity, channel, const String:name[]);
 native EmitSound(const clients[],
 				 numClients,
 				 const String:sample[],
-				 entity = SOUND_FROM_WORLD,
+				 entity = SOUND_FROM_PLAYER,
 				 channel = SNDCHAN_AUTO,
 				 level = SNDLEVEL_NORMAL,
 				 flags = SND_NOFLAGS,
@@ -221,7 +226,7 @@ native EmitSound(const clients[],
 native EmitSentence(const clients[],
 				 numClients,
 				 sentence,
-				 entity = SOUND_FROM_WORLD,
+				 entity,
 				 channel = SNDCHAN_AUTO,
 				 level = SNDLEVEL_NORMAL,
 				 flags = SND_NOFLAGS,
