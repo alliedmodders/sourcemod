@@ -52,6 +52,22 @@ static cell_t sm_GetMaxClients(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_GetClientName(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
+
+	if (index == 0)
+	{
+		static ConVar *hostname = NULL;
+		if (!hostname)
+		{
+			hostname = icvar->FindVar("hostname");
+			if (!hostname)
+			{
+				return pCtx->ThrowNativeError("Could not find \"hostname\" cvar");
+			}
+		}
+		pCtx->StringToLocalUTF8(params[2], static_cast<size_t>(params[3]), hostname->GetString(), NULL);
+		return 1;
+	}
+
 	if ((index < 1) || (index > g_Players.GetMaxClients()))
 	{
 		return pCtx->ThrowNativeError("Client index %d is invalid", index);
