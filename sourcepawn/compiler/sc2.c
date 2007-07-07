@@ -2329,18 +2329,22 @@ static cell litchar(const unsigned char **lptr,int flags)
         cptr+=1;
         break;
       case 'x':
+      {
+        int digits = 0;
         cptr+=1;
         c=0;
-        while (ishex(*cptr)) {
+        while (ishex(*cptr) && digits < 2) {
           if (isdigit(*cptr))
             c=(c<<4)+(*cptr-'0');
           else
             c=(c<<4)+(tolower(*cptr)-'a'+10);
           cptr++;
+          digits++;
         } /* while */
         if (*cptr==';')
           cptr++;       /* swallow a trailing ';' */
         break;
+      }
       case '\'':        /* \' == ' (single quote) */
       case '"':         /* \" == " (single quote) */
       case '%':         /* \% == % (percent) */
