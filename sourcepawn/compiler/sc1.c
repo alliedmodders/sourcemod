@@ -2143,7 +2143,7 @@ static void declglb(char *firstname,int firsttag,int fpublic,int fstatic,int fst
       address=sizeof(cell)*glb_declared;
       glb_incr=(int)size;
     } /* if */
-    if (address==sizeof(cell)*glb_declared) {
+    if (size != CELL_MAX && address==sizeof(cell)*glb_declared) {
       dumplits();       /* dump the literal queue */
       dumpzero((int)size-litidx);
     } /* if */
