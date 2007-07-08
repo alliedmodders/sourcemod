@@ -184,6 +184,17 @@ native ReplyToCommand(client, const String:format[], any:...);
 native ReplySource:GetCmdReplySource();
 
 /**
+ * Sets the current reply source of a command.
+ *
+ * Only use this if you know what you are doing.  You should save the old value
+ * and restore it once you are done.
+ *
+ * @param source		New ReplySource value.
+ * @return				Old ReplySource value.
+ */
+native ReplySource:SetCmdReplySource(ReplySource:source);
+
+/**
  * Displays usage of an admin command to users depending on the 
  * setting of the sm_show_activity cvar.  Additionally, the client
  * who typed the command will receive the same text without any
