@@ -17,9 +17,9 @@
 #include <mathlib.h>
 
 #define SET_VECTOR(addr, vec) \
-	addr[0] = vec.x; \
-	addr[1] = vec.y; \
-	addr[2] = vec.z; 
+	addr[0] = sp_ftoc(vec.x); \
+	addr[1] = sp_ftoc(vec.y); \
+	addr[2] = sp_ftoc(vec.z); 
 
 static cell_t GetVectorLength(IPluginContext *pContext, const cell_t *params)
 {
