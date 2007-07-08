@@ -8,8 +8,10 @@
 			"game"		"cstrike"
 			"game"		"dod"
 			"game"		"hl2mp"
+			"game"		"ship"
 			"game"		"!Dystopia"
 			"game"		"!Insurgency"
+			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
 		}
 
@@ -61,6 +63,7 @@
 			"game"		"ship"
 			"game"		"!Dystopia"
 			"game"		"!Insurgency"
+			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
 		}
 		
@@ -210,6 +213,52 @@
 		}
 	}
 	
+	/* The Ship */
+	"ship"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"316"
+				"linux"		"317"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"220"
+				"linux"		"221"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"218"
+				"linux"		"219"
+			}
+			"Ignite"
+			{
+				"windows"	"180"
+				"linux"		"181"
+			}
+			"Extinguish"
+			{
+				"windows"	"181"
+				"linux"		"182"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			
+			/* Temp Entities */
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+		}
+	}
+	
 	/* Dsytopia */
 	"!Dystopia"
 	{
@@ -310,6 +359,51 @@
 			"s_pTempEntities"
 			{
 				"linux"		"28"
+			}
+		}
+	}
+	
+	/* Pirates, Vikings and Knights II */
+	"!Pirates, Vikings and Knights II"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"328"
+				"linux"		"329"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"224"
+				"linux"		"225"
+			}
+			"Ignite"
+			{
+				"windows"	"188"
+				"linux"		"189"
+			}
+			"Extinguish"
+			{
+				"windows"	"189"
+				"linux"		"190"
+			}
+			"Teleport"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			
+			/* Temp Entities */
+			"s_pTempEntities"
+			{
+				"linux"		"29"
 			}
 		}
 	}
