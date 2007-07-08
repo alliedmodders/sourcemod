@@ -10,6 +10,7 @@
 			"game"		"hl2mp"
 			"game"		"insurgency"
 			"game"		"dystopia_v1"
+			"game"		"sourceforts"
 		}
 
 		"Offsets"
@@ -192,12 +193,96 @@
 		}
 	}
 
+	/* SourceForts 1.9.2
+	 * :TODO: use description instead...
+	 */
+	"sourceforts"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"294"
+				"linux"		"295"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"207"
+				"linux"		"208"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+			"Ignite"
+			{
+				"windows"	"170"
+				"linux"		"171"
+			}
+			"Extinguish"
+			{
+				"windows"	"171"
+				"linux"		"172"
+			}
+			"Teleport"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+
+			/* Temp Entities */
+			"s_pTempEntities"
+			{
+				"linux"		"29"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+		}
+	}
+
 	/* Dsytopia */
 	"dystopia_v1"
 	{
 
 		"Offsets"
 		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"331"
+				"linux"		"332"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"229"
+				"linux"		"230"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
+			"Ignite"
+			{
+				"windows"	"191"
+				"linux"		"192"
+			}
+			"Extinguish"
+			{
+				"windows"	"192"
+				"linux"		"193"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+
 			/* Offset into CBaseTempEntity constructor.
 			 * On Windows Dsytopia is heavily inlined; we use the function 
 			 * surrounding "aCouldnTFindTem" in IDA instead.
@@ -211,6 +296,9 @@
 
 		"Signatures"
 		{
+			/* On Windows Dsytopia is heavily inlined; we use the function 
+			 * surrounding "aCouldnTFindTem" in IDA instead.
+			 */
 			"CBaseTempEntity"
 			{
 				"library"	"server"
