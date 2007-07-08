@@ -22,7 +22,9 @@
 #include <sdktools_functions>
 #include <sdktools_tempents>
 #include <sdktools_tempents_stocks>
+#if !defined SDKTOOLS_DISABLE_SOUNDAPI
 #include <sdktools_sound>
+#endif
 
 enum SDKCallType
 {
