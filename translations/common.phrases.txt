@@ -8,7 +8,7 @@
 	"More than one client matches"
 	{
 		"#format"		"{1:s}"
-		"en"			"More than one client matches the pattern '{1}'"
+		"en"			"More than one client matches the pattern \"{1}\""
 	}
 	
 	"Kicked player"

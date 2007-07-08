@@ -166,10 +166,36 @@ const char *FixupString(StringInfo &data)
  	}
 #endif
 
+	/* Do some extra work on strings that have special quoted characters. */
 	if (data.special)
 	{
-		//:TODO: this string has special tokens in it, like \, and we must
-		//resolve these before passing the string back to the app
+		char *outptr = data.ptr;
+		size_t len = data.end - data.ptr;
+		if (len >= 2)
+		{
+			for (size_t i=0; i<len; i++)
+			{
+				if (data.ptr[i] == '\\' && i < len - 1)
+				{
+					/* Resolve the next character. */
+					i++;
+					if (data.ptr[i] == 'n')
+					{
+						data.ptr[i] = '\n';
+					} else if (data.ptr[i] == 't') {
+						data.ptr[i] = '\t';
+					} else if (data.ptr[i] == 'r') {
+						data.ptr[i] = '\r';
+					} else if (data.ptr[i] != '\\'
+						&& data.ptr[i] != '"') {
+						/* This character is invalid, so go back one */
+						i--;
+					}
+				}
+				*outptr++ = data.ptr[i];
+			}
+			*outptr = '\0';
+		}
 	}
 
 	*(data.end) = '\0';
@@ -357,10 +383,13 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 							err = SMCParse_InvalidTokens;
 							goto failed;
 						}
-					} else if (c == '\\' && i == (read - 1)) {
+					} else if (c == '\\') {
 						strings[0].special = true;
-						reparse_point = &parse_point[i];
-						break;
+						if (i == (read - 1))
+						{
+							reparse_point = &parse_point[i];
+							break;
+						}
 					}
 				} else if (ml_comment) {
 					if (c == '*')
