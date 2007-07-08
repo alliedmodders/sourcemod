@@ -370,12 +370,8 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 					}
 				}
 
-				if (real_bytes < 1)
+				if (real_bytes >= 1)
 				{
-					g_Logger.LogError("[SM] Invalid signature (name \"%s\") (gameconf \"%s\")",
-						m_offset,
-						m_pFile);
-				} else {
 					final_addr = g_MemUtils.FindPattern(addrInBase, real_sig, real_bytes);
 				}
 			}
