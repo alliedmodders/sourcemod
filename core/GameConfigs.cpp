@@ -32,7 +32,8 @@
 
 GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
-char g_mod[255];
+char g_Game[256];
+char g_GameDesc[256] = {'!', '\0'};
 
 #define PSTATE_NONE						0
 #define PSTATE_GAMES					1
@@ -106,10 +107,11 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 		{
 			if ((strcmp(name, "*") == 0)
 				|| (strcmp(name, "#default") == 0)
-				|| (strcmp(name, g_mod) == 0))
+				|| (strcasecmp(name, g_Game) == 0)
+				|| (strcasecmp(name, g_GameDesc) == 0))
 			{
 				m_ParseState = PSTATE_GAMEDEFS;
-				strncopy(m_mod, name, sizeof(m_mod));
+				strncopy(m_Game, name, sizeof(m_Game));
 			} else {
 				m_IgnoreLevel++;
 			}
@@ -126,7 +128,7 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			}
 			else if ((strcmp(name, "#supported") == 0)
-					 && (strcmp(m_mod, "#default") == 0))
+					 && (strcmp(m_Game, "#default") == 0))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
 				/* Ignore this section unless we get a game. */
@@ -144,8 +146,8 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 		}
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
-			m_prop[0] = '\0';
-			m_class[0] = '\0';
+			m_Prop[0] = '\0';
+			m_Class[0] = '\0';
 			strncopy(m_offset, name, sizeof(m_offset));
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS_OFFSET;
 			break;
@@ -185,9 +187,9 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 	{
 		if (strcmp(key, "class") == 0)
 		{
-			strncopy(m_class, value, sizeof(m_class));
+			strncopy(m_Class, value, sizeof(m_Class));
 		} else if (strcmp(key, "prop") == 0) {
-			strncopy(m_prop, value, sizeof(m_prop));
+			strncopy(m_Prop, value, sizeof(m_Prop));
 		} else if (strcmp(key, PLATFORM_NAME) == 0) {
 			int val = atoi(value);
 			sm_trie_replace(m_pOffsets, m_offset, (void *)val);
@@ -197,7 +199,7 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 		sm_trie_replace(m_pKeys, key, (void *)id);
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0
-			&& strcmp(value, g_mod) == 0)
+			&& (strcasecmp(value, g_Game) == 0 || strcasecmp(value, g_GameDesc) == 0))
 		{
 			bShouldBeReadingDefault = true;
 		}
@@ -242,10 +244,10 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 	case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 		{
 			/* Parse the offset... */
-			if (m_class[0] != '\0'
-				&& m_prop[0] != '\0')
+			if (m_Class[0] != '\0'
+				&& m_Prop[0] != '\0')
 			{
-				SendProp *pProp = g_HL2.FindInSendTable(m_class, m_prop);
+				SendProp *pProp = g_HL2.FindInSendTable(m_Class, m_Prop);
 				if (pProp)
 				{
 					int val = pProp->GetOffset();
@@ -253,14 +255,14 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 					sm_trie_replace(m_pProps, m_offset, pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
-					if (((strcmp(m_mod, "*") != 0) && strcmp(m_mod, "#default") != 0)
+					if (((strcmp(m_Game, "*") != 0) && strcmp(m_Game, "#default") != 0)
 						&& (!sm_trie_retrieve(m_pOffsets, m_offset, NULL)))
 					{
 						g_Logger.LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
-							m_class,
-							m_prop,
+							m_Class,
+							m_Prop,
 							m_pFile,
-							m_mod);
+							m_Game);
 					}
 				}
 			}
@@ -491,7 +493,8 @@ void GameConfigManager::OnSourceModStartup(bool late)
 {
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
-	strncopy(g_mod, g_SourceMod.GetGameFolderName(), sizeof(g_mod));
+	strncopy(g_Game, g_SourceMod.GetGameFolderName(), sizeof(g_Game));
+	strncopy(g_GameDesc + 1, SERVER_CALL(GetGameDescription)(), sizeof(g_GameDesc) - 1);
 }
 
 void GameConfigManager::OnSourceModAllInitialized()

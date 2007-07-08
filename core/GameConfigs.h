@@ -60,10 +60,10 @@ private:
 	/* Parse states */
 	int m_ParseState;
 	unsigned int m_IgnoreLevel;
-	char m_class[64];
-	char m_prop[64];
+	char m_Class[64];
+	char m_Prop[64];
 	char m_offset[64];
-	char m_mod[255];
+	char m_Game[256];
 	bool bShouldBeReadingDefault;
 };
 
