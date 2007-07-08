@@ -623,7 +623,7 @@ bool sm_trie_add(Trie *trie, const char *key, void *value, bool replace_allowed)
 				/* Do an initial browsing to make sure they're not the same string */
 				if (strcmp(keyptr, term) == 0)
 				{
-					if (!node->valset)
+					if (!node->valset || replace_allowed)
 					{
 						node->valset = true;
 						node->value = value;
