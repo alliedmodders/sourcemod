@@ -838,6 +838,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"FakeClientCommand",	FakeClientCommand},
 	{"ReplyToCommand",		ReplyToCommand},
 	{"GetCmdReplySource",	GetCmdReplyTarget},
-	{"SetCmdReplyTarget",	SetCmdReplyTarget},
+	{"SetCmdReplySource",	SetCmdReplyTarget},
 	{NULL,					NULL}
 };
