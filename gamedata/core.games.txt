@@ -37,4 +37,12 @@
 			"HudRadioMenuMsg"		"ShowMenu"
 		}
 	}
+
+	"insurgency"
+	{
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
 }

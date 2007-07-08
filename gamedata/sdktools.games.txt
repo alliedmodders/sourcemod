@@ -1,12 +1,94 @@
 "Games"
 {
+	/* General Temp Entities */
 	"#default"
 	{
 		"#supported"
 		{
 			"game"		"cstrike"
+			"game"		"dod"
+			"game"		"hl2mp"
+			"game"		"insurgency"
+			"game"		"dystopia_v1"
 		}
-		
+
+		"Offsets"
+		{
+			/* Offset into CBaseTempEntity constructor */
+			"s_pTempEntities"
+			{
+				"windows"	"17"
+				"linux"		"27"
+			}
+			"GetTEName"
+			{
+				"windows"	"4"
+				"linux"		"4"
+			}
+			"GetTENext"
+			{
+				"windows"	"8"
+				"linux"		"8"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"1"
+				"linux"		"1"
+			}
+		}
+
+		"Signatures"
+		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
+				"linux"		"@_ZN15CBaseTempEntityC2EPKc"
+			}
+		}
+	}
+
+	/* HL2MP */
+	"hl2mp"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"327"
+				"linux"		"328"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"225"
+				"linux"		"226"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"223"
+				"linux"		"224"
+			}
+			"Ignite"
+			{
+				"windows"	"187"
+				"linux"		"188"
+			}
+			"Extinguish"
+			{
+				"windows"	"188"
+				"linux"		"189"
+			}
+			"Teleport"
+			{
+				"windows"	"97"
+				"linux"		"98"
+			}
+		}
+	}
+
+	/* Counter-Strike: Source */
+	"cstrike"
+	{
 		"Offsets"
 		{
 			"GiveNamedItem"
@@ -42,38 +124,88 @@
 		}
 	}
 
-	/* Temp Entities Section */
-	"#default"
+	/* Day of Defeat */
+	"dod"
 	{
-		"#supported"
+		"Offsets"
 		{
-			"game"		"cstrike"
-			"game"		"dod"
-			"game"		"hl2mp"
+			"GiveNamedItem"
+			{
+				"windows"	"328"
+				"linux"		"330"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"224"
+				"linux"		"225"
+			}
+			"Ignite"
+			{
+				"windows"	"188"
+				"linux"		"189"
+			}
+			"Extinguish"
+			{
+				"windows"	"189"
+				"linux"		"190"
+			}
+			"Teleport"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
 		}
+	}
+
+	/* Insurgency */
+	"insurgency"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"Ignite"
+			{
+				"windows"	"174"
+				"linux"		"175"
+			}
+			"Extinguish"
+			{
+				"windows"	"175"
+				"linux"		"176"
+			}
+			"Teleport"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+
+			/* Temp Entities */
+			"s_pTempEntities"
+			{
+				"linux"		"28"
+			}
+		}
+	}
+
+	/* Dsytopia */
+	"dystopia_v1"
+	{
 
 		"Offsets"
 		{
-			/* Offset into CBaseTempEntity constructor */
+			/* Offset into CBaseTempEntity constructor.
+			 * On Windows Dsytopia is heavily inlined; we use the function 
+			 * surrounding "aCouldnTFindTem" in IDA instead.
+			 */
 			"s_pTempEntities"
 			{
-				"windows"	"17"
-				"linux"		"27"
-			}
-			"GetTEName"
-			{
-				"windows"	"4"
-				"linux"		"4"
-			}
-			"GetTENext"
-			{
-				"windows"	"8"
-				"linux"		"8"
-			}
-			"TE_GetServerClass"
-			{
-				"windows"	"1"
-				"linux"		"1"
+				"windows"	"70"
+				"linux"		"29"
 			}
 		}
 
@@ -82,8 +214,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
-				"linux"		"@_ZN15CBaseTempEntityC2EPKc"
+				"windows"	"\x81\xEC\x84\x00\x00\x00\x56\x8B\xF1\x8B\x46\x6C\x57\x8D\x7E\x6C\x8D\x4C\x24\x08\x83\xC8\x20\x51\x89\x44\x24\x0C\xE8\x2A\x2A\x2A"
 			}
 		}
 	}
