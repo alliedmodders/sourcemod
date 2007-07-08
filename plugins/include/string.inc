@@ -166,6 +166,16 @@ native VFormat(String:buffer[], maxlength, const String:format[], varpos);
 native StringToInt(const String:str[], nBase=10);
 
 /**
+ * Converts a string to an integer with some more options.
+ *
+ * @param str			String to convert.
+ * @param result		Variable to store the result in.
+ * @param nBase			Numerical base to use.  10 is default.
+ * @return				Number of characters consumed.
+ */
+native StringToIntEx(const String:str[], &result, nBase=10);
+
+/**
  * Converts an integer to a string.
  *
  * @param num			Integer to convert.
@@ -182,6 +192,15 @@ native IntToString(num, String:str[], maxlength);
  * @return				Floating point result, or 0.0 on error.
  */
 native Float:StringToFloat(const String:str[]);
+
+/** 
+ * Converts a string to a floating point number with some more options.
+ *
+ * @param str			String to convert to a foat.
+ * @param result		Variable to store result in.
+ * @return				Number of characters consumed.
+ */
+native StringToFloatEx(const String:str[], &Float:result);
 
 /**
  * Converts a floating point number to a string.

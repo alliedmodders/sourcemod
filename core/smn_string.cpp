@@ -108,6 +108,18 @@ static cell_t sm_strconvint(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(strtol(str, &dummy, params[2]));
 }
 
+static cell_t StringToIntEx(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str, *dummy = NULL;
+	cell_t *addr;
+	pCtx->LocalToString(params[1], &str);
+	pCtx->LocalToPhysAddr(params[2], &addr);
+
+	*addr = static_cast<cell_t>(strtol(str, &dummy, params[3]));
+
+	return dummy - str;
+}
+
 static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str;
@@ -125,6 +137,20 @@ static cell_t sm_strtofloat(IPluginContext *pCtx, const cell_t *params)
 	float val = (float)strtod(str, &dummy);
 
 	return sp_ftoc(val);
+}
+
+static cell_t StringToFloatEx(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str, *dummy = NULL;
+	cell_t *addr;
+	pCtx->LocalToString(params[1], &str);
+	pCtx->LocalToPhysAddr(params[2], &addr);
+
+	float val = (float)strtod(str, &dummy);
+
+	*addr = sp_ftoc(val);
+
+	return dummy - str;
 }
 
 static cell_t sm_floattostr(IPluginContext *pCtx, const cell_t *params)
@@ -539,7 +565,9 @@ REGISTER_NATIVES(basicStrings)
 	{"strcopy",				sm_strcopy},
 	{"StrCopy",				sm_strcopy},		/* Backwards compat shim */
 	{"StringToInt",			sm_strconvint},
+	{"StringToIntEx",		StringToIntEx},
 	{"StringToFloat",		sm_strtofloat},
+	{"StringToFloatEx",		StringToFloatEx},
 	{"TrimString",			TrimString},
 	{"VFormat",				sm_vformat},
 	{NULL,					NULL},
