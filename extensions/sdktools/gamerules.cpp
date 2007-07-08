@@ -43,7 +43,7 @@ void InitializeGameRules()
 
 	g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
 #elif defined PLATFORM_LINUX
-	if (!g_pGameRules->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
+	if (!g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
 	{
 		return;
 	}
