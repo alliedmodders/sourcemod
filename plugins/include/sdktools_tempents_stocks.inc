@@ -387,7 +387,7 @@ stock TE_SetupBeamLaser(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFram
  * @param Flags			Beam flags.
  * @noreturn
  */
-stock TE_BeamRing(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, Float:Width, Float:Amplitude, const Color[4], Speed, Flags)
+stock TE_SetupBeamRing(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, Float:Width, Float:Amplitude, const Color[4], Speed, Flags)
 {
 	TE_Start("BeamRing");
 	TE_WriteEncodedEnt("m_nStartEntity", StartEntity);
@@ -422,7 +422,7 @@ stock TE_BeamRing(StartEntity, EndEntity, ModelIndex, HaloIndex, StartFrame, Fra
  * @param color			Color array (r, g, b, a).
  * @noreturn
  */
-stock TE_BeamFollow(EntIndex, ModelIndex, HaloIndex, Float:Life, Float:Width, Float:EndWidth, FadeLength, const Color[4])
+stock TE_SetupBeamFollow(EntIndex, ModelIndex, HaloIndex, Float:Life, Float:Width, Float:EndWidth, FadeLength, const Color[4])
 {
 	TE_Start("BeamFollow");
 	TE_WriteEncodedEnt("m_iEntIndex", EntIndex);
