@@ -25,6 +25,7 @@
 #include "vcallbuilder.h"
 #include "vnatives.h"
 #include "tempents.h"
+#include "gamerules.h"
 
 /**
  * @file extension.cpp
@@ -102,7 +103,9 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 void SDKTools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
+
 	g_TEManager.Initialize();
+	InitializeGameRules();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)

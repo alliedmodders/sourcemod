@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\gamerules.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\tempents.cpp"
 				>
 			</File>
@@ -227,6 +231,10 @@
 			</File>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\gamerules.h"
 				>
 			</File>
 			<File

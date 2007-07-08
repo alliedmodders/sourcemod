@@ -31,6 +31,7 @@ enum SDKCallType
 	SDKCall_Static,		/**< Static call */
 	SDKCall_Entity,		/**< CBaseEntity call */
 	SDKCall_Player,		/**< CBasePlayer call */
+	SDKCall_GameRules,	/**< CGameRules call */
 };
 
 enum SDKLibrary
@@ -147,6 +148,7 @@ native Handle:EndPrepSDKCall();
  * Calls an SDK function with the given parameters.
  *
  * If the call type is Entity or Player, the index MUST ALWAYS be the FIRST parameter passed.
+ * If the call type is GameRules, then nothing special needs to be passed.
  * If the return value is a Vector or QAngles, the SECOND parameter must be a Float[3].
  * If the return value is a string, the THIRD parameter must be a String buffer, and the
  *  FOURTH parameter must be the maximum length.

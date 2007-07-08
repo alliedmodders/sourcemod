@@ -67,9 +67,10 @@ enum DataStatus
  */
 enum ValveCallType
 {
-	ValveCall_Static,	/**< Static call */
-	ValveCall_Entity,	/**< Thiscall (CBaseEntity implicit first parameter) */
-	ValveCall_Player,	/**< Thiscall (CBasePlayer implicit first parameter) */
+	ValveCall_Static,		/**< Static call */
+	ValveCall_Entity,		/**< Thiscall (CBaseEntity implicit first parameter) */
+	ValveCall_Player,		/**< Thiscall (CBasePlayer implicit first parameter) */
+	ValveCall_GameRules,	/**< Thiscall (CGameRules implicit first paramater) */
 };
 
 /**

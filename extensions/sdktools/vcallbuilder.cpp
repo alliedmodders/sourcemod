@@ -80,6 +80,8 @@ ValveCall *CreateValveCall(void *addr,
 
 	ValveCall *vc = new ValveCall;
 
+	vc->type = vcalltype;
+
 	size_t size = 0;
 	vc->stackSize = 0;
 
@@ -109,16 +111,24 @@ ValveCall *CreateValveCall(void *addr,
 	{
 		thisinfo = &thisbuf;
 		thisinfo->type = PassType_Basic;
-		if (vcalltype == ValveCall_Entity)
+		switch (vcalltype)
 		{
+		case ValveCall_Entity:
 			thisinfo->vtype = Valve_CBaseEntity;
+			thisinfo->flags = PASSFLAG_BYVAL;
 			thisinfo->decflags |= VDECODE_FLAG_ALLOWWORLD;
-		} else if (vcalltype == ValveCall_Player) {
+			break;
+		case ValveCall_Player:
 			thisinfo->vtype = Valve_CBasePlayer;
+			thisinfo->flags = PASSFLAG_BYVAL;
+			thisinfo->decflags = 0;
+			break;
+		case ValveCall_GameRules:
+			thisinfo->vtype = Valve_POD;
+			thisinfo->flags = PASSFLAG_ASPOINTER;
 			thisinfo->decflags = 0;
 		}
 		thisinfo->encflags = 0;
-		thisinfo->flags = PASSFLAG_BYVAL;
 		thisinfo->offset = 0;
 		vc->stackSize += sizeof(void *);
 		cv = CallConv_ThisCall;
@@ -227,6 +237,8 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 
 	ValveCall *vc = new ValveCall;
 
+	vc->type = vcalltype;
+
 	size_t size = 0;
 	vc->stackSize = 0;
 
@@ -314,16 +326,25 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 	/* Save the this info for the dynamic decoder */
 	vc->thisinfo = &(vc->vparams[numParams + 1]);
 	vc->thisinfo->type = PassType_Basic;
-	if (vcalltype == ValveCall_Entity)
+	switch (vcalltype)
 	{
+	case ValveCall_Entity:
 		vc->thisinfo->vtype = Valve_CBaseEntity;
+		vc->thisinfo->flags = PASSFLAG_BYVAL;
 		vc->thisinfo->decflags = VDECODE_FLAG_ALLOWWORLD;
-	} else if (vcalltype == ValveCall_Player) {
+		break;
+	case ValveCall_Player:
 		vc->thisinfo->vtype = Valve_CBasePlayer;
+		vc->thisinfo->flags = PASSFLAG_BYVAL;
 		vc->thisinfo->decflags = 0;
+		break;
+	case ValveCall_GameRules:
+		vc->thisinfo->vtype = Valve_POD;
+		vc->thisinfo->flags = PASSFLAG_ASPOINTER;
+		vc->thisinfo->decflags = 0;
+		break;
 	}
 	vc->thisinfo->encflags = 0;
-	vc->thisinfo->flags = PASSFLAG_BYVAL;
 	vc->thisinfo->offset = 0;
 	vc->thisinfo->obj_offset = 0;
 	normSize += sizeof(void *);

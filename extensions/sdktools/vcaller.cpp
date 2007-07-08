@@ -23,6 +23,7 @@
 
 #include "extension.h"
 #include "vcallbuilder.h"
+#include "gamerules.h"
 
 enum SDKLibrary
 {
@@ -245,25 +246,50 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 	unsigned int startparam = 2;
 	/* Do we need to write a thispointer?  */
 
-	if (vc->thisinfo && 
-		(vc->thisinfo->vtype == Valve_CBaseEntity
-		 || vc->thisinfo->vtype == Valve_CBasePlayer))
+	if (vc->thisinfo)
 	{
-		if (startparam > numparams)
+		switch (vc->type)
 		{
-			vc->stk_put(ptr);
-			return pContext->ThrowNativeError("Expected 1 parameter for entity pointer; found none");
+		case ValveCall_Entity:
+		case ValveCall_Player:
+			{
+				if (startparam > numparams)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Expected 1 parameter for entity pointer; found none");
+				}
+
+				if (DecodeValveParam(pContext, 
+					params[startparam],
+					vc,
+					vc->thisinfo,
+					ptr) == Data_Fail)
+				{
+					vc->stk_put(ptr);
+					return 0;
+				}
+				startparam++;
+			}
+			break;
+		case ValveCall_GameRules:
+			{
+				if (g_pGameRules == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("GameRules unsupported or not available; file a bug report");
+				}
+
+				void *gamerules = *g_pGameRules;
+
+				if (gamerules == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("GameRules not available before map is loaded");
+				}
+				*(void **)ptr = gamerules;
+			}
+			break;
 		}
-		if (DecodeValveParam(pContext, 
-			params[startparam],
-			vc,
-			vc->thisinfo,
-			ptr) == Data_Fail)
-		{
-			vc->stk_put(ptr);
-			return 0;
-		}
-		startparam++;
 	}
 
 	/* See if we need to skip any more parameters */

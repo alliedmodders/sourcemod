@@ -37,6 +37,7 @@ using namespace SourceHook;
 struct ValveCall
 {
 	ICallWrapper *call;			/**< From IBinTools */
+	ValveCallType type;			/**< Call type */
 	ValvePassInfo *vparams;		/**< Valve parameter info */
 	ValvePassInfo *retinfo;		/**< Return buffer info */
 	ValvePassInfo *thisinfo;	/**< Thiscall info */

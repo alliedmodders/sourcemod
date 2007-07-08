@@ -8,9 +8,9 @@
 			"game"		"cstrike"
 			"game"		"dod"
 			"game"		"hl2mp"
-			"game"		"insurgency"
-			"game"		"dystopia_v1"
-			"game"		"sourceforts"
+			"game"		"!Dystopia"
+			"game"		"!Insurgency"
+			"game"		"!SourceForts v1.9.2"
 		}
 
 		"Offsets"
@@ -48,41 +48,50 @@
 			}
 		}
 	}
-
-	/* HL2MP */
-	"hl2mp"
+	
+	/* General GameRules */
+	"#default"
 	{
+		"#supported"
+		{
+			"game"		"cstrike"
+			"game"		"dod"
+			"game"		"garrysmod"
+			"game"		"hl2mp"
+			"game"		"ship"
+			"game"		"!Dystopia"
+			"game"		"!Insurgency"
+			"game"		"!SourceForts v1.9.2"
+		}
+		
 		"Offsets"
 		{
-			"GiveNamedItem"
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
 			{
-				"windows"	"327"
-				"linux"		"328"
+				"windows"	"2"
 			}
-			"RemovePlayerItem"
+		}
+		
+		"Signatures"
+		{
+			/* This signature sometimes has multiple matches, but this
+			 * does not matter as g_pGameRules is involved in all of them.
+			 * The same g_pGameRules offset applies to each match.
+			 *
+			 * Sometimes this block of bytes is at the beginning of the static
+			 * CreateGameRulesObject function and sometimes it is in the middle
+			 * of an entirely different function. This depends on the game.
+			 */
+			"CreateGameRulesObject"
 			{
-				"windows"	"225"
-				"linux"		"226"
+				"library"	"server"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50"
 			}
-			"Weapon_GetSlot"
+			"g_pGameRules"
 			{
-				"windows"	"223"
-				"linux"		"224"
-			}
-			"Ignite"
-			{
-				"windows"	"187"
-				"linux"		"188"
-			}
-			"Extinguish"
-			{
-				"windows"	"188"
-				"linux"		"189"
-			}
-			"Teleport"
-			{
-				"windows"	"97"
-				"linux"		"98"
+				"library"	"server"
+				"linux"		"@g_pGameRules"
 			}
 		}
 	}
@@ -162,91 +171,47 @@
 			}
 		}
 	}
-
-	/* Insurgency */
-	"insurgency"
+	
+	/* Half-Life 2: Deathmatch */
+	"hl2mp"
 	{
 		"Offsets"
 		{
-			/* CBasePlayer */
-			"Ignite"
-			{
-				"windows"	"174"
-				"linux"		"175"
-			}
-			"Extinguish"
-			{
-				"windows"	"175"
-				"linux"		"176"
-			}
-			"Teleport"
-			{
-				"windows"	"90"
-				"linux"		"91"
-			}
-
-			/* Temp Entities */
-			"s_pTempEntities"
-			{
-				"linux"		"28"
-			}
-		}
-	}
-
-	/* SourceForts 1.9.2
-	 * :TODO: use description instead...
-	 */
-	"sourceforts"
-	{
-		"Offsets"
-		{
-			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"294"
-				"linux"		"295"
+				"windows"	"327"
+				"linux"		"328"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"207"
-				"linux"		"208"
+				"windows"	"225"
+				"linux"		"226"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"205"
-				"linux"		"206"
+				"windows"	"223"
+				"linux"		"224"
 			}
 			"Ignite"
 			{
-				"windows"	"170"
-				"linux"		"171"
+				"windows"	"187"
+				"linux"		"188"
 			}
 			"Extinguish"
 			{
-				"windows"	"171"
-				"linux"		"172"
+				"windows"	"188"
+				"linux"		"189"
 			}
 			"Teleport"
 			{
-				"windows"	"90"
-				"linux"		"91"
-			}
-
-			/* Temp Entities */
-			"s_pTempEntities"
-			{
-				"linux"		"29"
-			}
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
+				"windows"	"97"
+				"linux"		"98"
 			}
 		}
 	}
-
+	
 	/* Dsytopia */
-	"dystopia_v1"
+	"!Dystopia"
 	{
 
 		"Offsets"
@@ -303,6 +268,98 @@
 			{
 				"library"	"server"
 				"windows"	"\x81\xEC\x84\x00\x00\x00\x56\x8B\xF1\x8B\x46\x6C\x57\x8D\x7E\x6C\x8D\x4C\x24\x08\x83\xC8\x20\x51\x89\x44\x24\x0C\xE8\x2A\x2A\x2A"
+			}
+
+			/* Dystopia always has to be different, doesn't it
+			 *
+			 * This is very similar to the general signature, except that
+			 * it does "mov edx, [eax+2Ch]" before making a call rather than
+			 * doing "call dword ptr [eax+2Ch]"
+			 */
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
+			}
+		}
+	}
+
+	/* Insurgency */
+	"!Insurgency"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"Ignite"
+			{
+				"windows"	"174"
+				"linux"		"175"
+			}
+			"Extinguish"
+			{
+				"windows"	"175"
+				"linux"		"176"
+			}
+			"Teleport"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+
+			/* Temp Entities */
+			"s_pTempEntities"
+			{
+				"linux"		"28"
+			}
+		}
+	}
+
+	/* SourceForts 1.9.2 */
+	"!SourceForts v1.9.2"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"294"
+				"linux"		"295"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"207"
+				"linux"		"208"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+			"Ignite"
+			{
+				"windows"	"170"
+				"linux"		"171"
+			}
+			"Extinguish"
+			{
+				"windows"	"171"
+				"linux"		"172"
+			}
+			"Teleport"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+
+			/* Temp Entities */
+			"s_pTempEntities"
+			{
+				"linux"		"29"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
 			}
 		}
 	}
