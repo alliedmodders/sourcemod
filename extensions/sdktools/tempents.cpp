@@ -208,19 +208,19 @@ void TempEntityManager::Initialize()
 	{
 		return;
 	}
-	if (!g_pGameConf->GetOffset("s_pTempEntities", &offset) || !offset)
+	if (!g_pGameConf->GetOffset("s_pTempEntities", &offset))
 	{
 		return;
 	}
-	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs) || !m_NameOffs)
+	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs))
 	{
 		return;
 	}
-	if (!g_pGameConf->GetOffset("GetTENext", &m_NextOffs) || !m_NextOffs)
+	if (!g_pGameConf->GetOffset("GetTENext", &m_NextOffs))
 	{
 		return;
 	}
-	if (!g_pGameConf->GetOffset("TE_GetServerClass", &m_GetClassNameOffs) || !m_GetClassNameOffs)
+	if (!g_pGameConf->GetOffset("TE_GetServerClass", &m_GetClassNameOffs))
 	{
 		return;
 	}
