@@ -32,6 +32,7 @@ struct Plugin
 
 #include <core>
 #include <float>
+#include <vector>
 #include <string>
 #include <handles>
 #include <functions>

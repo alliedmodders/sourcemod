@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tier0.lib tier1.lib vstdlib.lib"
+				AdditionalDependencies="tier0.lib tier1.lib vstdlib.lib mathlib.lib"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
@@ -894,12 +894,20 @@
 				RelativePath="..\smn_usermsgs.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\smn_vector.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resources"
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{2A750240-7C10-455f-A900-B9A9D362356C}"
 			>
+			<File
+				RelativePath="..\Makefile"
+				>
+			</File>
 			<File
 				RelativePath="..\version.rc"
 				>
