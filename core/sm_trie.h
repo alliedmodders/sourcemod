@@ -20,6 +20,7 @@ struct Trie;
 Trie *sm_trie_create();
 void sm_trie_destroy(Trie *trie);
 bool sm_trie_insert(Trie *trie, const char *key, void *value);
+bool sm_trie_replace(Trie *trie, const char *key, void *value);
 bool sm_trie_retrieve(Trie *trie, const char *key, void **value);
 bool sm_trie_delete(Trie *trie, const char *key);
 void sm_trie_clear(Trie *trie);

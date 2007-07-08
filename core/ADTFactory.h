@@ -10,6 +10,7 @@ public:
 	BaseTrie();
 	virtual ~BaseTrie();
 	virtual bool Insert(const char *key, void *value);
+	virtual bool Replace(const char *key, void *value);
 	virtual bool Retrieve(const char *key, void **value);
 	virtual bool Delete(const char *key);
 	virtual void Clear();

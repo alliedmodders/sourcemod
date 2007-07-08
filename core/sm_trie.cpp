@@ -388,7 +388,7 @@ bool sm_trie_retrieve(Trie *trie, const char *key, void **value)
 	return true;
 }
 
-bool sm_trie_insert(Trie *trie, const char *key, void *value)
+bool sm_trie_add(Trie *trie, const char *key, void *value, bool replace_allowed)
 {
 	unsigned int lastidx = 1;		/* the last node index */
 	unsigned int curidx;			/* current node index */
@@ -803,7 +803,7 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 	 */
 	assert(node->mode == Node_Arc);
 
-	if (!node->valset)
+	if (!node->valset || replace_allowed)
 	{
 		/* Insert is only possible if we have no production */
 		node->valset = true;
@@ -812,4 +812,14 @@ bool sm_trie_insert(Trie *trie, const char *key, void *value)
 	}
 
 	return false;
+}
+
+bool sm_trie_insert(Trie *trie, const char *key, void *value)
+{
+	return sm_trie_add(trie, key, value, false);
+}
+
+bool sm_trie_replace(Trie *trie, const char *key, void *value)
+{
+	return sm_trie_add(trie, key, value, true);
 }

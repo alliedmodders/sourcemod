@@ -190,11 +190,11 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 			strncopy(m_prop, value, sizeof(m_prop));
 		} else if (strcmp(key, PLATFORM_NAME) == 0) {
 			int val = atoi(value);
-			sm_trie_insert(m_pOffsets, m_offset, (void *)val);
+			sm_trie_replace(m_pOffsets, m_offset, (void *)val);
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		int id = m_pStrings->AddString(value);
-		sm_trie_insert(m_pKeys, key, (void *)id);
+		sm_trie_replace(m_pKeys, key, (void *)id);
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0
 			&& strcmp(value, g_mod) == 0)
@@ -249,8 +249,8 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 				if (pProp)
 				{
 					int val = pProp->GetOffset();
-					sm_trie_insert(m_pOffsets, m_offset, (void *)val);
-					sm_trie_insert(m_pProps, m_offset, pProp);
+					sm_trie_replace(m_pOffsets, m_offset, (void *)val);
+					sm_trie_replace(m_pProps, m_offset, pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
 					if (((strcmp(m_mod, "*") != 0) && strcmp(m_mod, "#default") != 0)
@@ -383,7 +383,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 #if defined PLATFORM_LINUX
 skip_find:
 #endif
-			sm_trie_insert(m_pSigs, m_offset, final_addr);
+			sm_trie_replace(m_pSigs, m_offset, final_addr);
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 
 			break;

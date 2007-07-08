@@ -58,3 +58,8 @@ void BaseTrie::Destroy()
 {
 	delete this;
 }
+
+bool BaseTrie::Replace(const char *key, void *value)
+{
+	return sm_trie_replace(m_pTrie, key, value);
+}

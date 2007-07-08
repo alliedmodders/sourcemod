@@ -4,7 +4,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADTFACTORY_NAME		"IADTFactory"
-#define SMINTERFACE_ADTFACTORY_VERSION	1
+#define SMINTERFACE_ADTFACTORY_VERSION	2
 
 /**
 * @file IADTFactory.h
@@ -55,6 +55,16 @@ namespace SourceMod
 		 * memory.
 		 */
 		virtual void Destroy() =0;
+
+		/**
+		 * @brief Inserts a key/value pair, replacing an old inserted
+		 * value if it already exists.
+		 *
+		 * @param key		Key string (null terminated).
+		 * @param value		Value pointer (may be anything).
+		 * @return			True on success, false on failure.
+		 */
+		virtual bool Replace(const char *key, void *value) =0;
 	};
 
 	class IADTFactory : public SMInterface
