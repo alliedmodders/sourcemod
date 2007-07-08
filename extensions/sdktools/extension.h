@@ -33,6 +33,7 @@
 #include <IBinTools.h>
 #include <IPlayerHelpers.h>
 #include <IGameHelpers.h>
+#include <IEngineTrace.h>
 #include <IEngineSound.h>
 #include <convar.h>
 
@@ -66,10 +67,12 @@ public: //IConCommandBaseAccessor
 };
 
 extern IServerGameEnts *gameents;
+extern IEngineTrace *enginetrace;
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern IGameHelpers *g_pGameHelpers;
-extern HandleType_t g_CallHandle;
 extern IEngineSound *engsound;
+extern HandleType_t g_CallHandle;
+extern HandleType_t g_TraceHandle;
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

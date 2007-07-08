@@ -25,6 +25,7 @@
 #if !defined SDKTOOLS_DISABLE_SOUNDAPI
 #include <sdktools_sound>
 #endif
+#include <sdktools_trace>
 
 enum SDKCallType
 {

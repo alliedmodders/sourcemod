@@ -125,7 +125,7 @@ bool TempEntityInfo::TE_SetEntData(const char *name, int value)
 		*((uint8_t *)m_Me + offset) = value;
 	} else if (size <= 16) {
 		*(short *)((uint8_t *)m_Me + offset) = value;
-	} else if (size <= 32){
+	} else if (size <= 32) {
 		*(int *)((uint8_t *)m_Me + offset) = value;
 	} else {
 		return false;

@@ -34,16 +34,19 @@
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
+IEngineTrace *enginetrace = NULL;
 IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
 IGameHelpers *g_pGameHelpers = NULL;
 IEngineSound *engsound = NULL;
 HandleType_t g_CallHandle = 0;
+HandleType_t g_TraceHandle = 0;
 
 SMEXT_LINK(&g_SdkTools);
 
 extern sp_nativeinfo_t g_CallNatives[];
 extern sp_nativeinfo_t g_TENatives[];
+extern sp_nativeinfo_t g_TRNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -52,6 +55,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_Natives);
 	sharesys->AddNatives(myself, g_TENatives);
 	sharesys->AddNatives(myself, g_SoundNatives);
+	sharesys->AddNatives(myself, g_TRNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -61,6 +65,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
+	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
 	ConCommandBaseMgr::OneTimeInit(this);
 
@@ -73,6 +78,11 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 	{
 		ValveCall *v = (ValveCall *)object;
 		delete v;
+	}
+	if (type == g_TraceHandle)
+	{
+		trace_t *tr = (trace_t *)object;
+		delete tr;
 	}
 }
 
@@ -96,6 +106,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 {
 	GET_V_IFACE_ANY(serverFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
 	GET_V_IFACE_ANY(engineFactory, engsound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
+	GET_V_IFACE_ANY(engineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);
 
 	return true;
 }
