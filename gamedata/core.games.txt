@@ -10,7 +10,18 @@
 				"linux"			"14"
 			}
 		}
-
+	}
+	
+	"ship"
+	{
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"18"
+				"linux"			"19"
+			}
+		}
 	}
 
 	"cstrike"
@@ -29,7 +40,6 @@
 		}
 	}
 
-
 	"sourceforts"
 	{
 		"Keys"
@@ -37,8 +47,8 @@
 			"HudRadioMenuMsg"		"ShowMenu"
 		}
 	}
-
-	"insurgency"
+	
+	"!Insurgency"
 	{
 		"Keys"
 		{
