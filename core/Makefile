@@ -34,6 +34,7 @@ OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp
 	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
 	  systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
 	  vm/sp_vm_function.cpp
+OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
 OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
@@ -55,7 +56,7 @@ endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
 
-CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD
+CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ifeq "$(GCC_VERSION)" "4"
@@ -76,6 +77,7 @@ all:
 	mkdir -p $(BIN_DIR)/systems
 	mkdir -p $(BIN_DIR)/vm
 	mkdir -p $(BIN_DIR)/zlib
+	mkdir -p $(BIN_DIR)/thread
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
 	$(MAKE) sourcemod
@@ -94,9 +96,13 @@ clean:
 	rm -rf Release/*.ox
 	rm -rf Release/systems/*.ox
 	rm -rf Release/zlib/*.oc
+	rm -rf Release/vm/*.ox
+	rm -rf Release/thread/*.ox
 	rm -rf Release/$(BINARY)
 	rm -rf Debug/*.ox
 	rm -rf Debug/systems/*.ox
 	rm -rf Debug/zlib/*.oc
+	rm -rf Debug/vm/*.ox
+	rm -rf Debug/thread/*.ox
 	rm -rf Debug/$(BINARY)
 
