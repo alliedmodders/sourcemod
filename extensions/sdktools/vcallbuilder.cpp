@@ -103,6 +103,34 @@ ValveCall *CreateValveCall(void *addr,
 		}
 	}
 
+	/* Get parameter info */
+	PassInfo paramBuf[32];
+	size_t sizes[32];
+	size_t normSize = 0;
+	size_t extraSize = 0;
+	for (unsigned int i=0; i<numParams; i++)
+	{
+		bool needs_extra;
+		if ((size = ValveParamToBinParam(params[i].vtype, 
+			params[i].type,
+			params[i].flags,
+			&paramBuf[i],
+			needs_extra)) == 0)
+		{
+			delete vc;
+			return NULL;
+		}
+		if (needs_extra)
+		{
+			sizes[i] = size;
+		} else {
+			sizes[i] = 0;
+		}
+		normSize += paramBuf[i].size;
+		extraSize += sizes[i];
+	}
+
+
 	/* Get thisinfo if needed */
 	ValvePassInfo thisbuf;
 	ValvePassInfo *thisinfo = NULL;
@@ -130,35 +158,8 @@ ValveCall *CreateValveCall(void *addr,
 		}
 		thisinfo->encflags = 0;
 		thisinfo->offset = 0;
-		vc->stackSize += sizeof(void *);
+		normSize += sizeof(void *);
 		cv = CallConv_ThisCall;
-	}
-
-	/* Get parameter info */
-	PassInfo paramBuf[32];
-	size_t sizes[32];
-	size_t normSize = 0;
-	size_t extraSize = 0;
-	for (unsigned int i=0; i<numParams; i++)
-	{
-		bool needs_extra;
-		if ((size = ValveParamToBinParam(params[i].vtype, 
-			params[i].type,
-			params[i].flags,
-			&paramBuf[i],
-			needs_extra)) == 0)
-		{
-			delete vc;
-			return NULL;
-		}
-		if (needs_extra)
-		{
-			sizes[i] = size;
-		} else {
-			sizes[i] = 0;
-		}
-		normSize += paramBuf[i].size;
-		extraSize += sizes[i];
 	}
 
 	/* Now we can try creating the call */
