@@ -41,7 +41,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -120,7 +120,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				RuntimeLibrary="0"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="0"
@@ -290,6 +290,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ThreadSupport.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\TimerSys.cpp"
 				>
 			</File>
@@ -392,6 +396,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_cachelist.h"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_fastlink.h"
 				>
 			</File>
@@ -405,6 +413,14 @@
 			</File>
 			<File
 				RelativePath="..\..\public\sm_platform.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_queue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_simple_prioqueue.h"
 				>
 			</File>
 			<File
@@ -437,6 +453,10 @@
 			</File>
 			<File
 				RelativePath="..\TextParsers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\thread\ThreadSupport.h"
 				>
 			</File>
 			<File
@@ -912,6 +932,42 @@
 				RelativePath="..\version.rc"
 				>
 			</File>
+		</Filter>
+		<Filter
+			Name="Threader"
+			>
+			<Filter
+				Name="Header Files"
+				>
+				<File
+					RelativePath="..\thread\BaseWorker.h"
+					>
+				</File>
+				<File
+					RelativePath="..\thread\ThreadWorker.h"
+					>
+				</File>
+				<File
+					RelativePath="..\thread\WinThreads.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Source Files"
+				>
+				<File
+					RelativePath="..\thread\BaseWorker.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\thread\ThreadWorker.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\thread\WinThreads.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
