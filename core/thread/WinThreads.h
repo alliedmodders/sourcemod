@@ -52,9 +52,7 @@ public:
 	class WinMutex : public IMutex
 	{
 	public:
-		WinMutex(HANDLE mutex) : m_mutex(mutex)
-		{
-		};
+		WinMutex();
 		virtual ~WinMutex();
 	public:
 		virtual bool TryLock();
@@ -62,7 +60,7 @@ public:
 		virtual void Unlock();
 		virtual void DestroyThis();
 	protected:
-		HANDLE m_mutex;
+		CRITICAL_SECTION m_crit;
 	};
 	class WinEvent : public IEventSignal
 	{

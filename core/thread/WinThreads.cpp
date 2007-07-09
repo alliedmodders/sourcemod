@@ -12,6 +12,7 @@
  * Version: $Id$
  */
 
+#define _WIN32_WINNT 0x0400
 #include "WinThreads.h"
 #include "ThreadWorker.h"
 
@@ -37,12 +38,7 @@ void WinThreader::ThreadSleep(unsigned int ms)
 
 IMutex *WinThreader::MakeMutex()
 {
-	HANDLE mutex = CreateMutexA(NULL, FALSE, NULL);
-
-	if (mutex == NULL)
-		return NULL;
-
-	WinMutex *pMutex = new WinMutex(mutex);
+	WinMutex *pMutex = new WinMutex();
 
 	return pMutex;
 }
@@ -141,40 +137,29 @@ IEventSignal *WinThreader::MakeEventSignal()
  **** Mutexes ****
  *****************/
 
+WinThreader::WinMutex::WinMutex()
+{
+	InitializeCriticalSection(&m_crit);
+}
+
 WinThreader::WinMutex::~WinMutex()
 {
-	if (m_mutex)
-	{
-		CloseHandle(m_mutex);
-		m_mutex = NULL;
-	}
+	DeleteCriticalSection(&m_crit);
 }
 
 bool WinThreader::WinMutex::TryLock()
 {
-	if (!m_mutex)
-		return false;
-
-	if (WaitForSingleObject(m_mutex, 0) != WAIT_FAILED)
-		return true;
-
-	return false;
+	return (TryEnterCriticalSection(&m_crit) != FALSE);
 }
 
 void WinThreader::WinMutex::Lock()
 {
-	if (!m_mutex)
-		return;
-
-	WaitForSingleObject(m_mutex, INFINITE);
+	EnterCriticalSection(&m_crit);
 }
 
 void WinThreader::WinMutex::Unlock()
 {
-	if (!m_mutex)
-		return;
-
-	ReleaseMutex(m_mutex);
+	LeaveCriticalSection(&m_crit);
 }
 
 void WinThreader::WinMutex::DestroyThis()

@@ -23,11 +23,6 @@ folder = extensions/geoip
 in = svn_version.tpl
 out = svn_version.h
 
-[threader]
-folder = extensions/threader
-in = svn_version.tpl
-out = svn_version.h
-
 [compiler]
 folder = sourcepawn/compiler
 in = svn_version.tpl
