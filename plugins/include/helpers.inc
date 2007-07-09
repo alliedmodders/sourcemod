@@ -65,11 +65,11 @@ stock FormatUserLogText(client, String:buffer[], maxlength)
 	new userid = GetClientUserId(client);
 	if (!GetClientAuthString(client, auth, sizeof(auth)))
 	{
-		StrCopy(auth, sizeof(auth), "UNKNOWN");
+		strcopy(auth, sizeof(auth), "UNKNOWN");
 	}
 	if (!GetClientName(client, name, sizeof(name)))
 	{
-		StrCopy(name, sizeof(name), "UNKNOWN");
+		strcopy(name, sizeof(name), "UNKNOWN");
 	}
 	
 	/** Currently, no team stuff ... */
@@ -95,7 +95,7 @@ stock Handle:FindPluginByFile(const String:filename[])
 		pl = ReadPlugin(iter);
 		
 		GetPluginFilename(pl, buffer, sizeof(buffer));
-		if (StrCompare(buffer, filename) == 0)
+		if (strcmp(buffer, filename, false) == 0)
 		{
 			CloseHandle(iter);
 			return pl;
@@ -142,7 +142,7 @@ stock SearchForClients(const String:pattern[], clients[], maxClients)
 					continue;
 				}
 				GetClientName(i, name, sizeof(name));
-				if (StrEqual(name, pattern, false))
+				if (strcmp(name, pattern, false) == 0)
 				{
 					clients[0] = i;
 					return 1;
