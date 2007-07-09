@@ -12,6 +12,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	RegServerCmd("test_callfunc", Command_CallFunc);
+	RegServerCmd("test_callfunc_reentrant", Command_ReentrantCallFunc);
 }
 
 public OnCallFuncReceived(num, Float:fnum, String:str[], String:str2[], &val, &Float:fval, array[], array2[], size, hello2[1])
@@ -40,9 +41,9 @@ public OnCallFuncReceived(num, Float:fnum, String:str[], String:str2[], &val, &F
 	}
 	
 	/* This shouldn't get copied back */
-	StrCopy(str, strlen(str) + 1, "Yeti");
+	strcopy(str, strlen(str) + 1, "Yeti");
 	/* This should get copied back */
-	StrCopy(str2, strlen(str2) + 1, "Gaben is fat.");
+	strcopy(str2, strlen(str2) + 1, "Gaben is fat.");
 	
 	/* This should get copied back */
 	array[0] = 5;
@@ -51,6 +52,45 @@ public OnCallFuncReceived(num, Float:fnum, String:str[], String:str2[], &val, &F
 	hello2[0] = 25;
 	
 	return 42;
+}
+
+public OnReentrantCallReceived(num, String:str[])
+{
+	new err, ret;
+	
+	PrintToServer("Inside OnReentrantCallReceived...");
+	
+	PrintToServer("num = %d (expected: %d)", num, 7);
+	PrintToServer("str[] = \"%s\" (expected: \"%s\")", str, "nana");
+	
+	new Function:func = GetFunctionByName(INVALID_HANDLE, "OnReentrantCallReceivedTwo");
+	
+	if (func == INVALID_FUNCTION)
+	{
+		PrintToServer("Failed to get the function id of OnReentrantCallReceivedTwo");
+		return 0;
+	}
+	
+	PrintToServer("Calling OnReentrantCallReceivedTwo...");
+	
+	Call_StartFunction(INVALID_HANDLE, func);
+	Call_PushFloat(8.0);
+	err = Call_Finish(ret);
+	
+	PrintToServer("Call to OnReentrantCallReceivedTwo has finished!");
+	PrintToServer("Error code = %d (expected: %d)", err, 0);
+	PrintToServer("Return value = %d (expected: %d)", ret, 707);
+	
+	return 11;
+}
+
+public OnReentrantCallReceivedTwo(Float:fnum)
+{
+	PrintToServer("Inside OnReentrantCallReceivedTwo...");
+	
+	PrintToServer("fnum = %f (expected: %f)", fnum, 8.0);
+
+	return 707;
 }
 
 public Action:Command_CallFunc(args)
@@ -99,6 +139,31 @@ public Action:Command_CallFunc(args)
 	PrintToServer("hello[0] = %d (expected: %d)", hello[0], 5);
 	PrintToServer("hello[1] = %d (expected: %d)", hello[1], 6);
 	PrintToServer("hello2[0] = %d (expected: %d)", hello2[0], 9);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_ReentrantCallFunc(args)
+{	
+	new err, ret;
+	new Function:func = GetFunctionByName(INVALID_HANDLE, "OnReentrantCallReceived");
+	
+	if (func == INVALID_FUNCTION)
+	{
+		PrintToServer("Failed to get the function id of OnReentrantCallReceived");
+		return Plugin_Handled;
+	}
+	
+	PrintToServer("Calling OnReentrantCallReceived...");
+	
+	Call_StartFunction(INVALID_HANDLE, func);
+	Call_PushCell(7);
+	Call_PushString("nana");
+	err = Call_Finish(ret);
+	
+	PrintToServer("Call to OnReentrantCallReceived has finished!");
+	PrintToServer("Error code = %d (expected: %d)", err, 0);
+	PrintToServer("Return value = %d (expected: %d)", ret, 11);
 	
 	return Plugin_Handled;
 }

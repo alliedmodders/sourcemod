@@ -75,6 +75,7 @@ inline void ResetCall()
 {
 	s_CallStarted = false;
 	s_pFunction = NULL;
+	s_pForward = NULL;
 	s_pCallable = NULL;
 }
 
@@ -542,13 +543,13 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 	if (s_pFunction)
 	{
 		IPluginFunction *pFunction = s_pFunction;
+		ResetCall();
 		err = pFunction->Execute(result);
 	} else if (s_pForward) {
 		IForward *pForward = s_pForward;
+		ResetCall();
 		err = pForward->Execute(result, NULL);
 	}
-
-	ResetCall();
 
 	return err;
 }
