@@ -499,7 +499,7 @@ bool sm_trie_add(Trie *trie, const char *key, void *value, bool replace_allowed)
 
 			assert(incoming_limit > 0 && incoming_limit <= 255);
 
-			for (unsigned int i=1; i<=255; i++,cur++)
+			for (unsigned int i=1; i<=incoming_limit; i++,cur++)
 			{
 				if (cur->mode == Node_Arc || cur->mode == Node_Term)
 				{
