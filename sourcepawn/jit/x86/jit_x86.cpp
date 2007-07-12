@@ -2445,6 +2445,7 @@ jit_rewind:
 			ctx->natives[iter].name = strbase + plugin->info.natives[iter].name;
 			ctx->natives[iter].pfn = &InvalidNative;
 			ctx->natives[iter].status = SP_NATIVE_UNBOUND;
+			ctx->natives[iter].flags = 0;
 		}
 	}
 

@@ -234,6 +234,10 @@ public:
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	unsigned int GetConfigCount();
 	AutoConfig *GetConfig(unsigned int i);
+	inline bool IsInAskPluginLoad()
+	{
+		return m_IsInAskPluginLoad;
+	}
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);
@@ -258,6 +262,7 @@ private:
 	Trie *m_pProps;
 	bool m_FakeNativesMissing;
 	CVector<AutoConfig *> m_configs;
+	bool m_IsInAskPluginLoad;
 };
 
 class CPluginManager : 

@@ -171,6 +171,8 @@ typedef struct sp_pubvar_s
 #define SP_NATIVE_UNBOUND		(0)		/**< Native is undefined */
 #define SP_NATIVE_BOUND			(1)		/**< Native is bound */
 
+#define SP_NTVFLAG_OPTIONAL		(1<<0)	/**< Native is optional */
+
 /** 
  * @brief Native lookup table, by default names point back to the sp_plugin_infotab_t structure.
  */
@@ -179,6 +181,7 @@ typedef struct sp_native_s
 	SPVM_NATIVE_FUNC	pfn;	/**< Function pointer */
 	const char *		name;	/**< Name of function */
 	uint32_t			status;	/**< Status flags */
+	uint32_t			flags;	/**< Native flags */
 } sp_native_t;
 
 /** 

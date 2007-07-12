@@ -529,13 +529,19 @@ void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 			 n_iter++)
 		{
 			natives = (*n_iter);
+			uint32_t idx;
 			unsigned int i=0;
 			while (natives[i].func != NULL && natives[i].name != NULL)
 			{
-				if (pContext->BindNative(&natives[i++]) == SP_ERROR_NONE)
+				if (pContext->BindNative(&natives[i]) == SP_ERROR_NONE)
 				{
-					set = true;
+					pContext->FindNativeByName(natives[i].name, &idx);
+					if (!(pContext->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL))
+					{
+						set = true;
+					}
 				}
+				i++;
 			}
 		}
 		if (set && (pExt->m_Plugins.find(pPlugin) == pExt->m_Plugins.end()))

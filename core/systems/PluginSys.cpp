@@ -357,14 +357,18 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		return true;
 	}
 
+	m_IsInAskPluginLoad = true;
 	pFunction->PushCell(m_handle);
 	pFunction->PushCell(g_PluginSys.IsLateLoadTime() ? 1 : 0);
 	pFunction->PushStringEx(error, maxlength, 0, SM_PARAM_COPYBACK);
 	pFunction->PushCell(maxlength);
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
+		m_IsInAskPluginLoad = false;
 		return false;
 	}
+
+	m_IsInAskPluginLoad = false;
 
 	if (!result || m_status != Plugin_Loaded)
 	{
@@ -1098,7 +1102,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			break;
 		}
 		if (native->status == SP_NATIVE_UNBOUND
-			&& native->name[0] != '@')
+			&& native->name[0] != '@'
+			&& !(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
 			if (error)
 			{
@@ -1176,7 +1181,7 @@ void CPluginManager::TryRefreshNatives(CPlugin *pPlugin)
 		{
 			break;
 		}
-		if (native->status == SP_NATIVE_UNBOUND)
+		if (native->status == SP_NATIVE_UNBOUND && !(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
 			pPlugin->SetErrorState(Plugin_Error, "Native not found: %s", native->name);
 			return;
@@ -1213,6 +1218,12 @@ void CPluginManager::AddFakeNativesToPlugin(CPlugin *pPlugin)
 		native.func = pNative->func;
 		if (pContext->BindNative(&native) == SP_ERROR_NONE)
 		{
+			uint32_t idx;
+			pContext->FindNativeByName(native.name, &idx);
+			if (!(pPlugin->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL))
+			{
+				continue;
+			}
 			/* Add us as a dependency, but we're careful not to do this circularly! */
 			if (pNative->ctx != pContext)
 			{

@@ -330,20 +330,44 @@ static cell_t AutoExecConfig(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	uint32_t idx;
+	sp_context_t *ctx = pContext->GetContext();
+	CPlugin *pl = g_PluginSys.GetPluginByCtx(ctx);
+
+	if (!pl->IsInAskPluginLoad())
+	{
+		return pContext->ThrowNativeError("Calling MarkNativeAsOptional outside AskPluginLoad is not allowed");
+	}
+
+	pContext->LocalToString(params[1], &name);
+	if (pContext->FindNativeByName(name, &idx) != SP_ERROR_NONE)
+	{
+		return pContext->ThrowNativeError("Unable to find native \"%s\"", name);
+	}
+
+	ctx->natives[idx].flags |= SP_NTVFLAG_OPTIONAL;
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
-	{"AutoExecConfig",		AutoExecConfig},
-	{"GetPluginFilename",	GetPluginFilename},
-	{"GetPluginInfo",		GetPluginInfo},
-	{"GetPluginIterator",	GetPluginIterator},
-	{"GetPluginStatus",		GetPluginStatus},
-	{"GetSysTickCount",		GetSysTickCount},
-	{"GetTime",				GetTime},
-	{"IsPluginDebugging",	IsPluginDebugging},
-	{"MorePlugins",			MorePlugins},
-	{"ReadPlugin",			ReadPlugin},
-	{"ThrowError",			ThrowError},
-	{"SetFailState",		SetFailState},
-	{"FormatTime",			FormatTime},
-	{NULL,					NULL},
+	{"AutoExecConfig",			AutoExecConfig},
+	{"GetPluginFilename",		GetPluginFilename},
+	{"GetPluginInfo",			GetPluginInfo},
+	{"GetPluginIterator",		GetPluginIterator},
+	{"GetPluginStatus",			GetPluginStatus},
+	{"GetSysTickCount",			GetSysTickCount},
+	{"GetTime",					GetTime},
+	{"IsPluginDebugging",		IsPluginDebugging},
+	{"MorePlugins",				MorePlugins},
+	{"ReadPlugin",				ReadPlugin},
+	{"ThrowError",				ThrowError},
+	{"SetFailState",			SetFailState},
+	{"FormatTime",				FormatTime},
+	{"MarkNativeAsOptional",	MarkNativeAsOptional},
+	{NULL,						NULL},
 };
