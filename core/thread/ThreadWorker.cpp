@@ -14,7 +14,7 @@
 
 #include "ThreadWorker.h"
 
-ThreadWorker::ThreadWorker() : 
+ThreadWorker::ThreadWorker(IThreadWorkerCallbacks *hooks) : BaseWorker(hooks),
 	m_Threader(NULL),
 	m_QueueLock(NULL),
 	m_StateLock(NULL),
@@ -26,7 +26,8 @@ ThreadWorker::ThreadWorker() :
 	m_state = Worker_Invalid;
 }
 
-ThreadWorker::ThreadWorker(IThreader *pThreader, unsigned int thinktime) : 
+ThreadWorker::ThreadWorker(IThreadWorkerCallbacks *hooks, IThreader *pThreader, unsigned int thinktime) : 
+	BaseWorker(hooks),
 	m_Threader(pThreader),
 	m_QueueLock(NULL),
 	m_StateLock(NULL),
@@ -46,10 +47,14 @@ ThreadWorker::ThreadWorker(IThreader *pThreader, unsigned int thinktime) :
 ThreadWorker::~ThreadWorker()
 {
 	if (m_state != Worker_Stopped || m_state != Worker_Invalid)
+	{
 		Stop(true);
+	}
 
 	if (m_ThreadQueue.size())
+	{
 		Flush(true);
+	}
 }
 
 void ThreadWorker::OnTerminate(IThreadHandle *pHandle, bool cancel)
@@ -62,6 +67,11 @@ void ThreadWorker::RunThread(IThreadHandle *pHandle)
 {
 	WorkerState this_state = Worker_Running;
 	size_t num;
+
+	if (m_pHooks)
+	{
+		m_pHooks->OnWorkerStart(this);
+	}
     
 	while (true)
 	{
@@ -112,7 +122,9 @@ void ThreadWorker::RunThread(IThreadHandle *pHandle)
 					if (!m_FlushType)
 					{
 						while (m_ThreadQueue.size())
+						{
 							RunFrame();
+						}
 					}
 					break;
 				}
@@ -127,14 +139,23 @@ void ThreadWorker::RunThread(IThreadHandle *pHandle)
 		 * wait in between threads if specified
 		 */
 		if (m_think_time)
+		{
 			m_Threader->ThreadSleep(m_think_time);
+		}
+	}
+
+	if (m_pHooks)
+	{
+		m_pHooks->OnWorkerStop(this);
 	}
 }
 
 SWThreadHandle *ThreadWorker::PopThreadFromQueue()
 {
 	if (m_state <= Worker_Stopped && !m_QueueLock)
+	{
 		return NULL;
+	}
 
 	SWThreadHandle *swt;
 	m_QueueLock->Lock();
@@ -147,7 +168,9 @@ SWThreadHandle *ThreadWorker::PopThreadFromQueue()
 void ThreadWorker::AddThreadToQueue(SWThreadHandle *pHandle)
 {
 	if (m_state <= Worker_Stopped)
+	{
 		return;
+	}
 
 	m_QueueLock->Lock();
 	BaseWorker::AddThreadToQueue(pHandle);
@@ -174,7 +197,9 @@ bool ThreadWorker::Start()
 	if (m_state == Worker_Invalid)
 	{
 		if (m_Threader == NULL)
+		{
 			return false;
+		}
 	} else if (m_state != Worker_Stopped) {
 		return false;
 	}
@@ -196,7 +221,9 @@ bool ThreadWorker::Start()
 bool ThreadWorker::Stop(bool flush_cancel)
 {
 	if (m_state == Worker_Invalid || m_state == Worker_Stopped)
+	{
 		return false;
+	}
 
 	WorkerState oldstate;
 
@@ -244,7 +271,9 @@ bool ThreadWorker::Stop(bool flush_cancel)
 bool ThreadWorker::Pause()
 {
 	if (m_state != Worker_Running)
+	{
 		return false;
+	}
 
 	m_StateLock->Lock();
 	m_state = Worker_Paused;
@@ -257,7 +286,9 @@ bool ThreadWorker::Pause()
 bool ThreadWorker::Unpause()
 {
 	if (m_state != Worker_Paused)
+	{
 		return false;
+	}
 
 	m_StateLock->Lock();
 	m_state = Worker_Running;

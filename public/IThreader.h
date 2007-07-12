@@ -27,7 +27,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_THREADER_NAME		"IThreader"
-#define SMINTERFACE_THREADER_VERSION	1
+#define SMINTERFACE_THREADER_VERSION	2
 
 namespace SourceMod
 {
@@ -352,6 +352,31 @@ namespace SourceMod
 	};
 
 	/**
+	 * @brief Describes thread worker callbacks.
+	 */
+	class IThreadWorkerCallbacks
+	{
+	public:
+		/**
+		 * @brief Called when the worker thread is initialized.
+		 *
+		 * @param pWorker		Pointer to the worker.
+		 */
+		virtual void OnWorkerStart(IThreadWorker *pWorker)
+		{
+		}
+
+		/**
+		 * @brief Called when the worker thread is cleaning up.
+		 *
+		 * @param pWorker		Pointer to the worker.
+		 */
+		virtual void OnWorkerStop(IThreadWorker *pWorker)
+		{
+		}
+	};
+
+	/**
 	 * @brief Describes a threading system
 	 */
 	class IThreader : public SMInterface, public IThreadCreator
@@ -364,6 +389,14 @@ namespace SourceMod
 		virtual unsigned int GetInterfaceVersion()
 		{
 			return SMINTERFACE_THREADER_VERSION;
+		}
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < 2)
+			{
+				return false;
+			}
+			return SMInterface::IsVersionCompatible(version);
 		}
 	public:
 		/**
@@ -390,11 +423,12 @@ namespace SourceMod
 		/**
 		 * @brief Creates a thread worker.
 		 *
+		 * @param hooks		Optional pointer to callback interface.
 		 * @param threaded	If true, the worker will be threaded.
 		 *					If false, the worker will require manual frame execution.
 		 * @return			A new IThreadWorker pointer (must be destroyed).
 		 */
-		virtual IThreadWorker *MakeWorker(bool threaded) =0;
+		virtual IThreadWorker *MakeWorker(IThreadWorkerCallbacks *hooks, bool threaded) =0;
 
 		/**
 		 * @brief Destroys an IThreadWorker pointer.

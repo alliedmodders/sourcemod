@@ -16,13 +16,13 @@
 #include "WinThreads.h"
 #include "ThreadWorker.h"
 
-IThreadWorker *WinThreader::MakeWorker(bool threaded)
+IThreadWorker *WinThreader::MakeWorker(IThreadWorkerCallbacks *hooks, bool threaded)
 {
 	if (threaded)
 	{
-		return new ThreadWorker(this, DEFAULT_THINK_TIME_MS);
+		return new ThreadWorker(hooks, this, DEFAULT_THINK_TIME_MS);
 	} else {
-		return new BaseWorker();
+		return new BaseWorker(hooks);
 	}
 }
 

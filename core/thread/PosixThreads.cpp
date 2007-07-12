@@ -25,13 +25,13 @@
 #include "PosixThreads.h"
 #include "ThreadWorker.h"
 
-IThreadWorker *PosixThreader::MakeWorker(bool threaded)
+IThreadWorker *PosixThreader::MakeWorker(IThreadWorkerCallbacks *hooks, bool threaded)
 {
 	if (threaded)
 	{
-		return new ThreadWorker(this, DEFAULT_THINK_TIME_MS);
+		return new ThreadWorker(hooks, this, DEFAULT_THINK_TIME_MS);
 	} else {
-		return new BaseWorker();
+		return new BaseWorker(hooks);
 	}
 }
 

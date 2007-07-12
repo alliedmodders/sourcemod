@@ -54,7 +54,7 @@ private:
 class BaseWorker : public IThreadWorker
 {
 public:
-	BaseWorker();
+	BaseWorker(IThreadWorkerCallbacks *hooks);
 	virtual ~BaseWorker();
 public:	//IWorker
 	virtual unsigned int RunFrame();
@@ -81,6 +81,7 @@ protected:
 	SourceHook::List<SWThreadHandle *> m_ThreadQueue;
 	unsigned int m_perFrame;
 	volatile WorkerState m_state;
+	IThreadWorkerCallbacks *m_pHooks;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEWORKER_H

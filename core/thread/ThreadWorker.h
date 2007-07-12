@@ -22,8 +22,8 @@
 class ThreadWorker : public BaseWorker, public IThread
 {
 public:
-	ThreadWorker();
-	ThreadWorker(IThreader *pThreader, unsigned int thinktime=DEFAULT_THINK_TIME_MS);
+	ThreadWorker(IThreadWorkerCallbacks *hooks);
+	ThreadWorker(IThreadWorkerCallbacks *hooks, IThreader *pThreader, unsigned int thinktime=DEFAULT_THINK_TIME_MS);
 	virtual ~ThreadWorker();
 public:	//IThread
 	virtual void OnTerminate(IThreadHandle *pHandle, bool cancel);

@@ -60,6 +60,9 @@ ITimerSystem *timersys = NULL;
 #if defined SMEXT_ENABLE_ADTFACTORY
 IADTFactory *adtfactory = NULL;
 #endif
+#if defined SMEXT_ENABLE_THREADER
+IThreader *threader = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -123,6 +126,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_ADTFACTORY
 	SM_GET_IFACE(ADTFACTORY, adtfactory);
+#endif
+#if defined SMEXT_ENABLE_THREADER
+	SM_GET_IFACE(THREADER, threader);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))

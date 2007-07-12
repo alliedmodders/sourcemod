@@ -95,7 +95,7 @@ public:
 	void GetPriorityBounds(ThreadPriority &max, ThreadPriority &min);
 	void ThreadSleep(unsigned int ms);
 	IEventSignal *MakeEventSignal();
-	IThreadWorker *MakeWorker(bool threaded);
+	IThreadWorker *MakeWorker(IThreadWorkerCallbacks *hooks, bool threaded);
 	void DestroyWorker(IThreadWorker *pWorker);
 };
 

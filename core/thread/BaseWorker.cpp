@@ -14,9 +14,10 @@
 
 #include "BaseWorker.h"
 
-BaseWorker::BaseWorker() : 
+BaseWorker::BaseWorker(IThreadWorkerCallbacks *hooks) : 
 	m_perFrame(SM_DEFAULT_THREADS_PER_FRAME),
-	m_state(Worker_Stopped)
+	m_state(Worker_Stopped),
+	m_pHooks(hooks)
 {
 }
 
@@ -129,14 +130,18 @@ unsigned int BaseWorker::RunFrame()
 	while (done < max)
 	{
 		if ((swt=PopThreadFromQueue()) == NULL)
+		{
 			break;
+		}
 		pThread = swt->pThread;
 		swt->m_state = Thread_Running;
 		pThread->RunThread(swt);
 		swt->m_state = Thread_Done;
 		pThread->OnTerminate(swt, false);
 		if (swt->m_params.flags & Thread_AutoRelease)
+		{
 			delete swt;
+		}
 		done++;
 	}
 
@@ -157,22 +162,36 @@ bool BaseWorker::Start()
 
 	m_state = Worker_Running;
 
+	if (m_pHooks)
+	{
+		m_pHooks->OnWorkerStart(this);
+	}
+
     return true;
 }
 
 bool BaseWorker::Stop(bool flush_cancel)
 {
 	if (m_state == Worker_Invalid || m_state == Worker_Stopped)
+	{
 		return false;
+	}
 
 	if (m_state == Worker_Paused)
 	{
 		if (!Unpause())
+		{
 			return false;
+		}
 	}
 
 	m_state = Worker_Stopped;
 	Flush(flush_cancel);
+
+	if (m_pHooks)
+	{
+		m_pHooks->OnWorkerStop(this);
+	}
 
 	return true;
 }
@@ -180,7 +199,9 @@ bool BaseWorker::Stop(bool flush_cancel)
 bool BaseWorker::Pause()
 {
 	if (m_state != Worker_Running)
+	{
 		return false;
+	}
 
 	m_state = Worker_Paused;
 
@@ -191,7 +212,9 @@ bool BaseWorker::Pause()
 bool BaseWorker::Unpause()
 {
 	if (m_state != Worker_Paused)
+	{
 		return false;
+	}
 
 	m_state = Worker_Running;
 

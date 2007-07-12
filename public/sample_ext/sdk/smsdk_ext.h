@@ -54,6 +54,9 @@
 #if defined SMEXT_ENABLE_ADTFACTORY
 #include <IADTFactory.h>
 #endif
+#if defined SMEXT_ENABLE_THREADER
+#include <IThreader.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -230,6 +233,9 @@ extern ITimerSystem *timersys;
 #endif
 #if defined SMEXT_ENABLE_ADTFACTORY
 extern IADTFactory *adtfactory;
+#endif
+#if defined SMEXT_ENABLE_THREADER
+extern IThreader *threader;
 #endif
 
 #if defined SMEXT_CONF_METAMOD
