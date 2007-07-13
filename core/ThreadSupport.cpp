@@ -32,4 +32,4 @@ public:
 	{
 		g_ShareSys.AddInterface(NULL, g_pThreader);
 	}
-};
+} s_RegThreadStuff;
