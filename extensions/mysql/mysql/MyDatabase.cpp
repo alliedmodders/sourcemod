@@ -70,26 +70,39 @@ MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
+
+	m_pRefLock = threader->MakeMutex();
 }
 
 MyDatabase::~MyDatabase()
 {
 	mysql_close(m_mysql);
 	m_mysql = NULL;
+
+	m_pRefLock->DestroyThis();
+	if (m_pFullLock)
+	{
+		m_pFullLock->DestroyThis();
+	}
 }
 
 void MyDatabase::IncReferenceCount()
 {
+	m_pRefLock->Lock();
 	m_refcount++;
+	m_pRefLock->Unlock();
 }
 
 bool MyDatabase::Close()
 {
+	m_pRefLock->Lock();
 	if (m_refcount > 1)
 	{
 		m_refcount--;
+		m_pRefLock->Unlock();
 		return false;
 	}
+	m_pRefLock->Unlock();
 
 	/* Remove us from the search list */
 	if (m_bPersistent)

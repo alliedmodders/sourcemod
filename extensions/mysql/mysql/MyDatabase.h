@@ -33,6 +33,7 @@ private:
 	MYSQL *m_mysql;
 	unsigned int m_refcount;
 	IMutex *m_pFullLock;
+	IMutex *m_pRefLock;
 
 	/* ---------- */
 	DatabaseInfo m_Info;
