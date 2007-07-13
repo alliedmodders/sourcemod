@@ -22,6 +22,9 @@
 #include <sh_list.h>
 #include <ITextParsers.h>
 #include "sm_memtable.h"
+#include <IThreader.h>
+#include "sm_simple_prioqueue.h"
+#include "PluginSys.h"
 
 using namespace SourceHook;
 
@@ -41,11 +44,24 @@ struct ConfDbInfo
 	DatabaseInfo info;
 };
 
+class IDBThreadOperation
+{
+public:
+	virtual IDBDriver *GetDriver() =0;
+	virtual CPlugin *GetPlugin() =0;
+	virtual void RunThreadPart() =0;
+	virtual void RunThinkPart() =0;
+	virtual void CancelThinkPart() =0;
+};
+
 class DBManager : 
 	public IDBManager,
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
-	public ITextListener_SMC
+	public ITextListener_SMC,
+	public IThread,
+	public IThreadWorkerCallbacks,
+	public IPluginsListener
 {
 public:
 	DBManager();
@@ -74,12 +90,41 @@ public: //ITextListener_SMC
 	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
 	SMCParseResult ReadSMC_LeavingSection();
 	void ReadSMC_ParseEnd(bool halted, bool failed);
+public: //IThread
+	void RunThread(IThreadHandle *pThread);
+	void OnTerminate(IThreadHandle *pThread, bool cancel);
+public: //IThreadWorkerCallbacks
+	void OnWorkerStart(IThreadWorker *pWorker);
+	void OnWorkerStop(IThreadWorker *pWorker);
+public: //IPluginsListener
+	void OnPluginUnloaded(IPlugin *plugin);
 public:
 	ConfDbInfo *GetDatabaseConf(const char *name);
 	IDBDriver *FindOrLoadDriver(const char *name);
 	IDBDriver *GetDefaultDriver();
+	const char *GetDefaultDriverName();
+	bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio);
+	void LockConfig();
+	void UnlockConfig();
+	void RunFrame();
+	inline HandleType_t GetDatabaseType()
+	{
+		return m_DatabaseType;
+	}
+private:
+	void KillWorkerThread();
 private:
 	CVector<IDBDriver *> m_drivers;
+
+	/* Threading stuff */
+	PrioQueue<IDBThreadOperation *> m_OpQueue;
+	Queue<IDBThreadOperation *> m_ThinkQueue;
+	CVector<bool> m_drSafety;			/* which drivers are safe? */
+	IThreadWorker *m_pWorker;			/* Worker thread object */
+	IMutex *m_pConfigLock;				/* Configuration lock */
+	IMutex *m_pQueueLock;				/* Queue safety lock */
+	IMutex *m_pThinkLock;				/* Think-queue lock */
+
 	List<ConfDbInfo> m_confs;
 	HandleType_t m_DriverType;
 	HandleType_t m_DatabaseType;

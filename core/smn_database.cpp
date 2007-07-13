@@ -3,6 +3,7 @@
 #include "Database.h"
 #include "ExtensionSys.h"
 #include "PluginSys.h"
+#include "sm_stringutil.h"
 
 HandleType_t hQueryType;
 HandleType_t hStmtType;
@@ -78,6 +79,197 @@ inline HandleError ReadDbOrStmtHndl(Handle_t hndl, IPluginContext *pContext, IDa
 	return err;
 }
 
+class TQueryOp : public IDBThreadOperation
+{
+public:
+	TQueryOp(IDatabase *db, IPluginFunction *pf, const char *query, cell_t data) : 
+	  m_pDatabase(db), m_pFunction(pf), m_Query(query), m_Data(data),
+	  me(g_PluginSys.GetPluginByCtx(pf->GetParentContext()->GetContext())),
+	  m_pQuery(NULL)
+	{
+		/* We always increase the reference count because this is potentially
+		 * asynchronous.  Otherwise the original handle could be closed while 
+		 * we're still latched onto it.
+		 */
+		m_pDatabase->IncReferenceCount();
+
+		/* Now create our own Handle such that it can only be closed by us.
+		 * We allow cloning just in case someone wants to hold onto it.
+		 */
+		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
+		HandleAccess access;
+		g_HandleSys.InitAccessDefaults(NULL, &access);
+		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
+		m_MyHandle = g_HandleSys.CreateHandleEx(g_DBMan.GetDatabaseType(),
+			db,
+			&sec,
+			&access,
+			NULL);
+	}
+	~TQueryOp()
+	{
+		if (m_pQuery)
+		{
+			m_pQuery->Destroy();
+		}
+
+		/* Close our Handle if it's valid. */
+		if (m_MyHandle != BAD_HANDLE)
+		{
+			HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
+			g_HandleSys.FreeHandle(m_MyHandle, &sec);
+		} else {
+			/* Otherwise, there is an open ref to the db */
+			m_pDatabase->Close();
+		}
+	}
+	CPlugin *GetPlugin()
+	{
+		return me;
+	}
+	IDBDriver *GetDriver()
+	{
+		return m_pDatabase->GetDriver();
+	}
+	void RunThreadPart()
+	{
+		m_pDatabase->LockForFullAtomicOperation();
+		m_pQuery = m_pDatabase->DoQuery(m_Query.c_str());
+		if (!m_pQuery)
+		{
+			UTIL_Format(error, sizeof(error), "%s", m_pDatabase->GetError());
+		}
+		m_pDatabase->UnlockFromFullAtomicOperation();
+	}
+	void CancelThinkPart()
+	{
+		m_pFunction->PushCell(BAD_HANDLE);
+		m_pFunction->PushCell(BAD_HANDLE);
+		m_pFunction->PushString("Driver is unloading");
+		m_pFunction->PushCell(m_Data);
+		m_pFunction->Execute(NULL);
+		delete this;
+	}
+	void RunThinkPart()
+	{
+		/* Create a Handle for our query */
+		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
+		HandleAccess access;
+		g_HandleSys.InitAccessDefaults(NULL, &access);
+		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
+
+		Handle_t qh = BAD_HANDLE;
+		
+		if (m_pQuery)
+		{
+			qh = g_HandleSys.CreateHandle(hQueryType, m_pQuery, me->GetIdentity(), g_pCoreIdent, NULL);
+			if (qh != BAD_HANDLE)
+			{
+				m_pQuery = NULL;
+			} else {
+				UTIL_Format(error, sizeof(error), "Could not alloc handle");
+			}
+		}
+
+		m_pFunction->PushCell(m_MyHandle);
+		m_pFunction->PushCell(qh);
+		m_pFunction->PushString(qh == BAD_HANDLE ? error : "");
+		m_pFunction->PushCell(m_Data);
+		m_pFunction->Execute(NULL);
+
+		if (qh != BAD_HANDLE)
+		{
+			g_HandleSys.FreeHandle(qh, &sec);
+		}
+
+		delete this;
+	}
+private:
+	IDatabase *m_pDatabase;
+	IPluginFunction *m_pFunction;
+	String m_Query;
+	cell_t m_Data;
+	CPlugin *me;
+	IQuery *m_pQuery;
+	char error[255];
+	Handle_t m_MyHandle;
+};
+
+class TConnectOp : public IDBThreadOperation
+{
+public:
+	TConnectOp(IPluginFunction *func, IDBDriver *driver, const char *_dbname)
+	{
+		m_pFunction = func;
+		m_pDriver = driver;
+		m_pDatabase = NULL;
+		error[0] = '\0';
+		strncopy(dbname, _dbname, sizeof(dbname));
+		me = g_PluginSys.GetPluginByCtx(m_pFunction->GetParentContext()->GetContext());
+	}
+	CPlugin *GetPlugin()
+	{
+		return me;
+	}
+	IDBDriver *GetDriver()
+	{
+		return m_pDriver;
+	}
+	void RunThreadPart()
+	{
+		g_DBMan.LockConfig();
+		const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(dbname);
+		if (!pInfo)
+		{
+			UTIL_Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
+		} else {
+			m_pDatabase = m_pDriver->Connect(pInfo, false, error, sizeof(error));
+		}
+		g_DBMan.UnlockConfig();
+	}
+	void CancelThinkPart()
+	{
+		if (m_pDatabase)
+		{
+			m_pDatabase->Close();
+		}
+		m_pFunction->PushCell(BAD_HANDLE);
+		m_pFunction->PushCell(BAD_HANDLE);
+		m_pFunction->PushString("Driver is unloading");
+		m_pFunction->PushCell(0);
+		m_pFunction->Execute(NULL);
+		delete this;
+	}
+	void RunThinkPart()
+	{
+		Handle_t hndl = BAD_HANDLE;
+		
+		if (m_pDatabase)
+		{
+			if ((hndl = g_DBMan.CreateHandle(DBHandle_Database, m_pDatabase, me->GetIdentity()))
+				== BAD_HANDLE)
+			{
+				m_pDatabase->Close();
+				UTIL_Format(error, sizeof(error), "Unable to allocate Handle");
+			}
+		}
+
+		m_pFunction->PushCell(m_pDriver->GetHandle());
+		m_pFunction->PushCell(hndl);
+		m_pFunction->PushString(hndl == BAD_HANDLE ? "" : error);
+		m_pFunction->PushCell(0);
+		m_pFunction->Execute(NULL);
+		delete this;
+	}
+private:
+	CPlugin *me;
+	IPluginFunction *m_pFunction;
+	IDBDriver *m_pDriver;
+	IDatabase *m_pDatabase;
+	char dbname[64];
+	char error[255];
+};
+
 static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 {
 	char *conf, *err;
@@ -109,6 +301,75 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return hndl;
+}
+
+static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pf = pContext->GetFunctionById(params[1]);
+	if (!pf)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+	}
+
+	char *conf;
+	pContext->LocalToString(params[2], &conf);
+
+	IDBDriver *driver = NULL;
+	const DatabaseInfo *pInfo = g_DBMan.FindDatabaseConf(conf);
+	char error[255];
+	if (pInfo != NULL)
+	{
+		if (pInfo->driver[0] == '\0')
+		{
+			driver = g_DBMan.GetDefaultDriver();
+		} else {
+			driver = g_DBMan.FindOrLoadDriver(pInfo->driver);
+		}
+		if (!driver)
+		{
+			UTIL_Format(error, 
+				sizeof(error), 
+				"Could not find driver \"%s\"", 
+				pInfo->driver[0] == '\0' ? g_DBMan.GetDefaultDriverName() : pInfo->driver);
+		} else if (!driver->IsThreadSafe()) {
+			UTIL_Format(error,
+				sizeof(error),
+				"Driver \"%s\" is not thread safe!",
+				driver->GetIdentifier());
+		}
+	} else {
+		UTIL_Format(error, sizeof(error), "Could not find database conf \"%s\"", conf);
+	}
+
+	if (!pInfo || !driver)
+	{
+		pf->PushCell(BAD_HANDLE);
+		pf->PushCell(BAD_HANDLE);
+		pf->PushString(error);
+		pf->PushCell(0);
+		pf->Execute(NULL);
+		return 0;
+	}
+
+	/* HACK! Add us to the dependency list */
+	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
+	if (pExt)
+	{
+		g_Extensions.BindChildPlugin(pExt, g_PluginSys.FindPluginByContext(pContext->GetContext()));
+	}
+
+	/* Finally, add to the thread if we can */
+	TConnectOp *op = new TConnectOp(pf, driver, conf);
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
+		|| !g_DBMan.AddToThreadQueue(op, PrioQueue_High))
+	{
+		/* Do everything right now */
+		op->RunThreadPart();
+		op->RunThinkPart();
+	}
+
+	return 1;
 }
 
 static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
@@ -378,6 +639,81 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return hndl;
+}
+
+static cell_t SQL_TQuery(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db = NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
+	}
+
+	IPluginFunction *pf = pContext->GetFunctionById(params[2]);
+	if (!pf)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[2]);
+	}
+
+	char *query;
+	pContext->LocalToString(params[3], &query);
+
+	cell_t data = params[4];
+	PrioQueueLevel level = PrioQueue_Normal;
+	if (params[5] == (cell_t)PrioQueue_High)
+	{
+		level = PrioQueue_High;
+	} else if (params[5] == (cell_t)PrioQueue_Low) {
+		level = PrioQueue_Low;
+	}
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	TQueryOp *op = new TQueryOp(db, pf, query, data);
+	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
+		|| !g_DBMan.AddToThreadQueue(op, level))
+	{
+		/* Do everything right now */
+		op->RunThreadPart();
+		op->RunThinkPart();
+	}
+
+	return 1;
+}
+
+static cell_t SQL_LockDatabase(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db = NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
+	}
+
+	db->LockForFullAtomicOperation();
+
+	return 1;
+}
+
+static cell_t SQL_UnlockDatabase(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db = NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
+	}
+
+	db->UnlockFromFullAtomicOperation();
+
+	return 1;
 }
 
 static cell_t SQL_PrepareQuery(IPluginContext *pContext, const cell_t *params)
@@ -838,6 +1174,26 @@ static cell_t SQL_Execute(IPluginContext *pContext, const cell_t *params)
 	return stmt->Execute() ? 1 : 0;
 }
 
+static cell_t SQL_IsSameConnection(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db1=NULL, *db2=NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db1))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle 1/%x (error: %d)", params[1], err);
+	}
+
+	if ((err = g_DBMan.ReadHandle(params[2], DBHandle_Database, (void **)&db2))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle 2/%x (error: %d)", params[2], err);
+	}
+
+	return (db1 == db2) ? true : false;
+}
+
 REGISTER_NATIVES(dbNatives)
 {
 	{"SQL_BindParamInt",		SQL_BindParamInt},
@@ -865,10 +1221,15 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_GetRowCount",			SQL_GetRowCount},
 	{"SQL_HasResultSet",		SQL_HasResultSet},
 	{"SQL_IsFieldNull",			SQL_IsFieldNull},
+	{"SQL_IsSameConnection",	SQL_IsSameConnection},
+	{"SQL_LockDatabase",		SQL_LockDatabase},
 	{"SQL_MoreRows",			SQL_MoreRows},
+	{"SQL_PrepareQuery",		SQL_PrepareQuery},
 	{"SQL_Query",				SQL_Query},
 	{"SQL_QuoteString",			SQL_QuoteString},
-	{"SQL_PrepareQuery",		SQL_PrepareQuery},
 	{"SQL_Rewind",				SQL_Rewind},
+	{"SQL_TConnect",			SQL_TConnect},
+	{"SQL_TQuery",				SQL_TQuery},
+	{"SQL_UnlockDatabase",		SQL_UnlockDatabase},
 	{NULL,						NULL},
 };

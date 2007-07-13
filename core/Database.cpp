@@ -21,12 +21,14 @@
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include <stdlib.h>
+#include "ThreadSupport.h"
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1
 #define DBPARSE_LEVEL_DATABASE	2
 
 DBManager g_DBMan;
+static bool s_OneTimeThreaderErrorMsg = false;
 
 DBManager::DBManager() 
 : m_StrTab(512), m_ParseLevel(0), m_ParseState(0), m_pDefault(NULL)
@@ -47,12 +49,24 @@ void DBManager::OnSourceModAllInitialized()
 	g_ShareSys.AddInterface(NULL, this);
 
 	g_SourceMod.BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
+
+	m_pConfigLock = g_pThreader->MakeMutex();
+	m_pThinkLock = g_pThreader->MakeMutex();
+	m_pQueueLock = g_pThreader->MakeMutex();
+
+	g_PluginSys.AddPluginsListener(this);
 }
 
 void DBManager::OnSourceModLevelChange(const char *mapName)
 {
 	SMCParseError err;
 	unsigned int line = 0;
+
+	/* We lock and don't give up the lock until we're done.
+	 * This way the thread's search won't be searching through a
+	 * potentially empty/corrupt list, which would be very bad.
+	 */
+	m_pConfigLock->Lock();
 	if ((err = g_TextParser.ParseFile_SMC(m_Filename, this, &line, NULL)) != SMCParse_Okay)
 	{
 		g_Logger.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
@@ -62,10 +76,17 @@ void DBManager::OnSourceModLevelChange(const char *mapName)
 			g_Logger.LogError("[SM] Line %d: %s", line, txt);
 		}
 	}
+	m_pConfigLock->Unlock();
+
+	g_PluginSys.RemovePluginsListener(this);
 }
 
 void DBManager::OnSourceModShutdown()
 {
+	KillWorkerThread();
+	m_pConfigLock->DestroyThis();
+	m_pThinkLock->DestroyThis();
+	m_pQueueLock->DestroyThis();
 	g_HandleSys.RemoveType(m_DatabaseType, g_pCoreIdent);
 	g_HandleSys.RemoveType(m_DriverType, g_pCoreIdent);
 }
@@ -269,11 +290,24 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 
 void DBManager::AddDriver(IDBDriver *pDriver)
 {
+	 /* Let's kill the worker.  Join the thread and let the queries flush.
+	  * This is kind of stupid but we just want to unload safely.
+	  * Rather than recreate the worker, we'll wait until someone throws 
+	  * another query through.
+	  */
+	KillWorkerThread();
+
 	 m_drivers.push_back(pDriver);
 }
 
 void DBManager::RemoveDriver(IDBDriver *pDriver)
 {
+	/* Again, we're forced to kill the worker.  How rude!
+	 * Doing this flushes the queue, and thus we don't need to 
+	 * clean anything else.  
+	 */
+	KillWorkerThread();
+
 	for (size_t i=0; i<m_drivers.size(); i++)
 	{
 		if (m_drivers[i] == pDriver)
@@ -292,6 +326,31 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 		{
 			db.realDriver = NULL;
 		}
+	}
+
+	/* Now that the driver is gone, we have to test the think queue.
+	 * Whatever happens therein is up to the db op!
+	 */
+	Queue<IDBThreadOperation *>::iterator qiter = m_ThinkQueue.begin();
+	Queue<IDBThreadOperation *> templist;
+	while (qiter != m_ThinkQueue.end())
+	{
+		IDBThreadOperation *op = (*qiter);
+		if (op->GetDriver() == pDriver)
+		{
+			templist.push(op);
+			qiter = m_ThinkQueue.erase(qiter);
+		} else {
+			qiter++;
+		}
+	}
+
+	for (qiter = templist.begin();
+		 qiter != templist.end();
+		 qiter++)
+	{
+		IDBThreadOperation *op = (*qiter);
+		op->CancelThinkPart();
 	}
 }
 
@@ -416,4 +475,183 @@ IDBDriver *DBManager::FindOrLoadDriver(const char *name)
 	}
 
 	return NULL;
+}
+
+void DBManager::KillWorkerThread()
+{
+	if (m_pWorker)
+	{
+		m_pWorker->Stop(false);
+		g_pThreader->DestroyWorker(m_pWorker);
+		m_pWorker = NULL;
+		s_OneTimeThreaderErrorMsg = false;
+	}
+}
+
+bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
+{
+	if (!m_pWorker)
+	{
+		m_pWorker = g_pThreader->MakeWorker(this, true);
+		if (!m_pWorker)
+		{
+			if (!s_OneTimeThreaderErrorMsg)
+			{
+				g_Logger.LogError("[SM] Unable to create db threader (error unknown)");
+				s_OneTimeThreaderErrorMsg = true;
+			}
+			return false;
+		}
+		if (!m_pWorker->Start())
+		{
+			if (!s_OneTimeThreaderErrorMsg)
+			{
+				g_Logger.LogError("[SM] Unable to start db threader (error unknown)");
+				s_OneTimeThreaderErrorMsg = true;
+			}
+			g_pThreader->DestroyWorker(m_pWorker);
+			m_pWorker = NULL;
+			return false;
+		}
+	}
+
+	/* Add to the queue */
+	{
+		m_pQueueLock->Lock();
+		Queue<IDBThreadOperation *> &queue = m_OpQueue.GetQueue(prio);
+		queue.push(op);
+		m_pQueueLock->Unlock();
+	}
+
+	/* Make the thread */
+	m_pWorker->MakeThread(this);
+
+	return true;
+}
+
+void DBManager::OnWorkerStart(IThreadWorker *pWorker)
+{
+	m_drSafety.clear();
+	for (size_t i=0; i<m_drivers.size(); i++)
+	{
+		if (m_drivers[i]->IsThreadSafe())
+		{
+			m_drSafety.push_back(m_drivers[i]->InitializeThreadSafety());
+		} else {
+			m_drSafety.push_back(false);
+		}
+	}
+}
+
+void DBManager::OnWorkerStop(IThreadWorker *pWorker)
+{
+	for (size_t i=0; i<m_drivers.size(); i++)
+	{
+		if (m_drSafety[i])
+		{
+			m_drivers[i]->ShutdownThreadSafety();
+		}
+	}
+	m_drSafety.clear();
+}
+
+void DBManager::RunThread(IThreadHandle *pThread)
+{
+	IDBThreadOperation *op = NULL;
+
+	/* Get something from the queue */
+	{
+		m_pQueueLock->Lock();
+		Queue<IDBThreadOperation *> &queue = m_OpQueue.GetLikelyQueue();
+		if (!queue.empty())
+		{
+			op = queue.first();
+			queue.pop();
+		}
+		m_pQueueLock->Unlock();
+	}
+
+	/* whoa.  hi.  did we get something? we should have. */
+	if (!op)
+	{
+		/* wtf? */
+		return;
+	}
+
+	op->RunThreadPart();
+
+	m_pThinkLock->Lock();
+	m_ThinkQueue.push(op);
+	m_pThinkLock->Unlock();
+}
+
+void DBManager::RunFrame()
+{
+	/* Don't bother if we're empty */
+	if (!m_ThinkQueue.size())
+	{
+		return;
+	}
+
+	/* Dump one thing per-frame so the server stays sane. */
+	m_pThinkLock->Lock();
+	IDBThreadOperation *op = m_ThinkQueue.first();
+	m_ThinkQueue.pop();
+	m_pThinkLock->Unlock();
+	op->RunThinkPart();
+}
+
+void DBManager::OnTerminate(IThreadHandle *pThread, bool cancel)
+{
+	/* Do nothing */
+}
+
+void DBManager::OnPluginUnloaded(IPlugin *plugin)
+{
+	/* Kill the thread so we can flush everything into the think queue... */
+	KillWorkerThread();
+
+	/* Mark the plugin as being unloaded so future database calls will ignore threading... */
+	plugin->SetProperty("DisallowDBThreads", NULL);
+
+	/* Run all of the think operations.
+	 * Unlike the driver unloading example, we'll let these calls go through, 
+	 * since a plugin unloading is far more normal.
+	 */
+	Queue<IDBThreadOperation *>::iterator iter = m_ThinkQueue.begin();
+	Queue<IDBThreadOperation *> templist;
+	while (iter != m_ThinkQueue.end())
+	{
+		IDBThreadOperation *op = (*iter);
+		if (op->GetPlugin() == plugin)
+		{
+			templist.push(op);
+			iter = m_ThinkQueue.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+
+	for (iter = templist.begin();
+		 iter != templist.end();
+		 iter++)
+	{
+		IDBThreadOperation *op = (*iter);
+		op->RunThinkPart();
+	}
+}
+
+void DBManager::LockConfig()
+{
+	m_pConfigLock->Lock();
+}
+
+void DBManager::UnlockConfig()
+{
+	m_pConfigLock->Unlock();
+}
+
+const char *DBManager::GetDefaultDriverName()
+{
+	return m_DefDriver.c_str();
 }

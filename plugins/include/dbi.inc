@@ -56,7 +56,27 @@ enum DBResult
 	DBVal_TypeMismatch = 1,	/**< You cannot retrieve this data with this type. */
 	DBVal_Null = 2,			/**< Field has no data (NULL) */
 	DBVal_Data = 3,			/**< Field has data */
-}
+};
+
+/**
+ * Describes binding types.
+ */
+enum DBBindType
+{
+	DBBind_Int = 0,			/**< Bind an integer. */
+	DBBind_Float = 1,		/**< Bind a float. */
+	DBBind_String = 2,		/**< Bind a string. */
+};
+
+/**
+ * Threading priority level.
+ */
+enum DBPriority
+{
+	DBPrio_High = 0,		/**< High priority. */
+	DBPrio_Normal = 1,		/**< Normal priority. */
+	DBPrio_Low = 2,			/**< Low priority. */
+};
 
 /**
  * Creates an SQL connection from a named configuration.
@@ -452,3 +472,91 @@ native SQL_BindParamString(Handle:statement, param, const String:value[], bool:c
  * @error				Invalid statement Handle.
  */
 native bool:SQL_Execute(Handle:statement);
+
+/**
+ * Locks a database so threading operations will not interrupt.
+ * 
+ * If you are using a database Handle for both threading and non-threading,
+ * this MUST be called before doing any set of non-threading DB operations.
+ * Otherwise you risk corrupting the database driver's memory or network
+ * connection.
+ * 
+ * Leaving a lock on a database and then executing a threaded query results
+ * in a dead lock! Make sure to call SQL_UnlockDatabase()!
+ *
+ * If the lock cannot be acquired, the main thread will pause until the 
+ * threaded operation has concluded.
+ *
+ * @param database		A database Handle.
+ * @noreturn
+ * @error				Invalid database Handle.
+ */
+native SQL_LockDatabase(Handle:database);
+
+/**
+ * Unlocks a database so threading operations may continue.
+ *
+ * @param database		A database Handle.
+ * @noreturn
+ * @error				Invalid database Handle.
+ */
+native SQL_UnlockDatabase(Handle:database);
+
+/**
+ * General callback for threaded SQL stuff.
+ *
+ * @param db			Parent object of the Handle (or INVALID_HANDLE if none).
+ * @param hndl			Handle to the child object (or INVALID_HANDLE if none).
+ * @param error			Error string, if any.
+ * @param 
+ */
+functag SQLTCallback public(Handle:owner, Handle:hndl, const String:error[], any:data);
+
+/**
+ * Tells whether two database handles both point to the same database 
+ * connection.
+ *
+ * @param hndl1			First database Handle.
+ * @param hndl2			Second database Handle.
+ * @return				True if the Handles point to the same 
+ *						connection, false otherwise.
+ * @error				Invalid Handle.
+ */
+native bool:SQL_IsSameConnection(Handle:hndl1, Handle:hndl2);
+
+/**
+ * Connects to a database via a thread.  This can be used instead of
+ * SQL_Connect() if you wish for non-blocking functionality.
+ *
+ * It is not necessary to use this to use threaded queries.  However, if you 
+ * don't (or you mix threaded/non-threaded queries), you should see 
+ * SQL_LockDatabase().
+ *
+ * @param callback		Callback; new Handle will be in hndl, owner is the driver.
+ *						If no driver was found, the owner is INVALID_HANDLE.
+ * @param name			Database name.
+ * @noreturn
+ */
+native SQL_TConnect(SQLTCallback:callback, const String:name[]="default");
+
+/**
+ * Executes a simple query via a thread.  The query Handle is passed through
+ * the callback.
+ *
+ * The database Handle returned through the callback is always a new Handle,
+ * and if necessary, SQL_IsSameConnection() should be used to test against
+ * other conenctions.
+ *
+ * The query Handle returned through the callback is temporary and destroyed 
+ * at the end of the callback.  If you need to hold onto it, use CloneHandle().
+ *
+ * @param database		A database Handle.
+ * @param callback		Callback; database is in "owner" and the query Handle
+ *						is passed in "hndl".
+ * @param query			Query string.
+ * @param data			Extra data value to pass to the callback.
+ * @param prio			Priority queue to use.
+ * @noreturn
+ * @error				Invalid database Handle.
+ */
+native SQL_TQuery(Handle:database, SQLTCallback:callback, const String:query[], any:data=0, DBPriority:prio=DBPrio_Normal);

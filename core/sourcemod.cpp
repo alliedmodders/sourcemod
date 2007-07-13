@@ -31,6 +31,7 @@
 #include "TimerSys.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
+#include "Database.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -337,6 +338,8 @@ void SimulateTick()
 
 void SourceModBase::GameFrame(bool simulating)
 {
+	g_DBMan.RunFrame();
+
 	/**
 	 * Note: This is all hardcoded rather than delegated to save
 	 * precious CPU cycles.
