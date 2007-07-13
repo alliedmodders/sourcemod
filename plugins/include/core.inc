@@ -97,6 +97,7 @@ struct Extension
 struct SharedPlugin
 {
 	const String:name[],	/**< Short name */
+	const String:file[],	/**< File name */
 	bool:required,			/**< Whether or not to require */
 };
 
