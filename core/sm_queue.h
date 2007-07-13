@@ -309,7 +309,8 @@ public:
 
 	void pop()
 	{
-		erase(begin());
+		iterator iter = begin();
+		erase(iter);
 	}
 };
 
