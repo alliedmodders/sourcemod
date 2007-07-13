@@ -276,7 +276,7 @@ DBResult MyBasicResults::CopyBlob(unsigned int columnId, void *buffer, size_t ma
 MyQuery::MyQuery(MyDatabase *db, MYSQL_RES *res)
 : m_pParent(db), m_rs(res)
 {
-	m_pParent->IncRefCount();
+	m_pParent->IncReferenceCount();
 }
 
 IResultSet *MyQuery::GetResultSet()

@@ -2,6 +2,7 @@
 #define _INCLUDE_SM_MYSQL_DATABASE_H_
 
 #include "MyDriver.h"
+#include <IThreader.h>
 
 class MyQuery;
 class MyStatement;
@@ -22,12 +23,16 @@ public: //IDatabase
 	bool QuoteString(const char *str, char buffer[], size_t maxlen, size_t *newSize);
 	unsigned int GetAffectedRows();
 	unsigned int GetInsertID();
+	bool LockForFullAtomicOperation();
+	void UnlockFromFullAtomicOperation();
+	void IncReferenceCount();
+	IDBDriver *GetDriver();
 public:
 	const DatabaseInfo &GetInfo();
-	void IncRefCount();
 private:
 	MYSQL *m_mysql;
 	unsigned int m_refcount;
+	IMutex *m_pFullLock;
 
 	/* ---------- */
 	DatabaseInfo m_Info;

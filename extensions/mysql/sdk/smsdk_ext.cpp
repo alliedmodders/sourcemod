@@ -13,7 +13,7 @@
  * 
  * To view the latest information, see: http://www.sourcemod.net/license.php
  *
- * Version: $Id: smsdk_ext.cpp 763 2007-05-09 05:20:03Z damagedsoul $
+ * Version: $Id: smsdk_ext.cpp 1034 2007-06-30 16:43:11Z dvander $
  */
 
 #include <stdio.h>
@@ -40,11 +40,29 @@ IHandleSys *g_pHandleSys = NULL;		/**< Handle system */
 IHandleSys *handlesys = NULL;			/**< Handle system */
 #endif
 #if defined SMEXT_ENABLE_PLAYERHELPERS
-IPlayerHelpers *playerhelpers = NULL;	/**< Player helpers */
+IPlayerManager *playerhelpers = NULL;	/**< Player helpers */
 #endif //SMEXT_ENABLE_PLAYERHELPERS
 #if defined SMEXT_ENABLE_DBMANAGER
 IDBManager *dbi = NULL;					/**< DB Manager */
 #endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMECONF
+IGameConfigManager *gameconfs = NULL;	/**< Game config manager */
+#endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_MEMUTILS
+IMemoryUtils *memutils = NULL;
+#endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMEHELPERS
+IGameHelpers *gamehelpers = NULL;
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+ITimerSystem *timersys = NULL;
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+IADTFactory *adtfactory = NULL;
+#endif
+#if defined SMEXT_ENABLE_THREADER
+IThreader *threader = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -93,6 +111,24 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_DBMANAGER
 	SM_GET_IFACE(DBI, dbi);
+#endif
+#if defined SMEXT_ENABLE_GAMECONF
+	SM_GET_IFACE(GAMECONFIG, gameconfs);
+#endif
+#if defined SMEXT_ENABLE_MEMUTILS
+	SM_GET_IFACE(MEMORYUTILS, memutils);
+#endif
+#if defined SMEXT_ENABLE_GAMEHELPERS
+	SM_GET_IFACE(GAMEHELPERS, gamehelpers);
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+	SM_GET_IFACE(TIMERSYS, timersys);
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+	SM_GET_IFACE(ADTFACTORY, adtfactory);
+#endif
+#if defined SMEXT_ENABLE_THREADER
+	SM_GET_IFACE(THREADER, threader);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))

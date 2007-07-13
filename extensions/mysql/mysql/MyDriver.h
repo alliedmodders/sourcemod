@@ -29,6 +29,9 @@ public: //IDBDriver
 	const char *GetProductName();
 	Handle_t GetHandle();
 	IdentityToken_t *GetIdentity();
+	bool IsThreadSafe();
+	bool InitializeThreadSafety();
+	void ShutdownThreadSafety();
 public:
 	void Shutdown();
 	void RemoveFromList(MyDatabase *pdb, bool persistent);

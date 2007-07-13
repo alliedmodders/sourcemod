@@ -121,7 +121,7 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 				&& CompareField(info->database, other.database)
 				&& (info->port == other.port))
 			{
-				db->IncRefCount();
+				db->IncReferenceCount();
 				return db;
 			}
 		}
@@ -149,6 +149,21 @@ void MyDriver::RemoveFromList(MyDatabase *pdb, bool persistent)
 	{
 		m_PermDbs.remove(pdb);
 	}
+}
+
+bool MyDriver::IsThreadSafe()
+{
+	return (mysql_thread_safe() != 0);
+}
+
+bool MyDriver::InitializeThreadSafety()
+{
+	return (mysql_thread_init() == 0);
+}
+
+void MyDriver::ShutdownThreadSafety()
+{
+	mysql_thread_end();
 }
 
 unsigned int strncopy(char *dest, const char *src, size_t count)

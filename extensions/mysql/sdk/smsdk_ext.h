@@ -13,7 +13,7 @@
  * 
  * To view the latest information, see: http://www.sourcemod.net/license.php
  *
- * Version: $Id: smsdk_ext.h 763 2007-05-09 05:20:03Z damagedsoul $
+ * Version: $Id: smsdk_ext.h 1034 2007-06-30 16:43:11Z dvander $
  */
 
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_BASESDK_H_
@@ -39,6 +39,24 @@
 #if defined SMEXT_ENABLE_DBMANAGER
 #include <IDBDriver.h>
 #endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMECONF
+#include <IGameConfigs.h>
+#endif
+#if defined SMEXT_ENABLE_MEMUTILS
+#include <IMemoryUtils.h>
+#endif
+#if defined SMEXT_ENABLE_GAMEHELPERS
+#include <IGameHelpers.h>
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+#include <ITimerSystem.h>
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+#include <IADTFactory.h>
+#endif
+#if defined SMEXT_ENABLE_THREADER
+#include <IThreader.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -196,11 +214,29 @@ extern IHandleSys *g_pHandleSys;
 extern IHandleSys *handlesys;			/* Note: Newer name */
 #endif //SMEXT_ENABLE_HANDLESYS
 #if defined SMEXT_ENABLE_PLAYERHELPERS
-extern IPlayerHelpers *playerhelpers;
+extern IPlayerManager *playerhelpers;
 #endif //SMEXT_ENABLE_PLAYERHELPERS
 #if defined SMEXT_ENABLE_DBMANAGER
 extern IDBManager *dbi;
 #endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_GAMECONF
+extern IGameConfigManager *gameconfs;
+#endif //SMEXT_ENABLE_DBMANAGER
+#if defined SMEXT_ENABLE_MEMUTILS
+extern IMemoryUtils *memutils;
+#endif
+#if defined SMEXT_ENABLE_GAMEHELPERS
+extern IGameHelpers *gamehelpers;
+#endif
+#if defined SMEXT_ENABLE_TIMERSYS
+extern ITimerSystem *timersys;
+#endif
+#if defined SMEXT_ENABLE_ADTFACTORY
+extern IADTFactory *adtfactory;
+#endif
+#if defined SMEXT_ENABLE_THREADER
+extern IThreader *threader;
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();

@@ -17,7 +17,7 @@ MyStatement::MyStatement(MyDatabase *db, MYSQL_STMT *stmt)
 		m_bind = NULL;
 	}
 
-	m_pParent->IncRefCount();
+	m_pParent->IncReferenceCount();
 
 	m_pRes = mysql_stmt_result_metadata(stmt);
 	m_Results = false;

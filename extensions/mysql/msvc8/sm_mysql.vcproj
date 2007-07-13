@@ -215,6 +215,10 @@
 			UniqueIdentifier="{31958233-BB2D-4e41-A8F9-CE8A4684F436}"
 			>
 			<File
+				RelativePath="..\..\..\public\IDBDriver.h"
+				>
+			</File>
+			<File
 				RelativePath="..\sdk\smsdk_config.h"
 				>
 			</File>

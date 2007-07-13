@@ -56,7 +56,7 @@ DBType GetOurType(enum_field_types type)
 }
 
 MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
-: m_mysql(mysql), m_refcount(1), m_bPersistent(persistent)
+: m_mysql(mysql), m_refcount(1), m_pFullLock(NULL), m_bPersistent(persistent)
 {
 	m_Host.assign(info->host);
 	m_Database.assign(info->database);
@@ -78,7 +78,7 @@ MyDatabase::~MyDatabase()
 	m_mysql = NULL;
 }
 
-void MyDatabase::IncRefCount()
+void MyDatabase::IncReferenceCount()
 {
 	m_refcount++;
 }
@@ -211,4 +211,33 @@ IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t 
 	}
 
 	return new MyStatement(this, stmt);
+}
+
+bool MyDatabase::LockForFullAtomicOperation()
+{
+	if (!m_pFullLock)
+	{
+		m_pFullLock = threader->MakeMutex();
+		if (!m_pFullLock)
+		{
+			return false;
+		}
+	}
+
+	m_pFullLock->Lock();
+
+	return true;
+}
+
+void MyDatabase::UnlockFromFullAtomicOperation()
+{
+	if (m_pFullLock)
+	{
+		m_pFullLock->Unlock();
+	}
+}
+
+IDBDriver *MyDatabase::GetDriver()
+{
+	return &g_MyDriver;
 }

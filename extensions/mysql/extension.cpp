@@ -39,10 +39,14 @@ bool DBI_MySQL::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	dbi->AddDriver(&g_MyDriver);
 
+	my_init();
+
 	return true;
 }
 
 void DBI_MySQL::SDK_OnUnload()
 {
 	dbi->RemoveDriver(&g_MyDriver);
+	//:TODO: is this needed?
+	//mysql_library_end();
 }

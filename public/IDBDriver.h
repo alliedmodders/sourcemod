@@ -24,7 +24,7 @@
 #include <string.h>
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		3
+#define SMINTERFACE_DBI_VERSION		4
 
 namespace SourceMod
 {
@@ -396,6 +396,8 @@ namespace SourceMod
 		virtual unsigned int GetInsertID() =0;
 	};
 
+	class IDBDriver;
+
 	/**
 	 * @brief Encapsulates a database connection.
 	 */
@@ -484,6 +486,28 @@ namespace SourceMod
 		 * @return				Row insertion ID of the last execute, if any.
 		 */
 		virtual unsigned int GetInsertID() =0;
+
+		/**
+		 * @brief Locks the database for an atomic query+retrieval operation.
+		 *
+		 * @return				True on success, false if not supported.
+		 */
+		virtual bool LockForFullAtomicOperation() =0;
+
+		/**
+		 * @brief Unlocks a locked atomic fetch.
+		 */
+		virtual void UnlockFromFullAtomicOperation() =0;
+
+		/**
+		 * @brief Increases the reference count on the database.
+		 */
+		virtual void IncReferenceCount() =0;
+
+		/**
+		 * @brief Returns the parent driver.
+		 */
+		virtual IDBDriver *GetDriver() =0;
 	};
 
 	/** 
@@ -558,6 +582,25 @@ namespace SourceMod
 		 * @return				An IdentityToken_t identity.
 		 */
 		virtual IdentityToken_t *GetIdentity() =0;
+
+		/**
+		 * @brief Returns whether the driver is thread safe.
+		 *
+		 * @return				True if thread safe, false otherwise.
+		 */
+		virtual bool IsThreadSafe() =0;
+
+		/**
+		 * @brief Initializes thread safety for the calling thread.
+		 *
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool InitializeThreadSafety() =0;
+
+		/**
+		 * @brief Shuts down thread safety for the calling thread.
+		 */
+		virtual void ShutdownThreadSafety() =0;
 	};
 
 	/**
@@ -579,14 +622,14 @@ namespace SourceMod
 		virtual unsigned int GetInterfaceVersion() =0;
 	public:
 		/**
-		 * @brief Adds a driver to the DBI system.
+		 * @brief Adds a driver to the DBI system.  Not thread safe.
 		 *
 		 * @param pDriver		Database driver.
 		 */
 		virtual void AddDriver(IDBDriver *pDriver) =0;
 
 		/**
-		 * @brief Removes a driver from the DBI system.
+		 * @brief Removes a driver from the DBI system.  Not thread safe.
 		 *
 		 * @param pDriver		Database driver.
 		 */
@@ -602,7 +645,7 @@ namespace SourceMod
 		virtual const DatabaseInfo *FindDatabaseConf(const char *name) =0;
 
 		/**
-		 * @brief Tries to connect to a named database.  
+		 * @brief Tries to connect to a named database.  Not thread safe.
 		 *
 		 * @param name			Named database info.
 		 * @param pdr			Pointer to store the IDBDriver pointer in.
@@ -623,14 +666,14 @@ namespace SourceMod
 							size_t maxlength) =0;
 
 		/**
-		 * @brief Returns the number of drivers loaded.
+		 * @brief Returns the number of drivers loaded.  Not thread safe.
 		 *
 		 * @return				Number of drivers loaded.
 		 */
 		virtual unsigned int GetDriverCount() =0;
 
 		/**
-		 * @brief Returns a driver by index.
+		 * @brief Returns a driver by index.  Not thread safe.
 		 *
 		 * @param index			Driver index, starting from 0.
 		 * @return				IDBDriver pointer for the given index.
@@ -638,7 +681,7 @@ namespace SourceMod
 		virtual IDBDriver *GetDriver(unsigned int index) =0;
 
 		/**
-		 * @brief Creates a Handle_t of the IDBDriver type.
+		 * @brief Creates a Handle_t of the IDBDriver type.  Not thread safe.
 		 *
 		 * @param type			A DBHandleType value.
 		 * @param ptr			A pointer corrresponding to a DBHandleType 
@@ -649,7 +692,8 @@ namespace SourceMod
 		virtual Handle_t CreateHandle(DBHandleType type, void *ptr, IdentityToken_t *pToken) =0;
 
 		/**
-		 * @brief Reads an IDBDriver pointer from an IDBDriver handle.
+		 * @brief Reads an IDBDriver pointer from an IDBDriver handle.  Not 
+		 * thread safe.
 		 *
 		 * @param hndl			Handle_t handle to read.
 		 * @param type			A DBHandleType value.
@@ -670,7 +714,7 @@ namespace SourceMod
 
 		/**
 		 * @brief Given a driver name, attempts to find it.  If it is not found, SourceMod
-		 * will attempt to load it.
+		 * will attempt to load it.  This function is not thread safe.
 		 *
 		 * @param name			Driver identifier name.
 		 * @return				IDBDriver pointer on success, NULL otherwise.
@@ -678,7 +722,8 @@ namespace SourceMod
 		virtual IDBDriver *FindOrLoadDriver(const char *driver) =0;
 
 		/**
-		 * @brief Returns the default driver, or NULL if none is set.
+		 * @brief Returns the default driver, or NULL if none is set.  This 
+		 * function is not thread safe.
 		 *
 		 * @return				IDBDriver pointer on success, NULL otherwise.
 		 */
