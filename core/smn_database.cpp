@@ -256,7 +256,7 @@ public:
 
 		m_pFunction->PushCell(m_pDriver->GetHandle());
 		m_pFunction->PushCell(hndl);
-		m_pFunction->PushString(hndl == BAD_HANDLE ? "" : error);
+		m_pFunction->PushString(hndl == BAD_HANDLE ? error : "");
 		m_pFunction->PushCell(0);
 		m_pFunction->Execute(NULL);
 		delete this;
