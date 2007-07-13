@@ -652,6 +652,11 @@ static cell_t SQL_TQuery(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
 	}
 
+	if (!db->GetDriver()->IsThreadSafe())
+	{
+		return pContext->ThrowNativeError("Driver \"%s\" is not thread safe!", db->GetDriver()->GetIdentifier());
+	}
+
 	IPluginFunction *pf = pContext->GetFunctionById(params[2]);
 	if (!pf)
 	{
