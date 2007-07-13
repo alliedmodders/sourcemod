@@ -34,7 +34,7 @@ HL2LIB = $(HL2SDK)/linux_sdk
 HL2SDK = $(SOURCEMM)/hl2sdk
 SMM_TRUNK = $(SOURCEMM)/trunk
 
-LINK = $(LINK_HL2) -L$(MYSQL)/lib -lmysqlclient -lz -static-libgcc
+LINK = $(LINK_HL2) $(MYSQL)/lib/libmysqlclient_r.a -lz -static-libgcc -lpthread
 
 INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine \
 	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 \
