@@ -39,6 +39,36 @@ public ReadSimpleUsers()
 			break;
 		}
 		
+		/* Trim comments */
+		new len = strlen(line);
+		new bool:ignoring = false;
+		for (new i=0; i<len; i++)
+		{
+			if (ignoring)
+			{
+				if (line[i] == '"')
+				{
+					ignoring = false;
+				}
+			} else {
+				if (line[i] == '"')
+				{
+					ignoring = true;
+				} else if (line[i] == ';') {
+					line[i] = '\0';
+					break;
+				} else if (line[i] == '/'
+							&& i != len - 1
+							&& line[i+1] == '/')
+				{
+					line[i] = '\0';
+					break;
+				}
+			}
+		}
+		
+		TrimString(line);
+		
 		if ((line[0] == '/' && line[1] == '/')
 			|| (line[0] == ';' || line[0] == '\0'))
 		{
