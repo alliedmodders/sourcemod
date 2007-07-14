@@ -120,6 +120,7 @@ public:
 	unsigned int FindOrAddPhraseFile(const char *phrase_file);
 	BaseStringTable *GetStringTable();
 	unsigned int GetLanguageCount();
+	bool GetLanguageInfo(unsigned int number, const char **code, const char **name);
 	bool GetLanguageByCode(const char *code, unsigned int *index);
 	size_t Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans);
 	CPhraseFile *GetFileByIndex(unsigned int index);
@@ -130,6 +131,7 @@ public:
 						 void **params, 
 						 size_t *outlen=NULL);
 	unsigned int GetServerLanguage();
+	unsigned int GetClientLanguage(int client);
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:

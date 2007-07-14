@@ -81,7 +81,7 @@ try_serverlang:
 	{
 		langid = g_Translator.GetServerLanguage();
  	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
-		langid = g_Translator.GetServerLanguage();
+		langid = g_Translator.GetClientLanguage(target);
 	} else {
 		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
 		goto error_out;

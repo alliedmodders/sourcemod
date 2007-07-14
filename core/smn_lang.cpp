@@ -16,6 +16,7 @@
 #include "Translator.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
+#include "PlayerManager.h"
 
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {
@@ -48,9 +49,50 @@ static cell_t sm_SetGlobalTransTarget(IPluginContext *pContext, const cell_t *pa
 	return 1;
 }
 
-REGISTER_NATIVES(langNativeS)
+static cell_t sm_GetClientLanguage(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *player = g_Players.GetPlayerByIndex(params[1]);
+	if (!player || !player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+
+	return g_Translator.GetClientLanguage(params[1]);
+}
+
+static cell_t sm_GetServerLanguage(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Translator.GetServerLanguage();
+}
+
+static cell_t sm_GetLanguageCount(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Translator.GetLanguageCount();
+}
+
+static cell_t sm_GetLanguageInfo(IPluginContext *pContext, const cell_t *params)
+{
+	const char *code;
+	const char *name;
+
+	if (!g_Translator.GetLanguageInfo(params[1], &code, &name))
+	{
+		return pContext->ThrowNativeError("Invalid language number %d", params[1]);
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], code, NULL);
+	pContext->StringToLocalUTF8(params[4], params[5], name, NULL);
+
+	return 1;
+}
+
+REGISTER_NATIVES(langNatives)
 {
 	{"LoadTranslations",			sm_LoadTranslations},
 	{"SetGlobalTransTarget",		sm_SetGlobalTransTarget},
+	{"GetClientLanguage",			sm_GetClientLanguage},
+	{"GetServerLanguage",			sm_GetServerLanguage},
+	{"GetLanguageCount",			sm_GetLanguageCount},
+	{"GetLanguageInfo",				sm_GetLanguageInfo},
 	{NULL,							NULL},
 };

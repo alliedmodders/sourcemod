@@ -909,3 +909,28 @@ unsigned int Translator::GetServerLanguage()
 {
 	return m_ServerLang;
 }
+
+unsigned int Translator::GetClientLanguage(int client)
+{
+	return GetServerLanguage();
+}
+
+bool Translator::GetLanguageInfo(unsigned int number, const char **code, const char **name)
+{
+	if (number >= GetLanguageCount())
+	{
+		return false;
+	}
+
+	Language *l = m_Languages[number];
+	if (code)
+	{
+		*code = l->m_code2;
+	}
+	if (name)
+	{
+		*name = m_pStringTab->GetString(l->m_FullName);
+	}
+
+	return true;
+}

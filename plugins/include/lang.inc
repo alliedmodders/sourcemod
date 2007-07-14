@@ -39,3 +39,41 @@ native LoadTranslations(const String:file[]);
  * @noreturn
  */
 native SetGlobalTransTarget(client);
+
+/**
+ * Retrieves the language number of a client.
+ * Currently this simply returns the server language index.
+ *
+ * @param client	Client index.
+ * @return			Language number client is using.
+ * @error			Invalid client index or client not in game.
+ */
+native GetClientLanguage(client);
+
+/**
+ * Retrieves the server's language.
+ *
+ * @return			Language number server is using.
+ */
+native GetServerLanguage(client);
+
+/**
+ * Returns the number of languages known in languages.cfg.
+ *
+ * @return			Language count.
+ */
+native GetLanguageCount();
+
+/**
+ * Retrieves info about a given language number.
+ *
+ * @param language	Language number.
+ * @param code		Language code buffer (2-3 characters usually).
+ * @param codeLen	Maximum length of the language code buffer.
+ * @param name		Language name buffer.
+ * @param nameLen	Maximum length of the language name buffer.
+ * @noreturn
+ * @error			Invalid language number.
+ */
+native GetLanguageInfo(language, String:code[]="", codeLen=0, String:name[]="", nameLen=0);
+
