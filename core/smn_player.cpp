@@ -1075,6 +1075,7 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientAvgPackets",		GetAvgPackets},
 	{"GetClientOfUserId",		GetClientOfUserId},
 	{"ShowActivity",			ShowActivity},
+	{"ShowActivityEx",			ShowActivityEx},
 	{"KickClient",				KickClient},
 	{NULL,						NULL}
 };
