@@ -209,6 +209,19 @@ native ReplySource:SetCmdReplySource(ReplySource:source);
 native ShowActivity(client, const String:format[], any:...);
 
 /**
+ * Same as ShowActivity(), except the tag parameter is used instead of
+ * "[SM] " (note that you must supply any spacing).
+ *
+ * @param client		Client index doing the action, or 0 for server.
+ * @param tag			Tag to display with.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error
+ */
+native ShowActivityEx(client, const String:tag[], const String:format[], any:...);
+
+/**
  * Called when a server-only command is invoked.  
  *
  * @params args			Number of arguments that were in the argument string.

@@ -864,7 +864,7 @@ static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
 	return g_Players.GetClientOfUserId(params[1]);
 }
 
-static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
+static cell_t _ShowActivity(IPluginContext *pContext, const cell_t *params, const char *tag, cell_t fmt_param)
 {
 	char message[255];
 	char buffer[255];
@@ -894,15 +894,15 @@ static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 		if (replyto == SM_REPLY_CONSOLE)
 		{
 			g_SourceMod.SetGlobalTarget(client);
-			g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-			UTIL_Format(message, sizeof(message), "[SM] %s\n", buffer);
+			g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
 			engine->ClientPrintf(pPlayer->GetEdict(), message);
 			display_in_chat = true;
 		}
 	} else {
 		g_SourceMod.SetGlobalTarget(LANG_SERVER);
-		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-		UTIL_Format(message, sizeof(message), "[SM] %s\n", buffer);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+		UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
 		META_CONPRINT(message);
 	}
 
@@ -934,8 +934,8 @@ static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 				{
 					newsign = name;
 				}
-				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-				UTIL_Format(message, sizeof(message), "[SM] %s: %s", newsign, buffer);
+				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+				UTIL_Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
 				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
 			}
 		} else {
@@ -950,14 +950,27 @@ static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 				{
 					newsign = name;
 				}
-				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
-				UTIL_Format(message, sizeof(message), "[SM] %s: %s", newsign, buffer);
+				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+				UTIL_Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
 				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
 			}
 		}
 	}
 
 	return 1;
+}
+
+static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
+{
+	return _ShowActivity(pContext, params, "[SM] ", 2);
+}
+
+static cell_t ShowActivityEx(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[2], &str);
+
+	return _ShowActivity(pContext, params, str, 3);
 }
 
 static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
