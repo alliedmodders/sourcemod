@@ -15,7 +15,7 @@ extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegat
 ChatTriggers g_ChatTriggers;
 
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
-	m_ReplyTo(SM_REPLY_CONSOLE)
+	m_bTriggerWasSilent(false), m_ReplyTo(SM_REPLY_CONSOLE)
 {
 	m_PubTrigger = sm_strdup("!");
 	m_PrivTrigger = sm_strdup("/");
@@ -134,9 +134,11 @@ void ChatTriggers::OnSayCommand_Pre()
 	if (m_PubTriggerSize && strncmp(args, m_PubTrigger, m_PubTriggerSize) == 0)
 	{
 		is_trigger = true;
+		args = &args[m_PubTriggerSize];
 	} else if (m_PrivTriggerSize && strncmp(args, m_PrivTrigger, m_PrivTriggerSize) == 0) {
 		is_trigger = true;
 		is_silent = true;
+		args = &args[m_PrivTriggerSize];
 	}
 
 	if (!is_trigger)
@@ -144,21 +146,27 @@ void ChatTriggers::OnSayCommand_Pre()
 		RETURN_META(MRES_IGNORED);
 	}
 
-	/* If we're a public command, process later */
-	if (!is_silent)
+	/**
+	 * Test if this is actually a command!
+	 */
+	if (!PreProcessTrigger(engine->PEntityOfEntIndex(client), args, is_quoted))
 	{
-		/* We have to process this in _post_ instead.  Darn. */
-		m_bWillProcessInPost = true;
 		RETURN_META(MRES_IGNORED);
 	}
 
-	/* Otherwise, process now */
-	if (ProcessTrigger(engine->PEntityOfEntIndex(client), &args[m_PrivTriggerSize], is_quoted))
+	/**
+	 * We'll execute it in post.
+	 */
+	m_bWillProcessInPost = true;
+	m_bTriggerWasSilent = is_silent;
+
+	/* If we're silent, block */
+	if (is_silent)
 	{
-		/* If we succeed, block the original say! */
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
+	/* Otherwise, let the command continue */
 	RETURN_META(MRES_IGNORED);
 }
 
@@ -168,25 +176,16 @@ void ChatTriggers::OnSayCommand_Post()
 	{
 		/* Reset this for re-entrancy */
 		m_bWillProcessInPost = false;
-
-		/* Get our arguments */
-		const char *args = engine->Cmd_Args();
-
-		/* Handle quotations */
-		bool is_quoted = false;
-		if (args[0] == '"')
-		{
-			args++;
-			is_quoted = true;
-		}
-
+		
+		/* Execute the cached command */
 		int client = g_ConCmds.GetCommandClient();
-
-		ProcessTrigger(engine->PEntityOfEntIndex(client), &args[m_PubTriggerSize], is_quoted);
+		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
+		serverpluginhelpers->ClientCommand(engine->PEntityOfEntIndex(client), m_ToExecute);
+		SetReplyTo(old);
 	}
 }
 
-bool ChatTriggers::ProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted)
+bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted)
 {
 	/* Eat up whitespace */
 	while (*args != '\0' && IsWhitespace(args))
@@ -242,33 +241,27 @@ bool ChatTriggers::ProcessTrigger(edict_t *pEdict, const char *args, bool is_quo
 	/* See if we need to do extra string manipulation */
 	if (is_quoted || prepended)
 	{
-		static char buffer[300];
 		size_t len;
 
 		/* Check if we need to prepend sm_ */
 		if (prepended)
 		{
-			len = UTIL_Format(buffer, sizeof(buffer), "sm_%s", args);
+			len = UTIL_Format(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 		} else {
-			len = strncopy(buffer, args, sizeof(buffer));
+			len = strncopy(m_ToExecute, args, sizeof(m_ToExecute));
 		}
 		
 		/* Check if we need to strip a quote */
 		if (is_quoted)
 		{
-			if (buffer[len-1] == '"')
+			if (m_ToExecute[len-1] == '"')
 			{
-				buffer[--len] = '\0';
+				m_ToExecute[--len] = '\0';
 			}
 		}
-
-		args = buffer;
+	} else {
+		strncopy(m_ToExecute, args, sizeof(m_ToExecute));
 	}
-
-	/* Finally, execute! */
-	unsigned int old = SetReplyTo(SM_REPLY_CHAT);
-	serverpluginhelpers->ClientCommand(pEdict, args);
-	SetReplyTo(old);
 
 	return true;
 }

@@ -27,7 +27,7 @@ public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
 private:
-	bool ProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
+	bool PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
 private:
 	ConCommand *m_pSayCmd;
 	ConCommand *m_pSayTeamCmd;
@@ -36,7 +36,9 @@ private:
 	char *m_PrivTrigger;
 	size_t m_PrivTriggerSize;
 	bool m_bWillProcessInPost;
+	bool m_bTriggerWasSilent;
 	unsigned int m_ReplyTo;
+	char m_ToExecute[300];
 };
 
 extern ChatTriggers g_ChatTriggers;
