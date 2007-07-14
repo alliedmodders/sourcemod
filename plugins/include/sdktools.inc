@@ -19,6 +19,7 @@
 #define _sdktools_included
 
 #include <core>
+#include <sdktools_engine>
 #include <sdktools_functions>
 #include <sdktools_tempents>
 #include <sdktools_tempents_stocks>

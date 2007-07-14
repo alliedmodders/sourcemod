@@ -274,6 +274,29 @@ static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
+	}
+
+	edict_t *pEdict = engine->PEntityOfEntIndex(params[2]);
+	if (!pEdict || pEdict->IsFree())
+	{
+		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
+	}
+
+	engine->SetView(player->GetEdict(), pEdict);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",	ExtinguishPlayer},
@@ -285,6 +308,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"RemovePlayerItem",	RemovePlayerItem},
 	{"TeleportPlayer",		TeleportPlayer},
 	{"TeleportEntity",		TeleportPlayer},
+	{"SetClientViewEntity",	SetClientViewEntity},
 	{NULL,					NULL},
 };
 
