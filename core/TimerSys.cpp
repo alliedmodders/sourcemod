@@ -207,6 +207,7 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 	m_FreeTimers.push(pTimer);
 }
 
+CStack<ITimer *> s_tokill;
 void TimerSystem::MapChange()
 {
 	ITimer *pTimer;
@@ -215,13 +216,29 @@ void TimerSystem::MapChange()
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
+		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
+		{
+			s_tokill.push(pTimer);
+		} else {
+			pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
+		}
 	}
 
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
+		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
+		{
+			s_tokill.push(pTimer);
+		} else {
+			pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
+		}
+	}
+
+	while (!s_tokill.empty())
+	{
+		KillTimer(s_tokill.front());
+		s_tokill.pop();
 	}
 
 	m_LastExecTime = GetSimulatedTime();

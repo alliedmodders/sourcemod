@@ -20,8 +20,9 @@
 
 #include <datapack>
 
-#define TIMER_REPEAT		(1<<0)		/**< Timer will repeat until it returns Plugin_Stop */
-#define TIMER_HNDL_CLOSE	(1<<9)		/**< Timer will automatically call CloseHandle() on its value when finished */
+#define TIMER_REPEAT			(1<<0)		/**< Timer will repeat until it returns Plugin_Stop */
+#define TIMER_FLAG_NO_MAPCHANGE	(1<<1)		/**< Timer will not carry over mapchanges */
+#define TIMER_HNDL_CLOSE		(1<<9)		/**< Timer will automatically call CloseHandle() on its value when finished */
 
 /**
  * Any of the following prototypes will work for a timed function.

@@ -59,7 +59,8 @@ namespace SourceMod
 		virtual void OnTimerEnd(ITimer *pTimer, void *pData) =0;
 	};
 
-	#define TIMER_FLAG_REPEAT		(1<<0)
+	#define TIMER_FLAG_REPEAT			(1<<0)		/**< Timer will repeat until stopped */
+	#define TIMER_FLAG_NO_MAPCHANGE		(1<<1)		/**< Timer will not carry over mapchanges */
 
 	class ITimerSystem : public SMInterface
 	{
