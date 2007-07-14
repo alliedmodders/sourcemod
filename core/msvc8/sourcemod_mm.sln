@@ -5,10 +5,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sourcemod_mm", "sourcemod_m
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CrazyDebug|Win32 = CrazyDebug|Win32
 		Debug|Win32 = Debug|Win32
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug|Win32.ActiveCfg = CrazyDebug|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug|Win32.Build.0 = CrazyDebug|Win32
 		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug|Win32.ActiveCfg = Debug|Win32
 		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug|Win32.Build.0 = Debug|Win32
 		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release|Win32.ActiveCfg = Release|Win32
