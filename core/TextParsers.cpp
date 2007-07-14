@@ -436,7 +436,7 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 								/* If we reached the end of the look-ahead, we need to re-check our input.
 								 * Breaking out will force this to be the new reparse point!
 								 */
-								reparse_point = &reparse_point[i];
+								reparse_point = &parse_point[i];
 								break;
 							}
 							if (parse_point[i + 1] == '/')
