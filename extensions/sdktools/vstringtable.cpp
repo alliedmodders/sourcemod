@@ -193,13 +193,6 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 	return numBytes;
 }
 
-CON_COMMAND(sm_lockstate, "Lock state")
-{
-	bool save = engine->LockNetworkStringTables(false);
-	Msg("save: %d\n", save);
-	engine->LockNetworkStringTables(save);
-}
-
 static cell_t SetStringTableData(IPluginContext *pContext, const cell_t *params)
 {
 	TABLEID idx = static_cast<TABLEID>(params[1]);
