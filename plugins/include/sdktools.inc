@@ -21,12 +21,13 @@
 #include <core>
 #include <sdktools_engine>
 #include <sdktools_functions>
-#include <sdktools_tempents>
-#include <sdktools_tempents_stocks>
 #if !defined SDKTOOLS_DISABLE_SOUNDAPI
 #include <sdktools_sound>
 #endif
+#include <sdktools_stringtables>
 #include <sdktools_trace>
+#include <sdktools_tempents>
+#include <sdktools_tempents_stocks>
 
 enum SDKCallType
 {

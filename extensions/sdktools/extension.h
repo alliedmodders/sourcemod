@@ -66,12 +66,16 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 };
 
+/* Interfaces from engine or gamedll */
 extern IServerGameEnts *gameents;
 extern IEngineTrace *enginetrace;
+extern IEngineSound *engsound;
+extern INetworkStringTableContainer *netstringtables;
+/* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern IGameHelpers *g_pGameHelpers;
-extern IEngineSound *engsound;
+/* Handle types */
 extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
 
