@@ -92,13 +92,6 @@ CPlugin::~CPlugin()
 		delete m_configs[i];
 	}
 	m_configs.clear();
-
-	List<WeakNative *>::iterator iter;
-	for (iter=m_WeakNatives.begin(); iter!=m_WeakNatives.end(); iter++)
-	{
-		delete (*iter);
-	}
-	m_WeakNatives.clear();
 }
 
 void CPlugin::InitIdentity()
@@ -1242,7 +1235,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->Call_OnPluginStart();
 
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() >= Plugin_Paused && pPlugin->m_fakeNatives.size())
+	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_fakeNatives.size())
 	{
 		List<CPlugin *>::iterator pl_iter;
 		CPlugin *pOther;
@@ -1251,8 +1244,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 			 pl_iter++)
 		{
 			pOther = (*pl_iter);
-			if (pOther->GetStatus() == Plugin_Error
+			if ((pOther->GetStatus() == Plugin_Error
 				&& (pOther->m_FakeNativesMissing || pOther->m_LibraryMissing))
+				|| pOther->m_FakeNativesMissing)
 			{
 				TryRefreshDependencies(pOther);
 			}
@@ -1329,12 +1323,15 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 		}
 	}
 
-	/* If we got here, all natives are okay again! */
-	pPlugin->m_status = Plugin_Running;
-	if ((pPlugin->m_ctx.ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
+	if (pPlugin->GetStatus() == Plugin_Error)
 	{
-		pPlugin->m_ctx.ctx->flags &= ~SPFLAG_PLUGIN_PAUSED;
-		_SetPauseState(pPlugin, false);
+		/* If we got here, all natives are okay again! */
+		pPlugin->m_status = Plugin_Running;
+		if ((pPlugin->m_ctx.ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
+		{
+			pPlugin->m_ctx.ctx->flags &= ~SPFLAG_PLUGIN_PAUSED;
+			_SetPauseState(pPlugin, false);
+		}
 	}
 }
 
@@ -1363,7 +1360,7 @@ void CPluginManager::AddFakeNativesToPlugin(CPlugin *pPlugin)
 			pContext->FindNativeByName(native.name, &idx);
 			if (pPlugin->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL)
 			{
-				WeakNative *wkn = new WeakNative(pPlugin, idx);
+				WeakNative wkn(pPlugin, idx);
 				GetPluginByCtx(ctx)->m_WeakNatives.push_back(wkn);
 				continue;
 			}
@@ -1418,6 +1415,24 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pOther->m_dependents.remove(pPlugin);
 	}
 
+	/* Remove weak references to us */
+	for (pl_iter = m_plugins.begin();
+		 pl_iter != m_plugins.end();
+		 pl_iter++)
+	{
+		pOther = (*pl_iter);
+		List<WeakNative>::iterator wk_iter = pOther->m_WeakNatives.begin();
+		while (wk_iter != pOther->m_WeakNatives.end())
+		{
+			if ((*wk_iter).pl == pPlugin)
+			{
+				wk_iter = pOther->m_WeakNatives.erase(wk_iter);
+			} else {
+				wk_iter++;
+			}
+		}
+	}
+
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
 
@@ -1433,6 +1448,16 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pPlugin->Call_OnPluginEnd();
 	}
 
+	/* Unbound weak natives */
+	List<WeakNative>::iterator wk_iter;
+	for (wk_iter=pPlugin->m_WeakNatives.begin(); wk_iter!=pPlugin->m_WeakNatives.end(); wk_iter++)
+	{
+		WeakNative & wkn = (*wk_iter);
+		sp_context_t *ctx = wkn.pl->GetContext();
+		ctx->natives[wkn.idx].status = SP_NATIVE_UNBOUND;
+		wkn.pl->m_FakeNativesMissing = true;
+	}
+
 	/* Remove all of our native functions */
 	List<FakeNative *>::iterator fn_iter;
 	FakeNative *pNative;
@@ -1445,16 +1470,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		sm_trie_delete(m_pNativeLookup, pNative->name.c_str());
 		g_pVM->DestroyFakeNative(pNative->func);
 		delete pNative;
-	}
-
-	/* Unbound weak natives */
-	WeakNative *wkn;
-	List<WeakNative *>::iterator wk_iter;
-	for (wk_iter=pPlugin->m_WeakNatives.begin(); wk_iter!=pPlugin->m_WeakNatives.end(); wk_iter++)
-	{
-		wkn = (*wk_iter);
-		sp_context_t *ctx = wkn->pl->GetContext();
-		ctx->natives[wkn->idx].status = SP_NATIVE_UNBOUND;
 	}
 
 	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)

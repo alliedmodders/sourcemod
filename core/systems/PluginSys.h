@@ -271,7 +271,7 @@ private:
 	List<CPlugin *> m_dependents;
 	List<CPlugin *> m_dependsOn;
 	List<FakeNative *> m_fakeNatives;
-	List<WeakNative *> m_WeakNatives;
+	List<WeakNative> m_WeakNatives;
 	List<String> m_RequiredLibs;
 	List<String> m_Libraries;
 	Trie *m_pProps;
