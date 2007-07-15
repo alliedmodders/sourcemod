@@ -116,6 +116,18 @@ struct AutoConfig
 	bool create;
 };
 
+class CPlugin;
+struct WeakNative
+{
+	WeakNative(CPlugin *plugin, uint32_t index)
+	{
+		pl = plugin;
+		idx = index;
+	}
+	CPlugin *pl;
+	uint32_t idx;
+};
+
 class CPlugin : public IPlugin
 {
 	friend class CPluginManager;
@@ -234,9 +246,9 @@ public:
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	unsigned int GetConfigCount();
 	AutoConfig *GetConfig(unsigned int i);
-	inline bool IsInAskPluginLoad()
+	inline void AddLibrary(const char *name)
 	{
-		return m_IsInAskPluginLoad;
+		m_Libraries.push_back(name);
 	}
 protected:
 	void UpdateInfo();
@@ -259,10 +271,13 @@ private:
 	List<CPlugin *> m_dependents;
 	List<CPlugin *> m_dependsOn;
 	List<FakeNative *> m_fakeNatives;
+	List<WeakNative *> m_WeakNatives;
+	List<String> m_RequiredLibs;
+	List<String> m_Libraries;
 	Trie *m_pProps;
 	bool m_FakeNativesMissing;
+	bool m_LibraryMissing;
 	CVector<AutoConfig *> m_configs;
-	bool m_IsInAskPluginLoad;
 };
 
 class CPluginManager : 
@@ -413,6 +428,11 @@ private:
 	 */
 	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
 
+	/**
+	* Manages required natives.
+	*/
+	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
+
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
 
 	void ExecAndGenPluginConfs();
@@ -430,7 +450,7 @@ public:
 	bool AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func);
 private:
 	void AddFakeNativesToPlugin(CPlugin *pPlugin);
-	void TryRefreshNatives(CPlugin *pOther);
+	void TryRefreshDependencies(CPlugin *pOther);
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;

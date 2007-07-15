@@ -47,6 +47,7 @@ CPlugin::CPlugin(const char *file)
 	m_ident = NULL;
 	m_pProps = sm_trie_create();
 	m_FakeNativesMissing = false;
+	m_LibraryMissing = false;
 }
 
 CPlugin::~CPlugin()
@@ -91,6 +92,13 @@ CPlugin::~CPlugin()
 		delete m_configs[i];
 	}
 	m_configs.clear();
+
+	List<WeakNative *>::iterator iter;
+	for (iter=m_WeakNatives.begin(); iter!=m_WeakNatives.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_WeakNatives.clear();
 }
 
 void CPlugin::InitIdentity()
@@ -357,18 +365,14 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 		return true;
 	}
 
-	m_IsInAskPluginLoad = true;
 	pFunction->PushCell(m_handle);
 	pFunction->PushCell(g_PluginSys.IsLateLoadTime() ? 1 : 0);
 	pFunction->PushStringEx(error, maxlength, 0, SM_PARAM_COPYBACK);
 	pFunction->PushCell(maxlength);
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
-		m_IsInAskPluginLoad = false;
 		return false;
 	}
-
-	m_IsInAskPluginLoad = false;
 
 	if (!result || m_status != Plugin_Loaded)
 	{
@@ -592,6 +596,19 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		return;
 	}
 
+	List<String>::iterator reqlib_iter;
+	List<String>::iterator lib_iter;
+	for (lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++)
+	{
+		for (reqlib_iter=m_RequiredLibs.begin(); reqlib_iter!=m_RequiredLibs.end(); reqlib_iter++)
+		{
+			if ((*reqlib_iter) == (*lib_iter))
+			{
+				m_LibraryMissing = true;
+			}
+		}	
+	}
+
 	List<FakeNative *>::iterator iter;
 	FakeNative *pNative;
 	sp_native_t *native;
@@ -615,10 +632,14 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		unbound++;
 	}
 
-	/* :IDEA: in the future, add native trapping? */
 	if (unbound)
 	{
 		m_FakeNativesMissing = true;
+	}
+
+	/* :IDEA: in the future, add native trapping? */
+	if (m_FakeNativesMissing || m_LibraryMissing)
+	{
 		SetErrorState(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
 	}
 
@@ -1001,6 +1022,96 @@ void CPluginManager::LoadAll_SecondPass()
 	m_AllPluginsLoaded = true;
 }
 
+bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength)
+{
+	struct _pl
+	{
+		cell_t name;
+		cell_t file;
+		cell_t required;
+	} *pl;
+
+	IPluginContext *pBase = pPlugin->GetBaseContext();
+	uint32_t num = pBase->GetPubVarsNum();
+	sp_pubvar_t *pubvar;
+	char *name, *file;
+	char pathfile[PLATFORM_MAX_PATH];
+
+	for (uint32_t i=0; i<num; i++)
+	{
+		if (pBase->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
+		{
+			continue;
+		}
+		if (strncmp(pubvar->name, "__pl_", 5) == 0)
+		{
+			pl = (_pl *)pubvar->offs;
+			if (pBase->LocalToString(pl->file, &file) != SP_ERROR_NONE)
+			{
+				continue;
+			}
+			if (pBase->LocalToString(pl->name, &name) != SP_ERROR_NONE)
+			{
+				continue;
+			}
+			g_LibSys.GetFileFromPath(pathfile, sizeof(pathfile), pPlugin->GetFilename());
+			if (strcmp(pathfile, file) == 0)
+			{
+				continue;
+			}
+			if (pl->required == false)
+			{
+				IPluginFunction *pFunc;
+				char buffer[64];
+				UTIL_Format(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[6]);
+				if ((pFunc=pBase->GetFunctionByName(buffer)))
+				{
+					cell_t res;
+					pFunc->Execute(&res);
+					if (pPlugin->GetContext()->n_err != SP_ERROR_NONE)
+					{
+						if (error)
+						{
+							snprintf(error, maxlength, "Fatal error during initializing plugin load");
+						}
+						return false;
+					}
+				}
+			} else {
+				/* Check that we aren't registering the same library twice */
+				if (pPlugin->m_RequiredLibs.find(name) == pPlugin->m_RequiredLibs.end())
+				{
+					pPlugin->m_RequiredLibs.push_back(name);
+				} else {
+					continue;
+				}
+				List<CPlugin *>::iterator iter;
+				CPlugin *pl;
+				bool found = false;
+				for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
+				{
+					pl = (*iter);
+					if (pl->m_Libraries.find(name) != pl->m_Libraries.end())
+					{
+						found = true;
+						break;
+					}
+				}
+				if (!found)
+				{
+					if (error)
+					{
+						snprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
+					}
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
 bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength)
 {
 	/* Find any extensions this plugin needs */
@@ -1089,6 +1200,11 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	g_Extensions.BindAllNativesToPlugin(pPlugin);
 	AddFakeNativesToPlugin(pPlugin);
 
+	if (!FindOrRequirePluginDeps(pPlugin, error, maxlength))
+	{
+		return false;
+	}
+
 	/* Find any unbound natives
 	 * Right now, these are not allowed
 	 */
@@ -1136,9 +1252,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			pOther = (*pl_iter);
 			if (pOther->GetStatus() == Plugin_Error
-				&& pOther->m_FakeNativesMissing)
+				&& (pOther->m_FakeNativesMissing || pOther->m_LibraryMissing))
 			{
-				TryRefreshNatives(pOther);
+				TryRefreshDependencies(pOther);
 			}
 		}
 	}
@@ -1163,11 +1279,36 @@ void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 	}
 }
 
-void CPluginManager::TryRefreshNatives(CPlugin *pPlugin)
+void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 {
 	assert(pPlugin->GetBaseContext() != NULL);
 
 	AddFakeNativesToPlugin(pPlugin);
+
+	List<String>::iterator lib_iter;
+	List<String>::iterator req_iter;
+	List<CPlugin *>::iterator pl_iter;
+	CPlugin *pl;
+	for (req_iter=pPlugin->m_RequiredLibs.begin(); req_iter!=pPlugin->m_RequiredLibs.end(); req_iter++)
+	{
+		bool found = false;
+		for (pl_iter=m_plugins.begin(); pl_iter!=m_plugins.end(); pl_iter++)
+		{
+			pl = (*pl_iter);
+			for (lib_iter=pl->m_Libraries.begin(); lib_iter!=pl->m_Libraries.end(); lib_iter++)
+			{
+				if ((*req_iter) == (*lib_iter))
+				{
+					found = true;
+				}
+			}
+		}
+		if (!found)
+		{
+			pPlugin->SetErrorState(Plugin_Error, "Library not found: %s", (*req_iter).c_str());
+			return;
+		}
+	}
 
 	/* Find any unbound natives
 	 * Right now, these are not allowed
@@ -1220,8 +1361,10 @@ void CPluginManager::AddFakeNativesToPlugin(CPlugin *pPlugin)
 		{
 			uint32_t idx;
 			pContext->FindNativeByName(native.name, &idx);
-			if (!(pPlugin->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL))
+			if (pPlugin->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL)
 			{
+				WeakNative *wkn = new WeakNative(pPlugin, idx);
+				GetPluginByCtx(ctx)->m_WeakNatives.push_back(wkn);
 				continue;
 			}
 			/* Add us as a dependency, but we're careful not to do this circularly! */
@@ -1275,20 +1418,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pOther->m_dependents.remove(pPlugin);
 	}
 
-	/* Remove all of our native functions */
-	List<FakeNative *>::iterator fn_iter;
-	FakeNative *pNative;
-	for (fn_iter = pPlugin->m_fakeNatives.begin();
-		 fn_iter != pPlugin->m_fakeNatives.end();
-		 fn_iter++)
-	{
-		pNative = (*fn_iter);
-		m_Natives.remove(pNative);
-		sm_trie_delete(m_pNativeLookup, pNative->name.c_str());
-		g_pVM->DestroyFakeNative(pNative->func);
-		delete pNative;
-	}
-
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
 
@@ -1302,6 +1431,30 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		}
 		/* Notify plugin */
 		pPlugin->Call_OnPluginEnd();
+	}
+
+	/* Remove all of our native functions */
+	List<FakeNative *>::iterator fn_iter;
+	FakeNative *pNative;
+	for (fn_iter = pPlugin->m_fakeNatives.begin();
+		fn_iter != pPlugin->m_fakeNatives.end();
+		fn_iter++)
+	{
+		pNative = (*fn_iter);
+		m_Natives.remove(pNative);
+		sm_trie_delete(m_pNativeLookup, pNative->name.c_str());
+		g_pVM->DestroyFakeNative(pNative->func);
+		delete pNative;
+	}
+
+	/* Unbound weak natives */
+	WeakNative *wkn;
+	List<WeakNative *>::iterator wk_iter;
+	for (wk_iter=pPlugin->m_WeakNatives.begin(); wk_iter!=pPlugin->m_WeakNatives.end(); wk_iter++)
+	{
+		wkn = (*wk_iter);
+		sp_context_t *ctx = wkn->pl->GetContext();
+		ctx->natives[wkn->idx].status = SP_NATIVE_UNBOUND;
 	}
 
 	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)

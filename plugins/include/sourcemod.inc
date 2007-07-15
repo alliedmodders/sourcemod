@@ -329,5 +329,24 @@ native GetSysTickCount();
  */
 native AutoExecConfig(bool:autoCreate=true, const String:name[]="", const String:folder[]="sourcemod");
 
+/**
+ * Sets a native as optional, such that if it is unloaded, removed,
+ * or otherwise non-existent, the plugin will still work.  Calling
+ * removed natives results in a run-time error.
+ *
+ * @param name			Native name.
+ * @noreturn
+ */
+native MarkNativeAsOptional(const String:name[]);
+
+/**
+ * Registers a library name for identifying as a dependency to 
+ * other plugins.
+ *
+ * @param name			Library name.
+ * @noreturn
+ */
+native RegPluginLibrary(const String:name[]);
+
 #include <helpers>
 #include <entity>

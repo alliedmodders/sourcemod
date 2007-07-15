@@ -18,7 +18,6 @@
 #include "ShareSys.h"
 #include "Logger.h"
 #include "sourcemm_api.h"
-#include "PluginSys.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 
@@ -126,6 +125,13 @@ CExtension::~CExtension()
 	{
 		m_pLib->CloseLibrary();
 	}
+
+	List<WeakNative *>::iterator iter;
+	for (iter=m_WeakNatives.begin(); iter!=m_WeakNatives.end(); iter++)
+	{
+		delete (*iter);
+	}
+	m_WeakNatives.clear();
 }
 
 void CExtension::MarkAllLoaded()
@@ -539,6 +545,9 @@ void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 					if (!(pContext->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL))
 					{
 						set = true;
+					} else {
+						WeakNative *wkn = new WeakNative((CPlugin *)pPlugin, idx);
+						pExt->m_WeakNatives.push_back(wkn);
 					}
 				}
 				i++;
@@ -582,6 +591,16 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			/* We have to manually unlink ourselves here, since we're no longer being managed */
 			g_PluginSys.UnloadPlugin((*p_iter));
 			p_iter = pExt->m_Plugins.erase(p_iter);
+		}
+
+		/* Unbound weak natives */
+		WeakNative *wkn;
+		List<WeakNative *>::iterator wkn_iter;
+		for (wkn_iter=pExt->m_WeakNatives.begin(); wkn_iter!=pExt->m_WeakNatives.end(); wkn_iter++)
+		{
+			wkn = (*wkn_iter);
+			sp_context_t *ctx = wkn->pl->GetContext();
+			ctx->natives[wkn->idx].status = SP_NATIVE_UNBOUND;
 		}
 
 		/* Notify and/or unload all dependencies */

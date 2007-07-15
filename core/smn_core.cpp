@@ -335,12 +335,6 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 	char *name;
 	uint32_t idx;
 	sp_context_t *ctx = pContext->GetContext();
-	CPlugin *pl = g_PluginSys.GetPluginByCtx(ctx);
-
-	if (!pl->IsInAskPluginLoad())
-	{
-		return pContext->ThrowNativeError("Calling MarkNativeAsOptional outside AskPluginLoad is not allowed");
-	}
 
 	pContext->LocalToString(params[1], &name);
 	if (pContext->FindNativeByName(name, &idx) != SP_ERROR_NONE)
@@ -349,6 +343,19 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 	}
 
 	ctx->natives[idx].flags |= SP_NTVFLAG_OPTIONAL;
+
+	return 1;
+}
+
+static cell_t RegPluginLibrary(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	uint32_t idx;
+	CPlugin *pl = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	pContext->LocalToString(params[1], &name);
+
+	pl->AddLibrary(name);
 
 	return 1;
 }
@@ -369,5 +376,6 @@ REGISTER_NATIVES(coreNatives)
 	{"SetFailState",			SetFailState},
 	{"FormatTime",				FormatTime},
 	{"MarkNativeAsOptional",	MarkNativeAsOptional},
+	{"RegPluginLibrary",		RegPluginLibrary},
 	{NULL,						NULL},
 };

@@ -24,6 +24,7 @@
 #include <ISmmAPI.h>
 #include <IPluginSys.h>
 #include <IRootConsoleMenu.h>
+#include "PluginSys.h"
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -63,6 +64,7 @@ private:
 	List<SMInterface *> m_Interfaces;
 	List<IPlugin *> m_Plugins;
 	List<const sp_nativeinfo_t *> m_Natives;
+	List<WeakNative *> m_WeakNatives;
 	PluginId m_PlId;
 	unsigned int unload_code;
 	bool m_FullyLoaded;
