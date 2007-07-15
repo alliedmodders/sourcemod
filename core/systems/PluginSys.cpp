@@ -1056,7 +1056,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 			{
 				IPluginFunction *pFunc;
 				char buffer[64];
-				UTIL_Format(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[6]);
+				UTIL_Format(buffer, sizeof(buffer), "__pl_%s_SetNTVOptional", &pubvar->name[5]);
 				if ((pFunc=pBase->GetFunctionByName(buffer)))
 				{
 					cell_t res;
