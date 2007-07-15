@@ -599,12 +599,12 @@ native bool:ReadCommandIterator(Handle:iter,
 								descLen=0);
 
 /**
- * Returns whether a user has access to a command.  This takes into account
+ * Returns whether a client has access to a command.  This takes into account
  * the override system built into SourceMod.
  *
  * @param client		Client index.
  * @param command		Command name.
  * @param flags			Default command flags.
- * @return				True if the user has access, false otherwise.
+ * @return				True if the client has access, false otherwise.
  */
 native bool:CheckCommandAccess(client, const String:command[], flags);
