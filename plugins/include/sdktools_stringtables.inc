@@ -148,7 +148,7 @@ native bool:LockStringTables(bool:lock);
  *
  * @param filename		File that will be added to downloadables table.
  */
-stock AddFileToDownloadTable(const String:filename[])
+stock AddFileToDownloadsTable(const String:filename[])
 {
 	static table = INVALID_STRING_TABLE;
 	
