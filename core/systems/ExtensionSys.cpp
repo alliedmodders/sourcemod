@@ -125,13 +125,6 @@ CExtension::~CExtension()
 	{
 		m_pLib->CloseLibrary();
 	}
-
-	List<WeakNative *>::iterator iter;
-	for (iter=m_WeakNatives.begin(); iter!=m_WeakNatives.end(); iter++)
-	{
-		delete (*iter);
-	}
-	m_WeakNatives.clear();
 }
 
 void CExtension::MarkAllLoaded()
@@ -156,6 +149,17 @@ void CExtension::AddPlugin(IPlugin *pPlugin)
 void CExtension::RemovePlugin(IPlugin *pPlugin)
 {
 	m_Plugins.remove(pPlugin);
+
+	List<WeakNative>::iterator iter = m_WeakNatives.begin();
+	while (iter != m_WeakNatives.end())
+	{
+		if ((*iter).pl == pPlugin)
+		{
+			iter = m_WeakNatives.erase(iter);
+		} else {
+			iter++;
+		}
+	}
 }
 
 void CExtension::SetError(const char *error)
@@ -546,7 +550,7 @@ void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 					{
 						set = true;
 					} else {
-						WeakNative *wkn = new WeakNative((CPlugin *)pPlugin, idx);
+						WeakNative wkn = WeakNative((CPlugin *)pPlugin, idx);
 						pExt->m_WeakNatives.push_back(wkn);
 					}
 				}
@@ -594,13 +598,12 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 
 		/* Unbound weak natives */
-		WeakNative *wkn;
-		List<WeakNative *>::iterator wkn_iter;
+		List<WeakNative>::iterator wkn_iter;
 		for (wkn_iter=pExt->m_WeakNatives.begin(); wkn_iter!=pExt->m_WeakNatives.end(); wkn_iter++)
 		{
-			wkn = (*wkn_iter);
-			sp_context_t *ctx = wkn->pl->GetContext();
-			ctx->natives[wkn->idx].status = SP_NATIVE_UNBOUND;
+			WeakNative & wkn = (*wkn_iter);
+			sp_context_t *ctx = wkn.pl->GetContext();
+			ctx->natives[wkn.idx].status = SP_NATIVE_UNBOUND;
 		}
 
 		/* Notify and/or unload all dependencies */
