@@ -33,6 +33,34 @@ enum ConVarBounds
 	ConVarBound_Lower
 };
 
+HandleType_t hCmdIterType = 0;
+
+struct GlobCmdIter
+{
+	bool started;
+	List<ConCmdInfo *>::iterator iter;
+};
+
+class ConsoleHelpers : 
+	public SMGlobalClass,
+	public IHandleTypeDispatch
+{
+public:
+	virtual void OnSourceModAllInitialized()
+	{
+		HandleAccess access;
+		g_HandleSys.InitAccessDefaults(NULL, &access);
+		access.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER | HANDLE_RESTRICT_IDENTITY;
+
+		hCmdIterType = g_HandleSys.CreateType(NULL, this, 0, NULL, &access, g_pCoreIdent, NULL);
+	}
+	virtual void OnHandleDestroy(HandleType_t type, void *object)
+	{
+		GlobCmdIter *iter = (GlobCmdIter *)object;
+		delete iter;
+	}
+} s_ConsoleHelpers;
+
 static void ReplicateConVar(ConVar *pConVar)
 {
 	int maxClients = g_Players.GetMaxClients();
@@ -802,6 +830,78 @@ static cell_t SetCmdReplyTarget(IPluginContext *pContext, const cell_t *params)
 	return g_ChatTriggers.SetReplyTo(params[1]);
 }
 
+static cell_t GetCommandIterator(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter = new GlobCmdIter;
+	iter->started = false;
+
+	Handle_t hndl = g_HandleSys.CreateHandle(hCmdIterType, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (hndl == BAD_HANDLE)
+	{
+		delete iter;
+	}
+
+	return hndl;
+}
+
+static cell_t ReadCommandIterator(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid GlobCmdIter Handle %x", params[1]);
+	}
+
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+
+	if (!iter->started)
+	{
+		iter->iter = cmds.begin();
+		iter->started = true;
+	}
+
+	while (iter->iter != cmds.end()
+			&& !(*(iter->iter))->sourceMod)
+	{
+		iter->iter++;
+	}
+
+	if (iter->iter == cmds.end())
+	{
+		return 0;
+	}
+
+	ConCmdInfo *pInfo = (*(iter->iter));
+
+	pContext->StringToLocalUTF8(params[2], params[3], pInfo->pCmd->GetName(), NULL);
+	pContext->StringToLocalUTF8(params[5], params[6], pInfo->pCmd->GetHelpText(), NULL);
+	
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[4], &addr);
+	*addr = pInfo->admin.eflags;
+
+	iter->iter++;
+
+	return 1;
+}
+
+static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
+{
+	if (params[1] == 0)
+	{
+		return 1;
+	}
+
+	char *cmd;
+	pContext->LocalToString(params[2], &cmd);
+
+	return g_ConCmds.CheckCommandAccess(params[1], cmd, params[3]) ? 1 : 0;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -839,5 +939,8 @@ REGISTER_NATIVES(consoleNatives)
 	{"ReplyToCommand",		ReplyToCommand},
 	{"GetCmdReplySource",	GetCmdReplyTarget},
 	{"SetCmdReplySource",	SetCmdReplyTarget},
+	{"GetCommandIterator",	GetCommandIterator},
+	{"ReadCommandIterator",	ReadCommandIterator},
+	{"CheckCommandAccess",	CheckCommandAccess},
 	{NULL,					NULL}
 };

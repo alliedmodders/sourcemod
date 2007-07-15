@@ -306,9 +306,8 @@ void ConCmdManager::InternalDispatch()
 	}
 }
 
-bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
+bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmdflags)
 {
-	FlagBits cmdflags = pAdmin->eflags;
 	if (cmdflags == 0)
 	{
 		return true;
@@ -321,7 +320,9 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	}
 
 	CPlayer *player = g_Players.GetPlayerByIndex(client);
-	if (!player)
+	if (!player 
+		|| player->GetEdict() == NULL
+		|| player->IsFakeClient())
 	{
 		return false;
 	}
@@ -370,11 +371,17 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 		}
 	}
 
-	if (player->IsFakeClient()
-		|| player->GetEdict() == NULL)
+	return false;
+}
+
+bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
+{
+	if (CheckCommandAccess(client, cmd, pAdmin->eflags))
 	{
-		return false;
+		return true;
 	}
+
+	edict_t *pEdict = engine->PEntityOfEntIndex(client);
 	
 	/* If we got here, the command failed... */
 	char buffer[128];
@@ -389,7 +396,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	{
 		char fullbuffer[192];
 		snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
-		engine->ClientPrintf(player->GetEdict(), fullbuffer);
+		engine->ClientPrintf(pEdict, fullbuffer);
 	} else if (replyto == SM_REPLY_CHAT) {
 		char fullbuffer[192];
 		snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
@@ -495,6 +502,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 
 	/* Finally, add the hook */
 	pInfo->conhooks.push_back(pHook);
+	pInfo->admin = *(pHook->pAdmin);
 
 	/* Now add to the plugin */
 	CmdList *pList;
@@ -636,6 +644,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 				} else {
 					pHook->pAdmin->eflags = pHook->pAdmin->flags;
 				}
+				pInfo->admin = *(pHook->pAdmin);
 			}
 		}
 	} else if (type == Override_CommandGroup) {
@@ -665,6 +674,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 					} else {
 						pHook->pAdmin->eflags = pHook->pAdmin->flags;
 					}
+					pInfo->admin = *(pHook->pAdmin);
 				}
 			}
 		}

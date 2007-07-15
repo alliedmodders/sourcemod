@@ -70,6 +70,7 @@ struct ConCmdInfo
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	List<CmdHook *> srvhooks;		/**< Hooks as a server command */
 	List<CmdHook *> conhooks;		/**< Hooks as a console command */
+	AdminCmdInfo admin;				/**< Admin info, if any */
 };
 
 class ConCmdManager :
@@ -100,6 +101,7 @@ public:
 	ResultType DispatchClientCommand(int client, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
 	bool LookForSourceModCommand(const char *cmd);
+	bool CheckCommandAccess(int client, const char *cmd, FlagBits flags);
 private:
 	void InternalDispatch();
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
@@ -113,6 +115,10 @@ public:
 	inline int GetCommandClient()
 	{
 		return m_CmdClient;
+	}
+	inline const List<ConCmdInfo *> & GetCommandList()
+	{
+		return m_CmdList;
 	}
 private:
 	Trie *m_pCmds;					/* command lookup */

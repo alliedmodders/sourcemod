@@ -571,3 +571,40 @@ funcenum ConVarQueryFinished
  *						Returns QUERYCOOKIE_FAILED on failure, such as when used on a bot.
  */
 native QueryCookie:QueryClientConVar(client, const String:cvarName[], ConVarQueryFinished:callback, any:value=0);
+
+/**
+ * Gets a command iterator.  Must be freed with CloseHandle().
+ *
+ * @return				A new command iterator.
+ */
+native Handle:GetCommandIterator();
+
+/**
+ * Reads a command iterator, then advances to the next command if any.
+ * Only SourceMod specific commands are returned.
+ *
+ * @param iter			Command iterator Handle.
+ * @param name			Name buffer.
+ * @param nameLen		Name buffer size.
+ * @param eflags		Effective default flags of a command.
+ * @param desc			Command description buffer.
+ * @param descLen		Command description buffer size.
+ * @return				True on success, false if there are no more commands.
+ */
+native bool:ReadCommandIterator(Handle:iter, 
+								String:name[], 
+								nameLen, 
+								&eflags=0, 
+								String:desc[]="", 
+								descLen=0);
+
+/**
+ * Returns whether a user has access to a command.  This takes into account
+ * the override system built into SourceMod.
+ *
+ * @param client		Client index.
+ * @param command		Command name.
+ * @param flags			Default command flags.
+ * @return				True if the user has access, false otherwise.
+ */
+native bool:CheckCommandAccess(client, const String:command[], flags);

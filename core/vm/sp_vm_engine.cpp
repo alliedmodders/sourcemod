@@ -56,7 +56,7 @@ static const char *g_ErrorMsgTable[] =
 	"Heap memory leaked by native",
 	"Dynamic array is too big",
 	"Tracker stack is out of bounds",
-	"Native was never bound",
+	"Native is not bound",
 	"Maximum number of parameters reached",
 	"Native detected error",
 	"Plugin not runnable",
