@@ -65,13 +65,13 @@ public Action:Command_BanIp(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:arg[50], String:time[20];
+	decl String:arg[50], String:time[20];
 	GetCmdArg(1, time, sizeof(time));
 	GetCmdArg(2, arg, sizeof(arg));
 	
 	new minutes = StringToInt(time);
 	
-	new String:reason[128];
+	decl String:reason[128];
 	if (args >= 3)
 	{
 		GetCmdArg(3, reason, sizeof(reason));
@@ -108,13 +108,13 @@ public Action:Command_AddBan(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:arg[50], String:time[20];
+	decl String:arg[50], String:time[20];
 	GetCmdArg(1, time, sizeof(time));
 	GetCmdArg(2, arg, sizeof(arg));
 	
 	new minutes = StringToInt(time);
 	
-	new String:reason[128];
+	decl String:reason[128];
 	if (args >= 3)
 	{
 		GetCmdArg(3, reason, sizeof(reason));
@@ -151,8 +151,9 @@ public Action:Command_Unban(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:arg[50], start=0;
-	new String:new_arg[50];
+	decl String:arg[50];
+	new start=0;
+	decl String:new_arg[50];
 	GetCmdArgString(arg, sizeof(arg));
 	
 	if (strncmp(arg, "STEAM_0:", 8) == 0)
@@ -194,7 +195,7 @@ public Action:Command_Ban(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:arg[65];
+	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
 	new clients[2];
@@ -215,7 +216,7 @@ public Action:Command_Ban(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:s_time[12];
+	decl String:s_time[12];
 	GetCmdArg(2, s_time, sizeof(s_time));
 	
 	new time = StringToInt(s_time);
@@ -301,7 +302,7 @@ new String:g_FlagNames[FLAG_STRINGS][20] =
 
 FlagsToString(String:buffer[], maxlength, flags)
 {
-	new String:joins[FLAG_STRINGS][20];
+	decl String:joins[FLAG_STRINGS][20];
 	new total;
 	
 	for (new i=0; i<FLAG_STRINGS; i++)
@@ -320,7 +321,7 @@ public Action:Command_Who(client, args)
 	if (args < 1)
 	{
 		/* Display header */
-		new String:t_access[16], String:t_name[16];
+		decl String:t_access[16], String:t_name[16];
 		Format(t_access, sizeof(t_access), "%t", "Access", client);
 		Format(t_name, sizeof(t_name), "%t", "Name", client);
 		
@@ -328,7 +329,7 @@ public Action:Command_Who(client, args)
 		
 		/* List all players */
 		new maxClients = GetMaxClients();
-		new String:flagstring[255];
+		decl String:flagstring[255];
 				
 		for (new i=1; i<=maxClients; i++)
 		{
@@ -358,7 +359,7 @@ public Action:Command_Who(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:arg[65];
+	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
 	new clients[2];
@@ -374,7 +375,7 @@ public Action:Command_Who(client, args)
 	}
 	
 	new flags = GetUserFlagBits(clients[0]);
-	new String:flagstring[255];
+	decl String:flagstring[255];
 	if (flags == 0)
 	{
 		strcopy(flagstring, sizeof(flagstring), "none");
@@ -423,7 +424,7 @@ public Action:Command_Cvar(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:cvarname[33];
+	decl String:cvarname[33];
 	GetCmdArg(1, cvarname, sizeof(cvarname));
 	
 	new Handle:hndl = FindConVar(cvarname);
@@ -519,7 +520,7 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:map[64];
+	decl String:map[64];
 	GetCmdArg(1, map, sizeof(map));
 	
 	if (!IsMapValid(map))
@@ -541,7 +542,7 @@ public Action:Command_Map(client, args)
 
 public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 {
-	new String:map[65];
+	decl String:map[65];
 	
 	ResetPack(dp);
 	ReadPackString(dp, map, sizeof(map));
@@ -559,7 +560,7 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:arg[65];
+	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
 	new clients[2];
@@ -577,7 +578,7 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	}
 	
-	new String:name[65];
+	decl String:name[65];
 	
 	GetClientName(clients[0], name, sizeof(name));
 	
