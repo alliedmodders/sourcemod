@@ -350,7 +350,6 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 static cell_t RegPluginLibrary(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
-	uint32_t idx;
 	CPlugin *pl = g_PluginSys.GetPluginByCtx(pContext->GetContext());
 
 	pContext->LocalToString(params[1], &name);
