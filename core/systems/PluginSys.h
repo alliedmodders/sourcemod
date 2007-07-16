@@ -250,6 +250,7 @@ public:
 	{
 		m_Libraries.push_back(name);
 	}
+	void LibraryActions(bool dropping);
 protected:
 	void UpdateInfo();
 	void SetTimeStamp(time_t t);
@@ -398,6 +399,9 @@ public:
 
 	void Shutdown();
 
+	void OnLibraryAction(const char *lib, bool drop);
+
+	bool LibraryExists(const char *lib);
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 
@@ -434,8 +438,6 @@ private:
 	bool FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
-
-	void ExecAndGenPluginConfs();
 protected:
 	/**
 	 * Caching internal objects

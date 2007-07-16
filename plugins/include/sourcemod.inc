@@ -348,5 +348,29 @@ native MarkNativeAsOptional(const String:name[]);
  */
 native RegPluginLibrary(const String:name[]);
 
+/**
+ * Returns whether a library exists.
+ *
+ * @param name			Library name.
+ * @return				True if exists, false otherwise.
+ */
+native bool:LibraryExists(const String:name[]);
+
+/**
+ * Called after a library (plugin) is added that the 
+ * current plugin references optionally.
+ *
+ * @param name			Library name.
+ */
+forward OnLibraryAdded(const String:name[]);
+
+/**
+ * Called right before a library (plugin) is removed that the 
+ * current plugin references optionally.
+ *
+ * @param name			Library name.
+ */
+forward OnLibraryRemoved(const String:name[]);
+
 #include <helpers>
 #include <entity>

@@ -339,7 +339,8 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 	pContext->LocalToString(params[1], &name);
 	if (pContext->FindNativeByName(name, &idx) != SP_ERROR_NONE)
 	{
-		return pContext->ThrowNativeError("Unable to find native \"%s\"", name);
+		/* Oops! This HAS to silently fail! */
+		return 0;
 	}
 
 	ctx->natives[idx].flags |= SP_NTVFLAG_OPTIONAL;
@@ -359,6 +360,14 @@ static cell_t RegPluginLibrary(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[1], &str);
+
+	return g_PluginSys.LibraryExists(str) ? 1 : 0;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -376,5 +385,6 @@ REGISTER_NATIVES(coreNatives)
 	{"FormatTime",				FormatTime},
 	{"MarkNativeAsOptional",	MarkNativeAsOptional},
 	{"RegPluginLibrary",		RegPluginLibrary},
+	{"LibraryExists",			LibraryExists},
 	{NULL,						NULL},
 };

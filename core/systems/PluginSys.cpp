@@ -425,13 +425,29 @@ bool CPlugin::IsDebugging()
 	return ((m_ctx.ctx->flags & SP_FLAG_DEBUG) == SP_FLAG_DEBUG);
 }
 
+void CPlugin::LibraryActions(bool dropping)
+{
+	List<String>::iterator iter;
+	for (iter = m_Libraries.begin();
+		iter != m_Libraries.end();
+		iter++)
+	{
+		g_PluginSys.OnLibraryAction((*iter).c_str(), dropping);
+	}
+}
+
 bool CPlugin::SetPauseState(bool paused)
 {
-	if (paused && GetStatus() != Plugin_Paused)
+	if (paused && GetStatus() != Plugin_Running)
 	{
 		return false;
-	} else if (!paused && GetStatus() != Plugin_Running) {
+	} else if (!paused && GetStatus() != Plugin_Paused) {
 		return false;
+	}
+
+	if (paused)
+	{
+		LibraryActions(true);
 	}
 
 	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnPluginPauseChange");
@@ -452,6 +468,11 @@ bool CPlugin::SetPauseState(bool paused)
 	}
 
 	g_PluginSys._SetPauseState(this, paused);
+
+	if (!paused)
+	{
+		LibraryActions(false);
+	}
 
 	return true;
 }
@@ -1253,6 +1274,15 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		}
 	}
 
+	/* Go through our libraries and tell other plugins they're added */
+	List<String>::iterator s_iter;
+	for (s_iter = pPlugin->m_Libraries.begin();
+		s_iter != pPlugin->m_Libraries.end();
+		s_iter++)
+	{
+		OnLibraryAction((*s_iter).c_str(), false);
+	}
+
 	return true;
 }
 
@@ -1394,6 +1424,15 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
 	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
+
+	/* Go through our libraries and tell other plugins they're gone */
+	List<String>::iterator s_iter;
+	for (s_iter = pPlugin->m_Libraries.begin();
+		 s_iter != pPlugin->m_Libraries.end();
+		 s_iter++)
+	{
+		OnLibraryAction((*s_iter).c_str(), true);
+	}
 
 	/* Go through all dependent plugins and tell them this plugin is now gone */
 	List<CPlugin *>::iterator pl_iter;
@@ -2190,9 +2229,88 @@ CPlugin *CPluginManager::GetPluginFromIdentity(IdentityToken_t *pToken)
 	return (CPlugin *)(pToken->ptr);
 }
 
-void CPluginManager::ExecAndGenPluginConfs()
+void CPluginManager::OnLibraryAction(const char *lib, bool drop)
 {
 	List<CPlugin *>::iterator iter;
 
-	//for (iter = 
+	struct _pl
+	{
+		cell_t name;
+		cell_t file;
+		cell_t required;
+	} *plc;
+
+	const char *name = drop ? "OnLibraryRemoved" : "OnLibraryAdded";
+
+	for (iter=m_plugins.begin();
+		 iter!=m_plugins.end();
+		 iter++)
+	{
+		CPlugin *pl = (*iter);
+		if (pl->GetStatus() != Plugin_Running)
+		{
+			continue;
+		}
+		IPluginContext *pContext = pl->GetBaseContext();
+		IPluginFunction *pf = pContext->GetFunctionByName(name);
+		if (!pf)
+		{
+			continue;
+		}
+		sp_context_t *ctx = pContext->GetContext();
+		uint32_t num_vars = pContext->GetPubVarsNum();
+		for (uint32_t i=0; i<num_vars; i++)
+		{
+			sp_pubvar_t *pubvar;
+			if (pContext->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
+			{
+				continue;
+			}
+			if (strncmp(pubvar->name, "__pl_", 5) != 0)
+			{
+				continue;
+			}
+			plc = (_pl *)pubvar->offs;
+			if (plc->required)
+			{
+				continue;
+			}
+			char *str;
+			pContext->LocalToString(plc->name, &str);
+			if (strcmp(str, lib) != 0)
+			{
+				continue;
+			}
+			pf->PushString(lib);
+			pf->Execute(NULL);
+		}
+	}
+}
+
+bool CPluginManager::LibraryExists(const char *lib)
+{
+	List<CPlugin *>::iterator iter;
+
+	for (iter=m_plugins.begin();
+		 iter!=m_plugins.end();
+		 iter++)
+	{
+		CPlugin *pl = (*iter);
+		if (pl->GetStatus() != Plugin_Running)
+		{
+			continue;
+		}
+		List<String>::iterator s_iter;
+		for (s_iter = pl->m_Libraries.begin();
+			 s_iter != pl->m_Libraries.end();
+			 s_iter++)
+		{
+			if ((*s_iter).compare(lib) == 0)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
