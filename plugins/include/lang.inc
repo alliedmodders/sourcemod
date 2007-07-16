@@ -55,7 +55,7 @@ native GetClientLanguage(client);
  *
  * @return			Language number server is using.
  */
-native GetServerLanguage(client);
+native GetServerLanguage();
 
 /**
  * Returns the number of languages known in languages.cfg.
