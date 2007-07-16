@@ -47,6 +47,12 @@ public OnPluginStart()
 	sm_flood_time = CreateConVar("sm_flood_time", "0.75", "Amount of time allowed between chat messages");
 }
 
+public OnClientPutInServer(client)
+{
+	g_LastTime[client] = 0.0;
+	g_FloodTokens[client] = 0;
+}
+
 public Action:CheckChatFlood(client, args)
 {
 	/* Chat from server console shouldn't be checked for flooding */
