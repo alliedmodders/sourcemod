@@ -2257,7 +2257,6 @@ void CPluginManager::OnLibraryAction(const char *lib, bool drop)
 		{
 			continue;
 		}
-		sp_context_t *ctx = pContext->GetContext();
 		uint32_t num_vars = pContext->GetPubVarsNum();
 		for (uint32_t i=0; i<num_vars; i++)
 		{
