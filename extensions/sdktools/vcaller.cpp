@@ -342,7 +342,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			if (vc->vparams[i].encflags & VENCODE_FLAG_COPYBACK)
 			{
 				if (EncodeValveParam(pContext, 
-					startparam + i, 
+					params[startparam + i], 
 					vc,
 					&vc->vparams[i],
 					ptr) == Data_Fail)
