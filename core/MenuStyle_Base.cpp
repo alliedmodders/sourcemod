@@ -194,6 +194,16 @@ void BaseMenuStyle::ProcessWatchList()
 		return;
 	}
 
+#if defined MENU_DEBUG
+	g_Logger.LogMessage("BaseMenuStyle::ProcessWatchList(%d,%d,%d,%d,%d,%p)", 
+		m_WatchList.m_Size,
+		m_WatchList.m_FirstLink,
+		m_WatchList.m_FreeNodes,
+		m_WatchList.m_LastLink,
+		m_WatchList.m_MaxSize,
+		m_WatchList.m_Nodes);
+#endif
+
 	unsigned int total = 0;
 	for (FastLink<int>::iterator iter=m_WatchList.begin(); iter!=m_WatchList.end(); ++iter)
 	{

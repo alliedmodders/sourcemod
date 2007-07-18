@@ -31,7 +31,7 @@ public:
 		T obj;
 	};
 public:
-	FastLink(unsigned int maxsize) : m_Size(0), m_FirstLink(0), m_FreeNodes(0), m_LastLink(0)
+	FastLink(unsigned int maxsize) : m_Size(0), m_FirstLink(0), m_FreeNodes(0), m_LastLink(0), m_UsableIndex(0)
 	{
 		m_MaxSize = maxsize;
 		m_Nodes = new FastLinkNode[m_MaxSize+1];
@@ -70,11 +70,12 @@ private:
 		{
 			return m_Nodes[m_FreeNodes--].freeNode;
 		} else {
-			if (m_LastLink >= m_MaxSize)
+			if (m_UsableIndex >= m_MaxSize)
 			{
 				return 0;
 			}
-			return m_LastLink + 1;
+			m_UsableIndex++;
+			return m_UsableIndex;
 		}
 	}
 public:
@@ -184,12 +185,17 @@ public:
 
 		return iter;
 	}
+#if defined MENU_DEBUG
+public:
+#else
 private:
+#endif
 	size_t m_Size;
 	unsigned int m_FirstLink;
 	unsigned int m_FreeNodes;
 	unsigned int m_LastLink;
 	unsigned int m_MaxSize;
+	unsigned int m_UsableIndex;
 	FastLinkNode *m_Nodes;
 };
 
