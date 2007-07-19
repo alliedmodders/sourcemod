@@ -19,6 +19,11 @@
 #ifndef _INCLUDE_SOURCEMOD_INTERFACE_IPLAYERHELPERS_H_
 #define _INCLUDE_SOURCEMOD_INTERFACE_IPLAYERHELPERS_H_
 
+/**
+ * @file IPlayerHelpers.h
+ * @brief Defines basic helper functions for Half-Life 2 clients
+ */
+
 #include <IShareSys.h>
 #include <IAdminSystem.h>
 
@@ -27,10 +32,6 @@
 
 struct edict_t;
 
-/**
- * @file IPlayerHelpers.h
- * @brief Defines basic helper functions for Half-Life 2 clients
- */
 namespace SourceMod
 {
 	/**
