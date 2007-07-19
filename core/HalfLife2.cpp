@@ -244,13 +244,19 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 	}
 }
 
-void CHalfLife2::TextMsg(int client, int dest, const char *msg)
+bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 {
 	bf_write *pBitBuf = NULL;
 	cell_t players[] = {client};
 
-	pBitBuf = g_UserMsgs.StartMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE);
+	if ((pBitBuf = g_UserMsgs.StartMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
 	pBitBuf->WriteByte(dest);
 	pBitBuf->WriteString(msg);
 	g_UserMsgs.EndMessage();
+
+	return true;
 }

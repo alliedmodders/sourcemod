@@ -284,7 +284,10 @@ static cell_t PrintToChat(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	g_HL2.TextMsg(client, HUD_PRINTTALK, buffer);
+	if (!g_HL2.TextMsg(client, HUD_PRINTTALK, buffer))
+	{
+		return pContext->ThrowNativeError("Could not send a usermessage");
+	}
 
 	return 1;
 }
@@ -315,7 +318,10 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	g_HL2.TextMsg(client, HUD_PRINTCENTER, buffer);
+	if (!g_HL2.TextMsg(client, HUD_PRINTCENTER, buffer))
+	{
+		return pContext->ThrowNativeError("Could not send a usermessage");
+	}
 
 	return 1;
 }

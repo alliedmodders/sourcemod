@@ -95,8 +95,9 @@ namespace SourceMod
 		 * @param client		Client index.
 		 * @param dest			Destination on the HUD.
 		 * @param msg			Message to send.
+		 * @return				True on success, false on failure.
 		 */
-		virtual void TextMsg(int client, int dest, const char *msg) =0;
+		virtual bool TextMsg(int client, int dest, const char *msg) =0;
 	};
 }
 

@@ -56,7 +56,7 @@ public: //IGameHelpers
 	ServerClass *FindServerClass(const char *classname);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
-	void TextMsg(int client, int dest, const char *msg);
+	bool TextMsg(int client, int dest, const char *msg);
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
