@@ -181,7 +181,6 @@ SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes
 			pPhrase->fmt_list = -1;
 
 			int trans_tbl = m_pMemory->CreateMem(sizeof(trans_t) * m_LangCount, (void **)&pTrans);
-			/* Update the pointer! */
 			pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
 			pPhrase->trans_tbl = trans_tbl;
 
@@ -303,7 +302,11 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 		/* Allocate the format table */
 		char fmt_buf[16];
 		int *fmt_list;
-		pPhrase->fmt_list = m_pMemory->CreateMem(sizeof(int) * pPhrase->fmt_count, (void **)&fmt_list);
+		int tmp = m_pMemory->CreateMem(sizeof(int) * pPhrase->fmt_count, (void **)&fmt_list);
+
+		/* Update the phrase pointer in case it changed */
+		pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
+		pPhrase->fmt_list = tmp;
 
 		/* Initialize */
 		for (size_t i=0; i<pPhrase->fmt_count; i++)
@@ -366,6 +369,8 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 					state = Parse_None;
 					/* Now, add this to our table */
 					fmt_list[cur_idx - 1] = m_pStringTab->AddString(fmt_buf);
+					pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
+					fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
 					pPhrase->fmt_bytes += strlen(fmt_buf);
 				} else {
 					if (!out_ptr)
@@ -427,6 +432,9 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 
 		out_idx = m_pMemory->CreateMem(len, (void **)&out_buf);
 
+		/* Update pointer */
+		pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
+
 		int *fmt_order;
 		int *fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
 		trans_t *pTrans = (trans_t *)m_pMemory->GetAddress(pPhrase->trans_tbl);
@@ -439,7 +447,16 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 		/* Build the format order list, if necessary */
 		if (fmt_list)
 		{
-			pTrans->fmt_order = m_pMemory->CreateMem(pPhrase->fmt_count * sizeof(int), (void **)&fmt_order);
+			int tmp = m_pMemory->CreateMem(pPhrase->fmt_count * sizeof(int), (void **)&fmt_order);
+			
+			/* Update pointers */
+			pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
+			pTrans = (trans_t *)m_pMemory->GetAddress(pPhrase->trans_tbl);
+			fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
+			pTrans = &pTrans[lang];
+
+			/* Now it's safe to save the index */
+			pTrans->fmt_order = tmp;
 
 			for (unsigned int i=0; i<pPhrase->fmt_count; i++)
 			{
