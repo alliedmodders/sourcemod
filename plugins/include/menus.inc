@@ -137,7 +137,8 @@ native bool:DisplayMenu(Handle:menu, client, time);
  * @param menu				Menu Handle.
  * @param info				Item information string.
  * @param display			Default item display string.
- * @param style				Drawing style flags.
+ * @param style				Drawing style flags.  Anything other than DEFAULT or 
+ *							DISABLED will be completely ignored when paginating.
  * @return					True on success, false on failure.
  * @error					Invalid Handle or item limit reached.
  */
@@ -154,7 +155,8 @@ native AddMenuItem(Handle:menu,
  * @param position			Position, starting from 0.
  * @param info				Item information string.
  * @param display			Default item display string.
- * @param style				Drawing style flags.
+ * @param style				Drawing style flags.  Anything other than DEFAULT or 
+ *							DISABLED will be completely ignored when paginating.
  * @return					True on success, false on failure.
  * @error					Invalid Handle or menu position.
  */
