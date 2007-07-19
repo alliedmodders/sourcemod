@@ -368,10 +368,12 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 					*out_ptr = '\0';
 					state = Parse_None;
 					/* Now, add this to our table */
-					fmt_list[cur_idx - 1] = m_pStringTab->AddString(fmt_buf);
+					int tmp_idx = m_pStringTab->AddString(fmt_buf);
+					/* Update pointers and update necessary variables */
 					pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
-					fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
 					pPhrase->fmt_bytes += strlen(fmt_buf);
+					fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
+					fmt_list[cur_idx - 1] = tmp_idx;
 				} else {
 					if (!out_ptr)
 					{
