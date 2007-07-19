@@ -49,14 +49,14 @@ ValvePassInfo s_params[SP_MAX_EXEC_PARAMS];
 
 inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &type, unsigned int &flags)
 {
-	if (method == SDKPass_Pointer)
+	if (method == SDKPass_Pointer || method == SDKPass_ByRef)
 	{
 		type = PassType_Basic;
 		if (vtype == Valve_POD
 			|| vtype == Valve_Float
 			|| vtype == Valve_Bool)
 		{
-			flags = PASSFLAG_ASPOINTER;
+			flags = PASSFLAG_BYVAL | PASSFLAG_ASPOINTER;
 		} else {
 			flags = PASSFLAG_BYVAL;
 		}
@@ -72,15 +72,6 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 			type = PassType_Basic;
 		}
 		flags = PASSFLAG_BYVAL;
-	} else if (method == SDKPass_ByRef) {
-		if (vtype == Valve_Vector
-			|| vtype == Valve_QAngle)
-		{
-			type = PassType_Object;
-		} else {
-			type = PassType_Basic;
-		}
-		flags = PASSFLAG_BYREF;
 	}
 }
 
@@ -193,9 +184,16 @@ static cell_t PrepSDKCall_AddParameter(IPluginContext *pContext, const cell_t *p
 
 	ValvePassInfo *info = &s_params[s_numparams++];
 	info->vtype = (ValveType)params[1];
-	DecodePassMethod(info->vtype, (SDKPassMethod)params[2], info->type, info->flags);
+	SDKPassMethod method = (SDKPassMethod)params[2];
+	DecodePassMethod(info->vtype, method, info->type, info->flags);
 	info->decflags = params[3] | VDECODE_FLAG_BYREF;
 	info->encflags = params[4];
+
+	/* Since SDKPass_ByRef acts like SDKPass_Pointer we can't allow NULL, just in case */
+	if (method == SDKPass_ByRef)
+	{
+		info->decflags &= ~VDECODE_FLAG_ALLOWNULL;
+	}
 
 	return 1;
 }
@@ -406,14 +404,14 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			return engine->IndexOfEdict(pEdict);
 		} else if (vc->retinfo->vtype == Valve_Bool) {
 			bool *addr = (bool  *)vc->retbuf;
-			if (vc->retinfo->flags & PASSFLAG_BYREF)
+			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
 			{
 				addr = *(bool **)addr;
 			}
 			return *addr ? 1 : 0;
 		} else {
 			cell_t *addr = (cell_t *)vc->retbuf;
-			if (vc->retinfo->flags & PASSFLAG_BYREF)
+			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
 			{
 				addr = *(cell_t **)addr;
 			}

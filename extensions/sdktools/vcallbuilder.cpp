@@ -97,10 +97,6 @@ ValveCall *CreateValveCall(void *addr,
 			return NULL;
 		}
 		retBufSize = retBuf.size;
-		if (retbuf_needs_extra)
-		{
-			retBufSize += size;
-		}
 	}
 
 	/* Get parameter info */
@@ -255,10 +251,6 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 			return NULL;
 		}
 		retBufSize = retBuf.size;
-		if (retbuf_needs_extra)
-		{
-			retBufSize += size;
-		}
 	}
 
 	/* Get parameter info */

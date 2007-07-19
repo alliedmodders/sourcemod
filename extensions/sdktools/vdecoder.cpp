@@ -114,6 +114,7 @@ size_t ValveParamToBinParam(ValveType type,
 			info->flags = flags;
 			if (flags & PASSFLAG_ASPOINTER)
 			{
+				needs_extra = true;
 				info->size = sizeof(int *);
 				return sizeof(int *) + sizeof(int);
 			} else {
@@ -127,6 +128,7 @@ size_t ValveParamToBinParam(ValveType type,
 			info->flags = flags;
 			if (flags & PASSFLAG_ASPOINTER)
 			{
+				needs_extra = true;
 				info->size = sizeof(bool *);
 				return sizeof(bool *) + sizeof(bool);
 			} else {
@@ -136,13 +138,15 @@ size_t ValveParamToBinParam(ValveType type,
 		}
 	case Valve_Float:
 		{
-			info->type = PassType_Float;
 			info->flags = flags;
 			if (flags & PASSFLAG_ASPOINTER)
 			{
+				needs_extra = true;
+				info->type = PassType_Basic;
 				info->size = sizeof(float *);
 				return sizeof(float *) + sizeof(float);
 			} else {
+				info->type = PassType_Float;
 				info->size = sizeof(float);
 				return sizeof(float);
 			}
@@ -167,7 +171,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			if (data->type == PassType_Basic)
 			{
-				v = *(Vector **)((unsigned char *)buffer + sizeof(Vector *));
+				v = *(Vector **)buffer;
 			} else if (data->type == PassType_Object) {
 				v = (Vector *)buffer;
 			}
@@ -187,7 +191,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			if (data->type == PassType_Basic)
 			{
-				q = *(QAngle **)((unsigned char *)buffer + sizeof(QAngle *));
+				q = *(QAngle **)buffer;
 			} else if (data->type == PassType_Object) {
 				q = (QAngle *)buffer;
 			}
@@ -241,7 +245,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
-				buffer = (char *)buffer + sizeof(void *);
+				buffer = *(cell_t **)buffer;
 			}
 
 			*addr = *(cell_t *)buffer;
@@ -255,7 +259,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
-				buffer = (char *)buffer + sizeof(bool *);
+				buffer = *(bool **)buffer;
 			}
 
 			*addr = *(bool *)buffer ? 1 : 0;
@@ -565,7 +569,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			}
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
-				*(void **)buffer = (char *)buffer + sizeof(void *);
+				*(void **)buffer = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
 				buffer = *(void **)buffer;
 			}
 			*(cell_t *)buffer = param;
@@ -581,7 +585,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			}
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
-				*(bool **)buffer = (bool *)((char *)buffer + sizeof(bool *));
+				*(bool **)buffer = (bool *)((unsigned char *)_buffer + pCall->stackEnd + data->obj_offset);
 				buffer = *(bool **)buffer;
 			}
 			*(bool *)buffer = param ? true : false;
