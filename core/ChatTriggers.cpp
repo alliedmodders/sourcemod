@@ -118,6 +118,11 @@ void ChatTriggers::OnSayCommand_Pre()
 	}
 
 	const char *args = engine->Cmd_Args();
+	
+	if (!args)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
 
 	/* Handle quoted string sets */
 	bool is_quoted = false;
