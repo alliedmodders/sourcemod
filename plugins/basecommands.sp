@@ -170,7 +170,7 @@ public Action:Command_Unban(client, args)
 	Call_StartForward(hBanRemoved);
 	Call_PushCell(client);
 	Call_PushString(new_arg);
-	Call_Finish();
+	Call_Finish(act);
 	
 	if (act < Plugin_Handled)
 	{
@@ -239,7 +239,7 @@ public Action:Command_Ban(client, args)
 	Call_PushCell(clients[0]);
 	Call_PushCell(time);
 	Call_PushString(reason);
-	Call_Finish();
+	Call_Finish(act);
 	
 	if (act < Plugin_Handled)
 	{
