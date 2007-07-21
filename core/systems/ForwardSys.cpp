@@ -351,8 +351,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 						high_result = cur_result;
 						if ((ResultType)high_result == Pl_Stop)
 						{
-							iter = m_functions.end();
-							break;
+							goto done;
 						}
 					}
 					break;
@@ -363,7 +362,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 					{
 						if (filter->OnFunctionReturn(this, func, &cur_result) == Pl_Stop)
 						{
-							iter = m_functions.end();
+							goto done;
 						}
 					}
 					break;
@@ -376,6 +375,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		}
 	}
 
+done:
 	if (success)
 	{
 		if (m_ExecType == ET_Event || m_ExecType == ET_Hook)
