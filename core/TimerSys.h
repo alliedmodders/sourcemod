@@ -62,7 +62,7 @@ public: //ITimerSystem
 	void FireTimerOnce(ITimer *pTimer, bool delayExec=false);
 public:
 	void RunFrame();
-	void MapChange();
+	void MapChange(bool real_mapchange);
 private:
 	List<ITimer *> m_SingleTimers;
 	List<ITimer *> m_LoopTimers;

@@ -55,7 +55,7 @@ void TimerSystem::OnSourceModAllInitialized()
 
 void TimerSystem::OnSourceModLevelChange(const char *mapName)
 {
-	MapChange();
+	MapChange(true);
 }
 
 void TimerSystem::RunFrame()
@@ -208,7 +208,7 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 }
 
 CStack<ITimer *> s_tokill;
-void TimerSystem::MapChange()
+void TimerSystem::MapChange(bool real_mapchange)
 {
 	ITimer *pTimer;
 	TimerIter iter;
@@ -216,7 +216,7 @@ void TimerSystem::MapChange()
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
+		if (real_mapchange && (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE))
 		{
 			s_tokill.push(pTimer);
 		} else {
@@ -227,7 +227,7 @@ void TimerSystem::MapChange()
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
+		if (real_mapchange && (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE))
 		{
 			s_tokill.push(pTimer);
 		} else {

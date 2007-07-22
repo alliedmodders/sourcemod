@@ -325,7 +325,7 @@ void StartTickSimulation()
 void StopTickSimulation()
 {
 	g_SimTicks.ticking = true;
-	g_Timers.MapChange();
+	g_Timers.MapChange(false);
 	g_StillFrames = 0;
 	g_LastTime = gpGlobals->curtime;
 }
