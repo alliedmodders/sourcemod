@@ -295,7 +295,9 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 			in_buf[1] == (char)0xBB && 
 			in_buf[2] == (char)0xBF)
 		{
-			parse_point = &in_buf[3];
+			/* Move EVERYTHING down :\ */
+			memmove(in_buf, &in_buf[3], read - 3);
+			read -= 3;
 		}
 
 		if (reparse_point)
