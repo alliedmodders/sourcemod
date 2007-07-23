@@ -229,7 +229,8 @@ public Action:Command_Ban(client, args)
 		reason[0] = '\0';
 	}
 	
-	new userid = GetClientUserId(clients[0]);
+	decl String:authid[64];
+	GetClientAuthString(clients[0], authid, sizeof(authid));
 	GetClientName(clients[0], arg, sizeof(arg));
 	
 	/* Fire the ban forward */
@@ -269,7 +270,7 @@ public Action:Command_Ban(client, args)
 			strcopy(reason, sizeof(reason), "Banned");
 		}
 		
-		ServerCommand("banid %d %d", time, userid);
+		ServerCommand("banid %d %s", time, authid);
 		KickClient(clients[0], "%s", reason);
 		
 		if (time == 0)
