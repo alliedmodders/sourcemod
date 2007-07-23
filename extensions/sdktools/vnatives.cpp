@@ -21,6 +21,7 @@
  * Version: $Id$
  */
 
+#include <sh_string.h>
 #include "extension.h"
 #include "vcallbuilder.h"
 #include "vnatives.h"
@@ -317,6 +318,39 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
+static String *g_lightstyle[MAX_LIGHTSTYLES] = {NULL};
+static cell_t SetLightStyle(IPluginContext *pContext, const cell_t *params)
+{
+	if (!g_lightstyle)
+	{
+		/* We allocate and never free this because the Engine wants to hold onto it :\
+		 * in theory we could hook light style and know whether we're supposed to free 
+		 * this or not on shutdown, but for 4K of memory, it doesn't seem worth it yet.
+		 * So, it's a :TODO:!
+		 */
+	}
+
+	int style = params[1];
+	if (style >= MAX_LIGHTSTYLES)
+	{
+		return pContext->ThrowNativeError("Light style %d is invalid (range: 0-%d)", style, MAX_LIGHTSTYLES - 1);
+	}
+
+	if (g_lightstyle[style] == NULL)
+	{
+		g_lightstyle[style] = new String();
+	}
+
+	char *str;
+	pContext->LocalToString(params[2], &str);
+
+	g_lightstyle[style]->assign(str);
+
+	engine->LightStyle(style, str);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",	ExtinguishPlayer},
@@ -330,6 +364,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"TeleportPlayer",		TeleportPlayer},
 	{"TeleportEntity",		TeleportPlayer},
 	{"SetClientViewEntity",	SetClientViewEntity},
+	{"SetLightStyle",		SetLightStyle},
 	{NULL,					NULL},
 };
 
