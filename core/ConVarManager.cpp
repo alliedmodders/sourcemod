@@ -166,7 +166,7 @@ void ConVarManager::OnMetamodPluginUnloaded(PluginId id)
 		pInfo = (*i);
 		cvarName = pInfo->name;
 
-		if (!icvar->FindVar(cvarName))
+		if (cvarName && !icvar->FindVar(cvarName))
 		{
 			m_IgnoreHandle = true;
 			g_HandleSys.FreeHandle(pInfo->handle, &sec);
