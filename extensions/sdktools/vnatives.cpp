@@ -321,15 +321,6 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 static String *g_lightstyle[MAX_LIGHTSTYLES] = {NULL};
 static cell_t SetLightStyle(IPluginContext *pContext, const cell_t *params)
 {
-	if (!g_lightstyle)
-	{
-		/* We allocate and never free this because the Engine wants to hold onto it :\
-		 * in theory we could hook light style and know whether we're supposed to free 
-		 * this or not on shutdown, but for 4K of memory, it doesn't seem worth it yet.
-		 * So, it's a :TODO:!
-		 */
-	}
-
 	int style = params[1];
 	if (style >= MAX_LIGHTSTYLES)
 	{
@@ -338,6 +329,11 @@ static cell_t SetLightStyle(IPluginContext *pContext, const cell_t *params)
 
 	if (g_lightstyle[style] == NULL)
 	{
+		/* We allocate and never free this because the Engine wants to hold onto it :\
+		 * in theory we could hook light style and know whether we're supposed to free 
+		 * this or not on shutdown, but for ~4K of memory MAX, it doesn't seem worth it yet.
+		 * So, it's a :TODO:!
+		 */
 		g_lightstyle[style] = new String();
 	}
 
