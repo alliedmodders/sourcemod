@@ -138,12 +138,15 @@ void ConVarManager::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand
 	if (id != g_PLID && !pCommand->IsCommand())
 	{
 		ConVarInfo *pInfo;
+		const char *cvarName = pCommand->GetName();
 		HandleSecurity sec(NULL, g_pCoreIdent);
-		bool handleExists = sm_trie_retrieve(m_ConVarCache, pCommand->GetName(), reinterpret_cast<void **>(&pInfo));
+		bool handleExists = sm_trie_retrieve(m_ConVarCache, cvarName, reinterpret_cast<void **>(&pInfo));
 
 		if (handleExists)
 		{
 			g_HandleSys.FreeHandle(pInfo->handle, &sec);
+			sm_trie_delete(m_ConVarCache, cvarName);
+			m_ConVars.remove(pInfo);
 		}
 	}
 }
