@@ -85,6 +85,15 @@ native ExtinguishEntity(client);
 native TeleportEntity(entity, const Float:origin[3], const Float:angles[3], const Float:velocity[3]);
 
 /**
+ * Forces a player to commit suicide.
+ *
+ * @param client		Client index.
+ * @noreturn
+ * @error				Invalid entity or client not in game, or lack of mod support.
+ */
+native ForcePlayerSuicide(client);
+
+/**
  * @deprecated
  */
 stock IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:level=false)

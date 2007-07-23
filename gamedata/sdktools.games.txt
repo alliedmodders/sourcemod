@@ -134,6 +134,11 @@
 				"windows"	"98"
 				"linux"		"99"
 			}
+			"CommitSuicide"
+			{
+				"windows"	"357"
+				"linux"		"358"
+			}
 		}
 	}
 
@@ -171,6 +176,11 @@
 			{
 				"windows"	"98"
 				"linux"		"99"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"356"
+				"linux"		"357"
 			}
 		}
 	}
@@ -210,6 +220,11 @@
 				"windows"	"97"
 				"linux"		"98"
 			}
+			"CommitSuicide"
+			{
+				"windows"	"356"
+				"linux"		"357"
+			}
 		}
 	}
 	
@@ -248,6 +263,11 @@
 			{
 				"windows"	"100"
 				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"343"
+				"linux"		"344"
 			}
 			
 			/* Temp Entities */
@@ -295,6 +315,11 @@
 			{
 				"windows"	"100"
 				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"360"
+				"linux"		"361"
 			}
 
 			/* Offset into CBaseTempEntity constructor.
@@ -398,6 +423,11 @@
 			{
 				"windows"	"98"
 				"linux"		"99"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"356"
+				"linux"		"357"
 			}
 			
 			/* Temp Entities */

@@ -274,6 +274,26 @@ static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		if (!CreateBaseCall("CommitSuicide", ValveCall_Player, NULL, NULL, 0, &pCall))
+		{
+			return pContext->ThrowNativeError("\"CommitSuicide\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
 static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params)
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
@@ -301,6 +321,7 @@ sp_nativeinfo_t g_Natives[] =
 {
 	{"ExtinguishPlayer",	ExtinguishPlayer},
 	{"ExtinguishEntity",	ExtinguishPlayer},
+	{"ForcePlayerSuicide",	ForcePlayerSuicide},
 	{"GivePlayerItem",		GiveNamedItem},
 	{"GetPlayerWeaponSlot",	GetPlayerWeaponSlot},
 	{"IgnitePlayer",		IgnitePlayer},
