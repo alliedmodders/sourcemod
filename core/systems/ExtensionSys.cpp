@@ -192,6 +192,32 @@ void CExtension::AddDependency(IfaceInfo *pInfo)
 	m_Deps.push_back(*pInfo);
 }
 
+bool operator ==(const IfaceInfo &i1, const IfaceInfo &i2)
+{
+	return (i1.iface == i2.iface) && (i1.owner == i2.owner);
+}
+
+void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
+{
+	IfaceInfo info;
+	info.iface = iface;
+	info.owner = pOther;
+
+	List<IfaceInfo>::iterator iter;
+	for (iter = m_ChildDeps.begin();
+		 iter != m_ChildDeps.end();
+		 iter++)
+	{
+		IfaceInfo &other = (*iter);
+		if (other == info)
+		{
+			return;
+		}
+	}
+
+	m_ChildDeps.push_back(info);
+}
+
 ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
 {
 	List<IfaceInfo>::iterator iter = m_Deps.begin();
@@ -463,11 +489,18 @@ IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime
 	return pExt;
 }
 
-void CExtensionManager::BindDependency(IExtension *pOwner, IfaceInfo *pInfo)
+void CExtensionManager::BindDependency(IExtension *pRequester, IfaceInfo *pInfo)
 {
-	CExtension *pExt = (CExtension *)pOwner;
+	CExtension *pExt = (CExtension *)pRequester;
+	CExtension *pOwner = (CExtension *)pInfo->owner;
 
 	pExt->AddDependency(pInfo);
+
+	IExtensionInterface *pAPI = pExt->GetAPI();
+	if (pAPI && !pAPI->QueryInterfaceDrop(pInfo->iface))
+	{
+		pOwner->AddChildDependent(pExt, pInfo->iface);
+	}
 }
 
 void CExtensionManager::AddInterface(IExtension *pOwner, SMInterface *pInterface)
@@ -628,12 +661,27 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			{
 				if ((*i_iter).owner == _pExt)
 				{
-					if (!dropped && !pAPI->QueryInterfaceDrop((*i_iter).iface))
+					if (!pAPI->QueryInterfaceDrop((*i_iter).iface))
 					{
-						dropped = true;
+						if (!dropped)
+						{
+							dropped = true;
+							UnloadQueue.push_back(pDep);
+						}
 					}
 					pAPI->NotifyInterfaceDrop((*i_iter).iface);
 					i_iter = pDep->m_Deps.erase(i_iter);
+				} else {
+					i_iter++;
+				}
+			}
+			/* Flush out any back references to this plugin */
+			i_iter = pDep->m_ChildDeps.begin();
+			while (i_iter != pDep->m_ChildDeps.end())
+			{
+				if ((*i_iter).owner == pExt)
+				{
+					i_iter = pDep->m_ChildDeps.erase(i_iter);
 				} else {
 					i_iter++;
 				}
@@ -841,7 +889,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 			}
 
 			if (!pExt->IsLoaded() 
-				|| (!pExt->m_Deps.size() && !pExt->m_Plugins.size()))
+				|| (!pExt->m_ChildDeps.size() && !pExt->m_Plugins.size()))
 			{
 				char filename[PLATFORM_MAX_PATH];
 				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
@@ -850,7 +898,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				return;
 			} else {
 				List<IPlugin *> plugins;
-				if (pExt->m_Deps.size())
+				if (pExt->m_ChildDeps.size())
 				{
 					g_RootMenu.ConsolePrint("[SM] Unloading %s will unload the following extensions: ", pExt->GetFilename());
 					List<CExtension *>::iterator iter;

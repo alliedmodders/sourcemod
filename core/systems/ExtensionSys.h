@@ -47,6 +47,7 @@ public: //IExtension
 public:
 	void SetError(const char *error);
 	void AddDependency(IfaceInfo *pInfo);
+	void AddChildDependent(CExtension *pOther, SMInterface *iface);
 	void AddInterface(SMInterface *pInterface);
 	void AddPlugin(IPlugin *pPlugin);
 	void RemovePlugin(IPlugin *pPlugin);
@@ -60,7 +61,8 @@ private:
 	String m_Path;
 	ILibrary *m_pLib;
 	String m_Error;
-	List<IfaceInfo> m_Deps;
+	List<IfaceInfo> m_Deps;			/** Dependencies */
+	List<IfaceInfo> m_ChildDeps;	/** Children who might depend on us */
 	List<SMInterface *> m_Interfaces;
 	List<IPlugin *> m_Plugins;
 	List<const sp_nativeinfo_t *> m_Natives;
