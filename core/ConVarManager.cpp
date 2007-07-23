@@ -337,6 +337,9 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo->sourceMod = true;
 	pInfo->pChangeForward = NULL;
 	pInfo->origCallback = NULL;
+#if PLAPI_VERSION < 12
+	pInfo->name = NULL;
+#endif
 
 	/* Insert struct into caches */
 	m_ConVars.push_back(pInfo);
