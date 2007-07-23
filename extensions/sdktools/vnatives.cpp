@@ -346,7 +346,7 @@ static cell_t SetLightStyle(IPluginContext *pContext, const cell_t *params)
 
 	g_lightstyle[style]->assign(str);
 
-	engine->LightStyle(style, str);
+	engine->LightStyle(style, g_lightstyle[style]->c_str());
 
 	return 1;
 }
