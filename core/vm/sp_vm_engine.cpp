@@ -536,6 +536,11 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 	m_CurChain--;
 }
 
+unsigned int SourcePawnEngine::GetEngineAPIVersion()
+{
+	return SOURCEPAWN_ENGINE_API_VERSION;
+}
+
 CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native) : 
  m_Error(error), m_pMsg(msg), m_pStart(pStart), m_pIterator(pStart), m_Native(native)
 {

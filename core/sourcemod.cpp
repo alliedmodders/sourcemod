@@ -56,6 +56,7 @@ int g_StillFrames = 0;
 float g_StillTime = 0.0f;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
+typedef int (*GIVEENGINEPOINTER2)(ISourcePawnEngine *, unsigned int api_version);
 typedef unsigned int (*GETEXPORTCOUNT)();
 typedef IVirtualMachine *(*GETEXPORT)(unsigned int);
 typedef void (*NOTIFYSHUTDOWN)();
@@ -157,25 +158,43 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	}
 
 	int err;
-	GIVEENGINEPOINTER jit_init = (GIVEENGINEPOINTER)g_pJIT->GetSymbolAddress("GiveEnginePointer");
-	if (!jit_init)
+	
+	GIVEENGINEPOINTER2 jit_init2 = (GIVEENGINEPOINTER2)g_pJIT->GetSymbolAddress("GiveEnginePointer2");
+	if (!jit_init2)
 	{
-		ShutdownJIT();
-		if (error && maxlength)
+		GIVEENGINEPOINTER jit_init = (GIVEENGINEPOINTER)g_pJIT->GetSymbolAddress("GiveEnginePointer");
+		if (!jit_init)
 		{
-			snprintf(error, maxlength, "Failed to find GiveEnginePointer in JIT!");
+			ShutdownJIT();
+			if (error && maxlength)
+			{
+				snprintf(error, maxlength, "Failed to find GiveEnginePointer in JIT!");
+			}
+			return false;
 		}
-		return false;
-	}
 
-	if ((err=jit_init(g_pSourcePawn)) != 0)
-	{
-		ShutdownJIT();
-		if (error && maxlength)
+		if ((err=jit_init(g_pSourcePawn)) != 0)
 		{
-			snprintf(error, maxlength, "GiveEnginePointer returned %d in the JIT", err);
+			ShutdownJIT();
+			if (error && maxlength)
+			{
+				snprintf(error, maxlength, "GiveEnginePointer returned %d in the JIT", err);
+			}
+			return false;
 		}
-		return false;
+	} else {
+		/* On version bumps, we should check for older versions as well, if the new version fails.
+		 * We can then check the exports to see if any VM versions will be sufficient.
+		 */
+		if ((err=jit_init2(g_pSourcePawn, SOURCEPAWN_ENGINE_API_VERSION)) != SP_ERROR_NONE)
+		{
+			ShutdownJIT();
+			if (error && maxlength)
+			{
+				snprintf(error, maxlength, "JIT incompatible with SourceMod version");
+			}
+			return false;
+		}
 	}
 
 	GETEXPORTCOUNT jit_getnum = (GETEXPORTCOUNT)g_pJIT->GetSymbolAddress("GetExportCount");
@@ -191,7 +210,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	}
 
 	unsigned int num = jit_getnum();
-	if (!num || ((g_pVM=jit_get(0)) == NULL))
+	if (!num)
 	{
 		ShutdownJIT();
 		if (error && maxlength)
@@ -201,15 +220,36 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		return false;
 	}
 
-	unsigned int api = g_pVM->GetAPIVersion();
-	/* :TODO: clean this up (see amb398) */
-	if (api > SOURCEPAWN_VM_API_VERSION || api < 2)
+	unsigned int api_version;
+	for (unsigned int i=0; i<num; i++)
+	{
+		 if ((g_pVM=jit_get(i)) == NULL)
+		 {
+			 if (error && maxlength)
+			 {
+				 snprintf(error, maxlength, "JIT did not export any virtual machines!");
+			 }
+			 continue;
+		 }
+		/* Refuse any API that we might not be able to deal with.
+		 * Also refuse anything < 3 because we need fake natives.
+		 */
+		 api_version = g_pVM->GetAPIVersion();
+		 if (api_version < 3 || api_version > SOURCEPAWN_VM_API_VERSION)
+		 {
+			 if (error && maxlength)
+			 {
+				 snprintf(error, maxlength, "JIT is not a compatible version");
+			 }
+			 g_pVM = NULL;
+			 continue;
+		 }
+		 break;
+	}
+
+	if (!g_pVM)
 	{
 		ShutdownJIT();
-		if (error && maxlength)
-		{
-			snprintf(error, maxlength, "JIT is not a compatible version");
-		}
 		return false;
 	}
 

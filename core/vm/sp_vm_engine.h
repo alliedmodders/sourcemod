@@ -65,6 +65,7 @@ public: //ISourcePawnEngine
 	void ExecFree(void *address);
 	IDebugListener *SetDebugListener(IDebugListener *pListener);
 	unsigned int GetContextCallCount();
+	unsigned int GetEngineAPIVersion();
 public: //Debugger Stuff
 	/**
 	 * @brief Pushes a context onto the top of the call tracer.

@@ -27,6 +27,9 @@
 #include <stdio.h>
 #include "sp_vm_types.h"
 
+/** SourcePawn Engine API Version */
+#define SOURCEPAWN_ENGINE_API_VERSION	1
+
 /** SourcePawn VM API Version */
 #define SOURCEPAWN_VM_API_VERSION		3
 
@@ -730,6 +733,13 @@ namespace SourcePawn
 		 * @return			Number of contexts in the call stack.
 		 */
 		virtual unsigned int GetContextCallCount() =0;
+
+		/**
+		 * @brief Returns the engine API version.
+		 *
+		 * @return			Engine API version.
+		 */
+		virtual unsigned int GetEngineAPIVersion() =0;
 	};
 
 

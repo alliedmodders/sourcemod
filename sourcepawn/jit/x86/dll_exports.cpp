@@ -20,11 +20,16 @@
 SourcePawn::ISourcePawnEngine *engine = NULL;
 JITX86 g_jit;
 
-EXPORTFUNC int GiveEnginePointer(SourcePawn::ISourcePawnEngine *engine_p)
+EXPORTFUNC int GiveEnginePointer2(SourcePawn::ISourcePawnEngine *engine_p, unsigned int api_version)
 {
 	engine = engine_p;
 
-	return 0;
+	if (api_version > SOURCEPAWN_ENGINE_API_VERSION)
+	{
+		return SP_ERROR_PARAM;
+	}
+
+	return SP_ERROR_NONE;
 }
 
 EXPORTFUNC unsigned int GetExportCount()
