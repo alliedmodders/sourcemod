@@ -154,3 +154,18 @@ stock NegateVector(Float:vec[3])
 	vec[1] = -vec[1];
 	vec[2] = -vec[2];
 }
+
+/**
+ * Builds a vector from two points by subtracting the points.
+ *
+ * @param pt1		First point (to be subtracted from the second).
+ * @param pt2		Second point.
+ * @param output	Output vector buffer.
+ * @noreturn
+ */
+stock MakeVectorFromPoints(const Float:pt1[3], const Float:pt2[3], Float:output[3])
+{
+	output[0] = pt2[0] - pt1[0];
+	output[1] = pt2[1] - pt1[1];
+	output[2] = pt2[2] - pt1[2];
+}
