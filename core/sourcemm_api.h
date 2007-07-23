@@ -49,6 +49,11 @@ public:
 	const char *GetLogTag();
 public:
 	void OnVSPListening(IServerPluginCallbacks *iface);
+#if PLAPI_VERSION >= 12
+	void OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand);
+#else
+	void OnPluginUnload(PluginId id);
+#endif
 };
 
 extern SourceMod_Core g_SourceMod_Core;

@@ -31,6 +31,10 @@ typedef List<const ConVar *> ConVarList;
 
 ConVarManager::ConVarManager() : m_ConVarType(0), m_VSPIface(NULL), m_CanQueryConVars(false)
 {
+#if PLAPI_VERSION < 12
+	m_IgnoreHandle = false;
+#endif
+
 	/* Create a convar lookup trie */
 	m_ConVarCache = sm_trie_create();
 }
@@ -127,6 +131,52 @@ void ConVarManager::OnSourceModVSPReceived(IServerPluginCallbacks *iface)
 	}
 }
 
+#if PLAPI_VERSION >= 12
+void ConVarManager::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
+{
+	/* Only check convars that have not been created by SourceMod's core */
+	if (id != g_PLID && !pCommand->IsCommand())
+	{
+		ConVarInfo *pInfo;
+		HandleSecurity sec(NULL, g_pCoreIdent);
+		bool handleExists = sm_trie_retrieve(m_ConVarCache, pCommand->GetName(), reinterpret_cast<void **>(&pInfo));
+
+		if (handleExists)
+		{
+			g_HandleSys.FreeHandle(pInfo->handle, &sec);
+		}
+	}
+}
+
+#else
+
+/* I truly detest this code */
+void ConVarManager::OnMetamodPluginUnloaded(PluginId id)
+{
+	ConVarInfo *pInfo;
+	const char *cvarName;
+	HandleSecurity sec(NULL, g_pCoreIdent);
+
+	List<ConVarInfo *>::iterator i;
+	for (i = m_ConVars.begin(); i != m_ConVars.end(); i++)
+	{
+		pInfo = (*i);
+		cvarName = pInfo->name;
+
+		if (!icvar->FindVar(cvarName))
+		{
+			m_IgnoreHandle = true;
+			g_HandleSys.FreeHandle(pInfo->handle, &sec);
+
+			sm_trie_delete(m_ConVarCache, cvarName);
+			m_ConVars.erase(i);
+
+			delete [] cvarName;
+		}
+	}
+}
+#endif
+
 void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 {
 	ConVarList *pConVarList;
@@ -140,6 +190,15 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 
 void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
+#if PLAPI_VERSION < 12
+	/* Lovely workaround for our workaround! */
+	if (m_IgnoreHandle)
+	{
+		m_IgnoreHandle = false;
+		return;
+	}
+#endif
+
 	ConVarInfo *info;
 	ConVar *pConVar = static_cast<ConVar *>(object);
 
@@ -235,6 +294,9 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 			pInfo->sourceMod = false;
 			pInfo->pChangeForward = NULL;
 			pInfo->origCallback = pConVar->GetCallback();
+		#if PLAPI_VERSION < 12
+			pInfo->name = sm_strdup(pConVar->GetName());
+		#endif
 
 			/* Insert struct into caches */
 			m_ConVars.push_back(pInfo);
@@ -310,6 +372,9 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	pInfo->sourceMod = false;
 	pInfo->pChangeForward = NULL;
 	pInfo->origCallback = pConVar->GetCallback();
+#if PLAPI_VERSION < 12
+	pInfo->name = sm_strdup(pConVar->GetName());
+#endif
 
 	/* Insert struct into our caches */
 	m_ConVars.push_back(pInfo);

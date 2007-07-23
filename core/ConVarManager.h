@@ -35,6 +35,9 @@ struct ConVarInfo
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
 	FnChangeCallback origCallback;		/**< The original callback function */
+#if PLAPI_VERSION < 12
+	const char *name;					/**< Name of convar */
+#endif
 };
 
 /**
@@ -109,6 +112,18 @@ public:
 	 */
 	QueryCvarCookie_t QueryClientConVar(edict_t *pPlayer, const char *name, IPluginFunction *pCallback,
 	                                    Handle_t hndl);
+
+#if PLAPI_VERSION >= 12
+	/**
+	 * Called when Metamod:Source is about to remove convar
+	 */
+	void OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand);
+#else
+	/**
+	 * Called when Metamod:Source has unloaded a plugin
+	 */
+	void OnMetamodPluginUnloaded(PluginId id);
+#endif
 private:
 	/**
 	 * Adds a convar to a plugin's list.
@@ -132,6 +147,9 @@ private:
 	Trie *m_ConVarCache;
 	IServerPluginCallbacks *m_VSPIface;
 	bool m_CanQueryConVars;
+#if PLAPI_VERSION < 12
+	bool m_IgnoreHandle;
+#endif
 };
 
 extern ConVarManager g_ConVarManager;

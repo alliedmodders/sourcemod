@@ -17,6 +17,7 @@
 #include "sm_version.h"
 #include "sourcemod.h"
 #include "Logger.h"
+#include "ConVarManager.h"
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -148,3 +149,15 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 		pBase = pBase->m_pGlobalClassNext;
 	}
 }
+
+#if PLAPI_VERSION >= 12
+void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
+{
+	g_ConVarManager.OnUnlinkConCommandBase(id, pCommand);
+}
+#else
+void SourceMod_Core::OnPluginUnload(PluginId id)
+{
+	g_ConVarManager.OnMetamodPluginUnloaded(id);
+}
+#endif
