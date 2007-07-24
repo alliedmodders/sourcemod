@@ -138,9 +138,9 @@ public:
 			m_pDatabase->Close();
 		}
 	}
-	CPlugin *GetPlugin()
+	IdentityToken_t *GetOwner()
 	{
-		return me;
+		return me->GetIdentity();
 	}
 	IDBDriver *GetDriver()
 	{
@@ -163,7 +163,6 @@ public:
 		m_pFunction->PushString("Driver is unloading");
 		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);
-		delete this;
 	}
 	void RunThinkPart()
 	{
@@ -196,7 +195,9 @@ public:
 		{
 			g_HandleSys.FreeHandle(qh, &sec);
 		}
-
+	}
+	void Destroy()
+	{
 		delete this;
 	}
 private:
@@ -222,9 +223,9 @@ public:
 		strncopy(dbname, _dbname, sizeof(dbname));
 		me = g_PluginSys.GetPluginByCtx(m_pFunction->GetParentContext()->GetContext());
 	}
-	CPlugin *GetPlugin()
+	IdentityToken_t *GetOwner()
 	{
-		return me;
+		return me->GetIdentity();
 	}
 	IDBDriver *GetDriver()
 	{
@@ -253,7 +254,6 @@ public:
 		m_pFunction->PushString("Driver is unloading");
 		m_pFunction->PushCell(0);
 		m_pFunction->Execute(NULL);
-		delete this;
 	}
 	void RunThinkPart()
 	{
@@ -274,6 +274,9 @@ public:
 		m_pFunction->PushString(hndl == BAD_HANDLE ? error : "");
 		m_pFunction->PushCell(0);
 		m_pFunction->Execute(NULL);
+	}
+	void Destroy()
+	{
 		delete this;
 	}
 private:
@@ -382,6 +385,7 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 		/* Do everything right now */
 		op->RunThreadPart();
 		op->RunThinkPart();
+		op->Destroy();
 	}
 
 	return 1;
@@ -699,6 +703,7 @@ static cell_t SQL_TQuery(IPluginContext *pContext, const cell_t *params)
 		/* Do everything right now */
 		op->RunThreadPart();
 		op->RunThinkPart();
+		op->Destroy();
 	}
 
 	return 1;

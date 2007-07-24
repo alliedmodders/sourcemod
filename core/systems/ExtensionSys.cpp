@@ -689,6 +689,17 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 	}
 
+	IdentityToken_t *pIdentity;
+	if ((pIdentity = pExt->GetIdentity()) != NULL)
+	{
+		SMGlobalClass *glob = SMGlobalClass::head;
+		while (glob)
+		{
+			glob->OnSourceModIdentityDropped(pIdentity);
+			glob = glob->m_pGlobalClassNext;
+		}
+	}
+
 	delete pExt;
 
 	List<CExtension *>::iterator iter;

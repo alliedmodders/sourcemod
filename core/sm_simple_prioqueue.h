@@ -13,13 +13,7 @@
  */
 
 #include "sm_queue.h"
-
-enum PrioQueueLevel
-{
-	PrioQueue_High,
-	PrioQueue_Normal,
-	PrioQueue_Low
-};
+#include <IDBDriver.h>
 
 template <class T>
 class PrioQueue

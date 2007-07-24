@@ -44,16 +44,6 @@ struct ConfDbInfo
 	DatabaseInfo info;
 };
 
-class IDBThreadOperation
-{
-public:
-	virtual IDBDriver *GetDriver() =0;
-	virtual CPlugin *GetPlugin() =0;
-	virtual void RunThreadPart() =0;
-	virtual void RunThinkPart() =0;
-	virtual void CancelThinkPart() =0;
-};
-
 class DBManager : 
 	public IDBManager,
 	public SMGlobalClass,
@@ -71,6 +61,7 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModLevelChange(const char *mapName);
+	void OnSourceModIdentityDropped(IdentityToken_t *pToken);
 	void OnSourceModShutdown();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);

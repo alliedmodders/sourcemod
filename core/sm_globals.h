@@ -56,6 +56,7 @@ class SMGlobalClass
 	friend class SourceMod_Core;
 	friend class SourceModBase;
 	friend class CoreConfig;
+	friend class CExtensionManager;
 public:
 	SMGlobalClass();
 public:
@@ -133,6 +134,13 @@ public:
 	 * @brief Called once all MM:S plugins are loaded.
 	 */
 	virtual void OnSourceModGameInitialized()
+	{
+	}
+
+	/**
+	 * @brief Called when an identity is dropped (right now, extensions only)
+	 */
+	virtual void OnSourceModIdentityDropped(IdentityToken_t *pToken)
 	{
 	}
 private:

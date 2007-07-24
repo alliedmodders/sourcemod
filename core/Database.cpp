@@ -351,6 +351,7 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 	{
 		IDBThreadOperation *op = (*qiter);
 		op->CancelThinkPart();
+		op->Destroy();
 	}
 }
 
@@ -488,8 +489,15 @@ void DBManager::KillWorkerThread()
 	}
 }
 
+static IdentityToken_t *s_pAddBlock = NULL;
+
 bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 {
+	if (s_pAddBlock && op->GetOwner() == s_pAddBlock)
+	{
+		return false;
+	}
+
 	if (!m_pWorker)
 	{
 		m_pWorker = g_pThreader->MakeWorker(this, true);
@@ -599,11 +607,49 @@ void DBManager::RunFrame()
 	m_ThinkQueue.pop();
 	m_pThinkLock->Unlock();
 	op->RunThinkPart();
+	op->Destroy();
 }
 
 void DBManager::OnTerminate(IThreadHandle *pThread, bool cancel)
 {
 	/* Do nothing */
+}
+
+void DBManager::OnSourceModIdentityDropped(IdentityToken_t *pToken)
+{
+	s_pAddBlock = pToken;
+
+	/* Kill the thread so we can flush everything into the think queue... */
+	KillWorkerThread();
+
+	/* Run all of the think operations.
+ 	 * Unlike the driver unloading example, we'll let these calls go through, 
+	 * since a plugin unloading is far more normal.
+	 */
+	Queue<IDBThreadOperation *>::iterator iter = m_ThinkQueue.begin();
+	Queue<IDBThreadOperation *> templist;
+	while (iter != m_ThinkQueue.end())
+	{
+		IDBThreadOperation *op = (*iter);
+		if (op->GetOwner() == pToken)
+		{
+			templist.push(op);
+			iter = m_ThinkQueue.erase(iter);
+		} else {
+			iter++;
+		}
+	}
+
+	for (iter = templist.begin();
+		iter != templist.end();
+		iter++)
+	{
+		IDBThreadOperation *op = (*iter);
+		op->RunThinkPart();
+		op->Destroy();
+	}
+
+	s_pAddBlock = NULL;
 }
 
 void DBManager::OnPluginUnloaded(IPlugin *plugin)
@@ -623,7 +669,7 @@ void DBManager::OnPluginUnloaded(IPlugin *plugin)
 	while (iter != m_ThinkQueue.end())
 	{
 		IDBThreadOperation *op = (*iter);
-		if (op->GetPlugin() == plugin)
+		if (op->GetOwner() == plugin->GetIdentity())
 		{
 			templist.push(op);
 			iter = m_ThinkQueue.erase(iter);
@@ -638,6 +684,7 @@ void DBManager::OnPluginUnloaded(IPlugin *plugin)
 	{
 		IDBThreadOperation *op = (*iter);
 		op->RunThinkPart();
+		op->Destroy();
 	}
 }
 
