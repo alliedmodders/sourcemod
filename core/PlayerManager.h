@@ -43,26 +43,31 @@ public:
 	bool IsFakeClient();
 	void SetAdminId(AdminId id, bool temporary);
 	AdminId GetAdminId();
+	void Kick(const char *str);
 public:
 	IPlayerInfo *GetPlayerInfo();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
-	void Authorize(const char *steamid);
 	void Disconnect();
 	void SetName(const char *name);
 	void DumpAdmin(bool deleting);
+	void Authorize(const char *auth);
+	void Authorize_Post();
+	void DoBasicAdminChecks();
 private:
 	bool m_IsConnected;
 	bool m_IsInGame;
 	bool m_IsAuthorized;
 	String m_Name;
 	String m_Ip;
+	String m_IpNoPort;
 	String m_AuthID;
 	AdminId m_Admin;
 	bool m_TempAdmin;
 	edict_t *m_pEdict;
 	IPlayerInfo *m_Info;
+	String m_LastPassword;
 };
 
 class PlayerManager : 
@@ -90,6 +95,7 @@ public:
 	void OnClientDisconnect_Post(edict_t *pEntity);
 	void OnClientCommand(edict_t *pEntity);
 	void OnClientSettingsChanged(edict_t *pEntity);
+	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
 	void RemoveClientListener(IClientListener *listener);
@@ -107,9 +113,11 @@ public:
 	{
 		return m_PlayerCount;
 	}
+	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
+	bool CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id);
+	const char *GetPassInfoVar();
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
-	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
 private:
 	List<IClientListener *> m_hooks;
 	IForward *m_clconnect;

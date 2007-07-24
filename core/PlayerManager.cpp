@@ -21,6 +21,9 @@
 #include "MenuStyle_Radio.h"
 #include "sm_stringutil.h"
 #include "CoreConfig.h"
+#include <inetchannel.h>
+#include <iclient.h>
+#include "TimerSys.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -31,6 +34,25 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
+
+class KickPlayerTimer : public ITimedEvent
+{
+public:
+	ResultType OnTimer(ITimer *pTimer, void *pData)
+	{
+		int userid = (int)pData;
+		int client = g_Players.GetClientOfUserId(userid);
+		if (client)
+		{
+			CPlayer *player = g_Players.GetPlayerByIndex(client);
+			player->Kick("Your name is reserved by SourceMod; set your password to use it.");
+		}
+		return Pl_Stop;
+	}
+	void OnTimerEnd(ITimer *pTimer, void *pData)
+	{
+	}
+} s_KickPlayerTimer;
 
 PlayerManager::PlayerManager()
 {
@@ -159,6 +181,31 @@ bool PlayerManager::CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
 	return true;
 }
 
+bool PlayerManager::CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id)
+{
+	const char *password = g_Admins.GetAdminPassword(id);
+	if (password == NULL)
+	{
+		return false;
+	}
+
+	if (m_PassInfoVar.size() < 1)
+	{
+		return false;
+	}
+
+	/* Whoa... the user needs a password! */
+	const char *given = engine->GetClientConVarValue(index, m_PassInfoVar.c_str());
+	if (!given || strcmp(given, password) != 0)
+	{
+		return false;
+	}
+
+	pPlayer->SetAdminId(id, false);
+
+	return true;
+}
+
 void PlayerManager::RunAuthChecks()
 {
 	CPlayer *pPlayer;
@@ -172,23 +219,12 @@ void PlayerManager::RunAuthChecks()
 			&& (strcmp(authstr, "STEAM_ID_PENDING") != 0))
 		{
 			/* Set authorization */
-			pPlayer->m_AuthID.assign(authstr);
-			pPlayer->m_IsAuthorized = true;
+			pPlayer->Authorize(authstr);
 
 			/* Mark as removed from queue */
 			unsigned int client = m_AuthQueue[i];
 			m_AuthQueue[i] = 0;
 			removed++;
-
-			/* Do admin lookups */
-			if (pPlayer->GetAdminId() == INVALID_ADMIN_ID)
-			{
-				AdminId id = g_Admins.FindAdminByIdentity("steam", authstr);
-				if (id != INVALID_ADMIN_ID)
-				{
-					CheckSetAdmin(client, pPlayer, id);
-				}
-			}
 
 			/* Send to extensions */
 			List<IClientListener *>::iterator iter;
@@ -210,6 +246,11 @@ void PlayerManager::RunAuthChecks()
 				m_clauth->PushCell(client);
 				m_clauth->PushString(authstr);
 				m_clauth->Execute(NULL);
+			}
+
+			if (pPlayer->IsConnected())
+			{
+				pPlayer->Authorize_Post();
 			}
 		}
 	}
@@ -303,23 +344,6 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 		}
 	}
 
-	if (pPlayer->IsConnected())
-	{
-		/* Do an ip based lookup */
-		char ip[24], *ptr;
-		strncopy(ip, pszAddress, sizeof(ip));
-		if ((ptr = strchr(ip, ':')) != NULL)
-		{
-			*ptr = '\0';
-		}
-		
-		AdminId id = g_Admins.FindAdminByIdentity("ip", ip);
-		if (id != INVALID_ADMIN_ID)
-		{
-			CheckSetAdmin(client, pPlayer, id);
-		}
-	}
-
 	return true;
 }
 
@@ -370,6 +394,15 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			m_clauth->PushCell(client);
 			m_clauth->PushString(authid);
 			m_clauth->Execute(NULL);
+			if (!pPlayer->IsConnected())
+			{
+				return;
+			}
+		}
+		pPlayer->Authorize_Post();
+		if (!pPlayer->IsConnected())
+		{
+			return;
 		}
 	}
 
@@ -524,7 +557,46 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 
 	m_clinfochanged->PushCell(engine->IndexOfEdict(pEntity));
 	m_clinfochanged->Execute(&res, NULL);
-	m_Players[client].SetName(engine->GetClientConVarValue(client, "name"));
+
+	IPlayerInfo *info = m_Players[client].GetPlayerInfo();
+	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
+	const char *old_name = m_Players[client].m_Name.c_str();
+
+	if (strcmp(old_name, new_name) != 0)
+	{
+		AdminId id = g_Admins.FindAdminByIdentity("name", new_name);
+		if (id != INVALID_ADMIN_ID && m_Players[client].GetAdminId() != id)
+		{
+			if (!CheckSetAdminName(client, &m_Players[client], id))
+			{
+				m_Players[client].Kick("Your name is reserved by SourceMod; set your password to use it.");
+				RETURN_META(MRES_IGNORED);
+			}
+		} else if ((id = g_Admins.FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
+			if (id == m_Players[client].GetAdminId())
+			{
+				/* This player is changing their name; force them to drop admin privileges! */
+				m_Players[client].SetAdminId(INVALID_ADMIN_ID, false);
+			}
+		}
+		m_Players[client].SetName(new_name);
+	}
+	
+	if (m_PassInfoVar.size() > 0)
+	{
+		/* Try for a password change */
+		const char *old_pass = m_Players[client].m_LastPassword.c_str();
+		const char *new_pass = engine->GetClientConVarValue(client, m_PassInfoVar.c_str());
+		if (strcmp(old_pass, new_pass) != 0)
+		{
+			m_Players[client].m_LastPassword.assign(new_pass);
+			if (m_Players[client].IsInGame() && m_Players[client].IsAuthorized())
+			{
+				/* If there is already an admin id assigned, this will just bail out. */
+				m_Players[client].DoBasicAdminChecks();
+			}
+		}
+	}
 }
 
 int PlayerManager::GetMaxClients()
@@ -631,6 +703,10 @@ void PlayerManager::ClearAllAdmins()
 	}
 }
 
+const char *PlayerManager::GetPassInfoVar()
+{
+	return m_PassInfoVar.c_str();
+}
 
 /*******************
  *** PLAYER CODE ***
@@ -645,6 +721,7 @@ CPlayer::CPlayer()
 	m_Admin = INVALID_ADMIN_ID;
 	m_TempAdmin = false;
 	m_Info = NULL;
+	m_LastPassword.clear();
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -653,15 +730,48 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Name.assign(name);
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
+
+	char ip2[24], *ptr;
+	strncopy(ip2, ip, sizeof(ip2));
+	if ((ptr = strchr(ip2, ':')) != NULL)
+	{
+		*ptr = '\0';
+	}
+	m_IpNoPort.assign(ip2);
 }
 
 void CPlayer::Connect()
 {
+	if (m_IsInGame)
+	{
+		return;
+	}
+
 	m_IsInGame = true;
+
+	const char *var = g_Players.GetPassInfoVar();
+	int client = engine->IndexOfEdict(m_pEdict);
+	if (var[0] != '\0')
+	{
+		const char *pass = engine->GetClientConVarValue(client, var);
+		m_LastPassword.assign(pass ? pass : "");
+	} else {
+		m_LastPassword.assign("");
+	}
+
+	if (m_IsAuthorized)
+	{
+		DoBasicAdminChecks();
+	}
 }
 
 void CPlayer::Authorize(const char *steamid)
 {
+	if (m_IsAuthorized)
+	{
+		return;
+	}
+
 	m_IsAuthorized = true;
 	m_AuthID.assign(steamid);
 }
@@ -757,5 +867,61 @@ void CPlayer::DumpAdmin(bool deleting)
 		}
 		m_Admin = INVALID_ADMIN_ID;
 		m_TempAdmin = false;
+	}
+}
+
+void CPlayer::Kick(const char *str)
+{
+	int client = engine->IndexOfEdict(m_pEdict);
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+	pClient->Disconnect("%s", str);
+}
+
+void CPlayer::Authorize_Post()
+{
+	if (m_IsInGame)
+	{
+		DoBasicAdminChecks();
+	}
+}
+
+void CPlayer::DoBasicAdminChecks()
+{
+	if (GetAdminId() != INVALID_ADMIN_ID)
+	{
+		return;
+	}
+
+	/* First check the name */
+	AdminId id;
+	int client = engine->IndexOfEdict(m_pEdict);
+
+	if ((id = g_Admins.FindAdminByIdentity("name", GetName())) != INVALID_ADMIN_ID)
+	{
+		if (!g_Players.CheckSetAdminName(client, this, id))
+		{
+			int userid = engine->GetPlayerUserId(m_pEdict);
+			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)userid, 0);
+		}
+		return;
+	}
+	
+	/* Check IP */
+	if ((id = g_Admins.FindAdminByIdentity("ip", m_IpNoPort.c_str())) != INVALID_ADMIN_ID)
+	{
+		if (g_Players.CheckSetAdmin(client, this, id))
+		{
+			return;
+		}
+	}
+
+	/* Check IP address */
+	if ((id = g_Admins.FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
+	{
+		if (g_Players.CheckSetAdmin(client, this, id))
+		{
+			return;
+		}
 	}
 }
