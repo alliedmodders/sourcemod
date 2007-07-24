@@ -708,6 +708,18 @@ const char *PlayerManager::GetPassInfoVar()
 	return m_PassInfoVar.c_str();
 }
 
+void PlayerManager::RecheckAnyAdmins()
+{
+	for (int i=1; i<=m_maxClients; i++)
+	{
+		if (m_Players[i].IsInGame() && m_Players[i].IsAuthorized())
+		{
+			m_Players[i].DoBasicAdminChecks();
+		}
+	}
+}
+
+
 /*******************
  *** PLAYER CODE ***
  *******************/

@@ -116,6 +116,7 @@ public:
 	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
 	bool CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id);
 	const char *GetPassInfoVar();
+	void RecheckAnyAdmins();
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 private:

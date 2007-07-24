@@ -51,10 +51,23 @@ public OnPluginStart()
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
 	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
 	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_RCON, "sm_banip <time> <ip> [reason]");
+	RegAdminCmd("sm_reloadadmins", Command_ReloadAdmins, ADMFLAG_BAN, "sm_reloadadmins");
 	
 	hBanForward = CreateGlobalForward("OnClientBanned", ET_Hook, Param_Cell, Param_Cell, Param_Cell, Param_String);
 	hAddBanForward = CreateGlobalForward("OnBanAdded", ET_Hook, Param_Cell, Param_String, Param_Cell, Param_String);
 	hBanRemoved = CreateGlobalForward("OnBanRemoved", ET_Hook, Param_Cell, Param_String);
+}
+
+public Action:Command_ReloadAdmins(client, args)
+{
+	/* Dump it all! */
+	DumpAdminCache(AdminCache_Groups, true);
+	DumpAdminCache(AdminCache_Overrides, true);
+	
+	LogMessage("\"%L\" refreshed the admin cache.", client);
+	ReplyToCommand(client, "[SM] %t", "Admin cache refreshed");
+	
+	return Plugin_Handled;
 }
 
 public Action:Command_BanIp(client, args)

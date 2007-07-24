@@ -831,6 +831,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 			m_pCacheFwd->PushCell(AdminCache_Admins);
 			m_pCacheFwd->Execute(&result);
 		}
+		g_Players.RecheckAnyAdmins();
 	}
 }
 
