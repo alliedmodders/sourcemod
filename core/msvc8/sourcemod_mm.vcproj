@@ -407,6 +407,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\CellArray.h"
+				>
+			</File>
+			<File
 				RelativePath="..\CellRecipientFilter.h"
 				>
 			</File>
@@ -899,6 +903,10 @@
 			>
 			<File
 				RelativePath="..\smn_admin.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_adt_array.cpp"
 				>
 			</File>
 			<File

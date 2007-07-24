@@ -51,6 +51,7 @@ struct Plugin
 #include <keyvalues>
 #include <menus>
 #include <halflife>
+#include <adt>
 
 /**
  * Declare this as a struct in your plugin to expose its information.
