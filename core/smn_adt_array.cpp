@@ -218,7 +218,7 @@ static cell_t GetArrayCell(IPluginContext *pContext, const cell_t *params)
 	cell_t *blk = array->at(idx);
 
 	idx = (size_t)params[3];
-	if (params[4] == 1)
+	if (params[4] == 0)
 	{
 		if (idx >= array->blocksize())
 		{
@@ -316,7 +316,7 @@ static cell_t SetArrayCell(IPluginContext *pContext, const cell_t *params)
 	cell_t *blk = array->at(idx);
 
 	idx = (size_t)params[4];
-	if (params[5] == 1)
+	if (params[5] == 0)
 	{
 		if (idx >= array->blocksize())
 		{
