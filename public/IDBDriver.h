@@ -24,7 +24,7 @@
 #include <string.h>
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		4
+#define SMINTERFACE_DBI_VERSION		5
 
 namespace SourceMod
 {
@@ -411,6 +411,8 @@ namespace SourceMod
 		 *
 		 * It is guaranteed that an IDatabase pointer won't be destroyed until
 		 * all open IQuery or IPreparedQuery pointers are closed.
+		 *
+		 * This function is thread safe.
 		 * 
 		 * @return				True if object was destroyed, false if 
 		 *						references are remaining.
@@ -421,6 +423,8 @@ namespace SourceMod
 		 * @brief Error code and string returned by the last operation on this
 		 * connection.
 		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
 		 * @param errorCode		Optional pointer to retrieve an error code.
 		 * @return				Error string pointer (empty if none).
 		 */
@@ -429,6 +433,8 @@ namespace SourceMod
 		/**
 		 * @brief Prepares and executes a query in one step, and discards
 		 * any return data.
+		 *
+		 * This function is not thread safe and must be included in any locks.
 		 *
 		 * @param query			Query string.
 		 * @return				True on success, false otherwise.
@@ -442,6 +448,8 @@ namespace SourceMod
 		 * Note: If a query contains more than one result set, each
 		 * result set must be processed before a new query is started.
 		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
 		 * @param query			Query string.
 		 * @return				IQuery pointer on success, NULL otherwise.
 		 */
@@ -450,6 +458,8 @@ namespace SourceMod
 		/** 
 		 * @brief Prepares a query statement for multiple executions and/or
 		 * binding marked parameters (? in MySQL/sqLite, $n in PostgreSQL).
+		 *
+		 * This function is not thread safe and must be included in any locks.
 		 *
 		 * @param query			Query string.
 		 * @param error			Error buffer.
@@ -476,12 +486,16 @@ namespace SourceMod
 		/**
 		 * @brief Number of rows affected by the last execute.
 		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
 		 * @return				Number of rows affected by the last execute.
 		 */
 		virtual unsigned int GetAffectedRows() =0;
 
 		/**
 		 * @brief Retrieves the last insert ID on this database connection.
+		 *
+		 * This function is not thread safe and must be included in any locks.
 		 *
 		 * @return				Row insertion ID of the last execute, if any.
 		 */
@@ -501,11 +515,15 @@ namespace SourceMod
 
 		/**
 		 * @brief Increases the reference count on the database.
+		 *
+		 * This function is thread safe.
 		 */
 		virtual void IncReferenceCount() =0;
 
 		/**
 		 * @brief Returns the parent driver.
+		 *
+		 * This function is thread safe.
 		 */
 		virtual IDBDriver *GetDriver() =0;
 	};
@@ -544,6 +562,8 @@ namespace SourceMod
 	public:
 		/**
 		 * @brief Initiates a database connection.
+		 *
+		 * Note: Persistent connections should never be created from a thread.
 		 * 
 		 * @param info			Database connection info pointer.
 		 * @param persistent	If true, a previous persistent connection will
@@ -601,6 +621,68 @@ namespace SourceMod
 		 * @brief Shuts down thread safety for the calling thread.
 		 */
 		virtual void ShutdownThreadSafety() =0;
+	};
+
+	/**
+	 * @brief Priority queue level.
+	 */
+	enum PrioQueueLevel
+	{
+		PrioQueue_High,			/**< High priority */
+		PrioQueue_Normal,		/**< Normal priority */
+		PrioQueue_Low			/**< Low priority */
+	};
+
+	/**
+	 * Specification for a threaded database operation.
+	 */
+	class IDBThreadOperation
+	{
+	public:
+		/**
+		 * @brief Must return the driver this operation is using, or 
+		 * NULL if not using any driver.  This is not never inside 
+		 * the thread.
+		 *
+		 * @return			IDBDriver pointer.
+		 */
+		virtual IDBDriver *GetDriver() =0;
+
+		/**
+		 * @brief Must return the object owning this threaded operation.
+		 * This is never called inside the thread.
+		 *
+		 * @return			IdentityToken_t pointer.
+		 */
+		virtual IdentityToken_t *GetOwner() =0;
+
+		/**
+		 * @brief Called inside the thread; this is where any blocking
+		 * or threaded operations must occur.
+		 */
+		virtual void RunThreadPart() =0;
+
+		/**
+		 * @brief Called in a server frame after the thread operation 
+		 * has completed.  This is the non-threaded completion callback,
+		 * which although optional, is useful for pumping results back
+		 * to normal game API.
+		 */
+		virtual void RunThinkPart() =0;
+
+		/**
+		 * @brief If RunThinkPart() is not called, this will be called
+		 * instead.  Note that RunThreadPart() is ALWAYS called regardless,
+		 * and this is only called when Core requests that the operation
+		 * be scrapped (for example, the database driver might be unloading).
+		 */
+		virtual void CancelThinkPart() =0;
+
+		/**
+		 * @brief Called when the operation is finalized and any resources
+		 * can be released.
+		 */
+		virtual void Destroy() =0;
 	};
 
 	/**
@@ -728,6 +810,16 @@ namespace SourceMod
 		 * @return				IDBDriver pointer on success, NULL otherwise.
 		 */
 		virtual IDBDriver *GetDefaultDriver() =0;
+
+		/**
+		 * @brief Adds a threaded database operation to the priority queue.
+		 * This function is not thread safe.
+		 *
+		 * @param op			Instance of an IDBThreadOperation.
+		 * @param prio			Priority level to run at.
+		 * @return				True on success, false on failure.
+		 */
+		virtual bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio) =0;
 	};
 }
 
