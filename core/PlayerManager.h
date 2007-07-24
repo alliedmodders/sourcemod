@@ -76,6 +76,7 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModLevelEnd();
+	ConfigResult OnSourceModConfigChanged(const char *key, const char *value, ConfigSource source, char *error, size_t maxlength);
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
@@ -108,6 +109,7 @@ public:
 	}
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
 private:
 	List<IClientListener *> m_hooks;
 	IForward *m_clconnect;
@@ -125,6 +127,7 @@ private:
 	int m_PlayerCount;
 	bool m_FirstPass;
 	unsigned int *m_AuthQueue;
+	String m_PassInfoVar;
 };
 
 extern PlayerManager g_Players;

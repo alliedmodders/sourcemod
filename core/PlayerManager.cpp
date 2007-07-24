@@ -98,6 +98,23 @@ void PlayerManager::OnSourceModShutdown()
 	delete [] m_Players;
 }
 
+ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key, 
+												 const char *value, 
+												 ConfigSource source, 
+												 char *error, 
+												 size_t maxlength)
+{
+	if (strcmp(key, "PassInfoVar") == 0)
+	{
+		if (strcmp(value, "_password") != 0)
+		{
+			m_PassInfoVar.assign(value);
+		}
+		return ConfigResult_Accept;
+	}
+	return ConfigResult_Ignore;
+}
+
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	if (m_FirstPass)
@@ -119,13 +136,18 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	SM_ExecuteAllConfigs();
 }
 
-bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
+bool PlayerManager::CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)
 {
 	const char *password = g_Admins.GetAdminPassword(id);
 	if (password != NULL)
 	{
+		if (m_PassInfoVar.size() < 1)
+		{
+			return false;
+		}
+
 		/* Whoa... the user needs a password! */
-		const char *given = engine->GetClientConVarValue(index, "_password");
+		const char *given = engine->GetClientConVarValue(index, m_PassInfoVar.c_str());
 		if (!given || strcmp(given, password) != 0)
 		{
 			return false;
