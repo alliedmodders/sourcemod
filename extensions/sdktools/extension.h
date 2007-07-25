@@ -71,6 +71,7 @@ extern IServerGameEnts *gameents;
 extern IEngineTrace *enginetrace;
 extern IEngineSound *engsound;
 extern INetworkStringTableContainer *netstringtables;
+extern IServerPluginHelpers *pluginhelpers;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;

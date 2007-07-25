@@ -89,9 +89,20 @@ native TeleportEntity(entity, const Float:origin[3], const Float:angles[3], cons
  *
  * @param client		Client index.
  * @noreturn
- * @error				Invalid entity or client not in game, or lack of mod support.
+ * @error				Invalid client or client not in game, or lack of mod support.
  */
 native ForcePlayerSuicide(client);
+
+/**
+ * Slaps a player in a random direction.
+ *
+ * @param client		Client index.
+ * @param health		Health to subtract.
+ * @param sound			False to disable the sound effects.
+ * @noreturn
+ * @error				Invalid client or client not in game, or lack of mod support.
+ */
+native SlapPlayer(client, health=5, bool:sound=true);
 
 /**
  * @deprecated

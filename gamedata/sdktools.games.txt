@@ -1,5 +1,26 @@
 "Games"
 {
+	/* Sounds */
+	"#default"
+	{
+		"Keys"
+		{
+			"SlapSoundCount"	"3"
+			"SlapSound1"		"player/pl_fallpain1.wav"
+			"SlapSound2"		"player/pl_fallpain3.wav"
+			"SlapSound3"		"player/pl_pain5.wav"
+			"m_iFrags"		"m_iFrags"
+		}
+		"Offsets"
+		{
+			"m_iHealth"
+			{
+				"class"		"CBasePlayer"
+				"prop"		"m_iHealth"
+			}
+		}
+	}
+
 	/* General Temp Entities */
 	"#default"
 	{
@@ -102,6 +123,14 @@
 	/* Counter-Strike: Source */
 	"cstrike"
 	{
+		"Keys"
+		{
+			"SlapSoundCount"	"3"
+			"SlapSound1"		"player/damage1.wav"
+			"SlapSound2"		"player/damage2.wav"
+			"SlapSound3"		"player/damage3.wav"
+		}
+
 		"Offsets"
 		{
 			"GiveNamedItem"
@@ -138,6 +167,11 @@
 			{
 				"windows"	"357"
 				"linux"		"358"
+			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
 			}
 		}
 	}
@@ -182,6 +216,11 @@
 				"windows"	"356"
 				"linux"		"357"
 			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
+			}
 		}
 	}
 	
@@ -224,6 +263,11 @@
 			{
 				"windows"	"356"
 				"linux"		"357"
+			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
 			}
 		}
 	}
@@ -268,6 +312,11 @@
 			{
 				"windows"	"343"
 				"linux"		"344"
+			}
+			"GetVelocity"
+			{
+				"windows"	"124"
+				"linux"		"125"
 			}
 			
 			/* Temp Entities */
@@ -320,6 +369,11 @@
 			{
 				"windows"	"360"
 				"linux"		"361"
+			}
+			"GetVelocity"
+			{
+				"windows"	"128"
+				"linux"		"129"
 			}
 
 			/* Offset into CBaseTempEntity constructor.
@@ -379,6 +433,11 @@
 				"windows"	"90"
 				"linux"		"91"
 			}
+			"GetVelocity"
+			{
+				"windows"	"115"
+				"linux"		"116"
+			}
 
 			/* Temp Entities */
 			"s_pTempEntities"
@@ -429,6 +488,11 @@
 				"windows"	"356"
 				"linux"		"357"
 			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
+			}
 			
 			/* Temp Entities */
 			"s_pTempEntities"
@@ -473,6 +537,11 @@
 			{
 				"windows"	"90"
 				"linux"		"91"
+			}
+			"GetVelocity"
+			{
+				"windows"	"114"
+				"linux"		"115"
 			}
 
 			/* Temp Entities */

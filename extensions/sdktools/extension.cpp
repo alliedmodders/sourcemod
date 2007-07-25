@@ -24,6 +24,7 @@
 #include "extension.h"
 #include "vcallbuilder.h"
 #include "vnatives.h"
+#include "vhelpers.h"
 #include "tempents.h"
 #include "gamerules.h"
 
@@ -37,6 +38,7 @@ IServerGameEnts *gameents = NULL;
 IEngineTrace *enginetrace = NULL;
 IEngineSound *engsound = NULL;
 INetworkStringTableContainer *netstringtables = NULL;
+IServerPluginHelpers *pluginhelpers = NULL;
 IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
 IGameHelpers *g_pGameHelpers = NULL;
@@ -99,6 +101,7 @@ void SDKTools::SDK_OnUnload()
 		delete (*iter);
 	}
 	g_RegCalls.clear();
+	ShutdownHelpers();
 
 	g_TEManager.Shutdown();
 
@@ -111,6 +114,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(engineFactory, engsound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
 	GET_V_IFACE_ANY(engineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);
 	GET_V_IFACE_ANY(engineFactory, netstringtables, INetworkStringTableContainer, INTERFACENAME_NETWORKSTRINGTABLESERVER);
+	GET_V_IFACE_ANY(engineFactory, pluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
 
 	return true;
 }
@@ -150,6 +154,7 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 		delete (*iter);
 	}
 	g_RegCalls.clear();
+	ShutdownHelpers();
 
 	g_TEManager.Shutdown();
 }

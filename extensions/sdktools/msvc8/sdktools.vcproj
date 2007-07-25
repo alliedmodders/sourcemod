@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\vhelpers.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\vnatives.cpp"
 				>
 			</File>
@@ -255,6 +259,10 @@
 			</File>
 			<File
 				RelativePath="..\vdecoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vhelpers.h"
 				>
 			</File>
 			<File
