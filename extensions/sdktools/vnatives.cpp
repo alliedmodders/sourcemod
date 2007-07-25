@@ -107,9 +107,9 @@ static cell_t RemovePlayerItem(IPluginContext *pContext, const cell_t *params)
 	if (!pCall)
 	{
 		ValvePassInfo pass[2];
-		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, 0);
-		InitPass(pass[1], Valve_Bool, PassType_Basic, 0);
-		if (!CreateBaseCall("RemovePlayerItem", ValveCall_Player, &pass[1], &pass[0], 1, &pCall))
+		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("RemovePlayerItem", ValveCall_Player, &pass[1], pass, 1, &pCall))
 		{
 			return pContext->ThrowNativeError("\"RemovePlayerItem\" not supported by this mod");
 		} else if (!pCall) {
