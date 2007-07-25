@@ -117,6 +117,7 @@
 #define IA32_AND_REG_RM			0x23	// encoding is /r
 #define IA32_AND_EAX_IMM32		0x25	// encoding is <imm32>
 #define IA32_AND_RM_IMM32		0x81	// encoding is /4
+#define IA32_AND_RM_IMM8		0x83	// encoding is /4
 #define IA32_NOT_RM				0xF7	// encoding is /2
 #define IA32_DIV_RM				0xF7	// encoding is /6
 #define IA32_MUL_RM				0xF7	// encoding is /4
@@ -317,6 +318,13 @@ inline void IA32_And_Rm_Imm32(JitWriter *jit, jit_uint8_t reg, jit_uint8_t mode,
 	jit->write_ubyte(IA32_AND_RM_IMM32);
 	jit->write_ubyte(ia32_modrm(mode, 4, reg));
 	jit->write_int32(value);
+}
+
+inline void IA32_And_Rm_Imm8(JitWriter *jit, jit_uint8_t reg, jit_uint8_t mode, jit_int8_t value)
+{
+	jit->write_ubyte(IA32_AND_RM_IMM8);
+	jit->write_ubyte(ia32_modrm(mode, 4, reg));
+	jit->write_byte(value);
 }
 
 inline void IA32_And_Eax_Imm32(JitWriter *jit, jit_int32_t value)
