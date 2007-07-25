@@ -1608,6 +1608,16 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//push edx
 	IA32_Push_Reg(jit, AMX_REG_ALT);
 
+	/* Align the stack to 16 bytes */
+	//push ebx
+	//mov ebx, esp
+	//and esp, 0xFFFFFF0
+	//sub esp, 4
+	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Mov_Reg_Rm(jit, REG_EBX, REG_ESP, MOD_REG);
+	IA32_And_Rm_Imm8(jit, REG_ESP, MOD_REG, -16);
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
 	/* push some callback stuff */
 	//push edi		; stack
 	//push <native>	; native index
@@ -1656,10 +1666,12 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
-	//add esp, 4*3
+	//mov esp, ebx
+	//pop ebx
 	//add edi, ebp
 	//pop edx
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_EBX, MOD_REG);
+	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Add_Reg_Rm(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_ALT);
 
@@ -2551,18 +2563,42 @@ SPVM_NATIVE_FUNC JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *p
 
 	/* First pass, calculate size */
 rewind:
+	/* Align the stack to 16 bytes */
+	//push ebx
+	//push edi
+	//push esi
+	//mov edi, [esp+16]	;store ctx
+	//mov esi, [esp+20]	;store params
+	//mov ebx, esp
+	//and esp, 0xFFFFFF0
+	//sub esp, 4
+	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Push_Reg(jit, REG_EDI);
+	IA32_Push_Reg(jit, REG_ESI);
+	IA32_Mov_Reg_Esp_Disp8(jit, REG_EDI, 16);
+	IA32_Mov_Reg_Esp_Disp8(jit, REG_ESI, 20);
+	IA32_Mov_Reg_Rm(jit, REG_EBX, REG_ESP, MOD_REG);
+	IA32_And_Rm_Imm8(jit, REG_ESP, MOD_REG, -16);
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
 	//push pData		;push pData
-	//push [esp+12]		;push params
-	//push [esp+12]		;push ctx
+	//push esi			;push params
+	//push edi			;push ctx
 	//call [callback]	;invoke the meta-callback
-	//add esp, 12		;restore the stack
+	//mov esp, ebx		;restore the stack
+	//pop esi			;restore esi
+	//pop edi			;restore edi
+	//pop ebx			;restore ebx
 	//ret				;return
 	IA32_Push_Imm32(jit, (jit_int32_t)pData);
-	IA32_Push_Rm_Disp8_ESP(jit, 12);
-	IA32_Push_Rm_Disp8_ESP(jit, 12);
+	IA32_Push_Reg(jit, REG_ESI);
+	IA32_Push_Reg(jit, REG_EDI);
 	uint32_t call = IA32_Call_Imm32(jit, 0);
 	IA32_Write_Jump32_Abs(jit, call, (void *)callback);
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 12, MOD_REG);
+	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_EBX, MOD_REG);
+	IA32_Pop_Reg(jit, REG_ESI);
+	IA32_Pop_Reg(jit, REG_EDI);
+	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Return(jit);
 
 	if (jw.outbase == NULL)

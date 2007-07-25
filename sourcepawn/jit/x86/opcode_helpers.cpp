@@ -152,6 +152,7 @@ void Write_BreakDebug(JitWriter *jit)
 	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, dbreak), 0);
 	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_Z, 0);
 
+	//:TODO: align the stack to 16bytes like in sysreq.x
 	/* NOTE, Hack! PUSHAD pushes EDI last which still has the CIP */
 	//pushad
 	//push [esi+frm]
@@ -414,6 +415,16 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	//push edx
 	IA32_Push_Reg(jit, AMX_REG_ALT);
 
+	/* Align the stack to 16 bytes */
+	//push ebx
+	//mov ebx, esp
+	//and esp, 0xFFFFFF0
+	//sub esp, 4
+	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Mov_Reg_Rm(jit, REG_EBX, REG_ESP, MOD_REG);
+	IA32_And_Rm_Imm8(jit, REG_ESP, MOD_REG, -16);
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
 	/* push some callback stuff */
 	//push edi		; stack
 	//push ecx		; native index
@@ -457,10 +468,12 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
-	//add esp, 4*3
+	//mov esp, ebx
+	//pop ebx
 	//add edi, ebp
 	//pop edx
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_EBX, MOD_REG);
+	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Add_Reg_Rm(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_ALT);
 
@@ -641,6 +654,16 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	IA32_Push_Reg(jit, REG_EAX);
 	IA32_Push_Reg(jit, AMX_REG_ALT);
 
+	/* Align the stack to 16 bytes */
+	//push ebx
+	//mov ebx, esp
+	//and esp, 0xFFFFFF0
+	//sub esp, 4
+	IA32_Push_Reg(jit, REG_EBX);
+	IA32_Mov_Reg_Rm(jit, REG_EBX, REG_ESP, MOD_REG);
+	IA32_And_Rm_Imm8(jit, REG_ESP, MOD_REG, -16);
+	IA32_Sub_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+
 	/* push some callback stuff */
 	//push edi		; stack
 	//push ecx		; native index
@@ -684,11 +707,13 @@ void WriteOp_Sysreq_N_Function(JitWriter *jit)
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
-	//add esp, 4*3
+	//mov esp, ebx
+	//pop ebx
 	//add edi, ebp
 	//pop edx
 	//pop ecx	; num_params
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_EBX, MOD_REG);
+	IA32_Pop_Reg(jit, REG_EBX);
 	IA32_Add_Reg_Rm(jit, AMX_REG_STK, AMX_REG_DAT, MOD_REG);
 	IA32_Pop_Reg(jit, AMX_REG_ALT);
 	IA32_Pop_Reg(jit, REG_ECX);
