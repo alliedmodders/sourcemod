@@ -356,7 +356,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	static bool s_slap_supported = false;
 	static bool s_slap_setup = false;
 	static ICallWrapper *s_teleport = NULL;
-	static int s_health_offs = NULL;
+	static int s_health_offs = 0;
 	static int s_sound_count = 0;
 	static int s_frag_offs = 0;
 
