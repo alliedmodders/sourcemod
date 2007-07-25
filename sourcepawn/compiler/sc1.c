@@ -456,8 +456,10 @@ cleanup:
 
   #if !defined SC_LIGHT
     if (errnum==0 && strlen(errfname)==0) {
+#if 0	//bug in compiler -- someone's script caused this function to infrecurs
       int recursion;
       long stacksize=max_stacksize(&glbtab,&recursion);
+#endif
       int flag_exceed=0;
       if (pc_amxlimit>0) {
         long totalsize=hdrsize+code_idx;
@@ -468,11 +470,12 @@ cleanup:
       } /* if */
       if (pc_amxram>0 && (glb_declared+pc_stksize)*sizeof(cell)>=(unsigned long)pc_amxram)
         flag_exceed=1;
-      if (!norun && (sc_debug & sSYMBOLIC)!=0 || verbosity>=2 || stacksize+32>=(long)pc_stksize || flag_exceed) {
+      if (!norun && (sc_debug & sSYMBOLIC)!=0 || verbosity>=2 || flag_exceed) {
         pc_printf("Header size:       %8ld bytes\n", (long)hdrsize);
         pc_printf("Code size:         %8ld bytes\n", (long)code_idx);
         pc_printf("Data size:         %8ld bytes\n", (long)glb_declared*sizeof(cell));
         pc_printf("Stack/heap size:   %8ld bytes; ", (long)pc_stksize*sizeof(cell));
+#if 0
         pc_printf("estimated max. usage");
         if (recursion)
           pc_printf(": unknown, due to recursion\n");
@@ -480,6 +483,7 @@ cleanup:
           pc_printf(": unknown, due to the \"sleep\" instruction\n");
         else
           pc_printf("=%ld cells (%ld bytes)\n",stacksize,stacksize*sizeof(cell));
+#endif
         pc_printf("Total requirements:%8ld bytes\n", (long)hdrsize+(long)code_idx+(long)glb_declared*sizeof(cell)+(long)pc_stksize*sizeof(cell));
       } /* if */
       if (flag_exceed)
@@ -5029,6 +5033,8 @@ static long max_stacksize_recurse(symbol *sourcesym,symbol *sym,long basesize,in
   return maxsize+basesize;
 }
 
+static symbol *save_symbol;
+
 static long max_stacksize(symbol *root,int *recursion)
 {
   /* Loop over all non-native functions. For each function, loop
@@ -5061,6 +5067,7 @@ static long max_stacksize(symbol *root,int *recursion)
     if (sym->ident!=iFUNCTN || (sym->usage & uNATIVE)!=0)
       continue;
     /* accumulate stack size for this symbol */
+	save_symbol = sym;
     size=max_stacksize_recurse(sym,sym,0L,&maxparams,recursion);
     assert(size>=0);
     if (maxsize<size)
