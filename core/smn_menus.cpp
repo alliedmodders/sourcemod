@@ -45,6 +45,7 @@ enum MenuAction
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
 	MenuAction_DrawItem = (1<<8),	/**< A style is being drawn; return the new style (param1=client, param2=item) */
+	MenuAction_DisplayItem = (1<<9),	/**< the odd duck */
 };
 
 class CPanelHandler : public IMenuHandler
@@ -80,6 +81,7 @@ public:
 		unsigned int totalVotes);
 	void OnMenuVoteCancel(IBaseMenu *menu);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
+	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
 #if 0
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
@@ -104,11 +106,13 @@ public:
 	virtual void OnSourceModAllInitialized()
 	{
 		m_PanelType = g_HandleSys.CreateType("IMenuPanel", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		m_TempPanelType = g_HandleSys.CreateType("TempIMenuPanel", this, m_PanelType, NULL, NULL, g_pCoreIdent, NULL);
 		g_PluginSys.AddPluginsListener(this);
 	}
 
 	virtual void OnSourceModShutdown()
 	{
+		g_HandleSys.RemoveType(m_TempPanelType, g_pCoreIdent);
 		g_HandleSys.RemoveType(m_PanelType, g_pCoreIdent);
 
 		while (!m_FreePanelHandlers.empty())
@@ -126,6 +130,11 @@ public:
 
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
+		if (type == m_TempPanelType)
+		{
+			return;
+		}
+
 		IMenuPanel *panel = (IMenuPanel *)object;
 		panel->DeleteThis();
 	}
@@ -153,6 +162,11 @@ public:
 	inline HandleType_t GetPanelType()
 	{
 		return m_PanelType;
+	}
+
+	inline HandleType_t GetTempPanelType()
+	{
+		return m_TempPanelType;
 	}
 
 	CPanelHandler *GetPanelHandler(IPluginFunction *pFunction)
@@ -200,6 +214,7 @@ public:
 
 private:
 	HandleType_t m_PanelType;
+	HandleType_t m_TempPanelType;
 	CStack<CPanelHandler *> m_FreePanelHandlers;
 	CStack<CMenuHandler *> m_FreeMenuHandlers;
 	CVector<CPanelHandler *> m_PanelHandlers;
@@ -235,6 +250,10 @@ void CPanelHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
 	g_MenuHelpers.FreePanelHandler(this);
 }
 
+static IMenuPanel *s_pCurPanel = NULL;
+static unsigned int s_CurPanelReturn = 0;
+static const ItemDrawInfo *s_CurDrawInfo = NULL;
+
 /**
  * MENU HANDLER WRAPPER
  */
@@ -257,14 +276,14 @@ void CMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *panel)
 	if ((m_Flags & (int)MenuAction_Display) == (int)MenuAction_Display)
 	{
 		HandleSecurity sec;
-		sec.pIdentity = m_pBasic->GetParentContext()->GetIdentity();
-		sec.pOwner = g_pCoreIdent;
+		sec.pIdentity = g_pCoreIdent;
+		sec.pOwner = m_pBasic->GetParentContext()->GetIdentity();
 	
 		HandleAccess access;
 		g_HandleSys.InitAccessDefaults(NULL, &access);
 		access.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
-		Handle_t hndl =  g_HandleSys.CreateHandleEx(g_MenuHelpers.GetPanelType(), panel, &sec, &access, NULL);
+		Handle_t hndl = g_HandleSys.CreateHandleEx(g_MenuHelpers.GetTempPanelType(), panel, &sec, &access, NULL);
 
 		DoAction(menu, MenuAction_Display, client, hndl);
 
@@ -317,6 +336,38 @@ void CMenuHandler::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item
 		cell_t result = DoAction(menu, MenuAction_DrawItem, client, item, style);
 		style = (unsigned int)result;
 	}
+}
+
+unsigned int CMenuHandler::OnMenuDisplayItem(IBaseMenu *menu,
+									 int client,
+									 IMenuPanel *panel,
+									 unsigned int item,
+									 const ItemDrawInfo &dr)
+{
+	if ((m_Flags & (int)MenuAction_DisplayItem) == (int)MenuAction_DisplayItem)
+	{
+		IMenuPanel *oldpanel = s_pCurPanel;
+		unsigned int oldret = s_CurPanelReturn;
+		const ItemDrawInfo *oldinfo = s_CurDrawInfo;
+		s_pCurPanel = panel;
+		s_CurPanelReturn = 0;
+		s_CurDrawInfo = &dr;
+
+		cell_t res = DoAction(menu, MenuAction_DisplayItem, client, item, 0);
+
+		if (!res)
+		{
+			res = s_CurPanelReturn;
+		}
+
+		s_pCurPanel = oldpanel;
+		s_CurPanelReturn = oldret;
+		s_CurDrawInfo = oldinfo;
+
+		return res;
+	}
+
+	return 0;
 }
 
 cell_t CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2, cell_t def_res)
@@ -1002,6 +1053,27 @@ static cell_t SetPanelCurrentKey(IPluginContext *pContext, const cell_t *params)
 	return panel->SetCurrentKey(params[2]) ? 1 : 0;
 }
 
+static cell_t RedrawMenuItem(IPluginContext *pContext, const cell_t *params)
+{
+	if (!s_pCurPanel)
+	{
+		return pContext->ThrowNativeError("You can only call this once from a MenuAction_DisplayItem callback");
+	}
+
+	char *str;
+	pContext->LocalToString(params[1], &str);
+
+	ItemDrawInfo dr = *s_CurDrawInfo;
+	dr.display = str;
+
+	if ((s_CurPanelReturn = s_pCurPanel->DrawItem(dr)) != 0)
+	{
+		s_pCurPanel = NULL;
+	}
+
+	return s_CurPanelReturn;
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -1028,6 +1100,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},
 	{"IsVoteInProgress",		IsVoteInProgress},
+	{"RedrawMenuItem",			RedrawMenuItem},
 	{"RemoveAllMenuItems",		RemoveAllMenuItems},
 	{"RemoveMenuItem",			RemoveMenuItem},
 	{"SendPanelToClient",		SendPanelToClient},

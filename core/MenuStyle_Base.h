@@ -33,11 +33,13 @@ public:
 		infoString = -1;
 		displayString = -1;
 		style = 0;
+		access = 0;
 	}
 public:
 	int infoString;
 	int displayString;
 	unsigned int style;
+	unsigned int access;
 };
 
 class CBaseMenuPlayer

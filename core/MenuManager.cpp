@@ -187,9 +187,9 @@ void VoteMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *dis
 	m_pHandler->OnMenuDisplay(menu, client, display);
 }
 
-void VoteMenuHandler::OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display)
+unsigned int VoteMenuHandler::OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr)
 {
-	m_pHandler->OnMenuDisplayItem(menu, client, item, display);
+	return m_pHandler->OnMenuDisplayItem(menu, client, panel, item, dr);
 }
 
 void VoteMenuHandler::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)
@@ -594,8 +594,11 @@ skip_search:
 		for (unsigned int i=0; i<foundItems; i++)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
-			mh->OnMenuDisplayItem(menu, client, drawItems[i].position, &(dr.display));
-			if ((position = display->DrawItem(dr)) != 0)
+			if ((position = mh->OnMenuDisplayItem(menu, client, display, drawItems[i].position, dr)) == 0)
+			{
+				position = display->DrawItem(dr);
+			}
+			if (position != 0)
 			{
 				slots[position].item = drawItems[i].position;
 				slots[position].type = ItemSel_Item;
@@ -609,7 +612,10 @@ skip_search:
 		while (i--)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
-			mh->OnMenuDisplayItem(menu, client, drawItems[i].position, &(dr.display));
+			if ((position = mh->OnMenuDisplayItem(menu, client, display, drawItems[i].position, dr)) == 0)
+			{
+				position = display->DrawItem(dr);
+			}
 			if ((position = display->DrawItem(dr)) != 0)
 			{
 				slots[position].item = drawItems[i].position;

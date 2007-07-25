@@ -427,10 +427,10 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 	}
 
 	/* For the duration of this, we are going to totally ignore whether
-	* the player is already in a menu or not (except to cancel the old one).
-	* Instead, we are simply going to ignore any further menu displays, so
-	* this display can't be interrupted.
-	*/
+	 * the player is already in a menu or not (except to cancel the old one).
+	 * Instead, we are simply going to ignore any further menu displays, so
+	 * this display can't be interrupted.
+	 */
 	player->bAutoIgnore = true;
 
 	/* Cancel any old menus */
@@ -564,6 +564,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 		item.displayString = m_Strings.AddString(draw.display);
 	}
 	item.style = draw.style;
+	item.access = draw.access;
 
 
 	m_items.push_back(item);
@@ -591,6 +592,7 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 		item.displayString = m_Strings.AddString(draw.display);
 	}
 	item.style = draw.style;
+	item.access = draw.access;
 
 	CVector<CItem>::iterator iter = m_items.iterAt(position);
 	m_items.insert(iter, item);

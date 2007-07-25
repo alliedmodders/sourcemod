@@ -35,7 +35,7 @@ public: //IMenuHandler
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
 	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
-	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
+	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
 public: //IVoteMenuHandler
 	bool IsVoteInProgress();
 	void InitializeVoting(IBaseMenu *menu);

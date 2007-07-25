@@ -23,7 +23,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		6
+#define SMINTERFACE_MENUMANAGER_VERSION		7
 
 /**
  * @file IMenuManager.h
@@ -93,17 +93,14 @@ namespace SourceMod
 	 */
 	struct ItemDrawInfo
 	{
-		ItemDrawInfo()
-		{
-			style = 0;
-			display = NULL;
-		}
-		ItemDrawInfo(const char *DISPLAY, unsigned int STYLE=ITEMDRAW_DEFAULT) 
-			: display(DISPLAY), style(STYLE)
+		ItemDrawInfo(const char *DISPLAY=NULL, unsigned int STYLE=ITEMDRAW_DEFAULT, 
+					 unsigned int FLAGS=0, const char *HELPTEXT=NULL) 
+			: display(DISPLAY), style(STYLE), access(FLAGS)
 		{
 		}
 		const char *display;			/**< Display text (NULL for none) */
 		unsigned int style;				/**< ITEMDRAW style flags */
+		unsigned int access;				/**< Access flags required to see */
 	};
 
 	/**
@@ -648,15 +645,23 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Called when requesting how to draw an item's text.
+		 * @brief Called when drawing item text.
 		 *
 		 * @param menu			Menu pointer.
 		 * @param client		Client index receiving the menu.
+		 * @param panel			Panel being used to draw the menu.
 		 * @param item			Item number in the menu.
-		 * @param display		Pointer to the display text string (changeable).
+		 * @param dr			Item draw information.
+		 * @return				0 to let the render algorithm decide how to draw, otherwise,
+		 *						the return value from panel->DrawItem should be returned.
 		 */
-		virtual void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display)
+		virtual unsigned int OnMenuDisplayItem(IBaseMenu *menu, 
+											   int client, 
+											   IMenuPanel *panel,
+											   unsigned int item, 
+											   const ItemDrawInfo &dr)
 		{
+			return 0;
 		}
 
 		/**
@@ -755,7 +760,7 @@ namespace SourceMod
 		}
 		virtual bool IsVersionCompatible(unsigned int version)
 		{
-			if (version < 5 || version > GetInterfaceVersion())
+			if (version < 7 || version > GetInterfaceVersion())
 			{
 				return false;
 			}

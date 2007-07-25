@@ -42,6 +42,10 @@ enum MenuAction
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
 	MenuAction_DrawItem = (1<<8),	/**< An item is being drawn; return the new style (param1=client, param2=item) */
+	MenuAction_DisplayItem = (1<<9) /**< Item text is being drawn to the display (param1=client, param2=item)
+										  To change the text, use RedrawMenuItem().
+										  If you do so, return its return value.  Otherwise, return 0.
+										  */
 };
 
 /** Default menu actions */
@@ -475,7 +479,8 @@ native DrawPanelItem(Handle:panel, const String:text[], style=ITEMDRAW_DEFAULT);
 /**
  * Draws a raw line of text on a panel, without any markup other than a newline.
  *
- * @param panel			A MenuPanel Handle.
+ * @param panel			A MenuPanel Handle, or INVALID_HANDLE if inside a 
+ *						MenuAction_DisplayItem callback.
  * @param text			Display text to use.
  * @return				True on success, false if raw lines are not supported.
  * @error				Invalid Handle.
@@ -544,6 +549,14 @@ native GetPanelCurrentKey(Handle:panel);
  * @error				Invalid Handle.
  */
 native bool:SetPanelCurrentKey(Handle:panel, key);
+
+/**
+ * @brief Redraws menu text from inside a MenuAction_DisplayItem callback.
+ * 
+ * @param text			Menu text to draw.
+ * @return				Item position; must be returned via the callback.
+ */
+native RedrawMenuItem(const String:text[]);
 
 /**
  * Retrieves voting information from MenuAction_VoteEnd.
