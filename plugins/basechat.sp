@@ -131,39 +131,29 @@ public Action:Command_SayChat(client, args)
 	}	
 	else if (msgStart == 2 && (CheckAdminForChat(client) || GetConVarBool(g_Cvar_Psaymode))) // sm_psay alias
 	{
-		decl String:target[64];
+		decl String:arg[64];
 	
-		new len = BreakString(message, target, sizeof(target));
+		new len = BreakString(message, arg, sizeof(target));
+		new target = FindTarget(client, arg, true, false);
 		
-		new clients[2];
-		new numClients = SearchForClients(target, clients, 2);
-		
-		if (numClients == 0)
-		{
-			PrintToChat(client, "[SM] %t", "No matching client");
+		if (target == -1)
 			return Plugin_Handled;
-		}
-		else if (numClients > 1)
-		{
-			PrintToChat(client, "[SM] %t", "More than one client matches", target);
-			return Plugin_Handled;
-		}
 		
 		decl String:name2[64];
-		GetClientName(clients[0], name2, sizeof(name2));
+		GetClientName(target, name2, sizeof(name2));
 	
 		if (g_DoColor)
 		{
 			PrintToChat(client, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
-			PrintToChat(clients[0], "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
+			PrintToChat(target, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
 		}
 		else
 		{
 			PrintToChat(client, "(Private to %s) %s: %s", name2, name, message[len]);
-			PrintToChat(clients[0], "(Private to %s) %s: %s", name2, name, message[len]);			
+			PrintToChat(target, "(Private to %s) %s: %s", name2, name, message[len]);			
 		}
 
-		LogMessage("%L triggered sm_psay to %L (text %s)", client, clients[0], message);		
+		LogMessage("%L triggered sm_psay to %L (text %s)", client, target, message);		
 	}
 	else
 		return Plugin_Continue;
@@ -287,7 +277,7 @@ public Action:Command_SmTsay(client, args)
 	new color = FindColor(colorStr);
 
 	if (color == -1)    
-	    SendDialogToAll(_, "%s: %s", name, text);
+		SendDialogToAll(_, "%s: %s", name, text);
 	else
 		SendDialogToAll(color, "%s: %s", name, text[len]);
 
@@ -324,49 +314,33 @@ public Action:Command_SmPsay(client, args)
 		return Plugin_Handled;	
 	}	
 	
-	decl String:text[192];
+	decl String:text[192], String:arg[64], String:message[192];
 	GetCmdArgString(text, sizeof(text));
-	
-	decl String:target[64], String:message[192];
 
-	new len = BreakString(text, target, sizeof(target));
+	new len = BreakString(text, arg, sizeof(arg));
 	BreakString(text[len], message, sizeof(message));
 	
-	new clients[2];
-	new numClients = SearchForClients(target, clients, 2);
-	
-	if (numClients == 0)
-	{
-		ReplyToCommand(client, "[SM] %t", "No matching client");
-		return Plugin_Handled;
-	}
-	else if (numClients > 1)
-	{
-		ReplyToCommand(client, "[SM] %t", "More than one client matches", target);
-		return Plugin_Handled;
-	}
-	else if (!CanUserTarget(client, clients[0]))
-	{
-		ReplyToCommand(client, "[SM] %t", "Unable to target");
-		return Plugin_Handled;
-	}
-	
+	new target = FindTarget(client, arg, true, false);
+		
+	if (target == -1)
+		return Plugin_Handled;	
+		
 	decl String:name[64], String:name2[64];
 	GetClientName(client, name, sizeof(name));
-	GetClientName(clients[0], name2, sizeof(name2));
+	GetClientName(target, name2, sizeof(name2));
 
 	if (g_DoColor)
 	{
 		PrintToChat(client, "\x04(Private: %s) %s: \x01%s", name2, name, message);
-		PrintToChat(clients[0], "\x04(Private: %s) %s: \x01%s", name2, name, message);
+		PrintToChat(target, "\x04(Private: %s) %s: \x01%s", name2, name, message);
 	}
 	else
 	{
 		PrintToChat(client, "(Private: %s) %s: %s", name2, name, message);
-		PrintToChat(clients[0], "(Private: %s) %s: %s", name2, name, message);		
+		PrintToChat(target, "(Private: %s) %s: %s", name2, name, message);		
 	}
 
-	LogMessage("%L triggered sm_psay to %L (text %s)", client, clients[0], message);
+	LogMessage("%L triggered sm_psay to %L (text %s)", client, target, message);
 	
 	return Plugin_Handled;	
 }
