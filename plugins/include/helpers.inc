@@ -178,3 +178,42 @@ stock SearchForClients(const String:pattern[], clients[], maxClients)
 	
 	return total;
 }
+
+/**
+ * Wraps SearchForClients and handles producing error messages for
+ * bad targets.
+ *
+ * @param client	Client who issued command
+ * @param target	Client's target argument
+ * @param nobots	Optional. Set to true if bots should NOT be targetted
+ * @param immunity	Optional. Set to false to ignore target immunity.
+ * @return		Index of target client, or -1 on error.
+ */
+stock FindTarget(client, const String:target[], bool:nobots = false, bool:immunity = true)
+{
+	new clients[2];
+	new numClients = SearchForClients(target, clients, 2);
+	
+	if (numClients == 0)
+	{
+		ReplyToCommand(client, "[SM] %t", "No matching client");
+		return -1;
+	}
+	else if (numClients > 1)
+	{
+		ReplyToCommand(client, "[SM] %t", "More than one client matches", target);
+		return -1;
+	}
+	else if (immunity && !CanUserTarget(client, clients[0]))
+	{
+		ReplyToCommand(client, "[SM] %t", "Unable to target");
+		return -1;
+	}
+	else if (nobots && IsFakeClient(clients[0]))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot target bot");
+		return -1;
+	}
+	
+	return clients[0];
+}
