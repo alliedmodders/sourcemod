@@ -12,10 +12,10 @@ SOURCEMM = ../../../../sourcemm
 PROJECT = sdktools
 
 #Uncomment for SourceMM-enabled extensions
-LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so 
+LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so
 
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp gamerules.cpp vdecoder.cpp vcallbuilder.cpp \
-	vcaller.cpp vnatives.cpp vsound.cpp tenatives.cpp trnatives.cpp tempents.cpp vstringtable.cpp
+	vcaller.cpp vnatives.cpp vsound.cpp tenatives.cpp trnatives.cpp tempents.cpp vstringtable.cpp vhelpers.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -74,7 +74,7 @@ all:
 extension: $(OBJ_LINUX)
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
-debug:	
+debug:
 	$(MAKE) all DEBUG=true
 
 default: all
