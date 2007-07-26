@@ -74,7 +74,7 @@ public OnPluginStart()
 	HookUserMessage(g_VGUIMenu, UserMsg_VGUIMenu);
 	HookConVarChange(g_Cvar_Mapcycle, ConVarChange_Mapcyclefile);
 	
-	g_Cvar_Nextmap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_PLUGIN|FCVAR_SPONLY|FCVAR_UNLOGGED|FCVAR_DONTRECORD|FCVAR_REPLICATED|FCVAR_NOTIFY);
+	g_Cvar_Nextmap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_NOTIFY);
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
@@ -89,8 +89,7 @@ public OnPluginStart()
 		g_INS = true;
 	}
 	#endif
-	
-	RegConsoleCmd("nextmap", Command_Nextmap);
+
 	RegConsoleCmd("listmaps", Command_List);
 	
 	/* Set to the current map so OnMapStart() will know what to do */
@@ -151,20 +150,13 @@ public Action:Command_Say(client, args)
 	
 	if (strcmp(message, "nextmap", false) == 0)
 	{
-		return Command_Nextmap(client, args);
+		decl String:map[32];
+		GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
+		
+		PrintToChatAll("%t", "Next Map", map);
 	}
 	
 	return Plugin_Continue;	
-}
- 
-public Action:Command_Nextmap(client, args) 
-{
-	decl String:map[32];
-	GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
-	
-	PrintToChatAll("%t", "Next Map", map);
-	
-	return Plugin_Continue;
 }
  
 public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)
