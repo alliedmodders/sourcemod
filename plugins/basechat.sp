@@ -33,7 +33,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-decl String:g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Olive", "Lime", "Violet", "Lightblue"};
+new String:g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Olive", "Lime", "Violet", "Lightblue"};
 new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{255,0,255},{0,255,255},{255,128,0},{255,0,128},{128,255,0},{0,255,128},{128,0,255},{0,128,255}};
 
 new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
@@ -133,7 +133,7 @@ public Action:Command_SayChat(client, args)
 	{
 		decl String:arg[64];
 	
-		new len = BreakString(message, arg, sizeof(target));
+		new len = BreakString(message, arg, sizeof(arg));
 		new target = FindTarget(client, arg, true, false);
 		
 		if (target == -1)
