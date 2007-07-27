@@ -40,7 +40,7 @@ new Handle:hBanRemoved = INVALID_HANDLE;
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("plugin.basecommands");
+	
 	RegAdminCmd("sm_kick", Command_Kick, ADMFLAG_KICK, "sm_kick <#userid|name> [reason]");
 	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");
 	RegAdminCmd("sm_rcon", Command_Rcon, ADMFLAG_RCON, "sm_rcon <args>");
@@ -211,21 +211,9 @@ public Action:Command_Ban(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new clients[2];
-	new numClients = SearchForClients(arg, clients, 2);
-	
-	if (numClients == 0)
+	new target = FindTarget(client, arg, true);
+	if (target == -1)
 	{
-		ReplyToCommand(client, "[SM] %t", "No matching client");
-		return Plugin_Handled;
-	} else if (numClients > 1) {
-		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
-		return Plugin_Handled;
-	} else if (!CanUserTarget(client, clients[0])) {
-		ReplyToCommand(client, "[SM] %t", "Unable to target");
-		return Plugin_Handled;
-	} else if (IsFakeClient(clients[0])) {
-		ReplyToCommand(client, "[SM] %t", "Cannot target bot");
 		return Plugin_Handled;
 	}
 	
@@ -233,6 +221,7 @@ public Action:Command_Ban(client, args)
 	GetCmdArg(2, s_time, sizeof(s_time));
 	
 	new time = StringToInt(s_time);
+	new iptime = (time < 2 ? time : 2);
 	
 	decl String:reason[128];
 	if (args >= 3)
@@ -242,15 +231,16 @@ public Action:Command_Ban(client, args)
 		reason[0] = '\0';
 	}
 	
-	decl String:authid[64];
-	GetClientAuthString(clients[0], authid, sizeof(authid));
-	GetClientName(clients[0], arg, sizeof(arg));
+	decl String:authid[64], String:ip[50];
+	GetClientAuthString(target, authid, sizeof(authid));
+	GetClientIP(target, ip, sizeof(ip));
+	GetClientName(target, arg, sizeof(arg));
 	
 	/* Fire the ban forward */
 	new Action:act = Plugin_Continue;
 	Call_StartForward(hBanForward);
 	Call_PushCell(client);
-	Call_PushCell(clients[0]);
+	Call_PushCell(target);
 	Call_PushCell(time);
 	Call_PushString(reason);
 	Call_Finish(act);
@@ -273,7 +263,7 @@ public Action:Command_Ban(client, args)
 				ShowActivity(client, "%t", "Banned player reason", arg, time, reason);
 			}
 		}
-		LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, clients[0], time, reason);
+		LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, target, time, reason);
 	}
 
 	if (act < Plugin_Stop)
@@ -283,8 +273,9 @@ public Action:Command_Ban(client, args)
 			strcopy(reason, sizeof(reason), "Banned");
 		}
 		
+		ServerCommand("banip %d %s", iptime, ip);
 		ServerCommand("banid %d %s", time, authid);
-		KickClient(clients[0], "%s", reason);
+		KickClient(target, "%s", reason);
 		
 		if (time == 0)
 		{
@@ -577,24 +568,16 @@ public Action:Command_Kick(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new clients[2];
-	new numClients = SearchForClients(arg, clients, 2);
 	
-	if (numClients == 0)
+	new target = FindTarget(client, arg);
+	if (target == -1)
 	{
-		ReplyToCommand(client, "[SM] %t", "No matching client");
-		return Plugin_Handled;
-	} else if (numClients > 1) {
-		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
-		return Plugin_Handled;
-	} else if (!CanUserTarget(client, clients[0])) {
-		ReplyToCommand(client, "[SM] %t", "Unable to target");
 		return Plugin_Handled;
 	}
 	
 	decl String:name[65];
 	
-	GetClientName(clients[0], name, sizeof(name));
+	GetClientName(target, name, sizeof(name));
 	
 	decl String:reason[256];
 	if (args < 2)
@@ -607,9 +590,9 @@ public Action:Command_Kick(client, args)
 	
 	ShowActivity(client, "%t", "Kicked player", name);
 	
-	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, clients[0], reason);
+	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, target, reason);
 	
-	KickClient(clients[0], "%s", reason);
+	KickClient(target, "%s", reason);
 	
 	return Plugin_Handled;
 }
