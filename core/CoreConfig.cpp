@@ -200,7 +200,7 @@ bool SM_ExecuteConfig(CPlugin *pl, AutoConfig *cfg, bool can_create)
 					sizeof(build)-len,
 					"/%s",
 					cur_ptr);
-				if (!g_LibSys.CreateDirectory(build))
+				if (!g_LibSys.CreateFolder(build))
 				{
 					break;
 				}

@@ -75,7 +75,7 @@ public:
 	void GetPlatformError(char *error, size_t maxlength);
 	size_t PathFormat(char *buffer, size_t len, const char *fmt, ...);
 	const char *GetFileExtension(const char *filename);
-	bool CreateDirectory(const char *path);
+	bool CreateFolder(const char *path);
 	size_t GetFileFromPath(char *buffer, size_t maxlength, const char *path);
 };
 

@@ -349,7 +349,7 @@ const char *LibrarySystem::GetFileExtension(const char *filename)
 	return NULL;
 }
 
-bool LibrarySystem::CreateDirectory(const char *path)
+bool LibrarySystem::CreateFolder(const char *path)
 {
 #if defined PLATFORM_WINDOWS
 	return (mkdir(path) != -1);

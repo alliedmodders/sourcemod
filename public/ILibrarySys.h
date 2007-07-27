@@ -29,7 +29,7 @@
 namespace SourceMod
 {
 	#define SMINTERFACE_LIBRARYSYS_NAME		"ILibrarySys"
-	#define SMINTERFACE_LIBRARYSYS_VERSION	2
+	#define SMINTERFACE_LIBRARYSYS_VERSION	3
 
 	class ILibrary
 	{
@@ -181,6 +181,14 @@ namespace SourceMod
 		 * @return			Pointer to file extension.
 		 */
 		virtual const char *GetFileExtension(const char *filename) =0;
+
+		/**
+		 * @brief Creates a directory.
+		 *
+		 * @param path		Full, absolute path of the directory to create.
+		 * @return			True on success, false otherwise.
+		 */
+		virtual bool CreateFolder(const char *path) =0;
 	};
 }
 

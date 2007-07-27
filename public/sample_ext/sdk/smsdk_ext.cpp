@@ -63,6 +63,9 @@ IADTFactory *adtfactory = NULL;
 #if defined SMEXT_ENABLE_THREADER
 IThreader *threader = NULL;
 #endif
+#if defined SMEXT_ENABLE_LIBSYS
+ILibrarySys *libsys = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -129,6 +132,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_THREADER
 	SM_GET_IFACE(THREADER, threader);
+#endif
+#if defined SMEXT_ENABLE_LIBSYS
+	SM_GET_IFACE(LIBRARYSYS, libsys);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
