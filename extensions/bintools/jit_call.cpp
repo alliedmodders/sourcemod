@@ -28,6 +28,7 @@
 #include "jit_call.h"
 
 jit_uint32_t g_StackUsage = 0;
+jit_uint32_t g_StackAlign = 0;
 jit_uint32_t g_RegDecoder = 0;
 
 /********************
@@ -70,6 +71,10 @@ inline void Write_Execution_Prologue(JitWriter *jit, bool is_void, bool has_para
 	//if has_params
 	// push ebx
 	// mov ebx, [ebp+8]
+	//push esi
+	//mov esi, esp
+	//and esp, 0xFFFFFFF0
+	//sub esp, <alignment>
 	IA32_Push_Reg(jit, REG_EBP);
 	IA32_Mov_Reg_Rm(jit, REG_EBP, REG_ESP, MOD_REG);
 	if (!is_void)
@@ -82,10 +87,26 @@ inline void Write_Execution_Prologue(JitWriter *jit, bool is_void, bool has_para
 		IA32_Push_Reg(jit, REG_EBX);
 		IA32_Mov_Reg_Rm_Disp8(jit, REG_EBX, REG_EBP, 8);
 	}
+	IA32_Push_Reg(jit, REG_ESI);
+	IA32_Mov_Reg_Rm(jit, REG_ESI, REG_ESP, MOD_REG);
+	IA32_And_Rm_Imm8(jit, REG_ESP, MOD_REG, -16);
+
+	if (!jit->outbase)
+	{
+		/* Alloc this instruction before knowing the real stack usage */
+		IA32_Sub_Rm_Imm32(jit, REG_ESP, 1337, MOD_REG);
+	} else {
+		if (g_StackAlign)
+		{
+			IA32_Sub_Rm_Imm32(jit, REG_ESP, g_StackAlign, MOD_REG);
+		}
+	}
 }
 
 inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_params)
 {
+	//mov esp, esi
+	//pop esi
 	//if has_params
 	// pop ebx
 	//if !is_void
@@ -93,6 +114,8 @@ inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_param
 	//mov esp, ebp
 	//pop ebp
 	//ret
+	IA32_Mov_Reg_Rm(jit, REG_ESP, REG_ESI, MOD_REG);
+	IA32_Pop_Reg(jit, REG_ESI);
 	if (has_params)
 	{
 		IA32_Pop_Reg(jit, REG_EBX);
@@ -510,6 +533,8 @@ void JIT_Compile(CallWrapper *pWrapper, FuncAddrMethod method)
 	const PassInfo *pRet = pWrapper->GetReturnInfo();
 	bool hasParams = (ParamCount || Convention == CallConv_ThisCall);
 
+	g_StackUsage = 0;
+
 	writer.outbase = NULL;
 	writer.outptr = NULL;
 
@@ -607,6 +632,7 @@ skip_retbuffer:
 		writer.outbase = (jitcode_t)g_SPEngine->ExecAlloc(CodeSize);
 		writer.outptr = writer.outbase;
 		pWrapper->m_Addrs[ADDR_CODEBASE] = writer.outbase;
+		g_StackAlign = (g_StackUsage) ? ((g_StackUsage & 0xFFFFFFF0) + 16) - g_StackUsage : 0;
 		g_StackUsage = 0;
 		g_RegDecoder = 0;
 		Needs_Retbuf = false;
