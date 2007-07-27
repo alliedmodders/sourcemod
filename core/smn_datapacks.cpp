@@ -66,7 +66,7 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -87,7 +87,7 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -109,7 +109,7 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	IDataPack *pDataPack;
 	int err;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -137,7 +137,7 @@ static cell_t smn_ReadPackCell(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -161,7 +161,7 @@ static cell_t smn_ReadPackFloat(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -185,7 +185,7 @@ static cell_t smn_ReadPackString(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -212,7 +212,7 @@ static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -237,7 +237,7 @@ static cell_t smn_GetPackPosition(IPluginContext *pContext, const cell_t *params
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -256,7 +256,7 @@ static cell_t smn_SetPackPosition(IPluginContext *pContext, const cell_t *params
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
@@ -280,7 +280,7 @@ static cell_t smn_IsPackReadable(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec;
 	IDataPack *pDataPack;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
