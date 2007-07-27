@@ -146,4 +146,9 @@
 	{
 		"en"			"Admin cache has been refreshed."
 	}	
+	
+	"Invalid Amount"
+	{
+		"en"			"Invalid amount specified"
+	}	
 }
