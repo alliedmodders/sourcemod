@@ -25,7 +25,16 @@ class DataPackNatives :
 public:
 	void OnSourceModAllInitialized()
 	{
-		g_DataPackType = g_HandleSys.CreateType("DataPack", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		HandleAccess hacc;
+		TypeAccess tacc;
+
+		g_HandleSys.InitAccessDefaults(&tacc, &hacc);
+		tacc.access[HTypeAccess_Create] = true;
+		tacc.access[HTypeAccess_Inherit] = true;
+		tacc.ident = g_pCoreIdent;
+		hacc.access[HandleAccess_Read] = HANDLE_RESTRICT_OWNER;
+
+		g_DataPackType = g_HandleSys.CreateType("DataPack", this, 0, &tacc, &hacc, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{

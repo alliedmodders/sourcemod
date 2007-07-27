@@ -139,15 +139,10 @@ namespace SourceMod
 		virtual void FreeDataPack(IDataPack *pack) =0;
 
 		/**
-		 * @brief Returns the automated data pack handle type.
+		 * @brief Not implemented, do not use.
 		 *
-		 * The read-only data type is the parent of the writable type.  
-		 * Note that calling CloseHandle() on either type will release the data pack.
-		 * The read-only type is inheritable, but due to limitations of the Handle System,
-		 * the writable type is not.
-		 *
-		 * @param readonly	If true, the read-only type will be returned.
-		 * @return			The Handle type for storing generic data packs.
+		 * @param readonly	Ignored
+		 * @return			0
 		 */
 		virtual HandleType_t GetDataPackHandleType(bool readonly=false) =0;
 
