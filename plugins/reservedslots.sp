@@ -43,7 +43,7 @@ new Handle:sv_visiblemaxplayers;
 
 public OnPluginStart()
 {
-	LoadTranslations("plugin.reservedslots");
+	LoadTranslations("reservedslots.phrases");
 	
 	sm_reserved_slots = CreateConVar("sm_reserved_slots", "0", "Number of reserved player slots", 0, true, 0.0);
 	sm_hide_slots = CreateConVar("sm_hide_slots", "0", "If set to 1, reserved slots will hidden (subtracted from the max slot count)", 0, true, 0.0, true, 1.0);

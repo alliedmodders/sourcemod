@@ -49,7 +49,7 @@ new bool:g_INS = false;
  
 public OnPluginStart()
 {
-	LoadTranslations("plugin.nextmap");
+	LoadTranslations("nextmap.phrases");
 	
 	g_VGUIMenu = GetUserMessageId("VGUIMenu");
 	if (g_VGUIMenu == INVALID_MESSAGE_ID)

@@ -40,7 +40,7 @@ new Handle:sm_flood_time;								/* Handle to sm_flood_time convar */
 
 public OnPluginStart()
 {
-	LoadTranslations("plugin.antiflood");
+	LoadTranslations("antiflood.phrases");
 	
 	RegConsoleCmd("say", CheckChatFlood);
 	RegConsoleCmd("say_team", CheckChatFlood);

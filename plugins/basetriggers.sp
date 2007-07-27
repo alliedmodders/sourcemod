@@ -43,7 +43,7 @@ new Handle:g_Timer_TimeShow = INVALID_HANDLE;
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("plugin.basetriggers");
+	LoadTranslations("basetriggers.phrases");
 	
 	g_Cvar_TriggerShow = CreateConVar("sm_trigger_show", "1", "Display timeleft to all players? (0 off, 1 on, def. 1)", 0, true, 0.0, true, 1.0);	
 	g_Cvar_TimeleftInterval = CreateConVar("sm_timeleft_interval", "0.0", "Display timeleft every x seconds. Default 0.", 0, true, 0.0, true, 1800.0);

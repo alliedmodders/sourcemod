@@ -38,7 +38,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("plugin.adminhelp");
+	LoadTranslations("adminhelp.phrases");
 	RegConsoleCmd("sm_help", HelpCmd, "Displays SourceMod commands and descriptions");
 	RegConsoleCmd("sm_searchcmd", HelpCmd, "Searches SourceMod commands");
 }
