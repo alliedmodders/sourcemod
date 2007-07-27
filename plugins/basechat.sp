@@ -48,7 +48,6 @@ new g_INS = false;
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("plugin.basecommands");
 
 	g_Cvar_Chatmode = CreateConVar("sm_chat_mode", "1", "Allows player's to send messages to admin chat.", 0, true, 0.0, true, 1.0);
 	g_Cvar_Psaymode = CreateConVar("sm_psay_mode", "0", "Allows player's to use psay 'say @@' alias.", 0, true, 0.0, true, 1.0);
