@@ -62,9 +62,13 @@ public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], con
 {
 	new Float:newval = StringToFloat(newValue);
 	
-	if (newval < 1.0 && g_Timer_TimeShow != INVALID_HANDLE)
+	if (newval < 1.0)
 	{
-		KillTimer(g_Timer_TimeShow);		
+		if (g_Timer_TimeShow != INVALID_HANDLE)
+		{
+			KillTimer(g_Timer_TimeShow);		
+		}
+		
 		return;
 	}
 	
