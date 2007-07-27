@@ -134,11 +134,11 @@ public Action:Command_Say(client, args)
 		
 		if(GetConVarInt(g_Cvar_TriggerShow))
 		{
-			PrintToChatAll("[SM] %t %s", "Thetime", ctime);
+			PrintToChatAll("[SM] %t", "Thetime", ctime);
 		}
 		else
 		{
-			PrintToChat(client,"[SM] %t %s", "Thetime", ctime);
+			PrintToChat(client,"[SM] %t", "Thetime", ctime);
 		}
 	}
 	else if (strcmp(text[startidx], "ff", false) == 0 || strcmp(text[startidx], "/ff", false) == 0)
