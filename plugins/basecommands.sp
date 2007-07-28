@@ -221,7 +221,6 @@ public Action:Command_Ban(client, args)
 	GetCmdArg(2, s_time, sizeof(s_time));
 	
 	new time = StringToInt(s_time);
-	new iptime = (time < 2 ? time : 2);
 	
 	decl String:reason[128];
 	if (args >= 3)
@@ -231,9 +230,8 @@ public Action:Command_Ban(client, args)
 		reason[0] = '\0';
 	}
 	
-	decl String:authid[64], String:ip[50];
+	decl String:authid[64];
 	GetClientAuthString(target, authid, sizeof(authid));
-	GetClientIP(target, ip, sizeof(ip));
 	GetClientName(target, arg, sizeof(arg));
 	
 	/* Fire the ban forward */
@@ -273,7 +271,6 @@ public Action:Command_Ban(client, args)
 			strcopy(reason, sizeof(reason), "Banned");
 		}
 		
-		ServerCommand("banip %d %s", iptime, ip);
 		ServerCommand("banid %d %s", time, authid);
 		KickClient(target, "%s", reason);
 		
