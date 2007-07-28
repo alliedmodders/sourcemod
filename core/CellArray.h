@@ -112,7 +112,14 @@ public:
 			m_Size = count;
 			return true;
 		}
-		return GrowIfNeeded(m_Size - count);
+
+		if(!GrowIfNeeded(count - m_Size))
+		{
+			return false;
+		}
+
+		m_Size = count;
+		return true;
 	}
 private:
 	bool GrowIfNeeded(size_t count)
