@@ -109,7 +109,6 @@ CExtension::~CExtension()
 {
 	if (m_pAPI)
 	{
-		m_pAPI->OnExtensionUnload();
 		if (m_PlId)
 		{
 			g_pMMPlugins->Unload(m_PlId, true, NULL, 0);
@@ -687,6 +686,10 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 				}
 			}
 		}
+
+		/* Tell it to unload */
+		pAPI = pExt->GetAPI();
+		pAPI->OnExtensionUnload();
 	}
 
 	IdentityToken_t *pIdentity;
