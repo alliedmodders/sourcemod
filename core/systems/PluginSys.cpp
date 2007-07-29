@@ -932,6 +932,8 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		{
 			/* Autoload any modules */
 			LoadOrRequireExtensions(pPlugin, 1, error, maxlength);
+		} else {
+			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
 		}
 	}
 
