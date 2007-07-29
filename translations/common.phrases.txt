@@ -71,6 +71,12 @@
 		"#format"		"{1:s}"
 		"en"			"Slayed player '{1}'"
 	}
+
+	"Played Sound"
+	{
+		"#format"		"{1:s}"
+		"en"			"Played sound on player '{1}'"
+	}
 	
 	"Unable to find cvar"
 	{

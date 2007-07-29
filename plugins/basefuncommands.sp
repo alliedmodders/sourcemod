@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
@@ -25,7 +25,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-public Plugin:myinfo = 
+public Plugin:myinfo =
 {
 	name = "Basic Fun Commands",
 	author = "AlliedModders LLC",
@@ -41,6 +41,35 @@ public OnPluginStart()
 	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
+	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> [filename]");
+}
+
+public Action:Command_Play(client, args)
+{
+	if(args < 2)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_burn <#userid|name> [sound]");
+	}
+
+	decl String:Arg[65];
+	GetCmdArg(1, Arg, sizeof(Arg));
+
+	new target = FindTarget(client, Arg);
+	if (target == -1)
+	{
+		return Plugin_Handled;
+	}
+
+	decl String:SoundFile[PLATFORM_MAX_PATH];
+	GetCmdArg(2, SoundFile, sizeof(SoundFile));
+	GetClientName(target, Arg, sizeof(Arg));
+
+	ShowActivity(client, "%t", "Played Sound", Arg);
+	LogMessage("\"%L\" played sound on \"%L\" (file \"%s\")", client, target, SoundFile);
+
+	ClientCommand(target, "playgamesound %s", SoundFile);
+
+	return Plugin_Handled;
 }
 
 public Action:Command_Burn(client, args)
@@ -49,13 +78,13 @@ public Action:Command_Burn(client, args)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_burn <#userid|name> [time]");
 		return Plugin_Handled;
-	}	
-	
+	}
+
 	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));	
-	
+	GetCmdArg(1, arg, sizeof(arg));
+
 	new Float:seconds = 20.0;
-	
+
 	if (args > 1)
 	{
 		decl String:time[20];
@@ -64,22 +93,22 @@ public Action:Command_Burn(client, args)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;
-		}		
+		}
 	}
-	
+
 	new target = FindTarget(client, arg);
 	if (target == -1)
 	{
 		return Plugin_Handled;
 	}
-	
+
 	GetClientName(target, arg, sizeof(arg));
-	
+
 	ShowActivity(client, "%t", "Ignited player", arg);
 	LogMessage("\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 	IgniteEntity(target, seconds);
-	
-	return Plugin_Handled;	
+
+	return Plugin_Handled;
 }
 
 public Action:Command_Slap(client, args)
@@ -88,13 +117,13 @@ public Action:Command_Slap(client, args)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_slap <#userid|name> [damage]");
 		return Plugin_Handled;
-	}	
-	
+	}
+
 	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));	
-	
+	GetCmdArg(1, arg, sizeof(arg));
+
 	new damage = 5;
-	
+
 	if (args > 1)
 	{
 		decl String:arg2[20];
@@ -103,22 +132,22 @@ public Action:Command_Slap(client, args)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;
-		}		
+		}
 	}
-	
+
 	new target = FindTarget(client, arg);
 	if (target == -1)
 	{
 		return Plugin_Handled;
 	}
-	
+
 	GetClientName(target, arg, sizeof(arg));
-	
+
 	ShowActivity(client, "%t", "Slapped player", arg);
 	LogMessage("\"%L\" slapped \"%L\" (damage \"%d\")", client, target, damage);
 	SlapPlayer(target, damage, true);
-	
-	return Plugin_Handled;	
+
+	return Plugin_Handled;
 }
 
 public Action:Command_Slay(client, args)
@@ -127,22 +156,22 @@ public Action:Command_Slay(client, args)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_slay <#userid|name>");
 		return Plugin_Handled;
-	}	
-	
+	}
+
 	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));	
-	
+	GetCmdArg(1, arg, sizeof(arg));
+
 	new target = FindTarget(client, arg);
 	if (target == -1)
 	{
 		return Plugin_Handled;
 	}
-	
+
 	GetClientName(target, arg, sizeof(arg));
-	
+
 	ShowActivity(client, "%t", "Slayed player", arg);
 	LogMessage("\"%L\" slayed \"%L\"", client, target);
 	ForcePlayerSuicide(target);
-	
-	return Plugin_Handled;	
+
+	return Plugin_Handled;
 }
