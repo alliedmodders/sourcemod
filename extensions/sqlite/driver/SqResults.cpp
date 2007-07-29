@@ -275,7 +275,7 @@ DBResult SqResults::CopyString(unsigned int columnId, char *buffer, size_t maxle
 			field->type = SQLITE_TEXT;
 			res = DBVal_Null;
 		}
-		size_t wr;
+		size_t wr = 0;
 		if (field->type == SQLITE_TEXT)
 		{
 			wr = strncopy(buffer, ptr, maxlength);

@@ -80,10 +80,10 @@ private:
 	sqlite3_stmt *m_pStmt;		/** DOES NOT CHANGE */
 	String *m_ColNames;			/** DOES NOT CHANGE */
 	unsigned int m_ColCount;	/** DOES NOT CHANGE */
+	BaseStringTable m_Strings;	/** DOES NOT CHANGE */
+	BaseMemTable *m_pMemory;	/** DOES NOT CHANGE */
 	unsigned int m_RowCount;
 	unsigned int m_MaxRows;
-	BaseMemTable *m_pMemory;	/** DOES NOT CHANGE */
-	BaseStringTable m_Strings;	/** DOES NOT CHANGE */
 	SqField *m_Rows;
 	unsigned int m_CurRow;
 	unsigned int m_NextRow;
