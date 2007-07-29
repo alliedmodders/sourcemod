@@ -128,7 +128,7 @@ namespace builder
 			libs[7].Destination = "addons/sourcemod/extensions";
 			libs[7].LocalPath = "extensions/sqlite";
 			libs[7].Name = "dbi.sqlite.ext";
-			libs[7].ProjectFile = "sqlite";
+			libs[7].ProjectFile = "sm_sqlite";
 
 			return libs;
 		}
