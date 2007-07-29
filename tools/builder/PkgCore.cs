@@ -83,7 +83,7 @@ namespace builder
 		 */
 		public override Library [] GetLibraries()
 		{
-			Library [] libs = new Library[7];
+			Library [] libs = new Library[8];
 
 			for (int i=0; i<libs.Length; i++)
 			{
@@ -124,6 +124,11 @@ namespace builder
 			libs[6].LocalPath = "extensions/sdktools";
 			libs[6].Name = "sdktools.ext";
 			libs[6].ProjectFile = "sdktools";
+
+			libs[7].Destination = "addons/sourcemod/extensions";
+			libs[7].LocalPath = "extensions/sqlite";
+			libs[7].Name = "dbi.sqlite.ext";
+			libs[7].ProjectFile = "sqlite";
 
 			return libs;
 		}
