@@ -27,6 +27,7 @@ SqQuery::SqQuery(SqDatabase *parent, sqlite3_stmt *stmt) :
  m_pParent(parent), m_pStmt(stmt), m_pResults(NULL), m_AffectedRows(0), m_InsertID(0)
 {
 	m_ParamCount = sqlite3_bind_parameter_count(m_pStmt);
+	m_ColCount = sqlite3_column_count(m_pStmt);
 	m_pParent->IncReferenceCount();
 }
 
@@ -127,15 +128,25 @@ bool SqQuery::Execute()
 {
 	int rc;
 
+	/* If we don't have a result set and we have a column count, 
+	 * create a result set pre-emptively.  This is in case there
+	 * are no rows in the upcoming result set.
+	 */
+	if (!m_pResults && m_ColCount)
+	{
+		m_pResults = new SqResults(this);
+	}
+
 	/* If we've got results, throw them away */
 	if (m_pResults)
 	{
 		m_pResults->ResetResultCount();
 	}
 
+	/* Fetch each row, if any */
 	while ((rc = sqlite3_step(m_pStmt)) == SQLITE_ROW)
 	{
-		/* Delay creation as long as possible... */
+		/* This should NEVER happen but we're being safe. */
 		if (!m_pResults)
 		{
 			m_pResults = new SqResults(this);

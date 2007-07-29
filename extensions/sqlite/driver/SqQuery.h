@@ -81,6 +81,7 @@ private:
 	int m_LastErrorCode;
 	unsigned int m_AffectedRows;
 	unsigned int m_InsertID;
+	unsigned int m_ColCount;
 };
 
 #endif //_INCLUDE_SQLITE_SOURCEMOD_QUERY_H_
