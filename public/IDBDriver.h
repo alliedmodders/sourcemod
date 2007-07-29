@@ -49,6 +49,9 @@ namespace SourceMod
 		DBType_Blob,			/**< Raw binary data (variable length) */
 		DBType_Integer,			/**< 4-byte signed integer */
 		DBType_Float,			/**< 4-byte floating point  */
+		DBType_NULL,			/**< NULL (no data) */
+		/* --------- */
+		DBTypes_TOTAL,			/**< Total number of database types known */
 	};
 
 	/**
