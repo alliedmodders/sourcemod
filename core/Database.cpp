@@ -77,13 +77,12 @@ void DBManager::OnSourceModLevelChange(const char *mapName)
 		}
 	}
 	m_pConfigLock->Unlock();
-
-	g_PluginSys.RemovePluginsListener(this);
 }
 
 void DBManager::OnSourceModShutdown()
 {
 	KillWorkerThread();
+	g_PluginSys.RemovePluginsListener(this);
 	m_pConfigLock->DestroyThis();
 	m_pThinkLock->DestroyThis();
 	m_pQueueLock->DestroyThis();
@@ -313,7 +312,7 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 		if (m_drivers[i] == pDriver)
 		{
 			m_drivers.erase(m_drivers.iterAt(i));
-			return;
+			break;
 		}
 	}
 
