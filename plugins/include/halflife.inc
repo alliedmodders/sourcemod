@@ -264,13 +264,13 @@ stock PrintCenterTextAll(const String:format[], any:...)
 {
 	new maxClients = GetMaxClients();
 	decl String:buffer[192];
-	
-	VFormat(buffer, sizeof(buffer), format, 2);
-	
+
 	for (new i = 1; i <= maxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
+			SetGlobalTransTarget(i);
+			VFormat(buffer, sizeof(buffer), format, 2);
 			PrintCenterText(i, "%s", buffer);
 		}
 	}
