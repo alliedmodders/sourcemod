@@ -48,7 +48,7 @@ public Action:Command_Play(client, args)
 {
 	if(args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_burn <#userid|name> [sound]");
+		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> [sound]");
 	}
 
 	decl String:Arg[65];
