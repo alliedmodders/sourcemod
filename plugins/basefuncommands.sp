@@ -41,18 +41,21 @@ public OnPluginStart()
 	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
-	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> [filename]");
+	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
 }
 
 public Action:Command_Play(client, args)
 {
 	if(args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> [sound]");
+		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
 	}
 
-	decl String:Arg[65];
-	GetCmdArg(1, Arg, sizeof(Arg));
+	new String:Arguments[PLATFORM_MAX_PATH + 65];
+	GetCmdArgString(Arguments, sizeof(Arguments));
+
+ 	decl String:Arg[65];
+	new len = BreakString(Arguments, Arg, sizeof(Arg));
 
 	new target = FindTarget(client, Arg);
 	if (target == -1)
@@ -60,14 +63,30 @@ public Action:Command_Play(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:SoundFile[PLATFORM_MAX_PATH];
-	GetCmdArg(2, SoundFile, sizeof(SoundFile));
+	/* Make sure it does not go out of bound by doing "sm_play user  "*/
+	if(len == -1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
+		return Plugin_Handled;
+	}
+
+	/* Incase they put quotes and white spaces after the quotes */
+	if(Arguments[len] == '"')
+	{
+		len++;
+		new FileLen = TrimString(Arguments[len]) + len;
+
+		if(Arguments[FileLen - 1] == '"')
+		{
+			Arguments[FileLen - 1] = '\0';
+		}
+	}
+
 	GetClientName(target, Arg, sizeof(Arg));
-
 	ShowActivity(client, "%t", "Played Sound", Arg);
-	LogMessage("\"%L\" played sound on \"%L\" (file \"%s\")", client, target, SoundFile);
+	LogMessage("\"%L\" played sound on \"%L\" (file \"%s\")", client, target, Arguments[len]);
 
-	ClientCommand(target, "playgamesound %s", SoundFile);
+	ClientCommand(target, "playgamesound \"%s\"", Arguments[len]);
 
 	return Plugin_Handled;
 }
