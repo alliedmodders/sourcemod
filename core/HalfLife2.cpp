@@ -85,6 +85,8 @@ void CHalfLife2::OnSourceModStartup(bool late)
 void CHalfLife2::OnSourceModAllInitialized()
 {
 	m_MsgTextMsg = g_UserMsgs.GetMessageIndex("TextMsg");
+	m_HinTextMsg = g_UserMsgs.GetMessageIndex("HintText");
+	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
 }
 
@@ -256,6 +258,60 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 
 	pBitBuf->WriteByte(dest);
 	pBitBuf->WriteString(msg);
+	g_UserMsgs.EndMessage();
+
+	return true;
+}
+
+bool CHalfLife2::HinTextMsg(int client, const char *msg)
+{
+	bf_write *pBitBuf = NULL;
+	cell_t players[] = {client};
+
+	if ((pBitBuf = g_UserMsgs.StartMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
+	pBitBuf->WriteByte(1);
+	pBitBuf->WriteString(msg);
+	g_UserMsgs.EndMessage();
+
+	return true;
+}
+
+bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show)
+{
+	bf_write *pBitBuf = NULL;
+	KeyValues *SubKey = NULL;
+	int count = 0;
+	cell_t players[] = {client};
+
+	if ((pBitBuf = g_UserMsgs.StartMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
+	if (data)
+	{
+		SubKey = data->GetFirstSubKey();
+		while (SubKey)
+		{
+			count++;
+			SubKey = SubKey->GetNextKey();
+		}
+		SubKey = data->GetFirstSubKey();
+	}
+
+	pBitBuf->WriteString(name);
+	pBitBuf->WriteByte((show) ? 1 : 0);
+	pBitBuf->WriteByte(count);
+	while (SubKey)
+	{
+		pBitBuf->WriteString(SubKey->GetName());
+		pBitBuf->WriteString(SubKey->GetString());
+		SubKey = SubKey->GetNextKey();
+	}
 	g_UserMsgs.EndMessage();
 
 	return true;

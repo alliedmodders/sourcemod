@@ -20,6 +20,7 @@
 #include "sm_trie.h"
 #include "sm_globals.h"
 #include <IGameHelpers.h>
+#include <KeyValues.h>
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -57,6 +58,8 @@ public: //IGameHelpers
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
 	bool TextMsg(int client, int dest, const char *msg);
+	bool HinTextMsg(int client, const char *msg);
+	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
@@ -64,6 +67,8 @@ private:
 	List<DataTableInfo *> m_Tables;
 	THash<datamap_t *, DataMapTrie> m_Maps;
 	int m_MsgTextMsg;
+	int m_HinTextMsg;
+	int m_VGUIMenu;
 };
 
 extern CHalfLife2 g_HL2;

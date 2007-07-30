@@ -18,6 +18,11 @@
 #endif
 #define _halflife_included
 
+#define MOTDPANEL_TYPE_TEXT		0	/**< Treat msg as plain text */
+#define MOTDPANEL_TYPE_INDEX		1	/**< Msg is auto determined by the engine */
+#define MOTDPANEL_TYPE_URL		2	/**< Treat msg as an URL link */
+#define MOTDPANEL_TYPE_FILE		3	/**< Treat msg as a filename to be openned */
+
 enum DialogType
 {
 	DialogType_Msg = 0,		/**< just an on screen message */
@@ -274,4 +279,74 @@ stock PrintCenterTextAll(const String:format[], any:...)
 			PrintCenterText(i, "%s", buffer);
 		}
 	}
+}
+
+/**
+ * Prints a message to a specific client with a hint box.
+ *
+ * @param client		Client index.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error				If the client is not connected an error will be thrown.
+ */
+native PrintHintText(client, const String:format[], any:...);
+
+/**
+ * Prints a message to all clients with a hint box.
+ *
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+stock PrintHintTextToAll(const String:format[], any:...)
+{
+	new maxClients = GetMaxClients();
+	decl String:buffer[192];
+	
+	for (new i = 1; i <= maxClients; i++)
+	{
+		if (IsClientInGame(i))
+		{
+			SetGlobalTransTarget(i);
+			VFormat(buffer, sizeof(buffer), format, 2);
+			PrintHintText(i, "%s", buffer);
+		}
+	}
+}
+
+/**
+ * Shows a VGUI panel to a specific client.
+ *
+ * @param client		Client index.
+ * @param name			Panel type name (Check viewport_panel_names.h to see a list of some panel names).
+ * @param Kv			KeyValues handle with all the data for the panel setup (Depends on the panel type and may be unused).
+ * @param show			True to show the panel, or false to remove it from the client screen.
+ * @noreturn
+ * @error				If the client is not connected an error will be thrown.
+ */
+native ShowVGUIPanel(client, const String:name[], Handle:Kv=INVALID_HANDLE, bool:show=true);
+
+/**
+ * Shows a MOTD panel to a specific client.
+ *
+ * @param client		Client index.
+ * @param title			Title of the panel (printed on the top border of the window).
+ * @param msg			Contents of the panel, it can be treated as an url, filename or plain text
+ *				  depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
+ * @param type			Determines the way to treat the message body of the panel.
+ * @noreturn
+ * @error				If the client is not connected an error will be thrown.
+ */
+stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDPANEL_TYPE_INDEX)
+{
+	decl String:num[3];
+	new Handle:Kv = CreateKeyValues("data");
+	IntToString(type, num, sizeof(num));
+
+	KvSetString(Kv, "title", title);
+	KvSetString(Kv, "type", num);
+	KvSetString(Kv, "msg", msg);
+	ShowVGUIPanel(client, "info", Kv);
+	CloseHandle(Kv);
 }

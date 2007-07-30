@@ -326,6 +326,78 @@ static cell_t PrintCenterText(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t PrintHintText(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+
+	if (!pPlayer->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	g_SourceMod.SetGlobalTarget(client);
+
+	char buffer[192];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	/* Check for an error before printing to the client */
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	if (!g_HL2.HinTextMsg(client, buffer))
+	{
+		return pContext->ThrowNativeError("Could not send a usermessage");
+	}
+
+	return 1;
+}
+
+static cell_t ShowVGUIPanel(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError herr;
+	char *name;
+	KeyValues *pKV = NULL;
+	int client = params[1];
+	Handle_t hndl = static_cast<Handle_t>(params[3]);
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+
+	if (!pPlayer->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	if (hndl != BAD_HANDLE)
+	{
+		pKV = g_SourceMod.ReadKeyValuesHandle(hndl, &herr, true);
+		if (herr != HandleError_None)
+		{
+			return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+		}
+	}
+
+	pContext->LocalToString(params[2], &name);
+
+	if (!g_HL2.ShowVGUIMenu(client, name, pKV, (params[4]) ? true : false))
+	{
+		return pContext->ThrowNativeError("Could not send a usermessage");
+	}
+
+	return 1;
+}
+
 static HalfLifeNatives s_HalfLifeNatives;
 
 REGISTER_NATIVES(halflifeNatives)
@@ -354,5 +426,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"CreateDialog",			smn_CreateDialog},
 	{"PrintToChat",				PrintToChat},
 	{"PrintCenterText",			PrintCenterText},
+	{"PrintHintText",			PrintHintText},
+	{"ShowVGUIPanel",			ShowVGUIPanel},
 	{NULL,						NULL},
 };
