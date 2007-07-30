@@ -164,20 +164,30 @@ public Action:Command_Unban(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:arg[50];
+	decl String:arg[50], String:new_arg[50];
 	new start=0;
-	decl String:new_arg[50];
 	GetCmdArgString(arg, sizeof(arg));
 
-	if (strncmp(arg, "STEAM_0:", 8) == 0)
+	if(arg[start] == '"')
 	{
-		start = 8;
-	} else if (strncmp(arg, "0:1:", 4) == 0 || strncmp(arg, "0:0:", 4) == 0)
+		start++;
+	}
+
+	if (strncmp(arg[start], "STEAM_0:", 8, false) == 0)
 	{
-		start = 2;
+		start += 8;
+	} else if (strncmp(arg[start], "0:1:", 4) == 0 || strncmp(arg[start], "0:0:", 4) == 0) {
+		start += 2;
 	}
 
 	Format(new_arg, sizeof(new_arg), "STEAM_0:%s", arg[start]);
+
+	/* Remove white spaces */
+	new len = TrimString(new_arg);
+	if(new_arg[len - 1] == '"')
+	{
+		new_arg[len - 1] = '\0';
+	}
 
 	new Action:act = Plugin_Continue;
 	Call_StartForward(hBanRemoved);
@@ -187,13 +197,13 @@ public Action:Command_Unban(client, args)
 
 	if (act < Plugin_Handled)
 	{
-		LogMessage("\"%L\" removed ban (filter \"%s\")", client, arg[start]);
-		ReplyToCommand(client, "[SM] %t", "Removed bans matching", arg);
+		LogMessage("\"%L\" removed ban (filter \"%s\")", client, new_arg);
+		ReplyToCommand(client, "[SM] %t", "Removed bans matching", new_arg);
 	}
 
 	if (act < Plugin_Stop)
 	{
-		ServerCommand("removeid \"%s\"", arg[start]);
+		ServerCommand("removeid %s", new_arg);
 		ServerCommand("writeid");
 	}
 
