@@ -572,8 +572,12 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	}
 
+
+	decl String:Arguments[256];
+	GetCmdArgString(Arguments, sizeof(Arguments));
+
 	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
+	new len = BreakString(Arguments, arg, sizeof(arg));
 
 	new target = FindTarget(client, arg);
 	if (target == -1)
@@ -581,27 +585,19 @@ public Action:Command_Kick(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:name[65];
-	GetClientName(target, name, sizeof(name));
+	GetClientName(target, arg, sizeof(arg));
 
-	decl String:reason[256];
-
-
-	if (args < 2)
+	if (len == -1)
 	{
 		/* Safely null terminate */
-		reason[0] = '\0';
-	} else {
-		GetCmdArgString(reason, sizeof(reason));
-		new len = BreakString(reason, arg, sizeof(arg));
-
-		strcopy(reason, sizeof(reason), reason[len]);
+		len = 0;
+		Arguments[0] = '\0';
 	}
 
-	ShowActivity(client, "%t", "Kicked player", name);
-	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, target, reason);
+	ShowActivity(client, "%t", "Kicked player", arg);
+	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, target, Arguments[len]);
 
-	KickClient(target, "%s", reason);
+	KickClient(target, "%s", Arguments[len]);
 
 	return Plugin_Handled;
 }
