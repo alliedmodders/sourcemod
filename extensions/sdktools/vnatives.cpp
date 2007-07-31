@@ -502,21 +502,76 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetClientEyePosition(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
+	}
+
+	Vector pos;
+	serverClients->ClientEarPosition(player->GetEdict(), &pos);
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+	addr[0] = sp_ftoc(pos.x);
+	addr[1] = sp_ftoc(pos.y);
+	addr[2] = sp_ftoc(pos.z);
+
+	return 1;
+}
+
+static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo retinfo[1];
+		InitPass(retinfo[0], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("EyeAngles", ValveCall_Player, retinfo, NULL, 0, &pCall))
+		{
+			return pContext->ThrowNativeError("\"EyeAngles\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"EyeAngles\" wrapper failed to initialized");
+		}
+	}
+
+	QAngle *ang;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	FINISH_CALL_SIMPLE(&ang);
+	
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+	addr[0] = sp_ftoc(ang->x);
+	addr[1] = sp_ftoc(ang->y);
+	addr[2] = sp_ftoc(ang->z);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
-	{"ExtinguishPlayer",	ExtinguishPlayer},
-	{"ExtinguishEntity",	ExtinguishPlayer},
-	{"ForcePlayerSuicide",	ForcePlayerSuicide},
-	{"GivePlayerItem",		GiveNamedItem},
-	{"GetPlayerWeaponSlot",	GetPlayerWeaponSlot},
-	{"IgnitePlayer",		IgnitePlayer},
-	{"IgniteEntity",		IgnitePlayer},
-	{"RemovePlayerItem",	RemovePlayerItem},
-	{"TeleportPlayer",		TeleportPlayer},
-	{"TeleportEntity",		TeleportPlayer},
-	{"SetClientViewEntity",	SetClientViewEntity},
-	{"SetLightStyle",		SetLightStyle},
-	{"SlapPlayer",			SlapPlayer},
-	{NULL,					NULL},
+	{"ExtinguishPlayer",		ExtinguishPlayer},
+	{"ExtinguishEntity",		ExtinguishPlayer},
+	{"ForcePlayerSuicide",		ForcePlayerSuicide},
+	{"GivePlayerItem",			GiveNamedItem},
+	{"GetPlayerWeaponSlot",		GetPlayerWeaponSlot},
+	{"IgnitePlayer",			IgnitePlayer},
+	{"IgniteEntity",			IgnitePlayer},
+	{"RemovePlayerItem",		RemovePlayerItem},
+	{"TeleportPlayer",			TeleportPlayer},
+	{"TeleportEntity",			TeleportPlayer},
+	{"SetClientViewEntity",		SetClientViewEntity},
+	{"SetLightStyle",			SetLightStyle},
+	{"SlapPlayer",				SlapPlayer},
+	{"GetClientEyePosition",	GetClientEyePosition},
+	{"GetClientEyeAngles",		GetClientEyeAngles},
+	{NULL,						NULL},
 };
 

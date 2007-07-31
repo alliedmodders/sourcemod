@@ -40,3 +40,13 @@ native SetClientViewEntity(client, entity);
  * @error				Light style index is out of range.
  */
 native SetLightStyle(style, const String:value[]);
+
+/**
+ * Returns the client's eye position.
+ *
+ * @param client		Player's index.
+ * @param pos			Destination vector to store the client's eye position.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientEyePosition(client, Float:pos[3]);

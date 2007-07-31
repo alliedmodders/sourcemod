@@ -105,6 +105,16 @@ native ForcePlayerSuicide(client);
 native SlapPlayer(client, health=5, bool:sound=true);
 
 /**
+ * Returns the client's eye angles.
+ *
+ * @param client		Player's index.
+ * @param ang			Destination vector to store the client's eye angles.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native GetClientEyeAngles(client, Float:ang[3]);
+
+/**
  * @deprecated
  */
 stock IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:level=false)
