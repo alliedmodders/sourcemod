@@ -202,6 +202,11 @@ public:
 	void Call_OnPluginEnd();
 
 	/**
+	 * Calls the OnAllPluginsLoaded function.
+	 */
+	void Call_OnAllPluginsLoaded();
+
+	/**
 	 * Toggles debug mode in the plugin
 	 */
 	bool ToggleDebugMode(bool debug, char *error, size_t maxlength);
@@ -394,6 +399,11 @@ public:
 	 * plugins to the specified forward if the names match.
 	 */
 	void AddFunctionsToForward(const char *name, IChangeableForward *pForward);
+
+	/**
+	 * Iterates through plugins to call OnAllPluginsLoaded.
+	 */
+	void AllPluginsLoaded();
 
 	CPlugin *GetPluginFromIdentity(IdentityToken_t *pToken);
 

@@ -510,6 +510,9 @@ void SourceModBase::DoGlobalPluginLoads()
 
 	/* Re-mark any extensions as loaded */
 	g_Extensions.MarkAllLoaded();
+
+	/* Call OnAllPluginsLoaded */
+	g_PluginSys.AllPluginsLoaded();
 }
 
 size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...)

@@ -340,6 +340,23 @@ void CPlugin::Call_OnPluginEnd()
 	pFunction->Execute(&result);
 }
 
+void CPlugin::Call_OnAllPluginsLoaded()
+{
+	if (m_status > Plugin_Paused)
+	{
+		return;
+	}
+
+	cell_t result;
+	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnAllPluginsLoaded");
+	if (!pFunction)
+	{
+		return;
+	}
+
+	pFunction->Execute(&result);
+}
+
 bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 {
 	if (m_status != Plugin_Created)
@@ -977,6 +994,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 			UnloadPlugin(pl);
 			return NULL;
 		}
+		pl->Call_OnAllPluginsLoaded();
 	}
 
 	return pl;
@@ -2314,4 +2332,16 @@ bool CPluginManager::LibraryExists(const char *lib)
 	}
 
 	return false;
+}
+
+void CPluginManager::AllPluginsLoaded()
+{
+	List<CPlugin *>::iterator iter;
+	CPlugin *pl;
+
+	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
+	{
+		pl = (*iter);
+		pl->Call_OnAllPluginsLoaded();
+	}
 }

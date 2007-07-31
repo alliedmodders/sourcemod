@@ -144,6 +144,11 @@ forward OnConfigsExecuted();
 forward OnServerCfg();
 
 /**
+ * Called after all plugins have been loaded.
+ */
+forward OnAllPluginsLoaded();
+
+/**
  * Returns the calling plugin's Handle.
  *
  * @return				Handle of the calling plugin.
