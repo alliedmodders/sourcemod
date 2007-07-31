@@ -22,8 +22,11 @@
 #include "MenuStyle_Valve.h"
 #include "ShareSys.h"
 #include "HandleSys.h"
+#include "sourcemm_api.h"
 
 MenuManager g_Menus;
+
+ConVar sm_menu_sounds("sm_menu_sounds", "1", 0, "Sets whether SourceMod menus play trigger sounds");
 
 /*******************************
  *******************************
@@ -802,4 +805,61 @@ void MenuManager::ReleaseVoteWrapper(IVoteMenuHandler *mh)
 	}
 
 	m_VoteHandlers.push((VoteMenuHandler *)mh);
+}
+
+bool MenuManager::MenuSoundsEnabled()
+{
+	return (sm_menu_sounds.GetInt() != 0);
+}
+
+ConfigResult MenuManager::OnSourceModConfigChanged(const char *key,
+												   const char *value,
+												   ConfigSource source,
+												   char *error,
+												   size_t maxlength)
+{
+	if (strcmp(key, "MenuItemSound") == 0)
+	{
+		m_SelectSound.assign(value);
+		return ConfigResult_Accept;
+	} else if (strcmp(key, "MenuExitBackSound") == 0) {
+		m_ExitBackSound.assign(value);
+		return ConfigResult_Accept;
+	}
+
+	return ConfigResult_Ignore;
+}
+
+const char *MenuManager::GetMenuSound(ItemSelection sel)
+{
+	const char *sound = NULL;
+
+	switch (sel)
+	{
+	case ItemSel_Back:
+	case ItemSel_Next:
+	case ItemSel_Exit:
+	case ItemSel_Item:
+		{
+			if (m_SelectSound.size() > 0)
+			{
+				sound = m_SelectSound.c_str();
+			}
+			break;
+		}
+	case ItemSel_ExitBack:
+		{
+			if (m_ExitBackSound.size() > 0)
+			{
+				sound = m_ExitBackSound.c_str();
+			}
+			break;
+		}
+	default:
+		{
+			break;
+		}
+	}
+
+	return sound;
 }

@@ -18,6 +18,7 @@
 #include "PlayerManager.h"
 #include "MenuManager.h"
 #include "HandleSys.h"
+#include "CellRecipientFilter.h"
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
@@ -275,6 +276,42 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 		cancel = true;
 	} else {
 		ItemSelection type = states.slots[key_press].type;
+
+		/* Check if we should play a sound about the type */
+		if (g_Menus.MenuSoundsEnabled())
+		{
+			CellRecipientFilter filter;
+			cell_t clients[1];
+
+			clients[0] = client;
+			filter.Initialize(clients, 1);
+
+			const char *sound = g_Menus.GetMenuSound(type);
+
+			if (sound != NULL)
+			{
+				edict_t *pEdict = engine->PEntityOfEntIndex(client);
+				if (pEdict)
+				{
+					ICollideable *pCollideable = pEdict->GetCollideable();
+
+					if (pCollideable)
+					{
+						const Vector & pos = pCollideable->GetCollisionOrigin();
+		
+						enginesound->EmitSound(filter, 
+							client, 
+							CHAN_AUTO, 
+							sound, 
+							VOL_NORM, 
+							ATTN_NORM, 
+							0, 
+							PITCH_NORM, 
+							&pos);
+					}
+				}
+			}
+		}
 
 		/* For navigational items, we're going to redisplay */
 		if (type == ItemSel_Back)

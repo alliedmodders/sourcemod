@@ -19,6 +19,7 @@
 #include <sh_vector.h>
 #include <sh_stack.h>
 #include <sh_list.h>
+#include <sh_string.h>
 #include "sm_memtable.h"
 #include "sm_globals.h"
 
@@ -72,6 +73,11 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
+	ConfigResult OnSourceModConfigChanged(const char *key,
+		const char *value,
+		ConfigSource source,
+		char *error,
+		size_t maxlength);
 public: //IMenuManager
 	virtual const char *GetInterfaceName()
 	{
@@ -96,6 +102,9 @@ public: //IHandleTypeDispatch
 public:
 	HandleError ReadMenuHandle(Handle_t handle, IBaseMenu **menu);
 	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);
+public:
+	bool MenuSoundsEnabled();
+	const char *GetMenuSound(ItemSelection sel);
 protected:
 	Handle_t CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner);
 	Handle_t CreateStyleHandle(IMenuStyle *style);
@@ -106,6 +115,8 @@ private:
 	CVector<IMenuStyle *> m_Styles;
 	HandleType_t m_StyleType;
 	HandleType_t m_MenuType;
+	String m_SelectSound;
+	String m_ExitBackSound;
 };
 
 extern MenuManager g_Menus;
