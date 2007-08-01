@@ -843,6 +843,9 @@ ConfigResult MenuManager::OnSourceModConfigChanged(const char *key,
 	} else if (strcmp(key, "MenuExitBackSound") == 0) {
 		m_ExitBackSound.assign(value);
 		return ConfigResult_Accept;
+	} else if (strcmp(key, "MenuExitSound") == 0) {
+		m_ExitSound.assign(value);
+		return ConfigResult_Accept;
 	}
 
 	return ConfigResult_Ignore;
@@ -856,7 +859,6 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 	{
 	case ItemSel_Back:
 	case ItemSel_Next:
-	case ItemSel_Exit:
 	case ItemSel_Item:
 		{
 			if (m_SelectSound.size() > 0)
@@ -870,6 +872,14 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 			if (m_ExitBackSound.size() > 0)
 			{
 				sound = m_ExitBackSound.c_str();
+			}
+			break;
+		}
+	case ItemSel_Exit:
+		{
+			if (m_ExitSound.size() > 0)
+			{
+				sound= m_ExitSound.c_str();
 			}
 			break;
 		}

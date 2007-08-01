@@ -135,6 +135,7 @@ private:
 	HandleType_t m_MenuType;
 	String m_SelectSound;
 	String m_ExitBackSound;
+	String m_ExitSound;
 };
 
 extern MenuManager g_Menus;
