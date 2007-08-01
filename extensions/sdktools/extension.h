@@ -44,7 +44,7 @@
 #include <IGameHelpers.h>
 #include <IEngineTrace.h>
 #include <IEngineSound.h>
-#include <IVoiceServer.h>
+#include <ivoiceserver.h>
 #include <convar.h>
 
 /**
