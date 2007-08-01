@@ -1,3 +1,6 @@
+SourcePawn JIT License
+Version: JULY-31-2007
+
 1. COPYRIGHT INFORMATION
 
  SourcePawn is Copyright (C) 2006-2007 AlliedModders LLC.  All rights reserved.
@@ -17,7 +20,7 @@ its accompanying documentation and source code.  As a condition for granting
 you a license to download or use the JIT, you agree to all of the Terms and 
 Conditions.  If you fail to adhere to the Terms and Conditions, your license 
 to use the JIT is automatically revoked without any action on behalf of the 
-Licensor.  This License may be updated at any time, without prior notice..  
+Licensor.  This License may be updated at any time, without prior notice. 
 Each revision is differentiated by a date version.  This License was created 
 on Jan-27-2007, and modified exclusively for SourcePawn on Jul-31-2007.
 
