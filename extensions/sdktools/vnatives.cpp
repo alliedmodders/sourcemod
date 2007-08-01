@@ -633,6 +633,8 @@ static cell_t IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 		{
 			return info->IsDead() ? 0 : 1;
 		}
+
+		 return pContext->ThrowNativeError("\"IsPlayerAlive\" not supported by this mod");
 	}
 	return (*((uint8_t *)pEntity + lifeState_off) == LIFE_ALIVE) ? 1: 0;
 }

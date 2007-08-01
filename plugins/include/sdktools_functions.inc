@@ -129,7 +129,7 @@ native GetClientEyeAngles(client, Float:ang[3]);
  * Returns if the client is alive or dead.
  *
  * @param client		Player's index.
- * @return			True if the client is dead, false otherwise.
+ * @return			True if the client is alive, false otherwise.
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native bool:IsPlayerAlive(client);
