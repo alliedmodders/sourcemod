@@ -115,6 +115,15 @@ native SlapPlayer(client, health=5, bool:sound=true);
 native GetClientEyeAngles(client, Float:ang[3]);
 
 /**
+ * Returns if the client is alive or dead.
+ *
+ * @param client		Player's index.
+ * @return			True if the client is dead, false otherwise.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native bool:IsPlayerAlive(client);
+
+/**
  * @deprecated
  */
 stock IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:level=false)

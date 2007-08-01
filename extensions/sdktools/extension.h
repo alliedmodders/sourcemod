@@ -45,6 +45,7 @@
 #include <IEngineTrace.h>
 #include <IEngineSound.h>
 #include <ivoiceserver.h>
+#include <iplayerinfo.h>
 #include <convar.h>
 
 /**
@@ -90,6 +91,7 @@ extern INetworkStringTableContainer *netstringtables;
 extern IServerPluginHelpers *pluginhelpers;
 extern IServerGameClients *serverClients;
 extern IVoiceServer *voiceserver;
+extern IPlayerInfoManager *playerinfomngr;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
