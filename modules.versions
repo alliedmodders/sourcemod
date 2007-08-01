@@ -42,3 +42,8 @@ out = svn_version.h
 folder = extensions/mysql
 in = svn_version.tpl
 out = svn_version.h
+
+[sqlite]
+folder = extensions/sqlite
+in = svn_version.tpl
+out = svn_version.h
