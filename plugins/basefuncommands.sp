@@ -46,7 +46,7 @@ public OnPluginStart()
 
 public Action:Command_Play(client, args)
 {
-	if(args < 2)
+	if (args < 2)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
 	}
@@ -64,19 +64,19 @@ public Action:Command_Play(client, args)
 	}
 
 	/* Make sure it does not go out of bound by doing "sm_play user  "*/
-	if(len == -1)
+	if (len == -1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
 		return Plugin_Handled;
 	}
 
 	/* Incase they put quotes and white spaces after the quotes */
-	if(Arguments[len] == '"')
+	if (Arguments[len] == '"')
 	{
 		len++;
 		new FileLen = TrimString(Arguments[len]) + len;
 
-		if(Arguments[FileLen - 1] == '"')
+		if (Arguments[FileLen - 1] == '"')
 		{
 			Arguments[FileLen - 1] = '\0';
 		}
@@ -102,8 +102,21 @@ public Action:Command_Burn(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new Float:seconds = 20.0;
+	new target = FindTarget(client, arg);
+	if (target == -1)
+	{
+		return Plugin_Handled;
+	}
 
+	GetClientName(target, arg, sizeof(arg));
+	
+	if (!IsPlayerAlive(target))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
+		return Plugin_Handled;
+	}
+	
+	new Float:seconds = 20.0;
 	if (args > 1)
 	{
 		decl String:time[20];
@@ -114,14 +127,6 @@ public Action:Command_Burn(client, args)
 			return Plugin_Handled;
 		}
 	}
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	GetClientName(target, arg, sizeof(arg));
 
 	ShowActivity(client, "%t", "Ignited player", arg);
 	LogMessage("\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
@@ -141,8 +146,21 @@ public Action:Command_Slap(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new damage = 5;
+	new target = FindTarget(client, arg);
+	if (target == -1)
+	{
+		return Plugin_Handled;
+	}
 
+	GetClientName(target, arg, sizeof(arg));
+
+	if (!IsPlayerAlive(target))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
+		return Plugin_Handled;
+	}	
+	
+	new damage = 5;
 	if (args > 1)
 	{
 		decl String:arg2[20];
@@ -153,14 +171,6 @@ public Action:Command_Slap(client, args)
 			return Plugin_Handled;
 		}
 	}
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	GetClientName(target, arg, sizeof(arg));
 
 	ShowActivity(client, "%t", "Slapped player", arg);
 	LogMessage("\"%L\" slapped \"%L\" (damage \"%d\")", client, target, damage);
@@ -187,6 +197,12 @@ public Action:Command_Slay(client, args)
 	}
 
 	GetClientName(target, arg, sizeof(arg));
+
+	if (!IsPlayerAlive(target))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
+		return Plugin_Handled;
+	}	
 
 	ShowActivity(client, "%t", "Slayed player", arg);
 	LogMessage("\"%L\" slayed \"%L\"", client, target);

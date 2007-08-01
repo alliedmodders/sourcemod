@@ -157,4 +157,10 @@
 	{
 		"en"			"Invalid amount specified"
 	}	
+
+	"Cannot performed on dead"
+	{
+		"#format"		"{1:s}"
+		"en"			"This action cannot be performed on a dead client \"{1}\""
+	}
 }
