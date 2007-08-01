@@ -882,7 +882,7 @@ void _YamState(int state)
 		g_RootMenu.ConsolePrint("\"Welcome,\" he belches, \"to my lair.\"");
 		g_RootMenu.ConsolePrint("Do you SHAKE Gaben's hand, WALK past him, or OFFER a donut?");
 	} else if (state == 3) {
-		g_RootMenu.ConsolePrint("You walk into the break room.  Alfred \"Adolf\" Reynolds and");
+		g_RootMenu.ConsolePrint("You walk into the break room.  Alfred \"Alf is from Melmac\" Reynolds and");
 		g_RootMenu.ConsolePrint("Yahn \"Yeti\" Bernier are discussing something (you overhear ");
 		g_RootMenu.ConsolePrint("the phrase \"and next Steam update, here's what we should break\").");
 		g_RootMenu.ConsolePrint("Should you DIE in a fire, REPORT a bug, REQUEST a feature, or ");
