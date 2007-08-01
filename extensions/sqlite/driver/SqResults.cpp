@@ -245,7 +245,7 @@ DBResult SqResults::GetString(unsigned int columnId, const char **pString, size_
 		ptr = "";
 	}
 
-	if (*pString)
+	if (pString)
 	{
 		*pString = ptr;
 	}
