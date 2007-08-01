@@ -483,10 +483,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\sm_cachelist.h"
-				>
-			</File>
-			<File
 				RelativePath="..\sm_fastlink.h"
 				>
 			</File>
@@ -540,10 +536,6 @@
 			</File>
 			<File
 				RelativePath="..\TextParsers.h"
-				>
-			</File>
-			<File
-				RelativePath="..\thread\ThreadSupport.h"
 				>
 			</File>
 			<File
