@@ -36,6 +36,7 @@
 #include "vcallbuilder.h"
 #include "vnatives.h"
 #include "vhelpers.h"
+#include "vglobals.h"
 #include "CellRecipientFilter.h"
 
 List<ValveCall *> g_RegCalls;
@@ -212,7 +213,7 @@ static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params
 	return engine->IndexOfEdict(pEdict);
 }
 
-static cell_t IgnitePlayer(IPluginContext *pContext, const cell_t *params)
+static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
 	if (!pCall)
@@ -241,7 +242,7 @@ static cell_t IgnitePlayer(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t ExtinguishPlayer(IPluginContext *pContext, const cell_t *params)
+static cell_t ExtinguishEntity(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
 	if (!pCall)
@@ -261,7 +262,7 @@ static cell_t ExtinguishPlayer(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-static cell_t TeleportPlayer(IPluginContext *pContext, const cell_t *params)
+static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
 	if (!pCall)
@@ -564,6 +565,44 @@ static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL|VDECODE_FLAG_ALLOWWORLD);
+		InitPass(pass[1], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("FindEntityByClassname", ValveCall_EntityList, &pass[2], pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"FindEntityByClassname\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"FindEntityByClassname\" wrapper failed to initialized");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	START_CALL();
+	*(void **)vptr = g_EntList; 
+	DECODE_VALVE_PARAM(1, vparams, 0);
+	DECODE_VALVE_PARAM(2, vparams, 1);
+	FINISH_CALL_SIMPLE(&pEntity);
+
+	if (pEntity == NULL)
+	{
+		return -1;
+	}
+
+	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
+	if (!pEdict)
+	{
+		return -1;
+	}
+
+	return engine->IndexOfEdict(pEdict);
+}
+
 static cell_t IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
@@ -600,21 +639,22 @@ static cell_t IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 
 sp_nativeinfo_t g_Natives[] = 
 {
-	{"ExtinguishPlayer",		ExtinguishPlayer},
-	{"ExtinguishEntity",		ExtinguishPlayer},
+	{"ExtinguishPlayer",		ExtinguishEntity},
+	{"ExtinguishEntity",		ExtinguishEntity},
 	{"ForcePlayerSuicide",		ForcePlayerSuicide},
 	{"GivePlayerItem",			GiveNamedItem},
 	{"GetPlayerWeaponSlot",		GetPlayerWeaponSlot},
-	{"IgnitePlayer",			IgnitePlayer},
-	{"IgniteEntity",			IgnitePlayer},
+	{"IgnitePlayer",			IgniteEntity},
+	{"IgniteEntity",			IgniteEntity},
 	{"RemovePlayerItem",		RemovePlayerItem},
-	{"TeleportPlayer",			TeleportPlayer},
-	{"TeleportEntity",			TeleportPlayer},
+	{"TeleportPlayer",			TeleportEntity},
+	{"TeleportEntity",			TeleportEntity},
 	{"SetClientViewEntity",		SetClientViewEntity},
 	{"SetLightStyle",			SetLightStyle},
 	{"SlapPlayer",				SlapPlayer},
 	{"GetClientEyePosition",	GetClientEyePosition},
 	{"GetClientEyeAngles",		GetClientEyeAngles},
+	{"FindEntityByClassname",	FindEntityByClassname},
 	{"IsPlayerAlive",			IsPlayerAlive},
 	{NULL,						NULL},
 };

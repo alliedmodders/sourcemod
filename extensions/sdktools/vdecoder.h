@@ -80,6 +80,7 @@ enum ValveCallType
 	ValveCall_Entity,		/**< Thiscall (CBaseEntity implicit first parameter) */
 	ValveCall_Player,		/**< Thiscall (CBasePlayer implicit first parameter) */
 	ValveCall_GameRules,	/**< Thiscall (CGameRules implicit first paramater) */
+	ValveCall_EntityList,	/**< Thiscall (CGlobalEntityList implicit first paramater) */
 };
 
 /**

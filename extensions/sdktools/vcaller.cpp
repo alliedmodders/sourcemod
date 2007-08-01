@@ -32,7 +32,7 @@
 
 #include "extension.h"
 #include "vcallbuilder.h"
-#include "gamerules.h"
+#include "vglobals.h"
 
 enum SDKLibrary
 {
@@ -294,6 +294,17 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 					return pContext->ThrowNativeError("GameRules not available before map is loaded");
 				}
 				*(void **)ptr = gamerules;
+			}
+			break;
+		case ValveCall_EntityList:
+			{
+				if (g_EntList == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("EntityList unsupported or not available; file a bug report");
+				}
+
+				*(void **)ptr = g_EntList;
 			}
 			break;
 		}

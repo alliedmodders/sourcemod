@@ -124,6 +124,53 @@
 			}
 		}
 	}
+	
+	/* CGlobalEntityList */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+			"game"		"dod"
+			"game"		"garrysmod"
+			"game"		"hl2mp"
+			"game"		"ship"
+			"game"		"!Insurgency"
+			"game"		"!Pirates, Vikings and Knights II"
+			"game"		"!SourceForts v1.9.2"
+		}
+		
+		"Offsets"
+		{
+			/* Offset into LevelShutdown */
+			"gEntList"
+			{
+				"windows"	"11"
+			}
+		}
+		
+		"Signatures"
+		{
+			"LevelShutdown"
+			{
+				"library"	"server"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+			}
+			"gEntList"
+			{
+				"library"	"server"
+				"linux"		"@gEntList"
+			}
+			
+			/* Functions in CGlobalEntityList */
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x2A\x85\xC9\x57\x74\x2A\x8B\x01\xFF\x50\x2A\x8B\x08\x81\xE1\x2A\x2A\x2A\x2A\x83\xC1\x2A\xC1\xE1\x2A\x8B\x3C\x31\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x2A\x8B\x2D\x2A\x2A\x2A\x2A\x8D\x9B\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x2A\x39"
+				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+		}
+	}
 
 	/* Counter-Strike: Source */
 	"cstrike"

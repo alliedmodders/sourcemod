@@ -188,10 +188,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\gamerules.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\tempents.cpp"
 				>
 			</File>
@@ -213,6 +209,10 @@
 			</File>
 			<File
 				RelativePath="..\vdecoder.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\vglobals.cpp"
 				>
 			</File>
 			<File
@@ -250,10 +250,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\gamerules.h"
-				>
-			</File>
-			<File
 				RelativePath="..\tempents.h"
 				>
 			</File>
@@ -263,6 +259,10 @@
 			</File>
 			<File
 				RelativePath="..\vdecoder.h"
+				>
+			</File>
+			<File
+				RelativePath="..\vglobals.h"
 				>
 			</File>
 			<File

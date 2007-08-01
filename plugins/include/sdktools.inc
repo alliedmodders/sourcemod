@@ -36,6 +36,7 @@ enum SDKCallType
 	SDKCall_Entity,		/**< CBaseEntity call */
 	SDKCall_Player,		/**< CBasePlayer call */
 	SDKCall_GameRules,	/**< CGameRules call */
+	SDKCall_EntityList,	/**< CGlobalEntityList call */ 
 };
 
 enum SDKLibrary

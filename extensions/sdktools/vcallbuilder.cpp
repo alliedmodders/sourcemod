@@ -156,10 +156,11 @@ ValveCall *CreateValveCall(void *addr,
 			thisinfo->flags = PASSFLAG_BYVAL;
 			thisinfo->decflags = 0;
 			break;
-		case ValveCall_GameRules:
+		default:
 			thisinfo->vtype = Valve_POD;
 			thisinfo->flags = PASSFLAG_ASPOINTER;
 			thisinfo->decflags = 0;
+			break;
 		}
 		thisinfo->encflags = 0;
 		thisinfo->offset = 0;
@@ -340,7 +341,7 @@ ValveCall *CreateValveVCall(unsigned int vtableIdx,
 		vc->thisinfo->flags = PASSFLAG_BYVAL;
 		vc->thisinfo->decflags = 0;
 		break;
-	case ValveCall_GameRules:
+	default:
 		vc->thisinfo->vtype = Valve_POD;
 		vc->thisinfo->flags = PASSFLAG_ASPOINTER;
 		vc->thisinfo->decflags = 0;

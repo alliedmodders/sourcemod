@@ -34,8 +34,8 @@
 #include "vcallbuilder.h"
 #include "vnatives.h"
 #include "vhelpers.h"
+#include "vglobals.h"
 #include "tempents.h"
-#include "gamerules.h"
 
 /**
  * @file extension.cpp
@@ -52,10 +52,10 @@ IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
 IGameHelpers *g_pGameHelpers = NULL;
 IServerGameClients *serverClients = NULL;
+IVoiceServer *voiceserver = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
-IVoiceServer *voiceserver = NULL;
 
 SMEXT_LINK(&g_SdkTools);
 
@@ -143,7 +143,7 @@ void SDKTools::SDK_OnAllLoaded()
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 
 	g_TEManager.Initialize();
-	InitializeGameRules();
+	InitializeValveGlobals();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)
