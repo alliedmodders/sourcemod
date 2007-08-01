@@ -13,7 +13,7 @@
  * 
  * To view the latest information, see: http://www.sourcemod.net/license.php
  *
- * Version: $Id: smsdk_ext.cpp 1034 2007-06-30 16:43:11Z dvander $
+ * Version: $Id$
  */
 
 #include <stdio.h>

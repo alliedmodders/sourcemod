@@ -13,7 +13,7 @@
  * 
  * To view the latest information, see: http://www.sourcemod.net/license.php
  *
- * Version: $Id: smsdk_config.h 763 2007-05-09 05:20:03Z damagedsoul $
+ * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
