@@ -27,7 +27,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version 
  * JULY-31-2007), or <http://www.sourcemod.net/license.php>.
  *
- *
+ * Version: $Id$
  */
 
 #include <extension.h>

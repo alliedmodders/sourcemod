@@ -10,7 +10,7 @@
  * may change at any time.  To view the latest information, see:
  *   http://www.sourcemod.net/license.php
  *
- *
+ * Version: $Id$
  */
 
 #if defined _sdktools_voice_included
