@@ -1,0 +1,79 @@
+1. COPYRIGHT INFORMATION
+
+ SourcePawn is Copyright (C) 2006-2007 AlliedModders LLC.  All rights reserved.
+ Pawn and SMALL are Copyright (C) 1997-2007 ITB CompuPhase.
+ Source is Copyright (C) Valve Corporation.
+ All trademarks are property of their respective owners in the US and other 
+countries.
+
+2. LICENSE AGREEMENT
+
+   The copyright owner and Licensor of SourcePawn is "AlliedModders LLC."  
+The SourcePawn JIT (hereby "JIT") is Freeware, and does not require payment 
+of any license fee. This license is a binding legal agreement between the 
+individual who downloads the JIT ("you") and the Licensor.  AlliedModders 
+hereby grants you a non-exclusive, transferable license to use the JIT and 
+its accompanying documentation and source code.  As a condition for granting 
+you a license to download or use the JIT, you agree to all of the Terms and 
+Conditions.  If you fail to adhere to the Terms and Conditions, your license 
+to use the JIT is automatically revoked without any action on behalf of the 
+Licensor.  This License may be updated at any time, without prior notice..  
+Each revision is differentiated by a date version.  This License was created 
+on Jan-27-2007, and modified exclusively for SourcePawn on Jul-31-2007.
+
+   With this License, you may:
+
+   a. Use the JIT on any number of computers, in conjunction with SourceMod 
+      or derivative works only;
+
+   b. Redistribute or copy the JIT (subject to requirements in Section 3);
+
+   c. Alter the JIT binary for personal use only;
+
+   d. Disassemble, decompile, reverse engineer, or otherwise reduce the JIT 
+      to human readable form for personal use, documentation, research, or to 
+      report bugs or security issues.
+
+   e. Create derivate works (with or without the SDK) for usage with SourceMod
+      or derivative works only;
+
+3. LIMITATIONS ON DISTRIBUTION.  
+
+   Redistribution granted in Section 2.b is subject to the following 
+   restrictions:
+
+   a. You may alter JIT files under the following restrictions:
+
+     (i) You may not redistribute modified binary or object-code files of the JIT.
+
+   b. You may not sell the JIT, alter its License, or sell/rent licenses to 
+      third parties (by payment of money or otherwise).  
+
+     (i) You may charge for the media transfer of its file(s) only.
+  
+     (ii) You may not sell individual files derived from or directly from the JIT 
+          without explicit written permission of AlliedModders LLC.
+
+   c. You may not remove this or any copyright notice from SourceMod, the JIT, or 
+      any files distributed with SourceMod or the JIT. 
+
+4. NO WARRANTY
+
+   BECAUSE THE JIT IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY, TO THE 
+   EXTENT PERMITTED BY APPLICABLE LAW.  EXCEPT WHEN OTHERWISE STATED IN WRITING,
+   ALLIEDMODDERS LLC AND/OR OTHER PARTIES PROVIDE THE PROGRAM "AS IS" WITHOUT 
+   WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED 
+   TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+   PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS 
+   WITH YOU.  SHOULD THE PROGRAM PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL 
+   NECESSARY SERVICING, REPAIR OR CORRECTION.
+
+   IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL
+   ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR REDISTRIBUTE
+   THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
+   GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+   USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA
+   OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+   OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH
+   HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
