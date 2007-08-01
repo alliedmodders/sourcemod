@@ -1,24 +1,35 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * Sample SourceMod Extension
- * Copyright (C) 2004-2007 AlliedModders LLC. All rights reserved.
+ * SourceMod MySQL Extension (C)2004-2007 AlliedModders LLC.  
+ * All rights reserved.
  * ===============================================================
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * This program is free software; you can redistribute it and/or 
+ * modify it under the terms of the GNU General Public License, 
+ * version 3.0, as published by the Free Software Foundation.
+
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Version: $Id: extension.cpp 763 2007-05-09 05:20:03Z damagedsoul $
+ * As a special exception, AlliedModders LLC gives you permission to 
+ * link the code of this program (as well as its derivative works) to 
+ * "Half-Life 2," the "Source Engine," the "SourcePawn JIT," and any 
+ * Game MODs that run on software by the Valve Corporation.  You must 
+ * obey the GNU General Public License in all respects for all other 
+ * code used. Additionally, AlliedModders LLC grants this exception 
+ * to all derivative works.
+ * 
+ * AlliedModders LLC defines further exceptions, found in LICENSE.txt
+ * of the distribution (as of this writing, version JULY-31-2007), or
+ * http://www.sourcemod.net/license.php
+ *
+ * Version: $Id$
  */
 
 #include "extension.h"
