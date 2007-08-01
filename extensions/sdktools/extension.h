@@ -44,6 +44,7 @@
 #include <IGameHelpers.h>
 #include <IEngineTrace.h>
 #include <IEngineSound.h>
+#include <IVoiceServer.h>
 #include <convar.h>
 
 /**
@@ -53,7 +54,8 @@
 class SDKTools : 
 	public SDKExtension, 
 	public IHandleTypeDispatch,
-	public IConCommandBaseAccessor
+	public IConCommandBaseAccessor,
+	public IClientListener
 {
 public: //public IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
@@ -73,8 +75,13 @@ public:
 #endif
 public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
+public: //IClientListner
+	void OnClientDisconnecting(int client);
+public: // IVoiceServer
+	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 };
 
+extern SDKTools g_SdkTools;
 /* Interfaces from engine or gamedll */
 extern IServerGameEnts *gameents;
 extern IEngineTrace *enginetrace;
@@ -82,6 +89,7 @@ extern IEngineSound *engsound;
 extern INetworkStringTableContainer *netstringtables;
 extern IServerPluginHelpers *pluginhelpers;
 extern IServerGameClients *serverClients;
+extern IVoiceServer *voiceserver;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;

@@ -54,6 +54,7 @@ IGameHelpers *g_pGameHelpers = NULL;
 IServerGameClients *serverClients = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
+IVoiceServer *voiceserver = NULL;
 
 SMEXT_LINK(&g_SdkTools);
 
@@ -61,6 +62,7 @@ extern sp_nativeinfo_t g_CallNatives[];
 extern sp_nativeinfo_t g_TENatives[];
 extern sp_nativeinfo_t g_TRNatives[];
 extern sp_nativeinfo_t g_StringTableNatives[];
+extern sp_nativeinfo_t g_VoiceNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -71,6 +73,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_SoundNatives);
 	sharesys->AddNatives(myself, g_TRNatives);
 	sharesys->AddNatives(myself, g_StringTableNatives);
+	sharesys->AddNatives(myself, g_VoiceNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -79,6 +82,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	playerhelpers->AddClientListener(&g_SdkTools);
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
@@ -116,6 +120,7 @@ void SDKTools::SDK_OnUnload()
 	g_TEManager.Shutdown();
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
+	playerhelpers->RemoveClientListener(&g_SdkTools);
 }
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -126,6 +131,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(engineFactory, netstringtables, INetworkStringTableContainer, INTERFACENAME_NETWORKSTRINGTABLESERVER);
 	GET_V_IFACE_ANY(engineFactory, pluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
 	GET_V_IFACE_ANY(serverFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
+	GET_V_IFACE_ANY(engineFactory, voiceserver, IVoiceServer, INTERFACEVERSION_VOICESERVER);
 
 	return true;
 }

@@ -28,6 +28,7 @@
 #include <sdktools_trace>
 #include <sdktools_tempents>
 #include <sdktools_tempents_stocks>
+#include <sdktools_voice>
 
 enum SDKCallType
 {
