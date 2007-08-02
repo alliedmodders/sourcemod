@@ -347,7 +347,7 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 			save = ptr[240];
 			ptr[240] = '\0';
 		}
-		bf_write *buffer = g_UserMsgs.StartMessage(g_ShowMenuId, players, 1, 0);
+		bf_write *buffer = g_UserMsgs.StartMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
 		buffer->WriteWord(_sel_keys);
 		buffer->WriteChar(time ? time : -1);
 		buffer->WriteByte( (len > 240) ? 1 : 0 );
