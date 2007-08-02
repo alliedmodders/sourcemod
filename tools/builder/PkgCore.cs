@@ -52,6 +52,7 @@ namespace builder
 		 */
 		public override void OnCopyFiles(ABuilder builder)
 		{
+			builder.CopyFile(this, "sourcepawn/batchtool/compile.exe", "addons/sourcemod/scripting");
 		}
 
 		/**
