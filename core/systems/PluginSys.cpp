@@ -2002,22 +2002,34 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 		} else if (strcmp(cmd, "unload") == 0) {
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins unload <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins unload <#|file>");
 				return;
 			}
 
-			int id = 1;
-			int num = atoi(g_RootMenu.GetArgument(3));
-			if (num < 1 || num > (int)GetPluginCount())
+			CPlugin *pl;
+			char *end;
+			const char *arg = g_RootMenu.GetArgument(3);
+			int id = strtol(arg, &end, 10);
+
+			if (*end == '\0')
 			{
-				g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", num);
-				return;
-			}
+				pl = GetPluginByOrder(id);
+				if (!pl)
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
+					return;
+				}
+			} else {
+				char pluginfile[256];
+				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
+				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
-			IPluginIterator *iter = GetPluginIterator();
-			for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++)
-				;
-			IPlugin *pl = iter->GetPlugin();
+				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
+					return;
+				}
+			}
 
 			char name[PLATFORM_MAX_PATH];
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
@@ -2030,7 +2042,6 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				g_RootMenu.ConsolePrint("[SM] Failed to unload plugin %s.", name);
 			}
 
-			iter->Release();
 			return;
 		} else if (strcmp(cmd, "info") == 0) {
 			if (argcount < 4)
