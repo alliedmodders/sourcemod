@@ -163,11 +163,11 @@ bf_write *UserMessages::StartMessage(int msg_id, cell_t players[], unsigned int 
 
 	m_InExec = true;
 
-	if (m_CurFlags & (USERMSG_PASSTHRU_ALL|USERMSG_PASSTHRU))
+	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
-	} else {
 		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
+	} else {
+		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
 	}
 
 	return buffer;
@@ -180,11 +180,11 @@ bool UserMessages::EndMessage()
 		return false;
 	}
 
-	if (m_CurFlags & (USERMSG_PASSTHRU_ALL|USERMSG_PASSTHRU))
+	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-		engine->MessageEnd();
-	} else {
 		ENGINE_CALL(MessageEnd)();
+	} else {
+		engine->MessageEnd();
 	}
 
 	m_InExec = false;
@@ -286,7 +286,7 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 	bool is_hook_empty = m_msgHooks[msg_type].empty();
 
 	if ((is_intercept_empty && is_hook_empty)
-		|| (m_InExec && !(m_CurFlags & USERMSG_PASSTHRU_ALL)))
+		|| (m_InExec && (m_CurFlags & USERMSG_BLOCKHOOKS)))
 	{
 		m_InHook = false;
 		RETURN_META_VALUE(MRES_IGNORED, NULL);

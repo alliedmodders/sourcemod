@@ -89,10 +89,9 @@ namespace SourceMod
 		}
 	};
 
-	#define USERMSG_PASSTHRU			(1<<0)		/**< Message will pass through other SourceMM plugins */
-	#define USERMSG_PASSTHRU_ALL		(1<<1)		/**< Message will pass through other SourceMM plugins AND SourceMod */
 	#define USERMSG_RELIABLE			(1<<2)		/**< Message will be set to reliable */
 	#define USERMSG_INITMSG				(1<<3)		/**< Message will be considered to be an initmsg */
+	#define USERMSG_BLOCKHOOKS			(1<<7)		/**< Prevents the message from triggering SourceMod and Metamod hooks */
 
 	/**
 	 * @brief Contains functions for hooking user messages.
