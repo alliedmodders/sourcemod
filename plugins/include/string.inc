@@ -397,7 +397,7 @@ stock CharToLower(chr)
  */
 stock StrCat(String:buffer[], maxlength, const String:source[])
 {
-	new len = strlen(source);
+	new len = strlen(buffer);
 	if (len >= maxlength)
 	{
 		return 0;
