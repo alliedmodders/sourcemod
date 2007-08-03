@@ -216,7 +216,10 @@ const char *FixupString(StringInfo &data)
 		}
 	}
 
-	*(data.end) = '\0';
+	if (data.end)
+	{
+		*(data.end) = '\0';
+	}
 
 	return data.ptr;
 }
