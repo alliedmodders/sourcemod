@@ -40,7 +40,7 @@ functag TEHook Action:public(const String:te_name[], const Players[], numClients
 native AddTempEntHook(const String:te_name[], TEHook:hook);
 
 /**
- * Removes a temp entity.
+ * Removes a temp entity hook.
  *
  * @param te_name	TE name to unhook.
  * @param hook		Function used for the hook.
@@ -80,7 +80,6 @@ native TE_WriteNum(const String:prop[], value);
  * Reads an integer value in the current temp entity.
  *
  * @param prop		Property to use.
- * @param value		Integer value to read.
  * @return		Property value.
  * @error		Property not found.
  */
@@ -100,7 +99,6 @@ native TE_WriteFloat(const String:prop[], Float:value);
  * Reads a floating point number in the current temp entity.
  *
  * @param prop		Property to use.
- * @param value		Floating point number to read.
  * @noreturn		Property value.
  * @error		Property not found.
  */
