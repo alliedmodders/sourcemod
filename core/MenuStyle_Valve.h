@@ -122,6 +122,7 @@ public: //IBaseMenu
 	bool SetPagination(unsigned int itemsPerPage);
 	bool Display(int client, unsigned int time);
 	void VoteDisplay(int client, unsigned int maxTime);
+	void SetMenuOptionFlags(unsigned int flags);
 public: //CBaseMenu
 	void Cancel_Finally();
 private:

@@ -418,6 +418,12 @@ bool CValveMenu::SetExitButton(bool set)
 	return false;
 }
 
+void CValveMenu::SetMenuOptionFlags(unsigned int flags)
+{
+	flags &= ~MENUFLAG_BUTTON_EXIT;
+	CBaseMenu::SetMenuOptionFlags(flags);
+}
+
 const char *g_OptionNumTable[] = 
 {
 	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"

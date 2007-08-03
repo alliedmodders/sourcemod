@@ -64,6 +64,10 @@ enum MenuAction
 #define ITEMDRAW_IGNORE	((1<<1)|(1<<2))	/**< Item should be completely ignored (rawline + notext) */
 #define ITEMDRAW_CONTROL		(1<<4)	/**< Item is control text (back/next/exit) */
 
+#define MENUFLAG_BUTTON_EXIT		(1<<0)	/**< Menu has an "exit" button */
+#define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
+#define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
+
 /**
  * Reasons a menu can be cancelled.
  */
@@ -323,6 +327,28 @@ native SetMenuExitBackButton(Handle:menu, bool:button);
  * @error					Invalid Handle.
  */
 native CancelMenu(Handle:menu);
+
+/**
+ * Retrieves a menu's option flags.
+ *
+ * @param menu				Menu Handle.
+ * @return					A bitstring of MENUFLAG bits.
+ * @error					Invalid Handle.
+ */
+native GetMenuOptionFlags(Handle:menu);
+
+/**
+ * Sets a menu's option flags.
+ *
+ * If a certain bit is not supported, it will be stripped before
+ * being set.
+ *
+ * @param menu				Menu Handle.
+ * @param flags				A new bitstring of MENUFLAG bits.
+ * @noreturn
+ * @error					Invalid Handle.
+ */
+native SetMenuOptionFlags(Handle:menu, flags);
 
 /**
  * Returns whether a vote is in progress on the given menu.

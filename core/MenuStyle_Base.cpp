@@ -285,9 +285,13 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	MenuEndReason end_reason = MenuEnd_Selected;
 	menu_states_t &states = player->states;
 
-	assert(states.mh != NULL);
+	/* Save variables */
+	IMenuHandler *mh = states.mh;
+	IBaseMenu *menu = states.menu;
 
-	if (states.menu == NULL)
+	assert(mh != NULL);
+
+	if (menu == NULL)
 	{
 		item = key_press;
 	} else if (key_press < 1 || key_press > GetMaxPageItems()) {
@@ -296,7 +300,8 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 		ItemSelection type = states.slots[key_press].type;
 
 		/* Check if we should play a sound about the type */
-		if (g_Menus.MenuSoundsEnabled())
+		if (g_Menus.MenuSoundsEnabled() && 
+			(!menu || (menu->GetMenuOptionFlags() & MENUFLAG_NO_SOUND) != MENUFLAG_NO_SOUND))
 		{
 			CellRecipientFilter filter;
 			cell_t clients[1];
@@ -363,10 +368,6 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 			item = states.slots[key_press].item;
 		}
 	}
-
-	/* Save variables */
-	IMenuHandler *mh = states.mh;
-	IBaseMenu *menu = states.menu;
 
 	/* Clear states */
 	player->bInMenu = false;
@@ -581,10 +582,10 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 }
 
 CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
-m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_ExitButton(true), 
-m_bShouldDelete(false), m_bCancelling(false), m_pOwner(pOwner ? pOwner : g_pCoreIdent), 
-m_bDeleting(false), m_bWillFreeHandle(false), m_hHandle(BAD_HANDLE), m_pHandler(pHandler),
-m_pVoteHandler(NULL), m_ExitBackButton(false)
+m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
+m_pOwner(pOwner ? pOwner : g_pCoreIdent), m_bDeleting(false), m_bWillFreeHandle(false), 
+m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_pVoteHandler(NULL), 
+m_nFlags(MENUFLAG_BUTTON_EXIT)
 {
 }
 
@@ -733,12 +734,17 @@ const char *CBaseMenu::GetDefaultTitle()
 
 bool CBaseMenu::GetExitButton()
 {
-	return m_ExitButton;
+	return ((m_nFlags & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT);
 }
 
 bool CBaseMenu::SetExitButton(bool set)
 {
-	m_ExitButton = set;
+	if (set)
+	{
+		m_nFlags |= MENUFLAG_BUTTON_EXIT;
+	} else {
+		m_nFlags &= ~MENUFLAG_BUTTON_EXIT;
+	}
 	return true;
 }
 
@@ -860,10 +866,25 @@ bool CBaseMenu::IsVoteInProgress()
 
 bool CBaseMenu::GetExitBackButton()
 {
-	return m_ExitBackButton;
+	return ((m_nFlags & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK);
 }
 
 void CBaseMenu::SetExitBackButton(bool set)
 {
-	m_ExitBackButton = set;
+	if (set)
+	{
+		m_nFlags |= MENUFLAG_BUTTON_EXITBACK;
+	} else {
+		m_nFlags &= ~MENUFLAG_BUTTON_EXITBACK;
+	}
+}
+
+unsigned int CBaseMenu::GetMenuOptionFlags()
+{
+	return m_nFlags;
+}
+
+void CBaseMenu::SetMenuOptionFlags(unsigned int flags)
+{
+	m_nFlags = flags;
 }

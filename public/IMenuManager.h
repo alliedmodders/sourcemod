@@ -37,7 +37,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		7
+#define SMINTERFACE_MENUMANAGER_VERSION		8
 
 /**
  * @file IMenuManager.h
@@ -146,6 +146,10 @@ namespace SourceMod
 
 	#define MENU_NO_PAGINATION			0		/**< Menu should not be paginated (10 items max) */
 	#define MENU_TIME_FOREVER			0		/**< Menu should be displayed as long as possible */
+
+	#define MENUFLAG_BUTTON_EXIT		(1<<0)	/**< Menu has an "exit" button */
+	#define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
+	#define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
 
 	/**
 	 * @brief Extended menu options.
@@ -567,6 +571,20 @@ namespace SourceMod
 		 * @param set			True to enable, false to disable.
 		 */
 		virtual void SetExitBackButton(bool set) =0;
+		
+		/**
+		 * @brief Returns menu option flags.
+		 *
+		 * @return				Menu option flags.
+		 */
+		virtual unsigned int GetMenuOptionFlags() =0;
+
+		/**
+		 * @brief Sets menu option flags.
+		 *
+		 * @param flags			Menu option flags.
+		 */
+		virtual void SetMenuOptionFlags(unsigned int flags) =0;
 	};
 
 	/** 

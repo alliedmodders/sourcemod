@@ -1092,6 +1092,36 @@ static cell_t RedrawMenuItem(IPluginContext *pContext, const cell_t *params)
 	return s_CurPanelReturn;
 }
 
+static cell_t GetMenuOptionFlags(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return menu->GetMenuOptionFlags();
+}
+
+static cell_t SetMenuOptionFlags(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	menu->SetMenuOptionFlags(params[2]);
+
+	return 1;
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -1111,6 +1141,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetMenuExitButton",		GetMenuExitButton},
 	{"GetMenuItem",				GetMenuItem},
 	{"GetMenuItemCount",		GetMenuItemCount},
+	{"GetMenuOptionFlags",		GetMenuOptionFlags},
 	{"GetMenuPagination",		GetMenuPagination},
 	{"GetMenuStyle",			GetMenuStyle},
 	{"GetMenuStyleHandle",		GetMenuStyleHandle},
@@ -1124,6 +1155,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SendPanelToClient",		SendPanelToClient},
 	{"SetMenuExitBackButton",	SetMenuExitBackButton},
 	{"SetMenuExitButton",		SetMenuExitButton},
+	{"SetMenuOptionFlags",		SetMenuOptionFlags},
 	{"SetMenuPagination",		SetMenuPagination},
 	{"SetMenuTitle",			SetMenuTitle},
 	{"SetPanelCurrentKey",		SetPanelCurrentKey},

@@ -138,6 +138,8 @@ public:
 	virtual bool IsVoteInProgress();
 	virtual bool GetExitBackButton();
 	virtual void SetExitBackButton(bool set);
+	virtual unsigned int GetMenuOptionFlags();
+	virtual void SetMenuOptionFlags(unsigned int flags);
 public:
 	virtual void VoteDisplay(int client, unsigned int maxTime) =0;
 private:
@@ -148,7 +150,6 @@ protected:
 	BaseStringTable m_Strings;
 	unsigned int m_Pagination;
 	CVector<CItem> m_items;
-	bool m_ExitButton;
 	bool m_bShouldDelete;
 	bool m_bCancelling;
 	IdentityToken_t *m_pOwner;
@@ -157,7 +158,7 @@ protected:
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
 	IVoteMenuHandler *m_pVoteHandler;
-	bool m_ExitBackButton;
+	unsigned int m_nFlags;
 };
 
 #endif //_INCLUDE_MENUSTYLE_BASE_H
