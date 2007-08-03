@@ -143,6 +143,31 @@ bool TempEntityInfo::TE_SetEntData(const char *name, int value)
 	return true;
 }
 
+bool TempEntityInfo::TE_GetEntData(const char *name, int *value)
+{
+	/* Search for our offset */
+	int size;
+	int offset = _FindOffset(name, &size);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	if (size <= 8)
+	{
+		*value = *((uint8_t *)m_Me + offset);
+	} else if (size <= 16) {
+		*value = *(short *)((uint8_t *)m_Me + offset);
+	} else if (size <= 32) {
+		*value = *(int *)((uint8_t *)m_Me + offset);
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
 bool TempEntityInfo::TE_SetEntDataFloat(const char *name, float value)
 {
 	/* Search for our offset */
@@ -154,6 +179,21 @@ bool TempEntityInfo::TE_SetEntDataFloat(const char *name, float value)
 	}
 
 	*(float *)((uint8_t *)m_Me + offset) = value;
+
+	return true;
+}
+
+bool TempEntityInfo::TE_GetEntDataFloat(const char *name, float *value)
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	*value = *(float *)((uint8_t *)m_Me + offset);
 
 	return true;
 }
@@ -172,6 +212,24 @@ bool TempEntityInfo::TE_SetEntDataVector(const char *name, float vector[3])
 	v->x = vector[0];
 	v->y = vector[1];
 	v->z = vector[2];
+
+	return true;
+}
+
+bool TempEntityInfo::TE_GetEntDataVector(const char *name, float vector[3])
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	Vector *v = (Vector *)((uint8_t *)m_Me + offset);
+	vector[0] = v->x;
+	vector[1] = v->y;
+	vector[2] = v->z;
 
 	return true;
 }
@@ -312,6 +370,11 @@ TempEntityInfo *TempEntityManager::GetTempEntityInfo(const char *name)
 	}
 
 	return te;
+}
+
+const char *TempEntityManager::GetNameFromThisPtr(void *me)
+{
+	return *(const char **)((unsigned char *)me + m_NameOffs);
 }
 
 void TempEntityManager::DumpList()

@@ -53,6 +53,9 @@ public:
 	bool TE_SetEntDataFloat(const char *name, float value);
 	bool TE_SetEntDataVector(const char *name, float vector[3]);
 	bool TE_SetEntDataFloatArray(const char *name, cell_t *array, int size);
+	bool TE_GetEntData(const char *name, int *value);
+	bool TE_GetEntDataFloat(const char *name, float *value);
+	bool TE_GetEntDataVector(const char *name, float vector[3]);
 	void Send(IRecipientFilter &filter, float delay);
 private:
 	int _FindOffset(const char *name, int *size=NULL);
@@ -72,6 +75,7 @@ public:
 	void Shutdown();
 public:
 	TempEntityInfo *GetTempEntityInfo(const char *name);
+	const char *GetNameFromThisPtr(void *me);
 public:
 	void DumpList();
 	void DumpProps(FILE *fp);
@@ -85,6 +89,31 @@ private:
 	bool m_Loaded;
 };
 
+struct TEHookInfo
+{
+	TempEntityInfo *te;
+	List<IPluginFunction *> lst;
+};
+
+class TempEntHooks
+{
+public:
+	void Initialize();
+	void Shutdown();
+	bool AddHook(const char *name, IPluginFunction *pFunc);
+	bool RemoveHook(const char *name, IPluginFunction *pFunc);
+	void OnPlaybackTempEntity(IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID);
+private:
+	void _IncRefCounter();
+	void _DecRefCounter();
+	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
+private:
+	IBasicTrie *m_TEHooks;
+	List<TEHookInfo *> m_HookInfo;
+	size_t m_HookCount;
+};
+
 extern TempEntityManager g_TEManager;
+extern TempEntHooks s_TempEntHooks;
 
 #endif //_INCLUDE_SOURCEMOD_TEMPENTS_H_

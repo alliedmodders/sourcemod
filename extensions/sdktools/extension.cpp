@@ -119,6 +119,7 @@ void SDKTools::SDK_OnUnload()
 	ShutdownHelpers();
 
 	g_TEManager.Shutdown();
+	s_TempEntHooks.Shutdown();
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
@@ -143,6 +144,7 @@ void SDKTools::SDK_OnAllLoaded()
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 
 	g_TEManager.Initialize();
+	s_TempEntHooks.Initialize();
 	InitializeValveGlobals();
 }
 
@@ -176,6 +178,7 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 	ShutdownHelpers();
 
 	g_TEManager.Shutdown();
+	s_TempEntHooks.Shutdown();
 }
 
 bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)

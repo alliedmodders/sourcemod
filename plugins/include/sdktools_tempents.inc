@@ -19,6 +19,37 @@
 #define _sdktools_tempents_included
 
 /**
+ * Called when a temp entity is going to be sent.
+ *
+ * @param te_name	TE name.
+ * @param Players	Array containing target player indexes.
+ * @param numClients	Number of players in the array.
+ * @param delay		Delay in seconds to send the TE.
+ * @return		Plugin_Continue to allow the transmission of the TE, Plugin_Stop to block it.
+ */
+functag TEHook Action:public(const String:te_name[], const Players[], numClients, Float:delay);
+
+/**
+ * Hooks a temp entity.
+ *
+ * @param te_name	TE name to hook.
+ * @param hook		Function to use as a hook.
+ * @noreturn
+ * @error		Temp Entity name not available or invalid function hook.
+ */
+native AddTempEntHook(const String:te_name[], TEHook:hook);
+
+/**
+ * Removes a temp entity.
+ *
+ * @param te_name	TE name to unhook.
+ * @param hook		Function used for the hook.
+ * @noreturn
+ * @error		Temp Entity name not available or invalid function hook.
+ */
+native RemoveTempEntHook(const String:te_name[], TEHook:hook);
+
+/**
  * Starts a temp entity transmission.
  *
  * @param te_name	TE name.
@@ -46,6 +77,16 @@ native bool:TE_IsValidProp(const String:prop[]);
 native TE_WriteNum(const String:prop[], value);
 
 /**
+ * Reads an integer value in the current temp entity.
+ *
+ * @param prop		Property to use.
+ * @param value		Integer value to read.
+ * @return		Property value.
+ * @error		Property not found.
+ */
+native TE_ReadNum(const String:prop[]);
+
+/**
  * Sets a floating point number in the current temp entity.
  *
  * @param prop		Property to use.
@@ -56,6 +97,16 @@ native TE_WriteNum(const String:prop[], value);
 native TE_WriteFloat(const String:prop[], Float:value);
 
 /**
+ * Reads a floating point number in the current temp entity.
+ *
+ * @param prop		Property to use.
+ * @param value		Floating point number to read.
+ * @noreturn		Property value.
+ * @error		Property not found.
+ */
+native Float:TE_ReadFloat(const String:prop[]);
+
+/**
  * Sets a vector in the current temp entity.
  *
  * @param prop		Property to use.
@@ -64,6 +115,16 @@ native TE_WriteFloat(const String:prop[], Float:value);
  * @error		Property not found.
  */
 native TE_WriteVector(const String:prop[], const Float:vector[3]);
+
+/**
+ * Reads a vector in the current temp entity.
+ *
+ * @param prop		Property to use.
+ * @param vector	Vector to read.
+ * @noreturn
+ * @error		Property not found.
+ */
+native TE_ReadVector(const String:prop[], Float:vector[3]);
 
 /**
  * Sets a QAngle in the current temp entity.
