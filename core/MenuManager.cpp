@@ -637,7 +637,7 @@ skip_search:
 			{
 				position = display->DrawItem(dr);
 			}
-			if ((position = display->DrawItem(dr)) != 0)
+			if (position != 0)
 			{
 				slots[position].item = drawItems[i].position;
 				slots[position].type = ItemSel_Item;
