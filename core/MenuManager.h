@@ -96,6 +96,7 @@ public: //SMGlobalClass
 		ConfigSource source,
 		char *error,
 		size_t maxlength);
+	void OnSourceModLevelChange(const char *mapName);
 public: //IMenuManager
 	virtual const char *GetInterfaceName()
 	{

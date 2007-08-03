@@ -891,3 +891,19 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 
 	return sound;
 }
+
+void MenuManager::OnSourceModLevelChange(const char *mapName)
+{
+	if (m_SelectSound.size() > 0)
+	{
+		enginesound->PrecacheSound(m_SelectSound.c_str(), true);
+	}
+	if (m_ExitBackSound.size() > 0)
+	{
+		enginesound->PrecacheSound(m_ExitBackSound.c_str(), true);
+	}
+	if (m_ExitSound.size() > 0)
+	{
+		enginesound->PrecacheSound(m_ExitSound.c_str(), true);
+	}
+}
