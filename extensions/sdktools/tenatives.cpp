@@ -428,6 +428,11 @@ static cell_t smn_AddTempEntHook(IPluginContext *pContext, const cell_t *params)
 	char *name;
 	IPluginFunction *pFunc;
 
+	if (!g_TEManager.IsAvailable())
+	{
+		return pContext->ThrowNativeError("TempEntity System unsupported or not available, file a bug report");
+	}
+
 	pContext->LocalToString(params[1], &name);
 	pFunc = pContext->GetFunctionById(params[2]);
 	if (!pFunc)
@@ -447,6 +452,11 @@ static cell_t smn_RemoveTempEntHook(IPluginContext *pContext, const cell_t *para
 {
 	char *name;
 	IPluginFunction *pFunc;
+
+	if (!g_TEManager.IsAvailable())
+	{
+		return pContext->ThrowNativeError("TempEntity System unsupported or not available, file a bug report");
+	}
 
 	pContext->LocalToString(params[1], &name);
 	pFunc = pContext->GetFunctionById(params[2]);

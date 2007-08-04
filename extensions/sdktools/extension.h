@@ -80,6 +80,8 @@ public: //IClientListner
 	void OnClientDisconnecting(int client);
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
+public:
+	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 };
 
 extern SDKTools g_SdkTools;

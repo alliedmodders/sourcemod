@@ -42,6 +42,8 @@
  * @brief Implements SDK Tools extension code.
  */
 
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
 IEngineTrace *enginetrace = NULL;
@@ -89,6 +91,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	ConCommandBaseMgr::OneTimeInit(this);
 
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
+
 	return true;
 }
 
@@ -123,6 +127,8 @@ void SDKTools::SDK_OnUnload()
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
+
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 }
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -184,4 +190,30 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 {
 	return g_SMAPI->RegisterConCmdBase(g_PLAPI, pVar);
+}
+
+bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+{
+	const char *name;
+	char key[32];
+	int count, n = 1;
+
+	if (!(name=g_pGameConf->GetKeyValue("SlapSoundCount")))
+	{
+		RETURN_META_VALUE(MRES_IGNORED, true);
+	}
+
+	count = atoi(name);
+
+	while (n <= count)
+	{
+		snprintf(key, sizeof(key), "SlapSound%d", n);
+		if ((name=g_pGameConf->GetKeyValue(key)))
+		{
+			engsound->PrecacheSound(name, true);
+		}
+		n++;
+	}
+
+	RETURN_META_VALUE(MRES_IGNORED, true);
 }
