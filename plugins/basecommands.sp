@@ -127,7 +127,7 @@ public Action:Command_AddBan(client, args)
 
 	new minutes = StringToInt(time);
 
-	decl String:reason[128];
+	new String:reason[128];
 	if (args >= 3)
 	{
 		GetCmdArg(3, reason, sizeof(reason));
