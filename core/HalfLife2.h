@@ -76,7 +76,7 @@ public: //IGameHelpers
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
 	bool TextMsg(int client, int dest, const char *msg);
-	bool HinTextMsg(int client, const char *msg);
+	bool HintTextMsg(int client, const char *msg);
 	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
 private:
 	DataTableInfo *_FindServerClass(const char *classname);

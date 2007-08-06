@@ -370,7 +370,7 @@ static cell_t PrintHintText(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	if (!g_HL2.HinTextMsg(client, buffer))
+	if (!g_HL2.HintTextMsg(client, buffer))
 	{
 		return pContext->ThrowNativeError("Could not send a usermessage");
 	}

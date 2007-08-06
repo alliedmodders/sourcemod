@@ -281,7 +281,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 	return true;
 }
 
-bool CHalfLife2::HinTextMsg(int client, const char *msg)
+bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
 	bf_write *pBitBuf = NULL;
 	cell_t players[] = {client};
