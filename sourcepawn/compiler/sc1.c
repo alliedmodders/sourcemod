@@ -3860,10 +3860,6 @@ static void funcstub(int fnative)
    */
   if (fnative) {
     if (opertok!=0) {
-		if (matchtoken('['))
-		{
-			printf("Hrm!\n");
-		}
       needtoken('=');
       lexpush();        /* push back, for matchtoken() to retrieve again */
     } /* if */
@@ -4022,7 +4018,7 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
     cidx=code_idx;
     glbdecl=glb_declared;
   } /* if */
-  if ((sym->flags & flgDEPRECATED)!=0) {
+  if ((sym->flags & flgDEPRECATED) != 0 && (sym->usage & uSTOCK) == 0) {
     char *ptr= (sym->documentation!=NULL) ? sym->documentation : "";
     error(234,symbolname,ptr);  /* deprecated (probably a public function) */
   } /* if */
@@ -5659,7 +5655,7 @@ SC_FUNC int constexpr(cell *val,int *tag,symbol **symptr)
  *  In the case a "simple assignment" operator ("=") is used within a test,
  *  the warning "possibly unintended assignment" is displayed. This routine
  *  sets the global variable "sc_intest" to true, it is restored upon termination.
- *  In the case the assignment was intended, use parantheses around the
+ *  In the case the assignment was intended, use parentheses around the
  *  expression to avoid the warning; primary() sets "sc_intest" to 0.
  *
  *  Global references: sc_intest (altered, but restored upon termination)
