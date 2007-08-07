@@ -277,6 +277,8 @@ typedef struct s_stringpair {
   char *first;
   char *second;
   int matchlength;
+  char flags;
+  char *documentation;
 } stringpair;
 
 /* macros for code generation */
