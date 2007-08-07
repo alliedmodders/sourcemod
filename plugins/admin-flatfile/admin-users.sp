@@ -77,10 +77,10 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 	if (StrEqual(key, "auth"))
 	{
 		auth = true;
-		StrCopy(g_CurAuth, sizeof(g_CurAuth), value);
+		strcopy(g_CurAuth, sizeof(g_CurAuth), value);
 	} else if (StrEqual(key, "identity")) {
 		auth = true;
-		StrCopy(g_CurIdent, sizeof(g_CurIdent), value);
+		strcopy(g_CurIdent, sizeof(g_CurIdent), value);
 	} else if (StrEqual(key, "password")) {
 		SetAdminPassword(g_CurUser, value);
 	} else if (StrEqual(key, "group")) {

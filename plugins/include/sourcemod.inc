@@ -141,6 +141,7 @@ forward OnConfigsExecuted();
 /**
  * @deprecated Use OnConfigsExecuted() instead.
  */
+#pragma deprecated Use OnConfigsExecuted() instead
 forward OnServerCfg();
 
 /**

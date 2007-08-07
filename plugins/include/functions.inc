@@ -472,6 +472,7 @@ native FormatNativeString(out_param,
  *
  * @deprecated
  */
+#pragma deprecated Use GetNativeCell() or GetNativeCellRef() instead
 stock Float:GetNativeFloat(param, bool:byref)
 {
 	if (!byref)
@@ -487,6 +488,7 @@ stock Float:GetNativeFloat(param, bool:byref)
  *
  * @deprecated
  */
+#pragma deprecated Use GetNativeCell() or GetNativeCellRef() instead
 stock Handle:GetNativeHandle(param, bool:byref)
 {
 	if (!byref)

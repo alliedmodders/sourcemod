@@ -228,6 +228,7 @@ stock RoundFloat(Float:value)
  *
  * @deprecated
  */
+#pragma deprecated Use RoundToNearest() or RoundFloat() instead
 stock FloatRound(Float:value)
 {
 	return RoundToNearest(value);

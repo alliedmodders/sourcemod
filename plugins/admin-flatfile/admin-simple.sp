@@ -84,7 +84,7 @@ public ReadSimpleUsers()
 ReadAdminLine(const String:line[])
 {
 	new String:auth[64];
-	new cur_idx = StrBreak(line, auth, sizeof(auth));
+	new cur_idx = BreakString(line, auth, sizeof(auth));
 	new idx = cur_idx;
 	
 	if (cur_idx == -1)
@@ -98,7 +98,7 @@ ReadAdminLine(const String:line[])
 	
 	/* Read flags */
 	new String:flags[64];	
-	cur_idx = StrBreak(line[idx], flags, sizeof(flags));
+	cur_idx = BreakString(line[idx], flags, sizeof(flags));
 	idx += cur_idx;
 	
 	if (flags[0] == '@')
@@ -148,7 +148,7 @@ ReadAdminLine(const String:line[])
 	if (cur_idx != -1)
 	{
 		decl String:password[64];
-		StrBreak(line[idx], password, sizeof(password));
+		BreakString(line[idx], password, sizeof(password));
 		SetAdminPassword(admin, password);
 	}
 	

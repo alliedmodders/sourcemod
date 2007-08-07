@@ -76,6 +76,7 @@ native strncmp(const String:str1[], const String:str2[], num, bool:caseSensitive
  * Backwards compatible stock - StrCompare is now strcmp
  * @deprecated		Renamed to strcmp
  */
+#pragma deprecated Use strcmp() instead
 stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=true)
 {
 	return strcmp(str1, str2, caseSensitive);
@@ -92,7 +93,7 @@ stock StrCompare(const String:str1[], const String:str2[], bool:caseSensitive=tr
  */
 stock bool:StrEqual(const String:str1[], const String:str2[], bool:caseSensitive=true)
 {
-	return (StrCompare(str1, str2, caseSensitive) == 0);
+	return (strcmp(str1, str2, caseSensitive) == 0);
 }
 
 /**
@@ -111,6 +112,7 @@ native strcopy(String:dest[], destLen, const String:source[]);
  * Backwards compatibility stock - use strcopy
  * @deprecated			Renamed to strcopy
  */
+#pragma deprecated Use strcopy() instead
 stock StrCopy(String:dest[], destLen, const String:source[])
 {
 	return strcopy(dest, destLen, source);
@@ -230,6 +232,7 @@ native BreakString(const String:source[], String:arg[], argLen);
  * Backwards compatibility stock - use BreakString
  * @deprecated			Renamed to BreakString.
  */
+#pragma deprecated Use BreakString() instead
 stock StrBreak(const String:source[], String:arg[], argLen)
 {
 	return BreakString(source, arg, argLen);

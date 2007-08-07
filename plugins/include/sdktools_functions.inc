@@ -137,6 +137,7 @@ native bool:IsPlayerAlive(client);
 /**
  * @deprecated
  */
+#pragma deprecated Use IgniteEntity() instead
 stock IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:level=false)
 {
 	return IgniteEntity(client, time, npc, size, level);
@@ -145,6 +146,7 @@ stock IgnitePlayer(client, Float:time, bool:npc=false, Float:size=0.0, bool:leve
 /**
  * @deprecated
  */
+#pragma deprecated Use ExtinguishEntity() instead
 stock ExtinguishClient(client)
 {
 	return ExtinguishEntity(client);
@@ -153,6 +155,7 @@ stock ExtinguishClient(client)
 /**
  * @deprecated
  */
+#pragma deprecated Use TeleportEntity() instead
 stock TeleportPlayer(client, const Float:origin[3], const Float:angles[3], const Float:velocity[3])
 {
 	return TeleportEntity(client, origin, angles, velocity);

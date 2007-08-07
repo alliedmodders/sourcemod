@@ -166,6 +166,7 @@ native bool:IsClientInGame(client);
  * Backwards compatibility stock - use IsClientInGame
  * @deprecated			Renamed to IsClientInGame
  */
+#pragma deprecated Use IsClientInGame() instead
 stock bool:IsPlayerInGame(client)
 {
 	return IsClientInGame(client);
