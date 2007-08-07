@@ -62,6 +62,7 @@ static stringpair *insert_stringpair(stringpair *root,char *first,char *second,i
   cur->first=duplicatestring(first);
   cur->second=duplicatestring(second);
   cur->matchlength=matchlength;
+  cur->documentation=NULL;
   if (cur->first==NULL || cur->second==NULL) {
     if (cur->first!=NULL)
       free(cur->first);
@@ -343,6 +344,11 @@ SC_FUNC int delete_subst(char *name,int length)
     item=find_stringpair(item,name,length);
   if (item==NULL)
     return FALSE;
+  if (item->documentation)
+  {
+    free(item->documentation);
+    item->documentation=NULL;
+  }
   delete_stringpair(&substpair,item);
   adjustindex(*name);
   return TRUE;
