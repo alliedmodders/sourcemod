@@ -328,13 +328,24 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Display)
 	{
+		decl String:display[64];
+		GetMenuItem(menu, param2, "", 0, _, display, sizeof(display));
+	 
+	 	if (g_voteType != voteType:question)
+	 	{
+	 		decl String:buffer[255];
+			Format(buffer, sizeof(buffer), "%T", display, param1);
+
+			return RedrawMenuItem(buffer);
+		}
+	
 	}
 	else if (action == MenuAction_DisplayItem)
 	{
 		decl String:display[64];
 		GetMenuItem(menu, param2, "", 0, _, display, sizeof(display));
 	 
-	 	if(strcmp(display, "No") == 0 || strcmp(display, "Yes") == 0)
+	 	if (strcmp(display, "No") == 0 || strcmp(display, "Yes") == 0)
 	 	{
 			decl String:buffer[255];
 			Format(buffer, sizeof(buffer), "%T", display, param1);
@@ -367,7 +378,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		
 		percent = GetVotePercent(votes, totalVotes);
 		
-		switch(g_voteType)
+		switch (g_voteType)
 		{
 			case (voteType:map):
 				limit = GetConVarFloat(g_Cvar_VoteMap);
@@ -389,7 +400,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		{
 			PrintToChatAll("[SM] %t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 			
-			switch(g_voteType)
+			switch (g_voteType)
 			{
 				case (voteType:question):
 				{
