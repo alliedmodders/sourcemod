@@ -51,7 +51,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	if (!gi)
 	{
-		snprintf(error, maxlength, "Failed to instantiate GeoIP!");
+		snprintf(error, maxlength, "Could not load configs/geoip/GeoIP.dat");
 		return false;
 	}
 
