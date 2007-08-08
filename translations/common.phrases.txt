@@ -1,5 +1,15 @@
 "Phrases"
 {
+	"Yes"
+	{
+		"en"			"Yes"
+	}
+	
+	"No"
+	{
+		"en"			"No"
+	}
+
 	"No matching client"
 	{
 		"en"			"No matching client was found."
@@ -178,4 +188,15 @@
 	{
 		"en"			"Cancelled the vote."
 	}
+	
+	"Vote Select"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{1} has chosen {2}."
+	}	
+	
+	"No Votes Cast"
+	{
+		"en"			"No votes were cast."
+	}	
 }
