@@ -1,5 +1,5 @@
 /**
- * basefuncmds.sp
+ * basefuncommands.sp
  * Implements basic punishment commands.
  * This file is part of SourceMod, Copyright (C) 2004-2007 AlliedModders LLC
  *
