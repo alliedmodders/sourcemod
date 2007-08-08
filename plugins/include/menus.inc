@@ -38,7 +38,8 @@ enum MenuAction
 	MenuAction_Select = (1<<2),		/**< An item was selected (param1=client, param2=item) */
 	MenuAction_Cancel = (1<<3),		/**< The menu was cancelled (param1=client, param2=reason) */
 	MenuAction_End = (1<<4),		/**< A menu display has fully ended (param1=reason, param2=cancel reason) */
-	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item) */
+	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item) 
+										 This is not called if SetVoteResultCallback has been used on the menu. */
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
 	MenuAction_DrawItem = (1<<8),	/**< An item is being drawn; return the new style (param1=client, param2=item) */
@@ -97,6 +98,7 @@ enum
 	MenuEnd_Cancelled = -3,			/**< Menu was cancelled (reason in param2) */
 	MenuEnd_Exit = -4,				/**< Menu was cleanly exited via "exit" */
 	MenuEnd_ExitBack = -5,			/**< Menu was cleanly exited via "back" */
+	MenuEnd_NoVotes = -6,			/**< A menu received no votes */
 };
 
 /**
@@ -418,6 +420,7 @@ stock VoteMenuToAll(Handle:menu, time)
 /**
  * Callback for when a vote has ended and results are available.
  *
+ * @param menu				The menu being voted on.
  * @param num_votes			Number of votes tallied in total.
  * @param num_clients		Number of clients who could vote.
  * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
@@ -426,7 +429,8 @@ stock VoteMenuToAll(Handle:menu, time)
  *							defines.
  * @noreturn
  */
-functag VoteHandler public(num_votes, 
+functag VoteHandler public(Handle:menu,
+						   num_votes, 
 						   num_clients,
 						   const client_info[][2], 
 						   num_items,

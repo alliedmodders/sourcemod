@@ -507,6 +507,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		/* Finally, push everything */
 		if (!no_call)
 		{
+			m_pVoteResults->PushCell(menu->GetHandle());
 			m_pVoteResults->PushCell(results->num_votes);
 			m_pVoteResults->PushCell(results->num_clients);
 			m_pVoteResults->PushCell(client_array_address);
