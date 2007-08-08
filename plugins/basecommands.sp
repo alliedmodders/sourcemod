@@ -605,7 +605,7 @@ public Action:Command_Kick(client, args)
 
 public Action:Command_CancelVote(client, args)
 {
-	if (IsVoteInProgress())
+	if (!IsVoteInProgress())
 	{
 		ReplyToCommand(client, "[SM] %t", "Vote Not In Progress");
 		return Plugin_Handled;
