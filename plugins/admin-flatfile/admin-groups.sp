@@ -141,12 +141,19 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 		/* Check for immunity again, core should handle double inserts */
 		if (StrEqual(key, "immunity"))
 		{
-			new GroupId:id = FindAdmGroup(value);
-			if (id != INVALID_GROUP_ID)
+			if (StrEqual(value, "$"))
 			{
-				SetAdmGroupImmuneFrom(g_CurGrp, id);
+				SetAdmGroupImmunity(g_CurGrp, Immunity_Default, true);
+			} else if (StrEqual(value, "*")) {
+				SetAdmGroupImmunity(g_CurGrp, Immunity_Global, true);
 			} else {
-				ParseError("Unable to find group: \"%s\"", value);
+				new GroupId:id = FindAdmGroup(value);
+				if (id != INVALID_GROUP_ID)
+				{
+					SetAdmGroupImmuneFrom(g_CurGrp, id);
+				} else {
+					ParseError("Unable to find group: \"%s\"", value);
+				}
 			}
 		}
 	}
