@@ -68,7 +68,6 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 
 	g_Logger.LogError("[SM] %s", buffer);
 
-	const char *func_name = NULL;
 	if (func_idx != -1)
 	{
 		if (func_idx & 1)
