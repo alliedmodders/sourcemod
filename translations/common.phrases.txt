@@ -163,4 +163,19 @@
 		"#format"		"{1:s}"
 		"en"			"This action cannot be performed on a dead client \"{1}\""
 	}
+	
+	"Vote in Progress"
+	{
+		"en"			"A vote is already in progress."
+	}
+	
+	"Vote Not In Progress"
+	{
+		"en"			"A vote is not in progress at this time."
+	}
+	
+	"Cancelled Vote"
+	{
+		"en"			"Cancelled the vote."
+	}
 }
