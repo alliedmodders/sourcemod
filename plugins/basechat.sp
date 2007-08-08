@@ -41,10 +41,6 @@ new Handle:g_Cvar_Psaymode = INVALID_HANDLE;
 
 new bool:g_DoColor = false;
 
-#if 0
-new g_INS = false;
-#endif
-
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -56,7 +52,7 @@ public OnPluginStart()
 	RegConsoleCmd("say_team", Command_SayAdmin);		
 	RegAdminCmd("sm_say", Command_SmSay, ADMFLAG_CHAT, "sm_say <message> - sends message to all players");
 	RegAdminCmd("sm_csay", Command_SmCsay, ADMFLAG_CHAT, "sm_csay <message> - sends centered message to all players");
-	//RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");
+	RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");
 	RegAdminCmd("sm_tsay", Command_SmTsay, ADMFLAG_CHAT, "sm_tsay [color] <message> - sends top-left message to all players");
 	RegAdminCmd("sm_chat", Command_SmChat, ADMFLAG_CHAT, "sm_chat <message> - sends message to admins");
 	RegAdminCmd("sm_psay", Command_SmPsay, ADMFLAG_CHAT, "sm_psay <name or #userid> <message> - sends private message");
@@ -68,16 +64,7 @@ public OnPluginStart()
 	if (strcmp(modname, "cstrike") == 0)
 	{
 		g_DoColor = true;
-		RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");
 	}
-	
-	#if 0
-	if (strcmp(modname, "ins") == 0)
-	{
-		RegConsoleCmd("say2", Command_SayChat);
-		g_INS = true;
-	}
-	#endif
 }
 
 public Action:Command_SayChat(client, args)
@@ -91,13 +78,6 @@ public Action:Command_SayChat(client, args)
 		text[strlen(text)-1] = '\0';
 		startidx = 1;
 	}
-	
-	#if 0
-	if (g_INS)
-	{
-		startidx += 4;
-	}
-	#endif
 	
 	if (text[startidx] != '@')
 		return Plugin_Continue;
@@ -175,13 +155,6 @@ public Action:Command_SayAdmin(client, args)
 		startidx = 1;
 	}
 	
-	#if 0
-	if (g_INS)
-	{
-		startidx += 4;
-	}
-	#endif	
-	
 	if (text[startidx] != '@')
 		return Plugin_Continue;
 	
@@ -251,7 +224,7 @@ public Action:Command_SmHsay(client, args)
 	decl String:name[64];
 	GetClientName(client, name, sizeof(name));
     
-	SendHintToAll("%s: %s", name, text);
+	PrintHintTextToAll("%s: %s", name, text);
 	LogMessage("%L triggered sm_hsay (text %s)", client, text);
     
 	return Plugin_Handled;    
@@ -422,51 +395,6 @@ SendChatToAdmins(String:name[], String:message[])
 		}	
 	}
 }
-
-SendHintToAll(String:text[], any:...)
-{
-	new String:message[192];
-	VFormat(message, 191, text, 2);
- 
-	new iLen = strlen(message);
-    
-	if (iLen > 30)
-	{
-		new iLastAdded = 0;
- 
-		for (new i = 0; i < iLen; i++)
-		{
-			if((message[i] == ' ' && iLastAdded > 30 && (iLen - i) > 10) || ((GetNextSpaceCount(text, i + 1) + iLastAdded)  > 34))
-			{
-				message[i] = '\n';
-				iLastAdded = 0;
-			}
-			else
-				iLastAdded++;
-		}
-	}
- 
-	new Handle:hHintMessage = StartMessageAll("HintText");
-	BfWriteByte(hHintMessage, -1);
-	BfWriteString(hHintMessage, message);
-	EndMessage();
-}
- 
-GetNextSpaceCount(String:text[], iCurIndex)
-{
-	new iCount = 0;
-	new iLen = strlen(text);
-	
-	for (new i = iCurIndex; i < iLen; i++)
-	{
-		if (text[i] == ' ')
-			return iCount;
-		else
-			iCount++;
-	}
- 
-	return iCount;
-} 
 
 SendDialogToAll(color = 0, String:text[], any:...)
 {
