@@ -44,6 +44,7 @@ public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 public: // IDebugListener
 	void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error);
+	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
 private:
 	int _GetPluginIndex(IPluginContext *ctx);
 };

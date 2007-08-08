@@ -33,12 +33,54 @@
 #include "DebugReporter.h"
 #include "Logger.h"
 #include "PluginSys.h"
+#include "sm_stringutil.h"
 
 DebugReport g_DbgReporter;
+
+/* I'm really lazy.  This should probably be exported to ISourcePawnEngine someday,
+ * but we need to make sure the JIT will deal with the version bump.
+ */
+extern const char *GetSourcePawnErrorMessage(int error);
 
 void DebugReport::OnSourceModAllInitialized()
 {
 	g_pSourcePawn->SetDebugListener(this);
+}
+
+void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...)
+{
+	va_list ap;
+	char buffer[512];
+
+	va_start(ap, message);
+	UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
+	va_end(ap);
+
+	const char *plname = g_PluginSys.FindPluginByContext(ctx->GetContext())->GetFilename();
+	const char *error = GetSourcePawnErrorMessage(err);
+
+	if (error)
+	{
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+	} else {
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+	}
+
+	g_Logger.LogError("[SM] %s", buffer);
+
+	const char *func_name = NULL;
+	if (func_idx != -1)
+	{
+		if (func_idx & 1)
+		{
+			func_idx >>= 1;
+			sp_public_t *function;
+			if (ctx->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
+			{
+				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above errors.", function->name);
+			}
+		}
+	}
 }
 
 void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *error)

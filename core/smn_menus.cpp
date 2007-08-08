@@ -32,6 +32,7 @@
 
 #include "sm_globals.h"
 #include <sh_stack.h>
+#include "DebugReporter.h"
 #include "MenuManager.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
@@ -93,13 +94,11 @@ public:
 	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDestroy(IBaseMenu *menu);
 	void OnMenuVoteStart(IBaseMenu *menu);
-	void OnMenuVoteEnd(IBaseMenu *menu,
-		unsigned int item, 
-		unsigned int winningVotes,
-		unsigned int totalVotes);
+	void OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *results);
 	void OnMenuVoteCancel(IBaseMenu *menu);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
+	bool OnSetHandlerOption(const char *option, const void *data);
 #if 0
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
@@ -109,6 +108,8 @@ private:
 private:
 	IPluginFunction *m_pBasic;
 	int m_Flags;
+	IPluginFunction *m_pVoteResults;
+	cell_t m_fnVoteResult;
 };
 
 /**
@@ -158,7 +159,7 @@ public:
 	}
 
 	/**
-	 *   It is extremely important that unloaded plugins don't crash.
+	 * It is extremely important that unloaded plugins don't crash.
 	 * Thus, if a plugin unloads, we run through every handler we have.
 	 * This means we do almost no runtime work for keeping track of
 	 * our panel handlers (we don't have to store a list of the running 
@@ -221,6 +222,7 @@ public:
 			m_FreeMenuHandlers.pop();
 			handler->m_pBasic = pFunction;
 			handler->m_Flags = flags;
+			handler->m_pVoteResults = NULL;
 		}
 		return handler;
 	}
@@ -276,7 +278,7 @@ static const ItemDrawInfo *s_CurDrawInfo = NULL;
  * MENU HANDLER WRAPPER
  */
 CMenuHandler::CMenuHandler(IPluginFunction *pBasic, int flags) : 
-	m_pBasic(pBasic), m_Flags(flags)
+	m_pBasic(pBasic), m_Flags(flags), m_pVoteResults(NULL)
 {
 	/* :TODO: We can probably cache the handle ahead of time */
 }
@@ -332,14 +334,6 @@ void CMenuHandler::OnMenuDestroy(IBaseMenu *menu)
 void CMenuHandler::OnMenuVoteStart(IBaseMenu *menu)
 {
 	DoAction(menu, MenuAction_VoteStart, 0, 0);
-}
-
-void CMenuHandler::OnMenuVoteEnd(IBaseMenu *menu,
-								 unsigned int item,
-								 unsigned int winningVotes,
-								 unsigned int totalVotes)
-{
-	DoAction(menu, MenuAction_VoteEnd, item, (totalVotes << 16) | (winningVotes & 0xFFFF));
 }
 
 void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)
@@ -405,6 +399,145 @@ cell_t CMenuHandler::DoAction(IBaseMenu *menu, MenuAction action, cell_t param1,
 	m_pBasic->PushCell(param2);
 	m_pBasic->Execute(&res);
 	return res;
+}
+
+void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *results)
+{
+	if (!m_pVoteResults)
+	{
+		/* Call MenuAction_VoteEnd instead.  See if there are any extra winners. */
+		unsigned int num_items = 1;
+		for (unsigned int i=1; i<results->num_items; i++)
+		{
+			if (results->item_list[i].count != results->item_list[0].count)
+			{
+				break;
+			}
+			num_items++;
+		}
+
+		/* See if we need to pick a random winner. */
+		unsigned int winning_item;
+		if (num_items > 1)
+		{
+			/* Yes, we do. */
+			srand(time(NULL));
+			winning_item = rand() % num_items;
+			winning_item = results->item_list[winning_item].item;
+		} else {
+			/* No, take the first. */
+			winning_item = results->item_list[0].item;
+		}
+
+		unsigned int total_votes = results->num_votes;
+		unsigned int winning_votes = results->item_list[0].count;
+
+		DoAction(menu, MenuAction_VoteEnd, winning_item, (total_votes << 16) | (winning_votes & 0xFFFF));
+	} else {
+		IPluginContext *pContext = m_pVoteResults->GetParentContext();
+		bool no_call = false;
+		int err;
+
+		/* First array */
+		cell_t client_array_address = -1;
+		cell_t *client_array_base = NULL;
+		cell_t client_array_size = results->num_clients + (results->num_clients * 2);
+		if (client_array_size)
+		{
+			if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
+				!= SP_ERROR_NONE)
+			{
+				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
+				no_call = true;
+			} else {
+				cell_t target_offs = sizeof(cell_t) * results->num_clients;
+				cell_t *cur_index = client_array_base;
+				cell_t *cur_array;
+				for (unsigned int i=0; i<results->num_clients; i++)
+				{
+					/* Copy the array index */
+					*cur_index = target_offs;
+					/* Get the current array address */
+					cur_array = (cell_t *)((char *)cur_index + target_offs);
+					/* Store information */
+					cur_array[0] = results->client_list[i].client;
+					cur_array[1] = results->client_list[i].item;
+					/* Adjust for the new target by subtracting one indirection
+					 * and adding one array.
+					 */
+					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
+					cur_index++;
+				}
+			}
+		}
+
+		/* Second array */
+		cell_t item_array_address = -1;
+		cell_t *item_array_base = NULL;
+		cell_t item_array_size = results->num_items + (results->num_items * 2);
+		if (item_array_size)
+		{
+			if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
+				!= SP_ERROR_NONE)
+			{
+				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
+				no_call = true;
+			} else {
+				cell_t target_offs = sizeof(cell_t) * results->num_items;
+				cell_t *cur_index = item_array_base;
+				cell_t *cur_array;
+				for (unsigned int i=0; i<results->num_items; i++)
+				{
+					/* Copy the array index */
+					*cur_index = target_offs;
+					/* Get the current array address */
+					cur_array = (cell_t *)((char *)cur_index + target_offs);
+					/* Store information */
+					cur_array[0] = results->item_list[i].item;
+					cur_array[1] = results->item_list[i].count;
+					/* Adjust for the new target by subtracting one indirection
+					 * and adding one array.
+					 */
+					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
+					cur_index++;
+				}
+			}
+		}
+
+		/* Finally, push everything */
+		if (!no_call)
+		{
+			m_pVoteResults->PushCell(results->num_votes);
+			m_pVoteResults->PushCell(results->num_clients);
+			m_pVoteResults->PushCell(client_array_address);
+			m_pVoteResults->PushCell(results->num_items);
+			m_pVoteResults->PushCell(item_array_address);
+			m_pVoteResults->Execute(NULL);
+		}
+
+		/* Free what we allocated, in reverse order as required */
+		if (item_array_address != -1)
+		{
+			pContext->HeapPop(item_array_address);
+		}
+		if (client_array_address != -1)
+		{
+			pContext->HeapPop(client_array_address);
+		}
+	}
+}
+
+bool CMenuHandler::OnSetHandlerOption(const char *option, const void *data)
+{
+	if (strcmp(option, "set_vote_results_handler") == 0)
+	{
+		void **array = (void **)data;
+		m_pVoteResults = (IPluginFunction *)array[0];
+		m_fnVoteResult = *(cell_t *)((cell_t *)array[1]);
+		return true;
+	}
+
+	return false;
 }
 
 /**
@@ -488,6 +621,11 @@ static cell_t DisplayMenu(IPluginContext *pContext, const cell_t *params)
 
 static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_Menus.IsVoteInProgress())
+	{
+		return pContext->ThrowNativeError("A vote is already in progress");
+	}
+
 	Handle_t hndl = (Handle_t)params[1];
 	HandleError err;
 	IBaseMenu *menu;
@@ -500,7 +638,12 @@ static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
 
-	return menu->BroadcastVote(addr, params[3], params[4]) ? 1 : 0;
+	if (!g_Menus.StartVote(menu, params[3], addr, params[4]))
+	{
+		return 0;
+	}
+
+	return 1;
 }
 
 static cell_t AddMenuItem(IPluginContext *pContext, const cell_t *params)
@@ -699,7 +842,7 @@ static cell_t GetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	return menu->GetExitButton() ? 1 : 0;
+	return ((menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT) ? 1 : 0;
 }
 
 static cell_t GetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
@@ -713,7 +856,7 @@ static cell_t GetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	return menu->GetExitBackButton() ? 1 : 0;
+	return ((menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXIT) ? 1 : 0;
 }
 
 static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
@@ -727,7 +870,11 @@ static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	return menu->SetExitButton(params[2] ? true : false) ? 1 : 0;
+	unsigned int flags = menu->GetMenuOptionFlags();
+	flags |= MENUFLAG_BUTTON_EXIT;
+	menu->SetMenuOptionFlags(flags);
+	flags = menu->GetMenuOptionFlags();
+	return ((flags & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT) ? 1 : 0;
 }
 
 static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
@@ -741,7 +888,9 @@ static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	menu->SetExitBackButton(params[2] ? true : false);
+	unsigned int flags = menu->GetMenuOptionFlags();
+	flags |= MENUFLAG_BUTTON_EXITBACK;
+	menu->SetMenuOptionFlags(flags);
 
 	return 1;
 }
@@ -757,23 +906,14 @@ static cell_t CancelMenu(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	menu->Cancel();
+	g_Menus.CancelMenu(menu);
 
 	return 1;
 }
 
 static cell_t IsVoteInProgress(IPluginContext *pContext, const cell_t *params)
 {
-	Handle_t hndl = (Handle_t)params[1];
-	HandleError err;
-	IBaseMenu *menu;
-
-	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
-	{
-		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
-	}
-
-	return menu->IsVoteInProgress() ? 1 : 0;
+	return g_Menus.IsVoteInProgress() ? 1 : 0;
 }
 
 static cell_t GetMenuStyle(IPluginContext *pContext, const cell_t *params)
@@ -1122,12 +1262,55 @@ static cell_t SetMenuOptionFlags(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t CancelVote(IPluginContext *pContxt, const cell_t *params)
+{
+	if (!g_Menus.IsVoteInProgress())
+	{
+		return pContxt->ThrowNativeError("No vote is in progress");
+	}
+
+	g_Menus.CancelVoting();
+
+	return 1;
+}
+
+static cell_t SetVoteResultCallback(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	IPluginFunction *pFunction = pContext->GetFunctionById(params[2]);
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function %x", params[2]);
+	}
+
+	void *array[2];
+	array[0] = pFunction;
+	array[1] = (void *)&params[2];
+
+	IMenuHandler *pHandler = menu->GetHandler();
+	if (!pHandler->OnSetHandlerOption("set_vote_results_handler", (const void *)array))
+	{
+		return pContext->ThrowNativeError("The given menu does not support this option");
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
 	{"CanPanelDrawFlags",		CanPanelDrawFlags},
 	{"CancelClientMenu",		CancelClientMenu},
 	{"CancelMenu",				CancelMenu},
+	{"CancelVote",				CancelVote},
 	{"CreateMenu",				CreateMenu},
 	{"CreateMenuEx",			CreateMenuEx},
 	{"CreatePanel",				CreatePanel},
@@ -1161,6 +1344,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SetPanelCurrentKey",		SetPanelCurrentKey},
 	{"SetPanelTitle",			SetPanelTitle},
 	{"SetPanelKeys",			SetPanelKeys},
+	{"SetVoteResultCallback",	SetVoteResultCallback},
 	{"VoteMenu",				VoteMenu},
 	{NULL,						NULL},
 };

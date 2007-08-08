@@ -114,9 +114,8 @@ public:
 public:
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuPanel *CreatePanel();
-	bool Display(int client, unsigned int time);
+	bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL);
 	void Cancel_Finally();
-	void VoteDisplay(int client, unsigned int maxTime);
 };
 
 extern CRadioStyle g_RadioMenuStyle;

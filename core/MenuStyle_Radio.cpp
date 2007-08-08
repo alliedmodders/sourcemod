@@ -390,7 +390,7 @@ IMenuPanel *CRadioMenu::CreatePanel()
 	return g_RadioMenuStyle.MakeRadioDisplay(this);
 }
 
-bool CRadioMenu::Display(int client, unsigned int time)
+bool CRadioMenu::Display(int client, unsigned int time, IMenuHandler *alt_handler)
 {
 #if defined MENU_DEBUG
 	g_Logger.LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
@@ -403,23 +403,7 @@ bool CRadioMenu::Display(int client, unsigned int time)
 		return false;
 	}
 
-	return g_RadioMenuStyle.DoClientMenu(client, this, m_pHandler, time);
-}
-
-void CRadioMenu::VoteDisplay(int client, unsigned int maxTime)
-{
-#if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CRadioMenu::VoteDisplay(%p) (client %d) (time %d)",
-		this,
-		client,
-		maxTime);
-#endif
-	if (m_bCancelling)
-	{
-		return;
-	}
-
-	g_RadioMenuStyle.DoClientMenu(client, this, m_pVoteHandler, maxTime);
+	return g_RadioMenuStyle.DoClientMenu(client, this, alt_handler ? alt_handler : m_pHandler, time);
 }
 
 void CRadioMenu::Cancel_Finally()

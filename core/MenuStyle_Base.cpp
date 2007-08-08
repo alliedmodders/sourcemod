@@ -584,14 +584,12 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 CBaseMenu::CBaseMenu(IMenuHandler *pHandler, IMenuStyle *pStyle, IdentityToken_t *pOwner) : 
 m_pStyle(pStyle), m_Strings(512), m_Pagination(7), m_bShouldDelete(false), m_bCancelling(false), 
 m_pOwner(pOwner ? pOwner : g_pCoreIdent), m_bDeleting(false), m_bWillFreeHandle(false), 
-m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_pVoteHandler(NULL), 
-m_nFlags(MENUFLAG_BUTTON_EXIT)
+m_hHandle(BAD_HANDLE), m_pHandler(pHandler), m_nFlags(MENUFLAG_BUTTON_EXIT)
 {
 }
 
 CBaseMenu::~CBaseMenu()
 {
-	g_Menus.ReleaseVoteWrapper(m_pVoteHandler);
 }
 
 Handle_t CBaseMenu::GetHandle()
@@ -732,22 +730,6 @@ const char *CBaseMenu::GetDefaultTitle()
 	return m_Title.c_str();
 }
 
-bool CBaseMenu::GetExitButton()
-{
-	return ((m_nFlags & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT);
-}
-
-bool CBaseMenu::SetExitButton(bool set)
-{
-	if (set)
-	{
-		m_nFlags |= MENUFLAG_BUTTON_EXIT;
-	} else {
-		m_nFlags &= ~MENUFLAG_BUTTON_EXIT;
-	}
-	return true;
-}
-
 void CBaseMenu::Cancel()
 {
 	if (m_bCancelling)
@@ -756,17 +738,10 @@ void CBaseMenu::Cancel()
 	}
 
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CBaseMenu::Cancel(%p) (m_pVote %p) (inVote %d) (m_bShouldDelete %d)",
+	g_Logger.LogMessage("[SM_MENU] CBaseMenu::Cancel(%p) (m_bShouldDelete %d)",
 		this,
-		m_pVoteHandler,
-		m_pVoteHandler ? m_pVoteHandler->IsVoteInProgress() : false,
 		m_bShouldDelete);
 #endif
-
-	if (m_pVoteHandler && m_pVoteHandler->IsVoteInProgress())
-	{
-		m_pVoteHandler->CancelVoting();
-	}
 
 	m_bCancelling = true;
 	Cancel_Finally();
@@ -827,58 +802,6 @@ void CBaseMenu::InternalDelete()
 	delete this;
 }
 
-bool CBaseMenu::BroadcastVote(int clients[], 
-							  unsigned int numClients, 
-							  unsigned int maxTime,
-							  unsigned int flags)
-{
-#if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CBaseMenu::BroadcastVote(%p) (maxTime %d) (numClients %d) (m_pVote %p) (inVote %d)",
-		this,
-		maxTime,
-		numClients,
-		m_pVoteHandler,
-		m_pVoteHandler ? m_pVoteHandler->IsVoteInProgress() : false);
-#endif
-	if (!m_pVoteHandler)
-	{
-		m_pVoteHandler = g_Menus.CreateVoteWrapper(m_pHandler);
-	} else if (m_pVoteHandler->IsVoteInProgress()) {
-		return false;
-	}
-
-	m_pVoteHandler->InitializeVoting(this);
-
-	for (unsigned int i=0; i<numClients; i++)
-	{
-		VoteDisplay(clients[i], maxTime);
-	}
-
-	m_pVoteHandler->StartVoting();
-
-	return true;
-}
-
-bool CBaseMenu::IsVoteInProgress()
-{
-	return (m_pVoteHandler && m_pVoteHandler->IsVoteInProgress());
-}
-
-bool CBaseMenu::GetExitBackButton()
-{
-	return ((m_nFlags & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK);
-}
-
-void CBaseMenu::SetExitBackButton(bool set)
-{
-	if (set)
-	{
-		m_nFlags |= MENUFLAG_BUTTON_EXITBACK;
-	} else {
-		m_nFlags &= ~MENUFLAG_BUTTON_EXITBACK;
-	}
-}
-
 unsigned int CBaseMenu::GetMenuOptionFlags()
 {
 	return m_nFlags;
@@ -887,4 +810,9 @@ unsigned int CBaseMenu::GetMenuOptionFlags()
 void CBaseMenu::SetMenuOptionFlags(unsigned int flags)
 {
 	m_nFlags = flags;
+}
+
+IMenuHandler *CBaseMenu::GetHandler()
+{
+	return m_pHandler;
 }

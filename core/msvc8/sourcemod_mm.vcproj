@@ -337,6 +337,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\MenuVoting.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PlayerManager.cpp"
 				>
 			</File>
@@ -472,6 +476,10 @@
 			</File>
 			<File
 				RelativePath="..\MenuStyle_Valve.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MenuVoting.h"
 				>
 			</File>
 			<File

@@ -45,7 +45,6 @@ struct TracedCall
 	unsigned int chain;
 };
 
-
 class CContextTrace : public IContextTrace
 {
 public:

@@ -37,7 +37,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		8
+#define SMINTERFACE_MENUMANAGER_VERSION		9
 
 /**
  * @file IMenuManager.h
@@ -118,6 +118,27 @@ namespace SourceMod
 	};
 
 	/**
+	 * @brief Contains information about a vote result.
+	 */
+	struct menu_vote_result_t
+	{
+		unsigned int num_clients;		/**< Number of clients the menu was displayed to */
+		unsigned int num_votes;			/**< Number of votes received */
+		struct menu_client_vote_t
+		{
+			int client;					/**< Client index */
+			int item;					/**< Item # (or -1 for none) */
+		} *client_list;					/**< Array of size num_clients */
+		unsigned int num_items;			/**< Number of items voted for */
+		struct menu_item_vote_t
+		{
+			unsigned int item;			/**< Item index */
+			unsigned int count;			/**< Number of votes */
+		} *item_list;					/**< Array of size num_items, sorted by count, 
+											 descending */
+	};
+
+	/**
 	 * @brief Reasons for a menu dying.
 	 */
 	enum MenuCancelReason
@@ -141,6 +162,7 @@ namespace SourceMod
 		MenuEnd_Cancelled = -3,				/**< Menu was uncleanly cancelled */
 		MenuEnd_Exit = -4,					/**< Menu was cleanly exited via "exit" */
 		MenuEnd_ExitBack = -5,				/**< Menu was cleanly exited via "back" */
+		MenuEnd_NoVotes = -6,				/**< No votes received */
 	};
 
 
@@ -479,31 +501,14 @@ namespace SourceMod
 		virtual IMenuPanel *CreatePanel() =0;
 
 		/**
-		 * @brief Returns whether or not the menu should have an "Exit" button for
-		 * paginated menus.
-		 *
-		 * @return				True to have an exit button, false otherwise.
-		 */
-		virtual bool GetExitButton() =0;
-		
-		/**
-		 * @brief Sets whether or not the menu should have an "Exit" button for
-		 * paginated menus.
-		 *
-		 * @param set			True to enable, false to disable the exit button.
-		 * @return				True on success, false if the exit button is 
-		 *						non-optional.
-		 */
-		virtual bool SetExitButton(bool set) =0;
-
-		/**
 		 * @brief Sends the menu to a client.
 		 *
 		 * @param client		Client index to display to.
 		 * @param time			Time to hold menu for.
+		 * @param alt_handler	Alternate IMenuHandler.
 		 * @return				True on success, false otherwise.
 		 */
-		virtual bool Display(int client, unsigned int time) =0;
+		virtual bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL) =0;
 
 		/**
 		 * @brief Destroys the menu and frees all associated resources.
@@ -531,46 +536,6 @@ namespace SourceMod
 		 * @return				Handle_t handle value.
 		 */
 		virtual Handle_t GetHandle() =0;
-
-		/**
-		 * @brief Sends a menu to multiple clients as a vote menu.  All callbacks
-		 * will be sent as normal, except two extras, OnMenuVoteStart and 
-		 * OnMenuVoteEnd, will be called.
-		 *
-		 * @param clients		Array of client indexes.
-		 * @param numClients	Number of client indexes in the array.
-		 * @param maxTime		Maximum amount of time to hold the vote.
-		 * @param flags			Optional voting flags (currently unused).
-		 * @return				True on success, false if a vote is already in
-		 *						progress (the menu must be cancelled first).
-		 */
-		virtual bool BroadcastVote(int clients[], 
-			unsigned int numClients, 
-			unsigned int maxTime,
-			unsigned int flags=0) =0;
-
-		/**
-		 * @brief Returns whether a vote menu is active.
-		 *
-		 * @return				True if a vote menu is active, false otherwise.
-		 */
-		virtual bool IsVoteInProgress() =0;
-
-		/**
-		 * @brief Returns whether to draw a "Back" button on the first page.
-		 * ExitBack buttons are disabled by default.
-		 *
-		 * @return				True if enabled, false otherwise.
-		 */
-		virtual bool GetExitBackButton() =0;
-
-		/**
-		 * @brief Sets whether to draw a "Back" button on the first page.
-		 * ExitBack buttons are disabled by default.
-		 *
-		 * @param set			True to enable, false to disable.
-		 */
-		virtual void SetExitBackButton(bool set) =0;
 		
 		/**
 		 * @brief Returns menu option flags.
@@ -585,6 +550,13 @@ namespace SourceMod
 		 * @param flags			Menu option flags.
 		 */
 		virtual void SetMenuOptionFlags(unsigned int flags) =0;
+
+		/**
+		 * @brief Returns the menu's handler.
+		 *
+		 * @return				IMenuHandler of the menu.
+		 */
+		virtual IMenuHandler *GetHandler() =0;
 	};
 
 	/** 
@@ -716,20 +688,15 @@ namespace SourceMod
 		 * while it is in this function.
 		 *
 		 * @param menu			Menu pointer.
-		 * @param item			Item position that was chosen by a majority.
-		 * @param winningVotes	Number of votes from the winning item.
-		 * @param totalVotes	Number of votes total.
+		 * @param results		Menu vote results.
 		 */
-		virtual void OnMenuVoteEnd(IBaseMenu *menu,
-			unsigned int item, 
-			unsigned int winningVotes,
-			unsigned int totalVotes)
+		virtual void OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *results)
 		{
 		}
 
 		/**
 		 * @brief Called when a vote is cancelled.  If this is called, then 
-		 * OnMenuVoteEnd() will not be called.  In both cases, OnMenuEnd will 
+		 * OnMenuVoteResults() will not be called.  In both cases, OnMenuEnd will 
 		 * always be called.
 		 *
 		 * @param menu			Menu pointer.
@@ -737,43 +704,18 @@ namespace SourceMod
 		virtual void OnMenuVoteCancel(IBaseMenu *menu)
 		{
 		}
-	};
 
-	/**
-	 * @brief Contains functions for managing a vote handler.
-	 */
-	class IVoteMenuHandler : public IMenuHandler
-	{
-	public:
 		/**
-		 * @brief Returns whether or not a vote is in progress.
+		 * @brief Call to set private handler stuff.
 		 *
-		 * @return				True if a vote is in progress, false otherwise.
+		 * @param option		Option name.
+		 * @param data			Private data.
+		 * @return				True if set, false if invalid or unrecognized.
 		 */
-		virtual bool IsVoteInProgress() =0;
-
-		/**
-		 * @brief Use this to mark the vote as in progress (start).
-		 *
-		 * @param menu			Menu pointer.
-		 */
-		virtual void InitializeVoting(IBaseMenu *menu) =0;
-
-		/**
-		 * @brief Use this to notify that all clients' displays have been
-		 * processed (i.e., there are no more clients to display to).
-		 */
-		virtual void StartVoting() =0;
-
-		/**
-		 * @brief Notifies the vote handler that the voting should be 
-		 * cancelled.  
-		 *
-		 * Cancellation is not immediate and will only occur once every menu 
-		 * has been cancelled from clients.  Thus this should only be called
-		 * from the beginning of IBaseMenu::Cancel.
-		 */
-		virtual void CancelVoting() =0;
+		virtual bool OnSetHandlerOption(const char *option, const void *data)
+		{
+			return false;
+		}
 	};
 
 	/**
@@ -792,7 +734,7 @@ namespace SourceMod
 		}
 		virtual bool IsVersionCompatible(unsigned int version)
 		{
-			if (version < 7 || version > GetInterfaceVersion())
+			if (version < 9 || version > GetInterfaceVersion())
 			{
 				return false;
 			}
@@ -815,7 +757,7 @@ namespace SourceMod
 		virtual IMenuStyle *GetDefaultStyle() =0;
 
 		/**
-		 * @brief Given a set of menu states, converts it to an IDisplay object.
+		 * @brief Given a set of menu states, converts it to an IMenuPanel object.
 		 *
 		 * The state parameter is both INPUT and OUTPUT.
 		 * INPUT: menu, mh, firstItem, lastItem
@@ -823,7 +765,7 @@ namespace SourceMod
 		 *
 		 * @param client		Client index.
 		 * @param states		Menu states.
-		 * @return				IDisplay pointer, or NULL if no items could be 
+		 * @return				IMenuPanel pointer, or NULL if no items could be 
 		 *						found in the IBaseMenu pointer, or NULL if any
 		 *						other error occurred.  Any valid pointer must
 		 *						be freed using IMenuPanel::DeleteThis.
@@ -831,25 +773,40 @@ namespace SourceMod
 		virtual IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order) =0;
 
 		/**
-		 * @brief Creates a standard voting wrapper.  The wrapper is not 
-		 * re-entrant; a second menu cannot be displayed on the same handler
-		 * at the same time.
+		 * @brief Cancels a menu.  Calls IBaseMenu::Cancel() after doing some preparatory 
+		 * work.  This should always be used instead of directly calling Cancel().
 		 *
-		 * @param mh			Menu handler to wrap around.
-		 * @return				An IMenuHandler pointer that is a wrapper
-		 *						around IMenuHandler callbacks to invoke
-		 *						voting related callbacks.
+		 * @param menu			IBaseMenu pointer.
 		 */
-		virtual IVoteMenuHandler *CreateVoteWrapper(IMenuHandler *mh) =0;
+		virtual void CancelMenu(IBaseMenu *menu) =0;
 
 		/**
-		 * @brief Frees a standard voting wrapper.
+		 * @brief Displays a menu as a vote.
 		 *
-		 * @param mh			Menu handler pointer created by 
-		 *						CreateVoteWrapper().  NULL values will be 
-		 *						safely ignored.
+		 * @param menu			IBaseMenu pointer.
+		 * @param num_clients	Number of clients to display to.
+		 * @param clients		Client index array.
+		 * @param max_time		Maximum time to hold menu for.
+		 * @param flags			Vote flags (currently unused).
+		 * @return				True on success, false if a vote is in progress.
 		 */
-		virtual void ReleaseVoteWrapper(IVoteMenuHandler *mh) =0;
+		virtual bool StartVote(IBaseMenu *menu,
+								unsigned int num_clients,
+								int clients[],
+								unsigned int max_time,
+								unsigned int flags=0) =0;
+
+		/**
+		 * @brief Returns whether or not a vote is in progress.
+		 *
+		 * @return				True if a vote is in progress, false otherwise.
+		 */
+		virtual bool IsVoteInProgress() =0;
+
+		/**
+		 * @brief Cancels the vote in progress.  This calls IBaseMenu::Cancel().
+		 */
+		virtual void CancelVoting() =0;
 	};
 }
 

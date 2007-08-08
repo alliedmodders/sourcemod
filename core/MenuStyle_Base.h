@@ -125,23 +125,13 @@ public:
 	virtual IMenuStyle *GetDrawStyle();
 	virtual void SetDefaultTitle(const char *message);
 	virtual const char *GetDefaultTitle();
-	virtual bool GetExitButton();
-	virtual bool SetExitButton(bool set);
 	virtual void Cancel();
 	virtual void Destroy(bool releaseHandle);
 	virtual void Cancel_Finally() =0;
 	virtual Handle_t GetHandle();
-	virtual bool BroadcastVote(int clients[], 
-		unsigned int numClients, 
-		unsigned int maxTime,
-		unsigned int flags=0);
-	virtual bool IsVoteInProgress();
-	virtual bool GetExitBackButton();
-	virtual void SetExitBackButton(bool set);
 	virtual unsigned int GetMenuOptionFlags();
 	virtual void SetMenuOptionFlags(unsigned int flags);
-public:
-	virtual void VoteDisplay(int client, unsigned int maxTime) =0;
+	virtual IMenuHandler *GetHandler();
 private:
 	void InternalDelete();
 protected:
@@ -157,7 +147,6 @@ protected:
 	bool m_bWillFreeHandle;
 	Handle_t m_hHandle;
 	IMenuHandler *m_pHandler;
-	IVoteMenuHandler *m_pVoteHandler;
 	unsigned int m_nFlags;
 };
 

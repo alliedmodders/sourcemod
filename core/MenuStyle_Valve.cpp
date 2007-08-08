@@ -383,24 +383,14 @@ bool CValveMenu::SetExtOption(MenuOption option, const void *valuePtr)
 	return false;
 }
 
-bool CValveMenu::Display(int client, unsigned int time)
+bool CValveMenu::Display(int client, unsigned int time, IMenuHandler *alt_handler)
 {
 	if (m_bCancelling)
 	{
 		return false;
 	}
 
-	return g_ValveMenuStyle.DoClientMenu(client, this, m_pHandler, time);
-}
-
-void CValveMenu::VoteDisplay(int client, unsigned int maxTime)
-{
-	if (m_bCancelling)
-	{
-		return;
-	}
-
-	g_ValveMenuStyle.DoClientMenu(client, this, m_pVoteHandler, maxTime);
+	return g_ValveMenuStyle.DoClientMenu(client, this, alt_handler ? alt_handler : m_pHandler, time);
 }
 
 IMenuPanel *CValveMenu::CreatePanel()
@@ -408,19 +398,9 @@ IMenuPanel *CValveMenu::CreatePanel()
 	return new CValveMenuDisplay(this);
 }
 
-bool CValveMenu::GetExitButton()
-{
-	return true;
-}
-
-bool CValveMenu::SetExitButton(bool set)
-{
-	return false;
-}
-
 void CValveMenu::SetMenuOptionFlags(unsigned int flags)
 {
-	flags &= ~MENUFLAG_BUTTON_EXIT;
+	flags |= MENUFLAG_BUTTON_EXIT;
 	CBaseMenu::SetMenuOptionFlags(flags);
 }
 

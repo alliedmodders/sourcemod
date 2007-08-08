@@ -68,6 +68,11 @@ enum MenuAction
 #define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
 #define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
 
+#define VOTEINFO_CLIENT_INDEX		0		/**< Client index */
+#define VOTEINFO_CLIENT_ITEM		1		/**< Item the client selected, or -1 for none */
+#define VOTEINFO_ITEM_INDEX			0		/**< Item index */
+#define VOTEINFO_ITEM_VOTES			1		/**< Number of votes for the item */
+
 /**
  * Reasons a menu can be cancelled.
  */
@@ -351,12 +356,20 @@ native GetMenuOptionFlags(Handle:menu);
 native SetMenuOptionFlags(Handle:menu, flags);
 
 /**
- * Returns whether a vote is in progress on the given menu.
+ * Returns whether a vote is in progress.
  *
- * @param menu				Menu Handle.
+ * @param menu				Deprecated; no longer used.
  * @return					True if a vote is in progress, false otherwise.
  */
-native bool:IsVoteInProgress(Handle:menu);
+native bool:IsVoteInProgress(Handle:menu=INVALID_HANDLE);
+
+/**
+ * Cancels the vote in progress.
+ *
+ * @noreturn
+ * @error					If no vote is in progress.
+ */
+native CancelVote();
 
 /**
  * Broadcasts a menu to a list of clients.  The most selected item will be 
@@ -372,7 +385,7 @@ native bool:IsVoteInProgress(Handle:menu);
  * @param time				Maximum time to leave menu on the screen.
  * @return					True on success, false if this menu already has a vote session
  *							in progress.
- * @error					Invalid Handle.
+ * @error					Invalid Handle, or a vote is already in progress.
  */
 native bool:VoteMenu(Handle:menu, clients[], numClients, time);
 
@@ -402,6 +415,33 @@ stock VoteMenuToAll(Handle:menu, time)
 	
 	return VoteMenu(menu, players, total, time);
 }
+/**
+ * Callback for when a vote has ended and results are available.
+ *
+ * @param num_votes			Number of votes tallied in total.
+ * @param num_clients		Number of clients who could vote.
+ * @param client_info		Array of clients.  Use VOTEINFO_CLIENT_ defines.
+ * @param num_items			Number of unique items that were selected.
+ * @param item_info			Array of items, sorted by count.  Use VOTEINFO_ITEM
+ *							defines.
+ * @noreturn
+ */
+functag VoteHandler public(num_votes, 
+						   num_clients,
+						   const client_info[][2], 
+						   num_items,
+						   const item_info[][2]);	   
+
+/**
+ * Sets an advanced vote handling callback.  If this callback is set,
+ * MenuAction_VoteEnd will not be called.
+ *
+ * @param menu				Menu Handle.
+ * @param callback			Callback function.
+ * @noreturn
+ * @error					Invalid Handle or callback.
+ */
+native SetVoteResultCallback(Handle:menu, VoteHandler:callback);
 
 /**
  * Returns a style's global Handle.

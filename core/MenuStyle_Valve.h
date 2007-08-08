@@ -120,8 +120,7 @@ public: //IBaseMenu
 	bool GetExitButton();
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);
-	bool Display(int client, unsigned int time);
-	void VoteDisplay(int client, unsigned int maxTime);
+	bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL);
 	void SetMenuOptionFlags(unsigned int flags);
 public: //CBaseMenu
 	void Cancel_Finally();

@@ -34,6 +34,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include "MenuManager.h"
+#include "MenuVoting.h"
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
 #include "PlayerManager.h"
@@ -43,219 +44,9 @@
 #include "sourcemm_api.h"
 
 MenuManager g_Menus;
+VoteMenuHandler s_VoteHandler;
 
 ConVar sm_menu_sounds("sm_menu_sounds", "1", 0, "Sets whether SourceMod menus play trigger sounds");
-
-/*******************************
- *******************************
- ******** VOTE HANDLER *********
- *******************************
- *******************************/
-
-unsigned int VoteMenuHandler::GetMenuAPIVersion2()
-{
-	return m_pHandler->GetMenuAPIVersion2();
-}
-
-bool VoteMenuHandler::IsVoteInProgress()
-{
-	return (m_pCurMenu != NULL);
-}
-
-void VoteMenuHandler::InitializeVoting(IBaseMenu *menu)
-{
-	m_Items = menu->GetItemCount();
-
-	if (m_Votes.size() < (size_t)m_Items)
-	{
-		/* Only clear the items we need to... */
-		size_t size = m_Votes.size();
-		for (size_t i=0; i<size; i++)
-		{
-			m_Votes[i] = 0;
-		}
-		m_Votes.resize(m_Items, 0);
-	} else {
-		for (unsigned int i=0; i<m_Items; i++)
-		{
-			m_Votes[i] = 0;
-		}
-	}
-
-	m_pCurMenu = menu;
-
-	m_pHandler->OnMenuStart(m_pCurMenu);
-}
-
-void VoteMenuHandler::StartVoting()
-{
-	m_bStarted = true;
-
-	m_pHandler->OnMenuVoteStart(m_pCurMenu);
-
-	/* By now we know how many clients were set.  
-	 * If there are none, we should end IMMEDIATELY.
-	 */
-	if (m_Clients == 0)
-	{
-		EndVoting();
-	}
-}
-
-void VoteMenuHandler::DecrementPlayerCount()
-{
-	assert(m_Clients > 0);
-
-	m_Clients--;
-
-	if (m_bStarted && m_Clients == 0)
-	{
-		EndVoting();
-	}
-}
-
-void VoteMenuHandler::EndVoting()
-{
-	if (m_bCancelled)
-	{
-		/* If we were cancelled, don't bother tabulating anything.
-		 * Reset just in case someone tries to redraw, which means
-		 * we need to save our states.
-		 */
-		IBaseMenu *menu = m_pCurMenu;
-		InternalReset();
-		m_pHandler->OnMenuVoteCancel(menu);
-		m_pHandler->OnMenuEnd(menu, MenuEnd_VotingCancelled);
-		return;
-	}
-
-	unsigned int chosen = 0;
-	unsigned int highest = 0;
-	unsigned int dup_count = 0;
-	unsigned int total = m_Votes.size() ? m_Votes[0] : 0;
-
-	/* If we got zero votes, take a shortcut. */
-	if (m_NumVotes == 0)
-	{
-		/* Pick a random item and then jump far, far away. */
-		srand((unsigned int)(time(NULL)));
-		chosen = (unsigned int)rand() % m_Items;
-		goto picked_item;
-	}
-
-	/* We can't have more dups than this!
-	 * This is the max number of players.
-	 */
-	unsigned int dup_array[256];
-
-	for (size_t i=1; i<m_Items; i++)
-	{
-		if (m_Votes[i] > m_Votes[highest])
-		{
-			/* If we have a new highest count, mark it and trash the duplicate
-			 * list by setting the total to 0.
-			 */
-			highest = i;
-			dup_count = 0;
-		} else if (m_Votes[i] == m_Votes[highest]) {
-			/* If they're equal, mark it in the duplicate list.
-			 * We'll add in the original later.
-			 */
-			dup_array[dup_count++] = i;
-		}
-		total += m_Votes[i];
-	}
-
-	/* Check if we need to pick from the duplicate list */
-	if (dup_count)
-	{
-		/* Re-add the original to the list because it's not in there. */
-		dup_array[dup_count++] = highest;
-
-		/* Pick a random slot. */
-		srand((unsigned int)(time(NULL)));
-		unsigned int r = (unsigned int)rand() % dup_count;
-
-		/* Pick the item. */
-		chosen = dup_array[r];
-	} else {
-		chosen = highest;
-	}
-
-picked_item:
-	m_pHandler->OnMenuVoteEnd(m_pCurMenu, chosen, m_Votes[highest], total);
-	m_pHandler->OnMenuEnd(m_pCurMenu, MenuEnd_VotingDone);
-	InternalReset();
-}
-
-void VoteMenuHandler::OnMenuStart(IBaseMenu *menu)
-{
-	m_Clients++;
-}
-
-void VoteMenuHandler::OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
-{
-	DecrementPlayerCount();
-}
-
-void VoteMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
-{
-	m_pHandler->OnMenuCancel(menu, client, reason);
-}
-
-void VoteMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display)
-{
-	m_pHandler->OnMenuDisplay(menu, client, display);
-}
-
-unsigned int VoteMenuHandler::OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr)
-{
-	return m_pHandler->OnMenuDisplayItem(menu, client, panel, item, dr);
-}
-
-void VoteMenuHandler::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)
-{
-	m_pHandler->OnMenuDrawItem(menu, client, item, style);
-}
-
-void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
-{
-	/* Check by our item count, NOT the vote array size */
-	if (item < m_Items)
-	{
-		m_Votes[item]++;
-		m_NumVotes++;
-	}
-
-	m_pHandler->OnMenuSelect(menu, client, item);
-}
-
-void VoteMenuHandler::Reset(IMenuHandler *mh)
-{
-	m_pHandler = mh;
-	InternalReset();
-}
-
-void VoteMenuHandler::InternalReset()
-{
-	m_Clients = 0;
-	m_Items = 0;
-	m_bStarted = false;
-	m_pCurMenu = NULL;
-	m_NumVotes = 0;
-	m_bCancelled = false;
-}
-
-void VoteMenuHandler::CancelVoting()
-{
-	m_bCancelled = true;
-}
-
-/*******************************
- *******************************
- ******** MENU MANAGER *********
- *******************************
- *******************************/
 
 MenuManager::MenuManager()
 {
@@ -283,12 +74,6 @@ void MenuManager::OnSourceModAllShutdown()
 {
 	g_HandleSys.RemoveType(m_MenuType, g_pCoreIdent);
 	g_HandleSys.RemoveType(m_StyleType, g_pCoreIdent);
-
-	while (!m_VoteHandlers.empty())
-	{
-		delete m_VoteHandlers.front();
-		m_VoteHandlers.pop();
-	}
 }
 
 void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
@@ -649,8 +434,8 @@ skip_search:
 	if (pgn != MENU_NO_PAGINATION)
 	{
 		bool canDrawDisabled = display->CanDrawItem(ITEMDRAW_DISABLED|ITEMDRAW_CONTROL);
-		bool exitButton = menu->GetExitButton();
-		bool exitBackButton = menu->GetExitBackButton();
+		bool exitButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT;
+		bool exitBackButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK;
 		char text[50];
 
 		/* Calculate how many items we are allowed for control stuff */
@@ -798,33 +583,6 @@ IMenuStyle *MenuManager::GetDefaultStyle()
 	return m_pDefaultStyle;
 }
 
-IVoteMenuHandler *MenuManager::CreateVoteWrapper(IMenuHandler *mh)
-{
-	VoteMenuHandler *vh = NULL;
-
-	if (m_VoteHandlers.empty())
-	{
-		vh = new VoteMenuHandler;
-	} else {
-		vh = m_VoteHandlers.front();
-		m_VoteHandlers.pop();
-	}
-
-	vh->Reset(mh);
-
-	return vh;
-}
-
-void MenuManager::ReleaseVoteWrapper(IVoteMenuHandler *mh)
-{
-	if (mh == NULL)
-	{
-		return;
-	}
-
-	m_VoteHandlers.push((VoteMenuHandler *)mh);
-}
-
 bool MenuManager::MenuSoundsEnabled()
 {
 	return (sm_menu_sounds.GetInt() != 0);
@@ -879,7 +637,7 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_ExitSound.size() > 0)
 			{
-				sound= m_ExitSound.c_str();
+				sound = m_ExitSound.c_str();
 			}
 			break;
 		}
@@ -906,4 +664,31 @@ void MenuManager::OnSourceModLevelChange(const char *mapName)
 	{
 		enginesound->PrecacheSound(m_ExitSound.c_str(), true);
 	}
+}
+
+void MenuManager::CancelMenu(IBaseMenu *menu)
+{
+	if (s_VoteHandler.GetCurrentMenu() == menu
+		&& !s_VoteHandler.IsCancelling())
+	{
+		s_VoteHandler.CancelVoting();
+		return;
+	}
+
+	menu->Cancel();
+}
+
+bool MenuManager::StartVote(IBaseMenu *menu, unsigned int num_clients, int clients[], unsigned int max_time, unsigned int flags)
+{
+	return s_VoteHandler.StartVote(menu, num_clients, clients, max_time, flags);
+}
+
+bool MenuManager::IsVoteInProgress()
+{
+	return s_VoteHandler.IsVoteInProgress();
+}
+
+void MenuManager::CancelVoting()
+{
+	s_VoteHandler.CancelVoting();
 }

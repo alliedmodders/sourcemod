@@ -44,39 +44,6 @@
 using namespace SourceMod;
 using namespace SourceHook;
 
-class VoteMenuHandler : public IVoteMenuHandler
-{
-public: //IMenuHandler
-	unsigned int GetMenuAPIVersion2();
-	void OnMenuStart(IBaseMenu *menu);
-	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
-	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
-	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
-	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
-	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
-	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
-public: //IVoteMenuHandler
-	bool IsVoteInProgress();
-	void InitializeVoting(IBaseMenu *menu);
-	void StartVoting();
-	void CancelVoting();
-public:
-	void Reset(IMenuHandler *mh);
-private:
-	void DecrementPlayerCount();
-	void EndVoting();
-	void InternalReset();
-private:
-	IMenuHandler *m_pHandler;
-	unsigned int m_Clients;
-	unsigned int m_Items;
-	CVector<unsigned int> m_Votes;
-	IBaseMenu *m_pCurMenu;
-	bool m_bStarted;
-	bool m_bCancelled;
-	unsigned int m_NumVotes;
-};
-
 class MenuManager : 
 	public IMenuManager,
 	public SMGlobalClass,
@@ -114,8 +81,14 @@ public:
 	void AddStyle(IMenuStyle *style);
 	bool SetDefaultStyle(IMenuStyle *style);
 	IMenuPanel *RenderMenu(int client, menu_states_t &states, ItemOrder order);
-	IVoteMenuHandler *CreateVoteWrapper(IMenuHandler *mh);
-	void ReleaseVoteWrapper(IVoteMenuHandler *mh);
+	void CancelMenu(IBaseMenu *menu);
+	bool StartVote(IBaseMenu *menu,
+		unsigned int num_clients,
+		int clients[],
+		unsigned int max_time,
+		unsigned int flags=0);
+	bool IsVoteInProgress();
+	void CancelVoting();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public:
@@ -130,7 +103,6 @@ protected:
 private:
 	int m_ShowMenu;
 	IMenuStyle *m_pDefaultStyle;
-	CStack<VoteMenuHandler *> m_VoteHandlers;
 	CVector<IMenuStyle *> m_Styles;
 	HandleType_t m_StyleType;
 	HandleType_t m_MenuType;
