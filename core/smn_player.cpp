@@ -1020,6 +1020,11 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
 	pClient->Disconnect("%s", buffer);
 
 	return 1;
@@ -1044,6 +1049,45 @@ static cell_t ChangeClientTeam(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pInfo->ChangeTeam(params[2]);
+
+	return 1;
+}
+
+static cell_t RunAdminCacheChecks(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	} else if (!pPlayer->IsAuthorized()) {
+		return pContext->ThrowNativeError("Client %d is not authorized", client);
+	}
+
+	AdminId id = pPlayer->GetAdminId();
+	pPlayer->DoBasicAdminChecks();
+
+	return (id != pPlayer->GetAdminId()) ? 1 : 0;
+}
+
+static cell_t NotifyPostAdminCheck(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	} else if (!pPlayer->IsInGame()) {
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	} else if (!pPlayer->IsAuthorized()) {
+		return pContext->ThrowNativeError("Client %d is not authorized", client);
+	}
+
+	pPlayer->NotifyPostAdminChecks();
 
 	return 1;
 }
@@ -1095,5 +1139,7 @@ REGISTER_NATIVES(playernatives)
 	{"ShowActivity",			ShowActivity},
 	{"ShowActivityEx",			ShowActivityEx},
 	{"KickClient",				KickClient},
+	{"RunAdminCacheChecks",		RunAdminCacheChecks},
+	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
 	{NULL,						NULL}
 };

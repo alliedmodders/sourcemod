@@ -30,7 +30,7 @@ enum NetFlow
 /**
  * Called on client connection.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @param rejectmsg		Buffer to store the rejection message when the connection is refused.
  * @param maxlen		Maximum number of characters for rejection buffer.
  * @return				True to validate client's connection, false to refuse it.
@@ -40,7 +40,7 @@ forward bool:OnClientConnect(client, String:rejectmsg[], maxlen);
 /**
  * Called when a client is entering to the game.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @noreturn
  */
 forward OnClientPutInServer(client);
@@ -48,7 +48,7 @@ forward OnClientPutInServer(client);
 /**
  * Called when a client is disconnecting from the server.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @noreturn
  */
 forward OnClientDisconnect(client);
@@ -56,7 +56,7 @@ forward OnClientDisconnect(client);
 /**
  * Called when a client is disconnected from the server.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @noreturn
  */
 forward OnClientDisconnect_Post(client);
@@ -64,7 +64,7 @@ forward OnClientDisconnect_Post(client);
 /**
  * Called when a client is sending a command.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @param args			Number of arguments.
  * @noreturn
  */
@@ -73,19 +73,44 @@ forward Action:OnClientCommand(client, args);
 /**
  * Called whenever the client's settings are changed.
  *
- * @param client		Player index.
+ * @param client		Client index.
  * @noreturn
  */
 forward OnClientSettingsChanged(client);
 
 /**
  * Called when a client receives a Steam ID.
- * @note This is called by bots, but the ID will be "BOT"
+ 
+ * Admin properties are not assigned here, but on OnClientPostAdminCheck().
+ * This is called by bots, but the ID will be "BOT".
  *
- * @param client		Player index.
- * @param auth			Player auth string.
+ * @param client		Client index.
+ * @param auth			Client auth string.
+ * @noreturn
  */
 forward OnClientAuthorized(client, const String:auth[]);
+
+/**
+ * Called once a client is authorized and fully in-game, but 
+ * before admin checks are done.  This can be used to override 
+ * the default admin checks for a client.
+ *
+ * Note: If handled/blocked, PostAdminCheck must be signalled 
+ * manually via NotifyPostAdminCheck().
+ *
+ * @param client		Client index.
+ * @return				Plugin_Handled to block admin checks.
+ */
+forward Action:OnClientPreAdminCheck(client);
+
+/**
+ * Called once a client is authorized and fully in-game, and 
+ * after all post-connection authorizations have been performed.
+ *
+ * @param client		Client index.
+ * @noreturn
+ */
+forward OnClientPostAdminCheck(client);
 
 /**
  * Returns the maximum number of clients allowed on the server.
@@ -289,6 +314,30 @@ native GetUserFlagBits(client);
  * @error				Invalid or unconnected player indexers.
  */
 native bool:CanUserTarget(client, target);
+
+/**
+ * Runs through the Core-defined admin authorization checks on a player.
+ * Has no effect if the player is already an admin.
+ *
+ * Note: This function is based on the internal cache only.
+ *
+ * @param client		Client index.
+ * @return				True if access was changed, false if it did not.
+ * @error				Invalid client index or client not in-game AND authorized.
+ */
+native bool:RunAdminCacheChecks(client);
+
+/**
+ * Signals that a player has completed post-connection admin checks.
+ * Has no effect if the player has already had this event signalled.
+ *
+ * Note: This must be sent even if no admin id was assigned.
+ *
+ * @param client		Client index.
+ * @noreturn
+ * @error				Invalid client index or client not in-game AND authorized.
+ */
+native NotifyPostAdminCheck(client);
 
 /** 
  * Creates a fake client.

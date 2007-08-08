@@ -702,10 +702,15 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 {
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
 
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
 
 	/* One byte for null terminator, one for newline */
 	buffer[len++] = '\n';
@@ -718,10 +723,15 @@ static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *params)
 {
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
 
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
 
 	/* One byte for null terminator, one for newline */
 	buffer[len++] = '\n';
@@ -758,6 +768,11 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
 	engine->ClientCommand(pPlayer->GetEdict(), "%s", buffer);
 
 	return 1;
@@ -781,6 +796,11 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
 	unsigned int old = g_ChatTriggers.SetReplyTo(SM_REPLY_CONSOLE);
 	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
 	g_ChatTriggers.SetReplyTo(old);
@@ -795,6 +815,11 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	/* Build the format string */
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
 
 	/* If we're printing to the server, shortcut out */
 	if (params[1] == 0)

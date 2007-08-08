@@ -62,8 +62,10 @@ public:
 	void SetAdminId(AdminId id, bool temporary);
 	AdminId GetAdminId();
 	void Kick(const char *str);
-public:
 	IPlayerInfo *GetPlayerInfo();
+public:
+	void NotifyPostAdminChecks();
+	void DoBasicAdminChecks();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
@@ -72,7 +74,7 @@ private:
 	void DumpAdmin(bool deleting);
 	void Authorize(const char *auth);
 	void Authorize_Post();
-	void DoBasicAdminChecks();
+	void DoPostConnectAuthorization();
 private:
 	bool m_IsConnected;
 	bool m_IsInGame;
@@ -86,6 +88,8 @@ private:
 	edict_t *m_pEdict;
 	IPlayerInfo *m_Info;
 	String m_LastPassword;
+	bool m_bAdminCheckSignalled;
+	int m_iIndex;
 };
 
 class PlayerManager : 

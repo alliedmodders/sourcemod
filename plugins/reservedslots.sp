@@ -63,7 +63,7 @@ public OnConfigsExecuted()
 	}	
 }
 
-public OnClientAuthorized(client, const String:auth[])
+public OnClientPostAdminCheck(client)
 {
 	new reserved = GetConVarInt(sm_reserved_slots);
 	

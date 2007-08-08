@@ -45,6 +45,8 @@
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
+IForward *PreAdminCheck = NULL;
+IForward *PostAdminCheck = NULL;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -112,6 +114,9 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
 	m_onActivate = g_Forwards.CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 	m_onActivate2 = g_Forwards.CreateForward("OnMapStart", ET_Ignore, 0, NULL);
+
+	PreAdminCheck = g_Forwards.CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
+	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 }
 
 void PlayerManager::OnSourceModShutdown()
@@ -134,6 +139,9 @@ void PlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_clauth);
 	g_Forwards.ReleaseForward(m_onActivate);
 	g_Forwards.ReleaseForward(m_onActivate2);
+
+	g_Forwards.ReleaseForward(PreAdminCheck);
+	g_Forwards.ReleaseForward(PostAdminCheck);
 
 	delete [] m_Players;
 }
@@ -751,6 +759,7 @@ CPlayer::CPlayer()
 	m_Admin = INVALID_ADMIN_ID;
 	m_TempAdmin = false;
 	m_Info = NULL;
+	m_bAdminCheckSignalled = false;
 	m_LastPassword.clear();
 }
 
@@ -760,6 +769,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Name.assign(name);
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
+	m_iIndex = engine->IndexOfEdict(pEntity);
 
 	char ip2[24], *ptr;
 	strncopy(ip2, ip, sizeof(ip2));
@@ -791,7 +801,7 @@ void CPlayer::Connect()
 
 	if (m_IsAuthorized)
 	{
-		DoBasicAdminChecks();
+		DoPostConnectAuthorization();
 	}
 }
 
@@ -817,6 +827,7 @@ void CPlayer::Disconnect()
 	m_AuthID.clear();
 	m_pEdict = NULL;
 	m_Info = NULL;
+	m_bAdminCheckSignalled = false;
 }
 
 void CPlayer::SetName(const char *name)
@@ -902,8 +913,7 @@ void CPlayer::DumpAdmin(bool deleting)
 
 void CPlayer::Kick(const char *str)
 {
-	int client = engine->IndexOfEdict(m_pEdict);
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
 	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 	pClient->Disconnect("%s", str);
 }
@@ -912,8 +922,47 @@ void CPlayer::Authorize_Post()
 {
 	if (m_IsInGame)
 	{
-		DoBasicAdminChecks();
+		DoPostConnectAuthorization();
 	}
+}
+
+void CPlayer::DoPostConnectAuthorization()
+{
+	cell_t result;
+	PreAdminCheck->PushCell(m_iIndex);
+	PreAdminCheck->Execute(&result);
+
+	/* Defer, for better or worse */
+	if ((ResultType)result >= Pl_Handled)
+	{
+		return;
+	}
+
+	/* Sanity check */
+	if (!IsConnected())
+	{
+		return;
+	}
+
+	/* Otherwise, go ahead and do admin checks */
+	DoBasicAdminChecks();
+
+	/* Send the notification out */
+	NotifyPostAdminChecks();
+}
+
+void CPlayer::NotifyPostAdminChecks()
+{
+	if (m_bAdminCheckSignalled)
+	{
+		return;
+	}
+
+	/* Block beforehand so they can't double-call */
+	m_bAdminCheckSignalled = true;
+
+	PostAdminCheck->PushCell(m_iIndex);
+	PostAdminCheck->Execute(NULL);
 }
 
 void CPlayer::DoBasicAdminChecks()
