@@ -131,7 +131,7 @@ public Action:Command_Votemap(client, args)
 	
 	g_voteType = voteType:map;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	
 	if (mapCount == 1)
 	{
@@ -201,7 +201,7 @@ public Action:Command_Vote(client, args)
 	
 	g_voteType = voteType:question;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_hVoteMenu, "%s?", g_voteArg);
 	
 	if (answerCount < 2)
@@ -269,7 +269,7 @@ public Action:Command_Votekick(client, args)
 	// Temp
 	strcopy(g_votetitle, sizeof(g_votetitle), "Votekick Player");	
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_hVoteMenu, "Votekick Player");
 	AddMenuItem(g_hVoteMenu, "No", "Yes");
 	AddMenuItem(g_hVoteMenu, "No", "No");
@@ -327,7 +327,7 @@ public Action:Command_Voteban(client, args)
 	// Temp
 	strcopy(g_votetitle, sizeof(g_votetitle), "Voteban Player");		
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_hVoteMenu, "Voteban Player");
 	AddMenuItem(g_hVoteMenu, "No", "Yes");
 	AddMenuItem(g_hVoteMenu, "No", "No");
