@@ -52,7 +52,7 @@ enum MenuAction
 /** Default menu actions */
 #define MENU_ACTIONS_DEFAULT	MenuAction_Select|MenuAction_Cancel|MenuAction_End
 /** All menu actions */
-#define MENU_ACTIONS_ALL		-1
+#define MENU_ACTIONS_ALL		MenuAction:0xFFFFFFFF
 
 #define MENU_NO_PAGINATION		0		/**< Menu should not be paginated (10 items max) */
 #define MENU_TIME_FOREVER		0		/**< Menu should be displayed as long as possible */
