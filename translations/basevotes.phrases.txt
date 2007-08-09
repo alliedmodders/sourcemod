@@ -25,7 +25,8 @@
 	
 	"Map Vote"
 	{
-		"en"			"Map Vote:"
+		"#format"		"{1:s}"
+		"en"			"Map Vote: {1}"
 	}
 	
 	"Change Map To"
@@ -60,7 +61,7 @@
 
 	"Vote End"
 	{
-		"#format"		"{1:s},{2:s},{3:d},{4:d}"
-		"en"			"The answer to {1} is: {2}. (Received {3}%% of {4} votes)"
+		"#format"		"{1:s},{2:s}"
+		"en"			"The answer to {1} is: {2}."
 	}
 }

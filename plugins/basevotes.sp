@@ -66,11 +66,13 @@ new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
 new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
+// Temporary global until GetMenuTitle() is added.
+new String:g_votetitle[64];
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("plugin.basevotes");
+	LoadTranslations("basevotes.phrases");
 	
 	RegAdminCmd("sm_votemap", Command_Votemap, ADMFLAG_VOTE|ADMFLAG_CHANGEMAP, "sm_votemap <mapname> [mapname2] ... [mapname5] ");
 	RegAdminCmd("sm_votekick", Command_Votekick, ADMFLAG_VOTE|ADMFLAG_KICK, "sm_votekick <player> [reason]");
@@ -134,12 +136,21 @@ public Action:Command_Votemap(client, args)
 	if (mapCount == 1)
 	{
 		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), maps[0]);
+		
+		// Temp
+		strcopy(g_votetitle, sizeof(g_votetitle), "Change Map To");
+			
 		SetMenuTitle(g_hVoteMenu, "Change Map To");
 		AddMenuItem(g_hVoteMenu, maps[0], "Yes");
 		AddMenuItem(g_hVoteMenu, "no", "No");
 	}
 	else
 	{
+		g_voteInfo[VOTE_NAME][0] = '\0';
+		
+		// Temp
+		strcopy(g_votetitle, sizeof(g_votetitle), "Map Vote");
+		
 		SetMenuTitle(g_hVoteMenu, "Map Vote");
 		for (new i = 0; i < mapCount; i++)
 		{
@@ -175,7 +186,7 @@ public Action:Command_Vote(client, args)
 	new len = BreakString(text, g_voteArg, sizeof(g_voteArg));
 	new pos = len;
 	
-	while (pos != -1 && answerCount < 5)
+	while (args > 1 && pos != -1 && answerCount < 5)
 	{	
 		pos = BreakString(text[len], answers[answerCount], sizeof(answers[]));
 		answerCount++;
@@ -193,7 +204,7 @@ public Action:Command_Vote(client, args)
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback);
 	SetMenuTitle(g_hVoteMenu, "%s?", g_voteArg);
 	
-	if (answerCount == 1)
+	if (answerCount < 2)
 	{
 		AddMenuItem(g_hVoteMenu, "Yes", "Yes");
 		AddMenuItem(g_hVoteMenu, "No", "No");
@@ -255,6 +266,9 @@ public Action:Command_Votekick(client, args)
 	
 	g_voteType = voteType:kick;
 	
+	// Temp
+	strcopy(g_votetitle, sizeof(g_votetitle), "Votekick Player");	
+	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback);
 	SetMenuTitle(g_hVoteMenu, "Votekick Player");
 	AddMenuItem(g_hVoteMenu, "No", "Yes");
@@ -310,6 +324,9 @@ public Action:Command_Voteban(client, args)
 
 	g_voteType = voteType:ban;
 	
+	// Temp
+	strcopy(g_votetitle, sizeof(g_votetitle), "Voteban Player");		
+	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback);
 	SetMenuTitle(g_hVoteMenu, "Voteban Player");
 	AddMenuItem(g_hVoteMenu, "No", "Yes");
@@ -328,17 +345,18 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Display)
 	{
-		decl String:display[64];
-		GetMenuItem(menu, param2, "", 0, _, display, sizeof(display));
-	 
+		PrintToChatAll("Inside display");
 	 	if (g_voteType != voteType:question)
 	 	{
+			decl String:title[64];
+			//GetMenuTitle(g_hVoteMenu, title, sizeof(title));
+			strcopy(title, sizeof(title), g_votetitle);
+			
 	 		decl String:buffer[255];
-			Format(buffer, sizeof(buffer), "%T", display, param1);
+			Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-			return RedrawMenuItem(buffer);
+			SetMenuTitle(g_hVoteMenu, buffer);
 		}
-	
 	}
 	else if (action == MenuAction_DisplayItem)
 	{
@@ -366,7 +384,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		if (totalVotes < 1)
 		{
 			PrintToChatAll("[SM] %t", "No Votes Cast");
-			return;
+			return 0;
 		}
 		
 		GetMenuItem(menu, param1, item, sizeof(item), _, display, sizeof(display));
@@ -404,7 +422,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 			{
 				case (voteType:question):
 				{
-					PrintToChatAll("[SM] %t", "Vote End", g_voteArg, item, RoundToNearest(100.0*percent), totalVotes);
+					PrintToChatAll("[SM] %t", "Vote End", g_voteArg, item);
 				}
 				
 				case (voteType:map):
@@ -424,7 +442,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 					}
 					
 					PrintToChatAll("[SM] %t", "Kicked player", g_voteInfo[VOTE_NAME]);					
-					LogMessage("Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_USERID], g_voteArg);
+					LogMessage("Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 					
 					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
 				}
@@ -445,7 +463,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 					}
 					
 					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
-					LogMessage("Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_USERID], g_voteArg);
+					LogMessage("Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 					
 					ServerCommand("banid %d %s", 30, g_voteClient[VOTE_AUTHID]);
 					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);				
@@ -453,6 +471,8 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 			}
 		}
 	}
+	
+	return 0;
 }
 
 /*
