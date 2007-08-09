@@ -33,21 +33,22 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+#define VOTE_NO "###no###"
+#define VOTE_YES "###yes###"
+
 new Handle:g_hVoteMenu = INVALID_HANDLE;
 
 new Handle:g_hBanForward = INVALID_HANDLE;
 
-new Handle:g_Cvar_VoteMap = INVALID_HANDLE;
-new Handle:g_Cvar_VoteKick = INVALID_HANDLE;
-new Handle:g_Cvar_VoteBan = INVALID_HANDLE;
+new Handle:g_Cvar_Limits[3] = {INVALID_HANDLE, ...};
 //new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
 
 enum voteType
 {
-	question = 0,
 	map,
 	kick,
-	ban
+	ban,
+	question
 }
 
 new voteType:g_voteType = voteType:question;
@@ -66,8 +67,6 @@ new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
 new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
-// Temporary global until GetMenuTitle() is added.
-new String:g_votetitle[64];
 
 public OnPluginStart()
 {
@@ -79,11 +78,17 @@ public OnPluginStart()
 	RegAdminCmd("sm_voteban", Command_Voteban, ADMFLAG_VOTE|ADMFLAG_BAN, "sm_voteban <player> [reason]");
 	RegAdminCmd("sm_vote", Command_Vote, ADMFLAG_VOTE, "sm_vote <question> [Answer1] [Answer2] ... [Answer5]");
 
-	//g_Cvar_VoteShow = CreateConVar("sm_vote_show", "1", "Show player's votes? Default on.", 0, true, 0.0, true, 1.0);	
+	/*
+	g_Cvar_Show = FindConVar("sm_vote_show");
+	if (g_Cvar_Show == INVALID_HANDLE)
+	{
+		g_Cvar_Show = CreateConVar("sm_vote_show", "1", "Show player's votes? Default on.", 0, true, 0.0, true, 1.0);
+	}
+	*/
 
-	g_Cvar_VoteMap = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
-	g_Cvar_VoteKick = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);	
-	g_Cvar_VoteBan = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);	
+	g_Cvar_Limits[0] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
+	g_Cvar_Limits[1] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);	
+	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
 	
 	g_hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String);
 }
@@ -99,6 +104,11 @@ public Action:Command_Votemap(client, args)
 	if (IsVoteInProgress())
 	{
 		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
+		return Plugin_Handled;
+	}
+		
+	if (!TestVoteDelay(client))
+	{
 		return Plugin_Handled;
 	}
 	
@@ -131,25 +141,19 @@ public Action:Command_Votemap(client, args)
 	
 	g_voteType = voteType:map;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	
 	if (mapCount == 1)
 	{
 		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), maps[0]);
-		
-		// Temp
-		strcopy(g_votetitle, sizeof(g_votetitle), "Change Map To");
 			
 		SetMenuTitle(g_hVoteMenu, "Change Map To");
 		AddMenuItem(g_hVoteMenu, maps[0], "Yes");
-		AddMenuItem(g_hVoteMenu, "no", "No");
+		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
 	}
 	else
 	{
 		g_voteInfo[VOTE_NAME][0] = '\0';
-		
-		// Temp
-		strcopy(g_votetitle, sizeof(g_votetitle), "Map Vote");
 		
 		SetMenuTitle(g_hVoteMenu, "Map Vote");
 		for (new i = 0; i < mapCount; i++)
@@ -177,6 +181,11 @@ public Action:Command_Vote(client, args)
 		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}
+		
+	if (!TestVoteDelay(client))
+	{
+		return Plugin_Handled;
+	}
 	
 	decl String:text[256];
 	GetCmdArgString(text, sizeof(text));
@@ -201,13 +210,13 @@ public Action:Command_Vote(client, args)
 	
 	g_voteType = voteType:question;
 	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_hVoteMenu, "%s?", g_voteArg);
 	
 	if (answerCount < 2)
 	{
-		AddMenuItem(g_hVoteMenu, "Yes", "Yes");
-		AddMenuItem(g_hVoteMenu, "No", "No");
+		AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
+		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
 	}
 	else
 	{
@@ -236,7 +245,12 @@ public Action:Command_Votekick(client, args)
 		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}	
-
+	
+	if (!TestVoteDelay(client))
+	{
+		return Plugin_Handled;
+	}
+	
 	decl String:text[256], String:arg[64];
 	GetCmdArgString(text, sizeof(text));
 	
@@ -266,13 +280,10 @@ public Action:Command_Votekick(client, args)
 	
 	g_voteType = voteType:kick;
 	
-	// Temp
-	strcopy(g_votetitle, sizeof(g_votetitle), "Votekick Player");	
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_hVoteMenu, "Votekick Player");
-	AddMenuItem(g_hVoteMenu, "No", "Yes");
-	AddMenuItem(g_hVoteMenu, "No", "No");
+	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
+	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
 	SetMenuExitButton(g_hVoteMenu, false);
 	VoteMenuToAll(g_hVoteMenu, 20);
 	
@@ -292,7 +303,12 @@ public Action:Command_Voteban(client, args)
 		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
 		return Plugin_Handled;
 	}	
-
+	
+	if (!TestVoteDelay(client))
+	{
+		return Plugin_Handled;
+	}
+	
 	decl String:text[256], String:arg[64];
 	GetCmdArgString(text, sizeof(text));
 	
@@ -324,13 +340,10 @@ public Action:Command_Voteban(client, args)
 
 	g_voteType = voteType:ban;
 	
-	// Temp
-	strcopy(g_votetitle, sizeof(g_votetitle), "Voteban Player");		
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MENU_ACTIONS_ALL);
+	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_hVoteMenu, "Voteban Player");
-	AddMenuItem(g_hVoteMenu, "No", "Yes");
-	AddMenuItem(g_hVoteMenu, "No", "No");
+	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
+	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
 	SetMenuExitButton(g_hVoteMenu, false);
 	VoteMenuToAll(g_hVoteMenu, 20);
 	
@@ -348,8 +361,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	 	if (g_voteType != voteType:question)
 	 	{
 			decl String:title[64];
-			//GetMenuTitle(g_hVoteMenu, title, sizeof(title));
-			strcopy(title, sizeof(title), g_votetitle);
+			GetMenuTitle(g_hVoteMenu, title, sizeof(title));
 			
 	 		decl String:buffer[255];
 			Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
@@ -374,41 +386,32 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	{
 		VoteSelect(menu, param1, param2);
 	}*/
+	else if (action == MenuAction_NoVotes)
+	{
+		PrintToChatAll("[SM] %t", "No Votes Cast");
+	}	
 	else if (action == MenuAction_VoteEnd)
 	{
 		decl String:item[64], String:display[64];
 		new Float:percent, Float:limit, votes, totalVotes;
+
 		GetMenuVoteInfo(param2, votes, totalVotes);
-		
-		if (totalVotes < 1)
-		{
-			PrintToChatAll("[SM] %t", "No Votes Cast");
-			return 0;
-		}
-		
 		GetMenuItem(menu, param1, item, sizeof(item), _, display, sizeof(display));
 		
-		if (strcmp(display,"No") == 0 && param1 == 1)
+		if (strcmp(item, VOTE_NO) == 0 && param1 == 1)
 		{
 			votes = totalVotes - votes; // Reverse the votes to be in relation to the Yes option.
 		}
 		
 		percent = GetVotePercent(votes, totalVotes);
 		
-		switch (g_voteType)
+		if (g_voteType != voteType:question)
 		{
-			case (voteType:map):
-				limit = GetConVarFloat(g_Cvar_VoteMap);
-				
-			case (voteType:kick):
-				limit = GetConVarFloat(g_Cvar_VoteKick);
-				
-			case (voteType:ban):
-				limit = GetConVarFloat(g_Cvar_VoteBan);
+			limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
 		}
 
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
-		if ((strcmp(display,"Yes") == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(display,"No") == 0 && param1 == 1))
+		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
 			LogMessage("Vote failed.");
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
@@ -421,6 +424,11 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 			{
 				case (voteType:question):
 				{
+					if (strcmp(item, VOTE_NO) == 0 || strcmp(item, VOTE_YES) == 0)
+					{
+						strcopy(item, sizeof(item), display);
+					}
+					
 					PrintToChatAll("[SM] %t", "Vote End", g_voteArg, item);
 				}
 				
@@ -496,6 +504,27 @@ VoteMenuClose()
 Float:GetVotePercent(votes, totalVotes)
 {
 	return FloatDiv(float(votes),float(totalVotes));
+}
+
+bool:TestVoteDelay(client)
+{
+ 	new delay = CheckVoteDelay();
+ 	
+ 	if (delay > 0)
+ 	{
+ 		if (delay > 60)
+ 		{
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", delay % 60);
+ 		}
+ 		else
+ 		{
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Seconds", delay);
+ 		}
+ 		
+ 		return false;
+ 	}
+ 	
+	return true;
 }
 
 public Action:Timer_ChangeMap(Handle:timer, Handle:dp)

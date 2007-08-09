@@ -199,4 +199,16 @@
 	{
 		"en"			"No votes were cast."
 	}	
+	
+	"Vote Delay Minutes"
+	{
+		"#format"		"{1:d}"
+		"en"			"You must wait {1} minutes before starting another vote."
+	}
+	
+	"Vote Delay Seconds"
+	{
+		"#format"		"{1:d}"
+		"en"			"You must wait {1} seconds before starting another vote."
+	}	
 }
