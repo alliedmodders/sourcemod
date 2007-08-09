@@ -811,6 +811,25 @@ static cell_t SetMenuTitle(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetMenuTitle(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	size_t written;
+	const char *title = menu->GetDefaultTitle();
+	pContext->StringToLocalUTF8(params[2], params[3], title, &written);
+
+	return (cell_t)written;
+}
+
+
 static cell_t CreatePanelFromMenu(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -1329,6 +1348,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetMenuPagination",		GetMenuPagination},
 	{"GetMenuStyle",			GetMenuStyle},
 	{"GetMenuStyleHandle",		GetMenuStyleHandle},
+	{"GetMenuTitle",			GetMenuTitle},
 	{"GetPanelCurrentKey",		GetPanelCurrentKey},
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},
