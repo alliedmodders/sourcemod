@@ -90,9 +90,10 @@ static cell_t sm_Geoip_Code2(IPluginContext *pCtx, const cell_t *params)
 	StripPort(ip);
 
 	ccode = GeoIP_country_code_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], 3, (ccode) ? ccode : "er");
 
-	return 1;
+	pCtx->StringToLocal(params[2], 3, ccode ? ccode : "");
+
+	return ccode ? 1 : 0;
 }
 
 static cell_t sm_Geoip_Code3(IPluginContext *pCtx, const cell_t *params)
@@ -104,9 +105,9 @@ static cell_t sm_Geoip_Code3(IPluginContext *pCtx, const cell_t *params)
 	StripPort(ip);
 
 	ccode = GeoIP_country_code3_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], 4, (ccode) ? ccode : "err");
+	pCtx->StringToLocal(params[2], 4, ccode ? ccode : "");
 
-	return 1;
+	return ccode ? 1 : 0;
 }
 
 static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
@@ -118,9 +119,9 @@ static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
 	StripPort(ip);
 
 	ccode = GeoIP_country_name_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], params[3], (ccode) ? ccode : "error");
+	pCtx->StringToLocal(params[2], params[3], (ccode) ? ccode : "");
 
-	return 1;
+	return ccode ? 1 : 0;
 }
 
 const sp_nativeinfo_t geoip_natives[] = 

@@ -29,18 +29,18 @@
  *
  * @param ip			Ip to determine the country code.
  * @param ccode			Destination string buffer to store the code.
- * @noreturn
+ * @return				True on success, false if no country found.
  */
-native GeoipCode2(const String:ip[], String:ccode[3]);
+native bool:GeoipCode2(const String:ip[], String:ccode[3]);
 
 /**
  * Gets the three character country code from an IP address. (USA, CAN, etc)
  *
  * @param ip			Ip to determine the country code.
  * @param ccode			Destination string buffer to store the code.
- * @noreturn
+ * @return				True on success, false if no country found.
  */
-native GeoipCode3(const String:ip[], String:ccode[4]);
+native bool:GeoipCode3(const String:ip[], String:ccode[4]);
 
 /**
  * Gets the full country name. (max length of output string is 45)
@@ -48,9 +48,9 @@ native GeoipCode3(const String:ip[], String:ccode[4]);
  * @param ip			Ip to determine the country code.
  * @param ccode			Destination string buffer to store the country name.
  * @param len			Maximum length of output string buffer.
- * @noreturn
+ * @return				True on success, false if no country found.
  */
-native GeoipCountry(const String:ip[], String:name[], len=45);
+native bool:GeoipCountry(const String:ip[], String:name[], maxlength);
 
 /**
  * @endsection
