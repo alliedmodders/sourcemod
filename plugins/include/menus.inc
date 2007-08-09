@@ -459,6 +459,15 @@ functag VoteHandler public(Handle:menu,
 native SetVoteResultCallback(Handle:menu, VoteHandler:callback);
 
 /**
+ * Returns the number of seconds you should "wait" before displaying
+ * a publicly invocable menu.  This number is the time remaining until
+ * (last_vote + sm_vote_delay).
+ *
+ * @return					Number of seconds to wait, or 0 for none.
+ */
+native CheckVoteDelay();
+
+/**
  * Returns a style's global Handle.
  *
  * @param style			Menu Style.

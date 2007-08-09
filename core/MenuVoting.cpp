@@ -36,6 +36,49 @@
 #include "PlayerManager.h"
 #include "sourcemm_api.h"
 
+float g_next_vote = 0.0f;
+
+void OnVoteDelayChange(ConVar *cvar, const char *value);
+ConVar sm_vote_delay("sm_vote_delay",
+					 "30",
+					 0,
+					 "Sets the recommended time in between public votes",
+					 false,
+					 0.0,
+					 false,
+					 0.0,
+					 OnVoteDelayChange);
+
+void OnVoteDelayChange(ConVar *cvar, const char *value)
+{
+	/* See if the new vote delay isn't something we need to account for */
+	if (sm_vote_delay.GetFloat() < 1.0f)
+	{
+		g_next_vote = 0.0f;
+		return;
+	}
+
+	/* If there was never a last vote, ignore this change */
+	if (g_next_vote < 0.1f)
+	{
+		return;
+	}
+
+	/* Subtract the original value, then add the new one. */
+	g_next_vote -= (float)atof(value);
+	g_next_vote += sm_vote_delay.GetFloat();
+}
+
+unsigned int VoteMenuHandler::GetRemainingVoteDelay()
+{
+	if (g_next_vote <= gpGlobals->curtime)
+	{
+		return 0;
+	}
+
+	return (unsigned int)(g_next_vote - gpGlobals->curtime);
+}
+
 void VoteMenuHandler::OnSourceModAllInitialized()
 {
 	g_Players.AddClientListener(this);
@@ -44,6 +87,11 @@ void VoteMenuHandler::OnSourceModAllInitialized()
 void VoteMenuHandler::OnSourceModShutdown()
 {
 	g_Players.RemoveClientListener(this);
+}
+
+void VoteMenuHandler::OnSourceModLevelChange(const char *mapName)
+{
+	g_next_vote = 0.0f;
 }
 
 unsigned int VoteMenuHandler::GetMenuAPIVersion2()
@@ -79,6 +127,18 @@ bool VoteMenuHandler::StartVote(IBaseMenu *menu, unsigned int num_clients, int c
 	if (!InitializeVoting(menu, menu->GetHandler(), max_time, flags))
 	{
 		return false;
+	}
+
+	float fVoteDelay = sm_vote_delay.GetFloat();
+	if (fVoteDelay < 1.0)
+	{
+		g_next_vote = 0.0;
+	} else {
+		/* This little trick breaks for infinite votes!
+		 * However, we just ignore that since those 1) shouldn't exist and 
+		 * 2) people must be checking IsVoteInProgress() beforehand anyway.
+		 */
+		g_next_vote = gpGlobals->curtime + fVoteDelay + (float)max_time;
 	}
 
 	for (unsigned int i=0; i<num_clients; i++)
@@ -177,6 +237,18 @@ int SortVoteItems(const void *item1, const void *item2)
 
 void VoteMenuHandler::EndVoting()
 {
+	/* Set when the next delay ends.  We ignore cancellation because a menu
+	 * was, at one point, displayed, which is all that counts.  However, we
+	 * do re-calculate the time just in case the menu had no time limit.
+	 */
+	float fVoteDelay = sm_vote_delay.GetFloat();
+	if (fVoteDelay < 1.0)
+	{
+		g_next_vote = 0.0;
+	} else {
+		g_next_vote = gpGlobals->curtime + fVoteDelay;
+	}
+
 	if (m_bCancelled)
 	{
 		/* If we were cancelled, don't bother tabulating anything.

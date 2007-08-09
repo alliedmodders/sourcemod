@@ -39,6 +39,7 @@
 #include "HandleSys.h"
 #include "PluginSys.h"
 #include "sm_stringutil.h"
+#include "sourcemm_api.h"
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
@@ -1324,6 +1325,11 @@ static cell_t SetVoteResultCallback(IPluginContext *pContext, const cell_t *para
 	return 1;
 }
 
+static cell_t CheckVoteDelay(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Menus.GetRemainingVoteDelay();
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -1331,6 +1337,7 @@ REGISTER_NATIVES(menuNatives)
 	{"CancelClientMenu",		CancelClientMenu},
 	{"CancelMenu",				CancelMenu},
 	{"CancelVote",				CancelVote},
+	{"CheckVoteDelay",			CheckVoteDelay},
 	{"CreateMenu",				CreateMenu},
 	{"CreateMenuEx",			CreateMenuEx},
 	{"CreatePanel",				CreatePanel},

@@ -49,6 +49,7 @@ class VoteMenuHandler :
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModLevelChange(const char *mapName);
 public: //IClientListener
 	void OnClientDisconnected(int client);
 public: //IMenuHandler
@@ -70,6 +71,7 @@ public:
 	void CancelVoting();
 	IBaseMenu *GetCurrentMenu();
 	bool IsCancelling();
+	unsigned int GetRemainingVoteDelay();
 private:
 	void Reset(IMenuHandler *mh);
 	void DecrementPlayerCount();

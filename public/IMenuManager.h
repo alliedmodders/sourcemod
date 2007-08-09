@@ -807,6 +807,14 @@ namespace SourceMod
 		 * @brief Cancels the vote in progress.  This calls IBaseMenu::Cancel().
 		 */
 		virtual void CancelVoting() =0;
+
+		/**
+		 * @brief Returns the remaining vote delay from the last menu.  This delay is 
+		 * a suggestion for all public votes, and is not enforced.
+		 *
+		 * @return				Number of seconds to wait.
+		 */
+		virtual unsigned int GetRemainingVoteDelay() =0;
 	};
 }
 

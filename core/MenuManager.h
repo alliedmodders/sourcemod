@@ -89,6 +89,7 @@ public:
 		unsigned int flags=0);
 	bool IsVoteInProgress();
 	void CancelVoting();
+	unsigned int GetRemainingVoteDelay();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public:

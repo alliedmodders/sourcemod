@@ -692,3 +692,8 @@ void MenuManager::CancelVoting()
 {
 	s_VoteHandler.CancelVoting();
 }
+
+unsigned int MenuManager::GetRemainingVoteDelay()
+{
+	return s_VoteHandler.GetRemainingVoteDelay();
+}
