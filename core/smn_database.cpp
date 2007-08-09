@@ -1236,6 +1236,24 @@ static cell_t SQL_IsSameConnection(IPluginContext *pContext, const cell_t *param
 	return (db1 == db2) ? true : false;
 }
 
+static cell_t SQL_ReadDriver(IPluginContext *pContext, const cell_t *params)
+{
+	IDatabase *db1=NULL;
+	HandleError err;
+
+	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db1))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid database Handle 1/%x (error: %d)", params[1], err);
+	}
+
+	IDBDriver *driver = db1->GetDriver();
+
+	pContext->StringToLocalUTF8(params[2], params[3], driver->GetIdentifier(), NULL);
+
+	return driver->GetHandle();
+}
+
 REGISTER_NATIVES(dbNatives)
 {
 	{"SQL_BindParamInt",		SQL_BindParamInt},
@@ -1269,6 +1287,7 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_PrepareQuery",		SQL_PrepareQuery},
 	{"SQL_Query",				SQL_Query},
 	{"SQL_QuoteString",			SQL_QuoteString},
+	{"SQL_ReadDriver",			SQL_ReadDriver},
 	{"SQL_Rewind",				SQL_Rewind},
 	{"SQL_TConnect",			SQL_TConnect},
 	{"SQL_TQuery",				SQL_TQuery},

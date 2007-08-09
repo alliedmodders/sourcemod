@@ -145,7 +145,19 @@ native Handle:SQL_ConnectEx(Handle:driver,
 native Handle:SQL_GetDriver(const String:name[]="");
 
 /**
+ * Reads the driver of an opened database.
+ *
+ * @param database		Database Handle.
+ * @param ident			Option buffer to store the identification string.
+ * @param ident_length	Maximum length of the buffer.
+ * @return				Driver Handle.
+ */
+native Handle:SQL_ReadDriver(Handle:database, String:ident[]="", ident_length=0);
+
+/**
  * Retrieves a driver's identification string.
+ *
+ * Example: "mysql", "sqlite"
  *
  * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
  * @param ident			Identification string buffer.
@@ -157,6 +169,8 @@ native SQL_GetDriverIdent(Handle:driver, String:ident[], maxlength);
 
 /**
  * Retrieves a driver's product string.
+ *
+ * Example: "MySQL", "SQLite"
  *
  * @param driver		Driver Handle, or INVALID_HANDLE for the default driver.
  * @param product		Product string buffer.
