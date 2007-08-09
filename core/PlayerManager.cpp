@@ -928,7 +928,7 @@ void CPlayer::Authorize_Post()
 
 void CPlayer::DoPostConnectAuthorization()
 {
-	cell_t result;
+	cell_t result = 0;
 	PreAdminCheck->PushCell(m_iIndex);
 	PreAdminCheck->Execute(&result);
 
