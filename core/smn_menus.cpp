@@ -96,7 +96,7 @@ public:
 	void OnMenuDestroy(IBaseMenu *menu);
 	void OnMenuVoteStart(IBaseMenu *menu);
 	void OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *results);
-	void OnMenuVoteCancel(IBaseMenu *menu);
+	void OnMenuVoteCancel(IBaseMenu *menu, VoteCancelReason reason);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
 	bool OnSetHandlerOption(const char *option, const void *data);
@@ -337,9 +337,9 @@ void CMenuHandler::OnMenuVoteStart(IBaseMenu *menu)
 	DoAction(menu, MenuAction_VoteStart, 0, 0);
 }
 
-void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu)
+void CMenuHandler::OnMenuVoteCancel(IBaseMenu *menu, VoteCancelReason reason)
 {
-	DoAction(menu, MenuAction_VoteCancel, 0, 0);
+	DoAction(menu, MenuAction_VoteCancel, reason, 0);
 }
 
 void CMenuHandler::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)

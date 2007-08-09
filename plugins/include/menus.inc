@@ -41,7 +41,7 @@ enum MenuAction
 	MenuAction_VoteEnd = (1<<5),	/**< (VOTE ONLY): A vote sequence has succeeded (param1=chosen item) 
 										 This is not called if SetVoteResultCallback has been used on the menu. */
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
-	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (nothing passed) */
+	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (param1=reason) */
 	MenuAction_DrawItem = (1<<8),	/**< An item is being drawn; return the new style (param1=client, param2=item) */
 	MenuAction_DisplayItem = (1<<9) /**< Item text is being drawn to the display (param1=client, param2=item)
 										  To change the text, use RedrawMenuItem().
@@ -75,7 +75,7 @@ enum MenuAction
 #define VOTEINFO_ITEM_VOTES			1		/**< Number of votes for the item */
 
 /**
- * Reasons a menu can be cancelled.
+ * Reasons a menu can be cancelled (MenuAction_Cancel).
  */
 enum
 {
@@ -88,7 +88,16 @@ enum
 };
 
 /**
- * Reasons a menu ended.
+ * Reasons a vote can be cancelled (MenuAction_VoteCancel).
+ */
+enum
+{
+	VoteCancel_Generic = -1,		/**< Vote was generically cancelled. */
+	VoteCancel_NoVotes = -2,		/**< Vote did not receive any votes. */
+};
+
+/**
+ * Reasons a menu ended (MenuAction_End).
  */
 enum
 {
@@ -98,7 +107,6 @@ enum
 	MenuEnd_Cancelled = -3,			/**< Menu was cancelled (reason in param2) */
 	MenuEnd_Exit = -4,				/**< Menu was cleanly exited via "exit" */
 	MenuEnd_ExitBack = -5,			/**< Menu was cleanly exited via "back" */
-	MenuEnd_NoVotes = -6,			/**< A menu received no votes */
 };
 
 /**

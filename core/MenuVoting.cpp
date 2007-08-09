@@ -258,7 +258,7 @@ void VoteMenuHandler::EndVoting()
 		IBaseMenu *menu = m_pCurMenu;
 		IMenuHandler *handler = m_pHandler;
 		InternalReset();
-		handler->OnMenuVoteCancel(menu);
+		handler->OnMenuVoteCancel(menu, VoteCancel_Generic);
 		handler->OnMenuEnd(menu, MenuEnd_VotingCancelled);
 		return;
 	}
@@ -287,8 +287,8 @@ void VoteMenuHandler::EndVoting()
 		IBaseMenu *menu = m_pCurMenu;
 		IMenuHandler *handler = m_pHandler;
 		InternalReset();
-		handler->OnMenuVoteCancel(menu);
-		handler->OnMenuEnd(menu, MenuEnd_NoVotes);
+		handler->OnMenuVoteCancel(menu, VoteCancel_NoVotes);
+		handler->OnMenuEnd(menu, MenuEnd_VotingCancelled);
 		return;
 	}
 
