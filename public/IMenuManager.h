@@ -37,7 +37,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		9
+#define SMINTERFACE_MENUMANAGER_VERSION		10
 
 /**
  * @file IMenuManager.h
