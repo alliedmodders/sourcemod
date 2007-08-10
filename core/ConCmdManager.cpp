@@ -356,13 +356,9 @@ bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmd
 			return true;
 		}
 
-		/* See if our other flags match */
-		if ((bits & cmdflags) == cmdflags)
-		{
-			return true;
-		}
-
-		/* Check for overrides */
+		/* Check for overrides
+		 * :TODO: is it worth optimizing this?
+		 */
 		unsigned int groups = g_Admins.GetAdminGroupCount(adm);
 		GroupId gid;
 		OverrideRule rule;
@@ -383,9 +379,15 @@ bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmd
 				{
 					return true;
 				} else if (rule == Command_Deny) {
-					break;
+					return false;
 				}
 			}
+		}
+
+		/* See if our other flags match */
+		if ((bits & cmdflags) == cmdflags)
+		{
+			return true;
 		}
 	}
 
