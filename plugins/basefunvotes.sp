@@ -401,7 +401,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	{
 		VoteSelect(menu, param1, param2);
 	}*/
-	else if (action == MenuAction_NoVotes)
+	else if (action == VoteCancel_NoVotes)
 	{
 		PrintToChatAll("[SM] %t", "No Votes Cast");
 	}
