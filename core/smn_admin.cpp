@@ -451,6 +451,57 @@ static cell_t CreateAuthMethod(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t FindFlagByName(IPluginContext *pContext, const cell_t *params)
+{
+	char *flag;
+	pContext->LocalToString(params[1], &flag);
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	AdminFlag admflag;
+	if (!g_Admins.FindFlag(flag, &admflag))
+	{
+		return 0;
+	}
+
+	*addr = (cell_t)admflag;
+
+	return 1;
+}
+
+static cell_t FindFlagByChar(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	AdminFlag admflag;
+	if (!g_Admins.FindFlag((char)params[1], &admflag))
+	{
+		return 0;
+	}
+
+	*addr = (cell_t)admflag;
+
+	return 1;
+}
+
+static cell_t ReadFlagString(IPluginContext *pContext, const cell_t *params)
+{
+	char *flag;
+	pContext->LocalToString(params[1], &flag);
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	const char *end = flag;
+	FlagBits bits = g_Admins.ReadFlagString(flag, &end);
+
+	*addr = end - flag;
+
+	return bits;
+}
+
 REGISTER_NATIVES(adminNatives)
 {
 	{"DumpAdminCache",			DumpAdminCache},
@@ -489,6 +540,9 @@ REGISTER_NATIVES(adminNatives)
 	{"FlagBitsToArray",			FlagBitsToArray},
 	{"CanAdminTarget",			CanAdminTarget},
 	{"CreateAuthMethod",		CreateAuthMethod},
+	{"FindFlagByName",			FindFlagByName},
+	{"FindFlagByChar",			FindFlagByChar},
+	{"ReadFlagString",			ReadFlagString},
 	/* -------------------------------------------------- */
 	{NULL,						NULL},
 };

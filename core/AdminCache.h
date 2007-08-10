@@ -105,6 +105,7 @@ public:
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
+	void OnSourceModLevelChange(const char *mapName);
 	void OnSourceModShutdown();
 	void OnSourceModPluginsLoaded();
 public: //IAdminSystem
@@ -151,6 +152,9 @@ public: //IAdminSystem
 	bool CheckAdminFlags(AdminId id, FlagBits bits);
 	bool CanAdminTarget(AdminId id, AdminId target);
 	void SetAdminFlags(AdminId id, AccessMode mode, FlagBits bits);
+	bool FindFlag(const char *str, AdminFlag *pFlag);
+	bool FindFlag(char c, AdminFlag *pAdmFlag);
+	FlagBits ReadFlagString(const char *flags, const char **end);
 public:
 	bool IsValidAdmin(AdminId id);
 private:
@@ -161,6 +165,7 @@ private:
 	void DumpCommandOverrideCache(OverrideType type);
 	Trie *GetMethodByIndex(unsigned int index);
 	bool GetMethodIndex(const char *name, unsigned int *_index);
+	void NameFlag(const char *str, AdminFlag flag);
 public:
 	BaseStringTable *m_pStrings;
 	BaseMemTable *m_pMemory;
@@ -179,6 +184,7 @@ public:
 	int m_FreeUserList;
 	bool m_InvalidatingAdmins;
 	bool m_destroying;
+	Trie *m_pLevelNames;
 };
 
 extern AdminCache g_Admins;

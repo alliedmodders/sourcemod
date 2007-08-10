@@ -93,21 +93,15 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 		}
 	} else if (StrEqual(key, "flags")) {
 		new len = strlen(value);
+		new AdminFlag:flag;
 		
 		for (new i=0; i<len; i++)
 		{
-			if (value[i] < 'a' || value[i] > 'z')
+			if (!FindFlagByChar(value[i], flag))
 			{
 				ParseError("Invalid flag detected: %c", value[i]);
-				continue;
 			}
-			new val = value[i] - 'a';
-			if (!g_FlagsSet[val])
-			{
-				ParseError("Invalid flag detected: %c", value[i]);
-				continue;
-			}
-			SetAdminFlag(g_CurUser, g_FlagLetters[val], true);
+			SetAdminFlag(g_CurUser, flag, true);
 		}
 	}
 

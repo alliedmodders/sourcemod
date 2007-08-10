@@ -36,7 +36,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	1
+#define SMINTERFACE_ADMINSYS_VERSION	2
 
 /**
  * @file IAdminSystem.h
@@ -599,6 +599,34 @@ namespace SourceMod
 		 * @return			True if this admin has permission to target the other admin.
 		 */
 		virtual bool CanAdminTarget(AdminId id, AdminId target) =0;
+
+		/**
+		 * @brief Returns a flag from a named string.
+		 *
+		 * @param flagname	Case sensitive flag name string (like "kick").
+		 * @param pAdmFlag	Pointer to store the found admin flag in.
+		 * @return			True on success, false on failure.
+		 */
+		virtual bool FindFlag(const char *flagname, AdminFlag *pAdmFlag) =0;
+
+		/**
+		 * @brief Reads a single character as a flag.
+		 *
+		 * @param flag		Flag character.
+		 * @param pAdmFlag	Pointer to store the admin flag.
+		 * @return			True on success, false if invalid.
+		 */
+		virtual bool FindFlag(char c, AdminFlag *pAdmFlag) =0;
+
+		/**
+		 * @brief Reads a string of flag letters and returns its access value.
+		 *
+		 * @param flags		Flag string.
+		 * @param end		Pointer to store the last value read.  On success, 
+		 *					this will store a pointer to the null terminator.
+		 * @return			FlagBits value of the flags.
+		 */
+		virtual FlagBits ReadFlagString(const char *flags, const char **end) =0;
 	};
 }
 

@@ -92,15 +92,10 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 				new len = strlen(value);
 				for (new i=0; i<len; i++)
 				{
-					if (value[i] < 'a' || value[i] > 'z')
+					if (!FindFlagByChar(value[i], flag))
 					{
 						continue;
 					}
-					if (!g_FlagsSet[value[i] - 'a'])
-					{
-						continue;
-					}
-					flag = g_FlagLetters[value[i] - 'a'];
 					SetAdmGroupAddFlag(g_CurGrp, flag, true);
 				}
 			} else if (StrEqual(key, "immunity")) {

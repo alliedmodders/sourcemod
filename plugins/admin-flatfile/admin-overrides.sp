@@ -69,27 +69,7 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 		return SMCParse_Continue;
 	}
 	
-	new AdminFlag:array[AdminFlags_TOTAL];
-	new flags_total;
-	
-	new len = strlen(value);
-	for (new i=0; i<len; i++)
-	{
-		if (value[i] < 'a' || value[i] > 'z')
-		{
-			ParseError("Invalid flag detected: %c", value[i]);
-			continue;
-		}
-		new val = value[i] - 'a';
-		if (!g_FlagsSet[val])
-		{
-			ParseError("Invalid flag detected: %c", value[i]);
-			continue;
-		}
-		array[flags_total++] = g_FlagLetters[val];
-	}
-	
-	new flags = FlagArrayToBits(array, flags_total);
+	new flags = ReadFlagString(value);
 	
 	if (key[0] == '@')
 	{

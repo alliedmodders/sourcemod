@@ -489,6 +489,33 @@ native FlagArrayToBits(const AdminFlag:array[], numFlags);
 native FlagBitsToArray(bits, AdminFlag:array[], maxSize);
 
 /**
+ * Finds a flag by its string name.
+ *
+ * @param name			Flag name (like "kick"), case sensitive.
+ * @param flag			Variable to store flag in.
+ * @return				True on success, false if not found.
+ */
+native bool:FindFlagByName(const String:name[], &AdminFlag:flag);
+
+/**
+ * Finds a flag by a given character.
+ *
+ * @param c				Flag ASCII character/token.
+ * @param flag			Variable to store flag in.
+ * @return				True on success, false if not found.
+ */
+native bool:FindFlagByChar(c, &AdminFlag:flag);
+
+/**
+ * Converts a string of flag characters to a bit string.
+ *
+ * @param flags			Flag ASCII string.
+ * @param numchars		Optional variable to store the number of bytes read.
+ * @return				Bit string of ADMFLAG values.
+ */
+native ReadFlagString(const String:flags[], &numchars=0);
+
+/**
  * Tests whether one admin can target another.
  *
  * @param admin			Admin doing the targetting (may be INVALID_ADMIN_ID).

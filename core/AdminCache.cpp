@@ -37,8 +37,181 @@
 #include "ForwardSys.h"
 #include "PlayerManager.h"
 #include "ConCmdManager.h"
+#include "TextParsers.h"
+#include "Logger.h"
+#include "sourcemod.h"
+#include "sm_stringutil.h"
+
+#define LEVEL_STATE_NONE		0
+#define LEVEL_STATE_LEVELS		1
+#define LEVEL_STATE_FLAGS		2
 
 AdminCache g_Admins;
+AdminFlag g_FlagLetters[26];
+bool g_FlagSet[26];
+
+/* Default flags */
+AdminFlag g_DefaultFlags[26] = 
+{
+	Admin_Reservation, Admin_Generic, Admin_Kick, Admin_Ban, Admin_Unban,
+	Admin_Slay, Admin_Changemap, Admin_Convars, Admin_Config, Admin_Chat,
+	Admin_Vote, Admin_Password, Admin_RCON, Admin_Cheats, Admin_Custom1, 
+	Admin_Custom2, Admin_Custom3, Admin_Custom4, Admin_Custom5, Admin_Custom6,
+	Admin_Generic, Admin_Generic, Admin_Generic, Admin_Generic, Admin_Generic,
+	Admin_Root
+};
+
+
+class FlagReader : public ITextListener_SMC
+{
+public:
+	void LoadLevels()
+	{
+		if (!Parse())
+		{
+			memcpy(g_FlagLetters, g_DefaultFlags, sizeof(AdminFlag) * 26);
+			for (unsigned int i=0; i<20; i++)
+			{
+				g_FlagSet[i] = true;
+			}
+			g_FlagSet[25] = true;
+		}
+	}
+private:
+	bool Parse()
+	{
+		unsigned int line = 0;
+		SMCParseError error;
+
+		m_Line = 0;
+		m_bFileNameLogged = false;
+		g_SourceMod.BuildPath(Path_SM, m_File, sizeof(m_File), "configs/admin_levels.cfg");
+
+		if ((error = g_TextParser.ParseFile_SMC(m_File, this, &line, NULL))
+			!= SMCParse_Okay)
+		{
+			const char *err_string = g_TextParser.GetSMCErrorString(error);
+			if (!err_string)
+			{
+				err_string = "Unknown error";
+			}
+			ParseError("Error %d (%s)", error, err_string);
+			return false;
+		}
+
+		return true;
+	}
+	void ReadSMC_ParseStart()
+	{
+		m_LevelState = LEVEL_STATE_NONE;
+		m_IgnoreLevel = 0;
+		memset(g_FlagSet, 0, sizeof(g_FlagSet));
+	}
+	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes)
+	{
+		if (m_IgnoreLevel)
+		{
+			m_IgnoreLevel++;
+			return SMCParse_Continue;
+		}
+
+		if (m_LevelState == LEVEL_STATE_NONE)
+		{
+			if (strcmp(name, "Levels") == 0)
+			{
+				m_IgnoreLevel = LEVEL_STATE_LEVELS;
+			} else {
+				m_IgnoreLevel++;
+			}
+		} else if (m_IgnoreLevel == LEVEL_STATE_LEVELS) {
+			if (strcmp(name, "Flags") == 0)
+			{
+				m_IgnoreLevel = LEVEL_STATE_FLAGS;
+			} else {
+				m_IgnoreLevel++;
+			}
+		} else {
+			m_IgnoreLevel++;
+		}
+
+		return SMCParse_Continue;
+	}
+	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+	{
+		if (m_IgnoreLevel != LEVEL_STATE_FLAGS || m_IgnoreLevel)
+		{
+			return SMCParse_Continue;
+		}
+
+		unsigned char c = (unsigned)value[0];
+
+		if (c < (unsigned)'a' || c > (unsigned)'z')
+		{
+			ParseError("Flag \"%c\" is not a lower-case ASCII letter", c);
+			return SMCParse_Continue;
+		}
+
+		c -= (unsigned)'a';
+
+		assert(c >= 0 && c < 26);
+
+		if (!g_Admins.FindFlag(key, &g_FlagLetters[c]))
+		{
+			ParseError("Unrecognized admin level \"%s\"", key);
+			return SMCParse_Continue;
+		}
+
+		g_FlagSet[c] = true;
+
+		return SMCParse_Continue;
+	}
+	SMCParseResult ReadSMC_LeavingSection()
+	{
+		if (m_IgnoreLevel)
+		{
+			m_IgnoreLevel--;
+			return SMCParse_Continue;
+		}
+
+		if (m_LevelState == LEVEL_STATE_FLAGS)
+		{
+			m_LevelState = LEVEL_STATE_LEVELS;
+			return SMCParse_Halt;
+		} else if (m_LevelState == LEVEL_STATE_LEVELS) {
+			m_LevelState = LEVEL_STATE_NONE;
+		}
+
+		return SMCParse_Continue;
+	}
+	SMCParseResult ReadSMC_RawLine(const char *line, unsigned int curline)
+	{
+		m_Line = curline;
+		return SMCParse_Continue;
+	}
+	void ParseError(const char *message, ...)
+	{
+		va_list ap;
+		char buffer[256];
+
+		va_start(ap, message);
+		UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
+		va_end(ap);
+
+		if (!m_bFileNameLogged)
+		{
+			g_Logger.LogError("[SM] Parse error(s) detected in file \"%s\":", m_File);
+			m_bFileNameLogged = true;
+		}
+
+		g_Logger.LogError("[SM] (Line %d): %s", m_Line, buffer);
+	}
+private:
+	bool m_bFileNameLogged;
+	char m_File[PLATFORM_MAX_PATH];
+	int m_LevelState;
+	int m_IgnoreLevel;
+	unsigned int m_Line;
+} s_FlagReader;
 
 AdminCache::AdminCache()
 {
@@ -54,6 +227,7 @@ AdminCache::AdminCache()
 	m_pAuthTables = sm_trie_create();
 	m_InvalidatingAdmins = false;
 	m_destroying = false;
+	m_pLevelNames = sm_trie_create();
 }
 
 AdminCache::~AdminCache()
@@ -81,6 +255,8 @@ AdminCache::~AdminCache()
 	sm_trie_destroy(m_pAuthTables);
 
 	delete m_pStrings;
+
+	sm_trie_destroy(m_pLevelNames);
 }
 
 void AdminCache::OnSourceModStartup(bool late)
@@ -88,12 +264,40 @@ void AdminCache::OnSourceModStartup(bool late)
 	RegisterAuthIdentType("steam");
 	RegisterAuthIdentType("name");
 	RegisterAuthIdentType("ip");
+
+	NameFlag("reservation", Admin_Reservation);
+	NameFlag("kick", Admin_Kick);
+	NameFlag("generic", Admin_Generic);
+	NameFlag("ban", Admin_Ban);
+	NameFlag("unban", Admin_Unban);
+	NameFlag("slay", Admin_Slay);
+	NameFlag("changemap", Admin_Changemap);
+	NameFlag("cvars", Admin_Convars);
+	NameFlag("config", Admin_Config);
+	NameFlag("chat", Admin_Chat);
+	NameFlag("vote", Admin_Vote);
+	NameFlag("password", Admin_Password);
+	NameFlag("rcon", Admin_RCON);
+	NameFlag("cheats", Admin_Cheats);
+	NameFlag("root", Admin_Root);
+	NameFlag("custom1", Admin_Custom1);
+	NameFlag("custom2", Admin_Custom2);
+	NameFlag("custom3", Admin_Custom3);
+	NameFlag("custom4", Admin_Custom4);
+	NameFlag("custom5", Admin_Custom5);
+	NameFlag("custom6", Admin_Custom6);
 }
 
 void AdminCache::OnSourceModAllInitialized()
 {
 	m_pCacheFwd = g_Forwards.CreateForward("OnRebuildAdminCache", ET_Ignore, 1, NULL, Param_Cell);
 	g_ShareSys.AddInterface(NULL, this);
+}
+
+void AdminCache::OnSourceModLevelChange(const char *mapName)
+{
+	/* For now, we only read these once per level. */
+	s_FlagReader.LoadLevels();
 }
 
 void AdminCache::OnSourceModShutdown()
@@ -106,6 +310,27 @@ void AdminCache::OnSourceModPluginsLoaded()
 {
 	DumpAdminCache(AdminCache_Overrides, true);
 	DumpAdminCache(AdminCache_Groups, true);
+}
+
+void AdminCache::NameFlag(const char *str, AdminFlag flag)
+{
+	sm_trie_insert(m_pLevelNames, str, (void *)flag);
+}
+
+bool AdminCache::FindFlag(const char *str, AdminFlag *pFlag)
+{
+	void *obj;
+	if (!sm_trie_retrieve(m_pLevelNames, str, &obj))
+	{
+		return false;
+	}
+
+	if (pFlag)
+	{
+		*pFlag = (AdminFlag)(int)obj;
+	}
+
+	return true;
 }
 
 void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits flags)
@@ -1288,4 +1513,42 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 	}
 	
 	return true;
+}
+
+bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
+{
+	if (c < 'a' || c > 'z')
+	{
+		return false;
+	}
+
+	if (*pAdmFlag)
+	{
+		*pAdmFlag = g_FlagLetters[(unsigned)c - (unsigned)'a'];
+	}
+
+	return true;
+}
+
+FlagBits AdminCache::ReadFlagString(const char *flags, const char **end)
+{
+	FlagBits bits = 0;
+
+	while (flags && (*flags != '\0'))
+	{
+		AdminFlag flag;
+		if (!FindFlag(*flags, &flag))
+		{
+			break;
+		}
+		bits |= FlagArrayToBits(&flag, 1);
+		flags++;
+	}
+
+	if (end)
+	{
+		*end = flags;
+	}
+
+	return bits;
 }

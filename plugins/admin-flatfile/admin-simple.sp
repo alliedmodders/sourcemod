@@ -115,23 +115,19 @@ ReadAdminLine(const String:line[])
 		new bool:is_default = false;
 		for (new i=0; i<len; i++)
 		{
-			if (flags[i] < 'a' || flags[i] > 'z')
+			if (flags[i] == '$')
 			{
-				if (flags[i] == '$')
+				is_default = true;
+			} else {
+				new AdminFlag:flag;
+				
+				if (!FindFlagByChar(flags[i], flag))
 				{
-					is_default = true;
-				} else {
 					ParseError("Invalid flag detected: %c", flags[i]);
+					continue;
 				}
-				continue;
+				SetAdminFlag(admin, flag, true);
 			}
-			new val = flags[i] - 'a';
-			if (!g_FlagsSet[val])
-			{
-				ParseError("Invalid flag detected: %c", flags[i]);
-				continue;
-			}
-			SetAdminFlag(admin, g_FlagLetters[val], true);
 		}
 		
 		if (is_default)
