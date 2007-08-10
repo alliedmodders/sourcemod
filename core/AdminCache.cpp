@@ -119,14 +119,14 @@ private:
 		{
 			if (strcmp(name, "Levels") == 0)
 			{
-				m_IgnoreLevel = LEVEL_STATE_LEVELS;
+				m_LevelState = LEVEL_STATE_LEVELS;
 			} else {
 				m_IgnoreLevel++;
 			}
-		} else if (m_IgnoreLevel == LEVEL_STATE_LEVELS) {
+		} else if (m_LevelState == LEVEL_STATE_LEVELS) {
 			if (strcmp(name, "Flags") == 0)
 			{
-				m_IgnoreLevel = LEVEL_STATE_FLAGS;
+				m_LevelState = LEVEL_STATE_FLAGS;
 			} else {
 				m_IgnoreLevel++;
 			}
@@ -138,7 +138,7 @@ private:
 	}
 	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
 	{
-		if (m_IgnoreLevel != LEVEL_STATE_FLAGS || m_IgnoreLevel)
+		if (m_LevelState != LEVEL_STATE_FLAGS || m_IgnoreLevel)
 		{
 			return SMCParse_Continue;
 		}
