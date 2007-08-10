@@ -86,7 +86,7 @@ begin
 
   try
     cStart := GetTickCount;
-    if not GetConsoleOutput(ExtractFilePath(ParamStr(0))+COMPILER_EXE+' "'+FileName+'" "-o'+Compiled+'"',Output) then
+    if not GetConsoleOutput(ExtractFilePath(ParamStr(0))+COMPILER_EXE+' "'+Name+'" "-o'+Compiled+'"',Output) then
     begin
       WriteLn('// Internal error.');
       AppExit;
