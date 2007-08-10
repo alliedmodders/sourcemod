@@ -56,8 +56,12 @@ begin
 
   cfg := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'compiler.ini');
   outdir := cfg.ReadString('Main', 'Output', '');
-  if (outdir <> '') and (DirectoryExists(outdir)) then
-    outdir := IncludeTrailingPathDelimiter(outdir)
+  if (outdir <> '') then begin
+    if (DirectoryExists(outdir)) then
+      outdir := IncludeTrailingPathDelimiter(outdir)
+    else if (DirectoryExists(ExtractFilePath(ParamStr(0)) + outdir)) then
+      outdir := ExtractFilePath(ParamStr(0)) + IncludeTrailingPathDelimiter(outdir);
+  end
   else
     outdir := '';
   cfg.Free;
