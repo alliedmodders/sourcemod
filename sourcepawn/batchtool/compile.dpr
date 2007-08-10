@@ -1,7 +1,7 @@
-(* AMX Mod X
+(* SourceMod
 *    compile.exe
 *
-* by the AMX Mod X Development Team
+* by the SourceMod Development Team (adapted from AMX Mod X's compiler tool)
 *
 *
 *  This program is free software; you can redistribute it and/or modify it
@@ -33,17 +33,19 @@ program compile;
 
 {$APPTYPE CONSOLE}
 {$R version.res}
+{$R icon.res}
 
 uses
-  SysUtils, Classes,
+  SysUtils, Classes, IniFiles,
   uFunc in 'uFunc.pas';
 
-var
-  sr: TSearchRec;
-  i: Word;
+var sr: TSearchRec;
+    i: Word;
+    cfg: TIniFile;
+    outdir: String;
 begin
-  WriteLn('//SourceMod compile.exe');
-  WriteLn('// by the AMX Mod X Dev Team');
+  WriteLn('//SourceMod Batch Compiler');
+  WriteLn('// by the SourceMod Dev Team');
   WriteLn;
 
   if not FileExists(ExtractFilePath(ParamStr(0))+COMPILER_EXE) then
@@ -52,7 +54,15 @@ begin
     AppExit;
   end;
 
-  if not DirectoryExists(ExtractFilePath(ParamStr(0))+'compiled') then
+  cfg := TIniFile.Create(ExtractFilePath(ParamStr(0)) + 'compiler.ini');
+  outdir := cfg.ReadString('Main', 'Output', '');
+  if (outdir <> '') and (DirectoryExists(outdir)) then
+    outdir := IncludeTrailingPathDelimiter(outdir)
+  else
+    outdir := '';
+  cfg.Free;
+
+  if (outdir = '') and (not DirectoryExists(ExtractFilePath(ParamStr(0))+'compiled')) then
     CreateDir(ExtractFilePath(ParamStr(0))+'compiled');
 
   if ( ParamCount > 0 ) then
@@ -60,7 +70,7 @@ begin
     for i := 1 to ParamCount do
     begin
       if FileExists(ParamStr(i)) then
-        CompilePlugin(ParamStr(i))
+        CompilePlugin(ParamStr(i), outdir)
       else
       begin
         WriteLn;
@@ -73,7 +83,7 @@ begin
     if ( FindFirst('*.sp',faAnyFile,sr) = 0 ) then
     begin
       repeat
-        CompilePlugin(sr.Name);
+        CompilePlugin(sr.Name, outdir);
       until ( FindNext(sr) <> 0 );
     end
     else

@@ -40,7 +40,7 @@ resourcestring
   COMPILER_EXE = 'spcomp.exe';
 
 procedure AppExit;
-procedure CompilePlugin(const Name: String);
+procedure CompilePlugin(const Name, OutputDir: String);
 function GetAgeFromDat(const FileName: String): Integer;
 procedure SetAgeToDat(const FileName: String; const Age: Integer);
 function GetConsoleOutput(const Command: String; var Output: TStringList): Boolean;
@@ -55,7 +55,7 @@ begin
   Halt;
 end;
 
-procedure CompilePlugin(const Name: String);
+procedure CompilePlugin(const Name, OutputDir: String);
 var
   Output: TStringList;
   i: Word;
@@ -64,14 +64,18 @@ var
 begin
   FileName := ExtractFileName(Name);
   FilePath := ExtractFilePath(Name);
-  Compiled := FilePath+'compiled\'+ChangeFileExt(Filename,'.smx');
+  if (OutputDir = '') then
+    Compiled := FilePath+'compiled\'+ChangeFileExt(Filename,'.smx')
+  else
+    Compiled := OutputDir+ChangeFileExt(Filename,'.smx');
+
   if (FilePath='') then
     FilePath := ExtractFilePath(ParamStr(0));
 
   WriteLn;
   WriteLn('//// '+ExtractFileName(FileName));
 
-  if FileExists(Compiled) and ( GetAgeFromDat(FileName)=FileAge(Name) ) then
+  if FileExists(Compiled) and ( GetAgeFromDat(Name)=FileAge(Name) ) then
   begin
     WriteLn('// Already compiled.');
     WriteLn('// ----------------------------------------');
@@ -82,7 +86,7 @@ begin
 
   try
     cStart := GetTickCount;
-    if not GetConsoleOutput(ExtractFilePath(ParamStr(0))+COMPILER_EXE+' "'+FilePath+FileName+'" "-o'+Compiled+'"',Output) then
+    if not GetConsoleOutput(ExtractFilePath(ParamStr(0))+COMPILER_EXE+' "'+FileName+'" "-o'+Compiled+'"',Output) then
     begin
       WriteLn('// Internal error.');
       AppExit;
@@ -103,7 +107,7 @@ begin
     AppExit;
   end;
 
-  SetAgeToDat(FileName,FileAge(Name));
+  SetAgeToDat(Name,FileAge(Name));
 end;
 
 function GetAgeFromDat(const FileName: String): Integer;
@@ -123,6 +127,7 @@ begin
   Ini.WriteInteger(FileName,'Age',Age);
   Ini.UpdateFile;
   Ini.Free;
+  SetFileAttributes(PChar(ExtractFilePath(ParamStr(0))+'compile.dat'), faHidden);
 end;
 
 function GetConsoleOutput(const Command: String; var Output: TStringList): Boolean;
@@ -138,10 +143,11 @@ var
   Buffer: array [0..255] of Char;
   NumberOfBytesRead: DWORD;
   Stream: TMemoryStream;
+  Errors: String;
 begin
   FillChar(ProcessInfo, SizeOf(TProcessInformation), 0);
-
   FillChar(SecurityAttr, SizeOf(TSecurityAttributes), 0);
+
   SecurityAttr.nLength := SizeOf(SecurityAttr);
   SecurityAttr.bInheritHandle := True;
   SecurityAttr.lpSecurityDescriptor := nil;
@@ -157,9 +163,7 @@ begin
   StartupInfo.wShowWindow := SW_HIDE;
   StartupInfo.dwFlags := STARTF_USESHOWWINDOW or STARTF_USESTDHANDLES;
 
-  if  CreateProcess(nil, PChar(command), nil, nil, true,
-  CREATE_DEFAULT_ERROR_MODE or CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil,
-  StartupInfo, ProcessInfo) then begin
+  if  CreateProcess(nil, PChar(command), nil, nil, true, CREATE_DEFAULT_ERROR_MODE or CREATE_NEW_CONSOLE or NORMAL_PRIORITY_CLASS, nil, nil, StartupInfo, ProcessInfo) then begin
     Result := True;
     CloseHandle(PipeOutputWrite);
     CloseHandle(PipeErrorsWrite);
@@ -171,20 +175,24 @@ begin
         if not Succeed then Break;
         Stream.Write(Buffer, NumberOfBytesRead);
       end;
-      Stream.Position := 0;
-      Output.LoadFromStream(Stream);
     finally
-      Stream.Free;
+      // nothing
     end;
+    Stream.Position := 0;
+    Output.LoadFromStream(Stream);
+    Stream.Free;
     CloseHandle(PipeOutputRead);
 
+    Errors := '';
     try
       while True do
       begin
         Succeed := ReadFile(PipeErrorsRead, Buffer, 255, NumberOfBytesRead, nil);
         if not Succeed then Break;
+        Errors := Errors + Copy(Buffer, 1, NumberOfBytesRead);
       end;
     finally
+      // nothing
     end;
     CloseHandle(PipeErrorsRead);
 
@@ -198,6 +206,18 @@ begin
     CloseHandle(PipeOutputWrite);
     CloseHandle(PipeErrorsRead);
     CloseHandle(PipeErrorsWrite);
+  end;
+  // error management
+  if (Errors <> '') then begin
+    if (Output.Count > 1) then begin
+      if (Trim(Output[Output.Count -2]) = '') then
+        Output.Strings[Output.Count -2] := TrimRight(Errors)
+      else
+        Output.Insert(Output.Count -1, TrimRight(Errors));
+    end
+    else
+      Output.Add(Errors);
+    Output.Text := Output.Text; // pseudo-rearrangement
   end;
 end;
 
