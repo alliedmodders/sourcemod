@@ -360,6 +360,35 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *pConVar;
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	pConVar->Revert();
+	
+	/* Should we replicate it? */
+	if (params[2] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	{
+		ReplicateConVar(pConVar);
+	}
+
+	/* Should we notify clients? */
+	if (params[3] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	{
+		NotifyConVar(pConVar);
+	}
+
+	return 1;
+}
+
 static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -466,23 +495,6 @@ static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetName(), NULL);
-
-	return 1;
-}
-
-static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
-{
-	Handle_t hndl = static_cast<Handle_t>(params[1]);
-	HandleError err;
-	ConVar *pConVar;
-
-	if ((err=g_HandleSys.ReadHandle(hndl, g_ConVarManager.GetHandleType(), NULL, (void **)&pConVar))
-		!= HandleError_None)
-	{
-		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
-	}
-
-	pConVar->Revert();
 
 	return 1;
 }
@@ -961,10 +973,10 @@ REGISTER_NATIVES(consoleNatives)
 	{"SetConVarString",		sm_SetConVarString},
 	{"GetConVarFlags",		sm_GetConVarFlags},
 	{"SetConVarFlags",		sm_SetConVarFlags},
+	{"ResetConVar",			sm_ResetConVar},
 	{"GetConVarName",		sm_GetConVarName},
 	{"GetConVarBounds",		sm_GetConVarBounds},
 	{"SetConVarBounds",		sm_SetConVarBounds},
-	{"ResetConVar",			sm_ResetConVar},
 	{"QueryClientConVar",	sm_QueryClientConVar},
 	{"RegServerCmd",		sm_RegServerCmd},
 	{"RegConsoleCmd",		sm_RegConsoleCmd},

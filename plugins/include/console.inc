@@ -469,6 +469,20 @@ native GetConVarString(Handle:convar, String:value[], maxlength);
 native SetConVarString(Handle:convar, const String:value[], bool:replicate=false, bool:notify=false);
 
 /**
+ * Resets the console variable to its default value.
+ *
+ * @param convar		Handle to the convar.
+ * @param replicate		If set to true, the new convar value will be set on all clients.
+ *						This will only work if the convar has the FCVAR_REPLICATED flag
+ *						and actually exists on clients.
+ * @param notify		If set to true, clients will be notified that the convar has changed.
+ *						This will only work if the convar has the FCVAR_NOTIFY flag.
+ * @noreturn
+ * @error				Invalid or corrupt Handle.
+ */
+native ResetConVar(Handle:convar, bool:replicate=false, bool:notify=false);
+
+/**
  * Returns the bitstring of flags on a console variable.
  *
  * @param convar		Handle to the convar.
@@ -520,15 +534,6 @@ native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0
  * @error				Invalid or corrupt Handle.     
  */
 native GetConVarName(Handle:convar, const String:name[], maxlength);
-
-/**
- * Resets the console variable to its default value.
- *
- * @param convar		Handle to the convar.
- * @noreturn
- * @error				Invalid or corrupt Handle.
- */
-native ResetConVar(Handle:convar);
 
 funcenum ConVarQueryFinished
 {	
