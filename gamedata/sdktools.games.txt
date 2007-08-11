@@ -489,7 +489,7 @@
 		}
 	}
 
-	/* Insurgency */
+	/* Insurgency Generic */
 	"!Insurgency"
 	{
 		"Offsets"
@@ -520,15 +520,33 @@
 				"windows"	"107"
 				"linux"		"108"
 			}
-
-			/* Temp Entities */
 			"s_pTempEntities"
 			{
 				"linux"		"28"
 			}
 		}
 	}
-	
+
+	/* Insurgency 1.1a Patch for Linux */
+	"!Insurgency"
+	{
+		"CRC"
+		{
+			"server"
+			{
+				"linux"		"6D0E55DC"
+			}
+		}
+
+		"Offsets"
+		{
+			"s_pTempEntities"
+			{
+				"linux"		"29"
+			}
+		}
+	}
+
 	/* Pirates, Vikings and Knights II */
 	"!Pirates, Vikings and Knights II"
 	{
