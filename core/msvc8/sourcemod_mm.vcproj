@@ -349,6 +349,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\sm_crc32.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\sm_memtable.cpp"
 				>
 			</File>
@@ -488,6 +492,10 @@
 			</File>
 			<File
 				RelativePath="..\sm_autonatives.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_crc32.h"
 				>
 			</File>
 			<File

@@ -27,7 +27,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version 
  * JULY-31-2007), or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: AdminCache.cpp 1311 2007-08-11 18:03:55Z dvander $
+ * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEMOD_CRC32_H_
