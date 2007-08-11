@@ -1522,7 +1522,7 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 		return false;
 	}
 
-	if (*pAdmFlag)
+	if (pAdmFlag)
 	{
 		*pAdmFlag = g_FlagLetters[(unsigned)c - (unsigned)'a'];
 	}
