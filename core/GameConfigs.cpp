@@ -43,6 +43,7 @@
 #include "MemoryUtils.h"
 #include "LibrarySys.h"
 #include "HandleSys.h"
+#include "sm_crc32.h"
 
 #if defined PLATFORM_LINUX
 #include <dlfcn.h>
@@ -62,11 +63,15 @@ char g_GameDesc[256] = {'!', '\0'};
 #define PSTATE_GAMEDEFS_SUPPORTED		6
 #define PSTATE_GAMEDEFS_SIGNATURES		7
 #define PSTATE_GAMEDEFS_SIGNATURES_SIG	8
+#define PSTATE_GAMEDEFS_CRC				9
+#define PSTATE_GAMEDEFS_CRC_BINARY		10
 
 #if defined PLATFORM_WINDOWS
-#define PLATFORM_NAME	"windows"
+#define PLATFORM_NAME				"windows"
+#define PLATFORM_SERVER_BINARY		"server.dll"
 #elif defined PLATFORM_LINUX
-#define PLATFORM_NAME	"linux"
+#define PLATFORM_NAME				"linux"
+#define PLATFORM_SERVER_BINARY		"server_i486.so"
 #endif
 
 struct TempSigInfo
@@ -79,6 +84,8 @@ struct TempSigInfo
 	char sig[512];
 	char library[64];
 } s_TempSig;
+unsigned int s_ServerBinCRC;
+bool s_ServerBinCRC_Ok = false;
 
 CGameConfig::CGameConfig(const char *file)
 {
@@ -128,6 +135,7 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 				|| (strcasecmp(name, g_Game) == 0)
 				|| (strcasecmp(name, g_GameDesc) == 0))
 			{
+				bShouldBeReadingDefault = true;
 				m_ParseState = PSTATE_GAMEDEFS;
 				strncopy(m_Game, name, sizeof(m_Game));
 			} else {
@@ -156,6 +164,11 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 			}
+			else if (strcmp(name, "CRC") == 0)
+			{
+				m_ParseState = PSTATE_GAMEDEFS_CRC;
+				bShouldBeReadingDefault = false;
+			}
 			else
 			{
 				m_IgnoreLevel++;
@@ -177,11 +190,54 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES_SIG;
 			break;
 		}
+	case PSTATE_GAMEDEFS_CRC:
+		{
+			char error[255];
+			error[0] = '\0';
+			if (strcmp(name, "server") != 0)
+			{
+				UTIL_Format(error, sizeof(error), "Unrecognized library \"%s\"", name);
+			} 
+			else if (!s_ServerBinCRC_Ok)
+			{
+				FILE *fp;
+				char path[PLATFORM_MAX_PATH];
+
+				g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "bin/" PLATFORM_SERVER_BINARY);
+				if ((fp = fopen(path, "rb")) == NULL)
+				{
+					UTIL_Format(error, sizeof(error), "Could not open binary: %s", path);
+				} else {
+					size_t size;
+					void *buffer;
+
+					fseek(fp, 0, SEEK_END);
+					size = ftell(fp);
+					fseek(fp, 0, SEEK_SET);
+
+					buffer = malloc(size);
+					fread(buffer, size, 1, fp);
+					s_ServerBinCRC = UTIL_CRC32(buffer, size);
+					free(buffer);
+					s_ServerBinCRC_Ok = true;
+				}
+			}
+			if (error[0] != '\0')
+			{
+				m_IgnoreLevel = 1;
+				g_Logger.LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game, m_pFile);
+				g_Logger.LogError("[SM] %s", error);
+			} else {
+				m_ParseState = PSTATE_GAMEDEFS_CRC_BINARY;
+			}
+			break;
+		}
 	/* No sub-sections allowed:
 	 case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 	 case PSTATE_GAMEDEFS_KEYS:
 	 case PSTATE_GAMEDEFS_SUPPORTED:
 	 case PSTATE_GAMEDEFS_SIGNATURES_SIG:
+	 case PSTATE_GAMEDEFS_CRC_BINARY:
 	 */
 	default:
 		{
@@ -227,6 +283,18 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 			strncopy(s_TempSig.sig, value, sizeof(s_TempSig.sig));
 		} else if (strcmp(key, "library") == 0) {
 			strncopy(s_TempSig.library, value, sizeof(s_TempSig.library));
+		}
+	} else if (m_ParseState == PSTATE_GAMEDEFS_CRC_BINARY) {
+		if (strcmp(key, PLATFORM_NAME) == 0 
+			&& s_ServerBinCRC_Ok
+			&& !bShouldBeReadingDefault)
+		{
+			unsigned int crc = 0;
+			sscanf(value, "%08X", &crc);
+			if (s_ServerBinCRC == crc)
+			{
+				bShouldBeReadingDefault = true;
+			}
 		}
 	}
 
@@ -287,6 +355,7 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS;
 			break;
 		}
+	case PSTATE_GAMEDEFS_CRC:
 	case PSTATE_GAMEDEFS_SUPPORTED:
 		{
 			if (!bShouldBeReadingDefault)
@@ -297,6 +366,11 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			} else {
 				m_ParseState = PSTATE_GAMEDEFS;
 			}
+			break;
+		}
+	case PSTATE_GAMEDEFS_CRC_BINARY:
+		{
+			m_ParseState = PSTATE_GAMEDEFS_CRC;
 			break;
 		}
 	case PSTATE_GAMEDEFS_SIGNATURES:
