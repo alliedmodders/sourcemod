@@ -30,6 +30,9 @@
  * Version: $Id$
  */
 
+#ifndef _INCLUDE_SOURCEMOD_ADTFACTORY_H_
+#define _INCLUDE_SOURCEMOD_ADTFACTORY_H_
+
 #include <IADTFactory.h>
 #include "sm_globals.h"
 #include "sm_trie.h"
@@ -63,4 +66,6 @@ public: //SMGlobalClass
 public: //IADTFactory
 	IBasicTrie *CreateBasicTrie();
 };
+
+#endif //_INCLUDE_SOURCEMOD_ADTFACTORY_H_
 
