@@ -925,8 +925,7 @@ void HandleSystem::Dump(FILE *fp)
 	fprintf(fp, "---------------------------------------------\n");
 	for (unsigned int i=1; i<=m_HandleTail; i++)
 	{
-		if (m_Handles[i].set == HandleSet_Freed
-			|| m_Handles[i].set == HandleSet_Identity)
+		if (m_Handles[i].set != HandleSet_Used)
 		{
 			continue;
 		}
