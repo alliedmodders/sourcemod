@@ -332,6 +332,8 @@ FetchGroups(Handle:db)
 			}
 		}
 	}
+	
+	CloseHandle(groups);
 }
 
 FetchOverrides(Handle:db)
