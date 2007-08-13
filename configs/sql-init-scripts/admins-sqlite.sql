@@ -14,7 +14,7 @@ CREATE TABLE sm_groups (
   immunity varchar(16) NOT NULL,
   flags varchar(30) NOT NULL,
   name varchar(120) NOT NULL,
-  groups_immune varchar(255) NOT NULL,
+  groups_immune varchar(255),
   PRIMARY KEY (id)
 );
 
