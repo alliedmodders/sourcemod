@@ -331,6 +331,11 @@ FetchGroups(Handle:db)
 				}
 			}
 		}
+		
+		if (immunity_list != INVALID_HANDLE)
+		{
+			CloseHandle(immunity_list);
+		}
 	}
 	
 	CloseHandle(groups);
