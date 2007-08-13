@@ -24,10 +24,11 @@
 #define OVERRIDE_STATE_LEVELS		1
 #define OVERRIDE_STATE_OVERRIDES	2
 
-static Handle:g_hOverrideParser = INVALID_HANDLE;
+static Handle:g_hOldOverrideParser = INVALID_HANDLE;
+static Handle:g_hNewOverrideParser = INVALID_HANDLE;
 static g_OverrideState = OVERRIDE_STATE_NONE;
 
-public SMCResult:ReadOverrides_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
+public SMCResult:ReadOldOverrides_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
 	if (g_IgnoreLevel)
 	{
@@ -44,6 +45,29 @@ public SMCResult:ReadOverrides_NewSection(Handle:smc, const String:name[], bool:
 			g_IgnoreLevel++;
 		}
 	} else if (g_OverrideState == OVERRIDE_STATE_LEVELS) {
+		if (StrEqual(name, "Overrides"))
+		{
+			g_OverrideState = OVERRIDE_STATE_OVERRIDES;
+		} else {
+			g_IgnoreLevel++;
+		}
+	} else {
+		g_IgnoreLevel++;
+	}
+	
+	return SMCParse_Continue;
+}
+
+public SMCResult:ReadNewOverrides_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
+{
+	if (g_IgnoreLevel)
+	{
+		g_IgnoreLevel++;
+		return SMCParse_Continue;
+	}
+	
+	if (g_OverrideState == OVERRIDE_STATE_NONE)
+	{
 		if (StrEqual(name, "Overrides"))
 		{
 			g_OverrideState = OVERRIDE_STATE_OVERRIDES;
@@ -81,7 +105,7 @@ public SMCResult:ReadOverrides_KeyValue(Handle:smc,
 	return SMCParse_Continue;
 }
 
-public SMCResult:ReadOverrides_EndSection(Handle:smc)
+public SMCResult:ReadOldOverrides_EndSection(Handle:smc)
 {
 	/* If we're ignoring, skip out */
 	if (g_IgnoreLevel)
@@ -102,29 +126,52 @@ public SMCResult:ReadOverrides_EndSection(Handle:smc)
 	return SMCParse_Continue;
 }
 
-static InitializeOverrideParser()
+public SMCResult:ReadNewOverrides_EndSection(Handle:smc)
 {
-	if (g_hOverrideParser == INVALID_HANDLE)
+	/* If we're ignoring, skip out */
+	if (g_IgnoreLevel)
 	{
-		g_hOverrideParser = SMC_CreateParser();
-		SMC_SetReaders(g_hOverrideParser,
-					   ReadOverrides_NewSection,
+		g_IgnoreLevel--;
+		return SMCParse_Continue;
+	}
+	
+	if (g_OverrideState == OVERRIDE_STATE_OVERRIDES)
+	{
+		g_OverrideState = OVERRIDE_STATE_NONE;
+	}
+	
+	return SMCParse_Continue;
+}
+
+static InitializeOverrideParsers()
+{
+	if (g_hOldOverrideParser == INVALID_HANDLE)
+	{
+		g_hOldOverrideParser = SMC_CreateParser();
+		SMC_SetReaders(g_hOldOverrideParser,
+					   ReadOldOverrides_NewSection,
 					   ReadOverrides_KeyValue,
-					   ReadOverrides_EndSection);
+					   ReadOldOverrides_EndSection);
+	}
+	if (g_hNewOverrideParser == INVALID_HANDLE)
+	{
+		g_hNewOverrideParser = SMC_CreateParser();
+		SMC_SetReaders(g_hNewOverrideParser,
+					   ReadNewOverrides_NewSection,
+					   ReadOverrides_KeyValue,
+					   ReadNewOverrides_EndSection);
 	}
 }
 
-ReadOverrides()
+InternalReadOverrides(Handle:parser, const String:file[])
 {
-	InitializeOverrideParser();
-	
-	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), "configs/admin_levels.cfg");
+	BuildPath(Path_SM, g_Filename, sizeof(g_Filename), file);
 	
 	/* Set states */
 	InitGlobalStates();
 	g_OverrideState = OVERRIDE_STATE_NONE;
 		
-	new SMCError:err = SMC_ParseFile(g_hOverrideParser, g_Filename);
+	new SMCError:err = SMC_ParseFile(parser, g_Filename);
 	if (err != SMCError_Okay)
 	{
 		decl String:buffer[64];
@@ -135,4 +182,11 @@ ReadOverrides()
 			ParseError("Fatal parse error");
 		}
 	}
+}
+
+ReadOverrides()
+{
+	InitializeOverrideParsers();
+	InternalReadOverrides(g_hOldOverrideParser, "configs/admin_levels.cfg");
+	InternalReadOverrides(g_hNewOverrideParser, "configs/admin_overrides.cfg");
 }
