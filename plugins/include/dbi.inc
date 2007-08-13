@@ -551,7 +551,7 @@ native bool:SQL_IsSameConnection(Handle:hndl1, Handle:hndl2);
  * @param name			Database name.
  * @noreturn
  */
-native SQL_TConnect(SQLTCallback:callback, const String:name[]="default");
+native SQL_TConnect(SQLTCallback:callback, const String:name[]="default", any:data=0);
 
 /**
  * Executes a simple query via a thread.  The query Handle is passed through

@@ -231,11 +231,12 @@ private:
 class TConnectOp : public IDBThreadOperation
 {
 public:
-	TConnectOp(IPluginFunction *func, IDBDriver *driver, const char *_dbname)
+	TConnectOp(IPluginFunction *func, IDBDriver *driver, const char *_dbname, cell_t data)
 	{
 		m_pFunction = func;
 		m_pDriver = driver;
 		m_pDatabase = NULL;
+		m_Data = data;
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
 		me = g_PluginSys.GetPluginByCtx(m_pFunction->GetParentContext()->GetContext());
@@ -269,7 +270,7 @@ public:
 		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushCell(BAD_HANDLE);
 		m_pFunction->PushString("Driver is unloading");
-		m_pFunction->PushCell(0);
+		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);
 	}
 	void RunThinkPart()
@@ -289,7 +290,7 @@ public:
 		m_pFunction->PushCell(m_pDriver->GetHandle());
 		m_pFunction->PushCell(hndl);
 		m_pFunction->PushString(hndl == BAD_HANDLE ? error : "");
-		m_pFunction->PushCell(0);
+		m_pFunction->PushCell(m_Data);
 		m_pFunction->Execute(NULL);
 	}
 	void Destroy()
@@ -303,6 +304,7 @@ private:
 	IDatabase *m_pDatabase;
 	char dbname[64];
 	char error[255];
+	cell_t m_Data;
 };
 
 static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
@@ -394,7 +396,7 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* Finally, add to the thread if we can */
-	TConnectOp *op = new TConnectOp(pf, driver, conf);
+	TConnectOp *op = new TConnectOp(pf, driver, conf, params[3]);
 	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
 		|| !g_DBMan.AddToThreadQueue(op, PrioQueue_High))

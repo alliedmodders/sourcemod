@@ -27,7 +27,7 @@
 
 public Plugin:myinfo = 
 {
-	name = "SQL Admin Prefetcher",
+	name = "SQL Admins (Prefetch)",
 	author = "AlliedModders LLC",
 	description = "Reads all admins from SQL",
 	version = SOURCEMOD_VERSION,
