@@ -25,14 +25,22 @@ namespace builder
 		public Plugin(string file)
 		{
 			Source = file;
+			disabled = false;
 		}
 		public Plugin (string file, string folder)
 		{
 			Source = file;
 			Folder = folder;
+			disabled = false;
+		}
+		public Plugin (string file, bool is_disabled)
+		{
+			Source = file;
+			disabled = is_disabled;
 		}
 		public string Folder;		/* Source folder relative to scripting (null for default) */
 		public string Source;		/* Source file name */
+		public bool disabled;		/* Is the plugin disabled? */
 	};
 
 	public abstract class Package

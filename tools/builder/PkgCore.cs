@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[12];
+			string [] folders = new string[13];
 
 			folders[0] = "addons/sourcemod/bin";
 			folders[1] = "addons/sourcemod/plugins/disabled";
@@ -43,6 +43,7 @@ namespace builder
 			folders[9] = "addons/sourcemod/scripting/admin-flatfile";
 			folders[10] = "addons/sourcemod/scripting/testsuite";
 			folders[11] = "cfg/sourcemod";
+			folders[12] = "addons/sourcemod/configs/sql-init-scripts";
 
 			return folders;
 		}
@@ -63,6 +64,7 @@ namespace builder
 			builder.CopyFolder(this, "configs", "addons/sourcemod/configs", null);
 			builder.CopyFolder(this, "configs/geoip", "addons/sourcemod/configs/geoip", null);
 			builder.CopyFolder(this, "configs/cfg", "cfg/sourcemod", null);
+			builder.CopyFolder(this, "configs/sql-init-scripts", "addons/sourcemod/configs/sql-init-scripts", null);
 			
 			string [] plugin_omits = new string[1];
 			plugin_omits[0] = "spcomp.exe";
@@ -139,7 +141,7 @@ namespace builder
 		 */
 		public override Plugin [] GetPlugins()
 		{
-			Plugin [] plugins = new Plugin[11];
+			Plugin [] plugins = new Plugin[14];
 
 			plugins[0] = new Plugin("admin-flatfile", "admin-flatfile");
 			plugins[1] = new Plugin("adminhelp");
@@ -152,6 +154,9 @@ namespace builder
 			plugins[8] = new Plugin("basefuncommands");
 			plugins[9] = new Plugin("basevotes");
 			plugins[10] = new Plugin("basefunvotes");
+			plugins[11] = new Plugin("admin-sql-prefetch", true);
+			plugins[12] = new Plugin("admin-sql-threaded", true);
+			plugins[13] = new Plugin("sql-admin-manager", true);
 
 			return plugins;
 		}

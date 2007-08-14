@@ -53,7 +53,16 @@ namespace builder
 			{
 				return false;
 			}
-			string new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+
+			string new_loc;
+			if (pl.disabled)
+			{
+				new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/disabled/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+			} 
+			else 
+			{
+				new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+			}
 
 			try
 			{
