@@ -11,7 +11,7 @@ CREATE TABLE sm_admins (
 
 CREATE TABLE sm_groups (
   id int(10) unsigned NOT NULL auto_increment,
-  immunity enum('none','all','default') NOT NULL,
+  immunity enum('none','global','default') NOT NULL,
   flags varchar(30) NOT NULL,
   name varchar(120) NOT NULL,
   PRIMARY KEY (id)
