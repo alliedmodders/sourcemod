@@ -199,7 +199,7 @@ public Action:Command_DelGroup(client, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_sql_addgroup <name>");
+		ReplyToCommand(client, "[SM] Usage: sm_sql_delgroup <name>");
 		return Plugin_Handled;
 	}
 
