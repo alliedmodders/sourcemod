@@ -1256,11 +1256,20 @@ static cell_t SQL_ReadDriver(IPluginContext *pContext, const cell_t *params)
 	return driver->GetHandle();
 }
 
+static cell_t SQL_CheckConfig(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	pContext->LocalToString(params[1], &name);
+
+	return (g_DBMan.FindDatabaseConf(name) != NULL) ? 1 : 0;
+}
+
 REGISTER_NATIVES(dbNatives)
 {
 	{"SQL_BindParamInt",		SQL_BindParamInt},
 	{"SQL_BindParamFloat",		SQL_BindParamFloat},
-	{"SQL_BindParamString",		SQL_BindParamString},
+	{"SQL_BindParamString",		SQL_BindParamString},\
+	{"SQL_CheckConfig",			SQL_CheckConfig},
 	{"SQL_Connect",				SQL_Connect},
 	{"SQL_ConnectEx",			SQL_ConnectEx},
 	{"SQL_Execute",				SQL_Execute},

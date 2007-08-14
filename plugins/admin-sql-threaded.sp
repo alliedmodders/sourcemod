@@ -144,7 +144,12 @@ public OnDatabaseConnect(Handle:owner, Handle:hndl, const String:error[], any:da
 RequestDatabaseConnection()
 {
 	ConnectLock = ++g_sequence;
-	SQL_TConnect(OnDatabaseConnect, "default", ConnectLock);
+	if (SQL_CheckConfig("admins"))
+	{
+		SQL_TConnect(OnDatabaseConnect, "admins", ConnectLock);
+	} else {
+		SQL_TConnect(OnDatabaseConnect, "default", ConnectLock);
+	}
 }
 
 public OnRebuildAdminCache(AdminCachePart:part)

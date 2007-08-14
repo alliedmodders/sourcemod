@@ -131,6 +131,14 @@ native Handle:SQL_ConnectEx(Handle:driver,
 							bool:persistent=true,
 							port=0,
 							maxTimeout=0);
+							
+/**
+ * Returns if a named configuration is present in databases.cfg.
+ *
+ * @param name			Configuration name.
+ * @return				True if it exists, false otherwise.
+ */
+native bool:SQL_CheckConfig(const String:name[]);
 
 /**
  * Returns a driver Handle from a name string.

@@ -38,7 +38,15 @@ public OnRebuildAdminCache(AdminCachePart:part)
 {
 	/* First try to get a database connection */
 	decl String:error[255];
-	new Handle:db = SQL_Connect("default", true, error, sizeof(error));
+	new Handle:db;
+	
+	if (SQL_CheckConfig("admins"))
+	{
+		db = SQL_Connect("admins", true, error, sizeof(error));
+	} else {
+		db = SQL_Connect("default", true, error, sizeof(error));
+	}
+	
 	if (db == INVALID_HANDLE)
 	{
 		LogError("Could not connect to database \"default\": %s", error);
