@@ -5,6 +5,11 @@
 		"en"		"Auth type must be either 'steam', 'name', or 'ip'."
 	}
 
+	"Invalid immunity"
+	{
+		"en"		"Immunity must be 'none', 'default', or 'global'."
+	}
+
 	"SQL Admin already exists"
 	{
 		"en"		"An administrator with the given credentials already exists."

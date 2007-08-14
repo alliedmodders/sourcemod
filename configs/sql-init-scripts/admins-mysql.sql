@@ -14,8 +14,13 @@ CREATE TABLE sm_groups (
   immunity enum('none','all','default') NOT NULL,
   flags varchar(30) NOT NULL,
   name varchar(120) NOT NULL,
-  groups_immune varchar(255),
   PRIMARY KEY (id)
+);
+
+CREATE TABLE sm_group_immunity (
+  group_id int(10) unsigned NOT NULL,
+  other_id int(10) unsigned NOT NULL,
+  PRIMARY KEY (group_id, other_id)
 );
 
 CREATE TABLE sm_group_overrides (

@@ -227,39 +227,54 @@ public Action:Command_DelGroup(client, args)
 	
 	decl String:query[256];
 	
+	new Handle:hQuery;
+	Format(query, sizeof(query), "SELECT id FROM sm_groups WHERE name = '%s'", safe_name);
+	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	{
+		return DoError(client, db, query, "Group retrieval query failed");
+	}
+	
+	if (!SQL_FetchRow(hQuery))
+	{
+		ReplyToCommand(client, "[SM] %t", "SQL Group not found");
+		CloseHandle(hQuery);
+		CloseHandle(db);
+		return Plugin_Handled;
+	}
+	
+	new id = SQL_FetchInt(hQuery, 0);
+	
+	CloseHandle(hQuery);
+	
 	/* Delete admin inheritance for this group */
-	Format(query, 
-		sizeof(query),
-		"DELETE FROM sm_admins_groups WHERE group_id IN (SELECT id FROM sm_groups WHERE name = '%s')",
-		safe_name);
+	Format(query, sizeof(query), "DELETE FROM sm_admins_groups WHERE group_id = %d", id);
 	if (!SQL_FastQuery(db, query))
 	{
 		return DoError(client, db, query, "Admin group deletion query failed");
 	}
 	
 	/* Delete group overrides */
-	Format(query, 
-		sizeof(query),
-		"DELETE FROM sm_group_overrides WHERE group_id IN (SELECT id FROM sm_groups WHERE name = '%s')",
-		safe_name);
+	Format(query, sizeof(query), "DELETE FROM sm_group_overrides WHERE group_id = %d", id);
 	if (!SQL_FastQuery(db, query))
 	{
 		return DoError(client, db, query, "Group override deletion query failed");
 	}
 	
+	/* Delete immunity */
+	Format(query, sizeof(query), "DELETE FROM sm_group_immunity WHERE group_id = %d OR other_id = %d", id, id);
+	if (!SQL_FastQuery(db, query))
+	{
+		return DoError(client, db, query, "Group immunity deletion query failed");
+	}
+	
 	/* Finally delete the group */
-	Format(query, sizeof(query), "DELETE FROM sm_groups WHERE name = '%s'", safe_name);
+	Format(query, sizeof(query), "DELETE FROM sm_groups WHERE id = %d", id);
 	if (!SQL_FastQuery(db, query))
 	{
 		return DoError(client, db, query, "Group deletion query failed");
 	}
 	
-	if (SQL_GetAffectedRows(db))
-	{
-		ReplyToCommand(client, "[SM] %t", "SQL Group deleted");
-	} else {
-		ReplyToCommand(client, "[SM] %t", "SQL Group not found");
-	}
+	ReplyToCommand(client, "[SM] %t", "SQL Group deleted");
 	
 	CloseHandle(db);
 	

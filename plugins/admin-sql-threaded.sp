@@ -53,8 +53,8 @@ public Plugin:myinfo =
  *    was a 100% success in the fetch.  This is so we can potentially implement 
  *    connection retries in the future.
  *
- * 4) Sequence numbers for the admin cache are ignored except for being 
- *    non-zero, which means players in-game should be re-checked for admin \
+ * 4) Sequence numbers for the user cache are ignored except for being 
+ *    non-zero, which means players in-game should be re-checked for admin 
  *    powers.
  */
 
@@ -525,6 +525,64 @@ FetchUsersWeCan(Handle:db)
 	RebuildCachePart[_:AdminCache_Admins] = 0;
 }
 
+
+public OnReceiveGroupImmunity(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	new Handle:pk = Handle:data;
+	ResetPack(pk);
+	
+	/**
+	 * Check if this is the latest result request.
+	 */
+	new sequence = ReadPackCell(pk);
+	if (RebuildCachePart[_:AdminCache_Groups] != sequence)
+	{
+		/* Discard everything, since we're out of sequence. */
+		CloseHandle(pk);
+		return;
+	}
+	
+	/**
+	 * If we need to use the results, make sure they succeeded.
+	 */
+	if (hndl == INVALID_HANDLE)
+	{
+		decl String:query[255];
+		ReadPackString(pk, query, sizeof(query));		
+		LogError("SQL error receiving group immunity: %s", error);
+		LogError("Query dump: %s", query);
+		CloseHandle(pk);	
+		return;
+	}
+	
+	/* We're done with the pack forever. */
+	CloseHandle(pk);
+	
+	while (SQL_FetchRow(hndl))
+	{
+		decl String:group1[80];
+		decl String:group2[80];
+		new GroupId:gid1, GroupId:gid2;
+		
+		SQL_FetchString(hndl, 0, group1, sizeof(group1));
+		SQL_FetchString(hndl, 1, group2, sizeof(group2));
+		
+		if (((gid1 = FindAdmGroup(group1)) == INVALID_GROUP_ID)
+			|| (gid2 = FindAdmGroup(group2)) == INVALID_GROUP_ID)
+		{
+			continue;
+		}
+		
+		SetAdmGroupImmuneFrom(gid1, gid2);
+#if defined _DEBUG
+		PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", gid1, gid2);
+#endif
+	}
+	
+	/* Clear the sequence so another connect doesn't refetch */
+	RebuildCachePart[_:AdminCache_Groups] = 0;
+}
+
 public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], any:data)
 {
 	new Handle:pk = Handle:data;
@@ -553,9 +611,6 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 		CloseHandle(pk);	
 		return;
 	}
-	
-	/* We're done with the pack forever. */
-	CloseHandle(pk);
 	
 	/**
 	 * Fetch the overrides.
@@ -598,8 +653,20 @@ public OnReceiveGroupOverrides(Handle:owner, Handle:hndl, const String:error[], 
 		AddAdmGroupCmdOverride(gid, command, o_type, o_rule);
 	}
 	
-	/* Clear the sequence so another connect doesn't refetch */
-	RebuildCachePart[_:AdminCache_Groups] = 0;
+	/**
+	 * It's time to get the group immunity list.
+	 */
+	new len = 0;
+	decl String:query[256];
+	len += Format(query[len], sizeof(query)-len, "SELECT g1.name, g2.name FROM sm_group_immunity gi");
+	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g1 ON g1.id = gi.group_id ");
+	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
+
+	ResetPack(pk);
+	WritePackCell(pk, sequence);
+	WritePackString(pk, query);
+	
+	SQL_TQuery(owner, OnReceiveGroupImmunity, query, pk, DBPrio_High);
 }
 
 public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data)
@@ -631,26 +698,20 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 		return;
 	}
 	
-	/* We cache basic group info so we can do reverse lookups */
-	new Handle:groups = CreateArray(3);
-	
 	/**
 	 * Now start fetching groups.
 	 */
 	decl String:immunity[16];
 	decl String:flags[32];
 	decl String:name[128];
-	decl String:grp_immunity[256];
 	while (SQL_FetchRow(hndl))
 	{
-		new id = SQL_FetchInt(hndl, 0);
-		SQL_FetchString(hndl, 1, immunity, sizeof(immunity));
-		SQL_FetchString(hndl, 2, flags, sizeof(flags));
-		SQL_FetchString(hndl, 3, name, sizeof(name));
-		SQL_FetchString(hndl, 4, grp_immunity, sizeof(grp_immunity));
+		SQL_FetchString(hndl, 0, immunity, sizeof(immunity));
+		SQL_FetchString(hndl, 1, flags, sizeof(flags));
+		SQL_FetchString(hndl, 2, name, sizeof(name));
 		
 #if defined _DEBUG
-		PrintToServer("Adding group (%d, %s, %s, %s, %s)", id, immunity, flags, name, grp_immunity);
+		PrintToServer("Adding group (%s, %s, %s)", immunity, flags, name);
 #endif
 		
 		/* Find or create the group */
@@ -682,65 +743,10 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 		} else if (StrEqual(immunity, "global")) {
 			SetAdmGroupImmunity(gid, Immunity_Global, true);
 		}
-		
-		new Handle:immunity_list = UTIL_ExplodeNumberString(grp_immunity);
-		
-		/* Now, save all this for later */
-		decl savedata[3];
-		savedata[0] = id;
-		savedata[1] = _:gid;
-		savedata[2] = _:immunity_list;
-		
-		PushArrayArray(groups, savedata);
 	}
 	
 	/**
-	 * Resolve immunity now in a second pass.
-	 */
-	new num_groups = GetArraySize(groups);
-	for (new i=0; i<num_groups; i++)
-	{
-		decl savedata[3];
-		GetArrayArray(groups, i, savedata);
-		
-		new id = savedata[0];
-		new GroupId:gid = GroupId:savedata[1];
-		new Handle:immunity_list = Handle:savedata[2];
-	
-		if (immunity_list != INVALID_HANDLE)
-		{
-			new immunity_count = GetArraySize(immunity_list);
-			for (new j=0; j<immunity_count; j++)
-			{
-				new other_id = GetArrayCell(immunity_list, j);
-				
-				if (other_id == id)
-				{
-					continue;
-				}
-				
-				/* See if we can find this other ID */
-				new GroupId:other_gid;
-				if ((other_gid = UTIL_FindGroupInCache(groups, other_id)) != INVALID_GROUP_ID)
-				{
-#if defined _DEBUG
-					PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", gid, other_gid);
-#endif
-					SetAdmGroupImmuneFrom(gid, other_gid);
-				}
-			}
-			/**
-			 * We close the Handle but don't zero it in the parent array... not worth 
-			 * the effort.
-			 */
-			CloseHandle(immunity_list);
-		}
-	}
-	
-	CloseHandle(groups);
-	
-	/**
-	 * Now we're done with both passes.  It's time to get the group override list.
+	 * It's time to get the group override list.
 	 */
 	decl String:query[255];
 	Format(query, 
@@ -759,7 +765,7 @@ FetchGroups(Handle:db, sequence)
 	decl String:query[255];
 	new Handle:pk;
 	
-	Format(query, sizeof(query), "SELECT id, immunity, flags, name, groups_immune FROM sm_groups");
+	Format(query, sizeof(query), "SELECT immunity, flags, name FROM sm_groups");
 
 	pk = CreateDataPack();
 	WritePackCell(pk, sequence);

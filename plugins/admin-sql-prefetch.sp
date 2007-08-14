@@ -101,7 +101,7 @@ FetchUsers(Handle:db)
 	decl String:query[255], String:error[255];
 	new Handle:hQuery, Handle:hGroupQuery;
 	
-	Format(query, sizeof(query), "SELECT id, authtype, identity, passwd, flags, name FROM sm_admins");
+	Format(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name FROM sm_admins");
 	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
 	{
 		SQL_GetError(db, error, sizeof(error));
@@ -185,7 +185,7 @@ FetchGroups(Handle:db)
 	decl String:query[255];
 	new Handle:hQuery;
 	
-	Format(query, sizeof(query), "SELECT id, immunity, flags, name, groups_immune FROM sm_groups");
+	Format(query, sizeof(query), "SELECT immunity, flags, name FROM sm_groups");
 
 	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
 	{
@@ -196,24 +196,18 @@ FetchGroups(Handle:db)
 		return;
 	}
 	
-	/* We cache basic group info so we can do reverse lookups */
-	new Handle:groups = CreateArray(3);
-	
 	/* Now start fetching groups */
 	decl String:immunity[16];
 	decl String:flags[32];
 	decl String:name[128];
-	decl String:grp_immunity[256];
 	while (SQL_FetchRow(hQuery))
 	{
-		new id = SQL_FetchInt(hQuery, 0);
-		SQL_FetchString(hQuery, 1, immunity, sizeof(immunity));
-		SQL_FetchString(hQuery, 2, flags, sizeof(flags));
-		SQL_FetchString(hQuery, 3, name, sizeof(name));
-		SQL_FetchString(hQuery, 4, grp_immunity, sizeof(grp_immunity));
+		SQL_FetchString(hQuery, 0, immunity, sizeof(immunity));
+		SQL_FetchString(hQuery, 1, flags, sizeof(flags));
+		SQL_FetchString(hQuery, 2, name, sizeof(name));
 		
 #if defined _DEBUG
-		PrintToServer("Adding group (%d, %s, %s, %s, %s)", id, immunity, flags, name, grp_immunity);
+		PrintToServer("Adding group (%s, %s, %s)", immunity, flags, name);
 #endif
 		
 		/* Find or create the group */
@@ -245,108 +239,100 @@ FetchGroups(Handle:db)
 		} else if (StrEqual(immunity, "global")) {
 			SetAdmGroupImmunity(gid, Immunity_Global, true);
 		}
-		
-		new Handle:immunity_list = UTIL_ExplodeNumberString(grp_immunity);
-		
-		/* Now, save all this for later */
-		decl data[3];
-		data[0] = id;
-		data[1] = _:gid;
-		data[2] = _:immunity_list;
-		
-		PushArrayArray(groups, data);
 	}
 	
 	CloseHandle(hQuery);
 	
-	/* Second pass - resolve immunity and group overrides */
-	new num_groups = GetArraySize(groups);
-	for (new i=0; i<num_groups; i++)
+	/** 
+	 * Get immunity in a big lump.  This is a nasty query but it gets the job done.
+	 */
+	new len = 0;
+	len += Format(query[len], sizeof(query)-len, "SELECT g1.name, g2.name FROM sm_group_immunity gi");
+	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g1 ON g1.id = gi.group_id ");
+	len += Format(query[len], sizeof(query)-len, " LEFT JOIN sm_groups g2 ON g2.id = gi.other_id");
+	
+	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
 	{
-		decl data[3];
-		GetArrayArray(groups, i, data);
-		
-		new id = data[0];
-		new GroupId:gid = GroupId:data[1];
-		new Handle:immunity_list = Handle:data[2];
-		
-		/* Query to get per-group override list */
-		Format(query, 
-			sizeof(query),
-			"SELECT type, name, access FROM sm_group_overrides WHERE group_id = %d",
-			id);
-		
-		/* Fetch the override query results */
-		if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
-		{
-			decl String:error[255];
-			SQL_GetError(db, error, sizeof(error));
-			LogError("FetchOverrides() query failed: %s", query);
-			LogError("Query error: %s", error);
-		} else {
-			decl String:type[16];
-			decl String:cmd[64];
-			decl String:access[16];
-			while (SQL_FetchRow(hQuery))
-			{
-				SQL_FetchString(hQuery, 0, type, sizeof(type));
-				SQL_FetchString(hQuery, 1, cmd, sizeof(cmd));
-				SQL_FetchString(hQuery, 2, access, sizeof(access));
-				
-				new OverrideType:o_type = Override_Command;
-				if (StrEqual(type, "group"))
-				{
-					o_type = Override_CommandGroup;
-				}
-				
-				new OverrideRule:o_rule = Command_Deny;
-				if (StrEqual(access, "allow"))
-				{
-					o_rule = Command_Allow;
-				}
-				
-				#if defined _DEBUG
-				PrintToServer("AddAdmGroupCmdOverride(%d, %s, %d, %d)", gid, cmd, o_type, o_rule);
-				#endif
-				
-				AddAdmGroupCmdOverride(gid, cmd, o_type, o_rule);
-			}
-			CloseHandle(hQuery);
-		}
-		
-		/* Lastly, resolve the immunity list if any */
-		new immunity_count;
-		if (immunity_list != INVALID_HANDLE 
-			&& ((immunity_count = GetArraySize(immunity_list)) > 0))
-		{
-			for (new j=0; j<immunity_count; j++)
-			{
-				new other_id = GetArrayCell(immunity_list, j);
-				
-				if (other_id == id)
-				{
-					continue;
-				}
-				
-				/* See if we can find this other ID */
-				new GroupId:other_gid;
-				if ((other_gid = UTIL_FindGroupInCache(groups, other_id)) != INVALID_GROUP_ID)
-				{
-					#if defined _DEBUG
-					PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", gid, other_gid);
-					#endif
-					SetAdmGroupImmuneFrom(gid, other_gid);
-				}
-			}
-		}
-		
-		if (immunity_list != INVALID_HANDLE)
-		{
-			CloseHandle(immunity_list);
-		}
+		decl String:error[255];
+		SQL_GetError(db, error, sizeof(error));
+		LogError("FetchGroups() query failed: %s", query);
+		LogError("Query error: %s", error);
+		return;
 	}
 	
-	CloseHandle(groups);
+	while (SQL_FetchRow(hQuery))
+	{
+		decl String:group1[80];
+		decl String:group2[80];
+		new GroupId:gid1, GroupId:gid2;
+		
+		SQL_FetchString(hQuery, 0, group1, sizeof(group1));
+		SQL_FetchString(hQuery, 1, group2, sizeof(group2));
+		
+		if (((gid1 = FindAdmGroup(group1)) == INVALID_GROUP_ID)
+			|| (gid2 = FindAdmGroup(group2)) == INVALID_GROUP_ID)
+		{
+			continue;
+		}
+		
+		SetAdmGroupImmuneFrom(gid1, gid2);
+#if defined _DEBUG
+		PrintToServer("SetAdmGroupImmuneFrom(%d, %d)", gid1, gid2);
+#endif
+	}
+	
+	CloseHandle(hQuery);
+	
+	/**
+	 * Fetch overrides in a lump query.
+	 */
+	Format(query, sizeof(query), "SELECT g.name, go.type, go.name, go.access FROM sm_group_overrides go LEFT JOIN sm_groups g ON go.group_id = g.id");
+	
+	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	{
+		decl String:error[255];
+		SQL_GetError(db, error, sizeof(error));
+		LogError("FetchGroups() query failed: %s", query);
+		LogError("Query error: %s", error);
+		return;
+	}
+	
+	decl String:type[16];
+	decl String:cmd[64];
+	decl String:access[16];
+	while (SQL_FetchRow(hQuery))
+	{
+		SQL_FetchString(hQuery, 0, name, sizeof(name));
+		SQL_FetchString(hQuery, 1, type, sizeof(type));
+		SQL_FetchString(hQuery, 2, cmd, sizeof(cmd));
+		SQL_FetchString(hQuery, 3, access, sizeof(access));
+		
+		new GroupId:gid;
+		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
+		{
+			continue;
+		}
+				
+		new OverrideType:o_type = Override_Command;
+		if (StrEqual(type, "group"))
+		{
+			o_type = Override_CommandGroup;
+		}
+		
+		new OverrideRule:o_rule = Command_Deny;
+		if (StrEqual(access, "allow"))
+		{
+			o_rule = Command_Allow;
+		}
+				
+		#if defined _DEBUG
+		PrintToServer("AddAdmGroupCmdOverride(%d, %s, %d, %d)", gid, cmd, o_type, o_rule);
+		#endif
+		
+		AddAdmGroupCmdOverride(gid, cmd, o_type, o_rule);
+	}
+	
+	CloseHandle(hQuery);
 }
 
 FetchOverrides(Handle:db)
@@ -390,62 +376,3 @@ FetchOverrides(Handle:db)
 	
 	CloseHandle(hQuery);
 }
-
-stock GroupId:UTIL_FindGroupInCache(Handle:group_list, id)
-{
-	new size = GetArraySize(group_list);
-	
-	for (new i=0; i<size; i++)
-	{
-		decl data[3];
-		GetArrayArray(group_list, i, data);
-		
-		if (data[0] == id)
-		{
-			return GroupId:data[1];
-		}
-	}
-	
-	return INVALID_GROUP_ID;
-}
-
-/**
- * Breaks a comma-delimited string into a list of numbers, returning a new 
- * dynamic array.
- *
- * @param text				The string to split.
- * @return					A new array Handle which must be closed, or 
- *							INVALID_HANDLE on no strings found.
- */
-stock Handle:UTIL_ExplodeNumberString(const String:text[])
-{
-	new Handle:array = INVALID_HANDLE;
-	decl String:buffer[32];
-	new reloc_idx, idx;
-	
-	while ((idx = SplitString(text[reloc_idx], ",", buffer, sizeof(buffer))) != -1)
-	{
-		reloc_idx += idx;
-		if (text[reloc_idx] == '\0')
-		{
-			break;
-		}
-		if (array == INVALID_HANDLE)
-		{
-			array = CreateArray();
-		}
-		PushArrayCell(array, StringToInt(buffer));
-	}
-	
-	if (text[reloc_idx] != '\0')
-	{
-		if (array == INVALID_HANDLE)
-		{
-			array = CreateArray();
-		}
-		PushArrayCell(array, StringToInt(text[reloc_idx]));
-	}
-	
-	return array;
-}
-

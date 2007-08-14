@@ -12,8 +12,13 @@ CREATE TABLE sm_groups (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   immunity varchar(16) NOT NULL CHECK(immunity IN ('none', 'default', 'global', 'all')),
   flags varchar(30) NOT NULL,
-  name varchar(120) NOT NULL,
-  groups_immune varchar(255)
+  name varchar(120) NOT NULL
+);
+
+CREATE TABLE sm_group_immunity (
+  group_id INTEGER NOT NULL,
+  other_id INTEGER NOT NULL,
+  PRIMARY KEY (group_id, other_id)
 );
 
 CREATE TABLE sm_group_overrides (
