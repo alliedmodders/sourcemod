@@ -210,5 +210,15 @@
 	{
 		"#format"		"{1:d}"
 		"en"			"You must wait {1} seconds before starting another vote."
-	}	
+	}
+
+	"Could not connect to database"
+	{
+		"en"			"Could not connect to the database."
+	}
+
+	"Failed to query database"
+	{
+		"en"			"Failed to query database."
+	}
 }
