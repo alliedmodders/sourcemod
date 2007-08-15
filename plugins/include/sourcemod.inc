@@ -290,13 +290,17 @@ native LogError(const String:format[], any:...);
 native GetTime(bigStamp[2]={0,0});
 
 /**
- * Format date and time.
+ * Produces a date and/or time string value for a timestamp.
+ *
+ * See this URL for valid parameters: 
+ * http://opengroup.org/onlinepubs/007908799/xsh/strftime.html
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
  * @param format		Formatting rules.
  * @param stamp			Optional time stamp.
  * @noreturn
+ * @error			Buffer too small or invalid time format.
  */
 native FormatTime(String:buffer[], maxlength, const String:format[], stamp=-1);
 

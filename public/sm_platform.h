@@ -57,6 +57,9 @@
 #define PLATFORM_SEP_CHAR		'\\'
 #define PLATFORM_SEP_ALTCHAR	'/'
 #define PLATFORM_EXTERN_C		extern "C" __declspec(dllexport)
+#if defined _MSC_VER && _MSC_VER >= 1400
+#define SUBPLATFORM_SECURECRT
+#endif
 #elif defined __linux__
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX

@@ -114,8 +114,6 @@ void _ignore_invalid_parameter(
 }
 #endif
 
-#include "sm_srvcmds.h"
-
 static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *buffer;
