@@ -39,6 +39,7 @@
 
 #ifdef SOURCEMOD_BUILD
 #include "Logger.h"
+#include "DebugReporter.h"
 #endif
 
 using namespace SourcePawn;
@@ -149,7 +150,7 @@ void BaseContext::RefreshFunctionCache()
 			{
 				continue;
 			}
-			m_pub_funcs[i]->Set(pub->code_offs, this);
+			m_pub_funcs[i]->Set(pub->code_offs, this, pub->funcid);
 		}
 	}
 
@@ -221,6 +222,10 @@ int BaseContext::SetDebugBreak(SPVM_DEBUGBREAK newpfn, SPVM_DEBUGBREAK *oldpfn)
 
 IPluginDebugInfo *BaseContext::GetDebugInfo()
 {
+	if (!IsDebugging())
+	{
+		return NULL;
+	}
 	return this;
 }
 
@@ -243,7 +248,13 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	uint32_t pushcount = ctx->pushcount;
 	int err;
 
-	PushCell(pushcount++);
+	if ((err = PushCell(pushcount++)) != SP_ERROR_NONE)
+	{
+#if defined SOURCEMOD_BUILD
+		g_DbgReporter.GenerateCodeError(this, code_addr, err, "Stack error; cannot complete execution!");
+#endif
+		return SP_ERROR_NOT_RUNNABLE;
+	}
 	ctx->pushcount = 0;
 
 	cell_t save_sp = ctx->sp;
@@ -271,26 +282,30 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	 */
 	g_SourcePawn.PopTracer(err, m_CustomMsg ? m_MsgCache : NULL);
 
-#if 1//defined _DEBUG
-	//:TODO: debug code for leak detection, remove before the release?
+#if defined SOURCEMOD_BUILD
 	if (err == SP_ERROR_NONE)
 	{
 		if ((ctx->sp - (cell_t)(pushcount * sizeof(cell_t))) != save_sp)
 		{
-			const char *name;
-			ctx->context->GetDebugInfo()->LookupFunction(code_addr, &name);
-			g_Logger.LogError("Stack leak detected: sp:%d should be %d on function %s", ctx->sp, save_sp, name);
+			g_DbgReporter.GenerateCodeError(this,
+				code_addr,
+				SP_ERROR_STACKLEAK,
+				"Stack leak detected: sp:%d should be %d!",
+				ctx->sp,
+				save_sp);
 		}
 		if (ctx->hp != save_hp)
 		{
-			const char *name;
-			ctx->context->GetDebugInfo()->LookupFunction(code_addr, &name);
-			g_Logger.LogError("Heap leak detected: hp:%d should be %d on function %s", ctx->hp, save_hp, name);
+			g_DbgReporter.GenerateCodeError(this,
+				code_addr,
+				SP_ERROR_HEAPLEAK,
+				"Heap leak detected: sp:%d should be %d!",
+				ctx->hp,
+				save_hp);
 		}
-		//assert(ctx->sp - pushcount * sizeof(cell_t) == save_sp);
-		//assert(ctx->hp == save_hp);
 	}
 #endif
+
 	if (err != SP_ERROR_NONE)
 	{
 		ctx->sp = save_sp;
@@ -958,10 +973,10 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		pFunc = m_pub_funcs[func_id];
 		if (!pFunc)
 		{
-			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, this);
+			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, this, ctx->publics[func_id].funcid);
 			pFunc = m_pub_funcs[func_id];
 		} else if (pFunc->IsInvalidated()) {
-			pFunc->Set(ctx->publics[func_id].code_offs, this);
+			pFunc->Set(ctx->publics[func_id].code_offs, this, ctx->publics[func_id].funcid);
 		}
 	} else {
 		/* :TODO: currently not used */
@@ -1001,7 +1016,7 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			m_pub_funcs[index] = new CFunction(pub->code_offs, this);
+			m_pub_funcs[index] = new CFunction(pub->code_offs, this, pub->funcid);
 		}
 		pFunc = m_pub_funcs[index];
 	} else if (pFunc->IsInvalidated()) {
@@ -1009,7 +1024,7 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			pFunc->Set(pub->code_offs, this);
+			pFunc->Set(pub->code_offs, this, pub->funcid);
 		} else {
 			pFunc = NULL;
 		}

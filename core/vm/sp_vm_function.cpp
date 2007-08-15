@@ -37,7 +37,7 @@
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(uint32_t code_addr, IPluginContext *plugin)
+void CFunction::Set(uint32_t code_addr, IPluginContext *plugin, funcid_t id)
 {
 	m_codeaddr = code_addr;
 	m_pContext = plugin;
@@ -45,6 +45,7 @@ void CFunction::Set(uint32_t code_addr, IPluginContext *plugin)
 	m_errorstate = SP_ERROR_NONE;
 	m_Invalid = false;
 	m_pCtx = plugin ? plugin->GetContext() : NULL;
+	m_FnId = id;
 }
 
 bool CFunction::IsRunnable()
@@ -72,9 +73,9 @@ IPluginContext *CFunction::GetParentContext()
 	return m_pContext;
 }
 
-CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin) : 
+CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin, funcid_t id) : 
 	m_codeaddr(code_addr), m_pContext(plugin), m_curparam(0), 
-	m_errorstate(SP_ERROR_NONE)
+	m_errorstate(SP_ERROR_NONE), m_FnId(id)
 {
 	m_Invalid = false;
 	if (plugin)
@@ -312,4 +313,9 @@ int CFunction::Execute(cell_t *result)
 	}
 
 	return err;
+}
+
+funcid_t CFunction::GetFunctionID()
+{
+	return m_FnId;
 }

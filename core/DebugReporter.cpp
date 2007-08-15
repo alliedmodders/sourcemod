@@ -75,9 +75,48 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 			sp_public_t *function;
 			if (ctx->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
 			{
-				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above errors.", function->name);
+				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
 			}
 		}
+	}
+}
+
+void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr, int err, const char *message, ...)
+{
+	va_list ap;
+	char buffer[512];
+
+	va_start(ap, message);
+	UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
+	va_end(ap);
+
+	const char *plname = g_PluginSys.FindPluginByContext(pContext->GetContext())->GetFilename();
+	const char *error = GetSourcePawnErrorMessage(err);
+
+	if (error)
+	{
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+	} else {
+		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+	}
+
+	g_Logger.LogError("[SM] %s", buffer);
+
+	IPluginDebugInfo *pDebug;
+	if ((pDebug = pContext->GetDebugInfo()) == NULL)
+	{
+		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
+		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
+			_GetPluginIndex(pContext));
+		return;
+	}
+
+	const char *name;
+	if (pDebug->LookupFunction(code_addr, &name) == SP_ERROR_NONE)
+	{
+		g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", name);
+	} else {
+		g_Logger.LogError("[SM] Unable to call function (name unknown, address \"%x\").", code_addr);
 	}
 }
 

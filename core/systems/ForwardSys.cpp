@@ -35,6 +35,7 @@
 #include "ForwardSys.h"
 #include "PluginSys.h"
 #include "ShareSys.h"
+#include "DebugReporter.h"
 
 CForwardManager g_Forwards;
 
@@ -308,6 +309,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 
 		for (unsigned int i=0; i<num_params; i++)
 		{
+			int err = SP_ERROR_PARAM;
 			param = &temp_info[i];
 			if (i >= m_numparams || m_types[i] == Param_Any)
 			{
@@ -322,31 +324,37 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				 */
 				if (type == Param_String)
 				{
-					func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
+					err = func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
 				} else if (type == Param_Float || type == Param_Cell) {
-					func->PushCellByRef(&param->val); 
+					err = func->PushCellByRef(&param->val); 
 				} else {
-					func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
+					err = func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
 					assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
 				}
 			} else {
 				/* If we're not byref or not vararg, our job is a bit easier. */
 				assert(type == Param_Cell || type == Param_Float);
-				func->PushCell(param->val);
+				err = func->PushCell(param->val);
+			}
+			if (err != SP_ERROR_NONE)
+			{
+				if (!filter || !filter->OnErrorReport(this, func, err))
+				{
+					g_DbgReporter.GenerateError(func->GetParentContext(), 
+						func->GetFunctionID(), 
+						err, 
+						"Failed to push parameter while executing forward");
+				}
+				continue;
 			}
 		}
 		
 		/* Call the function and deal with the return value. */
 		if ((err=func->Execute(&cur_result)) != SP_ERROR_NONE)
 		{
-			bool handled = false;
 			if (filter)
 			{
-				handled = filter->OnErrorReport(this, func, err);
-			}
-			if (!handled)
-			{
-				/* :TODO: invoke global error reporting here */
+				filter->OnErrorReport(this, func, err);
 			}
 			failed++;
 		} else {
