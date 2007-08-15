@@ -29,7 +29,6 @@
  * or <http://www.sourcemod.net/license.php>.
  *
  * Version: $Id$
- */Version: $Id$
  */
 
 /* We like semicolons */
