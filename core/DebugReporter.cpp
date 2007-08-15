@@ -154,7 +154,7 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 
 	CallStackInfo stk_info;
 	int i = 0;
-	g_Logger.LogError("[SM] Displaying call stack trace:");
+	g_Logger.LogError("[SM] Displaying call stack trace for plugin \"%s\":", plname);
 	while (error->GetTraceInfo(&stk_info))
 	{
 		g_Logger.LogError("[SM]   [%d]  Line %d, %s::%s()",
