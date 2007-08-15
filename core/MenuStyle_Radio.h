@@ -70,7 +70,7 @@ public: //IUserMessageListener
 	void OnUserMessageSent(int msg_id);
 public:
 	bool IsSupported();
-	bool OnClientCommand(int client);
+	bool OnClientCommand(int client, const char *cmd);
 public:
 	CRadioDisplay *MakeRadioDisplay(CRadioMenu *menu=NULL);
 	void FreeRadioDisplay(CRadioDisplay *display);

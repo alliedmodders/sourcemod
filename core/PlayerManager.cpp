@@ -535,22 +535,27 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 
 void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
+	/**
+	 * We cache this because the engine is not re-entrant.
+	 */
+	char cmd[300];
+	int args = engine->Cmd_Argc() - 1;
+	strncopy(cmd, engine->Cmd_Argv(0), sizeof(cmd));
+
 	int client = engine->IndexOfEdict(pEntity);
 	cell_t res = Pl_Continue;
 
-	bool result = g_ValveMenuStyle.OnClientCommand(client);
+	bool result = g_ValveMenuStyle.OnClientCommand(client, cmd);
 	if (result)
 	{
 		res = Pl_Handled;
 	} else {
-		result = g_RadioMenuStyle.OnClientCommand(client);
+		result = g_RadioMenuStyle.OnClientCommand(client, cmd);
 		if (result)
 		{
 			res = Pl_Handled;
 		}
 	}
-
-	int args = engine->Cmd_Argc() - 1;
 
 	cell_t res2 = Pl_Continue;
 	m_clcommand->PushCell(client);
@@ -567,7 +572,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-	res = g_ConCmds.DispatchClientCommand(client, (ResultType)res);
+	res = g_ConCmds.DispatchClientCommand(client, cmd, args, (ResultType)res);
 
 	if (res >= Pl_Handled)
 	{

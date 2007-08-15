@@ -59,7 +59,7 @@ class ValveMenuStyle :
 {
 public:
 	ValveMenuStyle();
-	bool OnClientCommand(int client);
+	bool OnClientCommand(int client, const char *cmd);
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
 	void SendDisplay(int client, IMenuPanel *display);

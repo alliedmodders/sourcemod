@@ -115,7 +115,7 @@ public:
 						 int adminflags,
 						 const char *description, 
 						 int flags);
-	ResultType DispatchClientCommand(int client, ResultType type);
+	ResultType DispatchClientCommand(int client, const char *cmd, int args, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
 	bool LookForSourceModCommand(const char *cmd);
 	bool CheckCommandAccess(int client, const char *cmd, FlagBits flags);

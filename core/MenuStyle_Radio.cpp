@@ -96,10 +96,8 @@ bool CRadioStyle::IsSupported()
 	return (g_ShowMenuId != -1);
 }
 
-bool CRadioStyle::OnClientCommand(int client)
+bool CRadioStyle::OnClientCommand(int client, const char *cmd)
 {
-	const char *cmd = engine->Cmd_Argv(0);
-
 	if (strcmp(cmd, "menuselect") == 0)
 	{
 		if (!m_players[client].bInMenu)

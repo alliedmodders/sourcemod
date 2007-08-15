@@ -155,11 +155,8 @@ void ConCmdManager::SetCommandClient(int client)
 	m_CmdClient = client + 1;
 }
 
-ResultType ConCmdManager::DispatchClientCommand(int client, ResultType type)
+ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int args, ResultType type)
 {
-	const char *cmd = engine->Cmd_Argv(0);
-	int args = engine->Cmd_Argc() - 1;
-
 	ConCmdInfo *pInfo;
 	if (sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
 	{
