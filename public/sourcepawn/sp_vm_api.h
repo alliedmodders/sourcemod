@@ -44,7 +44,7 @@
 #define SOURCEPAWN_ENGINE_API_VERSION	1
 
 /** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		3
+#define SOURCEPAWN_VM_API_VERSION		4
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -212,6 +212,15 @@ namespace SourcePawn
 		 * @return				True if runnable, false otherwise.
 		 */
 		virtual bool IsRunnable() =0;
+
+		/**
+		 * @brief Returns the function ID of this function.
+		 * 
+		 * Note: This was added in API version 4.
+		 *
+		 * @return				Function id.
+		 */
+		virtual funcid_t GetFunctionID() =0;
 	};
 
 
