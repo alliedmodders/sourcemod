@@ -33,6 +33,7 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "UserMessages.h"
+#include "PlayerManager.h"
 
 CHalfLife2 g_HL2;
 bool g_IsOriginalEngine = false;
@@ -332,4 +333,39 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 	g_UserMsgs.EndMessage();
 
 	return true;
+}
+
+void CHalfLife2::AddToFakeCliCmdQueue(int client, int userid, const char *cmd)
+{
+	DelayedFakeCliCmd *pFake;
+
+	if (m_FreeCmds.empty())
+	{
+		pFake = new DelayedFakeCliCmd;
+	} else {
+		pFake = m_FreeCmds.front();
+		m_FreeCmds.pop();
+	}
+
+	pFake->client = client;
+	pFake->userid = userid;
+	pFake->cmd.assign(cmd);
+
+	m_CmdQueue.push(pFake);
+}
+
+void CHalfLife2::ProcessFakeCliCmdQueue()
+{
+	while (!m_CmdQueue.empty())
+	{
+		DelayedFakeCliCmd *pFake = m_CmdQueue.first();
+
+		if (g_Players.GetClientOfUserId(pFake->userid) == pFake->client)
+		{
+			CPlayer *pPlayer = g_Players.GetPlayerByIndex(pFake->client);
+			serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), pFake->cmd.c_str());
+		}
+
+		m_CmdQueue.pop();
+	}
 }

@@ -838,7 +838,7 @@ static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params
 		return 0;
 	}
 
-	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
+	g_HL2.AddToFakeCliCmdQueue(params[1], engine->GetPlayerUserId(pPlayer->GetEdict()), buffer);
 
 	return 1;
 }
@@ -1020,5 +1020,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetCommandIterator",	GetCommandIterator},
 	{"ReadCommandIterator",	ReadCommandIterator},
 	{"CheckCommandAccess",	CheckCommandAccess},
+	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{NULL,					NULL}
 };

@@ -33,9 +33,11 @@
 #define _INCLUDE_SOURCEMOD_CHALFLIFE2_H_
 
 #include <sh_list.h>
+#include <sh_string.h>
 #include <sh_tinyhash.h>
 #include "sm_trie.h"
 #include "sm_globals.h"
+#include "sm_queue.h"
 #include <IGameHelpers.h>
 #include <KeyValues.h>
 
@@ -55,6 +57,13 @@ struct DataMapTrie
 {
 	DataMapTrie() : trie(NULL) {}
 	Trie *trie;
+};
+
+struct DelayedFakeCliCmd
+{
+	String cmd;
+	int client;
+	int userid;
 };
 
 class CHalfLife2 : 
@@ -77,6 +86,9 @@ public: //IGameHelpers
 	bool TextMsg(int client, int dest, const char *msg);
 	bool HintTextMsg(int client, const char *msg);
 	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
+public:
+	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
+	void ProcessFakeCliCmdQueue();
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
@@ -86,6 +98,8 @@ private:
 	int m_MsgTextMsg;
 	int m_HinTextMsg;
 	int m_VGUIMenu;
+	Queue<DelayedFakeCliCmd *> m_CmdQueue;
+	CStack<DelayedFakeCliCmd *> m_FreeCmds;
 };
 
 extern CHalfLife2 g_HL2;

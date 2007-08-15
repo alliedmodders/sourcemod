@@ -150,6 +150,12 @@ native ClientCommand(client, const String:fmt[], any:...);
 /**
  * Executes a client command on the server without being networked.
  *
+ * FakeClientCommand() overwrites the command tokenization buffer.  This can 
+ * cause undesired effects because future calls to GetCmdArg* will return 
+ * data from the FakeClientCommand(), not the parent command.  If you are in 
+ * a hook where this matters (for example, a "say" hook), you should use 
+ * FakeClientCommandEx() instead.
+ *
  * @param client		Index of the client.
  * @param fmt			Format of the client command.
  * @param ...			Format parameters
@@ -157,6 +163,19 @@ native ClientCommand(client, const String:fmt[], any:...);
  * @error				Invalid client index, or client not connected.
  */
 native FakeClientCommand(client, const String:fmt[], any:...);
+
+/**
+ * Executes a client command on the server without being networked.  The 
+ * execution of the client command is delayed by one frame to prevent any 
+ * re-entrancy issues that might surface with FakeClientCommand().
+ *
+ * @param client		Index of the client.
+ * @param fmt			Format of the client command.
+ * @param ...			Format parameters
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native FakeClientCommandEx(client, const String:fmt[], any:...);
 
 /**
  * Sends a message to the server console.
