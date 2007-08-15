@@ -31,6 +31,7 @@
 
 #include <time.h>
 #include <string.h>
+#include <stdlib.h>
 #include "sm_stringutil.h"
 #include "sm_globals.h"
 #include "sourcemod.h"
@@ -100,14 +101,43 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 	return static_cast<cell_t>(t);
 }
 
+#if defined SUBPLATFORM_SECURECRT
+void _ignore_invalid_parameter(
+						const wchar_t * expression,
+						const wchar_t * function, 
+						const wchar_t * file, 
+						unsigned int line,
+						uintptr_t pReserved
+						)
+{
+	/* Wow we don't care, thanks Microsoft. */
+}
+#endif
+
+#include "sm_srvcmds.h"
+
 static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *buffer;
 	pContext->LocalToString(params[1], &buffer);
 	pContext->LocalToString(params[3], &format);
 
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
 	time_t t = (params[4] == -1) ? time(NULL) : (time_t)params[4];
-	strftime(buffer, params[2], format, localtime(&t));
+	size_t written = strftime(buffer, params[2], format, localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	if (params[2] && format[0] != '\0' && !written)
+	{
+		pContext->ThrowNativeError("Invalid time format or buffer too small");
+		return 0;
+	}
 
 	return 1;
 }
