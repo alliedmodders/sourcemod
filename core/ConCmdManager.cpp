@@ -209,8 +209,9 @@ void ConCmdManager::InternalDispatch()
 	 * -- 
 	 * Whether or not it goes through the callback is determined by FCVAR_GAMEDLL
 	 */
+	char cmd[300];
+	strncopy(cmd, engine->Cmd_Argv(0), sizeof(cmd));
 
-	const char *cmd = engine->Cmd_Argv(0);
 	ConCmdInfo *pInfo;
 	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
 	{
