@@ -789,7 +789,6 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-
 static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 {
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
@@ -812,9 +811,34 @@ static cell_t FakeClientCommand(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	unsigned int old = g_ChatTriggers.SetReplyTo(SM_REPLY_CONSOLE);
 	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
-	g_ChatTriggers.SetReplyTo(old);
+
+	return 1;
+}
+
+static cell_t FakeClientCommandEx(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	serverpluginhelpers->ClientCommand(pPlayer->GetEdict(), buffer);
 
 	return 1;
 }
