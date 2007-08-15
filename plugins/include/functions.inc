@@ -1,4 +1,4 @@
-m/**
+/**
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
