@@ -43,6 +43,7 @@ enum NetFlow
 };
 
 #define MAXPLAYERS		64	/**< Maximum number of players that can be in server */
+#define MAX_NAME_LENGTH 65	/**< Maximum buffer required to store a client name */
 
 /**
  * Called on client connection.
@@ -130,7 +131,9 @@ forward Action:OnClientPreAdminCheck(client);
 forward OnClientPostAdminCheck(client);
 
 /**
- * Returns the maximum number of clients allowed on the server.
+ * Returns the maximum number of clients allowed on the server.  This may 
+ * return 0 if called before OnMapStart(), and thus should not be called 
+ * in OnPluginStart().  
  *
  * @return				Maximum number of clients allowed.
  */
