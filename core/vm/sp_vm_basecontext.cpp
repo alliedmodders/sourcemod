@@ -994,7 +994,6 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 			pFunc = m_priv_funcs[func_id];
 		}
 #endif
-		assert(false);
 	}
 
 	return pFunc;
