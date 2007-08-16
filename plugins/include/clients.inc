@@ -43,7 +43,7 @@ enum NetFlow
 };
 
 #define MAXPLAYERS		64	/**< Maximum number of players that can be in server */
-#define MAX_NAME_LENGTH 65	/**< Maximum buffer required to store a client name */
+#define MAX_NAME_LENGTH 32	/**< Maximum buffer required to store a client name */
 
 /**
  * Called on client connection.
