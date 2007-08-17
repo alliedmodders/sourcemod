@@ -262,7 +262,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	 */
 	unsigned int i = startItem;
 	unsigned int foundItems = 0;
-	while (true)
+	while (totalItems)
 	{
 		ItemDrawInfo &dr = drawItems[foundItems].draw;
 		/* Is the item valid? */
