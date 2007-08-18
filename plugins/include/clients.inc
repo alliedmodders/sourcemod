@@ -574,7 +574,11 @@ native Float:GetClientAvgPackets(client, NetFlow:flow);
 native GetClientOfUserId(userid);
 
 /**
- * Disconnects a client from the server.
+ * Disconnects a client from the server.  
+ *
+ * Kicking clients from certain events or callbacks may cause crashes.  If in 
+ * doubt, create a short (0.1 second) timer to kick the client in the next 
+ * available frame.
  *
  * @param client		Client index.
  * @param format		Optional formatting rules for disconnect reason.
