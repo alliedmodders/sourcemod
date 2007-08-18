@@ -108,12 +108,11 @@ namespace SourceMod
 	{
 		ItemDrawInfo(const char *DISPLAY=NULL, unsigned int STYLE=ITEMDRAW_DEFAULT, 
 					 unsigned int FLAGS=0, const char *HELPTEXT=NULL) 
-			: display(DISPLAY), style(STYLE), access(FLAGS)
+			: display(DISPLAY), style(STYLE)
 		{
 		}
 		const char *display;			/**< Display text (NULL for none) */
 		unsigned int style;				/**< ITEMDRAW style flags */
-		unsigned int access;				/**< Access flags required to see */
 	};
 
 	/**
