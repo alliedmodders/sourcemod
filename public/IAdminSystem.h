@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	2
+#define SMINTERFACE_ADMINSYS_VERSION	3
 
 /**
  * @file IAdminSystem.h
@@ -626,6 +626,27 @@ namespace SourceMod
 		 * @return			FlagBits value of the flags.
 		 */
 		virtual FlagBits ReadFlagString(const char *flags, const char **end) =0;
+
+		/**
+		 * @brief Returns a "serial number" for an AdminId.  If the serial 
+		 * number has changed for a given AdminId, it means the permissions 
+		 * have changed.
+		 *
+		 * @param id		AdminId value.
+		 * @return			Serial number, or 0 on failure.
+		 */
+		virtual unsigned int GetAdminSerialChange(AdminId id) =0;
+
+		/**
+		 * @brief Checks whether an admin can use the given command name.
+		 *
+		 * If the command does not exist, this will return true.
+		 *
+		 * @param client	Client index.
+		 * @param cmd		Command name.
+		 * @return			True on success, false on failure.
+		 */
+		virtual bool CanAdminUseCommand(int client, const char *cmd) =0;
 	};
 }
 

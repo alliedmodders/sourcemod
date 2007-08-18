@@ -445,6 +445,7 @@ AdminId AdminCache::CreateAdmin(const char *name)
 	pUser->auth.index = 0;
 	pUser->immune_default = false;
 	pUser->immune_global = false;
+	pUser->serialchange = 1;
 
 	if (m_FirstUser == INVALID_ADMIN_ID)
 	{
@@ -843,6 +844,9 @@ bool AdminCache::InvalidateAdmin(AdminId id)
 	pUser->next_user = m_FreeUserList;
 	m_FreeUserList = id;
 
+	/* Unset serial change */
+	pUser->serialchange = 0;
+
 	return true;
 }
 
@@ -925,6 +929,8 @@ void AdminCache::InvalidateGroup(GroupId id)
 						pOther = (AdminGroup *)m_pMemory->GetAddress(table[j]);
 						pUser->eflags |= pOther->addflags;
 					}
+					/* Mark as changed */
+					pUser->serialchange++;
 					/* Break now, duplicates aren't allowed */
 					break;
 				}
@@ -1172,6 +1178,8 @@ void AdminCache::SetAdminFlag(AdminId id, AdminFlag flag, bool enabled)
 		pUser->flags &= ~bits;
 		pUser->eflags &= ~bits;
 	}
+
+	pUser->serialchange++;
 }
 
 bool AdminCache::GetAdminFlag(AdminId id, AdminFlag flag, AccessMode mode)
@@ -1238,6 +1246,8 @@ void AdminCache::SetAdminFlags(AdminId id, AccessMode mode, FlagBits bits)
 	} else if (mode == Access_Effective) {
 		pUser->eflags = bits;
 	}
+
+	pUser->serialchange++;
 }
 
 bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
@@ -1311,6 +1321,8 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 	{
 		pUser->immune_global = true;
 	}
+
+	pUser->serialchange++;
 
 	return true;
 }
@@ -1550,4 +1562,37 @@ FlagBits AdminCache::ReadFlagString(const char *flags, const char **end)
 	}
 
 	return bits;
+}
+
+unsigned int AdminCache::GetAdminSerialChange(AdminId id)
+{
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	if (!pUser || pUser->magic != USR_MAGIC_SET)
+	{
+		return 0;
+	}
+
+	return pUser->serialchange;
+}
+
+bool AdminCache::CanAdminUseCommand(int client, const char *cmd)
+{
+	FlagBits bits;
+	OverrideType otype = Override_Command;
+
+	if (cmd[0] == '@')
+	{
+		otype = Override_CommandGroup;
+		cmd++;
+	}
+
+	if (!g_ConCmds.LookForCommandAdminFlags(cmd, &bits))
+	{
+		if (!GetCommandOverride(cmd, otype, &bits))
+		{
+			bits = 0;
+		}
+	}
+
+	return g_ConCmds.CheckCommandAccess(client, cmd, bits);
 }

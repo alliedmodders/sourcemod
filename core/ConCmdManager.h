@@ -88,6 +88,7 @@ struct ConCmdInfo
 	List<CmdHook *> srvhooks;		/**< Hooks as a server command */
 	List<CmdHook *> conhooks;		/**< Hooks as a console command */
 	AdminCmdInfo admin;				/**< Admin info, if any */
+	bool is_admin_set;				/**< Whether or not admin info is set */
 };
 
 class ConCmdManager :
@@ -118,6 +119,7 @@ public:
 	ResultType DispatchClientCommand(int client, const char *cmd, int args, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
 	bool LookForSourceModCommand(const char *cmd);
+	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 	bool CheckCommandAccess(int client, const char *cmd, FlagBits flags);
 private:
 	void InternalDispatch();

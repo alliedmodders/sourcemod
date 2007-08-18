@@ -92,6 +92,7 @@ struct AdminUser
 	UserAuth auth;					/* Auth method for this user */
 	bool immune_global;				/* Whether globally immune */
 	bool immune_default;			/* Whether defaultly immune */
+	unsigned int serialchange;		/* Serial # for changes */
 };
 
 class AdminCache : 
@@ -154,6 +155,8 @@ public: //IAdminSystem
 	bool FindFlag(const char *str, AdminFlag *pFlag);
 	bool FindFlag(char c, AdminFlag *pAdmFlag);
 	FlagBits ReadFlagString(const char *flags, const char **end);
+	unsigned int GetAdminSerialChange(AdminId id);
+	bool CanAdminUseCommand(int client, const char *cmd);
 public:
 	bool IsValidAdmin(AdminId id);
 private:

@@ -323,7 +323,7 @@ void ConCmdManager::InternalDispatch()
 
 bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmdflags)
 {
-	if (cmdflags == 0)
+	if (cmdflags == 0 || client == 0)
 	{
 		return true;
 	}
@@ -520,6 +520,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	/* Finally, add the hook */
 	pInfo->conhooks.push_back(pHook);
 	pInfo->admin = *(pHook->pAdmin);
+	pInfo->is_admin_set = true;
 
 	/* Now add to the plugin */
 	CmdList *pList;
@@ -664,6 +665,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 				pInfo->admin = *(pHook->pAdmin);
 			}
 		}
+		pInfo->is_admin_set = true;
 	} else if (type == Override_CommandGroup) {
 		void *object;
 		if (!sm_trie_retrieve(m_pCmdGrps, cmd, &object))
@@ -695,6 +697,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 				}
 			}
 		}
+		pInfo->is_admin_set = true;
 	}
 }
 
@@ -742,6 +745,20 @@ bool ConCmdManager::LookForSourceModCommand(const char *cmd)
 	return pInfo->sourceMod && (pInfo->conhooks.size() > 0);
 }
 
+bool ConCmdManager::LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags)
+{
+	ConCmdInfo *pInfo;
+
+	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
+	{
+		return false;
+	}
+
+	*pFlags = pInfo->admin.eflags;
+
+	return pInfo->is_admin_set;
+}
+
 ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
 {
 	ConCmdInfo *pInfo;
@@ -785,6 +802,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		}
 
 		pInfo->pCmd = pCmd;
+		pInfo->is_admin_set = false;
 
 		sm_trie_insert(m_pCmds, name, pInfo);
 		AddToCmdList(pInfo);
