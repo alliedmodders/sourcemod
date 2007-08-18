@@ -429,6 +429,8 @@ public:
 	void OnLibraryAction(const char *lib, bool drop);
 
 	bool LibraryExists(const char *lib);
+
+	bool ReloadPlugin(CPlugin *pl);
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 

@@ -2169,6 +2169,50 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				g_RootMenu.ConsolePrint("[SM] Plugin returned error: %s", error);
 				return;
 			}
+		} else if (strcmp(cmd, "reload") == 0) {
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins reload <#|file>");
+				return;
+			}
+
+			CPlugin *pl;
+			char *end;
+			const char *arg = g_RootMenu.GetArgument(3);
+			int id = strtol(arg, &end, 10);
+
+			if (*end == '\0')
+			{
+				pl = GetPluginByOrder(id);
+				if (!pl)
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
+					return;
+				}
+			} else {
+				char pluginfile[256];
+				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
+				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+
+				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
+					return;
+				}
+			}
+
+			char name[PLATFORM_MAX_PATH];
+			const sm_plugininfo_t *info = pl->GetPublicInfo();
+			strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+
+			if (ReloadPlugin(pl))
+			{
+				g_RootMenu.ConsolePrint("[SM] Plugin %s reloaded successfully.", name);
+			} else {
+				g_RootMenu.ConsolePrint("[SM] Failed to reload plugin %s.", name);
+			}
+
+			return;
 		}
 	}
 
@@ -2179,6 +2223,53 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 	g_RootMenu.DrawGenericOption("unload", "Unload a plugin");
 	g_RootMenu.DrawGenericOption("info", "Information about a plugin");
 	g_RootMenu.DrawGenericOption("debug", "Toggle debug mode on a plugin");
+	g_RootMenu.DrawGenericOption("reload", "Reloads a plugin");
+}
+
+bool CPluginManager::ReloadPlugin(CPlugin *pl)
+{
+	List<CPlugin *>::iterator iter;
+	char filename[PLATFORM_MAX_PATH];
+	bool debug, wasloaded;
+	PluginType ptype;
+	IPlugin *newpl;
+	int id = 1;
+
+	strcpy(filename, pl->m_filename);
+	debug = pl->IsDebugging();
+	ptype = pl->GetType();
+
+	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++, id++)
+	{
+		if ((*iter) == pl)
+		{
+			break;
+		}
+	}
+
+	if (!UnloadPlugin(pl))
+	{
+		return false;
+	}
+	if (!(newpl=LoadPlugin(filename, debug, ptype, NULL, 0, &wasloaded)))
+	{
+		return false;
+	}
+
+	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++)
+	{
+		if ((*iter) == (CPlugin *)newpl)
+		{
+			m_plugins.erase(iter);
+			break;
+		}
+	}
+
+	int i;
+	for (i=1, iter=m_plugins.begin(); iter!=m_plugins.end() && i<id; iter++, i++) {}
+	m_plugins.insert(iter, (CPlugin *)newpl);
+
+	return true;
 }
 
 void CPluginManager::ReloadOrUnloadPlugins()
