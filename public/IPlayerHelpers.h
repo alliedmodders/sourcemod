@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	1
+#define SMINTERFACE_PLAYERMANAGER_VERSION	2
 
 struct edict_t;
 
@@ -122,6 +122,13 @@ namespace SourceMod
 		 * @param temp	If true, the id will be invalidated on disconnect.
 		 */
 		virtual void SetAdminId(AdminId id, bool temp) =0;
+
+		/**
+		 * @brief Returns the client's userid.
+		 *
+		 * @return		Userid.
+		 */
+		virtual int GetUserId() =0;
 	};
 
 	/**

@@ -41,6 +41,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "TimerSys.h"
+#include "Logger.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -63,6 +64,11 @@ public:
 		int client = g_Players.GetClientOfUserId(userid);
 		if (client)
 		{
+#if defined CLIENT_DEBUG
+			g_Logger.LogMessage("[CL_DEBUG] KickPlayerTimer (userid %d) (client %d)", 
+				client,
+				userid);
+#endif
 			CPlayer *player = g_Players.GetPlayerByIndex(client);
 			player->Kick("Your name is reserved by SourceMod; set your password to use it.");
 		}
@@ -118,8 +124,34 @@ void PlayerManager::OnSourceModAllInitialized()
 	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 }
 
+#if defined CLIENT_DEBUG
+SH_DECL_HOOK1_void(IServerGameEnts, FreeContainingEntity, SH_NOATTRIB, false, edict_t *);
+
+void FreeContainingEntity(edict_t *pEdict)
+{
+	if (!pEdict || pEdict->IsFree())
+	{
+		return;
+	}
+
+	int client = engine->IndexOfEdict(pEdict);
+	if (client >= 1 && client <= g_Players.MaxClients())
+	{
+		g_Logger.LogMessage("[CL_DEBUG] FreeContainingEntity(%p) (client %d) (pUnknown %p)",
+			pEdict,
+			client,
+			pEdict->GetUnknown());
+	}
+}
+#endif
+
 void PlayerManager::OnSourceModShutdown()
 {
+#if defined CLIENT_DEBUG
+	IServerGameEnts *ents = (IServerGameEnts *)(g_SMAPI->serverFactory(false))(INTERFACEVERSION_SERVERGAMEENTS, NULL);
+	SH_ADD_HOOK_STATICFUNC(IServerGameEnts, FreeContainingEntity, ents, FreeContainingEntity, false);
+#endif
+
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
@@ -314,6 +346,10 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 {
 	int client = engine->IndexOfEdict(pEntity);
 
+#if defined CLIENT_DEBUG
+	g_Logger.LogMessage("[CL_DEBUG] OnClientConnect(%p, %s, %s) (client %d)", pEntity, pszName, pszAddress, client);
+#endif
+
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
 	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
@@ -354,6 +390,16 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 	int client = engine->IndexOfEdict(pEntity);
 	bool orig_value = META_RESULT_ORIG_RET(bool);
 	CPlayer *pPlayer = GetPlayerByIndex(client);
+
+#if defined CLIENT_DEBUG
+	g_Logger.LogMessage("[CL_DEBUG] OnClientConnect_Post(%p, %s, %s) (client %d) (orig_value %d)", 
+		pEntity, 
+		pszName, 
+		pszAddress, 
+		client,
+		orig_value);
+#endif
+
 	if (orig_value)
 	{
 		List<IClientListener *>::iterator iter;
@@ -376,6 +422,10 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+
+#if defined CLIENT_DEBUG
+	g_Logger.LogMessage("[CL_DEBUG] OnClientPutInServer(%p, %s) (client %d)", pEntity, playername, client);
+#endif
 
 	CPlayer *pPlayer = GetPlayerByIndex(client);
 	/* If they're not connected, they're a bot */
@@ -436,6 +486,10 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		pPlayer->m_Info = playerinfo->GetPlayerInfo(pEntity);
 	}
 
+#if defined CLIENT_DEBUG
+	g_Logger.LogMessage("[CL_DEBUG] OnClientPutInServer() (m_Info %p)", pPlayer->m_Info);
+#endif
+
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
 	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
@@ -462,6 +516,9 @@ void PlayerManager::OnSourceModLevelEnd()
 	{
 		if (m_Players[i].IsConnected() && m_Players[i].IsFakeClient())
 		{
+#if defined CLIENT_DEBUG
+			g_Logger.LogMessage("[CL_DEBUG] OnSourceModLevelChange() (client %d)", i);
+#endif
 			OnClientDisconnect(m_Players[i].GetEdict());
 		}
 	}
@@ -471,6 +528,13 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+
+#if defined CLIENT_DEBUG
+	g_Logger.LogMessage("[CL_DEBUG] OnClientDisconnect(%p) (client %d) (pUnknown %p)", 
+		pEntity, 
+		client,
+		pEntity->GetUnknown());
+#endif
 
 	if (m_Players[client].IsConnected())
 	{
@@ -520,6 +584,13 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+
+#if defined CLIENT_DEBUG
+	g_Logger.LogMessage("[CL_DEBUG] OnClientDisconnect(%p) (client %d) (pUnknown %p)", 
+		pEntity, 
+		client,
+		pEntity->GetUnknown());
+#endif
 
 	m_cldisconnect_post->PushCell(client);
 	m_cldisconnect_post->Execute(&res, NULL);
@@ -832,6 +903,7 @@ void CPlayer::Disconnect()
 	m_pEdict = NULL;
 	m_Info = NULL;
 	m_bAdminCheckSignalled = false;
+	m_UserId = -1;
 }
 
 void CPlayer::SetName(const char *name)
@@ -1007,4 +1079,14 @@ void CPlayer::DoBasicAdminChecks()
 			return;
 		}
 	}
+}
+
+int CPlayer::GetUserId()
+{
+	if (m_UserId == -1)
+	{
+		m_UserId = engine->GetPlayerUserId(GetEdict());
+	}
+
+	return m_UserId;
 }

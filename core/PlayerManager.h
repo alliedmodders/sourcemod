@@ -62,6 +62,7 @@ public:
 	AdminId GetAdminId();
 	void Kick(const char *str);
 	IPlayerInfo *GetPlayerInfo();
+	int GetUserId();
 public:
 	void NotifyPostAdminChecks();
 	void DoBasicAdminChecks();
@@ -89,6 +90,7 @@ private:
 	String m_LastPassword;
 	bool m_bAdminCheckSignalled;
 	int m_iIndex;
+	int m_UserId;
 };
 
 class PlayerManager : 
