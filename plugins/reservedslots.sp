@@ -74,6 +74,20 @@ public OnConfigsExecuted()
 	}	
 }
 
+public Action:OnTimedKick(Handle:timer, any:value)
+{
+	new client = GetClientOfUserId(value);
+	
+	if (!client || !IsClientInGame(client))
+	{
+		return Plugin_Handled;
+	}
+	
+	KickClient(client, "%T", "Slot reserved", client);
+	
+	return Plugin_Handled;
+}
+
 public OnClientPostAdminCheck(client)
 {
 	new reserved = GetConVarInt(sm_reserved_slots);
@@ -95,7 +109,7 @@ public OnClientPostAdminCheck(client)
 		}
 
 		/* Kick player because there are no public slots left */
-		KickClient(client, "%T", "Slot reserved", client);
+		CreateTimer(0.1, OnTimedKick, GetClientUserId(client));
 	}
 }
 
