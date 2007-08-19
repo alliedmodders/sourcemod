@@ -92,7 +92,6 @@ private:
 	bool m_bAdminCheckSignalled;
 	int m_iIndex;
 	unsigned int m_LangId;
-	QueryCvarCookie_t m_LangCookie;
 	int m_UserId;
 };
 
@@ -130,7 +129,6 @@ public: //IPlayerManager
 	int GetMaxClients();
 	int GetNumPlayers();
 	int GetClientOfUserId(int userid);
-	void HandleLangQuery(int userid, const char *value, QueryCvarCookie_t cookie);
 public:
 	inline int MaxClients()
 	{

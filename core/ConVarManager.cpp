@@ -37,7 +37,6 @@
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
-#include "PlayerManager.h"
 
 ConVarManager g_ConVarManager;
 
@@ -569,14 +568,6 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		{
 			pCallback = query.pCallback;
 			value = query.value;
-
-			if (!pCallback)
-			{
-				g_Players.HandleLangQuery(engine->GetPlayerUserId(pPlayer), (result == eQueryCvarValueStatus_ValueIntact) ? cvarValue : "", cookie);
-				m_ConVarQueries.erase(iter);
-				return;
-			}
-
 			break;
 		}
 	}

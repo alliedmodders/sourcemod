@@ -42,9 +42,7 @@
 #include <iclient.h>
 #include "TimerSys.h"
 #include "Translator.h"
-#include "ConVarManager.h"
 #include "Logger.h"
-#include "HalfLife2.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -500,14 +498,15 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		pPlayer->m_Info = playerinfo->GetPlayerInfo(pEntity);
 	}
 
-	/* Query the client's language */
+	/* Get the client's language */
 	if (m_QueryLang)
 	{
-		if (!pPlayer->IsFakeClient() && !g_IsOriginalEngine)
+		const char *name;
+		if (!pPlayer->IsFakeClient() && (name=engine->GetClientConVarValue(client, "cl_language")))
 		{
-			pPlayer->m_LangCookie = g_ConVarManager.QueryClientConVar(pPlayer->GetEdict(), "cl_language", NULL, 0);
+			unsigned int langid;
+			pPlayer->m_LangId = (g_Translator.GetLanguageByName(name, &langid)) ? langid : g_Translator.GetServerLanguage();
 		} else {
-			/* Skip the query if this is a bot or if we cant query cvars*/
 			pPlayer->m_LangId = g_Translator.GetServerLanguage();
 		}
 	}
@@ -846,28 +845,6 @@ void PlayerManager::RecheckAnyAdmins()
 	}
 }
 
-void PlayerManager::HandleLangQuery(int userid, const char *value, QueryCvarCookie_t cookie)
-{
-	int id = GetClientOfUserId(userid);
-	if (id == 0)
-	{
-		return;
-	}
-
-	CPlayer *pl = GetPlayerByIndex(id);
-
-	unsigned int langid;
-	if (pl->m_LangCookie == cookie)
-	{
-		if (value[0] != '\0' && g_Translator.GetLanguageByName(value, &langid))
-		{
-			pl->m_LangId = langid;
-		} else {
-			pl->m_LangId = g_Translator.GetServerLanguage();
-		}
-	}
-}
-
 /*******************
  *** PLAYER CODE ***
  *******************/
@@ -884,7 +861,6 @@ CPlayer::CPlayer()
 	m_bAdminCheckSignalled = false;
 	m_LastPassword.clear();
 	m_LangId = LANGUAGE_ENGLISH;
-	m_LangCookie = 0;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -895,7 +871,6 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_pEdict = pEntity;
 	m_iIndex = engine->IndexOfEdict(pEntity);
 	m_LangId = g_Translator.GetServerLanguage();
-	m_LangCookie = 0;
 
 	char ip2[24], *ptr;
 	strncopy(ip2, ip, sizeof(ip2));
