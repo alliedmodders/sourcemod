@@ -124,18 +124,18 @@ namespace SourceMod
 		virtual void SetAdminId(AdminId id, bool temp) =0;
 
 		/**
-		 * @brief Returns the client's language id.
-		 *
-		 * @return		Language id.
-		 */
-		virtual unsigned int GetLanguageId() =0;
-
-		/**
 		 * @brief Returns the client's userid.
 		 *
 		 * @return		Userid.
 		 */
 		virtual int GetUserId() =0;
+
+		/**
+		 * @brief Returns the client's language id.
+		 *
+		 * @return		Language id.
+		 */
+		virtual unsigned int GetLanguageId() =0;
 	};
 
 	/**
