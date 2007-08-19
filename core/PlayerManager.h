@@ -55,6 +55,7 @@ public:
 	const char *GetAuthString();
 	edict_t *GetEdict();
 	bool IsInGame();
+	bool WasCountedAsInGame();
 	bool IsConnected();
 	bool IsAuthorized();
 	bool IsFakeClient();

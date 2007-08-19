@@ -475,6 +475,7 @@ void PlayerManager::OnSourceModLevelEnd()
 			OnClientDisconnect(m_Players[i].GetEdict());
 		}
 	}
+	m_PlayerCount = 0;
 }
 
 void PlayerManager::OnClientDisconnect(edict_t *pEntity)
@@ -491,7 +492,7 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 		return;
 	}
 
-	if (m_Players[client].IsInGame())
+	if (m_Players[client].WasCountedAsInGame())
 	{
 		m_PlayerCount--;
 	}
@@ -882,6 +883,11 @@ edict_t *CPlayer::GetEdict()
 bool CPlayer::IsInGame()
 {
 	return m_IsInGame && (m_pEdict->GetUnknown() != NULL);
+}
+
+bool CPlayer::WasCountedAsInGame()
+{
+	return m_IsInGame;
 }
 
 bool CPlayer::IsConnected()
