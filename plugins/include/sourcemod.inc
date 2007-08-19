@@ -297,7 +297,7 @@ native GetTime(bigStamp[2]={0,0});
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
- * @param format		Formatting rules.
+ * @param format		Formatting rules (passing NULL_STRING will use the rules defined in sm_datetime_format).
  * @param stamp			Optional time stamp.
  * @noreturn
  * @error			Buffer too small or invalid time format.

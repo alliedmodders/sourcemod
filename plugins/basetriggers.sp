@@ -146,7 +146,7 @@ public Action:Command_Say(client, args)
 	else if (strcmp(text[startidx], "thetime", false) == 0)
 	{
 		decl String:ctime[64];
-		FormatTime(ctime, 64, "%m/%d/%Y - %H:%M:%S");
+		FormatTime(ctime, 64, NULL_STRING);
 		
 		if(GetConVarInt(g_Cvar_TriggerShow))
 		{

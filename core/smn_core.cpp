@@ -48,6 +48,7 @@
 #endif
 
 HandleType_t g_PlIter;
+ConVar sm_datetime_format("sm_datetime_format", "%m/%d/%Y - %H:%M:%S", 0, "Default formatting time rules");
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -118,7 +119,12 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *buffer;
 	pContext->LocalToString(params[1], &buffer);
-	pContext->LocalToString(params[3], &format);
+	pContext->LocalToStringNULL(params[3], &format);
+
+	if (format == NULL)
+	{
+		format = const_cast<char *>(sm_datetime_format.GetString());
+	}
 
 #if defined SUBPLATFORM_SECURECRT
 	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
