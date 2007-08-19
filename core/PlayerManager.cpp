@@ -65,11 +65,6 @@ public:
 		int client = g_Players.GetClientOfUserId(userid);
 		if (client)
 		{
-#if defined CLIENT_DEBUG
-			g_Logger.LogMessage("[CL_DEBUG] KickPlayerTimer (userid %d) (client %d)", 
-				client,
-				userid);
-#endif
 			CPlayer *player = g_Players.GetPlayerByIndex(client);
 			player->Kick("Your name is reserved by SourceMod; set your password to use it.");
 		}
@@ -125,34 +120,8 @@ void PlayerManager::OnSourceModAllInitialized()
 	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 }
 
-#if defined CLIENT_DEBUG
-SH_DECL_HOOK1_void(IServerGameEnts, FreeContainingEntity, SH_NOATTRIB, false, edict_t *);
-
-void FreeContainingEntity(edict_t *pEdict)
-{
-	if (!pEdict || pEdict->IsFree())
-	{
-		return;
-	}
-
-	int client = engine->IndexOfEdict(pEdict);
-	if (client >= 1 && client <= g_Players.MaxClients())
-	{
-		g_Logger.LogMessage("[CL_DEBUG] FreeContainingEntity(%p) (client %d) (pUnknown %p)",
-			pEdict,
-			client,
-			pEdict->GetUnknown());
-	}
-}
-#endif
-
 void PlayerManager::OnSourceModShutdown()
 {
-#if defined CLIENT_DEBUG
-	IServerGameEnts *ents = (IServerGameEnts *)(g_SMAPI->serverFactory(false))(INTERFACEVERSION_SERVERGAMEENTS, NULL);
-	SH_ADD_HOOK_STATICFUNC(IServerGameEnts, FreeContainingEntity, ents, FreeContainingEntity, false);
-#endif
-
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
@@ -358,10 +327,6 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 {
 	int client = engine->IndexOfEdict(pEntity);
 
-#if defined CLIENT_DEBUG
-	g_Logger.LogMessage("[CL_DEBUG] OnClientConnect(%p, %s, %s) (client %d)", pEntity, pszName, pszAddress, client);
-#endif
-
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
 	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
@@ -403,15 +368,6 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 	bool orig_value = META_RESULT_ORIG_RET(bool);
 	CPlayer *pPlayer = GetPlayerByIndex(client);
 
-#if defined CLIENT_DEBUG
-	g_Logger.LogMessage("[CL_DEBUG] OnClientConnect_Post(%p, %s, %s) (client %d) (orig_value %d)", 
-		pEntity, 
-		pszName, 
-		pszAddress, 
-		client,
-		orig_value);
-#endif
-
 	if (orig_value)
 	{
 		List<IClientListener *>::iterator iter;
@@ -434,10 +390,6 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
-
-#if defined CLIENT_DEBUG
-	g_Logger.LogMessage("[CL_DEBUG] OnClientPutInServer(%p, %s) (client %d)", pEntity, playername, client);
-#endif
 
 	CPlayer *pPlayer = GetPlayerByIndex(client);
 	/* If they're not connected, they're a bot */
@@ -469,11 +421,6 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		{
 			pListener = (*iter);
 			pListener->OnClientAuthorized(client, authid);
-			/* See if bot was kicked */
-			if (!pPlayer->IsConnected())
-			{
-				return;
-			}
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
@@ -481,16 +428,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			m_clauth->PushCell(client);
 			m_clauth->PushString(authid);
 			m_clauth->Execute(NULL);
-			if (!pPlayer->IsConnected())
-			{
-				return;
-			}
 		}
 		pPlayer->Authorize_Post();
-		if (!pPlayer->IsConnected())
-		{
-			return;
-		}
 	}
 
 	if (playerinfo)
@@ -511,9 +450,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 	}
 
-#if defined CLIENT_DEBUG
-	g_Logger.LogMessage("[CL_DEBUG] OnClientPutInServer() (m_Info %p)", pPlayer->m_Info);
-#endif
+	m_Players[client].Connect();
+	m_PlayerCount++;
 
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
@@ -521,15 +459,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	{
 		pListener = (*iter);
 		pListener->OnClientPutInServer(client);
-		/* See if player was kicked */
-		if (!pPlayer->IsConnected())
-		{
-			return;
-		}
 	}
 
-	m_Players[client].Connect();
-	m_PlayerCount++;
 	m_clputinserver->PushCell(client);
 	m_clputinserver->Execute(&res, NULL);
 }
@@ -539,11 +470,8 @@ void PlayerManager::OnSourceModLevelEnd()
 	/* Disconnect all bots still in game */
 	for (int i=1; i<=m_maxClients; i++)
 	{
-		if (m_Players[i].IsConnected() && m_Players[i].IsFakeClient())
+		if (m_Players[i].IsConnected())
 		{
-#if defined CLIENT_DEBUG
-			g_Logger.LogMessage("[CL_DEBUG] OnSourceModLevelChange() (client %d)", i);
-#endif
 			OnClientDisconnect(m_Players[i].GetEdict());
 		}
 	}
@@ -554,17 +482,13 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
 
-#if defined CLIENT_DEBUG
-	g_Logger.LogMessage("[CL_DEBUG] OnClientDisconnect(%p) (client %d) (pUnknown %p)", 
-		pEntity, 
-		client,
-		pEntity->GetUnknown());
-#endif
-
 	if (m_Players[client].IsConnected())
 	{
 		m_cldisconnect->PushCell(client);
 		m_cldisconnect->Execute(&res, NULL);
+	} else {
+		/* We don't care, prevent a double call */
+		return;
 	}
 
 	if (m_Players[client].IsInGame())
@@ -609,13 +533,6 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
-
-#if defined CLIENT_DEBUG
-	g_Logger.LogMessage("[CL_DEBUG] OnClientDisconnect(%p) (client %d) (pUnknown %p)", 
-		pEntity, 
-		client,
-		pEntity->GetUnknown());
-#endif
 
 	m_cldisconnect_post->PushCell(client);
 	m_cldisconnect_post->Execute(&res, NULL);
@@ -939,7 +856,12 @@ void CPlayer::SetName(const char *name)
 
 const char *CPlayer::GetName()
 {
-	return (m_Info) ? m_Info->GetName(): m_Name.c_str();
+	if (m_Info && m_pEdict->GetUnknown())
+	{
+		return m_Info->GetName();
+	}
+	
+	return m_Name.c_str();
 }
 
 const char *CPlayer::GetIPAddress()
@@ -959,7 +881,7 @@ edict_t *CPlayer::GetEdict()
 
 bool CPlayer::IsInGame()
 {
-	return m_IsInGame;
+	return m_IsInGame && (m_pEdict->GetUnknown() != NULL);
 }
 
 bool CPlayer::IsConnected()
@@ -974,7 +896,12 @@ bool CPlayer::IsAuthorized()
 
 IPlayerInfo *CPlayer::GetPlayerInfo()
 {
-	return m_Info;
+	if (m_pEdict->GetUnknown())
+	{
+		return m_Info;
+	}
+
+	return NULL;
 }
 
 bool CPlayer::IsFakeClient()
