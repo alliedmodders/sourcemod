@@ -538,7 +538,11 @@ static cell_t SplitString(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	for (size_t i=0; i<textLen - splitLen; i++)
+	/**
+	 * Note that it's <= ... you could also just add 1,
+	 * but this is a bit nicer
+	 */
+	for (size_t i=0; i<=textLen - splitLen; i++)
 	{
 		if (strncmp(&text[i], split, splitLen) == 0)
 		{
