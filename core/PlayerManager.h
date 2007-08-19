@@ -62,6 +62,7 @@ public:
 	AdminId GetAdminId();
 	void Kick(const char *str);
 	IPlayerInfo *GetPlayerInfo();
+	unsigned int GetLanguageId();
 	int GetUserId();
 public:
 	void NotifyPostAdminChecks();
@@ -90,6 +91,8 @@ private:
 	String m_LastPassword;
 	bool m_bAdminCheckSignalled;
 	int m_iIndex;
+	unsigned int m_LangId;
+	QueryCvarCookie_t m_LangCookie;
 	int m_UserId;
 };
 
@@ -127,6 +130,7 @@ public: //IPlayerManager
 	int GetMaxClients();
 	int GetNumPlayers();
 	int GetClientOfUserId(int userid);
+	void HandleLangQuery(int userid, const char *value, QueryCvarCookie_t cookie);
 public:
 	inline int MaxClients()
 	{
@@ -160,6 +164,7 @@ private:
 	bool m_FirstPass;
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
+	bool m_QueryLang;
 };
 
 extern PlayerManager g_Players;

@@ -55,10 +55,14 @@ size_t CorePlayerTranslate(int client, char *buffer, size_t maxlength, const cha
 	Translation pTrans;
 	TransError err;
 
-	err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetServerLanguage(), &pTrans);
-	if (err != Trans_Okay && g_Translator.GetServerLanguage() != CORELANG_ENGLISH)
+	err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetClientLanguage(client), &pTrans);
+	if (err != Trans_Okay)
 	{
-		err = g_pCorePhrases->GetTranslation(phrase, CORELANG_ENGLISH, &pTrans);
+		err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetServerLanguage(), &pTrans);
+		if (err != Trans_Okay && g_Translator.GetServerLanguage() != CORELANG_ENGLISH)
+		{
+			err = g_pCorePhrases->GetTranslation(phrase, CORELANG_ENGLISH, &pTrans);
+		}
 	}
 
 	if (err != Trans_Okay)
@@ -123,7 +127,7 @@ try_serverlang:
 	}
 
 	max_params = pTrans.fmt_count;
-	
+
 	if (max_params)
 	{
 		/* Check if we're going to over the limit */

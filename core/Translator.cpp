@@ -38,6 +38,7 @@
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
 #include "sourcemod.h"
+#include "PlayerManager.h"
 
 Translator g_Translator;
 CPhraseFile *g_pCorePhrases = NULL;
@@ -736,6 +737,32 @@ bool Translator::GetLanguageByCode(const char *code, unsigned int *index)
 	return true;
 }
 
+bool Translator::GetLanguageByName(const char *name, unsigned int *index)
+{
+	CVector<Language *>::iterator iter;
+	unsigned int id = 0;
+
+	for (iter=m_Languages.begin(); iter!=m_Languages.end(); iter++, id++)
+	{
+		if (strcasecmp(m_pStringTab->GetString((*iter)->m_FullName), name) == 0)
+		{
+			break;
+		}
+	}
+
+	if (iter == m_Languages.end())
+	{
+		return false;
+	}
+
+	if (index)
+	{
+		*index = id;
+	}
+
+	return true;
+}
+
 unsigned int Translator::GetLanguageCount()
 {
 	return (unsigned int)m_Languages.size();
@@ -948,7 +975,8 @@ unsigned int Translator::GetServerLanguage()
 
 unsigned int Translator::GetClientLanguage(int client)
 {
-	return GetServerLanguage();
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	return pPlayer->GetLanguageId();
 }
 
 bool Translator::GetLanguageInfo(unsigned int number, const char **code, const char **name)

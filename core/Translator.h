@@ -139,6 +139,7 @@ public:
 	unsigned int GetLanguageCount();
 	bool GetLanguageInfo(unsigned int number, const char **code, const char **name);
 	bool GetLanguageByCode(const char *code, unsigned int *index);
+	bool GetLanguageByName(const char *name, unsigned int *index);
 	size_t Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans);
 	CPhraseFile *GetFileByIndex(unsigned int index);
 	TransError CoreTrans(int client, 

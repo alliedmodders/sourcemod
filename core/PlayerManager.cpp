@@ -41,7 +41,10 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "TimerSys.h"
+#include "Translator.h"
+#include "ConVarManager.h"
 #include "Logger.h"
+#include "HalfLife2.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -188,6 +191,17 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		if (strcmp(value, "_password") != 0)
 		{
 			m_PassInfoVar.assign(value);
+		}
+		return ConfigResult_Accept;
+	} else if (strcmp(key, "AllowClLanguageVar") == 0) {
+		if (strcasecmp(value, "on") == 0)
+		{
+			m_QueryLang = true;
+		} else if (strcasecmp(value, "off") == 0) {
+			m_QueryLang = false;
+		} else {
+			UTIL_Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
 	}
@@ -484,6 +498,18 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	if (playerinfo)
 	{
 		pPlayer->m_Info = playerinfo->GetPlayerInfo(pEntity);
+	}
+
+	/* Query the client's language */
+	if (m_QueryLang)
+	{
+		if (!pPlayer->IsFakeClient() && !g_IsOriginalEngine)
+		{
+			pPlayer->m_LangCookie = g_ConVarManager.QueryClientConVar(pPlayer->GetEdict(), "cl_language", NULL, 0);
+		} else {
+			/* Skip the query if this is a bot or if we cant query cvars*/
+			pPlayer->m_LangId = g_Translator.GetServerLanguage();
+		}
 	}
 
 #if defined CLIENT_DEBUG
@@ -820,6 +846,27 @@ void PlayerManager::RecheckAnyAdmins()
 	}
 }
 
+void PlayerManager::HandleLangQuery(int userid, const char *value, QueryCvarCookie_t cookie)
+{
+	int id = GetClientOfUserId(userid);
+	if (id == 0)
+	{
+		return;
+	}
+
+	CPlayer *pl = GetPlayerByIndex(id);
+
+	unsigned int langid;
+	if (pl->m_LangCookie == cookie)
+	{
+		if (value[0] != '\0' && g_Translator.GetLanguageByName(value, &langid))
+		{
+			pl->m_LangId = langid;
+		} else {
+			pl->m_LangId = g_Translator.GetServerLanguage();
+		}
+	}
+}
 
 /*******************
  *** PLAYER CODE ***
@@ -836,6 +883,8 @@ CPlayer::CPlayer()
 	m_Info = NULL;
 	m_bAdminCheckSignalled = false;
 	m_LastPassword.clear();
+	m_LangId = LANGUAGE_ENGLISH;
+	m_LangCookie = 0;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -845,6 +894,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
 	m_iIndex = engine->IndexOfEdict(pEntity);
+	m_LangId = g_Translator.GetServerLanguage();
+	m_LangCookie = 0;
 
 	char ip2[24], *ptr;
 	strncopy(ip2, ip, sizeof(ip2));
@@ -1079,6 +1130,11 @@ void CPlayer::DoBasicAdminChecks()
 			return;
 		}
 	}
+}
+
+unsigned int CPlayer::GetLanguageId()
+{
+	return m_LangId;
 }
 
 int CPlayer::GetUserId()
