@@ -647,6 +647,14 @@ namespace SourceMod
 		 * @return			True on success, false on failure.
 		 */
 		virtual bool CanAdminUseCommand(int client, const char *cmd) =0;
+
+		/**
+		 * @brief Returns the name of a group.
+		 *
+		 * @param gid		Group Id.
+		 * @return			Group name, or NULL on failure.
+		 */
+		virtual const char *GetGroupName(GroupId gid) =0;
 	};
 }
 

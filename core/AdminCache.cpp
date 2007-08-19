@@ -460,7 +460,9 @@ AdminId AdminCache::CreateAdmin(const char *name)
 
 	if (name && name[0] != '\0')
 	{
-		pUser->nameidx = m_pStrings->AddString(name);
+		int nameidx = m_pStrings->AddString(name);
+		pUser = (AdminUser *)m_pMemory->GetAddress(id);
+		pUser->nameidx = nameidx;
 	}
 
 	return id;
@@ -507,7 +509,9 @@ GroupId AdminCache::AddGroup(const char *group_name)
 		m_LastGroup = id;
 	}
 
-	pGroup->nameidx = m_pStrings->AddString(group_name);
+	int nameidx = m_pStrings->AddString(group_name);
+	pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
+	pGroup->nameidx = nameidx;
 
 	sm_trie_insert(m_pGroups, group_name, (void *)id);
 
@@ -585,6 +589,17 @@ FlagBits AdminCache::GetGroupAddFlags(GroupId id)
 	return pGroup->addflags;
 }
 
+const char *AdminCache::GetGroupName(GroupId gid)
+{
+	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(gid);
+	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
+	{
+		return 0;
+	}
+
+	return m_pStrings->GetString(pGroup->nameidx);
+}
+
 void AdminCache::SetGroupGenericImmunity(GroupId id, ImmunityType type, bool enabled)
 {
 	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
@@ -621,26 +636,27 @@ bool AdminCache::GetGroupGenericImmunity(GroupId id, ImmunityType type)
 
 void AdminCache::AddGroupImmunity(GroupId id, GroupId other_id)
 {
-	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
+	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(other_id);
 	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
 	{
 		return;
 	}
 
-	AdminGroup *pOther = (AdminGroup *)m_pMemory->GetAddress(id);
-	if (!pOther || pOther->magic != GRP_MAGIC_SET)
+	pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
+	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
 	{
 		return;
 	}
 
 	/* We always need to resize the immunity table */
 	int *table, tblidx;
-	if (pOther->immune_table == -1)
+	if (pGroup->immune_table == -1)
 	{
 		tblidx = m_pMemory->CreateMem(sizeof(int) * 2, (void **)&table);
+		pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
 		table[0] = 0;
 	} else {
-		int *old_table = (int *)m_pMemory->GetAddress(pOther->immune_table);
+		int *old_table = (int *)m_pMemory->GetAddress(pGroup->immune_table);
 		/* Break out if this group is already in the list */
 		for (int i=0; i<old_table[0]; i++)
 		{
@@ -651,7 +667,8 @@ void AdminCache::AddGroupImmunity(GroupId id, GroupId other_id)
 		}
 		tblidx = m_pMemory->CreateMem(sizeof(int) * (old_table[0] + 2), (void **)&table);
 		/* Get the old address again in case of resize */
-		old_table = (int *)m_pMemory->GetAddress(pOther->immune_table);
+		pGroup = (AdminGroup *)m_pMemory->GetAddress(id);
+		old_table = (int *)m_pMemory->GetAddress(pGroup->immune_table);
 		table[0] = old_table[0];
 		for (unsigned int i=1; i<=(unsigned int)old_table[0]; i++)
 		{
@@ -660,7 +677,7 @@ void AdminCache::AddGroupImmunity(GroupId id, GroupId other_id)
 	}
 
 	/* Assign */
-	pOther->immune_table = tblidx;
+	pGroup->immune_table = tblidx;
 
 	/* Add to the array */
 	table[0]++;
@@ -1131,7 +1148,10 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 		return false;
 	}
 
-	pUser->auth.identidx = m_pStrings->AddString(ident);
+	int i_ident = m_pStrings->AddString(ident);
+
+	pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	pUser->auth.identidx = i_ident;
 	GetMethodIndex(auth, &pUser->auth.index);
 
 	return sm_trie_insert(pTable, ident, (void **)id);
@@ -1354,7 +1374,14 @@ GroupId AdminCache::GetAdminGroup(AdminId id, unsigned int index, const char **n
 
 	int *table = (int *)m_pMemory->GetAddress(pUser->grp_table);
 
-	return table[index];
+	GroupId gid = table[index];
+
+	if (name)
+	{
+		*name = GetGroupName(gid);
+	}
+
+	return gid;
 }
 
 const char *AdminCache::GetAdminPassword(AdminId id)
@@ -1376,7 +1403,9 @@ void AdminCache::SetAdminPassword(AdminId id, const char *password)
 		return;
 	}
 
-	pUser->password = m_pStrings->AddString(password);
+	int i_password = m_pStrings->AddString(password);
+	pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	pUser->password = i_password;
 }
 
 unsigned int AdminCache::FlagBitsToBitArray(FlagBits bits, bool array[], unsigned int maxSize)

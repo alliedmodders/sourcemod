@@ -157,6 +157,7 @@ public: //IAdminSystem
 	FlagBits ReadFlagString(const char *flags, const char **end);
 	unsigned int GetAdminSerialChange(AdminId id);
 	bool CanAdminUseCommand(int client, const char *cmd);
+	const char *GetGroupName(GroupId gid);
 public:
 	bool IsValidAdmin(AdminId id);
 private:
