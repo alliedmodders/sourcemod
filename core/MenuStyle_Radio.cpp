@@ -361,6 +361,16 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 	}
 }
 
+int CRadioDisplay::GetAmountRemaining()
+{
+	size_t amt = m_Title.size() + 1 + m_BufferText.size();
+	if (amt >= 511)
+	{
+		return 0;
+	}
+	return (int)(511 - amt);
+}
+
 void CRadioDisplay::DeleteThis()
 {
 	delete this;

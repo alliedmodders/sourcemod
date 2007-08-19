@@ -99,6 +99,7 @@ public: //IMenuPanel
 	bool SetSelectableKeys(unsigned int keymap);
 	unsigned int GetCurrentKey();
 	bool SetCurrentKey(unsigned int key);
+	int GetAmountRemaining();
 private:
 	String m_BufferText;
 	String m_Title;

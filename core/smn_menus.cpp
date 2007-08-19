@@ -1217,6 +1217,20 @@ static cell_t GetPanelCurrentKey(IPluginContext *pContext, const cell_t *params)
 	return panel->GetCurrentKey();
 }
 
+static cell_t GetPanelTextRemaining(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMenuPanel *panel;
+
+	if ((err=ReadPanelHandle(hndl, &panel)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return panel->GetAmountRemaining();
+}
+
 static cell_t SetPanelCurrentKey(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -1355,6 +1369,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetMenuStyle",			GetMenuStyle},
 	{"GetMenuStyleHandle",		GetMenuStyleHandle},
 	{"GetMenuTitle",			GetMenuTitle},
+	{"GetPanelTextRemaining",	GetPanelTextRemaining},
 	{"GetPanelCurrentKey",		GetPanelCurrentKey},
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},

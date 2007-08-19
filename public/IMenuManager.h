@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		11
+#define SMINTERFACE_MENUMANAGER_VERSION		12
 
 /**
  * @file IMenuManager.h
@@ -312,6 +312,16 @@ namespace SourceMod
 		 * @return				True on success, false otherwise.
 		 */
 		virtual bool SetCurrentKey(unsigned int key) =0;
+
+		/**
+		 * @brief Returns the number of characters that can be added to the 
+		 * menu.  The internal buffer is truncated if overflowed; this is for 
+		 * manual truncation/wrapping purposes.
+		 *
+		 * @return				Number of bytes available.  If the result is 
+		 *						-1, then the panel has no text limit.
+		 */
+		virtual int GetAmountRemaining() =0;
 	};
 
 	/**

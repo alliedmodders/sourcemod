@@ -342,6 +342,12 @@ bool CValveMenuDisplay::SetSelectableKeys(unsigned int keymap)
 	return false;
 }
 
+int CValveMenuDisplay::GetAmountRemaining()
+{
+	/* :TODO: this is a lie, but nothing really seems meaningful... */
+	return -1;
+}
+
 CValveMenu::CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
 CBaseMenu(pHandler, &g_ValveMenuStyle, pOwner), 
 	m_IntroColor(255, 0, 0, 255)

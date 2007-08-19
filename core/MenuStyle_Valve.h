@@ -102,6 +102,7 @@ public:
 	bool SetSelectableKeys(unsigned int keymap);
 	unsigned int GetCurrentKey();
 	bool SetCurrentKey(unsigned int key);
+	int GetAmountRemaining();
 private:
 	KeyValues *m_pKv;
 	unsigned int m_NextPos;

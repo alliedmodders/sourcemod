@@ -645,6 +645,20 @@ native bool:SetPanelKeys(Handle:panel, keys);
 native bool:SendPanelToClient(Handle:panel, client, MenuHandler:handler, time);
 
 /**
+ * @brief Returns the amount of text the menu can still hold.  If this is 
+ * limit is reached or overflowed, the text is silently truncated.  
+ *
+ * Radio menus: Currently 511 characters (512 bytes).
+ * Valve menus: Currently -1 (no meaning).
+ *
+ * @param panel			A MenuPanel Handle.
+ * @return				Number of characters that the menu can still hold, 
+ *						or -1 if there is no known limit.
+ * @error				Invalid Handle.
+ */
+native GetPanelTextRemaining(Handle:panel);
+
+/**
  * @brief Returns the current key position.
  *
  * @param panel			A MenuPanel Handle.
