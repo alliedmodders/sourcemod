@@ -558,7 +558,12 @@ bool sm_trie_add(Trie *trie, const char *key, void *value, bool replace_allowed)
 					if (base[newidx].mode == Node_Arc)
 					{
 						TrieNode *check_base = &base[base[newidx].idx] + 1;
-						for (unsigned int j=1; j<=255; j++, check_base++)
+						outgoing_limit = (base + trie->baseSize + 1) - check_base;
+						if (outgoing_limit > 255)
+						{
+							outgoing_limit = 255;
+						}
+						for (unsigned int j=1; j<=outgoing_limit; j++, check_base++)
 						{
 							if (check_base->parent == oldidx)
 							{
@@ -602,7 +607,12 @@ bool sm_trie_add(Trie *trie, const char *key, void *value, bool replace_allowed)
 					if (base[newidx].mode == Node_Arc)
 					{
 						TrieNode *check_base = &base[base[newidx].idx] + 1;
-						for (unsigned int j=1; j<=255; j++, check_base++)
+						outgoing_limit = (base + trie->baseSize + 1) - check_base;
+						if (outgoing_limit > 255)
+						{
+							outgoing_limit = 255;
+						}
+						for (unsigned int j=1; j<=outgoing_limit; j++, check_base++)
 						{
 							if (check_base->parent == oldidx)
 							{
