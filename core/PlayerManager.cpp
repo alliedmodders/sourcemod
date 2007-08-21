@@ -599,6 +599,11 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
 
+	if (!m_Players[client].IsConnected())
+	{
+		return;
+	}
+
 	m_clinfochanged->PushCell(engine->IndexOfEdict(pEntity));
 	m_clinfochanged->Execute(&res, NULL);
 
