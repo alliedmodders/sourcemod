@@ -53,20 +53,17 @@ new Handle:g_Cvar_Mapcycle;
 
 new g_MapPos = -1;
 new Handle:g_MapList = INVALID_HANDLE;
-
-#if 0
-new bool:g_INS = false;
-#endif
  
 public OnPluginStart()
 {
+	LoadTranslations("common.phrases");
 	LoadTranslations("nextmap.phrases");
 	
 	g_VGUIMenu = GetUserMessageId("VGUIMenu");
 	if (g_VGUIMenu == INVALID_MESSAGE_ID)
 	{
-		LogMessage("FATAL: Cannot find VGUIMenu user message id. Nextmap not loaded.");
-		return;	
+		LogError("FATAL: Cannot find VGUIMenu user message id. Nextmap not loaded.");
+		SetFailState("VGUIMenu Not Found");
 	}
 	
 	g_Cvar_Chattime = FindConVar("mp_chattime");
@@ -76,10 +73,10 @@ public OnPluginStart()
 	
 	decl String:mapCycle[64];
 	GetConVarString(g_Cvar_Mapcycle, mapCycle, 64);
-	if (LoadMaps(mapCycle) == 0)
+	if (LoadMaps(mapCycle) < 1)
 	{
-		LogMessage("FATAL: Cannot load map cycle. Nextmap not loaded.");
-		return;
+		LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
+		SetFailState("Mapcycle Not Found");		
 	}	
 	
 	HookUserMessage(g_VGUIMenu, UserMsg_VGUIMenu);
@@ -89,21 +86,11 @@ public OnPluginStart()
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
-	
-	#if 0
-	decl String:modname[64];
-	GetGameFolderName(modname, sizeof(modname));
-	
-	if (strcmp(modname, "ins") == 0)
-	{
-		RegConsoleCmd("say2", Command_SayChat);
-		g_INS = true;
-	}
-	#endif
 
+	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 	RegConsoleCmd("listmaps", Command_List);
-	
-	/* Set to the current map so OnMapStart() will know what to do */
+
+	// Set to the current map so OnMapStart() will know what to do
 	decl String:currentMap[64];
 	GetCurrentMap(currentMap, 64);
 	SetConVarString(g_Cvar_Nextmap, currentMap);
@@ -133,7 +120,13 @@ public ConVarChange_Mapcyclefile(Handle:convar, const String:oldValue[], const S
 {
 	if (strcmp(oldValue, newValue, false) != 0)
 	{
-		LoadMaps(newValue);
+		if (LoadMaps(newValue) < 1)
+		{
+			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
+			SetFailState("Mapcycle Not Found");	
+		}
+		
+		FindAndSetNextMap();
 	}
 }
  
@@ -149,13 +142,6 @@ public Action:Command_Say(client, args)
 		startidx = 1;
 	}
 	
-	#if 0
-	if (g_INS)
-	{
-		startidx += 4;
-	}
-	#endif
-	
 	decl String:message[8];
 	BreakString(text[startidx], message, sizeof(message));
 	
@@ -168,6 +154,46 @@ public Action:Command_Say(client, args)
 	}
 	
 	return Plugin_Continue;	
+}
+
+public Action:Command_SetNextmap(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_setnextmap <map>");
+		return Plugin_Handled;
+	}
+
+	decl String:map[64];
+	GetCmdArg(1, map, sizeof(map));
+
+	if (!IsMapValid(map))
+	{
+		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
+		return Plugin_Handled;
+	}
+
+	ShowActivity(client, "%t", "Cvar changed", "sm_nextmap", map);
+	LogMessage("\"%L\" changed sm_nextmap to \"%s\"", client, map);
+
+	SetConVarString(g_Cvar_Nextmap, map);
+
+	return Plugin_Handled;
+}
+
+public Action:Command_List(client, args) 
+{
+	PrintToConsole(client, "Map Cycle:");
+	
+	new mapCount = GetArraySize(g_MapList);
+	decl String:mapName[32];
+	for (new i = 0; i < mapCount; i++)
+	{
+		GetArrayString(g_MapList, i, mapName, sizeof(mapName));
+		PrintToConsole(client, "%s", mapName);
+	}
+ 
+	return Plugin_Handled;
 }
  
 public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)
@@ -213,21 +239,6 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	LogMessage("Nextmap changed map to \"%s\"", map);
 	
 	return Plugin_Stop;
-}
- 
-public Action:Command_List(client, args) 
-{
-	PrintToConsole(client, "Map Cycle:");
-	
-	new mapCount = GetArraySize(g_MapList);
-	decl String:mapName[32];
-	for (new i = 0; i < mapCount; i++)
-	{
-		GetArrayString(g_MapList, i, mapName, sizeof(mapName));
-		PrintToConsole(client, "%s", mapName);
-	}
- 
-	return Plugin_Handled;
 }
  
 LoadMaps(const String:path[])
