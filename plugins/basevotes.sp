@@ -372,12 +372,13 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	 	if (g_voteType != voteType:question)
 	 	{
 			decl String:title[64];
-			GetMenuTitle(g_hVoteMenu, title, sizeof(title));
+			GetMenuTitle(menu, title, sizeof(title));
 			
 	 		decl String:buffer[255];
 			Format(buffer, sizeof(buffer), "%T", title, param1, g_voteInfo[VOTE_NAME]);
 
-			SetMenuTitle(g_hVoteMenu, buffer);
+			new Handle:panel = Handle:param2;
+			SetPanelTitle(panel, buffer);
 		}
 	}
 	else if (action == MenuAction_DisplayItem)
@@ -397,7 +398,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 	{
 		VoteSelect(menu, param1, param2);
 	}*/
-	else if (action == VoteCancel_NoVotes)
+	else if (action == MenuAction_VoteCancel && param1 == VoteCancel_NoVotes)
 	{
 		PrintToChatAll("[SM] %t", "No Votes Cast");
 	}	
