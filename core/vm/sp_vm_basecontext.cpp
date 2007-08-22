@@ -257,7 +257,7 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	}
 	ctx->pushcount = 0;
 
-	cell_t save_sp = ctx->sp;
+	cell_t save_sp = ctx->sp + (pushcount * sizeof(cell_t));
 	cell_t save_hp = ctx->hp;
 	uint32_t n_idx = ctx->n_idx;
 
@@ -285,7 +285,7 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 #if defined SOURCEMOD_BUILD
 	if (err == SP_ERROR_NONE)
 	{
-		if ((ctx->sp - (cell_t)(pushcount * sizeof(cell_t))) != save_sp)
+		if (ctx->sp != save_sp)
 		{
 			g_DbgReporter.GenerateCodeError(this,
 				code_addr,
@@ -313,6 +313,9 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	}
 
 	ctx->n_idx = n_idx;
+	ctx->n_err = SP_ERROR_NONE;
+	m_MsgCache[0] = '\0';
+	m_CustomMsg = false;
 
 	return err;
 }
