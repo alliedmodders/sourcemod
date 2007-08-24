@@ -891,10 +891,18 @@ static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 	}
 
 	unsigned int flags = menu->GetMenuOptionFlags();
-	flags |= MENUFLAG_BUTTON_EXIT;
+
+	if (params[2])
+	{
+		flags |= MENUFLAG_BUTTON_EXIT;
+	} else {
+		flags &= ~MENUFLAG_BUTTON_EXIT;
+	}
+
 	menu->SetMenuOptionFlags(flags);
-	flags = menu->GetMenuOptionFlags();
-	return ((flags & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT) ? 1 : 0;
+	unsigned int new_flags = menu->GetMenuOptionFlags();
+
+	return (flags == new_flags);
 }
 
 static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
@@ -909,7 +917,14 @@ static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 	}
 
 	unsigned int flags = menu->GetMenuOptionFlags();
-	flags |= MENUFLAG_BUTTON_EXITBACK;
+
+	if (params[2])
+	{
+		flags |= MENUFLAG_BUTTON_EXITBACK;
+	} else {
+		flags &= ~MENUFLAG_BUTTON_EXITBACK;
+	}
+
 	menu->SetMenuOptionFlags(flags);
 
 	return 1;
