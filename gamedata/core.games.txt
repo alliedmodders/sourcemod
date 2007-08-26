@@ -24,32 +24,19 @@
 		}
 	}
 
-	"cstrike"
+	/**
+	 * Which games support ShowMenu?
+	 */
+	"#default"
 	{
-		"Keys"
+		"#supported"
 		{
-			"HudRadioMenuMsg"		"ShowMenu"
+			"game"		"cstrike"
+			"game"		"dod"
+			"game"		"sourceforts"
+			"game"		"!Insurgency"
 		}
-	}
 
-	"dod"
-	{
-		"Keys"
-		{
-			"HudRadioMenuMsg"		"ShowMenu"
-		}
-	}
-
-	"sourceforts"
-	{
-		"Keys"
-		{
-			"HudRadioMenuMsg"		"ShowMenu"
-		}
-	}
-	
-	"!Insurgency"
-	{
 		"Keys"
 		{
 			"HudRadioMenuMsg"		"ShowMenu"
