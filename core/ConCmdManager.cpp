@@ -203,6 +203,17 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 
 void ConCmdManager::InternalDispatch()
 {
+	int client = m_CmdClient;
+
+	if (client)
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+		if (!pPlayer || !pPlayer->IsConnected())
+		{
+			return;
+		}
+	}
+
 	/**
 	 * Note: Console commands will EITHER go through IServerGameDLL::ClientCommand,
 	 * OR this dispatch.  They will NEVER go through both.
@@ -225,7 +236,7 @@ void ConCmdManager::InternalDispatch()
 	CmdHook *pHook;
 
 	/* Execute server-only commands if viable */
-	if (m_CmdClient == 0 && pInfo->srvhooks.size())
+	if (client == 0 && pInfo->srvhooks.size())
 	{
 		cell_t tempres = result;
 		for (iter=pInfo->srvhooks.begin();
@@ -275,9 +286,9 @@ void ConCmdManager::InternalDispatch()
 			{
 				continue;
 			}
-			if (m_CmdClient 
+			if (client 
 				&& pHook->pAdmin
-				&& !CheckAccess(m_CmdClient, cmd, pHook->pAdmin))
+				&& !CheckAccess(client, cmd, pHook->pAdmin))
 			{
 				if (result < Pl_Handled)
 				{
@@ -289,11 +300,11 @@ void ConCmdManager::InternalDispatch()
 			/* On a listen server, sometimes the server host's client index can be set as 0.
 			 * So index 1 is passed to the command callback to correct this potential problem.
 			 */
-			if (m_CmdClient == 0 && !engine->IsDedicatedServer())
+			if (client == 0 && !engine->IsDedicatedServer())
 			{
 				pHook->pf->PushCell(1);
 			} else {
-				pHook->pf->PushCell(m_CmdClient);
+				pHook->pf->PushCell(client);
 			}
 
 			pHook->pf->PushCell(args);

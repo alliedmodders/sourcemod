@@ -549,15 +549,21 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 
 void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
+	int client = engine->IndexOfEdict(pEntity);
+	cell_t res = Pl_Continue;
+
+	CPlayer *pPlayer = GetPlayerByIndex(client);
+	if (!pPlayer || !pPlayer->IsConnected())
+	{
+		return;
+	}
+
 	/**
 	 * We cache this because the engine is not re-entrant.
 	 */
 	char cmd[300];
 	int args = engine->Cmd_Argc() - 1;
 	strncopy(cmd, engine->Cmd_Argv(0), sizeof(cmd));
-
-	int client = engine->IndexOfEdict(pEntity);
-	cell_t res = Pl_Continue;
 
 	bool result = g_ValveMenuStyle.OnClientCommand(client, cmd);
 	if (result)
