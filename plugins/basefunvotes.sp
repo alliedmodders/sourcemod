@@ -38,7 +38,7 @@
 
 public Plugin:myinfo =
 {
-	name = "Fun Votes",
+	name = "Basic Fun Votes",
 	author = "AlliedModders LLC",
 	description = "Fun Vote Commands",
 	version = SOURCEMOD_VERSION,
