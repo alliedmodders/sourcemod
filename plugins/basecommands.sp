@@ -342,7 +342,7 @@ public Action:Command_Ban(client, args)
 #define FLAG_STRINGS		14
 new String:g_FlagNames[FLAG_STRINGS][20] =
 {
-	"reservation",
+	"res",
 	"admin",
 	"kick",
 	"ban",
@@ -358,17 +358,41 @@ new String:g_FlagNames[FLAG_STRINGS][20] =
 	"cheat"
 };
 
+CustomFlagsToString(String:buffer[], maxlength, flags)
+{
+	decl String:joins[6][6];
+	new total;
+	
+	for (new i=_:Admin_Custom1; i<=_:Admin_Custom6; i++)
+	{
+		if (flags & (1<<i))
+		{
+			IntToString(i - _:Admin_Custom1 + 1, joins[total++], 6);
+		}
+	}
+	
+	ImplodeStrings(joins, total, ",", buffer, maxlength);
+	
+	return total;
+}
+
 FlagsToString(String:buffer[], maxlength, flags)
 {
-	decl String:joins[FLAG_STRINGS][20];
+	decl String:joins[FLAG_STRINGS+1][32];
 	new total;
 
 	for (new i=0; i<FLAG_STRINGS; i++)
 	{
 		if (flags & (1<<i))
 		{
-			strcopy(joins[total++], 20, g_FlagNames[i]);
+			strcopy(joins[total++], 32, g_FlagNames[i]);
 		}
+	}
+	
+	decl String:custom_flags[32];
+	if (CustomFlagsToString(custom_flags, sizeof(custom_flags), flags))
+	{
+		Format(joins[total++], 32, "custom(%s)", custom_flags);
 	}
 
 	ImplodeStrings(joins, total, ", ", buffer, maxlength);
