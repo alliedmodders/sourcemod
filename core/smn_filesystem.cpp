@@ -568,7 +568,7 @@ static cell_t sm_GetFileTime(IPluginContext *pContext, const cell_t *params)
 	if (_stat(realpath, &s) != 0)
 #elif defined PLATFORM_POSIX
 	struct stat s;
-	if (stat(path, &s) != 0)
+	if (stat(realpath, &s) != 0)
 #endif
 	{
 		return -1;
