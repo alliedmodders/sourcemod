@@ -223,18 +223,6 @@ void ChatTriggers::OnSayCommand_Post()
 
 bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted)
 {
-	/* Eat up whitespace */
-	while (*args != '\0' && IsWhitespace(args))
-	{
-		args++;
-	}
-
-	/* Check if we're still valid */
-	if (*args == '\0')
-	{
-		return false;
-	}
-
 	/* Extract a command.  This is kind of sloppy. */
 	char cmd_buf[64];
 	size_t cmd_len = 0;
@@ -247,6 +235,11 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 		cmd_buf[cmd_len++] = *inptr++;
 	}
 	cmd_buf[cmd_len] = '\0';
+
+	if (cmd_len == 0)
+	{
+		return false;
+	}
 
 	/* See if we have this registered */
 	bool prepended = false;
