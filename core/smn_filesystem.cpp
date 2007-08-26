@@ -543,6 +543,49 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+enum
+{
+	FileTime_LastAccess = 0,	/* Last access (not available on FAT) */
+	FileTime_Created = 1,		/* Creation (not available on FAT) */
+	FileTime_LastChange = 2,	/* Last modification */
+};
+
+static cell_t sm_GetFileTime(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	int err;
+	if ((err=pContext->LocalToString(params[1], &name)) != SP_ERROR_NONE)
+	{
+		pContext->ThrowNativeErrorEx(err, NULL);
+		return 0;
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+
+#ifdef PLATFORM_WINDOWS
+	struct _stat s;
+	if (_stat(realpath, &s) != 0)
+#elif defined PLATFORM_POSIX
+	struct stat s;
+	if (stat(path, &s) != 0)
+#endif
+	{
+		return -1;
+	} else {
+		if (params[2] == FileTime_LastAccess)
+		{
+			return (cell_t)s.st_atime;
+		} else if (params[2] == FileTime_Created) {
+			return (cell_t)s.st_ctime;
+		} else if (params[2] == FileTime_LastChange) {
+			return (cell_t)s.st_mtime;
+		}
+	}
+
+	return -1;
+}
+
 static FileNatives s_FileNatives;
 
 REGISTER_NATIVES(filesystem)
@@ -566,5 +609,6 @@ REGISTER_NATIVES(filesystem)
 	{"LogMessage",				sm_LogMessage},
 	{"LogError",				sm_LogError},
 	{"FlushFile",				sm_FlushFile},
+	{"GetFileTime",				sm_GetFileTime},
 	{NULL,						NULL},
 };

@@ -47,6 +47,16 @@ enum FileType
 	FileType_File = 2,		/* File is a file */
 };
 
+/**
+ * File time modes.
+ */
+enum FileTimeMode
+{
+	FileTime_LastAccess = 0,	/* Last access (does not work on FAT) */
+	FileTime_Created = 1,		/* Creation (does not work on FAT) */
+	FileTime_LastChange = 2,	/* Last modification */
+};
+
 #define PLATFORM_MAX_PATH		256		/**< Maximum path length. */
 
 #define SEEK_SET 0						/**< Seek from start. */
@@ -213,3 +223,12 @@ native bool:RemoveDir(const String:path[]);
  * @return				True on success, false otherwise.
  */
 native bool:WriteFileLine(Handle:hndl, const String:format[], any:...);
+
+/**
+ * Returns a file timestamp as a unix timestamp.
+ *
+ * @param file			File name.
+ * @param tmode			Time mode.
+ * @return				Time value, or -1 on failure.
+ */
+native GetFileTime(const String:file[], FileTimeMode:tmode);
