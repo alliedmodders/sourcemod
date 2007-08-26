@@ -29,10 +29,24 @@
  * Version: $Id$
  */
 
+#include <time.h>
 #include "TimerSys.h"
+#include "sourcemm_api.h"
 
 TimerSystem g_Timers;
 TickInfo g_SimTicks;
+
+ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
+
+time_t GetAdjustedTime(time_t *buf)
+{
+	time_t val = time(NULL) + sm_time_adjustment.GetInt();
+	if (buf)
+	{
+		*buf = val;
+	}
+	return val;
+}
 
 inline float GetSimulatedTime()
 {

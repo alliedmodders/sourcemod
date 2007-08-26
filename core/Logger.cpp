@@ -35,6 +35,7 @@
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "systems/LibrarySys.h"
+#include "TimerSys.h"
 #include "sm_version.h"
 
 Logger g_Logger;
@@ -119,7 +120,7 @@ void Logger::_NewMapFile()
 	int i = 0;
 
 	time_t t;
-	time(&t);
+	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 
 	while (true)
@@ -189,7 +190,7 @@ void Logger::InitLogger(LoggingMode mode)
 	m_Active = m_InitialState;
 
 	time_t t;
-	time(&t);
+	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 	m_CurDay = curtime->tm_mday;
 
@@ -257,7 +258,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 
 	char date[32];
 	time_t t;
-	time(&t);
+	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 
@@ -314,7 +315,7 @@ void Logger::LogError(const char *vafmt, ...)
 	}
 
 	time_t t;
-	time(&t);
+	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 
 	char date[32];

@@ -756,6 +756,11 @@ void SourceModBase::AllPluginsLoaded()
 	}
 }
 
+time_t SourceModBase::GetAdjustedTime()
+{
+	return GetAdjustedTime();
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

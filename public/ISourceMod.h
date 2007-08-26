@@ -191,6 +191,13 @@ namespace SourceMod
 		 * @return			A pointer to the JIT interface.
 		 */
 		virtual SourcePawn::IVirtualMachine *GetScriptingVM() =0;
+
+		/**
+		 * @brief Returns the adjusted server time.
+		 *
+		 * @return			Adjusted server time.
+		 */
+		virtual time_t GetAdjustedTime() =0;
 	};
 }
 

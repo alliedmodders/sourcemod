@@ -115,6 +115,7 @@ public: // ISourceMod
 	ISourcePawnEngine *GetScriptingEngine();
 	IVirtualMachine *GetScriptingVM();
 	void AllPluginsLoaded();
+	time_t GetAdjustedTime();
 private:
 	/**
 	 * @brief Loading plugins

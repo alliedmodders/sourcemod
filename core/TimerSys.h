@@ -87,6 +87,8 @@ private:
 	float m_LastExecTime;
 };
 
+time_t GetAdjustedTime(time_t *buf = NULL);
+
 extern TimerSystem g_Timers;
 extern TickInfo g_SimTicks;
 

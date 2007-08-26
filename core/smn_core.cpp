@@ -38,6 +38,7 @@
 #include "PluginSys.h"
 #include "HandleSys.h"
 #include "LibrarySys.h"
+#include "TimerSys.h"
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -93,7 +94,7 @@ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 {
-	time_t t = time(NULL);
+	time_t t = GetAdjustedTime();
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[1], &addr);
 
@@ -130,7 +131,7 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
 #endif
 
-	time_t t = (params[4] == -1) ? time(NULL) : (time_t)params[4];
+	time_t t = (params[4] == -1) ? GetAdjustedTime() : (time_t)params[4];
 	size_t written = strftime(buffer, params[2], format, localtime(&t));
 
 #if defined SUBPLATFORM_SECURECRT
