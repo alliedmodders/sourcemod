@@ -385,7 +385,7 @@ native SetAdminFlag(AdminId:id, AdminFlag:flag, bool:enabled);
  * @param mode			Access mode to check.
  * @return				True if enabled, false otherwise.
  */
-native bool:GetAdminFlag(AdminId:id, AdminFlag:flag, AdmAccessMode:mode);
+native bool:GetAdminFlag(AdminId:id, AdminFlag:flag, AdmAccessMode:mode=Access_Effective);
 
 /**
  * Returns the bitstring of access flags on an admin.

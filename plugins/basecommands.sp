@@ -61,7 +61,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
 	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
-	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_RCON, "sm_banip <time> <ip> [reason]");
+	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <time> <ip|#userid|name> [reason]");
 	RegAdminCmd("sm_reloadadmins", Command_ReloadAdmins, ADMFLAG_BAN, "sm_reloadadmins");
 	RegAdminCmd("sm_cancelvote", Command_CancelVote, ADMFLAG_VOTE, "sm_cancelvote");
 	
@@ -86,13 +86,47 @@ public Action:Command_BanIp(client, args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_banip <time> <ip> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_banip <time> <ip|#userid|name> [reason]");
 		return Plugin_Handled;
 	}
 
 	decl String:arg[50], String:time[20];
 	GetCmdArg(1, time, sizeof(time));
 	GetCmdArg(2, arg, sizeof(arg));
+	
+	if (StrEqual(arg, "0"))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot ban that IP");
+		return Plugin_Handled;
+	}
+	
+	new clients[1];
+	new numClients = SearchForClients(arg, clients, 1);
+
+	new bool:has_rcon;
+	
+	if (client == 0 || (client == 1 && !IsDedicatedServer()))
+	{
+		has_rcon = true;
+	} else {
+		new AdminId:id = GetUserAdmin(client);
+		has_rcon = (id == INVALID_ADMIN_ID) ? false : GetAdminFlag(id, Admin_RCON);
+	}
+	
+	new bool:hit_client = false;
+	if (numClients == 1 
+		&& !IsFakeClient(clients[0])
+		&& (has_rcon || CanUserTarget(client, clients[0])))
+	{
+		GetClientIP(clients[0], arg, sizeof(arg));
+		hit_client = true;
+	}
+	
+	if (!hit_client && !has_rcon)
+	{
+		ReplyToCommand(client, "[SM] %t", "No Access");
+		return Plugin_Handled;
+	}
 
 	new minutes = StringToInt(time);
 
@@ -118,7 +152,7 @@ public Action:Command_BanIp(client, args)
 
 	if (act < Plugin_Stop)
 	{
-		ServerCommand("banip %d %s", minutes, arg);
+		ServerCommand("addip %d %s", minutes, arg);
 		ServerCommand("writeip");
 	}
 

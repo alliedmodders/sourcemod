@@ -221,4 +221,9 @@
 	{
 		"en"			"Failed to query database."
 	}
+	
+	"Cannot ban that IP"
+	{
+		"en"			"You cannot ban that IP address."
+	}
 }
