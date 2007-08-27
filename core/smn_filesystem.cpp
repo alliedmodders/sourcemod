@@ -684,5 +684,6 @@ REGISTER_NATIVES(filesystem)
 	{"FlushFile",				sm_FlushFile},
 	{"GetFileTime",				sm_GetFileTime},
 	{"LogToOpenFile",			sm_LogToOpenFile},
+	{"LogToOpenFileEx",			sm_LogToOpenFileEx},
 	{NULL,						NULL},
 };
