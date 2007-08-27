@@ -156,6 +156,7 @@ public Action:Command_VoteGravity(client, args)
 		}	
 	}
 
+	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
 	ShowActivity(client, "%t", "Initiated Vote Gravity");
 	
 	g_voteType = voteType:gravity;
@@ -226,6 +227,7 @@ public Action:Command_VoteBurn(client, args)
 	g_voteClient[VOTE_CLIENTID] = target;
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
+	LogAction(client, target, "\"%L\" initiated a burn vote against \"%L\"", client, target);
 	ShowActivity(client, "%t", "Initiated Vote Burn", g_voteInfo[VOTE_NAME]);
 	
 	g_voteType = voteType:burn;
@@ -279,6 +281,7 @@ public Action:Command_VoteSlay(client, args)
 	g_voteClient[VOTE_CLIENTID] = target;
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
+	LogAction(client, target, "\"%L\" initiated a slay vote against \"%L\"", client, target);
 	ShowActivity(client, "%t", "Initiated Vote Slay", g_voteInfo[VOTE_NAME]);
 	
 	g_voteType = voteType:slay;
@@ -312,6 +315,7 @@ public Action:Command_VoteAlltalk(client, args)
 		return Plugin_Handled;
 	}
 	
+	LogAction(client, -1, "\"%L\" initiated an alltalk vote.", client);
 	ShowActivity(client, "%t", "Initiated Vote Alltalk");
 	
 	g_voteType = voteType:alltalk;
@@ -355,6 +359,7 @@ public Action:Command_VoteFF(client, args)
 		return Plugin_Handled;
 	}
 	
+	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
 	ShowActivity(client, "%t", "Initiated Vote FF");
 	
 	g_voteType = voteType:ff;
@@ -433,11 +438,16 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		percent = GetVotePercent(votes, totalVotes);
 		
 		limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
+		
+		/* :TODO: g_voteClient[userid] needs to be checked.
+		 */
 
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
-			LogMessage("Vote failed.");
+			/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+			 */
+			LogAction(-1, -1, "Vote failed.");
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
 		}
 		else
@@ -449,14 +459,14 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				case (voteType:gravity):
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "sv_gravity", item);					
-					LogMessage("Changing gravity to %s due to vote.", item);
+					LogAction(-1, -1, "Changing gravity to %s due to vote.", item);
 					SetConVarInt(g_Cvar_Gravity, StringToInt(item));
 				}
 				
 				case (voteType:burn):
 				{
 					PrintToChatAll("[SM] %t", "Ignited player", g_voteInfo[VOTE_NAME]);					
-					LogMessage("Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
+					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
 					
 					IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	
 				}
@@ -464,7 +474,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				case (voteType:slay):
 				{
 					PrintToChatAll("[SM] %t", "Slayed player", g_voteInfo[VOTE_NAME]);					
-					LogMessage("Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
+					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote slay successful, slaying \"%L\"", g_voteClient[VOTE_CLIENTID]);
 					
 					ExtinguishEntity(g_voteClient[VOTE_CLIENTID]);
 					ForcePlayerSuicide(g_voteClient[VOTE_CLIENTID]);
@@ -473,14 +483,14 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				case (voteType:alltalk):
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "sv_alltalk", (GetConVarBool(g_Cvar_Alltalk) ? "0" : "1"));
-					LogMessage("Changing alltalk to %s due to vote.", (GetConVarBool(g_Cvar_Alltalk) ? "0" : "1"));
+					LogAction(-1, -1, "Changing alltalk to %s due to vote.", (GetConVarBool(g_Cvar_Alltalk) ? "0" : "1"));
 					SetConVarBool(g_Cvar_Alltalk, !GetConVarBool(g_Cvar_Alltalk));
 				}
 				
 				case (voteType:ff):
 				{
 					PrintToChatAll("[SM] %t", "Cvar changed", "mp_friendlyfire", (GetConVarBool(g_Cvar_FF) ? "0" : "1"));
-					LogMessage("Changing friendly fire to %s due to vote.", (GetConVarBool(g_Cvar_FF) ? "0" : "1"));
+					LogAction(-1, -1, "Changing friendly fire to %s due to vote.", (GetConVarBool(g_Cvar_FF) ? "0" : "1"));
 					SetConVarBool(g_Cvar_FF, !GetConVarBool(g_Cvar_FF));
 				}				
 			}

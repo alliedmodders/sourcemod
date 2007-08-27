@@ -148,6 +148,7 @@ public Action:Command_Votemap(client, args)
 		}	
 	}
 
+	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
 	ShowActivity(client, "%t", "Initiated Vote Map");
 	
 	g_voteType = voteType:map;
@@ -217,6 +218,7 @@ public Action:Command_Vote(client, args)
 		}	
 	}
 
+	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
 	ShowActivity(client, "%t", "Initiate Vote", g_voteArg);
 	
 	g_voteType = voteType:question;
@@ -287,6 +289,7 @@ public Action:Command_Votekick(client, args)
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
+	LogAction(client, target, "\"%L\" initiated a kick vote against \"%L\"", client, target);
 	ShowActivity(client, "%t", "Initiated Vote Kick", g_voteInfo[VOTE_NAME]);
 	
 	g_voteType = voteType:kick;
@@ -347,6 +350,7 @@ public Action:Command_Voteban(client, args)
 	GetClientAuthString(target, g_voteInfo[VOTE_AUTHID], sizeof(g_voteInfo[]));
 	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
 
+	LogAction(client, target, "\"%L\" initiated a ban vote against \"%L\"", client, target);
 	ShowActivity(client, "%t", "Initiated Vote Ban", g_voteInfo[VOTE_NAME]);
 
 	g_voteType = voteType:ban;
@@ -421,11 +425,15 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 		{
 			limit = GetConVarFloat(g_Cvar_Limits[g_voteType]);
 		}
+		
+		/* :TODO: g_voteClient[userid] needs to be checked */
 
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
-			LogMessage("Vote failed.");
+			/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+			 */
+			LogAction(-1, -1, "Vote failed.");
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
 		}
 		else
@@ -446,7 +454,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				
 				case (voteType:map):
 				{
-					LogMessage("Changing map to %s due to vote.", item);
+					LogAction(-1, -1, "Changing map to %s due to vote.", item);
 					PrintToChatAll("[SM] %t", "Changing map", item);
 					new Handle:dp;
 					CreateDataTimer(5.0, Timer_ChangeMap, dp);
@@ -461,7 +469,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 					}
 					
 					PrintToChatAll("[SM] %t", "Kicked player", g_voteInfo[VOTE_NAME]);					
-					LogMessage("Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
+					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 					
 					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
 				}
@@ -482,7 +490,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 					}
 					
 					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
-					LogMessage("Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
+					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 					
 					ServerCommand("banid %d %s", 30, g_voteClient[VOTE_AUTHID]);
 					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);				

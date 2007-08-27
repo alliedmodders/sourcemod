@@ -62,6 +62,16 @@ enum Action
 	Plugin_Stop = 4,		/**< Immediately stop the hook chain and handle the original */
 };
 
+/**
+ * Specifies identity types.
+ */
+enum Identity
+{
+	Identity_Core = 0,
+	Identity_Extension = 1,
+	Identity_Plugin = 2
+};
+
 public PlVers:__version = 
 {
 	version = SOURCEMOD_PLUGINAPI_VERSION,

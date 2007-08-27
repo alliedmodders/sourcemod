@@ -32,6 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_CLOGGER_H_
 #define _INCLUDE_SOURCEMOD_CLOGGER_H_
 
+#include <stdio.h>
 #include <sh_string.h>
 #include "sm_globals.h"
 
@@ -75,6 +76,8 @@ public:
 	void LogMessage(const char *msg, ...);
 	void LogError(const char *msg, ...);
 	void LogFatal(const char *msg, ...);
+	void LogToOpenFile(FILE *fp, const char *msg, ...);
+	void LogToOpenFileEx(FILE *fp, const char *msg, va_list ap);
 	void MapChange(const char *mapname);
 	const char *GetLogFileName(LogType type) const;
 	LoggingMode GetLoggingMode() const;

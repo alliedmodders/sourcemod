@@ -39,6 +39,8 @@
 #include "HandleSys.h"
 #include "LibrarySys.h"
 #include "TimerSys.h"
+#include "ForwardSys.h"
+#include "Logger.h"
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -50,6 +52,7 @@
 
 HandleType_t g_PlIter;
 ConVar sm_datetime_format("sm_datetime_format", "%m/%d/%Y - %H:%M:%S", 0, "Default formatting time rules");
+IForward *g_OnLogAction = NULL;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -63,6 +66,16 @@ public:
 		hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
 		g_PlIter = g_HandleSys.CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+
+		g_OnLogAction = g_Forwards.CreateForward("OnLogAction", 
+			ET_Hook, 
+			5, 
+			NULL,
+			Param_Cell,
+			Param_Cell,
+			Param_Cell,
+			Param_Cell,
+			Param_String);
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -71,10 +84,44 @@ public:
 	}
 	void OnSourceModShutdown()
 	{
+		g_Forwards.ReleaseForward(g_OnLogAction);
 		g_HandleSys.RemoveType(g_PlIter, g_pCoreIdent);
 	}
 } g_CoreNativeHelpers;
 
+void LogAction(Handle_t hndl, int type, int client, int target, const char *message)
+{
+	if (!g_OnLogAction->GetFunctionCount())
+	{
+		return;
+	}
+
+	cell_t result = 0;
+	g_OnLogAction->PushCell(hndl);
+	g_OnLogAction->PushCell(type);
+	g_OnLogAction->PushCell(client);
+	g_OnLogAction->PushCell(target);
+	g_OnLogAction->PushString(message);
+	g_OnLogAction->Execute(&result);
+
+	if (result >= (ResultType)Pl_Handled)
+	{
+		return;
+	}
+
+	const char *logtag = "SM";
+	if (type == 2)
+	{
+		HandleError err;
+		IPlugin *pPlugin = g_PluginSys.PluginFromHandle(hndl, &err);
+		if (pPlugin)
+		{
+			logtag = pPlugin->GetFilename();
+		}
+	}
+
+	g_Logger.LogMessage("[%s] %s", logtag, message);
+}
 
 static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
@@ -420,6 +467,88 @@ static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
 	return g_PluginSys.LibraryExists(str) ? 1 : 0;
 }
 
+static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[2048];
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	LogAction(pPlugin->GetMyHandle(), 2, params[1], params[2], buffer);
+
+	return 1;
+}
+
+static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
+{
+	char *file;
+	pContext->LocalToString(params[1], &file);
+
+	char path[PLATFORM_MAX_PATH];
+	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = fopen(path, "at");
+	if (!fp)
+	{
+		return pContext->ThrowNativeError("Could not open file \"%s\"", path);
+	}
+
+	char buffer[2048];
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		fclose(fp);
+		return 0;
+	}
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	g_Logger.LogToOpenFile(fp, "[%s] %s", pPlugin->GetFilename(), buffer);
+
+	fclose(fp);
+
+	return 1;
+}
+
+static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
+{
+	char *file;
+	pContext->LocalToString(params[1], &file);
+
+	char path[PLATFORM_MAX_PATH];
+	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = fopen(path, "at");
+	if (!fp)
+	{
+		return pContext->ThrowNativeError("Could not open file \"%s\"", path);
+	}
+
+	char buffer[2048];
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		fclose(fp);
+		return 0;
+	}
+
+	g_Logger.LogToOpenFile(fp, "%s", buffer);
+
+	fclose(fp);
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -438,5 +567,8 @@ REGISTER_NATIVES(coreNatives)
 	{"MarkNativeAsOptional",	MarkNativeAsOptional},
 	{"RegPluginLibrary",		RegPluginLibrary},
 	{"LibraryExists",			LibraryExists},
+	{"LogAction",				sm_LogAction},
+	{"LogToFile",				LogToFile},
+	{"LogToFileEx",				LogToFileEx},
 	{NULL,						NULL},
 };

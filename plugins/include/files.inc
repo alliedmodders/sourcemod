@@ -232,3 +232,28 @@ native bool:WriteFileLine(Handle:hndl, const String:format[], any:...);
  * @return				Time value, or -1 on failure.
  */
 native GetFileTime(const String:file[], FileTimeMode:tmode);
+
+/**
+ * Same as LogToFile(), except uses an open file Handle.  The file must 
+ * be opened in text appending mode.
+ *
+ * @param hndl			Handle to the file.
+ * @param message		Message format.
+ * @param ...			Message format parameters.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native LogToOpenFile(Handle:hndl, const String:message[], any:...);
+
+/**
+ * Same as LogToFileEx(), except uses an open file Handle.  The file must 
+ * be opened in text appending mode.
+ *
+ * @param hndl			Handle to the file.
+ * @param message		Message format.
+ * @param ...			Message format parameters.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native LogToOpenFileEx(Handle:hndl, const String:message[], any:...);
+

@@ -95,7 +95,7 @@ public Action:Command_Play(client, args)
 
 	GetClientName(target, Arg, sizeof(Arg));
 	ShowActivity(client, "%t", "Played Sound", Arg);
-	LogMessage("\"%L\" played sound on \"%L\" (file \"%s\")", client, target, Arguments[len]);
+	LogAction(client, target, "\"%L\" played sound on \"%L\" (file \"%s\")", client, target, Arguments[len]);
 
 	ClientCommand(target, "playgamesound \"%s\"", Arguments[len]);
 
@@ -140,7 +140,7 @@ public Action:Command_Burn(client, args)
 	}
 
 	ShowActivity(client, "%t", "Ignited player", arg);
-	LogMessage("\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
+	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 	IgniteEntity(target, seconds);
 
 	return Plugin_Handled;
@@ -184,7 +184,7 @@ public Action:Command_Slap(client, args)
 	}
 
 	ShowActivity(client, "%t", "Slapped player", arg);
-	LogMessage("\"%L\" slapped \"%L\" (damage \"%d\")", client, target, damage);
+	LogAction(client, target, "\"%L\" slapped \"%L\" (damage \"%d\")", client, target, damage);
 	SlapPlayer(target, damage, true);
 
 	return Plugin_Handled;
@@ -216,7 +216,7 @@ public Action:Command_Slay(client, args)
 	}	
 
 	ShowActivity(client, "%t", "Slayed player", arg);
-	LogMessage("\"%L\" slayed \"%L\"", client, target);
+	LogAction(client, target, "\"%L\" slayed \"%L\"", client, target);
 	ForcePlayerSuicide(target);
 
 	return Plugin_Handled;

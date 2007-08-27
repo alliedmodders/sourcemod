@@ -228,6 +228,39 @@ void Logger::CloseLogger()
 	_CloseFile();
 }
 
+void Logger::LogToOpenFile(FILE *fp, const char *msg, ...)
+{
+	if (!m_Active)
+	{
+		return;
+	}
+
+	va_list ap;
+	va_start(ap, msg);
+	LogToOpenFileEx(fp, msg, ap);
+	va_end(ap);
+}
+
+void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
+{
+	if (!m_Active)
+	{
+		return;
+	}
+
+	char buffer[3072];
+	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
+
+	char date[32];
+	time_t t;
+	GetAdjustedTime(&t);
+	tm *curtime = localtime(&t);
+	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+
+	fprintf(fp, "L %s: %s\n", date, buffer);
+	g_SMAPI->ConPrintf("L %s: %s\n", date, buffer);
+}
+
 void Logger::LogMessage(const char *vafmt, ...)
 {
 	if (!m_Active)
@@ -250,17 +283,9 @@ void Logger::LogMessage(const char *vafmt, ...)
 		_NewMapFile();
 	}
 
-	char msg[3072];
-	va_list ap;
-	va_start(ap, vafmt);
-	vsnprintf(msg, sizeof(msg), vafmt, ap);
-	va_end(ap);
-
-	char date[32];
 	time_t t;
 	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
-	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 
 	FILE *fp = NULL;
 	if (m_Mode == LoggingMode_PerMap)
@@ -291,16 +316,20 @@ void Logger::LogMessage(const char *vafmt, ...)
 	{
 		if (m_DailyPrintHdr)
 		{
+			char date[32];
 			m_DailyPrintHdr = false;
+			strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 			fprintf(fp, "L %s: SourceMod log file session started (file \"L%04d%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday, SVN_FULL_VERSION);
 	 	}
-		fprintf(fp, "L %s: %s\n", date, msg);
+		va_list ap;
+		va_start(ap, vafmt);
+		LogToOpenFileEx(fp, vafmt, ap);
+		va_end(ap);
 		fclose(fp);
 	} else {
 		goto print_error;
 	}
 
-	g_SMAPI->ConPrintf("L %s: %s\n", date, msg);
 	return;
 print_error:
 	g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
@@ -318,9 +347,6 @@ void Logger::LogError(const char *vafmt, ...)
 	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 
-	char date[32];
-	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-
 	if (curtime->tm_mday != m_CurDay)
 	{
 		char _filename[256];
@@ -330,30 +356,27 @@ void Logger::LogError(const char *vafmt, ...)
 		m_ErrMapStart = false;
 	}
 
-	char msg[3072];
-	va_list ap;
-	va_start(ap, vafmt);
-	vsnprintf(msg, sizeof(msg), vafmt, ap);
-	va_end(ap);
-
 	FILE *fp = fopen(m_ErrFileName.c_str(), "a+");
 	if (fp)
 	{
 		if (!m_ErrMapStart)
 		{
+			char date[32];
+			strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 			fprintf(fp, "L %s: SourceMod error session started\n", date);
 			fprintf(fp, "L %s: Info (map \"%s\") (file \"errors_%04d%02d%02d.log\")\n", date, m_CurMapName.c_str(), curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 			m_ErrMapStart = true;
 		}
-		fprintf(fp, "L %s: %s\n", date, msg);
+		va_list ap;
+		va_start(ap, vafmt);
+		LogToOpenFileEx(fp, vafmt, ap);
+		va_end(ap);
 		fclose(fp);
 	} else {
 		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
 		m_Active = false;
 		return;
 	}
-
-	g_SMAPI->ConPrintf("L %s: %s\n", date, msg);
 }
 
 void Logger::MapChange(const char *mapname)

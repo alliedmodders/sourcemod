@@ -69,8 +69,7 @@ public:
 			g_LibSys.CloseDirectory(pDir);
 		}
 	}
-};
-
+} s_FileNatives;
 
 static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 {
@@ -503,6 +502,11 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
 	if (len >= sizeof(buffer)-2)
 	{
 		buffer[1022] = '\n';
@@ -524,7 +528,12 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
-	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
 	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
@@ -537,7 +546,12 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
-	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
 	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
@@ -586,7 +600,66 @@ static cell_t sm_GetFileTime(IPluginContext *pContext, const cell_t *params)
 	return -1;
 }
 
-static FileNatives s_FileNatives;
+static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	FILE *pFile;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	char buffer[2048];
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	g_Logger.LogToOpenFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
+
+	return 1;
+}
+
+static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	FILE *pFile;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	char buffer[2048];
+	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	g_Logger.LogToOpenFile(pFile, "%s", buffer);
+
+	return 1;
+}
 
 REGISTER_NATIVES(filesystem)
 {
@@ -610,5 +683,6 @@ REGISTER_NATIVES(filesystem)
 	{"LogError",				sm_LogError},
 	{"FlushFile",				sm_FlushFile},
 	{"GetFileTime",				sm_GetFileTime},
+	{"LogToOpenFile",			sm_LogToOpenFile},
 	{NULL,						NULL},
 };

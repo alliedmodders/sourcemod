@@ -167,6 +167,26 @@ forward OnServerCfg();
 forward OnAllPluginsLoaded();
 
 /**
+ * Called when an action is going to be logged.
+ *
+ * @param source		Handle to the object logging the action, or INVALID_HANDLE 
+ *						if Core is logging the action.
+ * @param ident			Type of object logging the action (plugin, ext, or core).
+ * @param client		Client the action is from; 0 for server, -1 if not applicable.
+ * @param target		Client the action is targetting, or -1 if not applicable.
+ * @param message		Message that is being logged.
+ * @return				Plugin_Continue will cause Core to defaulty log the message.
+ *						Plugin_Handled will stop Core from logging the message.
+ * 						Plugin_Stop is the same as Handled, but prevents any other 
+ *						plugins from handling the message.
+ */
+forward Action:OnLogAction(Handle:source, 
+						   Identity:ident,
+						   client,
+						   target,
+						   const String:message[]);
+
+/**
  * Returns the calling plugin's Handle.
  *
  * @return				Handle of the calling plugin.
@@ -264,13 +284,61 @@ native SetFailState(const String:string[]);
 native ThrowError(const String:fmt[], any:...);
 
 /**
- * Logs a plugin message to the SourceMod logs.
+ * Logs a plugin message to the SourceMod logs.  The log message will be 
+ * prefixed by the plugin's logtag (filename).
  *
  * @param format		String format.
  * @param ...			Format arguments.
  * @noreturn
  */
 native LogMessage(const String:format[], any:...);
+
+/**
+ * Logs a message to the SourceMod logs without any plugin logtag.  This is 
+ * useful for re-routing messages from other plugins, for example, messages 
+ * from LogAction().
+ *
+ * @param format		String format.
+ * @param ...			Format arguments.
+ * @noreturn
+ */
+native LogMessageEx(const String:format[], any:...);
+
+/**
+ * Logs a message to any file.  The log message will be in the normal 
+ * SourceMod format, with the plugin logtag prepended.
+ *
+ * @param file			File to write the log message in.
+ * @param format		String format.
+ * @param ...			Format arguments.
+ * @noreturn
+ * @error				File could not be opened/written.
+ */
+native LogToFile(const String:file[], const String:format[], any:...);
+
+/**
+ * Same as LogToFile(), except no plugin logtag is prepended.
+ *
+ * @param file			File to write the log message in.
+ * @param format		String format.
+ * @param ...			Format arguments.
+ * @noreturn
+ * @error				File could not be opened/written.
+ */
+native LogToFileEx(const String:file[], const String:format[], any:...);
+
+/**
+ * Logs an action from a command or event whereby interception and routing may 
+ * be important.  This is intended to be a logging version of ShowActivity().
+ *
+ * @param client		Client performing the action, 0 for server, or -1 if not 
+ *						applicable.
+ * @param target		Client being targetted, or -1 if not applicable.
+ * @param message		Message format.
+ * @param ...			Message formatting parameters.
+ * @noreturn
+ */
+native LogAction(client, target, const String:message[], any:...);
 
 /**
  * Logs a plugin error message to the SourceMod logs.

@@ -76,7 +76,7 @@ public Action:Command_ReloadAdmins(client, args)
 	DumpAdminCache(AdminCache_Groups, true);
 	DumpAdminCache(AdminCache_Overrides, true);
 
-	LogMessage("\"%L\" refreshed the admin cache.", client);
+	LogAction(client, -1, "\"%L\" refreshed the admin cache.", client);
 	ReplyToCommand(client, "[SM] %t", "Admin cache refreshed");
 
 	return Plugin_Handled;
@@ -113,16 +113,16 @@ public Action:Command_BanIp(client, args)
 		has_rcon = (id == INVALID_ADMIN_ID) ? false : GetAdminFlag(id, Admin_RCON);
 	}
 	
-	new bool:hit_client = false;
+	new hit_client = -1;
 	if (numClients == 1 
 		&& !IsFakeClient(clients[0])
 		&& (has_rcon || CanUserTarget(client, clients[0])))
 	{
 		GetClientIP(clients[0], arg, sizeof(arg));
-		hit_client = true;
+		hit_client = clients[0];
 	}
 	
-	if (!hit_client && !has_rcon)
+	if (hit_client == -1 && !has_rcon)
 	{
 		ReplyToCommand(client, "[SM] %t", "No Access");
 		return Plugin_Handled;
@@ -146,7 +146,7 @@ public Action:Command_BanIp(client, args)
 
 	if (act < Plugin_Handled)
 	{
-		LogMessage("\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", client, minutes, arg, reason);
+		LogAction(client, hit_client, "\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", client, minutes, arg, reason);
 		ReplyToCommand(client, "[SM] %t", "Ban added");
 	}
 
@@ -189,7 +189,7 @@ public Action:Command_AddBan(client, args)
 
 	if (act < Plugin_Handled)
 	{
-		LogMessage("\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")", client, minutes, arg, reason);
+		LogAction(client, -1, "\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")", client, minutes, arg, reason);
 		ReplyToCommand(client, "[SM] %t", "Ban added");
 	}
 
@@ -243,7 +243,7 @@ public Action:Command_Unban(client, args)
 
 	if (act < Plugin_Handled)
 	{
-		LogMessage("\"%L\" removed ban (filter \"%s\")", client, new_arg);
+		LogAction(client, -1, "\"%L\" removed ban (filter \"%s\")", client, new_arg);
 		ReplyToCommand(client, "[SM] %t", "Removed bans matching", new_arg);
 	}
 
@@ -317,7 +317,7 @@ public Action:Command_Ban(client, args)
 				ShowActivity(client, "%t", "Banned player reason", arg, time, reason);
 			}
 		}
-		LogMessage("\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, target, time, reason);
+		LogAction(client, target, "\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, target, time, reason);
 	}
 
 	if (act < Plugin_Stop)
@@ -491,7 +491,7 @@ public Action:Command_ExecCfg(client, args)
 
 	ShowActivity(client, "%t", "Executed config", path[4]);
 
-	LogMessage("\"%L\" executed config (file \"%s\")", client, path[4]);
+	LogAction(client, -1, "\"%L\" executed config (file \"%s\")", client, path[4]);
 
 	ServerCommand("exec \"%s\"", path[4]);
 
@@ -569,7 +569,7 @@ public Action:Command_Cvar(client, args)
 		ReplyToCommand(client, "[SM] %t", "Cvar changed", cvarname, value);
 	}
 
-	LogMessage("\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
+	LogAction(client, -1, "\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 
 	SetConVarString(hndl, value, true);
 
@@ -587,7 +587,7 @@ public Action:Command_Rcon(client, args)
 	decl String:argstring[255];
 	GetCmdArgString(argstring, sizeof(argstring));
 
-	LogMessage("\"%L\" console command (cmdline \"%s\")", client, argstring);
+	LogAction(client, -1, "\"%L\" console command (cmdline \"%s\")", client, argstring);
 
 	ServerCommand("%s", argstring);
 
@@ -613,7 +613,7 @@ public Action:Command_Map(client, args)
 
 	ShowActivity(client, "%t", "Changing map", map);
 
-	LogMessage("\"%L\" changed map to \"%s\"", client, map);
+	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
 
 	new Handle:dp;
 	CreateDataTimer(3.0, Timer_ChangeMap, dp);
@@ -665,7 +665,7 @@ public Action:Command_Kick(client, args)
 	}
 
 	ShowActivity(client, "%t", "Kicked player", arg);
-	LogMessage("\"%L\" kicked \"%L\" (reason \"%s\")", client, target, Arguments[len]);
+	LogAction(client, target, "\"%L\" kicked \"%L\" (reason \"%s\")", client, target, Arguments[len]);
 
 	KickClient(target, "%s", Arguments[len]);
 
