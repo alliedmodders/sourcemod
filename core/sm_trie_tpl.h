@@ -35,7 +35,9 @@
 #include "sm_trie.h"
 
 /**
- * See sm_trie.h for the main implementation, this is a quick templatized version.
+ * See sm_trie.cpp for the main implementation, this is a quick templatized version.
+ * Once this is deemed to be stable I will reduce sm_trie.cpp to a wrapper around the 
+ * template.
  */
 
 template <typename K>
