@@ -141,8 +141,8 @@ public:
 			keyptr++;
 
 			/* Check if this slot is supposed to be empty.  If so, we need to handle CASES 1/2:
-			* Insertion without collisions
-			*/
+			 * Insertion without collisions
+			 */
 			if ( (curidx > m_baseSize) || (node->mode == Node_Unused) )
 			{
 				if (curidx > m_baseSize)
