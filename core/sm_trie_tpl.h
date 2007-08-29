@@ -32,50 +32,46 @@
 #ifndef _INCLUDE_SOURCEMOD_TEMPLATED_TRIE_H_
 #define _INCLUDE_SOURCEMOD_TEMPLATED_TRIE_H_
 
-#include "sm_trie.h"
+#include <new>
+#include <string.h>
+#include <malloc.h>
+#include <assert.h>
+
+enum NodeType
+{
+	Node_Unused = 0,		/* Node is not being used (sparse) */
+	Node_Arc,				/* Node is part of an arc and does not terminate */
+	Node_Term,				/* Node is a terminator */
+};
 
 /**
- * See sm_trie.cpp for the main implementation, this is a quick templatized version.
- * Once this is deemed to be stable I will reduce sm_trie.cpp to a wrapper around the 
- * template.
+ * @brief Trie algorithm based on "Double Array Trie" algorith.
+ * @file sm_trie_tpl.h
+ *
+ * For full works cited and implementation overview, there is a big comment 
+ * block at the bottom of this file.
  */
 
 template <typename K>
 class KTrie
 {
-private:
-	class KTrieNode
-	{
-		friend class KTrie;
-	private:
-		unsigned int idx;
-		unsigned int parent;
-		K value;				/* Value associated with this node */
-		NodeType mode;			/* Current usage type of the node */
-		bool valset;			/* Whether or not a value is set */
-	};
+	class KTrieNode;
 public:
-	KTrie()
-	{
-		m_base = (KTrieNode *)malloc(sizeof(KTrieNode) * (256 + 1));
-		m_stringtab = (char *)malloc(sizeof(char) * 256);
-		m_baseSize = 256;
-		m_stSize = 256;
-
-		internal_clear();
-	}
-	~KTrie()
-	{
-		run_destructors();
-		free(m_base);
-		free(m_stringtab);
-	}
-public:
+	/**
+	 * @brief Clears all set objects in the trie.
+	 */
 	void clear()
 	{
 		run_destructors();
 		internal_clear();
 	}
+
+	/**
+	 * @brief Removes a key from the trie.
+	 *
+	 * @param key		Key to remove.
+	 * @return			True on success, false if key was never set.
+	 */
 	bool remove(const char *key)
 	{
 		KTrieNode *node = internal_retrieve(key);
@@ -89,6 +85,13 @@ public:
 
 		return true;
 	}
+
+	/**
+	 * @brief Retrieves a pointer to the object stored at a given key.
+	 *
+	 * @param key		Key to retrieve.
+	 * @return			Pointer to object, or NULL if key was not found or not set.
+	 */
 	K * retrieve(const char *key)
 	{
 		KTrieNode *node = internal_retrieve(key);
@@ -98,6 +101,14 @@ public:
 		}
 		return &node->value;
 	}
+
+	/**
+	 * @brief Inserts or updates the object stored at a key.
+	 *
+	 * @param key		Key to update or insert.
+	 * @param obj		Object to store at the key.
+	 * @return			True on success, false on failure.
+	 */
 	bool replace(const char *key, const K & obj)
 	{
 		KTrieNode *prev_node = internal_retrieve(key);
@@ -115,6 +126,15 @@ public:
 
 		return true;
 	}
+
+	/**
+	 * @brief Inserts an object at a key.
+	 *
+	 * @param key		Key to insert at.
+	 * @param obj		Object to store at the key.
+	 * @return			True on success, false if the key is already set or 
+	 *					insertion otherwise failed.
+	 */
 	bool insert(const char *key, const K & obj)
 	{
 		unsigned int lastidx = 1;		/* the last node index */
@@ -557,12 +577,12 @@ public:
 		assert(node);
 
 		/* If we've exhausted the string and we have a valid reached node,
-		* the production rule already existed.  Make sure it's valid to set first.
-		*/
+		 * the production rule already existed.  Make sure it's valid to set first.
+		 */
 
 		/* We have to be an Arc.  If the last result was anything else, we would have returned a new 
-		* production earlier.
-		*/
+		 * production earlier.
+		 */
 		assert(node->mode == Node_Arc);
 
 		if (!node->valset)
@@ -574,6 +594,44 @@ public:
 
 		return false;
 	}
+public:
+	KTrie()
+	{
+		m_base = (KTrieNode *)malloc(sizeof(KTrieNode) * (256 + 1));
+		m_stringtab = (char *)malloc(sizeof(char) * 256);
+		m_baseSize = 256;
+		m_stSize = 256;
+
+		internal_clear();
+	}
+	~KTrie()
+	{
+		run_destructors();
+		free(m_base);
+		free(m_stringtab);
+	}
+private:
+	class KTrieNode
+	{
+		friend class KTrie;
+	private:
+		/**
+		 * For Node_Arc, this index stores the 'base' offset to the next arc chain.
+		 *   I.e. to jump from this arc to character C, it will be at base[idx+C].
+		 * For Node_Term, this is an index into the string table.
+		 */
+		unsigned int idx;	
+
+		/**
+		 * This contains the prior arc that we must have come from.
+		 * For example, if arc 63 has a base jump of index 12, and we want to see if
+		 * there is a valid character C, the parent of 12+C must be 63.
+		 */
+		unsigned int parent;
+		K value;				/* Value associated with this node */
+		NodeType mode;			/* Current usage type of the node */
+		bool valset;			/* Whether or not a value is set */
+	};
 private:
 	KTrieNode *internal_retrieve(const char *key)
 	{
@@ -625,7 +683,7 @@ private:
 			return false;
 		}
 
-		memcpy(new_base, m_base, sizeof(KTrieNode *) * (m_baseSize + 1));
+		memcpy(new_base, m_base, sizeof(KTrieNode) * (m_baseSize + 1));
 		memset(&new_base[cur_size + 1], 0, (new_size - cur_size) * sizeof(KTrieNode));
 
 		for (size_t i = 0; i <= m_baseSize; i++)
@@ -771,5 +829,70 @@ private:
 	unsigned int m_stSize;		/* Size of the string table, in bytes */
 	unsigned int m_tail;		/* Current unused offset into the string table */
 };
+
+/**
+ * Double Array Trie algorithm, based on:
+ * An Efficient Implementation of Trie Structures, by
+ *  Jun-ichi Aoe and Katsushi Maromoto, and Takashi Sato
+ * from Software - Practice and Experience, Vol. 22(9), 695-721 (September 1992)
+ *
+ *  A Trie is a simple data structure which stores strings as DFAs, with each 
+ * transition state being a string entry.  For example, observe the following strings:
+ *
+ * BAILOPAN, BAT, BACON, BACK
+ *  These transition as the follow production rules:
+ *  B -> ...                  B
+ *       A -> ...             BA
+ *            I -> ...        BAI
+ *                 LOPAN      BAILOPAN
+ *            T -> ...        BAT
+ *            C ->            BAC
+ *                 O -> ...   BACO
+ *                      N     BACON
+ *                 K          BACK
+ *
+ *  The standard implementation for this - using lists - gives a slow linear lookup, somewhere between
+ * O(N+M) or O(log n).  A faster implementation is proposed in the paper above, which is based on compacting
+ * the transition states into two arrays.  In the paper's implementation, two arrays are used, and thus it is
+ * called the "Double Array" algorithm.  However, the CHECK array's size is maintained the same as BASE, 
+ * so they can be combined into one structure.  The array seems complex at first, but is very simple: it is a
+ * tree structure flattened out into a single vector.  I am calling this implementation the Flat Array Trie.
+ *
+ *  BASE[] is an array where each member is a node in the Trie.  The node can either be UNUSED (empty), an ARC
+ * (containing an offset to the next set of ARCs), or a TERMINATOR (contains the rest of a string).
+ * Each node has an index which must be interpreted based on the node type.  If the node is a TERMINATOR, then the
+ * index is an index into a string table, to find the rest of the string.  
+ *  If the node is an ARC, the index is another index into BASE.  For each possible token that can follow the
+ * current token, the value of those tokens can be added to the index given in the ARC.  Thus, given a current
+ * position and the next desired token, the current arc will jump to another arc which can contain either:
+ *   1) An invalid production (collision, no entry exists)
+ *   2) An empty production (no entry exists)
+ *   3) Another arc label (the string ends here or continues into more productions)
+ *   4) A TERMINATOR (the string ends here and contains an unused set of productions)
+ * 
+ *  So, given current offset N (starting at N=1), jumping to token C means the next offset will be:
+ *      offs = BASE[n] + C
+ *  Thus, the next node will be at:
+ *      BASE[BASE[n] + C]
+ * 
+ *  This allows each ARC to specify the base offset for any of its ARC children, like a tree.  Each node specifies
+ * its parent ARC -- so if an invalid offset is specified, the parent will not match, and thus no such derived 
+ * string exists.
+ *
+ *  This means that arrays can be laid out "sparsely," maximizing their usage.  Note that N need not be related to
+ * the range of tokens (1-256).  I.e., a base index does not have to be at 1, 256, 512, et cetera.  This is because
+ * insertion comes with a small deal of complexity.  To insert a new set of tokens T, the algorithm finds a new 
+ * BASE index N such that BASE[N+T[i]] is unused for each T[i].  Thus, indirection is not necessarily linear; 
+ * traversing a chain of ARC nodes can _and will_ jump around BASE.
+ *
+ *  Of course, given this level of flexibility in the array organization, there are collisions.  This is largely 
+ * where insertions become slow, as the old chain must be relocated before the new one is used.  Relocation means 
+ * finding one or more new base indexes, and this means traversing BASE until an acceptable index is found, such 
+ * that each offset is unused (see description in previous paragraph).
+ *
+ *  However, it is not insertion time we are concerned about.  The "trie" name comes from reTRIEval.  We are only
+ * concerned with lookup and deletion.  Both lookup and deletion are O(k), where k is relative to the length of the 
+ * input string.  Note that it is best case O(1) and worst case O(k).  Deleting the entire trie is always O(1).
+ */
 
 #endif //_INCLUDE_SOURCEMOD_TEMPLATED_TRIE_H_

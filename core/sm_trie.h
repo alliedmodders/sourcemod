@@ -34,13 +34,6 @@
 
 struct Trie;
 
-enum NodeType
-{
-	Node_Unused = 0,		/* Node is not being used (sparse) */
-	Node_Arc,				/* Node is part of an arc and does not terminate */
-	Node_Term,				/* Node is a terminator */
-};
-
 Trie *sm_trie_create();
 void sm_trie_destroy(Trie *trie);
 bool sm_trie_insert(Trie *trie, const char *key, void *value);
