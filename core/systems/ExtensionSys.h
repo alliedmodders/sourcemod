@@ -36,6 +36,7 @@
 #include <ILibrarySys.h>
 #include <sh_list.h>
 #include <sh_string.h>
+#include <sm_trie_tpl.h>
 #include "sm_globals.h"
 #include "ShareSys.h"
 #include <ISmmAPI.h>
@@ -45,6 +46,14 @@
 
 using namespace SourceMod;
 using namespace SourceHook;
+
+class CExtension;
+
+struct sm_extnative_t
+{
+	CExtension *owner;
+	const sp_nativeinfo_t *info;
+};
 
 class CExtension : public IExtension
 {
@@ -95,6 +104,9 @@ class CExtensionManager :
 	public IPluginsListener,
 	public IRootConsoleCommand
 {
+public:
+	CExtensionManager();
+	~CExtensionManager();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -127,6 +139,7 @@ private:
 	CExtension *FindByOrder(unsigned int num);
 private:
 	List<CExtension *> m_Libs;
+	KTrie<sm_extnative_t> m_ExtNatives;
 };
 
 extern CExtensionManager g_Extensions;

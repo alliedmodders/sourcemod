@@ -118,12 +118,18 @@ namespace SourceMod
 										SMInterface **pIface) =0;
 
 		/**
-		 * @brief Adds a list of natives to the global native pool, to be bound on plugin load.
-		 * NOTE: Adding natives currently does not bind them to any loaded plugins.
-		 * You must manually bind late natives.
+		 * @brief Adds a list of natives to the global native pool, to be 
+		 * bound on plugin load.
+		 *
+		 * Adding natives does not bind them to any loaded plugins; the 
+		 * plugins must be reloaded for new natives to take effect.  
 		 * 
 		 * @param myself		Identity token of parent object.
-		 * @param natives		Array of natives to add.  The last entry must have NULL members.
+		 * @param natives		Array of natives to add.  The last entry in 
+		 *						the array must be filled with NULLs to 
+		 *						terminate the array.  The array must be static 
+		 *						as Core will cache the pointer for the 
+		 *						lifetime of the extension.
 		 */
 		virtual void AddNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;
 

@@ -566,51 +566,54 @@ CExtension *CExtensionManager::FindByOrder(unsigned int num)
 
 void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 {
-	List<CExtension *>::iterator iter;
-	CExtension *pExt;
 	IPluginContext *pContext = pPlugin->GetBaseContext();
-	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+
+	List<CExtension *> exts;
+
+	uint32_t natives = pContext->GetNativesNum();
+	sp_native_t *native;
+	sm_extnative_t *x_native;
+	for (uint32_t i=0; i<natives; i++)
 	{
-		pExt = (*iter);
-		if (!pExt->IsLoaded())
+		/* Make sure the native is valid */
+		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
 		{
 			continue;
 		}
-		if (!pExt->m_Natives.size())
+		/* Make sure the native is not already bound */
+		if (native->status == SP_NATIVE_BOUND)
 		{
 			continue;
 		}
-		bool set = false;
-		List<const sp_nativeinfo_t *>::iterator n_iter;
-		const sp_nativeinfo_t *natives;
-		for (n_iter = pExt->m_Natives.begin();
-			 n_iter != pExt->m_Natives.end();
-			 n_iter++)
+		/* See if we've got this native in our cache */
+		if ((x_native = m_ExtNatives.retrieve(native->name)) == NULL)
 		{
-			natives = (*n_iter);
-			uint32_t idx;
-			unsigned int i=0;
-			while (natives[i].func != NULL && natives[i].name != NULL)
-			{
-				if (pContext->BindNative(&natives[i]) == SP_ERROR_NONE)
-				{
-					pContext->FindNativeByName(natives[i].name, &idx);
-					if (!(pContext->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL))
-					{
-						set = true;
-					} else {
-						WeakNative wkn = WeakNative((CPlugin *)pPlugin, idx);
-						pExt->m_WeakNatives.push_back(wkn);
-					}
-				}
-				i++;
-			}
+			continue;
 		}
-		if (set && (pExt->m_Plugins.find(pPlugin) == pExt->m_Plugins.end()))
+		/* Try and bind it */
+		if (pContext->BindNativeToIndex(i, x_native->info->func) != SP_ERROR_NONE)
 		{
-			/* For now, mark this plugin as a requirement.  Later we'll introduce native filtering. */
-			pExt->m_Plugins.push_back(pPlugin);
+			continue;
 		}
+		/* See if it's optional */
+		if (native->flags & SP_NTVFLAG_OPTIONAL)
+		{
+			WeakNative wkn = WeakNative((CPlugin *)pPlugin, i);
+			x_native->owner->m_WeakNatives.push_back(wkn);
+		} else if (exts.find(x_native->owner) == exts.end()) {
+			exts.push_back(x_native->owner);
+		}
+	}
+
+	List<CExtension *>::iterator iter;
+	for (iter = exts.begin(); iter != exts.end(); iter++)
+	{
+		CExtension *pExt = (*iter);
+		if (pExt->m_Plugins.find(pPlugin) != pExt->m_Plugins.end())
+		{
+			continue;
+		}
+		pExt->m_Plugins.push_back(pPlugin);
 	}
 }
 
@@ -704,6 +707,26 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			}
 		}
 
+		/* Unbind our natives from Core */
+		List<const sp_nativeinfo_t *>::iterator native_iter;
+		for (native_iter = pExt->m_Natives.begin();
+			 native_iter != pExt->m_Natives.end();
+			 native_iter++)
+		{
+			const sp_nativeinfo_t *natives = (*native_iter);
+			sm_extnative_t *x_native;
+			for (unsigned int n = 0;
+				 natives[n].name != NULL && natives[n].func != NULL;
+				 n++)
+			{
+				x_native = m_ExtNatives.retrieve(natives[n].name);
+				if (x_native && x_native->owner == pExt)
+				{
+					m_ExtNatives.remove(natives[n].name);
+				}
+			}
+		}
+
 		/* Tell it to unload */
 		pAPI = pExt->GetAPI();
 		pAPI->OnExtensionUnload();
@@ -743,6 +766,18 @@ void CExtensionManager::AddNatives(IExtension *pOwner, const sp_nativeinfo_t *na
 	CExtension *pExt = (CExtension *)pOwner;
 
 	pExt->m_Natives.push_back(natives);
+
+	for (unsigned int i = 0; natives[i].func != NULL && natives[i].name != NULL; i++)
+	{
+		if (m_ExtNatives.retrieve(natives[i].name) != NULL)
+		{
+			continue;
+		}
+		sm_extnative_t x_native;
+		x_native.info = &natives[i];
+		x_native.owner = pExt;
+		m_ExtNatives.insert(natives[i].name, x_native);
+	}
 }
 
 void CExtensionManager::MarkAllLoaded()
@@ -1027,4 +1062,12 @@ CExtension *CExtensionManager::GetExtensionFromIdent(IdentityToken_t *ptr)
 	}
 
 	return NULL;
+}
+
+CExtensionManager::CExtensionManager()
+{
+}
+
+CExtensionManager::~CExtensionManager()
+{
 }
