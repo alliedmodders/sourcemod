@@ -1328,7 +1328,6 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 {
 	IPluginContext *pContext = pPlugin->GetBaseContext();
-	sp_context_t *ctx = pContext->GetContext();
 	
 
 	uint32_t natives = pContext->GetNativesNum();
