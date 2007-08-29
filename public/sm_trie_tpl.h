@@ -45,7 +45,7 @@ enum NodeType
 };
 
 /**
- * @brief Trie algorithm based on "Double Array Trie" algorith.
+ * @brief Trie class for storing key/value pairs, based on double array tries.
  * @file sm_trie_tpl.h
  *
  * For full works cited and implementation overview, there is a big comment 
