@@ -31,8 +31,8 @@
 
 #include <string.h>
 #include <assert.h>
+#include <sm_trie_tpl.h>
 #include "sm_trie.h"
-#include "sm_trie_tpl.h"
 
 struct Trie
 {
