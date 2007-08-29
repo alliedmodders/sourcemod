@@ -89,6 +89,7 @@ namespace SourcePawn
 		cell_t *GetNullRef(SP_NULL_TYPE type);
 		int LocalToStringNULL(cell_t local_addr, char **addr);
 #endif
+		int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native);
 	public: //IPluginDebugInfo
 		int LookupFile(ucell_t addr, const char **filename);
 		int LookupFunction(ucell_t addr, const char **name);

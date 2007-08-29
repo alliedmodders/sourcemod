@@ -44,7 +44,7 @@
 #define SOURCEPAWN_ENGINE_API_VERSION	1
 
 /** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		4
+#define SOURCEPAWN_VM_API_VERSION		5
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -591,6 +591,14 @@ namespace SourcePawn
 		 */
 		virtual int LocalToStringNULL(cell_t local_addr, char **addr) =0;
 #endif
+
+		/**
+		 * @brief Binds a single native to a given native index.
+		 *
+		 * @param index			Index to bind at.
+		 * @param native		Native function to bind.
+		 */
+		virtual int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native) =0;
 	};
 
 

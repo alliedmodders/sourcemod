@@ -642,6 +642,22 @@ int BaseContext::BindNative(const sp_nativeinfo_t *native)
 	return SP_ERROR_NONE;
 }
 
+int BaseContext::BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native)
+{
+	int err;
+	sp_native_t *native;
+
+	if ((err = GetNativeByIndex(index, &native)) != SP_ERROR_NONE)
+	{
+		return err;
+	}
+
+	ctx->natives[index].pfn = native;
+	ctx->natives[index].status = SP_NATIVE_BOUND;
+
+	return SP_ERROR_NONE;
+}
+
 int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 {
 	uint32_t nativesnum, i;

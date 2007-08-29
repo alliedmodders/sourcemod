@@ -769,6 +769,7 @@ CPluginManager::CPluginManager()
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
 	m_pNativeLookup = sm_trie_create();
+	m_pCoreNatives = sm_trie_create();
 }
 
 CPluginManager::~CPluginManager()
@@ -780,6 +781,7 @@ CPluginManager::~CPluginManager()
 	 */
 	sm_trie_destroy(m_LoadLookup);
 	sm_trie_destroy(m_pNativeLookup);
+	sm_trie_destroy(m_pCoreNatives);
 
 	CStack<CPluginManager::CPluginIterator *>::iterator iter;
 	for (iter=m_iters.begin(); iter!=m_iters.end(); iter++)
@@ -1325,18 +1327,28 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 
 void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 {
-	List<sp_nativeinfo_t *>::iterator iter;
+	IPluginContext *pContext = pPlugin->GetBaseContext();
+	sp_context_t *ctx = pContext->GetContext();
+	
 
-	for (iter=m_natives.begin(); iter!=m_natives.end(); iter++)
+	uint32_t natives = pContext->GetNativesNum();
+	sp_native_t *native;
+	SPVM_NATIVE_FUNC pfn;
+	for (uint32_t i=0; i<natives; i++)
 	{
-		sp_nativeinfo_t *natives = (*iter);
-		IPluginContext *ctx = pPlugin->GetBaseContext();
-		unsigned int i=0;
-		/* Attempt to bind every native! */
-		while (natives[i].func != NULL)
+		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
 		{
-			ctx->BindNative(&natives[i++]);
+			continue;
 		}
+		if (native->status == SP_NATIVE_BOUND)
+		{
+			continue;
+		}
+		if (!sm_trie_retrieve(m_pCoreNatives, native->name, (void **)&pfn))
+		{
+			continue;
+		}
+		pContext->BindNativeToIndex(i, pfn);
 	}
 }
 
@@ -1854,7 +1866,10 @@ void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)
 
 void CPluginManager::RegisterNativesFromCore(sp_nativeinfo_t *natives)
 {
-	m_natives.push_back(natives);
+	for (unsigned int i = 0; natives[i].func != NULL; i++)
+	{
+		sm_trie_insert(m_pCoreNatives, natives[i].name, natives[i].func);
+	}
 }
 
 IPlugin *CPluginManager::PluginFromHandle(Handle_t handle, HandleError *err)

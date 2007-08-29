@@ -485,12 +485,12 @@ private:
 private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
-	List<sp_nativeinfo_t *> m_natives;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
 	CPluginInfoDatabase m_PluginInfo;
 	Trie *m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
+	Trie *m_pCoreNatives;
 
 	/* Dynamic native stuff */
 	List<FakeNative *> m_Natives;
