@@ -142,5 +142,6 @@ private:
 extern SourceModBase g_SourceMod;
 extern HandleType_t g_WrBitBufType;		//:TODO: find a better place for this
 extern HandleType_t g_RdBitBufType;		//:TODO: find a better place for this
+extern IExtension *g_pGameExt;
 
 #endif //_INCLUDE_SOURCEMOD_GLOBALHEADER_H_

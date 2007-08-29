@@ -50,6 +50,7 @@
 #include "MenuStyle_Radio.h"
 #include "Database.h"
 #include "HalfLife2.h"
+#include "GameConfigs.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -72,6 +73,7 @@ IForward *g_pOnMapEnd = NULL;
 bool g_Loaded = false;
 int g_StillFrames = 0;
 float g_StillTime = 0.0f;
+IExtension *g_pGameExt = NULL;
 
 typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
 typedef int (*GIVEENGINEPOINTER2)(ISourcePawnEngine *, unsigned int api_version);
@@ -517,6 +519,15 @@ void SourceModBase::DoGlobalPluginLoads()
 
 	/* Load any auto extensions */
 	g_Extensions.TryAutoload();
+
+	/* Load any game extension */
+	const char *game_ext;
+	if ((game_ext = g_pGameConf->GetKeyValue("GameExtension")) != NULL)
+	{
+		char path[PLATFORM_MAX_PATH];
+		UTIL_Format(path, sizeof(path), "%s.ext." PLATFORM_LIB_EXT, game_ext);
+		g_pGameExt = g_Extensions.LoadAutoExtension(path);
+	}
 
 	/* Run the first pass */
 	g_PluginSys.LoadAll_FirstPass(config_path, plugins_path);

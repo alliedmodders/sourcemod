@@ -720,6 +720,12 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 	}
 
+	/* :HACKHACK: make sure g_pGameExt gets cleared */
+	if (pExt == g_pGameExt)
+	{
+		g_pGameExt = NULL;
+	}
+
 	delete pExt;
 
 	List<CExtension *>::iterator iter;
@@ -901,6 +907,12 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 			if (!pExt)
 			{
 				g_RootMenu.ConsolePrint("[SM] Extension number %d was not found.", num);
+				return;
+			}
+
+			if (pExt == g_pGameExt)
+			{
+				g_RootMenu.ConsolePrint("[SM] Game extensions cannot be unloaded at this time.");
 				return;
 			}
 
