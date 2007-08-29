@@ -58,6 +58,9 @@ forward bool:OnClientConnect(client, String:rejectmsg[], maxlen);
 /**
  * Called when a client is entering to the game.
  *
+ * @note Whether a client has a steamid is undefined until OnClientAuthorized
+ * is called, which may occur either before or after OnClientPutInServer.
+ *
  * @param client		Client index.
  * @noreturn
  */
