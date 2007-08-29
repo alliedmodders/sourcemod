@@ -1867,7 +1867,7 @@ void CPluginManager::RegisterNativesFromCore(sp_nativeinfo_t *natives)
 {
 	for (unsigned int i = 0; natives[i].func != NULL; i++)
 	{
-		sm_trie_insert(m_pCoreNatives, natives[i].name, natives[i].func);
+		sm_trie_insert(m_pCoreNatives, natives[i].name, (void *)natives[i].func);
 	}
 }
 
