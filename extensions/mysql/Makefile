@@ -3,7 +3,7 @@
 
 SMSDK = ../..
 SRCDS = ~/srcds
-SOURCEMM = ../../../../sourcemm
+SOURCEMM = ../../../sourcemm
 MYSQL = ../../../mysql-5.0
 
 #####################################
@@ -32,13 +32,12 @@ CPP = gcc-4.1
 HL2PUB = $(HL2SDK)/public
 HL2LIB = $(HL2SDK)/linux_sdk
 HL2SDK = $(SOURCEMM)/hl2sdk
-SMM_TRUNK = $(SOURCEMM)/trunk
 
 LINK = $(LINK_HL2) $(MYSQL)/lib/libmysqlclient_r.a -lz -static-libgcc -lpthread
 
 INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine \
 	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 \
-	-I$(SMM_TRUNK) -I$(SMM_TRUNK)/sourcehook -I$(SMM_TRUNK)/sourcemm \
+	-I$(SOURCEMM) -I$(SOURCEMM)/sourcehook -I$(SOURCEMM)/sourcemm \
 	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
 	-I$(MYSQL)/include
 
