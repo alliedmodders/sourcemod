@@ -215,7 +215,7 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 				{
 					IA32_Mov_Reg_Rm_Disp8(jit, reg2, REG_EBX, (jit_int8_t)pEnc->offset);
 				} else if (!pEnc->offset) {
-					IA32_Mov_Reg_Rm(jit, reg, REG_EBX, MOD_MEM_REG);
+					IA32_Mov_Reg_Rm(jit, reg2, REG_EBX, MOD_MEM_REG);
 				} else {
 					IA32_Mov_Reg_Rm_Disp32(jit, reg2, REG_EBX, pEnc->offset);
 				}
