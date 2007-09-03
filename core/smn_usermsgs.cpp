@@ -79,7 +79,9 @@ UsrMessageNatives::~UsrMessageNatives()
 void UsrMessageNatives::OnSourceModAllInitialized()
 {
 	HandleAccess sec;
-	sec.access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTITY;
+
+	g_HandleSys.InitAccessDefaults(NULL, &sec);
+	sec.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
 
 	g_WrBitBufType = g_HandleSys.CreateType("BitBufWriter", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	g_RdBitBufType = g_HandleSys.CreateType("BitBufReader", this, 0, NULL, &sec, g_pCoreIdent, NULL);

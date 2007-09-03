@@ -82,7 +82,9 @@ TimerNatives::~TimerNatives()
 void TimerNatives::OnSourceModAllInitialized()
 {
 	HandleAccess sec;
-	sec.access[HandleAccess_Clone] |= HANDLE_RESTRICT_IDENTITY;
+
+	g_HandleSys.InitAccessDefaults(NULL, &sec);
+	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 
 	g_TimerType = g_HandleSys.CreateType("Timer", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 }
@@ -230,7 +232,7 @@ static cell_t smn_TriggerTimer(IPluginContext *pCtx, const cell_t *params)
 	HandleSecurity sec;
 	TimerInfo *pInfo;
 
-	sec.pOwner = NULL;
+	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_TimerType, &sec, (void **)&pInfo))
