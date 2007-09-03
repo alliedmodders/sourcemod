@@ -482,44 +482,89 @@ void WriteOp_Sysreq_C_Function(JitWriter *jit)
 	IA32_Return(jit);
 }
 
-void GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], ucell_t _dimcount, bool autozero)
+typedef struct array_creation_s
 {
-	cell_t vectors = 1;				/* we need one vector to start off with */
-	cell_t cur_offs = 0;
-	cell_t cur_write = 0;
-	cell_t dimcount = _dimcount;
+	const cell_t *dim_list;				/* Dimension sizes */
+	cell_t dim_count;					/* Number of dimensions */
+	cell_t *data_offs;					/* Current offset AFTER the indirection vectors (data) */
+	cell_t *base;						/* array base */
+} array_creation_t;
 
-	/* Initialize rotation */
-	cur_write = dims[dimcount-1];
+cell_t _GenerateArrayIndirectionVectors(array_creation_t *ar, int dim, cell_t cur_offs)
+{
+	cell_t write_offs = cur_offs;
+	cell_t *data_offs = ar->data_offs;
+
+	cur_offs += ar->dim_list[dim];
+
+	/**
+	 * Dimension n-x where x > 2 will have sub-vectors.  
+	 * Otherwise, we just need to reference the data section.
+	 */
+	if (dim < ar->dim_count - 2)
+	{
+		/**
+		 * For each index at this dimension, write offstes to our sub-vectors.
+		 * After we write one sub-vector, we generate its sub-vectors recursively.
+		 * At the end, we're given the next offset we can use.
+		 */
+		for (int i = 0; i < ar->dim_list[dim]; i++)
+		{
+			ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell_t);
+			write_offs++;
+			cur_offs = _GenerateArrayIndirectionVectors(ar, dim + 1, cur_offs);
+		}
+	} else {
+		/**
+		 * In this section, there are no sub-vectors, we need to write offsets 
+		 * to the data.  This is separate so the data stays in one big chunk.
+		 * The data offset will increment by the size of the last dimension, 
+		 * because that is where the data is finally computed as. 
+		 */
+		for (int i = 0; i < ar->dim_list[dim]; i++)
+		{
+			ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell_t);
+			write_offs++;
+			*data_offs = *data_offs + ar->dim_list[dim + 1];
+		}
+	}
+
+	return cur_offs;
+}
+
+static cell_t calc_indirection(const array_creation_t *ar, cell_t dim)
+{
+	cell_t size = ar->dim_list[dim];
+
+	if (dim < ar->dim_count - 2)
+	{
+		size += ar->dim_list[dim] * calc_indirection(ar, dim + 1);
+	}
+
+	return size;
+}
+
+void GenerateArrayIndirectionVectors(cell_t *arraybase, cell_t dims[], cell_t _dimcount, bool autozero)
+{
+	array_creation_t ar;
+	cell_t data_offs;
+
+	/* Reverse the dimensions */
+	cell_t dim_list[sDIMEN_MAX];
+	int cur_dim = 0;
+	for (int i = _dimcount - 1; i >= 0; i--)
+	{
+		dim_list[cur_dim++] = dims[i];
+	}
 	
-	while (--dimcount >= 1)
-	{
-		cell_t cur_dim = dims[dimcount];
-		cell_t sub_dim = dims[dimcount-1];
-		for (cell_t i=0; i<vectors; i++)
-		{
-			for (cell_t j=0; j<cur_dim; j++)
-			{
-				arraybase[cur_offs] = (cur_write - cur_offs)*sizeof(cell_t);
-				cur_offs++;
-				cur_write += sub_dim;
-			}
-		}
-		vectors = cur_dim;
-	}
+	ar.base = arraybase;
+	ar.dim_list = dim_list;
+	ar.dim_count = _dimcount;
+	ar.data_offs = &data_offs;
 
-	/* everything after cur_offs can be zeroed */
-	if (autozero)
-	{
-		size_t size = 1;
-		for (ucell_t i=0; i<_dimcount; i++)
-		{
-			size *= dims[i];
-		}
-		memset(&arraybase[cur_offs], 0, size*sizeof(cell_t));
-	}
+	data_offs = calc_indirection(&ar, 0);
 
-	return;
+	_GenerateArrayIndirectionVectors(&ar, 0, 0);
 }
 
 /**

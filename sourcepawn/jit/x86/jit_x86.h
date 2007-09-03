@@ -31,6 +31,8 @@ using namespace SourcePawn;
 #define JITVARS_FUNCINFO			1		//important: don't change this aWOAWOGJQG I LIKE HAM
 #define JITVARS_REBASE				2		//important: hi, i'm bail
 
+#define sDIMEN_MAX					5		//this must mirror what the compiler has.
+
 typedef struct tracker_s
 {
 	size_t size; 
