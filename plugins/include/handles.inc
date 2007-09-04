@@ -43,16 +43,6 @@ enum Handle
 	INVALID_HANDLE = 0,
 };
 
-/**
- * Returns if a handle is valid or not.
- * @note It is not a good idea to call this on every Handle.  If you code properly,
- *       all of your Handles will either be valid or will expose important bugs to fix.
- *       This is provided for situations only where testing for handle validity is needed.
- *
- * @param hndl		Handle to test for validity.
- * @return			True if handle is valid, false otherwise.
- */
-native bool:IsValidHandle(Handle:hndl);
 
 /**
  * Closes a Handle.  If the handle has multiple copies open, 
@@ -85,3 +75,21 @@ native bool:CloseHandle(Handle:hndl);
  * @error			Invalid handles will cause a run time error.
  */
 native Handle:CloneHandle(Handle:hndl, Handle:plugin=INVALID_HANDLE);
+
+/**
+ * Do not use this function.  Returns if a Handle and its contents 
+ * are readable, whereas INVALID_HANDLE only checks for the absence 
+ * of a Handle.
+ *
+ * This function is intended only for tests where the validity of a 
+ * Handle can absolutely not be known. 
+ *
+ * Do not use this to check the return values of functions, or to 
+ * check if timers should be closed (except in very rare cases).  
+ * This function is for very specific usage and using it for general 
+ * purpose routines can and will hide very subtle bugs.
+ *
+ * @param hndl		Handle to test for validity.
+ * @return			True if handle is valid, false otherwise.
+ */
+native bool:IsValidHandle(Handle:hndl);
