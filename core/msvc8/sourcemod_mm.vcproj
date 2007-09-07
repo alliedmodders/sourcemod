@@ -535,7 +535,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\sm_trie_tpl.h"
+				RelativePath="..\..\public\sm_trie_tpl.h"
 				>
 			</File>
 			<File

@@ -977,7 +977,14 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 	char *cmd;
 	pContext->LocalToString(params[2], &cmd);
 
-	return g_ConCmds.CheckCommandAccess(params[1], cmd, params[3]) ? 1 : 0;
+	/* Support the newer version which will auto-check for an existing command. */
+	FlagBits bits = params[3];
+	if (params[0] == 4 && params[4])
+	{
+		g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
+	}
+
+	return g_ConCmds.CheckCommandAccess(params[1], cmd, bits) ? 1 : 0;
 }
 
 REGISTER_NATIVES(consoleNatives)
