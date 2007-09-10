@@ -831,6 +831,96 @@ static cell_t smn_KvSavePosition(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_CopySubkeys(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl_copied = static_cast<Handle_t>(params[1]);
+	Handle_t hndl_parent = static_cast<Handle_t>(params[2]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk_copied, *pStk_parent;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl_copied, g_KeyValueType, &sec, (void **)&pStk_copied))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_copied, herr);
+	}
+	if ((herr=g_HandleSys.ReadHandle(hndl_parent, g_KeyValueType, &sec, (void **)&pStk_parent))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_parent, herr);
+	}
+
+	pStk_copied->pCurRoot.front()->CopySubkeys(pStk_parent->pCurRoot.front());
+
+	return 1;
+}
+
+static cell_t smn_GetNameSymbol(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+	cell_t *val;
+	char *key;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	if (pStk->pCurRoot.size() < 2)
+	{
+		return 0;
+	}
+
+	pContext->LocalToString(params[2], &key);
+
+	KeyValues *pKv = pStk->pCurRoot.front()->FindKey(key);
+	if (!pKv)
+	{
+		return 0;
+	}
+	pContext->LocalToPhysAddr(params[3], &val);
+	*val = pKv->GetNameSymbol();
+
+	return 1;
+}
+
+static cell_t smn_FindKeyById(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	KeyValues *pKv = pStk->pCurRoot.front()->FindKey(params[2]);
+	if (!pKv)
+	{
+		return 0;
+	}
+
+	pContext->StringToLocalUTF8(params[3], params[4], pKv->GetName(), NULL);
+
+	return 1;
+}
+
 static KeyValueNatives s_KeyValueNatives;
 
 REGISTER_NATIVES(keyvaluenatives)
@@ -863,5 +953,8 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvDeleteKey",				smn_KvDeleteKey},
 	{"KvNodesInStack",			smn_KvNodesInStack},
 	{"KvSavePosition",			smn_KvSavePosition},
+	{"KvCopySubkeys",			smn_CopySubkeys},
+	{"KvFindKeyById",			smn_FindKeyById},
+	{"KvGetNameSymbol",			smn_GetNameSymbol},
 	{NULL,						NULL}
 };

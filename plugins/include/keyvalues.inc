@@ -350,3 +350,38 @@ native KvSetEscapeSequences(Handle:kv, bool:useEscapes);
  * @error				Invalid Handle.
  */
 native KvNodesInStack(Handle:kv);
+
+/**
+ * Makes a new copy of all subkeys in the origin KeyValues to
+ * the destination KeyValues.
+ * NOTE: All KeyValues are processed from the current location not the root one.
+ *
+ * @param origin		Origin KeyValues Handle.
+ * @param dest			Destination KeyValues Handlee.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native KvCopySubkeys(Handle:origin, Handle:dest);
+
+/** 
+ * Finds a KeyValues name by id.
+ *
+ * @param kv			KeyValues Handle.
+ * @param id			KeyValues id.
+ * @param name			Buffer to store the name.
+ * @param maxlength		Maximum length of the value buffer.
+ * @return			True on success, false if id not found.
+ * @error				Invalid Handle.
+ */
+native bool:KvFindKeyById(Handle:kv, id, String:name[], maxlength);
+
+/** 
+ * Finds a KeyValues id inside a KeyValues tree.
+ *
+ * @param kv			KeyValues Handle.
+ * @param key			Key name.
+ * @param id			Id of the found KeyValue.
+ * @return			True on success, false if key not found.
+ * @error				Invalid Handle.
+ */
+native bool:KvGetNameSymbol(Handle:kv, const String:key[], &id);
