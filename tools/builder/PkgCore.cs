@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[13];
+			string [] folders = new string[15];
 
 			folders[0] = "addons/sourcemod/bin";
 			folders[1] = "addons/sourcemod/plugins/disabled";
@@ -44,6 +44,8 @@ namespace builder
 			folders[10] = "addons/sourcemod/scripting/testsuite";
 			folders[11] = "cfg/sourcemod";
 			folders[12] = "addons/sourcemod/configs/sql-init-scripts";
+			folders[13] = "addons/sourcemod/configs/sql-init-scripts/mysql";
+			folders[14] = "addons/sourcemod/configs/sql-init-scripts/sqlite";
 
 			return folders;
 		}
@@ -64,7 +66,18 @@ namespace builder
 			builder.CopyFolder(this, "configs", "addons/sourcemod/configs", null);
 			builder.CopyFolder(this, "configs/geoip", "addons/sourcemod/configs/geoip", null);
 			builder.CopyFolder(this, "configs/cfg", "cfg/sourcemod", null);
-			builder.CopyFolder(this, "configs/sql-init-scripts", "addons/sourcemod/configs/sql-init-scripts", null);
+			builder.CopyFolder(this,
+				"configs/sql-init-scripts", 
+				"addons/sourcemod/configs/sql-init-scripts", 
+				null);
+			builder.CopyFolder(this,
+				"configs/sql-init-scripts/mysql",
+				"addons/sourcemod/configs/sql-init-scripts/mysql",
+				null);
+			builder.CopyFolder(this,
+				"configs/sql-init-scripts/sqlite",
+				"addons/sourcemod/configs/sql-init-scripts/sqlite",
+				null);
 			
 			string [] plugin_omits = new string[1];
 			plugin_omits[0] = "spcomp.exe";
