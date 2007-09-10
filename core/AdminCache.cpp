@@ -40,6 +40,7 @@
 #include "Logger.h"
 #include "sourcemod.h"
 #include "sm_stringutil.h"
+#include "sourcemm_api.h"
 
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
@@ -48,6 +49,8 @@
 AdminCache g_Admins;
 AdminFlag g_FlagLetters[26];
 bool g_FlagSet[26];
+
+ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY|FCVAR_PROTECTED, "Mode for deciding immunity protection");
 
 /* Default flags */
 AdminFlag g_DefaultFlags[26] = 
@@ -443,8 +446,7 @@ AdminId AdminCache::CreateAdmin(const char *name)
 	pUser->magic = USR_MAGIC_SET;
 	pUser->auth.identidx = -1;
 	pUser->auth.index = 0;
-	pUser->immune_default = false;
-	pUser->immune_global = false;
+	pUser->immunity_level = 0;
 	pUser->serialchange = 1;
 
 	if (m_FirstUser == INVALID_ADMIN_ID)
@@ -487,8 +489,7 @@ GroupId AdminCache::AddGroup(const char *group_name)
 		id = m_pMemory->CreateMem(sizeof(AdminGroup), (void **)&pGroup);
 	}
 
-	pGroup->immune_default = false;
-	pGroup->immune_global = false;
+	pGroup->immunity_level = 0;
 	pGroup->immune_table = -1;
 	pGroup->magic = GRP_MAGIC_SET;
 	pGroup->next_grp = INVALID_GROUP_ID;
@@ -594,7 +595,7 @@ const char *AdminCache::GetGroupName(GroupId gid)
 	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(gid);
 	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
 	{
-		return 0;
+		return NULL;
 	}
 
 	return m_pStrings->GetString(pGroup->nameidx);
@@ -608,12 +609,23 @@ void AdminCache::SetGroupGenericImmunity(GroupId id, ImmunityType type, bool ena
 		return;
 	}
 
-	if (type == Immunity_Default)
+	unsigned int level = 0;
+
+	if (enabled)
 	{
-		pGroup->immune_default = enabled;
-	} else if (type == Immunity_Global) {
-		pGroup->immune_global = enabled;
-	} 
+		if (type == Immunity_Default)
+		{
+			level = 1;
+		} else if (type == Immunity_Global) {
+			level = 2;
+		}
+		if (level > pGroup->immunity_level)
+		{
+			pGroup->immunity_level = level;
+		}
+	} else {
+		pGroup->immunity_level = 0;
+	}
 }
 
 bool AdminCache::GetGroupGenericImmunity(GroupId id, ImmunityType type)
@@ -624,11 +636,11 @@ bool AdminCache::GetGroupGenericImmunity(GroupId id, ImmunityType type)
 		return false;
 	}
 
-	if (type == Immunity_Default)
+	if (type == Immunity_Default && pGroup->immunity_level >= 1)
 	{
-		return pGroup->immune_default;
-	} else if (type == Immunity_Global) {
-		return pGroup->immune_global;
+		return true;
+	} else if (type == Immunity_Global && pGroup->immunity_level >= 2) {
+		return true;
 	}
 
 	return false;
@@ -1333,13 +1345,9 @@ bool AdminCache::AdminInheritGroup(AdminId id, GroupId gid)
 	/* Compute new effective permissions */
 	pUser->eflags |= pGroup->addflags;
 
-	if (pGroup->immune_default)
+	if (pGroup->immunity_level > pUser->immunity_level)
 	{
-		pUser->immune_default = true;
-	}
-	if (pGroup->immune_global)
-	{
-		pUser->immune_global = true;
+		pUser->immunity_level = pGroup->immunity_level;
 	}
 
 	pUser->serialchange++;
@@ -1486,6 +1494,11 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 		return true;
 	}
 
+	if (id == target)
+	{
+		return true;
+	}
+
 	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
 	if (!pUser || pUser->magic != USR_MAGIC_SET)
 	{
@@ -1506,23 +1519,39 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 		return true;
 	}
 
-	/** Fourth, if the targeted admin has global immunity, targeting fails. */
-	if (pTarget->immune_global)
+	/** Fourth, if the targeted admin is immune from targeting admin. */
+	int mode = sm_immunity_mode.GetInt();
+	switch (mode)
 	{
-		return false;
+		case 1:
+		{
+			if (pTarget->immunity_level > pUser->immunity_level)
+			{
+				return false;
+			}
+			break;
+		}
+		case 3:
+		{
+			/* If neither has any immunity, let this pass. */
+			if (!pUser->immunity_level && !pTarget->immunity_level)
+			{
+				return true;
+			}
+			/* Don't break, go to the next case. */
+		}
+		case 2:
+		{
+			if (pTarget->immunity_level >= pUser->immunity_level)
+			{
+				return false;
+			}
+			break;
+		}
 	}
 
 	/** 
-	 * Fifth, if the targeted admin has default immunity 
-	 *  and the admin belongs to no groups, targeting fails.
-	 */
-	if (pTarget->immune_default && pUser->grp_count < 1)
-	{
-		return false;
-	}
-
-	/** 
-	 * Sixth, if the targeted admin has specific immunity from the
+	 * Fifth, if the targeted admin has specific immunity from the
 	 *  targeting admin via group immunities, targeting fails.
 	 */
 	//:TODO: speed this up... maybe with trie hacks.
@@ -1625,3 +1654,56 @@ bool AdminCache::CanAdminUseCommand(int client, const char *cmd)
 
 	return g_ConCmds.CheckCommandAccess(client, cmd, bits);
 }
+
+unsigned int AdminCache::SetGroupImmunityLevel(GroupId gid, unsigned int level)
+{
+	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(gid);
+	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
+	{
+		return 0;
+	}
+
+	unsigned int old_level = pGroup->immunity_level;
+
+	pGroup->immunity_level = level;
+
+	return old_level;
+}
+
+unsigned int AdminCache::GetGroupImmunityLevel(GroupId gid)
+{
+	AdminGroup *pGroup = (AdminGroup *)m_pMemory->GetAddress(gid);
+	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
+	{
+		return 0;
+	}
+
+	return pGroup->immunity_level;
+}
+
+unsigned int AdminCache::SetAdminImmunityLevel(AdminId id, unsigned int level)
+{
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	if (!pUser || pUser->magic != USR_MAGIC_SET)
+	{
+		return 0;
+	}
+
+	unsigned int old_level = pUser->immunity_level;
+
+	pUser->immunity_level = level;
+
+	return old_level;
+}
+
+unsigned int AdminCache::GetAdminImmunityLevel(AdminId id)
+{
+	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
+	if (!pUser || pUser->magic != USR_MAGIC_SET)
+	{
+		return 0;
+	}
+
+	return pUser->immunity_level;
+}
+

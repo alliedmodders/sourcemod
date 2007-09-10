@@ -111,30 +111,42 @@ ReadAdminLine(const String:line[])
 	new String:flags[64];	
 	cur_idx = BreakString(line[idx], flags, sizeof(flags));
 	idx += cur_idx;
-	
-	if (flags[0] == '@')
+
+	/* Read immunity level, if any */
+	new level, flag_idx;
+
+	if ((flag_idx = StringToIntEx(flags, level)) > 0)
 	{
-		new GroupId:gid = FindAdmGroup(flags[1]);
+		SetAdminImmunityLevel(admin, level);
+		if (flags[flag_idx] == ':')
+		{
+			flag_idx++;
+		}
+	}
+
+	if (flags[flag_idx] == '@')
+	{
+		new GroupId:gid = FindAdmGroup(flags[flag_idx + 1]);
 		if (gid == INVALID_GROUP_ID)
 		{
-			ParseError("Invalid group detected: %s", flags[1]);
+			ParseError("Invalid group detected: %s", flags[flag_idx + 1]);
 			return;
 		}
 		AdminInheritGroup(admin, gid);
 	} else {
-		new len = strlen(flags);
+		new len = strlen(flags[flag_idx]);
 		new bool:is_default = false;
 		for (new i=0; i<len; i++)
 		{
-			if (flags[i] == '$')
+			if (!level && flags[flag_idx + i] == '$')
 			{
-				is_default = true;
+				SetAdminImmunityLevel(admin, 1);
 			} else {
 				new AdminFlag:flag;
 				
-				if (!FindFlagByChar(flags[i], flag))
+				if (!FindFlagByChar(flags[flag_idx + i], flag))
 				{
-					ParseError("Invalid flag detected: %c", flags[i]);
+					ParseError("Invalid flag detected: %c", flags[flag_idx + i]);
 					continue;
 				}
 				SetAdminFlag(admin, flag, true);
@@ -172,3 +184,4 @@ ReadAdminLine(const String:line[])
 		}
 	}
 }
+

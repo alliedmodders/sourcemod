@@ -5,14 +5,15 @@ CREATE TABLE sm_admins (
   identity varchar(65) NOT NULL,
   password varchar(65),
   flags varchar(30) NOT NULL,
-  name varchar(65) NOT NULL
+  name varchar(65) NOT NULL,
+  immunity INTEGER NOT NULL
 );
 
 CREATE TABLE sm_groups (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  immunity varchar(16) NOT NULL CHECK(immunity IN ('none', 'default', 'global', 'all')),
   flags varchar(30) NOT NULL,
-  name varchar(120) NOT NULL
+  name varchar(120) NOT NULL,
+  immunity_level INTEGER NOT NULL
 );
 
 CREATE TABLE sm_group_immunity (
@@ -42,3 +43,12 @@ CREATE TABLE sm_admins_groups (
   inherit_order int(10) NOT NULL,
   PRIMARY KEY (admin_id, group_id)
 );
+
+CREATE TABLE IF NOT EXISTS sm_config (
+  cfg_key varchar(32) NOT NULL,
+  cfg_value varchar(255) NOT NULL,
+  PRIMARY KEY (cfg_key)
+);
+
+REPLACE INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.1409');
+

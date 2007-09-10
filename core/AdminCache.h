@@ -50,8 +50,7 @@ using namespace SourceHook;
 struct AdminGroup
 {
 	uint32_t magic;					/* Magic flag, for memory validation (ugh) */
-	bool immune_global;				/* Global immunity? */
-	bool immune_default;			/* Default immunity? */
+	unsigned int immunity_level;	/* Immunity level */
 	/* Immune from target table (-1 = nonexistent)
 	 * [0] = number of entries
 	 * [1...N] = immune targets
@@ -90,8 +89,7 @@ struct AdminUser
 	int next_user;					/* Next user in the list */
 	int prev_user;					/* Previous user in the list */
 	UserAuth auth;					/* Auth method for this user */
-	bool immune_global;				/* Whether globally immune */
-	bool immune_default;			/* Whether defaultly immune */
+	unsigned int immunity_level;	/* Immunity level */
 	unsigned int serialchange;		/* Serial # for changes */
 };
 
@@ -158,6 +156,10 @@ public: //IAdminSystem
 	unsigned int GetAdminSerialChange(AdminId id);
 	bool CanAdminUseCommand(int client, const char *cmd);
 	const char *GetGroupName(GroupId gid);
+	virtual unsigned int SetGroupImmunityLevel(GroupId gid, unsigned int level);
+	virtual unsigned int GetGroupImmunityLevel(GroupId gid);
+	virtual unsigned int SetAdminImmunityLevel(AdminId id, unsigned int level);
+	virtual unsigned int GetAdminImmunityLevel(AdminId id);
 public:
 	bool IsValidAdmin(AdminId id);
 private:

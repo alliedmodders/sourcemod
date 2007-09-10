@@ -112,7 +112,7 @@ FetchUsers(Handle:db)
 	decl String:query[255], String:error[255];
 	new Handle:hQuery, Handle:hGroupQuery;
 	
-	Format(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name FROM sm_admins");
+	Format(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name, immunity FROM sm_admins");
 	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
 	{
 		SQL_GetError(db, error, sizeof(error));
@@ -136,6 +136,7 @@ FetchUsers(Handle:db)
 	decl String:password[80];
 	decl String:flags[32];
 	decl String:name[80];
+	new immunity;
 	new AdminId:adm, id;
 	
 	while (SQL_FetchRow(hQuery))
@@ -146,6 +147,7 @@ FetchUsers(Handle:db)
 		SQL_FetchString(hQuery, 3, password, sizeof(password));
 		SQL_FetchString(hQuery, 4, flags, sizeof(flags));
 		SQL_FetchString(hQuery, 5, name, sizeof(name));
+		immunity = SQL_FetchInt(hQuery, 6);
 		
 		/* Use a pre-existing admin if we can */
 		if ((adm = FindAdminByIdentity(authtype, identity)) == INVALID_ADMIN_ID)
@@ -159,7 +161,7 @@ FetchUsers(Handle:db)
 		}
 		
 		#if defined _DEBUG
-		PrintToServer("Found SQL admin (%d,%s,%s,%s,%s,%s):%d", id, authtype, identity, password, flags, name, adm);
+		PrintToServer("Found SQL admin (%d,%s,%s,%s,%s,%s,%d):%d", id, authtype, identity, password, flags, name, immunity, adm);
 		#endif
 		
 		/* See if this admin wants a password */
@@ -179,6 +181,8 @@ FetchUsers(Handle:db)
 			}
 			SetAdminFlag(adm, flag, true);
 		}
+
+		SetAdminImmunityLevel(adm, immunity);
 		
 		/* Look up groups */
 		if (hGroupQuery != INVALID_HANDLE)
@@ -196,7 +200,7 @@ FetchGroups(Handle:db)
 	decl String:query[255];
 	new Handle:hQuery;
 	
-	Format(query, sizeof(query), "SELECT immunity, flags, name FROM sm_groups");
+	Format(query, sizeof(query), "SELECT flags, name, immunity_level FROM sm_groups");
 
 	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
 	{
@@ -208,17 +212,17 @@ FetchGroups(Handle:db)
 	}
 	
 	/* Now start fetching groups */
-	decl String:immunity[16];
 	decl String:flags[32];
 	decl String:name[128];
+	new immunity;
 	while (SQL_FetchRow(hQuery))
 	{
-		SQL_FetchString(hQuery, 0, immunity, sizeof(immunity));
-		SQL_FetchString(hQuery, 1, flags, sizeof(flags));
-		SQL_FetchString(hQuery, 2, name, sizeof(name));
+		SQL_FetchString(hQuery, 0, flags, sizeof(flags));
+		SQL_FetchString(hQuery, 1, name, sizeof(name));
+		immunity = SQL_FetchInt(hQuery, 2);
 		
 #if defined _DEBUG
-		PrintToServer("Adding group (%s, %s, %s)", immunity, flags, name);
+		PrintToServer("Adding group (%d, %s, %s)", immunity, flags, name);
 #endif
 		
 		/* Find or create the group */
@@ -241,15 +245,7 @@ FetchGroups(Handle:db)
 		}
 		
 		/* Set the immunity level this group has */
-		if (StrEqual(immunity, "all"))
-		{
-			SetAdmGroupImmunity(gid, Immunity_Default, true);
-			SetAdmGroupImmunity(gid, Immunity_Global, true);
-		} else if (StrEqual(immunity, "default")) {
-			SetAdmGroupImmunity(gid, Immunity_Default, true);
-		} else if (StrEqual(immunity, "global")) {
-			SetAdmGroupImmunity(gid, Immunity_Global, true);
-		}
+		SetAdmGroupImmunityLevel(gid, immunity);
 	}
 	
 	CloseHandle(hQuery);
@@ -387,3 +383,4 @@ FetchOverrides(Handle:db)
 	
 	CloseHandle(hQuery);
 }
+

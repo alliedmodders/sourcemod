@@ -450,6 +450,26 @@ static cell_t CreateAuthMethod(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetAdmGroupImmunityLevel(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Admins.SetGroupImmunityLevel(params[1], params[2]);
+}
+
+static cell_t GetAdmGroupImmunityLevel(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Admins.GetGroupImmunityLevel(params[1]);
+}
+
+static cell_t SetAdminImmunityLevel(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Admins.SetAdminImmunityLevel(params[1], params[2]);
+}
+
+static cell_t GetAdminImmunityLevel(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Admins.GetAdminImmunityLevel(params[1]);
+}
+
 static cell_t FindFlagByName(IPluginContext *pContext, const cell_t *params)
 {
 	char *flag;
@@ -542,6 +562,11 @@ REGISTER_NATIVES(adminNatives)
 	{"FindFlagByName",			FindFlagByName},
 	{"FindFlagByChar",			FindFlagByChar},
 	{"ReadFlagString",			ReadFlagString},
+	{"GetAdmGroupImmunityLevel",GetAdmGroupImmunityLevel},
+	{"SetAdmGroupImmunityLevel",SetAdmGroupImmunityLevel},
+	{"GetAdminImmunityLevel",	GetAdminImmunityLevel},
+	{"SetAdminImmunityLevel",	SetAdminImmunityLevel},
 	/* -------------------------------------------------- */
 	{NULL,						NULL},
 };
+

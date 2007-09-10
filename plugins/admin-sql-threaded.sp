@@ -352,6 +352,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 	decl String:flags[32];
 	decl String:name[80];
 	new AdminId:adm, id;
+	new immunity;
 	
 	/**
 	 * Cache user info -- [0] = db id, [1] = cache id, [2] = groups
@@ -367,6 +368,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		SQL_FetchString(hndl, 3, password, sizeof(password));
 		SQL_FetchString(hndl, 4, flags, sizeof(flags));
 		SQL_FetchString(hndl, 5, name, sizeof(name));
+		immunity = SQL_FetchInt(hndl, 7);
 		
 		/* For dynamic admins we clear anything already in the cache. */
 		if ((adm = FindAdminByIdentity(authtype, identity)) != INVALID_ADMIN_ID)
@@ -387,7 +389,7 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		total_users++;
 		
 #if defined _DEBUG
-		PrintToServer("Found SQL admin (%d,%s,%s,%s,%s,%s):%d:%d", id, authtype, identity, password, flags, name, adm, user_lookup[total_users-1][2]);
+		PrintToServer("Found SQL admin (%d,%s,%s,%s,%s,%s,%d):%d:%d", id, authtype, identity, password, flags, name, immunity, adm, user_lookup[total_users-1][2]);
 #endif
 		
 		/* See if this admin wants a password */
@@ -395,6 +397,8 @@ public OnReceiveUser(Handle:owner, Handle:hndl, const String:error[], any:data)
 		{
 			SetAdminPassword(adm, password);
 		}
+
+		SetAdminImmunityLevel(adm, immunity);
 		
 		/* Apply each flag */
 		new len = strlen(flags);
@@ -488,7 +492,7 @@ FetchUser(Handle:db, client)
 	decl String:query[512];
 	new len = 0;
 	
-	len += Format(query[len], sizeof(query)-len, "SELECT a.id, a.authtype, a.identity, a.password, a.flags, a.name, COUNT(ag.group_id)");
+	len += Format(query[len], sizeof(query)-len, "SELECT a.id, a.authtype, a.identity, a.password, a.flags, a.name, COUNT(ag.group_id), immunity");
 	len += Format(query[len], sizeof(query)-len, " FROM sm_admins a LEFT JOIN sm_admins_groups ag ON a.id = ag.admin_id WHERE ");
 	len += Format(query[len], sizeof(query)-len, " (a.authtype = 'ip' AND a.identity = '%s')", ipaddr);
 	len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'name' AND a.identity = '%s')", safe_name);
@@ -710,17 +714,17 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 	/**
 	 * Now start fetching groups.
 	 */
-	decl String:immunity[16];
 	decl String:flags[32];
 	decl String:name[128];
+	new immunity;
 	while (SQL_FetchRow(hndl))
 	{
-		SQL_FetchString(hndl, 0, immunity, sizeof(immunity));
-		SQL_FetchString(hndl, 1, flags, sizeof(flags));
-		SQL_FetchString(hndl, 2, name, sizeof(name));
+		SQL_FetchString(hndl, 0, flags, sizeof(flags));
+		SQL_FetchString(hndl, 1, name, sizeof(name));
+		immunity = SQL_FetchInt(hndl, 2);
 		
 #if defined _DEBUG
-		PrintToServer("Adding group (%s, %s, %s)", immunity, flags, name);
+		PrintToServer("Adding group (%d, %s, %s)", immunity, flags, name);
 #endif
 		
 		/* Find or create the group */
@@ -729,7 +733,7 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 		{
 			gid = CreateAdmGroup(name);
 		}
-		
+
 		/* Add flags from the database to the group */
 		new num_flag_chars = strlen(flags);
 		for (new i=0; i<num_flag_chars; i++)
@@ -742,16 +746,7 @@ public OnReceiveGroups(Handle:owner, Handle:hndl, const String:error[], any:data
 			SetAdmGroupAddFlag(gid, flag, true);
 		}
 		
-		/* Set the immunity level this group has */
-		if (StrEqual(immunity, "all"))
-		{
-			SetAdmGroupImmunity(gid, Immunity_Default, true);
-			SetAdmGroupImmunity(gid, Immunity_Global, true);
-		} else if (StrEqual(immunity, "default")) {
-			SetAdmGroupImmunity(gid, Immunity_Default, true);
-		} else if (StrEqual(immunity, "global")) {
-			SetAdmGroupImmunity(gid, Immunity_Global, true);
-		}
+		SetAdmGroupImmunityLevel(gid, immunity);
 	}
 	
 	/**
@@ -774,7 +769,7 @@ FetchGroups(Handle:db, sequence)
 	decl String:query[255];
 	new Handle:pk;
 	
-	Format(query, sizeof(query), "SELECT immunity, flags, name FROM sm_groups");
+	Format(query, sizeof(query), "SELECT flags, name, immunity_level FROM sm_groups");
 
 	pk = CreateDataPack();
 	WritePackCell(pk, sequence);
@@ -856,70 +851,5 @@ FetchOverrides(Handle:db, sequence)
 	WritePackString(pk, query);
 	
 	SQL_TQuery(db, OnReceiveOverrides, query, pk, DBPrio_High);
-}
-
-/**
- * Finds an entry in a temporary group list (used by immunity resolver).
- * 
- * @param group_list		Array(3,n) (0=db id, 1=gid, 2=immunity list)
- * @param id				group database id
- * @return					GroupId of the database id or INVALID_GROUP_ID.
- */
-stock GroupId:UTIL_FindGroupInCache(Handle:group_list, id)
-{
-	new size = GetArraySize(group_list);
-	
-	for (new i=0; i<size; i++)
-	{
-		decl data[3];
-		GetArrayArray(group_list, i, data);
-		
-		if (data[0] == id)
-		{
-			return GroupId:data[1];
-		}
-	}
-	
-	return INVALID_GROUP_ID;
-}
-
-/**
- * Breaks a comma-delimited string into a list of numbers, returning a new 
- * dynamic array.
- *
- * @param text				The string to split.
- * @return					A new array Handle which must be closed, or 
- *							INVALID_HANDLE on no strings found.
- */
-stock Handle:UTIL_ExplodeNumberString(const String:text[])
-{
-	new Handle:array = INVALID_HANDLE;
-	decl String:buffer[32];
-	new reloc_idx, idx;
-	
-	while ((idx = SplitString(text[reloc_idx], ",", buffer, sizeof(buffer))) != -1)
-	{
-		reloc_idx += idx;
-		if (text[reloc_idx] == '\0')
-		{
-			break;
-		}
-		if (array == INVALID_HANDLE)
-		{
-			array = CreateArray();
-		}
-		PushArrayCell(array, StringToInt(buffer));
-	}
-	
-	if (text[reloc_idx] != '\0')
-	{
-		if (array == INVALID_HANDLE)
-		{
-			array = CreateArray();
-		}
-		PushArrayCell(array, StringToInt(text[reloc_idx]));
-	}
-	
-	return array;
 }
 

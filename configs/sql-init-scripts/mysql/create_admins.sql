@@ -6,14 +6,15 @@ CREATE TABLE sm_admins (
   password varchar(65),
   flags varchar(30) NOT NULL,
   name varchar(65) NOT NULL,
+  immunity int(10) unsigned NOT NULL,
   PRIMARY KEY (id)
 );
 
 CREATE TABLE sm_groups (
   id int(10) unsigned NOT NULL auto_increment,
-  immunity enum('none','global','default') NOT NULL,
   flags varchar(30) NOT NULL,
   name varchar(120) NOT NULL,
+  immunity_level int(1) unsigned NOT NULL,
   PRIMARY KEY (id)
 );
 
@@ -44,3 +45,12 @@ CREATE TABLE sm_admins_groups (
   inherit_order int(10) NOT NULL,
   PRIMARY KEY (admin_id, group_id)
 );
+
+CREATE TABLE IF NOT EXISTS sm_config (
+  cfg_key varchar(32) NOT NULL,
+  cfg_value varchar(255) NOT NULL,
+  PRIMARY KEY (cfg_key)
+);
+
+INSERT INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.1409') ON DUPLICATE KEY UPDATE cfg_value = '1.0.0.1409';
+

@@ -125,12 +125,12 @@ enum OverrideRule
 };
 
 /**
- * Immunity types.
+ * DEPRECATED, do not use.
  */
 enum ImmunityType
 {
-	Immunity_Default = 1,	/**< Immune from everyone with no immunity */
-	Immunity_Global,		/**< Immune from everyone (except root admins) */
+	Immunity_Default = 1,	/**< Deprecated. */
+	Immunity_Global,		/**< Deprecated. */
 };
 
 /** 
@@ -261,22 +261,15 @@ native bool:GetAdmGroupAddFlag(GroupId:id, AdminFlag:flag);
 native GetAdmGroupAddFlags(GroupId:id);
 
 /**
- * Toggles a generic immunity type.
- *
- * @param id			Group id.
- * @param type			Generic immunity type.
- * @param enabled		True to enable, false otherwise.
- * @noreturn
+ * @deprecated			Functionality removed.
  */
+#pragma deprecated Use SetAdmGroupImmunityLevel() instead.
 native SetAdmGroupImmunity(GroupId:id, ImmunityType:type, bool:enabled);
 
 /**
- * Returns whether or not a group has global immunity.
- *
- * @param id			Group id.
- * @param type			Generic immunity type.
- * @return				True if the group has this immunity, false otherwise.
+ * @deprecated			Functionality removed.
  */
+#pragma deprecated Use GetAdmGroupImmunityLevel() instead.
 native bool:GetAdmGroupImmunity(GroupId:id, ImmunityType:type);
 
 /**
@@ -535,6 +528,18 @@ native ReadFlagString(const String:flags[], &numchars=0);
 /**
  * Tests whether one admin can target another.
  *
+ * The hueristics for this check are as follows:
+ * 0. If the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
+ * 1. If the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+ * 2. If the targeted AdminId is the same as the targeting AdminId,
+ *    (self) targeting succeeds.
+ * 3. If the targeting admin is root, targeting succeeds.
+ * 4. If the targeted admin has access higher (as interpreted by 
+ *    (sm_immunity_mode) than the targeting admin, then targeting fails.
+ * 5. If the targeted admin has specific immunity from the
+ *    targeting admin via group immunities, targeting fails.
+ * 6. Targeting succeeds.
+ *
  * @param admin			Admin doing the targetting (may be INVALID_ADMIN_ID).
  * @param target		Target admin (may be INVALID_ADMIN_ID).
  * @return				True if targetable, false if immune.
@@ -549,6 +554,40 @@ native CanAdminTarget(AdminId:admin, AdminId:target);
  * @return				True on success, false on failure.
  */
 native bool:CreateAuthMethod(const String:method[]);
+
+/**
+ * Sets a group's immunity level.
+ *
+ * @param gid			Group Id.
+ * @param level			Immunity level value.
+ * @return				Old immunity level value.
+ */
+native SetAdmGroupImmunityLevel(GroupId:gid, level);
+
+/**
+ * Gets a group's immunity level (defaults to 0).
+ *
+ * @param gid			Group Id.
+ * @return				Immunity level value.
+ */
+native GetAdmGroupImmunityLevel(GroupId:gid);
+
+/**
+ * Sets an admin's immunity level.
+ *
+ * @param id			Admin Id.
+ * @param level			Immunity level value.
+ * @return				Old immunity level value.
+ */
+native SetAdminImmunityLevel(AdminId:id, level);
+
+/**
+ * Gets an admin's immunity level.
+ *
+ * @param id			Admin Id.
+ * @return				Immunity level value.
+ */
+native GetAdminImmunityLevel(AdminId:id);
 
 /**
  * Converts a flag to its single bit.

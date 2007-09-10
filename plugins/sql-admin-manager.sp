@@ -36,6 +36,11 @@
 
 #include <sourcemod>
 
+#define CURRENT_SCHEMA_VERSION		1409
+#define SCHEMA_UPGRADE_1			1409
+
+new current_version[4] = {1, 0, 0, CURRENT_SCHEMA_VERSION};
+
 public Plugin:myinfo = 
 {
 	name = "SQL Admin Manager",
@@ -55,6 +60,8 @@ public OnPluginStart()
 	RegAdminCmd("sm_sql_addgroup", Command_AddGroup, ADMFLAG_ROOT, "Adds a group to the SQL database");
 	RegAdminCmd("sm_sql_delgroup", Command_DelGroup, ADMFLAG_ROOT, "Removes a group from the SQL database");
 	RegAdminCmd("sm_sql_setadmingroups", Command_SetAdminGroups, ADMFLAG_ROOT, "Sets an admin's groups in the SQL database");
+	RegServerCmd("sm_create_adm_tables", Command_CreateTables);
+	RegServerCmd("sm_update_adm_tables", Command_UpdateTables);
 }
 
 Handle:Connect()
@@ -75,6 +82,310 @@ Handle:Connect()
 	}
 	
 	return db;
+}
+
+CreateMySQL(client, Handle:db)
+{
+	new String:queries[7][] = 
+	{
+		"CREATE TABLE sm_admins (id int(10) unsigned NOT NULL auto_increment, authtype enum('steam','name','ip') NOT NULL, identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity int(10) unsigned NOT NULL, PRIMARY KEY (id))",
+		"CREATE TABLE sm_groups (id int(10) unsigned NOT NULL auto_increment, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level int(1) unsigned NOT NULL, PRIMARY KEY (id))",
+		"CREATE TABLE sm_group_immunity (group_id int(10) unsigned NOT NULL, other_id int(10) unsigned NOT NULL,  PRIMARY KEY (group_id, other_id))",
+		"CREATE TABLE sm_group_overrides (group_id int(10) unsigned NOT NULL, type enum('command','group') NOT NULL, name varchar(32) NOT NULL, access enum('allow','deny') NOT NULL, PRIMARY KEY (group_id, type, name))",
+		"CREATE TABLE sm_overrides (type enum('command','group') NOT NULL, name varchar(32) NOT NULL, flags varchar(30) NOT NULL, PRIMARY KEY (type,name))",
+		"CREATE TABLE sm_admins_groups (admin_id int(10) unsigned NOT NULL, group_id int(10) unsigned NOT NULL, inherit_order int(10) NOT NULL, PRIMARY KEY (admin_id, group_id))",
+		"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
+	};
+
+	for (new i = 0; i < 7; i++)
+	{
+		if (!DoQuery(client, db, queries[i]))
+		{
+			return;
+		}
+	}
+
+	decl String:query[256];
+	Format(query, 
+		sizeof(query), 
+		"INSERT INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.%d') ON DUPLICATE KEY UPDATE cfg_value = '1.0.0.%d'",
+		CURRENT_SCHEMA_VERSION,
+		CURRENT_SCHEMA_VERSION);
+
+	if (!DoQuery(client, db, query))
+	{
+		return;
+	}
+
+	ReplyToCommand(client, "[SM] Admin tables have been created.");
+}
+
+CreateSQLite(client, Handle:db)
+{
+	new String:queries[7][] = 
+	{
+		"CREATE TABLE sm_admins (id INTEGER PRIMARY KEY AUTOINCREMENT, authtype varchar(16) NOT NULL CHECK(authtype IN ('steam', 'ip', 'name')), identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity INTEGER NOT NULL)",
+		"CREATE TABLE sm_groups (id INTEGER PRIMARY KEY AUTOINCREMENT, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level INTEGER NOT NULL)",
+		"CREATE TABLE sm_group_immunity (group_id INTEGER NOT NULL, other_id INTEGER NOT NULL, PRIMARY KEY (group_id, other_id))",
+		"CREATE TABLE sm_group_overrides (group_id INTEGER NOT NULL, type varchar(16) NOT NULL CHECK (type IN ('command', 'group')), name varchar(32) NOT NULL, access varchar(16) NOT NULL CHECK (access IN ('allow', 'deny')), PRIMARY KEY (group_id, type, name))",
+		"CREATE TABLE sm_overrides (type varchar(16) NOT NULL CHECK (type IN ('command', 'group')), name varchar(32) NOT NULL, flags varchar(30) NOT NULL, PRIMARY KEY (type,name))",
+		"CREATE TABLE sm_admins_groups (admin_id INTEGER NOT NULL, group_id INTEGER NOT NULL, inherit_order int(10) NOT NULL, PRIMARY KEY (admin_id, group_id))",
+		"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
+	};
+
+	for (new i = 0; i < 7; i++)
+	{
+		if (!DoQuery(client, db, queries[i]))
+		{
+			return;
+		}
+	}
+
+	decl String:query[256];
+	Format(query, 
+		sizeof(query), 
+		"REPLACE INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.%d')",
+		CURRENT_SCHEMA_VERSION);
+
+	if (!DoQuery(client, db, query))
+	{
+		return;
+	}
+
+	ReplyToCommand(client, "[SM] Admin tables have been created.");
+}
+
+public Action:Command_CreateTables(args)
+{
+	new client = 0;
+	new Handle:db = Connect();
+	if (db == INVALID_HANDLE)
+	{
+		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
+		return Plugin_Handled;
+	}
+
+	new String:ident[16];
+	SQL_ReadDriver(db, ident, sizeof(ident));
+
+	if (strcmp(ident, "mysql") == 0)
+	{
+		CreateMySQL(client, db);
+	} else if (strcmp(ident, "sqlite") == 0) {
+		CreateSQLite(client, db);
+	} else {
+		ReplyToCommand(client, "[SM] Unknown driver type '%s', cannot create tables.", ident);
+	}
+
+	CloseHandle(db);
+
+	return Plugin_Handled;
+}
+
+bool:GetUpdateVersion(client, Handle:db, versions[4])
+{
+	decl String:query[256];
+	new Handle:hQuery;
+
+	Format(query, sizeof(query), "SELECT cfg_value FROM sm_config WHERE cfg_key = 'admin_version'");
+	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	{
+		DoError(client, db, query, "Version lookup query failed");
+		return false;
+	}
+	if (SQL_FetchRow(hQuery))
+	{
+		decl String:version_string[255];
+		SQL_FetchString(hQuery, 0, version_string, sizeof(version_string));
+
+		decl String:version_numbers[4][12];
+		if (ExplodeString(version_string, ".", version_numbers, 4, 12) == 4)
+		{
+			for (new i = 0; i < 4; i++)
+			{
+				versions[i] = StringToInt(version_numbers[i]);
+			}
+		}
+	}
+
+	CloseHandle(hQuery);
+
+	if (current_version[3] < versions[3])
+	{
+		ReplyToCommand(client, "[SM] The database is newer than the expected version.");
+		return false;
+	}
+
+	if (current_version[3] == versions[3])
+	{
+		ReplyToCommand(client, "[SM] Your tables are already up to date.");
+		return false;
+	}
+
+
+	return true;
+}
+
+UpdateSQLite(client, Handle:db)
+{
+	decl String:query[512];
+	new Handle:hQuery;
+
+	Format(query, sizeof(query), "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'sm_config'");
+	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	{
+		DoError(client, db, query, "Table lookup query failed");
+		return;
+	}
+
+	new bool:found = SQL_FetchRow(hQuery);
+
+	CloseHandle(hQuery);
+
+	new versions[4];
+	if (found)
+	{
+		if (!GetUpdateVersion(client, db, versions))
+		{
+			return;
+		}
+	}
+
+	/* We only know about one upgrade path right now... 
+	 * 0 => 1
+	 */
+	if (versions[3] < SCHEMA_UPGRADE_1)
+	{
+		new String:queries[8][] = 
+		{
+			"ALTER TABLE sm_admins ADD immunity INTEGER DEFAULT 0 NOT NULL",
+			"CREATE TABLE _sm_groups_temp (id INTEGER PRIMARY KEY AUTOINCREMENT, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level INTEGER DEFAULT 0 NOT NULL)",
+			"INSERT INTO _sm_groups_temp (id, flags, name) SELECT id, flags, name FROM sm_groups",
+			"UPDATE _sm_groups_temp SET immunity_level = 2 WHERE id IN (SELECT g.id FROM sm_groups g WHERE g.immunity = 'global')",
+			"UPDATE _sm_groups_temp SET immunity_level = 1 WHERE id IN (SELECT g.id FROM sm_groups g WHERE g.immunity = 'default')",
+			"DROP TABLE sm_groups",
+			"ALTER TABLE _sm_groups_temp RENAME TO sm_groups",
+			"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
+		};
+
+		for (new i = 0; i < 8; i++)
+		{
+			if (!DoQuery(client, db, queries[i]))
+			{
+				return;
+			}
+		}
+
+		Format(query, 
+			sizeof(query), 
+			"REPLACE INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.%d')",
+			SCHEMA_UPGRADE_1);
+
+		if (!DoQuery(client, db, query))
+		{
+			return;
+		}
+
+		versions[3] = SCHEMA_UPGRADE_1;
+	}
+
+	ReplyToCommand(client, "[SM] Your tables are now up to date.");
+}
+
+UpdateMySQL(client, Handle:db)
+{
+	decl String:query[512];
+	new Handle:hQuery;
+	
+	Format(query, sizeof(query), "SHOW TABLES");
+	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	{
+		DoError(client, db, query, "Table lookup query failed");
+		return;
+	}
+
+	decl String:table[64];
+	new bool:found = false;
+	while (SQL_FetchRow(hQuery))
+	{
+		SQL_FetchString(hQuery, 0, table, sizeof(table));
+		if (strcmp(table, "sm_config") == 0)
+		{
+			found = true;
+		}
+	}
+	CloseHandle(hQuery);
+
+	new versions[4];
+
+	if (found && !GetUpdateVersion(client, db, versions))
+	{
+		return;
+	}
+
+	/* We only know about one upgrade path right now... 
+	 * 0 => 1
+	 */
+	if (versions[3] < SCHEMA_UPGRADE_1)
+	{
+		new String:queries[6][] = 
+		{
+			"CREATE TABLE IF NOT EXISTS sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))",
+			"ALTER TABLE sm_admins ADD immunity INT UNSIGNED NOT NULL",
+			"ALTER TABLE sm_groups ADD immunity_level INT UNSIGNED NOT NULL",
+			"UPDATE sm_groups SET immunity_level = 2 WHERE immunity = 'default'",
+			"UPDATE sm_groups SET immunity_level = 1 WHERE immunity = 'global'",
+			"ALTER TABLE sm_groups DROP immunity"
+		};
+
+		for (new i = 0; i < 6; i++)
+		{
+			if (!DoQuery(client, db, queries[i]))
+			{
+				return;
+			}
+		}
+
+		decl String:upgr[48];
+		Format(upgr, sizeof(upgr), "1.0.0.%d", SCHEMA_UPGRADE_1);
+
+		Format(query, sizeof(query), "INSERT INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '%s') ON DUPLICATE KEY UPDATE cfg_value = '%s'", upgr, upgr);
+		if (!DoQuery(client, db, query))
+		{
+			return;
+		}
+
+		versions[3] = SCHEMA_UPGRADE_1;
+	}
+
+	ReplyToCommand(client, "[SM] Your tables are now up to date.");
+}
+
+public Action:Command_UpdateTables(args)
+{
+	new client = 0;
+	new Handle:db = Connect();
+	if (db == INVALID_HANDLE)
+	{
+		ReplyToCommand(client, "[SM] %t", "Could not connect to database");
+		return Plugin_Handled;
+	}
+
+	new String:ident[16];
+	SQL_ReadDriver(db, ident, sizeof(ident));
+
+	if (strcmp(ident, "mysql") == 0)
+	{
+		UpdateMySQL(client, db);
+	} else if (strcmp(ident, "sqlite") == 0) {
+		UpdateSQLite(client, db);
+	} else {
+		ReplyToCommand(client, "[SM] Unknown driver type, cannot upgrade.");
+	}
+
+	CloseHandle(db);
+
+	return Plugin_Handled;
 }
 
 public Action:Command_SetAdminGroups(client, args)
@@ -296,17 +607,15 @@ public Action:Command_AddGroup(client, args)
 	if (args < 2)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_sql_addgroup <name> <flags> [immunity]");
-		ReplyToCommand(client, "[SM] %t", "Invalid immunity");
 		return Plugin_Handled;
 	}
 
-	new String:immunity[32] = "none";
+	new immunity;
 	if (args >= 3)
 	{
-		GetCmdArg(3, immunity, sizeof(immunity));
-		if (!StrEqual(immunity, "none")
-			&& !StrEqual(immunity, "global")
-			&& !StrEqual(immunity, "default"))
+		new String:arg3[32];
+		GetCmdArg(3, arg3, sizeof(arg3));
+		if (!StringToIntEx(arg3, immunity))
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid immunity");
 			return Plugin_Handled;
@@ -350,10 +659,9 @@ public Action:Command_AddGroup(client, args)
 	
 	Format(query, 
 		sizeof(query),
-		"INSERT INTO sm_groups (immunity, flags, name) VALUES ('%s', '%s', '%s')",
-		immunity,
+		"INSERT INTO sm_groups (flags, name, immunity_level) VALUES ('%s', '%s', '%d')",
 		safe_flags,
-		safe_name);
+		immunity);
 	
 	if (!SQL_FastQuery(db, query))
 	{
@@ -448,7 +756,7 @@ public Action:Command_AddAdmin(client, args)
 {
 	if (args < 4)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_sql_addadmin <alias> <authtype> <identity> <flags> [password]");
+		ReplyToCommand(client, "[SM] Usage: sm_sql_addadmin <alias> <authtype> <identity> <flags> [immunity] [password]");
 		ReplyToCommand(client, "[SM] %t", "Invalid authtype");
 		return Plugin_Handled;
 	}
@@ -462,6 +770,18 @@ public Action:Command_AddAdmin(client, args)
 	{
 		ReplyToCommand(client, "[SM] %t", "Invalid authtype");
 		return Plugin_Handled;
+	}
+
+	new immunity;
+	if (args >= 5)
+	{
+		new String:arg5[32];
+		GetCmdArg(5, arg5, sizeof(arg5));
+		if (!StringToIntEx(arg5, immunity))
+		{
+			ReplyToCommand(client, "[SM] %t", "Invalid immunity");
+			return Plugin_Handled;
+		}
 	}
 	
 	decl String:identity[65];
@@ -516,12 +836,12 @@ public Action:Command_AddAdmin(client, args)
 	}
 	
 	new len = 0;
-	len += Format(query[len], sizeof(query)-len, "INSERT INTO sm_admins (authtype, identity, password, flags, name) VALUES");
+	len += Format(query[len], sizeof(query)-len, "INSERT INTO sm_admins (authtype, identity, password, flags, name, immunity) VALUES");
 	if (safe_password[0] == '\0')
 	{
-		len += Format(query[len], sizeof(query)-len, " ('%s', '%s', NULL, '%s', '%s')", authtype, safe_identity, safe_flags, safe_alias);
+		len += Format(query[len], sizeof(query)-len, " ('%s', '%s', NULL, '%s', '%s', %d)", authtype, safe_identity, safe_flags, safe_alias, immunity);
 	} else {
-		len += Format(query[len], sizeof(query)-len, " ('%s', '%s', '%s', '%s', '%s')", authtype, safe_identity, safe_password, safe_flags, safe_alias);
+		len += Format(query[len], sizeof(query)-len, " ('%s', '%s', '%s', '%s', '%s', %d)", authtype, safe_identity, safe_password, safe_flags, safe_alias, immunity);
 	}
 	
 	if (!SQL_FastQuery(db, query))
@@ -534,6 +854,21 @@ public Action:Command_AddAdmin(client, args)
 	CloseHandle(db);
 		
 	return Plugin_Handled;
+}
+
+stock bool:DoQuery(client, Handle:db, const String:query[])
+{
+	if (!SQL_FastQuery(db, query))
+	{
+		decl String:error[255];
+		SQL_GetError(db, error, sizeof(error));
+		LogError("Query failed: %s", error);
+		LogError("Query dump: %s", query);
+		ReplyToCommand(client, "[SM] %t", "Failed to query database");
+		return false;
+	}
+
+	return true;
 }
 
 stock Action:DoError(client, Handle:db, const String:query[], const String:msg[])

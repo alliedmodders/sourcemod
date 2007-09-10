@@ -89,12 +89,18 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 	{
 		auth = true;
 		strcopy(g_CurAuth, sizeof(g_CurAuth), value);
-	} else if (StrEqual(key, "identity")) {
+	}
+	else if (StrEqual(key, "identity"))
+	{
 		auth = true;
 		strcopy(g_CurIdent, sizeof(g_CurIdent), value);
-	} else if (StrEqual(key, "password")) {
+	}
+	else if (StrEqual(key, "password")) 
+	{
 		SetAdminPassword(g_CurUser, value);
-	} else if (StrEqual(key, "group")) {
+	} 
+	else if (StrEqual(key, "group")) 
+	{
 		new GroupId:id = FindAdmGroup(value);
 		if (id == INVALID_GROUP_ID)
 		{
@@ -102,7 +108,9 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 		} else if (!AdminInheritGroup(g_CurUser, id)) {
 			ParseError("Unable to inherit group \"%s\"", value);
 		}
-	} else if (StrEqual(key, "flags")) {
+	} 
+	else if (StrEqual(key, "flags")) 
+	{
 		new len = strlen(value);
 		new AdminFlag:flag;
 		
@@ -114,6 +122,11 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 			}
 			SetAdminFlag(g_CurUser, flag, true);
 		}
+	} 
+	else if (StrEqual(key, "immunity")) 
+	{
+		new level = StringToInt(value);
+		SetAdminImmunityLevel(g_CurUser, level);
 	}
 
 	if (auth && g_CurIdent[0] && g_CurAuth[0])

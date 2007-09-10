@@ -110,22 +110,7 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 					SetAdmGroupAddFlag(g_CurGrp, flag, true);
 				}
 			} else if (StrEqual(key, "immunity")) {
-				/* If it's a value we know about, use it */
-				if (StrEqual(value, "*"))
-				{
-					SetAdmGroupImmunity(g_CurGrp, Immunity_Global, true);
-				} else if (StrEqual(value, "$")) {
-					SetAdmGroupImmunity(g_CurGrp, Immunity_Default, true);
-				} else {
-					/* If we can't find the group, we'll need to schedule a reparse */
-					new GroupId:id = FindAdmGroup(value);
-					if (id != INVALID_GROUP_ID)
-					{
-						SetAdmGroupImmuneFrom(g_CurGrp, id);
-					} else {
-						g_NeedReparse = true;
-					}
-				}
+				g_NeedReparse = true;
 			}
 		} else if (g_GroupState == GROUP_STATE_OVERRIDES) {
 			new OverrideRule:rule = Command_Deny;
@@ -147,18 +132,31 @@ public SMCResult:ReadGroups_KeyValue(Handle:smc,
 		/* Check for immunity again, core should handle double inserts */
 		if (StrEqual(key, "immunity"))
 		{
-			if (StrEqual(value, "$"))
+			/* If it's a value we know about, use it */
+			if (StrEqual(value, "*"))
 			{
-				SetAdmGroupImmunity(g_CurGrp, Immunity_Default, true);
-			} else if (StrEqual(value, "*")) {
-				SetAdmGroupImmunity(g_CurGrp, Immunity_Global, true);
+				SetAdmGroupImmunityLevel(g_CurGrp, 2);
+			} else if (StrEqual(value, "$")) {
+				SetAdmGroupImmunityLevel(g_CurGrp, 1);
 			} else {
-				new GroupId:id = FindAdmGroup(value);
-				if (id != INVALID_GROUP_ID)
+				new level;
+				if (StringToIntEx(value, level))
 				{
-					SetAdmGroupImmuneFrom(g_CurGrp, id);
+					SetAdmGroupImmunityLevel(g_CurGrp, level);
 				} else {
-					ParseError("Unable to find group: \"%s\"", value);
+					new GroupId:id;
+					if (value[0] == '@')
+					{
+						id = FindAdmGroup(value[1]);
+					} else {
+						id = FindAdmGroup(value);
+					}
+					if (id != INVALID_GROUP_ID)
+					{
+						SetAdmGroupImmuneFrom(g_CurGrp, id);
+					} else {
+						ParseError("Unable to find group: \"%s\"", value);
+					}
 				}
 			}
 		}

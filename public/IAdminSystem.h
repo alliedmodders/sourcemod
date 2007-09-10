@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	3
+#define SMINTERFACE_ADMINSYS_VERSION	4
 
 /**
  * @file IAdminSystem.h
@@ -133,12 +133,12 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Specifies a generic immunity type.
+	 * @brief DEPRECATED.  Specifies a generic immunity type.
 	 */
 	enum ImmunityType
 	{
-		Immunity_Default = 1,	/**< Immune from everyone with no immunity */
-		Immunity_Global,		/**< Immune from everyone (except root admins) */
+		Immunity_Default = 1,	/**< Immunity value of 1 */
+		Immunity_Global,		/**< Immunity value of 2 */
 	};
 
 	/**
@@ -302,20 +302,31 @@ namespace SourceMod
 		virtual FlagBits GetGroupAddFlags(GroupId id) =0;
 
 		/**
-		 * @brief Toggles a generic immunity type.
+		 * @brief DEPRECATED.  Sets a group's immunity level using backwards 
+		 * compatible types.  
+		 *
+		 * If the new level being set is lower than the group's actual immunity 
+		 * level, no operation takes place.
 		 *
 		 * @param id			Group id.
-		 * @param type			Generic immunity type.
-		 * @param enabled		True to enable, false otherwise.
+		 * @param type			Immunity type which will be converted to a 
+		 * 						numerical level.
+		 * @param enabled		True to set the level.  False sets the 
+		 * 						group's immunity value to 0.
 		 */
 		virtual void SetGroupGenericImmunity(GroupId id, ImmunityType type, bool enabled) =0;
 
 		/**
-		 * @brief Returns whether or not a group has global immunity.
+		 * @brief DEPRECATED.  Returns whether a group has an immunity level
+		 * using backwards compatible types.
+		 * 
+		 * This simply checks whether the group's immunity value is greater 
+		 * than or equal to the new-style value for the old type.
 		 *
 		 * @param id			Group id.
 		 * @param type			Generic immunity type.
-		 * @return				True if the group has this immunity, false otherwise.
+		 * @return				True if the group has this immunity, false 
+		 * 						otherwise.
 		 */
 		virtual bool GetGroupGenericImmunity(GroupId id, ImmunityType type) =0;
 
@@ -583,15 +594,17 @@ namespace SourceMod
 		/**
 		 * @brief Checks whether an AdminId can target another AdminId.
 		 * 
-		 * Zeroth, if the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
-		 * First, if the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
-		 * Second, if the targeting admin is root, targeting succeeds.
-		 * Third, if the targeted admin has global immunity, targeting fails.
-		 * Fourth, if the targeted admin has default immunity,
-		 *  and the admin belongs to no groups, targeting fails.
-		 * Fifth, if the targeted admin has specific immunity from the
-		 *  targeting admin via group immunities, targeting fails.
-		 * Sixth, targeting succeeds if it passes these tests.
+		 * The hueristics for this check are as follows:
+		 * 0. If the targeting AdminId is INVALID_ADMIN_ID, targeting fails.
+		 * 1. If the targeted AdminId is INVALID_ADMIN_ID, targeting succeeds.
+		 * 2. If the targeted AdminId is the same as the targeting AdminId,
+		 *    (self) targeting succeeds.
+		 * 3. If the targeting admin is root, targeting succeeds.
+		 * 4. If the targeted admin has access higher (as interpreted by 
+		 *    (sm_immunity_mode) than the targeting admin, then targeting fails.
+		 * 5. If the targeted admin has specific immunity from the
+		 *    targeting admin via group immunities, targeting fails.
+		 * 6. Targeting succeeds.
 		 *
 		 * @param id		AdminId index of admin doing the targeting.  Can be INVALID_ADMIN_ID.
 		 * @param target	AdminId index of the target admin.  Can be INVALID_ADMIN_ID.
@@ -655,7 +668,42 @@ namespace SourceMod
 		 * @return			Group name, or NULL on failure.
 		 */
 		virtual const char *GetGroupName(GroupId gid) =0;
+
+		/**
+		 * @brief Sets the immunity level of a group.
+		 * 
+		 * @param gid		Group Id.
+		 * @param level		Immunity level value.
+		 * @return			Old immunity level.
+		 */
+		virtual unsigned int SetGroupImmunityLevel(GroupId gid, unsigned int level) =0;
+
+		/**
+		 * @brief Retrieves the immunity level of a group.
+		 *
+		 * @param gid		Group Id.
+		 * @return			Immunity level value.
+		 */
+		virtual unsigned int GetGroupImmunityLevel(GroupId gid) =0;
+
+		/**
+		 * @brief Sets the immunity level of an admin.
+		 *
+		 * @param id		Admin Id.
+		 * @param level		Immunity level value.
+		 * @return			Old immunity level.
+		 */
+		virtual unsigned int SetAdminImmunityLevel(AdminId id, unsigned int level) =0;
+
+		/**
+		 * @brief Retrieves the immunity level of an admin.
+		 *
+		 * @param id		Admin Id.
+		 * @return			Immunity level value.
+		 */
+		virtual unsigned int GetAdminImmunityLevel(AdminId id) =0;
 	};
 }
 
 #endif //_INCLUDE_SOURCEMOD_ADMINISTRATION_SYSTEM_H_
+
