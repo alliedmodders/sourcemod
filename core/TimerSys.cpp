@@ -63,6 +63,11 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 	m_KillMe = false;
 }
 
+TimerSystem::TimerSystem()
+{
+	m_fnTimeLeft = NULL;
+}
+
 TimerSystem::~TimerSystem()
 {
 	CStack<ITimer *>::iterator iter;
