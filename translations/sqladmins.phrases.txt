@@ -7,7 +7,7 @@
 
 	"Invalid immunity"
 	{
-		"en"		"Immunity must be 'none', 'default', or 'global'."
+		"en"		"Immunity must be a positive integer."
 	}
 
 	"SQL Admin already exists"

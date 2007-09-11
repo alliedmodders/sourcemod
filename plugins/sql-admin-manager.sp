@@ -660,6 +660,7 @@ public Action:Command_AddGroup(client, args)
 	Format(query, 
 		sizeof(query),
 		"INSERT INTO sm_groups (flags, name, immunity_level) VALUES ('%s', '%s', '%d')",
+		safe_name,
 		safe_flags,
 		immunity);
 	
