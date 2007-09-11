@@ -30,7 +30,7 @@
  */
 
 #include "sm_globals.h"
-#include "TextParsers.h"
+#include <ITextParsers.h>
 #include "HandleSys.h"
 
 HandleType_t g_TypeSMC = 0;
@@ -280,7 +280,7 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
 	unsigned int line = 0, col = 0;
-	SMCParseError p_err = g_TextParser.ParseFile_SMC(path, parse, &line, &col);
+	SMCParseError p_err = textparsers->ParseFile_SMC(path, parse, &line, &col);
 
 	cell_t *c_line, *c_col;
 	pContext->LocalToPhysAddr(params[3], &c_line);
@@ -294,7 +294,7 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 
 static cell_t SMC_GetErrorString(IPluginContext *pContext, const cell_t *params)
 {
-	const char *str = g_TextParser.GetSMCErrorString((SMCParseError)params[1]);
+	const char *str = textparsers->GetSMCErrorString((SMCParseError)params[1]);
 
 	if (!str)
 	{

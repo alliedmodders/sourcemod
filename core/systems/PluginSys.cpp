@@ -807,10 +807,10 @@ void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 	SMCParseError err;
 	unsigned int line, col;
 	m_AllPluginsLoaded = false;
-	if ((err=g_TextParser.ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
 	{
 		g_Logger.LogError("[SM] Encountered fatal error parsing file \"%s\"", config);
-		const char *err_msg = g_TextParser.GetSMCErrorString(err);
+		const char *err_msg = textparsers->GetSMCErrorString(err);
 		if (err_msg)
 		{
 			g_Logger.LogError("[SM] Parse error encountered: \"%s\"", err_msg);

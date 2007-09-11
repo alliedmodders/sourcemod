@@ -31,12 +31,12 @@
 
 #include <string.h>
 #include <assert.h>
+#include <ITextParsers.h>
 #include "AdminCache.h"
 #include "ShareSys.h"
 #include "ForwardSys.h"
 #include "PlayerManager.h"
 #include "ConCmdManager.h"
-#include "TextParsers.h"
 #include "Logger.h"
 #include "sourcemod.h"
 #include "sm_stringutil.h"
@@ -89,10 +89,10 @@ private:
 		m_bFileNameLogged = false;
 		g_SourceMod.BuildPath(Path_SM, m_File, sizeof(m_File), "configs/admin_levels.cfg");
 
-		if ((error = g_TextParser.ParseFile_SMC(m_File, this, &line, NULL))
+		if ((error = textparsers->ParseFile_SMC(m_File, this, &line, NULL))
 			!= SMCParse_Okay)
 		{
-			const char *err_string = g_TextParser.GetSMCErrorString(error);
+			const char *err_string = textparsers->GetSMCErrorString(error);
 			if (!err_string)
 			{
 				err_string = "Unknown error";

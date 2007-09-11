@@ -362,7 +362,36 @@ namespace SourceMod
 		 * @return				Number of bytes in current character.
 		 */
 		virtual unsigned int GetUTF8CharBytes(const char *stream) =0;
+
+		/**
+		 * @brief Returns whether the first multi-byte character in the given stream
+		 * is a whitespace character.
+		 *
+		 * @param stream		Pointer to multi-byte character string.
+		 * @return				True if first character is whitespace, false otherwise.
+		 */
+		virtual bool IsWhitespace(const char *stream) =0;
 	};
+
+	inline unsigned int _GetUTF8CharBytes(const char *stream)
+	{
+		unsigned char c = *(unsigned char *)stream;
+		if (c & (1<<7))
+		{
+			if (c & (1<<5))
+			{
+				if (c & (1<<4))
+				{
+					return 4;
+				}
+				return 3;
+			}
+			return 2;
+		}
+		return 1;
+	}
 }
+
+extern SourceMod::ITextParsers *textparsers;
 
 #endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_

@@ -34,7 +34,6 @@
 #include <ctype.h>
 #include "Translator.h"
 #include "Logger.h"
-#include "TextParsers.h"
 #include "LibrarySys.h"
 #include "sm_stringutil.h"
 #include "sourcemod.h"
@@ -139,9 +138,9 @@ void CPhraseFile::ReparseFile()
 
 	unsigned int line=0, col=0;
 
-	if ((err=g_TextParser.ParseFile_SMC(path, this, &line, &col)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(path, this, &line, &col)) != SMCParse_Okay)
 	{
-		const char *msg = g_TextParser.GetSMCErrorString(err);
+		const char *msg = textparsers->GetSMCErrorString(err);
 		if (!msg)
 		{
 			msg = m_ParseError.c_str();
@@ -271,7 +270,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 				} else if (*value == ',') {
 					/* Do nothing */
 				} else {
-					unsigned int bytes = g_TextParser.GetUTF8CharBytes(value);
+					unsigned int bytes = textparsers->GetUTF8CharBytes(value);
 					if (bytes != 1 || !isalpha(*value))
 					{
 						ParseWarning("Invalid token '%c' in #format property on line %d.", *value, m_CurLine);
@@ -288,7 +287,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 						return SMCParse_Continue;
 					}
 				} else {
-					unsigned int bytes = g_TextParser.GetUTF8CharBytes(value);
+					unsigned int bytes = textparsers->GetUTF8CharBytes(value);
 					if (bytes != 1 || !isdigit(*value))
 					{
 						ParseWarning("Token '%c' in #format property on line %d is not a digit, phrase will be ignored.",
@@ -521,7 +520,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 				unsigned int bytes;
 				while (*in_ptr != '\0')
 				{
-					bytes = g_TextParser.GetUTF8CharBytes(in_ptr);
+					bytes = textparsers->GetUTF8CharBytes(in_ptr);
 					if (bytes != 1)
 					{
 						goto scrap_point;
@@ -809,9 +808,9 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 	/* Start anew */
 	SMCParseError err;
 	unsigned int line=0, col=0;
-	if ((err=g_TextParser.ParseFile_SMC(lang_header_file, this, &line, &col)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(lang_header_file, this, &line, &col)) != SMCParse_Okay)
 	{
-		const char *str_err = g_TextParser.GetSMCErrorString(err);
+		const char *str_err = textparsers->GetSMCErrorString(err);
 		if (!str_err)
 		{
 			str_err = m_CustomError.c_str();

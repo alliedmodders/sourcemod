@@ -34,7 +34,6 @@
 #include "ShareSys.h"
 #include "sourcemod.h"
 #include "sm_stringutil.h"
-#include "TextParsers.h"
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include <stdlib.h>
@@ -84,12 +83,12 @@ void DBManager::OnSourceModLevelChange(const char *mapName)
 	 * potentially empty/corrupt list, which would be very bad.
 	 */
 	m_pConfigLock->Lock();
-	if ((err = g_TextParser.ParseFile_SMC(m_Filename, this, &line, NULL)) != SMCParse_Okay)
+	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &line, NULL)) != SMCParse_Okay)
 	{
 		g_Logger.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
 		if (err != SMCParse_Custom)
 		{
-			const char *txt = g_TextParser.GetSMCErrorString(err);
+			const char *txt = textparsers->GetSMCErrorString(err);
 			g_Logger.LogError("[SM] Line %d: %s", line, txt);
 		}
 	}

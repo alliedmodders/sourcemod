@@ -32,7 +32,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "GameConfigs.h"
-#include "TextParsers.h"
 #include "sm_stringutil.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
@@ -504,12 +503,12 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	sm_trie_clear(m_pProps);
 	sm_trie_clear(m_pKeys);
 
-	if ((err=g_TextParser.ParseFile_SMC(path, this, NULL, NULL))
+	if ((err=textparsers->ParseFile_SMC(path, this, NULL, NULL))
 		!= SMCParse_Okay)
 	{
 		if (error && (err != SMCParse_Custom))
 		{
-			const char *str = g_TextParser.GetSMCErrorString(err);
+			const char *str = textparsers->GetSMCErrorString(err);
 			snprintf(error, maxlength, "%s", str);
 		}
 		return false;

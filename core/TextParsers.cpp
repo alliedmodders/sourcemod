@@ -39,11 +39,12 @@
 #include "ShareSys.h"
 
 TextParsers g_TextParser;
+ITextParsers *textparsers = &g_TextParser;
 
 static int g_ini_chartable1[255] = {0};
 static int g_ws_chartable[255] = {0};
 
-bool IsWhitespace(const char *stream)
+bool TextParsers::IsWhitespace(const char *stream)
 {
 	return g_ws_chartable[(unsigned)*stream] == 1;
 }

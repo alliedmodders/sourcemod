@@ -29,9 +29,9 @@
  * Version: $Id$
  */
 
+#include <ITextParsers.h>
 #include "ChatTriggers.h"
 #include "sm_stringutil.h"
-#include "TextParsers.h"
 #include "ConCmdManager.h"
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does */
@@ -228,7 +228,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args, bool is_
 	size_t cmd_len = 0;
 	const char *inptr = args;
 	while (*inptr != '\0' 
-			&& !IsWhitespace(inptr) 
+			&& !textparsers->IsWhitespace(inptr) 
 			&& *inptr != '"'
 			&& cmd_len < sizeof(cmd_buf) - 1)
 	{

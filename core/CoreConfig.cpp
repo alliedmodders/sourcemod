@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <ITextParsers.h>
 #include "CoreConfig.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
@@ -36,7 +37,6 @@
 #include "sm_version.h"
 #include "sm_stringutil.h"
 #include "LibrarySys.h"
-#include "TextParsers.h"
 #include "Logger.h"
 #include "PluginSys.h"
 #include "ForwardSys.h"
@@ -115,10 +115,10 @@ void CoreConfig::Initialize()
 	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 
 	/* Parse config file */
-	if ((err=g_TextParser.ParseFile_SMC(filePath, this, NULL, NULL)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(filePath, this, NULL, NULL)) != SMCParse_Okay)
 	{
  		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
-		const char *error = g_TextParser.GetSMCErrorString(err);
+		const char *error = textparsers->GetSMCErrorString(err);
 		g_Logger.LogFatal("[SM] Error encountered parsing core config file: %s", error ? error : "");
 	}
 }

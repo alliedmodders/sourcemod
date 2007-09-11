@@ -33,7 +33,7 @@
 #include <stdlib.h>
 #include "sm_globals.h"
 #include "sm_stringutil.h"
-#include "TextParsers.h"
+#include <ITextParsers.h>
 #include <ctype.h>
 
 inline const char *_strstr(const char *str, const char *substr)
@@ -294,7 +294,7 @@ static cell_t BreakString(IPluginContext *pContext, const cell_t *params)
 
 	const char *inptr = input;
 	/* Eat up whitespace */
-	while (*inptr != '\0' && IsWhitespace(inptr))
+	while (*inptr != '\0' && textparsers->IsWhitespace(inptr))
 	{
 		inptr++;
 	}
@@ -329,7 +329,7 @@ static cell_t BreakString(IPluginContext *pContext, const cell_t *params)
 	} else {
 		start = inptr;
 		/* Read input until we reach a space */
-		while (*inptr != '\0' && !IsWhitespace(inptr))
+		while (*inptr != '\0' && !textparsers->IsWhitespace(inptr))
 		{
 			/* Update the end point, increment the stream. */
 			end = inptr++;
@@ -356,7 +356,7 @@ static cell_t BreakString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* Consume more of the string until we reach non-whitespace */
-	while (*inptr != '\0' && IsWhitespace(inptr))
+	while (*inptr != '\0' && textparsers->IsWhitespace(inptr))
 	{
 		inptr++;
 	}
@@ -502,7 +502,7 @@ static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
 	char *end = str + chars - 1;
 
 	/* Iterate backwards through string until we reach first non-whitespace char */
-	while (end >= str && IsWhitespace(end))
+	while (end >= str && textparsers->IsWhitespace(end))
 	{
 		end--;
 	}
@@ -511,7 +511,7 @@ static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
 	*(end + 1) = '\0';
 
 	/* Iterate forwards through string until first non-whitespace char is reached */
-	while (IsWhitespace(str))
+	while (textparsers->IsWhitespace(str))
 	{
 		str++;
 	}

@@ -37,26 +37,6 @@
 
 using namespace SourceMod;
 
-inline unsigned int _GetUTF8CharBytes(const char *stream)
-{
-	unsigned char c = *(unsigned char *)stream;
-	if (c & (1<<7))
-	{
-		if (c & (1<<5))
-		{
-			if (c & (1<<4))
-			{
-				return 4;
-			}
-			return 3;
-		}
-		return 2;
-	}
-	return 1;
-}
-
-bool IsWhitespace(const char *stream);
-
 /**
  * @param void *			IN: Stream pointer
  * @param char *			IN/OUT: Stream buffer
@@ -88,6 +68,7 @@ public:
 	unsigned int GetUTF8CharBytes(const char *stream);
 
 	const char *GetSMCErrorString(SMCParseError err);
+	bool IsWhitespace(const char *stream);
 private:
 	SMCParseError ParseString_SMC(const char *stream, 
 		ITextListener_SMC *smc,
