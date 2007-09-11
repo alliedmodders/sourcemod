@@ -44,13 +44,6 @@ using namespace SourceMod;
 typedef List<ITimer *> TimerList;
 typedef List<ITimer *>::iterator TimerIter;
 
-struct TickInfo
-{
-	bool ticking;				/* true=game is ticking, false=we're ticking */
-	unsigned int tickcount;		/* number of simulated ticks we've done */
-	float ticktime;				/* tick time we're maintaining */
-};
-
 class SourceMod::ITimer
 {
 public:
@@ -77,19 +70,22 @@ public: //ITimerSystem
 	ITimer *CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags);
 	void KillTimer(ITimer *pTimer);
 	void FireTimerOnce(ITimer *pTimer, bool delayExec=false);
+	SM_TIMELEFT_FUNCTION SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn);
 public:
 	void RunFrame();
 	void MapChange(bool real_mapchange);
 private:
 	List<ITimer *> m_SingleTimers;
 	List<ITimer *> m_LoopTimers;
+	List<ITimer *> m_MapEndTimers;
 	CStack<ITimer *> m_FreeTimers;
 	float m_LastExecTime;
+	SM_TIMELEFT_FUNCTION m_fnTimeLeft;
 };
 
 time_t GetAdjustedTime(time_t *buf = NULL);
 
 extern TimerSystem g_Timers;
-extern TickInfo g_SimTicks;
 
 #endif //_INCLUDE_SOURCEMOD_CTIMERSYS_H_
+

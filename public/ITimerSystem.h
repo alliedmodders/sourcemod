@@ -48,6 +48,8 @@ namespace SourceMod
 {
 	class ITimer;
 
+	typedef float (*SM_TIMELEFT_FUNCTION)();
+
 	/**
 	 * @brief Event callbacks for when a timer is executed.
 	 */
@@ -74,6 +76,10 @@ namespace SourceMod
 
 	#define TIMER_FLAG_REPEAT			(1<<0)		/**< Timer will repeat until stopped */
 	#define TIMER_FLAG_NO_MAPCHANGE		(1<<1)		/**< Timer will not carry over mapchanges */
+	#define TIMER_FLAG_BEFORE_MAP_END	(1<<2)		/**< Timer will fire <interval> seconds before map end.
+														 This flag is cannot be used with REPEAT, 
+														 and TIMER_FLAG_NO_MAPCHANGE is implied.
+														 */
 
 	class ITimerSystem : public SMInterface
 	{
@@ -95,7 +101,8 @@ namespace SourceMod
 		 *							The smallest allowed interval is 0.1 seconds.
 		 * @param pData				Private data to pass on to the timer.
 		 * @param flags				Extra flags to pass on to the timer.
-		 * @return					An ITimer pointer on success, NULL on failure.
+		 * @return					An ITimer pointer on success, NULL on 
+		 *							failure.
 		 */
 		virtual ITimer *CreateTimer(ITimedEvent *pCallbacks, 
 										 float fInterval, 
@@ -116,11 +123,21 @@ namespace SourceMod
 		 *
 		 * @param pTimer			Pointer to the ITimer structure.
 		 * @param delayExec			If true, and the timer is repeating, the
-		 *							next execution will be delayed by its interval.
+		 *							next execution will be delayed by its 
+		 *							interval.
 		 * @return
 		 */
 		virtual void FireTimerOnce(ITimer *pTimer, bool delayExec=false) =0;
+
+		/**
+		 * @brief Sets the function which is used to find the time left in the map.
+		 *
+		 * @param fn				Function that returns the time left in seconds.
+		 * @return					The previous SM_TIMELEFT_FUNCTION pointer.
+		 */
+		virtual SM_TIMELEFT_FUNCTION SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn) =0;
 	};
 }
 
 #endif //_INCLUDE_SOURCEMOD_TIMER_SYSTEM_H_
+

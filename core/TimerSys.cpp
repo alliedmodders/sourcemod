@@ -34,7 +34,6 @@
 #include "sourcemm_api.h"
 
 TimerSystem g_Timers;
-TickInfo g_SimTicks;
 
 ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
 
@@ -50,12 +49,7 @@ time_t GetAdjustedTime(time_t *buf)
 
 inline float GetSimulatedTime()
 {
-	if (g_SimTicks.ticking)
-	{
-		return gpGlobals->curtime;
-	} else {
-		return g_SimTicks.ticktime;
-	}
+	return engine->Time();
 }
 
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
@@ -110,6 +104,25 @@ void TimerSystem::RunFrame()
 		}
 	}
 
+	if (m_fnTimeLeft != NULL && m_MapEndTimers.size())
+	{
+		float time_left = m_fnTimeLeft();
+		for (iter=m_MapEndTimers.begin(); iter!=m_MapEndTimers.end();)
+		{
+			pTimer = (*iter);
+			if ((*iter)->m_Interval < time_left)
+			{
+				pTimer->m_InExec = true;
+				pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
+				pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
+				iter = m_MapEndTimers.erase(iter);
+				m_FreeTimers.push(pTimer);
+			} else {
+				break;
+			}
+		}
+	}
+
 	ResultType res;
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); )
 	{
@@ -156,26 +169,40 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 		goto return_timer;
 	}
 
-	if (m_SingleTimers.size() >= 1)
+	if (flags & TIMER_FLAG_BEFORE_MAP_END)
 	{
-		iter = --m_SingleTimers.end();
-		if ((*iter)->m_ToExec <= to_exec)
+		for (iter=m_MapEndTimers.begin(); iter!=m_MapEndTimers.end(); iter++)
 		{
-			goto insert_end;
+			if (fInterval >= (*iter)->m_Interval)
+			{
+				m_MapEndTimers.insert(iter, pTimer);
+				goto return_timer;
+			}
 		}
-	}
 
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
-	{
-		if ((*iter)->m_ToExec >= to_exec)
+		m_MapEndTimers.push_back(pTimer);
+	} else {
+		if (m_SingleTimers.size() >= 1)
 		{
-			m_SingleTimers.insert(iter, pTimer);
-			goto return_timer;
+			iter = --m_SingleTimers.end();
+			if ((*iter)->m_ToExec <= to_exec)
+			{
+				goto normal_insert_end;
+			}
 		}
-	}
+	
+		for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
+		{
+			if ((*iter)->m_ToExec >= to_exec)
+			{
+				m_SingleTimers.insert(iter, pTimer);
+				goto return_timer;
+			}
+		}
 
-insert_end:
-	m_SingleTimers.push_back(pTimer);
+normal_insert_end:
+		m_SingleTimers.push_back(pTimer);
+	}
 
 return_timer:
 	return pTimer;
@@ -196,7 +223,12 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 	if (!(pTimer->m_Flags & TIMER_FLAG_REPEAT))
 	{
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-		m_SingleTimers.remove(pTimer);
+		if (pTimer->m_Flags & TIMER_FLAG_BEFORE_MAP_END)
+		{
+			m_MapEndTimers.remove(pTimer);
+		} else {
+			m_SingleTimers.remove(pTimer);
+		}
 		m_FreeTimers.push(pTimer);
 	} else {
 		if ((res != Pl_Stop) && !pTimer->m_KillMe)
@@ -232,7 +264,14 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 	pTimer->m_InExec = true; /* The timer it's not really executed but this check needs to be done */
 	pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 
-	pList = (pTimer->m_Flags & TIMER_FLAG_REPEAT) ? &m_LoopTimers : &m_SingleTimers;
+	if (pTimer->m_Flags & TIMER_FLAG_REPEAT)
+	{
+		m_LoopTimers.remove(pTimer);
+	} else if (pTimer->m_Flags & TIMER_FLAG_BEFORE_MAP_END) {
+		m_MapEndTimers.remove(pTimer);
+	} else {
+		m_SingleTimers.remove(pTimer);
+	}
 
 	pList->remove(pTimer);
 	m_FreeTimers.push(pTimer);
@@ -266,6 +305,15 @@ void TimerSystem::MapChange(bool real_mapchange)
 		}
 	}
 
+	if (real_mapchange)
+	{
+		for (iter=m_MapEndTimers.begin(); iter!=m_MapEndTimers.end(); iter++)
+		{
+			pTimer = (*iter);
+			s_tokill.push(pTimer);
+		}
+	}
+
 	while (!s_tokill.empty())
 	{
 		KillTimer(s_tokill.front());
@@ -274,3 +322,11 @@ void TimerSystem::MapChange(bool real_mapchange)
 
 	m_LastExecTime = GetSimulatedTime();
 }
+
+SM_TIMELEFT_FUNCTION TimerSystem::SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn)
+{
+	SM_TIMELEFT_FUNCTION old = m_fnTimeLeft;
+	m_fnTimeLeft = fn;
+	return old;
+}
+
