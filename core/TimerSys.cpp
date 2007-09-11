@@ -158,6 +158,12 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 	TimerIter iter;
 	float to_exec = GetSimulatedTime() + fInterval;
 
+	if ((flags & TIMER_FLAG_BEFORE_MAP_END)
+		&& m_fnTimeLeft == NULL)
+	{
+		return NULL;
+	}
+
 	if (m_FreeTimers.empty())
 	{
 		pTimer = new ITimer;
@@ -253,8 +259,6 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 
 void TimerSystem::KillTimer(ITimer *pTimer)
 {
-	TimerList *pList;
-
 	if (pTimer->m_KillMe)
 	{
 		return;
@@ -278,7 +282,6 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 		m_SingleTimers.remove(pTimer);
 	}
 
-	pList->remove(pTimer);
 	m_FreeTimers.push(pTimer);
 }
 

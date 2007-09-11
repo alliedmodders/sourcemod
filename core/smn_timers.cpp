@@ -181,6 +181,13 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 
 	pInfo = s_TimerNatives.CreateTimerInfo();
 	pTimer = g_Timers.CreateTimer(&s_TimerNatives, sp_ctof(params[1]), pInfo, flags);
+
+	if (!pTimer)
+	{
+		s_TimerNatives.DeleteTimerInfo(pInfo);
+		return 0;
+	}
+
 	hndl = g_HandleSys.CreateHandle(g_TimerType, pInfo, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 
 	pInfo->UserData = params[3];

@@ -84,6 +84,7 @@ funcenum Timer
  * @param value				Handle or value to give to the timer function.
  * @param flags				Flags to set (such as repeatability or auto-Handle closing).
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
+ *							If the timer could not be created, INVALID_HANDLE will be returned.
  */
 native Handle:CreateTimer(Float:interval, Timer:func, any:value=INVALID_HANDLE, flags=0);
 
