@@ -37,6 +37,8 @@ TimerSystem g_Timers;
 
 ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
 
+__BUILD_INTENTIONALLY_BROKEN_BY_BAIL__
+
 time_t GetAdjustedTime(time_t *buf)
 {
 	time_t val = time(NULL) + sm_time_adjustment.GetInt();
