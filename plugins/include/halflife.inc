@@ -45,7 +45,8 @@ enum DialogType
 	DialogType_Msg = 0,		/**< just an on screen message */
 	DialogType_Menu, 		/**< an options menu */
 	DialogType_Text, 		/**< a richtext dialog */
-	DialogType_Entry 		/**< an entry box */
+	DialogType_Entry, 		/**< an entry box */
+	DialogType_AskConnect		/**< ask the client to connect to a specified IP */
 };
 
 /**
@@ -365,5 +366,22 @@ stock ShowMOTDPanel(client, const String:title[], const String:msg[], type=MOTDP
 	KvSetString(Kv, "type", num);
 	KvSetString(Kv, "msg", msg);
 	ShowVGUIPanel(client, "info", Kv);
+	CloseHandle(Kv);
+}
+
+/**
+ * Displays a panel asking the client to connect to a specified IP.
+ *
+ * @param client		Client index.
+ * @param time			Duration to hold the panel on the client's screen.
+ * @param ip			Destionation IP.
+ * @noreturn
+ */
+stock DisplayAskConnectBox(client, Float:time, const String:ip[])
+{
+	new Handle:Kv = CreateKeyValues("data");
+	KvSetFloat(Kv, "time", time);
+	KvSetString(Kv, "title", ip);
+	CreateDialog(client, Kv, DialogType_AskConnect);
 	CloseHandle(Kv);
 }
