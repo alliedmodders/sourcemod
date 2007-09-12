@@ -101,7 +101,7 @@ namespace SourceMod
 		 * @param ...		Format arguments.
 		 * @return			Number of bytes written.
 		 */
-		virtual size_t BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...) =0;
+		virtual size_t BuildPath(PathType type, char *buffer, size_t maxlength, const char *format, ...) =0;
 
 		/**
 		 * @brief Logs a message to the SourceMod logs.

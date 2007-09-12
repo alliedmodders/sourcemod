@@ -479,7 +479,7 @@ void SourceModBase::DoGlobalPluginLoads()
 	g_PluginSys.AllPluginsLoaded();
 }
 
-size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, char *format, ...)
+size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, const char *format, ...)
 {
 	char _buffer[PLATFORM_MAX_PATH];
 	va_list ap;
