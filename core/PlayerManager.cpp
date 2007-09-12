@@ -48,6 +48,7 @@ PlayerManager g_Players;
 bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
 IForward *PostAdminCheck = NULL;
+const unsigned int *g_NumPlayersToAuth = NULL;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -86,6 +87,8 @@ PlayerManager::PlayerManager()
 
 PlayerManager::~PlayerManager()
 {
+	g_NumPlayersToAuth = NULL;
+
 	delete [] m_AuthQueue;
 	delete [] m_UserIdLookUp;
 }
@@ -187,6 +190,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 		m_FirstPass = false;
 
 		memset(m_AuthQueue, 0, sizeof(unsigned int) * (m_maxClients + 1));
+
+		g_NumPlayersToAuth = &m_AuthQueue[0];
 	}
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
@@ -318,7 +323,6 @@ void PlayerManager::RunAuthChecks()
 			m_AuthQueue[0] -= removed;
 		} else {
 			m_AuthQueue[0] = 0;
-			g_SourceMod.SetAuthChecking(false);
 		}
 	}
 }
@@ -351,7 +355,6 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		if (!m_Players[client].IsAuthorized())
 		{
 			m_AuthQueue[++m_AuthQueue[0]] = client;
-			g_SourceMod.SetAuthChecking(true);
 		}
 	} else {
 		RETURN_META_VALUE(MRES_SUPERCEDE, false);

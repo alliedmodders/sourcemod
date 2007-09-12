@@ -255,8 +255,7 @@ static cell_t smn_TriggerTimer(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
 {
-	float t = engine->Time();
-	return sp_ftoc(t);
+	return sp_ftoc(*g_pUniversalTime);
 }
 
 REGISTER_NATIVES(timernatives)

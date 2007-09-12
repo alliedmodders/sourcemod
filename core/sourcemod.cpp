@@ -46,10 +46,6 @@
 #include "Translator.h"
 #include "ForwardSys.h"
 #include "TimerSys.h"
-#include "MenuStyle_Valve.h"
-#include "MenuStyle_Radio.h"
-#include "Database.h"
-#include "HalfLife2.h"
 #include "GameConfigs.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
@@ -65,10 +61,6 @@ SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = &g_SourcePawn;
 IVirtualMachine *g_pVM;
 IdentityToken_t *g_pCoreIdent = NULL;
-float g_LastTime = 0.0f;
-float g_LastMenuTime = 0.0f;
-float g_LastAuthCheck = 0.0f;
-IForward *g_pOnGameFrame = NULL;
 IForward *g_pOnMapEnd = NULL;
 bool g_Loaded = false;
 IExtension *g_pGameExt = NULL;
@@ -286,7 +278,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 void SourceModBase::StartSourceMod(bool late)
 {
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, &g_Timers, &TimerSystem::GameFrame, false);
 
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
@@ -330,9 +322,6 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	m_IsMapLoading = true;
 	m_ExecPluginReload = true;
 	m_ExecOnMapEnd = true;
-	g_LastTime = 0.0f;
-	g_LastMenuTime = 0.0f;
-	g_LastAuthCheck = 0.0f;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -354,11 +343,6 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
-	if (!g_pOnGameFrame)
-	{
-		g_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
-	}
-
 	if (!g_pOnMapEnd)
 	{
 		g_pOnMapEnd = g_Forwards.CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
@@ -367,43 +351,6 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	g_LevelEndBarrier = true;
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
-}
-
-void SourceModBase::GameFrame(bool simulating)
-{
-	g_DBMan.RunFrame();
-	g_HL2.ProcessFakeCliCmdQueue();
-
-	/**
-	 * Note: This is all hardcoded rather than delegated to save
-	 * precious CPU cycles.
-	 */
-	float curtime = engine->Time();
-
-	if (curtime - g_LastTime >= 0.1f)
-	{
-		if (m_CheckingAuth
-			&& (gpGlobals->curtime - g_LastAuthCheck > 0.7f))
-		{
-			g_LastAuthCheck = gpGlobals->curtime;
-			g_Players.RunAuthChecks();
-		}
-
-		g_Timers.RunFrame();
-		g_LastTime = curtime;
-	}
-
-	if (gpGlobals->curtime - g_LastMenuTime >= 1.0f)
-	{
-		g_ValveMenuStyle.ProcessWatchList();
-		g_RadioMenuStyle.ProcessWatchList();
-		g_LastMenuTime = curtime;
-	}
-
-	if (g_pOnGameFrame && g_pOnGameFrame->GetFunctionCount())
-	{
-		g_pOnGameFrame->Execute(NULL);
-	}
 }
 
 void SourceModBase::LevelShutdown()
@@ -521,11 +468,6 @@ void SourceModBase::CloseSourceMod()
 
 	if (g_Loaded)
 	{
-		if (g_pOnGameFrame)
-		{
-			g_Forwards.ReleaseForward(g_pOnGameFrame);
-		}
-
 		if (g_pOnMapEnd)
 		{
 			g_Forwards.ReleaseForward(g_pOnMapEnd);
@@ -570,7 +512,7 @@ void SourceModBase::CloseSourceMod()
 		}
 
 		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelShutdown, gamedll, this, &SourceModBase::LevelShutdown, false);
-		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, this, &SourceModBase::GameFrame, false);
+		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, GameFrame, gamedll, &g_Timers, &TimerSystem::GameFrame, false);
 	}
 
 	/* Rest In Peace */
@@ -639,11 +581,6 @@ const char *SourceModBase::GetGamePath() const
 void SourceModBase::SetGlobalTarget(unsigned int index)
 {
 	m_target = index;
-}
-
-void SourceModBase::SetAuthChecking(bool set)
-{
-	m_CheckingAuth = set;
 }
 
 unsigned int SourceModBase::GetGlobalTarget() const

@@ -31,13 +31,20 @@
 
 #include <time.h>
 #include "TimerSys.h"
+#include "ForwardSys.h"
 #include "sourcemm_api.h"
+#include "frame_hooks.h"
 
 TimerSystem g_Timers;
+float g_fUniversalTime = 0.0f;
+const float *g_pUniversalTime = &g_fUniversalTime;
 
 ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
 
-__BUILD_INTENTIONALLY_BROKEN_BY_BAIL__
+inline float GetSimulatedTime()
+{
+	return g_fUniversalTime;
+}
 
 time_t GetAdjustedTime(time_t *buf)
 {
@@ -47,11 +54,6 @@ time_t GetAdjustedTime(time_t *buf)
 		*buf = val;
 	}
 	return val;
-}
-
-inline float GetSimulatedTime()
-{
-	return engine->Time();
 }
 
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
@@ -68,6 +70,9 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 TimerSystem::TimerSystem()
 {
 	m_fnTimeLeft = NULL;
+	m_bHasMapTickedYet = false;
+	m_fLastTickedTime = 0.0f;
+	m_LastExecTime = 0.0f;
 }
 
 TimerSystem::~TimerSystem()
@@ -83,11 +88,49 @@ TimerSystem::~TimerSystem()
 void TimerSystem::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
+	m_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
+}
+
+void TimerSystem::OnSourceModShutdown()
+{
+	g_Forwards.ReleaseForward(m_pOnGameFrame);
 }
 
 void TimerSystem::OnSourceModLevelChange(const char *mapName)
 {
 	MapChange(true);
+}
+
+void TimerSystem::OnSourceModLevelEnd()
+{
+	m_bHasMapTickedYet = false;
+}
+
+void TimerSystem::GameFrame(bool simulating)
+{
+	if (simulating && m_bHasMapTickedYet)
+	{
+		g_fUniversalTime += gpGlobals->curtime - m_fLastTickedTime;
+	}
+	else 
+	{
+		g_fUniversalTime += gpGlobals->interval_per_tick;
+	}
+
+	m_fLastTickedTime = gpGlobals->curtime;
+	m_bHasMapTickedYet = true;
+
+	if (g_fUniversalTime - m_LastExecTime >= 0.1)
+	{
+		RunFrame();
+	}
+
+	RunFrameHooks();
+
+	if (m_pOnGameFrame->GetFunctionCount())
+	{
+		m_pOnGameFrame->Execute(NULL);
+	}
 }
 
 void TimerSystem::RunFrame()
@@ -299,8 +342,6 @@ void TimerSystem::MapChange(bool real_mapchange)
 		if (real_mapchange && (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE))
 		{
 			s_tokill.push(pTimer);
-		} else {
-			pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
 		}
 	}
 
@@ -310,8 +351,6 @@ void TimerSystem::MapChange(bool real_mapchange)
 		if (real_mapchange && (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE))
 		{
 			s_tokill.push(pTimer);
-		} else {
-			pTimer->m_ToExec = pTimer->m_ToExec - m_LastExecTime + GetSimulatedTime();
 		}
 	}
 
@@ -329,8 +368,6 @@ void TimerSystem::MapChange(bool real_mapchange)
 		KillTimer(s_tokill.front());
 		s_tokill.pop();
 	}
-
-	m_LastExecTime = GetSimulatedTime();
 }
 
 SM_TIMELEFT_FUNCTION TimerSystem::SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn)

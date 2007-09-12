@@ -108,15 +108,17 @@ native KillTimer(Handle:timer, bool:autoClose=false);
 native TriggerTimer(Handle:timer, bool:reset=false);
 
 /**
- * Returns the simulated game time.
+ * Returns the simulated game time.  
  *
- * @param simulated			Retrieves whether or not the tick count
- *							is being manually simulated by SourceMod.
- *							This is the case if no players have joined
- *							the map yet.
+ * This time is internally maintained by SourceMod and is based on the game 
+ * tick count and tick rate.  Unlike GetGameTime(), it will increment past 
+ * map changes and while no players are connected.  Unlike GetEngineTime(), 
+ * it will not increment based on the system clock (i.e. it is still bound 
+ * to the ticking process).
+ *
  * @return					Time based on the game tick count.
  */
-native Float:GetTickedTime(&bool:simulated);
+native Float:GetTickedTime();
 
 /**
  * Creates a timer associated with a new data pack, and returns the datapack.

@@ -168,5 +168,6 @@ private:
 
 extern PlayerManager g_Players;
 extern bool g_OnMapStarted;
+extern const unsigned int *g_NumPlayersToAuth;
 
 #endif //_INCLUDE_SOURCEMOD_CPLAYERMANAGER_H_

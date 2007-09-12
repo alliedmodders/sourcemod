@@ -308,6 +308,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\frame_hooks.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\GameConfigs.cpp"
 				>
 			</File>
@@ -451,6 +455,10 @@
 			</File>
 			<File
 				RelativePath="..\EventManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\frame_hooks.h"
 				>
 			</File>
 			<File

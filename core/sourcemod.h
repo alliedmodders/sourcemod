@@ -89,11 +89,6 @@ public:
 	 * @brief Returns the global target index.
 	 */
 	unsigned int GetGlobalTarget() const;
-	
-	/** 
-	 * @brief Sets whether if SoureMod needs to check player auths.
-	 */
-	void SetAuthChecking(bool set);
 public: // SMGlobalClass
 	ConfigResult OnSourceModConfigChanged(const char *key, 
 										  const char *value, 
@@ -121,11 +116,6 @@ private:
 	 * @brief Loading plugins
 	 */
 	void DoGlobalPluginLoads();
-
-	/**
-	 * @brief GameFrame hook
-	 */
-	void GameFrame(bool simulating);
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
@@ -135,7 +125,6 @@ private:
 	bool m_ExecPluginReload;
 	bool m_ExecOnMapEnd;
 	unsigned int m_target;
-	bool m_CheckingAuth;
 	bool m_GotBasePath;
 };
 
