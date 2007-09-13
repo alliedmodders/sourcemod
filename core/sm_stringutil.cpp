@@ -789,6 +789,26 @@ reswitch:
 				arg++;
 				break;
 			}
+		case 'N':
+			{
+				CHECK_ARGS(0);
+				cell_t *value;
+				pCtx->LocalToPhysAddr(params[arg], &value);
+
+				const char *name = "Console";
+				if (*value)
+				{
+					CPlayer *player = g_Players.GetPlayerByIndex(*value);
+					if (!player || !player->IsConnected())
+					{
+						return pCtx->ThrowNativeError("Client index %d is invalid", *value);
+					}
+					name = player->GetName();
+				}
+				AddString(&buf_p, llen, name, width, prec);
+				arg++;
+				break;
+			}
 		case 's':
 			{
 				CHECK_ARGS(0);
