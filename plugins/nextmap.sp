@@ -133,7 +133,10 @@ public ConVarChange_Mapcyclefile(Handle:convar, const String:oldValue[], const S
 public Action:Command_Say(client, args)
 {
 	decl String:text[192];
-	GetCmdArgString(text, sizeof(text));
+	if (GetCmdArgString(text, sizeof(text)) < 1)
+	{
+		return Plugin_Continue;
+	}
 	
 	new startidx;
 	if (text[strlen(text)-1] == '"')

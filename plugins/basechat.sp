@@ -81,7 +81,10 @@ public OnPluginStart()
 public Action:Command_SayChat(client, args)
 {	
 	decl String:text[192];
-	GetCmdArgString(text, sizeof(text));
+	if (GetCmdArgString(text, sizeof(text)) < 1)
+	{
+		return Plugin_Continue;
+	}
 	
 	new startidx;
 	if (text[strlen(text)-1] == '"')

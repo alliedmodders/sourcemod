@@ -111,7 +111,10 @@ public Action:Command_Say(client, args)
 {
 	decl String:text[192], String:command[64];
 	new startidx = 0;
-	GetCmdArgString(text, sizeof(text));
+	if (GetCmdArgString(text, sizeof(text)) < 1)
+	{
+		return Plugin_Continue;
+	}
 	
 	if (text[strlen(text)-1] == '"')
 	{
