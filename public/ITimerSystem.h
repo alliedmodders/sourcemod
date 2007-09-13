@@ -48,7 +48,47 @@ namespace SourceMod
 {
 	class ITimer;
 
-	typedef float (*SM_TIMELEFT_FUNCTION)();
+	/**
+	 * @brief Interface for map timers.
+	 */
+	class IMapTimer
+	{
+	public:
+		/**
+		 * Returns the current map time limit in seconds.
+		 *
+		 * @return				Time limit, in seconds, or 
+		 *						0 if there is no limit.
+		 */
+		virtual int GetMapTimeLimit() =0;
+		
+		/**
+		 * Returns how much time is left in the map.
+		 *
+		 * @param time_left		Pointer to store time, in seconds.
+		 * @return				True if there is a time limit, false 
+		 *						if the time limit is 0.
+		 */
+		virtual bool GetMapTimeLeft(int *time_left) =0;
+
+		/**
+		 * Extends the map limit (either positively or negatively) in seconds.
+		 *
+		 * @param extra_time	Time to extend map by.  If 0, the map will 
+		 *						be set to have no time limit.
+		 */
+		virtual void ExtendMapTimeLimit(int extra_time) =0;
+
+		/**
+		 * Tells the map timer whether it is being used or not.
+		 *
+		 * Map timers are automatically enabled when they are set, and 
+		 * automatically disabled if being un-set.
+		 *
+		 * @param enabled		True if enabling, false if disabling.
+		 */
+		virtual void SetMapTimerStatus(bool enabled) =0;
+	};
 
 	/**
 	 * @brief Event callbacks for when a timer is executed.
@@ -76,10 +116,6 @@ namespace SourceMod
 
 	#define TIMER_FLAG_REPEAT			(1<<0)		/**< Timer will repeat until stopped */
 	#define TIMER_FLAG_NO_MAPCHANGE		(1<<1)		/**< Timer will not carry over mapchanges */
-	#define TIMER_FLAG_BEFORE_MAP_END	(1<<2)		/**< Timer will fire <interval> seconds before map end.
-														 This flag is cannot be used with REPEAT, 
-														 and TIMER_FLAG_NO_MAPCHANGE is implied.
-														 */
 
 	class ITimerSystem : public SMInterface
 	{
@@ -130,12 +166,22 @@ namespace SourceMod
 		virtual void FireTimerOnce(ITimer *pTimer, bool delayExec=false) =0;
 
 		/**
-		 * @brief Sets the function which is used to find the time left in the map.
+		 * @brief Sets the interface for dealing with map time limits.
 		 *
-		 * @param fn				Function that returns the time left in seconds.
-		 * @return					The previous SM_TIMELEFT_FUNCTION pointer.
+		 * @param pMapTimer			Map timer interface pointer.
+		 * @return					Old pointer.
 		 */
-		virtual SM_TIMELEFT_FUNCTION SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn) =0;
+		virtual IMapTimer *SetMapTimer(IMapTimer *pTimer) =0;
+
+		/**
+		 * @brief Notifies the timer that the map timelimit has been extended. 
+		 *
+		 * A time limit of 0 implies that there is no limit.
+		 *
+		 * @param old_limit			Old limit, in seconds.
+		 * @param new_limit			New limit, in seconds.
+		 */
+		virtual void MapTimeLimitExtended(int old_limit, int new_limit) =0;
 	};
 }
 

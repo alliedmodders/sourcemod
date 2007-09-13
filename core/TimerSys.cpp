@@ -35,9 +35,13 @@
 #include "sourcemm_api.h"
 #include "frame_hooks.h"
 
+SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
+
 TimerSystem g_Timers;
 float g_fUniversalTime = 0.0f;
+float g_fMapStartTime = 0.0f;
 const float *g_pUniversalTime = &g_fUniversalTime;
+ConVar *mp_timelimit = NULL;
 
 ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
 
@@ -56,6 +60,84 @@ time_t GetAdjustedTime(time_t *buf)
 	return val;
 }
 
+class DefaultMapTimer : 
+	public IMapTimer,
+	public SMGlobalClass
+{
+public:
+	DefaultMapTimer()
+	{
+		m_bInUse = false;
+	}
+
+	int GetMapTimeLimit()
+	{
+		return mp_timelimit->GetInt();
+	}
+
+	void SetMapTimerStatus(bool enabled)
+	{
+		if (enabled && !m_bInUse)
+		{
+			Enable();
+		} 
+		else if (!enabled && m_bInUse)
+		{
+			Disable();
+		}
+		m_bInUse = enabled;
+	}
+
+	 bool GetMapTimeLeft(int *time_left)
+	{
+		if (GetMapTimeLimit() == 0)
+		{
+			return false;
+		}
+
+		*time_left = (int)((g_fMapStartTime + mp_timelimit->GetInt() * 60.0f) - g_fUniversalTime);
+
+		return true;
+	}
+
+	void ExtendMapTimeLimit(int extra_time)
+	{
+		extra_time /= 60;
+
+		if (extra_time == 0)
+		{
+			mp_timelimit->SetValue(0);
+			return;
+		}
+
+		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
+	}
+
+	void GlobalChangeCallback(ConVar *pVar, const char *old_value)
+	{
+		if (pVar != mp_timelimit)
+		{
+			return;
+		}
+
+		g_Timers.MapTimeLimitExtended(atoi(old_value) * 60, pVar->GetInt() * 60);
+	}
+
+private:
+	void Enable()
+	{
+		SH_ADD_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallback, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
+	}
+
+	void Disable()
+	{
+		SH_REMOVE_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallback, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
+	}
+
+private:
+	bool m_bInUse;
+} s_DefaultMapTimer;
+
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
 {
 	m_Listener = pCallbacks;
@@ -69,7 +151,7 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 
 TimerSystem::TimerSystem()
 {
-	m_fnTimeLeft = NULL;
+	m_pMapTimer = NULL;
 	m_bHasMapTickedYet = false;
 	m_fLastTickedTime = 0.0f;
 	m_LastExecTime = 0.0f;
@@ -91,8 +173,19 @@ void TimerSystem::OnSourceModAllInitialized()
 	m_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
 }
 
+void TimerSystem::OnSourceModGameInitialized()
+{
+	mp_timelimit = icvar->FindVar("mp_timelimit");
+
+	if (m_pMapTimer == NULL && mp_timelimit != NULL)
+	{
+		SetMapTimer(&s_DefaultMapTimer);
+	}
+}
+
 void TimerSystem::OnSourceModShutdown()
 {
+	SetMapTimer(NULL);
 	g_Forwards.ReleaseForward(m_pOnGameFrame);
 }
 
@@ -118,7 +211,11 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 
 	m_fLastTickedTime = gpGlobals->curtime;
-	m_bHasMapTickedYet = true;
+	if (!m_bHasMapTickedYet)
+	{
+		g_fMapStartTime = g_fUniversalTime;
+		m_bHasMapTickedYet = true;
+	}
 
 	if (g_fUniversalTime - m_LastExecTime >= 0.1)
 	{
@@ -154,25 +251,6 @@ void TimerSystem::RunFrame()
 		}
 	}
 
-	if (m_fnTimeLeft != NULL && m_MapEndTimers.size())
-	{
-		float time_left = m_fnTimeLeft();
-		for (iter=m_MapEndTimers.begin(); iter!=m_MapEndTimers.end();)
-		{
-			pTimer = (*iter);
-			if ((*iter)->m_Interval < time_left)
-			{
-				pTimer->m_InExec = true;
-				pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
-				pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-				iter = m_MapEndTimers.erase(iter);
-				m_FreeTimers.push(pTimer);
-			} else {
-				break;
-			}
-		}
-	}
-
 	ResultType res;
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); )
 	{
@@ -203,12 +281,6 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 	TimerIter iter;
 	float to_exec = GetSimulatedTime() + fInterval;
 
-	if ((flags & TIMER_FLAG_BEFORE_MAP_END)
-		&& m_fnTimeLeft == NULL)
-	{
-		return NULL;
-	}
-
 	if (m_FreeTimers.empty())
 	{
 		pTimer = new ITimer;
@@ -225,40 +297,26 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 		goto return_timer;
 	}
 
-	if (flags & TIMER_FLAG_BEFORE_MAP_END)
+	if (m_SingleTimers.size() >= 1)
 	{
-		for (iter=m_MapEndTimers.begin(); iter!=m_MapEndTimers.end(); iter++)
+		iter = --m_SingleTimers.end();
+		if ((*iter)->m_ToExec <= to_exec)
 		{
-			if (fInterval >= (*iter)->m_Interval)
-			{
-				m_MapEndTimers.insert(iter, pTimer);
-				goto return_timer;
-			}
+			goto normal_insert_end;
 		}
+	}
 
-		m_MapEndTimers.push_back(pTimer);
-	} else {
-		if (m_SingleTimers.size() >= 1)
+	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
+	{
+		if ((*iter)->m_ToExec >= to_exec)
 		{
-			iter = --m_SingleTimers.end();
-			if ((*iter)->m_ToExec <= to_exec)
-			{
-				goto normal_insert_end;
-			}
+			m_SingleTimers.insert(iter, pTimer);
+			goto return_timer;
 		}
-	
-		for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
-		{
-			if ((*iter)->m_ToExec >= to_exec)
-			{
-				m_SingleTimers.insert(iter, pTimer);
-				goto return_timer;
-			}
-		}
+	}
 
 normal_insert_end:
-		m_SingleTimers.push_back(pTimer);
-	}
+	m_SingleTimers.push_back(pTimer);
 
 return_timer:
 	return pTimer;
@@ -279,12 +337,7 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 	if (!(pTimer->m_Flags & TIMER_FLAG_REPEAT))
 	{
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-		if (pTimer->m_Flags & TIMER_FLAG_BEFORE_MAP_END)
-		{
-			m_MapEndTimers.remove(pTimer);
-		} else {
-			m_SingleTimers.remove(pTimer);
-		}
+		m_SingleTimers.remove(pTimer);
 		m_FreeTimers.push(pTimer);
 	} else {
 		if ((res != Pl_Stop) && !pTimer->m_KillMe)
@@ -321,8 +374,6 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 	if (pTimer->m_Flags & TIMER_FLAG_REPEAT)
 	{
 		m_LoopTimers.remove(pTimer);
-	} else if (pTimer->m_Flags & TIMER_FLAG_BEFORE_MAP_END) {
-		m_MapEndTimers.remove(pTimer);
 	} else {
 		m_SingleTimers.remove(pTimer);
 	}
@@ -354,15 +405,6 @@ void TimerSystem::MapChange(bool real_mapchange)
 		}
 	}
 
-	if (real_mapchange)
-	{
-		for (iter=m_MapEndTimers.begin(); iter!=m_MapEndTimers.end(); iter++)
-		{
-			pTimer = (*iter);
-			s_tokill.push(pTimer);
-		}
-	}
-
 	while (!s_tokill.empty())
 	{
 		KillTimer(s_tokill.front());
@@ -370,10 +412,34 @@ void TimerSystem::MapChange(bool real_mapchange)
 	}
 }
 
-SM_TIMELEFT_FUNCTION TimerSystem::SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn)
+IMapTimer *TimerSystem::SetMapTimer(IMapTimer *pTimer)
 {
-	SM_TIMELEFT_FUNCTION old = m_fnTimeLeft;
-	m_fnTimeLeft = fn;
+	IMapTimer *old = m_pMapTimer;
+
+	m_pMapTimer = pTimer;
+
+	if (m_pMapTimer)
+	{
+		m_pMapTimer->SetMapTimerStatus(true);
+	}
+
+	if (old)
+	{
+		old->SetMapTimerStatus(false);
+	}
+
 	return old;
 }
 
+IMapTimer *TimerSystem::GetMapTimer()
+{
+	return m_pMapTimer;
+}
+
+void TimerSystem::MapTimeLimitExtended(int old_limit, int new_limit)
+{
+	if (old_limit == new_limit)
+	{
+		return;
+	}
+}

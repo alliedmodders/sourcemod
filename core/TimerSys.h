@@ -68,23 +68,25 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModLevelChange(const char *mapName);
 	void OnSourceModLevelEnd();
+	void OnSourceModGameInitialized();
 	void OnSourceModShutdown();
 public: //ITimerSystem
 	ITimer *CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags);
 	void KillTimer(ITimer *pTimer);
 	void FireTimerOnce(ITimer *pTimer, bool delayExec=false);
-	SM_TIMELEFT_FUNCTION SetTimeLeftFunction(SM_TIMELEFT_FUNCTION fn);
+	void MapTimeLimitExtended(int old_limit, int new_limit);
+	IMapTimer *SetMapTimer(IMapTimer *pTimer);
 public:
 	void RunFrame();
 	void MapChange(bool real_mapchange);
 	void GameFrame(bool simulating);
+	IMapTimer *GetMapTimer();
 private:
 	List<ITimer *> m_SingleTimers;
 	List<ITimer *> m_LoopTimers;
-	List<ITimer *> m_MapEndTimers;
 	CStack<ITimer *> m_FreeTimers;
 	float m_LastExecTime;
-	SM_TIMELEFT_FUNCTION m_fnTimeLeft;
+	IMapTimer *m_pMapTimer;
 
 	/* This is stuff for our manual ticking escapades. */
 	bool m_bHasMapTickedYet;	/** Has the map ticked yet? */
