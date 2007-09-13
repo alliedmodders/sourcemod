@@ -453,6 +453,19 @@ native RegPluginLibrary(const String:name[]);
 native bool:LibraryExists(const String:name[]);
 
 /**
+ * Returns the status of an extension, by filename.
+ *
+ * @param name			Extension name (like "sdktools.ext").
+ * @param error			Optional error message buffer.
+ * @param maxlength		Length of optional error message buffer.
+ * @return				-2 if the extension was not found.
+ *						-1 if the extension was found but failed to load.
+ * 						 0 if the extension loaded but reported an error.
+ * 						 1 if the extension is running without error.
+ */
+native GetExtensionFileStatus(const String:name[], String:error[]="", maxlength=0);
+
+/**
  * Called after a library (plugin) is added that the 
  * current plugin references optionally.
  *
@@ -470,3 +483,4 @@ forward OnLibraryRemoved(const String:name[]);
 
 #include <helpers>
 #include <entity>
+

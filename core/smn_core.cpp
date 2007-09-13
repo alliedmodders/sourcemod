@@ -41,6 +41,7 @@
 #include "TimerSys.h"
 #include "ForwardSys.h"
 #include "Logger.h"
+#include "ExtensionSys.h"
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -549,6 +550,33 @@ static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetExtensionFileStatus(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[1], &str);
+
+	IExtension *pExtension = g_Extensions.FindExtensionByFile(str);
+	
+	if (!pExtension)
+	{
+		return -2;
+	}
+	
+	if (!pExtension->IsLoaded())
+	{
+		return -1;
+	}
+
+	char *error;
+	pContext->LocalToString(params[2], &error);
+	if (!pExtension->IsRunning(error, params[3]))
+	{
+		return 0;
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -570,5 +598,7 @@ REGISTER_NATIVES(coreNatives)
 	{"LogAction",				sm_LogAction},
 	{"LogToFile",				LogToFile},
 	{"LogToFileEx",				LogToFileEx},
+	{"GetExtensionFileStatus",	GetExtensionFileStatus},
 	{NULL,						NULL},
 };
+
