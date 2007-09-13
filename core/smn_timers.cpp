@@ -258,11 +258,68 @@ static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
 	return sp_ftoc(*g_pUniversalTime);
 }
 
+static cell_t smn_GetMapTimeLeft(IPluginContext *pContext, const cell_t *params)
+{
+	IMapTimer *pMapTimer = g_Timers.GetMapTimer();
+
+	if (!pMapTimer)
+	{
+		return 0;
+	}
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	int time_left;
+	if (!pMapTimer->GetMapTimeLeft(&time_left))
+	{
+		time_left = -1;
+	}
+
+	*addr = time_left;
+
+	return true;
+}
+
+static cell_t smn_GetMapTimeLimit(IPluginContext *pContext, const cell_t *params)
+{
+	IMapTimer *pMapTimer = g_Timers.GetMapTimer();
+
+	if (!pMapTimer)
+	{
+		return 0;
+	}
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	*addr = pMapTimer->GetMapTimeLimit();
+
+	return 1;
+}
+
+static cell_t smn_ExtendMapTimeLimit(IPluginContext *pContext, const cell_t *params)
+{
+	IMapTimer *pMapTimer = g_Timers.GetMapTimer();
+
+	if (!pMapTimer)
+	{
+		return 0;
+	}
+
+	pMapTimer->ExtendMapTimeLimit(params[1]);
+
+	return 1;
+}
+
 REGISTER_NATIVES(timernatives)
 {
 	{"CreateTimer",				smn_CreateTimer},
 	{"KillTimer",				smn_KillTimer},
 	{"TriggerTimer",			smn_TriggerTimer},
 	{"GetTickedTime",			smn_GetTickedTime},
+	{"GetMapTimeLeft",			smn_GetMapTimeLeft},
+	{"GetMapTimeLimit",			smn_GetMapTimeLimit},
+	{"ExtendMapTimeLimit",		smn_ExtendMapTimeLimit},
 	{NULL,						NULL}
 };

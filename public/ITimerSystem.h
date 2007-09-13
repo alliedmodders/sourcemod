@@ -174,16 +174,27 @@ namespace SourceMod
 		virtual IMapTimer *SetMapTimer(IMapTimer *pTimer) =0;
 
 		/**
-		 * @brief Notifies the timer that the map timelimit has been extended. 
-		 *
-		 * A time limit of 0 implies that there is no limit.
-		 *
-		 * @param old_limit			Old limit, in seconds.
-		 * @param new_limit			New limit, in seconds.
+		 * @brief Notification that the map's time left has changed 
+		 * via a change in the time limit or a change in the game rules (
+		 * such as mp_restartgame).
 		 */
-		virtual void MapTimeLimitExtended(int old_limit, int new_limit) =0;
+		virtual void MapTimeLeftChanged() =0;
+
+		/**
+		 * @brief Returns the current universal tick time.  This 
+		 * replacement for gpGlobals->curtime and engine->Time() correctly 
+		 * keeps track of ticks.
+		 *
+		 * During simulation, it is incremented by the difference between 
+		 * gpGlobals->curtime and the last simulated tick.  Otherwise, 
+		 * it is incremented by the interval per tick.
+		 *
+		 * It is not reset past map changes.
+		 *
+		 * @return					Universal ticked time.
+		 */
+		virtual float GetTickedTime() =0;
 	};
 }
 
 #endif //_INCLUDE_SOURCEMOD_TIMER_SYSTEM_H_
-

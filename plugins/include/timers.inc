@@ -121,6 +121,46 @@ native TriggerTimer(Handle:timer, bool:reset=false);
 native Float:GetTickedTime();
 
 /**
+ * Returns an estimate of the time left before the map ends.
+ *
+ * @param timeleft			Variable to store the time, in seconds.  If the 
+ *							value is less than 0, the time limit is infinite.
+ * @return					True if the operation is supported, false otherwise.
+ */
+native bool:GetMapTimeLeft(&timeleft);
+
+/**
+ * Retrieves the current map time limit.
+ *
+ * @param time				Set to the number of total seconds in the map time 
+ *							limit, or 0 if there is no time limit set.
+ * @return					True on success, false if operation is not supported.
+ */
+native bool:GetMapTimeLimit(&time);
+
+/**
+ * Extends the map time limit in a way that will notify all plugins.
+ *
+ * @param time				Number of seconds to extend map time limit by.
+ *							The number can be negative to decrease the time limit.
+ *							If 0, the map will be set to have no time limit.
+ * @return					True on success, false if operation is not supported.
+ */
+native bool:ExtendMapTimeLimit(time);
+
+/**
+ * Notification that the map's time left has changed  via a change in the time 
+ * limit or a change in the game rules (such as mp_restartgame).  This is useful 
+ * for plugins trying to create timers based on the time left in the map.
+ *
+ * Calling ExtendMapTimeLimit() from here, without proper precaution, will 
+ * cause infinite recursion.
+ *
+ * If the operation is not supported, this will never be called.
+ */
+forward OnMapTimeLeftChanged();
+
+/**
  * Creates a timer associated with a new data pack, and returns the datapack.
  * @note The datapack is automatically freed when the timer ends.
  * @note The position of the datapack is not reset or changed for the timer function.

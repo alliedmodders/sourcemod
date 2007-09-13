@@ -74,8 +74,9 @@ public: //ITimerSystem
 	ITimer *CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags);
 	void KillTimer(ITimer *pTimer);
 	void FireTimerOnce(ITimer *pTimer, bool delayExec=false);
-	void MapTimeLimitExtended(int old_limit, int new_limit);
+	void MapTimeLeftChanged();
 	IMapTimer *SetMapTimer(IMapTimer *pTimer);
+	float GetTickedTime();
 public:
 	void RunFrame();
 	void MapChange(bool real_mapchange);

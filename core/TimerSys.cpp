@@ -120,7 +120,12 @@ public:
 			return;
 		}
 
-		g_Timers.MapTimeLimitExtended(atoi(old_value) * 60, pVar->GetInt() * 60);
+		if (atoi(old_value) == pVar->GetInt())
+		{
+			return;
+		}
+
+		g_Timers.MapTimeLeftChanged();
 	}
 
 private:
@@ -436,10 +441,12 @@ IMapTimer *TimerSystem::GetMapTimer()
 	return m_pMapTimer;
 }
 
-void TimerSystem::MapTimeLimitExtended(int old_limit, int new_limit)
+void TimerSystem::MapTimeLeftChanged()
 {
-	if (old_limit == new_limit)
-	{
-		return;
-	}
+
+}
+
+float TimerSystem::GetTickedTime()
+{
+	return g_fUniversalTime;
 }
