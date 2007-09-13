@@ -667,7 +667,14 @@ public Action:Command_Kick(client, args)
 	ShowActivity(client, "%t", "Kicked player", arg);
 	LogAction(client, target, "\"%L\" kicked \"%L\" (reason \"%s\")", client, target, Arguments[len]);
 
-	KickClient(target, "%s", Arguments[len]);
+	if (Arguments[0] == '\0')
+	{
+		KickClient(target, "%t", "Kicked by admin");
+	}
+	else
+	{
+		KickClient(target, "%s", Arguments[len]);
+	}
 
 	return Plugin_Handled;
 }

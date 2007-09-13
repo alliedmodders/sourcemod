@@ -26,6 +26,11 @@
 		"#format"		"{1:s}"
 		"en"			"Kicked player '{1}'"
 	}
+
+	"Kicked by admin"
+	{
+		"en"			"Kicked by administrator"
+	}
 	
 	"Changing map"
 	{
