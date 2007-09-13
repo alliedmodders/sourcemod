@@ -171,7 +171,7 @@ public Action:Command_Slap(client, args)
 		return Plugin_Handled;
 	}	
 	
-	new damage = 5;
+	new damage = 0;
 	if (args > 1)
 	{
 		decl String:arg2[20];
