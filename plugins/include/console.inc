@@ -338,7 +338,7 @@ native GetCmdArgs();
  * @param argnum		Argument number to retrieve.
  * @param buffer		Buffer to use for storing the string.
  * @param maxlength		Maximum length of the buffer.
- * @noreturn
+ * @return				Length of string written to buffer.
  */
 native GetCmdArg(argnum, String:buffer[], maxlength);
 
@@ -348,7 +348,7 @@ native GetCmdArg(argnum, String:buffer[], maxlength);
  *
  * @param buffer		Buffer to use for storing the string.
  * @param maxlength		Maximum length of the buffer.
- * @noreturn
+ * @return				Length of string written to buffer.
  */
 native GetCmdArgString(String:buffer[], maxlength);
 

@@ -630,24 +630,26 @@ static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 {
 	const char *arg = engine->Cmd_Argv(params[1]);
+	size_t length;
 	
-	pContext->StringToLocalUTF8(params[2], params[3], arg, NULL);
+	pContext->StringToLocalUTF8(params[2], params[3], arg, &length);
 
-	return 1;
+	return (cell_t)length;
 }
 
 static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 {
 	const char *args = engine->Cmd_Args();
+	size_t length;
 
 	if (!args)
 	{
 		args = "";
 	}
 
-	pContext->StringToLocalUTF8(params[1], params[2], args, NULL);
+	pContext->StringToLocalUTF8(params[1], params[2], args, &length);
 
-	return 1;
+	return (cell_t)length;
 }
 
 static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
