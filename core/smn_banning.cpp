@@ -54,7 +54,7 @@ public:
 	{
 		g_pOnBanClient = g_Forwards.CreateForward(
 			"OnBanClient",
-			ET_Ignore,
+			ET_Event,
 			7,
 			NULL,
 			Param_Cell,
@@ -66,7 +66,7 @@ public:
 			Param_Cell);
 		g_pOnBanIdentity = g_Forwards.CreateForward(
 			"OnBanIdentity",
-			ET_Ignore,
+			ET_Event,
 			6,
 			NULL,
 			Param_String,
@@ -77,7 +77,7 @@ public:
 			Param_Cell);
 		g_pOnRemoveBan = g_Forwards.CreateForward(
 			"OnRemoveBan",
-			ET_Ignore,
+			ET_Event,
 			4,
 			NULL,
 			Param_String,
@@ -122,6 +122,7 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 	strncopy(identity, r_identity, sizeof(identity));
 	UTIL_ReplaceAll(identity, sizeof(identity), ";", "");
 
+	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnBanIdentity->GetFunctionCount() > 0)
 	{
 		g_pOnBanIdentity->PushString(identity);
@@ -130,45 +131,48 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 		g_pOnBanIdentity->PushString(ban_reason);
 		g_pOnBanIdentity->PushString(ban_cmd);
 		g_pOnBanIdentity->PushCell(ban_source);
-		g_pOnBanIdentity->Execute(NULL);
+		g_pOnBanIdentity->Execute(&handled);
 	}
 
-	bool write_ban = ((ban_flags & BANFLAG_NOWRITE) != BANFLAG_NOWRITE);
-
-	char command[256];
-	if (ban_by_ip)
+	if (!handled)
 	{
-		UTIL_Format(
-			command,
-			sizeof(command),
-			"addip %d %s\n",
-			ban_time,
-			identity);
-		engine->ServerCommand(command);
+		bool write_ban = ((ban_flags & BANFLAG_NOWRITE) != BANFLAG_NOWRITE);
 
-		if (write_ban && ban_time == 0)
+		char command[256];
+		if (ban_by_ip)
 		{
-			engine->ServerCommand("writeip\n");
+			UTIL_Format(
+				command,
+				sizeof(command),
+				"addip %d %s\n",
+				ban_time,
+				identity);
+			engine->ServerCommand(command);
+	
+			if (write_ban && ban_time == 0)
+			{
+				engine->ServerCommand("writeip\n");
+			}
 		}
-	}
-	else if (!g_HL2.IsLANServer())
-	{
-		UTIL_Format(
-			command,
-			sizeof(command),
-			"banid %d %s\n",
-			ban_time,
-			identity);
-		engine->ServerCommand(command);
-
-		if (write_ban && ban_time == 0)
+		else if (!g_HL2.IsLANServer())
 		{
-			engine->ServerCommand("writeid\n");
+			UTIL_Format(
+				command,
+				sizeof(command),
+				"banid %d %s\n",
+				ban_time,
+				identity);
+			engine->ServerCommand(command);
+	
+			if (write_ban && ban_time == 0)
+			{
+				engine->ServerCommand("writeid\n");
+			}
 		}
-	}
-	else
-	{
-		return 0;
+		else
+		{
+			return 0;
+		}
 	}
 
 	return 1;
@@ -195,35 +199,42 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	strncopy(identity, r_identity, sizeof(identity));
 	UTIL_ReplaceAll(identity, sizeof(identity), ";", "");
 
+	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnRemoveBan->GetFunctionCount() > 0)
 	{
 		g_pOnRemoveBan->PushString(identity);
 		g_pOnRemoveBan->PushCell(ban_flags);
 		g_pOnRemoveBan->PushString(ban_cmd);
 		g_pOnRemoveBan->PushCell(ban_source);
-		g_pOnRemoveBan->Execute(NULL);
+		g_pOnRemoveBan->Execute(&handled);
 	}
 
 	char command[256];
 	if (ban_by_ip)
 	{
-		UTIL_Format(
-			command,
-			sizeof(command),
-			"removeip %s\n",
-			identity);
-		engine->ServerCommand(command);	
-		engine->ServerCommand("writeip\n");
+		if (!handled)
+		{
+			UTIL_Format(
+				command,
+				sizeof(command),
+				"removeip %s\n",
+				identity);
+			engine->ServerCommand(command);	
+			engine->ServerCommand("writeip\n");
+		}
 	}
 	else if (!g_HL2.IsLANServer())
 	{
-		UTIL_Format(
-			command,
-			sizeof(command),
-			"removeid %s\n",
-			identity);
-		engine->ServerCommand(command);
-		engine->ServerCommand("writeid\n");
+		if (!handled)
+		{
+			UTIL_Format(
+				command,
+				sizeof(command),
+				"removeid %s\n",
+				identity);
+			engine->ServerCommand(command);
+			engine->ServerCommand("writeid\n");
+		}
 	}
 	else
 	{
@@ -293,6 +304,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("No valid ban method flags specified");
 	}
 
+	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnBanClient->GetFunctionCount() > 0)
 	{
 		g_pOnBanClient->PushCell(client);
@@ -302,7 +314,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		g_pOnBanClient->PushString(kick_message);
 		g_pOnBanClient->PushString(ban_cmd);
 		g_pOnBanClient->PushCell(ban_source);
-		g_pOnBanClient->Execute(NULL);
+		g_pOnBanClient->Execute(&handled);
 	}
 
 	/* Sanitize the kick message */
@@ -311,61 +323,68 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		kick_message = "Kicked";
 	}
 
-	if ((ban_flags & BANFLAG_IP) == BANFLAG_IP)
+	if (!handled)
 	{
-		/* Get the IP address and strip the port */
-		char ip[24], *ptr;
-		strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
-		if ((ptr = strchr(ip, ':')) != NULL)
+		if ((ban_flags & BANFLAG_IP) == BANFLAG_IP)
 		{
-			*ptr = '\0';
+			/* Get the IP address and strip the port */
+			char ip[24], *ptr;
+			strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
+			if ((ptr = strchr(ip, ':')) != NULL)
+			{
+				*ptr = '\0';
+			}
+		
+			/* Tell the server to ban the ip */
+			char command[256];
+			UTIL_Format(
+				command,
+				sizeof(command),
+				"addip %d %s\n",
+				ban_time,
+				ip);
+	
+			/* Kick, then ban */
+			if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
+			{
+   		 		pClient->Disconnect("%s", kick_message);
+			}
+			engine->ServerCommand(command);
+	
+			/* Physically write the ban */
+			if ((ban_time == 0) && ((ban_flags & BANFLAG_NOWRITE) != BANFLAG_NOWRITE))
+			{
+				engine->ServerCommand("writeip\n");
+			}	
+		} 
+		else if ((ban_flags & BANFLAG_AUTHID) == BANFLAG_AUTHID)
+		{
+			/* Tell the server to ban the auth string */
+			char command[256];
+			UTIL_Format(
+				command, 
+				sizeof(command), 
+				"banid %d %s\n", 
+				ban_time,
+				pPlayer->GetAuthString());
+	
+			/* Kick, then ban */
+			if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
+			{
+   		 		pClient->Disconnect("%s", kick_message);
+			}
+			engine->ServerCommand(command);
+
+			/* Physically write the ban if it's permanent */
+			if ((ban_time == 0) && ((ban_flags & BANFLAG_NOWRITE) != BANFLAG_NOWRITE))
+			{
+				engine->ServerCommand("writeid\n");
+			}
 		}
-
-		/* Tell the server to ban the ip */
-		char command[256];
-		UTIL_Format(
-			command,
-			sizeof(command),
-			"addip %d %s\n",
-			ban_time,
-			ip);
-
-		/* Kick, then ban */
-		if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
-		{
-    		pClient->Disconnect("%s", kick_message);
-		}
-		engine->ServerCommand(command);
-
-		/* Physically write the ban */
-		if ((ban_time == 0) && ((ban_flags & BANFLAG_NOWRITE) != BANFLAG_NOWRITE))
-		{
-			engine->ServerCommand("writeip\n");
-		}	
-	} 
-	else if ((ban_flags & BANFLAG_AUTHID) == BANFLAG_AUTHID)
+	}
+	else if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 	{
-		/* Tell the server to ban the auth string */
-		char command[256];
-		UTIL_Format(
-			command, 
-			sizeof(command), 
-			"banid %d %s\n", 
-			ban_time,
-			pPlayer->GetAuthString());
-
-		/* Kick, then ban */
-		if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
-		{
-    		pClient->Disconnect("%s", kick_message);
-		}
-		engine->ServerCommand(command);
-
-		/* Physically write the ban if it's permanent */
-		if ((ban_time == 0) && ((ban_flags & BANFLAG_NOWRITE) != BANFLAG_NOWRITE))
-		{
-			engine->ServerCommand("writeid\n");
-		}
+		pClient->Disconnect("%s", kick_message);	
 	}
 
 
