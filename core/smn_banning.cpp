@@ -305,18 +305,10 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		g_pOnBanClient->Execute(NULL);
 	}
 
-	if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
+	/* Sanitize the kick message */
+	if (kick_message[0] == '\0')
 	{
-		/* Build a kick message */
-		const char *kick_message = "";
-		pContext->LocalToString(params[5], (char **)&kick_message);	
-		if (kick_message[0] == '\0')
-		{
-			kick_message = "Kicked";
-		}
-
-		/* Disconnect the client now */
-	    pClient->Disconnect("%s", kick_message);
+		kick_message = "Kicked";
 	}
 
 	if ((ban_flags & BANFLAG_IP) == BANFLAG_IP)
@@ -337,6 +329,12 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 			"addip %d %s\n",
 			ban_time,
 			ip);
+
+		/* Kick, then ban */
+		if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
+		{
+    		pClient->Disconnect("%s", kick_message);
+		}
 		engine->ServerCommand(command);
 
 		/* Physically write the ban */
@@ -355,6 +353,12 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 			"banid %d %s\n", 
 			ban_time,
 			pPlayer->GetAuthString());
+
+		/* Kick, then ban */
+		if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
+		{
+    		pClient->Disconnect("%s", kick_message);
+		}
 		engine->ServerCommand(command);
 
 		/* Physically write the ban if it's permanent */
