@@ -69,6 +69,7 @@ struct Plugin
 #include <menus>
 #include <halflife>
 #include <adt>
+#include <banning>
 
 /**
  * Declare this as a struct in your plugin to expose its information.

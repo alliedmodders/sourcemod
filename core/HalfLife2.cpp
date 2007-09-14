@@ -37,6 +37,7 @@
 
 CHalfLife2 g_HL2;
 bool g_IsOriginalEngine = false;
+ConVar *sv_lan = NULL;
 
 namespace SourceHook
 {
@@ -369,3 +370,16 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 		m_CmdQueue.pop();
 	}
 }
+
+bool CHalfLife2::IsLANServer()
+{
+	sv_lan = icvar->FindVar("sv_lan");
+
+	if (!sv_lan)
+	{
+		return false;
+	}
+
+	return (sv_lan->GetInt() != 0);
+}
+

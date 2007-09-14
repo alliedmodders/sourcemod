@@ -154,7 +154,7 @@ namespace builder
 		 */
 		public override Plugin [] GetPlugins()
 		{
-			Plugin [] plugins = new Plugin[14];
+			Plugin [] plugins = new Plugin[15];
 
 			plugins[0] = new Plugin("admin-flatfile", "admin-flatfile");
 			plugins[1] = new Plugin("adminhelp");
@@ -170,6 +170,7 @@ namespace builder
 			plugins[11] = new Plugin("admin-sql-prefetch", true);
 			plugins[12] = new Plugin("admin-sql-threaded", true);
 			plugins[13] = new Plugin("sql-admin-manager", true);
+			plugins[14] = new Plugin("basebans");
 
 			return plugins;
 		}

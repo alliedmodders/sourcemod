@@ -603,3 +603,4 @@ native KickClient(client, const String:format[]="", any:...);
  *						mod support.
  */
 native ChangeClientTeam(client, team);
+

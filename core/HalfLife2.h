@@ -86,6 +86,7 @@ public: //IGameHelpers
 	bool TextMsg(int client, int dest, const char *msg);
 	bool HintTextMsg(int client, const char *msg);
 	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
+	bool IsLANServer();
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

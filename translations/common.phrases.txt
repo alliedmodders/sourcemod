@@ -231,4 +231,10 @@
 	{
 		"en"			"You cannot ban that IP address."
 	}
+
+	"Invalid SteamID specified"
+	{
+		"en"			"You have specified an invalid Steam ID (must start with 'STEAM_0:')."
+	}
 }
+

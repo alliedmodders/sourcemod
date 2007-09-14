@@ -39,7 +39,7 @@
 #include <edict.h>
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		1
+#define SMINTERFACE_GAMEHELPERS_VERSION		2
 
 /**
  * @file IGameHelpers.h
@@ -111,6 +111,13 @@ namespace SourceMod
 		 * @return				True on success, false on failure.
 		 */
 		virtual bool TextMsg(int client, int dest, const char *msg) =0;
+		
+		/**
+		 * @brief Returns whether the server ls a LAN server.
+		 * 
+		 * @return				True if LAN server, false otherwise.
+		 */
+		virtual bool IsLANServer() =0;
 	};
 }
 

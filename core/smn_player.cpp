@@ -1142,3 +1142,4 @@ REGISTER_NATIVES(playernatives)
 	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
 	{NULL,						NULL}
 };
+

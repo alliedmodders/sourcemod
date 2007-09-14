@@ -36,37 +36,6 @@
 #define _helpers_included
 
 /**
- * Provided by basecommands.sp when sm_ban is called.
- *
- * @param admin			Admin client index (0 for server).
- * @param client		Client index which will be banned.
- * @param time			Minutes banned for (0 is permanent).
- * @param reason		Ban reason (may be empty if none exists).
- * @return				Pl_Handled to block output, Pl_Stop to block output and action.
- */
-forward Action:OnClientBanned(admin, client, time, const String:reason[]);
-
-/**
- * Provided by basecommands.sp when sm_addban or sm_banip is called.
- *
- * @param admin			Admin client index (0 for server).
- * @param info			User info (either steamid or ip).
- * @param time			Minutes banned for (0 is permanent).
- * @param reason		Ban reason (may be empty if none exists).
- * @return				Pl_Handled to block output, Pl_Stop to block output and action.
- */
-forward Action:OnBanAdded(admin, const String:info[], time, const String:reason[]);
-
-/**
- * Provided by basecommands.sp when sm_unban or sm_unbanip is called.
- *
- * @param admin			Admin client index (0 for server).
- * @param info 			User info (either steamid or ip).
- * @return				Pl_Handled to block output, Pl_Stop to block output and action.
- */
-forward Action:OnBanRemoved(admin, const String:info[]);
-
-/**
  * Formats a user's info as log text.  This is usually not needed because
  * %L can be used to auto-format client information into a string.
  *
