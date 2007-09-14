@@ -263,25 +263,25 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		if (g_HL2.IsLANServer() || !pPlayer->IsAuthorized())
 		{
 			ban_flags |= BANFLAG_IP;
-			ban_flags &= BANFLAG_AUTHID;
+			ban_flags &= ~BANFLAG_AUTHID;
 		}
 		else
 		{
 			ban_flags |= BANFLAG_AUTHID;
-			ban_flags &= BANFLAG_IP;
+			ban_flags &= ~BANFLAG_IP;
 		}
 	}
 	else if ((ban_flags & BANFLAG_IP) == BANFLAG_IP)
 	{
 		ban_flags |= BANFLAG_IP;
-		ban_flags &= BANFLAG_AUTHID;
+		ban_flags &= ~BANFLAG_AUTHID;
 	}
 	else if ((ban_flags & BANFLAG_AUTHID) == BANFLAG_AUTHID)
 	{
 		if (pPlayer->IsAuthorized())
 		{
 			ban_flags |= BANFLAG_AUTHID;
-			ban_flags &= BANFLAG_IP;
+			ban_flags &= ~BANFLAG_IP;
 		}
 		else
 		{
