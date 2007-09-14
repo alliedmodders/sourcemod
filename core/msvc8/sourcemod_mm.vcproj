@@ -933,6 +933,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_banning.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_bitbuffer.cpp"
 				>
 			</File>
