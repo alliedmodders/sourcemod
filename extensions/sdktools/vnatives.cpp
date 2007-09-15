@@ -633,9 +633,70 @@ static cell_t IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 			return info->IsDead() ? 0 : 1;
 		}
 
-		 return pContext->ThrowNativeError("\"IsPlayerAlive\" not supported by this mod");
+		return pContext->ThrowNativeError("\"IsPlayerAlive\" not supported by this mod");
 	}
-	return (*((uint8_t *)pEntity + lifeState_off) == LIFE_ALIVE) ? 1: 0;
+	return (*((uint8_t *)pEntity + lifeState_off) == LIFE_ALIVE) ? 1 : 0;
+}
+
+static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("CreateEntityByName", ValveCall_Static, &pass[2], pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"CreateEntityByName\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialized");
+		}
+	}
+
+	CBaseEntity *pEntity = NULL;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, vparams, 0);
+	DECODE_VALVE_PARAM(2, vparams, 1);
+	FINISH_CALL_SIMPLE(&pEntity);
+
+	if (pEntity == NULL)
+	{
+		return -1;
+	}
+
+	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
+	if (!pEdict)
+	{
+		return -1;
+	}
+
+	return engine->IndexOfEdict(pEdict);
+}
+
+static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[2];
+		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("DispatchSpawn", ValveCall_Static, &pass[1], pass, 1, &pCall))
+		{
+			return pContext->ThrowNativeError("\"DispatchSpawn\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"DispatchSpawn\" wrapper failed to initialized");
+		}
+	}
+
+	int ret;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, vparams, 0);
+	FINISH_CALL_SIMPLE(&ret);
+
+	return (ret == -1) ? 0 : 1;
 }
 
 sp_nativeinfo_t g_Natives[] = 
@@ -657,5 +718,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetClientEyeAngles",		GetClientEyeAngles},
 	{"FindEntityByClassname",	FindEntityByClassname},
 	{"IsPlayerAlive",			IsPlayerAlive},
+	{"CreateEntityByName",		CreateEntityByName},
+	{"DispatchSpawn",			DispatchSpawn},
 	{NULL,						NULL},
 };

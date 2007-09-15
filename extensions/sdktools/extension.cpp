@@ -101,9 +101,7 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 	{
 		ValveCall *v = (ValveCall *)object;
 		delete v;
-	}
-	if (type == g_TraceHandle)
-	{
+	} else if (type == g_TraceHandle) {
 		trace_t *tr = (trace_t *)object;
 		delete tr;
 	}

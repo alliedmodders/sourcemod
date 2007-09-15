@@ -172,6 +172,75 @@
 		}
 	}
 
+	/* Create Entity Signatures */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+			"game"		"dod"
+			"game"		"hl2mp"
+			"game"		"!Insurgency"
+			"game"		"!Pirates, Vikings and Knights II"
+		}
+
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
+			}
+		}
+	}
+
+	/* Create Entity Signatures */
+	"!SourceForts v1.9.2"
+	{
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14\x8B\x16\x8B\xCE"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
+			}
+		}
+	}
+
+	/* Create Entity Signatures */
+	"ship"
+	{
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\0x16"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
+			}
+		}
+	}
+
 	/* Counter-Strike: Source */
 	"cstrike"
 	{

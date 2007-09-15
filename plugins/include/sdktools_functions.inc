@@ -152,6 +152,27 @@ native GetClientEyeAngles(client, Float:ang[3]);
 native bool:IsPlayerAlive(client);
 
 /**
+ * Creates an entity by string name, but does not spawn it (see DispatchSpawn).
+ * If ForceEdictIndex is not -1, then it will use the edict by that index. If the index is 
+ *  invalid or there is already an edict using that index, it will error out.
+ *
+ * @param classname		Entity classname.
+ * @param ForceEdictIndex	Edict index used by the created entity.
+ * @return			Entity index on success, or -1 on failure.
+ * @error			Invalid edict index, or no mod support.
+ */
+native CreateEntityByName(const String:classname[], ForceEdictIndex=-1);
+
+/**
+ * Spawns an entity into the game.
+ *
+ * @param entity		Entity index of the created entity.
+ * @return			True on success, false otherwise.
+ * @error			Invalid entity index, or no mod support.
+ */
+native bool:DispatchSpawn(entity);
+
+/**
  * @deprecated
  */
 #pragma deprecated Use IgniteEntity() instead
