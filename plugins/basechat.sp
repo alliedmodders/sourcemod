@@ -157,10 +157,15 @@ public Action:Command_SayChat(client, args)
 public Action:Command_SayAdmin(client, args)
 {
 	if (!CheckAdminForChat(client) && !GetConVarBool(g_Cvar_Chatmode))
+	{
 		return Plugin_Continue;	
+	}
 	
 	decl String:text[192];
-	GetCmdArgString(text, sizeof(text));
+	if (GetCmdArgString(text, sizeof(text)) < 1)
+	{
+		return Plugin_Continue;
+	}
 	
 	new startidx;
 	if (text[strlen(text)-1] == '"')
@@ -354,6 +359,11 @@ public Action:Command_SmMsay(client, args)
 
 bool:CheckAdminForChat(client)
 {
+	if (client == 0)
+	{
+		return true;
+	}
+	
 	new AdminId:aid = GetUserAdmin(client);
 	
 	if (aid == INVALID_ADMIN_ID)
