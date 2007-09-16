@@ -155,6 +155,13 @@ public SMCResult:ReadNewOverrides_EndSection(Handle:smc)
 	return SMCParse_Continue;
 }
 
+public SMCResult:ReadOverrides_CurrentLine(Handle:smc, const String:line[], lineno)
+{
+	g_CurrentLine = lineno;
+	
+	return SMCParse_Continue;
+}
+
 static InitializeOverrideParsers()
 {
 	if (g_hOldOverrideParser == INVALID_HANDLE)
@@ -164,6 +171,7 @@ static InitializeOverrideParsers()
 					   ReadOldOverrides_NewSection,
 					   ReadOverrides_KeyValue,
 					   ReadOldOverrides_EndSection);
+		SMC_SetRawLine(g_hOldOverrideParser, ReadOverrides_CurrentLine);
 	}
 	if (g_hNewOverrideParser == INVALID_HANDLE)
 	{
@@ -172,6 +180,7 @@ static InitializeOverrideParsers()
 					   ReadNewOverrides_NewSection,
 					   ReadOverrides_KeyValue,
 					   ReadNewOverrides_EndSection);
+		SMC_SetRawLine(g_hNewOverrideParser, ReadOverrides_CurrentLine);
 	}
 }
 

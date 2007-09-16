@@ -162,6 +162,13 @@ public SMCResult:ReadUsers_EndSection(Handle:smc)
 	return SMCParse_Continue;
 }
 
+public SMCResult:ReadUsers_CurrentLine(Handle:smc, const String:line[], lineno)
+{
+	g_CurrentLine = lineno;
+	
+	return SMCParse_Continue;
+}
+
 static InitializeUserParser()
 {
 	if (g_hUserParser == INVALID_HANDLE)
@@ -171,6 +178,7 @@ static InitializeUserParser()
 					   ReadUsers_NewSection,
 					   ReadUsers_KeyValue,
 					   ReadUsers_EndSection);
+		SMC_SetRawLine(g_hUserParser, ReadUsers_CurrentLine);
 	}
 }
 

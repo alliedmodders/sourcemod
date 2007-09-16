@@ -187,6 +187,13 @@ public SMCResult:ReadGroups_EndSection(Handle:smc)
 	return SMCParse_Continue;
 }
 
+public SMCResult:ReadGroups_CurrentLine(Handle:smc, const String:line[], lineno)
+{
+	g_CurrentLine = lineno;
+	
+	return SMCParse_Continue;
+}
+
 static InitializeGroupParser()
 {
 	if (g_hGroupParser == INVALID_HANDLE)
@@ -196,6 +203,7 @@ static InitializeGroupParser()
 					   ReadGroups_NewSection,
 					   ReadGroups_KeyValue,
 					   ReadGroups_EndSection);
+		SMC_SetRawLine(g_hGroupParser, ReadGroups_CurrentLine);
 	}
 }
 

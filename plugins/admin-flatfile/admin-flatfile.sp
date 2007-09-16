@@ -49,6 +49,7 @@ public Plugin:myinfo =
 new bool:g_LoggedFileName = false;			/* Whether or not the file name has been logged */
 new g_ErrorCount = 0;						/* Current error count */
 new g_IgnoreLevel = 0;						/* Nested ignored section count, so users can screw up files safely */
+new g_CurrentLine = 0;						/* Current line we're on */
 new String:g_Filename[PLATFORM_MAX_PATH];	/* Used for error messages */
 
 #include "admin-overrides.sp"
@@ -81,12 +82,15 @@ ParseError(const String:format[], {Handle,String,Float,_}:...)
 	
 	VFormat(buffer, sizeof(buffer), format, 2);
 	
-	LogError(" (%d) %s", ++g_ErrorCount, buffer);
+	LogError(" (line %d) %s", g_CurrentLine, buffer);
+	
+	g_ErrorCount++;
 }
 
 InitGlobalStates()
 {
 	g_ErrorCount = 0;
 	g_IgnoreLevel = 0;
+	g_CurrentLine = 0;
 	g_LoggedFileName = false;
 }
