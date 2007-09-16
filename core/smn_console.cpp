@@ -39,6 +39,7 @@
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "ChatTriggers.h"
+#include "AdminCache.h"
 #include <inetchannel.h>
 #include <bitbuf.h>
 
@@ -979,11 +980,17 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 	char *cmd;
 	pContext->LocalToString(params[2], &cmd);
 
-	/* Support the newer version which will auto-check for an existing command. */
+	/* Auto-detect a command if we can */
 	FlagBits bits = params[3];
-	if (params[0] == 4 && params[4])
+	bool found_command = false;
+	if (params[0] < 4 || !params[4])
 	{
-		g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
+		found_command = g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
+	}
+	
+	if (!found_command)
+	{
+		g_Admins.GetCommandOverride(cmd, Override_Command, &bits);
 	}
 
 	return g_ConCmds.CheckCommandAccess(params[1], cmd, bits) ? 1 : 0;
