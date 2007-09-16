@@ -501,7 +501,7 @@ cell_t _GenerateArrayIndirectionVectors(array_creation_t *ar, int dim, cell_t cu
 	 * Dimension n-x where x > 2 will have sub-vectors.  
 	 * Otherwise, we just need to reference the data section.
 	 */
-	if (dim < ar->dim_count - 2)
+	if (ar->dim_count > 2 && dim < ar->dim_count - 2)
 	{
 		/**
 		 * For each index at this dimension, write offstes to our sub-vectors.
