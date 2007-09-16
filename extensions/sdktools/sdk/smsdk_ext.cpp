@@ -79,6 +79,9 @@ IThreader *threader = NULL;
 #if defined SMEXT_ENABLE_LIBSYS
 ILibrarySys *libsys = NULL;
 #endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+SourceMod::IPluginManager *plsys;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -148,6 +151,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_LIBSYS
 	SM_GET_IFACE(LIBRARYSYS, libsys);
+#endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+	SM_GET_IFACE(PLUGINSYSTEM, plsys);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))

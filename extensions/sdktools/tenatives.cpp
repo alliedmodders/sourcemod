@@ -48,10 +48,12 @@ int g_TEPlayers[256];
 void TempEntHooks::Initialize()
 {
 	m_TEHooks = adtfactory->CreateBasicTrie();
+	plsys->AddPluginsListener(this);
 }
 
 void TempEntHooks::Shutdown()
 {
+	plsys->RemovePluginsListener(this);
 	List<TEHookInfo *>::iterator iter;
 	for (iter=m_HookInfo.begin(); iter!=m_HookInfo.end(); iter++)
 	{
@@ -63,6 +65,47 @@ void TempEntHooks::Shutdown()
 		_DecRefCounter();
 	}
 	m_TEHooks->Destroy();
+}
+
+void TempEntHooks::OnPluginUnloaded(IPlugin *plugin)
+{
+	List<TEHookInfo *>::iterator iter = m_HookInfo.begin();
+	IPluginContext *pContext = plugin->GetBaseContext();
+
+	/* For each hook list... */
+	while (iter != m_HookInfo.end())
+	{
+		List<IPluginFunction *>::iterator f_iter = (*iter)->lst.begin();
+
+		/* Find the hooks on the given temp entity */
+		while (f_iter != (*iter)->lst.end())
+		{
+			/* If it matches, remove it and dec the ref count */
+			if ((*f_iter)->GetParentContext() == pContext)
+			{
+				f_iter = (*iter)->lst.erase(f_iter);
+				_DecRefCounter();
+			}
+			else
+			{
+				f_iter++;
+			}
+		}
+
+		/* If there are no more hooks left, we can safely 
+		 * remove it from the cache and remove its list.
+		 */
+		if ((*iter)->lst.size() == 0)
+		{
+			m_TEHooks->Delete((*iter)->te->GetName());
+			delete (*iter);
+			iter = m_HookInfo.erase(iter);
+		}
+		else
+		{
+			iter++;
+		}
+	}
 }
 
 void TempEntHooks::_IncRefCounter()

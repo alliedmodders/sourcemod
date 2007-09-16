@@ -94,8 +94,10 @@ struct TEHookInfo
 	List<IPluginFunction *> lst;
 };
 
-class TempEntHooks
+class TempEntHooks : public IPluginsListener
 {
+public: //IPluginsListener
+	void OnPluginUnloaded(IPlugin *plugin);
 public:
 	void Initialize();
 	void Shutdown();
