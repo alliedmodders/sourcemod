@@ -73,6 +73,9 @@
 #if defined SMEXT_ENABLE_LIBSYS
 #include <ILibrarySys.h>
 #endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+#include <IPluginSys.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -255,6 +258,9 @@ extern IThreader *threader;
 #endif
 #if defined SMEXT_ENABLE_LIBSYS
 extern ILibrarySys *libsys;
+#endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+extern SourceMod::IPluginManager *plsys;
 #endif
 
 #if defined SMEXT_CONF_METAMOD
