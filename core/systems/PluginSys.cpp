@@ -885,6 +885,22 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 //well i have discovered that gabe newell is very fat, so i wrote this comment now
 LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
+	bool no_load = false;
+	PluginSettings *pset;
+	unsigned int setcount = m_PluginInfo.GetSettingsNum();
+	for (unsigned int i=0; i<setcount; i++)
+	{
+		if ((pset = m_PluginInfo.GetSettingsIfMatch(i, path)) == NULL)
+		{
+			continue;
+		}
+		if (pset->blockload_val)
+		{
+			no_load = true;
+			break;
+		}
+	}
+
 	/**
 	 * Does this plugin already exist?
 	 */
@@ -894,7 +910,8 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
 			|| pPlugin->GetStatus() == Plugin_Error
-			|| pPlugin->GetStatus() == Plugin_Failed)
+			|| pPlugin->GetStatus() == Plugin_Failed
+			|| no_load)
 		{
 			UnloadPlugin(pPlugin);
 		} else {
@@ -904,6 +921,11 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 			}
 			return LoadRes_AlreadyLoaded;
 		}
+	}
+
+	if (no_load)
+	{
+		return LoadRes_NeverLoad;
 	}
 
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
@@ -919,8 +941,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		co = pPlugin->StartMyCompile(g_pVM);
 	}
 
-	PluginSettings *pset;
-	unsigned int setcount = m_PluginInfo.GetSettingsNum();
 	for (unsigned int i=0; i<setcount; i++)
 	{
 		if ((pset=m_PluginInfo.GetSettingsIfMatch(i, path)) == NULL)
@@ -1003,6 +1023,12 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 		return pl;
 	}
 
+	if (res == LoadRes_NeverLoad)
+	{
+		UTIL_Format(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+		return NULL;
+	}
+
 	AddPlugin(pl);
 
 	/* Run second pass if we need to */
@@ -1021,7 +1047,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 void CPluginManager::LoadAutoPlugin(const char *plugin)
 {
-	CPlugin *pl;
+	CPlugin *pl = NULL;
 	LoadRes res;
 	char error[255] = "Unknown error";
 

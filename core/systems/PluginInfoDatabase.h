@@ -58,6 +58,7 @@ struct PluginSettings
 	int optarray;
 	size_t opts_num;
 	size_t opts_size;
+	bool blockload_val;
 };
 
 class CPluginInfoDatabase : public ITextListener_SMC

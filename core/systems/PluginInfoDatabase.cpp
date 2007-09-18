@@ -42,6 +42,7 @@ void PluginSettings::Init()
 	optarray = -1;
 	opts_num = 0;
 	opts_size = 0;
+	blockload_val = false;
 }
 
 /**
@@ -179,6 +180,8 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key,
 				} else {
 					return MakeError("Unknown value for key \"lifetime\": \"%s\"", value);
 				}
+			} else if (strcmp(key, "blockload") == 0) {
+				plugin->blockload_val = true;
 			} else {
 				return MakeError("Unknown property key: \"%s\"", key);
 			}
@@ -188,6 +191,7 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key,
 			int validx = m_strtab->AddString(value);
 			PluginOpts *table;
 			BaseMemTable *memtab = m_strtab->GetMemTable();
+			plugin = (PluginSettings *)memtab->GetAddress(cur_plugin);
 			if (plugin->opts_num + 1 > plugin->opts_size)
 			{
 				unsigned int oldsize = plugin->opts_size;
@@ -286,9 +290,10 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_NewSection(const char *name, bool op
 		{
 			/* If we get a plugin node and we don't have a current plugin, create a new one */
 			PluginSettings *plugin;
+			int i_name = m_strtab->AddString(name);
 			cur_plugin = m_strtab->GetMemTable()->CreateMem(sizeof(PluginSettings), (void **)&plugin);
 			plugin->Init();
-			plugin->name = m_strtab->AddString(name);
+			plugin->name = i_name;
 			in_options = false;
 		} else {
 			if (!in_options && strcmp(name, "Options") == 0)

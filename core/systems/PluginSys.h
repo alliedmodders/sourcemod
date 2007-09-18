@@ -123,7 +123,8 @@ enum LoadRes
 {
 	LoadRes_Successful,
 	LoadRes_AlreadyLoaded,
-	LoadRes_Failure
+	LoadRes_Failure,
+	LoadRes_NeverLoad
 };
 
 struct AutoConfig
