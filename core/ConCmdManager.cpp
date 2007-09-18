@@ -648,7 +648,7 @@ void ConCmdManager::AddToCmdList(ConCmdInfo *info)
 	}
 }
 
-void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits)
+void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits, bool remove)
 {
 	ConCmdInfo *pInfo;
 
@@ -667,7 +667,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 			pHook = (*iter);
 			if (pHook->pAdmin)
 			{
-				if (bits)
+				if (!remove)
 				{
 					pHook->pAdmin->eflags = bits;
 				} else {
@@ -698,7 +698,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 				pHook = (*citer);
 				if (pHook->pAdmin && pHook->pAdmin->cmdGrpId == grpid)
 				{
-					if (bits)
+					if (remove)
 					{
 						pHook->pAdmin->eflags = bits;
 					} else {

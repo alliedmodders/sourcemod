@@ -117,7 +117,7 @@ public:
 						 const char *description, 
 						 int flags);
 	ResultType DispatchClientCommand(int client, const char *cmd, int args, ResultType type);
-	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits);
+	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool LookForSourceModCommand(const char *cmd);
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 	bool CheckCommandAccess(int client, const char *cmd, FlagBits flags);

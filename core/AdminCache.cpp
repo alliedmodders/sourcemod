@@ -349,7 +349,7 @@ void AdminCache::AddCommandOverride(const char *cmd, OverrideType type, FlagBits
 
 	sm_trie_insert(pTrie, cmd, (void *)(unsigned int)flags);
 
-	g_ConCmds.UpdateAdminCmdFlags(cmd, type, flags);
+	g_ConCmds.UpdateAdminCmdFlags(cmd, type, flags, false);
 }
 
 bool AdminCache::GetCommandOverride(const char *cmd, OverrideType type, FlagBits *pFlags)
@@ -397,7 +397,7 @@ void AdminCache::_UnsetCommandGroupOverride(const char *group)
 
 	sm_trie_delete(m_pCmdGrpOverrides, group);
 
-	g_ConCmds.UpdateAdminCmdFlags(group, Override_CommandGroup, 0);
+	g_ConCmds.UpdateAdminCmdFlags(group, Override_CommandGroup, 0, true);
 }
 
 void AdminCache::_UnsetCommandOverride(const char *cmd)
@@ -409,7 +409,7 @@ void AdminCache::_UnsetCommandOverride(const char *cmd)
 
 	sm_trie_delete(m_pCmdOverrides, cmd);
 
-	g_ConCmds.UpdateAdminCmdFlags(cmd, Override_Command, 0);
+	g_ConCmds.UpdateAdminCmdFlags(cmd, Override_Command, 0, true);
 }
 
 void AdminCache::DumpCommandOverrideCache(OverrideType type)
