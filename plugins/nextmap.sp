@@ -53,6 +53,7 @@ new Handle:g_Cvar_Mapcycle;
 
 new g_MapPos = -1;
 new Handle:g_MapList = INVALID_HANDLE;
+new g_mapFileTime;
  
 public OnPluginStart()
 {
@@ -70,10 +71,8 @@ public OnPluginStart()
 	g_Cvar_Mapcycle = FindConVar("mapcyclefile");
 	
 	g_MapList = CreateArray(32);
-	
-	decl String:mapCycle[64];
-	GetConVarString(g_Cvar_Mapcycle, mapCycle, 64);
-	if (LoadMaps(mapCycle) < 1)
+
+	if (!LoadMaps())
 	{
 		LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
 		SetFailState("Mapcycle Not Found");		
@@ -107,6 +106,12 @@ public OnMapStart()
 	// not in mapcyclefile. So we keep it set to the last expected nextmap. - ferret
 	if (strcmp(lastMap, currentMap) == 0)
 	{
+		if (!LoadMaps())
+		{
+			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
+			SetFailState("Mapcycle Not Found");	
+		}		
+		
 		FindAndSetNextMap();
 	}
 }
@@ -120,7 +125,7 @@ public ConVarChange_Mapcyclefile(Handle:convar, const String:oldValue[], const S
 {
 	if (strcmp(oldValue, newValue, false) != 0)
 	{
-		if (LoadMaps(newValue) < 1)
+		if (!LoadMaps())
 		{
 			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
 			SetFailState("Mapcycle Not Found");	
@@ -244,23 +249,37 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	return Plugin_Stop;
 }
  
-LoadMaps(const String:path[])
+LoadMaps()
 {
-	if (!FileExists(path))
+	decl String:mapCycle[64];
+	GetConVarString(g_Cvar_Mapcycle, mapCycle, 64);	
+	
+	if (!FileExists(mapCycle))
 	{
 		return 0;
 	}
+	
+	new fileTime =  GetFileTime(mapCycle, FileTime_LastChange);
+	if (g_mapFileTime == fileTime)
+	{
+		return GetArraySize(g_MapList);
+	}
+	
+	g_mapFileTime = fileTime;
  
-	new Handle:file = OpenFile(path, "r");
+	new Handle:file = OpenFile(mapCycle, "r");
 	
 	if (file == INVALID_HANDLE)
 	{
-		LogError("[SM] Could not open file: %s", path);
+		LogError("[SM] Could not open file: %s", mapCycle);
 		return 0;
 	}
 	
-	ClearArray(g_MapList);
 	g_MapPos = -1;
+	if (g_MapList != INVALID_HANDLE)
+	{
+		ClearArray(g_MapList);
+	}
 	
 	decl String:buffer[255];
 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
