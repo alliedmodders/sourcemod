@@ -364,14 +364,7 @@ bool:CheckAdminForChat(client)
 		return true;
 	}
 	
-	new AdminId:aid = GetUserAdmin(client);
-	
-	if (aid == INVALID_ADMIN_ID)
-	{
-		return false;			
-	}
-	
-	return GetAdminFlag(aid, Admin_Chat, Access_Effective);
+	return CheckCommandAccess(client, "sm_chat", ADMFLAG_CHAT);
 }
 
 FindColor(String:color[])
