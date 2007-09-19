@@ -36,7 +36,7 @@ INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2
           -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(SMM_TRUNK) -I$(SMM_TRUNK)/sourcehook -I$(SMM_TRUNK)/sourcemm \
 	  -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
 
-CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -fPIC -msse -DSOURCEMOD_BUILD
+CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
