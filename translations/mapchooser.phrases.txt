@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"en"			"Vote for the next map!"
+	}	
+
+	"Nextmap Voting Started"
+	{
+		"en"			"Voting for next map has started."
+	}	
+
+	"Nextmap Voting Finished"
+	{
+		"#format"		"{1:s}"
+		"en"			"Map voting has finished. The next map will be {1}."
+	}
+
+	"Current Map Extended"
+	{
+		"en"			"The current map has been extended."
+	}
+}

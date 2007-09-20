@@ -44,8 +44,8 @@ new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
 new Handle:g_Cvar_StartTime = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendTimeMax = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendTimeStep = INVALID_HANDLE;
-new Handle:g_Cvar_ExtendRoundsMax = INVALID_HANDLE;
-new Handle:g_Cvar_ExtendRoundsStep = INVALID_HANDLE;
+new Handle:g_Cvar_ExtendRoundMax = INVALID_HANDLE;
+new Handle:g_Cvar_ExtendRoundStep = INVALID_HANDLE;
 new Handle:g_Cvar_Mapfile = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
 
@@ -79,8 +79,8 @@ public OnPluginStart()
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies the time to start the vote when this much time remains.", _, true, 1.0);
 	g_Cvar_ExtendTimeMax = CreateConVar("sm_extendmap_maxtime", "90", "Specifies the maximum amount of time a map can be extended");
 	g_Cvar_ExtendTimeStep = CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes", _, true, 5.0);
-	g_Cvar_ExtendRoundsMax = CreateConVar("sm_extendmap_maxrounds", "30", "Specfies the maximum amount of rounds a map can be extended");
-	g_Cvar_ExtendRoundsStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 5.0);
+	g_Cvar_ExtendRoundMax = CreateConVar("sm_extendmap_maxrounds", "30", "Specfies the maximum amount of rounds a map can be extended");
+	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 5.0);
 	g_Cvar_Mapfile = CreateConVar("sm_mapvote_file", "configs/maps.ini", "Map file to use. (Def sourcemod/configs/maps.ini)");
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
 
@@ -124,6 +124,8 @@ public OnMapStart()
 public OnMapEnd()
 {
 	g_HasVoteStarted = false;
+	g_RetryTimer = INVALID_HANDLE;
+	g_VoteTimer = INVALID_HANDLE;
 }
 
 public OnMapTimeLeftChanged()
@@ -247,8 +249,8 @@ InitiateVote()
 	{
 		// Yes, I could short circuit this above. But I find it cleaner to break
 		// it up into two if's
-		if (GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundsMax)
-			|| GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundsMax))
+		if (GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundMax)
+			|| GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundMax))
 		{
 			AllowExtend = true;
 		}
@@ -338,9 +340,9 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				
 				if (g_GameType)
 				{
-					new roundstep = GetConVarInt(g_Cvar_ExtendRoundsStep);
+					new roundstep = GetConVarInt(g_Cvar_ExtendRoundStep);
 					new winlimit = GetConVarInt(g_Cvar_Winlimit);
-					if (winlimit < GetConVarInt(g_Cvar_ExtendRoundsMax))
+					if (winlimit < GetConVarInt(g_Cvar_ExtendRoundMax))
 					{
 						SetConVarInt(g_Cvar_Winlimit, winlimit + roundstep);
 					}
@@ -348,7 +350,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 					if (g_GameType == GAME_CSS)
 					{
 						new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
-						if (maxrounds < GetConVarInt(g_Cvar_ExtendRoundsMax))
+						if (maxrounds < GetConVarInt(g_Cvar_ExtendRoundMax))
 						{
 							SetConVarInt(g_Cvar_Maxrounds, maxrounds + roundstep);
 						}
@@ -358,8 +360,9 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				PrintToChatAll("[SM] %t", "Current Map Extended");
 				LogMessage("Voting for next map has finished. The current map has been extended.");
 				
-				// We extended, so we have to vote again.
+				// We extended, so we'll have to vote again.
 				g_HasVoteStarted = false;
+				SetupTimeleftTimer();
 			}
 			else
 			{
@@ -383,9 +386,13 @@ SetNextMap(const String:map[])
 	LogMessage("Voting for next map has finished. Nextmap: %s.", map);	
 }
 
-
 CreateNextVote()
 {
+	if(IsValidHandle(g_NextMapList))
+	{
+		CloseHandle(g_NextMapList);
+	}
+	
 	g_NextMapList = CreateKeyValues("MapChooser");
 	
 	new bool:oldMaps = false;
@@ -503,12 +510,7 @@ stock bool:IsValidCvarChar(c)
 stock bool:IsMapSelected(const String:Map[])
 {
 	KvRewind(g_NextMapList);
-	if (KvJumpToKey(g_NextMapList, Map))
-	{
-		return true;
-	}
-
-	return false;
+	return KvJumpToKey(g_NextMapList, Map)
 }
 
 stock bool:IsMapOld(const String:map[])
