@@ -139,7 +139,11 @@ void Logger::_NewMapFile()
 	FILE *fp = fopen(m_NrmFileName.c_str(), "w");
 	if (!fp)
 	{
-		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
+		char error[255];
+		g_LibSys.GetPlatformError(error, sizeof(error));
+		LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());
+		LogFatal("[SM] Platform returned error: \"%s\"", error);
+		LogFatal("[SM] Logging has been disabled.");
 		m_Active = false;
 		return;
 	} else {
@@ -332,7 +336,11 @@ void Logger::LogMessage(const char *vafmt, ...)
 
 	return;
 print_error:
-	g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
+	char error[255];
+	g_LibSys.GetPlatformError(error, sizeof(error));
+	LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());
+	LogFatal("[SM] Platform returned error: \"%s\"", error);
+	LogFatal("[SM] Logging has been disabled.");
 	m_Active = false;
 }
 
@@ -373,7 +381,11 @@ void Logger::LogError(const char *vafmt, ...)
 		va_end(ap);
 		fclose(fp);
 	} else {
-		g_SMAPI->ConPrint("[SM] Unexpected fatal logging error. SourceMod logging disabled.\n");
+		char error[255];
+		g_LibSys.GetPlatformError(error, sizeof(error));
+		LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());
+		LogFatal("[SM] Platform returned error: \"%s\"", error);
+		LogFatal("[SM] Logging has been disabled.");
 		m_Active = false;
 		return;
 	}
@@ -474,21 +486,28 @@ void Logger::LogFatal(const char *msg, ...)
 	 * It's already implemented twice which is bad.
 	 */
 
+	va_list ap;
+	char buffer[3072];
+
+	va_start(ap, msg);
+	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
+	va_end(ap);
+
+	char date[32];
+	time_t t;
+	GetAdjustedTime(&t);
+	tm *curtime = localtime(&t);
+	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+
+	g_SMAPI->ConPrintf("L %s: %s\n", date, buffer);
+
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
 	FILE *fp = fopen(path, "at");
-	if (!fp)
+	if (fp)
 	{
-		/* We're just doomed, aren't we... */
-		return;
+		fprintf(fp, "%s\n", buffer);
+		fclose(fp);
 	}
-
-	va_list ap;
-	va_start(ap, msg);
-	vfprintf(fp, msg, ap);
-	va_end(ap);
-
-	fputs("\n", fp);
-	
-	fclose(fp);
 }
+
