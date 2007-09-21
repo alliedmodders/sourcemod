@@ -546,7 +546,10 @@ native SQL_UnlockDatabase(Handle:database);
  *
  * @param db			Parent object of the Handle (or INVALID_HANDLE if none).
  * @param hndl			Handle to the child object (or INVALID_HANDLE if none).
- * @param error			Error string, if any.
+ * @param error			Error string if there was an error.  The error could be 
+ *						empty even if an error condition exists, so it is important 
+ *						to check the actual Handle value instead.
+ * @param data			Data passed in via the original threaded invocation.
  * @param 
  */
 functag SQLTCallback public(Handle:owner, Handle:hndl, const String:error[], any:data);
