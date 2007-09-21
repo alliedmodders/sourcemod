@@ -51,15 +51,16 @@
  * @param kick_message	Kick message passed via BanClient().
  * @param command		Command string to identify the ban source.
  * @param source		Source value passed via BanClient().
- * @noreturn
+ * @return				Plugin_Handled to block the actual server banning.
+ *						Kicking will still occur.
  */
-forward OnBanClient(client, 
-					time, 
-					flags, 
-					const String:reason[], 
-					const String:kick_message[], 
-					const String:command[],
-					any:source);
+forward Action:OnBanClient(client,
+						   time, 
+						   flags, 
+						   const String:reason[], 
+						   const String:kick_message[], 
+						   const String:command[],
+						   any:source);
 
 /**
  * Called for calls to BanIdentity() with a non-empty command.
@@ -70,14 +71,14 @@ forward OnBanClient(client,
  * @param reason		Reason passed via BanIdentity().
  * @param command		Command string to identify the ban source.
  * @param source		Source value passed via BanIdentity().
- * @noreturn
+ * @return				Plugin_Handled to block the actual server banning.
  */
-forward OnBanIdentity(const String:identity[],
-					  time,
-					  flags,
-					  const String:reason[],
-					  const String:command[],
-					  any:source);
+forward Action:OnBanIdentity(const String:identity[],
+							 time,
+							 flags,
+							 const String:reason[],
+							 const String:command[],
+							 any:source);
 
 /**
  * Called for calls to RemoveBan() with a non-empty command.
@@ -86,12 +87,12 @@ forward OnBanIdentity(const String:identity[],
  * @param flags			Ban flags (only IP or AUTHID are valid here).
  * @param command		Command string to identify the ban source.
  * @param source		Source value passed via BanIdentity().
- * @noreturn
+ * @return				Plugin_Handled to block the actual server banning.
  */
-forward OnRemoveBan(const String:identity[],
-					flags,
-					const String:command[],
-					any:source);
+forward Action:OnRemoveBan(const String:identity[],
+						   flags,
+						   const String:command[],
+						   any:source);
 
 /**
  * Bans a client.
