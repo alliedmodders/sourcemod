@@ -510,7 +510,7 @@ stock bool:IsValidCvarChar(c)
 stock bool:IsMapSelected(const String:Map[])
 {
 	KvRewind(g_NextMapList);
-	return KvJumpToKey(g_NextMapList, Map)
+	return KvJumpToKey(g_NextMapList, Map);
 }
 
 stock bool:IsMapOld(const String:map[])
