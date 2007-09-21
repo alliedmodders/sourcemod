@@ -53,6 +53,16 @@ unsigned int strncopy(char *dest, const char *src, size_t count)
 	return (dest - start);
 }
 
+int busy_handler(void *unused1, int unused2)
+{
+#if defined PLATFORM_WINDOWS
+	Sleep(100);
+#elif defined PLATFORM_LINUX
+	usleep(100000);
+#endif
+	return 1;
+}
+
 SqDriver::SqDriver()
 {
 	m_Handle = BAD_HANDLE;
@@ -222,6 +232,8 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 		m_pOpenLock->Unlock();
 		return NULL;
 	}
+
+	sqlite3_busy_handler(sql, busy_handler, NULL);
 
 	SqDatabase *pdb = new SqDatabase(sql, persistent);
 
