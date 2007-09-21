@@ -172,7 +172,7 @@ IPreparedQuery *SqDatabase::PrepareQuery(const char *query, char *error, size_t 
 			msg = sqlite3_errmsg(m_sq3);
 		} else {
 			msg = "Invalid query string";
-			m_LastErrorCode = SQLITE_MISUSE;
+			m_LastErrorCode = SQLITE_ERROR;
 		}
 		if (error)
 		{
