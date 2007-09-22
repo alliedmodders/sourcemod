@@ -248,3 +248,27 @@ native RemoveFromArray(Handle:array, index);
  * @error				Invalid Handle or invalid index.
  */
 native SwapArrayItems(Handle:array, index1, index2);
+
+/**
+ * Returns true is the supplied string exists within the supplied array.
+ *
+ * @param array			Array Handle.
+ * @param item			String to search for
+ * @return			True if found, false if not
+ * @error			Invalid handle
+ */
+stock bool:IsStringInArray(Handle:array, const String:item[])
+{
+	decl String:curItem[64];
+	
+	for (new i = 0; i < GetArraySize(array); i++)
+	{
+		GetArrayString(array, i, curItem, sizeof(curItem));
+		if(strcmp(item, curItem, false) == 0)
+		{
+			return true;
+		}		
+	}
+
+	return false;
+}
