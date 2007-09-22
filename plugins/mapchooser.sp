@@ -57,17 +57,8 @@ new Handle:g_OldMapList = INVALID_HANDLE;
 new Handle:g_NextMapList = INVALID_HANDLE;
 new Handle:g_VoteMenu = INVALID_HANDLE;
 
-new g_MapCount;
-new g_GameType;
 new bool:g_HasVoteStarted;
 new g_mapFileTime;
-
-enum
-{
-	GAME_HL2 = 0,
-	GAME_CSS,
-	GAME_DOD
-}
 
 public OnPluginStart()
 {
@@ -75,6 +66,7 @@ public OnPluginStart()
 	
 	g_MapList = CreateArray(33);
 	g_OldMapList = CreateArray(33);
+	g_NextMapList = CreateArray(33);
 
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies the time to start the vote when this much time remains.", _, true, 1.0);
 	g_Cvar_ExtendTimeMax = CreateConVar("sm_extendmap_maxtime", "90", "Specifies the maximum amount of time a map can be extended");
@@ -87,20 +79,12 @@ public OnPluginStart()
 	decl String:FolderName[32];
 	GetGameFolderName(FolderName, sizeof(FolderName));
 
-	if (strcmp(FolderName, "cstrike", false) == 0)
-	{
-		g_GameType = GAME_CSS;
-		g_Cvar_Maxrounds = FindConVar("mp_maxrounds");
-	}
-	else if (strcmp(FolderName, "dod", false) == 0)
-	{
-		g_GameType = GAME_DOD;	
-	}
+	g_Cvar_Winlimit = FindConVar("mp_winlimit");
+	g_Cvar_Maxrounds = FindConVar("mp_maxrounds");
 	
-	if (g_GameType)
+	if (g_Cvar_Winlimit != INVALID_HANDLE || g_Cvar_Maxrounds != INVALID_HANDLE)
 	{
-		g_Cvar_Winlimit = FindConVar("mp_winlimit");
-		HookEvent("team_score", Event_TeamScore);
+		HookEvent("round_end", Event_RoundEnd);
 	}
 }
 
@@ -131,6 +115,7 @@ public OnMapEnd()
 public OnMapTimeLeftChanged()
 {
 	SetupTimeleftTimer();
+	LogMessage("[MC] Timeleft changed, resetting timer.");
 }
 
 SetupTimeleftTimer()
@@ -141,7 +126,7 @@ SetupTimeleftTimer()
 		new startTime = GetConVarInt(g_Cvar_StartTime);
 		if (time - startTime < 0)
 		{
-			InitiateVote();			
+			InitiateVote();		
 		}
 		else
 		{
@@ -149,7 +134,7 @@ SetupTimeleftTimer()
 			{
 				KillTimer(g_VoteTimer);
 				g_VoteTimer = INVALID_HANDLE;
-			}			
+			}	
 			
 			g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote, TIMER_FLAG_NO_MAPCHANGE);
 		}		
@@ -158,10 +143,11 @@ SetupTimeleftTimer()
 
 public Action:Timer_StartMapVote(Handle:timer)
 {
-	if (!g_MapCount)
+	if (!GetArraySize(g_MapList))
 	{
 		return Plugin_Stop;
 	}	
+	
 	
 	if (timer == g_RetryTimer)
 	{
@@ -177,32 +163,44 @@ public Action:Timer_StartMapVote(Handle:timer)
 	return Plugin_Stop;
 }
 
-public Event_TeamScore(Handle:event, const String:name[], bool:dontBroadcast)
+public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!g_MapCount)
+	if (!GetArraySize(g_MapList))
 	{
 		return;
 	}
 
-	static Score[2];
-	new Team = GetEventInt(event, "teamid");
-	Score[Team - 2] = GetEventInt(event, "score");
-
-	new winlimit = GetConVarInt(g_Cvar_Winlimit);
-	if (winlimit)
+	new team = GetEventInt(event, "winner");
+	if (team != 2 || team != 3)
 	{
-		new Limit = winlimit - 2;
-		if (Score[0] > Limit || Score[1] > Limit)
+		return;
+	}
+	
+	static score[2];
+	
+	score[team - 2]++;
+
+	LogMessage("[MC] Team scored! %d - %d", score[0], score[1]);
+	
+	if (g_Cvar_Winlimit != INVALID_HANDLE)
+	{
+		new winlimit = GetConVarInt(g_Cvar_Winlimit);
+		if (winlimit)
 		{
-			InitiateVote();
+			new Limit = winlimit - 2;
+			if (score[0] > Limit || score[1] > Limit)
+			{
+				InitiateVote();
+			}
 		}
 	}
-	else if (g_GameType == GAME_CSS)
+	
+	if (g_Cvar_Maxrounds != INVALID_HANDLE)
 	{
 		new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
 		if (maxrounds)
 		{
-			if ((Score[0] + Score[1]) > maxrounds - 2)
+			if ((score[0] + score[1]) > maxrounds - 2)
 			{
 				InitiateVote();
 			}			
@@ -228,35 +226,30 @@ InitiateVote()
 	g_VoteMenu = CreateMenu(Handler_MapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_VoteMenu, "Vote Nextmap");
 
-	KvRewind(g_NextMapList);
-	KvGotoFirstSubKey(g_NextMapList);
-
 	decl String:map[32];
-	do
+	for (new i = 0; i < GetArraySize(g_NextMapList); i++)
 	{
-		KvGetSectionName(g_NextMapList, map, sizeof(map));
+		GetArrayString(g_NextMapList, i, map, sizeof(map));
 		AddMenuItem(g_VoteMenu, map, map);
 	}
-	while (KvGotoNextKey(g_NextMapList));
 
-	new bool:AllowExtend, time;
+	new bool:allowExtend, time;
 	if (GetMapTimeLimit(time) && time > 0 && time < GetConVarInt(g_Cvar_ExtendTimeMax))
 	{
-		AllowExtend = true;
+		allowExtend = true;
 	}
 	
-	if (g_GameType)
+	if (g_Cvar_Winlimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundMax))
 	{
-		// Yes, I could short circuit this above. But I find it cleaner to break
-		// it up into two if's
-		if (GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundMax)
-			|| GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundMax))
-		{
-			AllowExtend = true;
-		}
+		allowExtend = true;
 	}	
+	
+	if (g_Cvar_Maxrounds != INVALID_HANDLE && GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundMax))
+	{
+		allowExtend = true;
+	}
 
-	if (AllowExtend)
+	if (allowExtend)
 	{
 		AddMenuItem(g_VoteMenu, "##extend##", "Extend");
 	}
@@ -338,22 +331,21 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 					}
 				}
 				
-				if (g_GameType)
+				if (g_Cvar_Winlimit != INVALID_HANDLE)
 				{
-					new roundstep = GetConVarInt(g_Cvar_ExtendRoundStep);
 					new winlimit = GetConVarInt(g_Cvar_Winlimit);
-					if (winlimit < GetConVarInt(g_Cvar_ExtendRoundMax))
+					if (winlimit && winlimit < GetConVarInt(g_Cvar_ExtendRoundMax))
 					{
-						SetConVarInt(g_Cvar_Winlimit, winlimit + roundstep);
-					}
-					
-					if (g_GameType == GAME_CSS)
+						SetConVarInt(g_Cvar_Winlimit, winlimit + GetConVarInt(g_Cvar_ExtendRoundStep));
+					}					
+				}
+				
+				if (g_Cvar_Maxrounds != INVALID_HANDLE)
+				{
+					new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
+					if (maxrounds && maxrounds < GetConVarInt(g_Cvar_ExtendRoundMax))
 					{
-						new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
-						if (maxrounds < GetConVarInt(g_Cvar_ExtendRoundMax))
-						{
-							SetConVarInt(g_Cvar_Maxrounds, maxrounds + roundstep);
-						}
+						SetConVarInt(g_Cvar_Maxrounds, maxrounds + GetConVarInt(g_Cvar_ExtendRoundStep));
 					}
 				}
 
@@ -382,42 +374,40 @@ SetNextMap(const String:map[])
 		RemoveFromArray(g_OldMapList, 0);
 	}
 		
-	PrintToChatAll("[SM] %t", "Nextmap Voting Finished");
+	PrintToChatAll("[SM] %t", "Nextmap Voting Finished", map);
 	LogMessage("Voting for next map has finished. Nextmap: %s.", map);	
 }
 
 CreateNextVote()
 {
-	if(IsValidHandle(g_NextMapList))
+	if(g_NextMapList != INVALID_HANDLE)
 	{
-		CloseHandle(g_NextMapList);
-	}
+		ClearArray(g_NextMapList);
+	}	
 	
-	g_NextMapList = CreateKeyValues("MapChooser");
+	decl String:map[32];
+	new limit = (MAX_MAPS_SELECTION < GetArraySize(g_MapList) ? MAX_MAPS_SELECTION : GetArraySize(g_MapList));
 	
 	new bool:oldMaps = false;
-	if (g_MapCount > GetConVarInt(g_Cvar_ExcludeMaps))
+	if (limit > GetConVarInt(g_Cvar_ExcludeMaps))
 	{
+		limit -= GetArraySize(g_OldMapList);
 		oldMaps = true;
 	}
 	
-	decl String:map[32];
-	for (new i = 0, b, count; i < g_MapCount; i++)
+	for (new i = 0; i < limit; i++)
 	{
-		b = GetRandomInt(0, g_MapCount - 1);
+		new b = GetRandomInt(0, limit - 1);
 		GetArrayString(g_MapList, b, map, sizeof(map));
-
-		if (!IsMapSelected(map) && !(oldMaps && IsMapOld(map)))
+		
+		while (IsStringInArray(g_NextMapList, map) || (oldMaps && IsStringInArray(g_OldMapList, map)))
 		{
-			
-			KvJumpToKey(g_NextMapList, map, true);
-			count++;
+			b = GetRandomInt(0, limit - 1);
+			GetArrayString(g_MapList, b, map, sizeof(map));
 		}
-
-		if (count == MAX_MAPS_SELECTION || count >= 9)
-		{
-			break;
-		}
+		
+		LogMessage("[MC] Map was good, %s pushed on array.", map);
+		PushArrayString(g_NextMapList, map);		
 	}
 }
 
@@ -440,7 +430,6 @@ LoadMaps()
 	{
 		LogError("Unable to locate g_Cvar_Mapfile or mapcyclefile, no maps loaded.");
 		
-		g_MapCount = 0;
 		if (g_MapList != INVALID_HANDLE)
 		{
 			ClearArray(g_MapList);
@@ -454,19 +443,18 @@ LoadMaps()
 	new fileTime =  GetFileTime(mapPath, FileTime_LastChange);
 	if (g_mapFileTime == fileTime)
 	{
-		return g_MapCount;
+		return GetArraySize(g_MapList);
 	}
 	
 	g_mapFileTime = fileTime;
 	
 	// Reset the array
-	g_MapCount = 0;
 	if (g_MapList != INVALID_HANDLE)
 	{
 		ClearArray(g_MapList);
 	}
 
-	PrintToServer("[SM] Loading mapchooser map file [%s]", mapPath);
+	LogMessage("[SM] Loading mapchooser map file [%s]", mapPath);
 
 	decl String:currentMap[32];
 	GetCurrentMap(currentMap, sizeof(currentMap));
@@ -495,36 +483,13 @@ LoadMaps()
 		}
 
 		PushArrayString(g_MapList, buffer);
-		g_MapCount++;
 	}
 
 	CloseHandle(file);
-	return g_MapCount;
+	return GetArraySize(g_MapList);
 }
 
 stock bool:IsValidCvarChar(c)
 {
 	return (c == '_' || IsCharAlpha(c) || IsCharNumeric(c));
-}
-
-stock bool:IsMapSelected(const String:Map[])
-{
-	KvRewind(g_NextMapList);
-	return KvJumpToKey(g_NextMapList, Map);
-}
-
-stock bool:IsMapOld(const String:map[])
-{
-	decl String:oldMap[64];
-	
-	for (new i = 0; i < GetArraySize(g_OldMapList); i++)
-	{
-		GetArrayString(g_OldMapList, i, oldMap, sizeof(oldMap));
-		if(strcmp(map, oldMap, false) == 0)
-		{
-			return false;
-		}		
-	}
-
-	return true;
 }
