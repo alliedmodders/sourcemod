@@ -177,10 +177,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 	
 	static score[2];
-	
 	score[team - 2]++;
-
-	LogMessage("[MC] Team scored! %d - %d", score[0], score[1]);
 	
 	if (g_Cvar_Winlimit != INVALID_HANDLE)
 	{
