@@ -10,12 +10,12 @@ HL2SDK = ../../../hl2sdk
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = cstrike
+PROJECT = game.cstrike
 
 #Uncomment for SourceMM-enabled extensions
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp timeleft.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
