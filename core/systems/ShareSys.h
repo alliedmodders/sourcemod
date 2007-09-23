@@ -52,6 +52,10 @@ namespace SourceMod
 
 struct IfaceInfo
 {
+	bool operator ==(const IfaceInfo &info)
+	{
+		return (info.iface == iface && info.owner == owner);
+	}
 	SMInterface *iface;
 	IExtension *owner;
 };

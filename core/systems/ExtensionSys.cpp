@@ -205,7 +205,10 @@ bool CExtension::IsLoaded()
 
 void CExtension::AddDependency(IfaceInfo *pInfo)
 {
-	m_Deps.push_back(*pInfo);
+	if (m_Deps.find(*pInfo) == m_Deps.end())
+	{
+		m_Deps.push_back(*pInfo);
+	}
 }
 
 bool operator ==(const IfaceInfo &i1, const IfaceInfo &i2)
@@ -393,7 +396,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 	if (!strstr(path, "." PLATFORM_LIB_EXT))
 	{
 		char newpath[PLATFORM_MAX_PATH];
-		snprintf(newpath, PLATFORM_MAX_PATH, "%s.%s", path, PLATFORM_LIB_EXT);
+		g_LibSys.PathFormat(newpath, sizeof(newpath), "%s.%s", path, PLATFORM_LIB_EXT);
 		return LoadAutoExtension(newpath);
 	}
 
@@ -428,13 +431,13 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 	if (!strstr(file, "." PLATFORM_LIB_EXT))
 	{
 		char path[PLATFORM_MAX_PATH];
-		snprintf(path, PLATFORM_MAX_PATH, "%s.%s", file, PLATFORM_LIB_EXT);
+		UTIL_Format(path, sizeof(path), "%s.%s", file, PLATFORM_LIB_EXT);
 		return FindExtensionByFile(path);
 	}
 
 	/* Make sure the file direction is right */
 	char path[PLATFORM_MAX_PATH];
-	g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
+	g_LibSys.PathFormat(path, sizeof(path), "%s", file);
 
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
@@ -743,12 +746,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 	}
 
-	/* :HACKHACK: make sure g_pGameExt gets cleared */
-	if (pExt == g_pGameExt)
-	{
-		g_pGameExt = NULL;
-	}
-
 	delete pExt;
 
 	List<CExtension *>::iterator iter;
@@ -945,12 +942,6 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				return;
 			}
 
-			if (pExt == g_pGameExt)
-			{
-				g_RootMenu.ConsolePrint("[SM] Game extensions cannot be unloaded at this time.");
-				return;
-			}
-
 			if (argcount > 4 && pExt->unload_code)
 			{
 				const char *unload = g_RootMenu.GetArgument(4);
@@ -960,7 +951,9 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
 					UnloadExtension(pExt);
 					g_RootMenu.ConsolePrint("[SM] Extension %s is now unloaded.", filename);
-				} else {
+				}
+				else
+				{
 					g_RootMenu.ConsolePrint("[SM] Please try again, the correct unload code is \"%d\"", pExt->unload_code);
 				}
 				return;
@@ -974,7 +967,9 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				UnloadExtension(pExt);
 				g_RootMenu.ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				return;
-			} else {
+			}
+			else
+			{
 				List<IPlugin *> plugins;
 				if (pExt->m_ChildDeps.size())
 				{
