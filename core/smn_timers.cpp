@@ -310,7 +310,7 @@ static cell_t smn_ExtendMapTimeLimit(IPluginContext *pContext, const cell_t *par
 	return 1;
 }
 
-static cell_t smn_IsServerTicking(IPluginContext *pContext, const cell_t *params)
+static cell_t smn_IsServerProcessing(IPluginContext *pContext, const cell_t *params)
 {
 	return (gpGlobals->frametime > 0.0f) ? 1 : 0;
 }
@@ -324,6 +324,6 @@ REGISTER_NATIVES(timernatives)
 	{"GetMapTimeLeft",			smn_GetMapTimeLeft},
 	{"GetMapTimeLimit",			smn_GetMapTimeLimit},
 	{"ExtendMapTimeLimit",		smn_ExtendMapTimeLimit},
-	{"IsServerTicking",			smn_IsServerTicking},
+	{"IsServerProcessing",		smn_IsServerProcessing},
 	{NULL,						NULL}
 };
