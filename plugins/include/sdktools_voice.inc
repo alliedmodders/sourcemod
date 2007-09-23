@@ -39,9 +39,11 @@
  * @section voice flags.
  */
 #define VOICE_NORMAL		0	/**< Allow the client to listen and speak normally. */
-#define VOICE_MUTED			1	/**< Mutes the client from speaking to everyone. */
+#define VOICE_MUTED		1	/**< Mutes the client from speaking to everyone. */
 #define VOICE_SPEAKALL		2	/**< Allow the client to speak to everyone. */
 #define VOICE_LISTENALL		4	/**< Allow the client to listen to everyone. */
+#define VOICE_TEAM		8	/**< Allow the client to always speak to team, even when dead. */
+#define VOICE_LISTENTEAM	16	/**< Allow the client to always hear teammates, including dead ones. */
  
 /**
  * @endsection

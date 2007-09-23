@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,6 +35,8 @@
 #define SPEAK_MUTED			1
 #define SPEAK_ALL			2
 #define SPEAK_LISTENALL		4
+#define SPEAK_TEAM			8
+#define SPEAK_LISTENTEAM	16
 
 size_t g_VoiceFlags[65];
 size_t g_VoiceFlagsCount = 0;
@@ -43,19 +45,31 @@ SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, 
 
 bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 {
-	if (g_VoiceFlags[iSender] & SPEAK_MUTED) 
+	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
 	}
 
-	if (g_VoiceFlags[iSender] & SPEAK_ALL)
+	if ((g_VoiceFlags[iSender] & SPEAK_ALL) || (g_VoiceFlags[iReceiver] & SPEAK_LISTENALL))
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
 	}
 
-	if (g_VoiceFlags[iReceiver] & SPEAK_LISTENALL)
+	if ((g_VoiceFlags[iSender] & SPEAK_TEAM) || (g_VoiceFlags[iReceiver] & SPEAK_LISTENTEAM))
 	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
+		IGamePlayer *pReceiver = playerhelpers->GetGamePlayer(iReceiver);
+		IGamePlayer *pSender = playerhelpers->GetGamePlayer(iSender);
+
+		if (pReceiver && pSender && pReceiver->IsInGame() && pSender->IsInGame())
+		{
+			IPlayerInfo *pRInfo = pReceiver->GetPlayerInfo();
+			IPlayerInfo *pSInfo = pSender->GetPlayerInfo();
+
+			if (pRInfo && pSInfo && pRInfo->GetTeamIndex() == pSInfo->GetTeamIndex())
+			{
+				RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
+			}
+		}
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, bListen);
@@ -64,7 +78,7 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 void SDKTools::OnClientDisconnecting(int client)
 {
 	if (g_VoiceFlags[client])
-	{	
+	{
 		g_VoiceFlags[client] = 0;
 		if (!--g_VoiceFlagsCount)
 		{
@@ -143,7 +157,7 @@ static cell_t GetClientListening(IPluginContext *pContext, const cell_t *params)
 	return voiceserver->GetClientListening(params[1], params[2]) ? 1 : 0;
 }
 
-sp_nativeinfo_t g_VoiceNatives[] = 
+sp_nativeinfo_t g_VoiceNatives[] =
 {
 	{"SetClientListeningFlags",		SetClientListeningFlags},
 	{"GetClientListeningFlags",		GetClientListeningFlags},
