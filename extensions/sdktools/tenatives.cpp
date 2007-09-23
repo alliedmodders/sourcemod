@@ -38,6 +38,7 @@ SH_DECL_HOOK5_void(IVEngineServer, PlaybackTempEntity, SH_NOATTRIB, 0, IRecipien
 CellRecipientFilter g_TERecFilter;
 TempEntityInfo *g_CurrentTE = NULL;
 int g_TEPlayers[256];
+bool tenatives_initialized = false;
 
 /*************************
 *                        *
@@ -49,10 +50,16 @@ void TempEntHooks::Initialize()
 {
 	m_TEHooks = adtfactory->CreateBasicTrie();
 	plsys->AddPluginsListener(this);
+	tenatives_initialized = true;
 }
 
 void TempEntHooks::Shutdown()
 {
+	if (!tenatives_initialized)
+	{
+		return;
+	}
+
 	plsys->RemovePluginsListener(this);
 	List<TEHookInfo *>::iterator iter;
 	for (iter=m_HookInfo.begin(); iter!=m_HookInfo.end(); iter++)
@@ -65,6 +72,7 @@ void TempEntHooks::Shutdown()
 		_DecRefCounter();
 	}
 	m_TEHooks->Destroy();
+	tenatives_initialized = false;
 }
 
 void TempEntHooks::OnPluginUnloaded(IPlugin *plugin)
