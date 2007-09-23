@@ -92,22 +92,20 @@ public:
 
 void LogAction(Handle_t hndl, int type, int client, int target, const char *message)
 {
-	if (!g_OnLogAction->GetFunctionCount())
+	if (g_OnLogAction->GetFunctionCount())
 	{
-		return;
-	}
+		cell_t result = 0;
+		g_OnLogAction->PushCell(hndl);
+		g_OnLogAction->PushCell(type);
+		g_OnLogAction->PushCell(client);
+		g_OnLogAction->PushCell(target);
+		g_OnLogAction->PushString(message);
+		g_OnLogAction->Execute(&result);
 
-	cell_t result = 0;
-	g_OnLogAction->PushCell(hndl);
-	g_OnLogAction->PushCell(type);
-	g_OnLogAction->PushCell(client);
-	g_OnLogAction->PushCell(target);
-	g_OnLogAction->PushString(message);
-	g_OnLogAction->Execute(&result);
-
-	if (result >= (ResultType)Pl_Handled)
-	{
-		return;
+		if (result >= (ResultType)Pl_Handled)
+		{
+			return;
+		}
 	}
 
 	const char *logtag = "SM";
