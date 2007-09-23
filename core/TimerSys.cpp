@@ -39,9 +39,10 @@ SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *
 
 TimerSystem g_Timers;
 float g_fUniversalTime = 0.0f;
-float g_fMapStartTime = 0.0f;
+float g_fGameStartTime = 0.0f;	/* Game game start time, non-universal */
 const float *g_pUniversalTime = &g_fUniversalTime;
 ConVar *mp_timelimit = NULL;
+int g_TimeLeftMode = 0;
 
 ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
 
@@ -70,6 +71,11 @@ public:
 		m_bInUse = false;
 	}
 
+	void OnSourceModLevelChange(const char *mapName)
+	{
+		g_fGameStartTime = 0.0f;
+	}
+
 	int GetMapTimeLimit()
 	{
 		return mp_timelimit->GetInt();
@@ -86,18 +92,6 @@ public:
 			Disable();
 		}
 		m_bInUse = enabled;
-	}
-
-	 bool GetMapTimeLeft(int *time_left)
-	{
-		if (GetMapTimeLimit() == 0)
-		{
-			return false;
-		}
-
-		*time_left = (int)((g_fMapStartTime + mp_timelimit->GetInt() * 60.0f) - g_fUniversalTime);
-
-		return true;
 	}
 
 	void ExtendMapTimeLimit(int extra_time)
@@ -176,6 +170,7 @@ void TimerSystem::OnSourceModAllInitialized()
 {
 	g_ShareSys.AddInterface(NULL, this);
 	m_pOnGameFrame = g_Forwards.CreateForward("OnGameFrame", ET_Ignore, 0, NULL);
+	m_pOnMapTimeLeftChanged = g_Forwards.CreateForward("OnMapTimeLeftChanged", ET_Ignore, 0, NULL);
 }
 
 void TimerSystem::OnSourceModGameInitialized()
@@ -192,6 +187,7 @@ void TimerSystem::OnSourceModShutdown()
 {
 	SetMapTimer(NULL);
 	g_Forwards.ReleaseForward(m_pOnGameFrame);
+	g_Forwards.ReleaseForward(m_pOnMapTimeLeftChanged);
 }
 
 void TimerSystem::OnSourceModLevelChange(const char *mapName)
@@ -216,11 +212,7 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 
 	m_fLastTickedTime = gpGlobals->curtime;
-	if (!m_bHasMapTickedYet)
-	{
-		g_fMapStartTime = g_fUniversalTime;
-		m_bHasMapTickedYet = true;
-	}
+	m_bHasMapTickedYet = true;
 
 	if (g_fUniversalTime - m_LastExecTime >= 0.1)
 	{
@@ -443,10 +435,28 @@ IMapTimer *TimerSystem::GetMapTimer()
 
 void TimerSystem::MapTimeLeftChanged()
 {
+	m_pOnMapTimeLeftChanged->Execute(NULL);
+}
 
+void TimerSystem::NotifyOfGameStart(float offset)
+{
+	g_fGameStartTime = gpGlobals->curtime + offset;
 }
 
 float TimerSystem::GetTickedTime()
 {
 	return g_fUniversalTime;
+}
+
+bool TimerSystem::GetMapTimeLeft(float *time_left)
+{
+	int time_limit;
+	if (!m_pMapTimer || (time_limit = m_pMapTimer->GetMapTimeLimit()) < 1)
+	{
+		return false;
+	}
+
+	*time_left = (g_fGameStartTime + time_limit * 60.0f) - gpGlobals->curtime;
+
+	return true;
 }

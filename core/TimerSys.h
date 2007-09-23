@@ -77,6 +77,8 @@ public: //ITimerSystem
 	void MapTimeLeftChanged();
 	IMapTimer *SetMapTimer(IMapTimer *pTimer);
 	float GetTickedTime();
+	void NotifyOfGameStart(float offset /* = 0.0f */);
+	bool GetMapTimeLeft(float *pTime);
 public:
 	void RunFrame();
 	void MapChange(bool real_mapchange);
@@ -96,12 +98,14 @@ private:
 									*/
 
 	IForward *m_pOnGameFrame;
+	IForward *m_pOnMapTimeLeftChanged;
 };
 
 time_t GetAdjustedTime(time_t *buf = NULL);
 
 extern const float *g_pUniversalTime;
 extern TimerSystem g_Timers;
+extern int g_TimeLeftMode;
 
 #endif //_INCLUDE_SOURCEMOD_CTIMERSYS_H_
 

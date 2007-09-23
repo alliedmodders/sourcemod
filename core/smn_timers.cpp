@@ -260,23 +260,21 @@ static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_GetMapTimeLeft(IPluginContext *pContext, const cell_t *params)
 {
-	IMapTimer *pMapTimer = g_Timers.GetMapTimer();
-
-	if (!pMapTimer)
-	{
-		return 0;
-	}
-
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[1], &addr);
 
-	int time_left;
-	if (!pMapTimer->GetMapTimeLeft(&time_left))
+	float time_left;
+	int int_time;
+	if (!g_Timers.GetMapTimeLeft(&time_left))
 	{
-		time_left = -1;
+		int_time = -1;
+	}
+	else
+	{
+		int_time = (int)time_left;
 	}
 
-	*addr = time_left;
+	*addr = int_time;
 
 	return true;
 }
@@ -312,6 +310,11 @@ static cell_t smn_ExtendMapTimeLimit(IPluginContext *pContext, const cell_t *par
 	return 1;
 }
 
+static cell_t smn_IsServerTicking(IPluginContext *pContext, const cell_t *params)
+{
+	return (gpGlobals->frametime > 0.0f) ? 1 : 0;
+}
+
 REGISTER_NATIVES(timernatives)
 {
 	{"CreateTimer",				smn_CreateTimer},
@@ -321,5 +324,6 @@ REGISTER_NATIVES(timernatives)
 	{"GetMapTimeLeft",			smn_GetMapTimeLeft},
 	{"GetMapTimeLimit",			smn_GetMapTimeLimit},
 	{"ExtendMapTimeLimit",		smn_ExtendMapTimeLimit},
+	{"IsServerTicking",			smn_IsServerTicking},
 	{NULL,						NULL}
 };

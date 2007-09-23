@@ -31,15 +31,20 @@
 
 #include "extension.h"
 #include "RegNatives.h"
+#include "timeleft.h"
 
 /**
  * @file extension.cpp
  * @brief Implement extension code here.
  */
 
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+
 CStrike g_CStrike;		/**< Global singleton for extension's main interface */
 IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
+IGameEventManager2 *gameevents = NULL;
+bool hooked_everything = false;
 
 SMEXT_LINK(&g_CStrike);
 
@@ -49,8 +54,13 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 
-	if (!gameconfs->LoadGameConfigFile("sm-cstrike.games", &g_pGameConf, error, maxlength))
+	char conf_error[255];
+	if (!gameconfs->LoadGameConfigFile("sm-cstrike.games", &g_pGameConf, conf_error, sizeof(conf_error)))
 	{
+		if (error)
+		{
+			snprintf(error, maxlength, "Could not read sm-cstrike.games.txt: %s", conf_error);
+		}
 		return false;
 	}
 
@@ -59,14 +69,33 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	return true;
 }
 
+bool CStrike::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
+{
+	GET_V_IFACE_CURRENT(engineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
+	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+
+	return true;
+}
+
 void CStrike::SDK_OnUnload()
 {
+	if (hooked_everything)
+	{
+		gameevents->RemoveListener(&g_TimeLeftEvents);
+		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, &g_TimeLeftEvents, &TimeLeftEvents::LevelInit, true);
+		hooked_everything = false;
+	}
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
 
 void CStrike::SDK_OnAllLoaded()
 {
+	gameevents->AddListener(&g_TimeLeftEvents, "round_start", true);
+	gameevents->AddListener(&g_TimeLeftEvents, "round_end", true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, &g_TimeLeftEvents, &TimeLeftEvents::LevelInit, true);
+	hooked_everything = true;
+
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 }
 

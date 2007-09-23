@@ -37,10 +37,12 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
+#include "svn_version.h"
+
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"CS:S Tools"
 #define SMEXT_CONF_DESCRIPTION	"CS:S extended functionality"
-#define SMEXT_CONF_VERSION		"99.0.0.0"	//:TODO:
+#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"CSTRIKE"
@@ -66,7 +68,7 @@
 #define SMEXT_ENABLE_GAMECONF
 //#define SMEXT_ENABLE_MEMUTILS
 //#define SMEXT_ENABLE_GAMEHELPERS
-//#define SMEXT_ENABLE_TIMERSYS
+#define SMEXT_ENABLE_TIMERSYS
 //#define SMEXT_ENABLE_THREADER
 //#define SMEXT_ENABLE_LIBSYS
 

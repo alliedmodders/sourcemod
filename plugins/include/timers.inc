@@ -161,6 +161,17 @@ native bool:ExtendMapTimeLimit(time);
 forward OnMapTimeLeftChanged();
 
 /**
+ * Returns whether or not the server is processing frames or not.  
+ *
+ * The server does not process frames until at least one client joins the game.  
+ * Once the first player has in, even if that player, leaves, the server's 
+ * timers and entities will work.
+ *
+ * @return					True if the server is ticking, false otherwise.
+ */
+native bool:IsServerProcessing();
+
+/**
  * Creates a timer associated with a new data pack, and returns the datapack.
  * @note The datapack is automatically freed when the timer ends.
  * @note The position of the datapack is not reset or changed for the timer function.

@@ -42,7 +42,7 @@
 #include <IForwardSys.h>
 
 #define SMINTERFACE_TIMERSYS_NAME		"ITimerSys"
-#define SMINTERFACE_TIMERSYS_VERSION	1
+#define SMINTERFACE_TIMERSYS_VERSION	3
 
 namespace SourceMod
 {
@@ -62,15 +62,6 @@ namespace SourceMod
 		 */
 		virtual int GetMapTimeLimit() =0;
 		
-		/**
-		 * Returns how much time is left in the map.
-		 *
-		 * @param time_left		Pointer to store time, in seconds.
-		 * @return				True if there is a time limit, false 
-		 *						if the time limit is 0.
-		 */
-		virtual bool GetMapTimeLeft(int *time_left) =0;
-
 		/**
 		 * Extends the map limit (either positively or negatively) in seconds.
 		 *
@@ -194,6 +185,23 @@ namespace SourceMod
 		 * @return					Universal ticked time.
 		 */
 		virtual float GetTickedTime() =0;
+
+		/**
+		 * @brief Notification that the "starting point" in the game has has 
+		 * changed.  This does not invoke MapTimeLeftChanged() automatically.
+		 *
+		 * @param offset			Optional offset to add to the new time.
+		 */
+		virtual void NotifyOfGameStart(float offset = 0.0f) =0;
+
+		/**
+		 * @brief Returns the time left in the map.
+		 *
+		 * @param pTime				Pointer to store time left, in seconds.
+		 * @return					True on success, false if there no time limit 
+		 *							or if the time limit could not be determined.
+		 */
+		virtual bool GetMapTimeLeft(float *pTime) =0;
 	};
 }
 
