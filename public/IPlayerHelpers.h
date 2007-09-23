@@ -41,9 +41,10 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	3
+#define SMINTERFACE_PLAYERMANAGER_VERSION	4
 
 struct edict_t;
+class IPlayerInfo;
 
 namespace SourceMod
 {
@@ -136,6 +137,13 @@ namespace SourceMod
 		 * @return		Language id.
 		 */
 		virtual unsigned int GetLanguageId() =0;
+
+		/**
+		 * @brief Returns a player's IPlayerInfo object, if any.
+		 *
+		 * @return		IPlayerInfo pointer, or NULL if none.
+		 */
+		virtual IPlayerInfo *GetPlayerInfo() =0;
 	};
 
 	/**
