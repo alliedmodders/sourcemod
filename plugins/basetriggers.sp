@@ -44,10 +44,8 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Float:g_fStartTime;
 new Handle:g_Cvar_TriggerShow = INVALID_HANDLE;
 new Handle:g_Cvar_TimeleftInterval = INVALID_HANDLE;
-new Handle:g_Cvar_Timelimit = INVALID_HANDLE;
 new Handle:g_Cvar_FriendlyFire = INVALID_HANDLE;
 
 new Handle:g_Timer_TimeShow = INVALID_HANDLE;
@@ -59,13 +57,10 @@ public OnPluginStart()
 	
 	g_Cvar_TriggerShow = CreateConVar("sm_trigger_show", "1", "Display triggers message to all players? (0 off, 1 on, def. 1)", 0, true, 0.0, true, 1.0);	
 	g_Cvar_TimeleftInterval = CreateConVar("sm_timeleft_interval", "0.0", "Display timeleft every x seconds. Default 0.", 0, true, 0.0, true, 1800.0);
-	g_Cvar_Timelimit = FindConVar("mp_timelimit");
 	g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
-	
-	HookEvent("round_end", Event_RoundEnd, EventHookMode_Post);
 	
 	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
 }
@@ -95,16 +90,19 @@ public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], con
 
 public Action:Timer_DisplayTimeleft(Handle:timer)
 {
-	new mins, secs;
-	new timeleft = RoundToNearest(GetTimeLeft());
-	
-	if (timeleft > 0)
+	new timeleft;
+	if (GetMapTimeLeft(timeleft))
 	{
-		mins = timeleft / 60;
-		secs = timeleft % 60;		
+		new mins, secs;
+		
+		if (timeleft > 0)
+		{
+			mins = timeleft / 60;
+			secs = timeleft % 60;		
+		}
+		
+		PrintToChatAll("[SM] %T %d:%02d", "Timeleft", LANG_SERVER, mins, secs);
 	}
-
-	PrintToChatAll("[SM] %T %d:%02d", "Timeleft", LANG_SERVER, mins, secs);
 }
 
 public Action:Command_Say(client, args)
@@ -127,22 +125,25 @@ public Action:Command_Say(client, args)
 
 	if (strcmp(text[startidx], "timeleft", false) == 0)
 	{
-		new mins, secs;
-		new timeleft = RoundToNearest(GetTimeLeft());
-		
-		if (timeleft > 0)
+		new timeleft;
+		if (GetMapTimeLeft(timeleft))
 		{
-			mins = timeleft / 60;
-			secs = timeleft % 60;		
-		}	
-		
-		if(GetConVarInt(g_Cvar_TriggerShow))
-		{
-			PrintToChatAll("[SM] %t %d:%02d", "Timeleft", mins, secs);
-		}
-		else
-		{
-			PrintToChat(client,"[SM] %t %d:%02d", "Timeleft", mins, secs);
+			new mins, secs;
+			
+			if (timeleft > 0)
+			{
+				mins = timeleft / 60;
+				secs = timeleft % 60;		
+			}
+			
+			if(GetConVarInt(g_Cvar_TriggerShow))
+			{
+				PrintToChatAll("[SM] %t %d:%02d", "Timeleft", mins, secs);
+			}
+			else
+			{
+				PrintToChat(client,"[SM] %t %d:%02d", "Timeleft", mins, secs);
+			}
 		}
 		
 	}
@@ -200,26 +201,4 @@ public Action:Command_Say(client, args)
 	}	
 	
 	return Plugin_Continue;
-}
-
-public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new reason = GetEventInt(event, "reason");
-	if(reason == 16)
-	{
-		g_fStartTime = GetEngineTime();		
-	}	
-}
-
-public OnMapStart()
-{
-	g_fStartTime = GetEngineTime();
-}
-
-Float:GetTimeLeft()
-{
-	new Float:fLimit = GetConVarFloat(g_Cvar_Timelimit);
-	new Float:fElapsed = GetEngineTime() - g_fStartTime;
-	
-	return (fLimit*60.0) - fElapsed;
 }

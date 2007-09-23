@@ -86,6 +86,8 @@ public OnPluginStart()
 	{
 		HookEvent("round_end", Event_RoundEnd);
 	}
+	
+	AutoExecConfig(true, "mapchooser");
 }
 
 public OnMapStart()
@@ -114,8 +116,11 @@ public OnMapEnd()
 
 public OnMapTimeLeftChanged()
 {
-	SetupTimeleftTimer();
-	LogMessage("[MC] Timeleft changed, resetting timer.");
+	if (GetArraySize(g_MapList))
+	{
+		SetupTimeleftTimer();
+		LogMessage("[MC] Timeleft changed, resetting timer.");
+	}
 }
 
 SetupTimeleftTimer()
