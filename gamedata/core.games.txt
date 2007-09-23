@@ -42,4 +42,12 @@
 			"HudRadioMenuMsg"		"ShowMenu"
 		}
 	}
+
+	"cstrike"
+	{
+		"Keys"
+		{
+			"GameExtension"			"game.cstrike"
+		}
+	}
 }
