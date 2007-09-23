@@ -47,3 +47,9 @@ out = svn_version.h
 folder = extensions/sqlite
 in = svn_version.tpl
 out = svn_version.h
+
+[cstrike]
+folder = extensions/cstrike
+in = svn_version.tpl
+out = svn_version.h
+
