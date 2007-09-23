@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[15];
+			string [] folders = new string[16];
 
 			folders[0] = "addons/sourcemod/bin";
 			folders[1] = "addons/sourcemod/plugins/disabled";
@@ -46,6 +46,7 @@ namespace builder
 			folders[12] = "addons/sourcemod/configs/sql-init-scripts";
 			folders[13] = "addons/sourcemod/configs/sql-init-scripts/mysql";
 			folders[14] = "addons/sourcemod/configs/sql-init-scripts/sqlite";
+			folders[15] = "addons/sourcemod/extensions/games";
 
 			return folders;
 		}
@@ -99,7 +100,7 @@ namespace builder
 		 */
 		public override Library [] GetLibraries()
 		{
-			Library [] libs = new Library[8];
+			Library [] libs = new Library[9];
 
 			for (int i=0; i<libs.Length; i++)
 			{
@@ -145,6 +146,11 @@ namespace builder
 			libs[7].LocalPath = "extensions/sqlite";
 			libs[7].Name = "dbi.sqlite.ext";
 			libs[7].ProjectFile = "sm_sqlite";
+
+			libs[8].Destination = "addons/sourcemod/extensions/games";
+			libs[8].LocalPath = "extensions/cstrike";
+			libs[8].Name = "game.cstrike.ext";
+			libs[8].ProjectFile = "cstrike";
 
 			return libs;
 		}
