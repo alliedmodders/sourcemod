@@ -198,8 +198,9 @@ namespace SourceMod
 		 * @brief Returns the time left in the map.
 		 *
 		 * @param pTime				Pointer to store time left, in seconds.
-		 * @return					True on success, false if there no time limit 
-		 *							or if the time limit could not be determined.
+		 * 							If there is no time limit, the number will 
+		 * 							be below 0.
+		 * @return					True on success, false if no support.
 		 */
 		virtual bool GetMapTimeLeft(float *pTime) =0;
 	};

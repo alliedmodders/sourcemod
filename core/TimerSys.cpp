@@ -152,6 +152,7 @@ TimerSystem::TimerSystem()
 {
 	m_pMapTimer = NULL;
 	m_bHasMapTickedYet = false;
+	m_bHasMapSimulatedYet = false;
 	m_fLastTickedTime = 0.0f;
 	m_LastExecTime = 0.0f;
 }
@@ -198,6 +199,7 @@ void TimerSystem::OnSourceModLevelChange(const char *mapName)
 void TimerSystem::OnSourceModLevelEnd()
 {
 	m_bHasMapTickedYet = false;
+	m_bHasMapSimulatedYet = false;
 }
 
 void TimerSystem::GameFrame(bool simulating)
@@ -205,6 +207,11 @@ void TimerSystem::GameFrame(bool simulating)
 	if (simulating && m_bHasMapTickedYet)
 	{
 		g_fUniversalTime += gpGlobals->curtime - m_fLastTickedTime;
+		if (!m_bHasMapSimulatedYet)
+		{
+			m_bHasMapSimulatedYet = true;
+			MapTimeLeftChanged();
+		}
 	}
 	else 
 	{
@@ -450,13 +457,21 @@ float TimerSystem::GetTickedTime()
 
 bool TimerSystem::GetMapTimeLeft(float *time_left)
 {
-	int time_limit;
-	if (!m_pMapTimer || (time_limit = m_pMapTimer->GetMapTimeLimit()) < 1)
+	if (!m_pMapTimer)
 	{
 		return false;
 	}
 
-	*time_left = (g_fGameStartTime + time_limit * 60.0f) - gpGlobals->curtime;
+	int time_limit;
+	if (!m_bHasMapSimulatedYet || (time_limit = m_pMapTimer->GetMapTimeLimit()) < 1)
+	{
+		*time_left = -1.0f;
+	}
+	else
+	{
+		*time_left = (g_fGameStartTime + time_limit * 60.0f) - gpGlobals->curtime;
+	}
 
 	return true;
 }
+

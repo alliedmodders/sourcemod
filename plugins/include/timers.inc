@@ -121,7 +121,9 @@ native TriggerTimer(Handle:timer, bool:reset=false);
 native Float:GetTickedTime();
 
 /**
- * Returns an estimate of the time left before the map ends.
+ * Returns an estimate of the time left before the map ends.  If the server 
+ * has not processed any frames yet (i.e. no players have joined the map yet), 
+ * then the time left returned will always be infinite.
  *
  * @param timeleft			Variable to store the time, in seconds.  If the 
  *							value is less than 0, the time limit is infinite.
@@ -130,7 +132,9 @@ native Float:GetTickedTime();
 native bool:GetMapTimeLeft(&timeleft);
 
 /**
- * Retrieves the current map time limit.
+ * Retrieves the current map time limit.  If the server has not processed any 
+ * frames yet (i.e. no players have joined the map yet), then the time limit 
+ * returned will always be 0.
  *
  * @param time				Set to the number of total seconds in the map time 
  *							limit, or 0 if there is no time limit set.
@@ -149,7 +153,7 @@ native bool:GetMapTimeLimit(&time);
 native bool:ExtendMapTimeLimit(time);
 
 /**
- * Notification that the map's time left has changed  via a change in the time 
+ * Notification that the map's time left has changed via a change in the time 
  * limit or a change in the game rules (such as mp_restartgame).  This is useful 
  * for plugins trying to create timers based on the time left in the map.
  *
@@ -157,6 +161,10 @@ native bool:ExtendMapTimeLimit(time);
  * cause infinite recursion.
  *
  * If the operation is not supported, this will never be called.
+
+ * If the server has not yet processed any frames (i.e. no players have joined 
+ * the map yet), then this will be called once the server begins ticking, even 
+ * if there is no time limit set.
  */
 forward OnMapTimeLeftChanged();
 
@@ -188,3 +196,4 @@ stock Handle:CreateDataTimer(Float:interval, Timer:func, &Handle:data, flags=0)
 	flags |= TIMER_HNDL_CLOSE;
 	return CreateTimer(interval, func, data, flags);
 }
+

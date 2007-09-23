@@ -93,6 +93,7 @@ private:
 
 	/* This is stuff for our manual ticking escapades. */
 	bool m_bHasMapTickedYet;	/** Has the map ticked yet? */
+	bool m_bHasMapSimulatedYet;	/** Has the map simulated yet? */
 	float m_fLastTickedTime;	/** Last time that the game currently gave 
 									us while ticking.
 									*/

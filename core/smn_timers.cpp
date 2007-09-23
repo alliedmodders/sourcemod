@@ -260,23 +260,17 @@ static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_GetMapTimeLeft(IPluginContext *pContext, const cell_t *params)
 {
-	cell_t *addr;
-	pContext->LocalToPhysAddr(params[1], &addr);
-
 	float time_left;
-	int int_time;
 	if (!g_Timers.GetMapTimeLeft(&time_left))
 	{
-		int_time = -1;
-	}
-	else
-	{
-		int_time = (int)time_left;
+		return 0;
 	}
 
-	*addr = int_time;
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+	*addr = (int)time_left;
 
-	return true;
+	return 1;
 }
 
 static cell_t smn_GetMapTimeLimit(IPluginContext *pContext, const cell_t *params)
@@ -327,3 +321,4 @@ REGISTER_NATIVES(timernatives)
 	{"IsServerProcessing",		smn_IsServerProcessing},
 	{NULL,						NULL}
 };
+
