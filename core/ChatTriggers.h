@@ -57,6 +57,7 @@ private: //ConCommand
 public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
+	bool IsChatTrigger();
 private:
 	bool PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
 private:
@@ -68,6 +69,7 @@ private:
 	size_t m_PrivTriggerSize;
 	bool m_bWillProcessInPost;
 	bool m_bTriggerWasSilent;
+	bool m_bIsChatTrigger;
 	unsigned int m_ReplyTo;
 	char m_ToExecute[300];
 };

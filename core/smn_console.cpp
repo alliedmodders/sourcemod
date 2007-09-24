@@ -996,6 +996,11 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 	return g_ConCmds.CheckCommandAccess(params[1], cmd, bits) ? 1 : 0;
 }
 
+static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
+{
+	return g_ChatTriggers.IsChatTrigger() ? 1 : 0;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1037,5 +1042,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"ReadCommandIterator",	ReadCommandIterator},
 	{"CheckCommandAccess",	CheckCommandAccess},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
+	{"IsChatTrigger",		IsChatTrigger},
 	{NULL,					NULL}
 };

@@ -231,6 +231,15 @@ native ReplySource:GetCmdReplySource();
 native ReplySource:SetCmdReplySource(ReplySource:source);
 
 /**
+ * Returns whether the current say hook is a chat trigger.
+ *
+ * This function is only meaningful inside say or say_team hooks.
+ *
+ * @return				True if a chat trigger, false otherwise.
+ */
+native bool:IsChatTrigger();
+
+/**
  * Displays usage of an admin command to users depending on the 
  * setting of the sm_show_activity cvar.  Additionally, the client
  * who typed the command will receive the same text without any

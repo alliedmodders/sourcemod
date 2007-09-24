@@ -52,6 +52,7 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 	m_PrivTrigger = sm_strdup("/");
 	m_PubTriggerSize = 1;
 	m_PrivTriggerSize = 1;
+	m_bIsChatTrigger = false;
 }
 
 ChatTriggers::~ChatTriggers()
@@ -141,6 +142,7 @@ void ChatTriggers::OnSourceModShutdown()
 void ChatTriggers::OnSayCommand_Pre()
 {
 	int client = g_ConCmds.GetCommandClient();
+	m_bIsChatTrigger = false;
 
 	/* The server console cannot do this */
 	if (client == 0)
@@ -190,6 +192,8 @@ void ChatTriggers::OnSayCommand_Pre()
 		RETURN_META(MRES_IGNORED);
 	}
 
+	m_bIsChatTrigger = true;
+
 	/**
 	 * We'll execute it in post.
 	 */
@@ -208,6 +212,7 @@ void ChatTriggers::OnSayCommand_Pre()
 
 void ChatTriggers::OnSayCommand_Post()
 {
+	m_bIsChatTrigger = false;
 	if (m_bWillProcessInPost)
 	{
 		/* Reset this for re-entrancy */
@@ -307,4 +312,9 @@ unsigned int ChatTriggers::SetReplyTo(unsigned int reply)
 unsigned int ChatTriggers::GetReplyTo()
 {
 	return m_ReplyTo;
+}
+
+bool ChatTriggers::IsChatTrigger()
+{
+	return m_bIsChatTrigger;
 }
