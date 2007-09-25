@@ -2469,53 +2469,179 @@ static cell calc_arraysize(int dim[],int numdim,int cur)
   return newsize;
 }
 
-static cell adjust_indirectiontables(int dim[],int numdim,int cur,cell increment,
+static cell gen_indirection_vecs(array_info_t *ar, int dim, cell cur_offs)
+{
+	int i;
+	cell write_offs = cur_offs;
+	cell *data_offs = ar->data_offs;
+
+	cur_offs += ar->dim_list[dim];
+
+	/**
+	 * Dimension n-x where x > 2 will have sub-vectors.  
+	 * Otherwise, we just need to reference the data section.
+	 */
+	if (ar->dim_count > 2 && dim < ar->dim_count - 2)
+	{
+		/**
+		 * For each index at this dimension, write offstes to our sub-vectors.
+		 * After we write one sub-vector, we generate its sub-vectors recursively.
+		 * At the end, we're given the next offset we can use.
+		 */
+		for (i = 0; i < ar->dim_list[dim]; i++)
+		{
+			ar->base[write_offs] = (cur_offs - write_offs) * sizeof(cell);
+			write_offs++;
+			ar->cur_dims[dim] = i;
+			cur_offs = gen_indirection_vecs(ar, dim + 1, cur_offs);
+		}
+	} else if (ar->dim_count > 1) {
+		/**
+		 * In this section, there are no sub-vectors, we need to write offsets 
+		 * to the data.  This is separate so the data stays in one big chunk.
+		 * The data offset will increment by the size of the last dimension, 
+		 * because that is where the data is finally computed as.  But the last 
+		 * dimension can be of variable size, so we have to detect that.
+		 */
+		if (ar->dim_list[dim + 1] == 0)
+		{
+			int vec_start = 0;
+
+			/**
+			 * Using the precalculated offsets, compute an index into the last 
+			 * dimension array.
+			 */
+			for (i = 0; i < dim; i++)
+			{
+				vec_start += ar->cur_dims[i] * ar->dim_offs_precalc[i];
+			}
+
+			/**
+			 * Now, vec_start points to a vector of last dimension offsets for 
+			 * the preceding dimension combination(s).
+			 * I.e. (1,2,i,j) in [3][4][5][] will be:
+			 *  j = 1*(4*5) + 2*(5) + i, and the parenthetical expressions are 
+			 * precalculated for us so we can easily generalize here.
+			 */
+			for (i = 0; i < ar->dim_list[dim]; i++)
+			{
+				ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
+				write_offs++;
+				*data_offs = *data_offs + ar->lastdim_list[vec_start + i];
+			}
+		} else {
+			/**
+			 * The last dimension size is constant.  There's no extra work to 
+			 * compute the last dimension size.
+			 */
+			for (i = 0; i < ar->dim_list[dim]; i++)
+			{
+				ar->base[write_offs] = (*data_offs - write_offs) * sizeof(cell);
+				write_offs++;
+				*data_offs = *data_offs + ar->dim_list[dim + 1];
+			}
+		}
+	}
+
+	return cur_offs;
+}
+
+static cell calc_indirection(const int dim_list[], int dim_count, int dim)
+{
+	cell size = dim_list[dim];
+
+	if (dim < dim_count - 2)
+	{
+		size += dim_list[dim] * calc_indirection(dim_list, dim_count, dim + 1);
+	}
+
+	return size;
+}
+
+static void adjust_indirectiontables(int dim[],int numdim,int cur,cell increment,
                                      int startlit,constvalue *lastdim,int *skipdim)
 {
-static int base;
-  int d;
-  cell accum;
+	/* Find how many cells the indirection table will be */
+	cell tbl_size;
+	int *dyn_list = NULL;
+	int cur_dims[sDIMEN_MAX];
+	cell dim_offset_precalc[sDIMEN_MAX];
+	array_info_t ar;
 
-  assert(cur>=0 && cur<numdim);
-  assert(increment>=0);
-  assert(cur>0 && startlit==-1 || startlit>=0 && startlit<=litidx);
-  if (cur==0)
-    base=startlit;
-  if (cur==numdim-1)
-    return 0;
-  /* 2 or more dimensions left, fill in an indirection vector */
-  assert(dim[cur]>0);
-  if (dim[cur+1]>0) {
-    for (d=0; d<dim[cur]; d++)
-      litq[base++]=(dim[cur]+d*(dim[cur+1]-1)+increment) * sizeof(cell);
-    accum=dim[cur]*(dim[cur+1]-1);
-  } else {
-    /* final dimension is variable length */
-    constvalue *ld;
-    assert(dim[cur+1]==0);
-    assert(lastdim!=NULL);
-    assert(skipdim!=NULL);
-    accum=0;
-    /* skip the final dimension sizes for all earlier major dimensions */
-    for (d=0,ld=lastdim->next; d<*skipdim; d++,ld=ld->next) {
-      assert(ld!=NULL);
-    } /* for */
-    for (d=0; d<dim[cur]; d++) {
-      assert(ld!=NULL);
-      assert(strtol(ld->name,NULL,16)==d);
-      litq[base++]=(dim[cur]+accum+increment) * sizeof(cell);
-      accum+=ld->value-1;
-      *skipdim+=1;
-      ld=ld->next;
-    } /* for */
-  } /* if */
-  /* create the indirection tables for the lower level */
-  if (cur+2<numdim) {   /* are there at least 2 dimensions below this one? */
-    increment+=(dim[cur]-1)*dim[cur+1]; /* this many indirection tables follow */
-    for (d=0; d<dim[cur]; d++)
-      increment+=adjust_indirectiontables(dim,numdim,cur+1,increment,-1,lastdim,skipdim);
-  } /* if */
-  return accum;
+	if (numdim == 1)
+	{
+		return;
+	}
+
+	tbl_size = calc_indirection(dim, numdim, 0);
+	memset(cur_dims, 0, sizeof(cur_dims));
+
+	/**
+	 * Flatten the last dimension array list -- this makes 
+	 * things MUCH easier in the indirection calculator.
+	 */
+	if (lastdim)
+	{
+		int i;
+		constvalue *ld = lastdim->next;
+
+		/* Get the total number of last dimensions. */
+		for (i = 0; ld != NULL; i++, ld = ld->next)
+		{
+			/* Nothing */
+		}
+		/* Store them in an array instead of a linked list. */
+		dyn_list = (int *)malloc(sizeof(int) * i);
+		for (i = 0, ld = lastdim->next;
+			 ld != NULL;
+			 i++, ld = ld->next)
+		{
+			dyn_list[i] = ld->value;
+		}
+
+		/**
+		 * Pre-calculate all of the offsets.  This speeds up and simplifies 
+		 * the indirection process.  For example, if we have an array like:
+		 * [a][b][c][d][], and given (A,B,C), we want to find the size of 
+		 * the last dimension [A][B][C][i], we must do:
+		 *
+		 * list[A*(b*c*d) + B*(c*d) + C*(d) + i]
+		 *
+		 * Generalizing this algorithm in the indirection process is expensive, 
+		 * so we lessen the need for nested loops by pre-computing the parts:
+		 * (b*c*d), (c*d), and (d).
+		 *
+		 * In other words, finding the offset to dimension N at index I is 
+		 * I * (S[N+1] * S[N+2] ... S[N+n-1]) where S[] is the size of dimension
+		 * function, and n is the index of the last dimension.
+		 */
+		for (i = 0; i < numdim - 1; i++)
+		{
+			int j;
+
+			dim_offset_precalc[i] = 1;
+			for (j = i + 1; j < numdim - 1; j++)
+			{
+				dim_offset_precalc[i] *= dim[j];
+			}
+		}
+
+		ar.dim_offs_precalc = dim_offset_precalc;
+		ar.lastdim_list = dyn_list;
+	} else {
+		ar.dim_offs_precalc = NULL;
+		ar.lastdim_list = NULL;
+	}
+
+	ar.base = &litq[startlit];
+	ar.data_offs = &tbl_size;
+	ar.dim_list = dim;
+	ar.dim_count = numdim;
+	ar.cur_dims = cur_dims;
+
+	gen_indirection_vecs(&ar, 0, 0);
+
+	free(dyn_list);
 }
 
 /*  initials
@@ -5566,10 +5692,10 @@ static void compound(int stmt_sameline,int starttok)
   if (lastst!=tRETURN)
     destructsymbols(&loctab,nestlevel);
   if (lastst!=tRETURN && lastst!=tGOTO) {
-    popheaplist(1);
+    popheaplist();
     popstacklist(1);
   } else {
-    popheaplist(0);
+    popheaplist();
     popstacklist(0);
   }
   testsymbols(&loctab,nestlevel,FALSE,TRUE);        /* look for unused block locals */

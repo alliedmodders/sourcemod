@@ -849,4 +849,15 @@ SC_VDECL jmp_buf errbuf;      /* target of longjmp() on a fatal error */
 
 #endif /* SC_SKIP_VDECL */
 
+typedef struct array_info_s
+{
+  const int *dim_list;				/* Dimension sizes */
+  int dim_count;					/* Number of dimensions */
+  const int *lastdim_list;			/* Sizes of last dimensions, if variable */
+  const cell *dim_offs_precalc;		/* Cached calculations into the lastdim_list array */
+  cell *data_offs;					/* Current offset AFTER the indirection vectors (data) */
+  int *cur_dims;					/* Current dimensions the recursion is at */
+  cell *base;						/* &litq[startlit] */
+} array_info_t;
+
 #endif /* SC_H_INCLUDED */
