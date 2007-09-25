@@ -81,8 +81,8 @@ PlayerManager::PlayerManager()
 	m_AuthQueue = NULL;
 	m_FirstPass = true;
 
-	m_UserIdLookUp = new int[USHRT_MAX];
-	memset(m_UserIdLookUp, 0, sizeof(int) * USHRT_MAX);
+	m_UserIdLookUp = new int[USHRT_MAX+1];
+	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
 }
 
 PlayerManager::~PlayerManager()
