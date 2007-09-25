@@ -51,7 +51,7 @@ inline edict_t *GetEdict(cell_t num)
 	{
 		return NULL;
 	}
-	if (num > 0 && num < g_Players.GetMaxClients())
+	if (num > 0 && num <= g_Players.GetMaxClients())
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(num);
 		if (!pPlayer || !pPlayer->IsConnected())
@@ -69,7 +69,7 @@ inline edict_t *GetEntity(cell_t num, CBaseEntity **pData)
 	{
 		return NULL;
 	}
-	if (num > 0 && num < g_Players.GetMaxClients())
+	if (num > 0 && num <= g_Players.GetMaxClients())
 	{
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(num);
 		if (!pPlayer || !pPlayer->IsConnected())
