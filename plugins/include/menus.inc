@@ -60,7 +60,7 @@ enum MenuAction
 	MenuAction_VoteStart = (1<<6), 	/**< (VOTE ONLY): A vote sequence has started (nothing passed) */
 	MenuAction_VoteCancel = (1<<7),	/**< (VOTE ONLY): A vote sequence has been cancelled (param1=reason) */
 	MenuAction_DrawItem = (1<<8),	/**< An item is being drawn; return the new style (param1=client, param2=item) */
-	MenuAction_DisplayItem = (1<<9) /**< Item text is being drawn to the display (param1=client, param2=item)
+	MenuAction_DisplayItem = (1<<9),/**< Item text is being drawn to the display (param1=client, param2=item)
 										  To change the text, use RedrawMenuItem().
 										  If you do so, return its return value.  Otherwise, return 0.
 										  */
@@ -172,6 +172,18 @@ native Handle:CreateMenu(MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DE
 native bool:DisplayMenu(Handle:menu, client, time);
 
 /**
+ * Displays a menu to a client, starting from the given item.
+ *
+ * @param menu				Menu Handle.
+ * @param client			Client index.
+ * @param first_item		First item to begin drawing from.
+ * @param time				Maximum time to leave menu on the screen.
+ * @return					True on success, false on failure.
+ * @error					Invalid Handle or client not in game.
+ */
+native bool:DisplayMenuAtItem(Handle:menu, client, first_item, time);
+
+/**
  * Appends a new item to the end of a menu.
  *
  * @param menu				Menu Handle.
@@ -238,7 +250,26 @@ native RemoveAllMenuItems(Handle:menu);
  * @return					True on success, false if position is invalid.
  * @error					Invalid Handle.
  */
-native bool:GetMenuItem(Handle:menu, position, String:infoBuf[], infoBufLen, &style=0, String:dispBuf[]="", dispBufLen=0);
+native bool:GetMenuItem(Handle:menu, 
+						position, 
+						String:infoBuf[], 
+						infoBufLen, 
+						&style=0, 
+						String:dispBuf[]="",
+						dispBufLen=0);
+						
+/**
+ * Returns the first item on the page of a currently selected menu.
+ *
+ * This is only valid inside a MenuAction_Select callback.
+ *
+ * @return					First item number on the page the client was viewing 
+ *							before selecting the item in the callback.  This can 
+ *							be used to re-display the menu from the original 
+ *							position.
+ * @error					Not called from inside a MenuAction_Select callback.
+ */
+native GetMenuSelectionPosition();
 
 /**
  * Returns the number of items in a menu.
