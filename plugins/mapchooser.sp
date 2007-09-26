@@ -35,19 +35,33 @@
 #pragma semicolon 1
 #include <sourcemod>
 
-#define MAX_MAPS_SELECTION		5
+public Plugin:myinfo =
+{
+	name = "MapChooser",
+	author = "AlliedModders LLC",
+	description = "Automated Map Voting",
+	version = SOURCEMOD_VERSION,
+	url = "http://www.sourcemod.net/"
+};
 
 new Handle:g_Cvar_Winlimit = INVALID_HANDLE;
 new Handle:g_Cvar_Maxrounds = INVALID_HANDLE;
+new Handle:g_Cvar_Fraglimit = INVALID_HANDLE;
 
 new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
+
 new Handle:g_Cvar_StartTime = INVALID_HANDLE;
+new Handle:g_Cvar_StartRounds = INVALID_HANDLE;
+new Handle:g_Cvar_StartFrags = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendTimeMax = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendTimeStep = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendRoundMax = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendRoundStep = INVALID_HANDLE;
+new Handle:g_Cvar_ExtendFragMax = INVALID_HANDLE;
+new Handle:g_Cvar_ExtendFragStep = INVALID_HANDLE;
 new Handle:g_Cvar_Mapfile = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
+new Handle:g_Cvar_IncludeMaps = INVALID_HANDLE;
 
 new Handle:g_VoteTimer = INVALID_HANDLE;
 new Handle:g_RetryTimer = INVALID_HANDLE;
@@ -68,23 +82,33 @@ public OnPluginStart()
 	g_OldMapList = CreateArray(33);
 	g_NextMapList = CreateArray(33);
 
-	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies the time to start the vote when this much time remains.", _, true, 1.0);
-	g_Cvar_ExtendTimeMax = CreateConVar("sm_extendmap_maxtime", "90", "Specifies the maximum amount of time a map can be extended");
+	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
+	g_Cvar_StartRounds = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining.", _, true, 1.0);
+	g_Cvar_StartFrags = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
+	g_Cvar_ExtendTimeMax = CreateConVar("sm_extendmap_maxtime", "90", "Specifies the maximum amount of time a map can be extended", _, true, 0.0);
 	g_Cvar_ExtendTimeStep = CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes", _, true, 5.0);
-	g_Cvar_ExtendRoundMax = CreateConVar("sm_extendmap_maxrounds", "30", "Specfies the maximum amount of rounds a map can be extended");
+	g_Cvar_ExtendRoundMax = CreateConVar("sm_extendmap_maxrounds", "30", "Specfies the maximum amount of rounds a map can be extended", _, true, 0.0);
 	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 5.0);
+	g_Cvar_ExtendFragMax = CreateConVar("sm_extendmap_maxfrags", "150", "Specfies the maximum frags allowed that a map can be extended.", _, true, 0.0);
+	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
 	g_Cvar_Mapfile = CreateConVar("sm_mapvote_file", "configs/maps.ini", "Map file to use. (Def sourcemod/configs/maps.ini)");
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
+	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
 
-	decl String:FolderName[32];
-	GetGameFolderName(FolderName, sizeof(FolderName));
+	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 
 	g_Cvar_Winlimit = FindConVar("mp_winlimit");
 	g_Cvar_Maxrounds = FindConVar("mp_maxrounds");
+	g_Cvar_Fraglimit = FindConVar("mp_fraglimit");
 	
 	if (g_Cvar_Winlimit != INVALID_HANDLE || g_Cvar_Maxrounds != INVALID_HANDLE)
 	{
 		HookEvent("round_end", Event_RoundEnd);
+	}
+	
+	if (g_Cvar_Fraglimit != INVALID_HANDLE)
+	{
+		HookEvent("player_death", Event_PlayerDeath);		
 	}
 	
 	AutoExecConfig(true, "mapchooser");
@@ -119,7 +143,6 @@ public OnMapTimeLeftChanged()
 	if (GetArraySize(g_MapList))
 	{
 		SetupTimeleftTimer();
-		LogMessage("[MC] Timeleft changed, resetting timer.");
 	}
 }
 
@@ -151,8 +174,7 @@ public Action:Timer_StartMapVote(Handle:timer)
 	if (!GetArraySize(g_MapList))
 	{
 		return Plugin_Stop;
-	}	
-	
+	}		
 	
 	if (timer == g_RetryTimer)
 	{
@@ -168,6 +190,7 @@ public Action:Timer_StartMapVote(Handle:timer)
 	return Plugin_Stop;
 }
 
+/* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	if (!GetArraySize(g_MapList))
@@ -175,22 +198,51 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
-	new team = GetEventInt(event, "winner");
-	if (team != 2 || team != 3)
+	new winner = GetEventInt(event, "winner");
+	
+	if (winner == 0 || winner == 1)
 	{
 		return;
 	}
+
+	static total;
+	static Handle:teamArray;
+	if (teamArray == INVALID_HANDLE)
+	{
+		teamArray = CreateArray(2);		
+	}
 	
-	static score[2];
-	score[team - 2]++;
+	total++;
+	
+	new team[2], teamPos = -1;
+	for (new i; i < GetArraySize(teamArray); i++)
+	{
+		GetArrayArray(teamArray, i, team);
+		if (team[0] == winner)
+		{
+			teamPos = i;
+			break;
+		}		
+	}
+	
+	if (teamPos == -1)
+	{
+		team[0] = winner;
+		team[1] = 1;
+		PushArrayArray(teamArray, team);
+	}
+	else
+	{
+		team[1]++;
+		SetArrayArray(teamArray, teamPos, team);
+	}	
 	
 	if (g_Cvar_Winlimit != INVALID_HANDLE)
 	{
 		new winlimit = GetConVarInt(g_Cvar_Winlimit);
 		if (winlimit)
 		{
-			new Limit = winlimit - 2;
-			if (score[0] > Limit || score[1] > Limit)
+			if (team[1] > winlimit - GetConVarInt(g_Cvar_StartRounds))
 			{
 				InitiateVote();
 			}
@@ -202,12 +254,33 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
 		if (maxrounds)
 		{
-			if ((score[0] + score[1]) > maxrounds - 2)
+			if (total > maxrounds - GetConVarInt(g_Cvar_StartRounds))
 			{
 				InitiateVote();
 			}			
 		}
 	}
+}
+
+public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if (!GetArraySize(g_MapList) && g_Cvar_Fraglimit != INVALID_HANDLE)
+	{
+		return;
+	}
+
+	new fragger = GetClientOfUserId(GetEventInt(event, "attacker"));
+	if (fragger && GetClientFrags(fragger) > (GetConVarInt(g_Cvar_Fraglimit) - GetConVarInt(g_Cvar_StartFrags)))
+	{
+		InitiateVote();
+	}
+}
+
+public Action:Command_Mapvote(client, args)
+{	
+	InitiateVote();
+
+	return Plugin_Handled;	
 }
 
 InitiateVote()
@@ -250,10 +323,15 @@ InitiateVote()
 	{
 		allowExtend = true;
 	}
+	
+	if (g_Cvar_Fraglimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Fraglimit) < GetConVarInt(g_Cvar_ExtendFragMax))
+	{
+		allowExtend = true;
+	}
 
 	if (allowExtend)
 	{
-		AddMenuItem(g_VoteMenu, "##extend##", "Extend");
+		AddMenuItem(g_VoteMenu, "##extend##", "Extend Map");
 	}
 
 	SetMenuExitButton(g_VoteMenu, false);
@@ -280,7 +358,21 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 
 			new Handle:panel = Handle:param2;
 			SetPanelTitle(panel, buffer);
-		}
+		}		
+		
+		case MenuAction_DisplayItem:
+		{
+			if (GetMenuItemCount(menu) - 1 == param2)
+			{
+				decl String:map[64], String:buffer[255];
+				GetMenuItem(menu, param2, map, sizeof(map));
+				if (strcmp(map, "##extend##", false))
+				{
+					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
+					return RedrawMenuItem(buffer);
+				}
+			}
+		}		
 
 		// Why am I commented out? Because BAIL hasn't decided yet if
 		// vote notification will be built into the Vote API.
@@ -350,12 +442,22 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 						SetConVarInt(g_Cvar_Maxrounds, maxrounds + GetConVarInt(g_Cvar_ExtendRoundStep));
 					}
 				}
+				
+				if (g_Cvar_Fraglimit != INVALID_HANDLE)
+				{
+					new fraglimit = GetConVarInt(g_Cvar_Fraglimit);
+					if (fraglimit && fraglimit < GetConVarInt(g_Cvar_ExtendFragMax))
+					{
+						SetConVarInt(g_Cvar_Fraglimit, fraglimit + GetConVarInt(g_Cvar_ExtendFragStep));						
+					}
+				}
 
 				PrintToChatAll("[SM] %t", "Current Map Extended");
 				LogMessage("Voting for next map has finished. The current map has been extended.");
 				
 				// We extended, so we'll have to vote again.
 				g_HasVoteStarted = false;
+				CreateNextVote();
 				SetupTimeleftTimer();
 			}
 			else
@@ -364,6 +466,8 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			}
 		}
 	}
+	
+	return 0;
 }
 
 SetNextMap(const String:map[])
@@ -371,7 +475,7 @@ SetNextMap(const String:map[])
 	SetConVarString(g_Cvar_Nextmap, map);
 	PushArrayString(g_OldMapList, map);
 				
-	if (GetArraySize(g_OldMapList) > 5)
+	if (GetArraySize(g_OldMapList) > GetConVarInt(g_Cvar_ExcludeMaps))
 	{
 		RemoveFromArray(g_OldMapList, 0);
 	}
@@ -388,7 +492,7 @@ CreateNextVote()
 	}	
 	
 	decl String:map[32];
-	new limit = (MAX_MAPS_SELECTION < GetArraySize(g_MapList) ? MAX_MAPS_SELECTION : GetArraySize(g_MapList));
+	new limit = (GetConVarInt(g_Cvar_IncludeMaps) < GetArraySize(g_MapList) ? GetConVarInt(g_Cvar_IncludeMaps) : GetArraySize(g_MapList));
 	
 	new bool:oldMaps = false;
 	if (limit > GetConVarInt(g_Cvar_ExcludeMaps))
@@ -408,7 +512,6 @@ CreateNextVote()
 			GetArrayString(g_MapList, b, map, sizeof(map));
 		}
 		
-		LogMessage("[MC] Map was good, %s pushed on array.", map);
 		PushArrayString(g_NextMapList, map);		
 	}
 }
@@ -430,7 +533,7 @@ LoadMaps()
 	
 	if (!fileFound)
 	{
-		LogError("Unable to locate g_Cvar_Mapfile or mapcyclefile, no maps loaded.");
+		LogError("Unable to locate sm_mapvote_file or mapcyclefile, no maps loaded.");
 		
 		if (g_MapList != INVALID_HANDLE)
 		{
@@ -458,9 +561,6 @@ LoadMaps()
 
 	LogMessage("[SM] Loading mapchooser map file [%s]", mapPath);
 
-	decl String:currentMap[32];
-	GetCurrentMap(currentMap, sizeof(currentMap));
-
 	new Handle:file = OpenFile(mapPath, "rt");
 	if (file == INVALID_HANDLE)
 	{
@@ -468,6 +568,9 @@ LoadMaps()
 		return 0;
 	}
 
+	decl String:currentMap[32];
+	GetCurrentMap(currentMap, sizeof(currentMap));	
+	
 	decl String:buffer[64], len;
 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
 	{
@@ -478,7 +581,7 @@ LoadMaps()
 			buffer[len] = '\0';
 		}
 
-		if (buffer[0] == '\0' || !IsValidCvarChar(buffer[0]) || !IsMapValid(buffer)
+		if (buffer[0] == '\0' || !IsValidConVarChar(buffer[0]) || !IsMapValid(buffer)
 			|| strcmp(currentMap, buffer, false) == 0)
 		{
 			continue;
@@ -489,9 +592,4 @@ LoadMaps()
 
 	CloseHandle(file);
 	return GetArraySize(g_MapList);
-}
-
-stock bool:IsValidCvarChar(c)
-{
-	return (c == '_' || IsCharAlpha(c) || IsCharNumeric(c));
 }
