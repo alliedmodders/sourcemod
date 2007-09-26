@@ -421,7 +421,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				{
 					if (time > 0 && time < GetConVarInt(g_Cvar_ExtendTimeMax))
 					{
-						ExtendMapTimeLimit(GetConVarInt(g_Cvar_ExtendTimeStep));						
+						ExtendMapTimeLimit(GetConVarInt(g_Cvar_ExtendTimeStep)*60);						
 					}
 				}
 				
