@@ -264,7 +264,12 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!GetArraySize(g_MapList) && g_Cvar_Fraglimit != INVALID_HANDLE)
+	if (!GetArraySize(g_MapList) || g_Cvar_Fraglimit == INVALID_HANDLE)
+	{
+		return;
+	}
+	
+	if (!GetConVarInt(g_Cvar_Fraglimit))
 	{
 		return;
 	}
