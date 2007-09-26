@@ -96,13 +96,13 @@ public:
 
 	void ExtendMapTimeLimit(int extra_time)
 	{
-		extra_time /= 60;
-
 		if (extra_time == 0)
 		{
 			mp_timelimit->SetValue(0);
 			return;
 		}
+
+		extra_time /= 60;
 
 		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
 	}
