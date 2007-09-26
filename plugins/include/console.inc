@@ -669,3 +669,14 @@ native bool:CheckCommandAccess(client,
 							   const String:command[],
 							   flags,
 							   bool:override_only=false);
+
+/**
+ * Returns true if the supplied character is valid in a ConVar name.
+ *
+ * @param c			Character to validate.
+ * @return			True is valid for ConVars, false otherwise
+ */
+stock bool:IsValidConVarChar(c)
+{
+	return (c == '_' || IsCharAlpha(c) || IsCharNumeric(c));
+}

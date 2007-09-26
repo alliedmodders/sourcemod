@@ -1,0 +1,66 @@
+"Phrases"
+{
+	"Already Muted"
+	{
+		"en"			"Target player is already muted."
+		"de"			"Gewählte Zielperson ist bereits stummgeschaltet."
+	}
+	
+	"Player Muted"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1} has been muted."
+		"de"			"{1} wurde stummgeschaltet."
+	}
+	
+	"Player Not Muted"
+	{
+		"en"			"Target player is not muted."
+		"de"			"Gewählte Zielperson ist nicht stummgeschaltet."
+	}
+	
+	"Player Unmuted"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1} has been unmuted."
+		"de"			"{1} wurde die Sprache wiedergegeben."
+	}
+	
+	"Already Gagged"
+	{
+		"en"			"Target player is already gagged."
+		"de"			"Zielperson ist bereits geknebelt."
+	}
+	
+	"Player Gagged"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1} has been gagged."
+		"de"			"{1} wurde geknebelt."
+	}
+
+	"Player Not Gagged"
+	{
+		"en"			"Target player is not gagged."
+		"de"			"Zielperson ist nicht geknebelt."
+	}
+	
+	"Player Ungagged"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1} has been ungagged."
+		"de"			"{1} wurde der Chat wieder freigeschaltet."
+	}	
+	
+	"Already Silenced"
+	{
+		"en"			"Target player is already silenced."
+		"de"			"Zielperson schweigt bereites."
+	}
+	
+	"Player Not Silenced"
+	{
+		"en"			"Target player is not silenced."
+		"de"			"Zielperson ist schweigt nicht."
+	}
+}
