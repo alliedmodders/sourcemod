@@ -35,6 +35,7 @@
 
 #include <ITopMenus.h>
 #include <IPlayerHelpers.h>
+#include <IPluginSys.h>
 #include <sh_list.h>
 
 using namespace SourceMod;
@@ -44,7 +45,8 @@ class TopMenu;
 
 class TopMenuManager : 
 	public ITopMenuManager,
-	public IClientListener
+	public IClientListener,
+	public IPluginsListener
 {
 public:
 	const char *GetInterfaceName();
@@ -55,6 +57,7 @@ public:
 	void OnClientConnected(int client);
 	void OnClientDisconnected(int client);
 	void OnServerActivated(int max_clients);
+	void OnPluginUnloaded(IPlugin *plugin);
 private:
 	List<TopMenu *> m_TopMenus;
 };

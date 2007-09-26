@@ -120,6 +120,7 @@ public: //ITopMenu
 		unsigned int hold_time, 
 		TopMenuPosition position);
 	virtual bool LoadConfiguration(const char *file, char *error, size_t maxlength);
+	virtual unsigned int FindCategory(const char *name);
 public: //IMenuHandler
 	virtual void OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page);
 	virtual void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
@@ -150,6 +151,7 @@ private:
 	void OnClientConnected(int client);
 	void OnClientDisconnected(int client);
 	void OnServerActivated(int max_clients);
+	bool OnIdentityRemoval(IdentityToken_t *owner);
 private:
 	config_root_t m_Config;					/* Configuration from file */
 	topmenu_player_t *m_clients;			/* Client array */

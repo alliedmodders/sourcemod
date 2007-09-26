@@ -31,6 +31,7 @@
 
 #include "extension.h"
 #include "TopMenuManager.h"
+#include "smn_topmenus.h"
 
 /**
  * @file extension.cpp
@@ -44,12 +45,19 @@ SMEXT_LINK(&g_TopMenuExt);
 bool TopMenuExtension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	sharesys->AddInterface(myself, &g_TopMenus);
+	sharesys->AddNatives(myself, g_TopMenuNatives);
+
+	plsys->AddPluginsListener(&g_TopMenus);
 	playerhelpers->AddClientListener(&g_TopMenus);
+
+	Initialize_Natives();
 
 	return true;
 }
 
 void TopMenuExtension::SDK_OnUnload()
 {
+	Shutdown_Natives();
 	playerhelpers->RemoveClientListener(&g_TopMenus);
+	plsys->RemovePluginsListener(&g_TopMenus);
 }

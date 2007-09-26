@@ -91,6 +91,24 @@ void TopMenuManager::OnServerActivated(int max_clients)
 	is_server_activated = true;
 }
 
+void TopMenuManager::OnPluginUnloaded(IPlugin *plugin)
+{
+	List<TopMenu *>::iterator iter = m_TopMenus.begin();
+
+	while (iter != m_TopMenus.end())
+	{
+		if ((*iter)->OnIdentityRemoval(plugin->GetIdentity()))
+		{
+			iter++;
+		}
+		else
+		{
+			delete (*iter);
+			iter = m_TopMenus.erase(iter);
+		}
+	}
+}
+
 void TopMenuManager::DestroyTopMenu(ITopMenu *topmenu)
 {
 	TopMenu *pMenu = (TopMenu *)topmenu;

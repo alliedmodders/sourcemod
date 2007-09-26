@@ -59,25 +59,29 @@ TopMenu::TopMenu(ITopMenuObjectCallbacks *callbacks)
 TopMenu::~TopMenu()
 {
 	/* Delete all categories */
-	for (size_t i = 0; i < m_Categories.size(); i++)
+	size_t i = 1;
+	while (i >= m_Categories.size())
 	{
-		delete m_Categories[i];
+		RemoveFromMenu(m_Categories[i - 1]->obj->object_id);
 	}
 
-	/* Delete all items */
-	for (size_t i = 0; i < m_Objects.size(); i++)
+	/* Remove all objects */
+	for (i = 0; i < m_Objects.size(); i++)
 	{
+		assert(m_Objects[i]->is_free == true);
 		delete m_Objects[i];
 	}
 
+	m_pTitle->OnTopMenuObjectRemoved(this, 0);
+
 	/* Delete all cached config entries */
-	for (size_t i = 0; i < m_Config.cats.size(); i++)
+	for (i = 0; i < m_Config.cats.size(); i++)
 	{
 		delete m_Config.cats[i];
 	}
 
 	/* Sweep players */
-	for (int i = 0; i <= m_max_clients; i++)
+	for (i = 0; i <= (size_t)m_max_clients; i++)
 	{
 		TearDownClient(&m_clients[i]);
 	}
@@ -132,6 +136,10 @@ unsigned int TopMenu::AddToMenu(const char *name,
 		return 0;
 	}
 	else if (m_ObjLookup.retrieve(name) != NULL)
+	{
+		return 0;
+	}
+	else if (type != TopMenuObject_Item && type != TopMenuObject_Category)
 	{
 		return 0;
 	}
@@ -239,18 +247,30 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 
 	if (obj->type == TopMenuObject_Category)
 	{
-		/* Find it in the category list */
+		/* Find it in the category list. */
 		for (size_t i = 0; i < m_Categories.size(); i++)
 		{
 			if (m_Categories[i]->obj == obj)
 			{
-				/* Erase from here */
-				delete m_Categories[i];
+				/* Mark all children as removed + free.  Note we could
+				 * call into RemoveMenuItem() for this, but it'd be very 
+				 * inefficient!
+				 */
+				topmenu_category_t *cat = m_Categories[i];
+				for (size_t j = 0; j < m_Categories[i]->obj_list.size(); j++)
+				{
+					cat->obj_list[j]->callbacks->OnTopMenuObjectRemoved(this, cat->obj_list[j]->object_id);
+					cat->obj_list[j]->is_free = true;
+				}
+				
+				/* Remove the category from the list, then delete it. */
 				m_Categories.erase(m_Categories.iterAt(i));
+				delete cat;
 				break;
 			}
 		}
-		/* Update us as changed */
+
+		/* Update the root as changed. */
 		m_SerialNo++;
 		m_bCatsNeedResort = true;
 	}
@@ -278,6 +298,8 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 					break;
 				}
 			}
+
+			/* Update the category as changed. */
 			parent_cat->reorder = true;
 			parent_cat->serial++;
 		}
@@ -285,6 +307,9 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 
 	/* Finally, mark the object as free. */
 	obj->is_free = true;
+
+	/* The callbacks pointer is still valid, so fire away! */
+	obj->callbacks->OnTopMenuObjectRemoved(this, object_id);
 }
 
 bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition position)
@@ -401,7 +426,7 @@ void TopMenu::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsi
 		}
 		
 		/* Pass the information on to the callback */
-		obj->callbacks->OnTopMenuSelectOption(client, obj->object_id);
+		obj->callbacks->OnTopMenuSelectOption(this, client, obj->object_id);
 	}
 }
 
@@ -456,7 +481,7 @@ unsigned int TopMenu::OnMenuDisplayItem(IBaseMenu *menu,
 
 	/* Ask the object to render the text for this client */
 	char renderbuf[64];
-	obj->callbacks->OnTopMenuDrawOption(client, obj->object_id, renderbuf, sizeof(renderbuf));
+	obj->callbacks->OnTopMenuDrawOption(this, client, obj->object_id, renderbuf, sizeof(renderbuf));
 
 	/* Build the new draw info */
 	ItemDrawInfo new_dr = dr;
@@ -540,7 +565,8 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 		{
 			obj_by_name_t *temp_obj = &item_list[i];
 			topmenu_object_t *obj = m_Categories[m_UnsortedCats[i]]->obj;
-			obj->callbacks->OnTopMenuDrawOption(client, 
+			obj->callbacks->OnTopMenuDrawOption(this,
+				client, 
 				obj->object_id,
 				temp_obj->name,
 				sizeof(temp_obj->name));
@@ -561,7 +587,7 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 
 	/* Set the menu's title */
 	char renderbuf[128];
-	m_pTitle->OnTopMenuDrawTitle(client, 0, renderbuf, sizeof(renderbuf));
+	m_pTitle->OnTopMenuDrawTitle(this, client, 0, renderbuf, sizeof(renderbuf));
 	root_menu->SetDefaultTitle(renderbuf);
 
 	/* The client is now fully updated */
@@ -627,7 +653,8 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category)
 		{
 			obj_by_name_t *item = &item_list[i];
 			topmenu_object_t *obj = cat->unsorted[i];
-			obj->callbacks->OnTopMenuDrawOption(client,
+			obj->callbacks->OnTopMenuDrawOption(this,
+				client,
 				obj->object_id,
 				item->name,
 				sizeof(item->name));
@@ -648,7 +675,11 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category)
 
 	/* Set the menu's title */
 	char renderbuf[128];
-	cat->obj->callbacks->OnTopMenuDrawTitle(client, cat->obj->object_id, renderbuf, sizeof(renderbuf));
+	cat->obj->callbacks->OnTopMenuDrawTitle(this, 
+		client, 
+		cat->obj->object_id, 
+		renderbuf, 
+		sizeof(renderbuf));
 	cat_menu->SetDefaultTitle(renderbuf);
 
 	/* We're done! */
@@ -820,6 +851,40 @@ bool TopMenu::LoadConfiguration(const char *file, char *error, size_t maxlength)
 	return true;
 }
 
+bool TopMenu::OnIdentityRemoval(IdentityToken_t *owner)
+{
+	/* First sweep the categories owned by us */
+	CVector<unsigned int> obj_list;
+	for (size_t i = 0; i < m_Categories.size(); i++)
+	{
+		if (m_Categories[i]->obj->owner == owner)
+		{
+			obj_list.push_back(m_Categories[i]->obj->object_id);
+		}
+	}
+
+	for (size_t i = 0; i < obj_list.size(); i++)
+	{
+		RemoveFromMenu(obj_list[i]);
+	}
+
+	/* Now we can look for actual items */
+	for (size_t i = 0; i < m_Objects.size(); i++)
+	{
+		if (m_Objects[i]->is_free)
+		{
+			continue;
+		}
+		if (m_Objects[i]->owner == owner)
+		{
+			assert(m_Objects[i]->type != TopMenuObject_Category);
+			RemoveFromMenu(m_Objects[i]->object_id);
+		}
+	}
+
+	return true;
+}
+
 #define PARSE_STATE_NONE		0
 #define PARSE_STATE_CATEGORY	1
 unsigned int ignore_parse_level = 0;
@@ -898,6 +963,23 @@ SMCParseResult TopMenu::ReadSMC_LeavingSection()
 	}
 
 	return SMCParse_Continue;
+}
+
+unsigned int TopMenu::FindCategory(const char *name)
+{
+	topmenu_object_t **p_obj = m_ObjLookup.retrieve(name);
+	if (!p_obj)
+	{
+		return 0;
+	}
+
+	topmenu_object_t *obj = *p_obj;
+	if (obj->type != TopMenuObject_Category)
+	{
+		return 0;
+	}
+
+	return obj->object_id;
 }
 
 int _SortObjectNamesDescending(const void *ptr1, const void *ptr2)

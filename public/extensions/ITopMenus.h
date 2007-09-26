@@ -66,6 +66,8 @@ namespace SourceMod
 		TopMenuPosition_LastCategory = 3,	/**< Last position in their last category */
 	};
 
+	class ITopMenu;
+
 	/**
 	 * @brief Top Menu callbacks for rendering/drawing.
 	 */
@@ -85,6 +87,7 @@ namespace SourceMod
 		/**
 		 * @brief Requests how the given item should be drawn for a client.
 		 *
+		 * @param menu			A pointer to the parent ITopMenu.
 		 * @param client		Client index.
 		 * @param object_id		Object ID returned from ITopMenu::AddToMenu().
 		 * @param buffer		Buffer to store rendered text.
@@ -92,7 +95,8 @@ namespace SourceMod
 		 * @return				ITEMDRAW flags to disable or not draw the 
 		 *						option for this operation.
 		 */
-		virtual unsigned int OnTopMenuDrawOption(int client, 
+		virtual unsigned int OnTopMenuDrawOption(ITopMenu *menu,
+			int client, 
 			unsigned int object_id,
 			char buffer[], 
 			size_t maxlength) =0;
@@ -101,13 +105,15 @@ namespace SourceMod
 		 * @brief Requests how the given item's title should be drawn for
 		 * a client.  This is called on any object_id that is a category.
 		 *
+		 * @param menu			A pointer to the parent ITopMenu.
 		 * @param client		Client index.
 		 * @param object_id		Object ID returned from ITopMenu::AddToMenu(), 
 		 *						or 0 if the title is the root menu title.
 		 * @param buffer		Buffer to store rendered text.
 		 * @param maxlength		Maximum length of the rendering buffer.
 		 */
-		virtual void OnTopMenuDrawTitle(int client,
+		virtual void OnTopMenuDrawTitle(ITopMenu *menu,
+			int client,
 			unsigned int object_id,
 			char buffer[],
 			size_t maxlength) =0;
@@ -115,10 +121,22 @@ namespace SourceMod
 		/**
 		 * @brief Notifies the listener that the menu option has been selected.
 		 *
+		 * @param menu			A pointer to the parent ITopMenu.
 		 * @param client		Client index.
 		 * @param object_id		Object ID returned from ITopMenu::AddToMenu().
 		 */
-		virtual void OnTopMenuSelectOption(int client, unsigned int object_id) =0;
+		virtual void OnTopMenuSelectOption(ITopMenu *menu, 
+			int client, 
+			unsigned int object_id) =0;
+
+		/**
+		 * @brief Notified when the given item is removed.
+		 * 
+		 * @param menu			A pointer to the parent ITopMenu.
+		 * @param object_id		Object ID returned from ITopMenu::AddToMenu(), 
+		 *						or 0 if the title callbacks are being removed.
+		 */
+		virtual void OnTopMenuObjectRemoved(ITopMenu *menu, unsigned int object_id) =0;
 	};
 
 	/**
@@ -154,7 +172,7 @@ namespace SourceMod
 		 * @brief Removes an object from a menu.  If the object has any 
 		 * children, those will be removed.
 		 *
-		 * @param command_id	Command ID returned from AddToMenu.
+		 * @param object_id		Object ID returned from AddToMenu.
 		 */
 		virtual void RemoveFromMenu(unsigned int object_id) =0;
 
@@ -187,6 +205,14 @@ namespace SourceMod
 		 * @return				True on success, false on failure.
 		 */
 		virtual bool LoadConfiguration(const char *file, char *error, size_t maxlength) =0;
+
+		/**
+		 * @brief Finds a category's ID by name.
+		 *
+		 * @param name			Category's name.
+		 * @return				Object ID of the category, or 0 if none.
+		 */
+		virtual unsigned int FindCategory(const char *name) =0;
 	};
 
 	/**

@@ -185,6 +185,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_topmenus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\TopMenu.cpp"
 				>
 			</File>
@@ -200,6 +204,10 @@
 			>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_topmenus.h"
 				>
 			</File>
 			<File

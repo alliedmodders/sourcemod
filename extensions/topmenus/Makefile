@@ -15,7 +15,7 @@ PROJECT = topmenus
 #LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
 
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp TopMenuManager.cpp TopMenu.cpp \
-	sdk/sm_memtable.cpp
+	sdk/sm_memtable.cpp smn_topmenus.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
