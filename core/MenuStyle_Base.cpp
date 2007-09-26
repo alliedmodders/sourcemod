@@ -288,7 +288,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	IMenuHandler *mh = states.mh;
 	IBaseMenu *menu = states.menu;
 
-	unsigned int item_on_page = states.firstItem;
+	unsigned int item_on_page = states.item_on_page;
 
 	assert(mh != NULL);
 
@@ -508,8 +508,8 @@ bool BaseMenuStyle::DoClientMenu(int client,
 		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
 
-	states.firstItem = first_item;
-	states.lastItem = 0;
+	states.firstItem = 0;
+	states.lastItem = first_item;
 	states.menu = menu;
 	states.mh = mh;
 	states.apiVers = SMINTERFACE_MENUMANAGER_VERSION;

@@ -366,9 +366,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 					}
 				}
 			}
-		}
-		else if (order == ItemOrder_Ascending)
-		{
+		} else if (order == ItemOrder_Ascending) {
 			lastItem = drawItems[0].position;
 			if (lastItem == 0)
 			{
@@ -398,7 +396,8 @@ skip_search:
 	unsigned int position = 0;			/* Keep track of the last position */
 	if (order == ItemOrder_Ascending)
 	{
-		for (unsigned int i=0; i<foundItems; i++)
+		md.item_on_page = drawItems[0].position;
+		for (unsigned int i = 0; i < foundItems; i++)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
 			if ((position = mh->OnMenuDisplayItem(menu, client, display, drawItems[i].position, dr)) == 0)
@@ -411,11 +410,14 @@ skip_search:
 				slots[position].type = ItemSel_Item;
 			}
 		}
-	} else if (order == ItemOrder_Descending) {
+	}
+	else if (order == ItemOrder_Descending)
+	{
 		unsigned int i = foundItems;
 		/* NOTE: There will always be at least one item because
 		 * of the check earlier.
 		 */
+		md.item_on_page = drawItems[foundItems - 1].position;
 		while (i--)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;

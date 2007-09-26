@@ -90,6 +90,7 @@ namespace SourceMod
 		IMenuHandler *mh;				/**< Menu callbacks handler */
 		unsigned int firstItem;			/**< MENU ONLY: First item displayed on the last page */
 		unsigned int lastItem;			/**< MENU ONLY: Last item displayed on the last page */
+		unsigned int item_on_page;		/**< MENU ONLY: First item on page */
 		menu_slots_t slots[11];			/**< MENU ONLY: Item selection table (first index is 1) */
 	};
 

@@ -89,7 +89,7 @@ public:
 public:
 	void OnMenuStart(IBaseMenu *menu);
 	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
-	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
+	void OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page);
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
 	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDestroy(IBaseMenu *menu);
@@ -273,6 +273,7 @@ void CPanelHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
 static IMenuPanel *s_pCurPanel = NULL;
 static unsigned int s_CurPanelReturn = 0;
 static const ItemDrawInfo *s_CurDrawInfo = NULL;
+static unsigned int *s_CurSelectPosition = NULL;
 
 /**
  * MENU HANDLER WRAPPER
@@ -311,9 +312,17 @@ void CMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *panel)
 	}
 }
 
-void CMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
+void CMenuHandler::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page)
 {
+	/* Save old position first. */
+	unsigned int first_item = item_on_page;
+	unsigned int *old_pos = s_CurSelectPosition;
+
+	s_CurSelectPosition = &first_item;
+
 	DoAction(menu, MenuAction_Select, client, item);
+
+	s_CurSelectPosition = old_pos;
 }
 
 void CMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
@@ -618,6 +627,20 @@ static cell_t DisplayMenu(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return menu->Display(params[2], params[3]) ? 1 : 0;
+}
+
+static cell_t DisplayMenuAtItem(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	return menu->DisplayAtItem(params[2], params[4], params[3]) ? 1 : 0;
 }
 
 static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
@@ -1358,6 +1381,16 @@ static cell_t CheckVoteDelay(IPluginContext *pContext, const cell_t *params)
 	return g_Menus.GetRemainingVoteDelay();
 }
 
+static cell_t GetMenuSelectionPosition(IPluginContext *pContext, const cell_t *params)
+{
+	if (!s_CurSelectPosition)
+	{
+		return pContext->ThrowNativeError("Can only be called from inside a MenuAction_Select callback");
+	}
+
+	return *s_CurSelectPosition;
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -1371,6 +1404,7 @@ REGISTER_NATIVES(menuNatives)
 	{"CreatePanel",				CreatePanel},
 	{"CreatePanelFromMenu",		CreatePanelFromMenu},
 	{"DisplayMenu",				DisplayMenu},
+	{"DisplayMenuAtItem",		DisplayMenuAtItem},
 	{"DrawPanelItem",			DrawPanelItem},
 	{"DrawPanelText",			DrawPanelText},
 	{"GetClientMenu",			GetClientMenu},
@@ -1381,6 +1415,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetMenuItemCount",		GetMenuItemCount},
 	{"GetMenuOptionFlags",		GetMenuOptionFlags},
 	{"GetMenuPagination",		GetMenuPagination},
+	{"GetMenuSelectionPosition",GetMenuSelectionPosition},
 	{"GetMenuStyle",			GetMenuStyle},
 	{"GetMenuStyleHandle",		GetMenuStyleHandle},
 	{"GetMenuTitle",			GetMenuTitle},
