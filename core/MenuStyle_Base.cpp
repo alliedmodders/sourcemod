@@ -288,6 +288,8 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	IMenuHandler *mh = states.mh;
 	IBaseMenu *menu = states.menu;
 
+	unsigned int item_on_page = states.firstItem;
+
 	assert(mh != NULL);
 
 	if (menu == NULL)
@@ -380,6 +382,10 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 		mh->OnMenuCancel(menu, client, reason);
 	} else {
 		mh->OnMenuSelect(menu, client, item);
+		if (mh->GetMenuAPIVersion2() >= 13)
+		{
+			mh->OnMenuSelect2(menu, client, item, item_on_page);
+		}
 	}
 
 	/* Only fire end for valid menus */
@@ -448,7 +454,11 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 	return true;
 }
 
-bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time)
+bool BaseMenuStyle::DoClientMenu(int client,
+								 CBaseMenu *menu,
+								 unsigned int first_item,
+								 IMenuHandler *mh,
+								 unsigned int time)
 {
 #if defined MENU_DEBUG
 	g_Logger.LogMessage("[SM_MENU] DoClientMenu() (client %d) (menu %p) (mh %p) (time %d)",
@@ -498,7 +508,7 @@ bool BaseMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, 
 		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
 
-	states.firstItem = 0;
+	states.firstItem = first_item;
 	states.lastItem = 0;
 	states.menu = menu;
 	states.mh = mh;

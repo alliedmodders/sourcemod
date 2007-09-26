@@ -365,6 +365,14 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 	m_pHandler->OnMenuSelect(menu, client, item);
 }
 
+void VoteMenuHandler::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page)
+{
+	if (m_pHandler->GetMenuAPIVersion2() >= 13)
+	{
+		m_pHandler->OnMenuSelect2(menu, client, item, item_on_page);
+	}
+}
+
 void VoteMenuHandler::InternalReset()
 {
 	m_Clients = 0;

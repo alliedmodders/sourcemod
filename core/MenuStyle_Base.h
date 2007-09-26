@@ -91,7 +91,11 @@ public: //what derived must implement
 	virtual CBaseMenuPlayer *GetMenuPlayer(int client) =0;
 	virtual void SendDisplay(int client, IMenuPanel *display) =0;
 public: //what derived may implement 
-	virtual bool DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time);
+	virtual bool DoClientMenu(int client, 
+		CBaseMenu *menu, 
+		unsigned int first_item,
+		IMenuHandler *mh, 
+		unsigned int time);
 	virtual bool DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time);
 	virtual void AddClientToWatch(int client);
 	virtual void RemoveClientFromWatch(int client);

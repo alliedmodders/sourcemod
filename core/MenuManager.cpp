@@ -366,7 +366,9 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 					}
 				}
 			}
-		} else if (order == ItemOrder_Ascending) {
+		}
+		else if (order == ItemOrder_Ascending)
+		{
 			lastItem = drawItems[0].position;
 			if (lastItem == 0)
 			{

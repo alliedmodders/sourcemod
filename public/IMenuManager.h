@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		12
+#define SMINTERFACE_MENUMANAGER_VERSION		13
 
 /**
  * @file IMenuManager.h
@@ -572,6 +572,22 @@ namespace SourceMod
 		 * @return				IMenuHandler of the menu.
 		 */
 		virtual IMenuHandler *GetHandler() =0;
+
+		/**
+		 * @brief Sends the menu to a client, starting from the given item number. 
+		 *
+		 * Note: this API call was added in v13.
+		 *
+		 * @param client		Client index to display to.
+		 * @param time			Time to hold menu for.
+		 * @param start_item	Starting item to draw.
+		 * @param alt_handler	Alternate IMenuHandler.
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool DisplayAtItem(int client,
+			unsigned int time,
+			unsigned int start_item,
+			IMenuHandler *alt_handler=NULL) =0;
 	};
 
 	/** 
@@ -730,6 +746,24 @@ namespace SourceMod
 		virtual bool OnSetHandlerOption(const char *option, const void *data)
 		{
 			return false;
+		}
+
+		/**
+		 * @brief Called when an item is selected.
+		 *
+		 * Note: This callback was added in v13.  It is called after OnMenuSelect().
+		 *
+		 * @param menu			Menu pointer.
+		 * @param client		Client that selected the item.
+		 * @param item			Item number.
+		 * @param item_on_page	The first item on the page the player was last 
+		 *						viewing.
+		 */
+		virtual void OnMenuSelect2(IBaseMenu *menu,
+			int client,
+			unsigned int item,
+			unsigned int item_on_page)
+		{
 		}
 	};
 

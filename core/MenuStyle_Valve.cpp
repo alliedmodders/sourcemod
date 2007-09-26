@@ -156,7 +156,7 @@ bool ValveMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh
 	return BaseMenuStyle::DoClientMenu(client, menu, mh, time);
 }
 
-bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time)
+bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, unsigned int first_item, IMenuHandler *mh, unsigned int time)
 {
 	if (!g_pVSPHandle)
 	{
@@ -166,7 +166,7 @@ bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh,
 		return false;
 	}
 
-	return BaseMenuStyle::DoClientMenu(client, menu, mh, time);
+	return BaseMenuStyle::DoClientMenu(client, menu, first_item, mh, time);
 }
 
 CValveMenuDisplay::CValveMenuDisplay()
@@ -388,12 +388,20 @@ bool CValveMenu::SetExtOption(MenuOption option, const void *valuePtr)
 
 bool CValveMenu::Display(int client, unsigned int time, IMenuHandler *alt_handler)
 {
+	return DisplayAtItem(client, time, 0, alt_handler);
+}
+
+bool CValveMenu::DisplayAtItem(int client,
+							   unsigned int time,
+							   unsigned int start_item,
+							   IMenuHandler *alt_handler/* =NULL */)
+{
 	if (m_bCancelling)
 	{
 		return false;
 	}
 
-	return g_ValveMenuStyle.DoClientMenu(client, this, alt_handler ? alt_handler : m_pHandler, time);
+	return g_ValveMenuStyle.DoClientMenu(client, this, start_item, alt_handler ? alt_handler : m_pHandler, time);
 }
 
 IMenuPanel *CValveMenu::CreatePanel()

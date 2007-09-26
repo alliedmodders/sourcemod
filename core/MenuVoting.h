@@ -56,6 +56,7 @@ public: //IMenuHandler
 	void OnMenuStart(IBaseMenu *menu);
 	void OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display);
 	void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item);
+	void OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page);
 	void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
 	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);

@@ -63,7 +63,7 @@ public:
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
 	void SendDisplay(int client, IMenuPanel *display);
-	bool DoClientMenu(int client, CBaseMenu *menu, IMenuHandler *mh, unsigned int time);
+	bool DoClientMenu(int client, CBaseMenu *menu, unsigned int first_item, IMenuHandler *mh, unsigned int time);
 	bool DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -121,6 +121,10 @@ public: //IBaseMenu
 	bool SetExitButton(bool set);
 	bool SetPagination(unsigned int itemsPerPage);
 	bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL);
+	bool DisplayAtItem(int client,
+		unsigned int time,
+		unsigned int start_item,
+		IMenuHandler *alt_handler/* =NULL */);
 	void SetMenuOptionFlags(unsigned int flags);
 public: //CBaseMenu
 	void Cancel_Finally();

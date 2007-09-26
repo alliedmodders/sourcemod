@@ -115,6 +115,10 @@ public:
 	bool SetExtOption(MenuOption option, const void *valuePtr);
 	IMenuPanel *CreatePanel();
 	bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL);
+	bool DisplayAtItem(int client,
+		unsigned int time,
+		unsigned int start_item,
+		IMenuHandler *alt_handler/* =NULL */);
 	void Cancel_Finally();
 };
 

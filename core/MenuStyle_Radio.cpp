@@ -399,6 +399,14 @@ IMenuPanel *CRadioMenu::CreatePanel()
 
 bool CRadioMenu::Display(int client, unsigned int time, IMenuHandler *alt_handler)
 {
+	return DisplayAtItem(client, time, 0, alt_handler);
+}
+
+bool CRadioMenu::DisplayAtItem(int client,
+							   unsigned int time,
+							   unsigned int start_item,
+							   IMenuHandler *alt_handler)
+{
 #if defined MENU_DEBUG
 	g_Logger.LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
 		this,
@@ -410,7 +418,11 @@ bool CRadioMenu::Display(int client, unsigned int time, IMenuHandler *alt_handle
 		return false;
 	}
 
-	return g_RadioMenuStyle.DoClientMenu(client, this, alt_handler ? alt_handler : m_pHandler, time);
+	return g_RadioMenuStyle.DoClientMenu(client,
+		this,
+		start_item,
+		alt_handler ? alt_handler : m_pHandler, 
+		time);
 }
 
 void CRadioMenu::Cancel_Finally()
