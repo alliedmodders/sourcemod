@@ -145,11 +145,12 @@ public OnClientDisconnect(client)
 	}
 	
 	g_Voters--;
+	
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 	
-	if (g_Votes >= g_VotesNeeded && g_RTVAllowed && g_Voters != 0) 
+	if (g_Votes && g_Voters && g_Votes >= g_VotesNeeded && g_RTVAllowed) 
 	{
-		CreateTimer(2.0, Timer_StartRTV);
+		CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
 	}	
 }
 
@@ -273,7 +274,7 @@ public Action:Command_Say(client, args)
 		
 		if (g_Votes >= g_VotesNeeded)
 		{
-			CreateTimer(2.0, Timer_StartRTV);
+			CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
 	else if (GetConVarBool(g_Cvar_Nominate) && strcmp(text[startidx], "nominate", false) == 0)
