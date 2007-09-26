@@ -225,6 +225,14 @@ unsigned int TopMenu::AddToMenu(const char *name,
 		parent_cat->obj_list.push_back(obj);
 		parent_cat->reorder = true;
 		parent_cat->serial++;
+
+		/* If the category just went from 0 to 1 items, mark it as 
+		 * changed, so clients get the category drawn.
+		 */
+		if (parent_cat->obj_list.size() == 1)
+		{
+			m_SerialNo++;
+		}
 	}
 
 	m_ObjLookup.insert(name, obj);
@@ -295,6 +303,14 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 				if (parent_cat->obj_list[i] == obj)
 				{
 					parent_cat->obj_list.erase(parent_cat->obj_list.iterAt(i));
+
+					/* If this category now has no items, mark root as changed 
+					 * so clients won't get the category drawn anymore.
+					 */
+					if (parent_cat->obj_list.size() == 0)
+					{
+						m_SerialNo++;
+					}
 					break;
 				}
 			}
@@ -552,6 +568,10 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 	/* Add the sorted items */
 	for (size_t i = 0; i < m_SortedCats.size(); i++)
 	{
+		if (m_Categories[m_SortedCats[i]]->obj_list.size() == 0)
+		{
+			continue;
+		}
 		root_menu->AppendItem(m_Categories[m_SortedCats[i]]->obj->name, ItemDrawInfo(""));
 	}
 
@@ -579,6 +599,10 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 		/* Add the new sorted categories */
 		for (size_t i = 0; i < m_SortedCats.size(); i++)
 		{
+			if (m_Categories[item_list[i].obj_index]->obj_list.size() == 0)
+			{
+				continue;
+			}
 			root_menu->AppendItem(m_Categories[item_list[i].obj_index]->obj->name, ItemDrawInfo(""));
 		}
 

@@ -84,8 +84,9 @@ public:
 		cell_t result = ITEMDRAW_DEFAULT;
 
 		m_pFunction->PushCell(m_hMenuHandle);
-		m_pFunction->PushCell(client);
+		m_pFunction->PushCell(TopMenuAction_DrawOption);
 		m_pFunction->PushCell(object_id);
+		m_pFunction->PushCell(client);
 		m_pFunction->PushStringEx(buffer, maxlength, 0, SM_PARAM_COPYBACK);
 		m_pFunction->PushCell(maxlength);
 		m_pFunction->Execute(&result);
@@ -100,8 +101,9 @@ public:
 		size_t maxlength)
 	{
 		m_pFunction->PushCell(m_hMenuHandle);
-		m_pFunction->PushCell(client);
+		m_pFunction->PushCell(TopMenuAction_DrawTitle);
 		m_pFunction->PushCell(object_id);
+		m_pFunction->PushCell(client);
 		m_pFunction->PushStringEx(buffer, maxlength, 0, SM_PARAM_COPYBACK);
 		m_pFunction->PushCell(maxlength);
 		m_pFunction->Execute(NULL);
@@ -112,8 +114,9 @@ public:
 		unsigned int object_id)
 	{
 		m_pFunction->PushCell(m_hMenuHandle);
-		m_pFunction->PushCell(client);
+		m_pFunction->PushCell(TopMenuAction_SelectOption);
 		m_pFunction->PushCell(object_id);
+		m_pFunction->PushCell(client);
 		m_pFunction->PushString("");
 		m_pFunction->PushCell(0);
 		m_pFunction->Execute(NULL);
@@ -156,6 +159,8 @@ static cell_t CreateTopMenu(IPluginContext *pContext, const cell_t *params)
 		g_TopMenus.DestroyTopMenu(pMenu);
 		return BAD_HANDLE;
 	}
+
+	cb->m_hMenuHandle = hndl;
 
 	return hndl;
 }
@@ -204,7 +209,7 @@ static cell_t AddToTopMenu(IPluginContext *pContext, const cell_t *params)
 
 	char *name, *cmdname;
 	pContext->LocalToString(params[2], &name);
-	pContext->LocalToString(params[5], &cmdname);
+	pContext->LocalToString(params[6], &cmdname);
 
 	TopMenuObjectType obj_type = (TopMenuObjectType)params[3];
 	
@@ -213,8 +218,9 @@ static cell_t AddToTopMenu(IPluginContext *pContext, const cell_t *params)
 		obj_type,
 		cb,
 		pContext->GetIdentity(),
-		cmdname,params[6], 
-		params[7])) == 0)
+		cmdname,
+		params[7], 
+		params[5])) == 0)
 	{
 		delete cb;
 		return 0;
@@ -258,10 +264,37 @@ static cell_t FindTopMenuCategory(IPluginContext *pContext, const cell_t *params
 	return pMenu->FindCategory(name);
 }
 
+static cell_t DisplayTopMenu(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	ITopMenu *pMenu;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if ((err = handlesys->ReadHandle(params[1], hTopMenuType, &sec, (void **)&pMenu))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	int client = params[2];
+	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
+	if (!player)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+	else if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	return pMenu->DisplayMenu(client, 0, (TopMenuPosition)params[3]);
+}
+
 sp_nativeinfo_t g_TopMenuNatives[] = 
 {
 	{"AddToTopMenu",		AddToTopMenu},
 	{"CreateTopMenu",		CreateTopMenu},
+	{"DisplayTopMenu",		DisplayTopMenu},
 	{"LoadTopMenuConfig",	LoadTopMenuConfig},
 	{"RemoveFromTopMenu",	RemoveFromTopMenu},
 	{"FindTopMenuCategory",	FindTopMenuCategory},

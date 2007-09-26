@@ -45,7 +45,7 @@ enum TopMenuAction
 	/**
 	 * An option is being drawn for a menu (or for sorting purposes).
 	 *
-	 * INPUT : TopMenu Handle, (param1) Client index, (param2) object ID.
+	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 * OUTPUT: Must return an ITEMDRAW constant.
 	 */
@@ -54,9 +54,10 @@ enum TopMenuAction
 	/**
 	 * The title of a menu is being drawn for a given object.
 	 *
-	 * Note: The Object ID will be 0 if drawing the root title.
+	 * Note: The Object ID will be INVALID_TOPMENUOBJECT if drawing the 
+	 * root title.  Otherwise, the Object ID is a category.
 	 *
-	 * INPUT : TopMenu Handle, (param1) Client index, (param2) object ID.
+	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
 	TopMenuAction_DrawTitle = 1,
@@ -64,7 +65,9 @@ enum TopMenuAction
 	/**
 	 * A menu option has been selected.
 	 *
-	 * INPUT : TopMenu Handle, (param1) Client index, (param2) object ID.
+	 * The Object ID will always be an item (not a category).
+	 *
+	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
 	 */
 	TopMenuAction_SelectOption = 2,
 };
@@ -76,6 +79,16 @@ enum TopMenuObjectType
 {
 	TopMenuObject_Category = 0,			/**< Category (sub-menu branching from root) */
 	TopMenuObject_Item = 1				/**< Item on a sub-menu */
+};
+
+/**
+ * Top menu starting positions for display.
+ */
+enum TopMenuPosition
+{
+	TopMenuPosition_Start = 0,			/**< Start/root of the menu */
+	TopMenuPosition_LastRoot = 1,		/**< Last position in the root menu */
+	TopMenuPosition_LastCategory = 3,	/**< Last position in their last category */
 };
 
 /**
@@ -91,16 +104,16 @@ enum TopMenuObject
  *
  * @param topmenu			Handle to the TopMenu.
  * @param action			TopMenuAction being performed.
- * @param param1			First parameter (dependent on action).
- * @param param2			Second parameter (dependent on action).
- * @param buffer			Output buffer (not always used).
- * @param maxlength			Output buffer (not always used).
+ * @param object_id			The object ID (if used).
+ * @param param				Extra parameter (if used).
+ * @param buffer			Output buffer (if used).
+ * @param maxlength			Output buffer (if used).
  * @noreturn
  */
 functag TopMenuHandler public(Handle:topmenu, 
 							  TopMenuAction:action,
-							  param1,
-							  param2,
+							  TopMenuObject:object_id,
+							  param,
 							  String:buffer[],
 							  maxlength);
 
@@ -161,9 +174,9 @@ native TopMenuObject:AddToTopMenu(Handle:topmenu,
 								  const String:name[],
 								  TopMenuObjectType:type,
 								  TopMenuHandler:handler,
-								  const String:cmdname[],
-								  flags,
-								  TopMenuObject:parent);
+								  TopMenuObject:parent,
+								  const String:cmdname[]="",
+								  flags=0);
 
 /**
  * Removes an object from a TopMenu.
@@ -179,6 +192,17 @@ native TopMenuObject:AddToTopMenu(Handle:topmenu,
 native RemoveFromTopMenu(Handle:topmenu, TopMenuObject:object);
 
 /**
+ * Displays a TopMenu to a client.
+ *
+ * @param topmenu			TopMenu Handle.
+ * @param client			Client index.
+ * @param position			Position to display from.
+ * @return					True on success, false on failure.
+ * @error					Invalid TopMenu Handle or client not in game.
+ */
+native DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
+
+/**
  * Finds a category's object ID in a TopMenu.
  *
  * @param topmenu			TopMenu Handle.
@@ -188,3 +212,23 @@ native RemoveFromTopMenu(Handle:topmenu, TopMenuObject:object);
  * @error					Invalid TopMenu Handle.
  */
 native TopMenuObject:FindTopMenuCategory(Handle:topmenu, const String:name[]);
+
+/**
+ * Do not edit below this line!
+ */
+public Extension:__ext_cstrike = 
+{
+	name = "TopMenus",
+	file = "topmenus.ext",
+#if defined AUTOLOAD_EXTENSIONS
+	autoload = 1,
+#else
+	autoload = 0,
+#endif
+#if defined REQUIRE_EXTENSIONS
+	required = 1,
+#else
+	required = 0,
+#endif
+};
+
