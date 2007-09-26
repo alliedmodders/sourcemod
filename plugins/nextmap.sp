@@ -256,6 +256,7 @@ LoadMaps()
 	
 	if (!FileExists(mapCycle))
 	{
+		LogError("[SM] Could not find file: %s", mapCycle);
 		return 0;
 	}
 	
