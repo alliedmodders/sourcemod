@@ -1,0 +1,942 @@
+/**
+ * vim: set ts=4 :
+ * =============================================================================
+ * SourceMod Sample Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * =============================================================================
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, version 3.0, as published by the
+ * Free Software Foundation.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * As a special exception, AlliedModders LLC gives you permission to link the
+ * code of this program (as well as its derivative works) to "Half-Life 2," the
+ * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
+ * by the Valve Corporation.  You must obey the GNU General Public License in
+ * all respects for all other code used.  Additionally, AlliedModders LLC grants
+ * this exception to all derivative works.  AlliedModders LLC defines further
+ * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
+ * or <http://www.sourcemod.net/license.php>.
+ *
+ * Version: $Id: extension.cpp 1336 2007-08-15 06:19:30Z damagedsoul $
+ */
+
+#include <stdlib.h>
+#include "TopMenu.h"
+
+struct obj_by_name_t
+{
+	unsigned int obj_index;
+	char name[64];
+};
+
+int _SortObjectNamesDescending(const void *ptr1, const void *ptr2);
+unsigned int strncopy(char *dest, const char *src, size_t count);
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
+
+TopMenu::TopMenu(ITopMenuObjectCallbacks *callbacks)
+{
+	m_clients = NULL;
+	m_SerialNo = 1;
+	m_pTitle = callbacks;
+	m_max_clients = 0;
+
+	if (playerhelpers->IsServerActivated())
+	{
+		CreatePlayers(playerhelpers->GetMaxClients());
+	}
+}
+
+TopMenu::~TopMenu()
+{
+	/* Delete all categories */
+	for (size_t i = 0; i < m_Categories.size(); i++)
+	{
+		delete m_Categories[i];
+	}
+
+	/* Delete all items */
+	for (size_t i = 0; i < m_Objects.size(); i++)
+	{
+		delete m_Objects[i];
+	}
+
+	/* Delete all cached config entries */
+	for (size_t i = 0; i < m_Config.cats.size(); i++)
+	{
+		delete m_Config.cats[i];
+	}
+
+	/* Sweep players */
+	for (int i = 0; i <= m_max_clients; i++)
+	{
+		TearDownClient(&m_clients[i]);
+	}
+	delete [] m_clients;
+}
+
+void TopMenu::OnClientConnected(int client)
+{
+	if (m_clients == NULL)
+	{
+		return;
+	}
+
+	topmenu_player_t *player = &m_clients[client];
+	TearDownClient(player);
+}
+
+void TopMenu::OnClientDisconnected(int client)
+{
+	if (m_clients == NULL)
+	{
+		return;
+	}
+
+	topmenu_player_t *player = &m_clients[client];
+	TearDownClient(player);
+}
+
+void TopMenu::OnServerActivated(int max_clients)
+{
+	if (m_clients == NULL)
+	{
+		CreatePlayers(max_clients);
+	}
+}
+
+unsigned int TopMenu::AddToMenu(const char *name,
+								TopMenuObjectType type,
+								ITopMenuObjectCallbacks *callbacks,
+								IdentityToken_t *owner,
+								const char *cmdname,
+								FlagBits flags,
+								unsigned int parent)
+{
+	/* Sanity checks */
+	if (type == TopMenuObject_Category && parent != 0)
+	{
+		return 0;
+	}
+	else if (type == TopMenuObject_Item && parent == 0)
+	{
+		return 0;
+	}
+	else if (m_ObjLookup.retrieve(name) != NULL)
+	{
+		return 0;
+	}
+
+	/* If we're adding an item, make sure the parent is valid, 
+	 * and that the parent is a category.
+	 */
+	topmenu_object_t *parent_obj = NULL;
+	topmenu_category_t *parent_cat = NULL;
+	if (type == TopMenuObject_Item)
+	{
+		/* Check parent index.  Note it will be >= 1 here. */
+		if (parent > m_Objects.size() || m_Objects[parent - 1]->is_free)
+		{
+			return 0;
+		}
+		parent_obj = m_Objects[parent - 1];
+
+		/* Find an equivalent pointer in the category array. */
+		for (size_t i = 0; i < m_Categories.size(); i++)
+		{
+			if (m_Categories[i]->obj == parent_obj)
+			{
+				parent_cat = m_Categories[i];
+				break;
+			}
+		}
+
+		/* If none was found, leave. */
+		if (parent_cat == NULL)
+		{
+			return 0;
+		}
+	}
+
+	/* Re-use an old object pointer if we can. */
+	topmenu_object_t *obj = NULL;
+	for (size_t i = 0; i < m_Objects.size(); i++)
+	{
+		if (m_Objects[i]->is_free == true)
+		{
+			obj = m_Objects[i];
+			break;
+		}
+	}
+
+	/* Otherwise, allocate a new one. */
+	if (obj == NULL)
+	{
+		obj = new topmenu_object_t;
+		obj->object_id = ((unsigned int)m_Objects.size()) + 1;
+		m_Objects.push_back(obj);
+	}
+
+	/* Initialize the object's properties. */
+	obj->callbacks = callbacks;
+	obj->flags = flags;
+	obj->owner = owner;
+	obj->type = type;
+	obj->is_free = false;
+	obj->parent = parent_obj;
+	strncopy(obj->name, name, sizeof(obj->name));
+	strncopy(obj->cmdname, cmdname ? cmdname : "", sizeof(obj->cmdname));
+
+	if (obj->type == TopMenuObject_Category)
+	{
+		/* Create a new category entry */
+		topmenu_category_t *cat = new topmenu_category_t;
+		cat->obj = obj;
+		cat->reorder = false;
+		cat->serial = 1;
+
+		/* Add it, then update our serial change number. */
+		m_Categories.push_back(cat);
+		m_SerialNo++;
+
+		/* Updating sorting info */
+		m_bCatsNeedResort = true;
+	}
+	else if (obj->type == TopMenuObject_Item)
+	{
+		/* Update the category, mark it as needing changes */
+		parent_cat->obj_list.push_back(obj);
+		parent_cat->reorder = true;
+		parent_cat->serial++;
+	}
+
+	m_ObjLookup.insert(name, obj);
+
+	return obj->object_id;
+}
+
+void TopMenu::RemoveFromMenu(unsigned int object_id)
+{
+	if (object_id == 0 
+		|| object_id > m_Objects.size() 
+		|| m_Objects[object_id - 1]->is_free)
+	{
+		return;
+	}
+
+	topmenu_object_t *obj = m_Objects[object_id - 1];
+
+	m_ObjLookup.remove(obj->name);
+
+	if (obj->type == TopMenuObject_Category)
+	{
+		/* Find it in the category list */
+		for (size_t i = 0; i < m_Categories.size(); i++)
+		{
+			if (m_Categories[i]->obj == obj)
+			{
+				/* Erase from here */
+				delete m_Categories[i];
+				m_Categories.erase(m_Categories.iterAt(i));
+				break;
+			}
+		}
+		/* Update us as changed */
+		m_SerialNo++;
+		m_bCatsNeedResort = true;
+	}
+	else if (obj->type == TopMenuObject_Item)
+	{
+		/* Find the category this item is in. */
+		topmenu_category_t *parent_cat = NULL;
+		for (size_t i = 0; i < m_Categories.size(); i++)
+		{
+			if (m_Categories[i]->obj == obj->parent)
+			{
+				parent_cat = m_Categories[i];
+				break;
+			}
+		}
+
+		/* Erase it from the category's lists. */
+		if (parent_cat)
+		{
+			for (size_t i = 0; i < parent_cat->obj_list.size(); i++)
+			{
+				if (parent_cat->obj_list[i] == obj)
+				{
+					parent_cat->obj_list.erase(parent_cat->obj_list.iterAt(i));
+					break;
+				}
+			}
+			parent_cat->reorder = true;
+			parent_cat->serial++;
+		}
+	}
+
+	/* Finally, mark the object as free. */
+	obj->is_free = true;
+}
+
+bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition position)
+{
+	if (m_clients == NULL)
+	{
+		return false;
+	}
+
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+	if (!pPlayer->IsInGame())
+	{
+		return false;
+	}
+
+	UpdateClientRoot(client, pPlayer);
+
+	topmenu_player_t *pClient = &m_clients[client];
+	if (pClient->root == NULL)
+	{
+		return false;
+	}
+
+	bool return_value = false;
+
+	if (position == TopMenuPosition_LastCategory && 
+		pClient->last_category < m_Categories.size())
+	{
+		return_value = DisplayCategory(client, pClient->last_category, hold_time, true);
+	}
+	else if (position == TopMenuPosition_LastRoot)
+	{
+		pClient->root->DisplayAtItem(client, hold_time, pClient->last_root_pos);
+	}
+	else if (position == TopMenuPosition_Start)
+	{
+		pClient->last_position = 0;
+		pClient->last_category = 0;
+		return_value = pClient->root->Display(client, hold_time);
+	}
+
+	return return_value;
+}
+
+bool TopMenu::DisplayCategory(int client, unsigned int category, unsigned int hold_time, bool last_position)
+{
+	UpdateClientCategory(client, category);
+
+	topmenu_player_t *pClient = &m_clients[client];
+	if (category >= pClient->cat_count
+		|| pClient->cats[category].menu == NULL)
+	{
+		return false;
+	}
+
+	bool return_value = false;
+
+	topmenu_player_category_t *player_cat = &(pClient->cats[category]);
+
+	pClient->last_category = category;
+	if (last_position)
+	{
+		return_value = player_cat->menu->DisplayAtItem(client, hold_time, pClient->last_position);
+	}
+	else
+	{
+		return_value = player_cat->menu->Display(client, hold_time);
+	}
+
+	return return_value;
+}
+
+void TopMenu::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page)
+{
+	const char *item_name = menu->GetItemInfo(item, NULL);
+	if (!item_name)
+	{
+		return;
+	}
+
+	topmenu_object_t *obj;
+	topmenu_player_t *pClient = &m_clients[client];
+	topmenu_object_t **pObject = m_ObjLookup.retrieve(item_name);
+	if (pObject == NULL)
+	{
+		return;
+	}
+
+	obj = *pObject;
+
+	/* We now have the object... what do we do with it? */
+	if (obj->type == TopMenuObject_Category)
+	{
+		/* If it's a category, the user wants to view it.. */
+		for (size_t i = 0; i < m_Categories.size(); i++)
+		{
+			if (m_Categories[i]->obj == obj)
+			{
+				pClient->last_root_pos = item_on_page;
+				DisplayCategory(client, (unsigned int)i, MENU_TIME_FOREVER, false);
+				break;
+			}
+		}
+	}
+	else
+	{
+		pClient->last_position = item_on_page;
+		
+		/* Re-check access in case this user had their credentials revoked */
+		if (obj->cmdname[0] != '\0' && !adminsys->CheckAccess(client, obj->cmdname, obj->flags, false))
+		{
+			DisplayMenu(client, 0, TopMenuPosition_LastCategory);
+			return;
+		}
+		
+		/* Pass the information on to the callback */
+		obj->callbacks->OnTopMenuSelectOption(client, obj->object_id);
+	}
+}
+
+void TopMenu::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)
+{
+	const char *item_name = menu->GetItemInfo(item, NULL);
+	if (!item_name)
+	{
+		return;
+	}
+
+	topmenu_object_t *obj;
+	topmenu_object_t **pObject = m_ObjLookup.retrieve(item_name);
+	if (pObject == NULL)
+	{
+		return;
+	}
+
+	obj = *pObject;
+
+	if (obj->cmdname[0] == '\0')
+	{
+		return;
+	}
+
+	if (!adminsys->CheckAccess(client, obj->cmdname, obj->flags, false))
+	{
+		style = ITEMDRAW_IGNORE;
+	}
+}
+
+unsigned int TopMenu::OnMenuDisplayItem(IBaseMenu *menu,
+								int client,
+								IMenuPanel *panel,
+								unsigned int item,
+								const ItemDrawInfo &dr)
+{
+	const char *item_name = menu->GetItemInfo(item, NULL);
+	if (!item_name)
+	{
+		return 0;
+	}
+
+	topmenu_object_t *obj;
+	topmenu_object_t **pObject = m_ObjLookup.retrieve(item_name);
+	if (pObject == NULL)
+	{
+		return 0;
+	}
+
+	obj = *pObject;
+
+	/* Ask the object to render the text for this client */
+	char renderbuf[64];
+	obj->callbacks->OnTopMenuDrawOption(client, obj->object_id, renderbuf, sizeof(renderbuf));
+
+	/* Build the new draw info */
+	ItemDrawInfo new_dr = dr;
+	new_dr.display = renderbuf;
+
+	/* Man I love the menu API.  Ask the panel to draw the item and give the position 
+	 * back to Core's renderer.  This way we don't have to worry about keeping the 
+	 * render buffer static!
+	 */
+	return panel->DrawItem(new_dr);
+}
+
+void TopMenu::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
+{
+	if (reason == MenuCancel_ExitBack)
+	{
+		/* If the client chose exit back, they were on a category menu, and we can
+		 * now display the root menu from the last known position.
+		 */
+		DisplayMenu(client, 0, TopMenuPosition_LastRoot);
+	}
+}
+
+void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
+{
+	topmenu_player_t *pClient = &m_clients[client];
+	IGamePlayer *pPlayer = pGamePlayer ? pGamePlayer : playerhelpers->GetGamePlayer(client);
+
+	/* Determine if an update is necessary */
+	bool is_update_needed = false;
+	if (pClient->menu_serial != m_SerialNo)
+	{
+		is_update_needed = true;
+	}
+	else if (pPlayer->GetUserId() != pClient->user_id)
+	{
+		is_update_needed = true;
+	}
+
+	/* If no update is needed at the root level, just leave now */
+	if (!is_update_needed)
+	{
+		return;
+	}
+
+	/* First we need to flush the cache... */
+	TearDownClient(pClient);
+
+	/* Now, rebuild the category list, but don't create menus */
+	if (m_Categories.size() == 0)
+	{
+		pClient->cat_count = 0;
+		pClient->cats = NULL;
+	}
+	else
+	{
+		pClient->cat_count = (unsigned int)m_Categories.size();
+		pClient->cats = new topmenu_player_category_t[pClient->cat_count];
+		memset(pClient->cats, 0, sizeof(topmenu_player_category_t) * pClient->cat_count);
+	}
+
+	/* Re-sort the root categories if needed */
+	SortCategoriesIfNeeded();
+
+	/* Build the root menu */
+	IBaseMenu *root_menu = menus->GetDefaultStyle()->CreateMenu(this, myself->GetIdentity());
+
+	/* Add the sorted items */
+	for (size_t i = 0; i < m_SortedCats.size(); i++)
+	{
+		root_menu->AppendItem(m_Categories[m_SortedCats[i]]->obj->name, ItemDrawInfo(""));
+	}
+
+	/* Now we need to handle un-sorted items.  This is slightly trickier, as we need to 
+	 * pre-render each category name, and cache those names.  Phew!
+	 */
+	if (m_UnsortedCats.size())
+	{
+		obj_by_name_t *item_list = new obj_by_name_t[m_UnsortedCats.size()];
+		for (size_t i = 0; i < m_UnsortedCats.size(); i++)
+		{
+			obj_by_name_t *temp_obj = &item_list[i];
+			topmenu_object_t *obj = m_Categories[m_UnsortedCats[i]]->obj;
+			obj->callbacks->OnTopMenuDrawOption(client, 
+				obj->object_id,
+				temp_obj->name,
+				sizeof(temp_obj->name));
+			temp_obj->obj_index = m_UnsortedCats[i];
+		}
+
+		/* Sort our temp list */
+		qsort(item_list, m_UnsortedCats.size(), sizeof(obj_by_name_t), _SortObjectNamesDescending);
+
+		/* Add the new sorted categories */
+		for (size_t i = 0; i < m_SortedCats.size(); i++)
+		{
+			root_menu->AppendItem(m_Categories[item_list[i].obj_index]->obj->name, ItemDrawInfo(""));
+		}
+
+		delete [] item_list;
+	}
+
+	/* Set the menu's title */
+	char renderbuf[128];
+	m_pTitle->OnTopMenuDrawTitle(client, 0, renderbuf, sizeof(renderbuf));
+	root_menu->SetDefaultTitle(renderbuf);
+
+	/* The client is now fully updated */
+	pClient->root = root_menu;
+	pClient->user_id = pPlayer->GetUserId();
+	pClient->menu_serial = m_SerialNo;
+	pClient->last_position = 0;
+	pClient->last_category = 0;
+	pClient->last_root_pos = 0;
+}
+
+void TopMenu::UpdateClientCategory(int client, unsigned int category)
+{
+	/* Update the client's root menu just in case it needs it.  This 
+	 * will validate that we have both a valid client and a valid
+	 * category structure for that client.
+	 */
+	UpdateClientRoot(client);
+
+	/* Now it's guaranteed that our category tables will be usable */
+	topmenu_player_t *pClient = &m_clients[client];
+	topmenu_category_t *cat = m_Categories[category];
+	topmenu_player_category_t *player_cat = &(pClient->cats[category]);
+
+	/* Does the category actually need updating? */
+	if (player_cat->serial == cat->serial)
+	{
+		return;
+	}
+
+	/* Destroy any existing menu */
+	if (player_cat->menu)
+	{
+		player_cat->menu->Destroy();
+		player_cat->menu = NULL;
+	}
+
+	if (pClient->last_category == category)
+	{
+		pClient->last_position = 0;
+	}
+
+	IBaseMenu *cat_menu = menus->GetDefaultStyle()->CreateMenu(this, myself->GetIdentity());
+	
+	/* Categories get an "exit back" button */
+	cat_menu->SetMenuOptionFlags(cat_menu->GetMenuOptionFlags() | MENUFLAG_BUTTON_EXITBACK);
+
+	/* Re-sort the category if needed */
+	SortCategoryIfNeeded(category);
+
+	/* Build the menu with the sorted items first */
+	for (size_t i = 0; i < cat->sorted.size(); i++)
+	{
+		cat_menu->AppendItem(cat->sorted[i]->name, ItemDrawInfo(""));
+	}
+
+	/* Now handle unsorted items */
+	if (cat->unsorted.size())
+	{
+		/* Build a list of the item names */
+		obj_by_name_t *item_list = new obj_by_name_t[cat->unsorted.size()];
+		for (size_t i = 0; i < cat->unsorted.size(); i++)
+		{
+			obj_by_name_t *item = &item_list[i];
+			topmenu_object_t *obj = cat->unsorted[i];
+			obj->callbacks->OnTopMenuDrawOption(client,
+				obj->object_id,
+				item->name,
+				sizeof(item->name));
+			item->obj_index = (unsigned int)i;
+		}
+
+		/* Sort the names */
+		qsort(item_list, cat->unsorted.size(), sizeof(obj_by_name_t), _SortObjectNamesDescending);
+
+		/* Add to the menu */
+		for (size_t i = 0; i < cat->unsorted.size(); i++)
+		{
+			cat_menu->AppendItem(cat->unsorted[item_list[i].obj_index]->name, ItemDrawInfo(""));
+		}
+
+		delete [] item_list;
+	}
+
+	/* Set the menu's title */
+	char renderbuf[128];
+	cat->obj->callbacks->OnTopMenuDrawTitle(client, cat->obj->object_id, renderbuf, sizeof(renderbuf));
+	cat_menu->SetDefaultTitle(renderbuf);
+
+	/* We're done! */
+	player_cat->menu = cat_menu;
+	player_cat->serial = cat->serial;
+}
+
+void TopMenu::SortCategoryIfNeeded(unsigned int category)
+{
+	topmenu_category_t *cat = m_Categories[category];
+	if (!cat->reorder)
+	{
+		return;
+	}
+
+	cat->sorted.clear();
+	cat->unsorted.clear();
+
+	if (cat->obj_list.size() == 0)
+	{
+		cat->reorder = false;
+		return;
+	}
+
+	CVector<unsigned int> to_sort;
+	for (size_t i = 0; i < cat->obj_list.size(); i++)
+	{
+		to_sort.push_back(i);
+	}
+
+	/* Find a matching category in the configs */
+	config_category_t *config_cat = NULL; 
+	for (size_t i = 0; i < m_Config.cats.size(); i++)
+	{
+		if (strcmp(m_Config.strings.GetString(m_Config.cats[i]->name), cat->obj->name) == 0)
+		{
+			config_cat = m_Config.cats[i];
+			break;
+		}
+	}
+
+	/* If there is a matching category, build a pre-sorted item list */
+	if (config_cat != NULL)
+	{
+		/* Find matching objects in this category */
+		for (size_t i = 0; i < config_cat->commands.size(); i++)
+		{
+			const char *config_name = m_Config.strings.GetString(config_cat->commands[i]);
+			for (size_t j = 0; j < to_sort.size(); j++)
+			{
+				if (strcmp(config_name, cat->obj_list[to_sort[j]]->name) == 0)
+				{
+					/* Place in the final list, then remove from the temporary list */
+					cat->sorted.push_back(cat->obj_list[to_sort[j]]);
+					to_sort.erase(to_sort.iterAt(j));
+					break;
+				}
+			}
+		}
+	}
+
+	/* Push any remaining items onto the unsorted list */
+	for (size_t i = 0; i < to_sort.size(); i++)
+	{
+		cat->unsorted.push_back(cat->obj_list[to_sort[i]]);
+	}
+
+	cat->reorder = false;
+}
+
+void TopMenu::SortCategoriesIfNeeded()
+{
+	if (!m_bCatsNeedResort)
+	{
+		return;
+	}
+
+	/* Clear sort results */
+	m_SortedCats.clear();
+	m_UnsortedCats.clear();
+
+	if (m_Categories.size() == 0)
+	{
+		m_bCatsNeedResort = false;
+		return;
+	}
+
+	CVector<unsigned int> to_sort;
+	for (unsigned int i = 0; i < (unsigned int)m_Categories.size(); i++)
+	{
+		to_sort.push_back(i);
+	}
+
+	/* If we have any predefined categories, add them in as they appear. */
+	for (size_t i= 0; i < m_Config.cats.size(); i++)
+	{
+		/* Find this category and map it in if we can */
+		for (size_t j = 0; j < to_sort.size(); j++)
+		{
+			if (strcmp(m_Config.strings.GetString(m_Config.cats[i]->name), 
+					   m_Categories[to_sort[j]]->obj->name) == 0)
+			{
+				/* Add to the real list and remove from the temporary */
+				m_SortedCats.push_back(to_sort[j]);
+				to_sort.erase(to_sort.iterAt(j));
+				break;
+			}
+		}
+	}
+
+	/* Push any remaining items onto the unsorted list */
+	for (size_t i = 0; i < to_sort.size(); i++)
+	{
+		m_UnsortedCats.push_back(to_sort[i]);
+	}
+
+	m_bCatsNeedResort = false;
+}
+
+void TopMenu::CreatePlayers(int max_clients)
+{
+	m_max_clients = max_clients;
+	m_clients = (topmenu_player_t *)malloc(sizeof(topmenu_player_t) * (max_clients + 1));
+	memset(m_clients, 0, sizeof(topmenu_player_t) * (max_clients + 1));
+}
+
+void TopMenu::TearDownClient(topmenu_player_t *player)
+{
+	if (player->cats != NULL)
+	{
+		for (unsigned int i = 0; i < player->cat_count; i++)
+		{
+			topmenu_player_category_t *player_cat = &(player->cats[i]);
+			if (player_cat->menu != NULL)
+			{
+				player_cat->menu->Destroy();
+			}
+		}
+		delete [] player->cats;
+	}
+
+	if (player->root != NULL)
+	{
+		player->root->Destroy();
+	}
+
+	memset(player, 0, sizeof(topmenu_player_t));
+}
+
+bool TopMenu::LoadConfiguration(const char *file, char *error, size_t maxlength)
+{
+	SMCParseError err;
+	unsigned int line = 0, col = 0;
+
+	if ((err = textparsers->ParseFile_SMC(file, this, &line, &col))
+		!= SMCParse_Okay)
+	{
+		const char *err_string = textparsers->GetSMCErrorString(err);
+		if (!err_string)
+		{
+			err_string = "Unknown";
+		}
+
+		UTIL_Format(error, maxlength, "%s", err_string);
+
+		return false;
+	}
+
+	return true;
+}
+
+#define PARSE_STATE_NONE		0
+#define PARSE_STATE_CATEGORY	1
+unsigned int ignore_parse_level = 0;
+unsigned int current_parse_state = 0;
+config_category_t *cur_cat = NULL;
+
+void TopMenu::ReadSMC_ParseStart()
+{
+	current_parse_state = PARSE_STATE_NONE;
+	ignore_parse_level = 0;
+	cur_cat = NULL;
+
+	/* Reset the old config */
+	m_Config.strings.Reset();
+	for (size_t i = 0; i < m_Config.cats.size(); i++)
+	{
+		delete m_Config.cats[i];
+	}
+	m_Config.cats.clear();
+}
+
+SMCParseResult TopMenu::ReadSMC_NewSection(const char *name, bool opt_quotes)
+{
+	if (ignore_parse_level)
+	{
+		ignore_parse_level++;
+	}
+	else
+	{
+		if (current_parse_state == PARSE_STATE_NONE)
+		{
+			cur_cat = new config_category_t;
+			cur_cat->name = m_Config.strings.AddString(name);
+			m_Config.cats.push_back(cur_cat);
+			current_parse_state = PARSE_STATE_CATEGORY;
+		}
+		else
+		{
+			ignore_parse_level = 1;
+		}
+	}
+
+	return SMCParse_Continue;
+}
+
+SMCParseResult TopMenu::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+{
+	if (ignore_parse_level > 0
+		|| current_parse_state != PARSE_STATE_CATEGORY
+		|| cur_cat == NULL)
+	{
+		return SMCParse_Continue;
+	}
+
+	if (strcmp(key, "item") == 0)
+	{
+		cur_cat->commands.push_back(m_Config.strings.AddString(value));
+	}
+
+	return SMCParse_Continue;
+}
+
+SMCParseResult TopMenu::ReadSMC_LeavingSection()
+{
+	if (ignore_parse_level)
+	{
+		ignore_parse_level--;
+	}
+	else
+	{
+		if (current_parse_state == PARSE_STATE_CATEGORY)
+		{
+			cur_cat = NULL;
+			current_parse_state = PARSE_STATE_NONE;
+		}
+	}
+
+	return SMCParse_Continue;
+}
+
+int _SortObjectNamesDescending(const void *ptr1, const void *ptr2)
+{
+	obj_by_name_t *obj1 = (obj_by_name_t *)ptr1;
+	obj_by_name_t *obj2 = (obj_by_name_t *)ptr2;
+	return strcmp(obj1->name, obj2->name);
+}
+
+unsigned int strncopy(char *dest, const char *src, size_t count)
+{
+	if (!count)
+	{
+		return 0;
+	}
+
+	char *start = dest;
+	while ((*src) && (--count))
+	{
+		*dest++ = *src++;
+	}
+	*dest = '\0';
+
+	return (dest - start);
+}
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+	va_end(ap);
+
+	if (len >= maxlength)
+	{
+		buffer[maxlength - 1] = '\0';
+		return (maxlength - 1);
+	}
+	else
+	{
+		return len;
+	}
+}
