@@ -156,10 +156,14 @@ public: //IAdminSystem
 	unsigned int GetAdminSerialChange(AdminId id);
 	bool CanAdminUseCommand(int client, const char *cmd);
 	const char *GetGroupName(GroupId gid);
-	virtual unsigned int SetGroupImmunityLevel(GroupId gid, unsigned int level);
-	virtual unsigned int GetGroupImmunityLevel(GroupId gid);
-	virtual unsigned int SetAdminImmunityLevel(AdminId id, unsigned int level);
-	virtual unsigned int GetAdminImmunityLevel(AdminId id);
+	unsigned int SetGroupImmunityLevel(GroupId gid, unsigned int level);
+	unsigned int GetGroupImmunityLevel(GroupId gid);
+	unsigned int SetAdminImmunityLevel(AdminId id, unsigned int level);
+	unsigned int GetAdminImmunityLevel(AdminId id);
+	bool CheckAccess(int client, 
+		const char *cmd, 
+		AdminFlag flags, 
+		bool override_only);
 public:
 	bool IsValidAdmin(AdminId id);
 private:

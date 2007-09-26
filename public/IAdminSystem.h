@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	4
+#define SMINTERFACE_ADMINSYS_VERSION	5
 
 /**
  * @file IAdminSystem.h
@@ -702,6 +702,21 @@ namespace SourceMod
 		 * @return			Immunity level value.
 		 */
 		virtual unsigned int GetAdminImmunityLevel(AdminId id) =0;
+
+		/**
+		 * @brief Computers access to an override.
+		 *
+		 * @param client		Client index.
+		 * @param override		Override name.
+		 * @param flags			Default flags.
+		 * @param override_only	If false, if a command matches the override, 
+		 *						then its flags will override the default.
+		 * @return				True if the client has access, false otherwise.
+		 */
+		virtual bool CheckAccess(int client, 
+			const char *cmd, 
+			AdminFlag flags, 
+			bool override_only) =0;
 	};
 }
 

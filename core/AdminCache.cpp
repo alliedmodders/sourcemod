@@ -1707,3 +1707,25 @@ unsigned int AdminCache::GetAdminImmunityLevel(AdminId id)
 	return pUser->immunity_level;
 }
 
+bool AdminCache::CheckAccess(int client, const char *cmd, AdminFlag flags, bool override_only)
+{
+	if (client == 0)
+	{
+		return true;
+	}
+
+	/* Auto-detect a command if we can */
+	FlagBits bits = flags;
+	bool found_command = false;
+	if (!override_only)
+	{
+		found_command = g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
+	}
+
+	if (!found_command)
+	{
+		GetCommandOverride(cmd, Override_Command, &bits);
+	}
+
+	return g_ConCmds.CheckCommandAccess(client, cmd, bits) ? 1 : 0;
+}
