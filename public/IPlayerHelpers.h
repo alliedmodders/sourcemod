@@ -277,6 +277,8 @@ namespace SourceMod
 		/**
 		 * @brief Returns the maximum number of clients.
 		 *
+		 * Note: this will not work until the server is activated.
+		 *
 		 * @return				Maximum number of clients.
 		 */
 		virtual int GetMaxClients() =0;

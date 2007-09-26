@@ -199,7 +199,10 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	List<IClientListener *>::iterator iter;
 	for (iter = m_hooks.begin; iter != m_hooks.end(); iter++)
 	{
-		(*iter)->OnServerActivated(clientMax);
+		if ((*iter)->GetClientListenerVersion() >= 5)
+		{
+			(*iter)->OnServerActivated(clientMax);
+		}
 	}
 
 	g_OnMapStarted = true;
