@@ -197,7 +197,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	m_onActivate2->Execute(NULL);
 
 	List<IClientListener *>::iterator iter;
-	for (iter = m_hooks.begin; iter != m_hooks.end(); iter++)
+	for (iter = m_hooks.begin(); iter != m_hooks.end(); iter++)
 	{
 		if ((*iter)->GetClientListenerVersion() >= 5)
 		{
