@@ -30,6 +30,7 @@
  */
 
 #include <stdlib.h>
+#include <stdarg.h>
 #include "TopMenu.h"
 
 struct obj_by_name_t
