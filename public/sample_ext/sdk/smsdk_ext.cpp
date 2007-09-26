@@ -82,6 +82,15 @@ ILibrarySys *libsys = NULL;
 #if defined SMEXT_ENABLE_PLUGINSYS
 SourceMod::IPluginManager *plsys;
 #endif
+#if defined SMEXT_ENABLE_MENUS
+IMenuManager *menus = NULL;
+#endif
+#if defined SMEXT_ENABLE_ADMINSYS
+IAdminSystem *adminsys = NULL;
+#endif
+#if defined SMEXT_ENABLE_TEXTPARSERS
+ITextParsers *textparsers = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -154,6 +163,15 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_PLUGINSYS
 	SM_GET_IFACE(PLUGINSYSTEM, plsys);
+#endif
+#if defined SMEXT_ENABLE_MENUS
+	SM_GET_IFACE(MENUMANAGER, menus);
+#endif
+#if defined SMEXT_ENABLE_ADMINSYS
+	SM_GET_IFACE(ADMINSYS, adminsys);
+#endif
+#if defined SMEXT_ENABLE_TEXTPARSERS
+	SM_GET_IFACE(TEXTPARSERS, textparsers);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
