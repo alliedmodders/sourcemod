@@ -1707,7 +1707,7 @@ unsigned int AdminCache::GetAdminImmunityLevel(AdminId id)
 	return pUser->immunity_level;
 }
 
-bool AdminCache::CheckAccess(int client, const char *cmd, AdminFlag flags, bool override_only)
+bool AdminCache::CheckAccess(int client, const char *cmd, FlagBits flags, bool override_only)
 {
 	if (client == 0)
 	{

@@ -715,7 +715,7 @@ namespace SourceMod
 		 */
 		virtual bool CheckAccess(int client, 
 			const char *cmd, 
-			AdminFlag flags, 
+			FlagBits flags, 
 			bool override_only) =0;
 	};
 }

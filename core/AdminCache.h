@@ -162,7 +162,7 @@ public: //IAdminSystem
 	unsigned int GetAdminImmunityLevel(AdminId id);
 	bool CheckAccess(int client, 
 		const char *cmd, 
-		AdminFlag flags, 
+		FlagBits flags, 
 		bool override_only);
 public:
 	bool IsValidAdmin(AdminId id);
