@@ -199,7 +199,7 @@ static cell_t AddToTopMenu(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	IPluginFunction *func = pContext->GetFunctionById(params[1]);
+	IPluginFunction *func = pContext->GetFunctionById(params[4]);
 	if (func == NULL)
 	{
 		return pContext	->ThrowNativeError("Invalid function specified");

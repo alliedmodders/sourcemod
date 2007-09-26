@@ -59,14 +59,13 @@ TopMenu::TopMenu(ITopMenuObjectCallbacks *callbacks)
 TopMenu::~TopMenu()
 {
 	/* Delete all categories */
-	size_t i = 1;
-	while (i >= m_Categories.size())
+	while (m_Categories.size())
 	{
-		RemoveFromMenu(m_Categories[i - 1]->obj->object_id);
+		RemoveFromMenu(m_Categories[0]->obj->object_id);
 	}
 
 	/* Remove all objects */
-	for (i = 0; i < m_Objects.size(); i++)
+	for (size_t i = 0; i < m_Objects.size(); i++)
 	{
 		assert(m_Objects[i]->is_free == true);
 		delete m_Objects[i];
@@ -75,13 +74,13 @@ TopMenu::~TopMenu()
 	m_pTitle->OnTopMenuObjectRemoved(this, 0);
 
 	/* Delete all cached config entries */
-	for (i = 0; i < m_Config.cats.size(); i++)
+	for (size_t i = 0; i < m_Config.cats.size(); i++)
 	{
 		delete m_Config.cats[i];
 	}
 
 	/* Sweep players */
-	for (i = 0; i <= (size_t)m_max_clients; i++)
+	for (size_t i = 0; i <= (size_t)m_max_clients; i++)
 	{
 		TearDownClient(&m_clients[i]);
 	}
@@ -597,7 +596,7 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 		qsort(item_list, m_UnsortedCats.size(), sizeof(obj_by_name_t), _SortObjectNamesDescending);
 
 		/* Add the new sorted categories */
-		for (size_t i = 0; i < m_SortedCats.size(); i++)
+		for (size_t i = 0; i < m_UnsortedCats.size(); i++)
 		{
 			if (m_Categories[item_list[i].obj_index]->obj_list.size() == 0)
 			{
