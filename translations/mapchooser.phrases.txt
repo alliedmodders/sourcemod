@@ -20,4 +20,9 @@
 	{
 		"en"			"The current map has been extended."
 	}
+	
+	"Extend Map"
+	{
+		"en"			"Extend Current Map"
+	}
 }
