@@ -130,6 +130,7 @@ public: //IPlayerManager
 	int GetMaxClients();
 	int GetNumPlayers();
 	int GetClientOfUserId(int userid);
+	bool IsServerActivated();
 public:
 	inline int MaxClients()
 	{

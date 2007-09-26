@@ -79,7 +79,7 @@ public:
 PlayerManager::PlayerManager()
 {
 	m_AuthQueue = NULL;
-	m_FirstPass = true;
+	m_FirstPass = false;
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
@@ -180,14 +180,14 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	if (m_FirstPass)
+	if (!m_FirstPass)
 	{
 		/* Initialize all players */
 		m_maxClients = clientMax;
 		m_PlayerCount = 0;
 		m_Players = new CPlayer[m_maxClients + 1];
 		m_AuthQueue = new unsigned int[m_maxClients + 1];
-		m_FirstPass = false;
+		m_FirstPass = true;
 
 		memset(m_AuthQueue, 0, sizeof(unsigned int) * (m_maxClients + 1));
 
@@ -196,9 +196,20 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
+	List<IClientListener *>::iterator iter;
+	for (iter = m_hooks.begin; iter != m_hooks.end(); iter++)
+	{
+		(*iter)->OnServerActivated(clientMax);
+	}
+
 	g_OnMapStarted = true;
 
 	SM_ExecuteAllConfigs();
+}
+
+bool PlayerManager::IsServerActivated()
+{
+	return m_FirstPass;
 }
 
 bool PlayerManager::CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id)

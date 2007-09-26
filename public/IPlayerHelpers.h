@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	4
+#define SMINTERFACE_PLAYERMANAGER_VERSION	5
 
 struct edict_t;
 class IPlayerInfo;
@@ -220,6 +220,13 @@ namespace SourceMod
 		virtual void OnClientAuthorized(int client, const char *authstring)
 		{
 		}
+
+		/**
+		 * @brief Called when the server is activated.
+		 */
+		virtual void OnServerActivated(int max_clients)
+		{
+		}
 	};
 
 	class IPlayerManager : public SMInterface
@@ -288,6 +295,14 @@ namespace SourceMod
 		 * @return				Client index, or 0 if invalid userid passed.
 		 */
 		virtual int GetClientOfUserId(int userid) =0;
+
+		/**
+		 * @brief Returns whether or not the server is activated.
+		 *
+		 * @return				True if ServerActivate() has been called
+		 *						at least once, false otherwise.
+		 */
+		virtual bool IsServerActivated() =0;
 	};
 }
 
