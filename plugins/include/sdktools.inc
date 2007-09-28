@@ -46,6 +46,7 @@
 #include <sdktools_tempents>
 #include <sdktools_tempents_stocks>
 #include <sdktools_voice>
+#include <sdktools_entinput>
 
 enum SDKCallType
 {

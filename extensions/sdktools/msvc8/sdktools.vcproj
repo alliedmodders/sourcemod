@@ -191,6 +191,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\inputnatives.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\tempents.cpp"
 				>
 			</File>

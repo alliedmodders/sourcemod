@@ -299,6 +299,11 @@
 				"windows"	"118"
 				"linux"		"119"
 			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
 		}
 	}
 
@@ -352,6 +357,11 @@
 				"windows"	"118"
 				"linux"		"119"
 			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
 		}
 	}
 	
@@ -404,6 +414,11 @@
 			{
 				"windows"	"118"
 				"linux"		"119"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
 			}
 		}
 	}
@@ -521,6 +536,11 @@
 				"windows"	"120"
 				"linux"		"121"
 			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
 
 			/* Offset into CBaseTempEntity constructor.
 			 * On Windows Dsytopia is heavily inlined; we use the function 
@@ -588,6 +608,11 @@
 			{
 				"windows"	"107"
 				"linux"		"108"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
 			}
 			"s_pTempEntities"
 			{
@@ -666,6 +691,11 @@
 			{
 				"windows"	"118"
 				"linux"		"119"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
 			}
 			
 			/* Temp Entities */

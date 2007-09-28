@@ -430,13 +430,13 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				IServerUnknown *pUnknown = pEdict->GetUnknown();
 				if (!pUnknown)
 				{
-					pContext->ThrowNativeError("Entity %d is a not an IServerUnknown");
+					pContext->ThrowNativeError("Entity %d is a not an IServerUnknown", param);
 					return Data_Fail;
 				}
 				pEntity = pUnknown->GetBaseEntity();
 				if (!pEntity)
 				{
-					pContext->ThrowNativeError("Entity %d is not a CBaseEntity");
+					pContext->ThrowNativeError("Entity %d is not a CBaseEntity", param);
 					return Data_Fail;
 				}
 			}
@@ -498,13 +498,13 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				IServerUnknown *pUnknown = pEdict->GetUnknown();
 				if (!pUnknown)
 				{
-					pContext->ThrowNativeError("Entity %d is a not an IServerUnknown");
+					pContext->ThrowNativeError("Entity %d is a not an IServerUnknown", param);
 					return Data_Fail;
 				}
 				pEntity = pUnknown->GetBaseEntity();
 				if (!pEntity)
 				{
-					pContext->ThrowNativeError("Entity %d is not a CBaseEntity");
+					pContext->ThrowNativeError("Entity %d is not a CBaseEntity", param);
 					return Data_Fail;
 				}
 			}

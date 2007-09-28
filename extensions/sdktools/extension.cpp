@@ -65,6 +65,7 @@ extern sp_nativeinfo_t g_TENatives[];
 extern sp_nativeinfo_t g_TRNatives[];
 extern sp_nativeinfo_t g_StringTableNatives[];
 extern sp_nativeinfo_t g_VoiceNatives[];
+extern sp_nativeinfo_t g_EntInputNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -76,6 +77,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TRNatives);
 	sharesys->AddNatives(myself, g_StringTableNatives);
 	sharesys->AddNatives(myself, g_VoiceNatives);
+	sharesys->AddNatives(myself, g_EntInputNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -118,6 +120,12 @@ void SDKTools::SDK_OnUnload()
 	}
 	g_RegCalls.clear();
 	ShutdownHelpers();
+
+	if (g_pAcceptInput)
+	{
+		g_pAcceptInput->Destroy();
+		g_pAcceptInput = NULL;
+	}
 
 	g_TEManager.Shutdown();
 	s_TempEntHooks.Shutdown();
@@ -182,6 +190,12 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 
 	g_TEManager.Shutdown();
 	s_TempEntHooks.Shutdown();
+
+	if (g_pAcceptInput)
+	{
+		g_pAcceptInput->Destroy();
+		g_pAcceptInput = NULL;
+	}
 }
 
 bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)

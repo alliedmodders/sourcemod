@@ -100,5 +100,7 @@ extern IGameHelpers *g_pGameHelpers;
 /* Handle types */
 extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
+/* Call Wrappers */
+extern ICallWrapper *g_pAcceptInput;
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
