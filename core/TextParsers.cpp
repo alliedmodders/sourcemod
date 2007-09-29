@@ -279,8 +279,8 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 								   unsigned int *line, 
 								   unsigned int *col)
 {
-	char in_buf[4096];
 	char *reparse_point = NULL;
+	char in_buf[4096];
 	char *parse_point = in_buf;
 	char *line_begin = in_buf;
 	unsigned int read;
@@ -301,7 +301,7 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 
 	smc->ReadSMC_ParseStart();
 
-	while (srdr(stream, parse_point, sizeof(in_buf) - (parse_point - line_begin) - 1, &read))
+	while (srdr(stream, parse_point, sizeof(in_buf) - (parse_point - in_buf) - 1, &read))
 	{
 		if (!read)
 		{
