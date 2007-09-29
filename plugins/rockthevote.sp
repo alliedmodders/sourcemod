@@ -338,7 +338,7 @@ public Action:Timer_StartRTV(Handle:timer)
 	PrintToChatAll("[SM] %t", "RTV Vote Ready");
 		
 	new Handle:MapVoteMenu = CreateMenu(Handler_MapMapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(MapVoteMenu, "%t", "Rock The Vote");
+	SetMenuTitle(MapVoteMenu, "Rock The Vote");
 	
 	new limit = (GetArraySize(g_RTVMapList) < GetConVarInt(g_Cvar_Maps) ? GetArraySize(g_RTVMapList) : GetConVarInt(g_Cvar_Maps));
 	for (new i = 0; i < limit; i++)
