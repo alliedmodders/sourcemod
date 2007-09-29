@@ -304,6 +304,21 @@
 				"windows"	"35"
 				"linux"		"36"
 			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
 		}
 	}
 
@@ -361,6 +376,21 @@
 			{
 				"windows"	"35"
 				"linux"		"36"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"31"
+				"linux"		"32"
 			}
 		}
 	}
@@ -420,6 +450,21 @@
 				"windows"	"35"
 				"linux"		"36"
 			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
 		}
 	}
 	
@@ -473,6 +518,21 @@
 			{
 				"windows"	"116"
 				"linux"		"117"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"33"
+				"linux"		"34"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"35"
+				"linux"		"36"
 			}
 			
 			/* Temp Entities */
@@ -540,6 +600,21 @@
 			{
 				"windows"	"35"
 				"linux"		"36"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"31"
+				"linux"		"32"
 			}
 
 			/* Offset into CBaseTempEntity constructor.
@@ -617,6 +692,21 @@
 			"s_pTempEntities"
 			{
 				"linux"		"28"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"30"
+				"linux"		"31"
 			}
 		}
 	}
@@ -697,6 +787,21 @@
 				"windows"	"35"
 				"linux"		"36"
 			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
 			
 			/* Temp Entities */
 			"s_pTempEntities"
@@ -751,6 +856,21 @@
 			{
 				"windows"	"106"
 				"linux"		"107"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"30"
+				"linux"		"31"
 			}
 
 			/* Temp Entities */

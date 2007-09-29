@@ -699,6 +699,87 @@ static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 	return (ret == -1) ? 0 : 1;
 }
 
+static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("DispatchKeyValue", ValveCall_Entity, &pass[2], pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"DispatchKeyValue\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"DispatchKeyValue\" wrapper failed to initialized");
+		}
+	}
+
+	bool ret;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	FINISH_CALL_SIMPLE(&ret);
+
+	return (ret) ? 1 : 0;
+}
+
+static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Float, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("DispatchKeyValueFloat", ValveCall_Entity, &pass[2], pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"DispatchKeyValueFloat\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"DispatchKeyValueFloat\" wrapper failed to initialized");
+		}
+	}
+
+	bool ret;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	FINISH_CALL_SIMPLE(&ret);
+
+	return (ret) ? 1 : 0;
+}
+
+static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("DispatchKeyValueVector", ValveCall_Entity, &pass[2], pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"DispatchKeyValueVector\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"DispatchKeyValueVector\" wrapper failed to initialized");
+		}
+	}
+
+	bool ret;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	FINISH_CALL_SIMPLE(&ret);
+
+	return (ret) ? 1 : 0;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",		ExtinguishEntity},
@@ -720,5 +801,8 @@ sp_nativeinfo_t g_Natives[] =
 	{"IsPlayerAlive",			IsPlayerAlive},
 	{"CreateEntityByName",		CreateEntityByName},
 	{"DispatchSpawn",			DispatchSpawn},
+	{"DispatchKeyValue",		DispatchKeyValue},
+	{"DispatchKeyValueFloat",	DispatchKeyValueFloat},
+	{"DispatchKeyValueVector",	DispatchKeyValueVector},
 	{NULL,						NULL},
 };

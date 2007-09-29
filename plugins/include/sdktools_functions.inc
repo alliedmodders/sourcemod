@@ -173,6 +173,39 @@ native CreateEntityByName(const String:classname[], ForceEdictIndex=-1);
 native bool:DispatchSpawn(entity);
 
 /**
+ * Dispatches a KeyValue into given entity using a string value.
+ *
+ * @param entity		Destination entity index.
+ * @param keyName		Name of the key.
+ * @param value			String value.
+ * @return			True on success, false otherwise.
+ * @error			Invalid entity index, or no mod support.
+ */
+native bool:DispatchKeyValue(entity, const String:keyName[], const String:value[]);
+
+/**
+ * Dispatches a KeyValue into given entity using a floating point value.
+ *
+ * @param entity		Destination entity index.
+ * @param keyName		Name of the key.
+ * @param value			Floating point value.
+ * @return			True on success, false otherwise.
+ * @error			Invalid entity index, or no mod support.
+ */
+native bool:DispatchKeyValueFloat(entity, const String:keyName[], Float:value);
+
+/**
+ * Dispatches a KeyValue into given entity using a vector value.
+ *
+ * @param entity		Destination entity index.
+ * @param keyName		Name of the key.
+ * @param vec			Vector value.
+ * @return			True on success, false otherwise.
+ * @error			Invalid entity index, or no mod support.
+ */
+native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:vector[3]);
+
+/**
  * @deprecated
  */
 #pragma deprecated Use IgniteEntity() instead
