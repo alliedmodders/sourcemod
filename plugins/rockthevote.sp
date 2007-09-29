@@ -471,11 +471,6 @@ public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
 {
 	switch (action)
 	{
-		case MenuAction_End:
-		{
-			CloseHandle(menu);
-		}	
-	
 		case MenuAction_Select:
 		{
 			if (GetArraySize(g_RTVMapList) >= GetConVarInt(g_Cvar_Maps)) 
