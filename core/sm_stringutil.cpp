@@ -1037,9 +1037,28 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 	size_t textLen = strlen(subject);
 
 	/* It's not possible to search or replace */
-	if (searchLen > textLen || maxLen <= 1)
+	if (searchLen > textLen)
 	{
 		return NULL;
+	}
+
+	/* Handle the case of one byte replacement.
+	 * It's only valid in one case.
+	 */
+	if (maxLen == 1)
+	{
+		/* If the search matches and the replace length is 0, 
+		 * we can just terminate the string and be done.
+		 */
+		if (strcmp(subject, search) == 0 && replaceLen == 0)
+		{
+			*subject = '\0';
+			return subject;
+		}
+		else
+		{
+			return NULL;
+		}
 	}
 
 	/* Subtract one off the maxlength so we can include the null terminator */
