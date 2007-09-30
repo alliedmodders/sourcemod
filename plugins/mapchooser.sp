@@ -151,7 +151,7 @@ SetupTimeleftTimer()
 	new time;
 	if (GetMapTimeLeft(time) && time > 0)
 	{
-		new startTime = GetConVarInt(g_Cvar_StartTime);
+		new startTime = GetConVarInt(g_Cvar_StartTime) * 60;
 		if (time - startTime < 0)
 		{
 			InitiateVote();		
