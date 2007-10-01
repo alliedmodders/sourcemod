@@ -733,7 +733,7 @@ static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *para
 	{
 		ValvePassInfo pass[3];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[1], Valve_Float, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		if (!CreateBaseCall("DispatchKeyValueFloat", ValveCall_Entity, &pass[2], pass, 2, &pCall))
 		{
@@ -760,7 +760,7 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 	{
 		ValvePassInfo pass[3];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[1], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Vector, PassType_Object, PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_OASSIGNOP);
 		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		if (!CreateBaseCall("DispatchKeyValueVector", ValveCall_Entity, &pass[2], pass, 2, &pCall))
 		{

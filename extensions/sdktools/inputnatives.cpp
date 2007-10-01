@@ -93,7 +93,7 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 		pass[1].flags = pass[2].flags = PASSFLAG_BYVAL;
 		pass[1].size = pass[2].size = sizeof(CBaseEntity *);
 		pass[3].type = PassType_Object;
-		pass[3].flags = PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_ODTOR;
+		pass[3].flags = PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_ODTOR|PASSFLAG_OASSIGNOP;
 		pass[3].size = SIZEOF_VARIANT_T;
 		pass[4].type = PassType_Basic;
 		pass[4].flags = PASSFLAG_BYVAL;
