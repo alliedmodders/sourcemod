@@ -107,4 +107,6 @@ public SharedPlugin:__pl_adminmenu =
 public __pl_adminmenu_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetAdminTopMenu");
+	MarkNativeAsOptional("AddTargetsToMenu");
 }
+
