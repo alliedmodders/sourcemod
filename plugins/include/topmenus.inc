@@ -200,7 +200,7 @@ native RemoveFromTopMenu(Handle:topmenu, TopMenuObject:object);
  * @return					True on success, false on failure.
  * @error					Invalid TopMenu Handle or client not in game.
  */
-native DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
+native bool:DisplayTopMenu(Handle:topmenu, client, TopMenuPosition:position);
 
 /**
  * Finds a category's object ID in a TopMenu.
