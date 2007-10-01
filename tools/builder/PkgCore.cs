@@ -154,7 +154,7 @@ namespace builder
 			libs[8].Name = "game.cstrike.ext";
 			libs[8].ProjectFile = "cstrike";
 
-			libs[9].Destination = "addons/sourcemod/extenions";
+			libs[9].Destination = "addons/sourcemod/extensions";
 			libs[9].LocalPath = "extensions/topmenus";
 			libs[9].Name = "topmenus.ext";
 			libs[9].ProjectFile = "topmenus";
