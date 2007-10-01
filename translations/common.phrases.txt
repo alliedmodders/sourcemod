@@ -21,6 +21,16 @@
 		"en"			"More than one client matches the pattern \"{1}\""
 	}
 	
+	"Player no longer available"
+	{
+		"en"			"The player you selected is no longer available."
+	}
+	
+	"Kick player"
+	{
+		"en"			"Kick player"
+	}
+	
 	"Kicked player"
 	{
 		"#format"		"{1:s}"
@@ -235,6 +245,16 @@
 	"Invalid SteamID specified"
 	{
 		"en"			"You have specified an invalid Steam ID (must start with 'STEAM_0:')."
+	}
+	
+	"Admin Menu"
+	{
+		"en"			"Admin Menu"
+	}
+	
+	"Player Commands"
+	{
+		"en"			"Player Commands"
 	}
 }
 

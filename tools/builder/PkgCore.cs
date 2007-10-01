@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[16];
+			string [] folders = new string[17];
 
 			folders[0] = "addons/sourcemod/bin";
 			folders[1] = "addons/sourcemod/plugins/disabled";
@@ -47,6 +47,7 @@ namespace builder
 			folders[13] = "addons/sourcemod/configs/sql-init-scripts/mysql";
 			folders[14] = "addons/sourcemod/configs/sql-init-scripts/sqlite";
 			folders[15] = "addons/sourcemod/extensions/games";
+			folders[16] = "addons/sourcemod/scripting/basecommands";
 
 			return folders;
 		}
@@ -93,6 +94,7 @@ namespace builder
 			builder.CopyFolder(this, "public/licenses", "addons/sourcemod", null);
 			builder.CopyFolder(this, "plugins/admin-flatfile", "addons/sourcemod/scripting/admin-flatfile", null);
 			builder.CopyFolder(this, "plugins/testsuite", "addons/sourcemod/scripting/testsuite", null);
+			builder.CopyFolder(this, "plugins/basecommands", "addons/sourcemod/scripting/basecommands", null);
 		}
 
 		/**
@@ -100,7 +102,7 @@ namespace builder
 		 */
 		public override Library [] GetLibraries()
 		{
-			Library [] libs = new Library[9];
+			Library [] libs = new Library[10];
 
 			for (int i=0; i<libs.Length; i++)
 			{
@@ -151,6 +153,11 @@ namespace builder
 			libs[8].LocalPath = "extensions/cstrike";
 			libs[8].Name = "game.cstrike.ext";
 			libs[8].ProjectFile = "cstrike";
+
+			libs[9].Destination = "addons/sourcemod/extenions";
+			libs[9].LocalPath = "extensions/topmenus";
+			libs[9].Name = "topmenus.ext";
+			libs[9].ProjectFile = "topmenus";
 
 			return libs;
 		}

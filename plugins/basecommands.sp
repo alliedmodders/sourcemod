@@ -34,6 +34,8 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
 
 public Plugin:myinfo =
 {
@@ -43,6 +45,10 @@ public Plugin:myinfo =
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
 };
+
+new Handle:hTopMenu = INVALID_HANDLE;
+
+#include "basecommands/kick.sp"
 
 public OnPluginStart()
 {
@@ -56,6 +62,47 @@ public OnPluginStart()
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_reloadadmins", Command_ReloadAdmins, ADMFLAG_BAN, "sm_reloadadmins");
 	RegAdminCmd("sm_cancelvote", Command_CancelVote, ADMFLAG_VOTE, "sm_cancelvote");
+	
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+	/* Block us from being called twice */
+	if (topmenu == hTopMenu)
+	{
+		return;
+	}
+	
+	/* Save the Handle */
+	hTopMenu = topmenu;
+	
+	/* Build the "Player Commands" category */
+	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+	
+	if (player_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu, 
+			"Kick",
+			TopMenuObject_Item,
+			AdminMenu_Kick,
+			player_commands,
+			"sm_kick",
+			ADMFLAG_KICK);
+	}
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+	if (strcmp(name, "adminmenu") == 0)
+	{
+		hTopMenu = INVALID_HANDLE;
+	}
 }
 
 public Action:Command_ReloadAdmins(client, args)
@@ -365,51 +412,6 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	return Plugin_Stop;
 }
 
-public Action:Command_Kick(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
-		return Plugin_Handled;
-	}
-
-
-	decl String:Arguments[256];
-	GetCmdArgString(Arguments, sizeof(Arguments));
-
-	decl String:arg[65];
-	new len = BreakString(Arguments, arg, sizeof(arg));
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	GetClientName(target, arg, sizeof(arg));
-
-	if (len == -1)
-	{
-		/* Safely null terminate */
-		len = 0;
-		Arguments[0] = '\0';
-	}
-
-	ShowActivity(client, "%t", "Kicked player", arg);
-	LogAction(client, target, "\"%L\" kicked \"%L\" (reason \"%s\")", client, target, Arguments[len]);
-
-	if (Arguments[0] == '\0')
-	{
-		KickClient(target, "%t", "Kicked by admin");
-	}
-	else
-	{
-		KickClient(target, "%s", Arguments[len]);
-	}
-
-	return Plugin_Handled;
-}
-
 public Action:Command_CancelVote(client, args)
 {
 	if (!IsVoteInProgress())
@@ -424,3 +426,4 @@ public Action:Command_CancelVote(client, args)
 	
 	return Plugin_Handled;
 }
+
