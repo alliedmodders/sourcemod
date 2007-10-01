@@ -381,7 +381,7 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 
 	for (size_t i = length - 1;
 		 i >= 0 && i <= length - 1;
-		 i++)
+		 i--)
 	{
 		if (path[i] == '/' 
 #if defined PLATFORM_WINDOWS

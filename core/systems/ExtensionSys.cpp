@@ -124,11 +124,13 @@ bool CExtension::Load(char *error, size_t maxlength)
 
 CExtension::~CExtension()
 {
+	char temp_buffer[255];
+
 	if (m_pAPI)
 	{
 		if (m_PlId)
 		{
-			g_pMMPlugins->Unload(m_PlId, true, NULL, 0);
+			g_pMMPlugins->Unload(m_PlId, true, temp_buffer, sizeof(temp_buffer));
 		}
 	}
 
@@ -435,14 +437,16 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 		return FindExtensionByFile(path);
 	}
 
-	/* Make sure the file direction is right */
-	char path[PLATFORM_MAX_PATH];
-	g_LibSys.PathFormat(path, sizeof(path), "%s", file);
+	/* Chomp off the path */
+	char lookup[PLATFORM_MAX_PATH];
+	g_LibSys.GetFileFromPath(lookup, sizeof(lookup), file);
 
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
 		pExt = (*iter);
-		if (strcmp(pExt->GetFilename(), path) == 0)
+		char short_file[PLATFORM_MAX_PATH];
+		g_LibSys.GetFileFromPath(short_file, sizeof(short_file), pExt->GetFilename());
+		if (strcmp(lookup, short_file) == 0)
 		{
 			return pExt;
 		}
