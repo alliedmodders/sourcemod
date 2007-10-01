@@ -179,10 +179,12 @@ IPreparedQuery *SqDatabase::PrepareQuery(const char *query, char *error, size_t 
 			strncopy(error, msg, maxlength);
 		}
 		m_LastError.assign(msg);
+		#if 0 /* This didn't really seem like a good idea... */
 		if (stmt)
 		{
 			sqlite3_finalize(stmt);
 		}
+		#endif
 		return NULL;
 	}
 	return new SqQuery(this, stmt);
