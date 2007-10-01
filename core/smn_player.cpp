@@ -1002,6 +1002,8 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
 
+	pPlayer->MarkAsBeingKicked();
+
 	if (pPlayer->IsFakeClient())
 	{
 		char kickcmd[40];
@@ -1091,6 +1093,24 @@ static cell_t NotifyPostAdminCheck(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t IsClientInKickQueue(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+	else if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	return pPlayer->IsInKickQueue() ? 1 : 0;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -1140,6 +1160,7 @@ REGISTER_NATIVES(playernatives)
 	{"KickClient",				KickClient},
 	{"RunAdminCacheChecks",		RunAdminCacheChecks},
 	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
+	{"IsClientInKickQueue",		IsClientInKickQueue},
 	{NULL,						NULL}
 };
 

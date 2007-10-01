@@ -805,6 +805,7 @@ CPlayer::CPlayer()
 	m_TempAdmin = false;
 	m_Info = NULL;
 	m_bAdminCheckSignalled = false;
+	m_bIsInKickQueue = false;
 	m_LastPassword.clear();
 	m_LangId = LANGUAGE_ENGLISH;
 }
@@ -876,6 +877,7 @@ void CPlayer::Disconnect()
 	m_Info = NULL;
 	m_bAdminCheckSignalled = false;
 	m_UserId = -1;
+	m_bIsInKickQueue = false;
 }
 
 void CPlayer::SetName(const char *name)
@@ -1081,4 +1083,14 @@ int CPlayer::GetUserId()
 	}
 
 	return m_UserId;
+}
+
+bool CPlayer::IsInKickQueue()
+{
+	return m_bIsInKickQueue;
+}
+
+void CPlayer::MarkAsBeingKicked()
+{
+	m_bIsInKickQueue = true;
 }

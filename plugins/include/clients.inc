@@ -205,10 +205,21 @@ native bool:IsClientConnected(client);
 /**
  * Returns if a certain player has entered the game.
  *
- * @param client		Player index.
+ * @param client		Player index (index does not have to be connected).
  * @return				True if player has entered the game, false otherwise.
+ * @error				Invalid client index.
  */
 native bool:IsClientInGame(client);
+
+/**
+ * Returns if a client is in the "kick queue" (i.e. the client will be kicked 
+ * shortly and thus they should not appear as valid).
+ *
+ * @param client		Player index (must be connected).
+ * @return				True if in the kick queue, false otherwise.
+ * @error				Invalid client index.
+ */
+native bool:IsClientInKickQueue(client);
 
 /**
  * Backwards compatibility stock - use IsClientInGame

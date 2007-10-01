@@ -68,6 +68,8 @@ public:
 public:
 	void NotifyPostAdminChecks();
 	void DoBasicAdminChecks();
+	bool IsInKickQueue();
+	void MarkAsBeingKicked();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
@@ -81,6 +83,7 @@ private:
 	bool m_IsConnected;
 	bool m_IsInGame;
 	bool m_IsAuthorized;
+	bool m_bIsInKickQueue;
 	String m_Name;
 	String m_Ip;
 	String m_IpNoPort;
