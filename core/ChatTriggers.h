@@ -34,9 +34,7 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-
-#define SM_REPLY_CONSOLE	0
-#define SM_REPLY_CHAT		1
+#include <IGameHelpers.h>
 
 class ChatTriggers : public SMGlobalClass
 {

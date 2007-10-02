@@ -41,10 +41,13 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	5
+#define SMINTERFACE_PLAYERMANAGER_VERSION	6
 
 struct edict_t;
 class IPlayerInfo;
+
+#define SM_REPLY_CONSOLE	0			/**< Reply to console. */
+#define SM_REPLY_CHAT		1			/**< Reply to chat. */
 
 namespace SourceMod
 {
@@ -305,6 +308,21 @@ namespace SourceMod
 		 *						at least once, false otherwise.
 		 */
 		virtual bool IsServerActivated() =0;
+
+		/**
+		 * @brief Gets SourceMod's reply source.
+		 *
+		 * @return				ReplyTo source.
+		 */
+		virtual unsigned int GetReplyTo() =0;
+
+		/**
+		 * @brief Sets SourceMod's reply source.
+		 *
+		 * @param reply			Reply source.
+		 * @return				Old reply source.
+		 */
+		virtual unsigned int SetReplyTo(unsigned int reply) =0;
 	};
 }
 

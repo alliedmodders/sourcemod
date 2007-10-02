@@ -382,4 +382,3 @@ bool CHalfLife2::IsLANServer()
 
 	return (sv_lan->GetInt() != 0);
 }
-

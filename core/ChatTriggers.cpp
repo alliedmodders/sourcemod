@@ -33,6 +33,7 @@
 #include "ChatTriggers.h"
 #include "sm_stringutil.h"
 #include "ConCmdManager.h"
+#include <IPlayerHelpers.h>
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does */
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);

@@ -147,6 +147,8 @@ public:
 	bool CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id);
 	const char *GetPassInfoVar();
 	void RecheckAnyAdmins();
+	unsigned int GetReplyTo();
+	unsigned int SetReplyTo(unsigned int reply);
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 private:

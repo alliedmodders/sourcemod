@@ -43,6 +43,7 @@
 #include "TimerSys.h"
 #include "Translator.h"
 #include "Logger.h"
+#include "ChatTriggers.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -789,6 +790,16 @@ void PlayerManager::RecheckAnyAdmins()
 			m_Players[i].DoBasicAdminChecks();
 		}
 	}
+}
+
+unsigned int PlayerManager::GetReplyTo()
+{
+	return g_ChatTriggers.GetReplyTo();
+}
+
+unsigned int PlayerManager::SetReplyTo(unsigned int reply)
+{
+	return g_ChatTriggers.SetReplyTo(reply);
 }
 
 /*******************
