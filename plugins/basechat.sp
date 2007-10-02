@@ -44,6 +44,8 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+#define CHAT_SYMBOL '@'
+
 new String:g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Olive", "Lime", "Violet", "Lightblue"};
 new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{255,0,255},{0,255,255},{255,128,0},{255,0,128},{128,255,0},{0,255,128},{128,0,255},{0,128,255}};
 
@@ -93,16 +95,16 @@ public Action:Command_SayChat(client, args)
 		startidx = 1;
 	}
 	
-	if (text[startidx] != '@')
+	if (text[startidx] != CHAT_SYMBOL)
 		return Plugin_Continue;
 	
 	new msgStart = 1;
 	
-	if (text[startidx+1] == '@')
+	if (text[startidx+1] == CHAT_SYMBOL)
 	{
 		msgStart = 2;
 		
-		if (text[startidx+2] == '@')
+		if (text[startidx+2] == CHAT_SYMBOL)
 			msgStart = 3;
 	}
 	
@@ -162,7 +164,7 @@ public Action:Command_SayAdmin(client, args)
 	}
 	
 	decl String:text[192];
-	if (GetCmdArgString(text, sizeof(text)) < 1)
+	if (IsChatTrigger() || GetCmdArgString(text, sizeof(text)) < 1)
 	{
 		return Plugin_Continue;
 	}
@@ -174,7 +176,7 @@ public Action:Command_SayAdmin(client, args)
 		startidx = 1;
 	}
 	
-	if (text[startidx] != '@')
+	if (text[startidx] != CHAT_SYMBOL)
 		return Plugin_Continue;
 	
 	decl String:message[192];
