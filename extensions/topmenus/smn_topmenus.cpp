@@ -113,6 +113,7 @@ public:
 		int client, 
 		unsigned int object_id)
 	{
+		unsigned int old_reply = playerhelpers->SetReplyTo(SM_REPLY_CHAT);
 		m_pFunction->PushCell(m_hMenuHandle);
 		m_pFunction->PushCell(TopMenuAction_SelectOption);
 		m_pFunction->PushCell(object_id);
@@ -120,6 +121,7 @@ public:
 		m_pFunction->PushString("");
 		m_pFunction->PushCell(0);
 		m_pFunction->Execute(NULL);
+		playerhelpers->SetReplyTo(old_reply);
 	}
 
 	void OnTopMenuObjectRemoved(ITopMenu *menu, unsigned int object_id)
@@ -225,6 +227,8 @@ static cell_t AddToTopMenu(IPluginContext *pContext, const cell_t *params)
 		delete cb;
 		return 0;
 	}
+
+	cb->m_hMenuHandle = params[1];
 
 	return object_id;
 }
