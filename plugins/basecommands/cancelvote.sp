@@ -22,12 +22,23 @@ public AdminMenu_CancelVote(Handle:topmenu,
 	if (action == TopMenuAction_DrawOption)
 	{
 		Format(buffer, maxlength, "%T", "Cancel vote", param);
+
+		if (IsVoteInProgress())
+		{
+			return ITEMDRAW_DEFAULT;
+		}
+		else
+		{
+			return ITEMDRAW_IGNORE;
+		}
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
 		PerformCancelVote(param);
 		RedisplayAdminMenu(topmenu, param);	
 	}
+
+	return 0;
 }
 
 public Action:Command_CancelVote(client, args)
