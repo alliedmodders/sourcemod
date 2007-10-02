@@ -203,6 +203,11 @@
 	{
 		"en"			"Cancelled the vote."
 	}
+
+	"Cancel vote"
+	{
+		"en"			"Cancel vote"
+	}
 	
 	"Vote Select"
 	{
@@ -260,6 +265,11 @@
 	"Server Commands"
 	{
 		"en"			"Server Commands"
+	}
+
+	"Voting Commands"
+	{
+		"en"			"Voting Commands"
 	}
 	
 	"Reload admins"

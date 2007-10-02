@@ -28,6 +28,10 @@ public AdminMenu_CancelVote(Handle:topmenu,
 		PerformCancelVote(param);
 		RedisplayAdminMenu(topmenu, param);	
 	}
+	else if (action == TopMenuAction_DrawOption)
+	{
+		buffer[0] = IsVoteInProgress() ? ITEMDRAW_DEFAULT : ITEMDRAW_IGNORE;
+	}
 }
 
 public Action:Command_CancelVote(client, args)

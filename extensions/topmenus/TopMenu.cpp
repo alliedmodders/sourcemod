@@ -462,6 +462,12 @@ void TopMenu::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, uns
 
 	obj = *pObject;
 
+	style = obj->callbacks->OnTopMenuDrawOption(this, client, obj->object_id);
+	if (style != ITEMDRAW_DEFAULT)
+	{
+		return;
+	}
+
 	if (obj->cmdname[0] == '\0')
 	{
 		return;
@@ -496,7 +502,7 @@ unsigned int TopMenu::OnMenuDisplayItem(IBaseMenu *menu,
 
 	/* Ask the object to render the text for this client */
 	char renderbuf[64];
-	obj->callbacks->OnTopMenuDrawOption(this, client, obj->object_id, renderbuf, sizeof(renderbuf));
+	obj->callbacks->OnTopMenuDisplayOption(this, client, obj->object_id, renderbuf, sizeof(renderbuf));
 
 	/* Build the new draw info */
 	ItemDrawInfo new_dr = dr;
@@ -584,7 +590,7 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 		{
 			obj_by_name_t *temp_obj = &item_list[i];
 			topmenu_object_t *obj = m_Categories[m_UnsortedCats[i]]->obj;
-			obj->callbacks->OnTopMenuDrawOption(this,
+			obj->callbacks->OnTopMenuDisplayOption(this,
 				client, 
 				obj->object_id,
 				temp_obj->name,
@@ -610,7 +616,7 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 
 	/* Set the menu's title */
 	char renderbuf[128];
-	m_pTitle->OnTopMenuDrawTitle(this, client, 0, renderbuf, sizeof(renderbuf));
+	m_pTitle->OnTopMenuDisplayTitle(this, client, 0, renderbuf, sizeof(renderbuf));
 	root_menu->SetDefaultTitle(renderbuf);
 
 	/* The client is now fully updated */
@@ -676,7 +682,7 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category)
 		{
 			obj_by_name_t *item = &item_list[i];
 			topmenu_object_t *obj = cat->unsorted[i];
-			obj->callbacks->OnTopMenuDrawOption(this,
+			obj->callbacks->OnTopMenuDisplayOption(this,
 				client,
 				obj->object_id,
 				item->name,
@@ -698,7 +704,7 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category)
 
 	/* Set the menu's title */
 	char renderbuf[128];
-	cat->obj->callbacks->OnTopMenuDrawTitle(this, 
+	cat->obj->callbacks->OnTopMenuDisplayTitle(this, 
 		client, 
 		cat->obj->object_id, 
 		renderbuf, 

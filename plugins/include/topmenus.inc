@@ -45,7 +45,7 @@ enum TopMenuAction
 	/**
 	 * An option is being drawn for a menu (or for sorting purposes).
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
+	 * INPUT : TopMenu Handle, object ID, client index.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
 	TopMenuAction_DisplayOption = 0,
@@ -56,7 +56,7 @@ enum TopMenuAction
 	 * Note: The Object ID will be INVALID_TOPMENUOBJECT if drawing the 
 	 * root title.  Otherwise, the Object ID is a category.
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
+	 * INPUT : TopMenu Handle, object ID, client index.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
 	TopMenuAction_DisplayTitle = 1,
@@ -66,9 +66,19 @@ enum TopMenuAction
 	 *
 	 * The Object ID will always be an item (not a category).
 	 *
-	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
+	 * INPUT : TopMenu Handle, object ID, client index.
 	 */
 	TopMenuAction_SelectOption = 2,
+
+	/**
+	 * A menu option is being drawn and its flags can be overridden.
+	 *
+	 * INPUT : TopMenu Handle, object ID, client index.
+	 * OUTPUT: The first byte of the 'buffer' string should be set 
+	 *		   to the desired flags.  By default, it will contain
+	 *		   ITEMDRAW_DEFAULT.
+	 */
+	 TopMenuAction_DrawOption = 3,
 };
 
 /**

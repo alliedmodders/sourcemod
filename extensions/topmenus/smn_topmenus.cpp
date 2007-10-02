@@ -63,9 +63,10 @@ void Shutdown_Natives()
 
 enum TopMenuAction
 {
-	TopMenuAction_DrawOption = 0,
-	TopMenuAction_DrawTitle = 1,
+	TopMenuAction_DisplayOption = 0,
+	TopMenuAction_DisplayTitle = 1,
 	TopMenuAction_SelectOption = 2,
+	TopMenuAction_DrawOption = 3,
 };
 
 class TopMenuCallbacks : public ITopMenuObjectCallbacks
@@ -76,32 +77,43 @@ public:
 	}
 
 	unsigned int OnTopMenuDrawOption(ITopMenu *menu,
+		int client,
+		unsigned int object_id)
+	{
+		char buffer[2] = {ITEMDRAW_DEFAULT, 0x0};
+		m_pFunction->PushCell(m_hMenuHandle);
+		m_pFunction->PushCell(TopMenuAction_DrawOption);
+		m_pFunction->PushCell(object_id);
+		m_pFunction->PushCell(client);
+		m_pFunction->PushStringEx(buffer, sizeof(buffer), 0, SM_PARAM_COPYBACK);
+		m_pFunction->PushCell(sizeof(buffer));
+		m_pFunction->Execute(NULL);
+		return (unsigned int)buffer[0];
+	}
+
+	void OnTopMenuDisplayOption(ITopMenu *menu,
 		int client, 
 		unsigned int object_id,
 		char buffer[], 
 		size_t maxlength)
 	{
-		cell_t result = ITEMDRAW_DEFAULT;
-
 		m_pFunction->PushCell(m_hMenuHandle);
-		m_pFunction->PushCell(TopMenuAction_DrawOption);
+		m_pFunction->PushCell(TopMenuAction_DisplayOption);
 		m_pFunction->PushCell(object_id);
 		m_pFunction->PushCell(client);
 		m_pFunction->PushStringEx(buffer, maxlength, 0, SM_PARAM_COPYBACK);
 		m_pFunction->PushCell(maxlength);
-		m_pFunction->Execute(&result);
-
-		return result;
+		m_pFunction->Execute(NULL);
 	}
 
-	void OnTopMenuDrawTitle(ITopMenu *menu,
+	void OnTopMenuDisplayTitle(ITopMenu *menu,
 		int client,
 		unsigned int object_id,
 		char buffer[],
 		size_t maxlength)
 	{
 		m_pFunction->PushCell(m_hMenuHandle);
-		m_pFunction->PushCell(TopMenuAction_DrawTitle);
+		m_pFunction->PushCell(TopMenuAction_DisplayTitle);
 		m_pFunction->PushCell(object_id);
 		m_pFunction->PushCell(client);
 		m_pFunction->PushStringEx(buffer, maxlength, 0, SM_PARAM_COPYBACK);

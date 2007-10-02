@@ -43,7 +43,7 @@
  */
 
 #define SMINTERFACE_TOPMENUS_NAME		"ITopMenus"
-#define SMINTERFACE_TOPMENUS_VERSION	1
+#define SMINTERFACE_TOPMENUS_VERSION	2
 
 namespace SourceMod
 {
@@ -87,22 +87,42 @@ namespace SourceMod
 		/**
 		 * @brief Requests how the given item should be drawn for a client.
 		 *
+		 * Unlike the other callbacks, this is only called in determining 
+		 * whether to enable, disable, or ignore an item on a client's menu.
+		 *
+		 * @param menu			A pointer to the parent ITopMenu.
+		 * @param client		Client index.
+		 * @param object_id		Object ID returned from ITopMenu::AddToMenu().
+		 * @return				ITEMDRAW flags to disable or not draw the 
+		 *						option for this operation.
+		 */
+		virtual unsigned int OnTopMenuDrawOption(ITopMenu *menu,
+			int client, 
+			unsigned int object_id)
+		{ 
+			return ITEMDRAW_DEFAULT;
+		}
+
+		/**
+		 * @brief Requests how the given item should be displayed for a client.
+		 *
+		 * This can be called either while drawing a menu or to decide how to 
+		 * sort a menu for a player.
+		 *
 		 * @param menu			A pointer to the parent ITopMenu.
 		 * @param client		Client index.
 		 * @param object_id		Object ID returned from ITopMenu::AddToMenu().
 		 * @param buffer		Buffer to store rendered text.
 		 * @param maxlength		Maximum length of the rendering buffer.
-		 * @return				ITEMDRAW flags to disable or not draw the 
-		 *						option for this operation.
 		 */
-		virtual unsigned int OnTopMenuDrawOption(ITopMenu *menu,
+		virtual void OnTopMenuDisplayOption(ITopMenu *menu,
 			int client, 
 			unsigned int object_id,
 			char buffer[], 
 			size_t maxlength) =0;
 
 		/**
-		 * @brief Requests how the given item's title should be drawn for
+		 * @brief Requests how the given item's title should be displayed for
 		 * a client.  This is called on any object_id that is a category.
 		 *
 		 * @param menu			A pointer to the parent ITopMenu.
@@ -112,7 +132,7 @@ namespace SourceMod
 		 * @param buffer		Buffer to store rendered text.
 		 * @param maxlength		Maximum length of the rendering buffer.
 		 */
-		virtual void OnTopMenuDrawTitle(ITopMenu *menu,
+		virtual void OnTopMenuDisplayTitle(ITopMenu *menu,
 			int client,
 			unsigned int object_id,
 			char buffer[],
@@ -223,6 +243,14 @@ namespace SourceMod
 	public:
 		virtual const char *GetInterfaceName() =0;
 		virtual unsigned int GetInterfaceVersion() =0;
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < 2)
+			{
+				return false;
+			}
+			return SMInterface::IsVersionCompatible(version);
+		}
 	public:
 		/**
 		 * @brief Creates a new top-level menu.
@@ -243,3 +271,4 @@ namespace SourceMod
 }
 
 #endif //_INCLUDE_SOURCEMOD_MAIN_MENU_INTERFACE_H_
+
