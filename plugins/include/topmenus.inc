@@ -47,10 +47,8 @@ enum TopMenuAction
 	 *
 	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
-	 * OUTPUT: Must return an ITEMDRAW constant.  The return value may be ignored 
-	 *		   if the item is simply being sorted into the menu.
 	 */
-	TopMenuAction_DrawOption = 0,
+	TopMenuAction_DisplayOption = 0,
 	
 	/**
 	 * The title of a menu is being drawn for a given object.
@@ -61,7 +59,7 @@ enum TopMenuAction
 	 * INPUT : TopMenu Handle, object ID, client index in extra parameter.
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
-	TopMenuAction_DrawTitle = 1,
+	TopMenuAction_DisplayTitle = 1,
 	
 	/**
 	 * A menu option has been selected.

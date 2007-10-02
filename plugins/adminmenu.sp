@@ -113,7 +113,7 @@ public CategoryHandler(Handle:topmenu,
 						String:buffer[],
 						maxlength)
 {
-	if (action == TopMenuAction_DrawTitle)
+	if (action == TopMenuAction_DisplayTitle)
 	{
 		if (object_id == INVALID_TOPMENUOBJECT)
 		{
@@ -132,7 +132,7 @@ public CategoryHandler(Handle:topmenu,
 			Format(buffer, maxlength, "%T:", "Voting Commands", param);
 		}
 	}
-	else if (action == TopMenuAction_DrawOption)
+	else if (action == TopMenuAction_DisplayOption)
 	{
 		if (object_id == obj_playercmds)
 		{
@@ -146,7 +146,6 @@ public CategoryHandler(Handle:topmenu,
 		{
 			Format(buffer, maxlength, "%T", "Voting Commands", param);
 		}
-		return ITEMDRAW_DEFAULT;
 	}
 	
 	return 0;

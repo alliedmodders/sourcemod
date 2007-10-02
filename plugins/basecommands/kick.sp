@@ -39,7 +39,7 @@ public AdminMenu_Kick(Handle:topmenu,
 					  String:buffer[],
 					  maxlength)
 {
-	if (action == TopMenuAction_DrawOption)
+	if (action == TopMenuAction_DisplayOption)
 	{
 		Format(buffer, maxlength, "%T", "Kick player", param);
 	}
