@@ -154,6 +154,7 @@ SetupTimeleftTimer()
 		new startTime = GetConVarInt(g_Cvar_StartTime) * 60;
 		if (time - startTime < 0)
 		{
+			LogMessage("Vote triggered in SetupTimelefTimer().");
 			InitiateVote();		
 		}
 		else
@@ -178,10 +179,12 @@ public Action:Timer_StartMapVote(Handle:timer)
 	
 	if (timer == g_RetryTimer)
 	{
+		LogMessage("Vote triggered in Timer_StartMapVote(), retry.");
 		g_RetryTimer = INVALID_HANDLE;
 	}
 	else
 	{
+		LogMessage("Vote triggered in Timer_StartMapVote(), normal.");
 		g_VoteTimer = INVALID_HANDLE;
 	}
 
@@ -244,6 +247,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		{
 			if (team[1] > winlimit - GetConVarInt(g_Cvar_StartRounds))
 			{
+				LogMessage("Vote triggered in Event_RoundEnd(), winlimit.");
 				InitiateVote();
 			}
 		}
@@ -256,6 +260,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		{
 			if (total > maxrounds - GetConVarInt(g_Cvar_StartRounds))
 			{
+				LogMessage("Vote triggered in Event_RoundEnd(), maxrounds.");
 				InitiateVote();
 			}			
 		}
@@ -277,12 +282,14 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	new fragger = GetClientOfUserId(GetEventInt(event, "attacker"));
 	if (fragger && GetClientFrags(fragger) > (GetConVarInt(g_Cvar_Fraglimit) - GetConVarInt(g_Cvar_StartFrags)))
 	{
+		LogMessage("Vote triggered in Event_PlayerDeath(), flaglimit.");
 		InitiateVote();
 	}
 }
 
 public Action:Command_Mapvote(client, args)
-{	
+{
+	LogMessage("Vote triggered in Command_Mapvote(), user command.");
 	InitiateVote();
 
 	return Plugin_Handled;	
