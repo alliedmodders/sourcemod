@@ -49,6 +49,7 @@ public Plugin:myinfo =
 new Handle:hTopMenu = INVALID_HANDLE;
 
 #include "basecommands/kick.sp"
+#include "basecommands/reloadadmins.sp"
 
 public OnPluginStart()
 {
@@ -95,6 +96,19 @@ public OnAdminMenuReady(Handle:topmenu)
 			"sm_kick",
 			ADMFLAG_KICK);
 	}
+
+	new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
+
+	if (server_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu,
+			"Reload Admins",
+			TopMenuObject_Item,
+			AdminMenu_ReloadAdmins,
+			server_commands,
+			"sm_reloadadmins",
+			ADMFLAG_BAN);
+	}
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -103,18 +117,6 @@ public OnLibraryRemoved(const String:name[])
 	{
 		hTopMenu = INVALID_HANDLE;
 	}
-}
-
-public Action:Command_ReloadAdmins(client, args)
-{
-	/* Dump it all! */
-	DumpAdminCache(AdminCache_Groups, true);
-	DumpAdminCache(AdminCache_Overrides, true);
-
-	LogAction(client, -1, "\"%L\" refreshed the admin cache.", client);
-	ReplyToCommand(client, "[SM] %t", "Admin cache refreshed");
-
-	return Plugin_Handled;
 }
 
 #define FLAG_STRINGS		14

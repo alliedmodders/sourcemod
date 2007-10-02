@@ -54,6 +54,7 @@ new Handle:hAdminMenu = INVALID_HANDLE;
 
 /* Top menu objects */
 new TopMenuObject:obj_playercmds = INVALID_TOPMENUOBJECT;
+new TopMenuObject:obj_servercmds = INVALID_TOPMENUOBJECT;
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -79,6 +80,12 @@ public OnAllPluginsLoaded()
 	
 	obj_playercmds = AddToTopMenu(hAdminMenu, 
 		"PlayerCommands",
+		TopMenuObject_Category,
+		CategoryHandler,
+		INVALID_TOPMENUOBJECT);
+
+	obj_servercmds = AddToTopMenu(hAdminMenu,
+		"ServerCommands",
 		TopMenuObject_Category,
 		CategoryHandler,
 		INVALID_TOPMENUOBJECT);
@@ -109,12 +116,20 @@ public CategoryHandler(Handle:topmenu,
 		{
 			Format(buffer, maxlength, "%T:", "Player Commands", param);
 		}
+		else if (object_id == obj_servercmds)
+		{
+			Format(buffer, maxlength, "%T:", "Server Commands", param);
+		}
 	}
 	else if (action == TopMenuAction_DrawOption)
 	{
 		if (object_id == obj_playercmds)
 		{
 			Format(buffer, maxlength, "%T", "Player Commands", param);
+		}
+		else if (object_id == obj_servercmds)
+		{
+			Format(buffer, maxlength, "%T", "Server Commands", param);
 		}
 		return ITEMDRAW_DEFAULT;
 	}
@@ -174,3 +189,4 @@ stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only)
 	
 	return num_clients;
 }
+

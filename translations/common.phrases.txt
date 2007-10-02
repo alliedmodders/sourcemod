@@ -256,5 +256,10 @@
 	{
 		"en"			"Player Commands"
 	}
+
+	"Server Commands"
+	{
+		"en"			"Server Commands"
+	}
 }
 

@@ -52,6 +52,8 @@
 
 /** Category for player commands. */
 #define ADMINMENU_PLAYERCOMMANDS		"PlayerCommands"
+/** Category for server commands. */
+#define ADMINMENU_SERVERCOMMANDS		"ServerCommands"
 
 /**
  * Called when the admin menu is created and 3rd party plugins can grab 
@@ -90,6 +92,24 @@ native Handle:GetAdminTopMenu();
  * @return				Number of clients added.
  */
 native AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only=true);
+
+/**
+ * Re-displays the admin menu to a client after selecting an item.
+ * Auto-aborts if the Handle is invalid.
+ *
+ * @param topmenu		TopMenu Handle.
+ * @param client		Client index.
+ * @return				True on success, false on failure.
+ */
+stock bool:RedisplayAdminMenu(Handle:topmenu, client)
+{
+	if (topmenu == INVALID_HANDLE)
+	{
+		return false;
+	}
+
+	return DisplayTopMenu(topmenu, client, TopMenuPosition_LastCategory);
+}
 
 /* DO NOT EDIT BELOW THIS LINE */
 
