@@ -18,7 +18,7 @@ public AdminMenu_ReloadAdmins(Handle:topmenu,
 {
 	if (action == TopMenuAction_DrawOption)
 	{
-		Format(buffer, maxlength, "%T", "Kick player", param);
+		Format(buffer, maxlength, "%T", "Reload admins", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -33,5 +33,3 @@ public Action:Command_ReloadAdmins(client, args)
 
 	return Plugin_Handled;
 }
-
-

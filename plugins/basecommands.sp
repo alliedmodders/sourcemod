@@ -54,6 +54,7 @@ new Handle:hTopMenu = INVALID_HANDLE;
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+	LoadTranslations("plugin.basecommands");
 
 	RegAdminCmd("sm_kick", Command_Kick, ADMFLAG_KICK, "sm_kick <#userid|name> [reason]");
 	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");

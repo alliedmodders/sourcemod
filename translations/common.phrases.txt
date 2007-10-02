@@ -261,5 +261,10 @@
 	{
 		"en"			"Server Commands"
 	}
+	
+	"Reload admins"
+	{
+		"en"			"Reload admins"
+	}
 }
 
