@@ -61,3 +61,4 @@ void TopMenuExtension::SDK_OnUnload()
 	playerhelpers->RemoveClientListener(&g_TopMenus);
 	plsys->RemovePluginsListener(&g_TopMenus);
 }
+

@@ -85,7 +85,7 @@ public:
 		m_pFunction->PushCell(TopMenuAction_DrawOption);
 		m_pFunction->PushCell(object_id);
 		m_pFunction->PushCell(client);
-		m_pFunction->PushStringEx(buffer, sizeof(buffer), 0, SM_PARAM_COPYBACK);
+		m_pFunction->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 		m_pFunction->PushCell(sizeof(buffer));
 		m_pFunction->Execute(NULL);
 		return (unsigned int)buffer[0];

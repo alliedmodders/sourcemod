@@ -113,6 +113,7 @@ public CategoryHandler(Handle:topmenu,
 						String:buffer[],
 						maxlength)
 {
+	PrintToServer("CategoryHandler(%x, %d, %x)", topmenu, action, object_id);
 	if (action == TopMenuAction_DisplayTitle)
 	{
 		if (object_id == INVALID_TOPMENUOBJECT)
@@ -147,8 +148,6 @@ public CategoryHandler(Handle:topmenu,
 			Format(buffer, maxlength, "%T", "Voting Commands", param);
 		}
 	}
-	
-	return 0;
 }
 
 public __GetAdminTopMenu(Handle:plugin, numParams)

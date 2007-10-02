@@ -354,6 +354,10 @@ bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition po
 		pClient->last_category < m_Categories.size())
 	{
 		return_value = DisplayCategory(client, pClient->last_category, hold_time, true);
+		if (!return_value)
+		{
+			return_value = pClient->root->DisplayAtItem(client, hold_time, pClient->last_root_pos);
+		}
 	}
 	else if (position == TopMenuPosition_LastRoot)
 	{
@@ -424,7 +428,11 @@ void TopMenu::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsi
 			if (m_Categories[i]->obj == obj)
 			{
 				pClient->last_root_pos = item_on_page;
-				DisplayCategory(client, (unsigned int)i, MENU_TIME_FOREVER, false);
+				if (!DisplayCategory(client, (unsigned int)i, MENU_TIME_FOREVER, false))
+				{
+					/* If we can't display the category, re-display the root menu */
+					DisplayMenu(client, MENU_TIME_FOREVER, TopMenuPosition_LastRoot);
+				}
 				break;
 			}
 		}
