@@ -42,6 +42,7 @@
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
+#include "ChatTriggers.h"
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -261,11 +262,13 @@ void CPanelHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
 {
 	if (m_pFunc)
 	{
+		unsigned int old_reply = g_ChatTriggers.SetReplyTo(SM_REPLY_CHAT);
 		m_pFunc->PushCell(BAD_HANDLE);
 		m_pFunc->PushCell(MenuAction_Select);
 		m_pFunc->PushCell(client);
 		m_pFunc->PushCell(item);
 		m_pFunc->Execute(NULL);
+		g_ChatTriggers.SetReplyTo(old_reply);
 	}
 	g_MenuHelpers.FreePanelHandler(this);
 }
@@ -320,14 +323,18 @@ void CMenuHandler::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item,
 
 	s_CurSelectPosition = &first_item;
 
+	unsigned int old_reply = g_ChatTriggers.SetReplyTo(SM_REPLY_CHAT);
 	DoAction(menu, MenuAction_Select, client, item);
+	g_ChatTriggers.SetReplyTo(old_reply);
 
 	s_CurSelectPosition = old_pos;
 }
 
 void CMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason)
 {
+	unsigned int old_reply = g_ChatTriggers.SetReplyTo(SM_REPLY_CHAT);
 	DoAction(menu, MenuAction_Cancel, client, (cell_t)reason);
+	g_ChatTriggers.SetReplyTo(old_reply);
 }
 
 void CMenuHandler::OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
