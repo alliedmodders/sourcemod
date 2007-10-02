@@ -55,6 +55,7 @@ new Handle:hAdminMenu = INVALID_HANDLE;
 /* Top menu objects */
 new TopMenuObject:obj_playercmds = INVALID_TOPMENUOBJECT;
 new TopMenuObject:obj_servercmds = INVALID_TOPMENUOBJECT;
+new TopMenuObject:obj_votingcmds = INVALID_TOPMENUOBJECT;
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -89,6 +90,12 @@ public OnAllPluginsLoaded()
 		TopMenuObject_Category,
 		CategoryHandler,
 		INVALID_TOPMENUOBJECT);
+
+	obj_votingcmds = AddToTopMenu(hAdminMenu,
+		"VotingCommands",
+		TopMenuObject_Category,
+		CategoryHandler,
+		INVALID_TOPMENUOBJECT);
 	
 	Call_StartForward(hOnAdminMenuCreated);
 	Call_PushCell(hAdminMenu);
@@ -120,6 +127,10 @@ public CategoryHandler(Handle:topmenu,
 		{
 			Format(buffer, maxlength, "%T:", "Server Commands", param);
 		}
+		else if (object_id == obj_votingcmds)
+		{
+			Format(buffer, maxlength, "%T:", "Voting Commands", param);
+		}
 	}
 	else if (action == TopMenuAction_DrawOption)
 	{
@@ -130,6 +141,10 @@ public CategoryHandler(Handle:topmenu,
 		else if (object_id == obj_servercmds)
 		{
 			Format(buffer, maxlength, "%T", "Server Commands", param);
+		}
+		else if (object_id == obj_votingcmds)
+		{
+			Format(buffer, maxlength, "%T", "Voting Commands", param);
 		}
 		return ITEMDRAW_DEFAULT;
 	}

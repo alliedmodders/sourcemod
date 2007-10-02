@@ -54,6 +54,8 @@
 #define ADMINMENU_PLAYERCOMMANDS		"PlayerCommands"
 /** Category for server commands. */
 #define ADMINMENU_SERVERCOMMANDS		"ServerCommands"
+/** Category for voting commands. */
+#define ADMINMENU_VOTINGCOMMANDS		"VotingCommands"
 
 /**
  * Called when the admin menu is created and 3rd party plugins can grab 

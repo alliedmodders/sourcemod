@@ -50,6 +50,7 @@ new Handle:hTopMenu = INVALID_HANDLE;
 
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
+#include "basecommands/cancelvote.sp"
 
 public OnPluginStart()
 {
@@ -109,6 +110,19 @@ public OnAdminMenuReady(Handle:topmenu)
 			server_commands,
 			"sm_reloadadmins",
 			ADMFLAG_BAN);
+	}
+
+	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+
+	if (voting_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu,
+			"Cancel Vote",
+			TopMenuObject_Item,
+			AdminMenu_CancelVote,
+			voting_commands,
+			"sm_cancelvote",
+			ADMFLAG_VOTE);
 	}
 }
 
@@ -413,20 +427,5 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	ServerCommand("changelevel \"%s\"", map);
 
 	return Plugin_Stop;
-}
-
-public Action:Command_CancelVote(client, args)
-{
-	if (!IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote Not In Progress");
-		return Plugin_Handled;
-	}
-
-	ShowActivity(client, "%t", "Cancelled Vote");
-	
-	CancelVote();
-	
-	return Plugin_Handled;
 }
 
