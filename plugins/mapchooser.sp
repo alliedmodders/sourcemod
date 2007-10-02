@@ -70,6 +70,7 @@ new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_OldMapList = INVALID_HANDLE;
 new Handle:g_NextMapList = INVALID_HANDLE;
 new Handle:g_VoteMenu = INVALID_HANDLE;
+new Handle:g_TeamScores = INVALID_HANDLE;
 
 new bool:g_HasVoteStarted;
 new g_mapFileTime;
@@ -81,6 +82,7 @@ public OnPluginStart()
 	g_MapList = CreateArray(33);
 	g_OldMapList = CreateArray(33);
 	g_NextMapList = CreateArray(33);
+	g_TeamScores = CreateArray(2);
 
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
 	g_Cvar_StartRounds = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining.", _, true, 1.0);
@@ -154,7 +156,6 @@ SetupTimeleftTimer()
 		new startTime = GetConVarInt(g_Cvar_StartTime) * 60;
 		if (time - startTime < 0)
 		{
-			LogMessage("Vote triggered in SetupTimelefTimer().");
 			InitiateVote();		
 		}
 		else
@@ -179,12 +180,10 @@ public Action:Timer_StartMapVote(Handle:timer)
 	
 	if (timer == g_RetryTimer)
 	{
-		LogMessage("Vote triggered in Timer_StartMapVote(), retry.");
 		g_RetryTimer = INVALID_HANDLE;
 	}
 	else
 	{
-		LogMessage("Vote triggered in Timer_StartMapVote(), normal.");
 		g_VoteTimer = INVALID_HANDLE;
 	}
 
@@ -196,7 +195,7 @@ public Action:Timer_StartMapVote(Handle:timer)
 /* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!GetArraySize(g_MapList))
+	if (!GetArraySize(g_MapList) || g_HasVoteStarted)
 	{
 		return;
 	}
@@ -209,18 +208,12 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	static total;
-	static Handle:teamArray;
-	if (teamArray == INVALID_HANDLE)
-	{
-		teamArray = CreateArray(2);		
-	}
-	
 	total++;
 	
 	new team[2], teamPos = -1;
-	for (new i; i < GetArraySize(teamArray); i++)
+	for (new i; i < GetArraySize(g_TeamScores); i++)
 	{
-		GetArrayArray(teamArray, i, team);
+		GetArrayArray(g_TeamScores, i, team);
 		if (team[0] == winner)
 		{
 			teamPos = i;
@@ -232,12 +225,12 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		team[0] = winner;
 		team[1] = 1;
-		PushArrayArray(teamArray, team);
+		PushArrayArray(g_TeamScores, team);
 	}
 	else
 	{
 		team[1]++;
-		SetArrayArray(teamArray, teamPos, team);
+		SetArrayArray(g_TeamScores, teamPos, team);
 	}	
 	
 	if (g_Cvar_Winlimit != INVALID_HANDLE)
@@ -245,9 +238,8 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		new winlimit = GetConVarInt(g_Cvar_Winlimit);
 		if (winlimit)
 		{
-			if (team[1] > winlimit - GetConVarInt(g_Cvar_StartRounds))
+			if (team[1] >= (winlimit - GetConVarInt(g_Cvar_StartRounds)))
 			{
-				LogMessage("Vote triggered in Event_RoundEnd(), winlimit.");
 				InitiateVote();
 			}
 		}
@@ -258,9 +250,8 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
 		if (maxrounds)
 		{
-			if (total > maxrounds - GetConVarInt(g_Cvar_StartRounds))
+			if (total >= (maxrounds - GetConVarInt(g_Cvar_StartRounds)))
 			{
-				LogMessage("Vote triggered in Event_RoundEnd(), maxrounds.");
 				InitiateVote();
 			}			
 		}
@@ -269,7 +260,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
-	if (!GetArraySize(g_MapList) || g_Cvar_Fraglimit == INVALID_HANDLE)
+	if (!GetArraySize(g_MapList) || g_Cvar_Fraglimit == INVALID_HANDLE || g_HasVoteStarted)
 	{
 		return;
 	}
@@ -280,16 +271,14 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 	}
 
 	new fragger = GetClientOfUserId(GetEventInt(event, "attacker"));
-	if (fragger && GetClientFrags(fragger) > (GetConVarInt(g_Cvar_Fraglimit) - GetConVarInt(g_Cvar_StartFrags)))
+	if (fragger && GetClientFrags(fragger) >= (GetConVarInt(g_Cvar_Fraglimit) - GetConVarInt(g_Cvar_StartFrags)))
 	{
-		LogMessage("Vote triggered in Event_PlayerDeath(), flaglimit.");
 		InitiateVote();
 	}
 }
 
 public Action:Command_Mapvote(client, args)
 {
-	LogMessage("Vote triggered in Command_Mapvote(), user command.");
 	InitiateVote();
 
 	return Plugin_Handled;	
