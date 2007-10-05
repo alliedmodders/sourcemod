@@ -62,6 +62,8 @@ new Handle:g_Cvar_ExtendFragStep = INVALID_HANDLE;
 new Handle:g_Cvar_Mapfile = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
 new Handle:g_Cvar_IncludeMaps = INVALID_HANDLE;
+new Handle:g_Cvar_NoVoteMode = INVALID_HANDLE;
+new Handle:g_Cvar_Extend = INVALID_HANDLE;
 
 new Handle:g_VoteTimer = INVALID_HANDLE;
 new Handle:g_RetryTimer = INVALID_HANDLE;
@@ -74,6 +76,8 @@ new Handle:g_TeamScores = INVALID_HANDLE;
 
 new bool:g_HasVoteStarted;
 new g_mapFileTime;
+
+#define VOTE_EXTEND "##extend##"
 
 public OnPluginStart()
 {
@@ -96,6 +100,8 @@ public OnPluginStart()
 	g_Cvar_Mapfile = CreateConVar("sm_mapvote_file", "configs/maps.ini", "Map file to use. (Def sourcemod/configs/maps.ini)");
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
 	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
+	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
+	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "1", "Specifies whether or not MapChooser will allow the map to be extended.", _, true, 0.0, true, 1.0);
 
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 
@@ -130,6 +136,7 @@ public OnMapStart()
 	{
 		CreateNextVote();
 		SetupTimeleftTimer();
+		SetConVarString(g_Cvar_Nextmap, "Pending Vote");
 	}
 }
 
@@ -309,30 +316,33 @@ InitiateVote()
 		AddMenuItem(g_VoteMenu, map, map);
 	}
 
-	new bool:allowExtend, time;
-	if (GetMapTimeLimit(time) && time > 0 && time < GetConVarInt(g_Cvar_ExtendTimeMax))
+	if (GetConVarBool(g_Cvar_Extend))
 	{
-		allowExtend = true;
-	}
-	
-	if (g_Cvar_Winlimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundMax))
-	{
-		allowExtend = true;
-	}	
-	
-	if (g_Cvar_Maxrounds != INVALID_HANDLE && GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundMax))
-	{
-		allowExtend = true;
-	}
-	
-	if (g_Cvar_Fraglimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Fraglimit) < GetConVarInt(g_Cvar_ExtendFragMax))
-	{
-		allowExtend = true;
-	}
+		new bool:allowExtend, time;
+		if (GetMapTimeLimit(time) && time > 0 && time < GetConVarInt(g_Cvar_ExtendTimeMax))
+		{
+			allowExtend = true;
+		}
 
-	if (allowExtend)
-	{
-		AddMenuItem(g_VoteMenu, "##extend##", "Extend Map");
+		if (g_Cvar_Winlimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundMax))
+		{
+			allowExtend = true;
+		}	
+	
+		if (g_Cvar_Maxrounds != INVALID_HANDLE && GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundMax))
+		{
+			allowExtend = true;
+		}
+	
+		if (g_Cvar_Fraglimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Fraglimit) < GetConVarInt(g_Cvar_ExtendFragMax))
+		{
+			allowExtend = true;
+		}
+
+		if (allowExtend)
+		{
+			AddMenuItem(g_VoteMenu, VOTE_EXTEND, "Extend Map");
+		}
 	}
 
 	SetMenuExitButton(g_VoteMenu, false);
@@ -367,7 +377,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			{
 				decl String:map[64], String:buffer[255];
 				GetMenuItem(menu, param2, map, sizeof(map));
-				if (strcmp(map, "##extend##", false))
+				if (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
 					Format(buffer, sizeof(buffer), "%T", "Extend Map", param1);
 					return RedrawMenuItem(buffer);
@@ -389,14 +399,14 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 		case MenuAction_VoteCancel:
 		{
 			// If we receive 0 votes, pick at random.
-			if (param1 == VoteCancel_NoVotes)
+			if (param1 == VoteCancel_NoVotes && GetConVarBool(g_Cvar_NoVoteMode))
 			{
 				new count = GetMenuItemCount(menu);
 				new item = GetRandomInt(0, count - 1);
 				decl String:map[32];
 				GetMenuItem(menu, item, map, sizeof(map));
 				
-				while (strcmp(map, "##extend##", false) == 0)
+				while (strcmp(map, VOTE_EXTEND, false) == 0)
 				{
 					item = GetRandomInt(0, count - 1);
 					GetMenuItem(menu, item, map, sizeof(map));
@@ -415,7 +425,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			decl String:map[32];
 			GetMenuItem(menu, param1, map, sizeof(map));
 
-			if (strcmp(map, "##extend##", false) == 0)
+			if (strcmp(map, VOTE_EXTEND, false) == 0)
 			{
 				new time;
 				if (GetMapTimeLimit(time))

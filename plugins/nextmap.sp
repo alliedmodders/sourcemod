@@ -223,6 +223,11 @@ public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playe
 		
 		GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
 		
+		if (!IsMapValid(map))
+		{
+			GetArrayString(g_MapList, g_MapPos, map, sizeof(map));
+		}
+		
 		if (fChatTime < 2.0)
 			SetConVarFloat(g_Cvar_Chattime, 2.0);
 		
@@ -311,7 +316,6 @@ FindAndSetNextMap()
 	{
 		decl String:current[64];
 		GetCurrentMap(current, 64);
-		
 
 		for (new i = 0; i < mapCount; i++)
 		{
