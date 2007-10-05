@@ -504,12 +504,12 @@ CreateNextVote()
 	
 	for (new i = 0; i < limit; i++)
 	{
-		new b = GetRandomInt(0, g_MapList - 1);
+		new b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
 		GetArrayString(g_MapList, b, map, sizeof(map));
 		
 		while (IsStringInArray(g_NextMapList, map) || (oldMaps && IsStringInArray(g_OldMapList, map)))
 		{
-			b = GetRandomInt(0, g_MapList - 1);
+			b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
 			GetArrayString(g_MapList, b, map, sizeof(map));
 		}
 		
