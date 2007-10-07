@@ -359,12 +359,12 @@ public Action:Timer_StartRTV(Handle:timer)
 	for (new i = 0; i < limit; i++)
 	{
 		decl String:map[64];
-		new b = GetRandomInt(0, limit - 1);
+		new b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
 		GetArrayString(g_MapList, b, map, sizeof(map));
 		
 		while (IsStringInArray(g_RTVMapList, map))
 		{
-			b = GetRandomInt(0, limit - 1);
+			b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
 			GetArrayString(g_MapList, b, map, sizeof(map));
 		}
 		
