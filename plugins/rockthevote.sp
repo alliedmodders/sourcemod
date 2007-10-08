@@ -351,7 +351,7 @@ public Action:Timer_StartRTV(Handle:timer)
 	// We assume that g_RTVMapList is within the correct limits, based on the logic for nominations
 	for (new i = 0; i < GetArraySize(g_RTVMapList); i++)
 	{
-		GetArrayString(g_RTVMapList, i, map, sizeofmap));
+		GetArrayString(g_RTVMapList, i, map, sizeof(map));
 		AddMenuItem(MapVoteMenu, map, map);
 		
 		for (new j = 0; j < GetArraySize(tempMaps); j++)
