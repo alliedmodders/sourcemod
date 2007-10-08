@@ -500,30 +500,41 @@ CreateNextVote()
 	if(g_NextMapList != INVALID_HANDLE)
 	{
 		ClearArray(g_NextMapList);
-	}	
-	
-	decl String:map[32];
-	new limit = (GetConVarInt(g_Cvar_IncludeMaps) < GetArraySize(g_MapList) ? GetConVarInt(g_Cvar_IncludeMaps) : GetArraySize(g_MapList));
-	
-	new bool:oldMaps = false;
-	if (limit > GetConVarInt(g_Cvar_ExcludeMaps))
-	{
-		limit -= GetArraySize(g_OldMapList);
-		oldMaps = true;
 	}
 	
+	new Handle:tempMaps  = CreateArray(33);
+	decl String:map[32];
+	for (new i = 0; i < GetArraySize(g_MapList); i++)
+	{
+		GetArrayString(g_MapList, i, map, sizeof(map));
+		PushArrayString(tempMaps, map);		
+	}
+	
+	if (GetArraySize(tempMaps) > GetConVarInt(g_Cvar_ExcludeMaps))
+	{
+		for (new i = 0; i < GetArraySize(g_OldMapList); i++)
+		{
+			GetArrayString(g_OldMapList, i, map, sizeof(map));
+			for (new j = 0; j < GetArraySize(tempMaps); j++)
+			{
+				decl String:temp[32];
+				GetArrayString(tempMaps, j, temp, sizeof(temp));
+				if (strcmp(temp, map) == 0)
+				{
+					RemoveFromArray(tempMaps, j);
+					break;
+				}				
+			}
+		}	
+	}
+
+	new limit = (GetConVarInt(g_Cvar_IncludeMaps) < GetArraySize(tempMaps) ? GetConVarInt(g_Cvar_IncludeMaps) : GetArraySize(tempMaps));
 	for (new i = 0; i < limit; i++)
 	{
-		new b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
-		GetArrayString(g_MapList, b, map, sizeof(map));
-		
-		while (IsStringInArray(g_NextMapList, map) || (oldMaps && IsStringInArray(g_OldMapList, map)))
-		{
-			b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
-			GetArrayString(g_MapList, b, map, sizeof(map));
-		}
-		
-		PushArrayString(g_NextMapList, map);		
+		new b = GetRandomInt(0, GetArraySize(tempMaps) - 1);
+		GetArrayString(tempMaps, b, map, sizeof(map));		
+		PushArrayString(g_NextMapList, map);
+		RemoveFromArray(tempMaps, b);
 	}
 }
 
