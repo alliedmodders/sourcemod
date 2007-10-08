@@ -340,38 +340,47 @@ public Action:Timer_StartRTV(Handle:timer)
 	new Handle:MapVoteMenu = CreateMenu(Handler_MapMapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(MapVoteMenu, "Rock The Vote");
 	
-	new limit = (GetArraySize(g_RTVMapList) < GetConVarInt(g_Cvar_Maps) ? GetArraySize(g_RTVMapList) : GetConVarInt(g_Cvar_Maps));
-	for (new i = 0; i < limit; i++)
+	new Handle:tempMaps  = CreateArray(33);
+	decl String:map[32];
+	for (new i = 0; i < GetArraySize(g_MapList); i++)
 	{
-		decl String:rtvmap[64];
-		GetArrayString(g_RTVMapList, i, rtvmap, sizeof(rtvmap));
-		AddMenuItem(MapVoteMenu, rtvmap, rtvmap);
-	}
-
-	limit = (GetArraySize(g_MapList) < GetConVarInt(g_Cvar_Maps) ? GetArraySize(g_MapList) : GetConVarInt(g_Cvar_Maps));
-	limit -= GetMenuItemCount(MapVoteMenu);
-	
-	if (limit < 0)
-	{
-		limit = 0;
+		GetArrayString(g_MapList, i, map, sizeof(map));
+		PushArrayString(tempMaps, map);		
 	}
 	
-	for (new i = 0; i < limit; i++)
+	// We assume that g_RTVMapList is within the correct limits, based on the logic for nominations
+	for (new i = 0; i < GetArraySize(g_RTVMapList); i++)
 	{
-		decl String:map[64];
-		new b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
-		GetArrayString(g_MapList, b, map, sizeof(map));
+		GetArrayString(g_RTVMapList, i, map, sizeofmap));
+		AddMenuItem(MapVoteMenu, map, map);
 		
-		while (IsStringInArray(g_RTVMapList, map))
+		for (new j = 0; j < GetArraySize(tempMaps); j++)
 		{
-			b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
-			GetArrayString(g_MapList, b, map, sizeof(map));
+			decl String:temp[32];
+			GetArrayString(tempMaps, j, temp, sizeof(temp));
+			if (strcmp(map, temp) == 0)
+			{
+				RemoveFromArray(tempMaps, j);
+				break;
+			}
 		}
-		
-		PushArrayString(g_RTVMapList, map);
-		AddMenuItem(MapVoteMenu, map, map);		
+	}
+	
+	new limit = GetConVarInt(g_Cvar_Maps) - GetArraySize(g_RTVMapList);
+	if (limit > GetArraySize(tempMaps))
+	{
+		limit = GetArraySize(tempMaps);
 	}
 
+	for (new i = 0; i < limit; i++)
+	{
+		new b = GetRandomInt(0, GetArraySize(tempMaps) - 1);
+		GetArrayString(tempMaps, b, map, sizeof(map));		
+		PushArrayString(g_RTVMapList, map);
+		AddMenuItem(MapVoteMenu, map, map);			
+		RemoveFromArray(tempMaps, b);
+	}	
+	
 	AddMenuItem(MapVoteMenu, "Don't Change", "Don't Change");
 		
 	SetMenuExitButton(MapVoteMenu, false);
