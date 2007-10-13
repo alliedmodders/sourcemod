@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Anti-Flood Plugin
- * Protects against chat flooding.
+ * SourceMod Admin Menu Plugin
+ * Creates the base admin menu, for plugins to add items to.
  *
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * =============================================================================
