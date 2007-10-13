@@ -29,7 +29,7 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[17];
+			string [] folders = new string[22];
 
 			folders[0] = "addons/sourcemod/bin";
 			folders[1] = "addons/sourcemod/plugins/disabled";
@@ -48,6 +48,12 @@ namespace builder
 			folders[14] = "addons/sourcemod/configs/sql-init-scripts/sqlite";
 			folders[15] = "addons/sourcemod/extensions/games";
 			folders[16] = "addons/sourcemod/scripting/basecommands";
+			folders[17] = "addons/sourcemod/scripting/basecomm";
+			folders[18] = "addons/sourcemod/scripting/basefunvotes";
+			folders[19] = "addons/sourcemod/scripting/basevotes";
+			folders[20] = "addons/sourcemod/scripting/basebans";
+			folders[21] = "addons/sourcemod/scripting/basefuncommands";
+			
 
 			return folders;
 		}
@@ -95,6 +101,11 @@ namespace builder
 			builder.CopyFolder(this, "plugins/admin-flatfile", "addons/sourcemod/scripting/admin-flatfile", null);
 			builder.CopyFolder(this, "plugins/testsuite", "addons/sourcemod/scripting/testsuite", null);
 			builder.CopyFolder(this, "plugins/basecommands", "addons/sourcemod/scripting/basecommands", null);
+			builder.CopyFolder(this, "plugins/basecomm", "addons/sourcemod/scripting/basecomm", null);
+			builder.CopyFolder(this, "plugins/basefunvotes", "addons/sourcemod/scripting/basefunvotes", null);
+			builder.CopyFolder(this, "plugins/basevotes", "addons/sourcemod/scripting/basevotes", null);
+			builder.CopyFolder(this, "plugins/basebans", "addons/sourcemod/scripting/basebans", null);
+			builder.CopyFolder(this, "plugins/basefuncommands", "addons/sourcemod/scripting/basefuncommands", null);
 		}
 
 		/**
