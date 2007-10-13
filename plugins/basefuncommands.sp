@@ -35,6 +35,8 @@
 
 #include <sourcemod>
 #include <sdktools>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
 
 public Plugin:myinfo =
 {
@@ -45,6 +47,14 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+new Handle:hTopMenu = INVALID_HANDLE;
+
+new g_SlapDamage[MAXPLAYERS+1];
+
+#include "basefuncommands/slay.sp"
+#include "basefuncommands/burn.sp"
+#include "basefuncommands/slap.sp"
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -53,6 +63,55 @@ public OnPluginStart()
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
+	
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+	/* Block us from being called twice */
+	if (topmenu == hTopMenu)
+	{
+		return;
+	}
+	
+	/* Save the Handle */
+	hTopMenu = topmenu;
+	
+	/* Find the "Player Commands" category */
+	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+
+	if (player_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu,
+			"Slay Player",
+			TopMenuObject_Item,
+			AdminMenu_Slay,
+			player_commands,
+			"sm_slay",
+			ADMFLAG_SLAY);
+			
+		AddToTopMenu(hTopMenu,
+			"Burn Player",
+			TopMenuObject_Item,
+			AdminMenu_Burn,
+			player_commands,
+			"sm_burn",
+			ADMFLAG_SLAY);
+			
+		AddToTopMenu(hTopMenu,
+			"Slap Player",
+			TopMenuObject_Item,
+			AdminMenu_Slap,
+			player_commands,
+			"sm_slap",
+			ADMFLAG_SLAY);	
+	}
 }
 
 public Action:Command_Play(client, args)
@@ -102,122 +161,3 @@ public Action:Command_Play(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Burn(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_burn <#userid|name> [time]");
-		return Plugin_Handled;
-	}
-
-	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	GetClientName(target, arg, sizeof(arg));
-	
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
-		return Plugin_Handled;
-	}
-	
-	new Float:seconds = 20.0;
-	if (args > 1)
-	{
-		decl String:time[20];
-		GetCmdArg(2, time, sizeof(time));
-		if (StringToFloatEx(time, seconds) == 0)
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
-			return Plugin_Handled;
-		}
-	}
-
-	ShowActivity(client, "%t", "Ignited player", arg);
-	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
-	IgniteEntity(target, seconds);
-
-	return Plugin_Handled;
-}
-
-public Action:Command_Slap(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_slap <#userid|name> [damage]");
-		return Plugin_Handled;
-	}
-
-	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	GetClientName(target, arg, sizeof(arg));
-
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
-		return Plugin_Handled;
-	}	
-	
-	new damage = 0;
-	if (args > 1)
-	{
-		decl String:arg2[20];
-		GetCmdArg(2, arg2, sizeof(arg2));
-		if (StringToIntEx(arg2, damage) == 0)
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
-			return Plugin_Handled;
-		}
-	}
-
-	ShowActivity(client, "%t", "Slapped player", arg);
-	LogAction(client, target, "\"%L\" slapped \"%L\" (damage \"%d\")", client, target, damage);
-	SlapPlayer(target, damage, true);
-
-	return Plugin_Handled;
-}
-
-public Action:Command_Slay(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_slay <#userid|name>");
-		return Plugin_Handled;
-	}
-
-	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	GetClientName(target, arg, sizeof(arg));
-
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
-		return Plugin_Handled;
-	}	
-
-	ShowActivity(client, "%t", "Slayed player", arg);
-	LogAction(client, target, "\"%L\" slayed \"%L\"", client, target);
-	ForcePlayerSuicide(target);
-
-	return Plugin_Handled;
-}

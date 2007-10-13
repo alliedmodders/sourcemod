@@ -34,6 +34,8 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
 
 public Plugin:myinfo =
 {
@@ -79,6 +81,21 @@ new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
 
+new Handle:hTopMenu = INVALID_HANDLE;
+
+new Handle:g_MapList = INVALID_HANDLE;
+new g_mapFileTime;
+new g_mapCount;
+
+new Handle:g_SelectedMaps;
+new g_SelectedCount;
+
+new bool:g_VoteMapInUse;
+
+#include "basevotes/votekick.sp"
+#include "basevotes/voteban.sp"
+#include "basevotes/votemap.sp"
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -102,82 +119,66 @@ public OnPluginStart()
 	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
 	
 	g_hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String);
+	
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
+	
+	g_SelectedMaps = CreateArray(33);
+	
+	g_MapList = CreateMenu(MenuHandler_Map);
+	SetMenuTitle(g_MapList, "Please select a map");
+	SetMenuExitBackButton(g_MapList, true);
 }
 
-public Action:Command_Votemap(client, args)
+public OnMapStart()
 {
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_votemap <mapname> [mapname2] ... [mapname5]");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}
-		
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:text[256];
-	GetCmdArgString(text, sizeof(text));
+	g_mapCount = LoadMaps(g_MapList);
+}
 
-	decl String:maps[5][64];
-	new mapCount;	
-	new len, pos;
-	
-	while (pos != -1 && mapCount < 5)
-	{	
-		pos = BreakString(text[len], maps[mapCount], sizeof(maps[]));
-		
-		if (!IsMapValid(maps[mapCount]))
-		{
-			ReplyToCommand(client, "[SM] %t", "Map was not found", maps[mapCount]);
-			return Plugin_Handled;
-		}		
-
-		mapCount++;
-		
-		if (pos != -1)
-		{
-			len += pos;
-		}	
-	}
-
-	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote Map");
-	
-	g_voteType = voteType:map;
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	
-	if (mapCount == 1)
+public OnAdminMenuReady(Handle:topmenu)
+{
+	/* Block us from being called twice */
+	if (topmenu == hTopMenu)
 	{
-		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), maps[0]);
+		return;
+	}
+	
+	/* Save the Handle */
+	hTopMenu = topmenu;
+	
+	/* Build the "Voting Commands" category */
+	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
+
+	if (voting_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu,
+			"Vote Kick",
+			TopMenuObject_Item,
+			AdminMenu_VoteKick,
+			voting_commands,
+			"sm_votekick",
+			ADMFLAG_VOTE|ADMFLAG_KICK);
 			
-		SetMenuTitle(g_hVoteMenu, "Change Map To");
-		AddMenuItem(g_hVoteMenu, maps[0], "Yes");
-		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
+		AddToTopMenu(hTopMenu,
+			"Vote Ban",
+			TopMenuObject_Item,
+			AdminMenu_VoteBan,
+			voting_commands,
+			"sm_voteban",
+			ADMFLAG_VOTE|ADMFLAG_BAN);
+			
+		AddToTopMenu(hTopMenu,
+			"Vote Map",
+			TopMenuObject_Item,
+			AdminMenu_VoteMap,
+			voting_commands,
+			"sm_votemap",
+			ADMFLAG_VOTE|ADMFLAG_CHANGEMAP);
 	}
-	else
-	{
-		g_voteInfo[VOTE_NAME][0] = '\0';
-		
-		SetMenuTitle(g_hVoteMenu, "Map Vote");
-		for (new i = 0; i < mapCount; i++)
-		{
-			AddMenuItem(g_hVoteMenu, maps[i], maps[i]);
-		}	
-	}
-	
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);		
-	
-	return Plugin_Handled;	
 }
 
 public Action:Command_Vote(client, args)
@@ -243,126 +244,6 @@ public Action:Command_Vote(client, args)
 	VoteMenuToAll(g_hVoteMenu, 20);		
 	
 	return Plugin_Handled;	
-}
-
-public Action:Command_Votekick(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_votekick <player> [reason]");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}	
-	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:text[256], String:arg[64];
-	GetCmdArgString(text, sizeof(text));
-	
-	new len = BreakString(text, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-	
-	if (len != -1)
-	{
-		strcopy(g_voteArg, sizeof(g_voteArg), text[len]);
-	}
-	else
-	{
-		g_voteArg[0] = '\0';
-	}
-	
-	g_voteClient[VOTE_CLIENTID] = target;
-	g_voteClient[VOTE_USERID] = GetClientUserId(target);
-
-	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
-
-	LogAction(client, target, "\"%L\" initiated a kick vote against \"%L\"", client, target);
-	ShowActivity(client, "%t", "Initiated Vote Kick", g_voteInfo[VOTE_NAME]);
-	
-	g_voteType = voteType:kick;
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Votekick Player");
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
-	
-	return Plugin_Handled;
-}
-
-public Action:Command_Voteban(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_voteban <player> [reason]");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}	
-	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:text[256], String:arg[64];
-	GetCmdArgString(text, sizeof(text));
-	
-	new len = BreakString(text, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-	
-	if (len != -1)
-	{
-		strcopy(g_voteArg, sizeof(g_voteArg), text[len]);
-	}
-	else
-	{
-		g_voteArg[0] = '\0';
-	}
-	
-	g_voteClient[VOTE_CLIENTID] = target;
-	g_voteClient[VOTE_USERID] = GetClientUserId(target);
-
-	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
-	GetClientAuthString(target, g_voteInfo[VOTE_AUTHID], sizeof(g_voteInfo[]));
-	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
-
-	LogAction(client, target, "\"%L\" initiated a ban vote against \"%L\"", client, target);
-	ShowActivity(client, "%t", "Initiated Vote Ban", g_voteInfo[VOTE_NAME]);
-
-	g_voteType = voteType:ban;
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Voteban Player");
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
-	
-	return Plugin_Handled;
 }
 
 public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)

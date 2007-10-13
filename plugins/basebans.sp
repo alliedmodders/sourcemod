@@ -34,6 +34,8 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
 
 public Plugin:myinfo =
 {
@@ -44,6 +46,13 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+new Handle:hTopMenu = INVALID_HANDLE;
+
+new g_BanTarget[MAXPLAYERS+1];
+new g_BanTime[MAXPLAYERS+1];
+
+#include "basebans/ban.sp"
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -52,6 +61,40 @@ public OnPluginStart()
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
 	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
 	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <time> <ip|#userid|name> [reason]");
+	
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+	/* Block us from being called twice */
+	if (topmenu == hTopMenu)
+	{
+		return;
+	}
+	
+	/* Save the Handle */
+	hTopMenu = topmenu;
+	
+	/* Find the "Player Commands" category */
+	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+
+	if (player_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu,
+			"Ban Player",
+			TopMenuObject_Item,
+			AdminMenu_Ban,
+			player_commands,
+			"sm_ban",
+			ADMFLAG_BAN);
+			
+	}
 }
 
 public Action:Command_BanIp(client, args)
@@ -215,69 +258,6 @@ public Action:Command_Unban(client, args)
 	RemoveBan(arg, ban_flags, "sm_unban", client);
 
 	ReplyToCommand(client, "[SM] %t", "Removed bans matching", arg);
-
-	return Plugin_Handled;
-}
-
-public Action:Command_Ban(client, args)
-{
-	if (args < 2)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
-		return Plugin_Handled;
-	}
-
-	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
-
-	new target = FindTarget(client, arg, true);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	decl String:s_time[12];
-	GetCmdArg(2, s_time, sizeof(s_time));
-
-	new time = StringToInt(s_time);
-
-	decl String:reason[128];
-	if (args >= 3)
-	{
-		GetCmdArg(3, reason, sizeof(reason));
-	} else {
-		reason[0] = '\0';
-	}
-
-	decl String:authid[64];
-	GetClientAuthString(target, authid, sizeof(authid));
-	GetClientName(target, arg, sizeof(arg));
-
-	if (!time)
-	{
-		if (reason[0] == '\0')
-		{
-			ShowActivity(client, "%t", "Permabanned player", arg);
-		} else {
-			ShowActivity(client, "%t", "Permabanned player reason", arg, reason);
-		}
-	} else {
-		if (reason[0] == '\0')
-		{
-			ShowActivity(client, "%t", "Banned player", arg, time);
-		} else {
-			ShowActivity(client, "%t", "Banned player reason", arg, time, reason);
-		}
-	}
-
-	LogAction(client, target, "\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, target, time, reason);
-
-	if (reason[0] == '\0')
-	{
-		strcopy(reason, sizeof(reason), "Banned");
-	}
-
-	BanClient(target, time, BANFLAG_AUTO, reason, reason, "sm_ban", client);
 
 	return Plugin_Handled;
 }

@@ -90,6 +90,10 @@
 		"#format"		"{1:s}"
 		"en"			"Slapped player '{1}'"
 	}
+	"Slay player"
+	{
+		"en"			"Slay player"
+	}
 	
 	"Slayed player"
 	{
@@ -276,5 +280,24 @@
 	{
 		"en"			"Reload admins"
 	}
+	"Ban Player"
+	{
+		"en"			"Ban Player"
+	}
+	"Ban Reason"
+	{
+		"en"			"Ban Reason"
+	}
+	"Burn Player"
+	{
+		"en"			"Burn Player"
+	}
+	"Slap Player"
+	{
+		"en"			"Slap Player"
+	}
+	"Slap Damage"
+	{
+		"en"			"Slap Damage"
+	}
 }
-

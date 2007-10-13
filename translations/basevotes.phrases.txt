@@ -64,4 +64,20 @@
 		"#format"		"{1:s},{2:s}"
 		"en"			"The answer to {1} is: {2}."
 	}
+	"Vote Kick"
+	{
+		"en"			"Vote Kick"
+	}
+	"Vote Ban"
+	{
+		"en"			"Vote Ban"
+	}
+	"Vote Map"
+	{
+		"en"			"Vote Map"
+	}
+	"Confirm Vote"
+	{
+		"en"			"Confirm Vote"
+	}
 }

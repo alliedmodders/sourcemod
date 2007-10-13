@@ -74,5 +74,25 @@
 		"#format"		"{1:s}"
 		"en"			"Turn friendly fire on? {1}"
 	}
+	"Vote Gravity"
+	{
+		"en"			"Vote Gravity"
+	}
+	"Vote FF"
+	{
+		"en"			"Vote FF"
+	}
+	"Vote Burn"
+	{
+		"en"			"Vote Burn"
+	}
+	"Vote AllTalk"
+	{
+		"en"			"Vote AllTalk"
+	}
+	"Vote Slay"
+	{
+		"en"			"Vote Slay"
+	}
 	
 }

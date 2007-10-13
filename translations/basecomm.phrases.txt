@@ -53,4 +53,12 @@
 	{
 		"en"			"Target player is not silenced."
 	}
+	"Gag/Mute Player"
+	{
+		"en"			"Gag/Mute Player"
+	}
+	"Choose Type"
+	{
+		"en"			"Choose Type"
+	}
 }

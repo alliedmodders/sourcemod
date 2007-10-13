@@ -48,9 +48,17 @@ public Plugin:myinfo =
 
 new Handle:hTopMenu = INVALID_HANDLE;
 
+new Handle:g_MapList;
+new g_mapFileTime;
+
+new Handle:g_ConfigList;
+
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
 #include "basecommands/cancelvote.sp"
+#include "basecommands/who.sp"
+#include "basecommands/map.sp"
+#include "basecommands/execcfg.sp"
 
 public OnPluginStart()
 {
@@ -71,6 +79,26 @@ public OnPluginStart()
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(topmenu);
+	}
+	
+	g_MapList = CreateMenu(MenuHandler_ChangeMap);
+	SetMenuTitle(g_MapList, "Please select a map");
+	SetMenuExitBackButton(g_MapList, true);
+}
+
+public OnMapStart()
+{
+	LoadMaps(g_MapList);
+	
+	ParseConfigs();
+}
+
+public OnMapEnd()
+{
+	if (g_ConfigList != INVALID_HANDLE)
+	{
+		CloseHandle(g_ConfigList);
+		g_ConfigList = INVALID_HANDLE;
 	}
 }
 
@@ -97,6 +125,14 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_kick",
 			ADMFLAG_KICK);
+			
+		AddToTopMenu(hTopMenu,
+			"Get Info",
+			TopMenuObject_Item,
+			AdminMenu_Who,
+			player_commands,
+			"sm_who",
+			ADMFLAG_GENERIC);
 	}
 
 	new TopMenuObject:server_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_SERVERCOMMANDS);
@@ -110,6 +146,22 @@ public OnAdminMenuReady(Handle:topmenu)
 			server_commands,
 			"sm_reloadadmins",
 			ADMFLAG_BAN);
+			
+		AddToTopMenu(hTopMenu,
+			"Change Map",
+			TopMenuObject_Item,
+			AdminMenu_Map,
+			server_commands,
+			"sm_map",
+			ADMFLAG_CHANGEMAP);
+			
+		AddToTopMenu(hTopMenu,
+			"Exec CFG",
+			TopMenuObject_Item,
+			AdminMenu_ExecCFG,
+			server_commands,
+			"sm_execcfg",
+			ADMFLAG_CONFIG);		
 	}
 
 	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
@@ -191,106 +243,6 @@ FlagsToString(String:buffer[], maxlength, flags)
 	}
 
 	ImplodeStrings(joins, total, ", ", buffer, maxlength);
-}
-
-public Action:Command_Who(client, args)
-{
-	if (args < 1)
-	{
-		/* Display header */
-		decl String:t_access[16], String:t_name[16];
-		Format(t_access, sizeof(t_access), "%t", "Access", client);
-		Format(t_name, sizeof(t_name), "%t", "Name", client);
-
-		PrintToConsole(client, "%-24.23s %s", t_name, t_access);
-
-		/* List all players */
-		new maxClients = GetMaxClients();
-		decl String:flagstring[255];
-
-		for (new i=1; i<=maxClients; i++)
-		{
-			if (!IsClientInGame(i))
-			{
-				continue;
-			}
-			new flags = GetUserFlagBits(i);
-			if (flags == 0)
-			{
-				strcopy(flagstring, sizeof(flagstring), "none");
-			} else if (flags & ADMFLAG_ROOT) {
-				strcopy(flagstring, sizeof(flagstring), "root");
-			} else {
-				FlagsToString(flagstring, sizeof(flagstring), flags);
-			}
-			decl String:name[65];
-			GetClientName(i, name, sizeof(name));
-			PrintToConsole(client, "%d. %-24.23s %s", i, name, flagstring);
-		}
-
-		if (GetCmdReplySource() == SM_REPLY_TO_CHAT)
-		{
-			ReplyToCommand(client, "[SM] %t", "See console for output");
-		}
-
-		return Plugin_Handled;
-	}
-
-	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
-
-	new clients[2];
-	new numClients = SearchForClients(arg, clients, 2);
-
-	if (numClients == 0)
-	{
-		ReplyToCommand(client, "[SM] %t", "No matching client");
-		return Plugin_Handled;
-	} else if (numClients > 1) {
-		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
-		return Plugin_Handled;
-	}
-
-	new flags = GetUserFlagBits(clients[0]);
-	decl String:flagstring[255];
-	if (flags == 0)
-	{
-		strcopy(flagstring, sizeof(flagstring), "none");
-	} else if (flags & ADMFLAG_ROOT) {
-		strcopy(flagstring, sizeof(flagstring), "root");
-	} else {
-		FlagsToString(flagstring, sizeof(flagstring), flags);
-	}
-
-	ReplyToCommand(client, "[SM] %t: %s", "Access", flagstring);
-
-	return Plugin_Handled;
-}
-
-public Action:Command_ExecCfg(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_execcfg <filename>");
-		return Plugin_Handled;
-	}
-
-	new String:path[64] = "cfg/";
-	GetCmdArg(1, path[4], sizeof(path)-4);
-
-	if (!FileExists(path))
-	{
-		ReplyToCommand(client, "[SM] %t", "Config not found", path[4]);
-		return Plugin_Handled;
-	}
-
-	ShowActivity(client, "%t", "Executed config", path[4]);
-
-	LogAction(client, -1, "\"%L\" executed config (file \"%s\")", client, path[4]);
-
-	ServerCommand("exec \"%s\"", path[4]);
-
-	return Plugin_Handled;
 }
 
 public Action:Command_Cvar(client, args)
@@ -388,44 +340,3 @@ public Action:Command_Rcon(client, args)
 
 	return Plugin_Handled;
 }
-
-public Action:Command_Map(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_map <map>");
-		return Plugin_Handled;
-	}
-
-	decl String:map[64];
-	GetCmdArg(1, map, sizeof(map));
-
-	if (!IsMapValid(map))
-	{
-		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
-		return Plugin_Handled;
-	}
-
-	ShowActivity(client, "%t", "Changing map", map);
-
-	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
-
-	new Handle:dp;
-	CreateDataTimer(3.0, Timer_ChangeMap, dp);
-	WritePackString(dp, map);
-
-	return Plugin_Handled;
-}
-
-public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
-{
-	decl String:map[65];
-
-	ResetPack(dp);
-	ReadPackString(dp, map, sizeof(map));
-
-	ServerCommand("changelevel \"%s\"", map);
-
-	return Plugin_Stop;
-}
-

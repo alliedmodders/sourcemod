@@ -33,6 +33,8 @@
 
 #include <sourcemod>
 #include <sdktools>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
 
 #pragma semicolon 1
 
@@ -51,6 +53,12 @@ new bool:g_Gagged[MAXPLAYERS+1];	// Is the player gagged?
 new Handle:g_Cvar_Deadtalk = INVALID_HANDLE;	// Holds the handle for sm_deadtalk
 new Handle:g_Cvar_Alltalk = INVALID_HANDLE;	// Holds the handle for sv_alltalk
 new bool:g_Hooked = false;			// Tracks if we've hooked events for deadtalk
+
+new Handle:hTopMenu = INVALID_HANDLE;
+
+new g_GagTarget[MAXPLAYERS+1];
+
+#include "basecomm/gag.sp"
 
 public OnPluginStart()
 {
@@ -72,6 +80,39 @@ public OnPluginStart()
 	RegAdminCmd("sm_unsilence", Command_Unsilence, ADMFLAG_CHAT, "sm_unsilence <player> - Restores a player's ability to use voice and chat.");	
 	
 	HookConVarChange(g_Cvar_Deadtalk, ConVarChange_Deadtalk);
+	
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
+}
+
+public OnAdminMenuReady(Handle:topmenu)
+{
+	/* Block us from being called twice */
+	if (topmenu == hTopMenu)
+	{
+		return;
+	}
+	
+	/* Save the Handle */
+	hTopMenu = topmenu;
+	
+	/* Build the "Player Commands" category */
+	new TopMenuObject:player_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_PLAYERCOMMANDS);
+	
+	if (player_commands != INVALID_TOPMENUOBJECT)
+	{
+		AddToTopMenu(hTopMenu, 
+			"Gag/Mute",
+			TopMenuObject_Item,
+			AdminMenu_Gag,
+			player_commands,
+			"sm_gag",
+			ADMFLAG_CHAT);
+	}
 }
 
 public ConVarChange_Deadtalk(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -110,267 +151,6 @@ public Action:Command_Say(client, args)
 	}
 	
 	return Plugin_Continue;
-}
-
-public Action:Command_Mute(client, args)
-{	
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_mute <player>");
-		return Plugin_Handled;
-	}
-	
-	decl String:arg[64];
-	GetCmdArg(1, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Already Muted");
-		return Plugin_Handled;		
-	}
-		
-	g_Muted[target] = true;
-	SetClientListeningFlags(target, VOICE_MUTED);
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Muted", name);
-	ReplyToCommand(client, "%t", "Player Muted", name);
-	LogAction(client, target, "\"%L\" muted \"%L\"", client, target);
-	
-	return Plugin_Handled;	
-}
-
-public Action:Command_Gag(client, args)
-{	
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_gag <player>");
-		return Plugin_Handled;
-	}
-	
-	decl String:arg[64];
-	GetCmdArg(1, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (g_Gagged[target])
-	{
-		ReplyToCommand(client, "%t", "Already Gagged");
-		return Plugin_Handled;		
-	}
-		
-	g_Gagged[target] = true;
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Gagged", name);
-	ReplyToCommand(client, "%t", "Player Gagged", name);
-	LogAction(client, target, "\"%L\" gagged \"%L\"", client, target);
-	
-	return Plugin_Handled;	
-}
-
-public Action:Command_Silence(client, args)
-{	
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_silence <player>");
-		return Plugin_Handled;
-	}
-	
-	decl String:arg[64];
-	GetCmdArg(1, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (g_Gagged[target] && g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Already Silenced");
-		return Plugin_Handled;		
-	}
-
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-	
-	if (!g_Gagged[target])
-	{
-		g_Gagged[target] = true;
-
-		ShowActivity(client, "%t", "Player Gagged", name);
-		ReplyToCommand(client, "%t", "Player Gagged", name);
-		LogAction(client, target, "\"%L\" gagged \"%L\"", client, target);
-	}
-	
-	if (!g_Muted[target])
-	{
-		g_Muted[target] = true;
-		SetClientListeningFlags(target, VOICE_MUTED);
-	
-		ShowActivity(client, "%t", "Player Muted", name);
-		ReplyToCommand(client, "%t", "Player Muted", name);
-		LogAction(client, target, "\"%L\" muted \"%L\"", client, target);
-	}
-	
-	return Plugin_Handled;	
-}
-
-public Action:Command_Unmute(client, args)
-{	
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_unmute <player>");
-		return Plugin_Handled;
-	}
-	
-	decl String:arg[64];
-	GetCmdArg(1, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (!g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Player Not Muted");
-		return Plugin_Handled;		
-	}
-		
-	g_Muted[target] = false;
-	if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
-	{
-		SetClientListeningFlags(target, VOICE_LISTENALL);
-	}
-	else if (GetConVarInt(g_Cvar_Deadtalk) == 2 && !IsPlayerAlive(target))
-	{
-		SetClientListeningFlags(target, VOICE_TEAM);
-	}
-	else
-	{
-		SetClientListeningFlags(target, VOICE_NORMAL);
-	}
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Unmuted", name);
-	ReplyToCommand(client, "%t", "Player Unmuted", name);
-	LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);
-	
-	return Plugin_Handled;	
-}
-
-public Action:Command_Ungag(client, args)
-{	
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_ungag <player>");
-		return Plugin_Handled;
-	}
-	
-	decl String:arg[64];
-	GetCmdArg(1, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (!g_Gagged[target])
-	{
-		ReplyToCommand(client, "%t", "Player Not Gagged");
-		return Plugin_Handled;		
-	}
-		
-	g_Gagged[target] = false;
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Ungagged", name);
-	ReplyToCommand(client, "%t", "Player Ungagged", name);
-	LogAction(client, target, "\"%L\" ungagged \"%L\"", client, target);
-	
-	return Plugin_Handled;	
-}
-
-public Action:Command_Unsilence(client, args)
-{	
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_unsilence <player>");
-		return Plugin_Handled;
-	}
-	
-	decl String:arg[64];
-	GetCmdArg(1, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (!g_Gagged[target] && !g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Player Not Silenced");
-		return Plugin_Handled;		
-	}
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-	
-	if (g_Gagged[target])
-	{
-		g_Gagged[target] = false;
-		
-		ShowActivity(client, "%t", "Player Ungagged", name);
-		ReplyToCommand(client, "%t", "Player Ungagged", name);	
-		LogAction(client, target, "\"%L\" ungagged \"%L\"", client, target);
-	}
-	
-	if (g_Muted[target])
-	{
-		g_Muted[target] = false;
-		
-		if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
-		{
-			SetClientListeningFlags(target, VOICE_LISTENALL);
-		}
-		else if (GetConVarInt(g_Cvar_Deadtalk) == 2 && !IsPlayerAlive(target))
-		{
-			SetClientListeningFlags(target, VOICE_TEAM);
-		}
-		else
-		{
-			SetClientListeningFlags(target, VOICE_NORMAL);
-		}
-		
-		ShowActivity(client, "%t", "Player Unmuted", name);
-		ReplyToCommand(client, "%t", "Player Unmuted", name);
-		LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);		
-	}
-	
-	return Plugin_Handled;	
 }
 
 public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)

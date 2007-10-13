@@ -36,6 +36,9 @@
 #include <sourcemod>
 #include <sdktools>
 
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
+
 public Plugin:myinfo =
 {
 	name = "Basic Fun Votes",
@@ -64,7 +67,7 @@ enum voteType
 	slay,
 	alltalk,
 	ff
-}
+};
 
 new voteType:g_voteType = voteType:gravity;
 
@@ -79,6 +82,14 @@ new g_voteClient[2];		/* Holds the target's client id and user id */
 #define VOTE_AUTHID	1
 #define	VOTE_IP		2
 new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
+
+new Handle:hTopMenu = INVALID_HANDLE;
+
+#include "basefunvotes/votegravity.sp"
+#include "basefunvotes/voteburn.sp"
+#include "basefunvotes/voteslay.sp"
+#include "basefunvotes/votealltalk.sp"
+#include "basefunvotes/voteff.sp"
 
 public OnPluginStart()
 {
@@ -109,279 +120,71 @@ public OnPluginStart()
 		g_Cvar_Show = CreateConVar("sm_vote_show", "1", "Show player's votes? Default on.", 0, true, 0.0, true, 1.0);
 	}
 	*/
+	
+	/* Account for late loading */
+	new Handle:topmenu;
+	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
+	{
+		OnAdminMenuReady(topmenu);
+	}
 }
 
-public Action:Command_VoteGravity(client, args)
+public OnAdminMenuReady(Handle:topmenu)
 {
-	if (args < 1)
+	/* Block us from being called twice */
+	if (topmenu == hTopMenu)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_votegravity <amount> [amount2] ... [amount5]");
-		return Plugin_Handled;	
+		return;
 	}
 	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}
+	/* Save the Handle */
+	hTopMenu = topmenu;
 	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:text[256];
-	GetCmdArgString(text, sizeof(text));
+	/* Build the "Voting Commands" category */
+	new TopMenuObject:voting_commands = FindTopMenuCategory(hTopMenu, ADMINMENU_VOTINGCOMMANDS);
 
-	decl String:items[5][64];
-	new count;	
-	new len, pos;
-	
-	while (pos != -1 && count < 5)
-	{	
-		pos = BreakString(text[len], items[count], sizeof(items[]));
-		
-		decl Float:temp;
-		if (StringToFloatEx(items[count], temp) == 0)
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
-			return Plugin_Handled;
-		}		
-
-		count++;
-		
-		if (pos != -1)
-		{
-			len += pos;
-		}	
-	}
-
-	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote Gravity");
-	
-	g_voteType = voteType:gravity;
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	
-	if (count == 1)
+	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
-		strcopy(g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]), items[0]);
+		AddToTopMenu(hTopMenu,
+			"Vote Gravity",
+			TopMenuObject_Item,
+			AdminMenu_VoteGravity,
+			voting_commands,
+			"sm_votegravity",
+			ADMFLAG_VOTE);
 			
-		SetMenuTitle(g_hVoteMenu, "Change Gravity To");
-		AddMenuItem(g_hVoteMenu, items[0], "Yes");
-		AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
+		AddToTopMenu(hTopMenu,
+			"Vote Burn",
+			TopMenuObject_Item,
+			AdminMenu_VoteBurn,
+			voting_commands,
+			"sm_voteburn",
+			ADMFLAG_VOTE|ADMFLAG_SLAY);
+			
+		AddToTopMenu(hTopMenu,
+			"Vote Slay",
+			TopMenuObject_Item,
+			AdminMenu_VoteSlay,
+			voting_commands,
+			"sm_voteslay",
+			ADMFLAG_VOTE|ADMFLAG_SLAY);
+			
+		AddToTopMenu(hTopMenu,
+			"Vote AllTalk",
+			TopMenuObject_Item,
+			AdminMenu_VoteAllTalk,
+			voting_commands,
+			"sm_votealltalk",
+			ADMFLAG_VOTE);
+			
+		AddToTopMenu(hTopMenu,
+			"Vote FF",
+			TopMenuObject_Item,
+			AdminMenu_VoteFF,
+			voting_commands,
+			"sm_voteff",
+			ADMFLAG_VOTE);
 	}
-	else
-	{
-		g_voteInfo[VOTE_NAME][0] = '\0';
-		
-		SetMenuTitle(g_hVoteMenu, "Gravity Vote");
-		for (new i = 0; i < count; i++)
-		{
-			AddMenuItem(g_hVoteMenu, items[i], items[i]);
-		}	
-	}
-	
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);		
-	
-	return Plugin_Handled;	
-}
-
-public Action:Command_VoteBurn(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_voteburn <player>");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}	
-	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:text[256], String:arg[64];
-	GetCmdArgString(text, sizeof(text));
-	
-	BreakString(text, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
-		return Plugin_Handled;
-	}
-	
-	g_voteClient[VOTE_CLIENTID] = target;
-	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
-
-	LogAction(client, target, "\"%L\" initiated a burn vote against \"%L\"", client, target);
-	ShowActivity(client, "%t", "Initiated Vote Burn", g_voteInfo[VOTE_NAME]);
-	
-	g_voteType = voteType:burn;
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Voteburn Player");
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
-	
-	return Plugin_Handled;
-}
-
-public Action:Command_VoteSlay(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_voteslay <player>");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}	
-	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:text[256], String:arg[64];
-	GetCmdArgString(text, sizeof(text));
-	
-	BreakString(text, arg, sizeof(arg));
-	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", arg);
-		return Plugin_Handled;
-	}
-	
-	g_voteClient[VOTE_CLIENTID] = target;
-	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
-
-	LogAction(client, target, "\"%L\" initiated a slay vote against \"%L\"", client, target);
-	ShowActivity(client, "%t", "Initiated Vote Slay", g_voteInfo[VOTE_NAME]);
-	
-	g_voteType = voteType:slay;
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Voteslay Player");
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
-	
-	return Plugin_Handled;
-}
-
-public Action:Command_VoteAlltalk(client, args)
-{
-	if (args > 0)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_votealltalk");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}	
-	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	LogAction(client, -1, "\"%L\" initiated an alltalk vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote Alltalk");
-	
-	g_voteType = voteType:alltalk;
-	g_voteInfo[VOTE_NAME][0] = '\0';
-
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	
-	if (GetConVarBool(g_Cvar_Alltalk))
-	{
-		SetMenuTitle(g_hVoteMenu, "Votealltalk Off");
-	}
-	else
-	{
-		SetMenuTitle(g_hVoteMenu, "Votealltalk On");
-	}
-	
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
-	
-	return Plugin_Handled;
-}
-
-public Action:Command_VoteFF(client, args)
-{
-	if (args > 0)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_voteff");
-		return Plugin_Handled;	
-	}
-	
-	if (IsVoteInProgress())
-	{
-		ReplyToCommand(client, "[SM] %t", "Vote in Progress");
-		return Plugin_Handled;
-	}	
-	
-	if (!TestVoteDelay(client))
-	{
-		return Plugin_Handled;
-	}
-	
-	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote FF");
-	
-	g_voteType = voteType:ff;
-	g_voteInfo[VOTE_NAME][0] = '\0';
-	
-	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	
-	if (GetConVarBool(g_Cvar_Alltalk))
-	{
-		SetMenuTitle(g_hVoteMenu, "Voteff Off");
-	}
-	else
-	{
-		SetMenuTitle(g_hVoteMenu, "Voteff On");
-	}
-	
-	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
-	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
-	SetMenuExitButton(g_hVoteMenu, false);
-	VoteMenuToAll(g_hVoteMenu, 20);
-	
-	return Plugin_Handled;
 }
 
 public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
