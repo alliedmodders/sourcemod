@@ -116,7 +116,7 @@ LoadMaps()
 
 	decl String:mapPath[256], String:mapFile[64];
 	GetConVarString(g_Cvar_Mapfile, mapFile, 64);
-	BuildPath(Path_SM, mapPath, sizeof(mapFile), mapFile);
+	BuildPath(Path_SM, mapPath, sizeof(mapPath), mapFile);
 	fileFound = FileExists(mapPath);
 	if (!fileFound)
 	{
