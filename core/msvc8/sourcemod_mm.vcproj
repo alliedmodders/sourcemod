@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -63,7 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tier0.lib tier1.lib vstdlib.lib mathlib.lib"
+				AdditionalDependencies="$(HL2SDK)\lib\public\tier0.lib $(HL2SDK)\lib\public\tier1.lib $(HL2SDK)\lib\public\vstdlib.lib $(HL2SDK)\lib\public\mathlib.lib"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBCMT"
 				GenerateDebugInformation="true"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
@@ -142,7 +142,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="tier0.lib tier1.lib vstdlib.lib mathlib.lib"
+				AdditionalDependencies="$(HL2SDK)\lib\public\tier0.lib $(HL2SDK)\lib\public\tier1.lib $(HL2SDK)\lib\public\vstdlib.lib $(HL2SDK)\lib\public\mathlib.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				SubSystem="2"
