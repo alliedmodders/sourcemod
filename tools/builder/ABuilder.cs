@@ -171,6 +171,11 @@ namespace builder
 			string bin = null, binpath = null;
 			for (int i=0; i<libs.Length; i++)
 			{
+				if (cfg.Platform == BasePlatform.Platform_Linux
+					|| libs[i].build_mode == BuildMode.BuildMode_Episode2)
+				{
+					continue;
+				}
 				if (BuildLibrary(pkg, libs[i], ref bin, ref binpath))
 				{
 					path = Config.PathFormat("{0}/{1}/{2}/{3}",
