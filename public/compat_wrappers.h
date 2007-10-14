@@ -33,9 +33,6 @@
 #define _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
 
 #if defined ORANGEBOX_BUILD
-	#include "convar_sm_ob.h"
-	#include "sourcemm_api.h"
-
 	#define CONVAR_REGISTER(object)				ConVar_Register(0, object)
 
 	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
@@ -47,8 +44,6 @@
 		engine->ServerCommand(buf);
 	}
 #else
-	#include "sourcemm_api.h"
-
 	class CCommand
 	{
 	public:
@@ -74,6 +69,8 @@
 	{
 		engine->InsertServerCommand(buf);
 	}
+
+	#define CVAR_INTERFACE_VERSION				VENGINE_CVAR_INTERFACE_VERSION
 
 	#define CONVAR_REGISTER(object)				ConCommandBaseMgr::OneTimeInit(object)
 	typedef FnChangeCallback					FnChangeCallback_t;

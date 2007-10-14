@@ -32,8 +32,6 @@
 #ifndef _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
 #define _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
 
-#include <compat_wrappers.h>
-
 /**
  * @file IRootConsoleMenu.h
  * @brief Defines the interface for adding options to the "sm" console command.
@@ -44,6 +42,8 @@
  * Since this menu is explicitly provided for stuff that only Core itself is capable of managing,
  * we won't expose it until a legitimate reason comes up.
  */
+
+class CCommand;
 
 namespace SourceMod
 {
