@@ -12,7 +12,7 @@ namespace builder
 		{
 		}
 
-		public abstract bool BuildLibrary(Package pkg, Library lib, ref string _binName, ref string _binPath);
+		public abstract bool BuildLibrary(Package pkg, Library lib);
 
 		public abstract string GetPawnCompilerName();
 
@@ -168,7 +168,6 @@ namespace builder
 
 			/* Do libraries */
 			Library [] libs = pkg.GetLibraries();
-			string bin = null, binpath = null;
 			for (int i=0; i<libs.Length; i++)
 			{
 				if (cfg.Platform == BasePlatform.Platform_Linux
@@ -176,16 +175,7 @@ namespace builder
 				{
 					continue;
 				}
-				if (BuildLibrary(pkg, libs[i], ref bin, ref binpath))
-				{
-					path = Config.PathFormat("{0}/{1}/{2}/{3}",
-						cfg.pkg_path,
-						pkg.GetBaseFolder(),
-						libs[i].package_path,
-						bin);
-					File.Copy(binpath, path, true);
-				}
-				else 
+				if (!BuildLibrary(pkg, libs[i]))
 				{
 					throw new System.Exception("Failed to compile library: " + libs[i].binary_name);
 				}

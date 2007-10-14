@@ -16,7 +16,7 @@ namespace builder
 			return "spcomp.exe";
 		}
 
-		public override bool BuildLibrary(Package pkg, Library lib, ref string _binName, ref string _binPath)
+		public override bool BuildLibrary(Package pkg, Library lib)
 		{
 			ProcessStartInfo info = new ProcessStartInfo();
 
@@ -94,8 +94,17 @@ namespace builder
 				return false;
 			}
 
-			_binName = binName;
-			_binPath = binpath;
+			path = Config.PathFormat("{0}/{1}/{2}/{3}",
+				cfg.pkg_path,
+				pkg.GetBaseFolder(),
+				lib.package_path,
+				binName);
+			File.Copy(binpath, path, true);
+
+			/* On Windows we package the .pdb files as well */
+			binpath = binpath.Replace(".dll", ".pdb");
+			path = path.Replace(".dll", ".pdb");
+			File.Copy(binpath, path, true);
 
 			return true;
 		}
