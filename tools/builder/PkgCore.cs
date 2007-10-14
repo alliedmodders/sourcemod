@@ -134,6 +134,15 @@ namespace builder
 
 			Library lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "loader";
+			lib.binary_name = "sourcemod_mm";
+			lib.vcproj_name = "loader";
+			lib.build_mode = BuildMode.BuildMode_Simple;
+			lib.has_platform_ext = true;
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "core";
 			lib.binary_name = "sourcemod.1.ep1";
 			lib.vcproj_name = "sourcemod_mm";
