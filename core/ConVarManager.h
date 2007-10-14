@@ -40,6 +40,7 @@
 #include <IForwardSys.h>
 #include <IHandleSys.h>
 #include <IRootConsoleMenu.h>
+#include <compat_wrappers.h>
 
 using namespace SourceHook;
 
@@ -51,7 +52,7 @@ struct ConVarInfo
 	Handle_t handle;					/**< Handle to convar */
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
-	FnChangeCallback_t origCallback;		/**< The original callback function */
+	FnChangeCallback_t origCallback;	/**< The original callback function */
 #if PLAPI_VERSION < 12
 	const char *name;					/**< Name of convar */
 #endif

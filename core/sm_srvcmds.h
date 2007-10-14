@@ -38,6 +38,7 @@
 #include "sourcemm_api.h"
 #include <sh_list.h>
 #include <sh_string.h>
+#include <compat_wrappers.h>
 #include "sm_trie.h"
 
 using namespace SourceMod;

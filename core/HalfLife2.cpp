@@ -34,6 +34,8 @@
 #include "sourcemm_api.h"
 #include "UserMessages.h"
 #include "PlayerManager.h"
+#include "sm_stringutil.h"
+#include <compat_wrappers.h>
 
 CHalfLife2 g_HL2;
 bool g_IsOriginalEngine = false;

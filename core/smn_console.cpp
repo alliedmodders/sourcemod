@@ -623,10 +623,6 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-LOL BUILD IS STILL BROKEN
-LOL
-Seriously.  Don't compile it.
-
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
 	const CCommand *pCmd = g_HL2.PeekCommandStack();
