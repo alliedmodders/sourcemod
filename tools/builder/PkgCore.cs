@@ -63,6 +63,9 @@ namespace builder
 			folders.Add("addons/sourcemod/scripting/basevotes");
 			folders.Add("addons/sourcemod/scripting/basebans");
 			folders.Add("addons/sourcemod/scripting/basefuncommands");
+			folders.Add("addons/sourcemod/extensions/auto.1.ep1");
+			folders.Add("addons/sourcemod/extensions/auto.2.ep1");
+			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
 			
 			return (string [])folders.ToArray(typeof(string));
 		}
