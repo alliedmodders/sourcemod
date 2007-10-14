@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="sm_mysql"
 	ProjectGUID="{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
 	RootNamespace="sm_mysql"
@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -123,7 +123,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				StructMemberAlignment="3"
