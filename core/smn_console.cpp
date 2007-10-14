@@ -623,9 +623,13 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+BUILD INTENTIONALLY BROKEN BY BAIL
+HAHA
+I DOUBT YOU CAN COMPILE THIS, GCC
+
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
-	return 4 :O;//engine->Cmd_Argc() - 1;
+	return 4; //:O;//engine->Cmd_Argc() - 1;
 }
 
 static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)

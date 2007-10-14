@@ -66,7 +66,7 @@ RootConsoleMenu::~RootConsoleMenu()
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
 #if defined ORANGEBOX_BUILD
-	ICvar *g_pCVar = icvar;
+	g_pCVar = icvar;
 #endif
 	CONVAR_REGISTER(this);
 	AddRootConsoleCommand("version", "Display version information", this);
