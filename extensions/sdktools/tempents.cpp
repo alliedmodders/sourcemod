@@ -47,19 +47,22 @@ CON_COMMAND(sm_print_telist, "Prints the temp entity list")
 
 CON_COMMAND(sm_dump_teprops, "Dumps tempentity props to a file")
 {
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
 	if (!g_TEManager.IsAvailable())
 	{
 		META_CONPRINT("The tempent portion of SDKTools failed to load.\n");
 		META_CONPRINT("Check that you have the latest sdktools.games.txt file!\n");
 		return;
 	}
-	int argc = engine->Cmd_Argc();
+	int argc = args.ArgC();
 	if (argc < 2)
 	{
 		META_CONPRINT("Usage: sm_dump_teprops <file>\n");
 		return;
 	}
-	const char *arg = engine->Cmd_Argv(1);
+	const char *arg = args.Arg(1);
 	FILE *fp = NULL;
 	if (!arg || arg[0] == '\0' || ((fp = fopen(arg, "wt")) == NULL))
 	{
@@ -320,7 +323,7 @@ void TempEntityManager::Shutdown()
 		return;
 	}
 
-	List<TempEntityInfo *>::iterator iter;
+	SourceHook::List<TempEntityInfo *>::iterator iter;
 	for (iter=m_TEList.begin(); iter!=m_TEList.end(); iter++)
 	{
 		delete (*iter);

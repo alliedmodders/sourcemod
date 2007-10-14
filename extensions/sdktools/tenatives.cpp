@@ -61,7 +61,7 @@ void TempEntHooks::Shutdown()
 	}
 
 	plsys->RemovePluginsListener(this);
-	List<TEHookInfo *>::iterator iter;
+	SourceHook::List<TEHookInfo *>::iterator iter;
 	for (iter=m_HookInfo.begin(); iter!=m_HookInfo.end(); iter++)
 	{
 		delete (*iter);
@@ -77,13 +77,13 @@ void TempEntHooks::Shutdown()
 
 void TempEntHooks::OnPluginUnloaded(IPlugin *plugin)
 {
-	List<TEHookInfo *>::iterator iter = m_HookInfo.begin();
+	SourceHook::List<TEHookInfo *>::iterator iter = m_HookInfo.begin();
 	IPluginContext *pContext = plugin->GetBaseContext();
 
 	/* For each hook list... */
 	while (iter != m_HookInfo.end())
 	{
-		List<IPluginFunction *>::iterator f_iter = (*iter)->lst.begin();
+		SourceHook::List<IPluginFunction *>::iterator f_iter = (*iter)->lst.begin();
 
 		/* Find the hooks on the given temp entity */
 		while (f_iter != (*iter)->lst.end())
@@ -177,7 +177,7 @@ bool TempEntHooks::RemoveHook(const char *name, IPluginFunction *pFunc)
 
 	if (m_TEHooks->Retrieve(name, reinterpret_cast<void **>(&pInfo)))
 	{
-		List<IPluginFunction *>::iterator iter;
+		SourceHook::List<IPluginFunction *>::iterator iter;
 		if ((iter=pInfo->lst.find(pFunc)) != pInfo->lst.end())
 		{
 			pInfo->lst.erase(iter);
@@ -205,7 +205,7 @@ void TempEntHooks::OnPlaybackTempEntity(IRecipientFilter &filter, float delay, c
 
 	if (m_TEHooks->Retrieve(name, reinterpret_cast<void **>(&pInfo)))
 	{
-		List<IPluginFunction *>::iterator iter;
+		SourceHook::List<IPluginFunction *>::iterator iter;
 		IPluginFunction *pFunc;
 		size_t size;
 		cell_t res = static_cast<ResultType>(Pl_Continue);

@@ -38,8 +38,8 @@
 #include "vglobals.h"
 #include "CellRecipientFilter.h"
 
-List<ValveCall *> g_RegCalls;
-List<ICallWrapper *> g_CallWraps;
+SourceHook::List<ValveCall *> g_RegCalls;
+SourceHook::List<ICallWrapper *> g_CallWraps;
 
 inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
 {
@@ -331,7 +331,7 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
-static String *g_lightstyle[MAX_LIGHTSTYLES] = {NULL};
+static SourceHook::String *g_lightstyle[MAX_LIGHTSTYLES] = {NULL};
 static cell_t SetLightStyle(IPluginContext *pContext, const cell_t *params)
 {
 	int style = params[1];
@@ -347,7 +347,7 @@ static cell_t SetLightStyle(IPluginContext *pContext, const cell_t *params)
 		 * this or not on shutdown, but for ~4K of memory MAX, it doesn't seem worth it yet.
 		 * So, it's a :TODO:!
 		 */
-		g_lightstyle[style] = new String();
+		g_lightstyle[style] = new SourceHook::String();
 	}
 
 	char *str;

@@ -36,6 +36,12 @@
 #include "vglobals.h"
 #include "tempents.h"
 
+#if defined ORANGEBOX_BUILD
+	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2.txt"
+#else
+	#define SDKTOOLS_GAME_FILE		"sdktools.games"
+#endif
+
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -55,6 +61,7 @@ IGameHelpers *g_pGameHelpers = NULL;
 IServerGameClients *serverClients = NULL;
 IVoiceServer *voiceserver = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
+ICvar *icvar = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
 
@@ -81,7 +88,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
-	if (!gameconfs->LoadGameConfigFile("sdktools.games", &g_pGameConf, error, maxlength))
+	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
 	{
 		return false;
 	}
@@ -90,7 +97,10 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
 
-	ConCommandBaseMgr::OneTimeInit(this);
+#if defined ORANGEBOX_BUILD
+	g_pCVar = icvar;
+#endif
+	CONVAR_REGISTER(this);
 
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 
@@ -111,7 +121,7 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 
 void SDKTools::SDK_OnUnload()
 {
-	List<ValveCall *>::iterator iter;
+	SourceHook::List<ValveCall *>::iterator iter;
 	for (iter = g_RegCalls.begin();
 		 iter != g_RegCalls.end();
 		 iter++)
@@ -138,14 +148,15 @@ void SDKTools::SDK_OnUnload()
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
-	GET_V_IFACE_ANY(serverFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
-	GET_V_IFACE_ANY(engineFactory, engsound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
-	GET_V_IFACE_ANY(engineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);
-	GET_V_IFACE_ANY(engineFactory, netstringtables, INetworkStringTableContainer, INTERFACENAME_NETWORKSTRINGTABLESERVER);
-	GET_V_IFACE_ANY(engineFactory, pluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
-	GET_V_IFACE_ANY(serverFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
-	GET_V_IFACE_ANY(engineFactory, voiceserver, IVoiceServer, INTERFACEVERSION_VOICESERVER);
-	GET_V_IFACE_ANY(serverFactory, playerinfomngr, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
+	GET_V_IFACE_ANY(GetServerFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
+	GET_V_IFACE_ANY(GetEngineFactory, engsound, IEngineSound, IENGINESOUND_SERVER_INTERFACE_VERSION);
+	GET_V_IFACE_ANY(GetEngineFactory, enginetrace, IEngineTrace, INTERFACEVERSION_ENGINETRACE_SERVER);
+	GET_V_IFACE_ANY(GetEngineFactory, netstringtables, INetworkStringTableContainer, INTERFACENAME_NETWORKSTRINGTABLESERVER);
+	GET_V_IFACE_ANY(GetEngineFactory, pluginhelpers, IServerPluginHelpers, INTERFACEVERSION_ISERVERPLUGINHELPERS);
+	GET_V_IFACE_ANY(GetServerFactory, serverClients, IServerGameClients, INTERFACEVERSION_SERVERGAMECLIENTS);
+	GET_V_IFACE_ANY(GetEngineFactory, voiceserver, IVoiceServer, INTERFACEVERSION_VOICESERVER);
+	GET_V_IFACE_ANY(GetServerFactory, playerinfomngr, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
+	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
 	return true;
 }
@@ -178,7 +189,7 @@ bool SDKTools::QueryInterfaceDrop(SMInterface *pInterface)
 
 void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 {
-	List<ValveCall *>::iterator iter;
+	SourceHook::List<ValveCall *>::iterator iter;
 	for (iter = g_RegCalls.begin();
 		iter != g_RegCalls.end();
 		iter++)
@@ -200,7 +211,11 @@ void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 
 bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 {
+#if defined METAMOD_PLAPI_VERSION
+	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);
+#else
 	return g_SMAPI->RegisterConCmdBase(g_PLAPI, pVar);
+#endif
 }
 
 bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)

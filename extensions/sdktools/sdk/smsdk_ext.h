@@ -82,6 +82,10 @@
 #include <eiface.h>
 #endif
 
+#if !defined METAMOD_PLAPI_VERSION
+#include <metamod_wrappers.h>
+#endif
+
 using namespace SourceMod;
 using namespace SourcePawn;
 

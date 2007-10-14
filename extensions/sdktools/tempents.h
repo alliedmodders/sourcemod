@@ -38,8 +38,6 @@
 #include <sh_string.h>
 #include <stdio.h>
 
-using namespace SourceHook;
-
 class TempEntityInfo
 {
 public:
@@ -61,7 +59,7 @@ private:
 private:
 	void *m_Me;
 	ServerClass *m_Sc;
-	String m_Name;
+	SourceHook::String m_Name;
 };
 
 class TempEntityManager
@@ -79,7 +77,7 @@ public:
 	void DumpList();
 	void DumpProps(FILE *fp);
 private:
-	List<TempEntityInfo *> m_TEList;
+	SourceHook::List<TempEntityInfo *> m_TEList;
 	IBasicTrie *m_TempEntInfo;
 	void *m_ListHead;
 	int m_NameOffs;
@@ -91,7 +89,7 @@ private:
 struct TEHookInfo
 {
 	TempEntityInfo *te;
-	List<IPluginFunction *> lst;
+	SourceHook::List<IPluginFunction *> lst;
 };
 
 class TempEntHooks : public IPluginsListener
@@ -110,7 +108,7 @@ private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 private:
 	IBasicTrie *m_TEHooks;
-	List<TEHookInfo *> m_HookInfo;
+	SourceHook::List<TEHookInfo *> m_HookInfo;
 	size_t m_HookCount;
 };
 

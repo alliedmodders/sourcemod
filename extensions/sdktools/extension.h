@@ -46,6 +46,7 @@
 #include <ivoiceserver.h>
 #include <iplayerinfo.h>
 #include <convar.h>
+#include <compat_wrappers.h>
 
 /**
  * @brief Implementation of the SDK Tools extension.
@@ -93,6 +94,7 @@ extern IServerPluginHelpers *pluginhelpers;
 extern IServerGameClients *serverClients;
 extern IVoiceServer *voiceserver;
 extern IPlayerInfoManager *playerinfomngr;
+extern ICvar *icvar;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;

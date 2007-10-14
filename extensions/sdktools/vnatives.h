@@ -34,7 +34,7 @@
 
 #include <sh_list.h>
 
-extern List<ValveCall *> g_RegCalls;
+extern SourceHook::List<ValveCall *> g_RegCalls;
 extern sp_nativeinfo_t g_Natives[];
 extern sp_nativeinfo_t g_SoundNatives[];
 

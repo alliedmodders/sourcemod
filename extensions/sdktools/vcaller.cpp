@@ -106,9 +106,9 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	void *addrInBase = NULL;
 	if (params[1] == SDKLibrary_Server)
 	{
-		addrInBase = (void *)g_SMAPI->serverFactory(false);
+		addrInBase = (void *)g_SMAPI->GetServerFactory(false);
 	} else if (params[1] == SDKLibrary_Engine) {
-		addrInBase = (void *)g_SMAPI->engineFactory(false);
+		addrInBase = (void *)g_SMAPI->GetEngineFactory(false);
 	}
 	if (addrInBase == NULL)
 	{
