@@ -382,3 +382,39 @@ bool CHalfLife2::IsLANServer()
 
 	return (sv_lan->GetInt() != 0);
 }
+
+void CHalfLife2::PushCommandStack(const CCommand *cmd)
+{
+	CachedCommandInfo info;
+
+	info.args = cmd;
+#if !defined ORANGEBOX_BUILD
+	strncopy(info.cmd, cmd->Arg(0), sizeof(info.cmd));
+#endif
+
+	m_CommandStack.push(info);
+}
+
+const CCommand *CHalfLife2::PeekCommandStack()
+{
+	if (m_CommandStack.empty())
+	{
+		return NULL;
+	}
+
+	return m_CommandStack.front().args;
+}
+
+void CHalfLife2::PopCommandStack()
+{
+	m_CommandStack.pop();
+}
+
+const char *CHalfLife2::CurrentCommandName()
+{
+#if defined ORANGEBOX_BUILD
+	return m_CommandStack.front().args->Arg(0);
+#else
+	return m_CommandStack.front().cmd;
+#endif
+}

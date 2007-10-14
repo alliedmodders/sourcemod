@@ -527,13 +527,16 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 }
 
 #if defined ORANGEBOX_BUILD
-void ConVarManager::OnConVarChanged(IConVar *pConVar, const char *oldValue, float flOldValue)
+void ConVarManager::OnConVarChanged(IConVar *pIConVar, const char *oldValue, float flOldValue)
 #else
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 #endif
 {
 	/* If the values are the same, exit early in order to not trigger callbacks */
-	if (strcmp(reinterpret_cast<ConVar *>(pConVar)->GetString(), oldValue) == 0)
+#if defined ORANGEBOX_BUILD
+	ConVar *pConVar = (ConVar *)pIConVar;
+#endif
+	if (strcmp(pConVar->GetString(), oldValue) == 0)
 	{
 		return;
 	}

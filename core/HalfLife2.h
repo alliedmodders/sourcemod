@@ -41,6 +41,8 @@
 #include <IGameHelpers.h>
 #include <KeyValues.h>
 
+class CCommand;
+
 using namespace SourceHook;
 using namespace SourceMod;
 
@@ -64,6 +66,14 @@ struct DelayedFakeCliCmd
 	String cmd;
 	int client;
 	int userid;
+};
+
+struct CachedCommandInfo
+{
+	const CCommand *args;
+#if !defined ORANGEBOX_BUILD
+	char cmd[300];
+#endif
 };
 
 class CHalfLife2 : 
@@ -90,6 +100,11 @@ public: //IGameHelpers
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
+public:
+	void PushCommandStack(const CCommand *cmd);
+	void PopCommandStack();
+	const CCommand *PeekCommandStack();
+	const char *CurrentCommandName();
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
@@ -101,6 +116,7 @@ private:
 	int m_VGUIMenu;
 	Queue<DelayedFakeCliCmd *> m_CmdQueue;
 	CStack<DelayedFakeCliCmd *> m_FreeCmds;
+	CStack<CachedCommandInfo> m_CommandStack;
 };
 
 extern CHalfLife2 g_HL2;

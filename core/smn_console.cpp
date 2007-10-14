@@ -623,28 +623,50 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-BUILD INTENTIONALLY BROKEN BY BAIL
-HAHA
-I DOUBT YOU CAN COMPILE THIS, GCC
+LOL BUILD IS STILL BROKEN
+LOL
+Seriously.  Don't compile it.
 
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
-	return 4; //:O;//engine->Cmd_Argc() - 1;
+	const CCommand *pCmd = g_HL2.PeekCommandStack();
+
+	if (!pCmd)
+	{
+		return pContext->ThrowNativeError("No command callback available");
+	}
+
+	return pCmd->ArgC() - 1;
 }
 
 static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 {
-	//const char *arg = //engine->Cmd_Argv(params[1]);
+	const CCommand *pCmd = g_HL2.PeekCommandStack();
+
+	if (!pCmd)
+	{
+		return pContext->ThrowNativeError("No command callback available");
+	}
+
 	size_t length;
+
+	const char *arg = pCmd->Arg(params[1]);
 	
-	//pContext->StringToLocalUTF8(params[2], params[3], arg, &length);
+	pContext->StringToLocalUTF8(params[2], params[3], arg ? arg : "", &length);
 
 	return (cell_t)length;
 }
 
 static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 {
-	const char *args = NULL;//engine->Cmd_Args();
+	const CCommand *pCmd = g_HL2.PeekCommandStack();
+
+	if (!pCmd)
+	{
+		return pContext->ThrowNativeError("No command callback available");
+	}
+
+	const char *args = pCmd->ArgS();
 	size_t length;
 
 	if (!args)

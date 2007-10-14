@@ -44,6 +44,7 @@
 #include "Translator.h"
 #include "Logger.h"
 #include "ChatTriggers.h"
+#include "HalfLife2.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -586,12 +587,10 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		return;
 	}
 
-	/**
-	 * We cache this because the engine is not re-entrant.
-	 */
-	char cmd[300];
+	g_HL2.PushCommandStack(&args);
+
 	int argcount = args.ArgC() - 1;
-	strncopy(cmd, args.Arg(0), sizeof(cmd));
+	const char *cmd = g_HL2.CurrentCommandName();
 
 	bool result = g_ValveMenuStyle.OnClientCommand(client, cmd, args);
 	if (result)
@@ -617,10 +616,13 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 
 	if (res >= Pl_Stop)
 	{
+		g_HL2.PopCommandStack();
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	res = g_ConCmds.DispatchClientCommand(client, cmd, argcount, (ResultType)res);
+
+	g_HL2.PopCommandStack();
 
 	if (res >= Pl_Handled)
 	{

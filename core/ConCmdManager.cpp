@@ -157,7 +157,12 @@ void CommandCallback()
 {
 	CCommand command;
 #endif
+
+	g_HL2.PushCommandStack(&command);
+
 	g_ConCmds.InternalDispatch(command);
+
+	g_HL2.PopCommandStack();
 }
 
 void ConCmdManager::SetCommandClient(int client)
@@ -230,8 +235,7 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	 * -- 
 	 * Whether or not it goes through the callback is determined by FCVAR_GAMEDLL
 	 */
-	char cmd[300];
-	strncopy(cmd, command.Arg(0), sizeof(cmd));
+	const char *cmd = g_HL2.CurrentCommandName();
 
 	ConCmdInfo *pInfo;
 	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
