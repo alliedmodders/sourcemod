@@ -200,14 +200,29 @@ namespace builder
 			lib.vcproj_name = "sm_mysql";
 			libraries.Add(lib);
 
-			/*
 			lib = new Library();
-			lib.Destination = "addons/sourcemod/extensions";
-			lib.LocalPath = "extensions/sdktools";
-			lib.Name = "sdktools.ext";
-			lib.ProjectFile = "sdktools";
+			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
+			lib.source_path = "extensions/sdktools";
+			lib.binary_name = "sdktools.ext";
+			lib.vcproj_name = "sdktools";
+			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
-			*/
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep1";
+			lib.source_path = "extensions/sdktools";
+			lib.binary_name = "sdktools.ext";
+			lib.vcproj_name = "sdktools";
+			lib.build_mode = BuildMode.BuildMode_Episode1;
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
+			lib.source_path = "extensions/sdktools";
+			lib.binary_name = "sdktools.ext";
+			lib.vcproj_name = "sdktools";
+			lib.build_mode = BuildMode.BuildMode_Episode2;
+			libraries.Add(lib);
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions";
