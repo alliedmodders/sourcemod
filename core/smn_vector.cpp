@@ -183,7 +183,7 @@ static cell_t NormalizeVector(IPluginContext *pContext, const cell_t *params)
 
 //:TODO: OMG remove this when we get the OB SDK!!1
 // as well as bitbuf.cpp (i write it here just to remind it)
-#if defined ORANGEBOX_BUILD
+#if defined ORANGEBOX_BUILD && !defined __linux__
 float ham(float _X)
 {
 	return sqrt(_X); 

@@ -13,7 +13,7 @@ GCC4_FLAGS = -fvisibility=hidden
 GCC4_CPP_FLAGS = -fvisibility-inlines-hidden
 DEBUG_FLAGS = -g -ggdb3
 CPP = gcc-4.1
-BINARY = sourcemod_mm_i486.so
+BINARY = sourcemod.2.ep1.so
 
 HL2PUB = $(HL2SDK)/public
 HL2LIB = $(HL2SDK)/linux_sdk
@@ -82,8 +82,6 @@ all:
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
 	$(MAKE) -f Makefile.ep1 sourcemod
-	rm -rf $(BINARY)
-	ln -sf $(BIN_DIR)/$(BINARY) $(BINARY)
 
 sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C)
 	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
