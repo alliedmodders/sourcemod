@@ -200,7 +200,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -280,7 +280,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(HL2SDKOB)\public;$(HL2SDKOB)\public\dlls;$(HL2SDKOB)\public\engine;$(HL2SDKOB)\public\tier0;$(HL2SDKOB)\public\tier1;$(HL2SDKOB)\public\vstdlib;$(HL2SDKOB)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;$(HL2SDKOB)\public;$(HL2SDKOB)\public\dlls;$(HL2SDKOB)\public\engine;$(HL2SDKOB)\public\tier0;$(HL2SDKOB)\public\tier1;$(HL2SDKOB)\public\vstdlib;$(HL2SDKOB)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -360,7 +360,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM142);$(SOURCEMM142)\sourcemm;$(SOURCEMM142)\sourcehook"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM142);$(SOURCEMM142)\sourcemm;$(SOURCEMM142)\sourcehook"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -441,7 +441,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM142);$(SOURCEMM142)\sourcemm;$(SOURCEMM142)\sourcehook"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM142);$(SOURCEMM142)\sourcemm;$(SOURCEMM142)\sourcehook"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
@@ -522,7 +522,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(HL2SDKOB)\public;$(HL2SDKOB)\public\dlls;$(HL2SDKOB)\public\engine;$(HL2SDKOB)\public\tier0;$(HL2SDKOB)\public\tier1;$(HL2SDKOB)\public\vstdlib;$(HL2SDKOB)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;$(HL2SDKOB)\public;$(HL2SDKOB)\public\dlls;$(HL2SDKOB)\public\engine;$(HL2SDKOB)\public\tier0;$(HL2SDKOB)\public\tier1;$(HL2SDKOB)\public\vstdlib;$(HL2SDKOB)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
@@ -603,7 +603,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;$(HL2SDK)\public;$(HL2SDK)\public\dlls;$(HL2SDK)\public\engine;$(HL2SDK)\public\tier0;$(HL2SDK)\public\tier1;$(HL2SDK)\public\vstdlib;$(HL2SDK)\tier1;$(SOURCEMM);$(SOURCEMM)\sourcemm;$(SOURCEMM)\sourcehook"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"

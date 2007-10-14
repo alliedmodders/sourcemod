@@ -41,7 +41,7 @@ void RegNatives::Register(ICallWrapper *pWrapper)
 
 void RegNatives::UnregisterAll()
 {
-	List<ICallWrapper *>::iterator iter;
+	SourceHook::List<ICallWrapper *>::iterator iter;
 
 	for (iter=m_List.begin(); iter!=m_List.end(); iter++)
 	{

@@ -34,15 +34,13 @@
 
 #include <sh_list.h>
 
-using namespace SourceHook;
-
 class RegNatives
 {
 public:
 	void Register(ICallWrapper *pWrapper);
 	void UnregisterAll();
 private:
-	List<ICallWrapper *> m_List;
+	SourceHook::List<ICallWrapper *> m_List;
 };
 
 extern RegNatives g_RegNatives;
