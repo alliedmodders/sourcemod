@@ -171,7 +171,7 @@ namespace builder
 			for (int i=0; i<libs.Length; i++)
 			{
 				if (cfg.Platform == BasePlatform.Platform_Linux
-					|| libs[i].build_mode == BuildMode.BuildMode_Episode2)
+					&& libs[i].build_mode == BuildMode.BuildMode_Episode2)
 				{
 					continue;
 				}
