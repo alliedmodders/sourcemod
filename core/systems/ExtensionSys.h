@@ -121,7 +121,7 @@ public: //IExtensionManager
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmd, unsigned int argcount);
+	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
 	IExtension *LoadAutoExtension(const char *path);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);

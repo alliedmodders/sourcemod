@@ -60,7 +60,7 @@ public: //SMGlobalClass, IHandleTypeDispatch, IPluginListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
 	MsgListenerWrapper *CreateListener(IPluginContext *pCtx);
-	MsgWrapperIter FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept);
+	bool FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept, MsgWrapperIter *iter);
 	bool DeleteListener(IPluginContext *pCtx, MsgWrapperIter iter);
 private:
 	CStack<MsgListenerWrapper *> m_FreeListeners;
@@ -156,30 +156,31 @@ MsgListenerWrapper *UsrMessageNatives::CreateListener(IPluginContext *pCtx)
 	return pListener;
 }
 
-MsgWrapperIter UsrMessageNatives::FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept)
+bool UsrMessageNatives::FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept, MsgWrapperIter *iter)
 {
 	MsgWrapperList *pList;
-	MsgWrapperIter iter;
+	MsgWrapperIter _iter;
 	MsgListenerWrapper *pListener;
 	IPlugin *pl = g_PluginSys.FindPluginByContext(pCtx->GetContext());
 
 	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{
-		return NULL;
+		return false;
 	}
 
-	for (iter=pList->begin(); iter!=pList->end(); iter++)
+	for (_iter=pList->begin(); _iter!=pList->end(); _iter++)
 	{
-		pListener = (*iter);
+		pListener = (*_iter);
 		if ((msgid == pListener->GetMessageId()) 
 			&& (intercept == pListener->IsInterceptHook()) 
 			&& (pHook == pListener->GetHookedFunction()))
 		{
-			return iter;
+			*iter = _iter;
+			return true;
 		}
 	}
 
-	return NULL;
+	return false;
 }
 
 bool UsrMessageNatives::DeleteListener(IPluginContext *pCtx, MsgWrapperIter iter)
@@ -467,8 +468,7 @@ static cell_t smn_UnhookUserMessage(IPluginContext *pCtx, const cell_t *params)
 	}
 	intercept = (params[3]) ? true : false;
 
-	iter = s_UsrMessageNatives.FindListener(msgid, pCtx, pFunc, intercept);
-	if (iter == NULL)
+	if (!s_UsrMessageNatives.FindListener(msgid, pCtx, pFunc, intercept, &iter))
 	{
 		return pCtx->ThrowNativeError("Unable to unhook the current user message");
 	}

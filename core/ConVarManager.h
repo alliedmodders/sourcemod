@@ -51,7 +51,7 @@ struct ConVarInfo
 	Handle_t handle;					/**< Handle to convar */
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
-	FnChangeCallback origCallback;		/**< The original callback function */
+	FnChangeCallback_t origCallback;		/**< The original callback function */
 #if PLAPI_VERSION < 12
 	const char *name;					/**< Name of convar */
 #endif
@@ -85,7 +85,7 @@ public: // IHandleTypeDispatch
 public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *command, unsigned int argcount);
+	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
 	/**
 	 * Get the 'ConVar' handle type ID.
@@ -150,7 +150,11 @@ private:
 	/**
 	 * Static callback that Valve's ConVar object executes when the convar's value changes.
 	 */
+#if defined ORANGEBOX_BUILD
+	static void OnConVarChanged(IConVar *pConVar, const char *oldValue, float flOldValue);
+#else
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
+#endif
 
 	/**
 	 * Callback for when StartQueryCvarValue() has finished.

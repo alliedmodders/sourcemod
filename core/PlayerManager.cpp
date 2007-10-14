@@ -54,7 +54,11 @@ const unsigned int *g_NumPlayersToAuth = NULL;
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
+#if defined ORANGEBOX_BUILD
+SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
+#else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
+#endif
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
@@ -565,8 +569,14 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	}
 }
 
+#if defined ORANGEBOX_BUILD
+void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
+{
+#else
 void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
+	CCommand args;
+#endif
 	int client = engine->IndexOfEdict(pEntity);
 	cell_t res = Pl_Continue;
 
@@ -580,15 +590,15 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	 * We cache this because the engine is not re-entrant.
 	 */
 	char cmd[300];
-	int args = engine->Cmd_Argc() - 1;
-	strncopy(cmd, engine->Cmd_Argv(0), sizeof(cmd));
+	int argcount = args.ArgC() - 1;
+	strncopy(cmd, args.Arg(0), sizeof(cmd));
 
-	bool result = g_ValveMenuStyle.OnClientCommand(client, cmd);
+	bool result = g_ValveMenuStyle.OnClientCommand(client, cmd, args);
 	if (result)
 	{
 		res = Pl_Handled;
 	} else {
-		result = g_RadioMenuStyle.OnClientCommand(client, cmd);
+		result = g_RadioMenuStyle.OnClientCommand(client, cmd, args);
 		if (result)
 		{
 			res = Pl_Handled;
@@ -597,7 +607,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 
 	cell_t res2 = Pl_Continue;
 	m_clcommand->PushCell(client);
-	m_clcommand->PushCell(args);
+	m_clcommand->PushCell(argcount);
 	m_clcommand->Execute(&res2, NULL);
 
 	if (res2 > res)
@@ -610,7 +620,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
-	res = g_ConCmds.DispatchClientCommand(client, cmd, args, (ResultType)res);
+	res = g_ConCmds.DispatchClientCommand(client, cmd, argcount, (ResultType)res);
 
 	if (res >= Pl_Handled)
 	{

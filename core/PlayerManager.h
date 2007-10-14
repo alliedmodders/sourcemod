@@ -122,7 +122,11 @@ public:
 	void OnClientPutInServer(edict_t *pEntity, char const *playername);
 	void OnClientDisconnect(edict_t *pEntity);
 	void OnClientDisconnect_Post(edict_t *pEntity);
+#if defined ORANGEBOX_BUILD
+	void OnClientCommand(edict_t *pEntity, const CCommand &args);
+#else
 	void OnClientCommand(edict_t *pEntity);
+#endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 public: //IPlayerManager

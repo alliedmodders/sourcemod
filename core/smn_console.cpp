@@ -107,7 +107,7 @@ static void NotifyConVar(ConVar *pConVar)
 {
 	IGameEvent *pEvent = gameevents->CreateEvent("server_cvar");
 	pEvent->SetString("cvarname", pConVar->GetName());
-	if (pConVar->IsBitSet(FCVAR_PROTECTED))
+	if (IsFlagSet(pConVar, FCVAR_PROTECTED))
 	{
 		pEvent->SetString("cvarvalue", "***PROTECTED***");
 	} else {
@@ -250,13 +250,13 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 	pConVar->SetValue(params[2]);
 
 	/* Should we replicate it? */
-	if (params[3] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -297,13 +297,13 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	pConVar->SetValue(value);
 
 	/* Should we replicate it? */
-	if (params[3] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -346,13 +346,13 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 	pConVar->SetValue(value);
 
 	/* Should we replicate it? */
-	if (params[3] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[4] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -375,13 +375,13 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 	pConVar->Revert();
 	
 	/* Should we replicate it? */
-	if (params[2] && pConVar->IsBitSet(FCVAR_REPLICATED))
+	if (params[2] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[3] && pConVar->IsBitSet(FCVAR_NOTIFY))
+	if (params[3] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
@@ -625,22 +625,22 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
-	return engine->Cmd_Argc() - 1;
+	return 4 :O;//engine->Cmd_Argc() - 1;
 }
 
 static cell_t sm_GetCmdArg(IPluginContext *pContext, const cell_t *params)
 {
-	const char *arg = engine->Cmd_Argv(params[1]);
+	//const char *arg = //engine->Cmd_Argv(params[1]);
 	size_t length;
 	
-	pContext->StringToLocalUTF8(params[2], params[3], arg, &length);
+	//pContext->StringToLocalUTF8(params[2], params[3], arg, &length);
 
 	return (cell_t)length;
 }
 
 static cell_t sm_GetCmdArgString(IPluginContext *pContext, const cell_t *params)
 {
-	const char *args = engine->Cmd_Args();
+	const char *args = NULL;//engine->Cmd_Args();
 	size_t length;
 
 	if (!args)
@@ -751,7 +751,7 @@ static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *par
 	buffer[len++] = '\n';
 	buffer[len] = '\0';
 
-	engine->InsertServerCommand(buffer);
+	InsertServerCommand(buffer);
 
 	return 1;
 }

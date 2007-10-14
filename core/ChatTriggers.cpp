@@ -36,13 +36,17 @@
 #include <IPlayerHelpers.h>
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does */
+#if defined ORANGEBOX_BUILD
+extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate1<const CCommand &, void>);
+extern int __SourceHook_FHAddConCommandDispatch(void *, ISourceHook::AddHookMode, bool, class fastdelegate::FastDelegate1<const CCommand &, void>);
+#else
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-
 #if SH_IMPL_VERSION >= 4
 extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
 #else
 extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-#endif
+#endif //SH_IMPL_VERSION >= 4
+#endif //ORANGEBOX_BUILD
 
 ChatTriggers g_ChatTriggers;
 
@@ -140,8 +144,14 @@ void ChatTriggers::OnSourceModShutdown()
 	}
 }
 
+#if defined ORANGEBOX_BUILD
+void ChatTriggers::OnSayCommand_Pre(const CCommand &command)
+{
+#else
 void ChatTriggers::OnSayCommand_Pre()
 {
+	CCommand command;
+#endif
 	int client = g_ConCmds.GetCommandClient();
 	m_bIsChatTrigger = false;
 
@@ -151,7 +161,7 @@ void ChatTriggers::OnSayCommand_Pre()
 		RETURN_META(MRES_IGNORED);
 	}
 
-	const char *args = engine->Cmd_Args();
+	const char *args = command.ArgS();
 	
 	if (!args)
 	{
@@ -211,7 +221,11 @@ void ChatTriggers::OnSayCommand_Pre()
 	RETURN_META(MRES_IGNORED);
 }
 
+#if defined ORANGEBOX_BUILD
+void ChatTriggers::OnSayCommand_Post(const CCommand &command)
+#else
 void ChatTriggers::OnSayCommand_Post()
+#endif
 {
 	m_bIsChatTrigger = false;
 	if (m_bWillProcessInPost)

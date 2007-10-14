@@ -386,9 +386,9 @@ SMCParseResult CGameConfig::ReadSMC_LeavingSection()
 			void *addrInBase = NULL;
 			if (strcmp(s_TempSig.library, "server") == 0)
 			{
-				addrInBase = (void *)g_SMAPI->serverFactory(false);
+				addrInBase = (void *)g_SMAPI->GetServerFactory(false);
 			} else if (strcmp(s_TempSig.library, "engine") == 0) {
-				addrInBase = (void *)g_SMAPI->engineFactory(false);
+				addrInBase = (void *)g_SMAPI->GetEngineFactory(false);
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)

@@ -32,7 +32,11 @@
 #ifndef _INCLUDE_SOURCEMOD_MM_API_H_
 #define _INCLUDE_SOURCEMOD_MM_API_H_
 
-#include "convar_sm.h"
+#if defined ORANGEBOX_BUILD
+	#include "convar_sm_ob.h"
+#else
+	#include "convar_sm.h"
+#endif
 #include <ISmmPlugin.h>
 #include <eiface.h>
 #include <igameevents.h>
@@ -40,6 +44,10 @@
 #include <random.h>
 #include <filesystem.h>
 #include <IEngineSound.h>
+
+#ifndef METAMOD_PLAPI_VERSION
+	#include <metamod_wrappers.h>
+#endif
 
 /**
  * @file Contains wrappers around required Metamod:Source API exports

@@ -38,6 +38,7 @@
 #include "sourcemm_api.h"
 #include "KeyValues.h"
 #include "sm_fastlink.h"
+#include <compat_wrappers.h>
 
 using namespace SourceMod;
 
@@ -59,7 +60,7 @@ class ValveMenuStyle :
 {
 public:
 	ValveMenuStyle();
-	bool OnClientCommand(int client, const char *cmd);
+	bool OnClientCommand(int client, const char *cmdname, const CCommand &cmd);
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
 	void SendDisplay(int client, IMenuPanel *display);

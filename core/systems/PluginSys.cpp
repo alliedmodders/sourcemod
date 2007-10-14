@@ -1961,11 +1961,12 @@ const char *CPluginManager::GetStatusText(PluginStatus st)
 	}
 }
 
-void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
+void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
+	int argcount = command.ArgC();
 	if (argcount >= 3)
 	{
-		const char *cmd = g_RootMenu.GetArgument(2);
+		const char *cmd = command.Arg(2);
 		if (strcmp(cmd, "list") == 0)
 		{
 			char buffer[256];
@@ -2016,7 +2017,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 
 			char error[128];
 			bool wasloaded;
-			const char *filename = g_RootMenu.GetArgument(3);
+			const char *filename = command.Arg(3);
 
 			char pluginfile[256];
 			const char *ext = g_LibSys.GetFileExtension(filename) ? "" : ".smx";
@@ -2047,7 +2048,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 
 			CPlugin *pl;
 			char *end;
-			const char *arg = g_RootMenu.GetArgument(3);
+			const char *arg = command.Arg(3);
 			int id = strtol(arg, &end, 10);
 
 			if (*end == '\0')
@@ -2089,7 +2090,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				return;
 			}
 
-			int num = atoi(g_RootMenu.GetArgument(3));
+			int num = atoi(command.Arg(3));
 			if (num < 1 || num > (int)GetPluginCount())
 			{
 				g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
@@ -2166,7 +2167,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 				return;
 			}
 
-			int num = atoi(g_RootMenu.GetArgument(3));
+			int num = atoi(command.Arg(3));
 			if (num < 1 || num > (int)GetPluginCount())
 			{
 				g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
@@ -2174,7 +2175,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 			}
 
 			int res;
-			const char *mode = g_RootMenu.GetArgument(4);
+			const char *mode = command.Arg(4);
 			if ((res=strcmp("on", mode)) && strcmp("off", mode))
 			{
 				g_RootMenu.ConsolePrint("[SM] The only possible options are \"on\" and \"off.\"");
@@ -2218,7 +2219,7 @@ void CPluginManager::OnRootConsoleCommand(const char *command, unsigned int argc
 
 			CPlugin *pl;
 			char *end;
-			const char *arg = g_RootMenu.GetArgument(3);
+			const char *arg = command.Arg(3);
 			int id = strtol(arg, &end, 10);
 
 			if (*end == '\0')

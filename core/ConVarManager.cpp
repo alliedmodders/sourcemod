@@ -234,16 +234,17 @@ void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 		delete [] pConVar->GetHelpText();
 
 		/* Then unlink it from SourceMM */
-		g_SMAPI->UnregisterConCmdBase(g_PLAPI, pConVar);
+		g_SMAPI->UnregisterConCommandBase(g_PLAPI, pConVar);
 	}
 }
 
-void ConVarManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
+void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
+	int argcount = command.ArgC();
 	if (argcount >= 3)
 	{
 		/* Get plugin index that was passed */
-		int id = atoi(g_RootMenu.GetArgument(2));
+		int id = atoi(command.Arg(2));
 		
 		/* Get plugin object */
 		CPlugin *plugin = g_PluginSys.GetPluginByOrder(id);
@@ -525,10 +526,14 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	}
 }
 
+#if defined ORANGEBOX_BUILD
+void ConVarManager::OnConVarChanged(IConVar *pConVar, const char *oldValue, float flOldValue)
+#else
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
+#endif
 {
 	/* If the values are the same, exit early in order to not trigger callbacks */
-	if (strcmp(pConVar->GetString(), oldValue) == 0)
+	if (strcmp(reinterpret_cast<ConVar *>(pConVar)->GetString(), oldValue) == 0)
 	{
 		return;
 	}
@@ -539,19 +544,23 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 	/* Find the convar in the lookup trie */
 	sm_trie_retrieve(pCache, pConVar->GetName(), (void **)&pInfo);
 
-	FnChangeCallback origCallback = pInfo->origCallback;
+	FnChangeCallback_t origCallback = pInfo->origCallback;
 	IChangeableForward *pForward = pInfo->pChangeForward;
 
 	/* If there was a change callback installed previously, call it */
 	if (origCallback)
 	{
+#if defined ORANGEBOX_BUILD
+		origCallback(pConVar, oldValue, flOldValue);
+#else
 		origCallback(pConVar, oldValue);
+#endif
 	}
 
 	/* Now call forwards in plugins that have hooked this */
 	pForward->PushCell(pInfo->handle);
 	pForward->PushString(oldValue);
-	pForward->PushString(pConVar->GetString());
+	pForward->PushString(reinterpret_cast<ConVar *>(pConVar)->GetString());
 	pForward->Execute(NULL);
 }
 
@@ -652,10 +661,16 @@ void _YamagramPrinterTwoPointOhOh(int yamagram)
 	s_YamagramState = yamagram;
 }
 
+#if defined ORANGEBOX_BUILD
+void _IntExt_CallYamagrams(const CCommand &cmd)
+{
+#else
 void _IntExt_CallYamagrams()
 {
+	CCommand cmd;
+#endif
 	bool correct = false;
-	const char *arg = engine->Cmd_Args();
+	const char *arg = cmd.ArgS();
 
 	if (!arg || arg[0] == '\0')
 	{
@@ -737,10 +752,14 @@ void _IntExt_EnableYamagrams()
 	}
 }
 
+#if defined ORANGEBOX_BUILD
+void _IntExt_OnHostnameChanged(IConVar *pConVar, const char *oldValue, float flOldValue)
+#else
 void _IntExt_OnHostnameChanged(ConVar *pConVar, char const *oldValue)
+#endif
 {
 	if (strcmp(oldValue, "Good morning, DS-san.") == 0
-		&& strcmp(pConVar->GetString(), "Good night, talking desk lamp.") == 0)
+		&& strcmp(reinterpret_cast<ConVar *>(pConVar)->GetString(), "Good night, talking desk lamp.") == 0)
 	{
 		_IntExt_EnableYamagrams();
 	}

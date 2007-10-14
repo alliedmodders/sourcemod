@@ -40,7 +40,12 @@
 
 ConCmdManager g_ConCmds;
 
-SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
+#if defined ORANGEBOX_BUILD
+	SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+#else
+	SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
+#endif
+
 SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
 
 struct PlCmdInfo
@@ -144,10 +149,15 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		delete pList;
 	}
 }
-
+#if defined ORANGEBOX_BUILD
+void CommandCallback(const CCommand &command)
+{
+#else
 void CommandCallback()
 {
-	g_ConCmds.InternalDispatch();
+	CCommand command;
+#endif
+	g_ConCmds.InternalDispatch(command);
 }
 
 void ConCmdManager::SetCommandClient(int client)
@@ -201,7 +211,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 	return type;
 }
 
-void ConCmdManager::InternalDispatch()
+void ConCmdManager::InternalDispatch(const CCommand &command)
 {
 	int client = m_CmdClient;
 
@@ -221,7 +231,7 @@ void ConCmdManager::InternalDispatch()
 	 * Whether or not it goes through the callback is determined by FCVAR_GAMEDLL
 	 */
 	char cmd[300];
-	strncopy(cmd, engine->Cmd_Argv(0), sizeof(cmd));
+	strncopy(cmd, command.Arg(0), sizeof(cmd));
 
 	ConCmdInfo *pInfo;
 	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
@@ -230,7 +240,7 @@ void ConCmdManager::InternalDispatch()
 	}
 
 	cell_t result = Pl_Continue;
-	int args = engine->Cmd_Argc() - 1;
+	int args = command.ArgC() - 1;
 
 	List<CmdHook *>::iterator iter;
 	CmdHook *pHook;
@@ -725,7 +735,7 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info)
 		if (info->sourceMod)
 		{
 			/* Unlink from SourceMM */
-			g_SMAPI->UnregisterConCmdBase(g_PLAPI, info->pCmd);
+			g_SMAPI->UnregisterConCommandBase(g_PLAPI, info->pCmd);
 			/* Delete the command's memory */
 			char *new_help = const_cast<char *>(info->pCmd->GetHelpText());
 			char *new_name = const_cast<char *>(info->pCmd->GetName());
@@ -822,11 +832,11 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 	return pInfo;
 }
 
-void ConCmdManager::OnRootConsoleCommand(const char *command, unsigned int argcount)
+void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
-	if (argcount >= 3)
+	if (command.ArgC() >= 3)
 	{
-		const char *text = engine->Cmd_Argv(2);
+		const char *text = command.Arg(2);
 
 		int id = atoi(text);
 		CPlugin *pPlugin = g_PluginSys.GetPluginByOrder(id);
@@ -919,9 +929,15 @@ void _YamState(int state)
 	g_yam_state = state;
 }
 
+#if defined ORANGEBOX_BUILD
+void _IntExt_CallYams(const CCommand &cmd)
+{
+#else
 void _IntExt_CallYams()
 {
-	const char *arg = engine->Cmd_Argv(1);
+	CCommand cmd;
+#endif
+	const char *arg = cmd.Arg(1);
 
 	/* should be impossible */
 	if (!arg || arg[0] == '\0')

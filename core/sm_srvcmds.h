@@ -64,17 +64,14 @@ public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModShutdown();
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmd, unsigned int argcount);
+	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public: //IRootConsole
 	bool AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler);
 	bool RemoveRootConsoleCommand(const char *cmd, IRootConsoleCommand *pHandler);
 	void ConsolePrint(const char *fmt, ...);
-	const char *GetArgument(unsigned int argno);
-	unsigned int GetArgumentCount();
-	const char *GetArguments();
 	void DrawGenericOption(const char *cmd, const char *text);
 public:
-	void GotRootCmd();
+	void GotRootCmd(const CCommand &cmd);
 private:
 	bool m_CfgExecDone;
 	Trie *m_pCommands;

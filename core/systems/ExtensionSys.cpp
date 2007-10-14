@@ -813,11 +813,12 @@ void CExtensionManager::AddDependency(IExtension *pSource, const char *file, boo
 	}
 }
 
-void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
+void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
+	int argcount = command.ArgC();
 	if (argcount >= 3)
 	{
-		const char *cmd = g_RootMenu.GetArgument(2);
+		const char *cmd = command.Arg(2);
 		if (strcmp(cmd, "list") == 0)
 		{
 			List<CExtension *>::iterator iter;
@@ -869,7 +870,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				return;
 			}
 
-			const char *sId = g_RootMenu.GetArgument(3);
+			const char *sId = command.Arg(3);
 			unsigned int id = atoi(sId);
 			if (id <= 0)
 			{
@@ -936,7 +937,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 				return;
 			}
 
-			const char *arg = g_RootMenu.GetArgument(3);
+			const char *arg = command.Arg(3);
 			unsigned int num = atoi(arg);
 			CExtension *pExt = FindByOrder(num);
 
@@ -948,7 +949,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmd, unsigned int argco
 
 			if (argcount > 4 && pExt->unload_code)
 			{
-				const char *unload = g_RootMenu.GetArgument(4);
+				const char *unload = command.Arg(4);
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];

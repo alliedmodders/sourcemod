@@ -29,46 +29,54 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_CORECONFIG_H_
-#define _INCLUDE_SOURCEMOD_CORECONFIG_H_
+#ifndef _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
+#define _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
 
-#include "sm_globals.h"
-#include <ITextParsers.h>
-#include <IRootConsoleMenu.h>
+#if defined ORANGEBOX_BUILD
+	#include "convar_sm_ob.h"
+	#include "sourcemm_api.h"
 
-using namespace SourceMod;
+	#define CONVAR_REGISTER(object)				ConVar_Register(0, object)
 
-class CoreConfig : 
-	public SMGlobalClass,
-	public ITextListener_SMC,
-	public IRootConsoleCommand
-{
-public: // SMGlobalClass
-	void OnSourceModAllInitialized();
-	void OnSourceModShutdown();
-	void OnSourceModLevelChange(const char *mapName);
-public: // ITextListener_SMC
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
-public: // IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
-public:
-	/**
-	 * Initializes CoreConfig by reading from core.cfg file
-	 */
-	void Initialize();
-private:
-	/**
-	 * Sets configuration option by notifying SourceMod components that rely on core.cfg
-	 */
-	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
-};
+	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
+	{
+		return cmd->IsFlagSet(flag);
+	}
+	inline void InsertServerCommand(const char *buf)
+	{
+		engine->ServerCommand(buf);
+	}
+#else
+	#include "sourcemm_api.h"
 
-extern bool SM_AreConfigsExecuted();
-extern void SM_ExecuteAllConfigs();
-extern void SM_ExecuteForPlugin(IPluginContext *ctx);
-extern void SM_ConfigsExecuted_Global();
-extern void SM_ConfigsExecuted_Plugin(unsigned int serial);
+	class CCommand
+	{
+	public:
+		inline const char *ArgS() const
+		{
+			return engine->Cmd_Args();
+		}
+		inline int ArgC() const
+		{
+			return engine->Cmd_Argc();
+		}
+		inline const char *Arg(int index) const
+		{
+			return engine->Cmd_Argv(index);
+		}
+	};
 
-extern CoreConfig g_CoreConfig;
+	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
+	{
+		return cmd->IsBitSet(flag);
+	}
+	inline void InsertServerCommand(const char *buf)
+	{
+		engine->InsertServerCommand(buf);
+	}
 
-#endif // _INCLUDE_SOURCEMOD_CORECONFIG_H_
+	#define CONVAR_REGISTER(object)				ConCommandBaseMgr::OneTimeInit(object)
+	typedef FnChangeCallback					FnChangeCallback_t;
+#endif //ORANGEBOX_BUILD
+
+#endif //_INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_

@@ -96,7 +96,11 @@ class ConCmdManager :
 	public IRootConsoleCommand,
 	public IPluginsListener
 {
+#if defined ORANGEBOX_BUILD
+	friend void CommandCallback(const CCommand &command);
+#else
 	friend void CommandCallback();
+#endif
 public:
 	ConCmdManager();
 	~ConCmdManager();
@@ -106,7 +110,7 @@ public: //SMGlobalClass
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *command, unsigned int argcount);
+	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
 	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
 	bool AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
@@ -122,7 +126,7 @@ public:
 	bool LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags);
 	bool CheckCommandAccess(int client, const char *cmd, FlagBits flags);
 private:
-	void InternalDispatch();
+	void InternalDispatch(const CCommand &command);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	void SetCommandClient(int client);

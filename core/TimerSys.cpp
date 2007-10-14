@@ -35,7 +35,15 @@
 #include "sourcemm_api.h"
 #include "frame_hooks.h"
 
-SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
+#if !defined ORANGEBOX_BUILD
+#define CallGlobalChangeCallbacks	CallGlobalChangeCallback
+#endif
+
+#if defined ORANGEBOX_BUILD
+SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
+#else
+SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
+#endif
 
 TimerSystem g_Timers;
 float g_fUniversalTime = 0.0f;
@@ -107,7 +115,11 @@ public:
 		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
 	}
 
+#if defined ORANGEBOX_BUILD
+	void GlobalChangeCallback(ConVar *pVar, const char *old_value, float flOldValue)
+#else
 	void GlobalChangeCallback(ConVar *pVar, const char *old_value)
+#endif
 	{
 		if (pVar != mp_timelimit)
 		{
@@ -125,12 +137,12 @@ public:
 private:
 	void Enable()
 	{
-		SH_ADD_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallback, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
+		SH_ADD_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallbacks, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
 	}
 
 	void Disable()
 	{
-		SH_REMOVE_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallback, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
+		SH_REMOVE_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallbacks, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
 	}
 
 private:

@@ -57,11 +57,18 @@ RootConsoleMenu::~RootConsoleMenu()
 	m_Menu.clear();
 }
 
-extern void _IntExt_OnHostnameChanged(ConVar *pConVar, char const *oldValue);
+#if defined ORANGEBOX_BUILD
+	extern void _IntExt_OnHostnameChanged(IConVar *var, const char *pOldValue, float flOldValue);
+#else
+	extern void _IntExt_OnHostnameChanged(ConVar *pConVar, char const *oldValue);
+#endif
 
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
-	ConCommandBaseMgr::OneTimeInit(this);
+#if defined ORANGEBOX_BUILD
+	ICvar *g_pCVar = icvar;
+#endif
+	CONVAR_REGISTER(this);
 	AddRootConsoleCommand("version", "Display version information", this);
 	AddRootConsoleCommand("credits", "Display credits listing", this);
 
@@ -201,28 +208,28 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 
 extern void _IntExt_EnableYams();
 
-void RootConsoleMenu::GotRootCmd()
+void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 {
-	unsigned int argnum = GetArgumentCount();
+	unsigned int argnum = cmd.ArgC();
 
 	if (argnum >= 2)
 	{
-		const char *cmd = GetArgument(1);
-		if (strcmp(cmd, "text") == 0)
+		const char *cmdname = cmd.Arg(1);
+		if (strcmp(cmdname, "text") == 0)
 		{
 			_IntExt_EnableYams();
 			return;
-		} else if (strcmp(cmd, "internal") == 0) {
+		} else if (strcmp(cmdname, "internal") == 0) {
 			if (argnum >= 3)
 			{
-				const char *arg = GetArgument(2);
+				const char *arg = cmd.Arg(2);
 				if (strcmp(arg, "1") == 0)
 				{
 					SM_ConfigsExecuted_Global();
 				} else if (strcmp(arg, "2") == 0) {
 					if (argnum >= 4)
 					{
-						SM_ConfigsExecuted_Plugin(atoi(GetArgument(3)));
+						SM_ConfigsExecuted_Plugin(atoi(cmd.Arg(3)));
 					}
 				}
 			}
@@ -230,9 +237,9 @@ void RootConsoleMenu::GotRootCmd()
 		}
 
 		IRootConsoleCommand *pHandler;
-		if (sm_trie_retrieve(m_pCommands, cmd, (void **)&pHandler))
+		if (sm_trie_retrieve(m_pCommands, cmdname, (void **)&pHandler))
 		{
-			pHandler->OnRootConsoleCommand(cmd, argnum);
+			pHandler->OnRootConsoleCommand(cmdname, cmd);
 			return;
 		}
 	}
@@ -249,24 +256,9 @@ void RootConsoleMenu::GotRootCmd()
 	}
 }
 
-const char *RootConsoleMenu::GetArgument(unsigned int argno)
+void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
-	return engine->Cmd_Argv(argno);
-}
-
-const char *RootConsoleMenu::GetArguments()
-{
-	return engine->Cmd_Args();
-}
-
-unsigned int RootConsoleMenu::GetArgumentCount()
-{
-	return engine->Cmd_Argc();
-}
-
-void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcount)
-{
-	if (strcmp(cmd, "credits") == 0)
+	if (strcmp(cmdname, "credits") == 0)
 	{
 		ConsolePrint(" SourceMod was developed by AlliedModders, LLC.");
 		ConsolePrint(" Development would not have been possible without the following people:");
@@ -277,7 +269,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcoun
 		ConsolePrint(" Special thanks to Viper of GameConnect");
 		ConsolePrint(" Special thanks to Mani of Mani-Admin-Plugin");
 		ConsolePrint(" http://www.sourcemod.net/");
-	} else if (strcmp(cmd, "version") == 0) {
+	} else if (strcmp(cmdname, "version") == 0) {
 		ConsolePrint(" SourceMod Version Information:");
 		ConsolePrint("    SourceMod Version: %s", SVN_FULL_VERSION);
 		ConsolePrint("    JIT Version: %s, %s", g_pVM->GetVMName(), g_pVM->GetVersionString());
@@ -288,18 +280,24 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmd, unsigned int argcoun
 
 CON_COMMAND(sm, "SourceMod Menu")
 {
-	g_RootMenu.GotRootCmd();
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
+	g_RootMenu.GotRootCmd(args);
 }
 
 CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle leaks")
 {
-	if (engine->Cmd_Argc() < 2)
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
+	if (args.ArgC() < 2)
 	{
 		g_RootMenu.ConsolePrint("Usage: sm_dump_handles <file>");
 		return;
 	}
 
-	const char *arg = engine->Cmd_Argv(1);
+	const char *arg = args.Arg(1);
 	FILE *fp = fopen(arg, "wt");
 	if (!fp)
 	{

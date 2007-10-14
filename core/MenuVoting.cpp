@@ -37,7 +37,11 @@
 
 float g_next_vote = 0.0f;
 
+#if defined ORANGEBOX_BUILD
+void OnVoteDelayChange(IConVar *cvar, const char *value, float flOldValue);
+#else
 void OnVoteDelayChange(ConVar *cvar, const char *value);
+#endif
 ConVar sm_vote_delay("sm_vote_delay",
 					 "30",
 					 0,
@@ -48,7 +52,11 @@ ConVar sm_vote_delay("sm_vote_delay",
 					 0.0,
 					 OnVoteDelayChange);
 
+#if defined ORANGEBOX_BUILD
+void OnVoteDelayChange(IConVar *cvar, const char *value, float flOldValue)
+#else
 void OnVoteDelayChange(ConVar *cvar, const char *value)
+#endif
 {
 	/* See if the new vote delay isn't something we need to account for */
 	if (sm_vote_delay.GetFloat() < 1.0f)

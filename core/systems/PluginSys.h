@@ -48,7 +48,11 @@
 #include "sm_trie.h"
 #include "sourcemod.h"
 #include <IRootConsoleMenu.h>
+#if defined ORANGEBOX_BUILD
+#include "convar_sm_ob.h"
+#else
 #include "convar_sm.h"
+#endif
 
 using namespace SourceHook;
 
@@ -351,7 +355,7 @@ public: //SMGlobalClass
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *command, unsigned int argcount);
+	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
 	/**
 	 * Loads all plugins not yet loaded

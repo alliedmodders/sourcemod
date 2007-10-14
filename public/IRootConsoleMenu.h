@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
 #define _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
 
+#include <compat_wrappers.h>
+
 /**
  * @file IRootConsoleMenu.h
  * @brief Defines the interface for adding options to the "sm" console command.
@@ -51,7 +53,7 @@ namespace SourceMod
 	class IRootConsoleCommand
 	{
 	public:
-		virtual void OnRootConsoleCommand(const char *command, unsigned int argcount) =0;
+		virtual void OnRootConsoleCommand(const char *cmdname, const CCommand &command) =0;
 	};
 
 	/**
@@ -86,28 +88,6 @@ namespace SourceMod
 		 * @param ...			Format arguments.
 		 */
 		virtual void ConsolePrint(const char *fmt, ...) =0;
-
-		/**
-		 * @brief Returns the string of an argument.
-		 *
-		 * @param argno			The index of the argument.
-		 * @return				A string containing the argument, or nothing if invalid.
-		 */
-		virtual const char *GetArgument(unsigned int argno) =0;
-
-		/**
-		 * @brief Returns the number of arguments.
-		 *
-		 * @return				Number of arguments.
-		 */
-		virtual unsigned int GetArgumentCount() =0;
-
-		/** 
-		 * @brief Returns the entire argument string.
-		 *
-		 * @return				String containing all arguments.
-		 */
-		virtual const char *GetArguments() =0;
 
 		/**
 		 * @brief Draws a generic command/description pair.

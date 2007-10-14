@@ -96,16 +96,16 @@ bool CRadioStyle::IsSupported()
 	return (g_ShowMenuId != -1);
 }
 
-bool CRadioStyle::OnClientCommand(int client, const char *cmd)
+bool CRadioStyle::OnClientCommand(int client, const char *cmdname, const CCommand &cmd)
 {
-	if (strcmp(cmd, "menuselect") == 0)
+	if (strcmp(cmdname, "menuselect") == 0)
 	{
 		if (!m_players[client].bInMenu)
 		{
 			return false;
 		}
 
-		int arg = atoi(engine->Cmd_Argv(1));
+		int arg = atoi(cmd.Arg(1));
 		ClientPressedKey(client, arg);
 		return true;
 	}

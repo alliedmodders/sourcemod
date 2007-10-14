@@ -50,8 +50,13 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 private: //ConCommand
+#if defined ORANGEBOX_BUILD
+	void OnSayCommand_Pre(const CCommand &command);
+	void OnSayCommand_Post(const CCommand &command);
+#else
 	void OnSayCommand_Pre();
 	void OnSayCommand_Post();
+#endif
 public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);

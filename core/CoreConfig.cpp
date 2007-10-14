@@ -71,12 +71,13 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 	g_bConfigsExecd = false;
 }
 
-void CoreConfig::OnRootConsoleCommand(const char *command, unsigned int argcount)
+void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
+	int argcount = command.ArgC();
 	if (argcount >= 4)
 	{
-		const char *option = engine->Cmd_Argv(2);
-		const char *value = engine->Cmd_Argv(3);
+		const char *option = command.Arg(2);
+		const char *value = command.Arg(3);
 
 		char error[255];
 

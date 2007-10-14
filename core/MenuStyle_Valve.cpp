@@ -53,11 +53,11 @@ CBaseMenuPlayer *ValveMenuStyle::GetMenuPlayer(int client)
 	return &m_players[client];
 }
 
-bool ValveMenuStyle::OnClientCommand(int client, const char *cmd)
+bool ValveMenuStyle::OnClientCommand(int client, const char *cmdname, const CCommand &cmd)
 {
-	if (strcmp(cmd, "sm_vmenuselect") == 0)
+	if (strcmp(cmdname, "sm_vmenuselect") == 0)
 	{
-		int key_press = atoi(engine->Cmd_Argv(1));
+		int key_press = atoi(cmd.Arg(1));
 		g_ValveMenuStyle.ClientPressedKey(client, key_press);
 		return true;
 	}

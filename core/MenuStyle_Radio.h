@@ -40,6 +40,7 @@
 #include <IUserMessages.h>
 #include "sm_fastlink.h"
 #include <sh_stack.h>
+#include <compat_wrappers.h>
 
 using namespace SourceMod;
 
@@ -70,7 +71,7 @@ public: //IUserMessageListener
 	void OnUserMessageSent(int msg_id);
 public:
 	bool IsSupported();
-	bool OnClientCommand(int client, const char *cmd);
+	bool OnClientCommand(int client, const char *cmdname, const CCommand &cmd);
 public:
 	CRadioDisplay *MakeRadioDisplay(CRadioMenu *menu=NULL);
 	void FreeRadioDisplay(CRadioDisplay *display);
