@@ -68,6 +68,7 @@
 #define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
+bool load_attempted = false;
 
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
@@ -140,6 +141,8 @@ bool GetFileOfAddress(void *pAddr, char *buffer, size_t maxlength)
 DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
 {
 	char *filename;
+
+	load_attempted = true;
 	
 	if (mvi->api_major > METAMOD_API_MAJOR)
 	{
@@ -182,7 +185,15 @@ DLL_EXPORT void UnloadInterface_MMS()
 
 DLL_EXPORT void *CreateInterface(const char *iface, int *ret)
 {
-	if (strcmp(iface, METAMOD_PLAPI_NAME))
+	/**
+	 * If a load has already been attempted, bail out immediately.
+	 */
+	if (load_attempted)
+	{
+		return NULL;
+	}
+
+	if (strcmp(iface, METAMOD_PLAPI_NAME) == 0)
 	{
 		char thisfile[256];
 		char targetfile[256];
