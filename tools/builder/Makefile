@@ -8,7 +8,7 @@ OBJECTS = ABuilder.cs AssemblyInfo.cs Config.cs LinuxBuilder.cs Win32Builder.cs 
 default: all
 
 all:	$(OBJECTS)
-	$(CS) $(OBJECTS) -o $(BINARY)
+	$(CS) $(OBJECTS) -out:$(BINARY)
 
 clean:
 	rm -rf $(BINARY)
