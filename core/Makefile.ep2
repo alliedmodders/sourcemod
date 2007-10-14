@@ -2,7 +2,7 @@
 # Makefile written by David "BAILOPAN" Anderson
 
 SMM_BASE = ../../sourcemm
-HL2SDK = ../../hl2sdk
+HL2SDK = ../../hl2sdk-ob
 SMSDK = ..
 SRCDS = ~/srcds
 
@@ -57,7 +57,7 @@ endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
 
-CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER
+CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER -DORANGEBOX_BUILD
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ifeq "$(GCC_VERSION)" "4"
@@ -81,7 +81,7 @@ all:
 	mkdir -p $(BIN_DIR)/thread
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
-	$(MAKE) sourcemod
+	$(MAKE) -f Makefile.ep1 sourcemod
 	rm -rf $(BINARY)
 	ln -sf $(BIN_DIR)/$(BINARY) $(BINARY)
 
@@ -89,7 +89,7 @@ sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C)
 	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug:	
-	$(MAKE) all DEBUG=true
+	$(MAKE) -f Makefile.ep1 all DEBUG=true
 
 default: all
 
