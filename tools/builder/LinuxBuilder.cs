@@ -16,52 +16,20 @@ namespace builder
 			return "spcomp";
 		}
 
-		public override string CompressPackage(Package pkg)
-		{
-			string lpath = null, ltarget = null;
-			
-			pkg.GetCompressBases(ref lpath, ref ltarget);
-
-			string local_dir = Config.PathFormat("{0}/{1}", 
-				cfg.OutputBase,
-				lpath);
-
-			string name = PackageBuildName(pkg) + ".tar.gz";
-
-			ProcessStartInfo info = new ProcessStartInfo();
-			info.FileName = cfg.Compressor;
-			info.WorkingDirectory = local_dir;
-			info.Arguments = "zcvf \"" + name + "\" \"" + ltarget + "\"";
-			info.UseShellExecute = false;
-
-			Process p = Process.Start(info);
-			p.WaitForExit();
-
-			local_dir = Config.PathFormat("{0}/{1}", local_dir, name);
-
-			if (!File.Exists(local_dir))
-			{
-				return null;
-			}
-
-			return name;
-		}
-
-
 		public override bool BuildLibrary(Package pkg, Library lib, ref string _binName, ref string _binPath)
 		{
 			ProcessStartInfo info = new ProcessStartInfo();
 
 			string path = Config.PathFormat("{0}/{1}", 
-				cfg.SourceBase,
-				lib.LocalPath);
+				cfg.source_path,
+				lib.source_path);
 
 			/* PlatformExt ignored for us */
-			string binName = lib.Name;
+			string binName = lib.binary_name;
 			
-			if (!lib.IsExecutable)
+			if (!lib.is_executable)
 			{
-				if (lib.PlatformExt)
+				if (lib.has_platform_ext)
 				{
 					binName += "_i486.so";
 				} 
@@ -73,7 +41,7 @@ namespace builder
 
 			string binpath = Config.PathFormat("{0}/{1}/{2}",
 				path,
-				lib.ReleaseBuild,
+				(lib.release_mode == ReleaseMode.ReleaseMode_Release) ? "Release" : "Debug",
 				binName);
 			
 			if (File.Exists(binpath))
@@ -81,10 +49,25 @@ namespace builder
 				File.Delete(binpath);
 			}
 
+			string makefile_name = "Makefile";
+
+			if (lib.build_mode == BuildMode.BuildMode_Episode1)
+			{
+				makefile_name = "Makefile.ep1";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
+			{
+				makefile_name = "Makefile.ep2";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
+			{
+				makefile_name = "Makefile.orig";
+			}
+
 			/* Clean the project first */
 			info.WorkingDirectory = path;
-			info.FileName = cfg.BuilderPath;
-			info.Arguments = "clean";
+			info.FileName = cfg.builder_path;
+			info.Arguments = "-f " + makefile_name + " clean";
 			info.UseShellExecute = false;
 
 			Process p = Process.Start(info);
@@ -93,13 +76,13 @@ namespace builder
 
 			/* Now build it */
 			info.WorkingDirectory = path;
-			info.FileName = cfg.BuilderPath;
-			info.Arguments = "";
+			info.FileName = cfg.builder_path;
+			info.Arguments = "-f " + makefile_name;
 			info.UseShellExecute = false;
 
-			if (cfg.BuildOptions != null)
+			if (cfg.build_options != null)
 			{
-				info.Arguments += " " + cfg.BuildOptions;
+				info.Arguments += " " + cfg.build_options;
 			}
 
 			p = Process.Start(info);

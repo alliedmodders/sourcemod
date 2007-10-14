@@ -1,9 +1,14 @@
 using System;
+using System.Collections;
 
 namespace builder
 {
 	public class PkgCore : Package
 	{
+		private ArrayList libraries;
+		private ArrayList plugins;
+		private ArrayList folders;
+
 		public PkgCore()
 		{
 		}
@@ -29,33 +34,37 @@ namespace builder
 		 */
 		public override string [] GetFolders()
 		{
-			string [] folders = new string[22];
+			if (folders != null)
+			{
+				return (string [])folders.ToArray(typeof(string));
+			}
 
-			folders[0] = "addons/sourcemod/bin";
-			folders[1] = "addons/sourcemod/plugins/disabled";
-			folders[2] = "addons/sourcemod/gamedata";
-			folders[3] = "addons/sourcemod/configs/geoip";
-			folders[4] = "addons/sourcemod/translations";
-			folders[5] = "addons/sourcemod/logs";
-			folders[6] = "addons/sourcemod/extensions";
-			folders[7] = "addons/sourcemod/data";
-			folders[8] = "addons/sourcemod/scripting/include";
-			folders[9] = "addons/sourcemod/scripting/admin-flatfile";
-			folders[10] = "addons/sourcemod/scripting/testsuite";
-			folders[11] = "cfg/sourcemod";
-			folders[12] = "addons/sourcemod/configs/sql-init-scripts";
-			folders[13] = "addons/sourcemod/configs/sql-init-scripts/mysql";
-			folders[14] = "addons/sourcemod/configs/sql-init-scripts/sqlite";
-			folders[15] = "addons/sourcemod/extensions/games";
-			folders[16] = "addons/sourcemod/scripting/basecommands";
-			folders[17] = "addons/sourcemod/scripting/basecomm";
-			folders[18] = "addons/sourcemod/scripting/basefunvotes";
-			folders[19] = "addons/sourcemod/scripting/basevotes";
-			folders[20] = "addons/sourcemod/scripting/basebans";
-			folders[21] = "addons/sourcemod/scripting/basefuncommands";
+			folders = new ArrayList();
+
+			folders.Add("addons/sourcemod/bin");
+			folders.Add("addons/sourcemod/plugins/disabled");
+			folders.Add("addons/sourcemod/gamedata");
+			folders.Add("addons/sourcemod/configs/geoip");
+			folders.Add("addons/sourcemod/translations");
+			folders.Add("addons/sourcemod/logs");
+			folders.Add("addons/sourcemod/extensions");
+			folders.Add("addons/sourcemod/data");
+			folders.Add("addons/sourcemod/scripting/include");
+			folders.Add("addons/sourcemod/scripting/admin-flatfile");
+			folders.Add("addons/sourcemod/scripting/testsuite");
+			folders.Add("cfg/sourcemod");
+			folders.Add("addons/sourcemod/configs/sql-init-scripts");
+			folders.Add("addons/sourcemod/configs/sql-init-scripts/mysql");
+			folders.Add("addons/sourcemod/configs/sql-init-scripts/sqlite");
+			folders.Add("addons/sourcemod/extensions/games");
+			folders.Add("addons/sourcemod/scripting/basecommands");
+			folders.Add("addons/sourcemod/scripting/basecomm");
+			folders.Add("addons/sourcemod/scripting/basefunvotes");
+			folders.Add("addons/sourcemod/scripting/basevotes");
+			folders.Add("addons/sourcemod/scripting/basebans");
+			folders.Add("addons/sourcemod/scripting/basefuncommands");
 			
-
-			return folders;
+			return (string [])folders.ToArray(typeof(string));
 		}
 
 		/**
@@ -113,64 +122,105 @@ namespace builder
 		 */
 		public override Library [] GetLibraries()
 		{
-			Library [] libs = new Library[10];
-
-			for (int i=0; i<libs.Length; i++)
+			if (libraries != null)
 			{
-				libs[i] = new Library();
+				return (Library [])libraries.ToArray(typeof(Library));
 			}
 
-			libs[0].Destination = "addons/sourcemod/bin";
-			libs[0].LocalPath = "core";
-			libs[0].Name = "sourcemod_mm";
-			libs[0].PlatformExt = true;
+			libraries = new ArrayList();
 
-			libs[1].Destination = "addons/sourcemod/bin";
-			libs[1].LocalPath = "sourcepawn/jit/x86";
-			libs[1].Name = "sourcepawn.jit.x86";
-			libs[1].ProjectFile = "jit-x86";
+			Library lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "core";
+			lib.binary_name = "sourcemod.1.ep1";
+			lib.vcproj_name = "sourcemod_mm";
+			lib.build_mode = BuildMode.BuildMode_OldMetamod;
+			libraries.Add(lib);
 
-			libs[2].Destination = "addons/sourcemod/scripting";
-			libs[2].LocalPath = "sourcepawn/compiler";
-			libs[2].Name = "spcomp";
-			libs[2].IsExecutable = true;
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "core";
+			lib.binary_name = "sourcemod.2.ep1";
+			lib.vcproj_name = "sourcemod_mm";
+			lib.build_mode = BuildMode.BuildMode_Episode1;
+			libraries.Add(lib);
 
-			libs[3].Destination = "addons/sourcemod/extensions";
-			libs[3].LocalPath = "extensions/geoip";
-			libs[3].Name = "geoip.ext";
-			libs[3].ProjectFile = "geoip";
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "core";
+			lib.binary_name = "sourcemod.2.ep2";
+			lib.vcproj_name = "sourcemod_mm";
+			lib.build_mode = BuildMode.BuildMode_Episode2;
+			libraries.Add(lib);
 
-			libs[4].Destination = "addons/sourcemod/extensions";
-			libs[4].LocalPath = "extensions/bintools";
-			libs[4].Name = "bintools.ext";
-			libs[4].ProjectFile = "bintools";
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "sourcepawn/jit/x86";
+			lib.binary_name = "sourcepawn.jit.x86";
+			lib.vcproj_name = "jit-x86";
+			libraries.Add(lib);
 
-			libs[5].Destination = "addons/sourcemod/extensions";
-			libs[5].LocalPath = "extensions/mysql";
-			libs[5].Name = "dbi.mysql.ext";
-			libs[5].ProjectFile = "sm_mysql";
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/scripting";
+			lib.source_path = "sourcepawn/compiler";
+			lib.binary_name = "spcomp";
+			lib.is_executable = true;
+			libraries.Add(lib);
 
-			libs[6].Destination = "addons/sourcemod/extensions";
-			libs[6].LocalPath = "extensions/sdktools";
-			libs[6].Name = "sdktools.ext";
-			libs[6].ProjectFile = "sdktools";
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/geoip";
+			lib.binary_name = "geoip.ext";
+			lib.vcproj_name = "geoip";
+			libraries.Add(lib);
 
-			libs[7].Destination = "addons/sourcemod/extensions";
-			libs[7].LocalPath = "extensions/sqlite";
-			libs[7].Name = "dbi.sqlite.ext";
-			libs[7].ProjectFile = "sm_sqlite";
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/bintools";
+			lib.binary_name = "bintools.ext";
+			lib.vcproj_name = "bintools";
+			libraries.Add(lib);
 
-			libs[8].Destination = "addons/sourcemod/extensions/games";
-			libs[8].LocalPath = "extensions/cstrike";
-			libs[8].Name = "game.cstrike.ext";
-			libs[8].ProjectFile = "cstrike";
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/mysql";
+			lib.binary_name = "dbi.mysql.ext";
+			lib.vcproj_name = "sm_mysql";
+			libraries.Add(lib);
 
-			libs[9].Destination = "addons/sourcemod/extensions";
-			libs[9].LocalPath = "extensions/topmenus";
-			libs[9].Name = "topmenus.ext";
-			libs[9].ProjectFile = "topmenus";
+			/*
+			lib = new Library();
+			lib.Destination = "addons/sourcemod/extensions";
+			lib.LocalPath = "extensions/sdktools";
+			lib.Name = "sdktools.ext";
+			lib.ProjectFile = "sdktools";
+			libraries.Add(lib);
+			*/
 
-			return libs;
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/sqlite";
+			lib.binary_name = "dbi.sqlite.ext";
+			lib.vcproj_name = "sm_sqlite";
+			libraries.Add(lib);
+
+			/*
+			lib = new Library();
+			lib.Destination = "addons/sourcemod/extensions/games";
+			lib.LocalPath = "extensions/cstrike";
+			lib.Name = "game.cstrike.ext";
+			lib.ProjectFile = "cstrike";
+			libraries.Add(lib);
+			*/
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/topmenus";
+			lib.binary_name = "topmenus.ext";
+			lib.vcproj_name = "topmenus";
+			libraries.Add(lib);
+
+			return (Library [])libraries.ToArray(typeof(Library));
 		}
 
 		/**
@@ -178,29 +228,35 @@ namespace builder
 		 */
 		public override Plugin [] GetPlugins()
 		{
-			Plugin [] plugins = new Plugin[19];
+			if (plugins != null)
+			{
+				return (Plugin [])plugins.ToArray(typeof(Plugin));
+			}
 
-			plugins[0] = new Plugin("admin-flatfile", "admin-flatfile");
-			plugins[1] = new Plugin("adminhelp");
-			plugins[2] = new Plugin("antiflood");
-			plugins[3] = new Plugin("basecommands");
-			plugins[4] = new Plugin("reservedslots");
-			plugins[5] = new Plugin("basetriggers");
-			plugins[6] = new Plugin("nextmap");
-			plugins[7] = new Plugin("basechat");
-			plugins[8] = new Plugin("basefuncommands");
-			plugins[9] = new Plugin("basevotes");
-			plugins[10] = new Plugin("basefunvotes");
-			plugins[11] = new Plugin("admin-sql-prefetch", true);
-			plugins[12] = new Plugin("admin-sql-threaded", true);
-			plugins[13] = new Plugin("sql-admin-manager", true);
-			plugins[14] = new Plugin("basebans");
-			plugins[15] = new Plugin("mapchooser", true);
-			plugins[16] = new Plugin("basecomm");
-			plugins[17] = new Plugin("randomcycle", true);
-			plugins[18] = new Plugin("rockthevote", true);
+			plugins = new ArrayList();
 
-			return plugins;
+			plugins.Add(new Plugin("admin-flatfile", "admin-flatfile"));
+			plugins.Add(new Plugin("adminhelp"));
+			plugins.Add(new Plugin("antiflood"));
+			plugins.Add(new Plugin("basecommands"));
+			plugins.Add(new Plugin("reservedslots"));
+			plugins.Add(new Plugin("basetriggers"));
+			plugins.Add(new Plugin("nextmap"));
+			plugins.Add(new Plugin("basechat"));
+			plugins.Add(new Plugin("basefuncommands"));
+			plugins.Add(new Plugin("basevotes"));
+			plugins.Add(new Plugin("basefunvotes"));
+			plugins.Add(new Plugin("admin-sql-prefetch", true));
+			plugins.Add(new Plugin("admin-sql-threaded", true));
+			plugins.Add(new Plugin("sql-admin-manager", true));
+			plugins.Add(new Plugin("basebans"));
+			plugins.Add(new Plugin("mapchooser", true));
+			plugins.Add(new Plugin("basecomm"));
+			plugins.Add(new Plugin("randomcycle", true));
+			plugins.Add(new Plugin("rockthevote", true));
+			plugins.Add(new Plugin("adminmenu", true));
+
+			return (Plugin [])plugins.ToArray(typeof(Plugin));
 		}
 	}
 }

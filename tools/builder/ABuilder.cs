@@ -12,15 +12,13 @@ namespace builder
 		{
 		}
 
-		public abstract string CompressPackage(Package pkg);
-
 		public abstract bool BuildLibrary(Package pkg, Library lib, ref string _binName, ref string _binPath);
 
 		public abstract string GetPawnCompilerName();
 
 		public bool CompilePlugin(Package pkg, Plugin pl)
 		{
-			string local_dir = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting", cfg.OutputBase, pkg.GetBaseFolder());
+			string local_dir = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting", cfg.pkg_path, pkg.GetBaseFolder());
 
 			string filepath = null;
 			if (pl.Folder != null)
@@ -48,7 +46,7 @@ namespace builder
 
 			Console.WriteLine(output);
 
-			string binary = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+			string binary = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting/{2}.smx", cfg.pkg_path, pkg.GetBaseFolder(), pl.Source);
 			if (!File.Exists(binary))
 			{
 				return false;
@@ -57,11 +55,11 @@ namespace builder
 			string new_loc;
 			if (pl.disabled)
 			{
-				new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/disabled/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+				new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/disabled/{2}.smx", cfg.pkg_path, pkg.GetBaseFolder(), pl.Source);
 			} 
 			else 
 			{
-				new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/{2}.smx", cfg.OutputBase, pkg.GetBaseFolder(), pl.Source);
+				new_loc = Config.PathFormat("{0}/{1}/addons/sourcemod/plugins/{2}.smx", cfg.pkg_path, pkg.GetBaseFolder(), pl.Source);
 			}
 
 			try
@@ -81,51 +79,13 @@ namespace builder
 			return true;
 		}
 
-		public string GetRevsionOfPath(string path)
-		{
-			ProcessStartInfo info = new ProcessStartInfo();
-
-			info.WorkingDirectory = path;
-			info.FileName = cfg.SVNVersion;
-			info.Arguments = "--committed \"" + path + "\"";
-			info.UseShellExecute = false;
-			info.RedirectStandardOutput = true;
-
-			Process p = Process.Start(info);
-			string output = p.StandardOutput.ReadToEnd();
-			p.WaitForExit();
-			p.Close();
-
-			string [] revs = output.Split(":".ToCharArray(), 2);
-			if (revs.Length < 1)
-			{
-				return null;
-			}
-
-			string rev = null;
-			if (revs.Length == 1)
-			{
-				rev = revs[0];
-			} 
-			else 
-			{
-				rev = revs[1];
-			}
-
-			rev = rev.Trim();
-			rev = rev.Replace("M", "");
-			rev = rev.Replace("S", "");
-
-			return rev;
-		}
-
 		public bool CopyFile(Package pkg, string source, string dest)
 		{
 			string from = Config.PathFormat("{0}/{1}", 
-				cfg.SourceBase,
+				cfg.source_path,
 				source);
 			string to = Config.PathFormat("{0}/{1}/{2}",
-				cfg.OutputBase,
+				cfg.pkg_path,
 				pkg.GetBaseFolder(),
 				dest);
 
@@ -137,19 +97,19 @@ namespace builder
 		/** dest can be null to mean root base folder */
 		public void CopyFolder(Package pkg, string source, string dest, string [] omits)
 		{
-			string from_base = Config.PathFormat("{0}/{1}", cfg.SourceBase, source);
+			string from_base = Config.PathFormat("{0}/{1}", cfg.source_path, source);
 			string to_base = null;
 			
 			if (dest == null)
 			{
 				to_base = Config.PathFormat("{0}/{1}", 
-					cfg.OutputBase, 
+					cfg.pkg_path, 
 					pkg.GetBaseFolder());
 			} 
 			else 
 			{
 				to_base = Config.PathFormat("{0}/{1}/{2}", 
-					cfg.OutputBase, 
+					cfg.pkg_path, 
 					pkg.GetBaseFolder(), 
 					dest);
 			}
@@ -182,20 +142,9 @@ namespace builder
 			}
 		}
 
-		public string PackageBuildName(Package pkg)
-		{
-			return pkg.GetPackageName() 
-				+ "-r"
-				+ GetRevsionOfPath(cfg.SourceBase)
-				+ "-"
-				+ DateTime.Now.Year
-				+ DateTime.Now.Month.ToString("00")
-				+ DateTime.Now.Day.ToString("00");
-		}
-
 		public void BuildPackage(Package pkg)
 		{
-			string path = Config.PathFormat("{0}/{1}", cfg.OutputBase, pkg.GetBaseFolder());
+			string path = Config.PathFormat("{0}/{1}", cfg.pkg_path, pkg.GetBaseFolder());
 
 			if (!Directory.Exists(path))
 			{
@@ -206,7 +155,7 @@ namespace builder
 			string [] paths = pkg.GetFolders();
 			for (int i=0; i<paths.GetLength(0); i++)
 			{
-				path = Config.PathFormat("{0}/{1}/{2}", cfg.OutputBase, pkg.GetBaseFolder(), paths[i]);
+				path = Config.PathFormat("{0}/{1}/{2}", cfg.pkg_path, pkg.GetBaseFolder(), paths[i]);
 				if (!Directory.Exists(path))
 				{
 					Directory.CreateDirectory(path);
@@ -225,15 +174,15 @@ namespace builder
 				if (BuildLibrary(pkg, libs[i], ref bin, ref binpath))
 				{
 					path = Config.PathFormat("{0}/{1}/{2}/{3}",
-						cfg.OutputBase,
+						cfg.pkg_path,
 						pkg.GetBaseFolder(),
-						libs[i].Destination,
+						libs[i].package_path,
 						bin);
 					File.Copy(binpath, path, true);
 				}
 				else 
 				{
-					throw new System.Exception("Failed to compile library: " + libs[i].Name);
+					throw new System.Exception("Failed to compile library: " + libs[i].binary_name);
 				}
 			}
 
@@ -248,30 +197,6 @@ namespace builder
 						throw new System.Exception("Failed to compile plugin: " + plugins[i].Source);
 					}
 				}
-			}
-
-			string pkg_file = null;
-			if (cfg.Compressor != null)
-			{
-				if ((pkg_file=CompressPackage(pkg)) == null)
-				{
-					throw new System.Exception("Failed to compress package: " + pkg.GetPackageName());
-				}
-	
-				string lpath = null, ltarget = null;
-				pkg.GetCompressBases(ref lpath, ref ltarget);
-				lpath = Config.PathFormat("{0}/{1}/{2}",
-					cfg.OutputBase,
-					lpath,
-					pkg_file);
-				ltarget = Config.PathFormat("{0}/{1}", cfg.OutputBase, pkg_file);
-	
-				if (File.Exists(ltarget))
-				{
-					File.Delete(ltarget);
-				}
-
-				File.Move(lpath, ltarget);
 			}
 		}
 	}

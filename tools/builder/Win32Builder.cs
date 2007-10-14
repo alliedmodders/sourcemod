@@ -16,51 +16,44 @@ namespace builder
 			return "spcomp.exe";
 		}
 
-		public override string CompressPackage(Package pkg)
-		{
-			string lpath = null, ltarget = null;
-			
-			pkg.GetCompressBases(ref lpath, ref ltarget);
-
-			string local_dir = Config.PathFormat("{0}/{1}", 
-				cfg.OutputBase,
-				lpath);
-
-			string name = PackageBuildName(pkg) + ".zip";
-
-			ProcessStartInfo info = new ProcessStartInfo();
-			info.FileName = cfg.Compressor;
-			info.WorkingDirectory = local_dir;
-			info.Arguments = "-r \"" + name + "\" \"" + ltarget + "\"";
-			info.UseShellExecute = false;
-
-			Process p = Process.Start(info);
-			p.WaitForExit();
-
-			local_dir = Config.PathFormat("{0}/{1}", local_dir, name);
-
-			if (!File.Exists(local_dir))
-			{
-				return null;
-			}
-
-			return name;
-		}
-
 		public override bool BuildLibrary(Package pkg, Library lib, ref string _binName, ref string _binPath)
 		{
 			ProcessStartInfo info = new ProcessStartInfo();
 
 			string path = Config.PathFormat("{0}/{1}/msvc8", 
-				cfg.SourceBase,
-				lib.LocalPath);
+				cfg.source_path,
+				lib.source_path);
 
 			/* PlatformExt ignored for us */
-			string binName = lib.Name + (lib.IsExecutable ? ".exe" : ".dll");
+			string binName = lib.binary_name + (lib.is_executable ? ".exe" : ".dll");
+
+			string config_name = "Unknown";
+
+			if (lib.release_mode == ReleaseMode.ReleaseMode_Release)
+			{
+				config_name = "Release";
+			}
+			else if (lib.release_mode == ReleaseMode.ReleaseMode_Debug)
+			{
+				config_name = "Debug";
+			}
+
+			if (lib.build_mode == BuildMode.BuildMode_Episode1)
+			{
+				config_name = config_name + " - Episode 1";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
+			{
+				config_name = config_name + " - Orange Box";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
+			{
+				config_name = config_name + " - Old Metamod";
+			}
 
 			string binpath = Config.PathFormat("{0}/{1}/{2}",
 				path,
-				lib.ReleaseBuild,
+				config_name,
 				binName);
 			
 			if (File.Exists(binpath))
@@ -68,28 +61,28 @@ namespace builder
 				File.Delete(binpath);
 			}
 
-			string projectFile = null;
-			if (lib.ProjectFile != null)
+			string project_file = null;
+			if (lib.vcproj_name != null)
 			{
-				projectFile = lib.ProjectFile + ".vcproj";
+				project_file = lib.vcproj_name + ".vcproj";
 			} 
 			else 
 			{
-				projectFile = lib.Name + ".vcproj";
+				project_file = lib.binary_name + ".vcproj";
 			}
 
 			info.WorkingDirectory = path;
-			info.FileName = cfg.BuilderPath;
+			info.FileName = cfg.builder_path;
 			info.UseShellExecute = false;
 			info.RedirectStandardOutput = true;
 			info.RedirectStandardError = true;
 
-			if (cfg.BuildOptions != null)
+			if (cfg.build_options != null)
 			{
-				info.Arguments = cfg.BuildOptions + " ";
+				info.Arguments = cfg.build_options + " ";
 			}
 
-			info.Arguments += "/rebuild " + lib.ReleaseBuild + " " + projectFile;
+			info.Arguments += "/rebuild \"" + config_name + "\" " + project_file;
 
 			Process p = Process.Start(info);
 			Console.WriteLine(p.StandardOutput.ReadToEnd());

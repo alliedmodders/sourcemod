@@ -2,22 +2,37 @@ using System;
 
 namespace builder
 {
+	public enum ReleaseMode : int
+	{
+		ReleaseMode_Release,
+		ReleaseMode_Debug,
+	};
+
+	public enum BuildMode : int
+	{
+		BuildMode_Simple,
+		BuildMode_OldMetamod,
+		BuildMode_Episode1,
+		BuildMode_Episode2
+	};
+
 	public class Library
 	{
 		public Library()
 		{
-			PlatformExt = false;
-			IsExecutable = false;
-			ReleaseBuild = "Release";
+			has_platform_ext = false;
+			is_executable = false;
+			release_mode = ReleaseMode.ReleaseMode_Release;
+			build_mode = BuildMode.BuildMode_Simple;
 		}
-		public string Name;			/* Name of binary */
-		public string LocalPath;	/* Local path to library build scripts */
-		public string ReleaseBuild;	/* Release build name */
-		public string Destination;	/* Final relative path */
-		public bool PlatformExt;	/* Extra platform extension */
-		public string ProjectFile;	/* Project file, NULL for standard */
-		public bool IsExecutable;	/* If this is an EXE instead of a DLL */
-		//string DebugBuild;		/* Debug build name */
+		public string binary_name;		/* Name of binary */
+		public string source_path;		/* Local path to library build scripts */
+		public ReleaseMode release_mode; /* Release mode */
+		public BuildMode build_mode;	/* Build mode */
+		public string package_path;		/* Final relative path */
+		public bool has_platform_ext;	/* Add extra platform extension? */
+		public string vcproj_name;		/* Project file, NULL for standard */
+		public bool is_executable;		/* If this is an EXE instead of a DLL */
 	};
 
 	public class Plugin

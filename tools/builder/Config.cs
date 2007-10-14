@@ -12,14 +12,10 @@ namespace builder
 
 	public class Config
 	{
-		public string SourceBase;
-		public string OutputBase;
-		public string BuilderPath;
-		public string CompressOptions;
-		public string SVNVersion;
-		public string ProductVersion;
-		public string Compressor;
-		public string BuildOptions;
+		public string source_path;
+		public string pkg_path;
+		public string builder_path;
+		public string build_options;
 		public builder.BasePlatform Platform;
 
 		public Config()
@@ -75,35 +71,19 @@ namespace builder
 						val = val.Trim(delim.ToCharArray());
 						if (key.CompareTo("SourceBase") == 0)
 						{
-							SourceBase = val;
+							source_path = val;
 						} 
 						else if (key.CompareTo("OutputBase") == 0) 
 						{
-							OutputBase = val;
+							pkg_path = val;
 						} 
 						else if (key.CompareTo("BuilderPath") == 0) 
 						{
-							BuilderPath = val;
-						} 
-						else if (key.CompareTo("CompressOptions") == 0) 
-						{
-							CompressOptions = val;
-						} 
-						else if (key.CompareTo("SVNVersion") == 0) 
-						{
-							SVNVersion = val;
-						} 
-						else if (key.CompareTo("ProductVersion") == 0)
-						{
-							ProductVersion = val;
-						} 
-						else if (key.CompareTo("Compressor") == 0) 
-						{
-							Compressor = val;
+							builder_path = val;
 						} 
 						else if (key.CompareTo("BuildOptions") == 0) 
 						{
-							BuildOptions = val;
+							build_options = val;
 						}
 					}
 				}
