@@ -179,7 +179,9 @@ public:
 				if (*keyptr == '\0')
 				{
 					node->mode = Node_Arc;
-				} else {
+				}
+				else
+				{
 					node->idx = x_addstring(keyptr);
 					node->mode = Node_Term;
 				}
@@ -187,7 +189,9 @@ public:
 				new (&node->value) K(obj);
 
 				return true;
-			} else if (node->parent != lastidx) {
+			}
+			else if (node->parent != lastidx)
+			{
 				/* Collision! We have to split up the tree here.  CASE 4:
 				 * Insertion when a new word is inserted with a collision.
 				 * NOTE: This is the hardest case to handle.  All below examples are based on:
@@ -307,7 +311,9 @@ public:
 							}
 						}
 					}
-				} else {
+				}
+				else
+				{
 					unsigned int q = x_check_multi(outgoing_list, outgoing_count);
 
 					node = &m_base[curidx];
@@ -372,7 +378,9 @@ public:
 				if (*keyptr == '\0')
 				{
 					node->mode = Node_Arc;
-				} else {
+				}
+				else
+				{
 					node->idx = x_addstring(keyptr);
 					node->mode = Node_Term;
 				}
@@ -380,7 +388,9 @@ public:
 				new (&node->value) K(obj);
 
 				return true;
-			} else {
+			}
+			else
+			{
 				/* See what's in the next node - special case if terminator! */
 				if (node->mode == Node_Term)
 				{
@@ -441,7 +451,9 @@ public:
 							term++;
 							keyptr++;
 						}
-					} else if (node->valset) {
+					}
+					else if (node->valset)
+					{
 						node->valset = false;
 						node->value.~K();
 					}
@@ -481,14 +493,18 @@ public:
 						if (*keyptr == '\0')
 						{
 							node->mode = Node_Arc;
-						} else {
+						}
+						else
+						{
 							node->idx = x_addstring(keyptr);
 							node->mode = Node_Term;
 						}
 						node->parent = lastidx;
 						node->valset = true;
 						new (&node->value) K(obj);
-					} else if (*keyptr == '\0') {	//EX: BADGER added over B -> ADGERHOUSE
+					}
+					else if (*keyptr == '\0')
+					{	//EX: BADGER added over B -> ADGERHOUSE
 						/* First backpatch the current node - it ends newly split input string.
 						 * This is the exact opposite of the above procedure.
 						 */
@@ -510,7 +526,9 @@ public:
 						if (*term == '\0')
 						{
 							node->mode = Node_Arc;
-						} else {
+						}
+						else
+						{
 							node->idx = (term - m_stringtab); /* Already in the string table! */
 							node->mode = Node_Term;
 						}
@@ -520,7 +538,9 @@ public:
 						{
 							new (&node->value) K(oldvalue);
 						}
-					} else {
+					}
+					else
+					{
 						/* Finally, we have to create two new nodes instead of just one. */
 						node->mode = Node_Arc;
 
@@ -544,7 +564,9 @@ public:
 						if (*term == '\0')
 						{
 							node->mode = Node_Arc;
-						} else {
+						}
+						else
+						{
 							node->mode = Node_Term;
 							node->idx = (term - m_stringtab); /* Already in the string table! */
 						}
@@ -559,7 +581,9 @@ public:
 						if (*keyptr == '\0')
 						{
 							node->mode = Node_Arc;
-						} else {
+						}
+						else
+						{
 							node->mode = Node_Term;
 							node->idx = x_addstring(keyptr);
 						}
@@ -567,7 +591,9 @@ public:
 
 					/* Phew! */
 					return true;
-				} else {
+				}
+				else
+				{
 					assert(node->mode == Node_Arc);
 				}
 			}
@@ -659,11 +685,17 @@ private:
 			if ((curidx > m_baseSize) || node->mode == Node_Unused || node->parent != lastidx)
 			{
 				return NULL;
-			} else if (node->mode == Node_Term) {
+			}
+			else if (node->mode == Node_Term)
+			{
 				char *term = &m_stringtab[node->idx];
 				if (strcmp(keyptr, term) == 0)
 				{
 					break;
+				}
+				else
+				{
+					return NULL;
 				}
 			}
 			lastidx = curidx;
