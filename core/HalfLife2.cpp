@@ -38,7 +38,6 @@
 #include <compat_wrappers.h>
 
 CHalfLife2 g_HL2;
-bool g_IsOriginalEngine = false;
 ConVar *sv_lan = NULL;
 
 namespace SourceHook
@@ -90,15 +89,21 @@ CHalfLife2::~CHalfLife2()
 }
 
 CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
+bool is_original_engine = false;
 
 void CHalfLife2::OnSourceModStartup(bool late)
 {
 	/* The Ship currently is the only known game to use an older version of the engine */
+#if defined METAMOD_PLAPI_VERSION
+	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL)
+#else
 	if (strcasecmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
+#endif
 	{
-		/* :TODO: Better engine versioning - perhaps something added to SourceMM? */
-		g_IsOriginalEngine = true;
-	} else if (!g_pSharedChangeInfo) {
+		is_original_engine = true;
+	}
+	else if (g_pSharedChangeInfo == NULL)
+	{
 		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
 }
@@ -110,6 +115,13 @@ void CHalfLife2::OnSourceModAllInitialized()
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
 }
+
+#if !defined METAMOD_PLAPI_VERSION
+bool CHalfLife2::IsOriginalEngine()
+{
+	return is_original_engine;
+}
+#endif
 
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
@@ -254,7 +266,7 @@ typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset
 
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 {
-	if (!g_IsOriginalEngine)
+	if (g_pSharedChangeInfo != NULL)
 	{
 		if (offset)
 		{
@@ -262,7 +274,9 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 		} else {
 			pEdict->StateChanged();
 		}
-	} else {
+	}
+	else
+	{
 		pEdict->m_fStateFlags |= FL_EDICT_CHANGED;
 	}
 }

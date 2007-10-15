@@ -50,6 +50,8 @@ IPlayerInfoManager *playerinfo = NULL;
 IBaseFileSystem *basefilesystem = NULL;
 IEngineSound *enginesound = NULL;
 IServerPluginHelpers *serverpluginhelpers = NULL;
+IServerPluginCallbacks *vsp_interface = NULL;
+int vsp_version = 0;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
@@ -82,7 +84,13 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	gpGlobals = ismm->GetCGlobals();
 	
 	ismm->AddListener(this, this);
-	ismm->EnableVSPListener();
+
+#if defined METAMOD_PLAPI_VERSION
+	if ((vsp_interface = g_SMAPI->GetVSPInfo(&vsp_version)) == NULL)
+#endif
+	{
+		g_SMAPI->EnableVSPListener();
+	}
 
 	return g_SourceMod.InitializeSourceMod(error, maxlen, late);
 }
@@ -153,15 +161,44 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 	/* This shouldn't happen */
 	if (!iface)
 	{
-		g_Logger.LogFatal("Metamod:Source version is out of date. SourceMod requires 1.4 or greater.");
+		g_Logger.LogFatal("Metamod:Source version is out of date. SourceMod requires 1.4.2 or greater.");
 		return;
 	}
+
+	if (vsp_interface == NULL)
+	{
+		vsp_interface = iface;
+	}
+
+	if (!g_Loaded)
+	{
+		return;
+	}
+
+#if defined METAMOD_PLAPI_VERSION
+	if (vsp_version == 0)
+	{
+		g_SMAPI->GetVSPInfo(&vsp_version);
+	}
+#else
+	if (vsp_version == 0)
+	{
+		if (strcmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
+		{
+			vsp_version = 1;
+		}
+		else
+		{
+			vsp_version = 2;
+		}
+	}
+#endif
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
 	while (pBase)
 	{
-		pBase->OnSourceModVSPReceived(iface);
+		pBase->OnSourceModVSPReceived();
 		pBase = pBase->m_pGlobalClassNext;
 	}
 }

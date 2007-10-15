@@ -800,6 +800,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\public\compat_wrappers.h"
+				>
+			</File>
+			<File
 				RelativePath="..\ConCmdManager.h"
 				>
 			</File>

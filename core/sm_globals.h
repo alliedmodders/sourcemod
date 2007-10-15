@@ -143,7 +143,7 @@ public:
 	/**
 	 * @brief Called when SourceMod receives a pointer to IServerPluginCallbacks from SourceMM
 	 */
-	virtual void OnSourceModVSPReceived(IServerPluginCallbacks *iface)
+	virtual void OnSourceModVSPReceived()
 	{
 	}
 

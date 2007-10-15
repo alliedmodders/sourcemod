@@ -46,7 +46,7 @@ SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
 
-ConVarManager::ConVarManager() : m_ConVarType(0), m_VSPIface(NULL), m_CanQueryConVars(false)
+ConVarManager::ConVarManager() : m_ConVarType(0), m_bIsDLLQueryHooked(false), m_bIsVSPQueryHooked(false)
 {
 #if PLAPI_VERSION < 12
 	m_IgnoreHandle = false;
@@ -74,11 +74,15 @@ ConVarManager::~ConVarManager()
 
 void ConVarManager::OnSourceModAllInitialized()
 {
-	/* Only valid with ServerGameDLL006 or greater */
+	/**
+	 * Episode 2 has this function by default, but the older versions do not.
+	 */
+#if !defined ORANGEBOX_BUILD
 	if (g_SMAPI->GetGameDLLVersion() >= 6)
+#endif
 	{
 		SH_ADD_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
-		m_CanQueryConVars = true;
+		m_bIsDLLQueryHooked = true;
 	}
 
 	HandleAccess sec;
@@ -97,10 +101,15 @@ void ConVarManager::OnSourceModAllInitialized()
 
 void ConVarManager::OnSourceModShutdown()
 {
-	if (m_CanQueryConVars)
+	if (m_bIsDLLQueryHooked)
 	{
 		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
-		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, m_VSPIface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		m_bIsDLLQueryHooked = false;
+	}
+	else if (m_bIsVSPQueryHooked)
+	{
+		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+		m_bIsVSPQueryHooked = false;
 	}
 
 	IChangeableForward *fwd;
@@ -125,27 +134,35 @@ void ConVarManager::OnSourceModShutdown()
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
 }
 
-void ConVarManager::OnSourceModVSPReceived(IServerPluginCallbacks *iface)
+/**
+ * Orange Box will never use this.
+ */
+void ConVarManager::OnSourceModVSPReceived()
 {
-	/* This will be called after OnSourceModAllInitialized(), so...
-	 *
-	 * If we haven't been able to hook the IServerGameDLL version at this point,
-	 * then use hook IServerPluginCallbacks version from the engine.
+	/**
+	 * Don't bother if the DLL is already hooked.
 	 */
-
-	/* The Ship currently only supports ServerPluginCallbacks001, but we need 002 */
-	if (g_IsOriginalEngine)
+	if (m_bIsDLLQueryHooked)
 	{
 		return;
 	}
 
-	if (!m_CanQueryConVars)
+	/* For later MM:S versions, use the updated API, since it's cleaner. */
+#if defined METAMOD_PLAPI_VERSION
+	int engine = g_SMAPI->GetSourceEngineBuild();
+	if (engine == SOURCE_ENGINE_ORIGINAL || vsp_version < 2)
 	{
-		m_VSPIface = iface;
-
-		SH_ADD_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, iface, this, &ConVarManager::OnQueryCvarValueFinished, false);
-		m_CanQueryConVars = true;
+		return;
 	}
+#else
+	if (g_HL2.IsOriginalEngine() || vsp_version < 2)
+	{
+		return;
+	}
+#endif
+
+	SH_ADD_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
+	m_bIsVSPQueryHooked = true;
 }
 
 #if PLAPI_VERSION >= 12
@@ -306,7 +323,9 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 		if (sm_trie_retrieve(m_ConVarCache, name, (void **)&pInfo))
 		{
 			return pInfo->handle;
-		} else {
+		}
+		else
+		{
 			/* If we don't, then create a new handle from the convar */
 			hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
 
@@ -478,11 +497,17 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 	QueryCvarCookie_t cookie;
 
 	/* Call StartQueryCvarValue() in either the IVEngineServer or IServerPluginHelpers depending on situation */
-	if (!m_VSPIface)
+	if (m_bIsDLLQueryHooked)
 	{
 		cookie = engine->StartQueryCvarValue(pPlayer, name);	
-	} else {
+	}
+	else if (m_bIsVSPQueryHooked)
+	{
 		cookie = serverpluginhelpers->StartQueryCvarValue(pPlayer, name);
+	}
+	else
+	{
+		return InvalidQueryCvarCookie;
 	}
 
 	ConVarQuery query = {cookie, pCallback, hndl};
@@ -505,7 +530,9 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	{
 		pConVarList = new ConVarList();
 		plugin->SetProperty("ConVarList", pConVarList);
-	} else if (pConVarList->find(pConVar) != pConVarList->end()) {
+	}
+	else if (pConVarList->find(pConVar) != pConVarList->end())
+	{
 		/* If convar is already in list, then don't add it */
 		return;
 	}
@@ -568,6 +595,11 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 	pForward->Execute(NULL);
 }
 
+bool ConVarManager::IsQueryingSupported()
+{
+	return (m_bIsDLLQueryHooked || m_bIsVSPQueryHooked);
+}
+
 void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	IPluginFunction *pCallback = NULL;
@@ -597,7 +629,9 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		if (result == eQueryCvarValueStatus_ValueIntact)
 		{
 			pCallback->PushString(cvarValue);
-		} else {
+		}
+		else
+		{
 			pCallback->PushString("\0");
 		}
 

@@ -80,7 +80,7 @@ public:
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
-	void OnSourceModVSPReceived(IServerPluginCallbacks *iface);
+	void OnSourceModVSPReceived();
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public: // IPluginsListener
@@ -131,6 +131,8 @@ public:
 	QueryCvarCookie_t QueryClientConVar(edict_t *pPlayer, const char *name, IPluginFunction *pCallback,
 	                                    Handle_t hndl);
 
+	bool IsQueryingSupported();
+
 #if PLAPI_VERSION >= 12
 	/**
 	 * Called when Metamod:Source is about to remove convar
@@ -167,8 +169,8 @@ private:
 	List<ConVarInfo *> m_ConVars;
 	List<ConVarQuery> m_ConVarQueries;
 	Trie *m_ConVarCache;
-	IServerPluginCallbacks *m_VSPIface;
-	bool m_CanQueryConVars;
+	bool m_bIsDLLQueryHooked;
+	bool m_bIsVSPQueryHooked;
 #if PLAPI_VERSION < 12
 	bool m_IgnoreHandle;
 #endif

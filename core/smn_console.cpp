@@ -507,7 +507,7 @@ static cell_t sm_QueryClientConVar(IPluginContext *pContext, const cell_t *param
 	char *name;
 	IPluginFunction *pCallback;
 
-	if (g_IsOriginalEngine)
+	if (!g_ConVarManager.IsQueryingSupported())
 	{
 		if (!s_QueryAlreadyWarned)
 		{

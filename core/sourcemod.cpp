@@ -306,6 +306,12 @@ void SourceModBase::StartSourceMod(bool late)
 
 	/* We're loaded! */
 	g_Loaded = true;
+
+	/* Initialize VSP stuff */
+	if (vsp_interface != NULL)
+	{
+		g_SourceMod_Core.OnVSPListening(vsp_interface);
+	}
 }
 
 static bool g_LevelEndBarrier = false;

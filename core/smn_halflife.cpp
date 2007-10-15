@@ -36,17 +36,6 @@
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 
-IServerPluginCallbacks *g_VSP = NULL;
-
-class HalfLifeNatives : public SMGlobalClass
-{
-public: //SMGlobalClass
-	void OnSourceModVSPReceived(IServerPluginCallbacks *iface)
-	{
-		g_VSP = iface;
-	}
-};
-
 static cell_t SetRandomSeed(IPluginContext *pContext, const cell_t *params)
 {
 	engrandom->SetSeed(params[1]);
@@ -270,7 +259,10 @@ static cell_t smn_CreateDialog(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	serverpluginhelpers->CreateMessage(pPlayer->GetEdict(), static_cast<DIALOG_TYPE>(params[3]), pKV, g_VSP);
+	serverpluginhelpers->CreateMessage(pPlayer->GetEdict(), 
+		static_cast<DIALOG_TYPE>(params[3]), 
+		pKV, 
+		vsp_interface);
 
 	return 1;
 }
@@ -414,8 +406,6 @@ static cell_t ShowVGUIPanel(IPluginContext *pContext, const cell_t *params)
 
 	return 1;
 }
-
-static HalfLifeNatives s_HalfLifeNatives;
 
 REGISTER_NATIVES(halflifeNatives)
 {

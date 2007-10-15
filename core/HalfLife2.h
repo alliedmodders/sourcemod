@@ -105,6 +105,9 @@ public:
 	void PopCommandStack();
 	const CCommand *PeekCommandStack();
 	const char *CurrentCommandName();
+#if !defined METAMOD_PLAPI_VERSION
+	bool IsOriginalEngine();
+#endif
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
@@ -120,6 +123,5 @@ private:
 };
 
 extern CHalfLife2 g_HL2;
-extern bool g_IsOriginalEngine;
 
 #endif //_INCLUDE_SOURCEMOD_CHALFLIFE2_H_

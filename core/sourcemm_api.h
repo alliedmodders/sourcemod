@@ -96,6 +96,8 @@ extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
 extern IEngineSound *enginesound;
 extern IServerPluginHelpers *serverpluginhelpers;
+extern IServerPluginCallbacks *vsp_interface;
+extern int vsp_version;
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 #define SERVER_CALL(func)		SH_CALL(gamedllPatch, &IServerGameDLL::func)

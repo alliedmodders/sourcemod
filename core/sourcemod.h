@@ -128,6 +128,7 @@ private:
 	bool m_GotBasePath;
 };
 
+extern bool g_Loaded;
 extern SourceModBase g_SourceMod;
 extern HandleType_t g_WrBitBufType;		//:TODO: find a better place for this
 extern HandleType_t g_RdBitBufType;		//:TODO: find a better place for this
