@@ -37,6 +37,8 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
+#include "svn_version.h"
+
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Top Menus"
 #define SMEXT_CONF_DESCRIPTION	"Creates sorted nested menus"

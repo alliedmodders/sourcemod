@@ -57,3 +57,8 @@ out = svn_version.h
 folder = loader
 in = svn_version.tpl
 out = svn_version.h
+
+[topmenus]
+folder = extensions/topmenus
+in = svn_version.tpl
+out = svn_version.h
