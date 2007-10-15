@@ -37,7 +37,7 @@
 #include "tempents.h"
 
 #if defined ORANGEBOX_BUILD
-	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2.txt"
+	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2"
 #else
 	#define SDKTOOLS_GAME_FILE		"sdktools.games"
 #endif
