@@ -1013,9 +1013,6 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
-	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-
 	g_SourceMod.SetGlobalTarget(client);
 
 	char buffer[256];
@@ -1026,7 +1023,7 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	pClient->Disconnect("%s", buffer);
+	pPlayer->Kick(buffer);
 
 	return 1;
 }

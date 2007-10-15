@@ -38,13 +38,13 @@
 #include "MenuStyle_Radio.h"
 #include "sm_stringutil.h"
 #include "CoreConfig.h"
-#include <inetchannel.h>
-#include <iclient.h>
 #include "TimerSys.h"
 #include "Translator.h"
 #include "Logger.h"
 #include "ChatTriggers.h"
 #include "HalfLife2.h"
+#include <inetchannel.h>
+#include <iclient.h>
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -1001,6 +1001,7 @@ void CPlayer::DumpAdmin(bool deleting)
 
 void CPlayer::Kick(const char *str)
 {
+	MarkAsBeingKicked();
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
 	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 	pClient->Disconnect("%s", str);

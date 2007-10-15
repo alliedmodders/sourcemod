@@ -34,8 +34,6 @@
 #include "HalfLife2.h"
 #include "PlayerManager.h"
 #include "ForwardSys.h"
-#include <inetchannel.h>
-#include <iclient.h>
 
 #define BANFLAG_AUTO	(1<<0)	/**< Auto-detects whether to ban by steamid or IP */
 #define BANFLAG_IP   	(1<<1)	/**< Always ban by IP address */
@@ -265,9 +263,6 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	ban_flags = params[3];
 	ban_source = params[7];
 
-    INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
-    IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-
 	/* Check how we should ban the player */
 	if ((ban_flags & BANFLAG_AUTO) == BANFLAG_AUTO)
 	{
@@ -347,7 +342,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 			/* Kick, then ban */
 			if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 			{
-   		 		pClient->Disconnect("%s", kick_message);
+   		 		pPlayer->Kick(kick_message);
 			}
 			engine->ServerCommand(command);
 	
@@ -371,7 +366,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 			/* Kick, then ban */
 			if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 			{
-   		 		pClient->Disconnect("%s", kick_message);
+   		 		pPlayer->Kick(kick_message);
 			}
 			engine->ServerCommand(command);
 
@@ -384,7 +379,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	}
 	else if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 	{
-		pClient->Disconnect("%s", kick_message);	
+		pPlayer->Kick(kick_message);	
 	}
 
 
