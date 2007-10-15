@@ -231,14 +231,21 @@ namespace builder
 			lib.vcproj_name = "sm_sqlite";
 			libraries.Add(lib);
 
-			/*
 			lib = new Library();
-			lib.Destination = "addons/sourcemod/extensions/games";
-			lib.LocalPath = "extensions/cstrike";
-			lib.Name = "game.cstrike.ext";
-			lib.ProjectFile = "cstrike";
+			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
+			lib.source_path = "extensions/cstrike";
+			lib.binary_name = "game.cstrike.ext";
+			lib.vcproj_name = "cstrike";
+			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
-			*/
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep1";
+			lib.source_path = "extensions/cstrike";
+			lib.binary_name = "game.cstrike.ext";
+			lib.vcproj_name = "cstrike";
+			lib.build_mode = BuildMode.BuildMode_Episode1;
+			libraries.Add(lib);
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions";
