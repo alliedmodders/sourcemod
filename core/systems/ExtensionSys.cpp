@@ -51,7 +51,28 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 	m_FullyLoaded = false;
 
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
+
+	/* First see if there is an engine specific build! */
+	g_SourceMod.BuildPath(Path_SM, 
+		path, 
+		PLATFORM_MAX_PATH, 
+#if defined METAMOD_PLAPI_VERSION
+#if defined ORANGEBOX_BUILD
+		"extensions/auto.2.ep2/%s",
+#else
+		"extensions/auto.2.ep1/%s",
+#endif //ORANGEBOX_BUILD
+#else  //METAMOD_PLAPI_VERSION
+		"extensions/auto.1.ep1/%s",
+#endif //METAMOD_PLAPI_VERSION
+		filename);
+
+	/* Try the "normal" version */
+	if (!g_LibSys.IsPathFile(path))
+	{
+		g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
+	}
+
 	m_Path.assign(path);
 
 	m_pLib = NULL;
