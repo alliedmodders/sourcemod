@@ -43,7 +43,7 @@
 #define SMEXT_CONF_NAME			"CS:S Tools"
 #define SMEXT_CONF_DESCRIPTION	"CS:S extended functionality"
 #define SMEXT_CONF_VERSION		SVN_FULL_VERSION
-#define SMEXT_CONF_AUTHOR		"AlliedModders"
+#define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"CSTRIKE"
 #define SMEXT_CONF_LICENSE		"GPL"
