@@ -203,15 +203,13 @@ LoadMaps(Handle:menu)
 	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/menu_maplist.ini");
 	
 	if (!FileExists(mapPath))
-	{
-		LogError("Unable to locate menu_maplist, no maps loaded.");
-		
+	{	
 		if (g_MapList != INVALID_HANDLE)
 		{
 			RemoveAllMenuItems(menu);
 		}
 		
-		return 0;		
+		return LoadMapFolder(menu);		
 	}
 
 	// If the file hasn't changed, there's no reason to reload
@@ -235,8 +233,8 @@ LoadMaps(Handle:menu)
 	new Handle:file = OpenFile(mapPath, "rt");
 	if (file == INVALID_HANDLE)
 	{
-		LogError("[SM] Could not open file: %s", mapPath);
-		return 0;
+		LogError("[SM] Could not open file: %s, reverting to map folder", mapPath);
+		return LoadMapFolder(menu);
 	}
 	
 	decl String:buffer[64], len;
@@ -258,5 +256,46 @@ LoadMaps(Handle:menu)
 	}
 
 	CloseHandle(file);
-	return GetMenuItemCount(menu);
+	
+	new count = GetMenuItemCount(menu);
+	
+	if (!count)
+		return LoadMapFolder(menu);
+	else
+		return count;
+}
+
+LoadMapFolder(Handle:menu)
+{
+	LogMessage("[SM] Loading menu map list from maps folder");
+	
+	new Handle:mapDir = OpenDirectory("maps/");
+	
+	if (mapDir == INVALID_HANDLE)
+	{
+		LogError("[SM] Could not open map directory for reading");
+		return 0;
+	}
+	
+	new String:mapName[64];
+	new String:buffer[64];
+	new FileType:fileType;
+	new len;
+	
+	while(ReadDirEntry(mapDir, mapName, sizeof(mapName), fileType))
+	{
+		if(fileType == FileType_File)
+		{
+			len = strlen(mapName);
+
+			if(SplitString(mapName, ".bsp", buffer, sizeof(buffer)) == len)
+			{
+				AddMenuItem(menu, buffer, buffer);
+			}
+		}
+  	}
+  	
+  	CloseHandle(mapDir);
+  	
+  	return GetMenuItemCount(menu);
 }
