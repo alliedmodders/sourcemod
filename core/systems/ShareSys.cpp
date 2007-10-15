@@ -239,3 +239,7 @@ void ShareSystem::AddDependency(IExtension *myself, const char *filename, bool r
 	g_Extensions.AddDependency(myself, filename, require, autoload);
 }
 
+void ShareSystem::RegisterLibrary(IExtension *myself, const char *name)
+{
+	g_Extensions.AddLibrary(myself, name);
+}

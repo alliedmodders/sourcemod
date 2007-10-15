@@ -126,9 +126,10 @@ public SharedPlugin:__pl_adminmenu =
 #endif
 };
 
+#if !defined REQUIRE_PLUGIN
 public __pl_adminmenu_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetAdminTopMenu");
 	MarkNativeAsOptional("AddTargetsToMenu");
 }
-
+#endif

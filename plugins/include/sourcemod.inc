@@ -467,16 +467,18 @@ native bool:LibraryExists(const String:name[]);
 native GetExtensionFileStatus(const String:name[], String:error[]="", maxlength=0);
 
 /**
- * Called after a library (plugin) is added that the 
- * current plugin references optionally.
+ * Called after a library is added that the current plugin references 
+ * optionally. A library is either a plugin name or extension name, as 
+ * exposed via its include file.
  *
  * @param name			Library name.
  */
 forward OnLibraryAdded(const String:name[]);
 
 /**
- * Called right before a library (plugin) is removed that the 
- * current plugin references optionally.
+ * Called right before a library is removed that the current plugin references 
+ * optionally.  A library is either a plugin name or extension name, as 
+ * exposed via its include file.
  *
  * @param name			Library name.
  */

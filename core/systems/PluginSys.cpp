@@ -466,7 +466,7 @@ void CPlugin::LibraryActions(bool dropping)
 		iter != m_Libraries.end();
 		iter++)
 	{
-		g_PluginSys.OnLibraryAction((*iter).c_str(), dropping);
+		g_PluginSys.OnLibraryAction((*iter).c_str(), true, dropping);
 	}
 }
 
@@ -988,7 +988,9 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		{
 			/* Autoload any modules */
 			LoadOrRequireExtensions(pPlugin, 1, error, maxlength);
-		} else {
+		}
+		else
+		{
 			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
 		}
 	}
@@ -1156,12 +1158,16 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 						return false;
 					}
 				}
-			} else {
+			}
+			else
+			{
 				/* Check that we aren't registering the same library twice */
 				if (pPlugin->m_RequiredLibs.find(name) == pPlugin->m_RequiredLibs.end())
 				{
 					pPlugin->m_RequiredLibs.push_back(name);
-				} else {
+				}
+				else
+				{
 					continue;
 				}
 				List<CPlugin *>::iterator iter;
@@ -1237,7 +1243,9 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 					g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
 					g_Extensions.LoadAutoExtension(path);
 				}
-			} else if (pass == 2) {
+			}
+			else if (pass == 2)
+			{
 				/* Is this required? */
 				if (ext->required)
 				{
@@ -1256,8 +1264,30 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 							snprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
 						}
 						return false;
-					} else {
+					}
+					else
+					{
 						g_Extensions.BindChildPlugin(pExt, pPlugin);
+					}
+				}
+				else
+				{
+					IPluginFunction *pFunc;
+					char buffer[64];
+					UTIL_Format(buffer, sizeof(buffer), "__ext_%s_SetNTVOptional", &pubvar->name[6]);
+
+					if ((pFunc = pBase->GetFunctionByName(buffer)) != NULL)
+					{
+						cell_t res;
+						pFunc->Execute(&res);
+						if (pPlugin->GetContext()->n_err != SP_ERROR_NONE)
+						{
+							if (error)
+							{
+								UTIL_Format(error, maxlength, "Fatal error during plugin initialization (ext req)");
+							}
+							return false;
+						}
 					}
 				}
 			}
@@ -1277,12 +1307,13 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 
 	/* Bind all extra natives */
 	g_Extensions.BindAllNativesToPlugin(pPlugin);
-	AddFakeNativesToPlugin(pPlugin);
 
 	if (!FindOrRequirePluginDeps(pPlugin, error, maxlength))
 	{
 		return false;
 	}
+
+	AddFakeNativesToPlugin(pPlugin);
 
 	/* Find any unbound natives
 	 * Right now, these are not allowed
@@ -1345,7 +1376,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		s_iter != pPlugin->m_Libraries.end();
 		s_iter++)
 	{
-		OnLibraryAction((*s_iter).c_str(), false);
+		OnLibraryAction((*s_iter).c_str(), true, false);
 	}
 
 	return true;
@@ -1505,7 +1536,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		 s_iter != pPlugin->m_Libraries.end();
 		 s_iter++)
 	{
-		OnLibraryAction((*s_iter).c_str(), true);
+		OnLibraryAction((*s_iter).c_str(), true, true);
 	}
 
 	/* Go through all dependent plugins and tell them this plugin is now gone */
@@ -2409,7 +2440,7 @@ CPlugin *CPluginManager::GetPluginFromIdentity(IdentityToken_t *pToken)
 	return (CPlugin *)(pToken->ptr);
 }
 
-void CPluginManager::OnLibraryAction(const char *lib, bool drop)
+void CPluginManager::OnLibraryAction(const char *lib, bool is_a_plugin, bool drop)
 {
 	List<CPlugin *>::iterator iter;
 
@@ -2419,6 +2450,14 @@ void CPluginManager::OnLibraryAction(const char *lib, bool drop)
 		cell_t file;
 		cell_t required;
 	} *plc;
+
+	struct _ext
+	{
+		cell_t name;
+		cell_t file;
+		cell_t autoload;
+		cell_t required;
+	} *ext;
 
 	const char *name = drop ? "OnLibraryRemoved" : "OnLibraryAdded";
 
@@ -2445,23 +2484,38 @@ void CPluginManager::OnLibraryAction(const char *lib, bool drop)
 			{
 				continue;
 			}
-			if (strncmp(pubvar->name, "__pl_", 5) != 0)
+			if (is_a_plugin && strncmp(pubvar->name, "__pl_", 5) == 0)
 			{
-				continue;
+				plc = (_pl *)pubvar->offs;
+				if (plc->required)
+				{
+					continue;
+				}
+				char *str;
+				pContext->LocalToString(plc->name, &str);
+				if (strcmp(str, lib) != 0)
+				{
+					continue;
+				}
+				pf->PushString(lib);
+				pf->Execute(NULL);
 			}
-			plc = (_pl *)pubvar->offs;
-			if (plc->required)
+			else if (!is_a_plugin && strncmp(pubvar->name, "__ext_", 6) == 0)
 			{
-				continue;
+				ext = (_ext *)pubvar->offs;
+				if (ext->required)
+				{
+					continue;
+				}
+				char *str;
+				pContext->LocalToString(ext->name, &str);
+				if (strcmp(str, lib) != 0)
+				{
+					continue;
+				}
+				pf->PushString(lib);
+				pf->Execute(NULL);
 			}
-			char *str;
-			pContext->LocalToString(plc->name, &str);
-			if (strcmp(str, lib) != 0)
-			{
-				continue;
-			}
-			pf->PushString(lib);
-			pf->Execute(NULL);
 		}
 	}
 }

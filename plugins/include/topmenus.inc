@@ -225,7 +225,7 @@ native TopMenuObject:FindTopMenuCategory(Handle:topmenu, const String:name[]);
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_cstrike = 
+public Extension:__ext_topmenus = 
 {
 	name = "TopMenus",
 	file = "topmenus.ext",
@@ -241,3 +241,14 @@ public Extension:__ext_cstrike =
 #endif
 };
 
+#if !defined REQUIRE_EXTENSIONS
+public __ext_topmenus_SetNTVOptional()
+{
+	MarkNativeAsOptional("CreateTopMenu");
+	MarkNativeAsOptional("LoadTopMenuConfig");
+	MarkNativeAsOptional("AddToTopMenu");
+	MarkNativeAsOptional("RemoveFromTopMenu");
+	MarkNativeAsOptional("DisplayTopMenu");
+	MarkNativeAsOptional("FindTopMenuCategory");
+}
+#endif

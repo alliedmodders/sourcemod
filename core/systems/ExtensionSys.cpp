@@ -340,6 +340,11 @@ bool CExtension::IsRunning(char *error, size_t maxlength)
 	return m_pAPI->QueryRunning(error, maxlength);
 }
 
+void CExtension::AddLibrary(const char *library)
+{
+	m_Libraries.push_back(library);
+}
+
 /*********************
  * EXTENSION MANAGER *
  *********************/
@@ -628,7 +633,9 @@ void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 		{
 			WeakNative wkn = WeakNative((CPlugin *)pPlugin, i);
 			x_native->owner->m_WeakNatives.push_back(wkn);
-		} else if (exts.find(x_native->owner) == exts.end()) {
+		}
+		else if (exts.find(x_native->owner) == exts.end())
+		{
 			exts.push_back(x_native->owner);
 		}
 	}
@@ -677,6 +684,14 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			p_iter = pExt->m_Plugins.erase(p_iter);
 		}
 
+		List<String>::iterator s_iter;
+		for (s_iter = pExt->m_Libraries.begin();
+			 s_iter != pExt->m_Libraries.end();
+			 s_iter++)
+		{
+			g_PluginSys.OnLibraryAction((*s_iter).c_str(), false, true);
+		}
+
 		/* Unbound weak natives */
 		List<WeakNative>::iterator wkn_iter;
 		for (wkn_iter=pExt->m_WeakNatives.begin(); wkn_iter!=pExt->m_WeakNatives.end(); wkn_iter++)
@@ -718,7 +733,9 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 					}
 					pAPI->NotifyInterfaceDrop((*i_iter).iface);
 					i_iter = pDep->m_Deps.erase(i_iter);
-				} else {
+				}
+				else
+				{
 					i_iter++;
 				}
 			}
@@ -729,7 +746,9 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 				if ((*i_iter).owner == pExt)
 				{
 					i_iter = pDep->m_ChildDeps.erase(i_iter);
-				} else {
+				}
+				else
+				{
 					i_iter++;
 				}
 			}
@@ -1091,4 +1110,11 @@ CExtensionManager::CExtensionManager()
 
 CExtensionManager::~CExtensionManager()
 {
+}
+
+void CExtensionManager::AddLibrary(IExtension *pSource, const char *library)
+{
+	CExtension *pExt = (CExtension *)pSource;
+	pExt->AddLibrary(library);
+	g_PluginSys.OnLibraryAction(library, false, false);
 }

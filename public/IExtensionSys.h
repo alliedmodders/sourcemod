@@ -117,7 +117,7 @@ namespace SourceMod
 	/**
 	 * @brief Version code of the IExtensionInterface API itself.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	1
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	2
 
 	/**
 	 * @brief The interface an extension must expose.

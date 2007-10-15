@@ -431,7 +431,7 @@ public:
 
 	void Shutdown();
 
-	void OnLibraryAction(const char *lib, bool drop);
+	void OnLibraryAction(const char *lib, bool is_a_plugin, bool drop);
 
 	bool LibraryExists(const char *lib);
 

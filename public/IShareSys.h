@@ -192,6 +192,14 @@ namespace SourceMod
 		 * @param autoload		Whether or not to autoload this extension.
 		 */
 		virtual void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload) =0;
+
+		/**
+		 * @brief Registers a library name to an extension.
+		 *
+		 * @param myself		Extension to register library to.
+		 * @param name			Library name.
+		 */
+		virtual void RegisterLibrary(IExtension *myself, const char *name) =0;
 	};
 }
 

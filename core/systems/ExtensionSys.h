@@ -78,6 +78,7 @@ public:
 	void AddPlugin(IPlugin *pPlugin);
 	void RemovePlugin(IPlugin *pPlugin);
 	void MarkAllLoaded();
+	void AddLibrary(const char *library);
 private:
 	bool Load(char *error, size_t maxlength);
 private:
@@ -93,6 +94,7 @@ private:
 	List<IPlugin *> m_Plugins;
 	List<const sp_nativeinfo_t *> m_Natives;
 	List<WeakNative> m_WeakNatives;
+	List<String> m_Libraries;
 	PluginId m_PlId;
 	unsigned int unload_code;
 	bool m_FullyLoaded;
@@ -132,6 +134,7 @@ public:
 	void MarkAllLoaded();
 	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
 	void TryAutoload();
+	void AddLibrary(IExtension *pSource, const char *library);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();

@@ -52,6 +52,8 @@ bool TopMenuExtension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	Initialize_Natives();
 
+	sharesys->RegisterLibrary(myself, "TopMenus");
+
 	return true;
 }
 
