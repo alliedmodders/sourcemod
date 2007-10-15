@@ -24,6 +24,18 @@
 		}
 	}
 
+	"tf"
+	{
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+
 	/**
 	 * Which games support ShowMenu?
 	 */
@@ -35,6 +47,7 @@
 			"game"		"dod"
 			"game"		"sourceforts"
 			"game"		"!Insurgency"
+			"game"		"tf"
 		}
 
 		"Keys"
