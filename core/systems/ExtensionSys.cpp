@@ -1118,3 +1118,26 @@ void CExtensionManager::AddLibrary(IExtension *pSource, const char *library)
 	pExt->AddLibrary(library);
 	g_PluginSys.OnLibraryAction(library, false, false);
 }
+
+bool CExtensionManager::LibraryExists(const char *library)
+{
+	CExtension *pExt;
+
+	for (List<CExtension *>::iterator iter = m_Libs.begin();
+		 iter != m_Libs.end();
+		 iter++)
+	{
+		pExt = (*iter);
+		for (List<String>::iterator s_iter = pExt->m_Libraries.begin();
+			 s_iter != pExt->m_Libraries.end();
+			 s_iter++)
+		{
+			if ((*s_iter).compare(library) == 0)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}

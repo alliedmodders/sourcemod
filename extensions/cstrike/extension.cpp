@@ -65,6 +65,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
 	sharesys->AddNatives(myself, g_CSNatives);
+	sharesys->RegisterLibrary(myself, "cstrike");
 
 	return true;
 }

@@ -71,7 +71,7 @@ native CS_SwitchTeam(client, team);
  */
 public Extension:__ext_cstrike = 
 {
-	name = "CStrike",
+	name = "cstrike",
 	file = "games/game.cstrike.ext",
 	autoload = 0,
 #if defined REQUIRE_EXTENSIONS
@@ -80,3 +80,11 @@ public Extension:__ext_cstrike =
 	required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public __ext_cstrike_SetNTVOptional()
+{
+	MarkNativeAsOptional("CS_RespawnPlayer");
+	MarkNativeAsOptional("CS_SwitchTeam");
+}
+#endif

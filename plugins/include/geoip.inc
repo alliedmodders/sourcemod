@@ -91,3 +91,12 @@ public Extension:__ext_geoip =
 	required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public __ext_geoip_SetNTVOptional()
+{
+	MarkNativeAsOptional("GeoipCode2");
+	MarkNativeAsOptional("GeoipCode3");
+	MarkNativeAsOptional("GeoipCountry");
+}
+#endif

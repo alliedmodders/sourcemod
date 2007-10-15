@@ -55,6 +55,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
 	g_pShareSys->AddNatives(myself, geoip_natives);
+	g_pShareSys->RegisterLibrary(myself, "GeoIP");
 	g_pSM->LogMessage(myself, "GeoIP database info: %s", GeoIP_database_info(gi));
 
 	return true;

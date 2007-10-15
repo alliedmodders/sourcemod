@@ -135,6 +135,7 @@ public:
 	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
 	void TryAutoload();
 	void AddLibrary(IExtension *pSource, const char *library);
+	bool LibraryExists(const char *library);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();

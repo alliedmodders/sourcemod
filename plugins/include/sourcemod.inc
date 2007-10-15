@@ -446,9 +446,12 @@ native MarkNativeAsOptional(const String:name[]);
 native RegPluginLibrary(const String:name[]);
 
 /**
- * Returns whether a library exists.
+ * Returns whether a library exists.  This function should be considered 
+ * expensive; it should only be called on plugin to determine availability 
+ * of resources.  Use OnLibraryAdded()/OnLibraryRemoved() to detect changes 
+ * in optional resources.
  *
- * @param name			Library name.
+ * @param name			Library name of a plugin or extension.
  * @return				True if exists, false otherwise.
  */
 native bool:LibraryExists(const String:name[]);

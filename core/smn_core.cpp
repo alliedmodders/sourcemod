@@ -463,7 +463,17 @@ static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[1], &str);
 
-	return g_PluginSys.LibraryExists(str) ? 1 : 0;
+	if (g_PluginSys.LibraryExists(str))
+	{
+		return 1;
+	}
+
+	if (g_Extensions.LibraryExists(str))
+	{
+		return 1;
+	}
+
+	return 0;
 }
 
 static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
