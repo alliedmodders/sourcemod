@@ -228,13 +228,14 @@ void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 	/* If convar was created by SourceMod plugin... */
 	if (info->sourceMod)
 	{
+		/* Then unlink it from SourceMM */
+		g_SMAPI->UnregisterConCommandBase(g_PLAPI, pConVar);
+
 		/* Delete string allocations */
 		delete [] pConVar->GetName(); 
 		delete [] pConVar->GetDefault();
 		delete [] pConVar->GetHelpText();
-
-		/* Then unlink it from SourceMM */
-		g_SMAPI->UnregisterConCommandBase(g_PLAPI, pConVar);
+		delete pConVar;
 	}
 }
 
