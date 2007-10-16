@@ -1,0 +1,32 @@
+/**
+ * The default sorting is designed to look familiar to Mani's admin menu.
+ * You may re-order items here for your own menu.  Any items not explicitly 
+ * sorted will be sorted by their final translated phrases for each given client.
+ */
+
+"Menu"
+{
+	"PlayerCommands"
+	{
+		"item"		"Slay"
+		"item"		"Kick"
+		"item"		"Ban"
+		"item"		"Gag/Mute"
+		"item"		"Burn"
+	}
+
+	"ServerCommands"
+	{
+		"item"		"Change Map"
+		"item"		"Exec CFG"
+		"item"		"Reload Admins"
+	}
+
+	"VotingCommands"
+	{
+		"item"		"Cancel Vote"
+		"item"		"Map Vote"
+		"item"		"Kick Vote"
+		"item"		"Ban Vote"
+	}
+}
