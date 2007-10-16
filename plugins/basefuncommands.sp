@@ -89,7 +89,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"Slay Player",
+			"Slay",
 			TopMenuObject_Item,
 			AdminMenu_Slay,
 			player_commands,
@@ -97,7 +97,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
-			"Burn Player",
+			"Burn",
 			TopMenuObject_Item,
 			AdminMenu_Burn,
 			player_commands,
@@ -105,7 +105,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
-			"Slap Player",
+			"Slap",
 			TopMenuObject_Item,
 			AdminMenu_Slap,
 			player_commands,
