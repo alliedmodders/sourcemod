@@ -50,9 +50,11 @@ public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
 	if (action == MenuAction_End)
 	{
 		CloseHandle(menu);
+		g_VoteMapInUse = false;
 	}
 	else if (action == MenuAction_Cancel)
 	{
+		g_VoteMapInUse = false;
 		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
 		{
 			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
@@ -144,7 +146,7 @@ public AdminMenu_VoteMap(Handle:topmenu,
 	else if (action == TopMenuAction_DrawOption)
 	{	
 		/* disable this option if a vote is already running, theres no maps listed or someone else has already acessed this menu */
-		buffer[0] = (IsVoteInProgress() || g_mapCount < 1 || g_VoteMapInUse) ? ITEMDRAW_DISABLED : ITEMDRAW_DEFAULT;
+		buffer[0] = (!IsNewVoteAllowed() || g_mapCount < 1 || g_VoteMapInUse) ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 	}
 }
 

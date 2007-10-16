@@ -52,7 +52,7 @@ public AdminMenu_VoteFF(Handle:topmenu,
 	else if (action == TopMenuAction_DrawOption)
 	{	
 		/* disable this option if a vote is already running */
-		buffer[0] = IsVoteInProgress() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
+		buffer[0] = !IsNewVoteAllowed() ? ITEMDRAW_IGNORE : ITEMDRAW_DEFAULT;
 	}
 }
 

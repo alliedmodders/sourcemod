@@ -731,3 +731,21 @@ stock GetMenuVoteInfo(param2, &winningVotes, &totalVotes)
 	winningVotes = param2 & 0xFFFF;
 	totalVotes = param2 >> 16;
 }
+
+/**
+ * Quick stock to determine whether voting is allowed.  This doesn't let you 
+ * fine-tune a reason for not voting, so it's not recommended for lazily 
+ * telling clients that voting isn't allowed.
+ * 
+ * @return				True if voting is allowed, false if voting is in progress
+ *						or the cooldown is active.
+ */
+stock bool:IsNewVoteAllowed()
+{
+	if (IsVoteInProgress() || CheckVoteDelay() != 0)
+	{
+		return false;
+	}
+	
+	return true;
+}
