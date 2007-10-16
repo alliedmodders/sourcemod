@@ -963,7 +963,7 @@ SMCParseResult TopMenu::ReadSMC_NewSection(const char *name, bool opt_quotes)
 				ignore_parse_level = 1;
 			}
 		}
-		else if (current_parse_state = PARSE_STATE_MAIN)
+		else if (current_parse_state == PARSE_STATE_MAIN)
 		{
 			cur_cat = new config_category_t;
 			cur_cat->name = m_Config.strings.AddString(name);
