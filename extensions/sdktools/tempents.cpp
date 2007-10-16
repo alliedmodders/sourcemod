@@ -285,7 +285,7 @@ void TempEntityManager::Initialize()
 	/* Store the head of the TE linked list */
 	m_ListHead = **(void ***)((unsigned char *)addr + offset);
 #else
-	if (!g_pGameConf->GetMemSig("s_pTempEntities", &offset))
+	if (!g_pGameConf->GetMemSig("s_pTempEntities", &addr) || !addr)
 	{
 		return;
 	}
