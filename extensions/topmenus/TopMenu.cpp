@@ -923,7 +923,8 @@ bool TopMenu::OnIdentityRemoval(IdentityToken_t *owner)
 }
 
 #define PARSE_STATE_NONE		0
-#define PARSE_STATE_CATEGORY	1
+#define PARSE_STATE_MAIN		1
+#define PARSE_STATE_CATEGORY	2
 unsigned int ignore_parse_level = 0;
 unsigned int current_parse_state = 0;
 config_category_t *cur_cat = NULL;
@@ -952,6 +953,17 @@ SMCParseResult TopMenu::ReadSMC_NewSection(const char *name, bool opt_quotes)
 	else
 	{
 		if (current_parse_state == PARSE_STATE_NONE)
+		{
+			if (strcmp(name, "Menu") == 0)
+			{
+				current_parse_state = PARSE_STATE_MAIN;
+			}
+			else
+			{
+				ignore_parse_level = 1;
+			}
+		}
+		else if (current_parse_state = PARSE_STATE_MAIN)
 		{
 			cur_cat = new config_category_t;
 			cur_cat->name = m_Config.strings.AddString(name);
@@ -995,6 +1007,10 @@ SMCParseResult TopMenu::ReadSMC_LeavingSection()
 		if (current_parse_state == PARSE_STATE_CATEGORY)
 		{
 			cur_cat = NULL;
+			current_parse_state = PARSE_STATE_MAIN;
+		}
+		else if (current_parse_state == PARSE_STATE_MAIN)
+		{
 			current_parse_state = PARSE_STATE_NONE;
 		}
 	}
