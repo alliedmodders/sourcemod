@@ -74,7 +74,7 @@ public:
 	const char *GetLogTag();
 public:
 	void OnVSPListening(IServerPluginCallbacks *iface);
-#if PLAPI_VERSION >= 12
+#if defined METAMOD_PLAPI_VERSION
 	void OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand);
 #else
 	void OnPluginUnload(PluginId id);

@@ -37,6 +37,7 @@
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
 #include <sh_vector.h>
+#include <sm_trie_tpl.h>
 
 ConVarManager g_ConVarManager;
 
@@ -45,31 +46,14 @@ SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB
 
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
+KTrie<ConVarInfo *> convar_cache;
 
 ConVarManager::ConVarManager() : m_ConVarType(0), m_bIsDLLQueryHooked(false), m_bIsVSPQueryHooked(false)
 {
-#if PLAPI_VERSION < 12
-	m_IgnoreHandle = false;
-#endif
-
-	/* Create a convar lookup trie */
-	m_ConVarCache = sm_trie_create();
 }
 
 ConVarManager::~ConVarManager()
 {
-	List<ConVarInfo *>::iterator iter;
-
-	/* Destroy our convar lookup trie */
-	sm_trie_destroy(m_ConVarCache);
-
-	/* Destroy all the ConVarInfo structures */
-	for (iter = m_ConVars.begin(); iter != m_ConVars.end(); iter++)
-	{
-		delete (*iter);
-	}
-
-	m_ConVars.clear();
 }
 
 void ConVarManager::OnSourceModAllInitialized()
@@ -101,6 +85,48 @@ void ConVarManager::OnSourceModAllInitialized()
 
 void ConVarManager::OnSourceModShutdown()
 {
+	List<ConVarInfo *>::iterator iter = m_ConVars.begin();
+	HandleSecurity sec(NULL, g_pCoreIdent);
+
+	/* Iterate list of ConVarInfo structures, remove every one of them */
+	while (iter != m_ConVars.end())
+	{
+		ConVarInfo *pInfo = (*iter);
+
+		iter = m_ConVars.erase(iter);
+
+		g_HandleSys.FreeHandle(pInfo->handle, &sec);
+		if (pInfo->pChangeForward != NULL)
+		{
+			g_Forwards.ReleaseForward(pInfo->pChangeForward);
+		}
+		if (pInfo->sourceMod)
+		{
+			/* If we created it, we won't be tracking it, therefore it is 
+			 * safe to remove everything in one go.
+			 */
+			META_UNREGCVAR(pInfo->pVar);
+			delete [] pInfo->pVar->GetName();
+			delete [] pInfo->pVar->GetHelpText();
+			delete [] pInfo->pVar->GetDefault();
+			delete pInfo->pVar;
+		}
+		else
+		{
+			/* If we didn't create it, we might be tracking it.  Also, 
+			 * it could be unreadable.
+			 */
+			UntrackConCommandBase(pInfo->pVar, this);
+		}
+
+		/* It's not safe to read the name here, so we simply delete the 
+		 * the info struct and clear the lookup cache at the end.
+		 */
+		delete pInfo;
+	}
+	convar_cache.clear();
+
+	/* Unhook things */
 	if (m_bIsDLLQueryHooked)
 	{
 		SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
@@ -110,21 +136,6 @@ void ConVarManager::OnSourceModShutdown()
 	{
 		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
 		m_bIsVSPQueryHooked = false;
-	}
-
-	IChangeableForward *fwd;
-	List<ConVarInfo *>::iterator i;
-
-	/* Iterate list of ConVarInfo structures */
-	for (i = m_ConVars.begin(); i != m_ConVars.end(); i++)
-	{
-		fwd = (*i)->pChangeForward;
-
-		/* Free any convar-change forwards that still exist */
-		if (fwd)
-		{
-			g_Forwards.ReleaseForward(fwd);
-		}
 	}
 
 	/* Remove the 'convars' option from the 'sm' console command */
@@ -165,54 +176,55 @@ void ConVarManager::OnSourceModVSPReceived()
 	m_bIsVSPQueryHooked = true;
 }
 
-#if PLAPI_VERSION >= 12
-void ConVarManager::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
+bool convar_cache_lookup(const char *name, ConVarInfo **pVar)
+{
+	ConVarInfo **pLookup = convar_cache.retrieve(name);
+	if (pLookup != NULL)
+	{
+		*pVar = *pLookup;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
 {
 	/* Only check convars that have not been created by SourceMod's core */
-	if (id != g_PLID && !pCommand->IsCommand())
-	{
-		ConVarInfo *pInfo;
-		const char *cvarName = pCommand->GetName();
-		HandleSecurity sec(NULL, g_pCoreIdent);
-		bool handleExists = sm_trie_retrieve(m_ConVarCache, cvarName, reinterpret_cast<void **>(&pInfo));
-
-		if (handleExists)
-		{
-			g_HandleSys.FreeHandle(pInfo->handle, &sec);
-			sm_trie_delete(m_ConVarCache, cvarName);
-			m_ConVars.remove(pInfo);
-		}
-	}
-}
-
-#else
-
-/* I truly detest this code */
-void ConVarManager::OnMetamodPluginUnloaded(PluginId id)
-{
 	ConVarInfo *pInfo;
-	const char *cvarName;
+	if (!convar_cache_lookup(name, &pInfo))
+	{
+		return;
+	}
+
 	HandleSecurity sec(NULL, g_pCoreIdent);
 
-	List<ConVarInfo *>::iterator i;
-	for (i = m_ConVars.begin(); i != m_ConVars.end(); i++)
+	/* Remove it from our cache */
+	m_ConVars.remove(pInfo);
+	convar_cache.remove(name);
+
+	/* Now make sure no plugins are referring to this pointer */
+	IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator();
+	while (pl_iter->MorePlugins())
 	{
-		pInfo = (*i);
-		cvarName = pInfo->name;
+		IPlugin *pl = pl_iter->GetPlugin();
 
-		if (cvarName && !icvar->FindVar(cvarName))
+		ConVarList *pConVarList;
+		if (pl->GetProperty("ConVarList", (void **)&pConVarList, true) 
+			&& pConVarList != NULL)
 		{
-			m_IgnoreHandle = true;
-			g_HandleSys.FreeHandle(pInfo->handle, &sec);
-
-			sm_trie_delete(m_ConVarCache, cvarName);
-			m_ConVars.erase(i);
-
-			delete [] cvarName;
+			pConVarList->remove(pInfo->pVar);
 		}
+
+		pl_iter->NextPlugin();
 	}
+
+	/* Free resources */
+	g_HandleSys.FreeHandle(pInfo->handle, &sec);
+	delete pInfo;
 }
-#endif
 
 void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 {
@@ -227,33 +239,6 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 
 void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
-#if PLAPI_VERSION < 12
-	/* Lovely workaround for our workaround! */
-	if (m_IgnoreHandle)
-	{
-		m_IgnoreHandle = false;
-		return;
-	}
-#endif
-
-	ConVarInfo *info;
-	ConVar *pConVar = static_cast<ConVar *>(object);
-
-	/* Find convar in lookup trie */
-	sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), reinterpret_cast<void **>(&info));
-
-	/* If convar was created by SourceMod plugin... */
-	if (info->sourceMod)
-	{
-		/* Then unlink it from SourceMM */
-		g_SMAPI->UnregisterConCommandBase(g_PLAPI, pConVar);
-
-		/* Delete string allocations */
-		delete [] pConVar->GetName(); 
-		delete [] pConVar->GetDefault();
-		delete [] pConVar->GetHelpText();
-		delete pConVar;
-	}
 }
 
 void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
@@ -320,28 +305,33 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 		AddConVarToPluginList(pContext, pConVar);
 
 		/* First find out if we already have a handle to it */
-		if (sm_trie_retrieve(m_ConVarCache, name, (void **)&pInfo))
+		if (convar_cache_lookup(name, &pInfo))
 		{
 			return pInfo->handle;
 		}
 		else
 		{
-			/* If we don't, then create a new handle from the convar */
-			hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
-
 			/* Create and initialize ConVarInfo structure */
 			pInfo = new ConVarInfo();
-			pInfo->handle = hndl;
 			pInfo->sourceMod = false;
 			pInfo->pChangeForward = NULL;
 			pInfo->origCallback = pConVar->GetCallback();
-		#if PLAPI_VERSION < 12
-			pInfo->name = sm_strdup(pConVar->GetName());
-		#endif
+			pInfo->pVar = pConVar;
+
+			/* If we don't, then create a new handle from the convar */
+			hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
+			if (hndl == BAD_HANDLE)
+			{
+				delete pInfo;
+				return BAD_HANDLE;
+			}
+
+			pInfo->handle = hndl;
 
 			/* Insert struct into caches */
 			m_ConVars.push_back(pInfo);
-			sm_trie_insert(m_ConVarCache, name, pInfo);
+			convar_cache.insert(name, pInfo);
+			TrackConCommandBase(pConVar, this);
 
 			return hndl;
 		}
@@ -360,28 +350,33 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 		pBase = const_cast<ConCommandBase *>(pBase->GetNext());
 	}
 
-	/* Since an existing convar (or concmd with the same name) was not found , now we can finally create it */
-	pConVar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(description), hasMin, min, hasMax, max);
-
-	/* Add convar to plugin's list */
-	AddConVarToPluginList(pContext, pConVar);
-
-	/* Create a handle from the new convar */
-	hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
-
 	/* Create and initialize ConVarInfo structure */
 	pInfo = new ConVarInfo();
 	pInfo->handle = hndl;
 	pInfo->sourceMod = true;
 	pInfo->pChangeForward = NULL;
 	pInfo->origCallback = NULL;
-#if PLAPI_VERSION < 12
-	pInfo->name = NULL;
-#endif
+
+	/* Create a handle from the new convar */
+	hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
+	if (hndl == BAD_HANDLE)
+	{
+		delete pInfo;
+		return BAD_HANDLE;
+	}
+
+	pInfo->handle = hndl;
+
+	/* Since an existing convar (or concmd with the same name) was not found , now we can finally create it */
+	pConVar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(description), hasMin, min, hasMax, max);
+	pInfo->pVar = pConVar;
+
+	/* Add convar to plugin's list */
+	AddConVarToPluginList(pContext, pConVar);
 
 	/* Insert struct into caches */
 	m_ConVars.push_back(pInfo);
-	sm_trie_insert(m_ConVarCache, name, pInfo);
+	convar_cache.insert(name, pInfo);
 
 	return hndl;
 }
@@ -402,27 +397,32 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	}
 
 	/* At this point, the convar exists. So, find out if we already have a handle */
-	if (sm_trie_retrieve(m_ConVarCache, name, (void **)&pInfo))
+	if (convar_cache_lookup(name, &pInfo))
 	{
 		return pInfo->handle;
 	}
 
-	/* If we don't have a handle, then create a new one */
-	hndl = g_HandleSys.CreateHandle(m_ConVarType, pConVar, NULL, g_pCoreIdent, NULL);
-
 	/* Create and initialize ConVarInfo structure */
 	pInfo = new ConVarInfo();
-	pInfo->handle = hndl;
 	pInfo->sourceMod = false;
 	pInfo->pChangeForward = NULL;
 	pInfo->origCallback = pConVar->GetCallback();
-#if PLAPI_VERSION < 12
-	pInfo->name = sm_strdup(pConVar->GetName());
-#endif
+	pInfo->pVar = pConVar;
+
+	/* If we don't have a handle, then create a new one */
+	hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
+	if (hndl == BAD_HANDLE)
+	{
+		delete pInfo;
+		return BAD_HANDLE;
+	}
+
+	pInfo->handle = hndl;
 
 	/* Insert struct into our caches */
 	m_ConVars.push_back(pInfo);
-	sm_trie_insert(m_ConVarCache, name, pInfo);
+	convar_cache.insert(name, pInfo);
+	TrackConCommandBase(pConVar, this);
 
 	return hndl;
 }
@@ -433,7 +433,7 @@ void ConVarManager::HookConVarChange(ConVar *pConVar, IPluginFunction *pFunction
 	IChangeableForward *pForward;
 
 	/* Find the convar in the lookup trie */
-	if (sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), (void **)&pInfo))
+	if (convar_cache_lookup(pConVar->GetName(), &pInfo))
 	{
 		/* Get the forward */
 		pForward = pInfo->pChangeForward;
@@ -460,7 +460,7 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 	IPluginContext *pContext = pFunction->GetParentContext();
 
 	/* Find the convar in the lookup trie */
-	if (sm_trie_retrieve(m_ConVarCache, pConVar->GetName(), (void **)&pInfo))
+	if (convar_cache_lookup(pConVar->GetName(), &pInfo))
 	{
 		/* Get the forward */
 		pForward = pInfo->pChangeForward;
@@ -569,11 +569,13 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 		return;
 	}
 
-	Trie *pCache = g_ConVarManager.GetConVarCache();
 	ConVarInfo *pInfo;
 
 	/* Find the convar in the lookup trie */
-	sm_trie_retrieve(pCache, pConVar->GetName(), (void **)&pInfo);
+	if (!convar_cache_lookup(pConVar->GetName(), &pInfo))
+	{
+		return;
+	}
 
 	FnChangeCallback_t origCallback = pInfo->origCallback;
 	IChangeableForward *pForward = pInfo->pChangeForward;
@@ -642,6 +644,23 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 	}
 }
 
+HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar)
+{
+	ConVarInfo *pInfo;
+	HandleError error;
+	
+	if ((error = g_HandleSys.ReadHandle(hndl, m_ConVarType, NULL, (void **)&pInfo)) != HandleError_None)
+	{
+		return error;
+	}
+
+	if (pVar)
+	{
+		*pVar = pInfo->pVar;
+	}
+
+	return error;
+}
 
 static int s_YamagramState = 0;
 

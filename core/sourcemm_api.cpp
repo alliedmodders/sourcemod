@@ -33,7 +33,7 @@
 #include "sourcemm_api.h"
 #include "sm_version.h"
 #include "Logger.h"
-#include "ConVarManager.h"
+#include "concmd_cleaner.h"
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;
@@ -203,14 +203,18 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 	}
 }
 
-#if PLAPI_VERSION >= 12
+#if defined METAMOD_PLAPI_VERSION
+
 void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
 {
-	g_ConVarManager.OnUnlinkConCommandBase(id, pCommand);
+	Global_OnUnlinkConCommandBase(pCommand);
 }
+
 #else
+
 void SourceMod_Core::OnPluginUnload(PluginId id)
 {
-	g_ConVarManager.OnMetamodPluginUnloaded(id);
+	Global_OnUnlinkConCommandBase(NULL);
 }
+
 #endif

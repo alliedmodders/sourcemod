@@ -610,6 +610,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\concmd_cleaner.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\ConCmdManager.cpp"
 				>
 			</File>
@@ -801,6 +805,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\compat_wrappers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\concmd_cleaner.h"
 				>
 			</File>
 			<File

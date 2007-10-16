@@ -34,13 +34,13 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-#include "sm_trie.h"
 #include <sh_list.h>
 #include <IPluginSys.h>
 #include <IForwardSys.h>
 #include <IHandleSys.h>
 #include <IRootConsoleMenu.h>
 #include <compat_wrappers.h>
+#include "concmd_cleaner.h"
 
 using namespace SourceHook;
 
@@ -49,13 +49,11 @@ using namespace SourceHook;
  */
 struct ConVarInfo
 {
-	Handle_t handle;					/**< Handle to convar */
+	Handle_t handle;					/**< Handle to self */
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
 	FnChangeCallback_t origCallback;	/**< The original callback function */
-#if PLAPI_VERSION < 12
-	const char *name;					/**< Name of convar */
-#endif
+	ConVar *pVar;						/**< The actual convar */
 };
 
 /**
@@ -72,7 +70,8 @@ class ConVarManager :
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
 	public IPluginsListener,
-	public IRootConsoleCommand
+	public IRootConsoleCommand,
+	public IConCommandTracker
 {
 public:
 	ConVarManager();
@@ -87,22 +86,8 @@ public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
-public:
-	/**
-	 * Get the 'ConVar' handle type ID.
-	 */
-	inline HandleType_t GetHandleType()
-	{
-		return m_ConVarType;
-	}
-
-	/**
-	 * Get the convar lookup trie.
-	 */
-	inline Trie *GetConVarCache()
-	{
-		return m_ConVarCache;
-	}
+public: //IConCommandTracker
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
 public:
 	/**
 	 * Create a convar and return a handle to it.
@@ -133,17 +118,8 @@ public:
 
 	bool IsQueryingSupported();
 
-#if PLAPI_VERSION >= 12
-	/**
-	 * Called when Metamod:Source is about to remove convar
-	 */
-	void OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand);
-#else
-	/**
-	 * Called when Metamod:Source has unloaded a plugin
-	 */
-	void OnMetamodPluginUnloaded(PluginId id);
-#endif
+	HandleError ReadConVarHandle(Handle_t hndl, ConVar **pVar);
+
 private:
 	/**
 	 * Adds a convar to a plugin's list.
@@ -168,12 +144,8 @@ private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;
 	List<ConVarQuery> m_ConVarQueries;
-	Trie *m_ConVarCache;
 	bool m_bIsDLLQueryHooked;
 	bool m_bIsVSPQueryHooked;
-#if PLAPI_VERSION < 12
-	bool m_IgnoreHandle;
-#endif
 };
 
 extern ConVarManager g_ConVarManager;
