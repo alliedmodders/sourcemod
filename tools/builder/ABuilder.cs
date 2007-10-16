@@ -170,11 +170,6 @@ namespace builder
 			Library [] libs = pkg.GetLibraries();
 			for (int i=0; i<libs.Length; i++)
 			{
-				if (cfg.Platform == BasePlatform.Platform_Linux
-					&& libs[i].build_mode == BuildMode.BuildMode_Episode2)
-				{
-					continue;
-				}
 				if (!BuildLibrary(pkg, libs[i]))
 				{
 					throw new System.Exception("Failed to compile library: " + libs[i].binary_name);
