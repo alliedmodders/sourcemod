@@ -59,12 +59,12 @@ public:
 #if defined ORANGEBOX_BUILD
 	void OnSourceModAllInitialized()
 	{
-		SH_ADD_HOOK(ICvar, UnregisterConCommand, SH_NOATTRIB, SH_MEMBER(this, &ConCommandCleaner::UnlinkConCommandBase), false);
+		SH_ADD_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
 	}
 
 	void OnSourceModShutdown()
 	{
-		SH_REMOVE_HOOK(ICvar, UnregisterConCommand, SH_NOATTRIB, SH_MEMBER(this, &ConCommandCleaner::UnlinkConCommandBase), false);
+		SH_REMOVE_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
 	}
 #endif
 
