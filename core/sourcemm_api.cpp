@@ -34,6 +34,7 @@
 #include "sm_version.h"
 #include "Logger.h"
 #include "concmd_cleaner.h"
+#include "compat_wrappers.h"
 
 SourceMod_Core g_SourceMod_Core;
 IVEngineServer *engine = NULL;

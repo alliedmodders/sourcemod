@@ -99,7 +99,7 @@ public:
 				{
 					pInfo = (*iter);
 					iter = tracked_bases.erase(iter);
-					pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName(), true);
+					pInfo->cls->OnUnlinkConCommandBase(pBase, pInfo->name, true);
 					delete pInfo;
 				}
 				else
