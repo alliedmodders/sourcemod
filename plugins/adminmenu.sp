@@ -75,6 +75,20 @@ public OnPluginStart()
 	RegAdminCmd("sm_admin", Command_DisplayMenu, ADMFLAG_GENERIC, "sm_admin");
 }
 
+public OnConfigsExecuted()
+{
+	decl String:path[PLATFORM_MAX_PATH];
+	decl String:error[256];
+	
+	BuildPath(Path_SM, path, sizeof(path), "configs/adminmenu_sorting.txt");
+	
+	if (!LoadTopMenuConfig(hAdminMenu, path, error, sizeof(error)))
+	{
+		LogError("Could not load admin menu config (file \"%s\": %s)", path, error);
+		return;
+	}
+}
+
 public OnAllPluginsLoaded()
 {
 	hAdminMenu = CreateTopMenu(CategoryHandler);
@@ -113,7 +127,6 @@ public CategoryHandler(Handle:topmenu,
 						String:buffer[],
 						maxlength)
 {
-	PrintToServer("CategoryHandler(%x, %d, %x)", topmenu, action, object_id);
 	if (action == TopMenuAction_DisplayTitle)
 	{
 		if (object_id == INVALID_TOPMENUOBJECT)
