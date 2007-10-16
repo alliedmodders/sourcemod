@@ -760,7 +760,11 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 	{
 		ValvePassInfo pass[3];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+#if defined ORANGEBOX_BUILD
+		InitPass(pass[1], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+#else
 		InitPass(pass[1], Valve_Vector, PassType_Object, PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_OASSIGNOP);
+#endif
 		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		if (!CreateBaseCall("DispatchKeyValueVector", ValveCall_Entity, &pass[2], pass, 2, &pCall))
 		{

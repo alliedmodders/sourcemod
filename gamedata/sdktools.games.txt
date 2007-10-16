@@ -627,7 +627,6 @@
 			"s_pTempEntities"
 			{
 				"windows"	"70"
-				"linux"		"29"
 			}
 		}
 
