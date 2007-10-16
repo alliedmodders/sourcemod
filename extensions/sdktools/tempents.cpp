@@ -273,6 +273,7 @@ void TempEntityManager::Initialize()
 	m_Loaded = false;
 
 	/* Read our sigs and offsets from the config file */
+#if defined PLATFORM_WINDOWS
 	if (!g_pGameConf->GetMemSig("CBaseTempEntity", &addr) || !addr)
 	{
 		return;
@@ -281,6 +282,16 @@ void TempEntityManager::Initialize()
 	{
 		return;
 	}
+	/* Store the head of the TE linked list */
+	m_ListHead = **(void ***)((unsigned char *)addr + offset);
+#else
+	if (!g_pGameConf->GetMemSig("s_pTempEntities", &offset))
+	{
+		return;
+	}
+	/* Store the head of the TE linked list */
+	m_ListHead = *(void **)addr;
+#endif
 	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs))
 	{
 		return;
@@ -293,9 +304,6 @@ void TempEntityManager::Initialize()
 	{
 		return;
 	}
-
-	/* Store the head of the TE linked list */
-	m_ListHead = **(void ***)((unsigned char *)addr + offset);
 
 	/* Create our trie */
 	m_TempEntInfo = adtfactory->CreateBasicTrie();

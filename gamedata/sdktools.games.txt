@@ -47,7 +47,6 @@
 			"s_pTempEntities"
 			{
 				"windows"	"17"
-				"linux"		"27"
 			}
 			"GetTEName"
 			{
@@ -72,7 +71,11 @@
 			{
 				"library"	"server"
 				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
-				"linux"		"@_ZN15CBaseTempEntityC2EPKc"
+			}
+			"s_pTempEntities"
+			{
+				"library"	"server"
+				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
 		}
 	}
