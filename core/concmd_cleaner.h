@@ -29,6 +29,9 @@
  * Version: $Id$
  */
 
+#ifndef _INCLUDE_CONCMD_TRACKER_H_
+#define _INCLUDE_CONCMD_TRACKER_H_
+
 class IConCommandTracker
 {
 public:
@@ -39,3 +42,4 @@ void TrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);
 void UntrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);
 void Global_OnUnlinkConCommandBase(ConCommandBase *pBase);
 
+#endif //_INCLUDE_CONCMD_TRACKER_H_

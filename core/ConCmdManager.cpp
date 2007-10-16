@@ -85,6 +85,60 @@ void ConCmdManager::OnSourceModShutdown()
 	g_RootMenu.RemoveRootConsoleCommand("cmds", this);
 }
 
+void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+{
+	/* Whoa, first get its information struct */
+	ConCmdInfo *pInfo;
+
+	if (!sm_trie_retrieve(m_pCmds, name, (void **)&pInfo))
+	{
+		return;
+	}
+
+	RemoveConCmds(pInfo->srvhooks);
+	RemoveConCmds(pInfo->conhooks);
+
+	RemoveConCmd(pInfo, name, is_read_safe, false);
+}
+
+void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist)
+{
+	List<CmdHook *>::iterator iter = cmdlist.begin();
+
+	while (iter != cmdlist.end())
+	{
+		CmdHook *pHook = (*iter);
+		IPluginContext *pContext = pHook->pf->GetParentContext();
+		IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+		CmdList *pList = NULL;
+		
+		//gaben
+		if (!pPlugin->GetProperty("CommandList", (void **)&pList, false) || !pList)
+		{
+			continue;
+		}
+
+		CmdList::iterator p_iter = pList->begin();
+		while (p_iter != pList->end())
+		{
+			PlCmdInfo &cmd = (*p_iter);
+			if (cmd.pHook == pHook)
+			{
+				p_iter = pList->erase(p_iter);
+			}
+			else
+			{
+				p_iter++;
+			}
+		}
+
+		delete pHook->pAdmin;
+		delete pHook;
+		
+		iter = cmdlist.erase(iter);
+	}
+}
+
 void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext)
 {
 	List<CmdHook *>::iterator iter = cmdlist.begin();
@@ -98,7 +152,9 @@ void ConCmdManager::RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pCon
 			delete pHook->pAdmin;
 			delete pHook;
 			iter = cmdlist.erase(iter);
-		} else {
+		}
+		else
+		{
 			iter++;
 		}
 	}
@@ -143,7 +199,7 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 			}
 
 			/* Remove the command, it should be safe now */
-			RemoveConCmd(pInfo);
+			RemoveConCmd(pInfo, pInfo->pCmd->GetName(), true, true);
 			removed.push_back(pInfo);
 		}
 		delete pList;
@@ -516,7 +572,9 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	{
 		grpid = m_Strings.AddString(group);
 		sm_trie_insert(m_pCmdGrps, group, (void *)grpid);
-	} else {
+	}
+	else
+	{
 		grpid = (int)object;
 	}
 
@@ -691,7 +749,9 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 			}
 		}
 		pInfo->is_admin_set = true;
-	} else if (type == Override_CommandGroup) {
+	}
+	else if (type == Override_CommandGroup)
+	{
 		void *object;
 		if (!sm_trie_retrieve(m_pCmdGrps, cmd, &object))
 		{
@@ -726,16 +786,16 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 	}
 }
 
-void ConCmdManager::RemoveConCmd(ConCmdInfo *info)
+void ConCmdManager::RemoveConCmd(ConCmdInfo *info, const char *name, bool is_read_safe, bool untrack)
 {
+	/* Remove from the trie */
+	sm_trie_delete(m_pCmds, name);
+
 	/* Remove console-specific information
 	 * This should always be true as of right now
 	 */
 	if (info->pCmd)
 	{
-		/* Remove from the trie */
-		sm_trie_delete(m_pCmds, info->pCmd->GetName());
-
 		if (info->sourceMod)
 		{
 			/* Unlink from SourceMM */
@@ -746,9 +806,18 @@ void ConCmdManager::RemoveConCmd(ConCmdInfo *info)
 			delete [] new_help;
 			delete [] new_name;
 			delete info->pCmd;
-		} else {
-			/* Remove the external hook */
-			SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, info->pCmd, CommandCallback, false);
+		}
+		else
+		{
+			if (is_read_safe)
+			{
+				/* Remove the external hook */
+				SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, info->pCmd, CommandCallback, false);
+			}
+			if (untrack)
+			{
+				UntrackConCommandBase(info->pCmd, this);
+			}
 		}
 	}
 	
@@ -822,7 +891,10 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			char *new_help = sm_strdup(description);
 			pCmd = new ConCommand(new_name, CommandCallback, new_help, flags);
 			pInfo->sourceMod = true;
-		} else {
+		}
+		else
+		{
+			TrackConCommandBase(pCmd, this);
 			SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CommandCallback, false);
 		}
 
@@ -880,16 +952,22 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 			if (cmd.type == Cmd_Server)
 			{
 				type = "server";
-			} else if (cmd.type == Cmd_Console) {
+			}
+			else if (cmd.type == Cmd_Console)
+			{
 				type = "console";
-			} else if (cmd.type == Cmd_Admin) {
+			}
+			else if (cmd.type == Cmd_Admin)
+			{
 				type = "admin";
 			}
 			name = cmd.pInfo->pCmd->GetName();
 			if (cmd.pHook->helptext.size())
 			{
 				help = cmd.pHook->helptext.c_str();
-			} else {
+			}
+			else
+			{
 				help = cmd.pInfo->pCmd->GetHelpText();
 			}
 			g_RootMenu.ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		

@@ -41,6 +41,7 @@
 #include <sh_string.h>
 #include <IRootConsoleMenu.h>
 #include <IAdminSystem.h>
+#include "concmd_cleaner.h"
 
 using namespace SourceHook;
 
@@ -94,7 +95,8 @@ struct ConCmdInfo
 class ConCmdManager :
 	public SMGlobalClass,
 	public IRootConsoleCommand,
-	public IPluginsListener
+	public IPluginsListener,
+	public IConCommandTracker
 {
 #if defined ORANGEBOX_BUILD
 	friend void CommandCallback(const CCommand &command);
@@ -111,6 +113,8 @@ public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+public: //IConCommandTracker
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
 public:
 	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
 	bool AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
@@ -131,7 +135,8 @@ private:
 	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
 	void SetCommandClient(int client);
 	void AddToCmdList(ConCmdInfo *info);
-	void RemoveConCmd(ConCmdInfo *info);
+	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool is_read_safe, bool untrack);
+	void RemoveConCmds(List<CmdHook *> &cmdlist);
 	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
 public:
