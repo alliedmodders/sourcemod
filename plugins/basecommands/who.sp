@@ -23,7 +23,7 @@ DisplayWhoMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Who);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Check player access", client);
+	Format(title, sizeof(title), "%T:", "Identify player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -41,7 +41,7 @@ public AdminMenu_Who(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Check player access", param);
+		Format(buffer, maxlength, "%T", "Identify player", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

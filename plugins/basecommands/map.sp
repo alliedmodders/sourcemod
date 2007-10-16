@@ -85,7 +85,7 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 LoadMaps(Handle:menu)
 {
 	decl String:mapPath[256];
-	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/menu_maplist.ini");
+	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/adminmenu_maplist.ini");
 	
 	if (!FileExists(mapPath))
 	{	
@@ -112,8 +112,6 @@ LoadMaps(Handle:menu)
 	{
 		RemoveAllMenuItems(menu);
 	}
-
-	LogMessage("[SM] Loading menu map list file [%s]", mapPath);
 
 	new Handle:file = OpenFile(mapPath, "rt");
 	if (file == INVALID_HANDLE)

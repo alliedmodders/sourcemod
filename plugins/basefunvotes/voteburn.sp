@@ -2,7 +2,7 @@ DisplayVoteBurnMenu(client,target,String:name[])
 {
 	if (!IsPlayerAlive(target))
 	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", name);
+		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
 		return;
 	}
 	
@@ -15,7 +15,7 @@ DisplayVoteBurnMenu(client,target,String:name[])
 	g_voteType = voteType:burn;
 	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(g_hVoteMenu, "Voteburn Player");
+	SetMenuTitle(g_hVoteMenu, "Voteburn player");
 	AddMenuItem(g_hVoteMenu, VOTE_YES, "Yes");
 	AddMenuItem(g_hVoteMenu, VOTE_NO, "No");
 	SetMenuExitButton(g_hVoteMenu, false);
@@ -27,7 +27,7 @@ DisplayBurnTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Burn);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Vote Burn", client);
+	Format(title, sizeof(title), "%T:", "Burn vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -45,7 +45,7 @@ public AdminMenu_VoteBurn(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote Burn", param);
+		Format(buffer, maxlength, "%T", "Burn vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -86,6 +86,10 @@ public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
 		else if (!CanUserTarget(param1, target))
 		{
 			PrintToChat(param1, "[SM] %t", "Unable to target");
+		}
+		else if (!IsPlayerAlive(target))
+		{
+			PrintToChat(param1, "[SM] %t", "Player has since died");
 		}
 		else
 		{

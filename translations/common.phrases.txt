@@ -187,10 +187,16 @@
 		"en"			"Invalid amount specified"
 	}	
 
-	"Cannot performed on dead"
+	"Cannot be performed on dead"
 	{
 		"#format"		"{1:s}"
 		"en"			"This action cannot be performed on a dead client \"{1}\""
+	}
+	
+	"Player has since died"
+	{
+		"#format"		"{1:s}"
+		"en"			"Action cannot be performed, the player has since died."
 	}
 	
 	"Vote in Progress"
@@ -280,24 +286,24 @@
 	{
 		"en"			"Reload admins"
 	}
-	"Ban Player"
+	"Ban player"
 	{
-		"en"			"Ban Player"
+		"en"			"Ban player"
 	}
-	"Ban Reason"
+	"Ban reason"
 	{
-		"en"			"Ban Reason"
+		"en"			"Ban reason"
 	}
-	"Burn Player"
+	"Burn player"
 	{
-		"en"			"Burn Player"
+		"en"			"Burn player"
 	}
-	"Slap Player"
+	"Slap player"
 	{
-		"en"			"Slap Player"
+		"en"			"Slap player"
 	}
-	"Slap Damage"
+	"Slap damage"
 	{
-		"en"			"Slap Damage"
+		"en"			"Slap damage"
 	}
 }

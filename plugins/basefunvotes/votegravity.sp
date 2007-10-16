@@ -40,7 +40,7 @@ public AdminMenu_VoteGravity(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote Gravity", param);
+		Format(buffer, maxlength, "%T", "Gravity vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

@@ -8,19 +8,19 @@
 	
 	"Initiated Vote Map"
 	{
-		"en"			"Initiated a votemap."
+		"en"			"Initiated a map vote."
 	}	
 	
 	"Initiated Vote Kick"
 	{
 		"#format"		"{1:s}"
-		"en"			"Initiated a votekick against {1}."
+		"en"			"Initiated a kick vote against {1}."
 	}
 	
 	"Initiated Vote Ban"
 	{
 		"#format"		"{1:s}"
-		"en"			"Initiated a voteban against {1}."
+		"en"			"Initiated a ban vote against {1}."
 	}
 	
 	"Map Vote"
@@ -64,17 +64,17 @@
 		"#format"		"{1:s},{2:s}"
 		"en"			"The answer to {1} is: {2}."
 	}
-	"Vote Kick"
+	"Kick vote"
 	{
-		"en"			"Vote Kick"
+		"en"			"Kick vote"
 	}
-	"Vote Ban"
+	"Ban vote"
 	{
-		"en"			"Vote Ban"
+		"en"			"Ban vote"
 	}
-	"Vote Map"
+	"Map vote"
 	{
-		"en"			"Vote Map"
+		"en"			"Map vote"
 	}
 	"Confirm Vote"
 	{

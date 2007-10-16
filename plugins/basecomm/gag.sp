@@ -55,7 +55,7 @@ DisplayGagPlayerMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_GagPlayer);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Gag/Mute Player", client);
+	Format(title, sizeof(title), "%T:", "Gag/Mute player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -73,7 +73,7 @@ public AdminMenu_Gag(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Gag/Mute Player", param);
+		Format(buffer, maxlength, "%T", "Gag/Mute player", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

@@ -6,7 +6,7 @@ PerformSlap(client, target, damage)
 
 	if (!IsPlayerAlive(target))
 	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", name);
+		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
 		return;
 	}	
 
@@ -20,7 +20,7 @@ DisplaySlapDamageMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_SlapDamage);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Slap Damage", client);
+	Format(title, sizeof(title), "%T:", "Slap damage", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -40,7 +40,7 @@ DisplaySlapTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Slap);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Slap Player", client);
+	Format(title, sizeof(title), "%T:", "Slap player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -58,7 +58,7 @@ public AdminMenu_Slap(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Slap Player", param);
+		Format(buffer, maxlength, "%T", "Slap player", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

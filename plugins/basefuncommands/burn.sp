@@ -6,7 +6,7 @@ PerformBurn(client, target, Float:seconds)
 	
 	if (!IsPlayerAlive(target))
 	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", name);
+		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
 		return;
 	}
 
@@ -20,7 +20,7 @@ DisplayBurnMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Burn);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Burn Player", client);
+	Format(title, sizeof(title), "%T:", "Burn player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -38,7 +38,7 @@ public AdminMenu_Burn(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Burn Player", param);
+		Format(buffer, maxlength, "%T", "Burn player", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

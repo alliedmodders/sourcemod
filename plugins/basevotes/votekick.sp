@@ -25,7 +25,7 @@ DisplayKickTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Kick);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Vote Kick", client);
+	Format(title, sizeof(title), "%T:", "Kick vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -43,7 +43,7 @@ public AdminMenu_VoteKick(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote Kick", param);
+		Format(buffer, maxlength, "%T", "Kick vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

@@ -1,3 +1,5 @@
+new Handle:g_ConfigMenu = INVALID_HANDLE;
+
 PerformExec(client, String:path[])
 {
 	if (!FileExists(path))
@@ -26,7 +28,7 @@ public AdminMenu_ExecCFG(Handle:topmenu,
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		DisplayMenu(g_ConfigList, param, MENU_TIME_FOREVER);
+		DisplayMenu(g_ConfigMenu, param, MENU_TIME_FOREVER);
 	}
 }
 
@@ -65,18 +67,27 @@ public Action:Command_ExecCfg(client, args)
 	return Plugin_Handled;
 }
 
+new Handle:config_parser = INVALID_HANDLE;
 ParseConfigs()
 {
-	new Handle:list = SMC_CreateParser();
-	SMC_SetReaders(list, NewSection, KeyValue, EndSection);
-	SMC_SetParseEnd(list, ParseEnd);
+	if (config_parser == INVALID_HANDLE)
+	{
+		config_parser = SMC_CreateParser();
+	}
 	
-	new Handle:menu = CreateMenu(MenuHandler_ExecCFG);
-	SetMenuTitle(menu, "Choose Config");
-	SetMenuExitBackButton(menu, true);
+	SMC_SetReaders(config_parser, NewSection, KeyValue, EndSection);
+	
+	if (g_ConfigMenu != INVALID_HANDLE)
+	{
+		CloseHandle(g_ConfigMenu);
+	}
+	
+	g_ConfigMenu = CreateMenu(MenuHandler_ExecCFG);
+	SetMenuTitle(g_ConfigMenu, "Choose Config");
+	SetMenuExitBackButton(g_ConfigMenu, true);
 	
 	decl String:configPath[256];
-	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/menu_configs.cfg");
+	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/adminmenu_cfgs.txt");
 	
 	if (!FileExists(configPath))
 	{
@@ -85,9 +96,15 @@ ParseConfigs()
 		return;		
 	}
 	
-	g_ConfigList = menu;
-	
-	SMC_ParseFile(list, configPath);
+	new line;
+	new SMCError:err = SMC_ParseFile(config_parser, configPath, line);
+	if (err != SMCError_Okay)
+	{
+		decl String:error[256];
+		SMC_GetErrorString(err, error, sizeof(error));
+		LogError("Could not parse file (line %d, file \"%s\"):", line, configPath);
+		LogError("Parser encountered error: %s", error);
+	}
 	
 	return;
 }
@@ -99,18 +116,10 @@ public SMCResult:NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 
 public SMCResult:KeyValue(Handle:smc, const String:key[], const String:value[], bool:key_quotes, bool:value_quotes)
 {
-	AddMenuItem(g_ConfigList, key, value);
+	AddMenuItem(g_ConfigMenu, key, value);
 }
 
 public SMCResult:EndSection(Handle:smc)
 {
 	
-}
-
-public ParseEnd(Handle:smc, bool:halted, bool:failed)
-{
-	if (halted || failed)
-		LogError("Reading of configs file failed");
-		
-	CloseHandle(smc);
 }

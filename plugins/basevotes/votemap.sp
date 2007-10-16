@@ -132,7 +132,7 @@ public AdminMenu_VoteMap(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote Map", param);
+		Format(buffer, maxlength, "%T", "Map vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -200,7 +200,7 @@ public Action:Command_Votemap(client, args)
 LoadMaps(Handle:menu)
 {
 	decl String:mapPath[256];
-	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/menu_maplist.ini");
+	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/adminmenu_maplist.ini");
 	
 	if (!FileExists(mapPath))
 	{	
@@ -227,8 +227,6 @@ LoadMaps(Handle:menu)
 	{
 		RemoveAllMenuItems(menu);
 	}
-
-	LogMessage("[SM] Loading menu map list file [%s]", mapPath);
 
 	new Handle:file = OpenFile(mapPath, "rt");
 	if (file == INVALID_HANDLE)

@@ -7,7 +7,7 @@ PerformSlay(client, target)
 
 	if (!IsPlayerAlive(target))
 	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", name);
+		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
 		return;
 	}	
 

@@ -51,8 +51,6 @@ new Handle:hTopMenu = INVALID_HANDLE;
 new Handle:g_MapList;
 new g_mapFileTime;
 
-new Handle:g_ConfigList;
-
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
 #include "basecommands/cancelvote.sp"
@@ -93,15 +91,6 @@ public OnMapStart()
 	ParseConfigs();
 }
 
-public OnMapEnd()
-{
-	if (g_ConfigList != INVALID_HANDLE)
-	{
-		CloseHandle(g_ConfigList);
-		g_ConfigList = INVALID_HANDLE;
-	}
-}
-
 public OnAdminMenuReady(Handle:topmenu)
 {
 	/* Block us from being called twice */
@@ -127,7 +116,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_KICK);
 			
 		AddToTopMenu(hTopMenu,
-			"Get Info",
+			"Identify",
 			TopMenuObject_Item,
 			AdminMenu_Who,
 			player_commands,

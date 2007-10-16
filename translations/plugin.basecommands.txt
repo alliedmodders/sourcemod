@@ -74,9 +74,9 @@
 	{
 		"en"			"Admin cache has been refreshed."
 	}
-	"Check player access"
+	"Identify player"
 	{
-		"en"			"Check player access"
+		"en"			"Identify player"
 	}
 	"Choose Map"
 	{

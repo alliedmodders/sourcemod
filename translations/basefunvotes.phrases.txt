@@ -8,13 +8,13 @@
 	"Initiated Vote Burn"
 	{
 		"#format"		"{1:s}"
-		"en"			"Initiated a voteburn against {1}."
+		"en"			"Initiated a burn vote against {1}."
 	}
 	
 	"Initiated Vote Slay"
 	{
 		"#format"		"{1:s}"
-		"en"			"Initiated a voteslay against {1}."
+		"en"			"Initiated a slay vote against {1}."
 	}
 	
 	"Initiated Vote Alltalk"
@@ -30,7 +30,7 @@
 	"Gravity Vote"
 	{
 		"#format"		"{1:s}"
-		"en"			"Gravity Vote: {1}"
+		"en"			"Gravity vote: {1}"
 	}
 	
 	"Change Gravity To"
@@ -39,10 +39,10 @@
 		"en"			"Change gravity to {1}?"
 	}	
 
-	"Voteburn Player"
+	"Voteburn player"
 	{
 		"#format"		"{1:s}"
-		"en"			"Burn {1}?"
+		"en"			"Burn player {1}?"
 	}
 	
 	"Voteslay Player"
@@ -74,25 +74,30 @@
 		"#format"		"{1:s}"
 		"en"			"Turn friendly fire on? {1}"
 	}
-	"Vote Gravity"
+	
+	"Gravity vote"
 	{
-		"en"			"Vote Gravity"
+		"en"			"Gravity vote"
 	}
+	
 	"Vote FF"
 	{
 		"en"			"Vote FF"
 	}
-	"Vote Burn"
+	
+	"Burn vote"
 	{
-		"en"			"Vote Burn"
+		"en"			"Burn vote"
 	}
-	"Vote AllTalk"
+	
+	"Alltalk vote"
 	{
-		"en"			"Vote AllTalk"
+		"en"			"Alltalk vote"
 	}
-	"Vote Slay"
+	
+	"Slay vote"
 	{
-		"en"			"Vote Slay"
+		"en"			"Slay vote"
 	}
 	
 }

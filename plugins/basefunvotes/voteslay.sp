@@ -3,7 +3,7 @@ DisplayVoteSlayMenu(client,target,String:name[])
 {
 	if (!IsPlayerAlive(target))
 	{
-		ReplyToCommand(client, "[SM] %t", "Cannot performed on dead", name);
+		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
 		return;
 	}
 	
@@ -28,7 +28,7 @@ DisplaySlayTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Slay);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Vote Slay", client);
+	Format(title, sizeof(title), "%T:", "Slay vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -46,7 +46,7 @@ public AdminMenu_VoteSlay(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote Slay", param);
+		Format(buffer, maxlength, "%T", "Slay vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
@@ -87,6 +87,10 @@ public MenuHandler_Slay(Handle:menu, MenuAction:action, param1, param2)
 		else if (!CanUserTarget(param1, target))
 		{
 			PrintToChat(param1, "[SM] %t", "Unable to target");
+		}
+		else if (!IsPlayerAlive(target))
+		{
+			PrintToChat(param1, "[SM] %t", "Player has since died");
 		}
 		else
 		{

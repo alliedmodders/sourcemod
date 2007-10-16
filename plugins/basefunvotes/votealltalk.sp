@@ -44,7 +44,7 @@ public AdminMenu_VoteAllTalk(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote AllTalk", param);
+		Format(buffer, maxlength, "%T", "Alltalk vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

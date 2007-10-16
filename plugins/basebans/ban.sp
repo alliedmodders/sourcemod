@@ -36,7 +36,7 @@ DisplayBanTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_BanPlayerList);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Ban Player", client);
+	Format(title, sizeof(title), "%T:", "Ban player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -50,7 +50,7 @@ DisplayBanTimeMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_BanTimeList);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Ban Player", client);
+	Format(title, sizeof(title), "%T:", "Ban player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -70,9 +70,11 @@ DisplayBanReasonMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_BanReasonList);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Ban Reason", client);
+	Format(title, sizeof(title), "%T:", "Ban reason", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
+	
+	/* :TODO: we should either remove this or make it configurable */
 	
 	AddMenuItem(menu, "Abusive", "Abusive");
 	AddMenuItem(menu, "Racism", "Racism");
@@ -100,7 +102,7 @@ public AdminMenu_Ban(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Ban Player", param);
+		Format(buffer, maxlength, "%T", "Ban player", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

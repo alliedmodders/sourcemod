@@ -26,7 +26,7 @@ DisplayBanTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Ban);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Vote Ban", client);
+	Format(title, sizeof(title), "%T:", "Ban vote", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -44,7 +44,7 @@ public AdminMenu_VoteBan(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Vote Ban", param);
+		Format(buffer, maxlength, "%T", "Ban vote", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{

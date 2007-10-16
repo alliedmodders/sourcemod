@@ -156,7 +156,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"Vote Kick",
+			"Kick Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteKick,
 			voting_commands,
@@ -164,7 +164,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_VOTE|ADMFLAG_KICK);
 			
 		AddToTopMenu(hTopMenu,
-			"Vote Ban",
+			"Ban Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteBan,
 			voting_commands,
@@ -172,7 +172,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_VOTE|ADMFLAG_BAN);
 			
 		AddToTopMenu(hTopMenu,
-			"Vote Map",
+			"Map Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteMap,
 			voting_commands,

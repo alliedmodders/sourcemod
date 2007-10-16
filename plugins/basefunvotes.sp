@@ -146,7 +146,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"Vote Gravity",
+			"Gravity Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteGravity,
 			voting_commands,
@@ -154,7 +154,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_VOTE);
 			
 		AddToTopMenu(hTopMenu,
-			"Vote Burn",
+			"Burn Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteBurn,
 			voting_commands,
@@ -162,7 +162,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_VOTE|ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
-			"Vote Slay",
+			"Slay Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteSlay,
 			voting_commands,
@@ -170,7 +170,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_VOTE|ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
-			"Vote AllTalk",
+			"Alltalk Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteAllTalk,
 			voting_commands,
@@ -178,7 +178,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_VOTE);
 			
 		AddToTopMenu(hTopMenu,
-			"Vote FF",
+			"FF Vote",
 			TopMenuObject_Item,
 			AdminMenu_VoteFF,
 			voting_commands,
