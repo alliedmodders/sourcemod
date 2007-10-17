@@ -9,6 +9,7 @@
 	"PlayerCommands"
 	{
 		"item"		"sm_slay"
+		"item"		"sm_slap"
 		"item"		"sm_kick"
 		"item"		"sm_ban"
 		"item"		"sm_gag"
