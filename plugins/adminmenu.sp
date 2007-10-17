@@ -175,6 +175,12 @@ public __AddTargetsToMenu(Handle:plugin, numParams)
 
 public Action:Command_DisplayMenu(client, args)
 {
+	if (client == 0)
+	{
+		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
+		return Plugin_Handled;
+	}
+	
 	DisplayTopMenu(hAdminMenu, client, TopMenuPosition_Start);
 	
 	return Plugin_Handled;

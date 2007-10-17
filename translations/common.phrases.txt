@@ -286,24 +286,34 @@
 	{
 		"en"			"Reload admins"
 	}
+
 	"Ban player"
 	{
 		"en"			"Ban player"
 	}
+
 	"Ban reason"
 	{
 		"en"			"Ban reason"
 	}
+
 	"Burn player"
 	{
 		"en"			"Burn player"
 	}
+
 	"Slap player"
 	{
 		"en"			"Slap player"
 	}
+
 	"Slap damage"
 	{
 		"en"			"Slap damage"
+	}
+	
+	"Command is in-game only"
+	{
+		"en"			"This command can only be used in-game."
 	}
 }
