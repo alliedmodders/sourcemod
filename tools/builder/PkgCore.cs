@@ -157,13 +157,13 @@ namespace builder
 			lib.build_mode = BuildMode.BuildMode_Episode1;
 			libraries.Add(lib);
 
-			/*lib = new Library();
+			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "core";
 			lib.binary_name = "sourcemod.2.ep2";
 			lib.vcproj_name = "sourcemod_mm";
 			lib.build_mode = BuildMode.BuildMode_Episode2;
-			libraries.Add(lib);*/
+			libraries.Add(lib);
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
