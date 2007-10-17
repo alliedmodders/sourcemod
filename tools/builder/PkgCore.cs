@@ -288,7 +288,7 @@ namespace builder
 			plugins.Add(new Plugin("basecomm"));
 			plugins.Add(new Plugin("randomcycle", true));
 			plugins.Add(new Plugin("rockthevote", true));
-			//plugins.Add(new Plugin("adminmenu", true));
+			plugins.Add(new Plugin("adminmenu"));
 
 			return (Plugin [])plugins.ToArray(typeof(Plugin));
 		}
