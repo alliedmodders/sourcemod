@@ -8,25 +8,26 @@
 {
 	"PlayerCommands"
 	{
-		"item"		"Slay"
-		"item"		"Kick"
-		"item"		"Ban"
-		"item"		"Gag/Mute"
-		"item"		"Burn"
+		"item"		"sm_slay"
+		"item"		"sm_kick"
+		"item"		"sm_ban"
+		"item"		"sm_gag"
+		"item"		"sm_burn"
 	}
 
 	"ServerCommands"
 	{
-		"item"		"Change Map"
-		"item"		"Exec CFG"
-		"item"		"Reload Admins"
+		"item"		"sm_map"
+		"item"		"sm_execcfg"
+		"item"		"sm_reloadadmins"
 	}
 
 	"VotingCommands"
 	{
-		"item"		"Cancel Vote"
-		"item"		"Map Vote"
-		"item"		"Kick Vote"
-		"item"		"Ban Vote"
+		"item"		"sm_cancelvote"
+		"item"		"sm_votemap"
+		"item"		"sm_votekick"
+		"item"		"sm_voteban"
 	}
 }
+

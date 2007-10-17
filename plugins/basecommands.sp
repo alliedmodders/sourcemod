@@ -108,7 +108,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu, 
-			"Kick",
+			"sm_kick",
 			TopMenuObject_Item,
 			AdminMenu_Kick,
 			player_commands,
@@ -116,7 +116,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_KICK);
 			
 		AddToTopMenu(hTopMenu,
-			"Identify",
+			"sm_who",
 			TopMenuObject_Item,
 			AdminMenu_Who,
 			player_commands,
@@ -129,7 +129,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (server_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"Reload Admins",
+			"sm_reloadadmins",
 			TopMenuObject_Item,
 			AdminMenu_ReloadAdmins,
 			server_commands,
@@ -137,7 +137,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_BAN);
 			
 		AddToTopMenu(hTopMenu,
-			"Change Map",
+			"sm_map",
 			TopMenuObject_Item,
 			AdminMenu_Map,
 			server_commands,
@@ -145,7 +145,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_CHANGEMAP);
 			
 		AddToTopMenu(hTopMenu,
-			"Exec CFG",
+			"sm_execcfg",
 			TopMenuObject_Item,
 			AdminMenu_ExecCFG,
 			server_commands,
@@ -158,7 +158,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (voting_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"Cancel Vote",
+			"sm_cancelvote",
 			TopMenuObject_Item,
 			AdminMenu_CancelVote,
 			voting_commands,

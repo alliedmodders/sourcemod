@@ -87,7 +87,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"Ban",
+			"sm_ban",
 			TopMenuObject_Item,
 			AdminMenu_Ban,
 			player_commands,

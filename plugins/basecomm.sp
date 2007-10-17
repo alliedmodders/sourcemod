@@ -106,7 +106,7 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu, 
-			"Gag/Mute",
+			"sm_gag",
 			TopMenuObject_Item,
 			AdminMenu_Gag,
 			player_commands,
