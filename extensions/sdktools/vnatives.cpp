@@ -288,6 +288,35 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+#if defined ORANGEBOX_BUILD
+/* :TODO: This is Team Fortress 2 specific */
+static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[2];
+		InitPass(pass[0], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("CommitSuicide", ValveCall_Player, NULL, pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"CommitSuicide\" not supported by this mod");
+		}
+		else if (!pCall)
+		{
+			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	*(bool *)(vptr + 4) = false;
+	*(bool *)(vptr + 5) = false;
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+#else
 static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -307,6 +336,7 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	return 1;
 }
+#endif
 
 static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params)
 {

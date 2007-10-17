@@ -9,7 +9,7 @@
 			"SlapSound1"		"player/pl_fallpain1.wav"
 			"SlapSound2"		"player/pl_fallpain3.wav"
 			"SlapSound3"		"player/pl_pain5.wav"
-			"m_iFrags"		"m_iFrags"
+			"m_iFrags"			"m_iFrags"
 		}
 		"Offsets"
 		{

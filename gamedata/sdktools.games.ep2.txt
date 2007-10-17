@@ -1,5 +1,31 @@
 "Games"
 {
+	/* Sounds */
+	"#default"
+	{
+		"Keys"
+		{
+			"SlapSoundCount"	"3"
+			"SlapSound1"		"player/pl_fallpain1.wav"
+			"SlapSound2"		"player/pl_fallpain3.wav"
+			"SlapSound3"		"player/pl_pain5.wav"
+			"m_iFrags"			"m_iFrags"
+		}
+		"Offsets"
+		{
+			"m_iHealth"
+			{
+				"class"		"CBasePlayer"
+				"prop"		"m_iHealth"
+			}
+			"m_lifeState"
+			{
+				"class"		"CBasePlayer"
+				"prop"		"m_lifeState"
+			}
+		}
+	}
+	
 	/* General Temp Entities */
 	"#default"
 	{
@@ -44,6 +70,109 @@
 				"library"	"server"
 				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
+		}
+	}
+	
+	/* Create Entity Signatures */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"tf"
+		}
+
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+			}
+		}
+	}
+	
+	/* Team Fortress 2 Offsets */
+	"tf"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"348"
+				"linux"		"349"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"236"
+				"linux"		"237"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"234"
+				"linux"		"235"
+			}
+			"Ignite"
+			{
+				"windows"	"191"
+				"linux"		"192"
+			}
+			"Extinguish"
+			{
+				"windows"	"195"
+				"linux"		"196"
+			}
+			"Teleport"
+			{
+				"windows"	"99"
+				"linux"		"100"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"383"
+				"linux"		"384"
+			}
+			"GetVelocity"
+			{
+				"windows"	"128"
+				"linux"		"129"
+			}
+			"EyeAngles"
+			{
+				"windows"	"120"
+				"linux"		"121"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			
+			/**
+			 * THESE ARE DISABLED FOR NOW.
+			 
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			 */
 		}
 	}
 }
