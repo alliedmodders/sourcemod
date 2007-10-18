@@ -157,6 +157,7 @@ static cell_t GetGameFolderName(IPluginContext *pContext, const cell_t *params)
 	return numBytes;
 }
 
+/* Useless comment to bump the build */
 static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 {
 	size_t bytes;
