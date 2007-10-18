@@ -41,7 +41,6 @@ SH_DECL_HOOK4_void(IServerPluginHelpers, CreateMessage, SH_NOATTRIB, false, edic
 ValveMenuStyle g_ValveMenuStyle;
 extern const char *g_OptionNumTable[];
 extern const char *g_OptionCmdTable[];
-IServerPluginCallbacks *g_pVSPHandle = NULL;
 CallClass<IServerPluginHelpers> *g_pSPHCC = NULL;
 
 ValveMenuStyle::ValveMenuStyle() : m_players(new CValveMenuPlayer[256+1])
@@ -114,11 +113,6 @@ void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
 	}
 }
 
-void ValveMenuStyle::OnSourceModVSPReceived(IServerPluginCallbacks *iface)
-{
-	g_pVSPHandle = iface;
-}
-
 IMenuPanel *ValveMenuStyle::CreatePanel()
 {
 	return new CValveMenuDisplay();
@@ -148,7 +142,7 @@ void ValveMenuStyle::SendDisplay(int client, IMenuPanel *display)
 
 bool ValveMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time)
 {
-	if (!g_pVSPHandle)
+	if (vsp_interface == NULL)
 	{
 		return false;
 	}
@@ -158,7 +152,7 @@ bool ValveMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh
 
 bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, unsigned int first_item, IMenuHandler *mh, unsigned int time)
 {
-	if (!g_pVSPHandle)
+	if (vsp_interface == NULL)
 	{
 		mh->OnMenuStart(menu);
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
@@ -329,7 +323,7 @@ void CValveMenuDisplay::SendRawDisplay(int client, int priority, unsigned int ti
 		engine->PEntityOfEntIndex(client),
 		DIALOG_MENU,
 		m_pKv,
-		g_pVSPHandle);
+		vsp_interface);
 }
 
 bool CValveMenuDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned int time)

@@ -69,7 +69,6 @@ public: //BaseMenuStyle
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
-	void OnSourceModVSPReceived(IServerPluginCallbacks *iface);
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
