@@ -199,7 +199,7 @@ public Action:Command_Votemap(client, args)
 	return Plugin_Handled;	
 }
 
-LoadMaps(Handle:menu)
+LoadMapList(Handle:menu)
 {
 	decl String:mapPath[256];
 	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/adminmenu_maplist.ini");

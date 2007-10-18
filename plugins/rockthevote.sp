@@ -88,7 +88,7 @@ public OnPluginStart()
 	AutoExecConfig(true, "rtv");
 }
 
-public OnMapStart()
+public OnConfigsExecuted()
 {
 	if (g_RTVMapList != INVALID_HANDLE)
 	{
@@ -101,15 +101,11 @@ public OnMapStart()
 	g_RTVStarted = false;
 	g_RTVEnded = false;
 	
-	if (LoadMaps())
+	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_File))
 	{
 		BuildMapMenu();
 		g_CanRTV = true;
 		CreateTimer(30.0, Timer_DelayRTV);
-	}
-	else
-	{
-		LogMessage("[SM] Cannot find map cycle file, RTV not active.");
 	}
 }
 
@@ -528,82 +524,4 @@ BuildMapMenu()
 	}
 	
 	SetMenuExitButton(g_MapMenu, false);
-}
-
-LoadMaps()
-{
-	new bool:fileFound;
-
-	decl String:mapPath[256], String:mapFile[64];
-	GetConVarString(g_Cvar_File, mapFile, 64);
-	BuildPath(Path_SM, mapPath, sizeof(mapPath), mapFile);
-	fileFound = FileExists(mapPath);
-	if (!fileFound)
-	{
-		new Handle:mapCycleFile = FindConVar("mapcyclefile");
-		GetConVarString(mapCycleFile, mapPath, sizeof(mapPath));
-		fileFound = FileExists(mapPath);
-	}
-	
-	if (!fileFound)
-	{
-		LogError("Unable to locate sm_rtv_file or mapcyclefile, no maps loaded.");
-		
-		if (g_MapList != INVALID_HANDLE)
-		{
-			ClearArray(g_MapList);
-		}
-		
-		return 0;		
-	}
-
-	// If the file hasn't changed, there's no reason to reload
-	// all of the maps.
-	new fileTime =  GetFileTime(mapPath, FileTime_LastChange);
-	if (g_mapFileTime == fileTime)
-	{
-		return GetArraySize(g_MapList);
-	}
-	
-	g_mapFileTime = fileTime;
-	
-	// Reset the array
-	if (g_MapList != INVALID_HANDLE)
-	{
-		ClearArray(g_MapList);
-	}
-
-	LogMessage("[SM] Loading RTV map file [%s]", mapPath);
-
-	decl String:currentMap[32];
-	GetCurrentMap(currentMap, sizeof(currentMap));
-
-	new Handle:file = OpenFile(mapPath, "rt");
-	if (file == INVALID_HANDLE)
-	{
-		LogError("[SM] Could not open file: %s", mapPath);
-		return 0;
-	}
-
-	decl String:buffer[64], len;
-	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
-	{
-		TrimString(buffer);
-
-		if ((len = StrContains(buffer, ".bsp", false)) != -1)
-		{
-			buffer[len] = '\0';
-		}
-
-		if (buffer[0] == '\0' || !IsValidConVarChar(buffer[0]) || !IsMapValid(buffer)
-			|| strcmp(currentMap, buffer, false) == 0)
-		{
-			continue;
-		}
-
-		PushArrayString(g_MapList, buffer);
-	}
-
-	CloseHandle(file);
-	return GetArraySize(g_MapList);
 }

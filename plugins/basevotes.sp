@@ -136,7 +136,7 @@ public OnPluginStart()
 
 public OnMapStart()
 {
-	g_mapCount = LoadMaps(g_MapList);
+	g_mapCount = LoadMapList(g_MapList);
 }
 
 public OnAdminMenuReady(Handle:topmenu)

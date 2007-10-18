@@ -49,7 +49,6 @@ new UserMsg:g_VGUIMenu;
  
 new Handle:g_Cvar_Chattime;
 new Handle:g_Cvar_Nextmap;
-new Handle:g_Cvar_Mapcycle;
 
 new g_MapPos = -1;
 new Handle:g_MapList = INVALID_HANDLE;
@@ -67,21 +66,18 @@ public OnPluginStart()
 		SetFailState("VGUIMenu Not Found");
 	}
 	
-	g_Cvar_Chattime = FindConVar("mp_chattime");
-	g_Cvar_Mapcycle = FindConVar("mapcyclefile");
-	
 	g_MapList = CreateArray(32);
 
-	if (!LoadMaps())
+	if (!LoadMaps(g_MapList, g_mapFileTime))
 	{
 		LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
 		SetFailState("Mapcycle Not Found");		
 	}	
 	
 	HookUserMessage(g_VGUIMenu, UserMsg_VGUIMenu);
-	HookConVarChange(g_Cvar_Mapcycle, ConVarChange_Mapcyclefile);
 	
 	g_Cvar_Nextmap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_NOTIFY);
+	g_Cvar_Chattime = FindConVar("mp_chattime");
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
@@ -106,7 +102,7 @@ public OnMapStart()
 	// not in mapcyclefile. So we keep it set to the last expected nextmap. - ferret
 	if (strcmp(lastMap, currentMap) == 0)
 	{
-		if (!LoadMaps())
+		if (!LoadMaps(g_MapList, g_mapFileTime))
 		{
 			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
 			SetFailState("Mapcycle Not Found");	
@@ -120,21 +116,7 @@ public OnMapEnd()
 {
 	g_IntermissionCalled = false;
 }
- 
-public ConVarChange_Mapcyclefile(Handle:convar, const String:oldValue[], const String:newValue[])
-{
-	if (strcmp(oldValue, newValue, false) != 0)
-	{
-		if (!LoadMaps())
-		{
-			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
-			SetFailState("Mapcycle Not Found");	
-		}
-		
-		FindAndSetNextMap();
-	}
-}
- 
+
 public Action:Command_Say(client, args)
 {
 	decl String:text[192];
@@ -252,59 +234,6 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	LogMessage("Nextmap changed map to \"%s\"", map);
 	
 	return Plugin_Stop;
-}
- 
-LoadMaps()
-{
-	decl String:mapCycle[64];
-	GetConVarString(g_Cvar_Mapcycle, mapCycle, 64);	
-	
-	if (!FileExists(mapCycle))
-	{
-		LogError("[SM] Could not find file: %s", mapCycle);
-		return 0;
-	}
-	
-	new fileTime =  GetFileTime(mapCycle, FileTime_LastChange);
-	if (g_mapFileTime == fileTime)
-	{
-		return GetArraySize(g_MapList);
-	}
-	
-	g_mapFileTime = fileTime;
- 
-	new Handle:file = OpenFile(mapCycle, "r");
-	
-	if (file == INVALID_HANDLE)
-	{
-		LogError("[SM] Could not open file: %s", mapCycle);
-		return 0;
-	}
-	
-	g_MapPos = -1;
-	if (g_MapList != INVALID_HANDLE)
-	{
-		ClearArray(g_MapList);
-	}
-	
-	decl String:buffer[255];
-	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
-	{
-		TrimString(buffer);
-		if (buffer[0] == '\0' || buffer[0] == ';')
-		{
-			continue;
-		}
-		
-		if (IsMapValid(buffer))
-		{
-			PushArrayString(g_MapList, buffer);
-		}
-	}
-	
-	CloseHandle(file);
-
-	return GetArraySize(g_MapList);
 }
  
 FindAndSetNextMap()

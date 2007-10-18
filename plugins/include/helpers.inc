@@ -203,3 +203,86 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
 	
 	return clients[0];
 }
+
+
+/**
+ * Loads a specified array with maps. The maps will be either loaded from mapcyclefile, or if supplied
+ * a cvar containing a file name. If the file in the cvar is bad, it will use mapcyclefile. The fileTime
+ * parameter is used to store a timestamp of the file. If specified, the file will only be reloaded if it
+ * has changed.
+ *
+ * @param array		Valid array handle, should be created with CreateArray(33) or larger. 
+ * @param fileTime	Variable containing the "last changed" time of the file. Used to avoid needless reloading.
+ * @param fileCvar	CVAR set to the file to be loaded. Optional.
+ * @return		Number of maps loaded or 0 if in error.
+ */
+ stock LoadMaps(Handle:array, &fileTime = 0, Handle:fileCvar = INVALID_HANDLE)
+ { 
+ 	decl String:mapPath[256], String:mapFile[64];
+ 	new bool:fileFound = false;
+ 	
+ 	if (fileCvar != INVALID_HANDLE)
+ 	{
+ 		GetConVarString(fileCvar, mapFile, 64);
+	 	BuildPath(Path_SM, mapPath, sizeof(mapPath), mapFile);
+ 		fileFound = FileExists(mapPath);
+ 	}
+ 
+ 	if (!fileFound)
+ 	{
+ 		new Handle:mapCycleFile = FindConVar("mapcyclefile");
+ 		GetConVarString(mapCycleFile, mapPath, sizeof(mapPath));
+ 		fileFound = FileExists(mapPath);
+ 	}
+ 	
+ 	if (!fileFound)
+ 	{
+ 		LogError("Failed to find a file to load maps from. No maps loaded.");
+ 		ClearArray(array);
+ 		
+ 		return 0;		
+ 	}
+ 
+ 	// If the file hasn't changed, there's no reason to reload
+ 	// all of the maps.
+ 	new newTime =  GetFileTime(mapPath, FileTime_LastChange);
+ 	if (fileTime == newTime)
+ 	{
+ 		return GetArraySize(array);
+ 	}
+ 	
+ 	fileTime = newTime;
+ 	
+ 	ClearArray(array);
+ 
+ 	new Handle:file = OpenFile(mapPath, "rt");
+ 	if (file == INVALID_HANDLE)
+ 	{
+ 		LogError("Could not open file: %s", mapPath);
+ 		
+ 		return 0;
+ 	}
+ 
+	LogMessage("Loading maps from file: %s", mapPath);
+	
+ 	decl String:buffer[64], len;
+ 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
+ 	{
+ 		TrimString(buffer);
+ 
+ 		if ((len = StrContains(buffer, ".bsp", false)) != -1)
+ 		{
+ 			buffer[len] = '\0';
+ 		}
+ 
+ 		if (buffer[0] == '\0' || !IsValidConVarChar(buffer[0]) || !IsMapValid(buffer))
+ 		{
+ 			continue;
+ 		}
+ 
+ 		PushArrayString(array, buffer);
+ 	}
+ 
+ 	CloseHandle(file);
+ 	return GetArraySize(array);
+}

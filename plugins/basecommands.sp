@@ -86,7 +86,7 @@ public OnPluginStart()
 
 public OnMapStart()
 {
-	LoadMaps(g_MapList);
+	LoadMapList(g_MapList);
 	
 	ParseConfigs();
 }

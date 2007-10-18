@@ -71,8 +71,8 @@ new Handle:g_RetryTimer = INVALID_HANDLE;
 new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_OldMapList = INVALID_HANDLE;
 new Handle:g_NextMapList = INVALID_HANDLE;
-new Handle:g_VoteMenu = INVALID_HANDLE;
 new Handle:g_TeamScores = INVALID_HANDLE;
+new Handle:g_VoteMenu = INVALID_HANDLE;
 
 new bool:g_HasVoteStarted;
 new g_mapFileTime;
@@ -122,7 +122,7 @@ public OnPluginStart()
 	AutoExecConfig(true, "mapchooser");
 }
 
-public OnMapStart()
+public OnConfigsExecuted()
 {
 	g_Cvar_Nextmap = FindConVar("sm_nextmap");
 
@@ -132,7 +132,7 @@ public OnMapStart()
 		SetFailState("sm_nextmap not found");
 	}
 	
-	if (LoadMaps())
+	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_Mapfile))
 	{
 		CreateNextVote();
 		SetupTimeleftTimer();
@@ -143,8 +143,18 @@ public OnMapStart()
 public OnMapEnd()
 {
 	g_HasVoteStarted = false;
-	g_RetryTimer = INVALID_HANDLE;
-	g_VoteTimer = INVALID_HANDLE;
+	
+	if (g_VoteTimer != INVALID_HANDLE)
+	{
+		KillTimer(g_VoteTimer);
+		g_VoteTimer = INVALID_HANDLE;
+	}
+	
+	if (g_RetryTimer != INVALID_HANDLE)
+	{
+		KillTimer(g_RetryTimer);
+		g_RetryTimer = INVALID_HANDLE;
+	}
 }
 
 public OnMapTimeLeftChanged()
@@ -173,7 +183,7 @@ SetupTimeleftTimer()
 				g_VoteTimer = INVALID_HANDLE;
 			}	
 			
-			g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote, TIMER_FLAG_NO_MAPCHANGE);
+			g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote);
 		}		
 	}
 }
@@ -301,7 +311,7 @@ InitiateVote()
 	if (IsVoteInProgress())
 	{
 		// Can't start a vote, try again in 5 seconds.
-		g_RetryTimer = CreateTimer(5.0, Timer_StartMapVote, TIMER_FLAG_NO_MAPCHANGE);
+		g_RetryTimer = CreateTimer(5.0, Timer_StartMapVote);
 		return;
 	}		
 	
@@ -536,82 +546,4 @@ CreateNextVote()
 		PushArrayString(g_NextMapList, map);
 		RemoveFromArray(tempMaps, b);
 	}
-}
-
-LoadMaps()
-{
-	new bool:fileFound;
-
-	decl String:mapPath[256], String:mapFile[64];
-	GetConVarString(g_Cvar_Mapfile, mapFile, 64);
-	BuildPath(Path_SM, mapPath, sizeof(mapPath), mapFile);
-	fileFound = FileExists(mapPath);
-	if (!fileFound)
-	{
-		new Handle:mapCycleFile = FindConVar("mapcyclefile");
-		GetConVarString(mapCycleFile, mapPath, sizeof(mapPath));
-		fileFound = FileExists(mapPath);
-	}
-	
-	if (!fileFound)
-	{
-		LogError("Unable to locate sm_mapvote_file or mapcyclefile, no maps loaded.");
-		
-		if (g_MapList != INVALID_HANDLE)
-		{
-			ClearArray(g_MapList);
-		}
-		
-		return 0;		
-	}
-
-	// If the file hasn't changed, there's no reason to reload
-	// all of the maps.
-	new fileTime =  GetFileTime(mapPath, FileTime_LastChange);
-	if (g_mapFileTime == fileTime)
-	{
-		return GetArraySize(g_MapList);
-	}
-	
-	g_mapFileTime = fileTime;
-	
-	// Reset the array
-	if (g_MapList != INVALID_HANDLE)
-	{
-		ClearArray(g_MapList);
-	}
-
-	LogMessage("[SM] Loading mapchooser map file [%s]", mapPath);
-
-	new Handle:file = OpenFile(mapPath, "rt");
-	if (file == INVALID_HANDLE)
-	{
-		LogError("[SM] Could not open file: %s", mapPath);
-		return 0;
-	}
-
-	decl String:currentMap[32];
-	GetCurrentMap(currentMap, sizeof(currentMap));	
-	
-	decl String:buffer[64], len;
-	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
-	{
-		TrimString(buffer);
-
-		if ((len = StrContains(buffer, ".bsp", false)) != -1)
-		{
-			buffer[len] = '\0';
-		}
-
-		if (buffer[0] == '\0' || !IsValidConVarChar(buffer[0]) || !IsMapValid(buffer)
-			|| strcmp(currentMap, buffer, false) == 0)
-		{
-			continue;
-		}
-
-		PushArrayString(g_MapList, buffer);
-	}
-
-	CloseHandle(file);
-	return GetArraySize(g_MapList);
 }
