@@ -605,7 +605,7 @@ static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 	QAngle angles;
 	bool got_angles = false;
 
-	if (pEntity == NULL)
+	if (pEntity != NULL)
 	{
 		got_angles = GetEyeAngles(pEntity, &angles);
 	}

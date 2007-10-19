@@ -213,7 +213,7 @@ native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:v
  * @return				Entity index being aimed at.
  *						-1 if no entity is being aimed at.
  * 						-2 if the function is not supported.
- * @error				Invalid client index.
+ * @error				Invalid client index or client not in game.
  */
 native GetClientAimTarget(client, bool:only_clients=true);
 
