@@ -137,16 +137,16 @@ native FindEntityByClassname(startEnt, const String:classname[]);
  *
  * @param client		Player's index.
  * @param ang			Destination vector to store the client's eye angles.
- * @noreturn
+ * @return				True on success, false on failure.
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native GetClientEyeAngles(client, Float:ang[3]);
+native bool:GetClientEyeAngles(client, Float:ang[3]);
 
 /**
  * Returns if the client is alive or dead.
  *
  * @param client		Player's index.
- * @return			True if the client is alive, false otherwise.
+ * @return				True if the client is alive, false otherwise.
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native bool:IsPlayerAlive(client);
@@ -156,10 +156,10 @@ native bool:IsPlayerAlive(client);
  * If ForceEdictIndex is not -1, then it will use the edict by that index. If the index is 
  *  invalid or there is already an edict using that index, it will error out.
  *
- * @param classname		Entity classname.
+ * @param classname			Entity classname.
  * @param ForceEdictIndex	Edict index used by the created entity.
- * @return			Entity index on success, or -1 on failure.
- * @error			Invalid edict index, or no mod support.
+ * @return					Entity index on success, or -1 on failure.
+ * @error					Invalid edict index, or no mod support.
  */
 native CreateEntityByName(const String:classname[], ForceEdictIndex=-1);
 
@@ -167,8 +167,8 @@ native CreateEntityByName(const String:classname[], ForceEdictIndex=-1);
  * Spawns an entity into the game.
  *
  * @param entity		Entity index of the created entity.
- * @return			True on success, false otherwise.
- * @error			Invalid entity index, or no mod support.
+ * @return				True on success, false otherwise.
+ * @error				Invalid entity index, or no mod support.
  */
 native bool:DispatchSpawn(entity);
 
@@ -178,8 +178,8 @@ native bool:DispatchSpawn(entity);
  * @param entity		Destination entity index.
  * @param keyName		Name of the key.
  * @param value			String value.
- * @return			True on success, false otherwise.
- * @error			Invalid entity index, or no mod support.
+ * @return				True on success, false otherwise.
+ * @error				Invalid entity index, or no mod support.
  */
 native bool:DispatchKeyValue(entity, const String:keyName[], const String:value[]);
 
@@ -189,8 +189,8 @@ native bool:DispatchKeyValue(entity, const String:keyName[], const String:value[
  * @param entity		Destination entity index.
  * @param keyName		Name of the key.
  * @param value			Floating point value.
- * @return			True on success, false otherwise.
- * @error			Invalid entity index, or no mod support.
+ * @return				True on success, false otherwise.
+ * @error				Invalid entity index, or no mod support.
  */
 native bool:DispatchKeyValueFloat(entity, const String:keyName[], Float:value);
 
@@ -200,10 +200,22 @@ native bool:DispatchKeyValueFloat(entity, const String:keyName[], Float:value);
  * @param entity		Destination entity index.
  * @param keyName		Name of the key.
  * @param vec			Vector value.
- * @return			True on success, false otherwise.
- * @error			Invalid entity index, or no mod support.
+ * @return				True on success, false otherwise.
+ * @error				Invalid entity index, or no mod support.
  */
 native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:vector[3]);
+
+/**
+ * Returns the entity a client is aiming at.
+ *
+ * @param client		Client performing the aiming.
+ * @param only_clients	True to exclude all entities but clients.
+ * @return				Entity index being aimed at.
+ *						-1 if no entity is being aimed at.
+ * 						-2 if the function is not supported.
+ * @error				Invalid client index.
+ */
+native GetClientAimTarget(client, bool:only_clients=true);
 
 /**
  * @deprecated

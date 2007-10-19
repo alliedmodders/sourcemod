@@ -63,6 +63,9 @@ bool IsTeleportSupported();
 void GetVelocity(CBaseEntity *pEntity, Vector *velocity, AngularImpulse *angvelocity);
 bool IsGetVelocitySupported();
 
+bool GetEyeAngles(CBaseEntity *pEntity, QAngle *pAngles);
+bool IsEyeAnglesSupported();
+
 void ShutdownHelpers();
 
 #endif //_INCLUDE_SDKTOOLS_VHELPERS_H_

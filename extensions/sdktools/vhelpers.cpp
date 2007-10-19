@@ -34,6 +34,7 @@
 
 CallHelper s_Teleport;
 CallHelper s_GetVelocity;
+CallHelper s_EyeAngles;
 
 bool SetupTeleport()
 {
@@ -53,7 +54,7 @@ bool SetupTeleport()
 
 		s_Teleport.call = g_pBinTools->CreateVCall(offset, 0, 0, NULL, info, 3);
 
-		if (s_Teleport.call)
+		if (s_Teleport.call != NULL)
 		{
 			s_Teleport.supported = true;
 		}
@@ -101,7 +102,7 @@ bool SetupGetVelocity()
 
 		s_GetVelocity.call = g_pBinTools->CreateVCall(offset, 0, 0, NULL, info, 2);
 
-		if (s_GetVelocity.call)
+		if (s_GetVelocity.call != NULL)
 		{
 			s_GetVelocity.supported = true;
 		}
@@ -128,6 +129,65 @@ void GetVelocity(CBaseEntity *pEntity, Vector *velocity, AngularImpulse *angvelo
 bool IsGetVelocitySupported()
 {
 	return SetupGetVelocity();
+}
+
+bool SetupGetEyeAngles()
+{
+	if (s_EyeAngles.setup)
+	{
+		return s_EyeAngles.supported;
+	}
+
+	int offset;
+	if (g_pGameConf->GetOffset("EyeAngles", &offset))
+	{
+		PassInfo info[2];
+		info[0].flags = info[1].flags = PASSFLAG_BYVAL;
+		info[0].size = info[1].size = sizeof(void *);
+		info[0].type = info[1].type = PassType_Basic;
+
+		s_EyeAngles.call = g_pBinTools->CreateVCall(offset, 0, 0, &info[0], &info[1], 1);
+
+		if (s_EyeAngles.call != NULL)
+		{
+			s_EyeAngles.supported = true;
+		}
+	}
+
+	s_EyeAngles.setup = true;
+
+	return s_EyeAngles.supported;
+}
+
+bool GetEyeAngles(CBaseEntity *pEntity, QAngle *pAngles)
+{
+	if (!IsEyeAnglesSupported())
+	{
+		return false;
+	}
+
+	QAngle *pRetAngle = NULL;
+	unsigned char params[sizeof(void *)];
+	unsigned char *vptr = params;
+
+	*(CBaseEntity **)vptr = pEntity;
+	vptr += sizeof(CBaseEntity *);
+
+	s_EyeAngles.call->Execute(params, &pRetAngle);
+
+	if (pRetAngle == NULL)
+	{
+		return false;
+	}
+
+	*pAngles = *pRetAngle;
+
+	return true;
+}
+
+bool IsEyeAnglesSupported()
+{
+	return SetupGetEyeAngles();
 }
 
 void ShutdownHelpers()

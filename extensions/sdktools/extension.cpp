@@ -104,6 +104,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 
+	MathLib_Init(2.2f, 2.2f, 0.0f, 2);
+
 	return true;
 }
 

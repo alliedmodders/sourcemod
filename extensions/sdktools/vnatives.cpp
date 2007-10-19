@@ -113,6 +113,23 @@ bool CreateBaseCall(const char *name,
 	return false;
 }
 
+class CTraceFilterSimple : public CTraceFilterEntitiesOnly
+{
+public:
+	CTraceFilterSimple(const IHandleEntity *passentity): m_pPassEnt(passentity)
+	{
+	}
+	virtual bool ShouldHitEntity(IHandleEntity *pServerEntity, int contentsMask)
+	{
+		if (pServerEntity == m_pPassEnt)
+		{
+			return false;
+		}
+		return true;
+	}
+private:
+	const IHandleEntity *m_pPassEnt;
+};
 
 static cell_t RemovePlayerItem(IPluginContext *pContext, const cell_t *params)
 {
@@ -567,31 +584,39 @@ static cell_t GetClientEyePosition(IPluginContext *pContext, const cell_t *param
 
 static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 {
-	static ValveCall *pCall = NULL;
-	if (!pCall)
+	int client = params[1];
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+
+	if (!pPlayer)
 	{
-		ValvePassInfo retinfo[1];
-		InitPass(retinfo[0], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("EyeAngles", ValveCall_Player, retinfo, NULL, 0, &pCall))
-		{
-			return pContext->ThrowNativeError("\"EyeAngles\" not supported by this mod");
-		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"EyeAngles\" wrapper failed to initialized");
-		}
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+	else if (!pPlayer->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
-	QAngle *ang;
-	START_CALL();
-	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	FINISH_CALL_SIMPLE(&ang);
+	edict_t *pEdict = pPlayer->GetEdict();
+	CBaseEntity *pEntity = pEdict->GetUnknown() ? pEdict->GetUnknown()->GetBaseEntity() : NULL;
+
+	/* We always set the angles for backwards compatibility -- 
+	 * The original function had no return value.
+	 */
+	QAngle angles;
+	bool got_angles = false;
+
+	if (pEntity == NULL)
+	{
+		got_angles = GetEyeAngles(pEntity, &angles);
+	}
 	
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
-	addr[0] = sp_ftoc(ang->x);
-	addr[1] = sp_ftoc(ang->y);
-	addr[2] = sp_ftoc(ang->z);
+	addr[0] = sp_ftoc(angles.x);
+	addr[1] = sp_ftoc(angles.y);
+	addr[2] = sp_ftoc(angles.z);
 
-	return 1;
+	return got_angles ? 1 : 0;
 }
 
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
@@ -638,7 +663,8 @@ static cell_t IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 	if (player == NULL)
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	} else if (!player->IsInGame())
+	}
+	else if (!player->IsInGame())
 	{
 		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
@@ -814,6 +840,78 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 	return (ret) ? 1 : 0;
 }
 
+static cell_t GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+	else if (!pPlayer->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	edict_t *pEdict = pPlayer->GetEdict();
+	CBaseEntity *pEntity = pEdict->GetUnknown() ? pEdict->GetUnknown()->GetBaseEntity() : NULL;
+
+	if (pEntity == NULL)
+	{
+		return -1;
+	}
+
+	Vector eye_position;
+	QAngle eye_angles;
+	
+	/* Get the private information we need */
+	serverClients->ClientEarPosition(pEdict, &eye_position);
+	if (!GetEyeAngles(pEntity, &eye_angles))
+	{
+		return -2;
+	}
+
+	Vector aim_dir;
+	AngleVectors(eye_angles, &aim_dir);
+	VectorNormalize(aim_dir);
+
+	Vector vec_end = eye_position + aim_dir * 8000;
+
+	Ray_t ray;
+	ray.Init(eye_position, vec_end);
+
+	trace_t tr;
+	CTraceFilterSimple simple(pEdict->GetIServerEntity());
+
+	enginetrace->TraceRay(ray, MASK_SOLID|CONTENTS_DEBRIS|CONTENTS_HITBOX, &simple, &tr);
+
+	if (tr.fraction == 1.0f || tr.m_pEnt == NULL)
+	{
+		return -1;
+	}
+
+	edict_t *pTarget = gameents->BaseEntityToEdict(tr.m_pEnt);
+	if (pTarget == NULL)
+	{
+		return -1;
+	}
+
+	int ent_index = engine->IndexOfEdict(pTarget);
+
+	IGamePlayer *pTargetPlayer = playerhelpers->GetGamePlayer(ent_index);
+	if (pTargetPlayer != NULL && !pTargetPlayer->IsInGame())
+	{
+		return -1;
+	}
+	else if (params[2] && pTargetPlayer == NULL)
+	{
+		return -1;
+	}
+
+	return ent_index;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",		ExtinguishEntity},
@@ -838,5 +936,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"DispatchKeyValue",		DispatchKeyValue},
 	{"DispatchKeyValueFloat",	DispatchKeyValueFloat},
 	{"DispatchKeyValueVector",	DispatchKeyValueVector},
+	{"GetClientAimTarget",		GetClientAimTarget},
 	{NULL,						NULL},
 };
