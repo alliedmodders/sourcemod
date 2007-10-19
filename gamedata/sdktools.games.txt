@@ -541,6 +541,11 @@
 				"windows"	"33"
 				"linux"		"36"
 			}
+			"AcceptInput"
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
 			
 			/* Temp Entities */
 			"TE_GetServerClass"
@@ -877,6 +882,11 @@
 			{
 				"windows"	"28"
 				"linux"		"31"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
 			}
 
 			/* Temp Entities */
