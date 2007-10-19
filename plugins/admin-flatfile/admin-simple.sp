@@ -105,7 +105,7 @@ ReadAdminLine(const String:line[])
 	}
 	
 	/* Create the admin */
-	new AdminId:admin = CreateAdmin(auth);
+	new AdminId:admin = CreateAdmin();
 	
 	/* Read flags */
 	new String:flags[64];	

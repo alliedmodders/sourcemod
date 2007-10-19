@@ -6,16 +6,39 @@ PerformWho(client, target, ReplySource:reply)
 	if (flags == 0)
 	{
 		strcopy(flagstring, sizeof(flagstring), "none");
-	} else if (flags & ADMFLAG_ROOT) {
+	}
+	else if (flags & ADMFLAG_ROOT)
+	{
 		strcopy(flagstring, sizeof(flagstring), "root");
-	} else {
+	}
+	else
+	{
 		FlagsToString(flagstring, sizeof(flagstring), flags);
 	}
-
-	if (reply == SM_REPLY_TO_CHAT)
-		PrintToChat(client, "[SM] %t: %s", "Access", flagstring);
+	
+	decl String:name[MAX_NAME_LENGTH];
+	GetClientName(client, name, sizeof(name));
+	
+	new bool:show_name = false;
+	new String:admin_name[MAX_NAME_LENGTH];
+	new AdminId:id = GetUserAdmin(client);
+	if (id != INVALID_ADMIN_ID && GetAdminUsername(id, admin_name, sizeof(admin_name)))
+	{
+		show_name = true;
+	}
+	
+	new ReplySource:old_reply = SetCmdReplySource(reply);
+	
+	if (show_name)
+	{
+		ReplyToCommand(client, "[SM] %t", "Admin logged in as", name, admin_name, flagstring);
+	}
 	else
-		PrintToConsole(client, "[SM] %t: %s", "Access", flagstring);
+	{
+		ReplyToCommand(client, "[SM] %t", "Admin logged in anon", name, flagstring);
+	}
+	
+	SetCmdReplySource(old_reply);
 }
 
 DisplayWhoMenu(client)
@@ -118,9 +141,13 @@ public Action:Command_Who(client, args)
 			if (flags == 0)
 			{
 				strcopy(flagstring, sizeof(flagstring), "none");
-			} else if (flags & ADMFLAG_ROOT) {
+			}
+			else if (flags & ADMFLAG_ROOT)
+			{
 				strcopy(flagstring, sizeof(flagstring), "root");
-			} else {
+			}
+			else
+			{
 				FlagsToString(flagstring, sizeof(flagstring), flags);
 			}
 			decl String:name[65];
@@ -146,7 +173,9 @@ public Action:Command_Who(client, args)
 	{
 		ReplyToCommand(client, "[SM] %t", "No matching client");
 		return Plugin_Handled;
-	} else if (numClients > 1) {
+	}
+	else if (numClients > 1)
+	{
 		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
 		return Plugin_Handled;
 	}
