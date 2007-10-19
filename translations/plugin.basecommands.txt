@@ -74,16 +74,42 @@
 	{
 		"en"			"Admin cache has been refreshed."
 	}
+	
 	"Identify player"
 	{
 		"en"			"Identify player"
 	}
+	
 	"Choose Map"
 	{
 		"en"			"Choose Map"
 	}
+	
 	"Exec CFG"
 	{
 		"en"			"Exec CFG"
+	}
+	
+	"Admin logged in as"
+	{
+		"#format"		"{1:s},{2:s},{3:s}"
+		"en"			"\"{1}\" is logged in as \"{2}\" with access: {3}"
+	}
+	
+	"Admin logged in anon"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"\"{1}\" has access: {2}"
+	}
+	
+	"Player is not an admin"
+	{
+		"#format"		"{1:s}"
+		"en"			"\"{1}\" is not logged in as an admin."
+	}
+	
+	"Username"
+	{
+		"en"			"Username"
 	}
 }

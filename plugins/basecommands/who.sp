@@ -1,27 +1,12 @@
 
 PerformWho(client, target, ReplySource:reply)
 {
-	new flags = GetUserFlagBits(target);
-	decl String:flagstring[255];
-	if (flags == 0)
-	{
-		strcopy(flagstring, sizeof(flagstring), "none");
-	}
-	else if (flags & ADMFLAG_ROOT)
-	{
-		strcopy(flagstring, sizeof(flagstring), "root");
-	}
-	else
-	{
-		FlagsToString(flagstring, sizeof(flagstring), flags);
-	}
-	
 	decl String:name[MAX_NAME_LENGTH];
-	GetClientName(client, name, sizeof(name));
+	GetClientName(target, name, sizeof(name));
 	
 	new bool:show_name = false;
 	new String:admin_name[MAX_NAME_LENGTH];
-	new AdminId:id = GetUserAdmin(client);
+	new AdminId:id = GetUserAdmin(target);
 	if (id != INVALID_ADMIN_ID && GetAdminUsername(id, admin_name, sizeof(admin_name)))
 	{
 		show_name = true;
@@ -29,13 +14,35 @@ PerformWho(client, target, ReplySource:reply)
 	
 	new ReplySource:old_reply = SetCmdReplySource(reply);
 	
-	if (show_name)
+	if (id == INVALID_ADMIN_ID)
 	{
-		ReplyToCommand(client, "[SM] %t", "Admin logged in as", name, admin_name, flagstring);
+		ReplyToCommand(client, "[SM] %t", "Player is not an admin", name);
 	}
 	else
 	{
-		ReplyToCommand(client, "[SM] %t", "Admin logged in anon", name, flagstring);
+		new flags = GetUserFlagBits(target);
+		decl String:flagstring[255];
+		if (flags == 0)
+		{
+			strcopy(flagstring, sizeof(flagstring), "none");
+		}
+		else if (flags & ADMFLAG_ROOT)
+		{
+			strcopy(flagstring, sizeof(flagstring), "root");
+		}
+		else
+		{
+			FlagsToString(flagstring, sizeof(flagstring), flags);
+		}
+		
+		if (show_name)
+		{
+			ReplyToCommand(client, "[SM] %t", "Admin logged in as", name, admin_name, flagstring);
+		}
+		else
+		{
+			ReplyToCommand(client, "[SM] %t", "Admin logged in anon", name, flagstring);
+		}
 	}
 	
 	SetCmdReplySource(old_reply);
@@ -121,11 +128,12 @@ public Action:Command_Who(client, args)
 	if (args < 1)
 	{
 		/* Display header */
-		decl String:t_access[16], String:t_name[16];
+		decl String:t_access[16], String:t_name[16], String:t_username[16];
 		Format(t_access, sizeof(t_access), "%t", "Access", client);
 		Format(t_name, sizeof(t_name), "%t", "Name", client);
+		Format(t_username, sizeof(t_username), "%t", "Username", client);
 
-		PrintToConsole(client, "%-24.23s %s", t_name, t_access);
+		PrintToConsole(client, "    %-24.23s %-18.17s %s", t_name, t_username, t_access);
 
 		/* List all players */
 		new maxClients = GetMaxClients();
@@ -138,6 +146,7 @@ public Action:Command_Who(client, args)
 				continue;
 			}
 			new flags = GetUserFlagBits(i);
+			new AdminId:id = GetUserAdmin(i);
 			if (flags == 0)
 			{
 				strcopy(flagstring, sizeof(flagstring), "none");
@@ -150,9 +159,17 @@ public Action:Command_Who(client, args)
 			{
 				FlagsToString(flagstring, sizeof(flagstring), flags);
 			}
-			decl String:name[65];
+			decl String:name[MAX_NAME_LENGTH];
+			new String:username[MAX_NAME_LENGTH];
+			
 			GetClientName(i, name, sizeof(name));
-			PrintToConsole(client, "%d. %-24.23s %s", i, name, flagstring);
+			
+			if (id != INVALID_ADMIN_ID)
+			{
+				GetAdminUsername(id, username, sizeof(username));
+			}
+			
+			PrintToConsole(client, "%2d. %-24.23s %-18.17s %s", i, name, username, flagstring);
 		}
 
 		if (GetCmdReplySource() == SM_REPLY_TO_CHAT)
