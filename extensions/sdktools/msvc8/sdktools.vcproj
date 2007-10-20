@@ -681,6 +681,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\teamnatives.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\tempents.cpp"
 				>
 			</File>

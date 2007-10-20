@@ -48,6 +48,7 @@
  */
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
@@ -73,6 +74,7 @@ extern sp_nativeinfo_t g_TRNatives[];
 extern sp_nativeinfo_t g_StringTableNatives[];
 extern sp_nativeinfo_t g_VoiceNatives[];
 extern sp_nativeinfo_t g_EntInputNatives[];
+extern sp_nativeinfo_t g_TeamNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -85,6 +87,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_StringTableNatives);
 	sharesys->AddNatives(myself, g_VoiceNatives);
 	sharesys->AddNatives(myself, g_EntInputNatives);
+	sharesys->AddNatives(myself, g_TeamNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -103,6 +106,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	CONVAR_REGISTER(this);
 
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 
 	MathLib_Init(2.2f, 2.2f, 0.0f, 2);
 
@@ -146,6 +150,7 @@ void SDKTools::SDK_OnUnload()
 	playerhelpers->RemoveClientListener(&g_SdkTools);
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 }
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)

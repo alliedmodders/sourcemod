@@ -218,6 +218,51 @@ native bool:DispatchKeyValueVector(entity, const String:keyName[], const Float:v
 native GetClientAimTarget(client, bool:only_clients=true);
 
 /**
+ * Returns the total number of teams in a game.
+ *
+ * @return				Total number of teams.
+ */
+native GetTeamCount();
+
+/**
+ * Retrieves the team name based on a team index.
+ *
+ * @param index				Team index.
+ * @param name				Buffer to store string in.
+ * @param maxlength			Maximum length of string buffer.
+ * @noreturn
+ * @error				Invalid team index.
+ */
+native GetTeamName(index, String:name[], maxlength);
+
+/**
+ * Returns the score of a team based on a team index.
+ *
+ * @param index				Team index.
+ * @return				Score.
+ * @error				Invalid team index.
+ */
+native GetTeamScore(index);
+
+/**
+ * Sets the score of a team based on a team index.
+ *
+ * @param index				Team index.
+ * @return				Score.
+ * @error				Invalid team index.
+ */
+native SetTeamScore(index);
+
+/**
+ * Retrieves the number of players in a certain team.
+ *
+ * @param index				Team index.
+ * @return				Number of players in the team.
+ * @error				Invalid team index.
+ */
+native GetTeamClientCount(index);
+
+/**
  * @deprecated
  */
 #pragma deprecated Use IgniteEntity() instead
