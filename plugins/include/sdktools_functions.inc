@@ -248,10 +248,11 @@ native GetTeamScore(index);
  * Sets the score of a team based on a team index.
  *
  * @param index				Team index.
+ * @param value				New score value.
  * @return				Score.
  * @error				Invalid team index.
  */
-native SetTeamScore(index);
+native SetTeamScore(index, value);
 
 /**
  * Retrieves the number of players in a certain team.
