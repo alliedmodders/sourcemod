@@ -51,6 +51,7 @@ new g_MaxClients;
 new Handle:sm_reserved_slots;
 new Handle:sm_hide_slots;
 new Handle:sv_visiblemaxplayers;
+new Handle:sm_reserve_type;
 
 public OnPluginStart()
 {
@@ -59,6 +60,7 @@ public OnPluginStart()
 	sm_reserved_slots = CreateConVar("sm_reserved_slots", "0", "Number of reserved player slots", 0, true, 0.0);
 	sm_hide_slots = CreateConVar("sm_hide_slots", "0", "If set to 1, reserved slots will hidden (subtracted from the max slot count)", 0, true, 0.0, true, 1.0);
 	sv_visiblemaxplayers = FindConVar("sv_visiblemaxplayers");
+	sm_reserve_type = CreateConVar("sm_reserve_type", "0", "Method of reserving slots", 0, true, 0.0, true, 1.0);
 }
 
 public OnMapStart()
@@ -91,18 +93,30 @@ public Action:OnTimedKick(Handle:timer, any:value)
 public OnClientPostAdminCheck(client)
 {
 	new reserved = GetConVarInt(sm_reserved_slots);
-	
+
 	if (reserved > 0)
 	{
 		new clients = GetClientCount(false);
 		new limit = g_MaxClients - reserved;
 		new flags = GetUserFlagBits(client);
-		
+	
 		if (clients <= limit || IsFakeClient(client) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
 		{
 			if (GetConVarBool(sm_hide_slots))
 			{
 				SetVisibleMaxSlots(clients, limit);
+			}
+			
+			new type = GetConVarInt(sm_reserve_type);
+			
+			if (type == 1)
+			{
+				new target = SelectKickClient();
+				
+				if (target)
+				{
+					CreateTimer(0.1, OnTimedKick, GetClientUserId(target));
+				}
 			}
 			
 			return;
@@ -133,4 +147,65 @@ SetVisibleMaxSlots(clients, limit)
 	}
 	
 	SetConVarInt(sv_visiblemaxplayers, num);
+}
+
+SelectKickClient()
+{
+	new Float:highestLatency;
+	new highestLatencyId;
+	
+	new Float:highestSpecLatency;
+	new highestSpecLatencyId;
+	
+	new bool:specFound;
+	
+	new Float:latency;
+	
+	for (new i=1; i<=g_MaxClients; i++)
+	{
+		if (!IsClientConnected(i))
+		{
+			continue;
+		}
+	
+		new flags = GetUserFlagBits(i);
+		
+		if (IsFakeClient(i) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
+		{
+			continue;
+		}
+			
+		if (IsClientInGame(i))
+		{
+			latency = GetClientAvgLatency(i, NetFlow_Both);
+			
+			if (GetClientTeam(i) == 1)
+			{
+				specFound = true;
+				
+				if (latency > highestSpecLatency)
+				{
+					highestSpecLatency = latency;
+					highestSpecLatencyId = i;
+				}
+			}
+		}
+		else
+		{
+			latency = 0.0;
+		}
+		
+		if (latency > highestLatency)
+		{
+			highestLatency = latency;
+			highestLatencyId = i;
+		}
+	}
+	
+	if (specFound)
+	{
+		return highestSpecLatencyId;
+	}
+	
+	return highestLatencyId;
 }
