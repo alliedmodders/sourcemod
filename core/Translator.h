@@ -164,6 +164,7 @@ private:
 };
 
 extern CPhraseFile *g_pCorePhrases;
+extern unsigned int g_pCorePhraseID;
 extern Translator g_Translator;
 
 #endif //_INCLUDE_SOURCEMOD_TRANSLATOR_H_

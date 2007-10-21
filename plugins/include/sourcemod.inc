@@ -70,6 +70,7 @@ struct Plugin
 #include <halflife>
 #include <adt>
 #include <banning>
+#include <commandfilters>
 
 /**
  * Declare this as a struct in your plugin to expose its information.

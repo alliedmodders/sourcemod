@@ -241,9 +241,10 @@ native bool:IsChatTrigger();
 
 /**
  * Displays usage of an admin command to users depending on the 
- * setting of the sm_show_activity cvar.  Additionally, the client
- * who typed the command will receive the same text without any
- * client name prefix (as a confirmation).
+ * setting of the sm_show_activity cvar.
+ *
+ * If the original client did not use a console command, they will 
+ * not see the public display in their chat.
  *
  * @param client		Client index doing the action, or 0 for server.
  * @param format		Formatting rules.
@@ -265,6 +266,19 @@ native ShowActivity(client, const String:format[], any:...);
  * @error
  */
 native ShowActivityEx(client, const String:tag[], const String:format[], any:...);
+
+/**
+ * Same as ShowActivityEx(), except the text will always be mirrored to the 
+ * client's chat (and console, if the reply source specifies as such).
+ *
+ * @param client		Client index doing the action, or 0 for server.
+ * @param tag			Tag to display with.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error
+ */
+native ShowActivity2(client, const String:tag[], const String:format[], any:...);
 
 /**
  * Called when a server-only command is invoked.  

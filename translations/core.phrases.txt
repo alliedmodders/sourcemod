@@ -24,4 +24,36 @@
 	{
 		"en"			"Previous"
 	}
+	
+	"all players"
+	{
+		"en"			"all players"
+	}
+	
+	"all humans"
+	{
+		"en"			"all humans"
+	}
+	
+	"all bots"
+	{
+		"en"			"all bots"
+	}
+	
+	"all dead players"
+	{
+		"en"			"all dead players"
+	}
+	
+	"all alive players"
+	{
+		"en"			"all alive players"
+	}
+	
+	/* This is a special "pass-thru" translation */
+	"_S"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1}"
+	}
 }

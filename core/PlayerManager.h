@@ -44,6 +44,10 @@
 
 using namespace SourceHook;
 
+#define PLAYER_LIFE_UNKNOWN	0
+#define PLAYER_LIFE_ALIVE	1
+#define PLAYER_LIFE_DEAD	2
+
 class CPlayer : public IGamePlayer
 {
 	friend class PlayerManager;
@@ -70,6 +74,7 @@ public:
 	void DoBasicAdminChecks();
 	bool IsInKickQueue();
 	void MarkAsBeingKicked();
+	int GetLifeState();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
@@ -138,6 +143,11 @@ public: //IPlayerManager
 	int GetNumPlayers();
 	int GetClientOfUserId(int userid);
 	bool IsServerActivated();
+	int FilterCommandTarget(IGamePlayer *pAdmin, IGamePlayer *pTarget, int flags);
+	int InternalFilterCommandTarget(CPlayer *pAdmin, CPlayer *pTarget, int flags);
+	void RegisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
+	void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
+	void ProcessCommandTarget(cmd_target_info_t *info);
 public:
 	inline int MaxClients()
 	{

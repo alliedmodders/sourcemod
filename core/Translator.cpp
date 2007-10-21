@@ -41,6 +41,7 @@
 
 Translator g_Translator;
 CPhraseFile *g_pCorePhrases = NULL;
+unsigned int g_pCorePhraseID = 0;
 
 struct trans_t
 {
@@ -712,10 +713,13 @@ void Translator::OnSourceModAllInitialized()
 	if (g_LibSys.PathExists(path))
 	{
 		id = FindOrAddPhraseFile("core.cfg");
-	} else {
+	}
+	else
+	{
 		id = FindOrAddPhraseFile("core.phrases.txt");
 	}
 
+	g_pCorePhraseID = id;
 	g_pCorePhrases = GetFileByIndex(id);
 }
 

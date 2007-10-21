@@ -45,6 +45,7 @@
 #include "ConCmdManager.h"
 #include "PlayerManager.h"
 #include "CoreConfig.h"
+#include "Translator.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -1378,6 +1379,9 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	{
 		OnLibraryAction((*s_iter).c_str(), true, false);
 	}
+
+	/* Finally, add the core language file */
+	pPlugin->AddLangFile(g_pCorePhraseID);
 
 	return true;
 }

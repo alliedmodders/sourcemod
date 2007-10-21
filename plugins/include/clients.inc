@@ -256,6 +256,17 @@ native bool:IsFakeClient(client);
 native bool:IsClientObserver(client);
 
 /**
+ * Returns if the client is alive or dead.
+ *
+ * Note: This function was originally in SDKTools and was moved to core.
+ *
+ * @param client		Player's index.
+ * @return				True if the client is alive, false otherwise.
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native bool:IsPlayerAlive(client);
+
+/**
  * Retrieves values from client replicated keys.
  *
  * @param client		Player's index.

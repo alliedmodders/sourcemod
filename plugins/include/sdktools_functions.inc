@@ -143,15 +143,6 @@ native FindEntityByClassname(startEnt, const String:classname[]);
 native bool:GetClientEyeAngles(client, Float:ang[3]);
 
 /**
- * Returns if the client is alive or dead.
- *
- * @param client		Player's index.
- * @return				True if the client is alive, false otherwise.
- * @error				Invalid client index, client not in game, or no mod support.
- */
-native bool:IsPlayerAlive(client);
-
-/**
  * Creates an entity by string name, but does not spawn it (see DispatchSpawn).
  * If ForceEdictIndex is not -1, then it will use the edict by that index. If the index is 
  *  invalid or there is already an edict using that index, it will error out.

@@ -881,7 +881,11 @@ static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
 	return g_Players.GetClientOfUserId(params[1]);
 }
 
-static cell_t _ShowActivity(IPluginContext *pContext, const cell_t *params, const char *tag, cell_t fmt_param)
+static cell_t _ShowActivity(IPluginContext *pContext,
+							const cell_t *params,
+							const char *tag,
+							cell_t fmt_param,
+							unsigned int mode)
 {
 	char message[255];
 	char buffer[255];
@@ -912,13 +916,31 @@ static cell_t _ShowActivity(IPluginContext *pContext, const cell_t *params, cons
 		{
 			g_SourceMod.SetGlobalTarget(client);
 			g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+			if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+			{
+				return 0;
+			}
+
 			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
 			engine->ClientPrintf(pPlayer->GetEdict(), message);
 			display_in_chat = true;
 		}
-	} else {
+		else if (mode == 2)
+		{
+			display_in_chat = true;
+		}
+	}
+	else
+	{
 		g_SourceMod.SetGlobalTarget(LANG_SERVER);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		{
+			return 0;
+		}
+
 		UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
 		META_CONPRINT(message);
 	}
@@ -947,15 +969,23 @@ static cell_t _ShowActivity(IPluginContext *pContext, const cell_t *params, cons
 			if ((value & 1) || (value & 2))
 			{
 				const char *newsign = sign;
-				if (value & 2)
+				if ((value & 2) || (i == client))
 				{
 					newsign = name;
 				}
 				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				{
+					return 0;
+				}
+
 				UTIL_Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
 				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
 			}
-		} else {
+		}
+		else
+		{
 			/* Treat this as an admin user */
 			bool is_root = g_Admins.GetAdminFlag(id, Admin_Root, Access_Effective);
 			if ((value & 4) 
@@ -963,11 +993,17 @@ static cell_t _ShowActivity(IPluginContext *pContext, const cell_t *params, cons
 				|| ((value & 16) && is_root))
 			{
 				const char *newsign = sign;
-				if ((value & 8) || ((value & 16) && is_root))
+				if ((value & 8) || ((value & 16) && is_root) || (i == client))
 				{
 					newsign = name;
 				}
 				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				{
+					return 0;
+				}
+
 				UTIL_Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
 				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
 			}
@@ -979,7 +1015,7 @@ static cell_t _ShowActivity(IPluginContext *pContext, const cell_t *params, cons
 
 static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 {
-	return _ShowActivity(pContext, params, "[SM] ", 2);
+	return _ShowActivity(pContext, params, "[SM] ", 2, 1);
 }
 
 static cell_t ShowActivityEx(IPluginContext *pContext, const cell_t *params)
@@ -987,7 +1023,15 @@ static cell_t ShowActivityEx(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	return _ShowActivity(pContext, params, str, 3);
+	return _ShowActivity(pContext, params, str, 3, 1);
+}
+
+static cell_t ShowActivity2(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	pContext->LocalToString(params[2], &str);
+
+	return _ShowActivity(pContext, params, str, 3, 2);
 }
 
 static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
@@ -1036,7 +1080,9 @@ static cell_t ChangeClientTeam(IPluginContext *pContext, const cell_t *params)
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
@@ -1059,9 +1105,13 @@ static cell_t RunAdminCacheChecks(IPluginContext *pContext, const cell_t *params
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (!pPlayer->IsAuthorized()) {
+	}
+	else if (!pPlayer->IsAuthorized())
+	{
 		return pContext->ThrowNativeError("Client %d is not authorized", client);
 	}
 
@@ -1079,9 +1129,12 @@ static cell_t NotifyPostAdminCheck(IPluginContext *pContext, const cell_t *param
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame()) {
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (!pPlayer->IsAuthorized()) {
+	}
+	else if (!pPlayer->IsAuthorized())
+	{
 		return pContext->ThrowNativeError("Client %d is not authorized", client);
 	}
 
@@ -1106,6 +1159,42 @@ static cell_t IsClientInKickQueue(IPluginContext *pContext, const cell_t *params
 	}
 
 	return pPlayer->IsInKickQueue() ? 1 : 0;
+}
+
+static cell_t ProcessTargetString(IPluginContext *pContext, const cell_t *params)
+{
+	cmd_target_info_t info;
+
+	pContext->LocalToString(params[1], (char **)&info.pattern);
+	info.admin = params[2];
+	pContext->LocalToPhysAddr(params[3], &info.targets);
+	info.max_targets = params[4];
+	info.flags = params[5];
+	pContext->LocalToString(params[6], &info.target_name);
+	info.target_name_maxlength = params[7];
+
+	cell_t *tn_is_ml;
+	pContext->LocalToPhysAddr(params[8], &tn_is_ml);
+
+	g_Players.ProcessCommandTarget(&info);
+
+	if (info.target_name_style == COMMAND_TARGETNAME_ML)
+	{
+		*tn_is_ml = 1;
+	}
+	else
+	{
+		*tn_is_ml = 0;
+	}
+
+	if (info.num_targets == 0)
+	{
+		return info.reason;
+	}
+	else
+	{
+		return info.num_targets;
+	}
 }
 
 REGISTER_NATIVES(playernatives)
@@ -1154,10 +1243,12 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientOfUserId",		GetClientOfUserId},
 	{"ShowActivity",			ShowActivity},
 	{"ShowActivityEx",			ShowActivityEx},
+	{"ShowActivity2",			ShowActivity2},
 	{"KickClient",				KickClient},
 	{"RunAdminCacheChecks",		RunAdminCacheChecks},
 	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
 	{"IsClientInKickQueue",		IsClientInKickQueue},
+	{"ProcessTargetString",		ProcessTargetString},
 	{NULL,						NULL}
 };
 

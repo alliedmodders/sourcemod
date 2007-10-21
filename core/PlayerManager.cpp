@@ -45,12 +45,15 @@
 #include "HalfLife2.h"
 #include <inetchannel.h>
 #include <iclient.h>
+#include "GameConfigs.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
 IForward *PostAdminCheck = NULL;
 const unsigned int *g_NumPlayersToAuth = NULL;
+int lifestate_offset = -1;
+List<ICommandTargetProcessor *> target_processors;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -814,6 +817,281 @@ unsigned int PlayerManager::SetReplyTo(unsigned int reply)
 	return g_ChatTriggers.SetReplyTo(reply);
 }
 
+int PlayerManager::FilterCommandTarget(IGamePlayer *pAdmin, IGamePlayer *pTarget, int flags)
+{
+	return InternalFilterCommandTarget((CPlayer *)pAdmin, (CPlayer *)pTarget, flags);
+}
+
+void PlayerManager::RegisterCommandTargetProcessor(ICommandTargetProcessor *pHandler)
+{
+	target_processors.push_back(pHandler);
+}
+
+void PlayerManager::UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler)
+{
+	target_processors.remove(pHandler);
+}
+
+int PlayerManager::InternalFilterCommandTarget(CPlayer *pAdmin, CPlayer *pTarget, int flags)
+{
+	if ((flags & COMMAND_FILTER_CONNECTED) == COMMAND_FILTER_CONNECTED
+		&& !pTarget->IsConnected())
+	{
+		return COMMAND_TARGET_NONE;
+	}
+	else if ((flags & COMMAND_FILTER_CONNECTED) != COMMAND_FILTER_CONNECTED && 
+		!pTarget->IsInGame())
+	{
+		return COMMAND_TARGET_NOT_IN_GAME;
+	}
+
+	if ((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS
+		&& pTarget->IsFakeClient())
+	{
+		return COMMAND_TARGET_NOT_HUMAN;
+	}
+
+	if (pAdmin != NULL)
+	{
+		if ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY
+			&& !g_Admins.CanAdminTarget(pAdmin->GetAdminId(), pTarget->GetAdminId()))
+		{
+			return COMMAND_TARGET_IMMUNE;
+		}
+	}
+
+	if ((flags & COMMAND_FILTER_ALIVE) == COMMAND_FILTER_ALIVE 
+		&& pTarget->GetLifeState() != PLAYER_LIFE_ALIVE)
+	{
+		return COMMAND_TARGET_NOT_ALIVE;
+	}
+
+	if ((flags & COMMAND_FILTER_DEAD) == COMMAND_FILTER_DEAD
+		&& pTarget->GetLifeState() != PLAYER_LIFE_DEAD)
+	{
+		return COMMAND_TARGET_NOT_DEAD;
+	}
+
+	return COMMAND_TARGET_VALID;
+}
+
+void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
+{
+	CPlayer *pTarget, *pAdmin;
+	int max_clients, total = 0;
+
+	max_clients = GetMaxClients();
+
+	if (info->max_targets < 1)
+	{
+		info->reason = COMMAND_TARGET_NONE;
+		info->num_targets = 0;
+	}
+
+	if (info->admin == 0)
+	{
+		pAdmin = NULL;
+	}
+	else
+	{
+		pAdmin = GetPlayerByIndex(info->admin);
+	}
+
+	if (info->pattern[0] == '#')
+	{
+		int userid = atoi(&info->pattern[1]);
+		int client = GetClientOfUserId(userid);
+
+		/* See if a valid userid matched */
+		if (client > 0)
+		{
+			IGamePlayer *pTarget = GetPlayerByIndex(client);
+			if (pTarget != NULL)
+			{
+				if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags)) == COMMAND_TARGET_VALID)
+				{
+					info->targets[0] = client;
+					info->num_targets = 1;
+					strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+					info->target_name_style = COMMAND_TARGETNAME_RAW;
+				}
+				else
+				{
+					info->num_targets = 0;
+				}
+				return;
+			}
+		}
+
+		/* See if an exact name matches */
+		for (int i = 1; i <= max_clients; i++)
+		{
+			if ((pTarget = GetPlayerByIndex(i)) == NULL)
+			{
+				continue;
+			}
+			if  (!pTarget->IsConnected())
+			{
+				continue;
+			}
+			if (strcmp(pTarget->GetName(), &info->pattern[1]) == 0)
+			{
+				if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags))
+					== COMMAND_TARGET_VALID)
+				{
+					info->targets[0] = i;
+					info->num_targets = 1;
+					strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+					info->target_name_style = COMMAND_TARGETNAME_RAW;
+				}
+				else
+				{
+					info->num_targets = 0;
+				}
+				return;
+			}
+		}
+	}
+
+	if ((info->flags & COMMAND_FILTER_NO_MULTI) != COMMAND_FILTER_NO_MULTI)
+	{
+		bool is_multi = false;
+		bool bots_only = false;
+
+		if (strcmp(info->pattern, "@all") == 0)
+		{
+			is_multi = true;
+			strncopy(info->target_name, "all players", info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_ML;
+		}
+		else if (strcmp(info->pattern, "@dead") == 0)
+		{
+			is_multi = true;
+			if ((info->flags & COMMAND_FILTER_ALIVE) == COMMAND_FILTER_ALIVE)
+			{
+				info->num_targets = 0;
+				info->reason = COMMAND_TARGET_NOT_ALIVE;
+				return;
+			}
+			info->flags |= COMMAND_FILTER_DEAD;
+			strncopy(info->target_name, "all dead players", info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_ML;
+		}
+		else if (strcmp(info->pattern, "@alive") == 0)
+		{
+			is_multi = true;
+			if ((info->flags & COMMAND_FILTER_DEAD) == COMMAND_FILTER_DEAD)
+			{
+				info->num_targets = 0;
+				info->reason = COMMAND_TARGET_NOT_DEAD;
+				return;
+			}
+			strncopy(info->target_name, "all alive players", info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_ML;
+			info->flags |= COMMAND_FILTER_ALIVE;
+		}
+		else if (strcmp(info->pattern, "@bots") == 0)
+		{
+			is_multi = true;
+			if ((info->flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
+			{
+				info->num_targets = 0;
+				info->reason = COMMAND_FILTER_NO_BOTS;
+				return;
+			}
+			strncopy(info->target_name, "all bots", info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_ML;
+			bots_only = true;
+		}
+		else if (strcmp(info->pattern, "@humans") == 0)
+		{
+			is_multi = true;
+			strncopy(info->target_name, "all humans", info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_ML;
+			info->flags |= COMMAND_FILTER_NO_BOTS;
+		}
+
+		if (is_multi)
+		{
+			for (int i = 1; i <= max_clients && total < info->max_targets; i++)
+			{
+				if ((pTarget = GetPlayerByIndex(i)) == NULL)
+				{
+					continue;
+				}
+				if (FilterCommandTarget(pAdmin, pTarget, info->flags) > 0)
+				{
+					if (!bots_only || pTarget->IsFakeClient())
+					{
+						info->targets[total++] = i;
+					}
+				}
+			}
+
+			info->num_targets = total;
+			info->reason = (info->num_targets) ? COMMAND_TARGET_VALID : COMMAND_TARGET_EMPTY_FILTER;
+			return;
+		}
+	}
+
+	List<ICommandTargetProcessor *>::iterator iter;
+	for (iter = target_processors.begin(); iter != target_processors.end(); iter++)
+	{
+		ICommandTargetProcessor *pProcessor = (*iter);
+		if (pProcessor->ProcessCommandTarget(info))
+		{
+			return;
+		}
+	}
+
+	/* Check partial names */
+	int found_client = 0;
+	CPlayer *pFoundClient = NULL;
+	for (int i = 1; i <= max_clients; i++)
+	{
+		if ((pTarget = GetPlayerByIndex(i)) == NULL)
+		{
+			continue;
+		}
+
+		if (stristr(pTarget->GetName(), info->pattern) != NULL)
+		{
+			if (found_client)
+			{
+				info->num_targets = 0;
+				info->reason = COMMAND_TARGET_AMBIGUOUS;
+				return;
+			}
+			else
+			{
+				found_client = i;
+				pFoundClient = pTarget;
+			}
+		}
+	}
+
+	if (found_client)
+	{
+		if ((info->reason = FilterCommandTarget(pAdmin, pFoundClient, info->flags)) 
+			== COMMAND_TARGET_VALID)
+		{
+			info->targets[0] = found_client;
+			info->num_targets = 1;
+			strncopy(info->target_name, pFoundClient->GetName(), info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_RAW;
+		}
+		else
+		{
+			info->num_targets = 0;
+		}
+	}
+	else
+	{
+		info->num_targets = 0;
+		info->reason = COMMAND_TARGET_NONE;
+	}
+}
+
 /*******************
  *** PLAYER CODE ***
  *******************/
@@ -1117,4 +1395,46 @@ bool CPlayer::IsInKickQueue()
 void CPlayer::MarkAsBeingKicked()
 {
 	m_bIsInKickQueue = true;
+}
+
+int CPlayer::GetLifeState()
+{
+	if (lifestate_offset == -1)
+	{
+		if (!g_pGameConf->GetOffset("m_lifeState", &lifestate_offset))
+		{
+			lifestate_offset = -2;
+		}
+	}
+
+	if (lifestate_offset < 0)
+	{
+		IPlayerInfo *info = GetPlayerInfo();
+		if (info == NULL)
+		{
+			return PLAYER_LIFE_UNKNOWN;
+		}
+		return info->IsDead() ? PLAYER_LIFE_DEAD : PLAYER_LIFE_ALIVE;
+	}
+
+	if (m_pEdict == NULL)
+	{
+		return PLAYER_LIFE_UNKNOWN;
+	}
+
+	CBaseEntity *pEntity;
+	IServerUnknown *pUnknown = m_pEdict->GetUnknown();
+	if (pUnknown == NULL || (pEntity = pUnknown->GetBaseEntity()) == NULL)
+	{
+		return PLAYER_LIFE_UNKNOWN;
+	}
+
+	if (*((uint8_t *)pEntity + lifestate_offset) == LIFE_ALIVE)
+	{
+		return PLAYER_LIFE_ALIVE;
+	}
+	else
+	{
+		return PLAYER_LIFE_DEAD;
+	}
 }

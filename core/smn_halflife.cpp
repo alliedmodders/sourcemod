@@ -408,6 +408,34 @@ static cell_t ShowVGUIPanel(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *player = g_Players.GetPlayerByIndex(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	else if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
+	}
+
+	unsigned int state = player->GetLifeState();
+
+	if (state == PLAYER_LIFE_UNKNOWN)
+	{
+		return pContext->ThrowNativeError("\"IsPlayerAlive\" not supported by this mod");
+	}
+	else if (state == PLAYER_LIFE_ALIVE)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 REGISTER_NATIVES(halflifeNatives)
 {
 	{"CreateFakeClient",		CreateFakeClient},
@@ -436,5 +464,6 @@ REGISTER_NATIVES(halflifeNatives)
 	{"PrintCenterText",			PrintCenterText},
 	{"PrintHintText",			PrintHintText},
 	{"ShowVGUIPanel",			ShowVGUIPanel},
+	{"IsPlayerAlive",			smn_IsPlayerAlive},
 	{NULL,						NULL},
 };

@@ -154,6 +154,8 @@ try_serverlang:
 
 	if (max_params)
 	{
+		cell_t new_params[MAX_TRANSLATE_PARAMS];
+
 		/* Check if we're going to over the limit */
 		if ((*arg) + (max_params - 1) > (size_t)params[0])
 		{
@@ -164,12 +166,18 @@ try_serverlang:
 			goto error_out;
 		}
 
-		/* Re-order the parameters that this translation requires */
-		ReorderTranslationParams(&pTrans, const_cast<cell_t *>(&params[*arg]));
-	}
+		/* If we need to re-order the parameters, do so with a temporary array.
+		 * Otherwise, we could run into trouble with continual formats, a la ShowActivity().
+		 */
+		memcpy(new_params, params, sizeof(cell_t) * (params[0] + 1));
+		ReorderTranslationParams(&pTrans, &new_params[*arg]);
 
-	/* Now, call back into atcprintf() which is re-entrant */
-	return atcprintf(buffer, maxlen, pTrans.szPhrase, pCtx, params, arg);
+		return atcprintf(buffer, maxlen, pTrans.szPhrase, pCtx, new_params, arg);
+	}
+	else
+	{
+		return atcprintf(buffer, maxlen, pTrans.szPhrase, pCtx, params, arg);
+	}
 	
 error_out:
 	*error = true;
