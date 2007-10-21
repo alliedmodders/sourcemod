@@ -87,23 +87,43 @@ inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, un
 	return (err == Trans_Okay) ? true : false;
 }
 
-size_t Translate(char *buffer, size_t maxlen, IPluginContext *pCtx, const char *key, cell_t target, const cell_t *params, int *arg, bool *error)
+inline void ReorderTranslationParams(const Translation *pTrans, cell_t *params)
+{
+	cell_t new_params[MAX_TRANSLATE_PARAMS];
+	for (unsigned int i = 0; i < pTrans->fmt_count; i++)
+	{
+		new_params[i] = params[pTrans->fmt_order[i]];
+	}
+	memcpy(params, new_params, pTrans->fmt_count * sizeof(cell_t));
+}
+
+size_t Translate(char *buffer,
+				 size_t maxlen,
+				 IPluginContext *pCtx,
+				 const char *key,
+				 cell_t target,
+				 const cell_t *params,
+				 int *arg,
+				 bool *error)
 {
 	unsigned int langid;
 	*error = false;
 	Translation pTrans;
 	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
 	size_t langcount = pl->GetLangFileCount();
-	void *new_params[MAX_TRANSLATE_PARAMS];
 	unsigned int max_params = 0;
 
 try_serverlang:
 	if (target == LANG_SERVER)
 	{
 		langid = g_Translator.GetServerLanguage();
- 	} else if ((target >= 1) && (target <= g_Players.GetMaxClients())) {
+ 	}
+	else if ((target >= 1) && (target <= g_Players.GetMaxClients()))
+	{
 		langid = g_Translator.GetClientLanguage(target);
-	} else {
+	}
+	else
+	{
 		pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Translation failed: invalid client index %d", target);
 		goto error_out;
 	}
@@ -114,13 +134,17 @@ try_serverlang:
 		{
 			target = LANG_SERVER;
 			goto try_serverlang;
-		} else if (langid != LANGUAGE_ENGLISH) {
+		}
+		else if (langid != LANGUAGE_ENGLISH)
+		{
 			if (!TryTranslation(pl, key, LANGUAGE_ENGLISH, langcount, &pTrans))
 			{
 				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 				goto error_out;
 			}
-		} else {
+		}
+		else
+		{
 			pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 			goto error_out;
 		}
@@ -140,21 +164,17 @@ try_serverlang:
 			goto error_out;
 		}
 
-		/* Translate the parameters to raw pointers */
-		for (size_t i=0; i<max_params; i++)
-		{
-			pCtx->LocalToPhysAddr(params[*arg], reinterpret_cast<cell_t **>(&new_params[i]));
-			(*arg)++;
-		}
+		/* Re-order the parameters that this translation requires */
+		ReorderTranslationParams(&pTrans, const_cast<cell_t *>(&params[*arg]));
 	}
 
-	return g_Translator.Translate(buffer, maxlen, new_params, &pTrans);
+	/* Now, call back into atcprintf() which is re-entrant */
+	return atcprintf(buffer, maxlen, pTrans.szPhrase, pCtx, params, arg);
+	
 error_out:
 	*error = true;
 	return 0;
 }
-
-//:TODO: review this code before we choose a license
 
 void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec)
 {
