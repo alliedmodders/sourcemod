@@ -473,6 +473,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 			pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
 			pTrans = (trans_t *)m_pMemory->GetAddress(pPhrase->trans_tbl);
 			fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
+			out_buf = (char *)m_pMemory->GetAddress(out_idx);
 			pTrans = &pTrans[lang];
 
 			/* Now it's safe to save the index */

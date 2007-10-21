@@ -246,8 +246,7 @@ native bool:IsChatTrigger();
  * the message based on the current ReplySource.
  *
  * @param client		Client index doing the action, or 0 for server.
- * @param tag			Tag to display before the message string.  For example, 
- *						"[SM] " would show "[SM] <message>".
+ * @param tag			Tag to prepend to the message.
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
  * @noreturn

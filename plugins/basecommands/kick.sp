@@ -77,7 +77,7 @@ public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
 		{
 			decl String:name[MAX_NAME_LENGTH];
 			GetClientName(target, name, sizeof(name));
-			ShowActivity2(param1, "[SM] ", "%t", "Kicked target", "_S", name);
+			ShowActivity2(param1, "[SM] ", "%t", "Kicked target", "_s", name);
 			PerformKick(param1, target, "");
 		}
 		
@@ -129,7 +129,7 @@ public Action:Command_Kick(client, args)
 		}
 		else
 		{
-			ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_S", target_name);
+			ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_s", target_name);
 		}
 		
 		new kick_self = 0;

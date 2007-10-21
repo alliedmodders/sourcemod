@@ -884,8 +884,7 @@ static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
 static cell_t _ShowActivity(IPluginContext *pContext,
 							const cell_t *params,
 							const char *tag,
-							cell_t fmt_param,
-							unsigned int mode)
+							cell_t fmt_param)
 {
 	char message[255];
 	char buffer[255];
@@ -924,10 +923,6 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 
 			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
 			engine->ClientPrintf(pPlayer->GetEdict(), message);
-			display_in_chat = true;
-		}
-		else if (mode == 2)
-		{
 			display_in_chat = true;
 		}
 	}
@@ -1013,9 +1008,146 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	return 1;
 }
 
+static cell_t _ShowActivity2(IPluginContext *pContext,
+							 const cell_t *params,
+							 const char *tag,
+							 cell_t fmt_param)
+{
+	char message[255];
+	char buffer[255];
+	int value = sm_show_activity.GetInt();
+	unsigned int replyto = g_ChatTriggers.GetReplyTo();
+	int client = params[1];
+
+	const char *name = "Console";
+	const char *sign = "ADMIN";
+	if (client != 0)
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+		if (!pPlayer || !pPlayer->IsConnected())
+		{
+			return pContext->ThrowNativeError("Client index %d is invalid", client);
+		}
+		name = pPlayer->GetName();
+		AdminId id = pPlayer->GetAdminId();
+		if (id == INVALID_ADMIN_ID
+			|| !g_Admins.GetAdminFlag(id, Admin_Generic, Access_Effective))
+		{
+			sign = "PLAYER";
+		}
+
+		g_SourceMod.SetGlobalTarget(client);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		{
+			return 0;
+		}
+
+		/* We don't display directly to the console because the chat text 
+		 * simply gets added to the console, so we don't want it to print 
+		 * twice.
+		 */
+		if (replyto == SM_REPLY_CONSOLE)
+		{
+#if 0
+			UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
+			engine->ClientPrintf(pPlayer->GetEdict(), message);
+#endif
+			UTIL_Format(message, sizeof(message), "%s%s", tag, buffer);
+			g_HL2.TextMsg(client, HUD_PRINTTALK, message);
+		}
+		else
+		{
+			UTIL_Format(message, sizeof(message), "%s%s", tag, buffer);
+			g_HL2.TextMsg(client, HUD_PRINTTALK, message);
+		}
+	}
+	else
+	{
+		g_SourceMod.SetGlobalTarget(LANG_SERVER);
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		{
+			return 0;
+		}
+
+		UTIL_Format(message, sizeof(message), "%s%s\n", tag, buffer);
+		META_CONPRINT(message);
+	}
+
+	if (!value)
+	{
+		return 1;
+	}
+
+	int maxClients = g_Players.GetMaxClients();
+	for (int i=1; i<=maxClients; i++)
+	{
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(i);
+		if (!pPlayer->IsInGame() 
+			|| pPlayer->IsFakeClient()
+			|| i == client)
+		{
+			continue;
+		}
+		AdminId id = pPlayer->GetAdminId();
+		g_SourceMod.SetGlobalTarget(i);
+		if (id == INVALID_ADMIN_ID
+			|| !g_Admins.GetAdminFlag(id, Admin_Generic, Access_Effective))
+		{
+			/* Treat this as a normal user */
+			if ((value & 1) || (value & 2))
+			{
+				const char *newsign = sign;
+				if ((value & 2))
+				{
+					newsign = name;
+				}
+				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				{
+					return 0;
+				}
+
+				UTIL_Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
+				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
+			}
+		}
+		else
+		{
+			/* Treat this as an admin user */
+			bool is_root = g_Admins.GetAdminFlag(id, Admin_Root, Access_Effective);
+			if ((value & 4) 
+				|| (value & 8)
+				|| ((value & 16) && is_root))
+			{
+				const char *newsign = sign;
+				if ((value & 8) || ((value & 16) && is_root))
+				{
+					newsign = name;
+				}
+				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
+
+				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				{
+					return 0;
+				}
+
+				UTIL_Format(message, sizeof(message), "%s%s: %s", tag, newsign, buffer);
+				g_HL2.TextMsg(i, HUD_PRINTTALK, message);
+			}
+		}
+	}
+
+	return 1;
+}
+
 static cell_t ShowActivity(IPluginContext *pContext, const cell_t *params)
 {
-	return _ShowActivity(pContext, params, "[SM] ", 2, 1);
+	return _ShowActivity(pContext, params, "[SM] ", 2);
 }
 
 static cell_t ShowActivityEx(IPluginContext *pContext, const cell_t *params)
@@ -1023,7 +1155,7 @@ static cell_t ShowActivityEx(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	return _ShowActivity(pContext, params, str, 3, 1);
+	return _ShowActivity(pContext, params, str, 3);
 }
 
 static cell_t ShowActivity2(IPluginContext *pContext, const cell_t *params)
@@ -1031,7 +1163,7 @@ static cell_t ShowActivity2(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	return _ShowActivity(pContext, params, str, 3, 2);
+	return _ShowActivity2(pContext, params, str, 3);
 }
 
 static cell_t KickClient(IPluginContext *pContext, const cell_t *params)

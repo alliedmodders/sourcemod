@@ -1,17 +1,6 @@
 
 PerformSlay(client, target)
 {
-	decl String:name[32];
-
-	GetClientName(target, name, sizeof(name));
-
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
-		return;
-	}	
-
-	ShowActivity(client, "%t", "Slayed player", name);
 	LogAction(client, target, "\"%L\" slayed \"%L\"", client, target);
 	ForcePlayerSuicide(target);
 }
@@ -76,16 +65,19 @@ public MenuHandler_Slay(Handle:menu, MenuAction:action, param1, param2)
 		{
 			PrintToChat(param1, "[SM] %t", "Unable to target");
 		}
+		else if (!IsPlayerAlive(target))
+		{
+			ReplyToCommand(param1, "[SM] %t", "Player has since died");
+		}
 		else
 		{
+			decl String:name[32];
+			GetClientName(target, name, sizeof(name));
 			PerformSlay(param1, target);
+			ShowActivity2(param1, "[SM] ", "%t", "Slayed target", "_s", name);
 		}
 		
-		/* Re-draw the menu if they're still valid */
-		if (IsClientInGame(param1) && !IsClientInKickQueue(param1))
-		{
-			DisplaySlayMenu(param1);
-		}
+		DisplaySlayMenu(param1);
 	}
 }
 
@@ -100,13 +92,36 @@ public Action:Command_Slay(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client,
+			target_list,
+			MAXPLAYERS,
+			COMMAND_FILTER_NO_BOTS,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformSlay(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		PerformSlay(client, target_list[i]);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Slayed target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Slayed target", "_s", target_name);
+	}
 
 	return Plugin_Handled;
 }

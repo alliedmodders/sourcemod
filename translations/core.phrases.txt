@@ -51,7 +51,7 @@
 	}
 	
 	/* This is a special "pass-thru" translation */
-	"_S"
+	"_s"
 	{
 		"#format"		"{1:s}"
 		"en"			"{1}"

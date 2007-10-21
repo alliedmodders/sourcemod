@@ -1,16 +1,5 @@
 PerformBurn(client, target, Float:seconds)
 {
-	new String:name[32];
-
-	GetClientName(target, name, sizeof(name));
-	
-	if (!IsPlayerAlive(target))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot be performed on dead", name);
-		return;
-	}
-
-	ShowActivity(client, "%t", "Ignited player", name);
 	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 	IgniteEntity(target, seconds);
 }
@@ -77,7 +66,10 @@ public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
 		}
 		else
 		{
+			new String:name[32];
+			GetClientName(target, name, sizeof(name));
 			PerformBurn(param1, target, 20.0);
+			ShowActivity2(param1, "[SM] ", "%t", "Set target on fire", "_s", name);
 		}
 		
 		/* Re-draw the menu if they're still valid */
@@ -99,12 +91,6 @@ public Action:Command_Burn(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-	
 	new Float:seconds = 20.0;
 	
 	if (args > 1)
@@ -118,7 +104,36 @@ public Action:Command_Burn(client, args)
 		}
 	}
 	
-	PerformBurn(client, target, seconds);
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client,
+			target_list,
+			MAXPLAYERS,
+			COMMAND_FILTER_NO_BOTS,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
+	{
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+	
+	for (new i = 0; i < target_count; i++)
+	{
+		PerformBurn(client, target_list[i], seconds);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Set target on fire", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Set target on fire", "_s", target_name);
+	}
 
 	return Plugin_Handled;
 }

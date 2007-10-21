@@ -20,7 +20,7 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
+ * code of this program (as well as its derivative 1works) to "Half-Life 2," the
  * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
  * by the Valve Corporation.  You must obey the GNU General Public License in
  * all respects for all other code used.  Additionally, AlliedModders LLC grants

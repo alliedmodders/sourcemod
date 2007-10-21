@@ -116,6 +116,6 @@
 	"Kicked target"
 	{
 		"#format"		"{1:t}"
-		"en"			"Kicked {1}"
+		"en"			"Kicked {1}."
 	}
 }

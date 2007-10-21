@@ -100,4 +100,9 @@
 		"en"			"Slay vote"
 	}
 	
+	"Ignited player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Set player '{1}' on fire"
+	}
 }

@@ -58,6 +58,7 @@ new g_SlapDamage[MAXPLAYERS+1];
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+	LoadTranslations("basefuncommands.phrases");
 
 	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
@@ -127,12 +128,6 @@ public Action:Command_Play(client, args)
  	decl String:Arg[65];
 	new len = BreakString(Arguments, Arg, sizeof(Arg));
 
-	new target = FindTarget(client, Arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
 	/* Make sure it does not go out of bound by doing "sm_play user  "*/
 	if (len == -1)
 	{
@@ -151,13 +146,38 @@ public Action:Command_Play(client, args)
 			Arguments[FileLen - 1] = '\0';
 		}
 	}
-
-	GetClientName(target, Arg, sizeof(Arg));
-	ShowActivity(client, "%t", "Played Sound", Arg);
-	LogAction(client, target, "\"%L\" played sound on \"%L\" (file \"%s\")", client, target, Arguments[len]);
-
-	ClientCommand(target, "playgamesound \"%s\"", Arguments[len]);
+	
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			Arg,
+			client,
+			target_list,
+			MAXPLAYERS,
+			COMMAND_FILTER_NO_BOTS,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
+	{
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+	
+	for (new i = 0; i < target_count; i++)
+	{
+		ClientCommand(target_list[i], "playgamesound \"%s\"", Arguments[len]);
+		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], Arguments[len]);	
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Played sound to target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Played sound to target", "_s", target_name);
+	}
 
 	return Plugin_Handled;
 }
-

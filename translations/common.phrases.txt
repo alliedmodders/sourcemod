@@ -88,35 +88,6 @@
 	{
 		"en"			"Unable to perform this command on a bot."
 	}
-
-	"Ignited player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Set player '{1}' on fire"
-	}
-	
-	"Slapped player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Slapped player '{1}'"
-	}
-	
-	"Slay player"
-	{
-		"en"			"Slay player"
-	}
-	
-	"Slayed player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Slayed player '{1}'"
-	}
-
-	"Played Sound"
-	{
-		"#format"		"{1:s}"
-		"en"			"Played sound on player '{1}'"
-	}
 	
 	"Unable to find cvar"
 	{
@@ -206,7 +177,6 @@
 	
 	"Player has since died"
 	{
-		"#format"		"{1:s}"
 		"en"			"Action cannot be performed, the player has since died."
 	}
 	
@@ -307,21 +277,6 @@
 	{
 		"en"			"Ban reason"
 	}
-
-	"Burn player"
-	{
-		"en"			"Burn player"
-	}
-
-	"Slap player"
-	{
-		"en"			"Slap player"
-	}
-
-	"Slap damage"
-	{
-		"en"			"Slap damage"
-	}
 	
 	"Command is in-game only"
 	{
@@ -341,5 +296,26 @@
 	"Target is not in game"
 	{
 		"en"			"The given player is not fully in-game yet."
+	}
+	
+	/* :UNUSED: */
+	"Played Sound"
+	{
+		"#format"		"{1:s}"
+		"en"			"Played sound on player '{1}'"
+	}
+	
+	/* :UNUSED: */
+	"Slapped player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Slapped player '{1}'"
+	}
+	
+	/* :UNUSED: */
+	"Slayed player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Slayed player '{1}'"
 	}
 }
