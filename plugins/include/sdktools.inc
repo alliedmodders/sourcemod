@@ -189,6 +189,7 @@ native Handle:EndPrepSDKCall();
  */
 native any:SDKCall(Handle:call, any:...);
 
+#include <sdktools_stocks>
 
 /**
  * Do not edit below this line!
