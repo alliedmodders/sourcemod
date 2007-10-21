@@ -657,43 +657,6 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	return engine->IndexOfEdict(pEdict);
 }
 
-static cell_t IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
-{
-	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
-	if (player == NULL)
-	{
-		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
-	}
-	else if (!player->IsInGame())
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
-	}
-
-	edict_t *pEdict = player->GetEdict();
-	CBaseEntity *pEntity = pEdict->GetUnknown()->GetBaseEntity();
-
-	static int lifeState_off = 0;
-	static bool lifeState_setup = false;
-
-	if (!lifeState_setup)
-	{
-		lifeState_setup = true;
-		g_pGameConf->GetOffset("m_lifeState", &lifeState_off);
-	}
-
-	if (!lifeState_off)
-	{
-		IPlayerInfo *info = playerinfomngr->GetPlayerInfo(pEdict);
-		if (info)
-		{
-			return info->IsDead() ? 0 : 1;
-		}
-
-		return pContext->ThrowNativeError("\"IsPlayerAlive\" not supported by this mod");
-	}
-	return (*((uint8_t *)pEntity + lifeState_off) == LIFE_ALIVE) ? 1 : 0;
-}
-
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -930,7 +893,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetClientEyePosition",	GetClientEyePosition},
 	{"GetClientEyeAngles",		GetClientEyeAngles},
 	{"FindEntityByClassname",	FindEntityByClassname},
-	{"IsPlayerAlive",			IsPlayerAlive},
 	{"CreateEntityByName",		CreateEntityByName},
 	{"DispatchSpawn",			DispatchSpawn},
 	{"DispatchKeyValue",		DispatchKeyValue},
