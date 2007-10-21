@@ -232,6 +232,60 @@ namespace SourceMod
 		}
 	};
 
+	#define COMMAND_FILTER_ALIVE		(1<<0)		/**< Only allow alive players */
+	#define COMMAND_FILTER_DEAD			(1<<1)		/**< Only filter dead players */
+	#define COMMAND_FILTER_CONNECTED	(1<<2)		/**< Allow players not fully in-game */
+	#define COMMAND_FILTER_NO_IMMUNITY	(1<<3)		/**< Ignore immunity rules */
+	#define COMMAND_FILTER_NO_MULTI		(1<<4)		/**< Do not allow multiple target patterns */
+	#define COMMAND_FILTER_NO_BOTS		(1<<5)		/**< Do not allow bots to be targetted */
+
+	#define COMMAND_TARGET_VALID		1			/**< Client passed the filter */
+	#define COMMAND_TARGET_NONE			0			/**< No target was found */
+	#define COMMAND_TARGET_NOT_ALIVE	-1			/**< Single client is not alive */
+	#define COMMAND_TARGET_NOT_DEAD		-2			/**< Single client is not dead */
+	#define COMMAND_TARGET_NOT_IN_GAME	-3			/**< Single client is not in game */
+	#define COMMAND_TARGET_IMMUNE		-4			/**< Single client is immune */
+	#define COMMAND_TARGET_EMPTY_FILTER	-5			/**< A multi-filter (such as @all) had no targets */
+	#define COMMAND_TARGET_NOT_HUMAN	-6			/**< Target was not human */
+	#define COMMAND_TARGET_AMBIGUOUS	-7			/**< Partial name had too many targets */
+
+	#define COMMAND_TARGETNAME_RAW		0			/**< Target name is a raw string */
+	#define COMMAND_TARGETNAME_ML		1			/**< Target name is a multi-lingual phrase */
+
+	/**
+	 * @brief Holds the many command target info parameters.
+	 */
+	struct cmd_target_info_t
+	{
+		const char *pattern;			/**< IN: Target pattern string. */
+		int admin;						/**< IN: Client admin index, or 0 if server .*/
+		cell_t *targets;				/**< IN: Array to store targets. */
+		cell_t max_targets;				/**< IN: Max targets (always >= 1) */
+		int flags;						/**< IN: COMMAND_FILTER flags. */
+		char *target_name;				/**< OUT: Buffer to store target name. */
+		size_t target_name_maxlength;	/**< IN: Maximum length of the target name buffer. */
+		int target_name_style;			/**< OUT: Target name style (COMMAND_TARGETNAME) */
+		int reason;						/**< OUT: COMMAND_TARGET reason. */
+		unsigned int num_targets;		/**< OUT: Number of targets. */
+	};
+
+	/**
+	 * @brief Intercepts a command target operation.
+	 */
+	class ICommandTargetProcessor
+	{
+	public:
+		/**
+		 * @brief Must process the command target and return a COMMAND_TARGET value.
+		 *
+		 * @param info			Struct containing command target information.
+		 *						Any members labelled OUT must be filled if processing 
+		 *						is to be completed (i.e. true returned).
+		 * @return				True to end processing, false to let Core continue.
+		 */
+		virtual bool ProcessCommandTarget(cmd_target_info_t *info) =0;
+	};
+
 	class IPlayerManager : public SMInterface
 	{
 	public:
@@ -323,6 +377,30 @@ namespace SourceMod
 		 * @return				Old reply source.
 		 */
 		virtual unsigned int SetReplyTo(unsigned int reply) =0;
+
+		/**
+		 * @brief Tests if a player meets command filtering rules.
+		 *
+		 * @param pAdmin		IGamePlayer of the admin, or NULL if the server. 
+		 * @param pTarget		IGamePlayer of the player being targeted.
+		 * @param flags			COMMAND_FILTER flags.
+		 * @return				COMMAND_TARGET value.
+		 */
+		virtual int FilterCommandTarget(IGamePlayer *pAdmin, IGamePlayer *pTarget, int flags) =0;
+
+		/**
+		 * @brief Registers a command target processor.
+		 *
+		 * @param pHandler		Pointer to an ICommandTargetProcessor instance.
+		 */
+		virtual void RegisterCommandTargetProcessor(ICommandTargetProcessor *pHandler) =0;
+
+		/**
+		 * @brief Removes a command target processor.
+		 *
+		 * @param pHandler		Pointer to an ICommandTargetProcessor instance.
+		 */
+		virtual void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler) =0;
 	};
 }
 

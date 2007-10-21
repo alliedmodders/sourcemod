@@ -1,11 +1,6 @@
 
 PerformKick(client, target, const String:reason[])
 {
-	decl String:name[MAX_NAME_LENGTH];
-	
-	GetClientName(target, name, sizeof(name));
-	
-	ShowActivity(client, "%t", "Kicked player", name);
 	LogAction(client, target, "\"%L\" kicked \"%L\" (reason \"%s\")", client, target, reason);
 
 	if (reason[0] == '\0')
@@ -80,6 +75,9 @@ public MenuHandler_Kick(Handle:menu, MenuAction:action, param1, param2)
 		}
 		else
 		{
+			decl String:name[MAX_NAME_LENGTH];
+			GetClientName(target, name, sizeof(name));
+			ShowActivity2(param1, "[SM] ", "%t", "Kicked target", "_S", name);
 			PerformKick(param1, target, "");
 		}
 		
@@ -104,13 +102,7 @@ public Action:Command_Kick(client, args)
 
 	decl String:arg[65];
 	new len = BreakString(Arguments, arg, sizeof(arg));
-
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-
+	
 	if (len == -1)
 	{
 		/* Safely null terminate */
@@ -118,7 +110,49 @@ public Action:Command_Kick(client, args)
 		Arguments[0] = '\0';
 	}
 
-	PerformKick(client, target, Arguments[len]);
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			COMMAND_FILTER_CONNECTED,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) > 0)
+	{
+		if (tn_is_ml)
+		{
+			ShowActivity2(client, "[SM] ", "%t", "Kicked target", target_name);
+		}
+		else
+		{
+			ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_S", target_name);
+		}
+		
+		new kick_self = 0;
+		
+		for (new i = 0; i < target_count; i++)
+		{
+			/* Kick everyone else first */
+			if (target_list[i] == client)
+			{
+				kick_self = client;
+			}
+			PerformKick(client, target_list[i], Arguments[len]);
+		}
+		
+		if (kick_self)
+		{
+			PerformKick(client, client, Arguments[len]);
+		}
+	}
+	else
+	{
+		ReplyToTargetError(client, target_count);
+	}
 
 	return Plugin_Handled;
 }

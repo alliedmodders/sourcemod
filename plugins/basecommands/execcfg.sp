@@ -8,7 +8,7 @@ PerformExec(client, String:path[])
 		return;
 	}
 
-	ShowActivity(client, "%t", "Executed config", path[4]);
+	ShowActivity2(client, "[SM] ", "%t", "Executed config", path[4]);
 
 	LogAction(client, -1, "\"%L\" executed config (file \"%s\")", client, path[4]);
 

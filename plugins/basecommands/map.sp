@@ -14,7 +14,7 @@ public MenuHandler_ChangeMap(Handle:menu, MenuAction:action, param1, param2)
 		
 		GetMenuItem(menu, param2, map, sizeof(map));
 	
-		ShowActivity(param1, "%t", "Changing map", map);
+		ShowActivity2(param1, "[SM] ", "%t", "Changing map", map);
 
 		LogAction(param1, -1, "\"%L\" changed map to \"%s\"", param1, map);
 
@@ -59,7 +59,7 @@ public Action:Command_Map(client, args)
 		return Plugin_Handled;
 	}
 
-	ShowActivity(client, "%t", "Changing map", map);
+	ShowActivity2(client, "[SM] ", "%t", "Changing map", map);
 
 	LogAction(client, -1, "\"%L\" changed map to \"%s\"", client, map);
 

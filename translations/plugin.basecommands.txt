@@ -112,4 +112,10 @@
 	{
 		"en"			"Username"
 	}
+	
+	"Kicked target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Kicked {1}"
+	}
 }

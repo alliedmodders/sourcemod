@@ -241,10 +241,28 @@ native bool:IsChatTrigger();
 
 /**
  * Displays usage of an admin command to users depending on the 
- * setting of the sm_show_activity cvar.
+ * setting of the sm_show_activity cvar.  All users receive a message 
+ * in their chat text, except for the originating client, who receives 
+ * the message based on the current ReplySource.
  *
- * If the original client did not use a console command, they will 
- * not see the public display in their chat.
+ * @param client		Client index doing the action, or 0 for server.
+ * @param tag			Tag to display before the message string.  For example, 
+ *						"[SM] " would show "[SM] <message>".
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error
+ */
+native ShowActivity2(client, const String:tag[], const String:format[], any:...);
+
+/**
+ * Displays usage of an admin command to users depending on the 
+ * setting of the sm_show_activity cvar.  
+ *
+ * This version does not display a message to the originating client 
+ * if used from chat triggers or menus.  If manual replies are used 
+ * for these cases, then this function will suffice.  Otherwise, 
+ * ShowActivity2() is slightly more useful.
  *
  * @param client		Client index doing the action, or 0 for server.
  * @param format		Formatting rules.
@@ -266,19 +284,6 @@ native ShowActivity(client, const String:format[], any:...);
  * @error
  */
 native ShowActivityEx(client, const String:tag[], const String:format[], any:...);
-
-/**
- * Same as ShowActivityEx(), except the text will always be mirrored to the 
- * client's chat (and console, if the reply source specifies as such).
- *
- * @param client		Client index doing the action, or 0 for server.
- * @param tag			Tag to display with.
- * @param format		Formatting rules.
- * @param ...			Variable number of format parameters.
- * @noreturn
- * @error
- */
-native ShowActivity2(client, const String:tag[], const String:format[], any:...);
 
 /**
  * Called when a server-only command is invoked.  

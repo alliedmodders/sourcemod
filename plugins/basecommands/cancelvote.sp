@@ -7,7 +7,7 @@ PerformCancelVote(client)
 		return;
 	}
 
-	ShowActivity(client, "%t", "Cancelled Vote");
+	ShowActivity2(client, "[SM] ", "%t", "Cancelled Vote");
 	
 	CancelVote();
 }

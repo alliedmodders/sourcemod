@@ -300,8 +300,10 @@ public Action:Command_Cvar(client, args)
 
 	if ((GetConVarFlags(hndl) & FCVAR_PROTECTED) != FCVAR_PROTECTED)
 	{
-		ShowActivity(client, "%t", "Cvar changed", cvarname, value);
-	} else {
+		ShowActivity2(client, "[SM] ", "%t", "Cvar changed", cvarname, value);
+	}
+	else
+	{
 		ReplyToCommand(client, "[SM] %t", "Cvar changed", cvarname, value);
 	}
 

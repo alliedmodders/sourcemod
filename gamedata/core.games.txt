@@ -9,6 +9,12 @@
 				"windows"		"13"
 				"linux"			"14"
 			}
+
+			"m_lifeState"
+			{
+				"class"			"CBasePlayer"
+				"prop"			"m_lifeState"
+			}
 		}
 	}
 	

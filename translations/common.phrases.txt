@@ -15,10 +15,20 @@
 		"en"			"No matching client was found."
 	}
 	
+	"No matching clients"
+	{
+		"en"			"No matching clients were found."
+	}
+	
 	"More than one client matches"
 	{
 		"#format"		"{1:s}"
 		"en"			"More than one client matches the pattern \"{1}\""
+	}
+	
+	"More than one client matched"
+	{
+		"en"			"More than one client matched the given pattern."
 	}
 	
 	"Player no longer available"
@@ -90,6 +100,7 @@
 		"#format"		"{1:s}"
 		"en"			"Slapped player '{1}'"
 	}
+	
 	"Slay player"
 	{
 		"en"			"Slay player"
@@ -185,12 +196,12 @@
 	"Invalid Amount"
 	{
 		"en"			"Invalid amount specified"
-	}	
+	}
 
 	"Cannot be performed on dead"
 	{
 		"#format"		"{1:s}"
-		"en"			"This action cannot be performed on a dead client \"{1}\""
+		"en"			"This action cannot be performed on dead client \"{1}\""
 	}
 	
 	"Player has since died"
@@ -315,5 +326,20 @@
 	"Command is in-game only"
 	{
 		"en"			"This command can only be used in-game."
+	}
+	
+	"Target must be dead"
+	{
+		"en"			"This command can only be used on dead players."
+	}
+	
+	"Target must be alive"
+	{
+		"en"			"This command can only be used on alive players."
+	}
+	
+	"Target is not in game"
+	{
+		"en"			"The given player is not fully in-game yet."
 	}
 }
