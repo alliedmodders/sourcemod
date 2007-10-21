@@ -179,7 +179,7 @@ SelectKickClient()
 		{
 			latency = GetClientAvgLatency(i, NetFlow_Both);
 			
-			if (GetClientTeam(i) == 1)
+			if (IsClientObserver(i))
 			{
 				specFound = true;
 				
