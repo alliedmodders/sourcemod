@@ -171,7 +171,14 @@ public __GetAdminTopMenu(Handle:plugin, numParams)
 
 public __AddTargetsToMenu(Handle:plugin, numParams)
 {
-	return UTIL_AddTargetsToMenu(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3), GetNativeCell(4));
+	new bool:alive_only = false;
+	
+	if (numParams >= 4)
+	{
+		alive_only = GetNativeCell(4);
+	}
+	
+	return UTIL_AddTargetsToMenu(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3), alive_only);
 }
 
 public Action:Command_DisplayMenu(client, args)
