@@ -484,6 +484,7 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
 	{
+		fprintf(fp, "%s:\n", pBase->GetName());
 		UTIL_DrawSendTable(fp, pBase->m_pTable, 1);
 		pBase = pBase->m_pNext;
 	}
