@@ -105,7 +105,13 @@
 	"Player is not an admin"
 	{
 		"#format"		"{1:s}"
-		"en"			"\"{1}\" is not logged in as an admin."
+		"en"			"\"{1}\" is not an admin."
+	}
+	
+	"Player is an admin"
+	{
+		"#format"		"{1:s}"
+		"en"			"\"{1}\" is an admin."
 	}
 	
 	"Username"
@@ -117,5 +123,10 @@
 	{
 		"#format"		"{1:t}"
 		"en"			"Kicked {1}."
+	}
+	
+	"Admin access"
+	{
+		"en"			"Admin access"
 	}
 }

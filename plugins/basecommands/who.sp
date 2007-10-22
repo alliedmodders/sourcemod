@@ -1,5 +1,5 @@
 
-PerformWho(client, target, ReplySource:reply)
+PerformWho(client, target, ReplySource:reply, bool:is_admin)
 {
 	decl String:name[MAX_NAME_LENGTH];
 	GetClientName(target, name, sizeof(name));
@@ -20,28 +20,35 @@ PerformWho(client, target, ReplySource:reply)
 	}
 	else
 	{
-		new flags = GetUserFlagBits(target);
-		decl String:flagstring[255];
-		if (flags == 0)
+		if (!is_admin)
 		{
-			strcopy(flagstring, sizeof(flagstring), "none");
-		}
-		else if (flags & ADMFLAG_ROOT)
-		{
-			strcopy(flagstring, sizeof(flagstring), "root");
+			ReplyToCommand(client, "[SM] %t", "Player is an admin", name);
 		}
 		else
 		{
-			FlagsToString(flagstring, sizeof(flagstring), flags);
-		}
-		
-		if (show_name)
-		{
-			ReplyToCommand(client, "[SM] %t", "Admin logged in as", name, admin_name, flagstring);
-		}
-		else
-		{
-			ReplyToCommand(client, "[SM] %t", "Admin logged in anon", name, flagstring);
+			new flags = GetUserFlagBits(target);
+			decl String:flagstring[255];
+			if (flags == 0)
+			{
+				strcopy(flagstring, sizeof(flagstring), "none");
+			}
+			else if (flags & ADMFLAG_ROOT)
+			{
+				strcopy(flagstring, sizeof(flagstring), "root");
+			}
+			else
+			{
+				FlagsToString(flagstring, sizeof(flagstring), flags);
+			}
+			
+			if (show_name)
+			{
+				ReplyToCommand(client, "[SM] %t", "Admin logged in as", name, admin_name, flagstring);
+			}
+			else
+			{
+				ReplyToCommand(client, "[SM] %t", "Admin logged in anon", name, flagstring);
+			}
 		}
 	}
 	
@@ -110,7 +117,7 @@ public MenuHandler_Who(Handle:menu, MenuAction:action, param1, param2)
 		}
 		else
 		{
-			PerformWho(param1, target, SM_REPLY_TO_CHAT);
+			PerformWho(param1, target, SM_REPLY_TO_CHAT, (GetUserFlagBits(param1) != 0 ? true : false));
 		}
 		
 		/* Re-draw the menu if they're still valid */
@@ -125,15 +132,29 @@ public MenuHandler_Who(Handle:menu, MenuAction:action, param1, param2)
 }
 public Action:Command_Who(client, args)
 {
+	new bool:is_admin = false;
+	
+	if (client && GetUserFlagBits(client) != 0)
+	{
+		is_admin = true;
+	}
+	
 	if (args < 1)
 	{
 		/* Display header */
 		decl String:t_access[16], String:t_name[16], String:t_username[16];
-		Format(t_access, sizeof(t_access), "%t", "Access", client);
+		Format(t_access, sizeof(t_access), "%t", "Admin access", client);
 		Format(t_name, sizeof(t_name), "%t", "Name", client);
 		Format(t_username, sizeof(t_username), "%t", "Username", client);
 
-		PrintToConsole(client, "    %-24.23s %-18.17s %s", t_name, t_username, t_access);
+		if (is_admin)
+		{
+			PrintToConsole(client, "    %-24.23s %-18.17s %s", t_name, t_username, t_access);
+		}
+		else
+		{
+			PrintToConsole(client, "    %-24.23s %s", t_name, t_access);
+		}
 
 		/* List all players */
 		new maxClients = GetMaxClients();
@@ -169,7 +190,21 @@ public Action:Command_Who(client, args)
 				GetAdminUsername(id, username, sizeof(username));
 			}
 			
-			PrintToConsole(client, "%2d. %-24.23s %-18.17s %s", i, name, username, flagstring);
+			if (is_admin)
+			{
+				PrintToConsole(client, "%2d. %-24.23s %-18.17s %s", i, name, username, flagstring);
+			}
+			else
+			{
+				if (flags == 0)
+				{
+					PrintToConsole(client, "%2d. %-24.23s %t", i, name, "No");
+				}
+				else
+				{
+					PrintToConsole(client, "%2d. %-24.23s %t", i, name, "Yes");
+				}
+			}
 		}
 
 		if (GetCmdReplySource() == SM_REPLY_TO_CHAT)
@@ -183,13 +218,13 @@ public Action:Command_Who(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new target = FindTarget(client, arg);
+	new target = FindTarget(client, arg, false, false);
 	if (target == -1)
 	{
 		return Plugin_Handled;
 	}
 	
-	PerformWho(client, target, GetCmdReplySource());
+	PerformWho(client, target, GetCmdReplySource(), is_admin);
 
 	return Plugin_Handled;
 }
