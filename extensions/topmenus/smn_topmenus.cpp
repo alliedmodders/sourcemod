@@ -230,7 +230,7 @@ static cell_t AddToTopMenu(IPluginContext *pContext, const cell_t *params)
 
 	TopMenuCallbacks *cb = new TopMenuCallbacks(func);
 
-	char *name, *cmdname, *info_string;
+	char *name, *cmdname, *info_string = NULL;
 	pContext->LocalToString(params[2], &name);
 	pContext->LocalToString(params[6], &cmdname);
 
