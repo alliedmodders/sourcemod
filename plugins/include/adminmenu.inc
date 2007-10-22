@@ -91,9 +91,10 @@ native Handle:GetAdminTopMenu();
  * @param menu			Menu Handle.
  * @param source_client	Source client, or 0 to ignore immunity.
  * @param in_game_only	True to only select in-game players.
+ * @param alive_only 	True to only select alive players.
  * @return				Number of clients added.
  */
-native AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only=true);
+native AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only=true, bool:alive_only=false);
 
 /**
  * Re-displays the admin menu to a client after selecting an item.

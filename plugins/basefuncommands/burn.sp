@@ -13,7 +13,7 @@ DisplayBurnMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddTargetsToMenu(menu, client, false);
+	AddTargetsToMenu(menu, client, false, true);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

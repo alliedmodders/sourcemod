@@ -40,7 +40,7 @@ DisplayBanTargetMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddTargetsToMenu(menu, client, false);
+	AddTargetsToMenu(menu, client, false, false);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

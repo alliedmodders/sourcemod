@@ -171,7 +171,7 @@ public __GetAdminTopMenu(Handle:plugin, numParams)
 
 public __AddTargetsToMenu(Handle:plugin, numParams)
 {
-	return UTIL_AddTargetsToMenu(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
+	return UTIL_AddTargetsToMenu(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3), GetNativeCell(4));
 }
 
 public Action:Command_DisplayMenu(client, args)
@@ -187,7 +187,7 @@ public Action:Command_DisplayMenu(client, args)
 	return Plugin_Handled;
 }
 
-stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only)
+stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only, bool:alive_only)
 {
 	new max_clients = GetMaxClients();
 	decl String:user_id[12];
@@ -204,6 +204,11 @@ stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only)
 		}
 		
 		if (in_game_only && !IsClientInGame(i))
+		{
+			continue;
+		}
+		
+		if (alive_only && !IsPlayerAlive(i))
 		{
 			continue;
 		}
