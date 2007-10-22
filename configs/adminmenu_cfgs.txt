@@ -5,5 +5,6 @@
 Configs
 {
 	"cfg/server.cfg"			"Standard Server Setup"
-	"cfg/sourcemod/sourcemod.cfg"		"SourceMod Settings"	
+	"cfg/sourcemod/sm_warmode_on.cfg"	"War Mode On"
+	"cfg/sourcemod/sm_warmode_off.cfg"	"War Mode Off"
 }

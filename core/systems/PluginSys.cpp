@@ -363,12 +363,10 @@ void CPlugin::Call_OnAllPluginsLoaded()
 
 	cell_t result;
 	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnAllPluginsLoaded");
-	if (!pFunction)
+	if (pFunction != NULL)
 	{
-		return;
+		pFunction->Execute(&result);
 	}
-
-	pFunction->Execute(&result);
 
 	if (g_OnMapStarted)
 	{
