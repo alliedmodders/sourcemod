@@ -56,6 +56,7 @@ new g_BanTime[MAXPLAYERS+1];
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+	LoadTranslations("basebans.phrases");
 
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");

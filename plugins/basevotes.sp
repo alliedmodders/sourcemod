@@ -100,6 +100,8 @@ public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basevotes.phrases");
+	LoadTranslations("plugin.basecommands");
+	LoadTranslations("basebans.phrases");
 	
 	RegAdminCmd("sm_votemap", Command_Votemap, ADMFLAG_VOTE|ADMFLAG_CHANGEMAP, "sm_votemap <mapname> [mapname2] ... [mapname5] ");
 	RegAdminCmd("sm_votekick", Command_Votekick, ADMFLAG_VOTE|ADMFLAG_KICK, "sm_votekick <player> [reason]");
@@ -220,7 +222,7 @@ public Action:Command_Vote(client, args)
 	}
 
 	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
-	ShowActivity(client, "%t", "Initiate Vote", g_voteArg);
+	ShowActivity2(client, "[SM] ", "%t", "Initiate Vote", g_voteArg);
 	
 	g_voteType = voteType:question;
 	
@@ -349,7 +351,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 						strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
 					}
 					
-					PrintToChatAll("[SM] %t", "Kicked player", g_voteInfo[VOTE_NAME]);					
+					PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
 					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
 					
 					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					

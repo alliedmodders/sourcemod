@@ -41,12 +41,6 @@
 		"en"			"Kick player"
 	}
 	
-	"Kicked player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Kicked player '{1}'"
-	}
-
 	"Kicked by admin"
 	{
 		"en"			"Kicked by administrator"
@@ -123,41 +117,6 @@
 		"#format"		"{1:s}"
 		"en"			"Executed config \"{1}\"."
 	}
-
-	"Permabanned player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Permanently banned player \"{1}\"."
-	}
-	
-	"Permabanned player reason"
-	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"Permanently banned player \"{1}\" (reason: {2})."
-	}
-	
-	"Banned player"
-	{
-		"#format"		"{1:s},{2:d}"
-		"en"			"Banned player \"{1}\" for {2} minutes."
-	}
-	
-	"Banned player reason"
-	{
-		"#format"		"{1:s},{2:d},{3:s}"
-		"en"			"Banned player \"{1}\" for {2} minutes (reason: {3})."
-	}
-	
-	"Removed bans matching"
-	{
-		"#format"		"{1:s}"
-		"en"			"Removed bans matching filter: {1}"
-	}
-	
-	"Ban added"
-	{
-		"en"			"Ban has been added."
-	}
 	
 	"Admin cache refreshed"
 	{
@@ -232,35 +191,10 @@
 	{
 		"en"			"Failed to query database."
 	}
-	
-	"Cannot ban that IP"
-	{
-		"en"			"You cannot ban that IP address."
-	}
 
 	"Invalid SteamID specified"
 	{
 		"en"			"You have specified an invalid Steam ID (must start with 'STEAM_0:')."
-	}
-	
-	"Admin Menu"
-	{
-		"en"			"Admin Menu"
-	}
-	
-	"Player Commands"
-	{
-		"en"			"Player Commands"
-	}
-
-	"Server Commands"
-	{
-		"en"			"Server Commands"
-	}
-
-	"Voting Commands"
-	{
-		"en"			"Voting Commands"
 	}
 	
 	"Reload admins"
@@ -268,16 +202,6 @@
 		"en"			"Reload admins"
 	}
 
-	"Ban player"
-	{
-		"en"			"Ban player"
-	}
-
-	"Ban reason"
-	{
-		"en"			"Ban reason"
-	}
-	
 	"Command is in-game only"
 	{
 		"en"			"This command can only be used in-game."
@@ -317,5 +241,12 @@
 	{
 		"#format"		"{1:s}"
 		"en"			"Slayed player '{1}'"
+	}
+	
+	/* :UNUSED: */
+	"Kicked player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Kicked player '{1}'"
 	}
 }

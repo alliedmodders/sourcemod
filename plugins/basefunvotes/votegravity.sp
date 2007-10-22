@@ -2,7 +2,7 @@
 DisplayVoteGravityMenu(client,count,String:items[5][])
 {
 	LogAction(client, -1, "\"%L\" initiated a gravity vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote Gravity");
+	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Gravity");
 	
 	g_voteType = voteType:gravity;
 	

@@ -2,7 +2,7 @@
 DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 {
 	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote Map");
+	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Map");
 	
 	g_voteType = voteType:map;
 	

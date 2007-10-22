@@ -112,7 +112,7 @@ public Action:Command_Burn(client, args)
 			client,
 			target_list,
 			MAXPLAYERS,
-			COMMAND_FILTER_NO_BOTS,
+			COMMAND_FILTER_ALIVE,
 			target_name,
 			sizeof(target_name),
 			tn_is_ml)) <= 0)

@@ -1,4 +1,4 @@
-DisplayVoteBurnMenu(client,target,String:name[])
+DisplayVoteBurnMenu(client, target, String:name[])
 {
 	if (!IsPlayerAlive(target))
 	{
@@ -10,7 +10,7 @@ DisplayVoteBurnMenu(client,target,String:name[])
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a burn vote against \"%L\"", client, target);
-	ShowActivity(client, "%t", "Initiated Vote Burn", g_voteInfo[VOTE_NAME]);
+	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Burn", g_voteInfo[VOTE_NAME]);
 	
 	g_voteType = voteType:burn;
 	
@@ -122,13 +122,24 @@ public Action:Command_VoteBurn(client, args)
 	
 	BreakString(text, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client,
+			target_list,
+			MAXPLAYERS,
+			COMMAND_FILTER_NO_MULTI,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	DisplayVoteBurnMenu(client, target, arg);
+	DisplayVoteBurnMenu(client, target_list[0], arg);
 	
 	return Plugin_Handled;
 }

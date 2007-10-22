@@ -12,7 +12,7 @@ DisplayVoteFFMenu(client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated a friendly fire vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote FF");
+	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote FF");
 	
 	g_voteType = voteType:ff;
 	g_voteInfo[VOTE_NAME][0] = '\0';

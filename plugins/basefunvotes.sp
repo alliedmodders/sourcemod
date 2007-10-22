@@ -269,7 +269,7 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 				
 				case (voteType:burn):
 				{
-					PrintToChatAll("[SM] %t", "Ignited player", g_voteInfo[VOTE_NAME]);					
+					PrintToChatAll("[SM] %t", "Set target on fire", "_s", g_voteInfo[VOTE_NAME]);					
 					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote burn successful, igniting \"%L\"", g_voteClient[VOTE_CLIENTID]);
 					
 					IgniteEntity(g_voteClient[VOTE_CLIENTID], 19.8);	

@@ -68,6 +68,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+	LoadTranslations("adminmenu.phrases");
 	
 	hOnAdminMenuCreated = CreateGlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
 	hOnAdminMenuReady = CreateGlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);

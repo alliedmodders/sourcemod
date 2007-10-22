@@ -12,7 +12,7 @@ DisplayVoteAllTalkMenu(client)
 	}
 	
 	LogAction(client, -1, "\"%L\" initiated an alltalk vote.", client);
-	ShowActivity(client, "%t", "Initiated Vote Alltalk");
+	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Alltalk");
 	
 	g_voteType = voteType:alltalk;
 	g_voteInfo[VOTE_NAME][0] = '\0';

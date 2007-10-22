@@ -9,7 +9,7 @@ DisplayVoteBanMenu(client, target)
 	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a ban vote against \"%L\"", client, target);
-	ShowActivity(client, "%t", "Initiated Vote Ban", g_voteInfo[VOTE_NAME]);
+	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Ban", g_voteInfo[VOTE_NAME]);
 
 	g_voteType = voteType:ban;
 	
@@ -118,12 +118,6 @@ public Action:Command_Voteban(client, args)
 	
 	new len = BreakString(text, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
-	{
-		return Plugin_Handled;
-	}
-	
 	if (len != -1)
 	{
 		strcopy(g_voteArg, sizeof(g_voteArg), text[len]);
@@ -133,7 +127,24 @@ public Action:Command_Voteban(client, args)
 		g_voteArg[0] = '\0';
 	}
 	
-	DisplayVoteBanMenu(client, target);
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client,
+			target_list,
+			MAXPLAYERS,
+			COMMAND_FILTER_NO_MULTI,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
+	{
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+
+	DisplayVoteBanMenu(client, target_list[0]);
 	
 	return Plugin_Handled;
 }
