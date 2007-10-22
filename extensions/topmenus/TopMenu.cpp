@@ -125,6 +125,18 @@ unsigned int TopMenu::AddToMenu(const char *name,
 								FlagBits flags,
 								unsigned int parent)
 {
+	return AddToMenu2(name, type, callbacks, owner, cmdname, flags, parent, NULL);
+}
+
+unsigned int TopMenu::AddToMenu2(const char *name,
+								 TopMenuObjectType type,
+								 ITopMenuObjectCallbacks *callbacks,
+								 IdentityToken_t *owner,
+								 const char *cmdname,
+								 FlagBits flags,
+								 unsigned int parent,
+								 const char *info_string)
+{
 	/* Sanity checks */
 	if (type == TopMenuObject_Category && parent != 0)
 	{
@@ -202,6 +214,7 @@ unsigned int TopMenu::AddToMenu(const char *name,
 	obj->parent = parent_obj;
 	strncopy(obj->name, name, sizeof(obj->name));
 	strncopy(obj->cmdname, cmdname ? cmdname : "", sizeof(obj->cmdname));
+	strncopy(obj->info, info_string ? info_string : "", sizeof(obj->info));
 
 	if (obj->type == TopMenuObject_Category)
 	{
@@ -237,6 +250,20 @@ unsigned int TopMenu::AddToMenu(const char *name,
 	m_ObjLookup.insert(name, obj);
 
 	return obj->object_id;
+}
+
+const char *TopMenu::GetObjectInfoString(unsigned int object_id)
+{
+	if (object_id == 0 
+		|| object_id > m_Objects.size() 
+		|| m_Objects[object_id - 1]->is_free)
+	{
+		return NULL;
+	}
+
+	topmenu_object_t *obj = m_Objects[object_id - 1];
+
+	return obj->info;
 }
 
 void TopMenu::RemoveFromMenu(unsigned int object_id)
@@ -320,11 +347,11 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 		}
 	}
 
-	/* Finally, mark the object as free. */
-	obj->is_free = true;
-
 	/* The callbacks pointer is still valid, so fire away! */
 	obj->callbacks->OnTopMenuObjectRemoved(this, object_id);
+
+	/* Finally, mark the object as free. */
+	obj->is_free = true;
 }
 
 bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition position)

@@ -68,6 +68,7 @@ struct topmenu_object_t
 	topmenu_object_t *parent;			/** Parent, if any */
 	TopMenuObjectType type;				/** Object Type */
 	bool is_free;						/** Free or not? */
+	char info[255];						/** Info string */
 };
 
 struct topmenu_category_t
@@ -115,12 +116,21 @@ public: //ITopMenu
 		const char *cmdname,
 		FlagBits flags,
 		unsigned int parent);
+	unsigned int AddToMenu2(const char *name,
+		TopMenuObjectType type,
+		ITopMenuObjectCallbacks *callbacks,
+		IdentityToken_t *owner,
+		const char *cmdname,
+		FlagBits flags,
+		unsigned int parent,
+		const char *info_string);
 	virtual void RemoveFromMenu(unsigned int object_id);
 	virtual bool DisplayMenu(int client, 
 		unsigned int hold_time, 
 		TopMenuPosition position);
 	virtual bool LoadConfiguration(const char *file, char *error, size_t maxlength);
 	virtual unsigned int FindCategory(const char *name);
+	const char *GetObjectInfoString(unsigned int object_id);
 public: //IMenuHandler
 	virtual void OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page);
 	virtual void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
@@ -165,5 +175,7 @@ private:
 	int m_max_clients;						/* Maximum number of clients */
 	bool m_bCatsNeedResort;					/* True if categories need a resort */
 };
+
+unsigned int strncopy(char *dest, const char *src, size_t count);
 
 #endif //_INCLUDE_SOURCEMOD_TOP_MENU_H_

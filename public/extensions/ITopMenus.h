@@ -43,7 +43,7 @@
  */
 
 #define SMINTERFACE_TOPMENUS_NAME		"ITopMenus"
-#define SMINTERFACE_TOPMENUS_VERSION	2
+#define SMINTERFACE_TOPMENUS_VERSION	3
 
 namespace SourceMod
 {
@@ -233,6 +233,41 @@ namespace SourceMod
 		 * @return				Object ID of the category, or 0 if none.
 		 */
 		virtual unsigned int FindCategory(const char *name) =0;
+
+		/**
+		 * @brief Creates and adds an object type type to the top menu.
+		 *
+		 * @param name			Unique, string name to give the object.
+		 * @param type			Object type.
+		 * @param callbacks		ITopMenuObjectCallbacks pointer.
+		 * @param owner			IdentityToken_t owner of the object.
+		 * @param cmdname		Command name used for override access checks.
+		 *						If NULL or empty, access will not be Checked.
+		 * @param flags			Default flag(s) to use for access checks.
+		 * @param parent		Parent object, or 0 if none.
+		 *						Currently, categories cannot have a parent,
+		 *						and items must have a category parent.
+		 * @param info_string	Optional info string to attach to the object.
+		 *						Only 255 bytes of the string (including null 
+		 *						terminator) will be stored.
+		 * @return				An object ID, or 0 on failure.
+		 */
+		virtual unsigned int AddToMenu2(const char *name,
+			TopMenuObjectType type,
+			ITopMenuObjectCallbacks *callbacks,
+			IdentityToken_t *owner,
+			const char *cmdname,
+			FlagBits flags,
+			unsigned int parent,
+			const char *info_string) =0;
+
+		/**
+		 * @brief Returns an object's info string.
+		 *
+		 * @param object_id		Object ID.
+		 * @return				Object's info string, or NULL if none.
+		 */
+		virtual const char *GetObjectInfoString(unsigned int object_id) =0;
 	};
 
 	/**

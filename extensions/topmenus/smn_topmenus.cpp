@@ -67,6 +67,7 @@ enum TopMenuAction
 	TopMenuAction_DisplayTitle = 1,
 	TopMenuAction_SelectOption = 2,
 	TopMenuAction_DrawOption = 3,
+	TopMenuAction_RemoveObject = 4,
 };
 
 class TopMenuCallbacks : public ITopMenuObjectCallbacks
@@ -138,6 +139,14 @@ public:
 
 	void OnTopMenuObjectRemoved(ITopMenu *menu, unsigned int object_id)
 	{
+		m_pFunction->PushCell(m_hMenuHandle);
+		m_pFunction->PushCell(TopMenuAction_RemoveObject);
+		m_pFunction->PushCell(object_id);
+		m_pFunction->PushCell(0);
+		m_pFunction->PushString("");
+		m_pFunction->PushCell(0);
+		m_pFunction->Execute(NULL);
+
 		delete this;
 	}
 
@@ -221,20 +230,26 @@ static cell_t AddToTopMenu(IPluginContext *pContext, const cell_t *params)
 
 	TopMenuCallbacks *cb = new TopMenuCallbacks(func);
 
-	char *name, *cmdname;
+	char *name, *cmdname, *info_string;
 	pContext->LocalToString(params[2], &name);
 	pContext->LocalToString(params[6], &cmdname);
+
+	if (params[0] >= 8)
+	{
+		pContext->LocalToString(params[8], &info_string);
+	}
 
 	TopMenuObjectType obj_type = (TopMenuObjectType)params[3];
 	
 	unsigned int object_id;
-	if ((object_id = pMenu->AddToMenu(name,
+	if ((object_id = pMenu->AddToMenu2(name,
 		obj_type,
 		cb,
 		pContext->GetIdentity(),
 		cmdname,
 		params[7], 
-		params[5])) == 0)
+		params[5],
+		info_string)) == 0)
 	{
 		delete cb;
 		return 0;
@@ -306,13 +321,38 @@ static cell_t DisplayTopMenu(IPluginContext *pContext, const cell_t *params)
 	return pMenu->DisplayMenu(client, 0, (TopMenuPosition)params[3]);
 }
 
+static cell_t GetTopMenuInfoString(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	ITopMenu *pMenu;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if ((err = handlesys->ReadHandle(params[1], hTopMenuType, &sec, (void **)&pMenu))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	const char *str;
+	if ((str = pMenu->GetObjectInfoString(params[2])) == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid menu object %d", params[2]);
+	}
+
+	char *buffer;
+	pContext->LocalToString(params[3], &buffer);
+
+	return strncopy(buffer, str, params[4]);
+}
+
 sp_nativeinfo_t g_TopMenuNatives[] = 
 {
-	{"AddToTopMenu",		AddToTopMenu},
-	{"CreateTopMenu",		CreateTopMenu},
-	{"DisplayTopMenu",		DisplayTopMenu},
-	{"LoadTopMenuConfig",	LoadTopMenuConfig},
-	{"RemoveFromTopMenu",	RemoveFromTopMenu},
-	{"FindTopMenuCategory",	FindTopMenuCategory},
+	{"AddToTopMenu",			AddToTopMenu},
+	{"CreateTopMenu",			CreateTopMenu},
+	{"DisplayTopMenu",			DisplayTopMenu},
+	{"LoadTopMenuConfig",		LoadTopMenuConfig},
+	{"RemoveFromTopMenu",		RemoveFromTopMenu},
+	{"FindTopMenuCategory",		FindTopMenuCategory},
+	{"GetTopMenuInfoString",	GetTopMenuInfoString},
 	{NULL,					NULL},
 };

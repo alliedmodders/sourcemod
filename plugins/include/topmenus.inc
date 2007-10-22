@@ -79,6 +79,14 @@ enum TopMenuAction
 	 *		   ITEMDRAW_DEFAULT.
 	 */
 	 TopMenuAction_DrawOption = 3,
+	 
+	/**
+	 * Called when an object is being removed from the menu.
+	 * This can be used to clean up data stored in the info string.
+	 *
+	 * INPUT : TopMenu Handle, object ID.
+	 */
+	 TopMenuAction_RemoveObject = 4,
 };
 
 /**
@@ -175,6 +183,7 @@ native bool:LoadTopMenuConfig(Handle:topmenu, const String:file[], String:error[
  * @param parent			Parent object ID, or INVALID_TOPMENUOBJECT for none.
  *							Items must have a category parent.
  *							Categories must not have a parent.
+ * @param info_string		Arbitrary storage (max 255 bytes).
  * @return					A new TopMenuObject ID, or INVALID_TOPMENUOBJECT on
  *							failure.
  * @error					Invalid TopMenu Handle.
@@ -185,7 +194,21 @@ native TopMenuObject:AddToTopMenu(Handle:topmenu,
 								  TopMenuHandler:handler,
 								  TopMenuObject:parent,
 								  const String:cmdname[]="",
-								  flags=0);
+								  flags=0,
+								  const String:info_string[]="");
+								  
+/**
+ * Retrieves the info string of a top menu item.
+ *
+ * @param topmenu			TopMenu Handle.
+ * @param object			TopMenuObject ID.
+ * @param buffer			Buffer to store info string.
+ * @param maxlength			Maximum size of info string.
+ * @return					Number of bytes written, not including the 
+ *							null terminator.
+ * @error					Invalid TopMenu Handle or TopMenuObject ID.
+ */
+native GetTopMenuInfoString(Handle:topmenu, TopMenuObject:parent, String:buffer[], maxlength);
 
 /**
  * Removes an object from a TopMenu.
