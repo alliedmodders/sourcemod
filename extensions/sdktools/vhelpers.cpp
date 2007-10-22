@@ -272,3 +272,222 @@ void ShutdownHelpers()
 	s_Teleport.Shutdown();
 	s_GetVelocity.Shutdown();
 }
+
+const char *GetDTTypeName(int type)
+{
+	switch (type)
+	{
+	case DPT_Int:
+		{
+			return "integer";
+		}
+	case DPT_Float:
+		{
+			return "float";
+		}
+	case DPT_Vector:
+		{
+			return "vector";
+		}
+	case DPT_String:
+		{
+			return "string";
+		}
+	case DPT_Array:
+		{
+			return "array";
+		}
+	case DPT_DataTable:
+		{
+			return "datatable";
+		}
+	default:
+		{
+			return NULL;
+		}
+	}
+
+	return NULL;
+}
+
+void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
+{
+	char spaces[255];
+
+	for (int i = 0; i < space_count; i++)
+	{
+		spaces[i] = ' ';
+	}
+	spaces[space_count] = '\0';
+
+	const char *type_name;
+	SendTable *pOtherTable;
+	SendProp *pProp;
+
+	fprintf(fp, " %s<sendtable name=\"%s\">\n", spaces, pTable->GetName());
+	for (int i = 0; i < pTable->GetNumProps(); i++)
+	{
+		pProp = pTable->GetProp(i);
+
+		fprintf(fp, "  %s<property name=\"%s\">\n", spaces, pProp->GetName());
+
+		if ((type_name = GetDTTypeName(pProp->GetType())) != NULL)
+		{
+			fprintf(fp, "   %s<type>%s</type>\n", spaces, type_name);
+		}
+		else
+		{
+			fprintf(fp, "   %s<type>%d</type>\n", spaces, pProp->GetType());
+		}
+
+		fprintf(fp, "   %s<offset>%d</offset>\n", spaces, pProp->GetOffset());
+		fprintf(fp, "   %s<bits>%d</bits>\n", spaces, pProp->m_nBits);
+
+		if ((pOtherTable = pTable->GetProp(i)->GetDataTable()) != NULL)
+		{
+			UTIL_DrawSendTable_XML(fp, pOtherTable, space_count + 3);
+		}
+
+		fprintf(fp, "  %s</property>\n", spaces);
+	}
+	fprintf(fp, " %s</sendtable>\n", spaces);
+}
+
+void UTIL_DrawServerClass_XML(FILE *fp, ServerClass *sc)
+{
+	fprintf(fp, "<serverclass name=\"%s\">\n", sc->GetName());
+	UTIL_DrawSendTable_XML(fp, sc->m_pTable, 0);
+	fprintf(fp, "</serverclass>\n");
+}
+
+void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level)
+{
+	char spaces[255];
+	for (int i=0; i<level; i++)
+		spaces[i] = ' ';
+	spaces[level] = '\0';
+
+	const char *name, *type;
+	SendProp *pProp;
+
+	fprintf(fp, "%sSub-Class Table (%d Deep): %s\n", spaces, level, pTable->GetName());
+
+	for (int i=0; i<pTable->GetNumProps(); i++)
+	{
+		pProp = pTable->GetProp(i);
+		name = pProp->GetName();
+		if (pProp->GetDataTable())
+		{
+			UTIL_DrawSendTable(fp, pProp->GetDataTable(), level + 1);
+		}
+		else
+		{
+			type = GetDTTypeName(pProp->GetType());
+
+			if (type != NULL)
+			{
+				fprintf(fp,
+					"%s-Member: %s (offset %d) (type %s) (bits %d)\n", 
+					spaces, 
+					pProp->GetName(),
+					pProp->GetOffset(),
+					type,
+					pProp->m_nBits);
+			}
+			else
+			{
+				fprintf(fp,
+					"%s-Member: %s (offset %d) (type %d) (bits %d)\n", 
+					spaces, 
+					pProp->GetName(),
+					pProp->GetOffset(),
+					pProp->GetType(),
+					pProp->m_nBits);
+			}
+		}
+	}
+}
+
+CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
+{
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		META_CONPRINT("Usage: sm_dump_netprops_xml <file>\n");
+		return;
+	}
+
+	const char *file = args.Arg(1);
+	if (!file || file[0] == '\0')
+	{
+		META_CONPRINT("Usage: sm_dump_netprops_xml <file>\n");
+		return;
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = NULL;
+	if ((fp = fopen(path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", path);
+		return;
+	}
+
+	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
+	fprintf(fp, "<!-- Dump of all network properties for \"%s\" follows -->\n\n", g_pSM->GetGameFolderName());
+
+	ServerClass *pBase = gamedll->GetAllServerClasses();
+	while (pBase != NULL)
+	{
+		UTIL_DrawServerClass_XML(fp, pBase);
+		pBase = pBase->m_pNext;
+	}
+
+	fclose(fp);
+}
+
+CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text file")
+{
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		META_CONPRINT("Usage: sm_dump_netprops <file>\n");
+		return;
+	}
+
+	const char *file = args.Arg(1);
+	if (!file || file[0] == '\0')
+	{
+		META_CONPRINT("Usage: sm_dump_netprops <file>\n");
+		return;
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = NULL;
+	if ((fp = fopen(path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", path);
+		return;
+	}
+
+	fprintf(fp, "// Dump of all network properties for \"%s\" follows\n//\n\n", g_pSM->GetGameFolderName());
+
+	ServerClass *pBase = gamedll->GetAllServerClasses();
+	while (pBase != NULL)
+	{
+		UTIL_DrawSendTable(fp, pBase->m_pTable, 1);
+		pBase = pBase->m_pNext;
+	}
+
+	fclose(fp);
+}
+
