@@ -288,7 +288,6 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 {
 	HandleError err;
 	unsigned int owner_index = 0;
-	bool retried_alloc = false;
 
 	if (owner && (IdentityHandle(owner, &owner_index) != HandleError_None))
 	{
@@ -1050,3 +1049,4 @@ void HandleSystem::Dump(FILE *fp)
 		fprintf(fp, "0x%08x\t%-20.20s\t%-20.20s\n", index, owner, type);
 	}
 }
+
