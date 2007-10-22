@@ -219,14 +219,18 @@ void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 		{
 			_IntExt_EnableYams();
 			return;
-		} else if (strcmp(cmdname, "internal") == 0) {
+		}
+		else if (strcmp(cmdname, "internal") == 0)
+		{
 			if (argnum >= 3)
 			{
 				const char *arg = cmd.Arg(2);
 				if (strcmp(arg, "1") == 0)
 				{
 					SM_ConfigsExecuted_Global();
-				} else if (strcmp(arg, "2") == 0) {
+				}
+				else if (strcmp(arg, "2") == 0)
+				{
 					if (argnum >= 4)
 					{
 						SM_ConfigsExecuted_Plugin(atoi(cmd.Arg(3)));

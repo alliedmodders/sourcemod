@@ -164,7 +164,9 @@ forward OnConfigsExecuted();
 forward OnServerCfg();
 
 /**
- * Called after all plugins have been loaded.
+ * Called after all plugins have been loaded.  This is called once for 
+ * every plugin.  If a plugin late loads, it will be called immediately 
+ * after OnPluginStart().
  */
 forward OnAllPluginsLoaded();
 

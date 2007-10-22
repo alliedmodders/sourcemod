@@ -306,6 +306,7 @@ private:
 	bool m_FakeNativesMissing;
 	bool m_LibraryMissing;
 	CVector<AutoConfig *> m_configs;
+	bool m_bGotAllLoaded;
 };
 
 class CPluginManager : 
@@ -436,6 +437,8 @@ public:
 	bool LibraryExists(const char *lib);
 
 	bool ReloadPlugin(CPlugin *pl);
+
+	void UnloadAll();
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 
@@ -501,6 +504,7 @@ private:
 	List<FakeNative *> m_Natives;
 	Trie *m_pNativeLookup;
 
+	bool m_LoadingLocked;
 };
 
 extern CPluginManager g_PluginSys;

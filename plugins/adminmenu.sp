@@ -73,7 +73,7 @@ public OnPluginStart()
 	hOnAdminMenuCreated = CreateGlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
 	hOnAdminMenuReady = CreateGlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);
 
-	RegAdminCmd("sm_admin", Command_DisplayMenu, ADMFLAG_GENERIC, "sm_admin");
+	RegAdminCmd("sm_admin", Command_DisplayMenu, ADMFLAG_GENERIC, "Displays the admin menu");
 }
 
 public OnConfigsExecuted()

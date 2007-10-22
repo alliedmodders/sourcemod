@@ -66,6 +66,7 @@ CPlugin::CPlugin(const char *file)
 	m_pProps = sm_trie_create();
 	m_FakeNativesMissing = false;
 	m_LibraryMissing = false;
+	m_bGotAllLoaded = false;
 }
 
 CPlugin::~CPlugin()
@@ -326,18 +327,6 @@ void CPlugin::Call_OnPluginStart()
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
 		SetErrorState(Plugin_Error, "Error detected in plugin startup (see error logs)");
-	} else {
-		if (g_OnMapStarted)
-		{
-			if ((pFunction = m_ctx.base->GetFunctionByName("OnMapStart")) != NULL)
-			{
-				pFunction->Execute(NULL);
-			}
-		}
-		if (SM_AreConfigsExecuted())
-		{
-			SM_ExecuteForPlugin(GetBaseContext());
-		}
 	}
 }
 
@@ -365,6 +354,13 @@ void CPlugin::Call_OnAllPluginsLoaded()
 		return;
 	}
 
+	if (m_bGotAllLoaded)
+	{
+		return;
+	}
+
+	m_bGotAllLoaded = true;
+
 	cell_t result;
 	IPluginFunction *pFunction = m_ctx.base->GetFunctionByName("OnAllPluginsLoaded");
 	if (!pFunction)
@@ -373,6 +369,19 @@ void CPlugin::Call_OnAllPluginsLoaded()
 	}
 
 	pFunction->Execute(&result);
+
+	if (g_OnMapStarted)
+	{
+		if ((pFunction = m_ctx.base->GetFunctionByName("OnMapStart")) != NULL)
+		{
+			pFunction->Execute(NULL);
+		}
+	}
+
+	if (SM_AreConfigsExecuted())
+	{
+		SM_ExecuteForPlugin(GetBaseContext());
+	}
 }
 
 bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
@@ -537,7 +546,9 @@ bool CPlugin::ToggleDebugMode(bool debug, char *error, size_t maxlength)
 			snprintf(error, maxlength, "Plugin is already in debug mode.");
 		}
 		return false;
-	} else if (!debug && !IsDebugging()) {
+	}
+	else if (!debug && !IsDebugging())
+	{
 		if (error)
 		{
 			snprintf(error, maxlength, "Plugins is already in production mode.");
@@ -579,7 +590,9 @@ bool CPlugin::ToggleDebugMode(bool debug, char *error, size_t maxlength)
 		m_ctx.base->SetContext(new_ctx);
 
 		UpdateInfo();
-	} else {
+	}
+	else
+	{
 		if (error)
 		{
 			snprintf(error, maxlength, "Failed to recompile plugin (JIT error %d).", err);
@@ -608,7 +621,9 @@ time_t CPlugin::GetFileTimeStamp()
 #endif
 	{
 		return 0;
-	} else {
+	}
+	else
+	{
 		return s.st_mtime;
 	}
 }
@@ -771,6 +786,7 @@ CPluginManager::CPluginManager()
 	m_MyIdent = NULL;
 	m_pNativeLookup = sm_trie_create();
 	m_pCoreNatives = sm_trie_create();
+	m_LoadingLocked = false;
 }
 
 CPluginManager::~CPluginManager()
@@ -886,6 +902,11 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 //well i have discovered that gabe newell is very fat, so i wrote this comment now
 LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
+	if (m_LoadingLocked)
+	{
+		return LoadRes_NeverLoad;
+	}
+
 	bool no_load = false;
 	PluginSettings *pset;
 	unsigned int setcount = m_PluginInfo.GetSettingsNum();
@@ -915,7 +936,9 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 			|| no_load)
 		{
 			UnloadPlugin(pPlugin);
-		} else {
+		}
+		else
+		{
 			if (_plugin)
 			{
 				*_plugin = pPlugin;
@@ -1028,7 +1051,14 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 	if (res == LoadRes_NeverLoad)
 	{
-		UTIL_Format(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+		if (m_LoadingLocked)
+		{
+			UTIL_Format(error, maxlength, "There is a global plugin loading lock in effect.");
+		}
+		else
+		{
+			UTIL_Format(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+		}
 		return NULL;
 	}
 
@@ -1908,11 +1938,7 @@ void CPluginManager::OnSourceModShutdown()
 {
 	g_RootMenu.RemoveRootConsoleCommand("plugins", this);
 
-	List<CPlugin *>::iterator iter;
-	while ( (iter = m_plugins.begin()) != m_plugins.end() )
-	{
-		UnloadPlugin((*iter));
-	}
+	UnloadAll();
 
 	g_HandleSys.RemoveType(g_PluginType, m_MyIdent);
 	g_ShareSys.DestroyIdentType(g_PluginIdent);
@@ -2012,7 +2038,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			{
 				g_RootMenu.ConsolePrint("[SM] No plugins loaded");
 				return;
-			} else {
+			}
+			else
+			{
 				g_RootMenu.ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
 			}
 
@@ -2026,7 +2054,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				if (pl->GetStatus() != Plugin_Running)
 				{
 					len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
-				} else {
+				}
+				else
+				{
 					len += UTIL_Format(buffer, sizeof(buffer), "  %02d", id);
 				}
 				len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
@@ -2043,7 +2073,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			iter->Release();
 			return;
-		} else if (strcmp(cmd, "load") == 0) {
+		}
+		else if (strcmp(cmd, "load") == 0)
+		{
 			if (argcount < 4)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins load <file>");
@@ -2069,12 +2101,16 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			if (pl)
 			{
 				g_RootMenu.ConsolePrint("[SM] Loaded plugin %s successfully.", pluginfile);
-			} else {
+			}
+			else
+			{
 				g_RootMenu.ConsolePrint("[SM] Plugin %s failed to load: %s.", pluginfile, error);
 			}
 
 			return;
-		} else if (strcmp(cmd, "unload") == 0) {
+		}
+		else if (strcmp(cmd, "unload") == 0)
+		{
 			if (argcount < 4)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins unload <#|file>");
@@ -2094,7 +2130,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
 					return;
 				}
-			} else {
+			}
+			else
+			{
 				char pluginfile[256];
 				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
 				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
@@ -2113,12 +2151,48 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			if (UnloadPlugin(pl))
 			{
 				g_RootMenu.ConsolePrint("[SM] Plugin %s unloaded successfully.", name);
-			} else {
+			}
+			else
+			{
 				g_RootMenu.ConsolePrint("[SM] Failed to unload plugin %s.", name);
 			}
 
 			return;
-		} else if (strcmp(cmd, "info") == 0) {
+		}
+		else if (strcmp(cmd, "unload_all") == 0)
+		{
+			g_PluginSys.UnloadAll();
+			g_RootMenu.ConsolePrint("[SM] All plugins have been unloaded.");
+			return;
+		}
+		else if (strcmp(cmd, "load_lock") == 0)
+		{
+			if (m_LoadingLocked)
+			{
+				g_RootMenu.ConsolePrint("[SM] There is already a loading lock in effect.");
+			}
+			else
+			{
+				m_LoadingLocked = true;
+				g_RootMenu.ConsolePrint("[SM] Loading is now locked; no plugins will be loaded or re-loaded.");
+			}
+			return;
+		}
+		else if (strcmp(cmd, "load_unlock") == 0)
+		{
+			if (m_LoadingLocked)
+			{
+				m_LoadingLocked = false;
+				g_RootMenu.ConsolePrint("[SM] The loading lock is no longer in effect.");
+			}
+			else
+			{
+				g_RootMenu.ConsolePrint("[SM] There was no loading lock in effect.");
+			}
+			return;
+		}
+		else if (strcmp(cmd, "info") == 0)
+		{
 			if (argcount < 4)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins info <#>");
@@ -2162,7 +2236,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				if (pl->GetStatus() == Plugin_Error)
 				{
 					g_RootMenu.ConsolePrint("  Error: %s", pl->m_errormsg);
-				} else {
+				}
+				else
+				{
 					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "Yes" : "No");
 					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "Yes" : "No");
 
@@ -2183,7 +2259,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 					g_RootMenu.ConsolePrint("  Reloads: %s", typestr);
 				}
-			} else {
+			}
+			else
+			{
 				g_RootMenu.ConsolePrint("  Load error: %s", pl->m_errormsg);
 				g_RootMenu.ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
 										info->name ? info->name : "<none>",
@@ -2195,7 +2273,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			}
 
 			return;
-		} else if (strcmp(cmd, "debug") == 0) {
+		}
+		else if (strcmp(cmd, "debug") == 0)
+		{
 			if (argcount < 5)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins debug <#> [on|off]");
@@ -2221,7 +2301,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			if (!res)
 			{
 				debug = true;
-			} else {
+			}
+			else
+			{
 				debug = false;
 			}
 
@@ -2230,7 +2312,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			{
 				g_RootMenu.ConsolePrint("[SM] This plugin is already in debug mode.");
 				return;
-			} else if (!debug && !pl->IsDebugging()) {
+			}
+			else if (!debug && !pl->IsDebugging())
+			{
 				g_RootMenu.ConsolePrint("[SM] Debug mode is already disabled in this plugin.");
 				return;
 			}
@@ -2240,12 +2324,22 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			{
 				g_RootMenu.ConsolePrint("[SM] Successfully toggled debug mode on plugin %s.", pl->GetFilename());
 				return;
-			} else {
+			}
+			else
+			{
 				g_RootMenu.ConsolePrint("[SM] Could not toggle debug mode on plugin %s.", pl->GetFilename());
 				g_RootMenu.ConsolePrint("[SM] Plugin returned error: %s", error);
 				return;
 			}
-		} else if (strcmp(cmd, "reload") == 0) {
+		}
+		else if (strcmp(cmd, "refresh") == 0)
+		{
+			g_SourceMod.DoGlobalPluginLoads();
+			g_RootMenu.ConsolePrint("[SM] The plugin list has been refreshed and reloaded.");
+			return;
+		}
+		else if (strcmp(cmd, "reload") == 0)
+		{
 			if (argcount < 4)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins reload <#|file>");
@@ -2265,7 +2359,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
 					return;
 				}
-			} else {
+			}
+			else
+			{
 				char pluginfile[256];
 				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
 				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
@@ -2284,7 +2380,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			if (ReloadPlugin(pl))
 			{
 				g_RootMenu.ConsolePrint("[SM] Plugin %s reloaded successfully.", name);
-			} else {
+			}
+			else
+			{
 				g_RootMenu.ConsolePrint("[SM] Failed to reload plugin %s.", name);
 			}
 
@@ -2294,12 +2392,16 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 	/* Draw the main menu */
 	g_RootMenu.ConsolePrint("SourceMod Plugins Menu:");
+	g_RootMenu.DrawGenericOption("debug", "Toggle debug mode on a plugin");
+	g_RootMenu.DrawGenericOption("info", "Information about a plugin");
 	g_RootMenu.DrawGenericOption("list", "Show loaded plugins");
 	g_RootMenu.DrawGenericOption("load", "Load a plugin");
-	g_RootMenu.DrawGenericOption("unload", "Unload a plugin");
-	g_RootMenu.DrawGenericOption("info", "Information about a plugin");
-	g_RootMenu.DrawGenericOption("debug", "Toggle debug mode on a plugin");
+	g_RootMenu.DrawGenericOption("load_lock", "Prevents any more plugins from being loaded");
+	g_RootMenu.DrawGenericOption("load_unlock", "Re-enables plugin loading");
+	g_RootMenu.DrawGenericOption("refresh", "Reloads/refreshes all plugins in the plugins folder");
 	g_RootMenu.DrawGenericOption("reload", "Reloads a plugin");
+	g_RootMenu.DrawGenericOption("unload", "Unload a plugin");
+	g_RootMenu.DrawGenericOption("unload_all", "Unloads all plugins");
 }
 
 bool CPluginManager::ReloadPlugin(CPlugin *pl)
@@ -2342,7 +2444,9 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 	}
 
 	int i;
-	for (i=1, iter=m_plugins.begin(); iter!=m_plugins.end() && i<id; iter++, i++) {}
+	for (i=1, iter=m_plugins.begin(); iter!=m_plugins.end() && i<id; iter++, i++)
+	{
+	}
 	m_plugins.insert(iter, (CPlugin *)newpl);
 
 	return true;
@@ -2350,6 +2454,12 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 
 void CPluginManager::ReloadOrUnloadPlugins()
 {
+	/* If we're in a load lock, just skip this whole bit. */
+	if (m_LoadingLocked)
+	{
+		return;
+	}
+
 	List<CPlugin *>::iterator iter;
 	List<CPlugin *> tmp_list = m_plugins;
 	CPlugin *pl;
@@ -2361,7 +2471,9 @@ void CPluginManager::ReloadOrUnloadPlugins()
 		if (pl->GetType() ==  PluginType_MapOnly)
 		{
 			UnloadPlugin((IPlugin *)pl);
-		} else if (pl->GetType() == PluginType_MapUpdated) {
+		}
+		else if (pl->GetType() == PluginType_MapUpdated)
+		{
 			t = pl->GetFileTimeStamp();
 			if (!t || t > pl->GetTimeStamp())
 			{
@@ -2561,5 +2673,14 @@ void CPluginManager::AllPluginsLoaded()
 	{
 		pl = (*iter);
 		pl->Call_OnAllPluginsLoaded();
+	}
+}
+
+void CPluginManager::UnloadAll()
+{
+	List<CPlugin *>::iterator iter;
+	while ( (iter = m_plugins.begin()) != m_plugins.end() )
+	{
+		UnloadPlugin((*iter));
 	}
 }

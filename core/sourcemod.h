@@ -111,10 +111,8 @@ public: // ISourceMod
 	IVirtualMachine *GetScriptingVM();
 	void AllPluginsLoaded();
 	time_t GetAdjustedTime();
-private:
-	/**
-	 * @brief Loading plugins
-	 */
+	void GlobalPause();
+	void GlobalUnpause();
 	void DoGlobalPluginLoads();
 private:
 	CStack<CDataPack *> m_freepacks;

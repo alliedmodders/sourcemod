@@ -366,7 +366,9 @@ void SM_ExecuteForPlugin(IPluginContext *ctx)
 	if (!num)
 	{
 		SM_DoSingleExecFwds(ctx);
-	} else {
+	}
+	else
+	{
 		bool can_create = true;
 		for (unsigned int i=0; i<num; i++)
 		{
