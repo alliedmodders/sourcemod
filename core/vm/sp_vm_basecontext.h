@@ -96,6 +96,7 @@ namespace SourcePawn
 		int LookupLine(ucell_t addr, uint32_t *line);
 	public:
 		void SetContext(sp_context_t *_ctx);
+		bool IsInExec();
 	private:
 		void SetErrorMessage(const char *msg, va_list ap);
 		void FlushFunctionCache();

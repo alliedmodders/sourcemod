@@ -399,6 +399,8 @@ public:
 	 */
 	CPlugin *GetPluginByOrder(int num);
 
+	int GetOrderOfPlugin(IPlugin *pl);
+
 	/** 
 	 * Internal version of FindPluginByContext()
 	 */

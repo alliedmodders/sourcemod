@@ -1088,3 +1088,8 @@ cell_t *BaseContext::GetNullRef(SP_NULL_TYPE type)
 	return NULL;
 }
 #endif
+
+bool BaseContext::IsInExec()
+{
+	return m_InExec;
+}

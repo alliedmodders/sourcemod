@@ -487,26 +487,18 @@ void Logger::LogFatal(const char *msg, ...)
 	 */
 
 	va_list ap;
-	char buffer[3072];
-
-	va_start(ap, msg);
-	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
-	va_end(ap);
-
-	char date[32];
-	time_t t;
-	GetAdjustedTime(&t);
-	tm *curtime = localtime(&t);
-	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-
-	g_SMAPI->ConPrintf("L %s: %s\n", date, buffer);
-
 	char path[PLATFORM_MAX_PATH];
+
 	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
+
 	FILE *fp = fopen(path, "at");
 	if (fp)
 	{
-		fprintf(fp, "%s\n", buffer);
+		m_Active = true;
+		va_start(ap, msg);
+		LogToOpenFileEx(fp, msg, ap);
+		va_end(ap);
+		m_Active = false;
 		fclose(fp);
 	}
 }

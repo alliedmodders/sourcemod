@@ -201,6 +201,9 @@ protected:
 	void UnlinkHandleFromOwner(QHandle *pHandle, unsigned int index);
 	HandleError CloneHandle(QHandle *pHandle, unsigned int index, Handle_t *newhandle, IdentityToken_t *newOwner);
 	Handle_t CreateHandleInt(HandleType_t type, void *object, const HandleSecurity *pSec, HandleError *err, const HandleAccess *pAccess, bool identity);
+
+	bool TryAndFreeSomeHandles();
+	HandleError TryAllocHandle(unsigned int *handle);
 private:
 	QHandle *m_Handles;
 	QHandleType *m_Types;

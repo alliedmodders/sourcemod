@@ -599,6 +599,13 @@ namespace SourcePawn
 		 * @param native		Native function to bind.
 		 */
 		virtual int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native) =0;
+
+		/**
+		 * @brief Returns if there is currently an execution in progress.
+		 *
+		 * @return				True if in exec, false otherwise.
+		 */
+		virtual bool IsInExec() =0;
 	};
 
 

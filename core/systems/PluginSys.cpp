@@ -1558,6 +1558,15 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		return false;
 	}
 
+	IPluginContext *pContext = plugin->GetBaseContext();
+	if (pContext->IsInExec())
+	{
+		char buffer[255];
+		UTIL_Format(buffer, sizeof(buffer), "sm plugins unload %s\n", plugin->GetFilename());
+		engine->ServerCommand(buffer);
+		return false;
+	}
+
 	/* Remove us from the lookup table and linked list */
 	m_plugins.remove(pPlugin);
 	sm_trie_delete(m_LoadLookup, pPlugin->m_filename);
@@ -2682,3 +2691,20 @@ void CPluginManager::UnloadAll()
 		UnloadPlugin((*iter));
 	}
 }
+
+int CPluginManager::GetOrderOfPlugin(IPlugin *pl)
+{
+	int id = 1;
+	List<CPlugin *>::iterator iter;
+
+	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++, id++)
+	{
+		if ((*iter) == pl)
+		{
+			return id;
+		}
+	}
+
+	return -1;
+}
+

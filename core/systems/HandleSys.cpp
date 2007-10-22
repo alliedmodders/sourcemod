@@ -33,6 +33,7 @@
 #include "ShareSys.h"
 #include "PluginSys.h"
 #include "ExtensionSys.h"
+#include "Logger.h"
 #include <assert.h>
 #include <string.h>
 
@@ -260,6 +261,24 @@ bool HandleSystem::FindHandleType(const char *name, HandleType_t *type)
 	return true;
 }
 
+HandleError HandleSystem::TryAllocHandle(unsigned int *handle)
+{
+	if (m_FreeHandles == 0)
+	{
+		if (m_HandleTail >= HANDLESYS_MAX_HANDLES)
+		{
+			return HandleError_Limit;;
+		}
+		*handle = ++m_HandleTail;
+	}
+	else
+	{
+		*handle = m_Handles[m_FreeHandles--].freeID;
+	}
+
+	return HandleError_None;
+}
+
 HandleError HandleSystem::MakePrimHandle(HandleType_t type, 
 						   QHandle **in_pHandle, 
 						   unsigned int *in_index, 
@@ -267,7 +286,9 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 						   IdentityToken_t *owner,
 						   bool identity)
 {
+	HandleError err;
 	unsigned int owner_index = 0;
+	bool retried_alloc = false;
 
 	if (owner && (IdentityHandle(owner, &owner_index) != HandleError_None))
 	{
@@ -275,15 +296,13 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 	}
 
 	unsigned int handle;
-	if (m_FreeHandles == 0)
+	if ((err = TryAllocHandle(&handle)) != HandleError_None)
 	{
-		if (m_HandleTail >= HANDLESYS_MAX_HANDLES)
+		if (!TryAndFreeSomeHandles()
+			|| (err = TryAllocHandle(&handle)) != HandleError_None)
 		{
-			return HandleError_Limit;;
+			return err;
 		}
-		handle = ++m_HandleTail;
-	} else {
-		handle = m_Handles[m_FreeHandles--].freeID;
 	}
 
 	QHandle *pHandle = &m_Handles[handle];
@@ -329,7 +348,9 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 			pIdentity->ch_prev = handle;
 			pIdentity->ch_next = handle;
 			pHandle->ch_prev = 0;
-		} else {
+		}
+		else
+		{
 			/* Link previous node to us (forward) */
 			m_Handles[pIdentity->ch_next].ch_next = handle;
 			/* Link us to previous node (backwards) */
@@ -338,7 +359,9 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 			pIdentity->ch_next = handle;
 		}
 		pIdentity->refcount++;
-	} else {
+	}
+	else
+	{
 		pHandle->ch_prev = 0;
 	}
 
@@ -918,11 +941,65 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 	return true;
 }
 
+bool HandleSystem::TryAndFreeSomeHandles()
+{
+	IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator();
+	IPlugin *highest_owner = NULL;
+	unsigned int highest_handle_count = 0;
+
+	/* Search all plugins */
+	while (pl_iter->MorePlugins())
+	{
+		IPlugin *plugin = pl_iter->GetPlugin();
+		IdentityToken_t *identity = plugin->GetIdentity();
+		unsigned int handle_count = 0;
+
+		if (identity == NULL)
+		{
+			continue;
+		}
+
+		/* Search all handles */
+		for (unsigned int i = 1; i <= m_HandleTail; i++)
+		{
+			if (m_Handles[i].set != HandleSet_Used)
+			{
+				continue;
+			}
+			if (m_Handles[i].owner == identity)
+			{
+				handle_count++;
+			}
+		}
+
+		if (handle_count > highest_handle_count)
+		{
+			highest_owner = plugin;
+			highest_handle_count = handle_count;
+		}
+
+		pl_iter->NextPlugin();
+	}
+
+	if (highest_owner == NULL || highest_handle_count == 0)
+	{
+		return false;
+	}
+
+	g_Logger.LogFatal("[SM] MEMORY LEAK DETECTED IN PLUGIN (file \"%s\")", highest_owner->GetFilename());
+	g_Logger.LogFatal("[SM] Reloading plugin to free %d handles.", highest_handle_count);
+	g_Logger.LogFatal("[SM] Contact the author(s) of this plugin to correct this error.", highest_handle_count);
+
+	highest_owner->GetContext()->n_err = SP_ERROR_MEMACCESS;
+
+	return g_PluginSys.UnloadPlugin(highest_owner);
+}
+
 void HandleSystem::Dump(FILE *fp)
 {
 	fprintf(fp, "%-10.10s\t%-20.20s\t%-20.20s\n", "Handle", "Owner", "Type");
 	fprintf(fp, "---------------------------------------------\n");
-	for (unsigned int i=1; i<=m_HandleTail; i++)
+	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
 		{
@@ -938,14 +1015,20 @@ void HandleSystem::Dump(FILE *fp)
 			if (pOwner == g_pCoreIdent)
 			{
 				owner = "CORE";
-			} else if (pOwner == g_PluginSys.GetIdentity()) {
+			}
+			else if (pOwner == g_PluginSys.GetIdentity())
+			{
 				owner = "PLUGINSYS";
-			} else {
+			}
+			else
+			{
 				CExtension *ext = g_Extensions.GetExtensionFromIdent(pOwner);
 				if (ext)
 				{
 					owner = ext->GetFilename();
-				} else {
+				}
+				else
+				{
 					CPlugin *pPlugin = g_PluginSys.GetPluginFromIdentity(pOwner);
 					if (pPlugin)
 					{
@@ -953,7 +1036,9 @@ void HandleSystem::Dump(FILE *fp)
 					}
 				}
 			}
-		} else {
+		}
+		else
+		{
 			owner = "NONE";
 		}
 		const char *type = "ANON";
