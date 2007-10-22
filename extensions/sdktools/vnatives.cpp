@@ -113,24 +113,6 @@ bool CreateBaseCall(const char *name,
 	return false;
 }
 
-class CTraceFilterSimple : public CTraceFilterEntitiesOnly
-{
-public:
-	CTraceFilterSimple(const IHandleEntity *passentity): m_pPassEnt(passentity)
-	{
-	}
-	virtual bool ShouldHitEntity(IHandleEntity *pServerEntity, int contentsMask)
-	{
-		if (pServerEntity == m_pPassEnt)
-		{
-			return false;
-		}
-		return true;
-	}
-private:
-	const IHandleEntity *m_pPassEnt;
-};
-
 static cell_t RemovePlayerItem(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -803,7 +785,7 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 	return (ret) ? 1 : 0;
 }
 
-static cell_t GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
 	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
@@ -817,62 +799,7 @@ static cell_t GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client %d is not in game", client);
 	}
 
-	edict_t *pEdict = pPlayer->GetEdict();
-	CBaseEntity *pEntity = pEdict->GetUnknown() ? pEdict->GetUnknown()->GetBaseEntity() : NULL;
-
-	if (pEntity == NULL)
-	{
-		return -1;
-	}
-
-	Vector eye_position;
-	QAngle eye_angles;
-	
-	/* Get the private information we need */
-	serverClients->ClientEarPosition(pEdict, &eye_position);
-	if (!GetEyeAngles(pEntity, &eye_angles))
-	{
-		return -2;
-	}
-
-	Vector aim_dir;
-	AngleVectors(eye_angles, &aim_dir);
-	VectorNormalize(aim_dir);
-
-	Vector vec_end = eye_position + aim_dir * 8000;
-
-	Ray_t ray;
-	ray.Init(eye_position, vec_end);
-
-	trace_t tr;
-	CTraceFilterSimple simple(pEdict->GetIServerEntity());
-
-	enginetrace->TraceRay(ray, MASK_SOLID|CONTENTS_DEBRIS|CONTENTS_HITBOX, &simple, &tr);
-
-	if (tr.fraction == 1.0f || tr.m_pEnt == NULL)
-	{
-		return -1;
-	}
-
-	edict_t *pTarget = gameents->BaseEntityToEdict(tr.m_pEnt);
-	if (pTarget == NULL)
-	{
-		return -1;
-	}
-
-	int ent_index = engine->IndexOfEdict(pTarget);
-
-	IGamePlayer *pTargetPlayer = playerhelpers->GetGamePlayer(ent_index);
-	if (pTargetPlayer != NULL && !pTargetPlayer->IsInGame())
-	{
-		return -1;
-	}
-	else if (params[2] && pTargetPlayer == NULL)
-	{
-		return -1;
-	}
-
-	return ent_index;
+	return GetClientAimTarget(pPlayer->GetEdict(), params[2] ? true : false);
 }
 
 sp_nativeinfo_t g_Natives[] = 
@@ -898,6 +825,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"DispatchKeyValue",		DispatchKeyValue},
 	{"DispatchKeyValueFloat",	DispatchKeyValueFloat},
 	{"DispatchKeyValueVector",	DispatchKeyValueVector},
-	{"GetClientAimTarget",		GetClientAimTarget},
+	{"GetClientAimTarget",		sm_GetClientAimTarget},
 	{NULL,						NULL},
 };

@@ -56,7 +56,8 @@ class SDKTools :
 	public SDKExtension, 
 	public IHandleTypeDispatch,
 	public IConCommandBaseAccessor,
-	public IClientListener
+	public IClientListener,
+	public ICommandTargetProcessor
 {
 public: //public IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
@@ -80,6 +81,8 @@ public: //IClientListner
 	void OnClientDisconnecting(int client);
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
+public: //ICommandTargetProcessor
+	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);

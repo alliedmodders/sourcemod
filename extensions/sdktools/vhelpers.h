@@ -66,6 +66,8 @@ bool IsGetVelocitySupported();
 bool GetEyeAngles(CBaseEntity *pEntity, QAngle *pAngles);
 bool IsEyeAnglesSupported();
 
+int GetClientAimTarget(edict_t *pEdict, bool only_players);
+
 void ShutdownHelpers();
 
 #endif //_INCLUDE_SDKTOOLS_VHELPERS_H_

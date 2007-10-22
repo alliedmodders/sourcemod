@@ -108,6 +108,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 
+	playerhelpers->RegisterCommandTargetProcessor(this);
+
 	MathLib_Init(2.2f, 2.2f, 0.0f, 2);
 
 	return true;
@@ -119,7 +121,9 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 	{
 		ValveCall *v = (ValveCall *)object;
 		delete v;
-	} else if (type == g_TraceHandle) {
+	}
+	else if (type == g_TraceHandle)
+	{
 		trace_t *tr = (trace_t *)object;
 		delete tr;
 	}
@@ -148,6 +152,7 @@ void SDKTools::SDK_OnUnload()
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
+	playerhelpers->UnregisterCommandTargetProcessor(this);
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
@@ -249,4 +254,31 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
+{
+	IGamePlayer *pAdmin = info->admin ? playerhelpers->GetGamePlayer(info->admin) : NULL;
+
+	/* The server can't aim, of course. */
+	if (pAdmin == NULL)
+	{
+		return false;
+	}
+
+	int player_index;
+	if ((player_index = GetClientAimTarget(pAdmin->GetEdict(), true)) < 1)
+	{
+		return false;
+	}
+
+	IGamePlayer *pTarget = playerhelpers->GetGamePlayer(info->admin);
+
+	info->targets[0] = player_index;
+	info->num_targets = 1;
+	info->reason = COMMAND_TARGET_VALID;
+	info->target_name_style = COMMAND_TARGETNAME_RAW;
+	snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
+
+	return true;
 }

@@ -36,6 +36,24 @@ CallHelper s_Teleport;
 CallHelper s_GetVelocity;
 CallHelper s_EyeAngles;
 
+class CTraceFilterSimple : public CTraceFilterEntitiesOnly
+{
+public:
+	CTraceFilterSimple(const IHandleEntity *passentity): m_pPassEnt(passentity)
+	{
+	}
+	virtual bool ShouldHitEntity(IHandleEntity *pServerEntity, int contentsMask)
+	{
+		if (pServerEntity == m_pPassEnt)
+		{
+			return false;
+		}
+		return true;
+	}
+private:
+	const IHandleEntity *m_pPassEnt;
+};
+
 bool SetupTeleport()
 {
 	if (s_Teleport.setup)
@@ -183,6 +201,65 @@ bool GetEyeAngles(CBaseEntity *pEntity, QAngle *pAngles)
 	*pAngles = *pRetAngle;
 
 	return true;
+}
+
+int GetClientAimTarget(edict_t *pEdict, bool only_players)
+{
+	CBaseEntity *pEntity = pEdict->GetUnknown() ? pEdict->GetUnknown()->GetBaseEntity() : NULL;
+
+	if (pEntity == NULL)
+	{
+		return -1;
+	}
+
+	Vector eye_position;
+	QAngle eye_angles;
+
+	/* Get the private information we need */
+	serverClients->ClientEarPosition(pEdict, &eye_position);
+	if (!GetEyeAngles(pEntity, &eye_angles))
+	{
+		return -2;
+	}
+
+	Vector aim_dir;
+	AngleVectors(eye_angles, &aim_dir);
+	VectorNormalize(aim_dir);
+
+	Vector vec_end = eye_position + aim_dir * 8000;
+
+	Ray_t ray;
+	ray.Init(eye_position, vec_end);
+
+	trace_t tr;
+	CTraceFilterSimple simple(pEdict->GetIServerEntity());
+
+	enginetrace->TraceRay(ray, MASK_SOLID|CONTENTS_DEBRIS|CONTENTS_HITBOX, &simple, &tr);
+
+	if (tr.fraction == 1.0f || tr.m_pEnt == NULL)
+	{
+		return -1;
+	}
+
+	edict_t *pTarget = gameents->BaseEntityToEdict(tr.m_pEnt);
+	if (pTarget == NULL)
+	{
+		return -1;
+	}
+
+	int ent_index = engine->IndexOfEdict(pTarget);
+
+	IGamePlayer *pTargetPlayer = playerhelpers->GetGamePlayer(ent_index);
+	if (pTargetPlayer != NULL && !pTargetPlayer->IsInGame())
+	{
+		return -1;
+	}
+	else if (only_players && pTargetPlayer == NULL)
+	{
+		return -1;
+	}
+
+	return ent_index;
 }
 
 bool IsEyeAnglesSupported()

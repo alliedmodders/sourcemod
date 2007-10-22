@@ -1,59 +1,5 @@
 "Phrases"
 {
-	"Already Muted"
-	{
-		"en"			"Target player is already muted."
-	}
-	
-	"Player Muted"
-	{
-		"#format"		"{1:s}"
-		"en"			"{1} has been muted."
-	}
-	
-	"Player Not Muted"
-	{
-		"en"			"Target player is not muted."
-	}
-	
-	"Player Unmuted"
-	{
-		"#format"		"{1:s}"
-		"en"			"{1} has been unmuted."
-	}
-	
-	"Already Gagged"
-	{
-		"en"			"Target player is already gagged."
-	}
-	
-	"Player Gagged"
-	{
-		"#format"		"{1:s}"
-		"en"			"{1} has been gagged."
-	}
-
-	"Player Not Gagged"
-	{
-		"en"			"Target player is not gagged."
-	}
-	
-	"Player Ungagged"
-	{
-		"#format"		"{1:s}"
-		"en"			"{1} has been ungagged."
-	}	
-	
-	"Already Silenced"
-	{
-		"en"			"Target player is already silenced."
-	}
-	
-	"Player Not Silenced"
-	{
-		"en"			"Target player is not silenced."
-	}
-	
 	"Gag/Mute player"
 	{
 		"en"			"Gag/Mute player"
@@ -62,5 +8,41 @@
 	"Choose Type"
 	{
 		"en"			"Choose Type"
+	}
+	
+	"Gagged target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Gagged {1}."
+	}
+	
+	"Ungagged target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Ungagged {1}."
+	}
+	
+	"Muted target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Muted {1}."
+	}
+	
+	"Unmuted target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Unmuted {1}."
+	}
+	
+	"Silenced target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Silenced {1}."
+	}
+	
+	"Unsilenced target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Unsilenced {1}."
 	}
 }
