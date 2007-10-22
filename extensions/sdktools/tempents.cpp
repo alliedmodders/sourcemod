@@ -62,14 +62,27 @@ CON_COMMAND(sm_dump_teprops, "Dumps tempentity props to a file")
 		META_CONPRINT("Usage: sm_dump_teprops <file>\n");
 		return;
 	}
+
 	const char *arg = args.Arg(1);
-	FILE *fp = NULL;
-	if (!arg || arg[0] == '\0' || ((fp = fopen(arg, "wt")) == NULL))
+
+	if (!arg || arg[0] == '\0')
 	{
-		META_CONPRINTF("Could not open file \"%s\"\n", arg);
+		META_CONPRINTF("Usage: sm_dump_teprops <file>\n");
 		return;
 	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", arg);
+
+	FILE *fp = NULL;
+	if ((fp = fopen(path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", path);
+		return;
+	}
+
 	g_TEManager.DumpProps(fp);
+
 	fclose(fp);
 }
 
