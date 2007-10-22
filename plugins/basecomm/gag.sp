@@ -138,46 +138,55 @@ public MenuHandler_GagTypes(Handle:menu, MenuAction:action, param1, param2)
 		
 		GetMenuItem(menu, param2, info, sizeof(info));
 		type = CommType:StringToInt(info);
+		
+		decl String:name[MAX_NAME_LENGTH];
+		GetClientName(g_GagTarget[param1], name, sizeof(name));
 
 		switch (type)
 		{
-			case CommType_Mute:	PerformMute(param1, g_GagTarget[param1]);
-			case CommType_UnMute:	PerformUnMute(param1, g_GagTarget[param1]);
-			case CommType_Gag:	PerformGag(param1, g_GagTarget[param1]);
-			case CommType_UnGag:	PerformUnGag(param1, g_GagTarget[param1]);
-			case CommType_Silence:	PerformSilence(param1, g_GagTarget[param1]);
-			case CommType_UnSilence:	PerformUnSilence(param1, g_GagTarget[param1]);
+			case CommType_Mute:
+			{
+				PerformMute(param1, g_GagTarget[param1]);
+				ShowActivity2(param1, "[SM] ", "%t", "Muted target", "_s", name);
+			}
+			case CommType_UnMute:
+			{
+				PerformUnMute(param1, g_GagTarget[param1]);
+				ShowActivity2(param1, "[SM] ", "%t", "Unmuted target", "_s", name);
+			}
+			case CommType_Gag:
+			{
+				PerformGag(param1, g_GagTarget[param1]);
+				ShowActivity2(param1, "[SM] ", "%t", "Gagged target", "_s", name);
+			}
+			case CommType_UnGag:
+			{
+				PerformUnGag(param1, g_GagTarget[param1]);
+				ShowActivity2(param1, "[SM] ", "%t", "Ungagged target", "_s", name);
+			}
+			case CommType_Silence:
+			{
+				PerformSilence(param1, g_GagTarget[param1]);
+				ShowActivity2(param1, "[SM] ", "%t", "Silenced target", "_s", name);
+			}
+			case CommType_UnSilence:
+			{
+				PerformUnSilence(param1, g_GagTarget[param1]);
+				ShowActivity2(param1, "[SM] ", "%t", "Unsilenced target", "_s", name);
+			}
 		}
 	}
 }
 
 PerformMute(client, target)
 {
-	if (g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Already Muted");
-		return;		
-	}
-		
 	g_Muted[target] = true;
-	SetClientListeningFlags(target, VOICE_MUTED);
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Muted", name);
-	ReplyToCommand(client, "%t", "Player Muted", name);
+	SetClientListeningFlags(target, VOICE_MUTED);	
 	LogAction(client, target, "\"%L\" muted \"%L\"", client, target);
 }
 
 PerformUnMute(client, target)
 {
-	if (!g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Player Not Muted");
-		return;		
-	}
-		
 	g_Muted[target] = false;
 	if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
 	{
@@ -192,99 +201,42 @@ PerformUnMute(client, target)
 		SetClientListeningFlags(target, VOICE_NORMAL);
 	}
 	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Unmuted", name);
-	ReplyToCommand(client, "%t", "Player Unmuted", name);
 	LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);
 }
 
 PerformGag(client, target)
 {
-	if (g_Gagged[target])
-	{
-		ReplyToCommand(client, "%t", "Already Gagged");
-		return;		
-	}
-		
 	g_Gagged[target] = true;
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Gagged", name);
-	ReplyToCommand(client, "%t", "Player Gagged", name);
 	LogAction(client, target, "\"%L\" gagged \"%L\"", client, target);
 }
 
 PerformUnGag(client, target)
 {
-	if (!g_Gagged[target])
-	{
-		ReplyToCommand(client, "%t", "Player Not Gagged");
-		return;		
-	}
-		
 	g_Gagged[target] = false;
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-
-	ShowActivity(client, "%t", "Player Ungagged", name);
-	ReplyToCommand(client, "%t", "Player Ungagged", name);
 	LogAction(client, target, "\"%L\" ungagged \"%L\"", client, target);
 }
 
 PerformSilence(client, target)
 {
-	if (g_Gagged[target] && g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Already Silenced");
-		return;		
-	}
-
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-	
 	if (!g_Gagged[target])
 	{
 		g_Gagged[target] = true;
-
-		ShowActivity(client, "%t", "Player Gagged", name);
-		ReplyToCommand(client, "%t", "Player Gagged", name);
-		LogAction(client, target, "\"%L\" gagged \"%L\"", client, target);
 	}
 	
 	if (!g_Muted[target])
 	{
 		g_Muted[target] = true;
 		SetClientListeningFlags(target, VOICE_MUTED);
-	
-		ShowActivity(client, "%t", "Player Muted", name);
-		ReplyToCommand(client, "%t", "Player Muted", name);
-		LogAction(client, target, "\"%L\" muted \"%L\"", client, target);
 	}
+	
+	LogAction(client, target, "\"%L\" silenced \"%L\"", client, target);
 }
 
 PerformUnSilence(client, target)
 {
-	if (!g_Gagged[target] && !g_Muted[target])
-	{
-		ReplyToCommand(client, "%t", "Player Not Silenced");
-		return;		
-	}
-	
-	decl String:name[64];
-	GetClientName(target, name, sizeof(name));
-	
 	if (g_Gagged[target])
 	{
 		g_Gagged[target] = false;
-		
-		ShowActivity(client, "%t", "Player Ungagged", name);
-		ReplyToCommand(client, "%t", "Player Ungagged", name);	
-		LogAction(client, target, "\"%L\" ungagged \"%L\"", client, target);
 	}
 	
 	if (g_Muted[target])
@@ -302,12 +254,10 @@ PerformUnSilence(client, target)
 		else
 		{
 			SetClientListeningFlags(target, VOICE_NORMAL);
-		}
-		
-		ShowActivity(client, "%t", "Player Unmuted", name);
-		ReplyToCommand(client, "%t", "Player Unmuted", name);
-		LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);		
+		}	
 	}
+	
+	LogAction(client, target, "\"%L\" unsilenced \"%L\"", client, target);
 }
 
 public Action:Command_Mute(client, args)
@@ -321,13 +271,38 @@ public Action:Command_Mute(client, args)
 	decl String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformMute(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		new target = target_list[i];
+		
+		PerformMute(client, target);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Muted target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Muted target", "_s", target_name);
+	}
 	
 	return Plugin_Handled;	
 }
@@ -343,13 +318,38 @@ public Action:Command_Gag(client, args)
 	decl String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformGag(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		new target = target_list[i];
+		
+		PerformGag(client, target);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Gagged target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Gagged target", "_s", target_name);
+	}
 	
 	return Plugin_Handled;	
 }
@@ -365,13 +365,38 @@ public Action:Command_Silence(client, args)
 	decl String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformSilence(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		new target = target_list[i];
+		
+		PerformSilence(client, target);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Silenced target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Silenced target", "_s", target_name);
+	}
 	
 	return Plugin_Handled;	
 }
@@ -387,13 +412,43 @@ public Action:Command_Unmute(client, args)
 	decl String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformUnMute(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		new target = target_list[i];
+		
+		if (g_Muted[target])
+		{
+			continue;
+		}
+		
+		PerformUnMute(client, target);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Unmuted target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Unmuted target", "_s", target_name);
+	}
 	
 	return Plugin_Handled;	
 }
@@ -409,13 +464,38 @@ public Action:Command_Ungag(client, args)
 	decl String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformUnGag(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		new target = target_list[i];
+		
+		PerformUnGag(client, target);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Ungagged target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Ungagged target", "_s", target_name);
+	}
 	
 	return Plugin_Handled;	
 }
@@ -431,13 +511,38 @@ public Action:Command_Unsilence(client, args)
 	decl String:arg[64];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new target = FindTarget(client, arg);
-	if (target == -1)
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
+	
+	if ((target_count = ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			0,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
 		return Plugin_Handled;
 	}
 
-	PerformUnSilence(client, target);
+	for (new i = 0; i < target_count; i++)
+	{
+		new target = target_list[i];
+		
+		PerformUnSilence(client, target);
+	}
+	
+	if (tn_is_ml)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Unsilenced target", target_name);
+	}
+	else
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Unsilenced target", "_s", target_name);
+	}
 	
 	return Plugin_Handled;	
 }

@@ -183,21 +183,13 @@ public Action:Command_Who(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new clients[2];
-	new numClients = SearchForClients(arg, clients, 2);
-
-	if (numClients == 0)
+	new target = FindTarget(client, arg);
+	if (target == -1)
 	{
-		ReplyToCommand(client, "[SM] %t", "No matching client");
-		return Plugin_Handled;
-	}
-	else if (numClients > 1)
-	{
-		ReplyToCommand(client, "[SM] %t", "More than one client matches", arg);
 		return Plugin_Handled;
 	}
 	
-	PerformWho(client, clients[0], GetCmdReplySource());
+	PerformWho(client, target, GetCmdReplySource());
 
 	return Plugin_Handled;
 }

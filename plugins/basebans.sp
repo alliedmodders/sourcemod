@@ -116,26 +116,42 @@ public Action:Command_BanIp(client, args)
 		return Plugin_Handled;
 	}
 	
-	new clients[1];
-	new numClients = SearchForClients(arg, clients, 1);
-
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[1], bool:tn_is_ml;
+	new found_client = -1;
+	
+	if (ProcessTargetString(
+			arg,
+			client, 
+			target_list, 
+			1, 
+			COMMAND_FILTER_CONNECTED|COMMAND_FILTER_NO_MULTI,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml) > 0)
+	{
+		found_client = target_list[0];
+	}
+	
 	new bool:has_rcon;
 	
 	if (client == 0 || (client == 1 && !IsDedicatedServer()))
 	{
 		has_rcon = true;
-	} else {
+	}
+	else
+	{
 		new AdminId:id = GetUserAdmin(client);
 		has_rcon = (id == INVALID_ADMIN_ID) ? false : GetAdminFlag(id, Admin_RCON);
 	}
 	
 	new hit_client = -1;
-	if (numClients == 1 
-		&& !IsFakeClient(clients[0])
-		&& (has_rcon || CanUserTarget(client, clients[0])))
+	if (found_client != -1
+		&& !IsFakeClient(found_client)
+		&& (has_rcon || CanUserTarget(client, found_client)))
 	{
-		GetClientIP(clients[0], arg, sizeof(arg));
-		hit_client = clients[0];
+		GetClientIP(found_client, arg, sizeof(arg));
+		hit_client = found_client;
 	}
 	
 	if (hit_client == -1 && !has_rcon)
@@ -146,7 +162,7 @@ public Action:Command_BanIp(client, args)
 
 	new minutes = StringToInt(time);
 
-	decl String:reason[128];
+	new String:reason[128];
 	if (args >= 3)
 	{
 		GetCmdArg(3, reason, sizeof(reason));
@@ -159,14 +175,20 @@ public Action:Command_BanIp(client, args)
 			  minutes, 
 			  arg, 
 			  reason);
+				
+	ReplyToCommand(client, "[SM] %t", "Ban added");
+	
 	BanIdentity(arg, 
 				minutes, 
 				BANFLAG_IP, 
 				reason, 
 				"sm_banip", 
 				client);
-
-	ReplyToCommand(client, "[SM] %t", "Ban added");
+				
+	if (hit_client != -1)
+	{
+		KickClient(hit_client, "Banned: %s", reason);
+	}
 
 	return Plugin_Handled;
 }

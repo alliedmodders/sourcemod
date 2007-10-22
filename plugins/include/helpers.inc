@@ -94,17 +94,9 @@ stock Handle:FindPluginByFile(const String:filename[])
 }
 
 /**
- * Searches for clients that match an input string.
- *
- * Allowed patterns: 
- *  1) #<userid> or #<exact name>
- *  2) <partial or full name>
- *
- * @param pattern		Pattern to search for.
- * @param clients		Array to store matching clients in.
- * @param maxClients	Maximum clients in the array.
- * @return				Number of clients found.
+ * @deprecated Use FindTarget() or ProcessTargetString().
  */
+#pragma deprecated Use FindTarget() or ProcessTargetString()
 stock SearchForClients(const String:pattern[], clients[], maxClients)
 {
 	new maxclients = GetMaxClients();
@@ -166,44 +158,48 @@ stock SearchForClients(const String:pattern[], clients[], maxClients)
 }
 
 /**
- * Wraps SearchForClients and handles producing error messages for
+ * Wraps ProcessTargetString() and handles producing error messages for
  * bad targets.
  *
  * @param client	Client who issued command
  * @param target	Client's target argument
  * @param nobots	Optional. Set to true if bots should NOT be targetted
  * @param immunity	Optional. Set to false to ignore target immunity.
- * @return		Index of target client, or -1 on error.
+ * @return			Index of target client, or -1 on error.
  */
 stock FindTarget(client, const String:target[], bool:nobots = false, bool:immunity = true)
 {
-	new clients[2];
-	new numClients = SearchForClients(target, clients, 2);
+	decl String:target_name[MAX_TARGET_LENGTH];
+	decl target_list[1], target_count, bool:tn_is_ml;
 	
-	if (numClients == 0)
+	new flags = COMMAND_FILTER_NO_MULTI;
+	if (nobots)
 	{
-		ReplyToCommand(client, "[SM] %t", "No matching client");
-		return -1;
+		flags |= COMMAND_FILTER_NO_BOTS;
 	}
-	else if (numClients > 1)
+	if (!immunity)
 	{
-		ReplyToCommand(client, "[SM] %t", "More than one client matches", target);
-		return -1;
-	}
-	else if (immunity && !CanUserTarget(client, clients[0]))
-	{
-		ReplyToCommand(client, "[SM] %t", "Unable to target");
-		return -1;
-	}
-	else if (nobots && IsFakeClient(clients[0]))
-	{
-		ReplyToCommand(client, "[SM] %t", "Cannot target bot");
-		return -1;
+		flags |= COMMAND_FILTER_NO_IMMUNITY;
 	}
 	
-	return clients[0];
+	if ((target_count = ProcessTargetString(
+			target,
+			client, 
+			target_list, 
+			1, 
+			flags,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) > 0)
+	{
+		return target_list[0];
+	}
+	else
+	{
+		ReplyToTargetError(client, target_count);
+		return -1;
+	}
 }
-
 
 /**
  * Loads a specified array with maps. The maps will be either loaded from mapcyclefile, or if supplied
