@@ -31,6 +31,21 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 	VoteMenuToAll(g_hVoteMenu, 20);		
 }
 
+ResetMenu()
+{
+	/* Add the removed maps back to the menu */
+	new selectedmaps = GetArraySize(g_SelectedMaps);
+	decl String:mapname[64];
+		
+	for (new i=0; i<selectedmaps; i++)
+	{
+		GetArrayString(g_SelectedMaps, i, mapname, sizeof(mapname))	;
+		AddMenuItem(g_MapList, mapname, mapname);
+	}
+
+	g_VoteMapInUse = false;
+}
+
 ConfirmVote(client)
 {
 	new Handle:menu = CreateMenu(MenuHandler_Confirm);
@@ -54,7 +69,8 @@ public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
 	}
 	else if (action == MenuAction_Cancel)
 	{
-		g_VoteMapInUse = false;
+		ResetMenu();
+		
 		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
 		{
 			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
@@ -72,25 +88,14 @@ public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
 		
 		DisplayVoteMapMenu(param1, selectedmaps, maps);
 		
-		/* Re-enable the menu option */
-		g_VoteMapInUse = false;	
+		ResetMenu();
 	}
 }
 
 public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 {
 	if (action == MenuAction_Cancel)
-	{
-		/* Add the removed maps back to the menu */
-		new selectedmaps = GetArraySize(g_SelectedMaps);
-		decl String:mapname[64];
-			
-		for (new i=0; i<selectedmaps; i++)
-		{
-			GetArrayString(g_SelectedMaps, i, mapname, sizeof(mapname))	;
-			AddMenuItem(menu, mapname, mapname);
-		}
-		
+	{		
 		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
 		{
 			ConfirmVote(param1);
@@ -98,7 +103,9 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 		else // no action was selected.
 		{
 			/* Re-enable the menu option */
-			g_VoteMapInUse = false;	
+			g_VoteMapInUse = false;
+			
+			ResetMenu();
 		}
 	}
 	else if (action == MenuAction_Select)
@@ -139,8 +146,8 @@ public AdminMenu_VoteMap(Handle:topmenu,
 	else if (action == TopMenuAction_SelectOption)
 	{
 		g_VoteMapInUse = true;
-		ClearArray(g_SelectedMaps);
 		g_SelectedCount = 0;
+		ClearArray(g_SelectedMaps);
 		DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
 	}
 	else if (action == TopMenuAction_DrawOption)
