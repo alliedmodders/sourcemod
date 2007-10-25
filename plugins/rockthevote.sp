@@ -377,6 +377,8 @@ public Action:Timer_StartRTV(Handle:timer)
 		RemoveFromArray(tempMaps, b);
 	}	
 	
+	CloseHandle(tempMaps);
+	
 	AddMenuItem(MapVoteMenu, "Don't Change", "Don't Change");
 		
 	SetMenuExitButton(MapVoteMenu, false);

@@ -546,4 +546,6 @@ CreateNextVote()
 		PushArrayString(g_NextMapList, map);
 		RemoveFromArray(tempMaps, b);
 	}
+	
+	CloseHandle(tempMaps);
 }
