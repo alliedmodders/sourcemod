@@ -42,6 +42,7 @@
 #include "AdminCache.h"
 #include <inetchannel.h>
 #include <bitbuf.h>
+#include <sm_trie_tpl.h>
 
 #define NET_SETCONVAR	5
 
@@ -78,6 +79,61 @@ public:
 		delete iter;
 	}
 } s_ConsoleHelpers;
+
+class CommandFlagsHelper : public IConCommandTracker
+{
+public:
+	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe)
+	{
+		m_CmdFlags.remove(name);
+	}
+	bool GetFlags(const char *name, int *flags)
+	{
+		ConCommandBase **ppCmd;
+		ConCommandBase *pCmd;
+		if ((ppCmd=m_CmdFlags.retrieve(name)))
+		{
+			TrackConCommandBase((*ppCmd), this);
+			*flags = (*ppCmd)->GetFlags();
+			return true;
+		}
+		else if ((pCmd=FindConCommandBase(name)))
+		{
+			m_CmdFlags.insert(name, pCmd);
+			TrackConCommandBase(pCmd, this);
+			*flags = pCmd->GetFlags();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	bool SetFlags(const char *name, int flags)
+	{
+		ConCommandBase **ppCmd;
+		ConCommandBase *pCmd;
+		if ((ppCmd=m_CmdFlags.retrieve(name)))
+		{
+			(*ppCmd)->SetFlags(flags);
+			TrackConCommandBase((*ppCmd), this);
+			return true;
+		}
+		else if ((pCmd=FindConCommandBase(name)))
+		{
+			m_CmdFlags.insert(name, pCmd);
+			pCmd->SetFlags(flags);
+			TrackConCommandBase(pCmd, this);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+private:
+	KTrie<ConCommandBase *> m_CmdFlags;
+} s_CommandFlagsHelper;
 
 static void ReplicateConVar(ConVar *pConVar)
 {
@@ -1025,6 +1081,23 @@ static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
 	return g_ChatTriggers.IsChatTrigger() ? 1 : 0;
 }
 
+static cell_t SetCommandFlags(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	pContext->LocalToString(params[1], &name);
+
+	return (s_CommandFlagsHelper.SetFlags(name, params[2])) ? 1 : 0;
+}
+
+static cell_t GetCommandFlags(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	int flags;
+	pContext->LocalToString(params[1], &name);
+
+	return (s_CommandFlagsHelper.GetFlags(name, &flags)) ? flags : -1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1067,5 +1140,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"CheckCommandAccess",	CheckCommandAccess},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{"IsChatTrigger",		IsChatTrigger},
+	{"SetCommandFlags",		SetCommandFlags},
+	{"GetCommandFlags",		GetCommandFlags},
 	{NULL,					NULL}
 };

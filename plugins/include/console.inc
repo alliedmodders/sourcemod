@@ -35,6 +35,8 @@
 #endif
 #define _console_included
 
+#define INVALID_FCVAR_FLAGS		(-1)
+
 /**
  * Console variable bound values used with Get/SetConVarBounds()
  */
@@ -698,3 +700,20 @@ stock bool:IsValidConVarChar(c)
 {
 	return (c == '_' || IsCharAlpha(c) || IsCharNumeric(c));
 }
+
+/**
+ * Returns the bitstring of flags of a command.
+ *
+ * @param name				Name of the command.
+ * @return				A bitstring containing the FCVAR_* flags that are enabled or INVALID_FCVAR_FLAGS if command not found.
+ */
+native GetCommandFlags(const String:name[]);
+
+/**
+ * Sets the bitstring of flags of a command.
+ *
+ * @param name			Name of the command.
+ * @param flags			A bitstring containing the FCVAR_* flags to enable.
+ * @return			True on success, otherwise false.
+ */
+native bool:SetCommandFlags(const String:name[], flags);
