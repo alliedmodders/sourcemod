@@ -41,14 +41,26 @@
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
 
-CExtension::CExtension(const char *filename, char *error, size_t maxlength)
+void CExtension::Initialize(const char *filename, const char *path)
 {
-	m_File.assign(filename);
 	m_pAPI = NULL;
 	m_pIdentToken = NULL;
-	m_PlId = 0;
 	unload_code = 0;
-	m_FullyLoaded = false;
+	m_bFullyLoaded = false;
+	m_File.assign(filename);
+	m_Path.assign(path);
+}
+
+CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filename, const char *path)
+{
+	m_pAPI = pAPI;
+	Initialize(filename, path);
+}
+
+CLocalExtension::CLocalExtension(const char *filename)
+{
+	m_PlId = 0;
+	m_pLib = NULL;
 
 	char path[PLATFORM_MAX_PATH];
 
@@ -73,12 +85,27 @@ CExtension::CExtension(const char *filename, char *error, size_t maxlength)
 		g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
 	}
 
-	m_Path.assign(path);
-
-	m_pLib = NULL;
+	Initialize(filename, path);
 }
 
-bool CExtension::Load(char *error, size_t maxlength)
+bool CRemoteExtension::Load(char *error, size_t maxlength)
+{
+	if (!PerformAPICheck(error, maxlength))
+	{
+		m_pAPI = NULL;
+		return false;
+	}
+
+	if (!CExtension::Load(error, maxlength))
+	{
+		m_pAPI = NULL;
+		return false;
+	}
+
+	return true;
+}
+
+bool CLocalExtension::Load(char *error, size_t maxlength)
 {
 	m_pLib = g_LibSys.OpenLibrary(m_Path.c_str(), error, maxlength);
 
@@ -99,23 +126,24 @@ bool CExtension::Load(char *error, size_t maxlength)
 	}
 
 	m_pAPI = pfnGetAPI();
-	if (!m_pAPI || m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
+
+	/* Check pointer and version */
+	if (!PerformAPICheck(error, maxlength))
 	{
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
+		m_pAPI = NULL;
 		return false;
 	}
 
+	/* Load as MM:S */
 	if (m_pAPI->IsMetamodExtension())
 	{
 		bool already;
 		m_PlId = g_pMMPlugins->Load(m_Path.c_str(), g_PLID, already, error, maxlength);
 	}
 
-	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType, this);
-
-	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !g_SourceMod.IsMapLoading()))
+	if (!CExtension::Load(error, maxlength))
 	{
 		if (m_pAPI->IsMetamodExtension())
 		{
@@ -126,13 +154,71 @@ bool CExtension::Load(char *error, size_t maxlength)
 				m_PlId = 0;
 			}
 		}
-		m_pAPI = NULL;
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		g_ShareSys.DestroyIdentity(m_pIdentToken);
-		m_pIdentToken = NULL;
+		m_pAPI = NULL;
 		return false;
-	} else {
+	}
+
+	return true;
+}
+
+void CRemoteExtension::Unload()
+{
+}
+
+void CLocalExtension::Unload()
+{
+	if (m_pAPI != NULL && m_PlId)
+	{
+		char temp_buffer[255];
+		g_pMMPlugins->Unload(m_PlId, true, temp_buffer, sizeof(temp_buffer));
+		m_PlId = 0;
+	}
+
+	if (m_pLib != NULL)
+	{
+		m_pLib->CloseLibrary();
+		m_pLib = NULL;
+	}
+}
+
+bool CRemoteExtension::IsExternal()
+{
+	return true;
+}
+
+bool CLocalExtension::IsExternal()
+{
+	return false;
+}
+
+CExtension::~CExtension()
+{
+	DestroyIdentity();
+}
+
+bool CExtension::PerformAPICheck(char *error, size_t maxlength)
+{
+	if (!m_pAPI || m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
+	{
+		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
+		return false;
+	}
+
+	return true;
+}
+
+bool CExtension::Load(char *error, size_t maxlength)
+{
+	CreateIdentity();
+	if (!m_pAPI->OnExtensionLoad(this, &g_ShareSys, error, maxlength, !g_SourceMod.IsMapLoading()))
+	{
+		DestroyIdentity();
+		return false;
+	}
+	else
+	{
 		/* Check if we're past load time */
 		if (!g_SourceMod.IsMapLoading())
 		{
@@ -143,35 +229,33 @@ bool CExtension::Load(char *error, size_t maxlength)
 	return true;
 }
 
-CExtension::~CExtension()
+void CExtension::CreateIdentity()
 {
-	char temp_buffer[255];
-
-	if (m_pAPI)
+	if (m_pIdentToken != NULL)
 	{
-		if (m_PlId)
-		{
-			g_pMMPlugins->Unload(m_PlId, true, temp_buffer, sizeof(temp_buffer));
-		}
+		return;
 	}
 
-	if (m_pIdentToken)
+	m_pIdentToken = g_ShareSys.CreateIdentity(g_ExtType, this);
+}
+
+void CExtension::DestroyIdentity()
+{
+	if (m_pIdentToken == NULL)
 	{
-		g_ShareSys.DestroyIdentity(m_pIdentToken);
+		return;
 	}
 
-	if (m_pLib)
-	{
-		m_pLib->CloseLibrary();
-	}
+	g_ShareSys.DestroyIdentity(m_pIdentToken);
+	m_pIdentToken = NULL;
 }
 
 void CExtension::MarkAllLoaded()
 {
-	assert(m_FullyLoaded == false);
-	if (!m_FullyLoaded)
+	assert(m_bFullyLoaded == false);
+	if (!m_bFullyLoaded)
 	{
-		m_FullyLoaded = true;
+		m_bFullyLoaded = true;
 		m_pAPI->OnExtensionsAllLoaded();
 	}
 }
@@ -221,7 +305,12 @@ IdentityToken_t *CExtension::GetIdentity()
 	return m_pIdentToken;
 }
 
-bool CExtension::IsLoaded()
+bool CRemoteExtension::IsLoaded()
+{
+	return (m_pAPI != NULL);
+}
+
+bool CLocalExtension::IsLoaded()
 {
 	return (m_pLib != NULL);
 }
@@ -435,7 +524,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 	}
 
 	char error[256];
-	CExtension *p = new CExtension(path, error, sizeof(error));
+	CExtension *p = new CLocalExtension(path);
 
 	/* We put us in the list beforehand so extensions that check for each other
 	 * won't recursively load each other.
@@ -456,13 +545,6 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 	List<CExtension *>::iterator iter;
 	CExtension *pExt;
 
-	if (!strstr(file, "." PLATFORM_LIB_EXT))
-	{
-		char path[PLATFORM_MAX_PATH];
-		UTIL_Format(path, sizeof(path), "%s.%s", file, PLATFORM_LIB_EXT);
-		return FindExtensionByFile(path);
-	}
-
 	/* Chomp off the path */
 	char lookup[PLATFORM_MAX_PATH];
 	g_LibSys.GetFileFromPath(lookup, sizeof(lookup), file);
@@ -476,6 +558,16 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 		{
 			return pExt;
 		}
+	}
+
+	/* If we got no results, test if there was a platform extension.
+	 * If not, add one.
+	 */
+	if (!strstr(file, "." PLATFORM_LIB_EXT))
+	{
+		char path[PLATFORM_MAX_PATH];
+		UTIL_Format(path, sizeof(path), "%s.%s", file, PLATFORM_LIB_EXT);
+		return FindExtensionByFile(path);
 	}
 
 	return NULL;
@@ -513,7 +605,7 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 	return NULL;
 }
 
-IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime lifetime, char *error, size_t maxlength)
+IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size_t maxlength)
 {
 	IExtension *pAlready;
 	if ((pAlready=FindExtensionByFile(file)) != NULL)
@@ -521,12 +613,11 @@ IExtension *CExtensionManager::LoadExtension(const char *file, ExtensionLifetime
 		return pAlready;
 	}
 
-	CExtension *pExt = new CExtension(file, error, maxlength);
-
-	/* :NOTE: lifetime is currently ignored */
+	CExtension *pExt = new CLocalExtension(file);
 
 	if (!pExt->Load(error, maxlength) || !pExt->IsLoaded())
 	{
+		pExt->Unload();
 		delete pExt;
 		return NULL;
 	}
@@ -790,6 +881,7 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 	}
 
+	pExt->Unload();
 	delete pExt;
 
 	List<CExtension *>::iterator iter;
@@ -833,7 +925,7 @@ void CExtensionManager::MarkAllLoaded()
 		{
 			continue;
 		}
-		if (pExt->m_FullyLoaded)
+		if (pExt->m_bFullyLoaded)
 		{
 			continue;
 		}
@@ -891,7 +983,9 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 					if (!pExt->IsRunning(error, sizeof(error)))
 					{
 						g_RootMenu.ConsolePrint("[%02d] <FAILED> file \"%s\": %s", num, pExt->GetFilename(), error);
-					} else {
+					}
+					else
+					{
 						IExtensionInterface *pAPI = pExt->GetAPI();
 						const char *name = pAPI->GetExtensionName();
 						const char *version = pAPI->GetExtensionVerString();
@@ -903,7 +997,9 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				}
 			}
 			return;
-		} else if (strcmp(cmd, "info") == 0) {
+		}
+		else if (strcmp(cmd, "info") == 0)
+		{
 			if (argcount < 4)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
@@ -952,25 +1048,43 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			{
 				g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
 				g_RootMenu.ConsolePrint(" Loaded: No (%s)", pExt->m_Error.c_str());
-			} else {
+			}
+			else
+			{
 				char error[255];
 				if (!pExt->IsRunning(error, sizeof(error)))
 				{
 					g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
 					g_RootMenu.ConsolePrint(" Loaded: Yes");
 					g_RootMenu.ConsolePrint(" Running: No (%s)", error);
-				} else {
+				}
+				else
+				{
 					IExtensionInterface *pAPI = pExt->GetAPI();
 					g_RootMenu.ConsolePrint(" File: %s", pExt->GetFilename());
 					g_RootMenu.ConsolePrint(" Loaded: Yes (version %s)", pAPI->GetExtensionVerString());
 					g_RootMenu.ConsolePrint(" Name: %s (%s)", pAPI->GetExtensionName(), pAPI->GetExtensionDescription());
 					g_RootMenu.ConsolePrint(" Author: %s (%s)", pAPI->GetExtensionAuthor(), pAPI->GetExtensionURL());
 					g_RootMenu.ConsolePrint(" Binary info: API version %d (compiled %s)", pAPI->GetExtensionVersion(), pAPI->GetExtensionDateString());
-					g_RootMenu.ConsolePrint(" Metamod enabled: %s", pAPI->IsMetamodExtension() ? "yes" : "no");
+
+					if (pExt->IsExternal())
+					{
+						g_RootMenu.ConsolePrint(" Method: Loaded by Metamod:Source, attached to SourceMod");
+					}
+					else if (pAPI->IsMetamodExtension())
+					{
+						g_RootMenu.ConsolePrint(" Method: Loaded by SourceMod, attached to Metamod:Source");
+					}
+					else
+					{
+						g_RootMenu.ConsolePrint(" Method: Loaded by SourceMod");
+					}
 				}
 			}
 			return;
-		} else if (strcmp(cmd, "unload") == 0) {
+		}
+		else if (strcmp(cmd, "unload") == 0)
+		{
 			if (argcount < 4)
 			{
 				g_RootMenu.ConsolePrint("[SM] Usage: sm unload <#> [code]");
@@ -1140,4 +1254,30 @@ bool CExtensionManager::LibraryExists(const char *library)
 	}
 
 	return false;
+}
+
+IExtension *CExtensionManager::LoadExternal(IExtensionInterface *pInterface,
+											const char *filepath,
+											const char *filename,
+											char *error,
+											size_t maxlength)
+{
+	IExtension *pAlready;
+	if ((pAlready=FindExtensionByFile(filename)) != NULL)
+	{
+		return pAlready;
+	}
+
+	CExtension *pExt = new CRemoteExtension(pInterface, filename, filepath);
+
+	if (!pExt->Load(error, maxlength) || !pExt->IsLoaded())
+	{
+		pExt->Unload();
+		delete pExt;
+		return NULL;
+	}
+
+	m_Libs.push_back(pExt);
+
+	return pExt;
 }

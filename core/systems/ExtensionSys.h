@@ -59,13 +59,11 @@ class CExtension : public IExtension
 {
 	friend class CExtensionManager;
 public:
-	CExtension(const char *filename, char *error, size_t maxlen);
-	~CExtension();
+	virtual ~CExtension();
 public: //IExtension
 	IExtensionInterface *GetAPI();
 	const char *GetFilename();
 	IdentityToken_t *GetIdentity();
-	bool IsLoaded();
 	ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface);
 	bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface);
 	void FreeDependencyIterator(ITERATOR *iter);
@@ -79,14 +77,20 @@ public:
 	void RemovePlugin(IPlugin *pPlugin);
 	void MarkAllLoaded();
 	void AddLibrary(const char *library);
-private:
-	bool Load(char *error, size_t maxlength);
-private:
+public:
+	virtual bool Load(char *error, size_t maxlength);
+	virtual bool IsLoaded() =0;
+	virtual void Unload() =0;
+protected:
+	void Initialize(const char *filename, const char *path);
+	bool PerformAPICheck(char *error, size_t maxlength);
+	void CreateIdentity();
+	void DestroyIdentity();
+protected:
 	IdentityToken_t *m_pIdentToken;
 	IExtensionInterface *m_pAPI;
 	String m_File;
 	String m_Path;
-	ILibrary *m_pLib;
 	String m_Error;
 	List<IfaceInfo> m_Deps;			/** Dependencies */
 	List<IfaceInfo> m_ChildDeps;	/** Children who might depend on us */
@@ -95,9 +99,33 @@ private:
 	List<const sp_nativeinfo_t *> m_Natives;
 	List<WeakNative> m_WeakNatives;
 	List<String> m_Libraries;
-	PluginId m_PlId;
 	unsigned int unload_code;
-	bool m_FullyLoaded;
+	bool m_bFullyLoaded;
+};
+
+class CLocalExtension : public CExtension
+{
+public:
+	CLocalExtension(const char *filename);
+public:
+	bool Load(char *error, size_t maxlength);
+	bool IsLoaded();
+	void Unload();
+	bool IsExternal();
+private:
+	PluginId m_PlId;
+	ILibrary *m_pLib;
+};
+
+class CRemoteExtension : public CExtension
+{
+public:
+	CRemoteExtension(IExtensionInterface *pAPI, const char *filename, const char *path);
+public:
+	bool Load(char *error, size_t maxlength);
+	bool IsLoaded();
+	void Unload();
+	bool IsExternal();
 };
 
 class CExtensionManager : 
@@ -114,12 +142,16 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 public: //IExtensionManager
 	IExtension *LoadExtension(const char *path, 
-		ExtensionLifetime lifetime, 
 		char *error,
 		size_t maxlength);
 	bool UnloadExtension(IExtension *pExt);
 	IExtension *FindExtensionByFile(const char *file);
 	IExtension *FindExtensionByName(const char *ext);
+	IExtension *LoadExternal(IExtensionInterface *pInterface,
+		const char *filepath,
+		const char *filename,
+		char *error,
+		size_t maxlength);
 public: //IPluginsListener
 	void OnPluginDestroyed(IPlugin *plugin);
 public: //IRootConsoleCommand

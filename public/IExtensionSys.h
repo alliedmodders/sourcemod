@@ -65,7 +65,9 @@ namespace SourceMod
 
 		/**
 		 * @brief Returns the filename of the extension, relative to the
-		 * extension folder.
+		 * extension folder.   If the extension is an "external" extension, 
+		 * the file path is specified by the extension itself, and may be 
+		 * arbitrary (not real).
 		 *
 		 * @return			A string containing the extension file name.
 		 */
@@ -112,6 +114,15 @@ namespace SourceMod
 		 * @return				True if extension is okay, false if not okay.
 		 */
 		virtual bool IsRunning(char *error, size_t maxlength) =0;
+
+		/**
+		 * @brief Returns whether the extension is local (from the extensions 
+		 * folder), or is from an external source (such as Metamod:Source).
+		 *
+		 * @return				True if from an external source, 
+		 *						false if local to SourceMod.
+		 */
+		virtual bool IsExternal() =0;
 	};
 
 	/**
@@ -142,10 +153,10 @@ namespace SourceMod
 		 * @return			True if load should continue, false otherwise.
 		 */
 		virtual bool OnExtensionLoad(IExtension *me,
-								  IShareSys *sys, 
-								  char *error, 
-								  size_t maxlength, 
-								  bool late) =0;
+			IShareSys *sys, 
+			char *error, 
+			size_t maxlength, 
+			bool late) =0;
 
 		/**
 		 * @brief Called when the extension is about to be unloaded.
@@ -166,8 +177,10 @@ namespace SourceMod
 		virtual void OnExtensionPauseChange(bool pause) =0;
 
 		/**
-		 * @brief Asks the extension whether it's safe to remove an external interface it's using.
-		 * If it's not safe, return false, and the extension will be unloaded afterwards.
+		 * @brief Asks the extension whether it's safe to remove an external 
+		 * interface it's using.  If it's not safe, return false, and the 
+		 * extension will be unloaded afterwards.
+		 *
 		 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean up resources.
 		 *
 		 * @param pInterface		Pointer to interface being dropped.
@@ -199,27 +212,84 @@ namespace SourceMod
 			return true;
 		}
 	public:
+		/**
+		 * @brief For extensions loaded through SourceMod, this should return true 
+		 * if the extension needs to attach to Metamod:Source.  If the extension 
+		 * is loaded through Metamod:Source, and uses SourceMod optionally, it must 
+		 * return false.
+		 *
+		 * @return					True if Metamod:Source is needed.
+		 */
 		virtual bool IsMetamodExtension() =0;
+
+		/**
+		 * @brief Must return a string containing the extension's short name.
+		 *
+		 * @return					String containing extension name.
+		 */
 		virtual const char *GetExtensionName() =0;
+
+		/**
+		 * @brief Must return a string containing the extension's URL.
+		 *
+		 * @return					String containing extension URL.
+		 */
 		virtual const char *GetExtensionURL() =0;
+
+		/**
+		 * @brief Must return a string containing a short identifier tag.
+		 *
+		 * @return					String containing extension tag.
+		 */
 		virtual const char *GetExtensionTag() =0;
+
+		/**
+		 * @brief Must return a string containing a short author identifier.
+		 *
+		 * @return					String containing extension author.
+		 */
 		virtual const char *GetExtensionAuthor() =0;
+
+		/**
+		 * @brief Must return a string containing version information.
+		 *
+		 * Any version string format can be used, however, SourceMod 
+		 * makes a special guarantee version numbers in the form of 
+		 * A.B.C.D will always be fully displayed, where:
+		 * 
+		 * A is a major version number of at most one digit.
+		 * B is a minor version number of at most two digits.
+		 * C is a minor version number of at most two digits.
+		 * D is a build number of at most 5 digits.
+		 *
+		 * Thus, thirteen characters of display is guaranteed.
+		 *
+		 * @return					String containing extension version.
+		 */
 		virtual const char *GetExtensionVerString() =0;
+
+		/**
+		 * @brief Must return a string containing description text.
+		 *
+		 * The description text may be longer than the other identifiers, 
+		 * as it is only displayed when viewing one extension at a time.
+		 * However, it should not have newlines, or any other characters 
+		 * which would otherwise disrupt the display pattern.
+		 * 
+		 * @return					String containing extension description.
+		 */
 		virtual const char *GetExtensionDescription() =0;
+
+		/**
+		 * @brief Must return a string containing the compilation date.
+		 *
+		 * @return					String containing the compilation date.
+		 */
 		virtual const char *GetExtensionDateString() =0;
 	};
 
 	#define SMINTERFACE_EXTENSIONMANAGER_NAME			"IExtensionManager"
-	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		1
-
-	/**
-	 * @brief Not currently used.
-	 */
-	enum ExtensionLifetime
-	{
-		ExtLifetime_Forever,			//Extension will never be unloaded automatically
-		ExtLifetime_Map,				//Extension will be unloaded at the end of the map
-	};
+	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		2
 
 	/**
 	 * @brief Manages the loading/unloading of extensions.
@@ -235,26 +305,66 @@ namespace SourceMod
 		{
 			return SMINTERFACE_EXTENSIONMANAGER_VERSION;
 		}
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < 2)
+			{
+				return false;
+			}
+			return SMInterface::IsVersionCompatible(version);
+		}
 	public:
 		/**
 		 * @brief Loads a extension into the extension system.
 		 *
-		 * @param path		Path to extension file, relative to the extensions folder.
-		 * @param lifetime	Lifetime of the extension (currently ignored).
-		 * @param error		Error buffer.
-		 * @param maxlength	Maximum error buffer length.
-		 * @return			New IExtension on success, NULL on failure.
+		 * @param path			Path to extension file, relative to the 
+		 *						extensions folder.
+		 * @param lifetime		Lifetime of the extension (currently ignored).
+		 * @param error			Error buffer.
+		 * @param maxlength		Maximum error buffer length.
+		 * @return				New IExtension on success, NULL on failure.
+		 *						If	NULL is returned, the error buffer will be 
+		 *						filled with a null-terminated string.
 		 */
 		virtual IExtension *LoadExtension(const char *path, 
-									ExtensionLifetime lifetime, 
-									char *error,
-									size_t maxlength) =0;
+			char *error,
+			size_t maxlength) =0;
 
 		/**
-		 * @brief Attempts to unload a module.
+		 * @brief Loads an extension into the extension system, directly, 
+		 * as an external extension.  
 		 *
-		 * @param pExt		IExtension pointer.
-		 * @return			True if successful, false otherwise.
+		 * The extension receives all normal callbacks.  However, it is 
+		 * never opened via LoadLibrary/dlopen or closed via FreeLibrary
+		 * or dlclose.
+		 *
+		 * @param pInterface	Pointer to an IExtensionInterface instance.
+		 * @param filepath		Absolute path to the extension's file.
+		 * @param filename		Name to use to uniquely identify the extension. 
+		 *						The name should be generic, without any 
+		 *						platform-specific suffices.  For example, 
+		 *						sdktools.ext instead of sdktools.ext.so.
+		 *						This filename is used to detect if the 
+		 *						extension is already loaded, and to verify 
+		 *						plugins that require the same extension.
+		 * @param error			Buffer to store error message.
+		 * @param maxlength		Maximum size of the error buffer.
+		 * @return				IExtension pointer on success, NULL on failure.
+		 *						If NULL is returned, the error buffer will be 
+		 *						filled with a null-terminated string.
+		 */
+		virtual IExtension *LoadExternal(IExtensionInterface *pInterface,
+			const char *filepath,
+			const char *filename,
+			char *error,
+			size_t maxlength) =0;
+
+		/**
+		 * @brief Attempts to unload an extension.  External extensions must 
+		 * call this before unloading.
+		 *
+		 * @param pExt			IExtension pointer.
+		 * @return				True if successful, false otherwise.
 		 */
 		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
