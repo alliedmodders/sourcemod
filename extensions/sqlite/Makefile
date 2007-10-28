@@ -32,7 +32,9 @@ OBJECTS += sqlite-source/alter.c sqlite-source/analyze.c \
 	sqlite-source/util.c sqlite-source/vacuum.c sqlite-source/vdbe.c \
 	sqlite-source/vdbeapi.c sqlite-source/vdbeaux.c sqlite-source/vdbeblob.c \
 	sqlite-source/vdbefifo.c sqlite-source/vdbemem.c sqlite-source/vtab.c \
-	sqlite-source/where.c
+	sqlite-source/where.c sqlite-source/btmutex.c sqlite-source/journal.c \
+	sqlite-source/mem1.c sqlite-source/mem2.c sqlite-source/mutex.c \
+	sqlite-source/mutex_unix.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -53,7 +55,7 @@ INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2
           -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(SOURCEMM) -I$(SOURCEMM)/sourcehook -I$(SOURCEMM)/sourcemm \
 	  -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
 
-CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -Wno-uninitialized -DTHREADSAFE -DSQLITE_OMIT_LOAD_EXTENSION
+CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -Wno-uninitialized -DSQLITE_THREADSAFE -DSQLITE_OMIT_LOAD_EXTENSION
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
