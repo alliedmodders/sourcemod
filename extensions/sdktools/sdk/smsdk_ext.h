@@ -279,11 +279,15 @@ extern IServerGameDLL *gamedll;
 #define SM_GET_IFACE(prefix, addr) \
 	if (!g_pShareSys->RequestInterface(SM_MKIFACE(prefix), myself, (SMInterface **)&addr)) \
 	{ \
-		if (error) \
+		if (error != NULL && maxlength) \
 		{ \
-			snprintf(error, maxlength, "Could not find interface: %s (version: %d)", SMINTERFACE_##prefix##_NAME, SMINTERFACE_##prefix##_VERSION); \
-			return false; \
+			size_t len = snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
+			if (len >= maxlength) \
+			{ \
+				error[maxlength - 1] = '\0'; \
+			} \
 		} \
+		return false; \
 	}
 /** Automates retrieving SourceMod interfaces when needed outside of SDK_OnLoad() */
 #define SM_GET_LATE_IFACE(prefix, addr) \
@@ -292,11 +296,15 @@ extern IServerGameDLL *gamedll;
 #define SM_CHECK_IFACE(prefix, addr) \
 	if (!addr) \
 	{ \
-		if (error) \
+		if (error != NULL && maxlength) \
 		{ \
-			snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
-			return false; \
+			size_t len = snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
+			if (len >= maxlength) \
+			{ \
+				error[maxlength - 1] = '\0'; \
+			} \
 		} \
+		return false; \
 	}
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_BASESDK_H_
