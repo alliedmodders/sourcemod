@@ -41,7 +41,8 @@ void sqlite3IndexAffinityStr(Vdbe *v, Index *pIdx){
     */
     int n;
     Table *pTab = pIdx->pTable;
-    pIdx->zColAff = (char *)sqliteMalloc(pIdx->nColumn+1);
+    sqlite3 *db = sqlite3VdbeDb(v);
+    pIdx->zColAff = (char *)sqlite3DbMallocZero(db, pIdx->nColumn+1);
     if( !pIdx->zColAff ){
       return;
     }
@@ -79,8 +80,9 @@ void sqlite3TableAffinityStr(Vdbe *v, Table *pTab){
   if( !pTab->zColAff ){
     char *zColAff;
     int i;
+    sqlite3 *db = sqlite3VdbeDb(v);
 
-    zColAff = (char *)sqliteMalloc(pTab->nCol+1);
+    zColAff = (char *)sqlite3DbMallocZero(db, pTab->nCol+1);
     if( !zColAff ){
       return;
     }
@@ -356,10 +358,10 @@ void sqlite3Insert(
   int triggers_exist = 0;     /* True if there are FOR EACH ROW triggers */
 #endif
 
-  if( pParse->nErr || sqlite3MallocFailed() ){
+  db = pParse->db;
+  if( pParse->nErr || db->mallocFailed ){
     goto insert_cleanup;
   }
-  db = pParse->db;
 
   /* Locate the table into which we will be inserting new information.
   */
@@ -462,7 +464,7 @@ void sqlite3Insert(
 
     /* Resolve the expressions in the SELECT statement and execute it. */
     rc = sqlite3Select(pParse, pSelect, SRT_Subroutine, iInsertBlock,0,0,0,0);
-    if( rc || pParse->nErr || sqlite3MallocFailed() ){
+    if( rc || pParse->nErr || db->mallocFailed ){
       goto insert_cleanup;
     }
 
@@ -1027,7 +1029,7 @@ void sqlite3GenerateConstraintChecks(
     assert( pParse->ckOffset==nCol );
     pParse->ckOffset = 0;
     onError = overrideError!=OE_Default ? overrideError : OE_Abort;
-    if( onError==OE_Ignore || onError==OE_Replace ){
+    if( onError==OE_Ignore ){
       sqlite3VdbeAddOp(v, OP_Pop, nCol+1+hasTwoRowids, 0);
       sqlite3VdbeAddOp(v, OP_Goto, 0, ignoreDest);
     }else{
@@ -1416,9 +1418,7 @@ static int xferOptimization(
   if( onError!=OE_Abort && onError!=OE_Rollback ){
     return 0;   /* Cannot do OR REPLACE or OR IGNORE or OR FAIL */
   }
-  if( pSelect->pSrc==0 ){
-    return 0;   /* SELECT must have a FROM clause */
-  }
+  assert(pSelect->pSrc);   /* allocated even if there is no FROM clause */
   if( pSelect->pSrc->nSrc!=1 ){
     return 0;   /* FROM clause must have exactly one term */
   }
@@ -1523,6 +1523,7 @@ static int xferOptimization(
 #endif
   iDbSrc = sqlite3SchemaToIndex(pParse->db, pSrc->pSchema);
   v = sqlite3GetVdbe(pParse);
+  sqlite3CodeVerifySchema(pParse, iDbSrc);
   iSrc = pParse->nTab++;
   iDest = pParse->nTab++;
   counterMem = autoIncBegin(pParse, iDbDest, pDest);

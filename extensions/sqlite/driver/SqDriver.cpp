@@ -67,11 +67,14 @@ SqDriver::SqDriver()
 {
 	m_Handle = BAD_HANDLE;
 	m_pOpenLock = NULL;
+	m_bThreadSafe = false;
 }
 
 void SqDriver::Initialize()
 {
 	m_pOpenLock = threader->MakeMutex();
+
+	InitializeThreadSafety();
 }
 
 void SqDriver::Shutdown()
@@ -79,6 +82,11 @@ void SqDriver::Shutdown()
 	if (m_pOpenLock)
 	{
 		m_pOpenLock->DestroyThis();
+	}
+
+	if (m_bThreadSafe)
+	{
+		sqlite3_enable_shared_cache(0);
 	}
 }
 
@@ -89,10 +97,23 @@ bool SqDriver::IsThreadSafe()
 
 bool SqDriver::InitializeThreadSafety()
 {
-	/* sqlite should be thread safe if the locks are done right.
-	 * we don't enable the "shared cache" because it can corrupt
-	 * open databases!
-	 */
+	if (m_bThreadSafe)
+	{
+		return true;
+	}
+
+	if (sqlite3_threadsafe() == 0)
+	{
+		return false;
+	}
+
+	if (sqlite3_enable_shared_cache(1) != SQLITE_OK)
+	{
+		return false;
+	}
+
+	m_bThreadSafe = true;
+
 	return true;
 }
 

@@ -18,7 +18,6 @@
 */
 #include "sqliteInt.h"
 #include "vdbeInt.h"
-#include "os.h"
 
 #if !defined(SQLITE_OMIT_VACUUM) && !defined(SQLITE_OMIT_ATTACH)
 /*
@@ -26,6 +25,9 @@
 */
 static int execSql(sqlite3 *db, const char *zSql){
   sqlite3_stmt *pStmt;
+  if( !zSql ){
+    return SQLITE_NOMEM;
+  }
   if( SQLITE_OK!=sqlite3_prepare(db, zSql, -1, &pStmt, 0) ){
     return sqlite3_errcode(db);
   }
@@ -112,7 +114,7 @@ int sqlite3RunVacuum(char **pzErrMsg, sqlite3 *db){
   pTemp = db->aDb[db->nDb-1].pBt;
   sqlite3BtreeSetPageSize(pTemp, sqlite3BtreeGetPageSize(pMain),
      sqlite3BtreeGetReserve(pMain));
-  if( sqlite3MallocFailed() ){
+  if( db->mallocFailed ){
     rc = SQLITE_NOMEM;
     goto end_of_vacuum;
   }
@@ -248,9 +250,7 @@ end_of_vacuum:
   db->autoCommit = 1;
 
   if( pDb ){
-    sqlite3MallocDisallow();
     sqlite3BtreeClose(pDb->pBt);
-    sqlite3MallocAllow();
     pDb->pBt = 0;
     pDb->pSchema = 0;
   }

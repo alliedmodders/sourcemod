@@ -14,17 +14,11 @@
 ** $Id$
 */
 #include "sqliteInt.h"
-#include "os.h"
 #include <ctype.h>
 
 /* Ignore this whole file if pragmas are disabled
 */
 #if !defined(SQLITE_OMIT_PRAGMA) && !defined(SQLITE_OMIT_PARSER)
-
-#if defined(SQLITE_DEBUG) || defined(SQLITE_TEST)
-# include "pager.h"
-# include "btree.h"
-#endif
 
 /*
 ** Interpret the given string as a safety level.  Return 0 for OFF,
@@ -264,12 +258,12 @@ void sqlite3Pragma(
     return;
   }
 
-  zLeft = sqlite3NameFromToken(pId);
+  zLeft = sqlite3NameFromToken(db, pId);
   if( !zLeft ) return;
   if( minusFlag ){
-    zRight = sqlite3MPrintf("-%T", pValue);
+    zRight = sqlite3MPrintf(db, "-%T", pValue);
   }else{
-    zRight = sqlite3NameFromToken(pValue);
+    zRight = sqlite3NameFromToken(db, pValue);
   }
 
   zDb = ((iDb>0)?pDb->zName:0);
@@ -306,6 +300,7 @@ void sqlite3Pragma(
     };
     int addr;
     if( sqlite3ReadSchema(pParse) ) goto pragma_out;
+    sqlite3VdbeUsesBtree(v, iDb);
     if( !zRight ){
       sqlite3VdbeSetNumCols(v, 1);
       sqlite3VdbeSetColName(v, 0, COLNAME_NAME, "cache_size", P3_STATIC);
@@ -342,7 +337,12 @@ void sqlite3Pragma(
       int size = pBt ? sqlite3BtreeGetPageSize(pBt) : 0;
       returnSingleInt(pParse, "page_size", size);
     }else{
-      sqlite3BtreeSetPageSize(pBt, atoi(zRight), -1);
+      /* Malloc may fail when setting the page-size, as there is an internal
+      ** buffer that the pager module resizes using sqlite3_realloc().
+      */
+      if( SQLITE_NOMEM==sqlite3BtreeSetPageSize(pBt, atoi(zRight), -1) ){
+        db->mallocFailed = 1;
+      }
     }
   }else
 
@@ -461,6 +461,7 @@ void sqlite3Pragma(
           sqlite3VdbeChangeP2(v, iAddr+2, iAddr+4);
           sqlite3VdbeChangeP1(v, iAddr+4, eAuto-1);
           sqlite3VdbeChangeP1(v, iAddr+5, iDb);
+          sqlite3VdbeUsesBtree(v, iDb);
         }
       }
     }
@@ -557,7 +558,9 @@ void sqlite3Pragma(
         sqlite3VdbeAddOp(v, OP_Callback, 1, 0);
       }
     }else{
-      if( zRight[0] && !sqlite3OsIsDirWritable(zRight) ){
+      if( zRight[0] 
+       && !sqlite3OsAccess(db->pVfs, zRight, SQLITE_ACCESS_READWRITE) 
+      ){
         sqlite3ErrorMsg(pParse, "not a writable directory");
         goto pragma_out;
       }
@@ -567,7 +570,7 @@ void sqlite3Pragma(
       ){
         invalidateTempStorage(pParse);
       }
-      sqliteFree(sqlite3_temp_directory);
+      sqlite3_free(sqlite3_temp_directory);
       if( zRight[0] ){
         sqlite3_temp_directory = zRight;
         zRight = 0;
@@ -864,7 +867,7 @@ void sqlite3Pragma(
       sqlite3VdbeAddOp(v, OP_IntegrityCk, 0, i);
       addr = sqlite3VdbeAddOp(v, OP_IsNull, -1, 0);
       sqlite3VdbeOp3(v, OP_String8, 0, 0,
-         sqlite3MPrintf("*** in database %s ***\n", db->aDb[i].zName),
+         sqlite3MPrintf(db, "*** in database %s ***\n", db->aDb[i].zName),
          P3_DYNAMIC);
       sqlite3VdbeAddOp(v, OP_Pull, 1, 0);
       sqlite3VdbeAddOp(v, OP_Concat, 0, 0);
@@ -1047,6 +1050,7 @@ void sqlite3Pragma(
   ){
 
     int iCookie;   /* Cookie index. 0 for schema-cookie, 6 for user-cookie. */
+    sqlite3VdbeUsesBtree(v, iDb);
     switch( zLeft[0] ){
       case 's': case 'S':
         iCookie = 0;
@@ -1104,16 +1108,18 @@ void sqlite3Pragma(
     for(i=0; i<db->nDb; i++){
       Btree *pBt;
       Pager *pPager;
+      const char *zState = "unknown";
+      int j;
       if( db->aDb[i].zName==0 ) continue;
       sqlite3VdbeOp3(v, OP_String8, 0, 0, db->aDb[i].zName, P3_STATIC);
       pBt = db->aDb[i].pBt;
       if( pBt==0 || (pPager = sqlite3BtreePager(pBt))==0 ){
-        sqlite3VdbeOp3(v, OP_String8, 0, 0, "closed", P3_STATIC);
-      }else{
-        int j = sqlite3PagerLockstate(pPager);
-        sqlite3VdbeOp3(v, OP_String8, 0, 0, 
-            (j>=0 && j<=4) ? azLockName[j] : "unknown", P3_STATIC);
+        zState = "closed";
+      }else if( sqlite3_file_control(db, db->aDb[i].zName, 
+                                     SQLITE_FCNTL_LOCKSTATE, &j)==SQLITE_OK ){
+         zState = azLockName[j];
       }
+      sqlite3VdbeOp3(v, OP_String8, 0, 0, zState, P3_STATIC);
       sqlite3VdbeAddOp(v, OP_Callback, 2, 0);
     }
   }else
@@ -1173,8 +1179,8 @@ void sqlite3Pragma(
 #endif
   }
 pragma_out:
-  sqliteFree(zLeft);
-  sqliteFree(zRight);
+  sqlite3_free(zLeft);
+  sqlite3_free(zRight);
 }
 
 #endif /* SQLITE_OMIT_PRAGMA || SQLITE_OMIT_PARSER */

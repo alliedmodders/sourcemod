@@ -207,7 +207,7 @@ static void whereClauseClear(WhereClause *pWC){
     }
   }
   if( pWC->a!=pWC->aStatic ){
-    sqliteFree(pWC->a);
+    sqlite3_free(pWC->a);
   }
 }
 
@@ -228,8 +228,9 @@ static int whereClauseInsert(WhereClause *pWC, Expr *p, int flags){
   int idx;
   if( pWC->nTerm>=pWC->nSlot ){
     WhereTerm *pOld = pWC->a;
-    pWC->a = sqliteMalloc( sizeof(pWC->a[0])*pWC->nSlot*2 );
+    pWC->a = sqlite3_malloc( sizeof(pWC->a[0])*pWC->nSlot*2 );
     if( pWC->a==0 ){
+      pWC->pParse->db->mallocFailed = 1;
       if( flags & TERM_DYNAMIC ){
         sqlite3ExprDelete(p);
       }
@@ -237,7 +238,7 @@ static int whereClauseInsert(WhereClause *pWC, Expr *p, int flags){
     }
     memcpy(pWC->a, pOld, sizeof(pWC->a[0])*pWC->nTerm);
     if( pOld!=pWC->aStatic ){
-      sqliteFree(pOld);
+      sqlite3_free(pOld);
     }
     pWC->nSlot *= 2;
   }
@@ -349,15 +350,14 @@ static Bitmask exprListTableUsage(ExprMaskSet *pMaskSet, ExprList *pList){
   return mask;
 }
 static Bitmask exprSelectTableUsage(ExprMaskSet *pMaskSet, Select *pS){
-  Bitmask mask;
-  if( pS==0 ){
-    mask = 0;
-  }else{
-    mask = exprListTableUsage(pMaskSet, pS->pEList);
+  Bitmask mask = 0;
+  while( pS ){
+    mask |= exprListTableUsage(pMaskSet, pS->pEList);
     mask |= exprListTableUsage(pMaskSet, pS->pGroupBy);
     mask |= exprListTableUsage(pMaskSet, pS->pOrderBy);
     mask |= exprTableUsage(pMaskSet, pS->pWhere);
     mask |= exprTableUsage(pMaskSet, pS->pHaving);
+    pS = pS->pPrior;
   }
   return mask;
 }
@@ -383,10 +383,22 @@ static int allowedOp(int op){
 /*
 ** Commute a comparision operator.  Expressions of the form "X op Y"
 ** are converted into "Y op X".
+**
+** If a collation sequence is associated with either the left or right
+** side of the comparison, it remains associated with the same side after
+** the commutation. So "Y collate NOCASE op X" becomes 
+** "X collate NOCASE op Y". This is because any collation sequence on
+** the left hand side of a comparison overrides any collation sequence 
+** attached to the right. For the same reason the EP_ExpCollate flag
+** is not commuted.
 */
 static void exprCommute(Expr *pExpr){
+  u16 expRight = (pExpr->pRight->flags & EP_ExpCollate);
+  u16 expLeft = (pExpr->pLeft->flags & EP_ExpCollate);
   assert( allowedOp(pExpr->op) && pExpr->op!=TK_IN );
   SWAP(CollSeq*,pExpr->pRight->pColl,pExpr->pLeft->pColl);
+  pExpr->pRight->flags = (pExpr->pRight->flags & ~EP_ExpCollate) | expLeft;
+  pExpr->pLeft->flags = (pExpr->pLeft->flags & ~EP_ExpCollate) | expRight;
   SWAP(Expr*,pExpr->pRight,pExpr->pLeft);
   if( pExpr->op>=TK_GT ){
     assert( TK_LT==TK_GT+2 );
@@ -538,7 +550,7 @@ static int isLikeOrGlob(
       (pColl->type!=SQLITE_COLL_NOCASE || !noCase) ){
     return 0;
   }
-  sqlite3DequoteExpr(pRight);
+  sqlite3DequoteExpr(db, pRight);
   z = (char *)pRight->token.z;
   for(cnt=0; (c=z[cnt])!=0 && c!=wc[0] && c!=wc[1] && c!=wc[2]; cnt++){}
   if( cnt==0 || 255==(u8)z[cnt] ){
@@ -703,8 +715,10 @@ static void exprAnalyze(
   int nPattern;
   int isComplete;
   int op;
+  Parse *pParse = pWC->pParse;
+  sqlite3 *db = pParse->db;
 
-  if( sqlite3MallocFailed() ) return;
+  if( db->mallocFailed ) return;
   prereqLeft = exprTableUsage(pMaskSet, pExpr->pLeft);
   op = pExpr->op;
   if( op==TK_IN ){
@@ -737,8 +751,8 @@ static void exprAnalyze(
       Expr *pDup;
       if( pTerm->leftCursor>=0 ){
         int idxNew;
-        pDup = sqlite3ExprDup(pExpr);
-        if( sqlite3MallocFailed() ){
+        pDup = sqlite3ExprDup(db, pExpr);
+        if( db->mallocFailed ){
           sqlite3ExprDelete(pDup);
           return;
         }
@@ -776,8 +790,8 @@ static void exprAnalyze(
     for(i=0; i<2; i++){
       Expr *pNewExpr;
       int idxNew;
-      pNewExpr = sqlite3Expr(ops[i], sqlite3ExprDup(pExpr->pLeft),
-                             sqlite3ExprDup(pList->a[i].pExpr), 0);
+      pNewExpr = sqlite3Expr(db, ops[i], sqlite3ExprDup(db, pExpr->pLeft),
+                             sqlite3ExprDup(db, pList->a[i].pExpr), 0);
       idxNew = whereClauseInsert(pWC, pNewExpr, TERM_VIRTUAL|TERM_DYNAMIC);
       exprAnalyze(pSrc, pWC, idxNew);
       pTerm = &pWC->a[idxTerm];
@@ -837,13 +851,13 @@ static void exprAnalyze(
       Expr *pLeft = 0;
       for(i=sOr.nTerm-1, pOrTerm=sOr.a; i>=0 && ok; i--, pOrTerm++){
         if( (pOrTerm->flags & TERM_OR_OK)==0 ) continue;
-        pDup = sqlite3ExprDup(pOrTerm->pExpr->pRight);
-        pList = sqlite3ExprListAppend(pList, pDup, 0);
+        pDup = sqlite3ExprDup(db, pOrTerm->pExpr->pRight);
+        pList = sqlite3ExprListAppend(pWC->pParse, pList, pDup, 0);
         pLeft = pOrTerm->pExpr->pLeft;
       }
       assert( pLeft!=0 );
-      pDup = sqlite3ExprDup(pLeft);
-      pNew = sqlite3Expr(TK_IN, pDup, 0, 0);
+      pDup = sqlite3ExprDup(db, pLeft);
+      pNew = sqlite3Expr(db, TK_IN, pDup, 0, 0);
       if( pNew ){
         int idxNew;
         transferJoinMarkings(pNew, pExpr);
@@ -866,7 +880,7 @@ or_not_possible:
   /* Add constraints to reduce the search space on a LIKE or GLOB
   ** operator.
   */
-  if( isLikeOrGlob(pWC->pParse->db, pExpr, &nPattern, &isComplete) ){
+  if( isLikeOrGlob(db, pExpr, &nPattern, &isComplete) ){
     Expr *pLeft, *pRight;
     Expr *pStr1, *pStr2;
     Expr *pNewExpr1, *pNewExpr2;
@@ -874,21 +888,21 @@ or_not_possible:
 
     pLeft = pExpr->pList->a[1].pExpr;
     pRight = pExpr->pList->a[0].pExpr;
-    pStr1 = sqlite3Expr(TK_STRING, 0, 0, 0);
+    pStr1 = sqlite3PExpr(pParse, TK_STRING, 0, 0, 0);
     if( pStr1 ){
-      sqlite3TokenCopy(&pStr1->token, &pRight->token);
+      sqlite3TokenCopy(db, &pStr1->token, &pRight->token);
       pStr1->token.n = nPattern;
       pStr1->flags = EP_Dequoted;
     }
-    pStr2 = sqlite3ExprDup(pStr1);
+    pStr2 = sqlite3ExprDup(db, pStr1);
     if( pStr2 ){
       assert( pStr2->token.dyn );
       ++*(u8*)&pStr2->token.z[nPattern-1];
     }
-    pNewExpr1 = sqlite3Expr(TK_GE, sqlite3ExprDup(pLeft), pStr1, 0);
+    pNewExpr1 = sqlite3PExpr(pParse, TK_GE, sqlite3ExprDup(db,pLeft), pStr1, 0);
     idxNew1 = whereClauseInsert(pWC, pNewExpr1, TERM_VIRTUAL|TERM_DYNAMIC);
     exprAnalyze(pSrc, pWC, idxNew1);
-    pNewExpr2 = sqlite3Expr(TK_LT, sqlite3ExprDup(pLeft), pStr2, 0);
+    pNewExpr2 = sqlite3PExpr(pParse, TK_LT, sqlite3ExprDup(db,pLeft), pStr2, 0);
     idxNew2 = whereClauseInsert(pWC, pNewExpr2, TERM_VIRTUAL|TERM_DYNAMIC);
     exprAnalyze(pSrc, pWC, idxNew2);
     pTerm = &pWC->a[idxTerm];
@@ -919,7 +933,7 @@ or_not_possible:
     prereqColumn = exprTableUsage(pMaskSet, pLeft);
     if( (prereqExpr & prereqColumn)==0 ){
       Expr *pNewExpr;
-      pNewExpr = sqlite3Expr(TK_MATCH, 0, sqlite3ExprDup(pRight), 0);
+      pNewExpr = sqlite3Expr(db, TK_MATCH, 0, sqlite3ExprDup(db, pRight), 0);
       idxNew = whereClauseInsert(pWC, pNewExpr, TERM_VIRTUAL|TERM_DYNAMIC);
       pNewTerm = &pWC->a[idxNew];
       pNewTerm->prereqRight = prereqExpr;
@@ -1245,7 +1259,7 @@ static double bestVirtualIndex(
 
     /* Allocate the sqlite3_index_info structure
     */
-    pIdxInfo = sqliteMalloc( sizeof(*pIdxInfo)
+    pIdxInfo = sqlite3DbMallocZero(pParse->db, sizeof(*pIdxInfo)
                              + (sizeof(*pIdxCons) + sizeof(*pUsage))*nTerm
                              + sizeof(*pIdxOrderBy)*nOrderBy );
     if( pIdxInfo==0 ){
@@ -1274,7 +1288,7 @@ static double bestVirtualIndex(
       if( pTerm->eOperator==WO_IN ) continue;
       pIdxCons[j].iColumn = pTerm->leftColumn;
       pIdxCons[j].iTermOffset = i;
-      pIdxCons[j].op = (unsigned char)pTerm->eOperator;
+      pIdxCons[j].op = pTerm->eOperator;
       /* The direct assignment in the previous line is possible only because
       ** the WO_ and SQLITE_INDEX_CONSTRAINT_ codes are identical.  The
       ** following asserts verify this fact. */
@@ -1363,7 +1377,7 @@ static double bestVirtualIndex(
   TRACE_IDX_OUTPUTS(pIdxInfo);
   if( rc!=SQLITE_OK ){
     if( rc==SQLITE_NOMEM ){
-      sqlite3FailedMalloc();
+      pParse->db->mallocFailed = 1;
     }else {
       sqlite3ErrorMsg(pParse, "%s", sqlite3ErrStr(rc));
     }
@@ -1551,7 +1565,7 @@ static double bestIndex(
          && nEq==pProbe->nColumn ){
       flags |= WHERE_UNIQUE;
     }
-    WHERETRACE(("...... nEq=%d inMult=%.9g cost=%.9g\n", nEq, inMultiplier, cost));
+    WHERETRACE(("...... nEq=%d inMult=%.9g cost=%.9g\n",nEq,inMultiplier,cost));
 
     /* Look for range constraints
     */
@@ -1612,10 +1626,9 @@ static double bestIndex(
 
     /* If this index has achieved the lowest cost so far, then use it.
     */
-    if( cost < lowestCost ){
+    if( flags && cost < lowestCost ){
       bestIdx = pProbe;
       lowestCost = cost;
-      assert( flags!=0 );
       bestFlags = flags;
       bestNEq = nEq;
     }
@@ -1724,7 +1737,7 @@ static void codeEqualityTerm(
       pLevel->nxt = sqlite3VdbeMakeLabel(v);
     }
     pLevel->nIn++;
-    pLevel->aInLoop = sqliteReallocOrFree(pLevel->aInLoop,
+    pLevel->aInLoop = sqlite3DbReallocOrFree(pParse->db, pLevel->aInLoop,
                                     sizeof(pLevel->aInLoop[0])*pLevel->nIn);
     pIn = pLevel->aInLoop;
     if( pIn ){
@@ -1843,10 +1856,10 @@ static void whereInfoFree(WhereInfo *pWInfo){
           */
           sqlite3_free(pInfo->idxStr);
         }
-        sqliteFree(pInfo);
+        sqlite3_free(pInfo);
       }
     }
-    sqliteFree(pWInfo);
+    sqlite3_free(pWInfo);
   }
 }
 
@@ -1957,6 +1970,7 @@ WhereInfo *sqlite3WhereBegin(
   WhereLevel *pLevel;             /* A single level in the pWInfo list */
   int iFrom;                      /* First unused FROM clause element */
   int andFlags;              /* AND-ed combination of all wc.a[].flags */
+  sqlite3 *db;               /* Database connection */
 
   /* The number of tables in the FROM clause is limited by the number of
   ** bits in a Bitmask 
@@ -1976,8 +1990,10 @@ WhereInfo *sqlite3WhereBegin(
   /* Allocate and initialize the WhereInfo structure that will become the
   ** return value.
   */
-  pWInfo = sqliteMalloc( sizeof(WhereInfo) + pTabList->nSrc*sizeof(WhereLevel));
-  if( sqlite3MallocFailed() ){
+  db = pParse->db;
+  pWInfo = sqlite3DbMallocZero(db,  
+                      sizeof(WhereInfo) + pTabList->nSrc*sizeof(WhereLevel));
+  if( db->mallocFailed ){
     goto whereBeginNoMem;
   }
   pWInfo->nLevel = pTabList->nSrc;
@@ -2002,7 +2018,7 @@ WhereInfo *sqlite3WhereBegin(
     createMask(&maskSet, pTabList->a[i].iCursor);
   }
   exprAnalyzeAll(pTabList, &wc);
-  if( sqlite3MallocFailed() ){
+  if( db->mallocFailed ){
     goto whereBeginNoMem;
   }
 
@@ -2134,24 +2150,24 @@ WhereInfo *sqlite3WhereBegin(
     if( pParse->explain==2 ){
       char *zMsg;
       struct SrcList_item *pItem = &pTabList->a[pLevel->iFrom];
-      zMsg = sqlite3MPrintf("TABLE %s", pItem->zName);
+      zMsg = sqlite3MPrintf(db, "TABLE %s", pItem->zName);
       if( pItem->zAlias ){
-        zMsg = sqlite3MPrintf("%z AS %s", zMsg, pItem->zAlias);
+        zMsg = sqlite3MPrintf(db, "%z AS %s", zMsg, pItem->zAlias);
       }
       if( (pIx = pLevel->pIdx)!=0 ){
-        zMsg = sqlite3MPrintf("%z WITH INDEX %s", zMsg, pIx->zName);
+        zMsg = sqlite3MPrintf(db, "%z WITH INDEX %s", zMsg, pIx->zName);
       }else if( pLevel->flags & (WHERE_ROWID_EQ|WHERE_ROWID_RANGE) ){
-        zMsg = sqlite3MPrintf("%z USING PRIMARY KEY", zMsg);
+        zMsg = sqlite3MPrintf(db, "%z USING PRIMARY KEY", zMsg);
       }
 #ifndef SQLITE_OMIT_VIRTUALTABLE
       else if( pLevel->pBestIdx ){
         sqlite3_index_info *pBestIdx = pLevel->pBestIdx;
-        zMsg = sqlite3MPrintf("%z VIRTUAL TABLE INDEX %d:%s", zMsg,
+        zMsg = sqlite3MPrintf(db, "%z VIRTUAL TABLE INDEX %d:%s", zMsg,
                     pBestIdx->idxNum, pBestIdx->idxStr);
       }
 #endif
       if( pLevel->flags & WHERE_ORDERBY ){
-        zMsg = sqlite3MPrintf("%z ORDER BY", zMsg);
+        zMsg = sqlite3MPrintf(db, "%z ORDER BY", zMsg);
       }
       sqlite3VdbeOp3(v, OP_Explain, i, pLevel->iFrom, zMsg, P3_DYNAMIC);
     }
@@ -2679,7 +2695,7 @@ void sqlite3WhereEnd(WhereInfo *pWInfo){
         sqlite3VdbeAddOp(v, OP_Next, pIn->iCur, pIn->topAddr);
         sqlite3VdbeJumpHere(v, pIn->topAddr-1);
       }
-      sqliteFree(pLevel->aInLoop);
+      sqlite3_free(pLevel->aInLoop);
     }
     sqlite3VdbeResolveLabel(v, pLevel->brk);
     if( pLevel->iLeftJoin ){

@@ -41,13 +41,26 @@
 typedef struct Btree Btree;
 typedef struct BtCursor BtCursor;
 typedef struct BtShared BtShared;
+typedef struct BtreeMutexArray BtreeMutexArray;
+
+/*
+** This structure records all of the Btrees that need to hold
+** a mutex before we enter sqlite3VdbeExec().  The Btrees are
+** are placed in aBtree[] in order of aBtree[]->pBt.  That way,
+** we can always lock and unlock them all quickly.
+*/
+struct BtreeMutexArray {
+  int nMutex;
+  Btree *aBtree[SQLITE_MAX_ATTACHED+1];
+};
 
 
 int sqlite3BtreeOpen(
   const char *zFilename,   /* Name of database file to open */
   sqlite3 *db,             /* Associated database connection */
   Btree **,                /* Return open Btree* here */
-  int flags                /* Flags */
+  int flags,               /* Flags */
+  int vfsFlags             /* Flags passed through to VFS open */
 );
 
 /* The flags parameter to sqlite3BtreeOpen can be the bitwise or of the
@@ -59,6 +72,14 @@ int sqlite3BtreeOpen(
 #define BTREE_OMIT_JOURNAL  1  /* Do not use journal.  No argument */
 #define BTREE_NO_READLOCK   2  /* Omit readlocks on readonly files */
 #define BTREE_MEMORY        4  /* In-memory DB.  No argument */
+#define BTREE_READONLY      8  /* Open the database in read-only mode */
+#define BTREE_READWRITE    16  /* Open for both reading and writing */
+#define BTREE_CREATE       32  /* Create the database if it does not exist */
+
+/* Additional values for the 4th argument of sqlite3BtreeOpen that
+** are not associated with PAGER_ values.
+*/
+#define BTREE_PRIVATE      64  /* Never share with other connections */
 
 int sqlite3BtreeClose(Btree*);
 int sqlite3BtreeSetBusyHandler(Btree*,BusyHandler*);
@@ -105,6 +126,7 @@ int sqlite3BtreeDropTable(Btree*, int, int*);
 int sqlite3BtreeClearTable(Btree*, int);
 int sqlite3BtreeGetMeta(Btree*, int idx, u32 *pValue);
 int sqlite3BtreeUpdateMeta(Btree*, int idx, u32 value);
+void sqlite3BtreeTripAllCursors(Btree*, int);
 
 int sqlite3BtreeCursor(
   Btree*,                              /* BTree containing table to open */
@@ -129,6 +151,7 @@ int sqlite3BtreeFlags(BtCursor*);
 int sqlite3BtreePrevious(BtCursor*, int *pRes);
 int sqlite3BtreeKeySize(BtCursor*, i64 *pSize);
 int sqlite3BtreeKey(BtCursor*, u32 offset, u32 amt, void*);
+sqlite3 *sqlite3BtreeCursorDb(const BtCursor*);
 const void *sqlite3BtreeKeyFetch(BtCursor*, int *pAmt);
 const void *sqlite3BtreeDataFetch(BtCursor*, int *pAmt);
 int sqlite3BtreeDataSize(BtCursor*, u32 *pSize);
@@ -145,5 +168,37 @@ int sqlite3BtreeCursorInfo(BtCursor*, int*, int);
 void sqlite3BtreeCursorList(Btree*);
 int sqlite3BtreePageDump(Btree*, int, int recursive);
 #endif
+
+/*
+** If we are not using shared cache, then there is no need to
+** use mutexes to access the BtShared structures.  So make the
+** Enter and Leave procedures no-ops.
+*/
+#if !defined(SQLITE_OMIT_SHARED_CACHE) && SQLITE_THREADSAFE
+  void sqlite3BtreeEnter(Btree*);
+  void sqlite3BtreeLeave(Btree*);
+  int sqlite3BtreeHoldsMutex(Btree*);
+  void sqlite3BtreeEnterCursor(BtCursor*);
+  void sqlite3BtreeLeaveCursor(BtCursor*);
+  void sqlite3BtreeEnterAll(sqlite3*);
+  void sqlite3BtreeLeaveAll(sqlite3*);
+  int sqlite3BtreeHoldsAllMutexes(sqlite3*);
+  void sqlite3BtreeMutexArrayEnter(BtreeMutexArray*);
+  void sqlite3BtreeMutexArrayLeave(BtreeMutexArray*);
+  void sqlite3BtreeMutexArrayInsert(BtreeMutexArray*, Btree*);
+#else
+# define sqlite3BtreeEnter(X)
+# define sqlite3BtreeLeave(X)
+# define sqlite3BtreeHoldsMutex(X) 1
+# define sqlite3BtreeEnterCursor(X)
+# define sqlite3BtreeLeaveCursor(X)
+# define sqlite3BtreeEnterAll(X)
+# define sqlite3BtreeLeaveAll(X)
+# define sqlite3BtreeHoldsAllMutexes(X) 1
+# define sqlite3BtreeMutexArrayEnter(X)
+# define sqlite3BtreeMutexArrayLeave(X)
+# define sqlite3BtreeMutexArrayInsert(X,Y)
+#endif
+
 
 #endif /* _BTREE_H_ */

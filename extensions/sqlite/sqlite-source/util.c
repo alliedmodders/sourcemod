@@ -17,7 +17,6 @@
 ** $Id$
 */
 #include "sqliteInt.h"
-#include "os.h"
 #include <stdarg.h>
 #include <ctype.h>
 
@@ -44,15 +43,15 @@
 ** to NULL.
 */
 void sqlite3Error(sqlite3 *db, int err_code, const char *zFormat, ...){
-  if( db && (db->pErr || (db->pErr = sqlite3ValueNew())!=0) ){
+  if( db && (db->pErr || (db->pErr = sqlite3ValueNew(db))!=0) ){
     db->errCode = err_code;
     if( zFormat ){
       char *z;
       va_list ap;
       va_start(ap, zFormat);
-      z = sqlite3VMPrintf(zFormat, ap);
+      z = sqlite3VMPrintf(db, zFormat, ap);
       va_end(ap);
-      sqlite3ValueSetStr(db->pErr, -1, z, SQLITE_UTF8, sqlite3FreeX);
+      sqlite3ValueSetStr(db->pErr, -1, z, SQLITE_UTF8, sqlite3_free);
     }else{
       sqlite3ValueSetStr(db->pErr, 0, 0, SQLITE_UTF8, SQLITE_STATIC);
     }
@@ -79,9 +78,9 @@ void sqlite3Error(sqlite3 *db, int err_code, const char *zFormat, ...){
 void sqlite3ErrorMsg(Parse *pParse, const char *zFormat, ...){
   va_list ap;
   pParse->nErr++;
-  sqliteFree(pParse->zErrMsg);
+  sqlite3_free(pParse->zErrMsg);
   va_start(ap, zFormat);
-  pParse->zErrMsg = sqlite3VMPrintf(zFormat, ap);
+  pParse->zErrMsg = sqlite3VMPrintf(pParse->db, zFormat, ap);
   va_end(ap);
   if( pParse->rc==SQLITE_OK ){
     pParse->rc = SQLITE_ERROR;
@@ -92,7 +91,7 @@ void sqlite3ErrorMsg(Parse *pParse, const char *zFormat, ...){
 ** Clear the error message in pParse, if any
 */
 void sqlite3ErrorClear(Parse *pParse){
-  sqliteFree(pParse->zErrMsg);
+  sqlite3_free(pParse->zErrMsg);
   pParse->zErrMsg = 0;
   pParse->nErr = 0;
 }
@@ -421,10 +420,16 @@ int sqlite3GetInt32(const char *zNum, int *pValue){
     zNum++;
   }
   while( zNum[0]=='0' ) zNum++;
-  for(i=0; i<10 && (c = zNum[i] - '0')>=0 && c<=9; i++){
+  for(i=0; i<11 && (c = zNum[i] - '0')>=0 && c<=9; i++){
     v = v*10 + c;
   }
-  if( i>9 ){
+
+  /* The longest decimal representation of a 32 bit integer is 10 digits:
+  **
+  **             1234567890
+  **     2^31 -> 2147483648
+  */
+  if( i>10 ){
     return 0;
   }
   if( v-neg>2147483647 ){
@@ -631,13 +636,13 @@ static int hexToInt(int h){
 ** binary value has been obtained from malloc and must be freed by
 ** the calling routine.
 */
-void *sqlite3HexToBlob(const char *z){
+void *sqlite3HexToBlob(sqlite3 *db, const char *z){
   char *zBlob;
   int i;
   int n = strlen(z);
   if( n%2 ) return 0;
 
-  zBlob = (char *)sqliteMalloc(n/2);
+  zBlob = (char *)sqlite3DbMallocRaw(db, n/2);
   if( zBlob ){
     for(i=0; i<n; i+=2){
       zBlob[i/2] = (hexToInt(z[i])<<4) | hexToInt(z[i+1]);
@@ -698,35 +703,4 @@ int sqlite3SafetyOff(sqlite3 *db){
     db->u1.isInterrupted = 1;
     return 1;
   }
-}
-
-/*
-** Return a pointer to the ThreadData associated with the calling thread.
-*/
-ThreadData *sqlite3ThreadData(){
-  ThreadData *p = (ThreadData*)sqlite3OsThreadSpecificData(1);
-  if( !p ){
-    sqlite3FailedMalloc();
-  }
-  return p;
-}
-
-/*
-** Return a pointer to the ThreadData associated with the calling thread.
-** If no ThreadData has been allocated to this thread yet, return a pointer
-** to a substitute ThreadData structure that is all zeros. 
-*/
-const ThreadData *sqlite3ThreadDataReadOnly(){
-  static const ThreadData zeroData = {0};  /* Initializer to silence warnings
-                                           ** from broken compilers */
-  const ThreadData *pTd = sqlite3OsThreadSpecificData(0);
-  return pTd ? pTd : &zeroData;
-}
-
-/*
-** Check to see if the ThreadData for this thread is all zero.  If it
-** is, then deallocate it. 
-*/
-void sqlite3ReleaseThreadData(){
-  sqlite3OsThreadSpecificData(-1);
 }

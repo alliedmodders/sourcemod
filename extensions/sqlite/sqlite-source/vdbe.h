@@ -120,6 +120,7 @@ void sqlite3VdbeChangeP2(Vdbe*, int addr, int P2);
 void sqlite3VdbeJumpHere(Vdbe*, int addr);
 void sqlite3VdbeChangeToNoop(Vdbe*, int addr, int N);
 void sqlite3VdbeChangeP3(Vdbe*, int addr, const char *zP1, int N);
+void sqlite3VdbeUsesBtree(Vdbe*, int);
 VdbeOp *sqlite3VdbeGetOp(Vdbe*, int);
 int sqlite3VdbeMakeLabel(Vdbe*);
 void sqlite3VdbeDelete(Vdbe*);

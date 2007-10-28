@@ -113,7 +113,7 @@ static const et_info fmtinfo[] = {
   {  'd', 10, 1, etRADIX,      0,  0 },
   {  's',  0, 4, etSTRING,     0,  0 },
   {  'g',  0, 1, etGENERIC,    30, 0 },
-  {  'z',  0, 6, etDYNSTRING,  0,  0 },
+  {  'z',  0, 4, etDYNSTRING,  0,  0 },
   {  'q',  0, 4, etSQLESCAPE,  0,  0 },
   {  'Q',  0, 4, etSQLESCAPE2, 0,  0 },
   {  'w',  0, 4, etSQLESCAPE3, 0,  0 },
@@ -627,7 +627,7 @@ static int vxprintf(
         needQuote = !isnull && xtype==etSQLESCAPE2;
         n += i + 1 + needQuote*2;
         if( n>etBUFSIZE ){
-          bufpt = zExtra = sqliteMalloc( n );
+          bufpt = zExtra = sqlite3_malloc( n );
           if( bufpt==0 ) return -1;
         }else{
           bufpt = buf;
@@ -701,7 +701,7 @@ static int vxprintf(
       }
     }
     if( zExtra ){
-      sqliteFree(zExtra);
+      sqlite3_free(zExtra);
     }
   }/* End for loop over the format string */
   return errorflag ? -1 : count;
@@ -718,6 +718,7 @@ struct sgMprintf {
   int  nTotal;     /* Output size if unconstrained */
   int  nAlloc;     /* Amount of space allocated in zText */
   void *(*xRealloc)(void*,int);  /* Function used to realloc memory */
+  int  iMallocFailed;            /* True if xRealloc() has failed */
 };
 
 /* 
@@ -728,30 +729,39 @@ struct sgMprintf {
 */
 static void mout(void *arg, const char *zNewText, int nNewChar){
   struct sgMprintf *pM = (struct sgMprintf*)arg;
+  if( pM->iMallocFailed ) return;
   pM->nTotal += nNewChar;
-  if( pM->nChar + nNewChar + 1 > pM->nAlloc ){
-    if( pM->xRealloc==0 ){
-      nNewChar =  pM->nAlloc - pM->nChar - 1;
-    }else{
-      int nAlloc = pM->nChar + nNewChar*2 + 1;
-      if( pM->zText==pM->zBase ){
-        pM->zText = pM->xRealloc(0, nAlloc);
-        if( pM->zText && pM->nChar ){
-          memcpy(pM->zText, pM->zBase, pM->nChar);
-        }
-      }else{
-        char *zNew;
-        zNew = pM->xRealloc(pM->zText, nAlloc);
-        if( zNew ){
-          pM->zText = zNew;
-        }else{
-          return;
-        }
-      }
-      pM->nAlloc = nAlloc;
-    }
-  }
   if( pM->zText ){
+    if( pM->nChar + nNewChar + 1 > pM->nAlloc ){
+      if( pM->xRealloc==0 ){
+        nNewChar =  pM->nAlloc - pM->nChar - 1;
+      }else{
+        int nAlloc = pM->nChar + nNewChar*2 + 1;
+        if( pM->zText==pM->zBase ){
+          pM->zText = pM->xRealloc(0, nAlloc);
+          if( pM->zText==0 ){
+            pM->nAlloc = 0;
+            pM->iMallocFailed = 1;
+            return;
+          }else if( pM->nChar ){
+            memcpy(pM->zText, pM->zBase, pM->nChar);
+          }
+        }else{
+          char *zNew;
+          zNew = pM->xRealloc(pM->zText, nAlloc);
+          if( zNew ){
+            pM->zText = zNew;
+          }else{
+            pM->iMallocFailed = 1;
+            pM->xRealloc(pM->zText, 0);
+            pM->zText = 0;
+            pM->nAlloc = 0;
+            return;
+          }
+        }
+        pM->nAlloc = nAlloc;
+      }
+    }
     if( nNewChar>0 ){
       memcpy(&pM->zText[pM->nChar], zNewText, nNewChar);
       pM->nChar += nNewChar;
@@ -765,7 +775,7 @@ static void mout(void *arg, const char *zNewText, int nNewChar){
 ** the consumer.  
 */
 static char *base_vprintf(
-  void *(*xRealloc)(void*,int),   /* Routine to realloc memory. May be NULL */
+  void *(*xRealloc)(void*, int),  /* realloc() function. May be NULL */
   int useInternal,                /* Use internal %-conversions if true */
   char *zInitBuf,                 /* Initially write here, before mallocing */
   int nInitBuf,                   /* Size of zInitBuf[] */
@@ -777,15 +787,19 @@ static char *base_vprintf(
   sM.nChar = sM.nTotal = 0;
   sM.nAlloc = nInitBuf;
   sM.xRealloc = xRealloc;
+  sM.iMallocFailed = 0;
   vxprintf(mout, &sM, useInternal, zFormat, ap);
-  if( xRealloc ){
+  assert(sM.iMallocFailed==0 || sM.zText==0);
+  if( xRealloc && !sM.iMallocFailed ){
     if( sM.zText==sM.zBase ){
       sM.zText = xRealloc(0, sM.nChar+1);
       if( sM.zText ){
         memcpy(sM.zText, sM.zBase, sM.nChar+1);
       }
     }else if( sM.nAlloc>sM.nChar+10 ){
-      char *zNew = xRealloc(sM.zText, sM.nChar+1);
+      char *zNew;
+      sqlite3MallocBenignFailure(1);
+      zNew = xRealloc(sM.zText, sM.nChar+1);
       if( zNew ){
         sM.zText = zNew;
       }
@@ -798,29 +812,37 @@ static char *base_vprintf(
 ** Realloc that is a real function, not a macro.
 */
 static void *printf_realloc(void *old, int size){
-  return sqliteRealloc(old,size);
+  return sqlite3_realloc(old, size);
 }
 
 /*
 ** Print into memory obtained from sqliteMalloc().  Use the internal
 ** %-conversion extensions.
 */
-char *sqlite3VMPrintf(const char *zFormat, va_list ap){
+char *sqlite3VMPrintf(sqlite3 *db, const char *zFormat, va_list ap){
+  char *z;
   char zBase[SQLITE_PRINT_BUF_SIZE];
-  return base_vprintf(printf_realloc, 1, zBase, sizeof(zBase), zFormat, ap);
+  z = base_vprintf(printf_realloc, 1, zBase, sizeof(zBase), zFormat, ap);
+  if( z==0 && db!=0 ){
+    db->mallocFailed = 1;
+  }
+  return z;
 }
 
 /*
 ** Print into memory obtained from sqliteMalloc().  Use the internal
 ** %-conversion extensions.
 */
-char *sqlite3MPrintf(const char *zFormat, ...){
+char *sqlite3MPrintf(sqlite3 *db, const char *zFormat, ...){
   va_list ap;
   char *z;
   char zBase[SQLITE_PRINT_BUF_SIZE];
   va_start(ap, zFormat);
   z = base_vprintf(printf_realloc, 1, zBase, sizeof(zBase), zFormat, ap);
   va_end(ap);
+  if( z==0 && db!=0 ){
+    db->mallocFailed = 1;
+  }
   return z;
 }
 

@@ -39,6 +39,7 @@ static void clearSelect(Select *p){
 ** structure.
 */
 Select *sqlite3SelectNew(
+  Parse *pParse,        /* Parsing context */
   ExprList *pEList,     /* which columns to include in the result */
   SrcList *pSrc,        /* the FROM clause -- which tables to scan */
   Expr *pWhere,         /* the WHERE clause */
@@ -51,14 +52,15 @@ Select *sqlite3SelectNew(
 ){
   Select *pNew;
   Select standin;
-  pNew = sqliteMalloc( sizeof(*pNew) );
+  sqlite3 *db = pParse->db;
+  pNew = sqlite3DbMallocZero(db, sizeof(*pNew) );
   assert( !pOffset || pLimit );   /* Can't have OFFSET without LIMIT. */
   if( pNew==0 ){
     pNew = &standin;
     memset(pNew, 0, sizeof(*pNew));
   }
   if( pEList==0 ){
-    pEList = sqlite3ExprListAppend(0, sqlite3Expr(TK_ALL,0,0,0), 0);
+    pEList = sqlite3ExprListAppend(pParse, 0, sqlite3Expr(db,TK_ALL,0,0,0), 0);
   }
   pNew->pEList = pEList;
   pNew->pSrc = pSrc;
@@ -89,7 +91,7 @@ Select *sqlite3SelectNew(
 void sqlite3SelectDelete(Select *p){
   if( p ){
     clearSelect(p);
-    sqliteFree(p);
+    sqlite3_free(p);
   }
 }
 
@@ -191,21 +193,23 @@ static void setToken(Token *p, const char *z){
 **
 **    {a"bc}  ->  {"a""bc"}
 */
-static void setQuotedToken(Token *p, const char *z){
-  p->z = (u8 *)sqlite3MPrintf("\"%w\"", z);
+static void setQuotedToken(Parse *pParse, Token *p, const char *z){
+  p->z = (u8 *)sqlite3MPrintf(0, "\"%w\"", z);
   p->dyn = 1;
   if( p->z ){
     p->n = strlen((char *)p->z);
+  }else{
+    pParse->db->mallocFailed = 1;
   }
 }
 
 /*
 ** Create an expression node for an identifier with the name of zName
 */
-Expr *sqlite3CreateIdExpr(const char *zName){
+Expr *sqlite3CreateIdExpr(Parse *pParse, const char *zName){
   Token dummy;
   setToken(&dummy, zName);
-  return sqlite3Expr(TK_ID, 0, 0, &dummy);
+  return sqlite3PExpr(pParse, TK_ID, 0, 0, &dummy);
 }
 
 
@@ -214,6 +218,7 @@ Expr *sqlite3CreateIdExpr(const char *zName){
 ** zCol column to be equal in the two tables pTab1 and pTab2.
 */
 static void addWhereTerm(
+  Parse *pParse,           /* Parsing context */
   const char *zCol,        /* Name of the column */
   const Table *pTab1,      /* First table */
   const char *zAlias1,     /* Alias for first table.  May be NULL */
@@ -226,24 +231,24 @@ static void addWhereTerm(
   Expr *pE2a, *pE2b, *pE2c;
   Expr *pE;
 
-  pE1a = sqlite3CreateIdExpr(zCol);
-  pE2a = sqlite3CreateIdExpr(zCol);
+  pE1a = sqlite3CreateIdExpr(pParse, zCol);
+  pE2a = sqlite3CreateIdExpr(pParse, zCol);
   if( zAlias1==0 ){
     zAlias1 = pTab1->zName;
   }
-  pE1b = sqlite3CreateIdExpr(zAlias1);
+  pE1b = sqlite3CreateIdExpr(pParse, zAlias1);
   if( zAlias2==0 ){
     zAlias2 = pTab2->zName;
   }
-  pE2b = sqlite3CreateIdExpr(zAlias2);
-  pE1c = sqlite3ExprOrFree(TK_DOT, pE1b, pE1a, 0);
-  pE2c = sqlite3ExprOrFree(TK_DOT, pE2b, pE2a, 0);
-  pE = sqlite3ExprOrFree(TK_EQ, pE1c, pE2c, 0);
+  pE2b = sqlite3CreateIdExpr(pParse, zAlias2);
+  pE1c = sqlite3PExpr(pParse, TK_DOT, pE1b, pE1a, 0);
+  pE2c = sqlite3PExpr(pParse, TK_DOT, pE2b, pE2a, 0);
+  pE = sqlite3PExpr(pParse, TK_EQ, pE1c, pE2c, 0);
   if( pE ){
     ExprSetProperty(pE, EP_FromJoin);
     pE->iRightJoinTable = iRightJoinTable;
   }
-  pE = sqlite3ExprAnd(*ppExpr, pE);
+  pE = sqlite3ExprAnd(pParse->db,*ppExpr, pE);
   if( pE ){
     *ppExpr = pE;
   }
@@ -325,7 +330,7 @@ static int sqliteProcessJoin(Parse *pParse, Select *p){
       for(j=0; j<pLeftTab->nCol; j++){
         char *zName = pLeftTab->aCol[j].zName;
         if( columnIndex(pRightTab, zName)>=0 ){
-          addWhereTerm(zName, pLeftTab, pLeft->zAlias, 
+          addWhereTerm(pParse, zName, pLeftTab, pLeft->zAlias, 
                               pRightTab, pRight->zAlias,
                               pRight->iCursor, &p->pWhere);
           
@@ -346,7 +351,7 @@ static int sqliteProcessJoin(Parse *pParse, Select *p){
     */
     if( pRight->pOn ){
       setJoinExpr(pRight->pOn, pRight->iCursor);
-      p->pWhere = sqlite3ExprAnd(p->pWhere, pRight->pOn);
+      p->pWhere = sqlite3ExprAnd(pParse->db, p->pWhere, pRight->pOn);
       pRight->pOn = 0;
     }
 
@@ -366,7 +371,7 @@ static int sqliteProcessJoin(Parse *pParse, Select *p){
             "not present in both tables", zName);
           return 1;
         }
-        addWhereTerm(zName, pLeftTab, pLeft->zAlias, 
+        addWhereTerm(pParse, zName, pLeftTab, pLeft->zAlias, 
                             pRightTab, pRight->zAlias,
                             pRight->iCursor, &p->pWhere);
       }
@@ -689,7 +694,7 @@ static KeyInfo *keyInfoFromExprList(Parse *pParse, ExprList *pList){
   int i;
 
   nExpr = pList->nExpr;
-  pInfo = sqliteMalloc( sizeof(*pInfo) + nExpr*(sizeof(CollSeq*)+1) );
+  pInfo = sqlite3DbMallocZero(db, sizeof(*pInfo) + nExpr*(sizeof(CollSeq*)+1) );
   if( pInfo ){
     pInfo->aSortOrder = (u8*)&pInfo->aColl[nExpr];
     pInfo->nField = nExpr;
@@ -992,7 +997,7 @@ static void generateColumnNames(
 #endif
 
   assert( v!=0 );
-  if( pParse->colNamesSet || v==0 || sqlite3MallocFailed() ) return;
+  if( pParse->colNamesSet || v==0 || db->mallocFailed ) return;
   pParse->colNamesSet = 1;
   fullNames = (db->flags & SQLITE_FullColNames)!=0;
   shortNames = (db->flags & SQLITE_ShortColNames)!=0;
@@ -1076,6 +1081,7 @@ Table *sqlite3ResultSetOfSelect(Parse *pParse, char *zTabName, Select *pSelect){
   int i, j;
   ExprList *pEList;
   Column *aCol, *pCol;
+  sqlite3 *db = pParse->db;
 
   while( pSelect->pPrior ) pSelect = pSelect->pPrior;
   if( prepSelectStmt(pParse, pSelect) ){
@@ -1084,16 +1090,16 @@ Table *sqlite3ResultSetOfSelect(Parse *pParse, char *zTabName, Select *pSelect){
   if( sqlite3SelectResolve(pParse, pSelect, 0) ){
     return 0;
   }
-  pTab = sqliteMalloc( sizeof(Table) );
+  pTab = sqlite3DbMallocZero(db, sizeof(Table) );
   if( pTab==0 ){
     return 0;
   }
   pTab->nRef = 1;
-  pTab->zName = zTabName ? sqliteStrDup(zTabName) : 0;
+  pTab->zName = zTabName ? sqlite3DbStrDup(db, zTabName) : 0;
   pEList = pSelect->pEList;
   pTab->nCol = pEList->nExpr;
   assert( pTab->nCol>0 );
-  pTab->aCol = aCol = sqliteMalloc( sizeof(pTab->aCol[0])*pTab->nCol );
+  pTab->aCol = aCol = sqlite3DbMallocZero(db, sizeof(pTab->aCol[0])*pTab->nCol);
   for(i=0, pCol=aCol; i<pTab->nCol; i++, pCol++){
     Expr *p, *pR;
     char *zType;
@@ -1109,24 +1115,25 @@ Table *sqlite3ResultSetOfSelect(Parse *pParse, char *zTabName, Select *pSelect){
     assert( p->pRight==0 || p->pRight->token.z==0 || p->pRight->token.z[0]!=0 );
     if( (zName = pEList->a[i].zName)!=0 ){
       /* If the column contains an "AS <name>" phrase, use <name> as the name */
-      zName = sqliteStrDup(zName);
+      zName = sqlite3DbStrDup(db, zName);
     }else if( p->op==TK_DOT 
               && (pR=p->pRight)!=0 && pR->token.z && pR->token.z[0] ){
       /* For columns of the from A.B use B as the name */
-      zName = sqlite3MPrintf("%T", &pR->token);
+      zName = sqlite3MPrintf(db, "%T", &pR->token);
     }else if( p->span.z && p->span.z[0] ){
       /* Use the original text of the column expression as its name */
-      zName = sqlite3MPrintf("%T", &p->span);
+      zName = sqlite3MPrintf(db, "%T", &p->span);
     }else{
       /* If all else fails, make up a name */
-      zName = sqlite3MPrintf("column%d", i+1);
+      zName = sqlite3MPrintf(db, "column%d", i+1);
     }
-    sqlite3Dequote(zName);
-    if( sqlite3MallocFailed() ){
-      sqliteFree(zName);
+    if( !zName || db->mallocFailed ){
+      db->mallocFailed = 1;
+      sqlite3_free(zName);
       sqlite3DeleteTable(pTab);
       return 0;
     }
+    sqlite3Dequote(zName);
 
     /* Make sure the column name is unique.  If the name is not unique,
     ** append a integer to the name so that it becomes unique.
@@ -1135,7 +1142,7 @@ Table *sqlite3ResultSetOfSelect(Parse *pParse, char *zTabName, Select *pSelect){
     for(j=cnt=0; j<i; j++){
       if( sqlite3StrICmp(aCol[j].zName, zName)==0 ){
         zName[nName] = 0;
-        zName = sqlite3MPrintf("%z:%d", zName, ++cnt);
+        zName = sqlite3MPrintf(db, "%z:%d", zName, ++cnt);
         j = -1;
         if( zName==0 ) break;
       }
@@ -1147,12 +1154,12 @@ Table *sqlite3ResultSetOfSelect(Parse *pParse, char *zTabName, Select *pSelect){
     */
     memset(&sNC, 0, sizeof(sNC));
     sNC.pSrcList = pSelect->pSrc;
-    zType = sqliteStrDup(columnType(&sNC, p, 0, 0, 0));
+    zType = sqlite3DbStrDup(db, columnType(&sNC, p, 0, 0, 0));
     pCol->zType = zType;
     pCol->affinity = sqlite3ExprAffinity(p);
     pColl = sqlite3ExprCollSeq(pParse, p);
     if( pColl ){
-      pCol->zColl = sqliteStrDup(pColl->zName);
+      pCol->zColl = sqlite3DbStrDup(db, pColl->zName);
     }
   }
   pTab->iPKey = -1;
@@ -1190,8 +1197,9 @@ static int prepSelectStmt(Parse *pParse, Select *p){
   SrcList *pTabList;
   ExprList *pEList;
   struct SrcList_item *pFrom;
+  sqlite3 *db = pParse->db;
 
-  if( p==0 || p->pSrc==0 || sqlite3MallocFailed() ){
+  if( p==0 || p->pSrc==0 || db->mallocFailed ){
     return 1;
   }
   pTabList = p->pSrc;
@@ -1220,7 +1228,7 @@ static int prepSelectStmt(Parse *pParse, Select *p){
       assert( pFrom->pSelect!=0 );
       if( pFrom->zAlias==0 ){
         pFrom->zAlias =
-          sqlite3MPrintf("sqlite_subquery_%p_", (void*)pFrom->pSelect);
+          sqlite3MPrintf(db, "sqlite_subquery_%p_", (void*)pFrom->pSelect);
       }
       assert( pFrom->pTab==0 );
       pFrom->pTab = pTab = 
@@ -1255,7 +1263,7 @@ static int prepSelectStmt(Parse *pParse, Select *p){
         ** in the inner view.
         */
         if( pFrom->pSelect==0 ){
-          pFrom->pSelect = sqlite3SelectDup(pTab->pSelect);
+          pFrom->pSelect = sqlite3SelectDup(db, pTab->pSelect);
         }
       }
 #endif
@@ -1301,7 +1309,7 @@ static int prepSelectStmt(Parse *pParse, Select *p){
            (pE->op!=TK_DOT || pE->pRight==0 || pE->pRight->op!=TK_ALL) ){
         /* This particular expression does not need to be expanded.
         */
-        pNew = sqlite3ExprListAppend(pNew, a[k].pExpr, 0);
+        pNew = sqlite3ExprListAppend(pParse, pNew, a[k].pExpr, 0);
         if( pNew ){
           pNew->a[pNew->nExpr-1].zName = a[k].zName;
         }else{
@@ -1315,7 +1323,7 @@ static int prepSelectStmt(Parse *pParse, Select *p){
         int tableSeen = 0;      /* Set to 1 when TABLE matches */
         char *zTName;            /* text of name of TABLE */
         if( pE->op==TK_DOT && pE->pLeft ){
-          zTName = sqlite3NameFromToken(&pE->pLeft->token);
+          zTName = sqlite3NameFromToken(db, &pE->pLeft->token);
         }else{
           zTName = 0;
         }
@@ -1357,15 +1365,16 @@ static int prepSelectStmt(Parse *pParse, Select *p){
                 continue;
               }
             }
-            pRight = sqlite3Expr(TK_ID, 0, 0, 0);
+            pRight = sqlite3PExpr(pParse, TK_ID, 0, 0, 0);
             if( pRight==0 ) break;
-            setQuotedToken(&pRight->token, zName);
+            setQuotedToken(pParse, &pRight->token, zName);
             if( zTabName && (longNames || pTabList->nSrc>1) ){
-              Expr *pLeft = sqlite3Expr(TK_ID, 0, 0, 0);
-              pExpr = sqlite3Expr(TK_DOT, pLeft, pRight, 0);
+              Expr *pLeft = sqlite3PExpr(pParse, TK_ID, 0, 0, 0);
+              pExpr = sqlite3PExpr(pParse, TK_DOT, pLeft, pRight, 0);
               if( pExpr==0 ) break;
-              setQuotedToken(&pLeft->token, zTabName);
-              setToken(&pExpr->span, sqlite3MPrintf("%s.%s", zTabName, zName));
+              setQuotedToken(pParse, &pLeft->token, zTabName);
+              setToken(&pExpr->span, 
+                  sqlite3MPrintf(db, "%s.%s", zTabName, zName));
               pExpr->span.dyn = 1;
               pExpr->token.z = 0;
               pExpr->token.n = 0;
@@ -1376,9 +1385,9 @@ static int prepSelectStmt(Parse *pParse, Select *p){
               pExpr->span.dyn = 0;
             }
             if( longNames ){
-              pNew = sqlite3ExprListAppend(pNew, pExpr, &pExpr->span);
+              pNew = sqlite3ExprListAppend(pParse, pNew, pExpr, &pExpr->span);
             }else{
-              pNew = sqlite3ExprListAppend(pNew, pExpr, &pRight->token);
+              pNew = sqlite3ExprListAppend(pParse, pNew, pExpr, &pRight->token);
             }
           }
         }
@@ -1390,7 +1399,7 @@ static int prepSelectStmt(Parse *pParse, Select *p){
           }
           rc = 1;
         }
-        sqliteFree(zTName);
+        sqlite3_free(zTName);
       }
     }
     sqlite3ExprListDelete(pEList);
@@ -1400,7 +1409,7 @@ static int prepSelectStmt(Parse *pParse, Select *p){
     sqlite3ErrorMsg(pParse, "too many columns in result set");
     rc = SQLITE_ERROR;
   }
-  if( sqlite3MallocFailed() ){
+  if( db->mallocFailed ){
     rc = SQLITE_NOMEM;
   }
   return rc;
@@ -1430,6 +1439,7 @@ static int matchOrderbyToColumn(
   int nErr = 0;
   int i, j;
   ExprList *pEList;
+  sqlite3 *db = pParse->db;
 
   if( pSelect==0 || pOrderBy==0 ) return 1;
   if( mustComplete ){
@@ -1462,23 +1472,23 @@ static int matchOrderbyToColumn(
       if( !mustComplete ) continue;
       iCol--;
     }
-    if( iCol<0 && (zLabel = sqlite3NameFromToken(&pE->token))!=0 ){
+    if( iCol<0 && (zLabel = sqlite3NameFromToken(db, &pE->token))!=0 ){
       for(j=0, pItem=pEList->a; j<pEList->nExpr; j++, pItem++){
         char *zName;
         int isMatch;
         if( pItem->zName ){
-          zName = sqlite3StrDup(pItem->zName);
+          zName = sqlite3DbStrDup(db, pItem->zName);
         }else{
-          zName = sqlite3NameFromToken(&pItem->pExpr->token);
+          zName = sqlite3NameFromToken(db, &pItem->pExpr->token);
         }
         isMatch = zName && sqlite3StrICmp(zName, zLabel)==0;
-        sqliteFree(zName);
+        sqlite3_free(zName);
         if( isMatch ){
           iCol = j;
           break;
         }
       }
-      sqliteFree(zLabel);
+      sqlite3_free(zLabel);
     }
     if( iCol>=0 ){
       pE->op = TK_COLUMN;
@@ -1962,7 +1972,8 @@ static int multiSelect(
 
     assert( p->pRightmost==p );
     nKeyCol = nCol + (pOrderBy ? pOrderBy->nExpr : 0);
-    pKeyInfo = sqliteMalloc(sizeof(*pKeyInfo)+nKeyCol*(sizeof(CollSeq*) + 1));
+    pKeyInfo = sqlite3DbMallocZero(pParse->db,
+                       sizeof(*pKeyInfo)+nKeyCol*(sizeof(CollSeq*) + 1));
     if( !pKeyInfo ){
       rc = SQLITE_NOMEM;
       goto multi_select_end;
@@ -2037,7 +2048,7 @@ static int multiSelect(
       generateSortTail(pParse, p, v, p->pEList->nExpr, eDest, iParm);
     }
 
-    sqliteFree(pKeyInfo);
+    sqlite3_free(pKeyInfo);
   }
 
 multi_select_end:
@@ -2046,6 +2057,10 @@ multi_select_end:
 #endif /* SQLITE_OMIT_COMPOUND_SELECT */
 
 #ifndef SQLITE_OMIT_VIEW
+/* Forward Declarations */
+static void substExprList(sqlite3*, ExprList*, int, ExprList*);
+static void substSelect(sqlite3*, Select *, int, ExprList *);
+
 /*
 ** Scan through the expression pExpr.  Replace every reference to
 ** a column in table number iTable with a copy of the iColumn-th
@@ -2059,9 +2074,12 @@ multi_select_end:
 ** changes to pExpr so that it refers directly to the source table
 ** of the subquery rather the result set of the subquery.
 */
-static void substExprList(ExprList*,int,ExprList*);  /* Forward Decl */
-static void substSelect(Select *, int, ExprList *);  /* Forward Decl */
-static void substExpr(Expr *pExpr, int iTable, ExprList *pEList){
+static void substExpr(
+  sqlite3 *db,        /* Report malloc errors to this connection */
+  Expr *pExpr,        /* Expr in which substitution occurs */
+  int iTable,         /* Table to be substituted */
+  ExprList *pEList    /* Substitute expressions */
+){
   if( pExpr==0 ) return;
   if( pExpr->op==TK_COLUMN && pExpr->iTable==iTable ){
     if( pExpr->iColumn<0 ){
@@ -2074,42 +2092,52 @@ static void substExpr(Expr *pExpr, int iTable, ExprList *pEList){
       assert( pNew!=0 );
       pExpr->op = pNew->op;
       assert( pExpr->pLeft==0 );
-      pExpr->pLeft = sqlite3ExprDup(pNew->pLeft);
+      pExpr->pLeft = sqlite3ExprDup(db, pNew->pLeft);
       assert( pExpr->pRight==0 );
-      pExpr->pRight = sqlite3ExprDup(pNew->pRight);
+      pExpr->pRight = sqlite3ExprDup(db, pNew->pRight);
       assert( pExpr->pList==0 );
-      pExpr->pList = sqlite3ExprListDup(pNew->pList);
+      pExpr->pList = sqlite3ExprListDup(db, pNew->pList);
       pExpr->iTable = pNew->iTable;
       pExpr->pTab = pNew->pTab;
       pExpr->iColumn = pNew->iColumn;
       pExpr->iAgg = pNew->iAgg;
-      sqlite3TokenCopy(&pExpr->token, &pNew->token);
-      sqlite3TokenCopy(&pExpr->span, &pNew->span);
-      pExpr->pSelect = sqlite3SelectDup(pNew->pSelect);
+      sqlite3TokenCopy(db, &pExpr->token, &pNew->token);
+      sqlite3TokenCopy(db, &pExpr->span, &pNew->span);
+      pExpr->pSelect = sqlite3SelectDup(db, pNew->pSelect);
       pExpr->flags = pNew->flags;
     }
   }else{
-    substExpr(pExpr->pLeft, iTable, pEList);
-    substExpr(pExpr->pRight, iTable, pEList);
-    substSelect(pExpr->pSelect, iTable, pEList);
-    substExprList(pExpr->pList, iTable, pEList);
+    substExpr(db, pExpr->pLeft, iTable, pEList);
+    substExpr(db, pExpr->pRight, iTable, pEList);
+    substSelect(db, pExpr->pSelect, iTable, pEList);
+    substExprList(db, pExpr->pList, iTable, pEList);
   }
 }
-static void substExprList(ExprList *pList, int iTable, ExprList *pEList){
+static void substExprList(
+  sqlite3 *db,         /* Report malloc errors here */
+  ExprList *pList,     /* List to scan and in which to make substitutes */
+  int iTable,          /* Table to be substituted */
+  ExprList *pEList     /* Substitute values */
+){
   int i;
   if( pList==0 ) return;
   for(i=0; i<pList->nExpr; i++){
-    substExpr(pList->a[i].pExpr, iTable, pEList);
+    substExpr(db, pList->a[i].pExpr, iTable, pEList);
   }
 }
-static void substSelect(Select *p, int iTable, ExprList *pEList){
+static void substSelect(
+  sqlite3 *db,         /* Report malloc errors here */
+  Select *p,           /* SELECT statement in which to make substitutions */
+  int iTable,          /* Table to be replaced */
+  ExprList *pEList     /* Substitute values */
+){
   if( !p ) return;
-  substExprList(p->pEList, iTable, pEList);
-  substExprList(p->pGroupBy, iTable, pEList);
-  substExprList(p->pOrderBy, iTable, pEList);
-  substExpr(p->pHaving, iTable, pEList);
-  substExpr(p->pWhere, iTable, pEList);
-  substSelect(p->pPrior, iTable, pEList);
+  substExprList(db, p->pEList, iTable, pEList);
+  substExprList(db, p->pGroupBy, iTable, pEList);
+  substExprList(db, p->pOrderBy, iTable, pEList);
+  substExpr(db, p->pHaving, iTable, pEList);
+  substExpr(db, p->pWhere, iTable, pEList);
+  substSelect(db, p->pPrior, iTable, pEList);
 }
 #endif /* !defined(SQLITE_OMIT_VIEW) */
 
@@ -2192,6 +2220,7 @@ static void substSelect(Select *p, int iTable, ExprList *pEList){
 ** the subquery before this routine runs.
 */
 static int flattenSubquery(
+  sqlite3 *db,         /* Database connection */
   Select *p,           /* The parent or outer SELECT statement */
   int iFrom,           /* Index in p->pSrc->a[] of the inner subquery */
   int isAgg,           /* True if outer SELECT uses aggregate functions */
@@ -2289,13 +2318,13 @@ static int flattenSubquery(
     int jointype = pSubitem->jointype;
 
     sqlite3DeleteTable(pSubitem->pTab);
-    sqliteFree(pSubitem->zDatabase);
-    sqliteFree(pSubitem->zName);
-    sqliteFree(pSubitem->zAlias);
+    sqlite3_free(pSubitem->zDatabase);
+    sqlite3_free(pSubitem->zName);
+    sqlite3_free(pSubitem->zAlias);
     if( nSubSrc>1 ){
       int extra = nSubSrc - 1;
       for(i=1; i<nSubSrc; i++){
-        pSrc = sqlite3SrcListAppend(pSrc, 0, 0);
+        pSrc = sqlite3SrcListAppend(db, pSrc, 0, 0);
       }
       p->pSrc = pSrc;
       for(i=pSrc->nSrc-1; i-extra>=iFrom; i--){
@@ -2325,23 +2354,24 @@ static int flattenSubquery(
   for(i=0; i<pList->nExpr; i++){
     Expr *pExpr;
     if( pList->a[i].zName==0 && (pExpr = pList->a[i].pExpr)->span.z!=0 ){
-      pList->a[i].zName = sqliteStrNDup((char*)pExpr->span.z, pExpr->span.n);
+      pList->a[i].zName = 
+             sqlite3DbStrNDup(db, (char*)pExpr->span.z, pExpr->span.n);
     }
   }
-  substExprList(p->pEList, iParent, pSub->pEList);
+  substExprList(db, p->pEList, iParent, pSub->pEList);
   if( isAgg ){
-    substExprList(p->pGroupBy, iParent, pSub->pEList);
-    substExpr(p->pHaving, iParent, pSub->pEList);
+    substExprList(db, p->pGroupBy, iParent, pSub->pEList);
+    substExpr(db, p->pHaving, iParent, pSub->pEList);
   }
   if( pSub->pOrderBy ){
     assert( p->pOrderBy==0 );
     p->pOrderBy = pSub->pOrderBy;
     pSub->pOrderBy = 0;
   }else if( p->pOrderBy ){
-    substExprList(p->pOrderBy, iParent, pSub->pEList);
+    substExprList(db, p->pOrderBy, iParent, pSub->pEList);
   }
   if( pSub->pWhere ){
-    pWhere = sqlite3ExprDup(pSub->pWhere);
+    pWhere = sqlite3ExprDup(db, pSub->pWhere);
   }else{
     pWhere = 0;
   }
@@ -2349,13 +2379,14 @@ static int flattenSubquery(
     assert( p->pHaving==0 );
     p->pHaving = p->pWhere;
     p->pWhere = pWhere;
-    substExpr(p->pHaving, iParent, pSub->pEList);
-    p->pHaving = sqlite3ExprAnd(p->pHaving, sqlite3ExprDup(pSub->pHaving));
+    substExpr(db, p->pHaving, iParent, pSub->pEList);
+    p->pHaving = sqlite3ExprAnd(db, p->pHaving, 
+                                sqlite3ExprDup(db, pSub->pHaving));
     assert( p->pGroupBy==0 );
-    p->pGroupBy = sqlite3ExprListDup(pSub->pGroupBy);
+    p->pGroupBy = sqlite3ExprListDup(db, pSub->pGroupBy);
   }else{
-    substExpr(p->pWhere, iParent, pSub->pEList);
-    p->pWhere = sqlite3ExprAnd(p->pWhere, pWhere);
+    substExpr(db, p->pWhere, iParent, pSub->pEList);
+    p->pWhere = sqlite3ExprAnd(db, p->pWhere, pWhere);
   }
 
   /* The flattened query is distinct if either the inner or the
@@ -2571,7 +2602,8 @@ static int processOrderGroupBy(
         CollSeq *pColl = pE->pColl;
         int flags = pE->flags & EP_ExpCollate;
         sqlite3ExprDelete(pE);
-        pE = pOrderBy->a[i].pExpr = sqlite3ExprDup(pEList->a[iCol-1].pExpr);
+        pE = sqlite3ExprDup(pParse->db, pEList->a[iCol-1].pExpr);
+        pOrderBy->a[i].pExpr = pE;
         if( pColl && flags ){
           pE->pColl = pColl;
           pE->flags |= flags;
@@ -2690,7 +2722,7 @@ int sqlite3SelectResolve(
     }
   }
 
-  if( sqlite3MallocFailed() ){
+  if( pParse->db->mallocFailed ){
     return SQLITE_NOMEM;
   }
 
@@ -2897,8 +2929,10 @@ int sqlite3Select(
   int addrSortIndex;     /* Address of an OP_OpenEphemeral instruction */
   AggInfo sAggInfo;      /* Information used by aggregate queries */
   int iEnd;              /* Address of the end of the query */
+  sqlite3 *db;           /* The database connection */
 
-  if( p==0 || sqlite3MallocFailed() || pParse->nErr ){
+  db = pParse->db;
+  if( p==0 || db->mallocFailed || pParse->nErr ){
     return 1;
   }
   if( sqlite3AuthCheck(pParse, SQLITE_SELECT, 0, 0, 0) ) return 1;
@@ -2985,7 +3019,7 @@ int sqlite3Select(
     }else{
       needRestoreContext = 0;
     }
-#if SQLITE_MAX_EXPR_DEPTH>0
+#if defined(SQLITE_TEST) || SQLITE_MAX_EXPR_DEPTH>0
     /* Increment Parse.nHeight by the height of the largest expression
     ** tree refered to by this, the parent select. The child select
     ** may contain expression trees of at most
@@ -2997,7 +3031,7 @@ int sqlite3Select(
 #endif
     sqlite3Select(pParse, pItem->pSelect, SRT_EphemTab, 
                  pItem->iCursor, p, i, &isAgg, 0);
-#if SQLITE_MAX_EXPR_DEPTH>0
+#if defined(SQLITE_TEST) || SQLITE_MAX_EXPR_DEPTH>0
     pParse->nHeight -= sqlite3SelectExprHeight(p);
 #endif
     if( needRestoreContext ){
@@ -3027,7 +3061,7 @@ int sqlite3Select(
   */
 #ifndef SQLITE_OMIT_VIEW
   if( pParent && pParentAgg &&
-      flattenSubquery(pParent, parentTab, *pParentAgg, isAgg) ){
+      flattenSubquery(db, pParent, parentTab, *pParentAgg, isAgg) ){
     if( isAgg ) *pParentAgg = 1;
     goto select_end;
   }
@@ -3154,7 +3188,7 @@ int sqlite3Select(
         goto select_end;
       }
     }
-    if( sqlite3MallocFailed() ) goto select_end;
+    if( db->mallocFailed ) goto select_end;
 
     /* Processing for aggregates with GROUP BY is very different and
     ** much more complex tha aggregates without a GROUP BY.
@@ -3403,8 +3437,8 @@ select_end:
     generateColumnNames(pParse, pTabList, pEList);
   }
 
-  sqliteFree(sAggInfo.aCol);
-  sqliteFree(sAggInfo.aFunc);
+  sqlite3_free(sAggInfo.aCol);
+  sqlite3_free(sAggInfo.aFunc);
   return rc;
 }
 

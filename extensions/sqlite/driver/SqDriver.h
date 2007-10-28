@@ -72,6 +72,7 @@ private:
 	Handle_t m_Handle;
 	IMutex *m_pOpenLock;
 	List<SqDbInfo> m_Cache;
+	bool m_bThreadSafe;
 };
 
 extern SqDriver g_SqDriver;
