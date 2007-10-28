@@ -368,6 +368,28 @@ namespace SourceMod
 		 */
 		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
+
+	#define SM_IFACEPAIR(name) SMINTERFACE_##name##_NAME, SMINTERFACE_##name##_VERSION
+
+	#define SM_FIND_IFACE_OR_FAIL(prefix, variable, errbuf, errsize) \
+		if (!sharesys->RequestInterface(SM_IFACEPAIR(prefix), myself, (SMInterface **)&variable)) \
+		{ \
+			if (errbuf) \
+			{ \
+				size_t len = snprintf(errbuf, \
+					errsize, \
+					"Could not find interface: %s (version: %d)", \
+					SM_IFACEPAIR(prefix)); \
+				if (len >= errsize) \
+				{ \
+					buffer[errsize - 1] = '\0'; \
+				} \
+			} \
+			return false; \
+		}
+
+	#define SM_FIND_IFACE(prefix, variable) \
+		sharesys->RequestInterface(SM_IFACEPAIR(prefix), myself, (SMInterface **)&variable));
 }
 
 #endif //_INCLUDE_SOURCEMOD_MODULE_INTERFACE_H_

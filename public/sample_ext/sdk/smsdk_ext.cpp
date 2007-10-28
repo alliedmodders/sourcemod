@@ -280,7 +280,11 @@ IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 /** Exposes the extension to Metamod */
 SMM_API void *PL_EXPOSURE(const char *name, int *code)
 {
+#if defined METAMOD_PLAPI_VERSION
+	if (name && !strcmp(name, METAMOD_PLAPI_NAME))
+#else
 	if (name && !strcmp(name, PLAPI_NAME))
+#endif
 	{
 		if (code)
 		{
@@ -301,8 +305,13 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 {
 	PLUGIN_SAVEVARS();
 
+#if defined METAMOD_PLAPI_VERSION
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+#else
+	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
+	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+#endif
 
 	m_SourceMMLoaded = true;
 
