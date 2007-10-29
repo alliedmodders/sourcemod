@@ -46,7 +46,7 @@
  * Calculates the length of a string.
  *
  * @param str			String to check.
- * @return				Length of string, in cells (NOT characters).
+ * @return				Number of valid character bytes in the string.
  */
 native strlen(const String:str[]);
 
