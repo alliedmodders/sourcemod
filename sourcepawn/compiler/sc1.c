@@ -1198,7 +1198,7 @@ static void about(void)
 {
   if (strlen(errfname)==0) {
     setcaption();
-    pc_printf("Usage:   pawncc <filename> [filename...] [options]\n\n");
+    pc_printf("Usage:   spcomp <filename> [filename...] [options]\n\n");
     pc_printf("Options:\n");
     pc_printf("         -A<num>  alignment in bytes of the data segment and the stack\n");
     pc_printf("         -a       output assembler code\n");
