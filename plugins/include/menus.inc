@@ -82,7 +82,7 @@ enum MenuAction
 #define ITEMDRAW_IGNORE	((1<<1)|(1<<2))	/**< Item should be completely ignored (rawline + notext) */
 #define ITEMDRAW_CONTROL		(1<<4)	/**< Item is control text (back/next/exit) */
 
-#define MENUFLAG_BUTTON_EXIT		(1<<0)	/**< Menu has an "exit" button */
+#define MENUFLAG_BUTTON_EXIT		(1<<0)	/**< Menu has an "exit" button (default if paginated) */
 #define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
 #define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
 
@@ -283,9 +283,13 @@ native GetMenuItemCount(Handle:menu);
 /**
  * Sets whether the menu should be paginated or not.
  *
+ * If itemsPerPage is MENU_NO_PAGINATION, and the exit button flag is set, 
+ * then the exit button flag is removed.  It can be re-applied if desired.
+ *
  * @param menu				Handle to the menu.
  * @param itemsPerPage		Number of items per page, or MENU_NO_PAGINATION.
- * @return					True on success, false if pagination is too high or low.
+ * @return					True on success, false if pagination is too high or 
+ *							low.
  * @error					Invalid Handle.
  */
 native bool:SetMenuPagination(Handle:menu, itemsPerPage);
@@ -351,8 +355,15 @@ native Handle:CreatePanelFromMenu(Handle:menu);
 native bool:GetMenuExitButton(Handle:menu);
 
 /**
- * Sets whether or not the menu has an exit button.
- * By default, menus have an exit button.
+ * Sets whether or not the menu has an exit button.  By default, paginated menus 
+ * have an exit button.
+ *
+ * If a menu's pagination is changed to MENU_NO_PAGINATION, and the pagination 
+ * was previously a different value, then the Exit button status is changed to 
+ * false.  It must be explicitly re-enabled afterwards.
+ *
+ * If a non-paginated menu has an exit button, then at most 9 items will be 
+ * displayed.
  *
  * @param menu				Menu Handle.
  * @param button			True to enable the button, false to remove it.
@@ -362,10 +373,11 @@ native bool:GetMenuExitButton(Handle:menu);
 native bool:SetMenuExitButton(Handle:menu, bool:button);
 
 /**
- * Returns whether or not the menu has an "exit back" button.
- * By default, menus do not have an exit back button.
- * Exit Back buttons appear as "Back" on page 1 of paginated menus and
- * have functionality defined by the user in MenuEnd_ExitBack.
+ * Returns whether or not the menu has an "exit back" button.  By default, 
+ * menus do not have an exit back button.  
+ *
+ * Exit Back buttons appear as "Back" on page 1 of paginated menus and have 
+ * functionality defined by the user in MenuEnd_ExitBack.
  *
  * @param menu				Menu Handle.
  * @return 					True if the menu has an exit back button; false otherwise.
@@ -374,10 +386,11 @@ native bool:SetMenuExitButton(Handle:menu, bool:button);
 native bool:GetMenuExitBackButton(Handle:menu);
 
 /**
- * Sets whether or not the menu has an "exit back" button.
- * By default, menus do not have an exit back button.
- * Exit Back buttons appear as "Back" on page 1 of paginated menus and
- * have functionality defined by the user in MenuEnd_ExitBack.
+ * Sets whether or not the menu has an "exit back" button. By default, menus 
+ * do not have an exit back button.
+ *
+ * Exit Back buttons appear as "Back" on page 1 of paginated menus and have 
+ * functionality defined by the user in MenuEnd_ExitBack.
  *
  * @param menu				Menu Handle.
  * @param button			True to enable the button, false to remove it.
@@ -414,8 +427,9 @@ native GetMenuOptionFlags(Handle:menu);
 /**
  * Sets a menu's option flags.
  *
- * If a certain bit is not supported, it will be stripped before
- * being set.
+ * If a certain bit is not supported, it will be stripped before being set.
+ * See SetMenuExitButton() for information on Exit buttons.
+ * See SetMenuExitBackButton() for information on Exit Back buttons.
  *
  * @param menu				Menu Handle.
  * @param flags				A new bitstring of MENUFLAG bits.

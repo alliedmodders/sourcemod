@@ -711,6 +711,12 @@ bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
 		return false;
 	}
 
+	if (itemsPerPage == MENU_NO_PAGINATION
+		&& m_Pagination != MENU_NO_PAGINATION)
+	{
+		m_nFlags &= ~MENUFLAG_BUTTON_EXIT;
+	}
+
 	m_Pagination = itemsPerPage;
 
 	return true;

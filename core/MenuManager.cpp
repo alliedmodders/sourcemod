@@ -211,9 +211,21 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	IMenuStyle *style = menu->GetDrawStyle();
 	unsigned int pgn = menu->GetPagination();
 	unsigned int maxItems = style->GetMaxPageItems();
+	bool exitButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT;
+
 	if (pgn != MENU_NO_PAGINATION)
 	{
 		maxItems = pgn;
+	}
+	else if (exitButton)
+	{
+		maxItems--;
+	}
+
+	/* This is very not allowed! */
+	if (maxItems < 2)
+	{
+		return NULL;
 	}
 
 	unsigned int totalItems = menu->GetItemCount();
@@ -234,7 +246,9 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 				startItem = totalItems - 1;
 				order = ItemOrder_Descending;
 			}
-		} else if (order == ItemOrder_Descending) {
+		}
+		else if (order == ItemOrder_Descending)
+		{
 			startItem = md.firstItem;
 			/* This shouldn't happen with well-coded menus.
 			 * If searching backwards doesn't give us enough room,
@@ -249,10 +263,15 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	}
 
 	/* Get our Display pointer and initialize some crap */
-	IMenuPanel *display = menu->CreatePanel();
+	IMenuPanel *panel = menu->CreatePanel();
 	IMenuHandler *mh = md.mh;
 	bool foundExtra = false;
 	unsigned int extraItem = 0;
+
+	if (panel == NULL)
+	{
+		return NULL;
+	}
 
 	/**
 	 * We keep searching until:
@@ -271,7 +290,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			/* Ask the user to change the style, if necessary */
 			mh->OnMenuDrawItem(menu, client, i, dr.style);
 			/* Check if it's renderable */
-			if (IsSlotItem(display, dr.style))
+			if (IsSlotItem(panel, dr.style))
 			{
 				/* If we've already found the max number of items,
 				 * This means we should just cancel out and log our
@@ -318,31 +337,32 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	/* There were no items to draw! */
 	if (!foundItems)
 	{
-		display->DeleteThis();
+		panel->DeleteThis();
 		return NULL;
 	}
 
-	/* Check initial buttons */
 	bool displayPrev = false;
 	bool displayNext = false;
-	if (foundExtra)
-	{
-		if (order == ItemOrder_Descending)
-		{
-			displayPrev = true;
-			md.firstItem = extraItem;
-		} else if (order == ItemOrder_Ascending) {
-			displayNext = true;
-			md.lastItem = extraItem;
-		}
-	}
 
-	/**
-	 * If we're paginated, we have to find if there is another page.
-	 * Sadly, the only way to do this is to try drawing more items!
+	/* This is an annoying process.
+	 * Skip it for non-paginated menus, which get special treatment.
 	 */
 	if (pgn != MENU_NO_PAGINATION)
 	{
+		if (foundExtra)
+		{
+			if (order == ItemOrder_Descending)
+			{
+				displayPrev = true;
+				md.firstItem = extraItem;
+			}
+			else if (order == ItemOrder_Ascending)
+			{
+				displayNext = true;
+				md.lastItem = extraItem;
+			}
+		}
+
 		unsigned int lastItem = 0;
 		ItemDrawInfo dr;
 		/* Find the last feasible item to search from. */
@@ -358,7 +378,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 				if (menu->GetItemInfo(lastItem, &dr) != NULL)
 				{
 					mh->OnMenuDrawItem(menu, client, lastItem, dr.style);
-					if (IsSlotItem(display, dr.style))
+					if (IsSlotItem(panel, dr.style))
 					{
 						displayNext = true;
 						md.lastItem = lastItem;
@@ -366,7 +386,9 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 					}
 				}
 			}
-		} else if (order == ItemOrder_Ascending) {
+		}
+		else if (order == ItemOrder_Ascending)
+		{
 			lastItem = drawItems[0].position;
 			if (lastItem == 0)
 			{
@@ -378,7 +400,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 				if (menu->GetItemInfo(lastItem, &dr) != NULL)
 				{
 					mh->OnMenuDrawItem(menu, client, lastItem, dr.style);
-					if (IsSlotItem(display, dr.style))
+					if (IsSlotItem(panel, dr.style))
 					{
 						displayPrev = true;
 						md.firstItem = lastItem;
@@ -389,6 +411,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			}
 		}
 	}
+
 skip_search:
 
 	/* Draw the item according to the order */
@@ -400,9 +423,9 @@ skip_search:
 		for (unsigned int i = 0; i < foundItems; i++)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
-			if ((position = mh->OnMenuDisplayItem(menu, client, display, drawItems[i].position, dr)) == 0)
+			if ((position = mh->OnMenuDisplayItem(menu, client, panel, drawItems[i].position, dr)) == 0)
 			{
-				position = display->DrawItem(dr);
+				position = panel->DrawItem(dr);
 			}
 			if (position != 0)
 			{
@@ -421,9 +444,9 @@ skip_search:
 		while (i--)
 		{
 			ItemDrawInfo &dr = drawItems[i].draw;
-			if ((position = mh->OnMenuDisplayItem(menu, client, display, drawItems[i].position, dr)) == 0)
+			if ((position = mh->OnMenuDisplayItem(menu, client, panel, drawItems[i].position, dr)) == 0)
 			{
-				position = display->DrawItem(dr);
+				position = panel->DrawItem(dr);
 			}
 			if (position != 0)
 			{
@@ -434,12 +457,17 @@ skip_search:
 	}
 
 	/* Now, we need to check if we need to add anything extra */
-	if (pgn != MENU_NO_PAGINATION)
+	if (pgn != MENU_NO_PAGINATION || exitButton)
 	{
-		bool canDrawDisabled = display->CanDrawItem(ITEMDRAW_DISABLED|ITEMDRAW_CONTROL);
-		bool exitButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT;
-		bool exitBackButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK;
+		bool canDrawDisabled = panel->CanDrawItem(ITEMDRAW_DISABLED|ITEMDRAW_CONTROL);
+		bool exitBackButton = false;
 		char text[50];
+
+		if (pgn != MENU_NO_PAGINATION
+			&& (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK)
+		{
+			exitBackButton = true;
+		}
 
 		/* Calculate how many items we are allowed for control stuff */
 		unsigned int padding = style->GetMaxPageItems() - maxItems;
@@ -461,8 +489,11 @@ skip_search:
 		}
 #endif
 
-		/* Subtract two slots for the displayNext/displayPrev padding */
-		padding -= 2;
+		if (pgn != MENU_NO_PAGINATION)
+		{
+			/* Subtract two slots for the displayNext/displayPrev padding */
+			padding -= 2;
+		}
 
 		/* If we have an "Exit Back" button and the space to draw it, do so. */
 		if (exitBackButton)
@@ -470,7 +501,9 @@ skip_search:
 			if (!displayPrev)
 			{
 				displayPrev = true;
-			} else {
+			}
+			else
+			{
 				exitBackButton = false;
 			}
 		}
@@ -493,7 +526,7 @@ skip_search:
 			/* Add spacers so we can pad to the end */
 			for (unsigned int i=0; i<padding; i++)
 			{
-				position = display->DrawItem(padItem);
+				position = panel->DrawItem(padItem);
 				slots[position].type = ItemSel_None;
 			}
 		}
@@ -502,60 +535,72 @@ skip_search:
 		if ((displayPrev || displayNext) || exitButton)
 		{
 			ItemDrawInfo draw("", ITEMDRAW_RAWLINE|ITEMDRAW_SPACER);
-			display->DrawItem(draw);
+			panel->DrawItem(draw);
 		}
 
 		ItemDrawInfo dr(text, 0);
+
 		/**
 		 * If we have one or the other, we need to have spacers for both.
 		 */
-		if (displayPrev || displayNext)
+		if (pgn != MENU_NO_PAGINATION)
 		{
-			/* PREVIOUS */
-			ItemDrawInfo padCtrlItem(NULL, ITEMDRAW_SPACER|ITEMDRAW_CONTROL);
-			if (displayPrev || canDrawDisabled)
+			if (displayPrev || displayNext)
 			{
-				if (exitBackButton)
+				/* PREVIOUS */
+				ItemDrawInfo padCtrlItem(NULL, ITEMDRAW_SPACER|ITEMDRAW_CONTROL);
+				if (displayPrev || canDrawDisabled)
 				{
-					CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
-					dr.style = ITEMDRAW_CONTROL;
-					position = display->DrawItem(dr);
-					slots[position].type = ItemSel_ExitBack;
-				} else {
-					CorePlayerTranslate(client, text, sizeof(text), "Previous", NULL);
-					dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
-					position = display->DrawItem(dr);
-					slots[position].type = ItemSel_Back;
+					if (exitBackButton)
+					{
+						CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
+						dr.style = ITEMDRAW_CONTROL;
+						position = panel->DrawItem(dr);
+						slots[position].type = ItemSel_ExitBack;
+					}
+					else
+					{
+						CorePlayerTranslate(client, text, sizeof(text), "Previous", NULL);
+						dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
+						position = panel->DrawItem(dr);
+						slots[position].type = ItemSel_Back;
+					}
 				}
-			} else if (displayNext || exitButton) {
-				/* If we can't display this, and there is an exit button,
-				 * we need to pad!
-				 */
-				position = display->DrawItem(padCtrlItem);
-				slots[position].type = ItemSel_None;
-			}
+				else if (displayNext || exitButton)
+				{
+					/* If we can't display this, and there is an exit button,
+					 * we need to pad!
+					 */
+					position = panel->DrawItem(padCtrlItem);
+					slots[position].type = ItemSel_None;
+				}
 
-			/* NEXT */
-			if (displayNext || canDrawDisabled)
+				/* NEXT */
+				if (displayNext || canDrawDisabled)
+				{
+					CorePlayerTranslate(client, text, sizeof(text), "Next", NULL);
+					dr.style = (displayNext ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
+					position = panel->DrawItem(dr);
+					slots[position].type = ItemSel_Next;
+				}
+				else if (exitButton)
+				{
+					/* If we can't display this,
+					 * but there is an "exit" button, we need to pad!
+					 */
+					position = panel->DrawItem(padCtrlItem);
+					slots[position].type = ItemSel_None;
+				}
+			}
+			else
 			{
-				CorePlayerTranslate(client, text, sizeof(text), "Next", NULL);
-				dr.style = (displayNext ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
-				position = display->DrawItem(dr);
-				slots[position].type = ItemSel_Next;
-			} else if (exitButton) {
-				/* If we can't display this,
-				 * but there is an "exit" button, we need to pad!
-				 */
-				position = display->DrawItem(padCtrlItem);
+				/* Otherwise, bump to two slots! */
+				ItemDrawInfo numBump(NULL, ITEMDRAW_NOTEXT);
+				position = panel->DrawItem(numBump);
+				slots[position].type = ItemSel_None;
+				position = panel->DrawItem(numBump);
 				slots[position].type = ItemSel_None;
 			}
-		} else {
-			/* Otherwise, bump to two slots! */
-			ItemDrawInfo numBump(NULL, ITEMDRAW_NOTEXT);
-			position = display->DrawItem(numBump);
-			slots[position].type = ItemSel_None;
-			position = display->DrawItem(numBump);
-			slots[position].type = ItemSel_None;
 		}
 
 		/* EXIT */
@@ -563,7 +608,7 @@ skip_search:
 		{
 			CorePlayerTranslate(client, text, sizeof(text), "Exit", NULL);
 			dr.style = ITEMDRAW_CONTROL;
-			position = display->DrawItem(dr);
+			position = panel->DrawItem(dr);
 			slots[position].type = ItemSel_Exit;
 		}
 	}
@@ -575,10 +620,10 @@ skip_search:
 	}
 
 	/* Do title stuff */
-	mh->OnMenuDisplay(menu, client, display);
-	display->DrawTitle(menu->GetDefaultTitle(), true);
+	mh->OnMenuDisplay(menu, client, panel);
+	panel->DrawTitle(menu->GetDefaultTitle(), true);
 
-	return display;
+	return panel;
 }
 
 IMenuStyle *MenuManager::GetDefaultStyle()

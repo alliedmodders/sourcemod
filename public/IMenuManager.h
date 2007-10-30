@@ -373,6 +373,9 @@ namespace SourceMod
 		/**
 		 * @brief Returns the maximum number of items per page.
 		 *
+		 * Menu implementations must return >= 2.  Styles with only 1 or 0 
+		 * items per page are not valid.
+		 *
 		 * @return				Number of items per page.
 		 */
 		virtual unsigned int GetMaxPageItems() =0;
@@ -464,8 +467,13 @@ namespace SourceMod
 		/** 
 		 * @brief Sets the menu's pagination,.
 		 *
+		 * If pagination is set to MENU_NO_PAGINATION, and the previous 
+		 * pagination was not MENU_NO_PAGINATION, then the MENUFLAG_BUTTON_EXIT 
+		 * is unset.  It can be re-applied if desired.
+		 *
 		 * @param itemsPerPage	Number of items per page, or MENU_NO_PAGINATION.
-		 * @return				True on success, false if itemsPerPage is too large.
+		 * @return				True on success, false if itemsPerPage is too 
+		 *						large.
 		 */
 		virtual bool SetPagination(unsigned int itemsPerPage) =0;
 
