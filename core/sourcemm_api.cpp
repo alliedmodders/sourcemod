@@ -33,6 +33,7 @@
 #include "sourcemm_api.h"
 #include "sm_version.h"
 #include "Logger.h"
+#include "ExtensionSys.h"
 #include "concmd_cleaner.h"
 #include "compat_wrappers.h"
 
@@ -219,3 +220,21 @@ void SourceMod_Core::OnPluginUnload(PluginId id)
 }
 
 #endif
+
+void *SourceMod_Core::OnMetamodQuery(const char *iface, int *ret)
+{
+	void *ptr = NULL;
+
+	if (strcmp(iface, SOURCEMOD_INTERFACE_EXTENSIONS) == 0)
+	{
+		ptr = (IExtensionManager *)&g_Extensions;
+	}
+
+	if (ret != NULL)
+	{
+		*ret = (ptr == NULL) ? IFACE_FAILED : IFACE_OK;
+	}
+
+	return NULL;
+}
+

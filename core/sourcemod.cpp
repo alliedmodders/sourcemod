@@ -406,6 +406,9 @@ void SourceModBase::DoGlobalPluginLoads()
 	/* Load any auto extensions */
 	g_Extensions.TryAutoload();
 
+	/* Fire the extensions ready message */
+	g_SMAPI->MetaFactory(SOURCEMOD_NOTICE_EXTENSIONS, NULL, NULL);	
+
 	/* Load any game extension */
 	const char *game_ext;
 	if ((game_ext = g_pGameConf->GetKeyValue("GameExtension")) != NULL)

@@ -79,6 +79,7 @@ public:
 #else
 	void OnPluginUnload(PluginId id);
 #endif
+	void *OnMetamodQuery(const char *iface, int *ret);
 };
 
 extern SourceMod_Core g_SourceMod_Core;
@@ -105,3 +106,4 @@ extern int vsp_version;
 PLUGIN_GLOBALVARS();
 
 #endif //_INCLUDE_SOURCEMOD_MM_API_H_
+

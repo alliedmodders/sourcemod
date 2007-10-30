@@ -288,6 +288,24 @@ namespace SourceMod
 		virtual const char *GetExtensionDateString() =0;
 	};
 
+	/**
+	 * @brief Returned via OnMetamodQuery() to get an IExtensionManager pointer.
+	 */
+	#define SOURCEMOD_INTERFACE_EXTENSIONS				"SM_ExtensionManager"
+
+	/**
+	 * @brief Fired through OnMetamodQuery() to notify plugins that SourceMod is 
+	 * loaded.  
+	 *
+	 * Plugins should not return an interface pointer or IFACE_OK, instead, 
+	 * they should attach as needed by searching for SOURCEMOD_INTERFACE_EXTENSIONS.
+	 *
+	 * This may be fired more than once; if already attached, an extension should 
+	 * not attempt to re-attach.  The purpose of this is to notify Metamod:Source 
+	 * plugins which load after SourceMod loads.
+	 */
+	#define SOURCEMOD_NOTICE_EXTENSIONS					"SM_ExtensionsAttachable"
+
 	#define SMINTERFACE_EXTENSIONMANAGER_NAME			"IExtensionManager"
 	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		2
 
@@ -389,7 +407,8 @@ namespace SourceMod
 		}
 
 	#define SM_FIND_IFACE(prefix, variable) \
-		sharesys->RequestInterface(SM_IFACEPAIR(prefix), myself, (SMInterface **)&variable));
+		sharesys->RequestInterface(SM_IFACEPAIR(prefix), myself, (SMInterface **)&variable);
 }
 
 #endif //_INCLUDE_SOURCEMOD_MODULE_INTERFACE_H_
+`
