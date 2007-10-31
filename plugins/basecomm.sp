@@ -80,6 +80,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_unsilence", Command_Unsilence, ADMFLAG_CHAT, "sm_unsilence <player> - Restores a player's ability to use voice and chat.");	
 	
 	HookConVarChange(g_Cvar_Deadtalk, ConVarChange_Deadtalk);
+	HookConVarChange(g_Cvar_Alltalk, ConVarChange_Alltalk);
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -153,6 +154,55 @@ public Action:Command_Say(client, args)
 	return Plugin_Continue;
 }
 
+public ConVarChange_Alltalk(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (StringToInt(newValue) != 0
+		|| StringToInt(oldValue) == 0)
+	{
+		return;
+	}
+	
+	new dt_val = GetConVarInt(g_Cvar_Deadtalk);
+	new max_clients = GetMaxClients();
+	
+	for (new i = 1; i <= max_clients; i++)
+	{
+		if (!IsClientInGame(i))
+		{
+			continue;
+		}
+		
+		PrintToServer("STAT (i %d) (g_Muted[%d] %d) (dt_val %d)", i, i, g_Muted[i], dt_val);
+		
+		if (IsPlayerAlive(i))
+		{
+			if (g_Muted[i])
+			{
+				SetClientListeningFlags(i, VOICE_MUTED);
+			}
+			else
+			{
+				SetClientListeningFlags(i, VOICE_NORMAL);
+			}
+		}
+		else
+		{
+			if (g_Muted[i])
+			{
+				SetClientListeningFlags(i, VOICE_MUTED);
+			}
+			else if (dt_val == 1)
+			{
+				SetClientListeningFlags(i, VOICE_LISTENALL);
+			}
+			else if (dt_val == 2)
+			{
+				SetClientListeningFlags(i, VOICE_TEAM);
+			}
+		}
+	}
+}
+
 public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
@@ -183,11 +233,12 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 	
-	if (GetConVarInt(g_Cvar_Deadtalk) == 1)
+	new dt_val = GetConVarInt(g_Cvar_Deadtalk);
+	if (dt_val == 1)
 	{
 		SetClientListeningFlags(client, VOICE_LISTENALL);
 	}
-	else if (GetConVarInt(g_Cvar_Deadtalk) == 2)
+	else if (dt_val == 2)
 	{
 		SetClientListeningFlags(client, VOICE_TEAM);
 	}
