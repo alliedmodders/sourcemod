@@ -411,4 +411,4 @@ namespace SourceMod
 }
 
 #endif //_INCLUDE_SOURCEMOD_MODULE_INTERFACE_H_
-`
+
