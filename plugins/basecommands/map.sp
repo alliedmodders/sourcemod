@@ -120,22 +120,28 @@ LoadMapList(Handle:menu)
 		return LoadMapFolder(menu);
 	}
 	
-	decl String:buffer[64], len;
+	decl String:buffer[256], len;
 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
 	{
 		TrimString(buffer);
-
+		
 		if ((len = StrContains(buffer, ".bsp", false)) != -1)
 		{
 			buffer[len] = '\0';
 		}
 
-		if (buffer[0] == '\0' || !IsValidConVarChar(buffer[0]) || !IsMapValid(buffer))
+		if (buffer[0] == '\0' 
+			|| buffer[0] == ';'
+			|| buffer[0] == '/'
+			|| !IsValidConVarChar(buffer[0]))
 		{
 			continue;
 		}
-
-		AddMenuItem(menu, buffer, buffer);
+		
+		if (IsMapValid(buffer))
+		{
+			AddMenuItem(menu, buffer, buffer);
+		}
 	}
 
 	CloseHandle(file);

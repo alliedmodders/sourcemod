@@ -141,7 +141,10 @@ public Action:Command_Kick(client, args)
 			{
 				kick_self = client;
 			}
-			PerformKick(client, target_list[i], Arguments[len]);
+			else
+			{
+				PerformKick(client, target_list[i], Arguments[len]);
+			}
 		}
 		
 		if (kick_self)
