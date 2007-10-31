@@ -48,7 +48,7 @@ public: // SMGlobalClass
 	void OnSourceModShutdown();
 	void OnSourceModLevelChange(const char *mapName);
 public: // ITextListener_SMC
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 public: // IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:

@@ -89,11 +89,10 @@ public:
 	TransError GetTranslation(const char *szPhrase, unsigned int lang_id, Translation *pTrans);
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 	void ReadSMC_ParseEnd(bool halted, bool failed);
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
-	SMCParseResult ReadSMC_LeavingSection();
-	SMCParseResult ReadSMC_RawLine(const char *line, unsigned int curline);
 private:
 	void ParseError(const char *message, ...);
 	void ParseWarning(const char *message, ...);
@@ -108,7 +107,6 @@ private:
 	unsigned int m_LangCount;
 	String m_ParseError;
 	String m_LastPhraseString;
-	unsigned int m_CurLine;
 	bool m_FileLogged;
 };
 
@@ -129,9 +127,9 @@ public: // SMGlobalClass
 	void OnSourceModLevelChange(const char *mapName);
 public: // ITextListener_SMC
 	void ReadSMC_ParseStart();
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
-	SMCParseResult ReadSMC_LeavingSection();
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public:
 	void RebuildLanguageDatabase(const char *lang_header_file);
 	unsigned int FindOrAddPhraseFile(const char *phrase_file);

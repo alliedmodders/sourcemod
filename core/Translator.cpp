@@ -119,7 +119,7 @@ void CPhraseFile::ReparseFile()
 		return;
 	}
 
-	SMCParseError err;
+	SMCError err;
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
 
@@ -137,9 +137,9 @@ void CPhraseFile::ReparseFile()
 		}
 	}
 
-	unsigned int line=0, col=0;
+	SMCStates states;
 
-	if ((err=textparsers->ParseFile_SMC(path, this, &line, &col)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(path, this, &states)) != SMCError_Okay)
 	{
 		const char *msg = textparsers->GetSMCErrorString(err);
 		if (!msg)
@@ -148,7 +148,7 @@ void CPhraseFile::ReparseFile()
 		}
 
 		g_Logger.LogError("[SM] Fatal error encountered parsing translation file \"%s\"", m_File.c_str());
-		g_Logger.LogError("[SM] Error (line %d, column %d): %s", line, col, msg);
+		g_Logger.LogError("[SM] Error (line %d, column %d): %s", states.line, states.col, msg);
 	}
 }
 
@@ -156,19 +156,11 @@ void CPhraseFile::ReadSMC_ParseStart()
 {
 	m_CurPhrase = -1;
 	m_ParseState = PPS_None;
-	m_CurLine = 0;
 	m_FileLogged = false;
 	m_LastPhraseString.clear();
 }
 
-SMCParseResult CPhraseFile::ReadSMC_RawLine(const char *line, unsigned int curline)
-{
-	m_CurLine = curline;
-
-	return SMCParse_Continue;
-}
-
-SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCResult CPhraseFile::ReadSMC_NewSection(const SMCStates *states, const char *name)
 {
 	bool recognized = false;
 	if (m_ParseState == PPS_None)
@@ -178,7 +170,9 @@ SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes
 			m_ParseState = PPS_Phrases;
 			recognized = true;
 		}
-	} else if (m_ParseState == PPS_Phrases) {
+	} 
+	else if (m_ParseState == PPS_Phrases) 
+	{
 		m_ParseState = PPS_InPhrase;
 		recognized = true;
 
@@ -188,10 +182,12 @@ SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes
 		/* Create the reverse lookup */
 		if (!sm_trie_insert(m_pPhraseLookup, name, reinterpret_cast<void *>(m_CurPhrase)))
 		{
-			ParseWarning("Skipping duplicate phrase \"%s\" on line %d.", name, m_CurLine);
+			ParseWarning("Skipping duplicate phrase \"%s\" on line %d.", name, states->line);
 			/* :IDEA: prevent memory waste by seeking backwards in memtable? */
 			m_CurPhrase = -1;
-		} else {
+		} 
+		else 
+		{
 			/* Initialize new phrase */
 			trans_t *pTrans;
 	
@@ -211,25 +207,27 @@ SMCParseResult CPhraseFile::ReadSMC_NewSection(const char *name, bool opt_quotes
 			}
 			m_LastPhraseString.assign(name);
 		}
-	} else if (m_ParseState == PPS_InPhrase) {
+	} 
+	else if (m_ParseState == PPS_InPhrase) 
+	{
 		ParseError("Phrase sections may not have sub-sections");
-		return SMCParse_HaltFail;
+		return SMCResult_HaltFail;
 	}
 
 	if (!recognized)
 	{
-		ParseWarning("Ignoring invalid section \"%s\" on line %d.", name, m_CurLine);
+		ParseWarning("Ignoring invalid section \"%s\" on line %d.", name, states->line);
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCResult CPhraseFile::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	/* See if we are ignoring a phrase */
 	if (m_CurPhrase == -1)
 	{
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	phrase_t *pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
@@ -238,14 +236,14 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 	{
 		if (pPhrase->fmt_list != -1)
 		{
-			ParseWarning("Ignoring duplicated #format property on line %d", m_CurLine);
-			return SMCParse_Continue;
+			ParseWarning("Ignoring duplicated #format property on line %d", states->line);
+			return SMCResult_Continue;
 		}
 
 		if (pPhrase->translations > 0)
 		{
-			ParseWarning("#format property should come before translations on line %d, ignoring", m_CurLine);
-			return SMCParse_Continue;
+			ParseWarning("#format property should come before translations on line %d, ignoring", states->line);
+			return SMCResult_Continue;
 		}
 
 		/* Do an initial browsing for error checking and what not */
@@ -268,37 +266,47 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 				{
 					pPhrase->fmt_count++;
 					state = Parse_Index;
-				} else if (*value == ',') {
+				} 
+				else if (*value == ',') 
+				{
 					/* Do nothing */
-				} else {
+				} 
+				else 
+				{
 					unsigned int bytes = textparsers->GetUTF8CharBytes(value);
 					if (bytes != 1 || !isalpha(*value))
 					{
-						ParseWarning("Invalid token '%c' in #format property on line %d.", *value, m_CurLine);
+						ParseWarning("Invalid token '%c' in #format property on line %d.", *value, states->line);
 					}
 				}
-			} else if (state == Parse_Index) {
+			} 
+			else if (state == Parse_Index) 
+			{
 				if (*value == ':')
 				{
 					state = Parse_Format;
 					if (value - last_value >= 15)
 					{
-						ParseWarning("Too many digits in format index on line %d, phrase will be ignored.", m_CurLine);
+						ParseWarning("Too many digits in format index on line %d, phrase will be ignored.", states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
+						return SMCResult_Continue;
 					}
-				} else {
+				} 
+				else 
+				{
 					unsigned int bytes = textparsers->GetUTF8CharBytes(value);
 					if (bytes != 1 || !isdigit(*value))
 					{
 						ParseWarning("Token '%c' in #format property on line %d is not a digit, phrase will be ignored.",
 									*value,
-									m_CurLine);
+									states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
+						return SMCResult_Continue;
 					}
 				}
-			} else if (state == Parse_Format) {
+			} 
+			else if (state == Parse_Format) 
+			{
 				if (*value == '}')
 				{
 					state = Parse_None;
@@ -311,9 +319,9 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 		if (state != Parse_None)
 		{
 			/* Moose clam cow. */
-			ParseWarning("Unterminated format string on line %d, phrase will be ignored.", m_CurLine);
+			ParseWarning("Unterminated format string on line %d, phrase will be ignored.", states->line);
 			m_CurPhrase = -1;
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 		value = old_value;
 
@@ -347,41 +355,49 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 					state = Parse_Index;
 					idx_ptr = NULL;
 				}
-			} else if (state == Parse_Index) {
+			}
+			else if (state == Parse_Index) 
+			{
 				if (*in_ptr == ':')
 				{
 					/* Check the number! */
 					if (!idx_ptr)
 					{
-						ParseWarning("Format property contains unindexed format string on line %d, phrase will be ignored.", m_CurLine);
+						ParseWarning("Format property contains unindexed format string on line %d, phrase will be ignored.", states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
+						return SMCResult_Continue;
 					}
 					long idx = strtol(idx_ptr, NULL, 10);
 					if (idx < 1 || idx > (long)pPhrase->fmt_count)
 					{
-						ParseWarning("Format property contains invalid index '%d' on line %d, phrase will be ignored.", idx, m_CurLine);
+						ParseWarning("Format property contains invalid index '%d' on line %d, phrase will be ignored.", idx, states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
-					} else if (fmt_list[idx - 1] != -1) {
-						ParseWarning("Format property contains duplicated index '%d' on line %d, phrase will be ignored.", idx, m_CurLine);
+						return SMCResult_Continue;
+					}
+					else if (fmt_list[idx - 1] != -1) 
+					{
+						ParseWarning("Format property contains duplicated index '%d' on line %d, phrase will be ignored.", idx, states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
+						return SMCResult_Continue;
 					}
 					cur_idx = (unsigned int)idx;
 					state = Parse_Format;
 					out_ptr = NULL;
-				} else if (!idx_ptr) {
+				}
+				else if (!idx_ptr) 
+				{
 					idx_ptr = in_ptr;
 				}
-			} else if (state == Parse_Format) {
+			}
+			else if (state == Parse_Format) 
+			{
 				if (*in_ptr == '}')
 				{
 					if (!out_ptr)
 					{
-						ParseWarning("Format property contains empty format string on line %d, phrase will be ignored.", m_CurLine);
+						ParseWarning("Format property contains empty format string on line %d, phrase will be ignored.", states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
+						return SMCResult_Continue;
 					}
 					*out_ptr = '\0';
 					state = Parse_None;
@@ -392,7 +408,9 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 					pPhrase->fmt_bytes += strlen(fmt_buf);
 					fmt_list = (int *)m_pMemory->GetAddress(pPhrase->fmt_list);
 					fmt_list[cur_idx - 1] = tmp_idx;
-				} else {
+				} 
+				else 
+				{
 					if (!out_ptr)
 					{
 						out_ptr = fmt_buf;
@@ -402,9 +420,9 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 					if ((unsigned)(out_ptr - fmt_buf) >= sizeof(fmt_buf) - 1)
 					{
 						ParseWarning("Format property contains format string that exceeds maximum length on line %d, phrase will be ignored.",
-									 m_CurLine);
+									 states->line);
 						m_CurPhrase = -1;
-						return SMCParse_Continue;
+						return SMCResult_Continue;
 					}
 					*out_ptr++ = *in_ptr;
 				}
@@ -421,17 +439,19 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 			{
 				ParseWarning("Format property contains no string for index %d on line %d, phrase will be ignored.",
 							 i + 1,
-							 m_CurLine);
+							 states->line);
 				m_CurPhrase = -1;
-				return SMCParse_Continue;
+				return SMCResult_Continue;
 			}
 		}
-	} else {
+	} 
+	else 
+	{
 		size_t len = strlen(key);
 		if (len != 2)
 		{
-			ParseWarning("Ignoring translation to invalid language \"%s\" on line %d.", key, m_CurLine);
-			return SMCParse_Continue;
+			ParseWarning("Ignoring translation to invalid language \"%s\" on line %d.", key, states->line);
+			return SMCResult_Continue;
 		}
 
 		unsigned int lang;
@@ -440,7 +460,7 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 			/* Ignore if we don't have a language.
 			 * :IDEA: issue a one-time alert?
 			 */
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		/* See how many bytes we need for this string, then allocate.
@@ -515,7 +535,9 @@ SMCParseResult CPhraseFile::ReadSMC_KeyValue(const char *key, const char *value,
 				}
 				/* Skip past the last byte read */
 				in_ptr++;
-			} else if (*in_ptr == '{' && fmt_list != NULL) {
+			} 
+			else if (*in_ptr == '{' && fmt_list != NULL) 
+			{
 				/* Search for parameters if this is a formatted string */
 				const char *scrap_in_point = in_ptr;
 				const char *digit_start = ++in_ptr;
@@ -570,10 +592,10 @@ cont_loop:
 		pPhrase->translations++;
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult CPhraseFile::ReadSMC_LeavingSection()
+SMCResult CPhraseFile::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	if (m_ParseState == PPS_InPhrase)
 	{
@@ -584,11 +606,13 @@ SMCParseResult CPhraseFile::ReadSMC_LeavingSection()
 		m_CurPhrase = -1;
 		m_ParseState = PPS_Phrases;
 		m_LastPhraseString.assign("");
-	} else if (m_ParseState == PPS_Phrases) {
+	} 
+	else if (m_ParseState == PPS_Phrases) 
+	{
 		m_ParseState = PPS_None;
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
 void CPhraseFile::ReadSMC_ParseEnd(bool halted, bool failed)
@@ -623,9 +647,8 @@ TransError CPhraseFile::GetTranslation(const char *szPhrase, unsigned int lang_i
 		return Trans_BadPhraseLanguage;
 	}
 
-	pTrans->fmt_order = (int *)m_pMemory->GetAddress(trans->fmt_order);
 	pTrans->fmt_count = pPhrase->fmt_count;
-
+	pTrans->fmt_order = pTrans->fmt_count > 0 ? (int *)m_pMemory->GetAddress(trans->fmt_order) : NULL;
 	pTrans->szPhrase = m_pStringTab->GetString(trans->stridx);
 
 	return Trans_Okay;
@@ -811,9 +834,9 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 	m_Languages.clear();
 
 	/* Start anew */
-	SMCParseError err;
-	unsigned int line=0, col=0;
-	if ((err=textparsers->ParseFile_SMC(lang_header_file, this, &line, &col)) != SMCParse_Okay)
+	SMCError err;
+	SMCStates states;
+	if ((err=textparsers->ParseFile_SMC(lang_header_file, this, &states)) != SMCError_Okay)
 	{
 		const char *str_err = textparsers->GetSMCErrorString(err);
 		if (!str_err)
@@ -822,7 +845,7 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 		}
 
 		g_Logger.LogError("[SM] Failed to parse language header file: \"%s\"", lang_header_file);
-		g_Logger.LogError("[SM] Parse error (line %d, column %d): %s", line, col, str_err);
+		g_Logger.LogError("[SM] Parse error (line %d, column %d): %s", states.line, states.col, str_err);
 	}
 
 	void *serverLang;
@@ -854,7 +877,7 @@ void Translator::ReadSMC_ParseStart()
 	m_CustomError.clear();
 }
 
-SMCParseResult Translator::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCResult Translator::ReadSMC_NewSection(const SMCStates *states, const char *name)
 {
 	if (!m_InLanguageSection)
 	{
@@ -869,17 +892,17 @@ SMCParseResult Translator::ReadSMC_NewSection(const char *name, bool opt_quotes)
 		g_Logger.LogError("[SM] Warning: Unrecognized section \"%s\" in languages.cfg", name);
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult Translator::ReadSMC_LeavingSection()
+SMCResult Translator::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	m_InLanguageSection = false;
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult Translator::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	size_t len = strlen(key);
 
@@ -891,7 +914,7 @@ SMCParseResult Translator::ReadSMC_KeyValue(const char *key, const char *value, 
 
 	AddLanguage(key, value);
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
 bool Translator::AddLanguage(const char *langcode, const char *description)

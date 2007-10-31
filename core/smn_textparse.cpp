@@ -71,41 +71,41 @@ public:
 		}
 	}
 
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes)
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name)
 	{
-		cell_t result = SMCParse_Continue;
+		cell_t result = SMCResult_Continue;
 
 		if (new_section)
 		{
 			new_section->PushCell(handle);
 			new_section->PushString(name);
-			new_section->PushCell(opt_quotes ? 1 : 0);
+			new_section->PushCell(1);
 			new_section->Execute(&result);
 		}
 
-		return (SMCParseResult)result;
+		return (SMCResult)result;
 	}
 
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 	{
-		cell_t result = SMCParse_Continue;
+		cell_t result = SMCResult_Continue;
 
 		if (key_value)
 		{
 			key_value->PushCell(handle);
 			key_value->PushString(key);
 			key_value->PushString(value);
-			key_value->PushCell(key_quotes ? 1 : 0);
-			key_value->PushCell(value_quotes ? 1 : 0);
+			key_value->PushCell(1);
+			key_value->PushCell(1);
 			key_value->Execute(&result);
 		}
 
-		return (SMCParseResult)result;
+		return (SMCResult)result;
 	}
 
-	SMCParseResult ReadSMC_LeavingSection()
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states)
 	{
-		cell_t result = SMCParse_Continue;
+		cell_t result = SMCResult_Continue;
 
 		if (end_section)
 		{
@@ -113,22 +113,22 @@ public:
 			end_section->Execute(&result);
 		}
 
-		return (SMCParseResult)result;
+		return (SMCResult)result;
 	}
 
-	SMCParseResult ReadSMC_RawLine(const char *line, unsigned int curline)
+	SMCResult ReadSMC_RawLine(const SMCStates *states, const char *line)
 	{
-		cell_t result = SMCParse_Continue;
+		cell_t result = SMCResult_Continue;
 
 		if (raw_line)
 		{
 			raw_line->PushCell(handle);
 			raw_line->PushString(line);
-			raw_line->PushCell(curline);
+			raw_line->PushCell(states->line);
 			raw_line->Execute(&result);
 		}
 
-		return (SMCParseResult)result;
+		return (SMCResult)result;
 	}
 public:
 	IPluginFunction *parse_start;
@@ -279,22 +279,22 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
-	unsigned int line = 0, col = 0;
-	SMCParseError p_err = textparsers->ParseFile_SMC(path, parse, &line, &col);
+	SMCStates states;
+	SMCError p_err = textparsers->ParseFile_SMC(path, parse, &states);
 
 	cell_t *c_line, *c_col;
 	pContext->LocalToPhysAddr(params[3], &c_line);
 	pContext->LocalToPhysAddr(params[4], &c_col);
 
-	*c_line = line;
-	*c_col = col;
+	*c_line = states.line;
+	*c_col = states.col;
 
 	return (cell_t)p_err;
 }
 
 static cell_t SMC_GetErrorString(IPluginContext *pContext, const cell_t *params)
 {
-	const char *str = textparsers->GetSMCErrorString((SMCParseError)params[1]);
+	const char *str = textparsers->GetSMCErrorString((SMCError)params[1]);
 
 	if (!str)
 	{

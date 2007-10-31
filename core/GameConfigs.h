@@ -55,9 +55,9 @@ public:
 public:
 	bool Reparse(char *error, size_t maxlength);
 public: //ITextListener_SMC
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
-	SMCParseResult ReadSMC_LeavingSection();
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public: //IGameConfig
 	const char *GetKeyValue(const char *key);
 	bool GetOffset(const char *key, int *value);

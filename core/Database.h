@@ -94,9 +94,9 @@ public: //IDBManager
 	HandleError ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token);
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
-	SMCParseResult ReadSMC_LeavingSection();
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 	void ReadSMC_ParseEnd(bool halted, bool failed);
 public: //IThread
 	void RunThread(IThreadHandle *pThread);

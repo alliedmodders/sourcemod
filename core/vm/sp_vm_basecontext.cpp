@@ -811,7 +811,7 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *sour
 		len = bytes - 1;
 	}
 
-	memcpy(dest, source, len);
+	memmove(dest, source, len);
 	dest[len] = '\0';
 
 	return SP_ERROR_NONE;
@@ -880,7 +880,7 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 		needtocheck = true;
 	}
 
-	memcpy(dest, source, len);
+	memmove(dest, source, len);
 	if ((dest[len-1] & 1<<7) && needtocheck)
 	{
 		len -= __CheckValidChar(dest+len-1);

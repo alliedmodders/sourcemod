@@ -107,14 +107,13 @@ bool CharStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int
 	return true;
 }
 
-SMCParseError TextParsers::ParseString_SMC(const char *stream, 
+SMCError TextParsers::ParseString_SMC(const char *stream, 
 					 ITextListener_SMC *smc,
-					 unsigned int *line,
-					 unsigned int *col)
+					 SMCStates *states)
 {
 	CharStream srdr = { stream };
 
-	return ParseStream_SMC(&srdr, CharStreamReader, smc, line, col);
+	return ParseStream_SMC(&srdr, CharStreamReader, smc, states);
 }
 
 /**
@@ -135,16 +134,21 @@ bool FileStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int
 	return (ferror((FILE *)stream) == 0);
 }
 
-SMCParseError TextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc, unsigned int *line, unsigned int *col)
+SMCError TextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc, SMCStates *states)
 {
 	FILE *fp = fopen(file, "rt");
 
 	if (!fp)
 	{
-		return SMCParse_StreamOpen;
+		if (states != NULL)
+		{
+			states->line = 0;
+			states->col = 0;
+		}
+		return SMCError_StreamOpen;
 	}
 
-	SMCParseError result = ParseStream_SMC(fp, FileStreamReader, smc, line, col);
+	SMCError result = ParseStream_SMC(fp, FileStreamReader, smc, states);
 
 	fclose(fp);
 
@@ -273,34 +277,44 @@ char *lowstring(StringInfo info[3])
 	return NULL;
 }
 
-SMCParseError TextParsers::ParseStream_SMC(void *stream, 
+SMCError TextParsers::ParseStream_SMC(void *stream, 
 								   STREAMREADER srdr, 
 								   ITextListener_SMC *smc, 
-								   unsigned int *line, 
-								   unsigned int *col)
+								   SMCStates *pStates)
 {
 	char *reparse_point = NULL;
 	char in_buf[4096];
 	char *parse_point = in_buf;
 	char *line_begin = in_buf;
 	unsigned int read;
-	unsigned int curline = 1;
-	unsigned int curtok = 0;
 	unsigned int curlevel = 0;
 	bool in_quote = false;
 	bool ignoring = false;
 	bool eol_comment = false;
 	bool ml_comment = false;
 	unsigned int i;
-	SMCParseError err = SMCParse_Okay;
-	SMCParseResult res;
+	SMCError err = SMCError_Okay;
+	SMCResult res;
+	SMCStates states;
 	char c;
 
 	StringInfo strings[3];
 	StringInfo emptystring;
 
+	states.line = 1;
+	states.col = 0;
+
 	smc->ReadSMC_ParseStart();
 
+	/**
+	 * The stream reader reads in as much as it can fill the buffer with.
+	 * It then processes the buffer.  If the buffer cannot be fully processed, for example, 
+	 * a line is left hanging with no newline, then the contents of the buffer is shifted 
+	 * down, and the buffer is filled from the stream reader again.
+	 *
+	 * What makes this particularly annoying is that we cache pointers everywhere, so when 
+	 * the shifting process takes place, all those pointers must be shifted as well.
+	 */
 	while (srdr(stream, parse_point, sizeof(in_buf) - (parse_point - in_buf) - 1, &read))
 	{
 		if (!read)
@@ -308,10 +322,10 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 			break;
 		}
 
-		/* :TODO: do this outside of the main loop somehow
-		 * This checks for BOM markings
+		/* Check for BOM markings, which is only relevant on the first line.
+		 * Not worth it, but it could be moved out of the loop.
 		 */
-		if (curline == 1 && 
+		if (states.line == 1 && 
 			in_buf[0] == (char)0xEF && 
 			in_buf[1] == (char)0xBB && 
 			in_buf[2] == (char)0xBF)
@@ -341,7 +355,7 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 					strings[0].end = &parse_point[i];
 					if (rotate(strings) != NULL)
 					{
-						err = SMCParse_InvalidTokens;
+						err = SMCError_InvalidTokens;
 						goto failed;
 					}
 				}
@@ -354,39 +368,44 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 					ignoring = false;
 				}
 
-				/* Pass the raw line onto the listener */
-				if ((res=smc->ReadSMC_RawLine(line_begin, curline)) != SMCParse_Continue)
+				/* Pass the raw line onto the listener.  We terminate the line so the receiver 
+				 * doesn't get tons of useless info.  We restore the newline after.
+				 */
+				parse_point[i] = '\0';
+				if ((res=smc->ReadSMC_RawLine(&states, line_begin)) != SMCResult_Continue)
 				{
-					err = (res == SMCParse_HaltFail) ? SMCParse_Custom : SMCParse_Okay;
+					err = (res == SMCResult_HaltFail) ? SMCError_Custom : SMCError_Okay;
 					goto failed;
 				}
+				parse_point[i] = '\n';
 
 				/* Now we check the sanity of our staged strings! */
 				if (strings[2].ptr)
 				{
 					if (!curlevel)
 					{
-						err = SMCParse_InvalidProperty1;
+						err = SMCError_InvalidProperty1;
 						goto failed;
 					}
 					/* Assume the next string is a property and pass the info on. */
 					if ((res=smc->ReadSMC_KeyValue(
+						&states,
 						FixupString(strings[2]),
-						FixupString(strings[1]),
-						strings[2].quoted,
-						strings[1].quoted)) != SMCParse_Continue)
+						FixupString(strings[1]))) != SMCResult_Continue)
 					{
-						err = (res == SMCParse_HaltFail) ? SMCParse_Custom : SMCParse_Okay;
+						err = (res == SMCResult_HaltFail) ? SMCError_Custom : SMCError_Okay;
 						goto failed;
 					}
 					scrap(strings);
 				}
 
 				/* Change the states for the next line */
-				curtok = 0;
-				curline++;
+				states.col = 0;
+				states.line++;
 				line_begin = &parse_point[i+1];		//Note: safe because this gets relocated later
-			} else if (ignoring) {
+			} 
+			else if (ignoring) 
+			{
 				if (in_quote)
 				{
 					/* If i was 0, this case is impossible due to reparsing */
@@ -403,10 +422,12 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 						if (rotate(strings) != NULL)
 						{
 							/* If we rotated too many strings, there was too much crap on one line */
-							err = SMCParse_InvalidTokens;
+							err = SMCError_InvalidTokens;
 							goto failed;
 						}
-					} else if (c == '\\') {
+					} 
+					else if (c == '\\') 
+					{
 						strings[0].special = true;
 						if (i == (read - 1))
 						{
@@ -414,7 +435,9 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 							break;
 						}
 					}
-				} else if (ml_comment) {
+				} 
+				else if (ml_comment) 
+				{
 					if (c == '*')
 					{
 						/* Check if we need to get more input first */
@@ -431,11 +454,13 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 							assert(strings[0].ptr == NULL);
 							/* Advance the input stream so we don't choke on this token */
 							i++;
-							curtok++;
+							states.col++;
 						}
 					}
 				}
-			} else {
+			} 
+			else 
+			{
 				/* Check if we're whitespace or not */
 				if (!g_ws_chartable[(unsigned)c])
 				{
@@ -468,7 +493,9 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 								ignoring = true;
 								eol_comment = true;
 								restage = true;
-							} else if (parse_point[i+1] == '*') {
+							} 
+							else if (parse_point[i+1] == '*') 
+							{
 								/* inline comment - start ignoring */
 								ignoring = true;
 								ml_comment = true;
@@ -479,93 +506,108 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 								 */
 								restage = true;
 							}
-						} else {
+						} 
+						else 
+						{
 							ignoring = true;
 							eol_comment = true;
 							restage = true;
 						}
-					} else if (c == '{') {
+					} 
+					else if (c == '{') 
+					{
 						/* If we are staging a string, we must rotate here */
 						if (strings[0].ptr)
 						{
 							/* We have unacceptable tokens on this line */
 							if (rotate(strings) != NULL)
 							{
-								err = SMCParse_InvalidSection1;
+								err = SMCError_InvalidSection1;
 								goto failed;
 							}
 						}
 						/* Sections must always be alone */
 						if (strings[2].ptr != NULL)
 						{
-							err = SMCParse_InvalidSection1;
+							err = SMCError_InvalidSection1;
 							goto failed;
-						} else if (strings[1].ptr == NULL) {
-							err = SMCParse_InvalidSection2;
+						} 
+						else if (strings[1].ptr == NULL)
+						{
+							err = SMCError_InvalidSection2;
 							goto failed;
 						}
-						if ((res=smc->ReadSMC_NewSection(FixupString(strings[1]), strings[1].quoted))
-							!= SMCParse_Continue)
+						if ((res=smc->ReadSMC_NewSection(&states, FixupString(strings[1])))
+							!= SMCResult_Continue)
 						{
-							err = (res == SMCParse_HaltFail) ? SMCParse_Custom : SMCParse_Okay;
+							err = (res == SMCResult_HaltFail) ? SMCError_Custom : SMCError_Okay;
 							goto failed;
 						}
 						strings[1] = emptystring;
 						curlevel++;
-					} else if (c == '}') {
+					} 
+					else if (c == '}') 
+					{
 						/* Unlike our matching friend, this can be on the same line as something prior */
 						if (rotate(strings) != NULL)
 						{
-							err = SMCParse_InvalidSection3;
+							err = SMCError_InvalidSection3;
 							goto failed;
 						}
 						if (strings[2].ptr)
 						{
 							if (!curlevel)
 							{
-								err = SMCParse_InvalidProperty1;
+								err = SMCError_InvalidProperty1;
 								goto failed;
 							}
 							if ((res=smc->ReadSMC_KeyValue(
+											&states,
 											FixupString(strings[2]),
-											FixupString(strings[1]),
-											strings[2].quoted,
-											strings[1].quoted))
-								!= SMCParse_Continue)
+											FixupString(strings[1])))
+								!= SMCResult_Continue)
 							{
-								err = (res == SMCParse_HaltFail) ? SMCParse_Custom : SMCParse_Okay;
+								err = (res == SMCResult_HaltFail) ? SMCError_Custom : SMCError_Okay;
 								goto failed;
 							}
-						} else if (strings[1].ptr) {
-							err = SMCParse_InvalidSection3;
+						} 
+						else if (strings[1].ptr) 
+						{
+							err = SMCError_InvalidSection3;
 							goto failed;
-						} else if (!curlevel) {
-							err = SMCParse_InvalidSection4;
+						} 
+						else if (!curlevel) 
+						{
+							err = SMCError_InvalidSection4;
 							goto failed;
 						}
 						/* Now it's safe to leave the section */
 						scrap(strings);
-						if ((res=smc->ReadSMC_LeavingSection()) != SMCParse_Continue)
+						if ((res=smc->ReadSMC_LeavingSection(&states)) != SMCResult_Continue)
 						{
-							err = (res == SMCParse_HaltFail) ? SMCParse_Custom : SMCParse_Okay;
+							err = (res == SMCResult_HaltFail) ? SMCError_Custom : SMCError_Okay;
 							goto failed;
 						}
 						curlevel--;
-					} else if (c == '"') {
+					} 
+					else if (c == '"') 
+					{
 						/* If we get a quote mark, we always restage, but we need to do it beforehand */
 						if (strings[0].ptr)
 						{
 							strings[0].end = &parse_point[i];
 							if (rotate(strings) != NULL)
 							{
-								err = SMCParse_InvalidTokens;
+								err = SMCError_InvalidTokens;
 								goto failed;
 							}
 						}
 						strings[0].ptr = &parse_point[i];
 						in_quote = true;
 						ignoring = true;
-					} else if (!strings[0].ptr) {
+					} 
+					else if (!strings[0].ptr) 
+					{
 						/* If we have no string, we must start one */
 						strings[0].ptr = &parse_point[i];
 					}
@@ -574,11 +616,13 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 						strings[0].end = &parse_point[i];
 						if (rotate(strings) != NULL)
 						{
-							err = SMCParse_InvalidTokens;
+							err = SMCError_InvalidTokens;
 							goto failed;
 						}
 					}
-				} else {
+				} 
+				else 
+				{
 					/* If we're eating a string and get whitespace, we need to restage.
 					 * (Note that if we are quoted, this is being ignored)
 					 */
@@ -594,8 +638,10 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 							/* There's no string, so we must move this one down and eat up another */
 							strings[0].end = &parse_point[i];
 							rotate(strings);
-						} else if (!strings[1].quoted) {
-							err = SMCParse_InvalidTokens;
+						} 
+						else if (!strings[1].quoted) 
+						{
+							err = SMCError_InvalidTokens;
 							goto failed;
 						}
 					}
@@ -603,7 +649,7 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 			}
 
 			/* Advance which token we're on */
-			curtok++;
+			states.col++;
 		}
 
 		if (line_begin != in_buf)
@@ -637,8 +683,10 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 				parse_point = &parse_point[read];
 				parse_point -= bytes;
 			}
-		} else if (read == sizeof(in_buf) - 1) {
-			err = SMCParse_TokenOverflow;
+		} 
+		else if (read == sizeof(in_buf) - 1) 
+		{
+			err = SMCError_TokenOverflow;
 			goto failed;
 		}
 	}
@@ -646,29 +694,31 @@ SMCParseError TextParsers::ParseStream_SMC(void *stream,
 	/* If we're done parsing and there are tokens left over... */
 	if (curlevel)
 	{
-		err = SMCParse_InvalidSection5;
+		err = SMCError_InvalidSection5;
 		goto failed;
-	} else if (strings[0].ptr || strings[1].ptr) {
-		err = SMCParse_InvalidTokens;
+	} 
+	else if (strings[0].ptr || strings[1].ptr) 
+	{
+		err = SMCError_InvalidTokens;
 		goto failed;
 	}
 	
 	smc->ReadSMC_ParseEnd(false, false);
+	
+	if (pStates != NULL)
+	{
+		*pStates = states;
+	}
 
-	return SMCParse_Okay;
+	return SMCError_Okay;
 
 failed:
-	if (line)
+	if (pStates != NULL)
 	{
-		*line = curline;
+		*pStates = states;
 	}
 
-	smc->ReadSMC_ParseEnd(true, (err == SMCParse_Custom));
-
-	if (col)
-	{
-		*col = curtok;
-	}
+	smc->ReadSMC_ParseEnd(true, (err == SMCError_Custom));
 
 	return err;
 }
@@ -976,7 +1026,7 @@ event_failed:
 	return false;
 }
 
-const char *TextParsers::GetSMCErrorString(SMCParseError err)
+const char *TextParsers::GetSMCErrorString(SMCError err)
 {
 	static const char *s_errors[] = 
 	{
@@ -994,7 +1044,7 @@ const char *TextParsers::GetSMCErrorString(SMCParseError err)
 		"A property was declared outside of a section",
 	};
 
-	if (err < SMCParse_Okay || err > SMCParse_InvalidProperty1)
+	if (err < SMCError_Okay || err > SMCError_InvalidProperty1)
 	{
 		return NULL;
 	}

@@ -82,22 +82,21 @@ public:
 private:
 	bool Parse()
 	{
-		unsigned int line = 0;
-		SMCParseError error;
+		SMCStates states;
+		SMCError error;
 
-		m_Line = 0;
 		m_bFileNameLogged = false;
 		g_SourceMod.BuildPath(Path_SM, m_File, sizeof(m_File), "configs/admin_levels.cfg");
 
-		if ((error = textparsers->ParseFile_SMC(m_File, this, &line, NULL))
-			!= SMCParse_Okay)
+		if ((error = textparsers->ParseFile_SMC(m_File, this, &states))
+			!= SMCError_Okay)
 		{
 			const char *err_string = textparsers->GetSMCErrorString(error);
 			if (!err_string)
 			{
 				err_string = "Unknown error";
 			}
-			ParseError("Error %d (%s)", error, err_string);
+			ParseError(NULL, "Error %d (%s)", error, err_string);
 			return false;
 		}
 
@@ -109,12 +108,12 @@ private:
 		m_IgnoreLevel = 0;
 		memset(g_FlagSet, 0, sizeof(g_FlagSet));
 	}
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes)
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name)
 	{
 		if (m_IgnoreLevel)
 		{
 			m_IgnoreLevel++;
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		if (m_LevelState == LEVEL_STATE_NONE)
@@ -122,35 +121,41 @@ private:
 			if (strcmp(name, "Levels") == 0)
 			{
 				m_LevelState = LEVEL_STATE_LEVELS;
-			} else {
+			} 
+			else 
+			{
 				m_IgnoreLevel++;
 			}
 		} else if (m_LevelState == LEVEL_STATE_LEVELS) {
 			if (strcmp(name, "Flags") == 0)
 			{
 				m_LevelState = LEVEL_STATE_FLAGS;
-			} else {
+			} 
+			else 
+			{
 				m_IgnoreLevel++;
 			}
-		} else {
+		} 
+		else 
+		{
 			m_IgnoreLevel++;
 		}
 
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 	{
 		if (m_LevelState != LEVEL_STATE_FLAGS || m_IgnoreLevel)
 		{
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		unsigned char c = (unsigned)value[0];
 
 		if (c < (unsigned)'a' || c > (unsigned)'z')
 		{
-			ParseError("Flag \"%c\" is not a lower-case ASCII letter", c);
-			return SMCParse_Continue;
+			ParseError(states, "Flag \"%c\" is not a lower-case ASCII letter", c);
+			return SMCResult_Continue;
 		}
 
 		c -= (unsigned)'a';
@@ -159,38 +164,35 @@ private:
 
 		if (!g_Admins.FindFlag(key, &g_FlagLetters[c]))
 		{
-			ParseError("Unrecognized admin level \"%s\"", key);
-			return SMCParse_Continue;
+			ParseError(states, "Unrecognized admin level \"%s\"", key);
+			return SMCResult_Continue;
 		}
 
 		g_FlagSet[c] = true;
 
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
-	SMCParseResult ReadSMC_LeavingSection()
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states)
 	{
 		if (m_IgnoreLevel)
 		{
 			m_IgnoreLevel--;
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		if (m_LevelState == LEVEL_STATE_FLAGS)
 		{
 			m_LevelState = LEVEL_STATE_LEVELS;
-			return SMCParse_Halt;
-		} else if (m_LevelState == LEVEL_STATE_LEVELS) {
+			return SMCResult_Halt;
+		} 
+		else if (m_LevelState == LEVEL_STATE_LEVELS) 
+		{
 			m_LevelState = LEVEL_STATE_NONE;
 		}
 
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
-	SMCParseResult ReadSMC_RawLine(const char *line, unsigned int curline)
-	{
-		m_Line = curline;
-		return SMCParse_Continue;
-	}
-	void ParseError(const char *message, ...)
+	void ParseError(const SMCStates *states, const char *message, ...)
 	{
 		va_list ap;
 		char buffer[256];
@@ -205,14 +207,13 @@ private:
 			m_bFileNameLogged = true;
 		}
 
-		g_Logger.LogError("[SM] (Line %d): %s", m_Line, buffer);
+		g_Logger.LogError("[SM] (Line %d): %s", states ? states->line : 0, buffer);
 	}
 private:
 	bool m_bFileNameLogged;
 	char m_File[PLATFORM_MAX_PATH];
 	int m_LevelState;
 	int m_IgnoreLevel;
-	unsigned int m_Line;
 } s_FlagReader;
 
 AdminCache::AdminCache()

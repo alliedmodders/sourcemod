@@ -100,7 +100,7 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &comma
 
 void CoreConfig::Initialize()
 {
-	SMCParseError err;
+	SMCError err;
 	char filePath[PLATFORM_MAX_PATH];
 
 	/* Try to get command line value of core config convar */
@@ -116,7 +116,7 @@ void CoreConfig::Initialize()
 	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 
 	/* Parse config file */
-	if ((err=textparsers->ParseFile_SMC(filePath, this, NULL, NULL)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(filePath, this, NULL)) != SMCError_Okay)
 	{
  		/* :TODO: This won't actually log or print anything :( - So fix that somehow */
 		const char *error = textparsers->GetSMCErrorString(err);
@@ -124,7 +124,7 @@ void CoreConfig::Initialize()
 	}
 }
 
-SMCParseResult CoreConfig::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCResult CoreConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	char error[255];
 	ConfigResult err = SetConfigOption(key, value, ConfigSource_File, error, sizeof(error));
@@ -135,7 +135,7 @@ SMCParseResult CoreConfig::ReadSMC_KeyValue(const char *key, const char *value, 
 		g_Logger.LogFatal("Config error (key: %s) (value: %s) %s", key, value, error);
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
 ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, ConfigSource source, char *error, size_t maxlength)

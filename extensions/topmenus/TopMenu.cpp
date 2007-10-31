@@ -895,11 +895,11 @@ void TopMenu::TearDownClient(topmenu_player_t *player)
 
 bool TopMenu::LoadConfiguration(const char *file, char *error, size_t maxlength)
 {
-	SMCParseError err;
-	unsigned int line = 0, col = 0;
+	SMCError err;
+	SMCStates states;
 
-	if ((err = textparsers->ParseFile_SMC(file, this, &line, &col))
-		!= SMCParse_Okay)
+	if ((err = textparsers->ParseFile_SMC(file, this, &states))
+		!= SMCError_Okay)
 	{
 		const char *err_string = textparsers->GetSMCErrorString(err);
 		if (!err_string)
@@ -971,7 +971,7 @@ void TopMenu::ReadSMC_ParseStart()
 	m_Config.cats.clear();
 }
 
-SMCParseResult TopMenu::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCResult TopMenu::ReadSMC_NewSection(const SMCStates *states, const char *name)
 {
 	if (ignore_parse_level)
 	{
@@ -1003,16 +1003,16 @@ SMCParseResult TopMenu::ReadSMC_NewSection(const char *name, bool opt_quotes)
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult TopMenu::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCResult TopMenu::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	if (ignore_parse_level > 0
 		|| current_parse_state != PARSE_STATE_CATEGORY
 		|| cur_cat == NULL)
 	{
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	if (strcmp(key, "item") == 0)
@@ -1020,10 +1020,10 @@ SMCParseResult TopMenu::ReadSMC_KeyValue(const char *key, const char *value, boo
 		cur_cat->commands.push_back(m_Config.strings.AddString(value));
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult TopMenu::ReadSMC_LeavingSection()
+SMCResult TopMenu::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	if (ignore_parse_level)
 	{
@@ -1042,7 +1042,7 @@ SMCParseResult TopMenu::ReadSMC_LeavingSection()
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
 unsigned int TopMenu::FindCategory(const char *name)

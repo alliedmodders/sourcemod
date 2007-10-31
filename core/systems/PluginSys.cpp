@@ -819,10 +819,10 @@ void CPluginManager::Shutdown()
 void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */
-	SMCParseError err;
-	unsigned int line, col;
+	SMCError err;
+	SMCStates states;
 	m_AllPluginsLoaded = false;
-	if ((err=textparsers->ParseFile_SMC(config, &m_PluginInfo, &line, &col)) != SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(config, &m_PluginInfo, &states)) != SMCError_Okay)
 	{
 		g_Logger.LogError("[SM] Encountered fatal error parsing file \"%s\"", config);
 		const char *err_msg = textparsers->GetSMCErrorString(err);

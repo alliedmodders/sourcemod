@@ -106,12 +106,12 @@ CGameConfig::~CGameConfig()
 	delete m_pStrings;
 }
 
-SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *name)
 {
 	if (m_IgnoreLevel)
 	{
 		m_IgnoreLevel++;
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	switch (m_ParseState)
@@ -245,14 +245,14 @@ SMCParseResult CGameConfig::ReadSMC_NewSection(const char *name, bool opt_quotes
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	if (m_IgnoreLevel)
 	{
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	if (m_ParseState == PSTATE_GAMEDEFS_OFFSETS_OFFSET)
@@ -296,15 +296,15 @@ SMCParseResult CGameConfig::ReadSMC_KeyValue(const char *key, const char *value,
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult CGameConfig::ReadSMC_LeavingSection()
+SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	if (m_IgnoreLevel)
 	{
 		m_IgnoreLevel--;
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	switch (m_ParseState)
@@ -478,12 +478,12 @@ skip_find:
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
 bool CGameConfig::Reparse(char *error, size_t maxlength)
 {
-	SMCParseError err;
+	SMCError err;
 
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s.txt", m_pFile);
@@ -503,10 +503,10 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	sm_trie_clear(m_pProps);
 	sm_trie_clear(m_pKeys);
 
-	if ((err=textparsers->ParseFile_SMC(path, this, NULL, NULL))
-		!= SMCParse_Okay)
+	if ((err=textparsers->ParseFile_SMC(path, this, NULL))
+		!= SMCError_Okay)
 	{
-		if (error && (err != SMCParse_Custom))
+		if (error && (err != SMCError_Custom))
 		{
 			const char *str = textparsers->GetSMCErrorString(err);
 			snprintf(error, maxlength, "%s", str);

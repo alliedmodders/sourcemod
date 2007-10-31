@@ -60,28 +60,26 @@ public:
 		unsigned int *line,
 		unsigned int *col);
 
-	SMCParseError ParseFile_SMC(const char *file, 
+	SMCError ParseFile_SMC(const char *file, 
 		ITextListener_SMC *smc_listener, 
-		unsigned int *line, 
-		unsigned int *col);
+		SMCStates *states);
 
 	unsigned int GetUTF8CharBytes(const char *stream);
 
-	const char *GetSMCErrorString(SMCParseError err);
+	const char *GetSMCErrorString(SMCError err);
 	bool IsWhitespace(const char *stream);
 private:
-	SMCParseError ParseString_SMC(const char *stream, 
+	SMCError ParseString_SMC(const char *stream, 
 		ITextListener_SMC *smc,
-		unsigned int *line,
-		unsigned int *col);
-	SMCParseError ParseStream_SMC(void *stream, 
+		SMCStates *states);
+	SMCError ParseStream_SMC(void *stream, 
 		STREAMREADER srdr,
 		ITextListener_SMC *smc,
-		unsigned int *line, 
-		unsigned int *col);
+		SMCStates *states);
 
 };
 
 extern TextParsers g_TextParser;
 
 #endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_H_
+

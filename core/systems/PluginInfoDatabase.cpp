@@ -82,7 +82,7 @@ void CPluginInfoDatabase::ReadSMC_ParseStart()
 	m_infodb = -1;
 }
 
-SMCParseResult CPluginInfoDatabase::MakeError(const char *fmt, ...)
+SMCResult CPluginInfoDatabase::MakeError(const char *fmt, ...)
 {
 	char buffer[512];
 	va_list ap;
@@ -93,7 +93,7 @@ SMCParseResult CPluginInfoDatabase::MakeError(const char *fmt, ...)
 
 	m_errmsg = m_strtab->AddString(buffer);
 
-	return SMCParse_HaltFail;
+	return SMCResult_HaltFail;
 }
 
 unsigned int CPluginInfoDatabase::GetSettingsNum()
@@ -149,10 +149,7 @@ void CPluginInfoDatabase::GetOptionsForPlugin(PluginSettings *settings, unsigned
 	*val = m_strtab->GetString(table[opt_num].val);
 }
 
-SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key, 
-													 const char *value, 
-													 bool key_quotes, 
-													 bool value_quotes)
+SMCResult CPluginInfoDatabase::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	if (cur_plugin != -1)
 	{
@@ -164,28 +161,46 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key,
 				if (strcasecmp(value, "yes") == 0)
 				{
 					plugin->pause_val = true;
-				} else {
+				} 
+				else 
+				{
 					plugin->pause_val = false;
 				}
-			} else if (strcmp(key, "lifetime") == 0) {
+			} 
+			else if (strcmp(key, "lifetime") == 0) 
+			{
 				if (strcasecmp(value, "private") == 0)
 				{
 					plugin->type_val = PluginType_Private;
-				} else if (strcasecmp(value, "mapsync") == 0) {
+				} 
+				else if (strcasecmp(value, "mapsync") == 0) 
+				{
 					plugin->type_val = PluginType_MapUpdated;
-				} else if (strcasecmp(value, "maponly") == 0) {
+				}
+				else if (strcasecmp(value, "maponly") == 0) 
+				{
 					plugin->type_val = PluginType_MapOnly;
-				} else if (strcasecmp(value, "global") == 0) {
+				}
+				else if (strcasecmp(value, "global") == 0) 
+				{
 					plugin->type_val = PluginType_Global;
-				} else {
+				}
+				else 
+				{
 					return MakeError("Unknown value for key \"lifetime\": \"%s\"", value);
 				}
-			} else if (strcmp(key, "blockload") == 0) {
+			}
+			else if (strcmp(key, "blockload") == 0) 
+			{
 				plugin->blockload_val = true;
-			} else {
+			} 
+			else 
+			{
 				return MakeError("Unknown property key: \"%s\"", key);
 			}
-		} else {
+		}
+		else 
+		{
 			/* Cache every option, valid or not */
 			int keyidx = m_strtab->AddString(key);
 			int validx = m_strtab->AddString(value);
@@ -199,7 +214,9 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key,
 				{
 					//right now we don't have many
 					plugin->opts_size = 2;
-				} else {
+				} 
+				else
+				{
 					plugin->opts_size *= 2;
 				}
 				int newidx = memtab->CreateMem(plugin->opts_size * sizeof(PluginOpts), (void **)&table);
@@ -211,23 +228,29 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_KeyValue(const char *key,
 					memcpy(table, oldtable, oldsize * sizeof(PluginOpts));
 				}
 				plugin->optarray = newidx;
-			} else {
+			}
+			else
+			{
 				table = (PluginOpts *)memtab->GetAddress(plugin->optarray);
 			}
 			PluginOpts *opt = &table[plugin->opts_num++];
 			opt->key = keyidx;
 			opt->val = validx;
 		}
-	} else if (in_plugins) {
+	}
+	else if (in_plugins)
+	{
 		return MakeError("Unknown property key: \"%s\"", key);
-	} else {
+	}
+	else 
+	{
 		/* Ignore anything we don't know about! */
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult CPluginInfoDatabase::ReadSMC_LeavingSection()
+SMCResult CPluginInfoDatabase::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	if (in_plugins)
 	{
@@ -236,7 +259,9 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_LeavingSection()
 			if (in_options)
 			{
 				in_options = false;
-			} else {
+			}
+			else 
+			{
 				/* If the plugin is ending, add it to the table */
 				BaseMemTable *memtab = m_strtab->GetMemTable();
 				int *table;
@@ -246,7 +271,9 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_LeavingSection()
 					if (!m_infodb_size)
 					{
 						m_infodb_size = 8;
-					} else {
+					}
+					else 
+					{
 						m_infodb_size *= 2;
 					}
 					int newidx = memtab->CreateMem(m_infodb_size, (void **)&table);
@@ -256,22 +283,26 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_LeavingSection()
 						memcpy(table, oldtable, oldsize * sizeof(int));
 					}
 					m_infodb = newidx;
-				} else {
+				}
+				else 
+				{
 					table = (int *)memtab->GetAddress(m_infodb);
 				}
 				/* Assign to table and scrap the current plugin */
 				table[m_infodb_count++] = cur_plugin;
 				cur_plugin = -1;
 			}
-		} else {
+		}
+		else 
+		{
 			in_plugins = false;
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult CPluginInfoDatabase::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCResult CPluginInfoDatabase::ReadSMC_NewSection(const SMCStates *states, const char *name)
 {
 	if (!in_plugins)
 	{
@@ -279,13 +310,17 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_NewSection(const char *name, bool op
 		if (strcmp(name, "Plugins") != 0)
 		{
 			return MakeError("Unknown root section: \"%s\"", name);
-		} else {
+		}
+		else 
+		{
 			/* Otherwise set our states */
 			in_plugins = true;
 			cur_plugin = -1;
 			in_options = false;
 		}
-	} else {
+	}
+	else
+	{
 		if (cur_plugin == -1)
 		{
 			/* If we get a plugin node and we don't have a current plugin, create a new one */
@@ -295,15 +330,20 @@ SMCParseResult CPluginInfoDatabase::ReadSMC_NewSection(const char *name, bool op
 			plugin->Init();
 			plugin->name = i_name;
 			in_options = false;
-		} else {
+		} 
+		else 
+		{
 			if (!in_options && strcmp(name, "Options") == 0)
 			{
 				in_options = true;
-			} else {
+			}
+			else
+			{
 				return MakeError("Unknown plugin sub-section: \"%s\"", name);
 			}
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
+

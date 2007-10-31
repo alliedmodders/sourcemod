@@ -141,13 +141,10 @@ public: //IMenuHandler
 		const ItemDrawInfo &dr);
 	virtual void OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason reason);
 public: //ITextListener_SMC
-	virtual void ReadSMC_ParseStart();
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
-	SMCParseResult ReadSMC_KeyValue(const char *key, 
-									const char *value, 
-									bool key_quotes, 
-									bool value_quotes);
-	SMCParseResult ReadSMC_LeavingSection();
+	void ReadSMC_ParseStart();
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 private:
 	void SortCategoriesIfNeeded();
 	void SortCategoryIfNeeded(unsigned int category);

@@ -75,21 +75,21 @@ void DBManager::OnSourceModAllInitialized()
 
 void DBManager::OnSourceModLevelChange(const char *mapName)
 {
-	SMCParseError err;
-	unsigned int line = 0;
+	SMCError err;
+	SMCStates states = {0, 0};
 
 	/* We lock and don't give up the lock until we're done.
 	 * This way the thread's search won't be searching through a
 	 * potentially empty/corrupt list, which would be very bad.
 	 */
 	m_pConfigLock->Lock();
-	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &line, NULL)) != SMCParse_Okay)
+	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
 	{
 		g_Logger.LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
-		if (err != SMCParse_Custom)
+		if (err != SMCError_Custom)
 		{
 			const char *txt = textparsers->GetSMCErrorString(err);
-			g_Logger.LogError("[SM] Line %d: %s", line, txt);
+			g_Logger.LogError("[SM] Line %d: %s", states.line, txt);
 		}
 	}
 	m_pConfigLock->Unlock();
@@ -141,12 +141,12 @@ void DBManager::ReadSMC_ParseStart()
 }
 
 ConfDbInfo s_CurInfo;
-SMCParseResult DBManager::ReadSMC_NewSection(const char *name, bool opt_quotes)
+SMCResult DBManager::ReadSMC_NewSection(const SMCStates *states, const char *name)
 {
 	if (m_ParseLevel)
 	{
 		m_ParseLevel++;
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	if (m_ParseState == DBPARSE_LEVEL_NONE)
@@ -165,14 +165,14 @@ SMCParseResult DBManager::ReadSMC_NewSection(const char *name, bool opt_quotes)
 		m_ParseLevel++;
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
-SMCParseResult DBManager::ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes)
+SMCResult DBManager::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 {
 	if (m_ParseLevel)
 	{
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	if (m_ParseState == DBPARSE_LEVEL_MAIN)
@@ -203,7 +203,7 @@ SMCParseResult DBManager::ReadSMC_KeyValue(const char *key, const char *value, b
 		}
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 
 #define ASSIGN_VAR(var) \
@@ -213,12 +213,12 @@ SMCParseResult DBManager::ReadSMC_KeyValue(const char *key, const char *value, b
 		s_CurInfo.info.var = m_StrTab.GetString(s_CurInfo.var); \
 	}
 
-SMCParseResult DBManager::ReadSMC_LeavingSection()
+SMCResult DBManager::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	if (m_ParseLevel)
 	{
 		m_ParseLevel--;
-		return SMCParse_Continue;
+		return SMCResult_Continue;
 	}
 
 	if (m_ParseState == DBPARSE_LEVEL_DATABASE)
@@ -239,10 +239,10 @@ SMCParseResult DBManager::ReadSMC_LeavingSection()
 		m_ParseState = DBPARSE_LEVEL_MAIN;
 	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
 		m_ParseState = DBPARSE_LEVEL_NONE;
-		return SMCParse_Halt;
+		return SMCResult_Halt;
 	}
 
-	return SMCParse_Continue;
+	return SMCResult_Continue;
 }
 #undef ASSIGN_VAR
 

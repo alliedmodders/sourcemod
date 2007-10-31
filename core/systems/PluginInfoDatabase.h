@@ -68,9 +68,9 @@ public:
 	~CPluginInfoDatabase();
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
-	SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes);
-	SMCParseResult ReadSMC_KeyValue(const char *key, const char *value, bool key_quotes, bool value_quotes);
-	SMCParseResult ReadSMC_LeavingSection();
+	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public:
 	/**
 	 * Returns the number of plugin settings available.
@@ -90,7 +90,7 @@ public:
 	 */
 	void GetOptionsForPlugin(PluginSettings *settings, unsigned int opt_num, const char **key, const char **val);
 private:
-	SMCParseResult MakeError(const char *fmt, ...);
+	SMCResult MakeError(const char *fmt, ...);
 private:
 	BaseStringTable *m_strtab;
 	int m_errmsg;

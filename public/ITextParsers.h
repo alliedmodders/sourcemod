@@ -41,6 +41,10 @@
 
 namespace SourceMod
 {
+
+	#define SMINTERFACE_TEXTPARSERS_NAME		"ITextParsers"
+	#define SMINTERFACE_TEXTPARSERS_VERSION		2
+
 	/**
 	 * The INI file format is defined as:
 	 * WHITESPACE: 0x20, \n, \t, \r
@@ -85,6 +89,14 @@ namespace SourceMod
 	 */
 	class ITextListener_INI
 	{
+	public:
+		/** 
+		 * @brief Returns version number.
+		 */
+		virtual unsigned int GetTextParserVersion1()
+		{
+			return SMINTERFACE_TEXTPARSERS_VERSION;
+		}
 	public:
 		/**
 		 * @brief Called when a new section is encountered in an INI file.
@@ -183,30 +195,39 @@ namespace SourceMod
 	/**
 	 * @brief Lists actions to take when an SMC parse hook is done.
 	 */
-	enum SMCParseResult
+	enum SMCResult
 	{
-		SMCParse_Continue,		/**< Continue parsing */
-		SMCParse_Halt,			/**< Stop parsing here */
-		SMCParse_HaltFail		/**< Stop parsing and return SMCParseError_Custom */
+		SMCResult_Continue,		/**< Continue parsing */
+		SMCResult_Halt,			/**< Stop parsing here */
+		SMCResult_HaltFail		/**< Stop parsing and return SMCError_Custom */
 	};
 
 	/**
 	 * @brief Lists error codes possible from parsing an SMC file.
 	 */
-	enum SMCParseError
+	enum SMCError
 	{
-		SMCParse_Okay = 0,			/**< No error */
-		SMCParse_StreamOpen,		/**< Stream failed to open */
-		SMCParse_StreamError,		/**< The stream died... somehow */
-		SMCParse_Custom,			/**< A custom handler threw an error */
-		SMCParse_InvalidSection1,	/**< A section was declared without quotes, and had extra tokens */
-		SMCParse_InvalidSection2,	/**< A section was declared without any header */
-		SMCParse_InvalidSection3,	/**< A section ending was declared with too many unknown tokens */
-		SMCParse_InvalidSection4,	/**< A section ending has no matching beginning */
-		SMCParse_InvalidSection5,	/**< A section beginning has no matching ending */
-		SMCParse_InvalidTokens,		/**< There were too many unidentifiable strings on one line */
-		SMCParse_TokenOverflow,		/**< The token buffer overflowed */
-		SMCParse_InvalidProperty1,	/**< A property was declared outside of any section */
+		SMCError_Okay = 0,			/**< No error */
+		SMCError_StreamOpen,		/**< Stream failed to open */
+		SMCError_StreamError,		/**< The stream died... somehow */
+		SMCError_Custom,			/**< A custom handler threw an error */
+		SMCError_InvalidSection1,	/**< A section was declared without quotes, and had extra tokens */
+		SMCError_InvalidSection2,	/**< A section was declared without any header */
+		SMCError_InvalidSection3,	/**< A section ending was declared with too many unknown tokens */
+		SMCError_InvalidSection4,	/**< A section ending has no matching beginning */
+		SMCError_InvalidSection5,	/**< A section beginning has no matching ending */
+		SMCError_InvalidTokens,		/**< There were too many unidentifiable strings on one line */
+		SMCError_TokenOverflow,		/**< The token buffer overflowed */
+		SMCError_InvalidProperty1,	/**< A property was declared outside of any section */
+	};
+
+	/**
+	 * @brief States for line/column
+	 */
+	struct SMCStates
+	{
+		unsigned int line;			/**< Current line */
+		unsigned int col;			/**< Current col */
 	};
 
 	/**
@@ -214,6 +235,14 @@ namespace SourceMod
 	 */
 	class ITextListener_SMC
 	{
+	public:
+		/** 
+		 * @brief Returns version number.
+		 */
+		virtual unsigned int GetTextParserVersion2()
+		{
+			return SMINTERFACE_TEXTPARSERS_VERSION;
+		}
 	public:
 		/**
 		 * @brief Called when starting parsing.
@@ -233,71 +262,56 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Called when a warning occurs.
-		 * @param error				By-reference variable containing the error message of the warning.
-		 * @param tokens			Pointer to the token stream causing the error.
-		 * @return					SMCParseResult directive.
-		 */
-		virtual SMCParseResult ReadSMC_OnWarning(SMCParseError &error, const char *tokens)
-		{
-			return SMCParse_HaltFail;
-		}
-
-		/**
 		 * @brief Called when entering a new section
 		 *
+		 * @param states		Parsing states.
 		 * @param name			Name of section, with the colon omitted.
-		 * @param opt_quotes	Whether or not the option string was enclosed in quotes.
-		 * @return				SMCParseResult directive.
+		 * @return				SMCResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_NewSection(const char *name, bool opt_quotes)
+		virtual SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name)
 		{
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		/**
 		 * @brief Called when encountering a key/value pair in a section.
 		 * 
+		 * @param states		Parsing states.
 		 * @param key			Key string.
 		 * @param value			Value string.  If no quotes were specified, this will be NULL, 
-								and key will contain the entire string.
-		 * @param key_quotes	Whether or not the key was in quotation marks.
-		 * @param value_quotes	Whether or not the value was in quotation marks.
-		 * @return				SMCParseResult directive.
+		 *						and key will contain the entire string.
+		 * @param 				Number of line in file.
+		 * @return				SMCResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_KeyValue(const char *key, 
-												const char *value, 
-												bool key_quotes, 
-												bool value_quotes)
+		virtual SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
 		{
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		/**
 		 * @brief Called when leaving the current section.
 		 *
-		 * @return				SMCParseResult directive.
+		 * @param				Parsing states.
+		 * @return				SMCResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_LeavingSection()
+		virtual SMCResult ReadSMC_LeavingSection(const SMCStates *states)
 		{
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 
 		/**
 		 * @brief Called after an input line has been preprocessed.
 		 *
-		 * @param line			String containing line input.
-		 * @param curline		Number of line in file.
-		 * @return				SMCParseResult directive.
+		 * @param states		Parsing states.
+		 * @param line			Contents of the line, null terminated at the position 
+		 * 						of the newline character (thus, no newline will exist).
+		 * @return				SMCResult directive.
 		 */
-		virtual SMCParseResult ReadSMC_RawLine(const char *line, unsigned int curline)
+		virtual SMCResult ReadSMC_RawLine(const SMCStates *states, const char *line)
 		{
-			return SMCParse_Continue;
+			return SMCResult_Continue;
 		}
 	};	
-
-	#define SMINTERFACE_TEXTPARSERS_NAME		"ITextParsers"
-	#define SMINTERFACE_TEXTPARSERS_VERSION		1
 
 	/**
 	 * @brief Contains various text stream parsing functions.
@@ -312,6 +326,14 @@ namespace SourceMod
 		virtual unsigned int GetInterfaceVersion()
 		{
 			return SMINTERFACE_TEXTPARSERS_VERSION;
+		}
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < 2)
+			{
+				return false;
+			}
+			return SMInterface::IsVersionCompatible(version);
 		}
 	public:
 		/**
@@ -336,22 +358,20 @@ namespace SourceMod
 		 *
 		 * @param file			Path to file.
 		 * @param smc_listener	Event handler for reading file.
-		 * @param line			If non-NULL, will contain last line parsed (0 if file could not be opened).
-		 * @param col			If non-NULL, will contain last column parsed (undefined if file could not be opened).
-		 * @return				An SMCParseError result code.
+		 * @param states		Optional pointer to store last known states.
+		 * @return				An SMCError result code.
 		 */
-		virtual SMCParseError ParseFile_SMC(const char *file, 
+		virtual SMCError ParseFile_SMC(const char *file, 
 									ITextListener_SMC *smc_listener, 
-									unsigned int *line, 
-									unsigned int *col) =0;
+									SMCStates *states) =0;
 
 		/**
-		 * @brief Converts an SMCParseError to a string.
+		 * @brief Converts an SMCError to a string.
 		 *
-		 * @param err			SMCParseError.
+		 * @param err			SMCError.
 		 * @return				String error message, or NULL if none.
 		 */
-		virtual const char *GetSMCErrorString(SMCParseError err) =0;
+		virtual const char *GetSMCErrorString(SMCError err) =0;
 
 	public:
 		/**
@@ -395,3 +415,4 @@ namespace SourceMod
 extern SourceMod::ITextParsers *textparsers;
 
 #endif //_INCLUDE_SOURCEMOD_TEXTPARSERS_INTERFACE_H_
+
