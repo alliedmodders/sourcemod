@@ -6,7 +6,6 @@ enum CommType
 	CommType_UnGag,
 	CommType_Silence,
 	CommType_UnSilence
-
 };
 
 DisplayGagTypesMenu(client)
@@ -433,7 +432,7 @@ public Action:Command_Unmute(client, args)
 	{
 		new target = target_list[i];
 		
-		if (g_Muted[target])
+		if (!g_Muted[target])
 		{
 			continue;
 		}
