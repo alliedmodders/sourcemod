@@ -1,3 +1,9 @@
+new Handle:g_MapList = INVALID_HANDLE;
+new g_mapFileTime;
+new g_mapCount;
+
+new Handle:g_SelectedMaps;
+new bool:g_VoteMapInUse;
 
 DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 {
@@ -33,17 +39,8 @@ DisplayVoteMapMenu(client, mapCount, String:maps[5][])
 
 ResetMenu()
 {
-	/* Add the removed maps back to the menu */
-	new selectedmaps = GetArraySize(g_SelectedMaps);
-	decl String:mapname[64];
-		
-	for (new i=0; i<selectedmaps; i++)
-	{
-		GetArrayString(g_SelectedMaps, i, mapname, sizeof(mapname))	;
-		AddMenuItem(g_MapList, mapname, mapname);
-	}
-
 	g_VoteMapInUse = false;
+	ClearArray(g_SelectedMaps);
 }
 
 ConfirmVote(client)
@@ -81,7 +78,7 @@ public MenuHandler_Confirm(Handle:menu, MenuAction:action, param1, param2)
 		decl String:maps[5][64];
 		new selectedmaps = GetArraySize(g_SelectedMaps);
 		
-		for (new i=0; i<selectedmaps; i++)
+		for (new i = 0; i < selectedmaps; i++)
 		{
 			GetArrayString(g_SelectedMaps, i, maps[i], sizeof(maps[]));
 		}
@@ -108,20 +105,31 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 			ResetMenu();
 		}
 	}
+	else if (action == MenuAction_DrawItem)
+	{
+		decl String:info[32], String:name[32];
+		
+		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
+		
+		if (IsStringInArray(g_SelectedMaps, info))
+		{
+			return ITEMDRAW_IGNORE;
+		}
+		else
+		{
+			return ITEMDRAW_DEFAULT;
+		}
+	}
 	else if (action == MenuAction_Select)
 	{
 		decl String:info[32], String:name[32];
 		
 		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
 		
-		/* Remove selected map from global menu and add it to the selected array */
-		RemoveMenuItem(menu, param2);
 		PushArrayString(g_SelectedMaps, info);
-		g_SelectedCount++;
-		
 		
 		/* Redisplay the list */
-		if (g_SelectedCount < 5)
+		if (GetArraySize(g_SelectedMaps) < 5)
 		{
 			DisplayMenu(g_MapList, param1, MENU_TIME_FOREVER);
 		}
@@ -130,6 +138,8 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 			ConfirmVote(param1);
 		}
 	}
+	
+	return 0;
 }
 
 public AdminMenu_VoteMap(Handle:topmenu, 
@@ -146,8 +156,7 @@ public AdminMenu_VoteMap(Handle:topmenu,
 	else if (action == TopMenuAction_SelectOption)
 	{
 		g_VoteMapInUse = true;
-		g_SelectedCount = 0;
-		ClearArray(g_SelectedMaps);
+		ResetMenu();
 		DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
 	}
 	else if (action == TopMenuAction_DrawOption)
@@ -244,7 +253,7 @@ LoadMapList(Handle:menu)
 		return LoadMapFolder(menu);
 	}
 	
-	decl String:buffer[64], len;
+	decl String:buffer[256], len;
 	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
 	{
 		TrimString(buffer);
@@ -254,7 +263,11 @@ LoadMapList(Handle:menu)
 			buffer[len] = '\0';
 		}
 
-		if (buffer[0] == '\0' || !IsValidConVarChar(buffer[0]) || !IsMapValid(buffer))
+		if (buffer[0] == '\0' 
+			|| buffer[0] == ';'
+			|| buffer[0] == '/'
+			|| !IsValidConVarChar(buffer[0]) 
+			|| !IsMapValid(buffer))
 		{
 			continue;
 		}
@@ -267,9 +280,13 @@ LoadMapList(Handle:menu)
 	new count = GetMenuItemCount(menu);
 	
 	if (!count)
+	{
 		return LoadMapFolder(menu);
+	} 
 	else
+	{
 		return count;
+	}
 }
 
 LoadMapFolder(Handle:menu)

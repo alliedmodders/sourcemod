@@ -83,15 +83,6 @@ new String:g_voteArg[256];	/* Used to hold ban/kick reasons or vote questions */
 
 new Handle:hTopMenu = INVALID_HANDLE;
 
-new Handle:g_MapList = INVALID_HANDLE;
-new g_mapFileTime;
-new g_mapCount;
-
-new Handle:g_SelectedMaps;
-new g_SelectedCount;
-
-new bool:g_VoteMapInUse;
-
 #include "basevotes/votekick.sp"
 #include "basevotes/voteban.sp"
 #include "basevotes/votemap.sp"
@@ -131,7 +122,7 @@ public OnPluginStart()
 	
 	g_SelectedMaps = CreateArray(33);
 	
-	g_MapList = CreateMenu(MenuHandler_Map);
+	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem);
 	SetMenuTitle(g_MapList, "Please select a map");
 	SetMenuExitBackButton(g_MapList, true);
 }
