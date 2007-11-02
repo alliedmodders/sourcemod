@@ -35,6 +35,8 @@
 #include "sourcemm_api.h"
 #include "frame_hooks.h"
 
+#define TIMER_MIN_ACCURACY		0.1
+
 #if !defined ORANGEBOX_BUILD
 #define CallGlobalChangeCallbacks	CallGlobalChangeCallback
 #endif
@@ -48,6 +50,7 @@ SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar 
 TimerSystem g_Timers;
 float g_fUniversalTime = 0.0f;
 float g_fGameStartTime = 0.0f;	/* Game game start time, non-universal */
+float g_fTimerThink = 0.0f;		/* Timer's next think time */
 const float *g_pUniversalTime = &g_fUniversalTime;
 ConVar *mp_timelimit = NULL;
 int g_TimeLeftMode = 0;
@@ -149,6 +152,25 @@ private:
 	bool m_bInUse;
 } s_DefaultMapTimer;
 
+/**
+ * If the ticking process has run amok (should be impossible), we 
+ * take care of this by "skipping" the in-between time, to prevent 
+ * a bazillion times from firing on accident.  This has the result  
+ * that a drastic jump in time will continue acting normally.  Users 
+ * may not expect this, but... I think it is the best solution.
+ */
+inline float CalcNextThink(float last, float interval)
+{
+	if (g_fUniversalTime - last - interval <= TIMER_MIN_ACCURACY)
+	{
+		return last + interval;
+	}
+	else
+	{
+		return g_fUniversalTime + interval;
+	}
+}
+
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
 {
 	m_Listener = pCallbacks;
@@ -166,7 +188,6 @@ TimerSystem::TimerSystem()
 	m_bHasMapTickedYet = false;
 	m_bHasMapSimulatedYet = false;
 	m_fLastTickedTime = 0.0f;
-	m_LastExecTime = 0.0f;
 }
 
 TimerSystem::~TimerSystem()
@@ -233,9 +254,11 @@ void TimerSystem::GameFrame(bool simulating)
 	m_fLastTickedTime = gpGlobals->curtime;
 	m_bHasMapTickedYet = true;
 
-	if (g_fUniversalTime - m_LastExecTime >= 0.1)
+	if (g_fUniversalTime >= g_fTimerThink)
 	{
 		RunFrame();
+
+		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
 	}
 
 	RunFrameHooks();
@@ -262,7 +285,9 @@ void TimerSystem::RunFrame()
 			pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 			iter = m_SingleTimers.erase(iter);
 			m_FreeTimers.push(pTimer);
-		} else {
+		} 
+		else 
+		{
 			break;
 		}
 	}
@@ -283,12 +308,10 @@ void TimerSystem::RunFrame()
 				continue;
 			}
 			pTimer->m_InExec = false;
-			pTimer->m_ToExec = curtime + pTimer->m_Interval;
+			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval);
 		}
 		iter++;
 	}
-
-	m_LastExecTime = curtime;
 }
 
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
@@ -355,7 +378,9 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 		m_SingleTimers.remove(pTimer);
 		m_FreeTimers.push(pTimer);
-	} else {
+	} 
+	else 
+	{
 		if ((res != Pl_Stop) && !pTimer->m_KillMe)
 		{
 			if (delayExec)

@@ -88,7 +88,6 @@ private:
 	List<ITimer *> m_SingleTimers;
 	List<ITimer *> m_LoopTimers;
 	CStack<ITimer *> m_FreeTimers;
-	float m_LastExecTime;
 	IMapTimer *m_pMapTimer;
 
 	/* This is stuff for our manual ticking escapades. */
