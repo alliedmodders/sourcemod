@@ -52,7 +52,7 @@ new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{
 new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
 new Handle:g_Cvar_Psaymode = INVALID_HANDLE;
 
-new bool:g_DoColor = false;
+new bool:g_DoColor = true;
 
 public OnPluginStart()
 {
@@ -74,9 +74,9 @@ public OnPluginStart()
 	decl String:modname[64];
 	GetGameFolderName(modname, sizeof(modname));
 	
-	if (strcmp(modname, "cstrike") == 0)
+	if (strcmp(modname, "hl2mp") == 0)
 	{
-		g_DoColor = true;
+		g_DoColor = false;
 	}
 }
 
