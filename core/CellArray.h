@@ -138,6 +138,17 @@ public:
 		m_Size = count;
 		return true;
 	}
+
+	CellArray *clone()
+	{
+		CellArray *array = new CellArray(m_BlockSize);
+		array->m_AllocSize = m_AllocSize;
+		array->m_Size = m_Size;
+		array->m_Data = (cell_t *)malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize);
+		memcpy(array->m_Data, m_Data, sizeof(cell_t) * m_BlockSize * m_Size);
+		return array;
+	}
+
 private:
 	bool GrowIfNeeded(size_t count)
 	{

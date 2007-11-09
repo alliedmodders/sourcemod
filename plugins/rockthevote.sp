@@ -71,8 +71,9 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("rockthevote.phrases");
 	
-	g_MapList = CreateArray(33);
-	g_RTVMapList = CreateArray(33);
+	new arraySize = ByteCountToCells(33);	
+	g_MapList = CreateArray(arraySize);
+	g_RTVMapList = CreateArray(arraySize);
 	
 	g_Cvar_Needed = CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
 	g_Cvar_File = CreateConVar("sm_rtv_file", "configs/maps.ini", "Map file to use. (Def configs/maps.ini)");
@@ -161,7 +162,7 @@ public Action:Command_Addmap(client, args)
 	decl String:mapname[64];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
-	if (!IsStringInArray(g_MapList, mapname))
+	if (FindStringInArray(g_MapList, mapname) == -1)
 	{
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
 		return Plugin_Handled;
@@ -169,15 +170,10 @@ public Action:Command_Addmap(client, args)
 	
 	if (GetArraySize(g_RTVMapList) > 0)
 	{
-		for (new i = 0; i < GetArraySize(g_RTVMapList); i++)
+		if (FindStringInArray(g_RTVMapList, mapname) != -1)
 		{
-			decl String:nextmap[64];
-			GetArrayString(g_RTVMapList, i, nextmap, sizeof(nextmap));
-			if (strcmp(mapname, nextmap, false) == 0)
-			{
-				ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
-				return Plugin_Handled;			
-			}		
+			ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
+			return Plugin_Handled;				
 		}
 		
 		ShiftArrayUp(g_RTVMapList, 0);
@@ -336,13 +332,8 @@ public Action:Timer_StartRTV(Handle:timer)
 	new Handle:MapVoteMenu = CreateMenu(Handler_MapMapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(MapVoteMenu, "Rock The Vote");
 	
-	new Handle:tempMaps  = CreateArray(33);
+	new Handle:tempMaps  = CloneArray(g_MapList);
 	decl String:map[32];
-	for (new i = 0; i < GetArraySize(g_MapList); i++)
-	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		PushArrayString(tempMaps, map);		
-	}
 	
 	// We assume that g_RTVMapList is within the correct limits, based on the logic for nominations
 	for (new i = 0; i < GetArraySize(g_RTVMapList); i++)
@@ -350,15 +341,10 @@ public Action:Timer_StartRTV(Handle:timer)
 		GetArrayString(g_RTVMapList, i, map, sizeof(map));
 		AddMenuItem(MapVoteMenu, map, map);
 		
-		for (new j = 0; j < GetArraySize(tempMaps); j++)
+		new index = FindStringInArray(tempMaps, map);
+		if (index != -1)
 		{
-			decl String:temp[32];
-			GetArrayString(tempMaps, j, temp, sizeof(temp));
-			if (strcmp(map, temp) == 0)
-			{
-				RemoveFromArray(tempMaps, j);
-				break;
-			}
+			RemoveFromArray(tempMaps, index);
 		}
 	}
 	
@@ -489,7 +475,7 @@ public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
 			decl String:map[64], String:name[64];
 			GetMenuItem(menu, param2, map, sizeof(map));
 			
-			if (IsStringInArray(g_RTVMapList, map))
+			if (FindStringInArray(g_RTVMapList, map) != -1)
 			{
 				PrintToChat(param1, "[SM] %t", "Map Already Nominated");
 				return;

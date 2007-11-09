@@ -53,8 +53,9 @@ new g_mapFileTime;
 
 public OnPluginStart()
 {
-	g_MapList = CreateArray(33);
-	g_OldMapList = CreateArray(33);
+	new arraySize = ByteCountToCells(33);	
+	g_MapList = CreateArray(arraySize);
+	g_OldMapList = CreateArray(arraySize);
 
 	g_Cvar_Mapfile = CreateConVar("sm_randomcycle_file", "configs/maps.ini", "Map file to use. (Def sourcemod/configs/maps.ini)");
 	g_Cvar_ExcludeMaps = CreateConVar("sm_randomcycle_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
@@ -83,7 +84,7 @@ public Action:Timer_RandomizeNextmap(Handle:timer)
 	decl String:map[32];
 
 	new bool:oldMaps = false;
-	if (GetArraySize(g_MapList) > GetConVarInt(g_Cvar_ExcludeMaps))
+	if (GetConVarInt(g_Cvar_ExcludeMaps) && GetArraySize(g_MapList) > GetConVarInt(g_Cvar_ExcludeMaps))
 	{
 		oldMaps = true;
 	}
@@ -91,7 +92,7 @@ public Action:Timer_RandomizeNextmap(Handle:timer)
 	new b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
 	GetArrayString(g_MapList, b, map, sizeof(map));
 
-	while (oldMaps && IsStringInArray(g_OldMapList, map))
+	while (oldMaps && FindStringInArray(g_OldMapList, map) != -1)
 	{
 		b = GetRandomInt(0, GetArraySize(g_MapList) - 1);
 		GetArrayString(g_MapList, b, map, sizeof(map));

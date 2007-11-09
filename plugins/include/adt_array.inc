@@ -80,6 +80,17 @@ native Handle:CreateArray(blocksize=1, startsize=0);
 native ClearArray(Handle:array);
 
 /**
+ * Clones an array, returning a new handle with the same size and data. This should NOT
+ * be confused with CloneHandle. This is a completely new handle with the same data but
+ * no relation to the original. You MUST close it.
+ *
+ * @param array			Array handle to be cloned
+ * @return			New handle to the cloned array object
+ * @error			Invalid Handle
+ */
+ native Handle:CloneArray(Handle:array);
+
+/**
  * Resizes an array.  If the size is smaller than the current size,
  * the array is truncated.
  *
@@ -250,25 +261,33 @@ native RemoveFromArray(Handle:array, index);
 native SwapArrayItems(Handle:array, index1, index2);
 
 /**
- * Returns true is the supplied string exists within the supplied array.
+ * Returns the index for the first occurance of the provided string. If the string
+ * cannot be located, -1 will be returned.
  *
  * @param array			Array Handle.
  * @param item			String to search for
- * @return			True if found, false if not
- * @error			Invalid handle
+ * @return			Array index, or -1 on failure
+ * @error			Invalid Handle
  */
+native FindStringInArray(Handle:array, const String:item[]);
+ 
+/**
+ * Returns the index for the first occurance of the provided value. If the value
+ * cannot be located, -1 will be returned.
+ *
+ * @param array			Array Handle.
+ * @param item			Value to search for
+ * @return			Array index, or -1 on failure
+ * @error			Invalid Handle
+ */
+native FindValueInArray(Handle:array, item); 
+
+/**
+ * Backwards compatible stock - Use FindStringInArray()
+ * @deprecated		Replaced by FindStringInArray()
+ */
+#pragma deprecated Use FindStringInArray() instead
 stock bool:IsStringInArray(Handle:array, const String:item[])
 {
-	decl String:curItem[64];
-	
-	for (new i = 0; i < GetArraySize(array); i++)
-	{
-		GetArrayString(array, i, curItem, sizeof(curItem));
-		if(strcmp(item, curItem, false) == 0)
-		{
-			return true;
-		}		
-	}
-
-	return false;
+	return (FindStringInArray(array, item) != -1);
 }

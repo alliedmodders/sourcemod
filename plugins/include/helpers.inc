@@ -275,6 +275,11 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  		{
  			continue;
  		}
+ 		
+ 		if (FindStringInArray(array, buffer) != -1)
+ 		{
+ 			continue;
+ 		}
  
  		PushArrayString(array, buffer);
  	}

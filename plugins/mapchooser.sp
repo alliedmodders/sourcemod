@@ -83,9 +83,10 @@ public OnPluginStart()
 {
 	LoadTranslations("mapchooser.phrases");
 	
-	g_MapList = CreateArray(33);
-	g_OldMapList = CreateArray(33);
-	g_NextMapList = CreateArray(33);
+	new arraySize = ByteCountToCells(33);
+	g_MapList = CreateArray(arraySize);
+	g_OldMapList = CreateArray(arraySize);
+	g_NextMapList = CreateArray(arraySize);
 	g_TeamScores = CreateArray(2);
 
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
@@ -512,29 +513,29 @@ CreateNextVote()
 		ClearArray(g_NextMapList);
 	}
 	
-	new Handle:tempMaps  = CreateArray(33);
 	decl String:map[32];
-	for (new i = 0; i < GetArraySize(g_MapList); i++)
-	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		PushArrayString(tempMaps, map);		
-	}
+	new Handle:tempMaps  = CloneArray(g_MapList);
 	
-	if (GetArraySize(tempMaps) > GetConVarInt(g_Cvar_ExcludeMaps))
+	if (GetConVarInt(g_Cvar_ExcludeMaps) && GetArraySize(tempMaps) > GetConVarInt(g_Cvar_ExcludeMaps))
 	{
 		for (new i = 0; i < GetArraySize(g_OldMapList); i++)
 		{
 			GetArrayString(g_OldMapList, i, map, sizeof(map));
-			for (new j = 0; j < GetArraySize(tempMaps); j++)
+			new index = FindStringInArray(tempMaps, map);
+			if (index != -1)
 			{
-				decl String:temp[32];
-				GetArrayString(tempMaps, j, temp, sizeof(temp));
-				if (strcmp(temp, map) == 0)
-				{
-					RemoveFromArray(tempMaps, j);
-					break;
-				}				
+				RemoveFromArray(tempMaps, index);
 			}
+		}	
+	}
+	else
+	{
+		// If we didn't check against ExcludeMaps, we have to remove the current map.
+		GetCurrentMap(map, sizeof(map));
+		new index = FindStringInArray(tempMaps, map);
+		if (index != -1)
+		{
+			RemoveFromArray(tempMaps, index);			
 		}	
 	}
 

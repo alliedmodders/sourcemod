@@ -484,6 +484,79 @@ static cell_t SwapArrayItems(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t CloneArray(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *oldArray;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&oldArray)) 
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	CellArray *array = oldArray->clone();
+	
+	Handle_t hndl = g_HandleSys.CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (!hndl)
+	{
+		delete array;
+	}
+
+	return hndl;
+}
+
+static cell_t FindStringInArray(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&array)) 
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	char *str;
+	pContext->LocalToString(params[2], &str);
+
+	for (unsigned int i = 0; i < array->size(); i++)
+	{
+		const char *array_str = (const char *)array->at(i);
+		if (strcmp(str, array_str) == 0)
+		{
+			return (cell_t) i;
+		}
+	}
+
+	return -1;
+}
+
+static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&array)) 
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	for (unsigned int i = 0; i < array->size(); i++)
+	{
+		if (params[2] == *array->at(i))
+		{
+			return (cell_t) i;
+		}
+	}
+
+	return -1;
+}
+
 REGISTER_NATIVES(cellArrayNatives)
 {
 	{"ClearArray",					ClearArray},
@@ -502,5 +575,8 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"SetArrayArray",				SetArrayArray},
 	{"ShiftArrayUp",				ShiftArrayUp},
 	{"SwapArrayItems",				SwapArrayItems},
+	{"CloneArray",					CloneArray},
+	{"FindStringInArray",			FindStringInArray},
+	{"FindValueInArray",			FindValueInArray},
 	{NULL,							NULL},
 };
