@@ -400,7 +400,7 @@ namespace SourceMod
 					SM_IFACEPAIR(prefix)); \
 				if (len >= errsize) \
 				{ \
-					buffer[errsize - 1] = '\0'; \
+					errbuf[errsize - 1] = '\0'; \
 				} \
 			} \
 			return false; \

@@ -53,8 +53,8 @@ void CExtension::Initialize(const char *filename, const char *path)
 
 CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filename, const char *path)
 {
-	m_pAPI = pAPI;
 	Initialize(filename, path);
+	m_pAPI = pAPI;
 }
 
 CLocalExtension::CLocalExtension(const char *filename)
@@ -200,7 +200,13 @@ CExtension::~CExtension()
 
 bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 {
-	if (!m_pAPI || m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
+	if (!m_pAPI)
+	{
+		snprintf(error, maxlength, "No IExtensionInterface instance provided");
+		return false;
+	}
+	
+	if (m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
 	{
 		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
 		return false;
@@ -1281,3 +1287,4 @@ IExtension *CExtensionManager::LoadExternal(IExtensionInterface *pInterface,
 
 	return pExt;
 }
+

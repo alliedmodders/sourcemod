@@ -235,6 +235,6 @@ void *SourceMod_Core::OnMetamodQuery(const char *iface, int *ret)
 		*ret = (ptr == NULL) ? IFACE_FAILED : IFACE_OK;
 	}
 
-	return NULL;
+	return ptr;
 }
 

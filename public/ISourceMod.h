@@ -40,6 +40,7 @@
 #include <IHandleSys.h>
 #include <sp_vm_api.h>
 #include <IDataPack.h>
+#include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
 #define SMINTERFACE_SOURCEMOD_VERSION	3
