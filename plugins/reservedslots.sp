@@ -194,7 +194,7 @@ SelectKickClient()
 	
 		new flags = GetUserFlagBits(i);
 		
-		if (IsFakeClient(i) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
+		if (IsFakeClient(i) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION || CheckCommandAccess(i, "sm_reskick_immunity", ADMFLAG_RESERVATION, false))
 		{
 			continue;
 		}
