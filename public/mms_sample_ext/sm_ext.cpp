@@ -24,8 +24,7 @@ bool SM_LoadExtension(char *error, size_t maxlength)
 	char path[256];
 	g_SMAPI->PathFormat(path, 
 		sizeof(path), 
-		"%s/addons/myplugin/bin/myplugin%s",
-		g_SMAPI->GetBaseDir(),
+		"addons/myplugin/bin/myplugin%s",
 #if defined __linux__
 		"_i486.so"
 #else

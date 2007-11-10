@@ -357,7 +357,8 @@ namespace SourceMod
 		 * or dlclose.
 		 *
 		 * @param pInterface	Pointer to an IExtensionInterface instance.
-		 * @param filepath		Absolute path to the extension's file.
+		 * @param filepath		Relative path to the extension's file, from 
+		 * 						mod folder.
 		 * @param filename		Name to use to uniquely identify the extension. 
 		 *						The name should be generic, without any 
 		 *						platform-specific suffices.  For example, 
