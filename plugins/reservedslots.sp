@@ -61,11 +61,25 @@ public OnPluginStart()
 	sm_hide_slots = CreateConVar("sm_hide_slots", "0", "If set to 1, reserved slots will hidden (subtracted from the max slot count)", 0, true, 0.0, true, 1.0);
 	sv_visiblemaxplayers = FindConVar("sv_visiblemaxplayers");
 	sm_reserve_type = CreateConVar("sm_reserve_type", "0", "Method of reserving slots", 0, true, 0.0, true, 1.0);
+	
+	HookConVarChange(sm_reserved_slots, SlotsChanged);
+	HookConVarChange(sm_hide_slots, SlotsChanged);
+}
+
+public OnPluginEnd()
+{
+	/* 	If the plugin has been unloaded, reset visiblemaxplayers. In the case of the server shutting down this effect will not be visible */
+	SetConVarInt(sv_visiblemaxplayers, g_MaxClients);
 }
 
 public OnMapStart()
 {
 	g_MaxClients = GetMaxClients();
+	
+	if (GetConVarBool(sm_hide_slots))
+	{		
+		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+	}
 }
 
 public OnConfigsExecuted()
@@ -115,6 +129,7 @@ public OnClientPostAdminCheck(client)
 				
 				if (target)
 				{
+					/* Kick public player to free the reserved slot again */
 					CreateTimer(0.1, OnTimedKick, GetClientUserId(target));
 				}
 			}
@@ -132,6 +147,15 @@ public OnClientDisconnect_Post(client)
 	if (GetConVarBool(sm_hide_slots))
 	{		
 		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+	}
+}
+
+public SlotsChanged(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	/* Reserved slots or hidden slots have been disabled - reset sv_visiblemaxplayers */
+	if (StringToInt(newValue) == 0)
+	{
+		SetConVarInt(sv_visiblemaxplayers, g_MaxClients);
 	}
 }
 
