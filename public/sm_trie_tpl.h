@@ -145,10 +145,26 @@ public:
 		unsigned int q;					/* temporary var for x_check results */
 		unsigned int curoffs;			/* current offset */
 
-		/* Do not handle empty strings for simplicity */
-		if (!*key)
+		/**
+		 * Empty strings are a special case, since there are no productions.  We could 
+		 * probably rework it to use BASE[0] but this hack is easier.
+		 */
+		if (*key == '\0')
 		{
-			return false;
+			if (m_empty != NULL && m_empty->valset)
+			{
+				return false;
+			}
+
+			if (m_empty == NULL)
+			{
+				m_empty = (KTrieNode *)malloc(sizeof(KTrieNode));
+			}
+
+			m_empty->valset = true;
+			new (&m_empty->value) K(obj);
+
+			return true;
 		}
 
 		/* Start traversing at the root node (1) */
@@ -627,11 +643,18 @@ public:
 		m_stringtab = (char *)malloc(sizeof(char) * 256);
 		m_baseSize = 256;
 		m_stSize = 256;
+		m_empty = NULL;
 
 		internal_clear();
 	}
 	~KTrie()
 	{
+		if (m_empty != NULL && m_empty->valset)
+		{
+			m_empty->value.~K();
+			m_empty->valset = false;
+		}
+		free(m_empty);
 		run_destructors();
 		free(m_base);
 		free(m_stringtab);
@@ -668,7 +691,7 @@ private:
 
 		if (!*key)
 		{
-			return NULL;
+			return m_empty;
 		}
 
 		/* Start traversing at the root node */
@@ -856,6 +879,7 @@ private:
 	}
 private:
 	KTrieNode *m_base;			/* Base array for the sparse tables */
+	KTrieNode *m_empty;			/* Special case for empty strings */
 	char *m_stringtab;			/* String table pointer */
 	unsigned int m_baseSize;	/* Size of the base array, in members */
 	unsigned int m_stSize;		/* Size of the string table, in bytes */
