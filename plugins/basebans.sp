@@ -106,10 +106,23 @@ public Action:Command_BanIp(client, args)
 		return Plugin_Handled;
 	}
 
+	decl len, next_len;
+	decl String:Arguments[256];
 	decl String:arg[50], String:time[20];
-	GetCmdArg(1, time, sizeof(time));
-	GetCmdArg(2, arg, sizeof(arg));
 	
+	GetCmdArgString(Arguments, sizeof(Arguments));
+	len = BreakString(Arguments, arg, sizeof(arg));
+	
+	if ((next_len = BreakString(Arguments[len], time, sizeof(time))) != -1)
+	{
+		len += next_len;
+	}
+	else
+	{
+		len = 0;
+		Arguments[0] = '\0';
+	}
+
 	if (StrEqual(arg, "0"))
 	{
 		ReplyToCommand(client, "[SM] %t", "Cannot ban that IP");
@@ -162,32 +175,26 @@ public Action:Command_BanIp(client, args)
 
 	new minutes = StringToInt(time);
 
-	new String:reason[128];
-	if (args >= 3)
-	{
-		GetCmdArg(3, reason, sizeof(reason));
-	}
-
 	LogAction(client, 
 			  hit_client, 
 			  "\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", 
 			  client, 
 			  minutes, 
 			  arg, 
-			  reason);
+			  Arguments[len]);
 				
 	ReplyToCommand(client, "[SM] %t", "Ban added");
 	
 	BanIdentity(arg, 
 				minutes, 
 				BANFLAG_IP, 
-				reason, 
+				Arguments[len], 
 				"sm_banip", 
 				client);
 				
 	if (hit_client != -1)
 	{
-		KickClient(hit_client, "Banned: %s", reason);
+		KickClient(hit_client, "Banned: %s", Arguments[len]);
 	}
 
 	return Plugin_Handled;

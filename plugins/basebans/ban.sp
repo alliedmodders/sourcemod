@@ -1,4 +1,4 @@
-PrepareBan(client, target, time, String:reason[], size)
+PrepareBan(client, target, time, const String:reason[])
 {
 	decl String:authid[64], String:name[32];
 	GetClientAuthString(target, authid, sizeof(authid));
@@ -25,10 +25,12 @@ PrepareBan(client, target, time, String:reason[], size)
 
 	if (reason[0] == '\0')
 	{
-		strcopy(reason, size, "Banned");
+		BanClient(target, time, BANFLAG_AUTO, "Banned", "Banned", "sm_ban", client);
 	}
-
-	BanClient(target, time, BANFLAG_AUTO, reason, reason, "sm_ban", client);
+	else
+	{
+		BanClient(target, time, BANFLAG_AUTO, reason, reason, "sm_ban", client);
+	}
 }
 
 DisplayBanTargetMenu(client)
@@ -129,7 +131,7 @@ public MenuHandler_BanReasonList(Handle:menu, MenuAction:action, param1, param2)
 		
 		GetMenuItem(menu, param2, info, sizeof(info));
 	
-		PrepareBan(param1, g_BanTarget[param1], g_BanTime[param1], info, sizeof(info));
+		PrepareBan(param1, g_BanTarget[param1], g_BanTime[param1], info);
 	}
 }
 
@@ -202,9 +204,13 @@ public Action:Command_Ban(client, args)
 		ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
 		return Plugin_Handled;
 	}
+	
+	decl len, next_len;
+	decl String:Arguments[256];
+	GetCmdArgString(Arguments, sizeof(Arguments));
 
-	decl String:arg[65];
-	GetCmdArg(1, arg, sizeof(arg));
+	decl String:arg[65];	
+	len = BreakString(Arguments, arg, sizeof(arg));
 
 	new target = FindTarget(client, arg, true);
 	if (target == -1)
@@ -213,19 +219,19 @@ public Action:Command_Ban(client, args)
 	}
 
 	decl String:s_time[12];
-	GetCmdArg(2, s_time, sizeof(s_time));
+	if ((next_len = BreakString(Arguments[len], s_time, sizeof(s_time))) != -1)
+	{
+		len += next_len;
+	}
+	else
+	{
+		len = 0;
+		Arguments[0] = '\0';
+	}
 
 	new time = StringToInt(s_time);
 
-	decl String:reason[128];
-	if (args >= 3)
-	{
-		GetCmdArg(3, reason, sizeof(reason));
-	} else {
-		reason[0] = '\0';
-	}
-
-	PrepareBan(client, target, time, reason, sizeof(reason));
+	PrepareBan(client, target, time, Arguments[len]);
 
 	return Plugin_Handled;
 }
