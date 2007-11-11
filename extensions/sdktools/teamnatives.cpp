@@ -84,16 +84,21 @@ void SDKTools::OnServerActivate(edict_t *pEdictList, int edictCount, int clientM
 		ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
 		if (FindTeamEntities(pClass->m_pTable, "DT_Team"))
 		{
-			static int offset = g_pGameHelpers->FindInSendTable(pClass->GetName(), "m_iTeamNum")->GetOffset();
-			CBaseEntity *pEnt = pEdict->GetUnknown()->GetBaseEntity();
-			int TeamIndex = *(int *)((unsigned char *)pEnt + offset);
+			SendProp *pTeamNumProp = g_pGameHelpers->FindInSendTable(pClass->GetName(), "m_iTeamNum");
 
-			if (TeamIndex >= (int)g_Teams.size())
+			if (pTeamNumProp != NULL)
 			{
-				g_Teams.resize(TeamIndex+1);
+				int offset = pTeamNumProp->GetOffset();
+				CBaseEntity *pEnt = pEdict->GetUnknown()->GetBaseEntity();
+				int TeamIndex = *(int *)((unsigned char *)pEnt + offset);
+
+				if (TeamIndex >= (int)g_Teams.size())
+				{
+					g_Teams.resize(TeamIndex+1);
+				}
+				g_Teams[TeamIndex].ClassName = pClass->GetName();
+				g_Teams[TeamIndex].pEnt = pEnt;
 			}
-			g_Teams[TeamIndex].ClassName = pClass->GetName();
-			g_Teams[TeamIndex].pEnt = pEnt;
 		}
 	}
 }
