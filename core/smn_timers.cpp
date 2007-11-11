@@ -31,6 +31,7 @@
 
 #include "HandleSys.h"
 #include "TimerSys.h"
+#include "PluginSys.h"
 #include "Logger.h"
 
 #define TIMER_HNDL_CLOSE	(1<<9)
@@ -153,7 +154,14 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 		}
 	}
 
-	g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec);
+	if ((herr=g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
+	{
+		g_Logger.LogError("Invalid timer handle %x (error %d) on plugin %s during timer end", 
+							pInfo->TimerHandle, 
+							herr, 
+							g_PluginSys.FindPluginByContext(pInfo->pContext->GetContext())->GetFilename());
+		return;
+	}
 	DeleteTimerInfo(pInfo);
 }
 
