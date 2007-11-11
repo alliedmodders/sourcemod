@@ -242,7 +242,7 @@ public Action:Command_Cvar(client, args)
 		return Plugin_Handled;
 	}
 
-	decl String:cvarname[33];
+	decl String:cvarname[64];
 	GetCmdArg(1, cvarname, sizeof(cvarname));
 
 	new Handle:hndl = FindConVar(cvarname);
