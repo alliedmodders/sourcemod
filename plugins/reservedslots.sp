@@ -90,16 +90,16 @@ public OnConfigsExecuted()
 	}	
 }
 
-public Action:OnTimedKick(Handle:timer, any:value)
-{
-	new client = GetClientOfUserId(value);
-	
+public Action:OnTimedKick(Handle:timer, any:client)
+{	
 	if (!client || !IsClientInGame(client))
 	{
 		return Plugin_Handled;
 	}
 	
 	KickClient(client, "%T", "Slot reserved", client);
+	
+	SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
 	
 	return Plugin_Handled;
 }
@@ -113,32 +113,45 @@ public OnClientPostAdminCheck(client)
 		new clients = GetClientCount(false);
 		new limit = g_MaxClients - reserved;
 		new flags = GetUserFlagBits(client);
-	
-		if (clients <= limit || IsFakeClient(client) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
+		
+		new type = GetConVarInt(sm_reserve_type);
+		
+		if (type == 0)
 		{
-			if (GetConVarBool(sm_hide_slots))
+			if (clients <= limit || IsFakeClient(client) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
 			{
-				SetVisibleMaxSlots(clients, limit);
+				if (GetConVarBool(sm_hide_slots))
+				{
+					SetVisibleMaxSlots(clients, limit);
+				}
+				
+				return;
 			}
 			
-			new type = GetConVarInt(sm_reserve_type);
-			
-			if (type == 1)
-			{
-				new target = SelectKickClient();
-				
-				if (target)
+			/* Kick player because there are no public slots left */
+			CreateTimer(0.1, OnTimedKick, client);
+		}
+		else
+		{		
+			if (clients > limit)
+			{	
+				if (flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
 				{
-					/* Kick public player to free the reserved slot again */
-					CreateTimer(0.1, OnTimedKick, GetClientUserId(target));
+					new target = SelectKickClient();
+						
+					if (target)
+					{
+						/* Kick public player to free the reserved slot again */
+						CreateTimer(0.1, OnTimedKick, target);
+					}
+				}
+				else
+				{				
+					/* Kick player because there are no public slots left */
+					CreateTimer(0.1, OnTimedKick, client);
 				}
 			}
-			
-			return;
 		}
-
-		/* Kick player because there are no public slots left */
-		CreateTimer(0.1, OnTimedKick, GetClientUserId(client));
 	}
 }
 
@@ -161,7 +174,7 @@ public SlotsChanged(Handle:convar, const String:oldValue[], const String:newValu
 
 SetVisibleMaxSlots(clients, limit)
 {
-	new num = clients + 1;
+	new num = clients;
 	
 	if (clients == g_MaxClients)
 	{
@@ -186,7 +199,7 @@ SelectKickClient()
 	new Float:latency;
 	
 	for (new i=1; i<=g_MaxClients; i++)
-	{
+	{	
 		if (!IsClientConnected(i))
 		{
 			continue;
@@ -198,13 +211,17 @@ SelectKickClient()
 		{
 			continue;
 		}
+		
+		latency = 0.0;
 			
 		if (IsClientInGame(i))
-		{
-			latency = GetClientAvgLatency(i, NetFlow_Both);
+		{		
+			latency = GetClientAvgLatency(i, NetFlow_Outgoing);
+			
+			LogMessage("Latency : %f",latency);
 			
 			if (IsClientObserver(i))
-			{
+			{			
 				specFound = true;
 				
 				if (latency > highestSpecLatency)
@@ -214,12 +231,8 @@ SelectKickClient()
 				}
 			}
 		}
-		else
-		{
-			latency = 0.0;
-		}
 		
-		if (latency > highestLatency)
+		if (latency >= highestLatency)
 		{
 			highestLatency = latency;
 			highestLatencyId = i;
