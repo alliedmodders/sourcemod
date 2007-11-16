@@ -36,6 +36,11 @@
 #include <IHandleSys.h>
 #include <string.h>
 
+/**
+ * @file IDBDriver.h
+ * @brief Defines interfaces for interacting with relational databases.
+ */
+
 #define SMINTERFACE_DBI_NAME		"IDBI"
 #define SMINTERFACE_DBI_VERSION		5
 
