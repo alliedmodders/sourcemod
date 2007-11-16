@@ -825,6 +825,7 @@ namespace SourceMod
 		 *
 		 * @param client		Client index.
 		 * @param states		Menu states.
+		 * @param order			Order to search for items.
 		 * @return				IMenuPanel pointer, or NULL if no items could be 
 		 *						found in the IBaseMenu pointer, or NULL if any
 		 *						other error occurred.  Any valid pointer must
