@@ -259,7 +259,7 @@ static cell_t SetUserAdmin(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Client %d is not connected", client);
 	}
-	if (!g_Admins.IsValidAdmin(params[2]))
+	if (!g_Admins.IsValidAdmin(params[2]) && id != INVALID_ADMIN_ID)
 	{
 		return pContext->ThrowNativeError("AdminId %x is invalid", params[2]);
 	}
