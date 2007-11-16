@@ -266,8 +266,8 @@ native SwapArrayItems(Handle:array, index1, index2);
  *
  * @param array			Array Handle.
  * @param item			String to search for
- * @return			Array index, or -1 on failure
- * @error			Invalid Handle
+ * @return				Array index, or -1 on failure
+ * @error				Invalid Handle
  */
 native FindStringInArray(Handle:array, const String:item[]);
  
@@ -277,8 +277,8 @@ native FindStringInArray(Handle:array, const String:item[]);
  *
  * @param array			Array Handle.
  * @param item			Value to search for
- * @return			Array index, or -1 on failure
- * @error			Invalid Handle
+ * @return				Array index, or -1 on failure
+ * @error				Invalid Handle
  */
 native FindValueInArray(Handle:array, item); 
 
