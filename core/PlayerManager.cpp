@@ -1295,12 +1295,32 @@ void CPlayer::Authorize_Post()
 
 void CPlayer::DoPostConnectAuthorization()
 {
+	bool delay = false;
+
+	List<IClientListener *>::iterator iter;
+	for (iter = g_Players.m_hooks.begin();
+		 iter != g_Players.m_hooks.end();
+		 iter++)
+	{
+		IClientListener *pListener = (*iter);
+#if defined MIN_API_FOR_ADMINCALLS
+		if (pListener->GetClientListenerVersion() < MIN_API_FOR_ADMINCALLS)
+		{
+			continue;
+		}
+#endif
+		if (!pListener->OnClientPreAdminCheck(m_iIndex))
+		{
+			delay = true;
+		}
+	}
+	
 	cell_t result = 0;
 	PreAdminCheck->PushCell(m_iIndex);
 	PreAdminCheck->Execute(&result);
 
 	/* Defer, for better or worse */
-	if ((ResultType)result >= Pl_Handled)
+	if (delay || (ResultType)result >= Pl_Handled)
 	{
 		return;
 	}
@@ -1318,6 +1338,15 @@ void CPlayer::DoPostConnectAuthorization()
 	NotifyPostAdminChecks();
 }
 
+bool CPlayer::RunAdminCacheChecks()
+{
+	AdminId old_id = GetAdminId();
+
+	DoBasicAdminChecks();
+
+	return (GetAdminId() != old_id);
+}
+
 void CPlayer::NotifyPostAdminChecks()
 {
 	if (m_bAdminCheckSignalled)
@@ -1327,6 +1356,21 @@ void CPlayer::NotifyPostAdminChecks()
 
 	/* Block beforehand so they can't double-call */
 	m_bAdminCheckSignalled = true;
+
+	List<IClientListener *>::iterator iter;
+	for (iter = g_Players.m_hooks.begin();
+		iter != g_Players.m_hooks.end();
+		iter++)
+	{
+		IClientListener *pListener = (*iter);
+#if defined MIN_API_FOR_ADMINCALLS
+		if (pListener->GetClientListenerVersion() < MIN_API_FOR_ADMINCALLS)
+		{
+			continue;
+		}
+#endif
+		pListener->OnClientPostAdminCheck(m_iIndex);
+	}
 
 	PostAdminCheck->PushCell(m_iIndex);
 	PostAdminCheck->Execute(NULL);

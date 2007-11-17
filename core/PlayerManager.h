@@ -48,6 +48,8 @@ using namespace SourceHook;
 #define PLAYER_LIFE_ALIVE	1
 #define PLAYER_LIFE_DEAD	2
 
+#define MIN_API_FOR_ADMINCALLS		7
+
 class CPlayer : public IGamePlayer
 {
 	friend class PlayerManager;
@@ -69,8 +71,9 @@ public:
 	IPlayerInfo *GetPlayerInfo();
 	unsigned int GetLanguageId();
 	int GetUserId();
-public:
+	bool RunAdminCacheChecks();
 	void NotifyPostAdminChecks();
+public:
 	void DoBasicAdminChecks();
 	bool IsInKickQueue();
 	void MarkAsBeingKicked();
@@ -108,6 +111,7 @@ class PlayerManager :
 	public SMGlobalClass,
 	public IPlayerManager
 {
+	friend class CPlayer;
 public:
 	PlayerManager();
 	~PlayerManager();

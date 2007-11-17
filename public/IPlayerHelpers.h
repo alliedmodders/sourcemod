@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	6
+#define SMINTERFACE_PLAYERMANAGER_VERSION	7
 
 struct edict_t;
 class IPlayerInfo;
@@ -147,6 +147,42 @@ namespace SourceMod
 		 * @return		IPlayerInfo pointer, or NULL if none.
 		 */
 		virtual IPlayerInfo *GetPlayerInfo() =0;
+
+		/**
+		 * @brief Runs through Core's admin authorization checks.  If the 
+		 * client is already an admin, no checks are performed.  
+		 *
+		 * Note that this function operates solely against the in-memory admin 
+		 * cache.  It will check steamids, IPs, names, and verify a password 
+		 * if one exists.  To implement other authentication schemes, simply 
+		 * don't call this function and use IGamePlayer::SetAdminId() instead.
+		 *
+		 * @return				True if access changed, false otherwise.
+		 */
+		virtual bool RunAdminCacheChecks() =0;
+
+		/**
+		 * @brief Notifies all listeners that the client has completed 
+		 * all of your post-connection (in-game, auth, admin) checks.  
+		 *
+		 * If you returned "false" from OnClientPreAdminCheck(), you must 
+		 * ALWAYS manually invoke this function, even if RunAdminCacheChecks() 
+		 * failed or you did not assign an AdminId.  Failure to call this 
+		 * function could result in plugins (such as reservedslots) not 
+		 * working properly.
+		 *
+		 * If you are implementing asynchronous fetches, and the client 
+		 * disconnects during your fetching process, you should make sure to 
+		 * recognize that case and not call this function.  That is, do not 
+		 * call this function on mismatched PreCheck calls, or on disconnected 
+		 * clients.  A good way to check this is to pass userids around, which 
+		 * are unique per client connection.
+		 *
+		 * Calling this has no effect if it has already been called on the 
+		 * given client (thus it is safe for multiple asynchronous plugins to 
+		 * call it at various times).
+		 */
+		virtual void NotifyPostAdminChecks() =0;
 	};
 
 	/**
@@ -228,6 +264,41 @@ namespace SourceMod
 		 * @brief Called when the server is activated.
 		 */
 		virtual void OnServerActivated(int max_clients)
+		{
+		}
+
+		/**
+		 * @brief Called once a client is authorized and fully in-game, but 
+		 * before admin checks are done.  This can be used to override the 
+		 * default admin checks for a client.
+		 *
+		 * By default, this function allows the authentication process to 
+		 * continue as normal.  If you need to delay the cache searching 
+		 * process in order to get asynchronous data, then return false here. 
+		 *
+		 * If you return false, you must call IPlayerManager::NotifyPostAdminCheck 
+		 * for the same client, or else the OnClientPostAdminCheck callback will 
+		 * never be called.
+		 *
+		 * @param client		Client index.
+		 * @return				True to continue normally, false to override 
+		 *						the authentication process.
+		 */
+		virtual bool OnClientPreAdminCheck(int client)
+		{
+			return true;
+		}
+
+		/**
+		 * @brief Called once a client is authorized and fully in-game, and 
+		 * after all post-connection authorizations have been passed.  If the 
+		 * client does not have an AdminId by this stage, it means that no 
+		 * admin entry was in the cache that matched, and the user could not 
+		 * be authenticated as an admin.
+		 *
+		 * @param client		Client index.
+		 */
+		virtual void OnClientPostAdminCheck(int client)
 		{
 		}
 	};
