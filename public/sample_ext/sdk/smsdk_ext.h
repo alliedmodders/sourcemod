@@ -85,6 +85,9 @@
 #if defined SMEXT_ENABLE_TEXTPARSERS
 #include <ITextParsers.h>
 #endif
+#if defined SMEXT_ENABLE_USERMSGS
+#include <IUserMessages.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -276,6 +279,9 @@ extern IMenuManager *menus;
 #endif
 #if defined SMEXT_ENABLE_ADMINSYS
 extern IAdminSystem *adminsys;
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+extern IUserMessages *usermsgs;
 #endif
 
 #if defined SMEXT_CONF_METAMOD

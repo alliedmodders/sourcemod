@@ -91,6 +91,9 @@ IAdminSystem *adminsys = NULL;
 #if defined SMEXT_ENABLE_TEXTPARSERS
 ITextParsers *textparsers = NULL;
 #endif
+#if defined SMEXT_ENABLE_USERMSGS
+IUserMessages *usermsgs = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -172,6 +175,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_TEXTPARSERS
 	SM_GET_IFACE(TEXTPARSERS, textparsers);
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+	SM_GET_IFACE(USERMSGS, usermsgs);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
