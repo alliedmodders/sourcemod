@@ -290,6 +290,34 @@ CON_COMMAND(sm, "SourceMod Menu")
 	g_RootMenu.GotRootCmd(args);
 }
 
+FILE *g_pHndlLog = NULL;
+
+void write_handles_to_log(const char *fmt, ...)
+{
+	va_list ap;
+	
+	va_start(ap, fmt);
+	vfprintf(g_pHndlLog, fmt, ap);
+	fprintf(g_pHndlLog, "\n");
+	va_end(ap);
+}
+
+void write_handles_to_game(const char *fmt, ...)
+{
+	size_t len;
+	va_list ap;
+	char buffer[1024];
+	
+	va_start(ap, fmt);
+	len = UTIL_FormatArgs(buffer, sizeof(buffer)-2, fmt, ap);
+	va_end(ap);
+
+	buffer[len] = '\n';
+	buffer[len+1] = '\0';
+
+	engine->LogPrint(buffer);
+}
+
 CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle leaks")
 {
 #if !defined ORANGEBOX_BUILD
@@ -297,19 +325,28 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 #endif
 	if (args.ArgC() < 2)
 	{
-		g_RootMenu.ConsolePrint("Usage: sm_dump_handles <file>");
+		g_RootMenu.ConsolePrint("Usage: sm_dump_handles <file> or <log> for game logs");
 		return;
 	}
 
-	const char *arg = args.Arg(1);
-	FILE *fp = fopen(arg, "wt");
-	if (!fp)
+	if (strcmp(args.Arg(1), "log") != 0)
 	{
-		g_RootMenu.ConsolePrint("Could not find file \"%s\"", arg);
-		return;
+		const char *arg = args.Arg(1);
+		FILE *fp = fopen(arg, "wt");
+		if (!fp)
+		{
+			g_RootMenu.ConsolePrint("Could not find file \"%s\"", arg);
+			return;
+		}
+
+		g_pHndlLog = fp;
+		g_HandleSys.Dump(write_handles_to_log);
+		g_pHndlLog = NULL;
+
+		fclose(fp);
 	}
-
-	g_HandleSys.Dump(fp);
-
-	fclose(fp);
+	else
+	{
+		g_HandleSys.Dump(write_handles_to_game);
+	}
 }
