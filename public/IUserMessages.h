@@ -144,7 +144,7 @@ namespace SourceMod
 		 * @param flags			Flags to use for sending the message.
 		 * @return				bf_write structure to write message with, or NULL on failure.
 		 */
-		virtual bf_write *StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags) =0;
+		virtual bf_write *StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags) =0;
 
 		/**
 		 * @brief Wrapper around UserMessageEnd for use with StartMessage().

@@ -83,7 +83,7 @@ public:
 	/** 
 	 * @brief Stores the global target index.
 	 */
-	void SetGlobalTarget(unsigned int index);
+	unsigned int SetGlobalTarget(unsigned int index);
 
 	/** 
 	 * @brief Returns the global target index.

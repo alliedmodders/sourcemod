@@ -69,7 +69,7 @@ public: //IUserMessages
 	bool GetMessageName(int msgid, char *buffer, size_t maxlength) const;
 	bool HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
-	bf_write *StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags);
+	bf_write *StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags);
 	bool EndMessage();
 public:
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type);
