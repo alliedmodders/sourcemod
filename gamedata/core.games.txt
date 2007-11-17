@@ -62,6 +62,24 @@
 		}
 	}
 
+	/**
+	 * Which games use an extra byte in the HintText 
+	 * message? Even though it's in the SDK, apparently 
+	 * only CS:S does this right now.
+	 */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+		}
+
+		"Keys"
+		{
+			"HintTextPreByte"		"yes"
+		}
+	}
+
 	"cstrike"
 	{
 		"Keys"
