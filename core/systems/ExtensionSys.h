@@ -55,6 +55,14 @@ struct sm_extnative_t
 	const sp_nativeinfo_t *info;
 };
 
+/* Replacement native */
+struct sm_repnative_t
+{
+	CExtension *owner;
+	sp_nativeinfo_t info;
+	SPVM_NATIVE_FUNC original;
+};
+
 class CExtension : public IExtension
 {
 	friend class CExtensionManager;
@@ -98,6 +106,7 @@ protected:
 	List<IPlugin *> m_Plugins;
 	List<const sp_nativeinfo_t *> m_Natives;
 	List<WeakNative> m_WeakNatives;
+	List<WeakNative> m_ReplacedNatives;
 	List<String> m_Libraries;
 	unsigned int unload_code;
 	bool m_bFullyLoaded;
@@ -168,6 +177,7 @@ public:
 	void TryAutoload();
 	void AddLibrary(IExtension *pSource, const char *library);
 	bool LibraryExists(const char *library);
+	void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();
@@ -175,6 +185,8 @@ private:
 	CExtension *FindByOrder(unsigned int num);
 private:
 	List<CExtension *> m_Libs;
+	List<sm_repnative_t> m_RepNativeList;
+	KTrie<sm_repnative_t> m_RepNatives;
 	KTrie<sm_extnative_t> m_ExtNatives;
 };
 

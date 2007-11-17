@@ -200,6 +200,29 @@ namespace SourceMod
 		 * @param name			Library name.
 		 */
 		virtual void RegisterLibrary(IExtension *myself, const char *name) =0;
+
+		/**
+		 * @brief Adds a list of natives to the global native pool, to be 
+		 * bound on plugin load.
+		 *
+		 * Unlike AddNatives(), this function implements natives that are 
+		 * ALWAYS bound, regardless of whether a previous function is bound. 
+		 * That means extensions can override Core natives.
+		 *
+		 * A Core version of each native must exist.  If one does not, then 
+		 * Core will simply ignore that entry.
+		 *
+		 * Override natives represent a weak coupling.  If the extension is 
+		 * unloaded, the native will be re-bound to the Core version.
+		 * 
+		 * @param myself		Identity token of parent object.
+		 * @param natives		Array of natives to add.  The last entry in 
+		 *						the array must be filled with NULLs to 
+		 *						terminate the array.  The array must be static 
+		 *						as Core will cache the pointer for the 
+		 *						lifetime of the extension.
+		 */
+		virtual void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;
 	};
 }
 

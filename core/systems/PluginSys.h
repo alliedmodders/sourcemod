@@ -489,6 +489,7 @@ public:
 	}
 public:
 	bool AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func);
+	SPVM_NATIVE_FUNC FindCoreNative(const char *name);
 private:
 	void AddFakeNativesToPlugin(CPlugin *pPlugin);
 	void TryRefreshDependencies(CPlugin *pOther);
