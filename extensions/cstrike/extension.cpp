@@ -45,6 +45,7 @@ IBinTools *g_pBinTools = NULL;
 IGameConfig *g_pGameConf = NULL;
 IGameEventManager2 *gameevents = NULL;
 bool hooked_everything = false;
+int g_msgHintText = -1;
 
 SMEXT_LINK(&g_CStrike);
 
@@ -66,6 +67,11 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	sharesys->AddNatives(myself, g_CSNatives);
 	sharesys->RegisterLibrary(myself, "cstrike");
+
+	if ((g_msgHintText = usermsgs->GetMessageIndex("HintText")) != -1)
+	{
+		sharesys->OverrideNatives(myself, g_CS_PrintHintText);
+	}
 
 	return true;
 }
