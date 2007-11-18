@@ -99,7 +99,10 @@ public Action:OnTimedKick(Handle:timer, any:client)
 	
 	KickClient(client, "%T", "Slot reserved", client);
 	
-	SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+	if (GetConVarBool(sm_hide_slots))
+	{				
+		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+	}
 	
 	return Plugin_Handled;
 }
