@@ -235,7 +235,6 @@ void CRadioStyle::ProcessWatchList()
 	BaseMenuStyle::ProcessWatchList();
 
 	CRadioMenuPlayer *pPlayer;
-	float curtime = gpGlobals->curtime;
 	unsigned int max_clients = g_Players.GetMaxClients();
 	for (unsigned int i = 1; i <= max_clients; i++)
 	{
