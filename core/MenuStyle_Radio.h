@@ -47,6 +47,21 @@ using namespace SourceMod;
 class CRadioDisplay;
 class CRadioMenu;
 
+class CRadioMenuPlayer : public CBaseMenuPlayer
+{
+public:
+	void Radio_Init(int keys, const char *title, const char *buffer);
+	bool Radio_NeedsRefresh();
+	void Radio_Refresh();
+	void Radio_SetIndex(unsigned int index);
+private:
+	unsigned int m_index;
+	size_t display_len;
+	char display_pkt[512];
+	int display_keys;
+	float display_last_refresh;
+};
+
 class CRadioStyle : 
 	public BaseMenuStyle,
 	public SMGlobalClass,
@@ -61,6 +76,7 @@ public: //SMGlobalClass
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
 	void SendDisplay(int client, IMenuPanel *display);
+	void ProcessWatchList();
 public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
@@ -75,8 +91,9 @@ public:
 public:
 	CRadioDisplay *MakeRadioDisplay(CRadioMenu *menu=NULL);
 	void FreeRadioDisplay(CRadioDisplay *display);
+	CRadioMenuPlayer *GetRadioMenuPlayer(int client);
 private:
-	CBaseMenuPlayer *m_players;
+	CRadioMenuPlayer *m_players;
 	CStack<CRadioDisplay *> m_FreeDisplays;
 };
 

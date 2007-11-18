@@ -87,4 +87,12 @@
 			"GameExtension"			"game.cstrike"
 		}
 	}
+
+	"tf"
+	{
+		"Keys"
+		{
+			"RadioMenuTimeout"		"4"
+		}
+	}
 }

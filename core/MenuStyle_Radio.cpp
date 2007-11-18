@@ -42,9 +42,15 @@ extern const char *g_RadioNumTable[];
 CRadioStyle g_RadioMenuStyle;
 int g_ShowMenuId = -1;
 bool g_bRadioInit = false;
+unsigned int g_RadioMenuTimeout = 0;
 
-CRadioStyle::CRadioStyle() : m_players(new CBaseMenuPlayer[256+1])
+CRadioStyle::CRadioStyle()
 {
+	m_players = new CRadioMenuPlayer[256+1];
+	for (size_t i = 0; i < 256+1; i++)
+	{
+		m_players[i].Radio_SetIndex(i);
+	}
 }
 
 void CRadioStyle::OnSourceModAllInitialized()
@@ -71,6 +77,16 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 	if (!IsSupported())
 	{
 		return;
+	}
+
+	const char *val = g_pGameConf->GetKeyValue("RadioMenuTimeout");
+	if (val != NULL)
+	{
+		g_RadioMenuTimeout = atoi(val);
+	}
+	else
+	{
+		g_RadioMenuTimeout = 0;
 	}
 
 	g_Menus.AddStyle(this);
@@ -203,6 +219,38 @@ void CRadioStyle::FreeRadioDisplay(CRadioDisplay *display)
 	m_FreeDisplays.push(display);
 }
 
+CRadioMenuPlayer *CRadioStyle::GetRadioMenuPlayer(int client)
+{
+	return &m_players[client];
+}
+
+void CRadioStyle::ProcessWatchList()
+{
+	if (!g_RadioMenuTimeout)
+	{
+		BaseMenuStyle::ProcessWatchList();
+		return;
+	}
+
+	BaseMenuStyle::ProcessWatchList();
+
+	CRadioMenuPlayer *pPlayer;
+	float curtime = gpGlobals->curtime;
+	unsigned int max_clients = g_Players.GetMaxClients();
+	for (unsigned int i = 1; i <= max_clients; i++)
+	{
+		pPlayer = GetRadioMenuPlayer(i);
+		if (!pPlayer->bInMenu || pPlayer->bInExternMenu)
+		{
+			continue;
+		}
+		if (pPlayer->Radio_NeedsRefresh())
+		{
+			pPlayer->Radio_Refresh();
+		}
+	}
+}
+
 CRadioDisplay::CRadioDisplay()
 {
 	Reset();
@@ -326,17 +374,50 @@ bool CRadioDisplay::CanDrawItem(unsigned int drawFlags)
 
 void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 {
-	char buffer[4096];
-	size_t len;
-
-	len = UTIL_Format(buffer, sizeof(buffer), "%s\n%s", m_Title.c_str(), m_BufferText.c_str());
-
-	cell_t players[1] = {client};
-
 	int _sel_keys = (keys == 0) ? (1<<9) : keys;
+	CRadioMenuPlayer *pPlayer = g_RadioMenuStyle.GetRadioMenuPlayer(client);
+	pPlayer->Radio_Init(_sel_keys, m_Title.c_str(), m_BufferText.c_str());
+	pPlayer->Radio_Refresh();
+}
 
-	char *ptr = buffer;
+void CRadioMenuPlayer::Radio_SetIndex(unsigned int index)
+{
+	m_index = index;
+}
+
+bool CRadioMenuPlayer::Radio_NeedsRefresh()
+{
+	return (gpGlobals->curtime - display_last_refresh >= g_RadioMenuTimeout);
+}
+
+void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
+{
+	display_len = UTIL_Format(display_pkt, 
+		sizeof(display_pkt), 
+		"%s\n%s", 
+		title,
+		text);
+	display_keys = keys;
+}
+
+void CRadioMenuPlayer::Radio_Refresh()
+{
+	cell_t players[1] = {m_index};
+	char *ptr = display_pkt;
 	char save = 0;
+	size_t len = display_len;
+	unsigned int time;
+
+	/* Compute the new time */
+	if (menuHoldTime == 0)
+	{
+		time = 0;
+	}
+	else
+	{
+		time = menuHoldTime - (unsigned int)(gpGlobals->curtime - menuStartTime);
+	}
+
 	while (true)
 	{
 		if (len > 240)
@@ -345,7 +426,7 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 			ptr[240] = '\0';
 		}
 		bf_write *buffer = g_UserMsgs.StartMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
-		buffer->WriteWord(_sel_keys);
+		buffer->WriteWord(display_keys);
 		buffer->WriteChar(time ? time : -1);
 		buffer->WriteByte( (len > 240) ? 1 : 0 );
 		buffer->WriteString(ptr);
@@ -355,10 +436,14 @@ void CRadioDisplay::SendRawDisplay(int client, unsigned int time)
 			ptr[240] = save;
 			ptr = &ptr[240];
 			len -= 240;
-		} else {
+		}
+		else
+		{
 			break;
 		}
 	}
+
+	display_last_refresh = gpGlobals->curtime;
 }
 
 int CRadioDisplay::GetAmountRemaining()
