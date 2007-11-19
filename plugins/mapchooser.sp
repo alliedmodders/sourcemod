@@ -74,6 +74,7 @@ new Handle:g_NextMapList = INVALID_HANDLE;
 new Handle:g_TeamScores = INVALID_HANDLE;
 new Handle:g_VoteMenu = INVALID_HANDLE;
 
+new g_TotalRounds;
 new bool:g_HasVoteStarted;
 new g_mapFileTime;
 
@@ -87,7 +88,6 @@ public OnPluginStart()
 	g_MapList = CreateArray(arraySize);
 	g_OldMapList = CreateArray(arraySize);
 	g_NextMapList = CreateArray(arraySize);
-	g_TeamScores = CreateArray(2);
 
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
 	g_Cvar_StartRounds = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining.", _, true, 1.0);
@@ -139,6 +139,14 @@ public OnConfigsExecuted()
 		SetupTimeleftTimer();
 		SetConVarString(g_Cvar_Nextmap, "Pending Vote");
 	}
+	
+	if (g_TeamScores != INVALID_HANDLE)
+	{
+		CloseHandle(g_TeamScores);
+	}
+	
+	g_TeamScores = CreateArray(2);
+	g_TotalRounds = 0;
 }
 
 public OnMapEnd()
@@ -225,8 +233,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
-	static total;
-	total++;
+	g_TotalRounds++;
 	
 	new team[2], teamPos = -1;
 	for (new i; i < GetArraySize(g_TeamScores); i++)
@@ -268,7 +275,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
 		if (maxrounds)
 		{
-			if (total >= (maxrounds - GetConVarInt(g_Cvar_StartRounds)))
+			if (g_TotalRounds >= (maxrounds - GetConVarInt(g_Cvar_StartRounds)))
 			{
 				InitiateVote();
 			}			
