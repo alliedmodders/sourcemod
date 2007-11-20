@@ -423,7 +423,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (type == Sort_Float)
 	{
-		if (type == Sort_Ascending)
+		if (order == Sort_Ascending)
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_asc);
 		}
@@ -434,7 +434,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (type == Sort_String)
 	{
-		if (type == Sort_Ascending)
+		if (order == Sort_Ascending)
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_asc);
 		}
