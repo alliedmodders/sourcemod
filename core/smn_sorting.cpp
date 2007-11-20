@@ -33,6 +33,8 @@
 #include <IHandleSys.h>
 #include <stdlib.h>
 #include <string.h>
+#include "HandleSys.h"
+#include "CellArray.h"
 
 /***********************************
  *   About the double array hack   *
@@ -373,6 +375,139 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+enum SortType
+{
+	Sort_Integer = 0,
+	Sort_Float,
+	Sort_String,
+};
+
+int sort_adtarray_strings_asc(const void *str1, const void *str2)
+{
+	return strcmp((char *) str1, (char *) str2);
+}
+
+int sort_adtarray_strings_desc(const void *str1, const void *str2)
+{
+	return strcmp((char *) str2, (char *) str1);
+}
+
+static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *cArray;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	cell_t order = params[2];
+	cell_t type = params[3];
+	size_t arraysize = cArray->size();
+	size_t blocksize = cArray->blocksize();
+	cell_t *array = cArray->base();
+
+	if (type == Sort_Integer)
+	{
+		if (order == Sort_Ascending)
+		{
+			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_ints_asc);
+		}
+		else
+		{
+			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_ints_desc);
+		}
+	}
+	else if (type == Sort_Float)
+	{
+		if (type == Sort_Ascending)
+		{
+			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_asc);
+		}
+		else 
+		{
+			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_desc);
+		}
+	}
+	else if (type == Sort_String)
+	{
+		if (type == Sort_Ascending)
+		{
+			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_asc);
+		}
+		else 
+		{
+			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_desc);
+		}
+	}
+
+	return 1;
+}
+
+struct sort_infoADT
+{
+	IPluginFunction *pFunc;
+	cell_t *array_base;
+	cell_t array_bsize;
+	Handle_t array_hndl;
+	Handle_t hndl;
+};
+
+sort_infoADT g_SortInfoADT;
+
+int sort_adtarray_custom(const void *elem1, const void *elem2)
+{
+	cell_t result = 0;
+	IPluginFunction *pf = g_SortInfoADT.pFunc;
+	pf->PushCell(((cell_t) ((cell_t *) elem1 - g_SortInfoADT.array_base)) / g_SortInfoADT.array_bsize);
+	pf->PushCell(((cell_t) ((cell_t *) elem2 - g_SortInfoADT.array_base)) / g_SortInfoADT.array_bsize);
+	pf->PushCell(g_SortInfoADT.array_hndl);
+	pf->PushCell(g_SortInfoADT.hndl);
+	pf->Execute(&result);
+
+	return result;
+}
+
+static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *cArray;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	IPluginFunction *pFunction = pContext->GetFunctionById(params[2]);
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Function %x is not a valid function", params[2]);
+	}
+
+	size_t arraysize = cArray->size();
+	size_t blocksize = cArray->blocksize();
+	cell_t *array = cArray->base();
+
+	sort_infoADT oldinfo = g_SortInfoADT;
+
+	g_SortInfoADT.pFunc = pFunction;
+	g_SortInfoADT.array_base = array;
+	g_SortInfoADT.array_bsize = (cell_t) blocksize;
+	g_SortInfoADT.array_hndl = params[1];
+	g_SortInfoADT.hndl = params[3];
+	
+	qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_custom);
+
+	g_SortInfoADT = oldinfo;
+
+	return 1;
+}
+
 REGISTER_NATIVES(sortNatives)
 {
 	{"SortIntegers",			sm_SortIntegers},
@@ -380,5 +515,7 @@ REGISTER_NATIVES(sortNatives)
 	{"SortStrings",				sm_SortStrings},
 	{"SortCustom1D",			sm_SortCustom1D},
 	{"SortCustom2D",			sm_SortCustom2D},
+	{"SortADTArray",			sm_SortADTArray},
+	{"SortADTArrayCustom",		sm_SortADTArrayCustom},
 	{NULL,						NULL},
 };
