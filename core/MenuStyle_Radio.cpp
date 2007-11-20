@@ -206,12 +206,23 @@ CRadioDisplay *CRadioStyle::MakeRadioDisplay(CRadioMenu *menu)
 	if (m_FreeDisplays.empty())
 	{
 		display = new CRadioDisplay();
-	} else {
+	}
+	else
+	{
 		display = m_FreeDisplays.front();
 		m_FreeDisplays.pop();
 		display->Reset();
 	}
 	return display;
+}
+
+IMenuPanel *CRadioStyle::MakeRadioDisplay(const char *str, int keys)
+{
+	CRadioDisplay *pPanel = MakeRadioDisplay(NULL);
+
+	pPanel->DirectSet(str, keys);
+
+	return pPanel;
 }
 
 void CRadioStyle::FreeRadioDisplay(CRadioDisplay *display)
@@ -273,6 +284,13 @@ void CRadioDisplay::Reset()
 	m_Title.assign("");
 	m_NextPos = 1;
 	keys = 0;
+}
+
+void CRadioDisplay::DirectSet(const char *str, int keymap)
+{
+	m_Title.clear();
+	m_BufferText.assign(str);
+	keys = keymap;
 }
 
 unsigned int CRadioDisplay::GetCurrentKey()
@@ -391,11 +409,21 @@ bool CRadioMenuPlayer::Radio_NeedsRefresh()
 
 void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 {
-	display_len = UTIL_Format(display_pkt, 
-		sizeof(display_pkt), 
-		"%s\n%s", 
-		title,
-		text);
+	if (title[0] != '\0')
+	{
+		display_len = UTIL_Format(display_pkt, 
+			sizeof(display_pkt), 
+			"%s\n%s", 
+			title,
+			text);
+	}
+	else
+	{
+		display_len = UTIL_Format(display_pkt, 
+			sizeof(display_pkt), 
+			"%s", 
+			text);
+	}
 	display_keys = keys;
 }
 

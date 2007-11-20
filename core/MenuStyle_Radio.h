@@ -92,6 +92,7 @@ public:
 	CRadioDisplay *MakeRadioDisplay(CRadioMenu *menu=NULL);
 	void FreeRadioDisplay(CRadioDisplay *display);
 	CRadioMenuPlayer *GetRadioMenuPlayer(int client);
+	IMenuPanel *MakeRadioDisplay(const char *str, int keys);
 private:
 	CRadioMenuPlayer *m_players;
 	CStack<CRadioDisplay *> m_FreeDisplays;
@@ -118,6 +119,8 @@ public: //IMenuPanel
 	unsigned int GetCurrentKey();
 	bool SetCurrentKey(unsigned int key);
 	int GetAmountRemaining();
+public:
+	void DirectSet(const char *str, int keymap);
 private:
 	String m_BufferText;
 	String m_Title;

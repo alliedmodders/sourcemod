@@ -733,6 +733,26 @@ native bool:SetPanelCurrentKey(Handle:panel, key);
 native RedrawMenuItem(const String:text[]);
 
 /**
+ * This function is provided for legacy code only.  Some older plugins may use 
+ * network messages instead of the panel API.  This function wraps the panel 
+ * API for eased portability into the SourceMod menu system.  
+ *
+ * This function is only usable with the Radio Menu style.  You do not need to 
+ * split up your menu into multiple packets; SourceMod will break the string 
+ * up internally.
+ *
+ * @param client		Client index.
+ * @param str			Full menu string as would be passed over the network. 
+ * @param time			Time to hold the menu for.
+ * @param keys			Selectable key bitstring.
+ * @param handler		Optional handler function, with the same rules as
+ *						SendPanelToClient().
+ * @return				True on success, false on failure.
+ * @error				Invalid client index, or radio menus not supported.
+ */
+native bool:InternalShowMenu(client, const String:str[], time, keys=-1, MenuHandler:handler=MenuHandler:-1);
+
+/**
  * Retrieves voting information from MenuAction_VoteEnd.
  *
  * @param param2		Second parameter of MenuAction_VoteEnd.
