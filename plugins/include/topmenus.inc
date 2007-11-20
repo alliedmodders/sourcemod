@@ -221,7 +221,7 @@ native GetTopMenuInfoString(Handle:topmenu, TopMenuObject:parent, String:buffer[
  *							null terminator.
  * @error					Invalid TopMenu Handle or TopMenuObject ID.
  */
-native GetTopMenuName(Handle:topmenu, TopMenuObject:parent, String:buffer[], maxlength);
+native GetTopMenuObjName(Handle:topmenu, TopMenuObject:object, String:buffer[], maxlength);
 
 /**
  * Removes an object from a TopMenu.

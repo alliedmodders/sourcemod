@@ -378,6 +378,6 @@ sp_nativeinfo_t g_TopMenuNatives[] =
 	{"RemoveFromTopMenu",		RemoveFromTopMenu},
 	{"FindTopMenuCategory",		FindTopMenuCategory},
 	{"GetTopMenuInfoString",	GetTopMenuInfoString},
-	{"GetTopMenuName",			GetTopMenuName},
+	{"GetTopMenuObjName",		GetTopMenuName},
 	{NULL,					NULL},
 };
