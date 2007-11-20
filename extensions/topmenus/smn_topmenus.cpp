@@ -345,6 +345,30 @@ static cell_t GetTopMenuInfoString(IPluginContext *pContext, const cell_t *param
 	return strncopy(buffer, str, params[4]);
 }
 
+static cell_t GetTopMenuName(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	ITopMenu *pMenu;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if ((err = handlesys->ReadHandle(params[1], hTopMenuType, &sec, (void **)&pMenu))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	const char *str;
+	if ((str = pMenu->GetObjectName(params[2])) == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid menu object %d", params[2]);
+	}
+
+	char *buffer;
+	pContext->LocalToString(params[3], &buffer);
+
+	return strncopy(buffer, str, params[4]);
+}
+
 sp_nativeinfo_t g_TopMenuNatives[] = 
 {
 	{"AddToTopMenu",			AddToTopMenu},
@@ -354,5 +378,6 @@ sp_nativeinfo_t g_TopMenuNatives[] =
 	{"RemoveFromTopMenu",		RemoveFromTopMenu},
 	{"FindTopMenuCategory",		FindTopMenuCategory},
 	{"GetTopMenuInfoString",	GetTopMenuInfoString},
+	{"GetTopMenuName",			GetTopMenuName},
 	{NULL,					NULL},
 };

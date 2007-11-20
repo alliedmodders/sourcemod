@@ -131,6 +131,7 @@ public: //ITopMenu
 	virtual bool LoadConfiguration(const char *file, char *error, size_t maxlength);
 	virtual unsigned int FindCategory(const char *name);
 	const char *GetObjectInfoString(unsigned int object_id);
+	const char *GetObjectName(unsigned int object_id);
 public: //IMenuHandler
 	virtual void OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsigned int item_on_page);
 	virtual void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
