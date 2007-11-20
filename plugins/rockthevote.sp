@@ -96,18 +96,21 @@ public OnConfigsExecuted()
 		ClearArray(g_RTVMapList);
 	}
 	
-	g_Voters = 0;
-	g_Votes = 0;
-	g_VotesNeeded = 0;
-	g_RTVStarted = false;
-	g_RTVEnded = false;
-	
 	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_File))
 	{
 		BuildMapMenu();
 		g_CanRTV = true;
 		CreateTimer(30.0, Timer_DelayRTV);
 	}
+}
+
+public OnMapStart()
+{
+	g_Voters = 0;
+	g_Votes = 0;
+	g_VotesNeeded = 0;
+	g_RTVStarted = false;
+	g_RTVEnded = false;
 }
 
 public OnMapEnd()
