@@ -411,7 +411,6 @@ static cell_t smn_KvJumpToKeySymbol(IPluginContext *pCtx, const cell_t *params)
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
-	char *name;	
 	KeyValueStack *pStk;
 
 	sec.pOwner = NULL;
