@@ -967,7 +967,7 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 
 	KeyValues *pSection = pStk->pCurRoot.front();
 
-	pContext->LocalToPhysAddr(params[2], &val);
+	pCtx->LocalToPhysAddr(params[2], &val);
 	*val = pSection->GetNameSymbol();
 
 	if (!*val)
