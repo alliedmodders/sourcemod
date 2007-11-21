@@ -50,7 +50,6 @@ new String:g_ColorNames[13][10] = {"White", "Red", "Green", "Blue", "Yellow", "P
 new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{255,0,255},{0,255,255},{255,128,0},{255,0,128},{128,255,0},{0,255,128},{128,0,255},{0,128,255}};
 
 new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
-new Handle:g_Cvar_Psaymode = INVALID_HANDLE;
 
 new bool:g_DoColor = true;
 
@@ -59,7 +58,6 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 
 	g_Cvar_Chatmode = CreateConVar("sm_chat_mode", "1", "Allows player's to send messages to admin chat.", 0, true, 0.0, true, 1.0);
-	g_Cvar_Psaymode = CreateConVar("sm_psay_mode", "0", "Allows player's to use psay 'say @@' alias.", 0, true, 0.0, true, 1.0);
 
 	RegConsoleCmd("say", Command_SayChat);
 	RegConsoleCmd("say_team", Command_SayAdmin);		
@@ -114,17 +112,17 @@ public Action:Command_SayChat(client, args)
 	decl String:name[64];
 	GetClientName(client, name, sizeof(name));
 	
-	if (msgStart == 1 && CheckAdminForChat(client)) // sm_say alias
+	if (msgStart == 1 && CheckCommandAccess(client, "sm_say", ADMFLAG_CHAT)) // sm_say alias
 	{
 		SendChatToAll(name, message);
 		LogAction(client, -1, "%L triggered sm_say (text %s)", client, message);
 	}
-	else if (msgStart == 3 && CheckAdminForChat(client)) // sm_csay alias
+	else if (msgStart == 3 && CheckCommandAccess(client, "sm_csay", ADMFLAG_CHAT)) // sm_csay alias
 	{
 		PrintCenterTextAll("%s: %s", name, message);
 		LogAction(client, -1, "%L triggered sm_csay (text %s)", client, text);		
 	}	
-	else if (msgStart == 2 && (CheckAdminForChat(client) || GetConVarBool(g_Cvar_Psaymode))) // sm_psay alias
+	else if (msgStart == 2 && CheckCommandAccess(client, "sm_psay", ADMFLAG_CHAT)) // sm_psay alias
 	{
 		decl String:arg[64];
 	
@@ -158,7 +156,7 @@ public Action:Command_SayChat(client, args)
 
 public Action:Command_SayAdmin(client, args)
 {
-	if (!CheckAdminForChat(client) && !GetConVarBool(g_Cvar_Chatmode))
+	if (!CheckCommandAccess(client, "sm_chat", ADMFLAG_CHAT) && !GetConVarBool(g_Cvar_Chatmode))
 	{
 		return Plugin_Continue;	
 	}
@@ -359,16 +357,6 @@ public Action:Command_SmMsay(client, args)
 	return Plugin_Handled;		
 }
 
-bool:CheckAdminForChat(client)
-{
-	if (client == 0)
-	{
-		return true;
-	}
-	
-	return CheckCommandAccess(client, "sm_chat", ADMFLAG_CHAT);
-}
-
 FindColor(String:color[])
 {
 	for (new i = 0; i < 13; i++)
@@ -400,7 +388,7 @@ SendChatToAdmins(String:name[], String:message[])
 	{
 		if (IsClientInGame(i))
 		{
-			if (CheckAdminForChat(i))
+			if (CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT))
 			{
 				if (g_DoColor)
 				{
