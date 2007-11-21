@@ -394,3 +394,13 @@ native bool:KvFindKeyById(Handle:kv, id, String:name[], maxlength);
  * @error				Invalid Handle.
  */
 native bool:KvGetNameSymbol(Handle:kv, const String:key[], &id);
+
+/**
+ * Retrieves the current section id.
+ * 
+ * @param kv			KeyValues Handle.
+ * @param id			Id of the current section.
+ * @return				True on success, false on failure.
+ * @error				Invalid Handle.
+ */
+native bool:KvGetSectionSymbol(Handle:kv, &id);
