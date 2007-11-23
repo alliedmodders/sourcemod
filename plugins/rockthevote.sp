@@ -89,21 +89,6 @@ public OnPluginStart()
 	AutoExecConfig(true, "rtv");
 }
 
-public OnConfigsExecuted()
-{
-	if (g_RTVMapList != INVALID_HANDLE)
-	{
-		ClearArray(g_RTVMapList);
-	}
-	
-	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_File))
-	{
-		BuildMapMenu();
-		g_CanRTV = true;
-		CreateTimer(30.0, Timer_DelayRTV);
-	}
-}
-
 public OnMapStart()
 {
 	g_Voters = 0;
@@ -119,6 +104,20 @@ public OnMapEnd()
 	g_RTVAllowed = false;
 }
 
+public OnConfigsExecuted()
+{
+	if (g_RTVMapList != INVALID_HANDLE)
+	{
+		ClearArray(g_RTVMapList);
+	}
+	
+	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_File))
+	{
+		BuildMapMenu();
+		g_CanRTV = true;
+		CreateTimer(30.0, Timer_DelayRTV);
+	}
+}
 
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 {
@@ -219,7 +218,9 @@ public Action:Command_Addmap(client, args)
 public Action:Command_Say(client, args)
 {
 	if (!g_CanRTV || !client)
+	{
 		return Plugin_Continue;
+	}
 
 	decl String:text[192];
 	if (!GetCmdArgString(text, sizeof(text)))
@@ -438,7 +439,8 @@ public Handler_MapMapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 		{
 			if (param1 == VoteCancel_NoVotes)
 			{
-				PrintToChatAll("[SM] %t", "No Votes");		
+				PrintToChatAll("[SM] %t", "No Votes");
+				g_RTVEnded = true;
 			}
 		}
 
