@@ -51,7 +51,7 @@ public:
 	ITimedEvent *m_Listener;
 	void *m_pData;
 	float m_Interval;
-	float m_ToExec;
+	double m_ToExec;
 	int m_Flags;
 	bool m_InExec;
 	bool m_KillMe;
@@ -103,7 +103,7 @@ private:
 
 time_t GetAdjustedTime(time_t *buf = NULL);
 
-extern const float *g_pUniversalTime;
+extern const double *g_pUniversalTime;
 extern TimerSystem g_Timers;
 extern int g_TimeLeftMode;
 
