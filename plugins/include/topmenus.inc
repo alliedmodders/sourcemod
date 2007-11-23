@@ -211,6 +211,19 @@ native TopMenuObject:AddToTopMenu(Handle:topmenu,
 native GetTopMenuInfoString(Handle:topmenu, TopMenuObject:parent, String:buffer[], maxlength);
 
 /**
+ * Retrieves the name string of a top menu item.
+ *
+ * @param topmenu			TopMenu Handle.
+ * @param object			TopMenuObject ID.
+ * @param buffer			Buffer to store info string.
+ * @param maxlength			Maximum size of info string.
+ * @return					Number of bytes written, not including the 
+ *							null terminator.
+ * @error					Invalid TopMenu Handle or TopMenuObject ID.
+ */
+native GetTopMenuObjName(Handle:topmenu, TopMenuObject:object, String:buffer[], maxlength);
+
+/**
  * Removes an object from a TopMenu.
  *
  * Plugins' objects are automatically removed all TopMenus when the given 

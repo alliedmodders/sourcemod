@@ -43,7 +43,7 @@
  */
 
 #define SMINTERFACE_TOPMENUS_NAME		"ITopMenus"
-#define SMINTERFACE_TOPMENUS_VERSION	3
+#define SMINTERFACE_TOPMENUS_VERSION	4
 
 namespace SourceMod
 {
@@ -268,6 +268,14 @@ namespace SourceMod
 		 * @return				Object's info string, or NULL if none.
 		 */
 		virtual const char *GetObjectInfoString(unsigned int object_id) =0;
+
+		/**
+		 * @brief Returns an object's name string.
+		 *
+		 * @param object_id		Object ID.
+		 * @return				Object's name string, or NULL if none.
+		 */
+		virtual const char *GetObjectName(unsigned int object_id) =0;
 	};
 
 	/**

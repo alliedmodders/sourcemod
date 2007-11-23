@@ -207,7 +207,9 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 				break;
 			}
 		}
-	} else {
+	}
+	else
+	{
 		while (string[size++]);
 		size--;
 	}
@@ -234,78 +236,125 @@ void AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 	*buf_p = buf;
 }
 
-void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec)
+void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, int flags)
 {
-	char text[32];
-	int digits;
-	double signedVal;
-	char *buf;
-	int val;
+	int digits;					// non-fraction part digits
+	double tmp;					// temporary
+	char *buf = *buf_p;			// output buffer pointer
+	int val;					// temporary
+	int sign = 0;				// 0: positive, 1: negative
+	int fieldlength;			// for padding
+	int significant_digits = 0;	// number of significant digits written
+	const int MAX_SIGNIFICANT_DIGITS = 16;
 
-	// get the sign
-	signedVal = fval;
-	if (fval < 0)
-	{
-		fval = -fval;
-	}
-
-	// write the float number
-	digits = 0;
-	val = (int)fval;
-	do
-	{
-		text[digits++] = '0' + val % 10;
-		val /= 10;
-	} while (val);
-
-	if (signedVal < 0)
-	{
-		text[digits++] = '-';
-	}
-
-	buf = *buf_p;
-
-	while ((digits < width) && maxlen)
-	{
-		*buf++ = ' ';
-		width--;
-		maxlen--;
-	}
-
-	while ((digits--) && maxlen)
-	{
-		*buf++ = text[digits];
-		maxlen--;
-	}
-
-	*buf_p = buf;
-
+	// default precision
 	if (prec < 0)
 	{
 		prec = 6;
 	}
-	// write the fraction
-	digits = 0;
-	while (digits < prec)
+
+	// get the sign
+	if (fval < 0)
 	{
-		fval -= (int)fval;
-		fval *= 10.0;
-		val = (int)fval;
-		text[digits++] = '0' + val % 10;
+		fval = -fval;
+		sign = 1;
 	}
 
-	if ((digits > 0) && maxlen)
+	// compute whole-part digits count
+	digits = (int)log10(fval) + 1;
+
+	// Only print 0.something if 0 < fval < 1
+	if (digits < 1)
 	{
-		buf = *buf_p;
-		*buf++ = '.';
+		digits = 1;
+	}
+
+	// compute the field length
+	fieldlength = digits + prec + ((prec > 0) ? 1 : 0) + sign;
+
+	// minus sign BEFORE left padding if padding with zeros
+	if (sign && maxlen && (flags & ZEROPAD))
+	{
+		*buf++ = '-';
 		maxlen--;
-		for (prec = 0; maxlen && (prec < digits); prec++)
+	}
+
+	// right justify if required
+	if ((flags & LADJUST) == 0)
+	{
+		while ((fieldlength < width) && maxlen)
 		{
-			*buf++ = text[prec];
+			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
+			width--;
 			maxlen--;
 		}
-		*buf_p = buf;
 	}
+
+	// minus sign AFTER left padding if padding with spaces
+	if (sign && maxlen && !(flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
+	}
+
+	// write the whole part
+	tmp = pow(10.0, digits-1);
+	while ((digits--) && maxlen)
+	{
+		if (++significant_digits > MAX_SIGNIFICANT_DIGITS)
+		{
+			*buf++ = '0';
+		}
+		else
+		{
+			val = (int)(fval / tmp);
+			*buf++ = '0' + val;
+			fval -= val * tmp;
+			tmp *= 0.1;
+		}
+		maxlen--;
+	}
+
+	// write the fraction part
+	if (maxlen)
+	{
+		*buf++ = '.';
+		maxlen--;
+	}
+
+	tmp = pow(10.0, prec);
+
+	fval *= tmp;
+	while (prec-- && maxlen)
+	{
+		if (++significant_digits > MAX_SIGNIFICANT_DIGITS)
+		{
+			*buf++ = '0';
+		}
+		else
+		{
+			tmp *= 0.1;
+			val = (int)(fval / tmp);
+			*buf++ = '0' + val;
+			fval -= val * tmp;
+		}
+		maxlen--;
+	}
+
+	// left justify if required
+	if (flags & LADJUST)
+	{
+		while ((fieldlength < width) && maxlen)
+		{
+			// right-padding only with spaces, ZEROPAD is ignored
+			*buf++ = ' ';
+			width--;
+			maxlen--;
+		}
+	}
+
+	// update parent's buffer pointer
+	*buf_p = buf;
 }
 
 void AddUInt(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
@@ -366,9 +415,12 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 	{
 		/* we want the unsigned version */
 		unsignedVal = abs(val);
-	} else {
+	}
+	else
+	{
 		unsignedVal = val;
 	}
+
 	do
 	{
 		text[digits++] = '0' + unsignedVal % 10;
@@ -422,7 +474,9 @@ void AddHex(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags
 	if (flags & UPPERDIGITS)
 	{
 		hexadjust = 'A' - '9' - 1;
-	} else {
+	}
+	else
+	{
 		hexadjust = 'a' - '9' - 1;
 	}
 
@@ -587,7 +641,7 @@ reswitch:
 		case 'f':
 			{
 				float *value = (float *)args[arg];
-				AddFloat(&buf_p, llen, *value, width, prec);
+				AddFloat(&buf_p, llen, *value, width, prec, flags);
 				arg++;
 				break;
 			}
@@ -779,7 +833,7 @@ reswitch:
 				CHECK_ARGS(0);
 				cell_t *value;
 				pCtx->LocalToPhysAddr(params[arg], &value);
-				AddFloat(&buf_p, llen, sp_ctof(*value), width, prec);
+				AddFloat(&buf_p, llen, sp_ctof(*value), width, prec, flags);
 				arg++;
 				break;
 			}
@@ -808,7 +862,9 @@ reswitch:
 						player->GetName(),
 						userid,
 						auth);
-				} else {
+				}
+				else
+				{
 					UTIL_Format(buffer,
 						sizeof(buffer),
 						"Console<0><Console><Console>");
@@ -964,7 +1020,9 @@ const char *stristr(const char *str, const char *substr)
 			{
 				return prevloc;
 			}
-		} else {
+		}
+		else
+		{
 			haystack = ++prevloc;
 			needle = (char *)substr;
 		}
@@ -1001,7 +1059,9 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 	{
 		buffer[maxlength - 1] = '\0';
 		return (maxlength - 1);
-	} else {
+	}
+	else
+	{
 		return len;
 	}
 }
@@ -1014,7 +1074,9 @@ size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list 
 	{
 		buffer[maxlength - 1] = '\0';
 		return (maxlength - 1);
-	} else {
+	}
+	else
+	{
 		return len;
 	}
 }
@@ -1117,7 +1179,9 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 						replaceLen = maxLen - browsed;
 						/* Note, we add one to the final result for the null terminator */
 						strncopy(ptr, replace, replaceLen+1);
-					} else {
+					}
+					else
+					{
 						/* EXAMPLE CASE:
 						 * Subject: AABBBCCC
 						 * Buffer : 12 bytes
@@ -1138,7 +1202,9 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 						/* Now, do our replacement. */
 						memcpy(ptr, replace, replaceLen);
 					}
-				} else {
+				}
+				else
+				{
 					/* EXAMPLE CASE:
 					 * Subject: AABBBCCC
 					 * Buffer : 12 bytes
@@ -1158,7 +1224,9 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 					/* Now do our replacement. */
 					memcpy(ptr, replace, replaceLen);
 				}
-			} else if (replaceLen < searchLen) {
+			}
+			else if (replaceLen < searchLen)
+			{
 				/* EXAMPLE CASE:
 				 * Subject: AABBBCCC
 				 * Buffer : 12 bytes
@@ -1184,7 +1252,9 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 
 				/* Move the rest of the string down */
 				memmove(moveTo, moveFrom, bytesToCopy);
-			} else {
+			}
+			else
+			{
 				/* EXAMPLE CASE:
 				 * Subject: AABBBCCC
 				 * Buffer : 12 bytes

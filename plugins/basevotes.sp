@@ -51,8 +51,6 @@ public Plugin:myinfo =
 
 new Handle:g_hVoteMenu = INVALID_HANDLE;
 
-new Handle:g_hBanForward = INVALID_HANDLE;
-
 new Handle:g_Cvar_Limits[3] = {INVALID_HANDLE, ...};
 //new Handle:g_Cvar_VoteSay = INVALID_HANDLE;
 
@@ -110,8 +108,6 @@ public OnPluginStart()
 	g_Cvar_Limits[0] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
 	g_Cvar_Limits[1] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);	
 	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
-	
-	g_hBanForward = CreateGlobalForward("OnClientBanned", ET_Ignore, Param_Cell, Param_Cell, Param_Cell, Param_String);
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -350,14 +346,6 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 					
 				case (voteType:ban):
 				{
-					/* Fire the ban forward */
-					Call_StartForward(g_hBanForward);
-					Call_PushCell(0);
-					Call_PushCell(g_voteClient[VOTE_USERID]);
-					Call_PushCell(30);
-					Call_PushString(g_voteArg);
-					Call_Finish();
-				
 					if (g_voteArg[0] == '\0')
 					{
 						strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
@@ -365,9 +353,13 @@ public Handler_VoteCallback(Handle:menu, MenuAction:action, param1, param2)
 					
 					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
 					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-					
-					ServerCommand("banid %d %s", 30, g_voteClient[VOTE_AUTHID]);
-					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);				
+
+					BanClient(g_voteClient[VOTE_CLIENTID],
+							  30,
+							  BANFLAG_AUTO,
+							  g_voteArg,
+							  "Banned by vote",
+							  "sm_voteban");
 				}
 			}
 		}

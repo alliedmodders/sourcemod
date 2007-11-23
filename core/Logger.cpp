@@ -380,7 +380,9 @@ void Logger::LogError(const char *vafmt, ...)
 		LogToOpenFileEx(fp, vafmt, ap);
 		va_end(ap);
 		fclose(fp);
-	} else {
+	}
+	else
+	{
 		char error[255];
 		g_LibSys.GetPlatformError(error, sizeof(error));
 		LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());

@@ -1440,6 +1440,18 @@ void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
 	}
 }
 
+SPVM_NATIVE_FUNC CPluginManager::FindCoreNative(const char *name)
+{
+	SPVM_NATIVE_FUNC pfn;
+
+	if (!sm_trie_retrieve(m_pCoreNatives, name, (void **)&pfn))
+	{
+		return NULL;
+	}
+
+	return pfn;
+}
+
 void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 {
 	assert(pPlugin->GetBaseContext() != NULL);

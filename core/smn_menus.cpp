@@ -37,6 +37,7 @@
 #include "MenuStyle_Radio.h"
 #include "HandleSys.h"
 #include "PluginSys.h"
+#include "PlayerManager.h"
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
 #if defined MENU_DEBUG
@@ -1398,6 +1399,73 @@ static cell_t GetMenuSelectionPosition(IPluginContext *pContext, const cell_t *p
 	return *s_CurSelectPosition;
 }
 
+class EmptyMenuHandler : public IMenuHandler
+{
+public:
+} s_EmptyMenuHandler;
+
+static cell_t InternalShowMenu(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+
+	if (pPlayer == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+	else if (!pPlayer->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", client);
+	}
+
+	if (!g_RadioMenuStyle.IsSupported())
+	{
+		return pContext->ThrowNativeError("Radio menus are not supported on this mod");
+	}
+
+	char *str;
+	pContext->LocalToString(params[2], &str);
+
+	IMenuPanel *pPanel = g_RadioMenuStyle.MakeRadioDisplay(str, params[4]);
+
+	if (pPanel == NULL)
+	{
+		return 0;
+	}
+
+	IMenuHandler *pHandler;
+	CPanelHandler *pActualHandler = NULL;
+	if (params[5] != -1)
+	{
+		IPluginFunction *pFunction = pContext->GetFunctionById(params[5]);
+		if (pFunction == NULL)
+		{
+			return pContext->ThrowNativeError("Invalid function index %x", params[5]);
+		}
+		pActualHandler = g_MenuHelpers.GetPanelHandler(pFunction);
+	}
+
+	if (pActualHandler == NULL)
+	{
+		pHandler = &s_EmptyMenuHandler;
+	}
+	else
+	{
+		pHandler = pActualHandler;
+	}
+
+	bool bSuccess = pPanel->SendDisplay(client, pHandler, params[3]);
+
+	pPanel->DeleteThis();
+
+	if (!bSuccess && pActualHandler != NULL)
+	{
+		g_MenuHelpers.FreePanelHandler(pActualHandler);
+	}
+
+	return bSuccess ? 1 : 0;
+}
+
 REGISTER_NATIVES(menuNatives)
 {
 	{"AddMenuItem",				AddMenuItem},
@@ -1430,6 +1498,7 @@ REGISTER_NATIVES(menuNatives)
 	{"GetPanelCurrentKey",		GetPanelCurrentKey},
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},
+	{"InternalShowMenu",		InternalShowMenu},
 	{"IsVoteInProgress",		IsVoteInProgress},
 	{"RedrawMenuItem",			RedrawMenuItem},
 	{"RemoveAllMenuItems",		RemoveAllMenuItems},

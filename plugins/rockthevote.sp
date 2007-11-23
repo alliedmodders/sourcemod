@@ -89,18 +89,27 @@ public OnPluginStart()
 	AutoExecConfig(true, "rtv");
 }
 
+public OnMapStart()
+{
+	g_Voters = 0;
+	g_Votes = 0;
+	g_VotesNeeded = 0;
+	g_RTVStarted = false;
+	g_RTVEnded = false;
+}
+
+public OnMapEnd()
+{
+	g_CanRTV = false;	
+	g_RTVAllowed = false;
+}
+
 public OnConfigsExecuted()
 {
 	if (g_RTVMapList != INVALID_HANDLE)
 	{
 		ClearArray(g_RTVMapList);
 	}
-	
-	g_Voters = 0;
-	g_Votes = 0;
-	g_VotesNeeded = 0;
-	g_RTVStarted = false;
-	g_RTVEnded = false;
 	
 	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_File))
 	{
@@ -110,16 +119,9 @@ public OnConfigsExecuted()
 	}
 }
 
-public OnMapEnd()
-{
-	g_CanRTV = false;	
-	g_RTVAllowed = false;
-}
-
-
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 {
-	if(IsFakeClient(client))
+	if(!g_CanRTV || IsFakeClient(client))
 		return true;
 	
 	g_Voted[client] = false;
@@ -133,7 +135,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 
 public OnClientDisconnect(client)
 {
-	if(IsFakeClient(client))
+	if(!g_CanRTV || IsFakeClient(client))
 		return;
 	
 	if(g_Voted[client])
@@ -145,8 +147,9 @@ public OnClientDisconnect(client)
 	
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 	
-	if (g_Votes && g_Voters && g_Votes >= g_VotesNeeded && g_RTVAllowed) 
+	if (g_Votes && g_Voters && g_Votes >= g_VotesNeeded && g_RTVAllowed && !g_RTVStarted) 
 	{
+		g_RTVStarted = true;
 		CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
 	}	
 }
@@ -156,6 +159,12 @@ public Action:Command_Addmap(client, args)
 	if (args < 1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_rtv_addmap <mapname>");
+		return Plugin_Handled;
+	}
+	
+	if (!g_CanRTV)
+	{
+		ReplyToCommand(client, "[SM] RockTheVote is not available.");
 		return Plugin_Handled;
 	}
 	
@@ -209,7 +218,9 @@ public Action:Command_Addmap(client, args)
 public Action:Command_Say(client, args)
 {
 	if (!g_CanRTV || !client)
+	{
 		return Plugin_Continue;
+	}
 
 	decl String:text[192];
 	if (!GetCmdArgString(text, sizeof(text)))
@@ -266,6 +277,7 @@ public Action:Command_Say(client, args)
 		
 		if (g_Votes >= g_VotesNeeded)
 		{
+			g_RTVStarted = true;
 			CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -317,8 +329,6 @@ public Action:Timer_StartRTV(Handle:timer)
 	{
 		return;
 	}
-
-	g_RTVStarted = true;
 
 	if (IsVoteInProgress())
 	{
@@ -429,7 +439,8 @@ public Handler_MapMapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 		{
 			if (param1 == VoteCancel_NoVotes)
 			{
-				PrintToChatAll("[SM] %t", "No Votes");		
+				PrintToChatAll("[SM] %t", "No Votes");
+				g_RTVEnded = true;
 			}
 		}
 

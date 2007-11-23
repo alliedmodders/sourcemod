@@ -35,6 +35,7 @@
 #include "UserMessages.h"
 #include "PlayerManager.h"
 #include "sm_stringutil.h"
+#include "GameConfigs.h"
 #include <compat_wrappers.h>
 
 CHalfLife2 g_HL2;
@@ -308,7 +309,11 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 		return false;
 	}
 
-	pBitBuf->WriteByte(1);
+	const char *pre_byte = g_pGameConf->GetKeyValue("HintTextPreByte");
+	if (pre_byte != NULL && strcmp(pre_byte, "yes") == 0)
+	{
+		pBitBuf->WriteByte(1);
+	}
 	pBitBuf->WriteString(msg);
 	g_UserMsgs.EndMessage();
 

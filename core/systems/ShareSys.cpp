@@ -243,3 +243,8 @@ void ShareSystem::RegisterLibrary(IExtension *myself, const char *name)
 {
 	g_Extensions.AddLibrary(myself, name);
 }
+
+void ShareSystem::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives)
+{
+	g_Extensions.OverrideNatives(myself, natives);
+}

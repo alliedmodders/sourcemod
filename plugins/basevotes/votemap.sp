@@ -111,7 +111,7 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 		
 		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
 		
-		if (IsStringInArray(g_SelectedMaps, info))
+		if (FindStringInArray(g_SelectedMaps, info) != -1)
 		{
 			return ITEMDRAW_IGNORE;
 		}

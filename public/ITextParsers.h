@@ -280,7 +280,6 @@ namespace SourceMod
 		 * @param key			Key string.
 		 * @param value			Value string.  If no quotes were specified, this will be NULL, 
 		 *						and key will contain the entire string.
-		 * @param 				Number of line in file.
 		 * @return				SMCResult directive.
 		 */
 		virtual SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
@@ -291,7 +290,7 @@ namespace SourceMod
 		/**
 		 * @brief Called when leaving the current section.
 		 *
-		 * @param				Parsing states.
+		 * @param states		Parsing states.
 		 * @return				SMCResult directive.
 		 */
 		virtual SMCResult ReadSMC_LeavingSection(const SMCStates *states)

@@ -624,7 +624,7 @@ namespace SourceMod
 		/**
 		 * @brief Reads a single character as a flag.
 		 *
-		 * @param flag		Flag character.
+		 * @param c			Flag character.
 		 * @param pAdmFlag	Pointer to store the admin flag.
 		 * @return			True on success, false if invalid.
 		 */
@@ -707,7 +707,7 @@ namespace SourceMod
 		 * @brief Computers access to an override.
 		 *
 		 * @param client		Client index.
-		 * @param override		Override name.
+		 * @param cmd			Override name.
 		 * @param flags			Default flags.
 		 * @param override_only	If false, if a command matches the override, 
 		 *						then its flags will override the default.

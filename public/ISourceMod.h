@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	3
+#define SMINTERFACE_SOURCEMOD_VERSION	4
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -199,6 +199,23 @@ namespace SourceMod
 		 * @return			Adjusted server time.
 		 */
 		virtual time_t GetAdjustedTime() =0;
+
+		/**
+		 * @brief Sets the global client SourceMod will use for assisted 
+		 * translations (that is, %t).
+		 *
+		 * @param index		Client index.
+		 * @return			Old global client value.
+		 */
+		virtual unsigned int SetGlobalTarget(unsigned int index) =0;
+
+		/**
+		 * @brief Returns the global client SourceMod is currently using 
+		 * for assisted translations (that is, %t).
+		 *
+		 * @return			Global client value.
+		 */
+		virtual unsigned int GetGlobalTarget() const =0;
 	};
 }
 

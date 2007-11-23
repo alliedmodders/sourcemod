@@ -36,6 +36,11 @@
 #include <IHandleSys.h>
 #include <string.h>
 
+/**
+ * @file IDBDriver.h
+ * @brief Defines interfaces for interacting with relational databases.
+ */
+
 #define SMINTERFACE_DBI_NAME		"IDBI"
 #define SMINTERFACE_DBI_VERSION		5
 
@@ -784,7 +789,7 @@ namespace SourceMod
 		 * @param type			A DBHandleType value.
 		 * @param ptr			A pointer corrresponding to a DBHandleType 
 		 *						object.
-		 * @param token			Identity pointer of the owning identity.
+		 * @param pToken		Identity pointer of the owning identity.
 		 * @return				A new Handle_t handle, or 0 on failure.
 		 */
 		virtual Handle_t CreateHandle(DBHandleType type, void *ptr, IdentityToken_t *pToken) =0;
@@ -814,7 +819,7 @@ namespace SourceMod
 		 * @brief Given a driver name, attempts to find it.  If it is not found, SourceMod
 		 * will attempt to load it.  This function is not thread safe.
 		 *
-		 * @param name			Driver identifier name.
+		 * @param driver		Driver identifier name.
 		 * @return				IDBDriver pointer on success, NULL otherwise.
 		 */
 		virtual IDBDriver *FindOrLoadDriver(const char *driver) =0;

@@ -105,6 +105,8 @@ struct QHandleType
 	int nameIdx;
 };
 
+typedef void (HANDLE_REPORTER)(const char *str, ...);
+
 class HandleSystem : 
 	public IHandleSys
 {
@@ -155,7 +157,7 @@ public: //IHandleSystem
 		const HandleAccess *pAccess,
 		HandleError *err);
 
-	void Dump(FILE *fp);
+	void Dump(HANDLE_REPORTER rep);
 protected:
 	/**
 	 * Decodes a handle with sanity and security checking.

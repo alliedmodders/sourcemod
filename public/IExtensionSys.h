@@ -127,8 +127,11 @@ namespace SourceMod
 
 	/**
 	 * @brief Version code of the IExtensionInterface API itself.
+	 *
+	 * Note: This is bumped when IShareSys is changed, because IShareSys 
+	 * itself is not versioned.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	2
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	3
 
 	/**
 	 * @brief The interface an extension must expose.
@@ -337,7 +340,6 @@ namespace SourceMod
 		 *
 		 * @param path			Path to extension file, relative to the 
 		 *						extensions folder.
-		 * @param lifetime		Lifetime of the extension (currently ignored).
 		 * @param error			Error buffer.
 		 * @param maxlength		Maximum error buffer length.
 		 * @return				New IExtension on success, NULL on failure.

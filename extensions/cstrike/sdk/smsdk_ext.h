@@ -73,6 +73,9 @@
 #if defined SMEXT_ENABLE_LIBSYS
 #include <ILibrarySys.h>
 #endif
+#if defined SMEXT_ENABLE_USERMSGS
+#include <IUserMessages.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -259,6 +262,9 @@ extern IThreader *threader;
 #endif
 #if defined SMEXT_ENABLE_LIBSYS
 extern ILibrarySys *libsys;
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+extern IUserMessages *usermsgs;
 #endif
 
 #if defined SMEXT_CONF_METAMOD

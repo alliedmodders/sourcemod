@@ -135,7 +135,7 @@ bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) con
 	return false;
 }
 
-bf_write *UserMessages::StartMessage(int msg_id, cell_t players[], unsigned int playersNum, int flags)
+bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags)
 {
 	bf_write *buffer;
 

@@ -48,16 +48,16 @@ SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar 
 #endif
 
 TimerSystem g_Timers;
-float g_fUniversalTime = 0.0f;
+double g_fUniversalTime = 0.0f;
 float g_fGameStartTime = 0.0f;	/* Game game start time, non-universal */
-float g_fTimerThink = 0.0f;		/* Timer's next think time */
-const float *g_pUniversalTime = &g_fUniversalTime;
+double g_fTimerThink = 0.0f;		/* Timer's next think time */
+const double *g_pUniversalTime = &g_fUniversalTime;
 ConVar *mp_timelimit = NULL;
 int g_TimeLeftMode = 0;
 
 ConVar sm_time_adjustment("sm_time_adjustment", "0", 0, "Adjusts the server time in seconds");
 
-inline float GetSimulatedTime()
+inline double GetSimulatedTime()
 {
 	return g_fUniversalTime;
 }
@@ -159,7 +159,7 @@ private:
  * that a drastic jump in time will continue acting normally.  Users 
  * may not expect this, but... I think it is the best solution.
  */
-inline float CalcNextThink(float last, float interval)
+inline double CalcNextThink(double last, float interval)
 {
 	if (g_fUniversalTime - last - interval <= TIMER_MIN_ACCURACY)
 	{
@@ -274,7 +274,7 @@ void TimerSystem::RunFrame()
 	ITimer *pTimer;
 	TimerIter iter;
 
-	float curtime = GetSimulatedTime();
+	double curtime = GetSimulatedTime();
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
 	{
 		pTimer = (*iter);

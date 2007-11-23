@@ -58,7 +58,7 @@ DisplayGagPlayerMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddTargetsToMenu(menu, client, false, false);
+	AddTargetsToMenu(menu, client, true, false);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

@@ -994,10 +994,10 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	return g_PluginSys.UnloadPlugin(highest_owner);
 }
 
-void HandleSystem::Dump(FILE *fp)
+void HandleSystem::Dump(HANDLE_REPORTER rep)
 {
-	fprintf(fp, "%-10.10s\t%-20.20s\t%-20.20s\n", "Handle", "Owner", "Type");
-	fprintf(fp, "---------------------------------------------\n");
+	rep("%-10.10s\t%-20.20s\t%-20.20s", "Handle", "Owner", "Type");
+	rep("---------------------------------------------");
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1046,7 +1046,7 @@ void HandleSystem::Dump(FILE *fp)
 		{
 			type = m_strtab->GetString(pType->nameIdx);
 		}
-		fprintf(fp, "0x%08x\t%-20.20s\t%-20.20s\n", index, owner, type);
+		rep("0x%08x\t%-20.20s\t%-20.20s", index, owner, type);
 	}
 }
 

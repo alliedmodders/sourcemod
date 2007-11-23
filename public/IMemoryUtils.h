@@ -37,6 +37,11 @@
 #define SMINTERFACE_MEMORYUTILS_NAME		"IMemoryUtils"
 #define SMINTERFACE_MEMORYUTILS_VERSION		1
 
+/**
+ * @file IMemoryUtils.h
+ * @brief Interface for finding patterns in memory.
+ */
+
 namespace SourceMod
 {
 	class IMemoryUtils : public SMInterface

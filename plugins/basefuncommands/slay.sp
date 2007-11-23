@@ -14,7 +14,7 @@ DisplaySlayMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddTargetsToMenu(menu, client, false, true);
+	AddTargetsToMenu(menu, client, true, true);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

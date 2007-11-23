@@ -46,6 +46,16 @@ enum SortOrder
 };
 
 /**
+ * Data types for ADT Array Sorts
+ */
+  enum SortType
+ {
+ 	Sort_Integer = 0,
+ 	Sort_Float,
+ 	Sort_String,
+};
+
+/**
  * Sorts an array of integers.
  *
  * @param array			Array of integers to sort in-place.
@@ -128,3 +138,38 @@ funcenum SortFunc2D
  * @noreturn
  */
 native SortCustom2D(array[][], array_size, SortFunc2D:sortfunc, Handle:hndl=INVALID_HANDLE);
+
+/**
+ * Sort an ADT Array. Specify the type as Integer, Float, or String.
+ *
+ * @param array			Array Handle to sort
+ * @param order			Sort order to use, same as other sorts.
+ * @param type			Data type stored in the ADT Array
+ * @noreturn
+ */
+native SortADTArray(Handle:array, SortOrder:order = Sort_Ascending, SortType:type = Sort_Integer);
+
+/**
+ * Sort comparison function for ADT Array elements. Function provides you with
+ * indexes currently being sorted, use ADT Array functions to retrieve the
+ * index values and compare.
+ *
+ * @param index1		First index to compare.
+ * @param index2		Second index to compare.
+ * @param array			Array that is being sorted (order is undefined).
+ * @param hndl			Handle optionally passed in while sorting.
+ * @return				-1 if first should go before second
+ *					0 if first is equal to second
+ *					1 if first should go after second
+ */
+functag SortFuncADTArray public(index1, index2, Handle:array, Handle:hndl);
+
+/**
+ * Custom sorts an ADT Array. You must pass in a comparison function.
+ *
+ * @param array			Array Handle to sort
+ * @param sortfunc		Sort comparision function to use
+ * @param hndl			Optional Handle to pass through the comparison calls.
+ * @noreturn
+ */
+native SortADTArrayCustom(Handle:array, SortFuncADTArray:sortfunc, Handle:hndl=INVALID_HANDLE); 

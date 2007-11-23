@@ -265,7 +265,7 @@ namespace SourceMod
 		 * @brief Returns whether the display is capable of rendering an item
 		 * with the given flags.
 		 *
-		 * @param flags			ITEMDRAW flags.
+		 * @param drawFlags		ITEMDRAW flags.
 		 * @return				True if renderable, false otherwise.
 		 */
 		virtual bool CanDrawItem(unsigned int drawFlags) =0;
@@ -289,7 +289,7 @@ namespace SourceMod
 		 * @brief Sets the selectable key map.  Returns false if the function 
 		 * is not supported.
 		 * 
-		 * @param keys			A bit string where each bit N-1 specifies 
+		 * @param keymap		A bit string where each bit N-1 specifies 
 		 *						that key N is selectable (key 0 is bit 9).  
 		 *						If the selectable key map is 0, it will be
 		 *						automatically set to allow 0.
@@ -662,6 +662,7 @@ namespace SourceMod
 		 * @brief A display/selection cycle has ended.
 		 *
 		 * @param menu			Menu pointer.
+		 * @param reason		MenuEndReason reason.
 		 */
 		virtual void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 		{
@@ -740,6 +741,7 @@ namespace SourceMod
 		 * always be called.
 		 *
 		 * @param menu			Menu pointer.
+		 * @param reason		VoteCancelReason reason.
 		 */
 		virtual void OnMenuVoteCancel(IBaseMenu *menu, VoteCancelReason reason)
 		{
@@ -823,6 +825,7 @@ namespace SourceMod
 		 *
 		 * @param client		Client index.
 		 * @param states		Menu states.
+		 * @param order			Order to search for items.
 		 * @return				IMenuPanel pointer, or NULL if no items could be 
 		 *						found in the IBaseMenu pointer, or NULL if any
 		 *						other error occurred.  Any valid pointer must

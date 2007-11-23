@@ -586,9 +586,11 @@ const char *SourceModBase::GetGamePath() const
 	return g_BaseDir.c_str();
 }
 
-void SourceModBase::SetGlobalTarget(unsigned int index)
+unsigned int SourceModBase::SetGlobalTarget(unsigned int index)
 {
+	unsigned int old = m_target;
 	m_target = index;
+	return old;
 }
 
 unsigned int SourceModBase::GetGlobalTarget() const

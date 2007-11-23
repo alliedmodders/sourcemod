@@ -285,7 +285,22 @@ void CExtension::RemovePlugin(IPlugin *pPlugin)
 		if ((*iter).pl == pPlugin)
 		{
 			iter = m_WeakNatives.erase(iter);
-		} else {
+		}
+		else
+		{
+			iter++;
+		}
+	}
+
+	iter = m_ReplacedNatives.begin();
+	while (iter != m_ReplacedNatives.end())
+	{
+		if ((*iter).pl == pPlugin)
+		{
+			iter = m_ReplacedNatives.erase(iter);
+		}
+		else
+		{
 			iter++;
 		}
 	}
@@ -703,6 +718,7 @@ void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 	uint32_t natives = pContext->GetNativesNum();
 	sp_native_t *native;
 	sm_extnative_t *x_native;
+	sm_repnative_t *r_native;
 	for (uint32_t i=0; i<natives; i++)
 	{
 		/* Make sure the native is valid */
@@ -710,11 +726,26 @@ void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
 		{
 			continue;
 		}
+
 		/* Make sure the native is not already bound */
 		if (native->status == SP_NATIVE_BOUND)
 		{
+			/* If it is bound, see if there is a replacement. */
+			if ((r_native = m_RepNatives.retrieve(native->name)) == NULL)
+			{
+				continue;
+			}
+
+			/* Rewrite the address.  Whee! */
+			native->pfn = r_native->info.func;
+
+			/* Make sure this will unload safely */
+			WeakNative wn((CPlugin *)pPlugin, i);
+			r_native->owner->m_ReplacedNatives.push_back(wn);
+
 			continue;
 		}
+
 		/* See if we've got this native in our cache */
 		if ((x_native = m_ExtNatives.retrieve(native->name)) == NULL)
 		{
@@ -789,13 +820,28 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			g_PluginSys.OnLibraryAction((*s_iter).c_str(), false, true);
 		}
 
-		/* Unbound weak natives */
+		/* Unbind weak natives */
 		List<WeakNative>::iterator wkn_iter;
 		for (wkn_iter=pExt->m_WeakNatives.begin(); wkn_iter!=pExt->m_WeakNatives.end(); wkn_iter++)
 		{
 			WeakNative & wkn = (*wkn_iter);
 			sp_context_t *ctx = wkn.pl->GetContext();
 			ctx->natives[wkn.idx].status = SP_NATIVE_UNBOUND;
+		}
+
+		/* Unbind replacement natives, link them back to their originals */
+		for (wkn_iter = pExt->m_ReplacedNatives.begin();
+			 wkn_iter != pExt->m_ReplacedNatives.end();
+			 wkn_iter++)
+		{
+			WeakNative & wkn = (*wkn_iter);
+			sp_context_t *ctx = wkn.pl->GetContext();
+			sm_repnative_t *r_native = m_RepNatives.retrieve(ctx->natives[wkn.idx].name);
+			if (r_native == NULL || ctx->natives[wkn.idx].pfn != r_native->info.func)
+			{
+				continue;
+			}
+			ctx->natives[wkn.idx].pfn = r_native->original;
 		}
 
 		/* Notify and/or unload all dependencies */
@@ -871,6 +917,22 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			}
 		}
 
+		/* Unbind our replacement natives */
+		List<sm_repnative_t>::iterator rep_iter = m_RepNativeList.begin();
+		while (rep_iter != m_RepNativeList.end())
+		{
+			sm_repnative_t & r_native = (*rep_iter);
+			if (r_native.owner == pExt)
+			{
+				m_RepNatives.remove(r_native.info.name);
+				rep_iter = m_RepNativeList.erase(rep_iter);
+			}
+			else
+			{
+				rep_iter++;
+			}
+		}
+
 		/* Tell it to unload */
 		pAPI = pExt->GetAPI();
 		pAPI->OnExtensionUnload();
@@ -916,6 +978,25 @@ void CExtensionManager::AddNatives(IExtension *pOwner, const sp_nativeinfo_t *na
 		x_native.info = &natives[i];
 		x_native.owner = pExt;
 		m_ExtNatives.insert(natives[i].name, x_native);
+	}
+}
+
+void CExtensionManager::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives)
+{
+	SPVM_NATIVE_FUNC orig;
+
+	for (unsigned int i = 0; natives[i].func != NULL && natives[i].name != NULL; i++)
+	{
+		if ((orig = g_PluginSys.FindCoreNative(natives[i].name)) == NULL)
+		{
+			continue;
+		}
+		sm_repnative_t rep;
+		rep.info = natives[i];
+		rep.owner = (CExtension *)myself;
+		rep.original = orig;
+		m_RepNativeList.push_back(rep);
+		m_RepNatives.insert(natives[i].name, rep);
 	}
 }
 

@@ -32,6 +32,8 @@
 #include <malloc.h>
 #include <string.h>
 
+extern HandleType_t htCellArray;
+
 class CellArray
 {
 public:
@@ -147,6 +149,11 @@ public:
 		array->m_Data = (cell_t *)malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize);
 		memcpy(array->m_Data, m_Data, sizeof(cell_t) * m_BlockSize * m_Size);
 		return array;
+	}
+
+	cell_t *base()
+	{
+		return m_Data;
 	}
 
 private:

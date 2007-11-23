@@ -46,7 +46,7 @@ public: //IRecipientFilter
 	int GetRecipientCount() const;
 	int GetRecipientIndex(int slot) const;
 public:
-	void Initialize(cell_t *ptr, size_t count);
+	void Initialize(const cell_t *ptr, size_t count);
 	void SetToReliable(bool isreliable);
 	void SetToInit(bool isinitmsg);
 	void Reset();
@@ -98,7 +98,7 @@ inline void CellRecipientFilter::SetToReliable(bool isreliable)
 	m_IsReliable = isreliable;
 }
 
-inline void CellRecipientFilter::Initialize(cell_t *ptr, size_t count)
+inline void CellRecipientFilter::Initialize(const cell_t *ptr, size_t count)
 {
 	memcpy(m_Players, ptr, count * sizeof(cell_t));
 	m_Size = count;

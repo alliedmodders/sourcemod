@@ -266,6 +266,20 @@ const char *TopMenu::GetObjectInfoString(unsigned int object_id)
 	return obj->info;
 }
 
+const char *TopMenu::GetObjectName(unsigned int object_id)
+{
+	if (object_id == 0 
+		|| object_id > m_Objects.size() 
+		|| m_Objects[object_id - 1]->is_free)
+	{
+		return NULL;
+	}
+
+	topmenu_object_t *obj = m_Objects[object_id - 1];
+
+	return obj->name;
+}
+
 void TopMenu::RemoveFromMenu(unsigned int object_id)
 {
 	if (object_id == 0 
