@@ -426,7 +426,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				}
 #endif
 				/* First, preprocess the signature */
-				char real_sig[255];
+				char real_sig[511];
 				size_t real_bytes;
 				size_t length;
 

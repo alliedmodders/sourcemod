@@ -40,17 +40,6 @@ void InitializeValveGlobals()
 	char *addr = NULL;
 	int offset;
 
-	/* g_pGameRules */
-	if (!g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) || !addr)
-	{
-		return;
-	}
-	if (!g_pGameConf->GetOffset("g_pGameRules", &offset) || !offset)
-	{
-		return;
-	}
-	g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
-
 	/* gEntList and/or g_pEntityList */
 	if (!g_pGameConf->GetMemSig("LevelShutdown", (void **)&addr) || !addr)
 	{
@@ -61,18 +50,22 @@ void InitializeValveGlobals()
 		return;
 	}
 	g_EntList = *reinterpret_cast<void **>(addr + offset);
+
+	/* g_pGameRules */
+	if (!g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) || !addr)
+	{
+		return;
+	}
+	if (!g_pGameConf->GetOffset("g_pGameRules", &offset) || !offset)
+	{
+		return;
+	}
+	g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
 }
 #elif defined PLATFORM_LINUX
 void InitializeValveGlobals()
 {
 	char *addr = NULL;
-
-	/* g_pGameRules */
-	if (!g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
-	{
-		return;
-	}
-	g_pGameRules = reinterpret_cast<void **>(addr);
 
 	/* gEntList and/or g_pEntityList */
 	if (!g_pGameConf->GetMemSig("gEntList", (void **)&addr) || !addr)
@@ -80,5 +73,12 @@ void InitializeValveGlobals()
 		return;
 	}
 	g_EntList = reinterpret_cast<void *>(addr);
+
+	/* g_pGameRules */
+	if (!g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
+	{
+		return;
+	}
+	g_pGameRules = reinterpret_cast<void **>(addr);
 }
 #endif
