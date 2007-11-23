@@ -122,7 +122,7 @@ public OnMapEnd()
 
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 {
-	if(IsFakeClient(client))
+	if(!g_CanRTV || IsFakeClient(client))
 		return true;
 	
 	g_Voted[client] = false;
@@ -136,7 +136,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 
 public OnClientDisconnect(client)
 {
-	if(IsFakeClient(client))
+	if(!g_CanRTV || IsFakeClient(client))
 		return;
 	
 	if(g_Voted[client])
@@ -148,8 +148,9 @@ public OnClientDisconnect(client)
 	
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 	
-	if (g_Votes && g_Voters && g_Votes >= g_VotesNeeded && g_RTVAllowed) 
+	if (g_Votes && g_Voters && g_Votes >= g_VotesNeeded && g_RTVAllowed && !g_RTVStarted) 
 	{
+		g_RTVStarted = true;
 		CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
 	}	
 }
@@ -159,6 +160,12 @@ public Action:Command_Addmap(client, args)
 	if (args < 1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_rtv_addmap <mapname>");
+		return Plugin_Handled;
+	}
+	
+	if (!g_CanRTV)
+	{
+		ReplyToCommand(client, "[SM] RockTheVote is not available.");
 		return Plugin_Handled;
 	}
 	
@@ -269,6 +276,7 @@ public Action:Command_Say(client, args)
 		
 		if (g_Votes >= g_VotesNeeded)
 		{
+			g_RTVStarted = true;
 			CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
 		}
 	}
@@ -320,8 +328,6 @@ public Action:Timer_StartRTV(Handle:timer)
 	{
 		return;
 	}
-
-	g_RTVStarted = true;
 
 	if (IsVoteInProgress())
 	{
