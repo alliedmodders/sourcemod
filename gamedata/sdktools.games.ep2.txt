@@ -203,6 +203,11 @@
 				"windows"	"27"
 				"linux"		"30"
 			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
 			
 			/**
 			 * THESE ARE DISABLED FOR NOW.

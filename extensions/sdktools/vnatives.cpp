@@ -802,6 +802,29 @@ static cell_t sm_GetClientAimTarget(IPluginContext *pContext, const cell_t *para
 	return GetClientAimTarget(pPlayer->GetEdict(), params[2] ? true : false);
 }
 
+static cell_t sm_SetEntityModel(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[1];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("SetEntityModel", ValveCall_Entity, NULL, pass, 1, &pCall))
+		{
+			return pContext->ThrowNativeError("\"SetEntityModel\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"SetEntityModel\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",		ExtinguishEntity},
@@ -826,5 +849,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"DispatchKeyValueFloat",	DispatchKeyValueFloat},
 	{"DispatchKeyValueVector",	DispatchKeyValueVector},
 	{"GetClientAimTarget",		sm_GetClientAimTarget},
+	{"SetEntityModel",			sm_SetEntityModel},
 	{NULL,						NULL},
 };

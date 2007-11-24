@@ -326,6 +326,11 @@
 				"windows"	"29"
 				"linux"		"32"
 			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
 		}
 	}
 
@@ -398,6 +403,11 @@
 			{
 				"windows"	"29"
 				"linux"		"32"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
 			}
 		}
 	}
@@ -472,6 +482,11 @@
 				"windows"	"29"
 				"linux"		"32"
 			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
 		}
 	}
 	
@@ -545,6 +560,11 @@
 			{
 				"windows"	"39"
 				"linux"		"40"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"30"
+				"linux"		"31"
 			}
 			
 			/* Temp Entities */
@@ -627,6 +647,11 @@
 			{
 				"windows"	"29"
 				"linux"		"32"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
 			}
 
 			/* Offset into CBaseTempEntity constructor.
@@ -718,6 +743,11 @@
 			{
 				"windows"	"28"
 				"linux"		"31"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"24"
+				"linux"		"25"
 			}
 		}
 	}
@@ -813,6 +843,11 @@
 				"windows"	"29"
 				"linux"		"32"
 			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
 			
 			/* Temp Entities */
 			"s_pTempEntities"
@@ -887,6 +922,11 @@
 			{
 				"windows"	"34"
 				"linux"		"35"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
 			}
 
 			/* Temp Entities */
@@ -980,6 +1020,11 @@
 			{
 				"windows"	"33"
 				"linux"		"36"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"27"
+				"linux"		"28"
 			}
 		}
 	}

@@ -255,6 +255,16 @@ native SetTeamScore(index, value);
 native GetTeamClientCount(index);
 
 /**
+ * Sets the model to a given entity.
+ *
+ * @param entity			Entity index.
+ * @param model				Model name.
+ * @noreturn
+ * @error				Invalid entity index, or no mod support.
+ */
+native SetEntityModel(entity, const String:model[]);
+
+/**
  * @deprecated
  */
 #pragma deprecated Use IgniteEntity() instead
