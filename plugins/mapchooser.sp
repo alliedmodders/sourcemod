@@ -521,28 +521,25 @@ CreateNextVote()
 	}
 	
 	decl String:map[32];
-	new Handle:tempMaps  = CloneArray(g_MapList);
+	new index, Handle:tempMaps  = CloneArray(g_MapList);
+	
+	GetCurrentMap(map, sizeof(map));
+	index = FindStringInArray(tempMaps, map);
+	if (index != -1)
+	{
+		RemoveFromArray(tempMaps, index);
+	}	
 	
 	if (GetConVarInt(g_Cvar_ExcludeMaps) && GetArraySize(tempMaps) > GetConVarInt(g_Cvar_ExcludeMaps))
 	{
 		for (new i = 0; i < GetArraySize(g_OldMapList); i++)
 		{
 			GetArrayString(g_OldMapList, i, map, sizeof(map));
-			new index = FindStringInArray(tempMaps, map);
+			index = FindStringInArray(tempMaps, map);
 			if (index != -1)
 			{
 				RemoveFromArray(tempMaps, index);
 			}
-		}	
-	}
-	else
-	{
-		// If we didn't check against ExcludeMaps, we have to remove the current map.
-		GetCurrentMap(map, sizeof(map));
-		new index = FindStringInArray(tempMaps, map);
-		if (index != -1)
-		{
-			RemoveFromArray(tempMaps, index);			
 		}	
 	}
 

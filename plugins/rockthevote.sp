@@ -344,6 +344,13 @@ public Action:Timer_StartRTV(Handle:timer)
 	
 	new Handle:tempMaps  = CloneArray(g_MapList);
 	decl String:map[32];
+
+	GetCurrentMap(map, sizeof(map));
+	new index = FindStringInArray(tempMaps, map);
+	if (index != -1)
+	{
+		RemoveFromArray(tempMaps, index);
+	}	
 	
 	// We assume that g_RTVMapList is within the correct limits, based on the logic for nominations
 	for (new i = 0; i < GetArraySize(g_RTVMapList); i++)
@@ -351,7 +358,7 @@ public Action:Timer_StartRTV(Handle:timer)
 		GetArrayString(g_RTVMapList, i, map, sizeof(map));
 		AddMenuItem(MapVoteMenu, map, map);
 		
-		new index = FindStringInArray(tempMaps, map);
+		index = FindStringInArray(tempMaps, map);
 		if (index != -1)
 		{
 			RemoveFromArray(tempMaps, index);
