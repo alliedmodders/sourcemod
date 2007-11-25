@@ -2,13 +2,22 @@
 #include "Welcome.h"
 #include "ChooseMethod.h"
 
+bool g_bIsFirstRun = true;
+
 INT_PTR CALLBACK WelcomeHandler(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
 	case WM_INITDIALOG:
 		{
-			SetToGlobalPosition(hDlg);
+			if (!g_bIsFirstRun)
+			{
+				SetToGlobalPosition(hDlg);
+			}
+			else
+			{
+				g_bIsFirstRun = false;
+			}
 			return (INT_PTR)TRUE;
 		}
 	case WM_COMMAND:

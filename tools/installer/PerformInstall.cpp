@@ -143,6 +143,19 @@ bool CopyStructureRecursively(ICopyMethod *pCopyMethod,
 	/* Now copy folders */
 	while ((pSubList = pFileList->PeekCurrentFolder()) != NULL)
 	{
+		if (g_thread_args.m_bIsUpgrade)
+		{
+			/* :TODO: put this somewhere else because it technically 
+			 * means the progress bars get calculated wrong 
+			 */
+			if (tstrcasecmp(pSubList->GetFolderName(), _T("cfg")) == 0
+				|| tstrcasecmp(pSubList->GetFolderName(), _T("configs")) == 0)
+			{
+				pFileList->PopCurrentFolder();
+				continue;
+			}
+		}
+
 		/* Try creating the folder */
 		if (!pCopyMethod->CreateFolder(pSubList->GetFolderName(), errbuf, maxchars))
 		{
@@ -270,15 +283,17 @@ bool StartInstallProcess(HWND hWnd)
 	{
 		int val = MessageBox(
 			hWnd, 
-			_T("It looks like a previous SourceMod installation exists.  Do you want to upgrade?  Select \"Yes\" to upgrade and keep configuration files.  Select \"No\" to perform a full re-install."),
+			_T("It looks like a previous SourceMod installation exists.  Select \"Yes\" to skip copying configuration files.  Select \"No\" to perform a full re-install."),
 			_T("SourceMod Installer"), 
 			MB_YESNO|MB_ICONQUESTION);
 
 		if (val == 0 || val == IDYES)
 		{
+			g_thread_args.m_bIsUpgrade = true;
 		}
 		else
 		{
+			g_thread_args.m_bIsUpgrade = false;
 		}
 	}
 
