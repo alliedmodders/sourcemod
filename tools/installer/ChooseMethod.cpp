@@ -5,6 +5,7 @@
 #include "GamesList.h"
 #include "SelectGame.h"
 
+game_group_t *g_game_group = NULL;
 unsigned int method_chosen = 0;
 TCHAR method_path[MAX_PATH];
 
@@ -160,12 +161,32 @@ INT_PTR CALLBACK ChooseMethodHandler(HWND hDlg, UINT message, WPARAM wParam, LPA
 
 				if (game_type != 0)
 				{
-					int reason;
+					g_game_group = NULL;
 
-					if ((reason = FindGames(game_type)) < 1)
+					BuildGameDB();
+
+					if (game_type == GAMES_DEDICATED)
 					{
-						DisplayBadGamesDialog(hDlg, game_type, reason);
-						break;
+						g_game_group = &g_games.dedicated;
+					}
+					else if (game_type == GAMES_LISTEN)
+					{
+						g_game_group = &g_games.listen;
+					}
+					else if (game_type == GAMES_STANDALONE)
+					{
+						g_game_group = &g_games.standalone;
+					}
+					
+					if (g_game_group == NULL)
+					{
+						return (INT_PTR)TRUE;
+					}
+
+					if (g_game_group->list_count == 0)
+					{
+						DisplayBadGamesDialog(hDlg, g_game_group->error_code);
+						return (INT_PTR)TRUE;
 					}
 
 					/* If we got a valid games list, we can display the next 

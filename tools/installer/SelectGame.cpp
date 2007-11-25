@@ -7,25 +7,32 @@
 #include "LocalCopyMethod.h"
 
 int selected_game_index = -1;
-mod_info_t **game_sel_list = NULL;
-unsigned int game_sel_count = 0;
 
-void AppendSelectableGame(mod_info_t *mod)
+void UpdateGameListBox(HWND hDlg, game_list_t *gl)
 {
-	if (game_sel_list == NULL)
-	{
-		game_sel_list = 
-			(mod_info_t **)malloc(sizeof(mod_info_t *) * (game_sel_count + 1));
-	}
-	else
-	{
-		game_sel_list = 
-			(mod_info_t **)realloc(game_sel_list, 
-			sizeof(mod_info_t *) * (game_sel_count + 1));
-	}
+	HWND lbox = GetDlgItem(hDlg, IDC_SELGAME_LIST);
 
-	game_sel_list[game_sel_count++] = mod;
+	SendMessage(lbox, LB_RESETCONTENT, 0, 0);
+
+	for (unsigned int i = 0; i < gl->game_count; i++)
+	{
+		LRESULT res = SendMessage(lbox,
+			LB_ADDSTRING,
+			0,
+			(LPARAM)g_games.game_list[gl->games[i]].name);
+
+		if (res == LB_ERR || res == LB_ERRSPACE)
+		{
+			continue;
+		}
+
+		SendMessage(lbox, LB_SETITEMDATA, i, gl->games[i]);
+	}
+	
+	UpdateWindow(lbox);
 }
+
+#include "windowsx.h"
 
 INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -33,24 +40,23 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 	{
 	case WM_INITDIALOG:
 		{
-			HWND lbox = GetDlgItem(hDlg, IDC_SELGAME_LIST);
-
-			for (unsigned int i = 0; i < g_mod_count; i++)
+			HWND cbox = GetDlgItem(hDlg, IDC_SELGROUP_ACCOUNT);
+			SendMessage(cbox, CB_RESETCONTENT, 0, 0);
+			for (unsigned int i = 0; i < g_game_group->list_count; i++)
 			{
-				LRESULT res = SendMessage(lbox,
-					LB_ADDSTRING,
-					0,
-					(LPARAM)g_mod_list[i].name);
-
-				if (res == LB_ERR || res == LB_ERRSPACE)
+				LRESULT res = SendMessage(cbox, 
+					CB_ADDSTRING, 
+					0, 
+					(LPARAM)g_game_group->lists[i]->root_name);
+				if (res == CB_ERR || res == CB_ERRSPACE)
 				{
 					continue;
 				}
-
-				AppendSelectableGame(&g_mod_list[i]);
+				SendMessage(cbox, CB_SETITEMDATA, i, (LPARAM)g_game_group->lists[i]);
 			}
-
-			UpdateWindow(lbox);
+			SendMessage(cbox, CB_SETCURSEL, 0, 0);
+			UpdateWindow(cbox);
+			UpdateGameListBox(hDlg, g_game_group->lists[0]);
 
 			SetToGlobalPosition(hDlg);
 			
@@ -69,6 +75,29 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				EndDialog(hDlg, (INT_PTR)DisplayChooseMethod);
 				return (INT_PTR)TRUE;
 			}
+			else if (LOWORD(wParam) == IDC_SELGROUP_ACCOUNT)
+			{
+				if (HIWORD(wParam) == CBN_SELCHANGE)
+				{
+					HWND cbox = (HWND)lParam;
+					LRESULT cursel = SendMessage(cbox, CB_GETCURSEL, 0, 0);
+
+					if (cursel == LB_ERR)
+					{
+						break;
+					}
+
+					LRESULT data = SendMessage(cbox, CB_GETITEMDATA, cursel, 0);
+					if (data == CB_ERR)
+					{
+						break;
+					}
+
+					game_list_t *gl = (game_list_t *)data;
+					UpdateGameListBox(hDlg, gl);
+				}
+				break;
+			}
 			else if (LOWORD(wParam) == IDC_SELGAME_LIST)
 			{
 				if (HIWORD(wParam) == LBN_SELCHANGE)
@@ -83,12 +112,13 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 						break;
 					}
 
-					if (cursel >= (LRESULT)g_mod_count)
+					LRESULT item = SendMessage(lbox, LB_GETITEMDATA, cursel, 0);
+					if (item == LB_ERR)
 					{
 						break;
 					}
 
-					selected_game_index = (int)cursel;
+					selected_game_index = (int)item;
 
 					HWND button = GetDlgItem(hDlg, ID_SELGAME_NEXT);
 					EnableWindow(button, TRUE);
@@ -101,7 +131,7 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 					break;
 				}
 
-				g_LocalCopier.SetOutputPath(game_sel_list[selected_game_index]->mod_path);
+				g_LocalCopier.SetOutputPath(g_games.game_list[selected_game_index].game_path);
 				SetInstallMethod(&g_LocalCopier);
 
 				UpdateGlobalPosition(hDlg);
@@ -113,10 +143,7 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 		}
 	case WM_DESTROY:
 		{
-			ReleaseGamesList();
-			free(game_sel_list);
-			game_sel_list = NULL;
-			game_sel_count = 0;
+			ReleaseGameDB();
 			break;
 		}
 	}

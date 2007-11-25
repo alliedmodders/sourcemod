@@ -19,21 +19,54 @@
 #define SOURCE_ENGINE_2004			1
 #define SOURCE_ENGINE_2007			2
 
-struct mod_info_t
+struct valve_game_t
+{
+	const TCHAR *folder;
+	const TCHAR *subfolder;
+	int eng_type;
+};
+
+/* One game */
+struct game_info_t
 {
 	TCHAR name[128];
-	TCHAR mod_path[MAX_PATH];
+	TCHAR game_path[MAX_PATH];
 	int source_engine;
+};
+
+/* A list of games under one "account" */
+struct game_list_t
+{
+	TCHAR root_name[128];
+	unsigned int *games;
+	unsigned int game_count;
+};
+
+/* A list of accounts */
+struct game_group_t
+{
+	game_list_t **lists;
+	unsigned int list_count;
+	int error_code;
+};
+
+/* All games on the system */
+struct game_database_t
+{
+	game_info_t *game_list;
+	unsigned int game_count;
+	game_group_t dedicated;
+	game_group_t listen;
+	game_group_t standalone;
 };
 
 int IsValidFolder(const TCHAR *path);
 void DisplayBadFolderDialog(HWND hWnd, int reason);
 
-int FindGames(unsigned int game_type);
-void DisplayBadGamesDialog(HWND hWnd, unsigned int game_type, int reason);
-void ReleaseGamesList();
+void BuildGameDB();
+void ReleaseGameDB();
+void DisplayBadGamesDialog(HWND hWnd, int reason);
 
-extern mod_info_t *g_mod_list;
-extern unsigned int g_mod_count;
+extern game_database_t g_games;
 
 #endif //_INCLUDE_INSTALLER_GAMES_LIST_H_

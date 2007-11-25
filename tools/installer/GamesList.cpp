@@ -3,8 +3,30 @@
 #include "InstallerMain.h"
 #include <stdio.h>
 
-mod_info_t *g_mod_list = NULL;
-unsigned int g_mod_count = 0;
+game_database_t g_games = 
+{
+	NULL, 0, 
+	{NULL, 0, GAME_LIST_NO_GAMES}, 
+	{NULL, 0, GAME_LIST_NO_GAMES}, 
+	{NULL, 0, GAME_LIST_NO_GAMES}
+};
+
+valve_game_t valve_game_list[] = 
+{
+	{_T("counter-strike source"),		_T("cstrike"),	SOURCE_ENGINE_2004},
+	{_T("day of defeat source"),		_T("dod"),		SOURCE_ENGINE_2004},
+	{_T("half-life 2 deathmatch"),		_T("hl2mp"),	SOURCE_ENGINE_2004},
+	{_T("half-life deathmatch source"),	_T("hl1mp"),	SOURCE_ENGINE_2004},
+	{_T("team fortress 2"),				_T("tf"),		SOURCE_ENGINE_2007},
+	{NULL,								NULL,			0},
+};
+
+valve_game_t valve_server_list[] = 
+{
+	{_T("source dedicated server"),		NULL,			SOURCE_ENGINE_2004},
+	{_T("source 2007 dedicated server"), NULL,			SOURCE_ENGINE_2007},
+	{NULL,								NULL,			0},
+};
 
 int IsValidFolder(const TCHAR *path)
 {
@@ -64,30 +86,80 @@ void DisplayBadFolderDialog(HWND hDlg, int reason)
 		MB_OK|MB_ICONWARNING);
 }
 
-void AddModToList(mod_info_t **mod_list,
-				  unsigned int *total_mods,
-				  const mod_info_t *mod_info)
+game_list_t *MakeGameList(const TCHAR *name)
 {
-	mod_info_t *mods = *mod_list;
-	unsigned int total = *total_mods;
+	game_list_t *gl = (game_list_t *)malloc(sizeof(game_list_t));
 
-	if (mods == NULL)
+	UTIL_Format(gl->root_name, 
+		sizeof(gl->root_name) / sizeof(TCHAR),
+		_T("%s"),
+		name);
+	gl->game_count = 0;
+	gl->games = NULL;
+
+	return gl;
+}
+
+void AttachGameListToGroup(game_group_t *group, game_list_t *gl)
+{
+	if (group->lists == NULL)
 	{
-		mods = (mod_info_t *)malloc(sizeof(mod_info_t));
+		group->lists = (game_list_t **)malloc(sizeof(game_list_t *));
 	}
 	else
 	{
-		mods = (mod_info_t *)realloc(mods, sizeof(mod_info_t) * (total + 1));
+		group->lists = (game_list_t **)realloc(group->lists,
+			sizeof(game_list_t *) * (group->list_count + 1));
 	}
 
-	memcpy(&mods[total], mod_info, sizeof(mod_info_t));
-	total++;
-
-	*mod_list = mods;
-	*total_mods = total;
+	group->lists[group->list_count] = gl;
+	group->list_count++;
 }
 
-void TryToAddMod(const TCHAR *path, int eng_type, mod_info_t **mod_list, unsigned *total_mods)
+void AttachModToGameList(game_list_t *gl, unsigned int mod_id)
+{
+	if (gl->games == NULL)
+	{
+		gl->games = (unsigned int *)malloc(sizeof(unsigned int));
+	}
+	else
+	{
+		gl->games = (unsigned int *)realloc(gl->games, 
+			sizeof(unsigned int) * (gl->game_count + 1));
+	}
+
+	gl->games[gl->game_count] = mod_id;
+	gl->game_count++;
+}
+
+unsigned int AddModToList(game_database_t *db, const game_info_t *mod_info)
+{
+	/* Check if a matching game already exists */
+	for (unsigned int i = 0; i < db->game_count; i++)
+	{
+		if (tstrcasecmp(mod_info->game_path, db->game_list[i].game_path) == 0)
+		{
+			return i;
+		}
+	}
+
+	if (db->game_list == NULL)
+	{
+		db->game_list = (game_info_t *)malloc(sizeof(game_info_t));
+	}
+	else
+	{
+		db->game_list = (game_info_t *)realloc(db->game_list, 
+			sizeof(game_info_t) * (db->game_count + 1));
+	}
+
+	memcpy(&db->game_list[db->game_count], mod_info, sizeof(game_info_t));
+	db->game_count++;
+
+	return db->game_count - 1;
+}
+
+bool TryToAddMod(const TCHAR *path, int eng_type, game_database_t *db, unsigned int *id)
 {
 	FILE *fp;
 	TCHAR gameinfo_path[MAX_PATH];
@@ -99,7 +171,7 @@ void TryToAddMod(const TCHAR *path, int eng_type, mod_info_t **mod_list, unsigne
 
 	if ((fp = _tfopen(gameinfo_path, _T("rt"))) == NULL)
 	{
-		return;
+		return false;
 	}
 
 	int pos;
@@ -117,23 +189,41 @@ void TryToAddMod(const TCHAR *path, int eng_type, mod_info_t **mod_list, unsigne
 		}
 		if (strcmp(key, "game") == 0)
 		{
-			mod_info_t mod;
+			game_info_t mod;
+			unsigned int got_id;
+
 			AnsiToUnicode(value, mod.name, sizeof(mod.name));
-			UTIL_Format(mod.mod_path, sizeof(mod.mod_path), _T("%s"), path);
+			UTIL_Format(mod.game_path, sizeof(mod.game_path), _T("%s"), path);
 			mod.source_engine = eng_type;
-			AddModToList(mod_list, total_mods, &mod);
+
+			got_id = AddModToList(db, &mod);
+
+			if (id != NULL)
+			{
+				*id = got_id;
+			}
+
+			fclose(fp);
+
+			return true;
 		}
 	}
 
 	fclose(fp);
+
+	return false;
 }
 
-void AddModsFromFolder(const TCHAR *path, int eng_type, mod_info_t **mod_list, unsigned int *total_mods)
+void AddModsFromFolder(const TCHAR *path,
+					   int eng_type,
+					   game_database_t *db,
+					   game_list_t *gl)
 {
 	HANDLE hFind;
 	WIN32_FIND_DATA fd;
 	TCHAR temp_path[MAX_PATH];
 	TCHAR search_path[MAX_PATH];
+	unsigned int mod_id;
 
 	UTIL_Format(search_path,
 		sizeof(search_path),
@@ -163,30 +253,60 @@ void AddModsFromFolder(const TCHAR *path, int eng_type, mod_info_t **mod_list, u
 			_T("%s\\%s"),
 			path,
 			fd.cFileName);
-		TryToAddMod(temp_path, eng_type, mod_list, total_mods);
-
+		if (TryToAddMod(temp_path, eng_type, db, &mod_id))
+		{
+			AttachModToGameList(gl, mod_id);
+		}
 	} while (FindNextFile(hFind, &fd));
 
 	FindClose(hFind);
 }
 
-void AddValveModsFromFolder(const TCHAR *path,
-							unsigned int game_type,
-							mod_info_t **mod_list,
-							unsigned int *total_mods)
+void GetSteamGames(game_database_t *db)
 {
+	HKEY hkPath;
+	DWORD dwLen, dwType;
 	HANDLE hFind;
 	WIN32_FIND_DATA fd;
 	TCHAR temp_path[MAX_PATH];
-	TCHAR search_path[MAX_PATH];
+	TCHAR steam_path[MAX_PATH];
+	TCHAR steamapps_path[MAX_PATH];
 
-	UTIL_PathFormat(search_path,
-		sizeof(search_path) / sizeof(TCHAR),
-		_T("%s\\*.*"),
-		path);
-
-	if ((hFind = FindFirstFile(search_path, &fd)) == INVALID_HANDLE_VALUE)
+	if (RegOpenKeyEx(HKEY_CURRENT_USER,
+		_T("Software\\Valve\\Steam"),
+		0,
+		KEY_READ,
+		&hkPath) != ERROR_SUCCESS)
 	{
+		db->listen.error_code = GAME_LIST_CANT_READ;
+		db->dedicated.error_code = GAME_LIST_CANT_READ;
+		return;
+	}
+
+	dwLen = sizeof(steam_path) / sizeof(TCHAR);
+	if (RegQueryValueEx(hkPath,
+		_T("SteamPath"),
+		NULL,
+		&dwType,
+		(LPBYTE)steam_path,
+		&dwLen) != ERROR_SUCCESS)
+	{
+		RegCloseKey(hkPath);
+		db->listen.error_code = GAME_LIST_CANT_READ;
+		db->dedicated.error_code = GAME_LIST_CANT_READ;
+		return;
+	}
+
+	UTIL_PathFormat(steamapps_path,
+		sizeof(steamapps_path) / sizeof(TCHAR),
+		_T("%s\\steamapps\\*.*"),
+		steam_path);
+
+	if ((hFind = FindFirstFile(steamapps_path, &fd)) == INVALID_HANDLE_VALUE)
+	{
+		RegCloseKey(hkPath);
+		db->listen.error_code = GAME_LIST_CANT_READ;
+		db->dedicated.error_code = GAME_LIST_CANT_READ;
 		return;
 	}
 
@@ -203,263 +323,163 @@ void AddValveModsFromFolder(const TCHAR *path,
 			continue;
 		}
 
-		TCHAR *mod_folder = NULL;
-		int eng_type = SOURCE_ENGINE_UNKNOWN;
+		/* If we get a folder called "SourceMods," look for third party mods */
+		if (tstrcasecmp(fd.cFileName, _T("SourceMods")) == 0)
+		{
+			game_list_t *gl = MakeGameList(_T("Third-Party Games"));
 
-		if (game_type == GAMES_LISTEN)
-		{
-			if (tstrcasecmp(fd.cFileName, _T( "counter-strike source")) == 0)
-			{
-				mod_folder = _T("cstrike");
-			}
-			else if (tstrcasecmp(fd.cFileName, _T("day of defeat source")) == 0)
-			{
-				mod_folder = _T("dod");
-			}
-			else if (tstrcasecmp(fd.cFileName, _T("half-life 2 deathmatch")) == 0)
-			{
-				mod_folder = _T("hl2mp");
-			}
-			else if (tstrcasecmp(fd.cFileName, _T("half-life deathmatch source")) == 0)
-			{
-				mod_folder = _T("hl1mp");
-			}
-			else if (tstrcasecmp(fd.cFileName, _T("team fortress 2")) == 0)
-			{
-				mod_folder = _T("tf");
-				eng_type = SOURCE_ENGINE_2007;
-			}
-		}
-		else if (game_type == GAMES_DEDICATED)
-		{
-			if (tstrcasecmp(fd.cFileName, _T("source dedicated server")) == 0)
-			{
-				UTIL_PathFormat(temp_path,
-					sizeof(temp_path) / sizeof(TCHAR),
-					_T("%s\\%s"),
-					path,
-					fd.cFileName);
-				AddModsFromFolder(temp_path, SOURCE_ENGINE_2004, mod_list, total_mods);
-			}
-			else if (tstrcasecmp(fd.cFileName, _T("source 2007 dedicated server")) == 0)
-			{
-				UTIL_PathFormat(temp_path,
-					sizeof(temp_path) / sizeof(TCHAR),
-					_T("%s\\%s"),
-					path,
-					fd.cFileName);
-				AddModsFromFolder(temp_path, SOURCE_ENGINE_2007, mod_list, total_mods);
-			}
-		}
-
-		if (mod_folder != NULL)
-		{
 			UTIL_PathFormat(temp_path,
 				sizeof(temp_path) / sizeof(TCHAR),
-				_T("%s\\%s\\%s"),
-				path,
-				fd.cFileName,
-				mod_folder);
-			TryToAddMod(temp_path, eng_type, mod_list, total_mods);
+				_T("%s\\steamapps\\%s"),
+				steam_path,
+				fd.cFileName);
+
+			AddModsFromFolder(temp_path, SOURCE_ENGINE_UNKNOWN, db, gl);
+
+			if (gl->game_count)
+			{
+				AttachGameListToGroup(&db->listen, gl);
+			}
+			else
+			{
+				free(gl);
+			}
+		}
+		else
+		{
+			/* Look for listenserver games */
+			game_list_t *gl = MakeGameList(fd.cFileName);
+
+			for (unsigned int i = 0; valve_game_list[i].folder != NULL; i++)
+			{
+				unsigned int mod_id;
+				UTIL_PathFormat(temp_path,
+					sizeof(temp_path) / sizeof(TCHAR),
+					_T("%s\\steamapps\\%s\\%s\\%s"),
+					steam_path,
+					fd.cFileName,
+					valve_game_list[i].folder,
+					valve_game_list[i].subfolder);
+				if (TryToAddMod(temp_path, valve_game_list[i].eng_type, db, &mod_id))
+				{
+					AttachModToGameList(gl, mod_id);
+				}
+			}
+
+			if (gl->game_count)
+			{
+				AttachGameListToGroup(&db->listen, gl);
+			}
+			else
+			{
+				free(gl);
+			}
+
+			/* Look for dedicated games */
+			gl = MakeGameList(fd.cFileName);
+
+			for (unsigned int i = 0; valve_server_list[i].folder != NULL; i++)
+			{
+				UTIL_PathFormat(temp_path,
+					sizeof(temp_path) / sizeof(TCHAR),
+					_T("%s\\steamapps\\%s\\%s"),
+					steam_path,
+					fd.cFileName,
+					valve_server_list[i].folder);
+				AddModsFromFolder(temp_path, valve_server_list[i].eng_type, db, gl);
+			}
+
+			if (gl->game_count)
+			{
+				AttachGameListToGroup(&db->dedicated, gl);
+			}
+			else
+			{
+				free(gl);
+			}
 		}
 
 	} while (FindNextFile(hFind, &fd));
 
 	FindClose(hFind);
+	RegCloseKey(hkPath);
 }
 
-int BuildGameList(unsigned int game_type, mod_info_t **mod_list)
+void GetStandaloneGames(game_database_t *db)
 {
-	unsigned int total_mods = 0;
-	
-	if (game_type == GAMES_LISTEN
-		|| game_type == GAMES_DEDICATED)
+	HKEY hkPath;
+	DWORD dwLen, dwType, dwAttr;
+	TCHAR temp_path[MAX_PATH];
+	TCHAR hlds_path[MAX_PATH];
+	game_list_t *games_standalone;
+
+	if (RegOpenKeyEx(HKEY_CURRENT_USER,
+		_T("Software\\Valve\\HLServer"),
+		0,
+		KEY_READ,
+		&hkPath) != ERROR_SUCCESS)
 	{
-		HKEY hkPath;
-		DWORD dwLen, dwType;
-		HANDLE hFind;
-		WIN32_FIND_DATA fd;
-		TCHAR temp_path[MAX_PATH];
-		TCHAR steam_path[MAX_PATH];
-		TCHAR steamapps_path[MAX_PATH];
-
-		if (RegOpenKeyEx(HKEY_CURRENT_USER,
-			_T("Software\\Valve\\Steam"),
-			0,
-			KEY_READ,
-			&hkPath) != ERROR_SUCCESS)
-		{
-			DWORD err = GetLastError();
-			return GAME_LIST_CANT_READ;
-		}
-
-		dwLen = sizeof(steam_path) / sizeof(TCHAR);
-		if (RegQueryValueEx(hkPath,
-			_T("SteamPath"),
-			NULL,
-			&dwType,
-			(LPBYTE)steam_path,
-			&dwLen) != ERROR_SUCCESS)
-		{
-			RegCloseKey(hkPath);
-			return GAME_LIST_CANT_READ;
-		}
-
-		UTIL_PathFormat(steamapps_path,
-			sizeof(steamapps_path) / sizeof(TCHAR),
-			_T("%s\\steamapps\\*.*"),
-			steam_path);
-
-		if ((hFind = FindFirstFile(steamapps_path, &fd)) == INVALID_HANDLE_VALUE)
-		{
-			RegCloseKey(hkPath);
-			return GAME_LIST_CANT_READ;
-		}
-
-		do 
-		{
-			if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != FILE_ATTRIBUTE_DIRECTORY)
-			{
-				continue;
-			}
-
-			if (tstrcasecmp(fd.cFileName, _T(".")) == 0
-				|| tstrcasecmp(fd.cFileName, _T("..")) == 0)
-			{
-				continue;
-			}
-
-			/* If we get a folder called "SourceMods," look for third party mods */
-			if (game_type == GAMES_LISTEN 
-				&& tstrcasecmp(fd.cFileName, _T("SourceMods")) == 0)
-			{
-				UTIL_PathFormat(temp_path,
-					sizeof(temp_path) / sizeof(TCHAR),
-					_T("%s\\steamapps\\%s"),
-					steam_path,
-					fd.cFileName);
-				AddModsFromFolder(temp_path, SOURCE_ENGINE_UNKNOWN, mod_list, &total_mods);
-			}
-			else
-			{
-				UTIL_PathFormat(temp_path,
-					sizeof(temp_path) / sizeof(TCHAR),
-					_T("%s\\steamapps\\%s"),
-					steam_path,
-					fd.cFileName);
-				AddValveModsFromFolder(temp_path, game_type, mod_list, &total_mods);
-			}
-
-		} while (FindNextFile(hFind, &fd));
-
-		FindClose(hFind);
-		RegCloseKey(hkPath);
-	}
-	else if (game_type == GAMES_STANDALONE)
-	{
-		HKEY hkPath;
-		int eng_type = SOURCE_ENGINE_UNKNOWN;
-		DWORD dwLen, dwType, dwAttr;
-		TCHAR temp_path[MAX_PATH];
-		TCHAR hlds_path[MAX_PATH];
-
-		if (RegOpenKeyEx(HKEY_CURRENT_USER,
-			_T("Software\\Valve\\HLServer"),
-			0,
-			KEY_READ,
-			&hkPath) != ERROR_SUCCESS)
-		{
-			return GAME_LIST_CANT_READ;
-		}
-
-		dwLen = sizeof(hlds_path) / sizeof(TCHAR);
-		if (RegQueryValueEx(hkPath,
-			_T("InstallPath"),
-			NULL,
-			&dwType,
-			(LPBYTE)hlds_path,
-			&dwLen) != ERROR_SUCCESS)
-		{
-			RegCloseKey(hkPath);
-			return GAME_LIST_CANT_READ;
-		}
-
-		/* Make sure there is a "srcds.exe" file */
-		UTIL_PathFormat(temp_path,
-			sizeof(temp_path) / sizeof(TCHAR), 
-			_T("%s\\srcds.exe"), 
-			hlds_path);
-		dwAttr = GetFileAttributes(temp_path);
-		if (dwAttr == INVALID_FILE_ATTRIBUTES)
-		{
-			return GAME_LIST_HALFLIFE1;
-		}
-
-		/* If there is an "orangebox" sub folder, we can make a better guess 
-		 * at the engine state.
-		 */
-		UTIL_PathFormat(temp_path,
-			sizeof(temp_path) / sizeof(TCHAR), 
-			_T("%s\\orangebox"), 
-			hlds_path);
-		dwAttr = GetFileAttributes(temp_path);
-		if (dwAttr != INVALID_FILE_ATTRIBUTES
-			&& ((dwAttr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY))
-		{
-			eng_type = SOURCE_ENGINE_2004;
-			AddModsFromFolder(temp_path, SOURCE_ENGINE_2007, mod_list, &total_mods);
-		}
-
-		/* Add everything from the server */
-		AddModsFromFolder(hlds_path, eng_type, mod_list, &total_mods);
-
-		RegCloseKey(hkPath);
-	}
-
-	return (g_mod_list == NULL) ? GAME_LIST_NO_GAMES : (int)total_mods;
-}
-
-void FreeGameList(mod_info_t *mod_list)
-{
-	free(mod_list);
-}
-
-int _SortModList(const void *item1, const void *item2)
-{
-	const mod_info_t *mod1 = (const mod_info_t *)item1;
-	const mod_info_t *mod2 = (const mod_info_t *)item2;
-
-	return tstrcasecmp(mod1->name, mod2->name);
-}
-
-int FindGames(unsigned int game_type)
-{
-	int reason;
-
-	ReleaseGamesList();
-
-	if ((reason = BuildGameList(game_type, &g_mod_list)) > 0)
-	{
-		g_mod_count = (unsigned)reason;
-		qsort(g_mod_list, g_mod_count, sizeof(mod_info_t), _SortModList);
-	}
-
-	return reason;
-}
-
-void ReleaseGamesList()
-{
-	if (g_mod_list == NULL)
-	{
+		db->standalone.error_code = GAME_LIST_CANT_READ;
 		return;
 	}
 
-	free(g_mod_list);
-	g_mod_list = NULL;
-	g_mod_count = 0;
+	dwLen = sizeof(hlds_path) / sizeof(TCHAR);
+	if (RegQueryValueEx(hkPath,
+		_T("InstallPath"),
+		NULL,
+		&dwType,
+		(LPBYTE)hlds_path,
+		&dwLen) != ERROR_SUCCESS)
+	{
+		RegCloseKey(hkPath);
+		db->standalone.error_code = GAME_LIST_CANT_READ;
+		return;
+	}
+
+	/* Make sure there is a "srcds.exe" file */
+	UTIL_PathFormat(temp_path,
+		sizeof(temp_path) / sizeof(TCHAR), 
+		_T("%s\\srcds.exe"), 
+		hlds_path);
+	dwAttr = GetFileAttributes(temp_path);
+	if (dwAttr == INVALID_FILE_ATTRIBUTES)
+	{
+		db->standalone.error_code = GAME_LIST_HALFLIFE1;
+		return;
+	}
+
+	games_standalone = MakeGameList(_T("Standalone"));
+
+	/* If there is an "orangebox" sub folder, we can make a better guess 
+	 * at the engine state.
+	 */
+	UTIL_PathFormat(temp_path,
+		sizeof(temp_path) / sizeof(TCHAR), 
+		_T("%s\\orangebox"), 
+		hlds_path);
+	dwAttr = GetFileAttributes(temp_path);
+	if (dwAttr != INVALID_FILE_ATTRIBUTES
+		&& ((dwAttr & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY))
+	{
+		AddModsFromFolder(temp_path, SOURCE_ENGINE_2007, db, games_standalone);
+	}
+
+	/* Add everything from the server */
+	AddModsFromFolder(hlds_path, SOURCE_ENGINE_2004, db, games_standalone);
+
+	if (games_standalone->game_count)
+	{
+		AttachGameListToGroup(&db->standalone, games_standalone);
+	}
+	else
+	{
+		free(games_standalone);
+	}
+
+	RegCloseKey(hkPath);
 }
 
-void DisplayBadGamesDialog(HWND hWnd, unsigned int game_type, int reason)
+void DisplayBadGamesDialog(HWND hWnd, int reason)
 {
 	TCHAR message[256];
 	UINT idc = 0;
@@ -493,4 +513,62 @@ void DisplayBadGamesDialog(HWND hWnd, unsigned int game_type, int reason)
 		message, 
 		_T("SourceMod Installer"),
 		MB_OK|MB_ICONWARNING);
+}
+
+int _ModIdCompare(const void *item1, const void *item2)
+{
+	unsigned int mod_id1 = *(unsigned int *)item1;
+	unsigned int mod_id2 = *(unsigned int *)item2;
+
+	return tstrcasecmp(g_games.game_list[mod_id1].name, g_games.game_list[mod_id2].name);
+}
+
+int _GroupCompare(const void *item1, const void *item2)
+{
+	game_list_t *g1 = *(game_list_t **)item1;
+	game_list_t *g2 = *(game_list_t **)item2;
+
+	return tstrcasecmp(g1->root_name, g2->root_name);
+}
+
+void SortGameGroup(game_group_t *group)
+{
+	qsort(group->lists, group->list_count, sizeof(game_list_t *), _GroupCompare);
+
+	for (unsigned int i = 0; i < group->list_count; i++)
+	{
+		qsort(group->lists[i]->games,
+			  group->lists[i]->game_count,
+			  sizeof(unsigned int),
+			  _ModIdCompare);
+	}
+}
+
+void BuildGameDB()
+{
+	ReleaseGameDB();
+	GetStandaloneGames(&g_games);
+	GetSteamGames(&g_games);
+	SortGameGroup(&g_games.dedicated);
+	SortGameGroup(&g_games.listen);
+	SortGameGroup(&g_games.standalone);
+}
+
+void ReleaseGameGroup(game_group_t *group)
+{
+	for (unsigned int i = 0; i < group->list_count; i++)
+	{
+		free(group->lists[i]->games);
+		free(group->lists[i]);
+	}
+	free(group->lists);
+}
+
+void ReleaseGameDB()
+{
+	ReleaseGameGroup(&g_games.dedicated);
+	ReleaseGameGroup(&g_games.listen);
+	ReleaseGameGroup(&g_games.standalone);
+	free(g_games.game_list);
+	memset(&g_games, 0, sizeof(g_games));
 }
