@@ -85,7 +85,6 @@ SourceModBase::SourceModBase()
 {
 	m_IsMapLoading = false;
 	m_ExecPluginReload = false;
-	m_ExecOnMapEnd = false;
 	m_GotBasePath = false;
 }
 
@@ -326,7 +325,6 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	m_IsMapLoading = true;
 	m_ExecPluginReload = true;
-	m_ExecOnMapEnd = true;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -368,13 +366,15 @@ void SourceModBase::LevelShutdown()
 			next->OnSourceModLevelEnd();
 			next = next->m_pGlobalClassNext;
 		}
-		g_LevelEndBarrier = false;
-	}
+		
+		if (g_pOnMapEnd != NULL)
+		{
+			g_pOnMapEnd->Execute(NULL);
+		}
 
-	if (g_pOnMapEnd && m_ExecOnMapEnd)
-	{
-		g_pOnMapEnd->Execute(NULL);
-		m_ExecOnMapEnd = false;
+		g_Timers.RemoveMapChangeTimers();
+
+		g_LevelEndBarrier = false;
 	}
 
 	g_OnMapStarted = false;

@@ -224,11 +224,6 @@ void TimerSystem::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_pOnMapTimeLeftChanged);
 }
 
-void TimerSystem::OnSourceModLevelChange(const char *mapName)
-{
-	MapChange(true);
-}
-
 void TimerSystem::OnSourceModLevelEnd()
 {
 	m_bHasMapTickedYet = false;
@@ -423,7 +418,7 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 }
 
 CStack<ITimer *> s_tokill;
-void TimerSystem::MapChange(bool real_mapchange)
+void TimerSystem::RemoveMapChangeTimers()
 {
 	ITimer *pTimer;
 	TimerIter iter;
@@ -431,7 +426,7 @@ void TimerSystem::MapChange(bool real_mapchange)
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		if (real_mapchange && (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE))
+		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
 		{
 			s_tokill.push(pTimer);
 		}
@@ -440,7 +435,7 @@ void TimerSystem::MapChange(bool real_mapchange)
 	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); iter++)
 	{
 		pTimer = (*iter);
-		if (real_mapchange && (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE))
+		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
 		{
 			s_tokill.push(pTimer);
 		}

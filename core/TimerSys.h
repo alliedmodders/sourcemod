@@ -66,7 +66,6 @@ public:
 	~TimerSystem();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
-	void OnSourceModLevelChange(const char *mapName);
 	void OnSourceModLevelEnd();
 	void OnSourceModGameInitialized();
 	void OnSourceModShutdown();
@@ -81,7 +80,7 @@ public: //ITimerSystem
 	bool GetMapTimeLeft(float *pTime);
 public:
 	void RunFrame();
-	void MapChange(bool real_mapchange);
+	void RemoveMapChangeTimers();
 	void GameFrame(bool simulating);
 	IMapTimer *GetMapTimer();
 private:
