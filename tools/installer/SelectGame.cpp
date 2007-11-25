@@ -51,6 +51,8 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			}
 
 			UpdateWindow(lbox);
+
+			SetToGlobalPosition(hDlg);
 			
 			return (INT_PTR)TRUE;
 		}
@@ -63,6 +65,7 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 			}
 			else if (LOWORD(wParam) == ID_SELGAME_BACK)
 			{
+				UpdateGlobalPosition(hDlg);
 				EndDialog(hDlg, (INT_PTR)DisplayChooseMethod);
 				return (INT_PTR)TRUE;
 			}
@@ -101,6 +104,7 @@ INT_PTR CALLBACK ChooseGameHandler(HWND hDlg, UINT message, WPARAM wParam, LPARA
 				g_LocalCopier.SetOutputPath(game_sel_list[selected_game_index]->mod_path);
 				SetInstallMethod(&g_LocalCopier);
 
+				UpdateGlobalPosition(hDlg);
 				EndDialog(hDlg, (INT_PTR)DisplayPerformInstall);
 
 				return (INT_PTR)TRUE;

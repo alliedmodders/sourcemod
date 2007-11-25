@@ -15,9 +15,8 @@ DWORD CALLBACK CopyProgressRoutine(LARGE_INTEGER TotalFileSize,
 {
 	ICopyProgress *progress = (ICopyProgress *)lpData;
 
-	float percent = (float)(TotalBytesTransferred.QuadPart) / (float)(TotalFileSize.QuadPart);
-
-	progress->UpdateProgress(percent);
+	progress->UpdateProgress((size_t)TotalBytesTransferred.QuadPart,
+		(size_t)TotalFileSize.QuadPart);
 
 	return PROGRESS_CONTINUE;
 }
@@ -55,7 +54,7 @@ bool LocalCopyMethod::CreateFolder(const TCHAR *name, TCHAR *buffer, size_t maxc
 		m_CurrentPath,
 		name);
 
-	if (CreateDirectory(name, NULL))
+	if (CreateDirectory(path, NULL))
 	{
 		return true;
 	}
@@ -111,6 +110,11 @@ bool LocalCopyMethod::SendFile(const TCHAR *path, TCHAR *buffer, size_t maxchars
 
 	m_bCancelStatus = FALSE;
 
+	if (m_pProgress != NULL)
+	{
+		m_pProgress->StartingNewFile(filename);
+	}
+
 	if (CopyFileEx(path,
 		new_path,
 		m_pProgress ? CopyProgressRoutine : NULL,
@@ -124,6 +128,11 @@ bool LocalCopyMethod::SendFile(const TCHAR *path, TCHAR *buffer, size_t maxchars
 		GenerateErrorMessage(GetLastError(), buffer, maxchars);
 
 		return false;
+	}
+
+	if (m_pProgress != NULL)
+	{
+		m_pProgress->FileDone(UTIL_GetFileSize(path));
 	}
 
 	return true;

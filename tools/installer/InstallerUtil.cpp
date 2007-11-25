@@ -175,13 +175,13 @@ const TCHAR *GetFileFromPath(const TCHAR *path)
 {
 	size_t len = _tcslen(path);
 
-	for (size_t i = 0;
-		 i >= 0 && i < len - 1;
+	for (size_t i = len - 1;
+		 i >= 0 && i < len;
 		 i--)
 	{
 		if (path[i] == '\\' || path[i] == '/')
 		{
-			return &path[i];
+			return &path[i+1];
 		}
 	}
 
@@ -223,9 +223,90 @@ INT_PTR AskToExit(HWND hWnd)
 
 	if (val == 0 || val == IDYES)
 	{
+		UpdateGlobalPosition(hWnd);
 		EndDialog(hWnd, NULL);
 		return (INT_PTR)TRUE;
 	}
 	
 	return (INT_PTR)FALSE;
 }
+
+size_t UTIL_GetFileSize(const TCHAR *file_path)
+{
+	HANDLE hFile;
+
+	if ((hFile = CreateFile(file_path, 
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL)) 
+		!= INVALID_HANDLE_VALUE)
+	{
+		LARGE_INTEGER size;
+
+		if (GetFileSizeEx(hFile, &size))
+		{
+			CloseHandle(hFile);
+			return (size_t)size.QuadPart;
+		}
+
+		CloseHandle(hFile);
+	}
+
+	return 0;
+}
+
+#if 0
+size_t UTIL_GetFolderSize(const TCHAR *basepath)
+{
+	HANDLE hFind;
+	WIN32_FIND_DATA fd;
+	TCHAR search_path[MAX_PATH];
+	size_t total = 0;
+
+	UTIL_PathFormat(search_path,
+		sizeof(search_path) / sizeof(TCHAR),
+		_T("%s\\*.*"),
+		basepath);
+
+	if ((hFind = FindFirstFile(search_path, &fd)) == INVALID_HANDLE_VALUE)
+	{
+		return 0;
+	}
+
+	do
+	{
+		if (tstrcasecmp(fd.cFileName, _T(".")) == 0
+			|| tstrcasecmp(fd.cFileName, _T("..")) == 0)
+		{
+			continue;
+		}
+
+		if ((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+		{
+			UTIL_PathFormat(search_path,
+				sizeof(search_path) / sizeof(TCHAR),
+				_T("%s\\%s"),
+				basepath,
+				fd.cFileName);
+			total += UTIL_GetFolderSize(search_path);
+		}
+		else
+		{
+			UTIL_PathFormat(search_path,
+				sizeof(search_path) / sizeof(TCHAR),
+				_T("%s\\%s"),
+				basepath,
+				fd.cFileName);
+
+			total += UTIL_GetFileSize(search_path);
+		}
+	} while (FindNextFile(hFind, &fd));
+
+	FindClose(hFind);
+
+	return total;
+}
+#endif

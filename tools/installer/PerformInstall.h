@@ -3,6 +3,18 @@
 
 #include "InstallerMain.h"
 #include "ICopyMethod.h"
+#include "CFileList.h"
+
+struct copy_thread_args_t
+{
+	ICopyMethod *pCopyMethod;
+	CFileList *pFileList;
+	HWND hWnd;
+	bool m_bIsUpgrade;
+	bool m_bWasCancelled;
+	TCHAR basepath[MAX_PATH];
+	TCHAR error[255];
+};
 
 void *DisplayPerformInstall(HWND hWnd);
 void SetInstallMethod(ICopyMethod *pCopyMethod);

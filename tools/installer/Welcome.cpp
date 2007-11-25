@@ -8,6 +8,7 @@ INT_PTR CALLBACK WelcomeHandler(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 	{
 	case WM_INITDIALOG:
 		{
+			SetToGlobalPosition(hDlg);
 			return (INT_PTR)TRUE;
 		}
 	case WM_COMMAND:
@@ -15,11 +16,13 @@ INT_PTR CALLBACK WelcomeHandler(HWND hDlg, UINT message, WPARAM wParam, LPARAM l
 			if (LOWORD(wParam) == ID_WELCOME_EXIT
 				|| LOWORD(wParam) == ID_CLOSE)
 			{
+				UpdateGlobalPosition(hDlg);
 				EndDialog(hDlg, NULL);
 				return (INT_PTR)TRUE;
 			}
 			else if (LOWORD(wParam) == ID_WELCOME_NEXT)
 			{
+				UpdateGlobalPosition(hDlg);
 				EndDialog(hDlg, (INT_PTR)DisplayChooseMethod);
 				return (INT_PTR)TRUE;
 			}

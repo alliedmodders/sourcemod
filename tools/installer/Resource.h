@@ -30,7 +30,9 @@
 #define IDC_METHOD_LISTEN_SERVER        1008
 #define IDC_SELGAME_LIST                1008
 #define IDC_METHOD_ALONE_SERVER         1009
+#define IDC_PROGRESS_CURRENT            1009
 #define IDC_METHOD_CUSTOM_FOLDER        1010
+#define IDC_PROGRESS_TOTAL              1010
 #define IDC_METHOD_UPLOAD_FTP           1011
 #define ID_SELGAME_NEXT                 1012
 #define ID_SELGAME_EXIT                 1013
@@ -38,10 +40,12 @@
 #define IDC_SELGAME_TEXT                1015
 #define IDC_SELGAME_PANEL               1016
 #define IDD_SELECT_GAME                 1017
-#define IDD_PERFORM_INSTALL				1018
-#define ID_INSTALL_CANCEL				1019
-#define IDC_INSTALL_PANEL				1020
-#define IDC_INSTALL_TEXT				1021
+#define IDD_PERFORM_INSTALL             1018
+#define ID_INSTALL_CANCEL               1019
+#define IDC_INSTALL_PANEL               1020
+#define IDC_INSTALL_TEXT                1021
+#define ID_INSTALL_START                1022
+#define IDC_PROGRESS_CURCOPY            1023
 #define IDC_STATIC                      -1
 #define IDC_WELCOME_TEXT                -1
 #define IDC_METHOD_PANEL                -1
@@ -53,7 +57,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1012
 #define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

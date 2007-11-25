@@ -5,6 +5,35 @@
 
 HINSTANCE g_hInstance;
 NEXT_DIALOG next_dialog = DisplayWelcome;
+POINT g_GlobalPosition;
+
+void UpdateGlobalPosition(HWND hWnd)
+{
+	WINDOWINFO wi;
+
+	wi.cbSize = sizeof(WINDOWINFO);
+	if (GetWindowInfo(hWnd, &wi))
+	{
+		g_GlobalPosition.x = wi.rcWindow.left;
+		g_GlobalPosition.y = wi.rcWindow.top;
+	}
+}
+
+void SetToGlobalPosition(HWND hWnd)
+{
+	WINDOWINFO wi;
+	
+	wi.cbSize = sizeof(WINDOWINFO);
+	if (GetWindowInfo(hWnd, &wi))
+	{
+		MoveWindow(hWnd, 
+			g_GlobalPosition.x, 
+			g_GlobalPosition.y, 
+			wi.rcWindow.right - wi.rcWindow.left,
+			wi.rcWindow.bottom - wi.rcWindow.top,
+			TRUE);
+	}
+}
 
 LRESULT CALLBACK MainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -12,6 +41,7 @@ LRESULT CALLBACK MainWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
 	{
 	case WMU_INIT_INSTALLER:
 		{
+			UpdateGlobalPosition(hWnd);
 			while (next_dialog != NULL)
 			{
 				next_dialog = (NEXT_DIALOG)next_dialog(hWnd);

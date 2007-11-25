@@ -12,6 +12,8 @@ int BreakStringA(const char *str, char *out, size_t maxchars);
 size_t AnsiToUnicode(const char *str, wchar_t *buffer, size_t maxchars);
 const TCHAR *GetFileFromPath(const TCHAR *path);
 void GenerateErrorMessage(DWORD err, TCHAR *buffer, size_t maxchars);
+size_t UTIL_GetFileSize(const TCHAR *file_path);
+size_t UTIL_GetFolderSize(const TCHAR *basepath);
 
 INT_PTR AskToExit(HWND hWnd);
 

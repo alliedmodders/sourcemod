@@ -6,7 +6,9 @@
 class ICopyProgress
 {
 public:
-	virtual void UpdateProgress(float percent_complete) =0;
+	virtual void StartingNewFile(const TCHAR *filename) =0;
+	virtual void UpdateProgress(size_t bytes, size_t total_bytes) =0;
+	virtual void FileDone(size_t file_size) =0;
 };
 
 class ICopyMethod

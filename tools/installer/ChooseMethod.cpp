@@ -95,6 +95,7 @@ INT_PTR CALLBACK ChooseMethodHandler(HWND hDlg, UINT message, WPARAM wParam, LPA
 		{
 			if (LOWORD(wParam) == ID_METHOD_BACK)
 			{
+				UpdateGlobalPosition(hDlg);
 				EndDialog(hDlg, (INT_PTR)DisplayWelcome);
 				return (INT_PTR)TRUE;
 			}
@@ -170,6 +171,7 @@ INT_PTR CALLBACK ChooseMethodHandler(HWND hDlg, UINT message, WPARAM wParam, LPA
 					/* If we got a valid games list, we can display the next 
 					 * dialog box.
 					 */
+					UpdateGlobalPosition(hDlg);
 					EndDialog(hDlg, (INT_PTR)DisplaySelectGame);
 					return (INT_PTR)TRUE;
 				}
@@ -178,6 +180,7 @@ INT_PTR CALLBACK ChooseMethodHandler(HWND hDlg, UINT message, WPARAM wParam, LPA
 		}
 	case WM_INITDIALOG:
 		{
+			SetToGlobalPosition(hDlg);
 			return (INT_PTR)TRUE;
 		}
 	}

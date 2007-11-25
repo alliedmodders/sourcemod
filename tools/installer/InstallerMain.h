@@ -4,6 +4,9 @@
 #include "platform_headers.h"
 #include "Resource.h"
 
+void UpdateGlobalPosition(HWND hWnd);
+void SetToGlobalPosition(HWND hWnd);
+
 typedef void *(*NEXT_DIALOG)(HWND);
 
 extern HINSTANCE g_hInstance;
