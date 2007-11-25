@@ -4,6 +4,8 @@
 #include "Welcome.h"
 #include "GamesList.h"
 #include "SelectGame.h"
+#include "PerformInstall.h"
+#include "LocalCopyMethod.h"
 
 game_group_t *g_game_group = NULL;
 unsigned int method_chosen = 0;
@@ -156,6 +158,12 @@ INT_PTR CALLBACK ChooseMethodHandler(HWND hDlg, UINT message, WPARAM wParam, LPA
 							DisplayBadFolderDialog(hDlg, val);
 							break;
 						}
+
+						g_LocalCopier.SetOutputPath(method_path);
+						SetInstallMethod(&g_LocalCopier);
+
+						UpdateGlobalPosition(hDlg);
+						EndDialog(hDlg, (INT_PTR)DisplayPerformInstall);
 					}
 				}
 
