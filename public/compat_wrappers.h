@@ -41,7 +41,7 @@
 	}
 	inline void InsertServerCommand(const char *buf)
 	{
-		engine->ServerCommand(buf);
+		engine->InsertServerCommand(buf);
 	}
 #else
 	class CCommand
