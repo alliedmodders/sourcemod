@@ -208,16 +208,11 @@
 				"windows"	"23"
 				"linux"		"24"
 			}
-			
-			/**
-			 * THESE ARE DISABLED FOR NOW.
-			 
 			"AcceptInput"
 			{
 				"windows"	"34"
 				"linux"		"35"
 			}
-			 */
 		}
 	}
 }
