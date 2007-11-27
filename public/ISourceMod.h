@@ -95,6 +95,15 @@ namespace SourceMod
 		/**
 		 * @brief Builds a platform path for a specific target base path.
 		 *
+		 * If the path starts with the string "file://" and the PathType is 
+		 * not relative, then the "file://" portion is stripped off, and the 
+		 * rest of the path is used without any modification (except for 
+		 * correcting slashes).  This can be used to override the path 
+		 * builder to supply alternate absolute paths.  Examples:
+		 *
+		 * file://C:/Temp/file.txt
+		 * file:///tmp/file.txt
+		 *
 		 * @param type		Type of path to use as a base.
 		 * @param buffer	Buffer to write to.
 		 * @param maxlength	Size of buffer.

@@ -443,20 +443,35 @@ size_t SourceModBase::BuildPath(PathType type, char *buffer, size_t maxlength, c
 	vsnprintf(_buffer, PLATFORM_MAX_PATH, format, ap);
 	va_end(ap);
 
+	/* If we get a "file://" notation, strip off the file:// part so we're left 
+	 * with an absolute path.  Note that the absolute path gets returned, so 
+	 * usage with relative paths here is completely invalid.
+	 */
+	if (type != Path_SM_Rel && strncmp(_buffer, "file://", 7) == 0)
+	{
+		return g_LibSys.PathFormat(buffer, maxlength, "%s", &_buffer[7]);
+	}
+
 	const char *base = NULL;
 	if (type == Path_Game)
 	{
 		base = GetGamePath();
-	} else if (type == Path_SM) {
+	}
+	else if (type == Path_SM)
+	{
 		base = GetSourceModPath();
-	} else if (type == Path_SM_Rel) {
+	}
+	else if (type == Path_SM_Rel)
+	{
 		base = m_SMRelDir;
 	}
 
 	if (base)
 	{
 		return g_LibSys.PathFormat(buffer, maxlength, "%s/%s", base, _buffer);
-	} else {
+	}
+	else
+	{
 		return g_LibSys.PathFormat(buffer, maxlength, "%s", _buffer);
 	}
 }

@@ -35,7 +35,22 @@
 #endif
 #define _files_included
 
-/* @global All paths in SourceMod natives are relative to the mod folder unless otherwise noted. */
+/**
+ * @global All paths in SourceMod natives are relative to the mod folder 
+ * unless otherwise noted.
+ *
+ * Most functions in SourceMod (at least, ones that deal with direct 
+ * file manipulation) will support an alternate path specification.
+ *
+ * If the path starts with the string "file://" and the PathType is 
+ * not relative, then the "file://" portion is stripped off, and the 
+ * rest of the path is used without any modification (except for 
+ * correcting slashes).  This can be used to override the path 
+ * builder to supply alternate absolute paths.  Examples:
+ *
+ * file://C:/Temp/file.txt
+ * file:///tmp/file.txt
+ */
 
 /**
  * File inode types.
@@ -72,7 +87,9 @@ enum PathType
 };
 
 /**
- * Builds a path relative to the SourceMod folder.
+ * Builds a path relative to the SourceMod folder.  This should be used instead of 
+ * directly referencing addons/sourcemod, in case users change the name of their 
+ * folder layout.
  *
  * @param type			Type of path to build as the base.
  * @param buffer		Buffer to store the path.
@@ -85,8 +102,10 @@ native BuildPath(PathType:type, String:buffer[], maxlength, const String:fmt[], 
 
 /**
  * Opens a directory/folder for contents enumeration.
+ *
  * @note Directories are closed with CloseHandle().
  * @note Directories Handles can be cloned.
+ * @note OpenDirectory() supports the "file://" notation.
  *
  * @param path			Path to open.
  * @return				A Handle to the directory, INVALID_HANDLE on open error.
@@ -95,6 +114,7 @@ native Handle:OpenDirectory(const String:path[]);
 
 /**
  * Reads the current directory entry as a local filename, then moves to the next file.
+ *
  * @note Contents of buffers are undefined when returning false.
  * @note Both the '.' and '..' automatic directory entries will be retrieved for Windows and Linux.
  * 
@@ -109,8 +129,10 @@ native bool:ReadDirEntry(Handle:dir, String:buffer[], maxlength, &FileType:type=
 
 /**
  * Opens a file.
+ *
  * @note Files are closed with CloseHandle().
  * @note File Handles can be cloned.
+ * @note OpenFile() supports the "file://" notation.
  *
  * @param file			File to open.
  * @param mode			Open mode.
