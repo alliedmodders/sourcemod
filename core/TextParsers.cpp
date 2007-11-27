@@ -408,8 +408,8 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 			{
 				if (in_quote)
 				{
-					/* If i was 0, this case is impossible due to reparsing */
-					if ((i != 0) && c == '"' && parse_point[i-1] != '\\')
+					/* If i was 0, we could have reparsed, so make sure there's no buffer underrun */
+					if ((&parse_point[i] != in_buf) && c == '"' && parse_point[i-1] != '\\')
 					{
 						/* If we reached a quote in an ignore phase,
 						 * we're staging a string and we must rotate it out.
