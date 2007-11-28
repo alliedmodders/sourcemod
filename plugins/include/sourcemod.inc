@@ -148,7 +148,7 @@ forward OnMapEnd();
 /**
  * Called when the map has loaded, servercfgfile (server.cfg) has been 
  * executed, and all plugin configs are done executing.  This is the best
- * place to inialize plugin functions which are based on cvar data.  
+ * place to initialize plugin functions which are based on cvar data.  
  *
  * @note This will always be called once and only once per map.  It will be 
  * called after OnMapStart().
