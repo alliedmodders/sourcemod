@@ -124,7 +124,7 @@ enum
 /**
  * Prefetches a sound.
  *
- * @param name		Sound file name.
+ * @param name		Sound file name relative to the "sounds" folder.
  * @noreturn
  */
 native PrefetchSound(const String:nane[]);
@@ -132,7 +132,7 @@ native PrefetchSound(const String:nane[]);
 /**
  * Gets a sound's duration (does not work for mp3s).
  *
- * @param name		Sound file name.
+ * @param name		Sound file name relative to the "sounds" folder.
  * @return			Duration in seconds.
  */
 native Float:GetSoundDuration(const String:name[]);
@@ -140,9 +140,9 @@ native Float:GetSoundDuration(const String:name[]);
 /**
  * Emits an ambient sound.
  *
- * @param entity	Entity index to associate sound with.
+ * @param name		Sound file name relative to the "sounds" folder.
  * @param pos		Origin of sound.
- * @param name		Sound file name.
+ * @param entity	Entity index to associate sound with.
  * @param level		Sound level (from 0 to 255).
  * @param flags		Sound flags.
  * @param vol		Volume (from 0.0 to 1.0).
@@ -177,7 +177,7 @@ native FadeClientVolume(client, Float:percent, Float:outtime, Float:holdtime, Fl
  *
  * @param entity	Entity index.
  * @param channel	Channel number.
- * @param name		Sound name.
+ * @param name		Sound file name relative to the "sounds" folder.
  * @noreturn
  */
 native StopSound(entity, channel, const String:name[]);
@@ -187,9 +187,9 @@ native StopSound(entity, channel, const String:name[]);
  *
  * @param clients		Array of client indexes.
  * @param numClients	Number of clients in the array.
+ * @param sample		Sound file name relative to the "sounds" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
- * @param sample		Sound name.
  * @param level			Sound level.
  * @param flags			Sound flags.
  * @param volume		Sound volume.
@@ -224,9 +224,9 @@ native EmitSound(const clients[],
  *
  * @param clients		Array of client indexes.
  * @param numClients	Number of clients in the array.
+ * @param sentence		Sentence index (from PrecacheSenteFile).
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
- * @param sentence		Sentence index (from PrecacheSenteFile).
  * @param level			Sound level.
  * @param flags			Sound flags.
  * @param volume		Sound volume.
@@ -261,9 +261,9 @@ native EmitSentence(const clients[],
  * Wrapper to emit sound to one client.
  *
  * @param client		Client index.
+ * @param sample		Sound file name relative to the "sounds" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
- * @param sample		Sound name.
  * @param level			Sound level.
  * @param flags			Sound flags.
  * @param volume		Sound volume.
@@ -302,9 +302,9 @@ stock EmitSoundToClient(client,
 /**
  * Wrapper to emit sound to all clients.
  *
+ * @param sample		Sound file name relative to the "sounds" folder.
  * @param entity		Entity to emit from.
  * @param channel		Channel to emit with.
- * @param sample		Sound name.
  * @param level			Sound level.
  * @param flags			Sound flags.
  * @param volume		Sound volume.
