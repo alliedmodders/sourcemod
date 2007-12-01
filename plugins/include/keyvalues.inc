@@ -121,6 +121,17 @@ native KvSetFloat(Handle:kv, const String:key[], Float:value);
 native KvSetColor(Handle:kv, const String:key[], r, g, b, a=0);
 
 /** 
+ * Sets a vector value of a KeyValues key.
+ *
+ * @param kv			KeyValues Handle.
+ * @param key			Name of the key, or NULL_STRING.
+ * @param vec			Vector value.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native KvSetVector(Handle:kv, const String:key[], const Float:vec[3]);
+
+/** 
  * Retrieves a string value from a KeyValues key.
  *
  * @param kv			KeyValues Handle.
@@ -180,6 +191,18 @@ native KvGetColor(Handle:kv, const String:key[], &r, &g, &b, &a);
  * @error				Invalid Handle.
  */
 native KvGetUInt64(Handle:kv, const String:key[], value[2], defvalue[2]={0,0});
+
+/** 
+ * Retrieves a vector value from a KeyValues key.
+ *
+ * @param kv			KeyValues Handle.
+ * @param key			Name of the key, or NULL_STRING.
+ * @param vec			Destination vector to store the value in.
+ * @param defvalue		Optional default value to use if the key is not found.
+ * @noreturn
+ * @error				Invalid Handle.
+ */
+native KvGetVector(Handle:kv, const String:key[], Float:vec[3], const Float:defvalue[3]={0.0, 0.0, 0.0});
 
 /**
  * Sets the current position in the KeyValues tree to the given key.

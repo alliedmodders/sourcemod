@@ -218,6 +218,35 @@ static cell_t smn_KvSetColor(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_KvSetVector(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	char *key;
+	char buffer[64];
+	cell_t *vector;
+	pCtx->LocalToStringNULL(params[2], &key);
+	pCtx->LocalToPhysAddr(params[3], &vector);
+
+	UTIL_Format(buffer, sizeof(buffer), "%f %f %f", sp_ctof(vector[0]), sp_ctof(vector[1]), sp_ctof(vector[2]));
+
+	pStk->pCurRoot.front()->SetString(key, buffer);
+
+	return 1;
+}
+
 static cell_t smn_KvGetString(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -354,6 +383,79 @@ static cell_t smn_KvGetUInt64(IPluginContext *pCtx, const cell_t *params)
 
 	value = pStk->pCurRoot.front()->GetUint64(key, static_cast<uint64>(*defvalue));
 	*reinterpret_cast<uint64 *>(addr) = value;
+
+	return 1;
+}
+
+static cell_t smn_KvGetVector(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	char *key;
+	const char *value;
+	cell_t *defvector, *outvector;
+	char buffer[64];
+	pCtx->LocalToStringNULL(params[2], &key);
+	pCtx->LocalToPhysAddr(params[3], &outvector);
+	pCtx->LocalToPhysAddr(params[4], &defvector);
+
+	UTIL_Format(buffer, sizeof(buffer), "%f %f %f", sp_ctof(defvector[0]), sp_ctof(defvector[1]), sp_ctof(defvector[2]));
+
+	value = pStk->pCurRoot.front()->GetString(key, buffer);
+
+	float out;
+	int components = 0;
+	while (*value && components < 3)
+	{
+		while ((*value) && (*value == ' '))
+		{
+			value++;
+		}
+
+		out = 0.0f;
+		bool isnegative;
+		if (*value == '-')
+		{
+			isnegative = true;
+			value++;
+		}
+		else
+		{
+			isnegative = false;
+		}
+
+		for (; *value && isdigit(*value); ++value)
+		{
+			out *= 10.0f;
+			out += *value - '0';
+		}
+
+		if (*value == '.')
+		{
+			value++;
+			float factor = 0.1f;
+			for (; *value && isdigit(*value); ++value)
+			{
+				out += (*value - '0') * factor;
+				factor *= 0.1f;
+			}
+		}
+
+		out = (isnegative) ? -out : out;
+		outvector[components++] = sp_ftoc(out);
+	}
 
 	return 1;
 }
@@ -1015,5 +1117,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvFindKeyById",			smn_FindKeyById},
 	{"KvGetNameSymbol",			smn_GetNameSymbol},
 	{"KvGetSectionSymbol",		smn_KvGetSectionSymbol},
+	{"KvGetVector",				smn_KvGetVector},
+	{"KvSetVector",				smn_KvSetVector},
 	{NULL,						NULL}
 };
