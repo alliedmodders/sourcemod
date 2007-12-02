@@ -52,7 +52,7 @@ new Handle:g_Cvar_Nextmap;
 
 new g_MapPos = -1;
 new Handle:g_MapList = INVALID_HANDLE;
-new g_mapFileTime;
+new g_MapListSerial = -1;
  
 public OnPluginStart()
 {
@@ -68,12 +68,6 @@ public OnPluginStart()
 	
 	g_MapList = CreateArray(32);
 
-	if (!LoadMaps(g_MapList, g_mapFileTime))
-	{
-		LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
-		SetFailState("Mapcycle Not Found");		
-	}	
-	
 	HookUserMessage(g_VGUIMenu, UserMsg_VGUIMenu);
 	
 	g_Cvar_Nextmap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_NOTIFY);
@@ -91,7 +85,7 @@ public OnPluginStart()
 	SetConVarString(g_Cvar_Nextmap, currentMap);
 }
  
-public OnMapStart()
+public OnConfigsExecuted()
 {
 	decl String:lastMap[64], String:currentMap[64];
 	GetConVarString(g_Cvar_Nextmap, lastMap, 64);
@@ -102,11 +96,18 @@ public OnMapStart()
 	// not in mapcyclefile. So we keep it set to the last expected nextmap. - ferret
 	if (strcmp(lastMap, currentMap) == 0)
 	{
-		if (!LoadMaps(g_MapList, g_mapFileTime))
+		if (ReadMapList(g_MapList, 
+				g_MapListSerial, 
+				"mapcyclefile", 
+				MAPLIST_FLAG_CLEARARRAY)
+			== INVALID_HANDLE)
 		{
-			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
-			SetFailState("Mapcycle Not Found");	
-		}		
+			if (g_MapListSerial == -1)
+			{
+				LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
+				SetFailState("Mapcycle Not Found");
+			}
+		}
 		
 		FindAndSetNextMap();
 	}
