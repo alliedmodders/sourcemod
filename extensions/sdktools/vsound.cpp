@@ -29,8 +29,333 @@
  * Version: $Id$
  */
 
-#include "extension.h"
-#include "CellRecipientFilter.h"
+#include "vsound.h"
+#include <IForwardSys.h>
+
+SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const Vector &, const char *, float, soundlevel_t, int, int, float);
+SH_DECL_HOOK14_void(IEngineSound, EmitSound, SH_NOATTRIB, 0, IRecipientFilter &, int, int, const char *, float, float, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+SH_DECL_HOOK14_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+
+bool g_InSoundHook = false;
+
+/***************************
+*                          *
+* Sound Related Hook Class *
+*                          *
+****************************/
+
+size_t SoundHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
+{
+	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
+
+	for (size_t i=0; i<size; i++)
+	{
+		pl_array[i] = pFilter->GetRecipientIndex(i);
+	}
+
+	return size;
+}
+
+void SoundHooks::_IncRefCounter(int type)
+{
+	if (type == NORMAL_SOUND_HOOK)
+	{
+		if (m_NormalCount++ == 0)
+		{
+			SH_ADD_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound, false);
+			SH_ADD_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound2, false);
+		}
+	}
+	else if (type == AMBIENT_SOUND_HOOK)
+	{
+		if (m_AmbientCount++ == 0)
+		{
+			SH_ADD_HOOK_MEMFUNC(IVEngineServer, EmitAmbientSound, engine, this, &SoundHooks::OnEmitAmbientSound, false);
+		}
+	}
+}
+
+void SoundHooks::_DecRefCounter(int type)
+{
+	if (type == NORMAL_SOUND_HOOK)
+	{
+		if (--m_NormalCount == 0)
+		{
+			SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound, false);
+			SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound2, false);
+		}
+	}
+	else if (type == AMBIENT_SOUND_HOOK)
+	{
+		if (--m_AmbientCount == 0)
+		{
+			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, EmitAmbientSound, engine, this, &SoundHooks::OnEmitAmbientSound, false);
+		}
+	}
+}
+
+void SoundHooks::Initialize()
+{
+	plsys->AddPluginsListener(this);
+}
+
+void SoundHooks::Shutdown()
+{
+	plsys->RemovePluginsListener(this);
+	if (m_NormalCount)
+	{
+		SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound, false);
+		SH_REMOVE_HOOK_MEMFUNC(IEngineSound, EmitSound, engsound, this, &SoundHooks::OnEmitSound2, false);
+	}
+	if (m_AmbientCount)
+	{
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, EmitAmbientSound, engine, this, &SoundHooks::OnEmitAmbientSound, false);
+	}
+}
+
+void SoundHooks::OnPluginUnloaded(IPlugin *plugin)
+{
+	SoundHookIter iter;
+	IPluginContext *pContext = plugin->GetBaseContext();
+
+	if (m_AmbientCount)
+	{
+		for (iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); )
+		{
+			if ((*iter)->GetParentContext() == pContext)
+			{
+				iter = m_AmbientFuncs.erase(iter);
+				_DecRefCounter(AMBIENT_SOUND_HOOK);
+			}
+			else
+			{
+				iter++;
+			}
+		}
+	}
+	if (m_NormalCount)
+	{
+		for (iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); )
+		{
+			if ((*iter)->GetParentContext() == pContext)
+			{
+				iter = m_NormalFuncs.erase(iter);
+				_DecRefCounter(NORMAL_SOUND_HOOK);
+			}
+			else
+			{
+				iter++;
+			}
+		}
+	}
+}
+
+void SoundHooks::AddHook(int type, IPluginFunction *pFunc)
+{
+	if (type == NORMAL_SOUND_HOOK)
+	{
+		m_NormalFuncs.push_back(pFunc);
+		_IncRefCounter(NORMAL_SOUND_HOOK);
+	}
+	else if (type == AMBIENT_SOUND_HOOK)
+	{
+		m_AmbientFuncs.push_back(pFunc);
+		_IncRefCounter(AMBIENT_SOUND_HOOK);
+	}
+}
+
+bool SoundHooks::RemoveHook(int type, IPluginFunction *pFunc)
+{
+	SoundHookIter iter;
+	if (type == NORMAL_SOUND_HOOK)
+	{
+		if ((iter=m_NormalFuncs.find(pFunc)) != m_NormalFuncs.end())
+		{
+			m_NormalFuncs.erase(iter);
+			_DecRefCounter(NORMAL_SOUND_HOOK);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (type == AMBIENT_SOUND_HOOK)
+	{
+		if ((iter=m_AmbientFuncs.find(pFunc)) != m_AmbientFuncs.end())
+		{
+			m_AmbientFuncs.erase(iter);
+			_DecRefCounter(AMBIENT_SOUND_HOOK);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return false;
+}
+
+void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
+									soundlevel_t soundlevel, int fFlags, int pitch, float delay)
+{
+	SoundHookIter iter;
+	IPluginFunction *pFunc;
+	cell_t vec[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
+	cell_t res = static_cast<ResultType>(Pl_Continue);
+	char buffer[PLATFORM_MAX_PATH];
+	strcpy(buffer, samp);
+
+	for (iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); iter++)
+	{
+		pFunc = (*iter);
+		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&entindex);
+		pFunc->PushFloatByRef(&vol);
+		pFunc->PushCellByRef(reinterpret_cast<cell_t *>(&soundlevel));
+		pFunc->PushCellByRef(&pitch);
+		pFunc->PushArray(vec, 3, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&fFlags);
+		pFunc->PushFloatByRef(&delay);
+		g_InSoundHook = true;
+		pFunc->Execute(&res);
+		g_InSoundHook = false;
+
+		switch (res)
+		{
+		case Pl_Handled:
+		case Pl_Stop:
+			{
+				RETURN_META(MRES_SUPERCEDE);
+			}
+		case Pl_Changed:
+			{
+				Vector vec2;
+				vec2.x = sp_ctof(vec[0]);
+				vec2.y = sp_ctof(vec[1]);
+				vec2.z = sp_ctof(vec[2]);
+				RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::EmitAmbientSound, 
+										(entindex, vec2, buffer, vol, soundlevel, fFlags, pitch, delay));
+			}
+		}
+	}
+}
+
+void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, 
+							 float flVolume, soundlevel_t iSoundlevel, int iFlags, int iPitch, const Vector *pOrigin, 
+							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+							 float soundtime, int speakerentity)
+{
+	SoundHookIter iter;
+	IPluginFunction *pFunc;
+	cell_t res = static_cast<ResultType>(Pl_Continue);
+	char buffer[PLATFORM_MAX_PATH];
+	strcpy(buffer, pSample);
+
+	for (iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
+	{
+		int players[64], size;
+		size = _FillInPlayers(players, &filter);
+		pFunc = (*iter);
+
+		pFunc->PushArray(players, 64, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&size);
+		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&iEntIndex);
+		pFunc->PushCellByRef(&iChannel);
+		pFunc->PushFloatByRef(&flVolume);
+		pFunc->PushCellByRef(reinterpret_cast<cell_t *>(&iSoundlevel));
+		pFunc->PushCellByRef(&iPitch);
+		pFunc->PushCellByRef(&iFlags);
+		g_InSoundHook = true;
+		pFunc->Execute(&res);
+		g_InSoundHook = false;
+
+		switch (res)
+		{
+		case Pl_Handled:
+		case Pl_Stop:
+			{
+				RETURN_META(MRES_SUPERCEDE);
+			}
+		case Pl_Changed:
+			{
+				CellRecipientFilter crf;
+				crf.Initialize(players, size);
+				RETURN_META_NEWPARAMS(
+					MRES_IGNORED,
+					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
+					int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
+					(crf, iEntIndex, iChannel, buffer, flVolume, iSoundlevel, iFlags, iPitch, pOrigin, 
+					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+					);
+			}
+		}
+	}
+}
+
+void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, 
+							 float flVolume, float flAttenuation, int iFlags, int iPitch, const Vector *pOrigin, 
+							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+							 float soundtime, int speakerentity)
+{
+	SoundHookIter iter;
+	IPluginFunction *pFunc;
+	cell_t res = static_cast<ResultType>(Pl_Continue);
+	cell_t sndlevel = static_cast<cell_t>(ATTN_TO_SNDLVL(flAttenuation));
+	char buffer[PLATFORM_MAX_PATH];
+	strcpy(buffer, pSample);
+
+	for (iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
+	{
+		int players[64], size;
+		size = _FillInPlayers(players, &filter);
+		pFunc = (*iter);
+
+		pFunc->PushArray(players, 64, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&size);
+		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&iEntIndex);
+		pFunc->PushCellByRef(&iChannel);
+		pFunc->PushFloatByRef(&flVolume);
+		pFunc->PushCellByRef(&sndlevel);
+		pFunc->PushCellByRef(&iPitch);
+		pFunc->PushCellByRef(&iFlags);
+		g_InSoundHook = true;
+		pFunc->Execute(&res);
+		g_InSoundHook = false;
+
+		switch (res)
+		{
+		case Pl_Handled:
+		case Pl_Stop:
+			{
+				RETURN_META(MRES_SUPERCEDE);
+			}
+		case Pl_Changed:
+			{
+				CellRecipientFilter crf;
+				crf.Initialize(players, size);
+				RETURN_META_NEWPARAMS(
+					MRES_IGNORED,
+					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, float, 
+					int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
+					(crf, iEntIndex, iChannel, buffer, flVolume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(sndlevel)), 
+					iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+					);
+			}
+		}
+	}
+}
+
+/************************
+*                       *
+* Sound Related Natives *
+*                       *
+*************************/
+
+SoundHooks s_SoundHooks;
 
 static cell_t PrefetchSound(IPluginContext *pContext, const cell_t *params)
 {
@@ -74,7 +399,14 @@ static cell_t EmitAmbientSound(IPluginContext *pContext, const cell_t *params)
 	pitch = params[7];
 	delay = sp_ctof(params[8]);
 
-	engine->EmitAmbientSound(entity, pos, name, vol, (soundlevel_t)level, flags, pitch, delay);
+	if (g_InSoundHook)
+	{
+		ENGINE_CALL(EmitAmbientSound)(entity, pos, name, vol, (soundlevel_t)level, flags, pitch, delay);
+	}
+	else
+	{
+		engine->EmitAmbientSound(entity, pos, name, vol, (soundlevel_t)level, flags, pitch, delay);
+	}
 
 	return 1;
 }
@@ -186,8 +518,54 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 			player[0] = pl_addr[i];
 			crf.Reset();
 			crf.Initialize(player, 1);
-			engsound->EmitSound(crf, 
-				player[0], 
+			if (g_InSoundHook)
+			{
+				SH_CALL(enginesoundPatch, 
+					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+					soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
+					(&IEngineSound::EmitSound))
+					(crf, 
+					player[0], 
+					channel, 
+					sample, 
+					vol, 
+					(soundlevel_t)level, 
+					flags, 
+					pitch, 
+					pOrigin,
+					pDir,
+					pOrigVec,
+					updatePos,
+					soundtime,
+					speakerentity);
+			}
+			else
+			{
+				engsound->EmitSound(crf, 
+					player[0], 
+					channel, 
+					sample, 
+					vol, 
+					(soundlevel_t)level, 
+					flags, 
+					pitch, 
+					pOrigin,
+					pDir,
+					pOrigVec,
+					updatePos,
+					soundtime,
+					speakerentity);
+			}
+		}
+	} else {
+		if (g_InSoundHook)
+		{
+			SH_CALL(enginesoundPatch, 
+				static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+				soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
+				(&IEngineSound::EmitSound))
+				(crf, 
+				entity, 
 				channel, 
 				sample, 
 				vol, 
@@ -201,21 +579,23 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 				soundtime,
 				speakerentity);
 		}
-	} else {
-		engsound->EmitSound(crf, 
-			entity, 
-			channel, 
-			sample, 
-			vol, 
-			(soundlevel_t)level, 
-			flags, 
-			pitch, 
-			pOrigin,
-			pDir,
-			pOrigVec,
-			updatePos,
-			soundtime,
-			speakerentity);
+		else
+		{
+			engsound->EmitSound(crf, 
+				entity, 
+				channel, 
+				sample, 
+				vol, 
+				(soundlevel_t)level, 
+				flags, 
+				pitch, 
+				pOrigin,
+				pDir,
+				pOrigVec,
+				updatePos,
+				soundtime,
+				speakerentity);
+		}
 	}
 
 	return 1;
@@ -296,14 +676,76 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_AddAmbientSoundHook(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[1]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+	}
+
+	s_SoundHooks.AddHook(AMBIENT_SOUND_HOOK, pFunc);
+
+	return 1;
+}
+
+static cell_t smn_AddNormalSoundHook(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[1]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+	}
+
+	s_SoundHooks.AddHook(NORMAL_SOUND_HOOK, pFunc);
+
+	return 1;
+}
+
+static cell_t smn_RemoveAmbientSoundHook(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[1]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+	}
+
+	if (!s_SoundHooks.RemoveHook(AMBIENT_SOUND_HOOK, pFunc))
+	{
+		return pContext->ThrowNativeError("Invalid hooked function");
+	}
+
+	return 1;
+}
+
+static cell_t smn_RemoveNormalSoundHook(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc = pContext->GetFunctionById(params[1]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+	}
+
+	if (!s_SoundHooks.RemoveHook(NORMAL_SOUND_HOOK, pFunc))
+	{
+		return pContext->ThrowNativeError("Invalid hooked function");
+	}
+
+	return 1;
+}
+
 sp_nativeinfo_t g_SoundNatives[] = 
 {
-	{"EmitAmbientSound",	EmitAmbientSound},
-	{"EmitSentence",		EmitSentence},
-	{"EmitSound",			EmitSound},
-	{"FadeClientVolume",	FadeClientVolume},
-	{"GetSoundDuration",	GetSoundDuration},
-	{"PrefetchSound",		PrefetchSound},
-	{"StopSound",			StopSound},
-	{NULL,					NULL},
+	{"EmitAmbientSound",		EmitAmbientSound},
+	{"EmitSentence",			EmitSentence},
+	{"EmitSound",				EmitSound},
+	{"FadeClientVolume",		FadeClientVolume},
+	{"GetSoundDuration",		GetSoundDuration},
+	{"PrefetchSound",			PrefetchSound},
+	{"StopSound",				StopSound},
+	{"AddAmbientSoundHook",		smn_AddAmbientSoundHook},
+	{"AddNormalSoundHook",		smn_AddNormalSoundHook},
+	{"RemoveAmbientSoundHook",	smn_RemoveAmbientSoundHook},
+	{"RemoveNormalSoundHook",	smn_RemoveNormalSoundHook},
+	{NULL,						NULL},
 };

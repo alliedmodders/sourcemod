@@ -108,5 +108,10 @@ extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
 /* Call Wrappers */
 extern ICallWrapper *g_pAcceptInput;
+/* Call classes */
+extern SourceHook::CallClass<IVEngineServer> *enginePatch;
+extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;
+
+#define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

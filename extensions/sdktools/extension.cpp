@@ -35,6 +35,7 @@
 #include "vhelpers.h"
 #include "vglobals.h"
 #include "tempents.h"
+#include "vsound.h"
 
 #if defined ORANGEBOX_BUILD
 	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2"
@@ -63,6 +64,8 @@ IServerGameClients *serverClients = NULL;
 IVoiceServer *voiceserver = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
 ICvar *icvar = NULL;
+SourceHook::CallClass<IVEngineServer> *enginePatch = NULL;
+SourceHook::CallClass<IEngineSound> *enginesoundPatch = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
 
@@ -149,6 +152,7 @@ void SDKTools::SDK_OnUnload()
 
 	g_TEManager.Shutdown();
 	s_TempEntHooks.Shutdown();
+	s_SoundHooks.Shutdown();
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
@@ -156,6 +160,17 @@ void SDKTools::SDK_OnUnload()
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
+
+	if (enginePatch)
+	{
+		SH_RELEASE_CALLCLASS(enginePatch);
+		enginePatch = NULL;
+	}
+	if (enginesoundPatch)
+	{
+		SH_RELEASE_CALLCLASS(enginesoundPatch);
+		enginesoundPatch = NULL;
+	}
 }
 
 bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -170,6 +185,9 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetServerFactory, playerinfomngr, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
+	enginePatch = SH_GET_CALLCLASS(engine);
+	enginesoundPatch = SH_GET_CALLCLASS(engsound);
+
 	return true;
 }
 
@@ -179,6 +197,7 @@ void SDKTools::SDK_OnAllLoaded()
 
 	g_TEManager.Initialize();
 	s_TempEntHooks.Initialize();
+	s_SoundHooks.Initialize();
 	InitializeValveGlobals();
 }
 

@@ -256,6 +256,77 @@ native EmitSentence(const clients[],
 				 Float:soundtime = 0.0,
 				 any:...);
 
+/**
+ * Called when an ambient sound is about to be emitted to one or more clients.
+ *
+ * NOTICE: all parameters can be overwritten to modify the default behavior.
+ *
+ * @param sample	Sound file name relative to the "sounds" folder.
+ * @param entity	Entity index associated to the sound.
+ * @param volume	Volume (from 0.0 to 1.0).
+ * @param level		Sound level (from 0 to 255).
+ * @param pitch		Pitch (from 0 to 255).
+ * @param pos		Origin of sound.
+ * @param flags		Sound flags.
+ * @param delay		Play delay.
+ * @return		Plugin_Continue to allow the sound to be played, Plugin_Stop to block it, 
+ *			  Plugin_Changed when any parameter has been modified.
+ */
+functag AmbientSHook Action:public(String:sample[PLATFORM_MAX_PATH], &entity, &Float:volume, &level, &pitch, Float:pos[3], &flags, &Float:delay);
+
+/**
+ * Called when a sound is going to be emitted to one or more clients.
+ * NOTICE: all params can be overwritten to modify the default behaviour.
+ *
+ * @param clients		Array of client indexes.
+ * @param numClients		Number of clients in the array (modify this value if you add/remove elements from the client array).
+ * @param sample		Sound file name relative to the "sounds" folder.
+ * @param entity		Entity emitting the sound.
+ * @param channel		Channel emitting the sound.
+ * @param volume		Sound volume.
+ * @param level			Sound level.
+ * @param pitch			Sound pitch.
+ * @param flags			Sound flags.
+ * @return			Plugin_Continue to allow the sound to be played, Plugin_Stop to block it, 
+ *				  Plugin_Changed when any parameter has been modified.
+ */
+functag NormalSHook Action:public(clients[64], &numClients, String:sample[PLATFORM_MAX_PATH], &entity, &channel, &Float:volume, &level, &pitch, &flags);
+
+/**
+ * Hooks all played ambient sounds.
+ *
+ * @param hook		Function to use as a hook.
+ * @noreturn
+ * @error		Invalid function hook.
+ */
+native AddAmbientSoundHook(AmbientSHook:hook);
+
+/**
+ * Hooks all played normal sounds.
+ *
+ * @param hook		Function to use as a hook.
+ * @noreturn
+ * @error		Invalid function hook.
+ */
+native AddNormalSoundHook(NormalSHook:hook);
+
+/**
+ * Unhooks all played ambient sounds.
+ *
+ * @param hook		Function used for the hook.
+ * @noreturn
+ * @error		Invalid function hook.
+ */
+native RemoveAmbientSoundHook(AmbientSHook:hook);
+
+/**
+ * Unhooks all played normal sounds.
+ *
+ * @param hook		Function used for the hook.
+ * @noreturn
+ * @error		Invalid function hook.
+ */
+native RemoveNormalSoundHook(NormalSHook:hook);
 				 
 /**
  * Wrapper to emit sound to one client.

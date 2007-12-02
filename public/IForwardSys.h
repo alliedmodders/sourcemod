@@ -65,6 +65,7 @@ namespace SourceMod
 	enum ResultType
 	{
 		Pl_Continue = 0,	/**< No result */
+		Pl_Changed = 1,		/**< Inputs or outputs have been overridden with new values */
 		Pl_Handled = 3,		/**< Result was handled, stop at the end */
 		Pl_Stop = 4,		/**< Result was handled, stop now */
 	};

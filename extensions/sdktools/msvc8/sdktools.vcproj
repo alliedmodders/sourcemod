@@ -770,6 +770,10 @@
 				RelativePath="..\vnatives.h"
 				>
 			</File>
+			<File
+				RelativePath="..\vsound.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
