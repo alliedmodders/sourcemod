@@ -1379,6 +1379,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_maplists.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_menus.cpp"
 				>
 			</File>

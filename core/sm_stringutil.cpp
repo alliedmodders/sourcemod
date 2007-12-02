@@ -1275,3 +1275,34 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 
 	return NULL;
 }
+
+char *UTIL_TrimWhitespace(char *str, size_t &len)
+{
+	char *end = str + len - 1;
+
+	if (!len)
+	{
+		return str;
+	}
+
+	/* Iterate backwards through string until we reach first non-whitespace char */
+	while (end >= str && textparsers->IsWhitespace(end))
+	{
+		end--;
+		len--;
+	}
+
+	/* Replace first whitespace char (at the end) with null terminator.
+	 * If there is none, we're just replacing the null terminator. 
+	 */
+	*(end + 1) = '\0';
+
+	while (*str != '\0' && textparsers->IsWhitespace(str))
+	{
+		str++;
+		len--;
+	}
+
+	return str;
+}
+

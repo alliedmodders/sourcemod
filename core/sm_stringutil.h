@@ -52,5 +52,6 @@ char *sm_strdup(const char *str);
 size_t CorePlayerTranslate(int client, char *buffer, size_t maxlength, const char *phrase, void **params);
 unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace);
 char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen);
+char *UTIL_TrimWhitespace(char *str, size_t &len);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_

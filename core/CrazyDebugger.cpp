@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
-#if defined DEBUG
+#if 0
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "Tlhelp32.h"

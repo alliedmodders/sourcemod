@@ -49,7 +49,6 @@ public Plugin:myinfo =
 new Handle:hTopMenu = INVALID_HANDLE;
 
 new Handle:g_MapList;
-new g_mapFileTime;
 
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
@@ -82,6 +81,10 @@ public OnPluginStart()
 	g_MapList = CreateMenu(MenuHandler_ChangeMap);
 	SetMenuTitle(g_MapList, "Please select a map");
 	SetMenuExitBackButton(g_MapList, true);
+	
+	decl String:mapListPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
+	SetMapListCompatBind("admin menu", mapListPath);
 }
 
 public OnMapStart()

@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sys/stat.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -395,4 +396,33 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 
 	/* We scanned and found no path separator */
 	return UTIL_Format(buffer, maxlength, "%s", path);
+}
+
+bool LibrarySystem::FileTime(const char *path, FileTimeType type, time_t *pTime)
+{
+#ifdef PLATFORM_WINDOWS
+	struct _stat s;
+	if (_stat(path, &s) != 0)
+#elif defined PLATFORM_POSIX
+	struct stat s;
+	if (stat(path, &s) != 0)
+#endif
+	{
+		return false;
+	}
+
+	if (type == FileTime_LastAccess)
+	{
+		*pTime = s.st_atime;
+	}
+	else if (type == FileTime_Created)
+	{
+		*pTime = s.st_ctime;
+	}
+	else if (type == FileTime_LastChange)
+	{
+		*pTime = s.st_mtime;
+	}
+
+	return true;
 }

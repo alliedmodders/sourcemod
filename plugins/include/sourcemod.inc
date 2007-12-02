@@ -490,6 +490,70 @@ forward OnLibraryAdded(const String:name[]);
  */
 forward OnLibraryRemoved(const String:name[]);
 
+#define MAPLIST_FLAG_MAPSFOLDER		(1<<0)		/**< On failure, use all maps in the maps folder. */
+#define MAPLIST_FLAG_CLEARARRAY		(1<<1)		/**< If an input array is specified, clear it before adding. */
+#define MAPLIST_FLAG_NO_DEFAULT		(1<<2)		/**< Do not read "default" or "mapcyclefile" on failure. */
+
+/**
+ * Loads a map list to an ADT Array.
+ *
+ * A map list is a list of maps from a file.  SourceMod allows easy configuration of 
+ * maplists through addons/sourcemod/configs/maplists.cfg.  Each entry is given a 
+ * name and a file (for example, "rtv" => "rtv.cfg"), or a name and a redirection 
+ * (for example, "rtv" => "default").  This native will read a map list entry, 
+ * cache the file, and return the list of maps it holds.  
+ *
+ * Serial change numbers are used to identify if a map list has changed.  Thus, if 
+ * you pass a serial change number and it's equal to what SourceMod currently knows 
+ * about the map list, then SourceMod won't reparse the file.
+ *
+ * If the maps end up being read from the maps folder (MAPLIST_FLAG_MAPSFOLDER), they 
+ * are automatically sorted in alphabetical, ascending order.
+ *
+ * @param array			Array to store the map list.  If INVALID_HANDLE, a new blank 
+ *						array will be created.  The blocksize should be at least 16; 
+ *						otherwise results may be truncated.  Items are added to the array 
+ *						as strings.  The array is never checked for duplicates, and it is 
+ *						not read beforehand.  Only the serial number is used to detect 
+ *						changes.
+ * @param str			Config name, or "default" for the default map list.  Config names 
+ *						should be somewhat descriptive.  For example, the admin menu uses 
+ *						a config name of "admin menu".  The list names can be configured 
+ *						by users in addons/sourcemod/configs/maplists.cfg.
+ * @param serial		Serial number to identify last known map list change.  If -1, the 
+ *						the value will not be checked.  If the map list has since changed, 
+ *						the serial is updated (even if -1 was passed).  If there is an error 
+ *						finding a valid maplist, then the serial is set to -1.
+ * @param flags			MAPLIST_FLAG flags.
+ * @return				On failure:
+ *						 INVALID_HANDLE is returned, the serial is set to -1, and the input 
+ *						 array (if any) is left unchanged.
+ *						On no change:
+ 						 INVALID_HANDLE is returned, the serial is unchanged, and the input 
+ 						 array (if any) is left unchanged.
+ *						On success:
+ *						 A valid array Handle is returned, containing at least one map string.  
+ *						 If an array was passed, the return value is equal to the passed Array 
+ *						 Handle.  If the passed array was not cleared, it will have grown by at 
+ *						 least one item.  The serial number is updated to a positive number.
+ * @error				Invalid array Handle that is not INVALID_HANDLE.
+ */
+native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
+						  &serial=-1,
+						  const String:str[]="default",
+						  flags=MAPLIST_FLAG_CLEARARRAY);
+						  
+/**
+ * Makes a compatibility binding for map lists.  For example, if a function previously used 
+ * "clam.cfg" for map lists, this function will insert a "fake" binding to "clam.cfg" that 
+ * will be overridden if it's in the maplists.cfg file.
+ *
+ * @param name			Configuration name that would be used with ReadMapList().
+ * @param file			Default file to use.
+ * @noreturn
+ */
+native SetMapListCompatBind(const String:name[], const String:file[]);
+
 #include <helpers>
 #include <entity>
 

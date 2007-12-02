@@ -557,13 +557,6 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-enum
-{
-	FileTime_LastAccess = 0,	/* Last access (not available on FAT) */
-	FileTime_Created = 1,		/* Creation (not available on FAT) */
-	FileTime_LastChange = 2,	/* Last modification */
-};
-
 static cell_t sm_GetFileTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -574,30 +567,16 @@ static cell_t sm_GetFileTime(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
+	time_t time_val;
 	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
-#ifdef PLATFORM_WINDOWS
-	struct _stat s;
-	if (_stat(realpath, &s) != 0)
-#elif defined PLATFORM_POSIX
-	struct stat s;
-	if (stat(realpath, &s) != 0)
-#endif
+	if (!g_LibSys.FileTime(realpath, (FileTimeType)params[2], &time_val))
 	{
 		return -1;
-	} else {
-		if (params[2] == FileTime_LastAccess)
-		{
-			return (cell_t)s.st_atime;
-		} else if (params[2] == FileTime_Created) {
-			return (cell_t)s.st_ctime;
-		} else if (params[2] == FileTime_LastChange) {
-			return (cell_t)s.st_mtime;
-		}
 	}
 
-	return -1;
+	return (cell_t)time_val;
 }
 
 static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)

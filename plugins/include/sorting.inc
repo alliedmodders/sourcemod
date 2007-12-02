@@ -48,8 +48,8 @@ enum SortOrder
 /**
  * Data types for ADT Array Sorts
  */
-  enum SortType
- {
+enum SortType
+{
  	Sort_Integer = 0,
  	Sort_Float,
  	Sort_String,
@@ -147,7 +147,7 @@ native SortCustom2D(array[][], array_size, SortFunc2D:sortfunc, Handle:hndl=INVA
  * @param type			Data type stored in the ADT Array
  * @noreturn
  */
-native SortADTArray(Handle:array, SortOrder:order = Sort_Ascending, SortType:type = Sort_Integer);
+native SortADTArray(Handle:array, SortOrder:order, SortType:type);
 
 /**
  * Sort comparison function for ADT Array elements. Function provides you with

@@ -42,7 +42,14 @@
 namespace SourceMod
 {
 	#define SMINTERFACE_LIBRARYSYS_NAME		"ILibrarySys"
-	#define SMINTERFACE_LIBRARYSYS_VERSION	3
+	#define SMINTERFACE_LIBRARYSYS_VERSION	4
+
+	enum FileTimeType
+	{
+		FileTime_LastAccess = 0,	/* Last access (not available on FAT) */
+		FileTime_Created = 1,		/* Creation (not available on FAT) */
+		FileTime_LastChange = 2,	/* Last modification */
+	};
 
 	class ILibrary
 	{
@@ -202,6 +209,19 @@ namespace SourceMod
 		 * @return			True on success, false otherwise.
 		 */
 		virtual bool CreateFolder(const char *path) =0;
+
+		/**
+		 * @brief Returns the requested timestamp of a file.
+		 *
+		 * NOTE: On FAT file systems, the access and creation times 
+		 * may not be valid.
+		 *
+		 * @param path		Path to file.
+		 * @param type		FileTimeType of time value to request.
+		 * @param pTime		Pointer to store time.
+		 * @return			True on success, false on failure.
+		 */
+		virtual bool FileTime(const char *path, FileTimeType type, time_t *pTime) =0;
 	};
 }
 
