@@ -38,6 +38,7 @@
  */
 
 #include <IShareSys.h>
+#include <time.h>
 
 namespace SourceMod
 {
