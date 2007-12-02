@@ -209,7 +209,6 @@ public Action:Command_AddBan(client, args)
 	}
 
 	decl String:arg_string[256];
-	new String:reason[128];
 	new String:time[50];
 	new String:authid[50];
 
@@ -228,9 +227,12 @@ public Action:Command_AddBan(client, args)
 	/* Get steamid */
 	if ((len = BreakString(arg_string[total_len], authid, sizeof(authid))) != -1)
 	{
-		/* Get reason */
 		total_len += len;
-		BreakString(arg_string[total_len], reason, sizeof(reason));
+	}
+	else
+	{
+		total_len = 0;
+		arg_string[0] = '\0';
 	}
 
 	/* Verify steamid */
@@ -248,11 +250,11 @@ public Action:Command_AddBan(client, args)
 			  client, 
 			  minutes, 
 			  authid, 
-			  reason);
+			  arg_string[total_len]);
 	BanIdentity(authid, 
 				minutes, 
 				BANFLAG_AUTHID, 
-				reason, 
+				arg_string[total_len], 
 				"sm_addban", 
 				client);
 
