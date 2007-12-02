@@ -1425,7 +1425,15 @@
 			UniqueIdentifier="{2A750240-7C10-455f-A900-B9A9D362356C}"
 			>
 			<File
-				RelativePath="..\Makefile"
+				RelativePath="..\Makefile.ep1"
+				>
+			</File>
+			<File
+				RelativePath="..\Makefile.ep2"
+				>
+			</File>
+			<File
+				RelativePath="..\Makefile.orig"
 				>
 			</File>
 			<File
