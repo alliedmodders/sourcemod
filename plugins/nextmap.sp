@@ -99,7 +99,7 @@ public OnConfigsExecuted()
 		if (ReadMapList(g_MapList, 
 				g_MapListSerial, 
 				"mapcyclefile", 
-				MAPLIST_FLAG_CLEARARRAY)
+				MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT)
 			== INVALID_HANDLE)
 		{
 			if (g_MapListSerial == -1)
