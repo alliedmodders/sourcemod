@@ -1,5 +1,4 @@
 new Handle:g_MapList = INVALID_HANDLE;
-new g_mapFileTime;
 new g_mapCount;
 
 new Handle:g_SelectedMaps;
@@ -215,111 +214,37 @@ public Action:Command_Votemap(client, args)
 	return Plugin_Handled;	
 }
 
+new Handle:g_map_array = INVALID_HANDLE;
+new g_map_serial = -1;
+
 LoadMapList(Handle:menu)
 {
-	decl String:mapPath[256];
-	BuildPath(Path_SM, mapPath, sizeof(mapPath), "configs/adminmenu_maplist.ini");
+	new Handle:map_array;
 	
-	if (!FileExists(mapPath))
-	{	
-		if (g_MapList != INVALID_HANDLE)
-		{
-			RemoveAllMenuItems(menu);
-		}
-		
-		return LoadMapFolder(menu);		
-	}
-
-	// If the file hasn't changed, there's no reason to reload
-	// all of the maps.
-	new fileTime =  GetFileTime(mapPath, FileTime_LastChange);
-	if (g_mapFileTime == fileTime)
+	if ((map_array = ReadMapList(g_map_array,
+			g_map_serial,
+			"sm_votemap menu",
+			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT|MAPLIST_FLAG_MAPSFOLDER))
+		!= INVALID_HANDLE)
 	{
-		return GetMenuItemCount(menu);
+		g_map_array = map_array;
 	}
 	
-	g_mapFileTime = fileTime;
-	
-	// Reset the array
-	if (g_MapList != INVALID_HANDLE)
+	if (g_map_array == INVALID_HANDLE)
 	{
-		RemoveAllMenuItems(menu);
-	}
-
-	new Handle:file = OpenFile(mapPath, "rt");
-	if (file == INVALID_HANDLE)
-	{
-		LogError("[SM] Could not open file: %s, reverting to map folder", mapPath);
-		return LoadMapFolder(menu);
-	}
-	
-	decl String:buffer[256], len;
-	while (!IsEndOfFile(file) && ReadFileLine(file, buffer, sizeof(buffer)))
-	{
-		TrimString(buffer);
-
-		if ((len = StrContains(buffer, ".bsp", false)) != -1)
-		{
-			buffer[len] = '\0';
-		}
-
-		if (buffer[0] == '\0' 
-			|| buffer[0] == ';'
-			|| buffer[0] == '/'
-			|| !IsValidConVarChar(buffer[0]) 
-			|| !IsMapValid(buffer))
-		{
-			continue;
-		}
-
-		AddMenuItem(menu, buffer, buffer);
-	}
-
-	CloseHandle(file);
-	
-	new count = GetMenuItemCount(menu);
-	
-	if (!count)
-	{
-		return LoadMapFolder(menu);
-	} 
-	else
-	{
-		return count;
-	}
-}
-
-LoadMapFolder(Handle:menu)
-{
-	LogMessage("[SM] Loading menu map list from maps folder");
-	
-	new Handle:mapDir = OpenDirectory("maps/");
-	
-	if (mapDir == INVALID_HANDLE)
-	{
-		LogError("[SM] Could not open map directory for reading");
 		return 0;
 	}
 	
-	new String:mapName[64];
-	new String:buffer[64];
-	new FileType:fileType;
-	new len;
+	RemoveAllMenuItems(menu);
 	
-	while(ReadDirEntry(mapDir, mapName, sizeof(mapName), fileType))
+	decl String:map_name[64];
+	new map_count = GetArraySize(g_map_array);
+	
+	for (new i = 0; i < map_count; i++)
 	{
-		if(fileType == FileType_File)
-		{
-			len = strlen(mapName);
-
-			if(SplitString(mapName, ".bsp", buffer, sizeof(buffer)) == len)
-			{
-				AddMenuItem(menu, buffer, buffer);
-			}
-		}
-  	}
-  	
-  	CloseHandle(mapDir);
-  	
-  	return GetMenuItemCount(menu);
+		GetArrayString(g_map_array, i, map_name, sizeof(map_name));
+		AddMenuItem(menu, map_name, map_name);
+	}
+	
+	return map_count;
 }

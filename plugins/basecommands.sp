@@ -84,14 +84,17 @@ public OnPluginStart()
 	
 	decl String:mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
-	SetMapListCompatBind("admin menu", mapListPath);
+	SetMapListCompatBind("sm_map menu", mapListPath);
 }
 
 public OnMapStart()
 {
-	LoadMapList(g_MapList);
-	
 	ParseConfigs();
+}
+
+public OnConfigsExecuted()
+{
+	LoadMapList(g_MapList);
 }
 
 public OnAdminMenuReady(Handle:topmenu)

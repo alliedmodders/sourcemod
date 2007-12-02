@@ -121,9 +121,13 @@ public OnPluginStart()
 	g_MapList = CreateMenu(MenuHandler_Map, MenuAction_DrawItem);
 	SetMenuTitle(g_MapList, "Please select a map");
 	SetMenuExitBackButton(g_MapList, true);
+	
+	decl String:mapListPath[PLATFORM_MAX_PATH];
+	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
+	SetMapListCompatBind("sm_votemap menu", mapListPath);
 }
 
-public OnMapStart()
+public OnConfigsExecuted()
 {
 	g_mapCount = LoadMapList(g_MapList);
 }

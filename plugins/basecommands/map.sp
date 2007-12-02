@@ -91,7 +91,7 @@ LoadMapList(Handle:menu)
 	
 	if ((map_array = ReadMapList(g_map_array,
 			g_map_serial,
-			"admin menu",
+			"sm_map menu",
 			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT|MAPLIST_FLAG_MAPSFOLDER))
 		!= INVALID_HANDLE)
 	{
