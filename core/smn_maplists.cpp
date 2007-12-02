@@ -328,7 +328,7 @@ public:
 	CellArray *UpdateMapList(CellArray *pUseArray, const char *name, int *pSerial, unsigned int flags)
 	{
 		int change_serial;
-		CellArray *pNewArray;
+		CellArray *pNewArray = NULL;
 		bool success, free_new_array;
 
 		free_new_array = false;
