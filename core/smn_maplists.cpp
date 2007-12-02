@@ -77,7 +77,6 @@ public:
 	}
 	void OnSourceModAllInitialized()
 	{
-		m_pMapCycleFile = icvar->FindVar("mapcyclefile");
 		g_SourceMod.BuildPath(Path_SM, m_ConfigFile, sizeof(m_ConfigFile), "configs/maplists.cfg");
 	}
 	void OnSourceModShutdown()
@@ -156,6 +155,8 @@ public:
 		{
 			return;
 		}
+
+		m_pMapCycleFile = icvar->FindVar("mapcyclefile");
 
 		/* Dump everything we know about. */
 		List<maplist_info_t *> compat;
@@ -343,7 +344,7 @@ public:
 					success = GetMapList(&pNewArray, name, &change_serial);
 				}
 				/* If either of the last two conditions failed, try again if we can. */
-				if (!success)
+				if (!success && strcmp(name, "mapcyclefile") != 0)
 				{
 					success = GetMapList(&pNewArray, "mapcyclefile", &change_serial);
 				}
