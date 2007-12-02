@@ -510,6 +510,10 @@ forward OnLibraryRemoved(const String:name[]);
  * If the maps end up being read from the maps folder (MAPLIST_FLAG_MAPSFOLDER), they 
  * are automatically sorted in alphabetical, ascending order.
  *
+ * Arrays created by this function are temporary and must be freed via CloseHandle().
+ * Modifying arrays created by this function will not affect future return values or 
+ * or the contents of arrays returned to other plugins.
+ *
  * @param array			Array to store the map list.  If INVALID_HANDLE, a new blank 
  *						array will be created.  The blocksize should be at least 16; 
  *						otherwise results may be truncated.  Items are added to the array 
