@@ -500,9 +500,16 @@ private:
 
 		if (m_pMapCycleFile != NULL && strcmp(name, "mapcyclefile") == 0)
 		{
-			if (strcmp(m_pMapCycleFile->GetString(), pMapList->path) != 0)
+			char path[PLATFORM_MAX_PATH];
+			g_SourceMod.BuildPath(Path_Game,
+				path, 
+				sizeof(path),
+				"%s",
+				m_pMapCycleFile ? m_pMapCycleFile->GetString() : "mapcycle.txt");
+
+			if (strcmp(path, pMapList->path) != 0)
 			{
-				strncopy(pMapList->path, m_pMapCycleFile->GetString(), sizeof(pMapList->path));
+				strncopy(pMapList->path, path, sizeof(pMapList->path));
 				pMapList->last_modified_time = 0;
 			}
 		}
