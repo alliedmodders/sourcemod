@@ -317,17 +317,37 @@ public Action:Command_SmPsay(client, args)
 		return Plugin_Handled;	
 		
 	decl String:name[64], String:name2[64];
-	GetClientName(client, name, sizeof(name));
+
+	if (client == 0)
+	{
+		name = "Console";
+	}
+	else
+	{
+		GetClientName(client, name, sizeof(name));
+	}
+
 	GetClientName(target, name2, sizeof(name2));
 
-	if (g_DoColor)
+	if (client == 0)
+	{
+		PrintToServer("(Private: %s) %s: %s", name2, name, message);
+	}
+	else if (g_DoColor)
 	{
 		PrintToChat(client, "\x04(Private: %s) %s: \x01%s", name2, name, message);
-		PrintToChat(target, "\x04(Private: %s) %s: \x01%s", name2, name, message);
 	}
 	else
 	{
 		PrintToChat(client, "(Private: %s) %s: %s", name2, name, message);
+	}
+
+	if (g_DoColor)
+	{
+		PrintToChat(target, "\x04(Private: %s) %s: \x01%s", name2, name, message);
+	}
+	else
+	{
 		PrintToChat(target, "(Private: %s) %s: %s", name2, name, message);		
 	}
 
