@@ -25,22 +25,13 @@
 			}
 		}
 	}
-
+	
 	/* General Temp Entities */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
-			"game"		"dod"
-			"game"		"hl2mp"
-			"game"		"ship"
-			"game"		"!Dystopia"
-			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
-			"game"		"!SourceForts v1.9.2"
-			"game"		"FortressForever"
-			"game"		"empires"
+			"game"		"tf"
 		}
 
 		"Offsets"
@@ -62,8 +53,8 @@
 			}
 			"TE_GetServerClass"
 			{
-				"windows"	"1"
-				"linux"		"1"
+				"windows"	"0"
+				"linux"		"0"
 			}
 		}
 
@@ -82,71 +73,37 @@
 		}
 	}
 	
-	/* General GameRules */
+	/* Create Entity Signatures */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
-			"game"		"dod"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-			"game"		"ship"
-			"game"		"!Dystopia"
-			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
-			"game"		"!SourceForts v1.9.2"
-			"game"		"FortressForever"
-			"game"		"empires"
+			"game"		"tf"
 		}
-		
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		
+
 		"Signatures"
 		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
+			"DispatchSpawn"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
 			}
-			"g_pGameRules"
+			"CreateEntityByName"
 			{
 				"library"	"server"
-				"linux"		"@g_pGameRules"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
 			}
 		}
 	}
-	
+
 	/* CGlobalEntityList */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
-			"game"		"dod"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-			"game"		"ship"
-			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
-			"game"		"!SourceForts v1.9.2"
-			"game"		"FortressForever"
-			"game"		"empires"
+			"game"		"tf"
 		}
 		
 		"Offsets"
@@ -175,795 +132,61 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x2A\x85\xC9\x57\x74\x2A\x8B\x01\xFF\x50\x2A\x8B\x08\x81\xE1\x2A\x2A\x2A\x2A\x83\xC1\x2A\xC1\xE1\x2A\x8B\x3C\x31\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x2A\x8B\x2D\x2A\x2A\x2A\x2A\x8D\x9B\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x2A\x39"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
 
-	/* Create Entity Signatures */
+	/* General GameRules */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
-			"game"		"dod"
-			"game"		"hl2mp"
-			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
-			"game"		"FortressForever"
-			"game"		"empires"
+			"game"		"tf"
 		}
-
+		
+		"Offsets"
+		{
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
+			{
+				"windows"	"2"
+			}
+		}
+		
 		"Signatures"
 		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
-			}
-		}
-	}
-
-	/* Create Entity Signatures */
-	"!SourceForts v1.9.2"
-	{
-		"Signatures"
-		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14\x8B\x16\x8B\xCE"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
-			}
-		}
-	}
-
-	/* Create Entity Signatures */
-	"ship"
-	{
-		"Signatures"
-		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\0x16"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
-			}
-		}
-	}
-
-	/* Counter-Strike: Source */
-	"cstrike"
-	{
-		"Keys"
-		{
-			"SlapSoundCount"	"3"
-			"SlapSound1"		"player/damage1.wav"
-			"SlapSound2"		"player/damage2.wav"
-			"SlapSound3"		"player/damage3.wav"
-		}
-
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"329"
-				"linux"		"330"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"226"
-				"linux"		"227"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"224"
-				"linux"		"225"
-			}
-			"Ignite"
-			{
-				"windows"	"188"
-				"linux"		"189"
-			}
-			"Extinguish"
-			{
-				"windows"	"189"
-				"linux"		"190"
-			}
-			"Teleport"
-			{
-				"windows"	"98"
-				"linux"		"99"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"357"
-				"linux"		"358"
-			}
-			"GetVelocity"
-			{
-				"windows"	"126"
-				"linux"		"127"
-			}
-			"EyeAngles"
-			{
-				"windows"	"118"
-				"linux"		"119"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-		}
-	}
-
-	/* Day of Defeat */
-	"dod"
-	{
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"328"
-				"linux"		"330"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"226"
-				"linux"		"227"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"224"
-				"linux"		"225"
-			}
-			"Ignite"
-			{
-				"windows"	"188"
-				"linux"		"189"
-			}
-			"Extinguish"
-			{
-				"windows"	"189"
-				"linux"		"190"
-			}
-			"Teleport"
-			{
-				"windows"	"98"
-				"linux"		"99"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"356"
-				"linux"		"357"
-			}
-			"GetVelocity"
-			{
-				"windows"	"126"
-				"linux"		"127"
-			}
-			"EyeAngles"
-			{
-				"windows"	"118"
-				"linux"		"119"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-		}
-	}
-	
-	/* Half-Life 2: Deathmatch */
-	"hl2mp"
-	{
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"328"
-				"linux"		"329"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"226"
-				"linux"		"227"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"224"
-				"linux"		"225"
-			}
-			"Ignite"
-			{
-				"windows"	"188"
-				"linux"		"189"
-			}
-			"Extinguish"
-			{
-				"windows"	"189"
-				"linux"		"190"
-			}
-			"Teleport"
-			{
-				"windows"	"98"
-				"linux"		"99"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"356"
-				"linux"		"357"
-			}
-			"GetVelocity"
-			{
-				"windows"	"126"
-				"linux"		"127"
-			}
-			"EyeAngles"
-			{
-				"windows"	"118"
-				"linux"		"119"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-		}
-	}
-	
-	/* The Ship */
-	"ship"
-	{
-		"Offsets"
-		{
-			/* CBasePlayer */
-			"GiveNamedItem"
-			{
-				"windows"	"316"
-				"linux"		"317"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"220"
-				"linux"		"221"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"218"
-				"linux"		"219"
-			}
-			"Ignite"
-			{
-				"windows"	"180"
-				"linux"		"181"
-			}
-			"Extinguish"
-			{
-				"windows"	"181"
-				"linux"		"182"
-			}
-			"Teleport"
-			{
-				"windows"	"100"
-				"linux"		"101"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"343"
-				"linux"		"344"
-			}
-			"GetVelocity"
-			{
-				"windows"	"124"
-				"linux"		"125"
-			}
-			"EyeAngles"
-			{
-				"windows"	"116"
-				"linux"		"117"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"35"
-				"linux"		"34"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"33"
-				"linux"		"36"
-			}
-			"AcceptInput"
-			{
-				"windows"	"39"
-				"linux"		"40"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			
-			/* Temp Entities */
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
-			}
-		}
-	}
-	
-	/* Dsytopia */
-	"!Dystopia"
-	{
-
-		"Offsets"
-		{
-			/* CBasePlayer */
-			"GiveNamedItem"
-			{
-				"windows"	"331"
-				"linux"		"332"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"229"
-				"linux"		"230"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"227"
-				"linux"		"228"
-			}
-			"Ignite"
-			{
-				"windows"	"191"
-				"linux"		"192"
-			}
-			"Extinguish"
-			{
-				"windows"	"192"
-				"linux"		"193"
-			}
-			"Teleport"
-			{
-				"windows"	"100"
-				"linux"		"101"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"360"
-				"linux"		"361"
-			}
-			"GetVelocity"
-			{
-				"windows"	"128"
-				"linux"		"129"
-			}
-			"EyeAngles"
-			{
-				"windows"	"120"
-				"linux"		"121"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-
-			/* Offset into CBaseTempEntity constructor.
-			 * On Windows Dsytopia is heavily inlined; we use the function 
-			 * surrounding "aCouldnTFindTem" in IDA instead.
-			 */
-			"s_pTempEntities"
-			{
-				"windows"	"70"
-			}
-		}
-
-		"Signatures"
-		{
-			/* On Windows Dsytopia is heavily inlined; we use the function 
-			 * surrounding "aCouldnTFindTem" in IDA instead.
-			 */
-			"CBaseTempEntity"
-			{
-				"library"	"server"
-				"windows"	"\x81\xEC\x84\x00\x00\x00\x56\x8B\xF1\x8B\x46\x6C\x57\x8D\x7E\x6C\x8D\x4C\x24\x08\x83\xC8\x20\x51\x89\x44\x24\x0C\xE8\x2A\x2A\x2A"
-			}
-
-			/* Dystopia always has to be different, doesn't it
+			/* This signature sometimes has multiple matches, but this
+			 * does not matter as g_pGameRules is involved in all of them.
+			 * The same g_pGameRules offset applies to each match.
 			 *
-			 * This is very similar to the general signature, except that
-			 * it does "mov edx, [eax+2Ch]" before making a call rather than
-			 * doing "call dword ptr [eax+2Ch]"
+			 * Sometimes this block of bytes is at the beginning of the static
+			 * CreateGameRulesObject function and sometimes it is in the middle
+			 * of an entirely different function. This depends on the game.
 			 */
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
 				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
 			}
-		}
-	}
-
-	/* Insurgency Generic */
-	"!Insurgency"
-	{
-		"Offsets"
-		{
-			/* CBasePlayer */
-			"Ignite"
-			{
-				"windows"	"174"
-				"linux"		"175"
-			}
-			"Extinguish"
-			{
-				"windows"	"175"
-				"linux"		"176"
-			}
-			"Teleport"
-			{
-				"windows"	"90"
-				"linux"		"91"
-			}
-			"GetVelocity"
-			{
-				"windows"	"115"
-				"linux"		"116"
-			}
-			"EyeAngles"
-			{
-				"windows"	"107"
-				"linux"		"108"
-			}
-			"AcceptInput"
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			"s_pTempEntities"
-			{
-				"linux"		"28"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"30"
-				"linux"		"29"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"29"
-				"linux"		"30"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"28"
-				"linux"		"31"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"24"
-				"linux"		"25"
-			}
-		}
-	}
-
-	/* Insurgency 1.1a Patch for Linux */
-	"!Insurgency"
-	{
-		"CRC"
-		{
-			"server"
-			{
-				"linux"		"6D0E55DC"
-			}
-		}
-
-		"Offsets"
-		{
-			"s_pTempEntities"
-			{
-				"linux"		"29"
-			}
-		}
-	}
-
-	/* Pirates, Vikings and Knights II */
-	"!Pirates, Vikings and Knights II"
-	{
-		"Offsets"
-		{
-			/* CBasePlayer */
-			"GiveNamedItem"
-			{
-				"windows"	"328"
-				"linux"		"329"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"226"
-				"linux"		"227"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"224"
-				"linux"		"225"
-			}
-			"Ignite"
-			{
-				"windows"	"188"
-				"linux"		"189"
-			}
-			"Extinguish"
-			{
-				"windows"	"189"
-				"linux"		"190"
-			}
-			"Teleport"
-			{
-				"windows"	"98"
-				"linux"		"99"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"356"
-				"linux"		"357"
-			}
-			"GetVelocity"
-			{
-				"windows"	"126"
-				"linux"		"127"
-			}
-			"EyeAngles"
-			{
-				"windows"	"118"
-				"linux"		"119"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-			
-			/* Temp Entities */
-			"s_pTempEntities"
-			{
-				"linux"		"29"
-			}
-		}
-	}
-
-	/* SourceForts 1.9.2 */
-	"!SourceForts v1.9.2"
-	{
-		"Offsets"
-		{
-			/* CBasePlayer */
-			"GiveNamedItem"
-			{
-				"windows"	"294"
-				"linux"		"295"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"207"
-				"linux"		"208"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"205"
-				"linux"		"206"
-			}
-			"Ignite"
-			{
-				"windows"	"170"
-				"linux"		"171"
-			}
-			"Extinguish"
-			{
-				"windows"	"171"
-				"linux"		"172"
-			}
-			"Teleport"
-			{
-				"windows"	"90"
-				"linux"		"91"
-			}
-			"GetVelocity"
-			{
-				"windows"	"114"
-				"linux"		"115"
-			}
-			"EyeAngles"
-			{
-				"windows"	"106"
-				"linux"		"107"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"30"
-				"linux"		"29"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"29"
-				"linux"		"30"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"28"
-				"linux"		"31"
-			}
-			"AcceptInput"
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-
-			/* Temp Entities */
-			"s_pTempEntities"
-			{
-				"linux"		"29"
-			}
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
-			}
-		}
-	}
-	
-	/* Fortress Forever */
-	"FortressForever"
-	{
-		"Signatures"
-		{
-			"CreateGameRulesObject"
+			"g_pGameRules"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x3B\xCB\x74\x07\x8B\x01\x6A\x01\xFF\x50"
+				"linux"		"@g_pGameRules"
 			}
 		}
-		
+	}
+
+	/* Team Fortress 2 Offsets */
+	"tf"
+	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"338"
-				"linux"		"339"
+				"windows"	"348"
+				"linux"		"349"
 			}
 			"RemovePlayerItem"
 			{
@@ -977,212 +200,58 @@
 			}
 			"Ignite"
 			{
-				"windows"	"198"
-				"linux"		"199"
+				"windows"	"191"
+				"linux"		"192"
 			}
 			"Extinguish"
 			{
-				"windows"	"199"
-				"linux"		"200"
-			}
-			"Teleport"
-			{
-				"windows"	"104"
-				"linux"		"105"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"366"
-				"linux"		"367"
-			}
-			"GetVelocity"
-			{
-				"windows"	"136"
-				"linux"		"137"
-			}
-			"EyeAngles"
-			{
-				"windows"	"128"
-				"linux"		"129"
-			}
-			"AcceptInput"
-			{
-				"windows"	"39"
-				"linux"		"40"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"35"
-				"linux"		"34"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"33"
-				"linux"		"36"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"27"
-				"linux"		"28"
-			}
-		}
-	}
-
-	/* Garry's Mod 10 - Windows only */
-	"garrysmod"
-	{
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"366"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"264"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"262"
-			}
-			"Ignite"
-			{
-				"windows"	"220"
-			}
-			"Extinguish"
-			{
-				"windows"	"221"
+				"windows"	"195"
+				"linux"		"196"
 			}
 			"Teleport"
 			{
 				"windows"	"99"
+				"linux"		"100"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"394"
+				"windows"	"384"
+				"linux"		"384"
 			}
 			"GetVelocity"
 			{
-				"windows"	"127"
+				"windows"	"128"
+				"linux"		"129"
 			}
 			"EyeAngles"
 			{
-				"windows"	"119"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
+				"windows"	"120"
+				"linux"		"121"
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
+				"windows"	"29"
+				"linux"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
+				"windows"	"28"
+				"linux"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
-			}
-		}
-	}
-
-	/* Empires 2 */
-	"empires"
-	{
-
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"332"
-				"linux"		"333"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"230"
-				"linux"		"231"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"228"
-				"linux"		"229"
-			}
-			"Ignite"
-			{
-				"windows"	"192"
-				"linux"		"193"
-			}
-			"Extinguish"
-			{
-				"windows"	"193"
-				"linux"		"194"
-			}
-			"Teleport"
-			{
-				"windows"	"102"
-				"linux"		"103"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"360"
-				"linux"		"361"
-			}
-			"GetVelocity"
-			{
-				"windows"	"130"
-				"linux"		"131"
-			}
-			"EyeAngles"
-			{
-				"windows"	"122"
-				"linux"		"123"
-			}
-			"AcceptInput"
-			{
-				"windows"	"36"
-				"linux"		"37"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
+				"windows"	"27"
 				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"23"
+				"linux"		"24"
 			}
-
-			/* Offset into LevelShutdown for CGlobalEntList */
-			"gEntList"
+			"AcceptInput"
 			{
-				"windows"	"64"
-			}
-		}
-		
-		"Signatures"
-		{
-			"LevelShutdown"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2B\x56\xE8\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x8B\xF1\x74\x0E"
+				"windows"	"34"
+				"linux"		"35"
 			}
 		}
 	}
