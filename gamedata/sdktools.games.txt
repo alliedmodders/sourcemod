@@ -40,6 +40,7 @@
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
 			"game"		"FortressForever"
+			"game"		"empires"
 		}
 
 		"Offsets"
@@ -96,6 +97,7 @@
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
 			"game"		"FortressForever"
+			"game"		"empires"
 		}
 		
 		"Offsets"
@@ -144,6 +146,7 @@
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
 			"game"		"FortressForever"
+			"game"		"empires"
 		}
 		
 		"Offsets"
@@ -189,6 +192,7 @@
 			"game"		"!Insurgency"
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"FortressForever"
+			"game"		"empires"
 		}
 
 		"Signatures"
@@ -1085,6 +1089,100 @@
 			"DispatchKeyValueVector"
 			{
 				"windows"	"29"
+			}
+		}
+	}
+
+	/* Empires 2 */
+	"empires"
+	{
+
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"332"
+				"linux"		"333"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"228"
+				"linux"		"229"
+			}
+			"Ignite"
+			{
+				"windows"	"192"
+				"linux"		"193"
+			}
+			"Extinguish"
+			{
+				"windows"	"193"
+				"linux"		"194"
+			}
+			"Teleport"
+			{
+				"windows"	"102"
+				"linux"		"103"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"360"
+				"linux"		"361"
+			}
+			"GetVelocity"
+			{
+				"windows"	"130"
+				"linux"		"131"
+			}
+			"EyeAngles"
+			{
+				"windows"	"122"
+				"linux"		"123"
+			}
+			"AcceptInput"
+			{
+				"windows"	"36"
+				"linux"		"37"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+				"linux"		"32"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+
+			/* Offset into LevelShutdown for CGlobalEntList */
+			"gEntList"
+			{
+				"windows"	"64"
+			}
+		}
+		
+		"Signatures"
+		{
+			"LevelShutdown"
+			{
+				"library"	"server"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2B\x56\xE8\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x8B\xF1\x74\x0E"
 			}
 		}
 	}
