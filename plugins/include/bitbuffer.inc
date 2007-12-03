@@ -181,7 +181,7 @@ native BfWriteAngles(Handle:bf, Float:angles[3]);
  * Reads a single bit from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Bit value read.
+ * @return				Bit value read.
  * @error				Invalid or incorrect Handle.
  */
 native bool:BfReadBool(Handle:bf);
@@ -190,7 +190,7 @@ native bool:BfReadBool(Handle:bf);
  * Reads a byte from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Byte value read (read as 8bit).
+ * @return				Byte value read (read as 8bit).
  * @error				Invalid or incorrect Handle.
  */
 native BfReadByte(Handle:bf);
@@ -199,7 +199,7 @@ native BfReadByte(Handle:bf);
  * Reads a character from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Character value read.
+ * @return				Character value read.
  * @error				Invalid or incorrect Handle.
  */
 native BfReadChar(Handle:bf);
@@ -208,7 +208,7 @@ native BfReadChar(Handle:bf);
  * Reads a 16bit integer from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Integer value read (read as 16bit).
+ * @return				Integer value read (read as 16bit).
  * @error				Invalid or incorrect Handle.
  */
 native BfReadShort(Handle:bf);
@@ -217,7 +217,7 @@ native BfReadShort(Handle:bf);
  * Reads a 16bit unsigned integer from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Integer value read (read as 16bit).
+ * @return				Integer value read (read as 16bit).
  * @error				Invalid or incorrect Handle.
  */
 native BfReadWord(Handle:bf);
@@ -226,7 +226,7 @@ native BfReadWord(Handle:bf);
  * Reads a normal integer to a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Integer value read (read as 32bit).
+ * @return				Integer value read (read as 32bit).
  * @error				Invalid or incorrect Handle.
  */
 native BfReadNum(Handle:bf);
@@ -235,7 +235,7 @@ native BfReadNum(Handle:bf);
  * Reads a floating point number from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Floating point value read.
+ * @return				Floating point value read.
  * @error				Invalid or incorrect Handle.
  */
 native Float:BfReadFloat(Handle:bf);
@@ -247,8 +247,12 @@ native Float:BfReadFloat(Handle:bf);
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
  * @param line			If true the buffer will be copied until it reaches a '\n' or a null terminator.
- * @noreturn
- * @error				Invalid or incorrect Handle, destination string buffer was too short.
+ * @return				Number of bytes written to the buffer.  If the bitbuffer stream overflowed, 
+ *						that is, had no terminator before the end of the stream, then a negative 
+ *						number will be returned equal to the number of characters written to the 
+ *						buffer minus 1.  The buffer will be null terminated regardless of the 
+ *						return value.
+ * @error				Invalid or incorrect Handle.
  */
 native BfReadString(Handle:bf, String:buffer[], maxlength, bool:line=false);
 
@@ -257,7 +261,7 @@ native BfReadString(Handle:bf, String:buffer[], maxlength, bool:line=false);
  * @note This is a wrapper around BfReadShort().
  *
  * @param bf			bf_read handle to read from.
- * @return			Entity index read.
+ * @return				Entity index read.
  * @error				Invalid or incorrect Handle.
  */
 native BfReadEntity(Handle:bf);
@@ -267,7 +271,7 @@ native BfReadEntity(Handle:bf);
  *
  * @param bf			bf_read handle to read from.
  * @param numBits		Optional number of bits to use.
- * @return			Angle read.
+ * @return				Angle read.
  * @error				Invalid or incorrect Handle.
  */
 native Float:BfReadAngle(Handle:bf, numBits=8);
@@ -276,7 +280,7 @@ native Float:BfReadAngle(Handle:bf, numBits=8);
  * Reads a coordinate from a readable bitbuffer (bf_read).
  *
  * @param bf			bf_read handle to read from.
- * @return			Coordinate read.
+ * @return				Coordinate read.
  * @error				Invalid or incorrect Handle.
  */
 native Float:BfReadCoord(Handle:bf);

@@ -484,6 +484,7 @@ static cell_t smn_BfReadString(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	bf_read *pBitBuf;
+	int numChars = 0;
 	char *buf;
 
 	sec.pOwner = NULL;
@@ -496,12 +497,14 @@ static cell_t smn_BfReadString(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	pCtx->LocalToPhysAddr(params[2], (cell_t **)&buf);
-	if (!pBitBuf->ReadString(buf, params[3], params[4] ? true : false))
+	pBitBuf->ReadString(buf, params[3], params[4], &numChars);
+
+	if (pBitBuf->IsOverflowed())
 	{
-		return pCtx->ThrowNativeError("Destination string buffer is too short, try increasing its size");
+		return -numChars - 1;
 	}
 
-	return 1;
+	return numChars;
 }
 
 static cell_t smn_BfReadEntity(IPluginContext *pCtx, const cell_t *params)

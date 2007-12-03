@@ -195,7 +195,12 @@ public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playe
 	}
 	
 	decl String:type[15];
-	BfReadString(bf, type, sizeof(type));
+
+	/* If we don't get a valid string, bail out. */
+	if (BfReadString(bf, type, sizeof(type)) < 0)
+	{
+		return Plugin_Handled;
+	}
  
 	if (BfReadByte(bf) == 1 && BfReadByte(bf) == 0 && (strcmp(type, "scores", false) == 0))
 	{
