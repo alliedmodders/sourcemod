@@ -497,7 +497,7 @@ static cell_t smn_BfReadString(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	pCtx->LocalToPhysAddr(params[2], (cell_t **)&buf);
-	pBitBuf->ReadString(buf, params[3], params[4], &numChars);
+	pBitBuf->ReadString(buf, params[3], params[4] ? true : false, &numChars);
 
 	if (pBitBuf->IsOverflowed())
 	{

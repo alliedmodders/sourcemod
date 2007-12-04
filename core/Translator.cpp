@@ -729,20 +729,7 @@ void Translator::OnSourceModAllInitialized()
 
 	unsigned int id;
 
-	//backwards compatibility shim
-	/* hack -- if core.cfg exists, exec it instead. */
-	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "translations/core.cfg");
-	
-	if (g_LibSys.PathExists(path))
-	{
-		id = FindOrAddPhraseFile("core.cfg");
-	}
-	else
-	{
-		id = FindOrAddPhraseFile("core.phrases.txt");
-	}
-
+	id = FindOrAddPhraseFile("core.phrases.txt");
 	g_pCorePhraseID = id;
 	g_pCorePhrases = GetFileByIndex(id);
 }
