@@ -39,6 +39,7 @@
 			"game"		"!Insurgency"
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
+			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
 		}
@@ -96,6 +97,7 @@
 			"game"		"!Insurgency"
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
+			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
 		}
@@ -145,6 +147,7 @@
 			"game"		"!Insurgency"
 			"game"		"!Pirates, Vikings and Knights II"
 			"game"		"!SourceForts v1.9.2"
+			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
 		}
@@ -191,6 +194,7 @@
 			"game"		"hl2mp"
 			"game"		"!Insurgency"
 			"game"		"!Pirates, Vikings and Knights II"
+			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
 		}
@@ -202,46 +206,6 @@
 				"library"	"server"
 				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
 				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
-			}
-		}
-	}
-
-	/* Create Entity Signatures */
-	"!SourceForts v1.9.2"
-	{
-		"Signatures"
-		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14\x8B\x16\x8B\xCE"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
-			}
-		}
-	}
-
-	/* Create Entity Signatures */
-	"ship"
-	{
-		"Signatures"
-		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\0x16"
 			}
 			"CreateEntityByName"
 			{
@@ -578,6 +542,22 @@
 				"linux"		"0"
 			}
 		}
+
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\0x16"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
+			}
+		}
 	}
 	
 	/* Dsytopia */
@@ -729,10 +709,6 @@
 				"windows"	"34"
 				"linux"		"35"
 			}
-			"s_pTempEntities"
-			{
-				"linux"		"28"
-			}
 			"DispatchKeyValue"
 			{
 				"windows"	"30"
@@ -752,26 +728,6 @@
 			{
 				"windows"	"24"
 				"linux"		"25"
-			}
-		}
-	}
-
-	/* Insurgency 1.1a Patch for Linux */
-	"!Insurgency"
-	{
-		"CRC"
-		{
-			"server"
-			{
-				"linux"		"6D0E55DC"
-			}
-		}
-
-		"Offsets"
-		{
-			"s_pTempEntities"
-			{
-				"linux"		"29"
 			}
 		}
 	}
@@ -852,12 +808,6 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
-			
-			/* Temp Entities */
-			"s_pTempEntities"
-			{
-				"linux"		"29"
-			}
 		}
 	}
 
@@ -933,15 +883,26 @@
 				"linux"		"26"
 			}
 
-			/* Temp Entities */
-			"s_pTempEntities"
-			{
-				"linux"		"29"
-			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
+			}
+		}
+
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14\x8B\x16\x8B\xCE"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
 			}
 		}
 	}
@@ -1183,6 +1144,80 @@
 			{
 				"library"	"server"
 				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2B\x56\xE8\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x8B\xF1\x74\x0E"
+			}
+		}
+	}
+
+	/* SourceForts 1.9.3 */
+	"$SourceForts v1.9.3"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"328"
+				"linux"		"329"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"224"
+				"linux"		"225"
+			}
+			"Ignite"
+			{
+				"windows"	"188"
+				"linux"		"189"
+			}
+			"Extinguish"
+			{
+				"windows"	"189"
+				"linux"		"190"
+			}
+			"Teleport"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
+			}
+			"EyeAngles"
+			{
+				"windows"	"118"
+				"linux"		"119"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+				"linux"		"32"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
 			}
 		}
 	}
