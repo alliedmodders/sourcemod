@@ -44,7 +44,9 @@
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class CStrike : public SDKExtension
+class CStrike : 
+	public SDKExtension,
+	public ICommandTargetProcessor
 {
 public:
 	/**
@@ -84,6 +86,8 @@ public:
 
 	void NotifyInterfaceDrop(SMInterface *pInterface);
 	bool QueryInterfaceDrop(SMInterface *pInterface);
+public:
+	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**

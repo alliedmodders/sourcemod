@@ -32,6 +32,7 @@
 #include "extension.h"
 #include "RegNatives.h"
 #include "timeleft.h"
+#include "iplayerinfo.h"
 
 /**
  * @file extension.cpp
@@ -73,6 +74,8 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		sharesys->OverrideNatives(myself, g_CS_PrintHintText);
 	}
 
+	playerhelpers->RegisterCommandTargetProcessor(this);
+
 	return true;
 }
 
@@ -94,6 +97,7 @@ void CStrike::SDK_OnUnload()
 	}
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
+	playerhelpers->UnregisterCommandTargetProcessor(this);
 }
 
 void CStrike::SDK_OnAllLoaded()
@@ -126,4 +130,113 @@ bool CStrike::QueryInterfaceDrop(SMInterface *pInterface)
 void CStrike::NotifyInterfaceDrop(SMInterface *pInterface)
 {
 	g_RegNatives.UnregisterAll();
+}
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+	va_end(ap);
+
+	if (len >= maxlength)
+	{
+		buffer[maxlength - 1] = '\0';
+		return (maxlength - 1);
+	}
+	else
+	{
+		return len;
+	}
+}
+
+bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
+{
+	int max_clients;
+	IPlayerInfo *pInfo;
+	unsigned int team_index = 0;
+	IGamePlayer *pPlayer, *pAdmin;
+
+	if ((info->flags & COMMAND_FILTER_NO_MULTI) == COMMAND_FILTER_NO_MULTI)
+	{
+		return false;
+	}
+
+	if (info->admin)
+	{
+		if ((pAdmin = playerhelpers->GetGamePlayer(info->admin)) == NULL)
+		{
+			return false;
+		}
+		if (!pAdmin->IsInGame())
+		{
+			return false;
+		}
+	}
+	else
+	{
+		pAdmin = NULL;
+	}
+
+	if (strcmp(info->pattern, "@ct") == 0 || strcmp(info->pattern, "@cts") == 0)
+	{
+		team_index = 3;
+	}
+	else if (strcmp(info->pattern, "@t") == 0 || strcmp(info->pattern, "@ts") == 0)
+	{
+		team_index = 2;
+	}
+
+	info->num_targets = 0;
+
+	max_clients = playerhelpers->GetMaxClients();
+	for (int i = 1; 
+		 i <= max_clients && (cell_t)info->num_targets < info->max_targets; 
+		 i++)
+	{
+		if ((pPlayer = playerhelpers->GetGamePlayer(i)) == NULL)
+		{
+			continue;
+		}
+		if (!pPlayer->IsInGame())
+		{
+			continue;
+		}
+		if ((pInfo = pPlayer->GetPlayerInfo()) == NULL)
+		{
+			continue;
+		}
+		if (pInfo->GetTeamIndex() != team_index)
+		{
+			continue;
+		}
+		if (playerhelpers->FilterCommandTarget(pAdmin, pPlayer, info->flags) 
+			!= COMMAND_TARGET_VALID)
+		{
+			continue;
+		}
+		info->targets[info->num_targets] = i;
+		info->num_targets++;
+	}
+
+	if (info->num_targets == 0)
+	{
+		info->reason = COMMAND_TARGET_EMPTY_FILTER;
+	}
+	else
+	{
+		info->reason = COMMAND_TARGET_VALID;
+	}
+
+	info->target_name_style = COMMAND_TARGETNAME_RAW;
+	if (team_index == 2)
+	{
+		UTIL_Format(info->target_name, info->target_name_maxlength, "Terrorists");
+	}
+	else if (team_index == 3)
+	{
+		UTIL_Format(info->target_name, info->target_name_maxlength, "CTs");
+	}
+
+	return true;
 }
