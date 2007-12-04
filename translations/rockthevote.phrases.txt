@@ -31,7 +31,7 @@
 		"en"			"The minimal number of players required has not been met."
 	}
 
-	"Map Already in Vote"
+	"Map Already In Vote"
 	{
 		"#format"		"{1:s}"
 		"en"			"Map '{1}' already in the Rock the Vote list."
