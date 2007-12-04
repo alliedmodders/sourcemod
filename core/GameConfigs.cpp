@@ -51,6 +51,7 @@ GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
 char g_Game[256];
 char g_GameDesc[256] = {'!', '\0'};
+char g_GameName[256] = {'$', '\0'};
 
 #define PSTATE_NONE						0
 #define PSTATE_GAMES					1
@@ -131,7 +132,8 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			if ((strcmp(name, "*") == 0)
 				|| (strcmp(name, "#default") == 0)
 				|| (strcasecmp(name, g_Game) == 0)
-				|| (strcasecmp(name, g_GameDesc) == 0))
+				|| (strcasecmp(name, g_GameDesc) == 0)
+				|| (strcasecmp(name, g_GameName) == 0))
 			{
 				bShouldBeReadingDefault = true;
 				m_ParseState = PSTATE_GAMEDEFS;
@@ -271,7 +273,10 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		sm_trie_replace(m_pKeys, key, (void *)id);
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0
-			&& (strcasecmp(value, g_Game) == 0 || strcasecmp(value, g_GameDesc) == 0))
+			&& (strcasecmp(value, g_Game) == 0 
+				|| strcasecmp(value, g_GameDesc) == 0
+				|| strcasecmp(value, g_GameName) == 0)
+				)
 		{
 			bShouldBeReadingDefault = true;
 		}
@@ -585,6 +590,17 @@ void GameConfigManager::OnSourceModStartup(bool late)
 
 	strncopy(g_Game, g_SourceMod.GetGameFolderName(), sizeof(g_Game));
 	strncopy(g_GameDesc + 1, SERVER_CALL(GetGameDescription)(), sizeof(g_GameDesc) - 1);
+
+	KeyValues *pGameInfo = new KeyValues("GameInfo");
+	if (pGameInfo->LoadFromFile(basefilesystem, "gameinfo.txt"))
+	{
+		const char *str;
+		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
+		{
+			strncopy(g_GameName + 1, str, sizeof(g_GameName) - 1);
+		}
+	}
+	pGameInfo->deleteThis();
 }
 
 void GameConfigManager::OnSourceModAllInitialized()
