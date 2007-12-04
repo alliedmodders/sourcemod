@@ -63,11 +63,11 @@ void ConVarManager::OnSourceModAllInitialized()
 	 */
 #if !defined ORANGEBOX_BUILD
 	if (g_SMAPI->GetGameDLLVersion() >= 6)
-#endif
 	{
 		SH_ADD_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
 		m_bIsDLLQueryHooked = true;
 	}
+#endif
 
 	HandleAccess sec;
 
