@@ -195,6 +195,11 @@ void SDKTools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 
+	if (!g_pBinTools)
+	{
+		return;
+	}
+
 	g_TEManager.Initialize();
 	s_TempEntHooks.Initialize();
 	s_SoundHooks.Initialize();
@@ -293,10 +298,19 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 	int player_index;
 	if ((player_index = GetClientAimTarget(pAdmin->GetEdict(), true)) < 1)
 	{
-		return false;
+		info->reason = COMMAND_TARGET_NONE;
+		info->num_targets = 0;
+		return true;
 	}
 
 	IGamePlayer *pTarget = playerhelpers->GetGamePlayer(info->admin);
+
+	info->reason = playerhelpers->FilterCommandTarget(pAdmin, pTarget, info->flags);
+	if (info->reason != COMMAND_TARGET_VALID)
+	{
+		info->num_targets = 0;
+		return true;
+	}
 
 	info->targets[0] = player_index;
 	info->num_targets = 1;
