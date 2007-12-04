@@ -54,6 +54,7 @@
 			"game"		"sourceforts"
 			"game"		"!Insurgency"
 			"game"		"tf"
+			"game"		"empires"
 		}
 
 		"Keys"
