@@ -206,7 +206,7 @@ bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
 		{
 			continue;
 		}
-		if (pInfo->GetTeamIndex() != team_index)
+		if (pInfo->GetTeamIndex() != (int)team_index)
 		{
 			continue;
 		}
