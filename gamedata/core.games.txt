@@ -52,7 +52,8 @@
 			"game"		"cstrike"
 			"game"		"dod"
 			"game"		"sourceforts"
-			"game"		"!Insurgency"
+			"game"		"insurgency"
+			"game"		"Insurgency"
 			"game"		"tf"
 			"game"		"empires"
 		}
