@@ -303,7 +303,14 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 		return true;
 	}
 
-	IGamePlayer *pTarget = playerhelpers->GetGamePlayer(info->admin);
+	IGamePlayer *pTarget = playerhelpers->GetGamePlayer(player_index);
+
+	if (pTarget == NULL)
+	{
+		info->reason = COMMAND_TARGET_NONE;
+		info->num_targets = 0;
+		return true;
+	}
 
 	info->reason = playerhelpers->FilterCommandTarget(pAdmin, pTarget, info->flags);
 	if (info->reason != COMMAND_TARGET_VALID)
