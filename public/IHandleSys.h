@@ -52,7 +52,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		2
+#define SMINTERFACE_HANDLESYSTEM_VERSION		3
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
@@ -195,8 +195,25 @@ namespace SourceMod
 	public:
 		/**
 		 * @brief Called when destroying a handle.  Must be implemented.
+		 *
+		 * @param type		Handle type.
+		 * @param object	Handle internal object.
 		 */
 		virtual void OnHandleDestroy(HandleType_t type, void *object) =0;
+
+		/**
+		 * @brief Called to get the size of a handle's memory usage in bytes.
+		 * Implementation is optional.
+		 *
+		 * @param type		Handle type.
+		 * @param object	Handle internal object.
+		 * @param pSize		Pointer to store the approximate memory usage in bytes.
+		 * @return			True on success, false if not implemented.
+		 */
+		virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+		{
+			return false;
+		}
 	};
 
 	/**

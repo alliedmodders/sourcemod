@@ -160,6 +160,12 @@ public:
 		panel->DeleteThis();
 	}
 
+	virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		*pSize = ((IMenuPanel *)object)->GetApproxMemUsage();
+		return true;
+	}
+
 	/**
 	 * It is extremely important that unloaded plugins don't crash.
 	 * Thus, if a plugin unloads, we run through every handler we have.

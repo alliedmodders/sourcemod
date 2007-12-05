@@ -82,6 +82,7 @@ public: //IMenuStyle
 	IMenuPanel *CreatePanel();
 	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
 	unsigned int GetMaxPageItems();
+	unsigned int GetApproxMemUsage();
 public: //IUserMessageListener
 	void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
 	void OnUserMessageSent(int msg_id);
@@ -119,6 +120,7 @@ public: //IMenuPanel
 	unsigned int GetCurrentKey();
 	bool SetCurrentKey(unsigned int key);
 	int GetAmountRemaining();
+	unsigned int GetApproxMemUsage();
 public:
 	void DirectSet(const char *str, int keymap);
 private:
@@ -141,6 +143,7 @@ public:
 		unsigned int start_item,
 		IMenuHandler *alt_handler/* =NULL */);
 	void Cancel_Finally();
+	unsigned int GetApproxMemUsage();
 };
 
 extern CRadioStyle g_RadioMenuStyle;

@@ -58,6 +58,10 @@ public:
 	 */
 	void Reset();
 
+	inline unsigned int MemUsage()
+	{
+		return size;
+	}
 
 private:
 	unsigned char *membase;

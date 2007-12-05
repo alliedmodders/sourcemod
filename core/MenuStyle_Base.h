@@ -135,6 +135,7 @@ public:
 	virtual unsigned int GetMenuOptionFlags();
 	virtual void SetMenuOptionFlags(unsigned int flags);
 	virtual IMenuHandler *GetHandler();
+	unsigned int GetBaseMemUsage();
 private:
 	void InternalDelete();
 protected:

@@ -91,6 +91,7 @@ public:
 	unsigned int GetRemainingVoteDelay();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 public:
 	HandleError ReadMenuHandle(Handle_t handle, IBaseMenu **menu);
 	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);

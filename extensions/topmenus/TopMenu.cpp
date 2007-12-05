@@ -87,6 +87,29 @@ TopMenu::~TopMenu()
 	delete [] m_clients;
 }
 
+unsigned int TopMenu::CalcMemUsage()
+{
+	unsigned int size = sizeof(TopMenu);
+
+	size += m_Config.strings.GetMemTable()->MemUsage();
+	size += (m_Config.cats.size() * sizeof(int));
+	size += (sizeof(topmenu_player_t) * m_max_clients);
+	size += (m_SortedCats.size() * sizeof(unsigned int));
+	size += (m_UnsortedCats.size() * sizeof(unsigned int));
+	size += (m_Categories.size() * (sizeof(topmenu_category_t *) + sizeof(topmenu_category_t)));
+	size += (m_Objects.size() * (sizeof(topmenu_object_t *) + sizeof(topmenu_object_t)));
+	size += m_ObjLookup.mem_usage();
+
+	for (size_t i = 0; i < m_Categories.size(); i++)
+	{
+		size += m_Categories[i]->obj_list.size() * sizeof(topmenu_object_t *);
+		size += m_Categories[i]->sorted.size() * sizeof(topmenu_object_t *);
+		size += m_Categories[i]->unsorted.size() * sizeof(topmenu_object_t *);
+	}
+
+	return size;
+}
+
 void TopMenu::OnClientConnected(int client)
 {
 	if (m_clients == NULL)

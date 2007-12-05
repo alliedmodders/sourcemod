@@ -828,3 +828,10 @@ IMenuHandler *CBaseMenu::GetHandler()
 {
 	return m_pHandler;
 }
+
+unsigned int CBaseMenu::GetBaseMemUsage()
+{
+	return m_Title.size() 
+		+ m_Strings.GetMemTable()->GetMemUsage()
+		+ (m_items.size() * sizeof(CItem));
+}

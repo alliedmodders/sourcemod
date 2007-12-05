@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		13
+#define SMINTERFACE_MENUMANAGER_VERSION		14
 
 /**
  * @file IMenuManager.h
@@ -323,6 +323,13 @@ namespace SourceMod
 		 *						-1, then the panel has no text limit.
 		 */
 		virtual int GetAmountRemaining() =0;
+
+		/**
+		 * @brief For the Handle system, returns approximate memory usage.
+		 *
+		 * @return				Approximate number of bytes being used.
+		 */
+		virtual unsigned int GetApproxMemUsage() =0;
 	};
 
 	/**
@@ -406,6 +413,13 @@ namespace SourceMod
 		 * @return				Handle_t pointing to this object.
 		 */
 		virtual Handle_t GetHandle() =0;
+
+		/**
+		 * @brief For the Handle system, returns approximate memory usage.
+		 *
+		 * @return				Approximate number of bytes being used.
+		 */
+		virtual unsigned int GetApproxMemUsage() =0;
 	};
 
 	/**
@@ -597,6 +611,13 @@ namespace SourceMod
 			unsigned int time,
 			unsigned int start_item,
 			IMenuHandler *alt_handler=NULL) =0;
+
+		/**
+		 * @brief For the Handle system, returns approximate memory usage.
+		 *
+		 * @return				Approximate number of bytes being used.
+		 */
+		virtual unsigned int GetApproxMemUsage() =0;
 	};
 
 	/** 

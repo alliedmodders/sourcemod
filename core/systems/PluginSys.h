@@ -169,6 +169,7 @@ public:
 	unsigned int GetSerial();
 	const sp_plugin_t *GetPluginStructure();
 	IdentityToken_t *GetIdentity();
+	unsigned int CalcMemUsage();
 	bool SetProperty(const char *prop, void *ptr);
 	bool GetProperty(const char *prop, void **ptr, bool remove=false);
 public:
@@ -355,6 +356,7 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:

@@ -82,6 +82,7 @@ public: // SMGlobalClass
 	void OnSourceModVSPReceived();
 public: // IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: //IRootConsoleCommand

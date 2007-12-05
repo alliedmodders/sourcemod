@@ -41,5 +41,6 @@ bool sm_trie_replace(Trie *trie, const char *key, void *value);
 bool sm_trie_retrieve(Trie *trie, const char *key, void **value);
 bool sm_trie_delete(Trie *trie, const char *key);
 void sm_trie_clear(Trie *trie);
+size_t sm_trie_mem_usage(Trie *trie);
 
 #endif //_INCLUDE_SOURCEMOD_SIMPLE_TRIE_H_

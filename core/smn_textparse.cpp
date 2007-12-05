@@ -169,6 +169,12 @@ public:
 		ParseInfo *parse = (ParseInfo *)object;
 		delete parse;
 	}
+
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		*pSize = sizeof(ParseInfo);
+		return true;
+	}
 };
 
 TextParseGlobals g_TextParseGlobals;

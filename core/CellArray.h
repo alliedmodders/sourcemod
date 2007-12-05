@@ -156,6 +156,11 @@ public:
 		return m_Data;
 	}
 
+	size_t mem_usage()
+	{
+		return m_AllocSize * m_BlockSize * sizeof(cell_t);
+	}
+
 private:
 	bool GrowIfNeeded(size_t count)
 	{

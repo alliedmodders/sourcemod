@@ -48,6 +48,8 @@
 #define HANDLESYS_SERIAL_MASK		0xFFFF0000
 #define HANDLESYS_HANDLE_MASK		0x0000FFFF
 
+#define HANDLESYS_MEMUSAGE_MIN_VERSION		3
+
 /**
  *   The QHandle is a nasty structure that compacts the handle system into a big vector.
  * The members of the vector each encapsulate one Handle, however, they also act as nodes

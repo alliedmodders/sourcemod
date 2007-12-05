@@ -56,6 +56,12 @@ public: //IHandleTypeDispatch
 		CellArray *array = (CellArray *)object;
 		delete array;
 	}
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		CellArray *pArray = (CellArray *)object;
+		*pSize = sizeof(CellArray) + pArray->mem_usage();
+		return true;
+	}
 } s_CellArrayHelpers;
 
 static cell_t CreateArray(IPluginContext *pContext, const cell_t *params)

@@ -146,6 +146,8 @@ public: //ITextListener_SMC
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
 	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
+public:
+	unsigned int CalcMemUsage();
 private:
 	void SortCategoriesIfNeeded();
 	void SortCategoryIfNeeded(unsigned int category);

@@ -261,6 +261,11 @@ void CRadioStyle::ProcessWatchList()
 	}
 }
 
+unsigned int CRadioStyle::GetApproxMemUsage()
+{
+	return sizeof(CRadioStyle) + (sizeof(CRadioMenuPlayer) * 257);
+}
+
 CRadioDisplay::CRadioDisplay()
 {
 	Reset();
@@ -494,6 +499,13 @@ bool CRadioDisplay::SetSelectableKeys(unsigned int keymap)
 	return true;
 }
 
+unsigned int CRadioDisplay::GetApproxMemUsage()
+{
+	return sizeof(CRadioDisplay)
+		+ m_BufferText.size()
+		+ m_Title.size();
+}
+
 CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
 CBaseMenu(pHandler, &g_RadioMenuStyle, pOwner)
 {
@@ -540,6 +552,11 @@ bool CRadioMenu::DisplayAtItem(int client,
 void CRadioMenu::Cancel_Finally()
 {
 	g_RadioMenuStyle.CancelMenu(this);
+}
+
+unsigned int CRadioMenu::GetApproxMemUsage()
+{
+	return sizeof(CRadioMenu) + GetBaseMemUsage();
 }
 
 const char *g_RadioNumTable[11] = 

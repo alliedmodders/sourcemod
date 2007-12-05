@@ -78,6 +78,12 @@ public:
 
 		g_Forwards.ReleaseForward(pForward);
 	}
+
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		*pSize = sizeof(CForward) + (((IForward *)object)->GetFunctionCount() * 12);
+		return true;
+	}
 } g_ForwardNativeHelpers;
 
 

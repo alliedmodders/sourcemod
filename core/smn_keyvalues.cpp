@@ -34,6 +34,7 @@
 #include "sm_stringutil.h"
 #include "HandleSys.h"
 #include <KeyValues.h>
+#include "utlbuffer.h"
 
 HandleType_t g_KeyValueType;
 
@@ -62,6 +63,30 @@ public:
 		KeyValueStack *pStk = reinterpret_cast<KeyValueStack *>(object);
 		pStk->pBase->deleteThis();
 		delete pStk;
+	}
+	int CalcKVSizeR(KeyValues *pv)
+	{
+		CUtlBuffer buf;
+		int size;
+
+		pv->RecursiveSaveToFile(buf, 0);
+		size = buf.TellMaxPut();
+
+		buf.Purge();
+
+		return size;
+	}
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		KeyValueStack *pStk = (KeyValueStack *)object;
+		unsigned int size = sizeof(KeyValueStack) + (pStk->pCurRoot.size() * sizeof(KeyValues *));
+
+		/* Check how much memory the actual thing takes up */		
+		size += CalcKVSizeR(pStk->pBase);
+
+		*pSize = size;
+
+		return true;
 	}
 };
 

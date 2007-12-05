@@ -43,6 +43,11 @@ public:
 		ITopMenu *pTopMenu = (ITopMenu *)object;
 		g_TopMenus.DestroyTopMenu(pTopMenu);
 	}
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		*pSize = ((TopMenu *)object)->CalcMemUsage();
+		return true;
+	}
 } s_TopMenuHandle;
 
 void Initialize_Natives()

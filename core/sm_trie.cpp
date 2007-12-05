@@ -85,3 +85,8 @@ void sm_trie_clear(Trie *trie)
 {
 	trie->k.clear();
 }
+
+size_t sm_trie_mem_usage(Trie *trie)
+{
+	return trie->k.mem_usage();
+}

@@ -163,6 +163,11 @@ bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, unsigned int firs
 	return BaseMenuStyle::DoClientMenu(client, menu, first_item, mh, time);
 }
 
+unsigned int ValveMenuStyle::GetApproxMemUsage()
+{
+	return sizeof(ValveMenuStyle) + (sizeof(CValveMenuPlayer) * 257);
+}
+
 CValveMenuDisplay::CValveMenuDisplay()
 {
 	m_pKv = NULL;
@@ -342,6 +347,11 @@ int CValveMenuDisplay::GetAmountRemaining()
 	return -1;
 }
 
+unsigned int CValveMenuDisplay::GetApproxMemUsage()
+{
+	return sizeof(CValveMenuDisplay) + (sizeof(KeyValues) * m_NextPos * 10);
+}
+
 CValveMenu::CValveMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
 CBaseMenu(pHandler, &g_ValveMenuStyle, pOwner), 
 	m_IntroColor(255, 0, 0, 255)
@@ -407,6 +417,11 @@ void CValveMenu::SetMenuOptionFlags(unsigned int flags)
 {
 	flags |= MENUFLAG_BUTTON_EXIT;
 	CBaseMenu::SetMenuOptionFlags(flags);
+}
+
+unsigned int CValveMenu::GetApproxMemUsage()
+{
+	return sizeof(CValveMenu) + GetBaseMemUsage();
 }
 
 const char *g_OptionNumTable[] = 

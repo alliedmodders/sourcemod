@@ -877,6 +877,13 @@ private:
 
 		return x_check_multi(offsets, count, to_check+1);
 	}
+public:
+	size_t mem_usage()
+	{
+		return (sizeof(KTrieNode) * (m_baseSize))
+			+ m_stSize
+			+ sizeof(KTrieNode);
+	}
 private:
 	KTrieNode *m_base;			/* Base array for the sparse tables */
 	KTrieNode *m_empty;			/* Special case for empty strings */

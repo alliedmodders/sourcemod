@@ -36,6 +36,7 @@
 #include "Logger.h"
 #include <assert.h>
 #include <string.h>
+#include "sm_stringutil.h"
 
 HandleSystem g_HandleSys;
 
@@ -996,8 +997,9 @@ bool HandleSystem::TryAndFreeSomeHandles()
 
 void HandleSystem::Dump(HANDLE_REPORTER rep)
 {
-	rep("%-10.10s\t%-20.20s\t%-20.20s", "Handle", "Owner", "Type");
-	rep("---------------------------------------------");
+	unsigned int total_size = 0;
+	rep("%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s", "Handle", "Owner", "Type", "Memory");
+	rep("--------------------------------------------------------------------------");
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
 		if (m_Handles[i].set != HandleSet_Used)
@@ -1042,11 +1044,24 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		}
 		const char *type = "ANON";
 		QHandleType *pType = &m_Types[m_Handles[i].type];
+		unsigned int size = 0;
 		if (pType->nameIdx != -1)
 		{
 			type = m_strtab->GetString(pType->nameIdx);
 		}
-		rep("0x%08x\t%-20.20s\t%-20.20s", index, owner, type);
+		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
+			|| !pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size))
+		{
+			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
+		}
+		else
+		{
+			char buffer[32];
+			UTIL_Format(buffer, sizeof(buffer), "%d", size);
+			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
+			total_size += size;
+		}
 	}
+	rep("-- Approximately %d bytes of memory are in use by Handles.\n", total_size);
 }
 

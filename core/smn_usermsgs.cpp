@@ -57,6 +57,7 @@ public: //SMGlobalClass, IHandleTypeDispatch, IPluginListener
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnHandleDestroy(HandleType_t type, void *object);
+	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
 	MsgListenerWrapper *CreateListener(IPluginContext *pCtx);
@@ -107,6 +108,15 @@ void UsrMessageNatives::OnSourceModShutdown()
 
 void UsrMessageNatives::OnHandleDestroy(HandleType_t type, void *object)
 {
+}
+
+bool UsrMessageNatives::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+{
+	bf_read *pRead = (bf_read *)object;
+
+	*pSize = sizeof(bf_read) + pRead->GetNumBytesRead() + pRead->GetNumBytesLeft();
+
+	return true;
 }
 
 void UsrMessageNatives::OnPluginUnloaded(IPlugin *plugin)

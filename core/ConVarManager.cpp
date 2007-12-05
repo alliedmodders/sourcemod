@@ -241,6 +241,12 @@ void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 }
 
+bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+{
+	*pSize = sizeof(ConVar);
+	return true;
+}
+
 void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
 {
 	int argcount = command.ArgC();

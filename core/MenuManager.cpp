@@ -81,9 +81,27 @@ void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
 	{
 		IBaseMenu *menu = (IBaseMenu *)object;
 		menu->Destroy(false);
-	} else if (type == m_StyleType) {
+	}
+	else if (type == m_StyleType)
+	{
 		/* Do nothing */
 	}
+}
+
+bool MenuManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+{
+	if (type == m_MenuType)
+	{
+		*pSize = ((IBaseMenu *)object)->GetApproxMemUsage();
+		return true;
+	}
+	else
+	{
+		*pSize = ((IMenuStyle *)object)->GetApproxMemUsage();
+		return true;
+	}
+
+	return false;
 }
 
 Handle_t MenuManager::CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner)

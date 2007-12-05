@@ -123,6 +123,80 @@ void CPlugin::InitIdentity()
 	}
 }
 
+unsigned int CPlugin::CalcMemUsage()
+{
+	unsigned int base_size = 
+		sizeof(CPlugin) 
+		+ sizeof(IdentityToken_t)
+		+ (m_PhraseFiles.size() * sizeof(unsigned int))
+		+ (m_dependents.size() * sizeof(CPlugin *))
+		+ (m_dependsOn.size() * sizeof(CPlugin *))
+		+ (m_fakeNatives.size() * (sizeof(FakeNative *) + sizeof(FakeNative)))
+		+ (m_WeakNatives.size() * sizeof(WeakNative))
+		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
+		+ sm_trie_mem_usage(m_pProps);
+
+	for (unsigned int i = 0; i < m_configs.size(); i++)
+	{
+		base_size += m_configs[i]->autocfg.size();
+		base_size += m_configs[i]->folder.size();
+	}
+
+	for (List<String>::iterator i = m_Libraries.begin();
+		 i != m_Libraries.end();
+		 i++)
+	{
+		base_size += (*i).size();
+	}
+
+	for (List<String>::iterator i = m_RequiredLibs.begin();
+		 i != m_RequiredLibs.end();
+		 i++)
+	{
+		base_size += (*i).size();
+	}
+
+	for (List<FakeNative *>::iterator i = m_fakeNatives.begin();
+		 i != m_fakeNatives.end();
+		 i++)
+	{
+		base_size += (*i)->name.size();
+	}
+
+	if (m_plugin != NULL)
+	{
+		base_size += sizeof(sp_plugin_t);
+		base_size += m_plugin->data_size;
+		base_size += m_plugin->pcode_size;
+		base_size += (m_plugin->info.natives_num * sizeof(sp_file_natives_t));
+		base_size += (m_plugin->info.publics_num * sizeof(sp_file_publics_t));
+		base_size += (m_plugin->info.pubvars_num * sizeof(sp_file_pubvars_t));
+		base_size += (m_plugin->debug.files_num * sizeof(sp_fdbg_file_t));
+		base_size += (m_plugin->debug.lines_num * sizeof(sp_fdbg_line_t));
+		base_size += (m_plugin->debug.syms_num * sizeof(sp_fdbg_symbol_t));
+		/* We can't get strtab size, oh well. */
+	}
+
+	if (m_ctx.base != NULL)
+	{
+		base_size += sizeof(BaseContext);
+		base_size += m_ctx.base->GetPublicsNum() * sizeof(CFunction);
+	}
+	if (m_ctx.ctx != NULL)
+	{
+		base_size += m_ctx.ctx->mem_size;
+		base_size += (m_plugin->debug.files_num * sizeof(sp_debug_file_t));
+		base_size += (m_plugin->debug.lines_num * sizeof(sp_debug_line_t));
+		base_size += (m_plugin->debug.syms_num * sizeof(sp_debug_symbol_t));
+		base_size += (m_plugin->info.pubvars_num * sizeof(sp_pubvar_t));
+		base_size += (m_plugin->info.publics_num * sizeof(sp_public_t));
+		base_size += (m_plugin->info.natives_num * sizeof(sp_native_t));
+		/* We also don't know the JIT code size, oh well. */
+	}
+
+	return base_size;
+}
+
 Handle_t CPlugin::GetMyHandle()
 {
 	return m_handle;
@@ -1967,6 +2041,12 @@ void CPluginManager::OnSourceModShutdown()
 void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	/* We don't care about the internal object, actually */
+}
+
+bool CPluginManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+{
+	*pSize = ((CPlugin *)object)->CalcMemUsage();
+	return true;
 }
 
 void CPluginManager::RegisterNativesFromCore(sp_nativeinfo_t *natives)
