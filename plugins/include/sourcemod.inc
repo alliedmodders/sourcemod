@@ -520,14 +520,14 @@ forward OnLibraryRemoved(const String:name[]);
  *						as strings.  The array is never checked for duplicates, and it is 
  *						not read beforehand.  Only the serial number is used to detect 
  *						changes.
- * @param str			Config name, or "default" for the default map list.  Config names 
- *						should be somewhat descriptive.  For example, the admin menu uses 
- *						a config name of "admin menu".  The list names can be configured 
- *						by users in addons/sourcemod/configs/maplists.cfg.
  * @param serial		Serial number to identify last known map list change.  If -1, the 
  *						the value will not be checked.  If the map list has since changed, 
  *						the serial is updated (even if -1 was passed).  If there is an error 
  *						finding a valid maplist, then the serial is set to -1.
+ * @param str			Config name, or "default" for the default map list.  Config names 
+ *						should be somewhat descriptive.  For example, the admin menu uses 
+ *						a config name of "admin menu".  The list names can be configured 
+ *						by users in addons/sourcemod/configs/maplists.cfg.
  * @param flags			MAPLIST_FLAG flags.
  * @return				On failure:
  *						 INVALID_HANDLE is returned, the serial is set to -1, and the input 
