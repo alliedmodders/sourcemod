@@ -267,6 +267,15 @@ bool IsEyeAnglesSupported()
 	return SetupGetEyeAngles();
 }
 
+bool GetPlayerInfo(int client, player_info_t *info)
+{
+#if defined ORANGEBOX_BUILD
+	return engine->GetPlayerInfo(client, info);
+#else
+	return iserver->GetPlayerInfo(client, info);
+#endif
+}
+
 void ShutdownHelpers()
 {
 	s_Teleport.Shutdown();

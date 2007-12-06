@@ -265,6 +265,26 @@ native GetTeamClientCount(index);
 native SetEntityModel(entity, const String:model[]);
 
 /**
+ * Retrieves the decal file name associated to a given client.
+ *
+ * @param client			Player's index.
+ * @param hex				Buffer to store the logo filename.
+ * @param maxlength			Maximum length of string buffer.
+ * @return				True on success, otherwise false.
+ * @error				Invalid client or client not in game.
+ */
+native bool:GetPlayerDecalFile(client, String:hex[], maxlength);
+
+/**
+ * Returns the average server network traffic in bytes/sec.
+ *
+ * @param in				Buffer to store the input traffic velocity.
+ * @param out				Buffer to store the output traffic velocity.
+ * @noreturn
+ */
+native GetServerNetStats(&Float:in, &Float:out);
+
+/**
  * @deprecated
  */
 #pragma deprecated Use IgniteEntity() instead

@@ -825,6 +825,47 @@ static cell_t sm_SetEntityModel(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetPlayerDecalFile(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	if (!player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
+	}
+
+	player_info_t info;
+	char *buffer;
+
+	if (!GetPlayerInfo(params[1], &info) || !info.customFiles[0])
+	{
+		return 0;
+	}
+
+	pContext->LocalToString(params[2], &buffer);
+	Q_binarytohex((byte *)&info.customFiles[0], sizeof(info.customFiles[0]), buffer, params[3]);
+
+	return 1;
+}
+
+static cell_t GetServerNetStats(IPluginContext *pContext, const cell_t *params)
+{
+	float in, out;
+	cell_t *pIn, *pOut;
+
+	pContext->LocalToPhysAddr(params[1], &pIn);
+	pContext->LocalToPhysAddr(params[2], &pOut);
+	iserver->GetNetStats(in, out);
+
+	*pIn = sp_ftoc(in);
+	*pOut = sp_ftoc(out);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishPlayer",		ExtinguishEntity},
@@ -850,5 +891,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"DispatchKeyValueVector",	DispatchKeyValueVector},
 	{"GetClientAimTarget",		sm_GetClientAimTarget},
 	{"SetEntityModel",			sm_SetEntityModel},
+	{"GetPlayerDecalFile",		GetPlayerDecalFile},
+	{"GetServerNetStats",		GetServerNetStats},
 	{NULL,						NULL},
 };

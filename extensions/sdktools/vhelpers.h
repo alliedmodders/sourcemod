@@ -68,6 +68,8 @@ bool IsEyeAnglesSupported();
 
 int GetClientAimTarget(edict_t *pEdict, bool only_players);
 
+bool GetPlayerInfo(int client, player_info_t *info);
+
 void ShutdownHelpers();
 
 #endif //_INCLUDE_SDKTOOLS_VHELPERS_H_

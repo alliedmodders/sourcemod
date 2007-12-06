@@ -178,6 +178,29 @@
 		}
 	}
 
+	/* IServer interface pointer */
+	"#default"
+	{
+		"Offsets"
+		{
+			/* Offset into IVEngineServer::CreateFakeClient */
+			"sv"
+			{
+				"windows"	"6"
+			}
+		}
+
+		"Signatures"
+		{
+			/* CBaseServer object for IServer interface */
+			"sv"
+			{
+				"library"	"engine"
+				"linux"		"@sv"
+			}
+		}
+	}
+
 	/* Team Fortress 2 Offsets */
 	"tf"
 	{

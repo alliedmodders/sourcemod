@@ -36,5 +36,6 @@ extern void **g_pGameRules;
 extern void *g_EntList;
 
 void InitializeValveGlobals();
+void GetIServer();
 
 #endif // _INCLUDE_SDKTOOLS_VGLOBALS_H_

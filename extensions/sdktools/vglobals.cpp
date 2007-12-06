@@ -82,3 +82,60 @@ void InitializeValveGlobals()
 	g_pGameRules = reinterpret_cast<void **>(addr);
 }
 #endif
+
+#if defined PLATFORM_WINDOWS
+	/* Thanks to DS for the sigs */
+	#define ISERVER_WIN_SIG				"\x8B\x44\x24\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
+	#define ISERVER_WIN_SIG_LEN			11
+void GetIServer()
+{
+	/* First check that the IVEngineServer::CreateFakeClient exists */
+	if (!memutils->FindPattern(engine, ISERVER_WIN_SIG, ISERVER_WIN_SIG_LEN))
+	{
+		return;
+	}
+
+	int offset;
+	void *vfunc = NULL;
+
+	/* Get the offset into CreateFakeClient */
+	if (!g_pGameConf->GetOffset("sv", &offset))
+	{
+		return;
+	}
+#if defined METAMOD_PLAPI_VERSION
+	/* Get the CreateFakeClient function pointer */
+	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
+	{
+		return;
+	}
+
+	/* Finally we have the interface we were looking for */
+	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+#else
+	/* Get the interface manually */
+	SourceHook::MemFuncInfo info = {true, -1, 0, 0};
+	SourceHook::GetFuncInfo(&IVEngineServer::CreateFakeClient, info);
+
+	vfunc = enginePatch->GetOrigFunc(info.vtbloffs, info.vtblindex);
+	if (!vfunc)
+	{
+		void **vtable = *reinterpret_cast<void ***>(enginePatch->GetThisPtr() + info.thisptroffs + info.vtbloffs);
+		vfunc = vtable[info.vtblindex];
+	}
+
+	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+#endif
+}
+#elif defined PLATFORM_POSIX
+void GetIServer()
+{
+	void *addr;
+	if (!g_pGameConf->GetMemSig("sv", &addr) || !addr)
+	{
+		return;
+	}
+
+	iserver = *reinterpret_cast<IServer **>(addr);
+}
+#endif

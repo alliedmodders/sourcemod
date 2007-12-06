@@ -64,6 +64,7 @@ IServerGameClients *serverClients = NULL;
 IVoiceServer *voiceserver = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
 ICvar *icvar = NULL;
+IServer *iserver = NULL;
 SourceHook::CallClass<IVEngineServer> *enginePatch = NULL;
 SourceHook::CallClass<IEngineSound> *enginesoundPatch = NULL;
 HandleType_t g_CallHandle = 0;
@@ -204,6 +205,7 @@ void SDKTools::SDK_OnAllLoaded()
 	s_TempEntHooks.Initialize();
 	s_SoundHooks.Initialize();
 	InitializeValveGlobals();
+	GetIServer();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)

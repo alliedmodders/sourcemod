@@ -46,6 +46,8 @@
 #include <ivoiceserver.h>
 #include <iplayerinfo.h>
 #include <convar.h>
+#include <iserver.h>
+#include <cdll_int.h>
 #include <compat_wrappers.h>
 
 /**
@@ -99,6 +101,7 @@ extern IServerGameClients *serverClients;
 extern IVoiceServer *voiceserver;
 extern IPlayerInfoManager *playerinfomngr;
 extern ICvar *icvar;
+extern IServer *iserver;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
