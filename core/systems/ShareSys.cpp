@@ -54,7 +54,7 @@ IdentityToken_t *ShareSystem::CreateCoreIdentity()
 	return CreateIdentity(m_CoreType, this);
 }
 
-void ShareSystem::OnSourceModStartup(bool late)
+void ShareSystem::Initialize()
 {
 	TypeAccess sec;
 

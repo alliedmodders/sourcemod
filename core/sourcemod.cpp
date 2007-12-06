@@ -281,6 +281,11 @@ void SourceModBase::StartSourceMod(bool late)
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
 
+	g_ShareSys.Initialize();
+
+	/* Make the global core identity */
+	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
+
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
 	while (pBase)
@@ -288,9 +293,6 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase->OnSourceModStartup(false);
 		pBase = pBase->m_pGlobalClassNext;
 	}
-
-	/* Make the global core identity */
-	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
 
 	/* Notify! */
 	pBase = SMGlobalClass::head;

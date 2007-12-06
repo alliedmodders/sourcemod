@@ -34,6 +34,7 @@
 #include "sm_stringutil.h"
 #include "HandleSys.h"
 #include "CoreConfig.h"
+#include "ConVarManager.h"
 
 RootConsoleMenu g_RootMenu;
 
@@ -57,11 +58,16 @@ RootConsoleMenu::~RootConsoleMenu()
 	m_Menu.clear();
 }
 
-#if defined ORANGEBOX_BUILD
-	extern void _IntExt_OnHostnameChanged(IConVar *var, const char *pOldValue, float flOldValue);
-#else
-	extern void _IntExt_OnHostnameChanged(ConVar *pConVar, char const *oldValue);
-#endif
+extern void _IntExt_OnHostnameChanged(ConVar *var, const char *pOldValue, float flOldValue);
+
+class DetectHostNameChanges : public IConVarChangeListener
+{
+public:
+	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
+	{
+		_IntExt_OnHostnameChanged(pConVar, oldValue, flOldValue);
+	}
+} s_HostnameChangeDetector;
 
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
@@ -71,13 +77,16 @@ void RootConsoleMenu::OnSourceModStartup(bool late)
 	CONVAR_REGISTER(this);
 	AddRootConsoleCommand("version", "Display version information", this);
 	AddRootConsoleCommand("credits", "Display credits listing", this);
+}
 
-	ConVar *pHost = icvar->FindVar("hostname");
-	pHost->InstallChangeCallback(_IntExt_OnHostnameChanged);
+void RootConsoleMenu::OnSourceModAllInitialized()
+{
+	g_ConVarManager.AddConVarChangeListener("hostname", &s_HostnameChangeDetector);
 }
 
 void RootConsoleMenu::OnSourceModShutdown()
 {
+	g_ConVarManager.RemoveConVarChangeListener("hostname", &s_HostnameChangeDetector);
 	RemoveRootConsoleCommand("credits", this);
 	RemoveRootConsoleCommand("version", this);
 }

@@ -84,7 +84,7 @@ public: //IShareSys
 	void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 public: //SMGlobalClass
 	/* Pre-empt in case anything tries to register idents early */
-	void OnSourceModStartup(bool late);
+	void Initialize();
 	void OnSourceModShutdown();
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);

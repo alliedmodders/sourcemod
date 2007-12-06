@@ -63,6 +63,7 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pCommand);
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
+	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);

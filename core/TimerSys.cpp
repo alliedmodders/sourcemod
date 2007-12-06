@@ -34,18 +34,9 @@
 #include "ForwardSys.h"
 #include "sourcemm_api.h"
 #include "frame_hooks.h"
+#include "ConVarManager.h"
 
 #define TIMER_MIN_ACCURACY		0.1
-
-#if !defined ORANGEBOX_BUILD
-#define CallGlobalChangeCallbacks	CallGlobalChangeCallback
-#endif
-
-#if defined ORANGEBOX_BUILD
-SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
-#else
-SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
-#endif
 
 TimerSystem g_Timers;
 double g_fUniversalTime = 0.0f;
@@ -74,7 +65,8 @@ time_t GetAdjustedTime(time_t *buf)
 
 class DefaultMapTimer : 
 	public IMapTimer,
-	public SMGlobalClass
+	public SMGlobalClass,
+	public IConVarChangeListener
 {
 public:
 	DefaultMapTimer()
@@ -118,34 +110,20 @@ public:
 		mp_timelimit->SetValue(mp_timelimit->GetInt() + extra_time);
 	}
 
-#if defined ORANGEBOX_BUILD
-	void GlobalChangeCallback(ConVar *pVar, const char *old_value, float flOldValue)
-#else
-	void GlobalChangeCallback(ConVar *pVar, const char *old_value)
-#endif
+	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
 	{
-		if (pVar != mp_timelimit)
-		{
-			return;
-		}
-
-		if (atoi(old_value) == pVar->GetInt())
-		{
-			return;
-		}
-
 		g_Timers.MapTimeLeftChanged();
 	}
 
 private:
 	void Enable()
 	{
-		SH_ADD_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallbacks, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
+		g_ConVarManager.AddConVarChangeListener("mp_timelimit", this);
 	}
 
 	void Disable()
 	{
-		SH_REMOVE_HOOK_MEMFUNC(ICvar, CallGlobalChangeCallbacks, icvar, this, &DefaultMapTimer::GlobalChangeCallback, false);
+		g_ConVarManager.RemoveConVarChangeListener("mp_timelimit", this);
 	}
 
 private:

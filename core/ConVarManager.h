@@ -44,6 +44,12 @@
 
 using namespace SourceHook;
 
+class IConVarChangeListener
+{
+public:
+	virtual void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue) =0;
+};
+
 /**
  * Holds SourceMod-specific information about a convar
  */
@@ -52,8 +58,8 @@ struct ConVarInfo
 	Handle_t handle;					/**< Handle to self */
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
-	FnChangeCallback_t origCallback;	/**< The original callback function */
 	ConVar *pVar;						/**< The actual convar */
+	List<IConVarChangeListener *> changeListeners;
 };
 
 /**
@@ -77,6 +83,7 @@ public:
 	ConVarManager();
 	~ConVarManager();
 public: // SMGlobalClass
+	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 	void OnSourceModVSPReceived();
@@ -111,6 +118,9 @@ public:
 	 */
 	void UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFunction);
 
+	void AddConVarChangeListener(const char *name, IConVarChangeListener *pListener);
+	void RemoveConVarChangeListener(const char *name, IConVarChangeListener *pListener);
+
 	/**
 	 * Starts a query to find the value of a client convar.
 	 */
@@ -131,7 +141,7 @@ private:
 	 * Static callback that Valve's ConVar object executes when the convar's value changes.
 	 */
 #if defined ORANGEBOX_BUILD
-	static void OnConVarChanged(IConVar *pConVar, const char *oldValue, float flOldValue);
+	static void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 #else
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
 #endif

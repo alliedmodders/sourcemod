@@ -41,6 +41,16 @@
 
 ConVarManager g_ConVarManager;
 
+#if !defined ORANGEBOX_BUILD
+#define CallGlobalChangeCallbacks	CallGlobalChangeCallback
+#endif
+
+#if defined ORANGEBOX_BUILD
+SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
+#else
+SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
+#endif
+
 SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 
@@ -56,6 +66,19 @@ ConVarManager::~ConVarManager()
 {
 }
 
+void ConVarManager::OnSourceModStartup(bool late)
+{
+	HandleAccess sec;
+
+	/* Set up access rights for the 'ConVar' handle type */
+	sec.access[HandleAccess_Read] = 0;
+	sec.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
+	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
+
+	/* Create the 'ConVar' handle type */
+	m_ConVarType = g_HandleSys.CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+}
+
 void ConVarManager::OnSourceModAllInitialized()
 {
 	/**
@@ -69,15 +92,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	}
 #endif
 
-	HandleAccess sec;
-
-	/* Set up access rights for the 'ConVar' handle type */
-	sec.access[HandleAccess_Read] = 0;
-	sec.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
-	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
-
-	/* Create the 'ConVar' handle type */
-	m_ConVarType = g_HandleSys.CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+	SH_ADD_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
 	/* Add the 'convars' option to the 'sm' console command */
 	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
@@ -137,6 +152,8 @@ void ConVarManager::OnSourceModShutdown()
 		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
 		m_bIsVSPQueryHooked = false;
 	}
+
+	SH_REMOVE_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
 	/* Remove the 'convars' option from the 'sm' console command */
 	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
@@ -243,7 +260,7 @@ void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 
 bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 {
-	*pSize = sizeof(ConVar);
+	*pSize = sizeof(ConVar) + sizeof(ConVarInfo);
 	return true;
 }
 
@@ -321,7 +338,6 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 			pInfo = new ConVarInfo();
 			pInfo->sourceMod = false;
 			pInfo->pChangeForward = NULL;
-			pInfo->origCallback = pConVar->GetCallback();
 			pInfo->pVar = pConVar;
 
 			/* If we don't, then create a new handle from the convar */
@@ -361,7 +377,6 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo->handle = hndl;
 	pInfo->sourceMod = true;
 	pInfo->pChangeForward = NULL;
-	pInfo->origCallback = NULL;
 
 	/* Create a handle from the new convar */
 	hndl = g_HandleSys.CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
@@ -412,7 +427,6 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	pInfo = new ConVarInfo();
 	pInfo->sourceMod = false;
 	pInfo->pChangeForward = NULL;
-	pInfo->origCallback = pConVar->GetCallback();
 	pInfo->pVar = pConVar;
 
 	/* If we don't have a handle, then create a new one */
@@ -433,6 +447,33 @@ Handle_t ConVarManager::FindConVar(const char *name)
 	return hndl;
 }
 
+void ConVarManager::AddConVarChangeListener(const char *name, IConVarChangeListener *pListener)
+{
+	ConVarInfo *pInfo;
+
+	if (FindConVar(name) == BAD_HANDLE)
+	{
+		return;
+	}
+
+	/* Find the convar in the lookup trie */
+	if (convar_cache_lookup(name, &pInfo))
+	{
+		pInfo->changeListeners.push_back(pListener);
+	}
+}
+
+void ConVarManager::RemoveConVarChangeListener(const char *name, IConVarChangeListener *pListener)
+{
+	ConVarInfo *pInfo;
+
+	/* Find the convar in the lookup trie */
+	if (convar_cache_lookup(name, &pInfo))
+	{
+		pInfo->changeListeners.remove(pListener);
+	}
+}
+
 void ConVarManager::HookConVarChange(ConVar *pConVar, IPluginFunction *pFunction)
 {
 	ConVarInfo *pInfo;
@@ -449,9 +490,6 @@ void ConVarManager::HookConVarChange(ConVar *pConVar, IPluginFunction *pFunction
 		{
 			pForward = g_Forwards.CreateForwardEx(NULL, ET_Ignore, 3, CONVARCHANGE_PARAMS);
 			pInfo->pChangeForward = pForward;
-
-			/* Install our own callback */
-			pConVar->InstallChangeCallback(OnConVarChanged);
 		}
 
 		/* Add function to forward's list */
@@ -491,9 +529,6 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 			/* Free this forward */
 			g_Forwards.ReleaseForward(pForward);
 			pInfo->pChangeForward = NULL;
-
-			/* Put back the original convar callback */
-			pConVar->InstallChangeCallback(pInfo->origCallback);
 		}
 	}
 }
@@ -561,15 +596,12 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 }
 
 #if defined ORANGEBOX_BUILD
-void ConVarManager::OnConVarChanged(IConVar *pIConVar, const char *oldValue, float flOldValue)
+void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
 #else
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 #endif
 {
 	/* If the values are the same, exit early in order to not trigger callbacks */
-#if defined ORANGEBOX_BUILD
-	ConVar *pConVar = (ConVar *)pIConVar;
-#endif
 	if (strcmp(pConVar->GetString(), oldValue) == 0)
 	{
 		return;
@@ -583,24 +615,30 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 		return;
 	}
 
-	FnChangeCallback_t origCallback = pInfo->origCallback;
 	IChangeableForward *pForward = pInfo->pChangeForward;
 
-	/* If there was a change callback installed previously, call it */
-	if (origCallback)
+	if (pInfo->changeListeners.size() != 0)
 	{
+		for (List<IConVarChangeListener *>::iterator i = pInfo->changeListeners.begin();
+			 i != pInfo->changeListeners.end();
+			 i++)
+		{
 #if defined ORANGEBOX_BUILD
-		origCallback(pConVar, oldValue, flOldValue);
+			(*i)->OnConVarChanged(pConVar, oldValue, flOldValue);
 #else
-		origCallback(pConVar, oldValue);
+			(*i)->OnConVarChanged(pConVar, oldValue, atof(oldValue));
 #endif
+		}
 	}
 
-	/* Now call forwards in plugins that have hooked this */
-	pForward->PushCell(pInfo->handle);
-	pForward->PushString(oldValue);
-	pForward->PushString(reinterpret_cast<ConVar *>(pConVar)->GetString());
-	pForward->Execute(NULL);
+	if (pForward != NULL)
+	{
+		/* Now call forwards in plugins that have hooked this */
+		pForward->PushCell(pInfo->handle);
+		pForward->PushString(oldValue);
+		pForward->PushString(pConVar->GetString());
+		pForward->Execute(NULL);
+	}
 }
 
 bool ConVarManager::IsQueryingSupported()
@@ -815,14 +853,10 @@ void _IntExt_EnableYamagrams()
 	}
 }
 
-#if defined ORANGEBOX_BUILD
-void _IntExt_OnHostnameChanged(IConVar *pConVar, const char *oldValue, float flOldValue)
-#else
-void _IntExt_OnHostnameChanged(ConVar *pConVar, char const *oldValue)
-#endif
+void _IntExt_OnHostnameChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
 {
 	if (strcmp(oldValue, "Good morning, DS-san.") == 0
-		&& strcmp(reinterpret_cast<ConVar *>(pConVar)->GetString(), "Good night, talking desk lamp.") == 0)
+		&& strcmp(pConVar->GetString(), "Good night, talking desk lamp.") == 0)
 	{
 		_IntExt_EnableYamagrams();
 	}
