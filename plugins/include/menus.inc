@@ -575,8 +575,7 @@ native Handle:CreatePanel(Handle:hStyle=INVALID_HANDLE);
 native Handle:CreateMenuEx(Handle:hStyle=INVALID_HANDLE, MenuHandler:handler, MenuAction:actions=MENU_ACTIONS_DEFAULT);
 
 /**
- * Returns whether a client is viewing a menu.  If the menu source 
- * is MenuSource_Normal, a menu Handle will also be returned.
+ * Returns whether a client is viewing a menu.
  *
  * @param client		Client index.
  * @param hStyle		MenuStyle Handle, or INVALID_HANDLE to use the default style.
