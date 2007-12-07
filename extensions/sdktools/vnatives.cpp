@@ -853,6 +853,11 @@ static cell_t GetPlayerDecalFile(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetServerNetStats(IPluginContext *pContext, const cell_t *params)
 {
+	if (iserver == NULL)
+	{
+		return pContext->ThrowNativeError("IServer interface not supported, file a bug report.");
+	}
+
 	float in, out;
 	cell_t *pIn, *pOut;
 

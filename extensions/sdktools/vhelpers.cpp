@@ -272,7 +272,7 @@ bool GetPlayerInfo(int client, player_info_t *info)
 #if defined ORANGEBOX_BUILD
 	return engine->GetPlayerInfo(client, info);
 #else
-	return iserver->GetPlayerInfo(client, info);
+	return (iserver) ? iserver->GetPlayerInfo(client-1, info) : false;
 #endif
 }
 

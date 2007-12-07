@@ -83,18 +83,28 @@ void InitializeValveGlobals()
 }
 #endif
 
+bool vcmp(const void *_addr1, const void *_addr2, size_t len)
+{
+	unsigned char *addr1 = (unsigned char *)_addr1;
+	unsigned char *addr2 = (unsigned char *)_addr2;
+
+	for (size_t i=0; i<len; i++)
+	{
+		if (addr2[i] == '*')
+			continue;
+		if (addr1[i] != addr2[i])
+			return false;
+	}
+
+	return true;
+}
+
 #if defined PLATFORM_WINDOWS
 	/* Thanks to DS for the sigs */
 	#define ISERVER_WIN_SIG				"\x8B\x44\x24\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
 	#define ISERVER_WIN_SIG_LEN			11
 void GetIServer()
 {
-	/* First check that the IVEngineServer::CreateFakeClient exists */
-	if (!memutils->FindPattern(engine, ISERVER_WIN_SIG, ISERVER_WIN_SIG_LEN))
-	{
-		return;
-	}
-
 	int offset;
 	void *vfunc = NULL;
 
@@ -106,6 +116,12 @@ void GetIServer()
 #if defined METAMOD_PLAPI_VERSION
 	/* Get the CreateFakeClient function pointer */
 	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
+	{
+		return;
+	}
+
+	/* Check if we're on the expected function */
+	if (!vcmp(vfunc, ISERVER_WIN_SIG, ISERVER_WIN_SIG_LEN))
 	{
 		return;
 	}
@@ -123,6 +139,11 @@ void GetIServer()
 		void **vtable = *reinterpret_cast<void ***>(enginePatch->GetThisPtr() + info.thisptroffs + info.vtbloffs);
 		vfunc = vtable[info.vtblindex];
 	}
+	/* Check if we're on the expected function */
+	if (!vcmp(vfunc, ISERVER_WIN_SIG, ISERVER_WIN_SIG_LEN))
+	{
+		return;
+	}
 
 	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
 #endif
@@ -136,6 +157,6 @@ void GetIServer()
 		return;
 	}
 
-	iserver = *reinterpret_cast<IServer **>(addr);
+	iserver = reinterpret_cast<IServer *>(addr);
 }
 #endif
