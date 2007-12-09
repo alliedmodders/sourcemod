@@ -316,6 +316,8 @@ public Action:Command_Say(client, args)
 public Action:Timer_DelayRTV(Handle:timer)
 {
 	g_RTVAllowed = true;
+	g_RTVStarted = false;
+	g_RTVEnded = false;	
 }
 
 public Action:Timer_StartRTV(Handle:timer)
