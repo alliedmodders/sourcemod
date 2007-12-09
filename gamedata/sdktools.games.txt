@@ -42,6 +42,7 @@
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 
 		"Offsets"
@@ -100,6 +101,7 @@
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 		
 		"Offsets"
@@ -150,6 +152,7 @@
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 		
 		"Offsets"
@@ -197,6 +200,7 @@
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 
 		"Signatures"
@@ -1181,6 +1185,80 @@
 			{
 				"windows"	"328"
 				"linux"		"329"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"224"
+				"linux"		"225"
+			}
+			"Ignite"
+			{
+				"windows"	"188"
+				"linux"		"189"
+			}
+			"Extinguish"
+			{
+				"windows"	"189"
+				"linux"		"190"
+			}
+			"Teleport"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
+			}
+			"EyeAngles"
+			{
+				"windows"	"118"
+				"linux"		"119"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+				"linux"		"32"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+		}
+	}
+
+	/* Synergy Release 1 */
+	"synergy"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"334"
+				"linux"		"335"
 			}
 			"RemovePlayerItem"
 			{
