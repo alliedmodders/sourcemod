@@ -1311,6 +1311,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_adt_trie.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_banning.cpp"
 				>
 			</File>

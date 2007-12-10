@@ -36,3 +36,4 @@
 #define _adt_included
 
 #include <adt_array>
+#include <adt_trie>
