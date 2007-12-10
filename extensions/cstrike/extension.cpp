@@ -186,6 +186,10 @@ bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
 	{
 		team_index = 2;
 	}
+	else
+	{
+		return false;
+	}
 
 	info->num_targets = 0;
 
