@@ -1125,7 +1125,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	{
 		if (m_LoadingLocked)
 		{
-			UTIL_Format(error, maxlength, "There is a global plugin loading lock in effect.");
+			UTIL_Format(error, maxlength, "There is a global plugin loading lock in effect");
 		}
 		else
 		{
