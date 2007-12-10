@@ -45,6 +45,8 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+new g_maxPlayers;
+
 /* Forwards */
 new Handle:hOnAdminMenuReady = INVALID_HANDLE;
 new Handle:hOnAdminMenuCreated = INVALID_HANDLE;
@@ -56,6 +58,8 @@ new Handle:hAdminMenu = INVALID_HANDLE;
 new TopMenuObject:obj_playercmds = INVALID_TOPMENUOBJECT;
 new TopMenuObject:obj_servercmds = INVALID_TOPMENUOBJECT;
 new TopMenuObject:obj_votingcmds = INVALID_TOPMENUOBJECT;
+
+#include "adminmenu/dynamicmenu.sp"
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
@@ -81,7 +85,7 @@ public OnConfigsExecuted()
 	decl String:path[PLATFORM_MAX_PATH];
 	decl String:error[256];
 	
-	BuildPath(Path_SM, path, sizeof(path), "configs/adminmenu_sorting.txt");
+	BuildPath(Path_SM, path, sizeof(path), "configs/dynamicmenu/adminmenu_sorting.txt");
 	
 	if (!LoadTopMenuConfig(hAdminMenu, path, error, sizeof(error)))
 	{
@@ -90,27 +94,36 @@ public OnConfigsExecuted()
 	}
 }
 
+public OnMapStart()
+{
+	g_maxPlayers = GetMaxClients();
+	
+	ParseConfigs();
+}
+
 public OnAllPluginsLoaded()
 {
-	hAdminMenu = CreateTopMenu(CategoryHandler);
+	hAdminMenu = CreateTopMenu(DefaultCategoryHandler);
 	
 	obj_playercmds = AddToTopMenu(hAdminMenu, 
 		"PlayerCommands",
 		TopMenuObject_Category,
-		CategoryHandler,
+		DefaultCategoryHandler,
 		INVALID_TOPMENUOBJECT);
 
 	obj_servercmds = AddToTopMenu(hAdminMenu,
 		"ServerCommands",
 		TopMenuObject_Category,
-		CategoryHandler,
+		DefaultCategoryHandler,
 		INVALID_TOPMENUOBJECT);
 
 	obj_votingcmds = AddToTopMenu(hAdminMenu,
 		"VotingCommands",
 		TopMenuObject_Category,
-		CategoryHandler,
+		DefaultCategoryHandler,
 		INVALID_TOPMENUOBJECT);
+		
+	BuildDynamicMenu();
 	
 	Call_StartForward(hOnAdminMenuCreated);
 	Call_PushCell(hAdminMenu);
@@ -121,7 +134,7 @@ public OnAllPluginsLoaded()
 	Call_Finish();
 }
 
-public CategoryHandler(Handle:topmenu, 
+public DefaultCategoryHandler(Handle:topmenu, 
 						TopMenuAction:action,
 						TopMenuObject:object_id,
 						param,
