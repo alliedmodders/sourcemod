@@ -524,10 +524,6 @@ private:
 
 			if ((fp = fopen(pMapList->path, "rt")) == NULL)
 			{
-				char error_msg[255];
-				strncopy(error_msg, "Unknown error", sizeof(error_msg));
-				g_LibSys.GetPlatformError(error_msg, sizeof(error_msg));
-				g_Logger.LogError("ReadMapList(): Could not open file \"%s\": %s\n", pMapList->path, error_msg);
 				return false;
 			}
 
@@ -658,6 +654,7 @@ static cell_t SetMapListCompatBind(IPluginContext *pContext, const cell_t *param
 	pContext->LocalToString(params[1], &name);
 	pContext->LocalToString(params[2], &file);
 
+	s_MapLists.UpdateCache();
 	s_MapLists.AddOrUpdateDefault(name, file);
 
 	return 1;

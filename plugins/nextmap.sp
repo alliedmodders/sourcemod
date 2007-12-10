@@ -96,19 +96,6 @@ public OnConfigsExecuted()
 	// not in mapcyclefile. So we keep it set to the last expected nextmap. - ferret
 	if (strcmp(lastMap, currentMap) == 0)
 	{
-		if (ReadMapList(g_MapList, 
-				g_MapListSerial, 
-				"mapcyclefile", 
-				MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT)
-			== INVALID_HANDLE)
-		{
-			if (g_MapListSerial == -1)
-			{
-				LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
-				SetFailState("Mapcycle Not Found");
-			}
-		}
-		
 		FindAndSetNextMap();
 	}
 }
@@ -213,6 +200,10 @@ public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playe
 		
 		if (!IsMapValid(map))
 		{
+			if (g_MapPos == -1)
+			{
+				FindAndSetNextMap();
+			}
 			GetArrayString(g_MapList, g_MapPos, map, sizeof(map));
 		}
 		
@@ -244,6 +235,19 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
  
 FindAndSetNextMap()
 {
+	if (ReadMapList(g_MapList, 
+			g_MapListSerial, 
+			"mapcyclefile", 
+			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT)
+		== INVALID_HANDLE)
+	{
+		if (g_MapListSerial == -1)
+		{
+			LogError("FATAL: Cannot load map cycle. Nextmap not loaded.");
+			SetFailState("Mapcycle Not Found");
+		}
+	}
+	
 	new mapCount = GetArraySize(g_MapList);
 	decl String:mapName[32];
 	
