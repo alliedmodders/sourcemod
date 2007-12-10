@@ -659,6 +659,17 @@ public:
 		free(m_base);
 		free(m_stringtab);
 	}
+	void run_destructor(void (*dtor)(K * ptr))
+	{
+		for (size_t i = 0; i <= m_baseSize; i++)
+		{
+			if (m_base[i].valset)
+			{
+				dtor(&m_base[i].value);
+				m_base[i].valset = false;
+			}
+		}
+	}
 private:
 	class KTrieNode
 	{
