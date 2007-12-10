@@ -524,6 +524,10 @@ private:
 
 			if ((fp = fopen(pMapList->path, "rt")) == NULL)
 			{
+				char error_msg[255];
+				strncopy(error_msg, "Unknown error", sizeof(error_msg));
+				g_LibSys.GetPlatformError(error_msg, sizeof(error_msg));
+				g_Logger.LogError("ReadMapList(): Could not open file \"%s\": %s\n", pMapList->path, error_msg);
 				return false;
 			}
 
