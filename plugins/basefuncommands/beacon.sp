@@ -5,7 +5,6 @@ new g_haloSprite;
 
 SetupBeacon()
 {
-	HookEvent("player_death", Event_BeaconPlayerDeath, EventHookMode_Post);
 	HookEvent("round_end", Event_BeaconRoundEnd, EventHookMode_PostNoCopy);	
 
 	PrecacheSound("ambient/tones/elev1.wav", true);
@@ -109,17 +108,6 @@ public Action:Timer_Beacon(Handle:timer, any:client)
 	}
 		
 	return Plugin_Handled;
-}
-
-public Action:Event_BeaconPlayerDeath(Handle:event,const String:name[],bool:dontBroadcast)
-{
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	if (g_BeaconTimers[client] != INVALID_HANDLE)
-	{
-		KillBeacon(client);
-	}
-
-	return Plugin_Continue;
 }
 
 public Action:Event_BeaconRoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
