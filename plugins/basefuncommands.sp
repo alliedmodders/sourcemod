@@ -54,6 +54,7 @@ new g_SlapDamage[MAXPLAYERS+1];
 #include "basefuncommands/slay.sp"
 #include "basefuncommands/burn.sp"
 #include "basefuncommands/slap.sp"
+#include "basefuncommands/beacon.sp"
 
 public OnPluginStart()
 {
@@ -63,7 +64,10 @@ public OnPluginStart()
 	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
+	RegAdminCmd("sm_beacon", Command_Beacon, ADMFLAG_SLAY, "sm_beacon <#userid|name>");
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
+	
+	SetupBeacon();
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -71,6 +75,11 @@ public OnPluginStart()
 	{
 		OnAdminMenuReady(topmenu);
 	}
+}
+
+public OnMapEnd()
+{
+	KillAllBeacons();
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -112,6 +121,14 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_slap",
 			ADMFLAG_SLAY);	
+			
+		AddToTopMenu(hTopMenu,
+			"sm_beacon",
+			TopMenuObject_Item,
+			AdminMenu_Beacon,
+			player_commands,
+			"sm_beacon",
+			ADMFLAG_SLAY);			
 	}
 }
 

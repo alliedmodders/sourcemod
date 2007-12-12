@@ -10,6 +10,11 @@
 	{
 		"en"			"Burn player"
 	}
+	
+	"Beacon player"
+	{
+		"en"			"Beacon player"
+	}	
 
 	"Slap player"
 	{
@@ -42,5 +47,11 @@
 	{
 		"#format"		"{1:t}"
 		"en"			"Set {1} on fire."
+	}
+	
+	"Toggled beacon on target"
+	{
+		"#format"		"{1:t}"
+		"en"			"toggled beacon on {1}."
 	}
 }

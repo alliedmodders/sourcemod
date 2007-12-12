@@ -75,7 +75,7 @@ public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
 		/* Re-draw the menu if they're still valid */
 		if (IsClientInGame(param1) && !IsClientInKickQueue(param1))
 		{
-			DisplaySlayMenu(param1);
+			DisplayBurnMenu(param1);
 		}
 	}
 }
