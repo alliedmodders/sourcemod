@@ -9,7 +9,6 @@ SetupBeacon()
 	HookEvent("round_end", Event_BeaconRoundEnd, EventHookMode_PostNoCopy);	
 
 	PrecacheSound("ambient/tones/elev1.wav", true);
-	//AddFileToDownloadsTable("sound/ambient/tones/elev1.wav");
 
         g_beamSprite = PrecacheModel("materials/sprites/laser.vmt");
 	g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
@@ -40,8 +39,6 @@ KillAllBeacons()
 
 PerformBeacon(client, target)
 {
-	LogAction(client, target, "\"%L\" set a beacon on \"%L\"", client, target);
-	
 	if (g_BeaconTimers[target] == INVALID_HANDLE)
 	{
 		CreateBeacon(target);
