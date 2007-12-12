@@ -1,16 +1,26 @@
 new Handle:g_BeaconTimers[MAXPLAYERS+1] = {INVALID_HANDLE, ...};
 
-new g_beamSprite;
-new g_haloSprite;
+new g_BeaconRoundEndHooked = false;
+
+new g_BeamSprite;
+new g_HaloSprite;
+
+new redColor[4] = {255, 75, 75, 255};
+new greenColor[4] = {75, 255, 75, 255};
+new blueColor[4] = {75, 75, 255, 255};
 
 SetupBeacon()
 {
-	HookEvent("round_end", Event_BeaconRoundEnd, EventHookMode_PostNoCopy);	
+	if (!g_BeaconRoundEndHooked)
+	{
+		HookEvent("round_end", Event_BeaconRoundEnd, EventHookMode_PostNoCopy);	
+		g_BeaconRoundEndHooked = true;
+	}
 
 	PrecacheSound("ambient/tones/elev1.wav", true);
 
-        g_beamSprite = PrecacheModel("materials/sprites/laser.vmt");
-	g_haloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
+	g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
+	g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
 }
 
 CreateBeacon(client)
@@ -50,59 +60,44 @@ PerformBeacon(client, target)
 	}
 }
 
-DisplayBeacon(client, r, g, b, a)
+public Action:Timer_Beacon(Handle:timer, any:client)
 {
+	if (!IsClientInGame(client) || !IsPlayerAlive(client))
+	{
+		if (g_BeaconTimers[client] == timer)
+		{
+			KillBeacon(client);		
+		}
+		
+		return Plugin_Handled;
+	}
+	
+	new team = GetClientTeam(client);
+
 	new Float:vec[3];
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 5;
-
-	TE_Start("BeamRingPoint");
-	TE_WriteVector("m_vecCenter", vec);
-	TE_WriteFloat("m_flStartRadius", 20.0);
-	TE_WriteFloat("m_flEndRadius", 400.0);
-	TE_WriteNum("m_nModelIndex", g_beamSprite);
-	TE_WriteNum("m_nHaloIndex", g_haloSprite);
-	TE_WriteNum("m_nStartFrame", 0);
-	TE_WriteNum("m_nFrameRate", 0);
-	TE_WriteFloat("m_fLife", 1.0);
-	TE_WriteFloat("m_fWidth", 5.0);
-	TE_WriteFloat("m_fEndWidth", 5.0);
-	TE_WriteFloat("m_fAmplitude", 0.0);
-	TE_WriteNum("r", r);
-	TE_WriteNum("g", g);
-	TE_WriteNum("b", b);
-	TE_WriteNum("a", a);
-	TE_WriteNum("m_nSpeed", 50);
-	TE_WriteNum("m_nFlags", 0);
-	TE_WriteNum("m_nFadeLength", 0);
-	TE_SendToAll();
-}
-
-public Action:Timer_Beacon(Handle:timer, any:client)
-{
-        if (!IsClientInGame(client) || !IsPlayerAlive(client))
-	{
-		KillBeacon(client);		
-		return Plugin_Handled;
-        }
 	
-	new team = GetClientTeam(client);
-	
-        if (team == 2)
+	if (team == 2)
 	{
-		DisplayBeacon(client, 255, 75, 75, 255);
+		TE_SetupBeamRingPoint(vec, 20.0, 400.0, g_BeamSprite, g_HaloSprite, 0, 0, 1.0, 3.0, 0.0, redColor, 50, 0);
 	}
 	else if (team == 3)
 	{
-		DisplayBeacon(client, 75, 75, 255, 255);
+		TE_SetupBeamRingPoint(vec, 20.0, 400.0, g_BeamSprite, g_HaloSprite, 0, 0, 1.0, 3.0, 0.0, blueColor, 50, 0);
 	}
+	else
+	{
+		TE_SetupBeamRingPoint(vec, 20.0, 400.0, g_BeamSprite, g_HaloSprite, 0, 0, 1.0, 3.0, 0.0, greenColor, 50, 0);
+	}
+	
+	TE_SendToAll();
 	
 	// Create a double ring, if we are the repeating timer.
 	if (g_BeaconTimers[client] == timer)
 	{
 		CreateTimer(0.2, Timer_Beacon, client);
 
-		new Float:vec[3];
 		GetClientEyePosition(client, vec);
 		EmitAmbientSound("ambient/tones/elev1.wav", vec, client, SNDLEVEL_RAIDSIREN);	
 	}
@@ -114,7 +109,7 @@ public Action:Event_BeaconRoundEnd(Handle:event,const String:name[],bool:dontBro
 {
 	KillAllBeacons();
 	
-        return Plugin_Handled;
+	return Plugin_Handled;
 }
 
 DisplayBeaconMenu(client)

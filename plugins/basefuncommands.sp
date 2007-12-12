@@ -67,14 +67,17 @@ public OnPluginStart()
 	RegAdminCmd("sm_beacon", Command_Beacon, ADMFLAG_SLAY, "sm_beacon <#userid|name>");
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
 	
-	SetupBeacon();
-	
 	/* Account for late loading */
 	new Handle:topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(topmenu);
 	}
+}
+
+public OnMapStart()
+{
+	SetupBeacon();	
 }
 
 public OnMapEnd()
