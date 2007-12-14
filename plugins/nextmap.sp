@@ -75,6 +75,11 @@ public OnPluginStart()
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
+	
+	if (GetCommandFlags("nextmap") == INVALID_FCVAR_FLAGS)
+	{
+		RegServerCmd("nextmap", Command_Nextmap);
+	}
 
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 	RegConsoleCmd("listmaps", Command_List);
@@ -128,7 +133,7 @@ public Action:Command_Say(client, args)
 		decl String:map[32];
 		GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
 		
-		PrintToChatAll("%t", "Next Map", map);
+		PrintToChat(client, "%t", "Next Map", map);
 	}
 	
 	return Plugin_Continue;	
@@ -214,6 +219,17 @@ public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playe
 		CreateDataTimer(fChatTime - 1.0, Timer_ChangeMap, dp);
 		WritePackString(dp, map);
 	}
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_Nextmap(args)
+{
+	decl String:map[64];
+	
+	GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
+	
+	ReplyToCommand(0, "%t", "Next Map", map);
 	
 	return Plugin_Handled;
 }
