@@ -94,6 +94,7 @@ const char *MyDriver::GetProductName()
 MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 {
 	MYSQL *mysql = mysql_init(NULL);
+	const char *host = NULL, *socket = NULL;
 
 	if (info->maxTimeout > 0)
 	{
@@ -106,13 +107,24 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 	my_bool my_true = true;
 	mysql_options(mysql, MYSQL_OPT_RECONNECT, (const char *)&my_true);
 
+	if (info->host[0] == '/')
+	{
+		host = "localhost";
+		socket = info->host;
+	}
+	else
+	{
+		host = info->host;
+		socket = NULL;
+	}
+
 	if (!mysql_real_connect(mysql,
-		info->host,
+		host,
 		info->user, 
 		info->pass,
 		info->database,
 		info->port,
-		NULL,
+		socket,
 		M_CLIENT_MULTI_RESULTS))
 	{
 		/* :TODO: expose UTIL_Format from smutil! */
