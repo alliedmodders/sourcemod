@@ -718,3 +718,39 @@ native GetCommandFlags(const String:name[]);
  * @return			True on success, otherwise false.
  */
 native bool:SetCommandFlags(const String:name[], flags);
+
+/**
+ * Starts a ConCommandBase search, traversing the list of ConVars and 
+ * ConCommands.  If a Handle is returned, the next entry must be read 
+ * via FindNextConCommand().  The order of the list is undefined.
+ *
+ * @param buffer		Buffer to store entry name.
+ * @param max_size		Maximum size of the buffer.
+ * @param isCommand		Variable to store whether the entry is a command. 
+ *						If it is not a command, it is a ConVar.
+ * @param flags			Variable to store entry flags.
+ * @return				On success, a ConCmdIter Handle is returned, which 
+ *						can be read via FindNextConCommand(), and must be 
+ *						closed via CloseHandle().  Additionally, the output 
+ *						parameters will be filled with information of the 
+ *						first ConCommandBase entry.
+ *						On failure, INVALID_HANDLE is returned, and the 
+ *						contents of outputs is undefined.
+ */
+native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &flags=0);
+
+/**
+ * Reads the next entry in a ConCommandBase iterator.
+ *
+ * @param search		ConCmdIter Handle to search.
+ * @param buffer		Buffer to store entry name.
+ * @param max_size		Maximum size of the buffer.
+ * @param isCommand		Variable to store whether the entry is a command.
+ *						If it is not a command, it is a ConVar.
+ * @param flags			Variable to store entry flags.
+ * @return				On success, the outputs are filled, the iterator is 
+ *						advanced to the next entry, and true is returned.  
+ *						If no more entries exist, false is returned, and the 
+ *						contents of outputs is undefined.
+ */
+native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:isCommand, &flags=0);

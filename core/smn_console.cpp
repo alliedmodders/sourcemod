@@ -53,11 +53,17 @@ enum ConVarBounds
 };
 
 HandleType_t hCmdIterType = 0;
+HandleType_t htConCmdIter = 0;
 
 struct GlobCmdIter
 {
 	bool started;
 	List<ConCmdInfo *>::iterator iter;
+};
+
+struct ConCmdIter
+{
+	const ConCommandBase *pLast;
 };
 
 class ConsoleHelpers : 
@@ -68,15 +74,41 @@ public:
 	virtual void OnSourceModAllInitialized()
 	{
 		HandleAccess access;
+
 		g_HandleSys.InitAccessDefaults(NULL, &access);
+
+		htConCmdIter = g_HandleSys.CreateType("ConCmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
+
 		access.access[HandleAccess_Clone] = HANDLE_RESTRICT_OWNER | HANDLE_RESTRICT_IDENTITY;
 
-		hCmdIterType = g_HandleSys.CreateType(NULL, this, 0, NULL, &access, g_pCoreIdent, NULL);
+		hCmdIterType = g_HandleSys.CreateType("CmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
 	}
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		GlobCmdIter *iter = (GlobCmdIter *)object;
-		delete iter;
+		if (type == hCmdIterType)
+		{
+			GlobCmdIter *iter = (GlobCmdIter *)object;
+			delete iter;
+		}
+		else if (type == htConCmdIter)
+		{
+			ConCmdIter *iter = (ConCmdIter * )object;
+			delete iter;
+		}
+	}
+	virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	{
+		if (type == htConCmdIter)
+		{
+			*pSize = sizeof(ConCmdIter);
+			return true;
+		}
+		else if (type == hCmdIterType)
+		{
+			*pSize = sizeof(GlobCmdIter);
+			return true;
+		}
+		return false;
 	}
 } s_ConsoleHelpers;
 
@@ -1098,6 +1130,72 @@ static cell_t GetCommandFlags(IPluginContext *pContext, const cell_t *params)
 	return (s_CommandFlagsHelper.GetFlags(name, &flags)) ? flags : -1;
 }
 
+static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	ConCmdIter *pIter;
+	cell_t *pIsCmd, *pFlags;
+	const ConCommandBase *pConCmd;
+
+	pContext->LocalToPhysAddr(params[3], &pIsCmd);
+	pContext->LocalToPhysAddr(params[4], &pFlags);
+
+	pConCmd = icvar->GetCommands();
+
+	if (pConCmd == NULL)
+	{
+		return BAD_HANDLE;
+	}
+
+	pContext->StringToLocalUTF8(params[1], params[2], pConCmd->GetName(), NULL);
+	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
+	*pFlags = pConCmd->GetFlags();
+
+	pIter = new ConCmdIter;
+	pIter->pLast = pConCmd;
+
+	if ((hndl = g_HandleSys.CreateHandle(htConCmdIter, pIter, pContext->GetIdentity(), g_pCoreIdent, NULL))
+		== BAD_HANDLE)
+	{
+		delete pIter;
+		return BAD_HANDLE;
+	}
+
+	return hndl;
+}
+
+static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	ConCmdIter *pIter;
+	cell_t *pIsCmd, *pFlags;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = g_HandleSys.ReadHandle(params[1], htConCmdIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	if (pIter->pLast == NULL)
+	{
+		return 0;
+	}
+
+	if ((pIter->pLast = pIter->pLast->GetNext()) == NULL)
+	{
+		return 0;
+	}
+
+	pContext->LocalToPhysAddr(params[4], &pIsCmd);
+	pContext->LocalToPhysAddr(params[5], &pFlags);
+
+	pContext->StringToLocalUTF8(params[2], params[3], pIter->pLast->GetName(), NULL);
+	*pIsCmd = pIter->pLast->IsCommand() ? 1 : 0;
+	*pFlags = pIter->pLast->GetFlags();
+
+	return 1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1142,5 +1240,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"IsChatTrigger",		IsChatTrigger},
 	{"SetCommandFlags",		SetCommandFlags},
 	{"GetCommandFlags",		GetCommandFlags},
+	{"FindFirstConCommand",	FindFirstConCommand},
+	{"FindNextConCommand",	FindNextConCommand},
 	{NULL,					NULL}
 };
