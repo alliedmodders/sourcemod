@@ -50,7 +50,10 @@ SetupBeacon()
 		g_BeaconRoundEndHooked = true;
 	}
 
-	PrecacheSound("ambient/tones/elev1.wav", true);
+	if (g_cstrike)
+	{
+		PrecacheSound("ambient/tones/elev1.wav", true);
+	}
 
 	g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
 	g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
@@ -132,7 +135,11 @@ public Action:Timer_Beacon(Handle:timer, any:client)
 		CreateTimer(0.2, Timer_Beacon, client);
 
 		GetClientEyePosition(client, vec);
-		EmitAmbientSound("ambient/tones/elev1.wav", vec, client, SNDLEVEL_RAIDSIREN);	
+		
+		if (g_cstrike)
+		{
+			EmitAmbientSound("ambient/tones/elev1.wav", vec, client, SNDLEVEL_RAIDSIREN);	
+		}
 	}
 		
 	return Plugin_Handled;

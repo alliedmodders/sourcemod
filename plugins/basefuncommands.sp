@@ -50,6 +50,7 @@ public Plugin:myinfo =
 new Handle:hTopMenu = INVALID_HANDLE;
 
 new g_SlapDamage[MAXPLAYERS+1];
+new bool:g_cstrike = false;
 
 #include "basefuncommands/slay.sp"
 #include "basefuncommands/burn.sp"
@@ -72,6 +73,14 @@ public OnPluginStart()
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != INVALID_HANDLE))
 	{
 		OnAdminMenuReady(topmenu);
+	}
+	
+	decl String:folder[64];
+	GetGameFolderName(folder, sizeof(folder));
+	
+	if (strcmp(folder, "cstrike") == 0)
+	{
+		g_cstrike = true;
 	}
 }
 
