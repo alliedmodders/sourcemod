@@ -33,7 +33,7 @@
 #include "ChatTriggers.h"
 #include "sm_stringutil.h"
 #include "ConCmdManager.h"
-#include <IPlayerHelpers.h>
+#include "PlayerManager.h"
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does.
  * While the OB build only runs on MM:S 1.6.0+ (SH 5+), the older one 
@@ -54,6 +54,7 @@ extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegat
 #endif //ORANGEBOX_BUILD
 
 ChatTriggers g_ChatTriggers;
+bool g_bSupressSilentFails = false;
 
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
 	m_bTriggerWasSilent(false), m_ReplyTo(SM_REPLY_CONSOLE)
@@ -85,10 +86,17 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 		m_PubTrigger = sm_strdup(value);
 		m_PubTriggerSize = strlen(m_PubTrigger);
 		return ConfigResult_Accept;
-	} else if (strcmp(key, "SilentChatTrigger") == 0) {
+	}
+	else if (strcmp(key, "SilentChatTrigger") == 0)
+	{
 		delete [] m_PrivTrigger;
 		m_PrivTrigger = sm_strdup(value);
 		m_PrivTriggerSize = strlen(m_PrivTrigger);
+		return ConfigResult_Accept;
+	}
+	else if (strcmp(key, "SilentFailSuppress") == 0)
+	{
+		g_bSupressSilentFails = strcmp(value, "yes") == 0;
 		return ConfigResult_Accept;
 	}
 
@@ -205,6 +213,15 @@ void ChatTriggers::OnSayCommand_Pre()
 	 */
 	if (!PreProcessTrigger(engine->PEntityOfEntIndex(client), args, is_quoted))
 	{
+		CPlayer *pPlayer;
+		if (is_silent 
+			&& g_bSupressSilentFails 
+			&& client != 0
+			&& (pPlayer = g_Players.GetPlayerByIndex(client)) != NULL
+			&& pPlayer->GetAdminId() != INVALID_ADMIN_ID)
+		{
+			RETURN_META(MRES_SUPERCEDE);
+		}
 		RETURN_META(MRES_IGNORED);
 	}
 
