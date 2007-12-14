@@ -704,16 +704,17 @@ stock bool:IsValidConVarChar(c)
 /**
  * Returns the bitstring of flags of a command.
  *
- * @param name				Name of the command.
- * @return				A bitstring containing the FCVAR_* flags that are enabled or INVALID_FCVAR_FLAGS if command not found.
+ * @param name		Name of the command.
+ * @return			A bitstring containing the FCVAR_* flags that are enabled 
+ *					or INVALID_FCVAR_FLAGS if command not found.
  */
 native GetCommandFlags(const String:name[]);
 
 /**
  * Sets the bitstring of flags of a command.
  *
- * @param name			Name of the command.
- * @param flags			A bitstring containing the FCVAR_* flags to enable.
+ * @param name		Name of the command.
+ * @param flags		A bitstring containing the FCVAR_* flags to enable.
  * @return			True on success, otherwise false.
  */
 native bool:SetCommandFlags(const String:name[], flags);
