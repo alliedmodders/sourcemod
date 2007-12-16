@@ -267,6 +267,18 @@ native bool:IsPluginDebugging(Handle:hndl);
 native bool:GetPluginInfo(Handle:plugin, PluginInfo:info, String:buffer[], maxlength);
 
 /**
+ * Finds a plugin by its order in the list from the "plugins list" server 
+ * "sm" command.  You should not use this function to loop through all plugins, 
+ * use the iterator instead.  Looping through all plugins using this native 
+ * is O(n^2), whereas using the iterator is O(n).
+ *
+ * @param order_num		Number of the plugin as it appears in "sm plugins list".
+ * @return				Plugin Handle on success, INVALID_HANDLE if no plugin 
+ *						matches the given number.
+ */
+native Handle:FindPluginByNumber(order_num);
+
+/**
  * Causes the plugin to enter a failed state.  An error will be thrown and
  * the plugin will be paused until it is unloaded or reloaded.
  *

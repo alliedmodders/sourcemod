@@ -585,6 +585,18 @@ static cell_t GetExtensionFileStatus(IPluginContext *pContext, const cell_t *par
 	return 1;
 }
 
+static cell_t FindPluginByNumber(IPluginContext *pContext, const cell_t *params)
+{
+	CPlugin *pPlugin = g_PluginSys.GetPluginByOrder(params[1]);
+	
+	if (pPlugin == NULL)
+	{
+		return BAD_HANDLE;
+	}
+
+	return pPlugin->GetMyHandle();
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -607,6 +619,7 @@ REGISTER_NATIVES(coreNatives)
 	{"LogToFile",				LogToFile},
 	{"LogToFileEx",				LogToFileEx},
 	{"GetExtensionFileStatus",	GetExtensionFileStatus},
+	{"FindPluginByNumber",		FindPluginByNumber},
 	{NULL,						NULL},
 };
 
