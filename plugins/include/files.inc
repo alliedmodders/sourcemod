@@ -159,6 +159,112 @@ native bool:DeleteFile(const String:path[]);
 native bool:ReadFileLine(Handle:hndl, String:buffer[], maxlength);
 
 /**
+ * Reads binary data from a file.
+ *
+ * @param hndl			Handle to the file.
+ * @param items			Array to store each item read.  
+ * @param num_items		Number of items to read into the array.
+ * @param size			Size of each element, in bytes, to be read.
+ *						Valid sizes are 1, 2, or 4.
+ * @return				Number of elements read, or -1 on error.
+ */
+native ReadFile(Handle:hndl, items[], num_items, size);
+
+/**
+ * Reads a UTF8 or ANSI string from a file.
+ *
+ * @param hndl			Handle to the file.
+ * @param buffer		Buffer to store the string.
+ * @param max_size		Maximum size of the string buffer.
+ * @param stop			If true, reading will stop once max_size-1 bytes have 
+ *						been read.  If false, reading will stop once a NUL 
+ *						terminator is reached.  The buffer will simply be 
+ *						terminated in either case, the difference is in how 
+ *						the far the file position is changed.
+ * @return				Number of characters written to the buffer, or -1 
+ *						if an error was encountered.
+ * @error				Invalid Handle, or read_count > max_size.
+ */
+native ReadFileString(Handle:hndl, String:buffer[], max_size, read_count=-1);
+
+/**
+ * Writes binary data to a file.
+ *
+ * @param hndl			Handle to the file.
+ * @param items			Array of items to write.  The data is read directly. 
+ *						That is, in 1 or 2-byte mode, the lower byte(s) in 
+ *						each cell are used directly, rather than performing 
+ *						any casts from a 4-byte number to a smaller number.
+ * @param num_items		Number of items in the array.
+ * @param size			Size of each item in the array in bytes.  
+ *						Valid sizes are 1, 2, or 4.
+ * @return				True on success, false on error.
+ */
+native bool:WriteFile(Handle:hndl, const items[], num_items, size);
+
+/**
+ * Writes a binary string to a file.
+ *
+ * @param hndl			Handle to th efile.
+ * @param buffer		String to write.
+ * @param term			True to append NUL terminator, false otherwise.
+ * @return				True on success, false on error.
+ */
+native bool:WriteFileString(Handle:hndl, const String:buffer[], bool:term);
+
+/**
+ * Writes a line of text to a text file.  A newline is automatically appended.
+ *
+ * @param hndl			Handle to the file.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @return				True on success, false otherwise.
+ */
+native bool:WriteFileLine(Handle:hndl, const String:format[], any:...);
+
+/**
+ * Reads a single binary cell from a file.
+ *
+ * @param hndl			Handle to the file.
+ * @param data			Variable to store the data read.
+ * @param size			Size of the data to read in bytes.  Valid 
+ *						sizes are 1, 2, or 4 bytes.
+ * @return				Number of elements read (max 1), or -1 on error.
+ */
+stock ReadFileCell(Handle:hndl, &data, size)
+{
+	new array[1], ret;
+	
+	if ((ret = ReadFile(hndl, array, 1, size)) == 1)
+	{
+		data = array[0];
+	}
+	
+	return ret;
+}
+
+/**
+ * Writes a single binary cell to a file.
+ *
+ * @param hndl			Handle to the file.
+ * @param data			Cell to write to the file.
+ * @param size			Size of the data to read in bytes.  Valid 
+ *						sizes are 1, 2, or 4 bytes.  If the size 
+ *						is less than 4 bytes, the data is truncated 
+ *						rather than casted.  That is, only the lower 
+ *						bits will be read.
+ * @return				True on success, false on error.
+ */
+stock bool:WriteFileCell(Handle:hndl, data, size)
+{
+	new array[1];
+	
+	array[0] = data;
+	
+	return WriteFile(hndl, array, 1, size);
+}
+ 
+/**
  * Tests if the end of file has been reached.
  *
  * @param file			Handle to the file.
@@ -171,10 +277,10 @@ native bool:IsEndOfFile(Handle:file);
  *
  * @param file			Handle to the file.
  * @param position		Position relative to what is specified in whence.
- * @param whence		Look at the SEEK_* definitions.
+ * @param where			SEEK_ constant value of where to see from.
  * @return				True on success, false otherwise.
  */
-native bool:FileSeek(Handle:file, position, whence);
+native bool:FileSeek(Handle:file, position, where);
 
 /**
  * Get current position in the file.
@@ -234,17 +340,6 @@ native FlushFile(Handle:file);
  * @return				True on success, false otherwise.
  */
 native bool:RemoveDir(const String:path[]);
-
-/**
- * Writes a line of text in a file.
- * @note This native will append the newline character.
- *
- * @param hndl			Handle to the file.
- * @param format		Formatting rules.
- * @param ...			Variable number of format parameters.
- * @return				True on success, false otherwise.
- */
-native bool:WriteFileLine(Handle:hndl, const String:format[], any:...);
 
 /**
  * Returns a file timestamp as a unix timestamp.

@@ -640,6 +640,197 @@ static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+	FILE *pFile;
+	size_t read = 0;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	if (params[4] != 1 && params[4] != 2 && params[4] != 4)
+	{
+		return pContext->ThrowNativeError("Invalid size specifier (%d is not 1, 2, or 4)", params[4]);
+	}
+
+	cell_t *data;
+	pContext->LocalToPhysAddr(params[2], &data);
+
+	if (params[4] == 4)
+	{
+		read = fread(data, sizeof(cell_t), params[3], pFile);
+	}
+	else if (params[4] == 2)
+	{
+		int16_t val;
+		for (cell_t i = 0; i < params[3]; i++)
+		{
+			if (fread(&val, sizeof(int16_t), 1, pFile) != 1)
+			{
+				break;
+			}
+			data[read++] = val;
+		}
+	}
+	else if (params[4] == 1)
+	{
+		int8_t val;
+		for (cell_t i = 0; i < params[3]; i++)
+		{
+			if (fread(&val, sizeof(int8_t), 1, pFile) != 1)
+			{
+				break;
+			}
+			data[read++] = val;
+		}
+	}
+
+	if (read != (size_t)params[3] && ferror(pFile) != 0)
+	{
+		return -1;
+	}
+
+	return read;
+}
+
+static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+	FILE *pFile;
+	cell_t num_read = 0;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	char *buffer;
+	pContext->LocalToString(params[2], &buffer);
+
+	char val;
+	while (1)
+	{
+		/* If we're in stop mode, break as soon as the buffer is full. */
+		if (params[4] && (params[3] == 0 || num_read >= params[3] - 1))
+		{
+			break;
+		}
+		if (fread(&val, sizeof(val), 1, pFile) != 1)
+		{
+			if (ferror(pFile))
+			{
+				return -1;
+			}
+			break;
+		}
+		if (val == '\0')
+		{
+			break;
+		}
+		if (params[3] > 0 && num_read < params[3] - 1)
+		{
+			buffer[num_read++] = val;
+		}
+	}
+
+	if (params[3] > 0)
+	{
+		buffer[num_read] = '\0';
+	}
+
+	return num_read;
+}
+
+static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+	FILE *pFile;
+	size_t read = 0;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	cell_t *data;
+	pContext->LocalToPhysAddr(params[2], &data);
+
+	if (params[4] != 1 && params[4] != 2 && params[4] != 4)
+	{
+		return pContext->ThrowNativeError("Invalid size specifier (%d is not 1, 2, or 4)", params[4]);
+	}
+
+	/* :NOTE: This really isn't compatible with big endian but we will never have to worry about that. */
+
+	if (params[4] == 4)
+	{
+		if (fwrite(data, sizeof(cell_t), params[3], pFile) != (size_t)params[3])
+		{
+			return 0;
+		}
+	}
+	else if (params[4] == 2)
+	{
+		for (cell_t i = 0; i < params[3]; i++)
+		{
+			if (fwrite(&data[i], sizeof(int16_t), 1, pFile) != 1)
+			{
+				return 0;
+			}
+		}
+	}
+	else if (params[4] == 1)
+	{
+		for (cell_t i = 0; i < params[3]; i++)
+		{
+			if (fwrite(&data[i], sizeof(int8_t), 1, pFile) != 1)
+			{
+				return 0;
+			}
+		}
+	}
+
+	return 1;
+}
+
+static cell_t sm_WriteFileString(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+	FILE *pFile;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
+	}
+
+	char *buffer;
+	pContext->LocalToString(params[2], &buffer);
+
+	size_t len = strlen(buffer);
+
+	if (params[3])
+	{
+		len++;
+	}
+
+	return (fwrite(buffer, sizeof(char), len, pFile) == len) ? 1 : 0;
+}
+
 REGISTER_NATIVES(filesystem)
 {
 	{"OpenDirectory",			sm_OpenDirectory},
@@ -664,5 +855,9 @@ REGISTER_NATIVES(filesystem)
 	{"GetFileTime",				sm_GetFileTime},
 	{"LogToOpenFile",			sm_LogToOpenFile},
 	{"LogToOpenFileEx",			sm_LogToOpenFileEx},
+	{"ReadFile",				sm_ReadFile},
+	{"ReadFileString",			sm_ReadFileString},
+	{"WriteFile",				sm_WriteFile},
+	{"WriteFileString",			sm_WriteFileString},
 	{NULL,						NULL},
 };
