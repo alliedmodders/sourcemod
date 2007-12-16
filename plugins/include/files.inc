@@ -199,6 +199,7 @@ native ReadFileString(Handle:hndl, String:buffer[], max_size, read_count=-1);
  * @param size			Size of each item in the array in bytes.  
  *						Valid sizes are 1, 2, or 4.
  * @return				True on success, false on error.
+ * @error				Invalid Handle.
  */
 native bool:WriteFile(Handle:hndl, const items[], num_items, size);
 
@@ -209,6 +210,7 @@ native bool:WriteFile(Handle:hndl, const items[], num_items, size);
  * @param buffer		String to write.
  * @param term			True to append NUL terminator, false otherwise.
  * @return				True on success, false on error.
+ * @error				Invalid Handle.
  */
 native bool:WriteFileString(Handle:hndl, const String:buffer[], bool:term);
 
@@ -219,6 +221,7 @@ native bool:WriteFileString(Handle:hndl, const String:buffer[], bool:term);
  * @param format		Formatting rules.
  * @param ...			Variable number of format parameters.
  * @return				True on success, false otherwise.
+ * @error				Invalid Handle.
  */
 native bool:WriteFileLine(Handle:hndl, const String:format[], any:...);
 
@@ -230,6 +233,7 @@ native bool:WriteFileLine(Handle:hndl, const String:format[], any:...);
  * @param size			Size of the data to read in bytes.  Valid 
  *						sizes are 1, 2, or 4 bytes.
  * @return				Number of elements read (max 1), or -1 on error.
+ * @error				Invalid Handle.
  */
 stock ReadFileCell(Handle:hndl, &data, size)
 {
@@ -254,6 +258,7 @@ stock ReadFileCell(Handle:hndl, &data, size)
  *						rather than casted.  That is, only the lower 
  *						bits will be read.
  * @return				True on success, false on error.
+ * @error				Invalid Handle.
  */
 stock bool:WriteFileCell(Handle:hndl, data, size)
 {
@@ -269,6 +274,7 @@ stock bool:WriteFileCell(Handle:hndl, data, size)
  *
  * @param file			Handle to the file.
  * @return				True if end of file has been reached, false otherwise.
+ * @error				Invalid Handle.
  */
 native bool:IsEndOfFile(Handle:file);
 
@@ -279,6 +285,7 @@ native bool:IsEndOfFile(Handle:file);
  * @param position		Position relative to what is specified in whence.
  * @param where			SEEK_ constant value of where to see from.
  * @return				True on success, false otherwise.
+ * @error				Invalid Handle.
  */
 native bool:FileSeek(Handle:file, position, where);
 
@@ -287,6 +294,7 @@ native bool:FileSeek(Handle:file, position, where);
  *
  * @param file			Handle to the file.
  * @return				Value for the file position indicator.
+ * @error				Invalid Handle.
  */
 native FilePosition(Handle:file);
 
