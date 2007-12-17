@@ -756,7 +756,6 @@ static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 	FILE *pFile;
-	size_t read = 0;
 
 	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
