@@ -572,4 +572,5 @@ native SetMapListCompatBind(const String:name[], const String:file[]);
 
 #include <helpers>
 #include <entity>
+#include <entity_prop_stocks>
 
