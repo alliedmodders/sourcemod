@@ -289,6 +289,7 @@ namespace builder
 			plugins.Add(new Plugin("randomcycle", true));
 			plugins.Add(new Plugin("rockthevote", true));
 			plugins.Add(new Plugin("adminmenu"));
+			plugins.Add(new Plugin("playercommands"));
 
 			return (Plugin [])plugins.ToArray(typeof(Plugin));
 		}
