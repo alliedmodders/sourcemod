@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod Basefuncommands Plugin
- * Provides burn functionality
+ * Provides slap functionality
  *
  * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * =============================================================================
@@ -28,21 +28,43 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: admin-flatfile.sp 1438 2007-09-16 03:45:06Z dvander $
+ * Version: $Id$
  */
+ 
+new g_SlapDamage[MAXPLAYERS+1];
 
-PerformBurn(client, target, Float:seconds)
+PerformSlap(client, target, damage)
 {
-	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
-	IgniteEntity(target, seconds);
+	LogAction(client, target, "\"%L\" slapped \"%L\" (damage \"%d\")", client, target, damage);
+	SlapPlayer(target, damage, true);
 }
 
-DisplayBurnMenu(client)
+DisplaySlapDamageMenu(client)
 {
-	new Handle:menu = CreateMenu(MenuHandler_Burn);
+	new Handle:menu = CreateMenu(MenuHandler_SlapDamage);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Burn player", client);
+	Format(title, sizeof(title), "%T:", "Slap damage", client);
+	SetMenuTitle(menu, title);
+	SetMenuExitBackButton(menu, true);
+	
+	AddMenuItem(menu, "0", "0");
+	AddMenuItem(menu, "1", "1");
+	AddMenuItem(menu, "5", "5");
+	AddMenuItem(menu, "10", "10");
+	AddMenuItem(menu, "20", "20");
+	AddMenuItem(menu, "50", "50");
+	AddMenuItem(menu, "99", "99");
+	
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
+}
+
+DisplaySlapTargetMenu(client)
+{
+	new Handle:menu = CreateMenu(MenuHandler_Slap);
+	
+	decl String:title[100];
+	Format(title, sizeof(title), "%T:", "Slap player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
@@ -51,7 +73,7 @@ DisplayBurnMenu(client)
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_Burn(Handle:topmenu, 
+public AdminMenu_Slap(Handle:topmenu, 
 					  TopMenuAction:action,
 					  TopMenuObject:object_id,
 					  param,
@@ -60,15 +82,39 @@ public AdminMenu_Burn(Handle:topmenu,
 {
 	if (action == TopMenuAction_DisplayOption)
 	{
-		Format(buffer, maxlength, "%T", "Burn player", param);
+		Format(buffer, maxlength, "%T", "Slap player", param);
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		DisplayBurnMenu(param);
+		DisplaySlapDamageMenu(param);
 	}
 }
 
-public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
+public MenuHandler_SlapDamage(Handle:menu, MenuAction:action, param1, param2)
+{
+	if (action == MenuAction_End)
+	{
+		CloseHandle(menu);
+	}
+	else if (action == MenuAction_Cancel)
+	{
+		if (param2 == MenuCancel_ExitBack && hTopMenu != INVALID_HANDLE)
+		{
+			DisplayTopMenu(hTopMenu, param1, TopMenuPosition_LastCategory);
+		}
+	}
+	else if (action == MenuAction_Select)
+	{
+		decl String:info[32];
+		
+		GetMenuItem(menu, param2, info, sizeof(info));
+		g_SlapDamage[param1] = StringToInt(info);
+		
+		DisplaySlapTargetMenu(param1);
+	}
+}
+
+public MenuHandler_Slap(Handle:menu, MenuAction:action, param1, param2)
 {
 	if (action == MenuAction_End)
 	{
@@ -97,40 +143,39 @@ public MenuHandler_Burn(Handle:menu, MenuAction:action, param1, param2)
 		{
 			PrintToChat(param1, "[SM] %t", "Unable to target");
 		}
+		else if (!IsPlayerAlive(target))
+		{
+			ReplyToCommand(param1, "[SM] %t", "Player has since died");
+		}	
 		else
 		{
-			new String:name[32];
+			decl String:name[32];
 			GetClientName(target, name, sizeof(name));
-			PerformBurn(param1, target, 20.0);
-			ShowActivity2(param1, "[SM] ", "%t", "Set target on fire", "_s", name);
+			PerformSlap(param1, target, g_SlapDamage[param1]);
+			ShowActivity2(param1, "[SM] ", "%t", "Slapped target", "_s", name);
 		}
 		
-		/* Re-draw the menu if they're still valid */
-		if (IsClientInGame(param1) && !IsClientInKickQueue(param1))
-		{
-			DisplayBurnMenu(param1);
-		}
+		DisplaySlapTargetMenu(param1);
 	}
 }
 
-public Action:Command_Burn(client, args)
+public Action:Command_Slap(client, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_burn <#userid|name> [time]");
+		ReplyToCommand(client, "[SM] Usage: sm_slap <#userid|name> [damage]");
 		return Plugin_Handled;
 	}
 
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new Float:seconds = 20.0;
-	
+	new damage = 0;
 	if (args > 1)
 	{
-		decl String:time[20];
-		GetCmdArg(2, time, sizeof(time));
-		if (StringToFloatEx(time, seconds) == 0)
+		decl String:arg2[20];
+		GetCmdArg(2, arg2, sizeof(arg2));
+		if (StringToIntEx(arg2, damage) == 0)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;
@@ -156,16 +201,16 @@ public Action:Command_Burn(client, args)
 	
 	for (new i = 0; i < target_count; i++)
 	{
-		PerformBurn(client, target_list[i], seconds);
+		PerformSlap(client, target_list[i], damage);
 	}
-	
+
 	if (tn_is_ml)
 	{
-		ShowActivity2(client, "[SM] ", "%t", "Set target on fire", target_name);
+		ShowActivity2(client, "[SM] ", "%t", "Slapped target", target_name);
 	}
 	else
 	{
-		ShowActivity2(client, "[SM] ", "%t", "Set target on fire", "_s", target_name);
+		ShowActivity2(client, "[SM] ", "%t", "Slapped target", "_s", target_name);
 	}
 
 	return Plugin_Handled;

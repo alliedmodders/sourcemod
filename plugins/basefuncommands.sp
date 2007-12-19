@@ -49,24 +49,58 @@ public Plugin:myinfo =
 
 new Handle:hTopMenu = INVALID_HANDLE;
 
-new g_SlapDamage[MAXPLAYERS+1];
-new bool:g_cstrike = false;
+// Sounds
+#define SOUND_BLIP		"buttons/blip1.wav"
+#define SOUND_BEEP		"buttons/button17.wav"
+#define SOUND_FINAL		"weapons/cguard/charging.wav"
+#define SOUND_BOOM		"weapons/explode3.wav"
+#define SOUND_FREEZE		"physics/glass/glass_impact_bullet4.wav"
 
-#include "basefuncommands/slay.sp"
-#include "basefuncommands/burn.sp"
-#include "basefuncommands/slap.sp"
+// Following are model indexes for temp entities
+new g_BeamSprite;
+new g_BeamSprite2;
+new g_HaloSprite;
+new g_GlowSprite;
+new g_ExplosionSprite;
+
+// Basic color arrays for temp entities
+new redColor[4] = {255, 75, 75, 255};
+new orangeColor[4] = {255, 128, 0, 255};
+new greenColor[4] = {75, 255, 75, 255};
+new blueColor[4] = {75, 75, 255, 255};
+new whiteColor[4] = {255, 255, 255, 255};
+new greyColor[4] = {128, 128, 128, 255};
+
+// Used for some trace rays.
+/*
+new g_FilteredEntity = -1;
+public bool:TR_Filter_Client(ent, contentMask)
+{
+   return (ent == g_FilteredEntity) ? false : true;
+}
+*/
+
+// Include various commands and supporting functions
 #include "basefuncommands/beacon.sp"
+#include "basefuncommands/timebomb.sp"
+#include "basefuncommands/fire.sp"
+#include "basefuncommands/ice.sp"
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basefuncommands.phrases");
 
-	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
-	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
-	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
-	RegAdminCmd("sm_beacon", Command_Beacon, ADMFLAG_SLAY, "sm_beacon <#userid|name>");
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
+
+	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);	
+
+	SetupBeacon();		// sm_beacon
+	SetupTimeBomb();	// sm_timebomb
+	SetupFire();		// sm_burn and sm_firebomb
+	SetupIce();			// sm_freeze and sm_freezebomb
+	
+	AutoExecConfig(true, "funcommands");
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -74,24 +108,39 @@ public OnPluginStart()
 	{
 		OnAdminMenuReady(topmenu);
 	}
-	
-	decl String:folder[64];
-	GetGameFolderName(folder, sizeof(folder));
-	
-	if (strcmp(folder, "cstrike") == 0)
-	{
-		g_cstrike = true;
-	}
 }
 
 public OnMapStart()
 {
-	SetupBeacon();	
+	PrecacheSound(SOUND_BLIP, true);
+	PrecacheSound(SOUND_BEEP, true);
+	PrecacheSound(SOUND_FINAL, true);
+	PrecacheSound(SOUND_BOOM, true);
+	PrecacheSound(SOUND_FREEZE, true);
+
+	g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
+	g_BeamSprite2 = PrecacheModel("sprites/bluelight1.vmt");
+	g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
+	g_GlowSprite = PrecacheModel("sprites/blueglow2.vmt");
+	g_ExplosionSprite = PrecacheModel("sprites/sprite_fire01.vmt");
 }
 
 public OnMapEnd()
 {
 	KillAllBeacons();
+	KillAllTimeBombs();
+	KillAllFireBombs();
+	KillAllFreezes();
+}
+
+public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
+{
+	KillAllBeacons();
+	KillAllTimeBombs();
+	KillAllFireBombs();
+	KillAllFreezes();
+	
+	return Plugin_Handled;
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -111,13 +160,13 @@ public OnAdminMenuReady(Handle:topmenu)
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
 		AddToTopMenu(hTopMenu,
-			"sm_slay",
+			"sm_beacon",
 			TopMenuObject_Item,
-			AdminMenu_Slay,
+			AdminMenu_Beacon,
 			player_commands,
-			"sm_slay",
+			"sm_beacon",
 			ADMFLAG_SLAY);
-			
+		
 		AddToTopMenu(hTopMenu,
 			"sm_burn",
 			TopMenuObject_Item,
@@ -127,20 +176,36 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
-			"sm_slap",
+			"sm_freeze",
 			TopMenuObject_Item,
-			AdminMenu_Slap,
+			AdminMenu_Freeze,
 			player_commands,
-			"sm_slap",
+			"sm_freeze",
+			ADMFLAG_SLAY);
+
+		AddToTopMenu(hTopMenu,
+			"sm_timebomb",
+			TopMenuObject_Item,
+			AdminMenu_TimeBomb,
+			player_commands,
+			"sm_timebomb",
 			ADMFLAG_SLAY);	
 			
 		AddToTopMenu(hTopMenu,
-			"sm_beacon",
+			"sm_firebomb",
 			TopMenuObject_Item,
-			AdminMenu_Beacon,
+			AdminMenu_FireBomb,
 			player_commands,
-			"sm_beacon",
-			ADMFLAG_SLAY);			
+			"sm_firebomb",
+			ADMFLAG_SLAY);
+			
+		AddToTopMenu(hTopMenu,
+			"sm_freezebomb",
+			TopMenuObject_Item,
+			AdminMenu_FreezeBomb,
+			player_commands,
+			"sm_freezebomb",
+			ADMFLAG_SLAY);
 	}
 }
 
@@ -196,7 +261,7 @@ public Action:Command_Play(client, args)
 	for (new i = 0; i < target_count; i++)
 	{
 		ClientCommand(target_list[i], "playgamesound \"%s\"", Arguments[len]);
-		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], Arguments[len]);	
+		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], Arguments[len]);
 	}
 	
 	if (tn_is_ml)

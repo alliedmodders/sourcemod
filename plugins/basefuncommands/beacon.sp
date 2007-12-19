@@ -31,32 +31,15 @@
  * Version: $Id$
  */
 
-new Handle:g_BeaconTimers[MAXPLAYERS+1] = {INVALID_HANDLE, ...};
+new Handle:g_BeaconTimers[MAXPLAYERS+1];
 
-new g_BeaconRoundEndHooked = false;
-
-new g_BeamSprite;
-new g_HaloSprite;
-
-new redColor[4] = {255, 75, 75, 255};
-new greenColor[4] = {75, 255, 75, 255};
-new blueColor[4] = {75, 75, 255, 255};
+new Handle:g_BeaconRadius = INVALID_HANDLE;
 
 SetupBeacon()
 {
-	if (!g_BeaconRoundEndHooked)
-	{
-		HookEvent("round_end", Event_BeaconRoundEnd, EventHookMode_PostNoCopy);	
-		g_BeaconRoundEndHooked = true;
-	}
-
-	if (g_cstrike)
-	{
-		PrecacheSound("ambient/tones/elev1.wav", true);
-	}
-
-	g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
-	g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
+	RegAdminCmd("sm_beacon", Command_Beacon, ADMFLAG_SLAY, "sm_beacon <#userid|name> [0/1]");
+	
+	g_BeaconRadius = CreateConVar("sm_beacon_radius", "375", "Sets the radius for beacon's light rings.", 0, true, 50.0, true, 1500.0);
 }
 
 CreateBeacon(client)
@@ -82,17 +65,41 @@ KillAllBeacons()
 	}
 }
 
-PerformBeacon(client, target)
+PerformBeacon(client, target, toggle)
 {
-	if (g_BeaconTimers[target] == INVALID_HANDLE)
+	switch (toggle)
 	{
-		CreateBeacon(target);
-		LogAction(client, target, "\"%L\" set a beacon on \"%L\"", client, target);
-	}
-	else
-	{
-		KillBeacon(target);
-		LogAction(client, target, "\"%L\" removed a beacon on \"%L\"", client, target);
+		case (2):
+		{
+			if (g_BeaconTimers[target] == INVALID_HANDLE)
+			{
+				CreateBeacon(target);
+				LogAction(client, target, "\"%L\" set a beacon on \"%L\"", client, target);
+			}
+			else
+			{
+				KillBeacon(target);
+				LogAction(client, target, "\"%L\" removed a beacon on \"%L\"", client, target);
+			}			
+		}
+
+		case (1):
+		{
+			if (g_BeaconTimers[target] == INVALID_HANDLE)
+			{
+				CreateBeacon(target);
+				LogAction(client, target, "\"%L\" set a beacon on \"%L\"", client, target);
+			}			
+		}
+		
+		case (0):
+		{
+			if (g_BeaconTimers[target] != INVALID_HANDLE)
+			{
+				KillBeacon(target);
+				LogAction(client, target, "\"%L\" removed a beacon on \"%L\"", client, target);
+			}			
+		}
 	}
 }
 
@@ -100,11 +107,8 @@ public Action:Timer_Beacon(Handle:timer, any:client)
 {
 	if (!IsClientInGame(client) || !IsPlayerAlive(client))
 	{
-		if (g_BeaconTimers[client] == timer)
-		{
-			KillBeacon(client);		
-		}
-		
+		KillBeacon(client);		
+
 		return Plugin_Handled;
 	}
 	
@@ -112,58 +116,30 @@ public Action:Timer_Beacon(Handle:timer, any:client)
 
 	new Float:vec[3];
 	GetClientAbsOrigin(client, vec);
-	vec[2] += 5;
+	vec[2] += 10;
+
+	TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+	TE_SendToAll();
 	
 	if (team == 2)
 	{
-		TE_SetupBeamRingPoint(vec, 20.0, 400.0, g_BeamSprite, g_HaloSprite, 0, 0, 1.0, 3.0, 0.0, redColor, 50, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, redColor, 10, 0);
 	}
 	else if (team == 3)
 	{
-		TE_SetupBeamRingPoint(vec, 20.0, 400.0, g_BeamSprite, g_HaloSprite, 0, 0, 1.0, 3.0, 0.0, blueColor, 50, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, blueColor, 10, 0);
 	}
 	else
 	{
-		TE_SetupBeamRingPoint(vec, 20.0, 400.0, g_BeamSprite, g_HaloSprite, 0, 0, 1.0, 3.0, 0.0, greenColor, 50, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_BeaconRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, greenColor, 10, 0);
 	}
 	
 	TE_SendToAll();
-	
-	// Create a double ring, if we are the repeating timer.
-	if (g_BeaconTimers[client] == timer)
-	{
-		CreateTimer(0.2, Timer_Beacon, client);
-
-		GetClientEyePosition(client, vec);
 		
-		if (g_cstrike)
-		{
-			EmitAmbientSound("ambient/tones/elev1.wav", vec, client, SNDLEVEL_RAIDSIREN);	
-		}
-	}
+	GetClientEyePosition(client, vec);
+	EmitAmbientSound(SOUND_BLIP, vec, client, SNDLEVEL_RAIDSIREN);	
 		
 	return Plugin_Handled;
-}
-
-public Action:Event_BeaconRoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
-{
-	KillAllBeacons();
-	
-	return Plugin_Handled;
-}
-
-DisplayBeaconMenu(client)
-{
-	new Handle:menu = CreateMenu(MenuHandler_Beacon);
-	
-	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Beacon player", client);
-	SetMenuTitle(menu, title);
-	SetMenuExitBackButton(menu, true);
-	
-	AddTargetsToMenu(menu, client, true, true);
-	
-	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
 public AdminMenu_Beacon(Handle:topmenu, 
@@ -181,6 +157,20 @@ public AdminMenu_Beacon(Handle:topmenu,
 	{
 		DisplayBeaconMenu(param);
 	}
+}
+
+DisplayBeaconMenu(client)
+{
+	new Handle:menu = CreateMenu(MenuHandler_Beacon);
+	
+	decl String:title[100];
+	Format(title, sizeof(title), "%T:", "Beacon player", client);
+	SetMenuTitle(menu, title);
+	SetMenuExitBackButton(menu, true);
+	
+	AddTargetsToMenu(menu, client, true, true);
+	
+	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
 public MenuHandler_Beacon(Handle:menu, MenuAction:action, param1, param2)
@@ -217,7 +207,7 @@ public MenuHandler_Beacon(Handle:menu, MenuAction:action, param1, param2)
 			new String:name[32];
 			GetClientName(target, name, sizeof(name));
 			
-			PerformBeacon(param1, target);
+			PerformBeacon(param1, target, 2);
 			ShowActivity2(param1, "[SM] ", "%t", "Toggled beacon on target", "_s", name);
 		}
 		
@@ -233,12 +223,27 @@ public Action:Command_Beacon(client, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_beacon <#userid|name>");
+		ReplyToCommand(client, "[SM] Usage: sm_beacon <#userid|name> [0/1]");
 		return Plugin_Handled;
 	}
 
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
+	
+	new toggle = 2;
+	if (args > 1)
+	{
+		decl String:arg2[2];
+		GetCmdArg(2, arg2, sizeof(arg2));
+		if (arg2[0])
+		{
+			toggle = 1;
+		}
+		else
+		{
+			toggle = 0;
+		}
+	}
 
 	decl String:target_name[MAX_TARGET_LENGTH];
 	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
@@ -259,7 +264,7 @@ public Action:Command_Beacon(client, args)
 	
 	for (new i = 0; i < target_count; i++)
 	{
-		PerformBeacon(client, target_list[i]);
+		PerformBeacon(client, target_list[i], toggle);
 	}
 	
 	if (tn_is_ml)
