@@ -118,6 +118,7 @@ namespace builder
 			builder.CopyFolder(this, "plugins/basevotes", "addons/sourcemod/scripting/basevotes", null);
 			builder.CopyFolder(this, "plugins/basebans", "addons/sourcemod/scripting/basebans", null);
 			builder.CopyFolder(this, "plugins/basefuncommands", "addons/sourcemod/scripting/basefuncommands", null);
+			builder.CopyFolder(this, "plugins/playercommands", "addons/sourcemod/scripting/playercommands", null);
 		}
 
 		/**
