@@ -66,6 +66,7 @@ namespace builder
 			folders.Add("addons/sourcemod/extensions/auto.1.ep1");
 			folders.Add("addons/sourcemod/extensions/auto.2.ep1");
 			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
+			folders.Add("addons/sourcemod/scripting/playercommands");
 			
 			return (string [])folders.ToArray(typeof(string));
 		}
