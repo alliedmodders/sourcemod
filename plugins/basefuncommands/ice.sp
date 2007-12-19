@@ -48,7 +48,7 @@ SetupIce()
 
 	g_FreezeDuration = CreateConVar("sm_freeze_duration", "10.0", "Sets the default duration for sm_freeze and freezebomb victims", 0, true, 1.0, true, 120.0);	
 	g_FreezeBombTicks = CreateConVar("sm_freezebomb_ticks", "10", "Sets how long the freezebomb fuse is.", 0, true, 5.0, true, 120.0);
-	g_FreezeBombRadius = CreateConVar("sm_freezebomb_radius", "1000", "Sets the freezebomb blast radius.", 0, true, 50.0, true, 3000.0);
+	g_FreezeBombRadius = CreateConVar("sm_freezebomb_radius", "600", "Sets the freezebomb blast radius.", 0, true, 50.0, true, 3000.0);
 	g_FreezeBombMode = CreateConVar("sm_freezebomb_mode", "0", "Who is targetted by the freezebomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
 }
 

@@ -46,7 +46,7 @@ SetupFire()
 	
 	g_BurnDuration = CreateConVar("sm_burn_duration", "20", "Sets the default duration of sm_burn and firebomb victims.", 0, true, 0.5, true, 20.0);
 	g_FireBombTicks = CreateConVar("sm_firebomb_ticks", "10", "Sets how long the FireBomb fuse is.", 0, true, 5.0, true, 120.0);
-	g_FireBombRadius = CreateConVar("sm_firebomb_radius", "1000", "Sets the bomb blast radius.", 0, true, 50.0, true, 3000.0);
+	g_FireBombRadius = CreateConVar("sm_firebomb_radius", "600", "Sets the bomb blast radius.", 0, true, 50.0, true, 3000.0);
 	g_FireBombMode = CreateConVar("sm_firebomb_mode", "0", "Who is targetted by the FireBomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
 }
 
