@@ -13,7 +13,12 @@
 		"item"		"sm_kick"
 		"item"		"sm_ban"
 		"item"		"sm_gag"
-		"item"		"sm_burn"
+		"item"		"sm_burn"		
+		"item"		"sm_beacon"
+		"item"		"sm_freeze"
+		"item"		"sm_timebomb"
+		"item"		"sm_firebomb"
+		"item"		"sm_freezebomb"
 	}
 
 	"ServerCommands"
