@@ -49,8 +49,8 @@ public Plugin:myinfo =
 
 new Handle:hTopMenu = INVALID_HANDLE;
 
-#include "basefuncommands/slay.sp"
-#include "basefuncommands/slap.sp"
+#include "playercommands/slay.sp"
+#include "playercommands/slap.sp"
 
 public OnPluginStart()
 {
