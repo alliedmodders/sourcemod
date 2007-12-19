@@ -201,7 +201,7 @@ public Action:Timer_FreezeBomb(Handle:timer, any:client)
 	new Float:vec[3];
 	GetClientEyePosition(client, vec);
 	
-	if (g_FreezeBombTracker[client] > 1)
+	if (g_FreezeBombTracker[client] > 0)
 	{
 		new color;
 		
@@ -266,9 +266,6 @@ public Action:Timer_FreezeBomb(Handle:timer, any:client)
 				{
 					continue;
 				}
-				
-//stock TE_SetupBeamPoints(const Float:start[3], const Float:end[3], ModelIndex, HaloIndex, StartFrame, FrameRate, Float:Life, 
-//				Float:Width, Float:EndWidth, FadeLength, Float:Amplitude, const Color[4], Speed)
 				
 				TE_SetupBeamPoints(vec, pos, g_BeamSprite2, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
 				TE_SendToAll();
@@ -384,7 +381,7 @@ public MenuHandler_Freeze(Handle:menu, MenuAction:action, param1, param2)
 		/* Re-draw the menu if they're still valid */
 		if (IsClientInGame(param1) && !IsClientInKickQueue(param1))
 		{
-			DisplayFreezeBombMenu(param1);
+			DisplayFreezeMenu(param1);
 		}
 	}
 }

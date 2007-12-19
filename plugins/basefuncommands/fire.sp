@@ -134,7 +134,7 @@ public Action:Timer_FireBomb(Handle:timer, any:client)
 	new Float:vec[3];
 	GetClientEyePosition(client, vec);
 	
-	if (g_FireBombTracker[client] > 1)
+	if (g_FireBombTracker[client] > 0)
 	{
 		new color;
 		

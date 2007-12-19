@@ -125,7 +125,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:client)
 	new Float:vec[3];
 	GetClientEyePosition(client, vec);
 	
-	if (g_TimeBombTracker[client] > 1)
+	if (g_TimeBombTracker[client] > 0)
 	{
 		new color;
 		
