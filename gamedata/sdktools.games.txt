@@ -1215,6 +1215,11 @@
 				"windows"	"98"
 				"linux"		"99"
 			}
+			"CommitSuicide"
+			{
+				"windows"	"356"
+				"linux"		"357"
+			}
 			"GetVelocity"
 			{
 				"windows"	"126"
@@ -1288,6 +1293,11 @@
 			{
 				"windows"	"98"
 				"linux"		"99"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"362"
+				"linux"		"363"
 			}
 			"GetVelocity"
 			{
