@@ -1207,7 +1207,7 @@ static int hier14(value *lval1)
       } /* if */
     } /* if */
     if (lval3.sym->dim.array.level!=level)
-      return error(48); /* array dimensions must match */
+      return error(47); /* array dimensions must match */
     else if (ltlength<val || exactmatch && ltlength>val || val==0)
       return error(47); /* array sizes must match */
     else if (lval3.ident!=iARRAYCELL && !matchtag(lval3.sym->x.tags.index,idxtag,TRUE))
@@ -1217,6 +1217,7 @@ static int hier14(value *lval1)
       symbol *sym1 = lval3.sym;
       symbol *sym2 = lval2.sym;
       int i;
+      error(23);
       assert(sym1!=NULL && sym2!=NULL);
       /* ^^^ sym2 must be valid, because only variables can be
        *     multi-dimensional (there are no multi-dimensional literals),
