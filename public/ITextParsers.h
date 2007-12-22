@@ -43,7 +43,7 @@ namespace SourceMod
 {
 
 	#define SMINTERFACE_TEXTPARSERS_NAME		"ITextParsers"
-	#define SMINTERFACE_TEXTPARSERS_VERSION		2
+	#define SMINTERFACE_TEXTPARSERS_VERSION		3
 
 	/**
 	 * The INI file format is defined as:
@@ -390,6 +390,21 @@ namespace SourceMod
 		 * @return				True if first character is whitespace, false otherwise.
 		 */
 		virtual bool IsWhitespace(const char *stream) =0;
+
+		/**
+		 * @brief Same as ParseFile_SMC, but with an extended error buffer.
+		 *
+		 * @param file			Path to file.
+		 * @param smc_listener	Event handler for reading file.
+		 * @param states		Optional pointer to store last known states.
+		 * @param buffer		Error message buffer.
+		 * @param maxsize		Maximum size of the error buffer.
+		 */
+		virtual SMCError ParseSMCFile(const char *file,
+			ITextListener_SMC *smc_listener,
+			SMCStates *states,
+			char *buffer,
+			size_t maxsize) =0;
 	};
 
 	inline unsigned int _GetUTF8CharBytes(const char *stream)

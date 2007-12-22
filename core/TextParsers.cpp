@@ -37,6 +37,8 @@
 #include <assert.h>
 #include "TextParsers.h"
 #include "ShareSys.h"
+#include "sm_stringutil.h"
+#include "LibrarySys.h"
 
 TextParsers g_TextParser;
 ITextParsers *textparsers = &g_TextParser;
@@ -151,6 +153,38 @@ SMCError TextParsers::ParseFile_SMC(const char *file, ITextListener_SMC *smc, SM
 	SMCError result = ParseStream_SMC(fp, FileStreamReader, smc, states);
 
 	fclose(fp);
+
+	return result;
+}
+
+SMCError TextParsers::ParseSMCFile(const char *file,
+								   ITextListener_SMC *smc_listener,
+								   SMCStates *states,
+								   char *buffer,
+								   size_t maxsize)
+{
+	const char *errstr;
+	FILE *fp = fopen(file, "rt");
+
+	if (fp == NULL)
+	{
+		char error[256] = "unknown";
+		if (states != NULL)
+		{
+			states->line = 0;
+			states->col = 0;
+		}
+		g_LibSys.GetPlatformError(error, sizeof(error));
+		UTIL_Format(buffer, maxsize, "File could not be opened: %s", error);
+		return SMCError_StreamOpen;
+	}
+
+	SMCError result = ParseStream_SMC(fp, FileStreamReader, smc_listener, states);
+
+	fclose(fp);
+
+	errstr = GetSMCErrorString(result);
+	UTIL_Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }

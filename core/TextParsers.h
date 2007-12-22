@@ -64,6 +64,12 @@ public:
 		ITextListener_SMC *smc_listener, 
 		SMCStates *states);
 
+	SMCError ParseSMCFile(const char *file,
+			ITextListener_SMC *smc_listener,
+			SMCStates *states,
+			char *buffer,
+			size_t maxsize);
+
 	unsigned int GetUTF8CharBytes(const char *stream);
 
 	const char *GetSMCErrorString(SMCError err);

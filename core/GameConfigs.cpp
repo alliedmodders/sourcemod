@@ -508,14 +508,9 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	sm_trie_clear(m_pProps);
 	sm_trie_clear(m_pKeys);
 
-	if ((err=textparsers->ParseFile_SMC(path, this, NULL))
+	if ((err=textparsers->ParseSMCFile(path, this, NULL, error, maxlength))
 		!= SMCError_Okay)
 	{
-		if (error && (err != SMCError_Custom))
-		{
-			const char *str = textparsers->GetSMCErrorString(err);
-			snprintf(error, maxlength, "%s", str);
-		}
 		return false;
 	}
 
