@@ -489,6 +489,11 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 
 	m_clputinserver->PushCell(client);
 	m_clputinserver->Execute(&res, NULL);
+
+	if (m_Players[client].IsAuthorized())
+	{
+		m_Players[client].DoPostConnectAuthorization();
+	}
 }
 
 void PlayerManager::OnSourceModLevelEnd()
@@ -1144,13 +1149,10 @@ void CPlayer::Connect()
 	{
 		const char *pass = engine->GetClientConVarValue(client, var);
 		m_LastPassword.assign(pass ? pass : "");
-	} else {
-		m_LastPassword.assign("");
 	}
-
-	if (m_IsAuthorized)
+	else
 	{
-		DoPostConnectAuthorization();
+		m_LastPassword.assign("");
 	}
 }
 

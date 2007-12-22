@@ -56,10 +56,15 @@ enum NetFlow
 forward bool:OnClientConnect(client, String:rejectmsg[], maxlen);
 
 /**
- * Called when a client is entering to the game.
+ * Called when a client is entering the game.
  *
- * @note Whether a client has a steamid is undefined until OnClientAuthorized
+ * Whether a client has a steamid is undefined until OnClientAuthorized
  * is called, which may occur either before or after OnClientPutInServer.
+ * Similarly, use OnClientPostAdminCheck() if you need to verify whether 
+ * connecting players are admins.
+ *
+ * GetClientCount() will include clients as they are passed through this 
+ * function, as clients are already in game at this point.
  *
  * @param client		Client index.
  * @noreturn
@@ -100,9 +105,11 @@ forward Action:OnClientCommand(client, args);
 forward OnClientSettingsChanged(client);
 
 /**
- * Called when a client receives a Steam ID.
- 
- * Admin properties are not assigned here, but on OnClientPostAdminCheck().
+ * Called when a client receives a Steam ID.  The state of a client's 
+ * authorization via Steam or as an admin is not guaranteed here.  
+ * Use OnClientAuthorized() or OnClientPostAdminCheck() for those, 
+ * respectively.
+ *
  * This is called by bots, but the ID will be "BOT".
  *
  * @param client		Client index.
@@ -114,10 +121,15 @@ forward OnClientAuthorized(client, const String:auth[]);
 /**
  * Called once a client is authorized and fully in-game, but 
  * before admin checks are done.  This can be used to override 
- * the default admin checks for a client.
+ * the default admin checks for a client.  You should only use 
+ * this for overriding; use OnClientPostAdminCheck() instead 
+ * if you want notification.
  *
  * Note: If handled/blocked, PostAdminCheck must be signalled 
  * manually via NotifyPostAdminCheck().
+ *
+ * This callback is gauranteed to occur on all clients, and always 
+ * after each OnClientPutInServer() call.
  *
  * @param client		Client index.
  * @return				Plugin_Handled to block admin checks.
@@ -126,7 +138,10 @@ forward Action:OnClientPreAdminCheck(client);
 
 /**
  * Called once a client is authorized and fully in-game, and 
- * after all post-connection authorizations have been performed.
+ * after all post-connection authorizations have been performed.  
+ *
+ * This callback is gauranteed to occur on all clients, and always 
+ * after each OnClientPutInServer() call.
  *
  * @param client		Client index.
  * @noreturn
