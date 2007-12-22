@@ -63,9 +63,9 @@
 #elif defined __linux__
 #define PLATFORM_LINUX
 #define PLATFORM_POSIX
+#include <errno.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <errno.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
 #define PLATFORM_MAX_PATH		PATH_MAX

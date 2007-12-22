@@ -278,7 +278,7 @@ void LibrarySystem::GetPlatformError(char *error, size_t maxlength)
 #if defined PLATFORM_WINDOWS
 		DWORD dw = GetLastError();
 		FormatMessageA(
-			FORMAT_MESSAGE_FROM_SYSTEM,
+			FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
 			dw,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
