@@ -101,10 +101,14 @@ namespace builder
 				binName);
 			File.Copy(binpath, path, true);
 
-			/* On Windows we package the .pdb files as well */
-			binpath = binpath.Replace(".dll", ".pdb");
-			path = path.Replace(".dll", ".pdb");
-			File.Copy(binpath, path, true);
+			/* On Windows we optionally log the PDB path */
+			if (!lib.is_executable && cfg.pdb_log_file != null)
+			{
+				FileStream fs = File.Open(cfg.pdb_log_file, FileMode.Append, FileAccess.Write);
+				StreamWriter sw = new StreamWriter(fs);
+				sw.WriteLine(binpath.Replace(".dll", ".pdb"));
+				sw.Close();
+			}
 
 			return true;
 		}

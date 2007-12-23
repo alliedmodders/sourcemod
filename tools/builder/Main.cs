@@ -31,6 +31,10 @@ namespace builder
 			else if (cfg.Platform == BasePlatform.Platform_Windows)
 			{
 				bld = new Win32Builder(cfg);
+				if (cfg.pdb_log_file != null && File.Exists(cfg.pdb_log_file))
+				{
+					File.Delete(cfg.pdb_log_file);
+				}
 			}
 
 			try

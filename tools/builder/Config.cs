@@ -16,6 +16,7 @@ namespace builder
 		public string pkg_path;
 		public string builder_path;
 		public string build_options;
+		public string pdb_log_file;
 		public builder.BasePlatform Platform;
 
 		public Config()
@@ -84,6 +85,10 @@ namespace builder
 						else if (key.CompareTo("BuildOptions") == 0) 
 						{
 							build_options = val;
+						}
+						else if (key.CompareTo("PDBLog") == 0)
+						{
+							pdb_log_file = val;
 						}
 					}
 				}
