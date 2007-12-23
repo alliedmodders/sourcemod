@@ -156,46 +156,31 @@ public Action:Command_Say(client, args)
 
 public ConVarChange_Alltalk(Handle:convar, const String:oldValue[], const String:newValue[])
 {
-	if (StringToInt(newValue) != 0
-		|| StringToInt(oldValue) == 0)
-	{
-		return;
-	}
+	new mode = GetConVarInt(g_Cvar_Deadtalk);
+	new maxClients = GetMaxClients();
 	
-	new dt_val = GetConVarInt(g_Cvar_Deadtalk);
-	new max_clients = GetMaxClients();
-	
-	for (new i = 1; i <= max_clients; i++)
+	for (new i = 1; i <= maxClients; i++)
 	{
 		if (!IsClientInGame(i))
 		{
 			continue;
 		}
 		
-		PrintToServer("STAT (i %d) (g_Muted[%d] %d) (dt_val %d)", i, i, g_Muted[i], dt_val);
-		
-		if (IsPlayerAlive(i))
+		if (g_Muted[i])
 		{
-			if (g_Muted[i])
-			{
-				SetClientListeningFlags(i, VOICE_MUTED);
-			}
-			else
-			{
-				SetClientListeningFlags(i, VOICE_NORMAL);
-			}
+			SetClientListeningFlags(i, VOICE_MUTED);
+		}
+		else if (GetConVarBool(g_Cvar_Alltalk))
+		{
+			SetClientListeningFlags(i, VOICE_NORMAL);
 		}
 		else
 		{
-			if (g_Muted[i])
-			{
-				SetClientListeningFlags(i, VOICE_MUTED);
-			}
-			else if (dt_val == 1)
+			if (mode == 1)
 			{
 				SetClientListeningFlags(i, VOICE_LISTENALL);
 			}
-			else if (dt_val == 2)
+			else if (mode == 2)
 			{
 				SetClientListeningFlags(i, VOICE_TEAM);
 			}
@@ -233,12 +218,12 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 	
-	new dt_val = GetConVarInt(g_Cvar_Deadtalk);
-	if (dt_val == 1)
+	new mode = GetConVarInt(g_Cvar_Deadtalk);
+	if (mode == 1)
 	{
 		SetClientListeningFlags(client, VOICE_LISTENALL);
 	}
-	else if (dt_val == 2)
+	else if (mode == 2)
 	{
 		SetClientListeningFlags(client, VOICE_TEAM);
 	}
