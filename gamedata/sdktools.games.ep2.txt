@@ -238,8 +238,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"384"
-				"linux"		"384"
+				"windows"	"385"
+				"linux"		"385"
 			}
 			"GetVelocity"
 			{
