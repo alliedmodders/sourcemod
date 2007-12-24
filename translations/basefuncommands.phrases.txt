@@ -34,7 +34,77 @@
 	"Beacon player"
 	{
 		"en"			"Beacon player"
-	}	
+	}
+	
+	"NoClip player"
+	{
+		"en"			"NoClip player"
+	}
+	
+	"Blind player"
+	{
+		"en"			"Blind player"
+	}
+	
+	"Drug player"
+	{
+		"en"			"Drug player"
+	}
+	
+	"Gravity player"
+	{
+		"en"			"Gravity player"
+	}
+	
+	"Blind amount"
+	{
+		"en"			"How blind?"
+	}
+	
+	"Fully blind"
+	{
+		"en"			"Fully blind"
+	}
+	
+	"Half blind"
+	{
+		"en"			"Half blind"
+	}
+	
+	"No blind"
+	{
+		"en"			"No blind"
+	}
+	
+	"Gravity amount"
+	{
+		"en"			"Gravity?"
+	}
+	
+	"Gravity Very High"
+	{
+		"en"			"Gravity Very High"
+	}
+	
+	"Gravity High"
+	{
+		"en"			"Gravity High"
+	}
+	
+	"Gravity Normal"
+	{
+		"en"			"Gravity Normal"
+	}
+	
+	"Gravity Low"
+	{
+		"en"			"Gravity Low"
+	}
+	
+	"Gravity Very Low"
+	{
+		"en"			"Gravity Very Low"
+	}
 	
 	"Set target on fire"
 	{
@@ -45,7 +115,7 @@
 	"Toggled FireBomb on target"
 	{
 		"#format"		"{1:t}"
-		"en"			"set a firebomb on {1}."
+		"en"			"toggled firebomb on {1}."
 	}	
 
 	"Froze target"
@@ -57,7 +127,7 @@
 	"Toggled FreezeBomb on target"
 	{
 		"#format"		"{1:t}"
-		"en"			"set a freezebomb on {1}."
+		"en"			"toggled freezebomb on {1}."
 	}	
 	
 	"Toggled beacon on target"
@@ -69,7 +139,31 @@
 	"Toggled TimeBomb on target"
 	{
 		"#format"		"{1:t}"
-		"en"			"set a timebomb on {1}."
+		"en"			"toggled timebomb on {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"#format"		"{1:t}"
+		"en"			"toggled noclip on {1}."
+	}
+	
+	"Toggled drug on target"
+	{
+		"#format"		"{1:t}"
+		"en"			"toggled drugs on {1}."
+	}	
+	
+	"Set blind on target"
+	{
+		"#format"		"{1:t}"
+		"en"			"used blind on {1}."
+	}
+	
+	"Set gravity on target"
+	{
+		"#format"		"{1:t}"
+		"en"			"set {1}'s gravity."
 	}	
 	
 	"Till Explodes"

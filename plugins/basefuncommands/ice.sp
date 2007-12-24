@@ -374,7 +374,7 @@ public MenuHandler_Freeze(Handle:menu, MenuAction:action, param1, param2)
 			new String:name[32];
 			GetClientName(target, name, sizeof(name));
 			
-			PerformFreeze(param1, target, 2);
+			PerformFreeze(param1, target, GetConVarInt(g_FreezeDuration));
 			ShowActivity2(param1, "[SM] ", "%t", "Froze target", "_s", name);
 		}
 		

@@ -47,6 +47,23 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
+// -------------------------------------------------------------------------------
+// Set any of these to 0 and recompile to completely disable those commands
+// -------------------------------------------------------------------------------
+#define BEACON		1
+#define TIMEBOMB	1
+#define FIRE		1
+#define ICE			1
+#define GRAVITY		1
+#define BLIND		1
+#define NOCLIP		1
+#define DRUG		1
+#define TELEPORT	1
+#define HEALTH		1
+#define COLORS		1
+#define CASH		1
+// -------------------------------------------------------------------------------
+
 new Handle:hTopMenu = INVALID_HANDLE;
 
 // Sounds
@@ -71,34 +88,77 @@ new blueColor[4] = {75, 75, 255, 255};
 new whiteColor[4] = {255, 255, 255, 255};
 new greyColor[4] = {128, 128, 128, 255};
 
-// Used for some trace rays.
-/*
-new g_FilteredEntity = -1;
-public bool:TR_Filter_Client(ent, contentMask)
-{
-   return (ent == g_FilteredEntity) ? false : true;
-}
-*/
+// UserMessageId for Fade.
+new UserMsg:g_FadeUserMsgId;
 
 // Include various commands and supporting functions
+#if BEACON
 #include "basefuncommands/beacon.sp"
+#endif
+#if TIMEBOMB
 #include "basefuncommands/timebomb.sp"
+#endif
+#if FIRE
 #include "basefuncommands/fire.sp"
+#endif
+#if ICE
 #include "basefuncommands/ice.sp"
+#endif
+#if GRAVITY
+#include "basefuncommands/gravity.sp"
+#endif
+#if BLIND
+#include "basefuncommands/blind.sp"
+#endif
+#if NOCLIP
+#include "basefuncommands/noclip.sp"
+#endif
+#if DRUG
+#include "basefuncommands/drug.sp"
+#endif
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basefuncommands.phrases");
 
+	g_FadeUserMsgId = GetUserMessageId("Fade");
+	
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
 
 	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);	
 
+	#if BEACON
 	SetupBeacon();		// sm_beacon
+	#endif
+	
+	#if TIMEBOMB
 	SetupTimeBomb();	// sm_timebomb
+	#endif
+	
+	#if FIRE
 	SetupFire();		// sm_burn and sm_firebomb
+	#endif
+	
+	#if ICE
 	SetupIce();			// sm_freeze and sm_freezebomb
+	#endif
+	
+	#if GRAVITY
+	SetupGravity();		// sm_gravity
+	#endif
+	
+	#if BLIND
+	SetupBlind();		// sm_blind
+	#endif
+	
+	#if NOCLIP
+	SetupNoClip();		// sm_noclip
+	#endif
+	
+	#if DRUG
+	SetupDrugs();		// sm_drug
+	#endif
 	
 	AutoExecConfig(true, "funcommands");
 	
@@ -127,18 +187,40 @@ public OnMapStart()
 
 public OnMapEnd()
 {
+	#if BEACON
 	KillAllBeacons();
+	#endif
+	#if TIMEBOMB
 	KillAllTimeBombs();
+	#endif
+	#if FIRE
 	KillAllFireBombs();
+	#endif
+	#if ICE
 	KillAllFreezes();
+	#endif
+	#if DRUG
+	KillAllDrugs();
+	#endif
 }
 
 public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
 {
+	#if BEACON
 	KillAllBeacons();
+	#endif
+	#if TIMEBOMB
 	KillAllTimeBombs();
+	#endif
+	#if FIRE
 	KillAllFireBombs();
+	#endif
+	#if ICE
 	KillAllFreezes();
+	#endif
+	#if DRUG
+	KillAllDrugs();
+	#endif
 	
 	return Plugin_Handled;
 }
@@ -159,6 +241,7 @@ public OnAdminMenuReady(Handle:topmenu)
 
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
+		#if BEACON
 		AddToTopMenu(hTopMenu,
 			"sm_beacon",
 			TopMenuObject_Item,
@@ -166,7 +249,19 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_beacon",
 			ADMFLAG_SLAY);
+		#endif
 		
+		#if TIMEBOMB
+		AddToTopMenu(hTopMenu,
+			"sm_timebomb",
+			TopMenuObject_Item,
+			AdminMenu_TimeBomb,
+			player_commands,
+			"sm_timebomb",
+			ADMFLAG_SLAY);
+		#endif
+		
+		#if FIRE
 		AddToTopMenu(hTopMenu,
 			"sm_burn",
 			TopMenuObject_Item,
@@ -176,27 +271,21 @@ public OnAdminMenuReady(Handle:topmenu)
 			ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
-			"sm_freeze",
-			TopMenuObject_Item,
-			AdminMenu_Freeze,
-			player_commands,
-			"sm_freeze",
-			ADMFLAG_SLAY);
-
-		AddToTopMenu(hTopMenu,
-			"sm_timebomb",
-			TopMenuObject_Item,
-			AdminMenu_TimeBomb,
-			player_commands,
-			"sm_timebomb",
-			ADMFLAG_SLAY);	
-			
-		AddToTopMenu(hTopMenu,
 			"sm_firebomb",
 			TopMenuObject_Item,
 			AdminMenu_FireBomb,
 			player_commands,
 			"sm_firebomb",
+			ADMFLAG_SLAY);
+		#endif
+		
+		#if ICE
+		AddToTopMenu(hTopMenu,
+			"sm_freeze",
+			TopMenuObject_Item,
+			AdminMenu_Freeze,
+			player_commands,
+			"sm_freeze",
 			ADMFLAG_SLAY);
 			
 		AddToTopMenu(hTopMenu,
@@ -206,6 +295,47 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_freezebomb",
 			ADMFLAG_SLAY);
+		#endif
+			
+		#if GRAVITY
+		AddToTopMenu(hTopMenu,
+			"sm_gravity",
+			TopMenuObject_Item,
+			AdminMenu_Gravity,
+			player_commands,
+			"sm_gravity",
+			ADMFLAG_SLAY);
+		#endif
+			
+		#if BLIND
+		AddToTopMenu(hTopMenu,
+			"sm_blind",
+			TopMenuObject_Item,
+			AdminMenu_Blind,
+			player_commands,
+			"sm_blind",
+			ADMFLAG_SLAY);
+		#endif
+		
+		#if NOCLIP
+		AddToTopMenu(hTopMenu,
+			"sm_noclip",
+			TopMenuObject_Item,
+			AdminMenu_NoClip,
+			player_commands,
+			"sm_noclip",
+			ADMFLAG_SLAY);
+		#endif
+		
+		#if DRUG
+		AddToTopMenu(hTopMenu,
+			"sm_drug",
+			TopMenuObject_Item,
+			AdminMenu_Drug,
+			player_commands,
+			"sm_drug",
+			ADMFLAG_SLAY);
+		#endif		
 	}
 }
 
