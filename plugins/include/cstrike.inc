@@ -35,8 +35,6 @@
 #endif
 #define _cstrike_included
 
-#include <core>
-
 #define CS_TEAM_NONE		0	/**< No team yet. */
 #define CS_TEAM_SPECTATOR	1	/**< Spectators. */
 #define CS_TEAM_T 			2	/**< Terrorists. */
