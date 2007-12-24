@@ -52,7 +52,19 @@ enum
 };
 
 /**
- * Sets an entity's color.
+ * Gets an entity's movetype.
+ *
+ * @param index		Entity index
+ * @return		Movetype, see enum above
+ */
+stock GetEntityMovetype(index)
+{
+	new offset = GetEntSendPropOffs(index, "movetype");
+	return GetEntData(index, offset, 1);
+}
+
+/**
+ * Sets an entity's movetype.
  *
  * @param index		Entity index
  * @param mt		Movetype, see enum above
@@ -81,4 +93,42 @@ stock SetEntityRenderColor(index, r=255, g=255, b=255, a=255)
 	SetEntData(index, offset + 1, g, 1, true);
 	SetEntData(index, offset + 2, b, 1, true);
 	SetEntData(index, offset + 3, a, 1, true);
+}
+
+/**
+ * Gets an entity's gravity.
+ *
+ * @param index		Entity index
+ * @return		Entity's m_flGravity value
+ */
+stock Float:GetEntityGravity(index)
+{
+	new offset = FindDataMapOffs(index, "m_flGravity");
+	return GetEntDataFloat(index, offset);	
+}
+
+/**
+ * Sets an entity's gravity.
+ *
+ * @param index		Entity index
+ * @param amount	Gravity to set. Default = 800
+ * @noreturn
+ */
+stock SetEntityGravity(index, Float:amount)
+{
+	new offset = FindDataMapOffs(index, "m_flGravity");
+	SetEntDataFloat(index, offset, amount, true);	
+}
+
+/**
+ * Sets an entity's health
+ *
+ * @param index		Entity index
+ * @param amount	Health
+ * @noreturn
+ */
+stock SetEntityHealth(index, amount)
+{
+	SetEntProp(client, Prop_Send, "m_iHealth", health, 1)
+	SetEntProp(client, Prop_Data, "m_iHealth", health, 1)
 }
