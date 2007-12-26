@@ -166,7 +166,7 @@ ParseConfigs()
 	g_groupList[groupListCommand] = CreateArray(ARRAY_STRING_LENGTH);
 	
 	decl String:configPath[256];
-	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/adminmenu_grouping.txt");
+	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/dynamicmenu/adminmenu_grouping.txt");
 	
 	if (!FileExists(configPath))
 	{
@@ -273,9 +273,10 @@ public ParamCheck(client)
 	if (StrContains(g_command[client], buffer) != -1 || StrContains(g_command[client], buffer2) != -1)
 	{
 		//user has a parameter to fill. lets do it.	
-		Format(buffer, 5, "%i", g_currentPlace[client][Place_ReplaceNum]);
-		KvJumpToKey(g_kvMenu, buffer); // Jump to current param
+		KvJumpToKey(g_kvMenu, buffer[1]); // Jump to current param
 		KvGetString(g_kvMenu, "type", type, sizeof(type),"list");
+		
+		PrintToChatAll("Checking param %s - type %s", buffer[1], type);
 		
 		new Handle:itemMenu = CreateMenu(Menu_Selection);
 		
@@ -293,7 +294,8 @@ public ParamCheck(client)
 				AddMenuItem(itemMenu, commandBuffer, nameBuffer);
 			}
 		}
-		else if (strncmp(type,"mapcycle",8) == 0)
+		
+		if (strncmp(type,"mapcycle",8) == 0)
 		{
 			decl String:path[200];
 			KvGetString(g_kvMenu, "path", path, sizeof(path),"mapcycle.txt");
@@ -314,8 +316,10 @@ public ParamCheck(client)
 				}
 			}
 		}
-		else if (StrContains(type, "player"))
+		else if (StrContains(type, "player") != -1)
 		{
+			PrintToChatAll("Building Player List");
+			
 			new PlayerMethod:playermethod;
 			new String:method[NAME_LENGTH];
 			
@@ -357,37 +361,40 @@ public ParamCheck(client)
 				if (IsClientInGame(i))
 				{			
 					GetClientName(i, nameBuffer, 31);
-	
-					if (playermethod == UserId)
+					
+					switch (playermethod)
 					{
-						new userid = GetClientUserId(i);
-						Format(infoBuffer, sizeof(infoBuffer), "#%i", userid);
-						AddMenuItem(itemMenu, infoBuffer, nameBuffer);
-					}
-					if (playermethod == UserId2)
-					{
-						new userid = GetClientUserId(i);
-						Format(infoBuffer, sizeof(infoBuffer), "%i", userid);
-						AddMenuItem(itemMenu, infoBuffer, nameBuffer);
-					}
-					else if (playermethod == SteamId)
-					{
-						GetClientAuthString(i, infoBuffer, sizeof(infoBuffer));
-						AddMenuItem(itemMenu, infoBuffer, nameBuffer);
-					}
-					else if (playermethod == IpAddress)
-					{
-						GetClientIP(i, infoBuffer, sizeof(infoBuffer));
-						AddMenuItem(itemMenu, infoBuffer, nameBuffer);
-					}
-					else if (playermethod == Name)
-					{
-						AddMenuItem(itemMenu, nameBuffer, nameBuffer);
-					}
-					else //client id or none (so we'll give them the client id anyway)
-					{
-						Format(temp,3,"%i",i);
-						AddMenuItem(itemMenu, temp, nameBuffer);
+						case UserId:
+						{
+							new userid = GetClientUserId(i);
+							Format(infoBuffer, sizeof(infoBuffer), "#%i", userid);
+							AddMenuItem(itemMenu, infoBuffer, nameBuffer);	
+						}
+						case UserId2:
+						{
+							new userid = GetClientUserId(i);
+							Format(infoBuffer, sizeof(infoBuffer), "%i", userid);
+							AddMenuItem(itemMenu, infoBuffer, nameBuffer);							
+						}
+						case SteamId:
+						{
+							GetClientAuthString(i, infoBuffer, sizeof(infoBuffer));
+							AddMenuItem(itemMenu, infoBuffer, nameBuffer);							
+						}	
+						case IpAddress:
+						{
+							GetClientIP(i, infoBuffer, sizeof(infoBuffer));
+							AddMenuItem(itemMenu, infoBuffer, nameBuffer);							
+						}
+						case Name:
+						{
+							AddMenuItem(itemMenu, nameBuffer, nameBuffer);
+						}	
+						default: //assume client id
+						{
+							Format(temp,3,"%i",i);
+							AddMenuItem(itemMenu, temp, nameBuffer);						
+						}								
 					}
 				}
 			}
@@ -400,6 +407,8 @@ public ParamCheck(client)
 		else
 		{
 			//list menu
+			
+			PrintToChatAll("Building List Menu");
 
 			new String:temp[6];
 			new String:value[NAME_LENGTH];
@@ -485,15 +494,15 @@ public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
 			return;
 		}
 		
-		new String:buffer[5];
+		new String:buffer[6];
 		new String:infobuffer[NAME_LENGTH+2];
 		Format(infobuffer, sizeof(infobuffer), "\"%s\"", info);
 		
-		Format(buffer, 4, "#%i", g_currentPlace[param1][Place_ReplaceNum]);
+		Format(buffer, 5, "#%i", g_currentPlace[param1][Place_ReplaceNum]);
 		ReplaceString(g_command[param1], sizeof(g_command[]), buffer, infobuffer);
 		//replace #num with the selected option (quoted)
 		
-		Format(buffer, 4, "@%i", g_currentPlace[param1][Place_ReplaceNum]);
+		Format(buffer, 5, "@%i", g_currentPlace[param1][Place_ReplaceNum]);
 		ReplaceString(g_command[param1], sizeof(g_command[]), buffer, info);
 		//replace @num with the selected option (unquoted)
 		

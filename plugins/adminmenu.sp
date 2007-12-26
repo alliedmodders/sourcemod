@@ -85,7 +85,7 @@ public OnConfigsExecuted()
 	decl String:path[PLATFORM_MAX_PATH];
 	decl String:error[256];
 	
-	BuildPath(Path_SM, path, sizeof(path), "configs/dynamicmenu/adminmenu_sorting.txt");
+	BuildPath(Path_SM, path, sizeof(path), "configs/adminmenu_sorting.txt");
 	
 	if (!LoadTopMenuConfig(hAdminMenu, path, error, sizeof(error)))
 	{

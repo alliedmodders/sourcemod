@@ -53,6 +53,10 @@ new Handle:sm_hide_slots;
 new Handle:sv_visiblemaxplayers;
 new Handle:sm_reserve_type;
 
+/* Variables to keep track of admin count */
+new bool:g_hasReserved[MAXPLAYERS+1];
+new g_adminCount;
+
 public OnPluginStart()
 {
 	LoadTranslations("reservedslots.phrases");
@@ -64,6 +68,7 @@ public OnPluginStart()
 	
 	HookConVarChange(sm_reserved_slots, SlotsChanged);
 	HookConVarChange(sm_hide_slots, SlotsChanged);
+	HookConVarChange(sm_reserve_type, TypeChanged);
 }
 
 public OnPluginEnd()
@@ -119,6 +124,8 @@ public OnClientPostAdminCheck(client)
 		
 		new type = GetConVarInt(sm_reserve_type);
 		
+
+		
 		if (type == 0)
 		{
 			if (clients <= limit || IsFakeClient(client) || flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
@@ -134,7 +141,7 @@ public OnClientPostAdminCheck(client)
 			/* Kick player because there are no public slots left */
 			CreateTimer(0.1, OnTimedKick, client);
 		}
-		else
+		else if (type == 1)
 		{		
 			if (clients > limit)
 			{	
@@ -155,6 +162,33 @@ public OnClientPostAdminCheck(client)
 				}
 			}
 		}
+		else if (type == 2)
+		{
+			/* Skip the increment if hasReserved is already marked as true.
+			 * This could only occur if TypeChanged was called after a user is marked as 'ingame' but before they reach this point
+			 * In this case they will already have been counted.
+			 */
+			if ((!g_hasReserved[client]) && (flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION))
+			{
+				g_hasReserved[client] = true;
+				g_adminCount++;
+			}
+					
+			if (g_adminCount >= reserved)
+			{
+				/* reserved slots are occupied by admins already so current slot must be a 'public' slot. No action */
+				return;
+			}
+				
+		 	new slotsRemaining = g_MaxClients - clients;
+		 	new reservedRemaining = reserved - g_adminCount;
+		 	
+		 	if ((slotsRemaining < reservedRemaining)  && (!g_hasReserved[client]))
+		 	{
+			 	/* Kick player because there are no public slots left */
+				CreateTimer(0.1, OnTimedKick, client);
+		 	}		
+		}
 	}
 }
 
@@ -164,6 +198,12 @@ public OnClientDisconnect_Post(client)
 	{		
 		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
 	}
+	
+	if (g_hasReserved[client])
+	{
+		g_adminCount--;	
+		g_hasReserved[client] = false;
+	}
 }
 
 public SlotsChanged(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -172,6 +212,35 @@ public SlotsChanged(Handle:convar, const String:oldValue[], const String:newValu
 	if (StringToInt(newValue) == 0)
 	{
 		SetConVarInt(sv_visiblemaxplayers, g_MaxClients);
+	}
+}
+
+public TypeChanged(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	if (StringToInt(newValue) == 2)
+	{
+		g_adminCount = 0;
+		new flags;
+		
+		for (new i=1; i<=g_MaxClients; i++)
+		{
+			if (!IsClientInGame(i))
+			{
+				continue;
+			}
+			
+			flags = GetUserFlagBits(i);
+			
+			if (flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
+			{
+				g_hasReserved[i] = true;
+				g_adminCount++;
+			}
+			else
+			{
+				g_hasReserved[i] = false;
+			}
+		}
 	}
 }
 
