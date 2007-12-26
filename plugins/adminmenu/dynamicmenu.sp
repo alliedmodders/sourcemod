@@ -333,6 +333,10 @@ public ParamCheck(client)
 			{
 				playermethod = SteamId;
 			}
+			else if (strncmp(method,"userid2",7)==0)
+			{
+				playermethod = UserId2;
+			}
 			else if (strncmp(method,"userid",6)==0)
 			{
 				playermethod = UserId;
@@ -340,10 +344,6 @@ public ParamCheck(client)
 			else if (strncmp(method,"ip",2)==0)
 			{
 				playermethod = IpAddress;
-			}
-			else if (strncmp(method,"userid2",7)==0)
-			{
-				playermethod = UserId2;
 			}
 			else
 			{
