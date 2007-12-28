@@ -411,8 +411,8 @@ public ParamCheck(client)
 			PrintToChatAll("Building List Menu");
 
 			new String:temp[6];
-			new String:value[NAME_LENGTH];
-			new String:text[NAME_LENGTH];
+			new String:value[64];
+			new String:text[64];
 			new i=1;
 			new bool:more = true;
 					
