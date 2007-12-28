@@ -46,8 +46,7 @@ CreateDrug(client)
 
 KillDrug(client)
 {
-	KillTimer(g_DrugTimers[client]);
-	g_DrugTimers[client] = INVALID_HANDLE;
+	KillDrugTimer(client);
 	
 	new Float:pos[3];
 	GetClientAbsOrigin(client, pos);
@@ -72,6 +71,12 @@ KillDrug(client)
 	EndMessage();	
 }
 
+KillDrugTimer(client)
+{
+	KillTimer(g_DrugTimers[client]);
+	g_DrugTimers[client] = INVALID_HANDLE;	
+}
+
 KillAllDrugs()
 {
 	new maxclients = GetMaxClients();
@@ -79,7 +84,14 @@ KillAllDrugs()
 	{
 		if (g_DrugTimers[i] != INVALID_HANDLE)
 		{
-			KillDrug(i);
+			if(IsClientInGame(i))
+			{
+				KillDrug(i);
+			}
+			else
+			{
+				KillDrugTimer(i);
+			}
 		}
 	}
 }
@@ -124,10 +136,17 @@ PerformDrug(client, target, toggle)
 
 public Action:Timer_Drug(Handle:timer, any:client)
 {
-	if (!IsClientInGame(client) || !IsPlayerAlive(client))
+	if (!IsClientInGame(client))
 	{
-		KillDrug(client);		
+		KillDrugTimer(client);
 
+		return Plugin_Handled;
+	}
+	
+	if (!IsPlayerAlive(client))
+	{
+		KillDrug(client);
+		
 		return Plugin_Handled;
 	}
 	

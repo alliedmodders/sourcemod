@@ -57,8 +57,6 @@ KillTimeBomb(client)
 {
 	KillTimer(g_TimeBombTimers[client]);
 	g_TimeBombTimers[client] = INVALID_HANDLE;
-	
-	SetEntityRenderColor(client, 255, 255, 255, 255);
 }
 
 KillAllTimeBombs()
@@ -87,6 +85,7 @@ PerformTimeBomb(client, target, toggle)
 			else
 			{
 				KillTimeBomb(target);
+				SetEntityRenderColor(client, 255, 255, 255, 255);
 				LogAction(client, target, "\"%L\" removed a TimeBomb on \"%L\"", client, target);
 			}			
 		}
@@ -105,6 +104,7 @@ PerformTimeBomb(client, target, toggle)
 			if (g_TimeBombTimers[target] != INVALID_HANDLE)
 			{
 				KillTimeBomb(target);
+				SetEntityRenderColor(client, 255, 255, 255, 255);
 				LogAction(client, target, "\"%L\" removed a TimeBomb on \"%L\"", client, target);
 			}			
 		}
@@ -163,6 +163,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:client)
 
 		ForcePlayerSuicide(client);
 		KillTimeBomb(client);
+		SetEntityRenderColor(client, 255, 255, 255, 255);
 		
 		if (GetConVarInt(g_TimeBombMode) > 0)
 		{

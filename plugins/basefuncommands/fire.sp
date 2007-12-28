@@ -60,8 +60,6 @@ KillFireBomb(client)
 {
 	KillTimer(g_FireBombTimers[client]);
 	g_FireBombTimers[client] = INVALID_HANDLE;
-	
-	SetEntityRenderColor(client, 255, 255, 255, 255);
 }
 
 KillAllFireBombs()
@@ -96,6 +94,7 @@ PerformFireBomb(client, target, toggle)
 			else
 			{
 				KillFireBomb(target);
+				SetEntityRenderColor(client, 255, 255, 255, 255);
 				LogAction(client, target, "\"%L\" removed a FireBomb on \"%L\"", client, target);
 			}			
 		}
@@ -114,6 +113,7 @@ PerformFireBomb(client, target, toggle)
 			if (g_FireBombTimers[target] != INVALID_HANDLE)
 			{
 				KillFireBomb(target);
+				SetEntityRenderColor(client, 255, 255, 255, 255);
 				LogAction(client, target, "\"%L\" removed a FireBomb on \"%L\"", client, target);
 			}			
 		}
@@ -186,6 +186,7 @@ public Action:Timer_FireBomb(Handle:timer, any:client)
 
 		IgniteEntity(client, GetConVarFloat(g_BurnDuration));
 		KillFireBomb(client);
+		SetEntityRenderColor(client, 255, 255, 255, 255);
 		
 		if (GetConVarInt(g_FireBombMode) > 0)
 		{

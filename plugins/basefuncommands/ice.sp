@@ -72,6 +72,21 @@ FreezeClient(client, time)
 
 UnfreezeClient(client)
 {
+	KillFreezeTimer(client);
+
+	new Float:vec[3];
+	GetClientAbsOrigin(client, vec);
+	vec[2] += 10;	
+	
+	GetClientEyePosition(client, vec);
+	EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
+
+	SetEntityMovetype(client, MOVETYPE_WALK);
+	SetEntityRenderColor(client, 255, 255, 255, 255);	
+}
+
+KillFreezeTimer(client)
+{
 	KillTimer(g_FreezeTimers[client]);
 	g_FreezeTimers[client] = INVALID_HANDLE;
 }
@@ -81,7 +96,6 @@ CreateFreezeBomb(client)
 	g_FreezeBombTimers[client] = CreateTimer(1.0, Timer_FreezeBomb, client, TIMER_REPEAT);
 	g_FreezeBombTracker[client] = GetConVarInt(g_FreezeBombTicks);
 }
-
 
 KillFreezeBomb(client)
 {
@@ -98,7 +112,14 @@ KillAllFreezes()
 	{
 		if (g_FreezeTimers[i] != INVALID_HANDLE)
 		{
-			UnfreezeClient(i);
+			if(IsClientInGame(i))
+			{
+				UnfreezeClient(i);
+			}
+			else
+			{
+				KillFreezeTimer(i);
+			}			
 		}		
 		
 		if (g_FreezeBombTimers[i] != INVALID_HANDLE)
@@ -154,12 +175,19 @@ PerformFreezeBomb(client, target, toggle)
 
 public Action:Timer_Freeze(Handle:timer, any:client)
 {
-	if (!IsClientInGame(client) || !IsPlayerAlive(client))
+	if (!IsClientInGame(client))
 	{
-		KillFreezeBomb(client);
+		KillFreezeTimer(client);
 
 		return Plugin_Handled;
 	}
+	
+	if (!IsPlayerAlive(client))
+	{
+		UnfreezeClient(client);
+		
+		return Plugin_Handled;
+	}		
 	
 	g_FreezeTracker[client]--;
 	
@@ -176,14 +204,8 @@ public Action:Timer_Freeze(Handle:timer, any:client)
 	if (g_FreezeTracker[client] == 0)
 	{
 		UnfreezeClient(client);
-
-		GetClientEyePosition(client, vec);
-		EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
-
-		SetEntityMovetype(client, MOVETYPE_WALK);
-		SetEntityRenderColor(client, 255, 255, 255, 255);		
 	}
-			
+
 	return Plugin_Handled;
 }
 
