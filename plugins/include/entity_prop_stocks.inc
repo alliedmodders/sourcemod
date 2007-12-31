@@ -155,8 +155,8 @@ stock SetEntityGravity(index, Float:amount)
  */
 stock SetEntityHealth(index, amount)
 {
-	SetEntProp(client, Prop_Send, "m_iHealth", health, 1)
-	SetEntProp(client, Prop_Data, "m_iHealth", health, 1)
+	SetEntProp(client, Prop_Send, "m_iHealth", amount, 4)
+	SetEntProp(client, Prop_Data, "m_iHealth", amount, 4)
 }
 
 /**
