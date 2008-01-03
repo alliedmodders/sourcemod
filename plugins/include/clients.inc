@@ -137,6 +137,23 @@ forward OnClientAuthorized(client, const String:auth[]);
 forward Action:OnClientPreAdminCheck(client);
 
 /**
+ * Called directly before OnClientPostAdminCheck() as a method to 
+ * alter administrative permissions before plugins perform final 
+ * post-connect operations.  
+ *
+ * In general, do not use this function unless you are specifically 
+ * attempting to change access permissions.  Use OnClientPostAdminCheck() 
+ * instead if you simply want to perform post-connect authorization 
+ * routines.
+ *
+ * See OnClientPostAdminCheck() for more information.
+ *
+ * @param client		Client index.
+ * @noreturn
+ */
+forward OnClientPostAdminFilter(client);
+
+/**
  * Called once a client is authorized and fully in-game, and 
  * after all post-connection authorizations have been performed.  
  *

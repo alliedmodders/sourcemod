@@ -51,6 +51,7 @@ PlayerManager g_Players;
 bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
 IForward *PostAdminCheck = NULL;
+IForward *PostAdminFilter = NULL;
 const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
@@ -130,6 +131,7 @@ void PlayerManager::OnSourceModAllInitialized()
 
 	PreAdminCheck = g_Forwards.CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
 	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
+	PostAdminFilter = g_Forwards.CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
 }
 
 void PlayerManager::OnSourceModShutdown()
@@ -155,6 +157,7 @@ void PlayerManager::OnSourceModShutdown()
 
 	g_Forwards.ReleaseForward(PreAdminCheck);
 	g_Forwards.ReleaseForward(PostAdminCheck);
+	g_Forwards.ReleaseForward(PostAdminFilter);
 
 	delete [] m_Players;
 }
@@ -1373,6 +1376,9 @@ void CPlayer::NotifyPostAdminChecks()
 #endif
 		pListener->OnClientPostAdminCheck(m_iIndex);
 	}
+
+	PostAdminFilter->PushCell(m_iIndex);
+	PostAdminFilter->Execute(NULL);
 
 	PostAdminCheck->PushCell(m_iIndex);
 	PostAdminCheck->Execute(NULL);
