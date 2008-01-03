@@ -498,6 +498,24 @@ static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t GetTrieSize(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl;
+	CellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	hndl = params[1];
+
+	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	return pTrie->trie.size();
+}
+
 REGISTER_NATIVES(trieNatives)
 {
 	{"ClearTrie",				ClearTrie},
@@ -509,5 +527,6 @@ REGISTER_NATIVES(trieNatives)
 	{"SetTrieArray",			SetTrieArray},
 	{"SetTrieString",			SetTrieString},
 	{"SetTrieValue",			SetTrieValue},
+	{"GetTrieSize",				GetTrieSize},
 	{NULL,						NULL},
 };

@@ -83,6 +83,8 @@ public:
 		node->value.~K();
 		node->valset = false;
 
+		m_numElements--;
+
 		return true;
 	}
 
@@ -164,6 +166,8 @@ public:
 			m_empty->valset = true;
 			new (&m_empty->value) K(obj);
 
+			m_numElements++;
+
 			return true;
 		}
 
@@ -203,6 +207,8 @@ public:
 				}
 				node->valset = true;
 				new (&node->value) K(obj);
+
+				m_numElements++;
 
 				return true;
 			}
@@ -403,6 +409,8 @@ public:
 				node->valset = true;
 				new (&node->value) K(obj);
 
+				m_numElements++;
+
 				return true;
 			}
 			else
@@ -421,6 +429,7 @@ public:
 						{
 							node->valset = true;
 							new (&node->value) K(obj);
+							m_numElements++;
 							return true;
 						}
 						/* Same string.  We can't insert. */
@@ -605,6 +614,8 @@ public:
 						}
 					}
 
+					m_numElements++;
+
 					/* Phew! */
 					return true;
 				}
@@ -631,6 +642,7 @@ public:
 		{
 			node->valset = true;
 			new (&node->value) K(obj);
+			m_numElements++;
 			return true;
 		}
 
@@ -644,6 +656,7 @@ public:
 		m_baseSize = 256;
 		m_stSize = 256;
 		m_empty = NULL;
+		m_numElements = 0;
 
 		internal_clear();
 	}
@@ -775,6 +788,7 @@ private:
 	void internal_clear()
 	{
 		m_tail = 0;
+		m_numElements = 0;
 
 		memset(m_base, 0, sizeof(KTrieNode) * (m_baseSize + 1));
 		memset(m_stringtab, 0, sizeof(char) * m_stSize);
@@ -895,6 +909,10 @@ public:
 			+ m_stSize
 			+ sizeof(KTrieNode);
 	}
+	size_t size()
+	{
+		return m_numElements;
+	}
 private:
 	KTrieNode *m_base;			/* Base array for the sparse tables */
 	KTrieNode *m_empty;			/* Special case for empty strings */
@@ -902,6 +920,7 @@ private:
 	unsigned int m_baseSize;	/* Size of the base array, in members */
 	unsigned int m_stSize;		/* Size of the string table, in bytes */
 	unsigned int m_tail;		/* Current unused offset into the string table */
+	size_t m_numElements;		/* Number of elements in use */
 };
 
 /**

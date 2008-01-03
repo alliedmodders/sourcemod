@@ -144,3 +144,15 @@ native RemoveFromTrie(Handle:trie, const String:key[]);
  * @error			Invalid Handle.
  */
 native ClearTrie(Handle:trie);
+
+/**
+ * Retrieves the number of elements in a trie.
+ *
+ * Note that trie items are not enumerable/iteratable.  If you need to 
+ * retrieve the elements in a trie, store its keys in an ADT Array. 
+ *
+ * @param trie		Trie Handle.
+ * @return			Number of elements in the trie.
+ * @error			Invalid Handle.
+ */
+native GetTrieSize(Handle:trie);
