@@ -167,7 +167,7 @@ public Action:Command_Voteban(client, args)
 			client,
 			target_list,
 			MAXPLAYERS,
-			COMMAND_FILTER_NO_MULTI,
+			COMMAND_FILTER_NO_MULTI|COMMAND_FILTER_NO_BOTS,
 			target_name,
 			sizeof(target_name),
 			tn_is_ml)) <= 0)

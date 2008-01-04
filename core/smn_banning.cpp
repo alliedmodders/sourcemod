@@ -256,6 +256,11 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
 	}
 
+	if (pPlayer->IsFakeClient())
+	{
+		return pContext->ThrowNativeError("Cannot ban fake client %d", client);
+	}
+
 	pContext->LocalToString(params[4], &ban_reason);
 	pContext->LocalToString(params[5], (char **)&kick_message);
 	pContext->LocalToString(params[6], &ban_cmd);

@@ -94,7 +94,23 @@ native Handle:GetAdminTopMenu();
  * @param alive_only 	True to only select alive players.
  * @return				Number of clients added.
  */
-native AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only=true, bool:alive_only=false);
+native AddTargetsToMenu(Handle:menu, 
+						source_client, 
+						bool:in_game_only=true, 
+						bool:alive_only=false);
+
+/**
+ * Adds targets to an admin menu.
+ *
+ * Each client is displayed as: name (userid)
+ * Each item contains the userid as a string for its info.
+ *
+ * @param menu			Menu Handle.
+ * @param source_client	Source client, or 0 to ignore immunity.
+ * @param flags			COMMAND_FILTER flags from commandfilters.inc.
+ * @return				Number of clients added.
+ */
+native AddTargetsToMenu2(Handle:menu, source_client, flags);
 
 /**
  * Re-displays the admin menu to a client after selecting an item.
@@ -132,5 +148,6 @@ public __pl_adminmenu_SetNTVOptional()
 {
 	MarkNativeAsOptional("GetAdminTopMenu");
 	MarkNativeAsOptional("AddTargetsToMenu");
+	MarkNativeAsOptional("AddTargetsToMenu2");
 }
 #endif

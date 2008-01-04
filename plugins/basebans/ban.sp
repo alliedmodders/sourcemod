@@ -75,7 +75,7 @@ DisplayBanTargetMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddTargetsToMenu(menu, client, false, false);
+	AddTargetsToMenu2(menu, client, COMMAND_FILTER_NO_BOTS|COMMAND_FILTER_CONNECTED);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }

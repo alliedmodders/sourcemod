@@ -61,6 +61,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
 	CreateNative("GetAdminTopMenu", __GetAdminTopMenu);
 	CreateNative("AddTargetsToMenu", __AddTargetsToMenu);
+	CreateNative("AddTargetsToMenu2", __AddTargetsToMenu2);
 	RegPluginLibrary("adminmenu");
 	return true;
 }
@@ -181,6 +182,11 @@ public __AddTargetsToMenu(Handle:plugin, numParams)
 	return UTIL_AddTargetsToMenu(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3), alive_only);
 }
 
+public __AddTargetsToMenu2(Handle:plugin, numParams)
+{
+	return UTIL_AddTargetsToMenu2(GetNativeCell(1), GetNativeCell(2), GetNativeCell(3));
+}
+
 public Action:Command_DisplayMenu(client, args)
 {
 	if (client == 0)
@@ -194,7 +200,7 @@ public Action:Command_DisplayMenu(client, args)
 	return Plugin_Handled;
 }
 
-stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only, bool:alive_only)
+stock UTIL_AddTargetsToMenu2(Handle:menu, source_client, flags)
 {
 	new max_clients = GetMaxClients();
 	decl String:user_id[12];
@@ -210,17 +216,34 @@ stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only, bool:
 			continue;
 		}
 		
-		if (in_game_only && !IsClientInGame(i))
+		PrintToServer("%d, %d, %d", i, flags, IsFakeClient(i));
+		
+		if (((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
+			&& IsFakeClient(i))
 		{
 			continue;
 		}
 		
-		if (alive_only && !IsPlayerAlive(i))
+		if (((flags & COMMAND_FILTER_CONNECTED) != COMMAND_FILTER_CONNECTED)
+			&& !IsClientInGame(i))
 		{
 			continue;
 		}
 		
-		if (source_client && !CanUserTarget(source_client, i))
+		if (((flags & COMMAND_FILTER_ALIVE) == COMMAND_FILTER_ALIVE) 
+			&& !IsPlayerAlive(i))
+		{
+			continue;
+		}
+		
+		if (((flags & COMMAND_FILTER_DEAD) == COMMAND_FILTER_DEAD)
+			&& IsPlayerAlive(i))
+		{
+			continue;
+		}
+		
+		if ((source_client && ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY))
+			&& !CanUserTarget(source_client, i))
 		{
 			continue;
 		}
@@ -233,5 +256,22 @@ stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only, bool:
 	}
 	
 	return num_clients;
+}
+
+stock UTIL_AddTargetsToMenu(Handle:menu, source_client, bool:in_game_only, bool:alive_only)
+{
+	new flags = 0;
+	
+	if (!in_game_only)
+	{
+		flags |= COMMAND_FILTER_CONNECTED;
+	}
+	
+	if (alive_only)
+	{
+		flags |= COMMAND_FILTER_ALIVE;
+	}
+	
+	return UTIL_AddTargetsToMenu2(menu, source_client, flags);
 }
 
