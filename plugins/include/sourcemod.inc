@@ -282,11 +282,21 @@ native Handle:FindPluginByNumber(order_num);
  * Causes the plugin to enter a failed state.  An error will be thrown and
  * the plugin will be paused until it is unloaded or reloaded.
  *
- * @param string		Message to print.
+ * For backwards compatibility, if no extra arguments are passed, no 
+ * formatting is applied.  If one or more additional arguments is passed, 
+ * the string is formatted using Format().  If any errors are encountered 
+ * during formatting, both the format specifier string and an additional 
+ * error message are written.
+ *
+ * This function does not return, and no further code in the plugin is 
+ * executed.
+ *
+ * @param string		Format specifier string.
+ * @param ...			Formatting arguments.
  * @noreturn
  * @error				Always throws SP_ERROR_ABORT.
  */
-native SetFailState(const String:string[]);
+native SetFailState(const String:string[], any:...);
 
 /**
  * Aborts the current callback and throws an error.  This function

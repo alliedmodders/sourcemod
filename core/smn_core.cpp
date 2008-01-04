@@ -371,12 +371,35 @@ static cell_t GetPluginInfo(IPluginContext *pContext, const cell_t *params)
 static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 {
 	char *str;
+	CPlugin *pPlugin;
+
 	pContext->LocalToString(params[1], &str);
+	pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
-	pPlugin->SetErrorState(Plugin_Error, "%s", str);
+	if (params[0] == 1)
+	{
+		pPlugin->SetErrorState(Plugin_Error, "%s", str);
 
-	return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
+		return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", str);
+	}
+	else
+	{
+		char buffer[2048];
+
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		{
+			pPlugin->SetErrorState(Plugin_Error, "%s", str);
+			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "Formatting error (%s)", str);
+		}
+		else
+		{
+			pPlugin->SetErrorState(Plugin_Error, "%s", buffer);
+			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", buffer);
+		}
+	}
+
+	return 0;
 }
 
 static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
