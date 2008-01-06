@@ -80,83 +80,86 @@ enum
 /**
  * Gets an entity's movetype.
  *
- * @param index		Entity index
- * @return		Movetype, see enum above
+ * @param entity	Entity index.
+ * @return			Movetype, see enum above.
+ * @error			Invalid entity index, or lack of mod compliance.
  */
-stock GetEntityMovetype(index)
+stock GetEntityMovetype(entity)
 {
-	new offset = GetEntSendPropOffs(index, "movetype");
-	return GetEntData(index, offset, 1);
+	new offset = GetEntSendPropOffs(entity, "movetype");
+	return GetEntData(entity, offset, 1);
 }
 
 /**
  * Sets an entity's movetype.
  *
- * @param index		Entity index
- * @param mt		Movetype, see enum above
+ * @param entity	Entity index.
+ * @param mt		Movetype, see enum above.
  * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityMovetype(index, mt)
+stock SetEntityMovetype(entity, mt)
 {
-	new offset = GetEntSendPropOffs(index, "movetype");
-	SetEntData(index, offset, mt, 1, true);
+	new offset = GetEntSendPropOffs(entity, "movetype");
+	SetEntData(entity, offset, mt, 1, true);
 }
 
 /**
  * Sets an entity's color.
  *
- * @param index		Entity index
+ * @param entity	Entity index
  * @param r 		Amount of red (0-255)
  * @param g 		Amount of green (0-255)
  * @param b 		Amount of blue (0-255)
  * @param a 		Amount of alpha (0-255)
  * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityRenderColor(index, r=255, g=255, b=255, a=255)
+stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
 {
-	new offset = GetEntSendPropOffs(index, "m_clrRender");
-	SetEntData(index, offset, r, 1, true);
-	SetEntData(index, offset + 1, g, 1, true);
-	SetEntData(index, offset + 2, b, 1, true);
-	SetEntData(index, offset + 3, a, 1, true);
+	new offset = GetEntSendPropOffs(entity, "m_clrRender");
+	SetEntData(entity, offset, r, 1, true);
+	SetEntData(entity, offset + 1, g, 1, true);
+	SetEntData(entity, offset + 2, b, 1, true);
+	SetEntData(entity, offset + 3, a, 1, true);
 }
 
 /**
  * Gets an entity's gravity.
  *
- * @param index		Entity index
- * @return		Entity's m_flGravity value
+ * @param entity 	Entity index.
+ * @return			Entity's m_flGravity value.
+ * @error			Invalid entity index, or lack of mod compliance.
  */
-stock Float:GetEntityGravity(index)
+stock Float:GetEntityGravity(entity)
 {
-	new offset = FindDataMapOffs(index, "m_flGravity");
-	return GetEntDataFloat(index, offset);	
+	return GetEntPropFloat(entity, Prop_Data, "m_flGravity");
 }
 
 /**
  * Sets an entity's gravity.
  *
- * @param index		Entity index
- * @param amount	Gravity to set. Default = 800
+ * @param entity	Entity index.
+ * @param amount	Gravity to set (default = 800).
  * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityGravity(index, Float:amount)
+stock SetEntityGravity(entity, Float:amount)
 {
-	new offset = FindDataMapOffs(index, "m_flGravity");
-	SetEntDataFloat(index, offset, amount, true);	
+	SetEntPropFloat(entity, Prop_Data, "m_flGravity", amount);
 }
 
 /**
  * Sets an entity's health
  *
- * @param index		Entity index
- * @param amount	Health
+ * @param entity	Entity index.
+ * @param amount	Health amount.
  * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityHealth(index, amount)
+stock SetEntityHealth(entity, amount)
 {
-	SetEntProp(client, Prop_Send, "m_iHealth", amount, 4)
-	SetEntProp(client, Prop_Data, "m_iHealth", amount, 4)
+	SetEntProp(entity, Prop_Send, "m_iHealth", amount);
 }
 
 /**
@@ -164,9 +167,11 @@ stock SetEntityHealth(index, amount)
  *
  * @param client	Client index
  * @return			Bitsum of buttons
+ * @error			Invalid client index, client not in game, 
+ *					or lack of mod compliance.
  */
 stock GetClientButtons(client)
 {
-	new offset = FindDataMapOffs(client, "m_nButtons");
-	return GetEntData(client, offset, 4);
+	return GetEntProp(client, Prop_Data, "m_nButtons");
 }
+
