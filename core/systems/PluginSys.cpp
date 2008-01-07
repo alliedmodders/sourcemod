@@ -1326,10 +1326,6 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 		if (strncmp(pubvar->name, "__ext_", 6) == 0)
 		{
 			ext = (_ext *)pubvar->offs;
-			if (!ext->required && !ext->autoload)
-			{
-				continue;
-			}
 			if (pBase->LocalToString(ext->file, &file) != SP_ERROR_NONE)
 			{
 				continue;
