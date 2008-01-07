@@ -436,6 +436,37 @@ static cell_t smn_IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 	}
 }
 
+static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
+{
+#if defined METAMOD_PLAPI_VERSION
+	int version = g_SMAPI->GetSourceEngineBuild();
+
+	if (version == SOURCE_ENGINE_ORIGINAL)
+	{
+		return 10;
+	}
+	else if (version == SOURCE_ENGINE_EPISODEONE)
+	{
+		return 20;
+	}
+	else if (version == SOURCE_ENGINE_ORANGEBOX)
+	{
+		return 30;
+	}
+#else
+	if (g_HL2.IsOriginalEngine())
+	{
+		return 10;
+	}
+	else
+	{
+		return 20;
+	}
+#endif
+
+	return 0;
+}
+
 REGISTER_NATIVES(halflifeNatives)
 {
 	{"CreateFakeClient",		CreateFakeClient},
@@ -465,5 +496,6 @@ REGISTER_NATIVES(halflifeNatives)
 	{"PrintHintText",			PrintHintText},
 	{"ShowVGUIPanel",			ShowVGUIPanel},
 	{"IsPlayerAlive",			smn_IsPlayerAlive},
+	{"GuessSDKVersion",			GuessSDKVersion},
 	{NULL,						NULL},
 };

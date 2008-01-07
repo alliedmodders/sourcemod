@@ -35,8 +35,13 @@
 #endif
 #define _halflife_included
 
+#define SOURCE_SDK_UNKNOWN			0		/**< Could not determine the engine version */
+#define SOURCE_SDK_ORIGINAL			10		/**< Original Source engine (still used by "The Ship") */
+#define SOURCE_SDK_EPISODE1			20		/**< SDK+Engine released after Episode 1 */
+#define SOURCE_SDK_EPISODE2			30		/**< Engine released after Episode 2 (no SDK yet) */
+
 #define MOTDPANEL_TYPE_TEXT		0	/**< Treat msg as plain text */
-#define MOTDPANEL_TYPE_INDEX		1	/**< Msg is auto determined by the engine */
+#define MOTDPANEL_TYPE_INDEX	1	/**< Msg is auto determined by the engine */
 #define MOTDPANEL_TYPE_URL		2	/**< Treat msg as an URL link */
 #define MOTDPANEL_TYPE_FILE		3	/**< Treat msg as a filename to be openned */
 
@@ -230,6 +235,17 @@ native bool:IsSoundPrecached(const String:sound[]);
  * @error				Invalid client index, or client not connected.
  */
 native CreateDialog(client, Handle:kv, DialogType:type);
+
+/**
+ * Guesses the SDK version a mod was compiled against.  If nothing 
+ * specific is known about the game, the engine version is used instead.
+ *
+ * The return values are guaranteed to increase chronologically (that is, 
+ * a later release will have a higher value).
+ *
+ * @return				SOURCE_SDK version code.
+ */
+native GuessSDKVersion();
 
 /**
  * Prints a message to a specific client in the chat area.

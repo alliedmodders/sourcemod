@@ -59,7 +59,7 @@ FreezeClient(client, time)
 		UnfreezeClient(client);
 	}
 	
-	SetEntityMovetype(client, MOVETYPE_NONE);
+	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 192);
 	
 	new Float:vec[3];
@@ -81,7 +81,7 @@ UnfreezeClient(client)
 	GetClientEyePosition(client, vec);
 	EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
 
-	SetEntityMovetype(client, MOVETYPE_WALK);
+	SetEntityMoveType(client, MOVETYPE_WALK);
 	SetEntityRenderColor(client, 255, 255, 255, 255);	
 }
 
@@ -191,7 +191,7 @@ public Action:Timer_Freeze(Handle:timer, any:client)
 	
 	g_FreezeTracker[client]--;
 	
-	SetEntityMovetype(client, MOVETYPE_NONE);
+	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 135);
 	
 	new Float:vec[3];

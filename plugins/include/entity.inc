@@ -217,7 +217,7 @@ native GetEntData(entity, offset, size=4);
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-native SetEntData(entity, offset, value, size=4, bool:changeState=false);
+native SetEntData(entity, offset, any:value, size=4, bool:changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the float value at 
@@ -414,7 +414,7 @@ stock GetEntProp(entity, PropType:type, const String:prop[], size=4)
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-stock SetEntProp(entity, PropType:type, const String:prop[], value, size=4)
+stock SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4)
 {
 	new offs;
 

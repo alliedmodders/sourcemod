@@ -35,20 +35,65 @@
 #endif
 #define _entity_prop_stocks_included
 
-enum
+enum MoveType
 {
-	MOVETYPE_NONE = 0,			/** never moves */
-	MOVETYPE_ISOMETRIC,			/** For players */
-	MOVETYPE_WALK,				/** Player only - moving on the ground */
-	MOVETYPE_STEP,				/** gravity, special edge handling -- monsters use this */
-	MOVETYPE_FLY,				/** No gravity, but still collides with stuff */
-	MOVETYPE_FLYGRAVITY,			/** flies through the air + is affected by gravity */
-	MOVETYPE_VPHYSICS,			/** uses VPHYSICS for simulation */
-	MOVETYPE_PUSH,				/** no clip to world, push and crush */
-	MOVETYPE_NOCLIP,			/** No gravity, no collisions, still do velocity/avelocity */
-	MOVETYPE_LADDER,			/** Used by players only when going onto a ladder */
-	MOVETYPE_OBSERVER,			/** Observer movement, depends on player's observer mode */
-	MOVETYPE_CUSTOM,			/** Allows the entity to describe its own physics */
+	MOVETYPE_NONE = 0,			/**< never moves */
+	MOVETYPE_ISOMETRIC,			/**< For players */
+	MOVETYPE_WALK,				/**< Player only - moving on the ground */
+	MOVETYPE_STEP,				/**< gravity, special edge handling -- monsters use this */
+	MOVETYPE_FLY,				/**< No gravity, but still collides with stuff */
+	MOVETYPE_FLYGRAVITY,		/**< flies through the air + is affected by gravity */
+	MOVETYPE_VPHYSICS,			/**< uses VPHYSICS for simulation */
+	MOVETYPE_PUSH,				/**< no clip to world, push and crush */
+	MOVETYPE_NOCLIP,			/**< No gravity, no collisions, still do velocity/avelocity */
+	MOVETYPE_LADDER,			/**< Used by players only when going onto a ladder */
+	MOVETYPE_OBSERVER,			/**< Observer movement, depends on player's observer mode */
+	MOVETYPE_CUSTOM,			/**< Allows the entity to describe its own physics */
+};
+
+enum RenderMode
+{	
+	RENDER_NORMAL,			/**< src */
+	RENDER_TRANSCOLOR,		/**< c*a+dest*(1-a) */
+	RENDER_TRANSTEXTURE,	/**< src*a+dest*(1-a) */
+	RENDER_GLOW,			/**< src*a+dest -- No Z buffer checks -- Fixed size in screen space */
+	RENDER_TRANSALPHA,		/**< src*srca+dest*(1-srca) */
+	RENDER_TRANSADD,		/**< src*a+dest */
+	RENDER_ENVIRONMENTAL,	/**< not drawn, used for environmental effects */
+	RENDER_TRANSADDFRAMEBLEND, /**< use a fractional frame value to blend between animation frames */
+	RENDER_TRANSALPHAADD,	/**< src + dest*(1-a) */
+	RENDER_WORLDGLOW,		/**< Same as kRenderGlow but not fixed size in screen space */
+	RENDER_NONE,			/**< Don't render. */
+};
+
+enum RenderFx
+{	
+	RENDERFX_NONE = 0, 
+	RENDERFX_PULSE_SLOW, 
+	RENDERFX_PULSE_FAST, 
+	RENDERFX_PULSE_SLOW_WIDE, 
+	RENDERFX_PULSE_FAST_WIDE, 
+	RENDERFX_FADE_SLOW, 
+	RENDERFX_FADE_FAST, 
+	RENDERFX_SOLID_SLOW, 
+	RENDERFX_SOLID_FAST, 	   
+	RENDERFX_STROBE_SLOW, 
+	RENDERFX_STROBE_FAST, 
+	RENDERFX_STROBE_FASTER, 
+	RENDERFX_FLICKER_SLOW, 
+	RENDERFX_FLICKER_FAST,
+	RENDERFX_NO_DISSIPATION,
+	RENDERFX_DISTORT,			/**< Distort/scale/translate flicker */
+	RENDERFX_HOLOGRAM,			/**< kRenderFxDistort + distance fade */
+	RENDERFX_EXPLODE,			/**< Scale up really big! */
+	RENDERFX_GLOWSHELL,			/**< Glowing Shell */
+	RENDERFX_CLAMP_MIN_SCALE,	/**< Keep this sprite from getting very small (SPRITES only!) */
+	RENDERFX_ENV_RAIN,			/**< for environmental rendermode, make rain */
+	RENDERFX_ENV_SNOW,			/**<  "        "            "    , make snow */
+	RENDERFX_SPOTLIGHT,			/**< TEST CODE for experimental spotlight */
+	RENDERFX_RAGDOLL,			/**< HACKHACK: TEST CODE for signalling death of a ragdoll character */
+	RENDERFX_PULSE_FAST_WIDER,
+	RENDERFX_MAX
 };
 
 #define IN_ATTACK		(1 << 0)
@@ -84,10 +129,10 @@ enum
  * @return			Movetype, see enum above.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock GetEntityMovetype(entity)
+stock MoveType:GetEntityMoveType(entity)
 {
 	new offset = GetEntSendPropOffs(entity, "movetype");
-	return GetEntData(entity, offset, 1);
+	return MoveType:GetEntData(entity, offset, 1);
 }
 
 /**
@@ -98,10 +143,60 @@ stock GetEntityMovetype(entity)
  * @noreturn
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock SetEntityMovetype(entity, mt)
+stock SetEntityMoveType(entity, MoveType:mt)
 {
 	new offset = GetEntSendPropOffs(entity, "movetype");
 	SetEntData(entity, offset, mt, 1, true);
+}
+
+/**
+ * Gets an entity's render mode.
+ *
+ * @param entity	Entity index.
+ * @return			RenderMode value.
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock RenderMode:GetEntityRenderMode(entity)
+{
+	return RenderMode:GetEntProp(entity, Prop_Send, "m_nRenderMode", 1);
+}
+
+/**
+ * Sets an entity's render mode.
+ *
+ * @param entity	Entity index.
+ * @param mode		RenderMode value.
+ * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock SetEntityRenderMode(entity, RenderMode:mode)
+{
+	SetEntProp(entity, Prop_Send, "m_nRenderMode", mode, 1);
+}
+
+/**
+ * Gets an entity's render Fx.
+ *
+ * @param entity	Entity index.
+ * @return			RenderFx value.
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock RenderFx:GetEntityRenderFx(entity)
+{
+	return RenderFx:GetEntProp(entity, Prop_Send, "m_nRenderFX", 1);
+}
+
+/**
+ * Sets an entity's render Fx.
+ *
+ * @param entity	Entity index.
+ * @param fx		RenderFx value.
+ * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+stock SetEntityRenderFx(entity, RenderFx:fx)
+{
+	SetEntProp(entity, Prop_Send, "m_nRenderFX", fx, 1);
 }
 
 /**
@@ -123,6 +218,8 @@ stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
 	SetEntData(entity, offset + 2, b, 1, true);
 	SetEntData(entity, offset + 3, a, 1, true);
 }
+
+/* GuessSDKVersion */
 
 /**
  * Gets an entity's gravity.
@@ -175,3 +272,14 @@ stock GetClientButtons(client)
 	return GetEntProp(client, Prop_Data, "m_nButtons");
 }
 
+#pragma deprecated Case change, use MoveType version
+stock SetEntityMovetype(entity, any:mt)
+{
+	SetEntityMoveType(entity, MoveType:mt);
+}
+
+#pragma deprecated Case change, use MoveType version
+stock GetEntityMovetype(entity)
+{
+	return _:GetEntityMoveType(entity);
+}
