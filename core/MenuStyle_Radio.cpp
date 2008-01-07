@@ -118,6 +118,7 @@ bool CRadioStyle::OnClientCommand(int client, const char *cmdname, const CComman
 	{
 		if (!m_players[client].bInMenu)
 		{
+			m_players[client].bInExternMenu = false;
 			return false;
 		}
 
@@ -136,7 +137,7 @@ static int g_last_clients[256];
 void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
 {
 	int count = pFilter->GetRecipientCount();
-	bf_read br(bf->GetBasePointer(), 2);
+	bf_read br(bf->GetBasePointer(), 3);
 
 	br.ReadWord();
 	int c = br.ReadChar();
