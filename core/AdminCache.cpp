@@ -50,7 +50,7 @@ AdminCache g_Admins;
 AdminFlag g_FlagLetters[26];
 bool g_FlagSet[26];
 
-ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY|FCVAR_PROTECTED, "Mode for deciding immunity protection");
+ConVar sm_immunity_mode("sm_immunity_mode", "1", FCVAR_SPONLY, "Mode for deciding immunity protection");
 
 /* Default flags */
 AdminFlag g_DefaultFlags[26] = 

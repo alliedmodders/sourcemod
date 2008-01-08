@@ -129,4 +129,10 @@
 	{
 		"en"			"Admin access"
 	}
+	
+	"Cvar is now protected"
+	{
+		"#format"		"{1:s}"
+		"en"			"Cvar {1} is now protected."
+	}
 }

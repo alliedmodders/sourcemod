@@ -49,6 +49,7 @@ public Plugin:myinfo =
 new Handle:hTopMenu = INVALID_HANDLE;
 
 new Handle:g_MapList;
+new Handle:g_ProtectedVars;
 
 #include "basecommands/kick.sp"
 #include "basecommands/reloadadmins.sp"
@@ -85,6 +86,11 @@ public OnPluginStart()
 	decl String:mapListPath[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, mapListPath, sizeof(mapListPath), "configs/adminmenu_maplist.ini");
 	SetMapListCompatBind("sm_map menu", mapListPath);
+	
+	g_ProtectedVars = CreateTrie();
+	ProtectVar("rcon_password");
+	ProtectVar("sm_show_activity");
+	ProtectVar("sm_immunity_mode");
 }
 
 public OnMapStart()
@@ -95,6 +101,17 @@ public OnMapStart()
 public OnConfigsExecuted()
 {
 	LoadMapList(g_MapList);
+}
+
+ProtectVar(const String:cvar[])
+{
+	SetTrieValue(g_ProtectedVars, cvar, 1);
+}
+
+bool:IsVarProtected(const String:cvar[])
+{
+	decl dummy_value;
+	return GetTrieValue(g_ProtectedVars, cvar, dummy_value);
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -244,12 +261,32 @@ public Action:Command_Cvar(client, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_cvar <cvar> [value]");
+		if (client == 0)
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_cvar <cvar|protect> [value]");
+		}
+		else
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_cvar <cvar> [value]");
+		}
 		return Plugin_Handled;
 	}
 
 	decl String:cvarname[64];
 	GetCmdArg(1, cvarname, sizeof(cvarname));
+	
+	if (client == 0 && StrEqual(cvarname, "protect"))
+	{
+		if (args < 2)
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_cvar <protect> <cvar>");
+			return Plugin_Handled;
+		}
+		GetCmdArg(2, cvarname, sizeof(cvarname));
+		ProtectVar(cvarname);
+		ReplyToCommand(client, "[SM] %t", "Cvar is now protected", cvarname);
+		return Plugin_Handled;
+	}
 
 	new Handle:hndl = FindConVar(cvarname);
 	if (hndl == INVALID_HANDLE)
@@ -257,36 +294,30 @@ public Action:Command_Cvar(client, args)
 		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
 		return Plugin_Handled;
 	}
-
+	
 	new bool:allowed = false;
-	if (GetConVarFlags(hndl) & FCVAR_PROTECTED)
-	{
-		/* If they're root, allow anything */
-		if ((GetUserFlagBits(client) & ADMFLAG_ROOT) == ADMFLAG_ROOT)
-		{
-			allowed = true;
-		}
-		/* If they're not root, and getting sv_password, see if they have ADMFLAG_PASSWORD */
-		else if (StrEqual(cvarname, "sv_password") && (GetUserFlagBits(client) & ADMFLAG_PASSWORD))
-		{
-			allowed = true;
-		}
-	}
-	/* Do a check for the cheat cvar */
-	else if (StrEqual(cvarname, "sv_cheats"))
-	{
-		if (GetUserFlagBits(client) & ADMFLAG_CHEATS
-			|| GetUserFlagBits(client) & ADMFLAG_ROOT)
-		{
-			allowed = true;
-		}
-	}
-	/* If we drop down to here, it was a normal cvar. */
-	else
+	new client_flags = GetUserFlagBits(client);
+	
+	if (client_flags & ADMFLAG_ROOT)
 	{
 		allowed = true;
 	}
-
+	else
+	{
+		if (GetConVarFlags(hndl) & FCVAR_PROTECTED)
+		{
+			allowed = ((client_flags & ADMFLAG_PASSWORD) == ADMFLAG_PASSWORD);
+		}
+		else if (StrEqual(cvarname, "sv_cheats"))
+		{
+			allowed = ((client_flags & ADMFLAG_CHEATS) == ADMFLAG_CHEATS);
+		}
+		else if (!IsVarProtected(cvarname))
+		{
+			allowed = true;
+		}
+	}
+	
 	if (!allowed)
 	{
 		ReplyToCommand(client, "[SM] %t", "No access to cvar");
