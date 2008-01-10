@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
+#include <malloc.h>
 
 #if defined _MSC_VER
 	#define DLL_EXPORT				extern "C" __declspec(dllexport)
@@ -286,3 +287,32 @@ __attribute__((destructor)) static void gcc_fini()
 	UnloadInterface_MMS();
 }
 #endif
+
+/* Overload a few things to prevent libstdc++ linking */
+#if defined __linux__
+extern "C" void __cxa_pure_virtual(void)
+{
+}
+
+void *operator new(size_t size)
+{
+	return malloc(size);
+}
+
+void *operator new[](size_t size)
+{
+	return malloc(size);
+}
+
+void operator delete(void *ptr)
+{
+	free(ptr);
+}
+
+void operator delete[](void * ptr)
+{
+	free(ptr);
+}
+#endif
+
+
