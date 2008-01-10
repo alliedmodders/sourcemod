@@ -296,7 +296,7 @@ public Action:Command_Cvar(client, args)
 	}
 	
 	new bool:allowed = false;
-	new client_flags = GetUserFlagBits(client);
+	new client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
 	
 	if (client_flags & ADMFLAG_ROOT)
 	{
