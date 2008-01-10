@@ -70,6 +70,29 @@
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
 
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
+
+class FailPlugin : public SourceMM::ISmmFailPlugin
+{
+public:
+	int GetApiVersion()
+	{
+		return fail_version;
+	}
+
+	bool Load(SourceMM::PluginId id, SourceMM::ISmmAPI *ismm, char *error, size_t maxlength, bool late)
+	{
+		if (error != NULL && maxlength != 0)
+		{
+			UTIL_Format(error, maxlength, "%s", error_buffer);
+		}
+		return false;
+	}
+
+	int fail_version;
+	char error_buffer[512];
+} s_FailPlugin;
+
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
 	va_list ap;
@@ -87,7 +110,7 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 	return len;
 }
 
-METAMOD_PLUGIN *_GetPluginPtr(const char *path)
+METAMOD_PLUGIN *_GetPluginPtr(const char *path, int fail_api)
 {
 	METAMOD_FN_ORIG_LOAD fn;
 	METAMOD_PLUGIN *pl;
@@ -95,7 +118,34 @@ METAMOD_PLUGIN *_GetPluginPtr(const char *path)
 
 	if (!(g_hCore=openlib(path)))
 	{
-		return NULL;
+#if defined __linux__
+		UTIL_Format(s_FailPlugin.error_buffer, 
+			sizeof(s_FailPlugin.error_buffer),
+			"%s",
+			dlerror());
+#else
+		DWORD err = GetLastError();
+
+		if (FormatMessageA(
+				FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
+				NULL,
+				err,
+				MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+				s_FailPlugin.error_buffer,
+				sizeof(s_FailPlugin.error_buffer),
+				NULL)
+			== 0)
+		{
+			UTIL_Format(s_FailPlugin.error_buffer, 
+				sizeof(s_FailPlugin.error_buffer),
+				"unknown error %x",
+				err);
+		}
+#endif
+
+		s_FailPlugin.fail_version = fail_api;
+
+		return (METAMOD_PLUGIN *)&s_FailPlugin;
 	}
 
 	if (!(fn=(METAMOD_FN_ORIG_LOAD)findsym(g_hCore, "CreateInterface")))
@@ -171,7 +221,7 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	char abspath[256];
 	UTIL_Format(abspath, sizeof(abspath), "%s" PATH_SEP_CHAR "%s", mli->pl_path, filename);
 
-	return _GetPluginPtr(abspath);
+	return _GetPluginPtr(abspath, METAMOD_FAIL_API_V2);
 }
 
 DLL_EXPORT void UnloadInterface_MMS()
@@ -215,7 +265,7 @@ DLL_EXPORT void *CreateInterface(const char *iface, int *ret)
 
 		UTIL_Format(targetfile, sizeof(targetfile), "%s" PATH_SEP_CHAR FILENAME_1_4_EP1, thisfile);
 
-		return _GetPluginPtr(targetfile);
+		return _GetPluginPtr(targetfile, METAMOD_FAIL_API_V1);
 	}
 
 	return NULL;
