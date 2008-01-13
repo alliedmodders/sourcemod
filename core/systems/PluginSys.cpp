@@ -799,6 +799,17 @@ AutoConfig *CPlugin::GetConfig(unsigned int i)
 
 void CPlugin::AddConfig(bool autoCreate, const char *cfg, const char *folder)
 {
+	/* Do a check for duplicates to prevent double-execution */
+	for (size_t i = 0; i < m_configs.size(); i++)
+	{
+		if (m_configs[i]->autocfg.compare(cfg) == 0
+			&& m_configs[i]->folder.compare(folder) == 0
+			&& m_configs[i]->create == autoCreate)
+		{
+			return;
+		}
+	}
+
 	AutoConfig *c = new AutoConfig;
 
 	c->autocfg = cfg;
