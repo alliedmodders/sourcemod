@@ -162,7 +162,7 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 		}
 	}
 
-	return NULL;
+	return false;
 }
 
 typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name)
