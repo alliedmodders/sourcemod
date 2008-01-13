@@ -70,7 +70,6 @@ CHalfLife2::~CHalfLife2()
 	for (iter=m_Tables.begin(); iter!=m_Tables.end(); iter++)
 	{
 		pInfo = (*iter);
-		sm_trie_destroy(pInfo->lookup);
 		delete pInfo;
 	}
 
@@ -115,6 +114,8 @@ void CHalfLife2::OnSourceModAllInitialized()
 	m_HinTextMsg = g_UserMsgs.GetMessageIndex("HintText");
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
+
+	FindInSendTable("CTFPlayer", "m_nDisguiseClass");
 }
 
 #if !defined METAMOD_PLAPI_VERSION
@@ -129,7 +130,10 @@ IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 	return engine->GetChangeAccessor( (const edict_t *)this );
 }
 
-SendProp *UTIL_FindInSendTable(SendTable *pTable, const char *name)
+bool UTIL_FindInSendTable(SendTable *pTable, 
+						  const char *name,
+						  sm_sendprop_info_t *info,
+						  unsigned int offset)
 {
 	const char *pname;
 	int props = pTable->GetNumProps();
@@ -141,13 +145,19 @@ SendProp *UTIL_FindInSendTable(SendTable *pTable, const char *name)
 		pname = prop->GetName();
 		if (pname && strcmp(name, pname) == 0)
 		{
-			return prop;
+			info->prop = prop;
+			info->actual_offset = offset + info->prop->GetOffset();
+			return true;
 		}
 		if (prop->GetDataTable())
 		{
-			if ((prop=UTIL_FindInSendTable(prop->GetDataTable(), name)) != NULL)
+			if (UTIL_FindInSendTable(prop->GetDataTable(), 
+				name,
+				info,
+				offset + prop->GetOffset())
+				)
 			{
-				return prop;
+				return true;
 			}
 		}
 	}
@@ -187,6 +197,7 @@ typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name)
 ServerClass *CHalfLife2::FindServerClass(const char *classname)
 {
 	DataTableInfo *pInfo = _FindServerClass(classname);
+
 	if (!pInfo)
 	{
 		return NULL;
@@ -207,7 +218,6 @@ DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 			if (strcmp(classname, sc->GetName()) == 0)
 			{
 				pInfo = new DataTableInfo;
-				pInfo->lookup = sm_trie_create();
 				pInfo->sc = sc;
 				sm_trie_insert(m_pClasses, classname, pInfo);
 				m_Tables.push_back(pInfo);
@@ -224,25 +234,46 @@ DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 	return pInfo;
 }
 
+bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info)
+{
+	DataTableInfo *pInfo;
+	sm_sendprop_info_t *prop;
+
+	if ((pInfo = _FindServerClass(classname)) == NULL)
+	{
+		return false;
+	}
+
+	if ((prop = pInfo->lookup.retrieve(offset)) == NULL)
+	{
+		sm_sendprop_info_t temp_info;
+
+		if (!UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp_info, 0))
+		{
+			return false;
+		}
+
+		pInfo->lookup.insert(offset, temp_info);
+		*info = temp_info;
+	}
+	else
+	{
+		*info = *prop;
+	}
+	
+	return true;
+}
+
 SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
 {
-	DataTableInfo *pInfo = _FindServerClass(classname);
+	sm_sendprop_info_t info;
 
-	if (!pInfo)
+	if (!FindSendPropInfo(classname, offset, &info))
 	{
 		return NULL;
 	}
 
-	SendProp *pProp = NULL;
-	if (!sm_trie_retrieve(pInfo->lookup, offset, (void **)&pProp))
-	{
-		if ((pProp = UTIL_FindInSendTable(pInfo->sc->m_pTable, offset)) != NULL)
-		{
-			sm_trie_insert(pInfo->lookup, offset, pProp);
-		}
-	}
-
-	return pProp;
+	return info.prop;
 }
 
 typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset)
@@ -272,7 +303,9 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 		if (offset)
 		{
 			pEdict->StateChanged(offset);
-		} else {
+		}
+		else
+		{
 			pEdict->StateChanged();
 		}
 	}

@@ -35,6 +35,7 @@
 #include <sh_list.h>
 #include <sh_string.h>
 #include <sh_tinyhash.h>
+#include <sm_trie_tpl.h>
 #include "sm_trie.h"
 #include "sm_globals.h"
 #include "sm_queue.h"
@@ -52,7 +53,7 @@ using namespace SourceMod;
 struct DataTableInfo
 {
 	ServerClass *sc;
-	Trie *lookup;
+	KTrie<sm_sendprop_info_t> lookup;
 };
 
 struct DataMapTrie
@@ -89,6 +90,7 @@ public:
 	/*void OnSourceModAllShutdown();*/
 public: //IGameHelpers
 	SendProp *FindInSendTable(const char *classname, const char *offset);
+	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);

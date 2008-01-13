@@ -41,7 +41,7 @@
 enum PropType
 {
 	Prop_Send = 0,	/**< This property is networked. */
-	Prop_Data = 1,	/**< This property is for saved game files. */
+	Prop_Data = 1,	/**< This property is for save game data fields. */
 };
 
 /**
@@ -58,6 +58,16 @@ enum PropType
 #define FL_EDICT_PENDING_DORMANT_CHECK	(1<<6)
 #define FL_EDICT_DIRTY_PVS_INFORMATION	(1<<7)
 #define FL_FULL_EDICT_CHANGED		(1<<8)
+
+enum PropFieldType
+{
+	PropField_Unsupported,		/**< The type is unsupported. */
+	PropField_Integer,			/**< Valid for SendProp and Data fields */
+	PropField_Float,			/**< Valid for SendProp and Data fields */
+	PropField_Entity,			/**< Valid for Data fields only (SendProp shows as int) */
+	PropField_Vector,			/**< Valid for SendProp and Data fields */
+	PropField_String,			/**< Valid for SendProp and Data fields */
+};
 
 /**
  * @endsection
@@ -244,8 +254,14 @@ native Float:GetEntDataFloat(entity, offset);
 native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
 
 /**
- * Peeks into an entity's object data and retrieves the entity handle
- * info at the given offset.
+ * This function is deprecated.  Use GetEntDataEnt2 instead, for 
+ * reasons explained in the notes.
+ *
+ * Note: This function returns 0 on failure, which may be misleading, 
+ * as the number 0 is also used for the world entity index.
+ *
+ * Note: This function makes no attempt to validate the returned 
+ * entity, and in fact, it could be garbage or completely unexpected.
  * 
  * @param entity		Edict index.
  * @param offset		Offset to use.
@@ -255,8 +271,12 @@ native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
 native GetEntDataEnt(entity, offset);
 
 /**
- * Peeks into an entity's object data and sets the entity handle info
- * at the given offset.
+ * This function is deprecated.   Use GetEntDataEnt2 instead, for 
+ * reasons explained in the notes.
+ *
+ * Note: This function uses 0 as an indicator to unset data, but 
+ * 0 is also the world entity index.  Thus, the a property cannot 
+ * be set to the world entity using this native.
  * 
  * @param entity		Edict index.
  * @param offset		Offset to use.
@@ -266,6 +286,39 @@ native GetEntDataEnt(entity, offset);
  * @error				Invalid entity or offset out of reasonable bounds.
  */
 native SetEntDataEnt(entity, offset, other, bool:changeState=false);
+
+/**
+ * Peeks into an entity's object data and retrieves the entity index 
+ * at the given offset.
+ *
+ * Note: This will only work on offsets that are stored as "entity 
+ * handles" (which usually looks like m_h* in properties).  These 
+ * are not SourceMod Handles, but internal Source structures.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @return				Entity index at the given location.  If there is no entity, 
+ *						or the stored entity is invalid, then -1 is returned.
+ * @error				Invalid input entity, or offset out of reasonable bounds.
+ */
+native GetEntDataEnt2(entity, offset);
+
+/**
+ * Peeks into an entity's object data and sets the entity index at the 
+ * given offset.
+ *
+ * Note: This will only work on offsets that are stored as "entity 
+ * handles" (which usually looks like m_h* in properties).  These 
+ * are not SourceMod Handles, but internal Source structures.
+ * 
+ * @param entity		Edict index.
+ * @param offset		Offset to use.
+ * @param other			Entity index to set, or -1 to clear.
+ * @param changeState	If true, change will be sent over the network.
+ * @noreturn
+ * @error				Invalid input entity, or offset out of reasonable bounds.
+ */
+native SetEntDataEnt2(entity, offset, other, bool:changeState=false);
 
 /**
  * Peeks into an entity's object data and retrieves the vector at the 
@@ -331,6 +384,12 @@ native SetEntDataString(entity, offset, const String:buffer[], maxlen, bool:chan
  * Given a ServerClass name, finds a networkable send property offset.
  * This information is cached for future calls.
  *
+ * Note, this function may return offsets that do not work!
+ * If a property is nested beneath a parent object, the resulting offset 
+ * will be invalid for direct use with data functions.  Therefore, you 
+ * should use FindSendPropInfo() instead.  An example of such a property is 
+ * CTFPlayer::DT_LocalPlayer.m_nDisguiseClass on Team Fortress.
+ *
  * @param cls			Classname.
  * @param prop			Property name.
  * @return				An offset, or -1 on failure.
@@ -338,23 +397,61 @@ native SetEntDataString(entity, offset, const String:buffer[], maxlen, bool:chan
 native FindSendPropOffs(const String:cls[], const String:prop[]);
 
 /**
+ * Given a ServerClass name, finds a networkable send property offset.
+ * This information is cached for future calls.
+ * 
+ * Note: This function will correctly compute nested offsets, unlike 
+ * FindSendPropOffs().  YOU SHOULD NOT use this function to self-compute 
+ * nested offsets.  For example, it is okay to add indexes for arrays, 
+ * but not to add DT_LocalPlayer to m_nDisguiseClass.
+ *
+ * @param cls			Classname.
+ * @param prop			Property name.
+ * @param type			Optional parameter to store the type.
+ * @param num_bits		Optional parameter to store the number of bits the field 
+ *						uses, if applicable (otherwise 0 is stored).  The number 
+ *						of bits varies for integers and floats, and is always 0 
+ * 						for strings.
+ * @param local_offset	Optional parameter to store the local offset, as 
+ *						FindSendPropOffs() would return.
+ * @return				On success, returns an absolutely computed offset.
+ *						If no offset is available, 0 is returned.
+ *						If the property is not found, -1 is returned.
+ */
+native FindSendPropInfo(const String:cls[], 
+						const String:prop[], 
+						&PropFieldType:type=PropFieldType:0,
+						&num_bits=0,
+						&local_offset=0);
+
+/**
  * Given an entity, finds a datamap property offset.
  * This information is cached for future calls.
  *
  * @param entity		Entity index.
  * @param prop			Property name.
+ * @param type			Optional parameter to store the type.
+ * @param num_bits		Optional parameter to store the number of bits the field 
+ *						uses.  The bit count will either be 1 (for boolean) or 
+ *						divisible by 8 (including 0 if unknown).
  * @return				An offset, or -1 on failure.
  */
-native FindDataMapOffs(entity, const String:prop[]);
+native FindDataMapOffs(entity, 
+					   const String:prop[],
+					   &PropFieldType:type=PropFieldType:0,
+					   &num_bits=0);
 
 /**
  * Wrapper function for finding a send property for a particular entity.
  *
  * @param ent			Entity index.
  * @param prop			Property name.
+ * @param actual		Defaults to false for backwards compatibility.
+ *						If true, the newer FindSendPropInfo() function 
+ *						is used instead.
  * @return				An offset, or -1 on failure.
  */
-stock GetEntSendPropOffs(ent, const String:prop[])
+stock GetEntSendPropOffs(ent, const String:prop[], bool:actual=false)
 {
 	decl String:cls[64];
 	
@@ -363,314 +460,149 @@ stock GetEntSendPropOffs(ent, const String:prop[])
 		return -1;
 	}
 	
-	return FindSendPropOffs(cls, prop);
+	if (actual)
+	{
+		return FindSendPropInfo(cls, prop);
+	}
+	else
+	{
+		return FindSendPropOffs(cls, prop);
+	}
 }
 
 /**
- * Gets a network property as an integer; wrapper around GetEntData().
+ * Retrieves an integer value from an entity's property.
+ *
+ * This function is considered safer and more robust over GetEntData, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
- * @param size			Number of bytes to read (valid values are 1, 2, or 4).
+ * @param prop			Property name.
+ * @param size			Number of bytes to write (valid values are 1, 2, or 4).
+ *						This value is auto-detected, and the size parameter is 
+ *						only used as a fallback in case detection fails.
  * @return				Value at the given property offset.
  * @error				Invalid entity or property not found.
  */
-stock GetEntProp(entity, PropType:type, const String:prop[], size=4)
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return GetEntData(entity, offs, size);
-}
+native GetEntProp(entity, PropType:type, const String:prop[], size=4);
 
 /**
- * Sets a network property as an integer; wrapper around GetEntData().
+ * Sets an integer value in an entity's property.
  *
- * @param entity		Edict index.
+ * This function is considered safer and more robust over SetEntData, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
+ * 
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
+ * @param prop			Property name.
  * @param size			Number of bytes to write (valid values are 1, 2, or 4).
+ *						This value is auto-detected, and the size parameter is 
+ *						only used as a fallback in case detection fails.
  * @error				Invalid entity or offset out of reasonable bounds.
  * @noreturn
  */
-stock SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4)
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return SetEntData(entity, offs, value, size, true);
-}
+native SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4);
 
 /**
- * Gets a network property as a float; wrapper around GetEntDataFloat().
+ * Retrieves a float value from an entity's property.
+ *
+ * This function is considered safer and more robust over GetEntDataFloat, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
+ * @param prop			Property name.
  * @return				Value at the given property offset.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock Float:GetEntPropFloat(entity, PropType:type, const String:prop[])
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return GetEntDataFloat(entity, offs);
-}
+native Float:GetEntPropFloat(entity, PropType:type, const String:prop[]);
 
 /**
- * Sets a network property as a float; wrapper around SetEntDataFloat().
+ * Sets a float value in an entity's property.
+ *
+ * This function is considered safer and more robust over SetEntDataFloat, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
+ * @param prop			Property name.
  * @param value			Value to set.
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value)
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return SetEntDataFloat(entity, offs, value, true);
-}
+native SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value);
 
 /**
- * Gets a network property as a handle entity; wrapper around GetEntDataEnt().
+ * Retrieves an entity index from an entity's property.
+ *
+ * This function is considered safer and more robust over GetEntDataEnt*, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
- * @return				Entity index at the given property, or 0 if none.
+ * @param prop			Property name.
+ * @return				Entity index at the given property.
+ *						If there is no entity, or the entity is not valid, 
+ *						then -1 is returned.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock GetEntPropEnt(entity, PropType:type, const String:prop[])
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return GetEntDataEnt(entity, offs);
-}
+native GetEntPropEnt(entity, PropType:type, const String:prop[]);
 
 /**
- * Sets a network property as a handle entity; wrapper around SetEntDataEnt().
+ * Sets an entity index in an entity's property.
+ *
+ * This function is considered safer and more robust over SetEntDataEnt*, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
- * @param other			Entity index to set, or 0 to unset.
+ * @param prop			Property name.
+ * @param other			Entity index to set, or -1 to unset.
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
-stock SetEntPropEnt(entity, PropType:type, const String:prop[], other)
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return SetEntDataEnt(entity, offs, other, true);
-}
+native SetEntPropEnt(entity, PropType:type, const String:prop[], other);
 
 /**
- * Gets a network property as a vector; wrapper around GetEntDataVector().
- * @note Both a Vector and a QAngle are three floats.  This is a 
- * convenience function and will work with both types.
+ * Retrieves a vector of floats from an entity, given a named network property.
+ *
+ * This function is considered safer and more robust over GetEntDataVector, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
+ * @param prop			Property name.
  * @param vec			Vector buffer to store data in.
  * @noreturn
- * @error				Invalid entity or offset out of reasonable bounds.
+ * @error				Invalid entity, property not found, or property not 
+ *						actually a vector data type.
  */
-stock GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3])
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return GetEntDataVector(entity, offs, vec);
-}
+native GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3]);
 
 /**
- * Sets a network property as a vector; wrapper around SetEntDataVector().
- * @note Both a Vector and a QAngle are three floats.  This is a 
- * convenience function and will work with both types.
+ * Sets a vector of floats in an entity, given a named network property.
+ *
+ * This function is considered safer and more robust over SetEntDataVector, 
+ * because it performs strict offset checking and typing rules.  There is a 
+ * very minor performance hit from this.
  * 
- * @param entity		Edict index.
+ * @param entity		Entity/edict index.
  * @param type			Property type.
- * @param prop			Property to use.
+ * @param prop			Property name.
  * @param vec			Vector to set.
  * @noreturn
- * @error				Invalid entity or offset out of reasonable bounds.
+ * @error				Invalid entity, property not found, or property not 
+ *						actually a vector data type.
  */
-stock SetEntPropVector(entity, PropType:type, const String:prop[], const Float:vec[3])
-{
-	new offs;
-
-	switch (type)
-	{
-		case Prop_Send:
-		{
-			offs = GetEntSendPropOffs(entity, prop);
-		}
-		case Prop_Data:
-		{
-			offs = FindDataMapOffs(entity, prop);
-		}
-		default:
-		{
-			ThrowError("Invalid Property type %d", type);
-		}
-	}
-
-	if (offs == -1)
-	{
-		ThrowError("Property \"%s\" not found for entity %d", prop, entity);
-	}
-
-	return SetEntDataVector(entity, offs, vec, true);
-}
+native SetEntPropVector(entity, PropType:type, const String:prop[], const Float:vec[3]);
 
 /**
  * Gets a network property as a string.
@@ -715,7 +647,6 @@ stock GetEntDataArray(entity, offset, array[], arraySize, dataSize=4)
 		array[i] = GetEntData(entity, offset + i*dataSize, dataSize)
 	}
 }
-
 
 /**
  * Copies an array of cells to an entity at a given offset.

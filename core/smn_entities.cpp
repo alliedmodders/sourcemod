@@ -44,6 +44,16 @@ enum PropType
 	Prop_Data
 };
 
+enum PropFieldType
+{
+	PropField_Unsupported,		/**< The type is unsupported. */
+	PropField_Integer,			/**< Valid for SendProp and Data fields */
+	PropField_Float,			/**< Valid for SendProp and Data fields */
+	PropField_Entity,			/**< Valid for Data fields only (SendProp shows as int) */
+	PropField_Vector,			/**< Valid for SendProp and Data fields */
+	PropField_String,			/**< Valid for SendProp and Data fields */
+};
+
 inline edict_t *GetEdict(cell_t num)
 {
 	edict_t *pEdict = engine->PEntityOfEntIndex(num);
@@ -292,7 +302,7 @@ static cell_t GetEntData(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -321,7 +331,7 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -366,7 +376,7 @@ static cell_t GetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -387,7 +397,7 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -413,7 +423,7 @@ static cell_t GetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -441,7 +451,7 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -463,6 +473,7 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+/* THIS GUY IS DEPRECATED. */
 static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -474,7 +485,7 @@ static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -486,11 +497,65 @@ static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	/* :TODO: check serial no.? */
-
 	return hndl.GetEntryIndex();
 }
 
+int CheckBaseHandle(CBaseHandle &hndl)
+{
+	if (!hndl.IsValid())
+	{
+		return -1;
+	}
+
+	int index = hndl.GetEntryIndex();
+
+	edict_t *pStoredEdict;
+	CBaseEntity *pStoredEntity;
+
+	pStoredEdict = GetEntity(index, &pStoredEntity);
+
+	if (pStoredEdict == NULL || pStoredEntity == NULL)
+	{
+		return -1;
+	}
+
+	IServerEntity *pSE = pStoredEdict->GetIServerEntity();
+
+	if (pSE == NULL)
+	{
+		return -1;
+	}
+
+	if (pSE->GetRefEHandle() != hndl)
+	{
+		return -1;
+	}
+
+	return index;
+}
+
+static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (pEdict == NULL || pEntity == NULL)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset <= 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+
+	return CheckBaseHandle(hndl);
+}
+
+/* THIS GUY IS DEPRECATED. */
 static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -502,7 +567,7 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int offset = params[2];
-	if (offset < 0 || offset > 32768)
+	if (offset <= 0 || offset > 32768)
 	{
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
@@ -513,6 +578,47 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 	{
 		hndl.Set(NULL);
 	} else {
+		edict_t *pEdict = GetEdict(params[3]);
+		if (!pEdict)
+		{
+			return pContext->ThrowNativeError("Entity %d is invalid", params[3]);
+		}
+		IServerEntity *pEntOther = pEdict->GetIServerEntity();
+		hndl.Set(pEntOther);
+	}
+
+	if (params[4])
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
+
+	return 1;
+}
+
+static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	edict_t *pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	int offset = params[2];
+	if (offset <= 0 || offset > 32768)
+	{
+		return pContext->ThrowNativeError("Offset %d is invalid", offset);
+	}
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+
+	if (params[3] == -1)
+	{
+		hndl.Set(NULL);
+	}
+	else
+	{
 		edict_t *pEdict = GetEdict(params[3]);
 		if (!pEdict)
 		{
@@ -560,6 +666,59 @@ static cell_t FindSendPropOffs(IPluginContext *pContext, const cell_t *params)
 	return pSend->GetOffset();
 }
 
+static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
+{
+	char *cls, *prop;
+	sm_sendprop_info_t info;
+	cell_t *pType, *pBits, *pLocal;
+
+	pContext->LocalToString(params[1], &cls);
+	pContext->LocalToString(params[2], &prop);
+
+	if (!g_HL2.FindSendPropInfo(cls, prop, &info))
+	{
+		return -1;
+	}
+
+	pContext->LocalToPhysAddr(params[3], &pType);
+	pContext->LocalToPhysAddr(params[4], &pBits);
+	pContext->LocalToPhysAddr(params[5], &pLocal);
+
+	switch (info.prop->GetType())
+	{
+	case DPT_Int:
+		{
+			*pType = PropField_Integer;
+			break;
+		}
+	case DPT_Float:
+		{
+			*pType = PropField_Float;
+			break;
+		}
+	case DPT_String:
+		{
+			*pType = PropField_String;
+			break;
+		}
+	case DPT_Vector:
+		{
+			*pType = PropField_Vector;
+			break;
+		}
+	default:
+		{
+			*pType = PropField_Unsupported;
+			break;
+		}
+	}
+
+	*pBits = info.prop->m_nBits;
+	*pLocal = info.prop->GetOffset();
+
+	return info.actual_offset;
+}
+
 static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -582,6 +741,79 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 	if ((td=g_HL2.FindInDataMap(pMap, offset)) == NULL)
 	{
 		return -1;
+	}
+
+	if (params[0] == 4)
+	{
+		cell_t *pType, *pSize;
+
+		pContext->LocalToPhysAddr(params[3], &pType);
+		pContext->LocalToPhysAddr(params[4], &pSize);
+
+		switch (td->fieldType)
+		{
+		case FIELD_TICK:
+		case FIELD_MODELINDEX:
+		case FIELD_MATERIALINDEX:
+		case FIELD_INTEGER:
+		case FIELD_COLOR32:
+			{
+				*pType = PropField_Integer;
+				*pSize = 32;
+				break;
+			}
+		case FIELD_VECTOR:
+		case FIELD_POSITION_VECTOR:
+			{
+				*pType = PropField_Vector;
+				*pSize = 12;
+				break;
+			}
+		case FIELD_SHORT:
+			{
+				*pType = PropField_Integer;
+				*pSize = 16;
+				break;
+			}
+		case FIELD_BOOLEAN:
+			{
+				*pType = PropField_Integer;
+				*pSize = 1;
+				break;
+			}
+		case FIELD_CHARACTER:
+			{
+				if (td->fieldSize == 1)
+				{
+					*pType = PropField_Integer;
+					*pSize = 8;
+				}
+				else
+				{
+					*pType = PropField_String;
+					*pSize = 8 * td->fieldSize;
+				}
+				break;
+			}
+		case FIELD_FLOAT:
+		case FIELD_TIME:
+			{
+				*pType = PropField_Float;
+				*pSize = 32;
+				break;
+			}
+		case FIELD_EHANDLE:
+			{
+				*pType = PropField_Entity;
+				*pSize = 32;
+				break;
+			}
+		default:
+			{
+				*pType = PropField_Unsupported;
+				*pSize = 0;
+			}
+		}
 	}
 
 	return td->fieldOffset[TD_OFFSET_NORMAL];
@@ -640,59 +872,764 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	return len;
 }
 
-static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
+#define FIND_PROP_DATA(td) \
+	datamap_t *pMap; \
+	if ((pMap = CBaseEntity_GetDataDescMap(pEntity)) == NULL) \
+	{ \
+		return pContext->ThrowNativeError("Could not retrieve datamap"); \
+	} \
+	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL) \
+	{ \
+		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
+			prop, \
+			params[1], \
+			class_name); \
+	}
+
+#define FIND_PROP_SEND(pProp) \
+	IServerNetworkable *pNet = pEdict->GetNetworkable(); \
+	if (!pNet) \
+	{ \
+		return pContext->ThrowNativeError("Edict %d is not networkable", params[1]); \
+	} \
+	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, pProp)) \
+	{ \
+		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
+			prop, \
+			params[1], \
+			class_name); \
+	}
+
+inline int MatchFieldAsInteger(int field_type)
+{
+	switch (field_type)
+	{
+	case FIELD_TICK:
+	case FIELD_MODELINDEX:
+	case FIELD_MATERIALINDEX:
+	case FIELD_INTEGER:
+	case FIELD_COLOR32:
+		return 32;
+	case FIELD_SHORT:
+		return 16;
+	case FIELD_CHARACTER:
+		return 8;
+	case FIELD_BOOLEAN:
+		return 1;
+	default:
+		return 0;
+	}
+
+	return 0;
+}
+
+static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	const char *class_name;
+	edict_t *pEdict;
+	int bit_count;
+
+	pEdict = GetEntity(params[1], &pEntity);
 
 	if (!pEdict || !pEntity)
 	{
 		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
 	}
 
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
 	switch (params[2])
 	{
 	case Prop_Data:
 		{
-			datamap_t *pMap;
 			typedescription_t *td;
-			if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+
+			FIND_PROP_DATA(td);
+
+			if ((bit_count = MatchFieldAsInteger(td->fieldType)) == 0)
 			{
-				return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
+				return pContext->ThrowNativeError("Data field %s is not an integer (%d)", 
+					prop,
+					td->fieldType);
 			}
-			pContext->LocalToString(params[3], &prop);
-			if ((td=g_HL2.FindInDataMap(pMap, prop)) == NULL)
-			{
-				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
-			}
-			if (td->fieldType != FIELD_CHARACTER)
-			{
-				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
-			}
+
 			offset = td->fieldOffset[TD_OFFSET_NORMAL];
 			break;
 		}
 	case Prop_Send:
 		{
-			char *prop;
-			IServerNetworkable *pNet = pEdict->GetNetworkable();
-			if (!pNet)
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Int)
 			{
-				return pContext->ThrowNativeError("The edict is not networkable");
+				return pContext->ThrowNativeError("SendProp %s is not an integer ([%d,%d] != %d)",
+					prop,
+					info.prop->GetType(),
+					info.prop->m_nBits,
+					DPT_Int);
 			}
-			pContext->LocalToString(params[3], &prop);
-			SendProp *pSend = g_HL2.FindInSendTable(pNet->GetServerClass()->GetName(), prop);
-			if (!pSend)
+
+			bit_count = info.prop->m_nBits;
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	if (bit_count < 1)
+	{
+		bit_count = params[4] * 8;
+	}
+
+	if (bit_count >= 17)
+	{
+		return *(int32_t *)((uint8_t *)pEntity + offset);
+	}
+	else if (bit_count >= 9)
+	{
+		return *(int16_t *)((uint8_t *)pEntity + offset);
+	}
+	else if (bit_count >= 2)
+	{
+		return *(int8_t *)((uint8_t *)pEntity + offset);
+	}
+	else
+	{
+		return *(bool *)((uint8_t *)pEntity + offset) ? 1 : 0;
+	}
+
+	return 0;
+}
+
+static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+	int bit_count;
+
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+
+			FIND_PROP_DATA(td);
+
+			if ((bit_count = MatchFieldAsInteger(td->fieldType)) == 0)
 			{
-				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+				return pContext->ThrowNativeError("Data field %s is not an integer (%d)", 
+					prop,
+					td->fieldType);
 			}
-			if (pSend->GetType() != DPT_String)
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Int)
 			{
-				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
+				return pContext->ThrowNativeError("SendProp %s is not an integer ([%d,%d] != %d)",
+					prop,
+					info.prop->GetType(),
+					info.prop->m_nBits,
+					DPT_Int);
 			}
-			offset = pSend->GetOffset();
+
+			bit_count = info.prop->m_nBits;
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	if (bit_count < 1)
+	{
+		bit_count = params[5] * 8;
+	}
+
+	if (bit_count >= 17)
+	{
+		*(int32_t *)((uint8_t *)pEntity + offset) = params[4];
+	}
+	else if (bit_count >= 9)
+	{
+		*(int16_t *)((uint8_t *)pEntity + offset) = (int16_t)params[4];
+	}
+	else if (bit_count >= 2)
+	{
+		*(int8_t *)((uint8_t *)pEntity + offset) = (int8_t)params[4];
+	}
+	else
+	{
+		*(bool *)((uint8_t *)pEntity + offset) = params[4] ? true : false;
+	}
+
+	return 0;
+}
+
+static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_FLOAT
+				&& td->fieldType != FIELD_TIME)
+			{
+				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d])", 
+					prop,
+					td->fieldType,
+					FIELD_FLOAT,
+					FIELD_TIME);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Float)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not a float (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_Float);
+			}
+
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	float val = *(float *)((uint8_t *)pEntity + offset);
+
+	return sp_ftoc(val);
+}
+
+static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_FLOAT
+				&& td->fieldType != FIELD_TIME)
+			{
+				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d])", 
+					prop,
+					td->fieldType,
+					FIELD_FLOAT,
+					FIELD_TIME);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Float)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not a float (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_Float);
+			}
+
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	*(float *)((uint8_t *)pEntity + offset) = sp_ctof(params[4]);
+
+	if (params[2] == Prop_Send)
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
+
+	return 1;
+}
+
+static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_EHANDLE)
+			{
+				return pContext->ThrowNativeError("Data field %s is not an entity (%d != %d)", 
+					prop,
+					td->fieldType,
+					FIELD_EHANDLE);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Int)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not an integer (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_Int);
+			}
+
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+
+	return CheckBaseHandle(hndl);
+}
+
+static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_EHANDLE)
+			{
+				return pContext->ThrowNativeError("Data field %s is not an entity (%d != %d)", 
+					prop,
+					td->fieldType,
+					FIELD_EHANDLE);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Int)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not an integer (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_Int);
+			}
+
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+
+	if (params[4] == -1)
+	{
+		hndl.Set(NULL);
+	}
+	else
+	{
+		edict_t *pOther;
+		CBaseEntity *pOtherEnt;
+
+		if ((pOther = GetEntity(params[4], &pOtherEnt)) == NULL)
+		{
+			return pContext->ThrowNativeError("Invalid entity %d", params[4]);
+		}
+
+		hndl.Set(pOther->GetIServerEntity());
+	}
+
+	if (params[2] == Prop_Send)
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
+
+	return 1;
+}
+
+static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+	
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+			
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_VECTOR
+				&& td->fieldType != FIELD_POSITION_VECTOR)
+			{
+				return pContext->ThrowNativeError("Data field %s is not a vector (%d != [%d,%d])", 
+					prop,
+					td->fieldType,
+					FIELD_VECTOR,
+					FIELD_POSITION_VECTOR);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Vector)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not a vector (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_Vector);
+			}
+
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	Vector *v = (Vector *)((uint8_t *)pEntity + offset);
+
+	cell_t *vec;
+	pContext->LocalToPhysAddr(params[4], &vec);
+
+	vec[0] = sp_ftoc(v->x);
+	vec[1] = sp_ftoc(v->y);
+	vec[2] = sp_ftoc(v->z);
+
+	return 1;
+}
+
+static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+	
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+			
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_VECTOR
+				&& td->fieldType != FIELD_POSITION_VECTOR)
+			{
+				return pContext->ThrowNativeError("Data field %s is not a vector (%d != [%d,%d])", 
+					prop,
+					td->fieldType,
+					FIELD_VECTOR,
+					FIELD_POSITION_VECTOR);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_Vector)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not a vector (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_Vector);
+			}
+
+			offset = info.actual_offset;
+			break;
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	Vector *v = (Vector *)((uint8_t *)pEntity + offset);
+
+	cell_t *vec;
+	pContext->LocalToPhysAddr(params[4], &vec);
+
+	v->x = sp_ctof(vec[0]);
+	v->y = sp_ctof(vec[1]);
+	v->z = sp_ctof(vec[2]);
+
+	if (params[2] == Prop_Send)
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
+
+	return 1;
+}
+
+static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	int offset;
+	const char *class_name;
+	edict_t *pEdict;
+	
+	pEdict = GetEntity(params[1], &pEntity);
+
+	if (!pEdict || !pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+	}
+
+	if ((class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+			
+			FIND_PROP_DATA(td);
+
+			if (td->fieldType != FIELD_CHARACTER)
+			{
+				return pContext->ThrowNativeError("Data field %s is not a string (%d != %d)", 
+					prop,
+					td->fieldType,
+					FIELD_CHARACTER);
+			}
+
+			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			break;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+
+			FIND_PROP_SEND(&info);
+
+			if (info.prop->GetType() != DPT_String)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not a string (%d != %d)",
+					prop,
+					info.prop->GetType(),
+					DPT_String);
+			}
+
+			offset = info.actual_offset;
+			break;
 			break;
 		}
 	default:
@@ -714,7 +1651,6 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int maxlen;
-	bool is_sendprop = false;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
 	if (!pEdict || !pEntity)
@@ -765,7 +1701,6 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			offset = pSend->GetOffset();
 			maxlen = DT_MAX_STRING_BUFFERSIZE;
-			is_sendprop = true;
 			break;
 		}
 	default:
@@ -780,7 +1715,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[4], &src);
 	size_t len = strncopy(dest, src, maxlen);
 
-	if (is_sendprop)
+	if (params[2] == Prop_Send)
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -792,13 +1727,22 @@ REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
 	{"CreateEdict",				CreateEdict},
+	{"FindDataMapOffs",			FindDataMapOffs},
+	{"FindSendPropInfo",		FindSendPropInfo},
 	{"FindSendPropOffs",		FindSendPropOffs},
 	{"GetEdictClassname",		GetEdictClassname},
 	{"GetEdictFlags",			GetEdictFlags},
 	{"GetEntData",				GetEntData},
-	{"GetEntDataEnt",			GetEntDataEnt},
+	{"GetEntDataEnt",			GetEntDataEnt},		/** DEPRECATED */
+	{"GetEntDataEnt2",			GetEntDataEnt2},
 	{"GetEntDataFloat",			GetEntDataFloat},
+	{"GetEntDataString",		GetEntDataString},
 	{"GetEntDataVector",		GetEntDataVector},
+	{"GetEntProp",				GetEntProp},
+	{"GetEntPropEnt",			GetEntPropEnt},
+	{"GetEntPropFloat",			GetEntPropFloat},
+	{"GetEntPropString",		GetEntPropString},
+	{"GetEntPropVector",		GetEntPropVector},
 	{"GetEntityCount",			GetEntityCount},
 	{"GetEntityNetClass",		GetEntityNetClass},
 	{"GetMaxEntities",			GetMaxEntities},
@@ -808,13 +1752,15 @@ REGISTER_NATIVES(entityNatives)
 	{"RemoveEdict",				RemoveEdict},
 	{"SetEdictFlags",			SetEdictFlags},
 	{"SetEntData",				SetEntData},
-	{"SetEntDataEnt",			SetEntDataEnt},
+	{"SetEntDataEnt",			SetEntDataEnt},		/** DEPRECATED */
+	{"SetEntDataEnt2",			SetEntDataEnt2},
 	{"SetEntDataFloat",			SetEntDataFloat},
 	{"SetEntDataVector",		SetEntDataVector},
-	{"FindDataMapOffs",			FindDataMapOffs},
-	{"GetEntDataString",		GetEntDataString},
 	{"SetEntDataString",		SetEntDataString},
-	{"GetEntPropString",		GetEntPropString},
+	{"SetEntProp",				SetEntProp},
+	{"SetEntPropEnt",			SetEntPropEnt},
+	{"SetEntPropFloat",			SetEntPropFloat},
 	{"SetEntPropString",		SetEntPropString},
+	{"SetEntPropVector",		SetEntPropVector},
 	{NULL,						NULL}
 };

@@ -48,6 +48,15 @@
 
 namespace SourceMod
 {
+	/**
+	 * @brief Maps the heirarchy of a SendProp.
+	 */
+	struct sm_sendprop_info_t
+	{
+		SendProp *prop;					/**< Property instance. */
+		unsigned int actual_offset;		/**< Actual computed offset. */
+	};
+
 	class IGameHelpers : public SMInterface
 	{
 	public:
@@ -61,11 +70,11 @@ namespace SourceMod
 		}
 	public:
 		/**
-		 * @brief Finds a send property in a named send table.
+		 * @brief Deprecated; use FindSendPropInfo() instead.
 		 *
-		 * @param classname		Top-level sendtable name.
-		 * @param offset		Property name.
-		 * @return				SendProp pointer on success, NULL on failure.
+		 * @param classname		Do not use.
+		 * @param offset		Do not use.
+		 * @return				Do not use.
 		 */
 		virtual SendProp *FindInSendTable(const char *classname, const char *offset) =0;
 
@@ -118,6 +127,21 @@ namespace SourceMod
 		 * @return				True if LAN server, false otherwise.
 		 */
 		virtual bool IsLANServer() =0;
+
+		/**
+		 * @brief Finds a send property in a named ServerClass.
+		 *
+		 * This version, unlike FindInSendTable(), correctly deduces the 
+		 * offsets of nested tables.
+		 *
+		 * @param classname		ServerClass name (such as CBasePlayer).
+		 * @param offset		Offset name (such as m_iAmmo).
+		 * @param info			Buffer to store sm_sendprop_info_t data.
+		 * @return				True on success, false on failure.
+		 */
+		virtual bool FindSendPropInfo(const char *classname,
+			const char *offset,
+			sm_sendprop_info_t *info) =0;
 	};
 }
 
