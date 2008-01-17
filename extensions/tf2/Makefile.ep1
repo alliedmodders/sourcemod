@@ -1,21 +1,21 @@
 #(C)2004-2006 SourceMM Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMSDK = ../..
-SRCDS = ~/srcds
-SOURCEMM = ../../../sourcemm
-HL2SDK = ../../../hl2sdk
+SMSDK = ../smsdk
+SRCDS = ~/srcds_l/steaminstall
+SOURCEMM = ../sourcemm
+HL2SDK = ../hl2sdk
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = game.cstrike
+PROJECT = game.tf2
 
 #Uncomment for SourceMM-enabled extensions
 LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so 
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp timeleft.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

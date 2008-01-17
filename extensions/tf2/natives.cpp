@@ -30,6 +30,16 @@
  */
 
 #include "extension.h"
+#include "RegNatives.h"
+
+#define REGISTER_NATIVE_ADDR(name, code) \
+	void *addr; \
+	if (!g_pGameConf->GetMemSig(name, &addr)) \
+	{ \
+		return pContext->ThrowNativeError("Failed to locate function"); \
+	} \
+	code; \
+	g_RegNatives.Register(pWrapper);
 
 inline CBaseEntity *GetCBaseEntity(int num, bool onlyPlayers)
 {
@@ -61,7 +71,89 @@ inline CBaseEntity *GetCBaseEntity(int num, bool onlyPlayers)
 	return pUnk->GetBaseEntity();
 }
 
+
+// native TF2_Burn(client)
+cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	// CTFPlayerShared::Burn(CTFPlayer*)
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("Burn", 
+			PassInfo pass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(CBaseEntity *); \
+			pass[0].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity=GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->GetOffset());
+
+	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = obj;
+	vptr += sizeof(void *);
+	*(CBaseEntity **)vptr = pEntity;
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
+// native TF2_Invuln(client, bool:something, bool:anothersomething)
+cell_t TF2_Invuln(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	//CTFPlayerShared::SetInvulnerable(bool, bool)
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("Invuln", 
+			PassInfo pass[2]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(bool); \
+			pass[0].type = PassType_Basic; \
+			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].size = sizeof(bool); \
+			pass[1].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity=GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->GetOffset());
+
+	unsigned char vstk[sizeof(void *) + 2*sizeof(bool)];
+	unsigned char *vptr = vstk;
+
+
+	*(void **)vptr = obj;
+	vptr += sizeof(bool);
+	*(bool *)vptr = !!params[2];
+	vptr += sizeof(bool);
+	*(bool *)vptr = !!params[3];
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
+	{"TF2_Burn",						TF2_Burn},
+	{"TF2_Invuln",					TF2_Invuln},
 	{NULL,							NULL}
 };

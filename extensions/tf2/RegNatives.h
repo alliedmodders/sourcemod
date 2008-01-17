@@ -26,51 +26,23 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id$
+ * Version: $Id: RegNatives.h 1558 2007-10-14 19:34:46Z faluco $
  */
 
-#ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
-#define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
+#ifndef _INCLUDE_TF2TOOLS_REGNATIVES_H_
+#define _INCLUDE_TF2TOOLS_REGNATIVES_H_
 
-/**
- * @file smsdk_config.h
- * @brief Contains macros for configuring basic extension information.
- */
+#include <sh_list.h>
 
-#include "svn_version.h"
+class RegNatives
+{
+public:
+	void Register(ICallWrapper *pWrapper);
+	void UnregisterAll();
+private:
+	SourceHook::List<ICallWrapper *> m_List;
+};
 
-/* Basic information exposed publicly */
-#define SMEXT_CONF_NAME			"TF2 Tools"
-#define SMEXT_CONF_DESCRIPTION	"TF2 extended functionality"
-#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
-#define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
-#define SMEXT_CONF_URL			"http://www.sourcemod.net/"
-#define SMEXT_CONF_LOGTAG		"TF2"
-#define SMEXT_CONF_LICENSE		"GPL"
-#define SMEXT_CONF_DATESTRING	__DATE__
+extern RegNatives g_RegNatives;
 
-/** 
- * @brief Exposes plugin's main interface.
- */
-#define SMEXT_LINK(name) SDKExtension *g_pExtensionIface = name;
-
-/**
- * @brief Sets whether or not this plugin required Metamod.
- * NOTE: Uncomment to enable, comment to disable.
- */
-#define SMEXT_CONF_METAMOD
-
-/** Enable interfaces you want to use here by uncommenting lines */
-//#define SMEXT_ENABLE_FORWARDSYS
-//#define SMEXT_ENABLE_HANDLESYS
-#define SMEXT_ENABLE_PLAYERHELPERS
-//#define SMEXT_ENABLE_DBMANAGER
-#define SMEXT_ENABLE_GAMECONF
-//#define SMEXT_ENABLE_MEMUTILS
-#define SMEXT_ENABLE_GAMEHELPERS
-//#define SMEXT_ENABLE_TIMERSYS
-//#define SMEXT_ENABLE_THREADER
-//#define SMEXT_ENABLE_LIBSYS
-//#define SMEXT_ENABLE_USERMSGS
-
-#endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
+#endif //_INCLUDE_TF2TOOLS_REGNATIVES_H_

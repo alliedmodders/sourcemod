@@ -675,6 +675,10 @@
 				RelativePath="..\natives.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\RegNatives.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -683,6 +687,10 @@
 			>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\RegNatives.h"
 				>
 			</File>
 		</Filter>

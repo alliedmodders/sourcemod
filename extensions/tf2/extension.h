@@ -38,12 +38,15 @@
  */
 
 #include "smsdk_ext.h"
+#include <IBinTools.h>
 
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class TF2Tools : public SDKExtension
+class TF2Tools : 
+	public SDKExtension,
+	public ICommandTargetProcessor
 {
 public:
 	/**
@@ -81,8 +84,10 @@ public:
 	 */
 	virtual bool QueryRunning(char *error, size_t maxlength);
 
-	//void NotifyInterfaceDrop(SMInterface *pInterface);
-	//bool QueryInterfaceDrop(SMInterface *pInterface);
+	void NotifyInterfaceDrop(SMInterface *pInterface);
+	bool QueryInterfaceDrop(SMInterface *pInterface);
+public:
+	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
@@ -117,5 +122,9 @@ public:
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
 };
+
+extern IBinTools *g_pBinTools;
+extern IGameConfig *g_pGameConf;
+extern SendProp *playerSharedOffset;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
