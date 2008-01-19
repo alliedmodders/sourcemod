@@ -108,6 +108,9 @@ native UnhookEvent(const String:name[], EventHook:callback, EventHookMode:mode=E
 /**
  * Creates a game event to be fired later.
  *
+ * The Handle should not be closed via CloseHandle().  It must be closed via 
+ * FireEvent() or CancelCreatedEvent().
+ *
  * @param name			Name of event.
  * @param force			If set to true, this forces the event to be created even if it's not being hooked.
  *						Note that this will not force it if the event doesn't exist at all.
@@ -118,6 +121,8 @@ native Handle:CreateEvent(const String:name[], bool:force=false);
 
 /**
  * Fires a game event.
+ *
+ * This function closes the event Handle after completing.
  *
  * @param event			Handle to the event.
  * @param dontBroadcast	Optional boolean that determines if event should be broadcast to clients.
@@ -168,6 +173,11 @@ native GetEventInt(Handle:event, const String:key[]);
 
 /**
  * Sets the integer value of a game event's key.
+ *
+ * Integer value refers to anything that can be reduced to an integer.
+ * The various size specifiers, such as "byte" and "short" are still 
+ * integers, and only refer to how much data will actually be sent 
+ * over the network (if applicable).
  *
  * @param event			Handle to the event.
  * @param key			Name of event key.
