@@ -1196,6 +1196,52 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[2]);
+	HandleError err;
+	ConVar *pConVar;
+
+	char *value;
+	pContext->LocalToString(params[3], &value);
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, &pConVar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	char data[256];
+	bf_write buffer(data, sizeof(data));
+
+	buffer.WriteUBitLong(NET_SETCONVAR, 5);
+	buffer.WriteByte(1);
+	buffer.WriteString(pConVar->GetName());
+	buffer.WriteString(value);
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
+
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
+	}
+
+	if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+
+	if (pPlayer->IsFakeClient())
+	{
+		return pContext->ThrowNativeError("Client %d is fake and cannot be targeted", params[1]);
+	}
+
+	INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
+	netchan->SendData(buffer);
+
+	return 1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1242,5 +1288,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetCommandFlags",		GetCommandFlags},
 	{"FindFirstConCommand",	FindFirstConCommand},
 	{"FindNextConCommand",	FindNextConCommand},
+	{"SendConVarValue",		SendConVarValue},
 	{NULL,					NULL}
 };

@@ -754,3 +754,14 @@ native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &f
  *						contents of outputs is undefined.
  */
 native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:isCommand, &flags=0);
+
+/**
+ * Replicates a convar value to a specific client. This does not change the actual convar value.
+ *
+ * @param client		Client index
+ * @param convar		ConVar handle
+ * @param value			String value to send
+ * @return				True on success, false on failure
+ * @error 				Invalid client index, client not in game, or client is fake
+ */
+native bool:SendConVarValue(client, Handle:convar, const String:value[]);
