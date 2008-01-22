@@ -1329,7 +1329,9 @@ static int hier13(value *lval)
     array1= (lval->ident==iARRAY || lval->ident==iREFARRAY);
     array2= (lval2.ident==iARRAY || lval2.ident==iREFARRAY);
     if (array1 && !array2) {
-      char *ptr=(lval->sym->name!=NULL) ? lval->sym->name : "-unknown-";
+      const char *ptr = "-unknown-";
+	  if (lval->sym != NULL && lval->sym->name != NULL)
+        ptr = lval->sym->name;
       error(33,ptr);            /* array must be indexed */
     } else if (!array1 && array2) {
       char *ptr=(lval2.sym->name!=NULL) ? lval2.sym->name : "-unknown-";
@@ -1570,7 +1572,7 @@ static int hier2(value *lval)
 	  if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
       } else if (level==sym->dim.array.level+1) {
-        lval->constval= (idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
+        lval->constval=(idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
       } else {
         lval->constval=array_levelsize(sym,level);
       }
