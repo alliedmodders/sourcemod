@@ -44,9 +44,9 @@
 #define	CONTENTS_WATER			0x20
 #define	CONTENTS_MIST			0x40
 #define CONTENTS_OPAQUE			0x80		/**< things that cannot be seen through (may be non-solid though). */
-#define	LAST_VISIBLE_CONTENTS		0x80
-#define ALL_VISIBLE_CONTENTS 		(LAST_VISIBLE_CONTENTS | (LAST_VISIBLE_CONTENTS-1))
-#define CONTENTS_TESTFOGVOLUME		0x100
+#define	LAST_VISIBLE_CONTENTS	0x80
+#define ALL_VISIBLE_CONTENTS 	(LAST_VISIBLE_CONTENTS | (LAST_VISIBLE_CONTENTS-1))
+#define CONTENTS_TESTFOGVOLUME	0x100
 #define CONTENTS_UNUSED5		0x200
 #define CONTENTS_UNUSED6		0x4000
 #define CONTENTS_TEAM1			0x800		/**< per team contents used to differentiate collisions. */
@@ -55,17 +55,17 @@
 #define CONTENTS_MOVEABLE		0x4000		/**< hits entities which are MOVETYPE_PUSH (doors, plats, etc) */
 #define	CONTENTS_AREAPORTAL		0x8000		/**< remaining contents are non-visible, and don't eat brushes. */
 #define	CONTENTS_PLAYERCLIP		0x10000
-#define	CONTENTS_MONSTERCLIP		0x20000
+#define	CONTENTS_MONSTERCLIP	0x20000
 
 /**
  * @section currents can be added to any other contents, and may be mixed
  */
 #define	CONTENTS_CURRENT_0		0x40000
 #define	CONTENTS_CURRENT_90		0x80000
-#define	CONTENTS_CURRENT_180		0x100000
-#define	CONTENTS_CURRENT_270		0x200000
+#define	CONTENTS_CURRENT_180	0x100000
+#define	CONTENTS_CURRENT_270	0x200000
 #define	CONTENTS_CURRENT_UP		0x400000
-#define	CONTENTS_CURRENT_DOWN		0x800000
+#define	CONTENTS_CURRENT_DOWN	0x800000
 
 /**
  * @endsection
@@ -75,30 +75,30 @@
 #define	CONTENTS_MONSTER		0x2000000	/**< should never be on a brush, only in game. */
 #define	CONTENTS_DEBRIS			0x4000000
 #define	CONTENTS_DETAIL			0x8000000	/**< brushes to be added after vis leafs. */
-#define	CONTENTS_TRANSLUCENT		0x10000000	/**< auto set if any surface has trans. */
+#define	CONTENTS_TRANSLUCENT	0x10000000	/**< auto set if any surface has trans. */
 #define	CONTENTS_LADDER			0x20000000
 #define CONTENTS_HITBOX			0x40000000	/**< use accurate hitboxes on trace. */
 
 /**
  * @section Trace masks.
  */
-#define	MASK_ALL			(0xFFFFFFFF)
-#define	MASK_SOLID			(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) 			/**< everything that is normally solid */
+#define	MASK_ALL				(0xFFFFFFFF)
+#define	MASK_SOLID				(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) 			/**< everything that is normally solid */
 #define	MASK_PLAYERSOLID		(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_PLAYERCLIP|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) 	/**< everything that blocks player movement */
 #define	MASK_NPCSOLID			(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTERCLIP|CONTENTS_WINDOW|CONTENTS_MONSTER|CONTENTS_GRATE) /**< blocks npc movement */
-#define	MASK_WATER			(CONTENTS_WATER|CONTENTS_MOVEABLE|CONTENTS_SLIME) 							/**< water physics in these contents */
-#define	MASK_OPAQUE			(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_OPAQUE) 							/**< everything that blocks line of sight for AI, lighting, etc */
-#define MASK_OPAQUE_AND_NPCS		(MASK_OPAQUE|CONTENTS_MONSTER)										/**< everything that blocks line of sight for AI, lighting, etc, but with monsters added. */
+#define	MASK_WATER				(CONTENTS_WATER|CONTENTS_MOVEABLE|CONTENTS_SLIME) 							/**< water physics in these contents */
+#define	MASK_OPAQUE				(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_OPAQUE) 							/**< everything that blocks line of sight for AI, lighting, etc */
+#define MASK_OPAQUE_AND_NPCS	(MASK_OPAQUE|CONTENTS_MONSTER)										/**< everything that blocks line of sight for AI, lighting, etc, but with monsters added. */
 #define	MASK_VISIBLE			(MASK_OPAQUE|CONTENTS_IGNORE_NODRAW_OPAQUE) 								/**< everything that blocks line of sight for players */
-#define MASK_VISIBLE_AND_NPCS		(MASK_OPAQUE_AND_NPCS|CONTENTS_IGNORE_NODRAW_OPAQUE) 							/**< everything that blocks line of sight for players, but with monsters added. */
-#define	MASK_SHOT			(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_HITBOX) 	/**< bullets see these as solid */
+#define MASK_VISIBLE_AND_NPCS	(MASK_OPAQUE_AND_NPCS|CONTENTS_IGNORE_NODRAW_OPAQUE) 							/**< everything that blocks line of sight for players, but with monsters added. */
+#define	MASK_SHOT				(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_HITBOX) 	/**< bullets see these as solid */
 #define MASK_SHOT_HULL			(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_MONSTER|CONTENTS_WINDOW|CONTENTS_DEBRIS|CONTENTS_GRATE) 	/**< non-raycasted weapons see this as solid (includes grates) */
 #define MASK_SHOT_PORTAL		(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW) 							/**< hits solids (not grates) and passes through everything else */
-#define MASK_SOLID_BRUSHONLY		(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_GRATE) 					/**< everything normally solid, except monsters (world+brush only) */
+#define MASK_SOLID_BRUSHONLY	(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_GRATE) 					/**< everything normally solid, except monsters (world+brush only) */
 #define MASK_PLAYERSOLID_BRUSHONLY	(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_PLAYERCLIP|CONTENTS_GRATE) 			/**< everything normally solid for player movement, except monsters (world+brush only) */
-#define MASK_NPCSOLID_BRUSHONLY		(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) 			/**< everything normally solid for npc movement, except monsters (world+brush only) */
+#define MASK_NPCSOLID_BRUSHONLY	(CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) 			/**< everything normally solid for npc movement, except monsters (world+brush only) */
 #define MASK_NPCWORLDSTATIC		(CONTENTS_SOLID|CONTENTS_WINDOW|CONTENTS_MONSTERCLIP|CONTENTS_GRATE) 					/**< just the world, used for route rebuilding */
-#define MASK_SPLITAREAPORTAL		(CONTENTS_WATER|CONTENTS_SLIME) 									/**< These are things that can split areaportals */
+#define MASK_SPLITAREAPORTAL	(CONTENTS_WATER|CONTENTS_SLIME) 									/**< These are things that can split areaportals */
 
 /**
  * @endsection
@@ -110,21 +110,34 @@ enum RayType
 	RayType_Infinite	/**< The trace ray will go from the start position to infinity using a direction vector. */
 };
 
-/**
- * Called on entity filtering.
- *
- * @param entity		Entity index.
- * @param contentsMask		Contents Mask.
- * @return			True to allow the current entity to be hit, otherwise false.
- */
-functag TraceEntityFilter bool:public(entity, contentsMask);
+funcenum TraceEntityFilter
+{
+	/**
+	 * Called on entity filtering.
+	 *
+	 * @param entity		Entity index.
+ 	 * @param contentsMask	Contents Mask.
+ 	 * @return				True to allow the current entity to be hit, otherwise false.
+ 	 */
+	bool:public(entity, contentsMask),
+	
+	/**
+	 * Called on entity filtering.
+	 *
+	 * @param entity		Entity index.
+ 	 * @param contentsMask	Contents Mask.
+ 	 * @param data			Data value, if used.
+ 	 * @return				True to allow the current entity to be hit, otherwise false.
+ 	 */
+	bool:public(entity, contentsMask, any:data),
+};
 
 /**
  * Get the contents mask and the entity index at the given position.
  *
  * @param pos			World position to test.
  * @param entindex		Entity index found at the given position (by reference).
- * @return			Contents mask.
+ * @return				Contents mask.
  */
 native TR_GetPointContents(const Float:pos[3], &entindex=-1);
 
@@ -133,7 +146,7 @@ native TR_GetPointContents(const Float:pos[3], &entindex=-1);
  *
  * @param entindex		Entity index to test.
  * @param pos			World position.
- * @return			Contents mask.
+ * @return				Contents mask.
  */
 native TR_GetPointContentsEnt(entindex, const Float:pos[3]);
 
@@ -151,14 +164,23 @@ native TR_TraceRay(const Float:pos[3], const Float:vec[3], flags, RayType:rtype)
 /**
  * Starts up a new trace ray using a global trace result and a customized trace ray filter.
  *
+ * Calling TR_TraceRayFilter or TR_TraceRayFilterEx from inside a filter function is 
+ * currently not allowed and may not work.
+ *
  * @param pos			Starting position of the ray.
  * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @param filter		Function to use as a filter.
+ * @param data			Arbitrary data value to pass through to the filter function.
  * @noreturn
  */
-native TR_TraceRayFilter(const Float:pos[3], const Float:vec[3], flags, RayType:rtype, TraceEntityFilter:filter);
+native TR_TraceRayFilter(const Float:pos[3],
+						 const Float:vec[3],
+						 flags,
+						 RayType:rtype,
+						 TraceEntityFilter:filter,
+						 any:data=0);
 
 /**
  * Starts up a new trace ray using a new trace result.
@@ -167,30 +189,37 @@ native TR_TraceRayFilter(const Float:pos[3], const Float:vec[3], flags, RayType:
  * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
- * @return			Ray trace handle.
- * @note Traces are closed with CloseHandle().
+ * @return				Ray trace handle, which must be closed via CloseHandle().
  */
 native Handle:TR_TraceRayEx(const Float:pos[3], const Float:vec[3], flags, RayType:rtype);
 
 /**
  * Starts up a new trace ray using a new trace result and a customized trace ray filter.
  *
+ * Calling TR_TraceRayFilter or TR_TraceRayFilterEx from inside a filter function is 
+ * currently not allowed and may not work.
+ *
  * @param pos			Starting position of the ray.
  * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @param filter		Function to use as a filter.
- * @return			Ray trace handle.
- * @note Traces are closed with CloseHandle().
+ * @param data			Arbitrary data value to pass through to the filter function.
+ * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle:TR_TraceRayFilterEx(const Float:pos[3], const Float:vec[3], flags, RayType:rtype, TraceEntityFilter:filter);
+native Handle:TR_TraceRayFilterEx(const Float:pos[3], 
+								  const Float:vec[3],
+								  flags, 
+								  RayType:rtype, 
+								  TraceEntityFilter:filter,
+								  any:data=0);
 
 /**
  * Returns the time fraction from a trace result (1.0 means no collision).
  *
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @return			Time fraction value of the trace.
- * @error			Invalid Handle.
+ * @return				Time fraction value of the trace.
+ * @error				Invalid Handle.
  */
 native Float:TR_GetFraction(Handle:hndl=INVALID_HANDLE);
 
@@ -200,7 +229,7 @@ native Float:TR_GetFraction(Handle:hndl=INVALID_HANDLE);
  * @param pos			Vector buffer to store data in.
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
  * @noreturn
- * @error			Invalid Handle.
+ * @error				Invalid Handle.
  */
 native TR_GetEndPosition(Float:pos[3], Handle:hndl=INVALID_HANDLE);
 
@@ -208,8 +237,8 @@ native TR_GetEndPosition(Float:pos[3], Handle:hndl=INVALID_HANDLE);
  * Returns the entity index that collided with the trace.
  *
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @return			Entity index or -1 for no collision.
- * @error			Invalid Handle.
+ * @return				Entity index or -1 for no collision.
+ * @error				Invalid Handle.
  */
 native TR_GetEntityIndex(Handle:hndl=INVALID_HANDLE);
 
@@ -217,8 +246,8 @@ native TR_GetEntityIndex(Handle:hndl=INVALID_HANDLE);
  * Returns if there was any kind of collision along the trace ray.
  *
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @return			True if any collision found, otherwise false.
- * @error			Invalid Handle.
+ * @return				True if any collision found, otherwise false.
+ * @error				Invalid Handle.
  */
 native bool:TR_DidHit(Handle:hndl=INVALID_HANDLE);
 
@@ -226,7 +255,7 @@ native bool:TR_DidHit(Handle:hndl=INVALID_HANDLE);
  * Returns in which body hit group the trace collided if any.
  *
  * @param hndl			A trace Handle, or INVALID_HANDLE to use a global trace result.
- * @return			Body hit group.
- * @error			Invalid Handle.
+ * @return				Body hit group.
+ * @error				Invalid Handle.
  */
 native TR_GetHitGroup(Handle:hndl=INVALID_HANDLE);

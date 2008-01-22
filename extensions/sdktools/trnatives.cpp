@@ -41,16 +41,19 @@ public:
 		edict_t *pEdict = gameents->BaseEntityToEdict(reinterpret_cast<CBaseEntity *>(pEntity));
 		m_pFunc->PushCell(engine->IndexOfEdict(pEdict));
 		m_pFunc->PushCell(contentsMask);
+		m_pFunc->PushCell(m_Data);
 		m_pFunc->Execute(&res);
 
 		return (res) ? true : false;
 	}
-	void SetFunctionPtr(IPluginFunction *pFunc)
+	void SetFunctionPtr(IPluginFunction *pFunc, cell_t data)
 	{
 		m_pFunc = pFunc;
+		m_Data = data;
 	}
 private:
 	IPluginFunction *m_pFunc;
+	cell_t m_Data;
 };
 
 /* Used for the global trace version */
@@ -105,13 +108,24 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 {
 	cell_t *startaddr, *endaddr;
 	IPluginFunction *pFunc;
+	cell_t data;
 
 	pFunc = pContext->GetFunctionById(params[5]);
 	if (!pFunc)
 	{
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[5]);
 	}
-	g_SMTraceFilter.SetFunctionPtr(pFunc);
+
+	if (params[0] >= 6)
+	{
+		data = params[6];
+	}
+	else
+	{
+		data = 0;
+	}
+
+	g_SMTraceFilter.SetFunctionPtr(pFunc, data);
 	pContext->LocalToPhysAddr(params[1], &startaddr);
 	pContext->LocalToPhysAddr(params[2], &endaddr);
 
@@ -192,6 +206,7 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 {
 	IPluginFunction *pFunc;
 	cell_t *startaddr, *endaddr;
+	cell_t data;
 
 	pFunc = pContext->GetFunctionById(params[5]);
 	if (!pFunc)
@@ -205,7 +220,16 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 	CSMTraceFilter smfilter;
 	Ray_t ray;
 
-	smfilter.SetFunctionPtr(pFunc);
+	if (params[0] >= 6)
+	{
+		data = params[6];
+	}
+	else
+	{
+		data = 0;
+	}
+
+	smfilter.SetFunctionPtr(pFunc, data);
 	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
 
 	switch (params[4])
