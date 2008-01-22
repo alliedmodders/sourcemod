@@ -302,9 +302,13 @@ native FilePosition(Handle:file);
  * Checks if a file exists.
  *
  * @param path			Path to the file.
+ * @param use_valve_fs	If true, the Valve file system will be used instead.
+ *						This can be used to check for the existance of files 
+ *						inside GCFs or the game cache, rather than solely files 
+ *						that are on disk.
  * @return				True if the file exists, false otherwise.
  */
-native bool:FileExists(const String:path[]);
+native bool:FileExists(const String:path[], bool:use_valve_fs=false);
 
 /**
  * Renames a file.

@@ -288,6 +288,11 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
+	if (params[0] >= 2 && params[2] == 1)
+	{
+		return basefilesystem->FileExists(name) ? 1 : 0;
+	}
+
 	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
