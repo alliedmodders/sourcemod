@@ -64,6 +64,13 @@ public Plugin:myinfo =
 #define CASH		1
 // -------------------------------------------------------------------------------
 
+/**
+ * Fire requires timebomb
+ */
+#if TIMEBOMB == 0 && FIRE == 1
+#error "TimeBomb requires Fire"
+#endif
+
 new Handle:hTopMenu = INVALID_HANDLE;
 
 // Sounds
