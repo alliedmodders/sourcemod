@@ -49,14 +49,16 @@ inline CBaseEntity *GetCBaseEntity(int num, bool isplayer)
 		return NULL;
 	}
 
-	if (num > 0 && num < playerhelpers->GetMaxClients())
+	if (num > 0 && num <= playerhelpers->GetMaxClients())
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(pEdict);
 		if (!pPlayer || !pPlayer->IsConnected())
 		{
 			return NULL;
 		}
-	} else if (isplayer) {
+	}
+	else if (isplayer) 
+	{
 		return NULL;
 	}
 
