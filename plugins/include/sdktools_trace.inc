@@ -259,3 +259,13 @@ native bool:TR_DidHit(Handle:hndl=INVALID_HANDLE);
  * @error				Invalid Handle.
  */
 native TR_GetHitGroup(Handle:hndl=INVALID_HANDLE);
+
+/**
+ * Find the normal vector to the collison plane of a trace.
+ *
+ * @param hndl		A trace Handle, or INVALID_HANDLE to use a global trace result.
+ * @param normal	Vector buffer to store the vector normal to the collision plane
+ * @noreturn
+ * @error			Invalid Handle
+ */
+native TR_GetPlaneNormal(Handle:hndl=INVALID_HANDLE, Float:normal[3]);

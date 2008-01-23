@@ -283,6 +283,31 @@ static cell_t smn_TRGetFraction(IPluginContext *pContext, const cell_t *params)
 	return sp_ftoc(tr->fraction);
 }
 
+static cell_t smn_TRGetPlaneNormal(IPluginContext *pContext, const cell_t *params)
+{
+	trace_t *tr;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if (params[1] == BAD_HANDLE)
+	{
+		tr = &g_Trace;
+	} else if ((err = handlesys->ReadHandle(params[1], g_TraceHandle, &sec, (void **)&tr)) != HandleError_None) {
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	Vector *normal = &tr->plane.normal;
+
+	cell_t *r;
+	pContext->LocalToPhysAddr(params[2], &r);
+	r[0] = sp_ftoc(normal->x);
+	r[1] = sp_ftoc(normal->y);
+	r[2] = sp_ftoc(normal->z);
+
+	return 1;
+}
+
+
 static cell_t smn_TRGetEndPosition(IPluginContext *pContext, const cell_t *params)
 {
 	trace_t *tr;
@@ -414,5 +439,6 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_GetPointContentsEnt",	smn_TRGetPointContentsEnt},
 	{"TR_TraceRayFilter",		smn_TRTraceRayFilter},
 	{"TR_TraceRayFilterEx",		smn_TRTraceRayFilterEx},
+	{"TR_GetPlaneNormal",		smn_TRGetPlaneNormal},
 	{NULL,						NULL}
 };
