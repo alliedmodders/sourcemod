@@ -268,4 +268,5 @@ native TR_GetHitGroup(Handle:hndl=INVALID_HANDLE);
  * @noreturn
  * @error			Invalid Handle
  */
-native TR_GetPlaneNormal(Handle:hndl=INVALID_HANDLE, Float:normal[3]);
+native TR_GetPlaneNormal(Handle:hndl, Float:normal[3]);
+
