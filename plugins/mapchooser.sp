@@ -53,11 +53,8 @@ new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
 new Handle:g_Cvar_StartTime = INVALID_HANDLE;
 new Handle:g_Cvar_StartRounds = INVALID_HANDLE;
 new Handle:g_Cvar_StartFrags = INVALID_HANDLE;
-new Handle:g_Cvar_ExtendTimeMax = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendTimeStep = INVALID_HANDLE;
-new Handle:g_Cvar_ExtendRoundMax = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendRoundStep = INVALID_HANDLE;
-new Handle:g_Cvar_ExtendFragMax = INVALID_HANDLE;
 new Handle:g_Cvar_ExtendFragStep = INVALID_HANDLE;
 new Handle:g_Cvar_Mapfile = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
@@ -74,6 +71,7 @@ new Handle:g_NextMapList = INVALID_HANDLE;
 new Handle:g_TeamScores = INVALID_HANDLE;
 new Handle:g_VoteMenu = INVALID_HANDLE;
 
+new g_Extends;
 new g_TotalRounds;
 new bool:g_HasVoteStarted;
 new g_mapFileTime;
@@ -92,17 +90,14 @@ public OnPluginStart()
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
 	g_Cvar_StartRounds = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining.", _, true, 1.0);
 	g_Cvar_StartFrags = CreateConVar("sm_mapvote_startfrags", "5.0", "Specifies when to start the vote base on frags remaining.", _, true, 1.0);
-	g_Cvar_ExtendTimeMax = CreateConVar("sm_extendmap_maxtime", "90", "Specifies the maximum amount of time a map can be extended", _, true, 0.0);
 	g_Cvar_ExtendTimeStep = CreateConVar("sm_extendmap_timestep", "15", "Specifies how much many more minutes each extension makes", _, true, 5.0);
-	g_Cvar_ExtendRoundMax = CreateConVar("sm_extendmap_maxrounds", "30", "Specfies the maximum amount of rounds a map can be extended", _, true, 0.0);
 	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 5.0);
-	g_Cvar_ExtendFragMax = CreateConVar("sm_extendmap_maxfrags", "150", "Specfies the maximum frags allowed that a map can be extended.", _, true, 0.0);
 	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
 	g_Cvar_Mapfile = CreateConVar("sm_mapvote_file", "configs/maps.ini", "Map file to use. (Def sourcemod/configs/maps.ini)");
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
 	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
 	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
-	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "1", "Specifies whether or not MapChooser will allow the map to be extended.", _, true, 0.0, true, 1.0);
+	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
 
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 
@@ -147,6 +142,8 @@ public OnConfigsExecuted()
 	
 	g_TeamScores = CreateArray(2);
 	g_TotalRounds = 0;
+	
+	g_Extends = 0;
 }
 
 public OnMapEnd()
@@ -334,33 +331,9 @@ InitiateVote()
 		AddMenuItem(g_VoteMenu, map, map);
 	}
 
-	if (GetConVarBool(g_Cvar_Extend))
+	if (GetConVarBool(g_Cvar_Extend) && g_Extends < GetConVarInt(g_Cvar_Extend))
 	{
-		new bool:allowExtend, time;
-		if (GetMapTimeLimit(time) && time > 0 && time < GetConVarInt(g_Cvar_ExtendTimeMax))
-		{
-			allowExtend = true;
-		}
-
-		if (g_Cvar_Winlimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Winlimit) < GetConVarInt(g_Cvar_ExtendRoundMax))
-		{
-			allowExtend = true;
-		}	
-	
-		if (g_Cvar_Maxrounds != INVALID_HANDLE && GetConVarInt(g_Cvar_Maxrounds) < GetConVarInt(g_Cvar_ExtendRoundMax))
-		{
-			allowExtend = true;
-		}
-	
-		if (g_Cvar_Fraglimit != INVALID_HANDLE && GetConVarInt(g_Cvar_Fraglimit) < GetConVarInt(g_Cvar_ExtendFragMax))
-		{
-			allowExtend = true;
-		}
-
-		if (allowExtend)
-		{
-			AddMenuItem(g_VoteMenu, VOTE_EXTEND, "Extend Map");
-		}
+		AddMenuItem(g_VoteMenu, VOTE_EXTEND, "Extend Map");
 	}
 
 	SetMenuExitButton(g_VoteMenu, false);
@@ -445,6 +418,8 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 
 			if (strcmp(map, VOTE_EXTEND, false) == 0)
 			{
+				g_Extends++;
+				
 				new time;
 				if (GetMapTimeLimit(time))
 				{
