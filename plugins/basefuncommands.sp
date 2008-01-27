@@ -51,9 +51,9 @@ public Plugin:myinfo =
 // Set any of these to 0 and recompile to completely disable those commands
 // -------------------------------------------------------------------------------
 #define BEACON		1
-#define TIMEBOMB	0
+#define TIMEBOMB	1
 #define FIRE		1
-#define ICE			1
+#define ICE		1
 #define GRAVITY		1
 #define BLIND		1
 #define NOCLIP		1
@@ -63,13 +63,6 @@ public Plugin:myinfo =
 #define COLORS		1
 #define CASH		1
 // -------------------------------------------------------------------------------
-
-/**
- * Fire requires timebomb
- */
-#if TIMEBOMB == 0 && FIRE == 1
-#error "FIRE requires TIMEBOMB"
-#endif
 
 new Handle:hTopMenu = INVALID_HANDLE;
 

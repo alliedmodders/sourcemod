@@ -190,7 +190,7 @@ public Action:Timer_FireBomb(Handle:timer, any:client)
 		
 		if (GetConVarInt(g_FireBombMode) > 0)
 		{
-			new teamOnly = ((GetConVarInt(g_TimeBombMode) == 1) ? true : false);
+			new teamOnly = ((GetConVarInt(g_FireBombMode) == 1) ? true : false);
 			new maxClients = GetMaxClients();
 			
 			for (new i = 1; i < maxClients; i++)
@@ -216,7 +216,7 @@ public Action:Timer_FireBomb(Handle:timer, any:client)
 				}
 				
 				new Float:duration = GetConVarFloat(g_BurnDuration);
-				duration *= (GetConVarFloat(g_TimeBombRadius) - distance) / GetConVarFloat(g_TimeBombRadius);
+				duration *= (GetConVarFloat(g_FireBombRadius) - distance) / GetConVarFloat(g_FireBombRadius);
 
 				IgniteEntity(i, duration);
 			}		
