@@ -423,7 +423,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				new time;
 				if (GetMapTimeLimit(time))
 				{
-					if (time > 0 && time < GetConVarInt(g_Cvar_ExtendTimeMax))
+					if (time > 0)
 					{
 						ExtendMapTimeLimit(GetConVarInt(g_Cvar_ExtendTimeStep)*60);						
 					}
@@ -432,7 +432,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				if (g_Cvar_Winlimit != INVALID_HANDLE)
 				{
 					new winlimit = GetConVarInt(g_Cvar_Winlimit);
-					if (winlimit && winlimit < GetConVarInt(g_Cvar_ExtendRoundMax))
+					if (winlimit)
 					{
 						SetConVarInt(g_Cvar_Winlimit, winlimit + GetConVarInt(g_Cvar_ExtendRoundStep));
 					}					
@@ -441,7 +441,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				if (g_Cvar_Maxrounds != INVALID_HANDLE)
 				{
 					new maxrounds = GetConVarInt(g_Cvar_Maxrounds);
-					if (maxrounds && maxrounds < GetConVarInt(g_Cvar_ExtendRoundMax))
+					if (maxrounds)
 					{
 						SetConVarInt(g_Cvar_Maxrounds, maxrounds + GetConVarInt(g_Cvar_ExtendRoundStep));
 					}
@@ -450,7 +450,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 				if (g_Cvar_Fraglimit != INVALID_HANDLE)
 				{
 					new fraglimit = GetConVarInt(g_Cvar_Fraglimit);
-					if (fraglimit && fraglimit < GetConVarInt(g_Cvar_ExtendFragMax))
+					if (fraglimit)
 					{
 						SetConVarInt(g_Cvar_Fraglimit, fraglimit + GetConVarInt(g_Cvar_ExtendFragStep));						
 					}
