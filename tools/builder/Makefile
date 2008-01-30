@@ -1,4 +1,4 @@
-CS = /usr/mono/bin/mcs
+CS = mcs
 NAME = builder
 BINARY = $(NAME).exe
 
