@@ -36,7 +36,7 @@ else
 	CPPFLAGS += $(OPT_CPP_FLAGS)
 endif
 
-CFLAGS += -DLINUX -DNDEBUG -DHAVE_STDINT_H -DAMX_ANSIONLY -DENABLE_BINRELOC
+CFLAGS += -DLINUX -DNDEBUG -DHAVE_STDINT_H -DAMX_ANSIONLY -DENABLE_BINRELOC -m32
 CPPFLAGS += -Wno-deprecated -fno-exceptions -fno-rtti
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
@@ -53,7 +53,7 @@ all:
 	$(MAKE) spcomp
 
 spcomp: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -m32 -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug: 
 	$(MAKE) all DEBUG=true
