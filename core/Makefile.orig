@@ -1,7 +1,7 @@
 #(C)2004-2006 SourceMM Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMM_BASE = ../../sourcemm-1.4.2
+SMM_BASE = ../../sourcemm-1.4
 HL2SDK = ../../hl2sdk
 SMSDK = ..
 SRCDS = ~/srcds
@@ -58,7 +58,10 @@ endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
 
-CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER
+CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp \
+	-Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca \
+	-Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse \
+	-DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER -m32
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ifeq "$(GCC_VERSION)" "4"
@@ -85,7 +88,7 @@ all:
 	$(MAKE) -f Makefile.orig sourcemod
 
 sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug:	
 	$(MAKE) -f Makefile.orig all DEBUG=true

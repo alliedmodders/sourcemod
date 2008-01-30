@@ -3,7 +3,7 @@
 
 SMSDK = ../..
 SRCDS = ~/srcds
-SOURCEMM = ../../../sourcemm
+SOURCEMM = ../../../sourcemm-1.6
 HL2SDK = ../../../hl2sdk
 
 #####################################
@@ -36,7 +36,10 @@ INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2
           -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(SOURCEMM) -I$(SOURCEMM)/sourcehook -I$(SOURCEMM)/sourcemm \
 	  -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
 
-CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch -Wno-unused -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -Wno-uninitialized
+CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp \
+	-Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca \
+	-Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch -Wno-unused -fPIC -mfpmath=sse -msse \
+	-DSOURCEMOD_BUILD -DHAVE_STDINT_H -Wno-uninitialized -m32
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
@@ -71,7 +74,7 @@ all:
 	$(MAKE) extension
 
 extension: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) $(OBJ_LINUX) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) all DEBUG=true
