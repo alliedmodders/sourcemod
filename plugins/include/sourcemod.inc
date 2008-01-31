@@ -85,9 +85,12 @@ struct Plugin
 public Plugin:myinfo;
  
 /**
- * Called when the plugin is fully initialized and all known external references are resolved.
- * This is called even if the plugin type is "private."
- * @note Errors in this function will cause the plugin to stop running.
+ * Called when the plugin is fully initialized and all known external references 
+ * are resolved. This is only called once in the lifetime of the plugin, and is 
+ * paired with OnPluginEnd().
+ *
+ * If any run-time error is thrown during this callback, the plugin will be marked 
+ * as failed.
  *
  * @noreturn
  */
@@ -101,6 +104,9 @@ forward OnPluginStart();
  * 
  * @note It is not safe to call externally resolved natives until OnPluginStart().
  * @note Any sort of RTE in this function will cause the plugin to fail loading.
+ * @note You MUST remember to return SOMETHING here.  The act of not returning is 
+ *       equivalent to returning 0 (false).  If you forgot to return, it will 
+ *       cause your plugin to not load with a very strange error message.
  *
  * @param myself	Handle to the plugin.
  * @param late		Whether or not the plugin was loaded "late" (after map load).
