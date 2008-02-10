@@ -37,7 +37,7 @@
 			"game"		"ship"
 			"game"		"!Dystopia"
 			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
+			"game"		"pvkii"
 			"game"		"!SourceForts v1.9.2"
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
@@ -98,7 +98,7 @@
 			"game"		"ship"
 			"game"		"!Dystopia"
 			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
+			"game"		"pvkii"
 			"game"		"!SourceForts v1.9.2"
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
@@ -150,7 +150,7 @@
 			"game"		"hl2mp"
 			"game"		"ship"
 			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
+			"game"		"pvkii"
 			"game"		"!SourceForts v1.9.2"
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
@@ -201,7 +201,7 @@
 			"game"		"dod"
 			"game"		"hl2mp"
 			"game"		"!Insurgency"
-			"game"		"!Pirates, Vikings and Knights II"
+			"game"		"pvkii"
 			"game"		"$SourceForts v1.9.3"
 			"game"		"FortressForever"
 			"game"		"empires"
@@ -766,7 +766,7 @@
 	}
 
 	/* Pirates, Vikings and Knights II */
-	"!Pirates, Vikings and Knights II"
+	"pvkii"
 	{
 		"Offsets"
 		{

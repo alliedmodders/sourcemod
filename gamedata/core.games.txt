@@ -55,6 +55,7 @@
 			"game"		"insurgency"
 			"game"		"Insurgency"
 			"game"		"tf"
+			"game"		"pvkii"
 		}
 
 		"Keys"
