@@ -31,7 +31,11 @@
 
 #include "sm_globals.h"
 #include <vector.h>
-#include <mathlib/math_base.h>
+#if defined ORANGEBOX_BUILD
+#include <mathlib.h>
+#else
+#include <math_base.h>
+#endif
 
 #define SET_VECTOR(addr, vec) \
 	addr[0] = sp_ftoc(vec.x); \
@@ -180,16 +184,6 @@ static cell_t NormalizeVector(IPluginContext *pContext, const cell_t *params)
 
 	return sp_ftoc(length);
 }
-
-//:TODO: OMG remove this when we get the OB SDK!!1
-// as well as bitbuf.cpp (i write it here just to remind it)
-#if defined ORANGEBOX_BUILD && !defined __linux__
-float ham(float _X)
-{
-	return sqrt(_X); 
-}
-float (*pfSqrt)(float x)  = ham;
-#endif
 
 REGISTER_NATIVES(vectorNatives)
 {
