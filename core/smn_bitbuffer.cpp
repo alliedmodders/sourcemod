@@ -651,6 +651,25 @@ static cell_t smn_BfReadAngles(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t smn_BfGetNumBytesLeft(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	bf_read *pBitBuf;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_RdBitBufType, &sec, (void **)&pBitBuf))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
+	}
+
+	return pBitBuf->GetNumBitsLeft() >> 3;
+}
+
 REGISTER_NATIVES(bitbufnatives)
 {
 	{"BfWriteBool",				smn_BfWriteBool},
@@ -681,5 +700,6 @@ REGISTER_NATIVES(bitbufnatives)
 	{"BfReadVecCoord",			smn_BfReadVecCoord},
 	{"BfReadVecNormal",			smn_BfReadVecNormal},
 	{"BfReadAngles",			smn_BfReadAngles},
+	{"BfGetNumBytesLeft",		smn_BfGetNumBytesLeft},
 	{NULL,						NULL}
 };

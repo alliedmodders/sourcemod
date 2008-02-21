@@ -314,3 +314,12 @@ native BfReadVecNormal(Handle:bf, Float:vec[3]);
  * @error				Invalid or incorrect Handle.
  */
 native BfReadAngles(Handle:bf, Float:angles[3]);
+
+/**
+ * Returns the number of bytes left in a readable bitbuffer (bf_read).
+ *
+ * @param bf			bf_read handle to read from.
+ * @return				Number of bytes left unread.
+ * @error				Invalid or incorrect Handle.
+ */
+native BfGetNumBytesLeft(Handle:bf);
