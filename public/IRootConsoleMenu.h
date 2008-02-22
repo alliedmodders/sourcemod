@@ -36,12 +36,12 @@
  * @file IRootConsoleMenu.h
  * @brief Defines the interface for adding options to the "sm" console command.
  *
- *  This interface is not yet exported.  It will be eventually.  The initial reason should 
- * be obvious: we do not want users actually touching it.  If we exposed this, every little 
- * plugin would be dropping down a silly set of user commands, and exploiting/cluttering the menu.
- * Since this menu is explicitly provided for stuff that only Core itself is capable of managing,
- * we won't expose it until a legitimate reason comes up.
+ * You must be using the compat_wrappers.h header file to use this on 
+ * Original/Episode1 builds.  
  */
+
+#define SMINTERFACE_ROOTCONSOLE_NAME			"IRootConsole"
+#define SMINTERFACE_ROOTCONSOLE_VERSION			1
 
 class CCommand;
 
@@ -59,7 +59,7 @@ namespace SourceMod
 	/**
 	 * @brief Manages the root console menu - the "sm" command for servers.
 	 */
-	class IRootConsole
+	class IRootConsole : public SMInterface
 	{
 	public:
 		/**

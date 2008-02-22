@@ -59,6 +59,9 @@ class RootConsoleMenu :
 public:
 	RootConsoleMenu();
 	~RootConsoleMenu();
+public:
+	const char *GetInterfaceName();
+	unsigned int GetInterfaceVersion();
 public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pCommand);
 public: //SMGlobalClass

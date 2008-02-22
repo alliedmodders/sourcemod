@@ -35,6 +35,7 @@
 #include "HandleSys.h"
 #include "CoreConfig.h"
 #include "ConVarManager.h"
+#include "ShareSys.h"
 
 RootConsoleMenu g_RootMenu;
 
@@ -82,6 +83,7 @@ void RootConsoleMenu::OnSourceModStartup(bool late)
 void RootConsoleMenu::OnSourceModAllInitialized()
 {
 	g_ConVarManager.AddConVarChangeListener("hostname", &s_HostnameChangeDetector);
+	g_ShareSys.AddInterface(NULL, this);
 }
 
 void RootConsoleMenu::OnSourceModShutdown()
@@ -213,6 +215,16 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
 		ConsolePrint("%s", buffer);
 	}
+}
+
+const char *RootConsoleMenu::GetInterfaceName()
+{
+	return SMINTERFACE_ROOTCONSOLE_NAME;
+}
+
+unsigned int RootConsoleMenu::GetInterfaceVersion()
+{
+	return SMINTERFACE_ROOTCONSOLE_VERSION;
 }
 
 extern void _IntExt_EnableYams();
