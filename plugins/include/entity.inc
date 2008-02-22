@@ -67,6 +67,11 @@ enum PropFieldType
 	PropField_Entity,			/**< Valid for Data fields only (SendProp shows as int) */
 	PropField_Vector,			/**< Valid for SendProp and Data fields */
 	PropField_String,			/**< Valid for SendProp and Data fields */
+	PropField_String_T,			/**< Valid for Data fields.  Read only.  
+									 Note that the size of a string_t is dynamic, and 
+									 thus FindDataMapOffs() will return the constant size 
+									 of the string_t container (which is 32 bits right now).
+								 */
 };
 
 /**
@@ -619,6 +624,9 @@ native GetEntPropString(entity, PropType:type, const String:prop[], String:buffe
 
 /**
  * Sets a network property as a string.
+ *
+ * This cannot set property fields of type PropField_String_T (such as "m_target").
+ * To set such fields, you should use DispatchKeyValue() from SDKTools.
  * 
  * @param entity		Edict index.
  * @param type			Property type.

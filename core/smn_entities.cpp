@@ -52,6 +52,7 @@ enum PropFieldType
 	PropField_Entity,			/**< Valid for Data fields only (SendProp shows as int) */
 	PropField_Vector,			/**< Valid for SendProp and Data fields */
 	PropField_String,			/**< Valid for SendProp and Data fields */
+	PropField_String_T,			/**< Valid for Data fields.  Read only! */
 };
 
 inline edict_t *GetEdict(cell_t num)
@@ -793,6 +794,12 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 					*pType = PropField_String;
 					*pSize = 8 * td->fieldSize;
 				}
+				break;
+			}
+		case FIELD_STRING:
+			{
+				*pSize = sizeof(string_t);
+				*pType = PropField_String_T;
 				break;
 			}
 		case FIELD_FLOAT:
@@ -1580,6 +1587,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	int offset;
 	const char *class_name;
 	edict_t *pEdict;
+	bool bIsStringIndex;
 	
 	pEdict = GetEntity(params[1], &pEntity);
 
@@ -1595,6 +1603,8 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[3], &prop);
 
+	bIsStringIndex = false;
+
 	switch (params[2])
 	{
 	case Prop_Data:
@@ -1603,13 +1613,16 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			
 			FIND_PROP_DATA(td);
 
-			if (td->fieldType != FIELD_CHARACTER)
+			if (td->fieldType != FIELD_CHARACTER
+				&& td->fieldType != FIELD_STRING)
 			{
 				return pContext->ThrowNativeError("Data field %s is not a string (%d != %d)", 
 					prop,
 					td->fieldType,
 					FIELD_CHARACTER);
 			}
+
+			bIsStringIndex = (td->fieldType == FIELD_STRING);
 
 			offset = td->fieldOffset[TD_OFFSET_NORMAL];
 			break;
@@ -1639,7 +1652,20 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	}
 
 	size_t len;
-	char *src = (char *)((uint8_t *)pEntity + offset);
+	const char *src; 
+	
+	if (!bIsStringIndex)
+	{
+		src = (char *)((uint8_t *)pEntity + offset);
+	}
+	else
+	{
+		string_t idx;
+
+		idx = *(string_t *)((uint8_t *)pEntity + offset);
+		src = (idx == NULL_STRING) ? "" : STRING(idx);
+	}
+
 	pContext->StringToLocalUTF8(params[4], params[5], src, &len);
 
 	return len;
