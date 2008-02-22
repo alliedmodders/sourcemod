@@ -49,25 +49,25 @@ namespace builder
 				File.Delete(binpath);
 			}
 
-			string makefile_name = "Makefile";
+			string makefile_args = null;
 
 			if (lib.build_mode == BuildMode.BuildMode_Episode1)
 			{
-				makefile_name = "Makefile.ep1";
+				makefile_args = null;
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
 			{
-				makefile_name = "Makefile.ep2";
+				makefile_args = "ENGINE=\"orangebox\"";
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
-				makefile_name = "Makefile.orig";
+				makefile_args = "ENGINE=\"original\"";
 			}
 
 			/* Clean the project first */
 			info.WorkingDirectory = path;
 			info.FileName = cfg.builder_path;
-			info.Arguments = "-f " + makefile_name + " clean";
+			info.Arguments = makefile_args + " clean";
 			info.UseShellExecute = false;
 
 			Process p = Process.Start(info);
@@ -77,7 +77,7 @@ namespace builder
 			/* Now build it */
 			info.WorkingDirectory = path;
 			info.FileName = cfg.builder_path;
-			info.Arguments = "-f " + makefile_name;
+			info.Arguments = makefile_args + " clean";
 			info.UseShellExecute = false;
 
 			if (cfg.build_options != null)
