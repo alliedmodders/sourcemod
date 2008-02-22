@@ -1552,5 +1552,112 @@
 			}
 		}
 	}
+	
+	/* Zombie Panic! Source 1.2b 
+	 * Note: This mod is not fully supported yet. 
+	 * The definitions below were supplied by a third party.
+	 */
+	"$Zombie Panic! Source"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"333"
+				"linux"		"334"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Ignite"
+			{
+				"windows"	"190"
+				"linux"		"191"
+			}
+			"Extinguish"
+			{
+				"windows"	"191"
+				"linux"		"192"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"361"
+				"linux"		"362"
+			}
+			"GetVelocity"
+			{
+				"windows"	"128"
+				"linux"		"129"
+			}
+			"EyeAngles"
+			{
+				"windows"	"120"
+				"linux"		"121"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+				"linux"		"32"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+		}
+		"Signatures"
+		{
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2C\x6A\x01"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x2A\x2A\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xC1\xE0\x04\x8B\x2A\x2A\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x2A\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x2A\x39"								
+				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x2A\x57\x8B\x7C\x24\x2A\x83\xFE\xFF\x74\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x2A\x56\xFF\xD2"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x2A\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x60\x8B\xCB"
+			} 
+		}
+	}
 }
 
