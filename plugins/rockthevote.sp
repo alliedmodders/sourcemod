@@ -45,7 +45,6 @@ public Plugin:myinfo =
 };
 
 new Handle:g_Cvar_Needed = INVALID_HANDLE;
-new Handle:g_Cvar_File = INVALID_HANDLE;
 new Handle:g_Cvar_Maps = INVALID_HANDLE;
 new Handle:g_Cvar_Nominate = INVALID_HANDLE;
 new Handle:g_Cvar_MinPlayers = INVALID_HANDLE;
@@ -54,7 +53,7 @@ new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_RTVMapList = INVALID_HANDLE;
 new Handle:g_MapMenu = INVALID_HANDLE;
 new Handle:g_RetryTimer = INVALID_HANDLE;
-new g_mapFileTime;
+new g_mapFileSerial = -1;
 
 new bool:g_CanRTV = false;		// True if RTV loaded maps and is active.
 new bool:g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
@@ -76,7 +75,6 @@ public OnPluginStart()
 	g_RTVMapList = CreateArray(arraySize);
 	
 	g_Cvar_Needed = CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
-	g_Cvar_File = CreateConVar("sm_rtv_file", "configs/maps.ini", "Map file to use. (Def configs/maps.ini)");
 	g_Cvar_Maps = CreateConVar("sm_rtv_maps", "4", "Number of maps to be voted on. 2 to 6. (Def 4)", 0, true, 2.0, true, 6.0);
 	g_Cvar_Nominate = CreateConVar("sm_rtv_nominate", "1", "Enables nomination system.", 0, true, 0.0, true, 1.0);
 	g_Cvar_MinPlayers = CreateConVar("sm_rtv_minplayers", "0", "Number of players required before RTV will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
@@ -111,12 +109,21 @@ public OnConfigsExecuted()
 		ClearArray(g_RTVMapList);
 	}
 	
-	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_File))
+	if (ReadMapList(g_MapList,
+					g_mapFileSerial,
+					"rockthevote",
+					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
+		== INVALID_HANDLE)
 	{
-		BuildMapMenu();
-		g_CanRTV = true;
-		CreateTimer(30.0, Timer_DelayRTV);
+		if (g_mapFileSerial == -1)
+		{
+			LogError("Unable to create a valid map list.");
+		}
 	}
+	
+	BuildMapMenu();
+	g_CanRTV = true;
+	CreateTimer(30.0, Timer_DelayRTV);
 }
 
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)

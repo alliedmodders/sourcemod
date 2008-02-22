@@ -202,6 +202,10 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
 }
 
 /**
+ * This function is no longer supported.  It has been replaced with ReadMapList(), 
+ * which uses a more unified caching and configuration mechanism.  This function also 
+ * has a bug where if the cvar contents changes, the fileTime change won't be recognized.
+ * 
  * Loads a specified array with maps. The maps will be either loaded from mapcyclefile, or if supplied
  * a cvar containing a file name. If the file in the cvar is bad, it will use mapcyclefile. The fileTime
  * parameter is used to store a timestamp of the file. If specified, the file will only be reloaded if it
@@ -210,8 +214,9 @@ stock FindTarget(client, const String:target[], bool:nobots = false, bool:immuni
  * @param array		Valid array handle, should be created with CreateArray(33) or larger. 
  * @param fileTime	Variable containing the "last changed" time of the file. Used to avoid needless reloading.
  * @param fileCvar	CVAR set to the file to be loaded. Optional.
- * @return		Number of maps loaded or 0 if in error.
+ * @return			Number of maps loaded or 0 if in error.
  */
+#pragma deprecated Use ReadMapList() instead. 
  stock LoadMaps(Handle:array, &fileTime = 0, Handle:fileCvar = INVALID_HANDLE)
  { 
  	decl String:mapPath[256], String:mapFile[64];

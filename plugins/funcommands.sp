@@ -40,9 +40,9 @@
 
 public Plugin:myinfo =
 {
-	name = "Basic Fun Commands",
+	name = "Fun Commands",
 	author = "AlliedModders LLC",
-	description = "Basic Fun Commands",
+	description = "Fun Commands",
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
 };
@@ -53,7 +53,7 @@ public Plugin:myinfo =
 #define BEACON		1
 #define TIMEBOMB	1
 #define FIRE		1
-#define ICE		1
+#define ICE			1
 #define GRAVITY		1
 #define BLIND		1
 #define NOCLIP		1
@@ -71,7 +71,7 @@ new Handle:hTopMenu = INVALID_HANDLE;
 #define SOUND_BEEP		"buttons/button17.wav"
 #define SOUND_FINAL		"weapons/cguard/charging.wav"
 #define SOUND_BOOM		"weapons/explode3.wav"
-#define SOUND_FREEZE		"physics/glass/glass_impact_bullet4.wav"
+#define SOUND_FREEZE	"physics/glass/glass_impact_bullet4.wav"
 
 // Following are model indexes for temp entities
 new g_BeamSprite;
@@ -93,32 +93,37 @@ new UserMsg:g_FadeUserMsgId;
 
 // Include various commands and supporting functions
 #if BEACON
-#include "basefuncommands/beacon.sp"
+#include "funcommands/beacon.sp"
 #endif
 #if TIMEBOMB
-#include "basefuncommands/timebomb.sp"
+#include "funcommands/timebomb.sp"
 #endif
 #if FIRE
-#include "basefuncommands/fire.sp"
+#include "funcommands/fire.sp"
 #endif
 #if ICE
-#include "basefuncommands/ice.sp"
+#include "funcommands/ice.sp"
 #endif
 #if GRAVITY
-#include "basefuncommands/gravity.sp"
+#include "funcommands/gravity.sp"
 #endif
 #if BLIND
-#include "basefuncommands/blind.sp"
+#include "funcommands/blind.sp"
 #endif
 #if NOCLIP
-#include "basefuncommands/noclip.sp"
+#include "funcommands/noclip.sp"
 #endif
 #if DRUG
-#include "basefuncommands/drug.sp"
+#include "funcommands/drug.sp"
 #endif
 
 public OnPluginStart()
 {
+	if (FindPluginByFile("basefuncommands.smx") != INVALID_HANDLE)
+	{
+		ThrowError("This plugin replaces basefuncommands.  You cannot run both at once.");
+	}
+	
 	LoadTranslations("common.phrases");
 	LoadTranslations("basefuncommands.phrases");
 

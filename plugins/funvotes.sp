@@ -41,7 +41,7 @@
 
 public Plugin:myinfo =
 {
-	name = "Basic Fun Votes",
+	name = "Fun Votes",
 	author = "AlliedModders LLC",
 	description = "Fun Vote Commands",
 	version = SOURCEMOD_VERSION,
@@ -85,14 +85,19 @@ new String:g_voteInfo[3][65];	/* Holds the target's name, authid, and IP */
 
 new Handle:hTopMenu = INVALID_HANDLE;
 
-#include "basefunvotes/votegravity.sp"
-#include "basefunvotes/voteburn.sp"
-#include "basefunvotes/voteslay.sp"
-#include "basefunvotes/votealltalk.sp"
-#include "basefunvotes/voteff.sp"
+#include "funvotes/votegravity.sp"
+#include "funvotes/voteburn.sp"
+#include "funvotes/voteslay.sp"
+#include "funvotes/votealltalk.sp"
+#include "funvotes/voteff.sp"
 
 public OnPluginStart()
 {
+	if (FindPluginByFile("basefunvotes.smx") != INVALID_HANDLE)
+	{
+		ThrowError("This plugin replaces basefuncommands.  You cannot run both at once.");
+	}
+	
 	LoadTranslations("common.phrases");
 	LoadTranslations("basevotes.phrases");
 	LoadTranslations("basefunvotes.phrases");

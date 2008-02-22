@@ -44,12 +44,11 @@ public Plugin:myinfo =
 };
 
 new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
-new Handle:g_Cvar_Mapfile = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
 
 new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_OldMapList = INVALID_HANDLE;
-new g_mapFileTime;
+new g_mapListSerial = -1;
 
 public OnPluginStart()
 {
@@ -57,7 +56,6 @@ public OnPluginStart()
 	g_MapList = CreateArray(arraySize);
 	g_OldMapList = CreateArray(arraySize);
 
-	g_Cvar_Mapfile = CreateConVar("sm_randomcycle_file", "configs/maps.ini", "Map file to use. (Def sourcemod/configs/maps.ini)");
 	g_Cvar_ExcludeMaps = CreateConVar("sm_randomcycle_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
 	
 	AutoExecConfig(true, "randomcycle");
@@ -73,10 +71,19 @@ public OnConfigsExecuted()
 		SetFailState("sm_nextmap not found");
 	}
 	
-	if (LoadMaps(g_MapList, g_mapFileTime, g_Cvar_Mapfile))
+	if (ReadMapList(g_MapList, 
+					g_mapListSerial, 
+					"randomcycle", 
+					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
+		== INVALID_HANDLE)
 	{
-		CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
+		if (g_mapListSerial == -1)
+		{
+			LogError("Unable to create a valid map list.");
+		}
 	}
+	
+	CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
 }
 
 public Action:Timer_RandomizeNextmap(Handle:timer)
