@@ -1027,7 +1027,11 @@
 		}
 	}
 
-	/* Garry's Mod 10 - Windows only */
+	/* Garry's Mod 10 - Windows only
+	 * This mod is not officially supported, and the definitions are 
+	 * for Garry's Mod pre-Orange Box.  
+	 * (credits: Damaged Soul)
+	 */
 	"garrysmod"
 	{
 		"Offsets"
@@ -1556,6 +1560,7 @@
 	/* Zombie Panic! Source 1.2b 
 	 * Note: This mod is not fully supported yet. 
 	 * The definitions below were supplied by a third party.
+	 * (thanks "noob cannon lol")
 	 */
 	"$Zombie Panic! Source"
 	{
