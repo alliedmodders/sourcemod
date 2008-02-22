@@ -1271,6 +1271,7 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_CheckConfig",			SQL_CheckConfig},
 	{"SQL_Connect",				SQL_Connect},
 	{"SQL_ConnectEx",			SQL_ConnectEx},
+	{"SQL_EscapeString",		SQL_QuoteString},
 	{"SQL_Execute",				SQL_Execute},
 	{"SQL_FastQuery",			SQL_FastQuery},
 	{"SQL_FetchFloat",			SQL_FetchFloat},

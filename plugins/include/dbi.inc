@@ -235,8 +235,14 @@ native SQL_GetInsertId(Handle:hndl);
 native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
 
 /**
- * Quotes a database string for literal insertion.  This is not needed
- * for binding strings in prepared statements.
+ * Escapes a database string for literal insertion.  This is not needed
+ * for binding strings in prepared statements.  
+ *
+ * Generally, database strings are inserted into queries enclosed in 
+ * single quotes (').  If user input has a single quote in it, the 
+ * quote needs to be escaped.  This function ensures that any unsafe 
+ * characters are safely escaped according to the database engine and 
+ * the database's character set.
  *
  * @param hndl			A database Handle.
  * @param string		String to quote.
@@ -247,7 +253,24 @@ native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
  *						The buffer must be at least 2*strlen(string)+1.
  * @error				Invalid database or statement Handle.
  */
-native bool:SQL_QuoteString(Handle:database, const String:string[], String:buffer[], maxlength, &written=0);
+native bool:SQL_EscapeString(Handle:database, 
+							 const String:string[], 
+							 String:buffer[], 
+							 maxlength, 
+							 &written=0);
+
+/**
+ * This is a backwards compatibility stock.  You should use SQL_EscapeString() 
+ * instead, as this function will probably be deprecated in SourceMod 1.1.
+ */
+stock bool:SQL_QuoteString(Handle:database,
+						   const String:string[],
+						   String:buffer[],
+						   maxlength,
+						   &written=0)
+{
+	return SQL_EscapeString(database, string, buffer, maxlength, written);
+}
 
 /**
  * Executes a query and ignores the result set.

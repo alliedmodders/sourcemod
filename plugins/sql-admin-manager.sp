@@ -417,7 +417,7 @@ public Action:Command_SetAdminGroups(client, args)
 	decl String:identity[65];
 	decl String:safe_identity[140];
 	GetCmdArg(2, identity, sizeof(identity));
-	SQL_QuoteString(db, identity, safe_identity, sizeof(safe_identity));
+	SQL_EscapeString(db, identity, safe_identity, sizeof(safe_identity));
 	
 	decl String:query[255];
 	Format(query, 
@@ -541,9 +541,9 @@ public Action:Command_DelGroup(client, args)
 	if (len > 1 && (name[0] == '"' && name[len-1] == '"'))
 	{
 		name[--len] = '\0';
-		SQL_QuoteString(db, name[1], safe_name, sizeof(safe_name));
+		SQL_EscapeString(db, name[1], safe_name, sizeof(safe_name));
 	} else {
-		SQL_QuoteString(db, name, safe_name, sizeof(safe_name));
+		SQL_EscapeString(db, name, safe_name, sizeof(safe_name));
 	}
 	
 	decl String:query[256];
@@ -632,7 +632,7 @@ public Action:Command_AddGroup(client, args)
 	decl String:name[64];
 	decl String:safe_name[64];
 	GetCmdArg(1, name, sizeof(name));
-	SQL_QuoteString(db, name, safe_name, sizeof(safe_name));
+	SQL_EscapeString(db, name, safe_name, sizeof(safe_name));
 	
 	new Handle:hQuery;
 	decl String:query[256];
@@ -655,7 +655,7 @@ public Action:Command_AddGroup(client, args)
 	decl String:flags[30];
 	decl String:safe_flags[64];
 	GetCmdArg(2, flags, sizeof(safe_flags));
-	SQL_QuoteString(db, flags, safe_flags, sizeof(safe_flags));
+	SQL_EscapeString(db, flags, safe_flags, sizeof(safe_flags));
 	
 	Format(query, 
 		sizeof(query),
@@ -706,7 +706,7 @@ public Action:Command_DelAdmin(client, args)
 	decl String:identity[65];
 	decl String:safe_identity[140];
 	GetCmdArg(2, identity, sizeof(identity));
-	SQL_QuoteString(db, identity, safe_identity, sizeof(safe_identity));
+	SQL_EscapeString(db, identity, safe_identity, sizeof(safe_identity));
 	
 	decl String:query[255];
 	Format(query, 
@@ -798,7 +798,7 @@ public Action:Command_AddAdmin(client, args)
 		return Plugin_Handled;
 	}
 	
-	SQL_QuoteString(db, identity, safe_identity, sizeof(safe_identity));
+	SQL_EscapeString(db, identity, safe_identity, sizeof(safe_identity));
 	
 	Format(query, sizeof(query), "SELECT id FROM sm_admins WHERE authtype = '%s' AND identity = '%s'", authtype, identity);
 	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
@@ -819,19 +819,19 @@ public Action:Command_AddAdmin(client, args)
 	decl String:alias[64];
 	decl String:safe_alias[140];
 	GetCmdArg(1, alias, sizeof(alias));
-	SQL_QuoteString(db, alias, safe_alias, sizeof(safe_alias));
+	SQL_EscapeString(db, alias, safe_alias, sizeof(safe_alias));
 	
 	decl String:flags[30];
 	decl String:safe_flags[64];
 	GetCmdArg(4, flags, sizeof(flags));
-	SQL_QuoteString(db, flags, safe_flags, sizeof(safe_flags));
+	SQL_EscapeString(db, flags, safe_flags, sizeof(safe_flags));
 	
 	decl String:password[32];
 	decl String:safe_password[80];
 	if (args > 4)
 	{
 		GetCmdArg(5, password, sizeof(password));
-		SQL_QuoteString(db, password, safe_password, sizeof(safe_password));
+		SQL_EscapeString(db, password, safe_password, sizeof(safe_password));
 	} else {
 		safe_password[0] = '\0';
 	}

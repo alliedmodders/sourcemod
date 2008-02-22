@@ -484,7 +484,7 @@ FetchUser(Handle:db, client)
 		}
 	}
 	
-	SQL_QuoteString(db, name, safe_name, sizeof(safe_name));
+	SQL_EscapeString(db, name, safe_name, sizeof(safe_name));
 	
 	/**
 	 * Construct the query using the information the user gave us.
