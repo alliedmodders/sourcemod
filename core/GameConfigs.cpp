@@ -489,6 +489,7 @@ skip_find:
 bool CGameConfig::Reparse(char *error, size_t maxlength)
 {
 	SMCError err;
+	SMCStates state = {0, 0};
 
 	char path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s.txt", m_pFile);
@@ -508,9 +509,19 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	sm_trie_clear(m_pProps);
 	sm_trie_clear(m_pKeys);
 
-	if ((err=textparsers->ParseSMCFile(path, this, NULL, error, maxlength))
+	if ((err=textparsers->ParseSMCFile(path, this, &state, error, maxlength))
 		!= SMCError_Okay)
 	{
+		const char *msg;
+
+		msg = textparsers->GetSMCErrorString(err);
+
+		g_Logger.LogError("[SM] Error parsing gameconfig file \"%s\":", path);
+		g_Logger.LogError("[SM] Error %d on line %d, col %d: %s", 
+			err,
+			state.line,
+			state.col,
+			msg ? msg : "Unknown error");
 		return false;
 	}
 
