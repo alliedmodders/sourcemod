@@ -203,10 +203,10 @@
 			"game"		"!Insurgency"
 			"game"		"pvkii"
 			"game"		"$SourceForts v1.9.3"
-			"game"		"FortressForever"
 			"game"		"empires"
 			"game"		"synergy"
 			"game"		"hidden"
+			"game"		"FortressForever"
 		}
 
 		"Signatures"
@@ -942,16 +942,7 @@
 	
 	/* Fortress Forever */
 	"FortressForever"
-	{
-		"Signatures"
-		{
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x3B\xCB\x74\x07\x8B\x01\x6A\x01\xFF\x50"
-			}
-		}
-		
+	{	
 		"Offsets"
 		{
 			"GiveNamedItem"
@@ -1023,6 +1014,30 @@
 			{
 				"windows"	"27"
 				"linux"		"28"
+			}
+		}
+		
+		"Signatures"
+		{
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x09\x8B\x01\x8B\x50\x2C\x6A\x01"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x04\x00\x01\x00\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x60\x8B\xCB"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
 			}
 		}
 	}
