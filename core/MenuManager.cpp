@@ -448,7 +448,14 @@ skip_search:
 			if (position != 0)
 			{
 				slots[position].item = drawItems[i].position;
-				slots[position].type = ItemSel_Item;
+				if ((dr.style & ITEMDRAW_DISABLED) == ITEMDRAW_DISABLED)
+				{
+					slots[position].type = ItemSel_None;
+				}
+				else
+				{
+					slots[position].type = ItemSel_Item;
+				}
 			}
 		}
 	}
@@ -469,7 +476,14 @@ skip_search:
 			if (position != 0)
 			{
 				slots[position].item = drawItems[i].position;
-				slots[position].type = ItemSel_Item;
+				if ((dr.style & ITEMDRAW_DISABLED) == ITEMDRAW_DISABLED)
+				{
+					slots[position].type = ItemSel_None;
+				}
+				else
+				{
+					slots[position].type = ItemSel_Item;
+				}
 			}
 		}
 	}
