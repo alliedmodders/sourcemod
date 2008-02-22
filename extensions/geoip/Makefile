@@ -38,7 +38,7 @@ INCLUDE = -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2
 
 CFLAGS = -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp \
 	-Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca \
-	-Dstrcmpi=strcasecmp -Wall -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD \
+	-Dstrcmpi=strcasecmp -Wall -Werror -mfpmath=sse -msse -DSOURCEMOD_BUILD \
 	-m32
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 

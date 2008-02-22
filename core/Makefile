@@ -1,22 +1,21 @@
-#(C)2004-2006 SourceMM Development Team
+#(C)2004-2008 Metamod:Source Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMM_BASE = ../../sourcemm-1.6
-HL2SDK = ../../hl2sdk
+#Local paths
+HL2SDK_ORIG = ../../hl2sdk
+HL2SDK_OB = ../../hl2sdk-ob
+SOURCEMM14 = ../../sourcemm-1.4
+SOURCEMM16 = ../../sourcemm-1.6
+SRCDS_BASE = ~/srcds
 SMSDK = ..
-SRCDS = ~/srcds
 
-### EDIT BELOW FOR OTHER PROJECTS ###
-
+#Project options
 OPT_FLAGS = -O3 -funroll-loops -s -pipe -fno-strict-aliasing
 GCC4_FLAGS = -fvisibility=hidden 
 GCC4_CPP_FLAGS = -fvisibility-inlines-hidden
 DEBUG_FLAGS = -g -ggdb3
 CPP = gcc-4.1
-BINARY = sourcemod.2.ep1.so
 
-HL2PUB = $(HL2SDK)/public
-HL2LIB = $(HL2SDK)/linux_sdk
 
 OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreConfig.cpp \
 	Database.cpp DebugReporter.cpp EventManager.cpp GameConfigs.cpp HalfLife2.cpp Logger.cpp \
@@ -33,32 +32,60 @@ OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_usermsgs.cpp smn_menus.cpp smn_database.cpp smn_vector.cpp smn_adt_array.cpp \
 	smn_adt_trie.cpp
 OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
-	  systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
-	  systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
-	  vm/sp_vm_function.cpp
+	systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
+	systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
+	vm/sp_vm_function.cpp
 OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
 OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
 
-LINK = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so -lpthread -static-libgcc
+ifeq "$(ENGINE)" "original"
+	HL2SDK = $(HL2SDK_ORIG)
+	HL2PUB = $(HL2SDK_ORIG)/public
+	HL2LIB = $(HL2SDK)/linux_sdk
+	METAMOD = $(SOURCEMM14)
+	INCLUDE += -I$(HL2PUB)/dlls
+	SRCDS = $(SRCDS_BASE)
+	BINARY = sourcemod.1.ep1.so
+endif
+ifeq "$(ENGINE)" "orangebox"
+	HL2SDK = $(HL2SDK_OB)
+	HL2PUB = $(HL2SDK_OB)/public
+	HL2LIB = $(HL2SDK)/linux_sdk
+	CFLAGS += -DORANGEBOX_BUILD
+	METAMOD = $(SOURCEMM16)
+	INCLUDE += -I$(HL2PUB)/game/server
+	SRCDS = $(SRCDS_BASE)/orangebox
+	BINARY = sourcemod.2.ep2.so
+endif
+ifeq "$(BINARY)" ""
+	echo "You must supply ENGINE=orangebox or ENGINE=original"
+	false
+endif
 
-INCLUDE = -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-          -I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(SMM_BASE) -I$(SMM_BASE)/sourcehook -I$(SMM_BASE)/sourcemm \
-	  -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
-	  -Isystems
+LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so \
+	tier0_i486.so -lpthread -static-libgcc
+
+INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
+	-I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm \
+	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions -Isystems \
+	-I$(HL2PUB)/mathlib
 
 ifeq "$(DEBUG)" "true"
-	BIN_DIR = Debug
-	CFLAGS = $(DEBUG_FLAGS)
+	BIN_DIR = Debug.$(ENGINE)
+	CFLAGS += $(DEBUG_FLAGS)
 else
-	BIN_DIR = Release
-	CFLAGS = $(OPT_FLAGS)
+	BIN_DIR = Release.$(ENGINE)
+	CFLAGS += $(OPT_FLAGS)
 endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
 
-CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -fPIC -mfpmath=sse -msse -DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER
+CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp \
+	-Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca \
+	-Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -mfpmath=sse -msse \
+	-DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER -m32
 CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ifeq "$(GCC_VERSION)" "4"
@@ -82,27 +109,18 @@ all:
 	mkdir -p $(BIN_DIR)/thread
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
-	$(MAKE) -f Makefile.ep1 sourcemod
+	$(MAKE) -f Makefile sourcemod
 
 sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
-
-debug:	
-	$(MAKE) -f Makefile.ep1 all DEBUG=true
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 default: all
 
 clean:
-	rm -rf Release/*.ox
-	rm -rf Release/systems/*.ox
-	rm -rf Release/zlib/*.oc
-	rm -rf Release/vm/*.ox
-	rm -rf Release/thread/*.ox
-	rm -rf Release/$(BINARY)
-	rm -rf Debug/*.ox
-	rm -rf Debug/systems/*.ox
-	rm -rf Debug/zlib/*.oc
-	rm -rf Debug/vm/*.ox
-	rm -rf Debug/thread/*.ox
-	rm -rf Debug/$(BINARY)
+	rm -rf $(BIN_DIR)/*.ox
+	rm -rf $(BIN_DIR)/systems/*.ox
+	rm -rf $(BIN_DIR)/zlib/*.oc
+	rm -rf $(BIN_DIR)/vm/*.ox
+	rm -rf $(BIN_DIR)/thread/*.ox
+	rm -rf $(BIN_DIR)/$(BINARY)
 
