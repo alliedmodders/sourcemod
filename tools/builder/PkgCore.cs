@@ -67,6 +67,7 @@ namespace builder
 			folders.Add("addons/sourcemod/extensions/auto.2.ep1");
 			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
 			folders.Add("addons/sourcemod/scripting/playercommands");
+			folders.Add("addons/metamod");
 			
 			return (string [])folders.ToArray(typeof(string));
 		}
@@ -87,6 +88,7 @@ namespace builder
 			builder.CopyFolder(this, "configs", "addons/sourcemod/configs", null);
 			builder.CopyFolder(this, "configs/geoip", "addons/sourcemod/configs/geoip", null);
 			builder.CopyFolder(this, "configs/cfg", "cfg/sourcemod", null);
+			builder.CopyFolder(this, "configs/metamod", "addons/metamod", null);
 			builder.CopyFolder(this,
 				"configs/sql-init-scripts", 
 				"addons/sourcemod/configs/sql-init-scripts", 
@@ -115,10 +117,10 @@ namespace builder
 			builder.CopyFolder(this, "plugins/testsuite", "addons/sourcemod/scripting/testsuite", null);
 			builder.CopyFolder(this, "plugins/basecommands", "addons/sourcemod/scripting/basecommands", null);
 			builder.CopyFolder(this, "plugins/basecomm", "addons/sourcemod/scripting/basecomm", null);
-			builder.CopyFolder(this, "plugins/basefunvotes", "addons/sourcemod/scripting/basefunvotes", null);
+			builder.CopyFolder(this, "plugins/funvotes", "addons/sourcemod/scripting/funvotes", null);
 			builder.CopyFolder(this, "plugins/basevotes", "addons/sourcemod/scripting/basevotes", null);
 			builder.CopyFolder(this, "plugins/basebans", "addons/sourcemod/scripting/basebans", null);
-			builder.CopyFolder(this, "plugins/basefuncommands", "addons/sourcemod/scripting/basefuncommands", null);
+			builder.CopyFolder(this, "plugins/funcommands", "addons/sourcemod/scripting/funcommands", null);
 			builder.CopyFolder(this, "plugins/playercommands", "addons/sourcemod/scripting/playercommands", null);
 		}
 
@@ -279,9 +281,9 @@ namespace builder
 			plugins.Add(new Plugin("basetriggers"));
 			plugins.Add(new Plugin("nextmap"));
 			plugins.Add(new Plugin("basechat"));
-			plugins.Add(new Plugin("basefuncommands"));
+			plugins.Add(new Plugin("funcommands"));
 			plugins.Add(new Plugin("basevotes"));
-			plugins.Add(new Plugin("basefunvotes"));
+			plugins.Add(new Plugin("funvotes"));
 			plugins.Add(new Plugin("admin-sql-prefetch", true));
 			plugins.Add(new Plugin("admin-sql-threaded", true));
 			plugins.Add(new Plugin("sql-admin-manager", true));
