@@ -49,7 +49,7 @@ namespace builder
 				File.Delete(binpath);
 			}
 
-			string makefile_args = null;
+			string makefile_args = "";
 
 			if (lib.build_mode == BuildMode.BuildMode_Episode1)
 			{
@@ -58,10 +58,12 @@ namespace builder
 			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
 			{
 				makefile_args = "ENGINE=\"orangebox\"";
+				binpath += ".orangebox";
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
 				makefile_args = "ENGINE=\"original\"";
+				binpath += ".original";
 			}
 
 			/* Clean the project first */
@@ -77,7 +79,7 @@ namespace builder
 			/* Now build it */
 			info.WorkingDirectory = path;
 			info.FileName = cfg.builder_path;
-			info.Arguments = makefile_args + " clean";
+			info.Arguments = makefile_args;
 			info.UseShellExecute = false;
 
 			if (cfg.build_options != null)
