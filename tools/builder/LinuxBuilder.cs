@@ -39,9 +39,20 @@ namespace builder
 				}
 			}
 
+			string output_folder = (lib.release_mode == ReleaseMode.ReleaseMode_Release) ? "Release" : "Debug";
+
+			if (lib.build_mode == BuildMode.BuildMode_Episode2)
+			{
+				output_folder += ".orangebox";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
+			{
+				output_folder += ".original";
+			}
+
 			string binpath = Config.PathFormat("{0}/{1}/{2}",
 				path,
-				(lib.release_mode == ReleaseMode.ReleaseMode_Release) ? "Release" : "Debug",
+				output_folder,
 				binName);
 			
 			if (File.Exists(binpath))
@@ -58,12 +69,10 @@ namespace builder
 			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
 			{
 				makefile_args = "ENGINE=\"orangebox\"";
-				binpath += ".orangebox";
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
 				makefile_args = "ENGINE=\"original\"";
-				binpath += ".original";
 			}
 
 			/* Clean the project first */
