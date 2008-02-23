@@ -29,6 +29,16 @@
  * Version: $Id$
  */
 
+#include <sh_memory.h>
+/* HACK to avoid including sourcehook.h for just the SH_ASSERT definition */
+#if !defined  SH_ASSERT
+	#define SH_ASSERT(x, info)
+	#include <sh_pagealloc.h>
+	#undef SH_ASSERT
+#else
+	#include <sh_pagealloc.h>
+#endif
+
 #include <malloc.h>
 #include <string.h>
 #include <assert.h>
