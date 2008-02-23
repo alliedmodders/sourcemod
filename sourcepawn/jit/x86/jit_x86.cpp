@@ -2626,7 +2626,7 @@ rewind:
 
 void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-	engine->FreePageMemory(func);
+	engine->FreePageMemory((void *)func);
 }
 
 const char *JITX86::GetVMName()
