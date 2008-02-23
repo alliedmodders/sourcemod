@@ -2380,7 +2380,8 @@ jit_rewind:
 
 		/* the total codesize is now known! */
 		codemem = writer.get_outputpos();
-		writer.outbase = (jitcode_t)engine->ExecAlloc(codemem);
+		writer.outbase = (jitcode_t)engine->AllocatePageMemory(codemem);
+		engine->SetReadWrite(writer.outbase);
 		writer.outptr = writer.outbase;
 		/* go back for third pass */
 		goto jit_rewind;
@@ -2398,6 +2399,8 @@ jit_rewind:
 		}
 		/* Write these last because error jumps should be unpredicted, and thus forward */
 		WriteErrorRoutines(data, jit);
+
+		engine->SetReadExecute(writer.outbase);
 	}
 
 	/*************
@@ -2605,22 +2608,25 @@ rewind:
 	if (jw.outbase == NULL)
 	{
 		/* Second pass: Actually write */
-		jw.outbase = (jitcode_t)engine->ExecAlloc(jw.get_outputpos());
+		jw.outbase = (jitcode_t)engine->AllocatePageMemory(jw.get_outputpos());
 		if (!jw.outbase)
 		{
 			return NULL;
 		}
+		engine->SetReadWrite(jw.outbase);
 		jw.outptr = jw.outbase;
 	
 		goto rewind;
 	}
-	
+
+	engine->SetReadExecute(jw.outbase);
+
 	return (SPVM_NATIVE_FUNC)jw.outbase;
 }
 
 void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-	engine->ExecFree((void *)func);
+	engine->FreePageMemory(func);
 }
 
 const char *JITX86::GetVMName()
@@ -2637,7 +2643,7 @@ int JITX86::ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result)
 
 void JITX86::FreeContext(sp_context_t *ctx)
 {
-	engine->ExecFree(ctx->codebase);
+	engine->FreePageMemory(ctx->codebase);
 	delete [] ctx->memory;
 	delete [] ctx->files;
 	delete [] ctx->lines;

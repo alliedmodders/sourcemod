@@ -637,7 +637,8 @@ skip_retbuffer:
 	if (writer.outbase == NULL)
 	{
 		CodeSize = writer.get_outputpos();
-		writer.outbase = (jitcode_t)g_SPEngine->ExecAlloc(CodeSize);
+		writer.outbase = (jitcode_t)g_SPEngine->AllocatePageMemory(CodeSize);
+		g_SPEngine->SetReadWrite(writer.outbase);
 		writer.outptr = writer.outbase;
 		pWrapper->m_Addrs[ADDR_CODEBASE] = writer.outbase;
 		g_StackAlign = (g_StackUsage) ? ((g_StackUsage & 0xFFFFFFF0) + 16) - g_StackUsage : 0;
@@ -646,4 +647,5 @@ skip_retbuffer:
 		Needs_Retbuf = false;
 		goto jit_rewind;
 	}
+	g_SPEngine->SetReadExecute(writer.outbase);
 }

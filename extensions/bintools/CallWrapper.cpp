@@ -75,7 +75,7 @@ CallWrapper::~CallWrapper()
 {
 	delete [] m_Params;
 	delete m_RetParam;
-	g_SPEngine->ExecFree(m_Addrs[ADDR_CODEBASE]);
+	g_SPEngine->FreePageMemory(m_Addrs[ADDR_CODEBASE]);
 }
 
 void CallWrapper::Destroy()

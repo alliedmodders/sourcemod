@@ -33,6 +33,7 @@
 #include "TimerSys.h"
 #include "PluginSys.h"
 #include "Logger.h"
+#include "DebugReporter.h"
 
 #define TIMER_HNDL_CLOSE	(1<<9)
 
@@ -150,19 +151,23 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	{
 		if ((herr=g_HandleSys.FreeHandle(usrhndl, &sec)) != HandleError_None)
 		{
-			g_Logger.LogError("Invalid data handle %x (error %d) passed during timer end on plugin %s", 
-								usrhndl, 
-								herr, 
-								g_PluginSys.FindPluginByContext(pInfo->pContext->GetContext())->GetFilename());
+			g_DbgReporter.GenerateError(pInfo->pContext,
+										pInfo->Hook->GetFunctionID(), 
+										SP_ERROR_NATIVE, 
+										"Invalid data handle %x (error %d) passed during timer end",
+										usrhndl, 
+										herr);
 		}
 	}
 
 	if ((herr=g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
 	{
-		g_Logger.LogError("Invalid timer handle %x (error %d) on plugin %s during timer end", 
-							pInfo->TimerHandle, 
-							herr, 
-							g_PluginSys.FindPluginByContext(pInfo->pContext->GetContext())->GetFilename());
+		g_DbgReporter.GenerateError(pInfo->pContext, 
+									pInfo->Hook->GetFunctionID(), 
+									SP_ERROR_NATIVE, 
+									"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace", 
+									pInfo->TimerHandle, 
+									herr);
 		return;
 	}
 	DeleteTimerInfo(pInfo);
@@ -332,4 +337,3 @@ REGISTER_NATIVES(timernatives)
 	{"IsServerProcessing",		smn_IsServerProcessing},
 	{NULL,						NULL}
 };
-

@@ -41,7 +41,7 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn Engine API Version */
-#define SOURCEPAWN_ENGINE_API_VERSION	1
+#define SOURCEPAWN_ENGINE_API_VERSION	2
 
 /** SourcePawn VM API Version */
 #define SOURCEPAWN_VM_API_VERSION		5
@@ -740,6 +740,7 @@ namespace SourcePawn
 
 		/**
 		 * @brief Allocates executable memory.
+		 * @deprecated Use AllocPageMemory()
 		 *
 		 * @param size		Size of memory to allocate.
 		 * @return			Pointer to memory, NULL if allocation failed.
@@ -748,6 +749,7 @@ namespace SourcePawn
 
 		/**
 		 * @brief Frees executable memory.
+		 * @deprecated Use FreePageMemory()
 		 *
 		 * @param address	Address to free.
 		 */
@@ -777,6 +779,35 @@ namespace SourcePawn
 		 * @return			Engine API version.
 		 */
 		virtual unsigned int GetEngineAPIVersion() =0;
+
+		/**
+		 * @brief Allocates executable memory.
+		 *
+		 * @param size		Size of memory to allocate.
+		 * @return			Pointer to memory, NULL if allocation failed.
+		 */
+		virtual void *AllocatePageMemory(size_t size) =0;
+		
+		/**
+		 * @brief Sets the input memory permissions to read+write.
+		 *
+		 * @param ptr		Memory block.
+		 */
+		virtual void SetReadWrite(void *ptr) =0;
+
+		/**
+		 * @brief Sets the input memory permissions to read+execute.
+		 *
+		 * @param ptr		Memory block.
+		 */
+		virtual void SetReadExecute(void *ptr) =0;
+
+		/**
+		 * @brief Frees executable memory.
+		 *
+		 * @param ptr		Address to free.
+		 */
+		virtual void FreePageMemory(void *ptr) =0;
 	};
 
 

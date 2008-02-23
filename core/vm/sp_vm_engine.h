@@ -32,6 +32,15 @@
 #ifndef _INCLUDE_SOURCEPAWN_VM_ENGINE_H_
 #define _INCLUDE_SOURCEPAWN_VM_ENGINE_H_
 
+#include <sh_memory.h>
+/* HACK to avoid including sourcehook.h for just the SH_ASSERT definition */
+#if !defined  SH_ASSERT
+	#define SH_ASSERT(x, info)
+	#include <sh_pagealloc.h>
+	#undef SH_ASSERT
+#else
+	#include <sh_pagealloc.h>
+#endif
 #include "sp_vm_api.h"
 #include "sp_vm_function.h"
 
@@ -82,6 +91,10 @@ public: //ISourcePawnEngine
 	IDebugListener *SetDebugListener(IDebugListener *pListener);
 	unsigned int GetContextCallCount();
 	unsigned int GetEngineAPIVersion();
+	void *AllocatePageMemory(size_t size);
+	void SetReadWrite(void *ptr);
+	void SetReadExecute(void *ptr);
+	void FreePageMemory(void *ptr);
 public: //Debugger Stuff
 	/**
 	 * @brief Pushes a context onto the top of the call tracer.
@@ -110,6 +123,7 @@ private:
 	TracedCall *m_FreedCalls;
 	TracedCall *m_CallStack;
 	unsigned int m_CurChain;
+	SourceHook::CPageAlloc m_ExeMemory;
 	//CFunction *m_pFreeFuncs;
 };
 
