@@ -35,8 +35,6 @@
 #include "sp_vm_api.h"
 #include "sp_vm_function.h"
 
-class SourceHook::CPageAlloc;
-
 struct TracedCall
 {
 	uint32_t cip;
@@ -116,7 +114,6 @@ private:
 	TracedCall *m_FreedCalls;
 	TracedCall *m_CallStack;
 	unsigned int m_CurChain;
-	SourceHook::CPageAlloc m_ExeMemory;
 	//CFunction *m_pFreeFuncs;
 };
 

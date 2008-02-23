@@ -59,6 +59,8 @@
 
 using namespace SourcePawn;
 
+SourceHook::CPageAlloc g_ExeMemory(16);
+
 #define ERROR_MESSAGE_MAX		25
 static const char *g_ErrorMsgTable[] = 
 {
@@ -100,7 +102,7 @@ const char *GetSourcePawnErrorMessage(int error)
 	return g_ErrorMsgTable[error];
 }
 
-SourcePawnEngine::SourcePawnEngine() : m_ExeMemory(16)
+SourcePawnEngine::SourcePawnEngine()
 {
 	m_pDebugHook = NULL;
 	m_CallStack = NULL;
@@ -149,22 +151,22 @@ void *SourcePawnEngine::ExecAlloc(size_t size)
 
 void *SourcePawnEngine::AllocatePageMemory(size_t size)
 {
-	return m_ExeMemory.Alloc(size);
+	return g_ExeMemory.Alloc(size);
 }
 
 void SourcePawnEngine::SetReadExecute(void *ptr)
 {
-	m_ExeMemory.SetRE(ptr);
+	g_ExeMemory.SetRE(ptr);
 }
 
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
-	m_ExeMemory.SetRW(ptr);
+	g_ExeMemory.SetRW(ptr);
 }
 
 void SourcePawnEngine::FreePageMemory(void *ptr)
 {
-	m_ExeMemory.Free(ptr);
+	g_ExeMemory.Free(ptr);
 }
 
 void SourcePawnEngine::ExecFree(void *address)
