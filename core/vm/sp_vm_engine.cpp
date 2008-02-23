@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include "sp_vm_types.h"
 #include <sh_memory.h>
 /* HACK to avoid including sourcehook.h for just the SH_ASSERT definition */
 #if !defined  SH_ASSERT
@@ -43,7 +44,6 @@
 #include <string.h>
 #include <assert.h>
 #include "sp_file_headers.h"
-#include "sp_vm_types.h"
 #include "sp_vm_engine.h"
 #include "zlib/zlib.h"
 #include "sp_vm_basecontext.h"

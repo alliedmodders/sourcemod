@@ -352,7 +352,7 @@ public:
 		}
 
 		/* If there was a success, and the serial has not changed, bail out. */
-		if (*pSerial == change_serial)
+		if (success && *pSerial == change_serial)
 		{
 			return NULL;
 		}

@@ -33,12 +33,12 @@ OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_adt_trie.cpp
 OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
 	systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
-	systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
-	vm/sp_vm_function.cpp
+	systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_function.cpp
 OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
 OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
+OBJECTS_SM16 = vm/sp_vm_engine.cpp
 
 ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
@@ -67,10 +67,13 @@ endif
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so \
 	tier0_i486.so -lpthread -static-libgcc
 
+INCLUDE_SMSDK = -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions 
+
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
 	-I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm \
-	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions -Isystems \
-	-I$(HL2PUB)/mathlib
+	-I$(HL2PUB)/mathlib -Isystems $(INCLUDE_SMSDK)
+
+SM16_INCLUDE = -I. -I.. -I$(SOURCEMM16)/sourcehook $(INCLUDE_SMSDK)
 
 ifeq "$(DEBUG)" "true"
 	BIN_DIR = Debug.$(ENGINE)
@@ -95,12 +98,16 @@ endif
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.ox)
 OBJ_LINUX_C := $(OBJECTS_C:%.c=$(BIN_DIR)/%.oc)
+OBJ_LINUX_SM16 := $(OBJECTS_SM16:%.cpp=$(BIN_DIR)/%.ok)
 
 $(BIN_DIR)/%.ox: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 $(BIN_DIR)/%.oc: %.c
 	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
+
+$(BIN_DIR)/%.ok: %.cpp
+	$(CPP) $(SM16_INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all:
 	mkdir -p $(BIN_DIR)/systems
@@ -111,8 +118,8 @@ all:
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
 	$(MAKE) -f Makefile sourcemod
 
-sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(OBJ_LINUX_C) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C) $(OBJ_LINUX_SM16)
+	$(CPP) $(OBJ_LINUX) $(OBJ_LINUX_C) $(OBJ_LINUX_SM16) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 default: all
 
