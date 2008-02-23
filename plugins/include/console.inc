@@ -729,6 +729,8 @@ native bool:SetCommandFlags(const String:name[], flags);
  * @param isCommand		Variable to store whether the entry is a command. 
  *						If it is not a command, it is a ConVar.
  * @param flags			Variable to store entry flags.
+ * @param description		Buffer to store the description, empty if no description present.
+ * @param descrmax_size		Maximum size of the description buffer.
  * @return				On success, a ConCmdIter Handle is returned, which 
  *						can be read via FindNextConCommand(), and must be 
  *						closed via CloseHandle().  Additionally, the output 
@@ -737,7 +739,7 @@ native bool:SetCommandFlags(const String:name[], flags);
  *						On failure, INVALID_HANDLE is returned, and the 
  *						contents of outputs is undefined.
  */
-native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &flags=0);
+native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &flags=0, String:description[]="", descrmax_size=0);
 
 /**
  * Reads the next entry in a ConCommandBase iterator.
@@ -748,12 +750,14 @@ native Handle:FindFirstConCommand(String:buffer[], max_size, &bool:isCommand, &f
  * @param isCommand		Variable to store whether the entry is a command.
  *						If it is not a command, it is a ConVar.
  * @param flags			Variable to store entry flags.
+ * @param description		Buffer to store the description, empty if no description present.
+ * @param descrmax_size		Maximum size of the description buffer.
  * @return				On success, the outputs are filled, the iterator is 
  *						advanced to the next entry, and true is returned.  
  *						If no more entries exist, false is returned, and the 
  *						contents of outputs is undefined.
  */
-native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:isCommand, &flags=0);
+native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:isCommand, &flags=0, String:description[]="", descrmax_size=0);
 
 /**
  * Replicates a convar value to a specific client. This does not change the actual convar value.

@@ -1136,6 +1136,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	ConCmdIter *pIter;
 	cell_t *pIsCmd, *pFlags;
 	const ConCommandBase *pConCmd;
+	const char *desc;
 
 	pContext->LocalToPhysAddr(params[3], &pIsCmd);
 	pContext->LocalToPhysAddr(params[4], &pFlags);
@@ -1150,6 +1151,12 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	pContext->StringToLocalUTF8(params[1], params[2], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
 	*pFlags = pConCmd->GetFlags();
+
+	if (params[6])
+	{
+		desc = pConCmd->GetHelpText();
+		pContext->StringToLocalUTF8(params[5], params[6], (desc && desc[0]) ? desc : "", NULL);
+	}
 
 	pIter = new ConCmdIter;
 	pIter->pLast = pConCmd;
@@ -1169,6 +1176,7 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	ConCmdIter *pIter;
 	cell_t *pIsCmd, *pFlags;
+	const char *desc;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
 	if ((err = g_HandleSys.ReadHandle(params[1], htConCmdIter, &sec, (void **)&pIter)) != HandleError_None)
@@ -1192,6 +1200,12 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 	pContext->StringToLocalUTF8(params[2], params[3], pIter->pLast->GetName(), NULL);
 	*pIsCmd = pIter->pLast->IsCommand() ? 1 : 0;
 	*pFlags = pIter->pLast->GetFlags();
+
+	if (params[7])
+	{
+		desc = pIter->pLast->GetHelpText();
+		pContext->StringToLocalUTF8(params[6], params[7], (desc && desc[0]) ? desc : "", NULL);
+	}
 
 	return 1;
 }
