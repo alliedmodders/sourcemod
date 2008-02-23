@@ -150,7 +150,10 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	{
 		if ((herr=g_HandleSys.FreeHandle(usrhndl, &sec)) != HandleError_None)
 		{
-			g_Logger.LogError("Invalid data handle %x (error %d) passed during timer end", usrhndl, herr);
+			g_Logger.LogError("Invalid data handle %x (error %d) passed during timer end on plugin %s", 
+								usrhndl, 
+								herr, 
+								g_PluginSys.FindPluginByContext(pInfo->pContext->GetContext())->GetFilename());
 		}
 	}
 
