@@ -796,6 +796,8 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 				}
 				break;
 			}
+		case FIELD_MODELNAME:
+		case FIELD_SOUNDNAME:
 		case FIELD_STRING:
 			{
 				*pSize = sizeof(string_t);
@@ -1614,7 +1616,9 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_DATA(td);
 
 			if (td->fieldType != FIELD_CHARACTER
-				&& td->fieldType != FIELD_STRING)
+				&& td->fieldType != FIELD_STRING
+				&& td->fieldType != FIELD_MODELNAME 
+				&& td->fieldType != FIELD_SOUNDNAME)
 			{
 				return pContext->ThrowNativeError("Data field %s is not a string (%d != %d)", 
 					prop,
@@ -1622,7 +1626,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 					FIELD_CHARACTER);
 			}
 
-			bIsStringIndex = (td->fieldType == FIELD_STRING);
+			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
 
 			offset = td->fieldOffset[TD_OFFSET_NORMAL];
 			break;
