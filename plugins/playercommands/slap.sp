@@ -175,7 +175,7 @@ public Action:Command_Slap(client, args)
 	{
 		decl String:arg2[20];
 		GetCmdArg(2, arg2, sizeof(arg2));
-		if (StringToIntEx(arg2, damage) == 0)
+		if (StringToIntEx(arg2, damage) == 0 || damage < 0)
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;
