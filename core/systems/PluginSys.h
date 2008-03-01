@@ -443,6 +443,8 @@ public:
 	bool ReloadPlugin(CPlugin *pl);
 
 	void UnloadAll();
+
+	CPlugin *FindPluginByConsoleArg(const char *arg);
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 

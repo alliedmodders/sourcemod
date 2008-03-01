@@ -59,17 +59,6 @@ RootConsoleMenu::~RootConsoleMenu()
 	m_Menu.clear();
 }
 
-extern void _IntExt_OnHostnameChanged(ConVar *var, const char *pOldValue, float flOldValue);
-
-class DetectHostNameChanges : public IConVarChangeListener
-{
-public:
-	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
-	{
-		_IntExt_OnHostnameChanged(pConVar, oldValue, flOldValue);
-	}
-} s_HostnameChangeDetector;
-
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
 #if defined ORANGEBOX_BUILD
@@ -82,13 +71,11 @@ void RootConsoleMenu::OnSourceModStartup(bool late)
 
 void RootConsoleMenu::OnSourceModAllInitialized()
 {
-	g_ConVarManager.AddConVarChangeListener("hostname", &s_HostnameChangeDetector);
 	g_ShareSys.AddInterface(NULL, this);
 }
 
 void RootConsoleMenu::OnSourceModShutdown()
 {
-	g_ConVarManager.RemoveConVarChangeListener("hostname", &s_HostnameChangeDetector);
 	RemoveRootConsoleCommand("credits", this);
 	RemoveRootConsoleCommand("version", this);
 }
@@ -227,8 +214,6 @@ unsigned int RootConsoleMenu::GetInterfaceVersion()
 	return SMINTERFACE_ROOTCONSOLE_VERSION;
 }
 
-extern void _IntExt_EnableYams();
-
 void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 {
 	unsigned int argnum = cmd.ArgC();
@@ -236,12 +221,7 @@ void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 	if (argnum >= 2)
 	{
 		const char *cmdname = cmd.Arg(1);
-		if (strcmp(cmdname, "text") == 0)
-		{
-			_IntExt_EnableYams();
-			return;
-		}
-		else if (strcmp(cmdname, "internal") == 0)
+		if (strcmp(cmdname, "internal") == 0)
 		{
 			if (argnum >= 3)
 			{

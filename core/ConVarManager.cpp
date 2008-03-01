@@ -270,14 +270,14 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 	if (argcount >= 3)
 	{
 		/* Get plugin index that was passed */
-		int id = atoi(command.Arg(2));
+		const char *arg = command.Arg(2);
 		
 		/* Get plugin object */
-		CPlugin *plugin = g_PluginSys.GetPluginByOrder(id);
+		CPlugin *plugin = g_PluginSys.FindPluginByConsoleArg(arg);
 
 		if (!plugin)
 		{
-			g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
+			g_RootMenu.ConsolePrint("[SM] Plugin \"%s\" was not found.", arg);
 			return;
 		}
 
@@ -704,160 +704,4 @@ HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar)
 	}
 
 	return error;
-}
-
-static int s_YamagramState = 0;
-
-void _YamagramPrinterTwoPointOhOh(int yamagram)
-{
-	switch (yamagram)
-	{
-	case 0:
-		g_RootMenu.ConsolePrint("Answer the following questions correctly and Gaben may not eat you after all.");
-		g_RootMenu.ConsolePrint("You will be given one hint in the form of my patented yamagrams.");
-		g_RootMenu.ConsolePrint("Type sm_nana to see the last question.");
-		g_RootMenu.ConsolePrint("Type sm_nana <answer> to attempt an answer of the question.");
-		g_RootMenu.ConsolePrint("-------------------------------");
-		_YamagramPrinterTwoPointOhOh(1);
-		return;
-	case 1:
-		g_RootMenu.ConsolePrint("Question Ichi (1)");
-		g_RootMenu.ConsolePrint("One can turn into a cow by doing what action?");
-		g_RootMenu.ConsolePrint("Hint: AGE SANS GRIT");
-		break;
-	case 2:
-		g_RootMenu.ConsolePrint("Question Ni (2)");
-		g_RootMenu.ConsolePrint("What kind of hat should you wear when using the Internet?");
-		g_RootMenu.ConsolePrint("Hint: BRR MOOSE");
-		break;
-	case 3:
-		g_RootMenu.ConsolePrint("Question San (3)");
-		g_RootMenu.ConsolePrint("Who is the lead developer of SourceMod?");
-		g_RootMenu.ConsolePrint("Hint: VEAL BANDANA DID RIP SOON");
-		break;
-	case 4:
-		g_RootMenu.ConsolePrint("Question Yon (4)");
-		g_RootMenu.ConsolePrint("A terrible translation of 'SVN Revision' to Japanese romaji might be ...");
-		g_RootMenu.ConsolePrint("Hint: I TAKE IN AN AIR OK");
-		break;
-	case 5:
-		g_RootMenu.ConsolePrint("Question Go (5)");
-		g_RootMenu.ConsolePrint("What is a fundamental concept in the game of Go?");
-		g_RootMenu.ConsolePrint("Hint: AD LADEN THIEF");
-		break;
-	case 6:
-		g_RootMenu.ConsolePrint("Question Roku (6)");
-		g_RootMenu.ConsolePrint("Why am I asking all these strange questions?");
-		g_RootMenu.ConsolePrint("Hint: CHUBBY TITAN EATS EWE WAGE DATA");
-		break;
-	case 7:
-		g_RootMenu.ConsolePrint("Question Nana (7)");
-		g_RootMenu.ConsolePrint("What is my name?");
-		g_RootMenu.ConsolePrint("Hint: AD MODE LAG US");
-		break;
-	default:
-		break;
-	}
-
-	s_YamagramState = yamagram;
-}
-
-#if defined ORANGEBOX_BUILD
-void _IntExt_CallYamagrams(const CCommand &cmd)
-{
-#else
-void _IntExt_CallYamagrams()
-{
-	CCommand cmd;
-#endif
-	bool correct = false;
-	const char *arg = cmd.ArgS();
-
-	if (!arg || arg[0] == '\0')
-	{
-		_YamagramPrinterTwoPointOhOh(s_YamagramState);
-		return;
-	}
-
-	switch (s_YamagramState)
-	{
-	case 1:
-		correct = !strcasecmp(arg, "eating grass");
-		break;
-	case 2:
-		correct = !strcasecmp(arg, "sombrero");
-		break;
-	case 3:
-		correct = !strcasecmp(arg, "david bailopan anderson");
-		break;
-	case 4:
-		correct = !strcasecmp(arg, "kaitei no kairan");
-		break;
-	case 5:
-		correct = !strcasecmp(arg, "life and death");
-		break;
-	case 6:
-		correct = !strcasecmp(arg, "because gabe wanted it that way");
-		if (correct)
-		{
-			g_RootMenu.ConsolePrint("Congratulations, you have answered 6 of my questions.");
-			g_RootMenu.ConsolePrint("However, I have one final question for you. It wouldn't be nana without it.");
-			g_RootMenu.ConsolePrint("-------------------------------");
-			_YamagramPrinterTwoPointOhOh(7);
-			return;
-		}
-		break;
-	case 7:
-		correct = !strcasecmp(arg, "damaged soul");
-		if (correct)
-		{
-			g_RootMenu.ConsolePrint("You don't know how lucky you are to still be alive!");
-			g_RootMenu.ConsolePrint("Congratulations. You have answered all 7 questions correctly.");
-			g_RootMenu.ConsolePrint("The SourceMod Dev Team will be at your door with anti-Gaben grenades");
-			g_RootMenu.ConsolePrint("within seconds. You will also be provided with a rocket launcher,");
-			g_RootMenu.ConsolePrint("just in case Alfred decides to strike you with a blitzkrieg in retaliation.");
-
-			s_YamagramState = 0;
-			return;
-		}
-		break;
-	default:
-		break;
-	}
-
-	if (s_YamagramState > 0)
-	{
-		if (correct)
-		{
-			g_RootMenu.ConsolePrint("Correct! You are one step closer to avoiding the deadly jaws of Gaben.");
-			g_RootMenu.ConsolePrint("-------------------------------");
-			s_YamagramState++;
-		} else {
-			g_RootMenu.ConsolePrint("Wrong! You better be more careful. Gaben may be at your door at any minute.");
-			return;
-		}
-	}
-
-	_YamagramPrinterTwoPointOhOh(s_YamagramState);
-}
-
-void _IntExt_EnableYamagrams()
-{
-	static ConCommand *pCmd = NULL;
-	if (!pCmd)
-	{
-		pCmd = new ConCommand("sm_nana", _IntExt_CallYamagrams, "Try these yamagrams!", FCVAR_GAMEDLL);
-		g_RootMenu.ConsolePrint("[SM] Warning: Gaben has been alerted of your actions. You may be eaten.");
-	} else {
-		g_RootMenu.ConsolePrint("[SM] Gaben has already been alerted of your actions...");
-	}
-}
-
-void _IntExt_OnHostnameChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
-{
-	if (strcmp(oldValue, "Good morning, DS-san.") == 0
-		&& strcmp(pConVar->GetString(), "Good night, talking desk lamp.") == 0)
-	{
-		_IntExt_EnableYamagrams();
-	}
 }

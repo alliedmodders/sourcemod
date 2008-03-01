@@ -2305,14 +2305,33 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				return;
 			}
 
-			int num = atoi(command.Arg(3));
-			if (num < 1 || num > (int)GetPluginCount())
+			CPlugin *pl;
+			char *end;
+			const char *arg = command.Arg(3);
+			int id = strtol(arg, &end, 10);
+
+			if (*end == '\0')
 			{
-				g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
-				return;
+				pl = GetPluginByOrder(id);
+				if (!pl)
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
+					return;
+				}
+			}
+			else
+			{
+				char pluginfile[256];
+				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
+				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+
+				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
+					return;
+				}
 			}
 
-			CPlugin *pl = GetPluginByOrder(num);
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
 
 			g_RootMenu.ConsolePrint("  Filename: %s", pl->GetFilename());
@@ -2388,11 +2407,31 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				return;
 			}
 
-			int num = atoi(command.Arg(3));
-			if (num < 1 || num > (int)GetPluginCount())
+			CPlugin *pl;
+			char *end;
+			const char *arg = command.Arg(3);
+			int id = strtol(arg, &end, 10);
+
+			if (*end == '\0')
 			{
-				g_RootMenu.ConsolePrint("[SM] Plugin index not found.");
-				return;
+				pl = GetPluginByOrder(id);
+				if (!pl)
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
+					return;
+				}
+			}
+			else
+			{
+				char pluginfile[256];
+				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
+				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+
+				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
+				{
+					g_RootMenu.ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
+					return;
+				}
 			}
 
 			int res;
@@ -2413,7 +2452,6 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				debug = false;
 			}
 
-			CPlugin *pl = GetPluginByOrder(num);
 			if (debug && pl->IsDebugging())
 			{
 				g_RootMenu.ConsolePrint("[SM] This plugin is already in debug mode.");
@@ -2807,3 +2845,33 @@ int CPluginManager::GetOrderOfPlugin(IPlugin *pl)
 	return -1;
 }
 
+CPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
+{
+	int id;
+	char *end;
+	CPlugin *pl;
+	
+	id = strtol(arg, &end, 10);
+
+	if (*end == '\0')
+	{
+		pl = GetPluginByOrder(id);
+		if (!pl)
+		{
+			return NULL;
+		}
+	}
+	else
+	{
+		char pluginfile[256];
+		const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
+		UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+
+		if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
+		{
+			return NULL;
+		}
+	}
+
+	return pl;
+}
