@@ -118,7 +118,7 @@ public:
 		/* move everything up */
 		cell_t *src = at(index);
 		cell_t *dst = at(index + 1);
-		memmove(dst, src, sizeof(cell_t) * m_BlockSize * m_Size);
+		memmove(dst, src, sizeof(cell_t) * m_BlockSize * (m_Size-index));
 
 		m_Size++;
 
