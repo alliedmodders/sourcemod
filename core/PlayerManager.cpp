@@ -931,6 +931,53 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			}
 		}
 
+		/* Do we need to look for a steam id? */
+		if (strncmp(&info->pattern[1], "STEAM_", 6) == 0)
+		{
+			size_t p, len;
+			char new_pattern[256];
+
+			strcpy(new_pattern, "STEAM_");
+			len = strlen(&info->pattern[7]);
+			for (p = 0; p < len; p++)
+			{
+				new_pattern[6 + p] = info->pattern[7 + p];
+				if (new_pattern[6 + p] == '_')
+				{
+					new_pattern[6 + p] = ':';
+				}
+			}
+			new_pattern[6 + p] = '\0';
+
+			for (int i = 1; i <= max_clients; i++)
+			{
+				if ((pTarget = GetPlayerByIndex(i)) == NULL)
+				{
+					continue;
+				}
+				if (!pTarget->IsConnected() || !pTarget->IsAuthorized())
+				{
+					continue;
+				}
+				if (strcmp(pTarget->GetAuthString(), new_pattern) == 0)
+				{
+					if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags))
+						== COMMAND_TARGET_VALID)
+					{
+						info->targets[0] = i;
+						info->num_targets = 1;
+						strncopy(info->target_name, pTarget->GetName(), info->target_name_maxlength);
+						info->target_name_style = COMMAND_TARGETNAME_RAW;
+					}
+					else
+					{
+						info->num_targets = 0;
+					}
+					return;
+				}
+			}
+		}
+
 		/* See if an exact name matches */
 		for (int i = 1; i <= max_clients; i++)
 		{
