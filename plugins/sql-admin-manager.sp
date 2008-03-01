@@ -606,7 +606,7 @@ public Action:Command_AddGroup(client, args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_sql_addgroup <name> <flags> [immunity]");
+		ReplyToCommand(client, "[SM] Usage: sm_sql_addgroup <flags> <name> [immunity]");
 		return Plugin_Handled;
 	}
 
