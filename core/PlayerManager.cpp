@@ -961,13 +961,11 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 	}
 
-	if (strcmp(info->pattern, "@me") == 0)
+	if (strcmp(info->pattern, "@me") == 0 && info->admin != 0)
 	{
 		info->targets[0] = info->admin;
 		info->num_targets = 1;
-		strncopy(info->target_name, 
-			pAdmin ? pAdmin->GetName() : "Console",
-			info->target_name_maxlength);
+		strncopy(info->target_name, pAdmin->GetName(), info->target_name_maxlength);
 		info->target_name_style = COMMAND_TARGETNAME_RAW;
 		return;
 	}
