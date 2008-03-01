@@ -670,6 +670,36 @@ time_t SourceModBase::GetAdjustedTime()
 	return GetAdjustedTime();
 }
 
+void SourceModBase::AddGameFrameHook(GAME_FRAME_HOOK hook)
+{
+	m_frame_hooks.push_back(hook);
+}
+
+void SourceModBase::RemoveGameFrameHook(GAME_FRAME_HOOK hook)
+{
+	for (size_t i = 0; i < m_frame_hooks.size(); i++)
+	{
+		if (m_frame_hooks[i] == hook)
+		{
+			m_frame_hooks.erase(m_frame_hooks.iterAt(i));
+			return;
+		}
+	}
+}
+
+void SourceModBase::ProcessGameFrameHooks(bool simulating)
+{
+	if (m_frame_hooks.size() == 0)
+	{
+		return;
+	}
+
+	for (size_t i = 0; i < m_frame_hooks.size(); i++)
+	{
+		m_frame_hooks[i](simulating);
+	}
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

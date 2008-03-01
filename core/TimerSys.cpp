@@ -234,7 +234,7 @@ void TimerSystem::GameFrame(bool simulating)
 		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
 	}
 
-	RunFrameHooks();
+	RunFrameHooks(simulating);
 
 	if (m_pOnGameFrame->GetFunctionCount())
 	{

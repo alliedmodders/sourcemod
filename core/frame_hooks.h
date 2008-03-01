@@ -32,6 +32,6 @@
 #ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 #define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 
-void RunFrameHooks();
+void RunFrameHooks(bool simulating);
 
 #endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_

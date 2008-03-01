@@ -39,11 +39,12 @@
 float g_LastMenuTime = 0.0f;
 float g_LastAuthCheck = 0.0f;
 
-void RunFrameHooks()
+void RunFrameHooks(bool simulating)
 {
 	/* Frame based hooks */
 	g_DBMan.RunFrame();
 	g_HL2.ProcessFakeCliCmdQueue();
+	g_SourceMod.ProcessGameFrameHooks(simulating);
 
 	float curtime = *g_pUniversalTime;
 
@@ -60,4 +61,3 @@ void RunFrameHooks()
 		g_LastAuthCheck = curtime;
 	}
 }
-

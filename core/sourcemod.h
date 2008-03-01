@@ -35,6 +35,7 @@
 #include "sm_globals.h"
 #include <ISourceMod.h>
 #include <sh_stack.h>
+#include <sh_vector.h>
 #include "CDataPack.h"
 
 using namespace SourceHook;
@@ -114,6 +115,9 @@ public: // ISourceMod
 	void GlobalPause();
 	void GlobalUnpause();
 	void DoGlobalPluginLoads();
+	void AddGameFrameHook(GAME_FRAME_HOOK hook);
+	void RemoveGameFrameHook(GAME_FRAME_HOOK hook);
+	void ProcessGameFrameHooks(bool simulating);
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
@@ -124,6 +128,7 @@ private:
 	bool m_ExecOnMapEnd;
 	unsigned int m_target;
 	bool m_GotBasePath;
+	CVector<GAME_FRAME_HOOK> m_frame_hooks;
 };
 
 extern bool g_Loaded;

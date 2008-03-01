@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	5
+#define SMINTERFACE_SOURCEMOD_VERSION	6
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -62,6 +62,13 @@ namespace SourceMod
 		Path_SM,				/**< Base path is absolute to SourceMod */
 		Path_SM_Rel,			/**< Base path is relative to SourceMod */
 	};
+
+	/**
+	 * @brief Called when a game frame is fired.
+	 *
+	 * @param simulating		Whether or not the game is ticking.
+	 */
+	typedef void (*GAME_FRAME_HOOK)(bool simulating);
 
 	/**
 	 * @brief Contains miscellaneous helper functions.
@@ -225,6 +232,20 @@ namespace SourceMod
 		 * @return			Global client value.
 		 */
 		virtual unsigned int GetGlobalTarget() const =0;
+
+		/**
+		 * @brief Adds a function to be called each game frame.
+		 *
+		 * @param hook		Hook function.
+		 */
+		virtual void AddGameFrameHook(GAME_FRAME_HOOK hook) =0;
+
+		/**
+		 * @brief Removes one game frame hook matching the given function.
+		 *
+		 * @param hook		Hook function.
+		 */
+		virtual void RemoveGameFrameHook(GAME_FRAME_HOOK hook) =0;
 	};
 }
 
