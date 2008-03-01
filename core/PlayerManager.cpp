@@ -961,10 +961,22 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 	}
 
+	if (strcmp(info->pattern, "@me") == 0)
+	{
+		info->targets[0] = info->admin;
+		info->num_targets = 1;
+		strncopy(info->target_name, 
+			pAdmin ? pAdmin->GetName() : "Console",
+			info->target_name_maxlength);
+		info->target_name_style = COMMAND_TARGETNAME_RAW;
+		return;
+	}
+
 	if ((info->flags & COMMAND_FILTER_NO_MULTI) != COMMAND_FILTER_NO_MULTI)
 	{
 		bool is_multi = false;
 		bool bots_only = false;
+		int skip_client = -1;
 
 		if (strcmp(info->pattern, "@all") == 0)
 		{
@@ -1018,6 +1030,13 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			info->target_name_style = COMMAND_TARGETNAME_ML;
 			info->flags |= COMMAND_FILTER_NO_BOTS;
 		}
+		else if (strcmp(info->pattern, "@!me") == 0)
+		{
+			is_multi = true;
+			strncopy(info->target_name, "all players", info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_ML;
+			skip_client = info->admin;
+		}
 
 		if (is_multi)
 		{
@@ -1029,7 +1048,8 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				}
 				if (FilterCommandTarget(pAdmin, pTarget, info->flags) > 0)
 				{
-					if (!bots_only || pTarget->IsFakeClient())
+					if ((!bots_only || pTarget->IsFakeClient())
+						&& skip_client != i)
 					{
 						info->targets[total++] = i;
 					}
