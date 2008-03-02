@@ -33,6 +33,10 @@
 #include "PluginSys.h"
 #include "sm_stringutil.h"
 #include "Logger.h"
+#if defined PLATFORM_POSIX
+#include <sys/time.h>
+#include <time.h>
+#endif
 
 ProfileEngine g_Profiler;
 IProfiler *sm_profiler = &g_Profiler;
@@ -123,14 +127,14 @@ inline double DiffProfPoints(const prof_point_t &start, const prof_point_t &end)
 #elif defined PLATFORM_POSIX
 	seconds = (double)(end.value.tv_sec - start.value.tv_sec);
 
-	if (start.value.tv_usec > after.value.tv_usec)
+	if (start.value.tv_usec > end.value.tv_usec)
 	{
-		seconds - 1.0;
-		seconds += (double)(1000000 - (before.value.tv_usec - after.tv_usec)) / 1000000.0;
+		seconds -= 1.0;
+		seconds += (double)(1000000 - (start.value.tv_usec - end.value.tv_usec)) / 1000000.0;
 	}
 	else
 	{
-		seconds += (double)(after.value.tv_usec - before.value.tv_usec) / 1000000.0;
+		seconds += (double)(end.value.tv_usec - start.value.tv_usec) / 1000000.0;
 	}
 #endif
 
