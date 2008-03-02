@@ -47,6 +47,13 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 
 #define SP_MAX_EXEC_PARAMS				32	/**< Maximum number of parameters in a function */
 
+#define SP_JITCONF_DEBUG		"debug"		/**< Configuration option for debugging. */
+#define SP_JITCONF_PROFILE		"profile"	/**< Configuration option for profiling. */
+
+#define SP_PROF_NATIVES			(1<<0)		/**< Profile natives. */
+#define SP_PROF_CALLBACKS		(1<<1)		/**< Profile callbacks. */
+#define SP_PROF_FUNCTIONS		(1<<2)		/**< Profile functions. */
+
 /**
  * @brief Error codes for SourcePawn routines.
  */
@@ -139,6 +146,7 @@ namespace SourcePawn
 {
 	class IPluginContext;
 	class IVirtualMachine;
+	class IProfiler;
 };
 
 struct sp_context_s;
@@ -285,6 +293,8 @@ typedef struct sp_context_s
 	sp_debug_file_t	*files;		/**< Files */
 	sp_debug_line_t	*lines;		/**< Lines */
 	sp_debug_symbol_t *symbols;	/**< Symbols */
+	SourcePawn::IProfiler *profiler;		/**< Pointer to IProfiler */
+	uint32_t		prof_flags;	/**< Profiling flags */
 } sp_context_t;
 
 #endif //_INCLUDE_SOURCEPAWN_VM_TYPES_H

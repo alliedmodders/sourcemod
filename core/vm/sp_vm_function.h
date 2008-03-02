@@ -55,7 +55,10 @@ class CFunction : public IPluginFunction
 {
 	friend class SourcePawnEngine;
 public:
-	CFunction(uint32_t code_addr, IPluginContext *pContext, funcid_t fnid);
+	CFunction(uint32_t code_addr,
+			  IPluginContext *pContext, 
+			  funcid_t fnid,
+			  uint32_t pub_id);
 public:
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
@@ -79,7 +82,7 @@ public:
 	bool IsRunnable();
 	funcid_t GetFunctionID();
 public:
-	void Set(uint32_t code_addr, IPluginContext *plugin, funcid_t fnid);
+	void Set(uint32_t code_addr, IPluginContext *plugin, funcid_t fnid, uint32_t pub_id);
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	inline int SetError(int err)
@@ -98,6 +101,7 @@ private:
 	CFunction *m_pNext;
 	bool m_Invalid;
 	funcid_t m_FnId;
+	sp_public_t *m_pPublic;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

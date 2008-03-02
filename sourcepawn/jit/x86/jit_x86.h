@@ -67,13 +67,14 @@ class CompData : public ICompilation
 {
 public:
 	CompData() : plugin(NULL), 
-		debug(false), inline_level(0), rebase(NULL),
+		debug(false), profile(0), inline_level(0), rebase(NULL),
 		error_set(SP_ERROR_NONE), func_idx(0)
 	{
 	};
 public:
 	sp_plugin_t *plugin;			/* plugin handle */
 	bool debug;						/* whether to compile debug mode */
+	int profile;					/* profiling flags */
 	int inline_level;				/* inline optimization level */
 	jitcode_t rebase;				/* relocation map */
 	int error_set;					/* error code to halt process */
@@ -121,6 +122,8 @@ public:
 
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
 cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
+cell_t NativeCallback_Debug_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
+cell_t NativeCallback_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params);
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 
 #define AMX_REG_PRI		REG_EAX

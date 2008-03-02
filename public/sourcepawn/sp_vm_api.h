@@ -41,10 +41,10 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn Engine API Version */
-#define SOURCEPAWN_ENGINE_API_VERSION	2
+#define SOURCEPAWN_ENGINE_API_VERSION	3
 
 /** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		5
+#define SOURCEPAWN_VM_API_VERSION		6
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -688,6 +688,63 @@ namespace SourcePawn
 		virtual void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error) =0;
 	};
 
+	/**
+	 * @brief Represents a code profiler for plugins.
+	 */
+	class IProfiler
+	{
+	public:
+		/**
+		 * @brief Invoked by the JIT to notify that a native is being started.
+		 *
+		 * @param pContext			Plugin context.
+		 * @param native			Native information.
+		 */
+		virtual void OnNativeBegin(IPluginContext *pContext, sp_native_t *native) =0;
+
+		/**
+		 * @brief Invoked by the JIT to notify that the last native on the stack 
+		 * is no longer being executed.
+		 */
+		virtual void OnNativeEnd() =0;
+
+		/**
+		 * @brief Invoked by the JIT to notify that a function call is starting.
+		 *
+		 * @param pContext			Plugin context.
+		 * @param name				Function name, or NULL if not known.
+		 * @param code_addr			P-Code address.
+		 */
+		virtual void OnFunctionBegin(IPluginContext *pContext, const char *name) =0;
+
+		/**
+		 * @brief Invoked by the JIT to notify that the last function call has 
+		 * concluded.  In the case of an error inside a function, this will not 
+		 * be called.  Instead, the VM will call OnCallbackEnd() and the profiler 
+		 * stack must be unwound.
+		 */
+		virtual void OnFunctionEnd() =0;
+
+		/**
+		 * @brief Invoked by the VM to notify that a forward/callback is starting.
+		 *
+		 * @param pContext			Plugin context.
+		 * @param pubfunc			Public function information.
+		 * @return					Unique number to pass to OnFunctionEnd().
+		 */
+		virtual int OnCallbackBegin(IPluginContext *pContext, sp_public_t *pubfunc) =0;
+
+		/**
+		 * @brief Invoked by the JIT to notify that a callback has ended.  
+		 *
+		 * As noted in OnFunctionEnd(), this my be called with a misaligned 
+		 * profiler stack.  To correct this, the stack should be unwound 
+		 * (discarding data as appropriate) to a matching serial number.
+		 *
+		 * @param serial			Unique number from OnCallbackBegin().
+		 */
+		virtual void OnCallbackEnd(int serial) =0;
+	};
 
 	/**
 	 * @brief Contains helper functions used by VMs and the host app

@@ -39,6 +39,8 @@
  * :TODO: Make functions allocate as a lump instead of individual allocations!
  */
 
+extern IProfiler *sm_profiler;
+
 namespace SourcePawn
 {
 	class BaseContext : 

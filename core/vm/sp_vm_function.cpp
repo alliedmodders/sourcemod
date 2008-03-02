@@ -32,12 +32,13 @@
 #include <stdio.h>
 #include <string.h>
 #include "sp_vm_function.h"
+#include "sm_stringutil.h"
 
 /********************
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(uint32_t code_addr, IPluginContext *plugin, funcid_t id)
+void CFunction::Set(uint32_t code_addr, IPluginContext *plugin, funcid_t id, uint32_t pub_id)
 {
 	m_codeaddr = code_addr;
 	m_pContext = plugin;
@@ -46,6 +47,8 @@ void CFunction::Set(uint32_t code_addr, IPluginContext *plugin, funcid_t id)
 	m_Invalid = false;
 	m_pCtx = plugin ? plugin->GetContext() : NULL;
 	m_FnId = id;
+	
+	m_pContext->GetPublicByIndex(pub_id, &m_pPublic);
 }
 
 bool CFunction::IsRunnable()
@@ -55,9 +58,17 @@ bool CFunction::IsRunnable()
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
+	int ir, serial;
+
 	if (!IsRunnable())
 	{
 		return SP_ERROR_NOT_RUNNABLE;
+	}
+
+	if ((m_pCtx->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS
+		&& m_pPublic != NULL)
+	{
+		serial = m_pCtx->profiler->OnCallbackBegin(m_pContext, m_pPublic);
 	}
 
 	while (num_params--)
@@ -65,7 +76,15 @@ int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_
 		m_pContext->PushCell(params[num_params]);
 	}
 
-	return m_pContext->Execute(m_codeaddr, result);
+	ir = m_pContext->Execute(m_codeaddr, result);
+
+	if ((m_pCtx->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS
+		&& m_pPublic != NULL)
+	{
+		m_pCtx->profiler->OnCallbackEnd(serial);
+	}
+
+	return ir;
 }
 
 IPluginContext *CFunction::GetParentContext()
@@ -73,7 +92,7 @@ IPluginContext *CFunction::GetParentContext()
 	return m_pContext;
 }
 
-CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin, funcid_t id) : 
+CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin, funcid_t id, uint32_t pub_id) : 
 	m_codeaddr(code_addr), m_pContext(plugin), m_curparam(0), 
 	m_errorstate(SP_ERROR_NONE), m_FnId(id)
 {
@@ -82,6 +101,7 @@ CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin, funcid_t id) :
 	{
 		m_pCtx = plugin->GetContext();
 	}
+	m_pContext->GetPublicByIndex(pub_id, &m_pPublic);
 }
 
 int CFunction::PushCell(cell_t cell)
@@ -319,3 +339,4 @@ funcid_t CFunction::GetFunctionID()
 {
 	return m_FnId;
 }
+

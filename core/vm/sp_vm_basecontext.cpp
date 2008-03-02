@@ -61,6 +61,12 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	ctx = _ctx;
 	ctx->context = this;
 	ctx->dbreak = GlobalDebugBreak;
+
+	if (ctx->prof_flags != 0)
+	{
+		ctx->profiler = sm_profiler;
+	}
+
 	m_InExec = false;
 	m_CustomMsg = false;
 	m_funcsnum = ctx->vmbase->FunctionCount(ctx);
@@ -150,7 +156,7 @@ void BaseContext::RefreshFunctionCache()
 			{
 				continue;
 			}
-			m_pub_funcs[i]->Set(pub->code_offs, this, pub->funcid);
+			m_pub_funcs[i]->Set(pub->code_offs, this, pub->funcid, i);
 		}
 	}
 
@@ -186,9 +192,16 @@ void BaseContext::SetContext(sp_context_t *_ctx)
 	{
 		return;
 	}
+
 	ctx = _ctx;
 	ctx->context = this;
 	ctx->dbreak = GlobalDebugBreak;
+
+	if (ctx->prof_flags != 0)
+	{
+		ctx->profiler = sm_profiler;
+	}
+
 	RefreshFunctionCache();
 }
 
@@ -992,10 +1005,18 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		pFunc = m_pub_funcs[func_id];
 		if (!pFunc)
 		{
-			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, this, ctx->publics[func_id].funcid);
+			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, 
+												 this, 
+												 ctx->publics[func_id].funcid,
+												 func_id);
 			pFunc = m_pub_funcs[func_id];
-		} else if (pFunc->IsInvalidated()) {
-			pFunc->Set(ctx->publics[func_id].code_offs, this, ctx->publics[func_id].funcid);
+		}
+		else if (pFunc->IsInvalidated())
+		{
+			pFunc->Set(ctx->publics[func_id].code_offs, 
+				       this,
+					   ctx->publics[func_id].funcid,
+					   func_id);
 		}
 	} else {
 		/* :TODO: currently not used */
@@ -1034,16 +1055,20 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			m_pub_funcs[index] = new CFunction(pub->code_offs, this, pub->funcid);
+			m_pub_funcs[index] = new CFunction(pub->code_offs, this, pub->funcid, index);
 		}
 		pFunc = m_pub_funcs[index];
-	} else if (pFunc->IsInvalidated()) {
+	}
+	else if (pFunc->IsInvalidated())
+	{
 		sp_public_t *pub = NULL;
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			pFunc->Set(pub->code_offs, this, pub->funcid);
-		} else {
+			pFunc->Set(pub->code_offs, this, pub->funcid, index);
+		}
+		else
+		{
 			pFunc = NULL;
 		}
 	}

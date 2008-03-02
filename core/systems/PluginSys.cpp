@@ -982,7 +982,6 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	g_LibSys.CloseDirectory(dir);
 }
 
-//well i have discovered that gabe newell is very fat, so i wrote this comment now
 LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength)
 {
 	if (m_LoadingLocked)
