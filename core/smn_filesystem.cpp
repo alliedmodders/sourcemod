@@ -37,22 +37,40 @@
 #include "Logger.h"
 #include "PluginSys.h"
 #include "sourcemm_api.h"
+#include "ForwardSys.h"
+
+SH_DECL_HOOK1_void(IVEngineServer, LogPrint, SH_NOATTRIB, false, const char *);
 
 HandleType_t g_FileType;
 HandleType_t g_DirType;
+IChangeableForward *g_pLogHook = NULL;
 
 class FileNatives : 
 	public SMGlobalClass,
-	public IHandleTypeDispatch
+	public IHandleTypeDispatch,
+	public IPluginsListener
 {
 public:
+	FileNatives()
+	{
+		m_bIsLoggingHooked = false;
+	}
 	virtual void OnSourceModAllInitialized()
 	{
 		g_FileType = g_HandleSys.CreateType("File", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_DirType = g_HandleSys.CreateType("Directory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_pLogHook = g_Forwards.CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
+		g_PluginSys.AddPluginsListener(this);
 	}
 	virtual void OnSourceModShutdown()
 	{
+		g_PluginSys.RemovePluginsListener(this);
+		if (m_bIsLoggingHooked)
+		{
+			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
+			m_bIsLoggingHooked = false;
+		}
+		g_Forwards.ReleaseForward(g_pLogHook);
 		g_HandleSys.RemoveType(g_DirType, g_pCoreIdent);
 		g_HandleSys.RemoveType(g_FileType, g_pCoreIdent);
 		g_DirType = 0;
@@ -64,11 +82,59 @@ public:
 		{
 			FILE *fp = (FILE *)object;
 			fclose(fp);
-		} else if (type == g_DirType) {
+		}
+		else if (type == g_DirType)
+		{
 			IDirectory *pDir = (IDirectory *)object;
 			g_LibSys.CloseDirectory(pDir);
 		}
 	}
+	virtual void OnPluginDestroyed(IPlugin *plugin)
+	{
+		if (m_bIsLoggingHooked && g_pLogHook->GetFunctionCount() == 0)
+		{
+			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
+			m_bIsLoggingHooked = false;
+		}
+	}
+	virtual void AddLogHook(IPluginFunction *pFunc)
+	{
+		if (!m_bIsLoggingHooked)
+		{
+			SH_ADD_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
+			m_bIsLoggingHooked = true;
+		}
+
+		g_pLogHook->AddFunction(pFunc);
+	}
+	virtual void RemoveLogHook(IPluginFunction *pFunc)
+	{
+		g_pLogHook->RemoveFunction(pFunc);
+
+		if (m_bIsLoggingHooked && g_pLogHook->GetFunctionCount() == 0)
+		{
+			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
+			m_bIsLoggingHooked = false;
+		}
+	}
+	virtual void LogPrint(const char *msg)
+	{
+		cell_t result;
+
+		result = 0;
+
+		g_in_game_log_hook = true;
+		g_pLogHook->PushString(msg);
+		g_pLogHook->Execute(&result);
+		g_in_game_log_hook = false;
+
+		if (result >= Pl_Handled)
+		{
+			RETURN_META(MRES_SUPERCEDE);
+		}
+	}
+private:
+	bool m_bIsLoggingHooked;
 } s_FileNatives;
 
 static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
@@ -521,7 +587,7 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 		buffer[len] = '\0';
 	}
 
-	engine->LogPrint(buffer);
+	Engine_LogPrintWrapper(buffer);
 
 	return 1;
 }
@@ -835,6 +901,34 @@ static cell_t sm_WriteFileString(IPluginContext *pContext, const cell_t *params)
 	return (fwrite(buffer, sizeof(char), len, pFile) == len) ? 1 : 0;
 }
 
+static cell_t sm_AddGameLogHook(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunction;
+
+	if ((pFunction=pContext->GetFunctionById(params[1])) == NULL)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+	}
+
+	s_FileNatives.AddLogHook(pFunction);
+	
+	return 1;
+}
+
+static cell_t sm_RemoveGameLogHook(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunction;
+
+	if ((pFunction=pContext->GetFunctionById(params[1])) == NULL)
+	{
+		return pContext->ThrowNativeError("Function id %x is invalid", params[1]);
+	}
+
+	s_FileNatives.RemoveLogHook(pFunction);
+
+	return 1;
+}
+
 REGISTER_NATIVES(filesystem)
 {
 	{"OpenDirectory",			sm_OpenDirectory},
@@ -863,5 +957,7 @@ REGISTER_NATIVES(filesystem)
 	{"ReadFileString",			sm_ReadFileString},
 	{"WriteFile",				sm_WriteFile},
 	{"WriteFileString",			sm_WriteFileString},
+	{"AddGameLogHook",			sm_AddGameLogHook},
+	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
 	{NULL,						NULL},
 };

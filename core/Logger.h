@@ -98,6 +98,9 @@ private:
 	bool m_InitialState;
 };
 
+void Engine_LogPrintWrapper(const char *msg);
+
+extern bool g_in_game_log_hook;
 extern Logger g_Logger;
 
 #endif // _INCLUDE_SOURCEMOD_CLOGGER_H_

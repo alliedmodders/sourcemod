@@ -434,7 +434,7 @@ void Logger::_PrintToGameLog(const char *fmt, va_list ap)
 	msg[len++] = '\n';
 	msg[len] = '\0';
 
-	engine->LogPrint(msg);
+	Engine_LogPrintWrapper(msg);
 }
 
 const char *Logger::GetLogFileName(LogType type) const
@@ -505,3 +505,16 @@ void Logger::LogFatal(const char *msg, ...)
 	}
 }
 
+bool g_in_game_log_hook = false;
+
+void Engine_LogPrintWrapper(const char *msg)
+{
+	if (g_in_game_log_hook)
+	{
+		ENGINE_CALL(LogPrint)(msg);
+	}
+	else
+	{
+		engine->LogPrint(msg);
+	}
+}
