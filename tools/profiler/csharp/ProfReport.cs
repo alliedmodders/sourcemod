@@ -77,10 +77,12 @@ namespace profviewer
                 {
                     if (xml.Name.CompareTo("profile") == 0)
                     {
+                        int t;
                         in_profile = true;
                         m_duration = Double.Parse(xml.GetAttribute("uptime"));
                         m_start_time = new DateTime(1970, 1, 1, 0, 0, 0);
-                        m_start_time.AddSeconds(Int32.Parse(xml.GetAttribute("time")));
+                        t = Int32.Parse(xml.GetAttribute("time"));
+                        m_start_time = m_start_time.AddSeconds(t);
                     }
                     else if (in_profile)
                     {
