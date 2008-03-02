@@ -1351,16 +1351,20 @@ inline void WriteOp_Call(JitWriter *jit)
 		IA32_Add_Rm_Imm8(jit, REG_ESP, 8, MOD_REG);
 
 		//call <addr>
+		//push eax
 		jmp = IA32_Call_Imm32(jit, 0);
 		IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
+		IA32_Push_Reg(jit, REG_EAX);
 
 		//push [esi+context]
 		//call ProfCallGate_End
 		//add esp, 4
+		//pop eax
 		IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_CONTEXT);
 		jmp = IA32_Call_Imm32(jit, 0);
 		IA32_Write_Jump32_Abs(jit, jmp, (void *)ProfCallGate_End);
 		IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+		IA32_Pop_Reg(jit, REG_EAX);
 	}
 	else
 	{
