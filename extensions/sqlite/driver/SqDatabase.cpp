@@ -160,7 +160,36 @@ IQuery *SqDatabase::DoQuery(const char *query)
 	return pQuery;
 }
 
-IPreparedQuery *SqDatabase::PrepareQuery(const char *query, char *error, size_t maxlength, int *errCode/* =NULL */)
+bool SqDatabase::DoSimpleQueryEx(const char *query, size_t len)
+{
+	IQuery *pQuery = DoQueryEx(query, len);
+	if (!pQuery)
+	{
+		return false;
+	}
+	pQuery->Destroy();
+	return true;
+}
+
+IQuery *SqDatabase::DoQueryEx(const char *query, size_t len)
+{
+	IPreparedQuery *pQuery = PrepareQueryEx(query, len, NULL, 0, NULL);
+	if (!pQuery)
+	{
+		return NULL;
+	}
+	if (!pQuery->Execute())
+	{
+		pQuery->Destroy();
+		return NULL;
+	}
+	return pQuery;
+}
+
+IPreparedQuery *SqDatabase::PrepareQuery(const char *query, 
+										 char *error, 
+										 size_t maxlength, 
+										 int *errCode/* =NULL */)
 {
 	sqlite3_stmt *stmt = NULL;
 	if ((m_LastErrorCode = sqlite3_prepare_v2(m_sq3, query, -1, &stmt, NULL)) != SQLITE_OK
@@ -179,12 +208,34 @@ IPreparedQuery *SqDatabase::PrepareQuery(const char *query, char *error, size_t 
 			strncopy(error, msg, maxlength);
 		}
 		m_LastError.assign(msg);
-		#if 0 /* This didn't really seem like a good idea... */
-		if (stmt)
+		return NULL;
+	}
+	return new SqQuery(this, stmt);
+}
+
+IPreparedQuery *SqDatabase::PrepareQueryEx(const char *query, 
+										   size_t len, 
+										   char *error, 
+										   size_t maxlength, 
+										   int *errCode/* =NULL */)
+{
+	sqlite3_stmt *stmt = NULL;
+	if ((m_LastErrorCode = sqlite3_prepare_v2(m_sq3, query, len, &stmt, NULL)) != SQLITE_OK
+		|| !stmt)
+	{
+		const char *msg;
+		if (m_LastErrorCode != SQLITE_OK)
 		{
-			sqlite3_finalize(stmt);
+			msg = sqlite3_errmsg(m_sq3);
+		} else {
+			msg = "Invalid query string";
+			m_LastErrorCode = SQLITE_ERROR;
 		}
-		#endif
+		if (error)
+		{
+			strncopy(error, msg, maxlength);
+		}
+		m_LastError.assign(msg);
 		return NULL;
 	}
 	return new SqQuery(this, stmt);

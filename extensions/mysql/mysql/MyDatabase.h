@@ -58,6 +58,8 @@ public: //IDatabase
 	void UnlockFromFullAtomicOperation();
 	void IncReferenceCount();
 	IDBDriver *GetDriver();
+	bool DoSimpleQueryEx(const char *query, size_t len);
+	IQuery *DoQueryEx(const char *query, size_t len);
 public:
 	const DatabaseInfo &GetInfo();
 private:

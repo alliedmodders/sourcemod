@@ -226,6 +226,37 @@ IQuery *MyDatabase::DoQuery(const char *query)
 	return new MyQuery(this, res);
 }
 
+bool MyDatabase::DoSimpleQueryEx(const char *query, size_t len)
+{
+	IQuery *pQuery = DoQueryEx(query, len);
+	if (!pQuery)
+	{
+		return false;
+	}
+	pQuery->Destroy();
+	return true;
+}
+
+IQuery *MyDatabase::DoQueryEx(const char *query, size_t len)
+{
+	if (mysql_real_query(m_mysql, query, len) != 0)
+	{
+		return NULL;
+	}
+
+	MYSQL_RES *res = NULL;
+	if (mysql_field_count(m_mysql))
+	{
+		res = mysql_store_result(m_mysql);
+		if (!res)
+		{
+			return NULL;
+		}
+	}
+
+	return new MyQuery(this, res);
+}
+
 IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t maxlength, int *errCode)
 {
 	MYSQL_STMT *stmt = mysql_stmt_init(m_mysql);

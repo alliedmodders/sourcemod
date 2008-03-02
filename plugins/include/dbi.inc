@@ -277,11 +277,14 @@ stock bool:SQL_QuoteString(Handle:database,
  *
  * @param database		A database Handle.
  * @param query			Query string.
+ * @param len			Optional parameter to specify the query length, in 
+ *						bytes.  This can be used to send binary queries that 
+ * 						have a premature terminator.
  * @return				True if query succeeded, false otherwise.  Use
  *						SQL_GetError to find the last error.
  * @error				Invalid database Handle.
  */
-native bool:SQL_FastQuery(Handle:database, const String:query[]);
+native bool:SQL_FastQuery(Handle:database, const String:query[], len=-1);
 
 /**
  * Executes a simple query and returns a new query Handle for
@@ -289,11 +292,14 @@ native bool:SQL_FastQuery(Handle:database, const String:query[]);
  *
  * @param database		A database Handle.
  * @param query			Query string.
+ * @param len			Optional parameter to specify the query length, in 
+ *						bytes.  This can be used to send binary queries that 
+ * 						have a premature terminator.
  * @return				A new Query Handle on success, INVALID_HANDLE
  *						otherwise.  The Handle must be freed with CloseHandle().
  * @error				Invalid database Handle.
  */
-native Handle:SQL_Query(Handle:database, const String:query[]);
+native Handle:SQL_Query(Handle:database, const String:query[], len=-1);
 
 /**
  * Creates a new prepared statement query.  Prepared statements can

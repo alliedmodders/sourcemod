@@ -46,6 +46,7 @@ public:
 	bool DoSimpleQuery(const char *query);
 	IQuery *DoQuery(const char *query);
 	IPreparedQuery *PrepareQuery(const char *query, char *error, size_t maxlength, int *errCode=NULL);
+	IPreparedQuery *PrepareQueryEx(const char *query, size_t len, char *error, size_t maxlength, int *errCode=NULL);
 	bool QuoteString(const char *str, char buffer[], size_t maxlen, size_t *newSize);
 	unsigned int GetAffectedRows();
 	unsigned int GetInsertID();
@@ -53,6 +54,8 @@ public:
 	void UnlockFromFullAtomicOperation();
 	void IncReferenceCount();
 	IDBDriver *GetDriver();
+	bool DoSimpleQueryEx(const char *query, size_t len);
+	IQuery *DoQueryEx(const char *query, size_t len);
 public:
 	sqlite3 *GetDb();
 private:

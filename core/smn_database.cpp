@@ -644,6 +644,11 @@ static cell_t SQL_FastQuery(IPluginContext *pContext, const cell_t *params)
 	char *query;
 	pContext->LocalToString(params[2], &query);
 
+	if (params[0] >= 3 && params[3] != -1)
+	{
+		return db->DoSimpleQueryEx(query, params[3]) ? 1 : 0;
+	}
+
 	return db->DoSimpleQuery(query) ? 1 : 0;
 }
 
@@ -661,7 +666,16 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 	char *query;
 	pContext->LocalToString(params[2], &query);
 
-	IQuery *qr = db->DoQuery(query);
+	IQuery *qr;
+	
+	if (params[0] >= 3 && params[3] != -1)
+	{
+		qr = db->DoQueryEx(query, params[3]);
+	}
+	else
+	{
+		qr = db->DoQuery(query);
+	}
 
 	if (!qr)
 	{

@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		5
+#define SMINTERFACE_DBI_VERSION		6
 
 namespace SourceMod
 {
@@ -547,6 +547,32 @@ namespace SourceMod
 		 * This function is thread safe.
 		 */
 		virtual IDBDriver *GetDriver() =0;
+
+		/**
+		 * @brief Prepares and executes a binary query in one step, and discards
+		 * any return data.
+		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
+		 * @param query			Query string.
+		 * @param length		Length of query string.
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool DoSimpleQueryEx(const char *query, size_t len) =0;
+
+		/**
+		 * @brief Prepares and executes a binary query in one step, and returns
+		 * the resultant data set.
+		 *
+		 * Note: If a query contains more than one result set, each
+		 * result set must be processed before a new query is started.
+		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
+		 * @param query			Query string.
+		 * @return				IQuery pointer on success, NULL otherwise.
+		 */
+		virtual IQuery *DoQueryEx(const char *query, size_t len) =0;
 	};
 
 	/** 
