@@ -90,6 +90,7 @@ PlayerManager::PlayerManager()
 {
 	m_AuthQueue = NULL;
 	m_FirstPass = false;
+	m_maxClients = 0;
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));

@@ -302,6 +302,14 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	/* Notify! */
+	pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModAllInitialized_Post();
+		pBase = pBase->m_pGlobalClassNext;
+	}
+
 	/* Add us now... */
 	g_ShareSys.AddInterface(NULL, this);
 

@@ -85,9 +85,16 @@ public:
 	}
 
 	/**
-	 * @brief Called after all global classes have initialized
+	 * @brief Called after all global classes have been started up
 	 */
 	virtual void OnSourceModAllInitialized()
+	{
+	}
+
+	/**
+	 * @brief Called after all global classes have initialized
+	 */
+	virtual void OnSourceModAllInitialized_Post()
 	{
 	}
 

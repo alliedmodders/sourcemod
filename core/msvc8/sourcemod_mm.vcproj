@@ -1425,6 +1425,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_hudtext.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_keyvalues.cpp"
 				>
 			</File>

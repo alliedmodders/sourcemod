@@ -63,6 +63,24 @@
 			"HudRadioMenuMsg"		"ShowMenu"
 		}
 	}
+	
+	/**
+	 * Which games support HudMsg?
+	 */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"hl2mp"
+			"game"		"sourceforts"
+			"game"		"tf"
+		}
+		
+		"Keys"
+		{
+			"HudTextMsg"			"HudMsg"
+		}
+	}
 
 	/**
 	 * Which games use an extra byte in the HintText 
