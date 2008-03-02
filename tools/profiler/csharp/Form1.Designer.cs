@@ -183,7 +183,6 @@ namespace profviewer
             // 
             // dialog_open
             // 
-            this.dialog_open.FileName = "openFileDialog1";
             this.dialog_open.Filter = "Profiler files|*.xml|All files|*.*";
             // 
             // panel1
