@@ -47,6 +47,10 @@ public Action:Command_TestSortInts(args)
 	SortIntegers(array, 10, Sort_Descending)
 	PrintIntegers(array, 10)
 	
+	PrintToServer("Testing random sort:")
+	SortIntegers(array, 10, Sort_Random)
+	PrintIntegers(array, 10)
+	
 	return Plugin_Handled
 }
 
@@ -72,6 +76,10 @@ public Action:Command_TestSortFloats(args)
 	
 	PrintToServer("Testing descending sort:")
 	SortFloats(array, 10, Sort_Descending)
+	PrintFloats(array, 10)
+	
+	PrintToServer("Testing random sort:")
+	SortFloats(array, 10, Sort_Random)
 	PrintFloats(array, 10)
 	
 	return Plugin_Handled
@@ -125,7 +133,7 @@ public Action:Command_TestSortStrings(args)
 			"sidluke",
 			"johnny got his gun",
 			"gabe newell",
-			"hello",
+			"pRED*'s awesome",
 			"WHAT?!"
 		}
 		
@@ -135,6 +143,10 @@ public Action:Command_TestSortStrings(args)
 	
 	PrintToServer("Testing descending sort:")
 	SortStrings(strarray, 10, Sort_Descending)
+	PrintStrings(strarray, 10)
+	
+	PrintToServer("Testing random sort:")
+	SortStrings(strarray, 10, Sort_Random)
 	PrintStrings(strarray, 10)
 	
 	return Plugin_Handled
@@ -157,7 +169,7 @@ public Action:Command_TestSort2D(args)
 			"sidluke",
 			"johnny got his gun",
 			"gabe newell",
-			"hello",
+			"pred is a crab",
 			"WHAT?!"
 		}
 	
@@ -204,6 +216,10 @@ public Action:Command_TestSortADTInts(args)
 	SortADTArray(array, Sort_Descending, Sort_Integer)
 	PrintADTArrayIntegers(array)
 	
+	PrintToServer("Testing random sort:")
+	SortADTArray(array, Sort_Random, Sort_Integer)
+	PrintADTArrayIntegers(array)
+	
 	return Plugin_Handled
 
 }
@@ -239,6 +255,10 @@ public Action:Command_TestSortADTFloats(args)
 	SortADTArray(array, Sort_Descending, Sort_Float)
 	PrintADTArrayFloats(array)
 	
+	PrintToServer("Testing random sort:")
+	SortADTArray(array, Sort_Random, Sort_Float)
+	PrintADTArrayFloats(array)
+	
 	return Plugin_Handled
 }
 
@@ -264,7 +284,7 @@ public Action:Command_TestSortADTStrings(args)
 	PushArrayString(array, "sidluke");
 	PushArrayString(array, "johnny got his gun");
 	PushArrayString(array, "gabe newell");
-	PushArrayString(array, "hello");
+	PushArrayString(array, "Hello pRED*");
 	PushArrayString(array, "WHAT?!");
 	
 	PrintToServer("Testing ascending sort:")
@@ -273,6 +293,10 @@ public Action:Command_TestSortADTStrings(args)
 	
 	PrintToServer("Testing descending sort:")
 	SortADTArray(array, Sort_Descending, Sort_String)
+	PrintADTArrayStrings(array)
+	
+	PrintToServer("Testing random sort:")
+	SortADTArray(array, Sort_Random, Sort_String)
 	PrintADTArrayStrings(array)
 	
 	return Plugin_Handled
@@ -298,7 +322,7 @@ public Action:Command_TestSortADTCustom(args)
 	PushArrayString(array, "sidluke");
 	PushArrayString(array, "johnny got his gun");
 	PushArrayString(array, "gabe newell");
-	PushArrayString(array, "hello");
+	PushArrayString(array, "pRED*'s running out of ideas");
 	PushArrayString(array, "WHAT?!");
 	
 	PrintToServer("Testing custom sort:")

@@ -43,6 +43,7 @@ enum SortOrder
 {
 	Sort_Ascending = 0,		/**< Ascending order */
 	Sort_Descending = 1,	/**< Descending order */
+	Sort_Random = 2			/**< Random order */
 };
 
 /**

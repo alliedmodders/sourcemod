@@ -86,7 +86,25 @@ enum SortOrder
 {
 	Sort_Ascending = 0,
 	Sort_Descending = 1,
+	Sort_Random = 2,
 };
+
+void sort_random(cell_t *array, cell_t size)
+{
+	srand((unsigned int)time(NULL));
+
+	for (int i = size-1; i > 0; i--)
+	{
+        int n = (rand() % i) + 1;
+
+		if (array[i] != array[n]) 
+		{
+			array[i] ^= array[n];
+			array[n] ^= array[i];
+			array[i] ^= array[n];
+		}
+	}
+}
 
 int sort_ints_asc(const void *int1, const void *int2)
 {
@@ -109,8 +127,14 @@ static cell_t sm_SortIntegers(IPluginContext *pContext, const cell_t *params)
 	if (type == Sort_Ascending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_ints_asc);
-	} else {
+	} 
+	else if (type == Sort_Descending)
+	{
 		qsort(array, array_size, sizeof(cell_t), sort_ints_desc);
+	}
+	else
+	{
+		sort_random(array, array_size);
 	}
 
 	return 1;
@@ -157,8 +181,14 @@ static cell_t sm_SortFloats(IPluginContext *pContext, const cell_t *params)
 	if (type == Sort_Ascending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_floats_asc);
-	} else {
+	}
+	else if (type == Sort_Descending)
+	{
 		qsort(array, array_size, sizeof(cell_t), sort_floats_desc);
+	}
+	else
+	{
+		sort_random(array, array_size);
 	}
 
 	return 1;
@@ -217,8 +247,14 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 	if (type == Sort_Ascending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_strings_asc);
-	} else {
+	} 
+	else if (type == Sort_Descending)
+	{
 		qsort(array, array_size, sizeof(cell_t), sort_strings_desc);
+	}
+	else
+	{
+		sort_random(array, array_size);
 	}
 
 	/* END HACKHACK - restore what we damaged so Pawn doesn't throw up.
@@ -392,6 +428,20 @@ int sort_adtarray_strings_desc(const void *str1, const void *str2)
 	return strcmp((char *) str2, (char *) str1);
 }
 
+void sort_adt_random(CellArray *cArray)
+{
+	size_t arraysize = cArray->size();
+
+	srand((unsigned int)time(NULL));
+
+	for (int i = arraysize-1; i > 0; i--)
+	{
+        int n = (rand() % i) + 1;
+
+		cArray->swap(i, n);
+	}
+}
+
 static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 {
 	CellArray *cArray;
@@ -405,6 +455,14 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 	}
 
 	cell_t order = params[2];
+	
+	if (order == Sort_Random)
+	{
+		sort_adt_random(cArray);
+
+		return 1;
+	}
+
 	cell_t type = params[3];
 	size_t arraysize = cArray->size();
 	size_t blocksize = cArray->blocksize();
