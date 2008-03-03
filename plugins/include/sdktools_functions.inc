@@ -124,7 +124,7 @@ native SlapPlayer(client, health=5, bool:sound=true);
 /**
  * Searches for an entity by classname.
  *
- * @param startEnt		The entity index to begin searching from.
+ * @param startEnt		The entity index after which to begin searching from.
  *						Use -1 to start from the first entity.
  * @param classname		Classname of the entity to find.
  * @return				Entity index >= 0 if found, -1 otherwise.
