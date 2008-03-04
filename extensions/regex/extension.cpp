@@ -32,7 +32,6 @@
 #include "extension.h"
 
 #include <sh_string.h>
-#include <sh_vector.h>
 #include "pcre.h"
 #include "CRegEx.h"
 using namespace SourceHook;
@@ -50,21 +49,6 @@ RegexHandler g_RegexHandler;
 HandleType_t g_RegexHandle=0;
 
 
-SourceHook::CVector<RegEx *> PEL;
-
-int GetPEL()
-{
-	for (int i=0; i<(int)PEL.size(); i++)
-	{
-		if (PEL[i]->isFree())
-			return i;
-	}
-
-	RegEx *x = new RegEx();
-	PEL.push_back(x);
-
-	return (int)PEL.size() - 1;
-}
 
 bool RegexExtension::SDK_OnLoad(char *error, size_t err_max, bool late)
 {
@@ -76,15 +60,7 @@ bool RegexExtension::SDK_OnLoad(char *error, size_t err_max, bool late)
 void RegexExtension::SDK_OnUnload()
 {
 	g_pHandleSys->RemoveType(g_RegexHandle, myself->GetIdentity());
-	for(int i=0; i<(int)PEL.size(); i++)
-	{
-		if(PEL[i])
-		{
-			delete PEL[i];
-			PEL[i] = 0;
-		}
-	}
-	PEL.clear();
+
 }
 
 static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
@@ -92,8 +68,7 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 	char *regex;
 	pCtx->LocalToString(params[1], &regex);
 
-	int id = GetPEL();
-	RegEx *x = PEL[id];
+	RegEx *x = new RegEx();
 	
 	if (x->Compile(regex, params[2]) == 0)
 	{
@@ -201,6 +176,7 @@ void RegexHandler::OnHandleDestroy(HandleType_t type, void *object)
 	RegEx *x = (RegEx *)object;
 
 	x->Clear();
+	delete x;
 }
 
 const sp_nativeinfo_t regex_natives[] = 

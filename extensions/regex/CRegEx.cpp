@@ -13,7 +13,7 @@ RegEx::RegEx()
 	mSubStrings = 0;
 }
 
-void RegEx::Clear()
+void RegEx::Clear ()
 {
 	mErrorOffset = 0;
 	mError = NULL;
