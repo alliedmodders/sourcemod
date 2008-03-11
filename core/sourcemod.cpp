@@ -675,7 +675,7 @@ void SourceModBase::AllPluginsLoaded()
 
 time_t SourceModBase::GetAdjustedTime()
 {
-	return GetAdjustedTime();
+	return ::GetAdjustedTime();
 }
 
 void SourceModBase::AddGameFrameHook(GAME_FRAME_HOOK hook)
