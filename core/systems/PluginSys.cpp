@@ -2149,6 +2149,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				g_RootMenu.ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
 			}
 
+			SourceHook::List<IPlugin *> m_FailList;
+
 			IPluginIterator *iter = GetPluginIterator();
 			for (; iter->MorePlugins(); iter->NextPlugin(), id++)
 			{
@@ -2159,6 +2161,12 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				if (pl->GetStatus() != Plugin_Running)
 				{
 					len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
+
+					if (pl->GetStatus() <= Plugin_Error)
+					{
+						/* Plugin has failed to load. */
+						m_FailList.push_back(pl);
+					}
 				}
 				else
 				{
@@ -2177,6 +2185,22 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			}
 
 			iter->Release();
+
+			if (!m_FailList.empty())
+			{
+				g_RootMenu.ConsolePrint("Load Errors:");
+
+				SourceHook::List<IPlugin *>::iterator _iter;
+
+				CPlugin *pl;
+
+				for (_iter=m_FailList.begin(); _iter!=m_FailList.end(); _iter++)
+				{
+					pl = (CPlugin *)*_iter;
+					g_RootMenu.ConsolePrint("%s: %s",(IS_STR_FILLED(pl->GetPublicInfo()->name)) ? pl->GetPublicInfo()->name : pl->GetFilename(), pl->m_errormsg);
+				}
+			}
+
 			return;
 		}
 		else if (strcmp(cmd, "load") == 0)
