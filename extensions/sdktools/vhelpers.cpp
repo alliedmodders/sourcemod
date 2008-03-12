@@ -30,6 +30,7 @@
  */
 
 #include "extension.h"
+#include "util.h"
 #include "vhelpers.h"
 
 CallHelper s_Teleport;
@@ -500,4 +501,117 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 
 	fclose(fp);
 }
+
+#if defined SUBPLATFORM_SECURECRT
+void _ignore_invalid_parameter(
+						const wchar_t * expression,
+						const wchar_t * function, 
+						const wchar_t * file, 
+						unsigned int line,
+						uintptr_t pReserved
+						)
+{
+	/* Wow we don't care, thanks Microsoft. */
+}
+#endif
+
+CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
+{
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		META_CONPRINT("Usage: sm_dump_classes <file>\n");
+		return;
+	}
+
+	const char *file = args.Arg(1);
+	if (!file || file[0] == '\0')
+	{
+		META_CONPRINT("Usage: sm_dump_classes <file>\n");
+		return;
+	}
+
+	ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		PassInfo retData;
+		retData.flags = PASSFLAG_BYVAL;
+		retData.size = sizeof(void *);
+		retData.type = PassType_Basic;
+
+		void *addr;
+		if (!g_pGameConf->GetMemSig("EntityFactory", &addr) || addr == NULL)
+		{
+			META_CONPRINT("Failed to locate function\n");
+			return;
+		}
+
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
+	}
+
+
+	void *returnData = NULL;
+
+	pWrapper->Execute(NULL, &returnData);
+
+	pWrapper->Destroy();
+
+	if (returnData == NULL)
+	{
+		return;
+	}
+
+	CEntityFactoryDictionary *dict = ( CEntityFactoryDictionary * )returnData;
+
+	if ( !dict )
+	{
+		return;
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = NULL;
+	if ((fp = fopen(path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", path);
+		return;
+	}
+
+	char buffer[80];
+	buffer[0] = 0;
+
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%d/%m/%Y", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	fprintf(fp, "// Dump of all classes for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
+
+	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
+	{
+		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
+		ServerClass *sclass = entity->GetServerClass();
+		fprintf(fp,"%s - %s\n",sclass->GetName(), dict->m_Factories.GetElementName(i));
+
+		typedescription_t *datamap = gamehelpers->FindInDataMap(gamehelpers->GetDataMap(entity->GetBaseEntity()), "m_iEFlags");
+		
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + datamap->fieldOffset[TD_OFFSET_NORMAL]);
+		*eflags |= (1<<0); // EFL_KILLME
+	}
+
+	fclose(fp);
+
+}
+
 
