@@ -59,6 +59,10 @@ using namespace SourceHook;
 /**
  * NOTES:
  *
+ * UPDATE 2008-03-11: These comments are horribly out of date.  They paint a good overall 
+ * picture of how PluginSys works, but things like dependencies and fake natives have 
+ * complicated things quite a bit.
+ *
  *  Currently this system needs a lot of work but it's good skeletally.  Plugin creation 
  * is done without actually compiling anything.  This is done by Load functions in the 
  * manager.  This will need a rewrite when we add context switching.
