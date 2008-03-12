@@ -303,8 +303,7 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	 * blocked because of flooding.  We won't remove this, but the hack will get 
 	 * "nicer" when we expose explicit say hooks.
 	 */
-	if (META_RESULT_STATUS == MRES_SUPERCEDE 
-		&& g_ChatTriggers.WasFloodedMessage())
+	if (g_ChatTriggers.WasFloodedMessage())
 	{
 		return;
 	}
