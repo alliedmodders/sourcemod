@@ -36,6 +36,7 @@
 #include "sourcemm_api.h"
 #include <IGameHelpers.h>
 #include <compat_wrappers.h>
+#include <IForwardSys.h>
 
 class ChatTriggers : public SMGlobalClass
 {
@@ -43,6 +44,8 @@ public:
 	ChatTriggers();
 	~ChatTriggers();
 public: //SMGlobalClass
+	void OnSourceModAllInitialized();
+	void OnSourceModAllInitialized_Post();
 	void OnSourceModGameInitialized();
 	void OnSourceModShutdown();
 	ConfigResult OnSourceModConfigChanged(const char *key, 
@@ -62,8 +65,10 @@ public:
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
 	bool IsChatTrigger();
+	bool WasFloodedMessage();
 private:
 	bool PreProcessTrigger(edict_t *pEdict, const char *args, bool is_quoted);
+	bool ClientIsFlooding(int client);
 private:
 	ConCommand *m_pSayCmd;
 	ConCommand *m_pSayTeamCmd;
@@ -74,8 +79,11 @@ private:
 	bool m_bWillProcessInPost;
 	bool m_bTriggerWasSilent;
 	bool m_bIsChatTrigger;
+	bool m_bWasFloodedMessage;
 	unsigned int m_ReplyTo;
 	char m_ToExecute[300];
+	IForward *m_pShouldFloodBlock;
+	IForward *m_pDidFloodBlock;
 };
 
 extern ChatTriggers g_ChatTriggers;

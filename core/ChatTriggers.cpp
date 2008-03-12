@@ -34,6 +34,8 @@
 #include "sm_stringutil.h"
 #include "ConCmdManager.h"
 #include "PlayerManager.h"
+#include "Translator.h"
+#include "HalfLife2.h"
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does.
  * While the OB build only runs on MM:S 1.6.0+ (SH 5+), the older one 
@@ -55,6 +57,7 @@ extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegat
 
 ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
+CPhraseFile *g_pFloodPhrases = NULL;
 
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
 	m_bTriggerWasSilent(false), m_ReplyTo(SM_REPLY_CONSOLE)
@@ -101,6 +104,20 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 	}
 
 	return ConfigResult_Ignore;
+}
+
+void ChatTriggers::OnSourceModAllInitialized()
+{
+	m_pShouldFloodBlock = g_Forwards.CreateForward("OnClientFloodCheck", ET_Event, 1, NULL, Param_Cell);
+	m_pDidFloodBlock = g_Forwards.CreateForward("OnClientFloodResult", ET_Event, 2, NULL, Param_Cell, Param_Cell);
+}
+
+void ChatTriggers::OnSourceModAllInitialized_Post()
+{
+	unsigned int file_id;
+	
+	file_id = g_Translator.FindOrAddPhraseFile("antiflood.phrases.txt");
+	g_pFloodPhrases = g_Translator.GetFileByIndex(file_id);
 }
 
 void ChatTriggers::OnSourceModGameInitialized()
@@ -155,6 +172,9 @@ void ChatTriggers::OnSourceModShutdown()
 		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(ConCommand, Dispatch, m_pSayCmd, this, &ChatTriggers::OnSayCommand_Pre, false);
 	}
+
+	g_Forwards.ReleaseForward(m_pShouldFloodBlock);
+	g_Forwards.ReleaseForward(m_pDidFloodBlock);
 }
 
 #if defined ORANGEBOX_BUILD
@@ -167,6 +187,7 @@ void ChatTriggers::OnSayCommand_Pre()
 #endif
 	int client = g_ConCmds.GetCommandClient();
 	m_bIsChatTrigger = false;
+	m_bWasFloodedMessage = false;
 
 	/* The server console cannot do this */
 	if (client == 0)
@@ -179,6 +200,35 @@ void ChatTriggers::OnSayCommand_Pre()
 	if (!args)
 	{
 		RETURN_META(MRES_IGNORED);
+	}
+
+	/* Check if we need to block this message from being sent */
+	if (ClientIsFlooding(client))
+	{
+		char buffer[128];
+
+		/* :TODO: log an error? */
+		if (g_Translator.CoreTransEx(g_pFloodPhrases, 
+			client, 
+			buffer, 
+			sizeof(buffer),
+			"Flooding the server",
+			NULL,
+			NULL)
+			!= Trans_Okay)
+		{
+			UTIL_Format(buffer, sizeof(buffer), "You are flooding the server!");
+		}
+
+		/* :TODO: we should probably kick people who spam too much. */
+
+		char fullbuffer[192];
+		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s", buffer);
+		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
+
+		m_bWasFloodedMessage = true;
+
+		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	/* Handle quoted string sets */
@@ -197,7 +247,9 @@ void ChatTriggers::OnSayCommand_Pre()
 	{
 		is_trigger = true;
 		args = &args[m_PubTriggerSize];
-	} else if (m_PrivTriggerSize && strncmp(args, m_PrivTrigger, m_PrivTriggerSize) == 0) {
+	} 
+	else if (m_PrivTriggerSize && strncmp(args, m_PrivTrigger, m_PrivTriggerSize) == 0) 
+	{
 		is_trigger = true;
 		is_silent = true;
 		args = &args[m_PrivTriggerSize];
@@ -250,6 +302,7 @@ void ChatTriggers::OnSayCommand_Post()
 #endif
 {
 	m_bIsChatTrigger = false;
+	m_bWasFloodedMessage = false;
 	if (m_bWillProcessInPost)
 	{
 		/* Reset this for re-entrancy */
@@ -354,4 +407,36 @@ unsigned int ChatTriggers::GetReplyTo()
 bool ChatTriggers::IsChatTrigger()
 {
 	return m_bIsChatTrigger;
+}
+
+bool ChatTriggers::ClientIsFlooding(int client)
+{
+	bool is_flooding = false;
+
+	if (m_pShouldFloodBlock->GetFunctionCount() != 0)
+	{
+		cell_t res = 0;
+
+		m_pShouldFloodBlock->PushCell(client);
+		m_pShouldFloodBlock->Execute(&res);
+
+		if (res != 0)
+		{
+			is_flooding = true;
+		}
+	}
+
+	if (m_pDidFloodBlock->GetFunctionCount() != 0)
+	{
+		m_pDidFloodBlock->PushCell(client);
+		m_pDidFloodBlock->PushCell(is_flooding ? 1 : 0);
+		m_pDidFloodBlock->Execute(NULL);
+	}
+
+	return is_flooding;
+}
+
+bool ChatTriggers::WasFloodedMessage()
+{
+	return m_bWasFloodedMessage;
 }

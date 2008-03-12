@@ -949,25 +949,19 @@ size_t Translator::Translate(char *buffer, size_t maxlength, void **params, cons
 	return gnprintf(buffer, maxlength, pTrans->szPhrase, new_params);
 }
 
-TransError Translator::CoreTrans(int client, 
-								  char *buffer, 
-								  size_t maxlength, 
-								  const char *phrase, 
-								  void **params, 
-								  size_t *outlen)
+TransError Translator::CoreTransEx(CPhraseFile *pFile,
+								   int client, 
+								   char *buffer, 
+								   size_t maxlength, 
+								   const char *phrase, 
+								   void **params, 
+								   size_t *outlen)
 {
-	/* :TODO: do language stuff here */
-
-	if (!g_pCorePhrases)
-	{
-		return Trans_BadPhraseFile;
-	}
-
 	Translation trans;
 	TransError err;
-	
+
 	/* Using server lang temporarily until client lang stuff is implemented */
-	if ((err=g_pCorePhrases->GetTranslation(phrase, m_ServerLang, &trans)) != Trans_Okay)
+	if ((err = pFile->GetTranslation(phrase, m_ServerLang, &trans)) != Trans_Okay)
 	{
 		return err;
 	}
@@ -980,6 +974,21 @@ TransError Translator::CoreTrans(int client,
 	}
 
 	return Trans_Okay;
+}
+
+TransError Translator::CoreTrans(int client, 
+								  char *buffer, 
+								  size_t maxlength, 
+								  const char *phrase, 
+								  void **params, 
+								  size_t *outlen)
+{
+	if (!g_pCorePhrases)
+	{
+		return Trans_BadPhraseFile;
+	}
+
+	return CoreTransEx(g_pCorePhrases, client, buffer, maxlength, phrase, params, outlen);
 }
 
 unsigned int Translator::GetServerLanguage()

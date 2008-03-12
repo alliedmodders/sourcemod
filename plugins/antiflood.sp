@@ -51,10 +51,6 @@ new Handle:sm_flood_time;								/* Handle to sm_flood_time convar */
 
 public OnPluginStart()
 {
-	LoadTranslations("antiflood.phrases");
-	
-	RegConsoleCmd("say", CheckChatFlood);
-	RegConsoleCmd("say_team", CheckChatFlood);
 	sm_flood_time = CreateConVar("sm_flood_time", "0.75", "Amount of time allowed between chat messages");
 }
 
@@ -64,41 +60,63 @@ public OnClientPutInServer(client)
 	g_FloodTokens[client] = 0;
 }
 
-public Action:CheckChatFlood(client, args)
+new Float:max_chat;
+
+public bool:OnClientFloodCheck(client)
 {
-	/* Chat from server console shouldn't be checked for flooding */
-	if (client == 0)
+	max_chat = GetConVarFloat(sm_flood_time);
+	
+	if (max_chat <= 0.0 
+		|| (GetUserFlagBits(client) & ADMFLAG_ROOT) == ADMFLAG_ROOT)
 	{
-		return Plugin_Continue;
+		return false;
 	}
 	
-	new Float:maxChat = GetConVarFloat(sm_flood_time);
+	PrintToServer("OCFC: %f %f %d", g_LastTime[client], GetGameTime(), g_FloodTokens[client]);
 	
-	if (maxChat > 0.0)
+	if (g_LastTime[client] > GetGameTime())
 	{
-		new Float:curTime = GetGameTime();
-		
-		if (g_LastTime[client] > curTime)
+		/* If player has 3 or more flood tokens, block their message */
+		if (g_FloodTokens[client] >= 3)
 		{
-			/* If player has 3 or more flood tokens, block their message */
-			if (g_FloodTokens[client] >= 3)
-			{
-				PrintToChat(client, "[SM] %t", "Flooding the server");
-				g_LastTime[client] = curTime + maxChat + 3.0;
-				
-				return Plugin_Stop;	
-			}
-			
-			/* Add one flood token when player goes over chat time limit */
-			g_FloodTokens[client]++;
-		} else if (g_FloodTokens[client]) {
-			/* Remove one flood token when player chats within time limit (slow decay) */
-			g_FloodTokens[client]--;
+			return true;
 		}
-		
-		/* Store last time of chat usage */
-		g_LastTime[client] = curTime + maxChat;
 	}
 	
-	return Plugin_Continue;
+	return false;
+}
+
+public OnClientFloodResult(client, bool:blocked)
+{
+	if (max_chat <= 0.0 
+		|| (GetUserFlagBits(client) & ADMFLAG_ROOT) == ADMFLAG_ROOT)
+	{
+		return;
+	}
+	
+	new Float:curTime = GetGameTime();
+	new Float:newTime = curTime + max_chat;
+	
+	PrintToServer("OCFR: %f, %f", g_LastTime[client], GetGameTime());
+	
+	if (g_LastTime[client] > curTime)
+	{
+		/* If the last message was blocked, update their time limit */
+		if (blocked)
+		{
+			newTime += 3.0;
+		}
+		/* Add one flood token when player goes over chat time limit */
+		else if (g_FloodTokens[client] < 3)
+		{
+			g_FloodTokens[client]++;
+		}
+	}
+	else if (g_FloodTokens[client] > 0)
+	{
+		/* Remove one flood token when player chats within time limit (slow decay) */
+		g_FloodTokens[client]--;
+	}
+	
+	g_LastTime[client] = newTime;
 }

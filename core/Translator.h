@@ -140,6 +140,13 @@ public:
 	bool GetLanguageByName(const char *name, unsigned int *index);
 	size_t Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans);
 	CPhraseFile *GetFileByIndex(unsigned int index);
+	TransError CoreTransEx(CPhraseFile *pFile,
+		int client, 
+		char *buffer, 
+		size_t maxlength, 
+		const char *phrase, 
+		void **params, 
+		size_t *outlen=NULL);
 	TransError CoreTrans(int client, 
 						 char *buffer, 
 						 size_t maxlength, 

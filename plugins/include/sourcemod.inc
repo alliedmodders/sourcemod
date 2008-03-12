@@ -505,6 +505,32 @@ native Handle:ReadMapList(Handle:array=INVALID_HANDLE,
  */
 native SetMapListCompatBind(const String:name[], const String:file[]);
 
+/**
+ * Called when a client has sent chat text.  This must return either true or 
+ * false to indicate that a client is or is not spamming the server.
+ *
+ * The return value is a hint only.  Core or another plugin may decide 
+ * otherwise.
+ *
+ * @param client		Client index.  The server (0) will never be passed.
+ * @return				True if client is spamming the server, false otherwise.
+ */
+forward bool:OnClientFloodCheck(client);
+
+/**
+ * Called after a client's flood check has been computed.  This can be used 
+ * by antiflood algorithms to decay/increase flooding weights.
+ *
+ * Since the result from "OnClientFloodCheck" isn't guaranteed to be the 
+ * final result, it is generally a good idea to use this to play with other 
+ * algorithms nicely.
+ *
+ * @param client		Client index.  The server (0) will never be passed.
+ * @param blocked		True if client flooded last "say", false otherwise.
+ * @noreturn
+ */
+forward OnClientFloodResult(client, bool:blocked);
+
 #include <helpers>
 #include <entity>
 #include <entity_prop_stocks>

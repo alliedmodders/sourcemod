@@ -299,6 +299,16 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 		return;
 	}
 
+	/* This is a hack to prevent say triggers from firing on messages that were 
+	 * blocked because of flooding.  We won't remove this, but the hack will get 
+	 * "nicer" when we expose explicit say hooks.
+	 */
+	if (META_RESULT_STATUS == MRES_SUPERCEDE 
+		&& g_ChatTriggers.WasFloodedMessage())
+	{
+		return;
+	}
+
 	cell_t result = Pl_Continue;
 	int args = command.ArgC() - 1;
 
@@ -456,7 +466,9 @@ bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmd
 				if (rule == Command_Allow)
 				{
 					return true;
-				} else if (rule == Command_Deny) {
+				}
+				else if (rule == Command_Deny)
+				{
 					return false;
 				}
 			}
@@ -486,18 +498,20 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	if (g_Translator.CoreTrans(client, buffer, sizeof(buffer), "No Access", NULL, NULL)
 		!= Trans_Okay)
 	{
-		snprintf(buffer, sizeof(buffer), "You do not have access to this command");
+		UTIL_Format(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
 	if (replyto == SM_REPLY_CONSOLE)
 	{
 		char fullbuffer[192];
-		snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
+		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.\n", buffer);
 		engine->ClientPrintf(pEdict, fullbuffer);
-	} else if (replyto == SM_REPLY_CHAT) {
+	}
+	else if (replyto == SM_REPLY_CHAT)
+	{
 		char fullbuffer[192];
-		snprintf(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
+		UTIL_Format(fullbuffer, sizeof(fullbuffer), "[SM] %s.", buffer);
 		g_HL2.TextMsg(client, HUD_PRINTTALK, fullbuffer);
 	}
 	
