@@ -200,10 +200,12 @@ void CFunction::Cancel()
 int CFunction::Execute(cell_t *result)
 {
 	int err = SP_ERROR_NONE;
+
 	if (!IsRunnable())
 	{
 		m_errorstate = SP_ERROR_NOT_RUNNABLE;
 	}
+
 	if (m_errorstate != SP_ERROR_NONE)
 	{
 		err = m_errorstate;
@@ -245,7 +247,9 @@ int CFunction::Execute(cell_t *result)
 				{
 					memcpy(temp_info[i].phys_addr, temp_info[i].orig_addr, sizeof(cell_t) * temp_info[i].size);
 				}
-			} else {
+			}
+			else
+			{
 				/* Calculate cells required for the string */
 				size_t cells = (temp_info[i].size + sizeof(cell_t) - 1) / sizeof(cell_t);
 
@@ -260,6 +264,7 @@ int CFunction::Execute(cell_t *result)
 				/* Copy original string if necessary */
 				if ((temp_info[i].str.sz_flags & SM_PARAM_STRING_COPY) && (temp_info[i].orig_addr != NULL))
 				{
+					/* Cut off UTF-8 properly */
 					if (temp_info[i].str.sz_flags & SM_PARAM_STRING_UTF8)
 					{
 						if ((err=m_pContext->StringToLocalUTF8(temp_info[i].local_addr, 
@@ -270,7 +275,15 @@ int CFunction::Execute(cell_t *result)
 						{
 							break;
 						}
-					} else {
+					}
+					/* Copy a binary blob */
+					else if (temp_info[i].str.sz_flags & SM_PARAM_STRING_BINARY)
+					{
+						memmove(temp_info[i].phys_addr, temp_info[i].orig_addr, temp_info[i].size);
+					}
+					/* Copy ASCII characters */
+					else
+					{
 						if ((err=m_pContext->StringToLocal(temp_info[i].local_addr,
 															temp_info[i].size,
 															(const char *)temp_info[i].orig_addr))
@@ -283,7 +296,9 @@ int CFunction::Execute(cell_t *result)
 			} /* End array/string calculation */
 			/* Update the pushed parameter with the byref local address */
 			temp_params[i] = temp_info[i].local_addr;
-		} else {
+		}
+		else
+		{
 			/* Just copy the value normally */
 			temp_params[i] = m_params[i];
 		}
@@ -296,7 +311,9 @@ int CFunction::Execute(cell_t *result)
 		{
 			docopies = false;
 		}
-	} else {
+	}
+	else
+	{
 		docopies = false;
 	}
 
@@ -307,6 +324,7 @@ int CFunction::Execute(cell_t *result)
 		{
 			continue;
 		}
+
 		if (docopies && (temp_info[i].flags & SM_PARAM_COPYBACK))
 		{
 			if (temp_info[i].orig_addr)
@@ -314,11 +332,16 @@ int CFunction::Execute(cell_t *result)
 				if (temp_info[i].str.is_sz)
 				{
 					memcpy(temp_info[i].orig_addr, temp_info[i].phys_addr, temp_info[i].size);
-				} else {
+				
+				}
+				else
+				{
 					if (temp_info[i].size == 1)
 					{
 						*temp_info[i].orig_addr = *(temp_info[i].phys_addr);
-					} else {
+					}
+					else
+					{
 						memcpy(temp_info[i].orig_addr, 
 								temp_info[i].phys_addr, 
 								temp_info[i].size * sizeof(cell_t));
@@ -326,6 +349,7 @@ int CFunction::Execute(cell_t *result)
 				}
 			}
 		}
+
 		if ((err=m_pContext->HeapPop(temp_info[i].local_addr)) != SP_ERROR_NONE)
 		{
 			return err;

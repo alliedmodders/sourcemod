@@ -61,9 +61,12 @@ enum ExecType
 /**
  * @section Flags that are used with Call_PushArrayEx() and Call_PushStringEx()
  */
+ 
 #define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
+
 #define SM_PARAM_STRING_UTF8	(1<<0)		/**< String should be UTF-8 handled */
 #define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
+#define SM_PARAM_STRING_BINARY	(1<<2)		/**< Treat the string as a binary string */
 
 /**
  * @endsection
@@ -311,6 +314,7 @@ native Call_PushString(const String:value[]);
  * @param length			Length of string buffer.
  * @param szflags			Flags determining how string should be handled.
  *							See SP_PARAM_STRING_* constants for details.
+ *							The default (0) is to push ASCII.
  * @param cpflags			Whether or not changes should be copied back to the input array.
  *							See SP_PARAM_* constants for details.		
  * @noreturn

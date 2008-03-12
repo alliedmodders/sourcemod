@@ -61,9 +61,13 @@ namespace SourcePawn
 {
 	class IVirtualMachine;
 
+	/* Parameter flags */
 	#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
+
+	/* String parameter flags (separate from parameter flags) */
 	#define SM_PARAM_STRING_UTF8	(1<<0)		/**< String should be UTF-8 handled */
 	#define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
+	#define SM_PARAM_STRING_BINARY	(1<<2)		/**< String should be handled as binary data */
 
 #if defined SOURCEMOD_BUILD
 	/**
@@ -151,11 +155,13 @@ namespace SourcePawn
 
 		/**
 		 * @brief Pushes a string or string buffer.
+		 * 
 		 * NOTE: On Execute, the pointer passed will be modified if copy-back is enabled.
 		 *
 		 * @param buffer	Pointer to string buffer.
 		 * @param length	Length of buffer.
-		 * @param sz_flags	String flags.
+		 * @param sz_flags	String flags.  In copy mode, the string will be copied 
+		 *					according to the handling (ascii, utf-8, binary, etc).
 		 * @param cp_flags	Copy-back flags.
 		 * @return			Error code, if any.
 		 */
