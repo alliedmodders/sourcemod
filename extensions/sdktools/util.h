@@ -42,35 +42,6 @@ public:
 	virtual size_t GetEntitySize() = 0;
 };
 
-template <class T>
-class CEntityFactory : public IEntityFactory
-{
-public:
-	CEntityFactory( const char *pClassName )
-	{
-		EntityFactoryDictionary()->InstallFactory( this, pClassName );
-	}
-
-	IServerNetworkable *Create( const char *pClassName )
-	{
-		T* pEnt = _CreateEntityTemplate((T*)NULL, pClassName);
-		return pEnt->NetworkProp();
-	}
-
-	void Destroy( IServerNetworkable *pNetworkable )
-	{
-		if ( pNetworkable )
-		{
-			pNetworkable->Release();
-		}
-	}
-
-	virtual size_t GetEntitySize()
-	{
-		return sizeof(T);
-	}
-};
-
 abstract_class IEntityFactoryDictionary
 {
 public:
@@ -80,7 +51,6 @@ public:
 	virtual IEntityFactory *FindFactory( const char *pClassName ) = 0;
 	virtual const char *GetCannonicalName( const char *pClassName ) = 0;
 };
-
 
 class CEntityFactoryDictionary : public IEntityFactoryDictionary
 {
