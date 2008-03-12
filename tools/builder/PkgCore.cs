@@ -56,7 +56,7 @@ namespace builder
 			folders.Add("addons/sourcemod/configs/sql-init-scripts");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts/mysql");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts/sqlite");
-			folders.Add("addons/sourcemod/extensions/games");
+			//folders.Add("addons/sourcemod/extensions/games");
 			folders.Add("addons/sourcemod/scripting/basecommands");
 			folders.Add("addons/sourcemod/scripting/basecomm");
 			folders.Add("addons/sourcemod/scripting/funvotes");
@@ -64,7 +64,7 @@ namespace builder
 			folders.Add("addons/sourcemod/scripting/basebans");
 			folders.Add("addons/sourcemod/scripting/funcommands");
 			folders.Add("addons/sourcemod/extensions/auto.1.ep1");
-			folders.Add("addons/sourcemod/extensions/auto.2.ep1");
+			//folders.Add("addons/sourcemod/extensions/auto.2.ep1");
 			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
 			folders.Add("addons/sourcemod/scripting/playercommands");
 			folders.Add("addons/metamod");
