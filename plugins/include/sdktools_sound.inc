@@ -130,11 +130,13 @@ enum
 native PrefetchSound(const String:nane[]);
 
 /**
- * Gets a sound's duration (does not work for mp3s).
+ * This function is not known to work, and may crash.  You should 
+ * not use it.  It is provided for backwards compatibility only.
  *
  * @param name		Sound file name relative to the "sounds" folder.
  * @return			Duration in seconds.
  */
+#pragma deprecated Does not work, may crash.
 native Float:GetSoundDuration(const String:name[]);
 
 /**
