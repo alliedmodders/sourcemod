@@ -596,6 +596,7 @@ static OPCODEC opcodelist[] = {
   { 21, "sref.s.pri", sIN_CSEG, parm1 },
   { 67, "sshr",       sIN_CSEG, parm0 },
   { 44, "stack",      sIN_CSEG, parm1 },
+  {165, "stackadjust",sIN_CSEG, parm1 },
   {  0, "stksize",    0,        noop },
   { 16, "stor.alt",   sIN_CSEG, parm1 },
   { 23, "stor.i",     sIN_CSEG, parm0 },

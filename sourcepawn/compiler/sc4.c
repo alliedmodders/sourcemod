@@ -854,19 +854,10 @@ SC_FUNC void modstk(int delta)
 /* set the stack to a hard offset from the frame */
 SC_FUNC void setstk(cell value)
 {
-  stgwrite("\tlctrl 5\n");      /* get FRM in PRI */
+  stgwrite("\tstackadjust ");
   assert(value<=0);             /* STK should always become <= FRM */
-  if (value<0) {
-    stgwrite("\tadd.c ");
-    outval(value, TRUE);        /* add (negative) offset */
-    code_idx+=opcodes(1)+opargs(1);
-    // ??? write zeros in the space between STK and the value in PRI (the new stk)
-    //     get value of STK in ALT
-    //     zero PRI
-    //     need new FILL opcode that takes a variable size
-  } /* if */
-  stgwrite("\tsctrl 4\n");      /* store in STK */
-  code_idx+=opcodes(2)+opargs(2);
+  outval(value, TRUE);        /* add (negative) offset */
+  code_idx+=opcodes(1)+opargs(1);
 }
 
 SC_FUNC void modheap(int delta)
