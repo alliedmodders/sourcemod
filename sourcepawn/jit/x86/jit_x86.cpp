@@ -1278,12 +1278,99 @@ inline void WriteOp_Retn(JitWriter *jit)
 	IA32_Return(jit);
 }
 
+void ProfCallGate_Begin(sp_context_t *ctx, const char *name)
+{
+	ctx->profiler->OnFunctionBegin(ctx->context, name);
+}
+
+void ProfCallGate_End(sp_context_t *ctx)
+{
+	ctx->profiler->OnFunctionEnd();
+}
+
+const char *find_func_name(sp_plugin_t *plugin, uint32_t offs)
+{
+	uint32_t max, iter;
+	sp_fdbg_symbol_t *sym;
+	sp_fdbg_arraydim_t *arr;
+	uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
+
+	max = plugin->debug.syms_num;
+	for (iter = 0; iter < max; iter++)
+	{
+		sym = (sp_fdbg_symbol_t *)cursor;
+
+		if (sym->ident == SP_SYM_FUNCTION
+			&& sym->codestart <= offs 
+			&& sym->codeend > offs)
+		{
+			return plugin->debug.stringbase + sym->name;
+		}
+
+		if (sym->dimcount > 0)
+		{
+			cursor += sizeof(sp_fdbg_symbol_t);
+			arr = (sp_fdbg_arraydim_t *)cursor;
+			cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
+			continue;
+		}
+
+		cursor += sizeof(sp_fdbg_symbol_t);
+	}
+
+	return NULL;
+}
+
 inline void WriteOp_Call(JitWriter *jit)
 {
-	cell_t offs = jit->read_cell();
+	cell_t offs;
+	jitoffs_t jmp;
+	CompData *data;
+		
+	data = (CompData *)jit->data; 
+	offs = jit->read_cell();
 
-	jitoffs_t jmp = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
+	if ((data->profile & SP_PROF_FUNCTIONS) == SP_PROF_FUNCTIONS)
+	{
+		const char *name;
+
+		/* Find the function name */
+		if ((name = find_func_name(data->plugin, offs)) == NULL)
+		{
+			name = "unknown";
+		}
+
+		//push name
+		//push [esi+context] 
+		//call ProfCallGate_Begin
+		//add esp, 8
+		IA32_Push_Imm32(jit, (jit_int32_t)(intptr_t)name);
+		IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_CONTEXT);
+		jmp = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32_Abs(jit, jmp, (void *)ProfCallGate_Begin);
+		IA32_Add_Rm_Imm8(jit, REG_ESP, 8, MOD_REG);
+
+		//call <addr>
+		//push eax
+		jmp = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
+		IA32_Push_Reg(jit, REG_EAX);
+
+		//push [esi+context]
+		//call ProfCallGate_End
+		//add esp, 4
+		//pop eax
+		IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_CONTEXT);
+		jmp = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32_Abs(jit, jmp, (void *)ProfCallGate_End);
+		IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
+		IA32_Pop_Reg(jit, REG_EAX);
+	}
+	else
+	{
+		jmp = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
+	}
 }
 
 inline void WriteOp_Bounds(JitWriter *jit)
@@ -1653,9 +1740,25 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
 	if (!data->debug)
 	{
-		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
-	} else {
-		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug);
+		if ((data->profile & SP_PROF_NATIVES) == SP_PROF_NATIVES)
+		{
+			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Profile);
+		}
+		else
+		{
+			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
+		}
+	}
+	else
+	{
+		if ((data->profile & SP_PROF_NATIVES) == SP_PROF_NATIVES)
+		{
+			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug_Profile);
+		}
+		else
+		{
+			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug);
+		}
 	}
 	
 	/* check for errors */
@@ -2122,7 +2225,9 @@ inline void WriteOp_FloatCompare(JitWriter *jit)
 
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
-	sp_native_t *native = &ctx->natives[native_idx];
+	sp_native_t *native;
+	
+	native = &ctx->natives[native_idx];
 
 	ctx->n_idx = native_idx;
 	
@@ -2136,12 +2241,27 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 	return native->pfn(ctx->context, params);
 }
 
-static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
+cell_t NativeCallback_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
-	sp_context_t *ctx = pCtx->GetContext();
-	ctx->n_err = SP_ERROR_INVALID_NATIVE;
+	cell_t val;
+	sp_native_t *native;
 
-	return 0;
+	native = &ctx->natives[native_idx];
+
+	ctx->n_idx = native_idx;
+
+	/* Technically both aren't needed, I guess */
+	if (native->status == SP_NATIVE_UNBOUND)
+	{
+		ctx->n_err = SP_ERROR_INVALID_NATIVE;
+		return 0;
+	}
+
+	ctx->profiler->OnNativeBegin(ctx->context, native);
+	val = native->pfn(ctx->context, params);
+	ctx->profiler->OnNativeEnd();
+
+	return val;
 }
 
 cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
@@ -2170,7 +2290,7 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 	}
 
 	cell_t result = NativeCallback(ctx, native_idx, params);
-	
+
 	if (ctx->n_err != SP_ERROR_NONE)
 	{
 		return result;
@@ -2180,12 +2300,68 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 	{
 		ctx->n_err = SP_ERROR_STACKLEAK;
 		return result;
-	} else if (save_hp != ctx->hp) {
+	}
+	else if (save_hp != ctx->hp)
+	{
 		ctx->n_err = SP_ERROR_HEAPLEAK;
 		return result;
 	}
 
 	return result;
+}
+
+cell_t NativeCallback_Debug_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
+{
+	cell_t save_sp = ctx->sp;
+	cell_t save_hp = ctx->hp;
+
+	ctx->n_idx = native_idx;
+
+	if (ctx->hp < ctx->heap_base)
+	{
+		ctx->n_err = SP_ERROR_HEAPMIN;
+		return 0;
+	}
+
+	if (ctx->hp + STACK_MARGIN > ctx->sp)
+	{
+		ctx->n_err = SP_ERROR_STACKLOW;
+		return 0;
+	}
+
+	if ((uint32_t)ctx->sp >= ctx->mem_size)
+	{
+		ctx->n_err = SP_ERROR_STACKMIN;
+		return 0;
+	}
+
+	cell_t result = NativeCallback_Profile(ctx, native_idx, params);
+
+	if (ctx->n_err != SP_ERROR_NONE)
+	{
+		return result;
+	}
+
+	if (save_sp != ctx->sp)
+	{
+		ctx->n_err = SP_ERROR_STACKLEAK;
+		return result;
+	}
+	else if (save_hp != ctx->hp)
+	{
+		ctx->n_err = SP_ERROR_HEAPLEAK;
+		return result;
+	}
+
+	return result;
+}
+
+static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
+{
+	sp_context_t *ctx = pCtx->GetContext();
+	ctx->n_err = SP_ERROR_INVALID_NATIVE;
+
+	return 0;
 }
 
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
@@ -2204,7 +2380,9 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 		assert(pcode_offs >= 0 && (uint32_t)pcode_offs <= data->codesize);
 		/* Do the lookup in the native dictionary. */
 		return *(jitoffs_t *)(data->rebase + pcode_offs);
-	} else {
+	}
+	else
+	{
 		return 0;
 	}
 }
@@ -2380,7 +2558,8 @@ jit_rewind:
 
 		/* the total codesize is now known! */
 		codemem = writer.get_outputpos();
-		writer.outbase = (jitcode_t)engine->ExecAlloc(codemem);
+		writer.outbase = (jitcode_t)engine->AllocatePageMemory(codemem);
+		engine->SetReadWrite(writer.outbase);
 		writer.outptr = writer.outbase;
 		/* go back for third pass */
 		goto jit_rewind;
@@ -2398,6 +2577,8 @@ jit_rewind:
 		}
 		/* Write these last because error jumps should be unpredicted, and thus forward */
 		WriteErrorRoutines(data, jit);
+
+		engine->SetReadExecute(writer.outbase);
 	}
 
 	/*************
@@ -2420,6 +2601,7 @@ jit_rewind:
 	ctx->heap_base = plugin->data_size;
 	ctx->hp = ctx->heap_base;
 	ctx->sp = ctx->mem_size - sizeof(cell_t);
+	ctx->prof_flags = data->profile;
 
 	const char *strbase = plugin->info.stringbase;
 	uint32_t max, iter;
@@ -2605,22 +2787,25 @@ rewind:
 	if (jw.outbase == NULL)
 	{
 		/* Second pass: Actually write */
-		jw.outbase = (jitcode_t)engine->ExecAlloc(jw.get_outputpos());
+		jw.outbase = (jitcode_t)engine->AllocatePageMemory(jw.get_outputpos());
 		if (!jw.outbase)
 		{
 			return NULL;
 		}
+		engine->SetReadWrite(jw.outbase);
 		jw.outptr = jw.outbase;
 	
 		goto rewind;
 	}
-	
+
+	engine->SetReadExecute(jw.outbase);
+
 	return (SPVM_NATIVE_FUNC)jw.outbase;
 }
 
 void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-	engine->ExecFree((void *)func);
+	engine->FreePageMemory((void *)func);
 }
 
 const char *JITX86::GetVMName()
@@ -2637,7 +2822,7 @@ int JITX86::ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result)
 
 void JITX86::FreeContext(sp_context_t *ctx)
 {
-	engine->ExecFree(ctx->codebase);
+	engine->FreePageMemory(ctx->codebase);
 	delete [] ctx->memory;
 	delete [] ctx->files;
 	delete [] ctx->lines;
@@ -2720,7 +2905,7 @@ bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char 
 {
 	CompData *data = (CompData *)co;
 
-	if (strcmp(key, "debug") == 0)
+	if (strcmp(key, SP_JITCONF_DEBUG) == 0)
 	{
 		if ((atoi(val) == 1) || !strcmp(val, "yes"))
 		{
@@ -2733,6 +2918,18 @@ bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char 
 			data->debug = false;
 			return false;
 		}
+		return true;
+	}
+	else if (strcmp(key, SP_JITCONF_PROFILE) == 0)
+	{
+		data->profile = atoi(val);
+
+		/** Callbacks must be profiled to profile functions! */
+		if ((data->profile & SP_PROF_FUNCTIONS) == SP_PROF_FUNCTIONS)
+		{
+			data->profile |= SP_PROF_CALLBACKS;
+		}
+
 		return true;
 	}
 

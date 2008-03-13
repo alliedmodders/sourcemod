@@ -25,7 +25,7 @@ EXPORTFUNC int GiveEnginePointer2(SourcePawn::ISourcePawnEngine *engine_p, unsig
 {
 	engine = engine_p;
 
-	if (api_version > SOURCEPAWN_ENGINE_API_VERSION)
+	if (api_version > SOURCEPAWN_ENGINE_API_VERSION || api_version < 2)
 	{
 		return SP_ERROR_PARAM;
 	}

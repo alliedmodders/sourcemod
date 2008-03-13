@@ -1207,7 +1207,7 @@ static int hier14(value *lval1)
       } /* if */
     } /* if */
     if (lval3.sym->dim.array.level!=level)
-      return error(48); /* array dimensions must match */
+      return error(47); /* array dimensions must match */
     else if (ltlength<val || exactmatch && ltlength>val || val==0)
       return error(47); /* array sizes must match */
     else if (lval3.ident!=iARRAYCELL && !matchtag(lval3.sym->x.tags.index,idxtag,TRUE))
@@ -1217,6 +1217,7 @@ static int hier14(value *lval1)
       symbol *sym1 = lval3.sym;
       symbol *sym2 = lval2.sym;
       int i;
+      error(23);
       assert(sym1!=NULL && sym2!=NULL);
       /* ^^^ sym2 must be valid, because only variables can be
        *     multi-dimensional (there are no multi-dimensional literals),
@@ -1328,7 +1329,9 @@ static int hier13(value *lval)
     array1= (lval->ident==iARRAY || lval->ident==iREFARRAY);
     array2= (lval2.ident==iARRAY || lval2.ident==iREFARRAY);
     if (array1 && !array2) {
-      char *ptr=(lval->sym->name!=NULL) ? lval->sym->name : "-unknown-";
+      const char *ptr = "-unknown-";
+	  if (lval->sym != NULL && lval->sym->name != NULL)
+        ptr = lval->sym->name;
       error(33,ptr);            /* array must be indexed */
     } else if (!array1 && array2) {
       char *ptr=(lval2.sym->name!=NULL) ? lval2.sym->name : "-unknown-";
@@ -1569,7 +1572,7 @@ static int hier2(value *lval)
 	  if (level>sym->dim.array.level+1) {
         error(28,sym->name);  /* invalid subscript */
       } else if (level==sym->dim.array.level+1) {
-        lval->constval= (idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
+        lval->constval=(idxsym!=NULL && idxsym->dim.array.length>0) ? idxsym->dim.array.length : 1;
       } else {
         lval->constval=array_levelsize(sym,level);
       }
@@ -2365,7 +2368,7 @@ static int nesting=0;
          */
       } else {
         arglist[argpos]=ARG_DONE; /* flag argument as "present" */
-        if (arg[argidx].numtags==1)     /* set the expected tag, if any */
+        if (arg[argidx].ident!=0 && arg[argidx].numtags==1)     /* set the expected tag, if any */
           lval.cmptag=arg[argidx].tags[0];
         lvalue=hier14(&lval);
         assert(sc_status==statFIRST || arg[argidx].tags!=NULL);

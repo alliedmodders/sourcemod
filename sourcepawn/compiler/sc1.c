@@ -4136,6 +4136,8 @@ static int newfunc(char *firstname,int firsttag,int fpublic,int fstatic,int stoc
   /* "declargs()" found the ")"; if a ";" appears after this, it was a
    * prototype */
   if (matchtoken(';')) {
+    if (sym->usage & uPUBLIC)
+      error(10);
     sym->usage|=uFORWARD;
     if (!sc_needsemicolon)
       error(10);       /* old style prototypes used with optional semicolumns */
