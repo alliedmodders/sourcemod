@@ -373,16 +373,16 @@ typedef struct s_stringpair {
 #define tpTRYINCLUDE 332
 #define tpUNDEF  333
 /* semicolon is a special case, because it can be optional */
-#define tTERM    333    /* semicolon or newline */
-#define tENDEXPR 334    /* forced end of expression */
+#define tTERM    334    /* semicolon or newline */
+#define tENDEXPR 335    /* forced end of expression */
 /* other recognized tokens */
-#define tNUMBER  335    /* integer number */
-#define tRATIONAL 336   /* rational number */
-#define tSYMBOL  337
-#define tLABEL   338
-#define tSTRING  339
-#define tEXPR    340 /* for assigment to "lastst" only (see SC1.C) */
-#define tENDLESS 341 /* endless loop, for assigment to "lastst" only */
+#define tNUMBER  336    /* integer number */
+#define tRATIONAL 337   /* rational number */
+#define tSYMBOL  338
+#define tLABEL   339
+#define tSTRING  340
+#define tEXPR    341 /* for assigment to "lastst" only (see SC1.C) */
+#define tENDLESS 342 /* endless loop, for assigment to "lastst" only */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
