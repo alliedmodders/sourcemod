@@ -72,8 +72,6 @@ public bool:OnClientFloodCheck(client)
 		return false;
 	}
 	
-	PrintToServer("OCFC: %f %f %d", g_LastTime[client], GetGameTime(), g_FloodTokens[client]);
-	
 	if (g_LastTime[client] > GetGameTime())
 	{
 		/* If player has 3 or more flood tokens, block their message */
@@ -96,8 +94,6 @@ public OnClientFloodResult(client, bool:blocked)
 	
 	new Float:curTime = GetGameTime();
 	new Float:newTime = curTime + max_chat;
-	
-	PrintToServer("OCFR: %f, %f", g_LastTime[client], GetGameTime());
 	
 	if (g_LastTime[client] > curTime)
 	{

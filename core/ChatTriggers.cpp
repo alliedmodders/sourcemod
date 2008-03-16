@@ -185,12 +185,21 @@ void ChatTriggers::OnSayCommand_Pre()
 {
 	CCommand command;
 #endif
-	int client = g_ConCmds.GetCommandClient();
+	int client;
+	CPlayer *pPlayer;
+	
+	client = g_ConCmds.GetCommandClient();
 	m_bIsChatTrigger = false;
 	m_bWasFloodedMessage = false;
 
 	/* The server console cannot do this */
-	if (client == 0)
+	if (client == 0 || (pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	/* We guarantee the client is connected */
+	if (!pPlayer->IsConnected())
 	{
 		RETURN_META(MRES_IGNORED);
 	}
