@@ -873,15 +873,12 @@ static cell_t GetServerNetStats(IPluginContext *pContext, const cell_t *params)
 
 sp_nativeinfo_t g_Natives[] = 
 {
-	{"ExtinguishPlayer",		ExtinguishEntity},
 	{"ExtinguishEntity",		ExtinguishEntity},
 	{"ForcePlayerSuicide",		ForcePlayerSuicide},
 	{"GivePlayerItem",			GiveNamedItem},
 	{"GetPlayerWeaponSlot",		GetPlayerWeaponSlot},
-	{"IgnitePlayer",			IgniteEntity},
 	{"IgniteEntity",			IgniteEntity},
 	{"RemovePlayerItem",		RemovePlayerItem},
-	{"TeleportPlayer",			TeleportEntity},
 	{"TeleportEntity",			TeleportEntity},
 	{"SetClientViewEntity",		SetClientViewEntity},
 	{"SetLightStyle",			SetLightStyle},
