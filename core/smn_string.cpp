@@ -578,13 +578,10 @@ REGISTER_NATIVES(basicStrings)
 	{"ReplaceStringEx",		ReplaceStringEx},
 	{"SplitString",			SplitString},
 	{"strlen",				sm_strlen},
-	{"StrBreak",			BreakString},		/* Backwards compat shim */
 	{"StrContains",			sm_contain},
 	{"strcmp",				sm_strcmp},
-	{"StrCompare",			sm_strcmp},			/* Backwards compat shim */
 	{"strncmp",				sm_strncmp},
 	{"strcopy",				sm_strcopy},
-	{"StrCopy",				sm_strcopy},		/* Backwards compat shim */
 	{"StringToInt",			sm_strconvint},
 	{"StringToIntEx",		StringToIntEx},
 	{"StringToFloat",		sm_strtofloat},

@@ -308,6 +308,5 @@ REGISTER_NATIVES(floatnatives)
 	{"ArcCosine",		sm_ArcCosine},
 	{"ArcSine",			sm_ArcSine},
 	{"ArcTangent2",		sm_ArcTangent2},
-	{"FloatRound",		sm_FloatRound},			/* Backwards compat shim */
 	{NULL,				NULL}
 };

@@ -1123,9 +1123,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KvJumpToKey",				smn_KvJumpToKey},
 	{"KvJumpToKeySymbol",		smn_KvJumpToKeySymbol},
 	{"KvGotoNextKey",			smn_KvGotoNextKey},
-	{"KvJumpFirstSubKey",		smn_KvGotoFirstSubKey},		/* BACKWARDS COMPAT SHIM */
 	{"KvGotoFirstSubKey",		smn_KvGotoFirstSubKey},
-	{"KvJumpNextSubKey",		smn_KvJumpNextSubKey},		/* BACKWARDS COMPAT SHIM */
 	{"KvGoBack",				smn_KvGoBack},
 	{"KvRewind",				smn_KvRewind},
 	{"KvGetSectionName",		smn_KvGetSectionName},

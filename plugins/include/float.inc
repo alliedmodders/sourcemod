@@ -241,17 +241,6 @@ stock RoundFloat(Float:value)
 }
 
 /**
- * Backwards compatibility stock.  Do not use.
- *
- * @deprecated
- */
-#pragma deprecated Use RoundToNearest() or RoundFloat() instead
-stock FloatRound(Float:value)
-{
-	return RoundToNearest(value);
-}
-
-/**
  * User defined operators.
  *
  */

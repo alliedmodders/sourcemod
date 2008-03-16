@@ -1347,7 +1347,6 @@ REGISTER_NATIVES(playernatives)
 	{"IsClientAuthorized",		sm_IsClientAuthorized},
 	{"IsClientConnected",		sm_IsClientConnected},
 	{"IsFakeClient",			sm_IsClientFakeClient},
-	{"IsPlayerInGame",			sm_IsClientInGame},			/* Backwards compat shim */
 	{"IsClientInGame",			sm_IsClientInGame},
 	{"IsClientObserver",		IsClientObserver},
 	{"RemoveUserFlags",			RemoveUserFlags},
