@@ -487,35 +487,3 @@ native FormatNativeString(out_param,
 						  &written=0,
 						  String:out_string[]="",
 						  const String:fmt_string[]="");
-
-/**
- * Backwards compatibility stock - use GetNativeCell or GetNativeCellRef
- *
- * @deprecated
- */
-#pragma deprecated Use GetNativeCell() or GetNativeCellRef() instead
-stock Float:GetNativeFloat(param, bool:byref)
-{
-	if (!byref)
-	{
-		return Float:GetNativeCell(param);
-	} else {
-		return Float:GetNativeCellRef(param);
-	}
-}
-
-/**
- * Backwards compatibility stock - use GetNativeCell or GetNativeCellRef
- *
- * @deprecated
- */
-#pragma deprecated Use GetNativeCell() or GetNativeCellRef() instead
-stock Handle:GetNativeHandle(param, bool:byref)
-{
-	if (!byref)
-	{
-		return Handle:GetNativeCell(param);
-	} else {
-		return Handle:GetNativeCellRef(param);
-	}
-}

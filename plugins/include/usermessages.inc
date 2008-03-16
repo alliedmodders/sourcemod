@@ -50,17 +50,6 @@ enum UserMsg
 #define USERMSG_INITMSG			(1<<3)		/**< Message will be considered to be an initmsg */
 #define USERMSG_BLOCKHOOKS		(1<<7)		/**< Prevents the message from triggering SourceMod and Metamod hooks */
 
-#pragma deprecated Constant has no effect
-#define USERMSG_PASSTHRU		(1<<0)		/**< (DEPRECATED, NO EFFECT) */
-#pragma deprecated Constant has no effect
-#define USERMSG_PASSTHRU_ALL	(1<<1)		/**< (DEPRECATED, NO EFFECT) */
-#pragma deprecated Constant has no effect
-#define USERMSG_BLOCK_MM		(1<<4)		/**< (DEPRECATED, NO EFFECT) */
-#pragma deprecated Constant has no effect
-#define USERMSG_BLOCK_SM		(1<<5)		/**< (DEPRECATED, NO EFFECT) */
-#pragma deprecated Constant has no effect
-#define USERMSG_BLOCK_ALL		(1<<6)		/**< (DEPRECATED, NO EFFECT) */
-
 /**
  * @endsection
  */

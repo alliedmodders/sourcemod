@@ -322,15 +322,3 @@ stock GetClientButtons(client)
 {
 	return GetEntProp(client, Prop_Data, "m_nButtons");
 }
-
-#pragma deprecated Case change, use MoveType version
-stock SetEntityMovetype(entity, any:mt)
-{
-	SetEntityMoveType(entity, MoveType:mt);
-}
-
-#pragma deprecated Case change, use MoveType version
-stock GetEntityMovetype(entity)
-{
-	return _:GetEntityMoveType(entity);
-}

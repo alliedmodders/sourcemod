@@ -280,14 +280,4 @@ native FindStringInArray(Handle:array, const String:item[]);
  * @return				Array index, or -1 on failure
  * @error				Invalid Handle
  */
-native FindValueInArray(Handle:array, item); 
-
-/**
- * Backwards compatible stock - Use FindStringInArray()
- * @deprecated		Replaced by FindStringInArray()
- */
-#pragma deprecated Use FindStringInArray() instead
-stock bool:IsStringInArray(Handle:array, const String:item[])
-{
-	return (FindStringInArray(array, item) != -1);
-}
+native FindValueInArray(Handle:array, any:item); 
