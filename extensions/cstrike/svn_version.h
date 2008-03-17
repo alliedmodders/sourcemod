@@ -26,7 +26,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: svn_version.h 1336 2007-08-15 06:19:30Z damagedsoul $
+ * Version: $Id$
  */
 
 /**
@@ -36,7 +36,7 @@
 #ifndef _INCLUDE_SDKTOOLS_VERSION_H_
 #define _INCLUDE_SDKTOOLS_VERSION_H_
 
-#define SVN_FULL_VERSION	"1.0.0.1336"
-#define SVN_FILE_VERSION	1,0,0,1336
+#define SVN_FULL_VERSION	"1.0.0.1884"
+#define SVN_FILE_VERSION	1,0,0,1884
 
 #endif //_INCLUDE_SDKTOOLS_VERSION_H_
