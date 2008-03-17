@@ -247,6 +247,7 @@ static cell_t sm_ArcTangent2(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(val1);
 }
 
+#if 0
 static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
@@ -282,6 +283,7 @@ static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
 
 	return static_cast<int>(val);
 }
+#endif
 
 REGISTER_NATIVES(floatnatives)
 {
