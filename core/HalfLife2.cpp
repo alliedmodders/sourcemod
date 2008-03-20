@@ -114,8 +114,6 @@ void CHalfLife2::OnSourceModAllInitialized()
 	m_HinTextMsg = g_UserMsgs.GetMessageIndex("HintText");
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
-
-	FindInSendTable("CTFPlayer", "m_nDisguiseClass");
 }
 
 #if !defined METAMOD_PLAPI_VERSION
