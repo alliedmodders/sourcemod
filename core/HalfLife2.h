@@ -99,6 +99,7 @@ public: //IGameHelpers
 	bool HintTextMsg(int client, const char *msg);
 	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
 	bool IsLANServer();
+	bool KVLoadFromFile(KeyValues *kv, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID = NULL);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
