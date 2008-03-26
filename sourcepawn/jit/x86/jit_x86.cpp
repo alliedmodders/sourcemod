@@ -1209,6 +1209,28 @@ inline void WriteOp_Stack(JitWriter *jit)
 	}
 }
 
+inline void WriteOp_StackAdjust(JitWriter *jit)
+{
+	cell_t val = jit->read_cell();
+
+	assert(val <= 0);
+
+	//lea edi, [ebx-val]
+	
+	if (val < SCHAR_MAX && val > SCHAR_MIN)
+	{
+		IA32_Lea_DispRegImm8(jit, AMX_REG_STK, AMX_REG_FRM, val);
+	}
+	else
+	{
+		IA32_Lea_DispRegImm32(jit, AMX_REG_STK, AMX_REG_FRM, val);
+	}
+
+	/* We assume the compiler has generated good code -- 
+	 * That is, we do not bother validating this amount!
+	 */
+}
+
 inline void WriteOp_Heap(JitWriter *jit)
 {
 	//mov edx, [esi+hea]

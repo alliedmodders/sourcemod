@@ -124,8 +124,8 @@ typedef enum
 	OP_LOAD_ALT,			//~!VERIFIED (load.pri)
 	OP_LOAD_S_PRI,			//VERIFIED
 	OP_LOAD_S_ALT,			//VERIFIED
-	OP_LREF_PRI,			// !GEN :TODO: we will need this for dynarrays
-	OP_LREF_ALT,			// !GEN :TODO: we will need this for dynarrays
+	OP_LREF_PRI,			//VERIFIED
+	OP_LREF_ALT,			//~VERIFIED
 	OP_LREF_S_PRI,			//VERIFIED
 	OP_LREF_S_ALT,			//~VERIFIED (lref.s.pri)
 	OP_LOAD_I,				//VERIFIED
@@ -138,8 +138,8 @@ typedef enum
 	OP_STOR_ALT,			//~VERIFIED (stor.pri)
 	OP_STOR_S_PRI,			//VERIFIED
 	OP_STOR_S_ALT,			//~VERIFIED (stor.s.pri)
-	OP_SREF_PRI,			// !GEN :TODO: we will need this for dynarrays
-	OP_SREF_ALT,			// !GEN :TODO: we will need this for dynarrays
+	OP_SREF_PRI,			//VERIFIED
+	OP_SREF_ALT,			//~VERIFIED
 	OP_SREF_S_PRI,			//VERIFIED
 	OP_SREF_S_ALT,			//~VERIFIED (stor.s.alt)
 	OP_STOR_I,				//VERIFIED
@@ -286,6 +286,7 @@ typedef enum
 	OP_GENARRAY,			//VERIFIED
 	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
 	OP_STRADJUST_PRI,		//VERIFIED
+	OP_STACKADJUST,			//:TODO: VERIFY
 	OP_FABS,				//VERIFIED
 	OP_FLOAT,				//VERIFIED
 	OP_FLOATADD,			//VERIFIED
@@ -300,23 +301,5 @@ typedef enum
 	/* ----- */
 	OP_NUM_OPCODES
 } OPCODE;
-
-/*
-* :TODO: List of ASM Opts
-*	from jit_x86.cpp 
-*       DONE: Rest of opcodes including the SYSREQ.N inlined version (rev2)
-*			  Including genarray and the 2 tracker ones
-*       DONE: ALL ungen opcodes (rev1)
-*	from opcode_helpers.cpp
-*       DONE: SYSREQ.N .C (rev2)
-*			  MACRO OPCODES (rev2)
-*             ERROR CHECKS\{VERIFY ADDR} (rev2)
-*			  ARRAY STUFF
-*		TODO: BrkDebug
-*			  EXEC FUNCTION
-*			  VERIFY ADDR
-*
-*	Oh and ALIGN to 16BYTES all stuff that is called via CALL and frequently used jump labels like what's done with PROC.
-*/
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_OPCODE_INFO_H_

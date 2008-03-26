@@ -748,6 +748,11 @@
 				WriteOp_FloatCompare(jit);
 				break;
 			}
+		case OP_STACKADJUST:
+			{
+				WriteOp_StackAdjust(jit);
+				break;
+			}
 #if defined USE_UNGEN_OPCODES
 		#include "ungen_opcode_switch.inc"
 #endif
