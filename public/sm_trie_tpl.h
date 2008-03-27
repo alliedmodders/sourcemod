@@ -648,6 +648,117 @@ public:
 
 		return false;
 	}
+
+	/** 
+	 * @brief Iterates over the trie returning all known values.  
+	 * 
+	 * Note: This function is for debugging.  Do not use it as a 
+	 * production iterator since it's inefficient.  Iteration is 
+	 * guaranteed to be sorted ascendingly.
+	 *
+	 * The callback function takes:
+	 *  (KTrie)			- Pointer to this Trie
+	 *  (const char *)	- String containing key name.
+	 *  (K &)			- By-reference object at the key.
+	 *  (data)			- User pointer.
+	 *
+	 * @param buffer			Buffer to use as a key name cache.
+	 * @param maxlength			Maximum length of the key name buffer.
+	 * @param data				User pointer for passing to the iterator.
+	 * @param func				Iterator callback function.
+	 */
+	void bad_iterator(char *buffer, 
+		size_t maxlength, 
+		void *data,
+		void (*func)(KTrie *, const char *, K & obj, void *data))
+	{
+		bad_iterator_r(buffer, maxlength, 0, data, func, 1);
+	}
+
+private:
+	void bad_iterator_r(char *buffer, 
+		size_t maxlength, 
+		size_t buf_pos,
+		void *data,
+		void (*func)(KTrie *, const char *, K & obj, void *data),
+		unsigned int root)
+	{
+		char *term;
+		unsigned int idx, limit, start;
+
+		limit = 255;
+		start = m_base[root].idx;
+
+		/* Bound our limits */
+		if (start + limit > m_baseSize)
+		{
+			limit = m_baseSize - start;
+		}
+
+		/* Search for strings */
+		for (unsigned int i = 1; i <= limit; i++)
+		{
+			idx = start + i;
+			if (m_base[idx].mode == Node_Unused
+				|| m_base[idx].parent != root)
+			{
+				continue;
+			}
+
+			if (m_base[idx].mode == Node_Arc)
+			{
+				if (buf_pos < maxlength - 1)
+				{
+					buffer[buf_pos++] = (char)i;
+				}
+
+				if (m_base[idx].valset)
+				{
+					buffer[buf_pos] = '\0';
+					func(this, buffer, m_base[idx].value, data);
+				}
+
+				bad_iterator_r(buffer,
+					maxlength,
+					buf_pos,
+					data,
+					func,
+					idx);
+
+				buf_pos--;
+			}
+			else if (m_base[idx].mode == Node_Term 
+					 && m_base[idx].valset == true)
+			{
+				size_t save_buf_pos;
+
+				save_buf_pos = buf_pos;
+				if (buf_pos < maxlength - 1)
+				{
+					buffer[buf_pos++] = (char)i;
+				}
+				if (buf_pos < maxlength - 1)
+				{
+					size_t destlen, j;
+
+					term = &m_stringtab[m_base[idx].idx];
+					destlen = strlen(term);
+					for (j = 0; 
+						 j < destlen && j + buf_pos < maxlength - 1;
+						 j++)
+					{
+						buffer[buf_pos + j] = term[j];
+					}
+					buf_pos += j;
+				}
+				buffer[buf_pos] = '\0';
+
+				func(this, buffer, m_base[idx].value, data);
+				
+				buf_pos = save_buf_pos;
+			}
+		}
+	}
 public:
 	KTrie()
 	{
