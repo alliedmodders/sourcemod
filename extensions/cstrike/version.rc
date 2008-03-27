@@ -49,7 +49,7 @@ BEGIN
             VALUE "FileDescription", "SourceMod CS:S Extension"
             VALUE "FileVersion", SVN_FULL_VERSION
             VALUE "InternalName", "SourceMod CS:S Extension"
-            VALUE "LegalCopyright", "Copyright (c) 2004-2007, AlliedModders LLC"
+            VALUE "LegalCopyright", "Copyright (c) 2004-2008, AlliedModders LLC"
             VALUE "OriginalFilename", "game.cstrike.ext.dll"
             VALUE "ProductName", "SourceMod CS:S Extension"
             VALUE "ProductVersion", SVN_FULL_VERSION

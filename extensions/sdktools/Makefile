@@ -1,4 +1,4 @@
-#(C)2004-2006 SourceMM Development Team
+#(C)2004-2008 Metamod:Source Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
 HL2SDK_ORIG = ../../../hl2sdk

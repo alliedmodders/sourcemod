@@ -1,4 +1,4 @@
-#(C)2004-2007 AlliedModders LLC
+#(C)2004-2008 AlliedModders LLC
 #
 # This sample Makefile is designed for SourceMod extensions that
 # do not need to be built against HL2SDK, and do not require 

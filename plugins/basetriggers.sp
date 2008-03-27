@@ -4,7 +4,7 @@
  * SourceMod Basic Info Triggers Plugin
  * Implements basic information chat triggers like ff and timeleft.
  *
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under

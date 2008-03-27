@@ -1,4 +1,4 @@
-#(C)2004-2007 SourceMod Development Team
+#(C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..

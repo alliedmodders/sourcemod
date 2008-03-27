@@ -4,7 +4,7 @@
  * SourceMod Rock The Vote Plugin
  * Creates a map vote when the required number of players have requested one.
  *
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under

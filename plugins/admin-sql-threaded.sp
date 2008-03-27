@@ -4,7 +4,7 @@
  * SourceMod SQL Admins Plugin (Threaded)
  * Fetches admins from an SQL database dynamically.
  *
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under

@@ -4,7 +4,7 @@
  * SourceMod Admin Help Plugin
  * Displays and searches SourceMod commands and descriptions.
  *
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under

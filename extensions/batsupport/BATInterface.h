@@ -1,5 +1,5 @@
 /* ======== Basic Admin tool ========
-* Copyright (C) 2004-2006 Erling K. Sæterdal
+* Copyright (C) 2004-2008 Erling K. Sæterdal
 * No warranties of any kind
 *
 * License: zlib/libpng

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourcePawn JIT
- * Copyright (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is not open source and may not be copied without explicit wriiten
