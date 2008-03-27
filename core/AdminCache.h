@@ -153,6 +153,7 @@ public: //IAdminSystem
 	bool FindFlag(const char *str, AdminFlag *pFlag);
 	bool FindFlag(char c, AdminFlag *pAdmFlag);
 	FlagBits ReadFlagString(const char *flags, const char **end);
+	size_t FillFlagString(FlagBits bits, char *buffer, size_t maxlen);
 	unsigned int GetAdminSerialChange(AdminId id);
 	bool CanAdminUseCommand(int client, const char *cmd);
 	const char *GetGroupName(GroupId gid);
@@ -164,8 +165,13 @@ public: //IAdminSystem
 		const char *cmd, 
 		FlagBits flags, 
 		bool override_only);
+	bool FindFlagChar(AdminFlag flag, char *c);
 public:
 	bool IsValidAdmin(AdminId id);
+	void DumpCache(FILE *fp);
+	AdminGroup *GetGroup(GroupId gid);
+	AdminUser *GetUser(AdminId id);
+	const char *GetString(int idx);
 private:
 	void _UnsetCommandOverride(const char *cmd);
 	void _UnsetCommandGroupOverride(const char *group);
@@ -174,6 +180,7 @@ private:
 	void DumpCommandOverrideCache(OverrideType type);
 	Trie *GetMethodByIndex(unsigned int index);
 	bool GetMethodIndex(const char *name, unsigned int *_index);
+	const char *GetMethodName(unsigned int index);
 	void NameFlag(const char *str, AdminFlag flag);
 public:
 	BaseStringTable *m_pStrings;
