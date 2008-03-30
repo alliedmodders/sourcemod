@@ -1,0 +1,21 @@
+We now use svn:keywords "Id" on all .c/.cpp/.h/.sp/.inc files.  Please make sure your client is configured properly.  
+
+WINDOWS:
+ Open your Application Data folder.  
+ Windows XP/2000:	C:\Documents and Settings\<user>\Application Data
+ Windows Vista:		C:\Users\<user>\AppData\Roaming
+
+ Now go to Subversion.  Open the "config" file with a text editor.
+
+LINUX: 
+ Open ~/.subversion/config with your favorite text editor.
+
+Under [miscellany], uncomment this line:
+# enable-auto-props = yes
+
+Under [auto-props], add these lines:
+*.c = svn:keywords=Id
+*.cpp = svn:keywords=Id
+*.h = svn:keywords=Id
+*.sp = svn:keywords=Id
+*.inc = svn:keywords=Id

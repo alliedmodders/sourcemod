@@ -1,0 +1,52 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"en"			"Ban player"
+	}
+
+	"Ban reason"
+	{
+		"en"			"Ban reason"
+	}
+	
+	"Permabanned player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Permanently banned player \"{1}\"."
+	}
+	
+	"Permabanned player reason"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"Permanently banned player \"{1}\" (reason: {2})."
+	}
+	
+	"Banned player"
+	{
+		"#format"		"{1:s},{2:d}"
+		"en"			"Banned player \"{1}\" for {2} minutes."
+	}
+	
+	"Banned player reason"
+	{
+		"#format"		"{1:s},{2:d},{3:s}"
+		"en"			"Banned player \"{1}\" for {2} minutes (reason: {3})."
+	}
+	
+	"Removed bans matching"
+	{
+		"#format"		"{1:s}"
+		"en"			"Removed bans matching filter: {1}"
+	}
+	
+	"Ban added"
+	{
+		"en"			"Ban has been added."
+	}
+	
+	"Cannot ban that IP"
+	{
+		"en"			"You cannot ban that IP address."
+	}
+}

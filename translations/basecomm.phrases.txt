@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"en"			"Gag/Mute player"
+	}
+	
+	"Choose Type"
+	{
+		"en"			"Choose Type"
+	}
+	
+	"Gagged target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Gagged {1}."
+	}
+	
+	"Ungagged target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Ungagged {1}."
+	}
+	
+	"Muted target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Muted {1}."
+	}
+	
+	"Unmuted target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Unmuted {1}."
+	}
+	
+	"Silenced target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Silenced {1}."
+	}
+	
+	"Unsilenced target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Unsilenced {1}."
+	}
+}

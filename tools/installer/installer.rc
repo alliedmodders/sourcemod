@@ -1,0 +1,222 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_INSTALLER           ICON                    "installer.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_INSTALLER MENU 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "E&xit",                       IDM_EXIT
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About ...",                  IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDC_INSTALLER ACCELERATORS 
+BEGIN
+    "?",            IDM_ABOUT,              ASCII,  ALT
+    "/",            IDM_ABOUT,              ASCII,  ALT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WELCOME DIALOGEX 0, 0, 244, 74
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "SourceMod Installer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "&Next",ID_WELCOME_NEXT,191,58,50,14
+    GROUPBOX        "",IDC_WELCOME_PANEL,2,3,239,51
+    LTEXT           "Welcome to the SourceMod Installer.  This tool can be used to install SourcecMod to a local server/game installation, or upload SourceMod to a server via FTP.",IDC_WELCOME_TEXT,9,11,225,42
+    DEFPUSHBUTTON   "E&xit",ID_WELCOME_EXIT,2,58,50,14
+END
+
+IDD_CHOOSE_METHOD DIALOGEX 0, 0, 244, 130
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "SourceMod Installer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Next",ID_METHOD_NEXT,191,113,50,14,WS_DISABLED
+    PUSHBUTTON      "E&xit",ID_METHOD_EXIT,2,113,50,14
+    GROUPBOX        "",IDC_METHOD_PANEL,2,3,239,108
+    DEFPUSHBUTTON   "&Back",ID_METHOD_BACK,136,113,50,14
+    GROUPBOX        "",IDC_METHOD_PANEL,17,30,181,69
+    LTEXT           "Please select an installation method:",IDC_METHOD_TEXT,9,15,122,12
+    CONTROL         "Steam Dedicated Server",IDC_METHOD_DED_SERVER,"Button",BS_AUTORADIOBUTTON,21,35,98,15
+    CONTROL         "Steam Listen Server",IDC_METHOD_LISTEN_SERVER,"Button",BS_AUTORADIOBUTTON,21,46,93,16
+    CONTROL         "Standalone Server",IDC_METHOD_ALONE_SERVER,"Button",BS_AUTORADIOBUTTON,21,58,93,16
+    CONTROL         "Select Destination Folder",IDC_METHOD_CUSTOM_FOLDER,
+                    "Button",BS_AUTORADIOBUTTON,21,70,95,16
+    CONTROL         "Upload via FTP",IDC_METHOD_UPLOAD_FTP,"Button",BS_AUTORADIOBUTTON,21,82,94,16
+END
+
+IDD_SELECT_GAME DIALOGEX 0, 0, 244, 148
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "SourceMod Installer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Next",ID_SELGAME_NEXT,191,131,50,14,WS_DISABLED
+    PUSHBUTTON      "E&xit",ID_SELGAME_EXIT,2,131,50,14
+    GROUPBOX        "",IDC_SELGAME_PANEL,2,3,239,126
+    DEFPUSHBUTTON   "&Back",ID_SELGAME_BACK,136,131,50,14
+    LTEXT           "Please select a game from the list below.  If there are multiple accounts, you may select one from the combo-box.",IDC_SELGAME_TEXT,7,14,221,16
+    LISTBOX         IDC_SELGAME_LIST,17,46,199,76,LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SELGROUP_ACCOUNT,17,32,133,80,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_PERFORM_INSTALL DIALOGEX 0, 0, 243, 116
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "SourceMod Installer"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "&Cancel",ID_INSTALL_CANCEL,2,99,50,14
+    GROUPBOX        "",IDC_INSTALL_PANEL,2,3,239,93
+    LTEXT           "Click ""Install"" to begin copying the SourceMod files.",IDC_INSTALL_TEXT,9,15,175,13
+    CONTROL         "",IDC_PROGRESS_CURRENT,"msctls_progress32",WS_BORDER | 0x1,5,50,232,17
+    CONTROL         "",IDC_PROGRESS_TOTAL,"msctls_progress32",WS_BORDER | 0x1,5,73,232,17
+    PUSHBUTTON      "&Install",ID_INSTALL_START,191,99,50,14
+    LTEXT           "",IDC_PROGRESS_CURCOPY,9,34,175,11
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_WELCOME, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 241
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 72
+    END
+
+    IDD_CHOOSE_METHOD, DIALOG
+    BEGIN
+        LEFTMARGIN, 2
+        RIGHTMARGIN, 241
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_PERFORM_INSTALL, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 113
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NO_GAMEINFO         "The folder you selected does not appear to be a valid Half-Life 2 game/mod folder."
+    IDS_READONLY_GAMEINFO   "The folder you selected may contain a valid Half-Life 2 game/mod, but its gameinfo.txt is read-only.  You must make it writable to continue."
+    IDS_GAME_FAIL_HL1       "A Source dedicated server installation could not be found.  This may occur if you used the standalone server to install HLDS.  Try navigating to the folder manually."
+    IDS_GAME_FAIL_READ      "Could not locate a valid Source installation.  Please make sure Steam is installed and its games have been run at least once."
+    IDS_GAME_FAIL_NONE      "No Source games or mods were found.  Please make sure that Steam is installed and its games have been run at least once."
+    IDS_VERIFY_EXIT         "Are you sure you want to exit?"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
