@@ -4,8 +4,6 @@
 
 #define ARRAY_STRING_LENGTH 32
 
-new Handle:g_kvMenu;
-
 enum GroupCommands
 {
 	Handle:groupListName,
@@ -40,23 +38,59 @@ enum PlayerMethod
 	UserId2					/** Userid (not prefixed with #) */
 };
 
+enum ExecuteType
+{
+	Execute_Player,
+	Execute_Server
+}
+
+enum SubMenu_Type
+{
+	SubMenu_Group,
+	SubMenu_GroupPlayer,
+	SubMenu_Player,
+	SubMenu_MapCycle,
+	SubMenu_List,
+	SubMenu_OnOff	
+}
+
+enum Item
+{
+	String:Item_cmd[256],
+	ExecuteType:Item_execute,
+	Handle:Item_submenus
+}
+
+enum Submenu
+{
+	SubMenu_Type:Submenu_type,
+	String:Submenu_title[32],
+	PlayerMethod:Submenu_method,
+	Submenu_listcount,
+	Handle:Submenu_listdata
+}
+
+new Handle:g_DataArray;
+
 BuildDynamicMenu()
 {
-	if (g_kvMenu != INVALID_HANDLE)
-	{
-		CloseHandle(g_kvMenu);	
-	}
+	new itemInput[Item];
+	g_DataArray = CreateArray(sizeof(itemInput));
 	
-	g_kvMenu = CreateKeyValues("Commands");
+	new String:executeBuffer[32];
+	
+	new Handle:kvMenu;
+	kvMenu = CreateKeyValues("Commands");
 	new String:file[256];
 	BuildPath(Path_SM, file, 255, "configs/dynamicmenu/menu.ini");
-	FileToKeyValues(g_kvMenu, file);
+	FileToKeyValues(kvMenu, file);
 	
 	new String:name[NAME_LENGTH];
 	new String:buffer[NAME_LENGTH];
 	
-	
-	if (!KvGotoFirstSubKey(g_kvMenu))
+	KvSetEscapeSequences(kvMenu, true);
+		
+	if (!KvGotoFirstSubKey(kvMenu))
 	{
 		return;
 	}
@@ -65,14 +99,11 @@ BuildDynamicMenu()
 	
 	new TopMenuObject:categoryId;
 	
-	new catId;
-	new id;
-	
 	do
 	{		
-		KvGetSectionName(g_kvMenu, buffer, sizeof(buffer));
+		KvGetSectionName(kvMenu, buffer, sizeof(buffer));
 
-		KvGetString(g_kvMenu, "admin", admin, sizeof(admin),"sm_admin");
+		KvGetString(kvMenu, "admin", admin, sizeof(admin),"sm_admin");
 				
 		if ((categoryId =FindTopMenuCategory(hAdminMenu, buffer)) == INVALID_TOPMENUOBJECT)
 		{
@@ -87,22 +118,16 @@ BuildDynamicMenu()
 
 		}
 		
-		if (!KvGetSectionSymbol(g_kvMenu, catId))
-		{
-			LogError("Key Id not found for section: %s", buffer);
-			break;
-		}
-		
-		if (!KvGotoFirstSubKey(g_kvMenu))
+		if (!KvGotoFirstSubKey(kvMenu))
 		{
 			return;
 		}
 		
 		do
 		{		
-			KvGetSectionName(g_kvMenu, buffer, sizeof(buffer));
-
-			KvGetString(g_kvMenu, "admin", admin, sizeof(admin),"");
+			KvGetSectionName(kvMenu, buffer, sizeof(buffer));
+			
+			KvGetString(kvMenu, "admin", admin, sizeof(admin),"");
 			
 			if (admin[0] == '\0')
 			{
@@ -110,21 +135,165 @@ BuildDynamicMenu()
 				//Use the first argument of the 'cmd' string instead
 				
 				decl String:temp[64];
-				KvGetString(g_kvMenu, "cmd", temp, sizeof(temp),"");
+				KvGetString(kvMenu, "cmd", temp, sizeof(temp),"");
 				
 				BreakString(temp, admin, sizeof(admin));
 			}
-							  
-			if (!KvGetSectionSymbol(g_kvMenu, id))
+			
+			
+			KvGetString(kvMenu, "cmd", itemInput[Item_cmd], sizeof(itemInput[Item_cmd]));	
+			KvGetString(kvMenu, "execute", executeBuffer, sizeof(executeBuffer));
+			
+			if (StrEqual(executeBuffer, "server"))
 			{
-				LogError("Key Id not found for section: %s");
-				break;
+				itemInput[Item_execute] = Execute_Server;
 			}
+			else //assume player type execute
+			{
+				itemInput[Item_execute] = Execute_Player;
+			}
+  							
+  			/* iterate all submenus and load data into itemInput[Item_submenus] (adt array handle) */
+  			
+  			new count = 1;
+  			decl String:countBuffer[10] = "1";
+  			
+  			decl String:inputBuffer[32];
+  			
+  			while (KvJumpToKey(kvMenu, countBuffer))
+  			{
+	  			new submenuInput[Submenu];
+	  			
+	  			if (count == 1)
+	  			{
+		  			itemInput[Item_submenus] = CreateArray(sizeof(submenuInput));	
+	  			}
+	  			
+	  			KvGetString(kvMenu, "type", inputBuffer, sizeof(inputBuffer));
+	  			
+	  			if (strncmp(inputBuffer,"group",5)==0)
+				{	
+					if (StrContains(inputBuffer, "player") != -1)
+					{			
+						submenuInput[Submenu_type] = SubMenu_GroupPlayer;
+					}
+					else
+					{
+						submenuInput[Submenu_type] = SubMenu_Group;
+					}
+				}			
+				else if (StrEqual(inputBuffer,"mapcycle"))
+				{
+					submenuInput[Submenu_type] = SubMenu_MapCycle;
+					
+					KvGetString(kvMenu, "path", inputBuffer, sizeof(inputBuffer),"mapcycle.txt");
+					
+					submenuInput[Submenu_listdata] = CreateDataPack();
+					WritePackString(submenuInput[Submenu_listdata], inputBuffer);
+					ResetPack(submenuInput[Submenu_listdata]);
+				}
+				else if (StrContains(inputBuffer, "player") != -1)
+				{			
+					submenuInput[Submenu_type] = SubMenu_Player;
+				}
+				else if (StrEqual(inputBuffer,"onoff"))
+				{
+					submenuInput[Submenu_type] = SubMenu_OnOff;
+				}		
+				else //assume 'list' type
+				{
+					submenuInput[Submenu_type] = SubMenu_List;
+					
+					submenuInput[Submenu_listdata] = CreateDataPack();
+					
+					new String:temp[6];
+					new String:value[64];
+					new String:text[64];
+					new i=1;
+					new bool:more = true;
+					
+					new listcount = 0;
+								
+					do
+					{
+						Format(temp,3,"%i",i);
+						KvGetString(kvMenu, temp, value, sizeof(value), "");
+						
+						Format(temp,5,"%i.",i);
+						KvGetString(kvMenu, temp, text, sizeof(text), value);
+						
+						Format(temp,5,"%i*",i);
+						KvGetString(kvMenu, temp, admin, sizeof(admin),"");	
+						
+						if (value[0]=='\0')
+						{
+							more = false;
+						}
+						else
+						{
+							listcount++;
+							WritePackString(submenuInput[Submenu_listdata], value);
+							WritePackString(submenuInput[Submenu_listdata], text);
+							WritePackString(submenuInput[Submenu_listdata], admin);
+						}
+						
+						i++;
+										
+					} while (more);
+					
+					ResetPack(submenuInput[Submenu_listdata]);
+					submenuInput[Submenu_listcount] = listcount;
+				}
+				
+				if ((submenuInput[Submenu_type] == SubMenu_Player) || (submenuInput[Submenu_type] == SubMenu_GroupPlayer))
+				{
+					KvGetString(kvMenu, "method", inputBuffer, sizeof(inputBuffer));
+					
+					if (StrEqual(inputBuffer, "clientid"))
+					{
+						submenuInput[Submenu_method] = ClientId;
+					}
+					else if (StrEqual(inputBuffer, "steamid"))
+					{
+						submenuInput[Submenu_method] = SteamId;
+					}
+					else if (StrEqual(inputBuffer, "userid2"))
+					{
+						submenuInput[Submenu_method] = UserId2;
+					}
+					else if (StrEqual(inputBuffer, "userid"))
+					{
+						submenuInput[Submenu_method] = UserId;
+					}
+					else if (StrEqual(inputBuffer, "ip"))
+					{
+						submenuInput[Submenu_method] = IpAddress;
+					}
+					else
+					{
+						submenuInput[Submenu_method] = Name;
+					}					
+					
+				}
+				
+				KvGetString(kvMenu, "title", inputBuffer, sizeof(inputBuffer));
+				strcopy(submenuInput[Submenu_title], sizeof(submenuInput[Submenu_title]), inputBuffer);
+	  			
+	  			count++;
+	  			Format(countBuffer, sizeof(countBuffer), "%i", count);
+	  			
+	  			PushArrayArray(itemInput[Item_submenus], submenuInput[0]);
+	  		
+	  			KvGoBack(kvMenu);	
+  			}
+  			
+  			/* Save this entire item into the global items array and add it to the menu */
+  			
+  			new location = PushArrayArray(g_DataArray, itemInput[0]);
 			
-			decl String:keyId[64];
-			
-			Format(keyId, sizeof(keyId), "%i %i", catId, id);
-		
+			decl String:locString[10];
+			IntToString(location, locString, sizeof(locString));
+
 			AddToTopMenu(hAdminMenu,
 							buffer,
 							TopMenuObject_Item,
@@ -132,15 +301,15 @@ BuildDynamicMenu()
   							categoryId,
   							admin,
   							ADMFLAG_GENERIC,
-  							keyId);
+  							locString);			
 		
-		} while (KvGotoNextKey(g_kvMenu));
+		} while (KvGotoNextKey(kvMenu));
 		
-		KvGoBack(g_kvMenu);
+		KvGoBack(kvMenu);
 		
-	} while (KvGotoNextKey(g_kvMenu));
+	} while (KvGotoNextKey(kvMenu));
 	
-	KvRewind(g_kvMenu);	
+	CloseHandle(kvMenu);
 }
 
 ParseConfigs()
@@ -230,23 +399,17 @@ public DynamicMenuItemHandler(Handle:topmenu,
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{	
-		new String:keyId[64];
-		new String:catId[64];
-		GetTopMenuInfoString(topmenu, object_id, keyId, sizeof(keyId));
+		new String:locString[10];
+		GetTopMenuInfoString(topmenu, object_id, locString, sizeof(locString));
 		
-		new start = BreakString(keyId, catId, sizeof(catId));
+		new location = StringToInt(locString);
 		
-		new id = StringToInt(keyId[start]);
-		new category = StringToInt(catId);
+		new output[Item];
+		GetArrayArray(g_DataArray, location, output[0]);
 		
-		KvJumpToKeySymbol(g_kvMenu, category);
-		KvJumpToKeySymbol(g_kvMenu, id);
-		
-		KvGetString(g_kvMenu, "cmd", g_command[param], sizeof(g_command[]),"");
-		KvRewind(g_kvMenu);
+		strcopy(g_command[param], sizeof(g_command[]), output[Item_cmd]);
 					
-		g_currentPlace[param][Place_Category] = category;
-		g_currentPlace[param][Place_Item] = id;
+		g_currentPlace[param][Place_Item] = location;
 		
 		ParamCheck(param);
 	}
@@ -256,11 +419,11 @@ public ParamCheck(client)
 {
 	new String:buffer[6];
 	new String:buffer2[6];
-
-	KvJumpToKeySymbol(g_kvMenu, g_currentPlace[client][Place_Category]);
-	KvJumpToKeySymbol(g_kvMenu, g_currentPlace[client][Place_Item]);
 	
-	new String:type[NAME_LENGTH];
+	new outputItem[Item];
+	new outputSubmenu[Submenu];
+	
+	GetArrayArray(g_DataArray, g_currentPlace[client][Place_Item], outputItem[0]);
 		
 	if (g_currentPlace[client][Place_ReplaceNum] < 1)
 	{
@@ -272,17 +435,11 @@ public ParamCheck(client)
 	
 	if (StrContains(g_command[client], buffer) != -1 || StrContains(g_command[client], buffer2) != -1)
 	{
-		//user has a parameter to fill. lets do it.	
-		KvJumpToKey(g_kvMenu, buffer[1]); // Jump to current param
-		KvGetString(g_kvMenu, "type", type, sizeof(type),"list");
-		
-		PrintToChatAll("Checking param %s - type %s", buffer[1], type);
+		GetArrayArray(outputItem[Item_submenus], g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu[0]);
 		
 		new Handle:itemMenu = CreateMenu(Menu_Selection);
-		
-		new String:title[NAME_LENGTH];
 			
-		if (strncmp(type,"group",5)==0 && g_groupCount)
+		if ((outputSubmenu[Submenu_type] == SubMenu_Group) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
 		{	
 			decl String:nameBuffer[ARRAY_STRING_LENGTH];
 			decl String:commandBuffer[ARRAY_STRING_LENGTH];
@@ -295,10 +452,11 @@ public ParamCheck(client)
 			}
 		}
 		
-		if (strncmp(type,"mapcycle",8) == 0)
-		{
+		if (outputSubmenu[Submenu_type] == SubMenu_MapCycle)
+		{	
 			decl String:path[200];
-			KvGetString(g_kvMenu, "path", path, sizeof(path),"mapcycle.txt");
+			ReadPackString(outputSubmenu[Submenu_listdata], path, sizeof(path));
+			ResetPack(outputSubmenu[Submenu_listdata]);
 		
 			new Handle:file = OpenFile(path, "rt");
 			new String:readData[128];
@@ -316,41 +474,10 @@ public ParamCheck(client)
 				}
 			}
 		}
-		else if (StrContains(type, "player") != -1)
+		else if ((outputSubmenu[Submenu_type] == SubMenu_Player) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
 		{
-			PrintToChatAll("Building Player List");
-			
-			new PlayerMethod:playermethod;
-			new String:method[NAME_LENGTH];
-			
-			KvGetString(g_kvMenu, "method", method, sizeof(method),"name");
-			
-			if (strncmp(method,"clientid",8)==0)
-			{
-				playermethod = ClientId;
-			}
-			else if (strncmp(method,"steamid",7)==0)
-			{
-				playermethod = SteamId;
-			}
-			else if (strncmp(method,"userid2",7)==0)
-			{
-				playermethod = UserId2;
-			}
-			else if (strncmp(method,"userid",6)==0)
-			{
-				playermethod = UserId;
-			}
-			else if (strncmp(method,"ip",2)==0)
-			{
-				playermethod = IpAddress;
-			}
-			else
-			{
-				playermethod = Name;
-			}
-	
-			
+			new PlayerMethod:playermethod = outputSubmenu[Submenu_method];
+		
 			new String:nameBuffer[32];
 			new String:infoBuffer[32];
 			new String:temp[4];
@@ -399,66 +526,44 @@ public ParamCheck(client)
 				}
 			}
 		}
-		else if (strncmp(type,"onoff",5) == 0)
+		else if (outputSubmenu[Submenu_type] == SubMenu_OnOff)
 		{
 			AddMenuItem(itemMenu, "1", "On");
 			AddMenuItem(itemMenu, "0", "Off");
 		}		
 		else
 		{
-			//list menu
-			
-			PrintToChatAll("Building List Menu");
-
-			new String:temp[6];
 			new String:value[64];
 			new String:text[64];
-			new i=1;
-			new bool:more = true;
 					
 			new String:admin[NAME_LENGTH];
-						
-			do
+			
+			for (new i=0; i<outputSubmenu[Submenu_listcount]; i++)
 			{
-				// load the i and i. options from kv and make a menu from them (i* = required admin level to view)
-				Format(temp,3,"%i",i);
-				KvGetString(g_kvMenu, temp, value, sizeof(value), "");
+				ReadPackString(outputSubmenu[Submenu_listdata], value, sizeof(value));
+				ReadPackString(outputSubmenu[Submenu_listdata], text, sizeof(text));
+				ReadPackString(outputSubmenu[Submenu_listdata], admin, sizeof(admin));
 				
-				Format(temp,5,"%i.",i);
-				KvGetString(g_kvMenu, temp, text, sizeof(text), value);
-				
-				Format(temp,5,"%i*",i);
-				KvGetString(g_kvMenu, temp, admin, sizeof(admin),"");	
-				
-				if (value[0]=='\0')
-				{
-					more = false;
-				}
-				else if (CheckCommandAccess(client, admin, 0))
+				if (CheckCommandAccess(client, admin, 0))
 				{
 					AddMenuItem(itemMenu, value, text);
 				}
-				
-				i++;
-								
-			} while (more);
-		
+			}
+			
+			ResetPack(outputSubmenu[Submenu_listdata]);	
 		}
 		
-		KvGetString(g_kvMenu, "title", title, sizeof(title),"Choose an Option");
-		SetMenuTitle(itemMenu, title);
+		SetMenuTitle(itemMenu, outputSubmenu[Submenu_title]);
 		
 		DisplayMenu(itemMenu, client, MENU_TIME_FOREVER);
 	}
 	else
 	{	
 		//nothing else need to be done. Run teh command.
-		new String:execute[7];
-		KvGetString(g_kvMenu, "execute", execute, sizeof(execute), "player");
 		
 		DisplayTopMenu(hAdminMenu, client, TopMenuPosition_LastCategory);
 		
-		if (execute[0]=='p') // assume 'player' type execute option
+		if (outputItem[Item_execute] == Execute_Player) // assume 'player' type execute option
 		{
 			FakeClientCommand(client, g_command[client]);
 		}
@@ -471,8 +576,6 @@ public ParamCheck(client)
 		g_command[client][0] = '\0';
 		g_currentPlace[client][Place_ReplaceNum] = 1;
 	}
-	
-	KvRewind(g_kvMenu);
 }
 
 public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
