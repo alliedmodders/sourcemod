@@ -614,4 +614,220 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 
 }
 
+char *UTIL_FlagsToString(int flags)
+{
+	static char str[1024];
+	str[0] = 0;
+
+	if (flags & FTYPEDESC_GLOBAL)
+	{
+		strcat(str,	"Global|");
+	}
+	if (flags & FTYPEDESC_SAVE)
+	{
+		strcat(str,	"Save|");
+	}
+	if (flags & FTYPEDESC_KEY)
+	{
+		strcat(str,	"Key|");
+	}
+	if (flags & FTYPEDESC_INPUT)
+	{
+		strcat(str,	"Input|");
+	}
+	if (flags & FTYPEDESC_OUTPUT)
+	{
+		strcat(str,	"Output|");
+	}
+	if (flags & FTYPEDESC_FUNCTIONTABLE)
+	{
+		strcat(str,	"FunctionTable|");
+	}
+	if (flags & FTYPEDESC_PTR)
+	{
+		strcat(str,	"Ptr|");
+	}
+	if (flags & FTYPEDESC_OVERRIDE)
+	{
+		strcat(str,	"Override|");
+	}
+
+	int len = strlen(str) - 1;
+	if (len > 0)
+	{
+		str[len] = 0; // Strip the final '|'
+	}
+
+	return str;
+}
+
+void UTIL_DrawDataTable(FILE *fp, datamap_t *pMap, int level)
+{
+	char spaces[255];
+
+	for (int i=0; i<level; i++)
+	{
+		spaces[i] = ' ';
+	}
+
+	spaces[level] = '\0';
+
+	const char *externalname;
+	char *flags;
+
+	while (pMap)
+	{
+		for (int i=0; i<pMap->dataNumFields; i++)
+		{
+			if (pMap->dataDesc[i].fieldName == NULL)
+			{
+				continue;
+			}
+
+			if (pMap->dataDesc[i].td)
+			{
+				fprintf(fp, " %sSub-Class Table (%d Deep): %s - %s\n", spaces, level+1, pMap->dataDesc[i].fieldName, pMap->dataDesc[i].td->dataClassName);
+				UTIL_DrawDataTable(fp, pMap->dataDesc[i].td, level+1);
+			}
+			else
+			{
+				externalname  = pMap->dataDesc[i].externalName;
+				flags = UTIL_FlagsToString(pMap->dataDesc[i].flags);
+
+				if (externalname == NULL)
+				{
+					fprintf(fp,"%s- %s (%s)(%i Bytes)\n", spaces, pMap->dataDesc[i].fieldName, flags, pMap->dataDesc[i].fieldSizeInBytes);
+				}
+				else
+				{
+					fprintf(fp,"%s- %s (%s)(%i Bytes) - %s\n", spaces, pMap->dataDesc[i].fieldName, flags, pMap->dataDesc[i].fieldSizeInBytes, externalname);
+				}
+			}
+		}
+		pMap = pMap->baseMap;
+	}
+}
+
+CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
+{
+#if !defined ORANGEBOX_BUILD
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		META_CONPRINT("Usage: sm_dump_datamaps <file>\n");
+		return;
+	}
+
+	const char *file = args.Arg(1);
+	if (!file || file[0] == '\0')
+	{
+		META_CONPRINT("Usage: sm_dump_datamaps <file>\n");
+		return;
+	}
+
+	ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		PassInfo retData;
+		retData.flags = PASSFLAG_BYVAL;
+		retData.size = sizeof(void *);
+		retData.type = PassType_Basic;
+
+		void *addr;
+		if (!g_pGameConf->GetMemSig("EntityFactory", &addr) || addr == NULL)
+		{
+			META_CONPRINT("Failed to locate function\n");
+			return;
+		}
+
+		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
+	}
+
+
+	void *returnData = NULL;
+
+	pWrapper->Execute(NULL, &returnData);
+
+	pWrapper->Destroy();
+
+	if (returnData == NULL)
+	{
+		return;
+	}
+
+	CEntityFactoryDictionary *dict = ( CEntityFactoryDictionary * )returnData;
+
+	if ( !dict )
+	{
+		return;
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = NULL;
+	if ((fp = fopen(path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", path);
+		return;
+	}
+
+	char buffer[80];
+	buffer[0] = 0;
+
+#if defined SUBPLATFORM_SECURECRT
+	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+#endif
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = strftime(buffer, sizeof(buffer), "%d/%m/%Y", localtime(&t));
+
+#if defined SUBPLATFORM_SECURECRT
+	_set_invalid_parameter_handler(handler);
+#endif
+
+	fprintf(fp, "// Dump of all datamaps for \"%s\" as at %s\n//\n//\n", g_pSM->GetGameFolderName(), buffer);
+
+
+	fprintf(fp, "// Flag Details:\n//\n");
+
+	fprintf(fp, "// Global: This field is masked for global entity save/restore\n");
+	fprintf(fp, "// Save: This field is saved to disk\n");
+	fprintf(fp, "// Key: This field can be requested and written to by string name at load time\n");
+	fprintf(fp, "// Input: This field can be written to by string name at run time, and a function called\n");
+	fprintf(fp, "// Output: This field propogates it's value to all targets whenever it changes\n");
+	fprintf(fp, "// FunctionTable: This is a table entry for a member function pointer\n");
+	fprintf(fp, "// Ptr: This field is a pointer, not an embedded object\n");
+	fprintf(fp, "// Override: The field is an override for one in a base class (only used by prediction system for now)\n");
+
+	fprintf(fp, "//\n\n");
+
+	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
+	{
+		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
+		ServerClass *sclass = entity->GetServerClass();
+		datamap_t *pMap = gamehelpers->GetDataMap(entity->GetBaseEntity());
+
+		fprintf(fp,"%s - %s\n", sclass->GetName(), dict->m_Factories.GetElementName(i));
+
+		UTIL_DrawDataTable(fp, pMap, 0);
+
+		typedescription_t *datamap = gamehelpers->FindInDataMap(pMap), "m_iEFlags");
+		
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + datamap->fieldOffset[TD_OFFSET_NORMAL]);
+		*eflags |= (1<<0); // EFL_KILLME
+	}
+
+	fclose(fp);
+
+}
+
+
+
+	
+
+
 
