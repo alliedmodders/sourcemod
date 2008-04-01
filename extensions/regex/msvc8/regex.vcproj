@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="../lib_win/pcre.lib"
-				OutputFile="$(OutDir)\sample.ext.dll"
+				OutputFile="$(OutDir)\regex.ext.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="../lib_win/pcre.lib"
-				OutputFile="$(OutDir)\sample.ext.dll"
+				OutputFile="$(OutDir)\regex.ext.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
