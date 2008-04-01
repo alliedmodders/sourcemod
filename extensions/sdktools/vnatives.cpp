@@ -871,6 +871,29 @@ static cell_t GetServerNetStats(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t WeaponEquip(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[1];
+		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("WeaponEquip", ValveCall_Player, NULL, pass, 1, &pCall))
+		{
+			return pContext->ThrowNativeError("\"WeaponEquip\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"WeaponEquip\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -895,5 +918,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetEntityModel",			sm_SetEntityModel},
 	{"GetPlayerDecalFile",		GetPlayerDecalFile},
 	{"GetServerNetStats",		GetServerNetStats},
+	{"EquipPlayerWeapon",		WeaponEquip},
 	{NULL,						NULL},
 };

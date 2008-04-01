@@ -276,6 +276,11 @@
 				"windows"	"34"
 				"linux"		"35"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
 		}
 	}
 	/* EntityFactoryDictionary function */
@@ -288,6 +293,23 @@
 				"library"	"server"
 				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+	/* CBaseEntityOutput::FireOutput */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"tf"
+		}
+		"Signatures"
+		{
+			"FireEvent"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x85\xF6"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
