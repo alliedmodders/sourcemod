@@ -1707,11 +1707,19 @@
 		}
 		"Signatures"
 		{
-			"FireEvent"
+			"FireOutput"
 			{
 				"library"	"server"
 				"windows"	"\x81\xEC\x1C\x03\x00\x00\x53\x55\x56\x8B\x71\x14"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+		"Offsets"
+		{
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"6"
 			}
 		}
 	}

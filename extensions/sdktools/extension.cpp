@@ -36,6 +36,7 @@
 #include "vglobals.h"
 #include "tempents.h"
 #include "vsound.h"
+#include "output.h"
 
 #if defined ORANGEBOX_BUILD
 	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2"
@@ -92,6 +93,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_VoiceNatives);
 	sharesys->AddNatives(myself, g_EntInputNatives);
 	sharesys->AddNatives(myself, g_TeamNatives);
+	sharesys->AddNatives(myself, g_EntOutputNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -115,6 +117,14 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
 	MathLib_Init(2.2f, 2.2f, 0.0f, 2);
+
+	spengine = g_pSM->GetScriptingEngine();
+
+	//g_OutputManager.VariantHandle = handlesys->CreateType("Variant", &g_OutputManager, 0, NULL, NULL, myself->GetIdentity(), NULL);
+
+	plsys->AddPluginsListener(&g_OutputManager);
+
+	g_OutputManager.Init();
 
 	return true;
 }
