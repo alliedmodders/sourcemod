@@ -392,7 +392,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @param min			Minimum floating point value that the convar can have if hasMin is true.
  * @param hasMax		Optional boolean that determines if the convar has a maximum value.
  * @param max			Maximum floating point value that the convar can have if hasMax is true.
- * @return				A handle to the newly created convar. If the convar already exists, INVALID_HANDLE is returned.
+ * @return				A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
  * @error				Convar name is blank or is the same as an existing console command.
  */
 native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);
