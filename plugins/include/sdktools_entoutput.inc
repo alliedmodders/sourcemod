@@ -64,7 +64,7 @@ native HookEntityOutput(const String:classname[], const String:output[], EntityO
  * @return				True on success, false if no valid hook was found.
  * @error				Entity Outputs disabled.
  */
-native bool:UnHookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
+native bool:UnhookEntityOutput(const String:classname[], const String:output[], EntityOutput:callback);
 
 /**
  * Add an entity output hook on a single entity instance	
@@ -87,5 +87,5 @@ native HookSingleEntityOutput(entity, const String:output[], EntityOutput:callba
  * @return				True on success, false if no valid hook was found.
  * @error				Entity Outputs disabled	or Invalid Entity index.	
  */
-native bool:UnHookSingleEntityOutput(entity, const String:output[], EntityOutput:callback);
+native bool:UnhookSingleEntityOutput(entity, const String:output[], EntityOutput:callback);
 

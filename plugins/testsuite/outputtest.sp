@@ -54,6 +54,6 @@ public OnMapStart()
 	AcceptEntityInput(ent, "LightOn", ent, ent);
 	
 	//Comment these out (and reload the plugin heaps) to test for leaks on plugin unload
-	UnHookSingleEntityOutput(ent, "OnLightOn", OutputHook);
-	UnHookSingleEntityOutput(ent, "OnLightOff", OutputHook);
+	UnhookSingleEntityOutput(ent, "OnLightOn", OutputHook);
+	UnhookSingleEntityOutput(ent, "OnLightOff", OutputHook);
 }

@@ -500,9 +500,9 @@ static cell_t GetVariantString(IPluginContext *pContext, const cell_t *params)
 sp_nativeinfo_t g_EntOutputNatives[] =
 {
 	{"HookEntityOutput",			HookEntityOutput},
-	{"UnHookEntityOutput",			UnHookEntityOutput},
+	{"UnhookEntityOutput",			UnHookEntityOutput},
 	{"HookSingleEntityOutput",		HookSingleEntityOutput},
-	{"UnHookSingleEntityOutput",	UnHookSingleEntityOutput},
+	{"UnhookSingleEntityOutput",	UnHookSingleEntityOutput},
 #if 0 //Removed because we don't need them
 	{"GetVariantType",				GetVariantType},
 	{"GetVariantInt",				GetVariantInt},
