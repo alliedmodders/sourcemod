@@ -179,16 +179,6 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 	edict_t *pEdict = gameents->BaseEntityToEdict(pCaller);
 
-	/* DEBUG START */
-
-	const char *classname = pEdict->GetClassName();
-	const char *outputname = FindOutputName(pOutput, pCaller);
-
-	g_pSM->LogMessage(myself, "Output \"%s\" fired from entity \"%s\"", outputname, classname);
-
-	/* DEBUG END */
-
-
 	bool fastLookup = false;
 	
 	// Fast lookup failed - check the slow way for hooks that havn't fired yet
