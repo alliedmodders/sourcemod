@@ -37,16 +37,13 @@ EntityOutputManager g_OutputManager;
 
 bool EntityOutputManager::CreateFireEventDetour()
 {
-	g_pGameConf->GetMemSig("FireOutput", &info_address);
-	g_pGameConf->GetOffset("FireOutputBackup", (int *)&(info_restore.bytes));
-
-	if (!info_address)
+	if (!g_pGameConf->GetMemSig("FireOutput", &info_address) || !info_address)
 	{
 		g_pSM->LogError(myself, "Could not locate FireOutput - Disabling Entity Outputs");
 		return false;
 	}
 
-	if (!info_restore.bytes)
+	if (!g_pGameConf->GetOffset("FireOutputBackup", (int *)&(info_restore.bytes)))
 	{
 		g_pSM->LogError(myself, "Could not locate FireOutputBackup - Disabling Entity Outputs");
 		return false;
@@ -56,7 +53,6 @@ bool EntityOutputManager::CreateFireEventDetour()
 	for (size_t i=0; i<info_restore.bytes; i++)
 	{
 		info_restore.patch[i] = ((unsigned char *)info_address)[i];
-		g_pSM->LogMessage(myself, "Backing up: %x", info_restore.patch[i]);
 	}
 
 	info_callback = spengine->ExecAlloc(100);
@@ -64,9 +60,6 @@ bool EntityOutputManager::CreateFireEventDetour()
 	JitWriter *jit = &wr;
 	wr.outbase = (jitcode_t)info_callback;
 	wr.outptr = wr.outbase;
-
-	g_pSM->LogMessage(myself, "info_callback : %x", info_callback);
-	g_pSM->LogMessage(myself, "info_address : %x", info_address);
 
 	/* Function we are detouring into is
 	 *
@@ -120,7 +113,6 @@ bool EntityOutputManager::CreateFireEventDetour()
 	for (size_t i=0; i<info_restore.bytes; i++)
 	{
 		jit->write_ubyte(info_restore.patch[i]);
-		g_pSM->LogMessage(myself, "Writing: %x", info_restore.patch[i]);
 	}
 
 	/* Return to the original function */
@@ -178,6 +170,12 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	OutputNameStruct *pOutputName = NULL;
 
 	edict_t *pEdict = gameents->BaseEntityToEdict(pCaller);
+
+	/* TODO: Add support for entities without an edict */
+	if (pEdict == NULL)
+	{
+		return;
+	}
 
 	bool fastLookup = false;
 	
@@ -247,7 +245,16 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 				//fire the forward to hook->pf
 				hook->pf->PushString(pOutputName->Name);
 				hook->pf->PushCell(engine->IndexOfEdict(pEdict));
-				hook->pf->PushCell(engine->IndexOfEdict(gameents->BaseEntityToEdict(pActivator)));
+				
+				edict_t *pEdictActivator = gameents->BaseEntityToEdict(pActivator);
+				if (!pEdictActivator)
+				{
+					hook->pf->PushCell(-1);
+				}
+				else
+				{
+					hook->pf->PushCell(engine->IndexOfEdict(pEdictActivator));
+				}
 				//hook->pf->PushCell(handle);
 				hook->pf->PushFloat(fDelay);
 				hook->pf->Execute(NULL);

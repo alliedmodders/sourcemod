@@ -1704,6 +1704,7 @@
 		"#supported"
 		{
 			"game"		"cstrike"
+			"game"		"hl2mp"
 		}
 		"Signatures"
 		{
