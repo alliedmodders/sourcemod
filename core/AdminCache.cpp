@@ -1929,8 +1929,7 @@ void AdminCache::DumpCache(FILE *fp)
 			fprintf(fp, "\t\"\"\n\t{\n");
 		}
 
-		if (pAdmin->auth.index != -1
-			&& pAdmin->auth.identidx != -1)
+		if (pAdmin->auth.identidx != -1)
 		{
 			fprintf(fp, "\t\t\"auth\"\t\t\t\"%s\"\n", GetMethodName(pAdmin->auth.index));
 			fprintf(fp, "\t\t\"identity\"\t\t\"%s\"\n", GetString(pAdmin->auth.identidx));
