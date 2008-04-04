@@ -16,6 +16,27 @@
 				"windows"	"\x8A\x44\x24\x04\x83\xEC\x20\x56\x8B\xF1\x8B\x4E\x08\x57\x8D\x7E\x08\xC1\xE9\x05\x80\xE1\x01\x3A\xC8\x75\x32\x84\xC0"
 				"linux"		"@_ZN15CTFPlayerShared15SetInvulnerableEbb"
 			}
+			"RemoveDisguise"
+			{
+				"library"	"server"
+				"windows"	"\x51\x56\x8B\xF1\x8B\x46\x08\x57\x8D\x7E\x08\x8D\x4C\x24\x08\x83\xE0\xF7"
+				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
+			}
+			"Disguise"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\xF1\x8B\x4E\x7C\xE8"
+				"linux"		"@_ZN15CTFPlayerShared8DisguiseEii"
+			}
+
+		}
+		"Offsets"
+		{
+			"ForceRespawn"
+			{
+				"windows"	"279"
+				"linux"		"280"
+			}			
 		}
 	}
 }

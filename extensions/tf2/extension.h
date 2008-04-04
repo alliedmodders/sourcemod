@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Counter-Strike:Source Extension
+ * SourceMod Team Fortress 2 Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
@@ -123,8 +123,32 @@ public:
 #endif
 };
 
+enum TFClassType
+{
+	TFClass_Unknown = 0,
+	TFClass_Scout,
+	TFClass_Sniper,
+	TFClass_Soldier,
+	TFClass_DemoMan,
+	TFClass_Medic,
+	TFClass_Heavy,
+	TFClass_Pyro,
+	TFClass_Spy,
+	TFClass_Engineer
+};
+
+TFClassType ClassnameToType(const char *classname);
+
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
-extern SendProp *playerSharedOffset;
+extern sm_sendprop_info_t *playerSharedOffset;
+
+void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+
+int FindResourceEntity();
+int FindEntityByNetClass(int start, const char *classname);
+
+extern int g_resourceEntity;
+
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

@@ -26,27 +26,32 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id$
+ * Version: $Id: util.h 1558 2007-10-14 19:34:46Z faluco $
  */
 
-#include "extension.h"
-#include "RegNatives.h"
+#ifndef _INCLUDE_TF2TOOLS_UTIL_H_
+#define _INCLUDE_TF2TOOLS_UTIL_H_
 
-RegNatives g_RegNatives;
+#define REGISTER_NATIVE_ADDR(name, code) \
+	void *addr; \
+	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
+	{ \
+		return pContext->ThrowNativeError("Failed to locate function"); \
+	} \
+	code; \
+	g_RegNatives.Register(pWrapper);
 
-void RegNatives::Register(ICallWrapper *pWrapper)
-{
-	m_List.push_back(pWrapper);
-}
 
-void RegNatives::UnregisterAll()
-{
-	SourceHook::List<ICallWrapper *>::iterator iter;
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
-	for (iter=m_List.begin(); iter!=m_List.end(); iter++)
-	{
-		(*iter)->Destroy();
-	}
+bool UTIL_FindDataTable(SendTable *pTable, 
+						  const char *name,
+						  sm_sendprop_info_t *info,
+						  unsigned int offset);
 
-	m_List.clear();
-}
+ServerClass *UTIL_FindServerClass(const char *classname);
+
+CBaseEntity *UTIL_GetCBaseEntity(int num, bool onlyPlayers);
+
+
+#endif //_INCLUDE_TF2TOOLS_UTIL_H_

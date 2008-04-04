@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Counter-Strike:Source Extension
+ * SourceMod Team Fortress 2 Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
@@ -30,8 +30,10 @@
  */
 
 #include "extension.h"
+#include "util.h"
 #include "RegNatives.h"
 #include "iplayerinfo.h"
+#include "sm_trie_tpl.h"
 
 /**
  * @file extension.cpp
@@ -46,12 +48,35 @@ IBinTools *g_pBinTools = NULL;
 
 SMEXT_LINK(&g_TF2Tools);
 
-SendProp *playerSharedOffset;
+CGlobalVars *gpGlobals = NULL;
+
+sm_sendprop_info_t *playerSharedOffset;
 
 extern sp_nativeinfo_t g_TFNatives[];
 
+int g_resourceEntity;
+
+SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int , int);
+
 bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+	ServerClass *sc = UTIL_FindServerClass("CTFPlayer");
+	if (sc == NULL)
+	{
+		snprintf(error, maxlength, "Could not find CTFPlayer server class");
+
+		return false;
+	}
+
+	playerSharedOffset = new sm_sendprop_info_t;
+
+	if (!UTIL_FindDataTable(sc->m_pTable, "DT_TFPlayerShared", playerSharedOffset, 0))
+	{
+		snprintf(error, maxlength, "Could not find DT_TFPlayerShared data table");
+
+		return false;
+	}
+
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 
 	char conf_error[255];
@@ -67,8 +92,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TFNatives);
 	sharesys->RegisterLibrary(myself, "tf2");
 
-	playerSharedOffset = gamehelpers->FindInSendTable("CTFPlayer", "DT_TFPlayerShared");
-
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
 	return true;
@@ -78,13 +101,20 @@ bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 {
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 
+	gpGlobals = ismm->GetCGlobals();
+
+	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
+
 	return true;
 }
 
 void TF2Tools::SDK_OnUnload()
 {
+	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
+
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
+	playerhelpers->UnregisterCommandTargetProcessor(this);
 }
 
 void TF2Tools::SDK_OnAllLoaded()
@@ -114,23 +144,11 @@ void TF2Tools::NotifyInterfaceDrop(SMInterface *pInterface)
 	g_RegNatives.UnregisterAll();
 }
 
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
-	va_end(ap);
-
-	if (len >= maxlength)
-	{
-		buffer[maxlength - 1] = '\0';
-		return (maxlength - 1);
-	}
-	else
-	{
-		return len;
-	}
+	g_resourceEntity = FindResourceEntity();
 }
+
 
 bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)
 {
@@ -226,4 +244,84 @@ bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)
 
 	return true;
 }
+
+int FindResourceEntity()
+{
+	return FindEntityByNetClass(-1, "CTFPlayerResource");
+}
+
+
+int FindEntityByNetClass(int start, const char *classname)
+{
+	edict_t *current;
+
+	for (int i = ((start != -1) ? start : 0); i < gpGlobals->maxEntities; i++)
+	{
+		current = engine->PEntityOfEntIndex(i);
+		if (current == NULL)
+		{
+			continue;
+		}
+
+		IServerNetworkable *network = current->GetNetworkable();
+
+		if (network == NULL)
+		{
+			continue;
+		}
+
+		ServerClass *sClass = network->GetServerClass();
+		const char *name = sClass->GetName();
+		
+
+		if (strcmp(name, classname) == 0)
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+TFClassType ClassnameToType(const char *classname)
+{
+	static KTrie<TFClassType> trie;
+	static bool filled = false;
+	
+	if (!filled)
+	{
+		trie.insert("scout", TFClass_Scout);
+		trie.insert("scout", TFClass_Scout);
+		trie.insert("sniper", TFClass_Sniper);
+		trie.insert("soldier", TFClass_Soldier);
+		trie.insert("demoman", TFClass_DemoMan);
+		trie.insert("demo", TFClass_DemoMan);
+		trie.insert("medic", TFClass_Medic);
+		trie.insert("heavy", TFClass_Heavy);
+		trie.insert("hwg", TFClass_Heavy);
+		trie.insert("pyro", TFClass_Pyro);
+		trie.insert("spy", TFClass_Spy);
+		trie.insert("engineer", TFClass_Engineer);
+		trie.insert("engy", TFClass_Engineer);
+
+		filled = true;	
+	}
+	
+	TFClassType *value;
+
+	if (!(value = trie.retrieve(classname)))
+	{
+		return TFClass_Unknown;	
+	}
+
+	return *value;
+}
+
+
+
+/**
+ * A picture of a blue crab given to me as a gift and stored here for safe keeping
+ *
+ * http://www.democracycellproject.net/blog/archives/Clown%20car.jpg
+ */
 
