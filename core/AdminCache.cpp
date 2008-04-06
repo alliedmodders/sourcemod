@@ -41,12 +41,14 @@
 #include "sourcemod.h"
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
+#include "sm_srvcmds.h"
 
 #define LEVEL_STATE_NONE		0
 #define LEVEL_STATE_LEVELS		1
 #define LEVEL_STATE_FLAGS		2
 
 AdminCache g_Admins;
+char g_ReverseFlags[26];
 AdminFlag g_FlagLetters[26];
 bool g_FlagSet[26];
 
@@ -299,8 +301,23 @@ void AdminCache::OnSourceModAllInitialized()
 
 void AdminCache::OnSourceModLevelChange(const char *mapName)
 {
+	int i;
+	AdminFlag flag;
+
 	/* For now, we only read these once per level. */
 	s_FlagReader.LoadLevels();
+
+	for (i = 0; i < 26; i++)
+	{
+		if (FindFlag('a' + i, &flag))
+		{
+			g_ReverseFlags[flag] = 'a' + i;
+		}
+		else
+		{
+			g_ReverseFlags[flag] = '?';
+		}
+	}
 }
 
 void AdminCache::OnSourceModShutdown()
@@ -434,7 +451,9 @@ AdminId AdminCache::CreateAdmin(const char *name)
 		assert(pUser->magic == USR_MAGIC_UNSET);
 		id = m_FreeUserList;
 		m_FreeUserList = pUser->next_user;
-	} else {
+	}
+	else
+	{
 		id = m_pMemory->CreateMem(sizeof(AdminUser), (void **)&pUser);
 		pUser->grp_size = 0;
 		pUser->grp_table = -1;
@@ -454,18 +473,27 @@ AdminId AdminCache::CreateAdmin(const char *name)
 	{
 		m_FirstUser = id;
 		m_LastUser = id;
-	} else {
+	}
+	else
+	{
 		AdminUser *pPrev = (AdminUser *)m_pMemory->GetAddress(m_LastUser);
 		pPrev->next_user = id;
 		pUser->prev_user = m_LastUser;
 		m_LastUser = id;
 	}
 
+	/* Since we always append to the tail, we should invalidate their next */
+	pUser->next_user = -1;
+
 	if (name && name[0] != '\0')
 	{
 		int nameidx = m_pStrings->AddString(name);
 		pUser = (AdminUser *)m_pMemory->GetAddress(id);
 		pUser->nameidx = nameidx;
+	}
+	else
+	{
+		pUser->nameidx = -1;
 	}
 
 	return id;
@@ -1587,7 +1615,9 @@ bool AdminCache::CanAdminTarget(AdminId id, AdminId target)
 
 bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 {
-	if (c < 'a' || c > 'z')
+	if (c < 'a' 
+		|| c > 'z'
+		|| !g_FlagSet[(unsigned)c - (unsigned)'a'])
 	{
 		return false;
 	}
@@ -1595,6 +1625,21 @@ bool AdminCache::FindFlag(char c, AdminFlag *pAdmFlag)
 	if (pAdmFlag)
 	{
 		*pAdmFlag = g_FlagLetters[(unsigned)c - (unsigned)'a'];
+	}
+
+	return true;
+}
+
+bool AdminCache::FindFlagChar(AdminFlag flag, char *c)
+{
+	if (!g_FlagSet[flag])
+	{
+		return false;
+	}
+
+	if (c)
+	{
+		*c = g_ReverseFlags[flag];
 	}
 
 	return true;
@@ -1729,4 +1774,304 @@ bool AdminCache::CheckAccess(int client, const char *cmd, FlagBits flags, bool o
 	}
 
 	return g_ConCmds.CheckCommandAccess(client, cmd, bits) ? 1 : 0;
+}
+
+void iterator_glob_basic_override(Trie *pTrie, const char *key, void **value, void *data)
+{
+	FILE *fp;
+	int flags;
+	char flagstr[64];
+
+	fp = (FILE *)data;
+	flags = (int)*value;
+	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
+
+	fprintf(fp, "\t\"%s\"\t\t\"%s\"\n", key, flagstr);
+}
+
+void iterator_glob_grp_override(Trie *pTrie, const char *key, void **value, void *data)
+{
+	FILE *fp;
+	int flags;
+	char flagstr[64];
+
+	fp = (FILE *)data;
+	flags = (int)*value;
+	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
+
+	fprintf(fp, "\t\"@%s\"\t\t\"%s\"\n", key, flagstr);
+}
+
+void iterator_group_basic_override(Trie *pTrie, const char *key, void **value, void *data)
+{
+	FILE *fp;
+	int flags;
+	char flagstr[64];
+
+	fp = (FILE *)data;
+	flags = (int)*value;
+	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
+
+	fprintf(fp, "\t\t\t\"%s\"\t\t\"%s\"\n", key, flagstr);
+}
+
+void iterator_group_grp_override(Trie *pTrie, const char *key, void **value, void *data)
+{
+	FILE *fp;
+	int flags;
+	char flagstr[64];
+
+	fp = (FILE *)data;
+	flags = (int)*value;
+	g_Admins.FillFlagString(flags, flagstr, sizeof(flagstr));
+
+	fprintf(fp, "\t\t\t\"@%s\"\t\t\"%s\"\n", key, flagstr);
+}
+
+void AdminCache::DumpCache(FILE *fp)
+{
+	int *itable;
+	AdminId aid;
+	GroupId gid;
+	char flagstr[64];
+	unsigned int num;
+	AdminUser *pAdmin;
+	AdminGroup *pGroup;
+	char name_buffer[512];
+
+	fprintf(fp, "\"Groups\"\n{\n");
+	
+	num = 0;
+	gid = m_FirstGroup;
+	while (gid != INVALID_GROUP_ID
+			&& (pGroup = GetGroup(gid)) != NULL)
+	{
+		num++;
+		FillFlagString(pGroup->addflags, flagstr, sizeof(flagstr));
+
+		fprintf(fp, "\t/* num = %d, gid = 0x%X */\n", num, gid);
+		fprintf(fp, "\t\"%s\"\n\t{\n", GetString(pGroup->nameidx));
+		fprintf(fp, "\t\t\"flags\"\t\t\t\"%s\"\n", flagstr);
+		fprintf(fp, "\t\t\"immunity\"\t\t\"%d\"\n", pGroup->immunity_level);
+		
+		if (pGroup->immune_table != -1
+			&& (itable = (int *)m_pMemory->GetAddress(pGroup->immune_table)) != NULL)
+		{
+			AdminGroup *pAltGroup;
+			const char *gname, *mod;
+
+			for (int i = 1; i <= itable[0]; i++)
+			{
+				if ((pAltGroup = GetGroup(itable[i])) == NULL)
+				{
+					/* Assume the rest of the table is corrupt */
+					break;
+				}
+				gname = GetString(pAltGroup->nameidx);
+				if (atoi(gname) != 0)
+				{
+					mod = "@";
+				}
+				else
+				{
+					mod = "";
+				}
+				fprintf(fp, "\t\t\"immunity\"\t\t\"%s%s\"\n", mod, gname);
+			}
+		}
+
+		fprintf(fp, "\n\t\t\"Overrides\"\n\t\t{\n");
+		if (pGroup->pCmdGrpTable != NULL)
+		{
+			sm_trie_bad_iterator(pGroup->pCmdGrpTable, 
+				name_buffer,
+				sizeof(name_buffer),
+				iterator_group_grp_override,
+				fp);
+		}
+		if (pGroup->pCmdTable != NULL)
+		{
+			sm_trie_bad_iterator(pGroup->pCmdTable, 
+				name_buffer,
+				sizeof(name_buffer),
+				iterator_group_basic_override,
+				fp);
+		}
+		fprintf(fp, "\t\t}\n");
+
+		fprintf(fp, "\t}\n");
+
+		if ((gid = pGroup->next_grp) != INVALID_GROUP_ID)
+		{
+			fprintf(fp, "\n");
+		}
+	}
+
+	fprintf(fp, "}\n\n");
+	fprintf(fp, "\"Admins\"\n{\n");
+
+	num = 0;
+	aid = m_FirstUser;
+	while (aid != INVALID_ADMIN_ID
+			&& (pAdmin = GetUser(aid)) != NULL)
+	{
+		num++;
+		FillFlagString(pAdmin->flags, flagstr, sizeof(flagstr));
+
+		fprintf(fp, "\t/* num = %d, aid = 0x%X, serialno = 0x%X*/\n", num, aid, pAdmin->serialchange);
+
+		if (pAdmin->nameidx != -1)
+		{
+			fprintf(fp, "\t\"%s\"\n\t{\n", GetString(pAdmin->nameidx));
+		}
+		else
+		{
+			fprintf(fp, "\t\"\"\n\t{\n");
+		}
+
+		if (pAdmin->auth.identidx != -1)
+		{
+			fprintf(fp, "\t\t\"auth\"\t\t\t\"%s\"\n", GetMethodName(pAdmin->auth.index));
+			fprintf(fp, "\t\t\"identity\"\t\t\"%s\"\n", GetString(pAdmin->auth.identidx));
+		}
+		if (pAdmin->password != -1)
+		{
+			fprintf(fp, "\t\t\"password\"\t\t\"%s\"\n", GetString(pAdmin->password));
+		}
+		fprintf(fp, "\t\t\"flags\"\t\t\t\"%s\"\n", flagstr);
+		fprintf(fp, "\t\t\"immunity\"\t\t\"%d\"\n", pAdmin->immunity_level);
+
+		if (pAdmin->grp_count != 0 
+			&& pAdmin->grp_table != -1 
+			&& (itable = (int *)m_pMemory->GetAddress(pAdmin->grp_table)) != NULL)
+		{
+			unsigned int i;
+
+			for (i = 0; i < pAdmin->grp_count; i++)
+			{
+				if ((pGroup = GetGroup(itable[i])) == NULL)
+				{
+					/* Assume the rest of the table is corrupt */
+					break;
+				}
+				fprintf(fp, "\t\t\"group\"\t\t\t\"%s\"\n", GetString(pGroup->nameidx));
+			}
+		}
+
+		fprintf(fp, "\t}\n");
+
+		if ((aid = pAdmin->next_user) != INVALID_ADMIN_ID)
+		{
+			fprintf(fp, "\n");
+		}
+	}
+
+	fprintf(fp, "}\n\n");
+
+	fprintf(fp, "\"Overrides\"\n{\n");
+	if (m_pCmdGrpOverrides != NULL)
+	{
+		sm_trie_bad_iterator(m_pCmdGrpOverrides,
+			name_buffer,
+			sizeof(name_buffer),
+			iterator_glob_grp_override,
+			fp);
+	}
+	if (m_pCmdOverrides != NULL)
+	{
+		sm_trie_bad_iterator(m_pCmdOverrides,
+			name_buffer, 
+			sizeof(name_buffer), 
+			iterator_glob_basic_override, 
+			fp);
+	}
+	fprintf(fp, "}\n");
+}
+
+AdminGroup *AdminCache::GetGroup(GroupId gid)
+{
+	AdminGroup *pGroup;
+	
+	pGroup = (AdminGroup *)m_pMemory->GetAddress(gid);
+	if (!pGroup || pGroup->magic != GRP_MAGIC_SET)
+	{
+		return NULL;
+	}
+
+	return pGroup;
+}
+
+AdminUser *AdminCache::GetUser(AdminId aid)
+{
+	AdminUser *pAdmin;
+
+	pAdmin = (AdminUser *)m_pMemory->GetAddress(aid);
+	if (!pAdmin || pAdmin->magic != USR_MAGIC_SET)
+	{
+		return NULL;
+	}
+
+	return pAdmin;
+}
+
+const char *AdminCache::GetMethodName(unsigned int index)
+{
+	List<AuthMethod>::iterator iter;
+	for (iter=m_AuthMethods.begin();
+		iter!=m_AuthMethods.end();
+		iter++)
+	{
+		if (index-- == 0)
+		{
+			return (*iter).name.c_str();
+		}
+	}
+
+	return NULL;
+}
+
+const char *AdminCache::GetString(int idx)
+{
+	return m_pStrings->GetString(idx);
+}
+
+size_t AdminCache::FillFlagString(FlagBits bits, char *buffer, size_t maxlen)
+{
+	size_t pos;
+	unsigned int i, num_flags;
+	AdminFlag flags[AdminFlags_TOTAL];
+
+	num_flags = FlagBitsToArray(bits, flags, AdminFlags_TOTAL);
+
+	pos = 0;
+	for (i = 0; pos < maxlen && i < num_flags; i++)
+	{
+		if (FindFlagChar(flags[i], &buffer[pos]))
+		{
+			pos++;
+		}
+	}
+	buffer[pos] = '\0';
+
+	return pos;
+}
+
+CON_COMMAND(sm_dump_admcache, "Dumps the admin cache for debugging")
+{
+	FILE *fp;
+	char buffer[PLATFORM_MAX_PATH];
+
+	g_SourceMod.BuildPath(Path_SM, buffer, sizeof(buffer), "data/admin_cache_dump.txt");
+
+	if ((fp = fopen(buffer, "wt")) == NULL)
+	{
+		g_RootMenu.ConsolePrint("Could not open file for writing: %s", buffer);
+		return;
+	}
+
+	g_Admins.DumpCache(fp);
+
+	g_RootMenu.ConsolePrint("Admin cache dumped to: %s", buffer);
+
+	fclose(fp);
 }

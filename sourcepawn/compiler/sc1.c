@@ -2777,15 +2777,21 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
                       constvalue *enumroot,int *errorfound)
 {
   cell dsize,totalsize;
-  int idx,abortparse;
+  int idx,abortparse,needbrace;
 
   assert(cur>=0 && cur<numdim);
   assert(startlit>=0);
   assert(cur+2<=numdim);/* there must be 2 dimensions or more to do */
   assert(errorfound!=NULL && *errorfound==FALSE);
   totalsize=0;
+  needbrace=1;
   needtoken('{');
   for (idx=0,abortparse=FALSE; !abortparse; idx++) {
+    if (matchtoken('}'))
+    {
+      needbrace=0;
+      break;
+    }
     /* In case the major dimension is zero, we need to store the offset
      * to the newly detected sub-array into the indirection table; i.e.
      * this table needs to be expanded and updated.
@@ -2815,7 +2821,10 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
     if (*errorfound || !matchtoken(','))
       abortparse=TRUE;
   } /* for */
-  needtoken('}');
+  if (needbrace)
+  {
+    needtoken('}');
+  }
   assert(counteddim!=NULL);
   if (counteddim[cur]>0) {
     if (idx<counteddim[cur])
@@ -2917,7 +2926,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     if (size==0 || (litidx-curlit)==0)
       error(41);                /* invalid ellipsis, array size unknown */
     else if ((litidx-curlit)==(int)size)
-      error(18);                /* initialisation data exceeds declared size */
+      error(18);                /* initialization data exceeds declared size */
     while ((litidx-curlit)<(int)size) {
       prev1+=step;
       litadd(prev1);
@@ -2930,7 +2939,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
   if (size==0) {
     size=litidx-curlit;                 /* number of elements defined */
   } else if (litidx-curlit>(int)size) { /* e.g. "myvar[3]={1,2,3,4};" */
-    error(18);                  /* initialisation data exceeds declared size */
+    error(18);                  /* initialization data exceeds declared size */
     litidx=(int)size+curlit;    /* avoid overflow in memory moves */
   } /* if */
   return size;

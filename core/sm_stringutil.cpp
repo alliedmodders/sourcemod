@@ -357,6 +357,57 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 	*buf_p = buf;
 }
 
+void AddBinary(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
+{
+	char text[32];
+	int digits;
+	char *buf;
+
+	digits = 0;
+	do
+	{
+		if (val & 1)
+		{
+			text[digits++] = '1';
+		}
+		else
+		{
+			text[digits++] = '0';
+		}
+		val >>= 1;
+	} while (val);
+
+	buf = *buf_p;
+
+	if (!(flags & LADJUST))
+	{
+		while (digits < width && maxlen)
+		{
+			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
+			width--;
+			maxlen--;
+		}
+	}
+
+	while (digits-- && maxlen)
+	{
+		*buf++ = text[digits];
+		width--;
+		maxlen--;
+	}
+
+	if (flags & LADJUST)
+	{
+		while (width-- && maxlen)
+		{
+			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
+			maxlen--;
+		}
+	}
+
+	*buf_p = buf;
+}
+
 void AddUInt(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
 {
 	char text[32];
@@ -623,6 +674,13 @@ reswitch:
 				arg++;
 				break;
 			}
+		case 'b':
+			{
+				int *value = (int *)args[arg];
+				AddBinary(&buf_p, llen, *value, width, flags);
+				arg++;
+				break;
+			}
 		case 'd':
 		case 'i':
 			{
@@ -806,6 +864,15 @@ reswitch:
 				pCtx->LocalToString(params[arg], &c);
 				*buf_p++ = *c;
 				llen--;
+				arg++;
+				break;
+			}
+		case 'b':
+			{
+				CHECK_ARGS(0);
+				cell_t *value;
+				pCtx->LocalToPhysAddr(params[arg], &value);
+				AddBinary(&buf_p, llen, *value, width, flags);
 				arg++;
 				break;
 			}

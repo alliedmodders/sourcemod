@@ -90,3 +90,32 @@ size_t sm_trie_mem_usage(Trie *trie)
 {
 	return trie->k.mem_usage();
 }
+
+struct trie_iter_data
+{
+	SM_TRIE_BAD_ITERATOR iter;
+	void *ptr;
+	Trie *pTrie;
+};
+
+void our_trie_iterator(KTrie<void *> *pTrie, const char *name, void *& obj, void *data)
+{
+	trie_iter_data *our_iter;
+
+	our_iter = (trie_iter_data *)data;
+	our_iter->iter(our_iter->pTrie, name, &obj, our_iter->ptr);
+}
+
+void sm_trie_bad_iterator(Trie *trie,
+						  char *buffer,
+						  size_t maxlength,
+						  SM_TRIE_BAD_ITERATOR iter,
+						  void *data)
+{
+	trie_iter_data our_iter;
+
+	our_iter.iter = iter;
+	our_iter.ptr = data;
+	our_iter.pTrie = trie;
+	trie->k.bad_iterator(buffer, maxlength, &our_iter, our_trie_iterator);
+}
