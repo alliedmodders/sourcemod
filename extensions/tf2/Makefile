@@ -14,7 +14,7 @@ SMSDK = ../..
 
 PROJECT = game.tf2
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp RegNatives.cpp natives.cpp util.cpp
+OBJECTS = extension.cpp natives.cpp RegNatives.cpp util.cpp sdk/smsdk_ext.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -57,7 +57,8 @@ INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(H
 
 CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
-	-Wno-unused -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32 -Wno-uninitialized
+	-Wno-unused -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32 \
+	-Wno-uninitialized
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti -fno-threadsafe-statics 
 
 ################################################
