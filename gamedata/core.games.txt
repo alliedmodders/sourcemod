@@ -112,6 +112,7 @@
 	{
 		"Keys"
 		{
+			"GameExtension"			"game.tf2"
 			"RadioMenuTimeout"		"4"
 		}
 	}
