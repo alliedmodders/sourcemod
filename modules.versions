@@ -62,3 +62,15 @@ out = svn_version.h
 folder = extensions/topmenus
 in = svn_version.tpl
 out = svn_version.h
+
+[regex]
+folder = extensions/regex
+in = svn_version.tpl
+out = svn_version.h
+
+[tf2]
+folder = extensions/tf2
+in = svn_version.tpl
+out = svn_version.h
+
+
