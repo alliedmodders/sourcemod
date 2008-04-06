@@ -312,7 +312,7 @@ native GetTime(bigStamp[2]={0,0});
  * Produces a date and/or time string value for a timestamp.
  *
  * See this URL for valid parameters: 
- * http://opengroup.org/onlinepubs/007908799/xsh/strftime.html
+ * http://cplusplus.com/reference/clibrary/ctime/strftime.html
  *
  * @param buffer		Destination string buffer.
  * @param maxlength		Maximum length of output string buffer.
