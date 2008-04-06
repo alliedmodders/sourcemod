@@ -1,4 +1,4 @@
-#(C)2004-2006 SourceMM Development Team
+#(C)2004-2008 Metamod:Source Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
 HL2SDK_ORIG = ../../../hl2sdk
@@ -16,7 +16,8 @@ PROJECT = sdktools
 
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp vdecoder.cpp vcallbuilder.cpp vcaller.cpp \
 	vnatives.cpp vsound.cpp tenatives.cpp trnatives.cpp tempents.cpp vstringtable.cpp \
-	vhelpers.cpp vglobals.cpp voice.cpp inputnatives.cpp teamnatives.cpp
+	vhelpers.cpp vglobals.cpp voice.cpp inputnatives.cpp teamnatives.cpp output.cpp \
+	outputnatives.cpp detours.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -104,4 +105,3 @@ clean:
 	rm -rf $(BIN_DIR)/*.o
 	rm -rf $(BIN_DIR)/sdk/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)
-

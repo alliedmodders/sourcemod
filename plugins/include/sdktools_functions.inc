@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -283,3 +283,15 @@ native bool:GetPlayerDecalFile(client, String:hex[], maxlength);
  * @noreturn
  */
 native GetServerNetStats(&Float:in, &Float:out);
+
+
+/**
+ * Equip's a player's weapon.
+ *
+ * @param client		Client index.
+ * @param item			CBaseCombatWeapon entity index.
+ * @noreturn
+ * @error				Invalid client or entity, lack of mod support, or client not in 
+ *						game.
+ */
+native EquipPlayerWeapon(client, weapon);
