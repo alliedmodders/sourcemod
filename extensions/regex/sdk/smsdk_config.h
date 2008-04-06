@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 
+#include "svn_version.h"
+
 /**
  * @file smsdk_config.h
  * @brief Contains macros for configuring basic extension information.
@@ -40,7 +42,7 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Regex"
 #define SMEXT_CONF_DESCRIPTION	"Provides regex natives for plugins"
-#define SMEXT_CONF_VERSION		"SVN_FULL_VERSION"
+#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"REGEX"
