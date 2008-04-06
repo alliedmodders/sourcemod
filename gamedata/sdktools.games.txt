@@ -415,6 +415,11 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
 		}
 	}
 	
@@ -492,6 +497,11 @@
 			{
 				"windows"	"25"
 				"linux"		"26"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
 			}
 		}
 	}
@@ -571,6 +581,11 @@
 			{
 				"windows"	"30"
 				"linux"		"31"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"211"
+				"linux"		"212"
 			}
 			
 			/* Temp Entities */
@@ -675,6 +690,11 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"220"
+				"linux"		"221"
+			}
 
 			/* Offset into CBaseTempEntity constructor.
 			 * On Windows Dsytopia is heavily inlined; we use the function 
@@ -767,6 +787,11 @@
 				"windows"	"24"
 				"linux"		"25"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"215"
+				"linux"		"216"
+			}
 		}
 	}
 
@@ -845,6 +870,11 @@
 			{
 				"windows"	"25"
 				"linux"		"26"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
 			}
 		}
 	}
@@ -1020,6 +1050,11 @@
 				"windows"	"27"
 				"linux"		"28"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
 		}
 		
 		"Signatures"
@@ -1187,6 +1222,11 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"221"
+				"linux"		"222"
+			}
 
 			/* Offset into LevelShutdown for CGlobalEntList */
 			"gEntList"
@@ -1281,6 +1321,11 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
 		}
 	}
 
@@ -1359,6 +1404,11 @@
 			{
 				"windows"	"25"
 				"linux"		"26"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
 			}
 		}
 	}
@@ -1439,6 +1489,11 @@
 			{
 				"windows"	"0"
 				"linux"		"0"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"198"
+				"linux"		"199"
 			}
 		}
 		
@@ -1536,6 +1591,11 @@
 			"g_pGameRules"
 			{
 				"windows"	"7"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"198"
+				"linux"		"199"
 			}
 		}
 
@@ -1655,6 +1715,11 @@
 			{
 				"windows"	"25"
 				"linux"		"26"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"219"
+				"linux"		"220"
 			}
 		}
 		"Signatures"
