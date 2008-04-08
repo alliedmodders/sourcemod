@@ -113,7 +113,7 @@ stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true)
 	if (weapons)
 	{
 		TF2_RemoveAllWeapons(client);
-		TF2_EquipPlayerClassWeapons(client, class)
+		TF2_EquipPlayerClassWeapons(client, class);
 	}
 }
 
@@ -193,7 +193,7 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
 		return false;	
 	}
 	
-	SetEntData(entity, offset + (client*4), value)
+	SetEntData(entity, offset + (client*4), value);
 	
 	return true;	
 }
