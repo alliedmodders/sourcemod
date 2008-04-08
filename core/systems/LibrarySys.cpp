@@ -320,6 +320,7 @@ ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxle
 	if (lib == NULL)
 	{
 		GetLoaderError(error, maxlength);
+		return NULL;
 	}
 
 	return new CLibrary(lib);
