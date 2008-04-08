@@ -95,6 +95,7 @@ public:
 	bool CreateFolder(const char *path);
 	size_t GetFileFromPath(char *buffer, size_t maxlength, const char *path);
 	bool FileTime(const char *path, FileTimeType type, time_t *pTime);
+	void GetLoaderError(char *buffer, size_t maxlength);
 };
 
 extern LibrarySystem g_LibSys;

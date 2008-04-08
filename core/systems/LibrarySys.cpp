@@ -286,9 +286,21 @@ void LibrarySystem::GetPlatformError(char *error, size_t maxlength)
 			maxlength,
 			NULL);
 #elif defined PLATFORM_POSIX
-		snprintf(error, maxlength, "%s", strerror(errno));
+		UTIL_Format(error, maxlength, "%s", strerror(errno));
 #endif
 	}
+}
+
+void LibrarySystem::GetLoaderError(char *buffer, size_t maxlength)
+{
+#if defined PLATFORM_WINDOWS
+	GetPlatformError(buffer, maxlength);
+#elif defined PLATFORM_POSIX
+	if (buffer != NULL && maxlength)
+	{
+		strncopy(buffer, dlerror(), maxlength);
+	}
+#endif
 }
 
 void LibrarySystem::CloseDirectory(IDirectory *dir)
@@ -301,19 +313,15 @@ ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxle
 	LibraryHandle lib;
 #if defined PLATFORM_WINDOWS
 	lib = LoadLibraryA(path);
-	if (!lib)
-	{
-		GetPlatformError(error, maxlength);
-		return false;
-	}
 #elif defined PLATFORM_POSIX
 	lib = dlopen(path, RTLD_NOW);
-	if (!lib)
-	{
-		GetPlatformError(error, maxlength);
-		return false;
-	}
 #endif
+
+	if (lib == NULL)
+	{
+		GetLoaderError(error, maxlength);
+		return NULL;
+	}
 
 	return new CLibrary(lib);
 }
