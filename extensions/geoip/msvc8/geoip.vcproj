@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="geoip"
 	ProjectGUID="{698EAEE7-0EFC-4017-9B88-ECCAAF42FD5F}"
 	RootNamespace="geoip"
@@ -66,6 +66,7 @@
 				AdditionalDependencies="ws2_32.lib"
 				OutputFile="$(OutDir)\geoip.ext.dll"
 				LinkIncremental="2"
+				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -145,6 +146,7 @@
 				AdditionalDependencies="ws2_32.lib"
 				OutputFile="$(OutDir)\geoip.ext.dll"
 				LinkIncremental="1"
+				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

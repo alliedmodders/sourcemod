@@ -1,7 +1,7 @@
 # (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMSDK = ../..
+SMSDK = ..
 SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
@@ -12,13 +12,9 @@ SOURCEMM16 = ../../../sourcemm-1.6
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = topmenus
+PROJECT = stub_mm
 
-#Uncomment for Metamod: Source enabled extension
-#USEMETA = true
-
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp TopMenuManager.cpp TopMenu.cpp \
-	sdk/sm_memtable.cpp smn_topmenus.cpp
+OBJECTS = stub_mm.cpp sm_ext.cpp sm_sdk_config.cpp stub_util.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -51,24 +47,15 @@ ifeq "$(ENGINE)" "orangebox"
 	override ENGSET = true
 endif
 
-ifeq "$(USEMETA)" "true"
-	LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so
+LINK = vstdlib_i486.so tier0_i486.so -static-libgcc
 
-	LINK += $(LINK_HL2)
-
-	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK)/public \
-		-I$(SMSDK)/public/sourcepawn
-else
-	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
-		-I$(SOURCEMM16)/sourcehook
-endif
-
-LINK += -static-libgcc
+INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
+	-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK) -I$(SMSDK)/jit \
+	-I$(SMSDK)/jit/x86 -I$(SMSDK)/extensions -I$(SMSDK)/sourcepawn
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
-	-Wno-unused -Wno-uninitialized -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
+	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -mfpmath=sse \
+	-msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
@@ -76,15 +63,11 @@ CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 ################################################
 
 ifeq "$(DEBUG)" "true"
-	BIN_DIR = Debug
+	BIN_DIR = Debug.$(ENGINE)
 	CFLAGS += $(C_DEBUG_FLAGS)
 else
-	BIN_DIR = Release
+	BIN_DIR = Release.$(ENGINE)
 	CFLAGS += $(C_OPT_FLAGS)
-endif
-
-ifeq "$(USEMETA)" "true"
-	BIN_DIR := $(BIN_DIR).$(ENGINE)
 endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
@@ -93,7 +76,7 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-BINARY = $(PROJECT).ext.so
+BINARY = $(PROJECT)_i486.so
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 
@@ -101,20 +84,18 @@ $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all: check
-	mkdir -p $(BIN_DIR)/sdk
-	if [ "$(USEMETA)" == "true" ]; then \
-		ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so; \
-		ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so; \
-	fi
-	$(MAKE) -f Makefile extension
+	mkdir -p $(BIN_DIR)
+	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
+	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
+	$(MAKE) -f Makefile mms_ext
 
 check:
-	if [ "$(USEMETA)" == "true" ] && [ "$(ENGSET)" == "false" ]; then \
+	if [ "$(ENGSET)" == "false" ]; then \
 		echo "You must supply ENGINE=orangebox or ENGINE=original"; \
 		exit 1; \
 	fi
 
-extension: check $(OBJ_LINUX)
+mms_ext: check $(OBJ_LINUX)
 	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug:
@@ -124,5 +105,4 @@ default: all
 
 clean: check
 	rm -rf $(BIN_DIR)/*.o
-	rm -rf $(BIN_DIR)/sdk/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)

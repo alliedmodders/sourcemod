@@ -1,21 +1,16 @@
-#(C)2004-2008 Metamod:Source Development Team
+# (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-#Local paths
+SMSDK = ..
+SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../hl2sdk
 HL2SDK_OB = ../../hl2sdk-ob
 SOURCEMM14 = ../../sourcemm-1.4
 SOURCEMM16 = ../../sourcemm-1.6
-SRCDS_BASE = ~/srcds
-SMSDK = ..
 
-#Project options
-OPT_FLAGS = -O3 -funroll-loops -s -pipe -fno-strict-aliasing
-GCC4_FLAGS = -fvisibility=hidden 
-GCC4_CPP_FLAGS = -fvisibility-inlines-hidden
-DEBUG_FLAGS = -g -ggdb3
-CPP = gcc-4.1
-
+#####################################
+### EDIT BELOW FOR OTHER PROJECTS ###
+#####################################
 
 OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreConfig.cpp \
 	Database.cpp DebugReporter.cpp EventManager.cpp GameConfigs.cpp HalfLife2.cpp Logger.cpp \
@@ -33,101 +28,120 @@ OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_adt_trie.cpp smn_hudtext.cpp
 OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
 	systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
-	systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_function.cpp
+	systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
+	vm/sp_vm_function.cpp
 OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
-OBJECTS_C = zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
+OBJECTS += zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
-OBJECTS_SM16 = vm/sp_vm_engine.cpp
 
+##############################################
+### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
+##############################################
+
+C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -s -pipe -fno-strict-aliasing
+C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
+C_GCC4_FLAGS = -fvisibility=hidden
+CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
+CPP = gcc-4.1
+
+override ENGSET = false
 ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
 	HL2PUB = $(HL2SDK_ORIG)/public
-	HL2LIB = $(HL2SDK)/linux_sdk
+	HL2LIB = $(HL2SDK_ORIG)/linux_sdk
 	METAMOD = $(SOURCEMM14)
-	INCLUDE += -I$(HL2PUB)/dlls
+	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
 	BINARY = sourcemod.1.ep1.so
+	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangebox"
 	HL2SDK = $(HL2SDK_OB)
 	HL2PUB = $(HL2SDK_OB)/public
-	HL2LIB = $(HL2SDK)/linux_sdk
+	HL2LIB = $(HL2SDK_OB)/linux_sdk
 	CFLAGS += -DORANGEBOX_BUILD
 	METAMOD = $(SOURCEMM16)
-	INCLUDE += -I$(HL2PUB)/game/server
+	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
 	BINARY = sourcemod.2.ep2.so
-endif
-ifeq "$(BINARY)" ""
-	echo "You must supply ENGINE=orangebox or ENGINE=original"
-	false
+	override ENGSET = true
 endif
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so \
 	tier0_i486.so -lpthread -static-libgcc
 
-INCLUDE_SMSDK = -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions 
+INCLUDE_SMSDK = -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 
-INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/dlls -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-	-I$(HL2PUB)/vstdlib -I$(HL2SDK)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm \
-	-I$(HL2PUB)/mathlib -Isystems $(INCLUDE_SMSDK)
+INCLUDE_SM16 = -I. -I.. -I$(SOURCEMM16)/sourcehook $(INCLUDE_SMSDK)
+	
+INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/vstdlib \
+	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook \
+	-I$(METAMOD)/sourcemm -Isystems $(INCLUDE_SMSDK)
 
-SM16_INCLUDE = -I. -I.. -I$(SOURCEMM16)/sourcehook $(INCLUDE_SMSDK)
+CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
+	-Wno-uninitialized -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -DSM_DEFAULT_THREADER -m32
+CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
+
+################################################
+### DO NOT EDIT BELOW HERE FOR MOST PROJECTS ###
+################################################
 
 ifeq "$(DEBUG)" "true"
 	BIN_DIR = Debug.$(ENGINE)
-	CFLAGS += $(DEBUG_FLAGS)
+	CFLAGS += $(C_DEBUG_FLAGS)
 else
 	BIN_DIR = Release.$(ENGINE)
-	CFLAGS += $(OPT_FLAGS)
+	CFLAGS += $(C_OPT_FLAGS)
 endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
-
-CFLAGS += -D_LINUX -DNDEBUG -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp \
-	-Dstrnicmp=strncasecmp -D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca \
-	-Dstrcmpi=strcasecmp -Wall -Wno-uninitialized -Werror -mfpmath=sse -msse \
-	-DSOURCEMOD_BUILD -DSM_DEFAULT_THREADER -m32
-CPPFLAGS = -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
-
 ifeq "$(GCC_VERSION)" "4"
-	CFLAGS += $(GCC4_FLAGS)
-	CPPFLAGS += $(GCC4_CPP_FLAGS)
+	CFLAGS += $(C_GCC4_FLAGS)
+	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.ox)
-OBJ_LINUX_C := $(OBJECTS_C:%.c=$(BIN_DIR)/%.oc)
-OBJ_LINUX_SM16 := $(OBJECTS_SM16:%.cpp=$(BIN_DIR)/%.ok)
+OBJ_LINUX := $(OBJECTS:%vm_engine.cpp=$(BIN_DIR)/%vm_engine.o)
+OBJ_LINUX := $(OBJ_LINUX:%.cpp=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJ_LINUX:%.c=$(BIN_DIR)/%.o)
 
-$(BIN_DIR)/%.ox: %.cpp
+$(BIN_DIR)/%vm_engine.o: %vm_engine.cpp
+	$(CPP) $(INCLUDE_SM16) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
+
+$(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
-$(BIN_DIR)/%.oc: %.c
+$(BIN_DIR)/%.o: %.c
 	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
-$(BIN_DIR)/%.ok: %.cpp
-	$(CPP) $(SM16_INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
-
-all:
+all: check
 	mkdir -p $(BIN_DIR)/systems
 	mkdir -p $(BIN_DIR)/vm
 	mkdir -p $(BIN_DIR)/zlib
 	mkdir -p $(BIN_DIR)/thread
-	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so
-	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so
+	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
+	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
 	$(MAKE) -f Makefile sourcemod
 
-sourcemod: $(OBJ_LINUX) $(OBJ_LINUX_C) $(OBJ_LINUX_SM16)
-	$(CPP) $(OBJ_LINUX) $(OBJ_LINUX_C) $(OBJ_LINUX_SM16) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+check:
+	if [ "$(ENGSET)" == "false" ]; then \
+		echo "You must supply ENGINE=orangebox or ENGINE=original"; \
+		exit 1; \
+	fi
+
+sourcemod: check $(OBJ_LINUX)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+
+debug:
+	$(MAKE) -f Makefile all DEBUG=true
 
 default: all
 
-clean:
-	rm -rf $(BIN_DIR)/*.ox
-	rm -rf $(BIN_DIR)/systems/*.ox
-	rm -rf $(BIN_DIR)/zlib/*.oc
-	rm -rf $(BIN_DIR)/vm/*.ox
-	rm -rf $(BIN_DIR)/thread/*.ox
+clean: check
+	rm -rf $(BIN_DIR)/*.o
+	rm -rf $(BIN_DIR)/systems/*.o
+	rm -rf $(BIN_DIR)/zlib/*.o
+	rm -rf $(BIN_DIR)/vm/*.o
+	rm -rf $(BIN_DIR)/thread/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)
-
