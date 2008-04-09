@@ -2777,21 +2777,16 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
                       constvalue *enumroot,int *errorfound)
 {
   cell dsize,totalsize;
-  int idx,abortparse,needbrace;
+  int idx,abortparse;
 
   assert(cur>=0 && cur<numdim);
   assert(startlit>=0);
   assert(cur+2<=numdim);/* there must be 2 dimensions or more to do */
   assert(errorfound!=NULL && *errorfound==FALSE);
   totalsize=0;
-  needbrace=1;
   needtoken('{');
   for (idx=0,abortparse=FALSE; !abortparse; idx++) {
-    if (matchtoken('}'))
-    {
-      needbrace=0;
-      break;
-    }
+
     /* In case the major dimension is zero, we need to store the offset
      * to the newly detected sub-array into the indirection table; i.e.
      * this table needs to be expanded and updated.
@@ -2821,10 +2816,7 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
     if (*errorfound || !matchtoken(','))
       abortparse=TRUE;
   } /* for */
-  if (needbrace)
-  {
-    needtoken('}');
-  }
+  needtoken('}');
   assert(counteddim!=NULL);
   if (counteddim[cur]>0) {
     if (idx<counteddim[cur])
