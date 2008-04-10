@@ -26,7 +26,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: output.h 1775 2007-12-06 02:25:35Z faluco $
+ * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEMOD_OUTPUT_H_

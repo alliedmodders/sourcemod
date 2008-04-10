@@ -27,7 +27,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: sdktools_entoutput.inc 1504 2007-09-28 19:56:19Z faluco $
+ * Version: $Id$
  */
 
 #if defined _tf2_included
