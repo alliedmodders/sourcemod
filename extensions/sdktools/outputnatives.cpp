@@ -32,7 +32,6 @@
 #include "extension.h"
 #include "output.h"
 
-
 // HookSingleEntityOutput(ent, const String:output[], function, bool:once);
 cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 {
@@ -97,7 +96,6 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	return 1;
 }
-
 
 // HookEntityOutput(const String:classname[], const String:output[], function);
 cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)

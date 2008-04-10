@@ -824,10 +824,3 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 	fclose(fp);
 
 }
-
-
-
-	
-
-
-
