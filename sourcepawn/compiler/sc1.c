@@ -143,6 +143,7 @@ static void addwhile(int *ptr);
 static void delwhile(void);
 static int *readwhile(void);
 static void inst_datetime_defines(void);
+static void inst_binary_name(char *binfname);
 
 enum {
   TEST_PLAIN,           /* no parentheses */
@@ -332,6 +333,7 @@ int pc_compile(int argc, char *argv[])
     #if !defined NO_DEFINE
       delete_substtable();
       inst_datetime_defines();
+      inst_binary_name(binfname);
     #endif
     resetglobals();
     pstructs_free();
@@ -559,6 +561,35 @@ int pc_addconstant(char *name,cell value,int tag)
   sc_status=statIDLE;
   add_constant(name,value,sGLOBAL,tag);
   return 1;
+}
+
+static void inst_binary_name(char *binfname)
+{
+  size_t i, len;
+  char *binptr;
+
+  binptr = NULL;
+  len = strlen(binfname);
+  for (i = len - 1; i >= 0 && i < len; i--)
+  {
+    if (binfname[i] == '/'
+#if defined WIN32 || defined _WIN32
+      || binfname[i] == '\\'
+#endif
+      )
+    {
+      binptr = &binfname[i + 1];
+      break;
+    }
+  }
+
+  if (binptr == NULL)
+  {
+	  binptr = binfname;
+  }
+
+  insert_subst("__BINARY_PATH__", binfname, 15);
+  insert_subst("__BINARY_NAME__", binptr, 15);
 }
 
 static void inst_datetime_defines(void)
