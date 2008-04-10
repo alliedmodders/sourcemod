@@ -122,7 +122,7 @@
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKOB)&quot;;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;ORANGEBOX_BUILD"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
 				RuntimeTypeInfo="false"
@@ -186,6 +186,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\criticals.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\extension.cpp"
 				>
 			</File>
@@ -207,6 +211,14 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\criticals.h"
+				>
+			</File>
+			<File
+				RelativePath="..\detours.h"
+				>
+			</File>
 			<File
 				RelativePath="..\extension.h"
 				>

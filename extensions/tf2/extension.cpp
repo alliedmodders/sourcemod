@@ -34,6 +34,7 @@
 #include "RegNatives.h"
 #include "iplayerinfo.h"
 #include "sm_trie_tpl.h"
+#include "criticals.h"
 
 /**
  * @file extension.cpp
@@ -47,6 +48,8 @@ IGameConfig *g_pGameConf = NULL;
 IBinTools *g_pBinTools = NULL;
 
 SMEXT_LINK(&g_TF2Tools);
+
+ICvar *icvar = NULL;
 
 CGlobalVars *gpGlobals = NULL;
 
@@ -94,6 +97,10 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
+	spengine = g_pSM->GetScriptingEngine();
+
+	g_pCVar = icvar;
+
 	return true;
 }
 
@@ -104,6 +111,10 @@ bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	gpGlobals = ismm->GetCGlobals();
 
 	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
+
+	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
+
+	GET_V_IFACE_CURRENT(GetServerFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
 
 	return true;
 }
@@ -120,7 +131,15 @@ void TF2Tools::SDK_OnUnload()
 void TF2Tools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
+
+	g_CriticalHitManager.Init();
 }
+
+bool TF2Tools::RegisterConCommandBase(ConCommandBase *pVar)
+{
+	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);
+}
+
 
 bool TF2Tools::QueryRunning(char *error, size_t maxlength)
 {
@@ -290,7 +309,6 @@ TFClassType ClassnameToType(const char *classname)
 	
 	if (!filled)
 	{
-		trie.insert("scout", TFClass_Scout);
 		trie.insert("scout", TFClass_Scout);
 		trie.insert("sniper", TFClass_Sniper);
 		trie.insert("soldier", TFClass_Soldier);
