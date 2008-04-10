@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod SQLite Extension
+ * SourceMod Regular Expressions Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
@@ -36,7 +36,7 @@
 #ifndef _INCLUDE_REGEXEXT_VERSION_H_
 #define _INCLUDE_REGEXEXT_VERSION_H_
 
-#define SVN_FULL_VERSION	"1.0.0.1994"
-#define SVN_FILE_VERSION	1,0,0,1994
+#define SVN_FULL_VERSION	"1.1.0.1994"
+#define SVN_FILE_VERSION	1,1,0,1994
 
 #endif //_INCLUDE_REGEXEXT_VERSION_H_

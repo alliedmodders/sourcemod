@@ -26,7 +26,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: vcallbuilder.h 1566 2007-10-14 22:12:46Z faluco $
+ * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEMOD_UTIL_H_

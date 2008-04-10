@@ -437,6 +437,7 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 
 	return NULL;
 }
+
 #if 0
 // Almost identical copy of this function from cbase.cpp - FIELD_EHANDLE changed to remove dependencies
 const char *variant_t::ToString( void ) const
@@ -518,6 +519,7 @@ const char *variant_t::ToString( void ) const
 	return("No conversion to string");
 }
 #endif
+
 // Thanks SM core
 edict_t *EntityOutputManager::BaseHandleToEdict(CBaseHandle &hndl)
 {
@@ -551,6 +553,3 @@ edict_t *EntityOutputManager::BaseHandleToEdict(CBaseHandle &hndl)
 
 	return pStoredEdict;
 }
-
-
-
