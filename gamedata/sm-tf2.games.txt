@@ -28,6 +28,24 @@
 				"windows"	"\x56\x8B\xF1\x8B\x4E\x7C\xE8"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEii"
 			}
+			"CalcCritical"
+			{
+				"library"	"server"
+				"linux"		"@_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
+				"windows"	"\x83\xEC\x08\x56\x57\x6A\x00\x68"
+			}
+			"CalcCriticalMelee"
+			{
+				"library"	"server"
+				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
+				"windows"	"\x83\xEC\x08\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6"
+			}
+			"CalcCriticalKnife"
+			{
+				"library"	"server"
+				"linux"		"@_ZN8CTFKnife26CalcIsAttackCriticalHelperEv"
+				"windows"	"\x33\xC0\x83\xB9\x20\x05\x00"
+			}
 
 		}
 		"Offsets"
@@ -36,7 +54,22 @@
 			{
 				"windows"	"279"
 				"linux"		"280"
-			}			
+			}
+			"CalcCriticalBackup"
+			{
+				"linux"		"7"
+				"windows"	"7"
+			}
+			"CalcCriticalMeleeBackup"
+			{
+				"linux"		"7"
+				"windows"	"9"
+			}
+			"CalcCriticalKnifeBackup"
+			{
+				"linux"		"11"
+				"windows"	"9"
+			}		
 		}
 	}
 }

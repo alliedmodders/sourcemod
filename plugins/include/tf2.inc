@@ -114,6 +114,23 @@ native TF2_GetResourceEntity();
 native TFClassType:TF2_GetClass(const String:classname[]);
 
 /**
+ * Called on weapon fire to decide if the current shot should be critical.
+ * Return Plugin_Continue to let the original calculation or return a higher
+ * action to override the decision with the value of 'result'
+ *
+ * @note Since critical shots are also calculated client side any changes made with
+ *		 this will not show for the shooter. Projectile weapons such as the rocketlauncher
+ *		 and demoman weapons will show a critical bullet but no critical sound effect.
+ *		 Bullet hits should appear as expected.
+ *
+ * @param client		Client Index.
+ * @param weapon		Weapon entity Index.
+ * @param weaponname	Classname of the weapon.
+ * @param result		Buffer param for the result of the decision.
+ */
+forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_tf2 = 

@@ -17,7 +17,7 @@ PROJECT = game.tf2
 #Uncomment for Metamod: Source enabled extension
 USEMETA = true
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp criticals.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

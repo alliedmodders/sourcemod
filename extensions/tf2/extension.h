@@ -46,7 +46,8 @@
  */
 class TF2Tools : 
 	public SDKExtension,
-	public ICommandTargetProcessor
+	public ICommandTargetProcessor,
+	public IConCommandBaseAccessor
 {
 public:
 	/**
@@ -88,6 +89,7 @@ public:
 	bool QueryInterfaceDrop(SMInterface *pInterface);
 public:
 	bool ProcessCommandTarget(cmd_target_info_t *info);
+	bool RegisterConCommandBase(ConCommandBase *pVar);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
