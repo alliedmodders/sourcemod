@@ -339,7 +339,7 @@ ParseConfigs()
 	
 	if (!FileExists(configPath))
 	{
-		LogError("Unable to locate admin menu groups file, no groups loaded.");
+		LogError("Unable to locate admin menu groups file: %s", configPath);
 			
 		return;		
 	}
