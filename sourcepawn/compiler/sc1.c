@@ -403,6 +403,7 @@ int pc_compile(int argc, char *argv[])
   #if !defined NO_DEFINE
     delete_substtable();
     inst_datetime_defines();
+    inst_binary_name(binfname);
   #endif
   resetglobals();
   sc_ctrlchar=sc_ctrlchar_org;
@@ -567,6 +568,7 @@ static void inst_binary_name(char *binfname)
 {
   size_t i, len;
   char *binptr;
+  char newpath[512], newname[512];
 
   binptr = NULL;
   len = strlen(binfname);
@@ -588,8 +590,11 @@ static void inst_binary_name(char *binfname)
 	  binptr = binfname;
   }
 
-  insert_subst("__BINARY_PATH__", binfname, 15);
-  insert_subst("__BINARY_NAME__", binptr, 15);
+  snprintf(newpath, sizeof(newpath), "\"%s\"", binfname);
+  snprintf(newname, sizeof(newname), "\"%s\"", binptr);
+
+  insert_subst("__BINARY_PATH__", newpath, 15);
+  insert_subst("__BINARY_NAME__", newname, 15);
 }
 
 static void inst_datetime_defines(void)
