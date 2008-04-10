@@ -128,7 +128,7 @@ native TFClassType:TF2_GetClass(const String:classname[]);
  * @param weaponname	Classname of the weapon.
  * @param result		Buffer param for the result of the decision.
  */
-forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result)
+forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result);
 
 /**
  * Do not edit below this line!
