@@ -11,7 +11,7 @@
  *
  * This stub plugin is public domain.
  *
- * Version: $Id: stub_mm.cpp 534 2007-10-30 18:22:12Z dvander $
+ * Version: $Id$
  */
 
 #include <stdio.h>

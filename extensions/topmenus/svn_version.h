@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod SQLite Extension
+ * SourceMod TopMenus Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *

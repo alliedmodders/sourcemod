@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Sample Extension
+ * SourceMod Regular Expressions Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
@@ -34,7 +34,7 @@
 
 /**
  * @file extension.h
- * @brief Sample extension code header.
+ * @brief Regex extension code header.
  */
 
 #include "smsdk_ext.h"

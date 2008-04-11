@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Sample Extension
+ * SourceMod Regular Expressions Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
@@ -38,7 +38,7 @@ using namespace SourceHook;
 
 /**
  * @file extension.cpp
- * @brief Implement extension code here.
+ * @brief Implement Regex extension code here.
  */
 
 RegexExtension g_RegexExtension;		/**< Global singleton for extension's main interface */

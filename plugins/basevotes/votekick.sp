@@ -28,7 +28,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: admin-flatfile.sp 1438 2007-09-16 03:45:06Z dvander $
+ * Version: $Id$
  */
 
 

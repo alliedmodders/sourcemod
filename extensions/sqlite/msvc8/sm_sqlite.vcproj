@@ -189,10 +189,6 @@
 				RelativePath="..\extension.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\sm_memtable.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -201,10 +197,6 @@
 			>
 			<File
 				RelativePath="..\extension.h"
-				>
-			</File>
-			<File
-				RelativePath="..\sm_memtable.h"
 				>
 			</File>
 		</Filter>
@@ -226,6 +218,14 @@
 			Name="SourceMod SDK"
 			UniqueIdentifier="{31958233-BB2D-4e41-A8F9-CE8A4684F436}"
 			>
+			<File
+				RelativePath="..\sdk\sm_memtable.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\sdk\sm_memtable.h"
+				>
+			</File>
 			<File
 				RelativePath="..\sdk\smsdk_config.h"
 				>
