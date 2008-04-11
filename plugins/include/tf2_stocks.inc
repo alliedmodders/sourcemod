@@ -98,6 +98,8 @@ stock TFClassType:TF2_GetPlayerClass(client)
 /**
  * Set's a Clients class.
  *
+ * Note: If setting player class in a player spawn hook weapons should be set to false.
+ *
  * @param client		Player's index.
  * @param class			TFClassType class symbol.
  * @param weapons		If true, changes the players weapon set to that of the new class.
@@ -110,7 +112,7 @@ stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true)
 	SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:class);
 	TF2_SetPlayerResourceData(client, TFResource_PlayerClass, class);
 	
-	if (weapons)
+	if (weapons && IsPlayerAlive(client))
 	{
 		TF2_RemoveAllWeapons(client);
 		TF2_EquipPlayerClassWeapons(client, class);
