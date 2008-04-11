@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod SQLite Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod TopMenus Extension
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under

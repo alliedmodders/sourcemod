@@ -49,7 +49,7 @@ BEGIN
             VALUE "FileDescription", "SourceMod GeoIP Extension"
             VALUE "FileVersion", SVN_FULL_VERSION
             VALUE "InternalName", "SourceMod GeoIP Extension"
-            VALUE "LegalCopyright", "Copyright (c) 2004-2007, AlliedModders LLC"
+            VALUE "LegalCopyright", "Copyright (c) 2004-2008, AlliedModders LLC"
             VALUE "OriginalFilename", "geoip.ext.dll"
             VALUE "ProductName", "SourceMod GeoIP Extension"
             VALUE "ProductVersion", SVN_FULL_VERSION

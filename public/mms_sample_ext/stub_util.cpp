@@ -1,3 +1,19 @@
+/**
+ * vim: set ts=4 :
+ * ======================================================
+ * Metamod:Source Stub Plugin
+ * Written by AlliedModders LLC.
+ * ======================================================
+ *
+ * This software is provided 'as-is', without any express or implied warranty.
+ * In no event will the authors be held liable for any damages arising from 
+ * the use of this software.
+ *
+ * This stub plugin is public domain.
+ *
+ * Version: $Id$
+ */
+
 #include <stdio.h>
 #include <stdarg.h>
 #include "stub_util.h"

@@ -17,8 +17,8 @@ PROJECT = topmenus
 #Uncomment for Metamod: Source enabled extension
 #USEMETA = true
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp TopMenuManager.cpp TopMenu.cpp \
-	sdk/sm_memtable.cpp smn_topmenus.cpp
+OBJECTS = sdk/smsdk_ext.cpp sdk/sm_memtable.cpp extension.cpp TopMenuManager.cpp \
+	TopMenu.cpp smn_topmenus.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

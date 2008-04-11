@@ -17,7 +17,7 @@ PROJECT = dbi.sqlite
 #Uncomment for Metamod: Source enabled extension
 #USEMETA = true
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp sm_memtable.cpp \
+OBJECTS = sdk/smsdk_ext.cpp sdk/sm_memtable.cpp extension.cpp \
 	driver/SqDatabase.cpp driver/SqDriver.cpp driver/SqQuery.cpp \
 	driver/SqResults.cpp
 

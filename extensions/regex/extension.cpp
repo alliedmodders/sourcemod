@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Sample Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod Regular Expressions Extension
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -38,7 +38,7 @@ using namespace SourceHook;
 
 /**
  * @file extension.cpp
- * @brief Implement extension code here.
+ * @brief Implement Regex extension code here.
  */
 
 RegexExtension g_RegexExtension;		/**< Global singleton for extension's main interface */

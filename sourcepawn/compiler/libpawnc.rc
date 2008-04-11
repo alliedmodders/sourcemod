@@ -34,11 +34,11 @@ BEGIN
     BEGIN
         BLOCK "040904E4"
         BEGIN
-            VALUE "CompanyName",      "(C)1998-2006 ITB CompuPhase, AlliedModders LLC\0"
+            VALUE "CompanyName",      "(C)1998-2008 ITB CompuPhase, AlliedModders LLC\0"
             VALUE "FileDescription",  VERSIONDESCRIPTION
             VALUE "FileVersion",      SVN_FULL_VERSION
             VALUE "InternalName",     VERSIONNAME
-            VALUE "LegalCopyright",   "(C)1998-2006 ITB CompuPhase, AlliedModders LLC\0"
+            VALUE "LegalCopyright",   "(C)1998-2008 ITB CompuPhase, AlliedModders LLC\0"
             VALUE "OriginalFilename", VERSIONNAME
             VALUE "ProductName",      VERSIONPRODUCTNAME
             VALUE "ProductVersion",   SVN_FULL_VERSION
