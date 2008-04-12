@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
-#if 0
+#if defined ENABLE_CRAZYDEBUGGING
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include "Tlhelp32.h"
@@ -61,6 +61,7 @@ FARPROC WINAPI GetProcAddress2(HMODULE hModule, LPCSTR lpProcName)
 
 	return GetProcAddress(hModule, lpProcName);
 }
+
 
 class CrazyWindowsDebugger : public SMGlobalClass
 {
