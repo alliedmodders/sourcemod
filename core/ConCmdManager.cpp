@@ -379,14 +379,14 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 			/* On a listen server, sometimes the server host's client index can be set as 0.
 			 * So index 1 is passed to the command callback to correct this potential problem.
 			 */
-			if (client == 0 && !engine->IsDedicatedServer())
+			if (!engine->IsDedicatedServer())
 			{
-				pHook->pf->PushCell(1);
-			} else {
-				pHook->pf->PushCell(client);
+				client = g_Players.ListenClient();
 			}
 
+			pHook->pf->PushCell(client);
 			pHook->pf->PushCell(args);
+
 			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
 			{
 				if (tempres > result)

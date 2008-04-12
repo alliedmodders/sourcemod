@@ -134,6 +134,9 @@ void PlayerManager::OnSourceModAllInitialized()
 	PreAdminCheck = g_Forwards.CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
 	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 	PostAdminFilter = g_Forwards.CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
+
+	m_bIsListenServer = !engine->IsDedicatedServer();
+	m_ListenClient = 0;
 }
 
 void PlayerManager::OnSourceModShutdown()
@@ -385,7 +388,9 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		{
 			m_AuthQueue[++m_AuthQueue[0]] = client;
 		}
-	} else {
+	}
+	else
+	{
 		RETURN_META_VALUE(MRES_SUPERCEDE, false);
 	}
 
@@ -413,6 +418,13 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 				break;
 			}
 		}
+	}
+
+	if (!pPlayer->IsFakeClient() 
+		&& m_bIsListenServer
+		&& strncmp(pszAddress, "127.0.0.1", 9) == 0)
+	{
+		m_ListenClient = client;
 	}
 
 	return true;
@@ -524,7 +536,9 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 	{
 		m_cldisconnect->PushCell(client);
 		m_cldisconnect->Execute(&res, NULL);
-	} else {
+	}
+	else
+	{
 		/* We don't care, prevent a double call */
 		return;
 	}
@@ -565,6 +579,11 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 
 	m_Players[client].Disconnect();
 	m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = 0;
+
+	if (m_ListenClient == client)
+	{
+		m_ListenClient = 0;
+	}
 }
 
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
