@@ -40,6 +40,7 @@
  * @brief Defines the interface for loading/unloading/managing extensions.
  */
 
+struct edict_t;
 namespace SourceMod
 {
 	class IExtensionInterface;
@@ -131,7 +132,7 @@ namespace SourceMod
 	 * Note: This is bumped when IShareSys is changed, because IShareSys 
 	 * itself is not versioned.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	3
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	4
 
 	/**
 	 * @brief The interface an extension must expose.
