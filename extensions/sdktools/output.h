@@ -91,39 +91,12 @@ struct ClassNameStruct
 class EntityOutputManager : public IPluginsListener
 {
 public:
-	EntityOutputManager()
-	{
-		info_address = NULL;
-		info_callback = NULL;
-		HookCount = 0;
-		is_detoured = false;
-		enabled = false;
-	}
+	EntityOutputManager();
+	~EntityOutputManager();
+public:
+	void Init();
 
-	~EntityOutputManager()
-	{
-		EntityOutputs->Destroy();
-		ClassNames->Destroy();
-		ShutdownFireEventDetour();
-	}
-
-	void Init()
-	{
-		enabled = CreateFireEventDetour();
-
-		if (!enabled)
-		{
-			return;
-		}
-
-		EntityOutputs = adtfactory->CreateBasicTrie();
-		ClassNames = adtfactory->CreateBasicTrie();
-	}
-
-	bool IsEnabled()
-	{
-		return enabled;
-	}
+	bool IsEnabled();
 
 	void FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay);
 

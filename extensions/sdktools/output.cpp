@@ -35,6 +35,45 @@
 ISourcePawnEngine *spengine = NULL;
 EntityOutputManager g_OutputManager;
 
+EntityOutputManager::EntityOutputManager()
+{
+	info_address = NULL;
+	info_callback = NULL;
+	HookCount = 0;
+	is_detoured = false;
+	enabled = false;
+}
+
+EntityOutputManager::~EntityOutputManager()
+{
+	if (!enabled)
+	{
+		return;
+	}
+
+	EntityOutputs->Destroy();
+	ClassNames->Destroy();
+	ShutdownFireEventDetour();
+}
+
+void EntityOutputManager::Init()
+{
+	enabled = CreateFireEventDetour();
+
+	if (!enabled)
+	{
+		return;
+	}
+
+	EntityOutputs = adtfactory->CreateBasicTrie();
+	ClassNames = adtfactory->CreateBasicTrie();
+}
+
+bool EntityOutputManager::IsEnabled()
+{
+	return enabled;
+}
+
 bool EntityOutputManager::CreateFireEventDetour()
 {
 	if (!g_pGameConf->GetMemSig("FireOutput", &info_address) || !info_address)
