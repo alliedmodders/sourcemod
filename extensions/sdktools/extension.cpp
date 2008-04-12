@@ -50,7 +50,6 @@
  */
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
-SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
@@ -112,7 +111,6 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	CONVAR_REGISTER(this);
 
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
@@ -170,7 +168,6 @@ void SDKTools::SDK_OnUnload()
 	playerhelpers->UnregisterCommandTargetProcessor(this);
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 
 	if (enginePatch)
 	{
