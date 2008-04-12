@@ -207,7 +207,7 @@ bool CriticalHitManager::CreateCriticalKnifeDetour()
 		return false;
 	}
 
-	if (!g_pGameConf->GetOffset("CalcCriticalMeleeBackup", (int *)&(knife_restore.bytes)))
+	if (!g_pGameConf->GetOffset("CalcCriticalKnifeBackup", (int *)&(knife_restore.bytes)))
 	{
 		g_pSM->LogError(myself, "Could not locate CalcCriticalKnifeBackup - Disabling Critical Hit forward");
 		return false;
@@ -341,7 +341,7 @@ void CriticalHitManager::DisableCriticalDetour()
 		detoured = false;
 	}
 
-	if (melee_callback)
+	if (knife_callback)
 	{
 		/* Remove the patch */
 		ApplyPatch(knife_address, 0, &knife_restore, NULL);
