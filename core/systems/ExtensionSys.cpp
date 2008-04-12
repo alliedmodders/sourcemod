@@ -1369,3 +1369,15 @@ IExtension *CExtensionManager::LoadExternal(IExtensionInterface *pInterface,
 	return pExt;
 }
 
+void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	List<CExtension *>::iterator iter;
+
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		if (SMINTERFACE_EXTENSIONAPI_VERSION > 3)
+		{
+			(*iter)->GetAPI()->OnCoreMapStart(pEdictList, edictCount, clientMax);
+		}
+	}
+}

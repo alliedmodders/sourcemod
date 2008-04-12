@@ -46,6 +46,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "GameConfigs.h"
+#include "systems/ExtensionSys.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -206,6 +207,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 	}
+	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, clientMax);
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 

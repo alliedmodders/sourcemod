@@ -64,7 +64,7 @@ bool FindTeamEntities(SendTable *pTable, const char *name)
 	return false;
 }
 
-void SDKTools::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_Teams.clear();
 	g_Teams.resize(1);

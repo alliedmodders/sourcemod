@@ -40,6 +40,8 @@
  * @brief Defines the interface for loading/unloading/managing extensions.
  */
 
+struct edict_t;
+
 namespace SourceMod
 {
 	class IExtensionInterface;
@@ -131,7 +133,7 @@ namespace SourceMod
 	 * Note: This is bumped when IShareSys is changed, because IShareSys 
 	 * itself is not versioned.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	3
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	4
 
 	/**
 	 * @brief The interface an extension must expose.
@@ -289,6 +291,17 @@ namespace SourceMod
 		 * @return					String containing the compilation date.
 		 */
 		virtual const char *GetExtensionDateString() =0;
+
+		/**
+		 * @brief Called on server activation before plugins receive the OnServerLoad forward.
+		 * 
+		 * @param pEdictList		Edicts list.
+		 * @param edictCount		Number of edicts in the list.
+		 * @param clientMax			Maximum number of clients allowed in the server.
+		 */
+		virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+		{
+		}
 	};
 
 	/**

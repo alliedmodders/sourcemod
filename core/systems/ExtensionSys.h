@@ -178,6 +178,7 @@ public:
 	void AddLibrary(IExtension *pSource, const char *library);
 	bool LibraryExists(const char *library);
 	void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives);
+	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();
