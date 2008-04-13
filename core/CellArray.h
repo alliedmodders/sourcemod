@@ -40,14 +40,17 @@ public:
 	CellArray(size_t blocksize) : m_Data(NULL), m_BlockSize(blocksize), m_AllocSize(0), m_Size(0)
 	{
 	}
+
 	~CellArray()
 	{
 		free(m_Data);
 	}
+
 	size_t size() const
 	{
 		return m_Size;
 	}
+
 	cell_t *push()
 	{
 		if (!GrowIfNeeded(1))
@@ -58,18 +61,22 @@ public:
 		m_Size++;
 		return arr;
 	}
+
 	cell_t *at(size_t b) const
 	{
 		return &m_Data[b * m_BlockSize];
 	}
+
 	size_t blocksize() const
 	{
 		return m_BlockSize;
 	}
+
 	void clear()
 	{
 		m_Size = 0;
 	}
+
 	bool swap(size_t item1, size_t item2)
 	{
 		/* Make sure there is extra space available */
@@ -90,6 +97,7 @@ public:
 
 		return true;
 	}
+
 	void remove(size_t index)
 	{
 		/* If we're at the end, take the easy way out */
@@ -107,6 +115,7 @@ public:
 
 		m_Size--;
 	}
+
 	cell_t *insert_at(size_t index)
 	{
 		/* Make sure it'll fit */
@@ -124,6 +133,7 @@ public:
 
 		return src;
 	}
+
 	bool resize(size_t count)
 	{
 		if (count <= m_Size)
@@ -132,7 +142,7 @@ public:
 			return true;
 		}
 
-		if(!GrowIfNeeded(count - m_Size))
+		if (!GrowIfNeeded(count - m_Size))
 		{
 			return false;
 		}

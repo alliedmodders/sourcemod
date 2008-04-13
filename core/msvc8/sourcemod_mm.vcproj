@@ -1348,6 +1348,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_adt_stack.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_adt_trie.cpp"
 				>
 			</File>

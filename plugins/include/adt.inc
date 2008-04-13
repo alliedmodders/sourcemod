@@ -37,3 +37,4 @@
 
 #include <adt_array>
 #include <adt_trie>
+#include <adt_stack>
