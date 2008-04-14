@@ -111,7 +111,7 @@ CBaseEntity *UTIL_GetCBaseEntity(int num, bool onlyPlayers)
 		return NULL;
 	}
 
-	if (num > 0 && num < playerhelpers->GetMaxClients())
+	if (num > 0 && num <= playerhelpers->GetMaxClients())
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(pEdict);
 		if (!pPlayer || !pPlayer->IsConnected())
