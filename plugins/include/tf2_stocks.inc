@@ -103,14 +103,19 @@ stock TFClassType:TF2_GetPlayerClass(client)
  * @param client		Player's index.
  * @param class			TFClassType class symbol.
  * @param weapons		If true, changes the players weapon set to that of the new class.
+ * @param persistant	If true changes the players desired class so the change stays after death.
  * @noreturn
  * @error				Invalid client index.
  */
-stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true)
+stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:persistant=true)
 {
 	SetEntProp(client, Prop_Send, "m_iClass", _:class);
-	SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:class);
 	TF2_SetPlayerResourceData(client, TFResource_PlayerClass, class);
+	
+	if (persistant)
+	{
+		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:class);
+	}
 	
 	if (weapons && IsPlayerAlive(client))
 	{
