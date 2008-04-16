@@ -289,7 +289,6 @@ native bool:GetPlayerDecalFile(client, String:hex[], maxlength);
  */
 native GetServerNetStats(&Float:in, &Float:out);
 
-
 /**
  * Equip's a player's weapon.
  *
@@ -300,3 +299,12 @@ native GetServerNetStats(&Float:in, &Float:out);
  *						game.
  */
 native EquipPlayerWeapon(client, weapon);
+
+/**
+ * Activates an entity (CBaseAnimating::Activate)
+ *
+ * @param entity		Entity index.
+ * @noreturn
+ * @error				Invalid entity or lack of mod support.
+ */
+native ActivateEntity(entity);

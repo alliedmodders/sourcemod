@@ -894,6 +894,28 @@ static cell_t WeaponEquip(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		if (!CreateBaseCall("Activate", ValveCall_Entity, NULL, NULL, 0, &pCall))
+		{
+			return pContext->ThrowNativeError("\"Activate\" not supported by this mod");
+		}
+		else if (!pCall)
+		{
+			return pContext->ThrowNativeError("\"Activate\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -919,5 +941,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetPlayerDecalFile",		GetPlayerDecalFile},
 	{"GetServerNetStats",		GetServerNetStats},
 	{"EquipPlayerWeapon",		WeaponEquip},
+	{"ActivateEntity",			ActivateEntity},
 	{NULL,						NULL},
 };

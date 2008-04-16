@@ -337,6 +337,11 @@
 				"windows"	"217"
 				"linux"		"218"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 
@@ -419,6 +424,11 @@
 			{
 				"windows"	"217"
 				"linux"		"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 	}
@@ -503,6 +513,11 @@
 				"windows"	"217"
 				"linux"		"218"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 	
@@ -586,6 +601,11 @@
 			{
 				"windows"	"211"
 				"linux"		"212"
+			}
+			"Activate"
+			{
+				"windows"	"37"
+				"linux"		"38"
 			}
 			
 			/* Temp Entities */
@@ -695,6 +715,11 @@
 				"windows"	"220"
 				"linux"		"221"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 
 			/* Offset into CBaseTempEntity constructor.
 			 * On Windows Dsytopia is heavily inlined; we use the function 
@@ -792,6 +817,11 @@
 				"windows"	"215"
 				"linux"		"216"
 			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
 		}
 	}
 
@@ -876,6 +906,11 @@
 				"windows"	"217"
 				"linux"		"218"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 
@@ -950,7 +985,7 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
-
+			
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
@@ -1054,6 +1089,11 @@
 			{
 				"windows"	"227"
 				"linux"		"228"
+			}
+			"Activate"
+			{
+				"windows"	"36"
+				"linux"		"37"
 			}
 		}
 		
@@ -1227,6 +1267,11 @@
 				"windows"	"221"
 				"linux"		"222"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 
 			/* Offset into LevelShutdown for CGlobalEntList */
 			"gEntList"
@@ -1326,6 +1371,11 @@
 				"windows"	"217"
 				"linux"		"218"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 
@@ -1410,6 +1460,11 @@
 				"windows"	"217"
 				"linux"		"218"
 			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 	
@@ -1484,7 +1539,11 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
-			
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
@@ -1596,6 +1655,11 @@
 			{
 				"windows"	"198"
 				"linux"		"199"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 
@@ -1720,6 +1784,11 @@
 			{
 				"windows"	"219"
 				"linux"		"220"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 		"Signatures"
