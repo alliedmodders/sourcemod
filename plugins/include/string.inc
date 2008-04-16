@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -374,6 +374,20 @@ native bool:IsCharUpper(chr);
  * @return				True if character is lowercase, otherwise false.
  */
 native bool:IsCharLower(chr);
+
+/**
+ * Strips a quote pair off a string if it exists.  That is, the following 
+ * replace rule is applied once:  $"(.*)"^ -> $\1^
+ *
+ * Note that the leading and trailing quotes will only be removed if both 
+ * exist.  Otherwise, the string is left unmodified.  This function should 
+ * be considered O(k) (all characters get shifted down).
+ *
+ * @param text			String to modify (in place).
+ * @return				True if string was modified, false if there was no 
+ *						set of quotes.
+ */
+native bool:StripQuotes(String:text[]);
 
 /**
  * Returns an uppercase character to a lowercase character.

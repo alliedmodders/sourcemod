@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -560,6 +560,27 @@ static cell_t SplitString(IPluginContext *pContext, const cell_t *params)
 	return -1;
 }
 
+static cell_t StripQuotes(IPluginContext *pContext, const cell_t *params)
+{
+	char *text;
+	size_t length;
+
+	pContext->LocalToString(params[1], &text);
+	length = strlen(text);
+
+	if (text[0] == '"' && text[length-1] == '"')
+	{
+		/* Null-terminate */
+		text[--length] = '\0';
+		/* Move the remaining bytes (including null terminator) down by one */
+		memmove(&text[0], &text[1], length);
+
+		return 1;
+	}
+
+	return 0;	
+}
+
 REGISTER_NATIVES(basicStrings)
 {
 	{"BreakString",			BreakString},
@@ -586,6 +607,7 @@ REGISTER_NATIVES(basicStrings)
 	{"StringToIntEx",		StringToIntEx},
 	{"StringToFloat",		sm_strtofloat},
 	{"StringToFloatEx",		StringToFloatEx},
+	{"StripQuotes",			StripQuotes},
 	{"TrimString",			TrimString},
 	{"VFormat",				sm_vformat},
 	{NULL,					NULL},
