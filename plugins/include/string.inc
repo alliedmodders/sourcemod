@@ -376,6 +376,20 @@ native bool:IsCharUpper(chr);
 native bool:IsCharLower(chr);
 
 /**
+ * Strips a quote pair off a string if it exists.  That is, the following 
+ * replace rule is applied once:  $"(.*)"^ -> $\1^
+ *
+ * Note that the leading and trailing quotes will only be removed if both 
+ * exist.  Otherwise, the string is left unmodified.  This function should 
+ * be considered O(k) (all characters get shifted down).
+ *
+ * @param text			String to modify (in place).
+ * @return				True if string was modified, false if there was no 
+ *						set of quotes.
+ */
+native bool:StripQuotes(String:text[]);
+
+/**
  * Returns an uppercase character to a lowercase character.
  *
  * @param chr			Characer to convert.
