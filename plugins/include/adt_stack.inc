@@ -56,7 +56,7 @@
 native Handle:CreateStack(blocksize=1);
 
 /**
- * Pushes a value onto the end of the stack , adding a new index.
+ * Pushes a value onto the end of the stack, adding a new index.
  *
  * This may safely be used even if the stack has a blocksize
  * greater than 1.
