@@ -366,7 +366,7 @@ const char *LibrarySystem::GetFileExtension(const char *filename)
 
 	for (i = end; i <= end; i--)
 	{
-		if (filename[i] == '/')
+		if (filename[i] == PLATFORM_SEP_CHAR || filename[i] == PLATFORM_SEP_ALTCHAR)
 		{
 			break;
 		}
