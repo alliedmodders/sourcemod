@@ -277,6 +277,13 @@ namespace builder
 			lib.vcproj_name = "regex";
 			libraries.Add(lib);
 
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/clientprefs";
+			lib.binary_name = "clientprefs.ext";
+			lib.vcproj_name = "clientprefs";
+			libraries.Add(lib);
+
 			return (Library [])libraries.ToArray(typeof(Library));
 		}
 
