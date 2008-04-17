@@ -352,21 +352,26 @@ size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 
 const char *LibrarySystem::GetFileExtension(const char *filename)
 {
-	size_t end = strlen(filename) - 1;
+	size_t len, end, i;
 
-	for (size_t i = end; i >= 0; i--)
+	len = strlen(filename);
+
+	/* Minimum string length for filename with ext would be 3; example: a.a */
+	if (len < 3)
 	{
-		if (i > end)
+		return NULL;
+	}
+
+	end = len - 1;
+
+	for (i = end; i <= end; i--)
+	{
+		if (filename[i] == '/')
 		{
 			break;
 		}
 
-		if (filename[i] == PLATFORM_SEP_CHAR || filename[i] == PLATFORM_SEP_ALTCHAR)
-		{
-			break;
-		}
-
-		if (filename[i] == '.' && i != end)
+		if (filename[i] == '.' && i != end && i != 0)
 		{
 			return &filename[++i];
 		}
