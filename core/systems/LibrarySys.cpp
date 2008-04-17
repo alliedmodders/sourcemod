@@ -352,7 +352,7 @@ size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 
 const char *LibrarySystem::GetFileExtension(const char *filename)
 {
-	size_t len, end, i;
+	size_t len, end;
 
 	len = strlen(filename);
 
@@ -364,7 +364,7 @@ const char *LibrarySystem::GetFileExtension(const char *filename)
 
 	end = len - 1;
 
-	for (i = end; i <= end; i--)
+	for (size_t i = end; i <= end; i--)
 	{
 		if (filename[i] == PLATFORM_SEP_CHAR || filename[i] == PLATFORM_SEP_ALTCHAR)
 		{
