@@ -281,6 +281,11 @@
 				"windows"	"227"
 				"linux"		"228"
 			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
 		}
 	}
 	/* EntityFactoryDictionary function */
