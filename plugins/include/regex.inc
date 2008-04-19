@@ -77,7 +77,7 @@ enum RegexError
 	REGEX_ERROR_RECURSIONLIMIT = -21,
 	REGEX_ERROR_NULLWSLIMIT = -22,  	/* No longer actually used */
 	REGEX_ERROR_BADNEWLINE = -23
-}
+};
 
 /**
  * Precompile a regular expression.  Use this if you intend on using the 

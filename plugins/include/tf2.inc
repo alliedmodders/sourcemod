@@ -47,7 +47,7 @@ enum TFClassType
 	TFClass_Pyro,
 	TFClass_Spy,
 	TFClass_Engineer
-}
+};
 
 enum TFTeam
 {
@@ -55,7 +55,7 @@ enum TFTeam
 	TFTeam_Spectator = 1,
 	TFTeam_Red = 2,
 	TFTeam_Blue = 3	
-}
+};
 
 /**
  * Set's a Clients invulnrability status (ubercharge effect)
