@@ -114,7 +114,7 @@ enum TopMenuPosition
 enum TopMenuObject
 {
 	INVALID_TOPMENUOBJECT = 0,
-}
+};
 
 /**
  * TopMenu callback prototype.
