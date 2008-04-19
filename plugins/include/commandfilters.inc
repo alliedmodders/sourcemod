@@ -57,6 +57,10 @@
  * Processes a generic command target string, and resolves it to a list 
  * of clients or one client, based on filtering rules and a pattern.
  *
+ * Note that you should use LoadTranslations("common.phrases") in OnPluginStart(), 
+ * as that file is guaranteed to contain all of the translatable phrases that 
+ * ProcessTargetString() will return.
+ *
  * @param pattern		Pattern to find clients against.
  * @param admin			Admin performing the action, or 0 if the server.
  * @param targets		Array to hold targets.
@@ -64,11 +68,11 @@
  * @param filter_flags	Filter flags.
  * @param target_name	Buffer to store the target name.
  * @param tn_maxlength	Maximum length of the target name buffer.
- * @param tn_is_ml		Set to true if the target name buffer is an ML phrase,
+ * @param tn_is_ml		OUTPUT: Will be true if the target name buffer is an ML phrase,
  *						false if it is a normal string.
  * @return				If a multi-target pattern was used, the number of clients found 
  *						is returned.  If a single-target pattern was used, 1 is returned 
- *						if one valid client is found.  Otherwise, a CLIENT_TARGET reason 
+ *						if one valid client is found.  Otherwise, a COMMAND_TARGET reason 
  *						for failure is returned.
  */
 native ProcessTargetString(const String:pattern[],
