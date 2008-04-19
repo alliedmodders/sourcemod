@@ -65,6 +65,12 @@
 				"linux"		"7"
 				"windows"	"9"
 			}
+			/* The byte number (starting from 1) of the call (0xE8) byte or -1 if none */
+			"CalcCriticalMeleeCallByte"
+			{
+				"linux"		"-1"
+				"windows"	"5"
+			}
 			"CalcCriticalKnifeBackup"
 			{
 				"linux"		"11"

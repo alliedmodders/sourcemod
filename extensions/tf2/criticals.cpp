@@ -177,11 +177,45 @@ bool CriticalHitManager::CreateCriticalMeleeDetour()
 	jit->write_ubyte(0x75); 
 	jit->write_ubyte(50-((jit->outptr+1)-jit->outbase));
 
+	int callbyte = -1;
+	/* The callbyte should return the nth byte (starting from 1) in the backup bytes - Should be an 0xE8 (call) */
+	g_pGameConf->GetOffset("CalcCriticalMeleeCallByte", &callbyte);
+
+	callbyte--;
+	void *function = NULL;
+
+	if (callbyte > -1)
+	{
+		/* Check if the 'callbyte' is actually a call */
+		if (melee_restore.patch[callbyte] != 0xE8)
+		{
+			g_pSM->LogError(myself, "Invalid callbyte - Melee detour may work incorrectly");
+		}
+		else
+		{
+			/* Find the absolute address of the function it calls */
+			void *offsetaddr = (void *)((unsigned char *)melee_address + callbyte + 1);
+			int offset = (int)*(unsigned char *)offsetaddr;
+			function = (unsigned char *)offsetaddr + offset + 4;
+		}
+	}
+
 	/* Patch old bytes in */
 	for (size_t i=0; i<melee_restore.bytes; i++)
 	{
-		jit->write_ubyte(melee_restore.patch[i]);
+		if (i != callbyte)
+		{
+			jit->write_ubyte(melee_restore.patch[i]);
+			continue;
+		}
+		
+		/* Write in the adjusted call instead */
+		jitoffs_t call = IA32_Call_Imm32(jit, 0); 
+		IA32_Write_Jump32_Abs(jit, call, function);
+
+		i += 4;
 	}
+
 
 	/* Return to the original function */
 	call = IA32_Jump_Imm32(jit, 0);
