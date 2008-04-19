@@ -203,7 +203,7 @@ bool CriticalHitManager::CreateCriticalMeleeDetour()
 	/* Patch old bytes in */
 	for (size_t i=0; i<melee_restore.bytes; i++)
 	{
-		if (i != callbyte)
+		if ((int)i != callbyte)
 		{
 			jit->write_ubyte(melee_restore.patch[i]);
 			continue;
