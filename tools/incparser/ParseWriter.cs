@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 namespace incparser
 {
@@ -8,6 +10,16 @@ namespace incparser
     {
         private int level;
         private StringBuilder data;
+
+        public ArrayList enumList = new ArrayList();
+        public ArrayList defineList = new ArrayList();
+        public ArrayList enumTypeList = new ArrayList();
+        public ArrayList forwardList = new ArrayList();
+        public ArrayList nativeList = new ArrayList();
+        public ArrayList stockList = new ArrayList();
+        public ArrayList funcenumList = new ArrayList();
+        public ArrayList functagList = new ArrayList();
+        public ArrayList structList = new ArrayList();
 
         public int Level
         {
@@ -23,6 +35,12 @@ namespace incparser
             {
                 return data.ToString();
             }
+        }
+
+        public void Reset()
+        {
+            level = 0;
+            data = new StringBuilder();
         }
 
         public ParseWriter()
@@ -50,6 +68,79 @@ namespace incparser
                 throw new System.Exception("Writer nesting level went out of bounds");
             }
             WriteLine("}");
+        }
+
+        public void WriteFiles(string template, string outputfile)
+        {
+            StreamReader sr = null;
+
+            try
+            {
+                sr = File.OpenText(template);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to open template file: " + e.Message);
+                return;
+            }
+
+            string contents = sr.ReadToEnd();
+
+            string replace = ToOutputString(defineList);
+            contents = contents.Replace("$defines", replace);
+
+            replace = ToOutputString(enumList);
+            contents = contents.Replace("$enums", replace);
+
+            replace = ToOutputString(enumTypeList);
+            contents = contents.Replace("$enumtypes", replace);
+
+            replace = ToOutputString(forwardList);
+            contents = contents.Replace("$forwards", replace);
+
+            replace = ToOutputString(nativeList);
+            contents = contents.Replace("$natives", replace);
+
+            replace = ToOutputString(stockList);
+            contents = contents.Replace("$stocks", replace);
+
+            replace = ToOutputString(funcenumList);
+            contents = contents.Replace("$funcenums", replace);
+
+            replace = ToOutputString(functagList);
+            contents = contents.Replace("$functags", replace);
+
+            replace = ToOutputString(structList);
+            contents = contents.Replace("$structs", replace);
+
+            StreamWriter sw;
+            sw = File.CreateText(outputfile);
+
+            sw.Write(contents);
+
+            sr.Close();
+            sw.Close();
+        }
+
+        private string ToOutputString(ArrayList a)
+        {
+            string defines = "";
+            int count = 0;
+
+            foreach (object o in a)
+            {
+              defines += o;
+              defines += " ";
+              count += o.ToString().Length;
+
+              if (count > 180)
+              {
+                defines += "\r\n";
+                count = 0;
+              }
+            }
+
+            return defines;
         }
 
         private void WriteLine(string line)

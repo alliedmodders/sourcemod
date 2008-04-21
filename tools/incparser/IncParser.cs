@@ -133,7 +133,7 @@ namespace incparser
             Initialize();
         }
 
-        public void Parse(ParseWriter w)
+         public void Parse(ParseWriter w)
         {
             w.BeginSection(System.IO.Path.GetFileName(FileName));
             LexToken tok = LexToken.TOKEN_NONE;
@@ -198,7 +198,12 @@ namespace incparser
                         }
                     default:
                         {
-                            throw new ParseException("Unrecognized token: " + tok);
+                            if (_LexString == "static" || _LexString == "new")
+                            {
+                                PARSE_Public(w);
+                                break;
+                            }
+                            throw new ParseException("Unrecognized token: " + tok + " " + _LexString);
                         }
                 }
             }
@@ -207,15 +212,28 @@ namespace incparser
 
         private void PARSE_Public(ParseWriter w)
         {
+            MatchToken(LexToken.TOKEN_CONST);
+
             /* Eat up an optional tag */
             MatchToken(LexToken.TOKEN_LABEL);
-            
+
             /* Eat up a name */
             NeedToken(LexToken.TOKEN_SYMBOL);
+
+            while (MatchChar('['))
+            {
+                DiscardUntilChar(']');
+                NeedChar(']');
+            }
 
             if (MatchChar('='))
             {
                 ignore_block();
+            }
+            else if (MatchChar('(') && MatchChar(')'))
+            {
+                ignore_block();
+                return;
             }
 
             NeedChar(';');
@@ -225,6 +243,7 @@ namespace incparser
         {
             /* For now, we completely ignore these (they're not written to the output) */
             NeedToken(LexToken.TOKEN_SYMBOL);
+            w.structList.Add(LexString);
             NeedChar('{');
 
             bool need_closebrace = true;
@@ -294,6 +313,7 @@ namespace incparser
             /* Get the functag name */
             NeedToken(LexToken.TOKEN_SYMBOL);
             w.WritePair("name", LexString);
+            w.funcenumList.Add(LexString);
 
             NeedChar('{');
 
@@ -359,6 +379,7 @@ namespace incparser
             /* Get the functag name */
             NeedToken(LexToken.TOKEN_SYMBOL);
             w.WritePair("name", LexString);
+            w.functagList.Add(LexString);
 
             if (MatchToken(LexToken.TOKEN_LABEL))
             {
@@ -422,14 +443,17 @@ namespace incparser
             if (tok == LexToken.TOKEN_FORWARD)
             {
                 w.BeginSection("forward");
+                w.forwardList.Add(name);
             }
             else if (tok == LexToken.TOKEN_NATIVE)
             {
                 w.BeginSection("native");
+                w.nativeList.Add(name);
             }
             else if (tok == LexToken.TOKEN_STOCK)
             {
                 w.BeginSection("stock");
+                w.stockList.Add(name);
             }
 
             w.WritePair("name", name);
@@ -571,9 +595,17 @@ namespace incparser
             w.WritePair("name", name);
             w.BeginSection("properties");
 
+            w.enumList.Add(name);
+
             NeedChar('{');
             bool more_entries = true;
             bool need_closebrace = true;
+
+            if (MatchToken(LexToken.TOKEN_DOCBLOCK))
+            {
+              w.WritePair("doc", LexString);
+            }
+
             do
             {
                 if (MatchChar('}'))
@@ -583,12 +615,14 @@ namespace incparser
                 }
                 NeedToken(LexToken.TOKEN_SYMBOL);
                 name = LexString;
+ 
                 if (MatchChar('='))
                 {
-                    DiscardUntilCharOrComment(',', true);
+                    DiscardUntilCharOrComment(",\n}", true);
                 }
                 more_entries = MatchChar(',');
                 w.WritePair("name", name);
+                w.enumTypeList.Add(name);
                 if (MatchToken(LexToken.TOKEN_DOCBLOCK))
                 {
                     w.WritePair("doc", LexString);
@@ -637,6 +671,8 @@ namespace incparser
             }
 
             /* Write */
+            w.defineList.Add(name);
+
             w.BeginSection("define");
             w.WritePair("name", name);
             w.WritePair("linetext", value);
@@ -719,6 +755,37 @@ namespace incparser
                     return;
                 }
             }
+        }
+
+       /**
+        * Discards all data up to a certain character, ignoring
+        * the contents, unless specified to stop at a doc block comment.
+        */
+        private void DiscardUntilCharOrComment(string s, bool stop_at_comment)
+        {
+          for (int i = 0; i < Contents.Length; i++)
+          {
+            if (Contents[i] == '\n')
+            {
+              LineNo++;
+            }
+            else if (s.Contains(Contents[i].ToString()))
+            {
+              if (i > 0)
+              {
+                Contents.Remove(0, i);
+              }
+              return;
+            }
+            else if (stop_at_comment && CheckString(i, "/**"))
+            {
+              if (i > 0)
+              {
+                Contents.Remove(0, i);
+              }
+              return;
+            }
+          }
         }
 
         /**
@@ -938,7 +1005,7 @@ namespace incparser
             bool is_doc = false;
             bool is_newline = true;
 
-            for (int i=0; i<Contents.Length-1; i++)
+            for (int i=0; i<Contents.Length; i++)
             {
                 if (Contents[i] == '\n')
                 {
@@ -953,6 +1020,7 @@ namespace incparser
                             in_comment = true;
                             is_ml = false;
                             is_doc = false;
+                            is_newline = false;
                         } else if (Contents[i+1] == '*') {
                             /* Detect whether this is a doc comment or not */
                             if (Contents.Length - i >= 3
