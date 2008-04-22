@@ -125,7 +125,7 @@ public OnPluginStart()
 	}
 	
 	LoadTranslations("common.phrases");
-	LoadTranslations("basefuncommands.phrases");
+	LoadTranslations("funcommands.phrases");
 
 	g_FadeUserMsgId = GetUserMessageId("Fade");
 	

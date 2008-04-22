@@ -100,8 +100,8 @@ public OnPluginStart()
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("basevotes.phrases");
-	LoadTranslations("basefunvotes.phrases");
-	LoadTranslations("basefuncommands.phrases");
+	LoadTranslations("funvotes.phrases");
+	LoadTranslations("funcommands.phrases");
 	
 	RegAdminCmd("sm_votegravity", Command_VoteGravity, ADMFLAG_VOTE, "sm_votegravity <amount> [amount2] ... [amount5]");
 	RegAdminCmd("sm_voteburn", Command_VoteBurn, ADMFLAG_VOTE|ADMFLAG_SLAY, "sm_voteburn <player>");
