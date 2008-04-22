@@ -110,7 +110,6 @@ stock TFClassType:TF2_GetPlayerClass(client)
 stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:persistant=true)
 {
 	SetEntProp(client, Prop_Send, "m_iClass", _:class);
-	TF2_SetPlayerResourceData(client, TFResource_PlayerClass, class);
 	
 	if (persistant)
 	{
@@ -139,14 +138,7 @@ stock TF2_GetPlayerResourceData(client, TFResourceType:type)
 		return -1;	
 	}
 	
-	static offset;
-	static set = false;
-	
-	if (!set)
-	{
-		offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
-		set = true;
-	}
+	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
 		
 	if (offset < 1)
 	{
@@ -166,6 +158,8 @@ stock TF2_GetPlayerResourceData(client, TFResourceType:type)
 /**
  * Sets client data in the resource entity
  *
+ * Note: The game overwrites these values every frame, so changing them will have very little effect.
+ *
  * @param client		Player's index.
  * @param type			ResourceType constant
  * @param value			Value to set.
@@ -179,14 +173,7 @@ stock bool:TF2_SetPlayerResourceData(client, TFResourceType:type, any:value)
 		return false;	
 	}
 	
-	static offset;
-	static set = false;
-	
-	if (!set)
-	{
-		offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
-		set = true;
-	}
+	new offset = FindSendPropInfo("CTFPlayerResource", TFResourceNames[type]);
 						
 	if (offset < 1)
 	{
