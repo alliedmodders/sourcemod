@@ -85,8 +85,8 @@ native ClearArray(Handle:array);
  * no relation to the original. You MUST close it.
  *
  * @param array			Array handle to be cloned
- * @return			New handle to the cloned array object
- * @error			Invalid Handle
+ * @return				New handle to the cloned array object
+ * @error				Invalid Handle
  */
  native Handle:CloneArray(Handle:array);
 
@@ -147,7 +147,7 @@ native PushArrayString(Handle:array, const String:value[]);
  * @return				Index of the new entry.
  * @error				Invalid Handle or out of memory.
  */
-native PushArrayArray(Handle:array, const values[], size=-1);
+native PushArrayArray(Handle:array, const any:values[], size=-1);
 
 /**
  * Retrieves a cell value from an array.
@@ -185,7 +185,7 @@ native GetArrayString(Handle:array, index, String:buffer[], maxlength);
  * @return				Number of cells copied.
  * @error				Invalid Handle or invalid index.
  */
-native GetArrayArray(Handle:array, index, buffer[], size=-1);
+native GetArrayArray(Handle:array, index, any:buffer[], size=-1);
 
 /**
  * Sets a cell value in an array.
@@ -223,7 +223,7 @@ native SetArrayString(Handle:array, index, const String:buffer[]);
  * @return				Number of cells copied.
  * @error				Invalid Handle or invalid index.
  */
-native SetArrayArray(Handle:array, index, const values[], size=-1);
+native SetArrayArray(Handle:array, index, const any:values[], size=-1);
 
 /**
  * Shifts an array up.  All array contents after and including the given 

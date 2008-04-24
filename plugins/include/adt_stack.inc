@@ -92,7 +92,7 @@ native PushStackString(Handle:stack, const String:value[]);
  * @noreturn
  * @error				Invalid Handle or out of memory.
  */
-native PushStackArray(Handle:stack, const values[], size=-1);
+native PushStackArray(Handle:stack, const any:values[], size=-1);
 
 /**
  * Pops a cell value from a stack.
@@ -128,7 +128,7 @@ native bool:PopStackString(Handle:stack, String:buffer[], maxlength, &written=0)
  * @return				True on success, false if the stack is empty.
  * @error				Invalid Handle.
  */
-native bool:PopStackArray(Handle:stack, buffer[], size=-1);
+native bool:PopStackArray(Handle:stack, any:buffer[], size=-1);
 
 /**
  * Checks if a stack is empty.

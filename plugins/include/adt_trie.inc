@@ -72,7 +72,7 @@ native bool:SetTrieValue(Handle:trie, const String:key[], any:value, bool:replac
  * @return			True on success, false on failure.
  * @error			Invalid Handle.
  */
-native bool:SetTrieArray(Handle:trie, const String:key[], const array[], num_items, bool:replace=true);
+native bool:SetTrieArray(Handle:trie, const String:key[], const any:array[], num_items, bool:replace=true);
 
 /**
  * Sets a string value in a Trie, either inserting a new entry or replacing an old one.
@@ -111,7 +111,7 @@ native bool:GetTrieValue(Handle:trie, const String:key[], &any:value);
  *					as a value or string (not an array).
  * @error			Invalid Handle.
  */
-native bool:GetTrieArray(Handle:trie, const String:key[], array[], max_size, &size=0);
+native bool:GetTrieArray(Handle:trie, const String:key[], any:array[], max_size, &size=0);
 
 /**
  * Retrieves a string in a Trie.
