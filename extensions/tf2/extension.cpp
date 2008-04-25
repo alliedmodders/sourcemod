@@ -132,7 +132,7 @@ void TF2Tools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 
-	g_CriticalHitManager.Init();
+	//g_CriticalHitManager.Init();
 }
 
 bool TF2Tools::RegisterConCommandBase(ConCommandBase *pVar)
