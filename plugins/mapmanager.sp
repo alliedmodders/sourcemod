@@ -34,6 +34,8 @@
 
 #pragma semicolon 1
 #include <sourcemod>
+#undef REQUIRE_PLUGIN
+#include <adminmenu>
 
 public Plugin:myinfo =
 {
@@ -44,13 +46,14 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-#include "mapmanagement/globals.sp"
-#include "mapmanagement/commands.sp"
-#include "mapmanagement/events.sp"
-#include "mapmanagement/functions.sp"
-#include "mapmanagement/menus.sp"
-#include "mapmanagement/timers.sp"
-#include "mapmanagement/votes.sp"
+#include "mapmanager/globals.sp"
+#include "mapmanager/commands.sp"
+#include "mapmanager/events.sp"
+#include "mapmanager/functions.sp"
+#include "mapmanager/functions_menu.sp"
+#include "mapmanager/menus.sp"
+#include "mapmanager/timers.sp"
+#include "mapmanager/votes.sp"
 
 public OnPluginStart()
 {	
@@ -85,7 +88,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 	RegAdminCmd("sm_votemap", Command_Votemap, ADMFLAG_VOTE|ADMFLAG_CHANGEMAP, "sm_votemap <mapname> [mapname2] ... [mapname5] ");
 	RegAdminCmd("sm_maplist", Command_List, ADMFLAG_GENERIC, "sm_maplist");
-	RegAdminCmd("sm_nominate", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_nominate <mapname> - Nominates a map for RockTheVote and MapChooser. Overrides existing nominations.");
+	RegAdminCmd("sm_nominate", Command_Nominate, ADMFLAG_CHANGEMAP, "sm_nominate <mapname> - Nominates a map for RockTheVote and MapChooser. Overrides existing nominations.");
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces the MapChooser vote to occur.");
 	
 	if (GetCommandFlags("nextmap") == INVALID_FCVAR_FLAGS)
@@ -94,7 +97,7 @@ public OnPluginStart()
 	}	
 	
 	// Register all convars
-	g_Cvar_Nextmap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_NOTIFY);
+	g_Cvar_NextMap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_NOTIFY);
 	
 	g_Cvar_MapCount = CreateConVar("sm_mm_maps", "4", "Number of maps to be voted on at end of map or RTV. 2 to 6. (Def 4)", 0, true, 2.0, true, 6.0);	
 	g_Cvar_Excludes = CreateConVar("sm_mm_exclude", "5", "Specifies how many past maps to exclude from end of map vote and RTV.", _, true, 0.0);
@@ -123,6 +126,7 @@ public OnPluginStart()
 	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "1", "Specifies whether or not MapChooser will allow the map to be extended.", _, true, 0.0, true, 1.0);
 	
+	
 	// Find game convars
 	g_Cvar_Chattime = FindConVar("mp_chattime");
 	g_Cvar_Winlimit = FindConVar("mp_winlimit");
@@ -144,7 +148,7 @@ public OnPluginStart()
 	// Set to the current map so OnMapStart() will know what to do
 	decl String:currentMap[64];
 	GetCurrentMap(currentMap, 64);
-	SetNextmap(currentMap);	
+	SetNextMap(currentMap);	
 
 	// Create necessary menus for TopMenu
 	g_Menu_Map = CreateMenu(MenuHandler_Map);
@@ -223,7 +227,7 @@ public OnConfigsExecuted()
 	
 	// Get the current and last maps.
 	decl String:lastMap[64], String:currentMap[64];
-	GetConVarString(g_Cvar_Nextmap, lastMap, 64);
+	GetConVarString(g_Cvar_NextMap, lastMap, 64);
 	GetCurrentMap(currentMap, 64);
 	
 	// Why am I doing this? If we switched to a new map, but it wasn't what we expected (Due to sm_map, sm_votemap, or
@@ -235,8 +239,10 @@ public OnConfigsExecuted()
 	}
 	
 	// Build map menus for sm_map, sm_votemap, and RTV.
-	BuildMapMenu(g_Menu_Map, list);
-	BuildMapMenu(g_Menu_VoteMap, list);
+	/* TODO: Figure out wtf I'm supposed to do here */
+	BuildMapMenu(g_Menu_Map);
+	BuildMapMenu(g_Menu_Votemap);
+
 	
 	// If the Randomize option is on, randomize!
 	if (GetConVarBool(g_Cvar_Randomize))
@@ -248,23 +254,25 @@ public OnConfigsExecuted()
 	if (GetConVarBool(g_Cvar_MapChooser))
 	{
 		SetupTimeleftTimer();
-		SetConVarString(g_Cvar_Nextmap, "Pending Vote");
+		SetConVarString(g_Cvar_NextMap, "Pending Vote");
 	}
 	
+	/*
 	// If RockTheVote is active, start it up!
 	if (GetConVarBool(g_Cvar_RockTheVote))
 	{
 		BuildMapMenu(g_Menu_RTV, list);
 		CreateTimer(30.0, Timer_DelayRTV);
-	}	
+	}
+	*/
 }
 
 // Reinitialize all our various globals
 public OnMapStart()
 {
-	if (g_Nominate != INVALID_HANDLE)
+	if (g_Menu_Nominate != INVALID_HANDLE)
 	{
-		ClearArray(g_Nominate);
+		ClearArray(g_Menu_Nominate);
 	}
 	
 	if (g_TeamScores != INVALID_HANDLE)
@@ -314,7 +322,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 	{
 		g_RTV_Voted[client] = false;
 		g_RTV_Voters++;
-		g_RTV_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
+		g_RTV_VotesNeeded = RoundToFloor(float(g_RTV_Voters) * GetConVarFloat(g_Cvar_RTVLimit));
 	}
 
 	// If Nominate is active, let the new client nominate
