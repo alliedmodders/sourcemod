@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -34,7 +34,6 @@
 
 #include <jit/jit_helpers.h>
 #include <jit/x86/x86_macros.h>
-//#include "variant_t.h"
 #include "sh_list.h"
 #include "sh_stack.h"
 #include "sm_trie_tpl.h"

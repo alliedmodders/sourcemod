@@ -118,8 +118,6 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	spengine = g_pSM->GetScriptingEngine();
 
-	//g_OutputManager.VariantHandle = handlesys->CreateType("Variant", &g_OutputManager, 0, NULL, NULL, myself->GetIdentity(), NULL);
-
 	plsys->AddPluginsListener(&g_OutputManager);
 
 	g_OutputManager.Init();
