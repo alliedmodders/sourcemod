@@ -34,7 +34,6 @@
 
 #include <jit/jit_helpers.h>
 #include <jit/x86/x86_macros.h>
-//#include "variant_t.h"
 #include "sh_list.h"
 #include "sh_stack.h"
 #include "sm_trie_tpl.h"

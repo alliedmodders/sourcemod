@@ -118,20 +118,13 @@ bool EntityOutputManager::CreateFireEventDetour()
 	IA32_Push_Rm_Disp8_ESP(jit, 32);
 	IA32_Push_Rm_Disp8_ESP(jit, 32);
 
-	/* variant_t doesnt do anything so i'll disable this bit */
-	//IA32_Push_Rm_Disp8_ESP(jit, 32);
-	//IA32_Push_Rm_Disp8_ESP(jit, 32);
-	//IA32_Push_Rm_Disp8_ESP(jit, 32);
-	//IA32_Push_Rm_Disp8_ESP(jit, 32); 
-	//IA32_Push_Rm_Disp8_ESP(jit, 32);
-
 	IA32_Push_Reg(jit, REG_ECX);
 
 #elif defined PLATFORM_LINUX
 	IA32_Push_Rm_Disp8_ESP(jit, 20);
 	IA32_Push_Rm_Disp8_ESP(jit, 20);
 	IA32_Push_Rm_Disp8_ESP(jit, 20);
-	// We miss the variant_t pointer
+
 	IA32_Push_Rm_Disp8_ESP(jit, 16);
 #endif
 
@@ -265,22 +258,6 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 			if (hook->entity_filter == -1 || hook->entity_filter == serial) // Global classname hook
 			{
-				/*
-				Handle_t handle;
-
-				if (Value.FieldType() == FIELD_VOID)
-				{
-					handle = 0;
-				}
-				else
-				{
-					varhandle_t *varhandle = new varhandle_t;
-					memmove ((void *)&varhandle->crab, (void *)&Value, sizeof(variant_t));
-
-					handle = handlesys->CreateHandle(VariantHandle, (void *)varhandle, hook->pf->GetParentContext()->GetIdentity(), myself->GetIdentity(), NULL);
-				}
-				*/
-
 				//fire the forward to hook->pf
 				hook->pf->PushString(pOutputName->Name);
 				hook->pf->PushCell(engine->IndexOfEdict(pEdict));
@@ -356,8 +333,6 @@ void EntityOutputManager::OnHookRemoved()
 
 	if (HookCount == 0)
 	{
-		//we need to check if we are inside a detour. easy.
-		//if we are how do we 
 		ShutdownFireEventDetour();
 	}
 }
@@ -476,88 +451,6 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 
 	return NULL;
 }
-
-#if 0
-// Almost identical copy of this function from cbase.cpp - FIELD_EHANDLE changed to remove dependencies
-const char *variant_t::ToString( void ) const
-{
-	COMPILE_TIME_ASSERT( sizeof(string_t) == sizeof(int) );
-
-	static char szBuf[512];
-
-	switch (fieldType)
-	{
-	case FIELD_STRING:
-		{
-			return(STRING(iszVal));
-		}
-
-	case FIELD_BOOLEAN:
-		{
-			if (bVal == 0)
-			{
-				Q_strncpy(szBuf, "false",sizeof(szBuf));
-			}
-			else
-			{
-				Q_strncpy(szBuf, "true",sizeof(szBuf));
-			}
-			return(szBuf);
-		}
-
-	case FIELD_INTEGER:
-		{
-			Q_snprintf( szBuf, sizeof( szBuf ), "%i", iVal );
-			return(szBuf);
-		}
-
-	case FIELD_FLOAT:
-		{
-			Q_snprintf(szBuf,sizeof(szBuf), "%g", flVal);
-			return(szBuf);
-		}
-
-	case FIELD_COLOR32:
-		{
-			Q_snprintf(szBuf,sizeof(szBuf), "%d %d %d %d", (int)rgbaVal.r, (int)rgbaVal.g, (int)rgbaVal.b, (int)rgbaVal.a);
-			return(szBuf);
-		}
-
-	case FIELD_VECTOR:
-		{
-			Q_snprintf(szBuf,sizeof(szBuf), "[%g %g %g]", (double)vecVal[0], (double)vecVal[1], (double)vecVal[2]);
-			return(szBuf);
-		}
-
-	case FIELD_VOID:
-		{
-			szBuf[0] = '\0';
-			return(szBuf);
-		}
-
-	case FIELD_EHANDLE:
-		{
-			CBaseHandle temp = eVal;
-
-			const char *pszName = g_OutputManager.BaseHandleToEdict(temp)->GetClassName();
-
-			if (pszName == NULL)
-			{
-				Q_strncpy( szBuf, "<<null entity>>", 512 );
-				return (szBuf);
-			}
-
-			Q_strncpy( szBuf, pszName, 512 );
-			return (szBuf);
-		}
-
-	default:
-		break;
-	}
-
-	return("No conversion to string");
-}
-#endif
 
 // Thanks SM core
 edict_t *EntityOutputManager::BaseHandleToEdict(CBaseHandle &hndl)
