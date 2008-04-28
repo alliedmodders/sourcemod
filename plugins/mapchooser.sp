@@ -106,7 +106,7 @@ public OnPluginStart()
 	if (g_Cvar_Winlimit != INVALID_HANDLE || g_Cvar_Maxrounds != INVALID_HANDLE)
 	{
 		HookEvent("round_end", Event_RoundEnd);
-		HookEvent("teamplay_round_win", Event_TeamPlayRoundWin);
+		HookEventEx("teamplay_round_win", Event_TeamPlayRoundWin);
 	}
 	
 	if (g_Cvar_Fraglimit != INVALID_HANDLE)
