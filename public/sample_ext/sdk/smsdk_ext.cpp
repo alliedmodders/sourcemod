@@ -311,7 +311,7 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 {
 	PLUGIN_SAVEVARS();
 
-#if defined METAMOD_PLAPI_VERSION
+#if !defined METAMOD_PLAPI_VERSION
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 #else
