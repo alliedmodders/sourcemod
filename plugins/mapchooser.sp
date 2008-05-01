@@ -5,7 +5,7 @@
  * Creates a map vote at appropriate times, setting sm_nextmap to the winning
  * vote
  *
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -106,6 +106,7 @@ public OnPluginStart()
 	if (g_Cvar_Winlimit != INVALID_HANDLE || g_Cvar_Maxrounds != INVALID_HANDLE)
 	{
 		HookEvent("round_end", Event_RoundEnd);
+		HookEventEx("teamplay_round_win", Event_TeamPlayRoundWin);
 	}
 	
 	if (g_Cvar_Fraglimit != INVALID_HANDLE)
@@ -223,6 +224,16 @@ public Action:Timer_StartMapVote(Handle:timer)
 	return Plugin_Stop;
 }
 
+public Event_TeamPlayRoundWin(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	new isFull = GetEventInt(event, "full_round");
+	new winningTeam = GetEventInt(event, "team");
+	
+	if (isFull == 1)
+	{
+		RoundCompleted(winningTeam);
+	}
+}
 /* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
 public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 {
@@ -233,6 +244,11 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 
 	new winner = GetEventInt(event, "winner");
 	
+	RoundCompleted(winner);
+}
+	
+public RoundCompleted(winner)
+{
 	if (winner == 0 || winner == 1)
 	{
 		return;
