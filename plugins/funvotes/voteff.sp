@@ -4,7 +4,7 @@
  * SourceMod Basefunvotes Plugin
  * Provides vote ff functionality
  *
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -28,7 +28,7 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id: admin-flatfile.sp 1438 2007-09-16 03:45:06Z dvander $
+ * Version: $Id$
  */
 
 DisplayVoteFFMenu(client)
@@ -52,7 +52,7 @@ DisplayVoteFFMenu(client)
 	
 	g_hVoteMenu = CreateMenu(Handler_VoteCallback, MenuAction:MENU_ACTIONS_ALL);
 	
-	if (GetConVarBool(g_Cvar_Alltalk))
+	if (GetConVarBool(g_Cvar_FF))
 	{
 		SetMenuTitle(g_hVoteMenu, "Voteff Off");
 	}
