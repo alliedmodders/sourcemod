@@ -51,6 +51,10 @@ public:
 		knife_callback = NULL;
 
 		forward = NULL;
+
+		normalcreated = false;
+		meleecreated = false;
+		knifecreated = false;
 	}
 
 	~CriticalHitManager()
@@ -61,9 +65,14 @@ public:
 
 	void Init()
 	{
-		if (!CreateCriticalDetour() || !CreateCriticalMeleeDetour() || !CreateCriticalKnifeDetour())
+		normalcreated = CreateCriticalDetour();
+		meleecreated = CreateCriticalMeleeDetour();
+		knifecreated = CreateCriticalKnifeDetour();
+
+		if (!normalcreated && !meleecreated && !knifecreated)
 		{
 			enabled = false;
+			g_pSM->LogError(myself, "No critical hit forwards could be initialised - Disabled critical hit hooks");
 			return;
 		}
 
@@ -97,6 +106,10 @@ private:
 	bool CreateCriticalMeleeDetour();
 	bool CreateCriticalKnifeDetour();
 	void DeleteCriticalDetour();
+
+	bool normalcreated;
+	bool meleecreated;
+	bool knifecreated;
 
 	/* These patch/unpatch the server.dll */
 	void EnableCriticalDetour();

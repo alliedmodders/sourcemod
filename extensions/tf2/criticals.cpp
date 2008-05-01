@@ -318,9 +318,19 @@ void CriticalHitManager::EnableCriticalDetour()
 {
 	if (!detoured)
 	{
-		DoGatePatch((unsigned char *)critical_address, &critical_callback);
-		DoGatePatch((unsigned char *)melee_address, &melee_callback);
-		DoGatePatch((unsigned char *)knife_address, &knife_callback);
+		if (normalcreated)
+		{
+			DoGatePatch((unsigned char *)critical_address, &critical_callback);
+		}
+		if (meleecreated)
+		{
+			DoGatePatch((unsigned char *)melee_address, &melee_callback);
+		}
+		if (knifecreated)
+		{
+			DoGatePatch((unsigned char *)knife_address, &knife_callback);
+		}
+
 		detoured = true;
 	}
 }
