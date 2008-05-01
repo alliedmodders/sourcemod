@@ -71,6 +71,7 @@ public: //public SDKExtension
 	virtual bool QueryRunning(char *error, size_t maxlength);
 	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
 	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
+	virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 #if defined SMEXT_CONF_METAMOD
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);

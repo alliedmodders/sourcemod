@@ -161,6 +161,10 @@ public:
 	{
 		return m_PlayerCount;
 	}
+	inline int ListenClient()
+	{
+		return m_ListenClient;
+	}
 	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
 	bool CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id);
 	const char *GetPassInfoVar();
@@ -188,6 +192,8 @@ private:
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
+	bool m_bIsListenServer;
+	int m_ListenClient;
 };
 
 extern PlayerManager g_Players;

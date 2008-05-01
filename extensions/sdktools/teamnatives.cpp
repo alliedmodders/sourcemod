@@ -42,6 +42,10 @@ SourceHook::CVector<TeamInfo> g_Teams;
 
 bool FindTeamEntities(SendTable *pTable, const char *name)
 {
+	if (strcmp(pTable->GetName(), name) == 0)
+	{
+		return true;
+	}
 	int props = pTable->GetNumProps();
 	SendProp *prop;
 
@@ -50,10 +54,6 @@ bool FindTeamEntities(SendTable *pTable, const char *name)
 		prop = pTable->GetProp(i);
 		if (prop->GetDataTable())
 		{
-			if (strcmp(prop->GetDataTable()->GetName(), name) == 0)
-			{
-				return true;
-			}
 			if (FindTeamEntities(prop->GetDataTable(), name))
 			{
 				return true;
@@ -64,7 +64,7 @@ bool FindTeamEntities(SendTable *pTable, const char *name)
 	return false;
 }
 
-void SDKTools::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_Teams.clear();
 	g_Teams.resize(1);
@@ -111,7 +111,7 @@ static cell_t GetTeamCount(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
 	{
 		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
@@ -127,7 +127,7 @@ static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
 	{
 		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
@@ -140,7 +140,7 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
 	{
 		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
@@ -154,7 +154,7 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamClientCount(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
 	{
 		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}

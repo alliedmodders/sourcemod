@@ -210,6 +210,7 @@ native GetClientAimTarget(client, bool:only_clients=true);
 
 /**
  * Returns the total number of teams in a game.
+ * Note: This native should not be called before OnMapStart.
  *
  * @return				Total number of teams.
  */
@@ -217,6 +218,7 @@ native GetTeamCount();
 
 /**
  * Retrieves the team name based on a team index.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @param name				Buffer to store string in.
@@ -228,6 +230,7 @@ native GetTeamName(index, String:name[], maxlength);
 
 /**
  * Returns the score of a team based on a team index.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @return				Score.
@@ -237,6 +240,7 @@ native GetTeamScore(index);
 
 /**
  * Sets the score of a team based on a team index.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @param value				New score value.
@@ -247,6 +251,7 @@ native SetTeamScore(index, value);
 
 /**
  * Retrieves the number of players in a certain team.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @return				Number of players in the team.
