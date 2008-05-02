@@ -160,12 +160,12 @@ bool SetupGetEyeAngles()
 	int offset;
 	if (g_pGameConf->GetOffset("EyeAngles", &offset))
 	{
-		PassInfo info[2];
-		info[0].flags = info[1].flags = PASSFLAG_BYVAL;
-		info[0].size = info[1].size = sizeof(void *);
-		info[0].type = info[1].type = PassType_Basic;
+		PassInfo info[1];
+		info[0].flags = PASSFLAG_BYVAL;
+		info[0].size = sizeof(void *);
+		info[0].type = PassType_Basic;
 
-		s_EyeAngles.call = g_pBinTools->CreateVCall(offset, 0, 0, &info[0], &info[1], 1);
+		s_EyeAngles.call = g_pBinTools->CreateVCall(offset, 0, 0, info, NULL, 0);
 
 		if (s_EyeAngles.call != NULL)
 		{
@@ -190,7 +190,6 @@ bool GetEyeAngles(CBaseEntity *pEntity, QAngle *pAngles)
 	unsigned char *vptr = params;
 
 	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
 
 	s_EyeAngles.call->Execute(params, &pRetAngle);
 
