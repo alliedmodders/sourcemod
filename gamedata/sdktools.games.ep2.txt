@@ -206,11 +206,6 @@
 	{
 		"Offsets"
 		{
-			"GiveNamedItem"
-			{
-				"windows"	"349"
-				"linux"		"350"
-			}
 			"RemovePlayerItem"
 			{
 				"windows"	"237"
@@ -275,11 +270,6 @@
 			{
 				"windows"	"34"
 				"linux"		"35"
-			}
-			"WeaponEquip"
-			{
-				"windows"	"228"
-				"linux"		"229"
 			}
 			"Activate"
 			{
