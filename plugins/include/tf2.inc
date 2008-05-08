@@ -57,15 +57,6 @@ enum TFTeam
 	TFTeam_Blue = 3	
 };
 
-/**
- * Set's a Clients invulnrability status (ubercharge effect)
- *
- * @param client		Player's index.
- * @param enabled		Enable/Disable invulnrability.
- * @noreturn
- * @error				Invalid client index, client not in game, or no mod support.
- */
-native TF2_SetPlayerInvuln(client, bool:enabled);
 
 /**
  * Respawns a client
