@@ -80,43 +80,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 // native TF2_Invuln(client, bool:enabled)
 cell_t TF2_Invuln(IPluginContext *pContext, const cell_t *params)
 {
-	static ICallWrapper *pWrapper = NULL;
-
-	//CTFPlayerShared::SetInvulnerable(bool, bool)
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("Invuln", 
-			PassInfo pass[2]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].size = sizeof(bool); \
-			pass[0].type = PassType_Basic; \
-			pass[1].flags = PASSFLAG_BYVAL; \
-			pass[1].size = sizeof(bool); \
-			pass[1].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
-	}
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
-	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
-	unsigned char vstk[sizeof(void *) + 2*sizeof(bool)];
-	unsigned char *vptr = vstk;
-
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(bool *)vptr = !!params[2];
-	vptr += sizeof(bool);
-	*(bool *)vptr = true;
-
-	pWrapper->Execute(vstk, NULL);
-
-	return 1;
+	return pContext->ThrowNativeError("TF2_SetPlayerInvuln is no longer available");
 }
 
 cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
