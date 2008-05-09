@@ -42,7 +42,7 @@ bool HookImportAddrTable(BYTE *base, const char *func, DWORD hookfunc, char *err
 	if (dos->e_magic != IMAGE_DOS_SIGNATURE)
 	{
 		UTIL_Format(err, maxlength, "%s", "Could not detect valid DOS signature");
-		return (err == NULL) ? true : false;
+		return false;
 	}
 
 	IMAGE_NT_HEADERS *nt = (IMAGE_NT_HEADERS *)(base + dos->e_lfanew);
