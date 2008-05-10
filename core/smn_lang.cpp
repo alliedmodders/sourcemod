@@ -49,7 +49,7 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 		|| (ext = strstr(buffer, ".cfg")) != NULL)
 	{
 		/* Simple heuristic -- just see if it's at the end and terminate if so */
-		if (ext - buffer == strlen(buffer) - 4)
+		if ((unsigned)(ext - buffer) == strlen(buffer) - 4)
 		{
 			*ext = '\0';
 		}
