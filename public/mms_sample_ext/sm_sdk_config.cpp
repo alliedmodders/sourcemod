@@ -79,6 +79,9 @@ bool SM_AcquireInterfaces(char *error, size_t maxlength)
 #if defined SMEXT_ENABLE_TEXTPARSERS
 	SM_FIND_IFACE_OR_FAIL(TEXTPARSERS, sm_text, error, maxlength);
 #endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+	SM_FIND_IFACE_OR_FAIL(TRANSLATOR, sm_translator, error, maxlength);
+#endif
 
 	return true;
 }
@@ -131,6 +134,9 @@ void SM_UnsetInterfaces()
 #if defined SMEXT_ENABLE_TEXTPARSERS
 	sm_text = NULL;
 #endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+	sm_translator = NULL;
+#endif
 }
 
 IExtension *myself = NULL;
@@ -179,4 +185,6 @@ SourceMod::IAdminSystem *sm_adminsys = NULL;
 #if defined SMEXT_ENABLE_TEXTPARSERS
 SourceMod::ITextParsers *sm_text = NULL;
 #endif
-
+#if defined SMEXT_ENABLE_TRANSLATOR
+SourceMod::ITranslator *sm_translator = NULL;
+#endif

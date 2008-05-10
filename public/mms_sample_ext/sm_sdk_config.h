@@ -70,6 +70,7 @@ void SM_UnsetInterfaces();
 //#define SMEXT_ENABLE_PLUGINSYS
 //#define SMEXT_ENABLE_ADMINSYS
 //#define SMEXT_ENABLE_TEXTPARSERS
+//#define SMEXT_ENABLE_TRANSLATOR
 
 
 /**
@@ -153,6 +154,11 @@ extern SourceMod::IAdminSystem *sm_adminsys;
 #if defined SMEXT_ENABLE_TEXTPARSERS
 #include <ITextParsers.h>
 extern SourceMod::ITextParsers *sm_text;
+#endif
+
+#if defined SMEXT_ENABLE_TRANSLATOR
+#include <ITranslator.h>
+extern SourceMod::ITranslator *sm_translator;
 #endif
 
 #endif //_INCLUDE_SOURCEMOD_CONFIG_H_

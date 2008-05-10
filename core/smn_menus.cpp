@@ -838,7 +838,7 @@ static cell_t SetMenuTitle(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);

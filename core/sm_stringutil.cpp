@@ -50,43 +50,6 @@
 		return 0; \
 	}
 
-size_t CorePlayerTranslate(int client, char *buffer, size_t maxlength, const char *phrase, void **params)
-{
-	Translation pTrans;
-	TransError err;
-
-	err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetClientLanguage(client), &pTrans);
-	if (err != Trans_Okay)
-	{
-		err = g_pCorePhrases->GetTranslation(phrase, g_Translator.GetServerLanguage(), &pTrans);
-		if (err != Trans_Okay && g_Translator.GetServerLanguage() != CORELANG_ENGLISH)
-		{
-			err = g_pCorePhrases->GetTranslation(phrase, CORELANG_ENGLISH, &pTrans);
-		}
-	}
-
-	if (err != Trans_Okay)
-	{
-		return UTIL_Format(buffer, maxlength, "%s", phrase);
-	}
-
-	return g_Translator.Translate(buffer, maxlength, params, &pTrans);
-}
-
-inline bool TryTranslation(CPlugin *pl, const char *key, unsigned int langid, unsigned int langcount, Translation *pTrans)
-{
-	TransError err = Trans_BadLanguage;
-	CPhraseFile *phrfl;
-
-	for (size_t i=0; i<langcount && err!=Trans_Okay; i++)
-	{
-		phrfl = g_Translator.GetFileByIndex(pl->GetLangFileByIndex(i));
-		err = phrfl->GetTranslation(key, langid, pTrans);
-	}
-
-	return (err == Trans_Okay) ? true : false;
-}
-
 inline void ReorderTranslationParams(const Translation *pTrans, cell_t *params)
 {
 	cell_t new_params[MAX_TRANSLATE_PARAMS];
@@ -110,11 +73,13 @@ size_t Translate(char *buffer,
 	*error = false;
 	Translation pTrans;
 	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
-	size_t langcount = pl->GetLangFileCount();
 	unsigned int max_params = 0;
+	IPhraseCollection *pPhrases;
+
+	pPhrases = pl->GetPhrases();
 
 try_serverlang:
-	if (target == LANG_SERVER)
+	if (target == SOURCEMOD_SERVER_LANGUAGE)
 	{
 		langid = g_Translator.GetServerLanguage();
  	}
@@ -128,16 +93,16 @@ try_serverlang:
 		goto error_out;
 	}
 
-	if (!TryTranslation(pl, key, langid, langcount, &pTrans))
+	if (pPhrases->FindTranslation(key, langid, &pTrans) != Trans_Okay)
 	{
-		if (target != LANG_SERVER && langid != g_Translator.GetServerLanguage())
+		if (target != SOURCEMOD_SERVER_LANGUAGE && langid != g_Translator.GetServerLanguage())
 		{
-			target = LANG_SERVER;
+			target = SOURCEMOD_SERVER_LANGUAGE;
 			goto try_serverlang;
 		}
-		else if (langid != LANGUAGE_ENGLISH)
+		else if (langid != SOURCEMOD_LANGUAGE_ENGLISH)
 		{
-			if (!TryTranslation(pl, key, LANGUAGE_ENGLISH, langcount, &pTrans))
+			if (!pPhrases->FindTranslation(key, SOURCEMOD_LANGUAGE_ENGLISH, &pTrans))
 			{
 				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 				goto error_out;
@@ -575,11 +540,32 @@ void AddHex(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags
 	*buf_p = buf;
 }
 
-size_t gnprintf(char *buffer, size_t maxlen, const char *format, void **args)
+bool gnprintf(char *buffer,
+			  size_t maxlen,
+			  const char *format,
+			  IPhraseCollection *pPhrases,
+			  void **params,
+			  unsigned int numparams,
+			  unsigned int &curparam,
+			  size_t *pOutLength,
+			  const char **pFailPhrase)
 {
 	if (!buffer || !maxlen)
 	{
-		return 0;
+		if (pOutLength != NULL)
+		{
+			*pOutLength = 0;
+		}
+		return true;
+	}
+
+	if (numparams > MAX_TRANSLATE_PARAMS)
+	{
+		if (pFailPhrase != NULL)
+		{
+			*pFailPhrase = NULL;
+		}
+		return false;
 	}
 
 	int arg = 0;
@@ -668,7 +654,16 @@ reswitch:
 				{
 					goto done;
 				}
-				char *c = (char *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				char *c = (char *)params[curparam];
+				curparam++;
 				*buf_p++ = *c;
 				llen--;
 				arg++;
@@ -676,7 +671,16 @@ reswitch:
 			}
 		case 'b':
 			{
-				int *value = (int *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				int *value = (int *)params[curparam];
+				curparam++;
 				AddBinary(&buf_p, llen, *value, width, flags);
 				arg++;
 				break;
@@ -684,35 +688,224 @@ reswitch:
 		case 'd':
 		case 'i':
 			{
-				int *value = (int *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				int *value = (int *)params[curparam];
+				curparam++;
 				AddInt(&buf_p, llen, *value, width, flags);
 				arg++;
 				break;
 			}
 		case 'u':
 			{
-				unsigned int *value = (unsigned int *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				unsigned int *value = (unsigned int *)params[curparam];
+				curparam++;
 				AddUInt(&buf_p, llen, *value, width, flags);
 				arg++;
 				break;
 			}
 		case 'f':
 			{
-				float *value = (float *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				float *value = (float *)params[curparam];
+				curparam++;
 				AddFloat(&buf_p, llen, *value, width, prec, flags);
 				arg++;
 				break;
 			}
 		case 's':
 			{
-				const char *str = (const char *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				const char *str = (const char *)params[curparam];
+				curparam++;
 				AddString(&buf_p, llen, str, width, prec);
 				arg++;
 				break;
 			}
+		case 'T':
+		case 't':
+			{
+				int target;
+				const char *key;
+				size_t out_length;
+				Translation trans;
+				unsigned int lang_id;
+
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				key = (const char *)(params[curparam]);
+				curparam++;
+
+				if (ch == 'T')
+				{
+					if (curparam >= numparams)
+					{
+						if (pFailPhrase != NULL)
+						{
+							*pFailPhrase = NULL;
+						}
+						return false;
+					}
+					target = *((int *)(params[curparam]));
+					curparam++;
+				}
+				else
+				{
+					target = g_Translator.GetGlobalTarget();
+				}
+
+try_again:
+				if (target == SOURCEMOD_SERVER_LANGUAGE)
+				{
+					lang_id = g_Translator.GetServerLanguage();
+				}
+				else if (target >= 1 && target <= g_Players.GetMaxClients())
+				{
+					lang_id = g_Translator.GetClientLanguage(target);
+				}
+				else
+				{
+					lang_id = g_Translator.GetServerLanguage();
+				}
+
+				if (pPhrases == NULL)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = key;
+					}
+					return false;
+				}
+
+				if (pPhrases->FindTranslation(key, lang_id, &trans) != Trans_Okay)
+				{
+					if (target != SOURCEMOD_SERVER_LANGUAGE && lang_id != g_Translator.GetServerLanguage())
+					{
+						target = SOURCEMOD_SERVER_LANGUAGE;
+						goto try_again;
+					}
+					else if (lang_id != SOURCEMOD_LANGUAGE_ENGLISH)
+					{
+						if (pPhrases->FindTranslation(key, SOURCEMOD_LANGUAGE_ENGLISH, &trans) != Trans_Okay)
+						{
+							if (pFailPhrase != NULL)
+							{
+								*pFailPhrase = key;
+							}
+							return false;
+						}
+					}
+					else
+					{
+						if (pFailPhrase != NULL)
+						{
+							*pFailPhrase = key;
+						}
+						return false;
+					}
+				}
+
+				if (trans.fmt_count)
+				{
+					unsigned int i;
+					void *new_params[MAX_TRANSLATE_PARAMS];
+
+					if (curparam + trans.fmt_count > numparams)
+					{
+						if (pFailPhrase != NULL)
+						{
+							*pFailPhrase = NULL;
+						}
+						return false;
+					}
+
+					/* Copy the array and re-order the stack */
+					memcpy(new_params, params, sizeof(void *) * numparams);
+					for (i = 0; i < trans.fmt_count; i++)
+					{
+						new_params[i] = const_cast<void *>(params[curparam + trans.fmt_order[i]]);
+					}
+
+					if (!gnprintf(buf_p,
+							llen,
+							trans.szPhrase,
+							pPhrases,
+							new_params,
+							numparams,
+							curparam,
+							&out_length,
+							pFailPhrase))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (!gnprintf(buf_p,
+						llen,
+						trans.szPhrase,
+						pPhrases,
+						params,
+						numparams,
+						curparam,
+						&out_length,
+						pFailPhrase))
+					{
+						return false;
+					}
+				}
+
+				buf_p += out_length;
+				llen -= out_length;
+
+				break;
+			}
 		case 'X':
 			{
-				unsigned int *value = (unsigned int *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				unsigned int *value = (unsigned int *)params[curparam];
+				curparam++;
 				flags |= UPPERDIGITS;
 				AddHex(&buf_p, llen, *value, width, flags);
 				arg++;
@@ -720,7 +913,16 @@ reswitch:
 			}
 		case 'x':
 			{
-				unsigned int *value = (unsigned int *)args[arg];
+				if (curparam >= numparams)
+				{
+					if (pFailPhrase != NULL)
+					{
+						*pFailPhrase = NULL;
+					}
+					return false;
+				}
+				unsigned int *value = (unsigned int *)params[curparam];
+				curparam++;
 				AddHex(&buf_p, llen, *value, width, flags);
 				arg++;
 				break;
@@ -761,7 +963,12 @@ reswitch:
 done:
 	*buf_p = '\0';
 
-	return (maxlen - llen - 1);
+	if (pOutLength != NULL)
+	{
+		*pOutLength = (maxlen - llen - 1);
+	}
+
+	return true;
 }
 
 size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext *pCtx, const cell_t *params, int *param)

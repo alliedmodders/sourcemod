@@ -902,6 +902,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PhraseCollection.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\PlayerManager.cpp"
 				>
 			</File>
@@ -1061,6 +1065,10 @@
 			</File>
 			<File
 				RelativePath="..\MenuVoting.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PhraseCollection.h"
 				>
 			</File>
 			<File
@@ -1230,6 +1238,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\ITimerSystem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\ITranslator.h"
 				>
 			</File>
 			<File

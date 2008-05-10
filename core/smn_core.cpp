@@ -126,7 +126,7 @@ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
 
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
@@ -502,7 +502,7 @@ static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
 static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
 
 	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
@@ -532,7 +532,7 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
@@ -565,7 +565,7 @@ static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetContext()->n_err != SP_ERROR_NONE)

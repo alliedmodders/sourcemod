@@ -221,6 +221,7 @@ namespace SourceMod
 		 * translations (that is, %t).
 		 *
 		 * @param index		Client index.
+		 * @deprecated		Use ITranslator::GetGlobalTarget() instead.
 		 * @return			Old global client value.
 		 */
 		virtual unsigned int SetGlobalTarget(unsigned int index) =0;
@@ -229,6 +230,7 @@ namespace SourceMod
 		 * @brief Returns the global client SourceMod is currently using 
 		 * for assisted translations (that is, %t).
 		 *
+		 * @deprecated		Use ITranslator::GetGlobalTarget() instead.
 		 * @return			Global client value.
 		 */
 		virtual unsigned int GetGlobalTarget() const =0;

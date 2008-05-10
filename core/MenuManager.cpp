@@ -41,6 +41,7 @@
 #include "ShareSys.h"
 #include "HandleSys.h"
 #include "sourcemm_api.h"
+#include "Translator.h"
 
 MenuManager g_Menus;
 VoteMenuHandler s_VoteHandler;
@@ -585,14 +586,20 @@ skip_search:
 				{
 					if (exitBackButton)
 					{
-						CorePlayerTranslate(client, text, sizeof(text), "Back", NULL);
+						if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Back", &client))
+						{
+							UTIL_Format(text, sizeof(text), "Back");
+						}
 						dr.style = ITEMDRAW_CONTROL;
 						position = panel->DrawItem(dr);
 						slots[position].type = ItemSel_ExitBack;
 					}
 					else
 					{
-						CorePlayerTranslate(client, text, sizeof(text), "Previous", NULL);
+						if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Previous", &client))
+						{
+							UTIL_Format(text, sizeof(text), "Previous");
+						}
 						dr.style = (displayPrev ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
 						position = panel->DrawItem(dr);
 						slots[position].type = ItemSel_Back;
@@ -610,7 +617,10 @@ skip_search:
 				/* NEXT */
 				if (displayNext || canDrawDisabled)
 				{
-					CorePlayerTranslate(client, text, sizeof(text), "Next", NULL);
+					if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Next", &client))
+					{
+						UTIL_Format(text, sizeof(text), "Next");
+					}
 					dr.style = (displayNext ? 0 : ITEMDRAW_DISABLED)|ITEMDRAW_CONTROL;
 					position = panel->DrawItem(dr);
 					slots[position].type = ItemSel_Next;
@@ -638,7 +648,10 @@ skip_search:
 		/* EXIT */
 		if (exitButton)
 		{
-			CorePlayerTranslate(client, text, sizeof(text), "Exit", NULL);
+			if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Exit", &client))
+			{
+				UTIL_Format(text, sizeof(text), "Exit");
+			}
 			dr.style = ITEMDRAW_CONTROL;
 			position = panel->DrawItem(dr);
 			slots[position].type = ItemSel_Exit;

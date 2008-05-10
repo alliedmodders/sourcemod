@@ -136,7 +136,7 @@ static cell_t ThrowNativeError(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Not called from inside a native function");
 	}
 
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[512];
 

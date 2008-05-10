@@ -928,7 +928,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	}
 	else
 	{
-		g_SourceMod.SetGlobalTarget(LANG_SERVER);
+		g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
 		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
@@ -1065,7 +1065,7 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	}
 	else
 	{
-		g_SourceMod.SetGlobalTarget(LANG_SERVER);
+		g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
 		if (pContext->GetContext()->n_err != SP_ERROR_NONE)

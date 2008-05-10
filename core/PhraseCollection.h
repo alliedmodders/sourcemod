@@ -29,36 +29,37 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_STRINGUTIL_H_
-#define _INCLUDE_SOURCEMOD_STRINGUTIL_H_
+#ifndef _INCLUDE_SOURCEMOD_PHRASECOLLECTION_H_
+#define _INCLUDE_SOURCEMOD_PHRASECOLLECTION_H_
 
-#include <math.h>
-#include <sp_vm_api.h>
-#include <sp_typeutil.h>
+#include <string.h>
+#include <sh_vector.h>
 #include <ITranslator.h>
 
-using namespace SourcePawn;
+using namespace SourceHook;
 using namespace SourceMod;
 
-#define IS_STR_FILLED(var) (var[0] != '\0')
+class CPhraseCollection : public IPhraseCollection
+{
+public:
+	CPhraseCollection();
+	~CPhraseCollection();
+public:
+	IPhraseFile *AddPhraseFile(const char *filename);
+	unsigned int GetFileCount();
+	IPhraseFile *GetFile(unsigned int file);
+	void Destroy();
+	TransError FindTranslation(const char *key, unsigned int langid, Translation *pTrans);
+	bool FormatString(
+		char *buffer,
+		size_t maxlength,
+		const char *format,
+		void **params,
+		unsigned int numparams,
+		size_t *pOutLength,
+		const char **pFailPhrase);
+private:
+	CVector<IPhraseFile *> m_Files;
+};
 
-size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext *pCtx, const cell_t *params, int *param);
-const char *stristr(const char *str, const char *substr);
-unsigned int strncopy(char *dest, const char *src, size_t count);
-bool gnprintf(char *buffer,
-			  size_t maxlen,
-			  const char *format,
-			  IPhraseCollection *pPhrases,
-			  void **params,
-			  unsigned int numparams,
-			  unsigned int &curparam,
-			  size_t *pOutLength,
-			  const char **pFailPhrase);
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
-size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
-char *sm_strdup(const char *str);
-unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace);
-char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen);
-char *UTIL_TrimWhitespace(char *str, size_t &len);
-
-#endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_
+#endif //_INCLUDE_SOURCEMOD_PHRASECOLLECTION_H_

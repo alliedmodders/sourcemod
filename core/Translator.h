@@ -38,6 +38,7 @@
 #include "sm_globals.h"
 #include "sm_memtable.h"
 #include "ITextParsers.h"
+#include <ITranslator.h>
 
 #define MAX_TRANSLATE_PARAMS		32
 #define CORELANG_ENGLISH			0
@@ -60,25 +61,9 @@ struct Language
 	int m_FullName;
 };
 
-struct Translation
-{
-	const char *szPhrase;		/**< Translated phrase. */
-	unsigned int fmt_count;		/**< Number of format parameters. */
-	int *fmt_order;				/**< Format phrase order. */
-};
-
-#define LANGUAGE_ENGLISH			0
-
-enum TransError
-{
-	Trans_Okay = 0,
-	Trans_BadLanguage = 1,
-	Trans_BadPhrase = 2,
-	Trans_BadPhraseLanguage = 3,
-	Trans_BadPhraseFile = 4,
-};
-
-class CPhraseFile : public ITextListener_SMC
+class CPhraseFile : 
+	public ITextListener_SMC,
+	public IPhraseFile
 {
 public:
 	CPhraseFile(Translator *pTranslator, const char *file);
@@ -112,7 +97,8 @@ private:
 
 class Translator : 
 	public ITextListener_SMC,
-	public SMGlobalClass
+	public SMGlobalClass,
+	public ITranslator
 {
 public:
 	Translator();
@@ -125,6 +111,7 @@ public: // SMGlobalClass
 		size_t maxlength);
 	void OnSourceModAllInitialized();
 	void OnSourceModLevelChange(const char *mapName);
+	void OnSourceModShutdown();
 public: // ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
@@ -138,23 +125,30 @@ public:
 	bool GetLanguageInfo(unsigned int number, const char **code, const char **name);
 	bool GetLanguageByCode(const char *code, unsigned int *index);
 	bool GetLanguageByName(const char *name, unsigned int *index);
-	size_t Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans);
 	CPhraseFile *GetFileByIndex(unsigned int index);
-	TransError CoreTransEx(CPhraseFile *pFile,
-		int client, 
-		char *buffer, 
-		size_t maxlength, 
-		const char *phrase, 
-		void **params, 
-		size_t *outlen=NULL);
-	TransError CoreTrans(int client, 
-						 char *buffer, 
-						 size_t maxlength, 
-						 const char *phrase, 
-						 void **params, 
-						 size_t *outlen=NULL);
+public: //ITranslator
 	unsigned int GetServerLanguage();
 	unsigned int GetClientLanguage(int client);
+	const char *GetInterfaceName();
+	unsigned int GetInterfaceVersion();
+	IPhraseCollection *CreatePhraseCollection();
+	int SetGlobalTarget(int index);
+	int GetGlobalTarget() const;
+	size_t FormatString(
+		char *buffer, 
+		size_t maxlength, 
+		SourcePawn::IPluginContext *pContext,
+		const cell_t *params,
+		unsigned int param);
+	bool FormatString(
+		char *buffer,
+		size_t maxlength,
+		const char *format,
+		IPhraseCollection *pPhrases,
+		void **params,
+		unsigned int numparams,
+		size_t *pOutLength,
+		const char **pFailPhrase);
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:
@@ -168,7 +162,15 @@ private:
 	char m_InitialLang[3];
 };
 
-extern CPhraseFile *g_pCorePhrases;
+/* Nice little wrapper to handle error logging and whatnot */
+bool CoreTranslate(char *buffer, 
+				   size_t maxlength,
+				   const char *format,
+				   unsigned int numparams,
+				   size_t *pOutLength,
+				   ...);
+
+extern IPhraseCollection *g_pCorePhrases;
 extern unsigned int g_pCorePhraseID;
 extern Translator g_Translator;
 

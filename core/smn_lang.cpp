@@ -37,24 +37,25 @@
 
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {
-	char *filename;
-	unsigned int index;
+	char *filename, *ext;
+	char buffer[PLATFORM_MAX_PATH];
 	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
 
 	pCtx->LocalToString(params[1], &filename);
+	UTIL_Format(buffer, sizeof(buffer), "%s", filename);
 
-	/* Check if there is no extension */
-	const char *ext = g_LibSys.GetFileExtension(filename);
-	if (!ext || (strcmp(ext, "cfg") && strcmp(ext, "txt")))
+	/* Make sure there is no extension */
+	if ((ext = strstr(buffer, ".txt")) != NULL
+		|| (ext = strstr(buffer, ".cfg")) != NULL)
 	{
-		/* Append one */
-		static char new_file[PLATFORM_MAX_PATH];
-		UTIL_Format(new_file, sizeof(new_file), "%s.txt", filename);
-		filename = new_file;
+		/* Simple heuristic -- just see if it's at the end and terminate if so */
+		if (ext - buffer == strlen(buffer) - 4)
+		{
+			*ext = '\0';
+		}
 	}
 
-	index = g_Translator.FindOrAddPhraseFile(filename);
-	pl->AddLangFile(index);
+	pl->GetPhrases()->AddPhraseFile(buffer);
 
 	return 1;
 }

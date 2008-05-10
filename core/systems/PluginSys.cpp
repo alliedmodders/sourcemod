@@ -67,6 +67,7 @@ CPlugin::CPlugin(const char *file)
 	m_FakeNativesMissing = false;
 	m_LibraryMissing = false;
 	m_bGotAllLoaded = false;
+	m_pPhrases = g_Translator.CreatePhraseCollection();
 }
 
 CPlugin::~CPlugin()
@@ -111,6 +112,11 @@ CPlugin::~CPlugin()
 		delete m_configs[i];
 	}
 	m_configs.clear();
+	if (m_pPhrases != NULL)
+	{
+		m_pPhrases->Destroy();
+		m_pPhrases = NULL;
+	}
 }
 
 void CPlugin::InitIdentity()
@@ -128,7 +134,6 @@ unsigned int CPlugin::CalcMemUsage()
 	unsigned int base_size = 
 		sizeof(CPlugin) 
 		+ sizeof(IdentityToken_t)
-		+ (m_PhraseFiles.size() * sizeof(unsigned int))
 		+ (m_dependents.size() * sizeof(CPlugin *))
 		+ (m_dependsOn.size() * sizeof(CPlugin *))
 		+ (m_fakeNatives.size() * (sizeof(FakeNative *) + sizeof(FakeNative)))
@@ -710,19 +715,9 @@ void CPlugin::SetTimeStamp(time_t t)
 	m_LastAccess = t;
 }
 
-void CPlugin::AddLangFile(unsigned int index)
+IPhraseCollection *CPlugin::GetPhrases()
 {
-	m_PhraseFiles.push_back(index);
-}
-
-size_t CPlugin::GetLangFileCount()
-{
-	return m_PhraseFiles.size();
-}
-
-unsigned int CPlugin::GetLangFileByIndex(unsigned int index)
-{
-	return m_PhraseFiles.at(index);
+	return m_pPhrases;
 }
 
 void CPlugin::DependencyDropped(CPlugin *pOwner)
@@ -1488,8 +1483,8 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		OnLibraryAction((*s_iter).c_str(), true, false);
 	}
 
-	/* Finally, add the core language file */
-	pPlugin->AddLangFile(g_pCorePhraseID);
+	/* :TODO: optimize? does this even matter? */
+	pPlugin->GetPhrases()->AddPhraseFile("core.phrases");
 
 	return true;
 }

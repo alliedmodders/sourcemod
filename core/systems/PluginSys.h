@@ -53,6 +53,7 @@
 #else
 #include "convar_sm.h"
 #endif
+#include "ITranslator.h"
 
 using namespace SourceHook;
 
@@ -244,19 +245,9 @@ public:
 	bool IsRunnable();
 
 	/**
-	 * Adds a language file index to the plugin's list.
+	 * Get languages info.
 	 */
-	void AddLangFile(unsigned int index);
-
-	/**
-	 * Get language file count for this plugin.
-	 */
-	size_t GetLangFileCount();
-
-	/**
-	 * Get language file index based on the vector index.
-	 */
-	unsigned int GetLangFileByIndex(unsigned int index);
+	IPhraseCollection *GetPhrases();
 public:
 	/**
 	 * Returns the modification time during last plugin load.
@@ -300,7 +291,7 @@ private:
 	IdentityToken_t *m_ident;
 	Handle_t m_handle;
 	bool m_WasRunning;
-	CVector<unsigned int> m_PhraseFiles;
+	IPhraseCollection *m_pPhrases;
 	List<CPlugin *> m_dependents;
 	List<CPlugin *> m_dependsOn;
 	List<FakeNative *> m_fakeNatives;

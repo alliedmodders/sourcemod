@@ -38,9 +38,11 @@
 #include "sm_stringutil.h"
 #include "sourcemod.h"
 #include "PlayerManager.h"
+#include "PhraseCollection.h"
+#include "ShareSys.h"
 
 Translator g_Translator;
-CPhraseFile *g_pCorePhrases = NULL;
+IPhraseCollection *g_pCorePhrases = NULL;
 unsigned int g_pCorePhraseID = 0;
 
 struct trans_t
@@ -663,7 +665,7 @@ const char *CPhraseFile::GetFilename()
  ** MAIN TRANSLATOR CODE **
  **************************/
 
-Translator::Translator() : m_ServerLang(LANGUAGE_ENGLISH)
+Translator::Translator() : m_ServerLang(SOURCEMOD_LANGUAGE_ENGLISH)
 {
 	m_pStringTab = new BaseStringTable(2048);
 	m_pLCodeLookup = sm_trie_create();
@@ -727,11 +729,15 @@ void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");
 
-	unsigned int id;
+	g_pCorePhrases = CreatePhraseCollection();
+	g_pCorePhrases->AddPhraseFile("core.phrases");
 
-	id = FindOrAddPhraseFile("core.phrases.txt");
-	g_pCorePhraseID = id;
-	g_pCorePhrases = GetFileByIndex(id);
+	g_ShareSys.AddInterface(NULL, this);
+}
+
+void Translator::OnSourceModShutdown()
+{
+	g_pCorePhrases->Destroy();
 }
 
 bool Translator::GetLanguageByCode(const char *code, unsigned int *index)
@@ -842,7 +848,7 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English", m_InitialLang);
 
 		strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
-		m_ServerLang = LANGUAGE_ENGLISH;
+		m_ServerLang = SOURCEMOD_LANGUAGE_ENGLISH;
 	}
 
 	m_ServerLang = reinterpret_cast<unsigned int>(serverLang);
@@ -936,61 +942,6 @@ CPhraseFile *Translator::GetFileByIndex(unsigned int index)
 	return m_Files[index];
 }
 
-size_t Translator::Translate(char *buffer, size_t maxlength, void **params, const Translation *pTrans)
-{
-	void *new_params[MAX_TRANSLATE_PARAMS];
-
-	/* Rewrite the parameter order */
-	for (unsigned int i=0; i<pTrans->fmt_count; i++)
-	{
-		new_params[i] = params[pTrans->fmt_order[i]];
-	}
-
-	return gnprintf(buffer, maxlength, pTrans->szPhrase, new_params);
-}
-
-TransError Translator::CoreTransEx(CPhraseFile *pFile,
-								   int client, 
-								   char *buffer, 
-								   size_t maxlength, 
-								   const char *phrase, 
-								   void **params, 
-								   size_t *outlen)
-{
-	Translation trans;
-	TransError err;
-
-	/* Using server lang temporarily until client lang stuff is implemented */
-	if ((err = pFile->GetTranslation(phrase, m_ServerLang, &trans)) != Trans_Okay)
-	{
-		return err;
-	}
-
-	size_t len = Translate(buffer, maxlength, params, &trans);
-
-	if (outlen)
-	{
-		*outlen = len;
-	}
-
-	return Trans_Okay;
-}
-
-TransError Translator::CoreTrans(int client, 
-								  char *buffer, 
-								  size_t maxlength, 
-								  const char *phrase, 
-								  void **params, 
-								  size_t *outlen)
-{
-	if (!g_pCorePhrases)
-	{
-		return Trans_BadPhraseFile;
-	}
-
-	return CoreTransEx(g_pCorePhrases, client, buffer, maxlength, phrase, params, outlen);
-}
-
 unsigned int Translator::GetServerLanguage()
 {
 	return m_ServerLang;
@@ -1017,6 +968,108 @@ bool Translator::GetLanguageInfo(unsigned int number, const char **code, const c
 	if (name)
 	{
 		*name = m_pStringTab->GetString(l->m_FullName);
+	}
+
+	return true;
+}
+
+const char *Translator::GetInterfaceName()
+{
+	return SMINTERFACE_TRANSLATOR_NAME;
+}
+
+unsigned int Translator::GetInterfaceVersion()
+{
+	return SMINTERFACE_TRANSLATOR_VERSION;
+}
+
+IPhraseCollection *Translator::CreatePhraseCollection()
+{
+	return new CPhraseCollection();
+}
+
+int Translator::SetGlobalTarget(int index)
+{
+	return g_SourceMod.SetGlobalTarget(index);
+}
+
+int Translator::GetGlobalTarget() const
+{
+	return g_SourceMod.GetGlobalTarget();
+}
+
+bool CoreTranslate(char *buffer, 
+				   size_t maxlength,
+				   const char *format,
+				   unsigned int numparams,
+				   size_t *pOutLength,
+				   ...)
+{
+	va_list ap;
+	unsigned int i;
+	const char *fail_phrase;
+	void *params[MAX_TRANSLATE_PARAMS];
+
+	if (numparams > MAX_TRANSLATE_PARAMS)
+	{
+		assert(false);
+		return false;
+	}
+
+	va_start(ap, pOutLength);
+	for (i = 0; i < numparams; i++)
+	{
+		params[i] = va_arg(ap, void *);
+	}
+	va_end(ap);
+
+	if (!g_pCorePhrases->FormatString(buffer,
+		maxlength, 
+		format, 
+		params,
+		numparams,
+		pOutLength,
+		&fail_phrase))
+	{
+		if (fail_phrase != NULL)
+		{
+			g_Logger.LogError("[SM] Could not find core phrase: %s", fail_phrase);
+		}
+		else
+		{
+			g_Logger.LogError("[SM] Unknown fatal error while translating a core phrase.");
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+bool Translator::FormatString(char *buffer,
+							  size_t maxlength,
+							  const char *format,
+							  IPhraseCollection *pPhrases,
+							  void **params,
+							  unsigned int numparams,
+							  size_t *pOutLength,
+							  const char **pFailPhrase)
+{
+	unsigned int arg;
+
+	arg = 0;
+	if (!gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
+	{
+		return false;
+	}
+
+	if (arg != numparams)
+	{
+		if (pFailPhrase != NULL)
+		{
+			*pFailPhrase = NULL;
+		}
+		return false;
 	}
 
 	return true;

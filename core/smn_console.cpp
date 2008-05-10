@@ -828,7 +828,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 {
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);
@@ -849,7 +849,7 @@ static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *params)
 {
-	g_SourceMod.SetGlobalTarget(LANG_SERVER);
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 1);

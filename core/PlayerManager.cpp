@@ -1203,7 +1203,7 @@ CPlayer::CPlayer()
 	m_bAdminCheckSignalled = false;
 	m_bIsInKickQueue = false;
 	m_LastPassword.clear();
-	m_LangId = LANGUAGE_ENGLISH;
+	m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)

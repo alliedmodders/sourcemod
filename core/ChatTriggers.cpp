@@ -216,15 +216,14 @@ void ChatTriggers::OnSayCommand_Pre()
 	{
 		char buffer[128];
 
-		/* :TODO: log an error? */
-		if (g_Translator.CoreTransEx(g_pFloodPhrases, 
-			client, 
-			buffer, 
+		if (!CoreTranslate(
+			buffer,
 			sizeof(buffer),
-			"Flooding the server",
+			"%T",
+			2,
 			NULL,
-			NULL)
-			!= Trans_Okay)
+			"Flooding the server",
+			&client))
 		{
 			UTIL_Format(buffer, sizeof(buffer), "You are flooding the server!");
 		}
