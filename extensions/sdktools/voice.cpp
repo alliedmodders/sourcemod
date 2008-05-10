@@ -132,13 +132,16 @@ void SDKTools::OnClientDisconnecting(int client)
 	{
 		if (i == client)
 		{
-			break;
+			continue;
 		}
 
 		if (g_VoiceMap[i][client] != LISTEN_DEFAULT)
 		{
 			g_VoiceMap[i][client] = LISTEN_DEFAULT;
-			DecHookCount();
+			if (DecHookCount())
+			{
+				return;
+			}
 		}
 	}
 
