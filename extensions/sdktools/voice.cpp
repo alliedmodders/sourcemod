@@ -37,14 +37,53 @@
 #define SPEAK_LISTENALL		4
 #define SPEAK_TEAM			8
 #define SPEAK_LISTENTEAM	16
+#define LISTEN_DEFAULT		0
+#define LISTEN_NO			1
+#define LISTEN_YES			2
 
 size_t g_VoiceFlags[65];
-size_t g_VoiceFlagsCount = 0;
+size_t g_VoiceHookCount = 0;
+int g_VoiceMap[65][65];
 
 SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, bool);
 
+bool DecHookCount(int amount = 1);
+bool DecHookCount(int amount)
+{
+	g_VoiceHookCount -= amount;
+	if (g_VoiceHookCount == 0)
+	{
+		SH_REMOVE_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
+		return true;
+	}
+
+	return false;
+}
+
+void IncHookCount()
+{
+	if (!g_VoiceHookCount++)
+	{
+		SH_ADD_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
+	}
+}
+
+void SDKTools::VoiceInit()
+{
+	memset(g_VoiceMap, 0, sizeof(g_VoiceMap));
+}
+
 bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 {
+	if (g_VoiceMap[iReceiver][iSender] == LISTEN_NO)
+	{
+		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+	}
+	else if (g_VoiceMap[iReceiver][iSender] == LISTEN_YES)
+	{
+		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
+	}
+
 	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
@@ -77,13 +116,43 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 void SDKTools::OnClientDisconnecting(int client)
 {
+	int max_clients = playerhelpers->GetMaxClients();
+
+	if (g_VoiceHookCount == 0)
+	{
+		return;
+	}
+
+	/* This can probably be optimized more, but I doubt it's that much 
+	 * of an actual bottleneck.
+	 */
+
+	/* Reset clients who receive from us */
+	for (int i = 1; i <= max_clients; i++)
+	{
+		if (i == client)
+		{
+			break;
+		}
+
+		if (g_VoiceMap[i][client] != LISTEN_DEFAULT)
+		{
+			g_VoiceMap[i][client] = LISTEN_DEFAULT;
+			DecHookCount();
+		}
+	}
+
+	/* Reset clients who send to us.  I'm shoving a count in the 0 index! */
+	if (g_VoiceMap[client][0] > 0)
+	{
+		DecHookCount(g_VoiceMap[client][0]);
+		memset(&g_VoiceMap[client], 0, sizeof(int) * 65);
+	}
+
 	if (g_VoiceFlags[client])
 	{
 		g_VoiceFlags[client] = 0;
-		if (!--g_VoiceFlagsCount)
-		{
-			SH_REMOVE_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
-		}
+		DecHookCount();
 	}
 }
 
@@ -93,22 +162,19 @@ static cell_t SetClientListeningFlags(IPluginContext *pContext, const cell_t *pa
 	if (player == NULL)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	} else if (!player->IsConnected()) {
+	}
+	else if (!player->IsConnected())
+	{
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
 	if (!params[2] && g_VoiceFlags[params[1]])
 	{
-		if (!--g_VoiceFlagsCount)
-		{
-			SH_REMOVE_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
-		}
-	} else if (!g_VoiceFlags[params[1]] && params[2]) {
-
-		if (!g_VoiceFlagsCount++)
-		{
-			SH_ADD_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
-		}
+		DecHookCount();
+	}
+	else if (!g_VoiceFlags[params[1]] && params[2])
+	{
+		IncHookCount();
 	}
 
 	g_VoiceFlags[params[1]] = params[2];
@@ -122,7 +188,9 @@ static cell_t GetClientListeningFlags(IPluginContext *pContext, const cell_t *pa
 	if (player == NULL)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	} else if (!player->IsConnected()) {
+	}
+	else if (!player->IsConnected())
+	{
 		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
 	}
 
@@ -131,30 +199,77 @@ static cell_t GetClientListeningFlags(IPluginContext *pContext, const cell_t *pa
 
 static cell_t SetClientListening(IPluginContext *pContext, const cell_t *params)
 {
-	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	int r, s;
+	IGamePlayer *player;
+	
+	player = playerhelpers->GetGamePlayer(params[1]);
 	if (player == NULL)
 	{
-		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	} else if (!player->IsConnected()) {
-		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+		return pContext->ThrowNativeError("(Receiver) client index %d is invalid", params[1]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("(Receiver) client %d is not connected", params[1]);
 	}
 
-	bool bListen = !params[3] ? false : true;
+	player = playerhelpers->GetGamePlayer(params[2]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("(Sender) client index %d is invalid", params[2]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("(Sender) client %d is not connected", params[2]);
+	}
 
-	return voiceserver->SetClientListening(params[1], params[2], bListen) ? 1 : 0;
+	r = params[1];
+	s = params[2];
+	
+	if (g_VoiceMap[r][s] == LISTEN_DEFAULT && params[3] != LISTEN_DEFAULT)
+	{
+		g_VoiceMap[r][s] = params[3];
+		g_VoiceMap[r][0]++;
+		IncHookCount();
+	}
+	else if (g_VoiceMap[r][s] != LISTEN_DEFAULT && params[3] == LISTEN_DEFAULT)
+	{
+		g_VoiceMap[r][s] = params[3];
+		g_VoiceMap[r][0]--;
+		DecHookCount();
+	}
+	else
+	{
+		g_VoiceMap[r][s] = params[3];
+	}
+
+	return 1;
 }
 
 static cell_t GetClientListening(IPluginContext *pContext, const cell_t *params)
 {
-	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	IGamePlayer *player;
+
+	player = playerhelpers->GetGamePlayer(params[1]);
 	if (player == NULL)
 	{
-		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
-	} else if (!player->IsConnected()) {
-		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+		return pContext->ThrowNativeError("(Receiver) client index %d is invalid", params[1]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("(Receiver) client %d is not connected", params[1]);
 	}
 
-	return voiceserver->GetClientListening(params[1], params[2]) ? 1 : 0;
+	player = playerhelpers->GetGamePlayer(params[2]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("(Sender) client index %d is invalid", params[2]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("(Sender) client %d is not connected", params[2]);
+	}
+
+	return g_VoiceMap[params[1]][params[2]];
 }
 
 sp_nativeinfo_t g_VoiceNatives[] =

@@ -122,6 +122,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	g_OutputManager.Init();
 
+	VoiceInit();
+
 	return true;
 }
 

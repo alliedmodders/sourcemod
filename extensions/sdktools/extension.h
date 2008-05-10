@@ -84,6 +84,7 @@ public: //IClientListner
 	void OnClientDisconnecting(int client);
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
+	void VoiceInit();
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
