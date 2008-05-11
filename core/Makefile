@@ -39,7 +39,7 @@ OBJECTS += zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
 ##############################################
 
-C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -s -pipe -fno-strict-aliasing
+C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops-pipe -fno-strict-aliasing
 C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
 C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
