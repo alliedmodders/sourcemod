@@ -50,7 +50,7 @@ public OnPluginStart()
 {
 	LoadTranslations("clientprefs.phrases");
 	
-	RegConsoleCmd("sm_cookie", Command_Cookie, "sm_cookie <name> [value]");
+	RegConsoleCmd("sm_cookies", Command_Cookie, "sm_cookies <name> [value]");
 	RegConsoleCmd("sm_settings", Command_Settings);	
 }
 
