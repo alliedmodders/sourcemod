@@ -41,6 +41,13 @@
 #define MAX_DESC_LENGTH 255
 #define MAX_VALUE_LENGTH 100
 
+enum CookieAccess
+{
+	CookieAccess_Public,			/**< Visible and Changeable by users */
+	CookieAccess_Protected,			/**< Read only to users */
+	CookieAccess_Private,			/**< Completely hidden cookie */
+};
+
 struct Cookie;
 
 struct CookieData
@@ -58,12 +65,14 @@ struct CookieData
 
 struct Cookie
 {
-	Cookie(const char *name, const char *description)
+	Cookie(const char *name, const char *description, CookieAccess access)
 	{
 		strncpy(this->name, name, MAX_NAME_LENGTH);
 		this->name[MAX_NAME_LENGTH-1] = '\0';
 		strncpy(this->description, description, MAX_DESC_LENGTH);
 		this->description[MAX_DESC_LENGTH-1] = '\0';
+
+		this->access = access;
 
 		dbid = -1;
 
@@ -88,10 +97,10 @@ struct Cookie
 	char description[MAX_DESC_LENGTH];
 	int dbid;
 	CookieData *data[MAXCLIENTS+1];
+	CookieAccess access;
 };
 
-
-class CookieManager : public IClientListener
+class CookieManager : public IClientListener, public IPluginsListener
 {
 public:
 	CookieManager();
@@ -105,18 +114,24 @@ public:
 
 	void Unload();
 
-	void ClientConnectCallback(int client, IPreparedQuery *data);
+	void ClientConnectCallback(int client, IQuery *data);
 	void InsertCookieCallback(Cookie *pCookie, int dbId);
+	void SelectIdCallback(Cookie *pCookie, IQuery *data);
 
 	Cookie *FindCookie(const char *name);
-	Cookie *CreateCookie(const char *name, const char *description);
+	Cookie *CreateCookie(const char *name, const char *description, CookieAccess access);
 
 	bool AreClientCookiesCached(int client);
 
-	IForward *cookiesLoadedForward;
+	IForward *cookieDataLoadedForward;
+
+	SourceHook::List<Cookie *> cookieList;
+
+	IBaseMenu *clientMenu;
+
+	void OnPluginDestroyed(IPlugin *plugin);
 
 private:
-	SourceHook::List<Cookie *> cookieList;
 	KTrie<Cookie *> cookieTrie;
 	SourceHook::List<CookieData *> clientData[MAXCLIENTS];
 

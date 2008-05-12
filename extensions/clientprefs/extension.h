@@ -35,10 +35,15 @@
 #define MAXCLIENTS 64
 
 #include "smsdk_ext.h"
+#include "sh_list.h"
 #include "cookie.h"
+#include "menus.h"
 
 #define DRIVER_MYSQL 1
 #define DRIVER_SQLITE 0
+
+#define MAX_TRANSLATE_PARAMS		32
+
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -117,10 +122,7 @@ public:
 public:
 	IDBDriver *Driver;
 	IDatabase *Database;
-
-	IPreparedQuery *Query_InsertCookie;
-	IPreparedQuery *Query_SelectData;
-	IPreparedQuery *Query_InsertData;
+	IPhraseCollection *phrases;
 };
 
 class CookieTypeHandler : public IHandleTypeDispatch
@@ -128,15 +130,36 @@ class CookieTypeHandler : public IHandleTypeDispatch
 public:
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		/* No delete needed since this Cookies are persistant */
+		/* No delete needed since Cookies are persistant */
 	}
 };
+
+class CookieIteratorHandler : public IHandleTypeDispatch
+{
+public:
+	void OnHandleDestroy(HandleType_t type, void *object)
+	{
+		delete (SourceHook::List<Cookie *>::iterator *)object;
+	}
+};
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
 extern sp_nativeinfo_t g_ClientPrefNatives[];
 
 extern ClientPrefs g_ClientPrefs;
 extern HandleType_t g_CookieType;
 extern CookieTypeHandler g_CookieTypeHandler;
+
+extern HandleType_t g_CookieIterator;
+extern CookieIteratorHandler g_CookieIteratorHandler;
+
+bool Translate(char *buffer, 
+				   size_t maxlength,
+				   const char *format,
+				   unsigned int numparams,
+				   size_t *pOutLength,
+				   ...);
 
 extern int driver;
 

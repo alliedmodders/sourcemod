@@ -40,7 +40,7 @@
 #include "svn_version.h"
 
 /* Basic information exposed publicly */
-#define SMEXT_CONF_NAME			"Client Preferences Extension"
+#define SMEXT_CONF_NAME			"Client Preferences"
 #define SMEXT_CONF_DESCRIPTION	"Saves client preference settings"
 #define SMEXT_CONF_VERSION		SVN_FULL_VERSION
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
@@ -67,15 +67,16 @@
 #define SMEXT_ENABLE_DBMANAGER
 //#define SMEXT_ENABLE_GAMECONF
 //#define SMEXT_ENABLE_MEMUTILS
-//#define SMEXT_ENABLE_GAMEHELPERS
+#define SMEXT_ENABLE_GAMEHELPERS
 //#define SMEXT_ENABLE_TIMERSYS
 //#define SMEXT_ENABLE_THREADER
 //#define SMEXT_ENABLE_LIBSYS
-//#define SMEXT_ENABLE_MENUS
+#define SMEXT_ENABLE_MENUS
 //#define SMEXT_ENABLE_ADTFACTORY
-//#define SMEXT_ENABLE_PLUGINSYS
+#define SMEXT_ENABLE_PLUGINSYS
 //#define SMEXT_ENABLE_ADMINSYS
 //#define SMEXT_ENABLE_TEXTPARSERS
 //#define SMEXT_ENABLE_USERMSGS
+#define SMEXT_ENABLE_TRANSLATOR
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

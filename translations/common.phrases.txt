@@ -249,4 +249,12 @@
 		"#format"		"{1:s}"
 		"en"			"Kicked player '{1}'"
 	}
+	"On"
+	{
+		"en"			"On"
+	}
+	"Off"
+	{
+		"en"			"Off"
+	}
 }

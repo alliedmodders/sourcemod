@@ -36,14 +36,54 @@
 #define _clientprefs_included
 
 /**
+ * Cookie access types for client viewing
+ */
+enum CookieAccess
+{
+	CookieAccess_Public,			/**< Visible and Changeable by users */
+	CookieAccess_Protected,			/**< Read only to users */
+	CookieAccess_Private,			/**< Completely hidden cookie */
+};
+
+/**
+ * Cookie Prefab menu types
+ */
+enum CookieMenu
+{
+	CookieMenu_YesNo,			/**< Yes/No menu with "yes"/"no" results saved into the cookie */
+	CookieMenu_YesNo_Int,		/**< Yes/No menu with 1/0 saved into the cookie */
+	CookieMenu_OnOff,			/**< On/Off menu with "on"/"off" results saved into the cookie */
+	CookieMenu_OnOff_Int,		/**< On/Off menu with 1/0 saved into the cookie */
+};
+
+enum CookieMenuAction
+{
+	/**
+	 * An option is being drawn for a menu.
+	 *
+	 * INPUT : Client index and data if available.
+	 * OUTPUT: Buffer for rendering, maxlength of buffer.
+	 */
+	CookieMenuAction_DisplayOption = 0,
+	
+	/**
+	 * A menu option has been selected.
+	 *
+	 * INPUT : Client index and any data if available.
+	 */
+	CookieMenuAction_SelectOption = 1,
+};
+
+/**
  * Creates a new Client preference cookie.
  *
  * @param name			Name of the new preference cookie.
  * @param description	Optional description of the preference cookie.
+ * @param access		What CookieAccess level to assign to this cookie.
  * @return				A handle to the newly created cookie. If the cookie already exists, a handle to it will still be returned.
  * @error				Cookie name is blank.
  */
-native Handle:RegClientPrefCookie(const String:name[], const String:description[]);
+native Handle:RegClientCookie(const String:name[], const String:description[], CookieAccess:access);
 
 /**
  * Searches for a Client preference cookie.
@@ -51,7 +91,7 @@ native Handle:RegClientPrefCookie(const String:name[], const String:description[
  * @param name			Name of cookie to find.
  * @return				A handle to the cookie if it is found. INVALID_HANDLE otherwise.
  */
-native Handle:FindClientPrefCookie(const String:name[]);
+native Handle:FindClientCookie(const String:name[]);
 
 /**
  * Set the value of a Client preference cookie.
@@ -62,7 +102,7 @@ native Handle:FindClientPrefCookie(const String:name[]);
  * @noreturn			
  * @error				Invalid cookie handle or invalid client index.
  */
-native SetClientPrefCookie(client, Handle:cookie, const String:value[]);
+native SetClientCookie(client, Handle:cookie, const String:value[]);
 
 /**
  * Retrieve the value of a Client preference cookie.
@@ -71,9 +111,10 @@ native SetClientPrefCookie(client, Handle:cookie, const String:value[]);
  * @param cookie		Client preference cookie handle.
  * @param buffer		Copyback buffer for value.
  * @param maxlen		Maximum length of the buffer.
+ * @noreturn
  * @error				Invalid cookie handle or invalid client index.
  */
-native GetClientPrefCookie(client, Handle:cookie, String:buffer[], maxlen);
+native GetClientCookie(client, Handle:cookie, String:buffer[], maxlen);
 
 /**
  * Checks if a clients cookies have been loaded from the database.
@@ -89,8 +130,89 @@ native bool:AreClientCookiesCached(client);
  *
  * @param client		Client index.
  */
-forward OnClientCookiesLoaded(client);
+forward OnClientCookiesCached(client);
 
+/**
+ * Cookie Menu Callback prototype
+ *
+ * @param client		Client index.
+ * @param action		CookeMenuAction being performed.
+ * @param data			Info data passed.
+ * @param buffer		Outbut buffer.
+ * @param maxlen		Max length of the output buffer.			
+ */
+functag CookieMenuHandler public(client, CookieMenuAction:action, any:info, String:buffer[], maxlen);
+
+/**
+ * Add a new prefab item to the client cookie settings menu.
+ *
+ * Note: This handles everything automatically and does not require a callback
+ *
+ * @param cookie		Client preference cookie handle.
+ * @param type			A CookieMenu prefab menu type.
+ * @param display		Text to show on the menu.
+ * @param handler		Optional handler callback for translations and output on selection
+ * @param info			Info data to pass to the callback.
+ * @noreturn
+ * @error				Invalid cookie handle.
+ */
+native SetCookiePrefabMenu(Handle:cookie, CookieMenu:type, const String:display[], CookieMenuHandler:handler=CookieMenuHandler:-1, info=0);
+
+/**
+ * Adds a new item to the client cookie settings menu.
+ *
+ * Note: This only adds the top level menu item. You need to handle any submenus from the callback.
+ *
+ * @param handler		A MenuHandler callback function.
+ * @param info			Data to pass to the callback.
+ * @param display		Text to show on the menu.
+ * @noreturn
+ * @error				Invalid cookie handle.
+ */
+native SetCookieMenuItem(CookieMenuHandler:handler, any:info, const String:display[]);
+
+/**
+ * Displays the settings menu to a client.
+ *
+ * @param client		Client index.
+ * @noreturn
+ */
+native ShowCookieMenu(client);
+
+/**
+ * Gets a cookie iterator.  Must be freed with CloseHandle().
+ *
+ * @return				A new cookie iterator.
+ */
+native Handle:GetCookieIterator();
+
+/**
+ * Reads a cookie iterator, then advances to the next cookie if any.
+ *
+ * @param iter			Cookie iterator Handle.
+ * @param name			Name buffer.
+ * @param nameLen		Name buffer size.
+ * @param access		Access level of the cookie.
+ * @param desc			Cookie description buffer.
+ * @param descLen		Cookie description buffer size.
+ * @param 
+ * @return				True on success, false if there are no more commands.
+ */
+native bool:ReadCookieIterator(Handle:iter, 
+								String:name[], 
+								nameLen,
+								&CookieAccess:access, 
+								String:desc[]="", 
+								descLen=0);
+								
+/**
+ * Returns the access level of a cookie
+ *
+ * @param cookie		Client preference cookie handle.
+ * @return				CookieAccess access level.
+ * @error				Invalid cookie handle.	
+ */
+native CookieAccess:GetCookieAccess(Handle:cookie);
 
 /**
  * Do not edit below this line!

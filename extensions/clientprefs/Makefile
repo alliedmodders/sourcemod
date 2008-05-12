@@ -17,7 +17,7 @@ PROJECT = clientprefs
 #Uncomment for Metamod: Source enabled extension
 #USEMETA = true
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp query.cpp cookie.cpp natives.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp query.cpp cookie.cpp natives.cpp menus.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -59,7 +59,8 @@ ifeq "$(USEMETA)" "true"
 		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK)/public \
 		-I$(SMSDK)/public/sourcepawn 
 else
-	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SOURCEMM16)/sourcehook
+	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SOURCEMM16)/sourcehook \
+		 -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1
 endif
 
 LINK += -static-libgcc

@@ -43,6 +43,9 @@ SMEXT_LINK(&g_ClientPrefs);
 HandleType_t g_CookieType = 0;
 CookieTypeHandler g_CookieTypeHandler;
 
+HandleType_t g_CookieIterator = 0;
+CookieIteratorHandler g_CookieIteratorHandler;
+
 
 int driver = 0;
 
@@ -100,44 +103,9 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
-	if (driver == DRIVER_SQLITE)
-	{
-		Query_InsertCookie = Database->PrepareQuery("INSERT OR IGNORE INTO sm_cookies(name, description) VALUES(?, ?)", error, maxlength);
-	}
-	else
-	{
-		Query_InsertCookie = Database->PrepareQuery("INSERT IGNORE INTO sm_cookies(name, description) VALUES(?, ?)", error, maxlength);
-	}
-
-	if (Query_InsertCookie == NULL)
-	{
-		return false;
-	}
-
-	Query_SelectData = Database->PrepareQuery("SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description FROM sm_cookies JOIN sm_cookie_cache ON sm_cookies.id = sm_cookie_cache.cookie_id WHERE player = ?", error, maxlength);
-
-	if (Query_SelectData == NULL)
-	{
-		return false;
-	}
-
-	if (driver == DRIVER_SQLITE)
-	{
-		Query_InsertData = Database->PrepareQuery("INSERT OR REPLACE INTO sm_cookie_cache(player,cookie_id, value, timestamp) VALUES(?, ?, ?, ?)", error, maxlength);
-	}
-	else
-	{
-		Query_InsertData = Database->PrepareQuery("INSERT INTO sm_cookie_cache(player,cookie_id, value, timestamp) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE value = ?, timestamp = ?", error, maxlength);
-	}
-
-	if (Query_InsertData == NULL)
-	{
-		return false;
-	}
-
 	sharesys->AddNatives(myself, g_ClientPrefNatives);
 	sharesys->RegisterLibrary(myself, "clientprefs");
-	g_CookieManager.cookiesLoadedForward = forwards->CreateForward("OnClientCookiesLoaded", ET_Ignore, 1, NULL, Param_Cell);
+	g_CookieManager.cookieDataLoadedForward = forwards->CreateForward("OnClientCookiesCached", ET_Ignore, 1, NULL, Param_Cell);
 
 	g_CookieType = handlesys->CreateType("Cookie", 
 		&g_CookieTypeHandler, 
@@ -146,6 +114,25 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		NULL, 
 		myself->GetIdentity(), 
 		NULL);
+
+	g_CookieIterator = handlesys->CreateType("CookieIterator", 
+		&g_CookieIteratorHandler, 
+		0, 
+		NULL, 
+		NULL, 
+		myself->GetIdentity(), 
+		NULL);
+
+	IMenuStyle *style = menus->GetDefaultStyle();
+	g_CookieManager.clientMenu = style->CreateMenu(&g_Handler, NULL);
+	g_CookieManager.clientMenu->SetDefaultTitle("Client Settings:");
+
+	plsys->AddPluginsListener(&g_CookieManager);
+
+	phrases = translator->CreatePhraseCollection();
+	phrases->AddPhraseFile("clientprefs.phrases");
+	phrases->AddPhraseFile("common.phrases");
+
 
 	return true;
 }
@@ -161,13 +148,78 @@ void ClientPrefs::SDK_OnUnload()
 
 	g_CookieManager.Unload();
 
-	Query_InsertCookie->Destroy();
-	Query_InsertData->Destroy();
-	Query_SelectData->Destroy();
-
 	Database->Close();
 
-	forwards->ReleaseForward(g_CookieManager.cookiesLoadedForward);
+	forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
+
+	g_CookieManager.clientMenu->Destroy();
 }
+
+size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
+	va_end(ap);
+
+	if (len >= maxlength)
+	{
+		buffer[maxlength - 1] = '\0';
+		return (maxlength - 1);
+	}
+	else
+	{
+		return len;
+	}
+}
+
+bool Translate(char *buffer, 
+				   size_t maxlength,
+				   const char *format,
+				   unsigned int numparams,
+				   size_t *pOutLength,
+				   ...)
+{
+	va_list ap;
+	unsigned int i;
+	const char *fail_phrase;
+	void *params[MAX_TRANSLATE_PARAMS];
+
+	if (numparams > MAX_TRANSLATE_PARAMS)
+	{
+		assert(false);
+		return false;
+	}
+
+	va_start(ap, pOutLength);
+	for (i = 0; i < numparams; i++)
+	{
+		params[i] = va_arg(ap, void *);
+	}
+	va_end(ap);
+
+	if (!g_ClientPrefs.phrases->FormatString(buffer,
+		maxlength, 
+		format, 
+		params,
+		numparams,
+		pOutLength,
+		&fail_phrase))
+	{
+		if (fail_phrase != NULL)
+		{
+			g_pSM->LogError(myself, "[SM] Could not find core phrase: %s", fail_phrase);
+		}
+		else
+		{
+			g_pSM->LogError(myself, "[SM] Unknown fatal error while translating a core phrase.");
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
 
 

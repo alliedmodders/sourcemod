@@ -676,6 +676,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\menus.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\natives.cpp"
 				>
 			</File>
@@ -695,6 +699,10 @@
 			</File>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\menus.h"
 				>
 			</File>
 			<File

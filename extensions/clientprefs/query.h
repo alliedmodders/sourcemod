@@ -41,13 +41,14 @@ enum querytype
 	Query_InsertCookie = 0,
 	Query_SelectData,
 	Query_InsertData,
+	Query_SelectId,
 };
 
 class TQueryOp : public IDBThreadOperation
 {
 public:
-	TQueryOp(IDatabase *db, IPreparedQuery *query, enum querytype type, int client);
-	TQueryOp(IDatabase *db, IPreparedQuery *query, enum querytype type, Cookie *cookie);
+	TQueryOp(IDatabase *db, const char *query, enum querytype type, int client);
+	TQueryOp(IDatabase *db, const char *query, enum querytype type, Cookie *cookie);
 	~TQueryOp() {}
 
 	IDBDriver *GetDriver();
@@ -64,7 +65,8 @@ public:
 
 private:
 	IDatabase *m_pDatabase;
-	IPreparedQuery *m_pQuery;
+	IQuery *m_pQuery;
+	SourceHook::String m_Query;
 	char error[255];
 	enum querytype m_type;
 	int m_client;

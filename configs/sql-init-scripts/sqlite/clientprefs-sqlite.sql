@@ -2,7 +2,8 @@ CREATE TABLE sm_cookies
 (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name varchar(30) NOT NULL UNIQUE,
-	description varchar(255)
+	description varchar(255),
+	access INTEGER
 );
 
 CREATE TABLE sm_cookie_cache

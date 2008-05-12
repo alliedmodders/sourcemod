@@ -47,28 +47,34 @@ void TQueryOp::RunThinkPart()
 			g_CookieManager.ClientConnectCallback(m_client, m_pQuery);
 			break;
 		case Query_InsertData:
-			g_pSM->LogMessage(myself, "Inserted data into table");
 			//No specific handling
+			break;
+		case Query_SelectId:
+			g_CookieManager.SelectIdCallback(pCookie, m_pQuery);
 			break;
 		default:
 			break;
 		}
+
+		m_pQuery->Destroy();
 	}
 	else
 	{
-		g_pSM->LogError(myself,"Failed SQL Query Error: \"%s\"- Ref Id: %i, Client num: %i",error ,m_type, m_client);
+		g_pSM->LogError(myself,"Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", error, m_type, m_client);
 	}
 }
 
 void TQueryOp::RunThreadPart()
 {
 	m_pDatabase->LockForFullAtomicOperation();
-	if (!m_pQuery->Execute())
+	m_pQuery = m_pDatabase->DoQuery(m_Query.c_str());
+
+	if (!m_pQuery)
 	{
-		g_pSM->LogError(myself, m_pQuery->GetError());
+		g_pSM->LogError(myself, "Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", m_pDatabase->GetError(), m_type, m_client);
 	}
 
-	m_insertId = m_pQuery->GetInsertID();
+	m_insertId = g_ClientPrefs.Database->GetInsertID();
 
 	m_pDatabase->UnlockFromFullAtomicOperation();
 }
@@ -86,20 +92,20 @@ void TQueryOp::Destroy()
 	delete this;
 }
 
-TQueryOp::TQueryOp(IDatabase *db, IPreparedQuery *query, enum querytype type, int client)
+TQueryOp::TQueryOp(IDatabase *db, const char *query, enum querytype type, int client)
 {
 	m_pDatabase = db;
-	m_pQuery = query;
+	m_Query = query;
 	m_type = type;
 	m_client = client;
 
 	m_pDatabase->IncReferenceCount();
 }
 
-TQueryOp::TQueryOp(IDatabase *db, IPreparedQuery *query, enum querytype type, Cookie *cookie)
+TQueryOp::TQueryOp(IDatabase *db, const char *query, enum querytype type, Cookie *cookie)
 {
 	m_pDatabase = db;
-	m_pQuery = query;
+	m_Query = query;
 	m_type = type;
 	pCookie = cookie;
 

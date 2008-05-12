@@ -3,6 +3,7 @@ CREATE TABLE sm_cookies
 	id INTEGER unsigned NOT NULL auto_increment,
 	name varchar(30) NOT NULL UNIQUE,
 	description varchar(255),
+	access INTEGER,
 	PRIMARY KEY (id)
 );
 

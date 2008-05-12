@@ -30,6 +30,7 @@
  */
 
 #include "cookie.h"
+#include "menus.h"
 #include "query.h"
 
 CookieManager g_CookieManager;
@@ -42,7 +43,8 @@ CookieManager::CookieManager()
 		statsLoaded[i] = false;
 	}
 
-	cookiesLoadedForward = NULL;
+	cookieDataLoadedForward = NULL;
+	clientMenu = NULL;
 }
 CookieManager::~CookieManager(){}
 
@@ -97,26 +99,45 @@ Cookie *CookieManager::FindCookie(const char *name)
 }
 
 
-Cookie *CookieManager::CreateCookie(const char *name, const char *description)
+Cookie *CookieManager::CreateCookie(const char *name, const char *description, CookieAccess access)
 {
 	Cookie *pCookie = FindCookie(name);
 
 	/* Check if cookie already exists */
 	if (pCookie != NULL)
 	{
+		/* Update data fields to the provided values */
+		strncpy(pCookie->description, description, MAX_DESC_LENGTH);
+		pCookie->description[MAX_DESC_LENGTH-1] = '\0';
+
+		pCookie->access = access;
+
 		return pCookie;
 	}
 
 	/* First time cookie - Create from scratch */
-	pCookie = new Cookie(name, description);
+	pCookie = new Cookie(name, description, access);
 	cookieTrie.insert(name, pCookie);
 	cookieList.push_back(pCookie);
 
+	char quotedname[2 * MAX_NAME_LENGTH + 1];
+	char quoteddesc[2 * MAX_DESC_LENGTH + 1];
+
+	g_ClientPrefs.Database->QuoteString(pCookie->name, quotedname, sizeof(quotedname), NULL);
+	g_ClientPrefs.Database->QuoteString(pCookie->description, quoteddesc, sizeof(quoteddesc), NULL);
 	
-	/* Attempt to load cookie from the db and get its ID num */
-	g_ClientPrefs.Query_InsertCookie->BindParamString(0, name, true);
-	g_ClientPrefs.Query_InsertCookie->BindParamString(1, description, true);
-	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, g_ClientPrefs.Query_InsertCookie, Query_InsertCookie, pCookie);
+	/* Attempt to insert cookie into the db and get its ID num */
+	char query[300];
+	if (driver == DRIVER_SQLITE)
+	{
+		UTIL_Format(query, sizeof(query), "INSERT OR IGNORE INTO sm_cookies(name, description, access) VALUES('%s', '%s', %i)", quotedname, quoteddesc, access);
+	}
+	else
+	{
+		UTIL_Format(query, sizeof(query), "INSERT IGNORE INTO sm_cookies(name, description, access) VALUES('%s', '%s', %i)", quotedname, quoteddesc, access);
+	}
+
+	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_InsertCookie, pCookie);
 	dbi->AddToThreadQueue(op, PrioQueue_Normal);
 
 	return pCookie;
@@ -177,8 +198,10 @@ void CookieManager::OnClientAuthorized(int client, const char *authstring)
 {
 	connected[client] = true;
 
-	g_ClientPrefs.Query_SelectData->BindParamString(0, authstring, true);
-	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, g_ClientPrefs.Query_SelectData, Query_SelectData, client);
+	char query[300];
+	/* Assume that the authstring doesn't need to be quoted */
+	UTIL_Format(query, sizeof(query), "SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, sm_cookies.access FROM sm_cookies JOIN sm_cookie_cache ON sm_cookies.id = sm_cookie_cache.cookie_id WHERE player = '%s'", authstring);
+	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_SelectData, client);
 	dbi->AddToThreadQueue(op, PrioQueue_Normal);
 }
 
@@ -220,18 +243,20 @@ void CookieManager::OnClientDisconnecting(int client)
 			return;
 		}
 
-		g_ClientPrefs.Query_InsertData->BindParamString(0, player->GetAuthString(), true);
-		g_ClientPrefs.Query_InsertData->BindParamInt(1, dbId, false);
-		g_ClientPrefs.Query_InsertData->BindParamString(2, current->value, true);
-		g_ClientPrefs.Query_InsertData->BindParamInt(3, time(NULL), false);
+		char quotedvalue[2 * MAX_VALUE_LENGTH + 1];
+		g_ClientPrefs.Database->QuoteString(current->value, quotedvalue, sizeof(quotedvalue), NULL);
 
-		if (driver == DRIVER_MYSQL)
+		char query[300];
+		if (driver == DRIVER_SQLITE)
 		{
-			g_ClientPrefs.Query_InsertData->BindParamString(4, current->value, true);
-			g_ClientPrefs.Query_InsertData->BindParamInt(5, time(NULL), false);
+			UTIL_Format(query, sizeof(query), "INSERT OR REPLACE INTO sm_cookie_cache(player,cookie_id, value, timestamp) VALUES('%s', %i, '%s', %i)", player->GetAuthString(), dbId, quotedvalue, time(NULL));
+		}
+		else
+		{
+			UTIL_Format(query, sizeof(query), "INSERT INTO sm_cookie_cache(player,cookie_id, value, timestamp) VALUES('%s', %i, '%s', %i) ON DUPLICATE KEY UPDATE value = '%s', timestamp = %i", player->GetAuthString(), dbId, quotedvalue, time(NULL), quotedvalue, time(NULL));
 		}
 	
-		TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, g_ClientPrefs.Query_InsertData, Query_InsertData, client);
+		TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_InsertData, client);
 		dbi->AddToThreadQueue(op, PrioQueue_Normal);
 
 		current->parent->data[client] = NULL;
@@ -241,7 +266,7 @@ void CookieManager::OnClientDisconnecting(int client)
 	}
 }
 
-void CookieManager::ClientConnectCallback(int client, IPreparedQuery *data)
+void CookieManager::ClientConnectCallback(int client, IQuery *data)
 {
 	IResultSet *results = data->GetResultSet();
 	if (results == NULL)
@@ -274,7 +299,10 @@ void CookieManager::ClientConnectCallback(int client, IPreparedQuery *data)
 			const char *desc;
 			row->GetString(2, &desc, NULL);
 
-			parent = CreateCookie(name, desc);
+			CookieAccess access = CookieAccess_Public;
+			row->GetInt(3, (int *)&access);
+
+			parent = CreateCookie(name, desc, access);
 			cookieTrie.insert(name, parent);
 			cookieList.push_back(parent);
 		}
@@ -286,15 +314,47 @@ void CookieManager::ClientConnectCallback(int client, IPreparedQuery *data)
 
 	}  while (results->MoreRows());
 
+
 	statsLoaded[client] = true;
 
-	cookiesLoadedForward->PushCell(client);
-	cookiesLoadedForward->Execute(NULL);
+	cookieDataLoadedForward->PushCell(client);
+	cookieDataLoadedForward->Execute(NULL);
 }
 
 void CookieManager::InsertCookieCallback(Cookie *pCookie, int dbId)
 {
-	pCookie->dbid = dbId;
+	if (dbId > 0)
+	{
+		pCookie->dbid = dbId;
+		return;
+	}
+
+	char quotedname[2 * MAX_NAME_LENGTH + 1];
+	g_ClientPrefs.Database->QuoteString(pCookie->name, quotedname, sizeof(quotedname), NULL);
+
+	char query[300];
+	UTIL_Format(query, sizeof(query), "SELECT id FROM sm_cookies WHERE name='%s'", quotedname);
+
+	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_SelectId, pCookie);
+	dbi->AddToThreadQueue(op, PrioQueue_Normal);
+}
+
+void CookieManager::SelectIdCallback(Cookie *pCookie, IQuery *data)
+{
+	IResultSet *results = data->GetResultSet();
+	if (results == NULL)
+	{
+		return;
+	}
+
+	IResultRow *row = results->FetchRow();
+
+	if (row == NULL)
+	{
+		return;
+	}
+
+	row->GetInt(0, &pCookie->dbid);
 }
 
 bool CookieManager::AreClientCookiesCached(int client)
@@ -302,3 +362,51 @@ bool CookieManager::AreClientCookiesCached(int client)
 	return statsLoaded[client];
 }
 
+void CookieManager::OnPluginDestroyed(IPlugin *plugin)
+{
+	SourceHook::List<char *> *pList;
+
+	if (plugin->GetProperty("SettingsMenuItems", (void **)&pList, true))
+	{
+		SourceHook::List<char *>::iterator p_iter = pList->begin();
+		char *name;
+
+		while (p_iter != pList->end())
+		{
+			name = (char *)*p_iter;
+		
+			p_iter = pList->erase(p_iter); //remove from this plugins list
+
+			ItemDrawInfo draw;
+			
+			for (unsigned int i=0; i<clientMenu->GetItemCount(); i++)
+			{
+				const char *info = clientMenu->GetItemInfo(i, &draw);
+
+				if (info == NULL)
+				{
+					continue;
+				}
+
+				if (strcmp(draw.display, name) == 0)
+				{
+					ItemDrawInfo draw;
+					const char *info = clientMenu->GetItemInfo(i, &draw);
+					AutoMenuData *data = (AutoMenuData *)strtol(info, NULL, 16);
+
+					if (data->handler->forward != NULL)
+					{
+						forwards->ReleaseForward(data->handler->forward);
+					}
+					delete data->handler;
+					delete data;
+
+					clientMenu->RemoveItem(i);
+					break;
+				}
+			}
+
+			delete name;
+		}		
+	}
+}

@@ -88,6 +88,9 @@
 #if defined SMEXT_ENABLE_USERMSGS
 #include <IUserMessages.h>
 #endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+#include <ITranslator.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -282,6 +285,9 @@ extern IAdminSystem *adminsys;
 #endif
 #if defined SMEXT_ENABLE_USERMSGS
 extern IUserMessages *usermsgs;
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+extern ITranslator *translator;
 #endif
 
 #if defined SMEXT_CONF_METAMOD
