@@ -19,7 +19,7 @@ OBJECTS = loader.cpp
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
 ##############################################
 
-C_OPT_FLAGS = -O3 -funroll-loops-pipe -fno-strict-aliasing
+C_OPT_FLAGS = -O3 -funroll-loops -pipe -fno-strict-aliasing
 C_DEBUG_FLAGS = -g -ggdb3
 CPP_GCC4_FLAGS = -fvisibility=hidden -fvisibility-inlines-hidden
 CPP = gcc-4.1

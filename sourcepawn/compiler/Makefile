@@ -5,7 +5,7 @@ SMSDK = ../..
 
 ### EDIT BELOW FOR OTHER PROJECTS ###
 
-OPT_C_FLAGS = -O3 -funroll-loops-pipe -fno-strict-aliasing -fomit-frame-pointer 
+OPT_C_FLAGS = -O3 -funroll-loops -pipe -fno-strict-aliasing -fomit-frame-pointer 
 OPT_CPP_FLAGS = 
 DEBUG_C_FLAGS = -g -ggdb3
 CPP = gcc-4.1

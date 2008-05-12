@@ -10,7 +10,7 @@ SRCDS_BASE = ~/srcds
 SMSDK = ..
 
 #Project options
-OPT_FLAGS = -O3 -funroll-loops-pipe -fno-strict-aliasing
+OPT_FLAGS = -O3 -funroll-loops -pipe -fno-strict-aliasing
 GCC4_FLAGS = -fvisibility=hidden 
 GCC4_CPP_FLAGS = -fvisibility-inlines-hidden
 DEBUG_FLAGS = -g -ggdb3

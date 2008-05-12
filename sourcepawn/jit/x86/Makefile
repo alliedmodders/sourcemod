@@ -6,7 +6,7 @@ SMSDK = ../../..
 
 ### EDIT BELOW FOR OTHER PROJECTS ###
 
-OPT_FLAGS = -O3 -funroll-loops-pipe -fno-strict-aliasing
+OPT_FLAGS = -O3 -funroll-loops -pipe -fno-strict-aliasing
 GCC4_FLAGS = -fvisibility=hidden -fvisibility-inlines-hidden
 DEBUG_FLAGS = -g -ggdb3
 CPP = gcc-4.1
