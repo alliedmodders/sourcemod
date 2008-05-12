@@ -282,6 +282,7 @@ namespace builder
 			lib.source_path = "extensions/clientprefs";
 			lib.binary_name = "clientprefs.ext";
 			lib.vcproj_name = "clientprefs";
+			lib.build_mode = BuildMode.BuildMode_Episode2;
 			libraries.Add(lib);
 
 			return (Library [])libraries.ToArray(typeof(Library));
@@ -320,6 +321,7 @@ namespace builder
 			plugins.Add(new Plugin("rockthevote", true));
 			plugins.Add(new Plugin("adminmenu"));
 			plugins.Add(new Plugin("playercommands"));
+			plugins.Add(new Plugin("clientprefs"));
 
 			return (Plugin [])plugins.ToArray(typeof(Plugin));
 		}

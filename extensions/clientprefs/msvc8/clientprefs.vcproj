@@ -690,6 +690,10 @@
 				RelativePath="..\query.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\menus.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -706,6 +710,10 @@
 			</File>
 			<File
 				RelativePath="..\query.h"
+				>
+			</File>
+			<File
+				RelativePath="..\menus.h"
 				>
 			</File>
 		</Filter>
