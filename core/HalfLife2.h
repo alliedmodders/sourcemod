@@ -41,6 +41,8 @@
 #include "sm_queue.h"
 #include <IGameHelpers.h>
 #include <KeyValues.h>
+#include <server_class.h>
+#include <datamap.h>
 
 class CCommand;
 

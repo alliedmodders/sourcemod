@@ -34,6 +34,8 @@
 
 #define MAXCLIENTS 64
 
+#include <stdlib.h>
+#include <stdarg.h>
 #include "smsdk_ext.h"
 #include "sh_list.h"
 #include "cookie.h"

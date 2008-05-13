@@ -33,18 +33,21 @@
 #define _INCLUDE_SOURCEMOD_GAMEHELPERS_H_
 
 #include <IShareSys.h>
-#include <dt_send.h>
-#include <server_class.h>
-#include <datamap.h>
-#include <edict.h>
-
-#define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		2
 
 /**
  * @file IGameHelpers.h
  * @brief Provides Source helper functions.
  */
+
+#define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
+#define SMINTERFACE_GAMEHELPERS_VERSION		2
+
+class CBaseEntity;
+class SendProp;
+class ServerClass;
+struct edict_t;
+struct datamap_t;
+struct typedescription_t;
 
 namespace SourceMod
 {

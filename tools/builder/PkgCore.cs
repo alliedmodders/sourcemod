@@ -282,7 +282,6 @@ namespace builder
 			lib.source_path = "extensions/clientprefs";
 			lib.binary_name = "clientprefs.ext";
 			lib.vcproj_name = "clientprefs";
-			lib.build_mode = BuildMode.BuildMode_Episode2;
 			libraries.Add(lib);
 
 			return (Library [])libraries.ToArray(typeof(Library));

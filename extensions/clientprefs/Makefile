@@ -59,8 +59,8 @@ ifeq "$(USEMETA)" "true"
 		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK)/public \
 		-I$(SMSDK)/public/sourcepawn 
 else
-	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SOURCEMM16)/sourcehook \
-		 -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1
+	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
+		-I$(SOURCEMM16)/sourcehook
 endif
 
 LINK += -static-libgcc
