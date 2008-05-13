@@ -39,6 +39,7 @@
 
 #include "smsdk_ext.h"
 #include <IBinTools.h>
+#include <server_class.h>
 
 /**
  * @brief Sample implementation of the SDK Extension.

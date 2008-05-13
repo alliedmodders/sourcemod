@@ -45,6 +45,8 @@
 #include <IEngineSound.h>
 #include <ivoiceserver.h>
 #include <iplayerinfo.h>
+#include <server_class.h>
+#include <datamap.h>
 #include <convar.h>
 #include <iserver.h>
 #include <cdll_int.h>
