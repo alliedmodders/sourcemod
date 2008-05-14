@@ -166,7 +166,7 @@ public Action:Command_Who(client, args)
 {
 	new bool:is_admin = false;
 	
-	if (client && GetUserFlagBits(client) != 0)
+	if (!client || (client && GetUserFlagBits(client) != 0))
 	{
 		is_admin = true;
 	}
