@@ -92,20 +92,57 @@ public ReadSimpleUsers()
 	CloseHandle(file);
 }
 
+
+
+DecodeAuthMethod(const String:auth[], String:method[32], &offset)
+{
+	if (StrContains(auth, "STEAM_") == 0)
+	{
+		strcopy(method, sizeof(method), AUTHMETHOD_STEAM);
+		offset = 0;
+	}
+	else
+	{
+		if (auth[0] == '!')
+		{
+			strcopy(method, sizeof(method), AUTHMETHOD_IP);
+			offset = 1;
+		}
+		else
+		{
+			strcopy(method, sizeof(method), AUTHMETHOD_NAME);
+			offset = 0;
+		}
+	}
+}
+
 ReadAdminLine(const String:line[])
 {
+	new bool:is_bound;
+	new AdminId:admin;
 	new String:auth[64];
-	new cur_idx = BreakString(line, auth, sizeof(auth));
-	new idx = cur_idx;
+	decl String:auth_method[32];
+	new idx, cur_idx, auth_offset;
 	
-	if (cur_idx == -1)
+	if ((cur_idx = BreakString(line, auth, sizeof(auth))) == -1)
 	{
 		/* This line is bad... we need at least two parameters */
 		return;
 	}
 	
-	/* Create the admin */
-	new AdminId:admin = CreateAdmin();
+	idx = cur_idx;
+	
+	/* Check if we can bind beforehand */
+	DecodeAuthMethod(auth, auth_method, auth_offset);
+	if ((admin = FindAdminByIdentity(auth_method, auth[auth_offset])) == INVALID_ADMIN_ID)
+	{
+		/* There is no binding, create the admin */
+		admin = CreateAdmin();
+	}
+	else
+	{
+		is_bound = true;
+	}
 	
 	/* Read flags */
 	new String:flags[64];	
@@ -133,7 +170,9 @@ ReadAdminLine(const String:line[])
 			return;
 		}
 		AdminInheritGroup(admin, gid);
-	} else {
+	}
+	else
+	{
 		new len = strlen(flags[flag_idx]);
 		new bool:is_default = false;
 		for (new i=0; i<len; i++)
@@ -172,15 +211,12 @@ ReadAdminLine(const String:line[])
 	}
 	
 	/* Now, bind the identity to something */
-	if (StrContains(auth, "STEAM_") == 0)
+	if (!is_bound)
 	{
-		BindAdminIdentity(admin, AUTHMETHOD_STEAM, auth);
-	} else {
-		if (auth[0] == '!')
+		if (!BindAdminIdentity(admin, auth_method, auth[auth_offset]))
 		{
-			BindAdminIdentity(admin, AUTHMETHOD_IP, auth[1]);
-		} else {
-			BindAdminIdentity(admin, AUTHMETHOD_NAME, auth);
+			/* We should never reach here */
+			ParseError("Failed to bind identity %s (method %s)", auth[auth_offset], auth_method);
 		}
 	}
 }

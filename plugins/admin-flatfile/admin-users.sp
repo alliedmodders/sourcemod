@@ -36,10 +36,14 @@
 #define USER_STATE_INADMIN		2
 
 static Handle:g_hUserParser = INVALID_HANDLE;
-static AdminId:g_CurUser = INVALID_ADMIN_ID;
 static g_UserState = USER_STATE_NONE;
 static String:g_CurAuth[64];
 static String:g_CurIdent[64];
+static String:g_CurName[64];
+static String:g_CurPass[64];
+static Handle:g_GroupArray;
+static g_CurFlags;
+static g_CurImmunity;
 
 public SMCResult:ReadUsers_NewSection(Handle:smc, const String:name[], bool:opt_quotes)
 {
@@ -54,16 +58,25 @@ public SMCResult:ReadUsers_NewSection(Handle:smc, const String:name[], bool:opt_
 		if (StrEqual(name, "Admins"))
 		{
 			g_UserState = USER_STATE_ADMINS;
-			g_CurUser = INVALID_ADMIN_ID;
-		} else {
+		}
+		else
+		{
 			g_IgnoreLevel++;
 		}
-	} else if (g_UserState == USER_STATE_ADMINS) {
+	}
+	else if (g_UserState == USER_STATE_ADMINS)
+	{
 		g_UserState = USER_STATE_INADMIN;
-		g_CurUser = CreateAdmin(name);
+		strcopy(g_CurName, sizeof(g_CurName), name);
 		g_CurAuth[0] = '\0';
 		g_CurIdent[0] = '\0';
-	} else {
+		g_CurPass[0] = '\0';
+		ClearArray(g_GroupArray);
+		g_CurFlags = 0;
+		g_CurImmunity = 0;
+	}
+	else
+	{
 		g_IgnoreLevel++;
 	}
 	
@@ -76,28 +89,22 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 									bool:key_quotes, 
 									bool:value_quotes)
 {
-	if (g_UserState != USER_STATE_INADMIN
-		|| g_IgnoreLevel
-		|| g_CurUser == INVALID_ADMIN_ID)
+	if (g_UserState != USER_STATE_INADMIN || g_IgnoreLevel)
 	{
 		return SMCParse_Continue;
 	}
 	
-	new bool:auth = false;
-	
 	if (StrEqual(key, "auth"))
 	{
-		auth = true;
 		strcopy(g_CurAuth, sizeof(g_CurAuth), value);
 	}
 	else if (StrEqual(key, "identity"))
 	{
-		auth = true;
 		strcopy(g_CurIdent, sizeof(g_CurIdent), value);
 	}
 	else if (StrEqual(key, "password")) 
 	{
-		SetAdminPassword(g_CurUser, value);
+		strcopy(g_CurPass, sizeof(g_CurPass), value);
 	} 
 	else if (StrEqual(key, "group")) 
 	{
@@ -105,39 +112,30 @@ public SMCResult:ReadUsers_KeyValue(Handle:smc,
 		if (id == INVALID_GROUP_ID)
 		{
 			ParseError("Unknown group \"%s\"", value);
-		} else if (!AdminInheritGroup(g_CurUser, id)) {
-			ParseError("Unable to inherit group \"%s\"", value);
 		}
+
+		PushArrayCell(g_GroupArray, id);
 	} 
 	else if (StrEqual(key, "flags")) 
 	{
 		new len = strlen(value);
 		new AdminFlag:flag;
 		
-		for (new i=0; i<len; i++)
+		for (new i = 0; i < len; i++)
 		{
 			if (!FindFlagByChar(value[i], flag))
 			{
 				ParseError("Invalid flag detected: %c", value[i]);
 			}
-			SetAdminFlag(g_CurUser, flag, true);
+			else
+			{
+				g_CurFlags |= FlagToBit(flag);
+			}
 		}
 	} 
 	else if (StrEqual(key, "immunity")) 
 	{
-		new level = StringToInt(value);
-		SetAdminImmunityLevel(g_CurUser, level);
-	}
-
-	if (auth && g_CurIdent[0] && g_CurAuth[0])
-	{
-		if (BindAdminIdentity(g_CurUser, g_CurAuth, g_CurIdent))
-		{
-			g_CurAuth[0] = '\0';
-			g_CurIdent[0] = '\0';
-		} else {
-			ParseError("Failed to bind auth \"%s\" to identity \"%s\"", g_CurAuth, g_CurIdent);
-		}
+		g_CurImmunity = StringToInt(value);
 	}
 	
 	return SMCParse_Continue;
@@ -153,9 +151,48 @@ public SMCResult:ReadUsers_EndSection(Handle:smc)
 	
 	if (g_UserState == USER_STATE_INADMIN)
 	{
+		/* Dump this user to memory */
+		if (g_CurIdent[0] != '\0' && g_CurAuth[0] != '\0')
+		{
+			decl AdminFlag:flags[26];
+			new AdminId:id, i, num_groups, num_flags;
+			
+			if ((id = FindAdminByIdentity(g_CurAuth, g_CurIdent)) == INVALID_ADMIN_ID)
+			{
+				id = CreateAdmin(g_CurName);
+				if (!BindAdminIdentity(id, g_CurAuth, g_CurIdent))
+				{
+					ParseError("Failed to bind auth \"%s\" to identity \"%s\"", g_CurAuth, g_CurIdent);
+				}
+			}
+			
+			num_groups = GetArraySize(g_GroupArray);
+			for (i = 0; i < num_groups; i++)
+			{
+				AdminInheritGroup(id, GetArrayCell(g_GroupArray, i));
+			}
+			
+			SetAdminPassword(id, g_CurPass);
+			if (GetAdminImmunityLevel(id) < g_CurImmunity)
+			{
+				SetAdminImmunityLevel(id, g_CurImmunity);
+			}
+			
+			num_flags = FlagBitsToArray(g_CurFlags, flags, sizeof(flags));
+			for (i = 0; i < num_flags; i++)
+			{
+				SetAdminFlag(id, flags[i], true);
+			}
+		}
+		else
+		{
+			ParseError("Failed to create admin: did you forget either the auth or identity properties?");
+		}
+		
 		g_UserState = USER_STATE_ADMINS;
-		g_CurUser = INVALID_ADMIN_ID;
-	} else if (g_UserState == USER_STATE_ADMINS) {
+	}
+	else if (g_UserState == USER_STATE_ADMINS)
+	{
 		g_UserState = USER_STATE_NONE;
 	}
 	
@@ -179,6 +216,8 @@ static InitializeUserParser()
 					   ReadUsers_KeyValue,
 					   ReadUsers_EndSection);
 		SMC_SetRawLine(g_hUserParser, ReadUsers_CurrentLine);
+		
+		g_GroupArray = CreateArray();
 	}
 }
 
@@ -199,7 +238,9 @@ ReadUsers()
 		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
 		{
 			ParseError("%s", buffer);
-		} else {
+		}
+		else
+		{
 			ParseError("Fatal parse error");
 		}
 	}
