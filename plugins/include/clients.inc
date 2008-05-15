@@ -35,11 +35,14 @@
 #endif
 #define _clients_included
 
+/**
+ * Network flow directions.
+ */
 enum NetFlow
 {
 	NetFlow_Outgoing = 0,	/**< Outgoing traffic */
 	NetFlow_Incoming,		/**< Incoming traffic */
-	NetFlow_Both			/**< Incoming and outgoing traffic */
+	NetFlow_Both,			/**< Both values added together */
 };
 
 #define MAXPLAYERS		64	/**< Maximum number of players that can be in server */
