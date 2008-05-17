@@ -88,13 +88,11 @@ bool CriticalHitManager::CreateCriticalDetour()
 
 	//If TempDetour returns non-zero we want to load something into eax and return this value
 
-	//IA32_Test_Rm_Reg(jit, eax, eax, something);
-	jit->write_ubyte(0x85);
-	jit->write_ubyte(0xC0);
+	//test eax, eax
+	IA32_Test_Rm_Reg(jit,  REG_EAX, REG_EAX, MOD_REG);
 
-	//JNZ critical_callback+50
-	jit->write_ubyte(0x75); 
-	jit->write_ubyte(50-((jit->outptr+1)-jit->outbase));
+	//jnz _skip
+	call = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
 
 	/* Patch old bytes in */
 	for (size_t i=0; i<critical_restore.bytes; i++)
@@ -106,13 +104,11 @@ bool CriticalHitManager::CreateCriticalDetour()
 	call = IA32_Jump_Imm32(jit, 0);
 	IA32_Write_Jump32_Abs(jit, call, (unsigned char *)critical_address + critical_restore.bytes);
 	
-	wr.outbase = (jitcode_t)critical_callback+50;
-	wr.outptr = wr.outbase;
-
-	//copy g_returnvalue into eax
-	jit->write_ubyte(0xA1);
-	jit->write_uint32((jit_uint32_t)&g_returnvalue);
-
+	//_skip:
+	//mov eax, [g_returnvalue]
+	//ret
+	IA32_Send_Jump8_Here(jit, call);
+	IA32_Mov_Eax_Mem(jit, (jit_int32_t)&g_returnvalue);
 	IA32_Return(jit);
 
 	return true;
