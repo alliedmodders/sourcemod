@@ -1405,6 +1405,49 @@ static cell_t GetMenuSelectionPosition(IPluginContext *pContext, const cell_t *p
 	return *s_CurSelectPosition;
 }
 
+static cell_t IsClientInVotePool(IPluginContext *pContext, const cell_t *params)
+{
+	int client;
+	IGamePlayer *pPlayer;
+
+	client = params[1];
+	if ((pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+
+	if (!g_Menus.IsVoteInProgress())
+	{
+		return pContext->ThrowNativeError("No vote is in progress");
+	}
+
+	return g_Menus.IsClientInVotePool(client) ? 1 : 0;
+}
+
+static cell_t RedrawClientVoteMenu(IPluginContext *pContext, const cell_t *params)
+{
+	int client;
+	IGamePlayer *pPlayer;
+
+	client = params[1];
+	if ((pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", client);
+	}
+
+	if (!g_Menus.IsVoteInProgress())
+	{
+		return pContext->ThrowNativeError("No vote is in progress");
+	}
+
+	if (!g_Menus.IsClientInVotePool(client))
+	{
+		return pContext->ThrowNativeError("Client is not in the voting pool");
+	}
+
+	return g_Menus.RedrawClientVoteMenu(client) ? 1 : 0;
+}
+
 class EmptyMenuHandler : public IMenuHandler
 {
 public:
@@ -1505,7 +1548,9 @@ REGISTER_NATIVES(menuNatives)
 	{"GetPanelStyle",			GetPanelStyle},
 	{"InsertMenuItem",			InsertMenuItem},
 	{"InternalShowMenu",		InternalShowMenu},
+	{"IsClientInVotePool",		IsClientInVotePool},
 	{"IsVoteInProgress",		IsVoteInProgress},
+	{"RedrawClientVoteMenu",	RedrawClientVoteMenu},
 	{"RedrawMenuItem",			RedrawMenuItem},
 	{"RemoveAllMenuItems",		RemoveAllMenuItems},
 	{"RemoveMenuItem",			RemoveMenuItem},

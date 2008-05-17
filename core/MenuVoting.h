@@ -72,6 +72,9 @@ public:
 	IBaseMenu *GetCurrentMenu();
 	bool IsCancelling();
 	unsigned int GetRemainingVoteDelay();
+	bool IsClientInVotePool(int client);
+	bool GetClientVoteChoice(int client, unsigned int *pItem);
+	bool RedrawToClient(int client);
 private:
 	void Reset(IMenuHandler *mh);
 	void DecrementPlayerCount();
@@ -93,6 +96,8 @@ private:
 	unsigned int m_NumVotes;
 	unsigned int m_VoteTime;
 	unsigned int m_VoteFlags;
+	float m_fStartTime;
+	unsigned int m_nMenuTime;
 	int m_ClientVotes[256+1];
 };
 

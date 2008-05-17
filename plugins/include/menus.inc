@@ -541,6 +541,28 @@ native SetVoteResultCallback(Handle:menu, VoteHandler:callback);
 native CheckVoteDelay();
 
 /**
+ * Returns whether a client is in the pool of clients allowed 
+ * to participate in the current vote.  This is determined by 
+ * the client list passed to StartVote().
+ *
+ * @param client			Client index.
+ * @return					True if client is allowed to vote, false otherwise.
+ * @error					If no vote is in progress or client index is invalid.
+ */
+native bool:IsClientInVotePool(client);
+
+/**
+ * Redraws the current vote menu to a client in the voting pool.
+ *
+ * @param client			Client index.
+ * @return					True on success, false if the client is in the vote pool 
+ *							but cannot vote again.
+ * @error					No vote in progress, client is not in the voting pool, 
+ *							or client index is invalid.
+ */
+native bool:RedrawClientVoteMenu(client);
+
+/**
  * Returns a style's global Handle.
  *
  * @param style			Menu Style.

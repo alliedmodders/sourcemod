@@ -89,6 +89,8 @@ public:
 	bool IsVoteInProgress();
 	void CancelVoting();
 	unsigned int GetRemainingVoteDelay();
+	bool IsClientInVotePool(int client);
+	bool RedrawClientVoteMenu(int client);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);

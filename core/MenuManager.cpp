@@ -790,3 +790,13 @@ unsigned int MenuManager::GetRemainingVoteDelay()
 {
 	return s_VoteHandler.GetRemainingVoteDelay();
 }
+
+bool MenuManager::IsClientInVotePool(int client)
+{
+	return s_VoteHandler.IsClientInVotePool(client);
+}
+
+bool MenuManager::RedrawClientVoteMenu(int client)
+{
+	return s_VoteHandler.RedrawToClient(client);
+}

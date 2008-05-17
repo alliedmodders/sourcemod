@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		14
+#define SMINTERFACE_MENUMANAGER_VERSION		15
 
 /**
  * @file IMenuManager.h
@@ -897,6 +897,23 @@ namespace SourceMod
 		 * @return				Number of seconds to wait.
 		 */
 		virtual unsigned int GetRemainingVoteDelay() =0;
+
+		/**
+		 * @brief Returns whether a client is in the "allowed to vote" pool determined 
+		 * by the initial call to StartVote().
+		 *
+		 * @param client		Client index.
+		 * @return				True if client is allowed to vote, false on failure.
+		 */
+		virtual bool IsClientInVotePool(int client) =0;
+
+		/**
+		 * @brief Redraws the current vote menu to a client in the voting pool.
+		 *
+		 * @param client		Client index.
+		 * @return				True on success, false if client is not allowed to vote.
+		 */
+		virtual bool RedrawClientVoteMenu(int client) =0;
 	};
 }
 

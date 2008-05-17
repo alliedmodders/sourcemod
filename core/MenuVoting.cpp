@@ -113,14 +113,19 @@ void VoteMenuHandler::OnClientDisconnected(int client)
 		return;
 	}
 
-	/* Wipe out their vote if they had one */
+	/* Wipe out their vote if they had one.  We have to make sure the the the
+	 * newly connected client is not allowed to vote. 
+	 */
 	int item;
-	if ((item = m_ClientVotes[client]) >= 0)
+	if ((item = m_ClientVotes[client]) >= -1)
 	{
-		assert((unsigned)item < m_Items);
-		assert(m_Votes[item] > 0);
-		m_Votes[item]--;
-		m_ClientVotes[client] = -1;
+		if (item >= 0)
+		{
+			assert((unsigned)item < m_Items);
+			assert(m_Votes[item] > 0);
+			m_Votes[item]--;
+		}
+		m_ClientVotes[client] = -2;
 	}
 }
 
@@ -129,18 +134,28 @@ bool VoteMenuHandler::IsVoteInProgress()
 	return (m_pCurMenu != NULL);
 }
 
-bool VoteMenuHandler::StartVote(IBaseMenu *menu, unsigned int num_clients, int clients[], unsigned int max_time, unsigned int flags/* =0 */)
+bool VoteMenuHandler::StartVote(IBaseMenu *menu,
+								unsigned int num_clients,
+								int clients[],
+								unsigned int max_time,
+								unsigned int flags/* =0 */)
 {
 	if (!InitializeVoting(menu, menu->GetHandler(), max_time, flags))
 	{
 		return false;
 	}
 
+	/* Note: we can use game time and not universal time because 
+	 * if we're voting then players are in-game.
+	 */
+
 	float fVoteDelay = sm_vote_delay.GetFloat();
 	if (fVoteDelay < 1.0)
 	{
 		g_next_vote = 0.0;
-	} else {
+	}
+	else
+	{
 		/* This little trick breaks for infinite votes!
 		 * However, we just ignore that since those 1) shouldn't exist and 
 		 * 2) people must be checking IsVoteInProgress() beforehand anyway.
@@ -148,14 +163,73 @@ bool VoteMenuHandler::StartVote(IBaseMenu *menu, unsigned int num_clients, int c
 		g_next_vote = gpGlobals->curtime + fVoteDelay + (float)max_time;
 	}
 
+	m_fStartTime = gpGlobals->curtime;
+	m_nMenuTime = max_time;
+
 	for (unsigned int i=0; i<num_clients; i++)
 	{
+		if (clients[i] < 1 || clients[i] > 256)
+		{
+			continue;
+		}
 		menu->Display(clients[i], max_time, this);
 	}
 
 	StartVoting();
 
 	return true;
+}
+
+bool VoteMenuHandler::IsClientInVotePool(int client)
+{
+	if (client < 1 
+		|| client > g_Players.MaxClients() 
+		|| m_pCurMenu == NULL)
+	{
+		return false;
+	}
+
+	return (m_ClientVotes[client] > -2);
+}
+
+bool VoteMenuHandler::GetClientVoteChoice(int client, unsigned int *pItem)
+{
+	if (!IsClientInVotePool(client)
+		|| m_ClientVotes[client] == -1)
+	{
+		return false;
+	}
+
+	*pItem = m_ClientVotes[client];
+
+	return true;
+}
+
+bool VoteMenuHandler::RedrawToClient(int client)
+{
+	unsigned int time_limit;
+
+	if (!IsClientInVotePool(client))
+	{
+		return false;
+	}
+
+	if (m_nMenuTime == MENU_TIME_FOREVER)
+	{
+		time_limit = m_nMenuTime;
+	}
+	else
+	{
+		time_limit = (int)((float)m_nMenuTime - (gpGlobals->curtime - m_fStartTime));
+		
+		/* Make sure this doesn't round to zero */
+		if (time_limit == MENU_TIME_FOREVER)
+		{
+			time_limit = 1;
+		}
+	}
+
+	return m_pCurMenu->Display(client, time_limit, this);
 }
 
 bool VoteMenuHandler::InitializeVoting(IBaseMenu *menu, 
@@ -187,7 +261,9 @@ bool VoteMenuHandler::InitializeVoting(IBaseMenu *menu,
 			m_Votes[i] = 0;
 		}
 		m_Votes.resize(m_Items, 0);
-	} else {
+	}
+	else
+	{
 		for (unsigned int i=0; i<m_Items; i++)
 		{
 			m_Votes[i] = 0;
@@ -252,7 +328,9 @@ void VoteMenuHandler::EndVoting()
 	if (fVoteDelay < 1.0)
 	{
 		g_next_vote = 0.0;
-	} else {
+	}
+	else
+	{
 		g_next_vote = gpGlobals->curtime + fVoteDelay;
 	}
 

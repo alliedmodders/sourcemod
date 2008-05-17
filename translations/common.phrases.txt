@@ -222,32 +222,14 @@
 		"en"			"The given player is not fully in-game yet."
 	}
 	
-	/* :UNUSED: */
-	"Played Sound"
+	"Cannot participate in vote"
 	{
-		"#format"		"{1:s}"
-		"en"			"Played sound on player '{1}'"
+		"en"			"You cannot participate in this vote."
 	}
 	
-	/* :UNUSED: */
-	"Slapped player"
+	"Cannot change vote"
 	{
-		"#format"		"{1:s}"
-		"en"			"Slapped player '{1}'"
-	}
-	
-	/* :UNUSED: */
-	"Slayed player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Slayed player '{1}'"
-	}
-	
-	/* :UNUSED: */
-	"Kicked player"
-	{
-		"#format"		"{1:s}"
-		"en"			"Kicked player '{1}'"
+		"en"			"You cannot change your selection for this vote."
 	}
 	"On"
 	{
