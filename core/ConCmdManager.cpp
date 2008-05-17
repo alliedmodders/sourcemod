@@ -494,7 +494,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	
 	/* If we got here, the command failed... */
 	char buffer[128];
-	if (!CoreTranslate(buffer, sizeof(buffer), "%T", 1, NULL, "No Access", &client))
+	if (!CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
 		UTIL_Format(buffer, sizeof(buffer), "You do not have access to this command");
 	}
