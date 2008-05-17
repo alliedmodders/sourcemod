@@ -92,7 +92,7 @@ bool CriticalHitManager::CreateCriticalDetour()
 	IA32_Test_Rm_Reg(jit,  REG_EAX, REG_EAX, MOD_REG);
 
 	//jnz _skip
-	call = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
+	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
 
 	/* Patch old bytes in */
 	for (size_t i=0; i<critical_restore.bytes; i++)
@@ -107,7 +107,7 @@ bool CriticalHitManager::CreateCriticalDetour()
 	//_skip:
 	//mov eax, [g_returnvalue]
 	//ret
-	IA32_Send_Jump8_Here(jit, call);
+	IA32_Send_Jump8_Here(jit, jmp);
 	IA32_Mov_Eax_Mem(jit, (jit_int32_t)&g_returnvalue);
 	IA32_Return(jit);
 
