@@ -353,7 +353,7 @@
 			"GiveNamedItem"
 			{
 				"windows"	"328"
-				"linux"		"330"
+				"linux"		"329"
 			}
 			"RemovePlayerItem"
 			{
