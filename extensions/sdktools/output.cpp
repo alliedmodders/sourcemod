@@ -289,12 +289,10 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 					CleanUpHook(hook);
 					continue;
 				}
-
-				hook->in_use = false;
-				_iter++;
-
-				continue;
 			}
+
+			hook->in_use = false;
+			_iter++;
 		}
 	}
 }
