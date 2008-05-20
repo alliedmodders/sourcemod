@@ -153,6 +153,15 @@ native bool:GetMapTimeLimit(&time);
 native bool:ExtendMapTimeLimit(time);
 
 /**
+ * Returns the number of seconds in between game server ticks.
+ *
+ * Note: A tick, in this context, is a frame.
+ *
+ * @return					Number of seconds in between ticks.
+ */
+native Float:GetTickInterval();
+
+/**
  * Notification that the map's time left has changed via a change in the time 
  * limit or a change in the game rules (such as mp_restartgame).  This is useful 
  * for plugins trying to create timers based on the time left in the map.
