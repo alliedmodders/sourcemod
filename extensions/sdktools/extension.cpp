@@ -166,6 +166,7 @@ void SDKTools::SDK_OnUnload()
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
+	plsys->RemovePluginsListener(&g_OutputManager);
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
 
