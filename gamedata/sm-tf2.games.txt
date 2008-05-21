@@ -26,13 +26,13 @@
 			{
 				"library"	"server"
 				"linux"		"@_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x83\xEC\x08\x56\x57\x6A\x00\x68"
+				"windows"	"\x83\xEC\x08\x53\x56\x6A\x00"
 			}
 			"CalcCriticalMelee"
 			{
 				"library"	"server"
 				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x83\xEC\x08\x56\x57\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x8B\xF8"
+				"windows"	"\x83\xEC\x08\x53\x57\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x8B\xD8"
 			}
 			"CalcCriticalKnife"
 			{
@@ -51,7 +51,7 @@
 			}
 			"CalcCriticalBackup"
 			{
-				"linux"		"7"
+				"linux"		"6"
 				"windows"	"7"
 			}
 			"CalcCriticalMeleeBackup"
