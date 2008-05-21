@@ -134,7 +134,7 @@ while ( ($cur_module, $mod_i) = each(%modules) )
 		s/\$PMINOR\$/$minor/g;
 		s/\$PREVISION\$/$revision/g;
 		s/\$GLOBAL_BUILD\$/$rev/g;
-		s/\$LOCAL_BUILD\$/$local_rev/g;
+		s/\$LOCAL_BUILD\$/$rev/g;
 		print OUTFILE $_;
 	}
 	close(OUTFILE);
