@@ -1,0 +1,23 @@
+SourceMod Changelog
+
+SourceMod 1.0.1 [2008-05-20]
+
+Changes:
+
+ - Fixed SDKTools compatibility for latest TF2 update.
+ - Removed GivePlayerItem from TF2 (TF2 update broke functionality).
+ - Fixed amb1688: GivePlayerItem offset was wrong for DoD:S Linux.
+ - Fixed amb1657: Server console did not see admin version of sm_who.
+ - Fixed amb1648: Stack corruption from GetClientEyeAngles() on Windows.
+ - Fixed amb1646: NetFlow_Both did not work for client network statistics.
+ - Fixed amb1601: Vote FF menu read from sv_alltalk cvar instead of mp_friendlyfire.
+ - Fixed amb1591: Fixed listen server crashes on mods like IOS:S which pre-add more than one bot.
+ - Fixed amb1586: GetTeamName() could crash the server if called on load.
+ - Fixed mapchooser's round counting for TF2.
+ - Fixed a bug where an RTE on plugin load would throw a message referring to the plugin as "-1".
+ - Symbols are no longer stripped on Linux.
+ - Minor SourceMod SDK fixes.
+
+Notes:
+
+ The extension interface version has been bumped.  Any extensions compiled against 1.0.1 will require 1.0.1 or higher to run.  Extensions against 1.0.0 will continue to run normally.
