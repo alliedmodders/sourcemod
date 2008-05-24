@@ -1438,6 +1438,12 @@ void AdminCache::SetAdminPassword(AdminId id, const char *password)
 		return;
 	}
 
+	if (password[0] == '\0')
+	{
+		pUser->password = -1;
+		return;
+	}
+
 	int i_password = m_pStrings->AddString(password);
 	pUser = (AdminUser *)m_pMemory->GetAddress(id);
 	pUser->password = i_password;
