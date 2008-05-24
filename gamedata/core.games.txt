@@ -20,6 +20,10 @@
 	
 	"dodsbeta"
 	{
+		"Keys"
+		{
+			"RadioMenuTimeout"		"4"
+		}
 		"Offsets"
 		{
 			"GetDataDescMap"
