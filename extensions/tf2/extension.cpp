@@ -63,11 +63,16 @@ SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, in
 
 bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+	if (strcmp(g_pSM->GetGameFolderName(), "tf") != 0)
+	{
+		snprintf(error, maxlength, "Cannot Load TF2 Extension on mods other than TF2");
+		return false;
+	}
+
 	ServerClass *sc = UTIL_FindServerClass("CTFPlayer");
 	if (sc == NULL)
 	{
 		snprintf(error, maxlength, "Could not find CTFPlayer server class");
-
 		return false;
 	}
 
@@ -76,7 +81,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!UTIL_FindDataTable(sc->m_pTable, "DT_TFPlayerShared", playerSharedOffset, 0))
 	{
 		snprintf(error, maxlength, "Could not find DT_TFPlayerShared data table");
-
 		return false;
 	}
 
@@ -85,7 +89,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	char conf_error[255];
 	if (!gameconfs->LoadGameConfigFile("sm-tf2.games", &g_pGameConf, conf_error, sizeof(conf_error)))
 	{
-		if (error)
+		if (conf_error)
 		{
 			snprintf(error, maxlength, "Could not read sm-tf2.games.txt: %s", conf_error);
 		}
