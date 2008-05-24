@@ -54,6 +54,12 @@ extern sp_nativeinfo_t g_CSNatives[];
 
 bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0)
+	{
+		snprintf(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S");
+		return false;
+	}
+
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 
 	char conf_error[255];
