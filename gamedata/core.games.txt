@@ -18,6 +18,18 @@
 		}
 	}
 	
+	"dodsbeta"
+	{
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+	
 	"ship"
 	{
 		"Offsets"
@@ -51,6 +63,7 @@
 		{
 			"game"		"cstrike"
 			"game"		"dod"
+			"game"		"dodsbeta"
 			"game"		"sourceforts"
 			"game"		"insurgency"
 			"game"		"Insurgency"
