@@ -71,6 +71,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_reloadadmins", Command_ReloadAdmins, ADMFLAG_BAN, "sm_reloadadmins");
 	RegAdminCmd("sm_cancelvote", Command_CancelVote, ADMFLAG_VOTE, "sm_cancelvote");
+	RegConsoleCmd("sm_revote", Command_ReVote);
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -366,5 +367,33 @@ public Action:Command_Rcon(client, args)
 
 	ServerCommand("%s", argstring);
 
+	return Plugin_Handled;
+}
+
+public Action:Command_ReVote(client, args)
+{
+	if (client == 0)
+	{
+		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
+		return Plugin_Handled;
+	}
+	
+	if (!IsVoteInProgress())
+	{
+		ReplyToCommand(client, "[SM] %t", "Vote Not In Progress");
+		return Plugin_Handled;
+	}
+	
+	if (!IsClientInVotePool(client))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot participate in vote");
+		return Plugin_Handled;
+	}
+	
+	if (!RedrawClientVoteMenu(client))
+	{
+		ReplyToCommand(client, "[SM] %t", "Cannot change vote");
+	}
+	
 	return Plugin_Handled;
 }
