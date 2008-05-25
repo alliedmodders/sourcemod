@@ -89,6 +89,12 @@ public Action:Command_Cookie(client, args)
 		return Plugin_Handled;
 	}
 	
+	if (client == 0)
+	{
+		PrintToServer("%T", "No Console", LANG_SERVER);
+		return Plugin_Handled;	
+	}
+	
 	decl String:name[30];
 	name[0] = '\0';
 	GetCmdArg(1, name, sizeof(name));
