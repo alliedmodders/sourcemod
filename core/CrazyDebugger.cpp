@@ -168,9 +168,7 @@ public:
 			}
 			else if (strcasecmp(me32.szModule, "steam.dll") == 0)
 			{
-				/* Steam.dll is loaded by engine.dll, so we can exit the loop here */
 				steam = me32.modBaseAddr;
-				break;
 			}
 		} while  (Module32Next(hModuleList, &me32));
 
