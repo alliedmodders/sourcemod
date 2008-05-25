@@ -410,6 +410,7 @@ public DynamicMenuItemHandler(Handle:topmenu,
 		strcopy(g_command[param], sizeof(g_command[]), output[Item_cmd]);
 					
 		g_currentPlace[param][Place_Item] = location;
+		g_currentPlace[param][Place_ReplaceNum] = 1;
 		
 		ParamCheck(param);
 	}
