@@ -34,6 +34,8 @@
 #pragma semicolon 1
 
 #include <sourcemod>
+#include "include/nextmap.inc"
+
  
 public Plugin:myinfo = 
 {
@@ -44,12 +46,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new bool:g_IntermissionCalled;
-new UserMsg:g_VGUIMenu;
  
-new Handle:g_Cvar_Chattime;
-new Handle:g_Cvar_Nextmap;
-
 new g_MapPos = -1;
 new Handle:g_MapList = INVALID_HANDLE;
 new g_MapListSerial = -1;
@@ -59,19 +56,7 @@ public OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("nextmap.phrases");
 	
-	g_VGUIMenu = GetUserMessageId("VGUIMenu");
-	if (g_VGUIMenu == INVALID_MESSAGE_ID)
-	{
-		LogError("FATAL: Cannot find VGUIMenu user message id. Nextmap not loaded.");
-		SetFailState("VGUIMenu Not Found");
-	}
-	
 	g_MapList = CreateArray(32);
-
-	HookUserMessage(g_VGUIMenu, UserMsg_VGUIMenu);
-	
-	g_Cvar_Nextmap = CreateConVar("sm_nextmap", "", "Sets the Next Map", FCVAR_NOTIFY);
-	g_Cvar_Chattime = FindConVar("mp_chattime");
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
@@ -87,13 +72,13 @@ public OnPluginStart()
 	// Set to the current map so OnMapStart() will know what to do
 	decl String:currentMap[64];
 	GetCurrentMap(currentMap, 64);
-	SetConVarString(g_Cvar_Nextmap, currentMap);
+	SetNextMap(currentMap);
 }
  
 public OnConfigsExecuted()
 {
 	decl String:lastMap[64], String:currentMap[64];
-	GetConVarString(g_Cvar_Nextmap, lastMap, 64);
+	GetNextMap(lastMap, sizeof(lastMap));
 	GetCurrentMap(currentMap, 64);
 	
 	// Why am I doing this? If we switched to a new map, but it wasn't what we expected (Due to sm_map, sm_votemap, or
@@ -103,11 +88,6 @@ public OnConfigsExecuted()
 	{
 		FindAndSetNextMap();
 	}
-}
- 
-public OnMapEnd()
-{
-	g_IntermissionCalled = false;
 }
 
 public Action:Command_Say(client, args)
@@ -131,7 +111,7 @@ public Action:Command_Say(client, args)
 	if (strcmp(message, "nextmap", false) == 0)
 	{
 		decl String:map[32];
-		GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
+		GetNextMap(map, sizeof(map));
 		
 		PrintToChat(client, "%t", "Next Map", map);
 	}
@@ -156,10 +136,10 @@ public Action:Command_SetNextmap(client, args)
 		return Plugin_Handled;
 	}
 
-	ShowActivity(client, "%t", "Cvar changed", "sm_nextmap", map);
-	LogMessage("\"%L\" changed sm_nextmap to \"%s\"", client, map);
+	ShowActivity(client, "%t", "Changed Next Map", map);
+	LogMessage("\"%L\" changed nextmap to \"%s\"", client, map);
 
-	SetConVarString(g_Cvar_Nextmap, map);
+	SetNextMap(map);
 
 	return Plugin_Handled;
 }
@@ -179,74 +159,15 @@ public Action:Command_List(client, args)
 	return Plugin_Handled;
 }
  
-public Action:UserMsg_VGUIMenu(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init)
-{
-	if (g_IntermissionCalled)
-	{
-		return Plugin_Handled;
-	}
-	
-	decl String:type[15];
-
-	/* If we don't get a valid string, bail out. */
-	if (BfReadString(bf, type, sizeof(type)) < 0)
-	{
-		return Plugin_Handled;
-	}
- 
-	if (BfReadByte(bf) == 1 && BfReadByte(bf) == 0 && (strcmp(type, "scores", false) == 0))
-	{
-		g_IntermissionCalled = true;
-		
-		decl String:map[32];
-		new Float:fChatTime = GetConVarFloat(g_Cvar_Chattime);
-		
-		GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
-		
-		if (!IsMapValid(map))
-		{
-			if (g_MapPos == -1)
-			{
-				FindAndSetNextMap();
-			}
-			GetArrayString(g_MapList, g_MapPos, map, sizeof(map));
-		}
-		
-		if (fChatTime < 2.0)
-			SetConVarFloat(g_Cvar_Chattime, 2.0);
-		
-		new Handle:dp;
-		CreateDataTimer(fChatTime - 1.0, Timer_ChangeMap, dp);
-		WritePackString(dp, map);
-	}
-	
-	return Plugin_Handled;
-}
-
 public Action:Command_Nextmap(args)
 {
 	decl String:map[64];
 	
-	GetConVarString(g_Cvar_Nextmap, map, sizeof(map));
+	GetNextMap(map, sizeof(map));
 	
 	ReplyToCommand(0, "%t", "Next Map", map);
 	
 	return Plugin_Handled;
-}
- 
-public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
-{
-	new String:map[32];
-	
-	ResetPack(dp);
-	ReadPackString(dp, map, sizeof(map));
- 
-	InsertServerCommand("changelevel \"%s\"", map);
-	ServerExecute();
-	
-	LogMessage("Nextmap changed map to \"%s\"", map);
-	
-	return Plugin_Stop;
 }
  
 FindAndSetNextMap()
@@ -291,5 +212,5 @@ FindAndSetNextMap()
 		g_MapPos = 0;	
  
  	GetArrayString(g_MapList, g_MapPos, mapName, sizeof(mapName));
-	SetConVarString(g_Cvar_Nextmap, mapName);
+	SetNextMap(mapName);
 }
