@@ -439,6 +439,7 @@ public ParamCheck(client)
 		GetArrayArray(outputItem[Item_submenus], g_currentPlace[client][Place_ReplaceNum] - 1, outputSubmenu[0]);
 		
 		new Handle:itemMenu = CreateMenu(Menu_Selection);
+		SetMenuExitBackButton(itemMenu, true);
 			
 		if ((outputSubmenu[Submenu_type] == SubMenu_Group) || (outputSubmenu[Submenu_type] == SubMenu_GroupPlayer))
 		{	
@@ -616,7 +617,7 @@ public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
 		ParamCheck(param1);
 	}
 	
-	if (action == MenuAction_Cancel && param2 == MenuCancel_Exit)
+	if (action == MenuAction_Cancel && param2 == MenuCancel_ExitBack)
 	{
 		//client exited we should go back to submenu i think
 		DisplayTopMenu(hAdminMenu, param1, TopMenuPosition_LastCategory);
