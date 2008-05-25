@@ -40,6 +40,7 @@
 #include "smsdk_ext.h"
 #include <IBinTools.h>
 #include <server_class.h>
+#include <igameevents.h>
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -48,7 +49,8 @@
 class TF2Tools : 
 	public SDKExtension,
 	public ICommandTargetProcessor,
-	public IConCommandBaseAccessor
+	public IConCommandBaseAccessor,
+	public IGameEventListener2
 {
 public:
 	/**
@@ -91,6 +93,9 @@ public:
 public:
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 	bool RegisterConCommandBase(ConCommandBase *pVar);
+
+	IGameEventManager2 *m_GameEventManager;
+	void FireGameEvent( IGameEvent *event );
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**

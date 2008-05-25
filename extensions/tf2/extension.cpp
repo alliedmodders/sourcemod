@@ -120,6 +120,9 @@ bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 	GET_V_IFACE_CURRENT(GetServerFactory, gameents, IServerGameEnts, INTERFACEVERSION_SERVERGAMEENTS);
 
+	GET_V_IFACE_CURRENT(GetEngineFactory, m_GameEventManager, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
+	m_GameEventManager->AddListener(this, "teamplay_restart_round", true);
+
 	return true;
 }
 
@@ -144,6 +147,11 @@ bool TF2Tools::RegisterConCommandBase(ConCommandBase *pVar)
 	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);
 }
 
+void TF2Tools::FireGameEvent( IGameEvent *event )
+{
+	timersys->NotifyOfGameStart();
+	timersys->MapTimeLeftChanged();
+}
 
 bool TF2Tools::QueryRunning(char *error, size_t maxlength)
 {
