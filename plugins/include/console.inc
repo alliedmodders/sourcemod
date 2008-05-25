@@ -337,9 +337,9 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * @param cmd			String containing command to register.
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param adminflags	Administrative flags (bitstring) to use for permissions.
+ * @param description	Optional description to use for help.
  * @param group			String containing the command group to use.  If empty,
  * 						the plugin's filename will be used instead.
- * @param description	Optional description to use for help.
  * @param flags			Optional console flags.
  * @noreturn
  * @error				Command name is the same as an existing convar.
