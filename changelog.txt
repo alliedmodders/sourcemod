@@ -10,7 +10,7 @@ Changes:
  - Fixed amb1657: Server console did not see admin version of sm_who.
  - Fixed amb1648: Stack corruption from GetClientEyeAngles() on Windows.
  - Fixed amb1646: NetFlow_Both did not work for client network statistics.
- - Fixed amb1601: Vote FF menu read from sv_alltalk cvar instead of mp_friendlyfire.
+ - Fixed amb1601: Vote FF menu reading from sv_alltalk cvar instead of mp_friendlyfire.
  - Fixed amb1591: Fixed listen server crashes on mods like IOS:S which pre-add more than one bot.
  - Fixed amb1586: GetTeamName() could crash the server if called on load.
  - Fixed mapchooser's round counting for TF2.
