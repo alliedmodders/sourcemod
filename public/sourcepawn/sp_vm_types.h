@@ -203,6 +203,7 @@ typedef struct sp_native_s
 	const char *		name;	/**< Name of function */
 	uint32_t			status;	/**< Status flags */
 	uint32_t			flags;	/**< Native flags */
+	void *				user;	/**< Host-specific data */
 } sp_native_t;
 
 /** 

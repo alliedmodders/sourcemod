@@ -44,7 +44,7 @@
 #define SOURCEPAWN_ENGINE_API_VERSION	3
 
 /** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		6
+#define SOURCEPAWN_VM_API_VERSION		7
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -500,22 +500,18 @@ namespace SourcePawn
 		virtual int PushCellsFromArray(cell_t array[], unsigned int numcells) =0;
 
 		/** 
-		 * @brief Binds a list of native names and their function pointers to a context.
-		 * If num is 0, the list is read until an entry with a NULL name is reached.
-		 * If overwrite is non-zero, already registered natives will be overwritten.
+		 * @brief Deprecated; do not use.
 		 * 
-		 * @param natives		Array of natives.
-		 * @param num			Number of natives in array.
-		 * @param overwrite		Toggles overwrite.
+		 * @param natives		Deprecated; do not use.
+		 * @param num			Deprecated; do not use.
+		 * @param overwrite		Deprecated; do not use.
 		 */
 		virtual int BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite) =0;
 
 		/**
-		 * @brief Binds a single native.  Overwrites any existing bind.
-		 * If the context does not contain the native that will be binded the function will return
-		 *  with a SP_ERROR_NOT_FOUND error.
+		 * @brief Deprecated; do not use.
 		 *
-		 * @param native		Pointer to native.
+		 * @param native		Deprecated; do not use.
 		 */
 		virtual int BindNative(const sp_nativeinfo_t *native) =0;
 
@@ -599,10 +595,10 @@ namespace SourcePawn
 #endif
 
 		/**
-		 * @brief Binds a single native to a given native index.
+		 * @brief Deprecated; do not use.
 		 *
-		 * @param index			Index to bind at.
-		 * @param native		Native function to bind.
+		 * @param index			Deprecated; do not use.
+		 * @param native		Deprecated; do not use.
 		 */
 		virtual int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native) =0;
 

@@ -50,4 +50,8 @@ public:
 	sp_nativeinfo_t *m_NativeList;
 };
 
+class CNativeOwner;
+
+extern CNativeOwner *g_pCoreNatives;
+
 #endif //_INCLUDE_SOURCEMOD_CORE_AUTONATIVES_H_

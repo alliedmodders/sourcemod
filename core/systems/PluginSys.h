@@ -54,6 +54,8 @@
 #include "convar_sm.h"
 #endif
 #include "ITranslator.h"
+#include "NativeOwner.h"
+#include "ShareSys.h"
 
 using namespace SourceHook;
 
@@ -120,14 +122,6 @@ struct ContextPair
 	IVirtualMachine *vm;
 };
 
-struct FakeNative
-{
-	IPluginContext *ctx;
-	IPluginFunction *call;
-	String name;
-	SPVM_NATIVE_FUNC func;
-};
-
 enum LoadRes
 {
 	LoadRes_Successful,
@@ -144,18 +138,10 @@ struct AutoConfig
 };
 
 class CPlugin;
-struct WeakNative
-{
-	WeakNative(CPlugin *plugin, uint32_t index)
-	{
-		pl = plugin;
-		idx = index;
-	}
-	CPlugin *pl;
-	uint32_t idx;
-};
 
-class CPlugin : public IPlugin
+class CPlugin : 
+	public IPlugin,
+	public CNativeOwner
 {
 	friend class CPluginManager;
 	friend class CFunction;
@@ -177,6 +163,7 @@ public:
 	unsigned int CalcMemUsage();
 	bool SetProperty(const char *prop, void *ptr);
 	bool GetProperty(const char *prop, void **ptr, bool remove=false);
+	void DropEverything();
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -266,6 +253,7 @@ public:
 
 	Handle_t GetMyHandle();
 
+	bool AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	unsigned int GetConfigCount();
 	AutoConfig *GetConfig(unsigned int i);
@@ -292,10 +280,6 @@ private:
 	Handle_t m_handle;
 	bool m_WasRunning;
 	IPhraseCollection *m_pPhrases;
-	List<CPlugin *> m_dependents;
-	List<CPlugin *> m_dependsOn;
-	List<FakeNative *> m_fakeNatives;
-	List<WeakNative> m_WeakNatives;
 	List<String> m_RequiredLibs;
 	List<String> m_Libraries;
 	Trie *m_pProps;
@@ -382,11 +366,6 @@ public:
 	bool IsLateLoadTime() const;
 
 	/**
-	 * Adds natives from core into the native pool.
-	 */
-	void RegisterNativesFromCore(sp_nativeinfo_t *natives);
-
-	/**
 	 * Converts a Handle to an IPlugin if possible.
 	 */
 	IPlugin *PluginFromHandle(Handle_t handle, HandleError *err);
@@ -461,11 +440,6 @@ private:
 	bool RunSecondPass(CPlugin *pPlugin, char *error, size_t maxlength);
 
 	/**
-	 * Adds any globally registered natives to a plugin
-	 */
-	void AddCoreNativesToPlugin(CPlugin *pPlugin);
-
-	/**
 	 * Runs an extension pass on a plugin.
 	 */
 	bool LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass, char *error, size_t maxlength);
@@ -486,11 +460,7 @@ public:
 	{
 		return m_MyIdent;
 	}
-public:
-	bool AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func);
-	SPVM_NATIVE_FUNC FindCoreNative(const char *name);
 private:
-	void AddFakeNativesToPlugin(CPlugin *pPlugin);
 	void TryRefreshDependencies(CPlugin *pOther);
 private:
 	List<IPluginsListener *> m_listeners;
@@ -500,11 +470,9 @@ private:
 	Trie *m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
-	Trie *m_pCoreNatives;
 
 	/* Dynamic native stuff */
 	List<FakeNative *> m_Natives;
-	Trie *m_pNativeLookup;
 
 	bool m_LoadingLocked;
 };

@@ -31,8 +31,13 @@
 
 #include "sm_autonatives.h"
 #include "PluginSys.h"
+#include "NativeOwner.h"
+
+CNativeOwner g_CoreNatives;
+
+CNativeOwner *g_pCoreNatives = &g_CoreNatives;
 
 void CoreNativesToAdd::OnSourceModAllInitialized()
 {
-	g_PluginSys.RegisterNativesFromCore(m_NativeList);
+	g_CoreNatives.AddNatives(m_NativeList);
 }

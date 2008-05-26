@@ -333,7 +333,7 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, g_PluginSys.FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
 	}
 
 	return hndl;
@@ -391,7 +391,7 @@ static cell_t SQL_TConnect(IPluginContext *pContext, const cell_t *params)
 	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, g_PluginSys.FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
 	}
 
 	/* Finally, add to the thread if we can */
@@ -462,7 +462,7 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 		CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 		if (pExt)
 		{
-			g_Extensions.BindChildPlugin(pExt, g_PluginSys.FindPluginByContext(pContext->GetContext()));
+			g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
 		}
 
 		return hndl;

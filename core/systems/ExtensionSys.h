@@ -43,6 +43,7 @@
 #include <IPluginSys.h>
 #include <IRootConsoleMenu.h>
 #include "PluginSys.h"
+#include "NativeOwner.h"
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -55,15 +56,9 @@ struct sm_extnative_t
 	const sp_nativeinfo_t *info;
 };
 
-/* Replacement native */
-struct sm_repnative_t
-{
-	CExtension *owner;
-	sp_nativeinfo_t info;
-	SPVM_NATIVE_FUNC original;
-};
-
-class CExtension : public IExtension
+class CExtension : 
+	public IExtension,
+	public CNativeOwner
 {
 	friend class CExtensionManager;
 public:
@@ -81,8 +76,7 @@ public:
 	void AddDependency(IfaceInfo *pInfo);
 	void AddChildDependent(CExtension *pOther, SMInterface *iface);
 	void AddInterface(SMInterface *pInterface);
-	void AddPlugin(IPlugin *pPlugin);
-	void RemovePlugin(IPlugin *pPlugin);
+	void AddPlugin(CPlugin *pPlugin);
 	void MarkAllLoaded();
 	void AddLibrary(const char *library);
 public:
@@ -103,10 +97,6 @@ protected:
 	List<IfaceInfo> m_Deps;			/** Dependencies */
 	List<IfaceInfo> m_ChildDeps;	/** Children who might depend on us */
 	List<SMInterface *> m_Interfaces;
-	List<IPlugin *> m_Plugins;
-	List<const sp_nativeinfo_t *> m_Natives;
-	List<WeakNative> m_WeakNatives;
-	List<WeakNative> m_ReplacedNatives;
 	List<String> m_Libraries;
 	unsigned int unload_code;
 	bool m_bFullyLoaded;
@@ -169,26 +159,25 @@ public:
 	IExtension *LoadAutoExtension(const char *path);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
-	void BindChildPlugin(IExtension *pParent, IPlugin *pPlugin);
-	void AddNatives(IExtension *pOwner, const sp_nativeinfo_t *natives);
-	void BindAllNativesToPlugin(IPlugin *pPlugin);
+	void BindChildPlugin(IExtension *pParent, CPlugin *pPlugin);
 	void MarkAllLoaded();
 	void AddDependency(IExtension *pSource, const char *file, bool required, bool autoload);
 	void TryAutoload();
 	void AddLibrary(IExtension *pSource, const char *library);
 	bool LibraryExists(const char *library);
-	void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();
+	CNativeOwner *GetNativeOwner(IExtension *pExt)
+	{
+		CExtension *p = (CExtension *)pExt;
+		return p;
+	}
 private:
 	CExtension *FindByOrder(unsigned int num);
 private:
 	List<CExtension *> m_Libs;
-	List<sm_repnative_t> m_RepNativeList;
-	KTrie<sm_repnative_t> m_RepNatives;
-	KTrie<sm_extnative_t> m_ExtNatives;
 };
 
 extern CExtensionManager g_Extensions;

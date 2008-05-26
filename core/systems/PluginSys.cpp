@@ -134,10 +134,6 @@ unsigned int CPlugin::CalcMemUsage()
 	unsigned int base_size = 
 		sizeof(CPlugin) 
 		+ sizeof(IdentityToken_t)
-		+ (m_dependents.size() * sizeof(CPlugin *))
-		+ (m_dependsOn.size() * sizeof(CPlugin *))
-		+ (m_fakeNatives.size() * (sizeof(FakeNative *) + sizeof(FakeNative)))
-		+ (m_WeakNatives.size() * sizeof(WeakNative))
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
 		+ sm_trie_mem_usage(m_pProps);
 
@@ -159,13 +155,6 @@ unsigned int CPlugin::CalcMemUsage()
 		 i++)
 	{
 		base_size += (*i).size();
-	}
-
-	for (List<FakeNative *>::iterator i = m_fakeNatives.begin();
-		 i != m_fakeNatives.end();
-		 i++)
-	{
-		base_size += (*i)->name.size();
 	}
 
 	if (m_plugin != NULL)
@@ -740,19 +729,19 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		}	
 	}
 
-	List<FakeNative *>::iterator iter;
-	FakeNative *pNative;
+	List<NativeEntry *>::iterator iter;
+	NativeEntry *pNative;
 	sp_native_t *native;
 	uint32_t idx;
 	unsigned int unbound = 0;
 
-	for (iter = pOwner->m_fakeNatives.begin();
-		 iter != pOwner->m_fakeNatives.end();
+	for (iter = pOwner->m_Natives.begin();
+		 iter != pOwner->m_Natives.end();
 		 iter++)
 	{
 		pNative = (*iter);
 		/* Find this native! */
-		if (m_ctx.base->FindNativeByName(pNative->name.c_str(), &idx) != SP_ERROR_NONE)
+		if (m_ctx.base->FindNativeByName(pNative->name, &idx) != SP_ERROR_NONE)
 		{
 			continue;
 		}
@@ -773,8 +762,6 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	{
 		SetErrorState(Plugin_Error, "Depends on plugin: %s", pOwner->GetFilename());
 	}
-
-	m_dependsOn.remove(pOwner);
 }
 
 unsigned int CPlugin::GetConfigCount()
@@ -812,6 +799,56 @@ void CPlugin::AddConfig(bool autoCreate, const char *cfg, const char *folder)
 	c->create = autoCreate;
 
 	m_configs.push_back(c);
+}
+
+void CPlugin::DropEverything()
+{
+	CPlugin *pOther;
+	List<CPlugin *>::iterator iter;
+	List<WeakNative>::iterator wk_iter;
+
+	/* Tell everyone that depends on us that we're about to drop */
+	for (iter = m_Dependents.begin();
+		 iter != m_Dependents.end(); 
+		 iter++)
+	{
+		pOther = (*iter);
+		pOther->DependencyDropped(this);
+	}
+
+	/* Note: we don't care about things we depend on. 
+	 * The reason is that extensions have their own cleanup 
+	 * code for plugins.  Although the "right" design would be 
+	 * to centralize that here, i'm omitting it for now.  Thus, 
+	 * the code below to walk the plugins list will suffice.
+	 */
+	
+	/* Other plugins could be holding weak references that were 
+	 * added by us.  We need to clean all of those up now.
+	 */
+	for (iter = g_PluginSys.m_plugins.begin();
+		 iter != g_PluginSys.m_plugins.end();
+		 iter++)
+	{
+		(*iter)->DropRefsTo(this);
+	}
+
+	/* Proceed with the rest of the necessities. */
+	CNativeOwner::DropEverything();
+}
+
+bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
+{
+	NativeEntry *pEntry;
+
+	if ((pEntry = g_ShareSys.AddFakeNative(pFunc, name, func)) == NULL)
+	{
+		return false;
+	}
+
+	m_Natives.push_back(pEntry);
+
+	return true;
 }
 
 /*******************
@@ -862,8 +899,6 @@ CPluginManager::CPluginManager()
 	m_LoadLookup = sm_trie_create();
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
-	m_pNativeLookup = sm_trie_create();
-	m_pCoreNatives = sm_trie_create();
 	m_LoadingLocked = false;
 }
 
@@ -875,8 +910,6 @@ CPluginManager::~CPluginManager()
 	 * will crash anyway.  YAY
 	 */
 	sm_trie_destroy(m_LoadLookup);
-	sm_trie_destroy(m_pNativeLookup);
-	sm_trie_destroy(m_pCoreNatives);
 
 	CStack<CPluginManager::CPluginIterator *>::iterator iter;
 	for (iter=m_iters.begin(); iter!=m_iters.end(); iter++)
@@ -1083,7 +1116,8 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	/* Get the status */
 	if (pPlugin->GetStatus() == Plugin_Created)
 	{
-		AddCoreNativesToPlugin(pPlugin);
+		/* First native pass - add anything from Core */
+		g_ShareSys.BindNativesToPlugin(pPlugin, true);
 		pPlugin->InitIdentity();
 		if (pPlugin->Call_AskPluginLoad(error, maxlength))
 		{
@@ -1409,19 +1443,15 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		return false;
 	}
 
-	/* Bind all extra natives */
-	g_Extensions.BindAllNativesToPlugin(pPlugin);
-
 	if (!FindOrRequirePluginDeps(pPlugin, error, maxlength))
 	{
 		return false;
 	}
 
-	AddFakeNativesToPlugin(pPlugin);
+	/* Run another binding pass */
+	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
-	/* Find any unbound natives
-	 * Right now, these are not allowed
-	 */
+	/* Find any unbound natives. Right now, these are not allowed. */
 	IPluginContext *pContext = pPlugin->GetBaseContext();
 	uint32_t num = pContext->GetNativesNum();
 	sp_native_t *native;
@@ -1456,7 +1486,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	pPlugin->Call_OnPluginStart();
 
 	/* Now, if we have fake natives, go through all plugins that might need rebinding */
-	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_fakeNatives.size())
+	if (pPlugin->GetStatus() <= Plugin_Paused && pPlugin->m_Natives.size())
 	{
 		List<CPlugin *>::iterator pl_iter;
 		CPlugin *pOther;
@@ -1470,6 +1500,18 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 				|| pOther->m_FakeNativesMissing)
 			{
 				TryRefreshDependencies(pOther);
+			}
+			else if ((pOther->GetStatus() == Plugin_Running
+					  || pOther->GetStatus() == Plugin_Paused)
+					 && pOther != pPlugin)
+			{
+				List<NativeEntry *>::iterator nv_iter;
+				for (nv_iter = pPlugin->m_Natives.begin();
+					 nv_iter != pPlugin->m_Natives.end();
+					 nv_iter++)
+				{
+					g_ShareSys.BindNativeToPlugin(pOther, (*nv_iter));
+				}
 			}
 		}
 	}
@@ -1489,49 +1531,11 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 	return true;
 }
 
-void CPluginManager::AddCoreNativesToPlugin(CPlugin *pPlugin)
-{
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	
-
-	uint32_t natives = pContext->GetNativesNum();
-	sp_native_t *native;
-	SPVM_NATIVE_FUNC pfn;
-	for (uint32_t i=0; i<natives; i++)
-	{
-		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
-		{
-			continue;
-		}
-		if (native->status == SP_NATIVE_BOUND)
-		{
-			continue;
-		}
-		if (!sm_trie_retrieve(m_pCoreNatives, native->name, (void **)&pfn))
-		{
-			continue;
-		}
-		pContext->BindNativeToIndex(i, pfn);
-	}
-}
-
-SPVM_NATIVE_FUNC CPluginManager::FindCoreNative(const char *name)
-{
-	SPVM_NATIVE_FUNC pfn;
-
-	if (!sm_trie_retrieve(m_pCoreNatives, name, (void **)&pfn))
-	{
-		return NULL;
-	}
-
-	return pfn;
-}
-
 void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 {
 	assert(pPlugin->GetBaseContext() != NULL);
 
-	AddFakeNativesToPlugin(pPlugin);
+	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
 	List<String>::iterator lib_iter;
 	List<String>::iterator req_iter;
@@ -1589,52 +1593,6 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 	}
 }
 
-void CPluginManager::AddFakeNativesToPlugin(CPlugin *pPlugin)
-{
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	sp_nativeinfo_t native;
-
-	List<FakeNative *>::iterator iter;
-	FakeNative *pNative;
-	sp_context_t *ctx;
-	for (iter = m_Natives.begin(); iter != m_Natives.end(); iter++)
-	{
-		pNative = (*iter);
-		ctx = pNative->ctx->GetContext();
-		if ((ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
-		{
-			/* Ignore natives in paused plugins */
-			continue;
-		}
-		native.name = pNative->name.c_str();
-		native.func = pNative->func;
-		if (pContext->BindNative(&native) == SP_ERROR_NONE)
-		{
-			uint32_t idx;
-			pContext->FindNativeByName(native.name, &idx);
-			if (pPlugin->GetContext()->natives[idx].flags & SP_NTVFLAG_OPTIONAL)
-			{
-				WeakNative wkn(pPlugin, idx);
-				GetPluginByCtx(ctx)->m_WeakNatives.push_back(wkn);
-				continue;
-			}
-			/* Add us as a dependency, but we're careful not to do this circularly! */
-			if (pNative->ctx != pContext)
-			{
-				CPlugin *pOther = GetPluginByCtx(ctx);
-				if (pOther->m_dependents.find(pPlugin) == pOther->m_dependents.end())
-				{
-					pOther->m_dependents.push_back(pPlugin);
-				}
-				if (pPlugin->m_dependsOn.find(pOther) == pPlugin->m_dependsOn.end())
-				{
-					pPlugin->m_dependsOn.push_back(pOther);
-				}
-			}
-		}
-	}
-}
-
 bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 {
 	CPlugin *pPlugin = (CPlugin *)plugin;
@@ -1667,44 +1625,6 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		OnLibraryAction((*s_iter).c_str(), true, true);
 	}
 
-	/* Go through all dependent plugins and tell them this plugin is now gone */
-	List<CPlugin *>::iterator pl_iter;
-	CPlugin *pOther;
-	for (pl_iter = pPlugin->m_dependents.begin();
-		 pl_iter != pPlugin->m_dependents.end();
-		 pl_iter++)
-	{
-		pOther = (*pl_iter);
-		pOther->DependencyDropped(pPlugin);
-	}
-
-	/* Tell everyone we depend on that we no longer exist */
-	for (pl_iter = pPlugin->m_dependsOn.begin();
-		 pl_iter != pPlugin->m_dependsOn.end();
-		 pl_iter++)
-	{
-		pOther = (*pl_iter);
-		pOther->m_dependents.remove(pPlugin);
-	}
-
-	/* Remove weak references to us */
-	for (pl_iter = m_plugins.begin();
-		 pl_iter != m_plugins.end();
-		 pl_iter++)
-	{
-		pOther = (*pl_iter);
-		List<WeakNative>::iterator wk_iter = pOther->m_WeakNatives.begin();
-		while (wk_iter != pOther->m_WeakNatives.end())
-		{
-			if ((*wk_iter).pl == pPlugin)
-			{
-				wk_iter = pOther->m_WeakNatives.erase(wk_iter);
-			} else {
-				wk_iter++;
-			}
-		}
-	}
-
 	List<IPluginsListener *>::iterator iter;
 	IPluginsListener *pListener;
 
@@ -1720,29 +1640,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		pPlugin->Call_OnPluginEnd();
 	}
 
-	/* Unbound weak natives */
-	List<WeakNative>::iterator wk_iter;
-	for (wk_iter=pPlugin->m_WeakNatives.begin(); wk_iter!=pPlugin->m_WeakNatives.end(); wk_iter++)
-	{
-		WeakNative & wkn = (*wk_iter);
-		sp_context_t *ctx = wkn.pl->GetContext();
-		ctx->natives[wkn.idx].status = SP_NATIVE_UNBOUND;
-		wkn.pl->m_FakeNativesMissing = true;
-	}
-
-	/* Remove all of our native functions */
-	List<FakeNative *>::iterator fn_iter;
-	FakeNative *pNative;
-	for (fn_iter = pPlugin->m_fakeNatives.begin();
-		fn_iter != pPlugin->m_fakeNatives.end();
-		fn_iter++)
-	{
-		pNative = (*fn_iter);
-		m_Natives.remove(pNative);
-		sm_trie_delete(m_pNativeLookup, pNative->name.c_str());
-		g_pVM->DestroyFakeNative(pNative->func);
-		delete pNative;
-	}
+	pPlugin->DropEverything();
 
 	for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
 	{
@@ -2048,14 +1946,6 @@ bool CPluginManager::GetHandleApproxSize(HandleType_t type, void *object, unsign
 {
 	*pSize = ((CPlugin *)object)->CalcMemUsage();
 	return true;
-}
-
-void CPluginManager::RegisterNativesFromCore(sp_nativeinfo_t *natives)
-{
-	for (unsigned int i = 0; natives[i].func != NULL; i++)
-	{
-		sm_trie_insert(m_pCoreNatives, natives[i].name, (void *)natives[i].func);
-	}
 }
 
 IPlugin *CPluginManager::PluginFromHandle(Handle_t handle, HandleError *err)
@@ -2655,35 +2545,6 @@ void CPluginManager::_SetPauseState(CPlugin *pl, bool paused)
 		pListener = (*iter);
 		pListener->OnPluginPauseChange(pl, paused);
 	}	
-}
-
-bool CPluginManager::AddFakeNative(IPluginFunction *pFunction, const char *name, SPVM_FAKENATIVE_FUNC func)
-{
-	if (sm_trie_retrieve(m_pNativeLookup, name, NULL))
-	{
-		return false;
-	}
-
-	FakeNative *pNative = new FakeNative;
-
-	pNative->func = g_pVM->CreateFakeNative(func, pNative);
-	if (!pNative->func)
-	{
-		delete pNative;
-		return false;
-	}
-
-	pNative->call = pFunction;
-	pNative->name.assign(name);
-	pNative->ctx = pFunction->GetParentContext();
-
-	m_Natives.push_back(pNative);
-	sm_trie_insert(m_pNativeLookup, name,pNative);
-
-	CPlugin *pPlugin = GetPluginByCtx(pNative->ctx->GetContext());
-	pPlugin->m_fakeNatives.push_back(pNative);
-
-	return true;
 }
 
 void CPluginManager::AddFunctionsToForward(const char *name, IChangeableForward *pForward)

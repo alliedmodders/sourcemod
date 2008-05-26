@@ -35,6 +35,7 @@
 #include <IShareSys.h>
 #include <IHandleSys.h>
 #include <sh_list.h>
+#include <sm_trie_tpl.h>
 #include "sm_globals.h"
 #include "sourcemod.h"
 
@@ -60,11 +61,38 @@ struct IfaceInfo
 	IExtension *owner;
 };
 
+class CNativeOwner;
+class CPlugin;
+struct NativeEntry;
+
+struct ReplaceNative
+{
+	CNativeOwner *owner;
+	SPVM_NATIVE_FUNC func;
+};
+
+struct FakeNative
+{
+	char name[64];
+	IPluginContext *ctx;
+	IPluginFunction *call;
+};
+
+struct NativeEntry
+{
+	CNativeOwner *owner;
+	SPVM_NATIVE_FUNC func;
+	const char *name;
+	ReplaceNative replacement;
+	FakeNative *fake;
+};
+
 class ShareSystem : 
 	public IShareSys,
 	public SMGlobalClass,
 	public IHandleTypeDispatch
 {
+	friend class CNativeOwner;
 public:
 	ShareSystem();
 public: //IShareSys
@@ -96,12 +124,25 @@ public:
 	{
 		return &m_IdentRoot;
 	}
+public:
+	void BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly);
+	void BindNativeToPlugin(CPlugin *pPlugin, NativeEntry *pEntry);
+	NativeEntry *AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
+private:
+	NativeEntry *AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
+	void ClearNativeFromCache(CNativeOwner *pOwner, const char *name);
+	NativeEntry *FindNative(const char *name);
+	void BindNativeToPlugin(CPlugin *pPlugin, 
+		sp_native_t *ntv, 
+		uint32_t index, 
+		NativeEntry *pEntry);
 private:
 	List<IfaceInfo> m_Interfaces;
 	HandleType_t m_TypeRoot;
 	IdentityToken_t m_IdentRoot;
 	HandleType_t m_IfaceType;
 	IdentityType_t m_CoreType;
+	KTrie<NativeEntry *> m_NtvCache;
 };
 
 extern ShareSystem g_ShareSys;

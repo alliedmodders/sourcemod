@@ -113,6 +113,8 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 static cell_t CreateNative(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
+	CPlugin *pPlugin;
+
 	pContext->LocalToString(params[1], &name);
 
 	IPluginFunction *pFunction = pContext->GetFunctionById(params[2]);
@@ -121,7 +123,9 @@ static cell_t CreateNative(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Function %x is not a valid function", params[2]);
 	}
 
-	if (!g_PluginSys.AddFakeNative(pFunction, name, FakeNativeRouter))
+	pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+	if (!pPlugin->AddFakeNative(pFunction, name, FakeNativeRouter))
 	{
 		return pContext->ThrowNativeError("Fatal error creating dynamic native!");
 	}

@@ -190,7 +190,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 			}
 			return false;
 		}
-	} else {
+	}
+	else
+	{
 		/* On version bumps, we should check for older versions as well, if the new version fails.
 		 * We can then check the exports to see if any VM versions will be sufficient.
 		 */
@@ -240,10 +242,11 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 			 continue;
 		 }
 		/* Refuse any API that we might not be able to deal with.
-		 * Also refuse anything < 3 because we need fake natives.
+		 * <s>Also refuse anything < 3 because we need fake natives.</s>
+		 * Also refuse anything < 7 because we need the new sp_native definition.
 		 */
 		 api_version = g_pVM->GetAPIVersion();
-		 if (api_version < 3 || api_version > SOURCEPAWN_VM_API_VERSION)
+		 if (api_version < 7 || api_version > SOURCEPAWN_VM_API_VERSION)
 		 {
 			 if (error && maxlength)
 			 {

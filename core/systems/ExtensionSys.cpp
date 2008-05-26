@@ -266,43 +266,12 @@ void CExtension::MarkAllLoaded()
 	}
 }
 
-void CExtension::AddPlugin(IPlugin *pPlugin)
+void CExtension::AddPlugin(CPlugin *pPlugin)
 {
 	/* Unfortunately we have to do this :( */
-	if (m_Plugins.find(pPlugin) != m_Plugins.end())
+	if (m_Dependents.find(pPlugin) != m_Dependents.end())
 	{
-		m_Plugins.push_back(pPlugin);
-	}
-}
-
-void CExtension::RemovePlugin(IPlugin *pPlugin)
-{
-	m_Plugins.remove(pPlugin);
-
-	List<WeakNative>::iterator iter = m_WeakNatives.begin();
-	while (iter != m_WeakNatives.end())
-	{
-		if ((*iter).pl == pPlugin)
-		{
-			iter = m_WeakNatives.erase(iter);
-		}
-		else
-		{
-			iter++;
-		}
-	}
-
-	iter = m_ReplacedNatives.begin();
-	while (iter != m_ReplacedNatives.end())
-	{
-		if ((*iter).pl == pPlugin)
-		{
-			iter = m_ReplacedNatives.erase(iter);
-		}
-		else
-		{
-			iter++;
-		}
+		m_Dependents.push_back(pPlugin);
 	}
 }
 
@@ -671,7 +640,7 @@ void CExtensionManager::AddInterface(IExtension *pOwner, SMInterface *pInterface
 	pExt->AddInterface(pInterface);
 }
 
-void CExtensionManager::BindChildPlugin(IExtension *pParent, IPlugin *pPlugin)
+void CExtensionManager::BindChildPlugin( IExtension *pParent, CPlugin *pPlugin )
 {
 	CExtension *pExt = (CExtension *)pParent;
 
@@ -684,7 +653,7 @@ void CExtensionManager::OnPluginDestroyed(IPlugin *plugin)
 
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
-		(*iter)->RemovePlugin(plugin);
+		(*iter)->DropRefsTo((CPlugin *)plugin);
 	}
 }
 
@@ -707,77 +676,6 @@ CExtension *CExtensionManager::FindByOrder(unsigned int num)
 	}
 
 	return NULL;
-}
-
-void CExtensionManager::BindAllNativesToPlugin(IPlugin *pPlugin)
-{
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-
-	List<CExtension *> exts;
-
-	uint32_t natives = pContext->GetNativesNum();
-	sp_native_t *native;
-	sm_extnative_t *x_native;
-	sm_repnative_t *r_native;
-	for (uint32_t i=0; i<natives; i++)
-	{
-		/* Make sure the native is valid */
-		if (pContext->GetNativeByIndex(i, &native) != SP_ERROR_NONE)
-		{
-			continue;
-		}
-
-		/* Make sure the native is not already bound */
-		if (native->status == SP_NATIVE_BOUND)
-		{
-			/* If it is bound, see if there is a replacement. */
-			if ((r_native = m_RepNatives.retrieve(native->name)) == NULL)
-			{
-				continue;
-			}
-
-			/* Rewrite the address.  Whee! */
-			native->pfn = r_native->info.func;
-
-			/* Make sure this will unload safely */
-			WeakNative wn((CPlugin *)pPlugin, i);
-			r_native->owner->m_ReplacedNatives.push_back(wn);
-
-			continue;
-		}
-
-		/* See if we've got this native in our cache */
-		if ((x_native = m_ExtNatives.retrieve(native->name)) == NULL)
-		{
-			continue;
-		}
-		/* Try and bind it */
-		if (pContext->BindNativeToIndex(i, x_native->info->func) != SP_ERROR_NONE)
-		{
-			continue;
-		}
-		/* See if it's optional */
-		if (native->flags & SP_NTVFLAG_OPTIONAL)
-		{
-			WeakNative wkn = WeakNative((CPlugin *)pPlugin, i);
-			x_native->owner->m_WeakNatives.push_back(wkn);
-		}
-		else if (exts.find(x_native->owner) == exts.end())
-		{
-			exts.push_back(x_native->owner);
-		}
-	}
-
-	List<CExtension *>::iterator iter;
-	for (iter = exts.begin(); iter != exts.end(); iter++)
-	{
-		CExtension *pExt = (*iter);
-		if (pExt->m_Plugins.find(pPlugin) != pExt->m_Plugins.end())
-		{
-			continue;
-		}
-		pExt->m_Plugins.push_back(pPlugin);
-	}
 }
 
 bool CExtensionManager::UnloadExtension(IExtension *_pExt)
@@ -804,12 +702,12 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 	if (pExt->IsLoaded())
 	{
 		/* Unload any dependent plugins */
-		List<IPlugin *>::iterator p_iter = pExt->m_Plugins.begin();
-		while (p_iter != pExt->m_Plugins.end())
+		List<CPlugin *>::iterator p_iter = pExt->m_Dependents.begin();
+		while (p_iter != pExt->m_Dependents.end())
 		{
 			/* We have to manually unlink ourselves here, since we're no longer being managed */
 			g_PluginSys.UnloadPlugin((*p_iter));
-			p_iter = pExt->m_Plugins.erase(p_iter);
+			p_iter = pExt->m_Dependents.erase(p_iter);
 		}
 
 		List<String>::iterator s_iter;
@@ -818,30 +716,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			 s_iter++)
 		{
 			g_PluginSys.OnLibraryAction((*s_iter).c_str(), false, true);
-		}
-
-		/* Unbind weak natives */
-		List<WeakNative>::iterator wkn_iter;
-		for (wkn_iter=pExt->m_WeakNatives.begin(); wkn_iter!=pExt->m_WeakNatives.end(); wkn_iter++)
-		{
-			WeakNative & wkn = (*wkn_iter);
-			sp_context_t *ctx = wkn.pl->GetContext();
-			ctx->natives[wkn.idx].status = SP_NATIVE_UNBOUND;
-		}
-
-		/* Unbind replacement natives, link them back to their originals */
-		for (wkn_iter = pExt->m_ReplacedNatives.begin();
-			 wkn_iter != pExt->m_ReplacedNatives.end();
-			 wkn_iter++)
-		{
-			WeakNative & wkn = (*wkn_iter);
-			sp_context_t *ctx = wkn.pl->GetContext();
-			sm_repnative_t *r_native = m_RepNatives.retrieve(ctx->natives[wkn.idx].name);
-			if (r_native == NULL || ctx->natives[wkn.idx].pfn != r_native->info.func)
-			{
-				continue;
-			}
-			ctx->natives[wkn.idx].pfn = r_native->original;
 		}
 
 		/* Notify and/or unload all dependencies */
@@ -898,40 +772,7 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 
 		/* Unbind our natives from Core */
-		List<const sp_nativeinfo_t *>::iterator native_iter;
-		for (native_iter = pExt->m_Natives.begin();
-			 native_iter != pExt->m_Natives.end();
-			 native_iter++)
-		{
-			const sp_nativeinfo_t *natives = (*native_iter);
-			sm_extnative_t *x_native;
-			for (unsigned int n = 0;
-				 natives[n].name != NULL && natives[n].func != NULL;
-				 n++)
-			{
-				x_native = m_ExtNatives.retrieve(natives[n].name);
-				if (x_native && x_native->owner == pExt)
-				{
-					m_ExtNatives.remove(natives[n].name);
-				}
-			}
-		}
-
-		/* Unbind our replacement natives */
-		List<sm_repnative_t>::iterator rep_iter = m_RepNativeList.begin();
-		while (rep_iter != m_RepNativeList.end())
-		{
-			sm_repnative_t & r_native = (*rep_iter);
-			if (r_native.owner == pExt)
-			{
-				m_RepNatives.remove(r_native.info.name);
-				rep_iter = m_RepNativeList.erase(rep_iter);
-			}
-			else
-			{
-				rep_iter++;
-			}
-		}
+		pExt->DropEverything();
 
 		/* Tell it to unload */
 		pAPI = pExt->GetAPI();
@@ -960,44 +801,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 	}
 
 	return true;
-}
-
-void CExtensionManager::AddNatives(IExtension *pOwner, const sp_nativeinfo_t *natives)
-{
-	CExtension *pExt = (CExtension *)pOwner;
-
-	pExt->m_Natives.push_back(natives);
-
-	for (unsigned int i = 0; natives[i].func != NULL && natives[i].name != NULL; i++)
-	{
-		if (m_ExtNatives.retrieve(natives[i].name) != NULL)
-		{
-			continue;
-		}
-		sm_extnative_t x_native;
-		x_native.info = &natives[i];
-		x_native.owner = pExt;
-		m_ExtNatives.insert(natives[i].name, x_native);
-	}
-}
-
-void CExtensionManager::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives)
-{
-	SPVM_NATIVE_FUNC orig;
-
-	for (unsigned int i = 0; natives[i].func != NULL && natives[i].name != NULL; i++)
-	{
-		if ((orig = g_PluginSys.FindCoreNative(natives[i].name)) == NULL)
-		{
-			continue;
-		}
-		sm_repnative_t rep;
-		rep.info = natives[i];
-		rep.owner = (CExtension *)myself;
-		rep.original = orig;
-		m_RepNativeList.push_back(rep);
-		m_RepNatives.insert(natives[i].name, rep);
-	}
 }
 
 void CExtensionManager::MarkAllLoaded()
@@ -1206,7 +1009,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			}
 
 			if (!pExt->IsLoaded() 
-				|| (!pExt->m_ChildDeps.size() && !pExt->m_Plugins.size()))
+				|| (!pExt->m_ChildDeps.size() && !pExt->m_Dependents.size()))
 			{
 				char filename[PLATFORM_MAX_PATH];
 				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
@@ -1216,7 +1019,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			}
 			else
 			{
-				List<IPlugin *> plugins;
+				List<CPlugin *> plugins;
 				if (pExt->m_ChildDeps.size())
 				{
 					g_RootMenu.ConsolePrint("[SM] Unloading %s will unload the following extensions: ", pExt->GetFilename());
@@ -1246,9 +1049,9 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 							{
 								g_RootMenu.ConsolePrint(" -> %s", pExt->GetFilename());
 								/* Add to plugin unload list */
-								List<IPlugin *>::iterator p_iter;
-								for (p_iter=pOther->m_Plugins.begin();
-									 p_iter!=pOther->m_Plugins.end();
+								List<CPlugin *>::iterator p_iter;
+								for (p_iter=pOther->m_Dependents.begin();
+									 p_iter!=pOther->m_Dependents.end();
 									 p_iter++)
 								{
 									if (plugins.find((*p_iter)) == plugins.end())
@@ -1260,12 +1063,12 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 						}
 					}
 				}
-				if (pExt->m_Plugins.size())
+				if (pExt->m_Dependents.size())
 				{
 					g_RootMenu.ConsolePrint("[SM] Unloading %s will unload the following plugins: ", pExt->GetFilename());
-					List<IPlugin *>::iterator iter;
-					IPlugin *pPlugin;
-					for (iter = pExt->m_Plugins.begin(); iter != pExt->m_Plugins.end(); iter++)
+					List<CPlugin *>::iterator iter;
+					CPlugin *pPlugin;
+					for (iter = pExt->m_Dependents.begin(); iter != pExt->m_Dependents.end(); iter++)
 					{
 						pPlugin = (*iter);
 						if (plugins.find(pPlugin) == plugins.end())
