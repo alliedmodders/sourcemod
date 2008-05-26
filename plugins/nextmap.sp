@@ -61,10 +61,7 @@ public OnPluginStart()
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
 	
-	if (GetCommandFlags("nextmap") == INVALID_FCVAR_FLAGS)
-	{
-		RegServerCmd("nextmap", Command_Nextmap);
-	}
+	RegConsoleCmd("nextmap", Command_Nextmap);
 
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 	RegConsoleCmd("listmaps", Command_List);
@@ -113,7 +110,7 @@ public Action:Command_Say(client, args)
 		decl String:map[32];
 		GetNextMap(map, sizeof(map));
 		
-		PrintToChat(client, "%t", "Next Map", map);
+		PrintToChat(client, "[SM] %t", "Next Map", map);
 	}
 	
 	return Plugin_Continue;	
@@ -159,13 +156,13 @@ public Action:Command_List(client, args)
 	return Plugin_Handled;
 }
  
-public Action:Command_Nextmap(args)
+public Action:Command_Nextmap(client, args)
 {
 	decl String:map[64];
 	
 	GetNextMap(map, sizeof(map));
 	
-	ReplyToCommand(0, "%t", "Next Map", map);
+	ReplyToCommand(client, "[SM] %t", "Next Map", map);
 	
 	return Plugin_Handled;
 }
