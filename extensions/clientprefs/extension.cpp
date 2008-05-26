@@ -92,16 +92,77 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (strcmp(identifier, "sqlite") == 0)
 	{
 		driver = DRIVER_SQLITE;
+
+		TQueryOp *op = new TQueryOp(
+						Database, 
+						"CREATE TABLE sm_cookies IF NOT EXISTS \
+						( \
+							id INTEGER PRIMARY KEY AUTOINCREMENT, \
+							name varchar(30) NOT NULL UNIQUE, \
+							description varchar(255), \
+							access INTEGER \
+						)", 
+						Query_CreateTable, 
+						0);
+
+		dbi->AddToThreadQueue(op, PrioQueue_Normal);
+
+		op = new TQueryOp(
+						Database, 
+						"CREATE TABLE sm_cookie_cache IF NOT EXISTS \
+						( \
+							player varchar(65) NOT NULL, \
+							cookie_id int(10) NOT NULL, \
+							value varchar(100), \
+							timestamp int, \
+							PRIMARY KEY (player, cookie_id) \
+						)", 
+						Query_CreateTable, 
+						0);
+
+		dbi->AddToThreadQueue(op, PrioQueue_Normal);
 	}
 	else if (strcmp(identifier, "mysql") == 0)
 	{
 		driver = DRIVER_MYSQL;
+
+		TQueryOp *op = new TQueryOp(
+						Database, 
+						"CREATE TABLE sm_cookies IF NOT EXISTS \
+						( \
+							id INTEGER unsigned NOT NULL auto_increment, \
+							name varchar(30) NOT NULL UNIQUE, \
+							description varchar(255), \
+							access INTEGER, \
+							PRIMARY KEY (id) \
+						)", 
+						Query_CreateTable, 
+						0);
+
+		dbi->AddToThreadQueue(op, PrioQueue_Normal);
+
+		op = new TQueryOp(
+						Database, 
+						"CREATE TABLE sm_cookie_cache IF NOT EXISTS \
+						( \
+							player varchar(65) NOT NULL, \
+							cookie_id int(10) NOT NULL, \
+							value varchar(100), \
+							timestamp int NOT NULL, \
+							PRIMARY KEY (player, cookie_id) \
+						)", 
+						Query_CreateTable, 
+						0);
+
+		dbi->AddToThreadQueue(op, PrioQueue_Normal);
 	}
 	else
 	{
 		snprintf(error, maxlength, "Unsupported driver \"%s\"", identifier);
 		return false;
 	}
+
+
 
 	sharesys->AddNatives(myself, g_ClientPrefNatives);
 	sharesys->RegisterLibrary(myself, "clientprefs");

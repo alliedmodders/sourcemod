@@ -42,6 +42,7 @@ enum querytype
 	Query_SelectData,
 	Query_InsertData,
 	Query_SelectId,
+	Query_CreateTable,
 };
 
 class TQueryOp : public IDBThreadOperation

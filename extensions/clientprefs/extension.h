@@ -40,12 +40,12 @@
 #include "sh_list.h"
 #include "cookie.h"
 #include "menus.h"
+#include "query.h"
 
 #define DRIVER_MYSQL 1
 #define DRIVER_SQLITE 0
 
 #define MAX_TRANSLATE_PARAMS		32
-
 
 /**
  * @brief Sample implementation of the SDK Extension.
