@@ -154,25 +154,48 @@ native TR_GetPointContentsEnt(entindex, const Float:pos[3]);
  * Starts up a new trace ray using a global trace result.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
+ * @param vec			Depending on RayType, it will be used as the
+ *						ending point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @noreturn
  */
-native TR_TraceRay(const Float:pos[3], const Float:vec[3], flags, RayType:rtype);
-
+native TR_TraceRay(const Float:pos[3],
+				   const Float:vec[3],
+				   flags,
+				   RayType:rtype);
+				   
 /**
- * Starts up a new trace ray using a global trace result and a customized trace ray filter.
- *
- * Calling TR_TraceRayFilter or TR_TraceRayFilterEx from inside a filter function is 
- * currently not allowed and may not work.
+ * Starts up a new trace hull using a global trace result.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
+ * @param vec			Ending position of the ray.
+ * @param mins			Hull minimum size.
+ * @param maxs			Hull maximum size.
+ * @param flags			Trace flags.
+ * @noreturn
+ */
+native TR_TraceHull(const Float:pos[3],
+					const Float:vec[3],
+					const Float:mins[3],
+					const Float:maxs[3],
+					flags);
+
+/**
+ * Starts up a new trace ray using a global trace result and a customized 
+ * trace ray filter.
+ *
+ * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter 
+ * function is currently not allowed and may not work.
+ *
+ * @param pos			Starting position of the ray.
+ * @param vec			Depending on RayType, it will be used as the ending 
+ *						point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @param filter		Function to use as a filter.
- * @param data			Arbitrary data value to pass through to the filter function.
+ * @param data			Arbitrary data value to pass through to the filter 
+ *						function.
  * @noreturn
  */
 native TR_TraceRayFilter(const Float:pos[3],
@@ -181,26 +204,74 @@ native TR_TraceRayFilter(const Float:pos[3],
 						 RayType:rtype,
 						 TraceEntityFilter:filter,
 						 any:data=0);
+						 
+/**
+ * Starts up a new trace hull using a global trace result and a customized 
+ * trace ray filter.
+ *
+ * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter 
+ * function is currently not allowed and may not work.
+ *
+ * @param pos			Starting position of the ray.
+ * @param vec			Depending on RayType, it will be used as the ending 
+ *						point, or the direction angle.
+ * @param mins			Hull minimum size.
+ * @param maxs			Hull maximum size.
+ * @param flags			Trace flags.
+ * @param filter		Function to use as a filter.
+ * @param data			Arbitrary data value to pass through to the filter 
+ *						function.
+ * @noreturn
+ */
+native TR_TraceHullFilter(const Float:pos[3],
+						  const Float:vec[3],
+						  const Float:mins[3],
+						  const Float:maxs[3],
+						  flags,
+						  TraceEntityFilter:filter,
+						  any:data=0);
 
 /**
  * Starts up a new trace ray using a new trace result.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
+ * @param vec			Depending on RayType, it will be used as the ending 
+ *						point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @return				Ray trace handle, which must be closed via CloseHandle().
  */
-native Handle:TR_TraceRayEx(const Float:pos[3], const Float:vec[3], flags, RayType:rtype);
-
+native Handle:TR_TraceRayEx(const Float:pos[3],
+							const Float:vec[3],
+							flags,
+							RayType:rtype);
+							
 /**
- * Starts up a new trace ray using a new trace result and a customized trace ray filter.
- *
- * Calling TR_TraceRayFilter or TR_TraceRayFilterEx from inside a filter function is 
- * currently not allowed and may not work.
+ * Starts up a new trace hull using a new trace result.
  *
  * @param pos			Starting position of the ray.
- * @param vec			Depending on RayType, it will be used as the ending point, or the direction angle.
+ * @param vec			Ending position of the ray.
+ * @param mins			Hull minimum size.
+ * @param maxs			Hull maximum size.
+ * @param flags			Trace flags.
+ * @return				Ray trace handle, which must be closed via CloseHandle().
+ */
+native Handle:TR_TraceHullEx(const Float:pos[3],
+							 const Float:vec[3],
+							 const Float:mins[3],
+							 const Float:maxs[3],
+							 flags);
+
+/**
+ * Starts up a new trace ray using a new trace result and a customized 
+ * trace ray filter.
+ *
+ * Calling TR_Trace*Filter or TR_TraceRay*Ex from inside a filter 
+ * function is currently not allowed and may not work.
+ *
+ * @param pos			Starting position of the ray.
+ * @param vec			Depending on RayType, it will be used as the ending 
+ *						point, or the direction angle.
  * @param flags			Trace flags.
  * @param rtype			Method to calculate the ray direction.
  * @param filter		Function to use as a filter.
@@ -213,6 +284,30 @@ native Handle:TR_TraceRayFilterEx(const Float:pos[3],
 								  RayType:rtype, 
 								  TraceEntityFilter:filter,
 								  any:data=0);
+								  
+/**
+ * Starts up a new trace hull using a new trace result and a customized 
+ * trace ray filter.
+ *
+ * Calling TR_Trace*Filter or TR_Trace*FilterEx from inside a filter 
+ * function is currently not allowed and may not work.
+ *
+ * @param pos			Starting position of the ray.
+ * @param vec			Ending position of the ray.
+ * @param mins			Hull minimum size.
+ * @param maxs			Hull maximum size.
+ * @param flags			Trace flags.
+ * @param filter		Function to use as a filter.
+ * @param data			Arbitrary data value to pass through to the filter function.
+ * @return				Ray trace handle, which must be closed via CloseHandle().
+ */
+native Handle:TR_TraceHullFilterEx(const Float:pos[3], 
+								   const Float:vec[3],
+								   const Float:mins[3],
+								   const Float:maxs[3],
+								   flags, 
+								   TraceEntityFilter:filter,
+								   any:data=0);
 
 /**
  * Returns the time fraction from a trace result (1.0 means no collision).
