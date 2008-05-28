@@ -902,6 +902,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\NativeOwner.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\NextMap.cpp"
 				>
 			</File>
@@ -1069,6 +1073,10 @@
 			</File>
 			<File
 				RelativePath="..\MenuVoting.h"
+				>
+			</File>
+			<File
+				RelativePath="..\NativeOwner.h"
 				>
 			</File>
 			<File
