@@ -49,6 +49,7 @@ ConVar sm_corecfgfile("sm_corecfgfile", "addons/sourcemod/configs/core.cfg", 0, 
 
 IForward *g_pOnServerCfg = NULL;
 IForward *g_pOnConfigsExecuted = NULL;
+IForward *g_pOnAutoConfigsBuffered = NULL;
 CoreConfig g_CoreConfig;
 bool g_bConfigsExecd = false;
 
@@ -57,6 +58,7 @@ void CoreConfig::OnSourceModAllInitialized()
 	g_RootMenu.AddRootConsoleCommand("config", "Set core configuration options", this);
 	g_pOnServerCfg = g_Forwards.CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
 	g_pOnConfigsExecuted = g_Forwards.CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
+	g_pOnAutoConfigsBuffered = g_Forwards.CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
 }
 
 void CoreConfig::OnSourceModShutdown()
@@ -64,6 +66,7 @@ void CoreConfig::OnSourceModShutdown()
 	g_RootMenu.RemoveRootConsoleCommand("config", this);
 	g_Forwards.ReleaseForward(g_pOnServerCfg);
 	g_Forwards.ReleaseForward(g_pOnConfigsExecuted);
+	g_Forwards.ReleaseForward(g_pOnAutoConfigsBuffered);
 }
 
 void CoreConfig::OnSourceModLevelChange(const char *mapName)
@@ -402,6 +405,8 @@ void SM_ExecuteAllConfigs()
 		iter->NextPlugin();
 	}
 	iter->Release();
+
+	g_pOnAutoConfigsBuffered->Execute(NULL);
 
 	engine->ServerCommand("sm internal 1\n");
 }
