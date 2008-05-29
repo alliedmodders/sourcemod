@@ -343,3 +343,4 @@ REGISTER_NATIVES(timernatives)
 	{"GetTickInterval",			smn_GetTickInterval},
 	{NULL,						NULL}
 };
+

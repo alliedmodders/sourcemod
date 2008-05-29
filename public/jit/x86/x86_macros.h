@@ -112,6 +112,7 @@
 #define IA32_MOV_REG8_RM8		0x8A	// encoding is /r
 #define IA32_MOV_RM8_REG8		0x88	// encoding is /r
 #define IA32_MOV_RM_IMM32		0xC7	// encoding is /0
+#define IA32_MOV_EAX_MEM		0xA1	// encoding is <imm32>
 #define IA32_CMP_RM_IMM32		0x81	// encoding is /7 <imm32>
 #define IA32_CMP_RM_IMM8		0x83	// encoding is /7 <imm8>
 #define IA32_CMP_AL_IMM32		0x3C	// no extra encoding
@@ -783,6 +784,12 @@ inline void IA32_Push_Rm_Disp8_ESP(JitWriter *jit, jit_int8_t disp8)
 /**
  * Moving from REGISTER/MEMORY to REGISTER
  */
+
+inline void IA32_Mov_Eax_Mem(JitWriter *jit, jit_uint32_t mem)
+{
+	jit->write_ubyte(IA32_MOV_EAX_MEM);
+	jit->write_uint32(mem);
+}
 
 inline void IA32_Mov_Reg_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
 {
