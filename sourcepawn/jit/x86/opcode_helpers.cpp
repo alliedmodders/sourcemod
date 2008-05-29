@@ -339,7 +339,7 @@ void Macro_PushN_Addr(JitWriter *jit, int i)
 	do
 	{
 		val = jit->read_cell();
-		if (val < SCHAR_MAX && val > SCHAR_MIN)
+		if (val <= SCHAR_MAX && val >= SCHAR_MIN)
 			IA32_Lea_DispRegImm8(jit, AMX_REG_TMP, AMX_REG_PRI, (jit_int8_t)val);
 		else
 			IA32_Lea_DispRegImm32(jit, AMX_REG_TMP, AMX_REG_PRI, val);
@@ -361,7 +361,7 @@ void Macro_PushN_S(JitWriter *jit, int i)
 	do 
 	{
 		val = jit->read_cell();
-		if (val < SCHAR_MAX && val > SCHAR_MIN)
+		if (val <= SCHAR_MAX && val >= SCHAR_MIN)
 			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_FRM, (jit_int8_t)val);
 		else
 			IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_FRM, val);
@@ -396,7 +396,7 @@ void Macro_PushN(JitWriter *jit, int i)
 	do 
 	{
 		val = jit->read_cell();
-		if (val < SCHAR_MAX && val > SCHAR_MIN)
+		if (val <= SCHAR_MAX && val >= SCHAR_MIN)
 			IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_DAT, (jit_int8_t)val);
 		else
 			IA32_Mov_Reg_Rm_Disp32(jit, AMX_REG_TMP, AMX_REG_DAT, val);
