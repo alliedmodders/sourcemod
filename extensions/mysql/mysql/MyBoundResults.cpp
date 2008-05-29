@@ -89,6 +89,8 @@ MyBoundResults::MyBoundResults(MYSQL_STMT *stmt, MYSQL_RES *res)
 	/* Zero data */
 	memset(m_bind, 0, sizeof(MYSQL_BIND) * m_ColCount);
 	memset(m_pull, 0, sizeof(ResultBind) * m_ColCount);
+
+	m_bUpdatedBinds = false;
 }
 
 MyBoundResults::~MyBoundResults()
@@ -211,6 +213,15 @@ IResultRow *MyBoundResults::FetchRow()
 
 	m_CurRow++;
 
+	if (m_bUpdatedBinds)
+	{
+		if (mysql_stmt_bind_result(m_stmt, m_bind) != 0)
+		{
+			return false;
+		}
+		m_bUpdatedBinds = false;
+	}
+
 	/* We should be able to get another row */
 	int err = mysql_stmt_fetch(m_stmt);
 	if (err == 0 || err == MYSQL_DATA_TRUNCATED)
@@ -266,21 +277,28 @@ void ResizeBuffer(ResultBind *bind, size_t len)
 	{
 		bind->blob = new unsigned char[len];
 		bind->length = len;
-	} else if (bind->length < len) {
+	}
+	else if (bind->length < len)
+	{
 		delete [] bind->blob;
 		bind->blob = new unsigned char[len];
 		bind->length = len;
 	}
 }
 
-bool RefetchField(MYSQL_STMT *stmt, 
-				  ResultBind *rbind, 
+bool MyBoundResults::RefetchField(MYSQL_STMT *stmt, 
 				  unsigned int id,
 				  size_t initSize,
 				  enum_field_types type)
 {
+	ResultBind *rbind = &m_pull[id];
+
 	/* Make sure there is a buffer to pull into */
 	ResizeBuffer(rbind, initSize);
+
+	/* Update the bind with the buffer size */
+	m_bind[id].buffer_length = (unsigned long)rbind->length;
+	m_bUpdatedBinds = true;
 
 	MYSQL_BIND bind;
 
@@ -397,7 +415,7 @@ DBResult MyBoundResults::GetString(unsigned int id, const char **pString, size_t
 		}
 
 		/* Attempt to refetch the string */
-		if (!RefetchField(m_stmt, &m_pull[id], id, 128, MYSQL_TYPE_STRING))
+		if (!RefetchField(m_stmt, id, 128, MYSQL_TYPE_STRING))
 		{
 			return DBVal_TypeMismatch;
 		}
@@ -418,7 +436,7 @@ DBResult MyBoundResults::GetString(unsigned int id, const char **pString, size_t
 	if ((size_t)(m_pull[id].my_length) >= m_pull[id].length)
 	{
 		/* Yes, we need to refetch. */
-		if (!RefetchField(m_stmt, &m_pull[id], id, m_pull[id].my_length + 1, MYSQL_TYPE_STRING))
+		if (!RefetchField(m_stmt, id, m_pull[id].my_length + 1, MYSQL_TYPE_STRING))
 		{
 			return DBVal_Error;
 		}
@@ -591,7 +609,7 @@ DBResult MyBoundResults::GetBlob(unsigned int id, const void **pData, size_t *le
 
 	if ((size_t)m_pull[id].my_length > m_pull[id].length)
 	{
-		if (!RefetchField(m_stmt, &m_pull[id], id, m_pull[id].my_length, MYSQL_TYPE_BLOB))
+		if (!RefetchField(m_stmt, id, m_pull[id].my_length, MYSQL_TYPE_BLOB))
 		{
 			return DBVal_TypeMismatch;
 		}

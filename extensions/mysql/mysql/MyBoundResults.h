@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod MySQL Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -84,6 +84,11 @@ public:
 	bool Initialize();
 	void Update();
 private:
+	bool RefetchField(MYSQL_STMT *stmt, 
+		unsigned int id,
+		size_t initSize,
+		enum_field_types type);
+private:
 	MYSQL_STMT *m_stmt;
 	MYSQL_RES *m_pRes;
 	MYSQL_BIND *m_bind;
@@ -92,6 +97,7 @@ private:
 	bool m_Initialized;
 	unsigned int m_RowCount;
 	unsigned int m_CurRow;
+	bool m_bUpdatedBinds;
 };
 
 #endif //_INCLUDE_SM_MYSQL_BOUND_RESULTS_H_
