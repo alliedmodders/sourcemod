@@ -35,48 +35,6 @@
 #include "RegNatives.h"
 
 
-// native TF2_Burn(client, target)
-cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
-{
-	static ICallWrapper *pWrapper = NULL;
-
-	// CTFPlayerShared::Burn(CTFPlayer*)
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("Burn", 
-			PassInfo pass[1]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].size = sizeof(CBaseEntity *); \
-			pass[0].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
-	}
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
-	CBaseEntity *pTarget;
-	if (!(pTarget = UTIL_GetCBaseEntity(params[2], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[2]);
-	}
-
-	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
-
-	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = obj;
-	vptr += sizeof(void *);
-	*(CBaseEntity **)vptr = pTarget;
-
-	pWrapper->Execute(vstk, NULL);
-
-	return 1;
-}
-
 // native TF2_Invuln(client, bool:enabled)
 cell_t TF2_Invuln(IPluginContext *pContext, const cell_t *params)
 {
@@ -211,7 +169,6 @@ cell_t TF2_GetClass(IPluginContext *pContext, const cell_t *params)
 
 sp_nativeinfo_t g_TFNatives[] = 
 {
-	{"TF2_IgnitePlayer",			TF2_Burn},
 	{"TF2_SetPlayerInvuln",			TF2_Invuln},
 	{"TF2_RespawnPlayer",			TF2_Respawn},
 	{"TF2_DisguisePlayer",			TF2_Disguise},
