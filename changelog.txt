@@ -18,10 +18,11 @@ Changes:
  - Added amb1715 - TraceHull functions to SDKTools (complementing TraceRay).
  - Added amb1694 - FindCharInString() function.
  - Added amb1685 - GetTickInterval() function.
- - Added amb1620 - ActivateEntity() function to SDKTools.
+ - Added amb1620 - ActivateEntity() function to SDKTools (for Orange Box particle system).
  - Added amb1610 - StripQuotes() function.
  - Added amb1558 - Compiler now has __BINARY_PATH__ and __BINARY_FILE__ macros.
- - Fixed amb1684 - Fixed blank passwords requiring an empty password.
+ - Fixed amb1686 - ReplaceString* with an empty search string crashed; it now throws an error.
+ - Fixed amb1684 - Blank passwords required an empty but set password.
  - Fixed amb1595 - Extension load failures did not show a platform error message.
  - Fixed amb1583 - MySQL string fetch from prepared queries returned corrupted data.
  - Fixed amb1358 - Timeleft did not reset on TF2 restarts.
