@@ -1,5 +1,45 @@
 SourceMod Changelog
 
+----------------------------
+
+SourceMod 1.0.2 [2008-??-??]
+
+Changes:
+
+ - The admin menu is now user-modifiable (the "Dynamic Admin Menu").
+ - Added a TF2 extension with Team Fortress functions.
+ - Added a RegEx extension with regular expression functions.
+ - Added functions to SDKTools for hooking entity outputs.
+ - Added preliminary support for the DoD:S Orange Box beta.
+ - Added a forward for map config plugins for preventing race conditions.
+ - Added a %b format specifier for binary printing.
+ - Added sm_dump_datamaps command (SDKTools) for enumerating datamap properties.
+ - Added sm_dump_admcache command for debugging the admin cache.
+ - Added amb1715 - TraceHull functions to SDKTools (complementing TraceRay).
+ - Added amb1694 - FindCharInString() function.
+ - Added amb1685 - GetTickInterval() function.
+ - Added amb1620 - ActivateEntity() function to SDKTools.
+ - Added amb1610 - StripQuotes() function.
+ - Added amb1558 - Compiler now has __BINARY_PATH__ and __BINARY_FILE__ macros.
+ - Fixed amb1684 - Fixed blank passwords requiring an empty password.
+ - Fixed amb1595 - Extension load failures did not show a platform error message.
+ - Fixed amb1583 - MySQL string fetch from prepared queries returned corrupted data.
+ - Fixed amb1358 - Timeleft did not reset on TF2 restarts.
+ - Fixed cases where the JIT was too cautious in space optimizations.
+ - Fixed TF2/Cstrike extensions being loadable on incompatible games.
+ - Fixed various documentation inconsistencies and typos.
+ - Fixed internal bugs with file extension handling.
+ 
+Notes:
+ 
+ There is a possible compatibility regression from amb1684.  SetAdminPassword() 
+ has been modified to remove any set password when given an empty string.  Previously, 
+ a blank password ("") would force an admin to use "setinfo" to set an empty password, 
+ but this functionality was deemed unuseful and unintended.  Blank passwords now 
+ remove any set password.  
+ 
+----------------------------
+
 SourceMod 1.0.1 [2008-05-20]
 
 Changes:
