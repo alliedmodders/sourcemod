@@ -460,8 +460,12 @@ static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[4], &replace);
 	maxlength = (size_t)params[2];
 
+	if (search[0] == '\0')
+	{
+		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
+	}
 
-	return  UTIL_ReplaceAll(text, maxlength, search, replace);
+	return UTIL_ReplaceAll(text, maxlength, search, replace);
 }
 
 static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
@@ -476,6 +480,11 @@ static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 
 	size_t searchLen = (params[5] == -1) ? strlen(search) : (size_t)params[5];
 	size_t replaceLen = (params[6] == -1) ? strlen(replace) : (size_t)params[6];
+
+	if (searchLen == 0)
+	{
+		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
+	}
 
 	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen);
 
