@@ -5,7 +5,7 @@
  * Copyright (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
- * This file is not open source and may not be copied without explicit wriiten
+ * This file is not open source and may not be copied without explicit written
  * permission of AlliedModders LLC.  This file may not be redistributed in whole
  * or significant part.
  * For information, see LICENSE.txt or http://www.sourcemod.net/license.php
@@ -2554,7 +2554,9 @@ jit_rewind:
 					*(writer.inptr++) = OP_NOP;
 					*(writer.inptr++) = OP_NOP;
 					op = (OPCODE)data->jit_float_table[idx].index;
-				} else {
+				}
+				else
+				{
 					writer.inptr--;
 				}
 			}
@@ -2585,7 +2587,9 @@ jit_rewind:
 		writer.outptr = writer.outbase;
 		/* go back for third pass */
 		goto jit_rewind;
-	} else {
+	}
+	else
+	{
 		/*******
 		 * THIRD PASS - write opcode info
 		 *******/
@@ -2663,6 +2667,7 @@ jit_rewind:
 			ctx->natives[iter].pfn = &InvalidNative;
 			ctx->natives[iter].status = SP_NATIVE_UNBOUND;
 			ctx->natives[iter].flags = 0;
+			ctx->natives[iter].user = NULL;
 		}
 	}
 
