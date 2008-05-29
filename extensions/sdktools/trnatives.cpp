@@ -61,6 +61,8 @@ Ray_t g_Ray;
 trace_t g_Trace;
 Vector g_StartVec;
 Vector g_EndVec;
+Vector g_HullMins;
+Vector g_HullMaxs;
 QAngle g_DirAngles;
 CTraceFilterHitAll g_HitAllFilter;
 CSMTraceFilter g_SMTraceFilter;
@@ -100,6 +102,25 @@ static cell_t smn_TRTraceRay(IPluginContext *pContext, const cell_t *params)
 
 	g_Ray.Init(g_StartVec, g_EndVec);
 	enginetrace->TraceRay(g_Ray, params[3], &g_HitAllFilter, &g_Trace);
+
+	return 1;
+}
+
+static cell_t smn_TRTraceHull(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	g_HullMins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	g_HullMaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+
+	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
+	enginetrace->TraceRay(g_Ray, params[5], &g_HitAllFilter, &g_Trace);
 
 	return 1;
 }
@@ -156,6 +177,38 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t data;
+	IPluginFunction *pFunc;
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+
+	pFunc = pContext->GetFunctionById(params[6]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[5]);
+	}
+
+	data = params[7];
+
+	g_SMTraceFilter.SetFunctionPtr(pFunc, data);
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+
+	g_StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	g_HullMins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	g_HullMaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	g_EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+
+	g_Ray.Init(g_StartVec, g_EndVec, g_HullMins, g_HullMaxs);
+	enginetrace->TraceRay(g_Ray, params[5], &g_SMTraceFilter, &g_Trace);
+
+	return 1;
+}
+
+
 static cell_t smn_TRTraceRayEx(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *startaddr, *endaddr;
@@ -190,6 +243,38 @@ static cell_t smn_TRTraceRayEx(IPluginContext *pContext, const cell_t *params)
 	trace_t *tr = new trace_t;
 	ray.Init(StartVec, EndVec);
 	enginetrace->TraceRay(ray, params[3], &g_HitAllFilter, tr);
+
+	HandleError herr;
+	Handle_t hndl;
+	if (!(hndl=handlesys->CreateHandle(g_TraceHandle, tr, pContext->GetIdentity(), myself->GetIdentity(), &herr)))
+	{
+		delete tr;
+		return pContext->ThrowNativeError("Unable to create a new trace handle (error %d)", herr);
+	}
+
+	return hndl;
+}
+
+static cell_t smn_TRTraceHullEx(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+
+	Ray_t ray;
+	Vector StartVec, EndVec, vmins, vmaxs;
+
+	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	vmins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	vmaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+
+	ray.Init(StartVec, EndVec, vmins, vmaxs);
+
+	trace_t *tr = new trace_t;
+	enginetrace->TraceRay(ray, params[5], &g_HitAllFilter, tr);
 
 	HandleError herr;
 	Handle_t hndl;
@@ -255,6 +340,50 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 	trace_t *tr = new trace_t;
 	ray.Init(StartVec, EndVec);
 	enginetrace->TraceRay(ray, params[3], &smfilter, tr);
+
+	HandleError herr;
+	Handle_t hndl;
+	if (!(hndl=handlesys->CreateHandle(g_TraceHandle, tr, pContext->GetIdentity(), myself->GetIdentity(), &herr)))
+	{
+		delete tr;
+		return pContext->ThrowNativeError("Unable to create a new trace handle (error %d)", herr);
+	}
+
+	return hndl;
+}
+
+static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *pFunc;
+	cell_t *startaddr, *endaddr, *mins, *maxs;
+	cell_t data;
+
+	pFunc = pContext->GetFunctionById(params[6]);
+	if (!pFunc)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[5]);
+	}
+	pContext->LocalToPhysAddr(params[1], &startaddr);
+	pContext->LocalToPhysAddr(params[2], &endaddr);
+	pContext->LocalToPhysAddr(params[3], &mins);
+	pContext->LocalToPhysAddr(params[4], &maxs);
+
+	Vector StartVec, EndVec, vmins, vmaxs;
+	CSMTraceFilter smfilter;
+	Ray_t ray;
+
+	data = params[7];
+
+	smfilter.SetFunctionPtr(pFunc, data);
+	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
+	vmins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
+	vmaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));
+	EndVec.Init(sp_ctof(endaddr[0]), sp_ctof(endaddr[1]), sp_ctof(endaddr[2]));
+
+	ray.Init(StartVec, EndVec, vmins, vmaxs);
+
+	trace_t *tr = new trace_t;
+	enginetrace->TraceRay(ray, params[5], &smfilter, tr);
 
 	HandleError herr;
 	Handle_t hndl;
@@ -429,7 +558,9 @@ static cell_t smn_TRGetPointContentsEnt(IPluginContext *pContext, const cell_t *
 sp_nativeinfo_t g_TRNatives[] = 
 {
 	{"TR_TraceRay",				smn_TRTraceRay},
+	{"TR_TraceHull",			smn_TRTraceHull},
 	{"TR_TraceRayEx",			smn_TRTraceRayEx},
+	{"TR_TraceHullEx",			smn_TRTraceHullEx},
 	{"TR_GetFraction",			smn_TRGetFraction},
 	{"TR_GetEndPosition",		smn_TRGetEndPosition},
 	{"TR_GetEntityIndex",		smn_TRGetEntityIndex},
@@ -439,6 +570,8 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_GetPointContentsEnt",	smn_TRGetPointContentsEnt},
 	{"TR_TraceRayFilter",		smn_TRTraceRayFilter},
 	{"TR_TraceRayFilterEx",		smn_TRTraceRayFilterEx},
+	{"TR_TraceHullFilter",		smn_TRTraceHullFilter},
+	{"TR_TraceHullFilterEx",	smn_TRTraceHullFilterEx},
 	{"TR_GetPlaneNormal",		smn_TRGetPlaneNormal},
 	{NULL,						NULL}
 };
