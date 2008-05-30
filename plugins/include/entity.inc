@@ -273,10 +273,11 @@ native SetEntDataFloat(entity, offset, Float:value, bool:changeState=false);
  * @return				Entity index at the given location, or 0 if none.
  * @error				Invalid entity or offset out of reasonable bounds.
  */
+#pragma deprecated Use GetEntDataEnt2() instead.
 native GetEntDataEnt(entity, offset);
 
 /**
- * This function is deprecated.   Use GetEntDataEnt2 instead, for 
+ * This function is deprecated.   Use SetEntDataEnt2 instead, for 
  * reasons explained in the notes.
  *
  * Note: This function uses 0 as an indicator to unset data, but 
@@ -290,6 +291,7 @@ native GetEntDataEnt(entity, offset);
  * @noreturn
  * @error				Invalid entity or offset out of reasonable bounds.
  */
+#pragma deprecated Use SetEntDataEnt2() instead.
 native SetEntDataEnt(entity, offset, other, bool:changeState=false);
 
 /**
