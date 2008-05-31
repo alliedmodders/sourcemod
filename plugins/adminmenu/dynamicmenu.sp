@@ -81,8 +81,21 @@ BuildDynamicMenu()
 	
 	new Handle:kvMenu;
 	kvMenu = CreateKeyValues("Commands");
+	
 	new String:file[256];
+	
+	/* As a compatibility shim, we use the old file if it exists. */
 	BuildPath(Path_SM, file, 255, "configs/dynamicmenu/menu.ini");
+	if (FileExists(file))
+	{
+		LogError("Warning! configs/dynamicmenu/menu.ini is now configs/adminmenu_custom.txt.");
+		LogError("Read the 1.0.2 release notes, as the dynamicmenu folder has been removed.");
+	}
+	else
+	{
+		BuildPath(Path_SM, file, 255, "configs/adminmenu_custom.txt");
+	}
+	
 	FileToKeyValues(kvMenu, file);
 	
 	new String:name[NAME_LENGTH];
@@ -336,6 +349,15 @@ ParseConfigs()
 	
 	decl String:configPath[256];
 	BuildPath(Path_SM, configPath, sizeof(configPath), "configs/dynamicmenu/adminmenu_grouping.txt");
+	if (FileExists(configPath))
+	{
+		LogError("Warning! configs/dynamicmenu/adminmenu_grouping.txt is now configs/adminmenu_grouping.txt.");
+		LogError("Read the 1.0.2 release notes, as the dynamicmenu folder has been removed.");
+	}
+	else
+	{
+		BuildPath(Path_SM, configPath, sizeof(configPath), "configs/adminmenu_grouping.txt");
+	}
 	
 	if (!FileExists(configPath))
 	{
