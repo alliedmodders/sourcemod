@@ -57,7 +57,6 @@ namespace builder
 			folders.Add("addons/sourcemod/configs/sql-init-scripts");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts/mysql");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts/sqlite");
-			folders.Add("addons/sourcemod/configs/dynamicmenu");
 			//folders.Add("addons/sourcemod/extensions/games");
 			folders.Add("addons/sourcemod/scripting/basecommands");
 			folders.Add("addons/sourcemod/scripting/basecomm");
@@ -91,7 +90,6 @@ namespace builder
 			builder.CopyFolder(this, "configs/geoip", "addons/sourcemod/configs/geoip", null);
 			builder.CopyFolder(this, "configs/cfg", "cfg/sourcemod", null);
 			builder.CopyFolder(this, "configs/metamod", "addons/metamod", null);
-			builder.CopyFolder(this, "configs/dynamicmenu", "addons/sourcemod/configs/dynamicmenu", null);
 			builder.CopyFolder(this,
 				"configs/sql-init-scripts", 
 				"addons/sourcemod/configs/sql-init-scripts", 
