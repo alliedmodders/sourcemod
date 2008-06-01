@@ -81,6 +81,7 @@ BuildDynamicMenu()
 	
 	new Handle:kvMenu;
 	kvMenu = CreateKeyValues("Commands");
+	KvSetEscapeSequences(kvMenu, true); 
 	
 	new String:file[256];
 	
@@ -100,8 +101,6 @@ BuildDynamicMenu()
 	
 	new String:name[NAME_LENGTH];
 	new String:buffer[NAME_LENGTH];
-	
-	KvSetEscapeSequences(kvMenu, true);
 		
 	if (!KvGotoFirstSubKey(kvMenu))
 	{
