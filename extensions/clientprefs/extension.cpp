@@ -95,7 +95,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 		TQueryOp *op = new TQueryOp(
 						Database, 
-						"CREATE TABLE sm_cookies IF NOT EXISTS \
+						"CREATE TABLE IF NOT EXISTS sm_cookies  \
 						( \
 							id INTEGER PRIMARY KEY AUTOINCREMENT, \
 							name varchar(30) NOT NULL UNIQUE, \
@@ -109,7 +109,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 		op = new TQueryOp(
 						Database, 
-						"CREATE TABLE sm_cookie_cache IF NOT EXISTS \
+						"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
 						( \
 							player varchar(65) NOT NULL, \
 							cookie_id int(10) NOT NULL, \
@@ -128,7 +128,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 		TQueryOp *op = new TQueryOp(
 						Database, 
-						"CREATE TABLE sm_cookies IF NOT EXISTS \
+						"CREATE TABLE IF NOT EXISTS sm_cookies \
 						( \
 							id INTEGER unsigned NOT NULL auto_increment, \
 							name varchar(30) NOT NULL UNIQUE, \
@@ -143,7 +143,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 		op = new TQueryOp(
 						Database, 
-						"CREATE TABLE sm_cookie_cache IF NOT EXISTS \
+						"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
 						( \
 							player varchar(65) NOT NULL, \
 							cookie_id int(10) NOT NULL, \
