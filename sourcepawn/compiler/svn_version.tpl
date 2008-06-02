@@ -19,7 +19,7 @@
  * @file Contains SourceMod version information.
  */
 
-#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$.$LOCAL_BUILD$"
+#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$-svn"
 #define SVN_FILE_VERSION	$PMAJOR$,$PMINOR$,$PREVISION$,$LOCAL_BUILD$
 
 #endif //_INCLUDE_SOURCEMOD_VERSION_H_

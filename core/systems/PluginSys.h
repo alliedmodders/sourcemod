@@ -312,6 +312,8 @@ private:
 	bool m_LibraryMissing;
 	CVector<AutoConfig *> m_configs;
 	bool m_bGotAllLoaded;
+	int m_FileVersion;
+	char m_DateTime[256];
 };
 
 class CPluginManager : 
