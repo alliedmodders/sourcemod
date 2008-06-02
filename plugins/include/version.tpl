@@ -39,4 +39,4 @@
 #define SOURCEMOD_V_MINOR		$PMINOR$				/**< SourceMod Minor version */
 #define SOURCEMOD_V_RELEASE		$PREVISION$				/**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION		"$PMAJOR$.$PMINOR$.$PREVISION$.$GLOBAL_BUILD$"	/**< SourceMod version string (major.minor.release.build) */
+#define SOURCEMOD_VERSION		"$PMAJOR$.$PMINOR$.$PREVISION$-svn"	/**< SourceMod version string (major.minor.release.build) */
