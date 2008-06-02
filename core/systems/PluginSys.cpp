@@ -373,6 +373,36 @@ void CPlugin::UpdateInfo()
 	m_info.name = m_info.name ? m_info.name : "";
 	m_info.url = m_info.url ? m_info.url : "";
 	m_info.version = m_info.version ? m_info.version : "";
+
+	if ((err = base->FindPubvarByName("__version", &idx)) == SP_ERROR_NONE)
+	{
+		struct __version_info
+		{
+			cell_t version;
+			cell_t filevers;
+			cell_t date;
+			cell_t time;
+		};
+		__version_info *info;
+		cell_t local_addr;
+		const char *pDate, *pTime;
+
+		pDate = "";
+		pTime = "";
+
+		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&info);
+		m_FileVersion = info->version;
+		if (m_FileVersion >= 3)
+		{
+			base->LocalToString(info->date, (char **)&pDate);
+			base->LocalToString(info->time, (char **)&pTime);
+			UTIL_Format(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
+		}
+	}
+	else
+	{
+		m_FileVersion = 0;
+	}
 }
 
 void CPlugin::Call_OnPluginStart()
@@ -2034,12 +2064,13 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				g_RootMenu.ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
 			}
 
-			SourceHook::List<IPlugin *> m_FailList;
+			CPlugin *pl;
+			SourceHook::List<CPlugin *>::iterator iter;
+			SourceHook::List<CPlugin *> m_FailList;
 
-			IPluginIterator *iter = GetPluginIterator();
-			for (; iter->MorePlugins(); iter->NextPlugin(), id++)
+			for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
 			{
-				IPlugin *pl = iter->GetPlugin();
+				pl = (*iter);
 				assert(pl->GetStatus() != Plugin_Created);
 				int len = 0;
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
@@ -2069,13 +2100,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				g_RootMenu.ConsolePrint("%s", buffer);
 			}
 
-			iter->Release();
-
 			if (!m_FailList.empty())
 			{
 				g_RootMenu.ConsolePrint("Load Errors:");
 
-				SourceHook::List<IPlugin *>::iterator _iter;
+				SourceHook::List<CPlugin *>::iterator _iter;
 
 				CPlugin *pl;
 
@@ -2272,8 +2301,21 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				}
 				else
 				{
-					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "Yes" : "No");
-					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "Yes" : "No");
+					if (pl->GetStatus() == Plugin_Running)
+					{
+						if (pl->IsDebugging())
+						{
+							g_RootMenu.ConsolePrint("  Status: running, debugging");
+						}
+						else
+						{
+							g_RootMenu.ConsolePrint("  Status: running");
+						}
+					}
+					else
+					{
+						g_RootMenu.ConsolePrint("  Status: not running");
+					}
 
 					const char *typestr = "";
 					switch (pl->GetType())
@@ -2291,6 +2333,10 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 					}
 
 					g_RootMenu.ConsolePrint("  Reloads: %s", typestr);
+				}
+				if (pl->m_FileVersion >= 3)
+				{
+					g_RootMenu.ConsolePrint("  Timestamp: %s", pl->m_DateTime);
 				}
 			}
 			else

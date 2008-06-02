@@ -47,7 +47,7 @@
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"CLIENTPREFS"
 #define SMEXT_CONF_LICENSE		"GPL"
-#define SMEXT_CONF_DATESTRING	__DATE__
+#define SMEXT_CONF_DATESTRING	__DATE__ " " __TIME__
 
 /** 
  * @brief Exposes plugin's main interface.

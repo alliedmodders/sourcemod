@@ -268,17 +268,22 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 		ConsolePrint(" SourceMod was developed by AlliedModders, LLC.");
 		ConsolePrint(" Development would not have been possible without the following people:");
 		ConsolePrint("  David \"BAILOPAN\" Anderson, lead developer");
-		ConsolePrint("  Borja \"faluco\" Ferrer, Core developer");
-		ConsolePrint("  Scott \"Damaged Soul\" Ehlert, Core developer");
+		ConsolePrint("  Borja \"faluco\" Ferrer, core developer");
+		ConsolePrint("  Scott \"Damaged Soul\" Ehlert, core developer");
+		ConsolePrint("  Matt \"pRED\" Woodrow, core developer");
+		ConsolePrint("  Michael \"ferret\" McKoy, plugin developer");
 		ConsolePrint("  Pavol \"PM OnoTo\" Marko, SourceHook developer");
 		ConsolePrint(" Special thanks to Viper of GameConnect");
 		ConsolePrint(" Special thanks to Mani of Mani-Admin-Plugin");
 		ConsolePrint(" http://www.sourcemod.net/");
-	} else if (strcmp(cmdname, "version") == 0) {
+	}
+	else if (strcmp(cmdname, "version") == 0)
+	{
 		ConsolePrint(" SourceMod Version Information:");
 		ConsolePrint("    SourceMod Version: %s", SVN_FULL_VERSION);
 		ConsolePrint("    JIT Version: %s, %s", g_pVM->GetVMName(), g_pVM->GetVersionString());
 		ConsolePrint("    JIT Settings: %s", g_pVM->GetCPUOptimizations());
+		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
 }
