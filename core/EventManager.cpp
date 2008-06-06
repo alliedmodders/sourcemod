@@ -359,6 +359,12 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	const char *name;
 	cell_t res = Pl_Continue;
+
+	/* The engine accepts NULL without crashing, so to prevent a crash in SM we ignore these */
+	if (!pEvent)
+	{
+		RETURN_META_VALUE(MRES_IGNORED, false);
+	}
 	
 	/* Get the event name, we're going to need this for passing to post hooks */
 	name = pEvent->GetName();
@@ -406,6 +412,12 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	const char *name;
 	Handle_t hndl = 0;
+
+	/* The engine accepts NULL without crashing, so to prevent a crash in SM we ignore these */
+	if (!pEvent)
+	{
+		RETURN_META_VALUE(MRES_IGNORED, false);
+	}
 
 	name = m_EventNames.front();
 
