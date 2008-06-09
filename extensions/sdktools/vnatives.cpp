@@ -922,7 +922,7 @@ static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
 static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
-	IClient *pClient = iserver->GetClient(params[1]);
+	IClient *pClient = iserver->GetClient(params[1]-1);
 	if (player == NULL || pClient == NULL)
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
