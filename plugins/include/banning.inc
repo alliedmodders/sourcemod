@@ -144,7 +144,7 @@ native bool:BanIdentity(const String:identity[],
  *
  * @param identity		String to unban (ip or authstring).
  * @param flags			Flags (only IP and AUTHID are valid flags here).
- * @param command		Command strnig to identify the source.  If this is left 
+ * @param command		Command string to identify the source.  If this is left 
  *						empty, then OnRemoveBan will not be called.
  * @param source		A source value that could be interpreted as a player 
  *						index of any sort (not actually checked by Core).
