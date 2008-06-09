@@ -39,6 +39,7 @@
 #include "CellRecipientFilter.h"
 #include <inetchannel.h>
 #include <iclient.h>
+#include "iserver.h"
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -921,7 +922,8 @@ static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
 static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
-	if (player == NULL)
+	IClient *pClient = iserver->GetClient(params[1]);
+	if (player == NULL || pClient == NULL)
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}
@@ -956,9 +958,6 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("\"SetUserCvar\" not supported by this mod");
 		}
 	}
-
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
-	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 
 	unsigned char *CGameClient = (unsigned char *)pClient - 4;
 
