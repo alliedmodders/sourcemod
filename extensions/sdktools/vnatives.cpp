@@ -37,6 +37,8 @@
 #include "vhelpers.h"
 #include "vglobals.h"
 #include "CellRecipientFilter.h"
+#include <inetchannel.h>
+#include <iclient.h>
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -916,6 +918,64 @@ static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo params[2];
+		InitPass(params[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(params[1], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+
+		if (!CreateBaseCall("SetUserCvar", ValveCall_Entity, NULL, params, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"SetUserCvar\" not supported by this mod");
+		}
+		else if (!pCall)
+		{
+			return pContext->ThrowNativeError("\"SetUserCvar\" wrapper failed to initialized");
+		}
+	}
+
+	static int changedOffset = -1;
+
+	if (changedOffset == -1)
+	{	
+		if (!g_pGameConf->GetOffset("InfoChanged", &changedOffset))
+		{
+			return pContext->ThrowNativeError("\"SetUserCvar\" not supported by this mod");
+		}
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
+	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+
+	unsigned char *CGameClient = (unsigned char *)pClient - 4;
+
+	START_CALL();
+	/* Not really a CBaseEntity* but this works */
+	CBaseEntity **ebuf = (CBaseEntity **)vptr;
+	*ebuf = (CBaseEntity *)CGameClient;
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	FINISH_CALL_SIMPLE(NULL);
+
+	uint8_t* changed = (uint8_t *)(CGameClient + changedOffset);
+	*changed = 1;
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -942,5 +1002,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetServerNetStats",		GetServerNetStats},
 	{"EquipPlayerWeapon",		WeaponEquip},
 	{"ActivateEntity",			ActivateEntity},
+	{"SetClientInfo",			SetClientInfo},
 	{NULL,						NULL},
 };
