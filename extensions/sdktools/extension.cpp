@@ -103,7 +103,11 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	playerhelpers->AddClientListener(&g_SdkTools);
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
-	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
+
+	TypeAccess TraceAccess;
+	handlesys->InitAccessDefaults(&TraceAccess, NULL);
+	TraceAccess.access[HTypeAccess_Create] = true;
+	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, &TraceAccess, NULL, myself->GetIdentity(), NULL);
 
 #if defined ORANGEBOX_BUILD
 	g_pCVar = icvar;
