@@ -2011,11 +2011,10 @@ CPlugin *CPluginManager::GetPluginByOrder(int num)
 	CPlugin *pl;
 	int id = 1;
 
-	IPluginIterator *iter = GetPluginIterator();
-	for (; iter->MorePlugins() && id<num; iter->NextPlugin(), id++) {}
+	SourceHook::List<CPlugin *>::iterator iter;
+	for (iter = m_plugins.begin(); iter != m_plugins.end() && id < num; iter++, id++) {}
 
-	pl = (CPlugin *)(iter->GetPlugin());
-	iter->Release();
+	pl = *iter;
 
 	return pl;
 }
@@ -2068,7 +2067,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			SourceHook::List<CPlugin *>::iterator iter;
 			SourceHook::List<CPlugin *> m_FailList;
 
-			for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+			for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++, id++)
 			{
 				pl = (*iter);
 				assert(pl->GetStatus() != Plugin_Created);
