@@ -32,6 +32,7 @@
 #include "HandleSys.h"
 #include "PluginSys.h"
 #include "UserMessages.h"
+#include "PlayerManager.h"
 #include "smn_usermsgs.h"
 
 HandleType_t g_WrBitBufType;
@@ -349,8 +350,11 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 {
 	char *msgname;
 	cell_t *cl_array;
+	unsigned int numClients;
 	int msgid;
 	bf_write *pBitBuf;
+	int client;
+	CPlayer *pPlayer = NULL;
 
 	if (g_IsMsgInExec)
 	{
@@ -366,7 +370,23 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToPhysAddr(params[2], &cl_array);
 
-	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, params[3], params[4]);
+	numClients = params[3];
+
+	/* Client validation */
+	for (unsigned int i = 0; i < numClients; i++)
+	{
+		client = cl_array[i];
+		pPlayer = g_Players.GetPlayerByIndex(client);
+
+		if (!pPlayer)
+		{
+			return pCtx->ThrowNativeError("Client index %d is invalid", client);
+		} else if (!pPlayer->IsConnected()) {
+			return pCtx->ThrowNativeError("Client %d is not connected", client);
+		}
+	}
+
+	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, numClients, params[4]);
 	if (!pBitBuf)
 	{
 		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
@@ -381,7 +401,10 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 static cell_t smn_StartMessageEx(IPluginContext *pCtx, const cell_t *params)
 {
 	cell_t *cl_array;
+	unsigned int numClients;
 	bf_write *pBitBuf;
+	int client;
+	CPlayer *pPlayer = NULL;
 	int msgid = params[1];
 
 	if (g_IsMsgInExec)
@@ -396,7 +419,23 @@ static cell_t smn_StartMessageEx(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToPhysAddr(params[2], &cl_array);
 
-	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, params[3], params[4]);
+	numClients = params[3];
+
+	/* Client validation */
+	for (unsigned int i = 0; i < numClients; i++)
+	{
+		client = cl_array[i];
+		pPlayer = g_Players.GetPlayerByIndex(client);
+
+		if (!pPlayer)
+		{
+			return pCtx->ThrowNativeError("Client index %d is invalid", client);
+		} else if (!pPlayer->IsConnected()) {
+			return pCtx->ThrowNativeError("Client %d is not connected", client);
+		}
+	}
+
+	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, numClients, params[4]);
 	if (!pBitBuf)
 	{
 		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");

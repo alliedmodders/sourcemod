@@ -83,7 +83,8 @@ native bool:GetUserMessageName(UserMsg:msg_id, String:msg[], maxlength);
  * @param flags			Optional flags to set.
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
- * @error				Invalid message name or unable to start a message.
+ * @error				Invalid message name, unable to start a message, invalid client,
+ *						or client not connected.
  */
 native Handle:StartMessage(String:msgname[], clients[], numClients, flags=0);
 
@@ -98,7 +99,8 @@ native Handle:StartMessage(String:msgname[], clients[], numClients, flags=0);
  * @param flags			Optional flags to set.
  * @return				A handle to a bf_write bit packing structure, or
  *						INVALID_HANDLE on failure.
- * @error				Invalid message name or unable to start a message.
+ * @error				Invalid message name, unable to start a message, invalid client,
+ *						or client not connected.
  */
 native Handle:StartMessageEx(UserMsg:msg, clients[], numClients, flags=0);
 

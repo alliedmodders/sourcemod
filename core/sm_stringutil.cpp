@@ -1385,7 +1385,7 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
  * NOTE: Do not edit this for the love of god unless you have 
  * read the test cases and understand the code behind each one.
  * While I don't guarantee there aren't mistakes, I do guarantee
- * that plugins will end up relying on tiny idiosyncracies of this
+ * that plugins will end up relying on tiny idiosyncrasies of this
  * function, just like they did with AMX Mod X.
  *
  * There are explicitly more cases than the AMX Mod X version because

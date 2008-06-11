@@ -449,11 +449,30 @@ static cell_t StopSound(IPluginContext *pContext, const cell_t *params)
 
 static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 {
-	cell_t *addr, *pl_addr;
-
+	cell_t *addr, *cl_array;
 	CellRecipientFilter crf;
-	pContext->LocalToPhysAddr(params[1], &pl_addr);
-	crf.Initialize(pl_addr, params[2]);
+	unsigned int numClients;
+	int client;
+	IGamePlayer *pPlayer = NULL;
+
+	pContext->LocalToPhysAddr(params[1], &cl_array);
+	numClients = params[2];
+
+	/* Client validation */
+	for (unsigned int i = 0; i < numClients; i++)
+	{
+		client = cl_array[i];
+		pPlayer = playerhelpers->GetGamePlayer(client);
+
+		if (!pPlayer)
+		{
+			return pContext->ThrowNativeError("Client index %d is invalid", client);
+		} else if (!pPlayer->IsInGame()) {
+			return pContext->ThrowNativeError("Client %d is not connected", client);
+		}
+	}
+
+	crf.Initialize(cl_array, numClients);
 
 	char *sample;
 	pContext->LocalToString(params[3], &sample);
@@ -512,10 +531,10 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 
 	if (entity == -2 && engine->IsDedicatedServer())
 	{
-		for (cell_t i=0; i<params[2]; i++)
+		for (unsigned int i = 0; i < numClients; i++)
 		{
 			cell_t player[1];
-			player[0] = pl_addr[i];
+			player[0] = cl_array[i];
 			crf.Reset();
 			crf.Initialize(player, 1);
 			if (g_InSoundHook)
@@ -604,10 +623,29 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *addr;
-
 	CellRecipientFilter crf;
+	unsigned int numClients;
+	int client;
+	IGamePlayer *pPlayer = NULL;
+
 	pContext->LocalToPhysAddr(params[1], &addr);
-	crf.Initialize(addr, params[2]);
+	numClients = params[2];
+
+	/* Client validation */
+	for (unsigned int i = 0; i < numClients; i++)
+	{
+		client = addr[i];
+		pPlayer = playerhelpers->GetGamePlayer(client);
+
+		if (!pPlayer)
+		{
+			return pContext->ThrowNativeError("Client index %d is invalid", client);
+		} else if (!pPlayer->IsInGame()) {
+			return pContext->ThrowNativeError("Client %d is not connected", client);
+		}
+	}
+
+	crf.Initialize(addr, numClients);
 
 	int sentence = params[3];
 	int entity = params[4];
