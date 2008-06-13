@@ -1,12 +1,8 @@
 SOURCEMOD LICENSE INFORMATION
-VERSION: JULY-31-2007
+VERSION: JUNE-13-2008
 -----------------------------
 
 SourceMod is licensed under the GNU General Public License, version 3.  
-
-The SourcePawn JIT (distributed with SourceMod by AlliedModders LLC) is 
-Freeware.  It may only be used in conjunction with SourceMod.  For the full 
-license, see JIT.txt.
 
 As a special exception, AlliedModders LLC gives you permission to link the code
 of this program (as well as its derivative works) to "Half-Life 2," the "Source 
@@ -35,9 +31,9 @@ A copy of the JIT License is available in JIT.txt.
 A copy of the GNU General Public License 2.0 is available in GPLv2.txt.
 A copy of the GNU General Public License 3.0 is available in GPLv3.txt.
 
-SourcePawn is Copyright (C) 2006-2007 AlliedModders LLC.  All rights reserved.
-SourceMod is Copyright (C) 2006-2007 AlliedModders LLC.  All rights reserved.
-Pawn and SMALL are Copyright (C) 1997-2007 ITB CompuPhase.
+SourcePawn is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
+SourceMod is Copyright (C) 2006-2008 AlliedModders LLC.  All rights reserved.
+Pawn and SMALL are Copyright (C) 1997-2008 ITB CompuPhase.
 Source is Copyright (C) Valve Corporation.
 All trademarks are property of their respective owners in the US and other 
 
