@@ -38,7 +38,7 @@
 			{
 				"library"	"server"
 				"linux"		"@_ZN8CTFKnife26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x33\xC0\x83\xB9\xF4\x12\x00\x00\x01\x0F\x94\xC0\xC3"
+				"windows"	"\x33\xC0\x83\xB9\x08\x13\x00\x00\x01\x0F\x94\xC0\xC3"
 			}
 
 		}
@@ -46,12 +46,12 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"280"
-				"linux"		"281"
+				"windows"	"281"
+				"linux"		"282"
 			}
 			"CalcCriticalBackup"
 			{
-				"linux"		"6"
+				"linux"		"7"
 				"windows"	"7"
 			}
 			"CalcCriticalMeleeBackup"
