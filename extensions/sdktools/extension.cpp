@@ -106,7 +106,9 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	TypeAccess TraceAccess;
 	handlesys->InitAccessDefaults(&TraceAccess, NULL);
+	TraceAccess.ident = myself->GetIdentity();
 	TraceAccess.access[HTypeAccess_Create] = true;
+	TraceAccess.access[HTypeAccess_Inherit] = true;
 	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, &TraceAccess, NULL, myself->GetIdentity(), NULL);
 
 #if defined ORANGEBOX_BUILD
