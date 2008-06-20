@@ -75,7 +75,9 @@ void Hook_ExecDispatch()
 #endif
 
 	const char *arg = cmd.Arg(1);
-	if (arg != NULL && strcmp(arg, g_ServerCfgFile->GetString()) == 0)
+	if (!g_bServerExecd 
+		&& arg != NULL 
+		&& strcmp(arg, g_ServerCfgFile->GetString()) == 0)
 	{
 		g_bServerExecd = true;
 		CheckAndFinalizeConfigs();
@@ -84,7 +86,8 @@ void Hook_ExecDispatch()
 
 void CheckAndFinalizeConfigs()
 {
-	if ((g_bServerExecd || g_ServerCfgFile == NULL) && g_bGotServerStart)
+	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
+		&& g_bGotServerStart)
 	{
 		/* Order is important here.  We need to buffer things before we send the command out. */
 		g_pOnAutoConfigsBuffered->Execute(NULL);
