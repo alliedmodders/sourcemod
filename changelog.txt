@@ -2,7 +2,18 @@ SourceMod Changelog
 
 ----------------------------
 
-SourceMod 1.0.2 [2008-??-??]
+SourceMod 1.0.3 [2008-06-21]
+
+Changes:
+ 
+ - Fixed SDKTools compatibility for latest TF2 update. 
+ - Fixed amb1750: OnAutoConfigsBuffered() inserted before "exec server.cfg". 
+ - Fixed a logic bug where OnConfigsExecuted() could be executed before "exec server.cfg" finished. 
+ - Fixed a rare crash in the event manager that manifested on Zombie Panic! Source. 
+
+----------------------------
+
+SourceMod 1.0.2 [2008-05-31]
 
 Changes:
 
