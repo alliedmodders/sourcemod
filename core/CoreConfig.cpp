@@ -54,20 +54,19 @@ CoreConfig g_CoreConfig;
 bool g_bConfigsExecd = false;
 bool g_bServerExecd = false;
 bool g_bGotServerStart = false;
+bool g_bGotTrigger = false;
 ConCommand *g_pExecPtr = NULL;
 ConVar *g_ServerCfgFile = NULL;
 
 void CheckAndFinalizeConfigs();
 
-/* :TODO: use PM's new macros.  this is a fast patch so I don't have time to look them up. */
 #if defined ORANGEBOX_BUILD
-bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate1<class CCommand const &,void>);
-int __SourceHook_FHAddConCommandDispatch(void *,enum SourceHook::ISourceHook::AddHookMode,bool,class fastdelegate::FastDelegate1<class CCommand const &,void>);
-void Hook_ExecDispatch(const CCommand &cmd)
+SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+void Hook_ExecDispatchPre(const CCommand &cmd)
 #else
 extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-void Hook_ExecDispatch()
+void Hook_ExecDispatchPre()
 #endif
 {
 #if !defined ORANGEBOX_BUILD
@@ -75,10 +74,24 @@ void Hook_ExecDispatch()
 #endif
 
 	const char *arg = cmd.Arg(1);
+
 	if (!g_bServerExecd 
 		&& arg != NULL 
 		&& strcmp(arg, g_ServerCfgFile->GetString()) == 0)
 	{
+		g_bGotTrigger = true;
+	}
+}
+
+#if defined ORANGEBOX_BUILD
+void Hook_ExecDispatchPost(const CCommand &cmd)
+#else
+void Hook_ExecDispatchPost()
+#endif
+{
+	if (g_bGotTrigger)
+	{
+		g_bGotTrigger = false;
 		g_bServerExecd = true;
 		CheckAndFinalizeConfigs();
 	}
@@ -112,7 +125,8 @@ void CoreConfig::OnSourceModShutdown()
 
 	if (g_pExecPtr != NULL)
 	{
-		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatch, true);
+		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);
+		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPost, true);
 		g_pExecPtr = NULL;
 	}
 }
@@ -139,7 +153,8 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 			g_pExecPtr = (ConCommand *)pBase;
 			if (g_pExecPtr != NULL)
 			{
-				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatch, true);
+				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);
+				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPost, true);
 			}
 			else
 			{
@@ -152,6 +167,7 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 	g_bConfigsExecd = false;
 	g_bServerExecd = false;
 	g_bGotServerStart = false;
+	g_bGotTrigger = false;
 }
 
 void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
