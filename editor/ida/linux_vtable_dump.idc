@@ -66,7 +66,7 @@ static main()
 			auto real_addr;
 			real_addr = Dword(pAddress);
 				
-			szFuncName = GetFunctionName(real_addr);
+			szFuncName = Name(real_addr);
 			if (strlen(szFuncName) == 0)
 			{
 				break;
