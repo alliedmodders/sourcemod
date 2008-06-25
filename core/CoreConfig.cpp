@@ -502,6 +502,10 @@ void SM_ExecuteAllConfigs()
 	}
 	iter->Release();
 
+#if defined ORANGEBOX_BUILD
+	engine->ServerExecute();
+#endif
+
 	g_bGotServerStart = true;
 	CheckAndFinalizeConfigs();
 }
