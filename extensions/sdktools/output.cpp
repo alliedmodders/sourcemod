@@ -76,7 +76,12 @@ bool EntityOutputManager::IsEnabled()
 
 bool EntityOutputManager::CreateFireEventDetour()
 {
-	if (!g_pGameConf->GetMemSig("FireOutput", &info_address) || !info_address)
+	if (!g_pGameConf->GetMemSig("FireOutput", &info_address))
+	{
+		return false;
+	}
+
+	if (!info_address)
 	{
 		g_pSM->LogError(myself, "Could not locate FireOutput - Disabling Entity Outputs");
 		return false;
@@ -84,7 +89,6 @@ bool EntityOutputManager::CreateFireEventDetour()
 
 	if (!g_pGameConf->GetOffset("FireOutputBackup", (int *)&(info_restore.bytes)))
 	{
-		g_pSM->LogError(myself, "Could not locate FireOutputBackup - Disabling Entity Outputs");
 		return false;
 	}
 
