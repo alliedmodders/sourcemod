@@ -32,7 +32,10 @@
 #ifndef _INCLUDE_SOURCEMOD_BASEFUNCTION_H_
 #define _INCLUDE_SOURCEMOD_BASEFUNCTION_H_
 
-#include "sm_globals.h"
+#include <sp_vm_types.h>
+#include <sp_vm_api.h>
+
+using namespace SourcePawn;
 
 struct ParamInfo
 {

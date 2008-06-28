@@ -32,8 +32,9 @@
 #ifndef _INCLUDE_SOURCEPAWN_BASECONTEXT_H_
 #define _INCLUDE_SOURCEPAWN_BASECONTEXT_H_
 
-#include "sp_vm_api.h"
+#include <sp_vm_api.h>
 #include "sp_vm_function.h"
+#include "sp_vm_engine.h"
 
 /**
  * :TODO: Make functions allocate as a lump instead of individual allocations!
@@ -48,7 +49,7 @@ namespace SourcePawn
 		public IPluginDebugInfo
 	{
 	public:
-		BaseContext(sp_context_t *ctx);
+		BaseContext(SourcePawnEngine *engine, sp_context_t *ctx);
 		~BaseContext();
 	public: //IPluginContext
 		IVirtualMachine *GetVirtualMachine();
@@ -118,6 +119,8 @@ namespace SourcePawn
 		CFunction **m_priv_funcs;
 #endif
 		CFunction **m_pub_funcs;
+	public:
+		SourcePawnEngine *m_pEngine;
 	};
 };
 

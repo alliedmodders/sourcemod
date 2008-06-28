@@ -30,16 +30,6 @@
  */
 
 #include "sp_vm_types.h"
-#include <sh_memory.h>
-/* HACK to avoid including sourcehook.h for just the SH_ASSERT definition */
-#if !defined  SH_ASSERT
-	#define SH_ASSERT(x, info)
-	#include <sh_pagealloc.h>
-	#undef SH_ASSERT
-#else
-	#include <sh_pagealloc.h>
-#endif
-
 #include <malloc.h>
 #include <string.h>
 #include <assert.h>
@@ -58,8 +48,6 @@
 #define INVALID_CIP			0xFFFFFFFF
 
 using namespace SourcePawn;
-
-SourceHook::CPageAlloc g_ExeMemory(16);
 
 #define ERROR_MESSAGE_MAX		25
 static const char *g_ErrorMsgTable[] = 
@@ -92,7 +80,7 @@ static const char *g_ErrorMsgTable[] =
 	"Call was aborted",
 };
 
-const char *GetSourcePawnErrorMessage(int error)
+const char *SourcePawnEngine::GetErrorString(int error)
 {
 	if (error < 1 || error > ERROR_MESSAGE_MAX)
 	{
@@ -149,26 +137,6 @@ void *SourcePawnEngine::ExecAlloc(size_t size)
 #endif
 }
 
-void *SourcePawnEngine::AllocatePageMemory(size_t size)
-{
-	return g_ExeMemory.Alloc(size);
-}
-
-void SourcePawnEngine::SetReadExecute(void *ptr)
-{
-	g_ExeMemory.SetRE(ptr);
-}
-
-void SourcePawnEngine::SetReadWrite(void *ptr)
-{
-	g_ExeMemory.SetRW(ptr);
-}
-
-void SourcePawnEngine::FreePageMemory(void *ptr)
-{
-	g_ExeMemory.Free(ptr);
-}
-
 void SourcePawnEngine::ExecFree(void *address)
 {
 #if defined WIN32
@@ -190,7 +158,7 @@ void SourcePawnEngine::BaseFree(void *memory)
 
 IPluginContext *SourcePawnEngine::CreateBaseContext(sp_context_t *ctx)
 {
-	return new BaseContext(ctx);
+	return new BaseContext(this, ctx);
 }
 
 void SourcePawnEngine::FreeBaseContext(IPluginContext *ctx)
@@ -314,7 +282,6 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 	}
 
 	/* Rewind for safety */
-	rewind(fp);
 	fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
 
 	if (hdr.magic != SPFILE_MAGIC)
@@ -597,7 +564,7 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 
 unsigned int SourcePawnEngine::GetEngineAPIVersion()
 {
-	return SOURCEPAWN_ENGINE_API_VERSION;
+	return SOURCEPAWN_VERSION;
 }
 
 CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native) : 
@@ -701,4 +668,26 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 	}
 
 	return native->name;
+}
+
+
+void *SourcePawnEngine::AllocatePageMemory(size_t size)
+{
+	/* :TODO: */
+	return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+}
+
+void SourcePawnEngine::SetReadExecute(void *ptr)
+{
+	__asm int 3;
+}
+
+void SourcePawnEngine::FreePageMemory(void *ptr)
+{
+	VirtualFree(ptr, 0, MEM_RELEASE);
+}
+
+void SourcePawnEngine::SetReadWrite(void *ptr)
+{
+	__asm int 3;
 }

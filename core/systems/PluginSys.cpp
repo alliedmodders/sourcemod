@@ -177,11 +177,6 @@ unsigned int CPlugin::CalcMemUsage()
 		/* We can't get strtab size, oh well. */
 	}
 
-	if (m_ctx.base != NULL)
-	{
-		base_size += sizeof(BaseContext);
-		base_size += m_ctx.base->GetPublicsNum() * sizeof(CFunction);
-	}
 	if (m_ctx.ctx != NULL)
 	{
 		base_size += m_ctx.ctx->mem_size;
@@ -207,6 +202,8 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 	char fullpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", file);
 	FILE *fp = fopen(fullpath, "rb");
+
+	rewind(fp);
 
 	CPlugin *pPlugin = new CPlugin(file);
 
@@ -311,7 +308,7 @@ bool CPlugin::FinishMyCompile(char *error, size_t maxlength)
 		return false;
 	}
 
-	m_ctx.base = new BaseContext(m_ctx.ctx);
+	m_ctx.base = g_pSourcePawn->CreateBaseContext(m_ctx.ctx);
 	m_ctx.ctx->user[SM_CONTEXTVAR_MYSELF] = (void *)this;
 
 	m_status = Plugin_Created;

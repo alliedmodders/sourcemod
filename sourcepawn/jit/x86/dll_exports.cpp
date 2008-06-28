@@ -17,42 +17,17 @@
 #include <malloc.h>
 #include "jit_x86.h"
 #include "dll_exports.h"
+#include "../sp_vm_engine.h"
 
-SourcePawn::ISourcePawnEngine *engine = NULL;
-JITX86 g_jit;
+JITX86 g_v1_jit;
+SourcePawnEngine g_engine;
+SourcePawn::ISourcePawnEngine *engine = &g_engine;
 
-EXPORTFUNC int GiveEnginePointer2(SourcePawn::ISourcePawnEngine *engine_p, unsigned int api_version)
+EXPORTFUNC void GetSourcePawn(SourcePawn::IVirtualMachine **pVm,
+							  SourcePawn::ISourcePawnEngine **pEngine)
 {
-	engine = engine_p;
-
-	if (api_version > SOURCEPAWN_ENGINE_API_VERSION || api_version < 2)
-	{
-		return SP_ERROR_PARAM;
-	}
-
-	return SP_ERROR_NONE;
-}
-
-EXPORTFUNC unsigned int GetExportCount()
-{
-	return 1;
-}
-
-EXPORTFUNC SourcePawn::IVirtualMachine *GetExport(unsigned int exportnum)
-{
-	/* Don't return anything if we're not initialized yet */
-	if (!engine)
-	{
-		return NULL;
-	}
-
-	/* We only have one export - 0 */
-	if (exportnum)
-	{
-		return NULL;
-	}
-
-	return &g_jit;
+	*pVm = &g_v1_jit;
+	*pEngine = &g_engine;
 }
 
 #if defined __linux__

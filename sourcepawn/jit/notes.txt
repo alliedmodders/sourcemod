@@ -1,0 +1,88 @@
+    proc    ; OnPluginStart
+    stack fffffffc
+    sysreq.n 0 0
+    stor.s.pri fffffffc
+    push.c 0
+    push.c 1
+    jump 75
+l.73        ; 50
+    inc.s fffffff4
+l.75
+    load.s.both fffffff4 fffffffc
+    jsgrtr 74
+    load.s.both fffffff4 fffffff8
+    add
+    stor.s.pri fffffff8
+    jump 73
+l.74        ; 94
+    stack 4
+    load.s.pri fffffff8
+    stack 8
+    retn
+
+SP, FP
+
+    stack fffffffc
+1: JSI_stack #1
+    sysreq.n 0 0
+2: JSI_call GetMaxClients
+    stor.s.pri fffffffc
+3: JSI_store `1, #0, `2
+    push.c 0
+4: JSI_stack #1
+5: JSI_store `4, #0, #0
+    push.c 1
+6: JSI_stack #1
+7: JSI_store `6, #0, #1
+    jump 75
+8: JSI_jump `12
+    inc.s fffffff4 
+9: JSI_load `1, #0
+10: JSI_add `9, #1
+11: JSI_store `1, #0, `10
+    load.s.both fffffff4 fffffffc
+12: JSI_load 6
+13: JSI_load 1
+    jsgrtr 74
+14: JSI_jgrtr `12, `13, `20
+    load.s.both fffffff4 fffffff8
+15: JSI_load 6
+16: JSI_load 4
+    add
+17: JSI_add `15, `16
+    stor.s.pri fffffff8
+18: JSI_store 4, #0, `17
+    jump 73
+19: JSI_jump `9
+    stack 4
+20: JSI_rmstk #1
+    load.s.pri fffffff8
+21: JSI_load `4
+    stack 8
+22: JSI_rmstk #2
+    retn
+23: JSI_return
+
+1: stack #1
+2: call GetMaxClients
+3: store `1, #0, `2
+4: stack #1
+5: store `4, #0, #0
+6: stack #1
+7: store `6, #0, #1
+8: jump `12
+9: load `1, #0
+10: add `9, #1
+11: store `1, #0, `10
+12: load 6
+13: load 1
+14: jgrtr `12, `13, `20
+15: load 6
+16: load 4
+17: add `15, `16
+18: store 4, #0, `17
+19: jump `9
+20: rmstk #1
+21: load `4
+22: rmstk #2
+23: return

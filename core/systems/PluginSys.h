@@ -43,7 +43,6 @@
 #include <sh_vector.h>
 #include <sh_string.h>
 #include "sm_globals.h"
-#include "vm/sp_vm_basecontext.h"
 #include "PluginInfoDatabase.h"
 #include "sm_trie.h"
 #include "sourcemod.h"
@@ -113,7 +112,7 @@ struct ContextPair
 	ContextPair() : base(NULL), ctx(NULL), co(NULL)
 	{
 	};
-	BaseContext *base;
+	IPluginContext *base;
 	sp_context_t *ctx;
 	ICompilation *co;
 	IVirtualMachine *vm;

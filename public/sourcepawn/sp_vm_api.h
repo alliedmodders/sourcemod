@@ -41,14 +41,7 @@
 #include "sp_vm_types.h"
 
 /** SourcePawn Engine API Version */
-#define SOURCEPAWN_ENGINE_API_VERSION	3
-
-/** SourcePawn VM API Version */
-#define SOURCEPAWN_VM_API_VERSION		6
-
-#if !defined SOURCEMOD_BUILD
-#define SOURCEMOD_BUILD
-#endif
+#define SOURCEPAWN_VERSION					4
 
 #if defined SOURCEMOD_BUILD
 namespace SourceMod
@@ -612,6 +605,22 @@ namespace SourcePawn
 		 * @return				True if in exec, false otherwise.
 		 */
 		virtual bool IsInExec() =0;
+
+#if defined SOURCEMOD_BUILD
+		/**
+		 * @brief This should not exist.  Do not call it.
+		 *
+		 * @return			Identity token.
+		 */
+		virtual void SetIdentity(SourceMod::IdentityToken_t *pToken) =0;
+
+		/**
+		 * @brief This should not exist.  Do not call it.
+		 *
+		 * @return			Blah
+		 */
+		virtual void SetContext(sp_context_t *ctx) =0;
+#endif
 	};
 
 
@@ -871,6 +880,19 @@ namespace SourcePawn
 		 * @param ptr		Address to free.
 		 */
 		virtual void FreePageMemory(void *ptr) =0;
+
+		/**
+		 * @brief Creates a base context around an sp_context_t 
+		 * (NOTE: this should really not exist)
+		 */
+		virtual IPluginContext *CreateBaseContext(sp_context_t *pContext) =0;
+
+		/**
+		 * @brief Returns an error string.
+		 *
+		 * @param err		Error number.
+		 */
+		virtual const char *GetErrorString(int err) =0;
 	};
 
 

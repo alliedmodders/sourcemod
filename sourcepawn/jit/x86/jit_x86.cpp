@@ -2942,7 +2942,7 @@ bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char 
 
 unsigned int JITX86::GetAPIVersion()
 {
-	return SOURCEPAWN_VM_API_VERSION;
+	return 6;
 }
 
 bool JITX86::FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)

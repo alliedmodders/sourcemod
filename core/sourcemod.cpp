@@ -33,7 +33,6 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "systems/LibrarySys.h"
-#include "vm/sp_vm_engine.h"
 #include <sh_string.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
@@ -53,21 +52,17 @@ SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char *);
 
-SourcePawnEngine g_SourcePawn;
 SourceModBase g_SourceMod;
 
 ILibrary *g_pJIT = NULL;
 SourceHook::String g_BaseDir;
-ISourcePawnEngine *g_pSourcePawn = &g_SourcePawn;
+ISourcePawnEngine *g_pSourcePawn;
 IVirtualMachine *g_pVM;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapEnd = NULL;
 bool g_Loaded = false;
 
-typedef int (*GIVEENGINEPOINTER)(ISourcePawnEngine *);
-typedef int (*GIVEENGINEPOINTER2)(ISourcePawnEngine *, unsigned int api_version);
-typedef unsigned int (*GETEXPORTCOUNT)();
-typedef IVirtualMachine *(*GETEXPORT)(unsigned int);
+typedef void (*GETSOURCEPAWN)(IVirtualMachine **, ISourcePawnEngine **);
 typedef void (*NOTIFYSHUTDOWN)();
 
 void ShutdownJIT()
@@ -165,101 +160,18 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		return false;
 	}
 
-	int err;
-	
-	GIVEENGINEPOINTER2 jit_init2 = (GIVEENGINEPOINTER2)g_pJIT->GetSymbolAddress("GiveEnginePointer2");
-	if (!jit_init2)
-	{
-		GIVEENGINEPOINTER jit_init = (GIVEENGINEPOINTER)g_pJIT->GetSymbolAddress("GiveEnginePointer");
-		if (!jit_init)
-		{
-			ShutdownJIT();
-			if (error && maxlength)
-			{
-				snprintf(error, maxlength, "Failed to find GiveEnginePointer in JIT!");
-			}
-			return false;
-		}
-
-		if ((err=jit_init(g_pSourcePawn)) != 0)
-		{
-			ShutdownJIT();
-			if (error && maxlength)
-			{
-				snprintf(error, maxlength, "GiveEnginePointer returned %d in the JIT", err);
-			}
-			return false;
-		}
-	} else {
-		/* On version bumps, we should check for older versions as well, if the new version fails.
-		 * We can then check the exports to see if any VM versions will be sufficient.
-		 */
-		if ((err=jit_init2(g_pSourcePawn, SOURCEPAWN_ENGINE_API_VERSION)) != SP_ERROR_NONE)
-		{
-			ShutdownJIT();
-			if (error && maxlength)
-			{
-				snprintf(error, maxlength, "JIT incompatible with SourceMod version");
-			}
-			return false;
-		}
-	}
-
-	GETEXPORTCOUNT jit_getnum = (GETEXPORTCOUNT)g_pJIT->GetSymbolAddress("GetExportCount");
-	GETEXPORT jit_get = (GETEXPORT)g_pJIT->GetSymbolAddress("GetExport");
-	if (!jit_get)
+	GETSOURCEPAWN jit_init = (GETSOURCEPAWN)g_pJIT->GetSymbolAddress("GetSourcePawn");
+	if (jit_init == NULL)
 	{
 		ShutdownJIT();
 		if (error && maxlength)
 		{
-			snprintf(error, maxlength, "JIT is missing a necessary export!");
+			UTIL_Format(error, maxlength, "Failed to find GetSourcePawn in JIT!");
 		}
 		return false;
 	}
 
-	unsigned int num = jit_getnum();
-	if (!num)
-	{
-		ShutdownJIT();
-		if (error && maxlength)
-		{
-			snprintf(error, maxlength, "JIT did not export any virtual machines!");
-		}
-		return false;
-	}
-
-	unsigned int api_version;
-	for (unsigned int i=0; i<num; i++)
-	{
-		 if ((g_pVM=jit_get(i)) == NULL)
-		 {
-			 if (error && maxlength)
-			 {
-				 snprintf(error, maxlength, "JIT did not export any virtual machines!");
-			 }
-			 continue;
-		 }
-		/* Refuse any API that we might not be able to deal with.
-		 * Also refuse anything < 3 because we need fake natives.
-		 */
-		 api_version = g_pVM->GetAPIVersion();
-		 if (api_version < 3 || api_version > SOURCEPAWN_VM_API_VERSION)
-		 {
-			 if (error && maxlength)
-			 {
-				 snprintf(error, maxlength, "JIT is not a compatible version");
-			 }
-			 g_pVM = NULL;
-			 continue;
-		 }
-		 break;
-	}
-
-	if (!g_pVM)
-	{
-		ShutdownJIT();
-		return false;
-	}
+	jit_init(&g_pVM, &g_pSourcePawn);
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);

@@ -37,35 +37,24 @@
 #include "sp_vm_basecontext.h"
 #include "sp_vm_engine.h"
 
-#ifdef SOURCEMOD_BUILD
-#include "Logger.h"
-#include "DebugReporter.h"
-#endif
-
 using namespace SourcePawn;
-
-extern SourcePawnEngine g_SourcePawn;
 
 #define CELLBOUNDMAX	(INT_MAX/sizeof(cell_t))
 #define STACKMARGIN		((cell_t)(16*sizeof(cell_t)))
 
 int GlobalDebugBreak(sp_context_t *ctx, uint32_t frm, uint32_t cip)
 {
-	g_SourcePawn.RunTracer(ctx, frm, cip);
+	((SourcePawn::BaseContext *)(ctx->context))->m_pEngine->RunTracer(ctx, frm, cip);
 
 	return SP_ERROR_NONE;
 }
 
-BaseContext::BaseContext(sp_context_t *_ctx)
+BaseContext::BaseContext(SourcePawnEngine *pEngine, sp_context_t *_ctx)
 {
 	ctx = _ctx;
 	ctx->context = this;
 	ctx->dbreak = GlobalDebugBreak;
-
-	if (ctx->prof_flags != 0)
-	{
-		ctx->profiler = sm_profiler;
-	}
+	m_pEngine = pEngine;
 
 	m_InExec = false;
 	m_CustomMsg = false;
@@ -97,6 +86,7 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 		m_pub_funcs = NULL;
 	}
 
+#if defined SOURCEMOD_BUILD
 	/* Initialize the null references */
 	uint32_t index;
 	if (FindPubvarByName("NULL_VECTOR", &index) == SP_ERROR_NONE)
@@ -116,6 +106,7 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 	} else {
 		m_pNullString = NULL;
 	}
+#endif
 }
 
 void BaseContext::FlushFunctionCache()
@@ -197,11 +188,6 @@ void BaseContext::SetContext(sp_context_t *_ctx)
 	ctx->context = this;
 	ctx->dbreak = GlobalDebugBreak;
 
-	if (ctx->prof_flags != 0)
-	{
-		ctx->profiler = sm_profiler;
-	}
-
 	RefreshFunctionCache();
 }
 
@@ -263,10 +249,7 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 
 	if ((err = PushCell(pushcount++)) != SP_ERROR_NONE)
 	{
-#if defined SOURCEMOD_BUILD
-		g_DbgReporter.GenerateCodeError(this, code_addr, err, "Stack error; cannot complete execution!");
-#endif
-		return SP_ERROR_NOT_RUNNABLE;
+		return SP_ERROR_STACKLOW;
 	}
 	ctx->pushcount = 0;
 
@@ -283,7 +266,7 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	m_MsgCache[0] = '\0';
 	m_CustomMsg = false;
 
-	g_SourcePawn.PushTracer(ctx);
+	m_pEngine->PushTracer(ctx);
 
 	err = vm->ContextExecute(ctx, code_addr, result);
 
@@ -293,31 +276,19 @@ int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 	 * :TODO: Calling from a plugin in here will erase the cached message...
 	 * Should that be documented?
 	 */
-	g_SourcePawn.PopTracer(err, m_CustomMsg ? m_MsgCache : NULL);
+	m_pEngine->PopTracer(err, m_CustomMsg ? m_MsgCache : NULL);
 
-#if defined SOURCEMOD_BUILD
 	if (err == SP_ERROR_NONE)
 	{
 		if (ctx->sp != save_sp)
 		{
-			g_DbgReporter.GenerateCodeError(this,
-				code_addr,
-				SP_ERROR_STACKLEAK,
-				"Stack leak detected: sp:%d should be %d!",
-				ctx->sp,
-				save_sp);
+			return SP_ERROR_STACKLEAK;
 		}
 		if (ctx->hp != save_hp)
 		{
-			g_DbgReporter.GenerateCodeError(this,
-				code_addr,
-				SP_ERROR_HEAPLEAK,
-				"Heap leak detected: sp:%d should be %d!",
-				ctx->hp,
-				save_hp);
+			return SP_ERROR_HEAPLEAK;
 		}
 	}
-#endif
 
 	if (err != SP_ERROR_NONE)
 	{
@@ -1076,6 +1047,7 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 	return pFunc;
 }
 
+#if defined SOURCEMOD_BUILD
 int BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
 {
 	int err;
@@ -1092,7 +1064,6 @@ int BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
 	return SP_ERROR_NONE;
 }
 
-#if defined SOURCEMOD_BUILD
 SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 {
 	return m_pToken;
@@ -1118,3 +1089,4 @@ bool BaseContext::IsInExec()
 {
 	return m_InExec;
 }
+
