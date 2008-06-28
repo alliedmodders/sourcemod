@@ -83,7 +83,7 @@ CPlugin::~CPlugin()
 
 	if (m_ctx.base)
 	{
-		delete m_ctx.base;
+		g_pSourcePawn->DestroyBaseContext(m_ctx.base);
 		m_ctx.base = NULL;
 	}
 	if (m_ctx.ctx)

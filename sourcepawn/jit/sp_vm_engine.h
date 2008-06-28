@@ -87,6 +87,7 @@ public: //ISourcePawnEngine
 	void SetReadExecute(void *ptr);
 	void FreePageMemory(void *ptr);
 	const char *GetErrorString(int err);
+	void DestroyBaseContext(IPluginContext *pContext);
 public: //Debugger Stuff
 	/**
 	 * @brief Pushes a context onto the top of the call tracer.

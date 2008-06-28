@@ -644,3 +644,9 @@ void SourcePawnEngine::FreePageMemory(void *ptr)
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
 }
+
+void SourcePawnEngine::DestroyBaseContext(IPluginContext *pContext)
+{
+	BaseContext *pCtx = (BaseContext *)pContext;
+	delete pCtx;
+}
