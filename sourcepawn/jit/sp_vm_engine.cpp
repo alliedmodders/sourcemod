@@ -629,21 +629,18 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 
 void *SourcePawnEngine::AllocatePageMemory(size_t size)
 {
-	/* :TODO: */
-	return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	return ExecAlloc(size);
 }
 
 void SourcePawnEngine::SetReadExecute(void *ptr)
 {
-	__asm int 3;
 }
 
 void SourcePawnEngine::FreePageMemory(void *ptr)
 {
-	VirtualFree(ptr, 0, MEM_RELEASE);
+	ExecFree(ptr);
 }
 
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
-	__asm int 3;
 }
