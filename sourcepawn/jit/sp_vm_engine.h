@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEPAWN_VM_ENGINE_H_
 #define _INCLUDE_SOURCEPAWN_VM_ENGINE_H_
 
-#include "sp_vm_api.h"
+#include <sp_vm_api.h>
 #include "sp_vm_function.h"
 
 struct TracedCall

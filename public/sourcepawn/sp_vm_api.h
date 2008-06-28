@@ -768,14 +768,14 @@ namespace SourcePawn
 	{
 	public:
 		/**
-		 * @brief Loads a named file from a file pointer.  
-		 * Note: Using this means the memory will be allocated by the VM.
+		 * @brief This function is deprecated and no longer works. 
+		 * Do not use it.
 		 * 
-		 * @param fp			File pointer.  May be at any offset.  Not closed on return.
-		 * @param err		Optional error code pointer.
-		 * @return			A new plugin structure.
+		 * @param fp		Unused.
+		 * @param err		Unused.
+		 * @return			NULL pointer.
 		 */	
-		virtual sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err) =0;
+		virtual sp_plugin_t *LoadFromFilePointer(FILE *fp,int *err) =0;
 	
 		/**
 		 * @brief Loads a file from a base memory address.
@@ -786,7 +786,9 @@ namespace SourcePawn
 		 * @param err		Optional error code pointer.
 		 * @return			The resulting plugin pointer.
 		 */
-		virtual sp_plugin_t *LoadFromMemory(void *base, sp_plugin_t *plugin, int *err) =0;
+		virtual sp_plugin_t *LoadFromMemory(void *base,
+			sp_plugin_t *plugin,
+			int *err) =0;
 
 		/**
 		 * Frees all of the memory associated with a plugin file.
@@ -939,7 +941,9 @@ namespace SourcePawn
 		 * @param val		Option value string.
 		 * @return			True if option could be set, false otherwise.
 		 */
-		virtual bool SetCompilationOption(ICompilation *co, const char *key, const char *val) =0;
+		virtual bool SetCompilationOption(ICompilation *co,
+			const char *key,
+			const char *val) =0;
 
 		/**
 		 * @brief Finalizes a compilation into a new sp_context_t.
@@ -973,7 +977,9 @@ namespace SourcePawn
 		 * @param result	Pointer to store result into.
 		 * @return			Error code (if any).
 		 */
-		virtual int ContextExecute(sp_context_t *ctx, uint32_t code_addr, cell_t *result) =0;
+		virtual int ContextExecute(sp_context_t *ctx,
+			uint32_t code_addr,
+			cell_t *result) =0;
 
 		/**
 		 * @brief Given a context and a code address, returns the index of the function.
@@ -983,7 +989,9 @@ namespace SourcePawn
 		 * @param result	Pointer to store result into.
 		 * @return			True if code index is valid, false otherwise.
 		 */
-		virtual bool FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result) =0;
+		virtual bool FunctionLookup(const sp_context_t *ctx, 
+			uint32_t code_addr, 
+			unsigned int *result) =0;
 
 		/**
 		 * @brief Returns the number of functions defined in the context.

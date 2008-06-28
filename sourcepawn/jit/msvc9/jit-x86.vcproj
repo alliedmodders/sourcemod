@@ -186,10 +186,6 @@
 				Name="Header Files"
 				>
 				<File
-					RelativePath="..\x86\dll_exports.h"
-					>
-				</File>
-				<File
 					RelativePath="..\x86\jit_version.h"
 					>
 				</File>
@@ -209,10 +205,6 @@
 			<Filter
 				Name="Source Files"
 				>
-				<File
-					RelativePath="..\x86\dll_exports.cpp"
-					>
-				</File>
 				<File
 					RelativePath="..\x86\jit_x86.cpp"
 					>
@@ -308,6 +300,22 @@
 			</File>
 			<File
 				RelativePath="..\zlib\zutil.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			>
+			<File
+				RelativePath="..\dll_exports.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Source Files"
+			>
+			<File
+				RelativePath="..\dll_exports.cpp"
 				>
 			</File>
 		</Filter>

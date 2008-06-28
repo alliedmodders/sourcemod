@@ -42,9 +42,7 @@
  #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
 #elif defined __GNUC__
- #include <unistd.h>
  #include <sys/mman.h>
- #include <stdlib.h>
 #endif
 
 #define INVALID_CIP			0xFFFFFFFF
@@ -271,20 +269,22 @@ return_error:
 
 sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 {
-	sp_file_hdr_t hdr;
-	sp_plugin_t *plugin;
-	uint8_t *base;
-	int z_result;
-	int error;
-
-	if (!fp)
+	if (err != NULL)
 	{
-		error = SP_ERROR_NOT_FOUND;
-		goto return_error;
+		*err = SP_ERROR_PARAM;
 	}
 
-	/* Rewind for safety */
-	fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
+	return NULL;
+}
+
+sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
+{
+	int error = SP_ERROR_NONE;
+	sp_file_hdr_t hdr;
+	uint8_t noptr = 0;
+	uint8_t *read_base = (uint8_t *)base;
+
+	memcpy(&hdr, base, sizeof(sp_file_hdr_t));
 
 	if (hdr.magic != SPFILE_MAGIC)
 	{
@@ -296,6 +296,7 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 	{
 	case SPFILE_COMPRESSION_GZ:
 		{
+			int z_result;
 			uint32_t uncompsize = hdr.imagesize - hdr.dataoffs;
 			uint32_t compsize = hdr.disksize - hdr.dataoffs;
 			uint32_t sectsize = hdr.dataoffs - sizeof(sp_file_hdr_t);
@@ -305,8 +306,8 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 			void *uncompdata = malloc(uncompsize);
 			void *sectheader = malloc(sectsize);
 
-			fread(sectheader, sectsize, 1, fp);
-			fread(tempbuf, compsize, 1, fp);
+			memcpy(sectheader, (uint8_t *)base + sizeof(sp_file_hdr_t), sectsize);
+			memcpy(tempbuf, (uint8_t *)base + sizeof(sp_file_hdr_t) + sectsize, compsize);
 
 			z_result = uncompress((Bytef *)uncompdata, &destlen, (Bytef *)tempbuf, compsize);
 			free(tempbuf);
@@ -318,20 +319,17 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 				goto return_error;
 			}
 
-			base = (uint8_t *)malloc(hdr.imagesize);
-			memcpy(base, &hdr, sizeof(sp_file_hdr_t));
-			memcpy(base + sizeof(sp_file_hdr_t), sectheader, sectsize);
+			read_base = (uint8_t *)malloc(hdr.imagesize);
+			memcpy(read_base, &hdr, sizeof(sp_file_hdr_t));
+			memcpy(read_base + sizeof(sp_file_hdr_t), sectheader, sectsize);
 			free(sectheader);
-			memcpy(base + hdr.dataoffs, uncompdata, uncompsize);
+			memcpy(read_base + hdr.dataoffs, uncompdata, uncompsize);
 			free(uncompdata);
 			break;
 		}
 	case SPFILE_COMPRESSION_NONE:
 		{
-			base = (uint8_t *)malloc(hdr.imagesize);
-			rewind(fp);
-			fread(base, hdr.imagesize, 1, fp);
-			break;
+			/* :TODO: no support yet */
 		}
 	default:
 		{
@@ -340,15 +338,27 @@ sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 		}
 	}
 
-	plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
-	if (!_ReadPlugin(&hdr, base, plugin, err))
+	if (!plugin)
 	{
-		free(plugin);
-		free(base);
+		plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
+		noptr = 1;
+	}
+
+	if (!_ReadPlugin(&hdr, (uint8_t *)read_base, plugin, err))
+	{
+		if (noptr)
+		{
+			free(plugin);
+		}
+		free(read_base);
 		return NULL;
 	}
 
-	plugin->allocflags = 0;
+	if (!noptr)
+	{
+		plugin->allocflags |= SP_FA_SELF_EXTERNAL;
+	}
+	plugin->base = read_base;
 
 	return plugin;
 
@@ -357,38 +367,8 @@ return_error:
 	{
 		*err = error;
 	}
+
 	return NULL;
-}
-
-sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
-{
-	sp_file_hdr_t hdr;
-	uint8_t noptr = 0;
-
-	memcpy(&hdr, base, sizeof(sp_file_hdr_t));
-
-	if (!plugin)
-	{
-		plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
-		noptr = 1;
-	}
-
-	if (!_ReadPlugin(&hdr, (uint8_t *)base, plugin, err))
-	{
-		if (noptr)
-		{
-			free(plugin);
-		}
-		return NULL;
-	}
-
-	if (!noptr)
-	{
-		plugin->allocflags |= SP_FA_SELF_EXTERNAL;
-	}
-	plugin->allocflags |= SP_FA_BASE_EXTERNAL;
-
-	return plugin;
 }
 
 int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
@@ -405,32 +385,6 @@ int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
 
 	return SP_ERROR_NONE;
 }
-
-#if 0
-void SourcePawnEngine::ReleaseFunctionToPool(CFunction *func)
-{
-	if (!func)
-	{
-		return;
-	}
-	func->Cancel();
-	func->m_pNext = m_pFreeFuncs;
-	m_pFreeFuncs = func;
-}
-
-CFunction *SourcePawnEngine::GetFunctionFromPool(funcid_t f, IPluginContext *plugin)
-{
-	if (!m_pFreeFuncs)
-	{
-		return new CFunction(f, plugin);
-	} else {
-		CFunction *pFunc = m_pFreeFuncs;
-		m_pFreeFuncs = m_pFreeFuncs->m_pNext;
-		pFunc->Set(f, plugin);
-		return pFunc;
-	}
-}
-#endif
 
 IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 {
@@ -675,19 +629,21 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 
 void *SourcePawnEngine::AllocatePageMemory(size_t size)
 {
-	return ExecAlloc(size);
+	/* :TODO: */
+	return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 }
 
 void SourcePawnEngine::SetReadExecute(void *ptr)
 {
+	__asm int 3;
 }
 
 void SourcePawnEngine::FreePageMemory(void *ptr)
 {
-	return ExecFree(ptr);
+	VirtualFree(ptr, 0, MEM_RELEASE);
 }
 
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
+	__asm int 3;
 }
-

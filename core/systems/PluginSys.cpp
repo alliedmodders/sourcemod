@@ -199,11 +199,11 @@ Handle_t CPlugin::GetMyHandle()
 
 CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 {
+	long size;
+	void *ptr;
 	char fullpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", file);
 	FILE *fp = fopen(fullpath, "rb");
-
-	rewind(fp);
 
 	CPlugin *pPlugin = new CPlugin(file);
 
@@ -217,11 +217,20 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 		return pPlugin;
 	}
 
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp);
+	ptr = malloc(size);
+	rewind(fp);
+	fread(ptr, size, 1, fp);
+	fclose(fp);
+
 	int err;
-	sp_plugin_t *pl = g_pSourcePawn->LoadFromFilePointer(fp, &err);
+	sp_plugin_t *pl = g_pSourcePawn->LoadFromMemory(ptr, NULL, &err);
+
+	free(ptr);
+
 	if (pl == NULL)
 	{
-		fclose(fp);
 		if (error)
 		{
 			snprintf(error, maxlength, "Error %d while parsing plugin", err);
@@ -229,8 +238,6 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 		pPlugin->m_status = Plugin_BadLoad;
 		return pPlugin;
 	}
-
-	fclose(fp);
 
 	pPlugin->m_plugin = pl;
 
