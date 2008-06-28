@@ -680,11 +680,6 @@ void *SourcePawnEngine::AllocatePageMemory(size_t size)
 
 void SourcePawnEngine::SetReadExecute(void *ptr)
 {
-#if defined _MSC_VER
-	__asm int 3;
-#else
-	asm("int3");
-#endif
 }
 
 void SourcePawnEngine::FreePageMemory(void *ptr)
@@ -694,10 +689,5 @@ void SourcePawnEngine::FreePageMemory(void *ptr)
 
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
-#if defined _MSC_VER
-	__asm int 3;
-#else
-	asm("int3");
-#endif
 }
 

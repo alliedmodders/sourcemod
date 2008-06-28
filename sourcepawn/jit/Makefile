@@ -11,10 +11,22 @@ PROJECT = sourcepawn.jit.x86
 
 OBJECTS = dll_exports.cpp 		\
 	sp_vm_basecontext.cpp		\
-	sp_vm_engine.cpp		\
-	sp_vm_function.cpp		\
-	x86/jit_x86.cpp 		\
-	x86/opcode_helpers.cpp	
+	sp_vm_engine.cpp			\
+	sp_vm_function.cpp			\
+	x86/jit_x86.cpp 			\
+	x86/opcode_helpers.cpp		\
+	zlib/adler32.c				\
+	zlib/compress.c				\
+	zlib/crc32.c				\
+	zlib/deflate.c				\
+	zlib/gzio.c					\
+	zlib/infback.c				\
+	zlib/inffast.c				\
+	zlib/inflate.c				\
+	zlib/inftrees.c				\
+	zlib/trees.c				\
+	zlib/uncompr.c				\
+	zlib/zutil.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -33,7 +45,7 @@ INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -DHAVE_STDINT_H \
-	-m32
+	-m32 -DSOURCEMOD_BUILD
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
@@ -62,6 +74,7 @@ $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all:
+	mkdir -p $(BIN_DIR)/zlib
 	mkdir -p $(BIN_DIR)/x86
 	$(MAKE) -f Makefile jit
 
@@ -74,6 +87,7 @@ debug:
 default: all
 
 clean:
+	rm -rf $(BIN_DIR)/zlib/*.o
 	rm -rf $(BIN_DIR)/x86/*.o
 	rm -rf $(BIN_DIR)/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)
