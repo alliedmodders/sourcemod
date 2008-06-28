@@ -42,7 +42,9 @@
  #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
 #elif defined __GNUC__
+ #include <unistd.h>
  #include <sys/mman.h>
+ #include <stdlib.h>
 #endif
 
 #define INVALID_CIP			0xFFFFFFFF
@@ -673,21 +675,29 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 
 void *SourcePawnEngine::AllocatePageMemory(size_t size)
 {
-	/* :TODO: */
-	return VirtualAlloc(NULL, size, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	return ExecAlloc(size);
 }
 
 void SourcePawnEngine::SetReadExecute(void *ptr)
 {
+#if defined _MSC_VER
 	__asm int 3;
+#else
+	asm("int3");
+#endif
 }
 
 void SourcePawnEngine::FreePageMemory(void *ptr)
 {
-	VirtualFree(ptr, 0, MEM_RELEASE);
+	return ExecFree(ptr);
 }
 
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
+#if defined _MSC_VER
 	__asm int 3;
+#else
+	asm("int3");
+#endif
 }
+

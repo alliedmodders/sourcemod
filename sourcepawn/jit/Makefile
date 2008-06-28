@@ -1,7 +1,7 @@
 # (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMSDK = ../../..
+SMSDK = ../..
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -9,7 +9,12 @@ SMSDK = ../../..
 
 PROJECT = sourcepawn.jit.x86
 
-OBJECTS = dll_exports.cpp jit_x86.cpp opcode_helpers.cpp
+OBJECTS = dll_exports.cpp 		\
+	sp_vm_basecontext.cpp		\
+	sp_vm_engine.cpp		\
+	sp_vm_function.cpp		\
+	x86/jit_x86.cpp 		\
+	x86/opcode_helpers.cpp	
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -57,7 +62,7 @@ $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all:
-	mkdir -p $(BIN_DIR)
+	mkdir -p $(BIN_DIR)/x86
 	$(MAKE) -f Makefile jit
 
 jit: $(OBJ_LINUX)
@@ -69,5 +74,7 @@ debug:
 default: all
 
 clean:
+	rm -rf $(BIN_DIR)/x86/*.o
 	rm -rf $(BIN_DIR)/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)
+
