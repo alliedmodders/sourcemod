@@ -96,9 +96,6 @@ SourcePawnEngine::SourcePawnEngine()
 	m_CallStack = NULL;
 	m_FreedCalls = NULL;
 	m_CurChain = 0;
-#if 0
-	m_pFreeFuncs = NULL;
-#endif
 }
 
 SourcePawnEngine::~SourcePawnEngine()
@@ -110,16 +107,6 @@ SourcePawnEngine::~SourcePawnEngine()
 		delete m_FreedCalls;
 		m_FreedCalls = pTemp;
 	}
-
-#if 0
-	CFunction *pNext;
-	while (m_pFreeFuncs)
-	{
-		pNext = m_pFreeFuncs->m_pNext;
-		delete m_pFreeFuncs;
-		m_pFreeFuncs = pNext;
-	}
-#endif
 }
 
 sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin, int *err)
@@ -207,6 +194,50 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 		goto return_error;
 	}
 
+	if (plugin->info.publics_num > 0)
+	{
+		plugin->publics = new sp_public_t[plugin->info.publics_num];
+		for (uint32_t i = 0; i < plugin->info.publics_num; i++)
+		{
+			plugin->publics[i].funcid = (i << 1) | (1 << 0);
+			plugin->publics[i].name = plugin->info.stringbase + plugin->info.publics[i].name;
+		}
+	}
+	else
+	{
+		plugin->info.publics = NULL;
+	}
+
+	if (plugin->info.natives_num > 0)
+	{
+		plugin->natives = new sp_native_t[plugin->info.natives_num];
+		for (uint32_t i = 0; i < plugin->info.natives_num; i++)
+		{
+			plugin->natives[i].flags = 0;
+			plugin->natives[i].name = plugin->info.stringbase + plugin->info.natives[i].name;
+			plugin->natives[i].pfn = NULL;
+			plugin->natives[i].status = SP_NATIVE_UNBOUND;
+		}
+	}
+	else
+	{
+		plugin->natives = NULL;
+	}
+
+	if (plugin->info.pubvars_num > 0)
+	{
+		plugin->pubvars = new sp_pubvar_t[plugin->info.pubvars_num];
+		for (uint32_t i = 0; i < plugin->info.pubvars_num; i++)
+		{
+			plugin->pubvars[i].name = plugin->info.stringbase + plugin->info.pubvars[i].name;
+			plugin->pubvars[i].offs = (cell_t *)(plugin->base + plugin->info.pubvars[i].address);
+		}
+	}
+	else
+	{
+		plugin->pubvars = NULL;
+	}
+
 	if (err)
 	{
 		*err = SP_ERROR_NONE;
@@ -265,7 +296,7 @@ IPluginContext *SourcePawnEngine::LoadPluginFromMemory(void *data, int *err)
 				goto return_error;
 			}
 
-			read_base = (uint8_t *)malloc(hdr.imagesize);
+			read_base = new uint8_t[hdr.imagesize];
 			memcpy(read_base, &hdr, sizeof(sp_file_hdr_t));
 			memcpy(read_base + sizeof(sp_file_hdr_t), sectheader, sectsize);
 			free(sectheader);
@@ -284,7 +315,7 @@ IPluginContext *SourcePawnEngine::LoadPluginFromMemory(void *data, int *err)
 		}
 	}
 
-	plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
+	plugin = new sp_plugin_t;
 
 	if (!_ReadPlugin(&hdr, (uint8_t *)read_base, plugin, err))
 	{

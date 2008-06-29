@@ -49,13 +49,26 @@ BaseContext::BaseContext(sp_plugin_t *plugin)
 	m_InExec = false;
 	m_CustomMsg = false;
 
-	m_PubFuncs = new CFunction *[plugin->info.publics_num];
-	memset(m_PubFuncs, 0, sizeof(m_PubFuncs));
+	if (plugin->info.publics_num > 0)
+	{
+		m_PubFuncs = new CFunction *[plugin->info.publics_num];
+		memset(m_PubFuncs, 0, sizeof(m_PubFuncs));
+	}
+	else
+	{
+		m_PubFuncs = NULL;
+	}
 }
 
 BaseContext::~BaseContext()
 {
-	/* :XXX: TODO */
+	delete [] m_PubFuncs;
+
+	delete [] m_pPlugin->base;
+	delete [] m_pPlugin->pubvars;
+	delete [] m_pPlugin->natives;
+	delete [] m_pPlugin->publics;
+	delete m_pPlugin;
 }
 
 bool BaseContext::IsDebugging()
@@ -349,6 +362,19 @@ uint32_t BaseContext::GetPubVarsNum()
 	return m_pPlugin->info.pubvars_num;
 }
 
+int BaseContext::BindNative(const sp_nativeinfo_t *native)
+{
+	int err;
+	uint32_t idx;
+
+	if ((err = FindNativeByName(native->name, &idx)) != SP_ERROR_NONE)
+	{
+		return err;
+	}
+
+	return BindNativeToIndex(idx, native->func);
+}
+
 int BaseContext::BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC func)
 {
 	int err;
@@ -610,7 +636,7 @@ IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 		pFunc = m_PubFuncs[func_id];
 		if (!pFunc)
 		{
-			m_PubFuncs[func_id] = new CFunction(this, func_id, m_pPlugin->publics[func_id].addr);
+			m_PubFuncs[func_id] = new CFunction(this, func_id, m_pPlugin->info.publics[func_id].address);
 			pFunc = m_PubFuncs[func_id];
 		}
 	}
@@ -634,12 +660,7 @@ IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 	CFunction *pFunc = m_PubFuncs[index];
 	if (!pFunc)
 	{
-		sp_public_t *pub = NULL;
-		GetPublicByIndex(index, &pub);
-		if (pub)
-		{
-			m_PubFuncs[index] = new CFunction(this, index, pub->code_offs);
-		}
+		m_PubFuncs[index] = new CFunction(this, index, m_pPlugin->info.publics[index].address);
 		pFunc = m_PubFuncs[index];
 	}
 
@@ -655,3 +676,26 @@ const sp_context_t *BaseContext::GetContext()
 {
 	return &m_ctx;
 }
+
+unsigned int BaseContext::GetProfCallbackSerial()
+{
+	//:TODO:
+	return 0;
+}
+
+int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
+{
+	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) 
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->memory))
+	{
+		return SP_ERROR_INVALID_ADDRESS;
+	}
+
+	if (phys_addr)
+	{
+		*phys_addr = (cell_t *)(m_pPlugin->data + local_addr);
+	}
+
+	return SP_ERROR_NONE;
+}
+

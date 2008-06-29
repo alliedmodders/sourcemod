@@ -17,7 +17,7 @@ typedef void* HMODULE;
 
 using namespace SourcePawn;
 
-typedef void (*GETSOURCEPAWN)(IVirtualMachine **vm, ISourcePawnEngine **eng);
+typedef void (*GETSOURCEPAWN)(ISourcePawnEngine **eng);
 
 int main(int argc, char **argv)
 {
@@ -29,11 +29,7 @@ int main(int argc, char **argv)
 	bool bDebug;
 	HMODULE pJitLib;
 	const char *file;
-	ICompilation *co;
-	sp_context_t *ctx;
 	const char *jitlib;
-	sp_plugin_t *plugin;
-	IVirtualMachine *vm;
 	GETSOURCEPAWN jit_load;
 	IPluginFunction *pMain;
 	IPluginContext *pContext;
@@ -101,40 +97,24 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	jit_load(&vm, &engine);
+	jit_load(&engine);
 
-	plugin = engine->LoadFromMemory(data, NULL, &err);
+	pContext = engine->LoadPluginFromMemory(data, &err);
 
 	free(data);
 
-	if (plugin == NULL)
+	if (pContext == NULL)
 	{
 		fprintf(stderr, "Error loading plugin: (%d) %s\n", err, engine->GetErrorString(err));
 		FreeLibrary(pJitLib);
 		exit(1);
 	}
 
-	co = vm->StartCompilation(plugin);
-	vm->SetCompilationOption(co, "debug", bDebug ? "1" : "0");
-
-	ctx = vm->CompileToContext(co, &err);
-	if (ctx == NULL)
-	{
-		fprintf(stderr, "Error compiling plugin: (%d) %s\n", err, engine->GetErrorString(err));
-		engine->FreeFromMemory(plugin);
-		FreeLibrary(pJitLib);
-		exit(1);
-	}
-
-	pContext = engine->CreateBaseContext(ctx);
-
 	pMain = pContext->GetFunctionByName("main");
 	if (pMain == NULL)
 	{
 		fprintf(stderr, "Could not find a main function in plugin.");
-		engine->DestroyBaseContext(pContext);
-		vm->FreeContext(ctx);
-		engine->FreeFromMemory(plugin);
+		engine->DestroyContext(pContext);
 		exit(1);
 	}
 
@@ -147,22 +127,9 @@ int main(int argc, char **argv)
 		{
 			if (pContext->FindNativeByName(g_Natives[i].name, &idx) == SP_ERROR_NONE)
 			{
-				ctx->natives[idx].pfn = g_Natives[i].func;
-				ctx->natives[idx].status = SP_NATIVE_BOUND;
+				pContext->BindNativeToIndex(idx, g_Natives[i].func);
 			}
 			i++;
-		}
-
-		for (idx = 0; idx < plugin->info.natives_num; idx++)
-		{
-			if (ctx->natives[idx].status != SP_NATIVE_BOUND)
-			{
-				fprintf(stderr, "Plugin needs unknown native: %s", ctx->natives[idx].name);
-				engine->DestroyBaseContext(pContext);
-				vm->FreeContext(ctx);
-				engine->FreeFromMemory(plugin);
-				exit(1);
-			}
 		}
 	}
 
@@ -176,9 +143,7 @@ int main(int argc, char **argv)
 		fprintf(stdout, "Plugin returned value: %d\n", res);
 	}
 
-	engine->DestroyBaseContext(pContext);
-	vm->FreeContext(ctx);
-	engine->FreeFromMemory(plugin);
+	engine->DestroyContext(pContext);
 	FreeLibrary(pJitLib);
 
 	return 0;

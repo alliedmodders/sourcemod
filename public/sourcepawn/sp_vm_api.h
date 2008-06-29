@@ -45,8 +45,6 @@
 
 namespace SourcePawn
 {
-	class IVirtualMachine;
-
 	/* Parameter flags */
 	#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
 

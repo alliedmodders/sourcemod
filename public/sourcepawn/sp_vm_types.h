@@ -124,7 +124,6 @@ typedef cell_t (*SPVM_FAKENATIVE_FUNC)(SourcePawn::IPluginContext *, const cell_
 typedef struct sp_public_s
 {
 	funcid_t	funcid;		/**< Encoded function id */
-	uint32_t	code_offs;	/**< Relocated code offset */
 	const char *name;		/**< Name of function */
 } sp_public_t;
 

@@ -340,3 +340,8 @@ int CFunction::Execute(cell_t *result)
 	return err;
 }
 
+int CFunction::SetError(int err)
+{
+	m_errorstate = err;
+	return err;
+}
