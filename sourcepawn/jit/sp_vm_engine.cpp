@@ -122,50 +122,6 @@ SourcePawnEngine::~SourcePawnEngine()
 #endif
 }
 
-void *SourcePawnEngine::ExecAlloc(size_t size)
-{
-#if defined WIN32
-	return VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-#elif defined __GNUC__
-	void *base = memalign(sysconf(_SC_PAGESIZE), size);
-	if (mprotect(base, size, PROT_READ|PROT_WRITE|PROT_EXEC) != 0)
-	{
-		free(base);
-		return NULL;
-	}
-	return base;
-#endif
-}
-
-void SourcePawnEngine::ExecFree(void *address)
-{
-#if defined WIN32
-	VirtualFree(address, 0, MEM_RELEASE);
-#elif defined __GNUC__
-	free(address);
-#endif
-}
-
-void *SourcePawnEngine::BaseAlloc(size_t size)
-{
-	return malloc(size);
-}
-
-void SourcePawnEngine::BaseFree(void *memory)
-{
-	free(memory);
-}
-
-IPluginContext *SourcePawnEngine::CreateBaseContext(sp_context_t *ctx)
-{
-	return new BaseContext(this, ctx);
-}
-
-void SourcePawnEngine::FreeBaseContext(IPluginContext *ctx)
-{
-	delete ctx;
-}
-
 sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin, int *err)
 {
 	char *nameptr;
@@ -267,24 +223,14 @@ return_error:
 	return NULL;
 }
 
-sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
-{
-	if (err != NULL)
-	{
-		*err = SP_ERROR_PARAM;
-	}
-
-	return NULL;
-}
-
-sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
+IPluginContext *SourcePawnEngine::LoadPluginFromMemory(void *data, int *err)
 {
 	int error = SP_ERROR_NONE;
 	sp_file_hdr_t hdr;
-	uint8_t noptr = 0;
-	uint8_t *read_base = (uint8_t *)base;
+	sp_plugin_t *plugin;
+	uint8_t *read_base = (uint8_t *)data;
 
-	memcpy(&hdr, base, sizeof(sp_file_hdr_t));
+	memcpy(&hdr, read_base, sizeof(sp_file_hdr_t));
 
 	if (hdr.magic != SPFILE_MAGIC)
 	{
@@ -306,8 +252,8 @@ sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, i
 			void *uncompdata = malloc(uncompsize);
 			void *sectheader = malloc(sectsize);
 
-			memcpy(sectheader, (uint8_t *)base + sizeof(sp_file_hdr_t), sectsize);
-			memcpy(tempbuf, (uint8_t *)base + sizeof(sp_file_hdr_t) + sectsize, compsize);
+			memcpy(sectheader, (uint8_t *)read_base + sizeof(sp_file_hdr_t), sectsize);
+			memcpy(tempbuf, (uint8_t *)read_base + sizeof(sp_file_hdr_t) + sectsize, compsize);
 
 			z_result = uncompress((Bytef *)uncompdata, &destlen, (Bytef *)tempbuf, compsize);
 			free(tempbuf);
@@ -338,29 +284,17 @@ sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, i
 		}
 	}
 
-	if (!plugin)
-	{
-		plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
-		noptr = 1;
-	}
+	plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
 
 	if (!_ReadPlugin(&hdr, (uint8_t *)read_base, plugin, err))
 	{
-		if (noptr)
-		{
-			free(plugin);
-		}
 		free(read_base);
 		return NULL;
 	}
 
-	if (!noptr)
-	{
-		plugin->allocflags |= SP_FA_SELF_EXTERNAL;
-	}
 	plugin->base = read_base;
 
-	return plugin;
+	return new BaseContext(plugin);
 
 return_error:
 	if (err)
@@ -371,21 +305,6 @@ return_error:
 	return NULL;
 }
 
-int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
-{
-	if (!(plugin->allocflags & SP_FA_BASE_EXTERNAL))
-	{
-		free(plugin->base);
-		plugin->base = NULL;
-	}
-	if (!(plugin->allocflags & SP_FA_SELF_EXTERNAL))
-	{
-		free(plugin);
-	}
-
-	return SP_ERROR_NONE;
-}
-
 IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 {
 	IDebugListener *old = m_pDebugHook;
@@ -393,16 +312,6 @@ IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 	m_pDebugHook = pListener;
 
 	return old;
-}
-
-unsigned int SourcePawnEngine::GetContextCallCount()
-{
-	if (!m_CallStack)
-	{
-		return 0;
-	}
-
-	return m_CallStack->chain;
 }
 
 TracedCall *SourcePawnEngine::MakeTracedCall(bool new_chain)
@@ -452,7 +361,7 @@ void SourcePawnEngine::FreeTracedCall(TracedCall *pCall)
 	}
 }
 
-void SourcePawnEngine::PushTracer(sp_context_t *ctx)
+void SourcePawnEngine::PushTracer(IPluginContext *ctx)
 {
 	TracedCall *pCall = MakeTracedCall(true);
 
@@ -461,7 +370,7 @@ void SourcePawnEngine::PushTracer(sp_context_t *ctx)
 	pCall->frm = INVALID_CIP;
 }
 
-void SourcePawnEngine::RunTracer(sp_context_t *ctx, uint32_t frame, uint32_t codeip)
+void SourcePawnEngine::RunTracer(IPluginContext *ctx, uint32_t frame, uint32_t codeip)
 {
 	assert(m_CallStack != NULL);
 	assert(m_CallStack->ctx == ctx);
@@ -500,13 +409,13 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 	{
 		uint32_t native = INVALID_CIP;
 
-		if (m_CallStack->ctx->n_err)
+		if (m_CallStack->ctx->GetContext()->n_err)
 		{
-			native = m_CallStack->ctx->n_idx;
+			native = m_CallStack->ctx->GetContext()->n_idx;
 		}
 
 		CContextTrace trace(m_CallStack, error, msg, native);
-		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx->context, &trace);
+		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx, &trace);
 	}
 
 	/* Now pop the error chain  */
@@ -518,11 +427,6 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 	m_CurChain--;
 }
 
-unsigned int SourcePawnEngine::GetEngineAPIVersion()
-{
-	return SOURCEPAWN_VERSION;
-}
-
 CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native) : 
  m_Error(error), m_pMsg(msg), m_pStart(pStart), m_pIterator(pStart), m_Native(native)
 {
@@ -530,7 +434,7 @@ CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uin
 
 bool CContextTrace::DebugInfoAvailable()
 {
-	return ((m_pStart->ctx->flags & SP_FLAG_DEBUG) == SP_FLAG_DEBUG);
+	return (m_pStart->ctx->GetDebugInfo() != NULL);
 }
 
 const char *CContextTrace::GetCustomErrorString()
@@ -571,7 +475,7 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 		return false;
 	}
 
-	IPluginContext *pContext = m_pIterator->ctx->context;
+	IPluginContext *pContext = m_pIterator->ctx;
 	IPluginDebugInfo *pInfo = pContext->GetDebugInfo();
 
 	if (!pInfo)
@@ -613,7 +517,7 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 	}
 
 	sp_native_t *native;
-	if (m_pIterator->ctx->context->GetNativeByIndex(m_Native, &native) != SP_ERROR_NONE)
+	if (m_pIterator->ctx->GetNativeByIndex(m_Native, &native) != SP_ERROR_NONE)
 	{
 		return NULL;
 	}
@@ -626,27 +530,7 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 	return native->name;
 }
 
-
-void *SourcePawnEngine::AllocatePageMemory(size_t size)
+void SourcePawnEngine::DestroyContext(IPluginContext *pContext)
 {
-	return ExecAlloc(size);
-}
-
-void SourcePawnEngine::SetReadExecute(void *ptr)
-{
-}
-
-void SourcePawnEngine::FreePageMemory(void *ptr)
-{
-	ExecFree(ptr);
-}
-
-void SourcePawnEngine::SetReadWrite(void *ptr)
-{
-}
-
-void SourcePawnEngine::DestroyBaseContext(IPluginContext *pContext)
-{
-	BaseContext *pCtx = (BaseContext *)pContext;
-	delete pCtx;
+	delete pContext;
 }

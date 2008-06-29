@@ -259,42 +259,6 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Old JIT"
-			>
-			<Filter
-				Name="Header Files"
-				>
-				<File
-					RelativePath="..\x86\jit_version.h"
-					>
-				</File>
-				<File
-					RelativePath="..\x86\jit_x86.h"
-					>
-				</File>
-				<File
-					RelativePath="..\x86\opcode_helpers.h"
-					>
-				</File>
-				<File
-					RelativePath="..\x86\ungen_opcodes.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				>
-				<File
-					RelativePath="..\x86\jit_x86.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\x86\opcode_helpers.cpp"
-					>
-				</File>
-			</Filter>
-		</Filter>
-		<Filter
 			Name="Engine"
 			>
 			<Filter
@@ -387,6 +351,10 @@
 			>
 			<File
 				RelativePath="..\dll_exports.h"
+				>
+			</File>
+			<File
+				RelativePath="..\JSI.h"
 				>
 			</File>
 		</Filter>

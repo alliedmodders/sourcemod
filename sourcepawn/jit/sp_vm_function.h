@@ -37,6 +37,9 @@
 
 using namespace SourcePawn;
 
+class BaseContext;
+struct sp_plugin_t;
+
 struct ParamInfo
 {
 	int flags;			/* Copy-back flags */
@@ -56,12 +59,8 @@ class CPlugin;
 
 class CFunction : public IPluginFunction
 {
-	friend class SourcePawnEngine;
 public:
-	CFunction(uint32_t code_addr,
-			  IPluginContext *pContext, 
-			  funcid_t fnid,
-			  uint32_t pub_id);
+	CFunction(BaseContext *pContext, uint32_t pubfunc, uint32_t code_addr);
 public:
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
@@ -74,37 +73,19 @@ public:
 	virtual void Cancel();
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
 	virtual IPluginContext *GetParentContext();
-	inline bool IsInvalidated()
-	{
-		return m_Invalid;
-	}
-	inline void Invalidate()
-	{
-		m_Invalid = true;
-	}
 	bool IsRunnable();
-	funcid_t GetFunctionID();
-public:
-	void Set(uint32_t code_addr, IPluginContext *plugin, funcid_t fnid, uint32_t pub_id);
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
-	inline int SetError(int err)
-	{
-		m_errorstate = err;
-		return err;
-	}
+	int SetError(int err);
 private:
-	uint32_t m_codeaddr;
-	IPluginContext *m_pContext;
-	sp_context_t *m_pCtx;
+	BaseContext *m_pContext;
+	sp_plugin_t *m_pPlugin;
 	cell_t m_params[SP_MAX_EXEC_PARAMS];
 	ParamInfo m_info[SP_MAX_EXEC_PARAMS];
 	unsigned int m_curparam;
-	int m_errorstate;
-	CFunction *m_pNext;
-	bool m_Invalid;
-	funcid_t m_FnId;
 	sp_public_t *m_pPublic;
+	int m_errorstate;
+	uint32_t m_CodeAddr;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

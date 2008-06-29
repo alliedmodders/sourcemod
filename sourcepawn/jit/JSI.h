@@ -36,23 +36,11 @@
 
 using namespace SourcePawn
 {
-	enum JitCond
-	{
-		CC_EQ,
-		CC_NEQ,
-		CC_LT,
-		CC_LTE,
-		CC_GT,
-		CC_GTE
-	};
-
 	enum JitOp
 	{
-		JSI_addstk,				/* [base,cells] -> [address] */
-		JSI_rmstk,				/* [base,cells] -> [address] */
-		JSI_store,				/* [address, displacement, value] */
-		JSI_load,				/* [address, displacement] -> value */
-		JSI_return,				/* [value] */
+		J_sysreq,			/* [imm:idx] -> value */
+		J_return,			/* [instr:retval] */
+		J_imm,				/* [imm:value] -> value */
 	};
 
 	#define JSIL_VAL8			(1<<0)
@@ -61,24 +49,14 @@ using namespace SourcePawn
 	#define JSIL_VAL64			(1<<3)
 	#define JSIL_IMMVAL			(1<<4)
 
+	typedef uint8_t * JIns;
+
 	class JsiWriter
 	{
 	public:
-		virtual uint8_t *ins_addstk(uint8_t stnum, uint32_t cells);
-		virtual uint8_t *ins_rmstk(uint8_t stnum, uint32_t cells);
-		virtual uint8_t *ins_store(uint8_t *base, int32_t disp, uint8_t *val);
-		virtual uint8_t *ins_load(uint8_t *base, int32_t disp);
-		virtual uint8_t *ins_return(uint8_t *val);
-	};
-
-	class JsiBufWriter : public JsiWriter
-	{
-	public:
-		virtual uint8_t *ins_addstk(uint8_t stnum, uint32_t cells);
-		virtual uint8_t *ins_rmstk(uint8_t stnum, uint32_t cells);
-		virtual uint8_t *ins_store(uint8_t *base, int32_t disp, uint8_t *val);
-		virtual uint8_t *ins_load(uint8_t *base, int32_t disp);
-		virtual uint8_t *ins_return(uint8_t *val);
+		virtual JIns *ins_sysreq(uint32_t index) = 0;
+		virtual JIns *ins_imm(int32_t value) = 0;
+		virtual JIns *ins_return(JIns *val) = 0;
 	};
 }
 

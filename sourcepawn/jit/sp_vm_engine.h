@@ -39,7 +39,7 @@ struct TracedCall
 {
 	uint32_t cip;
 	uint32_t frm;
-	sp_context_t *ctx;
+	IPluginContext *ctx;
 	TracedCall *next;
 	unsigned int chain;
 };
@@ -70,31 +70,17 @@ public:
 	SourcePawnEngine();
 	~SourcePawnEngine();
 public: //ISourcePawnEngine
-	sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err);
-	sp_plugin_t *LoadFromMemory(void *base, sp_plugin_t *plugin, int *err);
-	int FreeFromMemory(sp_plugin_t *plugin);
-	IPluginContext *CreateBaseContext(sp_context_t *ctx);
-	void FreeBaseContext(IPluginContext *ctx);
-	void *BaseAlloc(size_t size);
-	void BaseFree(void *memory);
-	void *ExecAlloc(size_t size);
-	void ExecFree(void *address);
 	IDebugListener *SetDebugListener(IDebugListener *pListener);
-	unsigned int GetContextCallCount();
-	unsigned int GetEngineAPIVersion();
-	void *AllocatePageMemory(size_t size);
-	void SetReadWrite(void *ptr);
-	void SetReadExecute(void *ptr);
-	void FreePageMemory(void *ptr);
+	IPluginContext *LoadPluginFromMemory(void *data, int *err);
+	void DestroyContext(IPluginContext *pContext);
 	const char *GetErrorString(int err);
-	void DestroyBaseContext(IPluginContext *pContext);
 public: //Debugger Stuff
 	/**
 	 * @brief Pushes a context onto the top of the call tracer.
 	 * 
 	 * @param ctx		Plugin context.
 	 */
-	void PushTracer(sp_context_t *ctx);
+	void PushTracer(IPluginContext *ctx);
 
 	/**
 	 * @brief Pops a plugin off the call tracer.
@@ -104,10 +90,7 @@ public: //Debugger Stuff
 	/**
 	 * @brief Runs tracer from a debug break.
 	 */
-	void RunTracer(sp_context_t *ctx, uint32_t frame, uint32_t codeip);
-public: //Plugin function stuff
-	CFunction *GetFunctionFromPool(funcid_t f, IPluginContext  *plugin);
-	void ReleaseFunctionToPool(CFunction *func);
+	void RunTracer(IPluginContext *ctx, uint32_t frame, uint32_t codeip);
 private:
 	TracedCall *MakeTracedCall(bool new_chain);
 	void FreeTracedCall(TracedCall *pCall);

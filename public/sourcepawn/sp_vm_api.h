@@ -43,13 +43,6 @@
 /** SourcePawn Engine API Version */
 #define SOURCEPAWN_VERSION					4
 
-#if defined SOURCEMOD_BUILD
-namespace SourceMod
-{
-	struct IdentityToken_t;
-};
-#endif
-
 namespace SourcePawn
 {
 	class IVirtualMachine;
@@ -61,17 +54,6 @@ namespace SourcePawn
 	#define SM_PARAM_STRING_UTF8	(1<<0)		/**< String should be UTF-8 handled */
 	#define SM_PARAM_STRING_COPY	(1<<1)		/**< String should be copied into the plugin */
 	#define SM_PARAM_STRING_BINARY	(1<<2)		/**< String should be handled as binary data */
-
-#if defined SOURCEMOD_BUILD
-	/**
-	 * @brief Pseudo-NULL reference types.
-	 */
-	enum SP_NULL_TYPE
-	{
-		SP_NULL_VECTOR = 0,		/**< Float[3] reference */
-		SP_NULL_STRING = 1,		/**< const String[1] reference */
-	};
-#endif
 
 	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
@@ -211,15 +193,6 @@ namespace SourcePawn
 		 * @return				True if runnable, false otherwise.
 		 */
 		virtual bool IsRunnable() =0;
-
-		/**
-		 * @brief Returns the function ID of this function.
-		 * 
-		 * Note: This was added in API version 4.
-		 *
-		 * @return				Function id.
-		 */
-		virtual funcid_t GetFunctionID() =0;
 	};
 
 
@@ -261,44 +234,23 @@ namespace SourcePawn
 	{
 	public:
 		/** Virtual destructor */
-		virtual ~IPluginContext() { };
+		virtual ~IPluginContext()
+		{
+		};
 	public:
-		/** 
-		 * @brief Returns the parent IVirtualMachine.
-		 *
-		 * @return				Parent virtual machine pointer.
-		 */
-		virtual IVirtualMachine *GetVirtualMachine() =0;
-
-		/**
-		 * @brief Returns the child sp_context_t structure.
-		 *
-		 * @return				Child sp_context_t structure.
-		 */
-		virtual sp_context_t *GetContext() =0;
-
 		/**
 		 * @brief Returns true if the plugin is in debug mode.
 		 *
 		 * @return				True if in debug mode, false otherwise.
 		 */
-		virtual bool IsDebugging() =0;
-
-		/**
-		 * @brief Installs a debug break and returns the old one, if any.
-		 * This will fail if the plugin is not debugging.
-		 *
-		 * @param newpfn		New function pointer.
-		 * @param oldpfn		Pointer to retrieve old function pointer.
-		 */
-		virtual int SetDebugBreak(SPVM_DEBUGBREAK newpfn, SPVM_DEBUGBREAK *oldpfn) =0;
+		virtual bool IsDebugging() = 0;
 
 		/**
 		 * @brief Returns debug info.
 		 *
 		 * @return				IPluginDebugInfo, or NULL if no debug info found.
 		 */
-		virtual IPluginDebugInfo *GetDebugInfo() =0;
+		virtual IPluginDebugInfo *GetDebugInfo() = 0;
 
 		/**
 		 * @brief Allocates memory on the secondary stack of a plugin.
@@ -308,7 +260,7 @@ namespace SourcePawn
 		 * @param local_addr	Will be filled with data offset to heap.
 		 * @param phys_addr		Physical address to heap memory.
 		 */
-		virtual int HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_addr) =0;
+		virtual int HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys_addr) = 0;
 
 		/**
 		 * @brief Pops a heap address off the heap stack.  Use this to free memory allocated with
@@ -318,7 +270,7 @@ namespace SourcePawn
 		 *
 		 * @param local_addr	Local address to free.
  		 */
-		virtual int HeapPop(cell_t local_addr) =0;
+		virtual int HeapPop(cell_t local_addr) = 0;
 
 		/**
 		 * @brief Releases a heap address using a different method than SP_HeapPop().
@@ -331,7 +283,7 @@ namespace SourcePawn
 		 *
 		 * @param local_addr	Local address to free.
  		 */
-		virtual int HeapRelease(cell_t local_addr) =0;
+		virtual int HeapRelease(cell_t local_addr) = 0;
 
 		/**
 		 * @brief Finds a native by name.
@@ -339,7 +291,7 @@ namespace SourcePawn
 		 * @param name			Name of native.
 		 * @param index			Optionally filled with native index number.
 		 */
-		virtual int FindNativeByName(const char *name, uint32_t *index) =0;
+		virtual int FindNativeByName(const char *name, uint32_t *index) = 0;
 
 		/**
 		 * @brief Gets native info by index.
@@ -347,14 +299,14 @@ namespace SourcePawn
 		 * @param index			Index number of native.
 		 * @param native		Optionally filled with pointer to native structure.
 		 */
-		virtual int GetNativeByIndex(uint32_t index, sp_native_t **native) =0;
+		virtual int GetNativeByIndex(uint32_t index, sp_native_t **native) = 0;
 
 		/**
 		 * @brief Gets the number of natives.
 		 * 
 		 * @return				Filled with the number of natives.
 		 */
-		virtual uint32_t GetNativesNum() =0;
+		virtual uint32_t GetNativesNum() = 0;
 
 		/**
 		 * @brief Finds a public function by name.
@@ -362,7 +314,7 @@ namespace SourcePawn
 		 * @param name			Name of public
 		 * @param index			Optionally filled with public index number.
 		 */
-		virtual int FindPublicByName(const char *name, uint32_t *index) =0;
+		virtual int FindPublicByName(const char *name, uint32_t *index) = 0;
 
 		/**
 		 * @brief Gets public function info by index.
@@ -370,14 +322,14 @@ namespace SourcePawn
 		 * @param index			Public function index number.
 		 * @param publicptr		Optionally filled with pointer to public structure.
 		 */
-		virtual int GetPublicByIndex(uint32_t index, sp_public_t **publicptr) =0;
+		virtual int GetPublicByIndex(uint32_t index, sp_public_t **publicptr) = 0;
 
 		/**
 		 * @brief Gets the number of public functions.
 		 *
 		 * @return				Filled with the number of public functions.
 		 */
-		virtual uint32_t GetPublicsNum() =0;
+		virtual uint32_t GetPublicsNum() = 0;
 
 		/**
 		 * @brief Gets public variable info by index.
@@ -385,7 +337,7 @@ namespace SourcePawn
 		 * @param index			Public variable index number.
 		 * @param pubvar		Optionally filled with pointer to pubvar structure.
 		 */
-		virtual int GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar) =0;
+		virtual int GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar) = 0;
 
 		/**
 		 * @brief Finds a public variable by name.
@@ -393,7 +345,7 @@ namespace SourcePawn
 		 * @param name			Name of pubvar
 		 * @param index			Optionally filled with pubvar index number.
 		 */
-		virtual int FindPubvarByName(const char *name, uint32_t *index) =0;
+		virtual int FindPubvarByName(const char *name, uint32_t *index) = 0;
 
 		/**
 		 * @brief Gets the addresses of a public variable.
@@ -402,14 +354,14 @@ namespace SourcePawn
 		 * @param local_addr		Address to store local address in.
 		 * @param phys_addr		Address to store physically relocated in.
 		 */
-		virtual int GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr) =0;
+		virtual int GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr) = 0;
 
 		/**
 		 * @brief Returns the number of public variables.
 		 *
 		 * @return				Number of public variables.
 		 */
-		virtual uint32_t GetPubVarsNum() =0;
+		virtual uint32_t GetPubVarsNum() = 0;
 
 		/**
 		 * @brief Round-about method of converting a plugin reference to a physical address
@@ -417,7 +369,7 @@ namespace SourcePawn
 		 * @param local_addr	Local address in plugin.
 		 * @param phys_addr		Optionally filled with relocated physical address.
 		 */
-		virtual int LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr) =0;
+		virtual int LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr) = 0;
 
 		/**
 		 * @brief Converts a local address to a physical string.
@@ -425,7 +377,7 @@ namespace SourcePawn
 		 * @param local_addr	Local address in plugin.
 		 * @param addr			Destination output pointer.
 		 */
-		virtual int LocalToString(cell_t local_addr, char **addr) =0;
+		virtual int LocalToString(cell_t local_addr, char **addr) = 0;
 
 		/**
 		 * @brief Converts a physical string to a local address.
@@ -434,7 +386,7 @@ namespace SourcePawn
 		 * @param bytes			Number of chars to write, including NULL terminator.
 		 * @param source		Source string to copy.
 		 */
-		virtual int StringToLocal(cell_t local_addr, size_t bytes, const char *source) =0;
+		virtual int StringToLocal(cell_t local_addr, size_t bytes, const char *source) = 0;
 
 		/**
 		 * @brief Converts a physical UTF-8 string to a local address.
@@ -449,59 +401,7 @@ namespace SourcePawn
 		virtual int StringToLocalUTF8(cell_t local_addr, 
 									  size_t maxbytes, 
 									  const char *source, 
-									  size_t *wrtnbytes) =0;
-
-		/**
-		 * @brief Pushes a cell onto the stack.  Increases the parameter count by one.
-		 *
-		 * @param value			Cell value.
-		 */
-		virtual int PushCell(cell_t value) =0;
-
-		/** 
-		 * @brief Pushes an array of cells onto the stack.  Increases the parameter count by one.
-		 * If the function returns an error it will fail entirely, releasing anything allocated in the process.
-		 * Note that this does not release the heap, so you should release it after
-		 *  calling Execute().
-		 *
-		 * @param local_addr	Filled with local address to release.
-		 * @param phys_addr		Optionally filled with physical address of new array.
-		 * @param array			Cell array to copy.
-		 * @param numcells		Number of cells in the array to copy.
-		 */
-		virtual int PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells) =0;
-
-		/**
-		 * @brief Pushes a string onto the stack (by reference) and increases the parameter count by one.
-		 * Note that this does not release the heap, so you should release it after
-		 *  calling Execute().
-		 *
-		 * @param local_addr	Filled with local address to release.
-		 * @param phys_addr		Optionally filled with physical address of new array.
-		 * @param string		Source string to push.
-		 */
-		virtual int PushString(cell_t *local_addr, char **phys_addr, const char *string) =0;
-
-		/**
-		 * @brief Individually pushes each cell of an array of cells onto the stack.  Increases the 
-		 *  parameter count by the number of cells pushed.
-		 * If the function returns an error it will fail entirely, releasing anything allocated in the process.
-		 *
-		 * @param array			Array of cells to read from.
-		 * @param numcells		Number of cells to read.
-		 */
-		virtual int PushCellsFromArray(cell_t array[], unsigned int numcells) =0;
-
-		/** 
-		 * @brief Binds a list of native names and their function pointers to a context.
-		 * If num is 0, the list is read until an entry with a NULL name is reached.
-		 * If overwrite is non-zero, already registered natives will be overwritten.
-		 * 
-		 * @param natives		Array of natives.
-		 * @param num			Number of natives in array.
-		 * @param overwrite		Toggles overwrite.
-		 */
-		virtual int BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite) =0;
+									  size_t *wrtnbytes) = 0;
 
 		/**
 		 * @brief Binds a single native.  Overwrites any existing bind.
@@ -510,23 +410,7 @@ namespace SourcePawn
 		 *
 		 * @param native		Pointer to native.
 		 */
-		virtual int BindNative(const sp_nativeinfo_t *native) =0;
-
-		/**
-		 * @brief Binds a single native to any non-registered native.
-		 *
-		 * @param native		Native to bind.
-		 */
-		virtual int BindNativeToAny(SPVM_NATIVE_FUNC native) =0;
-
-		/**
-		 * @brief Executes a function ID located in this context.
-		 *
-		 * @param code_addr		Address to execute at.
-		 * @param result		Pointer to store the return value (required).
-		 * @return				Error code (if any) from the VM.
-		 */
-		virtual int Execute(uint32_t code_addr, cell_t *result) =0;
+		virtual int BindNative(const sp_nativeinfo_t *native) = 0;
 
 		/**
 		 * @brief Throws a error and halts any current execution.
@@ -536,7 +420,7 @@ namespace SourcePawn
 		 * @param ...		Message format arguments, if any.
 		 * @return			0 for convenience.
 		 */
-		virtual cell_t ThrowNativeErrorEx(int error, const char *msg, ...) =0;
+		virtual cell_t ThrowNativeErrorEx(int error, const char *msg, ...) = 0;
 
 		/**
 		 * @brief Throws a generic native error and halts any current execution.
@@ -545,7 +429,7 @@ namespace SourcePawn
 		 * @param ...		Message format arguments, if any.
 		 * @return			0 for convenience.
 		 */
-		virtual cell_t ThrowNativeError(const char *msg, ...) =0;
+		virtual cell_t ThrowNativeError(const char *msg, ...) = 0;
 
 		/**
 		 * @brief Returns a function by name.
@@ -553,7 +437,7 @@ namespace SourcePawn
 		 * @param public_name		Name of the function.
 		 * @return					A new IPluginFunction pointer, NULL if not found.
 		 */
-		virtual IPluginFunction *GetFunctionByName(const char *public_name) =0;
+		virtual IPluginFunction *GetFunctionByName(const char *public_name) = 0;
 
 		/**
 		 * @brief Returns a function by its id.
@@ -561,35 +445,7 @@ namespace SourcePawn
 		 * @param func_id			Function ID.
 		 * @return					A new IPluginFunction pointer, NULL if not found.
 		 */
-		virtual IPluginFunction *GetFunctionById(funcid_t func_id) =0;
-
-#if defined SOURCEMOD_BUILD
-		/**
-		 * @brief Returns the identity token for this context.
-		 * Note: This is a helper function for native calls and the Handle System.
-		 *
-		 * @return			Identity token.
-		 */
-		virtual SourceMod::IdentityToken_t *GetIdentity() =0;
-
-		/**
-		 * @brief Returns a NULL reference based on one of the available NULL
-		 * reference types.
-		 *
-		 * @param type		NULL reference type.
-		 * @return			cell_t address to compare to.
-		 */
-		virtual cell_t *GetNullRef(SP_NULL_TYPE type) =0;
-
-		/**
-		 * @brief Converts a local address to a physical string, and allows
-		 * for NULL_STRING to be set.
-		 *
-		 * @param local_addr	Local address in plugin.
-		 * @param addr			Destination output pointer.
-		 */
-		virtual int LocalToStringNULL(cell_t local_addr, char **addr) =0;
-#endif
+		virtual IPluginFunction *GetFunctionById(funcid_t func_id) = 0;
 
 		/**
 		 * @brief Binds a single native to a given native index.
@@ -597,30 +453,21 @@ namespace SourcePawn
 		 * @param index			Index to bind at.
 		 * @param native		Native function to bind.
 		 */
-		virtual int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native) =0;
+		virtual int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native) = 0;
 
 		/**
 		 * @brief Returns if there is currently an execution in progress.
 		 *
 		 * @return				True if in exec, false otherwise.
 		 */
-		virtual bool IsInExec() =0;
-
-#if defined SOURCEMOD_BUILD
-		/**
-		 * @brief This should not exist.  Do not call it.
-		 *
-		 * @return			Identity token.
-		 */
-		virtual void SetIdentity(SourceMod::IdentityToken_t *pToken) =0;
+		virtual bool IsInExec() = 0;
 
 		/**
-		 * @brief This should not exist.  Do not call it.
+		 * @brief Returns the interpreter state.
 		 *
-		 * @return			Blah
+		 * @return				Interpreter state.
 		 */
-		virtual void SetContext(sp_context_t *ctx) =0;
-#endif
+		virtual const sp_context_t *GetContext() = 0;
 	};
 
 
@@ -762,72 +609,29 @@ namespace SourcePawn
 	};
 
 	/**
-	 * @brief Contains helper functions used by VMs and the host app
+	 * @brief Encapsulates the SourcePawn run-time.
 	 */
 	class ISourcePawnEngine
 	{
 	public:
 		/**
-		 * @brief This function is deprecated and no longer works. 
-		 * Do not use it.
-		 * 
-		 * @param fp		Unused.
-		 * @param err		Unused.
-		 * @return			NULL pointer.
-		 */	
-		virtual sp_plugin_t *LoadFromFilePointer(FILE *fp,int *err) =0;
-	
-		/**
-		 * @brief Loads a file from a base memory address.
-		 *	
-		 * @param base		Base address of the plugin's memory region.
-		 * @param plugin	If NULL, a new plugin pointer is returned.
-		 *                  Otherwise, the passed pointer is used.
-		 * @param err		Optional error code pointer.
-		 * @return			The resulting plugin pointer.
-		 */
-		virtual sp_plugin_t *LoadFromMemory(void *base,
-			sp_plugin_t *plugin,
-			int *err) =0;
-
-		/**
-		 * Frees all of the memory associated with a plugin file.
-		 * If allocated using SP_LoadFromMemory, the base and plugin pointer 
-		 *  itself are not freed (so this may end up doing nothing).
-		 */
-		virtual int FreeFromMemory(sp_plugin_t *plugin) =0;
-
-		/**
-		 * @brief Allocates large blocks of temporary memory.
-		 * 
-		 * @param size		Size of memory to allocate.
-		 * @return			Pointer to memory, NULL if allocation failed.
-		 */
-		virtual void *BaseAlloc(size_t size) =0;
-
-		/**
-		 * @brief Frees memory allocated with BaseAlloc.
+		 * @brief Given a plugin's binary format (as on disk), maps it into 
+		 * an IPluginContext structure.
 		 *
-		 * @param memory	Memory address to free.
+		 * @param data		Memory block.
+		 * @param err		Pointer to store an error code.
+		 * @return			On success, returns a new plugin context from the 
+		 *					given data.  On failure, NULL is returned, and if 
+		 *					err is non-NULL, an error code is stored.
 		 */
-		virtual void BaseFree(void *memory) =0;
+		virtual IPluginContext *LoadPluginFromMemory(void *data, int *err) = 0;
 
 		/**
-		 * @brief Allocates executable memory.
-		 * @deprecated Use AllocPageMemory()
+		 * @brief Destroys all resources associated with a context.
 		 *
-		 * @param size		Size of memory to allocate.
-		 * @return			Pointer to memory, NULL if allocation failed.
+		 * @param pContext	Context pointer.
 		 */
-		virtual void *ExecAlloc(size_t size) =0;
-
-		/**
-		 * @brief Frees executable memory.
-		 * @deprecated Use FreePageMemory()
-		 *
-		 * @param address	Address to free.
-		 */
-		virtual void ExecFree(void *address) =0;
+		virtual void DestroyContext(IPluginContext *pContext) = 0;
 
 		/**
 		 * @brief Sets the debug listener.  This should only be called once.
@@ -838,208 +642,15 @@ namespace SourcePawn
 		 * @param listener	Pointer to an IDebugListener.
 		 * @return			Old IDebugListener, or NULL if none.
 		 */
-		virtual IDebugListener *SetDebugListener(IDebugListener *listener) =0;
-		
+		virtual IDebugListener *SetDebugListener(IDebugListener *listener) = 0;
+
 		/**
-		 * @brief Returns the number of plugins on the call stack.
+		 * @brief Retrieve an English phrase corresponding to an SP_ERROR error code.
 		 *
-		 * @return			Number of contexts in the call stack.
+		 * @param err		Error code.
+		 * @return			Error string.
 		 */
-		virtual unsigned int GetContextCallCount() =0;
-
-		/**
-		 * @brief Returns the engine API version.
-		 *
-		 * @return			Engine API version.
-		 */
-		virtual unsigned int GetEngineAPIVersion() =0;
-
-		/**
-		 * @brief Allocates executable memory.
-		 *
-		 * @param size		Size of memory to allocate.
-		 * @return			Pointer to memory, NULL if allocation failed.
-		 */
-		virtual void *AllocatePageMemory(size_t size) =0;
-		
-		/**
-		 * @brief Sets the input memory permissions to read+write.
-		 *
-		 * @param ptr		Memory block.
-		 */
-		virtual void SetReadWrite(void *ptr) =0;
-
-		/**
-		 * @brief Sets the input memory permissions to read+execute.
-		 *
-		 * @param ptr		Memory block.
-		 */
-		virtual void SetReadExecute(void *ptr) =0;
-
-		/**
-		 * @brief Frees executable memory.
-		 *
-		 * @param ptr		Address to free.
-		 */
-		virtual void FreePageMemory(void *ptr) =0;
-
-		/**
-		 * @brief Creates a base context around an sp_context_t 
-		 * (NOTE: this should really not exist)
-		 */
-		virtual IPluginContext *CreateBaseContext(sp_context_t *pContext) =0;
-
-		/**
-		 * @brief Returns an error string.
-		 *
-		 * @param err		Error number.
-		 */
-		virtual const char *GetErrorString(int err) =0;
-	};
-
-
-	/**
-	 * @brief Dummy class for encapsulating private compilation data.
-	 */
-	class ICompilation
-	{
-	public:
-		/** Virtual destructor */
-		virtual ~ICompilation() { };
-	};
-
-
-	/** 
-	 * @brief Outlines the interface a Virtual Machine (JIT) must expose
-	 */
-	class IVirtualMachine
-	{
-	public:
-		/**
-		 * @brief Returns the current API version.
-		 */
-		virtual unsigned int GetAPIVersion() =0;
-
-		/**
-		 * @brief Returns the string name of a VM implementation.
-		 */
-		virtual const char *GetVMName() =0;
-
-		/**
-		 * @brief Begins a new compilation
-		 * 
-		 * @param plugin	Pointer to a plugin structure.
-		 * @return			New compilation pointer.
-		 */
-		virtual ICompilation *StartCompilation(sp_plugin_t *plugin) =0;
-
-		/**
-		 * @brief Sets a compilation option.
-		 *
-		 * @param co		Pointer to a compilation.
-		 * @param key		Option key name.
-		 * @param val		Option value string.
-		 * @return			True if option could be set, false otherwise.
-		 */
-		virtual bool SetCompilationOption(ICompilation *co,
-			const char *key,
-			const char *val) =0;
-
-		/**
-		 * @brief Finalizes a compilation into a new sp_context_t.
-		 * Note: This will free the ICompilation pointer.
-		 *
-		 * @param co		Compilation pointer.
-		 * @param err		Filled with error code on exit.
-		 * @return			New plugin context.
-		 */
-		virtual sp_context_t *CompileToContext(ICompilation *co, int *err) =0;
-
-		/**
-		 * @brief Aborts a compilation and frees the ICompilation pointer.
-		 *
-		 * @param co		Compilation pointer.
-		 */
-		virtual void AbortCompilation(ICompilation *co) =0;
-
-		/**
-		 * @brief Frees any internal variable usage on a context.
-		 *
-		 * @param ctx		Context structure pointer.
-		 */
-		virtual void FreeContext(sp_context_t *ctx) =0;
-
-		/**
-		 * @brief Calls the "execute" function on a context.
-		 *
-		 * @param ctx		Executes a function in a context.
-		 * @param code_addr	Index into the code section.
-		 * @param result	Pointer to store result into.
-		 * @return			Error code (if any).
-		 */
-		virtual int ContextExecute(sp_context_t *ctx,
-			uint32_t code_addr,
-			cell_t *result) =0;
-
-		/**
-		 * @brief Given a context and a code address, returns the index of the function.
-		 * 
-		 * @param ctx		Context to search.
-		 * @param code_addr	Index into the code section.
-		 * @param result	Pointer to store result into.
-		 * @return			True if code index is valid, false otherwise.
-		 */
-		virtual bool FunctionLookup(const sp_context_t *ctx, 
-			uint32_t code_addr, 
-			unsigned int *result) =0;
-
-		/**
-		 * @brief Returns the number of functions defined in the context.
-		 *
-		 * @param ctx		Context to search.
-		 * @return			Number of functions.
-		 */
-		virtual unsigned int FunctionCount(const sp_context_t *ctx) =0;
-
-		/**
-		 * @brief Returns a version string.
-		 *
-		 * @return			Versioning string.
-		 */
-		virtual const char *GetVersionString() =0;
-
-		/**
-		 * @brief Returns a string describing optimizations.
-		 *
-		 * @return			String describing CPU specific optimizations.
-		 */
-		virtual const char *GetCPUOptimizations() =0;
-
-		/**
-		 * @brief Given a context and a p-code address, returns the index of the function.
-		 * 
-		 * @param ctx		Context to search.
-		 * @param code_addr	Index into the p-code section.
-		 * @param result	Pointer to store result into.
-		 * @return			True if code index is valid, false otherwise.
-		 */
-		virtual bool FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result) =0;
-
-		/**
-		 * @brief Creates a fake native and binds it to a general callback function.
-		 *
-		 * @param callback	Callback function to bind the native to.
-		 * @param pData		Private data to pass to the callback when the native is invoked.
-		 * @return			A new fake native function as a wrapper around the callback.
-		 */
-		virtual SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData) =0;
-
-		/**
-		 * @brief Destroys a fake native function wrapper.  
-		 *
-		 * @param func		Pointer to the fake native created by CreateFakeNative.
-		 */
-		virtual void DestroyFakeNative(SPVM_NATIVE_FUNC func) =0;
+		virtual const char *GetErrorString(int err) = 0;
 	};
 };
 

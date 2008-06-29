@@ -32,55 +32,49 @@
 #include <stdio.h>
 #include <string.h>
 #include "sp_vm_function.h"
+#include "sp_vm_basecontext.h"
 
 /********************
-* FUNCTION CALLING *
-********************/
+ * FUNCTION CALLING *
+ ********************/
 
-void CFunction::Set(uint32_t code_addr, IPluginContext *plugin, funcid_t id, uint32_t pub_id)
+CFunction::CFunction(BaseContext *pContext, uint32_t pubfunc, uint32_t code_addr)
 {
-	m_codeaddr = code_addr;
-	m_pContext = plugin;
-	m_curparam = 0;
-	m_errorstate = SP_ERROR_NONE;
-	m_Invalid = false;
-	m_pCtx = plugin ? plugin->GetContext() : NULL;
-	m_FnId = id;
-	
-	m_pContext->GetPublicByIndex(pub_id, &m_pPublic);
+	m_pContext = pContext;
+	m_CodeAddr = code_addr;
+
+	m_pContext->GetPublicByIndex(pubfunc, &m_pPublic);
 }
 
 bool CFunction::IsRunnable()
 {
-	return ((m_pCtx->flags & SPFLAG_PLUGIN_PAUSED) != SPFLAG_PLUGIN_PAUSED);
+	/* :TODO: */
+	return false;
 }
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
 	int ir, serial;
 
+	ir = 0;
+	serial = 0;
+
 	if (!IsRunnable())
 	{
 		return SP_ERROR_NOT_RUNNABLE;
 	}
 
-	if ((m_pCtx->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS
-		&& m_pPublic != NULL)
+	if (m_pPublic != NULL && (serial = m_pContext->GetProfCallbackSerial()) != 0)
 	{
-		serial = m_pCtx->profiler->OnCallbackBegin(m_pContext, m_pPublic);
+		serial = m_pPlugin->profiler->OnCallbackBegin(m_pContext, m_pPublic);
 	}
 
-	while (num_params--)
-	{
-		m_pContext->PushCell(params[num_params]);
-	}
+	/* :TODO: */
+//	ir = m_pContext->Execute(m_CodeAddr, result);
 
-	ir = m_pContext->Execute(m_codeaddr, result);
-
-	if ((m_pCtx->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS
-		&& m_pPublic != NULL)
+	if (serial != 0)
 	{
-		m_pCtx->profiler->OnCallbackEnd(serial);
+		m_pPlugin->profiler->OnCallbackEnd(serial);
 	}
 
 	return ir;
@@ -89,18 +83,6 @@ int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_
 IPluginContext *CFunction::GetParentContext()
 {
 	return m_pContext;
-}
-
-CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin, funcid_t id, uint32_t pub_id) : 
-	m_codeaddr(code_addr), m_pContext(plugin), m_curparam(0), 
-	m_errorstate(SP_ERROR_NONE), m_FnId(id)
-{
-	m_Invalid = false;
-	if (plugin)
-	{
-		m_pCtx = plugin->GetContext();
-	}
-	m_pContext->GetPublicByIndex(pub_id, &m_pPublic);
 }
 
 int CFunction::PushCell(cell_t cell)
@@ -356,10 +338,5 @@ int CFunction::Execute(cell_t *result)
 	}
 
 	return err;
-}
-
-funcid_t CFunction::GetFunctionID()
-{
-	return m_FnId;
 }
 

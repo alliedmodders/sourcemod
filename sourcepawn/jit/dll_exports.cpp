@@ -15,18 +15,14 @@
 
 #include <sp_vm_api.h>
 #include <malloc.h>
-#include "x86/jit_x86.h"
 #include "dll_exports.h"
 #include "sp_vm_engine.h"
 
-JITX86 g_v1_jit;
 SourcePawnEngine g_engine;
 SourcePawn::ISourcePawnEngine *engine = &g_engine;
 
-EXPORTFUNC void GetSourcePawn(SourcePawn::IVirtualMachine **pVm,
-							  SourcePawn::ISourcePawnEngine **pEngine)
+EXPORTFUNC void GetSourcePawn(SourcePawn::ISourcePawnEngine **pEngine)
 {
-	*pVm = &g_v1_jit;
 	*pEngine = &g_engine;
 }
 
