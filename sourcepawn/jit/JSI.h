@@ -33,30 +33,94 @@
 #define _INCLUDE_SOURCEPAWN_JSI_H_
 
 #include <sp_vm_types.h>
+#include "PageAllocator.h"
 
-using namespace SourcePawn
+namespace SourcePawn
 {
 	enum JitOp
 	{
-		J_sysreq,			/* [imm:idx] -> value */
+		J_next,				/* [ptr] -- special opcode for discontiguous pages */
+		J_sysreq,			/* [imm:idx, imm:count] -> value */
 		J_return,			/* [instr:retval] */
 		J_imm,				/* [imm:value] -> value */
+		J_load,				/* [instr:base, instr:disp] -> value */
+		J_loadi,			/* [instr:base, imm:disp] -> value */
+		J_store,			/* [instr:base, instr:disp, instr:value] */
+		J_storei,			/* [instr:base, imm:disp, instr:value] */
+		J_add,				/* [instr:op1, instr:op2] -> value (op1 + op2) */
 	};
 
-	#define JSIL_VAL8			(1<<0)
-	#define JSIL_VAL16			(1<<1)
-	#define JSIL_VAL32			(1<<2)
-	#define JSIL_VAL64			(1<<3)
-	#define JSIL_IMMVAL			(1<<4)
+	struct JIns;
 
-	typedef uint8_t * JIns;
+	union JInsParam
+	{
+		uint8_t *ptr;
+		JIns *instr;
+		int32_t imm;
+	};
 
-	class JsiWriter
+	struct JIns
+	{
+		uint8_t op;
+		JInsParam param1;
+		JInsParam param2;
+		JInsParam value;
+	};
+
+	class JsiStream
 	{
 	public:
-		virtual JIns *ins_sysreq(uint32_t index) = 0;
-		virtual JIns *ins_imm(int32_t value) = 0;
-		virtual JIns *ins_return(JIns *val) = 0;
+		JsiStream(const JsiStream & other);
+		JsiStream(Page *pFirstPage, JIns *pLast);
+	public:
+		JIns *GetFirst() const;
+		JIns *GetLast() const;
+	private:
+		Page *m_pFirstPage;
+		JIns *m_pLast;
+	};
+
+	class JsiBufWriter
+	{
+	public:
+		JsiBufWriter(PageAllocator *allocator);
+	public:
+		virtual JIns *ins_sysreq(uint32_t index, uint32_t count);
+		virtual JIns *ins_imm(int32_t value);
+		virtual JIns *ins_imm_ptr(void *value);
+		virtual JIns *ins_return(JIns *val);
+		virtual JIns *ins_loadi(JIns *base, int32_t disp);
+		virtual JIns *ins_load(JIns *base, JIns *disp);
+		virtual JIns *ins_storei(JIns *base, int32_t disp, JIns *val);
+		virtual JIns *ins_store(JIns *base, JIns *disp, JIns *val);
+		virtual JIns *ins_add(JIns *op1, JIns *op2);
+	public:
+		void destroy();
+		JsiStream getstream();
+	private:
+		JIns *ensure_room();
+	private:
+		JIns *m_pPos;
+		Page *m_pCurPage;
+		Page *m_pFirstPage;
+		PageAllocator *m_pAlloc;
+	};
+
+	class JsiReader
+	{
+	public:
+		virtual JIns *next() = 0;
+	};
+
+	class JsiForwardReader : public JsiReader
+	{
+	public:
+		JsiForwardReader(const JsiStream & stream);
+	public:
+		virtual JIns *next();
+	private:
+		JIns *m_pCur;
+		JIns *m_pLast;
 	};
 }
 

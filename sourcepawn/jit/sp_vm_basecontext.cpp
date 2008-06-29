@@ -52,16 +52,23 @@ BaseContext::BaseContext(sp_plugin_t *plugin)
 	if (plugin->info.publics_num > 0)
 	{
 		m_PubFuncs = new CFunction *[plugin->info.publics_num];
-		memset(m_PubFuncs, 0, sizeof(m_PubFuncs));
+		memset(m_PubFuncs, 0, sizeof(CFunction *) * plugin->info.publics_num);
 	}
 	else
 	{
 		m_PubFuncs = NULL;
 	}
+
+	m_ctx.sp = m_pPlugin->memory - sizeof(cell_t);
+	m_ctx.hp = m_pPlugin->data_size;
 }
 
 BaseContext::~BaseContext()
 {
+	for (uint32_t i = 0; i < m_pPlugin->info.publics_num; i++)
+	{
+		delete m_PubFuncs[i];
+	}
 	delete [] m_PubFuncs;
 
 	delete [] m_pPlugin->base;
@@ -75,6 +82,11 @@ bool BaseContext::IsDebugging()
 {
 	/* :XXX: TODO */
 	return false;
+}
+
+const sp_plugin_t *BaseContext::GetPlugin()
+{
+	return m_pPlugin;
 }
 
 IPluginDebugInfo *BaseContext::GetDebugInfo()

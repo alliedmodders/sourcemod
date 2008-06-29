@@ -122,6 +122,7 @@ public: //IPluginContext
 	int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native);
 	bool IsInExec();
 	const sp_context_t *GetContext();
+	const sp_plugin_t *GetPlugin();
 public: //IPluginDebugInfo
 	int LookupFile(ucell_t addr, const char **filename);
 	int LookupFunction(ucell_t addr, const char **name);

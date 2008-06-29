@@ -29,12 +29,12 @@
  * Version: $Id$
  */
 
-#include "sp_vm_types.h"
+#include <sp_vm_types.h>
+#include <sp_vm_api.h>
 #include <malloc.h>
 #include <string.h>
 #include <assert.h>
 #include "sp_file_headers.h"
-#include "sp_vm_engine.h"
 #include "zlib/zlib.h"
 #include "sp_vm_basecontext.h"
 

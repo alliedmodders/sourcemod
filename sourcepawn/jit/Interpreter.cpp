@@ -1,0 +1,85 @@
+#include "Interpreter.h"
+
+using namespace SourcePawn;
+
+int SourcePawn::InterpretSSA(BaseContext *pContext,
+							 const JsiStream *stream,
+							 cell_t *result)
+{
+	JIns *ins;
+	const sp_context_t *ctx;
+	const sp_plugin_t *plugin;
+	JsiForwardReader rdr(*stream);
+
+	ctx = pContext->GetContext();
+	plugin = pContext->GetPlugin();
+
+	while (true)
+	{
+		if ((ins = rdr.next()) == NULL)
+		{
+			return SP_ERROR_INVALID_INSTRUCTION;
+		}
+
+		switch (ins->op)
+		{
+		case J_sysreq:
+			{
+				ins->value.imm = 
+					plugin->natives[ins->param1.imm].pfn(pContext, (cell_t *)(plugin->base + ctx->sp));
+				break;
+			}
+		case J_imm:
+			{
+				ins->value = ins->param1;
+				break;
+			}
+		case J_load:
+			{
+				ins->value.imm = *(int32_t *)
+					((char *)(ins->param1.instr->value.ptr) + ins->param2.instr->value.imm);
+				break;
+			}
+		case J_loadi:
+			{
+				ins->value.imm = *(int32_t *)
+					((char *)(ins->param1.instr->value.ptr) + ins->param2.imm);
+				break;
+			}
+		case J_store:
+			{
+				*(int32_t *)((char *)(ins->param1.instr->value.ptr) + ins->value.instr->value.imm) 
+					=
+					ins->param2.instr->value.imm;
+				break;
+			}
+		case J_storei:
+			{
+				*(int32_t *)((char *)(ins->param1.instr->value.ptr) + ins->value.imm) 
+					=
+					ins->param2.instr->value.imm;
+				break;
+			}
+		case J_add:
+			{
+				ins->value.imm = ins->param1.instr->value.imm + ins->param2.instr->value.imm;
+				break;
+			}
+		case J_return:
+			{
+				if (result)
+				{
+					*result = ins->param1.instr->value.imm;
+				}
+				return SP_ERROR_NONE;
+				break;
+			}
+		default:
+			{
+				return SP_ERROR_INVALID_INSTRUCTION;
+			}
+		}
+	}
+
+	return SP_ERROR_INVALID_INSTRUCTION;
+}

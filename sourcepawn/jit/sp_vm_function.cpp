@@ -33,6 +33,8 @@
 #include <string.h>
 #include "sp_vm_function.h"
 #include "sp_vm_basecontext.h"
+#include "AMXToSSA.h"
+#include "Interpreter.h"
 
 /********************
  * FUNCTION CALLING *
@@ -42,14 +44,32 @@ CFunction::CFunction(BaseContext *pContext, uint32_t pubfunc, uint32_t code_addr
 {
 	m_pContext = pContext;
 	m_CodeAddr = code_addr;
+	m_errorstate = SP_ERROR_NONE;
+	m_curparam = 0;
+	m_pCode = NULL;
 
 	m_pContext->GetPublicByIndex(pubfunc, &m_pPublic);
+}
+
+CFunction::~CFunction()
+{
+	/* :TODO: */
 }
 
 bool CFunction::IsRunnable()
 {
 	/* :TODO: */
-	return false;
+	return true;
+}
+
+bool CFunction::Compile()
+{
+	int err;
+	char buffer[255];
+
+	m_pCode = ConvertAMXToSSA(m_pContext, m_CodeAddr, &err, buffer, sizeof(buffer));
+
+	return (m_pCode != NULL);
 }
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
@@ -69,8 +89,14 @@ int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_
 		serial = m_pPlugin->profiler->OnCallbackBegin(m_pContext, m_pPublic);
 	}
 
-	/* :TODO: */
-//	ir = m_pContext->Execute(m_CodeAddr, result);
+	if (m_pCode == NULL)
+	{
+		if (!Compile())
+		{
+			return SP_ERROR_NOT_RUNNABLE;
+		}
+		ir = InterpretSSA(m_pContext, m_pCode, result);
+	}
 
 	if (serial != 0)
 	{

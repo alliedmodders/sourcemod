@@ -34,6 +34,7 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
+#include "JSI.h"
 
 using namespace SourcePawn;
 
@@ -61,6 +62,7 @@ class CFunction : public IPluginFunction
 {
 public:
 	CFunction(BaseContext *pContext, uint32_t pubfunc, uint32_t code_addr);
+	~CFunction();
 public:
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
@@ -77,6 +79,7 @@ public:
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	int SetError(int err);
+	bool Compile();
 private:
 	BaseContext *m_pContext;
 	sp_plugin_t *m_pPlugin;
@@ -86,6 +89,7 @@ private:
 	sp_public_t *m_pPublic;
 	int m_errorstate;
 	uint32_t m_CodeAddr;
+	JsiStream *m_pCode;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

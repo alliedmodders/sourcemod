@@ -350,11 +350,23 @@
 			Name="Header Files"
 			>
 			<File
+				RelativePath="..\AmxToSSA.h"
+				>
+			</File>
+			<File
 				RelativePath="..\dll_exports.h"
 				>
 			</File>
 			<File
+				RelativePath="..\Interpreter.h"
+				>
+			</File>
+			<File
 				RelativePath="..\JSI.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PageAllocator.h"
 				>
 			</File>
 		</Filter>
@@ -362,7 +374,23 @@
 			Name="Source Files"
 			>
 			<File
+				RelativePath="..\AmxToSSA.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\dll_exports.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Interpreter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\JSI.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PageAllocator.cpp"
 				>
 			</File>
 		</Filter>
