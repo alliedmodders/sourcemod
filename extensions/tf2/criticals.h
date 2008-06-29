@@ -59,7 +59,11 @@ public:
 
 	~CriticalHitManager()
 	{
-		forwards->ReleaseForward(forward);
+		if (forward != NULL)
+		{
+			forwards->ReleaseForward(forward);
+		}
+		
 		DeleteCriticalDetour();
 	}
 
