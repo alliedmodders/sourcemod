@@ -82,6 +82,10 @@ extern sp_nativeinfo_t g_TeamNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
+	{
+		return false;
+	}
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_CallNatives);
 	sharesys->AddNatives(myself, g_Natives);
@@ -96,10 +100,6 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
-	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
-	{
-		return false;
-	}
 
 	playerhelpers->AddClientListener(&g_SdkTools);
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
