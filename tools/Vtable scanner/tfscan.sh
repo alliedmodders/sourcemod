@@ -1,4 +1,4 @@
-echo "sdktools.games.ep2.txt
+echo "sdktools.games.ep2.txt"
 ./vtablecheck ~/srcds/orangebox/tf/bin/server_i486.so _ZTV9CTFPlayer RemovePlayerItem
 ./vtablecheck ~/srcds/orangebox/tf/bin/server_i486.so _ZTV9CTFPlayer Weapon_GetSlot
 ./vtablecheck ~/srcds/orangebox/tf/bin/server_i486.so _ZTV9CTFPlayer Ignite
