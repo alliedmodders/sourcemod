@@ -222,6 +222,8 @@ void CookieManager::OnClientDisconnecting(int client)
 
 		if (!current->changed)
 		{
+			current->parent->data[client] = NULL;
+			delete current;
 			_iter = clientData[client].erase(_iter);
 			continue;
 		}
@@ -313,7 +315,6 @@ void CookieManager::ClientConnectCallback(int client, IQuery *data)
 		clientData[client].push_back(pData);
 
 	}  while (results->MoreRows());
-
 
 	statsLoaded[client] = true;
 

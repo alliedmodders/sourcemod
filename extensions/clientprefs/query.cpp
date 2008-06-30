@@ -98,6 +98,7 @@ TQueryOp::TQueryOp(IDatabase *db, const char *query, enum querytype type, int cl
 	m_Query = query;
 	m_type = type;
 	m_client = client;
+	m_pQuery = NULL;
 
 	m_pDatabase->IncReferenceCount();
 }
@@ -108,6 +109,7 @@ TQueryOp::TQueryOp(IDatabase *db, const char *query, enum querytype type, Cookie
 	m_Query = query;
 	m_type = type;
 	pCookie = cookie;
+	m_pQuery = NULL;
 
 	m_pDatabase->IncReferenceCount();
 }

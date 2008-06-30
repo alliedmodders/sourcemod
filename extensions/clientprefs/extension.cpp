@@ -194,7 +194,6 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	phrases->AddPhraseFile("clientprefs.phrases");
 	phrases->AddPhraseFile("common.phrases");
 
-
 	return true;
 }
 
@@ -206,6 +205,7 @@ void ClientPrefs::SDK_OnAllLoaded()
 void ClientPrefs::SDK_OnUnload()
 {
 	handlesys->RemoveType(g_CookieType, myself->GetIdentity());
+	handlesys->RemoveType(g_CookieIterator, myself->GetIdentity());
 
 	g_CookieManager.Unload();
 
@@ -214,6 +214,11 @@ void ClientPrefs::SDK_OnUnload()
 	forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
 
 	g_CookieManager.clientMenu->Destroy();
+
+	phrases->Destroy();
+
+	plsys->RemovePluginsListener(&g_CookieManager);
+	playerhelpers->RemoveClientListener(&g_CookieManager);
 }
 
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
