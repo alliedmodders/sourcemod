@@ -2,5 +2,10 @@
 
 public main()
 {
-	return ReturnFour();
+	new a
+
+	a = 5
+
+	return a
+
 }

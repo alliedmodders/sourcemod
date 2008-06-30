@@ -369,6 +369,10 @@
 				RelativePath="..\PageAllocator.h"
 				>
 			</File>
+			<File
+				RelativePath="..\StackTracker.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Source Files"
@@ -391,6 +395,10 @@
 			</File>
 			<File
 				RelativePath="..\PageAllocator.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\StackTracker.cpp"
 				>
 			</File>
 		</Filter>

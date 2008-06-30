@@ -32,6 +32,7 @@
 #ifndef _INCLUDE_SOURCEPAWN_JSI_H_
 #define _INCLUDE_SOURCEPAWN_JSI_H_
 
+#include <stdio.h>
 #include <sp_vm_types.h>
 #include "PageAllocator.h"
 
@@ -121,6 +122,16 @@ namespace SourcePawn
 	private:
 		JIns *m_pCur;
 		JIns *m_pLast;
+	};
+
+	class JsiPrinter
+	{
+	public:
+		JsiPrinter(const JsiStream & stream);
+	public:
+		void emit_to_file(FILE *fp);
+	private:
+		JsiForwardReader m_Reader;
 	};
 }
 

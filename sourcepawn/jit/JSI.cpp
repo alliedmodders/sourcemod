@@ -189,7 +189,11 @@ JIns *JsiForwardReader::next()
 {
 	JIns *ret;
 
-	if (m_pCur->op == J_next)
+	if (m_pCur == NULL)
+	{
+		return NULL;
+	}
+	else if (m_pCur->op == J_next)
 	{
 		m_pCur = m_pCur->param1.instr;
 	}
@@ -206,4 +210,75 @@ JIns *JsiForwardReader::next()
 	}
 
 	return ret;
+}
+
+JsiPrinter::JsiPrinter(const JsiStream & stream) : m_Reader(stream)
+{
+}
+
+const char *op_table[] = 
+{
+	"next",
+	"sysreq",
+	"return",
+	"imm",
+	"load",
+	"loadi",
+	"store",
+	"storei",
+	"add"
+};
+
+void JsiPrinter::emit_to_file(FILE *fp)
+{
+	JIns *ins;
+
+	while ((ins = m_Reader.next()) != NULL)
+	{
+		fprintf(fp, " %p: %s ", ins, op_table[ins->op]);
+
+		switch (ins->op)
+		{
+		case J_sysreq:
+			{
+				fprintf(fp, " #%d, #%d\n", ins->param1.imm, ins->param2.imm);
+				break;
+			}
+		case J_return:
+			{
+				fprintf(fp, " %p\n", ins->param1.instr);
+				break;
+			}
+		case J_imm:
+			{
+				fprintf(fp, " #%d\n", ins->param1.imm);
+				break;
+			}
+		case J_load:
+			{
+				fprintf(fp, " %p(%p)\n", ins->param2.instr, ins->param1.instr);
+				break;
+			}
+		case J_loadi:
+			{
+				fprintf(fp, " #%d(%p)\n", ins->param2.imm, ins->param1.instr);
+				break;
+			}
+		case J_store:
+			{
+				fprintf(fp, " %p(%p), %p\n", ins->value.instr, ins->param1.instr, ins->param2.instr);
+				break;
+			}
+		case J_storei:
+			{
+				fprintf(fp, " #%d(%p), %p\n", ins->value.imm, ins->param1.instr, ins->param2.instr);
+				break;
+			}
+		case J_add:
+			{
+				fprintf(fp, " %p, %p\n", ins->param1.instr, ins->param2.instr);
+				break;
+			}
+		}
+	}
 }

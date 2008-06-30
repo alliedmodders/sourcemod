@@ -54,6 +54,18 @@ namespace SourcePawn
 	#define SM_PARAM_STRING_BINARY	(1<<2)		/**< String should be handled as binary data */
 
 	/**
+	 * @brief Interpreter state.
+	 */
+	typedef struct sp_context_s
+	{
+		cell_t sp;					/**< Stack pointer. */
+		cell_t hp;					/**< Heap pointer. */
+		cell_t frm;					/**< Frame pointer. */
+		cell_t n_idx;				/**< Last native to be executed. */
+		cell_t n_err;				/**< Error code of last native. */
+	} sp_context_t;
+
+	/**
 	 * @brief Represents what a function needs to implement in order to be callable.
 	 */
 	class ICallable

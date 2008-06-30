@@ -68,6 +68,11 @@ bool CFunction::Compile()
 	char buffer[255];
 
 	m_pCode = ConvertAMXToSSA(m_pContext, m_CodeAddr, &err, buffer, sizeof(buffer));
+	if (m_pCode != NULL)
+	{
+		JsiPrinter pr(*m_pCode);
+		pr.emit_to_file(stdout);
+	}
 
 	return (m_pCode != NULL);
 }

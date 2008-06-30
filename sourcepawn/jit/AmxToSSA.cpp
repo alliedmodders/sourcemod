@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "AmxToSSA.h"
+#include "StackTracker.h"
 
 using namespace SourcePawn;
 
@@ -204,16 +206,17 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 									   size_t maxlength)
 {
 	bool done;
+	int stk_offs;
 	cell_t *code;
-	JIns *memory;
 	JIns *pri, *alt;
-	JIns *param_ctx;
+	StackTracker stk;
 	JsiBufWriter *buf;
 	const sp_plugin_t *plugin;
 
 	pri = NULL;
 	alt = NULL;
 	done = false;
+	stk_offs = 0;
 	plugin = pContext->GetPlugin();
 
 	code = (cell_t *)(plugin->pcode + code_addr);
@@ -228,9 +231,6 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 
 	*err = SP_ERROR_NONE;
 	buf = new JsiBufWriter(&g_PageAlloc);
-	
-	param_ctx = buf->ins_imm_ptr((void *)pContext->GetContext());
-	memory = buf->ins_imm_ptr((void *)pContext->GetPlugin()->base);
 
 	while (!done)
 	{
@@ -250,42 +250,67 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 			{
 				break;
 			}
-		case OP_SYSREQ_N:
+		case OP_STACK:
 			{
-				/* Adjust stack */
-				buf->ins_storei(
-					param_ctx,
-					offsetof(sp_context_t, sp),
-					buf->ins_add(
-						buf->ins_loadi(
-							param_ctx,
-							offsetof(sp_context_t, sp)),
-						buf->ins_imm(-4)
-						)
-					);
-				/* Store 0 in stack */
-				buf->ins_store(
-					memory,
-					buf->ins_loadi(
-						param_ctx,
-						offsetof(sp_context_t, sp)),
-					buf->ins_imm(0)
-					);
-				/* Make call */
-				pri = buf->ins_sysreq(*code, *(code + 1));
-				/* Adjust stack again */
-				buf->ins_storei(
-					param_ctx,
-					offsetof(sp_context_t, sp),
-					buf->ins_add(
-						buf->ins_loadi(
-							param_ctx,
-							offsetof(sp_context_t, sp)),
-						buf->ins_imm(4)
-						)
-					);
-				code += 2;
+				stk_offs += *code;
 
+				if (*code > 0)
+				{
+					stk.pop(stk_offs);
+				}
+				else
+				{
+					stk.set(*code, NULL);
+				}
+
+				code++;
+				break;
+			}
+		case OP_CONST_S:
+			{
+				if (*code < stk_offs)
+				{
+					UTIL_Format(buffer, maxlength, "Invalid stack offset");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else
+				{
+					stk.set(*code, buf->ins_imm(*(code + 1)));
+				}
+
+				code += 2;
+				break;
+			}
+		case OP_PUSH_C:
+			{
+				stk_offs -= 4;
+				stk.set(stk_offs, buf->ins_imm(*code));
+
+				code++;
+				break;
+			}
+		case OP_LOAD_S_PRI:
+			{
+				if (*code < stk_offs)
+				{
+					UTIL_Format(buffer, maxlength, "Invalid stack offset");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else
+				{
+					pri = stk.get(stk_offs);
+					
+					if (pri == NULL)
+					{
+						UTIL_Format(buffer, maxlength, "Unitialized memory used");
+						*err = SP_ERROR_INVALID_INSTRUCTION;
+						done = true;
+					}
+				}
+
+				code++;
 				break;
 			}
 		case OP_RETN:
@@ -309,6 +334,12 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 				done = true;
 			}
 		}
+	}
+
+	if (stk_offs != 0)
+	{
+		UTIL_Format(buffer, maxlength, "Stack misalignment detected");
+		*err = SP_ERROR_INVALID_INSTRUCTION;
 	}
 
 	if (*err != SP_ERROR_NONE)

@@ -199,15 +199,4 @@ typedef struct sp_debug_symbol_s
 	sp_fdbg_symbol_t	*sym;	/**< Pointer to original symbol */
 } sp_debug_symbol_t;
 
-/**
- * @brief Interpreter state.
- */
-typedef struct sp_context_s
-{
-	cell_t sp;					/**< Stack pointer. */
-	cell_t hp;					/**< Heap pointer. */
-	cell_t n_idx;				/**< Last native to be executed. */
-	cell_t n_err;				/**< Error code of last native. */
-} sp_context_t;
-
 #endif //_INCLUDE_SOURCEPAWN_VM_TYPES_H
