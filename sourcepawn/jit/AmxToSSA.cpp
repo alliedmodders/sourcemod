@@ -290,6 +290,25 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 				code++;
 				break;
 			}
+		case OP_STOR_S_PRI:
+			{
+				if (*code < stk_offs)
+				{
+					UTIL_Format(buffer, maxlength, "Invalid stack offset");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else if (pri == NULL)
+				{
+					UTIL_Format(buffer, maxlength, "PRI used without being set");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else
+				{
+					stk.set(*code, pri);
+				}
+			}
 		case OP_LOAD_S_PRI:
 			{
 				if (*code < stk_offs)
@@ -300,7 +319,7 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 				}
 				else
 				{
-					pri = stk.get(stk_offs);
+					pri = stk.get(*code);
 					
 					if (pri == NULL)
 					{
@@ -311,6 +330,71 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 				}
 
 				code++;
+				break;
+			}
+		case OP_LOAD_S_BOTH:
+			{
+				if (*code < stk_offs)
+				{
+					UTIL_Format(buffer, maxlength, "Invalid stack offset");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else
+				{
+					pri = stk.get(*code);
+
+					if (pri == NULL)
+					{
+						UTIL_Format(buffer, maxlength, "Unitialized memory used");
+						*err = SP_ERROR_INVALID_INSTRUCTION;
+						done = true;
+					}
+				}
+
+				code++;
+
+				if (*code < stk_offs)
+				{
+					UTIL_Format(buffer, maxlength, "Invalid stack offset");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else
+				{
+					alt = stk.get(*code);
+
+					if (alt == NULL)
+					{
+						UTIL_Format(buffer, maxlength, "Unitialized memory used");
+						*err = SP_ERROR_INVALID_INSTRUCTION;
+						done = true;
+					}
+				}
+
+				code++;
+				break;
+			}
+		case OP_ADD:
+			{
+				if (alt == NULL || pri == NULL)
+				{
+					UTIL_Format(buffer, maxlength, "ADD used with uninitialized operands");
+					*err = SP_ERROR_INVALID_INSTRUCTION;
+					done = true;
+				}
+				else
+				{
+					if (pri->op == J_imm && alt->op == J_imm)
+					{
+						pri = buf->ins_imm(pri->param1.imm + alt->param1.imm);
+					}
+					else
+					{
+						pri = buf->ins_add(pri, alt);
+					}
+				}
+
 				break;
 			}
 		case OP_RETN:
