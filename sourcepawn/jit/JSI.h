@@ -40,8 +40,9 @@ namespace SourcePawn
 {
 	enum JitOp
 	{
-		J_next,				/* [ptr] -- special opcode for discontiguous pages */
-		J_sysreq,			/* [imm:idx, imm:count] -> value */
+		J_nop,				/* no operation, used for DCE */
+		J_next,				/* [ptr] -- special opcode for next page */
+		J_prev,				/* [ptr] -- special opcode for previous page */
 		J_return,			/* [instr:retval] */
 		J_imm,				/* [imm:value] -> value */
 		J_load,				/* [instr:base, instr:disp] -> value */
@@ -76,6 +77,7 @@ namespace SourcePawn
 	public:
 		JIns *GetFirst() const;
 		JIns *GetLast() const;
+		void kill_pages();
 	private:
 		Page *m_pFirstPage;
 		JIns *m_pLast;
@@ -86,7 +88,6 @@ namespace SourcePawn
 	public:
 		JsiBufWriter(PageAllocator *allocator);
 	public:
-		virtual JIns *ins_sysreq(uint32_t index, uint32_t count);
 		virtual JIns *ins_imm(int32_t value);
 		virtual JIns *ins_imm_ptr(void *value);
 		virtual JIns *ins_return(JIns *val);
@@ -134,5 +135,7 @@ namespace SourcePawn
 		JsiForwardReader m_Reader;
 	};
 }
+
+extern SourcePawn::PageAllocator g_PageAlloc;
 
 #endif //_INCLUDE_SOURCEPAWN_JSI_H_

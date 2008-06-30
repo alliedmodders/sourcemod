@@ -35,6 +35,7 @@
 #include "sp_vm_basecontext.h"
 #include "AMXToSSA.h"
 #include "Interpreter.h"
+#include "DeadCodeEliminator.h"
 
 /********************
  * FUNCTION CALLING *
@@ -71,6 +72,10 @@ bool CFunction::Compile()
 	if (m_pCode != NULL)
 	{
 		JsiPrinter pr(*m_pCode);
+		pr.emit_to_file(stdout);
+		fprintf(stdout, " ---- DEAD CODE ELIMINATION ---- \n");
+		DeadCodeEliminator(m_pCode);
+		pr = JsiPrinter(*m_pCode);
 		pr.emit_to_file(stdout);
 	}
 

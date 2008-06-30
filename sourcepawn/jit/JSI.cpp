@@ -29,17 +29,6 @@ JsiBufWriter::JsiBufWriter(PageAllocator *allocator)
 	m_pAlloc = allocator;
 }
 
-JIns *JsiBufWriter::ins_sysreq(uint32_t index, uint32_t count)
-{
-	JIns *p = ensure_room();
-
-	p->op = uint8_t(J_sysreq);
-	p->param1.imm = index;
-	p->param2.imm = count;
-
-	return p;
-}
-
 JIns *JsiBufWriter::ins_imm(int32_t value)
 {
 	JIns *p = ensure_room();
@@ -154,6 +143,9 @@ JIns *JsiBufWriter::ensure_room()
 			ret_pos->op = uint8_t(J_next);
 			ret_pos->param1.instr = (JIns *)m_pCurPage->data;
 			m_pPos = (JIns *)m_pCurPage->data;
+			m_pPos->op = J_prev;
+			m_pPos->param1.instr = ret_pos;
+			m_pPos++;
 		}
 	}
 
@@ -209,6 +201,11 @@ JIns *JsiForwardReader::next()
 		m_pCur++;
 	}
 
+	if (ret->op == J_prev || ret->op == J_nop)
+	{
+		return next();
+	}
+
 	return ret;
 }
 
@@ -218,8 +215,9 @@ JsiPrinter::JsiPrinter(const JsiStream & stream) : m_Reader(stream)
 
 const char *op_table[] = 
 {
+	"nop",
 	"next",
-	"sysreq",
+	"prev",
 	"return",
 	"imm",
 	"load",
@@ -239,11 +237,6 @@ void JsiPrinter::emit_to_file(FILE *fp)
 
 		switch (ins->op)
 		{
-		case J_sysreq:
-			{
-				fprintf(fp, " #%d, #%d\n", ins->param1.imm, ins->param2.imm);
-				break;
-			}
 		case J_return:
 			{
 				fprintf(fp, " %p\n", ins->param1.instr);

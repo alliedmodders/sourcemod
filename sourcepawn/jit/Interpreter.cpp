@@ -23,12 +23,6 @@ int SourcePawn::InterpretSSA(BaseContext *pContext,
 
 		switch (ins->op)
 		{
-		case J_sysreq:
-			{
-				ins->value.imm = 
-					plugin->natives[ins->param1.imm].pfn(pContext, (cell_t *)(plugin->base + ctx->sp));
-				break;
-			}
 		case J_imm:
 			{
 				ins->value = ins->param1;

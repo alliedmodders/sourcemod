@@ -200,7 +200,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;..\..\..\public"
+				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;..\..\..\public;$(SOURCEMM16)\sourcehook"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -354,6 +354,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\DeadCodeEliminator.h"
+				>
+			</File>
+			<File
 				RelativePath="..\dll_exports.h"
 				>
 			</File>
@@ -379,6 +383,10 @@
 			>
 			<File
 				RelativePath="..\AmxToSSA.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\DeadCodeEliminator.cpp"
 				>
 			</File>
 			<File
