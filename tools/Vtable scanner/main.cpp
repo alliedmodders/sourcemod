@@ -77,28 +77,6 @@ int main(int argc, char **argv)
 
 	fprintf(stderr, "Failed to find function!");
 	return -1;
-
-#if 0
-	if (FindVFunc(handle, pVtable, "CommitSuicide", "(bool, bool)", &offsets))
-		printf("Commit Suicide - Win: %i  Linux : %i\n", offsets.windows_offset, offsets.linux_offset);
-
-	if (FindVFunc(handle, pVtable, "KeyValue", "(char const*, char const*)", &offsets))
-		printf("KeyValue - Win: %i  Linux : %i\n", offsets.windows_offset, offsets.linux_offset);
-
-	if (FindVFunc(handle, pVtable, "KeyValue", "(char const*, float)", &offsets))
-		printf("KeyValue Float - Win: %i  Linux : %i\n", offsets.windows_offset, offsets.linux_offset);
-
-	if (FindVFunc(handle, handle, pVtable, "KeyValue", "(char const*, Vector const&)", &offsets))
-		printf("KeyValue Vector - Win: %i  Linux : %i\n", offsets.windows_offset, offsets.linux_offset);
-
-	if (FindVFunc(handle, pVtable, "Ignite", NULL, &offsets))
-		printf("Ignite - Win: %i  Linux : %i\n", offsets.windows_offset, offsets.linux_offset);
-
-	if (FindVFunc(handle, pVtable, "Extinguish", NULL, &offsets))
-		printf("Extinguish - Win: %i  Linux : %i\n", offsets.windows_offset, offsets.linux_offset);
-
-	return 0;
-#endif
 }
 
 static bool FindVFunc(void *handle, void **vtable, const char* vtable_end, const char *class_function, const char *params, VOffset *offsets)
