@@ -308,6 +308,9 @@ JsiStream *SourcePawn::ConvertAMXToSSA(BaseContext *pContext,
 				{
 					stk.set(*code, pri);
 				}
+
+				code++;
+				break;
 			}
 		case OP_LOAD_S_PRI:
 			{
