@@ -288,11 +288,13 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 	while (filename[0] == '\n')
 	{
 		fgets(filename, sizeof(filename), file);
-		if (filename[strlen(filename)-1] == '\n')
-		{
-			filename[strlen(filename)-1] = '\0';
-		}
 	}
+
+	if (filename[strlen(filename)-1] == '\n')
+	{	
+		filename[strlen(filename)-1] = '\0';
+	}
+
 
 
 	printf("Filename is %s\n", filename);
