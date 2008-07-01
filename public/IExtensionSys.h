@@ -186,10 +186,16 @@ namespace SourceMod
 		 * interface it's using.  If it's not safe, return false, and the 
 		 * extension will be unloaded afterwards.
 		 *
-		 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean up resources.
+		 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean 
+		 * up resources.
 		 *
-		 * @param pInterface		Pointer to interface being dropped.
-		 * @return					True to continue, false to unload this extension afterwards.
+		 * @param pInterface		Pointer to interface being dropped.  This 
+		 * 							pointer may be opaque, and it should not 
+		 *							be queried using SMInterface functions unless 
+		 *							it can be verified to match an existing 
+		 *							pointer of known type.
+		 * @return					True to continue, false to unload this 
+		 * 							extension afterwards.
 		 */
 		virtual bool QueryInterfaceDrop(SMInterface *pInterface)
 		{
@@ -199,7 +205,10 @@ namespace SourceMod
 		/**
 		 * @brief Notifies the extension that an external interface it uses is being removed.
 		 *
-		 * @param pInterface		Pointer to interface being dropped.
+		 * @param pInterface		Pointer to interface being dropped.  This
+		 * 							pointer may be opaque, and it should not 
+		 *							be queried using SMInterface functions unless 
+		 *							it can be verified to match an existing 
 		 */
 		virtual void NotifyInterfaceDrop(SMInterface *pInterface)
 		{

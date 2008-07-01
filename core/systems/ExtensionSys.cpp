@@ -305,7 +305,7 @@ bool CLocalExtension::IsLoaded()
 	return (m_pLib != NULL);
 }
 
-void CExtension::AddDependency(IfaceInfo *pInfo)
+void CExtension::AddDependency(const IfaceInfo *pInfo)
 {
 	if (m_Deps.find(*pInfo) == m_Deps.end())
 	{
@@ -631,6 +631,20 @@ void CExtensionManager::BindDependency(IExtension *pRequester, IfaceInfo *pInfo)
 	{
 		pOwner->AddChildDependent(pExt, pInfo->iface);
 	}
+}
+
+void CExtensionManager::AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface)
+{
+	CExtension *pExt = (CExtension *)ext;
+	CExtension *pOwner = GetExtensionFromIdent(other);
+
+	IfaceInfo info;
+
+	info.iface = (SMInterface *)iface;
+	info.owner = pOwner;
+
+	pExt->AddDependency(&info);
+	pOwner->AddChildDependent(pExt, (SMInterface *)iface);
 }
 
 void CExtensionManager::AddInterface(IExtension *pOwner, SMInterface *pInterface)

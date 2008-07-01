@@ -73,7 +73,7 @@ public: //IExtension
 	bool IsRunning(char *error, size_t maxlength);
 public:
 	void SetError(const char *error);
-	void AddDependency(IfaceInfo *pInfo);
+	void AddDependency(const IfaceInfo *pInfo);
 	void AddChildDependent(CExtension *pOther, SMInterface *iface);
 	void AddInterface(SMInterface *pInterface);
 	void AddPlugin(CPlugin *pPlugin);
@@ -166,6 +166,7 @@ public:
 	void AddLibrary(IExtension *pSource, const char *library);
 	bool LibraryExists(const char *library);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
+	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();

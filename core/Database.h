@@ -92,6 +92,7 @@ public: //IDBManager
 	Handle_t CreateHandle(DBHandleType type, void *ptr, IdentityToken_t *pToken);
 	HandleError ReadHandle(Handle_t hndl, DBHandleType type, void **ptr);
 	HandleError ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token);
+	void AddDependency(IExtension *myself, IDBDriver *driver);
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
