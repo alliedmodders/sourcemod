@@ -33,7 +33,7 @@
 #include <string.h>
 #include "sp_vm_function.h"
 #include "sp_vm_basecontext.h"
-#include "AMXToSSA.h"
+#include "AmxToSSA.h"
 #include "Interpreter.h"
 #include "DeadCodeEliminator.h"
 

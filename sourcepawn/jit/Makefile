@@ -2,6 +2,7 @@
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..
+SOURCEMM = ../../../sourcemm-1.6
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -13,6 +14,11 @@ OBJECTS = dll_exports.cpp 		\
 	sp_vm_basecontext.cpp		\
 	sp_vm_engine.cpp			\
 	sp_vm_function.cpp			\
+	StackTracker.cpp			\
+	JSI.cpp						\
+	Interpreter.cpp				\
+	AmxToSSA.cpp				\
+	DeadCodeEliminator.cpp		\
 	zlib/adler32.c				\
 	zlib/compress.c				\
 	zlib/crc32.c				\
@@ -39,7 +45,7 @@ CPP = gcc-4.1
 LINK = -static-libgcc
 
 INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86 \
-	-I$(SMSDK)/public/sourcepawn
+	-I$(SMSDK)/public/sourcepawn -I$(SOURCEMM)/sourcehook
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -DHAVE_STDINT_H \
