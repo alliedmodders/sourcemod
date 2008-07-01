@@ -32,7 +32,7 @@ int main(int argc, char **argv)
 
 	if (handle == NULL)
 	{
-		printf("Failed to open server image, error [%s]\n", dlerror());
+		fprintf(stderr, "Failed to open server image, error [%s]\n", dlerror());
 		return -1;
 	}
 
@@ -40,7 +40,8 @@ int main(int argc, char **argv)
 
 	if (pVtable == NULL)
 	{
-		printf("Invalid vtable symbol \"%s\"\n", argv[2]);
+		fprintf(stderr, "Invalid vtable symbol \"%s\"\n", argv[2]);
+		return -1;
 	}
 
 	if (argc >= 5)
