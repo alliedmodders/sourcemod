@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
 	if (error == SMCError_Okay)
 	{
-		printf("MD5: %s\n", g_MD5Builder.GetMD5String());
+		printf("%s", g_MD5Builder.GetMD5String());
 		return 0;
 	}
 
