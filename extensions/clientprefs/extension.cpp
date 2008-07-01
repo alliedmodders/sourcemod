@@ -87,6 +87,8 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	dbi->AddDependency(myself, Driver);
+
 	const char *identifier = Driver->GetIdentifier();
 
 	if (strcmp(identifier, "sqlite") == 0)
@@ -202,6 +204,25 @@ void ClientPrefs::SDK_OnAllLoaded()
 	playerhelpers->AddClientListener(&g_CookieManager);
 }
 
+bool ClientPrefs::QueryInterfaceDrop(SMInterface *pInterface)
+{
+	if ((void *)pInterface == (void *)(Database->GetDriver()))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
+{
+	if (Database != NULL && (void *)pInterface == (void *)(Database->GetDriver()))
+	{
+		Database->Close();
+		Database = NULL;
+	}
+}
+
 void ClientPrefs::SDK_OnUnload()
 {
 	handlesys->RemoveType(g_CookieType, myself->GetIdentity());
@@ -209,7 +230,10 @@ void ClientPrefs::SDK_OnUnload()
 
 	g_CookieManager.Unload();
 
-	Database->Close();
+	if (Database != NULL)
+	{
+		Database->Close();
+	}
 
 	forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
 

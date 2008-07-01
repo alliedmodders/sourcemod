@@ -75,6 +75,10 @@ public:
 	 */
 	virtual void SDK_OnAllLoaded();
 
+	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
+
+	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
+
 	/**
 	 * @brief Called when the pause state is changed.
 	 */
