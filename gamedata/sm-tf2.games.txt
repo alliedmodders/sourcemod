@@ -6,37 +6,37 @@
 		{
 			"Burn"
 			{
-				"library"	"server"
+				"library"		"server"
 				"windows"	"\x56\x8B\xF1\x8B\x8E\x2A\x2A\x00\x00\x8B\x01\x8B\x90\x2A\x2A\x00\x00\xFF\xD2\x84\xC0"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBase"
 			}
 			"RemoveDisguise"
 			{
-				"library"	"server"
+				"library"		"server"
 				"windows"	"\x51\x56\x8B\xF1\x8B\x46\x2A\x57\x8D\x7E\x2A\x8D\x4C\x24\x08\x83\xE0\xF7"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
 			"Disguise"
 			{
-				"library"	"server"
+				"library"		"server"
 				"windows"	"\x56\x8B\xF1\x8B\x8E\x2A\x2A\x00\x00\xE8\x2A\x2A\x2A\x2A\x8B\x8E\x2A\x2A\x00\x00\x8B\x89\x2A\x2A\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEii"
 			}
 			"CalcCritical"
 			{
-				"library"	"server"
+				"library"		"server"
 				"linux"		"@_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
 				"windows"	"\x83\xEC\x08\x53\x56\x6A\x00"
 			}
 			"CalcCriticalMelee"
 			{
-				"library"	"server"
+				"library"		"server"
 				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
 				"windows"	"\x83\xEC\x08\x53\x57\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x8B\xD8"
 			}
 			"CalcCriticalKnife"
 			{
-				"library"	"server"
+				"library"		"server"
 				"linux"		"@_ZN8CTFKnife26CalcIsAttackCriticalHelperEv"
 				"windows"	"\x33\xC0\x83\xB9\x08\x13\x00\x00\x01\x0F\x94\xC0\xC3"
 			}
@@ -49,27 +49,6 @@
 				"windows"	"281"
 				"linux"		"282"
 			}
-			"CalcCriticalBackup"
-			{
-				"linux"		"7"
-				"windows"	"7"
-			}
-			"CalcCriticalMeleeBackup"
-			{
-				"linux"		"7"
-				"windows"	"7"
-			}
-			/* The byte number (starting from 1) of the call (0xE8) byte or -1 if none */
-			"CalcCriticalMeleeCallByte"
-			{
-				"linux"		"-1"
-				"windows"	"-1"
-			}
-			"CalcCriticalKnifeBackup"
-			{
-				"linux"		"11"
-				"windows"	"9"
-			}		
 		}
 	}
 }

@@ -35,6 +35,7 @@
 #include "iplayerinfo.h"
 #include "sm_trie_tpl.h"
 #include "criticals.h"
+#include "CDetour/detours.h"
 
 /**
  * @file extension.cpp
@@ -96,12 +97,14 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
+
 	sharesys->AddNatives(myself, g_TFNatives);
 	sharesys->RegisterLibrary(myself, "tf2");
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
-	spengine = g_pSM->GetScriptingEngine();
+	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
 
 	g_pCVar = icvar;
 
@@ -133,13 +136,17 @@ void TF2Tools::SDK_OnUnload()
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
+
+	forwards->ReleaseForward(g_critForward);
+
+	RemoveDetours();
 }
 
 void TF2Tools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 
-	g_CriticalHitManager.Init();
+	InitialiseDetours();
 }
 
 bool TF2Tools::RegisterConCommandBase(ConCommandBase *pVar)

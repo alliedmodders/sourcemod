@@ -29,114 +29,21 @@
  * Version: $Id$
  */
 
+#ifndef _INCLUDE_SOURCEMOD_CRITICALS_H_
+#define _INCLUDE_SOURCEMOD_CRITICALS_H_
+
 #include "extension.h"
 #include <jit/jit_helpers.h>
 #include <jit/x86/x86_macros.h>
-#include "detours.h"
+#include "CDetour/detours.h"
 
-class CriticalHitManager
-{
-public:
-	CriticalHitManager()
-	{
-		enabled = false;
-		detoured = false;
-		critical_address = NULL;
-		critical_callback = NULL;
-
-		melee_address = NULL;
-		melee_callback = NULL;
-
-		knife_address = NULL;
-		knife_callback = NULL;
-
-		forward = NULL;
-
-		normalcreated = false;
-		meleecreated = false;
-		knifecreated = false;
-	}
-
-	~CriticalHitManager()
-	{
-		if (forward != NULL)
-		{
-			forwards->ReleaseForward(forward);
-		}
-		
-		DeleteCriticalDetour();
-	}
-
-	void Init()
-	{
-		normalcreated = CreateCriticalDetour();
-		meleecreated = CreateCriticalMeleeDetour();
-		knifecreated = CreateCriticalKnifeDetour();
-
-		if (!normalcreated && !meleecreated && !knifecreated)
-		{
-			enabled = false;
-			g_pSM->LogError(myself, "No critical hit forwards could be initialised - Disabled critical hit hooks");
-			return;
-		}
-
-		forward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
-
-		if (!forward)
-		{
-			g_pSM->LogError(myself, "Failed to create forward - Disabling critical hit hook");
-			enabled = false;
-			return;
-		}
-
-		/* TODO: Only enable this once forwards exist. Requires IForwardListener functionality */
-		EnableCriticalDetour();
-
-		enabled = true;
-	}
-
-	bool IsEnabled()
-	{
-		return enabled;
-	}
-
-	bool CriticalDetour(void *pWeapon);
-
-private:
-	IForward *forward;
-
-	/* These create/delete the allocated memory */
-	bool CreateCriticalDetour();
-	bool CreateCriticalMeleeDetour();
-	bool CreateCriticalKnifeDetour();
-	void DeleteCriticalDetour();
-
-	bool normalcreated;
-	bool meleecreated;
-	bool knifecreated;
-
-	/* These patch/unpatch the server.dll */
-	void EnableCriticalDetour();
-	void DisableCriticalDetour();
-
-	bool enabled;
-	bool detoured;
-
-	patch_t critical_restore;
-	void *critical_address;
-	void *critical_callback;
-
-	patch_t melee_restore;
-	void *melee_address;
-	void *melee_callback;
-
-	patch_t knife_restore;
-	void *knife_address;
-	void *knife_callback;
-};
+void InitialiseDetours();
+void RemoveDetours();
 
 bool TempDetour(void *pWeapon);
 
-extern ISourcePawnEngine *spengine;
+extern IForward *g_critForward;
+
 extern IServerGameEnts *gameents;
-extern CriticalHitManager g_CriticalHitManager;
+
+#endif //_INCLUDE_SOURCEMOD_CRITICALS_H_

@@ -216,10 +216,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\detours.h"
-				>
-			</File>
-			<File
 				RelativePath="..\extension.h"
 				>
 			</File>
@@ -256,6 +252,34 @@
 			</File>
 			<File
 				RelativePath="..\sdk\smsdk_ext.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="CDetour"
+			>
+			<File
+				RelativePath="..\..\..\public\CBaseServer and friends\CDetour\detourhelpers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\public\CBaseServer and friends\CDetour\detours.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\public\CBaseServer and friends\CDetour\detours.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="asm"
+			>
+			<File
+				RelativePath="..\asm\asm.c"
+				>
+			</File>
+			<File
+				RelativePath="..\asm\asm.h"
 				>
 			</File>
 		</Filter>

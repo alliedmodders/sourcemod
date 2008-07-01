@@ -31,353 +31,46 @@
 
 #include "criticals.h"
 
-ISourcePawnEngine *spengine = NULL;
-CriticalHitManager g_CriticalHitManager;
 IServerGameEnts *gameents = NULL;
 
-int g_returnvalue;
+CDetour *calcIsAttackCriticalDetour = NULL;
+CDetour *calcIsAttackCriticalMeleeDetour = NULL;
+CDetour *calcIsAttackCriticalKnifeDetour = NULL;
 
-bool CriticalHitManager::CreateCriticalDetour()
+IForward *g_critForward = NULL;
+
+void InitialiseDetours()
 {
-	if (!g_pGameConf->GetMemSig("CalcCritical", &critical_address) || !critical_address)
+	calcIsAttackCriticalDetour = CDetourManager::CreateDetour((void *)&TempDetour, 0, "CalcCritical");
+	calcIsAttackCriticalMeleeDetour = CDetourManager::CreateDetour((void *)&TempDetour, 0, "CalcCriticalMelee");
+	calcIsAttackCriticalKnifeDetour = CDetourManager::CreateDetour((void *)&TempDetour, 0, "CalcCriticalKnife");
+
+	bool HookCreated = false;
+
+	if (calcIsAttackCriticalDetour != NULL)
 	{
-		g_pSM->LogError(myself, "Could not locate CalcCritical - Disabling Critical Hit forward");
-		return false;
+		calcIsAttackCriticalDetour->EnableDetour();
+		HookCreated = true;
 	}
 
-	if (!g_pGameConf->GetOffset("CalcCriticalBackup", (int *)&(critical_restore.bytes)))
+	if (calcIsAttackCriticalMeleeDetour != NULL)
 	{
-		g_pSM->LogError(myself, "Could not locate CalcCriticalBackup - Disabling Critical Hit forward");
-		return false;
+		calcIsAttackCriticalMeleeDetour->EnableDetour();
+		HookCreated = true;
 	}
 
-	/* First, save restore bits */
-	for (size_t i=0; i<critical_restore.bytes; i++)
+	if (calcIsAttackCriticalKnifeDetour != NULL)
 	{
-		critical_restore.patch[i] = ((unsigned char *)critical_address)[i];
+		calcIsAttackCriticalKnifeDetour->EnableDetour();
+		HookCreated = true;
 	}
 
-	critical_callback = spengine->ExecAlloc(100);
-	JitWriter wr;
-	JitWriter *jit = &wr;
-	wr.outbase = (jitcode_t)critical_callback;
-	wr.outptr = wr.outbase;
-
-	/* Function we are detouring into is
-	 *
-	 * void CriticalDetour(CTFWeaponBase(void *) *pWeapon)
-	 *
-	 * push		pWeapon [ecx]
-	 */
-
-#if defined PLATFORM_WINDOWS
-	IA32_Push_Reg(jit, REG_ECX);
-#elif defined PLATFORM_LINUX
-	IA32_Push_Rm_Disp8_ESP(jit, 4);
-#endif
-
-	jitoffs_t call = IA32_Call_Imm32(jit, 0); 
-	IA32_Write_Jump32_Abs(jit, call, (void *)TempDetour);
-
-	
-#if defined PLATFORM_LINUX
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);		//add esp, 4
-#elif defined PLATFORM_WINDOWS
-	IA32_Pop_Reg(jit, REG_ECX);
-#endif
-
-	//If TempDetour returns non-zero we want to load something into eax and return this value
-
-	//test eax, eax
-	IA32_Test_Rm_Reg(jit,  REG_EAX, REG_EAX, MOD_REG);
-
-	//jnz _skip
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
-
-	/* Patch old bytes in */
-	for (size_t i=0; i<critical_restore.bytes; i++)
+	if (!HookCreated)
 	{
-		jit->write_ubyte(critical_restore.patch[i]);
+		g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
+		return;
 	}
 
-	/* Return to the original function */
-	call = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, (unsigned char *)critical_address + critical_restore.bytes);
-	
-	//_skip:
-	//mov eax, [g_returnvalue]
-	//ret
-	IA32_Send_Jump8_Here(jit, jmp);
-	IA32_Mov_Eax_Mem(jit, (jit_int32_t)&g_returnvalue);
-	IA32_Return(jit);
-
-	return true;
-}
-
-bool CriticalHitManager::CreateCriticalMeleeDetour()
-{
-	if (!g_pGameConf->GetMemSig("CalcCriticalMelee", &melee_address) || !melee_address)
-	{
-		g_pSM->LogError(myself, "Could not locate CalcCriticalMelee - Disabling Critical Hit forward");
-		return false;
-	}
-
-	if (!g_pGameConf->GetOffset("CalcCriticalMeleeBackup", (int *)&(melee_restore.bytes)))
-	{
-		g_pSM->LogError(myself, "Could not locate CalcCriticalMeleeBackup - Disabling Critical Hit forward");
-		return false;
-	}
-
-	/* First, save restore bits */
-	for (size_t i=0; i<melee_restore.bytes; i++)
-	{
-		melee_restore.patch[i] = ((unsigned char *)melee_address)[i];
-	}
-
-	melee_callback = spengine->ExecAlloc(100);
-	JitWriter wr;
-	JitWriter *jit = &wr;
-	wr.outbase = (jitcode_t)melee_callback;
-	wr.outptr = wr.outbase;
-
-	/* Function we are detouring into is
-	 *
-	 * void CriticalDetour(CTFWeaponBase(void *) *pWeapon)
-	 *
-	 * push		pWeapon [ecx]
-	 */
-
-#if defined PLATFORM_WINDOWS
-	IA32_Push_Reg(jit, REG_ECX);
-#elif defined PLATFORM_LINUX
-	IA32_Push_Rm_Disp8_ESP(jit, 4);
-#endif
-
-	jitoffs_t call = IA32_Call_Imm32(jit, 0); 
-	IA32_Write_Jump32_Abs(jit, call, (void *)TempDetour);
-
-	
-#if defined PLATFORM_LINUX
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);		//add esp, 4
-#elif defined PLATFORM_WINDOWS
-	IA32_Pop_Reg(jit, REG_ECX);
-#endif
-
-	//If TempDetour returns non-zero we want to load something into eax and return this value
-
-	//test eax, eax
-	IA32_Test_Rm_Reg(jit,  REG_EAX, REG_EAX, MOD_REG);
-
-	//jnz _skip
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
-
-	int callbyte = -1;
-	/* The callbyte should return the nth byte (starting from 1) in the backup bytes - Should be an 0xE8 (call) */
-	g_pGameConf->GetOffset("CalcCriticalMeleeCallByte", &callbyte);
-
-	callbyte--;
-	void *function = NULL;
-
-	if (callbyte > -1)
-	{
-		/* Check if the 'callbyte' is actually a call */
-		if (melee_restore.patch[callbyte] != 0xE8)
-		{
-			g_pSM->LogError(myself, "Invalid callbyte - Melee detour may work incorrectly");
-		}
-		else
-		{
-			/* Find the absolute address of the function it calls */
-			void *offsetaddr = (void *)((unsigned char *)melee_address + callbyte + 1);
-			int offset = (int)*(unsigned char *)offsetaddr;
-			function = (unsigned char *)offsetaddr + offset + 4;
-		}
-	}
-
-	/* Patch old bytes in */
-	for (size_t i=0; i<melee_restore.bytes; i++)
-	{
-		if ((int)i != callbyte)
-		{
-			jit->write_ubyte(melee_restore.patch[i]);
-			continue;
-		}
-		
-		/* Write in the adjusted call instead */
-		jitoffs_t call = IA32_Call_Imm32(jit, 0); 
-		IA32_Write_Jump32_Abs(jit, call, function);
-
-		i += 4;
-	}
-
-	/* Return to the original function */
-	call = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, (unsigned char *)melee_address + melee_restore.bytes);
-	
-	//_skip:
-	//mov eax, [g_returnvalue]
-	//ret
-	IA32_Send_Jump8_Here(jit, jmp);
-	IA32_Mov_Eax_Mem(jit, (jit_int32_t)&g_returnvalue);
-	IA32_Return(jit);
-
-	return true;
-}
-
-bool CriticalHitManager::CreateCriticalKnifeDetour()
-{
-	if (!g_pGameConf->GetMemSig("CalcCriticalKnife", &knife_address) || !knife_address)
-	{
-		g_pSM->LogError(myself, "Could not locate CalcCriticalKnife - Disabling Critical Hit forward");
-		return false;
-	}
-
-	if (!g_pGameConf->GetOffset("CalcCriticalKnifeBackup", (int *)&(knife_restore.bytes)))
-	{
-		g_pSM->LogError(myself, "Could not locate CalcCriticalKnifeBackup - Disabling Critical Hit forward");
-		return false;
-	}
-
-	/* First, save restore bits */
-	for (size_t i=0; i<knife_restore.bytes; i++)
-	{
-		knife_restore.patch[i] = ((unsigned char *)knife_address)[i];
-	}
-
-	knife_callback = spengine->ExecAlloc(100);
-	JitWriter wr;
-	JitWriter *jit = &wr;
-	wr.outbase = (jitcode_t)knife_callback;
-	wr.outptr = wr.outbase;
-
-	/* Function we are detouring into is
-	 *
-	 * void CriticalDetour(CTFWeaponBase(void *) *pWeapon)
-	 *
-	 * push		pWeapon [ecx]
-	 */
-
-#if defined PLATFORM_WINDOWS
-	IA32_Push_Reg(jit, REG_ECX);
-#elif defined PLATFORM_LINUX
-	IA32_Push_Rm_Disp8_ESP(jit, 4);
-#endif
-
-	jitoffs_t call = IA32_Call_Imm32(jit, 0); 
-	IA32_Write_Jump32_Abs(jit, call, (void *)TempDetour);
-
-	
-#if defined PLATFORM_LINUX
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);		//add esp, 4
-#elif defined PLATFORM_WINDOWS
-	IA32_Pop_Reg(jit, REG_ECX);
-#endif
-
-	//If TempDetour returns non-zero we want to load something into eax and return this value
-
-	//test eax, eax
-	IA32_Test_Rm_Reg(jit,  REG_EAX, REG_EAX, MOD_REG);
-
-	//jnz _skip
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_NZ, 0);
-
-	/* Patch old bytes in */
-	for (size_t i=0; i<knife_restore.bytes; i++)
-	{
-		jit->write_ubyte(knife_restore.patch[i]);
-	}
-
-	/* Return to the original function */
-	call = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, (unsigned char *)knife_address + knife_restore.bytes);
-	
-	//_skip:
-	//mov eax, [g_returnvalue]
-	//ret
-	IA32_Send_Jump8_Here(jit, jmp);
-	IA32_Mov_Eax_Mem(jit, (jit_int32_t)&g_returnvalue);
-	IA32_Return(jit);
-
-	return true;
-}
-
-void CriticalHitManager::EnableCriticalDetour()
-{
-	if (!detoured)
-	{
-		if (normalcreated)
-		{
-			DoGatePatch((unsigned char *)critical_address, &critical_callback);
-		}
-		if (meleecreated)
-		{
-			DoGatePatch((unsigned char *)melee_address, &melee_callback);
-		}
-		if (knifecreated)
-		{
-			DoGatePatch((unsigned char *)knife_address, &knife_callback);
-		}
-
-		detoured = true;
-	}
-}
-
-void CriticalHitManager::DeleteCriticalDetour()
-{
-	if (detoured)
-	{
-		DisableCriticalDetour();
-	}
-
-	if (critical_callback)
-	{
-		/* Free the gate */
-		spengine->ExecFree(critical_callback);
-		critical_callback = NULL;
-	}
-
-	if (melee_callback)
-	{
-		/* Free the gate */
-		spengine->ExecFree(melee_callback);
-		melee_callback = NULL;
-	}
-
-	if (knife_callback)
-	{
-		/* Free the gate */
-		spengine->ExecFree(knife_callback);
-		knife_callback = NULL;
-	}
-}
-
-bool TempDetour(void *pWeapon)
-{
-	return g_CriticalHitManager.CriticalDetour(pWeapon);
-}
-
-void CriticalHitManager::DisableCriticalDetour()
-{
-	if (critical_callback)
-	{
-		/* Remove the patch */
-		ApplyPatch(critical_address, 0, &critical_restore, NULL);
-		detoured = false;
-	}
-
-	if (melee_callback)
-	{
-		/* Remove the patch */
-		ApplyPatch(melee_address, 0, &melee_restore, NULL);
-		detoured = false;
-	}
-
-	if (knife_callback)
-	{
-		/* Remove the patch */
-		ApplyPatch(knife_address, 0, &knife_restore, NULL);
-		detoured = false;
-	}
 }
 
 int CheckBaseHandle(CBaseHandle &hndl)
@@ -413,7 +106,7 @@ int CheckBaseHandle(CBaseHandle &hndl)
 	return index;
 }
 
-bool CriticalHitManager::CriticalDetour(void *pWeapon)
+DetourReturn TempDetour(void *pWeapon)
 {
 	edict_t *pEdict = gameents->BaseEntityToEdict((CBaseEntity *)pWeapon);
 	
@@ -431,23 +124,40 @@ bool CriticalHitManager::CriticalDetour(void *pWeapon)
 		return false;
 	}
 
-	if (!forward)
+	if (!g_critForward)
 	{
 		g_pSM->LogMessage(myself, "Invalid Forward");
 		return false;
 	}
+
+	int returnValue=0;
 	
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pWeapon + info.actual_offset);
 	int index = CheckBaseHandle(hndl);
 
-	forward->PushCell(index); //Client index
-	forward->PushCell(engine->IndexOfEdict(pEdict)); // Weapon index
-	forward->PushString(pEdict->GetClassName()); //Weapon classname
-	forward->PushCellByRef(&g_returnvalue); //return value
+	g_critForward->PushCell(index); //Client index
+	g_critForward->PushCell(engine->IndexOfEdict(pEdict)); // Weapon index
+	g_critForward->PushString(pEdict->GetClassName()); //Weapon classname
+	g_critForward->PushCellByRef(&returnValue); //return value
 
 	cell_t result = 0;
 
-	forward->Execute(&result);
+	g_critForward->Execute(&result);
 
-	return !!result;
+	if (result)
+	{
+		RETURN_DETOUR_VALUE(DETOUR_RESULT_OVERRIDE, returnValue);
+	}
+	else
+	{
+		RETURN_DETOUR_VALUE(DETOUR_RESULT_IGNORED, returnValue);
+	}
+	
+}
+
+void RemoveDetours()
+{
+	CDetourManager::DeleteDetour(calcIsAttackCriticalDetour);
+	CDetourManager::DeleteDetour(calcIsAttackCriticalMeleeDetour);
+	CDetourManager::DeleteDetour(calcIsAttackCriticalKnifeDetour);
 }

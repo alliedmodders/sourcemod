@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod Team Fortress 2 Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod SDKTools Extension
+ * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,8 +29,8 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_DETOURS_H_
-#define _INCLUDE_SOURCEMOD_DETOURS_H_
+#ifndef _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
+#define _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 
 #if defined PLATFORM_LINUX
 #include <sys/mman.h>
@@ -95,4 +95,4 @@ inline void ApplyPatch(void *address, int offset, const patch_t *patch, patch_t 
 	}
 }
 
-#endif //_INCLUDE_SOURCEMOD_DETOURS_H_
+#endif //_INCLUDE_SOURCEMOD_DETOURHELPERS_H_

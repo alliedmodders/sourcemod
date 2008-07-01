@@ -18,7 +18,7 @@ PROJECT = game.tf2
 USEMETA = true
 
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp criticals.cpp \
-	util.cpp
+	util.cpp CDetour/detours.cpp asm/asm.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -43,7 +43,7 @@ endif
 ifeq "$(ENGINE)" "orangebox"
 	HL2SDK = $(HL2SDK_OB)
 	HL2PUB = $(HL2SDK_OB)/public
-	HL2LIB = $(HL2SDK_OB)/linux_sdk
+	HL2LIB = $(HL2SDK_OB)/lib/linux
 	CFLAGS += -DORANGEBOX_BUILD
 	METAMOD = $(SOURCEMM16)
 	INCLUDE += -I$(HL2SDK)/public/game/server
@@ -101,6 +101,8 @@ $(BIN_DIR)/%.o: %.cpp
 
 all: check
 	mkdir -p $(BIN_DIR)/sdk
+	mkdir -p $(BIN_DIR)/CDetour
+	mkdir -p $(BIN_DIR)/asm
 	if [ "$(USEMETA)" == "true" ]; then \
 		ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so; \
 	fi
