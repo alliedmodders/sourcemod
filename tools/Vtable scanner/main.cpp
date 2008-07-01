@@ -38,6 +38,11 @@ int main(int argc, char **argv)
 
 	pVtable = (void **)dlsym(handle, argv[2]);
 
+	if (pVtable == NULL)
+	{
+		printf("Invalid vtable symbol \"%s\"\n", argv[2]);
+	}
+
 	if (argc >= 5)
 	{
 		params = argv[4];
