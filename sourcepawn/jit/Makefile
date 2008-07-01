@@ -13,8 +13,6 @@ OBJECTS = dll_exports.cpp 		\
 	sp_vm_basecontext.cpp		\
 	sp_vm_engine.cpp			\
 	sp_vm_function.cpp			\
-	x86/jit_x86.cpp 			\
-	x86/opcode_helpers.cpp		\
 	zlib/adler32.c				\
 	zlib/compress.c				\
 	zlib/crc32.c				\
