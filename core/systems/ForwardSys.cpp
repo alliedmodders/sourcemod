@@ -186,6 +186,11 @@ void CForwardManager::ReleaseForward(IForward *forward)
 
 void CForwardManager::ForwardFree(CForward *fwd)
 {
+	if (fwd == NULL)
+	{
+		return;
+	}
+
 	m_FreeForwards.push(fwd);
 	m_managed.remove(fwd);
 }

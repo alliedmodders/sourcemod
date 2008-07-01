@@ -870,11 +870,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\GameDataFetcher.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\HalfLife2.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\Logger.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\md5.cpp"
 				>
 			</File>
 			<File
@@ -1044,11 +1052,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\GameDataFetcher.h"
+				>
+			</File>
+			<File
 				RelativePath="..\HalfLife2.h"
 				>
 			</File>
 			<File
 				RelativePath="..\Logger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\md5.h"
 				>
 			</File>
 			<File

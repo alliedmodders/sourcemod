@@ -63,6 +63,11 @@ public:
 		return size;
 	}
 
+	inline unsigned int GetActualMemUsed()
+	{
+		return tail;
+	}
+
 private:
 	unsigned char *membase;
 	unsigned int size;
