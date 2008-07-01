@@ -8,30 +8,10 @@ SOURCEMM = ../../../sourcemm-1.6
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = sourcepawn.jit.x86
+PROJECT = spshell
 
-OBJECTS = dll_exports.cpp 		\
-	sp_vm_basecontext.cpp		\
-	sp_vm_engine.cpp			\
-	sp_vm_function.cpp			\
-	StackTracker.cpp			\
-	JSI.cpp						\
-	Interpreter.cpp				\
-	AmxToSSA.cpp				\
-	DeadCodeEliminator.cpp		\
-	PageAllocator.cpp			\
-	zlib/adler32.c				\
-	zlib/compress.c				\
-	zlib/crc32.c				\
-	zlib/deflate.c				\
-	zlib/gzio.c					\
-	zlib/infback.c				\
-	zlib/inffast.c				\
-	zlib/inflate.c				\
-	zlib/inftrees.c				\
-	zlib/trees.c				\
-	zlib/uncompr.c				\
-	zlib/zutil.c
+OBJECTS = main.cpp \
+		natives.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -71,7 +51,7 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-BINARY = $(PROJECT).so
+BINARY = $(PROJECT)
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 
@@ -79,12 +59,11 @@ $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all:
-	mkdir -p $(BIN_DIR)/zlib
-	mkdir -p $(BIN_DIR)/x86
+	mkdir -p $(BIN_DIR)
 	$(MAKE) -f Makefile jit
 
 jit: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -ldl -lm -o$(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) -f Makefile all DEBUG=true
@@ -92,8 +71,6 @@ debug:
 default: all
 
 clean:
-	rm -rf $(BIN_DIR)/zlib/*.o
-	rm -rf $(BIN_DIR)/x86/*.o
 	rm -rf $(BIN_DIR)/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)
 

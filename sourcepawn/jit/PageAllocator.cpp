@@ -12,7 +12,8 @@ PageAllocator::PageAllocator() : m_pFreePages(NULL), m_NumBlocks(0), m_Blocks(NU
 	m_PageSize = info.dwPageSize;
 	m_PageGranularity = info.dwAllocationGranularity;
 #else
-#error oh
+	m_PageSize = sysconf(_SC_PAGESIZE);
+	m_PageGranularity = m_PageSize;
 #endif
 }
 
@@ -22,7 +23,11 @@ PageAllocator::~PageAllocator()
 	{
 		for (unsigned int i = 0; i < m_NumBlocks; i++)
 		{
+#if defined __linux__
+			free(m_Blocks[i]);
+#else
 			VirtualFree(m_Blocks[i], 0, MEM_RELEASE);
+#endif
 		}
 		free(m_Blocks);
 	}
@@ -33,7 +38,11 @@ PageAllocator::~PageAllocator()
 		while (m_pFreePages != NULL)
 		{
 			next = m_pFreePages->next;
+#if defined __linux__
+			free(m_pFreePages);
+#else
 			VirtualFree(m_pFreePages, 0, MEM_RELEASE);
+#endif
 			m_pFreePages = next;
 		}
 	}
@@ -58,7 +67,11 @@ Page *PageAllocator::AllocPage()
 		Page *pPage, *pLast;
 		
 		pLast = NULL;
+#if defined __linux__
+		p = (char *)valloc(m_PageGranularity);
+#else
 		p = (char *)VirtualAlloc(NULL, m_PageGranularity, MEM_COMMIT|MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+#endif
 
 		if (m_PageSize != m_PageGranularity)
 		{

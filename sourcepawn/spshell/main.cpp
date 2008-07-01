@@ -83,7 +83,10 @@ int main(int argc, char **argv)
 	pJitLib = LoadLibrary(jitlib);
 	if (pJitLib == NULL)
 	{
-		fprintf(stderr, "Could not load JIT library: %s\n", file);
+		fprintf(stderr, "Could not load JIT library: %s\n", jitlib);
+#if defined __GNUC__
+		fprintf(stderr, "Error: %s", dlerror());
+#endif
 		free(data);
 		exit(1);
 	}
