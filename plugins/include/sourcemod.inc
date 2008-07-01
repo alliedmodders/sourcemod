@@ -72,7 +72,7 @@ struct Plugin
 #include <adt>
 #include <banning>
 #include <commandfilters>
-//#include <nextmap>
+#include <nextmap>
 
 /**
  * Declare this as a struct in your plugin to expose its information.

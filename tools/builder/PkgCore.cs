@@ -319,6 +319,7 @@ namespace builder
 			plugins.Add(new Plugin("adminmenu"));
 			plugins.Add(new Plugin("playercommands"));
 			plugins.Add(new Plugin("clientprefs"));
+			plugins.Add(new Plugin("nominations"), true);
 
 			return (Plugin [])plugins.ToArray(typeof(Plugin));
 		}

@@ -32,6 +32,8 @@
  */
 
 #include <sourcemod>
+#include <mapchooser>
+#include <nextmap>
 
 #pragma semicolon 1
 
@@ -45,44 +47,37 @@ public Plugin:myinfo =
 };
 
 new Handle:g_Cvar_Needed = INVALID_HANDLE;
-new Handle:g_Cvar_Maps = INVALID_HANDLE;
-new Handle:g_Cvar_Nominate = INVALID_HANDLE;
 new Handle:g_Cvar_MinPlayers = INVALID_HANDLE;
-
-new Handle:g_MapList = INVALID_HANDLE;
-new Handle:g_RTVMapList = INVALID_HANDLE;
-new Handle:g_MapMenu = INVALID_HANDLE;
-new Handle:g_RetryTimer = INVALID_HANDLE;
-new g_mapFileSerial = -1;
+new Handle:g_Cvar_InitialDelay = INVALID_HANDLE;
+new Handle:g_Cvar_Interval = INVALID_HANDLE;
+new Handle:g_Cvar_ChangeTime = INVALID_HANDLE;
+new Handle:g_Cvar_RTVPostVoteAction = INVALID_HANDLE;
 
 new bool:g_CanRTV = false;		// True if RTV loaded maps and is active.
 new bool:g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
-new bool:g_RTVStarted = false;	// Indicates that the actual map vote has started
-new bool:g_RTVEnded = false;	// Indicates that the actual map vote has concluded
 new g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
 new g_Votes = 0;				// Total number of "say rtv" votes
 new g_VotesNeeded = 0;			// Necessary votes before map vote begins. (voters * percent_needed)
 new bool:g_Voted[MAXPLAYERS+1] = {false, ...};
-new bool:g_Nominated[MAXPLAYERS+1] = {false, ...};
+
+new bool:g_InChange = false;
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("rockthevote.phrases");
 	
-	new arraySize = ByteCountToCells(33);	
-	g_MapList = CreateArray(arraySize);
-	g_RTVMapList = CreateArray(arraySize);
-	
 	g_Cvar_Needed = CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
-	g_Cvar_Maps = CreateConVar("sm_rtv_maps", "4", "Number of maps to be voted on. 2 to 6. (Def 4)", 0, true, 2.0, true, 6.0);
-	g_Cvar_Nominate = CreateConVar("sm_rtv_nominate", "1", "Enables nomination system.", 0, true, 0.0, true, 1.0);
 	g_Cvar_MinPlayers = CreateConVar("sm_rtv_minplayers", "0", "Number of players required before RTV will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
+	g_Cvar_InitialDelay = CreateConVar("sm_rtv_initialdelay", "30.0", "Time before first RTV can be held", 0, true, 0.00);
+	g_Cvar_Interval = CreateConVar("sm_rtv_interval", "240.0", "Time after a failed RTV before another can be held", 0, true, 0.00);
+	g_Cvar_ChangeTime = CreateConVar("sm_rtv_changetime", "0", "When to change the map after a succesful RTV: 0 - Instant, 1 - RoundEnd, 2 - MapEnd", _, true, 0.0, true, 2.0);
+	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 	
 	RegConsoleCmd("say", Command_Say);
 	RegConsoleCmd("say_team", Command_Say);
 	
-	RegAdminCmd("sm_rtv_addmap", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_rtv_addmap <mapname> - Forces a map to be on the RTV, and lowers the allowed nominations.");
+	RegConsoleCmd("sm_rtv", Command_RTV);
 	
 	AutoExecConfig(true, "rtv");
 }
@@ -92,8 +87,17 @@ public OnMapStart()
 	g_Voters = 0;
 	g_Votes = 0;
 	g_VotesNeeded = 0;
-	g_RTVStarted = false;
-	g_RTVEnded = false;
+	g_InChange = false;
+	
+	/* Handle late load */
+	new maxclients = GetMaxClients();
+	for (new i=1; i<=maxclients; i++)
+	{
+		if (IsClientConnected(i))
+		{
+			OnClientConnect(i, "", 0);	
+		}	
+	}
 }
 
 public OnMapEnd()
@@ -103,36 +107,18 @@ public OnMapEnd()
 }
 
 public OnConfigsExecuted()
-{
-	if (g_RTVMapList != INVALID_HANDLE)
-	{
-		ClearArray(g_RTVMapList);
-	}
-	
-	if (ReadMapList(g_MapList,
-					g_mapFileSerial,
-					"rockthevote",
-					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
-		== INVALID_HANDLE)
-	{
-		if (g_mapFileSerial == -1)
-		{
-			LogError("Unable to create a valid map list.");
-		}
-	}
-	
-	BuildMapMenu();
+{	
 	g_CanRTV = true;
-	CreateTimer(30.0, Timer_DelayRTV);
+	g_RTVAllowed = false;
+	CreateTimer(GetConVarFloat(g_Cvar_InitialDelay), Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 {
-	if(!g_CanRTV || IsFakeClient(client))
+	if(IsFakeClient(client))
 		return true;
 	
 	g_Voted[client] = false;
-	g_Nominated[client] = false;
 
 	g_Voters++;
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
@@ -154,72 +140,30 @@ public OnClientDisconnect(client)
 	
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 	
-	if (g_Votes && g_Voters && g_Votes >= g_VotesNeeded && g_RTVAllowed && !g_RTVStarted) 
+	if (g_Votes && 
+		g_Voters && 
+		g_Votes >= g_VotesNeeded && 
+		g_RTVAllowed ) 
 	{
-		g_RTVStarted = true;
-		CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
+		if (GetConVarInt(g_Cvar_RTVPostVoteAction) == 1 && HasEndOfMapVoteFinished())
+		{
+			return;
+		}
+		
+		StartRTV();
 	}	
 }
 
-public Action:Command_Addmap(client, args)
+public Action:Command_RTV(client, args)
 {
-	if (args < 1)
+	if (!g_CanRTV || !client)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_rtv_addmap <mapname>");
-		return Plugin_Handled;
+		return Plugin_Continue;
 	}
 	
-	if (!g_CanRTV)
-	{
-		ReplyToCommand(client, "[SM] RockTheVote is not available.");
-		return Plugin_Handled;
-	}
+	AttemptRTV(client);
 	
-	decl String:mapname[64];
-	GetCmdArg(1, mapname, sizeof(mapname));
-
-	if (FindStringInArray(g_MapList, mapname) == -1)
-	{
-		ReplyToCommand(client, "%t", "Map was not found", mapname);
-		return Plugin_Handled;
-	}
-	
-	if (GetArraySize(g_RTVMapList) > 0)
-	{
-		if (FindStringInArray(g_RTVMapList, mapname) != -1)
-		{
-			ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
-			return Plugin_Handled;				
-		}
-		
-		ShiftArrayUp(g_RTVMapList, 0);
-		SetArrayString(g_RTVMapList, 0, mapname);
-		
-		while (GetArraySize(g_RTVMapList) > GetConVarInt(g_Cvar_Maps))
-		{
-			RemoveFromArray(g_RTVMapList, GetConVarInt(g_Cvar_Maps));
-		}
-	}
-	else
-	{
-		PushArrayString(g_RTVMapList, mapname);
-	}
-		
-	decl String:item[64];
-	for (new i = 0; i < GetMenuItemCount(g_MapMenu); i++)
-	{
-		GetMenuItem(g_MapMenu, i, item, sizeof(item));
-		if (strcmp(item, mapname) == 0)
-		{
-			RemoveMenuItem(g_MapMenu, i);
-			break;
-		}			
-	}	
-	
-	ReplyToCommand(client, "%t", "Map Inserted", mapname);
-	LogAction(client, -1, "\"%L\" inserted map \"%s\".", client, mapname);
-
-	return Plugin_Handled;		
+	return Plugin_Continue;
 }
 
 public Action:Command_Say(client, args)
@@ -228,7 +172,7 @@ public Action:Command_Say(client, args)
 	{
 		return Plugin_Continue;
 	}
-
+	
 	decl String:text[192];
 	if (!GetCmdArgString(text, sizeof(text)))
 	{
@@ -242,301 +186,120 @@ public Action:Command_Say(client, args)
 		startidx = 1;
 	}
 	
+	new ReplySource:old = SetCmdReplySource(SM_REPLY_TO_CHAT);
+	
 	if (strcmp(text[startidx], "rtv", false) == 0 || strcmp(text[startidx], "rockthevote", false) == 0)
 	{
-		if (!g_RTVAllowed)
-		{
-			PrintToChat(client, "[SM] %t", "RTV Not Allowed");
-			return Plugin_Continue;
-		}
-		
-		if (g_RTVEnded)
-		{
-			PrintToChat(client, "[SM] %t", "RTV Ended");
-			return Plugin_Continue;
-		}
-		
-		if (g_RTVStarted)
-		{
-			PrintToChat(client, "[SM] %t", "RTV Started");
-			return Plugin_Continue;
-		}
-		
-		if (GetClientCount(true) < GetConVarInt(g_Cvar_MinPlayers) && g_Votes == 0) // Should we keep checking g_Votes here?
-		{
-			PrintToChat(client, "[SM] %t", "Minimal Players Not Met");
-			return Plugin_Continue;			
-		}
-		
-		if (g_Voted[client])
-		{
-			PrintToChat(client, "[SM] %t", "Already Voted");
-			return Plugin_Continue;
-		}	
-		
-		new String:name[64];
-		GetClientName(client, name, sizeof(name));
-		
-		g_Votes++;
-		g_Voted[client] = true;
-		
-		PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
-		
-		if (g_Votes >= g_VotesNeeded)
-		{
-			g_RTVStarted = true;
-			CreateTimer(2.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
-		}
-	}
-	else if (GetConVarBool(g_Cvar_Nominate) && strcmp(text[startidx], "nominate", false) == 0)
-	{
-		if (g_RTVEnded)
-		{
-			PrintToChat(client, "[SM] %t", "RTV Ended");
-			return Plugin_Continue;
-		}		
-		
-		if (g_RTVStarted)
-		{
-			PrintToChat(client, "[SM] %t", "RTV Started");
-			return Plugin_Continue;
-		}
-		
-		if (g_Nominated[client])
-		{
-			PrintToChat(client, "[SM] %t", "Already Nominated");
-			return Plugin_Continue;
-		}
-		
-		if (GetArraySize(g_RTVMapList) >= GetConVarInt(g_Cvar_Maps))
-		{
-			PrintToChat(client, "[SM] %t", "Max Nominations");
-			return Plugin_Continue;			
-		}
-		
-		DisplayMenu(g_MapMenu, client, MENU_TIME_FOREVER);		
+		AttemptRTV(client);
 	}
 	
+	SetCmdReplySource(old);
+	
 	return Plugin_Continue;	
+}
+
+AttemptRTV(client)
+{
+	if (!g_RTVAllowed  || (GetConVarInt(g_Cvar_RTVPostVoteAction) == 1 && HasEndOfMapVoteFinished()))
+	{
+		ReplyToCommand(client, "[SM] %t", "RTV Not Allowed");
+		return;
+	}
+		
+	if (!CanMapChooserStartVote())
+	{
+		ReplyToCommand(client, "[SM] %t", "RTV Started");
+		return;
+	}
+	
+	if (GetClientCount(true) < GetConVarInt(g_Cvar_MinPlayers))
+	{
+		ReplyToCommand(client, "[SM] %t", "Minimal Players Not Met");
+		return;			
+	}
+	
+	if (g_Voted[client])
+	{
+		ReplyToCommand(client, "[SM] %t", "Already Voted");
+		return;
+	}	
+	
+	new String:name[64];
+	GetClientName(client, name, sizeof(name));
+	
+	g_Votes++;
+	g_Voted[client] = true;
+	
+	PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
+	
+	if (g_Votes >= g_VotesNeeded)
+	{
+		StartRTV();
+	}	
 }
 
 public Action:Timer_DelayRTV(Handle:timer)
 {
 	g_RTVAllowed = true;
-	g_RTVStarted = false;
-	g_RTVEnded = false;	
 }
 
-public Action:Timer_StartRTV(Handle:timer)
+StartRTV()
 {
-	if (timer == g_RetryTimer)
+	if (g_InChange)
 	{
-		g_RetryTimer = INVALID_HANDLE;
+		return;	
 	}
 	
-	if (g_RetryTimer != INVALID_HANDLE)
+	if (HasEndOfMapVoteFinished())
 	{
-		return;
-	}
-
-	if (IsVoteInProgress())
-	{
-		// Can't start a vote, try again in 5 seconds.
-		g_RetryTimer = CreateTimer(5.0, Timer_StartRTV, TIMER_FLAG_NO_MAPCHANGE);
-		return;
-	}			
-	
-	PrintToChatAll("[SM] %t", "RTV Vote Ready");
-		
-	new Handle:MapVoteMenu = CreateMenu(Handler_MapMapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
-	SetMenuTitle(MapVoteMenu, "Rock The Vote");
-	
-	new Handle:tempMaps  = CloneArray(g_MapList);
-	decl String:map[32];
-
-	GetCurrentMap(map, sizeof(map));
-	new index = FindStringInArray(tempMaps, map);
-	if (index != -1)
-	{
-		RemoveFromArray(tempMaps, index);
-	}	
-	
-	// We assume that g_RTVMapList is within the correct limits, based on the logic for nominations
-	for (new i = 0; i < GetArraySize(g_RTVMapList); i++)
-	{
-		GetArrayString(g_RTVMapList, i, map, sizeof(map));
-		AddMenuItem(MapVoteMenu, map, map);
-		
-		index = FindStringInArray(tempMaps, map);
-		if (index != -1)
+		/* Change right now then */
+		new String:map[65];
+		if (GetNextMap(map, sizeof(map)))
 		{
-			RemoveFromArray(tempMaps, index);
+			PrintToChatAll("[SM] %t", "Changing Maps", map);
+			CreateTimer(5.0, Timer_ChangeMap, _, TIMER_FLAG_NO_MAPCHANGE);
+			g_InChange = true;
+			
+			ResetRTV();
+			
+			g_RTVAllowed = false;
 		}
+		return;	
 	}
 	
-	new limit = GetConVarInt(g_Cvar_Maps) - GetArraySize(g_RTVMapList);
-	if (limit > GetArraySize(tempMaps))
+	if (CanMapChooserStartVote())
 	{
-		limit = GetArraySize(tempMaps);
+		new MapChange:when = MapChange:GetConVarInt(g_Cvar_ChangeTime);
+		InitiateMapChooserVote(when);
+		
+		ResetRTV();
+		
+		g_RTVAllowed = false;
+		CreateTimer(GetConVarFloat(g_Cvar_Interval), Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
-
-	for (new i = 0; i < limit; i++)
-	{
-		new b = GetRandomInt(0, GetArraySize(tempMaps) - 1);
-		GetArrayString(tempMaps, b, map, sizeof(map));		
-		PushArrayString(g_RTVMapList, map);
-		AddMenuItem(MapVoteMenu, map, map);			
-		RemoveFromArray(tempMaps, b);
-	}	
-	
-	CloseHandle(tempMaps);
-	
-	AddMenuItem(MapVoteMenu, "Don't Change", "Don't Change");
-		
-	SetMenuExitButton(MapVoteMenu, false);
-	VoteMenuToAll(MapVoteMenu, 20);
-		
-	LogMessage("[SM] Rockthevote was successfully started.");
 }
 
-public Action:Timer_ChangeMap(Handle:hTimer, Handle:dp)
+ResetRTV()
 {
+	g_Votes = 0;
+			
+	for (new i=1; i<=MAXPLAYERS; i++)
+	{
+		g_Voted[i] = false;
+	}
+}
+
+public Action:Timer_ChangeMap(Handle:hTimer)
+{
+	g_InChange = false;
+	
+	LogMessage("RTV changing map manually");
+	
 	new String:map[65];
-	
-	ResetPack(dp);
-	ReadPackString(dp, map, sizeof(map));
-	
-	ServerCommand("changelevel \"%s\"", map);
+	if (GetNextMap(map, sizeof(map)))
+	{	
+		ServerCommand("changelevel \"%s\"", map);
+	}
 	
 	return Plugin_Stop;
-}
-
-public Handler_MapMapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
-{
-	switch (action)
-	{
-		case MenuAction_End:
-		{
-			CloseHandle(menu);
-		}
-		
-		case MenuAction_Display:
-		{
-	 		decl String:oldTitle[255], String:buffer[255];
-			GetMenuTitle(menu, oldTitle, sizeof(oldTitle));
-			Format(buffer, sizeof(buffer), "%T", oldTitle, param1);
-
-			new Handle:panel = Handle:param2;
-			SetPanelTitle(panel, buffer);
-		}
-		
-		case MenuAction_DisplayItem:
-		{
-			if (GetMenuItemCount(menu) - 1 == param2)
-			{
-				decl String:buffer[255];
-				Format(buffer, sizeof(buffer), "%T", "Don't Change", param1);
-				return RedrawMenuItem(buffer);
-			}
-		}		
-
-		// Why am I commented out? Because BAIL hasn't decided yet if
-		// vote notification will be built into the Vote API.
-		/*case MenuAction_Select:
-		{
-			decl String:Name[32], String:Map[32];
-			GetClientName(param1, Name, sizeof(Name));
-			GetMenuItem(menu, param2, Map, sizeof(Map));
-
-			PrintToChatAll("[SM] %s has voted for map '%s'", Name, Map);
-		}*/
-		
-		case MenuAction_VoteCancel:
-		{
-			if (param1 == VoteCancel_NoVotes)
-			{
-				PrintToChatAll("[SM] %t", "No Votes");
-				g_RTVEnded = true;
-			}
-		}
-
-		case MenuAction_VoteEnd:
-		{
-			new String:map[64];
-			
-			GetMenuItem(menu, param1, map, sizeof(map));
-			
-			if (GetMenuItemCount(menu) - 1 == param1) // This should always match the "Keep Current" option
-			{
-				PrintToChatAll("[SM] %t", "Current Map Stays");
-				LogMessage("[SM] Rockthevote has ended, current map kept.");
-			}
-			else
-			{
-				PrintToChatAll("[SM] %t", "Changing Maps", map);
-				LogMessage("[SM] Rockthevote has ended, changing to map %s.", map);
-				new Handle:dp;
-				CreateDataTimer(5.0, Timer_ChangeMap, dp);
-				WritePackString(dp, map);
-			}
-			
-			g_RTVEnded = true;
-		}
-	}
-	
-	return 0;
-}
-
-public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
-{
-	switch (action)
-	{
-		case MenuAction_Select:
-		{
-			if (GetArraySize(g_RTVMapList) >= GetConVarInt(g_Cvar_Maps)) 
-			{
-				PrintToChat(param1, "[SM] %t", "Max Nominations");
-				return;	
-			}
-			
-			decl String:map[64], String:name[64];
-			GetMenuItem(menu, param2, map, sizeof(map));
-			
-			if (FindStringInArray(g_RTVMapList, map) != -1)
-			{
-				PrintToChat(param1, "[SM] %t", "Map Already Nominated");
-				return;
-			}
-			
-			GetClientName(param1, name, 64);
-
-			PushArrayString(g_RTVMapList, map);
-			RemoveMenuItem(menu, param2);
-			
-			g_Nominated[param1] = true;
-			
-			PrintToChatAll("[SM] %t", "Map Nominated", name, map);
-		}
-	}
-}
-
-BuildMapMenu()
-{
-	if (g_MapMenu != INVALID_HANDLE)
-	{
-		CloseHandle(g_MapMenu);
-		g_MapMenu = INVALID_HANDLE;
-	}
-	
-	g_MapMenu = CreateMenu(Handler_MapSelectMenu);
-	SetMenuTitle(g_MapMenu, "%t", "Nominate Title");
-
-	decl String:map[64];		
-	for (new i = 0; i < GetArraySize(g_MapList); i++)
-	{
-		GetArrayString(g_MapList, i, map, sizeof(map));
-		AddMenuItem(g_MapMenu, map, map);
-	}
-	
-	SetMenuExitButton(g_MapMenu, false);
 }

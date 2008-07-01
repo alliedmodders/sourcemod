@@ -150,7 +150,7 @@ public OnClientPostAdminCheck(client)
 		else if (type == 1)
 		{	
 			if (clients > limit)
-			{	
+			{
 				if (flags & ADMFLAG_ROOT || flags & ADMFLAG_RESERVATION)
 				{
 					new target = SelectKickClient();

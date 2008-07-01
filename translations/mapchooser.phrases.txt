@@ -12,17 +12,29 @@
 
 	"Nextmap Voting Finished"
 	{
-		"#format"		"{1:s}"
-		"en"			"Map voting has finished. The next map will be {1}."
+		"#format"			"{1:s},{2:i},{3:i}"
+		"en"			"Map voting has finished. The next map will be {1}. (Received {2}%% of {3} votes)"
 	}
 
 	"Current Map Extended"
 	{
-		"en"			"The current map has been extended."
+		"#format"			"{1:i},{2:i}"
+		"en"			"The current map has been extended. (Received {1}%% of {2} votes)"
 	}
 	
 	"Extend Map"
 	{
 		"en"			"Extend Current Map"
+	}
+
+	"Dont Change"
+	{
+		"en"			"Don't Change"
+	}
+
+	"Current Map Stays"
+	{
+		"#format"			"{1:i},{2:i}"
+		"en"			"Current map continues! The Vote has spoken! (Received {1}%% of {2} votes)"
 	}
 }

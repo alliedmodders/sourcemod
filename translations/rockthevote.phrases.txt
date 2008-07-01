@@ -30,18 +30,7 @@
 	{
 		"en"			"The minimal number of players required has not been met."
 	}
-
-	"Map Already In Vote"
-	{
-		"#format"		"{1:s}"
-		"en"			"Map '{1}' already in the Rock the Vote list."
-	}	
 	
-	"Map Inserted"
-	{
-		"#format"		"{1:s}"
-		"en"			"Map '{1}' added to Rock the Vote."
-	}
 	
 	"RTV Requested"
 	{
@@ -60,16 +49,6 @@
 		"en"			"Keep Current Map"
 	}
 	
-	"Already Nominated"
-	{
-		"en"			"You have already nominated a map."
-
-	}
-	
-	"Max Nominations"
-	{
-		"en"			"The maximum allowed nominations has been reached."
-	}
 	
 	"Selected Map"
 	{
@@ -91,21 +70,5 @@
 	{
 		"#format"		"{1:s}"
 		"en"			"Changing map to {1}! Rock the Vote has spoken!"
-	}
-	
-	"Map Already Nominated"
-	{
-		"en"			"The map you chose has already been nominated."
-	}
-	
-	"Map Nominated"
-	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{1} has nominated {2} for Rock the Vote."
-	}
-	
-	"Nominate Title"
-	{
-		"en"			"Nominate Map:"
 	}
 }
