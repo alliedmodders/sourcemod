@@ -111,6 +111,8 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 	if (socketDescriptor == INVALID_SOCKET)
 	{
+		fclose(logfile);
+		unlink(lock_path);
 		return;
 	}
 
@@ -122,12 +124,20 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 	if (len == 0)
 	{
 		g_Logger.LogToOpenFile(logfile, "Query Writing failed");
+
+		closesocket(socketDescriptor);
+		fclose(logfile);
+		unlink(lock_path);
 		return;
 	}
 
 	if (g_disableGameDataUpdate)
 	{
 		g_Logger.LogMessage("Skipping GameData Query due to DisableAutoUpdate being set to true");
+
+		closesocket(socketDescriptor);
+		fclose(logfile);
+		unlink(lock_path);
 		return;
 	}
 
@@ -138,7 +148,10 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 	if (sent == 0)
 	{
 		g_Logger.LogToOpenFile(logfile, "Failed to send data");
+
 		closesocket(socketDescriptor);
+		fclose(logfile);
+		unlink(lock_path);
 		return;
 	}
 
@@ -146,10 +159,7 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 	/* And we're done! */
 	closesocket(socketDescriptor);
-
 	fclose(logfile);
-
-	// Delete our lock
 	unlink(lock_path);
 }
 
