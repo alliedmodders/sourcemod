@@ -59,6 +59,7 @@
 #include "sourcemm_api.h"
 #include "time.h"
 #include "TimerSys.h"
+#include "compat_wrappers.h"
 
 #define QUERY_MAX_LENGTH 1024
 
