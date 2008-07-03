@@ -77,7 +77,15 @@ int main(int argc, char **argv)
 
 	if (ret)
 	{
-		printf("%s - Win: %i  Linux : %i\n", argv[3], offsets.windows_offset, offsets.linux_offset);
+		if (params != NULL)
+		{
+			printf("%s%s - Win: %i  Linux : %i\n", argv[3], params, offsets.windows_offset, offsets.linux_offset);
+		}
+		else
+		{
+			printf("%s - Win: %i  Linux : %i\n", argv[3], offsets.windows_offset, offsets.linux_offset);
+		}
+		
 		return 0;
 	}
 
