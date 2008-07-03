@@ -18,7 +18,7 @@
 		}
 	}
 	
-	"dodsbeta"
+	"dod"
 	{
 		"Keys"
 		{
@@ -67,7 +67,6 @@
 		{
 			"game"		"cstrike"
 			"game"		"dod"
-			"game"		"dodsbeta"
 			"game"		"sourceforts"
 			"game"		"insurgency"
 			"game"		"Insurgency"

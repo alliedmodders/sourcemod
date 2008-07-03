@@ -31,7 +31,7 @@
 	{
 		"#supported"
 		{
-			"game"		"dodsbeta"
+			"game"		"dod"
 			"game"		"tf"
 		}
 
@@ -79,7 +79,7 @@
 	{
 		"#supported"
 		{
-			"game"		"dodsbeta"
+			"game"		"dod"
 			"game"		"tf"
 		}
 
@@ -105,7 +105,7 @@
 	{
 		"#supported"
 		{
-			"game"		"dodsbeta"
+			"game"		"dod"
 			"game"		"tf"
 		}
 		
@@ -146,7 +146,7 @@
 	{
 		"#supported"
 		{
-			"game"		"dodsbeta"
+			"game"		"dod"
 			"game"		"tf"
 		}
 		
@@ -224,7 +224,7 @@
 	{
 		"#supported"
 		{
-			"game"		"dodsbeta"
+			"game"		"dod"
 			"game"		"tf"
 		}
 		"Signatures"
@@ -354,8 +354,8 @@
 		}
 	}
 	
-	/* Day of Defeat: Source (Orange Box Beta) */
-	"dodsbeta"
+	/* Day of Defeat: Source */
+	"dod"
 	{
 		"Offsets"
 		{
