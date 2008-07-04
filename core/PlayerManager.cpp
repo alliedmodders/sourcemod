@@ -1335,7 +1335,7 @@ IPlayerInfo *CPlayer::GetPlayerInfo()
 
 bool CPlayer::IsFakeClient()
 {
-	return (strcmp(m_AuthID.c_str(), "BOT") == 0);
+	return (strncasecmp(m_AuthID.c_str(), "BOT", 3) == 0);
 }
 
 void CPlayer::SetAdminId(AdminId id, bool temporary)
