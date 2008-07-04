@@ -50,6 +50,8 @@ namespace SourcePawn
 		J_store,			/* [instr:base, instr:disp, instr:value] */
 		J_storei,			/* [instr:base, imm:disp, instr:value] */
 		J_add,				/* [instr:op1, instr:op2] -> value (op1 + op2) */
+		J_stkadd,			/* [imm] -> address */
+		J_stkdrop,			/* [imm] */
 	};
 
 	struct JIns;
@@ -77,7 +79,6 @@ namespace SourcePawn
 	public:
 		JIns *GetFirst() const;
 		JIns *GetLast() const;
-		void kill_pages();
 	private:
 		Page *m_pFirstPage;
 		JIns *m_pLast;
@@ -96,8 +97,10 @@ namespace SourcePawn
 		virtual JIns *ins_storei(JIns *base, int32_t disp, JIns *val);
 		virtual JIns *ins_store(JIns *base, JIns *disp, JIns *val);
 		virtual JIns *ins_add(JIns *op1, JIns *op2);
+		virtual JIns *ins_stkadd(int32_t amt);
+		virtual void ins_stkdrop(int32_t amt);
 	public:
-		void destroy();
+		void kill_pages();
 		JsiStream getstream();
 	private:
 		JIns *ensure_room();

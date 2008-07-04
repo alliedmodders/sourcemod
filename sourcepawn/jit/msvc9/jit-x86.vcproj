@@ -350,7 +350,15 @@
 			Name="Header Files"
 			>
 			<File
-				RelativePath="..\AmxToSSA.h"
+				RelativePath="..\AmxConverter.h"
+				>
+			</File>
+			<File
+				RelativePath="..\AmxListener.h"
+				>
+			</File>
+			<File
+				RelativePath="..\AmxReader.h"
 				>
 			</File>
 			<File
@@ -382,7 +390,11 @@
 			Name="Source Files"
 			>
 			<File
-				RelativePath="..\AmxToSSA.cpp"
+				RelativePath="..\AmxConverter.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\AmxReader.cpp"
 				>
 			</File>
 			<File

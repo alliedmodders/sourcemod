@@ -33,13 +33,16 @@
 #include <string.h>
 #include "sp_vm_function.h"
 #include "sp_vm_basecontext.h"
-#include "AmxToSSA.h"
+#include "AmxConverter.h"
 #include "Interpreter.h"
 #include "DeadCodeEliminator.h"
 
 /********************
  * FUNCTION CALLING *
  ********************/
+
+PageAllocator g_PageAlloc;
+AmxConverter g_AmxConvert(&g_PageAlloc);
 
 CFunction::CFunction(BaseContext *pContext, uint32_t pubfunc, uint32_t code_addr)
 {
@@ -68,7 +71,7 @@ bool CFunction::Compile()
 	int err;
 	char buffer[255];
 
-	m_pCode = ConvertAMXToSSA(m_pContext, m_CodeAddr, &err, buffer, sizeof(buffer));
+	m_pCode = g_AmxConvert.Analyze(m_pContext, m_CodeAddr, &err, buffer, sizeof(buffer));
 	if (m_pCode != NULL)
 	{
 		JsiPrinter pr(*m_pCode);

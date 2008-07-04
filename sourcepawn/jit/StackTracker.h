@@ -1,31 +1,38 @@
 #ifndef _INCLUDE_STACK_TRACKER_H_
 #define _INCLUDE_STACK_TRACKER_H_
 
+#include <sp_vm_types.h>
+#include <sh_list.h>
 #include "JSI.h"
+
+#define STACK_FRAME_REACH		(SP_MAX_EXEC_PARAMS + 3)
+
+using namespace SourceHook;
 
 namespace SourcePawn
 {
-	struct stack_entry_t
+	struct stack_region_t
 	{
-		int pos;
-		JIns *ins;
+		cell_t position;
+		JIns *addr;
+		JIns *value;
 	};
 
 	class StackTracker
 	{
 	public:
-		StackTracker();
-		~StackTracker();
-	public:
-		void set(int position, JIns *ins);
-		JIns *get(int position);
-		void pop(int new_stk);
+		void reset(JsiBufWriter *writer);
+		void add(cell_t amt);
+		bool set(cell_t offs, JIns *value);
+		bool drop(cell_t amt);
+		JIns *get(cell_t offs);
+		cell_t top();
 	private:
-		stack_entry_t *internal_get(int pos);
+		stack_region_t *find_region(cell_t offs);
 	private:
-		stack_entry_t *m_Entries;
-		size_t m_NumEntries;
-		size_t m_MaxEntries;
+		cell_t m_StackPtr;
+		JsiBufWriter *m_pBuf;
+		List<stack_region_t> m_Regions;
 	};
 }
 

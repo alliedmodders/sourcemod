@@ -4,83 +4,97 @@
 #include "StackTracker.h"
 
 using namespace SourcePawn;
+using namespace SourceHook;
 
-StackTracker::StackTracker() : m_Entries(NULL), m_NumEntries(0), m_MaxEntries(0)
+
+void StackTracker::reset(JsiBufWriter *writer)
 {
+	m_pBuf = writer;
+	m_StackPtr = 0;
+	m_Regions.clear();
 }
 
-StackTracker::~StackTracker()
+cell_t StackTracker::top()
 {
-	free(m_Entries);
+	return m_StackPtr;
 }
 
-JIns *StackTracker::get(int position)
+void StackTracker::add(cell_t amt)
 {
-	stack_entry_t *etr;
+	stack_region_t region;
 
-	if ((etr = internal_get(position)) == NULL)
+	m_StackPtr -= amt;
+	region.position = m_StackPtr;
+	region.value = NULL;
+	region.addr = m_pBuf->ins_stkadd(amt);
+
+	m_Regions.push_back(region);
+}
+
+JIns *StackTracker::get(cell_t offs)
+{
+	stack_region_t *region;
+
+	if ((region = find_region(offs)) == NULL)
 	{
 		return NULL;
 	}
 
-	return etr->ins;
+	return region->value;
 }
 
-void StackTracker::set(int position, JIns *ins)
+bool StackTracker::set(cell_t offs, JIns *value)
 {
-	stack_entry_t *etr;
+	stack_region_t *region;
 
-	if ((etr = internal_get(position)) == NULL)
+	if ((region = find_region(offs)) == NULL)
 	{
-		assert(0);
+		return false;
 	}
 
-	etr->ins = ins;
+	region->value = value;
+	m_pBuf->ins_storei(region->addr, 0, value);
+
+	return true;
 }
 
-void StackTracker::pop(int new_stk)
+stack_region_t *StackTracker::find_region(cell_t offs)
 {
-	while (m_NumEntries > 0 && m_Entries[m_NumEntries - 1].pos < new_stk)
+	List<stack_region_t>::iterator iter;
+
+	for (iter = m_Regions.begin(); iter != m_Regions.end(); iter++)
 	{
-		m_NumEntries--;
-	}
-}
-
-stack_entry_t *StackTracker::internal_get(int pos)
-{
-	if (m_NumEntries == 0 || pos < m_Entries[m_NumEntries-1].pos)
-	{
-		stack_entry_t *etr;
-
-		if (m_MaxEntries == 0)
+		if ((*iter).position == offs)
 		{
-			m_MaxEntries = 8;
-			m_Entries = (stack_entry_t *)malloc(sizeof(stack_entry_t) * m_MaxEntries);
-		}
-		else if (m_NumEntries == m_MaxEntries)
-		{
-			m_MaxEntries *= 2;
-			m_Entries = (stack_entry_t *)realloc(m_Entries, sizeof(stack_entry_t) * m_MaxEntries);
-		}
-
-		etr = &m_Entries[m_NumEntries++];
-		etr->ins = NULL;
-		etr->pos = pos;
-
-		return etr;
-	}
-	else
-	{
-		for (size_t i = m_NumEntries - 1;
-			 i >= 0 && i < m_NumEntries && pos >= m_Entries[i].pos;
-			 i--)
-		{
-			if (m_Entries[i].pos == pos)
-			{
-				return &m_Entries[i];
-			}
+			return &(*iter);
 		}
 	}
 
 	return NULL;
+}
+
+bool StackTracker::drop(cell_t amt)
+{
+	if (m_StackPtr + amt > 0)
+	{
+		return false;
+	}
+
+	m_pBuf->ins_stkdrop(amt);
+
+	/* :TODO: Make this backwards and short-cut out... */
+	List<stack_region_t>::iterator iter = m_Regions.begin();
+	while (iter != m_Regions.end())
+	{
+		if ((*iter).position < m_StackPtr)
+		{
+			iter = m_Regions.erase(iter);
+		}
+		else
+		{
+			iter++;
+		}
+	}
+
+	return true;
 }

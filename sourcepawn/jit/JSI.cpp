@@ -109,11 +109,36 @@ JIns *JsiBufWriter::ins_add(JIns *op1, JIns *op2)
 {
 	JIns *p = ensure_room();
 
-	p->op = uint8_t(J_add);
-	p->param1.instr = op1;
-	p->param2.instr = op2;
+	if (op1->op == J_imm && op2->op == J_imm)
+	{
+		return ins_imm(op1->param1.imm + op2->param1.imm);
+	}
+	else
+	{
+		p->op = uint8_t(J_add);
+		p->param1.instr = op1;
+		p->param2.instr = op2;
+	}
 
 	return p;
+}
+
+JIns *JsiBufWriter::ins_stkadd(int32_t amt)
+{
+	JIns *p = ensure_room();
+
+	p->op = J_stkadd;
+	p->param1.imm = amt;
+
+	return p;
+}
+
+void JsiBufWriter::ins_stkdrop(int32_t amt)
+{
+	JIns *p = ensure_room();
+
+	p->op = J_stkdrop;
+	p->param1.imm = amt;
 }
 
 JIns *JsiBufWriter::ensure_room()
@@ -154,7 +179,7 @@ JIns *JsiBufWriter::ensure_room()
 	return ret_pos;
 }
 
-void JsiBufWriter::destroy()
+void JsiBufWriter::kill_pages()
 {
 	Page *temp;
 
@@ -224,7 +249,9 @@ const char *op_table[] =
 	"loadi",
 	"store",
 	"storei",
-	"add"
+	"add",
+	"stkadd",
+	"stkdrop"
 };
 
 void JsiPrinter::emit_to_file(FILE *fp)
@@ -270,6 +297,12 @@ void JsiPrinter::emit_to_file(FILE *fp)
 		case J_add:
 			{
 				fprintf(fp, " %p, %p\n", ins->param1.instr, ins->param2.instr);
+				break;
+			}
+		case J_stkadd:
+		case J_stkdrop:
+			{
+				fprintf(fp, " %d\n", ins->param1.imm);
 				break;
 			}
 		}
