@@ -184,28 +184,6 @@ public Action:Command_Nominate(client, args)
 	
 	decl String:mapname[64];
 	GetCmdArg(1, mapname, sizeof(mapname));
-
-	if (FindStringInArray(g_MapList, mapname) == -1)
-	{
-		ReplyToCommand(client, "%t", "Map was not found", mapname);
-		return Plugin_Handled;
-	}
-	
-	new NominateResult:result = NominateMap(mapname, false, client);
-	
-	if (result > Nominate_Replaced)
-	{
-		if (result == Nominate_AlreadyInVote)
-		{
-			ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
-		}
-		else
-		{
-			ReplyToCommand(client, "[SM] %t", "Map Already Nominated");
-		}
-		
-		return Plugin_Handled;	
-	}
 	
 	decl String:item[64];
 	for (new i = 0; i < GetMenuItemCount(g_MapMenu); i++)
@@ -213,17 +191,35 @@ public Action:Command_Nominate(client, args)
 		GetMenuItem(g_MapMenu, i, item, sizeof(item));
 		if (strcmp(item, mapname) == 0)
 		{
+			new NominateResult:result = NominateMap(mapname, false, client);
+	
+			if (result > Nominate_Replaced)
+			{
+				if (result == Nominate_AlreadyInVote)
+				{
+					ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
+				}
+				else
+				{
+					ReplyToCommand(client, "[SM] %t", "Map Already Nominated");
+				}
+				
+				return Plugin_Handled;	
+			}
+			
 			RemoveMenuItem(g_MapMenu, i);
-			break;
+			
+			decl String:name[64];
+			GetClientName(client, name, sizeof(name));
+	
+			PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
+	
+			return Plugin_Continue;
 		}			
 	}
 	
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-	
-	PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
-	
-	return Plugin_Continue;
+	ReplyToCommand(client, "%t", "Map was not found", mapname);
+	return Plugin_Handled;
 }
 
 AttemptNominate(client)

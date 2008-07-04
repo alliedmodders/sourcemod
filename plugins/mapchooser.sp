@@ -170,11 +170,6 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 	return true;
 }
 
-public OnMapStart()
-{
-	Call_Cancel();	
-}
-
 public OnConfigsExecuted()
 {
 	if (ReadMapList(g_MapList,
