@@ -51,7 +51,7 @@ namespace SourcePawn
 		J_storei,			/* [instr:base, imm:disp, instr:value] */
 		J_add,				/* [instr:op1, instr:op2] -> value (op1 + op2) */
 		J_stkadd,			/* [imm] -> address */
-		J_stkdrop,			/* [imm] */
+		J_stkdrop,			/* [instr:val] */
 	};
 
 	struct JIns;
@@ -126,6 +126,17 @@ namespace SourcePawn
 	private:
 		JIns *m_pCur;
 		JIns *m_pLast;
+	};
+
+	class JsiReverseReader : public JsiReader
+	{
+	public:
+		JsiReverseReader(const JsiStream & stream);
+	public:
+		virtual JIns *next();
+	private:
+		JIns *m_pCur;
+		JIns *m_pFirst;
 	};
 
 	class JsiPrinter

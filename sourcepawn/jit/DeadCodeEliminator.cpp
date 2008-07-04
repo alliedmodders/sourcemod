@@ -7,20 +7,47 @@ using namespace SourcePawn;
 void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 {
 	JIns *ins;
+	cell_t sp;
 	CStack<JIns *> worklist;
-	JsiForwardReader rdr(*stream);
+	JsiReverseReader rdr(*stream);
 
+	/* Eliminate dead stores to the stack. */
+	sp = 0;
 	while ((ins = rdr.next()) != NULL)
 	{
-		if (ins->op == J_store 
-			|| ins->op == J_storei
-			|| ins->op == J_return)
+		ins->value.imm = 0;
+		switch (ins->op)
 		{
-			worklist.push(ins);
-		}
-		else
-		{
-			ins->value.imm = 0;
+		case J_return:
+			{
+				worklist.push(ins);
+				break;
+			}
+		case J_stkadd:
+			{
+				sp += ins->param1.imm;
+				break;
+			}
+		case J_stkdrop:
+			{
+				sp -= ins->param1.imm;
+				break;
+			}
+		case J_store:
+		case J_storei:
+			{
+				/* Check if we're storing to the stack, right now that is 
+				 * automatically something we can ignore. */
+				if (ins->param1.instr->op != J_stkadd)
+				{
+					worklist.push(ins);
+				}
+				else
+				{
+					ins->op = J_nop;
+				}
+				break;
+			}
 		}
 	}
 
@@ -68,8 +95,8 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 
 	JsiBufWriter buf(&g_PageAlloc);
 
-	rdr = JsiForwardReader(*stream);
-	while ((ins = rdr.next()) != NULL)
+	JsiForwardReader fwd(*stream);
+	while ((ins = fwd.next()) != NULL)
 	{
 		if (ins->op == J_store || ins->op == J_storei || ins->value.imm == 1)
 		{

@@ -234,6 +234,44 @@ JIns *JsiForwardReader::next()
 	return ret;
 }
 
+JsiReverseReader::JsiReverseReader(const JsiStream & stream)
+{
+	m_pFirst = stream.GetFirst();
+	m_pCur = stream.GetLast();
+}
+
+JIns *JsiReverseReader::next()
+{
+	JIns *ret;
+
+	if (m_pCur == NULL)
+	{
+		return NULL;
+	}
+	else if (m_pCur->op == J_prev)
+	{
+		m_pCur = m_pCur->param1.instr;
+	}
+
+	ret = m_pCur;
+
+	if (ret == m_pFirst)
+	{
+		m_pCur = NULL;
+	}
+	else
+	{
+		m_pCur--;
+	}
+
+	if (ret->op == J_next || ret->op == J_nop)
+	{
+		return next();
+	}
+
+	return ret;
+}
+
 JsiPrinter::JsiPrinter(const JsiStream & stream) : m_Reader(stream)
 {
 }

@@ -2,9 +2,13 @@
 
 public main()
 {
-	new a = 4
+	new a, b, c, d
 
-	a += 9
+	a = 5
+	a = a + b
+	b = 8
+	c = b
+	d = b + c
 
-	return a
+	return a + d
 }
