@@ -21,7 +21,7 @@ JIns *JsiStream::GetLast() const
 	return m_pLast - 1;
 }
 
-JsiBufWriter::JsiBufWriter(PageAllocator *allocator)
+JsiBufWriter::JsiBufWriter(PageAllocator *allocator) : JsiPipeline(NULL)
 {
 	m_pPos = NULL;
 	m_pFirstPage = NULL;
@@ -109,17 +109,9 @@ JIns *JsiBufWriter::ins_add(JIns *op1, JIns *op2)
 {
 	JIns *p = ensure_room();
 
-	if (op1->op == J_imm && op2->op == J_imm)
-	{
-		p->op = uint8_t(J_imm);
-		p->param1.imm = op1->param1.imm + op2->param1.imm;
-	}
-	else
-	{
-		p->op = uint8_t(J_add);
-		p->param1.instr = op1;
-		p->param2.instr = op2;
-	}
+	p->op = uint8_t(J_add);
+	p->param1.instr = op1;
+	p->param2.instr = op2;
 
 	return p;
 }
@@ -128,17 +120,9 @@ JIns *JsiBufWriter::ins_sub(JIns *op1, JIns *op2)
 {
 	JIns *p = ensure_room();
 
-	if (op1->op == J_imm && op2->op == J_imm)
-	{
-		p->op = uint8_t(J_imm);
-		p->param1.imm = op1->param1.imm - op2->param1.imm;
-	}
-	else
-	{
-		p->op = uint8_t(J_sub);
-		p->param1.instr = op1;
-		p->param2.instr = op2;
-	}
+	p->op = uint8_t(J_sub);
+	p->param1.instr = op1;
+	p->param2.instr = op2;
 
 	return p;
 }
@@ -223,6 +207,70 @@ void JsiBufWriter::kill_pages()
 JsiStream JsiBufWriter::getstream()
 {
 	return JsiStream(m_pFirstPage, m_pPos);
+}
+
+JsiPipeline::JsiPipeline(JsiPipeline *other) : m_pOut(other)
+{
+}
+
+JIns *JsiPipeline::ins_imm(int32_t value)
+{
+	return m_pOut->ins_imm(value);
+}
+
+JIns *JsiPipeline::ins_imm_ptr(void *value)
+{
+	return m_pOut->ins_imm_ptr(value);
+}
+
+JIns *JsiPipeline::ins_return(JIns *val)
+{
+	return m_pOut->ins_return(val);
+}
+
+JIns *JsiPipeline::ins_loadi(JIns *base, int32_t disp)
+{
+	return m_pOut->ins_loadi(base, disp);
+}
+
+JIns *JsiPipeline::ins_load(JIns *base, JIns *disp)
+{
+	return m_pOut->ins_load(base, disp);
+}
+
+JIns *JsiPipeline::ins_storei(JIns *base, int32_t disp, JIns *val)
+{
+	return m_pOut->ins_storei(base, disp, val);
+}
+
+JIns *JsiPipeline::ins_store(JIns *base, JIns *disp, JIns *val)
+{
+	return m_pOut->ins_store(base, disp, val);
+}
+
+JIns *JsiPipeline::ins_add(JIns *op1, JIns *op2)
+{
+	return m_pOut->ins_add(op1, op2);
+}
+
+JIns *JsiPipeline::ins_sub(JIns *op1, JIns *op2)
+{
+	return m_pOut->ins_sub(op1, op2);
+}
+
+JIns *JsiPipeline::ins_stkadd(int32_t amt)
+{
+	return m_pOut->ins_stkadd(amt);
+}
+
+void JsiPipeline::ins_stkdrop(int32_t amt)
+{
+	return m_pOut->ins_stkdrop(amt);
+}
+
+JIns *JsiPipeline::ins_frm()
+{
+	return m_pOut->ins_frm();
 }
 
 JsiForwardReader::JsiForwardReader(const JsiStream & stream)

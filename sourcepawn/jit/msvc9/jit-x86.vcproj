@@ -265,6 +265,14 @@
 				Name="Header Files"
 				>
 				<File
+					RelativePath="..\dll_exports.h"
+					>
+				</File>
+				<File
+					RelativePath="..\PageAllocator.h"
+					>
+				</File>
+				<File
 					RelativePath="..\sp_vm_basecontext.h"
 					>
 				</File>
@@ -280,6 +288,14 @@
 			<Filter
 				Name="Source Files"
 				>
+				<File
+					RelativePath="..\dll_exports.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\PageAllocator.cpp"
+					>
+				</File>
 				<File
 					RelativePath="..\sp_vm_basecontext.cpp"
 					>
@@ -362,11 +378,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\DeadCodeEliminator.h"
+				RelativePath="..\ArithmeticOptimizer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\dll_exports.h"
+				RelativePath="..\ConstantFolding.h"
+				>
+			</File>
+			<File
+				RelativePath="..\DeadCodeEliminator.h"
 				>
 			</File>
 			<File
@@ -375,10 +395,6 @@
 			</File>
 			<File
 				RelativePath="..\JSI.h"
-				>
-			</File>
-			<File
-				RelativePath="..\PageAllocator.h"
 				>
 			</File>
 			<File
@@ -398,11 +414,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\DeadCodeEliminator.cpp"
+				RelativePath="..\ArithmeticOptimizer.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\dll_exports.cpp"
+				RelativePath="..\ConstantFolding.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\DeadCodeEliminator.cpp"
 				>
 			</File>
 			<File
@@ -411,10 +431,6 @@
 			</File>
 			<File
 				RelativePath="..\JSI.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\PageAllocator.cpp"
 				>
 			</File>
 			<File

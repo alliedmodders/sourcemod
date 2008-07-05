@@ -86,7 +86,28 @@ namespace SourcePawn
 		JIns *m_pLast;
 	};
 
-	class JsiBufWriter
+	class JsiPipeline
+	{
+	public:
+		JsiPipeline(JsiPipeline *other);
+	public:
+		virtual JIns *ins_imm(int32_t value);
+		virtual JIns *ins_imm_ptr(void *value);
+		virtual JIns *ins_return(JIns *val);
+		virtual JIns *ins_loadi(JIns *base, int32_t disp);
+		virtual JIns *ins_load(JIns *base, JIns *disp);
+		virtual JIns *ins_storei(JIns *base, int32_t disp, JIns *val);
+		virtual JIns *ins_store(JIns *base, JIns *disp, JIns *val);
+		virtual JIns *ins_add(JIns *op1, JIns *op2);
+		virtual JIns *ins_sub(JIns *op1, JIns *op2);
+		virtual JIns *ins_stkadd(int32_t amt);
+		virtual void ins_stkdrop(int32_t amt);
+		virtual JIns *ins_frm();
+	protected:
+		JsiPipeline *m_pOut;
+	};
+
+	class JsiBufWriter : public JsiPipeline
 	{
 	public:
 		JsiBufWriter(PageAllocator *allocator);

@@ -48,7 +48,7 @@ namespace SourcePawn
 		JIns *m_pPri;
 		JIns *m_pAlt;
 		StackTracker m_Stk;
-		JsiBufWriter *m_pBuf;
+		JsiPipeline *m_pBuf;
 		const sp_plugin_t *m_pPlugin;
 		PageAllocator *m_pAlloc;
 	};

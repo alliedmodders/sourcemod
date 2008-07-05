@@ -20,7 +20,7 @@ namespace SourcePawn
 	class StackTracker
 	{
 	public:
-		void reset(JsiBufWriter *writer, JIns *frm);
+		void reset(JsiPipeline *writer, JIns *frm);
 		void add(cell_t amt);
 		bool set(cell_t offs, JIns *value);
 		bool drop(cell_t amt);
@@ -31,7 +31,7 @@ namespace SourcePawn
 	private:
 		JIns *m_pFrm;
 		cell_t m_StackPtr;
-		JsiBufWriter *m_pBuf;
+		JsiPipeline *m_pBuf;
 		List<stack_region_t> m_Regions;
 		stack_region_t m_LocalParams[STACK_FRAME_REACH];
 	};

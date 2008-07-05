@@ -7,7 +7,7 @@ using namespace SourcePawn;
 using namespace SourceHook;
 
 
-void StackTracker::reset(JsiBufWriter *writer, JIns *frm)
+void StackTracker::reset(JsiPipeline *writer, JIns *frm)
 {
 	m_pFrm = frm;
 	m_pBuf = writer;

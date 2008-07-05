@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "AmxConverter.h"
+#include "ConstantFolding.h"
+#include "ArithmeticOptimizer.h"
 
 using namespace SourcePawn;
 
@@ -59,6 +61,8 @@ void AmxConverter::SetError(int err, const char *msg, ...)
 
 JsiStream *AmxConverter::Analyze(BaseContext *ctx, uint32_t code_addr, int *err, char *errbuf, size_t maxlength)
 {
+	JsiBufWriter *buf;
+
 	m_pContext = ctx;
 	m_pPlugin = ctx->GetPlugin();
 	m_ErrorBuffer = errbuf;
@@ -67,7 +71,12 @@ JsiStream *AmxConverter::Analyze(BaseContext *ctx, uint32_t code_addr, int *err,
 
 	m_pPri = NULL;
 	m_pAlt = NULL;
-	m_pBuf = new JsiBufWriter(m_pAlloc);
+	buf = new JsiBufWriter(m_pAlloc);
+
+	ArithmeticOptimizer ao(buf);
+	ConstantFolding cf(&ao);
+
+	m_pBuf = &cf;
 	
 	if (*(cell_t *)(m_pPlugin->pcode + code_addr) != AMX_OP_PROC)
 	{
@@ -94,19 +103,14 @@ JsiStream *AmxConverter::Analyze(BaseContext *ctx, uint32_t code_addr, int *err,
 			*err = m_ErrorCode;
 		}
 
-		if (m_pBuf != NULL)
-		{
-			m_pBuf->kill_pages();
-			delete m_pBuf;
-		}
-
-		m_pBuf = NULL;
+		buf->kill_pages();
+		delete buf;
 
 		return NULL;
 	}
 
-	JsiStream *stream = new JsiStream(m_pBuf->getstream());
-	delete m_pBuf;
+	JsiStream *stream = new JsiStream(buf->getstream());
+	delete buf;
 
 	return stream;
 }
