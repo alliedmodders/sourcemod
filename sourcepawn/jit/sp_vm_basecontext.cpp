@@ -720,7 +720,7 @@ int BaseContext::PushCell(cell_t value)
 	}
 
 	m_ctx.sp -= sizeof(cell_t);
-	*(cell_t *)(m_pPlugin->base + m_ctx.sp) = value;
+	*(cell_t *)(m_pPlugin->memory + m_ctx.sp) = value;
 
 	return SP_ERROR_NONE;
 }
