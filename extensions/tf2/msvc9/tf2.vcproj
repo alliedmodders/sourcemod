@@ -258,15 +258,15 @@
 			Name="CDetour"
 			>
 			<File
-				RelativePath="..\..\..\public\CBaseServer and friends\CDetour\detourhelpers.h"
+				RelativePath="..\CDetour\detourhelpers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\public\CBaseServer and friends\CDetour\detours.cpp"
+				RelativePath="..\CDetour\detours.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\public\CBaseServer and friends\CDetour\detours.h"
+				RelativePath="..\CDetour\detours.h"
 				>
 			</File>
 		</Filter>
