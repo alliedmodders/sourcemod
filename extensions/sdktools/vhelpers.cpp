@@ -280,6 +280,7 @@ void ShutdownHelpers()
 {
 	s_Teleport.Shutdown();
 	s_GetVelocity.Shutdown();
+	s_EyeAngles.Shutdown();
 }
 
 const char *GetDTTypeName(int type)
