@@ -54,6 +54,10 @@ new Handle:g_Cvar_WinLimit = INVALID_HANDLE;
 new Handle:g_Cvar_FragLimit = INVALID_HANDLE;
 new Handle:g_Cvar_MaxRounds = INVALID_HANDLE;
 
+#define TIMELEFT_ALL_ALWAYS		0
+#define TIMELEFT_ALL_MAYBE		1
+#define TIMELEFT_ONE			2
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -101,12 +105,12 @@ public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], con
 
 public Action:Timer_DisplayTimeleft(Handle:timer)
 {
-	ShowTimeLeft(0, true);	
+	ShowTimeLeft(0, TIMELEFT_ALL_ALWAYS);	
 }
 
 public Action:Command_Timeleft(client, args)
 {
-	ShowTimeLeft(client);
+	ShowTimeLeft(client, TIMELEFT_ONE);
 	
 	return Plugin_Handled;
 }
@@ -131,7 +135,7 @@ public Action:Command_Say(client, args)
 
 	if (strcmp(text[startidx], "timeleft", false) == 0)
 	{
-		ShowTimeLeft(client);
+		ShowTimeLeft(client, TIMELEFT_ALL_MAYBE);
 	}
 	else if (strcmp(text[startidx], "thetime", false) == 0)
 	{
@@ -189,7 +193,7 @@ public Action:Command_Say(client, args)
 	return Plugin_Continue;
 }
 
-ShowTimeLeft(client, bool:all=false)
+ShowTimeLeft(client, who)
 {
 	new bool:lastround = false;
 	new bool:written = false;
@@ -198,7 +202,8 @@ ShowTimeLeft(client, bool:all=false)
 	decl String:finalOutput[1024];
 	finalOutput[0] = 0;
 	
-	if(GetConVarInt(g_Cvar_TriggerShow) || all)
+	if (who == TIMELEFT_ALL_ALWAYS
+		|| (who == TIMELEFT_ALL_MAYBE && GetConVarInt(g_Cvar_TriggerShow)))
 	{
 		client = 0;	
 	}
@@ -305,7 +310,8 @@ ShowTimeLeft(client, bool:all=false)
 		FormatEx(finalOutput, sizeof(finalOutput), "%T", "NoTimelimit", client);
 	}
 
-	if(GetConVarInt(g_Cvar_TriggerShow) || all)
+	if (who == TIMELEFT_ALL_ALWAYS
+		|| (who == TIMELEFT_ALL_MAYBE && GetConVarInt(g_Cvar_TriggerShow)))
 	{
 		PrintToChatAll("[SM] %s", finalOutput);
 	}
