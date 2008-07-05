@@ -59,7 +59,7 @@ BaseContext::BaseContext(sp_plugin_t *plugin)
 		m_PubFuncs = NULL;
 	}
 
-	m_ctx.sp = m_pPlugin->memory - sizeof(cell_t);
+	m_ctx.sp = m_pPlugin->mem_size - sizeof(cell_t);
 	m_ctx.hp = m_pPlugin->data_size;
 }
 
@@ -71,6 +71,7 @@ BaseContext::~BaseContext()
 	}
 	delete [] m_PubFuncs;
 
+	delete [] m_pPlugin->memory;
 	delete [] m_pPlugin->base;
 	delete [] m_pPlugin->pubvars;
 	delete [] m_pPlugin->natives;
@@ -424,11 +425,11 @@ int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 int BaseContext::LocalToString(cell_t local_addr, char **addr)
 {
 	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) 
-		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->memory))
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
-	*addr = (char *)(m_pPlugin->data + local_addr);
+	*addr = (char *)(m_pPlugin->memory + local_addr);
 
 	return SP_ERROR_NONE;
 }
@@ -439,7 +440,7 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *sour
 	size_t len;
 
 	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) 
-		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->memory))
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
@@ -508,7 +509,7 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	bool needtocheck = false;
 
 	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) 
-		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->memory))
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
@@ -519,7 +520,7 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	}
 
 	len = strlen(source);
-	dest = (char *)(m_pPlugin->data + local_addr);
+	dest = (char *)(m_pPlugin->memory + local_addr);
 
 	if ((size_t)len >= maxbytes)
 	{
@@ -698,14 +699,14 @@ unsigned int BaseContext::GetProfCallbackSerial()
 int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
 	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) 
-		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->memory))
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	if (phys_addr)
 	{
-		*phys_addr = (cell_t *)(m_pPlugin->data + local_addr);
+		*phys_addr = (cell_t *)(m_pPlugin->mem_size + local_addr);
 	}
 
 	return SP_ERROR_NONE;

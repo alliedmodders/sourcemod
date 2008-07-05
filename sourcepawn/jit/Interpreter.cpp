@@ -25,7 +25,7 @@ int SourcePawn::InterpretSSA(BaseContext *pContext,
 		{
 		case J_frm:
 			{
-				ins->value.ptr = plugin->base + ctx->frm;
+				ins->value.ptr = plugin->memory + ctx->frm;
 				break;
 			}
 		case J_imm:

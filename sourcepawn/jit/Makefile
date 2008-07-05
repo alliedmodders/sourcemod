@@ -17,8 +17,9 @@ OBJECTS = dll_exports.cpp 		\
 	StackTracker.cpp			\
 	JSI.cpp						\
 	Interpreter.cpp				\
-	AmxToSSA.cpp				\
 	DeadCodeEliminator.cpp		\
+	AmxConverter.cpp			\
+	AmxReader.cpp				\
 	PageAllocator.cpp			\
 	zlib/adler32.c				\
 	zlib/compress.c				\

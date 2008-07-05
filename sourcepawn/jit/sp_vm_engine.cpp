@@ -130,12 +130,13 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 			plugin->pcode_size = cod->codesize;
 			plugin->flags = cod->flags;
 		}
-		else if (!(plugin->data) && !strcmp(nameptr, ".data"))
+		else if (!(plugin->memory) && !strcmp(nameptr, ".data"))
 		{
 			sp_file_data_t *dat = (sp_file_data_t *)(base + secptr->dataoffs);
-			plugin->data = base + secptr->dataoffs + dat->data;
+			plugin->memory = new uint8_t[dat->memsize];
+			plugin->mem_size = dat->memsize;
 			plugin->data_size = dat->datasize;
-			plugin->memory = dat->memsize;
+			memcpy(plugin->memory, base + secptr->dataoffs + dat->data, dat->datasize);
 		}
 		else if (!(plugin->info.publics) && !strcmp(nameptr, ".publics"))
 		{
@@ -184,7 +185,7 @@ sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin,
 		sectnum++;
 	}
 
-	if (!(plugin->pcode) || !(plugin->data) || !(plugin->info.stringbase))
+	if (!(plugin->pcode) || !(plugin->memory) || !(plugin->info.stringbase))
 	{
 		goto return_error;
 	}

@@ -73,9 +73,9 @@ struct sp_plugin_t
 	uint8_t		*base;			/**< Base of memory for this plugin. */
 	uint8_t		*pcode;			/**< P-Code of plugin */
 	uint32_t	pcode_size;		/**< Size of p-code */
-	uint8_t		*data;			/**< Data/memory layout */
 	uint32_t	data_size;		/**< Size of data */
-	uint32_t	memory;			/**< Required memory space */
+	uint8_t*	memory;			/**< Memory pointer (includes data) */
+	uint32_t	mem_size;		/**< Required memory space */
 	uint16_t	flags;			/**< Code flags */
 	sp_plugin_infotab_t info;	/**< Base info table */
 	sp_plugin_debug_t   debug;	/**< Debug info table */
