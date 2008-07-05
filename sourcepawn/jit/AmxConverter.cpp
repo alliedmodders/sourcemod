@@ -68,14 +68,16 @@ JsiStream *AmxConverter::Analyze(BaseContext *ctx, uint32_t code_addr, int *err,
 	m_pPri = NULL;
 	m_pAlt = NULL;
 	m_pBuf = new JsiBufWriter(m_pAlloc);
-	m_Stk.reset(m_pBuf);
-
+	
 	if (*(cell_t *)(m_pPlugin->pcode + code_addr) != AMX_OP_PROC)
 	{
 		SetError(SP_ERROR_INVALID_INSTRUCTION, "A function can only start with PROC");
 	}
 	else
 	{
+		m_pParamFrm = m_pBuf->ins_frm();
+		m_Stk.reset(m_pBuf, m_pParamFrm);
+
 		if (!m_Reader.Read(this, m_pPlugin, code_addr + sizeof(cell_t)))
 		{
 			if (m_ErrorCode == SP_ERROR_NONE)

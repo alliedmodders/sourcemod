@@ -141,6 +141,15 @@ void JsiBufWriter::ins_stkdrop(int32_t amt)
 	p->param1.imm = amt;
 }
 
+JIns *JsiBufWriter::ins_frm()
+{
+	JIns *p = ensure_room();
+
+	p->op = J_frm;
+
+	return p;
+}
+
 JIns *JsiBufWriter::ensure_room()
 {
 	JIns *ret_pos;
@@ -289,7 +298,8 @@ const char *op_table[] =
 	"storei",
 	"add",
 	"stkadd",
-	"stkdrop"
+	"stkdrop",
+	"frm"
 };
 
 void JsiPrinter::emit_to_file(FILE *fp)
@@ -341,6 +351,11 @@ void JsiPrinter::emit_to_file(FILE *fp)
 		case J_stkdrop:
 			{
 				fprintf(fp, " %d\n", ins->param1.imm);
+				break;
+			}
+		default:
+			{
+				fprintf(fp, "\n");
 				break;
 			}
 		}

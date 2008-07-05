@@ -7,8 +7,9 @@ using namespace SourcePawn;
 using namespace SourceHook;
 
 
-void StackTracker::reset(JsiBufWriter *writer)
+void StackTracker::reset(JsiBufWriter *writer, JIns *frm)
 {
+	m_pFrm = frm;
 	m_pBuf = writer;
 	m_StackPtr = 0;
 	m_Regions.clear();
@@ -26,8 +27,6 @@ void StackTracker::add(cell_t amt)
 	m_StackPtr -= amt;
 	region.position = m_StackPtr;
 	region.value = NULL;
-	region.addr = m_pBuf->ins_stkadd(amt);
-	region.addr->param2.imm = m_StackPtr;
 
 	m_Regions.push_back(region);
 }
@@ -54,7 +53,7 @@ bool StackTracker::set(cell_t offs, JIns *value)
 	}
 
 	region->value = value;
-	m_pBuf->ins_storei(region->addr, 0, value);
+	m_pBuf->ins_storei(m_pFrm, region->position, value);
 
 	return true;
 }

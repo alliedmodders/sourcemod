@@ -42,8 +42,7 @@ namespace SourcePawn
 		char *m_ErrorBuffer;
 		size_t m_ErrorBufLen;
 		int m_ErrorCode;
-		JIns *m_pParamCtx;
-		JIns *m_pParamMem;
+		JIns *m_pParamFrm;
 		JIns *m_pPri;
 		JIns *m_pAlt;
 		StackTracker m_Stk;

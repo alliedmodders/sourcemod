@@ -14,14 +14,13 @@ namespace SourcePawn
 	struct stack_region_t
 	{
 		cell_t position;
-		JIns *addr;
 		JIns *value;
 	};
 
 	class StackTracker
 	{
 	public:
-		void reset(JsiBufWriter *writer);
+		void reset(JsiBufWriter *writer, JIns *frm);
 		void add(cell_t amt);
 		bool set(cell_t offs, JIns *value);
 		bool drop(cell_t amt);
@@ -30,6 +29,7 @@ namespace SourcePawn
 	private:
 		stack_region_t *find_region(cell_t offs);
 	private:
+		JIns *m_pFrm;
 		cell_t m_StackPtr;
 		JsiBufWriter *m_pBuf;
 		List<stack_region_t> m_Regions;

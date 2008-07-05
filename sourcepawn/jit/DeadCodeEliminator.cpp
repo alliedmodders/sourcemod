@@ -23,22 +23,10 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 				worklist.push(ins);
 				break;
 			}
-		case J_stkadd:
-			{
-				sp += ins->param1.imm;
-				break;
-			}
-		case J_stkdrop:
-			{
-				sp -= ins->param1.imm;
-				break;
-			}
 		case J_store:
 		case J_storei:
 			{
-				/* Check if we're storing to the stack, right now that is 
-				 * automatically something we can ignore. */
-				if (ins->param1.instr->op != J_stkadd)
+				if (ins->param1.instr->op != J_frm)
 				{
 					worklist.push(ins);
 				}
