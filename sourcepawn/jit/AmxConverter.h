@@ -40,6 +40,8 @@ namespace SourcePawn
 		virtual bool OP_SUB_ALT();
 		virtual bool OP_ZERO_REG(AmxReg reg);
 	private:
+		void SetReg(AmxReg reg, JIns *val);
+		JIns *GetReg(AmxReg reg);
 		void SetError(int err, const char *msg, ...);
 	private:
 		AmxReader m_Reader;

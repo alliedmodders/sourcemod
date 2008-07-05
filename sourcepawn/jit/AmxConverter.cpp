@@ -116,6 +116,32 @@ JsiStream *AmxConverter::Analyze(BaseContext *ctx, uint32_t code_addr, int *err,
 	return stream;
 }
 
+void AmxConverter::SetReg(AmxReg reg, JIns *val)
+{
+	if (reg == Amx_Pri)
+	{
+		m_pPri = val;
+	}
+	else if (reg == Amx_Alt)
+	{
+		m_pAlt = val;
+	}
+}
+
+JIns *AmxConverter::GetReg(AmxReg reg)
+{
+	if (reg == Amx_Pri)
+	{
+		return m_pPri;
+	}
+	else if (reg == Amx_Alt)
+	{
+		return m_pAlt;
+	}
+	
+	return NULL;
+}
+
 bool AmxConverter::OP_BREAK()
 {
 	return true;
@@ -175,16 +201,9 @@ bool AmxConverter::OP_PUSH_C(cell_t value)
 
 bool AmxConverter::OP_PUSH_REG(AmxReg reg)
 {
-	JIns *pIns = NULL;
+	JIns *pIns;
 
-	if (reg == Amx_Pri)
-	{
-		pIns = m_pPri;
-	}
-	else if (reg == Amx_Alt)
-	{
-		pIns = m_pAlt;
-	}
+	pIns = GetReg(reg);
 
 	if (pIns == NULL)
 	{
@@ -207,14 +226,7 @@ bool AmxConverter::OP_POP_REG(AmxReg reg)
 		return false;
 	}
 
-	if (reg == Amx_Pri)
-	{
-		m_pPri = pIns;
-	}
-	else if (reg == Amx_Alt)
-	{
-		m_pAlt = pIns;
-	}
+	SetReg(reg, pIns);
 
 	m_Stk.drop(4);
 
@@ -225,14 +237,7 @@ bool AmxConverter::OP_STOR_S_REG(AmxReg reg, cell_t offs)
 {
 	JIns *pIns = NULL;
 
-	if (reg == Amx_Pri)
-	{
-		pIns = m_pPri;
-	}
-	else if (reg == Amx_Alt)
-	{
-		pIns = m_pAlt;
-	}
+	pIns = GetReg(reg);
 
 	if (pIns == NULL)
 	{
@@ -252,14 +257,7 @@ bool AmxConverter::OP_LOAD_S_REG(AmxReg reg, cell_t offs)
 		return false;
 	}
 
-	if (reg == Amx_Pri)
-	{
-		m_pPri = ins;
-	}
-	else if (reg == Amx_Alt)
-	{
-		m_pAlt = ins;
-	}
+	SetReg(reg, ins);
 
 	return true;
 }
@@ -318,14 +316,7 @@ bool AmxConverter::OP_SUB_ALT()
 
 bool AmxConverter::OP_ZERO_REG(AmxReg reg)
 {
-	if (reg == Amx_Pri)
-	{
-		m_pPri = m_pBuf->ins_imm(0);
-	}
-	else if (reg == Amx_Alt)
-	{
-		m_pAlt = m_pBuf->ins_imm(0);
-	}
+	SetReg(reg, m_pBuf->ins_imm(0));
 
 	return true;
 }
