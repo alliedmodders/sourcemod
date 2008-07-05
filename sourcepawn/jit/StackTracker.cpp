@@ -46,7 +46,7 @@ JIns *StackTracker::get(cell_t offs)
 	/* If we're a parameter, we can propagate a default load */
 	if (region->value == NULL && offs >= 0)
 	{
-		region->value = m_pBuf->ins_loadi(m_pFrm, offs);
+		region->value = m_pBuf->ins_load(J_ld, m_pFrm, offs);
 	}
 
 	return region->value;
@@ -62,7 +62,7 @@ bool StackTracker::set(cell_t offs, JIns *value)
 	}
 
 	region->value = value;
-	m_pBuf->ins_storei(m_pFrm, region->position, value);
+	m_pBuf->ins_store(m_pFrm, region->position, value);
 
 	return true;
 }

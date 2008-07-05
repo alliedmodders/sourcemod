@@ -45,10 +45,9 @@ namespace SourcePawn
 		J_prev,				/* [ptr] -- special opcode for previous page */
 		J_return,			/* [instr:retval] */
 		J_imm,				/* [imm:value] -> value */
-		J_load,				/* [instr:base, instr:disp] -> value */
-		J_loadi,			/* [instr:base, imm:disp] -> value */
-		J_store,			/* [instr:base, instr:disp, instr:value] */
-		J_storei,			/* [instr:base, imm:disp, instr:value] */
+		J_ld,				/* [instr:base, imm:disp] -> value */
+		J_ldb,				/* [instr:base, 'instr:disp] -> value */
+		J_st,				/* [instr:base, imm:disp, instr:value] */
 		J_add,				/* [instr:op1, instr:op2] -> value (op1 + op2) */
 		J_sub,				/* [instr:op1, instr:op2] -> value (op1 - op2) */
 		J_stkadd,			/* [imm] -> address */
@@ -94,10 +93,8 @@ namespace SourcePawn
 		virtual JIns *ins_imm(int32_t value);
 		virtual JIns *ins_imm_ptr(void *value);
 		virtual JIns *ins_return(JIns *val);
-		virtual JIns *ins_loadi(JIns *base, int32_t disp);
-		virtual JIns *ins_load(JIns *base, JIns *disp);
-		virtual JIns *ins_storei(JIns *base, int32_t disp, JIns *val);
-		virtual JIns *ins_store(JIns *base, JIns *disp, JIns *val);
+		virtual JIns *ins_load(JitOp op, JIns *base, int32_t disp);
+		virtual JIns *ins_store(JIns *base, int32_t disp, JIns *val);
 		virtual JIns *ins_add(JIns *op1, JIns *op2);
 		virtual JIns *ins_sub(JIns *op1, JIns *op2);
 		virtual JIns *ins_stkadd(int32_t amt);
@@ -115,10 +112,8 @@ namespace SourcePawn
 		virtual JIns *ins_imm(int32_t value);
 		virtual JIns *ins_imm_ptr(void *value);
 		virtual JIns *ins_return(JIns *val);
-		virtual JIns *ins_loadi(JIns *base, int32_t disp);
-		virtual JIns *ins_load(JIns *base, JIns *disp);
-		virtual JIns *ins_storei(JIns *base, int32_t disp, JIns *val);
-		virtual JIns *ins_store(JIns *base, JIns *disp, JIns *val);
+		virtual JIns *ins_load(JitOp op, JIns *base, int32_t disp);
+		virtual JIns *ins_store(JIns *base, int32_t disp, JIns *val);
 		virtual JIns *ins_add(JIns *op1, JIns *op2);
 		virtual JIns *ins_sub(JIns *op1, JIns *op2);
 		virtual JIns *ins_stkadd(int32_t amt);

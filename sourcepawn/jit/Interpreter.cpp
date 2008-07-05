@@ -25,7 +25,7 @@ int SourcePawn::InterpretSSA(BaseContext *pContext,
 		{
 		case J_frm:
 			{
-				ins->value.ptr = plugin->memory + ctx->frm;
+				ins->value.imm = ctx->frm;
 				break;
 			}
 		case J_imm:
@@ -33,26 +33,13 @@ int SourcePawn::InterpretSSA(BaseContext *pContext,
 				ins->value = ins->param1;
 				break;
 			}
-		case J_load:
+		case J_ld:
 			{
 				ins->value.imm = *(int32_t *)
-					((char *)(ins->param1.instr->value.ptr) + ins->param2.instr->value.imm);
+					((char *)(plugin->memory + ins->param1.instr->value.imm) + ins->param2.imm);
 				break;
 			}
-		case J_loadi:
-			{
-				ins->value.imm = *(int32_t *)
-					((char *)(ins->param1.instr->value.ptr) + ins->param2.imm);
-				break;
-			}
-		case J_store:
-			{
-				*(int32_t *)((char *)(ins->param1.instr->value.ptr) + ins->value.instr->value.imm) 
-					=
-					ins->param2.instr->value.imm;
-				break;
-			}
-		case J_storei:
+		case J_st:
 			{
 				*(int32_t *)((char *)(ins->param1.instr->value.ptr) + ins->value.imm) 
 					=

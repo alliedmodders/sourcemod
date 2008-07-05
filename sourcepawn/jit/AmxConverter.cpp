@@ -270,7 +270,7 @@ bool AmxConverter::OP_LOAD_I()
 		return false;
 	}
 
-	m_pPri = m_pBuf->ins_load(m_pParamMem, m_pPri);
+	m_pPri = m_pBuf->ins_load(J_ld, m_pPri, 0);
 
 	return true;
 }

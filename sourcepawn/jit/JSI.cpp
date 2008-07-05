@@ -59,48 +59,25 @@ JIns *JsiBufWriter::ins_return(JIns *val)
 	return p;
 }
 
-JIns *JsiBufWriter::ins_loadi(JIns *base, int32_t disp)
+JIns *JsiBufWriter::ins_load(JitOp op, JIns *base, int32_t disp)
 {
 	JIns *p = ensure_room();
 
-	p->op = uint8_t(J_loadi);
+	p->op = uint8_t(op);
 	p->param1.instr = base;
 	p->param2.imm = disp;
 
 	return p;
 }
 
-JIns *JsiBufWriter::ins_load(JIns *base, JIns *disp)
+JIns *JsiBufWriter::ins_store(JIns *base, int32_t disp, JIns *val)
 {
 	JIns *p = ensure_room();
 
-	p->op = uint8_t(J_load);
-	p->param1.instr = base;
-	p->param2.instr = disp;
-
-	return p;
-}
-
-JIns *JsiBufWriter::ins_storei(JIns *base, int32_t disp, JIns *val)
-{
-	JIns *p = ensure_room();
-
-	p->op = uint8_t(J_storei);
+	p->op = uint8_t(J_st);
 	p->param1.instr = base;
 	p->param2.instr = val;
 	p->value.imm = disp;
-
-	return p;
-}
-
-JIns *JsiBufWriter::ins_store(JIns *base, JIns *disp, JIns *val)
-{
-	JIns *p = ensure_room();
-
-	p->op = uint8_t(J_store);
-	p->param1.instr = base;
-	p->param2.instr = val;
-	p->value.instr = disp;
 
 	return p;
 }
@@ -228,22 +205,12 @@ JIns *JsiPipeline::ins_return(JIns *val)
 	return m_pOut->ins_return(val);
 }
 
-JIns *JsiPipeline::ins_loadi(JIns *base, int32_t disp)
+JIns *JsiPipeline::ins_load(JitOp op, JIns *base, int32_t disp)
 {
-	return m_pOut->ins_loadi(base, disp);
+	return m_pOut->ins_load(op, base, disp);
 }
 
-JIns *JsiPipeline::ins_load(JIns *base, JIns *disp)
-{
-	return m_pOut->ins_load(base, disp);
-}
-
-JIns *JsiPipeline::ins_storei(JIns *base, int32_t disp, JIns *val)
-{
-	return m_pOut->ins_storei(base, disp, val);
-}
-
-JIns *JsiPipeline::ins_store(JIns *base, JIns *disp, JIns *val)
+JIns *JsiPipeline::ins_store(JIns *base, int32_t disp, JIns *val)
 {
 	return m_pOut->ins_store(base, disp, val);
 }
@@ -360,10 +327,9 @@ const char *op_table[] =
 	"prev",
 	"return",
 	"imm",
-	"load",
-	"loadi",
-	"store",
-	"storei",
+	"ld",
+	"ldb",
+	"st",
 	"add",
 	"sub",
 	"stkadd",
@@ -391,31 +357,18 @@ void JsiPrinter::emit_to_file(FILE *fp)
 				fprintf(fp, " #%d\n", ins->param1.imm);
 				break;
 			}
-		case J_load:
+		case J_ld:
+		case J_ldb:
 			{
 				fprintf(fp, " %p(%p)\n", ins->param2.instr, ins->param1.instr);
 				break;
 			}
-		case J_loadi:
-			{
-				fprintf(fp, " #%d(%p)\n", ins->param2.imm, ins->param1.instr);
-				break;
-			}
-		case J_store:
-			{
-				fprintf(fp, " %p(%p), %p\n", ins->value.instr, ins->param1.instr, ins->param2.instr);
-				break;
-			}
-		case J_storei:
+		case J_st:
 			{
 				fprintf(fp, " #%d(%p), %p\n", ins->value.imm, ins->param1.instr, ins->param2.instr);
 				break;
 			}
 		case J_add:
-			{
-				fprintf(fp, " %p, %p\n", ins->param1.instr, ins->param2.instr);
-				break;
-			}
 		case J_sub:
 			{
 				fprintf(fp, " %p, %p\n", ins->param1.instr, ins->param2.instr);
@@ -435,3 +388,4 @@ void JsiPrinter::emit_to_file(FILE *fp)
 		}
 	}
 }
+

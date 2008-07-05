@@ -23,8 +23,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 				worklist.push(ins);
 				break;
 			}
-		case J_store:
-		case J_storei:
+		case J_st:
 			{
 				if (ins->param1.instr->op != J_frm)
 				{
@@ -44,7 +43,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 		ins = worklist.front();
 		worklist.pop();
 
-		if (ins->op != J_store && ins->op != J_storei)
+		if (ins->op != J_st)
 		{
 			ins->value.imm = 1;
 		}
@@ -52,10 +51,9 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 		switch (ins->op)
 		{
 		case J_return:
-		case J_load:
-		case J_loadi:
-		case J_store:
-		case J_storei:
+		case J_ld:
+		case J_ldb:
+		case J_st:
 		case J_add:
 		case J_sub:
 			{
@@ -63,8 +61,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 
 				switch(ins->op)
 				{
-				case J_load:
-				case J_store:
+				case J_st:
 				case J_add:
 				case J_sub:
 					{
@@ -73,7 +70,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 					}
 				}
 
-				if (ins->op == J_store)
+				if (ins->op == J_st)
 				{
 					worklist.push(ins->value.instr);
 				}
@@ -86,7 +83,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 	JsiForwardReader fwd(*stream);
 	while ((ins = fwd.next()) != NULL)
 	{
-		if (ins->op == J_store || ins->op == J_storei || ins->value.imm == 1)
+		if (ins->op == J_st || ins->value.imm == 1)
 		{
 			continue;
 		}
