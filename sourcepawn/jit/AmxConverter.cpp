@@ -243,3 +243,17 @@ bool AmxConverter::OP_SUB_ALT()
 
 	return true;
 }
+
+bool AmxConverter::OP_ZERO_REG(AmxReg reg)
+{
+	if (reg == Amx_Pri)
+	{
+		m_pPri = m_pBuf->ins_imm(0);
+	}
+	else if (reg == Amx_Alt)
+	{
+		m_pAlt = m_pBuf->ins_imm(0);
+	}
+
+	return true;
+}
