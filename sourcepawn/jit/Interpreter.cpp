@@ -23,6 +23,11 @@ int SourcePawn::InterpretSSA(BaseContext *pContext,
 
 		switch (ins->op)
 		{
+		case J_frm:
+			{
+				ins->value.ptr = plugin->base + ctx->frm;
+				break;
+			}
 		case J_imm:
 			{
 				ins->value = ins->param1;
@@ -57,6 +62,11 @@ int SourcePawn::InterpretSSA(BaseContext *pContext,
 		case J_add:
 			{
 				ins->value.imm = ins->param1.instr->value.imm + ins->param2.instr->value.imm;
+				break;
+			}
+		case J_sub:
+			{
+				ins->value.imm = ins->param1.instr->value.imm - ins->param2.instr->value.imm;
 				break;
 			}
 		case J_return:

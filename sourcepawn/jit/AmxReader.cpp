@@ -272,6 +272,11 @@ bool AmxReader::Read(IAmxListener *pListener, const sp_plugin_t *pl, cell_t code
 				success = pListener->OP_ADD_C(*(m_pCode - 1));
 				break;
 			}
+		case OP_SUB_ALT:
+			{
+				success = pListener->OP_SUB_ALT();
+				break;
+			}
 		default:
 			{
 				success = false;

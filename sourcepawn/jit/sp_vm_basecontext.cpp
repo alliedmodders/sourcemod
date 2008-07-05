@@ -711,3 +711,20 @@ int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 	return SP_ERROR_NONE;
 }
 
+int BaseContext::PushCell(cell_t value)
+{
+	if ((m_ctx.hp + STACKMARGIN) > (cell_t)(m_ctx.sp - sizeof(cell_t)))
+	{
+		return SP_ERROR_STACKLOW;
+	}
+
+	m_ctx.sp -= sizeof(cell_t);
+	*(cell_t *)(m_pPlugin->base + m_ctx.sp) = value;
+
+	return SP_ERROR_NONE;
+}
+
+void BaseContext::MarkFrame()
+{
+	m_ctx.frm = m_ctx.sp;
+}

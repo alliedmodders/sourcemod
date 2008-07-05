@@ -1,14 +1,9 @@
 #include <sourcemod>
 
-public main()
+public main2(a, b, c)
 {
-	new a, b, c, d
-
-	a = 5
-	a = a + b
-	b = 8
-	c = b
-	d = b + c
-
-	return a + d
+	new d = a + b
+	new f = c - d
+	new g = d + f
+	return d
 }

@@ -128,6 +128,9 @@ public: //IPluginDebugInfo
 	int LookupFunction(ucell_t addr, const char **name);
 	int LookupLine(ucell_t addr, uint32_t *line);
 public:
+	int PushCell(cell_t value);
+	void MarkFrame();
+public:
 	unsigned int GetProfCallbackSerial();
 private:
 	void SetErrorMessage(const char *msg, va_list ap);

@@ -113,7 +113,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	pMain = pContext->GetFunctionByName("main");
+	pMain = pContext->GetFunctionByName("main2");
 	if (pMain == NULL)
 	{
 		fprintf(stderr, "Could not find a main function in plugin.");
@@ -136,6 +136,9 @@ int main(int argc, char **argv)
 		}
 	}
 
+	pMain->PushCell(1);
+	pMain->PushCell(2);
+	pMain->PushCell(3);
 	err = pMain->Execute(&res);
 	if (err != SP_ERROR_NONE)
 	{
@@ -145,6 +148,8 @@ int main(int argc, char **argv)
 	{
 		fprintf(stdout, "Plugin returned value: %d\n", res);
 	}
+
+	getchar();
 
 	engine->DestroyContext(pContext);
 	FreeLibrary(pJitLib);

@@ -24,6 +24,7 @@ namespace SourcePawn
 		virtual bool OP_LOAD_S_REG(AmxReg reg, cell_t offs) = 0;
 		virtual bool OP_ADD() = 0;
 		virtual bool OP_ADD_C(cell_t value) = 0;
+		virtual bool OP_SUB_ALT() = 0;
 	};
 }
 

@@ -50,6 +50,7 @@ namespace SourcePawn
 		J_store,			/* [instr:base, instr:disp, instr:value] */
 		J_storei,			/* [instr:base, imm:disp, instr:value] */
 		J_add,				/* [instr:op1, instr:op2] -> value (op1 + op2) */
+		J_sub,				/* [instr:op1, instr:op2] -> value (op1 - op2) */
 		J_stkadd,			/* [imm] -> address */
 		J_stkdrop,			/* [imm] */
 		J_frm,				/* [] -> address */
@@ -98,6 +99,7 @@ namespace SourcePawn
 		virtual JIns *ins_storei(JIns *base, int32_t disp, JIns *val);
 		virtual JIns *ins_store(JIns *base, JIns *disp, JIns *val);
 		virtual JIns *ins_add(JIns *op1, JIns *op2);
+		virtual JIns *ins_sub(JIns *op1, JIns *op2);
 		virtual JIns *ins_stkadd(int32_t amt);
 		virtual void ins_stkdrop(int32_t amt);
 		virtual JIns *ins_frm();

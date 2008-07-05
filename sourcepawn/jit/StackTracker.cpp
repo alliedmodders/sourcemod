@@ -13,6 +13,7 @@ void StackTracker::reset(JsiBufWriter *writer, JIns *frm)
 	m_pBuf = writer;
 	m_StackPtr = 0;
 	m_Regions.clear();
+	memset(&m_LocalParams[0], 0, sizeof(m_LocalParams));
 }
 
 cell_t StackTracker::top()
@@ -40,6 +41,12 @@ JIns *StackTracker::get(cell_t offs)
 		return NULL;
 	}
 
+	/* If we're a parameter, we can propagate a default load */
+	if (region->value == NULL && offs >= 0)
+	{
+		region->value = m_pBuf->ins_loadi(m_pFrm, offs);
+	}
+
 	return region->value;
 }
 
@@ -60,14 +67,28 @@ bool StackTracker::set(cell_t offs, JIns *value)
 
 stack_region_t *StackTracker::find_region(cell_t offs)
 {
-	List<stack_region_t>::iterator iter;
-
-	for (iter = m_Regions.begin(); iter != m_Regions.end(); iter++)
+	if (offs < 0)
 	{
-		if ((*iter).position == offs)
+		List<stack_region_t>::iterator iter;
+
+		for (iter = m_Regions.begin(); iter != m_Regions.end(); iter++)
 		{
-			return &(*iter);
+			if ((*iter).position == offs)
+			{
+				return &(*iter);
+			}
 		}
+	}
+	else
+	{
+		offs >>= 2;
+
+		if (offs >= STACK_FRAME_REACH)
+		{
+			return NULL;
+		}
+
+		return &m_LocalParams[offs];
 	}
 
 	return NULL;

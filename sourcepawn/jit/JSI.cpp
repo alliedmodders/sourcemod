@@ -111,11 +111,31 @@ JIns *JsiBufWriter::ins_add(JIns *op1, JIns *op2)
 
 	if (op1->op == J_imm && op2->op == J_imm)
 	{
-		return ins_imm(op1->param1.imm + op2->param1.imm);
+		p->op = uint8_t(J_imm);
+		p->param1.imm = op1->param1.imm + op2->param1.imm;
 	}
 	else
 	{
 		p->op = uint8_t(J_add);
+		p->param1.instr = op1;
+		p->param2.instr = op2;
+	}
+
+	return p;
+}
+
+JIns *JsiBufWriter::ins_sub(JIns *op1, JIns *op2)
+{
+	JIns *p = ensure_room();
+
+	if (op1->op == J_imm && op2->op == J_imm)
+	{
+		p->op = uint8_t(J_imm);
+		p->param1.imm = op1->param1.imm - op2->param1.imm;
+	}
+	else
+	{
+		p->op = uint8_t(J_sub);
 		p->param1.instr = op1;
 		p->param2.instr = op2;
 	}
@@ -297,6 +317,7 @@ const char *op_table[] =
 	"store",
 	"storei",
 	"add",
+	"sub",
 	"stkadd",
 	"stkdrop",
 	"frm"

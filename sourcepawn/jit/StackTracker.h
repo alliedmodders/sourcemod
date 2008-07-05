@@ -33,6 +33,7 @@ namespace SourcePawn
 		cell_t m_StackPtr;
 		JsiBufWriter *m_pBuf;
 		List<stack_region_t> m_Regions;
+		stack_region_t m_LocalParams[STACK_FRAME_REACH];
 	};
 }
 

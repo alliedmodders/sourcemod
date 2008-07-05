@@ -65,6 +65,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 				case J_load:
 				case J_store:
 				case J_add:
+				case J_sub:
 					{
 						worklist.push(ins->param2.instr);
 						break;
@@ -80,8 +81,6 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 			}
 		}
 	}
-
-	JsiBufWriter buf(&g_PageAlloc);
 
 	JsiForwardReader fwd(*stream);
 	while ((ins = fwd.next()) != NULL)

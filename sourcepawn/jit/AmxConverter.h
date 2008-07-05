@@ -34,6 +34,7 @@ namespace SourcePawn
 		virtual bool OP_LOAD_S_REG(AmxReg reg, cell_t offs);
 		virtual bool OP_ADD();
 		virtual bool OP_ADD_C(cell_t value);
+		virtual bool OP_SUB_ALT();
 	private:
 		void SetError(int err, const char *msg, ...);
 	private:

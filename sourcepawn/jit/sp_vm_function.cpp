@@ -88,6 +88,7 @@ bool CFunction::Compile()
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
 	int ir, serial;
+	unsigned int num;
 
 	ir = 0;
 	serial = 0;
@@ -108,8 +109,22 @@ int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_
 		{
 			return SP_ERROR_NOT_RUNNABLE;
 		}
-		ir = InterpretSSA(m_pContext, m_pCode, result);
 	}
+
+	num = num_params;
+	while (num--)
+	{
+		m_pContext->PushCell(params[num]);
+	}
+	m_pContext->PushCell(num_params);
+
+	/* Two bogus pushes */
+	m_pContext->PushCell(0);
+	m_pContext->PushCell(0);
+
+	m_pContext->MarkFrame();
+
+	ir = InterpretSSA(m_pContext, m_pCode, result);
 
 	if (serial != 0)
 	{

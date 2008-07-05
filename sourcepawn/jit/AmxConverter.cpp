@@ -230,3 +230,16 @@ bool AmxConverter::OP_ADD_C(cell_t value)
 
 	return true;
 }
+
+bool AmxConverter::OP_SUB_ALT()
+{
+	if (m_pPri == NULL || m_pAlt == NULL)
+	{
+		SetError(SP_ERROR_INVALID_INSTRUCTION, "SUB.ALT used with uninitialized operands");
+		return false;
+	}
+
+	m_pPri = m_pBuf->ins_sub(m_pAlt, m_pPri);
+
+	return true;
+}
