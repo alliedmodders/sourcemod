@@ -57,6 +57,7 @@ void SourcePawn::DeadCodeEliminator(const JsiStream *stream)
 		case J_store:
 		case J_storei:
 		case J_add:
+		case J_sub:
 			{
 				worklist.push(ins->param1.instr);
 
