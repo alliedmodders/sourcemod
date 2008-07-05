@@ -30,8 +30,11 @@ namespace SourcePawn
 		virtual bool OP_STACK(cell_t offs);
 		virtual bool OP_CONST_S(cell_t offs, cell_t value);
 		virtual bool OP_PUSH_C(cell_t value);
+		virtual bool OP_PUSH_REG(AmxReg reg);
+		virtual bool OP_POP_REG(AmxReg reg);
 		virtual bool OP_STOR_S_REG(AmxReg reg, cell_t offs);
 		virtual bool OP_LOAD_S_REG(AmxReg reg, cell_t offs);
+		virtual bool OP_LOAD_I();
 		virtual bool OP_ADD();
 		virtual bool OP_ADD_C(cell_t value);
 		virtual bool OP_SUB_ALT();
@@ -44,6 +47,7 @@ namespace SourcePawn
 		char *m_ErrorBuffer;
 		size_t m_ErrorBufLen;
 		int m_ErrorCode;
+		JIns *m_pParamMem;
 		JIns *m_pParamFrm;
 		JIns *m_pPri;
 		JIns *m_pAlt;

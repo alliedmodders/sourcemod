@@ -84,6 +84,7 @@ JsiStream *AmxConverter::Analyze(BaseContext *ctx, uint32_t code_addr, int *err,
 	}
 	else
 	{
+		m_pParamMem = m_pBuf->ins_imm_ptr(m_pPlugin->memory);
 		m_pParamFrm = m_pBuf->ins_frm();
 		m_Stk.reset(m_pBuf, m_pParamFrm);
 
@@ -134,6 +135,12 @@ bool AmxConverter::OP_RETN()
 		return false;
 	}
 
+	if (m_Stk.top() != 0)
+	{
+		SetError(SP_ERROR_STACKLEAK, "Return edge has a stack leak");
+		return false;
+	}
+
 	m_pBuf->ins_return(m_pPri);
 
 	m_Reader.SetDone();
@@ -164,6 +171,54 @@ bool AmxConverter::OP_PUSH_C(cell_t value)
 {
 	m_Stk.add(4);
 	return m_Stk.set(m_Stk.top(), m_pBuf->ins_imm(value));
+}
+
+bool AmxConverter::OP_PUSH_REG(AmxReg reg)
+{
+	JIns *pIns = NULL;
+
+	if (reg == Amx_Pri)
+	{
+		pIns = m_pPri;
+	}
+	else if (reg == Amx_Alt)
+	{
+		pIns = m_pAlt;
+	}
+
+	if (pIns == NULL)
+	{
+		SetError(SP_ERROR_INSTRUCTION_PARAM, "Invalid or unset register used");
+		return false;
+	}
+
+	m_Stk.add(4);
+
+	return m_Stk.set(m_Stk.top(), pIns);
+}
+
+bool AmxConverter::OP_POP_REG(AmxReg reg)
+{
+	JIns *pIns;
+
+	if ((pIns = m_Stk.get(m_Stk.top())) == NULL)
+	{
+		SetError(SP_ERROR_INVALID_INSTRUCTION, "POP used without a valid stack");
+		return false;
+	}
+
+	if (reg == Amx_Pri)
+	{
+		m_pPri = pIns;
+	}
+	else if (reg == Amx_Alt)
+	{
+		m_pAlt = pIns;
+	}
+
+	m_Stk.drop(4);
+
+	return true;
 }
 
 bool AmxConverter::OP_STOR_S_REG(AmxReg reg, cell_t offs)
@@ -205,6 +260,19 @@ bool AmxConverter::OP_LOAD_S_REG(AmxReg reg, cell_t offs)
 	{
 		m_pAlt = ins;
 	}
+
+	return true;
+}
+
+bool AmxConverter::OP_LOAD_I()
+{
+	if (m_pPri == NULL)
+	{
+		SetError(SP_ERROR_INVALID_INSTRUCTION, "LOAD.I used with an uninitialized operand");
+		return false;
+	}
+
+	m_pPri = m_pBuf->ins_load(m_pParamMem, m_pPri);
 
 	return true;
 }

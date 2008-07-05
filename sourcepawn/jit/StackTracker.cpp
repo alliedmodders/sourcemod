@@ -104,6 +104,7 @@ bool StackTracker::drop(cell_t amt)
 	}
 
 	m_pBuf->ins_stkdrop(amt);
+	m_StackPtr += amt;
 
 	/* :TODO: Make this backwards and short-cut out... */
 	List<stack_region_t>::iterator iter = m_Regions.begin();

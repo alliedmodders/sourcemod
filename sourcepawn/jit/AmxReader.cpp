@@ -228,6 +228,26 @@ bool AmxReader::Read(IAmxListener *pListener, const sp_plugin_t *pl, cell_t code
 				success = pListener->OP_PUSH_C(*(m_pCode - 1));
 				break;
 			}
+		case OP_PUSH_PRI:
+			{
+				success = pListener->OP_PUSH_REG(Amx_Pri);
+				break;
+			}
+		case OP_PUSH_ALT:
+			{
+				success = pListener->OP_PUSH_REG(Amx_Alt);
+				break;
+			}
+		case OP_POP_PRI:
+			{
+				success = pListener->OP_POP_REG(Amx_Pri);
+				break;
+			}
+		case OP_POP_ALT:
+			{
+				success = pListener->OP_POP_REG(Amx_Alt);
+				break;
+			}
 		case OP_STOR_S_PRI:
 			{
 				m_pCode++;
@@ -259,6 +279,11 @@ bool AmxReader::Read(IAmxListener *pListener, const sp_plugin_t *pl, cell_t code
 				{
 					success = pListener->OP_LOAD_S_REG(Amx_Alt, *(m_pCode - 1));
 				}
+				break;
+			}
+		case OP_LOAD_I:
+			{
+				success = pListener->OP_LOAD_I();
 				break;
 			}
 		case OP_ADD:

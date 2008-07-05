@@ -20,8 +20,11 @@ namespace SourcePawn
 		virtual bool OP_STACK(cell_t offs) = 0;
 		virtual bool OP_CONST_S(cell_t offs, cell_t value) = 0;
 		virtual bool OP_PUSH_C(cell_t value) = 0;
+		virtual bool OP_PUSH_REG(AmxReg reg) = 0;
+		virtual bool OP_POP_REG(AmxReg reg) = 0;
 		virtual bool OP_STOR_S_REG(AmxReg reg, cell_t offs) = 0;
 		virtual bool OP_LOAD_S_REG(AmxReg reg, cell_t offs) = 0;
+		virtual bool OP_LOAD_I() = 0;
 		virtual bool OP_ADD() = 0;
 		virtual bool OP_ADD_C(cell_t value) = 0;
 		virtual bool OP_SUB_ALT() = 0;

@@ -342,7 +342,7 @@ int CFunction::Execute(cell_t *result)
 	/* Make the call if we can */
 	if (err == SP_ERROR_NONE)
 	{
-		if ((err = CallFunction(temp_params, numparams, result)) != SP_ERROR_NONE)
+		if ((m_errorstate = CallFunction(temp_params, numparams, result)) != SP_ERROR_NONE)
 		{
 			docopies = false;
 		}
@@ -387,9 +387,13 @@ int CFunction::Execute(cell_t *result)
 
 		if ((err=m_pContext->HeapPop(temp_info[i].local_addr)) != SP_ERROR_NONE)
 		{
+			m_errorstate = SP_ERROR_NONE;
 			return err;
 		}
 	}
+
+	err = m_errorstate;
+	m_errorstate = SP_ERROR_NONE;
 
 	return err;
 }

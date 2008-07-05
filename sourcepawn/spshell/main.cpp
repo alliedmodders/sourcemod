@@ -136,9 +136,8 @@ int main(int argc, char **argv)
 		}
 	}
 
-	pMain->PushCell(1);
-	pMain->PushCell(2);
-	pMain->PushCell(3);
+	cell_t arr[3] = {1,2,3};
+	pMain->PushArray(arr, 3);
 	err = pMain->Execute(&res);
 	if (err != SP_ERROR_NONE)
 	{
