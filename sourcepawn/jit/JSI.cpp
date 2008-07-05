@@ -368,6 +368,11 @@ void JsiPrinter::emit_to_file(FILE *fp)
 				fprintf(fp, " %p, %p\n", ins->param1.instr, ins->param2.instr);
 				break;
 			}
+		case J_sub:
+			{
+				fprintf(fp, " %p, %p\n", ins->param1.instr, ins->param2.instr);
+				break;
+			}
 		case J_stkadd:
 		case J_stkdrop:
 			{

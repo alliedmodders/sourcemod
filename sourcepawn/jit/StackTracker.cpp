@@ -29,6 +29,8 @@ void StackTracker::add(cell_t amt)
 	region.position = m_StackPtr;
 	region.value = NULL;
 
+	m_pBuf->ins_stkadd(amt);
+
 	m_Regions.push_back(region);
 }
 
