@@ -1258,8 +1258,62 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsConnected()) {
+	}
+	else if (!pPlayer->IsConnected())
+	{
 		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	/* Ignore duplicate kicks */
+	if (pPlayer->IsInKickQueue())
+	{
+		return 1;
+	}
+
+	pPlayer->MarkAsBeingKicked();
+
+	if (pPlayer->IsFakeClient())
+	{
+		char kickcmd[40];
+		UTIL_Format(kickcmd, sizeof(kickcmd), "kick %s\n", pPlayer->GetName());
+
+		engine->ServerCommand(kickcmd);
+		return 1;
+	}
+
+	g_SourceMod.SetGlobalTarget(client);
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), buffer);
+
+	return 1;
+}
+
+static cell_t KickClientEx(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+	else if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	/* Ignore duplicate kicks */
+	if (pPlayer->IsInKickQueue())
+	{
+		return 1;
 	}
 
 	pPlayer->MarkAsBeingKicked();
@@ -1460,6 +1514,7 @@ REGISTER_NATIVES(playernatives)
 	{"ShowActivityEx",			ShowActivityEx},
 	{"ShowActivity2",			ShowActivity2},
 	{"KickClient",				KickClient},
+	{"KickClientEx",			KickClientEx},
 	{"RunAdminCacheChecks",		RunAdminCacheChecks},
 	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
 	{"IsClientInKickQueue",		IsClientInKickQueue},

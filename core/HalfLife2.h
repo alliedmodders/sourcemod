@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -79,6 +79,13 @@ struct CachedCommandInfo
 #endif
 };
 
+struct DelayedKickInfo
+{
+	int userid;
+	int client;
+	char buffer[384];
+};
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -110,6 +117,8 @@ public:
 	void PopCommandStack();
 	const CCommand *PeekCommandStack();
 	const char *CurrentCommandName();
+	void AddDelayedKick(int client, int userid, const char *msg);
+	void ProcessDelayedKicks();
 #if !defined METAMOD_PLAPI_VERSION
 	bool IsOriginalEngine();
 #endif
@@ -125,6 +134,7 @@ private:
 	Queue<DelayedFakeCliCmd *> m_CmdQueue;
 	CStack<DelayedFakeCliCmd *> m_FreeCmds;
 	CStack<CachedCommandInfo> m_CommandStack;
+	Queue<DelayedKickInfo> m_DelayedKicks;
 };
 
 extern CHalfLife2 g_HL2;

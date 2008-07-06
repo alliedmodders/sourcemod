@@ -634,7 +634,28 @@ native Float:GetClientAvgPackets(client, NetFlow:flow);
 native GetClientOfUserId(userid);
 
 /**
- * Disconnects a client from the server.  
+ * Disconnects a client from the server as soon as the next frame starts.
+ *
+ * Note: Originally, KickClient() was immediate.  The delay was introduced 
+ * because despite warnings, plugins were using it in ways that would crash. 
+ * The new safe version can break cases that rely on immediate disconnects, 
+ * but ensures that plugins do not accidentally cause crashes.
+ *
+ * If you need immediate disconnects, use KickClientEx().
+ *
+ * Note: IsClientInKickQueue() will return true before the kick occurs.
+ *
+ * @param client		Client index.
+ * @param format		Optional formatting rules for disconnect reason.
+ *                      Note that a period is automatically appended to the string by the engine.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ * @error				Invalid client index, or client not connected.
+ */
+native KickClient(client, const String:format[]="", any:...);
+
+/**
+ * Immediately disconnects a client from the server.
  *
  * Kicking clients from certain events or callbacks may cause crashes.  If in 
  * doubt, create a short (0.1 second) timer to kick the client in the next 
@@ -647,7 +668,7 @@ native GetClientOfUserId(userid);
  * @noreturn
  * @error				Invalid client index, or client not connected.
  */
-native KickClient(client, const String:format[]="", any:...);
+native KickClientEx(client, const String:format[]="", any:...);
 
 /**
  * Changes a client's team through the mod's generic team changing function.

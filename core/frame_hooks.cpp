@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -44,6 +44,7 @@ void RunFrameHooks(bool simulating)
 	/* Frame based hooks */
 	g_DBMan.RunFrame();
 	g_HL2.ProcessFakeCliCmdQueue();
+	g_HL2.ProcessDelayedKicks();
 	g_SourceMod.ProcessGameFrameHooks(simulating);
 
 	float curtime = *g_pUniversalTime;

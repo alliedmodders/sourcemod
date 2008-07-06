@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -510,4 +510,32 @@ const char *CHalfLife2::CurrentCommandName()
 #else
 	return m_CommandStack.front().cmd;
 #endif
+}
+
+void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
+{
+	DelayedKickInfo kick;
+
+	kick.client = client;
+	kick.userid = userid;
+	UTIL_Format(kick.buffer, sizeof(kick.buffer), "%s", msg);
+
+	m_DelayedKicks.push(kick);
+}
+
+void CHalfLife2::ProcessDelayedKicks()
+{
+	while (!m_DelayedKicks.empty())
+	{
+		DelayedKickInfo info = m_DelayedKicks.first();
+		m_DelayedKicks.pop();
+
+		CPlayer *player = g_Players.GetPlayerByIndex(info.client);
+		if (player == NULL || player->GetUserId() != info.userid)
+		{
+			continue;
+		}
+
+		player->Kick(info.buffer);
+	}
 }
