@@ -64,7 +64,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot; &quot;$(HL2SDK)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDK)\lib\public\mathlib.lib&quot; dbghelp.lib"
+				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot; &quot;$(HL2SDK)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDK)\lib\public\mathlib.lib&quot; dbghelp.lib &quot;Wsock32.lib&quot;"
 				OutputFile="$(OutDir)\sourcemod.1.ep1.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
@@ -311,7 +311,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(HL2SDKOB)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOB)\lib\public\tier1.lib&quot; &quot;$(HL2SDKOB)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKOB)\lib\public\mathlib.lib&quot; dbghelp.lib"
+				AdditionalDependencies="&quot;$(HL2SDKOB)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOB)\lib\public\tier1.lib&quot; &quot;$(HL2SDKOB)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKOB)\lib\public\mathlib.lib&quot; dbghelp.lib &quot;Wsock32.lib&quot;"
 				OutputFile="$(OutDir)\sourcemod.2.ep2.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
@@ -558,7 +558,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot; &quot;$(HL2SDK)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDK)\lib\public\mathlib.lib&quot; dbghelp.lib"
+				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot; &quot;$(HL2SDK)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDK)\lib\public\mathlib.lib&quot; dbghelp.lib &quot;Wsock32.lib&quot;"
 				OutputFile="$(OutDir)\sourcemod.2.ep1.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
