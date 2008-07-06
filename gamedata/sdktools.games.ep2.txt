@@ -359,6 +359,11 @@
 	{
 		"Offsets"
 		{
+			"GiveNamedItem"
+			{
+				"windows"	"350"
+				"linux"		"351"
+			}
 			"RemovePlayerItem"
 			{
 				"windows"	"238"
