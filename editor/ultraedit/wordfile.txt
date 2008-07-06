@@ -1,0 +1,70 @@
+/L20"SourcePawn" Line Comment = // Block Comment On = /* Block Comment Off = */ Escape Char = \ String Chars = "' File Extensions = INC SP
+/Delimiters = ~!@%^&*()-+=|\/{}[]:;"'<> ,	.?
+/Regexp Type = Perl
+/Function String = "^(?:(?:public|stock|native|forward)[ \t]+|(?:))(?:[\w\d_]+:|(?:))([\w\d_@]+)\([\w\d \t.,_:&='"\[\]{}]*\)"
+/Function String 1 = "^functag[ \t]+([\w\d_]+)[ \t]+(?:[\w\d_]+:|(?:))public\([\w\d \t.,_:&='"\[\]{}]*\)"
+/Function String 2 = "^funcenum[ \t]+([\w\d_]+)$"
+/Indent Strings = "{"
+/Unindent Strings = "}"
+/Open Fold Strings = "{"
+/Close Fold Strings = "}"
+/C1"Keywords"
+assert
+begin break
+case const continue
+decl default do
+else enum exit
+for forward funcenum functag
+if
+native new
+operator
+public
+return
+static stock struct switch
+while
+/C2"Directives"
+#assert #define #else #elseif #emit #endif #endinput #endscript #if #include #pragma #error #tryinclude #undef
+align
+ctrlchar
+defined dynamic
+library
+pack
+rational
+semicolon
+tabsize
+/C3"Operators"
++
+-
+=
+// /
+%
+&
+>
+<
+^
+!
+|
+~
+:
+?
+cellsof chars
+sizeof
+tagof
+/C4"Tags"
+any
+bool
+Float Function
+Handle
+Plugin
+String
+/C5"Constants"
+__Pawn __version
+cellbits cellmax cellmin charbits charmax charmin
+debug
+myinfo
+ucharmax
+INVALID_HANDLE
+/C6"Stocks"
+# TODO
+/C7"Natives"
+# TODO

@@ -1,0 +1,83 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"#format"		"{1:s}"
+		"en"			"Initiated a vote: {1}"
+	}
+	
+	"Initiated Vote Map"
+	{
+		"en"			"Initiated a map vote."
+	}	
+	
+	"Initiated Vote Kick"
+	{
+		"#format"		"{1:s}"
+		"en"			"Initiated a kick vote against {1}."
+	}
+	
+	"Initiated Vote Ban"
+	{
+		"#format"		"{1:s}"
+		"en"			"Initiated a ban vote against {1}."
+	}
+	
+	"Map Vote"
+	{
+		"#format"		"{1:s}"
+		"en"			"Map Vote: {1}"
+	}
+	
+	"Change Map To"
+	{
+		"#format"		"{1:s}"
+		"en"			"Change map to {1}?"
+	}	
+
+	"Votekick Player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Kick {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"#format"		"{1:s}"
+		"en"			"Ban {1}?"
+	}
+	
+	"Vote Successful"
+	{
+		"#format"		"{1:d},{2:d}"
+		"en"			"Vote successful. (Received {1}%% of {2} votes)"
+	}	
+	
+	"Vote Failed"
+	{
+		"#format"		"{1:d},{2:d},{3:d}"
+		"en"			"Vote failed. {1}%% vote required. (Received {2}%% of {3} votes)"
+	}	
+
+	"Vote End"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"The answer to {1} is: {2}."
+	}
+	"Kick vote"
+	{
+		"en"			"Kick vote"
+	}
+	"Ban vote"
+	{
+		"en"			"Ban vote"
+	}
+	"Map vote"
+	{
+		"en"			"Map vote"
+	}
+	"Confirm Vote"
+	{
+		"en"			"Confirm Vote"
+	}
+}

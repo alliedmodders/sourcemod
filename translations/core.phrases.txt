@@ -1,0 +1,59 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"en"			"You do not have access to this command"
+	}
+	
+	"Back"
+	{
+		"en"			"Back"
+	}
+	
+	"Next"
+	{
+		"en"			"Next"
+	}
+	
+	"Exit"
+	{
+		"en"			"Exit"
+	}
+	
+	"Previous"
+	{
+		"en"			"Previous"
+	}
+	
+	"all players"
+	{
+		"en"			"all players"
+	}
+	
+	"all humans"
+	{
+		"en"			"all humans"
+	}
+	
+	"all bots"
+	{
+		"en"			"all bots"
+	}
+	
+	"all dead players"
+	{
+		"en"			"all dead players"
+	}
+	
+	"all alive players"
+	{
+		"en"			"all alive players"
+	}
+	
+	/* This is a special "pass-thru" translation */
+	"_s"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1}"
+	}
+}

@@ -1,0 +1,33 @@
+VS_VERSION_INFO VERSIONINFO
+
+FILEVERSION 1,5,0,0
+PRODUCTVERSION 1,5,0,0
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_APP // VFT_APP VFT_DLL
+//FILEFLGAGS:
+// VS_FF_DEBUG VS_FF_PRERELEASE VS_FF_PATCHED VS_FF_PRIVATEBUILD VS_FF_INFOINFERRED VS_FF_SPECIALBUILD
+
+BEGIN
+	BLOCK "StringFileInfo"
+	BEGIN
+		BLOCK "040904b0"
+		BEGIN
+			VALUE "Comments", "SPCOMP compile.exe\0"
+			//VALUE "CompanyName", "AMXX Development Team\0"
+			VALUE "FileDescription", "SPCOMP compile.exe\0"
+			VALUE "FileVersion", "1.0\0"
+			VALUE "InternalName", "SPCOMP compile.exe\0"
+			VALUE "LegalCopyright", "(c) 2007, SourceMod Development Team\0"
+			//VALUE "LegalTrademarks", "\0"
+			VALUE "OriginalFilename", "compile.exe\0"
+			//VALUE "PrivateBuild", "\0"
+			VALUE "ProductName", "SPCOMP compile.exe\0"
+			VALUE "ProductVersion", "1.0\0"
+			//VALUE "SpecialBuild", "\0"
+		END
+	END
+	BLOCK "VarFileInfo"
+	BEGIN
+		VALUE "Translation", LANG_ENGLISH SUBLANG_ENGLISH_US
+	END
+END

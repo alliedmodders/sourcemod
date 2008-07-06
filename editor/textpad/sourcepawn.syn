@@ -1,0 +1,533 @@
+
+C=1
+
+
+[Syntax]
+Namespace1 = 6
+IgnoreCase = No
+KeyWordLength =
+BracketChars = {[()]}
+OperatorChars = ~`!@$%^&*-+=|\:;"',.<>/?
+PreprocStart = #
+SyntaxStart =
+SyntaxEnd =
+HexPrefix = 0x
+CommentStart = /*
+CommentEnd = */
+CommentStartAlt =
+CommentEndAlt =
+SingleComment = //
+SingleCommentCol =
+SingleCommentAlt =
+SingleCommentColAlt =
+SingleCommentEsc =
+StringsSpanLines = Yes
+StringStart = "
+StringEnd = "
+StringAlt =
+StringEsc = \
+CharStart = '
+CharEnd = '
+CharEsc = \
+
+
+; Preprocessor keywords
+; ======
+[Preprocessor keywords]
+#assert
+#define
+#else
+#elseif
+#emit
+#endif
+#endinput
+#endscript
+#if
+#include
+#pragma
+#error
+#tryinclude
+#undef
+align
+ctrlchar
+defined
+dynamic
+library
+pack
+rational
+semicolon
+tabsize
+
+
+; Language keywords
+; ======
+[Keywords 1]
+assert
+begin
+break
+case
+cellsof
+chars
+const
+continue
+decl
+default
+do
+else
+enum
+exit
+for
+forward
+funcenum
+functag
+if
+native
+new
+operator
+public
+return
+sizeof
+static
+stock
+struct
+switch
+tagof
+while
+;Compiler-defined types
+bool
+String
+Float
+Fixed
+;Compiler-defined constants
+false
+true
+
+
+; Constants
+; ======
+[Keywords 2]
+cellbits
+cellmax
+cellmin
+charbits
+charmax
+charmin
+ucharmax
+__Pawn
+debug
+;
+; admin.inc
+; ------
+Admin_Reservation
+Admin_Generic
+Admin_Kick
+Admin_Ban
+Admin_Unban
+Admin_Slay
+Admin_Changemap
+Admin_Convars
+Admin_Config
+Admin_Chat
+Admin_Vote
+Admin_Password
+Admin_RCON
+Admin_Cheats
+Admin_Root
+Admin_Custom1
+Admin_Custom2
+Admin_Custom3
+Admin_Custom4
+Admin_Custom5
+Admin_Custom6
+ADMFLAG_RESERVATION
+ADMFLAG_GENERIC
+ADMFLAG_KICK
+ADMFLAG_BAN
+ADMFLAG_UNBAN
+ADMFLAG_SLAY
+ADMFLAG_CHANGEMAP
+ADMFLAG_CONVARS
+ADMFLAG_CONFIG
+ADMFLAG_CHAT
+ADMFLAG_VOTE
+ADMFLAG_PASSWORD
+ADMFLAG_RCON
+ADMFLAG_CHEATS
+ADMFLAG_ROOT
+ADMFLAG_CUSTOM1
+ADMFLAG_CUSTOM2
+ADMFLAG_CUSTOM3
+ADMFLAG_CUSTOM4
+ADMFLAG_CUSTOM5
+ADMFLAG_CUSTOM6
+AUTHMETHOD_STEAM
+AUTHMETHOD_IP
+AUTHMETHOD_NAME
+AdminFlags_TOTAL
+Override_Command
+Override_CommandGroup
+Command_Deny
+Command_Allow
+Immunity_Default
+Immunity_Global
+INVALID_GROUP_ID
+INVALID_ADMIN_ID
+Access_Real
+Access_Effective
+AdminCache_Overrides
+AdminCache_Groups
+AdminCache_Admins
+;
+; console.inc
+; ------
+FCVAR_NONE
+FCVAR_UNREGISTERED
+FCVAR_LAUNCHER
+FCVAR_GAMEDLL
+FCVAR_CLIENTDLL
+FCVAR_MATERIAL_SYSTEM
+FCVAR_PROTECTED
+FCVAR_SPONLY
+FCVAR_ARCHIVE
+FCVAR_NOTIFY
+FCVAR_USERINFO
+FCVAR_PRINTABLEONLY
+FCVAR_UNLOGGED
+FCVAR_NEVER_AS_STRING
+FCVAR_REPLICATED
+FCVAR_CHEAT
+FCVAR_STUDIORENDER
+FCVAR_DEMO
+FCVAR_DONTRECORD
+FCVAR_PLUGIN
+FCVAR_DATACACHE
+FCVAR_TOOLSYSTEM
+FCVAR_FILESYSTEM
+FCVAR_NOT_CONNECTED
+FCVAR_SOUNDSYSTEM
+FCVAR_ARCHIVE_XBOX
+FCVAR_INPUTSYSTEM
+FCVAR_NETWORKSYSTEM
+FCVAR_VPHYSICS
+;
+; core.inc
+; ------
+__version
+Plugin_Continue
+Plugin_Handled
+Plugin_Stop
+;
+; files.inc
+; ------
+FileType_Unknown
+FileType_Directory
+FileType_File
+PLATFORM_MAX_PATH
+SEEK_SET
+SEEK_CUR
+SEEK_END
+Path_SM
+;
+; float.inc
+; ------
+floatround_round
+floatround_floor
+floatround_ceil
+floatround_tozero
+FLOAT_PI
+;
+; handles.inc
+; ------
+INVALID_HANDLE
+;
+; sourcemod.inc
+; ------
+myinfo
+;
+; textparse.inc
+; ------
+SMCParse_Continue
+SMCParse_Halt
+SMCParse_HaltFail
+SMCError_Okay
+SMCError_StreamOpen
+SMCError_StreamError
+SMCError_Custom
+SMCError_InvalidSection1
+SMCError_InvalidSection2
+SMCError_InvalidSection3
+SMCError_InvalidSection4
+SMCError_InvalidSection5
+SMCError_InvalidTokens
+SMCError_TokenOverflow
+SMCError_InvalidProperty1
+
+
+; Natives and Stocks
+; ======
+[Keywords 3]
+;
+; admin.inc
+; ------
+DumpAdminCache
+AddCommandOverride
+GetCommandOverride
+UnsetCommandOverride
+CreateAdmGroup
+FindAdmGroup
+SetAdmGroupAddFlag
+GetAdmGroupAddFlag
+GetAdmGroupAddFlags
+SetAdmGroupImmunity
+GetAdmGroupImmunity
+SetAdmGroupImmuneFrom
+GetAdmGroupImmuneFrom
+GetAdmGroupImmuneCount
+AddAdmGroupCmdOverride
+GetAdmGroupCmdOverride
+RegisterAuthIdentType
+CreateAdmin
+GetAdminUsername
+BindAdminIdentity
+SetAdminFlag
+GetAdminFlag
+GetAdminFlags
+AdminInheritGroup
+GetAdminGroupCount
+GetAdminGroup
+SetAdminPassword
+GetAdminPassword
+FindAdminByIdentity
+RemoveAdmin
+FlagBitsToBitArray
+FlagBitArrayToBits
+FlagArrayToBits
+FlagBitsToArray
+FlagToBit
+BitToFlag
+;
+; console.inc
+; ------
+PrintToServer
+PrintToConsole
+CreateConVar
+FindConVar
+HookConVarChange
+UnhookConVarChange
+GetConVarBool
+SetConVarBool
+GetConVarInt
+SetConVarInt
+GetConVarFloat
+SetConVarFloat
+GetConVarString
+SetConVarString
+GetConVarFlags
+SetConVarFlags
+GetConVarName
+GetConVarMin
+GetConVarMax
+ResetConVar
+;
+; datapack.inc
+; ------
+CreateDataPack
+WritePackCell
+WritePackFloat
+WritePackString
+ReadPackCell
+ReadPackFloat
+ReadPackString
+ResetPack
+GetPackPosition
+SetPackPosition
+IsPackReadable
+;
+; files.inc
+; ------
+BuildPath
+OpenDirectory
+ReadDirEntry
+OpenFile
+DeleteFile
+ReadFileLine
+IsEndOfFile
+FileSeek
+FilePosition
+FileExists
+RenameFile
+DirExists
+FileSize
+RemoveDir
+WriteFileLine
+;
+; float.inc
+; ------
+float
+FloatStr
+;FloatMul
+;FloatDiv
+;FloatAdd
+;FloatSub
+FloatFraction
+FloatRound
+;FloatCompare
+SquareRoot
+Pow
+Exponential
+Logarithm
+Sine
+Cosine
+Tangent
+FloatAbs
+ArcTangent
+ArcCosine
+ArcSine
+ArcTangent2
+DegToRad
+RadToDeg
+;
+; handles.inc
+; ------
+IsValidHandle
+CloseHandle
+CloneHandle
+;
+; helpers.inc
+; ------
+FormatUserLogText
+;
+; geoip.inc
+; ------
+GeoipCode2
+GeoipCode3
+GeoipCountry
+;
+; lang.inc
+; ------
+LoadTranslations
+;
+; sourcemod.inc
+; ------
+GetMaxClients
+GetClientCount
+GetClientName
+GetClientIP
+GetClientAuthString
+GetClientUserId
+IsPlayerConnected
+IsPlayerInGame
+IsPlayerAuthorized
+IsPlayerFakeClient
+GetClientInfo
+SetUserAdmin
+GetUserAdmin
+AddUserFlags
+RemoveUserFlags
+SetUserFlagBits
+GetUserFlagBits
+LogToGame
+LogMessage
+LogError
+;
+; string.inc
+; ------
+strlen
+StrContains
+StrCompare
+StrEqual
+StrCopy
+Format
+FormatEx
+VFormat
+StringToInt
+IntToString
+StringToFloat
+FloatToString
+;
+; textparse.inc
+; ------
+SMC_CreateParser
+SMC_ParseFile
+SMC_GetErrorString
+SMC_SetParseStart
+SMC_SetParseEnd
+SMC_SetReaders
+SMC_SetRawLine
+
+
+; Forwards
+; ======
+[Keywords 4]
+;
+; admin.inc
+; ------
+OnRebuildAdminCache
+;
+; sourcemod.inc
+; ------
+OnPluginStart
+AskPluginLoad
+OnPluginEnd
+OnPluginPauseChange
+OnClientConnect
+OnClientPutInServer
+OnClientDisconnect
+OnClientDisconnect_Post
+OnClientCommand
+OnClientSettingsChanged
+OnClientAuthorized
+
+
+; Tags/types
+; ======
+[Keywords 5]
+;
+; admin.inc
+; ------
+AdminFlag
+OverrideType
+OverrideRule
+ImmunityType
+GroupId
+AdminId
+AdmAccessMode
+AdminCachePart
+;
+; console.inc
+; ------
+OnConVarChanged
+;
+; core.inc
+; ------
+Extension
+Result
+PlVers
+;
+; files.inc
+; ------
+FileType
+PathType
+;
+; float.inc
+; ------
+floatround_method
+;
+; handles.inc
+; ------
+Handle
+;
+; sourcemod.inc
+; ------
+Plugin
+;
+; textparse.inc
+; ------
+SMCResult
+SMCError
+SMC_ParseStart
+SMC_ParseEnd
+SMC_NewSection
+SMC_KeyValue
+SMC_EndSection
+SMC_RawLine

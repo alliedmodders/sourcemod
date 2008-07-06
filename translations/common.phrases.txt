@@ -1,0 +1,242 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"en"			"Yes"
+	}
+	
+	"No"
+	{
+		"en"			"No"
+	}
+
+	"No matching client"
+	{
+		"en"			"No matching client was found."
+	}
+	
+	"No matching clients"
+	{
+		"en"			"No matching clients were found."
+	}
+	
+	"More than one client matches"
+	{
+		"#format"		"{1:s}"
+		"en"			"More than one client matches the pattern \"{1}\""
+	}
+	
+	"More than one client matched"
+	{
+		"en"			"More than one client matched the given pattern."
+	}
+	
+	"Player no longer available"
+	{
+		"en"			"The player you selected is no longer available."
+	}
+	
+	"Kick player"
+	{
+		"en"			"Kick player"
+	}
+	
+	"Kicked by admin"
+	{
+		"en"			"Kicked by administrator"
+	}
+	
+	"Changing map"
+	{
+		"#format"		"{1:s}"
+		"en"			"Changing map to {1}..."
+	}
+	
+	"Map was not found"
+	{
+		"#format"		"{1:s}"
+		"en"			"Map {1} was not found."
+	}
+	
+	"Unable to target"
+	{
+		"en"			"You cannot target this player."
+	}
+	
+	"Name"
+	{
+		"en"			"Name"
+	}
+	
+	"Access"
+	{
+		"en"			"Access"
+	}
+	
+	"See console for output"
+	{
+		"en"			"See console for output."
+	}
+	
+	"Cannot target bot"
+	{
+		"en"			"Unable to perform this command on a bot."
+	}
+	
+	"Unable to find cvar"
+	{
+		"#format"		"{1:s}"
+		"en"			"Unable to find cvar: {1}"
+	}
+	
+	"No access to cvar"
+	{
+		"en"			"You do not have access to this cvar."
+	}
+	
+	"Value of cvar"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"Value of cvar \"{1}\": \"{2}\""
+	}
+	
+	"Cvar changed"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"Changed cvar \"{1}\" to \"{2}\"."
+	}
+	
+	"Config not found"
+	{
+		"#format"		"{1:s}"
+		"en"			"Config file \"{1}\" not found."
+	}
+	
+	"Executed config"
+	{
+		"#format"		"{1:s}"
+		"en"			"Executed config \"{1}\"."
+	}
+	
+	"Admin cache refreshed"
+	{
+		"en"			"Admin cache has been refreshed."
+	}	
+	
+	"Invalid Amount"
+	{
+		"en"			"Invalid amount specified"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"#format"		"{1:s}"
+		"en"			"This action cannot be performed on dead client \"{1}\""
+	}
+	
+	"Player has since died"
+	{
+		"en"			"Action cannot be performed, the player has since died."
+	}
+	
+	"Vote in Progress"
+	{
+		"en"			"A vote is already in progress."
+	}
+	
+	"Vote Not In Progress"
+	{
+		"en"			"A vote is not in progress at this time."
+	}
+	
+	"Cancelled Vote"
+	{
+		"en"			"Cancelled the vote."
+	}
+
+	"Cancel vote"
+	{
+		"en"			"Cancel vote"
+	}
+	
+	"Vote Select"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{1} has chosen {2}."
+	}	
+	
+	"No Votes Cast"
+	{
+		"en"			"No votes were cast."
+	}	
+	
+	"Vote Delay Minutes"
+	{
+		"#format"		"{1:d}"
+		"en"			"You must wait {1} minutes before starting another vote."
+	}
+	
+	"Vote Delay Seconds"
+	{
+		"#format"		"{1:d}"
+		"en"			"You must wait {1} seconds before starting another vote."
+	}
+
+	"Could not connect to database"
+	{
+		"en"			"Could not connect to the database."
+	}
+
+	"Failed to query database"
+	{
+		"en"			"Failed to query database."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"en"			"You have specified an invalid Steam ID (must start with 'STEAM_0:')."
+	}
+	
+	"Reload admins"
+	{
+		"en"			"Reload admins"
+	}
+
+	"Command is in-game only"
+	{
+		"en"			"This command can only be used in-game."
+	}
+	
+	"Target must be dead"
+	{
+		"en"			"This command can only be used on dead players."
+	}
+	
+	"Target must be alive"
+	{
+		"en"			"This command can only be used on alive players."
+	}
+	
+	"Target is not in game"
+	{
+		"en"			"The given player is not fully in-game yet."
+	}
+	
+	"Cannot participate in vote"
+	{
+		"en"			"You cannot participate in this vote."
+	}
+	
+	"Cannot change vote"
+	{
+		"en"			"You cannot change your selection for this vote."
+	}
+	"On"
+	{
+		"en"			"On"
+	}
+	"Off"
+	{
+		"en"			"Off"
+	}
+}

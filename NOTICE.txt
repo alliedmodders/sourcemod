@@ -1,0 +1,36 @@
+We now use svn:keywords "Id" on all .c/.cpp/.h/.inc/.sp/ files.
+Please make sure your client is configured properly.  
+
+WINDOWS:
+	- Open your Application Data directory.
+		Windows XP/2000:	C:\Documents and Settings\<user>\Application Data
+		Windows Vista:		C:\Users\<user>\AppData\Roaming
+
+	- Now go to the Subversion directory.
+	- Open the "config" file with a text editor.
+
+LINUX: 
+	- Open ~/.subversion/config with your favorite text editor.
+
+Under [miscellany], uncomment this line:
+# enable-auto-props = yes
+
+Under [auto-props], add these lines:
+*.c = svn:keywords=Id
+*.cpp = svn:keywords=Id
+*.h = svn:keywords=Id
+*.inc = svn:keywords=Id
+*.sp = svn:keywords=Id
+
+
+If you find a file with one of the above extensions that does not have the svn:keywords property...
+
+TORTOISE SVN:
+	- Right click on the file(s) that do not have the property.
+	- In the context menu that appears, select TortoiseSVN -> Properties.
+	- A properties window should appear. Click the Add button.
+	- Select "svn:keywords" from the "Property name" combo box and type "Id" in the "Property value" text area.
+	- Click OK on both windows and commit the change(s).
+	
+CLI SVN CLIENT:
+	- Execute the following command: svn propset svn:keywords Id <files>

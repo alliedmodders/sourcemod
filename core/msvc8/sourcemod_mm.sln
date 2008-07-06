@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sourcemod_mm", "sourcemod_mm.vcproj", "{E39527CD-7CAB-4420-97CC-DA1B93B260BC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		CrazyDebug - Episode 1|Win32 = CrazyDebug - Episode 1|Win32
+		CrazyDebug - Old Metamod|Win32 = CrazyDebug - Old Metamod|Win32
+		CrazyDebug - Orange Box|Win32 = CrazyDebug - Orange Box|Win32
+		Debug - Episode 1|Win32 = Debug - Episode 1|Win32
+		Debug - Old Metamod|Win32 = Debug - Old Metamod|Win32
+		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
+		Release - Episode 1|Win32 = Release - Episode 1|Win32
+		Release - Old Metamod|Win32 = Release - Old Metamod|Win32
+		Release - Orange Box|Win32 = Release - Orange Box|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug - Episode 1|Win32.ActiveCfg = CrazyDebug - Episode 1|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug - Episode 1|Win32.Build.0 = CrazyDebug - Episode 1|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug - Old Metamod|Win32.ActiveCfg = CrazyDebug - Old Metamod|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug - Old Metamod|Win32.Build.0 = CrazyDebug - Old Metamod|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug - Orange Box|Win32.ActiveCfg = CrazyDebug - Orange Box|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.CrazyDebug - Orange Box|Win32.Build.0 = CrazyDebug - Orange Box|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug - Episode 1|Win32.ActiveCfg = Debug - Episode 1|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug - Episode 1|Win32.Build.0 = Debug - Episode 1|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug - Old Metamod|Win32.ActiveCfg = Debug - Old Metamod|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug - Old Metamod|Win32.Build.0 = Debug - Old Metamod|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug - Orange Box|Win32.ActiveCfg = Debug - Orange Box|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release - Episode 1|Win32.ActiveCfg = Release - Episode 1|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release - Episode 1|Win32.Build.0 = Release - Episode 1|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release - Old Metamod|Win32.ActiveCfg = Release - Old Metamod|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release - Old Metamod|Win32.Build.0 = Release - Old Metamod|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release - Orange Box|Win32.ActiveCfg = Release - Orange Box|Win32
+		{E39527CD-7CAB-4420-97CC-DA1B93B260BC}.Release - Orange Box|Win32.Build.0 = Release - Orange Box|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
