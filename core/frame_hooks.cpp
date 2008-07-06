@@ -44,6 +44,7 @@ void RunFrameHooks(bool simulating)
 	/* Frame based hooks */
 	g_DBMan.RunFrame();
 	g_HL2.ProcessFakeCliCmdQueue();
+	g_HL2.ProcessDelayedKicks();
 	g_SourceMod.ProcessGameFrameHooks(simulating);
 
 	float curtime = *g_pUniversalTime;
