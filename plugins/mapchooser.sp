@@ -154,13 +154,15 @@ public OnPluginStart()
 		SetConVarBounds(g_Cvar_Bonusroundtime, ConVarBound_Upper, true, 30.0);		
 	}
 	
-	RegPluginLibrary("mapchooser");
+
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
 }
 
 public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 {
+	RegPluginLibrary("mapchooser");	
+	
 	CreateNative("NominateMap", Native_NominateMap);
 	CreateNative("InitiateMapChooserVote", Native_InitiateVote);
 	CreateNative("CanMapChooserStartVote", Native_CanVoteStart);
