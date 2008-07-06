@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -304,10 +304,7 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 	HandleError err;
 	IPlugin *pPlugin;
 
-	if (s_CallStarted)
-	{
-		return pContext->ThrowNativeError("Cannot start a call while one is already in progress");
-	}
+	ResetCall();
 
 	hndl = static_cast<Handle_t>(params[1]);
 
@@ -343,10 +340,7 @@ static cell_t sm_CallStartForward(IPluginContext *pContext, const cell_t *params
 	HandleError err;
 	IForward *pForward;
 
-	if (s_CallStarted)
-	{
-		return pContext->ThrowNativeError("Cannot start a call while one is already in progress");
-	}
+	ResetCall();
 
 	hndl = static_cast<Handle_t>(params[1]);
 
