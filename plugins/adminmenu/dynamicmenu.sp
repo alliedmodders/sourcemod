@@ -284,8 +284,7 @@ BuildDynamicMenu()
 					else
 					{
 						submenuInput[Submenu_method] = Name;
-					}					
-					
+					}				
 				}
 				
 				KvGetString(kvMenu, "title", inputBuffer, sizeof(inputBuffer));
@@ -586,13 +585,16 @@ public ParamCheck(client)
 		
 		DisplayTopMenu(hAdminMenu, client, TopMenuPosition_LastCategory);
 		
+		decl String:unquotedCommand[CMD_LENGTH];
+		UnQuoteString(g_command[client], unquotedCommand, sizeof(unquotedCommand), "#@");
+		
 		if (outputItem[Item_execute] == Execute_Player) // assume 'player' type execute option
 		{
-			FakeClientCommand(client, g_command[client]);
+			FakeClientCommand(client, unquotedCommand);
 		}
 		else // assume 'server' type execute option
 		{
-			InsertServerCommand(g_command[client]);
+			InsertServerCommand(unquotedCommand);
 			ServerExecute();
 		}
 
@@ -610,15 +612,19 @@ public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
 	
 	if (action == MenuAction_Select)
 	{
-		new String:info[NAME_LENGTH];
+		new String:unquotedinfo[NAME_LENGTH];
  
 		/* Get item info */
-		new bool:found = GetMenuItem(menu, param2, info, sizeof(info));
+		new bool:found = GetMenuItem(menu, param2, unquotedinfo, sizeof(unquotedinfo));
 		
 		if (!found)
 		{
 			return;
 		}
+		
+		new String:info[NAME_LENGTH*2+1];
+		QuoteString(unquotedinfo, info, sizeof(info), "#@");
+		
 		
 		new String:buffer[6];
 		new String:infobuffer[NAME_LENGTH+2];
@@ -643,4 +649,73 @@ public Menu_Selection(Handle:menu, MenuAction:action, param1, param2)
 		//client exited we should go back to submenu i think
 		DisplayTopMenu(hAdminMenu, param1, TopMenuPosition_LastCategory);
 	}
+}
+
+
+stock bool:QuoteString(String:input[], String:output[], maxlen, String:quotechars[])
+{
+	new count = 0;
+	new len = strlen(input);
+	
+	for (new i=0; i<len; i++)
+	{
+		output[count] = input[i];
+		count++;
+		
+		if (count >= maxlen)
+		{
+			/* Null terminate for safety */
+			output[maxlen-1] = 0;
+			return false;	
+		}
+		
+		if (FindCharInString(quotechars, input[i]) != -1 || input[i] == '\\')
+		{
+			/* This char needs escaping */
+			output[count] = '\\';
+			count++;
+			
+			if (count >= maxlen)
+			{
+				/* Null terminate for safety */
+				output[maxlen-1] = 0;
+				return false;	
+			}		
+		}
+	}
+	
+	output[count] = 0;
+	
+	return true;
+}
+
+stock bool:UnQuoteString(String:input[], String:output[], maxlen, String:quotechars[])
+{
+	new count = 1;
+	new len = strlen(input);
+	
+	output[0] = input[0];
+	
+	for (new i=1; i<len; i++)
+	{
+		output[count] = input[i];
+		count++;
+		
+		if (input[i+1] == '\\' && (input[i] == '\\' || FindCharInString(quotechars, input[i]) != -1))
+		{
+			/* valid quotechar followed by a backslash - Skip */
+			i++; 
+		}
+		
+		if (count >= maxlen)
+		{
+			/* Null terminate for safety */
+			output[maxlen-1] = 0;
+			return false;	
+		}
+	}
+	
+	output[count] = 0;
+	
+	return true;
 }
