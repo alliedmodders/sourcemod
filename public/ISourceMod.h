@@ -203,9 +203,9 @@ namespace SourceMod
 		virtual SourcePawn::ISourcePawnEngine *GetScriptingEngine() =0;
 
 		/**
-		 * @brief Returns the JIT interface.
+		 * @brief Deprecated, do not use.
 		 *
-		 * @return			A pointer to the JIT interface.
+		 * @return			NULL.
 		 */
 		virtual SourcePawn::IVirtualMachine *GetScriptingVM() =0;
 

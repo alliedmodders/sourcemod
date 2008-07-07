@@ -590,7 +590,7 @@ ISourcePawnEngine *SourceModBase::GetScriptingEngine()
 
 IVirtualMachine *SourceModBase::GetScriptingVM()
 {
-	return g_pVM;
+	return NULL;
 }
 
 void SourceModBase::AllPluginsLoaded()
