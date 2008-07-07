@@ -829,6 +829,26 @@ namespace SourcePawn
 			const cell_t *params, 
 			unsigned int num_params, 
 			cell_t *result) =0;
+
+		/**
+		 * @brief Returns whether a context is in an error state.  
+		 * 
+		 * This should only be used inside natives to determine whether 
+		 * a prior call failed.
+		 */
+		virtual int GetLastNativeError() =0;
+
+		/**
+		 * @brief Returns the local parameter stack, starting from the 
+		 * cell that contains the number of parameters passed.
+		 *
+		 * Local parameters are the parameters passed to the function 
+		 * from which a native was called (and thus this can only be 
+		 * called inside a native).
+		 *
+		 * @return				Parameter stack.
+		 */
+		virtual cell_t *GetLocalParams() =0;
 	};
 
 

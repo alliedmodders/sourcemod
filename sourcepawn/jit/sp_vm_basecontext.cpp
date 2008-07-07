@@ -759,3 +759,13 @@ int DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
 }
 
 #undef USHR
+
+int BaseContext::GetLastNativeError()
+{
+	return m_ctx.n_err;
+}
+
+cell_t *BaseContext::GetLocalParams()
+{
+	return (cell_t *)(m_pPlugin->memory + m_ctx.frm + (2 * sizeof(cell_t)));
+}

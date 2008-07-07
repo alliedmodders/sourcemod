@@ -88,6 +88,8 @@ public: //IPluginContext
 	int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native);
 	int Execute(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result);
 	IPluginRuntime *GetRuntime();
+	int GetLastNativeError();
+	cell_t *GetLocalParams();
 public:
 	bool IsInExec();
 private:
