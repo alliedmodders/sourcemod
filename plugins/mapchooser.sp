@@ -331,7 +331,7 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 	if (g_ChangeMapAtRoundEnd)
 	{
 		g_ChangeMapAtRoundEnd = false;
-		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
 	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted || !GetConVarBool(g_Cvar_EndOfMapVote))
@@ -371,7 +371,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if (g_ChangeMapAtRoundEnd)
 	{
 		g_ChangeMapAtRoundEnd = false;
-		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, _, TIMER_FLAG_NO_MAPCHANGE);
+		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
 	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted)
