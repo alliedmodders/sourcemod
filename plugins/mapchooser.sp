@@ -69,6 +69,7 @@ new Handle:g_Cvar_Extend = INVALID_HANDLE;
 new Handle:g_Cvar_DontChange = INVALID_HANDLE;
 new Handle:g_Cvar_EndOfMapVote = INVALID_HANDLE;
 new Handle:g_Cvar_VoteDuration = INVALID_HANDLE;
+
 new Handle:g_VoteTimer = INVALID_HANDLE;
 new Handle:g_RetryTimer = INVALID_HANDLE;
 
@@ -221,17 +222,8 @@ public OnMapEnd()
 	g_HasVoteStarted = false;
 	g_WaitingForVote = false;
 	
-	if (g_VoteTimer != INVALID_HANDLE)
-	{
-		KillTimer(g_VoteTimer);
-		g_VoteTimer = INVALID_HANDLE;
-	}
-	
-	if (g_RetryTimer != INVALID_HANDLE)
-	{
-		KillTimer(g_RetryTimer);
-		g_RetryTimer = INVALID_HANDLE;
-	}
+	g_VoteTimer = INVALID_HANDLE;
+	g_RetryTimer = INVALID_HANDLE;
 	
 	decl String:map[32];
 	GetCurrentMap(map, sizeof(map));
@@ -302,7 +294,7 @@ SetupTimeleftTimer()
 				g_VoteTimer = INVALID_HANDLE;
 			}	
 			
-			g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote);
+			g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote, _, TIMER_FLAG_NO_MAPCHANGE);
 		}		
 	}
 }
@@ -339,7 +331,7 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 	if (g_ChangeMapAtRoundEnd)
 	{
 		g_ChangeMapAtRoundEnd = false;
-		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE);
+		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
 	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted || !GetConVarBool(g_Cvar_EndOfMapVote))
@@ -379,7 +371,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	if (g_ChangeMapAtRoundEnd)
 	{
 		g_ChangeMapAtRoundEnd = false;
-		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE);
+		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
 	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted)
@@ -475,7 +467,7 @@ InitiateVote(MapChange:when, Handle:inputlist)
 	if (IsVoteInProgress())
 	{
 		// Can't start a vote, try again in 5 seconds.
-		g_RetryTimer = CreateTimer(5.0, Timer_StartMapVote);
+		g_RetryTimer = CreateTimer(5.0, Timer_StartMapVote, _, TIMER_FLAG_NO_MAPCHANGE);
 		return;
 	}
 	
