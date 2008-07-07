@@ -43,7 +43,6 @@
 #include <sh_vector.h>
 #include <sh_string.h>
 #include "sm_globals.h"
-#include "vm/sp_vm_basecontext.h"
 #include "PluginInfoDatabase.h"
 #include "sm_trie.h"
 #include "sourcemod.h"
@@ -109,19 +108,6 @@ using namespace SourceHook;
  *			 7. Once all plugins are deemed to be loaded, OnPluginStart() is called
  */
 
-#define SM_CONTEXTVAR_MYSELF	0
-
-struct ContextPair
-{
-	ContextPair() : base(NULL), ctx(NULL), co(NULL)
-	{
-	};
-	BaseContext *base;
-	sp_context_t *ctx;
-	ICompilation *co;
-	IVirtualMachine *vm;
-};
-
 enum LoadRes
 {
 	LoadRes_Successful,
@@ -152,18 +138,19 @@ public:
 	PluginType GetType();
 	SourcePawn::IPluginContext *GetBaseContext();
 	sp_context_t *GetContext();
-	const sm_plugininfo_t *GetPublicInfo();
+	void *GetPluginStructure();
 	const char *GetFilename();
 	bool IsDebugging();
 	PluginStatus GetStatus();
+	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
-	const sp_plugin_t *GetPluginStructure();
 	IdentityToken_t *GetIdentity();
 	unsigned int CalcMemUsage();
 	bool SetProperty(const char *prop, void *ptr);
 	bool GetProperty(const char *prop, void **ptr, bool remove=false);
 	void DropEverything();
+	SourcePawn::IPluginRuntime *GetRuntime();
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -174,16 +161,6 @@ public:
 	 */
 	static CPlugin *CreatePlugin(const char *file, char *error, size_t maxlength);
 public:
-	/**
-	 * Starts the initial compilation of a plugin.
-	 * Returns false if another compilation exists or there is a current context set.
-	 */
-	ICompilation *StartMyCompile(IVirtualMachine *vm);
-	/** 
-	 * Finalizes a compilation.  If error buffer is NULL, the error is saved locally.
-	 */
-	bool FinishMyCompile(char *error, size_t maxlength);
-	void CancelMyCompile();
 
 	/**
 	 * Sets an error state on the plugin
@@ -267,13 +244,11 @@ protected:
 	void SetTimeStamp(time_t t);
 	void DependencyDropped(CPlugin *pOwner);
 private:
-	ContextPair m_ctx;
 	PluginType m_type;
 	char m_filename[PLATFORM_MAX_PATH];
 	PluginStatus m_status;
 	unsigned int m_serial;
 	sm_plugininfo_t m_info;
-	sp_plugin_t *m_plugin;
 	char m_errormsg[256];
 	time_t m_LastAccess;
 	IdentityToken_t *m_ident;
@@ -289,6 +264,8 @@ private:
 	bool m_bGotAllLoaded;
 	int m_FileVersion;
 	char m_DateTime[256];
+	IPluginRuntime *m_pRuntime;
+	IPluginContext *m_pContext;
 };
 
 class CPluginManager : 
@@ -382,10 +359,7 @@ public:
 	/** 
 	 * Internal version of FindPluginByContext()
 	 */
-	inline CPlugin *GetPluginByCtx(const sp_context_t *ctx)
-	{
-		return reinterpret_cast<CPlugin *>(ctx->user[SM_CONTEXTVAR_MYSELF]);
-	}
+	CPlugin *GetPluginByCtx(const sp_context_t *ctx);
 
 	/**
 	 * Gets status text for a status code 

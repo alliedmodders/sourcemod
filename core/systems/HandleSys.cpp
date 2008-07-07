@@ -990,7 +990,7 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	g_Logger.LogFatal("[SM] Reloading plugin to free %d handles.", highest_handle_count);
 	g_Logger.LogFatal("[SM] Contact the author(s) of this plugin to correct this error.", highest_handle_count);
 
-	highest_owner->GetContext()->n_err = SP_ERROR_MEMACCESS;
+	highest_owner->GetBaseContext()->ThrowNativeErrorEx(SP_ERROR_MEMACCESS, "Memory leak");
 
 	return g_PluginSys.UnloadPlugin(highest_owner);
 }

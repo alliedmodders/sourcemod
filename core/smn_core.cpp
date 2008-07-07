@@ -130,7 +130,7 @@ static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
-	if (pContext->GetContext()->n_err == SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() == SP_ERROR_NONE)
 	{
 		pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", buffer);
 	}
@@ -387,7 +387,7 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 		char buffer[2048];
 
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
-		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
 			pPlugin->SetErrorState(Plugin_Error, "%s", str);
 			return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "Formatting error (%s)", str);
@@ -455,6 +455,7 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 {
 	char *name;
 	uint32_t idx;
+	sp_native_t *native;
 	sp_context_t *ctx = pContext->GetContext();
 
 	pContext->LocalToString(params[1], &name);
@@ -464,7 +465,9 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 		return 0;
 	}
 
-	ctx->natives[idx].flags |= SP_NTVFLAG_OPTIONAL;
+	pContext->GetNativeByIndex(idx, &native);
+
+	native->flags |= SP_NTVFLAG_OPTIONAL;
 
 	return 1;
 }
@@ -505,7 +508,7 @@ static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -535,7 +538,7 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		fclose(fp);
 		return 0;
@@ -568,7 +571,7 @@ static cell_t LogToFileEx(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		fclose(fp);
 		return 0;

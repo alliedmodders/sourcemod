@@ -573,7 +573,7 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 	char buffer[1024];
 	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -599,7 +599,7 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -617,7 +617,7 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 	char buffer[1024];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -670,7 +670,7 @@ static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -701,7 +701,7 @@ static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}

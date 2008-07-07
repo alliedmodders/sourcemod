@@ -1000,7 +1000,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 			g_SourceMod.SetGlobalTarget(client);
 			g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-			if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+			if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 			{
 				return 0;
 			}
@@ -1015,7 +1015,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 		g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
 			return 0;
 		}
@@ -1054,7 +1054,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 				}
 				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
 					return 0;
 				}
@@ -1078,7 +1078,7 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 				}
 				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
 					return 0;
 				}
@@ -1123,7 +1123,7 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 		g_SourceMod.SetGlobalTarget(client);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
 			return 0;
 		}
@@ -1152,7 +1152,7 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 		g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-		if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+		if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 		{
 			return 0;
 		}
@@ -1191,7 +1191,7 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 				}
 				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
 					return 0;
 				}
@@ -1215,7 +1215,7 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 				}
 				g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, fmt_param);
 
-				if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+				if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 				{
 					return 0;
 				}
@@ -1286,7 +1286,7 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -1332,7 +1332,7 @@ static cell_t KickClientEx(IPluginContext *pContext, const cell_t *params)
 	char buffer[256];
 	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
