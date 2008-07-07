@@ -32,7 +32,11 @@
 #ifndef _INCLUDE_SOURCEMOD_BASEFUNCTION_H_
 #define _INCLUDE_SOURCEMOD_BASEFUNCTION_H_
 
-#include "sm_globals.h"
+#include <sp_vm_api.h>
+
+class BaseRuntime;
+
+using namespace SourcePawn;
 
 struct ParamInfo
 {
@@ -56,7 +60,7 @@ class CFunction : public IPluginFunction
 	friend class SourcePawnEngine;
 public:
 	CFunction(uint32_t code_addr,
-			  IPluginContext *pContext, 
+			  BaseRuntime *pRuntime, 
 			  funcid_t fnid,
 			  uint32_t pub_id);
 public:
@@ -71,29 +75,23 @@ public:
 	virtual void Cancel();
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
 	virtual IPluginContext *GetParentContext();
-	inline bool IsInvalidated()
-	{
-		return m_Invalid;
-	}
-	inline void Invalidate()
-	{
-		m_Invalid = true;
-	}
+	bool IsInvalidated();
+	void Invalidate();
 	bool IsRunnable();
 	funcid_t GetFunctionID();
+	int Execute(IPluginContext *ctx, cell_t *result);
+	int CallFunction(IPluginContext *ctx, 
+		const cell_t *params, 
+		unsigned int num_params, 
+		cell_t *result);
 public:
-	void Set(uint32_t code_addr, IPluginContext *plugin, funcid_t fnid, uint32_t pub_id);
+	void Set(uint32_t code_addr, BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id);
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
-	inline int SetError(int err)
-	{
-		m_errorstate = err;
-		return err;
-	}
+	int SetError(int err);
 private:
 	uint32_t m_codeaddr;
-	IPluginContext *m_pContext;
-	sp_context_t *m_pCtx;
+	BaseRuntime *m_pRuntime;
 	cell_t m_params[SP_MAX_EXEC_PARAMS];
 	ParamInfo m_info[SP_MAX_EXEC_PARAMS];
 	unsigned int m_curparam;
@@ -101,7 +99,6 @@ private:
 	CFunction *m_pNext;
 	bool m_Invalid;
 	funcid_t m_FnId;
-	sp_public_t *m_pPublic;
 };
 
 #endif //_INCLUDE_SOURCEMOD_BASEFUNCTION_H_

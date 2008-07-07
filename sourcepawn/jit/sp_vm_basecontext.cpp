@@ -36,66 +36,19 @@
 #include "sp_vm_api.h"
 #include "sp_vm_basecontext.h"
 #include "sp_vm_engine.h"
-
-#ifdef SOURCEMOD_BUILD
-#include "Logger.h"
-#include "DebugReporter.h"
-#endif
+#include "x86/jit_x86.h"
 
 using namespace SourcePawn;
-
-extern SourcePawnEngine g_SourcePawn;
 
 #define CELLBOUNDMAX	(INT_MAX/sizeof(cell_t))
 #define STACKMARGIN		((cell_t)(16*sizeof(cell_t)))
 
-int GlobalDebugBreak(sp_context_t *ctx, uint32_t frm, uint32_t cip)
+BaseContext::BaseContext(BaseRuntime *pRuntime)
 {
-	g_SourcePawn.RunTracer(ctx, frm, cip);
-
-	return SP_ERROR_NONE;
-}
-
-BaseContext::BaseContext(sp_context_t *_ctx)
-{
-	ctx = _ctx;
-	ctx->context = this;
-	ctx->dbreak = GlobalDebugBreak;
-
-	if (ctx->prof_flags != 0)
-	{
-		ctx->profiler = sm_profiler;
-	}
+	m_pRuntime = pRuntime;
 
 	m_InExec = false;
 	m_CustomMsg = false;
-	m_funcsnum = ctx->vmbase->FunctionCount(ctx);
-#if 0
-	m_priv_funcs = NULL;
-#endif
-	m_pub_funcs = NULL;
-
-#if 0
-	/**
-	 * Note: Since the m_plugin member will never change,
-	 * it is safe to assume the function count will never change
-	 */
-	if (m_funcsnum && m_priv_funcs == NULL)
-	{
-		m_priv_funcs = new CFunction *[m_funcsnum];
-		memset(m_priv_funcs, 0, sizeof(CFunction *) * m_funcsnum);
-	} else {
-		m_priv_funcs = NULL;
-	}
-#endif
-
-	if (ctx->plugin->info.publics_num && m_pub_funcs == NULL)
-	{
-		m_pub_funcs = new CFunction *[ctx->plugin->info.publics_num];
-		memset(m_pub_funcs, 0, sizeof(CFunction *) * ctx->plugin->info.publics_num);
-	} else {
-		m_pub_funcs = NULL;
-	}
 
 	/* Initialize the null references */
 	uint32_t index;
@@ -104,7 +57,9 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 		sp_pubvar_t *pubvar;
 		GetPubvarByIndex(index, &pubvar);
 		m_pNullVec = pubvar->offs;
-	} else {
+	}
+	else
+	{
 		m_pNullVec = NULL;
 	}
 
@@ -113,224 +68,45 @@ BaseContext::BaseContext(sp_context_t *_ctx)
 		sp_pubvar_t *pubvar;
 		GetPubvarByIndex(index, &pubvar);
 		m_pNullString = pubvar->offs;
-	} else {
+	}
+	else
+	{
 		m_pNullString = NULL;
 	}
 }
 
-void BaseContext::FlushFunctionCache()
-{
-	if (m_pub_funcs)
-	{
-		for (uint32_t i=0; i<ctx->plugin->info.publics_num; i++)
-		{
-			delete m_pub_funcs[i];
-			m_pub_funcs[i] = NULL;
-		}
-	}
-
-#if 0
-	if (m_priv_funcs)
-	{
-		for (unsigned int i=0; i<m_funcsnum; i++)
-		{
-			delete m_priv_funcs[i];
-			m_priv_funcs[i] = NULL;
-		}
-	}
-#endif
-}
-
-void BaseContext::RefreshFunctionCache()
-{
-	if (m_pub_funcs)
-	{
-		sp_public_t *pub;
-		for (uint32_t i=0; i<ctx->plugin->info.publics_num; i++)
-		{
-			if (!m_pub_funcs[i])
-			{
-				continue;
-			}
-			if (GetPublicByIndex(i, &pub) != SP_ERROR_NONE)
-			{
-				continue;
-			}
-			m_pub_funcs[i]->Set(pub->code_offs, this, pub->funcid, i);
-		}
-	}
-
-#if 0
-	if (m_priv_funcs)
-	{
-		for (unsigned int i=0; i<m_funcsnum; i++)
-		{
-			if (!m_priv_funcs[i])
-			{
-				continue;
-			}
-			g_pVM->
-		}
-	}
-#endif
-}
-
 BaseContext::~BaseContext()
 {
-	FlushFunctionCache();
-	delete [] m_pub_funcs;
-	m_pub_funcs = NULL;
-#if 0
-	delete [] m_priv_funcs;
-	m_priv_funcs = NULL;
-#endif
-}
-
-void BaseContext::SetContext(sp_context_t *_ctx)
-{
-	if (!_ctx)
-	{
-		return;
-	}
-
-	ctx = _ctx;
-	ctx->context = this;
-	ctx->dbreak = GlobalDebugBreak;
-
-	if (ctx->prof_flags != 0)
-	{
-		ctx->profiler = sm_profiler;
-	}
-
-	RefreshFunctionCache();
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()
 {
-	return (IVirtualMachine *)ctx->vmbase;
+	return NULL;
 }
 
 sp_context_t *BaseContext::GetContext()
 {
-	return ctx;
+	return &m_ctx;
 }
 
 bool BaseContext::IsDebugging()
 {
-	return (ctx->flags & SPFLAG_PLUGIN_DEBUG);
+	return m_pRuntime->IsDebugging();
 }
 
-int BaseContext::SetDebugBreak(SPVM_DEBUGBREAK newpfn, SPVM_DEBUGBREAK *oldpfn)
+int BaseContext::SetDebugBreak(void *newpfn, void *oldpfn)
 {
-	if (!IsDebugging())
-	{
-		return SP_ERROR_NOTDEBUGGING;
-	}
-
-	*oldpfn = ctx->dbreak;
-	ctx->dbreak = newpfn;
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 IPluginDebugInfo *BaseContext::GetDebugInfo()
 {
-	if (!IsDebugging())
-	{
-		return NULL;
-	}
-	return this;
+	return NULL;
 }
 
 int BaseContext::Execute(uint32_t code_addr, cell_t *result)
 {
-	if ((ctx->flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED)
-	{
-		return SP_ERROR_NOT_RUNNABLE;
-	}
-
-	/* tada, prevent a crash */
-	cell_t _ignore_result;
-	if (!result)
-	{
-		result = &_ignore_result;
-	}
-
-	IVirtualMachine *vm = (IVirtualMachine *)ctx->vmbase;
-
-	uint32_t pushcount = ctx->pushcount;
-	int err;
-
-	if ((err = PushCell(pushcount++)) != SP_ERROR_NONE)
-	{
-#if defined SOURCEMOD_BUILD
-		g_DbgReporter.GenerateCodeError(this, code_addr, err, "Stack error; cannot complete execution!");
-#endif
-		return SP_ERROR_NOT_RUNNABLE;
-	}
-	ctx->pushcount = 0;
-
-	cell_t save_sp = ctx->sp + (pushcount * sizeof(cell_t));
-	cell_t save_hp = ctx->hp;
-	uint32_t n_idx = ctx->n_idx;
-
-	bool wasExec = m_InExec;
-
-	/* Clear the error state, if any */
-	ctx->n_err = SP_ERROR_NONE;
-	ctx->n_idx = 0;
-	m_InExec = true;
-	m_MsgCache[0] = '\0';
-	m_CustomMsg = false;
-
-	g_SourcePawn.PushTracer(ctx);
-
-	err = vm->ContextExecute(ctx, code_addr, result);
-
-	m_InExec = wasExec;
-
-	/**
-	 * :TODO: Calling from a plugin in here will erase the cached message...
-	 * Should that be documented?
-	 */
-	g_SourcePawn.PopTracer(err, m_CustomMsg ? m_MsgCache : NULL);
-
-#if defined SOURCEMOD_BUILD
-	if (err == SP_ERROR_NONE)
-	{
-		if (ctx->sp != save_sp)
-		{
-			g_DbgReporter.GenerateCodeError(this,
-				code_addr,
-				SP_ERROR_STACKLEAK,
-				"Stack leak detected: sp:%d should be %d!",
-				ctx->sp,
-				save_sp);
-		}
-		if (ctx->hp != save_hp)
-		{
-			g_DbgReporter.GenerateCodeError(this,
-				code_addr,
-				SP_ERROR_HEAPLEAK,
-				"Heap leak detected: sp:%d should be %d!",
-				ctx->hp,
-				save_hp);
-		}
-	}
-#endif
-
-	if (err != SP_ERROR_NONE)
-	{
-		ctx->sp = save_sp;
-		ctx->hp = save_hp;
-	}
-
-	ctx->n_idx = n_idx;
-	ctx->n_err = SP_ERROR_NONE;
-	m_MsgCache[0] = '\0';
-	m_CustomMsg = false;
-
-	return err;
+	return SP_ERROR_ABORTED;
 }
 
 void BaseContext::SetErrorMessage(const char *msg, va_list ap)
@@ -340,6 +116,14 @@ void BaseContext::SetErrorMessage(const char *msg, va_list ap)
 	vsnprintf(m_MsgCache, sizeof(m_MsgCache), msg, ap);
 }
 
+void BaseContext::_SetErrorMessage(const char *msg, ...)
+{
+	va_list ap;
+	va_start(ap, msg);
+	SetErrorMessage(msg, ap);
+	va_end(ap);
+}
+
 cell_t BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 {
 	if (!m_InExec)
@@ -347,7 +131,7 @@ cell_t BaseContext::ThrowNativeErrorEx(int error, const char *msg, ...)
 		return 0;
 	}
 
-	ctx->n_err = error;
+	m_ctx.n_err = error;
 	
 	if (msg)
 	{
@@ -367,7 +151,7 @@ cell_t BaseContext::ThrowNativeError(const char *msg, ...)
 		return 0;
 	}
 
-	ctx->n_err = SP_ERROR_NATIVE;
+	m_ctx.n_err = SP_ERROR_NATIVE;
 
 	if (msg)
 	{
@@ -399,25 +183,25 @@ int BaseContext::HeapAlloc(unsigned int cells, cell_t *local_addr, cell_t **phys
 	/**
 	 * Check if the space between the heap and stack is sufficient.
 	 */
-	if ((cell_t)(ctx->sp - ctx->hp - realmem) < STACKMARGIN)
+	if ((cell_t)(m_ctx.sp - m_ctx.hp - realmem) < STACKMARGIN)
 	{
 		return SP_ERROR_HEAPLOW;
 	}
 
-	addr = (cell_t *)(ctx->memory + ctx->hp);
+	addr = (cell_t *)(m_pPlugin->memory + m_ctx.hp);
 	/* store size of allocation in cells */
 	*addr = (cell_t)cells;
 	addr++;
-	ctx->hp += sizeof(cell_t);
+	m_ctx.hp += sizeof(cell_t);
 
-	*local_addr = ctx->hp;
+	*local_addr = m_ctx.hp;
 
 	if (phys_addr)
 	{
 		*phys_addr = addr;
 	}
 
-	ctx->hp += realmem;
+	m_ctx.hp += realmem;
 
 	return SP_ERROR_NONE;
 }
@@ -429,20 +213,20 @@ int BaseContext::HeapPop(cell_t local_addr)
 
 	/* check the bounds of this address */
 	local_addr -= sizeof(cell_t);
-	if (local_addr < ctx->heap_base || local_addr >= ctx->sp)
+	if (local_addr < (cell_t)m_pPlugin->data_size || local_addr >= m_ctx.sp)
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
-	addr = (cell_t *)(ctx->memory + local_addr);
+	addr = (cell_t *)(m_pPlugin->memory + local_addr);
 	cellcount = (*addr) * sizeof(cell_t);
 	/* check if this memory count looks valid */
-	if ((signed)(ctx->hp - cellcount - sizeof(cell_t)) != local_addr)
+	if ((signed)(m_ctx.hp - cellcount - sizeof(cell_t)) != local_addr)
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
-	ctx->hp = local_addr;
+	m_ctx.hp = local_addr;
 
 	return SP_ERROR_NONE;
 }
@@ -450,255 +234,98 @@ int BaseContext::HeapPop(cell_t local_addr)
 
 int BaseContext::HeapRelease(cell_t local_addr)
 {
-	if (local_addr < ctx->heap_base)
+	if (local_addr < (cell_t)m_pPlugin->data_size)
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
-	ctx->hp = local_addr - sizeof(cell_t);
+	m_ctx.hp = local_addr - sizeof(cell_t);
 
 	return SP_ERROR_NONE;
 }
 
 int BaseContext::FindNativeByName(const char *name, uint32_t *index)
 {
-	int high;
-
-	high = ctx->plugin->info.natives_num - 1;
-
-	for (uint32_t i=0; i<ctx->plugin->info.natives_num; i++)
-	{
-		if (strcmp(ctx->natives[i].name, name) == 0)
-		{
-			if (index)
-			{
-				*index = i;
-			}
-			return SP_ERROR_NONE;
-		}
-	}
-
-	return SP_ERROR_NOT_FOUND;
+	return m_pRuntime->FindNativeByName(name, index);
 }
 
 int BaseContext::GetNativeByIndex(uint32_t index, sp_native_t **native)
 {
-	if (index >= ctx->plugin->info.natives_num)
-	{
-		return SP_ERROR_INDEX;
-	}
-
-	if (native)
-	{
-		*native = &(ctx->natives[index]);
-	}
-
-	return SP_ERROR_NONE;
+	return m_pRuntime->GetNativeByIndex(index, native);
 }
 
 
 uint32_t BaseContext::GetNativesNum()
 {
-	return ctx->plugin->info.natives_num;
+	return m_pRuntime->GetNativesNum();
 }
 
 int BaseContext::FindPublicByName(const char *name, uint32_t *index)
 {
-	int diff, high, low;
-	uint32_t mid;
-
-	high = ctx->plugin->info.publics_num - 1;
-	low = 0;
-
-	while (low <= high)
-	{
-		mid = (low + high) / 2;
-		diff = strcmp(ctx->publics[mid].name, name);
-		if (diff == 0)
-		{
-			if (index)
-			{
-				*index = mid;
-			}
-			return SP_ERROR_NONE;
-		} else if (diff < 0) {
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-	}
-
-	return SP_ERROR_NOT_FOUND;
+	return m_pRuntime->FindPublicByName(name, index);
 }
 
 int BaseContext::GetPublicByIndex(uint32_t index, sp_public_t **pblic)
 {
-	if (index >= ctx->plugin->info.publics_num)
-	{
-		return SP_ERROR_INDEX;
-	}
-
-	if (pblic)
-	{
-		*pblic = &(ctx->publics[index]);
-	}
-
-	return SP_ERROR_NONE;
+	return m_pRuntime->GetPublicByIndex(index, pblic);
 }
 
 uint32_t BaseContext::GetPublicsNum()
 {
-	return ctx->plugin->info.publics_num;
+	return m_pRuntime->GetPublicsNum();
 }
 
 int BaseContext::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 {
-	if (index >= ctx->plugin->info.pubvars_num)
-	{
-		return SP_ERROR_INDEX;
-	}
-
-	if (pubvar)
-	{
-		*pubvar = &(ctx->pubvars[index]);
-	}
-
-	return SP_ERROR_NONE;
+	return m_pRuntime->GetPubvarByIndex(index, pubvar);
 }
 
 int BaseContext::FindPubvarByName(const char *name, uint32_t *index)
 {
-	int diff, high, low;
-	uint32_t mid;
-
-	high = ctx->plugin->info.pubvars_num - 1;
-	low = 0;
-
-	while (low <= high)
-	{
-		mid = (low + high) / 2;
-		diff = strcmp(ctx->pubvars[mid].name, name);
-		if (diff == 0)
-		{
-			if (index)
-			{
-				*index = mid;
-			}
-			return SP_ERROR_NONE;
-		} else if (diff < 0) {
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-	}
-
-	return SP_ERROR_NOT_FOUND;
+	return m_pRuntime->FindPublicByName(name, index);
 }
 
 int BaseContext::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)
 {
-	if (index >= ctx->plugin->info.pubvars_num)
-	{
-		return SP_ERROR_INDEX;
-	}
-
-	*local_addr = ctx->plugin->info.pubvars[index].address;
-	*phys_addr = ctx->pubvars[index].offs;
-
-	return SP_ERROR_NONE;
+	return m_pRuntime->GetPubvarAddrs(index, local_addr, phys_addr);
 }
 
 uint32_t BaseContext::GetPubVarsNum()
 {
-	return ctx->plugin->info.pubvars_num;
+	return m_pRuntime->GetPubVarsNum();
 }
 
 int BaseContext::BindNatives(const sp_nativeinfo_t *natives, unsigned int num, int overwrite)
 {
-	uint32_t i, j, max;
-
-	max = ctx->plugin->info.natives_num;
-
-	for (i=0; i<max; i++)
-	{
-		if ((ctx->natives[i].status == SP_NATIVE_BOUND) && !overwrite)
-		{
-			continue;
-		}
-
-		for (j=0; (natives[j].name) && (!num || j<num); j++)
-		{
-			if (!strcmp(ctx->natives[i].name, natives[j].name))
-			{
-				ctx->natives[i].pfn = natives[j].func;
-				ctx->natives[i].status = SP_NATIVE_BOUND;
-			}
-		}
-	}
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::BindNative(const sp_nativeinfo_t *native)
 {
-	uint32_t index;
-	int err;
-
-	if ((err = FindNativeByName(native->name, &index)) != SP_ERROR_NONE)
-	{
-		return err;
-	}
-
-	ctx->natives[index].pfn = native->func;
-	ctx->natives[index].status = SP_NATIVE_BOUND;
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC func)
 {
-	int err;
-	sp_native_t *native;
-
-	if ((err = GetNativeByIndex(index, &native)) != SP_ERROR_NONE)
-	{
-		return err;
-	}
-
-	ctx->natives[index].pfn = func;
-	ctx->natives[index].status = SP_NATIVE_BOUND;
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::BindNativeToAny(SPVM_NATIVE_FUNC native)
 {
-	uint32_t nativesnum, i;
-
-	nativesnum = ctx->plugin->info.natives_num;
-
-	for (i=0; i<nativesnum; i++)
-	{
-		if (ctx->natives[i].status == SP_NATIVE_UNBOUND)
-		{
-			ctx->natives[i].pfn = native;
-			ctx->natives[i].status = SP_NATIVE_BOUND;
-		}
-	}
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 {
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
+	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp)) 
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
 
 	if (phys_addr)
 	{
-		*phys_addr = (cell_t *)(ctx->memory + local_addr);
+		*phys_addr = (cell_t *)(m_pPlugin->memory + local_addr);
 	}
 
 	return SP_ERROR_NONE;
@@ -706,99 +333,34 @@ int BaseContext::LocalToPhysAddr(cell_t local_addr, cell_t **phys_addr)
 
 int BaseContext::PushCell(cell_t value)
 {
-	if ((ctx->hp + STACKMARGIN) > (cell_t)(ctx->sp - sizeof(cell_t)))
-	{
-		return SP_ERROR_STACKLOW;
-	}
-
-	ctx->sp -= sizeof(cell_t);
-	*(cell_t *)(ctx->memory + ctx->sp) = value;
-	ctx->pushcount++;
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::PushCellsFromArray(cell_t array[], unsigned int numcells)
 {
-	unsigned int i;
-	int err;
-
-	for (i=0; i<numcells; i++)
-	{
-		if ((err = PushCell(array[i])) != SP_ERROR_NONE)
-		{
-			ctx->sp += (cell_t)(i * sizeof(cell_t));
-			ctx->pushcount -= i;
-			return err;
-		}
-	}
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::PushCellArray(cell_t *local_addr, cell_t **phys_addr, cell_t array[], unsigned int numcells)
 {
-	cell_t *ph_addr;
-	int err;
-
-	if ((err = HeapAlloc(numcells, local_addr, &ph_addr)) != SP_ERROR_NONE)
-	{
-		return err;
-	}
-
-	memcpy(ph_addr, array, numcells * sizeof(cell_t));
-
-	if ((err = PushCell(*local_addr)) != SP_ERROR_NONE)
-	{
-		HeapRelease(*local_addr);
-		return err;
-	}
-
-	if (phys_addr)
-	{
-		*phys_addr = ph_addr;
-	}
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::LocalToString(cell_t local_addr, char **addr)
 {
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
+	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp))
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
-	*addr = (char *)(ctx->memory + local_addr);
+	*addr = (char *)(m_pPlugin->memory + local_addr);
 
 	return SP_ERROR_NONE;
 }
 
 int BaseContext::PushString(cell_t *local_addr, char **phys_addr, const char *string)
 {
-	char *ph_addr;
-	int err;
-	unsigned int len, numcells = ((len=strlen(string)) + sizeof(cell_t)) / sizeof(cell_t);
-
-	if ((err = HeapAlloc(numcells, local_addr, (cell_t **)&ph_addr)) != SP_ERROR_NONE)
-	{
-		return err;
-	}
-
-	memcpy(ph_addr, string, len);
-	ph_addr[len] = '\0';
-
-	if ((err = PushCell(*local_addr)) != SP_ERROR_NONE)
-	{
-		HeapRelease(*local_addr);
-		return err;
-	}
-
-	if (phys_addr)
-	{
-		*phys_addr = ph_addr;
-	}
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
 
 int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *source)
@@ -806,7 +368,8 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *sour
 	char *dest;
 	size_t len;
 
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
+	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp))
+		|| (local_addr < 0) || ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
@@ -817,7 +380,7 @@ int BaseContext::StringToLocal(cell_t local_addr, size_t bytes, const char *sour
 	}
 
 	len = strlen(source);
-	dest = (char *)(ctx->memory + local_addr);
+	dest = (char *)(m_pPlugin->memory + local_addr);
 
 	if (len >= bytes)
 	{
@@ -874,7 +437,9 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	size_t len;
 	bool needtocheck = false;
 
-	if (((local_addr >= ctx->hp) && (local_addr < ctx->sp)) || (local_addr < 0) || ((ucell_t)local_addr >= ctx->mem_size))
+	if (((local_addr >= m_ctx.hp) && (local_addr < m_ctx.sp))
+		|| (local_addr < 0)
+		|| ((ucell_t)local_addr >= m_pPlugin->mem_size))
 	{
 		return SP_ERROR_INVALID_ADDRESS;
 	}
@@ -885,7 +450,7 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	}
 
 	len = strlen(source);
-	dest = (char *)(ctx->memory + local_addr);
+	dest = (char *)(m_pPlugin->memory + local_addr);
 
 	if ((size_t)len >= maxbytes)
 	{
@@ -908,172 +473,14 @@ int BaseContext::StringToLocalUTF8(cell_t local_addr, size_t maxbytes, const cha
 	return SP_ERROR_NONE;
 }
 
-#define USHR(x) ((unsigned int)(x)>>1)
-
-int BaseContext::LookupFile(ucell_t addr, const char **filename)
-{
-	int high, low, mid;
-
-	high = ctx->plugin->debug.files_num;
-	low = -1;
-
-	while (high - low > 1)
-	{
-		mid = USHR(low + high);
-		if (ctx->files[mid].addr <= addr)
-		{
-			low = mid;
-		} else {
-			high = mid;
-		}
-	}
-
-	if (low == -1)
-	{
-		return SP_ERROR_NOT_FOUND;
-	}
-
-	*filename = ctx->files[low].name;
-
-	return SP_ERROR_NONE;
-}
-
-int BaseContext::LookupFunction(ucell_t addr, const char **name)
-{
-	uint32_t iter, max = ctx->plugin->debug.syms_num;
-
-	for (iter=0; iter<max; iter++)
-	{
-		if ((ctx->symbols[iter].sym->ident == SP_SYM_FUNCTION) 
-			&& (ctx->symbols[iter].codestart <= addr) 
-			&& (ctx->symbols[iter].codeend > addr))
-		{
-			break;
-		}
-	}
-
-	if (iter >= max)
-	{
-		return SP_ERROR_NOT_FOUND;
-	}
-
-	*name = ctx->symbols[iter].name;
-
-	return SP_ERROR_NONE;
-}
-
-int BaseContext::LookupLine(ucell_t addr, uint32_t *line)
-{
-	int high, low, mid;
-
-	high = ctx->plugin->debug.lines_num;
-	low = -1;
-
-	while (high - low > 1)
-	{
-		mid = USHR(low + high);
-		if (ctx->lines[mid].addr <= addr)
-		{
-			low = mid;
-		} else {
-			high = mid;
-		}
-	}
-
-	if (low == -1)
-	{
-		return SP_ERROR_NOT_FOUND;
-	}
-
-	/* Since the CIP occurs BEFORE the line, we have to add one */
-	*line = ctx->lines[low].line + 1;
-
-	return SP_ERROR_NONE;
-}
-
 IPluginFunction *BaseContext::GetFunctionById(funcid_t func_id)
 {
-	CFunction *pFunc = NULL;
-
-	if (func_id & 1)
-	{
-		func_id >>= 1;
-		if (func_id >= ctx->plugin->info.publics_num)
-		{
-			return NULL;
-		}
-		pFunc = m_pub_funcs[func_id];
-		if (!pFunc)
-		{
-			m_pub_funcs[func_id] = new CFunction(ctx->publics[func_id].code_offs, 
-												 this, 
-												 ctx->publics[func_id].funcid,
-												 func_id);
-			pFunc = m_pub_funcs[func_id];
-		}
-		else if (pFunc->IsInvalidated())
-		{
-			pFunc->Set(ctx->publics[func_id].code_offs, 
-				       this,
-					   ctx->publics[func_id].funcid,
-					   func_id);
-		}
-	} else {
-		/* :TODO: currently not used */
-#if 0
-		func_id >>= 1;
-		unsigned int index;
-		if (!g_pVM->FunctionLookup(ctx, func_id, &index))
-		{
-			return NULL;
-		}
-		pFunc = m_priv_funcs[func_id];
-		if (!pFunc)
-		{
-			m_priv_funcs[func_id] = new CFunction(save, this);
-			pFunc = m_priv_funcs[func_id];
-		}
-#endif
-	}
-
-	return pFunc;
+	return m_pRuntime->GetFunctionById(func_id);
 }
 
 IPluginFunction *BaseContext::GetFunctionByName(const char *public_name)
 {
-	uint32_t index;
-
-	if (FindPublicByName(public_name, &index) != SP_ERROR_NONE)
-	{
-		return NULL;
-	}
-
-	CFunction *pFunc = m_pub_funcs[index];
-	if (!pFunc)
-	{
-		sp_public_t *pub = NULL;
-		GetPublicByIndex(index, &pub);
-		if (pub)
-		{
-			m_pub_funcs[index] = new CFunction(pub->code_offs, this, pub->funcid, index);
-		}
-		pFunc = m_pub_funcs[index];
-	}
-	else if (pFunc->IsInvalidated())
-	{
-		sp_public_t *pub = NULL;
-		GetPublicByIndex(index, &pub);
-		if (pub)
-		{
-			pFunc->Set(pub->code_offs, this, pub->funcid, index);
-		}
-		else
-		{
-			pFunc = NULL;
-		}
-	}
-
-	return pFunc;
+	return m_pRuntime->GetFunctionByName(public_name);
 }
 
 int BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
@@ -1092,7 +499,6 @@ int BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
 	return SP_ERROR_NONE;
 }
 
-#if defined SOURCEMOD_BUILD
 SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 {
 	return m_pToken;
@@ -1112,9 +518,244 @@ cell_t *BaseContext::GetNullRef(SP_NULL_TYPE type)
 
 	return NULL;
 }
-#endif
 
 bool BaseContext::IsInExec()
 {
 	return m_InExec;
 }
+
+int BaseContext::Execute(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result)
+{
+	int ir;
+	int serial;
+	cell_t *sp;
+	funcid_t fnid;
+	sp_public_t *pubfunc;
+	cell_t _ignore_result;
+
+	fnid = function->GetFunctionID();
+
+	if (fnid & 1)
+	{
+		unsigned int public_id;
+		
+		public_id = fnid >> 1;
+
+		if (m_pRuntime->GetPublicByIndex(public_id, &pubfunc) != SP_ERROR_NONE)
+		{
+			return SP_ERROR_NOT_FOUND;
+		}
+	}
+	else
+	{
+		return SP_ERROR_INVALID_ADDRESS;
+	}
+
+	if (m_pRuntime->IsPaused())
+	{
+		return SP_ERROR_NOT_RUNNABLE;
+	}
+
+	if (m_ctx.hp + 16*sizeof(cell_t) > (cell_t)(m_ctx.sp - (sizeof(cell_t) * (num_params + 1))))
+	{
+		return SP_ERROR_STACKLOW;
+	}
+
+	if (result == NULL)
+	{
+		result = &_ignore_result;
+	}
+
+	/* We got this far.  It's time to start profiling. */
+	
+	if ((m_pPlugin->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS)
+	{
+		serial = m_pPlugin->profiler->OnCallbackBegin(this, pubfunc);
+	}
+
+	/* Save our previous state. */
+
+	bool save_exec;
+	uint32_t save_n_idx;
+	cell_t save_sp, save_hp;
+
+	save_sp = m_ctx.sp;
+	save_hp = m_ctx.hp;
+	save_exec = m_InExec;
+	save_n_idx = m_ctx.n_idx;
+
+	/* Push parameters */
+
+	m_ctx.sp -= sizeof(cell_t) * (num_params + 1);
+	sp = (cell_t *)(m_pPlugin->memory + m_ctx.sp);
+
+	sp[0] = num_params;
+	for (unsigned int i = 0; i < num_params; i++)
+	{
+		sp[i + 1] = params[i];
+	}
+
+	/* Clear internal state */
+	m_ctx.n_err = SP_ERROR_NONE;
+	m_ctx.n_idx = 0;
+	m_MsgCache[0] = '\0';
+	m_CustomMsg = false;
+	m_InExec = false;
+
+	/* Start the tracer */
+
+	g_engine1.PushTracer(this);
+
+	/* Execute the function */
+
+	ir = g_Jit1.ContextExecute(m_pPlugin, &m_ctx, pubfunc->code_offs, result);
+
+	/* Restore some states, stop tracing */
+
+	m_InExec = save_exec;
+
+	if (ir == SP_ERROR_NONE)
+	{
+		m_ctx.n_err = SP_ERROR_NONE;
+		if (m_ctx.sp != save_sp)
+		{
+			ir = SP_ERROR_STACKLEAK;
+			_SetErrorMessage("Stack leak detected: sp:%d should be %d!", 
+				m_ctx.sp, 
+				save_sp);
+		}
+		if (m_ctx.hp != save_hp)
+		{
+			ir = SP_ERROR_HEAPLEAK;
+			_SetErrorMessage("Heap leak detected: hp:%d should be %d!", 
+				m_ctx.hp, 
+				save_hp);
+		}
+	}
+
+	m_ctx.sp = save_sp;
+	m_ctx.hp = save_hp;
+
+	g_engine1.PopTracer(ir, m_CustomMsg ? m_MsgCache : NULL);
+
+	if ((m_pPlugin->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS)
+	{
+		m_pPlugin->profiler->OnCallbackEnd(serial);
+	}
+
+	m_ctx.n_idx = save_n_idx;
+	m_ctx.n_err = SP_ERROR_NONE;
+	m_MsgCache[0] = '\0';
+	m_CustomMsg = false;
+
+	return ir;
+}
+
+IPluginRuntime *BaseContext::GetRuntime()
+{
+	return m_pRuntime;
+}
+
+int BaseRuntime::ApplyCompilationOptions(ICompilation *co)
+{
+	int err;
+
+	/* The JIT does not destroy anything until it is guaranteed to succeed. */
+	if (!g_Jit1.Compile(co, this, &err))
+	{
+		return err;
+	}
+
+	RefreshFunctionCache();
+
+	return SP_ERROR_NONE;
+}
+
+DebugInfo::DebugInfo(sp_plugin_t *plugin) : m_pPlugin(plugin)
+{
+}
+
+#define USHR(x) ((unsigned int)(x)>>1)
+
+int DebugInfo::LookupFile(ucell_t addr, const char **filename)
+{
+	int high, low, mid;
+
+	high = m_pPlugin->debug.files_num;
+	low = -1;
+
+	while (high - low > 1)
+	{
+		mid = USHR(low + high);
+		if (m_pPlugin->files[mid].addr <= addr)
+		{
+			low = mid;
+		} else {
+			high = mid;
+		}
+	}
+
+	if (low == -1)
+	{
+		return SP_ERROR_NOT_FOUND;
+	}
+
+	*filename = m_pPlugin->files[low].name;
+
+	return SP_ERROR_NONE;
+}
+
+int DebugInfo::LookupFunction(ucell_t addr, const char **name)
+{
+	uint32_t iter, max = m_pPlugin->debug.syms_num;
+
+	for (iter=0; iter<max; iter++)
+	{
+		if ((m_pPlugin->symbols[iter].sym->ident == SP_SYM_FUNCTION) 
+			&& (m_pPlugin->symbols[iter].codestart <= addr) 
+			&& (m_pPlugin->symbols[iter].codeend > addr))
+		{
+			break;
+		}
+	}
+
+	if (iter >= max)
+	{
+		return SP_ERROR_NOT_FOUND;
+	}
+
+	*name = m_pPlugin->symbols[iter].name;
+
+	return SP_ERROR_NONE;
+}
+
+int DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
+{
+	int high, low, mid;
+
+	high = m_pPlugin->debug.lines_num;
+	low = -1;
+
+	while (high - low > 1)
+	{
+		mid = USHR(low + high);
+		if (m_pPlugin->lines[mid].addr <= addr)
+		{
+			low = mid;
+		} else {
+			high = mid;
+		}
+	}
+
+	if (low == -1)
+	{
+		return SP_ERROR_NOT_FOUND;
+	}
+
+	/* Since the CIP occurs BEFORE the line, we have to add one */
+	*line = m_pPlugin->lines[low].line + 1;
+
+	return SP_ERROR_NONE;
+}
+
+#undef USHR

@@ -35,11 +35,21 @@
 #include "jit_x86.h"
 #include "opcode_helpers.h"
 #include <x86_macros.h>
-#include "jit_version.h"
+#include "../jit_version.h"
+#include "../sp_vm_engine.h"
+#include "../engine2.h"
 
 #if defined USE_UNGEN_OPCODES
 #include "ungen_opcodes.h"
 #endif
+
+JITX86 g_Jit1;
+ISourcePawnEngine *engine = &g_engine1;
+
+inline sp_plugin_t *GETPLUGIN(sp_context_t *ctx)
+{
+	return (sp_plugin_t *)(ctx->vm[JITVARS_PLUGIN]);
+}
 
 inline void WriteOp_Move_Pri(JitWriter *jit)
 {
@@ -1318,12 +1328,12 @@ inline void WriteOp_Retn(JitWriter *jit)
 
 void ProfCallGate_Begin(sp_context_t *ctx, const char *name)
 {
-	ctx->profiler->OnFunctionBegin(ctx->context, name);
+	((IProfiler *)ctx->vm[JITVARS_PROFILER])->OnFunctionBegin((IPluginContext *)ctx->vm[JITVARS_BASECTX], name);
 }
 
 void ProfCallGate_End(sp_context_t *ctx)
 {
-	ctx->profiler->OnFunctionEnd();
+	((IProfiler *)ctx->vm[JITVARS_PROFILER])->OnFunctionEnd();
 }
 
 const char *find_func_name(sp_plugin_t *plugin, uint32_t offs)
@@ -2264,8 +2274,11 @@ inline void WriteOp_FloatCompare(JitWriter *jit)
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
 	sp_native_t *native;
+	sp_plugin_t *plugin;
+
+	plugin = (sp_plugin_t *)ctx->vm[JITVARS_PLUGIN];
 	
-	native = &ctx->natives[native_idx];
+	native = &plugin->natives[native_idx];
 
 	ctx->n_idx = native_idx;
 	
@@ -2276,15 +2289,18 @@ cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 		return 0;
 	}
 
-	return native->pfn(ctx->context, params);
+	return native->pfn(GET_CONTEXT(ctx), params);
 }
 
 cell_t NativeCallback_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
 	cell_t val;
 	sp_native_t *native;
+	sp_plugin_t *plugin;
 
-	native = &ctx->natives[native_idx];
+	plugin = (sp_plugin_t *)ctx->vm[JITVARS_PLUGIN];
+
+	native = &plugin->natives[native_idx];
 
 	ctx->n_idx = native_idx;
 
@@ -2295,9 +2311,9 @@ cell_t NativeCallback_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *par
 		return 0;
 	}
 
-	ctx->profiler->OnNativeBegin(ctx->context, native);
-	val = native->pfn(ctx->context, params);
-	ctx->profiler->OnNativeEnd();
+	plugin->profiler->OnNativeBegin(GET_CONTEXT(ctx), native);
+	val = native->pfn(GET_CONTEXT(ctx), params);
+	plugin->profiler->OnNativeEnd();
 
 	return val;
 }
@@ -2307,9 +2323,11 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
+	sp_plugin_t *pl = GETPLUGIN(ctx);
+
 	ctx->n_idx = native_idx;
 
-	if (ctx->hp < ctx->heap_base)
+	if (ctx->hp < (cell_t)pl->data_size)
 	{
 		ctx->n_err = SP_ERROR_HEAPMIN;
 		return 0;
@@ -2321,7 +2339,7 @@ cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *param
 		return 0;
 	}
 
-	if ((uint32_t)ctx->sp >= ctx->mem_size)
+	if ((uint32_t)ctx->sp >= pl->mem_size)
 	{
 		ctx->n_err = SP_ERROR_STACKMIN;
 		return 0;
@@ -2353,9 +2371,11 @@ cell_t NativeCallback_Debug_Profile(sp_context_t *ctx, ucell_t native_idx, cell_
 	cell_t save_sp = ctx->sp;
 	cell_t save_hp = ctx->hp;
 
+	sp_plugin_t *pl = GETPLUGIN(ctx);
+
 	ctx->n_idx = native_idx;
 
-	if (ctx->hp < ctx->heap_base)
+	if (ctx->hp < (cell_t)pl->data_size)
 	{
 		ctx->n_err = SP_ERROR_HEAPMIN;
 		return 0;
@@ -2367,7 +2387,7 @@ cell_t NativeCallback_Debug_Profile(sp_context_t *ctx, ucell_t native_idx, cell_
 		return 0;
 	}
 
-	if ((uint32_t)ctx->sp >= ctx->mem_size)
+	if ((uint32_t)ctx->sp >= pl->mem_size)
 	{
 		ctx->n_err = SP_ERROR_STACKMIN;
 		return 0;
@@ -2457,10 +2477,25 @@ void WriteErrorRoutines(CompData *data, JitWriter *jit)
 	Write_GetError(jit);
 }
 
-sp_context_t *JITX86::CompileToContext(ICompilation *co, int *err)
+bool JITX86::Compile(ICompilation *co, BaseRuntime *prt, int *err)
 {
 	CompData *data = (CompData *)co;
 	sp_plugin_t *plugin = data->plugin;
+
+	if (data->plugin == NULL)
+	{
+		if (data->debug && !(prt->m_pPlugin->flags & SP_FLAG_DEBUG))
+		{
+			if (err != NULL)
+			{
+				*err = SP_ERROR_NOTDEBUGGING;
+			}
+			co->Abort();
+			return false;
+		}
+
+		data->SetRuntime(prt);
+	}
 
 	/* The first phase is to browse */
 	uint8_t *code = plugin->pcode;
@@ -2584,8 +2619,8 @@ jit_rewind:
 			if (data->error_set != SP_ERROR_NONE)
 			{
 				*err = data->error_set;
-				AbortCompilation(co);
-				return NULL;
+				co->Abort();
+				return false;
 			}
 		}
 		/* Write these last because error jumps should be unpredicted, and thus forward */
@@ -2627,23 +2662,27 @@ jit_rewind:
 	 * FOURTH PASS - Context Setup
 	 *************/
 
-	sp_context_t *ctx = new sp_context_t;
-	memset(ctx, 0, sizeof(sp_context_t));
-
 	/* setup  basics */
-	ctx->codebase = writer.outbase;
-	ctx->plugin = plugin;
-	ctx->vmbase = this;
-	ctx->flags = (data->debug ? SPFLAG_PLUGIN_DEBUG : 0);
+	sp_context_t *ctx = data->runtime->GetDefaultContext()->GetContext();
+
+	/* Clear out any old cruft */
+	if (plugin->codebase != NULL)
+	{
+		FreePluginVars(data->runtime->m_pPlugin);
+		FreeContextVars(ctx);
+	}
+	
+	plugin->codebase = writer.outbase;
 
 	/* setup memory */
-	ctx->memory = new uint8_t[plugin->memory];
-	memcpy(ctx->memory, plugin->data, plugin->data_size);
-	ctx->mem_size = plugin->memory;
-	ctx->heap_base = plugin->data_size;
-	ctx->hp = ctx->heap_base;
-	ctx->sp = ctx->mem_size - sizeof(cell_t);
-	ctx->prof_flags = data->profile;
+
+	ctx->hp = plugin->data_size;
+	ctx->sp = plugin->mem_size - sizeof(cell_t);
+	ctx->frm = ctx->sp;
+	ctx->n_err = SP_ERROR_NONE;
+	ctx->n_idx = SP_ERROR_NONE;
+	plugin->prof_flags = data->profile;
+	plugin->flags = data->debug ? SPFLAG_PLUGIN_DEBUG : 0;
 
 	const char *strbase = plugin->info.stringbase;
 	uint32_t max, iter;
@@ -2651,39 +2690,39 @@ jit_rewind:
 	/* relocate public info */
 	if ((max = plugin->info.publics_num))
 	{
-		ctx->publics = new sp_public_t[max];
+		plugin->publics = new sp_public_t[max];
 		for (iter=0; iter<max; iter++)
 		{
-			ctx->publics[iter].name = strbase + plugin->info.publics[iter].name;
-			ctx->publics[iter].code_offs = RelocLookup(jit, plugin->info.publics[iter].address, false);
+			plugin->publics[iter].name = strbase + plugin->info.publics[iter].name;
+			plugin->publics[iter].code_offs = RelocLookup(jit, plugin->info.publics[iter].address, false);
 			/* Encode the ID as a straight code offset */
-			ctx->publics[iter].funcid = (ctx->publics[iter].code_offs << 1);
+			plugin->publics[iter].funcid = (plugin->publics[iter].code_offs << 1);
 		}
 	}
 
 	/* relocate pubvar info */
 	if ((max = plugin->info.pubvars_num))
 	{
-		uint8_t *dat = ctx->memory;
-		ctx->pubvars = new sp_pubvar_t[max];
+		uint8_t *dat = plugin->memory;
+		plugin->pubvars = new sp_pubvar_t[max];
 		for (iter=0; iter<max; iter++)
 		{
-			ctx->pubvars[iter].name = strbase + plugin->info.pubvars[iter].name;
-			ctx->pubvars[iter].offs = (cell_t *)(dat + plugin->info.pubvars[iter].address);
+			plugin->pubvars[iter].name = strbase + plugin->info.pubvars[iter].name;
+			plugin->pubvars[iter].offs = (cell_t *)(dat + plugin->info.pubvars[iter].address);
 		}
 	}
 
 	/* relocate native info */
 	if ((max = plugin->info.natives_num))
 	{
-		ctx->natives = new sp_native_t[max];
+		plugin->natives = new sp_native_t[max];
 		for (iter=0; iter<max; iter++)
 		{
-			ctx->natives[iter].name = strbase + plugin->info.natives[iter].name;
-			ctx->natives[iter].pfn = &InvalidNative;
-			ctx->natives[iter].status = SP_NATIVE_UNBOUND;
-			ctx->natives[iter].flags = 0;
-			ctx->natives[iter].user = NULL;
+			plugin->natives[iter].name = strbase + plugin->info.natives[iter].name;
+			plugin->natives[iter].pfn = &InvalidNative;
+			plugin->natives[iter].status = SP_NATIVE_UNBOUND;
+			plugin->natives[iter].flags = 0;
+			plugin->natives[iter].user = NULL;
 		}
 	}
 
@@ -2696,20 +2735,20 @@ jit_rewind:
 		
 		/* relocate files */
 		max = plugin->debug.files_num;
-		ctx->files = new sp_debug_file_t[max];
+		plugin->files = new sp_debug_file_t[max];
 		for (iter=0; iter<max; iter++)
 		{
-			ctx->files[iter].addr = RelocLookup(jit, plugin->debug.files[iter].addr, false);
-			ctx->files[iter].name = strbase + plugin->debug.files[iter].name;
+			plugin->files[iter].addr = RelocLookup(jit, plugin->debug.files[iter].addr, false);
+			plugin->files[iter].name = strbase + plugin->debug.files[iter].name;
 		}
 
 		/* relocate lines */
 		max = plugin->debug.lines_num;
-		ctx->lines = new sp_debug_line_t[max];
+		plugin->lines = new sp_debug_line_t[max];
 		for (iter=0; iter<max; iter++)
 		{
-			ctx->lines[iter].addr = RelocLookup(jit, plugin->debug.lines[iter].addr, false);
-			ctx->lines[iter].line = plugin->debug.lines[iter].line;
+			plugin->lines[iter].addr = RelocLookup(jit, plugin->debug.lines[iter].addr, false);
+			plugin->lines[iter].line = plugin->debug.lines[iter].line;
 		}
 
 		/* relocate arrays */
@@ -2718,7 +2757,7 @@ jit_rewind:
 		uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
 		
 		max = plugin->debug.syms_num;
-		ctx->symbols = new sp_debug_symbol_t[max];
+		plugin->symbols = new sp_debug_symbol_t[max];
 		for (iter=0; iter<max; iter++)
 		{
 			sym = (sp_fdbg_symbol_t *)cursor;
@@ -2730,52 +2769,48 @@ jit_rewind:
 			 */
 			if (sym->codestart > data->codesize)
 			{
-				ctx->symbols[iter].codestart = 0;
+				plugin->symbols[iter].codestart = 0;
 			} else {
-				ctx->symbols[iter].codestart = RelocLookup(jit, sym->codestart, false);
+				plugin->symbols[iter].codestart = RelocLookup(jit, sym->codestart, false);
 			}
 			if (sym->codeend > data->codesize)
 			{
-				ctx->symbols[iter].codeend = data->codesize;
+				plugin->symbols[iter].codeend = data->codesize;
 			} else {
-				ctx->symbols[iter].codeend = RelocLookup(jit, sym->codeend, false);
+				plugin->symbols[iter].codeend = RelocLookup(jit, sym->codeend, false);
 			}
-			ctx->symbols[iter].name = strbase + sym->name;
-			ctx->symbols[iter].sym = sym;
+			plugin->symbols[iter].name = strbase + sym->name;
+			plugin->symbols[iter].sym = sym;
 
 			if (sym->dimcount > 0)
 			{
 				cursor += sizeof(sp_fdbg_symbol_t);
 				arr = (sp_fdbg_arraydim_t *)cursor;
-				ctx->symbols[iter].dims = arr;
+				plugin->symbols[iter].dims = arr;
 				cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
 				continue;
 			}
 
-			ctx->symbols[iter].dims = NULL;
+			plugin->symbols[iter].dims = NULL;
 			cursor += sizeof(sp_fdbg_symbol_t);
 		}
 	}
 
 	tracker_t *trk = new tracker_t;
 	ctx->vm[JITVARS_TRACKER] = trk;
+	ctx->vm[JITVARS_BASECTX] = data->runtime->GetDefaultContext();
+	ctx->vm[JITVARS_PROFILER] = g_engine2.GetProfiler();
+	ctx->vm[JITVARS_PLUGIN] = data->runtime->m_pPlugin;
 	trk->pBase = (ucell_t *)malloc(1024);
 	trk->pCur = trk->pBase;
 	trk->size = 1024 / sizeof(cell_t);
 
-	functracker_t *fnc = new functracker_t;
-	ctx->vm[JITVARS_FUNCINFO] = fnc;
-	ctx->vm[JITVARS_REBASE] = data->rebase;
-	fnc->code_size = codemem;
-	fnc->num_functions = data->func_idx;
-
 	/* clean up relocation+compilation memory */
-	data->rebase = NULL;
-	AbortCompilation(co);
+	co->Abort();
 
 	*err = SP_ERROR_NONE;
 
-	return ctx;
+	return true;
 }
 
 SPVM_NATIVE_FUNC JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
@@ -2851,126 +2886,146 @@ void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 	engine->FreePageMemory((void *)func);
 }
 
-const char *JITX86::GetVMName()
-{
-	return "JIT (x86)";
-}
-
-int JITX86::ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result)
+int JITX86::ContextExecute(sp_plugin_t *pl, sp_context_t *ctx, uint32_t code_idx, cell_t *result)
 {
 	typedef int (*CONTEXT_EXECUTE)(sp_context_t *, uint32_t, cell_t *);
- 	CONTEXT_EXECUTE fn = (CONTEXT_EXECUTE)ctx->codebase;
+ 	CONTEXT_EXECUTE fn = (CONTEXT_EXECUTE)pl->codebase;
 	return fn(ctx, code_idx, result);
 }
 
-void JITX86::FreeContext(sp_context_t *ctx)
-{
-	engine->FreePageMemory(ctx->codebase);
-	delete [] ctx->memory;
-	delete [] ctx->files;
-	delete [] ctx->lines;
-	delete [] ctx->natives;
-	delete [] ctx->publics;
-	delete [] ctx->pubvars;
-	delete [] ctx->symbols;
-	engine->BaseFree(ctx->vm[JITVARS_REBASE]);
-	free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
-	delete (tracker_t *)ctx->vm[JITVARS_TRACKER];
-	delete (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
-	delete ctx;
-}
-
-ICompilation *JITX86::StartCompilation(sp_plugin_t *plugin)
+ICompilation *JITX86::StartCompilation()
 {
 	CompData *data = new CompData;
+
+	data->jit_float_table = NULL;
+
+	return data;
+}
+
+void CompData::SetRuntime(BaseRuntime *runtime)
+{
 	uint32_t max_natives = plugin->info.natives_num;
 	const char *strbase = plugin->info.stringbase;
 
-	data->plugin = plugin;
-	data->inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
-	data->error_set = SP_ERROR_NONE;
+	plugin = runtime->m_pPlugin;
+	inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
+	error_set = SP_ERROR_NONE;
 
-	data->jit_float_table = new floattbl_t[max_natives];
+	jit_float_table = new floattbl_t[max_natives];
 	for (uint32_t i=0; i<max_natives; i++)
 	{
 		const char *name = strbase + plugin->info.natives[i].name;
 		if (!strcmp(name, "FloatAbs"))
 		{
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FABS;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FABS;
 		} else if (!strcmp(name, "FloatAdd")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FLOATADD;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FLOATADD;
 		} else if (!strcmp(name, "FloatSub")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FLOATSUB;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FLOATSUB;
 		} else if (!strcmp(name, "FloatMul")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FLOATMUL;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FLOATMUL;
 		} else if (!strcmp(name, "FloatDiv")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FLOATDIV;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FLOATDIV;
 		} else if (!strcmp(name, "float")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FLOAT;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FLOAT;
 		} else if (!strcmp(name, "FloatCompare")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_FLOATCMP;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_FLOATCMP;
 		} else if (!strcmp(name, "RoundToZero")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_RND_TO_ZERO;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_RND_TO_ZERO;
 		} else if (!strcmp(name, "RoundToCeil")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_RND_TO_CEIL;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_RND_TO_CEIL;
 		} else if (!strcmp(name, "RoundToFloor")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_RND_TO_FLOOR;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_RND_TO_FLOOR;
 		} else if (!strcmp(name, "RoundToNearest")) {
-			data->jit_float_table[i].found = true;
-			data->jit_float_table[i].index = OP_RND_TO_NEAREST;
+			jit_float_table[i].found = true;
+			jit_float_table[i].index = OP_RND_TO_NEAREST;
 		}
 	}
+}
+
+ICompilation *JITX86::StartCompilation(BaseRuntime *runtime)
+{
+	CompData *data = new CompData;
+
+	data->SetRuntime(runtime);
 
 	return data;
 }
 
-void JITX86::AbortCompilation(ICompilation *co)
+void CompData::Abort()
 {
-	if (((CompData *)co)->rebase)
+	if (rebase)
 	{
-		engine->BaseFree(((CompData *)co)->rebase);
+		engine->BaseFree(rebase);
 	}
-	delete [] ((CompData *)co)->jit_float_table;
-	delete (CompData *)co;
+	delete [] jit_float_table;
+	delete this;
 }
 
-bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char *val)
+void JITX86::FreeContextVars(sp_context_t *ctx)
 {
-	CompData *data = (CompData *)co;
+	free(((tracker_t *)(ctx->vm[JITVARS_TRACKER]))->pBase);
+	delete (tracker_t *)ctx->vm[JITVARS_TRACKER];
+}
 
+void JITX86::FreePluginVars(sp_plugin_t *pl)
+{
+	delete [] pl->files;
+	delete [] pl->lines;
+	delete [] pl->natives;
+	delete [] pl->publics;
+	delete [] pl->pubvars;
+	delete [] pl->symbols;
+
+	if (pl->codebase != NULL)
+	{
+		g_engine1.FreePageMemory(pl->codebase);
+		pl->codebase = NULL;
+	}
+
+	pl->files = NULL;
+	pl->lines = NULL;
+	pl->natives = NULL;
+	pl->publics = NULL;
+	pl->pubvars = NULL;
+	pl->symbols = NULL;
+}
+
+bool CompData::SetOption(const char *key, const char *val)
+{
 	if (strcmp(key, SP_JITCONF_DEBUG) == 0)
 	{
 		if ((atoi(val) == 1) || !strcmp(val, "yes"))
 		{
-			data->debug = true;
+			debug = true;
 		} else {
-			data->debug = false;
+			debug = false;
 		}
-		if (data->debug && !(data->plugin->flags & SP_FLAG_DEBUG))
+		if (debug && plugin && !(plugin->flags & SP_FLAG_DEBUG))
 		{
-			data->debug = false;
+			debug = false;
 			return false;
 		}
 		return true;
 	}
 	else if (strcmp(key, SP_JITCONF_PROFILE) == 0)
 	{
-		data->profile = atoi(val);
+		profile = atoi(val);
 
 		/** Callbacks must be profiled to profile functions! */
-		if ((data->profile & SP_PROF_FUNCTIONS) == SP_PROF_FUNCTIONS)
+		if ((profile & SP_PROF_FUNCTIONS) == SP_PROF_FUNCTIONS)
 		{
-			data->profile |= SP_PROF_CALLBACKS;
+			profile |= SP_PROF_CALLBACKS;
 		}
 
 		return true;
@@ -2979,83 +3034,3 @@ bool JITX86::SetCompilationOption(ICompilation *co, const char *key, const char 
 	return false;
 }
 
-unsigned int JITX86::GetAPIVersion()
-{
-	return SOURCEPAWN_VM_API_VERSION;
-}
-
-bool JITX86::FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)
-{
-	uint8_t *rebase = (uint8_t *)ctx->vm[JITVARS_REBASE];
-
-	/* Is this within the pcode bounds? */
-	if (code_addr >= ctx->plugin->pcode_size - sizeof(uint32_t))
-	{
-		return false;
-	}
-
-	/* Relocate this */
-	code_addr = *(jitoffs_t *)(rebase + code_addr);
-
-	/* Check if this is in the relocation bounds */
-	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
-	if (code_addr >= fnc->code_size)
-	{
-		return false;
-	}
-
-	/* Get the function info and sanity check */
-	funcinfo_t *f = (funcinfo_t *)((char *)ctx->codebase + code_addr - sizeof(funcinfo_t));
-	if (f->magic != JIT_FUNCMAGIC || f->index >= fnc->num_functions)
-	{
-		return false;
-	}
-
-	if (result)
-	{
-		*result = f->index;
-	}
-
-	return true;
-}
-
-bool JITX86::FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result)
-{
-	/* Check if this is in the relocation bounds */
-	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
-	if (code_addr >= fnc->code_size)
-	{
-		return false;
-	}
-
-	/* Get the function info and sanity check */
-	funcinfo_t *f = (funcinfo_t *)((char *)ctx->codebase + code_addr - sizeof(funcinfo_t));
-	if (f->magic != JIT_FUNCMAGIC || f->index >= fnc->num_functions)
-	{
-		return false;
-	}
-
-	if (result)
-	{
-		*result = f->index;
-	}
-
-	return true;
-}
-
-unsigned int JITX86::FunctionCount(const sp_context_t *ctx)
-{
-	functracker_t *fnc = (functracker_t *)ctx->vm[JITVARS_FUNCINFO];
-
-	return fnc->num_functions;
-}
-
-const char *JITX86::GetVersionString()
-{
-	return SVN_FULL_VERSION;
-}
-
-const char *JITX86::GetCPUOptimizations()
-{
-	return "Generic i686";
-}

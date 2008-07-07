@@ -35,6 +35,8 @@
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
 #include <jit_helpers.h>
+#include "../jit_shared.h"
+#include "../BaseRuntime.h"
 
 using namespace SourcePawn;
 
@@ -44,10 +46,13 @@ using namespace SourcePawn;
 #define JIT_FUNCMAGIC				0x214D4148	//magic function offset
 
 #define JITVARS_TRACKER				0		//important: don't change this to avoid trouble
-#define JITVARS_FUNCINFO			1		//important: don't change this aWOAWOGJQG I LIKE HAM
-#define JITVARS_REBASE				2		//important: hi, i'm bail
+#define JITVARS_BASECTX				1		//important: don't change this aWOAWOGJQG I LIKE HAM
+#define JITVARS_PROFILER			2		//profiler
+#define JITVARS_PLUGIN				3		//sp_plugin_t
 
 #define sDIMEN_MAX					5		//this must mirror what the compiler has.
+
+#define GET_CONTEXT(c)  ((IPluginContext *)c->vm[JITVARS_BASECTX])
 
 typedef struct tracker_s
 {
@@ -87,7 +92,11 @@ public:
 		error_set(SP_ERROR_NONE), func_idx(0)
 	{
 	};
+	bool SetOption(const char *key, const char *val);
+	void SetRuntime(BaseRuntime *runtime);
+	void Abort();
 public:
+	BaseRuntime *runtime;			/* runtime handle */
 	sp_plugin_t *plugin;			/* plugin handle */
 	bool debug;						/* whether to compile debug mode */
 	int profile;					/* profiling flags */
@@ -116,22 +125,15 @@ public:
 	uint32_t codesize;				/* total codesize */
 };
 
-class JITX86 : public IVirtualMachine
+class JITX86
 {
 public:
-	const char *GetVMName();
-	ICompilation *StartCompilation(sp_plugin_t *plugin);
-	bool SetCompilationOption(ICompilation *co, const char *key, const char *val);
-	sp_context_t *CompileToContext(ICompilation *co, int *err);
-	void AbortCompilation(ICompilation *co);
-	void FreeContext(sp_context_t *ctx);
-	int ContextExecute(sp_context_t *ctx, uint32_t code_idx, cell_t *result);
-	unsigned int GetAPIVersion();
-	bool FunctionLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result);
-	bool FunctionPLookup(const sp_context_t *ctx, uint32_t code_addr, unsigned int *result);
-	unsigned int FunctionCount(const sp_context_t *ctx);
-	const char *GetVersionString();
-	const char *GetCPUOptimizations();
+	ICompilation *StartCompilation(BaseRuntime *runtime);
+	ICompilation *StartCompilation();
+	bool Compile(ICompilation *co, BaseRuntime *runtime, int *err);
+	void FreePluginVars(sp_plugin_t *pl);
+	void FreeContextVars(sp_context_t *ctx);
+	int ContextExecute(sp_plugin_t *pl, sp_context_t *ctx, uint32_t code_idx, cell_t *result);
 	SPVM_NATIVE_FUNC CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData);
 	void DestroyFakeNative(SPVM_NATIVE_FUNC func);
 };
@@ -157,6 +159,6 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative=false);
 #define AMX_INFO_CONTEXT	12				//physical
 #define AMX_INFO_STACKTOP	16				//relocated
 
-extern ISourcePawnEngine *engine;
+extern JITX86 g_Jit1;
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_X86_H_
