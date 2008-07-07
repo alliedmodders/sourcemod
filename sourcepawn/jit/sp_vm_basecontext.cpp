@@ -769,3 +769,26 @@ cell_t *BaseContext::GetLocalParams()
 {
 	return (cell_t *)(m_pPlugin->memory + m_ctx.frm + (2 * sizeof(cell_t)));
 }
+
+void BaseContext::SetKey(int k, void *value)
+{
+	if (k < 1 || k > 4)
+	{
+		return;
+	}
+
+	m_keys[k - 1] = value;
+	m_keys_set[k - 1] = true;
+}
+
+bool BaseContext::GetKey(int k, void **value)
+{
+	if (k < 1 || k > 4 || m_keys_set[k - 1] == false)
+	{
+		return false;
+	}
+
+	*value = m_keys[k - 1];
+
+	return true;
+}

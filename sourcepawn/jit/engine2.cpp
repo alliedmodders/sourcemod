@@ -195,6 +195,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 
 	memset(plugin, 0, sizeof(sp_plugin_t));
 
+	plugin->base_size = hdr.imagesize;
 	if (!_ReadPlugin(&hdr, base, plugin, err))
 	{
 		delete plugin;
@@ -268,4 +269,9 @@ unsigned int SourcePawnEngine2::GetAPIVersion()
 ICompilation *SourcePawnEngine2::StartCompilation()
 {
 	return g_Jit1.StartCompilation();
+}
+
+const char *SourcePawnEngine2::GetErrorString(int err)
+{
+	return g_engine1.GetErrorString(err);
 }

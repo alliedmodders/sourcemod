@@ -234,7 +234,7 @@ namespace SourcePawn
 		 * @brief Executes the forward, resets the pushed parameter list, and 
 		 * performs any copybacks.
 		 *
-		 * Note: A function can only be executed given a context it was created in.
+		 * Note: A function can only be executed given a runtime it was created in.
 		 *
 		 * @param ctx			Context to execute the function in.
 		 * @param result		Pointer to store return value in.
@@ -248,7 +248,7 @@ namespace SourcePawn
 		 * NOTE: You will get an error if you attempt to use CallFunction() with
 		 * previously pushed parameters.
 		 *
-		 * Note: A function can only be executed given a context it was created in.
+		 * Note: A function can only be executed given a runtime it was created in.
 		 *
 		 * @param ctx			Context to execute the function in.
 		 * @param params		Array of cell parameters.
@@ -466,6 +466,13 @@ namespace SourcePawn
 		 * @return				Pause state (true = paused, false = not).
 		 */
 		virtual bool IsPaused() =0;
+
+		/**
+		 * @brief Returns the estimated memory usage of this plugin.
+		 *
+		 * @return				Memory usage, in bytes.
+		 */
+		virtual size_t GetMemUsage() =0;
 	};
 
 	/**
@@ -765,10 +772,10 @@ namespace SourcePawn
 		 */
 		virtual IPluginFunction *GetFunctionById(funcid_t func_id) =0;
 
-#if defined SOURCEMOD_BUILD
 		/**
 		 * @brief Returns the identity token for this context.
-		 * Note: This is a helper function for native calls and the Handle System.
+		 * 
+		 * Note: This is a compatibility shim and is the same as GetKey(1).
 		 *
 		 * @return			Identity token.
 		 */
@@ -791,7 +798,6 @@ namespace SourcePawn
 		 * @param addr			Destination output pointer.
 		 */
 		virtual int LocalToStringNULL(cell_t local_addr, char **addr) =0;
-#endif
 
 		/**
 		 * @brief Deprecated; do not use.
@@ -849,6 +855,25 @@ namespace SourcePawn
 		 * @return				Parameter stack.
 		 */
 		virtual cell_t *GetLocalParams() =0;
+
+		/**
+		 * @brief Sets a local "key" that can be used for fast lookup.
+		 *
+		 * Only the "owner" of the context should be setting this.
+		 *
+		 * @param key			Key number (values allowed: 1 through 4).
+		 * @param value			Pointer value.
+		 */
+		virtual void SetKey(int k, void *value) =0;
+
+		/**
+		 * @brief Retrieves a previously set "key."
+		 *
+		 * @param key			Key number (values allowed: 1 through 4).
+		 * @param value			Pointer to store value.
+		 * @return				True on success, false on failure.
+		 */
+		virtual bool GetKey(int k, void **value) =0;
 	};
 
 
@@ -1190,6 +1215,14 @@ namespace SourcePawn
 		 * @param profiler	Profiler pointer.
 		 */
 		virtual void SetProfiler(IProfiler *profiler) =0;
+
+		/**
+		 * @brief Returns the string representation of an error message.
+		 *
+		 * @param err		Error code.
+		 * @return			Error string, or NULL if not found.
+		 */
+		virtual const char *GetErrorString(int err) =0;
 	};
 };
 

@@ -109,25 +109,25 @@ namespace SourceMod
 		virtual PluginType GetType() =0;
 
 		/**
-		 * @brief Returns the current API context being used in the plugin.
+		 * @brief Returns the IPluginRuntime::GetDefaultContext() value.
 		 *
 		 * @return	Pointer to an IPluginContext, or NULL if not loaded.
 		 */
 		virtual SourcePawn::IPluginContext *GetBaseContext() =0;
 
 		/**
-		 * @brief Returns the context structure being used in the plugin.
+		 * @brief Deprecated, returns NULL.
 		 *
-		 * @return	Pointer to an sp_context_t, or NULL if not loaded.
+		 * @return	NULL.
 		 */
 		virtual sp_context_t *GetContext() =0;
 
 		/**
-		 * @brief Returns the plugin file structure.
+		 * @brief Deprecated, returns NULL.
 		 *
-		 * @return	Pointer to an sp_plugin_t, or NULL if not loaded.
+		 * @return	NULL.
 		 */
-		virtual const sp_plugin_t *GetPluginStructure() =0;
+		virtual void *GetPluginStructure() =0;
 
 		/**
 		 * @brief Returns information about the plugin by reference.
@@ -189,6 +189,13 @@ namespace SourceMod
 		 * @return			True if the property existed, false otherwise.
 		 */
 		virtual bool GetProperty(const char *prop, void **ptr, bool remove=false) =0;
+
+		/**
+		 * @brief Returns the runtime representing this plugin.
+		 *
+		 * @return			IPluginRuntime pointer, or NULL if not loaded.
+		 */
+		virtual SourcePawn::IPluginRuntime *GetRuntime() =0;
 	};
 
 

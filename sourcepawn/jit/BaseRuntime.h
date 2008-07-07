@@ -44,6 +44,7 @@ public:
 	virtual int ApplyCompilationOptions(ICompilation *co);
 	virtual void SetPauseState(bool paused);
 	virtual bool IsPaused();
+	virtual size_t GetMemUsage();
 private:
 	void ClearCompile();
 	void RefreshFunctionCache();

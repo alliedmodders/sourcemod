@@ -5,6 +5,7 @@
 #include "sp_vm_engine.h"
 #include "x86/jit_x86.h"
 #include "sp_vm_basecontext.h"
+#include "engine2.h"
 
 using namespace SourcePawn;
 
@@ -28,6 +29,9 @@ BaseRuntime::BaseRuntime(sp_plugin_t *pl) : m_Debug(pl), m_pPlugin(pl)
 	{
 		m_PubFuncs = NULL;
 	}
+
+	m_pPlugin->dbreak = GlobalDebugBreak;
+	m_pPlugin->profiler = g_engine2.GetProfiler();
 }
 
 BaseRuntime::~BaseRuntime()
@@ -330,4 +334,18 @@ void BaseRuntime::SetPauseState(bool paused)
 bool BaseRuntime::IsPaused()
 {
 	return ((m_pPlugin->run_flags & SPFLAG_PLUGIN_PAUSED) == SPFLAG_PLUGIN_PAUSED);
+}
+
+size_t BaseRuntime::GetMemUsage()
+{
+	size_t mem = 0;
+
+	mem += sizeof(this);
+	mem += sizeof(sp_plugin_t);
+	mem += sizeof(BaseContext);
+	mem += m_pPlugin->base_size;
+	mem += m_pPlugin->jit_codesize;
+	mem += m_pPlugin->jit_memsize;
+
+	return mem;
 }

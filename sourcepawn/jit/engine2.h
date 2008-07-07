@@ -22,6 +22,7 @@ namespace SourcePawn
 		IDebugListener *SetDebugListener(IDebugListener *listener);
 		void SetProfiler(IProfiler *profiler);
 		ICompilation *StartCompilation();
+		const char *GetErrorString(int err);
 	public:
 		IProfiler *GetProfiler();
 	private:

@@ -2673,6 +2673,8 @@ jit_rewind:
 	}
 	
 	plugin->codebase = writer.outbase;
+	plugin->jit_codesize = codemem;
+	plugin->jit_memsize = 0;
 
 	/* setup memory */
 
@@ -2691,6 +2693,7 @@ jit_rewind:
 	if ((max = plugin->info.publics_num))
 	{
 		plugin->publics = new sp_public_t[max];
+		plugin->jit_memsize += sizeof(sp_public_t) * max;
 		for (iter=0; iter<max; iter++)
 		{
 			plugin->publics[iter].name = strbase + plugin->info.publics[iter].name;
@@ -2705,6 +2708,7 @@ jit_rewind:
 	{
 		uint8_t *dat = plugin->memory;
 		plugin->pubvars = new sp_pubvar_t[max];
+		plugin->jit_memsize += sizeof(sp_pubvar_t) * max;
 		for (iter=0; iter<max; iter++)
 		{
 			plugin->pubvars[iter].name = strbase + plugin->info.pubvars[iter].name;
@@ -2716,6 +2720,7 @@ jit_rewind:
 	if ((max = plugin->info.natives_num))
 	{
 		plugin->natives = new sp_native_t[max];
+		plugin->jit_memsize += sizeof(sp_native_t) * max;
 		for (iter=0; iter<max; iter++)
 		{
 			plugin->natives[iter].name = strbase + plugin->info.natives[iter].name;
@@ -2736,6 +2741,7 @@ jit_rewind:
 		/* relocate files */
 		max = plugin->debug.files_num;
 		plugin->files = new sp_debug_file_t[max];
+		plugin->jit_memsize += sizeof(sp_debug_file_t) * max;
 		for (iter=0; iter<max; iter++)
 		{
 			plugin->files[iter].addr = RelocLookup(jit, plugin->debug.files[iter].addr, false);
@@ -2745,6 +2751,7 @@ jit_rewind:
 		/* relocate lines */
 		max = plugin->debug.lines_num;
 		plugin->lines = new sp_debug_line_t[max];
+		plugin->jit_memsize += sizeof(sp_debug_line_t) * max;
 		for (iter=0; iter<max; iter++)
 		{
 			plugin->lines[iter].addr = RelocLookup(jit, plugin->debug.lines[iter].addr, false);
@@ -2758,6 +2765,7 @@ jit_rewind:
 		
 		max = plugin->debug.syms_num;
 		plugin->symbols = new sp_debug_symbol_t[max];
+		plugin->jit_memsize += sizeof(sp_debug_symbol_t) * max;
 		for (iter=0; iter<max; iter++)
 		{
 			sym = (sp_fdbg_symbol_t *)cursor;
@@ -2804,6 +2812,8 @@ jit_rewind:
 	trk->pBase = (ucell_t *)malloc(1024);
 	trk->pCur = trk->pBase;
 	trk->size = 1024 / sizeof(cell_t);
+
+	plugin->jit_memsize += trk->size;
 
 	/* clean up relocation+compilation memory */
 	co->Abort();

@@ -94,7 +94,7 @@ static const char *g_ErrorMsgTable[] =
 	"Call was aborted",
 };
 
-const char *GetSourcePawnErrorMessage(int error)
+const char *SourcePawnEngine::GetErrorString(int error)
 {
 	if (error < 1 || error > ERROR_MESSAGE_MAX)
 	{

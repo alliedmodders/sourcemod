@@ -61,6 +61,7 @@ namespace SourcePawn
 		uint16_t	flags;			/**< Code flags */
 		sp_plugin_infotab_t info;	/**< Base info table */
 		sp_plugin_debug_t   debug;	/**< Debug info table */
+		size_t		base_size;		/**< Size of the entire plugin base */
 		void		*codebase;		/**< Base of generated code and memory */
 		SPVM_DEBUGBREAK dbreak;		/**< Debug break function */
 		uint8_t		*memory;		/**< Data chunk */
@@ -73,6 +74,8 @@ namespace SourcePawn
 		IProfiler *profiler;		/**< Pointer to IProfiler */
 		uint32_t	prof_flags;		/**< Profiling flags */
 		uint32_t	run_flags;		/**< Runtime flags */
+		size_t		jit_codesize;	/**< JIT compiled codesize */
+		size_t		jit_memsize;	/**< JIT additional memory */
 	} sp_plugin_t;
 }
 

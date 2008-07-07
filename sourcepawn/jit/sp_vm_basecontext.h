@@ -90,6 +90,8 @@ public: //IPluginContext
 	IPluginRuntime *GetRuntime();
 	int GetLastNativeError();
 	cell_t *GetLocalParams();
+	void SetKey(int k, void *value);
+	bool GetKey(int k, void **value);
 public:
 	bool IsInExec();
 private:
@@ -105,6 +107,8 @@ private:
 	bool m_InExec;
 	BaseRuntime *m_pRuntime;
 	sp_context_t m_ctx;
+	void *m_keys[4];
+	bool m_keys_set[4];
 };
 
 #endif //_INCLUDE_SOURCEPAWN_BASECONTEXT_H_
