@@ -92,6 +92,7 @@ public: //IPluginContext
 	cell_t *GetLocalParams();
 	void SetKey(int k, void *value);
 	bool GetKey(int k, void **value);
+	void Refresh();
 public:
 	bool IsInExec();
 private:

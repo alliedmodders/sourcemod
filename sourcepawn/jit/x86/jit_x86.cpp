@@ -2495,6 +2495,7 @@ bool JITX86::Compile(ICompilation *co, BaseRuntime *prt, int *err)
 		}
 
 		data->SetRuntime(prt);
+		plugin = data->plugin;
 	}
 
 	/* The first phase is to browse */
@@ -2914,10 +2915,13 @@ ICompilation *JITX86::StartCompilation()
 
 void CompData::SetRuntime(BaseRuntime *runtime)
 {
+	plugin = runtime->m_pPlugin;
+
 	uint32_t max_natives = plugin->info.natives_num;
 	const char *strbase = plugin->info.stringbase;
 
-	plugin = runtime->m_pPlugin;
+	this->runtime = runtime;
+
 	inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
 	error_set = SP_ERROR_NONE;
 

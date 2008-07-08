@@ -163,8 +163,8 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		return false;
 	}
 
-	GET_SP_V1 getv1 = (GET_SP_V1)g_pJIT->GetSymbolAddress("GetSourcePawn1");
-	GET_SP_V2 getv2 = (GET_SP_V2)g_pJIT->GetSymbolAddress("GetSourcePawn2");
+	GET_SP_V1 getv1 = (GET_SP_V1)g_pJIT->GetSymbolAddress("GetSourcePawnEngine1");
+	GET_SP_V2 getv2 = (GET_SP_V2)g_pJIT->GetSymbolAddress("GetSourcePawnEngine2");
 
 	if (getv1 == NULL)
 	{

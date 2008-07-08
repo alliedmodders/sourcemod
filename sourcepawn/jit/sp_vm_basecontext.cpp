@@ -46,33 +46,13 @@ using namespace SourcePawn;
 BaseContext::BaseContext(BaseRuntime *pRuntime)
 {
 	m_pRuntime = pRuntime;
+	m_pPlugin = m_pRuntime->m_pPlugin;
 
 	m_InExec = false;
 	m_CustomMsg = false;
 
-	/* Initialize the null references */
-	uint32_t index;
-	if (FindPubvarByName("NULL_VECTOR", &index) == SP_ERROR_NONE)
-	{
-		sp_pubvar_t *pubvar;
-		GetPubvarByIndex(index, &pubvar);
-		m_pNullVec = pubvar->offs;
-	}
-	else
-	{
-		m_pNullVec = NULL;
-	}
-
-	if (FindPubvarByName("NULL_STRING", &index) == SP_ERROR_NONE)
-	{
-		sp_pubvar_t *pubvar;
-		GetPubvarByIndex(index, &pubvar);
-		m_pNullString = pubvar->offs;
-	}
-	else
-	{
-		m_pNullString = NULL;
-	}
+	m_pNullVec = NULL;
+	m_pNullString = NULL;
 }
 
 BaseContext::~BaseContext()
@@ -668,6 +648,8 @@ int BaseRuntime::ApplyCompilationOptions(ICompilation *co)
 
 	RefreshFunctionCache();
 
+	m_pCtx->Refresh();
+
 	return SP_ERROR_NONE;
 }
 
@@ -791,4 +773,31 @@ bool BaseContext::GetKey(int k, void **value)
 	*value = m_keys[k - 1];
 
 	return true;
+}
+
+void BaseContext::Refresh()
+{
+	/* Initialize the null references */
+	uint32_t index;
+	if (FindPubvarByName("NULL_VECTOR", &index) == SP_ERROR_NONE)
+	{
+		sp_pubvar_t *pubvar;
+		GetPubvarByIndex(index, &pubvar);
+		m_pNullVec = pubvar->offs;
+	}
+	else
+	{
+		m_pNullVec = NULL;
+	}
+
+	if (FindPubvarByName("NULL_STRING", &index) == SP_ERROR_NONE)
+	{
+		sp_pubvar_t *pubvar;
+		GetPubvarByIndex(index, &pubvar);
+		m_pNullString = pubvar->offs;
+	}
+	else
+	{
+		m_pNullString = NULL;
+	}
 }
