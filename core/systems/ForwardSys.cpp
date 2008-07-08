@@ -385,7 +385,8 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				}
 			case ET_LowEvent:
 				{
-					if (cur_result < low_result)
+					/* Check if the current result is the lowest so far (or if it's the first result) */
+					if (cur_result < low_result || success == 1)
 					{
 						low_result = cur_result;
 					}
