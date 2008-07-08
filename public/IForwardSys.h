@@ -50,7 +50,7 @@
 using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
-#define SMINTERFACE_FORWARDMANAGER_VERSION	2
+#define SMINTERFACE_FORWARDMANAGER_VERSION	3
 
 /*
  * There is some very important documentation at the bottom of this file.
