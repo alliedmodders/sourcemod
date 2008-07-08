@@ -79,66 +79,11 @@ namespace SourceMod
 		ET_Single = 1,		/**< Only return the last exec, ignore all others */
 		ET_Event = 2,		/**< Acts as an event with the ResultTypes above, no mid-Stops allowed, returns highest */
 		ET_Hook = 3,		/**< Acts as a hook with the ResultTypes above, mid-Stops allowed, returns highest */
-		ET_Custom = 4,		/**< Ignored or handled by an IForwardFilter */
+		ET_LowEvent = 4,	/**< Same as ET_Event except that it returns the lowest value */
 	};
 
 	class IForward;
-
-	/**
-	 * @brief Allows interception of how the Forward System executes functions.
-	 */
-	class IForwardFilter
-	{
-	public:
-		/**
-		 * @brief Called when an error occurs executing a plugin.
-		 *
-		 * @param fwd		IForward pointer.
-		 * @param func		IPluginFunction pointer to the failed function.
-		 * @param err		Error code.
-		 * @return			True to handle, false to pass to global error reporter.
-		 */
-		virtual bool OnErrorReport(IForward *fwd,
-									IPluginFunction *func,
-									int err)
-		{
-			return false;
-		}
-
-		/** 
-		 * @brief Called after each function return during execution.
-		 * NOTE: Only used for ET_Custom.
-		 *
-		 * @param fwd		IForward pointer.
-		 * @param func		IPluginFunction pointer to the executed function.
-		 * @param retval	Pointer to current return value (can be modified).
-		 * @return			ResultType denoting the next action to take.
-		 */
-		virtual ResultType OnFunctionReturn(IForward *fwd,
-									  IPluginFunction *func,
-									  cell_t *retval)
-		{
-			return Pl_Continue;
-		}
-
-		/** 
-		 * @brief Called when execution begins.
-		 */
-		virtual void OnExecuteBegin()
-		{
-		};
-
-		/**
-		 * @brief Called when execution ends.
-		 * 
-		 * @param final_ret	Final return value (modifiable).
-		 * @param success	Number of successful execs.
-		 * @param failed	Number of failed execs.
-		 */
-		virtual void OnExecuteEnd(cell_t *final_ret, unsigned int success, unsigned int failed)
-		{
-		}
-	};
+	class IForwardFilter;
 
 	/**
 	 * @brief Unmanaged Forward, abstracts calling multiple functions as "forwards," or collections of functions.
@@ -180,7 +125,7 @@ namespace SourceMod
 		 * @brief Executes the forward.
 		 *
 		 * @param result		Optional pointer to store result in.
-		 * @param filter		Optional pointer to an IForwardFilter.
+		 * @param filter		Do not use.
 		 * @return				Error code, if any.
 		 */
 		virtual int Execute(cell_t *result, IForwardFilter *filter=NULL) =0;

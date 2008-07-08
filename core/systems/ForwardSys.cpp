@@ -186,11 +186,6 @@ void CForwardManager::ReleaseForward(IForward *forward)
 
 void CForwardManager::ForwardFree(CForward *fwd)
 {
-	if (fwd == NULL)
-	{
-		return;
-	}
-
 	m_FreeForwards.push(fwd);
 	m_managed.remove(fwd);
 }
@@ -288,15 +283,11 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		return err;
 	}
 
-	if (filter)
-	{
-		filter->OnExecuteBegin();
-	}
-
 	FuncIter iter = m_functions.begin();
 	IPluginFunction *func;
 	cell_t cur_result = 0;
 	cell_t high_result = 0;
+	cell_t low_result = 0;
 	int err;
 	unsigned int failed=0, success=0;
 	unsigned int num_params = m_curparam;
@@ -316,12 +307,16 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		{
 			int err = SP_ERROR_PARAM;
 			param = &temp_info[i];
+
 			if (i >= m_numparams || m_types[i] == Param_Any)
 			{
 				type = param->pushedas;
-			} else {
+			}
+			else
+			{
 				type = m_types[i];
 			}
+
 			if ((i >= m_numparams) || (type & SP_PARAMFLAG_BYREF))
 			{
 				/* If we're byref or we're vararg, we always push everything by ref.
@@ -330,26 +325,30 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				if (type == Param_String)
 				{
 					err = func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
-				} else if (type == Param_Float || type == Param_Cell) {
+				}
+				else if (type == Param_Float || type == Param_Cell)
+				{
 					err = func->PushCellByRef(&param->val); 
-				} else {
+				}
+				else
+				{
 					err = func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
 					assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
 				}
-			} else {
+			}
+			else
+			{
 				/* If we're not byref or not vararg, our job is a bit easier. */
 				assert(type == Param_Cell || type == Param_Float);
 				err = func->PushCell(param->val);
 			}
+
 			if (err != SP_ERROR_NONE)
 			{
-				if (!filter || !filter->OnErrorReport(this, func, err))
-				{
-					g_DbgReporter.GenerateError(func->GetParentContext(), 
-						func->GetFunctionID(), 
-						err, 
-						"Failed to push parameter while executing forward");
-				}
+				g_DbgReporter.GenerateError(func->GetParentContext(), 
+					func->GetFunctionID(), 
+					err, 
+					"Failed to push parameter while executing forward");
 				continue;
 			}
 		}
@@ -357,12 +356,10 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		/* Call the function and deal with the return value. */
 		if ((err=func->Execute(&cur_result)) != SP_ERROR_NONE)
 		{
-			if (filter)
-			{
-				filter->OnErrorReport(this, func, err);
-			}
 			failed++;
-		} else {
+		}
+		else
+		{
 			success++;
 			switch (m_ExecType)
 			{
@@ -386,14 +383,11 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 					}
 					break;
 				}
-			case ET_Custom:
+			case ET_LowEvent:
 				{
-					if (filter)
+					if (cur_result < low_result)
 					{
-						if (filter->OnFunctionReturn(this, func, &cur_result) == Pl_Stop)
-						{
-							goto done;
-						}
+						low_result = cur_result;
 					}
 					break;
 				}
@@ -406,23 +400,37 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	}
 
 done:
+
 	if (success)
 	{
-		if (m_ExecType == ET_Event || m_ExecType == ET_Hook)
+		switch (m_ExecType)
 		{
-			cur_result = high_result;
-		} else if (m_ExecType == ET_Ignore) {
-			cur_result = 0;
+		case ET_Ignore:
+			{
+				cur_result = 0;
+				break;
+			}
+		case ET_Event:
+		case ET_Hook:
+			{
+				cur_result = high_result;
+				break;
+			}
+		case ET_LowEvent:
+			{
+				cur_result = low_result;
+				break;
+			}
+		default:
+			{
+				break;
+			}
 		}
+
 		if (result)
 		{
 			*result = cur_result;
 		}
-	}
-
-	if (filter)
-	{
-		filter->OnExecuteEnd(&cur_result, success, failed);
 	}
 
 	return SP_ERROR_NONE;

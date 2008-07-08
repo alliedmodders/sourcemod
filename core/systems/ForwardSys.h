@@ -43,7 +43,7 @@ using namespace SourceHook;
 
 typedef List<IPluginFunction *>::iterator FuncIter;
 
-//:TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX
+/* :TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX */
 #define FORWARDS_NAME_MAX		64
 
 struct ByrefInfo
