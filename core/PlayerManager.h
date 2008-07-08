@@ -173,6 +173,7 @@ public:
 	unsigned int SetReplyTo(unsigned int reply);
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+	void InvalidatePlayer(CPlayer *pPlayer);
 private:
 	List<IClientListener *> m_hooks;
 	IForward *m_clconnect;
