@@ -251,7 +251,7 @@ void CDetour::DeleteDetour()
 	if (detour_callback)
 	{
 		/* Free the gate */
-		spengine->ExecFree(detour_callback);
+		spengine->FreePageMemory(detour_callback);
 		detour_callback = NULL;
 	}
 }
