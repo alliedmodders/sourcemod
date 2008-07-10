@@ -456,7 +456,6 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 	char *name;
 	uint32_t idx;
 	sp_native_t *native;
-	sp_context_t *ctx = pContext->GetContext();
 
 	pContext->LocalToString(params[1], &name);
 	if (pContext->FindNativeByName(name, &idx) != SP_ERROR_NONE)

@@ -233,7 +233,6 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 	int vargPos = static_cast<int>(params[4]);
 
 	/* Get the parent parameter array */
-	sp_context_t *ctx = pContext->GetContext();
 	cell_t *local_params = pContext->GetLocalParams();
 
 	cell_t max = local_params[0];
