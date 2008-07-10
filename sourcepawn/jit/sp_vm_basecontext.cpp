@@ -262,7 +262,7 @@ int BaseContext::GetPubvarByIndex(uint32_t index, sp_pubvar_t **pubvar)
 
 int BaseContext::FindPubvarByName(const char *name, uint32_t *index)
 {
-	return m_pRuntime->FindPublicByName(name, index);
+	return m_pRuntime->FindPubvarByName(name, index);
 }
 
 int BaseContext::GetPubvarAddrs(uint32_t index, cell_t *local_addr, cell_t **phys_addr)

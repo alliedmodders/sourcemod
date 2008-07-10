@@ -50,7 +50,7 @@ void CFunction::Set(uint32_t code_addr, BaseRuntime *runtime, funcid_t fnid, uin
 
 bool CFunction::IsRunnable()
 {
-	return m_pRuntime->IsPaused();
+	return !m_pRuntime->IsPaused();
 }
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)

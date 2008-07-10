@@ -125,6 +125,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	uint8_t *base;
 	int z_result;
 	int error;
+	BaseRuntime *pRuntime;
 
 	FILE *fp = fopen(file, "rb");
 
@@ -203,7 +204,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 		return NULL;
 	}
 
-	BaseRuntime *pRuntime = new BaseRuntime(plugin);
+	pRuntime = new BaseRuntime(plugin);
 
 	if (co == NULL)
 	{

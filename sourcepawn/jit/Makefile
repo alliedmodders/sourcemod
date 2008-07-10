@@ -1,7 +1,8 @@
 # (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMSDK = ../../..
+SMSDK = ../..
+SOURCEHOOK = ../../../sourcemm-1.6/sourcehook
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -9,7 +10,26 @@ SMSDK = ../../..
 
 PROJECT = sourcepawn.jit.x86
 
-OBJECTS = dll_exports.cpp jit_x86.cpp opcode_helpers.cpp
+OBJECTS = dll_exports.cpp 	\
+	x86/jit_x86.cpp 	\
+	x86/opcode_helpers.cpp	\
+	sp_vm_basecontext.cpp	\
+	sp_vm_engine.cpp	\
+	sp_vm_function.cpp	\
+	engine2.cpp		\
+	BaseRuntime.cpp		\
+	zlib/adler32.c		\
+	zlib/compress.c		\
+	zlib/crc32.c		\
+	zlib/deflate.c		\
+	zlib/gzio.c		\
+	zlib/infback.c		\
+	zlib/inffast.c		\
+	zlib/inflate.c		\
+	zlib/inftrees.c		\
+	zlib/trees.c		\
+	zlib/uncompr.c		\
+	zlib/zutil.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -24,7 +44,7 @@ CPP = gcc-4.1
 LINK = -static-libgcc
 
 INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86 \
-	-I$(SMSDK)/public/sourcepawn
+	-I$(SMSDK)/public/sourcepawn -I$(SOURCEHOOK)
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -DHAVE_STDINT_H \
@@ -52,12 +72,17 @@ endif
 BINARY = $(PROJECT).so
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJ_LINUX:%.c=$(BIN_DIR)/%.o)
+
+$(BIN_DIR)/%.o: %.c
+	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 all:
-	mkdir -p $(BIN_DIR)
+	mkdir -p $(BIN_DIR)/x86
+	mkdir -p $(BIN_DIR)/zlib
 	$(MAKE) -f Makefile jit
 
 jit: $(OBJ_LINUX)

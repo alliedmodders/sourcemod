@@ -239,7 +239,7 @@ void BaseRuntime::RefreshFunctionCache()
 			{
 				continue;
 			}
-			m_PubFuncs[i]->Set(pub->code_offs, this, pub->funcid, i);
+			m_PubFuncs[i]->Set(pub->code_offs, this, (i << 1) | 1, i);
 		}
 	}
 
@@ -261,7 +261,7 @@ IPluginFunction *BaseRuntime::GetFunctionById(funcid_t func_id)
 		{
 			m_PubFuncs[func_id] = new CFunction(m_pPlugin->publics[func_id].code_offs, 
 				this, 
-				m_pPlugin->publics[func_id].funcid,
+				(func_id << 1) | 1,
 				func_id);
 			pFunc = m_PubFuncs[func_id];
 		}
@@ -269,7 +269,7 @@ IPluginFunction *BaseRuntime::GetFunctionById(funcid_t func_id)
 		{
 			pFunc->Set(m_pPlugin->publics[func_id].code_offs, 
 				this,
-				m_pPlugin->publics[func_id].funcid,
+				(func_id << 1) | 1,
 				func_id);
 		}
 	}
@@ -293,7 +293,7 @@ IPluginFunction *BaseRuntime::GetFunctionByName(const char *public_name)
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			m_PubFuncs[index] = new CFunction(pub->code_offs, this, pub->funcid, index);
+			m_PubFuncs[index] = new CFunction(pub->code_offs, this, (index << 1) | 1, index);
 		}
 		pFunc = m_PubFuncs[index];
 	}
@@ -303,7 +303,7 @@ IPluginFunction *BaseRuntime::GetFunctionByName(const char *public_name)
 		GetPublicByIndex(index, &pub);
 		if (pub)
 		{
-			pFunc->Set(pub->code_offs, this, pub->funcid, index);
+			pFunc->Set(pub->code_offs, this, (index << 1) | 1, index);
 		}
 		else
 		{
