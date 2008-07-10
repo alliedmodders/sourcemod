@@ -166,7 +166,7 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 void FetcherThread::OnTerminate( IThreadHandle *pHandle, bool cancel )
 {
-	//delete this;
+	g_blockGameDataLoad = false;
 }
 
 int FetcherThread::BuildGameDataQuery( char *buffer, int maxlen )
