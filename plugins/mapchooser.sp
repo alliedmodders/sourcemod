@@ -745,10 +745,7 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			}
 			else
 			{
-				// We were actually cancelled. What should we do?
-				g_HasVoteStarted = false;
-				CreateNextVote();
-				SetupTimeleftTimer();
+				// We were actually cancelled. I guess we do nothing.
 			}
 		}
 	}
