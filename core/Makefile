@@ -99,7 +99,7 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-OBJ_LINUX := $(OBJ_LINUX:%.cpp=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 OBJ_LINUX := $(OBJ_LINUX:%.c=$(BIN_DIR)/%.o)
 
 $(BIN_DIR)/%.o: %.cpp
