@@ -36,6 +36,7 @@
 #include <sourcemod>
 #include "include/nextmap.inc"
 
+new Handle:g_Cvar_TriggerShow = INVALID_HANDLE;
  
 public Plugin:myinfo = 
 {
@@ -85,6 +86,8 @@ public OnConfigsExecuted()
 	{
 		FindAndSetNextMap();
 	}
+	
+	g_Cvar_TriggerShow = FindConVar("sm_trigger_show");
 }
 
 public Action:Command_Say(client, args)
@@ -109,8 +112,15 @@ public Action:Command_Say(client, args)
 	{
 		decl String:map[32];
 		GetNextMap(map, sizeof(map));
-		
-		PrintToChat(client, "[SM] %t", "Next Map", map);
+			
+		if(g_Cvar_TriggerShow != INVALID_HANDLE && GetConVarInt(g_Cvar_TriggerShow))
+		{
+			PrintToChatAll("[SM] %t", "Next Map", map);
+		}
+		else
+		{
+			PrintToChat(client, "[SM] %t", "Next Map", map);
+		}
 	}
 	
 	return Plugin_Continue;	
@@ -162,7 +172,14 @@ public Action:Command_Nextmap(client, args)
 	
 	GetNextMap(map, sizeof(map));
 	
-	ReplyToCommand(client, "[SM] %t", "Next Map", map);
+	if(g_Cvar_TriggerShow != INVALID_HANDLE && GetConVarInt(g_Cvar_TriggerShow))
+	{
+		PrintToChatAll("[SM] %t", "Next Map", map);
+	}
+	else
+	{
+		ReplyToCommand(client, "[SM] %t", "Next Map", map);
+	}
 	
 	return Plugin_Handled;
 }
