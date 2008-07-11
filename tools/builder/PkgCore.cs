@@ -173,7 +173,7 @@ namespace builder
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
-			lib.source_path = "sourcepawn/jit/x86";
+			lib.source_path = "sourcepawn/jit";
 			lib.binary_name = "sourcepawn.jit.x86";
 			lib.vcproj_name = "jit-x86";
 			libraries.Add(lib);
