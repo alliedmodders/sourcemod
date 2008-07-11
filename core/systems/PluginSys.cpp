@@ -111,6 +111,7 @@ void CPlugin::InitIdentity()
 		m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
 		m_handle = g_HandleSys.CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
 		m_pRuntime->GetDefaultContext()->SetKey(1, m_ident);
+		m_pRuntime->GetDefaultContext()->SetKey(2, (IPlugin *)this);
 	}
 }
 
@@ -1563,16 +1564,14 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 
 IPlugin *CPluginManager::FindPluginByContext(const sp_context_t *ctx)
 {
-	List<CPlugin *>::iterator iter;
+	IPlugin *pPlugin;
+	IPluginContext *pContext;
 
-	/* :TODO: :TODO: respeed this up somehow */
-	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+	pContext = reinterpret_cast<IPluginContext *>(const_cast<sp_context_t *>(ctx));
+
+	if (pContext->GetKey(2, (void **)&pPlugin))
 	{
-		CPlugin *pl = (*iter);
-		if (pl->m_pRuntime != NULL && pl->m_pRuntime->GetDefaultContext()->GetContext() == ctx)
-		{
-			return pl;
-		}
+		return pPlugin;
 	}
 
 	return NULL;
