@@ -55,12 +55,12 @@ bool CFunction::IsRunnable()
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
-	return CallFunction(m_pRuntime->GetDefaultContext(), params, num_params, result);
+	return CallFunction2(m_pRuntime->GetDefaultContext(), params, num_params, result);
 }
 
-int CFunction::CallFunction(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
+int CFunction::CallFunction2(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
 {
-	return pContext->Execute(this, params, num_params, result);
+	return pContext->Execute2(this, params, num_params, result);
 }
 
 IPluginContext *CFunction::GetParentContext()
@@ -170,10 +170,10 @@ void CFunction::Cancel()
 
 int CFunction::Execute(cell_t *result)
 {
-	return Execute(m_pRuntime->GetDefaultContext(), result);
+	return Execute2(m_pRuntime->GetDefaultContext(), result);
 }
 
-int CFunction::Execute(IPluginContext *ctx, cell_t *result)
+int CFunction::Execute2(IPluginContext *ctx, cell_t *result)
 {
 	int err = SP_ERROR_NONE;
 
@@ -283,7 +283,7 @@ int CFunction::Execute(IPluginContext *ctx, cell_t *result)
 	/* Make the call if we can */
 	if (err == SP_ERROR_NONE)
 	{
-		if ((err = CallFunction(ctx, temp_params, numparams, result)) != SP_ERROR_NONE)
+		if ((err = CallFunction2(ctx, temp_params, numparams, result)) != SP_ERROR_NONE)
 		{
 			docopies = false;
 		}

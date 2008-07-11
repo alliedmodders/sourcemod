@@ -79,8 +79,8 @@ public:
 	void Invalidate();
 	bool IsRunnable();
 	funcid_t GetFunctionID();
-	int Execute(IPluginContext *ctx, cell_t *result);
-	int CallFunction(IPluginContext *ctx, 
+	int Execute2(IPluginContext *ctx, cell_t *result);
+	int CallFunction2(IPluginContext *ctx, 
 		const cell_t *params, 
 		unsigned int num_params, 
 		cell_t *result);

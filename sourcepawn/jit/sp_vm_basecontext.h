@@ -86,7 +86,7 @@ public: //IPluginContext
 	cell_t *GetNullRef(SP_NULL_TYPE type);
 	int LocalToStringNULL(cell_t local_addr, char **addr);
 	int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native);
-	int Execute(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result);
+	int Execute2(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result);
 	IPluginRuntime *GetRuntime();
 	int GetLastNativeError();
 	cell_t *GetLocalParams();

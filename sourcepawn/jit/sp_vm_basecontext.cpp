@@ -511,7 +511,7 @@ bool BaseContext::IsInExec()
 	return m_InExec;
 }
 
-int BaseContext::Execute(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result)
+int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsigned int num_params, cell_t *result)
 {
 	int ir;
 	int serial;

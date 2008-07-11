@@ -240,7 +240,7 @@ namespace SourcePawn
 		 * @param result		Pointer to store return value in.
 		 * @return				Error code, if any.
 		 */
-		virtual int Execute(IPluginContext *ctx, cell_t *result) =0;
+		virtual int Execute2(IPluginContext *ctx, cell_t *result) =0;
 
 		/**
 		 * @brief Executes the function with the given parameter array.
@@ -256,7 +256,7 @@ namespace SourcePawn
 		 * @param result		Pointer to store result of function on return.
 		 * @return				SourcePawn error code (if any).
 		 */
-		virtual int CallFunction(IPluginContext *ctx, 
+		virtual int CallFunction2(IPluginContext *ctx, 
 			const cell_t *params, 
 			unsigned int num_params, 
 			cell_t *result) =0;
@@ -833,7 +833,7 @@ namespace SourcePawn
 		 * @param result		Optional pointer to store the result on success.
 		 * @return				Error code.
 		 */
-		virtual int Execute(IPluginFunction *function, 
+		virtual int Execute2(IPluginFunction *function, 
 			const cell_t *params, 
 			unsigned int num_params, 
 			cell_t *result) =0;

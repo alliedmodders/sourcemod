@@ -38,7 +38,7 @@
 #include "../jit_version.h"
 #include "../sp_vm_engine.h"
 #include "../engine2.h"
-#include "BaseRuntime.h"
+#include "../BaseRuntime.h"
 #include "../sp_vm_basecontext.h"
 
 #if defined USE_UNGEN_OPCODES
