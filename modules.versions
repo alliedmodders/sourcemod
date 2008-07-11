@@ -14,7 +14,7 @@ in = version.tpl
 out = version.inc
 
 [jitx86]
-folder = sourcepawn/jit/x86
+folder = sourcepawn/jit
 in = jit_version.tpl
 out = jit_version.h
 
