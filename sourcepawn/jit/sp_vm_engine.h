@@ -35,11 +35,13 @@
 #include "sp_vm_api.h"
 #include "sp_vm_function.h"
 
+class BaseContext;
+
 struct TracedCall
 {
 	uint32_t cip;
 	uint32_t frm;
-	sp_context_t *ctx;
+	BaseContext *ctx;
 	TracedCall *next;
 	unsigned int chain;
 };
@@ -73,8 +75,6 @@ public: //ISourcePawnEngine
 	sp_plugin_t *LoadFromFilePointer(FILE *fp, int *err);
 	sp_plugin_t *LoadFromMemory(void *base, sp_plugin_t *plugin, int *err);
 	int FreeFromMemory(sp_plugin_t *plugin);
-	IPluginContext *CreateBaseContext(sp_context_t *ctx);
-	void FreeBaseContext(IPluginContext *ctx);
 	void *BaseAlloc(size_t size);
 	void BaseFree(void *memory);
 	void *ExecAlloc(size_t size);
@@ -86,13 +86,14 @@ public: //ISourcePawnEngine
 	void SetReadWrite(void *ptr);
 	void SetReadExecute(void *ptr);
 	void FreePageMemory(void *ptr);
+	const char *GetErrorString(int err);
 public: //Debugger Stuff
 	/**
 	 * @brief Pushes a context onto the top of the call tracer.
 	 * 
 	 * @param ctx		Plugin context.
 	 */
-	void PushTracer(sp_context_t *ctx);
+	void PushTracer(BaseContext *ctx);
 
 	/**
 	 * @brief Pops a plugin off the call tracer.
@@ -102,7 +103,7 @@ public: //Debugger Stuff
 	/**
 	 * @brief Runs tracer from a debug break.
 	 */
-	void RunTracer(sp_context_t *ctx, uint32_t frame, uint32_t codeip);
+	void RunTracer(BaseContext *ctx, uint32_t frame, uint32_t codeip);
 public: //Plugin function stuff
 	CFunction *GetFunctionFromPool(funcid_t f, IPluginContext  *plugin);
 	void ReleaseFunctionToPool(CFunction *func);
@@ -116,5 +117,7 @@ private:
 	unsigned int m_CurChain;
 	//CFunction *m_pFreeFuncs;
 };
+
+extern SourcePawnEngine g_engine1;
 
 #endif //_INCLUDE_SOURCEPAWN_VM_ENGINE_H_

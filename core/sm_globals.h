@@ -173,7 +173,7 @@ private:
 };
 
 extern ISourcePawnEngine *g_pSourcePawn;
-extern IVirtualMachine *g_pVM;
+extern ISourcePawnEngine2 *g_pSourcePawn2;
 extern IdentityToken_t *g_pCoreIdent;
 
 #include "sm_autonatives.h"

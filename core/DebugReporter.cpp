@@ -36,11 +36,6 @@
 
 DebugReport g_DbgReporter;
 
-/* I'm really lazy.  This should probably be exported to ISourcePawnEngine someday,
- * but we need to make sure the JIT will deal with the version bump.
- */
-extern const char *GetSourcePawnErrorMessage(int error);
-
 void DebugReport::OnSourceModAllInitialized()
 {
 	g_pSourcePawn->SetDebugListener(this);
@@ -56,7 +51,7 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 	va_end(ap);
 
 	const char *plname = g_PluginSys.FindPluginByContext(ctx->GetContext())->GetFilename();
-	const char *error = GetSourcePawnErrorMessage(err);
+	const char *error = g_pSourcePawn2->GetErrorString(err);
 
 	if (error)
 	{
@@ -91,7 +86,7 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	va_end(ap);
 
 	const char *plname = g_PluginSys.FindPluginByContext(pContext->GetContext())->GetFilename();
-	const char *error = GetSourcePawnErrorMessage(err);
+	const char *error = g_pSourcePawn2->GetErrorString(err);
 
 	if (error)
 	{

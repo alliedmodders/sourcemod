@@ -281,8 +281,8 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 	{
 		ConsolePrint(" SourceMod Version Information:");
 		ConsolePrint("    SourceMod Version: %s", SVN_FULL_VERSION);
-		ConsolePrint("    JIT Version: %s, %s", g_pVM->GetVMName(), g_pVM->GetVersionString());
-		ConsolePrint("    JIT Settings: %s", g_pVM->GetCPUOptimizations());
+		ConsolePrint("    SourcePawn Engine: %s (build %s)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
+		ConsolePrint("    SourcePawn API: v1 = %d, v2 = %d", g_pSourcePawn->GetEngineAPIVersion(), g_pSourcePawn2->GetAPIVersion());
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
 		ConsolePrint("    http://www.sourcemod.net/");
 	}

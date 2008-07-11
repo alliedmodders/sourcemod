@@ -40,6 +40,7 @@
 
 jitoffs_t Write_Execute_Function(JitWriter *jit)
 {
+	CompData *co = (CompData *)jit->data;
 	/** 
 	 * The variables we're passed in:
 	 *  sp_context_t *ctx, uint32_t code_idx, cell_t *result
@@ -76,14 +77,14 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	//mov [esi+12], eax		- store context into info pointer
 	//mov ecx, [eax+<offs>]	- get heap pointer
 	//mov [esi+4], ecx		- store heap into info pointer
-	//mov ebp, [eax+<offs>]	- get data pointer
+	//mov ebp, <addr>		- get data pointer
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 16);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EAX, AMX_INFO_RETVAL);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, REG_EBP, 8);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_EAX, AMX_INFO_CONTEXT);
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, hp));
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_HEAP);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_DAT, REG_EAX, offsetof(sp_context_t, memory));
+	IA32_Mov_Reg_Imm32(jit, AMX_REG_DAT, jit_int32_t(co->plugin->memory));
 
 	/* Frame setup */
 	//mov edi, [eax+<offs>]	- get stack pointer
@@ -97,15 +98,23 @@ jitoffs_t Write_Execute_Function(JitWriter *jit)
 	//mov ecx, [eax+<offs>] - copy memsize to temp var
 	//add ecx, ebp			- relocate
 	//mov [esi+x], ecx		- store relocated
-	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, mem_size));
+	IA32_Mov_Reg_Imm32(jit, REG_ECX, co->plugin->mem_size);
 	IA32_Add_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_DAT, MOD_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, REG_ECX, AMX_INFO_STACKTOP);
 
 	/* Remaining needed vars */
 	//mov ecx, [esp+(4*(NUM_INFO_PARAMS+3))+12] - get code index (normally esp+12, but we have another array on the stack)
-	//add ecx, [eax+<offs>]   - add code base to index
+	//push eax
+	//mov eax, <addr of addr of code>
+	//mov eax, [eax]
+	//add ecx, eax
+	//pop eax
 	IA32_Mov_Reg_Esp_Disp8(jit, REG_ECX, 12+(4*(NUM_INFO_PARAMS+3)));
-	IA32_Add_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, codebase));
+	IA32_Push_Reg(jit, REG_EAX);
+	IA32_Mov_Reg_Imm32(jit, REG_EAX, jit_int32_t(&co->plugin->codebase));
+	IA32_Mov_Reg_Rm(jit, REG_EAX, REG_EAX, MOD_MEM_REG);
+	IA32_Add_Reg_Rm(jit, REG_ECX, REG_EAX, MOD_REG);
+	IA32_Pop_Reg(jit, REG_EAX);
 
 	/* by now, everything is set up, so we can call into the plugin */
 	//call ecx
@@ -161,36 +170,30 @@ void Write_BreakDebug(JitWriter *jit)
 	//push edi
 	//mov edi, ecx
 	//mov ecx, [esi+ctx]
-	//cmp [ecx+dbreak], 0
-	//jnz :nocall
 	IA32_Push_Reg(jit, REG_EDI);
 	IA32_Mov_Reg_Rm(jit, REG_EDI, REG_ECX, MOD_REG);
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
-	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, dbreak), 0);
-	jitoffs_t jmp = IA32_Jump_Cond_Imm8(jit, CC_Z, 0);
 
 	//:TODO: align the stack to 16bytes like in sysreq.x
 	/* NOTE, Hack! PUSHAD pushes EDI last which still has the CIP */
 	//pushad
 	//push [esi+frm]
-	//push ctx
-	//mov ecx, [ecx+dbreak]
+	//push [ctx+basectx]
+	//mov ecx, <dbreak>
 	//call ecx
 	//add esp, 8
 	//popad
 	IA32_Pushad(jit);
 	IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_FRAME); //:TODO: move to regs and push? and dont disp for 0
-	IA32_Push_Reg(jit, AMX_REG_TMP);
-	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_TMP, offsetof(sp_context_t, dbreak));
+	IA32_Push_Rm_Disp8(jit, AMX_REG_TMP, offsetof(sp_context_t, vm[JITVARS_BASECTX]));
+	IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, jit_int32_t(((CompData *)jit->data)->plugin->dbreak));
 	IA32_Call_Reg(jit, AMX_REG_TMP);
 	IA32_Add_Rm_Imm8(jit, REG_ESP, 4*2, MOD_REG);
 	IA32_Popad(jit);
 
-	//:nocall
 	//pop edi
 	//ret
 	IA32_Pop_Reg(jit, REG_EDI);
-	IA32_Send_Jump8_Here(jit, jmp);
 	IA32_Return(jit);
 }
 
@@ -314,7 +317,7 @@ void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg)
 	/* Part 1: Check if we're in the memory bounds */
 	//cmp <reg>, <stpu>
 	//jae :error
-	IA32_Cmp_Rm_Imm32(jit, MOD_REG, reg, ((CompData *)jit->data)->plugin->memory);
+	IA32_Cmp_Rm_Imm32(jit, MOD_REG, reg, ((CompData *)jit->data)->plugin->mem_size);
 	IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_memaccess);
 
 	/* Part 2: Check if we're in the invalid region between HP and SP */

@@ -32,76 +32,47 @@
 #include <stdio.h>
 #include <string.h>
 #include "sp_vm_function.h"
-#include "sm_stringutil.h"
+#include "BaseRuntime.h"
 
 /********************
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(uint32_t code_addr, IPluginContext *plugin, funcid_t id, uint32_t pub_id)
+void CFunction::Set(uint32_t code_addr, BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id)
 {
 	m_codeaddr = code_addr;
-	m_pContext = plugin;
+	m_pRuntime = runtime;
 	m_curparam = 0;
 	m_errorstate = SP_ERROR_NONE;
 	m_Invalid = false;
-	m_pCtx = plugin ? plugin->GetContext() : NULL;
-	m_FnId = id;
-	
-	m_pContext->GetPublicByIndex(pub_id, &m_pPublic);
+	m_FnId = fnid;
 }
 
 bool CFunction::IsRunnable()
 {
-	return ((m_pCtx->flags & SPFLAG_PLUGIN_PAUSED) != SPFLAG_PLUGIN_PAUSED);
+	return !m_pRuntime->IsPaused();
 }
 
 int CFunction::CallFunction(const cell_t *params, unsigned int num_params, cell_t *result)
 {
-	int ir, serial;
+	return CallFunction2(m_pRuntime->GetDefaultContext(), params, num_params, result);
+}
 
-	if (!IsRunnable())
-	{
-		return SP_ERROR_NOT_RUNNABLE;
-	}
-
-	if ((m_pCtx->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS
-		&& m_pPublic != NULL)
-	{
-		serial = m_pCtx->profiler->OnCallbackBegin(m_pContext, m_pPublic);
-	}
-
-	while (num_params--)
-	{
-		m_pContext->PushCell(params[num_params]);
-	}
-
-	ir = m_pContext->Execute(m_codeaddr, result);
-
-	if ((m_pCtx->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS
-		&& m_pPublic != NULL)
-	{
-		m_pCtx->profiler->OnCallbackEnd(serial);
-	}
-
-	return ir;
+int CFunction::CallFunction2(IPluginContext *pContext, const cell_t *params, unsigned int num_params, cell_t *result)
+{
+	return pContext->Execute2(this, params, num_params, result);
 }
 
 IPluginContext *CFunction::GetParentContext()
 {
-	return m_pContext;
+	return m_pRuntime->GetDefaultContext();
 }
 
-CFunction::CFunction(uint32_t code_addr, IPluginContext *plugin, funcid_t id, uint32_t pub_id) : 
-	m_codeaddr(code_addr), m_pContext(plugin), m_curparam(0), 
-	m_errorstate(SP_ERROR_NONE), m_FnId(id)
+CFunction::CFunction(uint32_t code_addr, BaseRuntime *runtime, funcid_t id, uint32_t pub_id) : 
+	m_codeaddr(code_addr), m_curparam(0), m_errorstate(SP_ERROR_NONE), m_FnId(id)
 {
 	m_Invalid = false;
-	if (plugin)
-	{
-		m_pCtx = plugin->GetContext();
-	}
-	m_pContext->GetPublicByIndex(pub_id, &m_pPublic);
+	m_pRuntime = runtime;
 }
 
 int CFunction::PushCell(cell_t cell)
@@ -199,6 +170,11 @@ void CFunction::Cancel()
 
 int CFunction::Execute(cell_t *result)
 {
+	return Execute2(m_pRuntime->GetDefaultContext(), result);
+}
+
+int CFunction::Execute2(IPluginContext *ctx, cell_t *result)
+{
 	int err = SP_ERROR_NONE;
 
 	if (!IsRunnable())
@@ -236,9 +212,9 @@ int CFunction::Execute(cell_t *result)
 			if (!temp_info[i].str.is_sz)
 			{
 				/* Allocate a normal/generic array */
-				if ((err=m_pContext->HeapAlloc(temp_info[i].size, 
-											   &(temp_info[i].local_addr),
-											   &(temp_info[i].phys_addr)))
+				if ((err=ctx->HeapAlloc(temp_info[i].size, 
+										   &(temp_info[i].local_addr),
+										   &(temp_info[i].phys_addr)))
 					!= SP_ERROR_NONE)
 				{
 					break;
@@ -254,9 +230,9 @@ int CFunction::Execute(cell_t *result)
 				size_t cells = (temp_info[i].size + sizeof(cell_t) - 1) / sizeof(cell_t);
 
 				/* Allocate the buffer */
-				if ((err=m_pContext->HeapAlloc(cells,
-												&(temp_info[i].local_addr),
-												&(temp_info[i].phys_addr)))
+				if ((err=ctx->HeapAlloc(cells,
+										&(temp_info[i].local_addr),
+										&(temp_info[i].phys_addr)))
 					!= SP_ERROR_NONE)
 				{
 					break;
@@ -267,10 +243,10 @@ int CFunction::Execute(cell_t *result)
 					/* Cut off UTF-8 properly */
 					if (temp_info[i].str.sz_flags & SM_PARAM_STRING_UTF8)
 					{
-						if ((err=m_pContext->StringToLocalUTF8(temp_info[i].local_addr, 
-																temp_info[i].size, 
-																(const char *)temp_info[i].orig_addr,
-																NULL))
+						if ((err=ctx->StringToLocalUTF8(temp_info[i].local_addr, 
+															temp_info[i].size, 
+															(const char *)temp_info[i].orig_addr,
+															NULL))
 							!= SP_ERROR_NONE)
 						{
 							break;
@@ -284,9 +260,9 @@ int CFunction::Execute(cell_t *result)
 					/* Copy ASCII characters */
 					else
 					{
-						if ((err=m_pContext->StringToLocal(temp_info[i].local_addr,
-															temp_info[i].size,
-															(const char *)temp_info[i].orig_addr))
+						if ((err=ctx->StringToLocal(temp_info[i].local_addr,
+														temp_info[i].size,
+														(const char *)temp_info[i].orig_addr))
 							!= SP_ERROR_NONE)
 						{
 							break;
@@ -307,7 +283,7 @@ int CFunction::Execute(cell_t *result)
 	/* Make the call if we can */
 	if (err == SP_ERROR_NONE)
 	{
-		if ((err = CallFunction(temp_params, numparams, result)) != SP_ERROR_NONE)
+		if ((err = CallFunction2(ctx, temp_params, numparams, result)) != SP_ERROR_NONE)
 		{
 			docopies = false;
 		}
@@ -350,7 +326,7 @@ int CFunction::Execute(cell_t *result)
 			}
 		}
 
-		if ((err=m_pContext->HeapPop(temp_info[i].local_addr)) != SP_ERROR_NONE)
+		if ((err=ctx->HeapPop(temp_info[i].local_addr)) != SP_ERROR_NONE)
 		{
 			return err;
 		}
@@ -363,4 +339,17 @@ funcid_t CFunction::GetFunctionID()
 {
 	return m_FnId;
 }
+
+int CFunction::SetError(int err)
+{
+	m_errorstate = err;
+
+	return err;
+}
+
+bool CFunction::IsInvalidated()
+{
+	return m_Invalid;
+}
+
 

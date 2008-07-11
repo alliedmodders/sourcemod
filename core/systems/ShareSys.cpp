@@ -488,7 +488,7 @@ NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name
 
 	pFake = new FakeNative;
 
-	if ((gate = g_pVM->CreateFakeNative(func, pFake)) == NULL)
+	if ((gate = g_pSourcePawn2->CreateFakeNative(func, pFake)) == NULL)
 	{
 		delete pFake;
 		return NULL;

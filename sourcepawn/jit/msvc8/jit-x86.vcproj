@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\..\public\jit;..\..\..\..\public\jit\x86;..\..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -186,23 +186,43 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\BaseRuntime.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\dll_exports.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\engine2.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\x86\jit_x86.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\x86\opcode_helpers.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\sp_vm_basecontext.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\sp_vm_engine.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
+						AdditionalIncludeDirectories="&quot;$(SOURCEMM16)\sourcehook&quot;"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\jit_x86.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\opcode_helpers.cpp"
+				RelativePath="..\sp_vm_function.cpp"
 				>
 			</File>
 		</Filter>
@@ -212,11 +232,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath="..\BaseRuntime.h"
+				>
+			</File>
+			<File
 				RelativePath="..\dll_exports.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\jit\jit_helpers.h"
+				RelativePath="..\engine2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\jit_shared.h"
 				>
 			</File>
 			<File
@@ -224,19 +252,23 @@
 				>
 			</File>
 			<File
-				RelativePath="..\jit_x86.h"
+				RelativePath="..\x86\jit_x86.h"
 				>
 			</File>
 			<File
-				RelativePath="..\opcode_helpers.h"
+				RelativePath="..\x86\opcode_helpers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\ungen_opcodes.h"
+				RelativePath="..\sp_vm_basecontext.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\jit\x86\x86_macros.h"
+				RelativePath="..\sp_vm_engine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sp_vm_function.h"
 				>
 			</File>
 		</Filter>
@@ -246,18 +278,6 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath="..\jit_version.tpl"
-				>
-			</File>
-			<File
-				RelativePath="..\opcode_switch.inc"
-				>
-			</File>
-			<File
-				RelativePath="..\ungen_opcode_switch.inc"
-				>
-			</File>
-			<File
 				RelativePath="..\version.rc"
 				>
 			</File>
@@ -266,27 +286,75 @@
 			Name="SDK"
 			>
 			<File
-				RelativePath="..\..\jit_helpers.h"
+				RelativePath="..\..\..\public\sourcepawn\sp_file_headers.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\sourcepawn\sp_file_headers.h"
+				RelativePath="..\..\..\public\sourcepawn\sp_typeutil.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\sourcepawn\sp_typeutil.h"
+				RelativePath="..\..\..\public\sourcepawn\sp_vm_api.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\sourcepawn\sp_vm_api.h"
+				RelativePath="..\..\..\public\sourcepawn\sp_vm_base.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\sourcepawn\sp_vm_base.h"
+				RelativePath="..\..\..\public\sourcepawn\sp_vm_types.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="zlib"
+			>
+			<File
+				RelativePath="..\zlib\adler32.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\public\sourcepawn\sp_vm_types.h"
+				RelativePath="..\zlib\compress.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\crc32.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\deflate.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\gzio.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\infback.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\inffast.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\inflate.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\inftrees.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\trees.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\uncompr.c"
+				>
+			</File>
+			<File
+				RelativePath="..\zlib\zutil.c"
 				>
 			</File>
 		</Filter>

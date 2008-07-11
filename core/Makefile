@@ -29,12 +29,8 @@ OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_adt_trie.cpp smn_hudtext.cpp smn_adt_stack.cpp smn_nextmap.cpp
 OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
 	systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
-	systems/ShareSys.cpp vm/sp_vm_basecontext.cpp vm/sp_vm_engine.cpp \
-	vm/sp_vm_function.cpp
+	systems/ShareSys.cpp 
 OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
-OBJECTS += zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
-	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
-	   zlib/uncompr.c zlib/zutil.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -103,12 +99,8 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-OBJ_LINUX := $(OBJECTS:%vm_engine.cpp=$(BIN_DIR)/%vm_engine.o)
-OBJ_LINUX := $(OBJ_LINUX:%.cpp=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 OBJ_LINUX := $(OBJ_LINUX:%.c=$(BIN_DIR)/%.o)
-
-$(BIN_DIR)/%vm_engine.o: %vm_engine.cpp
-	$(CPP) $(INCLUDE_SM16) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
@@ -118,8 +110,6 @@ $(BIN_DIR)/%.o: %.c
 
 all: check
 	mkdir -p $(BIN_DIR)/systems
-	mkdir -p $(BIN_DIR)/vm
-	mkdir -p $(BIN_DIR)/zlib
 	mkdir -p $(BIN_DIR)/thread
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
@@ -142,7 +132,5 @@ default: all
 clean: check
 	rm -rf $(BIN_DIR)/*.o
 	rm -rf $(BIN_DIR)/systems/*.o
-	rm -rf $(BIN_DIR)/zlib/*.o
-	rm -rf $(BIN_DIR)/vm/*.o
 	rm -rf $(BIN_DIR)/thread/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)

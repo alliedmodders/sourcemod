@@ -47,8 +47,5 @@
 #define EXPORT_LINK		extern "C" __attribute__((visibility("default")))
 #endif
 
-/** No longer used */
-typedef SourcePawn::IVirtualMachine *(*SP_GETVM_FUNC)(SourcePawn::ISourcePawnEngine *);
-
 #endif //_INCLUDE_SOURCEPAWN_VM_BASE_H_
 

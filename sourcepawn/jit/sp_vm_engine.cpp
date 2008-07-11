@@ -48,6 +48,8 @@
 #include "zlib/zlib.h"
 #include "sp_vm_basecontext.h"
 
+SourcePawnEngine g_engine1;
+
 #if defined WIN32
  #define WIN32_LEAN_AND_MEAN
  #include <windows.h>
@@ -92,7 +94,7 @@ static const char *g_ErrorMsgTable[] =
 	"Call was aborted",
 };
 
-const char *GetSourcePawnErrorMessage(int error)
+const char *SourcePawnEngine::GetErrorString(int error)
 {
 	if (error < 1 || error > ERROR_MESSAGE_MAX)
 	{
@@ -188,280 +190,30 @@ void SourcePawnEngine::BaseFree(void *memory)
 	free(memory);
 }
 
-IPluginContext *SourcePawnEngine::CreateBaseContext(sp_context_t *ctx)
-{
-	return new BaseContext(ctx);
-}
-
-void SourcePawnEngine::FreeBaseContext(IPluginContext *ctx)
-{
-	delete ctx;
-}
-
-sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin, int *err)
-{
-	char *nameptr;
-	uint8_t sectnum = 0;
-	sp_file_section_t *secptr = (sp_file_section_t *)(base + sizeof(sp_file_hdr_t));
-
-	memset(plugin, 0, sizeof(sp_plugin_t));
-
-	plugin->base = base;
-
-	while (sectnum < hdr->sections)
-	{
-		nameptr = (char *)(base + hdr->stringtab + secptr->nameoffs);
-
-		if (!(plugin->pcode) && !strcmp(nameptr, ".code"))
-		{
-			sp_file_code_t *cod = (sp_file_code_t *)(base + secptr->dataoffs);
-			plugin->pcode = base + secptr->dataoffs + cod->code;
-			plugin->pcode_size = cod->codesize;
-			plugin->flags = cod->flags;
-		}
-		else if (!(plugin->data) && !strcmp(nameptr, ".data"))
-		{
-			sp_file_data_t *dat = (sp_file_data_t *)(base + secptr->dataoffs);
-			plugin->data = base + secptr->dataoffs + dat->data;
-			plugin->data_size = dat->datasize;
-			plugin->memory = dat->memsize;
-		}
-		else if (!(plugin->info.publics) && !strcmp(nameptr, ".publics"))
-		{
-			plugin->info.publics_num = secptr->size / sizeof(sp_file_publics_t);
-			plugin->info.publics = (sp_file_publics_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->info.pubvars) && !strcmp(nameptr, ".pubvars"))
-		{
-			plugin->info.pubvars_num = secptr->size / sizeof(sp_file_pubvars_t);
-			plugin->info.pubvars = (sp_file_pubvars_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->info.natives) && !strcmp(nameptr, ".natives"))
-		{
-			plugin->info.natives_num = secptr->size / sizeof(sp_file_natives_t);
-			plugin->info.natives = (sp_file_natives_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->info.stringbase) && !strcmp(nameptr, ".names"))
-		{
-			plugin->info.stringbase = (const char *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.files) && !strcmp(nameptr, ".dbg.files"))
-		{
-			plugin->debug.files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.lines) && !strcmp(nameptr, ".dbg.lines"))
-		{
-			plugin->debug.lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.symbols) && !strcmp(nameptr, ".dbg.symbols"))
-		{
-			plugin->debug.symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.lines_num) && !strcmp(nameptr, ".dbg.info"))
-		{
-			sp_fdbg_info_t *inf = (sp_fdbg_info_t *)(base + secptr->dataoffs);
-			plugin->debug.files_num = inf->num_files;
-			plugin->debug.lines_num = inf->num_lines;
-			plugin->debug.syms_num = inf->num_syms;
-		}
-		else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
-		{
-			plugin->debug.stringbase = (const char *)(base + secptr->dataoffs);
-		}
-
-		secptr++;
-		sectnum++;
-	}
-
-	if (!(plugin->pcode) || !(plugin->data) || !(plugin->info.stringbase))
-	{
-		goto return_error;
-	}
-
-	if ((plugin->flags & SP_FLAG_DEBUG) && (!(plugin->debug.files) || !(plugin->debug.lines) || !(plugin->debug.symbols)))
-	{
-		goto return_error;
-	}
-
-	if (err)
-	{
-		*err = SP_ERROR_NONE;
-	}
-
-	return plugin;
-
-return_error:
-	if (err)
-	{
-		*err = SP_ERROR_FILE_FORMAT;
-	}
-
-	return NULL;
-}
-
 sp_plugin_t *SourcePawnEngine::LoadFromFilePointer(FILE *fp, int *err)
 {
-	sp_file_hdr_t hdr;
-	sp_plugin_t *plugin;
-	uint8_t *base;
-	int z_result;
-	int error;
-
-	if (!fp)
+	if (err != NULL)
 	{
-		error = SP_ERROR_NOT_FOUND;
-		goto return_error;
+		*err = SP_ERROR_ABORTED;
 	}
 
-	/* Rewind for safety */
-	rewind(fp);
-	fread(&hdr, sizeof(sp_file_hdr_t), 1, fp);
-
-	if (hdr.magic != SPFILE_MAGIC)
-	{
-		error = SP_ERROR_FILE_FORMAT;
-		goto return_error;
-	}
-
-	switch (hdr.compression)
-	{
-	case SPFILE_COMPRESSION_GZ:
-		{
-			uint32_t uncompsize = hdr.imagesize - hdr.dataoffs;
-			uint32_t compsize = hdr.disksize - hdr.dataoffs;
-			uint32_t sectsize = hdr.dataoffs - sizeof(sp_file_hdr_t);
-			uLongf destlen = uncompsize;
-
-			char *tempbuf = (char *)malloc(compsize);
-			void *uncompdata = malloc(uncompsize);
-			void *sectheader = malloc(sectsize);
-
-			fread(sectheader, sectsize, 1, fp);
-			fread(tempbuf, compsize, 1, fp);
-
-			z_result = uncompress((Bytef *)uncompdata, &destlen, (Bytef *)tempbuf, compsize);
-			free(tempbuf);
-			if (z_result != Z_OK)
-			{
-				free(sectheader);
-				free(uncompdata);
-				error = SP_ERROR_DECOMPRESSOR;
-				goto return_error;
-			}
-
-			base = (uint8_t *)malloc(hdr.imagesize);
-			memcpy(base, &hdr, sizeof(sp_file_hdr_t));
-			memcpy(base + sizeof(sp_file_hdr_t), sectheader, sectsize);
-			free(sectheader);
-			memcpy(base + hdr.dataoffs, uncompdata, uncompsize);
-			free(uncompdata);
-			break;
-		}
-	case SPFILE_COMPRESSION_NONE:
-		{
-			base = (uint8_t *)malloc(hdr.imagesize);
-			rewind(fp);
-			fread(base, hdr.imagesize, 1, fp);
-			break;
-		}
-	default:
-		{
-			error = SP_ERROR_DECOMPRESSOR;
-			goto return_error;
-		}
-	}
-
-	plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
-	if (!_ReadPlugin(&hdr, base, plugin, err))
-	{
-		free(plugin);
-		free(base);
-		return NULL;
-	}
-
-	plugin->allocflags = 0;
-
-	return plugin;
-
-return_error:
-	if (err)
-	{
-		*err = error;
-	}
 	return NULL;
 }
 
 sp_plugin_t *SourcePawnEngine::LoadFromMemory(void *base, sp_plugin_t *plugin, int *err)
 {
-	sp_file_hdr_t hdr;
-	uint8_t noptr = 0;
-
-	memcpy(&hdr, base, sizeof(sp_file_hdr_t));
-
-	if (!plugin)
+	if (err != NULL)
 	{
-		plugin = (sp_plugin_t *)malloc(sizeof(sp_plugin_t));
-		noptr = 1;
+		*err = SP_ERROR_ABORTED;
 	}
 
-	if (!_ReadPlugin(&hdr, (uint8_t *)base, plugin, err))
-	{
-		if (noptr)
-		{
-			free(plugin);
-		}
-		return NULL;
-	}
-
-	if (!noptr)
-	{
-		plugin->allocflags |= SP_FA_SELF_EXTERNAL;
-	}
-	plugin->allocflags |= SP_FA_BASE_EXTERNAL;
-
-	return plugin;
+	return NULL;
 }
 
 int SourcePawnEngine::FreeFromMemory(sp_plugin_t *plugin)
 {
-	if (!(plugin->allocflags & SP_FA_BASE_EXTERNAL))
-	{
-		free(plugin->base);
-		plugin->base = NULL;
-	}
-	if (!(plugin->allocflags & SP_FA_SELF_EXTERNAL))
-	{
-		free(plugin);
-	}
-
-	return SP_ERROR_NONE;
+	return SP_ERROR_ABORTED;
 }
-
-#if 0
-void SourcePawnEngine::ReleaseFunctionToPool(CFunction *func)
-{
-	if (!func)
-	{
-		return;
-	}
-	func->Cancel();
-	func->m_pNext = m_pFreeFuncs;
-	m_pFreeFuncs = func;
-}
-
-CFunction *SourcePawnEngine::GetFunctionFromPool(funcid_t f, IPluginContext *plugin)
-{
-	if (!m_pFreeFuncs)
-	{
-		return new CFunction(f, plugin);
-	} else {
-		CFunction *pFunc = m_pFreeFuncs;
-		m_pFreeFuncs = m_pFreeFuncs->m_pNext;
-		pFunc->Set(f, plugin);
-		return pFunc;
-	}
-}
-#endif
 
 IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 {
@@ -529,7 +281,7 @@ void SourcePawnEngine::FreeTracedCall(TracedCall *pCall)
 	}
 }
 
-void SourcePawnEngine::PushTracer(sp_context_t *ctx)
+void SourcePawnEngine::PushTracer(BaseContext *ctx)
 {
 	TracedCall *pCall = MakeTracedCall(true);
 
@@ -538,7 +290,7 @@ void SourcePawnEngine::PushTracer(sp_context_t *ctx)
 	pCall->frm = INVALID_CIP;
 }
 
-void SourcePawnEngine::RunTracer(sp_context_t *ctx, uint32_t frame, uint32_t codeip)
+void SourcePawnEngine::RunTracer(BaseContext *ctx, uint32_t frame, uint32_t codeip)
 {
 	assert(m_CallStack != NULL);
 	assert(m_CallStack->ctx == ctx);
@@ -577,13 +329,13 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 	{
 		uint32_t native = INVALID_CIP;
 
-		if (m_CallStack->ctx->n_err)
+		if (m_CallStack->ctx->GetCtx()->n_err)
 		{
-			native = m_CallStack->ctx->n_idx;
+			native = m_CallStack->ctx->GetCtx()->n_idx;
 		}
 
 		CContextTrace trace(m_CallStack, error, msg, native);
-		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx->context, &trace);
+		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx, &trace);
 	}
 
 	/* Now pop the error chain  */
@@ -607,7 +359,7 @@ CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uin
 
 bool CContextTrace::DebugInfoAvailable()
 {
-	return ((m_pStart->ctx->flags & SP_FLAG_DEBUG) == SP_FLAG_DEBUG);
+	return m_pStart->ctx->IsDebugging();
 }
 
 const char *CContextTrace::GetCustomErrorString()
@@ -648,7 +400,7 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 		return false;
 	}
 
-	IPluginContext *pContext = m_pIterator->ctx->context;
+	IPluginContext *pContext = m_pIterator->ctx;
 	IPluginDebugInfo *pInfo = pContext->GetDebugInfo();
 
 	if (!pInfo)
@@ -690,7 +442,7 @@ const char *CContextTrace::GetLastNative(uint32_t *index)
 	}
 
 	sp_native_t *native;
-	if (m_pIterator->ctx->context->GetNativeByIndex(m_Native, &native) != SP_ERROR_NONE)
+	if (m_pIterator->ctx->GetNativeByIndex(m_Native, &native) != SP_ERROR_NONE)
 	{
 		return NULL;
 	}

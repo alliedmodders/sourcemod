@@ -371,7 +371,7 @@ static cell_t ShowSyncHudText(IPluginContext *pContext, const cell_t *params)
 	}
 
 	g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
@@ -443,7 +443,7 @@ static cell_t ShowHudText(IPluginContext *pContext, const cell_t *params)
 	}
 
 	g_SourceMod.FormatString(message_buffer, sizeof(message_buffer), pContext, params, 3);
-	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
