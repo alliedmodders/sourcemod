@@ -49,6 +49,7 @@ public:
 public: //IPluginContext
 	IVirtualMachine *GetVirtualMachine();
 	sp_context_t *GetContext();
+	sp_context_t *GetCtx();
 	bool IsDebugging();
 	int SetDebugBreak(void *newpfn, void *oldpfn);
 	IPluginDebugInfo *GetDebugInfo();
@@ -82,7 +83,6 @@ public: //IPluginContext
 	IPluginFunction *GetFunctionByName(const char *public_name);
 	IPluginFunction *GetFunctionById(funcid_t func_id);
 	SourceMod::IdentityToken_t *GetIdentity();
-	void SetIdentity(SourceMod::IdentityToken_t *token);
 	cell_t *GetNullRef(SP_NULL_TYPE type);
 	int LocalToStringNULL(cell_t local_addr, char **addr);
 	int BindNativeToIndex(uint32_t index, SPVM_NATIVE_FUNC native);
@@ -100,7 +100,6 @@ private:
 	void _SetErrorMessage(const char *msg, ...);
 private:
 	sp_plugin_t *m_pPlugin;
-	SourceMod::IdentityToken_t *m_pToken;
 	cell_t *m_pNullVec;
 	cell_t *m_pNullString;
 	char m_MsgCache[1024];

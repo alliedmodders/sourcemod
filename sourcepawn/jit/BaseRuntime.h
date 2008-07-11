@@ -45,6 +45,8 @@ public:
 	virtual void SetPauseState(bool paused);
 	virtual bool IsPaused();
 	virtual size_t GetMemUsage();
+public:
+	BaseContext *GetBaseContext();
 private:
 	void ClearCompile();
 	void RefreshFunctionCache();

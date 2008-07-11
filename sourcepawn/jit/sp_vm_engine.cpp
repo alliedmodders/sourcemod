@@ -329,9 +329,9 @@ void SourcePawnEngine::PopTracer(int error, const char *msg)
 	{
 		uint32_t native = INVALID_CIP;
 
-		if (m_CallStack->ctx->GetContext()->n_err)
+		if (m_CallStack->ctx->GetCtx()->n_err)
 		{
-			native = m_CallStack->ctx->GetContext()->n_idx;
+			native = m_CallStack->ctx->GetCtx()->n_idx;
 		}
 
 		CContextTrace trace(m_CallStack, error, msg, native);

@@ -66,6 +66,11 @@ IVirtualMachine *BaseContext::GetVirtualMachine()
 
 sp_context_t *BaseContext::GetContext()
 {
+	return reinterpret_cast<sp_context_t *>((IPluginContext * )this);
+}
+
+sp_context_t *BaseContext::GetCtx()
+{
 	return &m_ctx;
 }
 
@@ -481,12 +486,14 @@ int BaseContext::LocalToStringNULL(cell_t local_addr, char **addr)
 
 SourceMod::IdentityToken_t *BaseContext::GetIdentity()
 {
-	return m_pToken;
-}
+	SourceMod::IdentityToken_t *tok;
 
-void BaseContext::SetIdentity(SourceMod::IdentityToken_t *token)
-{
-	m_pToken = token;
+	if (GetKey(1, (void **)&tok))
+	{
+		return tok;
+	}
+
+	return NULL;
 }
 
 cell_t *BaseContext::GetNullRef(SP_NULL_TYPE type)
@@ -536,7 +543,7 @@ int BaseContext::Execute(IPluginFunction *function, const cell_t *params, unsign
 		return SP_ERROR_NOT_RUNNABLE;
 	}
 
-	if (m_ctx.hp + 16*sizeof(cell_t) > (cell_t)(m_ctx.sp - (sizeof(cell_t) * (num_params + 1))))
+	if ((cell_t)(m_ctx.hp + 16*sizeof(cell_t)) > (cell_t)(m_ctx.sp - (sizeof(cell_t) * (num_params + 1))))
 	{
 		return SP_ERROR_STACKLOW;
 	}

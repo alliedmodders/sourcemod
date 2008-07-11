@@ -52,7 +52,7 @@ BaseRuntime::~BaseRuntime()
 
 void BaseRuntime::ClearCompile()
 {
-	g_Jit1.FreeContextVars(m_pCtx->GetContext());
+	g_Jit1.FreeContextVars(m_pCtx->GetCtx());
 	g_Jit1.FreePluginVars(m_pPlugin);
 }
 
@@ -349,3 +349,9 @@ size_t BaseRuntime::GetMemUsage()
 
 	return mem;
 }
+
+BaseContext *BaseRuntime::GetBaseContext()
+{
+	return m_pCtx;
+}
+

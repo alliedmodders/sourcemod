@@ -38,6 +38,8 @@
 #include "../jit_version.h"
 #include "../sp_vm_engine.h"
 #include "../engine2.h"
+#include "BaseRuntime.h"
+#include "../sp_vm_basecontext.h"
 
 #if defined USE_UNGEN_OPCODES
 #include "ungen_opcodes.h"
@@ -2416,10 +2418,7 @@ cell_t NativeCallback_Debug_Profile(sp_context_t *ctx, ucell_t native_idx, cell_
 
 static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
 {
-	sp_context_t *ctx = pCtx->GetContext();
-	ctx->n_err = SP_ERROR_INVALID_NATIVE;
-
-	return 0;
+	return pCtx->ThrowNativeErrorEx(SP_ERROR_INVALID_NATIVE, "Invalid native");
 }
 
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
@@ -2664,7 +2663,7 @@ jit_rewind:
 	 *************/
 
 	/* setup  basics */
-	sp_context_t *ctx = data->runtime->GetDefaultContext()->GetContext();
+	sp_context_t *ctx = data->runtime->GetBaseContext()->GetCtx();
 
 	/* Clear out any old cruft */
 	if (plugin->codebase != NULL)

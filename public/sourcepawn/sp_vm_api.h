@@ -494,7 +494,9 @@ namespace SourcePawn
 		/**
 		 * @brief Deprecated, do not use.
 		 *
-		 * @return				Opaque pointer.
+		 * Returns the pointer of this object, casted to an opaque structure.
+		 *
+		 * @return				Returns this.
 		 */
 		virtual sp_context_t *GetContext() =0;
 
