@@ -47,6 +47,7 @@ BaseRuntime::~BaseRuntime()
 
 	free(m_pPlugin->base);
 	delete [] m_pPlugin->memory;
+	delete [] m_pPlugin->natives;
 	delete m_pPlugin;
 }
 

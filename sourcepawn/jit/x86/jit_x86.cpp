@@ -2684,7 +2684,7 @@ jit_rewind:
 	ctx->n_err = SP_ERROR_NONE;
 	ctx->n_idx = SP_ERROR_NONE;
 	plugin->prof_flags = data->profile;
-	plugin->flags = data->debug ? SPFLAG_PLUGIN_DEBUG : 0;
+	plugin->run_flags = data->debug ? SPFLAG_PLUGIN_DEBUG : 0;
 
 	const char *strbase = plugin->info.stringbase;
 	uint32_t max, iter;
@@ -2717,7 +2717,8 @@ jit_rewind:
 	}
 
 	/* relocate native info */
-	if ((max = plugin->info.natives_num))
+	if ((max = plugin->info.natives_num)
+		&& plugin->natives == NULL)
 	{
 		plugin->natives = new sp_native_t[max];
 		plugin->jit_memsize += sizeof(sp_native_t) * max;
@@ -2995,7 +2996,6 @@ void JITX86::FreePluginVars(sp_plugin_t *pl)
 {
 	delete [] pl->files;
 	delete [] pl->lines;
-	delete [] pl->natives;
 	delete [] pl->publics;
 	delete [] pl->pubvars;
 	delete [] pl->symbols;
@@ -3008,7 +3008,6 @@ void JITX86::FreePluginVars(sp_plugin_t *pl)
 
 	pl->files = NULL;
 	pl->lines = NULL;
-	pl->natives = NULL;
 	pl->publics = NULL;
 	pl->pubvars = NULL;
 	pl->symbols = NULL;

@@ -68,7 +68,7 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 		{
 			func_idx >>= 1;
 			sp_public_t *function;
-			if (ctx->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
+			if (ctx->GetRuntime()->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
 			{
 				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
 			}
@@ -98,7 +98,7 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	g_Logger.LogError("[SM] %s", buffer);
 
 	IPluginDebugInfo *pDebug;
-	if ((pDebug = pContext->GetDebugInfo()) == NULL)
+	if ((pDebug = pContext->GetRuntime()->GetDebugInfo()) == NULL)
 	{
 		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
 		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",

@@ -401,7 +401,7 @@ bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 	}
 
 	IPluginContext *pContext = m_pIterator->ctx;
-	IPluginDebugInfo *pInfo = pContext->GetDebugInfo();
+	IPluginDebugInfo *pInfo = pContext->GetRuntime()->GetDebugInfo();
 
 	if (!pInfo)
 	{
