@@ -62,7 +62,7 @@ endif
 ifeq "$(ENGINE)" "orangebox"
 	HL2SDK = $(HL2SDK_OB)
 	HL2PUB = $(HL2SDK_OB)/public
-	HL2LIB = $(HL2SDK_OB)/linux_sdk
+	HL2LIB = $(HL2SDK_OB)/lib/linux
 	CFLAGS += -DORANGEBOX_BUILD
 	METAMOD = $(SOURCEMM16)
 	INCLUDE += -I$(HL2SDK)/public/game/server
