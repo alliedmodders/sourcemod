@@ -6265,6 +6265,8 @@ static void dogoto(void)
   /* if we were inside an endless loop, assume that we jump out of it */
   endlessloop=0;
 
+  error(4, "goto");
+
   if (lex(&val,&st)==tSYMBOL) {
     sym=fetchlab(st);
     jumplabel((int)sym->addr);
