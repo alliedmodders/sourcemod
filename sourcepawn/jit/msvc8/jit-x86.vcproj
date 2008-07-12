@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn"
+				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;&quot;$(SOURCEMM16)\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
