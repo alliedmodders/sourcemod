@@ -7,7 +7,7 @@
 	
 	"Thetime"
 	{
-		"#format"	"{1:s}"	
+		"#format"		"{1:s}"	
 		"en"		"The current server time is {1}"
 	}
 	
@@ -23,42 +23,42 @@
 	
 	"Current Map"
 	{
-		"#format"	"{1:s}"
+		"#format"		"{1:s}"
 		"en"		"The current map is {1}."
 	}
 
 	"WinLimitAppend"
 	{
-		"#format"	"{1:i},{2:s}"
+		"#format"		"{1:i},{2:s}"
 		"en"		", or change map after a team wins {1} round{2}"
 	}
 
 	"WinLimit"
 	{
-		"#format"	"{1:i},{2:s}"
+		"#format"		"{1:i},{2:s}"
 		"en"		"Map will change after a team wins {1} round{2}"
 	}
 
 	"MaxRoundsAppend"
 	{
-		"#format"	"{1:i},{2:s}"
+		"#format"		"{1:i},{2:s}"
 		"en"		", or change map after {1} round{2}"
 	}
 
 	"MaxRounds"
 	{
-		"#format"	"{1:i},{2:s}"
+		"#format"		"{1:i},{2:s}"
 		"en"		"Map will change after {1} round{2}"
 	}
 
 	"FragLimitAppend"
 	{
-		"#format"	"{1:i},{2:s}"
+		"#format"		"{1:i},{2:s}"
 		"en"		", or change map after player reaches {1} frag{2}"
 	}
 	"FragLimit"
 	{
-		"#format"	"{1:i},{2:s}"
+		"#format"		"{1:i},{2:s}"
 		"en"		"Map will change after a player reaches {1} frag{2}"
 	}
 
@@ -70,5 +70,11 @@
 	"NoTimelimit"
 	{
 		"en"		"No timelimit for map"
+	}
+
+	"Next Map"
+	{
+		"#format"		"{1:s}"
+		"en"		"Next Map: {1}"
 	}
 }

@@ -36,8 +36,6 @@
 #include <sourcemod>
 #include "include/nextmap.inc"
 
-new Handle:g_Cvar_TriggerShow = INVALID_HANDLE;
- 
 public Plugin:myinfo = 
 {
 	name = "Nextmap",
@@ -60,11 +58,6 @@ public OnPluginStart()
 	LoadTranslations("nextmap.phrases");
 	
 	g_MapList = CreateArray(32);
-	
-	RegConsoleCmd("say", Command_Say);
-	RegConsoleCmd("say_team", Command_Say);
-	
-	RegConsoleCmd("nextmap", Command_Nextmap);
 
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 	RegAdminCmd("sm_maphistory", Command_MapHistory, ADMFLAG_CHANGEMAP, "Shows the most recent maps played");
@@ -94,44 +87,6 @@ public OnConfigsExecuted()
 	{
 		FindAndSetNextMap();
 	}
-	
-	g_Cvar_TriggerShow = FindConVar("sm_trigger_show");
-}
-
-public Action:Command_Say(client, args)
-{
-	decl String:text[192];
-	if (GetCmdArgString(text, sizeof(text)) < 1)
-	{
-		return Plugin_Continue;
-	}
-	
-	new startidx;
-	if (text[strlen(text)-1] == '"')
-	{
-		text[strlen(text)-1] = '\0';
-		startidx = 1;
-	}
-	
-	decl String:message[8];
-	BreakString(text[startidx], message, sizeof(message));
-	
-	if (strcmp(message, "nextmap", false) == 0)
-	{
-		decl String:map[32];
-		GetNextMap(map, sizeof(map));
-			
-		if(g_Cvar_TriggerShow != INVALID_HANDLE && GetConVarInt(g_Cvar_TriggerShow))
-		{
-			PrintToChatAll("[SM] %t", "Next Map", map);
-		}
-		else
-		{
-			PrintToChat(client, "[SM] %t", "Next Map", map);
-		}
-	}
-	
-	return Plugin_Continue;	
 }
 
 public Action:Command_SetNextmap(client, args)
@@ -173,25 +128,7 @@ public Action:Command_List(client, args)
  
 	return Plugin_Handled;
 }
- 
-public Action:Command_Nextmap(client, args)
-{
-	decl String:map[64];
-	
-	GetNextMap(map, sizeof(map));
-	
-	if(g_Cvar_TriggerShow != INVALID_HANDLE && GetConVarInt(g_Cvar_TriggerShow))
-	{
-		PrintToChatAll("[SM] %t", "Next Map", map);
-	}
-	else
-	{
-		ReplyToCommand(client, "[SM] %t", "Next Map", map);
-	}
-	
-	return Plugin_Handled;
-}
- 
+  
 FindAndSetNextMap()
 {
 	if (ReadMapList(g_MapList, 

@@ -71,6 +71,7 @@ public OnPluginStart()
 	RegConsoleCmd("say_team", Command_Say);
 	
 	RegConsoleCmd("timeleft", Command_Timeleft);
+	RegConsoleCmd("nextmap", Command_Nextmap);
 	
 	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
 	
@@ -111,6 +112,24 @@ public Action:Timer_DisplayTimeleft(Handle:timer)
 public Action:Command_Timeleft(client, args)
 {
 	ShowTimeLeft(client, TIMELEFT_ONE);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_Nextmap(client, args)
+{
+	decl String:map[64];
+	
+	GetNextMap(map, sizeof(map));
+	
+	if(GetConVarInt(g_Cvar_TriggerShow))
+	{
+		PrintToChatAll("[SM] %t", "Next Map", map);
+	}
+	else
+	{
+		ReplyToCommand(client, "[SM] %t", "Next Map", map);
+	}
 	
 	return Plugin_Handled;
 }
@@ -188,7 +207,21 @@ public Action:Command_Say(client, args)
 		{
 			PrintToChat(client,"[SM] %t", "Current Map", map);
 		}
-	}	
+	}
+	else if (strcmp(text[startidx], "nextmap", false) == 0)
+	{
+		decl String:map[32];
+		GetNextMap(map, sizeof(map));
+			
+		if(GetConVarInt(g_Cvar_TriggerShow))
+		{
+			PrintToChatAll("[SM] %t", "Next Map", map);
+		}
+		else
+		{
+			PrintToChat(client, "[SM] %t", "Next Map", map);
+		}
+	}
 	
 	return Plugin_Continue;
 }
