@@ -933,9 +933,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			}
 		}
 
-		/* Tell it to unload */
-		pAPI = pExt->GetAPI();
-		pAPI->OnExtensionUnload();
 	}
 
 	IdentityToken_t *pIdentity;
@@ -949,6 +946,12 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 	}
 
+	/* Tell it to unload */
+	if (pExt->IsLoaded())
+	{
+		IExtensionInterface *pAPI = pExt->GetAPI();
+		pAPI->OnExtensionUnload();
+	}
 	pExt->Unload();
 	delete pExt;
 
