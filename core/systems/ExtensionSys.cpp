@@ -787,10 +787,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 
 		/* Unbind our natives from Core */
 		pExt->DropEverything();
-
-		/* Tell it to unload */
-		pAPI = pExt->GetAPI();
-		pAPI->OnExtensionUnload();
 	}
 
 	IdentityToken_t *pIdentity;
@@ -802,6 +798,13 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			glob->OnSourceModIdentityDropped(pIdentity);
 			glob = glob->m_pGlobalClassNext;
 		}
+	}
+
+	/* Tell it to unload */
+	if (pExt->IsLoaded())
+	{
+		IExtensionInterface *pAPI = pExt->GetAPI();
+		pAPI->OnExtensionUnload();
 	}
 
 	pExt->Unload();
