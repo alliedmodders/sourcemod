@@ -54,9 +54,9 @@ new Handle:g_Cvar_WinLimit = INVALID_HANDLE;
 new Handle:g_Cvar_FragLimit = INVALID_HANDLE;
 new Handle:g_Cvar_MaxRounds = INVALID_HANDLE;
 
-#define TIMELEFT_ALL_ALWAYS		0
-#define TIMELEFT_ALL_MAYBE		1
-#define TIMELEFT_ONE			2
+#define TIMELEFT_ALL_ALWAYS		0		/* Print to all players */
+#define TIMELEFT_ALL_MAYBE		1		/* Print to all players if sm_trigger_show allows */
+#define TIMELEFT_ONE			2		/* Print to a single player */
 
 public OnPluginStart()
 {

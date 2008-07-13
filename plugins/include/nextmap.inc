@@ -52,3 +52,33 @@ native bool:SetNextMap(const String:map[]);
  * @return			True if a Map was found and copied, false if no nextmap is set (map will be unchanged).
  */
 native bool:GetNextMap(String:map[], maxlen);
+
+/**
+ * Changes the current map and records the reason for the change with maphistory
+ *
+ * @param map		Map to change to.
+ * @param reason	Reason for change.
+ * @noreturn
+ */
+native ForceChangeLevel(const String:map[], const String:reason[]);
+
+/**
+ * Gets the current number of maps in the map history
+ *
+ * @return			Number of maps.
+ */
+native GetMapHistorySize();
+
+/**
+ * Retrieves a map from the map history list.
+ * 
+ * @param item			Item number. Must be 0 or greater and less than GetMapHistorySize().
+ * @param map			Buffer to store the map name.
+ * @param mapLen		Length of map buffer.
+ * @param reason		Buffer to store the change reason.
+ * @param reasonLen		Length of the reason buffer.
+ * @param startTime		Time the map started.
+ * @noreturn
+ * @error				Invalid item number.	
+ */
+native GetMapHistory(item, String:map[], mapLen, String:reason[], reasonLen, &startTime);

@@ -424,7 +424,7 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	ResetPack(dp);
 	ReadPackString(dp, mapname, sizeof(mapname));
 	
-	ServerCommand("changelevel \"%s\"", mapname);
+	ForceChangeLevel(mapname, "sm_votemap Result");
 	
 	return Plugin_Stop;
 }

@@ -34,17 +34,58 @@
 
 #include "sm_globals.h"
 #include "eiface.h"
+#include "sh_list.h"
+#include "sm_stringutil.h"
+
+struct MapChangeData
+{
+	MapChangeData(const char *mapName, const char *changeReason, time_t time)
+	{
+		UTIL_Format(m_mapName, sizeof(m_mapName), mapName);
+		UTIL_Format(m_changeReason, sizeof(m_changeReason), changeReason);
+		startTime = time;
+	}
+
+	MapChangeData()
+	{
+		m_mapName[0] = '\0';
+		m_changeReason[0] = '\0';
+		startTime = 0;
+	}
+
+	char m_mapName[32];
+	char m_changeReason[100];
+	time_t startTime;
+};
 
 class NextMapManager : public SMGlobalClass
 {
 public:
+	NextMapManager();
+
+#if defined ORANGEBOX_BUILD
+	friend void CmdChangeLevelCallback(const CCommand &command);
+#else
+	friend void CmdChangeLevelCallback();
+#endif
+
 	void OnSourceModAllInitialized_Post();
 	void OnSourceModShutdown();
+	void OnSourceModLevelChange(const char *mapName);
 
 	const char *GetNextMap();
 	bool SetNextMap(const char *map);
 
+	void ForceChangeLevel(const char *mapName, const char* changeReason);
+
 	void HookChangeLevel(const char *map, const char *unknown);
+
+public:
+	SourceHook::List<MapChangeData *> m_mapHistory;
+
+private:
+	MapChangeData m_tempChangeInfo;
+	char lastMap[32];
 };
 
 extern NextMapManager g_NextMap;

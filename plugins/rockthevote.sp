@@ -298,7 +298,7 @@ public Action:Timer_ChangeMap(Handle:hTimer)
 	new String:map[65];
 	if (GetNextMap(map, sizeof(map)))
 	{	
-		ServerCommand("changelevel \"%s\"", map);
+		ForceChangeLevel(map, "RTV after mapvote");
 	}
 	
 	return Plugin_Stop;

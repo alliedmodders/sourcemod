@@ -51,6 +51,8 @@ public Plugin:myinfo =
 new g_MapPos = -1;
 new Handle:g_MapList = INVALID_HANDLE;
 new g_MapListSerial = -1;
+
+new g_CurrentMapStartTime;
  
 public OnPluginStart()
 {
@@ -65,12 +67,18 @@ public OnPluginStart()
 	RegConsoleCmd("nextmap", Command_Nextmap);
 
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
+	RegAdminCmd("sm_maphistory", Command_MapHistory, ADMFLAG_CHANGEMAP, "Shows the most recent maps played");
 	RegConsoleCmd("listmaps", Command_List);
 
 	// Set to the current map so OnMapStart() will know what to do
 	decl String:currentMap[64];
 	GetCurrentMap(currentMap, 64);
 	SetNextMap(currentMap);
+}
+
+public OnMapStart()
+{
+	g_CurrentMapStartTime = GetTime();
 }
  
 public OnConfigsExecuted()
@@ -227,4 +235,60 @@ FindAndSetNextMap()
  
  	GetArrayString(g_MapList, g_MapPos, mapName, sizeof(mapName));
 	SetNextMap(mapName);
+}
+
+public Action:Command_MapHistory(client, args)
+{
+	new mapCount = GetMapHistorySize();
+	
+	decl String:mapName[32];
+	decl String:changeReason[100];
+	decl String:timeString[100];
+	decl String:playedTime[100];
+	new startTime;
+	
+	new lastMapStartTime = g_CurrentMapStartTime;
+	
+	PrintToConsole(client, "Map History:\n");
+	PrintToConsole(client, "Map : Started : Played Time : Reason for ending");
+	
+	GetCurrentMap(mapName, sizeof(mapName));
+	PrintToConsole(client, "%02i. %s (Current Map)", 0, mapName);
+	
+	for (new i=0; i<mapCount; i++)
+	{
+		GetMapHistory(i, mapName, sizeof(mapName), changeReason, sizeof(changeReason), startTime);
+
+		FormatTimeDuration(timeString, sizeof(timeString), GetTime() - startTime);
+		FormatTimeDuration(playedTime, sizeof(playedTime), lastMapStartTime - startTime);
+		
+		PrintToConsole(client, "%02i. %s : %s ago : %s : %s", i+1, mapName, timeString, playedTime, changeReason);
+		
+		lastMapStartTime = startTime;
+	}
+}
+
+FormatTimeDuration(String:buffer[], maxlen, time)
+{
+	new	days = time / 86400;
+	new	hours = (time / 3600) % 24;
+	new	minutes = (time / 60) % 60;
+	new	seconds =  time % 60;
+	
+	if (days > 0)
+	{
+		Format(buffer, maxlen, "%id %ih %im", days, hours, (seconds >= 30) ? minutes+1 : minutes);
+	}
+	else if (hours > 0)
+	{
+		Format(buffer, maxlen, "%ih %im", hours, (seconds >= 30) ? minutes+1 : minutes);		
+	}
+	else if (minutes > 0)
+	{
+		Format(buffer, maxlen, "%im", (seconds >= 30) ? minutes+1 : minutes);		
+	}
+	else
+	{
+		Format(buffer, maxlen, "%is", seconds);		
+	}
 }

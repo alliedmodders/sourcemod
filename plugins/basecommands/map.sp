@@ -109,7 +109,7 @@ public Action:Timer_ChangeMap(Handle:timer, Handle:dp)
 	ResetPack(dp);
 	ReadPackString(dp, map, sizeof(map));
 
-	ServerCommand("changelevel \"%s\"", map);
+	ForceChangeLevel(map, "sm_map Command");
 
 	return Plugin_Stop;
 }

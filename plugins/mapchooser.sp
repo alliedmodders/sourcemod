@@ -771,7 +771,7 @@ public Action:Timer_ChangeMap(Handle:hTimer, Handle:dp)
 		ReadPackString(dp, map, sizeof(map));		
 	}
 	
-	ServerCommand("changelevel \"%s\"", map);
+	ForceChangeLevel(map, "Map Vote");
 	
 	return Plugin_Stop;
 }

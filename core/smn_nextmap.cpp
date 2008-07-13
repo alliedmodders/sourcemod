@@ -54,10 +54,58 @@ static cell_t sm_SetNextMap(IPluginContext *pCtx, const cell_t *params)
 	return g_NextMap.SetNextMap(map);
 }
 
+static cell_t sm_ForceChangeLevel(IPluginContext *pCtx, const cell_t *params)
+{
+	char *map;
+	char *changeReason;
+
+	pCtx->LocalToString(params[1], &map);
+	pCtx->LocalToString(params[2], &changeReason);
+
+	g_NextMap.ForceChangeLevel(map, changeReason);
+
+	return 0;
+}
+
+static cell_t sm_GetMapHistorySize(IPluginContext *pCtx, const cell_t *params)
+{
+	return g_NextMap.m_mapHistory.size();
+}
+
+static cell_t sm_GetMapHistory(IPluginContext *pCtx, const cell_t *params)
+{
+	if (params[1] < 0 || params[1] >= (int)g_NextMap.m_mapHistory.size())
+	{
+		return pCtx->ThrowNativeError("Invalid Map History Index");
+	}
+
+	SourceHook::List<MapChangeData *>::iterator iter;
+	iter = g_NextMap.m_mapHistory.end();
+	iter--;
+
+	for (int i=0; i<params[1]; i++)
+	{
+		iter--;
+	}
+
+	MapChangeData *data = (MapChangeData *)*iter;
+
+	pCtx->StringToLocal(params[2], params[3], data->m_mapName);
+	pCtx->StringToLocal(params[4], params[5], data->m_changeReason);
+
+	cell_t *startTime;
+	pCtx->LocalToPhysAddr(params[6], &startTime);
+	*startTime = data->startTime;
+
+	return 0;
+}
 
 REGISTER_NATIVES(nextmapnatives)
 {
-	{"GetNextMap",		sm_GetNextMap},
-	{"SetNextMap",		sm_SetNextMap},
-	{NULL,						NULL},
+	{"GetNextMap",			sm_GetNextMap},
+	{"SetNextMap",			sm_SetNextMap},
+	{"ForceChangeLevel",	sm_ForceChangeLevel},
+	{"GetMapHistorySize",	sm_GetMapHistorySize},
+	{"GetMapHistory",		sm_GetMapHistory},
+	{NULL,					NULL},
 };
