@@ -58,6 +58,12 @@ struct MapChangeData
 	time_t startTime;
 };
 
+#if defined ORANGEBOX_BUILD
+void CmdChangeLevelCallback(const CCommand &command);
+#else
+void CmdChangeLevelCallback();
+#endif
+
 class NextMapManager : public SMGlobalClass
 {
 public:
