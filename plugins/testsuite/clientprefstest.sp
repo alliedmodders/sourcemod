@@ -44,6 +44,8 @@ public CookieSelected(client, CookieMenuAction:action, any:info, String:buffer[]
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 {
 	LogMessage("Connect Cookie state: %s", AreClientCookiesCached(client) ? "YES" : "NO");
+	
+	return true;
 }
 
 public OnClientCookiesCached(client)

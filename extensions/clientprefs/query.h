@@ -43,36 +43,67 @@ enum querytype
 	Query_InsertData,
 	Query_SelectId,
 	Query_CreateTable,
+	Query_Connect,
+};
+
+struct PreparedQueryWrapper;
+struct Cookie;
+struct CookieData;
+#define MAX_NAME_LENGTH 30
+
+/* This stores all the info required for our param binding until the thread is executed */
+struct ParamData
+{
+	ParamData();
+
+	~ParamData();
+
+	/* Contains a name, description and access for InsertCookie queries */
+	Cookie *cookie;
+	/* A clients steamid - Used for most queries - Doubles as storage for the cookie name*/
+	char steamId[MAX_NAME_LENGTH];
+
+	int cookieId;
+	CookieData *data;
 };
 
 class TQueryOp : public IDBThreadOperation
 {
 public:
-	TQueryOp(IDatabase *db, const char *query, enum querytype type, int client);
-	TQueryOp(IDatabase *db, const char *query, enum querytype type, Cookie *cookie);
+	TQueryOp(enum querytype type, int client);
+	TQueryOp(enum querytype type, Cookie *cookie);
 	~TQueryOp() {}
 
 	IDBDriver *GetDriver();
 	IdentityToken_t *GetOwner();
 
+	void SetDatabase(IDatabase *db);
+	void SetPreparedQuery();
+	void SetCustomPreparedQuery(IPreparedQuery *wrapper);
+
 	void Destroy();
 
 	void RunThreadPart();
 	/* Thread has been cancelled due to driver unloading. Nothing else to do? */
-	void CancelThinkPart()
-	{
-	}
+	void CancelThinkPart()	{}
 	void RunThinkPart();
 
+	bool BindParamsAndRun();
+
+	/* Params to be bound */
+	ParamData m_params;
+
 private:
-	IDatabase *m_pDatabase;
-	IQuery *m_pQuery;
-	SourceHook::String m_Query;
-	char error[255];
+	IPreparedQuery *m_pQuery;
+	IDatabase *m_database;
+
+	/* Query type */
 	enum querytype m_type;
+
+	/* Data to be passed to the callback */
 	int m_client;
 	int m_insertId;
-	Cookie *pCookie;
+	Cookie *m_pCookie;
 };
 
 

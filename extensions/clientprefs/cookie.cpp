@@ -80,7 +80,17 @@ void CookieManager::Unload()
 			continue;
 		}
 
-		delete current;
+		g_ClientPrefs.cookieMutex->Lock();
+		if (current->usedInQuery)
+		{
+			current->shouldDelete = true;
+			g_ClientPrefs.cookieMutex->Unlock();
+		}
+		else
+		{
+			g_ClientPrefs.cookieMutex->Unlock();
+			delete current;
+		}
 
 		_iter = cookieList.erase(_iter);
 	}
@@ -97,7 +107,6 @@ Cookie *CookieManager::FindCookie(const char *name)
 
 	return *pCookie;
 }
-
 
 Cookie *CookieManager::CreateCookie(const char *name, const char *description, CookieAccess access)
 {
@@ -120,25 +129,16 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 	cookieTrie.insert(name, pCookie);
 	cookieList.push_back(pCookie);
 
-	char quotedname[2 * MAX_NAME_LENGTH + 1];
-	char quoteddesc[2 * MAX_DESC_LENGTH + 1];
-
-	g_ClientPrefs.Database->QuoteString(pCookie->name, quotedname, sizeof(quotedname), NULL);
-	g_ClientPrefs.Database->QuoteString(pCookie->description, quoteddesc, sizeof(quoteddesc), NULL);
-	
 	/* Attempt to insert cookie into the db and get its ID num */
-	char query[300];
-	if (driver == DRIVER_SQLITE)
-	{
-		UTIL_Format(query, sizeof(query), "INSERT OR IGNORE INTO sm_cookies(name, description, access) VALUES('%s', '%s', %i)", quotedname, quoteddesc, access);
-	}
-	else
-	{
-		UTIL_Format(query, sizeof(query), "INSERT IGNORE INTO sm_cookies(name, description, access) VALUES('%s', '%s', %i)", quotedname, quoteddesc, access);
-	}
 
-	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_InsertCookie, pCookie);
-	dbi->AddToThreadQueue(op, PrioQueue_Normal);
+	TQueryOp *op = new TQueryOp(Query_InsertCookie, pCookie);
+
+	g_ClientPrefs.cookieMutex->Lock();
+	op->m_params.cookie = pCookie;
+	pCookie->usedInQuery++;
+	g_ClientPrefs.cookieMutex->Unlock();
+
+	g_ClientPrefs.AddQueryToQueue(op);
 
 	return pCookie;
 }
@@ -198,11 +198,10 @@ void CookieManager::OnClientAuthorized(int client, const char *authstring)
 {
 	connected[client] = true;
 
-	char query[300];
-	/* Assume that the authstring doesn't need to be quoted */
-	UTIL_Format(query, sizeof(query), "SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, sm_cookies.access FROM sm_cookies JOIN sm_cookie_cache ON sm_cookies.id = sm_cookie_cache.cookie_id WHERE player = '%s'", authstring);
-	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_SelectData, client);
-	dbi->AddToThreadQueue(op, PrioQueue_Normal);
+	TQueryOp *op = new TQueryOp(Query_SelectData, client);
+	strcpy(op->m_params.steamId, authstring);
+
+	g_ClientPrefs.AddQueryToQueue(op);
 }
 
 void CookieManager::OnClientDisconnecting(int client)
@@ -245,24 +244,18 @@ void CookieManager::OnClientDisconnecting(int client)
 			return;
 		}
 
-		char quotedvalue[2 * MAX_VALUE_LENGTH + 1];
-		g_ClientPrefs.Database->QuoteString(current->value, quotedvalue, sizeof(quotedvalue), NULL);
+		TQueryOp *op = new TQueryOp(Query_InsertData, client);
 
-		char query[300];
-		if (driver == DRIVER_SQLITE)
-		{
-			UTIL_Format(query, sizeof(query), "INSERT OR REPLACE INTO sm_cookie_cache(player,cookie_id, value, timestamp) VALUES('%s', %i, '%s', %i)", player->GetAuthString(), dbId, quotedvalue, time(NULL));
-		}
-		else
-		{
-			UTIL_Format(query, sizeof(query), "INSERT INTO sm_cookie_cache(player,cookie_id, value, timestamp) VALUES('%s', %i, '%s', %i) ON DUPLICATE KEY UPDATE value = '%s', timestamp = %i", player->GetAuthString(), dbId, quotedvalue, time(NULL), quotedvalue, time(NULL));
-		}
-	
-		TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_InsertData, client);
-		dbi->AddToThreadQueue(op, PrioQueue_Normal);
+		strcpy(op->m_params.steamId, player->GetAuthString());
+		op->m_params.cookieId = dbId;
+		op->m_params.data = current;
+
+		g_ClientPrefs.AddQueryToQueue(op);
 
 		current->parent->data[client] = NULL;
-		delete current;
+		
+
+		/* We don't delete here, it will be removed when the query is completed */
 
 		_iter = clientData[client].erase(_iter);
 	}
@@ -330,14 +323,10 @@ void CookieManager::InsertCookieCallback(Cookie *pCookie, int dbId)
 		return;
 	}
 
-	char quotedname[2 * MAX_NAME_LENGTH + 1];
-	g_ClientPrefs.Database->QuoteString(pCookie->name, quotedname, sizeof(quotedname), NULL);
-
-	char query[300];
-	UTIL_Format(query, sizeof(query), "SELECT id FROM sm_cookies WHERE name='%s'", quotedname);
-
-	TQueryOp *op = new TQueryOp(g_ClientPrefs.Database, query, Query_SelectId, pCookie);
-	dbi->AddToThreadQueue(op, PrioQueue_Normal);
+	TQueryOp *op = new TQueryOp(Query_SelectId, pCookie);
+	/* Put the cookie name into the steamId field to save space - Make sure we remember that it's there */
+	strcpy(op->m_params.steamId, pCookie->name);
+	g_ClientPrefs.AddQueryToQueue(op);
 }
 
 void CookieManager::SelectIdCallback(Cookie *pCookie, IQuery *data)

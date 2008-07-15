@@ -50,8 +50,11 @@ CookieIteratorHandler g_CookieIteratorHandler;
 int driver = 0;
 
 bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
-{	
-	const DatabaseInfo *DBInfo = dbi->FindDatabaseConf("clientprefs");
+{
+	queryMutex = threader->MakeMutex();
+	cookieMutex = threader->MakeMutex();
+
+	DBInfo = dbi->FindDatabaseConf("clientprefs");
 
 	if (DBInfo == NULL)
 	{
@@ -62,7 +65,6 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 			snprintf(error, maxlength, "Could not find \"clientprefs\" or \"default\" database configs");
 			return false;
 		}
-
 	}
 
 	if (DBInfo->driver[0] != '\0')
@@ -80,91 +82,12 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
-	Database = Driver->Connect(DBInfo, true, error, maxlength);
-
-	if (Database == NULL)
-	{
-		return false;
-	}
+	Database = NULL;
+	databaseLoading = true;
+	TQueryOp *op = new TQueryOp(Query_Connect, 0);
+	dbi->AddToThreadQueue(op, PrioQueue_High);
 
 	dbi->AddDependency(myself, Driver);
-
-	const char *identifier = Driver->GetIdentifier();
-
-	if (strcmp(identifier, "sqlite") == 0)
-	{
-		driver = DRIVER_SQLITE;
-
-		TQueryOp *op = new TQueryOp(
-						Database, 
-						"CREATE TABLE IF NOT EXISTS sm_cookies  \
-						( \
-							id INTEGER PRIMARY KEY AUTOINCREMENT, \
-							name varchar(30) NOT NULL UNIQUE, \
-							description varchar(255), \
-							access INTEGER \
-						)", 
-						Query_CreateTable, 
-						0);
-
-		dbi->AddToThreadQueue(op, PrioQueue_Normal);
-
-		op = new TQueryOp(
-						Database, 
-						"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
-						( \
-							player varchar(65) NOT NULL, \
-							cookie_id int(10) NOT NULL, \
-							value varchar(100), \
-							timestamp int, \
-							PRIMARY KEY (player, cookie_id) \
-						)", 
-						Query_CreateTable, 
-						0);
-
-		dbi->AddToThreadQueue(op, PrioQueue_Normal);
-	}
-	else if (strcmp(identifier, "mysql") == 0)
-	{
-		driver = DRIVER_MYSQL;
-
-		TQueryOp *op = new TQueryOp(
-						Database, 
-						"CREATE TABLE IF NOT EXISTS sm_cookies \
-						( \
-							id INTEGER unsigned NOT NULL auto_increment, \
-							name varchar(30) NOT NULL UNIQUE, \
-							description varchar(255), \
-							access INTEGER, \
-							PRIMARY KEY (id) \
-						)", 
-						Query_CreateTable, 
-						0);
-
-		dbi->AddToThreadQueue(op, PrioQueue_Normal);
-
-		op = new TQueryOp(
-						Database, 
-						"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
-						( \
-							player varchar(65) NOT NULL, \
-							cookie_id int(10) NOT NULL, \
-							value varchar(100), \
-							timestamp int NOT NULL, \
-							PRIMARY KEY (player, cookie_id) \
-						)", 
-						Query_CreateTable, 
-						0);
-
-		dbi->AddToThreadQueue(op, PrioQueue_Normal);
-	}
-	else
-	{
-		snprintf(error, maxlength, "Unsupported driver \"%s\"", identifier);
-		return false;
-	}
-
-
 
 	sharesys->AddNatives(myself, g_ClientPrefNatives);
 	sharesys->RegisterLibrary(myself, "clientprefs");
@@ -218,6 +141,16 @@ void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
 {
 	if (Database != NULL && (void *)pInterface == (void *)(Database->GetDriver()))
 	{
+		InsertCookieQuery->Destroy();
+		SelectDataQuery->Destroy();
+		SelectIdQuery->Destroy();
+		InsertDataQuery->Destroy();
+
+		InsertCookieQuery = NULL;
+		SelectDataQuery = NULL;
+		SelectIdQuery = NULL;
+		InsertDataQuery = NULL;
+
 		Database->Close();
 		Database = NULL;
 	}
@@ -243,6 +176,232 @@ void ClientPrefs::SDK_OnUnload()
 
 	plsys->RemovePluginsListener(&g_CookieManager);
 	playerhelpers->RemoveClientListener(&g_CookieManager);
+
+	/* Kill all our prepared queries - Queries are guaranteed to be flushed before this is called */
+
+	if (InsertCookieQuery != NULL)
+	{
+		InsertCookieQuery->Destroy();
+	}
+
+	if (SelectDataQuery != NULL)
+	{
+		SelectDataQuery->Destroy();
+	}
+
+	if (SelectIdQuery != NULL)
+	{
+		SelectIdQuery->Destroy();
+	}
+
+	if (InsertDataQuery != NULL)
+	{
+		InsertDataQuery->Destroy();
+	}
+
+	queryMutex->DestroyThis();
+	cookieMutex->DestroyThis();
+}
+
+void ClientPrefs::DatabaseConnect()
+{
+	char error[256];
+	int errCode = 0;
+
+	Database = Driver->Connect(DBInfo, true, error, sizeof(error));
+
+	if (Database == NULL)
+	{
+		g_pSM->LogError(myself, error);
+		databaseLoading = false;
+		ProcessQueryCache();
+		return;
+	}
+
+	const char *identifier = Driver->GetIdentifier();
+
+	if (strcmp(identifier, "sqlite") == 0)
+	{
+		driver = DRIVER_SQLITE;
+
+		TQueryOp *op = new TQueryOp(Query_CreateTable, 0);
+
+		op->SetDatabase(Database);
+		op->SetCustomPreparedQuery
+				(Database->PrepareQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookies  \
+				( \
+					id INTEGER PRIMARY KEY AUTOINCREMENT, \
+					name varchar(30) NOT NULL UNIQUE, \
+					description varchar(255), \
+					access INTEGER \
+				)",
+				error, sizeof(error), &errCode));
+
+		dbi->AddToThreadQueue(op, PrioQueue_High);
+
+		op = new TQueryOp(Query_CreateTable, 0);
+		op->SetDatabase(Database);
+		op->SetCustomPreparedQuery
+				(Database->PrepareQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
+				( \
+					player varchar(65) NOT NULL, \
+					cookie_id int(10) NOT NULL, \
+					value varchar(100), \
+					timestamp int, \
+					PRIMARY KEY (player, cookie_id) \
+				)",
+				error, sizeof(error), &errCode));
+
+		dbi->AddToThreadQueue(op, PrioQueue_High);
+	}
+	else if (strcmp(identifier, "mysql") == 0)
+	{
+		driver = DRIVER_MYSQL;
+
+		TQueryOp *op = new TQueryOp(Query_CreateTable, 0);
+		op->SetDatabase(Database);
+		op->SetCustomPreparedQuery
+				(Database->PrepareQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookies \
+				( \
+					id INTEGER unsigned NOT NULL auto_increment, \
+					name varchar(30) NOT NULL UNIQUE, \
+					description varchar(255), \
+					access INTEGER, \
+					PRIMARY KEY (id) \
+				)",
+				error, sizeof(error), &errCode));
+
+		dbi->AddToThreadQueue(op, PrioQueue_High);
+
+		op = new TQueryOp(Query_CreateTable, 0);
+		op->SetDatabase(Database);
+		op->SetCustomPreparedQuery
+				(Database->PrepareQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
+				( \
+					player varchar(65) NOT NULL, \
+					cookie_id int(10) NOT NULL, \
+					value varchar(100), \
+					timestamp int NOT NULL, \
+					PRIMARY KEY (player, cookie_id) \
+				)",
+				error, sizeof(error), &errCode));
+
+		dbi->AddToThreadQueue(op, PrioQueue_High);
+	}
+	else
+	{
+		g_pSM->LogError(myself, "Unsupported driver \"%s\"", identifier);
+		Database->Close();
+		Database = NULL;
+		databaseLoading = false;
+		ProcessQueryCache();
+		return;
+	}
+
+	if (driver == DRIVER_MYSQL)
+	{
+		InsertCookieQuery = Database->PrepareQuery(
+				"INSERT IGNORE INTO sm_cookies(name, description, access) \
+				VALUES(?, ?, ?)",
+				error, sizeof(error), &errCode);
+		InsertDataQuery = Database->PrepareQuery(
+				"INSERT INTO sm_cookie_cache(player, cookie_id, value, timestamp) \
+				VALUES(?, ?, ?, ?) \
+				ON DUPLICATE KEY UPDATE value = ?, timestamp = ?",
+				error, sizeof(error), &errCode);
+	}
+	else
+	{
+		InsertCookieQuery = Database->PrepareQuery(
+				"INSERT OR IGNORE INTO sm_cookies(name, description, access) \
+				VALUES(?, ?, ?)", 
+				error, sizeof(error), &errCode);
+		InsertDataQuery = Database->PrepareQuery(
+				"INSERT OR REPLACE INTO sm_cookie_cache(player, cookie_id, value, timestamp) \
+				VALUES(?, ?, ?, ?)", 
+				error, sizeof(error), &errCode);
+	}
+
+	SelectDataQuery = Database->PrepareQuery(
+			"SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, sm_cookies.access \
+			FROM sm_cookies \
+			JOIN sm_cookie_cache \
+			ON sm_cookies.id = sm_cookie_cache.cookie_id \
+			WHERE player = ?",
+			error, sizeof(error), &errCode);
+
+	SelectIdQuery = Database->PrepareQuery(
+			"SELECT id \
+			FROM sm_cookies \
+			WHERE name=?",
+			error, sizeof(error), &errCode);
+
+	databaseLoading = false;
+	cell_t result = 0;
+
+	ProcessQueryCache();
+
+	return;
+}
+
+bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
+{
+	queryMutex->Lock();
+
+	if (Database == NULL && databaseLoading)
+	{
+		cachedQueries.push_back(query);
+		queryMutex->Unlock();
+		return true;
+	}
+
+	queryMutex->Unlock();
+
+	if (Database)
+	{
+		query->SetDatabase(Database);
+		query->SetPreparedQuery();
+		dbi->AddToThreadQueue(query, PrioQueue_Normal);
+		return true;
+	}
+
+	/* If Database is NULL and we're not in the loading phase it must have failed - Can't do much */
+	return false;
+}
+
+void ClientPrefs::ProcessQueryCache()
+{
+	SourceHook::List<TQueryOp *>::iterator iter;
+
+	queryMutex->Lock();
+
+	iter = cachedQueries.begin();
+	
+	while (iter != cachedQueries.end())
+	{
+		TQueryOp *op = (TQueryOp *)*iter;
+
+		if (Database != NULL)
+		{
+			op->SetDatabase(Database);
+			op->SetPreparedQuery();
+			dbi->AddToThreadQueue(op, PrioQueue_Normal);
+		}
+		else
+		{
+			delete op;
+		}
+
+		iter++;
+	}
+
+	cachedQueries.clear();
+
+	queryMutex->Unlock();
 }
 
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)

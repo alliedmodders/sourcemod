@@ -80,6 +80,9 @@ struct Cookie
 		{
 			data[i] = NULL;
 		}
+
+		shouldDelete = false;
+		usedInQuery = 0;
 	}
 
 	~Cookie()
@@ -98,6 +101,10 @@ struct Cookie
 	int dbid;
 	CookieData *data[MAXCLIENTS+1];
 	CookieAccess access;
+
+	/* Reference counting stuff */
+	bool shouldDelete;
+	int usedInQuery;
 };
 
 class CookieManager : public IClientListener, public IPluginsListener
@@ -123,13 +130,12 @@ public:
 
 	bool AreClientCookiesCached(int client);
 
-	IForward *cookieDataLoadedForward;
-
-	SourceHook::List<Cookie *> cookieList;
-
-	IBaseMenu *clientMenu;
-
 	void OnPluginDestroyed(IPlugin *plugin);
+
+public:
+	IForward *cookieDataLoadedForward;
+	SourceHook::List<Cookie *> cookieList;
+	IBaseMenu *clientMenu;
 
 private:
 	KTrie<Cookie *> cookieTrie;

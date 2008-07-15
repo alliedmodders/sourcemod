@@ -58,7 +58,7 @@ public Action:Command_Cookie(client, args)
 {
 	if (args == 0)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_cookie <name> [value]");
+		ReplyToCommand(client, "[SM] Usage: sm_cookies <name> [value]");
 		ReplyToCommand(client, "[SM] %t", "Printing Cookie List");
 		
 		/* Show list of cookies */

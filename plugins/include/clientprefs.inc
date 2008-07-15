@@ -75,6 +75,14 @@ enum CookieMenuAction
 };
 
 /**
+ * Note:
+ * 
+ * A successful return value/result on any client prefs native only guarantees that the local cache has been updated.
+ * Database connection problems can still prevent the data from being permanently saved. Connection problems will be logged as
+ * errors by the clientprefs extension.
+ */
+
+/**
  * Creates a new Client preference cookie.
  *
  * @param name			Name of the new preference cookie.

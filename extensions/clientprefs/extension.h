@@ -47,6 +47,8 @@
 
 #define MAX_TRANSLATE_PARAMS		32
 
+class TQueryOp;
+
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -78,6 +80,11 @@ public:
 	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
 
 	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
+
+	void DatabaseConnect();
+
+	bool AddQueryToQueue(TQueryOp *query);
+	void ProcessQueryCache();
 
 	/**
 	 * @brief Called when the pause state is changed.
@@ -128,7 +135,20 @@ public:
 public:
 	IDBDriver *Driver;
 	IDatabase *Database;
+	bool databaseLoading;
 	IPhraseCollection *phrases;
+	const DatabaseInfo *DBInfo;
+
+	IPreparedQuery *InsertCookieQuery;
+	IPreparedQuery *SelectDataQuery;
+	IPreparedQuery *InsertDataQuery;
+	IPreparedQuery *SelectIdQuery;
+
+	IMutex *cookieMutex;
+
+private:
+	SourceHook::List<TQueryOp *> cachedQueries;
+	IMutex *queryMutex;
 };
 
 class CookieTypeHandler : public IHandleTypeDispatch
@@ -136,7 +156,7 @@ class CookieTypeHandler : public IHandleTypeDispatch
 public:
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		/* No delete needed since Cookies are persistant */
+		/* No delete needed since Cookies are persistent */
 	}
 };
 

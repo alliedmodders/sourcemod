@@ -36,52 +36,83 @@ void TQueryOp::RunThinkPart()
 {
 	//handler for threaded sql queries
 
+	if (m_type == Query_Connect)
+	{
+		return;
+	}
+
 	if (m_pQuery)
 	{
 		switch (m_type)
 		{
-		case Query_InsertCookie:
-			g_CookieManager.InsertCookieCallback(pCookie, m_insertId);
-			break;
-		case Query_SelectData:
-			g_CookieManager.ClientConnectCallback(m_client, m_pQuery);
-			break;
-		case Query_InsertData:
-			//No specific handling
-			break;
-		case Query_SelectId:
-			g_CookieManager.SelectIdCallback(pCookie, m_pQuery);
-			break;
-		default:
-			break;
-		}
+			case Query_InsertCookie:
+			{
+				g_CookieManager.InsertCookieCallback(m_pCookie, m_insertId);
+				break;
+			}
 
-		m_pQuery->Destroy();
-	}
-	else
-	{
-		g_pSM->LogError(myself,"Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", error, m_type, m_client);
+			case Query_SelectData:
+			{
+				g_CookieManager.ClientConnectCallback(m_client, m_pQuery);
+				break;
+			}
+
+			case Query_SelectId:
+			{
+				g_CookieManager.SelectIdCallback(m_pCookie, m_pQuery);
+				break;
+			}
+
+			case Query_CreateTable:
+			{
+				m_pQuery->Destroy();
+				delete m_pQuery;
+				m_pQuery = NULL;
+				break;
+			}
+
+			default:
+			{
+				break;
+			}
+		}
 	}
 }
 
 void TQueryOp::RunThreadPart()
 {
-	m_pDatabase->LockForFullAtomicOperation();
-	m_pQuery = m_pDatabase->DoQuery(m_Query.c_str());
-
-	if (!m_pQuery)
+	if (m_type == Query_Connect)
 	{
-		g_pSM->LogError(myself, "Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", m_pDatabase->GetError(), m_type, m_client);
+		g_ClientPrefs.DatabaseConnect();
 	}
+	else
+	{
+		if (m_database == NULL)
+		{
+			return;
+		}
 
-	m_insertId = g_ClientPrefs.Database->GetInsertID();
+		m_database->LockForFullAtomicOperation();
 
-	m_pDatabase->UnlockFromFullAtomicOperation();
+		if (!BindParamsAndRun())
+		{
+			g_pSM->LogError(myself, "Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", m_database->GetError(), m_type, m_client);
+		}
+
+		m_insertId = m_database->GetInsertID();
+
+		m_database->UnlockFromFullAtomicOperation();
+	}
 }
 
 IDBDriver *TQueryOp::GetDriver()
 {
-	return m_pDatabase->GetDriver();
+	if (m_database == NULL)
+	{
+		return NULL;
+	}
+
+	return m_database->GetDriver();
 }
 IdentityToken_t *TQueryOp::GetOwner()
 {
@@ -92,24 +123,157 @@ void TQueryOp::Destroy()
 	delete this;
 }
 
-TQueryOp::TQueryOp(IDatabase *db, const char *query, enum querytype type, int client)
+TQueryOp::TQueryOp(enum querytype type, int client)
 {
-	m_pDatabase = db;
-	m_Query = query;
 	m_type = type;
 	m_client = client;
 	m_pQuery = NULL;
-
-	m_pDatabase->IncReferenceCount();
+	m_database = NULL;
 }
 
-TQueryOp::TQueryOp(IDatabase *db, const char *query, enum querytype type, Cookie *cookie)
+TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
 {
-	m_pDatabase = db;
-	m_Query = query;
 	m_type = type;
-	pCookie = cookie;
+	m_pCookie = cookie;
 	m_pQuery = NULL;
+	m_database = NULL;
+}
 
-	m_pDatabase->IncReferenceCount();
+void TQueryOp::SetDatabase( IDatabase *db )
+{
+	m_database = db;
+	m_database->IncReferenceCount();
+}
+
+bool TQueryOp::BindParamsAndRun()
+{
+	if (m_pQuery == NULL)
+	{
+		return false;
+	}
+
+	switch (m_type)
+	{
+		case Query_InsertCookie:
+		{
+			m_pQuery->BindParamString(0, m_params.cookie->name, false);
+			m_pQuery->BindParamString(1, m_params.cookie->description, false);
+			m_pQuery->BindParamInt(2, m_params.cookie->access);
+
+			break;
+		}
+
+		case Query_SelectData:
+		{
+			m_pQuery->BindParamString(0, m_params.steamId, false);
+
+			break;
+		}
+
+		case Query_InsertData:
+		{
+			m_pQuery->BindParamString(0, m_params.steamId, false);
+			m_pQuery->BindParamInt(1, m_params.cookieId);
+			m_pQuery->BindParamString(2, m_params.data->value, false);
+			m_pQuery->BindParamInt(3, (unsigned int)time(NULL), false);
+
+			if (driver == DRIVER_MYSQL)
+			{
+				m_pQuery->BindParamString(4, m_params.data->value, false);
+				m_pQuery->BindParamInt(5, (unsigned int)time(NULL), false);
+			}
+
+			break;
+		}
+
+		case Query_SelectId:
+		{
+			/* the steamId var was actually used to store the name of the cookie - Save duplicating vars */
+			m_pQuery->BindParamString(0, m_params.steamId, false);
+
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+			
+	}
+
+	return m_pQuery->Execute();
+}
+
+void TQueryOp::SetPreparedQuery()
+{
+	switch (m_type)
+	{
+		case Query_InsertCookie:
+		{
+			m_pQuery = g_ClientPrefs.InsertCookieQuery;
+			break;
+		}
+
+		case Query_SelectData:
+		{
+			m_pQuery = g_ClientPrefs.SelectDataQuery;
+			break;
+		}
+
+		case Query_InsertData:
+		{
+			m_pQuery = g_ClientPrefs.InsertDataQuery;
+			break;
+		}
+
+		case Query_SelectId:
+		{
+			m_pQuery = g_ClientPrefs.SelectIdQuery;
+			break;
+		}
+
+		default:
+		{
+			break;
+		}
+
+	}
+}
+
+void TQueryOp::SetCustomPreparedQuery(IPreparedQuery *query)
+{
+	m_pQuery = query;
+}
+
+ParamData::~ParamData()
+{
+	if (cookie)
+	{
+		g_ClientPrefs.cookieMutex->Lock();
+		cookie->usedInQuery--;
+
+		if (cookie->shouldDelete && cookie->usedInQuery <= 0)
+		{
+			g_ClientPrefs.cookieMutex->Unlock();
+			delete cookie;
+			cookie = NULL;
+		}
+
+		g_ClientPrefs.cookieMutex->Unlock();	
+	}
+
+	if (data)
+	{
+		/* Data is only ever passed in a client disconnect query and always needs to be deleted */
+		delete data;
+		data = NULL;
+	}
+}
+
+ParamData::ParamData()
+{
+	cookie = NULL;
+	data = NULL;
+	steamId[0] = '\0';
+	cookieId = 0;
 }
