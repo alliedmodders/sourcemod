@@ -1374,7 +1374,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			if (error)
 			{
-				snprintf(error, maxlength, "Native \"%s\" was not found.", native->name);
+				snprintf(error, maxlength, "Native \"%s\" was not found", native->name);
 			}
 			return false;
 		}
