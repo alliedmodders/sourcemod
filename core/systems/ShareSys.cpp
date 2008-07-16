@@ -399,7 +399,15 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 			/* The native is optional, this is a special case */
 			if ((native->flags & SP_NTVFLAG_OPTIONAL) == SP_NTVFLAG_OPTIONAL)
 			{
-				pEntry->owner->AddWeakRef(WeakNative(pPlugin, index));
+				/* Only add if there is a valid owner. */
+				if (pEntry->owner != NULL)
+				{
+					pEntry->owner->AddWeakRef(WeakNative(pPlugin, index));
+				}
+				else
+				{
+					native->status = SP_NATIVE_UNBOUND;
+				}
 			}
 			/* Otherwise, we're a strong dependent and not a weak one */
 			else
@@ -466,6 +474,13 @@ void ShareSystem::ClearNativeFromCache(CNativeOwner *pOwner, const char *name)
 	if (pEntry->owner != pOwner)
 	{
 		return;
+	}
+
+	if (pEntry->fake != NULL)
+	{
+		g_pSourcePawn2->DestroyFakeNative(pEntry->func);
+		delete pEntry->fake;
+		pEntry->fake = NULL;
 	}
 
 	pEntry->func = NULL;
