@@ -66,7 +66,6 @@ void TQueryOp::RunThinkPart()
 			case Query_CreateTable:
 			{
 				m_pQuery->Destroy();
-				delete m_pQuery;
 				m_pQuery = NULL;
 				break;
 			}
