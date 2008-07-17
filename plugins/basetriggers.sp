@@ -35,6 +35,10 @@
 
 #include <sourcemod>
 
+#undef REQUIRE_PLUGIN
+#include <mapchooser>
+#define REQUIRE_PLUGIN
+
 public Plugin:myinfo = 
 {
 	name = "Basic Info Triggers",
@@ -58,6 +62,8 @@ new Handle:g_Cvar_MaxRounds = INVALID_HANDLE;
 #define TIMELEFT_ALL_MAYBE		1		/* Print to all players if sm_trigger_show allows */
 #define TIMELEFT_ONE			2		/* Print to a single player */
 
+new bool:mapchooser;
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -79,6 +85,24 @@ public OnPluginStart()
 	g_Cvar_WinLimit = FindConVar("mp_winlimit");
 	g_Cvar_FragLimit = FindConVar("mp_fraglimit");
 	g_Cvar_MaxRounds = FindConVar("mp_maxrounds");
+	
+	mapchooser = LibraryExists("mapchooser");
+}
+
+public OnLibraryRemoved(const String:name[])
+{
+	if (StrEqual(name, "mapchooser"))
+	{
+		mapchooser = false;
+	}
+}
+ 
+public OnLibraryAdded(const String:name[])
+{
+	if (StrEqual(name, "mapchooser"))
+	{
+		mapchooser = true;
+	}
 }
 
 public ConVarChange_TimeleftInterval(Handle:convar, const String:oldValue[], const String:newValue[])
@@ -124,11 +148,25 @@ public Action:Command_Nextmap(client, args)
 	
 	if(GetConVarInt(g_Cvar_TriggerShow))
 	{
-		PrintToChatAll("[SM] %t", "Next Map", map);
+		if (mapchooser && !HasEndOfMapVoteFinished())
+		{
+			PrintToChatAll("[SM] %t", "Pending Vote");			
+		}
+		else
+		{
+			PrintToChatAll("[SM] %t", "Next Map", map);
+		}
 	}
 	else
 	{
-		ReplyToCommand(client, "[SM] %t", "Next Map", map);
+		if (mapchooser && !HasEndOfMapVoteFinished())
+		{
+			ReplyToCommand(client, "[SM] %t", "Pending Vote");			
+		}
+		else
+		{
+			ReplyToCommand(client, "[SM] %t", "Next Map", map);
+		}
 	}
 	
 	return Plugin_Handled;
@@ -215,11 +253,25 @@ public Action:Command_Say(client, args)
 			
 		if(GetConVarInt(g_Cvar_TriggerShow))
 		{
-			PrintToChatAll("[SM] %t", "Next Map", map);
+			if (mapchooser && !HasEndOfMapVoteFinished())
+			{
+				PrintToChatAll("[SM] %t", "Pending Vote");			
+			}
+			else
+			{
+				PrintToChatAll("[SM] %t", "Next Map", map);
+			}
 		}
 		else
 		{
-			PrintToChat(client, "[SM] %t", "Next Map", map);
+			if (mapchooser && !HasEndOfMapVoteFinished())
+			{
+				PrintToChat(client, "[SM] %t", "Pending Vote");			
+			}
+			else
+			{
+				PrintToChat(client, "[SM] %t", "Next Map", map);
+			}
 		}
 	}
 	

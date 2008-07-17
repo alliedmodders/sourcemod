@@ -55,9 +55,8 @@ native bool:CanMapChooserStartVote();
  */
 native InitiateMapChooserVote(MapChange:when, Handle:inputarray=INVALID_HANDLE);
 
-
 /**
- * A horribly named native that checks if MapChooser's end of map vote has completed.
+ * Checks if MapChooser's end of map vote has completed.
  */
 native bool:HasEndOfMapVoteFinished();
 
@@ -78,3 +77,12 @@ public SharedPlugin:__pl_mapchooser =
 	required = 0,
 #endif
 };
+
+public __pl_mapchooser_SetNTVOptional()
+{
+	MarkNativeAsOptional("NominateMap");
+	MarkNativeAsOptional("GetExcludeMapList");
+	MarkNativeAsOptional("CanMapChooserStartVote");
+	MarkNativeAsOptional("InitiateMapChooserVote");
+	MarkNativeAsOptional("HasEndOfMapVoteFinished");
+}

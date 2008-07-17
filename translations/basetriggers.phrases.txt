@@ -77,4 +77,9 @@
 		"#format"		"{1:s}"
 		"en"		"Next Map: {1}"
 	}
+
+	"Pending Vote"
+	{
+		"en"		"Pending Vote"
+	}
 }
