@@ -587,7 +587,7 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	m_ctx.n_idx = 0;
 	m_MsgCache[0] = '\0';
 	m_CustomMsg = false;
-	m_InExec = false;
+	m_InExec = true;
 
 	/* Start the tracer */
 
