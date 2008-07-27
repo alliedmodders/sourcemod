@@ -295,7 +295,7 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 		filename[strlen(filename)-1] = '\0';
 	}
 
-
+	fclose(file);
 
 	printf("Filename is %s\n", filename);
 
