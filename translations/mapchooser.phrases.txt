@@ -37,4 +37,10 @@
 		"#format"			"{1:i},{2:i}"
 		"en"			"Current map continues! The Vote has spoken! (Received {1}%% of {2} votes)"
 	}
+
+	"Changed Next Map"
+	{
+		"#format"		"{1:s}"
+		"en"		"Changed nextmap to \"{1}\"."	
+	}
 }

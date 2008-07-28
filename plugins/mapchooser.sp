@@ -36,9 +36,6 @@
 #include <sourcemod>
 #include <mapchooser>
 #include <nextmap>
-#undef REQUIRE_EXTENSIONS
-#include <tf2>
-#define REQUIRE_EXTENSIONS
 
 public Plugin:myinfo =
 {
@@ -104,6 +101,7 @@ new g_winCount[MAXTEAMS];
 public OnPluginStart()
 {
 	LoadTranslations("mapchooser.phrases");
+	LoadTranslations("common.phrases");
 	
 	new arraySize = ByteCountToCells(33);
 	g_MapList = CreateArray(arraySize);
@@ -113,7 +111,6 @@ public OnPluginStart()
 	g_NextMapList = CreateArray(arraySize);
 	
 	g_Cvar_EndOfMapVote = CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
-	HookConVarChange(g_Cvar_EndOfMapVote, EndVoteChanged);
 
 	g_Cvar_StartTime = CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
 	g_Cvar_StartRounds = CreateConVar("sm_mapvote_startround", "2.0", "Specifies when to start the vote based on rounds remaining. Use 0 on TF2 to start vote during bonus round time", _, true, 0.0);
@@ -127,7 +124,9 @@ public OnPluginStart()
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
 	g_Cvar_DontChange = CreateConVar("sm_mapvote_dontchange", "1", "Specifies if a 'Don't Change' option should be added to early votes", _, true, 0.0);
 	g_Cvar_VoteDuration = CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0, true, 25.0);
+	
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
+	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 
 	g_Cvar_Winlimit = FindConVar("mp_winlimit");
 	g_Cvar_Maxrounds = FindConVar("mp_maxrounds");
@@ -154,8 +153,6 @@ public OnPluginStart()
 	{
 		SetConVarBounds(g_Cvar_Bonusroundtime, ConVarBound_Upper, true, 30.0);		
 	}
-	
-
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
 }
@@ -256,16 +253,30 @@ public OnClientDisconnect(client)
 	g_NominateCount--;
 }
 
-public EndVoteChanged(Handle:convar, const String:oldValue[], const String:newValue[])
+public Action:Command_SetNextmap(client, args)
 {
-	if (newValue[0] == '1')
+	if (args < 1)
 	{
-		SetNextMap("Pending Vote");
+		ReplyToCommand(client, "[SM] Usage: sm_setnextmap <map>");
+		return Plugin_Handled;
 	}
-	else
+
+	decl String:map[64];
+	GetCmdArg(1, map, sizeof(map));
+
+	if (!IsMapValid(map))
 	{
-		SetNextMap("");	
+		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
+		return Plugin_Handled;
 	}
+
+	ShowActivity(client, "%t", "Changed Next Map", map);
+	LogMessage("\"%L\" changed nextmap to \"%s\"", client, map);
+
+	SetNextMap(map);
+	g_MapVoteCompleted = true;
+
+	return Plugin_Handled;
 }
 
 public OnMapTimeLeftChanged()
@@ -346,11 +357,11 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 	{	
 		switch(GetEventInt(event, "winning_team"))
 		{
-			case TFTeam_Blue:
+			case 3:
 			{
 				CheckWinLimit(bluescore);
 			}
-			case TFTeam_Red:
+			case 2:
 			{
 				CheckWinLimit(redscore);				
 			}			
@@ -920,6 +931,11 @@ public Native_CanVoteStart(Handle:plugin, numParams)
 
 public Native_CheckVoteDone(Handle:plugin, numParams)
 {
+	if (GetConVarBool(g_Cvar_EndOfMapVote) == false)
+	{
+		return true;	
+	}
+	
 	return g_MapVoteCompleted;
 }
 

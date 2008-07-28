@@ -59,7 +59,6 @@ public OnPluginStart()
 	
 	g_MapList = CreateArray(32);
 
-	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
 	RegAdminCmd("sm_maphistory", Command_MapHistory, ADMFLAG_CHANGEMAP, "Shows the most recent maps played");
 	RegConsoleCmd("listmaps", Command_List);
 
@@ -87,31 +86,6 @@ public OnConfigsExecuted()
 	{
 		FindAndSetNextMap();
 	}
-}
-
-public Action:Command_SetNextmap(client, args)
-{
-	if (args < 1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_setnextmap <map>");
-		return Plugin_Handled;
-	}
-
-	decl String:map[64];
-	GetCmdArg(1, map, sizeof(map));
-
-	if (!IsMapValid(map))
-	{
-		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
-		return Plugin_Handled;
-	}
-
-	ShowActivity(client, "%t", "Changed Next Map", map);
-	LogMessage("\"%L\" changed nextmap to \"%s\"", client, map);
-
-	SetNextMap(map);
-
-	return Plugin_Handled;
 }
 
 public Action:Command_List(client, args) 
@@ -214,18 +188,18 @@ FormatTimeDuration(String:buffer[], maxlen, time)
 	
 	if (days > 0)
 	{
-		Format(buffer, maxlen, "%id %ih %im", days, hours, (seconds >= 30) ? minutes+1 : minutes);
+		return Format(buffer, maxlen, "%id %ih %im", days, hours, (seconds >= 30) ? minutes+1 : minutes);
 	}
 	else if (hours > 0)
 	{
-		Format(buffer, maxlen, "%ih %im", hours, (seconds >= 30) ? minutes+1 : minutes);		
+		return Format(buffer, maxlen, "%ih %im", hours, (seconds >= 30) ? minutes+1 : minutes);		
 	}
 	else if (minutes > 0)
 	{
-		Format(buffer, maxlen, "%im", (seconds >= 30) ? minutes+1 : minutes);		
+		return Format(buffer, maxlen, "%im", (seconds >= 30) ? minutes+1 : minutes);		
 	}
 	else
 	{
-		Format(buffer, maxlen, "%is", seconds);		
+		return Format(buffer, maxlen, "%is", seconds);		
 	}
 }
