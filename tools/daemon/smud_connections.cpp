@@ -279,6 +279,7 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 
 	if (strcmp(latestMD5, md5String) == 0)
 	{
+		fclose(file);
 		return MD5Status_Current;
 	}
 
