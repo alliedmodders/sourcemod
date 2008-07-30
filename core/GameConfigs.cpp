@@ -65,6 +65,7 @@ char g_GameName[256] = {'$', '\0'};
 #define PSTATE_GAMEDEFS_SIGNATURES_SIG	8
 #define PSTATE_GAMEDEFS_CRC				9
 #define PSTATE_GAMEDEFS_CRC_BINARY		10
+#define PSTATE_GAMEDEFS_CUSTOM			11
 
 #if defined PLATFORM_WINDOWS
 #define PLATFORM_NAME				"windows"
@@ -96,6 +97,9 @@ CGameConfig::CGameConfig(const char *file)
 	m_pSigs = sm_trie_create();
 	m_pStrings = new BaseStringTable(512);
 	m_RefCount = 0;
+
+	m_CustomLevel = 0;
+	m_CustomHandler = NULL;
 }
 
 CGameConfig::~CGameConfig()
@@ -172,6 +176,17 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			else
 			{
+				ITextListener_SMC **pListen = g_GameConfigs.m_customHandlers.retrieve(name);
+
+				if (pListen != NULL)
+				{
+					m_CustomLevel = 0;
+					m_ParseState = PSTATE_GAMEDEFS_CUSTOM;
+					m_CustomHandler = *pListen;
+					m_CustomHandler->ReadSMC_ParseStart();
+					break;
+				}
+
 				m_IgnoreLevel++;
 			}
 			break;
@@ -231,6 +246,12 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			} else {
 				m_ParseState = PSTATE_GAMEDEFS_CRC_BINARY;
 			}
+			break;
+		}
+	case PSTATE_GAMEDEFS_CUSTOM:
+		{
+			m_CustomLevel++;
+			return m_CustomHandler->ReadSMC_NewSection(states, name);
 			break;
 		}
 	/* No sub-sections allowed:
@@ -300,6 +321,8 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				bShouldBeReadingDefault = true;
 			}
 		}
+	} else if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM) {
+		return m_CustomHandler->ReadSMC_KeyValue(states, key, value);
 	}
 
 	return SMCResult_Continue;
@@ -313,6 +336,13 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 		return SMCResult_Continue;
 	}
 
+	if (m_CustomLevel)
+	{
+		m_CustomLevel--;
+		m_CustomHandler->ReadSMC_LeavingSection(states);
+		return SMCResult_Continue;
+	}
+
 	switch (m_ParseState)
 	{
 	case PSTATE_GAMES:
@@ -323,6 +353,12 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 	case PSTATE_GAMEDEFS:
 		{
 			m_ParseState = PSTATE_GAMES;
+			break;
+		}
+	case PSTATE_GAMEDEFS_CUSTOM:
+		{
+			m_ParseState = PSTATE_GAMEDEFS;
+			m_CustomHandler->ReadSMC_ParseEnd(false, false);
 			break;
 		}
 	case PSTATE_GAMEDEFS_KEYS:
@@ -523,6 +559,15 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 			state.line,
 			state.col,
 			msg ? msg : "Unknown error");
+
+		if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM)
+		{
+			//error occurred while parsing a custom section
+			m_CustomHandler->ReadSMC_ParseEnd(true, true);
+			m_CustomHandler = NULL;
+			m_CustomLevel = 0;
+		}
+
 		return false;
 	}
 
@@ -691,4 +736,28 @@ IGameConfig *GameConfigManager::ReadHandle(Handle_t hndl, IdentityToken_t *ident
 	}
 
 	return conf;
+}
+
+void GameConfigManager::AddUserConfigHook( const char *sectionname, ITextListener_SMC *listener )
+{
+	m_customHandlers.insert(sectionname, listener);
+}
+
+void GameConfigManager::RemoveUserConfigHook( const char *sectionname, ITextListener_SMC *listener )
+{
+	ITextListener_SMC **pListener = m_customHandlers.retrieve(sectionname);
+
+	if (pListener == NULL)
+	{
+		return;
+	}
+
+	if (*pListener != listener)
+	{
+		return;
+	}
+
+	m_customHandlers.remove(sectionname);
+	
+	return;
 }

@@ -34,6 +34,7 @@
 
 #include <IShareSys.h>
 #include <IHandleSys.h>
+#include <ITextParsers.h>
 
 /**
  * @file IGameConfigs.h
@@ -41,7 +42,7 @@
  */
 
 #define SMINTERFACE_GAMECONFIG_NAME			"IGameConfigManager"
-#define SMINTERFACE_GAMECONFIG_VERSION		3
+#define SMINTERFACE_GAMECONFIG_VERSION		4
 
 class SendProp;
 
@@ -141,7 +142,25 @@ namespace SourceMod
 		 */
 		virtual IGameConfig *ReadHandle(Handle_t hndl,
 			IdentityToken_t *ident,
-			HandleError *err) =0;										
+			HandleError *err) =0;
+
+		/**
+		 * @brief Adds a custom gamedata section hook.
+		 *
+		 * @param sectionname	Section name to hook.
+		 * @param listener		Listener callback.
+		 * @noreturn
+		 */
+		virtual void AddUserConfigHook(const char *sectionname, ITextListener_SMC *listener) =0;
+
+		/**
+		 * @brief Removes a custom gamedata section hook.
+		 *
+		 * @param sectionname	Section name to unhook.
+		 * @param listener		Listener callback.
+		 * @noreturn
+		 */
+		virtual void RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener) =0;
 	};
 }
 

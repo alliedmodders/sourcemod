@@ -38,6 +38,7 @@
 #include "sm_trie.h"
 #include "sm_globals.h"
 #include "sm_memtable.h"
+#include "sm_trie_tpl.h"
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -82,6 +83,10 @@ private:
 	char m_offset[64];
 	char m_Game[256];
 	bool bShouldBeReadingDefault;
+
+	/* Custom Sections */
+	unsigned int m_CustomLevel;
+	ITextListener_SMC *m_CustomHandler;
 };
 
 class GameConfigManager : 
@@ -97,6 +102,8 @@ public: //IGameConfigManager
 	IGameConfig *ReadHandle(Handle_t hndl,
 		IdentityToken_t *ident,
 		HandleError *err);
+	void AddUserConfigHook(const char *sectionname, ITextListener_SMC *listener);
+	void RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener);
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
@@ -104,6 +111,8 @@ public: //SMGlobalClass
 private:
 	List<CGameConfig *> m_cfgs;
 	Trie *m_pLookup;
+public:
+	KTrie<ITextListener_SMC *> m_customHandlers;
 };
 
 extern GameConfigManager g_GameConfigs;
