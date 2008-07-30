@@ -129,7 +129,7 @@ public Action:Command_SayChat(client, args)
 		new len = BreakString(message, arg, sizeof(arg));
 		new target = FindTarget(client, arg, true, false);
 		
-		if (target == -1)
+		if (target == -1 || len == -1)
 			return Plugin_Handled;
 		
 		decl String:name2[64];
