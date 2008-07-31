@@ -141,6 +141,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	if (hdr.magic != SPFILE_MAGIC)
 	{
 		error = SP_ERROR_FILE_FORMAT;
+		fclose(fp);
 		goto return_error;
 	}
 
@@ -167,6 +168,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 				free(sectheader);
 				free(uncompdata);
 				error = SP_ERROR_DECOMPRESSOR;
+				fclose(fp);
 				goto return_error;
 			}
 
@@ -188,9 +190,12 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	default:
 		{
 			error = SP_ERROR_DECOMPRESSOR;
+			fclose(fp);
 			goto return_error;
 		}
 	}
+
+	fclose(fp);
 
 	plugin = new sp_plugin_t;
 

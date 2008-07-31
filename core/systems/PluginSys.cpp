@@ -169,6 +169,8 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 		return pPlugin;
 	}
 
+	fclose(fp);
+
 	return pPlugin;
 }
 
