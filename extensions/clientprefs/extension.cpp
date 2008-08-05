@@ -227,8 +227,7 @@ void ClientPrefs::DatabaseConnect()
 		TQueryOp *op = new TQueryOp(Query_CreateTable, 0);
 
 		op->SetDatabase(Database);
-		op->SetCustomPreparedQuery
-				(Database->PrepareQuery(
+		IPreparedQuery *pQuery = Database->PrepareQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookies  \
 				( \
 					id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -236,14 +235,22 @@ void ClientPrefs::DatabaseConnect()
 					description varchar(255), \
 					access INTEGER \
 				)",
-				error, sizeof(error), &errCode));
+				error, sizeof(error), &errCode);
+
+		if (pQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookies: %s (%i)", error, errCode);
+			return;
+		}
+
+		op->SetCustomPreparedQuery(pQuery);
 
 		dbi->AddToThreadQueue(op, PrioQueue_High);
 
 		op = new TQueryOp(Query_CreateTable, 0);
 		op->SetDatabase(Database);
-		op->SetCustomPreparedQuery
-				(Database->PrepareQuery(
+
+		pQuery = Database->PrepareQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
 				( \
 					player varchar(65) NOT NULL, \
@@ -252,7 +259,15 @@ void ClientPrefs::DatabaseConnect()
 					timestamp int, \
 					PRIMARY KEY (player, cookie_id) \
 				)",
-				error, sizeof(error), &errCode));
+				error, sizeof(error), &errCode);
+
+		if (pQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookie_cache: %s (%i)", error, errCode);
+			return;
+		}
+
+		op->SetCustomPreparedQuery(pQuery);
 
 		dbi->AddToThreadQueue(op, PrioQueue_High);
 	}
@@ -262,8 +277,8 @@ void ClientPrefs::DatabaseConnect()
 
 		TQueryOp *op = new TQueryOp(Query_CreateTable, 0);
 		op->SetDatabase(Database);
-		op->SetCustomPreparedQuery
-				(Database->PrepareQuery(
+		
+		IPreparedQuery *pQuery = Database->PrepareQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookies \
 				( \
 					id INTEGER unsigned NOT NULL auto_increment, \
@@ -272,14 +287,22 @@ void ClientPrefs::DatabaseConnect()
 					access INTEGER, \
 					PRIMARY KEY (id) \
 				)",
-				error, sizeof(error), &errCode));
+				error, sizeof(error), &errCode);
+
+		if (pQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookies: %s (%i)", error, errCode);
+			return;
+		}
+
+		op->SetCustomPreparedQuery(pQuery);
 
 		dbi->AddToThreadQueue(op, PrioQueue_High);
 
 		op = new TQueryOp(Query_CreateTable, 0);
 		op->SetDatabase(Database);
-		op->SetCustomPreparedQuery
-				(Database->PrepareQuery(
+			
+		pQuery = Database->PrepareQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
 				( \
 					player varchar(65) NOT NULL, \
@@ -288,7 +311,15 @@ void ClientPrefs::DatabaseConnect()
 					timestamp int NOT NULL, \
 					PRIMARY KEY (player, cookie_id) \
 				)",
-				error, sizeof(error), &errCode));
+				error, sizeof(error), &errCode);
+
+		if (pQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookie_cache: %s (%i)", error, errCode);
+			return;
+		}
+
+		op->SetCustomPreparedQuery(pQuery);
 
 		dbi->AddToThreadQueue(op, PrioQueue_High);
 	}
@@ -308,11 +339,24 @@ void ClientPrefs::DatabaseConnect()
 				"INSERT IGNORE INTO sm_cookies(name, description, access) \
 				VALUES(?, ?, ?)",
 				error, sizeof(error), &errCode);
+
+		if (InsertCookieQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query InsertCookie: %s (%i)", error, errCode);
+			return;
+		}
+
 		InsertDataQuery = Database->PrepareQuery(
 				"INSERT INTO sm_cookie_cache(player, cookie_id, value, timestamp) \
 				VALUES(?, ?, ?, ?) \
 				ON DUPLICATE KEY UPDATE value = ?, timestamp = ?",
 				error, sizeof(error), &errCode);
+
+		if (InsertDataQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query InsertData: %s (%i)", error, errCode);
+			return;
+		}
 	}
 	else
 	{
@@ -320,10 +364,23 @@ void ClientPrefs::DatabaseConnect()
 				"INSERT OR IGNORE INTO sm_cookies(name, description, access) \
 				VALUES(?, ?, ?)", 
 				error, sizeof(error), &errCode);
+
+		if (InsertCookieQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query InsertCookie: %s (%i)", error, errCode);
+			return;
+		}
+
 		InsertDataQuery = Database->PrepareQuery(
 				"INSERT OR REPLACE INTO sm_cookie_cache(player, cookie_id, value, timestamp) \
 				VALUES(?, ?, ?, ?)", 
 				error, sizeof(error), &errCode);
+
+		if (InsertDataQuery == NULL)
+		{
+			g_pSM->LogMessage(myself, "Failed to prepare query InsertData: %s (%i)", error, errCode);
+			return;
+		}
 	}
 
 	SelectDataQuery = Database->PrepareQuery(
@@ -334,11 +391,23 @@ void ClientPrefs::DatabaseConnect()
 			WHERE player = ?",
 			error, sizeof(error), &errCode);
 
+	if (SelectDataQuery == NULL)
+	{
+		g_pSM->LogMessage(myself, "Failed to prepare query SelectData: %s (%i)", error, errCode);
+		return;
+	}
+
 	SelectIdQuery = Database->PrepareQuery(
 			"SELECT id \
 			FROM sm_cookies \
 			WHERE name=?",
 			error, sizeof(error), &errCode);
+
+	if (SelectIdQuery == NULL)
+	{
+		g_pSM->LogMessage(myself, "Failed to prepare query SelectId: %s (%i)", error, errCode);
+		return;
+	}
 
 	databaseLoading = false;
 	cell_t result = 0;
@@ -368,6 +437,8 @@ bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
 		dbi->AddToThreadQueue(query, PrioQueue_Normal);
 		return true;
 	}
+
+	query->Destroy();
 
 	/* If Database is NULL and we're not in the loading phase it must have failed - Can't do much */
 	return false;

@@ -117,6 +117,7 @@ IdentityToken_t *TQueryOp::GetOwner()
 {
 	return myself->GetIdentity();
 }
+
 void TQueryOp::Destroy()
 {
 	delete this;
@@ -148,6 +149,7 @@ bool TQueryOp::BindParamsAndRun()
 {
 	if (m_pQuery == NULL)
 	{
+		g_pSM->LogError(myself, "Attempted to run with a NULL Query");
 		return false;
 	}
 
