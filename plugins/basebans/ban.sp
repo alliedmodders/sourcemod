@@ -33,6 +33,14 @@
  
 PrepareBan(client, target, time, const String:reason[])
 {
+	new originalTarget = GetClientOfUserId(g_BanTargetUserId[client]);
+	
+	if (originalTarget != target)
+	{
+		PrintToChat(client, "[SM] %t", "Player no longer available");
+		return;	
+	}
+	
 	decl String:authid[64], String:name[32];
 	GetClientAuthString(target, authid, sizeof(authid));
 	GetClientName(target, name, sizeof(name));
@@ -200,6 +208,7 @@ public MenuHandler_BanPlayerList(Handle:menu, MenuAction:action, param1, param2)
 		else
 		{
 			g_BanTarget[param1] = target;
+			g_BanTargetUserId[param1] = userid;
 			DisplayBanTimeMenu(param1);
 		}
 	}

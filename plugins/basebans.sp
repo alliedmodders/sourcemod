@@ -49,6 +49,7 @@ public Plugin:myinfo =
 new Handle:hTopMenu = INVALID_HANDLE;
 
 new g_BanTarget[MAXPLAYERS+1];
+new g_BanTargetUserId[MAXPLAYERS+1];
 new g_BanTime[MAXPLAYERS+1];
 
 #include "basebans/ban.sp"
