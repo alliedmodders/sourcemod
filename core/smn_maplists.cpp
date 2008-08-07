@@ -387,7 +387,7 @@ public:
 						continue;
 					}
 					strncopy(buffer, pDir->GetEntryName(), sizeof(buffer));
-					if ((ptr = strstr(buffer, ".bsp")) == NULL)
+					if ((ptr = strstr(buffer, ".bsp")) == NULL || ptr[4] != '\0')
 					{
 						pDir->NextEntry();
 						continue;
