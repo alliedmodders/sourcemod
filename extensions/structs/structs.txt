@@ -1,0 +1,610 @@
+"Games"
+{
+	"#default"
+	{
+		"Signatures"
+		{
+			"LookupWeaponInfoSlot"
+			{
+				"library"		"server"
+				"linux"		"@_Z20LookupWeaponInfoSlotPKc"
+				/* This is actually ReadWeaponDataFromFileForSlot - We get find using an offset from here */
+				"windows"	"\x81\xEC\x84\x00\x00\x00\x56\x8B\xB4\x24\x94\x00\x00\x00\x85\xF6\x75\x0A"
+			}
+
+			"GetFileWeaponInfoFromHandle"
+			{
+				"library"		"server"
+				"linux"		"@_Z27GetFileWeaponInfoFromHandlet"
+				"windows"	"\x66\x8B\x44\x24\x04\x66\x3B\x05\x2A\x2A\x2A\x2A\x73\x17"
+			}
+		}
+
+		"Offsets"
+		{
+			"m_WeaponInfoDatabase"
+			{
+				"windows"	"38"
+			}
+		}
+
+		"Structs"
+		{
+			"TestStruct"
+			{
+				"size"	"155"
+
+				"seven"
+				{
+					"type"		"float"
+					"windows"	"0"
+					"linux"		"0"
+				}
+				"eight"
+				{
+					"type"		"float*"
+					"windows"	"4"
+					"linux"		"4"
+				}
+				"nine"
+				{
+					"type"		"Vector"
+					"windows"	"8"
+					"linux"		"8"
+				}
+				"ten"
+				{
+					"type"		"Vector*"
+					"windows"	"20"
+					"linux"		"20"
+				}
+				"eleven"
+				{
+					"type"		"char"
+					"size"		"100"
+					"windows"	"24"
+					"linux"		"24"
+				}
+				"twelve"
+				{
+					"type"		"char*"
+					"size"		"100"
+					"windows"	"124"
+					"linux"		"124"
+				}
+				"thirteen"
+				{
+					"type"		"ent"
+					"windows"	"128"
+					"linux"		"128"
+				}
+				"fourteen"
+				{
+					"type"		"ent*"
+					"windows"	"132"
+					"linux"		"132"
+				}
+				"one"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"136"
+					"linux"		"136"
+				}
+				"two"
+				{
+					"type"		"int"
+					"size"		"2"
+					"windows"	"137"
+					"linux"		"137"
+				}
+				"three"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"139"
+					"linux"		"139"
+				}
+				"four"
+				{
+					"type"		"int*"
+					"size"		"1"
+					"windows"	"143"
+					"linux"		"143"
+				}
+				"five"
+				{
+					"type"		"int*"
+					"size"		"2"
+					"windows"	"147"
+					"linux"		"147"
+				}
+				"six"
+				{
+					"type"		"int*"
+					"size"		"4"
+					"windows"	"151"
+					"linux"		"151"
+				}
+			}
+		}
+	}
+	
+	"tf"
+	{
+		"Structs"
+		{
+
+			"FileWeaponInfo_t"
+			{
+				"bParsedScript"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"4"
+					"linux"		"4"
+				}
+
+				"bLoadedHudElements"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"5"
+					"linux"		"5"
+				}
+
+				"szClassName"
+				{
+					"type"		"char"
+					"size"		"80"
+					"windows"	"6"
+					"linux"		"6"
+				}
+
+				"szPrintName"
+				{
+					"type"		"char"
+					"size"		"80"
+					"windows"	"86"
+					"linux"		"86"
+				}
+
+				"szViewModel"
+				{
+					"type"		"char"
+					"size"		"80"
+					"windows"	"166"
+					"linux"		"166"
+				}
+
+				"szWorldModel"
+				{
+					"type"		"char"
+					"size"		"80"
+					"windows"	"246"
+					"linux"		"246"
+				}
+
+				"szAnimationPrefix"
+				{
+					"type"		"char"
+					"size"		"16"
+					"windows"	"326"
+					"linux"		"326"
+				}
+
+				"iSlot"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"344"
+					"linux"		"344"
+				}
+
+				"iPosition"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"348"
+					"linux"		"348"
+				}
+
+				"iMaxClip1"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"352"
+					"linux"		"352"
+				}
+
+				"iMaxClip2"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"356"
+					"linux"		"356"
+				}
+
+				"iDefaultClip1"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"360"
+					"linux"		"360"
+				}
+
+				"iDefaultClip2"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"364"
+					"linux"		"364"
+				}
+
+				"iWeight"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"368"
+					"linux"		"368"
+				}
+
+				"iRumbleEffect"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"372"
+					"linux"		"372"
+				}
+
+				"bAutoSwitchFrom"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"376"
+					"linux"		"376"
+				}
+
+				"bAutoSwitchTo"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"377"
+					"linux"		"377"
+				}
+
+				"iFlags"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"380"
+					"linux"		"380"
+				}
+
+				"szAmmo1"
+				{
+					"type"		"char"
+					"size"		"32"
+					"windows"	"384"
+					"linux"		"384"
+				}
+
+				"szAmmo2"
+				{
+					"type"		"char"
+					"size"		"32"
+					"windows"	"416"
+					"linux"		"416"
+				}
+
+				/* I could split this up into 15 strings of length 80 */
+				"aShootSounds"
+				{
+					"type"		"char"
+					"size"		"1200"
+					"windows"	"448"
+					"linux"		"448"
+				}
+
+				"iAmmoType"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"1648"
+					"linux"		"1648"
+				}
+
+				"iAmmo2Type"
+				{
+					"type"		"int"
+					"size"		"4"
+					"windows"	"1652"
+					"linux"		"1652"
+				}
+
+				"m_bMeleeWeapon"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"1656"
+					"linux"		"1656"
+				}
+
+				"m_bBuiltRightHanded"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"1657"
+					"linux"		"1657"
+				}
+
+				"m_bAllowFlipping"
+				{
+					"type"		"int"
+					"size"		"1"
+					"windows"	"1658"
+					"linux"		"1658"
+				}
+			
+				"iDamage"
+				{
+					"type"          "int"
+					"size"          "4"
+					"linux"         "1704"
+					"windows"		"1704"
+				}
+				
+				"iBulletsPerShot"
+				{
+					"type"			"int"
+					"size"			"4"
+					"windows"		"1708"
+					"linux"			"1708"
+				}
+
+				"fRange"
+				{
+					"type"			"float"
+					"linux"			"1712"
+					"windows"		"1712"
+				}
+				
+				"fSpread"
+				{
+					"type"			"float"
+					"windows"		"1716"
+					"linux"			"1716"
+				}
+				
+				"fPunchAngle"
+				{
+					"type"			"float"
+					"windows"		"1720"
+					"linux"			"1720"
+				}
+				
+				"fTimeFireDelay"
+				{
+					"type"			"float"
+					"windows"		"1724"
+					"linux"			"1724"
+				}
+				
+				"fTimeIdle"
+				{
+					"type"			"float"
+					"windows"		"1728"
+					"linux"			"1728"
+				}
+				
+				"fTimeIdleEmpty"
+				{
+					"type"			"float"
+					"windows"		"1732"
+					"linux"			"1732"
+				}
+				
+				"fTimeReloadStart"
+				{
+					"type"			"float"
+					"windows"		"1736"
+					"linux"			"1736"
+				}
+				
+				"fTimeReload"
+				{
+					"type"			"float"
+					"windows"		"1740"
+					"linux"			"1740"
+				}
+			
+				"bDrawCrosshair"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1744"
+					"linux"			"1744"
+				}
+				
+				"iAmmoPerShot"
+				{
+					"type"			"int"
+					"size"			"4"
+					"windows"		"1752"
+					"linux"			"1752"
+				}
+				
+				"bUseRapidFireCrits"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1764"
+					"linux"			"1764"
+				}
+				
+				"iProjectileType"
+				{
+					"type"          "int"
+					"size"          "1"
+					"windows"		"1748"
+					"linux"         "1748"
+				}
+				
+				"fProjectileSpeed"
+				{
+					"type"          "float"
+					"windows"		"1756"
+					"linux"         "1756"
+				}
+				
+				"fSmackDelay"
+				{
+					"type"          "float"
+					"windows"		"1760"
+					"linux"         "1760"
+				}
+							
+				"bDoInstantEjectBrass"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"2240"
+					"linux"			"2240"
+				}
+				
+				"szBrassModel"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"2241"
+					"linux"			"2241"
+				}
+				
+				"bGrenade"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1836"
+					"linux"			"1836"
+				}
+				
+				"fDamageRadius"
+				{
+					"type"			"float"
+					"windows"		"1840"
+					"linux"			"1840"
+				}
+				
+				"fPrimerTime"
+				{
+					"type"			"float"
+					"windows"		"1844"
+					"linux"			"1844"
+				}
+				
+				"bPlayGrenTimer"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1849"
+					"linux"			"1849"
+				}
+				
+				"bLowerMainWeapon"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1848"
+					"linux"			"1848"
+				}
+				
+				"bHasTeamSkins_Viewmodel"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1850"
+					"linux"			"1850"
+				}
+				
+				"bHasTeamSkins_Worldmodel"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"1851"
+					"linux"			"1851"
+				}
+				
+				"szMuzzleFlashModel"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"1852"
+					"linux"			"1852"
+				}
+				
+				"fMuzzleFlashModelDuration"
+				{
+					"type"			"float"
+					"windows"		"1980"
+					"linux"			"1980"
+				}
+				
+				"szMuzzleFlashParticleEffect"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"1984"
+					"linux"			"1984"
+				}
+				
+				"szTracerEffect"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"2112"
+					"linux"			"2112"
+				}
+				
+				"szExplosionSound"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"2369"
+					"linux"			"2369"
+				}
+				
+				"szExplosionEffect"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"2497"
+					"linux"			"2497"
+				}
+				
+				"szExplosionPlayerEffect"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"2625"
+					"linux"			"2625"
+				}
+				
+				"szExplosionWaterEffect"
+				{
+					"type"			"char"
+					"size"			"128"
+					"windows"		"2753"
+					"linux"			"2753"
+				}
+				
+				"bDontDrop"
+				{
+					"type"			"int"
+					"size"			"1"
+					"windows"		"2881"
+					"linux"			"2881"
+				}
+			}
+		}
+	}
+}
