@@ -166,6 +166,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("CanMapChooserStartVote", Native_CanVoteStart);
 	CreateNative("HasEndOfMapVoteFinished", Native_CheckVoteDone);
 	CreateNative("GetExcludeMapList", Native_GetExcludeMapList);
+	CreateNative("EndOfMapVoteEnabled", Native_EndOfMapVoteEnabled);
 
 	return true;
 }
@@ -218,6 +219,7 @@ public OnMapEnd()
 {
 	g_HasVoteStarted = false;
 	g_WaitingForVote = false;
+	g_ChangeMapAtRoundEnd = false;
 	
 	g_VoteTimer = INVALID_HANDLE;
 	g_RetryTimer = INVALID_HANDLE;
@@ -312,11 +314,6 @@ SetupTimeleftTimer()
 
 public Action:Timer_StartMapVote(Handle:timer)
 {
-	if (!GetArraySize(g_MapList) || !GetConVarBool(g_Cvar_EndOfMapVote) || g_MapVoteCompleted || g_HasVoteStarted)
-	{
-		return Plugin_Stop;
-	}		
-	
 	if (timer == g_RetryTimer)
 	{
 		g_RetryTimer = INVALID_HANDLE;
@@ -326,6 +323,11 @@ public Action:Timer_StartMapVote(Handle:timer)
 		g_VoteTimer = INVALID_HANDLE;
 	}
 	
+	if (!GetArraySize(g_MapList) || !GetConVarBool(g_Cvar_EndOfMapVote) || g_MapVoteCompleted || g_HasVoteStarted)
+	{
+		return Plugin_Stop;
+	}		
+
 	InitiateVote(MapChange_MapEnd, INVALID_HANDLE);
 
 	return Plugin_Stop;
@@ -931,12 +933,12 @@ public Native_CanVoteStart(Handle:plugin, numParams)
 
 public Native_CheckVoteDone(Handle:plugin, numParams)
 {
-	if (GetConVarBool(g_Cvar_EndOfMapVote) == false)
-	{
-		return true;	
-	}
-	
 	return g_MapVoteCompleted;
+}
+
+public Native_EndOfMapVoteEnabled(Handle:plugin, numParams)
+{
+	return GetConVarBool(g_Cvar_EndOfMapVote);
 }
 
 public Native_GetExcludeMapList(Handle:plugin, numParams)

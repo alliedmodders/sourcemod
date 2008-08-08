@@ -250,7 +250,7 @@ StartRTV()
 		return;	
 	}
 	
-	if (HasEndOfMapVoteFinished())
+	if (EndOfMapVoteEnabled() && HasEndOfMapVoteFinished())
 	{
 		/* Change right now then */
 		new String:map[65];

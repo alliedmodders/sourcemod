@@ -57,8 +57,17 @@ native InitiateMapChooserVote(MapChange:when, Handle:inputarray=INVALID_HANDLE);
 
 /**
  * Checks if MapChooser's end of map vote has completed.
+ *
+ * @return			True if complete, false otherwise.
  */
 native bool:HasEndOfMapVoteFinished();
+
+/**
+ * Checks if MapChooser is set to run an end of map vote.
+ *
+ * @return			True if enabled, false otherwise.
+ */
+native bool:EndOfMapVoteEnabled();
 
 /**
  * Called when mapchooser removes a nomination from its list.
