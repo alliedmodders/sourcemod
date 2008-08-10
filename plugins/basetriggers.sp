@@ -148,7 +148,7 @@ public Action:Command_Nextmap(client, args)
 	
 	if(GetConVarInt(g_Cvar_TriggerShow))
 	{
-		if (mapchooser && !HasEndOfMapVoteFinished())
+		if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 		{
 			PrintToChatAll("[SM] %t", "Pending Vote");			
 		}
@@ -159,7 +159,7 @@ public Action:Command_Nextmap(client, args)
 	}
 	else
 	{
-		if (mapchooser && !HasEndOfMapVoteFinished())
+		if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 		{
 			ReplyToCommand(client, "[SM] %t", "Pending Vote");			
 		}
@@ -253,7 +253,7 @@ public Action:Command_Say(client, args)
 			
 		if(GetConVarInt(g_Cvar_TriggerShow))
 		{
-			if (mapchooser && !HasEndOfMapVoteFinished())
+			if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 			{
 				PrintToChatAll("[SM] %t", "Pending Vote");			
 			}
