@@ -94,4 +94,6 @@ public __pl_mapchooser_SetNTVOptional()
 	MarkNativeAsOptional("CanMapChooserStartVote");
 	MarkNativeAsOptional("InitiateMapChooserVote");
 	MarkNativeAsOptional("HasEndOfMapVoteFinished");
+	MarkNativeAsOptional("EndOfMapVoteEnabled");
 }
+
