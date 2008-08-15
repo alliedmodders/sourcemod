@@ -29,10 +29,10 @@
  * Version: $Id$
  */
 
-#include "sp_vm_types.h"
 #include <malloc.h>
 #include <string.h>
 #include <assert.h>
+#include "sp_vm_types.h"
 #include <KeCodeAllocator.h>
 #include "sp_file_headers.h"
 #include "sp_vm_engine.h"
