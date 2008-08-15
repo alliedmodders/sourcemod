@@ -447,7 +447,7 @@ bool CPlugin::IsDebugging()
 		return false;
 	}
 
-	return m_pRuntime->IsDebugging();
+	return true;
 }
 
 void CPlugin::LibraryActions(bool dropping)
@@ -505,61 +505,6 @@ bool CPlugin::SetPauseState(bool paused)
 IdentityToken_t *CPlugin::GetIdentity()
 {
 	return m_ident;
-}
-
-bool CPlugin::ToggleDebugMode(bool debug, char *error, size_t maxlength)
-{
-	int err;
-
-	if (!IsRunnable())
-	{
-		if (error)
-		{
-			snprintf(error, maxlength, "Plugin is not runnable.");
-		}
-		return false;
-	}
-
-	if (debug && IsDebugging())
-	{
-		if (error)
-		{
-			snprintf(error, maxlength, "Plugin is already in debug mode.");
-		}
-		return false;
-	}
-	else if (!debug && !IsDebugging())
-	{
-		if (error)
-		{
-			snprintf(error, maxlength, "Plugins is already in production mode.");
-		}
-		return false;
-	}
-
-	ICompilation *co = g_pSourcePawn2->StartCompilation();
-
-	if (!co->SetOption("debug", (debug) ? "1" : "0"))
-	{
-		if (error)
-		{
-			snprintf(error, maxlength, "Failed to change plugin mode (JIT failure).");
-		}
-		return false;
-	}
-
-	if ((err = m_pRuntime->ApplyCompilationOptions(co)) != SP_ERROR_NONE)
-	{
-		if (error)
-		{
-			snprintf(error, maxlength, "Failed to recompile plugin (JIT error %d).", err);
-		}
-		return false;
-	}
-
-	UpdateInfo();
-
-	return true;
 }
 
 bool CPlugin::IsRunnable()
@@ -1057,7 +1002,7 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
-	if ((res=_LoadPlugin(&pl, path, debug, type, error, maxlength)) == LoadRes_Failure)
+	if ((res=_LoadPlugin(&pl, path, true, type, error, maxlength)) == LoadRes_Failure)
 	{
 		delete pl;
 		return NULL;
@@ -2195,14 +2140,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				{
 					if (pl->GetStatus() == Plugin_Running)
 					{
-						if (pl->IsDebugging())
-						{
-							g_RootMenu.ConsolePrint("  Status: running, debugging");
-						}
-						else
-						{
-							g_RootMenu.ConsolePrint("  Status: running");
-						}
+						g_RootMenu.ConsolePrint("  Status: running");
 					}
 					else
 					{
@@ -2244,83 +2182,6 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			}
 
 			return;
-		}
-		else if (strcmp(cmd, "debug") == 0)
-		{
-			if (argcount < 5)
-			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm plugins debug <#> [on|off]");
-				return;
-			}
-
-			CPlugin *pl;
-			char *end;
-			const char *arg = command.Arg(3);
-			int id = strtol(arg, &end, 10);
-
-			if (*end == '\0')
-			{
-				pl = GetPluginByOrder(id);
-				if (!pl)
-				{
-					g_RootMenu.ConsolePrint("[SM] Plugin index %d not found.", id);
-					return;
-				}
-			}
-			else
-			{
-				char pluginfile[256];
-				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
-				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
-
-				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
-				{
-					g_RootMenu.ConsolePrint("[SM] Plugin %s is not loaded.", pluginfile);
-					return;
-				}
-			}
-
-			int res;
-			const char *mode = command.Arg(4);
-			if ((res=strcmp("on", mode)) && strcmp("off", mode))
-			{
-				g_RootMenu.ConsolePrint("[SM] The only possible options are \"on\" and \"off.\"");
-				return;
-			}
-
-			bool debug;
-			if (!res)
-			{
-				debug = true;
-			}
-			else
-			{
-				debug = false;
-			}
-
-			if (debug && pl->IsDebugging())
-			{
-				g_RootMenu.ConsolePrint("[SM] This plugin is already in debug mode.");
-				return;
-			}
-			else if (!debug && !pl->IsDebugging())
-			{
-				g_RootMenu.ConsolePrint("[SM] Debug mode is already disabled in this plugin.");
-				return;
-			}
-
-			char error[256];
-			if (pl->ToggleDebugMode(debug, error, sizeof(error)))
-			{
-				g_RootMenu.ConsolePrint("[SM] Successfully toggled debug mode on plugin %s.", pl->GetFilename());
-				return;
-			}
-			else
-			{
-				g_RootMenu.ConsolePrint("[SM] Could not toggle debug mode on plugin %s.", pl->GetFilename());
-				g_RootMenu.ConsolePrint("[SM] Plugin returned error: %s", error);
-				return;
-			}
 		}
 		else if (strcmp(cmd, "refresh") == 0)
 		{
@@ -2382,7 +2243,6 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 	/* Draw the main menu */
 	g_RootMenu.ConsolePrint("SourceMod Plugins Menu:");
-	g_RootMenu.DrawGenericOption("debug", "Toggle debug mode on a plugin");
 	g_RootMenu.DrawGenericOption("info", "Information about a plugin");
 	g_RootMenu.DrawGenericOption("list", "Show loaded plugins");
 	g_RootMenu.DrawGenericOption("load", "Load a plugin");
@@ -2398,13 +2258,12 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 {
 	List<CPlugin *>::iterator iter;
 	char filename[PLATFORM_MAX_PATH];
-	bool debug, wasloaded;
+	bool wasloaded;
 	PluginType ptype;
 	IPlugin *newpl;
 	int id = 1;
 
 	strcpy(filename, pl->m_filename);
-	debug = pl->IsDebugging();
 	ptype = pl->GetType();
 
 	for (iter=m_plugins.begin(); iter!=m_plugins.end(); iter++, id++)
@@ -2419,7 +2278,7 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl)
 	{
 		return false;
 	}
-	if (!(newpl=LoadPlugin(filename, debug, ptype, NULL, 0, &wasloaded)))
+	if (!(newpl=LoadPlugin(filename, true, ptype, NULL, 0, &wasloaded)))
 	{
 		return false;
 	}

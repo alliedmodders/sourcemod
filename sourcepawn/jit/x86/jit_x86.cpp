@@ -41,11 +41,14 @@
 #include "../BaseRuntime.h"
 #include "../sp_vm_basecontext.h"
 
+using namespace Knight;
+
 #if defined USE_UNGEN_OPCODES
 #include "ungen_opcodes.h"
 #endif
 
-JITX86 g_Jit1;
+JITX86 g_Jit;
+KeCodeCache *g_pCodeCache = NULL;
 ISourcePawnEngine *engine = &g_engine1;
 
 inline sp_plugin_t *GETPLUGIN(sp_context_t *ctx)
@@ -271,8 +274,7 @@ inline void WriteOp_Sub_Alt(JitWriter *jit)
 
 inline void WriteOp_Proc(JitWriter *jit)
 {
-	CompData *co = (CompData *)jit->data;
-
+#if 0 /* :TODO: We no longer use this */
 	/* Specialized code to align this taking in account the function magic number */
 	jitoffs_t cur_offs = jit->get_outputpos();
 	jitoffs_t offset = ((cur_offs & 0xFFFFFFF8) + 8) - cur_offs;
@@ -295,8 +297,8 @@ inline void WriteOp_Proc(JitWriter *jit)
 	/* Now we have to backpatch our reloction offset! */
 	{
 		jitoffs_t offs = jit->get_inputpos() - sizeof(cell_t);
-		jitcode_t rebase = ((CompData *)jit->data)->rebase;
-		*(jitoffs_t *)((unsigned char  *)rebase + offs) = jit->get_outputpos();
+		uint8_t *rebase = ((CompData *)jit->data)->rebase;
+		*(jitoffs_t *)(rebase + offs) = jit->get_outputpos();
 	}
 
 	/* Lastly, if we're writing, keep track of the function count */
@@ -304,6 +306,7 @@ inline void WriteOp_Proc(JitWriter *jit)
 	{
 		co->func_idx++;
 	}
+#endif
 
 	//push old frame on stack:
 	//mov ecx, [esi+frm]
@@ -312,6 +315,7 @@ inline void WriteOp_Proc(JitWriter *jit)
 	IA32_Mov_Reg_Rm(jit, AMX_REG_TMP, AMX_REG_INFO, MOD_MEM_REG);
 	IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_STK, AMX_REG_TMP, -4);
 	IA32_Sub_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
+
 	//save frame:
 	//mov ecx, edi			- get new frame
 	//mov ebx, edi			- store frame back
@@ -1065,7 +1069,7 @@ inline void WriteOp_GenArray(JitWriter *jit, bool autozero)
 		IA32_Mov_Rm_Reg_Disp8(jit, AMX_REG_INFO, AMX_REG_ALT, AMX_INFO_HEAP);
 		IA32_Add_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_DAT, MOD_REG);
 		IA32_Cmp_Reg_Rm(jit, AMX_REG_ALT, AMX_REG_STK, MOD_REG);
-		IA32_Jump_Cond_Imm32_Abs(jit, CC_AE, ((CompData *)jit->data)->jit_error_heaplow);
+		IA32_Jump_Cond_Imm32_Rel(jit, CC_AE, ((CompData *)jit->data)->jit_error_heaplow);
 
 		WriteOp_Tracker_Push_Reg(jit, REG_ECX);
 
@@ -1104,7 +1108,7 @@ inline void WriteOp_GenArray(JitWriter *jit, bool autozero)
 			IA32_Mov_Reg_Imm32(jit, REG_EDX, 0);
 		}
 		jitoffs_t call = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_genarray);
+		IA32_Write_Jump32_Abs(jit, call, g_Jit.GetGenArrayIntrinsic());
 	}
 }
 
@@ -1376,51 +1380,97 @@ inline void WriteOp_Call(JitWriter *jit)
 	cell_t offs;
 	jitoffs_t jmp;
 	CompData *data;
-		
+	uint32_t func_idx;
+	
 	data = (CompData *)jit->data; 
 	offs = jit->read_cell();
 
-	if ((data->profile & SP_PROF_FUNCTIONS) == SP_PROF_FUNCTIONS)
+	/* Get the context + rp */
+	//mov eax, [esi+ctx]
+	//mov ecx, [eax+rp]
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_EAX, AMX_REG_INFO, AMX_INFO_CONTEXT);
+	IA32_Mov_Reg_Rm_Disp8(jit, REG_ECX, REG_EAX, offsetof(sp_context_t, rp));
+
+	/* Check if the return stack is used up. */
+	//cmp ecx, <max stack>
+	//jae :stacklow
+	IA32_Cmp_Rm_Imm32(jit, MOD_REG, REG_ECX, SP_MAX_RETURN_STACK);
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_AE, data->jit_error_stacklow);
+	
+	/* Add us to the return stack */
+	//mov [eax+ecx*4+cips], cip
+	IA32_Mov_Rm_Imm32_SIB(jit,
+		REG_EAX,
+		(uint8_t *)(jit->inptr - 2) - data->plugin->pcode,
+		offsetof(sp_context_t, rstk_cips),
+		REG_ECX,
+		SCALE4);
+
+	/* Increment the return stack pointer */
+	//inc [eax+rp]
+	if ((int)offsetof(sp_context_t, rp) >= SCHAR_MIN && (int)offsetof(sp_context_t, rp) <= SCHAR_MAX)
 	{
-		const char *name;
-
-		/* Find the function name */
-		if ((name = find_func_name(data->plugin, offs)) == NULL)
-		{
-			name = "unknown";
-		}
-
-		//push name
-		//push [esi+context] 
-		//call ProfCallGate_Begin
-		//add esp, 8
-		IA32_Push_Imm32(jit, (jit_int32_t)(intptr_t)name);
-		IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_CONTEXT);
-		jmp = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32_Abs(jit, jmp, (void *)ProfCallGate_Begin);
-		IA32_Add_Rm_Imm8(jit, REG_ESP, 8, MOD_REG);
-
-		//call <addr>
-		//push eax
-		jmp = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
-		IA32_Push_Reg(jit, REG_EAX);
-
-		//push [esi+context]
-		//call ProfCallGate_End
-		//add esp, 4
-		//pop eax
-		IA32_Push_Rm_Disp8(jit, AMX_REG_INFO, AMX_INFO_CONTEXT);
-		jmp = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32_Abs(jit, jmp, (void *)ProfCallGate_End);
-		IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);
-		IA32_Pop_Reg(jit, REG_EAX);
+		IA32_Inc_Rm_Disp8(jit, REG_EAX, offsetof(sp_context_t, rp));
 	}
 	else
 	{
-		jmp = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32(jit, jmp, RelocLookup(jit, offs, false));
+		IA32_Inc_Rm_Disp32(jit, REG_EAX, offsetof(sp_context_t, rp));
 	}
+
+	/* Store the CIP of the function we're about to call. */
+	IA32_Mov_Rm_Imm32_Disp8(jit, AMX_REG_INFO, offs, AMX_INFO_CIP);
+
+	/* Call the function */
+	func_idx = FuncLookup(data, offs);
+
+	/* We need to emit a delayed thunk instead. */
+	if (func_idx == 0)
+	{
+		if (jit->outbase == NULL)
+		{
+			data->num_thunks++;
+
+			/* We still emit the call because we need consistent size counting */
+			IA32_Call_Imm32(jit, 0);
+		}
+		else
+		{
+			call_thunk_t *thunk;
+
+			/* Find the thunk we're associated with */
+			thunk = &data->thunks[data->num_thunks];
+			data->num_thunks++;
+
+			/* Emit the call, save its target position.
+			 * Save thunk info, then patch the target to the thunk.
+			 */
+			thunk->patch_addr = IA32_Call_Imm32(jit, 0);
+			thunk->pcode_offs = offs;
+			IA32_Write_Jump32(jit, thunk->patch_addr, thunk->thunk_addr);
+		}
+	}
+	/* The function is already jitted.  We can emit a direct call. */
+	else
+	{
+		JitFunction *fn;
+
+		fn = data->runtime->GetJittedFunction(func_idx);
+		jmp = IA32_Call_Imm32(jit, 0);
+		IA32_Write_Jump32_Abs(jit, jmp, fn->GetEntryAddress());
+	}
+
+	/* Restore the last cip */
+	//mov [esi+cip], <cip>
+	IA32_Mov_Rm_Imm32_Disp8(jit, 
+		AMX_REG_INFO, 
+		(uint8_t *)(jit->inptr - 2) - data->plugin->pcode, 
+		AMX_INFO_CIP);
+
+	/* Mark us as leaving the last frame. */ 
+	//mov ecx, [esi+ctx] 
+	//dec [ecx+rp] 
+	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT); 
+	IA32_Dec_Rm_Disp8(jit, REG_ECX, offsetof(sp_context_t, rp));
 }
 
 inline void WriteOp_Bounds(JitWriter *jit)
@@ -1435,7 +1485,7 @@ inline void WriteOp_Bounds(JitWriter *jit)
 	} else {
 		IA32_Cmp_Eax_Imm32(jit, val);
 	}
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_A, ((CompData *)jit->data)->jit_error_bounds);
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_A, ((CompData *)jit->data)->jit_error_bounds);
 }
 
 inline void WriteOp_Halt(JitWriter *jit)
@@ -1453,32 +1503,27 @@ inline void WriteOp_Halt(JitWriter *jit)
 	 */
 	jit->read_cell();
 
-	CompData *data = (CompData *)jit->data;
-	IA32_Jump_Imm32_Abs(jit, data->jit_return);
+	IA32_Jump_Imm32_Abs(jit, g_Jit.GetReturnPoint());
 }
 
 inline void WriteOp_Break(JitWriter *jit)
 {
-	CompData *data = (CompData *)jit->data;
-	if (data->debug)
-	{
-		//jit->write_ubyte(IA32_INT3);
-		//mov ecx, <cip>
-		jitoffs_t wr = IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, 0);
-		jitoffs_t save = jit->get_outputpos();
-		jit->set_outputpos(wr);
-		jit->write_uint32((uint32_t)(wr));
-		jit->set_outputpos(save);
-		wr = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32(jit, wr, data->jit_break);
-	}
+	CompData *data;
+
+	data = (CompData *)jit->data;
+
+	//mov [esi+cip], <cip>
+	IA32_Mov_Rm_Imm32_Disp8(jit, 
+		AMX_REG_INFO, 
+		(uint8_t *)(jit->inptr - 1) - data->plugin->pcode, 
+		AMX_INFO_CIP);
 }
 
 inline void WriteOp_Jump(JitWriter *jit)
 {
 	//jmp <offs>
 	cell_t amx_offs = jit->read_cell();
-	IA32_Jump_Imm32_Abs(jit, RelocLookup(jit, amx_offs, false));
+	IA32_Jump_Imm32_Rel(jit, RelocLookup(jit, amx_offs, false));
 }
 
 inline void WriteOp_Jzer(JitWriter *jit)
@@ -1487,7 +1532,7 @@ inline void WriteOp_Jzer(JitWriter *jit)
 	//jz <target>
 	cell_t target = jit->read_cell();
 	IA32_Test_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_PRI, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_Z, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_Z, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_Jnz(JitWriter *jit)
@@ -1496,7 +1541,7 @@ inline void WriteOp_Jnz(JitWriter *jit)
 	//jnz <target>
 	cell_t target = jit->read_cell();
 	IA32_Test_Rm_Reg(jit, AMX_REG_PRI, AMX_REG_PRI, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_NZ, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_Jeq(JitWriter *jit)
@@ -1505,7 +1550,7 @@ inline void WriteOp_Jeq(JitWriter *jit)
 	//je <target>
 	cell_t target = jit->read_cell();
 	IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_E, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_E, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_Jneq(JitWriter *jit)
@@ -1514,7 +1559,7 @@ inline void WriteOp_Jneq(JitWriter *jit)
 	//jne <target>
 	cell_t target = jit->read_cell();
 	IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NE, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_NE, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_Jsless(JitWriter *jit)
@@ -1523,7 +1568,7 @@ inline void WriteOp_Jsless(JitWriter *jit)
 	//jl <target>
 	cell_t target = jit->read_cell();
 	IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_L, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_L, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_Jsleq(JitWriter *jit)
@@ -1532,7 +1577,7 @@ inline void WriteOp_Jsleq(JitWriter *jit)
 	//jle <target>
 	cell_t target = jit->read_cell();
 	IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_LE, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_LE, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_JsGrtr(JitWriter *jit)
@@ -1541,7 +1586,7 @@ inline void WriteOp_JsGrtr(JitWriter *jit)
 	//jg <target>
 	cell_t target = jit->read_cell();
 	IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_G, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_G, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_JsGeq(JitWriter *jit)
@@ -1550,7 +1595,7 @@ inline void WriteOp_JsGeq(JitWriter *jit)
 	//jge <target>
 	cell_t target = jit->read_cell();
 	IA32_Cmp_Reg_Rm(jit, AMX_REG_PRI, AMX_REG_ALT, MOD_REG);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_GE, RelocLookup(jit, target, false));
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_GE, RelocLookup(jit, target, false));
 }
 
 inline void WriteOp_Switch(JitWriter *jit)
@@ -1570,7 +1615,7 @@ inline void WriteOp_Switch(JitWriter *jit)
 	{
 		/* Special treatment for 0 cases */
 		//jmp <default>
-		IA32_Jump_Imm32_Abs(jit, RelocLookup(jit, *tbl, false));
+		IA32_Jump_Imm32_Rel(jit, RelocLookup(jit, *tbl, false));
 	} else {
 		/* Check if the case layout is fully sequential */
 		casetbl *iter = (casetbl *)(tbl + 1);
@@ -1615,7 +1660,7 @@ inline void WriteOp_Switch(JitWriter *jit)
 			IA32_Cmp_Rm_Imm32(jit, MOD_REG, AMX_REG_TMP, high_bound);
 		}
 		//ja <default case>
-		IA32_Jump_Cond_Imm32_Abs(jit, CC_A, RelocLookup(jit, *tbl, false));
+		IA32_Jump_Cond_Imm32_Rel(jit, CC_A, RelocLookup(jit, *tbl, false));
 
 		/**
 		 * Now we've taken the default case out of the way, it's time to do the
@@ -1662,10 +1707,10 @@ inline void WriteOp_Switch(JitWriter *jit)
 				} else {
 					IA32_Cmp_Eax_Imm32(jit, cases[i].val);
 				}
-				IA32_Jump_Cond_Imm32_Abs(jit, CC_E, RelocLookup(jit, cases[i].offs, false));
+				IA32_Jump_Cond_Imm32_Rel(jit, CC_E, RelocLookup(jit, cases[i].offs, false));
 			}
 			/* After all this, jump to the default case! */
-			IA32_Jump_Imm32_Abs(jit, RelocLookup(jit, *tbl, false));
+			IA32_Jump_Imm32_Rel(jit, RelocLookup(jit, *tbl, false));
 		}
 	}
 }
@@ -1687,7 +1732,7 @@ inline void WriteOp_Sysreq_C(JitWriter *jit)
 	 */
 	cell_t native_index = jit->read_cell();
 
-	if ((uint32_t)native_index >= ((CompData*)jit->data)->plugin->info.natives_num)
+	if ((uint32_t)native_index >= ((CompData*)jit->data)->plugin->num_natives)
 	{
 		((CompData *)jit->data)->error_set = SP_ERROR_INSTRUCTION_PARAM;
 		return;
@@ -1700,29 +1745,6 @@ inline void WriteOp_Sysreq_C(JitWriter *jit)
 	IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_sysreq_c);
 }
 
-inline void WriteOp_Sysreq_N_NoInline(JitWriter *jit)
-{
-	/* store the number of parameters on the stack, 
-	 * and store the native index as well.
-	 */
-	cell_t native_index = jit->read_cell();
-	cell_t num_params = jit->read_cell();
-	
-	if ((uint32_t)native_index >= ((CompData*)jit->data)->plugin->info.natives_num)
-	{
-		((CompData *)jit->data)->error_set = SP_ERROR_INSTRUCTION_PARAM;
-		return;
-	}
-
-	//mov eax, <num_params>
-	//mov ecx, <native_index>
-	IA32_Mov_Reg_Imm32(jit, REG_EAX, num_params);
-	IA32_Mov_Reg_Imm32(jit, REG_ECX, native_index);
-
-	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	IA32_Write_Jump32(jit, call, ((CompData *)jit->data)->jit_sysreq_n);
-}
-
 inline void WriteOp_Sysreq_N(JitWriter *jit)
 {
 	/* The big daddy of opcodes. */
@@ -1730,7 +1752,7 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	cell_t num_params = jit->read_cell();
 	CompData *data = (CompData *)jit->data;
 
-	if ((uint32_t)native_index >= data->plugin->info.natives_num)
+	if ((uint32_t)native_index >= data->plugin->num_natives)
 	{
 		data->error_set = SP_ERROR_INSTRUCTION_PARAM;
 		return;
@@ -1788,27 +1810,13 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//call NativeCallback
 	IA32_Push_Reg(jit, REG_EAX);
 	jitoffs_t call = IA32_Call_Imm32(jit, 0);
-	if (!data->debug)
+	if ((data->profile & SP_PROF_NATIVES) == SP_PROF_NATIVES)
 	{
-		if ((data->profile & SP_PROF_NATIVES) == SP_PROF_NATIVES)
-		{
-			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Profile);
-		}
-		else
-		{
-			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
-		}
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Profile);
 	}
 	else
 	{
-		if ((data->profile & SP_PROF_NATIVES) == SP_PROF_NATIVES)
-		{
-			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug_Profile);
-		}
-		else
-		{
-			IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback_Debug);
-		}
+		IA32_Write_Jump32_Abs(jit, call, (void *)NativeCallback);
 	}
 	
 	/* check for errors */
@@ -1817,7 +1825,7 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 	//jnz :error
 	IA32_Mov_Reg_Rm_Disp8(jit, AMX_REG_TMP, AMX_REG_INFO, AMX_INFO_CONTEXT);
 	IA32_Cmp_Rm_Disp8_Imm8(jit, AMX_REG_TMP, offsetof(sp_context_t, n_err), 0);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_extern_error);
+	IA32_Jump_Cond_Imm32_Rel(jit, CC_NZ, data->jit_extern_error);
 
 	/* restore what we damaged */
 	//mov esp, ebx
@@ -1846,7 +1854,6 @@ inline void WriteOp_Sysreq_N(JitWriter *jit)
 
 inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 {
-	CompData *data = (CompData *)jit->data;
 	cell_t val = jit->read_cell();
 
 	/* Save registers that may be damaged by the call */
@@ -1868,7 +1875,7 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 	//cmp eax, 0
 	//jnz :error
 	IA32_Cmp_Rm_Imm8(jit, MOD_REG, REG_EAX, 0);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, g_Jit.GetReturnPoint());
 
 	/* Restore */
 	//pop eax
@@ -1893,8 +1900,6 @@ inline void WriteOp_Tracker_Push_C(JitWriter *jit)
 
 inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 {
-	CompData *data = (CompData *)jit->data;
-
 	/* Save registers that may be damaged by the call */
 	//push eax
 	//push edx
@@ -1914,7 +1919,7 @@ inline void WriteOp_Tracker_Pop_SetHeap(JitWriter *jit)
 	//cmp eax, 0
 	//jnz :error
 	IA32_Cmp_Rm_Imm8(jit, MOD_REG, REG_EAX, 0);
-	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, data->jit_return);
+	IA32_Jump_Cond_Imm32_Abs(jit, CC_NZ, g_Jit.GetReturnPoint());
 
 	/* Restore */
 	//pop eax
@@ -2241,8 +2246,6 @@ inline void WriteOp_RoundToZero(JitWriter *jit)
 
 inline void WriteOp_FloatCompare(JitWriter *jit)
 {
-	CompData *data = (CompData *)jit->data;
-
 	//fld [edi]
 	//fld [edi+4]
 	//fucomip st(0), st(1)
@@ -2255,7 +2258,7 @@ inline void WriteOp_FloatCompare(JitWriter *jit)
 	IA32_Fld_Mem32(jit, AMX_REG_STK);
 	IA32_Fld_Mem32_Disp8(jit, AMX_REG_STK, 4);
 	IA32_Fucomip_ST0_FPUreg(jit, 1);
-	IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, (jit_int32_t)jit->outbase + data->jit_rounding_table);
+	IA32_Mov_Reg_Imm32(jit, AMX_REG_TMP, (jit_int32_t)g_Jit.GetRoundingTable());
 	IA32_CmovCC_Rm_Disp8(jit, AMX_REG_TMP, CC_Z, 4);
 	IA32_CmovCC_Rm_Disp8(jit, AMX_REG_TMP, CC_B, 8);
 	IA32_CmovCC_Rm(jit, AMX_REG_TMP, CC_A);
@@ -2266,6 +2269,45 @@ inline void WriteOp_FloatCompare(JitWriter *jit)
 	IA32_Add_Rm_Imm8(jit, AMX_REG_STK, 8, MOD_REG);
 }
 
+inline void WriteOp_EndProc(JitWriter *jit)
+{
+}
+
+void Write_CallThunk(JitWriter *jit, jitoffs_t jmploc, cell_t pcode_offs)
+{
+	CompData *data;
+	jitoffs_t call;
+
+	data = (CompData *)jit->data;
+
+	//push <jmploc_addr>
+	//push <pcode_offs>
+	//push <runtime>
+	//call CompileFromThunk
+	//add esp, 4*3
+	//test eax, eax
+	//jz :error
+	//call eax
+	//ret
+	IA32_Push_Imm32(jit, (jit_int32_t)(jit->outbase + jmploc));
+	IA32_Push_Imm32(jit, pcode_offs);
+	IA32_Push_Imm32(jit, (jit_int32_t)(data->runtime));
+	call = IA32_Call_Imm32(jit, 0);
+	IA32_Write_Jump32_Abs(jit, call, (void *)CompileThunk);
+	IA32_Add_Rm_Imm32(jit, REG_ESP, 4*3, MOD_REG);
+	IA32_Test_Rm_Reg(jit, REG_EAX, REG_EAX, MOD_REG);
+	call = IA32_Jump_Cond_Imm8(jit, CC_Z, 0);
+	IA32_Call_Reg(jit, REG_EAX);
+	IA32_Return(jit);
+
+	/* We decrement the frame and store the target cip. */
+	//:error
+	//mov [esi+cip], pcode_offs
+	//goto error
+	IA32_Send_Jump8_Here(jit, call);
+	Write_SetError(jit, SP_ERROR_INVALID_INSTRUCTION);
+}
+
 /*************************************************
  *************************************************
  * JIT PROPER ************************************
@@ -2273,152 +2315,110 @@ inline void WriteOp_FloatCompare(JitWriter *jit)
  *************************************************
  *************************************************/
 
+void *CompileThunk(BaseRuntime *runtime, cell_t pcode_offs, void *jmploc_addr)
+{
+	int err;
+	JitFunction *fn;
+	uint32_t func_idx;
+	void *target_addr;
+	
+	if ((func_idx = FuncLookup((CompData *)runtime->m_pCo, pcode_offs)) == 0)
+	{
+		fn = g_Jit.CompileFunction(runtime, pcode_offs, &err);
+	}
+	else
+	{
+		fn = runtime->GetJittedFunction(func_idx);
+
+#if defined _DEBUG
+		g_engine1.GetDebugHook()->OnDebugSpew("Patching thunk to %s::%s", runtime->m_pPlugin->name, find_func_name(runtime->m_pPlugin, pcode_offs));
+#endif
+
+	}
+
+	if (fn == NULL)
+	{
+		return NULL;
+	}
+
+	target_addr = fn->GetEntryAddress();
+
+	/* Right now, we always keep the code RWE */
+	*(intptr_t *)((char *)jmploc_addr) = 
+		intptr_t(target_addr) - (intptr_t(jmploc_addr) + 4);
+
+	return target_addr;
+}
+
 cell_t NativeCallback(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
 	sp_native_t *native;
-	sp_plugin_t *plugin;
-
-	plugin = (sp_plugin_t *)ctx->vm[JITVARS_PLUGIN];
-	
-	native = &plugin->natives[native_idx];
+	cell_t save_sp = ctx->sp;
+	cell_t save_hp = ctx->hp;
+	sp_plugin_t *pl = GETPLUGIN(ctx);
 
 	ctx->n_idx = native_idx;
-	
-	/* Technically both aren't needed, I guess */
+
+	if (ctx->hp < (cell_t)pl->data_size)
+	{
+		ctx->n_err = SP_ERROR_HEAPMIN;
+		return 0;
+	}
+
+	if (ctx->hp + STACK_MARGIN > ctx->sp)
+	{
+		ctx->n_err = SP_ERROR_STACKLOW;
+		return 0;
+	}
+
+	if ((uint32_t)ctx->sp >= pl->mem_size)
+	{
+		ctx->n_err = SP_ERROR_STACKMIN;
+		return 0;
+	}
+
+	native = &pl->natives[native_idx];
+
 	if (native->status == SP_NATIVE_UNBOUND)
 	{
 		ctx->n_err = SP_ERROR_INVALID_NATIVE;
 		return 0;
 	}
 
-	return native->pfn(GET_CONTEXT(ctx), params);
+	cell_t result = native->pfn(GET_CONTEXT(ctx), params);
+
+	if (ctx->n_err != SP_ERROR_NONE)
+	{
+		return result;
+	}
+
+	if (save_sp != ctx->sp)
+	{
+		ctx->n_err = SP_ERROR_STACKLEAK;
+		return result;
+	}
+	else if (save_hp != ctx->hp)
+	{
+		ctx->n_err = SP_ERROR_HEAPLEAK;
+		return result;
+	}
+
+	return result;
 }
 
 cell_t NativeCallback_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
 {
-	cell_t val;
-	sp_native_t *native;
-	sp_plugin_t *plugin;
-
-	plugin = (sp_plugin_t *)ctx->vm[JITVARS_PLUGIN];
-
-	native = &plugin->natives[native_idx];
-
-	ctx->n_idx = native_idx;
-
-	/* Technically both aren't needed, I guess */
-	if (native->status == SP_NATIVE_UNBOUND)
-	{
-		ctx->n_err = SP_ERROR_INVALID_NATIVE;
-		return 0;
-	}
-
-	plugin->profiler->OnNativeBegin(GET_CONTEXT(ctx), native);
-	val = native->pfn(GET_CONTEXT(ctx), params);
-	plugin->profiler->OnNativeEnd();
-
-	return val;
+	/* :TODO: */
+	return NativeCallback(ctx, native_idx, params);
 }
 
-cell_t NativeCallback_Debug(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
+uint32_t FuncLookup(CompData *data, cell_t pcode_offs)
 {
-	cell_t save_sp = ctx->sp;
-	cell_t save_hp = ctx->hp;
+	/* Offset must always be 1)positive and 2)less than or equal to the codesize */
+	assert(pcode_offs >= 0 && (uint32_t)pcode_offs <= data->plugin->pcode_size);
 
-	sp_plugin_t *pl = GETPLUGIN(ctx);
-
-	ctx->n_idx = native_idx;
-
-	if (ctx->hp < (cell_t)pl->data_size)
-	{
-		ctx->n_err = SP_ERROR_HEAPMIN;
-		return 0;
-	}
-
-	if (ctx->hp + STACK_MARGIN > ctx->sp)
-	{
-		ctx->n_err = SP_ERROR_STACKLOW;
-		return 0;
-	}
-
-	if ((uint32_t)ctx->sp >= pl->mem_size)
-	{
-		ctx->n_err = SP_ERROR_STACKMIN;
-		return 0;
-	}
-
-	cell_t result = NativeCallback(ctx, native_idx, params);
-
-	if (ctx->n_err != SP_ERROR_NONE)
-	{
-		return result;
-	}
-
-	if (save_sp != ctx->sp)
-	{
-		ctx->n_err = SP_ERROR_STACKLEAK;
-		return result;
-	}
-	else if (save_hp != ctx->hp)
-	{
-		ctx->n_err = SP_ERROR_HEAPLEAK;
-		return result;
-	}
-
-	return result;
-}
-
-cell_t NativeCallback_Debug_Profile(sp_context_t *ctx, ucell_t native_idx, cell_t *params)
-{
-	cell_t save_sp = ctx->sp;
-	cell_t save_hp = ctx->hp;
-
-	sp_plugin_t *pl = GETPLUGIN(ctx);
-
-	ctx->n_idx = native_idx;
-
-	if (ctx->hp < (cell_t)pl->data_size)
-	{
-		ctx->n_err = SP_ERROR_HEAPMIN;
-		return 0;
-	}
-
-	if (ctx->hp + STACK_MARGIN > ctx->sp)
-	{
-		ctx->n_err = SP_ERROR_STACKLOW;
-		return 0;
-	}
-
-	if ((uint32_t)ctx->sp >= pl->mem_size)
-	{
-		ctx->n_err = SP_ERROR_STACKMIN;
-		return 0;
-	}
-
-	cell_t result = NativeCallback_Profile(ctx, native_idx, params);
-
-	if (ctx->n_err != SP_ERROR_NONE)
-	{
-		return result;
-	}
-
-	if (save_sp != ctx->sp)
-	{
-		ctx->n_err = SP_ERROR_STACKLEAK;
-		return result;
-	}
-	else if (save_hp != ctx->hp)
-	{
-		ctx->n_err = SP_ERROR_HEAPLEAK;
-		return result;
-	}
-
-	return result;
-}
-
-static cell_t InvalidNative(IPluginContext *pCtx, const cell_t *params)
-{
-	return pCtx->ThrowNativeErrorEx(SP_ERROR_INVALID_NATIVE, "Invalid native");
+	/* Do the lookup in the native dictionary. */
+	return *(jitoffs_t *)(data->rebase + pcode_offs);
 }
 
 jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
@@ -2434,7 +2434,7 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 			pcode_offs += jit->get_inputpos();
 		}
 		/* Offset must always be 1)positive and 2)less than or equal to the codesize */
-		assert(pcode_offs >= 0 && (uint32_t)pcode_offs <= data->codesize);
+		assert(pcode_offs >= 0 && (uint32_t)pcode_offs <= data->plugin->pcode_size);
 		/* Do the lookup in the native dictionary. */
 		return *(jitoffs_t *)(data->rebase + pcode_offs);
 	}
@@ -2469,130 +2469,144 @@ void WriteErrorRoutines(CompData *data, JitWriter *jit)
 	data->jit_error_heapmin = jit->get_outputpos();
 	Write_SetError(jit, SP_ERROR_HEAPMIN);
 
-	data->jit_error_array_too_big = jit->get_outputpos();
-	Write_SetError(jit, SP_ERROR_ARRAY_TOO_BIG);
-
 	data->jit_extern_error = jit->get_outputpos();
 	Write_GetError(jit);
 }
 
-bool JITX86::Compile(ICompilation *co, BaseRuntime *prt, int *err)
+ICompilation *JITX86::ApplyOptions(ICompilation *_IN, ICompilation *_OUT)
 {
-	CompData *data = (CompData *)co;
-	sp_plugin_t *plugin = data->plugin;
-
-	if (data->plugin == NULL)
+	if (_IN == NULL)
 	{
-		if (data->debug && !(prt->m_pPlugin->flags & SP_FLAG_DEBUG))
-		{
-			if (err != NULL)
-			{
-				*err = SP_ERROR_NOTDEBUGGING;
-			}
-			co->Abort();
-			return false;
-		}
-
-		data->SetRuntime(prt);
-		plugin = data->plugin;
+		return _OUT;
 	}
 
-	/* The first phase is to browse */
-	uint8_t *code = plugin->pcode;
-	uint8_t *end_cip = plugin->pcode + plugin->pcode_size;
-	OPCODE op;
+	CompData *_in = (CompData * )_IN;
+	CompData *_out = (CompData * )_OUT;
 
-	/*********************************************
-	 * FIRST PASS (medium load): writer.outbase is NULL, getting size only
-	 * SECOND PASS (heavy load!!): writer.outbase is valid and output is written
-	 *********************************************/
+	_in->inline_level = _out->inline_level;
+	_in->profile = _out->profile;
 
-	JitWriter writer;
-	JitWriter *jit = &writer;
-	cell_t *endptr = (cell_t *)(end_cip);
-	uint32_t codemem = 0;
+	_out->Abort();
 
-	/* Initial code is written "blank,"
-	 * so we can check the exact memory usage.
-	 */
-	data->codesize = plugin->pcode_size;
-	writer.data = data;
-	writer.inbase = (cell_t *)code;
-	writer.outptr = NULL;
-	writer.outbase = NULL;
-	/* Allocate relocation.  One extra cell for final CIP. */
-	data->rebase = (jitcode_t)engine->BaseAlloc(plugin->pcode_size + sizeof(cell_t));
+	return _in;
+}
 
-	/* We will jump back here for second pass */
-jit_rewind:
-	/* Initialize pass vars */
-	writer.inptr = writer.inbase;
-	data->jit_verify_addr_eax = 0;
-	data->jit_verify_addr_edx = 0;
+JITX86::JITX86()
+{
+	m_pJitEntry = NULL;
+	m_pJitReturn = NULL;
+	m_RoundTable[0] = -1;
+	m_RoundTable[1] = 0;
+	m_RoundTable[2] = 1;
+	m_pJitGenArray = NULL;
+}
 
-	/* Write the prologue of the JIT */
-	data->jit_return = Write_Execute_Function(jit);
+bool JITX86::InitializeJIT()
+{
+	jitoffs_t offs;
+	JitWriter writer, *jit;
 
-	/* Write the SYSREQ.N opcode if we need to */
-	if (!(data->inline_level & JIT_INLINE_NATIVES))
-	{
-		AlignMe(jit);
-		data->jit_sysreq_n = jit->get_outputpos();
-		WriteOp_Sysreq_N_Function(jit);
-	}
+	g_pCodeCache = KE_CreateCodeCache();
 
-	/* Write the debug section if we need it */
-	if (data->debug == true)
-	{
-		AlignMe(jit);
-		data->jit_break = jit->get_outputpos();
-		Write_BreakDebug(jit);
-	}
-
-	/* Plugins compiled with -O0 will need this! */
-	AlignMe(jit);
-	data->jit_sysreq_c = jit->get_outputpos();
-	WriteOp_Sysreq_C_Function(jit);
-
-	AlignMe(jit);
-	data->jit_genarray = jit->get_outputpos();
+	jit = &writer;
+	
+	/* Build the genarray intrinsic */
+	jit->outbase = NULL;
+	jit->outptr = NULL;
+	WriteIntrinsic_GenArray(jit);
+	m_pJitGenArray = Knight::KE_AllocCode(g_pCodeCache, jit->get_outputpos());
+	jit->outbase = (jitcode_t)m_pJitGenArray;
+	jit->outptr = jit->outbase;
 	WriteIntrinsic_GenArray(jit);
 
-	/* Write error checking routines that are called to */
-	if (!(data->inline_level & JIT_INLINE_ERRORCHECKS))
+	/* Build the entry point */
+	writer = JitWriter();
+	jit->outbase = NULL;
+	jit->outptr = NULL;
+	Write_Execute_Function(jit);
+	m_pJitEntry = Knight::KE_AllocCode(g_pCodeCache, jit->get_outputpos());
+	jit->outbase = (jitcode_t)m_pJitEntry;
+	jit->outptr = jit->outbase;
+	offs = Write_Execute_Function(jit);
+	m_pJitReturn = (uint8_t *)m_pJitEntry + offs;
+
+	return true;
+}
+
+void JITX86::ShutdownJIT()
+{
+	KE_DestroyCodeCache(g_pCodeCache);
+}
+
+JitFunction *JITX86::CompileFunction(BaseRuntime *prt, cell_t pcode_offs, int *err)
+{
+	CompData *data = (CompData *)prt->m_pCo;
+	sp_plugin_t *plugin = data->plugin;
+
+	uint8_t *code = plugin->pcode + pcode_offs;
+	uint8_t *end_code = plugin->pcode + plugin->pcode_size;
+
+	assert(FuncLookup(data, pcode_offs) == 0);
+
+	if (code >= end_code || *(cell_t *)code != OP_PROC)
 	{
-		AlignMe(jit);
-		data->jit_verify_addr_eax = jit->get_outputpos();
-		Write_Check_VerifyAddr(jit, REG_EAX);
-	
-		AlignMe(jit);
-		data->jit_verify_addr_edx = jit->get_outputpos();
-		Write_Check_VerifyAddr(jit, REG_EDX);
+		*err = SP_ERROR_INVALID_INSTRUCTION;
+		return NULL;
 	}
 
-	/* Write the rounding table for the float compare opcode */
-	data->jit_rounding_table = jit->get_outputpos();
-	Write_RoundingTable(jit);
+#if defined _DEBUG
+	g_engine1.GetDebugHook()->OnDebugSpew("Compiling function %s::%s", prt->m_pPlugin->name, find_func_name(prt->m_pPlugin, pcode_offs));
+#endif
+
+	code += sizeof(cell_t);
+
+	OPCODE op;
+	uint32_t code_size;
+	cell_t *cip, *end_cip;
+	JitWriter writer, *jit;
+
+	jit = &writer;
+	cip = (cell_t *)code;
+	end_cip = (cell_t *)end_code;
+	writer.data = data;
+	writer.inbase = cip;
+	writer.outptr = NULL;
+	writer.outbase = NULL;
+	data->cur_func = pcode_offs;
+
+jit_rewind:
+	data->num_thunks = 0;
+	writer.inptr = writer.inbase;
+
+	WriteOp_Proc(jit);
 
 	/* Actual code generation! */
 	if (writer.outbase == NULL)
 	{
 		/* First Pass - find codesize and resolve relocation */
-		jitoffs_t pcode_offs;
+		jitoffs_t jpcode_offs;
 		jitoffs_t native_offs;
 
-		for (; writer.inptr < endptr;)
+		for (; writer.inptr < end_cip;)
 		{
+			op = (OPCODE)writer.peek_cell();
+
+			/* If we hit another function, we must stop. */
+			if (op == OP_PROC || op == OP_ENDPROC)
+			{
+				break;
+			}
+
 			/* Store the native offset into the rebase memory.
 			 * This large chunk of memory lets us do an instant lookup
 			 * based on an original pcode offset.
 			 */
-			pcode_offs = (jitoffs_t)((uint8_t *)writer.inptr - code);
+			jpcode_offs = (jitoffs_t)((uint8_t *)writer.inptr - plugin->pcode);
 			native_offs = jit->get_outputpos();
-			*((jitoffs_t *)(data->rebase + pcode_offs)) = native_offs;
+			*((jitoffs_t *)(data->rebase + jpcode_offs)) = native_offs;
 
-			/* Now read the opcode and continue. */
-			op = (OPCODE)writer.read_cell();
+			/* Read past the opcode. */
+			writer.read_cell();
 
 			/* Patch the floating point natives with our opcodes */
 			if (op == OP_SYSREQ_N)
@@ -2619,209 +2633,108 @@ jit_rewind:
 			if (data->error_set != SP_ERROR_NONE)
 			{
 				*err = data->error_set;
-				co->Abort();
-				return false;
+				return NULL;
 			}
 		}
-		/* Write these last because error jumps should be unpredicted, and thus forward */
+
+		/* Write these last because error jumps should be predicted forwardly (not taken) */
 		WriteErrorRoutines(data, jit);
 
+		/* Build thunk tables */
+		if (data->num_thunks > data->max_thunks)
+		{
+			data->max_thunks = data->num_thunks;
+			data->thunks = (call_thunk_t *)realloc(
+				data->thunks,
+				data->max_thunks * sizeof(call_thunk_t));
+		}
+
+		/* Write the thunk offsets.
+		 * :TODO: we can emit all but one call to Write_CallThunk().
+		 */
+		for (unsigned int i = 0; i < data->num_thunks; i++)
+		{
+			data->thunks[i].thunk_addr = jit->get_outputpos();
+			Write_CallThunk(jit, 0, 0);
+		}
+
+		/**
+		 * I don't understand the purpose of this code.
+		 * Why do we want to know about the last opcode?
+		 * It should already have gotten written.
+		 */
+		#if 0
 		/* Write the final CIP to the last position in the reloc array */
 		pcode_offs = (jitoffs_t)((uint8_t *)writer.inptr - code);
 		native_offs = jit->get_outputpos();
 		*((jitoffs_t *)(data->rebase + pcode_offs)) = native_offs;
+		#endif
 
 		/* the total codesize is now known! */
-		codemem = writer.get_outputpos();
-		writer.outbase = (jitcode_t)engine->AllocatePageMemory(codemem);
-		engine->SetReadWrite(writer.outbase);
+		code_size = writer.get_outputpos();
+		writer.outbase = (jitcode_t)Knight::KE_AllocCode(g_pCodeCache, code_size);
 		writer.outptr = writer.outbase;
-		/* go back for third pass */
+
+		/* go back for second pass */
 		goto jit_rewind;
 	}
 	else
 	{
 		/*******
-		 * THIRD PASS - write opcode info
+		 * SECOND PASS - write opcode info
 		 *******/
-		for (; writer.inptr < endptr;)
+		for (; writer.inptr < end_cip;)
 		{
 			op = (OPCODE)writer.read_cell();
+
+			/* If we hit another function, we must stop. */
+			if (op == OP_PROC || op == OP_ENDPROC)
+			{
+				break;
+			}
+
 			switch (op)
 			{
 				#include "opcode_switch.inc"
 			}
 		}
-		/* Write these last because error jumps should be unpredicted, and thus forward */
+
+		/* Write these last because error jumps should be predicted as not taken (forward) */
 		WriteErrorRoutines(data, jit);
 
-		engine->SetReadExecute(writer.outbase);
+		/* Write the thunk offsets. */
+		for (unsigned int i = 0; i < data->num_thunks; i++)
+		{
+			Write_CallThunk(jit, data->thunks[i].patch_addr, data->thunks[i].pcode_offs);
+		}
 	}
 
-	/*************
-	 * FOURTH PASS - Context Setup
-	 *************/
-
-	/* setup  basics */
-	sp_context_t *ctx = data->runtime->GetBaseContext()->GetCtx();
-
-	/* Clear out any old cruft */
-	if (plugin->codebase != NULL)
-	{
-		FreePluginVars(data->runtime->m_pPlugin);
-		FreeContextVars(ctx);
-	}
-	
-	plugin->codebase = writer.outbase;
-	plugin->jit_codesize = codemem;
-	plugin->jit_memsize = 0;
-
-	/* setup memory */
-
-	ctx->hp = plugin->data_size;
-	ctx->sp = plugin->mem_size - sizeof(cell_t);
-	ctx->frm = ctx->sp;
-	ctx->n_err = SP_ERROR_NONE;
-	ctx->n_idx = SP_ERROR_NONE;
 	plugin->prof_flags = data->profile;
-	plugin->run_flags = data->debug ? SPFLAG_PLUGIN_DEBUG : 0;
-
-	const char *strbase = plugin->info.stringbase;
-	uint32_t max, iter;
-
-	/* relocate public info */
-	if ((max = plugin->info.publics_num))
-	{
-		plugin->publics = new sp_public_t[max];
-		plugin->jit_memsize += sizeof(sp_public_t) * max;
-		for (iter=0; iter<max; iter++)
-		{
-			plugin->publics[iter].name = strbase + plugin->info.publics[iter].name;
-			plugin->publics[iter].code_offs = RelocLookup(jit, plugin->info.publics[iter].address, false);
-			/* Encode the ID as a straight code offset */
-			plugin->publics[iter].funcid = (plugin->publics[iter].code_offs << 1);
-		}
-	}
-
-	/* relocate pubvar info */
-	if ((max = plugin->info.pubvars_num))
-	{
-		uint8_t *dat = plugin->memory;
-		plugin->pubvars = new sp_pubvar_t[max];
-		plugin->jit_memsize += sizeof(sp_pubvar_t) * max;
-		for (iter=0; iter<max; iter++)
-		{
-			plugin->pubvars[iter].name = strbase + plugin->info.pubvars[iter].name;
-			plugin->pubvars[iter].offs = (cell_t *)(dat + plugin->info.pubvars[iter].address);
-		}
-	}
-
-	/* relocate native info */
-	if ((max = plugin->info.natives_num)
-		&& plugin->natives == NULL)
-	{
-		plugin->natives = new sp_native_t[max];
-		plugin->jit_memsize += sizeof(sp_native_t) * max;
-		for (iter=0; iter<max; iter++)
-		{
-			plugin->natives[iter].name = strbase + plugin->info.natives[iter].name;
-			plugin->natives[iter].pfn = &InvalidNative;
-			plugin->natives[iter].status = SP_NATIVE_UNBOUND;
-			plugin->natives[iter].flags = 0;
-			plugin->natives[iter].user = NULL;
-		}
-	}
-
-	/**
-	 * If we're debugging, make sure we copy the necessary info.
-	 */
-	if (data->debug)
-	{
-		strbase = plugin->debug.stringbase;
-		
-		/* relocate files */
-		max = plugin->debug.files_num;
-		plugin->files = new sp_debug_file_t[max];
-		plugin->jit_memsize += sizeof(sp_debug_file_t) * max;
-		for (iter=0; iter<max; iter++)
-		{
-			plugin->files[iter].addr = RelocLookup(jit, plugin->debug.files[iter].addr, false);
-			plugin->files[iter].name = strbase + plugin->debug.files[iter].name;
-		}
-
-		/* relocate lines */
-		max = plugin->debug.lines_num;
-		plugin->lines = new sp_debug_line_t[max];
-		plugin->jit_memsize += sizeof(sp_debug_line_t) * max;
-		for (iter=0; iter<max; iter++)
-		{
-			plugin->lines[iter].addr = RelocLookup(jit, plugin->debug.lines[iter].addr, false);
-			plugin->lines[iter].line = plugin->debug.lines[iter].line;
-		}
-
-		/* relocate arrays */
-		sp_fdbg_symbol_t *sym;
-		sp_fdbg_arraydim_t *arr;
-		uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
-		
-		max = plugin->debug.syms_num;
-		plugin->symbols = new sp_debug_symbol_t[max];
-		plugin->jit_memsize += sizeof(sp_debug_symbol_t) * max;
-		for (iter=0; iter<max; iter++)
-		{
-			sym = (sp_fdbg_symbol_t *)cursor;
-
-			/**
-			 * @brief There is an "issue" where the compiler will give totally bogus code 
-			 * address because codegeneration is still being calculated.  A simple fix for 
-			 * this is to coerce the codestart value to 0 when it's invalid.
-			 */
-			if (sym->codestart > data->codesize)
-			{
-				plugin->symbols[iter].codestart = 0;
-			} else {
-				plugin->symbols[iter].codestart = RelocLookup(jit, sym->codestart, false);
-			}
-			if (sym->codeend > data->codesize)
-			{
-				plugin->symbols[iter].codeend = data->codesize;
-			} else {
-				plugin->symbols[iter].codeend = RelocLookup(jit, sym->codeend, false);
-			}
-			plugin->symbols[iter].name = strbase + sym->name;
-			plugin->symbols[iter].sym = sym;
-
-			if (sym->dimcount > 0)
-			{
-				cursor += sizeof(sp_fdbg_symbol_t);
-				arr = (sp_fdbg_arraydim_t *)cursor;
-				plugin->symbols[iter].dims = arr;
-				cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
-				continue;
-			}
-
-			plugin->symbols[iter].dims = NULL;
-			cursor += sizeof(sp_fdbg_symbol_t);
-		}
-	}
-
-	tracker_t *trk = new tracker_t;
-	ctx->vm[JITVARS_TRACKER] = trk;
-	ctx->vm[JITVARS_BASECTX] = data->runtime->GetDefaultContext();
-	ctx->vm[JITVARS_PROFILER] = g_engine2.GetProfiler();
-	ctx->vm[JITVARS_PLUGIN] = data->runtime->m_pPlugin;
-	trk->pBase = (ucell_t *)malloc(1024);
-	trk->pCur = trk->pBase;
-	trk->size = 1024 / sizeof(cell_t);
-
-	plugin->jit_memsize += trk->size;
-
-	/* clean up relocation+compilation memory */
-	co->Abort();
 
 	*err = SP_ERROR_NONE;
 
-	return true;
+	JitFunction *fn;
+	uint32_t func_idx;
+	
+	fn = new JitFunction(writer.outbase, pcode_offs);
+	func_idx = prt->AddJittedFunction(fn);
+	*(cell_t *)(data->rebase + pcode_offs) = func_idx;
+
+	return fn;
+}
+
+void JITX86::SetupContextVars(BaseRuntime *runtime, BaseContext *pCtx, sp_context_t *ctx)
+{
+	tracker_t *trk = new tracker_t;
+
+	ctx->vm[JITVARS_TRACKER] = trk;
+	ctx->vm[JITVARS_BASECTX] = pCtx; /* GetDefaultContext() is not constructed yet */
+	ctx->vm[JITVARS_PROFILER] = g_engine2.GetProfiler();
+	ctx->vm[JITVARS_PLUGIN] = runtime->m_pPlugin;
+
+	trk->pBase = (ucell_t *)malloc(1024);
+	trk->pCur = trk->pBase;
+	trk->size = 1024 / sizeof(cell_t);
 }
 
 SPVM_NATIVE_FUNC JITX86::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
@@ -2876,32 +2789,22 @@ rewind:
 	if (jw.outbase == NULL)
 	{
 		/* Second pass: Actually write */
-		jw.outbase = (jitcode_t)engine->AllocatePageMemory(jw.get_outputpos());
+		jw.outbase = (jitcode_t)KE_AllocCode(g_pCodeCache, jw.get_outputpos());
 		if (!jw.outbase)
 		{
 			return NULL;
 		}
-		engine->SetReadWrite(jw.outbase);
 		jw.outptr = jw.outbase;
 	
 		goto rewind;
 	}
-
-	engine->SetReadExecute(jw.outbase);
 
 	return (SPVM_NATIVE_FUNC)jw.outbase;
 }
 
 void JITX86::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-	engine->FreePageMemory((void *)func);
-}
-
-int JITX86::ContextExecute(sp_plugin_t *pl, sp_context_t *ctx, uint32_t code_idx, cell_t *result)
-{
-	typedef int (*CONTEXT_EXECUTE)(sp_context_t *, uint32_t, cell_t *);
- 	CONTEXT_EXECUTE fn = (CONTEXT_EXECUTE)pl->codebase;
-	return fn(ctx, code_idx, result);
+	KE_FreeCode(g_pCodeCache, (void *)func);
 }
 
 ICompilation *JITX86::StartCompilation()
@@ -2917,10 +2820,10 @@ void CompData::SetRuntime(BaseRuntime *runtime)
 {
 	plugin = runtime->m_pPlugin;
 
-	uint32_t max_natives = plugin->info.natives_num;
-	const char *strbase = plugin->info.stringbase;
+	uint32_t max_natives = plugin->num_natives;
 
 	this->runtime = runtime;
+	this->plugin = runtime->m_pPlugin;
 
 	inline_level = JIT_INLINE_ERRORCHECKS|JIT_INLINE_NATIVES;
 	error_set = SP_ERROR_NONE;
@@ -2928,43 +2831,69 @@ void CompData::SetRuntime(BaseRuntime *runtime)
 	jit_float_table = new floattbl_t[max_natives];
 	for (uint32_t i=0; i<max_natives; i++)
 	{
-		const char *name = strbase + plugin->info.natives[i].name;
+		const char *name = plugin->natives[i].name;
 		if (!strcmp(name, "FloatAbs"))
 		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FABS;
-		} else if (!strcmp(name, "FloatAdd")) {
+		} 
+		else if (!strcmp(name, "FloatAdd")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FLOATADD;
-		} else if (!strcmp(name, "FloatSub")) {
+		} 
+		else if (!strcmp(name, "FloatSub")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FLOATSUB;
-		} else if (!strcmp(name, "FloatMul")) {
+		} 
+		else if (!strcmp(name, "FloatMul")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FLOATMUL;
-		} else if (!strcmp(name, "FloatDiv")) {
+		} 
+		else if (!strcmp(name, "FloatDiv")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FLOATDIV;
-		} else if (!strcmp(name, "float")) {
+		} 
+		else if (!strcmp(name, "float")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FLOAT;
-		} else if (!strcmp(name, "FloatCompare")) {
+		} 
+		else if (!strcmp(name, "FloatCompare")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_FLOATCMP;
-		} else if (!strcmp(name, "RoundToZero")) {
+		} 
+		else if (!strcmp(name, "RoundToZero")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_RND_TO_ZERO;
-		} else if (!strcmp(name, "RoundToCeil")) {
+		} 
+		else if (!strcmp(name, "RoundToCeil")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_RND_TO_CEIL;
-		} else if (!strcmp(name, "RoundToFloor")) {
+		} 
+		else if (!strcmp(name, "RoundToFloor")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_RND_TO_FLOOR;
-		} else if (!strcmp(name, "RoundToNearest")) {
+		} 
+		else if (!strcmp(name, "RoundToNearest")) 
+		{
 			jit_float_table[i].found = true;
 			jit_float_table[i].index = OP_RND_TO_NEAREST;
 		}
 	}
+
+	/* We need a relocation table.  This is the relocation table we'll use for jumps 
+	 * and calls alike.  One extra cell for final CIP.
+	 */
+	this->rebase = (uint8_t *)engine->BaseAlloc(plugin->pcode_size + sizeof(cell_t));
+	memset(this->rebase, 0, plugin->pcode_size + sizeof(cell_t));
 }
 
 ICompilation *JITX86::StartCompilation(BaseRuntime *runtime)
@@ -2982,6 +2911,7 @@ void CompData::Abort()
 	{
 		engine->BaseFree(rebase);
 	}
+	delete [] thunks;
 	delete [] jit_float_table;
 	delete this;
 }
@@ -2992,42 +2922,10 @@ void JITX86::FreeContextVars(sp_context_t *ctx)
 	delete (tracker_t *)ctx->vm[JITVARS_TRACKER];
 }
 
-void JITX86::FreePluginVars(sp_plugin_t *pl)
-{
-	delete [] pl->files;
-	delete [] pl->lines;
-	delete [] pl->publics;
-	delete [] pl->pubvars;
-	delete [] pl->symbols;
-
-	if (pl->codebase != NULL)
-	{
-		g_engine1.FreePageMemory(pl->codebase);
-		pl->codebase = NULL;
-	}
-
-	pl->files = NULL;
-	pl->lines = NULL;
-	pl->publics = NULL;
-	pl->pubvars = NULL;
-	pl->symbols = NULL;
-}
-
 bool CompData::SetOption(const char *key, const char *val)
 {
 	if (strcmp(key, SP_JITCONF_DEBUG) == 0)
 	{
-		if ((atoi(val) == 1) || !strcmp(val, "yes"))
-		{
-			debug = true;
-		} else {
-			debug = false;
-		}
-		if (debug && plugin && !(plugin->flags & SP_FLAG_DEBUG))
-		{
-			debug = false;
-			return false;
-		}
 		return true;
 	}
 	else if (strcmp(key, SP_JITCONF_PROFILE) == 0)
@@ -3046,3 +2944,56 @@ bool CompData::SetOption(const char *key, const char *val)
 	return false;
 }
 
+void *JITX86::GetGenArrayIntrinsic()
+{
+	return m_pJitGenArray;
+}
+
+void *JITX86::GetReturnPoint()
+{
+	return m_pJitReturn;
+}
+
+void *JITX86::GetRoundingTable()
+{
+	return m_RoundTable;
+}
+
+typedef int (*JIT_EXECUTE)(cell_t *vars, void *addr);
+int JITX86::InvokeFunction(BaseRuntime *runtime, JitFunction *fn, cell_t *result)
+{
+	int err;
+	JIT_EXECUTE pfn;
+	sp_context_t *ctx;
+	cell_t vars[AMX_NUM_INFO_VARS];
+
+	ctx = runtime->GetBaseContext()->GetCtx();
+
+	vars[0] = ctx->sp;
+	vars[1] = ctx->hp;
+	vars[2] = (cell_t)result;
+	vars[3] = (cell_t)ctx;
+	vars[4] = (cell_t)(runtime->m_pPlugin->memory + runtime->m_pPlugin->mem_size);
+	vars[5] = fn->GetPCodeAddress();
+	vars[6] = runtime->m_pPlugin->data_size;
+	vars[7] = (cell_t)(runtime->m_pPlugin->memory);
+	/* vars[8] will be set to ESP */
+
+	pfn = (JIT_EXECUTE)m_pJitEntry;
+	err = pfn(vars, fn->GetEntryAddress());
+
+	ctx->hp = vars[1];
+	ctx->err_cip = vars[5];
+
+	return err;
+}
+
+void *JITX86::AllocCode(size_t size)
+{
+	return Knight::KE_AllocCode(g_pCodeCache, size);
+}
+
+void JITX86::FreeCode(void *code)
+{
+	KE_FreeCode(g_pCodeCache, code);
+}

@@ -98,6 +98,9 @@ typedef struct sp_file_hdr_s
 
 #define SP_FLAG_DEBUG	(1<<0)		/**< Debug information is present in the file */
 
+#define SP_CODEVERS_JIT1       9    /**< Code version for JIT1 */
+#define SP_CODEVERS_JIT2      10    /**< Code version for JIT2 */    
+
 /**
  * @brief File-encoded format of the ".code" section.
  */

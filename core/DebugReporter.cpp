@@ -41,6 +41,18 @@ void DebugReport::OnSourceModAllInitialized()
 	g_pSourcePawn->SetDebugListener(this);
 }
 
+void DebugReport::OnDebugSpew(const char *msg, ...)
+{
+	va_list ap;
+	char buffer[512];
+
+	va_start(ap, msg);
+	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
+	va_end(ap);
+
+	g_Logger.LogMessage("[SM] %s", buffer);
+}
+
 void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...)
 {
 	va_list ap;

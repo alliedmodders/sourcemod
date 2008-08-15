@@ -65,6 +65,10 @@ public:
 		inptr++;
 		return val;
 	}
+	inline cell_t peek_cell()
+	{
+		return *inptr;
+	}
 	inline cell_t *read_cellptr()
 	{
 		cell_t *val = *(cell_t **)(inptr);

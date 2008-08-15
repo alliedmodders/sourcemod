@@ -23,6 +23,8 @@ namespace SourcePawn
 		void SetProfiler(IProfiler *profiler);
 		ICompilation *StartCompilation();
 		const char *GetErrorString(int err);
+		bool Initialize();
+		void Shutdown();
 	public:
 		IProfiler *GetProfiler();
 	private:

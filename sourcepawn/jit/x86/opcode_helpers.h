@@ -44,13 +44,14 @@ jitoffs_t Write_Execute_Function(JitWriter *jit);
 /**
  * Writes the Sysreq.* opcodes as a function call.
  */
-void WriteOp_Sysreq_N_Function(JitWriter *jit);
 void WriteOp_Sysreq_C_Function(JitWriter *jit);
 
 /**
  * Write the GENARRAY intrinsic function.
  */
 void WriteIntrinsic_GenArray(JitWriter *jit);
+
+void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg);
 
 /**
  * Generates code to set an error state in the VM and return.
@@ -72,12 +73,6 @@ void Write_CheckStack_Low(JitWriter *jit);
  */
 void Write_CheckHeap_Min(JitWriter *jit);
 void Write_CheckHeap_Low(JitWriter *jit);
-
-/**
- * Verifies an address by register.  The address must reside
- * between DAT and HP and SP and STP.
- */
-void Write_Check_VerifyAddr(JitWriter *jit, jit_uint8_t reg);
 
 /**
  * Checks for division by zero.
@@ -303,6 +298,7 @@ typedef enum
 	OP_GENARRAY_Z,			//-VERIFIED (not tested for 1D arrays)
 	OP_STRADJUST_PRI,		//VERIFIED
 	OP_STACKADJUST,			//:TODO: VERIFY
+	OP_ENDPROC,				//VERIFIED
 	OP_FABS,				//VERIFIED
 	OP_FLOAT,				//VERIFIED
 	OP_FLOATADD,			//VERIFIED

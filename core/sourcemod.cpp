@@ -76,6 +76,11 @@ void ShutdownJIT()
 		notify();
 	}
 
+	if (g_pSourcePawn2 != NULL)
+	{
+		g_pSourcePawn2->Shutdown();
+	}
+
 	g_pJIT->CloseLibrary();
 }
 
@@ -187,6 +192,26 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	g_pSourcePawn = getv1();
 	g_pSourcePawn2 = getv2();
+
+	if (g_pSourcePawn2->GetAPIVersion() < 2)
+	{
+		g_pSourcePawn2 = NULL;
+		if (error && maxlength)
+		{
+			snprintf(error, maxlength, "JIT version is out of date");
+		}
+		return false;
+	}
+
+	if (!g_pSourcePawn2->Initialize())
+	{
+		g_pSourcePawn2 = NULL;
+		if (error && maxlength)
+		{
+			snprintf(error, maxlength, "JIT could not be initialized");
+		}
+		return false;
+	}
 
 	g_pSourcePawn2->SetDebugListener(&g_DbgReporter);
 	g_pSourcePawn2->SetProfiler(&g_Profiler);

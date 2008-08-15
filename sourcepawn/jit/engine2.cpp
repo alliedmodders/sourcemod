@@ -15,113 +15,9 @@ SourcePawnEngine2::SourcePawnEngine2()
 	m_Profiler = NULL;
 }
 
-sp_plugin_t *_ReadPlugin(sp_file_hdr_t *hdr, uint8_t *base, sp_plugin_t *plugin, int *err)
-{
-	char *nameptr;
-	uint8_t sectnum = 0;
-	sp_file_section_t *secptr = (sp_file_section_t *)(base + sizeof(sp_file_hdr_t));
-
-	memset(plugin, 0, sizeof(sp_plugin_t));
-
-	plugin->base = base;
-
-	while (sectnum < hdr->sections)
-	{
-		nameptr = (char *)(base + hdr->stringtab + secptr->nameoffs);
-
-		if (!(plugin->pcode) && !strcmp(nameptr, ".code"))
-		{
-			sp_file_code_t *cod = (sp_file_code_t *)(base + secptr->dataoffs);
-			plugin->pcode = base + secptr->dataoffs + cod->code;
-			plugin->pcode_size = cod->codesize;
-			plugin->flags = cod->flags;
-		}
-		else if (!(plugin->data) && !strcmp(nameptr, ".data"))
-		{
-			sp_file_data_t *dat = (sp_file_data_t *)(base + secptr->dataoffs);
-			plugin->data = base + secptr->dataoffs + dat->data;
-			plugin->data_size = dat->datasize;
-			plugin->mem_size = dat->memsize;
-			plugin->memory = new uint8_t[plugin->mem_size];
-			memcpy(plugin->memory, plugin->data, plugin->data_size);
-		}
-		else if (!(plugin->info.publics) && !strcmp(nameptr, ".publics"))
-		{
-			plugin->info.publics_num = secptr->size / sizeof(sp_file_publics_t);
-			plugin->info.publics = (sp_file_publics_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->info.pubvars) && !strcmp(nameptr, ".pubvars"))
-		{
-			plugin->info.pubvars_num = secptr->size / sizeof(sp_file_pubvars_t);
-			plugin->info.pubvars = (sp_file_pubvars_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->info.natives) && !strcmp(nameptr, ".natives"))
-		{
-			plugin->info.natives_num = secptr->size / sizeof(sp_file_natives_t);
-			plugin->info.natives = (sp_file_natives_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->info.stringbase) && !strcmp(nameptr, ".names"))
-		{
-			plugin->info.stringbase = (const char *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.files) && !strcmp(nameptr, ".dbg.files"))
-		{
-			plugin->debug.files = (sp_fdbg_file_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.lines) && !strcmp(nameptr, ".dbg.lines"))
-		{
-			plugin->debug.lines = (sp_fdbg_line_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.symbols) && !strcmp(nameptr, ".dbg.symbols"))
-		{
-			plugin->debug.symbols = (sp_fdbg_symbol_t *)(base + secptr->dataoffs);
-		}
-		else if (!(plugin->debug.lines_num) && !strcmp(nameptr, ".dbg.info"))
-		{
-			sp_fdbg_info_t *inf = (sp_fdbg_info_t *)(base + secptr->dataoffs);
-			plugin->debug.files_num = inf->num_files;
-			plugin->debug.lines_num = inf->num_lines;
-			plugin->debug.syms_num = inf->num_syms;
-		}
-		else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
-		{
-			plugin->debug.stringbase = (const char *)(base + secptr->dataoffs);
-		}
-
-		secptr++;
-		sectnum++;
-	}
-
-	if (!(plugin->pcode) || !(plugin->data) || !(plugin->info.stringbase))
-	{
-		goto return_error;
-	}
-
-	if ((plugin->flags & SP_FLAG_DEBUG) && (!(plugin->debug.files) || !(plugin->debug.lines) || !(plugin->debug.symbols)))
-	{
-		goto return_error;
-	}
-
-	if (err)
-	{
-		*err = SP_ERROR_NONE;
-	}
-
-	return plugin;
-
-return_error:
-	if (err)
-	{
-		*err = SP_ERROR_FILE_FORMAT;
-	}
-
-	return NULL;
-}
-
 IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file, int *err)
 {
 	sp_file_hdr_t hdr;
-	sp_plugin_t *plugin;
 	uint8_t *base;
 	int z_result;
 	int error;
@@ -141,7 +37,6 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	if (hdr.magic != SPFILE_MAGIC)
 	{
 		error = SP_ERROR_FILE_FORMAT;
-		fclose(fp);
 		goto return_error;
 	}
 
@@ -168,7 +63,6 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 				free(sectheader);
 				free(uncompdata);
 				error = SP_ERROR_DECOMPRESSOR;
-				fclose(fp);
 				goto return_error;
 			}
 
@@ -190,39 +84,40 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	default:
 		{
 			error = SP_ERROR_DECOMPRESSOR;
-			fclose(fp);
 			goto return_error;
 		}
 	}
 
-	fclose(fp);
 
-	plugin = new sp_plugin_t;
-
-	memset(plugin, 0, sizeof(sp_plugin_t));
-
-	plugin->base_size = hdr.imagesize;
-	if (!_ReadPlugin(&hdr, base, plugin, err))
-	{
-		delete plugin;
-		free(base);
-		return NULL;
-	}
-
-	pRuntime = new BaseRuntime(plugin);
-
-	if (co == NULL)
-	{
-		co = g_Jit1.StartCompilation(pRuntime);
-	}
-
-
-	*err = pRuntime->ApplyCompilationOptions(co);
-	if (*err != SP_ERROR_NONE)
+	pRuntime = new BaseRuntime();
+	if ((error = pRuntime->CreateFromMemory(&hdr, base)) != SP_ERROR_NONE)
 	{
 		delete pRuntime;
-		return NULL;
+		goto return_error;
 	}
+
+	size_t len;
+	
+	len = strlen(file);
+	for (size_t i = len - 1; i >= 0 && i < len; i--)
+	{
+		if (file[i] == '/' 
+		#if defined WIN32
+			|| file[i] == '\\'
+		#endif
+		)
+		{
+			pRuntime->m_pPlugin->name = strdup(&file[i+1]);
+			break;
+		}
+	}
+
+	if (pRuntime->m_pPlugin->name == NULL)
+	{
+		pRuntime->m_pPlugin->name = strdup(file);
+	}
+
+	pRuntime->ApplyCompilationOptions(co);
 
 	return pRuntime;
 
@@ -234,12 +129,12 @@ return_error:
 
 SPVM_NATIVE_FUNC SourcePawnEngine2::CreateFakeNative(SPVM_FAKENATIVE_FUNC callback, void *pData)
 {
-	return g_Jit1.CreateFakeNative(callback, pData);
+	return g_Jit.CreateFakeNative(callback, pData);
 }
 
 void SourcePawnEngine2::DestroyFakeNative(SPVM_NATIVE_FUNC func)
 {
-	g_Jit1.DestroyFakeNative(func);
+	g_Jit.DestroyFakeNative(func);
 }
 
 const char *SourcePawnEngine2::GetEngineName()
@@ -274,10 +169,20 @@ unsigned int SourcePawnEngine2::GetAPIVersion()
 
 ICompilation *SourcePawnEngine2::StartCompilation()
 {
-	return g_Jit1.StartCompilation();
+	return g_Jit.StartCompilation();
 }
 
 const char *SourcePawnEngine2::GetErrorString(int err)
 {
 	return g_engine1.GetErrorString(err);
+}
+
+bool SourcePawnEngine2::Initialize()
+{
+	return g_Jit.InitializeJIT();
+}
+
+void SourcePawnEngine2::Shutdown()
+{
+	g_Jit.ShutdownJIT();
 }

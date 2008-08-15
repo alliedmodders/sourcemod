@@ -37,19 +37,10 @@
 
 class BaseContext;
 
-struct TracedCall
-{
-	uint32_t cip;
-	uint32_t frm;
-	BaseContext *ctx;
-	TracedCall *next;
-	unsigned int chain;
-};
-
 class CContextTrace : public IContextTrace
 {
 public:
-	CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native);
+	CContextTrace(BaseRuntime *pRuntime, int err, const char *errstr, cell_t start_rp);
 public:
 	int GetErrorCode();
 	const char *GetErrorString();
@@ -59,11 +50,13 @@ public:
 	void ResetTrace();
 	const char *GetLastNative(uint32_t *index);
 private:
+	BaseRuntime *m_pRuntime;
+	sp_context_t *m_ctx;
 	int m_Error;
 	const char *m_pMsg;
-	TracedCall *m_pStart;
-	TracedCall *m_pIterator;
-	uint32_t m_Native;
+	cell_t m_StartRp;
+	cell_t m_Level;
+	IPluginDebugInfo *m_pDebug;
 };
 
 class SourcePawnEngine : public ISourcePawnEngine
@@ -85,37 +78,16 @@ public: //ISourcePawnEngine
 	void *AllocatePageMemory(size_t size);
 	void SetReadWrite(void *ptr);
 	void SetReadExecute(void *ptr);
+	void SetReadWriteExecute(void *ptr);
 	void FreePageMemory(void *ptr);
 	const char *GetErrorString(int err);
-public: //Debugger Stuff
-	/**
-	 * @brief Pushes a context onto the top of the call tracer.
-	 * 
-	 * @param ctx		Plugin context.
-	 */
-	void PushTracer(BaseContext *ctx);
-
-	/**
-	 * @brief Pops a plugin off the call tracer.
-	 */
-	void PopTracer(int error, const char *msg);
-
-	/**
-	 * @brief Runs tracer from a debug break.
-	 */
-	void RunTracer(BaseContext *ctx, uint32_t frame, uint32_t codeip);
+	void ReportError(BaseRuntime *runtime, int err, const char *errstr, cell_t rp_start);
 public: //Plugin function stuff
 	CFunction *GetFunctionFromPool(funcid_t f, IPluginContext  *plugin);
 	void ReleaseFunctionToPool(CFunction *func);
-private:
-	TracedCall *MakeTracedCall(bool new_chain);
-	void FreeTracedCall(TracedCall *pCall);
+	IDebugListener *GetDebugHook();
 private:
 	IDebugListener *m_pDebugHook;
-	TracedCall *m_FreedCalls;
-	TracedCall *m_CallStack;
-	unsigned int m_CurChain;
-	//CFunction *m_pFreeFuncs;
 };
 
 extern SourcePawnEngine g_engine1;

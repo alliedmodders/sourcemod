@@ -6,6 +6,7 @@
 #include "sp_vm_function.h"
 
 class BaseContext;
+class JitFunction;
 
 class DebugInfo : public IPluginDebugInfo
 {
@@ -23,9 +24,10 @@ private:
 class BaseRuntime : public SourcePawn::IPluginRuntime
 {
 public:
-	BaseRuntime(sp_plugin_t *pl);
+	BaseRuntime();
 	~BaseRuntime();
 public:
+	virtual int CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base);
 	virtual bool IsDebugging();
 	virtual IPluginDebugInfo *GetDebugInfo();
 	virtual int FindNativeByName(const char *name, uint32_t *index);
@@ -45,16 +47,23 @@ public:
 	virtual void SetPauseState(bool paused);
 	virtual bool IsPaused();
 	virtual size_t GetMemUsage();
+	JitFunction *GetJittedFunction(uint32_t idx);
+	uint32_t AddJittedFunction(JitFunction *fn);
 public:
 	BaseContext *GetBaseContext();
 private:
-	void ClearCompile();
-	void RefreshFunctionCache();
+	sp_plugin_t m_plugin;
+	unsigned int m_NumFuncs;
+	unsigned int m_MaxFuncs;
+	JitFunction **m_FuncCache;
 public:
 	DebugInfo m_Debug;
 	sp_plugin_t *m_pPlugin;
 	BaseContext *m_pCtx;
 	CFunction **m_PubFuncs;
+	JitFunction **m_PubJitFuncs;
+	ICompilation *m_pCo;
+	unsigned int m_CompSerial;
 };
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_RUNTIME_H_

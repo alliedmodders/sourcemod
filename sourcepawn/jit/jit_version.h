@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_JIT_VERSION_H_
 #define _INCLUDE_JIT_VERSION_H_
 
-#define SVN_FULL_VERSION	"1.1.0-svn"
-#define SVN_FILE_VERSION	1,1,0,2218
+#define SVN_FULL_VERSION	"1.2.0-svn"
+#define SVN_FILE_VERSION	1,2,0,2218
 
 #endif //_INCLUDE_JIT_VERSION_H_

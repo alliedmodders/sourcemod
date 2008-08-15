@@ -413,9 +413,9 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin,
 			else
 			{
 				/* See if this has already been marked as a dependent.
-				* If it has, it means this relationship has already occurred, 
-				* and there is no reason to do it again.
-				*/
+				 * If it has, it means this relationship has already occurred, 
+				 * and there is no reason to do it again.
+				 */
 				if (pEntry->owner != pPlugin 
 					&& pEntry->owner->GetMarkSerial() != g_mark_serial)
 				{

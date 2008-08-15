@@ -30,23 +30,18 @@
  */
 
 #include "sp_vm_types.h"
-#include <sh_memory.h>
-/* HACK to avoid including sourcehook.h for just the SH_ASSERT definition */
-#if !defined  SH_ASSERT
-	#define SH_ASSERT(x, info)
-	#include <sh_pagealloc.h>
-	#undef SH_ASSERT
-#else
-	#include <sh_pagealloc.h>
-#endif
-
 #include <malloc.h>
 #include <string.h>
 #include <assert.h>
+#include <KeCodeAllocator.h>
 #include "sp_file_headers.h"
 #include "sp_vm_engine.h"
 #include "zlib/zlib.h"
 #include "sp_vm_basecontext.h"
+#include "jit_x86.h"
+#if defined __GNUC__
+#include <unistd.h>
+#endif
 
 SourcePawnEngine g_engine1;
 
@@ -57,11 +52,7 @@ SourcePawnEngine g_engine1;
  #include <sys/mman.h>
 #endif
 
-#define INVALID_CIP			0xFFFFFFFF
-
 using namespace SourcePawn;
-
-SourceHook::CPageAlloc g_ExeMemory(16);
 
 #define ERROR_MESSAGE_MAX		25
 static const char *g_ErrorMsgTable[] = 
@@ -92,6 +83,8 @@ static const char *g_ErrorMsgTable[] =
 	"Native detected error",
 	"Plugin not runnable",
 	"Call was aborted",
+	"Plugin format is too old",
+	"Plugin format is too new",
 };
 
 const char *SourcePawnEngine::GetErrorString(int error)
@@ -107,33 +100,10 @@ const char *SourcePawnEngine::GetErrorString(int error)
 SourcePawnEngine::SourcePawnEngine()
 {
 	m_pDebugHook = NULL;
-	m_CallStack = NULL;
-	m_FreedCalls = NULL;
-	m_CurChain = 0;
-#if 0
-	m_pFreeFuncs = NULL;
-#endif
 }
 
 SourcePawnEngine::~SourcePawnEngine()
 {
-	TracedCall *pTemp;
-	while (m_FreedCalls)
-	{
-		pTemp = m_FreedCalls->next;
-		delete m_FreedCalls;
-		m_FreedCalls = pTemp;
-	}
-
-#if 0
-	CFunction *pNext;
-	while (m_pFreeFuncs)
-	{
-		pNext = m_pFreeFuncs->m_pNext;
-		delete m_pFreeFuncs;
-		m_pFreeFuncs = pNext;
-	}
-#endif
 }
 
 void *SourcePawnEngine::ExecAlloc(size_t size)
@@ -153,22 +123,22 @@ void *SourcePawnEngine::ExecAlloc(size_t size)
 
 void *SourcePawnEngine::AllocatePageMemory(size_t size)
 {
-	return g_ExeMemory.Alloc(size);
+	return g_Jit.AllocCode(size);
 }
 
 void SourcePawnEngine::SetReadExecute(void *ptr)
 {
-	g_ExeMemory.SetRE(ptr);
+	/* already re */
 }
 
 void SourcePawnEngine::SetReadWrite(void *ptr)
 {
-	g_ExeMemory.SetRW(ptr);
+	/* already rw */
 }
 
 void SourcePawnEngine::FreePageMemory(void *ptr)
 {
-	g_ExeMemory.Free(ptr);
+	g_Jit.FreeCode(ptr);
 }
 
 void SourcePawnEngine::ExecFree(void *address)
@@ -178,6 +148,12 @@ void SourcePawnEngine::ExecFree(void *address)
 #elif defined __GNUC__
 	free(address);
 #endif
+}
+
+void SourcePawnEngine::SetReadWriteExecute(void *ptr)
+{
+//:TODO:	g_ExeMemory.SetRWE(ptr);
+	SetReadExecute(ptr);
 }
 
 void *SourcePawnEngine::BaseAlloc(size_t size)
@@ -224,142 +200,38 @@ IDebugListener *SourcePawnEngine::SetDebugListener(IDebugListener *pListener)
 	return old;
 }
 
-unsigned int SourcePawnEngine::GetContextCallCount()
-{
-	if (!m_CallStack)
-	{
-		return 0;
-	}
-
-	return m_CallStack->chain;
-}
-
-TracedCall *SourcePawnEngine::MakeTracedCall(bool new_chain)
-{
-	TracedCall *pCall;
-
-	if (!m_FreedCalls)
-	{
-		pCall = new TracedCall;
-	} else {
-		/* Unlink the head node from the free list */
-		pCall = m_FreedCalls;
-		m_FreedCalls = m_FreedCalls->next;
-	}
-
-	/* Link as the head node into the call stack */
-	pCall->next = m_CallStack;
-
-	if (new_chain)
-	{
-		pCall->chain = ++m_CurChain;
-	} else {
-		pCall->chain = m_CurChain;
-	}
-
-	m_CallStack = pCall;
-
-	return pCall;
-}
-
-void SourcePawnEngine::FreeTracedCall(TracedCall *pCall)
-{
-	/* Check if this is the top of the call stack */
-	if (pCall == m_CallStack)
-	{
-		m_CallStack = m_CallStack->next;
-	}
-
-	/* Add this to our linked list of freed calls */
-	if (!m_FreedCalls)
-	{
-		m_FreedCalls = pCall;
-		m_FreedCalls->next = NULL;
-	} else {
-		pCall->next = m_FreedCalls;
-		m_FreedCalls = pCall;
-	}
-}
-
-void SourcePawnEngine::PushTracer(BaseContext *ctx)
-{
-	TracedCall *pCall = MakeTracedCall(true);
-
-	pCall->cip = INVALID_CIP;
-	pCall->ctx = ctx;
-	pCall->frm = INVALID_CIP;
-}
-
-void SourcePawnEngine::RunTracer(BaseContext *ctx, uint32_t frame, uint32_t codeip)
-{
-	assert(m_CallStack != NULL);
-	assert(m_CallStack->ctx == ctx);
-	assert(m_CallStack->chain == m_CurChain);
-
-	if (m_CallStack->cip == INVALID_CIP)
-	{
-		/* We aren't logging anything yet, so begin the trace */
-		m_CallStack->cip = codeip;
-		m_CallStack->frm = frame;
-	} else {
-		if (m_CallStack->frm > frame)
-		{
-			/* The last frame has moved down the stack, 
-			 * so we have to push a new call onto our list.
-			 */
-			TracedCall *pCall = MakeTracedCall(false);
-			pCall->ctx = ctx;
-			pCall->frm = frame;
-		} else if (m_CallStack->frm < frame) {
-			/* The last frame has moved up the stack,
-			 * so we have to pop the call from our list.
-			 */
-			FreeTracedCall(m_CallStack);
-		}
-		/* no matter where we are, update the cip */
-		m_CallStack->cip = codeip;
-	}
-}
-
-void SourcePawnEngine::PopTracer(int error, const char *msg)
-{
-	assert(m_CallStack != NULL);
-
-	if (error != SP_ERROR_NONE && m_pDebugHook)
-	{
-		uint32_t native = INVALID_CIP;
-
-		if (m_CallStack->ctx->GetCtx()->n_err)
-		{
-			native = m_CallStack->ctx->GetCtx()->n_idx;
-		}
-
-		CContextTrace trace(m_CallStack, error, msg, native);
-		m_pDebugHook->OnContextExecuteError(m_CallStack->ctx, &trace);
-	}
-
-	/* Now pop the error chain  */
-	while (m_CallStack && m_CallStack->chain == m_CurChain)
-	{
-		FreeTracedCall(m_CallStack);
-	}
-
-	m_CurChain--;
-}
-
 unsigned int SourcePawnEngine::GetEngineAPIVersion()
 {
 	return SOURCEPAWN_ENGINE_API_VERSION;
 }
 
-CContextTrace::CContextTrace(TracedCall *pStart, int error, const char *msg, uint32_t native) : 
- m_Error(error), m_pMsg(msg), m_pStart(pStart), m_pIterator(pStart), m_Native(native)
+unsigned int SourcePawnEngine::GetContextCallCount()
 {
+	return 0;
+}
+
+void SourcePawnEngine::ReportError(BaseRuntime *runtime, int err, const char *errstr, cell_t rp_start)
+{
+	if (m_pDebugHook == NULL)
+	{
+		return;
+	}
+
+	CContextTrace trace(runtime, err, errstr, rp_start);
+
+	m_pDebugHook->OnContextExecuteError(runtime->GetDefaultContext(), &trace);
+}
+
+CContextTrace::CContextTrace(BaseRuntime *pRuntime, int err, const char *errstr, cell_t start_rp) 
+: m_pRuntime(pRuntime), m_Error(err), m_pMsg(errstr), m_StartRp(start_rp), m_Level(0)
+{
+	m_ctx = pRuntime->m_pCtx->GetCtx();
+	m_pDebug = m_pRuntime->GetDebugInfo();
 }
 
 bool CContextTrace::DebugInfoAvailable()
 {
-	return m_pStart->ctx->IsDebugging();
+	return (m_pDebug != NULL);
 }
 
 const char *CContextTrace::GetCustomErrorString()
@@ -374,83 +246,99 @@ int CContextTrace::GetErrorCode()
 
 const char *CContextTrace::GetErrorString()
 {
-	if (m_Error > ERROR_MESSAGE_MAX || 
-		m_Error < 1)
+	if (m_Error > ERROR_MESSAGE_MAX || m_Error < 1)
 	{
 		return "Invalid error code";
-	} else {
+	}
+	else
+	{
 		return g_ErrorMsgTable[m_Error];
 	}
 }
 
 void CContextTrace::ResetTrace()
 {
-	m_pIterator = m_pStart;
+	m_Level = 0;
 }
 
 bool CContextTrace::GetTraceInfo(CallStackInfo *trace)
 {
-	if (!m_pIterator || (m_pIterator->chain != m_pStart->chain))
+	cell_t cip;
+
+	if (m_Level == 0)
+	{
+		cip = m_ctx->err_cip;
+	}
+	else if (m_ctx->rp > 0)
+	{
+		/* Entries go from ctx.rp - 1 to m_StartRp */
+		cell_t offs, start, end;
+
+		offs = m_Level - 1;
+		start = m_ctx->rp - 1;
+		end = m_StartRp;
+
+		if (start - offs < end)
+		{
+			return false;
+		}
+
+		cip = m_ctx->rstk_cips[start - offs];
+	}
+	else
 	{
 		return false;
 	}
 
-	if (m_pIterator->cip == INVALID_CIP)
+	if (trace == NULL)
 	{
-		return false;
-	}
-
-	IPluginContext *pContext = m_pIterator->ctx;
-	IPluginDebugInfo *pInfo = pContext->GetRuntime()->GetDebugInfo();
-
-	if (!pInfo)
-	{
-		return false;
-	}
-
-	if (!trace)
-	{
-		m_pIterator = m_pIterator->next;
+		m_Level++;
 		return true;
 	}
 
-	if (pInfo->LookupFile(m_pIterator->cip, &(trace->filename)) != SP_ERROR_NONE)
+	if (m_pDebug->LookupFile(cip, &(trace->filename)) != SP_ERROR_NONE)
 	{
 		trace->filename = NULL;
 	}
 
-	if (pInfo->LookupFunction(m_pIterator->cip, &(trace->function)) != SP_ERROR_NONE)
+	if (m_pDebug->LookupFunction(cip, &(trace->function)) != SP_ERROR_NONE)
 	{
 		trace->function = NULL;
 	}
 
-	if (pInfo->LookupLine(m_pIterator->cip, &(trace->line)) != SP_ERROR_NONE)
+	if (m_pDebug->LookupLine(cip, &(trace->line)) != SP_ERROR_NONE)
 	{
 		trace->line = 0;
 	}
 
-	m_pIterator = m_pIterator->next;
+	m_Level++;
 
 	return true;
 }
 
 const char *CContextTrace::GetLastNative(uint32_t *index)
 {
-	if (m_Native == INVALID_CIP)
+	if (m_ctx->n_err == SP_ERROR_NONE)
 	{
 		return NULL;
 	}
 
 	sp_native_t *native;
-	if (m_pIterator->ctx->GetNativeByIndex(m_Native, &native) != SP_ERROR_NONE)
+	if (m_pRuntime->GetNativeByIndex(m_ctx->n_idx, &native) != SP_ERROR_NONE)
 	{
 		return NULL;
 	}
 
 	if (index)
 	{
-		*index = m_Native;
+		*index = m_ctx->n_idx;
 	}
 
 	return native->name;
 }
+
+IDebugListener *SourcePawnEngine::GetDebugHook()
+{
+	return m_pDebugHook;
+}
+

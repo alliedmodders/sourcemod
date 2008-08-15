@@ -2,6 +2,10 @@
 #include "ShareSys.h"
 #include "PluginSys.h"
 
+CNativeOwner::CNativeOwner() : m_nMarkSerial(0)
+{
+}
+
 void CNativeOwner::SetMarkSerial(unsigned int serial)
 {
 	m_nMarkSerial = serial;

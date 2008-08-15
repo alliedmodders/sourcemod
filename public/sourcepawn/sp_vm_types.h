@@ -83,6 +83,8 @@ typedef uint32_t	funcid_t;			/**< Function index code */
 #define SP_ERROR_NATIVE					23	/**< Error originates from a native */
 #define SP_ERROR_NOT_RUNNABLE			24	/**< Function or plugin is not runnable */
 #define SP_ERROR_ABORTED				25	/**< Function call was aborted */
+#define SP_ERROR_CODE_TOO_OLD			26	/**< Code is too old for this VM */
+#define SP_ERROR_CODE_TOO_NEW			27	/**< Code is too new for this VM */
 //Hey you! Update the string table if you add to the end of me! */
 
 /**********************************************
@@ -200,8 +202,5 @@ typedef struct sp_debug_symbol_s
 	sp_debug_arraydim_t *dims;	/**< Relocated dimension struct, if any */
 	sp_fdbg_symbol_t	*sym;	/**< Pointer to original symbol */
 } sp_debug_symbol_t;
-
-//#define SPFLAG_PLUGIN_DEBUG		(1<<0)		/**< plugin is in debug mode */
-//#define SPFLAG_PLUGIN_PAUSED	(1<<1)		/**< plugin is "paused" (blocked from executing) */
 
 #endif //_INCLUDE_SOURCEPAWN_VM_TYPES_H

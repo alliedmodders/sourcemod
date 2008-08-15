@@ -5,23 +5,11 @@
 
 using namespace SourcePawn;
 
-/**
-* @brief Information about the core plugin tables.  These may or may not be present!
-*/
-typedef struct sp_plugin_infotab_s
-{
-	const char *stringbase;		/**< base of string table */
-	uint32_t	publics_num;	/**< number of publics */
-	sp_file_publics_t *publics;	/**< public table */
-	uint32_t	natives_num;	/**< number of natives */
-	sp_file_natives_t *natives; /**< native table */
-	uint32_t	pubvars_num;	/**< number of pubvars */
-	sp_file_pubvars_t *pubvars;	/**< pubvars table */
-} sp_plugin_infotab_t;
+#define SP_MAX_RETURN_STACK		1024
 
 /**
-* @brief Information about the plugin's debug tables.  These are all present if one is present.
-*/
+ * @brief Information about the plugin's debug tables.  These are all present if one is present.
+ */
 typedef struct sp_plugin_debug_s
 {
 	const char *stringbase;		/**< base of string table */
@@ -36,12 +24,12 @@ typedef struct sp_plugin_debug_s
 class BaseContext;
 
 /**
-* Breaks into a debugger
-* Params:
-*  [0] - plugin context
-*  [1] - frm
-*  [2] - cip
-*/
+ * Breaks into a debugger
+ * Params:
+ *  [0] - plugin context
+ *  [1] - frm
+ *  [2] - cip
+ */
 typedef int (*SPVM_DEBUGBREAK)(BaseContext *, uint32_t, uint32_t);
 
 /**
@@ -59,37 +47,40 @@ namespace SourcePawn
 		uint32_t	data_size;		/**< Size of data */
 		uint32_t	mem_size;		/**< Required memory space */
 		uint16_t	flags;			/**< Code flags */
-		sp_plugin_infotab_t info;	/**< Base info table */
 		sp_plugin_debug_t   debug;	/**< Debug info table */
 		size_t		base_size;		/**< Size of the entire plugin base */
-		void		*codebase;		/**< Base of generated code and memory */
-		SPVM_DEBUGBREAK dbreak;		/**< Debug break function */
 		uint8_t		*memory;		/**< Data chunk */
+		const char *stringbase;		/**< base of string table */
 		sp_public_t	*publics;		/**< Public functions table */
+		uint32_t	num_publics;	/**< Number of publics. */
 		sp_pubvar_t	*pubvars;		/**< Public variables table */
+		uint32_t	num_pubvars;	/**< Number of public variables */
 		sp_native_t	*natives;		/**< Natives table */
-		sp_debug_file_t	*files;		/**< Files */
-		sp_debug_line_t	*lines;		/**< Lines */
-		sp_debug_symbol_t *symbols;	/**< Symbols */
+		uint32_t	num_natives;	/**< Number of natives */
 		IProfiler *profiler;		/**< Pointer to IProfiler */
 		uint32_t	prof_flags;		/**< Profiling flags */
 		uint32_t	run_flags;		/**< Runtime flags */
-		size_t		jit_codesize;	/**< JIT compiled codesize */
-		size_t		jit_memsize;	/**< JIT additional memory */
+		uint32_t	pcode_version;	/**< P-Code version number */
+		char		*name;			/**< Plugin/script name */
 	} sp_plugin_t;
 }
 
 typedef struct sp_context_s
 {
-	cell_t			hp;			/**< Heap pointer */
-	cell_t			sp;			/**< Stack pointer */
-	cell_t			frm;		/**< Frame pointer */
-	int32_t			n_err;		/**< Error code set by a native */
-	uint32_t		n_idx;		/**< Current native index being executed */
-	void *			vm[8];		/**< VM-specific pointers */
+	cell_t			hp;				/**< Heap pointer */
+	cell_t			sp;				/**< Stack pointer */
+	cell_t			frm;			/**< Frame pointer */
+	int32_t			err_cip;		/**< Code pointer last error occurred in */
+	int32_t			n_err;			/**< Error code set by a native */
+	uint32_t		n_idx;			/**< Current native index being executed */
+	void *			vm[8];			/**< VM-specific pointers */
+	cell_t			rp;				/**< Return stack pointer */
+	cell_t			rstk_cips[SP_MAX_RETURN_STACK];
 } sp_context_t;
 
-#define SPFLAG_PLUGIN_DEBUG			(1<<0)
+//#define SPFLAG_PLUGIN_DEBUG			(1<<0)
 #define SPFLAG_PLUGIN_PAUSED		(1<<1)
+
+#define INVALID_CIP			0xFFFFFFFF
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_SHARED_H_

@@ -296,7 +296,7 @@ namespace SourceMod
 		 * @brief Attempts to load a plugin.
 		 *
 		 * @param path		Path and filename of plugin, relative to plugins folder.
-		 * @param debug		Whether or not to default the plugin into debug mode.
+		 * @param debug		Deprecated, must be false.
 		 * @param type		Lifetime of the plugin.
 		 * @param error		Buffer to hold any error message.
 		 * @param maxlength	Maximum length of error message buffer.

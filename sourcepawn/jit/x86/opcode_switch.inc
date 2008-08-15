@@ -676,12 +676,7 @@
 			}
 		case OP_SYSREQ_N:
 			{
-				if (data->inline_level & JIT_INLINE_NATIVES)
-				{
-					WriteOp_Sysreq_N(jit);
-				} else {
-					WriteOp_Sysreq_N_NoInline(jit);
-				}
+				WriteOp_Sysreq_N(jit);
 				break;
 			}
 		case OP_TRACKER_PUSH_C:
@@ -767,6 +762,11 @@
 		case OP_STACKADJUST:
 			{
 				WriteOp_StackAdjust(jit);
+				break;
+			}
+		case OP_ENDPROC:
+			{
+				WriteOp_EndProc(jit);
 				break;
 			}
 #if defined USE_UNGEN_OPCODES

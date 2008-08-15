@@ -54,13 +54,13 @@ struct ParamInfo
 };
 
 class CPlugin;
+class JitFunction;
 
 class CFunction : public IPluginFunction
 {
 	friend class SourcePawnEngine;
 public:
-	CFunction(uint32_t code_addr,
-			  BaseRuntime *pRuntime, 
+	CFunction(BaseRuntime *pRuntime, 
 			  funcid_t fnid,
 			  uint32_t pub_id);
 public:
@@ -75,8 +75,6 @@ public:
 	virtual void Cancel();
 	virtual int CallFunction(const cell_t *params, unsigned int num_params, cell_t *result);
 	virtual IPluginContext *GetParentContext();
-	bool IsInvalidated();
-	void Invalidate();
 	bool IsRunnable();
 	funcid_t GetFunctionID();
 	int Execute2(IPluginContext *ctx, cell_t *result);
@@ -85,19 +83,16 @@ public:
 		unsigned int num_params, 
 		cell_t *result);
 public:
-	void Set(uint32_t code_addr, BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id);
+	void Set(BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id);
 private:
 	int _PushString(const char *string, int sz_flags, int cp_flags, size_t len);
 	int SetError(int err);
 private:
-	uint32_t m_codeaddr;
 	BaseRuntime *m_pRuntime;
 	cell_t m_params[SP_MAX_EXEC_PARAMS];
 	ParamInfo m_info[SP_MAX_EXEC_PARAMS];
 	unsigned int m_curparam;
 	int m_errorstate;
-	CFunction *m_pNext;
-	bool m_Invalid;
 	funcid_t m_FnId;
 };
 

@@ -42,7 +42,7 @@
 
 /** SourcePawn Engine API Version */
 #define SOURCEPAWN_ENGINE_API_VERSION	4
-#define SOURCEPAWN_ENGINE2_API_VERSION	1
+#define SOURCEPAWN_ENGINE2_API_VERSION	2
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -955,7 +955,21 @@ namespace SourcePawn
 	class IDebugListener
 	{
 	public:
+		/**
+		 * @brief Invoked on a context execution error.
+		 * 
+		 * @param ctx		Context.
+		 * @param error		Object holding error information and a backtrace.
+		 */
 		virtual void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error) =0;
+
+		/**
+		 * @brief Called on debug spew.
+		 *
+		 * @param msg		Message text.
+		 * @param fmt		Message formatting arguments (printf-style).
+		 */
+		virtual void OnDebugSpew(const char *msg, ...) =0;
 	};
 
 	/**
@@ -1225,6 +1239,19 @@ namespace SourcePawn
 		 * @return			Error string, or NULL if not found.
 		 */
 		virtual const char *GetErrorString(int err) =0;
+
+		/**
+		 * @brief Initializes the SourcePawn engine.
+		 *
+		 * @return			True on success, false if failed.
+		 */
+		virtual bool Initialize() =0;
+		
+		/**
+		 * @brief Shuts down the SourcePawn engine.  Only needs to be called if 
+		 * Initialize() succeeded.
+		 */
+		virtual void Shutdown() =0;
 	};
 };
 

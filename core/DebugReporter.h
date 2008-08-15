@@ -43,6 +43,8 @@ public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 public: // IDebugListener
 	void OnContextExecuteError(IPluginContext *ctx, IContextTrace *error);
+	void OnDebugSpew(const char *msg, ...);
+public:
 	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
 	void GenerateCodeError(IPluginContext *ctx, uint32_t code_addr, int err, const char *message, ...);
 private:

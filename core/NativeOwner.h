@@ -31,6 +31,8 @@ using namespace SourceHook;
 class CNativeOwner
 {
 public:
+	CNativeOwner();
+public:
 	virtual void DropEverything();
 public:
 	void AddNatives(const sp_nativeinfo_t *info);

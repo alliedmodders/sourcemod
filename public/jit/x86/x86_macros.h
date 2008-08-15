@@ -998,6 +998,38 @@ inline void IA32_Mov_Rm_Imm32_Disp32(JitWriter *jit,
 	jit->write_int32(val);
 }
 
+inline void IA32_Mov_Rm_Imm32_SIB(JitWriter *jit, 
+								  jit_uint8_t dest, 
+								  jit_int32_t val, 
+								  jit_int32_t disp,
+								  jit_uint8_t index,
+								  jit_uint8_t scale)
+{
+	jit->write_ubyte(IA32_MOV_RM_IMM32);
+
+	if (disp >= SCHAR_MIN && disp <= SCHAR_MAX)
+	{
+		jit->write_ubyte(ia32_modrm(MOD_DISP8, 0, REG_SIB));
+	}
+	else
+	{
+		jit->write_ubyte(ia32_modrm(MOD_DISP32, 0, REG_SIB));
+	}
+
+	jit->write_ubyte(ia32_sib(scale, index, dest));
+
+	if (disp >= SCHAR_MIN && disp <= SCHAR_MAX)
+	{
+		jit->write_byte((jit_int8_t)disp);
+	}
+	else
+	{
+		jit->write_int32(disp);
+	}
+
+	jit->write_int32(val);
+}
+
 inline void IA32_Mov_RmEBP_Imm32_Disp_Reg(JitWriter *jit, 
 								jit_uint8_t dest_base, 
 								jit_uint8_t dest_index, 
@@ -1347,21 +1379,36 @@ inline void IA32_Write_Jump32_Abs(JitWriter *jit, jitoffs_t jmp, void *target)
 	jit->outptr = oldptr;
 }
 
-/* For writing and auto-calculating an absolute target */
-inline void IA32_Jump_Imm32_Abs(JitWriter *jit, jitoffs_t target)
+/* For writing and auto-calculating a relative target */
+inline void IA32_Jump_Imm32_Rel(JitWriter *jit, jitoffs_t target)
 {
-	/* :TODO: this should work, but does it? */
 	jit->write_ubyte(IA32_JMP_IMM32);
 	IA32_Write_Jump32(jit, jit->get_outputpos(), target);
 	jit->outptr += 4;
 }
 
-inline void IA32_Jump_Cond_Imm32_Abs(JitWriter *jit, jit_uint8_t cond, jitoffs_t target)
+/* For writing and auto-calculating an absolute target */
+inline void IA32_Jump_Imm32_Abs(JitWriter *jit, void *target)
 {
-	/* :TODO: this should work, but does it? */
+	jitoffs_t jmp;
+
+	jmp = IA32_Jump_Imm32(jit, 0);
+	IA32_Write_Jump32_Abs(jit, jmp, target);
+}
+
+inline void IA32_Jump_Cond_Imm32_Rel(JitWriter *jit, jit_uint8_t cond, jitoffs_t target)
+{
 	jit->write_ubyte(IA32_JCC_IMM32_1);
 	jit->write_ubyte(IA32_JCC_IMM32_2+cond);
 	IA32_Write_Jump32(jit, jit->get_outputpos(), target);
+	jit->outptr += 4;
+}
+
+inline void IA32_Jump_Cond_Imm32_Abs(JitWriter *jit, jit_uint8_t cond, void *target)
+{
+	jit->write_ubyte(IA32_JCC_IMM32_1);
+	jit->write_ubyte(IA32_JCC_IMM32_2+cond);
+	IA32_Write_Jump32_Abs(jit, jit->get_outputpos(), target);
 	jit->outptr += 4;
 }
 

@@ -38,13 +38,11 @@
 * FUNCTION CALLING *
 ********************/
 
-void CFunction::Set(uint32_t code_addr, BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id)
+void CFunction::Set(BaseRuntime *runtime, funcid_t fnid, uint32_t pub_id)
 {
-	m_codeaddr = code_addr;
 	m_pRuntime = runtime;
 	m_curparam = 0;
 	m_errorstate = SP_ERROR_NONE;
-	m_Invalid = false;
 	m_FnId = fnid;
 }
 
@@ -68,10 +66,9 @@ IPluginContext *CFunction::GetParentContext()
 	return m_pRuntime->GetDefaultContext();
 }
 
-CFunction::CFunction(uint32_t code_addr, BaseRuntime *runtime, funcid_t id, uint32_t pub_id) : 
-	m_codeaddr(code_addr), m_curparam(0), m_errorstate(SP_ERROR_NONE), m_FnId(id)
+CFunction::CFunction(BaseRuntime *runtime, funcid_t id, uint32_t pub_id) : 
+	m_curparam(0), m_errorstate(SP_ERROR_NONE), m_FnId(id)
 {
-	m_Invalid = false;
 	m_pRuntime = runtime;
 }
 
@@ -346,10 +343,4 @@ int CFunction::SetError(int err)
 
 	return err;
 }
-
-bool CFunction::IsInvalidated()
-{
-	return m_Invalid;
-}
-
 

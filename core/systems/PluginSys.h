@@ -199,11 +199,6 @@ public:
 	void Call_OnAllPluginsLoaded();
 
 	/**
-	 * Toggles debug mode in the plugin
-	 */
-	bool ToggleDebugMode(bool debug, char *error, size_t maxlength);
-
-	/**
 	 * Returns true if a plugin is usable.
 	 */
 	bool IsRunnable();

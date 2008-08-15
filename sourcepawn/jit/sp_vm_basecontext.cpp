@@ -51,12 +51,43 @@ BaseContext::BaseContext(BaseRuntime *pRuntime)
 	m_InExec = false;
 	m_CustomMsg = false;
 
-	m_pNullVec = NULL;
-	m_pNullString = NULL;
+	/* Initialize the null references */
+	uint32_t index;
+	if (FindPubvarByName("NULL_VECTOR", &index) == SP_ERROR_NONE)
+	{
+		sp_pubvar_t *pubvar;
+		GetPubvarByIndex(index, &pubvar);
+		m_pNullVec = pubvar->offs;
+	}
+	else
+	{
+		m_pNullVec = NULL;
+	}
+
+	if (FindPubvarByName("NULL_STRING", &index) == SP_ERROR_NONE)
+	{
+		sp_pubvar_t *pubvar;
+		GetPubvarByIndex(index, &pubvar);
+		m_pNullString = pubvar->offs;
+	}
+	else
+	{
+		m_pNullString = NULL;
+	}
+
+	m_ctx.hp = m_pPlugin->data_size;
+	m_ctx.sp = m_pPlugin->mem_size - sizeof(cell_t);
+	m_ctx.frm = m_ctx.sp;
+	m_ctx.n_err = SP_ERROR_NONE;
+	m_ctx.n_idx = SP_ERROR_NONE;
+	m_ctx.rp = 0;
+
+	g_Jit.SetupContextVars(m_pRuntime, this, &m_ctx);
 }
 
 BaseContext::~BaseContext()
 {
+	g_Jit.FreeContextVars(&m_ctx);
 }
 
 IVirtualMachine *BaseContext::GetVirtualMachine()
@@ -76,7 +107,7 @@ sp_context_t *BaseContext::GetCtx()
 
 bool BaseContext::IsDebugging()
 {
-	return m_pRuntime->IsDebugging();
+	return true;
 }
 
 int BaseContext::SetDebugBreak(void *newpfn, void *oldpfn)
@@ -517,15 +548,15 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	int serial;
 	cell_t *sp;
 	funcid_t fnid;
+	JitFunction *fn;
 	sp_public_t *pubfunc;
 	cell_t _ignore_result;
+	unsigned int public_id;
 
 	fnid = function->GetFunctionID();
 
 	if (fnid & 1)
-	{
-		unsigned int public_id;
-		
+	{	
 		public_id = fnid >> 1;
 
 		if (m_pRuntime->GetPublicByIndex(public_id, &pubfunc) != SP_ERROR_NONE)
@@ -560,16 +591,40 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 		serial = m_pPlugin->profiler->OnCallbackBegin(this, pubfunc);
 	}
 
+	/* See if we have to compile the callee. */
+	if ((fn = m_pRuntime->m_PubJitFuncs[public_id]) == NULL)
+	{
+		uint32_t func_idx;
+
+		/* We might not have to - check pcode offset. */
+		if ((func_idx = FuncLookup((CompData *)m_pRuntime->m_pCo, pubfunc->code_offs)) != 0)
+		{
+			fn = m_pRuntime->GetJittedFunction(func_idx);
+			assert(fn != NULL);
+			m_pRuntime->m_PubJitFuncs[public_id] = fn;
+		}
+		else
+		{
+			if ((fn = g_Jit.CompileFunction(m_pRuntime, pubfunc->code_offs, &ir)) == NULL)
+			{
+				return ir;
+			}
+			m_pRuntime->m_PubJitFuncs[public_id] = fn;
+		}
+	}
+
 	/* Save our previous state. */
 
 	bool save_exec;
 	uint32_t save_n_idx;
-	cell_t save_sp, save_hp;
+	cell_t save_sp, save_hp, save_rp, save_cip;
 
 	save_sp = m_ctx.sp;
 	save_hp = m_ctx.hp;
 	save_exec = m_InExec;
 	save_n_idx = m_ctx.n_idx;
+	save_rp = m_ctx.rp;
+	save_cip = m_ctx.err_cip;
 
 	/* Push parameters */
 
@@ -589,15 +644,11 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 	m_CustomMsg = false;
 	m_InExec = true;
 
-	/* Start the tracer */
+	/* Start the frame tracer */
 
-	g_engine1.PushTracer(this);
+	ir = g_Jit.InvokeFunction(m_pRuntime, fn, result);
 
-	/* Execute the function */
-
-	ir = g_Jit1.ContextExecute(m_pPlugin, &m_ctx, pubfunc->code_offs, result);
-
-	/* Restore some states, stop tracing */
+	/* Restore some states, stop the frame tracer */
 
 	m_InExec = save_exec;
 
@@ -618,18 +669,30 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 				m_ctx.hp, 
 				save_hp);
 		}
+		if (m_ctx.rp != save_rp)
+		{
+			ir = SP_ERROR_STACKLEAK;
+			_SetErrorMessage("Return stack leak detected: rp:%d should be %d!",
+				m_ctx.rp,
+				save_rp);
+		}
+	}
+
+	if (ir != SP_ERROR_NONE)
+	{
+		g_engine1.ReportError(m_pRuntime, ir, m_MsgCache, save_rp);
 	}
 
 	m_ctx.sp = save_sp;
 	m_ctx.hp = save_hp;
-
-	g_engine1.PopTracer(ir, m_CustomMsg ? m_MsgCache : NULL);
-
+	m_ctx.rp = save_rp;
+	
 	if ((m_pPlugin->prof_flags & SP_PROF_CALLBACKS) == SP_PROF_CALLBACKS)
 	{
 		m_pPlugin->profiler->OnCallbackEnd(serial);
 	}
 
+	m_ctx.err_cip = save_cip;
 	m_ctx.n_idx = save_n_idx;
 	m_ctx.n_err = SP_ERROR_NONE;
 	m_MsgCache[0] = '\0';
@@ -641,23 +704,6 @@ int BaseContext::Execute2(IPluginFunction *function, const cell_t *params, unsig
 IPluginRuntime *BaseContext::GetRuntime()
 {
 	return m_pRuntime;
-}
-
-int BaseRuntime::ApplyCompilationOptions(ICompilation *co)
-{
-	int err;
-
-	/* The JIT does not destroy anything until it is guaranteed to succeed. */
-	if (!g_Jit1.Compile(co, this, &err))
-	{
-		return err;
-	}
-
-	RefreshFunctionCache();
-
-	m_pCtx->Refresh();
-
-	return SP_ERROR_NONE;
 }
 
 DebugInfo::DebugInfo(sp_plugin_t *plugin) : m_pPlugin(plugin)
@@ -676,7 +722,7 @@ int DebugInfo::LookupFile(ucell_t addr, const char **filename)
 	while (high - low > 1)
 	{
 		mid = USHR(low + high);
-		if (m_pPlugin->files[mid].addr <= addr)
+		if (m_pPlugin->debug.files[mid].addr <= addr)
 		{
 			low = mid;
 		} else {
@@ -689,33 +735,44 @@ int DebugInfo::LookupFile(ucell_t addr, const char **filename)
 		return SP_ERROR_NOT_FOUND;
 	}
 
-	*filename = m_pPlugin->files[low].name;
+	*filename = m_pPlugin->debug.stringbase + m_pPlugin->debug.files[low].name;
 
 	return SP_ERROR_NONE;
 }
 
 int DebugInfo::LookupFunction(ucell_t addr, const char **name)
 {
-	uint32_t iter, max = m_pPlugin->debug.syms_num;
+	uint32_t max, iter;
+	sp_fdbg_symbol_t *sym;
+	sp_fdbg_arraydim_t *arr;
+	uint8_t *cursor = (uint8_t *)(m_pPlugin->debug.symbols);
 
-	for (iter=0; iter<max; iter++)
+	max = m_pPlugin->debug.syms_num;
+	for (iter = 0; iter < max; iter++)
 	{
-		if ((m_pPlugin->symbols[iter].sym->ident == SP_SYM_FUNCTION) 
-			&& (m_pPlugin->symbols[iter].codestart <= addr) 
-			&& (m_pPlugin->symbols[iter].codeend > addr))
+		sym = (sp_fdbg_symbol_t *)cursor;
+
+		if (sym->ident == SP_SYM_FUNCTION
+			&& sym->codestart <= addr 
+			&& sym->codeend > addr)
 		{
-			break;
+			*name = m_pPlugin->debug.stringbase + sym->name;
+			return SP_ERROR_NONE;
 		}
+
+		if (sym->dimcount > 0)
+		{
+			cursor += sizeof(sp_fdbg_symbol_t);
+			arr = (sp_fdbg_arraydim_t *)cursor;
+			cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
+			continue;
+		}
+
+		cursor += sizeof(sp_fdbg_symbol_t);
 	}
 
-	if (iter >= max)
-	{
-		return SP_ERROR_NOT_FOUND;
-	}
+	return SP_ERROR_NOT_FOUND;
 
-	*name = m_pPlugin->symbols[iter].name;
-
-	return SP_ERROR_NONE;
 }
 
 int DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
@@ -728,7 +785,7 @@ int DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
 	while (high - low > 1)
 	{
 		mid = USHR(low + high);
-		if (m_pPlugin->lines[mid].addr <= addr)
+		if (m_pPlugin->debug.lines[mid].addr <= addr)
 		{
 			low = mid;
 		} else {
@@ -742,7 +799,7 @@ int DebugInfo::LookupLine(ucell_t addr, uint32_t *line)
 	}
 
 	/* Since the CIP occurs BEFORE the line, we have to add one */
-	*line = m_pPlugin->lines[low].line + 1;
+	*line = m_pPlugin->debug.lines[low].line + 1;
 
 	return SP_ERROR_NONE;
 }
@@ -780,31 +837,4 @@ bool BaseContext::GetKey(int k, void **value)
 	*value = m_keys[k - 1];
 
 	return true;
-}
-
-void BaseContext::Refresh()
-{
-	/* Initialize the null references */
-	uint32_t index;
-	if (FindPubvarByName("NULL_VECTOR", &index) == SP_ERROR_NONE)
-	{
-		sp_pubvar_t *pubvar;
-		GetPubvarByIndex(index, &pubvar);
-		m_pNullVec = pubvar->offs;
-	}
-	else
-	{
-		m_pNullVec = NULL;
-	}
-
-	if (FindPubvarByName("NULL_STRING", &index) == SP_ERROR_NONE)
-	{
-		sp_pubvar_t *pubvar;
-		GetPubvarByIndex(index, &pubvar);
-		m_pNullString = pubvar->offs;
-	}
-	else
-	{
-		m_pNullString = NULL;
-	}
 }
