@@ -1600,8 +1600,9 @@ inline void WriteOp_JsGeq(JitWriter *jit)
 
 inline void WriteOp_Switch(JitWriter *jit)
 {
+	CompData *data = (CompData *)jit->data;
 	cell_t offs = jit->read_cell();
-	cell_t *tbl = (cell_t *)((char *)jit->inbase + offs + sizeof(cell_t));
+	cell_t *tbl = (cell_t *)((char *)data->plugin->pcode + offs + sizeof(cell_t));
 
 	struct casetbl
 	{
@@ -2436,6 +2437,12 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 		/* Offset must always be 1)positive and 2)less than or equal to the codesize */
 		assert(pcode_offs >= 0 && (uint32_t)pcode_offs <= data->plugin->pcode_size);
 		/* Do the lookup in the native dictionary. */
+#if defined _DEBUG
+		if (jit->outbase != NULL)
+		{
+			assert(*(jitoffs_t *)(data->rebase + pcode_offs) != NULL);
+		}
+#endif
 		return *(jitoffs_t *)(data->rebase + pcode_offs);
 	}
 	else
