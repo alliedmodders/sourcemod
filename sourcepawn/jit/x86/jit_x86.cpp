@@ -2440,7 +2440,7 @@ jitoffs_t RelocLookup(JitWriter *jit, cell_t pcode_offs, bool relative)
 #if defined _DEBUG
 		if (jit->outbase != NULL)
 		{
-			assert(*(jitoffs_t *)(data->rebase + pcode_offs) != NULL);
+			assert(*(jitoffs_t *)(data->rebase + pcode_offs) != 0);
 		}
 #endif
 		return *(jitoffs_t *)(data->rebase + pcode_offs);
