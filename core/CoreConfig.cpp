@@ -40,6 +40,7 @@
 #include "Logger.h"
 #include "PluginSys.h"
 #include "ForwardSys.h"
+#include "frame_hooks.h"
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -102,9 +103,7 @@ void CheckAndFinalizeConfigs()
 	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
 		&& g_bGotServerStart)
 	{
-		/* Order is important here.  We need to buffer things before we send the command out. */
-		g_pOnAutoConfigsBuffered->Execute(NULL);
-		engine->ServerCommand("sm internal 1\n");
+        g_PendingInternalPush = true;
 	}
 }
 
@@ -502,10 +501,6 @@ void SM_ExecuteAllConfigs()
 	}
 	iter->Release();
 
-#if defined ORANGEBOX_BUILD
-	engine->ServerExecute();
-#endif
-
 	g_bGotServerStart = true;
 	CheckAndFinalizeConfigs();
 }
@@ -522,3 +517,12 @@ void SM_ConfigsExecuted_Global()
 	g_pOnServerCfg->Execute(NULL);
 	g_pOnConfigsExecuted->Execute(NULL);
 }
+
+void SM_InternalCmdTrigger()
+{
+	/* Order is important here.  We need to buffer things before we send the command out. */
+	g_pOnAutoConfigsBuffered->Execute(NULL);
+	engine->ServerCommand("sm internal 1\n");
+    g_PendingInternalPush = false;
+}
+

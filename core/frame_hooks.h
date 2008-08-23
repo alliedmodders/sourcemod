@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 #define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 
+extern bool g_PendingInternalPush;
+
 void RunFrameHooks(bool simulating);
 
 #endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_

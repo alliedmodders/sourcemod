@@ -68,6 +68,7 @@ extern void SM_ExecuteAllConfigs();
 extern void SM_ExecuteForPlugin(IPluginContext *ctx);
 extern void SM_ConfigsExecuted_Global();
 extern void SM_ConfigsExecuted_Plugin(unsigned int serial);
+extern void SM_InternalCmdTrigger();
 
 extern CoreConfig g_CoreConfig;
 
