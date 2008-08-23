@@ -103,7 +103,11 @@ void CheckAndFinalizeConfigs()
 	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
 		&& g_bGotServerStart)
 	{
+#if defined ORANGEBOX_BUILD
         g_PendingInternalPush = true;
+#else
+        SM_InternalCmdTrigger();
+#endif
 	}
 }
 
