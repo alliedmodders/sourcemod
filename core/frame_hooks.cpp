@@ -35,9 +35,11 @@
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
 #include "PlayerManager.h"
+#include "CoreConfig.h"
 
 float g_LastMenuTime = 0.0f;
 float g_LastAuthCheck = 0.0f;
+bool g_PendingInternalPush = false;
 
 void RunFrameHooks(bool simulating)
 {
@@ -45,6 +47,12 @@ void RunFrameHooks(bool simulating)
 	g_DBMan.RunFrame();
 	g_HL2.ProcessFakeCliCmdQueue();
 	g_HL2.ProcessDelayedKicks();
+
+    if (g_PendingInternalPush)
+    {
+        SM_InternalCmdTrigger();
+    }
+
 	g_SourceMod.ProcessGameFrameHooks(simulating);
 
 	float curtime = *g_pUniversalTime;

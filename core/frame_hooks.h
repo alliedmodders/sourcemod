@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -31,6 +31,8 @@
 
 #ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 #define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
+
+extern bool g_PendingInternalPush;
 
 void RunFrameHooks(bool simulating);
 

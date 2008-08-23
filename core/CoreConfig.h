@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -68,6 +68,7 @@ extern void SM_ExecuteAllConfigs();
 extern void SM_ExecuteForPlugin(IPluginContext *ctx);
 extern void SM_ConfigsExecuted_Global();
 extern void SM_ConfigsExecuted_Plugin(unsigned int serial);
+extern void SM_InternalCmdTrigger();
 
 extern CoreConfig g_CoreConfig;
 
