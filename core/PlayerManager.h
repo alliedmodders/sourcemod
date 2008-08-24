@@ -105,6 +105,7 @@ private:
 	int m_iIndex;
 	unsigned int m_LangId;
 	int m_UserId;
+	bool m_bFakeClient;
 };
 
 class PlayerManager : 
@@ -195,7 +196,6 @@ private:
 	bool m_QueryLang;
 	bool m_bIsListenServer;
 	int m_ListenClient;
-	bool m_bFakeClient;
 };
 
 extern PlayerManager g_Players;
