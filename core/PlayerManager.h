@@ -195,6 +195,7 @@ private:
 	bool m_QueryLang;
 	bool m_bIsListenServer;
 	int m_ListenClient;
+	bool m_bFakeClient;
 };
 
 extern PlayerManager g_Players;

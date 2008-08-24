@@ -451,6 +451,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		char error[255];
 		const char *authid = engine->GetPlayerNetworkIDString(pEntity);
 		pPlayer->Authorize(authid);
+		pPlayer->m_bFakeClient = true;
 		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
 		{
 			/* :TODO: kick the bot if it's rejected */
@@ -1219,6 +1220,7 @@ CPlayer::CPlayer()
 	m_bIsInKickQueue = false;
 	m_LastPassword.clear();
 	m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
+	m_bFakeClient = false;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -1286,6 +1288,7 @@ void CPlayer::Disconnect()
 	m_bAdminCheckSignalled = false;
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
+	m_bFakeClient = false;
 }
 
 void CPlayer::SetName(const char *name)
@@ -1350,7 +1353,7 @@ IPlayerInfo *CPlayer::GetPlayerInfo()
 
 bool CPlayer::IsFakeClient()
 {
-	return (strncasecmp(m_AuthID.c_str(), "BOT", 3) == 0);
+	return m_bFakeClient;
 }
 
 void CPlayer::SetAdminId(AdminId id, bool temporary)
