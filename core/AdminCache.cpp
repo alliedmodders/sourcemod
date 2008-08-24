@@ -162,8 +162,6 @@ private:
 
 		c -= (unsigned)'a';
 
-		assert(c >= 0 && c < 26);
-
 		if (!g_Admins.FindFlag(key, &g_FlagLetters[c]))
 		{
 			ParseError(states, "Unrecognized admin level \"%s\"", key);

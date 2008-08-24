@@ -105,6 +105,7 @@ private:
 	int m_iIndex;
 	unsigned int m_LangId;
 	int m_UserId;
+	bool m_bFakeClient;
 };
 
 class PlayerManager : 
