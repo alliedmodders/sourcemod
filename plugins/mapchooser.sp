@@ -138,6 +138,7 @@ public OnPluginStart()
 		HookEvent("round_end", Event_RoundEnd);
 		HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
 		HookEventEx("teamplay_restart_round", Event_TFRestartRound);
+		HookEventEx("arena_win_panel", Event_TeamPlayWinPanel);
 	}
 	
 	if (g_Cvar_Fraglimit != INVALID_HANDLE)
@@ -316,6 +317,7 @@ public Action:Timer_StartMapVote(Handle:timer)
 {
 	if (timer == g_RetryTimer)
 	{
+		g_WaitingForVote = false;
 		g_RetryTimer = INVALID_HANDLE;
 	}
 	else
@@ -347,16 +349,23 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
-	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted || !GetConVarBool(g_Cvar_EndOfMapVote))
-	{
-		return;
-	}
-	
 	new bluescore = GetEventInt(event, "blue_score");
 	new redscore = GetEventInt(event, "red_score");
 	
-	if(GetEventInt(event, "round_complete") == 1)
-	{	
+	LogMessage("Win Panel Detected - Red Score %i, Blue Score %i", redscore, bluescore);
+	
+	if(GetEventInt(event, "round_complete") == 1 || StrEqual(name, "arena_win_panel"))
+	{
+		g_TotalRounds++;
+		CheckMaxRounds(g_TotalRounds);
+		
+		LogMessage("Round Completed! rounds %i", g_TotalRounds);
+		
+		if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted || !GetConVarBool(g_Cvar_EndOfMapVote))
+		{
+			return;
+		}
+		
 		switch(GetEventInt(event, "winning_team"))
 		{
 			case 3:
@@ -373,9 +382,6 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 				return;
 			}			
 		}
-		
-		g_TotalRounds++;
-		CheckMaxRounds(g_TotalRounds);
 	}
 }
 /* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
@@ -387,11 +393,6 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
 	}
 	
-	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted)
-	{
-		return;
-	}
-
 	new winner = GetEventInt(event, "winner");
 	
 	if (winner == 0 || winner == 1 || !GetConVarBool(g_Cvar_EndOfMapVote))
@@ -407,6 +408,11 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	g_TotalRounds++;
 	
 	g_winCount[winner]++;
+	
+	if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted)
+	{
+		return;
+	}
 	
 	CheckWinLimit(g_winCount[winner]);
 	CheckMaxRounds(g_TotalRounds);
@@ -760,6 +766,9 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 			{
 				// We were actually cancelled. I guess we do nothing.
 			}
+			
+			g_HasVoteStarted = false;
+			g_MapVoteCompleted = true;
 		}
 	}
 	
