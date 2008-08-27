@@ -351,15 +351,11 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 	
 	new bluescore = GetEventInt(event, "blue_score");
 	new redscore = GetEventInt(event, "red_score");
-	
-	LogMessage("Win Panel Detected - Red Score %i, Blue Score %i", redscore, bluescore);
-	
+		
 	if(GetEventInt(event, "round_complete") == 1 || StrEqual(name, "arena_win_panel"))
 	{
 		g_TotalRounds++;
 		CheckMaxRounds(g_TotalRounds);
-		
-		LogMessage("Round Completed! rounds %i", g_TotalRounds);
 		
 		if (!GetArraySize(g_MapList) || g_HasVoteStarted || g_MapVoteCompleted || !GetConVarBool(g_Cvar_EndOfMapVote))
 		{
