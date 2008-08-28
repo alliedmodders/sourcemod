@@ -246,7 +246,7 @@ namespace SourceMod
 		 *						permissions.
 		 * @param ident		Security token for any permissions.  If typeAccess is NULL, this 
 		 *					becomes the owning identity.
-		 * @param err		Optional pointer to store an error code.
+		 * @param err		Optional pointer to store an error code on failure (undefined on success).
 		 * @return			A new HandleType_t unique ID, or 0 on failure.
 		 */
 		virtual HandleType_t CreateType(const char *name,
@@ -283,7 +283,7 @@ namespace SourceMod
 		 * @param object	Object to bind to the handle.
 		 * @param owner		Owner of the new Handle (may be NULL).
 		 * @param ident		Identity for type access if needed (may be NULL).
-		 * @param err		Optional pointer to store an error code.
+		 * @param err		Optional pointer to store an error code on failure (undefined on success).
 		 * @return			A new Handle_t, or 0 on failure.
 		 */
 		virtual Handle_t CreateHandle(HandleType_t type, 
@@ -349,7 +349,7 @@ namespace SourceMod
 		 * @param pSec		Security pointer; pOwner is written as the owner,
 		 *					pIdent is used as the parent identity for authorization.
 		 * @param pAccess	Access right descriptor for the Handle; NULL for type defaults.
-		 * @param err		Optional pointer to store an error code.
+		 * @param err		Optional pointer to store an error code on failure (undefined on success).
 		 * @return			A new Handle_t, or 0 on failure.
 		 */
 		virtual Handle_t CreateHandleEx(HandleType_t type, 
@@ -361,3 +361,4 @@ namespace SourceMod
 }
 
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_INTERFACE_H_
+
