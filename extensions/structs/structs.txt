@@ -9,7 +9,7 @@
 				"library"		"server"
 				"linux"		"@_Z20LookupWeaponInfoSlotPKc"
 				/* This is actually ReadWeaponDataFromFileForSlot - We get find using an offset from here */
-				"windows"	"\x81\xEC\x84\x00\x00\x00\x56\x8B\xB4\x24\x94\x00\x00\x00\x85\xF6\x75\x0A"
+				"windows"	"\x81\xEC\x80\x00\x00\x00\x57\x8B\xBC\x24\x90\x00\x00\x00\x85\xFF\x75\x0A"
 			}
 
 			"GetFileWeaponInfoFromHandle"
