@@ -296,7 +296,32 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	ConCmdInfo *pInfo;
 	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
 	{
-		return;
+        /* Unfortunately, we now have to do a slow lookup because Valve made client commands 
+         * case-insensitive.  We can't even use our sortedness.
+         */
+        if (client == 0 && !engine->IsDedicatedServer())
+        {
+            return;
+        }
+
+        List<ConCmdInfo *>::iterator iter;
+
+        pInfo = NULL;
+        iter = m_CmdList.begin();
+        while (iter != m_CmdList.end())
+        {
+            if (strcasecmp((*iter)->pCmd->GetName(), cmd) == 0)
+            {
+                pInfo = (*iter);
+                break;
+            }
+            iter++;
+        }
+        
+		if (pInfo == NULL)
+        {
+            return;
+        }
 	}
 
 	/* This is a hack to prevent say triggers from firing on messages that were 
