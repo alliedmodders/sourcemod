@@ -330,6 +330,7 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 				topmenu_category_t *cat = m_Categories[i];
 				for (size_t j = 0; j < m_Categories[i]->obj_list.size(); j++)
 				{
+					m_ObjLookup.remove(cat->obj_list[j]->name);
 					cat->obj_list[j]->callbacks->OnTopMenuObjectRemoved(this, cat->obj_list[j]->object_id);
 					cat->obj_list[j]->is_free = true;
 				}
