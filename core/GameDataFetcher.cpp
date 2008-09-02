@@ -60,6 +60,7 @@
 #include "time.h"
 #include "TimerSys.h"
 #include "compat_wrappers.h"
+#include "sm_stringutil.h"
 
 #define QUERY_MAX_LENGTH 1024
 
@@ -70,6 +71,9 @@ FILE *logfile = NULL;
 
 bool g_disableGameDataUpdate = false;
 bool g_restartAfterUpdate = false;
+
+int g_serverPort = 6500;
+char g_serverAddress[100] = "hayate.alliedmods.net";
 
 void FetcherThread::RunThread( IThreadHandle *pHandle )
 {
@@ -269,13 +273,13 @@ int FetcherThread::ConnectSocket()
 	struct sockaddr_in local_addr;
 
 	local_addr.sin_family = AF_INET;
-	local_addr.sin_port = htons((u_short)6500);
+	local_addr.sin_port = htons((u_short)g_serverPort);
 
-	he = gethostbyname("hayate.alliedmods.net");
+	he = gethostbyname(g_serverAddress);
 
 	if (!he)
 	{
-		if ((local_addr.sin_addr.s_addr = inet_addr("hayate.alliedmods.net")) == INADDR_NONE)
+		if ((local_addr.sin_addr.s_addr = inet_addr(g_serverAddress)) == INADDR_NONE)
 		{
 			g_Logger.LogToOpenFile(logfile, "Couldnt locate address");
 			closesocket(socketDescriptor);
@@ -643,6 +647,27 @@ public:
 			}
 
 			return ConfigResult_Reject;
+		}
+
+		if (strcmp(key, "AutoUpdateServer") == 0)
+		{
+			UTIL_Format(g_serverAddress, sizeof(g_serverAddress), "%s", value);
+
+			return ConfigResult_Accept;
+		}
+
+		if (strcmp(key, "AutoUpdatePort") == 0)
+		{
+			int port = atoi(value);
+
+			if (!port)
+			{
+				return ConfigResult_Reject;
+			}
+
+			g_serverPort = port;
+
+			return ConfigResult_Accept;
 		}
 
 		return ConfigResult_Ignore;
