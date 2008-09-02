@@ -298,6 +298,8 @@ functag SrvCmd Action:public(args);
 /**
  * Creates a server-only console command, or hooks an already existing one.  
  *
+ * Server commands are case sensitive.
+ *
  * @param cmd			Name of the command to hook or create.
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
@@ -320,6 +322,10 @@ functag ConCmd Action:public(client, args);
 /**
  * Creates a console command, or hooks an already existing one.
  *
+ * Console commands are case sensitive.  However, if the command already exists in the game, 
+ * the a client may enter the command in any case.  SourceMod corrects for this automatically, 
+ * and you should only hook the "real" version of the command.
+ *
  * @param cmd			Name of the command to hook or create.
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
@@ -333,6 +339,8 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * Creates a console command as an administrative command.  If the command does not exist,
  * it is created.  When this command is invoked, the access rights of the player are 
  * automatically checked before allowing it to continue.
+ *
+ * Admin commands are case sensitive from both the client and server.
  *
  * @param cmd			String containing command to register.
  * @param callback		A function to use as a callback for when the command is invoked.
