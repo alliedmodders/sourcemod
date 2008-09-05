@@ -2716,8 +2716,6 @@ jit_rewind:
 		}
 	}
 
-	plugin->prof_flags = data->profile;
-
 	*err = SP_ERROR_NONE;
 
 	JitFunction *fn;

@@ -484,6 +484,7 @@ int BaseRuntime::ApplyCompilationOptions(ICompilation *co)
 	}
 
 	m_pCo = g_Jit.ApplyOptions(m_pCo, co);
+	m_pPlugin->prof_flags = ((CompData *)m_pCo)->profile;
 
 	return SP_ERROR_NONE;
 }
