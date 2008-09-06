@@ -1,0 +1,116 @@
+#!/usr/bin/perl
+
+use strict;
+use Cwd;
+
+package Build;
+
+our $SVN = "/usr/bin/svn";
+our $SVN_USER = 'dvander';
+our $SVN_ARGS = '';
+our $SVN_VERSION = "/usr/bin/svnversion";
+
+sub Revision
+{
+	my ($str)=(@_);
+	my $dir = $SVN_VERSION;
+		
+	my $data = Command($dir . ' -c ' . $str);
+	if ($data =~ /(\d+):(\d+)/)
+	{
+		return $2;
+	} elsif ($data =~ /(\d+)/) {
+		return $1;
+	} else {
+		return 0;
+	}
+}
+
+sub Delete
+{
+	my ($str)=(@_);
+	if ($^O =~ /MSWin/)
+	{
+		Command("del /S /F /Q \"$str\"");
+		Command("rmdir /S /Q \"$str\"");
+	} else {
+		Command("rm -rf $str");
+	}
+	return !(-e $str);
+}
+
+sub Copy
+{
+	my ($src,$dest)=(@_);
+	if ($^O =~ /MSWin/)
+	{
+		Command("copy \"$src\" \"$dest\" /y");
+	} else {
+		Command("cp \"$src\" \"$dest\"");
+	}
+	return (-e $dest);
+}
+
+sub Move
+{
+	my ($src,$dest)=(@_);
+	if ($^O =~ /MSWin/)
+	{
+		Command("move \"$src\" \"$dest\"");
+	} else {
+		Command("mv \"$src\" \"$dest\"");
+	}
+	return (-e $dest);
+}
+
+sub Command
+{
+	my($cmd)=(@_);
+	print "$cmd\n";
+	return `$cmd`;
+}
+
+sub PathFormat
+{
+	my ($str)=(@_);
+	if ($^O =~ /MSWin/)
+	{
+		$str =~ s#/#\\#g;
+	} else {
+		$str =~ s#\\#/#g;
+	}
+	return $str;
+}
+
+sub SVN_Remove
+{
+	my ($file)=(@_);
+	my ($path, $name);
+	if ($^O =~ /MSWin/)
+	{
+		($path, $name) = ($file =~ /(.+)\/([^\/]+)$/);
+	} else {
+		($path, $name) = ($file =~ /(.+)\\([^\\]+)$/);
+	}
+	my $dir = Cwd::cwd();
+	chdir($path);
+	Command($SVN . ' ' . $SVN_ARGS . ' delete ' . $name);
+	chdir($dir);
+}
+
+sub SVN_Add
+{
+	my ($file)=(@_);
+	my ($path, $name);
+	if ($^O =~ /MSWin/)
+	{
+		($path, $name) = ($file =~ /(.+)\/([^\/]+)$/);
+	} else {
+		($path, $name) = ($file =~ /(.+)\\([^\\]+)$/);
+	}
+	my $dir = Cwd::cwd();
+	chdir($path);
+	Command($SVN . ' ' . $SVN_ARGS . ' add ' . $name);
+	chdir($dir);
+}
+
