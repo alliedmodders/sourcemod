@@ -43,9 +43,11 @@ namespace builder
 			} 
 			catch (System.Exception e) 
 			{
-				Console.WriteLine("Build failed: " + e.Message);
+				Console.WriteLine("Build failed, exception: " + e.Message);
                 Environment.Exit(1);
 			}
+
+            Environment.Exit(0);
 		}
 	}
 }
