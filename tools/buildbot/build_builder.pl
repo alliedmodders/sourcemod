@@ -2,7 +2,7 @@
 
 require 'helpers.pm';
 
-chdir('../builder');
+chdir('tools/builder');
 if ($^O eq "linux")
 {
     Build::Command('make clean');
