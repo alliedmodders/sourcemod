@@ -44,7 +44,6 @@ namespace builder
 			p.WaitForExit();
 			p.Close();
 
-			Console.WriteLine("Debug: wd = " + info.WorkingDirectory + " fn = " + info.FileName + " arg = " + info.Arguments);
 			Console.WriteLine(output);
 
 			string binary = Config.PathFormat("{0}/{1}/addons/sourcemod/scripting/{2}.smx", cfg.pkg_path, pkg.GetBaseFolder(), pl.Source);
