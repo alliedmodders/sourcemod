@@ -4,12 +4,15 @@ use File::Basename;
 
 my ($myself, $path) = fileparse($0);
 chdir($path);
+
+require 'helpers.pm';
+
 chdir('..');
 chdir('..');
 
 my ($cmd, $output);
 
-$cmd = 'tools/builder/builder.exe build.cfg 2>&1';
+$cmd = Build::PathFormat('tools/builder/builder.exe') . ' build.cfg 2>&1';
 
 if ($^O eq "linux")
 {
