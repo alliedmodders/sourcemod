@@ -5,12 +5,21 @@ use Cwd;
 use File::Basename;
 use Net::FTP;
 
-my ($ftp_host, $ftp_user, $ftp_pass, $ftp_path);
+my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path);
 
-$ftp_host = shift;
-$ftp_user = shift;
-$ftp_pass = shift;
-$ftp_path = shift;
+$ftp_file = shift;
+
+open(FTP, $ftp_file) or die "Unable to read FTP config file $ftp_file: $!\n";
+$ftp_host = <FTP>;
+$ftp_user = <FTP>;
+$ftp_pass = <FTP>;
+$ftp_path = <FTP>;
+close(FTP);
+
+chomp $ftp_host;
+chomp $ftp_user;
+chomp $ftp_pass;
+chomp $ftp_path;
 
 my ($myself, $path) = fileparse($0);
 chdir($path);
