@@ -23,3 +23,37 @@ else
 
 die "Unable to build builder tool!\n" unless -e 'builder.exe';
 
+#Go back to main source dir.
+chdir(Build::PathFormat('../..'));
+
+#Get the source path.
+my ($root) = getcwd();
+
+#Create output folder if it doesn't exist.
+if (!(-d 'OUTPUT')) {
+    mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
+}
+
+#Write the configuration file.
+open(CONF, '>build.cfg') or die("Failed to write build.cfg: $!\n");
+print CONF "OutputBase = " . Build::PathFormat($root . '/OUTPUT') . "\n";
+print CONF "SourceBase = $root\n";
+if ($^O eq "linux") 
+{
+    print CONF "BuilderPath = /usr/bin/make\n";
+}
+else
+{
+    print CONF "BuilderPath = " . $ENV{'MSVC8'} . "\n";
+}
+close(CONF);
+
+#Do the annoying revision bumping.
+#Linux needs some help here.
+if ($^O eq "linux")
+{
+    Build::Command("flip -u modules.versions");
+    Build::Command("flip -u tools/versionchanger.pl");
+    Build::Command("chmod +x tools/versionchanger.pl");
+}
+Build::Command("tools/versionchanger.pl");
