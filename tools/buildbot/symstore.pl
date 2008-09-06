@@ -34,7 +34,7 @@ while (<PDBLOG>)
 close(PDBLOG);
 
 #Now that we're done, rsync back.
-rsync('..\\..\\symstore\\', 'sourcemod@alliedmods.net:~/public_html/symbols');
+rsync('../../symstore/', 'sourcemod@alliedmods.net:~/public_html/symbols');
 
 sub rsync
 {
