@@ -17,7 +17,7 @@ if ($^O eq "linux")
 }
 else
 {
-    Build::Command($ENV{'MSVC7'} . ' /Rebuild Release builder.csproj');
+    Build::Command('"' . $ENV{'MSVC7'} . '" /Rebuild Release builder.csproj');
     Build::Command('move ' . Build::PathFormat('bin/Release/builder.exe') . ' .');
 }
 
