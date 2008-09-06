@@ -8,14 +8,12 @@ package Build;
 our $SVN = "/usr/bin/svn";
 our $SVN_USER = 'dvander';
 our $SVN_ARGS = '';
-our $SVN_VERSION = "/usr/bin/svnversion";
 
 sub Revision
 {
 	my ($str)=(@_);
-	my $dir = $SVN_VERSION;
-		
-	my $data = Command($dir . ' -c ' . $str);
+			
+	my $data = Command('svnversion -c ' . $str);
 	if ($data =~ /(\d+):(\d+)/)
 	{
 		return $2;
@@ -24,6 +22,17 @@ sub Revision
 	} else {
 		return 0;
 	}
+}
+
+sub ProductVersion
+{
+	my ($file) = (@_);
+	my ($version);
+	open(FILE, $file) or die "Could not open $file: $!\n";
+	$version = <FILE>;
+	close(FILE);
+	chomp $version;
+	return $version;
 }
 
 sub Delete
@@ -114,3 +123,4 @@ sub SVN_Add
 	chdir($dir);
 }
 
+return 1;

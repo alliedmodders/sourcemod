@@ -31,8 +31,7 @@ chdir(Build::PathFormat('../../OUTPUT/base'));
 
 my ($version);
 
-$version = `cat ../../product.version`;
-chomp $version;
+$version = Build::ProductVersion(Build::PathFormat('../../product.version'));
 $version .= '.' . Build::Revision('../..');
 
 my ($filename);

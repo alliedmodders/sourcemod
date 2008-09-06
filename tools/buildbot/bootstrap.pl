@@ -45,6 +45,7 @@ if ($^O eq "linux")
 else
 {
     print CONF "BuilderPath = " . $ENV{'MSVC8'} . "\n";
+    print CONF "PDBLog = $root\\OUTPUT\\pdblog.txt\n";
 }
 close(CONF);
 
