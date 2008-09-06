@@ -16,10 +16,4 @@ if ($^O eq "linux")
     $cmd = 'mono ' . $cmd;
 }
 
-print "$cmd\n";
-$output = `$cmd`;
-
-print $output;
-
-die "Build failed: $!\n" if $?;
-
+system($cmd) or die "Build failed: $!\n";
