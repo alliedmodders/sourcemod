@@ -1,5 +1,12 @@
 #!/usr/bin/perl
 
+use strict;
+use Cwd;
+use File::Basename;
+
+my ($myself, $path) = fileparse($0);
+chdir($path);
+
 require 'helpers.pm';
 
 chdir(Build::PathFormat('../builder'));
