@@ -1,8 +1,12 @@
 #!/usr/bin/perl
 
-require 'helpers.pm';
+my $incoming = shift;
 
-chdir('tools/builder');
+die "Invalid source folder.\n" unless $incoming ne '';
+
+require $incoming . '/tools/buildbot/helpers.pm';
+
+chdir(Build::PathFormat($incoming . '/tools/builder'));
 if ($^O eq "linux")
 {
     Build::Command('make clean');
