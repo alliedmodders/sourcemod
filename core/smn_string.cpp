@@ -192,7 +192,31 @@ static cell_t sm_formatex(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(res);
 }
 
+class StaticCharBuf
+{
+    char *buffer;
+    size_t max_size;
+public:
+    StaticCharBuf() : buffer(NULL), max_size(0)
+    {
+    }
+    ~StaticCharBuf()
+    {
+        delete [] buffer;
+    }
+    char* GetWithSize(size_t len)
+    {
+        if (len > max_size)
+        {
+            buffer = (char *)realloc(buffer, len);
+            max_size = len;
+        }
+        return buffer;
+    }
+};
+
 static char g_formatbuf[2048];
+static StaticCharBuf g_extrabuf;
 static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 {
 	char *buf, *fmt, *destbuf;
@@ -200,6 +224,7 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 	size_t res, maxlen;
 	int arg = 4;
 	bool copy = false;
+    char *__copy_buf;
 
 	pCtx->LocalToString(params[1], &destbuf);
 	pCtx->LocalToString(params[3], &fmt);
@@ -217,12 +242,25 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 			break;
 		}
 	}
-	buf = (copy) ? g_formatbuf : destbuf;
+
+    if (copy)
+    {
+        if (maxlen > sizeof(g_formatbuf))
+        {
+            __copy_buf = g_extrabuf.GetWithSize(maxlen);
+        }
+        else
+        {
+            __copy_buf = g_formatbuf;
+        }
+    }
+
+	buf = (copy) ? __copy_buf : destbuf;
 	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
 
 	if (copy)
 	{
-		memcpy(destbuf, g_formatbuf, res+1);
+		memcpy(destbuf, __copy_buf, res+1);
 	}
 
 	return static_cast<cell_t>(res);
