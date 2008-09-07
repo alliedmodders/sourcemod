@@ -112,9 +112,9 @@ static cell_t GetTeamCount(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_szTeamname")->GetOffset();
@@ -128,9 +128,9 @@ static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
@@ -141,9 +141,9 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
@@ -155,9 +155,9 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamClientCount(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (!g_Teams[teamindex].ClassName || (teamindex > (int)g_Teams.size()))
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	SendProp *pProp = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "\"player_array\"");
