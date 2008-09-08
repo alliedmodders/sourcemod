@@ -109,6 +109,7 @@ static cell_t GetTeamCount(IPluginContext *pContext, const cell_t *params)
 	return g_Teams.size();
 }
 
+static int g_teamname_offset = -1;
 static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
@@ -117,8 +118,25 @@ static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_szTeamname")->GetOffset();
-	char *name = (char *)((unsigned char *)g_Teams[teamindex].pEnt + offset);
+	if (g_teamname_offset == 0)
+	{
+		return pContext->ThrowNativeError("Team names are not available on this game.");
+	}
+
+	if (g_teamname_offset == -1)
+	{
+		SendProp *prop = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_szTeamname");
+
+		if (prop == NULL)
+		{
+			g_teamname_offset = 0;
+			return pContext->ThrowNativeError("Team names are not available on this game.");
+		}
+
+		g_teamname_offset = prop->GetOffset();
+	}
+
+	char *name = (char *)((unsigned char *)g_Teams[teamindex].pEnt + g_teamname_offset);
 
 	pContext->StringToLocalUTF8(params[2], params[3], name, NULL);
 
