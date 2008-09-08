@@ -1641,7 +1641,6 @@ static int substpattern(unsigned char *line,size_t buffersize,char *pattern,char
           if (args[arg]!=NULL) {
             strins((char*)s,(char*)args[arg],strlen((char*)args[arg]));
             s+=strlen((char*)args[arg]);
-            e++;
           } else {
             error(236); /* parameter does not exist, incorrect #define pattern */
             strins((char*)s,(char*)e,2);
