@@ -57,7 +57,6 @@ extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegat
 
 ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
-CPhraseFile *g_pFloodPhrases = NULL;
 
 ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false), 
 	m_bTriggerWasSilent(false), m_ReplyTo(SM_REPLY_CONSOLE)
@@ -114,10 +113,7 @@ void ChatTriggers::OnSourceModAllInitialized()
 
 void ChatTriggers::OnSourceModAllInitialized_Post()
 {
-	unsigned int file_id;
-	
-	file_id = g_Translator.FindOrAddPhraseFile("antiflood.phrases.txt");
-	g_pFloodPhrases = g_Translator.GetFileByIndex(file_id);
+	g_pCorePhrases->AddPhraseFile("antiflood.phrases");
 }
 
 void ChatTriggers::OnSourceModGameInitialized()
