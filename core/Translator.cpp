@@ -103,7 +103,7 @@ void CPhraseFile::ParseWarning(const char *message, ...)
 		m_FileLogged = true;
 	}
 
-	g_Logger.LogError("[SM] %s", message);
+	g_Logger.LogError("[SM] %s", buffer);
 }
 
 void CPhraseFile::ReparseFile()
