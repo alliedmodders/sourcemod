@@ -10,7 +10,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -30,17 +30,25 @@
  *
  * Version: $Id$
  */
- 
+
 PrepareBan(client, target, time, const String:reason[])
 {
 	new originalTarget = GetClientOfUserId(g_BanTargetUserId[client]);
-	
+
 	if (originalTarget != target)
 	{
-		PrintToChat(client, "[SM] %t", "Player no longer available");
-		return;	
+		if (client == 0)
+		{
+			PrintToServer("[SM] %t", "Player no longer available");
+		}
+		else
+		{
+			PrintToChat(client, "[SM] %t", "Player no longer available");
+		}
+
+		return;
 	}
-	
+
 	decl String:authid[64], String:name[32];
 	GetClientAuthString(target, authid, sizeof(authid));
 	GetClientName(target, name, sizeof(name));
@@ -77,26 +85,26 @@ PrepareBan(client, target, time, const String:reason[])
 DisplayBanTargetMenu(client)
 {
 	new Handle:menu = CreateMenu(MenuHandler_BanPlayerList);
-	
+
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Ban player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
-	
+
 	AddTargetsToMenu2(menu, client, COMMAND_FILTER_NO_BOTS|COMMAND_FILTER_CONNECTED);
-	
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
 DisplayBanTimeMenu(client)
 {
 	new Handle:menu = CreateMenu(MenuHandler_BanTimeList);
-	
+
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Ban player", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
-	
+
 	AddMenuItem(menu, "0", "Permanent");
 	AddMenuItem(menu, "10", "10 Minutes");
 	AddMenuItem(menu, "30", "30 Minutes");
@@ -104,21 +112,21 @@ DisplayBanTimeMenu(client)
 	AddMenuItem(menu, "240", "4 Hours");
 	AddMenuItem(menu, "1440", "1 Day");
 	AddMenuItem(menu, "10080", "1 Week");
-	
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
 DisplayBanReasonMenu(client)
 {
 	new Handle:menu = CreateMenu(MenuHandler_BanReasonList);
-	
+
 	decl String:title[100];
 	Format(title, sizeof(title), "%T:", "Ban reason", client);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
-	
+
 	/* :TODO: we should either remove this or make it configurable */
-	
+
 	AddMenuItem(menu, "Abusive", "Abusive");
 	AddMenuItem(menu, "Racism", "Racism");
 	AddMenuItem(menu, "General cheating/exploits", "General cheating/exploits");
@@ -132,11 +140,11 @@ DisplayBanReasonMenu(client)
 	AddMenuItem(menu, "Unacceptable Spray", "Unacceptable Spray");
 	AddMenuItem(menu, "Breaking Server Rules", "Breaking Server Rules");
 	AddMenuItem(menu, "Other", "Other");
-	
+
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
 
-public AdminMenu_Ban(Handle:topmenu, 
+public AdminMenu_Ban(Handle:topmenu,
 							  TopMenuAction:action,
 							  TopMenuObject:object_id,
 							  param,
@@ -169,9 +177,9 @@ public MenuHandler_BanReasonList(Handle:menu, MenuAction:action, param1, param2)
 	else if (action == MenuAction_Select)
 	{
 		decl String:info[64];
-		
+
 		GetMenuItem(menu, param2, info, sizeof(info));
-	
+
 		PrepareBan(param1, g_BanTarget[param1], g_BanTime[param1], info);
 	}
 }
@@ -193,7 +201,7 @@ public MenuHandler_BanPlayerList(Handle:menu, MenuAction:action, param1, param2)
 	{
 		decl String:info[32], String:name[32];
 		new userid, target;
-		
+
 		GetMenuItem(menu, param2, info, sizeof(info), _, name, sizeof(name));
 		userid = StringToInt(info);
 
@@ -230,10 +238,10 @@ public MenuHandler_BanTimeList(Handle:menu, MenuAction:action, param1, param2)
 	else if (action == MenuAction_Select)
 	{
 		decl String:info[32];
-		
+
 		GetMenuItem(menu, param2, info, sizeof(info));
 		g_BanTime[param1] = StringToInt(info);
-		
+
 		DisplayBanReasonMenu(param1);
 	}
 }
@@ -246,12 +254,12 @@ public Action:Command_Ban(client, args)
 		ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
 		return Plugin_Handled;
 	}
-	
+
 	decl len, next_len;
 	decl String:Arguments[256];
 	GetCmdArgString(Arguments, sizeof(Arguments));
 
-	decl String:arg[65];	
+	decl String:arg[65];
 	len = BreakString(Arguments, arg, sizeof(arg));
 
 	new target = FindTarget(client, arg, true);
@@ -272,6 +280,8 @@ public Action:Command_Ban(client, args)
 	}
 
 	new time = StringToInt(s_time);
+
+	g_BanTargetUserId[client] = GetClientUserId(target);
 
 	PrepareBan(client, target, time, Arguments[len]);
 
