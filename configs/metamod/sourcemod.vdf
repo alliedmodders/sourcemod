@@ -1,5 +1,0 @@
-"Metamod Plugin"
-{
-	"alias"		"sourcemod"
-	"file"		"addons/sourcemod/bin/sourcemod_mm"
-}
