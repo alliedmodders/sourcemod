@@ -9,7 +9,26 @@ our $SVN = "/usr/bin/svn";
 our $SVN_USER = 'dvander';
 our $SVN_ARGS = '';
 
-sub Revision
+sub HgRevNum
+{
+	my ($path) = (@_);
+	my ($cd, $text, $rev);
+
+	$cd = Cwd::cwd();
+	chdir($path);
+	$text = `hg identify -n`;
+	chdir($cd);
+
+	chomp $text;
+	if ($text =~ /^(\d+)/)
+	{
+		return $1;
+	}
+
+	return 0;
+}
+
+sub SvnRevNum
 {
 	my ($str)=(@_);
 			

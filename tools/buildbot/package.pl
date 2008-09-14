@@ -32,7 +32,7 @@ chdir(Build::PathFormat('../../OUTPUT/base'));
 my ($version);
 
 $version = Build::ProductVersion(Build::PathFormat('../../product.version'));
-$version .= '.' . Build::Revision('../..');
+$version .= '-hg' . Build::HgRevNum('../..');
 
 my ($filename);
 $filename = 'sourcemod-' . $version;
