@@ -7,7 +7,6 @@ our %arguments =
 	'minor' => '0',
 	'revision' => '0',
 	'build' => undef,
-	'svnrev' => 'global',
 	'path' => '',
 	'buildstring' => '',
 );
@@ -74,25 +73,27 @@ if (exists($modules{'PRODUCT'}))
 	{
 		$arguments{'revision'} = $modules{'PRODUCT'}{'revision'};
 	}
-	if (exists($modules{'PRODUCT'}{'svnrev'}))
-	{
-		$arguments{'svnrev'} = $modules{'PRODUCT'}{'svnrev'};
-	}
 }
 
 #Get the global SVN revision if we have none
 my $rev;
 if ($arguments{'build'} == undef)
 {
-	$rev = GetRevision(undef);
-} else {
+	my ($text);
+	$text = `hg identif -n -i`;
+	chomp $text;
+	$text =~ s/\+//g;
+	my ($id,$num) = split(/ /, $text);
+	$rev = "$num:$id";
+} 
+else 
+{
 	$rev = int($arguments{'build'});
 }
 
 my $major = $arguments{'major'};
 my $minor = $arguments{'minor'};
 my $revision = $arguments{'revision'};
-my $svnrev = $arguments{'svnrev'};
 my $buildstr = $arguments{'buildstring'};
 
 #Go through everything now
@@ -121,12 +122,6 @@ while ( ($cur_module, $mod_i) = each(%modules) )
 	{
 		die "File $infile is not a file.\n";
 	}
-	my $global_rev = $rev;
-	my $local_rev = GetRevision($mod{'folder'});
-	if ($arguments{'svnrev'} eq 'local')
-	{
-		$global_rev = $local_rev;
-	}
 	#Start rewriting
 	open(INFILE, $infile) or die "Could not open file for reading: $infile\n";
 	open(OUTFILE, '>'.$outfile) or die "Could not open file for writing: $outfile\n";
@@ -135,8 +130,6 @@ while ( ($cur_module, $mod_i) = each(%modules) )
 		s/\$PMAJOR\$/$major/g;
 		s/\$PMINOR\$/$minor/g;
 		s/\$PREVISION\$/$revision/g;
-		s/\$GLOBAL_BUILD\$/$rev/g;
-		s/\$LOCAL_BUILD\$/$local_rev/g;
 		s/\$BUILD_ID\$/$rev/g;
 		s/\$BUILD_STRING\$/$buildstr/g;
 		print OUTFILE $_;
@@ -145,25 +138,3 @@ while ( ($cur_module, $mod_i) = each(%modules) )
 	close(INFILE);
 }
 
-sub GetRevision
-{
-	my ($path)=(@_);
-	my $rev;
-	if (!$path)
-	{
-		$rev = `svnversion --committed`;
-	} else {
-		$rev = `svnversion --committed $path`;
-	}
-	if ($rev =~ /exported/)
-	{
-		die "Path specified is not a working copy\n";
-	} elsif ($rev =~ /(\d+):(\d+)/) {
-		$rev = int($2);
-	} elsif ($rev =~ /(\d+)/) {
-		$rev = int($1);
-	} else {
-		die "Unknown svnversion response: $rev\n";
-	}
-	return $rev;
-}
