@@ -40,7 +40,9 @@
  * @file Contains SourceMod version information.
  */
 
-#define SVN_FULL_VERSION	"1.0.3.2239"
-#define SVN_FILE_VERSION	1,0,3,2239
+#define SM_BUILD_STRING		""
+#define SM_BUILD_UNIQUEID	"2533" SM_BUILD_STRING
+#define SVN_FULL_VERSION	"1.0.4" SM_BUILD_STRING
+#define SVN_FILE_VERSION	1,0,4,0
 
 #endif //_INCLUDE_SOURCEMOD_VERSION_H_

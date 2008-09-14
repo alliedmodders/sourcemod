@@ -284,6 +284,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 		ConsolePrint("    JIT Version: %s, %s", g_pVM->GetVMName(), g_pVM->GetVersionString());
 		ConsolePrint("    JIT Settings: %s", g_pVM->GetCPUOptimizations());
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
+		ConsolePrint("    Build ID: %s", SM_BUILD_UNIQUEID);
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
 }
