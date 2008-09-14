@@ -9,6 +9,7 @@ our %arguments =
 	'build' => undef,
 	'svnrev' => 'global',
 	'path' => '',
+	'buildstring' => '',
 );
 
 my $arg;
@@ -92,6 +93,7 @@ my $major = $arguments{'major'};
 my $minor = $arguments{'minor'};
 my $revision = $arguments{'revision'};
 my $svnrev = $arguments{'svnrev'};
+my $buildstr = $arguments{'buildstring'};
 
 #Go through everything now
 my $mod_i;
@@ -135,6 +137,8 @@ while ( ($cur_module, $mod_i) = each(%modules) )
 		s/\$PREVISION\$/$revision/g;
 		s/\$GLOBAL_BUILD\$/$rev/g;
 		s/\$LOCAL_BUILD\$/$local_rev/g;
+		s/\$BUILD_ID\$/$rev/g;
+		s/\$BUILD_STRING\$/$buildstr/g;
 		print OUTFILE $_;
 	}
 	close(OUTFILE);

@@ -284,6 +284,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 		ConsolePrint("    SourcePawn Engine: %s (build %s)", g_pSourcePawn2->GetEngineName(), g_pSourcePawn2->GetVersionString());
 		ConsolePrint("    SourcePawn API: v1 = %d, v2 = %d", g_pSourcePawn->GetEngineAPIVersion(), g_pSourcePawn2->GetAPIVersion());
 		ConsolePrint("    Compiled on: %s %s", __DATE__, __TIME__);
+		ConsolePrint("    Build ID: %s", SM_BUILD_UNIQUEID);
 		ConsolePrint("    http://www.sourcemod.net/");
 	}
 }

@@ -62,7 +62,7 @@ public Action:Command_TestSql1(args)
 		return Plugin_Handled
 	}
 	
-	new Handle:query = SQL_Query(db, "SELECT * FROM gaben")
+	new Handle:query = SQL_Query(db, "SELECT * FROM gab")
 	if (query == INVALID_HANDLE)
 	{
 		SQL_GetError(db, error, sizeof(error))
@@ -87,7 +87,7 @@ public Action:Command_TestSql2(args)
 		return Plugin_Handled
 	}
 	
-	new Handle:stmt = SQL_PrepareQuery(db, "SELECT * FROM gaben WHERE gaben > ?", error, sizeof(error))
+	new Handle:stmt = SQL_PrepareQuery(db, "SELECT * FROM gab WHERE gaben > ?", error, sizeof(error))
 	if (stmt == INVALID_HANDLE)
 	{
 		PrintToServer("Failed to prepare query: %s", error)
@@ -141,7 +141,7 @@ public Action:Command_TestSql3(args)
 public Action:Command_TestSql4(args)
 {
 	SQL_LockDatabase(g_ThreadedHandle);
-	new Handle:query = SQL_Query(g_ThreadedHandle, "SELECT * FROM gaben")
+	new Handle:query = SQL_Query(g_ThreadedHandle, "SELECT * FROM gab")
 	if (query == INVALID_HANDLE)
 	{
 		new String:error[255];
@@ -163,15 +163,37 @@ public CallbackTest5(Handle:owner, Handle:hndl, const String:error[], any:data)
 		PrintToServer("Failed to query: %s", error)
 	} else {
 		PrintQueryData(hndl)
+		SQL_TQuery(g_ThreadedHandle, CallbackTest6, "UPDATE gab SET `gaben` = `gaben` + 1 WHERE `gaben` >= 4", 52)
+	}
+}
+
+public CallbackTest6(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if (hndl == INVALID_HANDLE)
+	{
+		PrintToServer("Failed to query: %s", error)
+	} else {
+		PrintToServer("Queried!");
+		SQL_TQuery(g_ThreadedHandle, CallbackTest7, "UPDATE gab SET `gaben` = `gaben` + 1 WHERE `gaben` >= 4", 52)
+	}
+}
+
+public CallbackTest7(Handle:owner, Handle:hndl, const String:error[], any:data)
+{
+	if (hndl == INVALID_HANDLE)
+	{
+		PrintToServer("Failed to query: %s", error)
+	} else {
+		PrintToServer("Queried!");
 	}
 }
 
 public Action:Command_TestSql5(args)
 {
-	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gaben", 52)
-	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gaben", 52)
-	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gaben", 52)
-	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gaben", 52)
+	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gab", 52)
+	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gab", 52)
+	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gab", 52)
+	SQL_TQuery(g_ThreadedHandle, CallbackTest5, "SELECT * FROM gab", 52)
 	
 	return Plugin_Handled;
 }
