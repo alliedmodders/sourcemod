@@ -1,8 +1,0 @@
-"Phrases"
-{
-	"Next Map"
-	{
-		#format			"{1:s}"
-		"en"			"Next Map: {1}"
-	}
-}
