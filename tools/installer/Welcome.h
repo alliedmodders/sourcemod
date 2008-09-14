@@ -1,6 +1,0 @@
-#ifndef _INCLUDE_INSTALLER_WELCOME_H_
-#define _INCLUDE_INSTALLER_WELCOME_H_
-
-void *DisplayWelcome(HWND hWnd);
-
-#endif //_INCLUDE_INSTALLER_WELCOME_H_
