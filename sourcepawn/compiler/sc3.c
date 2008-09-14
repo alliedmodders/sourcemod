@@ -1346,6 +1346,15 @@ static int hier13(value *lval)
     if ((array1 && array2) && (total1 && total2)) {
       markheap(MEMUSE_DYNAMIC, 0);
     }
+    /* If both sides are arrays, we should return the maximal as the lvalue.
+     * Otherwise we could buffer overflow and the compiler is too stupid.
+     * Literal strings have a constval == -(num_cells) so the cmp is flipped.
+     */
+    if (lval->ident==iARRAY && lval2.ident==iARRAY
+        && lval->constval < 0
+        && lval->constval > lval2.constval) {
+      *lval = lval2;
+    }
     if (lval->ident==iARRAY)
       lval->ident=iREFARRAY;    /* iARRAY becomes iREFARRAY */
     else if (lval->ident!=iREFARRAY)

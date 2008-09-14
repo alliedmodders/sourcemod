@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tf2", "tf2.vcproj", "{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
+		Release - Orange Box|Win32 = Release - Orange Box|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.ActiveCfg = Debug - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box|Win32.ActiveCfg = Release - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box|Win32.Build.0 = Release - Orange Box|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

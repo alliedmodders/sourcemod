@@ -18,6 +18,22 @@
 		}
 	}
 	
+	"dod"
+	{
+		"Keys"
+		{
+			"RadioMenuTimeout"		"4"
+		}
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+	
 	"ship"
 	{
 		"Offsets"
@@ -112,6 +128,7 @@
 	{
 		"Keys"
 		{
+			"GameExtension"			"game.tf2"
 			"RadioMenuTimeout"		"4"
 		}
 	}

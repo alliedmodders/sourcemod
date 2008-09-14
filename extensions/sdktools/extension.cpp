@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -36,6 +36,7 @@
 #include "vglobals.h"
 #include "tempents.h"
 #include "vsound.h"
+#include "output.h"
 
 #if defined ORANGEBOX_BUILD
 	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2"
@@ -49,7 +50,6 @@
  */
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
-SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
@@ -82,6 +82,10 @@ extern sp_nativeinfo_t g_TeamNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
+	{
+		return false;
+	}
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_CallNatives);
 	sharesys->AddNatives(myself, g_Natives);
@@ -92,13 +96,10 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_VoiceNatives);
 	sharesys->AddNatives(myself, g_EntInputNatives);
 	sharesys->AddNatives(myself, g_TeamNatives);
+	sharesys->AddNatives(myself, g_EntOutputNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
-	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
-	{
-		return false;
-	}
 
 	playerhelpers->AddClientListener(&g_SdkTools);
 	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
@@ -110,11 +111,16 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	CONVAR_REGISTER(this);
 
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
-	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
 	MathLib_Init(2.2f, 2.2f, 0.0f, 2);
+
+	spengine = g_pSM->GetScriptingEngine();
+
+	plsys->AddPluginsListener(&g_OutputManager);
+
+	g_OutputManager.Init();
 
 	return true;
 }
@@ -158,9 +164,9 @@ void SDKTools::SDK_OnUnload()
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
+	plsys->RemovePluginsListener(&g_OutputManager);
 
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SDKTools::LevelInit, true);
-	SH_REMOVE_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &SDKTools::OnServerActivate, false);
 
 	if (enginePatch)
 	{

@@ -220,6 +220,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 					s_ServerBinCRC = UTIL_CRC32(buffer, size);
 					free(buffer);
 					s_ServerBinCRC_Ok = true;
+					fclose(fp);
 				}
 			}
 			if (error[0] != '\0')
@@ -598,7 +599,7 @@ void GameConfigManager::OnSourceModStartup(bool late)
 	strncopy(g_GameDesc + 1, SERVER_CALL(GetGameDescription)(), sizeof(g_GameDesc) - 1);
 
 	KeyValues *pGameInfo = new KeyValues("GameInfo");
-	if (pGameInfo->LoadFromFile(basefilesystem, "gameinfo.txt"))
+	if (g_HL2.KVLoadFromFile(pGameInfo, basefilesystem, "gameinfo.txt"))
 	{
 		const char *str;
 		if ((str = pGameInfo->GetString("game", NULL)) != NULL)

@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -37,6 +37,6 @@
 
 #define SOURCEMOD_V_MAJOR		1				/**< SourceMod Major version */
 #define SOURCEMOD_V_MINOR		0				/**< SourceMod Minor version */
-#define SOURCEMOD_V_RELEASE		0				/**< SourceMod Release version */
+#define SOURCEMOD_V_RELEASE		4				/**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION		"1.0.0.1946"	/**< SourceMod version string (major.minor.release.build) */
+#define SOURCEMOD_VERSION	"1.0.4"	/**< SourceMod version string (major.minor.release.build) */

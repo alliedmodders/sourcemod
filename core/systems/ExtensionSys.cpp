@@ -933,9 +933,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			}
 		}
 
-		/* Tell it to unload */
-		pAPI = pExt->GetAPI();
-		pAPI->OnExtensionUnload();
 	}
 
 	IdentityToken_t *pIdentity;
@@ -949,6 +946,12 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		}
 	}
 
+	/* Tell it to unload */
+	if (pExt->IsLoaded())
+	{
+		IExtensionInterface *pAPI = pExt->GetAPI();
+		pAPI->OnExtensionUnload();
+	}
 	pExt->Unload();
 	delete pExt;
 
@@ -1369,3 +1372,20 @@ IExtension *CExtensionManager::LoadExternal(IExtensionInterface *pInterface,
 	return pExt;
 }
 
+void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	IExtensionInterface *pAPI;
+	List<CExtension *>::iterator iter;
+
+	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
+	{
+		if ((pAPI = (*iter)->GetAPI()) == NULL)
+		{
+			continue;
+		}
+		if (pAPI->GetExtensionVersion() > 3)
+		{
+			pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
+		}
+	}
+}

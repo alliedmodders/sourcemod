@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -765,115 +765,199 @@ static cell_t IsTimingOut(IPluginContext *pContext, const cell_t *params)
 static cell_t GetLatency(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
+	float value;
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (pPlayer->IsFakeClient()) {
+	}
+	else if (pPlayer->IsFakeClient())
+	{
 		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
 
-	return sp_ftoc(pInfo->GetLatency(params[2]));
+	if (params[2] == MAX_FLOWS)
+	{
+		value = pInfo->GetLatency(FLOW_INCOMING) + pInfo->GetLatency(FLOW_OUTGOING);
+	}
+	else
+	{
+		value = pInfo->GetLatency(params[2]);
+	}
+
+	return sp_ftoc(value);
 }
 
 static cell_t GetAvgLatency(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
+	float value;
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (pPlayer->IsFakeClient()) {
+	}
+	else if (pPlayer->IsFakeClient())
+	{
 		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
 
-	return sp_ftoc(pInfo->GetAvgLatency(params[2]));
+	if (params[2] == MAX_FLOWS)
+	{
+		value = pInfo->GetAvgLatency(FLOW_INCOMING) + pInfo->GetAvgLatency(FLOW_OUTGOING);
+	}
+	else
+	{
+		value = pInfo->GetAvgLatency(params[2]);
+	}
+
+	return sp_ftoc(value);
 }
 
 static cell_t GetAvgLoss(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
+	float value;
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (pPlayer->IsFakeClient()) {
+	}
+	else if (pPlayer->IsFakeClient())
+	{
 		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
 
-	return sp_ftoc(pInfo->GetAvgLoss(params[2]));
+	if (params[2] == MAX_FLOWS)
+	{
+		value = pInfo->GetAvgLoss(FLOW_INCOMING) + pInfo->GetAvgLoss(FLOW_OUTGOING);
+	}
+	else
+	{
+		value = pInfo->GetAvgLoss(params[2]);
+	}
+
+	return sp_ftoc(value);
 }
 
 static cell_t GetAvgChoke(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
+	float value;
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (pPlayer->IsFakeClient()) {
+	}
+	else if (pPlayer->IsFakeClient())
+	{
 		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
 
-	return sp_ftoc(pInfo->GetAvgChoke(params[2]));
+	if (params[2] == MAX_FLOWS)
+	{
+		value = pInfo->GetAvgChoke(FLOW_INCOMING) + pInfo->GetAvgChoke(FLOW_OUTGOING);
+	}
+	else
+	{
+		value = pInfo->GetAvgChoke(params[2]);
+	}
+
+	return sp_ftoc(value);
 }
 
 static cell_t GetAvgData(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
+	float value;
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (pPlayer->IsFakeClient()) {
+	}
+	else if (pPlayer->IsFakeClient())
+	{
 		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
 
-	return sp_ftoc(pInfo->GetAvgData(params[2]));
+	if (params[2] == MAX_FLOWS)
+	{
+		value = pInfo->GetAvgData(FLOW_INCOMING) + pInfo->GetAvgData(FLOW_OUTGOING);
+	}
+	else
+	{
+		value = pInfo->GetAvgData(params[2]);
+	}
+
+	return sp_ftoc(value);
 }
 
 static cell_t GetAvgPackets(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
+	float value;
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsInGame()) {
+	}
+	else if (!pPlayer->IsInGame())
+	{
 		return pContext->ThrowNativeError("Client %d is not in game", client);
-	} else if (pPlayer->IsFakeClient()) {
+	}
+	else if (pPlayer->IsFakeClient())
+	{
 		return pContext->ThrowNativeError("Client %d is a bot", client);
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
 
-	return sp_ftoc(pInfo->GetAvgPackets(params[2]));
+	if (params[2] == MAX_FLOWS)
+	{
+		value = pInfo->GetAvgPackets(FLOW_INCOMING) + pInfo->GetAvgPackets(FLOW_OUTGOING);
+	}
+	else
+	{
+		value = pInfo->GetAvgPackets(params[2]);
+	}
+
+	return sp_ftoc(value);
 }
 
 static cell_t GetClientOfUserId(IPluginContext *pContext, const cell_t *params)
@@ -1174,8 +1258,62 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	} else if (!pPlayer->IsConnected()) {
+	}
+	else if (!pPlayer->IsConnected())
+	{
 		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	/* Ignore duplicate kicks */
+	if (pPlayer->IsInKickQueue())
+	{
+		return 1;
+	}
+
+	pPlayer->MarkAsBeingKicked();
+
+	if (pPlayer->IsFakeClient())
+	{
+		char kickcmd[40];
+		UTIL_Format(kickcmd, sizeof(kickcmd), "kick %s\n", pPlayer->GetName());
+
+		engine->ServerCommand(kickcmd);
+		return 1;
+	}
+
+	g_SourceMod.SetGlobalTarget(client);
+
+	char buffer[256];
+	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+
+	if (pContext->GetContext()->n_err != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), buffer);
+
+	return 1;
+}
+
+static cell_t KickClientEx(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+	else if (!pPlayer->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", client);
+	}
+
+	/* Ignore duplicate kicks */
+	if (pPlayer->IsInKickQueue())
+	{
+		return 1;
 	}
 
 	pPlayer->MarkAsBeingKicked();
@@ -1376,6 +1514,7 @@ REGISTER_NATIVES(playernatives)
 	{"ShowActivityEx",			ShowActivityEx},
 	{"ShowActivity2",			ShowActivity2},
 	{"KickClient",				KickClient},
+	{"KickClientEx",			KickClientEx},
 	{"RunAdminCacheChecks",		RunAdminCacheChecks},
 	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
 	{"IsClientInKickQueue",		IsClientInKickQueue},

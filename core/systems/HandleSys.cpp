@@ -997,8 +997,9 @@ bool HandleSystem::TryAndFreeSomeHandles()
 
 void HandleSystem::Dump(HANDLE_REPORTER rep)
 {
+	char refcount[20], parent[20];
 	unsigned int total_size = 0;
-	rep("%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s", "Handle", "Owner", "Type", "Memory");
+	rep("%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-10.10s\t%-10.10s", "Handle", "Owner", "Type", "Memory", "Refcount", "Parent");
 	rep("--------------------------------------------------------------------------");
 	for (unsigned int i = 1; i <= m_HandleTail; i++)
 	{
@@ -1049,16 +1050,26 @@ void HandleSystem::Dump(HANDLE_REPORTER rep)
 		{
 			type = m_strtab->GetString(pType->nameIdx);
 		}
+		if (m_Handles[i].clone == 0)
+		{
+			UTIL_Format(refcount, sizeof(refcount), "%d", m_Handles[i].refcount);
+			UTIL_Format(parent, sizeof(parent), "NULL");
+		}
+		else
+		{
+			UTIL_Format(refcount, sizeof(refcount), "%d", m_Handles[m_Handles[i].clone].refcount);
+			UTIL_Format(parent, sizeof(parent), "%d", m_Handles[i].clone);
+		}
 		if (pType->dispatch->GetDispatchVersion() < HANDLESYS_MEMUSAGE_MIN_VERSION
 			|| !pType->dispatch->GetHandleApproxSize(m_Handles[i].type, m_Handles[i].object, &size))
 		{
-			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, "-1");
+			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-10.10s\t%-10.10s", index, owner, type, "-1", refcount, parent);
 		}
 		else
 		{
 			char buffer[32];
 			UTIL_Format(buffer, sizeof(buffer), "%d", size);
-			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s", index, owner, type, buffer);
+			rep("0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-10.10s\t%-10.10s", index, owner, type, buffer, refcount, parent);
 			total_size += size;
 		}
 	}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="bintools"
 	ProjectGUID="{E38F65D9-74B2-4373-B46A-DBB76F579F98}"
 	RootNamespace="bintools"
@@ -65,6 +65,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)\bintools.ext.dll"
 				LinkIncremental="2"
+				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				TargetMachine="1"
@@ -143,6 +144,7 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)\bintools.ext.dll"
 				LinkIncremental="1"
+				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"
 				SubSystem="2"
 				OptimizeReferences="2"

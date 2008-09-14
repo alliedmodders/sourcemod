@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -286,9 +286,21 @@ void LibrarySystem::GetPlatformError(char *error, size_t maxlength)
 			maxlength,
 			NULL);
 #elif defined PLATFORM_POSIX
-		snprintf(error, maxlength, "%s", strerror(errno));
+		UTIL_Format(error, maxlength, "%s", strerror(errno));
 #endif
 	}
+}
+
+void LibrarySystem::GetLoaderError(char *buffer, size_t maxlength)
+{
+#if defined PLATFORM_WINDOWS
+	GetPlatformError(buffer, maxlength);
+#elif defined PLATFORM_POSIX
+	if (buffer != NULL && maxlength)
+	{
+		strncopy(buffer, dlerror(), maxlength);
+	}
+#endif
 }
 
 void LibrarySystem::CloseDirectory(IDirectory *dir)
@@ -301,19 +313,15 @@ ILibrary *LibrarySystem::OpenLibrary(const char *path, char *error, size_t maxle
 	LibraryHandle lib;
 #if defined PLATFORM_WINDOWS
 	lib = LoadLibraryA(path);
-	if (!lib)
-	{
-		GetPlatformError(error, maxlength);
-		return false;
-	}
 #elif defined PLATFORM_POSIX
 	lib = dlopen(path, RTLD_NOW);
-	if (!lib)
-	{
-		GetPlatformError(error, maxlength);
-		return false;
-	}
 #endif
+
+	if (lib == NULL)
+	{
+		GetLoaderError(error, maxlength);
+		return NULL;
+	}
 
 	return new CLibrary(lib);
 }
@@ -344,21 +352,26 @@ size_t LibrarySystem::PathFormat(char *buffer, size_t len, const char *fmt, ...)
 
 const char *LibrarySystem::GetFileExtension(const char *filename)
 {
-	size_t end = strlen(filename) - 1;
+	size_t len, end;
 
-	for (size_t i = end; i >= 0; i--)
+	len = strlen(filename);
+
+	/* Minimum string length for filename with ext would be 3; example: a.a */
+	if (len < 3)
 	{
-		if (i > end)
-		{
-			break;
-		}
+		return NULL;
+	}
 
+	end = len - 1;
+
+	for (size_t i = end; i <= end; i--)
+	{
 		if (filename[i] == PLATFORM_SEP_CHAR || filename[i] == PLATFORM_SEP_ALTCHAR)
 		{
 			break;
 		}
 
-		if (filename[i] == '.' && i != end)
+		if (filename[i] == '.' && i != end && i != 0)
 		{
 			return &filename[++i];
 		}

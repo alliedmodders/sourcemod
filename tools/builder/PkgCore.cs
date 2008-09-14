@@ -51,6 +51,7 @@ namespace builder
 			folders.Add("addons/sourcemod/data");
 			folders.Add("addons/sourcemod/scripting/include");
 			folders.Add("addons/sourcemod/scripting/admin-flatfile");
+			folders.Add("addons/sourcemod/scripting/adminmenu");
 			folders.Add("addons/sourcemod/scripting/testsuite");
 			folders.Add("cfg/sourcemod");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts");
@@ -114,6 +115,7 @@ namespace builder
 			builder.CopyFolder(this, "translations", "addons/sourcemod/translations", null);
 			builder.CopyFolder(this, "public/licenses", "addons/sourcemod", null);
 			builder.CopyFolder(this, "plugins/admin-flatfile", "addons/sourcemod/scripting/admin-flatfile", null);
+			builder.CopyFolder(this, "plugins/adminmenu", "addons/sourcemod/scripting/adminmenu", null);
 			builder.CopyFolder(this, "plugins/testsuite", "addons/sourcemod/scripting/testsuite", null);
 			builder.CopyFolder(this, "plugins/basecommands", "addons/sourcemod/scripting/basecommands", null);
 			builder.CopyFolder(this, "plugins/basecomm", "addons/sourcemod/scripting/basecomm", null);
@@ -256,6 +258,21 @@ namespace builder
 			lib.source_path = "extensions/topmenus";
 			lib.binary_name = "topmenus.ext";
 			lib.vcproj_name = "topmenus";
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
+			lib.source_path = "extensions/tf2";
+			lib.binary_name = "game.tf2.ext";
+			lib.vcproj_name = "tf2";
+			lib.build_mode = BuildMode.BuildMode_Episode2;
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/regex";
+			lib.binary_name = "regex.ext";
+			lib.vcproj_name = "regex";
 			libraries.Add(lib);
 
 			return (Library [])libraries.ToArray(typeof(Library));

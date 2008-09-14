@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -40,7 +40,9 @@
  * @file Contains SourceMod version information.
  */
 
-#define SVN_FULL_VERSION	"1.0.0.1946"
-#define SVN_FILE_VERSION	1,0,0,1946
+#define SM_BUILD_STRING		""
+#define SM_BUILD_UNIQUEID	"2537" SM_BUILD_STRING
+#define SVN_FULL_VERSION	"1.0.4" SM_BUILD_STRING
+#define SVN_FILE_VERSION	1,0,4,0
 
 #endif //_INCLUDE_SOURCEMOD_VERSION_H_

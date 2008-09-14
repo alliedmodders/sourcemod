@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -41,6 +41,8 @@
 #include "sm_queue.h"
 #include <IGameHelpers.h>
 #include <KeyValues.h>
+#include <server_class.h>
+#include <datamap.h>
 
 class CCommand;
 
@@ -77,6 +79,13 @@ struct CachedCommandInfo
 #endif
 };
 
+struct DelayedKickInfo
+{
+	int userid;
+	int client;
+	char buffer[384];
+};
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -99,6 +108,7 @@ public: //IGameHelpers
 	bool HintTextMsg(int client, const char *msg);
 	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
 	bool IsLANServer();
+	bool KVLoadFromFile(KeyValues *kv, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID = NULL);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
@@ -107,6 +117,8 @@ public:
 	void PopCommandStack();
 	const CCommand *PeekCommandStack();
 	const char *CurrentCommandName();
+	void AddDelayedKick(int client, int userid, const char *msg);
+	void ProcessDelayedKicks();
 #if !defined METAMOD_PLAPI_VERSION
 	bool IsOriginalEngine();
 #endif
@@ -122,6 +134,7 @@ private:
 	Queue<DelayedFakeCliCmd *> m_CmdQueue;
 	CStack<DelayedFakeCliCmd *> m_FreeCmds;
 	CStack<CachedCommandInfo> m_CommandStack;
+	Queue<DelayedKickInfo> m_DelayedKicks;
 };
 
 extern CHalfLife2 g_HL2;

@@ -4,7 +4,7 @@
  * SourceMod Basic Commands Plugin
  * Implements basic admin commands.
  *
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -49,6 +49,7 @@ public Plugin:myinfo =
 new Handle:hTopMenu = INVALID_HANDLE;
 
 new g_BanTarget[MAXPLAYERS+1];
+new g_BanTargetUserId[MAXPLAYERS+1];
 new g_BanTime[MAXPLAYERS+1];
 
 #include "basebans/ban.sp"
@@ -61,7 +62,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid>");
 	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
-	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <time> <ip|#userid|name> [reason]");
+	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <ip|#userid|name> <time> [reason]");
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -102,7 +103,7 @@ public Action:Command_BanIp(client, args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_banip <time> <ip|#userid|name> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <time> [reason]");
 		return Plugin_Handled;
 	}
 

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -45,6 +45,8 @@
 #include <IEngineSound.h>
 #include <ivoiceserver.h>
 #include <iplayerinfo.h>
+#include <server_class.h>
+#include <datamap.h>
 #include <convar.h>
 #include <iserver.h>
 #include <cdll_int.h>
@@ -71,6 +73,7 @@ public: //public SDKExtension
 	virtual bool QueryRunning(char *error, size_t maxlength);
 	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
 	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
+	virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 #if defined SMEXT_CONF_METAMOD
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);

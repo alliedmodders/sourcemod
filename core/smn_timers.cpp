@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -325,6 +325,11 @@ static cell_t smn_IsServerProcessing(IPluginContext *pContext, const cell_t *par
 	return (gpGlobals->frametime > 0.0f) ? 1 : 0;
 }
 
+static cell_t smn_GetTickInterval(IPluginContext *pContext, const cell_t *params)
+{
+	return sp_ftoc(gpGlobals->interval_per_tick);
+}
+
 REGISTER_NATIVES(timernatives)
 {
 	{"CreateTimer",				smn_CreateTimer},
@@ -335,5 +340,7 @@ REGISTER_NATIVES(timernatives)
 	{"GetMapTimeLimit",			smn_GetMapTimeLimit},
 	{"ExtendMapTimeLimit",		smn_ExtendMapTimeLimit},
 	{"IsServerProcessing",		smn_IsServerProcessing},
+	{"GetTickInterval",			smn_GetTickInterval},
 	{NULL,						NULL}
 };
+

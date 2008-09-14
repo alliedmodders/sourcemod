@@ -74,7 +74,7 @@ new RebuildCachePart[3] = {0};					/** Cache part sequence numbers */
 new PlayerSeq[MAXPLAYERS+1];					/** Player-specific sequence numbers */
 new bool:PlayerAuth[MAXPLAYERS+1];				/** Whether a player has been "pre-authed" */
 
-#define _DEBUG
+//#define _DEBUG
 
 public OnMapEnd()
 {

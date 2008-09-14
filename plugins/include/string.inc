@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -376,6 +376,20 @@ native bool:IsCharUpper(chr);
 native bool:IsCharLower(chr);
 
 /**
+ * Strips a quote pair off a string if it exists.  That is, the following 
+ * replace rule is applied once:  $"(.*)"^ -> $\1^
+ *
+ * Note that the leading and trailing quotes will only be removed if both 
+ * exist.  Otherwise, the string is left unmodified.  This function should 
+ * be considered O(k) (all characters get shifted down).
+ *
+ * @param text			String to modify (in place).
+ * @return				True if string was modified, false if there was no 
+ *						set of quotes.
+ */
+native bool:StripQuotes(String:text[]);
+
+/**
  * Returns an uppercase character to a lowercase character.
  *
  * @param chr			Characer to convert.
@@ -405,6 +419,46 @@ stock CharToLower(chr)
 		return (chr | (1<<5));
 	}
 	return chr;
+}
+
+/**
+ * Finds the first occurrence of a character in a string.
+ *
+ * @param str			String.
+ * @param c				Character to search for.
+ * @param reverse		False (default) to search forward, true to search 
+ *						backward.
+ * @return				The index of the first occurrence of the character 
+ * 						in the string, or -1 if the character was not found.
+ */
+stock FindCharInString(const String:str[], c, bool:reverse = false)
+{
+	new i, len
+
+	len = strlen(str);
+	
+	if (!reverse)
+	{
+		for (i = 0; i < len; i++)
+		{
+			if (str[i] == c)
+			{
+				return i;
+			}
+		}
+	}
+	else
+	{
+		for (i = len - 1; i >= 0; i--)
+		{
+			if (str[i] == c)
+			{
+				return i;
+			}
+		}
+	}
+
+	return -1;
 }
 
 /**

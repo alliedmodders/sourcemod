@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SQLite Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -36,7 +36,9 @@
 #ifndef _INCLUDE_SQLITEEXT_VERSION_H_
 #define _INCLUDE_SQLITEEXT_VERSION_H_
 
-#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$.$LOCAL_BUILD$"
-#define SVN_FILE_VERSION	$PMAJOR$,$PMINOR$,$PREVISION$,$LOCAL_BUILD$
+#define SM_BUILD_STRING		"$BUILD_STRING$"
+#define SM_BUILD_UNIQUEID	"$BUILD_ID$" SM_BUILD_STRING
+#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$" SM_BUILD_STRING
+#define SVN_FILE_VERSION	$PMAJOR$,$PMINOR$,$PREVISION$,0
 
 #endif //_INCLUDE_SQLITEEXT_VERSION_H_

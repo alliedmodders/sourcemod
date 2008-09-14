@@ -1,0 +1,20 @@
+/* Add group options to be added to 'group' or 'groupplayer' type submenus
+ * The left side is the name that will show in the menu, right is the command that will be fired
+ *
+ * For more information: http://wiki.alliedmods.net/Custom_Admin_Menu_%28SourceMod%29
+ */	
+
+Groups
+{
+	"All"					"@all"
+	"Bots"					"@bots"
+	"Alive"					"@alive"
+	"Dead"					"@dead"
+	"Humans"				"@humans"
+	"Current aim"			"@aim"
+
+	/* You can enable these if you are using Counter-Strike Source and running the cstrike extension */
+//	"Terrorists"			"@t"
+//	"Counter-Terrorists"	"@ct"
+
+}

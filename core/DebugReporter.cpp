@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -181,6 +181,9 @@ int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 	}
 
 	iter->Release();
-	return -1;
+
+	/* If we don't know which plugin this is, it's one being loaded.  Fake its index for now. */
+
+	return g_PluginSys.GetPluginCount() + 1;
 }
 

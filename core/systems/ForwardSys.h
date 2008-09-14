@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -43,7 +43,7 @@ using namespace SourceHook;
 
 typedef List<IPluginFunction *>::iterator FuncIter;
 
-//:TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX
+/* :TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX */
 #define FORWARDS_NAME_MAX		64
 
 struct ByrefInfo

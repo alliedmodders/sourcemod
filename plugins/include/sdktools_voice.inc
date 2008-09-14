@@ -39,11 +39,15 @@
  * @section voice flags.
  */
 #define VOICE_NORMAL		0	/**< Allow the client to listen and speak normally. */
-#define VOICE_MUTED		1	/**< Mutes the client from speaking to everyone. */
+#define VOICE_MUTED			1	/**< Mutes the client from speaking to everyone. */
 #define VOICE_SPEAKALL		2	/**< Allow the client to speak to everyone. */
 #define VOICE_LISTENALL		4	/**< Allow the client to listen to everyone. */
-#define VOICE_TEAM		8	/**< Allow the client to always speak to team, even when dead. */
+#define VOICE_TEAM			8	/**< Allow the client to always speak to team, even when dead. */
 #define VOICE_LISTENTEAM	16	/**< Allow the client to always hear teammates, including dead ones. */
+
+#define LISTEN_DEFAULT		0	/**< Default action (flags or game) is taken */
+#define LISTEN_NO			1	/**< Receiver cannot hear sender */
+#define LISTEN_YES			2	/**< Receiver can hear sender */
  
 /**
  * @endsection
@@ -53,7 +57,7 @@
  * Set the client listening flags.
  *
  * @param client		The client index
- * @param flags		The voice flags
+ * @param flags			The voice flags
  * @noreturn
  */
 native SetClientListeningFlags(client, flags);
@@ -62,24 +66,27 @@ native SetClientListeningFlags(client, flags);
  * Retrieve the client current listening flags.
  *
  * @param client		The client index
- * @return			The current voice flags
+ * @return				The current voice flags
  */
 native GetClientListeningFlags(client);
 
 /**
- * Set the receiver ability to listen to the sender.
+ * Set the receiver's ability to listen to the sender.
  *
- * @param iReceiver		The listener index.
- * @param iSender		The sender index.
- * @return			True if successful otherwise false.
+ * @param receiver		The listener client index.
+ * @param sender		The sender client index.
+ * @param control		A LISTEN_ constant describing the voice relationship.
+ * @noreturn
+ * @error				If either client index is invalid or not connected.
  */
-native bool:SetClientListening(iReceiver, iSender, bool:bListen);
+native bool:SetClientListening(receiver, sender, control);
 
 /**
- * Retrieves if the receiver can listen to the sender.
+ * Retrieves if a receiver can listen to the sender.
  *
- * @param iReceiver		The listener index.
- * @param iSender		The sender index.
- * @return			True if successful otherwise false.
+ * @param receiver		The listener client index.
+ * @param sender		The sender client index.
+ * @return				A LISTEN_ constant describing the voice relationship.
+ * @error				If either client index is invalid or not connected.
  */
-native bool:GetClientListening(iReceiver, iSender);
+native bool:GetClientListening(receiver, sender);

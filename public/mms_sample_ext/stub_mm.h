@@ -11,7 +11,7 @@
  *
  * This stub plugin is public domain.
  *
- * Version: $Id: stub_mm.h 463 2007-10-06 17:01:51Z dvander $
+ * Version: $Id$
  */
 
 #ifndef _INCLUDE_METAMOD_SOURCE_STUB_PLUGIN_H_

@@ -37,11 +37,13 @@
 
 #include <version>
 
-#define SOURCEMOD_PLUGINAPI_VERSION		2
+#define SOURCEMOD_PLUGINAPI_VERSION		3
 struct PlVers
 {
 	version,
 	String:filevers[],
+	String:date[],
+	String:time[]
 };
 
 /**
@@ -76,7 +78,9 @@ enum Identity
 public PlVers:__version = 
 {
 	version = SOURCEMOD_PLUGINAPI_VERSION,
-	filevers = SOURCEMOD_VERSION
+	filevers = SOURCEMOD_VERSION,
+	date = __DATE__,
+	time = __TIME__
 };
 
 /**

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -42,6 +42,11 @@ SourceHook::CVector<TeamInfo> g_Teams;
 
 bool FindTeamEntities(SendTable *pTable, const char *name)
 {
+	if (strcmp(pTable->GetName(), name) == 0)
+	{
+		return true;
+	}
+
 	int props = pTable->GetNumProps();
 	SendProp *prop;
 
@@ -50,10 +55,6 @@ bool FindTeamEntities(SendTable *pTable, const char *name)
 		prop = pTable->GetProp(i);
 		if (prop->GetDataTable())
 		{
-			if (strcmp(prop->GetDataTable()->GetName(), name) == 0)
-			{
-				return true;
-			}
 			if (FindTeamEntities(prop->GetDataTable(), name))
 			{
 				return true;
@@ -64,7 +65,7 @@ bool FindTeamEntities(SendTable *pTable, const char *name)
 	return false;
 }
 
-void SDKTools::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_Teams.clear();
 	g_Teams.resize(1);
@@ -108,16 +109,34 @@ static cell_t GetTeamCount(IPluginContext *pContext, const cell_t *params)
 	return g_Teams.size();
 }
 
+static int g_teamname_offset = -1;
 static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_szTeamname")->GetOffset();
-	char *name = (char *)((unsigned char *)g_Teams[teamindex].pEnt + offset);
+	if (g_teamname_offset == 0)
+	{
+		return pContext->ThrowNativeError("Team names are not available on this game.");
+	}
+
+	if (g_teamname_offset == -1)
+	{
+		SendProp *prop = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_szTeamname");
+
+		if (prop == NULL)
+		{
+			g_teamname_offset = 0;
+			return pContext->ThrowNativeError("Team names are not available on this game.");
+		}
+
+		g_teamname_offset = prop->GetOffset();
+	}
+
+	char *name = (char *)((unsigned char *)g_Teams[teamindex].pEnt + g_teamname_offset);
 
 	pContext->StringToLocalUTF8(params[2], params[3], name, NULL);
 
@@ -127,9 +146,9 @@ static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
@@ -140,9 +159,9 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
@@ -154,9 +173,9 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 static cell_t GetTeamClientCount(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
-	if (teamindex > (int)g_Teams.size())
+	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
 	{
-		pContext->ThrowNativeError("Team index %d is invalid", teamindex);
+		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
 	SendProp *pProp = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "\"player_array\"");

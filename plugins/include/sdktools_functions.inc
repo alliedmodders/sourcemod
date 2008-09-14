@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -210,6 +210,7 @@ native GetClientAimTarget(client, bool:only_clients=true);
 
 /**
  * Returns the total number of teams in a game.
+ * Note: This native should not be called before OnMapStart.
  *
  * @return				Total number of teams.
  */
@@ -217,6 +218,7 @@ native GetTeamCount();
 
 /**
  * Retrieves the team name based on a team index.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @param name				Buffer to store string in.
@@ -228,6 +230,7 @@ native GetTeamName(index, String:name[], maxlength);
 
 /**
  * Returns the score of a team based on a team index.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @return				Score.
@@ -237,6 +240,7 @@ native GetTeamScore(index);
 
 /**
  * Sets the score of a team based on a team index.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @param value				New score value.
@@ -247,6 +251,7 @@ native SetTeamScore(index, value);
 
 /**
  * Retrieves the number of players in a certain team.
+ * Note: This native should not be called before OnMapStart.
  *
  * @param index				Team index.
  * @return				Number of players in the team.
@@ -283,3 +288,23 @@ native bool:GetPlayerDecalFile(client, String:hex[], maxlength);
  * @noreturn
  */
 native GetServerNetStats(&Float:in, &Float:out);
+
+/**
+ * Equip's a player's weapon.
+ *
+ * @param client		Client index.
+ * @param item			CBaseCombatWeapon entity index.
+ * @noreturn
+ * @error				Invalid client or entity, lack of mod support, or client not in 
+ *						game.
+ */
+native EquipPlayerWeapon(client, weapon);
+
+/**
+ * Activates an entity (CBaseAnimating::Activate)
+ *
+ * @param entity		Entity index.
+ * @noreturn
+ * @error				Invalid entity or lack of mod support.
+ */
+native ActivateEntity(entity);

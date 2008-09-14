@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * ===============================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * ===============================================================
  *
  * This file is not open source and may not be copied without explicit
@@ -19,7 +19,9 @@
  * @file Contains SourceMod version information.
  */
 
-#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$.$LOCAL_BUILD$"
-#define SVN_FILE_VERSION	$PMAJOR$,$PMINOR$,$PREVISION$,$LOCAL_BUILD$
+#define SM_BUILD_STRING		"$BUILD_STRING$"
+#define SM_BUILD_UNIQUEID	"$BUILD_ID$" SM_BUILD_STRING
+#define SVN_FULL_VERSION	"$PMAJOR$.$PMINOR$.$PREVISION$" SM_BUILD_STRING
+#define SVN_FILE_VERSION	$PMAJOR$,$PMINOR$,$PREVISION$,0
 
 #endif //_INCLUDE_SOURCEMOD_VERSION_H_

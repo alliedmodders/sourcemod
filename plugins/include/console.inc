@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2007 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -298,6 +298,8 @@ functag SrvCmd Action:public(args);
 /**
  * Creates a server-only console command, or hooks an already existing one.  
  *
+ * Server commands are case sensitive.
+ *
  * @param cmd			Name of the command to hook or create.
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
@@ -320,6 +322,10 @@ functag ConCmd Action:public(client, args);
 /**
  * Creates a console command, or hooks an already existing one.
  *
+ * Console commands are case sensitive.  However, if the command already exists in the game, 
+ * the a client may enter the command in any case.  SourceMod corrects for this automatically, 
+ * and you should only hook the "real" version of the command.
+ *
  * @param cmd			Name of the command to hook or create.
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param description	Optional description to use for command creation.
@@ -334,12 +340,14 @@ native RegConsoleCmd(const String:cmd[], ConCmd:callback, const String:descripti
  * it is created.  When this command is invoked, the access rights of the player are 
  * automatically checked before allowing it to continue.
  *
+ * Admin commands are case sensitive from both the client and server.
+ *
  * @param cmd			String containing command to register.
  * @param callback		A function to use as a callback for when the command is invoked.
  * @param adminflags	Administrative flags (bitstring) to use for permissions.
+ * @param description	Optional description to use for help.
  * @param group			String containing the command group to use.  If empty,
  * 						the plugin's filename will be used instead.
- * @param description	Optional description to use for help.
  * @param flags			Optional console flags.
  * @noreturn
  * @error				Command name is the same as an existing convar.
@@ -392,7 +400,7 @@ native GetCmdArgString(String:buffer[], maxlength);
  * @param min			Minimum floating point value that the convar can have if hasMin is true.
  * @param hasMax		Optional boolean that determines if the convar has a maximum value.
  * @param max			Maximum floating point value that the convar can have if hasMax is true.
- * @return				A handle to the newly created convar. If the convar already exists, INVALID_HANDLE is returned.
+ * @return				A handle to the newly created convar. If the convar already exists, a handle to it will still be returned.
  * @error				Convar name is blank or is the same as an existing console command.
  */
 native Handle:CreateConVar(const String:name[], const String:defaultValue[], const String:description[]="", flags=0, bool:hasMin=false, Float:min=0.0, bool:hasMax=false, Float:max=0.0);

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -46,6 +46,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "GameConfigs.h"
+#include "systems/ExtensionSys.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -120,7 +121,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	ParamType p1[] = {Param_Cell, Param_String, Param_Cell};
 	ParamType p2[] = {Param_Cell};
 
-	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_Event, 3, p1);
+	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_LowEvent, 3, p1);
 	m_clputinserver = g_Forwards.CreateForward("OnClientPutInServer", ET_Ignore, 1, p2);
 	m_cldisconnect = g_Forwards.CreateForward("OnClientDisconnect", ET_Ignore, 1, p2);
 	m_cldisconnect_post = g_Forwards.CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
@@ -133,6 +134,9 @@ void PlayerManager::OnSourceModAllInitialized()
 	PreAdminCheck = g_Forwards.CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
 	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 	PostAdminFilter = g_Forwards.CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
+
+	m_bIsListenServer = !engine->IsDedicatedServer();
+	m_ListenClient = 0;
 }
 
 void PlayerManager::OnSourceModShutdown()
@@ -206,6 +210,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 	}
+	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, clientMax);
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
@@ -283,7 +288,7 @@ void PlayerManager::RunAuthChecks()
 	unsigned int removed = 0;
 	for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
 	{
-		pPlayer = GetPlayerByIndex(m_AuthQueue[i]);
+		pPlayer = &m_Players[m_AuthQueue[i]];
 		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
 		if (authstr && authstr[0] != '\0'
 			&& (strcmp(authstr, "STEAM_ID_PENDING") != 0))
@@ -357,6 +362,7 @@ void PlayerManager::RunAuthChecks()
 bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = engine->IndexOfEdict(pEntity);
+	CPlayer *pPlayer = &m_Players[client];
 
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
@@ -371,23 +377,28 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 
 	cell_t res = 1;
 
-	m_Players[client].Initialize(pszName, pszAddress, pEntity);
+	pPlayer->Initialize(pszName, pszAddress, pEntity);
 	m_clconnect->PushCell(client);
 	m_clconnect->PushStringEx(reject, maxrejectlen, SM_PARAM_STRING_UTF8, SM_PARAM_COPYBACK);
 	m_clconnect->PushCell(maxrejectlen);
-	m_clconnect->Execute(&res, NULL);
+	m_clconnect->Execute(&res);
 
 	if (res)
 	{
-		if (!m_Players[client].IsAuthorized())
+		if (!pPlayer->IsAuthorized())
 		{
 			m_AuthQueue[++m_AuthQueue[0]] = client;
 		}
-	} else {
-		RETURN_META_VALUE(MRES_SUPERCEDE, false);
-	}
 
-	m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;
+		m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;
+	}
+	else
+	{
+		if (!pPlayer->IsFakeClient())
+		{
+			RETURN_META_VALUE(MRES_SUPERCEDE, false);
+		}
+	}
 
 	return true;
 }
@@ -396,7 +407,7 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 {
 	int client = engine->IndexOfEdict(pEntity);
 	bool orig_value = META_RESULT_ORIG_RET(bool);
-	CPlayer *pPlayer = GetPlayerByIndex(client);
+	CPlayer *pPlayer = &m_Players[client];
 
 	if (orig_value)
 	{
@@ -411,6 +422,17 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 				break;
 			}
 		}
+
+		if (!pPlayer->IsFakeClient() 
+			&& m_bIsListenServer
+			&& strncmp(pszAddress, "127.0.0.1", 9) == 0)
+		{
+			m_ListenClient = client;
+		}
+	}
+	else
+	{
+		InvalidatePlayer(pPlayer);
 	}
 
 	return true;
@@ -420,8 +442,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+	CPlayer *pPlayer = &m_Players[client];
 
-	CPlayer *pPlayer = GetPlayerByIndex(client);
 	/* If they're not connected, they're a bot */
 	if (!pPlayer->IsConnected())
 	{
@@ -429,6 +451,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		char error[255];
 		const char *authid = engine->GetPlayerNetworkIDString(pEntity);
 		pPlayer->Authorize(authid);
+		pPlayer->m_bFakeClient = true;
 		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
 		{
 			/* :TODO: kick the bot if it's rejected */
@@ -480,7 +503,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 	}
 
-	m_Players[client].Connect();
+	pPlayer->Connect();
 	m_PlayerCount++;
 
 	List<IClientListener *>::iterator iter;
@@ -494,9 +517,9 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	m_clputinserver->PushCell(client);
 	m_clputinserver->Execute(&res, NULL);
 
-	if (m_Players[client].IsAuthorized())
+	if (pPlayer->IsAuthorized())
 	{
-		m_Players[client].DoPostConnectAuthorization();
+		pPlayer->DoPostConnectAuthorization();
 	}
 }
 
@@ -517,17 +540,20 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+	CPlayer *pPlayer = &m_Players[client];
 
-	if (m_Players[client].IsConnected())
+	if (pPlayer->IsConnected())
 	{
 		m_cldisconnect->PushCell(client);
 		m_cldisconnect->Execute(&res, NULL);
-	} else {
+	}
+	else
+	{
 		/* We don't care, prevent a double call */
 		return;
 	}
 
-	if (m_Players[client].WasCountedAsInGame())
+	if (pPlayer->WasCountedAsInGame())
 	{
 		m_PlayerCount--;
 	}
@@ -540,29 +566,12 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 		pListener->OnClientDisconnecting(client);
 	}
 
-	/**
-	 * Remove client from auth queue if necessary
-	 */
-	if (!m_Players[client].IsAuthorized())
-	{
-		for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
-		{
-			if (m_AuthQueue[i] == (unsigned)client)
-			{
-				/* Move everything ahead of us back by one */
-				for (unsigned int j=i+1; j<=m_AuthQueue[0]; j++)
-				{
-					m_AuthQueue[j-1] = m_AuthQueue[j];
-				}
-				/* Remove us and break */
-				m_AuthQueue[0]--;
-				break;
-			}
-		}
-	}
+	InvalidatePlayer(pPlayer);
 
-	m_Players[client].Disconnect();
-	m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = 0;
+	if (m_ListenClient == client)
+	{
+		m_ListenClient = 0;
+	}
 }
 
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
@@ -592,9 +601,9 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 #endif
 	int client = engine->IndexOfEdict(pEntity);
 	cell_t res = Pl_Continue;
+	CPlayer *pPlayer = &m_Players[client];
 
-	CPlayer *pPlayer = GetPlayerByIndex(client);
-	if (!pPlayer || !pPlayer->IsConnected())
+	if (!pPlayer->IsConnected())
 	{
 		return;
 	}
@@ -646,8 +655,9 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 {
 	cell_t res;
 	int client = engine->IndexOfEdict(pEntity);
+	CPlayer *pPlayer = &m_Players[client];
 
-	if (!m_Players[client].IsConnected())
+	if (!pPlayer->IsConnected())
 	{
 		return;
 	}
@@ -655,42 +665,42 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	m_clinfochanged->PushCell(engine->IndexOfEdict(pEntity));
 	m_clinfochanged->Execute(&res, NULL);
 
-	IPlayerInfo *info = m_Players[client].GetPlayerInfo();
+	IPlayerInfo *info = pPlayer->GetPlayerInfo();
 	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
-	const char *old_name = m_Players[client].m_Name.c_str();
+	const char *old_name = pPlayer->m_Name.c_str();
 
 	if (strcmp(old_name, new_name) != 0)
 	{
 		AdminId id = g_Admins.FindAdminByIdentity("name", new_name);
-		if (id != INVALID_ADMIN_ID && m_Players[client].GetAdminId() != id)
+		if (id != INVALID_ADMIN_ID && pPlayer->GetAdminId() != id)
 		{
-			if (!CheckSetAdminName(client, &m_Players[client], id))
+			if (!CheckSetAdminName(client, pPlayer, id))
 			{
-				m_Players[client].Kick("Your name is reserved by SourceMod; set your password to use it.");
+				pPlayer->Kick("Your name is reserved by SourceMod; set your password to use it.");
 				RETURN_META(MRES_IGNORED);
 			}
 		} else if ((id = g_Admins.FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
-			if (id == m_Players[client].GetAdminId())
+			if (id == pPlayer->GetAdminId())
 			{
 				/* This player is changing their name; force them to drop admin privileges! */
-				m_Players[client].SetAdminId(INVALID_ADMIN_ID, false);
+				pPlayer->SetAdminId(INVALID_ADMIN_ID, false);
 			}
 		}
-		m_Players[client].SetName(new_name);
+		pPlayer->SetName(new_name);
 	}
 	
 	if (m_PassInfoVar.size() > 0)
 	{
 		/* Try for a password change */
-		const char *old_pass = m_Players[client].m_LastPassword.c_str();
+		const char *old_pass = pPlayer->m_LastPassword.c_str();
 		const char *new_pass = engine->GetClientConVarValue(client, m_PassInfoVar.c_str());
 		if (strcmp(old_pass, new_pass) != 0)
 		{
-			m_Players[client].m_LastPassword.assign(new_pass);
-			if (m_Players[client].IsInGame() && m_Players[client].IsAuthorized())
+			pPlayer->m_LastPassword.assign(new_pass);
+			if (pPlayer->IsInGame() && pPlayer->IsAuthorized())
 			{
 				/* If there is already an admin id assigned, this will just bail out. */
-				m_Players[client].DoBasicAdminChecks();
+				pPlayer->DoBasicAdminChecks();
 			}
 		}
 	}
@@ -839,6 +849,33 @@ void PlayerManager::RegisterCommandTargetProcessor(ICommandTargetProcessor *pHan
 void PlayerManager::UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler)
 {
 	target_processors.remove(pHandler);
+}
+
+void PlayerManager::InvalidatePlayer(CPlayer *pPlayer)
+{
+	/**
+	* Remove client from auth queue if necessary
+	*/
+	if (!pPlayer->IsAuthorized())
+	{
+		for (unsigned int i=1; i<=m_AuthQueue[0]; i++)
+		{
+			if (m_AuthQueue[i] == (unsigned)pPlayer->m_iIndex)
+			{
+				/* Move everything ahead of us back by one */
+				for (unsigned int j=i+1; j<=m_AuthQueue[0]; j++)
+				{
+					m_AuthQueue[j-1] = m_AuthQueue[j];
+				}
+				/* Remove us and break */
+				m_AuthQueue[0]--;
+				break;
+			}
+		}
+	}
+	
+	m_UserIdLookUp[engine->GetPlayerUserId(pPlayer->m_pEdict)] = 0;
+	pPlayer->Disconnect();
 }
 
 int PlayerManager::InternalFilterCommandTarget(CPlayer *pAdmin, CPlayer *pTarget, int flags)
@@ -1183,6 +1220,7 @@ CPlayer::CPlayer()
 	m_bIsInKickQueue = false;
 	m_LastPassword.clear();
 	m_LangId = LANGUAGE_ENGLISH;
+	m_bFakeClient = false;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -1250,6 +1288,7 @@ void CPlayer::Disconnect()
 	m_bAdminCheckSignalled = false;
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
+	m_bFakeClient = false;
 }
 
 void CPlayer::SetName(const char *name)
@@ -1314,7 +1353,7 @@ IPlayerInfo *CPlayer::GetPlayerInfo()
 
 bool CPlayer::IsFakeClient()
 {
-	return (strcmp(m_AuthID.c_str(), "BOT") == 0);
+	return m_bFakeClient;
 }
 
 void CPlayer::SetAdminId(AdminId id, bool temporary)

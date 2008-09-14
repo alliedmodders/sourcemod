@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -114,8 +114,6 @@ void CHalfLife2::OnSourceModAllInitialized()
 	m_HinTextMsg = g_UserMsgs.GetMessageIndex("HintText");
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
-
-	FindInSendTable("CTFPlayer", "m_nDisguiseClass");
 }
 
 #if !defined METAMOD_PLAPI_VERSION
@@ -437,6 +435,47 @@ bool CHalfLife2::IsLANServer()
 	return (sv_lan->GetInt() != 0);
 }
 
+bool CHalfLife2::KVLoadFromFile(KeyValues *kv, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID)
+{
+#if defined METAMOD_PLAPI_VERSION
+	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL)
+#else
+	if (strcasecmp(g_SourceMod.GetGameFolderName(), "ship") == 0)
+#endif
+	{
+		Assert(filesystem);
+#ifdef _MSC_VER
+		Assert(_heapchk() == _HEAPOK);
+#endif
+
+		FileHandle_t f = filesystem->Open(resourceName, "rb", pathID);
+		if (!f)
+			return false;
+
+		// load file into a null-terminated buffer
+		int fileSize = filesystem->Size(f);
+		char *buffer = (char *)MemAllocScratch(fileSize + 1);
+
+		Assert(buffer);
+
+		filesystem->Read(buffer, fileSize, f); // read into local buffer
+
+		buffer[fileSize] = 0; // null terminate file as EOF
+
+		filesystem->Close( f );	// close file after reading
+
+		bool retOK = kv->LoadFromBuffer( resourceName, buffer, filesystem );
+
+		MemFreeScratch();
+
+		return retOK;
+	}
+	else
+	{
+		return kv->LoadFromFile(filesystem, resourceName, pathID);
+	}
+}
+
 void CHalfLife2::PushCommandStack(const CCommand *cmd)
 {
 	CachedCommandInfo info;
@@ -471,4 +510,32 @@ const char *CHalfLife2::CurrentCommandName()
 #else
 	return m_CommandStack.front().cmd;
 #endif
+}
+
+void CHalfLife2::AddDelayedKick(int client, int userid, const char *msg)
+{
+	DelayedKickInfo kick;
+
+	kick.client = client;
+	kick.userid = userid;
+	UTIL_Format(kick.buffer, sizeof(kick.buffer), "%s", msg);
+
+	m_DelayedKicks.push(kick);
+}
+
+void CHalfLife2::ProcessDelayedKicks()
+{
+	while (!m_DelayedKicks.empty())
+	{
+		DelayedKickInfo info = m_DelayedKicks.first();
+		m_DelayedKicks.pop();
+
+		CPlayer *player = g_Players.GetPlayerByIndex(info.client);
+		if (player == NULL || player->GetUserId() != info.userid)
+		{
+			continue;
+		}
+
+		player->Kick(info.buffer);
+	}
 }

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -105,6 +105,7 @@ private:
 	int m_iIndex;
 	unsigned int m_LangId;
 	int m_UserId;
+	bool m_bFakeClient;
 };
 
 class PlayerManager : 
@@ -161,6 +162,10 @@ public:
 	{
 		return m_PlayerCount;
 	}
+	inline int ListenClient()
+	{
+		return m_ListenClient;
+	}
 	bool CheckSetAdmin(int index, CPlayer *pPlayer, AdminId id);
 	bool CheckSetAdminName(int index, CPlayer *pPlayer, AdminId id);
 	const char *GetPassInfoVar();
@@ -169,6 +174,7 @@ public:
 	unsigned int SetReplyTo(unsigned int reply);
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+	void InvalidatePlayer(CPlayer *pPlayer);
 private:
 	List<IClientListener *> m_hooks;
 	IForward *m_clconnect;
@@ -188,6 +194,8 @@ private:
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
+	bool m_bIsListenServer;
+	int m_ListenClient;
 };
 
 extern PlayerManager g_Players;

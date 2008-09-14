@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -296,7 +296,32 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	ConCmdInfo *pInfo;
 	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
 	{
-		return;
+        /* Unfortunately, we now have to do a slow lookup because Valve made client commands 
+         * case-insensitive.  We can't even use our sortedness.
+         */
+        if (client == 0 && !engine->IsDedicatedServer())
+        {
+            return;
+        }
+
+        List<ConCmdInfo *>::iterator iter;
+
+        pInfo = NULL;
+        iter = m_CmdList.begin();
+        while (iter != m_CmdList.end())
+        {
+            if (strcasecmp((*iter)->pCmd->GetName(), cmd) == 0)
+            {
+                pInfo = (*iter);
+                break;
+            }
+            iter++;
+        }
+        
+		if (pInfo == NULL)
+        {
+            return;
+        }
 	}
 
 	/* This is a hack to prevent say triggers from firing on messages that were 
@@ -379,14 +404,14 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 			/* On a listen server, sometimes the server host's client index can be set as 0.
 			 * So index 1 is passed to the command callback to correct this potential problem.
 			 */
-			if (client == 0 && !engine->IsDedicatedServer())
+			if (!engine->IsDedicatedServer())
 			{
-				pHook->pf->PushCell(1);
-			} else {
-				pHook->pf->PushCell(client);
+				client = g_Players.ListenClient();
 			}
 
+			pHook->pf->PushCell(client);
 			pHook->pf->PushCell(args);
+
 			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
 			{
 				if (tempres > result)

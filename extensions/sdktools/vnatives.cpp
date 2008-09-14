@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -871,6 +871,51 @@ static cell_t GetServerNetStats(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t WeaponEquip(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[1];
+		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("WeaponEquip", ValveCall_Player, NULL, pass, 1, &pCall))
+		{
+			return pContext->ThrowNativeError("\"WeaponEquip\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"WeaponEquip\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
+static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		if (!CreateBaseCall("Activate", ValveCall_Entity, NULL, NULL, 0, &pCall))
+		{
+			return pContext->ThrowNativeError("\"Activate\" not supported by this mod");
+		}
+		else if (!pCall)
+		{
+			return pContext->ThrowNativeError("\"Activate\" wrapper failed to initialized");
+		}
+	}
+
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	FINISH_CALL_SIMPLE(NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -895,5 +940,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetEntityModel",			sm_SetEntityModel},
 	{"GetPlayerDecalFile",		GetPlayerDecalFile},
 	{"GetServerNetStats",		GetServerNetStats},
+	{"EquipPlayerWeapon",		WeaponEquip},
+	{"ActivateEntity",			ActivateEntity},
 	{NULL,						NULL},
 };

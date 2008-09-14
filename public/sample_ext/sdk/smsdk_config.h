@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod Sample Extension
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -74,6 +74,6 @@
 //#define SMEXT_ENABLE_PLUGINSYS
 //#define SMEXT_ENABLE_ADMINSYS
 //#define SMEXT_ENABLE_TEXTPARSERS
-#define SMEXT_ENABLE_USERMSGS
+//#define SMEXT_ENABLE_USERMSGS
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

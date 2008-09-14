@@ -32,7 +32,6 @@
 		"#supported"
 		{
 			"game"		"cstrike"
-			"game"		"dod"
 			"game"		"hl2mp"
 			"game"		"ship"
 			"game"		"!Dystopia"
@@ -92,7 +91,6 @@
 		"#supported"
 		{
 			"game"		"cstrike"
-			"game"		"dod"
 			"game"		"garrysmod"
 			"game"		"hl2mp"
 			"game"		"ship"
@@ -145,7 +143,6 @@
 		"#supported"
 		{
 			"game"		"cstrike"
-			"game"		"dod"
 			"game"		"garrysmod"
 			"game"		"hl2mp"
 			"game"		"ship"
@@ -198,7 +195,6 @@
 		"#supported"
 		{
 			"game"		"cstrike"
-			"game"		"dod"
 			"game"		"hl2mp"
 			"game"		"!Insurgency"
 			"game"		"pvkii"
@@ -245,6 +241,46 @@
 			{
 				"library"	"engine"
 				"linux"		"@sv"
+			}
+		}
+	}
+	
+	/* EntityFactoryDictionary function */
+	"#default"
+	{
+		"Signatures"
+		{
+			"EntityFactory"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+	/* CBaseEntityOutput::FireOutput */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+			"game"		"hl2mp"
+		}
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x1C\x03\x00\x00\x53\x55\x56\x8B\x71\x14"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+		"Offsets"
+		{
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"6"
 			}
 		}
 	}
@@ -332,87 +368,19 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 
-	/* Day of Defeat */
-	"dod"
-	{
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"328"
-				"linux"		"330"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"226"
-				"linux"		"227"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"224"
-				"linux"		"225"
-			}
-			"Ignite"
-			{
-				"windows"	"188"
-				"linux"		"189"
-			}
-			"Extinguish"
-			{
-				"windows"	"189"
-				"linux"		"190"
-			}
-			"Teleport"
-			{
-				"windows"	"98"
-				"linux"		"99"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"356"
-				"linux"		"357"
-			}
-			"GetVelocity"
-			{
-				"windows"	"126"
-				"linux"		"127"
-			}
-			"EyeAngles"
-			{
-				"windows"	"118"
-				"linux"		"119"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-		}
-	}
-	
 	/* Half-Life 2: Deathmatch */
 	"hl2mp"
 	{
@@ -487,6 +455,16 @@
 			{
 				"windows"	"25"
 				"linux"		"26"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 	}
@@ -566,6 +544,16 @@
 			{
 				"windows"	"30"
 				"linux"		"31"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"211"
+				"linux"		"212"
+			}
+			"Activate"
+			{
+				"windows"	"37"
+				"linux"		"38"
 			}
 			
 			/* Temp Entities */
@@ -670,6 +658,16 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"220"
+				"linux"		"221"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 
 			/* Offset into CBaseTempEntity constructor.
 			 * On Windows Dsytopia is heavily inlined; we use the function 
@@ -762,6 +760,16 @@
 				"windows"	"24"
 				"linux"		"25"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"215"
+				"linux"		"216"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
 		}
 	}
 
@@ -841,6 +849,16 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 
@@ -915,7 +933,7 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
-
+			
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
@@ -1014,6 +1032,16 @@
 			{
 				"windows"	"27"
 				"linux"		"28"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
+			"Activate"
+			{
+				"windows"	"36"
+				"linux"		"37"
 			}
 		}
 		
@@ -1182,6 +1210,16 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"221"
+				"linux"		"222"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 
 			/* Offset into LevelShutdown for CGlobalEntList */
 			"gEntList"
@@ -1276,6 +1314,16 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 
@@ -1355,6 +1403,16 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 	}
 	
@@ -1429,11 +1487,20 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
-			
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"198"
+				"linux"		"199"
 			}
 		}
 		
@@ -1531,6 +1598,16 @@
 			"g_pGameRules"
 			{
 				"windows"	"7"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
 			}
 		}
 
@@ -1651,6 +1728,16 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"219"
+				"linux"		"220"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
 		}
 		"Signatures"
 		{
@@ -1677,20 +1764,6 @@
 				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
 				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x2A\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x60\x8B\xCB"
 			} 
-		}
-	}
-
-	/* EntityFactoryDictionary function */
-	"#default"
-	{
-		"Signatures"
-		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-			}
 		}
 	}
 }

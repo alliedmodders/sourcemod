@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -40,6 +40,7 @@
 #include "Logger.h"
 #include "PluginSys.h"
 #include "ForwardSys.h"
+#include "frame_hooks.h"
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -49,14 +50,73 @@ ConVar sm_corecfgfile("sm_corecfgfile", "addons/sourcemod/configs/core.cfg", 0, 
 
 IForward *g_pOnServerCfg = NULL;
 IForward *g_pOnConfigsExecuted = NULL;
+IForward *g_pOnAutoConfigsBuffered = NULL;
 CoreConfig g_CoreConfig;
 bool g_bConfigsExecd = false;
+bool g_bServerExecd = false;
+bool g_bGotServerStart = false;
+bool g_bGotTrigger = false;
+ConCommand *g_pExecPtr = NULL;
+ConVar *g_ServerCfgFile = NULL;
+
+void CheckAndFinalizeConfigs();
+
+#if defined ORANGEBOX_BUILD
+SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+void Hook_ExecDispatchPre(const CCommand &cmd)
+#else
+extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+void Hook_ExecDispatchPre()
+#endif
+{
+#if !defined ORANGEBOX_BUILD
+	CCommand cmd;
+#endif
+
+	const char *arg = cmd.Arg(1);
+
+	if (!g_bServerExecd 
+		&& arg != NULL 
+		&& strcmp(arg, g_ServerCfgFile->GetString()) == 0)
+	{
+		g_bGotTrigger = true;
+	}
+}
+
+#if defined ORANGEBOX_BUILD
+void Hook_ExecDispatchPost(const CCommand &cmd)
+#else
+void Hook_ExecDispatchPost()
+#endif
+{
+	if (g_bGotTrigger)
+	{
+		g_bGotTrigger = false;
+		g_bServerExecd = true;
+		CheckAndFinalizeConfigs();
+	}
+}
+
+void CheckAndFinalizeConfigs()
+{
+	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
+		&& g_bGotServerStart)
+	{
+#if defined ORANGEBOX_BUILD
+        g_PendingInternalPush = true;
+#else
+        SM_InternalCmdTrigger();
+#endif
+	}
+}
 
 void CoreConfig::OnSourceModAllInitialized()
 {
 	g_RootMenu.AddRootConsoleCommand("config", "Set core configuration options", this);
 	g_pOnServerCfg = g_Forwards.CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
 	g_pOnConfigsExecuted = g_Forwards.CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
+	g_pOnAutoConfigsBuffered = g_Forwards.CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
 }
 
 void CoreConfig::OnSourceModShutdown()
@@ -64,11 +124,53 @@ void CoreConfig::OnSourceModShutdown()
 	g_RootMenu.RemoveRootConsoleCommand("config", this);
 	g_Forwards.ReleaseForward(g_pOnServerCfg);
 	g_Forwards.ReleaseForward(g_pOnConfigsExecuted);
+	g_Forwards.ReleaseForward(g_pOnAutoConfigsBuffered);
+
+	if (g_pExecPtr != NULL)
+	{
+		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);
+		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPost, true);
+		g_pExecPtr = NULL;
+	}
 }
 
 void CoreConfig::OnSourceModLevelChange(const char *mapName)
 {
+	static bool already_checked = false;
+
+	if (!already_checked)
+	{
+		g_ServerCfgFile = icvar->FindVar("servercfgfile");
+		if (g_ServerCfgFile != NULL)
+		{
+			ConCommandBase *pBase = icvar->GetCommands();
+			while (pBase != NULL)
+			{
+				if (pBase->IsCommand() && strcmp(pBase->GetName(), "exec") == 0)
+				{
+					break;
+				}
+				pBase = const_cast<ConCommandBase *>(pBase->GetNext());
+			}
+
+			g_pExecPtr = (ConCommand *)pBase;
+			if (g_pExecPtr != NULL)
+			{
+				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);
+				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPost, true);
+			}
+			else
+			{
+				g_ServerCfgFile = NULL;
+			}
+		}
+		already_checked = true;
+	}
+
 	g_bConfigsExecd = false;
+	g_bServerExecd = false;
+	g_bGotServerStart = false;
+	g_bGotTrigger = false;
 }
 
 void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
@@ -382,7 +484,7 @@ void SM_ExecuteForPlugin(IPluginContext *ctx)
 
 void SM_ExecuteAllConfigs()
 {
-	if (g_bConfigsExecd)
+	if (g_bGotServerStart)
 	{
 		return;
 	}
@@ -403,7 +505,8 @@ void SM_ExecuteAllConfigs()
 	}
 	iter->Release();
 
-	engine->ServerCommand("sm internal 1\n");
+	g_bGotServerStart = true;
+	CheckAndFinalizeConfigs();
 }
 
 void SM_ConfigsExecuted_Global()
@@ -418,3 +521,12 @@ void SM_ConfigsExecuted_Global()
 	g_pOnServerCfg->Execute(NULL);
 	g_pOnConfigsExecuted->Execute(NULL);
 }
+
+void SM_InternalCmdTrigger()
+{
+	/* Order is important here.  We need to buffer things before we send the command out. */
+	g_pOnAutoConfigsBuffered->Execute(NULL);
+	engine->ServerCommand("sm internal 1\n");
+    g_PendingInternalPush = false;
+}
+

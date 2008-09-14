@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -192,7 +192,31 @@ static cell_t sm_formatex(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(res);
 }
 
+class StaticCharBuf
+{
+    char *buffer;
+    size_t max_size;
+public:
+    StaticCharBuf() : buffer(NULL), max_size(0)
+    {
+    }
+    ~StaticCharBuf()
+    {
+        delete [] buffer;
+    }
+    char* GetWithSize(size_t len)
+    {
+        if (len > max_size)
+        {
+            buffer = (char *)realloc(buffer, len);
+            max_size = len;
+        }
+        return buffer;
+    }
+};
+
 static char g_formatbuf[2048];
+static StaticCharBuf g_extrabuf;
 static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 {
 	char *buf, *fmt, *destbuf;
@@ -200,6 +224,7 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 	size_t res, maxlen;
 	int arg = 4;
 	bool copy = false;
+    char *__copy_buf;
 
 	pCtx->LocalToString(params[1], &destbuf);
 	pCtx->LocalToString(params[3], &fmt);
@@ -217,12 +242,25 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 			break;
 		}
 	}
-	buf = (copy) ? g_formatbuf : destbuf;
+
+    if (copy)
+    {
+        if (maxlen > sizeof(g_formatbuf))
+        {
+            __copy_buf = g_extrabuf.GetWithSize(maxlen);
+        }
+        else
+        {
+            __copy_buf = g_formatbuf;
+        }
+    }
+
+	buf = (copy) ? __copy_buf : destbuf;
 	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
 
 	if (copy)
 	{
-		memcpy(destbuf, g_formatbuf, res+1);
+		memcpy(destbuf, __copy_buf, res+1);
 	}
 
 	return static_cast<cell_t>(res);
@@ -460,8 +498,12 @@ static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[4], &replace);
 	maxlength = (size_t)params[2];
 
+	if (search[0] == '\0')
+	{
+		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
+	}
 
-	return  UTIL_ReplaceAll(text, maxlength, search, replace);
+	return UTIL_ReplaceAll(text, maxlength, search, replace);
 }
 
 static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
@@ -476,6 +518,11 @@ static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 
 	size_t searchLen = (params[5] == -1) ? strlen(search) : (size_t)params[5];
 	size_t replaceLen = (params[6] == -1) ? strlen(replace) : (size_t)params[6];
+
+	if (searchLen == 0)
+	{
+		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
+	}
 
 	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen);
 
@@ -560,6 +607,27 @@ static cell_t SplitString(IPluginContext *pContext, const cell_t *params)
 	return -1;
 }
 
+static cell_t StripQuotes(IPluginContext *pContext, const cell_t *params)
+{
+	char *text;
+	size_t length;
+
+	pContext->LocalToString(params[1], &text);
+	length = strlen(text);
+
+	if (text[0] == '"' && text[length-1] == '"')
+	{
+		/* Null-terminate */
+		text[--length] = '\0';
+		/* Move the remaining bytes (including null terminator) down by one */
+		memmove(&text[0], &text[1], length);
+
+		return 1;
+	}
+
+	return 0;	
+}
+
 REGISTER_NATIVES(basicStrings)
 {
 	{"BreakString",			BreakString},
@@ -586,6 +654,7 @@ REGISTER_NATIVES(basicStrings)
 	{"StringToIntEx",		StringToIntEx},
 	{"StringToFloat",		sm_strtofloat},
 	{"StringToFloatEx",		StringToFloatEx},
+	{"StripQuotes",			StripQuotes},
 	{"TrimString",			TrimString},
 	{"VFormat",				sm_vformat},
 	{NULL,					NULL},

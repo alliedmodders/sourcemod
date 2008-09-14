@@ -33,6 +33,7 @@
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
 #include "HandleSys.h"
+#include "HalfLife2.h"
 #include <KeyValues.h>
 #include "utlbuffer.h"
 
@@ -782,6 +783,7 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	HandleSecurity sec;
 	char *path;
 	KeyValueStack *pStk;
+	KeyValues *kv;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -797,7 +799,8 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	char realpath[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
 
-	return pStk->pCurRoot.front()->LoadFromFile(basefilesystem, realpath);
+	kv = pStk->pCurRoot.front();
+	return g_HL2.KVLoadFromFile(kv, basefilesystem, realpath);
 }
 
 static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *params)

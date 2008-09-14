@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2007 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -2387,8 +2387,21 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				}
 				else
 				{
-					g_RootMenu.ConsolePrint("  Debugging: %s", pl->IsDebugging() ? "Yes" : "No");
-					g_RootMenu.ConsolePrint("  Running: %s", pl->GetStatus() == Plugin_Running ? "Yes" : "No");
+					if (pl->GetStatus() == Plugin_Running)
+					{
+						if (pl->IsDebugging())
+						{
+							g_RootMenu.ConsolePrint("  Status: running, debugging");
+						}
+						else
+						{
+							g_RootMenu.ConsolePrint("  Status: running");
+						}
+					}
+					else
+					{
+						g_RootMenu.ConsolePrint("  Status: not running");
+					}
 
 					const char *typestr = "";
 					switch (pl->GetType())
@@ -2406,6 +2419,10 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 					}
 
 					g_RootMenu.ConsolePrint("  Reloads: %s", typestr);
+				}
+				if (pl->m_FileVersion >= 3)
+				{
+					g_RootMenu.ConsolePrint("  Timestamp: %s", pl->m_DateTime);
 				}
 			}
 			else

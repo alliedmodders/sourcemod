@@ -143,6 +143,7 @@ static void addwhile(int *ptr);
 static void delwhile(void);
 static int *readwhile(void);
 static void inst_datetime_defines(void);
+static void inst_binary_name(char *binfname);
 
 enum {
   TEST_PLAIN,           /* no parentheses */
@@ -332,6 +333,7 @@ int pc_compile(int argc, char *argv[])
     #if !defined NO_DEFINE
       delete_substtable();
       inst_datetime_defines();
+      inst_binary_name(binfname);
     #endif
     resetglobals();
     pstructs_free();
@@ -401,6 +403,7 @@ int pc_compile(int argc, char *argv[])
   #if !defined NO_DEFINE
     delete_substtable();
     inst_datetime_defines();
+    inst_binary_name(binfname);
   #endif
   resetglobals();
   sc_ctrlchar=sc_ctrlchar_org;
@@ -559,6 +562,39 @@ int pc_addconstant(char *name,cell value,int tag)
   sc_status=statIDLE;
   add_constant(name,value,sGLOBAL,tag);
   return 1;
+}
+
+static void inst_binary_name(char *binfname)
+{
+  size_t i, len;
+  char *binptr;
+  char newpath[512], newname[512];
+
+  binptr = NULL;
+  len = strlen(binfname);
+  for (i = len - 1; i >= 0 && i < len; i--)
+  {
+    if (binfname[i] == '/'
+#if defined WIN32 || defined _WIN32
+      || binfname[i] == '\\'
+#endif
+      )
+    {
+      binptr = &binfname[i + 1];
+      break;
+    }
+  }
+
+  if (binptr == NULL)
+  {
+	  binptr = binfname;
+  }
+
+  snprintf(newpath, sizeof(newpath), "\"%s\"", binfname);
+  snprintf(newname, sizeof(newname), "\"%s\"", binptr);
+
+  insert_subst("__BINARY_PATH__", newpath, 15);
+  insert_subst("__BINARY_NAME__", newname, 15);
 }
 
 static void inst_datetime_defines(void)
@@ -1191,7 +1227,7 @@ static void setconfig(char *root)
 static void setcaption(void)
 {
   pc_printf("SourcePawn Compiler " SVN_FULL_VERSION "\n");
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2007 AlliedModders, LLC\n\n");
+  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2008 AlliedModders, LLC\n\n");
 }
 
 static void about(void)
@@ -2786,6 +2822,7 @@ static cell initarray(int ident,int tag,int dim[],int numdim,int cur,
   totalsize=0;
   needtoken('{');
   for (idx=0,abortparse=FALSE; !abortparse; idx++) {
+
     /* In case the major dimension is zero, we need to store the offset
      * to the newly detected sub-array into the indirection table; i.e.
      * this table needs to be expanded and updated.
@@ -2917,7 +2954,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
     if (size==0 || (litidx-curlit)==0)
       error(41);                /* invalid ellipsis, array size unknown */
     else if ((litidx-curlit)==(int)size)
-      error(18);                /* initialisation data exceeds declared size */
+      error(18);                /* initialization data exceeds declared size */
     while ((litidx-curlit)<(int)size) {
       prev1+=step;
       litadd(prev1);
@@ -2930,7 +2967,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
   if (size==0) {
     size=litidx-curlit;                 /* number of elements defined */
   } else if (litidx-curlit>(int)size) { /* e.g. "myvar[3]={1,2,3,4};" */
-    error(18);                  /* initialisation data exceeds declared size */
+    error(18);                  /* initialization data exceeds declared size */
     litidx=(int)size+curlit;    /* avoid overflow in memory moves */
   } /* if */
   return size;
