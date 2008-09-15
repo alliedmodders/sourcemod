@@ -82,6 +82,8 @@ extern sp_nativeinfo_t g_TeamNatives[];
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
+	HandleError err;
+
 	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
 	{
 		return false;
@@ -102,14 +104,26 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
 	playerhelpers->AddClientListener(&g_SdkTools);
-	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), NULL);
+	g_CallHandle = handlesys->CreateType("ValveCall", this, 0, NULL, NULL, myself->GetIdentity(), &err);
+	if (g_CallHandle == 0)
+	{
+		snprintf(error, maxlength, "Could not create call handle type (err: %d)", err);	
+		return false;
+	}
 
 	TypeAccess TraceAccess;
 	handlesys->InitAccessDefaults(&TraceAccess, NULL);
 	TraceAccess.ident = myself->GetIdentity();
 	TraceAccess.access[HTypeAccess_Create] = true;
 	TraceAccess.access[HTypeAccess_Inherit] = true;
-	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, &TraceAccess, NULL, myself->GetIdentity(), NULL);
+	g_TraceHandle = handlesys->CreateType("TraceRay", this, 0, &TraceAccess, NULL, myself->GetIdentity(), &err);
+	if (g_TraceHandle == 0)
+	{
+		handlesys->RemoveType(g_CallHandle, myself->GetIdentity());
+		g_CallHandle = 0;
+		snprintf(error, maxlength, "Could not create traceray handle type (err: %d)", err);
+		return false;
+	}
 
 #if defined ORANGEBOX_BUILD
 	g_pCVar = icvar;
@@ -185,6 +199,23 @@ void SDKTools::SDK_OnUnload()
 	{
 		SH_RELEASE_CALLCLASS(enginesoundPatch);
 		enginesoundPatch = NULL;
+	}
+
+	bool err;
+	if (g_CallHandle != 0)
+	{
+		if ((err = handlesys->RemoveType(g_CallHandle, myself->GetIdentity())) != true)
+		{
+			g_pSM->LogError(myself, "Could not remove call handle (type=%x, err=%d)", g_CallHandle, err);
+		}
+	}
+
+	if (g_TraceHandle != 0)
+	{
+		if ((err = handlesys->RemoveType(g_TraceHandle, myself->GetIdentity())) != true)
+		{
+			g_pSM->LogError(myself, "Could not remove trace handle (type=%x, err=%d)", g_TraceHandle, err);
+		}
 	}
 }
 
