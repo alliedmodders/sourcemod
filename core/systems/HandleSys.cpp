@@ -910,6 +910,15 @@ bool HandleSystem::RemoveType(HandleType_t type, IdentityToken_t *ident)
 		}
 	}
 
+	/* Remove it from the type cache. */
+	if (pType->nameIdx != -1)
+	{
+		const char *typeName;
+
+		typeName = m_strtab->GetString(pType->nameIdx);
+		sm_trie_delete(m_TypeLookup, typeName);
+	}
+
 	return true;
 }
 
