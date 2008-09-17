@@ -353,6 +353,25 @@ native FlushFile(Handle:file);
  */
 native bool:RemoveDir(const String:path[]);
 
+#define FPERM_U_READ		0x0100	/* User can read. */
+#define FPERM_U_WRITE		0x0080	/* User can write. */
+#define FPERM_U_EXEC		0x0040	/* User can exec. */
+#define FPERM_G_READ		0x0020	/* Group can read. */
+#define FPERM_G_WRITE		0x0010	/* Group can write. */
+#define FPERM_G_EXEC		0x0008	/* Group can exec. */
+#define FPERM_O_READ		0x0004	/* Anyone can read. */
+#define FPERM_O_WRITE		0x0002	/* Anyone can write. */
+#define FPERM_O_EXEC		0x0001	/* Anyone can exec. */
+
+/**
+ * Creates a directory.
+ *
+ * @param path			Path to create.
+ * @param mode			Permissions (default is o=rx,g=rx,u=rwx).  Note that folders must have 
+ *						the execute bit set on Linux.  On Windows, the mode is ignored.
+ */
+native bool:CreateDirectory(const String:path[], mode);
+
 /**
  * Returns a file timestamp as a unix timestamp.
  *

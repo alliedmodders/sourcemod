@@ -487,6 +487,21 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 #endif
 }
 
+static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	char realpath[PLATFORM_MAX_PATH];
+
+	pContext->LocalToString(params[1], &name);
+	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+
+#if defined PLATFORM_WINDOWS
+	return mkdir(realpath) == 0;
+#else
+	return mkdir(realpath, params[2]) == 0;
+#endif
+}
+
 static cell_t sm_RemoveDir(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -959,5 +974,6 @@ REGISTER_NATIVES(filesystem)
 	{"WriteFileString",			sm_WriteFileString},
 	{"AddGameLogHook",			sm_AddGameLogHook},
 	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
+	{"CreateDirectory",			sm_CreateDirectory},
 	{NULL,						NULL},
 };
