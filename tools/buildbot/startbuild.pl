@@ -12,7 +12,7 @@ chdir('..');
 
 my ($cmd, $output);
 
-$cmd = Build::PathFormat('tools/builder/builder.exe') . ' build.cfg 2>&1';
+$cmd = Build::PathFormat('tools/builder/builder.exe') . ' build.cfg'; # 2>&1';
 
 if ($^O eq "linux")
 {
