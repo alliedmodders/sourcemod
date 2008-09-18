@@ -39,4 +39,4 @@
 #define SOURCEMOD_V_MINOR		1				/**< SourceMod Minor version */
 #define SOURCEMOD_V_RELEASE		0				/**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION		"1.1.0-svn"	/**< SourceMod version string (major.minor.release.build) */
+#define SOURCEMOD_VERSION	"1.1.0"	/**< SourceMod version string (major.minor.release.build) */

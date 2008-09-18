@@ -2647,6 +2647,10 @@ jit_rewind:
 		/* Write these last because error jumps should be predicted forwardly (not taken) */
 		WriteErrorRoutines(data, jit);
 
+		AlignMe(jit);
+		data->jit_sysreq_c = jit->get_outputpos();
+		WriteOp_Sysreq_C_Function(jit);
+
 		/* Build thunk tables */
 		if (data->num_thunks > data->max_thunks)
 		{
@@ -2708,6 +2712,10 @@ jit_rewind:
 
 		/* Write these last because error jumps should be predicted as not taken (forward) */
 		WriteErrorRoutines(data, jit);
+
+		AlignMe(jit);
+		data->jit_sysreq_c = jit->get_outputpos();
+		WriteOp_Sysreq_C_Function(jit);
 
 		/* Write the thunk offsets. */
 		for (unsigned int i = 0; i < data->num_thunks; i++)
