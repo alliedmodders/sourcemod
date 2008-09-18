@@ -156,6 +156,7 @@ native SetStructEnt(Handle:strct, const String:member[], entity);
 
 /**
  * Retrieves a struct handle to a FileWeaponInfo_t for the given weapon name.
+ * This handle needs to be closed when you have finished using it.
  *
  * @param weapon	Weapon name to retrieve.
  * @return			Struct handle or INVALID_HANDLE on failure.
