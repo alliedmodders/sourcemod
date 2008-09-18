@@ -51,7 +51,7 @@ ifeq "$(ENGINE)" "orangebox"
 endif
 
 ifeq "$(USEMETA)" "true"
-	LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so $(SRCDS)/tf/bin/server_i486.so
+	LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_i486.so tier0_i486.so
 
 	LINK += $(LINK_HL2)
 
