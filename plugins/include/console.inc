@@ -293,7 +293,7 @@ native ShowActivityEx(client, const String:tag[], const String:format[], any:...
  * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag SrvCmd Action:public(args);
+functag public Action:SrvCmd(args);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  
@@ -317,7 +317,7 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
  * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag ConCmd Action:public(client, args);
+functag public Action:ConCmd(client, args);
 
 /**
  * Creates a console command, or hooks an already existing one.
@@ -421,7 +421,7 @@ native Handle:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-functag ConVarChanged public(Handle:convar, const String:oldValue[], const String:newValue[]);
+functag public ConVarChanged(Handle:convar, const String:oldValue[], const String:newValue[]);
 
 /**
  * Creates a hook for when a console variable's value is changed.

@@ -43,7 +43,7 @@
  * @param activator		Entity index of the activator.
  * @param delay			Delay in seconds? before the event gets fired.
  */
-functag EntityOutput public(const String:output[], caller, activator, Float:delay);
+functag public EntityOutput(const String:output[], caller, activator, Float:delay);
 
 /**
  * Add an entity output hook on a entity classname
