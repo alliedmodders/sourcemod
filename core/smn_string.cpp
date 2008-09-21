@@ -202,7 +202,7 @@ public:
     }
     ~StaticCharBuf()
     {
-        delete [] buffer;
+        free(buffer);
     }
     char* GetWithSize(size_t len)
     {
@@ -224,7 +224,7 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 	size_t res, maxlen;
 	int arg = 4;
 	bool copy = false;
-    char *__copy_buf;
+	char *__copy_buf;
 
 	pCtx->LocalToString(params[1], &destbuf);
 	pCtx->LocalToString(params[3], &fmt);
@@ -243,17 +243,17 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 
-    if (copy)
-    {
-        if (maxlen > sizeof(g_formatbuf))
-        {
-            __copy_buf = g_extrabuf.GetWithSize(maxlen);
-        }
-        else
-        {
-            __copy_buf = g_formatbuf;
-        }
-    }
+	if (copy)
+	{
+		if (maxlen > sizeof(g_formatbuf))
+		{
+			__copy_buf = g_extrabuf.GetWithSize(maxlen);
+		}
+		else
+		{
+			__copy_buf = g_formatbuf;
+		}
+	}
 
 	buf = (copy) ? __copy_buf : destbuf;
 	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
