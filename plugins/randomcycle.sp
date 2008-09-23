@@ -43,7 +43,6 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new Handle:g_Cvar_Nextmap = INVALID_HANDLE;
 new Handle:g_Cvar_ExcludeMaps = INVALID_HANDLE;
 
 new Handle:g_MapList = INVALID_HANDLE;
@@ -63,14 +62,6 @@ public OnPluginStart()
 
 public OnConfigsExecuted()
 {
-	g_Cvar_Nextmap = FindConVar("sm_nextmap");
-
-	if (g_Cvar_Nextmap == INVALID_HANDLE)
-	{
-		LogError("FATAL: Cannot find sm_nextmap cvar. RandomCycle not loaded.");
-		SetFailState("sm_nextmap not found");
-	}
-	
 	if (ReadMapList(g_MapList, 
 					g_mapListSerial, 
 					"randomcycle", 
@@ -105,8 +96,8 @@ public Action:Timer_RandomizeNextmap(Handle:timer)
 		GetArrayString(g_MapList, b, map, sizeof(map));
 	}
 	
-	SetConVarString(g_Cvar_Nextmap, map);
 	PushArrayString(g_OldMapList, map);
+	SetNextMap(map);
 
 	if (GetArraySize(g_OldMapList) > GetConVarInt(g_Cvar_ExcludeMaps))
 	{

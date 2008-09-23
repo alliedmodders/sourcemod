@@ -3182,12 +3182,27 @@ static void dofuncenum(int listmode)
 	constvalue *cur;
 	funcenum_t *fenum = NULL;
 	int i;
+	int newStyleTag = 0;
+	int isNewStyle = 0;
 
 	/* get the explicit tag (required!) */
 	int l = lex(&val,&str);
 	if (l != tSYMBOL)
 	{
-		error(93);
+		if (listmode == FALSE && l == tPUBLIC)
+		{
+			isNewStyle = 1;
+			newStyleTag = pc_addtag(NULL);
+			l = lex(&val, &str);
+			if (l != tSYMBOL)
+			{
+				error(93);
+			}
+		}
+		else
+		{
+			error(93);
+		}
 	}
 
 	/* This tag can't already exist! */
@@ -3223,27 +3238,32 @@ static void dofuncenum(int listmode)
 			break;
 		}
 		memset(&func, 0, sizeof(func));
-		func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
-		l = lex(&val, &str);
-		/* :TODO:
-		 * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
-		 * because the address isn't known until the final reparse.  Unfortunately, you can write code
-		 * before the address is known, because Pawn's compiler isn't truly multipass.
-		 *
-		 * When you call a function, there's no problem, because it does not write the address.
-		 * The assembly looks like this:
-		 *   call MyFunction
-		 * Then, only at assembly time (once all passes are done), does it know the address.
-		 * I do not see any solution to this because there is no way I know to inject the function name
-		 * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
-		 */
-		/*if (l == tSTOCK)
+		if (!isNewStyle)
 		{
-			func.type = uSTOCK;
-		} else */if (l == tPUBLIC) {
+			func.ret_tag = pc_addtag(NULL);	/* Get the return tag */
+			l = lex(&val, &str);
+			/* :TODO:
+			 * Right now, there is a problem.  We can't pass non-public function pointer addresses around,
+			 * because the address isn't known until the final reparse.  Unfortunately, you can write code
+			 * before the address is known, because Pawn's compiler isn't truly multipass.
+			 *
+			 * When you call a function, there's no problem, because it does not write the address.
+			 * The assembly looks like this:
+			 *   call MyFunction
+			 * Then, only at assembly time (once all passes are done), does it know the address.
+			 * I do not see any solution to this because there is no way I know to inject the function name
+			 * rather than the constant value.  And even if we could, we'd have to change the assembler recognize that.
+			 */
+			if (l == tPUBLIC) {
+				func.type = uPUBLIC;
+			} else {
+				error(1, "-public-", str);
+			}
+		}
+		else
+		{
+			func.ret_tag = newStyleTag;
 			func.type = uPUBLIC;
-		} else {
-			error(1, "-public-", str);
 		}
 		needtoken('(');
 		do 

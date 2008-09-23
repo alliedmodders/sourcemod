@@ -124,14 +124,14 @@ native EndMessage();
  *						blocks the message from being sent, and Plugin_Continue 
  *						resumes normal functionality.
  */
-functag MsgHook Action:public(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
+functag public Action:MsgHook(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
 
 /**
  * Called when a message is finished sending.
  *
  * @param msg_id		Message index.
  */
-functag MsgSentNotify public(UserMsg:msg_id);
+functag public MsgSentNotify(UserMsg:msg_id);
 
 /**
  * Hooks a user message.
