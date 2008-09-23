@@ -114,12 +114,12 @@ public Action:Command_SayChat(client, args)
 	
 	if (msgStart == 1 && CheckCommandAccess(client, "sm_say", ADMFLAG_CHAT)) // sm_say alias
 	{
-		SendChatToAll(name, message);
+		SendChatToAll(client, message);
 		LogAction(client, -1, "%L triggered sm_say (text %s)", client, message);
 	}
 	else if (msgStart == 3 && CheckCommandAccess(client, "sm_csay", ADMFLAG_CHAT)) // sm_csay alias
 	{
-		PrintCenterTextAll("%s: %s", name, message);
+		DisplayCenterTextToAll(client, message);
 		LogAction(client, -1, "%L triggered sm_csay (text %s)", client, text);		
 	}	
 	else if (msgStart == 2 && CheckCommandAccess(client, "sm_psay", ADMFLAG_CHAT)) // sm_psay alias
@@ -200,10 +200,7 @@ public Action:Command_SmSay(client, args)
 	decl String:text[192];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-			
-	SendChatToAll(name, text);
+	SendChatToAll(client, text);
 	LogAction(client, -1, "%L triggered sm_say (text %s)", client, text);
 	
 	return Plugin_Handled;		
@@ -219,11 +216,9 @@ public Action:Command_SmCsay(client, args)
 	
 	decl String:text[192];
 	GetCmdArgString(text, sizeof(text));
-
-	new String:name[64];
-	GetClientName(client, name, sizeof(name));
 	
-	PrintCenterTextAll("%s: %s", name, text);
+	DisplayCenterTextToAll(client, text);
+	
 	LogAction(client, -1, "%L triggered sm_csay (text %s)", client, text);
 	
 	return Plugin_Handled;		
@@ -236,17 +231,26 @@ public Action:Command_SmHsay(client, args)
 		ReplyToCommand(client, "[SM] Usage: sm_hsay <message>");
 		return Plugin_Handled;  
 	}
-    
+	
 	decl String:text[192];
 	GetCmdArgString(text, sizeof(text));
  
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-    
-	PrintHintTextToAll("%s: %s", name, text);
+	decl String:nameBuf[MAX_NAME_LENGTH];
+	
+	new maxClients = GetMaxClients();
+	for (new i = 1; i <= maxClients; i++)
+	{
+		if (!IsClientConnected(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
+		PrintHintText(i, "%s: %s", nameBuf, text);
+	}
+	
 	LogAction(client, -1, "%L triggered sm_hsay (text %s)", client, text);
-    
-	return Plugin_Handled;    
+	
+	return Plugin_Handled;	
 }
 
 public Action:Command_SmTsay(client, args)
@@ -256,7 +260,7 @@ public Action:Command_SmTsay(client, args)
 		ReplyToCommand(client, "[SM] Usage: sm_tsay <message>");
 		return Plugin_Handled;  
 	}
-    
+	
 	decl String:text[192], String:colorStr[16];
 	GetCmdArgString(text, sizeof(text));
 	
@@ -266,15 +270,28 @@ public Action:Command_SmTsay(client, args)
 	GetClientName(client, name, sizeof(name));
 		
 	new color = FindColor(colorStr);
-
-	if (color == -1)    
-		SendDialogToAll(_, "%s: %s", name, text);
-	else
-		SendDialogToAll(color, "%s: %s", name, text[len]);
+	new maxClients = GetMaxClients();
+	new String:nameBuf[MAX_NAME_LENGTH];
+	
+	if (color == -1)
+	{
+		color = 0;
+		len = 0;
+	}
+	
+	for (new i = 1; i <= maxClients; i++)
+	{
+		if (!IsClientConnected(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
+		SendDialogToOne(i, color, "%s: %s", nameBuf, text[len]);
+	}
 
 	LogAction(client, -1, "%L triggered sm_tsay (text %s)", client, text);
-    
-	return Plugin_Handled;    
+	
+	return Plugin_Handled;	
 }
 
 public Action:Command_SmChat(client, args)
@@ -388,15 +405,44 @@ FindColor(String:color[])
 	return -1;
 }
 
-SendChatToAll(String:name[], String:message[])
+SendChatToAll(client, String:message[])
 {
-	if (g_DoColor)
+	new maxClients;
+	new String:nameBuf[MAX_NAME_LENGTH];
+	
+	maxClients = GetMaxClients();
+	for (new i = 1; i <= maxClients; i++)
 	{
-		PrintToChatAll("\x04(ALL) %s: \x01%s", name, message);
+		if (!IsClientConnected(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
+		
+		if (g_DoColor)
+		{
+			PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
+		}
+		else
+		{
+			PrintToChat(i, "%s: %s", nameBuf, message);
+		}
 	}
-	else
+}
+
+DisplayCenterTextToAll(client, String:message[])
+{
+	new String:nameBuf[MAX_NAME_LENGTH];
+	new maxClients = GetMaxClients();
+	
+	for (new i = 1; i < maxClients; i++)
 	{
-		PrintToChatAll("(ALL) %s: %s", name, message);
+		if (!IsClientConnected(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
+		PrintCenterText(i, "%s: %s", nameBuf, message);
 	}
 }
 
@@ -423,26 +469,19 @@ SendChatToAdmins(String:name[], String:message[])
 	}
 }
 
-SendDialogToAll(color = 0, String:text[], any:...)
+SendDialogToOne(client, color, String:text[], any:...)
 {
 	new String:message[100];
-	VFormat(message, sizeof(message), text, 3);	
+	VFormat(message, sizeof(message), text, 4);	
 	
-	new MaxClients = GetMaxClients();
-	for(new i = 1; i < MaxClients; i++)
-	{
-		if(IsClientInGame(i))
-		{
-			new Handle:kv = CreateKeyValues("Stuff", "title", message);
-			KvSetColor(kv, "color", g_Colors[color][0], g_Colors[color][1], g_Colors[color][2], 255);
-			KvSetNum(kv, "level", 1);
-			KvSetNum(kv, "time", 10);
-			
-			CreateDialog(i, kv, DialogType_Msg);
-			
-			CloseHandle(kv);
-		}
-	}	
+	new Handle:kv = CreateKeyValues("Stuff", "title", message);
+	KvSetColor(kv, "color", g_Colors[color][0], g_Colors[color][1], g_Colors[color][2], 255);
+	KvSetNum(kv, "level", 1);
+	KvSetNum(kv, "time", 10);
+	
+	CreateDialog(client, kv, DialogType_Msg);
+	
+	CloseHandle(kv);	
 }
 
 SendPanelToAll(String:name[], String:message[])

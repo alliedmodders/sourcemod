@@ -287,6 +287,24 @@ native ShowActivity(client, const String:format[], any:...);
 native ShowActivityEx(client, const String:tag[], const String:format[], any:...);
 
 /**
+ * Given an originating client and a target client, returns the string 
+ * that describes the originating client according to the sm_show_activity cvar.
+ *
+ * For example, "ADMIN", "PLAYER", or a player's name could be placed in this buffer.
+ *
+ * @param client        Originating client; may be 0 for server console.
+ * @param target        Targeted client.
+ * @param namebuf       Name buffer.
+ * @param maxlength     Maximum size of the name buffer.
+ * @return              True if activity should be shown.  False otherwise.  In either 
+ *                      case, the name buffer is filled.  The return value can be used 
+ *                      to broadcast a "safe" name to all players regardless of the 
+ *                      sm_show_activity filters.
+ * @error               Invalid client index or client not connected.
+ */
+native FormatActivitySource(client, target, const String:namebuf[], maxlength);
+
+/**
  * Called when a server-only command is invoked.  
  *
  * @params args			Number of arguments that were in the argument string.
