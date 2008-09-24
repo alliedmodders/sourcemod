@@ -43,6 +43,15 @@ struct ControlFlowGraph
 	FunctionInfo *func;
 };
 
+DefineNode::DefineNode(BaseNode *o, const char *fmt, ...) : BaseNode(_OP_DEFINE), other(o)
+{
+	va_list ap;
+	
+	va_start(ap, fmt);
+	Sp_FormatArgs(name, sizeof(name), fmt, ap);
+	va_end(ap);
+}
+
 static FunctionInfo *sp_InferFuncPrototype(sp_decomp_t *dc, uint32_t code_addr, bool is_public)
 {
 	sp_tag_t *pTag;
@@ -333,6 +342,14 @@ void sp_DebugExprTree(PrintBuffer *buffer, BaseNode *node, bool is_stmt=false)
 {
 	switch (node->op)
 	{
+	case _OP_DEFINE:
+		{
+			DefineNode *def = (DefineNode *)node;
+
+			buffer->Append("new %s = ", def->name);
+			sp_DebugExprTree(buffer, def->other, is_stmt);
+			break;
+		}
 	case OP_CALL:
 		{
 			CallNode *call = (CallNode *)node;
@@ -343,6 +360,13 @@ void sp_DebugExprTree(PrintBuffer *buffer, BaseNode *node, bool is_stmt=false)
 				sp_DebugExprTree(buffer, call->args[i], false);
 			}
 			buffer->Append(")");
+			break;
+		}
+	case _OP_USE:
+		{
+			UseNode *unode = (UseNode *)node;
+
+			buffer->Append("%s", unode->def->name);
 			break;
 		}
 	case _OP_VAR:
@@ -577,6 +601,7 @@ int sp_AnalyzeGraph(sp_decomp_t *dc, ControlFlowGraph *graph)
 	FunctionInfo *func, *tfunc;
 	cell_t p1, p2, op;
 	FuncVar *v1, *v2;
+	unsigned int callnumber = 0;
 	unsigned int stack_entries = 0;
 	StackEntry eval_stack[MAX_STACK_ENTRIES];
 
@@ -637,6 +662,11 @@ int sp_AnalyzeGraph(sp_decomp_t *dc, ControlFlowGraph *graph)
 				assert(sp <= 0);
 
 				pri = new (graph) CallNode(tfunc, nodes, cnode->val);
+				pri = new (graph) DefineNode(pri, "call%03x", ++callnumber);
+				rtemp = new (graph) StmtNode(_OP_STMT, pri, NULL);
+				root_tail->next = rtemp;
+				root_tail = rtemp;
+				pri = new (graph) UseNode((DefineNode *)pri);
 				
 				break;
 			}

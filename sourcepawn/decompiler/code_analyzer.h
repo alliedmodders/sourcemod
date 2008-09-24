@@ -5,13 +5,14 @@
 
 enum Opcode
 {
-	_OP_VAR		= -1,
-	_OP_STMT	= -2,
-	_OP_CONST	= -3,
-	_OP_STORE	= -4,
-	_OP_NEW		= -5,
-	_OP_MODULO	= -6,
-	_OP_EMPTY	= -7,
+	_OP_VAR		= -1,		/* Variable container */
+	_OP_STMT	= -2,		/* Statement contained */
+	_OP_CONST	= -3,		/* Constant value */
+	_OP_STORE	= -4,		/* Store operation (binary assignment) */
+	_OP_NEW		= -5,		/* Variable declaration */
+	_OP_MODULO	= -6,		/* Binary modulo operator */
+	_OP_DEFINE	= -7,		/* "define" node for SSA */
+	_OP_USE		= -8,		/* "use" node for SSA */
 #define OPDEF(num,name,str,params) \
 	OP_##name = num,
 #include "opcodes.tbl"
@@ -70,8 +71,17 @@ struct CallNode : public BaseNode
 
 struct DefineNode : public BaseNode
 {
-	TempNode(const char *name
+	DefineNode(BaseNode *o, const char *fmt, ...);
 	char name[32];
+	BaseNode *other;
+};
+
+struct UseNode : public BaseNode
+{
+	UseNode(DefineNode *n) : BaseNode(_OP_USE), def(n)
+	{
+	}
+	DefineNode *def;
 };
 
 struct UnaryNode : public BaseNode
