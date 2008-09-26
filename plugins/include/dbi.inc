@@ -581,7 +581,7 @@ native SQL_UnlockDatabase(Handle:database);
  * @param data			Data passed in via the original threaded invocation.
  * @param 
  */
-functag SQLTCallback public(Handle:owner, Handle:hndl, const String:error[], any:data);
+functag public SQLTCallback(Handle:owner, Handle:hndl, const String:error[], any:data);
 
 /**
  * Tells whether two database handles both point to the same database 

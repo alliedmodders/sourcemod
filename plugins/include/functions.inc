@@ -352,7 +352,7 @@ native Call_Cancel();
  * @param numParams			Number of parameters passed to the native.
  * @return 					Value for the native call to return.
  */
-functag NativeCall public(Handle:plugin, numParams);
+functag public NativeCall(Handle:plugin, numParams);
 
 /**
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or 

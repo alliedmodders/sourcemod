@@ -1467,6 +1467,90 @@ static cell_t ProcessTargetString(IPluginContext *pContext, const cell_t *params
 	}
 }
 
+static cell_t FormatActivitySource(IPluginContext *pContext, const cell_t *params)
+{
+	int value;
+	int client;
+	int target;
+	CPlayer *pTarget;
+	AdminId aidTarget;
+	const char *identity[2] = {"Console", "ADMIN"};
+
+	client = params[1];
+	target = params[2];
+
+	if ((pTarget = g_Players.GetPlayerByIndex(target)) == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", target);
+	}
+	if (!pTarget->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d not connected", target);
+	}
+
+	value = sm_show_activity.GetInt();
+
+	if (client != 0)
+	{
+		CPlayer *pPlayer;
+
+		if ((pPlayer = g_Players.GetPlayerByIndex(client)) == NULL)
+		{
+			return pContext->ThrowNativeError("Invalid client index %d", client);
+		}
+		if (!pPlayer->IsConnected())
+		{
+			return pContext->ThrowNativeError("Client %d not connected", client);
+		}
+
+		identity[0] = pPlayer->GetName();
+
+		AdminId id = pPlayer->GetAdminId();
+		if (id == INVALID_ADMIN_ID
+			|| !g_Admins.GetAdminFlag(id, Admin_Generic, Access_Effective))
+		{
+			identity[1] = "PLAYER";
+		}
+	}
+
+	int mode = 1;
+	bool bShowActivity = false;
+
+	if ((aidTarget = pTarget->GetAdminId()) == INVALID_ADMIN_ID
+		|| !g_Admins.GetAdminFlag(aidTarget, Admin_Generic, Access_Effective))
+	{
+		/* Treat this as a normal user */
+		if ((value & 1) || (value & 2))
+		{
+			if ((value & 2) || (target == client))
+			{
+				mode = 0;
+			}
+			bShowActivity = true;
+		}
+	}
+	else
+	{
+		/* Treat this as an admin user */
+		bool is_root = g_Admins.GetAdminFlag(aidTarget, Admin_Root, Access_Effective);
+		if ((value & 4) 
+			|| (value & 8)
+			|| ((value & 16) && is_root))
+		{
+			if ((value & 8) || ((value & 16) && is_root) || (target == client))
+			{
+				mode = 0;
+			}
+			bShowActivity = true;
+		}
+	}
+
+	/* Otherwise, send it back to the script. */
+	pContext->StringToLocalUTF8(params[3], params[4], identity[mode], NULL);
+
+	return bShowActivity ? 1 : 0;
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -1519,6 +1603,7 @@ REGISTER_NATIVES(playernatives)
 	{"NotifyPostAdminCheck",	NotifyPostAdminCheck},
 	{"IsClientInKickQueue",		IsClientInKickQueue},
 	{"ProcessTargetString",		ProcessTargetString},
+	{"FormatActivitySource",	FormatActivitySource},
 	{NULL,						NULL}
 };
 

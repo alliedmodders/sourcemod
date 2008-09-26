@@ -287,13 +287,31 @@ native ShowActivity(client, const String:format[], any:...);
 native ShowActivityEx(client, const String:tag[], const String:format[], any:...);
 
 /**
+ * Given an originating client and a target client, returns the string 
+ * that describes the originating client according to the sm_show_activity cvar.
+ *
+ * For example, "ADMIN", "PLAYER", or a player's name could be placed in this buffer.
+ *
+ * @param client        Originating client; may be 0 for server console.
+ * @param target        Targeted client.
+ * @param namebuf       Name buffer.
+ * @param maxlength     Maximum size of the name buffer.
+ * @return              True if activity should be shown.  False otherwise.  In either 
+ *                      case, the name buffer is filled.  The return value can be used 
+ *                      to broadcast a "safe" name to all players regardless of the 
+ *                      sm_show_activity filters.
+ * @error               Invalid client index or client not connected.
+ */
+native FormatActivitySource(client, target, const String:namebuf[], maxlength);
+
+/**
  * Called when a server-only command is invoked.  
  *
  * @params args			Number of arguments that were in the argument string.
  * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag SrvCmd Action:public(args);
+functag public Action:SrvCmd(args);
 
 /**
  * Creates a server-only console command, or hooks an already existing one.  
@@ -317,7 +335,7 @@ native RegServerCmd(const String:cmd[], SrvCmd:callback, const String:descriptio
  * @return				An Action value.  Not handling the command
  *						means that Source will report it as "not found."
  */
-functag ConCmd Action:public(client, args);
+functag public Action:ConCmd(client, args);
 
 /**
  * Creates a console command, or hooks an already existing one.
@@ -421,7 +439,7 @@ native Handle:FindConVar(const String:name[]);
  * @param newValue		String containing the new value of the convar.
  * @noreturn
  */
-functag ConVarChanged public(Handle:convar, const String:oldValue[], const String:newValue[]);
+functag public ConVarChanged(Handle:convar, const String:oldValue[], const String:newValue[]);
 
 /**
  * Creates a hook for when a console variable's value is changed.

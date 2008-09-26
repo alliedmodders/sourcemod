@@ -149,7 +149,7 @@ enum MenuSource
  * @param param2			Second action parameter (usually the item).
  * @noreturn
  */
-functag MenuHandler public(Handle:menu, MenuAction:action, param1, param2);
+functag public MenuHandler(Handle:menu, MenuAction:action, param1, param2);
 
 /**
  * Creates a new, empty menu using the default style.
@@ -513,7 +513,7 @@ stock VoteMenuToAll(Handle:menu, time)
  *							defines.
  * @noreturn
  */
-functag VoteHandler public(Handle:menu,
+functag public VoteHandler(Handle:menu,
 						   num_votes, 
 						   num_clients,
 						   const client_info[][2], 

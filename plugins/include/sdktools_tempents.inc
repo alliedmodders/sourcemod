@@ -44,7 +44,7 @@
  * @param delay		Delay in seconds to send the TE.
  * @return		Plugin_Continue to allow the transmission of the TE, Plugin_Stop to block it.
  */
-functag TEHook Action:public(const String:te_name[], const Players[], numClients, Float:delay);
+functag public Action:TEHook(const String:te_name[], const Players[], numClients, Float:delay);
 
 /**
  * Hooks a temp entity.
