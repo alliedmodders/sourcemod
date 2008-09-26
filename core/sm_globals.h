@@ -74,6 +74,7 @@ class SMGlobalClass
 	friend class SourceModBase;
 	friend class CoreConfig;
 	friend class CExtensionManager;
+	friend class PlayerManager;
 public:
 	SMGlobalClass();
 public:
@@ -165,6 +166,15 @@ public:
 	 * @brief Called when an identity is dropped (right now, extensions only)
 	 */
 	virtual void OnSourceModIdentityDropped(IdentityToken_t *pToken)
+	{
+	}
+
+	/**
+	 * @brief Called when the server maxplayers changes
+	 *
+	 * @param newvalue		New maxplayers value.
+	 */
+	virtual void OnSourceModMaxPlayersChanged(int newvalue)
 	{
 	}
 private:

@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	7
+#define SMINTERFACE_PLAYERMANAGER_VERSION	8
 
 struct edict_t;
 class IPlayerInfo;
@@ -299,6 +299,15 @@ namespace SourceMod
 		 * @param client		Client index.
 		 */
 		virtual void OnClientPostAdminCheck(int client)
+		{
+		}
+
+		/**
+		* @brief Notifies the extension that the maxplayers value has changed
+		*
+		* @param newvalue			New maxplayers value.
+		*/
+		virtual void OnMaxPlayersChanged(int newvalue)
 		{
 		}
 	};

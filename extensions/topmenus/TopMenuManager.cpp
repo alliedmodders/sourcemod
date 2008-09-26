@@ -117,3 +117,13 @@ void TopMenuManager::DestroyTopMenu(ITopMenu *topmenu)
 
 	delete pMenu;
 }
+
+void TopMenuManager::OnMaxPlayersChanged( int newvalue )
+{
+	List<TopMenu *>::iterator iter;
+
+	for (iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
+	{
+		(*iter)->OnMaxPlayersChanged(newvalue);
+	}
+}

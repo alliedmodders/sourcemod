@@ -42,6 +42,8 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
+#define ABSOLUTE_PLAYER_LIMIT 255  // not 256, so we can send the limit as a byte 
+
 struct config_category_t
 {
 	int name;
@@ -162,6 +164,7 @@ private:
 	void OnClientDisconnected(int client);
 	void OnServerActivated(int max_clients);
 	bool OnIdentityRemoval(IdentityToken_t *owner);
+	void OnMaxPlayersChanged(int newvalue);
 private:
 	config_root_t m_Config;					/* Configuration from file */
 	topmenu_player_t *m_clients;			/* Client array */

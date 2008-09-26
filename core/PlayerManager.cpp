@@ -68,6 +68,15 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *)
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
+#if defined ORANGEBOX_BUILD
+SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+#else
+extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+#endif
+
+ConCommand *maxplayersCmd = NULL;
+
 class KickPlayerTimer : public ITimedEvent
 {
 public:
@@ -137,6 +146,32 @@ void PlayerManager::OnSourceModAllInitialized()
 
 	m_bIsListenServer = !engine->IsDedicatedServer();
 	m_ListenClient = 0;
+
+	g_ConVarManager.AddConVarChangeListener("tv_enable", this);
+
+	ConCommandBase *pBase = icvar->GetCommands();
+	ConCommand *pCmd = NULL;
+	while (pBase)
+	{
+		if (strcmp(pBase->GetName(), "maxplayers") == 0)
+		{
+			/* Don't want to return convar with same name */
+			if (!pBase->IsCommand())
+			{
+				break;
+			}
+
+			pCmd = (ConCommand *)pBase;
+			break;
+		}
+		pBase = const_cast<ConCommandBase *>(pBase->GetNext());
+	}
+
+	if (pCmd != NULL)
+	{
+		SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CmdMaxplayersCallback, true);
+		maxplayersCmd = pCmd;
+	}
 }
 
 void PlayerManager::OnSourceModShutdown()
@@ -165,6 +200,13 @@ void PlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(PostAdminFilter);
 
 	delete [] m_Players;
+
+	g_ConVarManager.RemoveConVarChangeListener("tv_enable", this);
+
+	if (maxplayersCmd != NULL)
+	{
+		SH_REMOVE_HOOK_STATICFUNC(ConCommand, Dispatch, maxplayersCmd, CmdMaxplayersCallback, true);
+	}
 }
 
 ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key, 
@@ -202,11 +244,11 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 		/* Initialize all players */
 		m_maxClients = clientMax;
 		m_PlayerCount = 0;
-		m_Players = new CPlayer[m_maxClients + 1];
-		m_AuthQueue = new unsigned int[m_maxClients + 1];
+		m_Players = new CPlayer[ABSOLUTE_PLAYER_LIMIT + 1];
+		m_AuthQueue = new unsigned int[ABSOLUTE_PLAYER_LIMIT + 1];
 		m_FirstPass = true;
 
-		memset(m_AuthQueue, 0, sizeof(unsigned int) * (m_maxClients + 1));
+		memset(m_AuthQueue, 0, sizeof(unsigned int) * (ABSOLUTE_PLAYER_LIMIT + 1));
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 	}
@@ -1202,6 +1244,68 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		info->reason = COMMAND_TARGET_NONE;
 	}
 }
+
+void PlayerManager::OnConVarChanged( ConVar *pConVar, const char *oldValue, float flOldValue )
+{
+	if (pConVar->GetBool() && !atoi(oldValue))
+	{
+		MaxPlayersChanged(gpGlobals->maxClients + 1);
+	}
+	else
+	{
+		MaxPlayersChanged();
+	}
+}
+
+void PlayerManager::OnSourceModMaxPlayersChanged( int newvalue )
+{
+	m_maxClients = newvalue;
+}
+
+void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
+{
+	if (newvalue == -1)
+	{
+		newvalue = gpGlobals->maxClients;
+	}
+
+	if (newvalue == MaxClients())
+	{
+		return;
+	}
+
+	/* Notify the rest of core */
+	SMGlobalClass *pBase = SMGlobalClass::head;
+	while (pBase)
+	{
+		pBase->OnSourceModMaxPlayersChanged(newvalue);
+		pBase = pBase->m_pGlobalClassNext;
+	}
+
+	/* Notify Extensions */
+	List<IClientListener *>::iterator iter;
+	IClientListener *pListener = NULL;
+	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	{
+		pListener = (*iter);
+		if (pListener->GetClientListenerVersion() >= 8)
+		{
+			pListener->OnMaxPlayersChanged(newvalue);
+		}
+	}
+}
+
+#if defined ORANGEBOX_BUILD
+void CmdMaxplayersCallback(const CCommand &command)
+{
+#else
+void CmdMaxplayersCallback()
+{
+#endif
+
+	g_Players.MaxPlayersChanged();
+}
+
 
 /*******************
  *** PLAYER CODE ***

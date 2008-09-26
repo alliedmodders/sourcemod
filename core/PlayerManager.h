@@ -41,6 +41,7 @@
 #include <sh_string.h>
 #include <sh_list.h>
 #include <sh_vector.h>
+#include "ConVarManager.h"
 
 using namespace SourceHook;
 
@@ -110,7 +111,8 @@ private:
 
 class PlayerManager : 
 	public SMGlobalClass,
-	public IPlayerManager
+	public IPlayerManager,
+	public IConVarChangeListener
 {
 	friend class CPlayer;
 public:
@@ -121,6 +123,7 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 	void OnSourceModLevelEnd();
 	ConfigResult OnSourceModConfigChanged(const char *key, const char *value, ConfigSource source, char *error, size_t maxlength);
+	void OnSourceModMaxPlayersChanged(int newvalue);
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
@@ -153,6 +156,8 @@ public: //IPlayerManager
 	void RegisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
 	void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
 	void ProcessCommandTarget(cmd_target_info_t *info);
+public: // IConVarChangeListener
+	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 public:
 	inline int MaxClients()
 	{
@@ -172,6 +177,7 @@ public:
 	void RecheckAnyAdmins();
 	unsigned int GetReplyTo();
 	unsigned int SetReplyTo(unsigned int reply);
+	void MaxPlayersChanged(int newvalue = -1);
 private:
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 	void InvalidatePlayer(CPlayer *pPlayer);
@@ -197,6 +203,12 @@ private:
 	bool m_bIsListenServer;
 	int m_ListenClient;
 };
+
+#if defined ORANGEBOX_BUILD
+void CmdMaxplayersCallback(const CCommand &command);
+#else
+void CmdMaxplayersCallback();
+#endif
 
 extern PlayerManager g_Players;
 extern bool g_OnMapStarted;

@@ -58,6 +58,7 @@ public:
 	void OnClientDisconnected(int client);
 	void OnServerActivated(int max_clients);
 	void OnPluginUnloaded(IPlugin *plugin);
+	void OnMaxPlayersChanged(int newvalue);
 private:
 	List<TopMenu *> m_TopMenus;
 };
