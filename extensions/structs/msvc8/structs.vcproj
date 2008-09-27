@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="sdk"
+	Name="structs"
 	ProjectGUID="{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
-	RootNamespace="sdk"
+	RootNamespace="structs"
 	Keyword="Win32Proj"
 	>
 	<Platforms>

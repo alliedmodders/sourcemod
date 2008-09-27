@@ -20,7 +20,7 @@ namespace builder
 		{
 			ProcessStartInfo info = new ProcessStartInfo();
 
-			string path = Config.PathFormat("{0}/{1}/msvc8", 
+			string path = Config.PathFormat("{0}/{1}/msvc9", 
 				cfg.source_path,
 				lib.source_path);
 
