@@ -246,6 +246,10 @@ sp_file_t *Sp_ReadPlugin(const char *file, int *err)
 				plugin->debug.lines_num = inf->num_lines;
 				plugin->debug.syms_num = inf->num_syms;
 			}
+			else if (plugin->debug.ntv == NULL && !strcmp(nameptr, ".dbg.natives"))
+			{
+				plugin->debug.ntv = (sp_fdbg_ntvtab_s *)(base + secptr->dataoffs);
+			}
 			else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
 			{
 				plugin->debug.stringbase = (const char *)(base + secptr->dataoffs);

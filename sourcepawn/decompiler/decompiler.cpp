@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "decompiler.h"
 #include "platform_util.h"
 
@@ -27,6 +28,52 @@ sp_decomp_t *Sp_InitDecomp(const char *file, int *err)
 #include "opcodes.tbl"
 #undef OPDEF
 
+	if (plugin->debug.ntv != NULL)
+	{
+		assert(plugin->debug.ntv->num_entries == plugin->num_natives);
+		dc->natives = new FunctionInfo[plugin->num_natives];
+		memset(dc->natives, 0, sizeof(FunctionInfo) * plugin->num_natives);
+
+		/* Unfurl this mess. */
+		uint8_t *cursor = (uint8_t *)plugin->debug.ntv;
+
+		cursor += sizeof(sp_fdbg_ntvtab_t);
+		for (uint32_t i = 0; i < plugin->num_natives; i++)
+		{
+			sp_fdbg_native_t *native = (sp_fdbg_native_t *)cursor;
+
+			uint32_t idx = native->index;
+
+			assert(dc->natives[idx].name[0] == '\0');
+
+			Sp_Format(dc->natives[idx].name, 
+				sizeof(dc->natives[idx].name),
+				"%s",
+				plugin->debug.stringbase + native->name);
+			dc->natives[idx].tag = Sp_FindTag(plugin, native->tagid);
+			dc->natives[idx].num_known_args = native->nargs;
+			
+			cursor += sizeof(sp_fdbg_native_t);
+
+			for (uint32_t j = 0; j < dc->natives[idx].num_known_args; j++)
+			{
+				sp_fdbg_ntvarg_t *arg = (sp_fdbg_ntvarg_t *)cursor;
+				dc->natives[idx].known_args[j].name = 
+					plugin->debug.stringbase + arg->name;
+				dc->natives[idx].known_args[j].tag = 
+					Sp_FindTag(plugin, arg->tagid);
+				dc->natives[idx].known_args[j].dimcount = arg->dimcount;
+
+				cursor += sizeof(sp_fdbg_ntvarg_t);
+				if (arg->dimcount != 0)
+				{
+					dc->natives[idx].known_args[j].dims = (sp_fdbg_arraydim_t *)cursor;
+					cursor += sizeof(sp_fdbg_arraydim_t) * arg->dimcount;
+				}
+			}
+		}
+	}
+
 	return dc;
 }
 
@@ -44,6 +91,7 @@ void Sp_FreeDecomp(sp_decomp_t *decomp)
 
 	Sp_FreePlugin(decomp->plugin);
 	free(decomp->pcode_map);
+	delete [] decomp->natives;
 	delete decomp;
 }
 
@@ -84,9 +132,8 @@ void PrintBuffer::Append(const char *fmt, ...)
 	len = Sp_FormatArgs(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
-	Grow(len);
+	Grow(len + 1);
 
-	printbuf = (char *)realloc(printbuf, printbuf_alloc);
 	strcpy(&printbuf[printbuf_pos], buffer);
 	printbuf_pos += len;
 }
@@ -102,7 +149,7 @@ void PrintBuffer::Set(const char *fmt, ...)
 	va_end(ap);
 
 	Reset();
-	Grow(len);
+	Grow(len + 1);
 
 	printbuf = (char *)realloc(printbuf, printbuf_alloc);
 	strcpy(&printbuf[printbuf_pos], buffer);

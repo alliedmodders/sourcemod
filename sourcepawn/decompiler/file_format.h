@@ -12,6 +12,7 @@ struct sp_debug_t
 	sp_fdbg_line_t *lines;		/**< lines table */
 	uint32_t	syms_num;		/**< number of symbols */
 	sp_fdbg_symbol_t *symbols;	/**< symbol table */
+	sp_fdbg_ntvtab_s *ntv;		/**< native table */
 };
 
 struct sp_tag_t

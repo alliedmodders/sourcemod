@@ -7,7 +7,7 @@ int main()
 	int err;
 	sp_decomp_t *dc;
 
-	const char *file = "R:\\sourcemod\\sourcemod-central\\plugins\\test.smx";
+	const char *file = "../../plugins/test.smx";
 
 	if ((dc = Sp_InitDecomp(file, &err)) == NULL)
 	{

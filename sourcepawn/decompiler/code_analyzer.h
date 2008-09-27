@@ -126,6 +126,7 @@ struct FuncVar
 	sp_fdbg_arraydim_t *dims;
 	sp_tag_t *tag;
 	const char *name;
+	unsigned int dimcount;
 	DeclNode *new_stmt;
 };
 

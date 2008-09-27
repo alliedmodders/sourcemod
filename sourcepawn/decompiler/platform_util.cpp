@@ -1,4 +1,6 @@
+#include <new>
 #include <stdio.h>
+#include <stdlib.h>
 #include "platform_util.h"
 
 size_t Sp_Format(char *buffer, size_t maxlength, const char *fmt, ...)
@@ -30,3 +32,29 @@ size_t Sp_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap
 	}
 }
 
+/* Overload a few things to prevent libstdc++ linking */
+#if defined __linux__
+extern "C" void __cxa_pure_virtual(void)
+{
+}
+
+void *operator new(size_t size)
+{
+	return malloc(size);
+}
+
+void *operator new[](size_t size) 
+{
+	return malloc(size);
+}
+
+void operator delete(void *ptr) 
+{
+	free(ptr);
+}
+
+void operator delete[](void * ptr)
+{
+	free(ptr);
+}
+#endif

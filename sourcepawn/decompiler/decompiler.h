@@ -30,6 +30,7 @@ struct sp_decomp_t
 	sp_opdef_t opdef[OP_TOTAL+1];
 	FunctionInfo *funcs;
 	cell_t *pcode_map;
+	FunctionInfo *natives;
 };
 
 sp_decomp_t *Sp_InitDecomp(const char *file, int *err);

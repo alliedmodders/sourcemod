@@ -146,6 +146,7 @@ static FunctionInfo *sp_InferFuncPrototype(sp_decomp_t *dc, uint32_t code_addr, 
 		}
 		info->known_args[i].name = plugin->debug.stringbase + sym->name;
 		
+		info->known_args[i].dimcount = sym->dimcount;
 		if (sym->dimcount > 0)
 		{
 			info->known_args[i].dims = 
@@ -260,6 +261,7 @@ static void sp_CacheLocals(sp_decomp_t *dc, FunctionInfo *info)
 					info->known_vars[num].name = plugin->debug.stringbase + sym->name;
 					info->known_vars[num].tag = 
 						(sym->tagid == 0) ? NULL : Sp_FindTag(plugin, sym->tagid);
+					info->known_vars[num].dimcount = sym->dimcount;
 					info->known_vars[num].dims = 
 						(sym->dimcount == 0)
 						? NULL
@@ -633,35 +635,60 @@ int sp_AnalyzeGraph(sp_decomp_t *dc, ControlFlowGraph *graph)
 				break;
 			}
 		case OP_CALL:
+		case OP_SYSREQ_N:
 			{
 				p1 = PCODE_PARAM(pcode, cip, 1);
-				tfunc = sp_GetFuncPrototype(dc, p1, false);
+				if (op == OP_CALL)
+				{
+					tfunc = sp_GetFuncPrototype(dc, p1, false);
+				}
+				else if (op == OP_SYSREQ_N)
+				{
+					assert(dc->natives);
+					assert(uint32_t(p1) < dc->plugin->num_natives);
+					tfunc = &dc->natives[p1];
+				}
 				CHECK_VALUE(tfunc);
 
 				/* Sanity checks, :TODO: runtime checks later. */
 				assert(stack_entries >= 1);
 
-				ConstNode *cnode;
-				cnode = (ConstNode *)eval_stack[stack_entries-1].expr;
-				stack_entries--;
+				if (op == OP_SYSREQ_N)
+				{
+					p2 = PCODE_PARAM(pcode, cip, 2);
+				}
+				else
+				{
+					/* Try to read the value off the stack. */
+					ConstNode *cnode;
+					cnode = (ConstNode *)eval_stack[stack_entries-1].expr;
+					/* Sanity checks, :TODO: runtime checks later. */
+					assert(cnode->op == _OP_CONST);
+					assert(cnode->val >= 0);
+					assert(uint32_t(cnode->val) == tfunc->num_known_args);
+					p2 = cnode->val;
+					stack_entries--;
+				}
 
-				/* Sanity checks, :TODO: runtime checks later. */
-				assert(cnode->op == _OP_CONST);
-				assert(cnode->val >= 0);
-				assert(cnode->val == tfunc->num_known_args);
-				assert(unsigned int(cnode->val) <= stack_entries);
+				assert(uint32_t(p2) <= stack_entries);
 				
-				cell_t argc = cnode->val;
-				BaseNode **nodes = new (graph) BaseNode *[cnode->val];
-				for (cell_t argno = 0; argno < cnode->val; argno++, stack_entries--)
+				/* Build arg SSA */
+				BaseNode **nodes = new (graph) BaseNode *[p2];
+				for (cell_t argno = 0; argno < p2; argno++, stack_entries--)
 				{
 					nodes[argno] = eval_stack[stack_entries-1].expr;
 				}
 
-				sp += (cnode->val + 1) * sizeof(cell_t);
+				/* Get rid of any args we pushed. */
+				sp += p2 * sizeof(cell_t);
+				if (op == OP_CALL)
+				{
+					sp += sizeof(cell_t);
+				}
 				assert(sp <= 0);
 
-				pri = new (graph) CallNode(tfunc, nodes, cnode->val);
+				/* Build function call SSA */
+				pri = new (graph) CallNode(tfunc, nodes, p2);
 				pri = new (graph) DefineNode(pri, "call%03x", ++callnumber);
 				rtemp = new (graph) StmtNode(_OP_STMT, pri, NULL);
 				root_tail->next = rtemp;
@@ -677,32 +704,38 @@ int sp_AnalyzeGraph(sp_decomp_t *dc, ControlFlowGraph *graph)
 				break;
 			}
 		case OP_PUSH_C:
+		case OP_PUSH2_C:
+		case OP_PUSH3_C:
+		case OP_PUSH5_C:
 			{
-				p1 = PCODE_PARAM(pcode, cip, 1);
-
-				/* Adjust stack pointer. */
-				sp -= sizeof(cell_t);
-
-				if ((v1 = sp_FindGraphVar(func, cip, sp, sp)) == NULL)
+				for (int N = 1; N <= dc->opdef[op].params; N++)
 				{
-					/* Add a new stack entry. */
-					assert(stack_entries < MAX_STACK_ENTRIES);
-					eval_stack[stack_entries++] = StackEntry(sp, new ConstNode(p1));
-				}
-				else
-				{
-					assert(v1->new_stmt == NULL);
-					if (v1->new_stmt == NULL)
+					p1 = PCODE_PARAM(pcode, cip, N);
+
+					/* Adjust stack pointer. */
+					sp -= sizeof(cell_t);
+
+					if ((v1 = sp_FindGraphVar(func, cip, sp, sp)) == NULL)
 					{
-						v1->new_stmt = new (graph) DeclNode(
-							new (graph) VarNode(v1),
-							new (graph) ConstNode(p1));
-						rtemp = new (graph) StmtNode(
-							_OP_STMT,
-							v1->new_stmt,
-							NULL);
-						root_tail->next = rtemp;
-						root_tail = rtemp;
+						/* Add a new stack entry. */
+						assert(stack_entries < MAX_STACK_ENTRIES);
+						eval_stack[stack_entries++] = StackEntry(sp, new ConstNode(p1));
+					}
+					else
+					{
+						assert(v1->new_stmt == NULL);
+						if (v1->new_stmt == NULL)
+						{
+							v1->new_stmt = new (graph) DeclNode(
+								new (graph) VarNode(v1),
+								new (graph) ConstNode(p1));
+							rtemp = new (graph) StmtNode(
+								_OP_STMT,
+								v1->new_stmt,
+								NULL);
+							root_tail->next = rtemp;
+							root_tail = rtemp;
+						}
 					}
 				}
 				break;
@@ -1160,7 +1193,7 @@ int Sp_DecompFunction(sp_decomp_t *dc, uint32_t code_addr, bool is_public)
 		goto return_error;
 	}
 
-	if ((err = sp_AnalyzeGraph(dc, &graph)) == NULL)
+	if ((err = sp_AnalyzeGraph(dc, &graph)) != SP_ERROR_NONE)
 	{
 		goto return_error;
 	}
