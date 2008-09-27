@@ -21,6 +21,7 @@ enum FileSections
 	FS_DbgSymbol,
 	FS_DbgLine,
 	FS_DbgTags,
+	FS_DbgNatives,
 	FS_DbgAutomaton,
 	FS_DbgState,
 	FS_DbgStrings,
@@ -37,6 +38,28 @@ void sfwrite(const void *buf, size_t size, size_t count, sp_file_t *spf);
 memfile_t *bin_file = NULL;
 jmp_buf brkout;
 
+#define sARGS_MAX		32	/* number of arguments a function can have, max */
+#define sDIMEN_MAX     4    /* maximum number of array dimensions */
+
+typedef struct t_arg_s
+{
+	uint8_t ident;
+	int16_t tag;
+	char *name;
+	uint16_t dimcount;
+	sp_fdbg_arraydim_t dims[sDIMEN_MAX];
+} t_arg;
+
+typedef struct t_native_s
+{
+	char *name;
+	int16_t ret_tag;
+	uint16_t num_args;
+	t_arg args[sARGS_MAX];
+} t_native;
+
+t_native *native_list = NULL;
+
 int main(int argc, char *argv[])
 {
 #if defined _DEBUG
@@ -51,7 +74,7 @@ int main(int argc, char *argv[])
 		sp_file_t *spf;
 		memfile_t *dbgtab = NULL;		//dbgcrab
 		unsigned char *dbgptr = NULL;
-		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0,0};
+		uint32_t sections[FS_Number] = {1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0};
 		FILE *fp;
 
 		if (bin_file == NULL)
@@ -108,6 +131,10 @@ int main(int argc, char *argv[])
 			} else {
 				dbgtab = memfile_creat("", 512);
 				dbgptr = (unsigned char *)dbg + sizeof(AMX_DBG_HDR);
+				if ((sections[FS_DbgNatives] = sections[FS_Natives]) > 0)
+				{
+					spfw_add_section(spf, ".dbg.natives");
+				}
 				if (dbg->files)
 				{
 					spfw_add_section(spf, ".dbg.files");
@@ -297,6 +324,49 @@ int main(int argc, char *argv[])
 			sp_fdbg_info_t info;
 
 			memset(&info, 0, sizeof(sp_fdbg_info_t));
+
+			if (sections[FS_Natives])
+			{
+				uint16_t j;
+				uint32_t idx;
+				uint32_t name;
+				uint32_t natives = (hdr->libraries - hdr->natives) / hdr->defsize;
+
+				sfwrite(&natives, sizeof(uint32_t), 1, spf);
+				for (idx=0; idx<natives; idx++)
+				{
+					sfwrite(&idx, sizeof(uint32_t), 1, spf);
+					name = (uint32_t)memfile_tell(dbgtab);
+					memfile_write(dbgtab, native_list[idx].name, strlen(native_list[idx].name) + 1);
+					sfwrite(&name, sizeof(uint32_t), 1, spf);
+					sfwrite(&native_list[idx].ret_tag, sizeof(int16_t), 1, spf);
+					sfwrite(&native_list[idx].num_args, sizeof(uint16_t), 1, spf);
+
+					/* Go through arguments */
+					for (j = 0; j < native_list[idx].num_args; j++)
+					{
+						sfwrite(&native_list[idx].args[j].ident, sizeof(uint8_t), 1, spf);
+						sfwrite(&native_list[idx].args[j].tag, sizeof(int16_t), 1, spf);
+						sfwrite(&native_list[idx].args[j].dimcount, sizeof(uint16_t), 1, spf);
+						name = (uint32_t)memfile_tell(dbgtab);
+						sfwrite(&name, sizeof(uint32_t), 1, spf);
+						memfile_write(dbgtab, 
+							native_list[idx].args[j].name, 
+							strlen(native_list[idx].args[j].name) + 1);
+						if (native_list[idx].args[j].dimcount)
+						{
+							sfwrite(native_list[idx].args[j].dims,
+								sizeof(sp_fdbg_arraydim_t),
+								native_list[idx].args[j].dimcount,
+								spf);
+						}
+						free(native_list[idx].args[j].name);
+					}
+					free(native_list[idx].name);
+				}
+				free(native_list);
+				spfw_next_section(spf);
+			}
 
 			if (sections[FS_DbgFile])
 			{
@@ -498,4 +568,46 @@ void sfwrite(const void *buf, size_t size, size_t count, sp_file_t *spf)
 	{
 		longjmp(brkout, 1);
 	}
+}
+
+void sp_fdbg_ntv_start(int num_natives)
+{
+	if (num_natives == 0)
+	{
+		return;
+	}
+
+	native_list = (t_native *)malloc(sizeof(t_native) * num_natives);
+	memset(native_list, 0, sizeof(t_native) * num_natives);
+}
+
+#include "sc.h"
+
+void sp_fdbg_ntv_hook(int index, symbol *sym)
+{
+	int i, j;
+	t_native *native;
+
+	native = &native_list[index];
+	native->name = strdup(sym->name);
+	
+	for (i = 0; i < sMAXARGS; i++)
+	{
+		if (sym->dim.arglist[i].ident == 0)
+		{
+			break;
+		}
+		native->num_args++;
+		native->args[i].tag = sym->dim.arglist[i].tags == NULL ? 0 : sym->dim.arglist[i].tags[0];
+		native->args[i].name = strdup(sym->dim.arglist[i].name);
+		native->args[i].ident = sym->dim.arglist[i].ident;
+		native->args[i].dimcount = sym->dim.arglist[i].numdim;
+		for (j = 0; j < native->args[i].dimcount; j++)
+		{
+			native->args[i].dims[j].size = sym->dim.arglist[i].dim[j];
+			native->args[i].dims[j].tagid = sym->dim.arglist[i].idxtag[j];
+		}
+	}
+
+	native->ret_tag = sym->tag;
 }

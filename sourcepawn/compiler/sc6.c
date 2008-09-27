@@ -844,9 +844,11 @@ SC_FUNC int assemble(FILE *fout,FILE *fin)
       } /* if */
     } /* for */
     count=0;
+    sp_fdbg_ntv_start(numnatives);
     for (i=0; i<numnatives; i++) {
       const char *aliasptr;
       sym=nativelist[i];
+      sp_fdbg_ntv_hook(i, sym);
       assert(sym!=NULL);
       aliasptr = sym->name;
       if (lookup_alias(testalias,sym->name)) {

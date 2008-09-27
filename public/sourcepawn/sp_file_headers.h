@@ -159,12 +159,6 @@ typedef struct sp_file_tag_s
 	uint32_t	name;			/**< Index into nametable */
 } sp_file_tag_t;
 
-#if defined __linux__
-	#pragma pack()    /* reset default packing */
-#else
-	#pragma pack(pop) /* reset previous packing */
-#endif
-
 /**
  * @brief File-encoded debug information table.
  */
@@ -199,6 +193,7 @@ typedef struct sp_fdbg_line_s
 #define SP_SYM_ARRAY     3	/**< Symbol is an array */
 #define SP_SYM_REFARRAY  4  /**< An array passed by reference (i.e. a pointer) */
 #define SP_SYM_FUNCTION	 9  /**< Symbol is a function */
+#define SP_SYM_VARARGS	11	/**< Variadic argument start. */
 
 /**
  * @brief File-encoded debug symbol information.
@@ -226,5 +221,49 @@ typedef struct sp_fdbg_arraydim_s
 
 /** Typedef for .names table */
 typedef char * sp_file_nametab_t;
+
+/**
+ * @brief File encoding for the dbg.natives table.
+ *
+ * This header is followed by variable length entries of sp_fdbg_native.
+ */
+typedef struct sp_fdbg_ntvtab_s
+{
+	uint32_t num_entries;	/**< Number of entries. */
+} sp_fdbg_ntvtab_t;
+
+#define SP_NTVDBG_VARARGS	(1<<0)		/**< Formal args are followed by '...' */
+
+/**
+ * @brief File encoding of native debug info.
+ *
+ * Each entry is followed by an sp_fdbg_ntvarg_t for each narg.
+ */
+typedef struct sp_fdbg_native_s
+{
+	uint32_t index;			/**< Native index in the plugin. */
+	uint32_t name;			/**< Offset into debug nametable. */
+	int16_t tagid;			/**< Return tag. */
+	uint16_t nargs;			/**< Number of formal arguments. */
+} sp_fdbg_native_t;
+
+/**
+ * @brief File encoding of native arguments.
+ *
+ * Each entry is followed by an sp_fdbg_arraydim_t for each dimcount.
+ */
+typedef struct fp_fdbg_ntvarg_s
+{
+	uint8_t		ident;		/**< Variable type */
+	int16_t		tagid;		/**< Tag id */
+	uint16_t	dimcount;	/**< Dimension count (for arrays) */
+	uint32_t	name;		/**< Offset into debug nametable */
+} sp_fdbg_ntvarg_t;
+
+#if defined __linux__
+#pragma pack()    /* reset default packing */
+#else
+#pragma pack(pop) /* reset previous packing */
+#endif
 
 #endif //_INCLUDE_SPFILE_HEADERS_H

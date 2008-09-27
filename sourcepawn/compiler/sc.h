@@ -519,6 +519,9 @@ long pc_lengthbin(void *handle); /* return the length of the file */
   #define SC_VDEFINE
 #endif
 
+void sp_fdbg_ntv_start(int num_natives);
+void sp_fdbg_ntv_hook(int index, symbol *sym);
+
 /* function prototypes in SC1.C */
 SC_FUNC void set_extension(char *filename,char *extension,int force);
 SC_FUNC symbol *fetchfunc(char *name,int tag);
