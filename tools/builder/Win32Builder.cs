@@ -82,7 +82,7 @@ namespace builder
 				info.Arguments = cfg.build_options + " ";
 			}
 
-			info.Arguments += "/rebuild \"" + config_name + "\" " + project_file;
+			info.Arguments += "/rebuild \"" + project_file + "\" \"" + config_name + "\"";
 
 			Process p = Process.Start(info);
 			Console.WriteLine(p.StandardOutput.ReadToEnd());

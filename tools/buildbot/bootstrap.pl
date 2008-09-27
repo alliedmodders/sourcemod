@@ -17,7 +17,7 @@ if ($^O eq "linux")
 }
 else
 {
-    Build::Command('"' . $ENV{'MSVC9'} . '" /Rebuild Release builder.csproj');
+    Build::Command('"' . $ENV{'VC9BUILDER'} . '" /rebuild builder.csproj Release');
     Build::Command('move ' . Build::PathFormat('bin/Release/builder.exe') . ' .');
 }
 
@@ -44,7 +44,7 @@ if ($^O eq "linux")
 }
 else
 {
-    print CONF "BuilderPath = " . $ENV{'MSVC9'} . "\n";
+    print CONF "BuilderPath = " . $ENV{'VC9BUILDER'} . "\n";
     print CONF "PDBLog = $root\\OUTPUT\\pdblog.txt\n";
 }
 close(CONF);
