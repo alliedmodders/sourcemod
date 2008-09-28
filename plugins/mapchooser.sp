@@ -84,6 +84,7 @@ new bool:g_HasVoteStarted;
 new bool:g_WaitingForVote;
 new bool:g_MapVoteCompleted;
 new bool:g_ChangeMapAtRoundEnd;
+new bool:g_ChangeMapInProgress;
 new g_mapFileSerial = -1;
 
 new g_NominateCount = 0;
@@ -221,6 +222,7 @@ public OnMapEnd()
 	g_HasVoteStarted = false;
 	g_WaitingForVote = false;
 	g_ChangeMapAtRoundEnd = false;
+	g_ChangeMapInProgress = false;
 	
 	g_VoteTimer = INVALID_HANDLE;
 	g_RetryTimer = INVALID_HANDLE;
@@ -308,12 +310,17 @@ SetupTimeleftTimer()
 				g_VoteTimer = INVALID_HANDLE;
 			}	
 			
-			g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote, _, TIMER_FLAG_NO_MAPCHANGE);
+			//g_VoteTimer = CreateTimer(float(time - startTime), Timer_StartMapVote, _, TIMER_FLAG_NO_MAPCHANGE);
+			new Handle:data;
+			g_VoteTimer = CreateDataTimer(float(time - startTime), Timer_StartMapVote, data, TIMER_FLAG_NO_MAPCHANGE);
+			WritePackCell(data, _:MapChange_MapEnd);
+			WritePackCell(data, _:INVALID_HANDLE);
+			ResetPack(data);
 		}		
 	}
 }
 
-public Action:Timer_StartMapVote(Handle:timer)
+public Action:Timer_StartMapVote(Handle:timer, Handle:data)
 {
 	if (timer == g_RetryTimer)
 	{
@@ -328,9 +335,9 @@ public Action:Timer_StartMapVote(Handle:timer)
 	if (!GetArraySize(g_MapList) || !GetConVarBool(g_Cvar_EndOfMapVote) || g_MapVoteCompleted || g_HasVoteStarted)
 	{
 		return Plugin_Stop;
-	}		
+	}
 
-	InitiateVote(MapChange_MapEnd, INVALID_HANDLE);
+	InitiateVote(MapChange:ReadPackCell(data), Handle:ReadPackCell(data));
 
 	return Plugin_Stop;
 }
@@ -347,6 +354,7 @@ public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadc
 	{
 		g_ChangeMapAtRoundEnd = false;
 		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+		g_ChangeMapInProgress = true;
 	}
 	
 	new bluescore = GetEventInt(event, "blue_score");
@@ -388,6 +396,7 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 	{
 		g_ChangeMapAtRoundEnd = false;
 		CreateTimer(2.0, Timer_ChangeMap, INVALID_HANDLE, TIMER_FLAG_NO_MAPCHANGE);
+		g_ChangeMapInProgress = true;
 	}
 	
 	new winner = GetEventInt(event, "winner");
@@ -471,19 +480,32 @@ public Action:Command_Mapvote(client, args)
 	return Plugin_Handled;	
 }
 
-InitiateVote(MapChange:when, Handle:inputlist)
+/**
+ * Starts a new map vote
+ *
+ * @param when			When the resulting map change should occur.
+ * @param inputlist		Optional list of maps to use for the vote, otherwise an internal list of nominations + random maps will be used.
+ */
+InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 {
-	if (!CanVoteStart())
-	{
-		return;
-	}
-	
 	g_WaitingForVote = true;
 	
 	if (IsVoteInProgress())
 	{
 		// Can't start a vote, try again in 5 seconds.
-		g_RetryTimer = CreateTimer(5.0, Timer_StartMapVote, _, TIMER_FLAG_NO_MAPCHANGE);
+		//g_RetryTimer = CreateTimer(5.0, Timer_StartMapVote, _, TIMER_FLAG_NO_MAPCHANGE);
+		
+		new Handle:data;
+		g_RetryTimer = CreateDataTimer(5.0, Timer_StartMapVote, data, TIMER_FLAG_NO_MAPCHANGE);
+		WritePackCell(data, _:when);
+		WritePackCell(data, _:inputlist);
+		ResetPack(data);
+		return;
+	}
+	
+	/* If the main map vote has completed (and chosen result) and its currently changing (not a delayed change) we block further attempts */
+	if (g_MapVoteCompleted && g_ChangeMapInProgress)
+	{
 		return;
 	}
 	
@@ -688,6 +710,7 @@ public Handler_MapVoteFinished(Handle:menu,
 			new Handle:data;
 			CreateDataTimer(2.0, Timer_ChangeMap, data);
 			WritePackString(data, map);
+			g_ChangeMapInProgress = false;
 		}
 		else // MapChange_RoundEnd
 		{
@@ -774,6 +797,8 @@ public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
 
 public Action:Timer_ChangeMap(Handle:hTimer, Handle:dp)
 {
+	g_ChangeMapInProgress = false;
+	
 	new String:map[65];
 	
 	if (dp == INVALID_HANDLE)
