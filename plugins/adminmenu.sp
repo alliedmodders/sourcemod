@@ -229,8 +229,6 @@ stock UTIL_AddTargetsToMenu2(Handle:menu, source_client, flags)
 			continue;
 		}
 		
-		PrintToServer("%d, %d, %d", i, flags, IsFakeClient(i));
-		
 		if (((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
 			&& IsFakeClient(i))
 		{
