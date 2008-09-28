@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cstrike", "cstrike.vcproj", "{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Episode1|Win32 = Debug - Episode1|Win32
+		Debug - Old Metamod|Win32 = Debug - Old Metamod|Win32
+		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
+		Release - Episode 1|Win32 = Release - Episode 1|Win32
+		Release - Old Metamod|Win32 = Release - Old Metamod|Win32
+		Release - Orange Box|Win32 = Release - Orange Box|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Episode1|Win32.ActiveCfg = Debug - Episode1|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Episode1|Win32.Build.0 = Debug - Episode1|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Old Metamod|Win32.ActiveCfg = Debug - Old Metamod|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Old Metamod|Win32.Build.0 = Debug - Old Metamod|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.ActiveCfg = Debug - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Episode 1|Win32.ActiveCfg = Release - Episode 1|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Episode 1|Win32.Build.0 = Release - Episode 1|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Old Metamod|Win32.ActiveCfg = Release - Old Metamod|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Old Metamod|Win32.Build.0 = Release - Old Metamod|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box|Win32.ActiveCfg = Release - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box|Win32.Build.0 = Release - Orange Box|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
