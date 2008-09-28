@@ -286,7 +286,7 @@ namespace builder
 			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
 			lib.source_path = "extensions/structs";
 			lib.binary_name = "structs.ext";
-			lib.vcproj_name = "sdk";
+			lib.vcproj_name = "structs";
 			lib.build_mode = BuildMode.BuildMode_Episode2;
 			libraries.Add(lib);
 
