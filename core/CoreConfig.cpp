@@ -140,7 +140,15 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 
 	if (!already_checked)
 	{
-		g_ServerCfgFile = icvar->FindVar("servercfgfile");
+		if (engine->IsDedicatedServer())
+		{
+			g_ServerCfgFile = icvar->FindVar("servercfgfile");
+		}
+		else
+		{
+			g_ServerCfgFile = icvar->FindVar("lservercfgfile");
+		}
+
 		if (g_ServerCfgFile != NULL)
 		{
 			ConCommandBase *pBase = icvar->GetCommands();
