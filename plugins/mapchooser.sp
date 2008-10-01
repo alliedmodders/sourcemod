@@ -336,8 +336,11 @@ public Action:Timer_StartMapVote(Handle:timer, Handle:data)
 	{
 		return Plugin_Stop;
 	}
+	
+	new MapChange:mapChange = MapChange:ReadPackCell(data);
+	new Handle:hndl = Handle:ReadPackCell(data);
 
-	InitiateVote(MapChange:ReadPackCell(data), Handle:ReadPackCell(data));
+	InitiateVote(mapChange, hndl);
 
 	return Plugin_Stop;
 }
