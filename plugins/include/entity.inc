@@ -481,8 +481,7 @@ stock GetEntSendPropOffs(ent, const String:prop[], bool:actual=false)
  * Retrieves an integer value from an entity's property.
  *
  * This function is considered safer and more robust over GetEntData, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -499,8 +498,7 @@ native GetEntProp(entity, PropType:type, const String:prop[], size=4);
  * Sets an integer value in an entity's property.
  *
  * This function is considered safer and more robust over SetEntData, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -517,8 +515,7 @@ native SetEntProp(entity, PropType:type, const String:prop[], any:value, size=4)
  * Retrieves a float value from an entity's property.
  *
  * This function is considered safer and more robust over GetEntDataFloat, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -532,8 +529,7 @@ native Float:GetEntPropFloat(entity, PropType:type, const String:prop[]);
  * Sets a float value in an entity's property.
  *
  * This function is considered safer and more robust over SetEntDataFloat, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -548,8 +544,7 @@ native SetEntPropFloat(entity, PropType:type, const String:prop[], Float:value);
  * Retrieves an entity index from an entity's property.
  *
  * This function is considered safer and more robust over GetEntDataEnt*, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -565,8 +560,7 @@ native GetEntPropEnt(entity, PropType:type, const String:prop[]);
  * Sets an entity index in an entity's property.
  *
  * This function is considered safer and more robust over SetEntDataEnt*, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -581,8 +575,7 @@ native SetEntPropEnt(entity, PropType:type, const String:prop[], other);
  * Retrieves a vector of floats from an entity, given a named network property.
  *
  * This function is considered safer and more robust over GetEntDataVector, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
@@ -598,8 +591,7 @@ native GetEntPropVector(entity, PropType:type, const String:prop[], Float:vec[3]
  * Sets a vector of floats in an entity, given a named network property.
  *
  * This function is considered safer and more robust over SetEntDataVector, 
- * because it performs strict offset checking and typing rules.  There is a 
- * very minor performance hit from this.
+ * because it performs strict offset checking and typing rules.
  * 
  * @param entity		Entity/edict index.
  * @param type			Property type.
