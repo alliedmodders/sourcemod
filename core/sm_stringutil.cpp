@@ -102,7 +102,7 @@ try_serverlang:
 		}
 		else if (langid != SOURCEMOD_LANGUAGE_ENGLISH)
 		{
-			if (!pPhrases->FindTranslation(key, SOURCEMOD_LANGUAGE_ENGLISH, &pTrans))
+			if (pPhrases->FindTranslation(key, SOURCEMOD_LANGUAGE_ENGLISH, &pTrans) != Trans_Okay)
 			{
 				pCtx->ThrowNativeErrorEx(SP_ERROR_PARAM, "Language phrase \"%s\" not found", key);
 				goto error_out;
