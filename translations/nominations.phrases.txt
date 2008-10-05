@@ -15,7 +15,7 @@
 	"Map Already In Vote"
 	{
 		"#format"		"{1:s}"
-		"en"			"Map '{1}' already in the Nominations list."
+		"en"			"Map '{1}' already in the nominations list."
 	}
 
 	"Map Inserted"
