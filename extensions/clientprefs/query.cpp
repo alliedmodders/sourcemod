@@ -63,13 +63,6 @@ void TQueryOp::RunThinkPart()
 				break;
 			}
 
-			case Query_CreateTable:
-			{
-				m_pQuery->Destroy();
-				m_pQuery = NULL;
-				break;
-			}
-
 			default:
 			{
 				break;
@@ -239,11 +232,6 @@ void TQueryOp::SetPreparedQuery()
 		}
 
 	}
-}
-
-void TQueryOp::SetCustomPreparedQuery(IPreparedQuery *query)
-{
-	m_pQuery = query;
 }
 
 ParamData::~ParamData()

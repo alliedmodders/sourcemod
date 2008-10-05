@@ -42,7 +42,6 @@ enum querytype
 	Query_SelectData,
 	Query_InsertData,
 	Query_SelectId,
-	Query_CreateTable,
 	Query_Connect,
 };
 
@@ -79,7 +78,6 @@ public:
 
 	void SetDatabase(IDatabase *db);
 	void SetPreparedQuery();
-	void SetCustomPreparedQuery(IPreparedQuery *wrapper);
 
 	void Destroy();
 

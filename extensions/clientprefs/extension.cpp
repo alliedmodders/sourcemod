@@ -224,33 +224,20 @@ void ClientPrefs::DatabaseConnect()
 	{
 		driver = DRIVER_SQLITE;
 
-		TQueryOp *op = new TQueryOp(Query_CreateTable, 0);
-
-		op->SetDatabase(Database);
-		IPreparedQuery *pQuery = Database->PrepareQuery(
+		if (!Database->DoSimpleQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookies  \
 				( \
 					id INTEGER PRIMARY KEY AUTOINCREMENT, \
 					name varchar(30) NOT NULL UNIQUE, \
 					description varchar(255), \
 					access INTEGER \
-				)",
-				error, sizeof(error), &errCode);
-
-		if (pQuery == NULL)
+				)"))
 		{
-			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookies: %s (%i)", error, errCode);
-			return;
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookies: %s", Database->GetError());
+			goto fatal_fail;
 		}
 
-		op->SetCustomPreparedQuery(pQuery);
-
-		dbi->AddToThreadQueue(op, PrioQueue_High);
-
-		op = new TQueryOp(Query_CreateTable, 0);
-		op->SetDatabase(Database);
-
-		pQuery = Database->PrepareQuery(
+		if (!Database->DoSimpleQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
 				( \
 					player varchar(65) NOT NULL, \
@@ -258,27 +245,17 @@ void ClientPrefs::DatabaseConnect()
 					value varchar(100), \
 					timestamp int, \
 					PRIMARY KEY (player, cookie_id) \
-				)",
-				error, sizeof(error), &errCode);
-
-		if (pQuery == NULL)
+				)"))
 		{
-			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookie_cache: %s (%i)", error, errCode);
-			return;
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookie_cache: %s", Database->GetError());
+			goto fatal_fail;
 		}
-
-		op->SetCustomPreparedQuery(pQuery);
-
-		dbi->AddToThreadQueue(op, PrioQueue_High);
 	}
 	else if (strcmp(identifier, "mysql") == 0)
 	{
 		driver = DRIVER_MYSQL;
 
-		TQueryOp *op = new TQueryOp(Query_CreateTable, 0);
-		op->SetDatabase(Database);
-		
-		IPreparedQuery *pQuery = Database->PrepareQuery(
+		if (!Database->DoSimpleQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookies \
 				( \
 					id INTEGER unsigned NOT NULL auto_increment, \
@@ -286,23 +263,13 @@ void ClientPrefs::DatabaseConnect()
 					description varchar(255), \
 					access INTEGER, \
 					PRIMARY KEY (id) \
-				)",
-				error, sizeof(error), &errCode);
-
-		if (pQuery == NULL)
+				)"))
 		{
-			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookies: %s (%i)", error, errCode);
-			return;
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookies: %s", Database->GetError());
+			goto fatal_fail;
 		}
 
-		op->SetCustomPreparedQuery(pQuery);
-
-		dbi->AddToThreadQueue(op, PrioQueue_High);
-
-		op = new TQueryOp(Query_CreateTable, 0);
-		op->SetDatabase(Database);
-			
-		pQuery = Database->PrepareQuery(
+		if (!Database->DoSimpleQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
 				( \
 					player varchar(65) NOT NULL, \
@@ -310,27 +277,16 @@ void ClientPrefs::DatabaseConnect()
 					value varchar(100), \
 					timestamp int NOT NULL, \
 					PRIMARY KEY (player, cookie_id) \
-				)",
-				error, sizeof(error), &errCode);
-
-		if (pQuery == NULL)
+				)"))
 		{
-			g_pSM->LogMessage(myself, "Failed to prepare query CreateTable sm_cookie_cache: %s (%i)", error, errCode);
-			return;
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookie_cache: %s", Database->GetError());
+			goto fatal_fail;
 		}
-
-		op->SetCustomPreparedQuery(pQuery);
-
-		dbi->AddToThreadQueue(op, PrioQueue_High);
 	}
 	else
 	{
 		g_pSM->LogError(myself, "Unsupported driver \"%s\"", identifier);
-		Database->Close();
-		Database = NULL;
-		databaseLoading = false;
-		ProcessQueryCache();
-		return;
+		goto fatal_fail;
 	}
 
 	if (driver == DRIVER_MYSQL)
@@ -343,7 +299,7 @@ void ClientPrefs::DatabaseConnect()
 		if (InsertCookieQuery == NULL)
 		{
 			g_pSM->LogMessage(myself, "Failed to prepare query InsertCookie: %s (%i)", error, errCode);
-			return;
+			goto fatal_fail;
 		}
 
 		InsertDataQuery = Database->PrepareQuery(
@@ -355,7 +311,7 @@ void ClientPrefs::DatabaseConnect()
 		if (InsertDataQuery == NULL)
 		{
 			g_pSM->LogMessage(myself, "Failed to prepare query InsertData: %s (%i)", error, errCode);
-			return;
+			goto fatal_fail;
 		}
 	}
 	else
@@ -368,7 +324,7 @@ void ClientPrefs::DatabaseConnect()
 		if (InsertCookieQuery == NULL)
 		{
 			g_pSM->LogMessage(myself, "Failed to prepare query InsertCookie: %s (%i)", error, errCode);
-			return;
+			goto fatal_fail;
 		}
 
 		InsertDataQuery = Database->PrepareQuery(
@@ -379,7 +335,7 @@ void ClientPrefs::DatabaseConnect()
 		if (InsertDataQuery == NULL)
 		{
 			g_pSM->LogMessage(myself, "Failed to prepare query InsertData: %s (%i)", error, errCode);
-			return;
+			goto fatal_fail;
 		}
 	}
 
@@ -394,7 +350,7 @@ void ClientPrefs::DatabaseConnect()
 	if (SelectDataQuery == NULL)
 	{
 		g_pSM->LogMessage(myself, "Failed to prepare query SelectData: %s (%i)", error, errCode);
-		return;
+		goto fatal_fail;
 	}
 
 	SelectIdQuery = Database->PrepareQuery(
@@ -406,15 +362,40 @@ void ClientPrefs::DatabaseConnect()
 	if (SelectIdQuery == NULL)
 	{
 		g_pSM->LogMessage(myself, "Failed to prepare query SelectId: %s (%i)", error, errCode);
-		return;
+		goto fatal_fail;
 	}
 
 	databaseLoading = false;
-	cell_t result = 0;
 
 	ProcessQueryCache();
 
 	return;
+
+fatal_fail:
+	if (SelectIdQuery != NULL)
+	{
+		SelectIdQuery->Destroy();
+		SelectIdQuery = NULL;
+	}
+	if (SelectDataQuery != NULL)
+	{
+		SelectDataQuery->Destroy();
+		SelectDataQuery = NULL;
+	}
+	if (InsertCookieQuery != NULL)
+	{
+		InsertCookieQuery->Destroy();
+		InsertCookieQuery = NULL;
+	}
+	if (InsertDataQuery != NULL)
+	{
+		InsertDataQuery->Destroy();
+		InsertDataQuery = NULL;
+	}
+	Database->Close();
+	Database = NULL;
+	databaseLoading = false;
+	ProcessQueryCache();
 }
 
 bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
