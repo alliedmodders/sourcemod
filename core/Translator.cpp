@@ -152,6 +152,45 @@ void CPhraseFile::ReparseFile()
 		g_Logger.LogError("[SM] Fatal error encountered parsing translation file \"%s\"", m_File.c_str());
 		g_Logger.LogError("[SM] Error (line %d, column %d): %s", states.line, states.col, msg);
 	}
+
+	const char *code;
+	for (unsigned int i = 1; i < m_LangCount; i++)
+	{
+		if (!m_pTranslator->GetLanguageInfo(i, &code, NULL))
+		{
+			continue;
+		}
+
+		g_SourceMod.BuildPath(Path_SM, 
+			path,
+			PLATFORM_MAX_PATH,
+			"translations/%s/%s",
+			code,
+			m_File.c_str());
+
+		/* Speculatively load these. */
+		if (!g_LibSys.PathExists(path))
+		{
+			continue;
+		}
+
+		if ((err=textparsers->ParseFile_SMC(path, this, &states)) != SMCError_Okay)
+		{
+			const char *msg = textparsers->GetSMCErrorString(err);
+			if (!msg)
+			{
+				msg = m_ParseError.c_str();
+			}
+
+			g_Logger.LogError("[SM] Fatal error encountered parsing translation file \"%s/%s\"", 
+				code, 
+				m_File.c_str());
+			g_Logger.LogError("[SM] Error (line %d, column %d): %s",
+				states.line,
+				states.col,
+				msg);
+		}
+	}
 }
 
 void CPhraseFile::ReadSMC_ParseStart()
@@ -178,21 +217,21 @@ SMCResult CPhraseFile::ReadSMC_NewSection(const SMCStates *states, const char *n
 		m_ParseState = PPS_InPhrase;
 		recognized = true;
 
-		phrase_t *pPhrase;
-		m_CurPhrase = m_pMemory->CreateMem(sizeof(phrase_t), (void **)&pPhrase);
+		void *value;
+		if (sm_trie_retrieve(m_pPhraseLookup, name, &value))
+		{
+			m_CurPhrase = reinterpret_cast<int>(value);
+		}
+		else
+		{
+			phrase_t *pPhrase;
 
-		/* Create the reverse lookup */
-		if (!sm_trie_insert(m_pPhraseLookup, name, reinterpret_cast<void *>(m_CurPhrase)))
-		{
-			ParseWarning("Skipping duplicate phrase \"%s\" on line %d.", name, states->line);
-			/* :IDEA: prevent memory waste by seeking backwards in memtable? */
-			m_CurPhrase = -1;
-		} 
-		else 
-		{
+			m_CurPhrase = m_pMemory->CreateMem(sizeof(phrase_t), (void **)&pPhrase);
+			sm_trie_insert(m_pPhraseLookup, name, reinterpret_cast<void *>(m_CurPhrase));
+
 			/* Initialize new phrase */
 			trans_t *pTrans;
-	
+
 			pPhrase->fmt_count = 0;
 			pPhrase->fmt_list = -1;
 
@@ -202,13 +241,14 @@ SMCResult CPhraseFile::ReadSMC_NewSection(const SMCStates *states, const char *n
 
 			pPhrase->translations = 0;
 			pPhrase->fmt_bytes = 0;
-	
+
 			for (unsigned int i=0; i<m_LangCount; i++)
 			{
 				pTrans[i].stridx = -1;
 			}
-			m_LastPhraseString.assign(name);
 		}
+
+		m_LastPhraseString.assign(name);
 	} 
 	else if (m_ParseState == PPS_InPhrase) 
 	{
@@ -233,15 +273,12 @@ SMCResult CPhraseFile::ReadSMC_KeyValue(const SMCStates *states, const char *key
 	}
 
 	phrase_t *pPhrase = (phrase_t *)m_pMemory->GetAddress(m_CurPhrase);
-	
-	if (key[0] == '#' && strcmp(key, "#format") == 0)
-	{
-		if (pPhrase->fmt_list != -1)
-		{
-			ParseWarning("Ignoring duplicated #format property on line %d", states->line);
-			return SMCResult_Continue;
-		}
 
+	/* Duplicate format keys get silently ignored. */
+	if (key[0] == '#' 
+		&& strcmp(key, "#format") == 0
+		&& pPhrase->fmt_list == -1)
+	{
 		if (pPhrase->translations > 0)
 		{
 			ParseWarning("#format property should come before translations on line %d, ignoring", states->line);
