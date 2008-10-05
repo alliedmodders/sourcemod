@@ -68,6 +68,7 @@ CPlugin::CPlugin(const char *file)
 	m_LibraryMissing = false;
 	m_bGotAllLoaded = false;
 	m_pPhrases = g_Translator.CreatePhraseCollection();
+	m_MaxClientsVar = NULL;
 }
 
 CPlugin::~CPlugin()
@@ -218,7 +219,7 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 	}
 }
 
-void CPlugin::UpdateInfo()
+bool CPlugin::UpdateInfo()
 {
 	/* Now grab the info */
 	uint32_t idx;
@@ -265,7 +266,7 @@ void CPlugin::UpdateInfo()
 		};
 		__version_info *info;
 		cell_t local_addr;
-		const char *pDate, *pTime;
+		const char *pDate, *pTime, *pFileVers;
 
 		pDate = "";
 		pTime = "";
@@ -278,11 +279,34 @@ void CPlugin::UpdateInfo()
 			base->LocalToString(info->time, (char **)&pTime);
 			UTIL_Format(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
 		}
+		if (m_FileVersion > 4)
+		{
+			base->LocalToString(info->filevers, (char **)&pFileVers);
+			SetErrorState(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
+			return false;
+		}
 	}
 	else
 	{
 		m_FileVersion = 0;
 	}
+
+	if ((err = base->FindPubvarByName("MaxClients", &idx)) == SP_ERROR_NONE)
+	{
+		base->GetPubvarByIndex(idx, &m_MaxClientsVar);
+	}
+
+	return true;
+}
+
+void CPlugin::SyncMaxClients(int max_clients)
+{
+	if (m_MaxClientsVar == NULL)
+	{
+		return;
+	}
+
+	*m_MaxClientsVar->offs = max_clients;
 }
 
 void CPlugin::Call_OnPluginStart()
@@ -293,6 +317,8 @@ void CPlugin::Call_OnPluginStart()
 	}
 
 	m_status = Plugin_Running;
+
+	SyncMaxClients(g_Players.MaxClients());
 
 	cell_t result;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginStart");
@@ -427,6 +453,10 @@ PluginType CPlugin::GetType()
 
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
+	if (GetStatus() >= Plugin_Created)
+	{
+		return NULL;
+	}
 	return &m_info;
 }
 
@@ -959,11 +989,18 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 				"Unable to load plugin (error %d: %s)", 
 				err, 
 				g_pSourcePawn2->GetErrorString(err));
+			pPlugin->m_status = Plugin_BadLoad;
 		}
 		else
 		{
-			pPlugin->UpdateInfo();
-			pPlugin->m_status = Plugin_Created;
+			if (pPlugin->UpdateInfo())
+			{
+				pPlugin->m_status = Plugin_Created;
+			}
+			else
+			{
+				UTIL_Format(error, maxlength, "%s", pPlugin->m_errormsg);
+			}
 		}
 	}
 
@@ -1052,10 +1089,13 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	if ((res=_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s", plugin, error);
-		pl->SetErrorState(Plugin_Failed, "%s", error);
+		pl->SetErrorState(
+			pl->GetStatus() == Plugin_BadLoad ? Plugin_BadLoad : Plugin_Failed, 
+			"%s",
+			error);
 	}
 
-	if (res == LoadRes_Successful)
+	if (res == LoadRes_Successful || res == LoadRes_Failure)
 	{
 		AddPlugin(pl);
 	}
@@ -1458,7 +1498,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 	}
 
 	IPluginContext *pContext = plugin->GetBaseContext();
-	if (pContext->IsInExec())
+	if (pContext != NULL && pContext->IsInExec())
 	{
 		char buffer[255];
 		UTIL_Format(buffer, sizeof(buffer), "sm plugins unload %s\n", plugin->GetFilename());
@@ -1925,14 +1965,21 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				{
 					len += UTIL_Format(buffer, sizeof(buffer), "  %02d", id);
 				}
-				len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
-				if (IS_STR_FILLED(info->version))
+				if (pl->GetStatus() < Plugin_Created)
 				{
-					len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+					len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+					if (IS_STR_FILLED(info->version))
+					{
+						len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+					}
+					if (IS_STR_FILLED(info->author))
+					{
+						UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+					}
 				}
-				if (IS_STR_FILLED(info->author))
+				else
 				{
-					UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+					UTIL_Format(&buffer[len], sizeof(buffer)-len, " %s", pl->m_filename);
 				}
 				g_RootMenu.ConsolePrint("%s", buffer);
 			}
@@ -2025,8 +2072,16 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			}
 
 			char name[PLATFORM_MAX_PATH];
-			const sm_plugininfo_t *info = pl->GetPublicInfo();
-			strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+
+			if (pl->GetStatus() < Plugin_Created)
+			{
+				const sm_plugininfo_t *info = pl->GetPublicInfo();
+				UTIL_Format(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+			}
+			else
+			{
+				UTIL_Format(name, sizeof(name), "%s", pl->GetFilename());
+			}
 
 			if (UnloadPlugin(pl))
 			{
@@ -2172,12 +2227,15 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			else
 			{
 				g_RootMenu.ConsolePrint("  Load error: %s", pl->m_errormsg);
-				g_RootMenu.ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
-										info->name ? info->name : "<none>",
-										info->version ? info->version : "<none>");
-				if (IS_STR_FILLED(info->url))
+				if (pl->GetStatus() < Plugin_Created)
 				{
-					g_RootMenu.ConsolePrint("  File URL: %s", info->url);
+					g_RootMenu.ConsolePrint("  File info: (title \"%s\") (version \"%s\")", 
+											info->name ? info->name : "<none>",
+											info->version ? info->version : "<none>");
+					if (IS_STR_FILLED(info->url))
+					{
+						g_RootMenu.ConsolePrint("  File URL: %s", info->url);
+					}
 				}
 			}
 
@@ -2550,4 +2608,19 @@ CPlugin *CPluginManager::FindPluginByConsoleArg(const char *arg)
 	}
 
 	return pl;
+}
+
+void CPluginManager::OnSourceModMaxPlayersChanged(int newvalue)
+{
+	SyncMaxClients(newvalue);
+}
+
+void CPluginManager::SyncMaxClients(int max_clients)
+{
+	List<CPlugin *>::iterator iter;
+
+	for (iter = m_plugins.begin(); iter != m_plugins.end(); iter++)
+	{
+		(*iter)->SyncMaxClients(max_clients);
+	}
 }

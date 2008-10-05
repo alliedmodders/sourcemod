@@ -234,8 +234,9 @@ public:
 		m_Libraries.push_back(name);
 	}
 	void LibraryActions(bool dropping);
+	void SyncMaxClients(int max_clients);
 protected:
-	void UpdateInfo();
+	bool UpdateInfo();
 	void SetTimeStamp(time_t t);
 	void DependencyDropped(CPlugin *pOwner);
 private:
@@ -261,6 +262,7 @@ private:
 	char m_DateTime[256];
 	IPluginRuntime *m_pRuntime;
 	IPluginContext *m_pContext;
+	sp_pubvar_t *m_MaxClientsVar;
 };
 
 class CPluginManager : 
@@ -307,6 +309,7 @@ public: //IPluginManager
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	void OnSourceModMaxPlayersChanged(int newvalue);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
@@ -390,6 +393,8 @@ public:
 	void UnloadAll();
 
 	CPlugin *FindPluginByConsoleArg(const char *arg);
+
+	void SyncMaxClients(int max_clients);
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 

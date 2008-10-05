@@ -237,8 +237,7 @@ public Action:Command_SmHsay(client, args)
  
 	decl String:nameBuf[MAX_NAME_LENGTH];
 	
-	new maxClients = GetMaxClients();
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientConnected(i) || IsFakeClient(i))
 		{
@@ -270,7 +269,6 @@ public Action:Command_SmTsay(client, args)
 	GetClientName(client, name, sizeof(name));
 		
 	new color = FindColor(colorStr);
-	new maxClients = GetMaxClients();
 	new String:nameBuf[MAX_NAME_LENGTH];
 	
 	if (color == -1)
@@ -279,7 +277,7 @@ public Action:Command_SmTsay(client, args)
 		len = 0;
 	}
 	
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientConnected(i) || IsFakeClient(i))
 		{
@@ -407,11 +405,9 @@ FindColor(String:color[])
 
 SendChatToAll(client, String:message[])
 {
-	new maxClients;
 	new String:nameBuf[MAX_NAME_LENGTH];
 	
-	maxClients = GetMaxClients();
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientConnected(i) || IsFakeClient(i))
 		{
@@ -433,9 +429,8 @@ SendChatToAll(client, String:message[])
 DisplayCenterTextToAll(client, String:message[])
 {
 	new String:nameBuf[MAX_NAME_LENGTH];
-	new maxClients = GetMaxClients();
 	
-	for (new i = 1; i < maxClients; i++)
+	for (new i = 1; i < MaxClients; i++)
 	{
 		if (!IsClientConnected(i) || IsFakeClient(i))
 		{
@@ -448,9 +443,7 @@ DisplayCenterTextToAll(client, String:message[])
 
 SendChatToAdmins(String:name[], String:message[])
 {
-	new iMaxClients = GetMaxClients();
-	
-	for (new i = 1; i <= iMaxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -500,8 +493,7 @@ SendPanelToAll(String:name[], String:message[])
 	SetPanelCurrentKey(mSayPanel, 10);
 	DrawPanelItem(mSayPanel, "Exit", ITEMDRAW_CONTROL);
 
-	new MaxClients = GetMaxClients();
-	for(new i = 1; i < MaxClients; i++)
+	for(new i = 1; i <= MaxClients; i++)
 	{
 		if(IsClientInGame(i) && !IsFakeClient(i))
 		{

@@ -622,6 +622,11 @@ static cell_t FindPluginByNumber(IPluginContext *pContext, const cell_t *params)
 	return pPlugin->GetMyHandle();
 }
 
+static cell_t VerifyCoreVersion(IPluginContext *pContext, const cell_t *params)
+{
+	return 4;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -645,6 +650,7 @@ REGISTER_NATIVES(coreNatives)
 	{"LogToFileEx",				LogToFileEx},
 	{"GetExtensionFileStatus",	GetExtensionFileStatus},
 	{"FindPluginByNumber",		FindPluginByNumber},
+	{"VerifyCoreVersion",		VerifyCoreVersion},
 	{NULL,						NULL},
 };
 

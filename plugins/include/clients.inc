@@ -45,8 +45,18 @@ enum NetFlow
 	NetFlow_Both,			/**< Both values added together */
 };
 
-#define MAXPLAYERS		64	/**< Maximum number of players that can be in server */
+/**
+ * MAXPLAYERS is not the same as MaxClients.
+ * MAXPLAYERS is a hardcoded value as an upper limit.  MaxClients changes based on the server.
+ *
+ * Both GetMaxClients() and MaxClients are only available once the map is loaded, and should 
+ * not be used in OnPluginStart().
+ */
+
+#define MAXPLAYERS		64	/**< Maximum number of players SourceMod supports */
 #define MAX_NAME_LENGTH 32	/**< Maximum buffer required to store a client name */
+
+public const MaxClients;	/**< Maximum number of players the server supports (dynamic) */
 
 /**
  * Called on client connection.
@@ -169,9 +179,15 @@ forward OnClientPostAdminFilter(client);
 forward OnClientPostAdminCheck(client);
 
 /**
+ * This function will be deprecated in a future release.  Use the MaxClients variable instead.
+ *
  * Returns the maximum number of clients allowed on the server.  This may 
  * return 0 if called before OnMapStart(), and thus should not be called 
  * in OnPluginStart().  
+ *
+ * You should not globally cache the value to GetMaxClients() because it can change from 
+ * SourceTV or TF2's arena mode.  Use the "MaxClients" dynamic variable documented at the 
+ * top of this file.
  *
  * @return				Maximum number of clients allowed.
  */
