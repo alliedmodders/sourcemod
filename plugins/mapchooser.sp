@@ -884,8 +884,7 @@ NominateResult:InternalNominateMap(String:map[], bool:force, owner)
 	
 	new index;
 
-	/* Look to replace an existing nomination by this client - Nominations made with owner = 0 aren't replaced */
-	if (owner && ((index = FindValueInArray(g_NominateOwners, owner)) != -1))
+	if ((index = FindValueInArray(g_NominateOwners, owner)) != -1)
 	{
 		new String:oldmap[33];
 		GetArrayString(g_NominateList, index, oldmap, sizeof(oldmap));
@@ -893,6 +892,7 @@ NominateResult:InternalNominateMap(String:map[], bool:force, owner)
 		Call_PushString(oldmap);
 		Call_PushCell(owner);
 		Call_Finish();
+		
 		
 		SetArrayString(g_NominateList, index, map);
 		return Nominate_Replaced;
