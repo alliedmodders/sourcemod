@@ -45,7 +45,7 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2LIB = $(HL2SDK_OB)/lib/linux
 	CFLAGS += -DORANGEBOX_BUILD
 	METAMOD = $(SOURCEMM16)
-	INCLUDE += -I$(HL2SDK)/public/game/server
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/public/mathlib
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
 endif
