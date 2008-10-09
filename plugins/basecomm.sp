@@ -192,6 +192,11 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
 	
+	if (!client)
+	{
+		return;	
+	}
+	
 	if (g_Muted[client])
 	{
 		SetClientListeningFlags(client, VOICE_MUTED);
@@ -205,6 +210,11 @@ public Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
 public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	new client = GetClientOfUserId(GetEventInt(event, "userid"));
+	
+	if (!client)
+	{
+		return;	
+	}
 	
 	if (g_Muted[client])
 	{
