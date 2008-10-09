@@ -45,4 +45,29 @@
 	{
 		"en"			"Nominate Map:"
 	}
+
+	"Can't Nominate Current Map"
+	{
+		"en"			"The map you chose is the current map and cannot be nominated"
+	}
+
+	"Map in Exclude List"
+	{
+		"en"			"The map you chose was recently played and cannot be nominated"
+	}
+
+	"Current Map"
+	{
+		"en"			"Current Map"
+	}
+
+	"Recently Played"
+	{
+		"en"			"Recently Played"
+	}
+
+	"Nominated"
+	{
+		"en"			"Nominated"
+	}
 }

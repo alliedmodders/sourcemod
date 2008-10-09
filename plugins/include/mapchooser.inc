@@ -73,7 +73,7 @@ native bool:EndOfMapVoteEnabled();
  * Called when mapchooser removes a nomination from its list.
  * Nominations cleared on map start will not trigger this forward
  */
-forward OnNominationRemoved(String:map[], owner);
+forward OnNominationRemoved(const String:map[], owner);
 
 
 public SharedPlugin:__pl_mapchooser = 
