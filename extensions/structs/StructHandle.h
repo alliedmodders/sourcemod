@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_STRUCT_HANDLE_H_
 
 #include "Struct.h"
-#include "mathlib/vector.h"
+#include "vector.h"
 #include "basehandle.h"
 
 class StructHandle
