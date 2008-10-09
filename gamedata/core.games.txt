@@ -72,6 +72,9 @@
 			"game"		"Insurgency"
 			"game"		"tf"
 			"game"		"pvkii"
+			"game"		"diprip"
+			"game"		"synergy"
+			"game"		"FortressForever"
 		}
 
 		"Keys"
