@@ -73,6 +73,7 @@
 			"game"		"tf"
 			"game"		"pvkii"
 			"game"		"diprip"
+			"game"		"synergy"
 		}
 
 		"Keys"
