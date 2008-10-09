@@ -52,14 +52,6 @@ new Handle:g_MapList = INVALID_HANDLE;
 new Handle:g_MapMenu = INVALID_HANDLE;
 new g_mapFileSerial = -1;
 
-#define MAPSTATUS_ENABLED (1<<0)
-#define MAPSTATUS_DISABLED (1<<1)
-#define MAPSTATUS_EXCLUDE_CURRENT (1<<2)
-#define MAPSTATUS_EXCLUDE_PREVIOUS (1<<3)
-#define MAPSTATUS_EXCLUDE_NOMINATED (1<<4)
-
-new Handle:g_mapTrie;
-
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -77,8 +69,6 @@ public OnPluginStart()
 	RegConsoleCmd("sm_nominate", Command_Nominate);
 	
 	RegAdminCmd("sm_nominate_addmap", Command_Addmap, ADMFLAG_CHANGEMAP, "sm_nominate_addmap <mapname> - Forces a map to be on the next mapvote.");
-	
-	g_mapTrie = CreateTrie();
 }
 
 public OnConfigsExecuted()
@@ -98,23 +88,9 @@ public OnConfigsExecuted()
 	BuildMapMenu();
 }
 
-public OnNominationRemoved(/* const */String:map[], owner)
+public OnNominationRemoved(String:map[], owner)
 {
-	new status;
-	
-	/* Is the map in our list? */
-	if (!GetTrieValue(g_mapTrie, map, status))
-	{
-		return;	
-	}
-	
-	/* Was the map disabled due to being nominated */
-	if ((status & MAPSTATUS_EXCLUDE_NOMINATED) != MAPSTATUS_EXCLUDE_NOMINATED)
-	{
-		return;
-	}
-	
-	SetTrieValue(g_mapTrie, map, MAPSTATUS_ENABLED);	
+	AddMenuItem(g_MapMenu,	map, map);
 }
 
 public Action:Command_Addmap(client, args)
@@ -128,12 +104,10 @@ public Action:Command_Addmap(client, args)
 	decl String:mapname[64];
 	GetCmdArg(1, mapname, sizeof(mapname));
 
-	
-	new status;
-	if (!GetTrieValue(g_mapTrie, mapname, status))
+	if (FindStringInArray(g_MapList, mapname) == -1)
 	{
 		ReplyToCommand(client, "%t", "Map was not found", mapname);
-		return Plugin_Handled;		
+		return Plugin_Handled;
 	}
 	
 	new NominateResult:result = NominateMap(mapname, true, 0);
@@ -146,9 +120,16 @@ public Action:Command_Addmap(client, args)
 		return Plugin_Handled;	
 	}
 	
-	
-	SetTrieValue(g_mapTrie, mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
-
+	decl String:item[64];
+	for (new i = 0; i < GetMenuItemCount(g_MapMenu); i++)
+	{
+		GetMenuItem(g_MapMenu, i, item, sizeof(item));
+		if (strcmp(item, mapname) == 0)
+		{
+			RemoveMenuItem(g_MapMenu, i);
+			break;
+		}			
+	}	
 	
 	ReplyToCommand(client, "%t", "Map Inserted", mapname);
 	LogAction(client, -1, "\"%L\" inserted map \"%s\".", client, mapname);
@@ -204,58 +185,41 @@ public Action:Command_Nominate(client, args)
 	decl String:mapname[64];
 	GetCmdArg(1, mapname, sizeof(mapname));
 	
-	new status;
-	if (!GetTrieValue(g_mapTrie, mapname, status))
+	decl String:item[64];
+	for (new i = 0; i < GetMenuItemCount(g_MapMenu); i++)
 	{
-		ReplyToCommand(client, "%t", "Map was not found", mapname);
-		return Plugin_Handled;		
+		GetMenuItem(g_MapMenu, i, item, sizeof(item));
+		if (strcmp(item, mapname) == 0)
+		{
+			new NominateResult:result = NominateMap(mapname, false, client);
+	
+			if (result > Nominate_Replaced)
+			{
+				if (result == Nominate_AlreadyInVote)
+				{
+					ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
+				}
+				else
+				{
+					ReplyToCommand(client, "[SM] %t", "Map Already Nominated");
+				}
+				
+				return Plugin_Handled;	
+			}
+			
+			RemoveMenuItem(g_MapMenu, i);
+			
+			decl String:name[64];
+			GetClientName(client, name, sizeof(name));
+	
+			PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
+	
+			return Plugin_Continue;
+		}			
 	}
 	
-	if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
-	{
-		if ((status & MAPSTATUS_EXCLUDE_CURRENT) == MAPSTATUS_EXCLUDE_CURRENT)
-		{
-			ReplyToCommand(client, "[SM] %t", "Can't Nominate Current Map");
-		}
-		
-		if ((status & MAPSTATUS_EXCLUDE_PREVIOUS) == MAPSTATUS_EXCLUDE_PREVIOUS)
-		{
-			ReplyToCommand(client, "[SM] %t", "Map in Exclude List");
-		}
-		
-		if ((status & MAPSTATUS_EXCLUDE_NOMINATED) == MAPSTATUS_EXCLUDE_NOMINATED)
-		{
-			ReplyToCommand(client, "[SM] %t", "Map Already Nominated");
-		}
-		
-		return Plugin_Handled;
-	}
-	
-	new NominateResult:result = NominateMap(mapname, false, client);
-	
-	if (result > Nominate_Replaced)
-	{
-		if (result == Nominate_AlreadyInVote)
-		{
-			ReplyToCommand(client, "%t", "Map Already In Vote", mapname);
-		}
-		else
-		{
-			ReplyToCommand(client, "[SM] %t", "Map Already Nominated");
-		}
-		
-		return Plugin_Handled;	
-	}
-	
-	/* Map was nominated! - Disable the menu item and update the trie */
-	
-	SetTrieValue(g_mapTrie, mapname, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
-	
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-	PrintToChatAll("[SM] %t", "Map Nominated", name, mapname);
-	
-	return Plugin_Continue;
+	ReplyToCommand(client, "%t", "Map was not found", mapname);
+	return Plugin_Handled;
 }
 
 AttemptNominate(client)
@@ -274,9 +238,7 @@ BuildMapMenu()
 		g_MapMenu = INVALID_HANDLE;
 	}
 	
-	ClearTrie(g_mapTrie);
-	
-	g_MapMenu = CreateMenu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
+	g_MapMenu = CreateMenu(Handler_MapSelectMenu);
 
 	decl String:map[64];
 	
@@ -294,32 +256,27 @@ BuildMapMenu()
 		GetCurrentMap(currentMap, sizeof(currentMap));
 	}
 	
-		
 	for (new i = 0; i < GetArraySize(g_MapList); i++)
 	{
-		new status = MAPSTATUS_ENABLED;
-		
 		GetArrayString(g_MapList, i, map, sizeof(map));
+		
+		if (GetConVarBool(g_Cvar_ExcludeOld))
+		{
+			if (FindStringInArray(excludeMaps, map) != -1)
+			{
+				continue;	
+			}
+		}
 		
 		if (GetConVarBool(g_Cvar_ExcludeCurrent))
 		{
 			if (StrEqual(map, currentMap))
 			{
-				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_CURRENT;
-			}
-		}
-		
-		/* Dont bother with this check if the current map check passed */
-		if (GetConVarBool(g_Cvar_ExcludeOld) && status == MAPSTATUS_ENABLED)
-		{
-			if (FindStringInArray(excludeMaps, map) != -1)
-			{
-				status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_PREVIOUS;
+				continue;
 			}
 		}
 		
 		AddMenuItem(g_MapMenu, map, map);
-		SetTrieValue(g_mapTrie, map, status);
 	}
 	
 	SetMenuExitButton(g_MapMenu, true);
@@ -332,96 +289,35 @@ public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
 		case MenuAction_Select:
 		{
 			decl String:map[64], String:name[64];
-			GetMenuItem(menu, param2, map, sizeof(map));		
+			GetMenuItem(menu, param2, map, sizeof(map));
+			
 			
 			GetClientName(param1, name, 64);
 	
+			
 			new NominateResult:result = NominateMap(map, false, param1);
 			
 			/* Don't need to check for InvalidMap because the menu did that already */
 			if (result == Nominate_AlreadyInVote)
 			{
 				PrintToChat(param1, "[SM] %t", "Map Already Nominated");
-				return 0;
+				return;
 			}
 			else if (result == Nominate_VoteFull)
 			{
 				PrintToChat(param1, "[SM] %t", "Max Nominations");
-				return 0;
+				return;
 			}
-			
-			SetTrieValue(g_mapTrie, map, MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_NOMINATED);
 
+			RemoveMenuItem(menu, param2);
+			
 			if (result == Nominate_Replaced)
 			{
 				PrintToChatAll("[SM] %t", "Map Nomination Changed", name, map);
-				return 0;	
+				return;	
 			}
 			
 			PrintToChatAll("[SM] %t", "Map Nominated", name, map);
 		}
-		
-		case MenuAction_DrawItem:
-		{
-			decl String:map[64];
-			GetMenuItem(menu, param2, map, sizeof(map));
-			
-			new status;
-			
-			if (!GetTrieValue(g_mapTrie, map, status))
-			{
-				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
-				return ITEMDRAW_DEFAULT;
-			}
-			
-			if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
-			{
-				return ITEMDRAW_DISABLED;	
-			}
-			
-			return ITEMDRAW_DEFAULT;
-						
-		}
-		
-		case MenuAction_DisplayItem:
-		{
-			decl String:map[64];
-			GetMenuItem(menu, param2, map, sizeof(map));
-			
-			new status;
-			
-			if (!GetTrieValue(g_mapTrie, map, status))
-			{
-				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
-				return 0;
-			}
-			
-			decl String:display[100];
-			
-			if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
-			{
-				if ((status & MAPSTATUS_EXCLUDE_CURRENT) == MAPSTATUS_EXCLUDE_CURRENT)
-				{
-					Format(display, sizeof(display), "%s (%T)", map, "Current Map", param1);
-					return RedrawMenuItem(display);
-				}
-				
-				if ((status & MAPSTATUS_EXCLUDE_PREVIOUS) == MAPSTATUS_EXCLUDE_PREVIOUS)
-				{
-					Format(display, sizeof(display), "%s (%T)", map, "Recently Played", param1);
-					return RedrawMenuItem(display);
-				}
-				
-				if ((status & MAPSTATUS_EXCLUDE_NOMINATED) == MAPSTATUS_EXCLUDE_NOMINATED)
-				{
-					Format(display, sizeof(display), "%s (%T)", map, "Nominated", param1);
-					return RedrawMenuItem(display);
-				}
-			}
-			
-			return 0;
-		}
 	}
-	
-	return 0;
 }

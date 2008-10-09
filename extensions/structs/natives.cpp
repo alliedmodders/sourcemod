@@ -31,6 +31,7 @@
 
 #include "extension.h"
 #include "utldict.h"
+#include "weapon_parse.h"
 
 class FileWeaponInfo_t;
 typedef unsigned short WEAPON_FILE_INFO_HANDLE;
