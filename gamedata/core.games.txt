@@ -72,6 +72,7 @@
 			"game"		"Insurgency"
 			"game"		"tf"
 			"game"		"pvkii"
+			"game"		"diprip"
 		}
 
 		"Keys"
