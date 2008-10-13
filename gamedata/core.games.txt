@@ -135,4 +135,12 @@
 			"RadioMenuTimeout"		"4"
 		}
 	}
+
+    	"synergy"
+	{
+		"Keys"
+		{
+			"RadioMenuTimeout"        "4"
+		}
+	}
 }
