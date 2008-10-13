@@ -115,6 +115,7 @@ native Handle:SQL_Connect(const String:confname[], bool:persistent, String:error
  * @param persistent	True to re-use a previous persistent connection
  *						if possible, false otherwise.
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
+ * 						On failure the error buffer will be filled with a message.
  */
 stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
 {
@@ -122,22 +123,66 @@ stock Handle:SQL_DefConnect(String:error[], maxlength, bool:persistent=true)
 }
 
 /**
- * Creates an SQL connection from specific parameters.
+ * Connects to a database using key value pairs containing the database info.
+ * The key/value pairs should match what would be in databases.cfg.
  *
- * @param driver		Driver Handle, or INVALID_HANDLE for default.
- * @param host			Host name.
- * @param user			User name.
- * @param pass			User password.
- * @param database		Database name.
+ * I.e. "driver" should be "default" or a driver name (or ommitted for 
+ * the default).  For SQLite, only the "database" parameter is needed in addition.
+ * For drivers which require external connections, more of the parameters may be 
+ * needed.
+ *
+ * In general it is discouraged to use this function.  Connections should go through 
+ * databases.cfg for greatest flexibility on behalf of users.
+ *
+ * @param keyvalues		Key/value pairs from a KeyValues handle, describing the connection.
  * @param error			Error buffer.
  * @param maxlength		Maximum length of the error buffer.
- * @param persistent	True to re-use a previous persistent connection 
- *						if possible, false otherwise.
- * @param port			Optional port to specify.
- * @param maxTimeout	Maximum timeout in seconds if applicable.
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
- * @error				Invalid driver Handle other than INVALID_HANDLE.
+ * 						On failure the error buffer will be filled with a message.
+ * @error				Invalid KeyValues handle.
  */
+native Handle:SQL_ConnectCustom(Handle:keyvalues,
+								String:error[],
+								maxlength,
+								bool:persistent);
+
+/**
+ * Grabs a handle to an SQLite database, creating one if it does not exist.  
+ *
+ * Unless there are extenuating circumstances, you should consider using "sourcemod-local" as the 
+ * database name.  This gives provides some unification between plugins on behalf of users.
+ *
+ * As a precaution, you should always create some sort of unique prefix to your table names so 
+ * there are no conflicts, and you should never drop or modify tables that you do not own.
+ *
+ * @param database		Database name.  
+ * @param error			Error buffer.
+ * @param maxlength		Maximum length of the error buffer.
+ * @param persistent	Persistent or not.
+ * @return				A database connection Handle, or INVALID_HANDLE on failure.
+ * 						On failure the error buffer will be filled with a message.
+ */
+stock Handle:SQLite_UseDatabase(const String:database[],
+								String:buffer[], 
+								maxlength)
+{
+	new Handle:kv, Handle:db;
+
+	kv = CreateKeyValues("");
+	KvSetString(kv, "driver", "sqlite");
+	KvSetString(kv, "database", database);
+
+	db = SQL_ConnectCustom(kv, buffer, maxlength, false);
+
+	CloseHandle(kv);
+
+	return db;
+}
+
+/**
+ * This function is deprecated.  Use SQL_ConnectCustom or SQLite_UseDatabase instead.
+ */
+#pragma deprecated Use SQL_ConnectCustom instead.
 native Handle:SQL_ConnectEx(Handle:driver, 
 							const String:host[],
 							const String:user[], 

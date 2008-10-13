@@ -1277,6 +1277,76 @@ static cell_t SQL_CheckConfig(IPluginContext *pContext, const cell_t *params)
 	return (g_DBMan.FindDatabaseConf(name) != NULL) ? 1 : 0;
 }
 
+static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
+{
+	KeyValues *kv;
+	HandleError err;
+
+	kv = g_SourceMod.ReadKeyValuesHandle(params[1], &err, false);
+	if (kv == NULL)
+	{
+		return pContext->ThrowNativeError("Invalid KeyValues handle %x (error: %d)",
+										  params[1],
+										  err);
+	}
+
+	DatabaseInfo info;
+	info.database = kv->GetString("database", "");
+	info.driver = kv->GetString("driver", "default");
+	info.host = kv->GetString("host", "");
+	info.maxTimeout = kv->GetInt("timeout", 0);
+	info.pass = kv->GetString("pass", "");
+	info.port = kv->GetInt("port", 0);
+	info.user = kv->GetString("user", "");
+
+	IDBDriver *driver;
+	if (info.driver[0] == '\0' || strcmp(info.driver, "default") == 0)
+	{
+		driver = g_DBMan.GetDefaultDriver();
+	}
+	else
+	{
+		driver = g_DBMan.FindOrLoadDriver(info.driver);
+	}
+
+	if (driver == NULL)
+	{
+		char buffer[255];
+
+		UTIL_Format(buffer, sizeof(buffer), "Could not find driver \"%s\"", info.driver);
+		pContext->StringToLocalUTF8(params[2], params[3], buffer, NULL);
+
+		return BAD_HANDLE;
+	}
+
+	char *buffer;
+	IDatabase *db;
+
+	pContext->LocalToString(params[2], &buffer);
+	
+	db = driver->Connect(&info, params[4] ? true : false, buffer, params[3]);
+	if (db == NULL)
+	{
+		return BAD_HANDLE;
+	}
+
+	Handle_t hndl = g_DBMan.CreateHandle(DBHandle_Database, db, pContext->GetIdentity());
+	if (!hndl)
+	{
+		db->Close();
+		return pContext->ThrowNativeError("Out of handles!");
+	}
+
+	/* HACK! Add us to the dependency list */
+	CExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
+	if (pExt)
+	{
+		g_Extensions.BindChildPlugin(pExt, g_PluginSys.GetPluginByCtx(pContext->GetContext()));
+	}
+
+	return hndl;
+}
+
 REGISTER_NATIVES(dbNatives)
 {
 	{"SQL_BindParamInt",		SQL_BindParamInt},
@@ -1317,5 +1387,7 @@ REGISTER_NATIVES(dbNatives)
 	{"SQL_TConnect",			SQL_TConnect},
 	{"SQL_TQuery",				SQL_TQuery},
 	{"SQL_UnlockDatabase",		SQL_UnlockDatabase},
+	{"SQL_ConnectCustom",		SQL_ConnectCustom},
 	{NULL,						NULL},
 };
+

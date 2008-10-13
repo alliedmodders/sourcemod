@@ -57,6 +57,7 @@ struct Plugin
 #include <logging>
 #include <timers>
 #include <admin>
+#include <keyvalues>
 #include <dbi>
 #include <lang>
 #include <sorting>
@@ -66,7 +67,6 @@ struct Plugin
 #include <events>
 #include <bitbuffer>
 #include <usermessages>
-#include <keyvalues>
 #include <menus>
 #include <halflife>
 #include <adt>
