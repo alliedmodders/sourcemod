@@ -90,8 +90,7 @@ public OnMapStart()
 	g_InChange = false;
 	
 	/* Handle late load */
-	new maxclients = GetMaxClients();
-	for (new i=1; i<=maxclients; i++)
+	for (new i=1; i<=MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 		{
