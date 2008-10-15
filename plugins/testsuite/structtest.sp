@@ -1,5 +1,5 @@
 #include <sourcemod>
-#include "structs.inc"
+#include <structs>
 
 public Plugin:myinfo = 
 {
