@@ -29,37 +29,68 @@
 
 	"WinLimitAppend"
 	{
-		"#format"		"{1:i},{2:s}"
-		"en"		", or change map after a team wins {1} round{2}"
+		"en"		", or change map after a team wins one round"
 	}
 
 	"WinLimit"
 	{
-		"#format"		"{1:i},{2:s}"
-		"en"		"Map will change after a team wins {1} round{2}"
+		"en"		"Map will change after a team wins one round"
 	}
 
 	"MaxRoundsAppend"
 	{
-		"#format"		"{1:i},{2:s}"
-		"en"		", or change map after {1} round{2}"
+		"en"		", or change map after one more round"
 	}
 
 	"MaxRounds"
 	{
-		"#format"		"{1:i},{2:s}"
-		"en"		"Map will change after {1} round{2}"
+		"en"		"Map will change after one more round"
 	}
 
 	"FragLimitAppend"
 	{
-		"#format"		"{1:i},{2:s}"
-		"en"		", or change map after player reaches {1} frag{2}"
+		"en"		", or change map after player reaches one frag"
 	}
+
 	"FragLimit"
 	{
-		"#format"		"{1:i},{2:s}"
-		"en"		"Map will change after a player reaches {1} frag{2}"
+		"en"		"Map will change after a player reaches one frag"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"#format"		"{1:i}"
+		"en"		", or change map after a team wins {1} rounds"
+	}
+
+	"WinLimitPlural"
+	{
+		"#format"		"{1:i}"
+		"en"		"Map will change after a team wins {1} rounds"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"#format"		"{1:i}"
+		"en"		", or change map after {1} more rounds"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"#format"		"{1:i}"
+		"en"		"Map will change after {1} more rounds"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"#format"		"{1:i}"
+		"en"		", or change map after player reaches {1} frags"
+	}
+
+	"FragLimitPlural"
+	{
+		"#format"		"{1:i}"
+		"en"		"Map will change after a player reaches {1} frags"
 	}
 
 	"LastRound"

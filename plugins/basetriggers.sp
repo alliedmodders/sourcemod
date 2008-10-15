@@ -64,6 +64,8 @@ new Handle:g_Cvar_MaxRounds = INVALID_HANDLE;
 
 new bool:mapchooser;
 
+new g_TotalRounds;
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
@@ -81,12 +83,48 @@ public OnPluginStart()
 	
 	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
 	
+	HookEvent("round_end", Event_RoundEnd);
+	HookEvent("game_start", Event_GameStart);
+	HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
+	HookEventEx("teamplay_restart_round", Event_TFRestartRound);
+	HookEventEx("arena_win_panel", Event_TeamPlayWinPanel);
 	
 	g_Cvar_WinLimit = FindConVar("mp_winlimit");
 	g_Cvar_FragLimit = FindConVar("mp_fraglimit");
 	g_Cvar_MaxRounds = FindConVar("mp_maxrounds");
 	
 	mapchooser = LibraryExists("mapchooser");
+}
+
+public OnMapStart()
+{
+	g_TotalRounds = 0;	
+}
+
+/* Round count tracking */
+public Event_TFRestartRound(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	/* Game got restarted - reset our round count tracking */
+	g_TotalRounds = 0;	
+}
+
+public Event_GameStart(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	/* Game got restarted - reset our round count tracking */
+	g_TotalRounds = 0;	
+}
+
+public Event_TeamPlayWinPanel(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	if(GetEventInt(event, "round_complete") == 1 || StrEqual(name, "arena_win_panel"))
+	{
+		g_TotalRounds++;
+	}
+}
+/* You ask, why don't you just use team_score event? And I answer... Because CSS doesn't. */
+public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
+{
+	g_TotalRounds++;
 }
 
 public OnLibraryRemoved(const String:name[])
@@ -330,12 +368,27 @@ ShowTimeLeft(client, who)
 					new len = strlen(finalOutput);
 					if (len < sizeof(finalOutput))
 					{
-						FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "WinLimitAppend" ,client, winlimit, (winlimit == 1)? "":"s");
+						if (winlimit > 1)
+						{
+							FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "WinLimitAppendPlural" ,client, winlimit);
+						}
+						else
+						{
+							FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "WinLimitAppend" ,client);
+						}
 					}
 				}
 				else
 				{
-					FormatEx(finalOutput, sizeof(finalOutput), "%T", "WinLimit", client, winlimit, (winlimit == 1)? "":"s");
+					if (winlimit > 1)
+					{
+						FormatEx(finalOutput, sizeof(finalOutput), "%T", "WinLimitPlural", client, winlimit);
+					}
+					else
+					{
+						FormatEx(finalOutput, sizeof(finalOutput), "%T", "WinLimit", client);
+					}
+					
 					written = true;
 				}
 			}
@@ -352,12 +405,27 @@ ShowTimeLeft(client, who)
 					new len = strlen(finalOutput);
 					if (len < sizeof(finalOutput))
 					{
-						FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "FragLimitAppend", client, fraglimit, (fraglimit == 1)? "":"s");
+						if (fraglimit > 1)
+						{
+							FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "FragLimitAppendPlural", client, fraglimit);
+						}
+						else
+						{
+							FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "FragLimitAppend", client);
+						}
 					}	
 				}
 				else
 				{
-					FormatEx(finalOutput, sizeof(finalOutput), "%T", "FragLimit", client, fraglimit, (fraglimit == 1)? "":"s");
+					if (fraglimit > 1)
+					{
+						FormatEx(finalOutput, sizeof(finalOutput), "%T", "FragLimitPlural", client, fraglimit);
+					}
+					else
+					{
+						FormatEx(finalOutput, sizeof(finalOutput), "%T", "FragLimit", client);
+					}
+					
 					written = true;
 				}			
 			}
@@ -369,17 +437,34 @@ ShowTimeLeft(client, who)
 			
 			if (maxrounds > 0)
 			{
+				new remaining = maxrounds - g_TotalRounds;
+				
 				if (written)
 				{
 					new len = strlen(finalOutput);
 					if (len < sizeof(finalOutput))
 					{
-						FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "MaxRoundsAppend", client, maxrounds, (maxrounds == 1)? "":"s");
+						if (remaining > 1)
+						{
+							FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "MaxRoundsAppendPlural", client, remaining);
+						}
+						else
+						{
+							FormatEx(finalOutput[len], sizeof(finalOutput)-len, "%T", "MaxRoundsAppend", client);
+						}
 					}
 				}
 				else
 				{
-					FormatEx(finalOutput, sizeof(finalOutput), "%T", "MaxRounds", client, maxrounds, (maxrounds == 1)? "":"s");
+					if (remaining > 1)
+					{
+						FormatEx(finalOutput, sizeof(finalOutput), "%T", "MaxRoundsPlural", client, remaining);
+					}
+					else
+					{
+						FormatEx(finalOutput, sizeof(finalOutput), "%T", "MaxRounds", client);
+					}
+					
 					written = true;
 				}			
 			}		
