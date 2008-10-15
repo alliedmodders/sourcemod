@@ -415,7 +415,18 @@ bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
 	{
 		query->SetDatabase(Database);
 		query->SetPreparedQuery();
-		dbi->AddToThreadQueue(query, PrioQueue_Normal);
+		if (query->GetQuery() == NULL && query->GetType() != Query_Connect)
+		{
+			g_pSM->LogError(myself, "Invalid aqtq query %d being inserted! glorp: %p, %p",
+				query->GetType(),
+				query->GetDriver(),
+				query);
+			query->Destroy();
+		}
+		else
+		{
+			dbi->AddToThreadQueue(query, PrioQueue_Normal);
+		}
 		return true;
 	}
 
@@ -435,17 +446,28 @@ void ClientPrefs::ProcessQueryCache()
 	
 	while (iter != cachedQueries.end())
 	{
-		TQueryOp *op = (TQueryOp *)*iter;
+		TQueryOp *op = *iter;
 
 		if (Database != NULL)
 		{
 			op->SetDatabase(Database);
 			op->SetPreparedQuery();
-			dbi->AddToThreadQueue(op, PrioQueue_Normal);
+			if (op->GetQuery() == NULL && op->GetType() != Query_Connect)
+			{
+				g_pSM->LogError(myself, "Invalid pqc query %d being inserted! glorp: %p, %p",
+					op->GetType(),
+					op->GetDriver(),
+					op);
+				op->Destroy();
+			}
+			else
+			{
+				dbi->AddToThreadQueue(op, PrioQueue_Normal);
+			}
 		}
 		else
 		{
-			delete op;
+			op->Destroy();
 		}
 
 		iter++;

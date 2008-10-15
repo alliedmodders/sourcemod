@@ -79,10 +79,7 @@ void TQueryOp::RunThreadPart()
 	}
 	else
 	{
-		if (m_database == NULL)
-		{
-			return;
-		}
+		assert(m_database != NULL);
 
 		m_database->LockForFullAtomicOperation();
 
@@ -99,10 +96,7 @@ void TQueryOp::RunThreadPart()
 
 IDBDriver *TQueryOp::GetDriver()
 {
-	if (m_database == NULL)
-	{
-		return NULL;
-	}
+	assert(m_database != NULL);
 
 	return m_database->GetDriver();
 }
@@ -140,9 +134,12 @@ void TQueryOp::SetDatabase( IDatabase *db )
 
 bool TQueryOp::BindParamsAndRun()
 {
+	assert(m_pQuery != NULL);
+
+	/* :TODO: remove this check. */
 	if (m_pQuery == NULL)
 	{
-		g_pSM->LogError(myself, "Attempted to run with a NULL Query");
+		g_pSM->LogError(myself, "Attempted to run with a NULL Query (type %d)", m_type);
 		return false;
 	}
 
@@ -230,7 +227,6 @@ void TQueryOp::SetPreparedQuery()
 		{
 			break;
 		}
-
 	}
 }
 
