@@ -91,6 +91,21 @@ public:
 	/* Params to be bound */
 	ParamData m_params;
 
+	inline IPreparedQuery *GetQuery()
+	{
+		return m_pQuery;
+	}
+
+	inline querytype GetType()
+	{
+		return m_type;
+	}
+
+	inline IDatabase *GetDB()
+	{
+		return m_database;
+	}
+
 private:
 	IPreparedQuery *m_pQuery;
 	IDatabase *m_database;
