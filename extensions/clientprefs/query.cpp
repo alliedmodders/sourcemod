@@ -85,7 +85,11 @@ void TQueryOp::RunThreadPart()
 
 		if (!BindParamsAndRun())
 		{
-			g_pSM->LogError(myself, "Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", m_database->GetError(), m_type, m_client);
+			g_pSM->LogError(myself, 
+							"Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", 
+							m_pQuery ? m_pQuery->GetError() : "NULL QUERY",
+							m_type, 
+							m_client);
 		}
 
 		m_insertId = m_database->GetInsertID();
