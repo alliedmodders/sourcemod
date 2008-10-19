@@ -59,7 +59,9 @@ enum NetFlow
 public const MaxClients;	/**< Maximum number of players the server supports (dynamic) */
 
 /**
- * Called on client connection.
+ * Called on client connection.  If you return true, the client will be allowed in the server.
+ * If you return false (or return nothing), the client will be rejected.  If the client is 
+ * rejected by this forward or any other, OnClientDisconnect will not be called.
  *
  * @param client		Client index.
  * @param rejectmsg		Buffer to store the rejection message when the connection is refused.
@@ -67,6 +69,14 @@ public const MaxClients;	/**< Maximum number of players the server supports (dyn
  * @return				True to validate client's connection, false to refuse it.
  */
 forward bool:OnClientConnect(client, String:rejectmsg[], maxlen);
+
+/**
+ * Called once a client successfully connects.  This callback is paired with OnClientDisconnect.
+ *
+ * @param client		Client index.
+ * @noreturn
+ */
+forward OnClientConnected(client);
 
 /**
  * Called when a client is entering the game.
