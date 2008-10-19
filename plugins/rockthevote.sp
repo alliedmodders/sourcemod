@@ -94,7 +94,7 @@ public OnMapStart()
 	{
 		if (IsClientConnected(i))
 		{
-			OnClientConnect(i, "", 0);	
+			OnClientConnected(i, "", 0);	
 		}	
 	}
 }
