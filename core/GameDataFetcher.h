@@ -165,9 +165,8 @@ private:
 	int BuildGameDataQuery(char *buffer, int maxlen);
 	void ProcessGameDataQuery(int SocketDescriptor);
 
-	/* These names are a lie. It's really NoMoreBlockingThan10Seconds */
-	int NonBlockingRecv(int socketDescriptor, char *buffer, int len);
-	int NonBlockingSend(int socketDescriptor, char *buffer, int len);
+	int RecvData(int socketDescriptor, char *buffer, int len);
+	int SendData(int socketDescriptor, char *buffer, int len);
 
 	int ConnectSocket();
 

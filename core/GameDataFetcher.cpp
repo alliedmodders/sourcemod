@@ -83,7 +83,7 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 	g_SourceMod.BuildPath(Path_SM, lock_path, sizeof(lock_path), "data/temp/gamedata.lock");
 
-	g_Logger.LogMessage("Starting experimental gamedata update fetcher... please report problems to bugs.alliedmods.net");
+	g_Logger.LogMessage("Starting Gamedata update fetcher... please report problems to bugs.alliedmods.net");
 
 	char log_path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, log_path, sizeof(log_path), "logs/gamedata");
@@ -111,6 +111,31 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 		fclose(fp);
 	}
 
+	char query[QUERY_MAX_LENGTH];
+
+	/* Check for updated gamedata files */
+	int len = BuildGameDataQuery(query, QUERY_MAX_LENGTH);
+
+	if (len == 0)
+	{
+		g_Logger.LogToOpenFile(logfile, "Query Writing failed");
+
+		fclose(logfile);
+		unlink(lock_path);
+		return;
+	}
+
+	if (g_disableGameDataUpdate)
+	{
+#ifdef DEBUG
+		g_Logger.LogMessage("Skipping GameData Query due to DisableAutoUpdate being set to true");
+#endif
+
+		fclose(logfile);
+		unlink(lock_path);
+		return;
+	}
+
 	/* Create a new socket for this connection */
 	int socketDescriptor = ConnectSocket();
 
@@ -121,38 +146,15 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 		return;
 	}
 
-	char query[QUERY_MAX_LENGTH];
+	int sent = SendData(socketDescriptor, query, len);
 
-	/* Check for updated gamedata files */
-	int len = BuildGameDataQuery(query, QUERY_MAX_LENGTH);
-
-	if (len == 0)
-	{
-		g_Logger.LogToOpenFile(logfile, "Query Writing failed");
-
-		closesocket(socketDescriptor);
-		fclose(logfile);
-		unlink(lock_path);
-		return;
-	}
-
-	if (g_disableGameDataUpdate)
-	{
-		g_Logger.LogMessage("Skipping GameData Query due to DisableAutoUpdate being set to true");
-
-		closesocket(socketDescriptor);
-		fclose(logfile);
-		unlink(lock_path);
-		return;
-	}
-
-	int sent = NonBlockingSend(socketDescriptor, query, len);
-
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "Sent Query!");
+#endif
 
 	if (sent == 0)
 	{
-		g_Logger.LogToOpenFile(logfile, "Failed to send data");
+		g_Logger.LogToOpenFile(logfile, "Failed to send gamedata query data to remote host");
 
 		closesocket(socketDescriptor);
 		fclose(logfile);
@@ -227,12 +229,16 @@ int FetcherThread::BuildGameDataQuery( char *buffer, int maxlen )
 					}
 					else
 					{
+#ifdef DEBUG
 						g_Logger.LogToOpenFile(logfile, "%s no md5?", file);
+#endif
 					}
 				}
 				else
 				{
+#ifdef DEBUG
 					g_Logger.LogToOpenFile(logfile, "%s failed!", file);
+#endif
 				}
 			}
 		}
@@ -264,7 +270,11 @@ int FetcherThread::ConnectSocket()
 	if (socketDescriptor == INVALID_SOCKET)
 	{
 		//bugger aye?
-		g_Logger.LogToOpenFile(logfile, "Failed to create a new socket");
+#ifdef WIN32
+		g_Logger.LogToOpenFile(logfile, "Failed to create a new socket - Error %i", WSAGetLastError());
+#else
+		g_Logger.LogToOpenFile(logfile, "Failed to create a new socket - Error %i", errno);
+#endif
 		closesocket(socketDescriptor);
 		return INVALID_SOCKET;
 	}
@@ -281,7 +291,7 @@ int FetcherThread::ConnectSocket()
 	{
 		if ((local_addr.sin_addr.s_addr = inet_addr(g_serverAddress)) == INADDR_NONE)
 		{
-			g_Logger.LogToOpenFile(logfile, "Couldnt locate address");
+			g_Logger.LogToOpenFile(logfile, "Couldn't locate address");
 			closesocket(socketDescriptor);
 			return INVALID_SOCKET;
 		}
@@ -293,7 +303,11 @@ int FetcherThread::ConnectSocket()
 
 	if (connect(socketDescriptor, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0)
 	{
-		g_Logger.LogToOpenFile(logfile, "Couldn't connect");
+#ifdef WIN32
+		g_Logger.LogToOpenFile(logfile, "Couldn't connect - Error %i", WSAGetLastError());
+#else
+		g_Logger.LogToOpenFile(logfile, "Couldn't connect - Error %i", errno);
+#endif
 		closesocket(socketDescriptor);
 		return INVALID_SOCKET;
 	}
@@ -304,28 +318,35 @@ int FetcherThread::ConnectSocket()
 void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 {
 	char buffer[50];
-
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "Waiting for reply!");
+#endif
 
 	//Read in the header bytes
-	int returnLen = NonBlockingRecv(socketDescriptor, buffer, 12);
+	int returnLen = RecvData(socketDescriptor, buffer, 12);
 
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "Recv Completed");
+#endif
 
 	if (returnLen == 0)
 	{
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, ",but it failed.");
+#endif
 		/* Timeout or fail? */
 		return;
 	}
 
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "Received Header!");
+#endif
 
 	bf_read Reader = bf_read("GameDataQuery", buffer, 12);
 
 	if (Reader.ReadByte() != 'A' || Reader.ReadByte() != 'G')
 	{
-		g_Logger.LogToOpenFile(logfile, "Invalid Query to handle");
+		g_Logger.LogToOpenFile(logfile, "Unknown Query Response");
 		return;
 	}
 
@@ -338,18 +359,22 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 	build[2] = Reader.ReadShort();
 	build[3] = Reader.ReadShort();
 
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "Update Status: %i - Latest %i.%i.%i.%i", updateStatus, build[0], build[1], build[2], build[3]);
+#endif
 
 	HandleUpdateStatus(updateStatus, build);
 
 	int changedFiles = Reader.ReadByte();
 
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "Files to download: %i", changedFiles);
+#endif
 
 	for (int i=0; i<changedFiles; i++)
 	{
 		//Read in the file index and byte count
-		returnLen = NonBlockingRecv(socketDescriptor, buffer, 5);
+		returnLen = RecvData(socketDescriptor, buffer, 5);
 
 		if (returnLen == 0)
 		{
@@ -362,15 +387,19 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 		int index = Reader.ReadByte();
 		int tempLen = Reader.ReadUBitLong(32);
 
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, "File index %i and length %i", index, tempLen);
+#endif
 
 		void *memPtr;
 		memtable->CreateMem(tempLen+1, &memPtr);
 
 		//Read the contents of our file into the memtable
-		returnLen = NonBlockingRecv(socketDescriptor, (char *)memPtr, tempLen);
+		returnLen = RecvData(socketDescriptor, (char *)memPtr, tempLen);
 
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, "Recieved %i bytes", returnLen);
+#endif
 
 		if (returnLen == 0)
 		{
@@ -393,6 +422,10 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 				fprintf(fp, (const char *)memPtr);
 				fclose(fp);
 			}
+			else
+			{
+				g_Logger.LogToOpenFile(logfile, "Failed to open file \"%s\"", filename);
+			}
 		}
 		else
 		{
@@ -401,10 +434,14 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 
 		memtable->Reset();
 
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, "Updated File %s", filename);
+#endif
 	}
 
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "File Downloads Completed!");
+#endif
 
 	bool needsRestart = false;
 
@@ -415,7 +452,7 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 	}
 
 	//Read changed file count
-	returnLen = NonBlockingRecv(socketDescriptor, buffer, 1);
+	returnLen = RecvData(socketDescriptor, buffer, 1);
 
 	if (returnLen == 0)
 	{
@@ -430,20 +467,26 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 
 	if (changedFiles == 0)
 	{
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, "No unknown files. We're all done");
+#endif
 		return;
 	}
 
 	char *changedFileIndexes = new char[changedFiles];
-	
+
+#ifdef DEBUG
 	g_Logger.LogToOpenFile(logfile, "%i Files were unknown", changedFiles);
-	
-	returnLen = NonBlockingRecv(socketDescriptor, changedFileIndexes, changedFiles);
+#endif
+
+	returnLen = RecvData(socketDescriptor, changedFileIndexes, changedFiles);
 
 	if (returnLen == 0)
 	{
 		/* Timeout or fail? */
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, "Failed to receive unknown list");
+#endif
 		return;
 	}
 
@@ -466,8 +509,9 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 		}
 
 		g_LibSys.GetFileFromPath(fileName, sizeof(fileName), pathname);
-
+#ifdef DEBUG
 		g_Logger.LogToOpenFile(logfile, "Unknown File %i : %s", index, fileName);
+#endif
 	}
 
 	delete [] changedFileIndexes;
@@ -479,7 +523,7 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 	}
 }
 
-int FetcherThread::NonBlockingRecv( int socketDescriptor, char *buffer, int len )
+int FetcherThread::RecvData( int socketDescriptor, char *buffer, int len )
 {
 	fd_set fds;
 	struct timeval tv;
@@ -488,35 +532,37 @@ int FetcherThread::NonBlockingRecv( int socketDescriptor, char *buffer, int len 
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
 
-	/* Add our socket to a socket set */
-	FD_ZERO(&fds);
-	FD_SET(socketDescriptor, &fds);
+	int bytesReceivedTotal = 0;
 
-	/* Wait max of 10 seconds for recv to become available */
-	select(socketDescriptor+1, &fds, NULL, NULL, &tv);
-
-	int bytesReceived = 0;
-
-	/* Is there a limit on how much we can receive? Some site said 1024 bytes, which will be well short of a file */
-	if (FD_ISSET(socketDescriptor, &fds))
+	while (bytesReceivedTotal < len)
 	{
-		bytesReceived = recv(socketDescriptor, buffer, len, 0);
+		/* Add our socket to a socket set */
+		FD_ZERO(&fds);
+		FD_SET(socketDescriptor, &fds);
+
+		/* Wait max of 10 seconds for recv to become available */
+		select(socketDescriptor+1, &fds, NULL, NULL, &tv);
+
+		int bytesReceived = 0;
+
+		/* Is there a limit on how much we can receive? Some site said 1024 bytes, which will be well short of a file */
+		if (FD_ISSET(socketDescriptor, &fds))
+		{
+			bytesReceived = recv(socketDescriptor, buffer, len, 0);
+		}
+
+		if (bytesReceived == 0 || bytesReceived == -1)
+		{
+			return 0;
+		}
+
+		bytesReceivedTotal += bytesReceived;
 	}
 
-	if (bytesReceived == 0 || bytesReceived == -1)
-	{
-		return 0;
-	}
-
-	if (bytesReceived < len)
-	{
-		return bytesReceived + NonBlockingRecv(socketDescriptor, buffer+bytesReceived, len-bytesReceived);
-	}
-
-	return bytesReceived;	
+	return bytesReceivedTotal;	
 }
 
-int FetcherThread::NonBlockingSend( int socketDescriptor, char *buffer, int len )
+int FetcherThread::SendData( int socketDescriptor, char *buffer, int len )
 {
 	fd_set fds;
 	struct timeval tv;
@@ -524,29 +570,31 @@ int FetcherThread::NonBlockingSend( int socketDescriptor, char *buffer, int len 
 	tv.tv_sec = 10;
 	tv.tv_usec = 0;
 
-	FD_ZERO(&fds);
-	FD_SET(socketDescriptor, &fds);
+	int sentBytesTotal = 0;
 
-	select(socketDescriptor+1, NULL, &fds, NULL, &tv);
-
-	int sentBytes = 0;
-
-	if (FD_ISSET(socketDescriptor, &fds))
+	while (sentBytesTotal < len)
 	{
-		sentBytes = send(socketDescriptor, buffer, len, 0);
+		FD_ZERO(&fds);
+		FD_SET(socketDescriptor, &fds);
+
+		select(socketDescriptor+1, NULL, &fds, NULL, &tv);
+
+		int sentBytes = 0;
+
+		if (FD_ISSET(socketDescriptor, &fds))
+		{
+			sentBytes = send(socketDescriptor, buffer, len, 0);
+		}
+
+		if (sentBytes == 0 || sentBytes == -1)
+		{
+			return 0;
+		}		
+
+		sentBytesTotal += sentBytes;
 	}
 
-	if (sentBytes == 0 || sentBytes == -1)
-	{
-		return 0;
-	}
-
-	if (sentBytes < len)
-	{
-		return sentBytes + NonBlockingSend(socketDescriptor, buffer+sentBytes, len-sentBytes);
-	}
-
-	return sentBytes;
+	return sentBytesTotal;
 }
 
 void FetcherThread::HandleUpdateStatus( UpdateStatus status, short version[4] )
@@ -561,7 +609,7 @@ void FetcherThread::HandleUpdateStatus( UpdateStatus status, short version[4] )
 
 		case Update_NewBuild:
 		{
-			g_Logger.LogMessage("SourceMod Update: A new SVN build is available from sourcemod.net");
+			g_Logger.LogMessage("SourceMod Update: A new Mercurial build is available from sourcemod.net");
 			g_Logger.LogMessage("Current Version: %i.%i.%i.%i Available: %i.%i.%i.%i", version[0], version[1], version[2], version[3], version[0], version[1], version[2], version[3]);
 			break;
 		}
