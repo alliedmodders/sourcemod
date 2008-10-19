@@ -112,22 +112,22 @@ public OnConfigsExecuted()
 	CreateTimer(GetConVarFloat(g_Cvar_InitialDelay), Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
+public OnClientConnected(client)
 {
 	if(IsFakeClient(client))
-		return true;
+		return;
 	
 	g_Voted[client] = false;
 
 	g_Voters++;
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
 	
-	return true;
+	return;
 }
 
 public OnClientDisconnect(client)
 {
-	if(!g_CanRTV || IsFakeClient(client))
+	if(IsFakeClient(client))
 		return;
 	
 	if(g_Voted[client])
@@ -138,6 +138,11 @@ public OnClientDisconnect(client)
 	g_Voters--;
 	
 	g_VotesNeeded = RoundToFloor(float(g_Voters) * GetConVarFloat(g_Cvar_Needed));
+	
+	if (!g_CanRTV)
+	{
+		return;	
+	}
 	
 	if (g_Votes && 
 		g_Voters && 
