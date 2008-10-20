@@ -297,6 +297,7 @@ bool MyBoundResults::RefetchField(MYSQL_STMT *stmt,
 	ResizeBuffer(rbind, initSize);
 
 	/* Update the bind with the buffer size */
+	m_bind[id].buffer = rbind->blob;
 	m_bind[id].buffer_length = (unsigned long)rbind->length;
 	m_bUpdatedBinds = true;
 
