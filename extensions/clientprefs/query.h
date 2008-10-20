@@ -45,7 +45,6 @@ enum querytype
 	Query_Connect,
 };
 
-struct PreparedQueryWrapper;
 struct Cookie;
 struct CookieData;
 #define MAX_NAME_LENGTH 30
@@ -77,7 +76,6 @@ public:
 	IdentityToken_t *GetOwner();
 
 	void SetDatabase(IDatabase *db);
-	void SetPreparedQuery();
 
 	void Destroy();
 
@@ -91,24 +89,14 @@ public:
 	/* Params to be bound */
 	ParamData m_params;
 
-	inline IPreparedQuery *GetQuery()
-	{
-		return m_pQuery;
-	}
-
-	inline querytype GetType()
-	{
-		return m_type;
-	}
-
 	inline IDatabase *GetDB()
 	{
 		return m_database;
 	}
 
 private:
-	IPreparedQuery *m_pQuery;
 	IDatabase *m_database;
+	IQuery *m_pResult;
 
 	/* Query type */
 	enum querytype m_type;

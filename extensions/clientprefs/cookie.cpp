@@ -263,21 +263,21 @@ void CookieManager::OnClientDisconnecting(int client)
 
 void CookieManager::ClientConnectCallback(int client, IQuery *data)
 {
-	IResultSet *results = data->GetResultSet();
-	if (results == NULL)
+	IResultSet *results;
+
+	if (data == NULL || (results = data->GetResultSet()) == NULL)
 	{
 		return;
 	}
 
+	IResultRow *row;
 	do
 	{
-		IResultRow *row = results->FetchRow();
-
-		if (row == NULL)
+		if ((row = results->FetchRow()) == NULL)
 		{
-			continue;
+			break;
 		}
-		
+
 		const char *name;
 		row->GetString(0, &name, NULL);
 
@@ -307,7 +307,7 @@ void CookieManager::ClientConnectCallback(int client, IQuery *data)
 
 		clientData[client].push_back(pData);
 
-	}  while (results->MoreRows());
+	} while (results->MoreRows());
 
 	statsLoaded[client] = true;
 
@@ -331,8 +331,9 @@ void CookieManager::InsertCookieCallback(Cookie *pCookie, int dbId)
 
 void CookieManager::SelectIdCallback(Cookie *pCookie, IQuery *data)
 {
-	IResultSet *results = data->GetResultSet();
-	if (results == NULL)
+	IResultSet *results;
+	
+	if (data == NULL || (results = data->GetResultSet()) == NULL)
 	{
 		return;
 	}
@@ -400,3 +401,4 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 		}		
 	}
 }
+

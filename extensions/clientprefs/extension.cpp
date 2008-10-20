@@ -45,9 +45,7 @@ CookieTypeHandler g_CookieTypeHandler;
 
 HandleType_t g_CookieIterator = 0;
 CookieIteratorHandler g_CookieIteratorHandler;
-
-
-int driver = 0;
+DbDriver g_DriverType;
 
 bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -141,16 +139,6 @@ void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
 {
 	if (Database != NULL && (void *)pInterface == (void *)(Database->GetDriver()))
 	{
-		InsertCookieQuery->Destroy();
-		SelectDataQuery->Destroy();
-		SelectIdQuery->Destroy();
-		InsertDataQuery->Destroy();
-
-		InsertCookieQuery = NULL;
-		SelectDataQuery = NULL;
-		SelectIdQuery = NULL;
-		InsertDataQuery = NULL;
-
 		Database->Close();
 		Database = NULL;
 	}
@@ -177,28 +165,6 @@ void ClientPrefs::SDK_OnUnload()
 	plsys->RemovePluginsListener(&g_CookieManager);
 	playerhelpers->RemoveClientListener(&g_CookieManager);
 
-	/* Kill all our prepared queries - Queries are guaranteed to be flushed before this is called */
-
-	if (InsertCookieQuery != NULL)
-	{
-		InsertCookieQuery->Destroy();
-	}
-
-	if (SelectDataQuery != NULL)
-	{
-		SelectDataQuery->Destroy();
-	}
-
-	if (SelectIdQuery != NULL)
-	{
-		SelectIdQuery->Destroy();
-	}
-
-	if (InsertDataQuery != NULL)
-	{
-		InsertDataQuery->Destroy();
-	}
-
 	queryMutex->DestroyThis();
 	cookieMutex->DestroyThis();
 }
@@ -222,7 +188,7 @@ void ClientPrefs::DatabaseConnect()
 
 	if (strcmp(identifier, "sqlite") == 0)
 	{
-		driver = DRIVER_SQLITE;
+		g_DriverType = Driver_SQLite;
 
 		if (!Database->DoSimpleQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookies  \
@@ -253,7 +219,7 @@ void ClientPrefs::DatabaseConnect()
 	}
 	else if (strcmp(identifier, "mysql") == 0)
 	{
-		driver = DRIVER_MYSQL;
+		g_DriverType = Driver_MySQL;
 
 		if (!Database->DoSimpleQuery(
 				"CREATE TABLE IF NOT EXISTS sm_cookies \
@@ -289,82 +255,6 @@ void ClientPrefs::DatabaseConnect()
 		goto fatal_fail;
 	}
 
-	if (driver == DRIVER_MYSQL)
-	{
-		InsertCookieQuery = Database->PrepareQuery(
-				"INSERT IGNORE INTO sm_cookies(name, description, access) \
-				VALUES(?, ?, ?)",
-				error, sizeof(error), &errCode);
-
-		if (InsertCookieQuery == NULL)
-		{
-			g_pSM->LogMessage(myself, "Failed to prepare query InsertCookie: %s (%i)", error, errCode);
-			goto fatal_fail;
-		}
-
-		InsertDataQuery = Database->PrepareQuery(
-				"INSERT INTO sm_cookie_cache(player, cookie_id, value, timestamp) \
-				VALUES(?, ?, ?, ?) \
-				ON DUPLICATE KEY UPDATE value = ?, timestamp = ?",
-				error, sizeof(error), &errCode);
-
-		if (InsertDataQuery == NULL)
-		{
-			g_pSM->LogMessage(myself, "Failed to prepare query InsertData: %s (%i)", error, errCode);
-			goto fatal_fail;
-		}
-	}
-	else
-	{
-		InsertCookieQuery = Database->PrepareQuery(
-				"INSERT OR IGNORE INTO sm_cookies(name, description, access) \
-				VALUES(?, ?, ?)", 
-				error, sizeof(error), &errCode);
-
-		if (InsertCookieQuery == NULL)
-		{
-			g_pSM->LogMessage(myself, "Failed to prepare query InsertCookie: %s (%i)", error, errCode);
-			goto fatal_fail;
-		}
-
-		InsertDataQuery = Database->PrepareQuery(
-				"INSERT OR REPLACE INTO sm_cookie_cache(player, cookie_id, value, timestamp) \
-				VALUES(?, ?, ?, ?)", 
-				error, sizeof(error), &errCode);
-
-		if (InsertDataQuery == NULL)
-		{
-			g_pSM->LogMessage(myself, "Failed to prepare query InsertData: %s (%i)", error, errCode);
-			goto fatal_fail;
-		}
-	}
-
-	SelectDataQuery = Database->PrepareQuery(
-			"SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, sm_cookies.access \
-			FROM sm_cookies \
-			JOIN sm_cookie_cache \
-			ON sm_cookies.id = sm_cookie_cache.cookie_id \
-			WHERE player = ?",
-			error, sizeof(error), &errCode);
-
-	if (SelectDataQuery == NULL)
-	{
-		g_pSM->LogMessage(myself, "Failed to prepare query SelectData: %s (%i)", error, errCode);
-		goto fatal_fail;
-	}
-
-	SelectIdQuery = Database->PrepareQuery(
-			"SELECT id \
-			FROM sm_cookies \
-			WHERE name=?",
-			error, sizeof(error), &errCode);
-
-	if (SelectIdQuery == NULL)
-	{
-		g_pSM->LogMessage(myself, "Failed to prepare query SelectId: %s (%i)", error, errCode);
-		goto fatal_fail;
-	}
-
 	databaseLoading = false;
 
 	ProcessQueryCache();
@@ -372,26 +262,6 @@ void ClientPrefs::DatabaseConnect()
 	return;
 
 fatal_fail:
-	if (SelectIdQuery != NULL)
-	{
-		SelectIdQuery->Destroy();
-		SelectIdQuery = NULL;
-	}
-	if (SelectDataQuery != NULL)
-	{
-		SelectDataQuery->Destroy();
-		SelectDataQuery = NULL;
-	}
-	if (InsertCookieQuery != NULL)
-	{
-		InsertCookieQuery->Destroy();
-		InsertCookieQuery = NULL;
-	}
-	if (InsertDataQuery != NULL)
-	{
-		InsertDataQuery->Destroy();
-		InsertDataQuery = NULL;
-	}
 	Database->Close();
 	Database = NULL;
 	databaseLoading = false;
@@ -414,19 +284,7 @@ bool ClientPrefs::AddQueryToQueue( TQueryOp *query )
 	if (Database)
 	{
 		query->SetDatabase(Database);
-		query->SetPreparedQuery();
-		if (query->GetQuery() == NULL && query->GetType() != Query_Connect)
-		{
-			g_pSM->LogError(myself, "Invalid aqtq query %d being inserted! glorp: %p, %p",
-				query->GetType(),
-				query->GetDriver(),
-				query);
-			query->Destroy();
-		}
-		else
-		{
-			dbi->AddToThreadQueue(query, PrioQueue_Normal);
-		}
+		dbi->AddToThreadQueue(query, PrioQueue_Normal);
 		return true;
 	}
 
@@ -451,19 +309,7 @@ void ClientPrefs::ProcessQueryCache()
 		if (Database != NULL)
 		{
 			op->SetDatabase(Database);
-			op->SetPreparedQuery();
-			if (op->GetQuery() == NULL && op->GetType() != Query_Connect)
-			{
-				g_pSM->LogError(myself, "Invalid pqc query %d being inserted! glorp: %p, %p",
-					op->GetType(),
-					op->GetDriver(),
-					op);
-				op->Destroy();
-			}
-			else
-			{
-				dbi->AddToThreadQueue(op, PrioQueue_Normal);
-			}
+			dbi->AddToThreadQueue(op, PrioQueue_Normal);
 		}
 		else
 		{

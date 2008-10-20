@@ -41,32 +41,29 @@ void TQueryOp::RunThinkPart()
 		return;
 	}
 
-	if (m_pQuery)
+	switch (m_type)
 	{
-		switch (m_type)
+		case Query_InsertCookie:
 		{
-			case Query_InsertCookie:
-			{
-				g_CookieManager.InsertCookieCallback(m_pCookie, m_insertId);
-				break;
-			}
+			g_CookieManager.InsertCookieCallback(m_pCookie, m_insertId);
+			break;
+		}
 
-			case Query_SelectData:
-			{
-				g_CookieManager.ClientConnectCallback(m_client, m_pQuery);
-				break;
-			}
+		case Query_SelectData:
+		{
+			g_CookieManager.ClientConnectCallback(m_client, m_pResult);
+			break;
+		}
 
-			case Query_SelectId:
-			{
-				g_CookieManager.SelectIdCallback(m_pCookie, m_pQuery);
-				break;
-			}
+		case Query_SelectId:
+		{
+			g_CookieManager.SelectIdCallback(m_pCookie, m_pResult);
+			break;
+		}
 
-			default:
-			{
-				break;
-			}
+		default:
+		{
+			break;
 		}
 	}
 }
@@ -81,18 +78,17 @@ void TQueryOp::RunThreadPart()
 	{
 		assert(m_database != NULL);
 
+		/* I don't think this is needed anymore... keeping for now. */
 		m_database->LockForFullAtomicOperation();
 
 		if (!BindParamsAndRun())
 		{
 			g_pSM->LogError(myself, 
 							"Failed SQL Query, Error: \"%s\" (Query id %i - client %i)", 
-							m_pQuery ? m_pQuery->GetError() : "NULL QUERY",
+							m_database->GetError(),
 							m_type, 
 							m_client);
 		}
-
-		m_insertId = m_database->GetInsertID();
 
 		m_database->UnlockFromFullAtomicOperation();
 	}
@@ -104,6 +100,7 @@ IDBDriver *TQueryOp::GetDriver()
 
 	return m_database->GetDriver();
 }
+
 IdentityToken_t *TQueryOp::GetOwner()
 {
 	return myself->GetIdentity();
@@ -111,6 +108,10 @@ IdentityToken_t *TQueryOp::GetOwner()
 
 void TQueryOp::Destroy()
 {
+	if (m_pResult != NULL)
+	{
+		m_pResult->Destroy();
+	}
 	delete this;
 }
 
@@ -118,19 +119,21 @@ TQueryOp::TQueryOp(enum querytype type, int client)
 {
 	m_type = type;
 	m_client = client;
-	m_pQuery = NULL;
 	m_database = NULL;
+	m_insertId = -1;
+	m_pResult = NULL;
 }
 
 TQueryOp::TQueryOp(enum querytype type, Cookie *cookie)
 {
 	m_type = type;
 	m_pCookie = cookie;
-	m_pQuery = NULL;
 	m_database = NULL;
+	m_insertId = -1;
+	m_pResult = NULL;
 }
 
-void TQueryOp::SetDatabase( IDatabase *db )
+void TQueryOp::SetDatabase(IDatabase *db)
 {
 	m_database = db;
 	m_database->IncReferenceCount();
@@ -138,55 +141,148 @@ void TQueryOp::SetDatabase( IDatabase *db )
 
 bool TQueryOp::BindParamsAndRun()
 {
-	assert(m_pQuery != NULL);
-
-	/* :TODO: remove this check. */
-	if (m_pQuery == NULL)
-	{
-		g_pSM->LogError(myself, "Attempted to run with a NULL Query (type %d)", m_type);
-		return false;
-	}
+	size_t ignore;
+	char query[2048];
 
 	switch (m_type)
 	{
 		case Query_InsertCookie:
 		{
-			m_pQuery->BindParamString(0, m_params.cookie->name, false);
-			m_pQuery->BindParamString(1, m_params.cookie->description, false);
-			m_pQuery->BindParamInt(2, m_params.cookie->access);
+			char safe_name[MAX_NAME_LENGTH*2 + 1];
+			char safe_desc[MAX_DESC_LENGTH*2 + 1];
+			
+			m_database->QuoteString(m_params.cookie->name, 
+				safe_name, 
+				sizeof(safe_name),
+				&ignore);
+			m_database->QuoteString(m_params.cookie->description,
+				safe_desc,
+				sizeof(safe_desc),
+				&ignore);
 
-			break;
+			if (g_DriverType == Driver_MySQL)
+			{
+				UTIL_Format(query,
+					sizeof(query),
+					"INSERT IGNORE INTO sm_cookies (name, description, access) \
+					 VALUES (\"%s\", \"%s\", %d)",
+					safe_name,
+					safe_desc,
+					m_params.cookie->access);
+			}
+			else if (g_DriverType == Driver_SQLite)
+			{
+				UTIL_Format(query,
+					sizeof(query),
+					"INSERT OR IGNORE INTO sm_cookies (name, description, access) \
+					 VALUES (\"%s\", \"%s\", %d)",
+					 safe_name,
+					 safe_desc,
+					 m_params.cookie->access);
+			}
+
+			if (!m_database->DoSimpleQuery(query))
+			{
+				return false;
+			}
+
+			m_insertId = m_database->GetInsertID();
+
+			return true;
 		}
 
 		case Query_SelectData:
 		{
-			m_pQuery->BindParamString(0, m_params.steamId, false);
+			char safe_str[128];
 
-			break;
+			m_database->QuoteString(m_params.steamId, safe_str, sizeof(safe_str), &ignore);
+
+			UTIL_Format(query,
+				sizeof(query),
+				"SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, \
+						sm_cookies.access 	\
+				FROM sm_cookies				\
+				JOIN sm_cookie_cache		\
+				ON sm_cookies.id = sm_cookie_cache.cookie_id \
+				WHERE player = \"%s\"",
+				safe_str);
+
+			m_pResult = m_database->DoQuery(query);
+
+			return (m_pResult != NULL);
 		}
 
 		case Query_InsertData:
 		{
-			m_pQuery->BindParamString(0, m_params.steamId, false);
-			m_pQuery->BindParamInt(1, m_params.cookieId);
-			m_pQuery->BindParamString(2, m_params.data->value, false);
-			m_pQuery->BindParamInt(3, (unsigned int)time(NULL), false);
+			time_t t = time(NULL);
+			char safe_id[128];
+			char safe_val[MAX_VALUE_LENGTH*2 + 1];
 
-			if (driver == DRIVER_MYSQL)
+			m_database->QuoteString(m_params.steamId,
+				safe_id,
+				sizeof(safe_id),
+				&ignore);
+			m_database->QuoteString(m_params.data->value,
+				safe_val,
+				sizeof(safe_val),
+				&ignore);
+
+			if (g_DriverType == Driver_MySQL)
 			{
-				m_pQuery->BindParamString(4, m_params.data->value, false);
-				m_pQuery->BindParamInt(5, (unsigned int)time(NULL), false);
+				UTIL_Format(query, 
+					sizeof(query),
+					"INSERT INTO sm_cookie_cache (player, cookie_id, value, timestamp) 	\
+					 VALUES (\"%s\", %d, \"%s\", %d)									\
+					 ON DUPLICATE KEY UPDATE											\
+					 value = \"%s\", timestamp = %d",
+					safe_id,
+					m_params.cookieId,
+					safe_val,
+					(unsigned int)t,
+					safe_val,
+					(unsigned int)t);
+			}
+			else if (g_DriverType == Driver_SQLite)
+			{
+				UTIL_Format(query,
+					sizeof(query),
+					"INSERT OR REPLACE INTO sm_cookie_cache						\
+					 (player, cookie_id, value, timestamp)						\
+					 VALUES (\"%s\", %d, \"%s\", %d)",
+					safe_id,
+					m_params.cookieId,
+					safe_val,
+					(unsigned int)t);
 			}
 
-			break;
+			if (!m_database->DoSimpleQuery(query))
+			{
+				return false;
+			}
+
+			m_insertId = m_database->GetInsertID();
+
+			return true;
 		}
 
 		case Query_SelectId:
 		{
-			/* the steamId var was actually used to store the name of the cookie - Save duplicating vars */
-			m_pQuery->BindParamString(0, m_params.steamId, false);
+			char safe_name[MAX_NAME_LENGTH*2 + 1];
 
-			break;
+			/* the steamId var was actually used to store the name of the cookie - Save duplicating vars */
+			m_database->QuoteString(m_params.steamId, 
+				safe_name,
+				sizeof(safe_name),
+				&ignore);
+
+			UTIL_Format(query, 
+				sizeof(query),
+				"SELECT id FROM sm_cookies WHERE name = \"%s\"",
+				safe_name);
+
+			m_pResult = m_database->DoQuery(query);
+
+			return (m_pResult != NULL);
 		}
 
 		default:
@@ -196,42 +292,9 @@ bool TQueryOp::BindParamsAndRun()
 			
 	}
 
-	return m_pQuery->Execute();
-}
+	assert(false);
 
-void TQueryOp::SetPreparedQuery()
-{
-	switch (m_type)
-	{
-		case Query_InsertCookie:
-		{
-			m_pQuery = g_ClientPrefs.InsertCookieQuery;
-			break;
-		}
-
-		case Query_SelectData:
-		{
-			m_pQuery = g_ClientPrefs.SelectDataQuery;
-			break;
-		}
-
-		case Query_InsertData:
-		{
-			m_pQuery = g_ClientPrefs.InsertDataQuery;
-			break;
-		}
-
-		case Query_SelectId:
-		{
-			m_pQuery = g_ClientPrefs.SelectIdQuery;
-			break;
-		}
-
-		default:
-		{
-			break;
-		}
-	}
+	return false;
 }
 
 ParamData::~ParamData()
@@ -266,3 +329,4 @@ ParamData::ParamData()
 	steamId[0] = '\0';
 	cookieId = 0;
 }
+

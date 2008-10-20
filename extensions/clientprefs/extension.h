@@ -42,8 +42,11 @@
 #include "menus.h"
 #include "query.h"
 
-#define DRIVER_MYSQL 1
-#define DRIVER_SQLITE 0
+enum DbDriver
+{
+	Driver_MySQL,
+	Driver_SQLite
+};
 
 #define MAX_TRANSLATE_PARAMS		32
 
@@ -139,11 +142,6 @@ public:
 	IPhraseCollection *phrases;
 	const DatabaseInfo *DBInfo;
 
-	IPreparedQuery *InsertCookieQuery;
-	IPreparedQuery *SelectDataQuery;
-	IPreparedQuery *InsertDataQuery;
-	IPreparedQuery *SelectIdQuery;
-
 	IMutex *cookieMutex;
 
 private:
@@ -187,6 +185,7 @@ bool Translate(char *buffer,
 				   size_t *pOutLength,
 				   ...);
 
-extern int driver;
+extern DbDriver g_DriverType;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
+
