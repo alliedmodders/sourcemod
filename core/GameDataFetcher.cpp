@@ -548,7 +548,7 @@ int FetcherThread::RecvData( int socketDescriptor, char *buffer, int len )
 		/* Is there a limit on how much we can receive? Some site said 1024 bytes, which will be well short of a file */
 		if (FD_ISSET(socketDescriptor, &fds))
 		{
-			bytesReceived = recv(socketDescriptor, buffer, len, 0);
+			bytesReceived = recv(socketDescriptor, buffer+bytesReceivedTotal, len-bytesReceivedTotal, 0);
 		}
 
 		if (bytesReceived == 0 || bytesReceived == -1)
@@ -583,7 +583,7 @@ int FetcherThread::SendData( int socketDescriptor, char *buffer, int len )
 
 		if (FD_ISSET(socketDescriptor, &fds))
 		{
-			sentBytes = send(socketDescriptor, buffer, len, 0);
+			sentBytes = send(socketDescriptor, buffer+sentBytesTotal, len-sentBytesTotal, 0);
 		}
 
 		if (sentBytes == 0 || sentBytes == -1)
