@@ -493,7 +493,7 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 	unsigned int serial = (handle >> 16);
 	unsigned int index = (handle & HANDLESYS_HANDLE_MASK);
 
-	if (index == 0 || index == 0xFFFF)
+	if (index == 0 || index > m_HandleTail || index > HANDLESYS_MAX_HANDLES)
 	{
 		return HandleError_Index;
 	}
