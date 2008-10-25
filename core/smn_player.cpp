@@ -1586,7 +1586,7 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientHealth",			GetHealth},
 	{"GetClientTime",			GetTimeConnected},
 	{"GetClientDataRate",		GetDataRate},
-	{"IsClentTimingOut",		IsTimingOut},
+	{"IsClientTimingOut",		IsTimingOut},
 	{"GetClientLatency",		GetLatency},
 	{"GetClientAvgLatency",		GetAvgLatency},
 	{"GetClientAvgLoss",		GetAvgLoss},
