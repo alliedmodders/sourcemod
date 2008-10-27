@@ -19,6 +19,7 @@ typedef struct sp_plugin_debug_s
 	sp_fdbg_line_t *lines;		/**< lines table */
 	uint32_t	syms_num;		/**< number of symbols */
 	sp_fdbg_symbol_t *symbols;	/**< symbol table */
+	bool unpacked;				/**< Whether debug structures are unpacked */
 } sp_plugin_debug_t;
 
 class BaseContext;

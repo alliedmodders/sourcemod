@@ -742,37 +742,72 @@ int DebugInfo::LookupFile(ucell_t addr, const char **filename)
 
 int DebugInfo::LookupFunction(ucell_t addr, const char **name)
 {
-	uint32_t max, iter;
-	sp_fdbg_symbol_t *sym;
-	sp_fdbg_arraydim_t *arr;
-	uint8_t *cursor = (uint8_t *)(m_pPlugin->debug.symbols);
-
-	max = m_pPlugin->debug.syms_num;
-	for (iter = 0; iter < max; iter++)
+	if (!m_pPlugin->debug.unpacked)
 	{
-		sym = (sp_fdbg_symbol_t *)cursor;
+		uint32_t max, iter;
+		sp_fdbg_symbol_t *sym;
+		sp_fdbg_arraydim_t *arr;
+		uint8_t *cursor = (uint8_t *)(m_pPlugin->debug.symbols);
 
-		if (sym->ident == SP_SYM_FUNCTION
-			&& sym->codestart <= addr 
-			&& sym->codeend > addr)
+		max = m_pPlugin->debug.syms_num;
+		for (iter = 0; iter < max; iter++)
 		{
-			*name = m_pPlugin->debug.stringbase + sym->name;
-			return SP_ERROR_NONE;
-		}
+			sym = (sp_fdbg_symbol_t *)cursor;
 
-		if (sym->dimcount > 0)
-		{
+			if (sym->ident == SP_SYM_FUNCTION
+				&& sym->codestart <= addr 
+				&& sym->codeend > addr)
+			{
+				*name = m_pPlugin->debug.stringbase + sym->name;
+				return SP_ERROR_NONE;
+			}
+
+			if (sym->dimcount > 0)
+			{
+				cursor += sizeof(sp_fdbg_symbol_t);
+				arr = (sp_fdbg_arraydim_t *)cursor;
+				cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
+				continue;
+			}
+
 			cursor += sizeof(sp_fdbg_symbol_t);
-			arr = (sp_fdbg_arraydim_t *)cursor;
-			cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
-			continue;
 		}
 
-		cursor += sizeof(sp_fdbg_symbol_t);
+		return SP_ERROR_NOT_FOUND;
 	}
+	else
+	{
+		uint32_t max, iter;
+		sp_u_fdbg_symbol_t *sym;
+		sp_u_fdbg_arraydim_t *arr;
+		uint8_t *cursor = (uint8_t *)(m_pPlugin->debug.symbols);
 
-	return SP_ERROR_NOT_FOUND;
+		max = m_pPlugin->debug.syms_num;
+		for (iter = 0; iter < max; iter++)
+		{
+			sym = (sp_u_fdbg_symbol_t *)cursor;
 
+			if (sym->ident == SP_SYM_FUNCTION
+				&& sym->codestart <= addr 
+				&& sym->codeend > addr)
+			{
+				*name = m_pPlugin->debug.stringbase + sym->name;
+				return SP_ERROR_NONE;
+			}
+
+			if (sym->dimcount > 0)
+			{
+				cursor += sizeof(sp_u_fdbg_symbol_t);
+				arr = (sp_u_fdbg_arraydim_t *)cursor;
+				cursor += sizeof(sp_u_fdbg_arraydim_t) * sym->dimcount;
+				continue;
+			}
+
+			cursor += sizeof(sp_u_fdbg_symbol_t);
+		}
+
+		return SP_ERROR_NOT_FOUND;
+	}
 }
 
 int DebugInfo::LookupLine(ucell_t addr, uint32_t *line)

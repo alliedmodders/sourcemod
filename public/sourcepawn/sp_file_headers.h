@@ -57,7 +57,7 @@
 #endif
 
 #define SPFILE_MAGIC	0x53504646		/**< Source Pawn File Format (SPFF) */
-#define SPFILE_VERSION	0x0101			/**< Uncompressed bytecode */
+#define SPFILE_VERSION	0x0102			/**< File format version */
 
 //:TODO: better compiler/nix support
 #if defined __linux__
@@ -266,4 +266,40 @@ typedef struct fp_fdbg_ntvarg_s
 #pragma pack(pop) /* reset previous packing */
 #endif
 
+/**
+ * Okay, my mistake here.  I apologize.  I changed the packing by accident and there is no 
+ * version bump aside from the presence of the native debug table.  Cat's out of the bag 
+ * for SourceMod and we have no choice but to shim compat for the old version.  For people 
+ * parsing plugins on their own, use the presence of the native debug table to decide this.  
+ * If there are no natives (really, there is a very very low chance of this), heuristics 
+ * might be necessary.  I've bumped the version to 0x0102 but there may have been plugins 
+ * in the 0x0101 window with no natives.
+ */
+
+/**
+ * @brief Unpacked file-encoded debug symbol array dimension info.
+ */
+typedef struct sp_u_fdbg_arraydim_s
+{
+	int16_t		tagid;		/**< Tag id */
+	uint32_t	size;		/**< Size of dimension */
+} sp_u_fdbg_arraydim_t;
+
+/**
+ * @brief Unpacked file-encoded debug symbol information.
+ */
+typedef struct sp_u_fdbg_symbol_s
+{
+	int32_t		addr;		/**< Address rel to DAT or stack frame */
+	int16_t		tagid;		/**< Tag id */
+	uint32_t	codestart;	/**< Start scope validity in code */
+	uint32_t	codeend;	/**< End scope validity in code */
+	uint8_t		ident;		/**< Variable type */
+	uint8_t		vclass;		/**< Scope class (local vs global) */
+	uint16_t	dimcount;	/**< Dimension count (for arrays) */
+	uint32_t	name;		/**< Offset into debug nametable */
+} sp_u_fdbg_symbol_t;
+
+
 #endif //_INCLUDE_SPFILE_HEADERS_H
+

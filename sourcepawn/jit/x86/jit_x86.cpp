@@ -1344,32 +1344,65 @@ void ProfCallGate_End(sp_context_t *ctx)
 
 const char *find_func_name(sp_plugin_t *plugin, uint32_t offs)
 {
-	uint32_t max, iter;
-	sp_fdbg_symbol_t *sym;
-	sp_fdbg_arraydim_t *arr;
-	uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
-
-	max = plugin->debug.syms_num;
-	for (iter = 0; iter < max; iter++)
+	if (!plugin->debug.unpacked)
 	{
-		sym = (sp_fdbg_symbol_t *)cursor;
+		uint32_t max, iter;
+		sp_fdbg_symbol_t *sym;
+		sp_fdbg_arraydim_t *arr;
+		uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
 
-		if (sym->ident == SP_SYM_FUNCTION
-			&& sym->codestart <= offs 
-			&& sym->codeend > offs)
+		max = plugin->debug.syms_num;
+		for (iter = 0; iter < max; iter++)
 		{
-			return plugin->debug.stringbase + sym->name;
-		}
+			sym = (sp_fdbg_symbol_t *)cursor;
 
-		if (sym->dimcount > 0)
-		{
+			if (sym->ident == SP_SYM_FUNCTION
+				&& sym->codestart <= offs 
+				&& sym->codeend > offs)
+			{
+				return plugin->debug.stringbase + sym->name;
+			}
+
+			if (sym->dimcount > 0)
+			{
+				cursor += sizeof(sp_fdbg_symbol_t);
+				arr = (sp_fdbg_arraydim_t *)cursor;
+				cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
+				continue;
+			}
+
 			cursor += sizeof(sp_fdbg_symbol_t);
-			arr = (sp_fdbg_arraydim_t *)cursor;
-			cursor += sizeof(sp_fdbg_arraydim_t) * sym->dimcount;
-			continue;
 		}
+	}
+	else
+	{
+		uint32_t max, iter;
+		sp_u_fdbg_symbol_t *sym;
+		sp_u_fdbg_arraydim_t *arr;
+		uint8_t *cursor = (uint8_t *)(plugin->debug.symbols);
 
-		cursor += sizeof(sp_fdbg_symbol_t);
+		max = plugin->debug.syms_num;
+		for (iter = 0; iter < max; iter++)
+		{
+			sym = (sp_u_fdbg_symbol_t *)cursor;
+
+			if (sym->ident == SP_SYM_FUNCTION
+				&& sym->codestart <= offs 
+				&& sym->codeend > offs)
+			{
+				return plugin->debug.stringbase + sym->name;
+			}
+
+			if (sym->dimcount > 0)
+			{
+				cursor += sizeof(sp_u_fdbg_symbol_t);
+				arr = (sp_u_fdbg_arraydim_t *)cursor;
+				cursor += sizeof(sp_u_fdbg_arraydim_t) * sym->dimcount;
+				continue;
+			}
+
+			cursor += sizeof(sp_u_fdbg_symbol_t);
+		}
 	}
 
 	return NULL;

@@ -88,7 +88,6 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 		}
 	}
 
-
 	pRuntime = new BaseRuntime();
 	if ((error = pRuntime->CreateFromMemory(&hdr, base)) != SP_ERROR_NONE)
 	{

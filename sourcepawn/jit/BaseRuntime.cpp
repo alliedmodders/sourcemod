@@ -69,6 +69,11 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 	plugin->base_size = hdr->imagesize;
 	set_err = SP_ERROR_NONE;
 
+	if (hdr->version == 0x0101)
+	{
+		plugin->debug.unpacked = true;
+	}
+
 	/* We have to read the name section first */
 	for (sectnum = 0; sectnum < hdr->sections; sectnum++)
 	{
@@ -194,6 +199,10 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 		else if (!(plugin->debug.stringbase) && !strcmp(nameptr, ".dbg.strings"))
 		{
 			plugin->debug.stringbase = (const char *)(base + secptr->dataoffs);
+		}
+		else if (strcmp(nameptr, ".dbg.natives") == 0)
+		{
+			plugin->debug.unpacked = false;
 		}
 
 		secptr++;
