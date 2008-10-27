@@ -37,7 +37,10 @@ BaseRuntime::~BaseRuntime()
 	free(m_FuncCache);
 
 	delete m_pCtx;
-	delete m_pCo;
+	if (m_pCo != NULL)
+	{
+		m_pCo->Abort();
+	}
 
 	free(m_pPlugin->base);
 	delete [] m_pPlugin->memory;
