@@ -125,7 +125,10 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 
 return_error:
 	*err = error;
-    fclose(fp);
+	if (fp != NULL)
+	{
+    	fclose(fp);
+	}
 
 	return NULL;
 }
