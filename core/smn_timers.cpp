@@ -160,16 +160,19 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 		}
 	}
 
-	if ((herr=g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
+	if (pInfo->TimerHandle != BAD_HANDLE)
 	{
-		g_DbgReporter.GenerateError(pInfo->pContext, 
-									pInfo->Hook->GetFunctionID(), 
-									SP_ERROR_NATIVE, 
-									"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace", 
-									pInfo->TimerHandle, 
-									herr);
-		return;
+		if ((herr=g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
+		{
+			g_DbgReporter.GenerateError(pInfo->pContext, 
+				pInfo->Hook->GetFunctionID(), 
+				SP_ERROR_NATIVE, 
+				"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace", 
+				pInfo->TimerHandle, 
+				herr);
+		}
 	}
+
 	DeleteTimerInfo(pInfo);
 }
 
@@ -205,6 +208,24 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	hndl = g_HandleSys.CreateHandle(g_TimerType, pInfo, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+
+	/* If we can't get a handle, the timer isn't refcounted against the plugin and 
+	 * we need to bail out to prevent a crash.
+	 */
+	if (hndl == BAD_HANDLE)
+	{
+		/* Free this for completeness. */
+		if (flags & TIMER_HNDL_CLOSE)
+		{
+			HandleSecurity sec(pCtx->GetIdentity(), g_pCoreIdent);
+			g_HandleSys.FreeHandle(params[3], &sec);
+		}
+		/* Zero everything so there's no conflicts */
+		memset(pInfo, 0, sizeof(TimerInfo));
+		g_Timers.KillTimer(pTimer);
+
+		return pCtx->ThrowNativeError("Could not create timer, no more handles");
+	}
 
 	pInfo->UserData = params[3];
 	pInfo->Flags = flags;
