@@ -432,7 +432,7 @@ DisplayCenterTextToAll(client, String:message[])
 	
 	for (new i = 1; i < MaxClients; i++)
 	{
-		if (!IsClientConnected(i) || IsFakeClient(i))
+		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
 			continue;
 		}
