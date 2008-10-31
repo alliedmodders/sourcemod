@@ -52,7 +52,7 @@ stock FindTeamByName(const String:name[])
 	new name_len = strlen(name);
 	new num_teams = GetTeamCount();
 	decl String:team_name[32];
-	new found_team = -1
+	new found_team = -1;
 
 	for (new i = 0; i < num_teams; i++)
 	{
