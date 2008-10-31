@@ -68,7 +68,7 @@ struct ParamData
 class TQueryOp : public IDBThreadOperation
 {
 public:
-	TQueryOp(enum querytype type, int client);
+	TQueryOp(enum querytype type, int userid);
 	TQueryOp(enum querytype type, Cookie *cookie);
 	~TQueryOp() {}
 
@@ -102,7 +102,7 @@ private:
 	enum querytype m_type;
 
 	/* Data to be passed to the callback */
-	int m_client;
+	int m_userid;
 	int m_insertId;
 	Cookie *m_pCookie;
 };

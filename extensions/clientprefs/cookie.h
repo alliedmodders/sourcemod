@@ -121,7 +121,7 @@ public:
 
 	void Unload();
 
-	void ClientConnectCallback(int client, IQuery *data);
+	void ClientConnectCallback(int userid, IQuery *data);
 	void InsertCookieCallback(Cookie *pCookie, int dbId);
 	void SelectIdCallback(Cookie *pCookie, IQuery *data);
 

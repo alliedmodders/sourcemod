@@ -196,9 +196,16 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, char *value)
 
 void CookieManager::OnClientAuthorized(int client, const char *authstring)
 {
+	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
+
+	if (player == NULL)
+	{
+		return;
+	}
+
 	connected[client] = true;
 
-	TQueryOp *op = new TQueryOp(Query_SelectData, client);
+	TQueryOp *op = new TQueryOp(Query_SelectData, player->GetUserId());
 	strcpy(op->m_params.steamId, authstring);
 
 	g_ClientPrefs.AddQueryToQueue(op);
@@ -261,10 +268,18 @@ void CookieManager::OnClientDisconnecting(int client)
 	}
 }
 
-void CookieManager::ClientConnectCallback(int client, IQuery *data)
+void CookieManager::ClientConnectCallback(int userid, IQuery *data)
 {
+	int client;
 	IResultSet *results;
 
+	/* Check validity of client */
+	if ((client = playerhelpers->GetClientOfUserId(userid)) == 0)
+	{
+		return;
+	}
+
+	/* Check validity of results */
 	if (data == NULL || (results = data->GetResultSet()) == NULL)
 	{
 		return;
