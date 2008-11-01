@@ -457,7 +457,6 @@ NativeEntry *ShareSystem::AddNativeToCache(CNativeOwner *pOwner, const sp_native
 	pEntry->owner = pOwner;
 	pEntry->func = ntv->func;
 	pEntry->name = ntv->name;
-	pEntry->func = NULL;
 
 	return pEntry;
 }
