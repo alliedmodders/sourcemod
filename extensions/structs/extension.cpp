@@ -88,7 +88,7 @@ void Structs::SDK_OnAllLoaded()
 void Structs::SDK_OnUnload()
 {
 	handlesys->RemoveType(g_StructHandle, myself->GetIdentity());
-
+	gameconfs->CloseGameConfigFile(conf);
 	gameconfs->RemoveUserConfigHook("Structs", this);
 }
 
