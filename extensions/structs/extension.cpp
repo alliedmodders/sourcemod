@@ -79,7 +79,7 @@ void Structs::SDK_OnAllLoaded()
 
 
 	char error[100];
-	if (!gameconfs->LoadGameConfigFile("structs", &conf, error, sizeof(error)))
+	if (!gameconfs->LoadGameConfigFile("structs.gamedata", &conf, error, sizeof(error)))
 	{
 		g_pSM->LogError(myself, "Parsing Failed!");
 	}
