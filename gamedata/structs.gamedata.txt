@@ -27,114 +27,20 @@
 				"windows"	"38"
 			}
 		}
-
-		"Structs"
-		{
-			"TestStruct"
-			{
-				"size"	"155"
-
-				"seven"
-				{
-					"type"		"float"
-					"windows"	"0"
-					"linux"		"0"
-				}
-				"eight"
-				{
-					"type"		"float*"
-					"windows"	"4"
-					"linux"		"4"
-				}
-				"nine"
-				{
-					"type"		"Vector"
-					"windows"	"8"
-					"linux"		"8"
-				}
-				"ten"
-				{
-					"type"		"Vector*"
-					"windows"	"20"
-					"linux"		"20"
-				}
-				"eleven"
-				{
-					"type"		"char"
-					"size"		"100"
-					"windows"	"24"
-					"linux"		"24"
-				}
-				"twelve"
-				{
-					"type"		"char*"
-					"size"		"100"
-					"windows"	"124"
-					"linux"		"124"
-				}
-				"thirteen"
-				{
-					"type"		"ent"
-					"windows"	"128"
-					"linux"		"128"
-				}
-				"fourteen"
-				{
-					"type"		"ent*"
-					"windows"	"132"
-					"linux"		"132"
-				}
-				"one"
-				{
-					"type"		"int"
-					"size"		"1"
-					"windows"	"136"
-					"linux"		"136"
-				}
-				"two"
-				{
-					"type"		"int"
-					"size"		"2"
-					"windows"	"137"
-					"linux"		"137"
-				}
-				"three"
-				{
-					"type"		"int"
-					"size"		"4"
-					"windows"	"139"
-					"linux"		"139"
-				}
-				"four"
-				{
-					"type"		"int*"
-					"size"		"1"
-					"windows"	"143"
-					"linux"		"143"
-				}
-				"five"
-				{
-					"type"		"int*"
-					"size"		"2"
-					"windows"	"147"
-					"linux"		"147"
-				}
-				"six"
-				{
-					"type"		"int*"
-					"size"		"4"
-					"windows"	"151"
-					"linux"		"151"
-				}
-			}
-		}
 	}
 	
 	"tf"
 	{
+		"Offsets"
+		{
+			"m_WeaponInfoDatabase"
+			{
+				"windows"	"65"
+			}
+		}
+	
 		"Structs"
 		{
-
 			"FileWeaponInfo_t"
 			{
 				"bParsedScript"
