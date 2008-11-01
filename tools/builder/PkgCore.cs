@@ -282,22 +282,6 @@ namespace builder
 			lib.vcproj_name = "clientprefs";
 			libraries.Add(lib);
 
-			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
-			lib.source_path = "extensions/structs";
-			lib.binary_name = "structs.ext";
-			lib.vcproj_name = "structs";
-			lib.build_mode = BuildMode.BuildMode_Episode2;
-			libraries.Add(lib);
-
-			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
-			lib.source_path = "extensions/structs";
-			lib.binary_name = "structs.ext";
-			lib.vcproj_name = "structs";
-			lib.build_mode = BuildMode.BuildMode_OldMetamod;
-			libraries.Add(lib);
-
 			return (Library [])libraries.ToArray(typeof(Library));
 		}
 
