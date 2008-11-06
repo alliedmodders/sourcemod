@@ -184,27 +184,13 @@ public Action:Command_Nextmap(client, args)
 	
 	GetNextMap(map, sizeof(map));
 	
-	if(GetConVarInt(g_Cvar_TriggerShow))
+	if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 	{
-		if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
-		{
-			PrintToChatAll("[SM] %t", "Pending Vote");			
-		}
-		else
-		{
-			PrintToChatAll("[SM] %t", "Next Map", map);
-		}
+		ReplyToCommand(client, "[SM] %t", "Pending Vote");			
 	}
 	else
 	{
-		if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
-		{
-			ReplyToCommand(client, "[SM] %t", "Pending Vote");			
-		}
-		else
-		{
-			ReplyToCommand(client, "[SM] %t", "Next Map", map);
-		}
+		ReplyToCommand(client, "[SM] %t", "Next Map", map);
 	}
 	
 	return Plugin_Handled;
