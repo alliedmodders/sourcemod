@@ -5,8 +5,15 @@
 // Desc: Add references for strings, variables, and other data that seem mangled
 //       due to GCC's -fPIC option and the .got section of an x86 ELF binary.
 // 
-// Version 1.0 - November 22, 2007
-// Version 1.1 - May 02, 2008 - Now works with GCC 4.x compiled binaries
+// Version History
+// 1.0 [2007-11-22]
+//     - Initial Version
+// 1.1 [2008-05-02]
+//     - Now works with GCC 4.x compiled binaries
+// 1.2 [2008-11-06]
+//     - Now works with GCC 4.3 compiled binaries
+//     - Fixed: Redefining alignment blocks as data caused IDA to pop up
+//       an annoying warning
 // -----------------------------------------------------------------------------
 
 #include <idc.idc>
@@ -123,7 +130,7 @@ static main()
 		}
 		
 		/* Get current PIC register */
-		reg = GetPICRegister(addr, reg);
+		reg = GetPICRegister(addr, reg, funcend);
 		
 		if (reg != REG_NONE)
 		{
@@ -173,6 +180,10 @@ static main()
 					{
 						/* Create a name based on the address */
 						opstr = form("unk_%X", dataAddr);
+						if (strstr(GetDisasm(dataAddr), "align") != -1)
+						{
+							MakeUnkn(dataAddr, DOUNK_SIMPLE);
+						}
 						MakeNameEx(dataAddr, opstr, SN_NOCHECK|SN_NOLIST|SN_NOWARN);
 						opformat = OPFORMAT_DEREF;
 					}
@@ -188,6 +199,10 @@ static main()
 					{
 						/* If name doesn't exist for that, then create name based on address */
 						opstr = form("unk_%X", dataAddr);
+						if (strstr(GetDisasm(dataAddr), "align") != -1)
+						{
+							MakeUnkn(dataAddr, DOUNK_SIMPLE);
+						}
 						MakeNameEx(dataAddr, opstr, SN_NOCHECK|SN_NOLIST|SN_NOWARN);
 						opformat = OPFORMAT_DEREF;
 					}
@@ -255,32 +270,37 @@ static main()
  * Tries to determine the current PIC register given the current address being processed
  * and the previous PIC register.
  */
-static GetPICRegister(addr, previous)
+static GetPICRegister(addr, previous, funcend)
 {
-	auto assemblyStr, idx, reg;
+	auto assemblyStr, idx, reg, ab;
 	assemblyStr = GetDisasm(addr);
 	
 	if ((idx = strstr(assemblyStr, "call    __i686_get_pc_thunk_")) != -1)
 	{
 		/* 28 is the length of the above string */ 
 		reg = substr(assemblyStr, idx + 28, 30);
-		
-		if (reg == "ax")
-		{
-			return REG_EAX;
-		}
-		else if (reg == "bx")
-		{
-			return REG_EBX;
-		}
-		else if (reg == "cx")
-		{
-			return REG_ECX;
-		}
-		else if (reg == "dx")
-		{
-			return REG_EDX;
-		}
+	}
+	else if (strstr(assemblyStr, "call    $+5") != -1)
+	{
+		assemblyStr = GetDisasm(NextHead(addr, funcend));
+		reg = substr(assemblyStr, 9, 11);
+	}
+	
+	if (reg == "ax")
+	{
+		return REG_EAX;
+	}
+	else if (reg == "bx")
+	{
+		return REG_EBX;
+	}
+	else if (reg == "cx")
+	{
+		return REG_ECX;
+	}
+	else if (reg == "dx")
+	{
+		return REG_EDX;
 	}
 	
 	return previous;
