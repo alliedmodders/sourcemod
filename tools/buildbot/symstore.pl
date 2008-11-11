@@ -48,10 +48,10 @@ for ($i = 0; $i <= $#files; $i++)
 	opendir(DIR, "..\\..\\symstore\\$file");
 	@subdirs = readdir(DIR);
 	closedir(DIR);
-	for ($j = 0; $j < $#subdirs; $j++)
+	for ($j = 0; $j <= $#subdirs; $j++)
 	{
 		next unless ($subdirs[$j] =~ /[A-Z]/);
-		Build::Command("rename ..\\..\\symstore\\$file\\" . $subdirs[$j] . " ..\\..\\symstore\\$file\\" . lc($subdirs[$j]));
+		Build::Command("rename ..\\..\\symstore\\$file\\" . $subdirs[$j] . " " . lc($subdirs[$j]));
 	}	
 }
 
