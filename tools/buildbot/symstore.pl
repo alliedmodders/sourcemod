@@ -33,6 +33,28 @@ while (<PDBLOG>)
 
 close(PDBLOG);
 
+#Lowercase DLLs.  Sigh.
+my (@files);
+opendir(DIR, "..\\..\\symstore");
+@files = readdir(DIR);
+closedir(DIR);
+
+my ($i, $j, $file, @subdirs);
+for ($i = 0; $i <= $#files; $i++)
+{
+	$file = $files[$i];
+	next unless ($file =~ /\.dll$/);
+	next unless (-d "..\\..\\symstore\\$file");
+	opendir(DIR, "..\\..\\symstore\\$file");
+	@subdirs = readdir(DIR);
+	closedir(DIR);
+	for ($j = 0; $j < $#subdirs; $j++)
+	{
+		next unless ($subdirs[$j] =~ /[A-Z]/);
+		Build::Command("rename ..\\..\\symstore\\$file\\" . $subdirs[$j] . " ..\\..\\symstore\\$file\\" . lc($subdirs[$j]));
+	}	
+}
+
 #Now that we're done, rsync back.
 rsync('../../symstore/', 'sourcemod@alliedmods.net:~/public_html/symbols');
 
