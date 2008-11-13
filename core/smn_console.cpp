@@ -339,6 +339,7 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(params[2]);
 
+#ifndef ORANGEBOX_BUILD
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -350,6 +351,7 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 	{
 		NotifyConVar(pConVar);
 	}
+#endif
 
 	return 1;
 }
@@ -386,6 +388,7 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	float value = sp_ctof(params[2]);
 	pConVar->SetValue(value);
 
+#ifndef ORANGEBOX_BUILD
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -397,6 +400,7 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	{
 		NotifyConVar(pConVar);
 	}
+#endif
 
 	return 1;
 }
@@ -435,6 +439,7 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(value);
 
+#ifndef ORANGEBOX_BUILD
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -446,6 +451,7 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 	{
 		NotifyConVar(pConVar);
 	}
+#endif
 
 	return 1;
 }
@@ -464,17 +470,19 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->Revert();
 	
+#ifndef ORANGEBOX_BUILD
 	/* Should we replicate it? */
-	if (params[2] && IsFlagSet(pConVar, FCVAR_REPLICATED))
+	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
 		ReplicateConVar(pConVar);
 	}
 
 	/* Should we notify clients? */
-	if (params[3] && IsFlagSet(pConVar, FCVAR_NOTIFY))
+	if (params[4] && IsFlagSet(pConVar, FCVAR_NOTIFY))
 	{
 		NotifyConVar(pConVar);
 	}
+#endif
 
 	return 1;
 }
