@@ -167,6 +167,7 @@ private:
 	KTrie<ConCommandBase *> m_CmdFlags;
 } s_CommandFlagsHelper;
 
+#ifndef ORANGEBOX_BUILD
 static void ReplicateConVar(ConVar *pConVar)
 {
 	int maxClients = g_Players.GetMaxClients();
@@ -206,6 +207,7 @@ static void NotifyConVar(ConVar *pConVar)
 
 	gameevents->FireEvent(pEvent);
 }
+#endif
 
 static cell_t sm_CreateConVar(IPluginContext *pContext, const cell_t *params)
 {
