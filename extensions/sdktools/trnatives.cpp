@@ -39,7 +39,7 @@ public:
 	{
 		cell_t res = 1;
 		edict_t *pEdict = gameents->BaseEntityToEdict(reinterpret_cast<CBaseEntity *>(pEntity));
-		m_pFunc->PushCell(engine->IndexOfEdict(pEdict));
+		m_pFunc->PushCell(IndexOfEdict(pEdict));
 		m_pFunc->PushCell(contentsMask);
 		m_pFunc->PushCell(m_Data);
 		m_pFunc->Execute(&res);
@@ -506,7 +506,7 @@ static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *param
 	}
 
 	edict_t *pEdict = gameents->BaseEntityToEdict(tr->m_pEnt);
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
 
 static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *params)
@@ -527,9 +527,13 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 	{
 		mask = enginetrace->GetPointContents(pos);
 	} else {
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+		mask = enginetrace->GetPointContents(pos, 0, &hentity);
+#else
 		mask = enginetrace->GetPointContents(pos, &hentity);
+#endif
 		edict_t *pEdict = gameents->BaseEntityToEdict(reinterpret_cast<CBaseEntity *>(hentity));
-		*ent = engine->IndexOfEdict(pEdict);
+		*ent = IndexOfEdict(pEdict);
 	}
 
 	return mask;
@@ -537,7 +541,7 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 
 static cell_t smn_TRGetPointContentsEnt(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = PEntityOfEntIndex(params[1]);
 	if (!pEdict || pEdict->IsFree())
 	{
 		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);

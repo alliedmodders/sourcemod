@@ -314,7 +314,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 
 			if (sound != NULL)
 			{
-				edict_t *pEdict = engine->PEntityOfEntIndex(client);
+				edict_t *pEdict = PEntityOfEntIndex(client);
 				if (pEdict)
 				{
 					ICollideable *pCollideable = pEdict->GetCollideable();

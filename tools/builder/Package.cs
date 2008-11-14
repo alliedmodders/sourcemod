@@ -13,7 +13,8 @@ namespace builder
 		BuildMode_Simple,
 		BuildMode_OldMetamod,
 		BuildMode_Episode1,
-		BuildMode_Episode2
+		BuildMode_Episode2,
+        BuildMode_Left4Dead
 	};
 
 	public class Library

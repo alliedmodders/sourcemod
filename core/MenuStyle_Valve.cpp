@@ -88,7 +88,7 @@ void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
 		return;
 	}
 
-	int client = engine->IndexOfEdict(pEdict);
+	int client = IndexOfEdict(pEdict);
 	if (client < 1 || client > 256)
 	{
 		return;
@@ -325,7 +325,7 @@ void CValveMenuDisplay::SendRawDisplay(int client, int priority, unsigned int ti
 	m_pKv->SetInt("time", time ? time : 200);
 
 	SH_CALL(g_pSPHCC, &IServerPluginHelpers::CreateMessage)(
-		engine->PEntityOfEntIndex(client),
+		PEntityOfEntIndex(client),
 		DIALOG_MENU,
 		m_pKv,
 		vsp_interface);

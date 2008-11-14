@@ -31,7 +31,7 @@
 
 #include "sm_globals.h"
 #include <vector.h>
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 #include <mathlib.h>
 #else
 #include <math_base.h>

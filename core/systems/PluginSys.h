@@ -47,7 +47,9 @@
 #include "sm_trie.h"
 #include "sourcemod.h"
 #include <IRootConsoleMenu.h>
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+#include "convar_sm_l4d.h"
+#elif SOURCE_ENGINE == SE_ORANGEBOX
 #include "convar_sm_ob.h"
 #else
 #include "convar_sm.h"

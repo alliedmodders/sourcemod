@@ -40,7 +40,7 @@ NextMapManager g_NextMap;
 
 SH_DECL_HOOK2_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *);
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #else
 extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
@@ -55,30 +55,13 @@ bool g_forcedChange = false;
 
 void NextMapManager::OnSourceModAllInitialized_Post()
 {
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_ADD_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
 #else
 	SH_ADD_HOOK_MEMFUNC(IVEngineServer, ChangeLevel, engine, this, &NextMapManager::HookChangeLevel, false);
 #endif
 
-	ConCommandBase *pBase = icvar->GetCommands();
-	ConCommand *pCmd = NULL;
-	while (pBase)
-	{
-		if (strcmp(pBase->GetName(), "changelevel") == 0)
-		{
-			/* Don't want to return convar with same name */
-			if (!pBase->IsCommand())
-			{
-				break;
-			}
-
-			pCmd = (ConCommand *)pBase;
-			break;
-		}
-		pBase = const_cast<ConCommandBase *>(pBase->GetNext());
-	}
-
+	ConCommand *pCmd = FindCommand("changelevel");
 	if (pCmd != NULL)
 	{
 		SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CmdChangeLevelCallback, false);
@@ -88,7 +71,7 @@ void NextMapManager::OnSourceModAllInitialized_Post()
 
 void NextMapManager::OnSourceModShutdown()
 {
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_REMOVE_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
 #else
 	SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, ChangeLevel, engine, this, &NextMapManager::HookChangeLevel, false);
@@ -203,7 +186,7 @@ NextMapManager::NextMapManager()
 	m_mapHistory = SourceHook::List<MapChangeData *>();
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdChangeLevelCallback(const CCommand &command)
 {
 #else

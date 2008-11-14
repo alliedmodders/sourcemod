@@ -413,14 +413,14 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			{
 				return -1;
 			}
-			return engine->IndexOfEdict(pEdict);
+			return IndexOfEdict(pEdict);
 		} else if (vc->retinfo->vtype == Valve_Edict) {
 			edict_t *pEdict = *(edict_t **)(vc->retbuf);
 			if (!pEdict || pEdict->IsFree())
 			{
 				return -1;
 			}
-			return engine->IndexOfEdict(pEdict);
+			return IndexOfEdict(pEdict);
 		} else if (vc->retinfo->vtype == Valve_Bool) {
 			bool *addr = (bool  *)vc->retbuf;
 			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)

@@ -61,7 +61,7 @@ ConVar *g_ServerCfgFile = NULL;
 
 void CheckAndFinalizeConfigs();
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 void Hook_ExecDispatchPre(const CCommand &cmd)
 #else
@@ -70,7 +70,7 @@ extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelega
 void Hook_ExecDispatchPre()
 #endif
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand cmd;
 #endif
 
@@ -84,7 +84,7 @@ void Hook_ExecDispatchPre()
 	}
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void Hook_ExecDispatchPost(const CCommand &cmd)
 #else
 void Hook_ExecDispatchPost()
@@ -103,7 +103,7 @@ void CheckAndFinalizeConfigs()
 	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
 		&& g_bGotServerStart)
 	{
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
         g_PendingInternalPush = true;
 #else
         SM_InternalCmdTrigger();
@@ -151,17 +151,7 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 
 		if (g_ServerCfgFile != NULL)
 		{
-			ConCommandBase *pBase = icvar->GetCommands();
-			while (pBase != NULL)
-			{
-				if (pBase->IsCommand() && strcmp(pBase->GetName(), "exec") == 0)
-				{
-					break;
-				}
-				pBase = const_cast<ConCommandBase *>(pBase->GetNext());
-			}
-
-			g_pExecPtr = (ConCommand *)pBase;
+			g_pExecPtr = FindCommand("exec");
 			if (g_pExecPtr != NULL)
 			{
 				SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, g_pExecPtr, Hook_ExecDispatchPre, false);

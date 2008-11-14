@@ -61,7 +61,7 @@ RootConsoleMenu::~RootConsoleMenu()
 
 void RootConsoleMenu::OnSourceModStartup(bool late)
 {
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	g_pCVar = icvar;
 #endif
 	CONVAR_REGISTER(this);
@@ -291,7 +291,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 
 CON_COMMAND(sm, "SourceMod Menu")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 	g_RootMenu.GotRootCmd(args);
@@ -327,7 +327,7 @@ void write_handles_to_game(const char *fmt, ...)
 
 CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle leaks")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 	if (args.ArgC() < 2)

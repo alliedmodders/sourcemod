@@ -40,7 +40,7 @@
 
 ConCmdManager g_ConCmds;
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #else
 	SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
@@ -205,7 +205,7 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		delete pList;
 	}
 }
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CommandCallback(const CCommand &command)
 {
 #else
@@ -515,7 +515,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 		return true;
 	}
 
-	edict_t *pEdict = engine->PEntityOfEntIndex(client);
+	edict_t *pEdict = PEntityOfEntIndex(client);
 	
 	/* If we got here, the command failed... */
 	char buffer[128];
@@ -897,23 +897,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 	{
 		pInfo = new ConCmdInfo();
 		/* Find the commandopan */
-		ConCommandBase *pBase = icvar->GetCommands();
-		ConCommand *pCmd = NULL;
-		while (pBase)
-		{
-			if (strcmp(pBase->GetName(), name) == 0)
-			{
-				/* Don't want to return convar with same name */
-				if (!pBase->IsCommand())
-				{
-					return NULL;
-				}
-
-				pCmd = (ConCommand *)pBase;
-				break;
-			}
-			pBase = const_cast<ConCommandBase *>(pBase->GetNext());
-		}
+		ConCommand *pCmd = FindCommand(name);
 
 		if (!pCmd)
 		{

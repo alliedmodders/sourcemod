@@ -49,6 +49,10 @@ namespace builder
 			{
 				output_folder += ".original";
 			}
+			else if (lib.build_mode == BuildMode.BuildMode_Left4Dead)
+			{
+				output_folder += ".left4dead";
+			}
 
 			string binpath = Config.PathFormat("{0}/{1}/{2}",
 				path,
@@ -73,6 +77,10 @@ namespace builder
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
 				makefile_args = "ENGINE=\"original\"";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_Left4Dead)
+			{
+				makefile_args = "ENGINE=\"left4dead\"";
 			}
 
 			/* Clean the project first */

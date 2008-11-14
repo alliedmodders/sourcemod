@@ -175,7 +175,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
 
 static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params)
@@ -211,7 +211,7 @@ static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params
 		return -1;
 	}
 
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
 
 static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
@@ -290,7 +290,7 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 /* :TODO: This is Team Fortress 2 specific */
 static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 {
@@ -352,7 +352,7 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[2]);
+	edict_t *pEdict = PEntityOfEntIndex(params[2]);
 	if (!pEdict || pEdict->IsFree())
 	{
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
@@ -639,9 +639,49 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 		return -1;
 	}
 
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[4];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[3], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("CreateEntityByName", ValveCall_Static, &pass[3], pass, 3, &pCall))
+		{
+			return pContext->ThrowNativeError("\"CreateEntityByName\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialized");
+		}
+	}
+
+	CBaseEntity *pEntity = NULL;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, vparams, 0);
+	DECODE_VALVE_PARAM(2, vparams, 1);
+	*(bool *)(vptr + 8) = true;
+	FINISH_CALL_SIMPLE(&pEntity);
+
+	if (pEntity == NULL)
+	{
+		return -1;
+	}
+
+	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
+	if (!pEdict)
+	{
+		return -1;
+	}
+
+	return IndexOfEdict(pEdict);
+}
+#else
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -676,8 +716,9 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
+#endif
 
 static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 {
@@ -764,7 +805,7 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 	{
 		ValvePassInfo pass[3];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 		InitPass(pass[1], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
 #else
 		InitPass(pass[1], Valve_Vector, PassType_Object, PASSFLAG_BYVAL|PASSFLAG_OCTOR|PASSFLAG_OASSIGNOP);

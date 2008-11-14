@@ -54,7 +54,7 @@ public: //SMGlobalClass
 		char *error, 
 		size_t maxlength);
 private: //ConCommand
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnSayCommand_Pre(const CCommand &command);
 	void OnSayCommand_Post(const CCommand &command);
 #else

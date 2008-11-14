@@ -140,7 +140,7 @@ private:
 	/**
 	 * Static callback that Valve's ConVar object executes when the convar's value changes.
 	 */
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 #else
 	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);

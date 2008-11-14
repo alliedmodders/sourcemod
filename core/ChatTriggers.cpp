@@ -41,7 +41,7 @@
  * While the OB build only runs on MM:S 1.6.0+ (SH 5+), the older one 
  * can technically be compiled against any MM:S version after 1.4.2.
  */
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate1<const CCommand &, void>);
 extern int __SourceHook_FHAddConCommandDispatch(void *, ISourceHook::AddHookMode, bool, class fastdelegate::FastDelegate1<const CCommand &, void>);
 #else
@@ -53,7 +53,7 @@ extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate
 #elif SH_IMPL_VERSION == 3
 extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
 #endif //SH_IMPL_VERSION
-#endif //ORANGEBOX_BUILD
+#endif //SE_ORANGEBOX
 
 ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
@@ -118,31 +118,8 @@ void ChatTriggers::OnSourceModAllInitialized_Post()
 
 void ChatTriggers::OnSourceModGameInitialized()
 {
-	unsigned int total = 2;
-	ConCommandBase *pCmd = icvar->GetCommands();
-	const char *name;
-	while (pCmd)
-	{
-		if (pCmd->IsCommand())
-		{
-			name = pCmd->GetName();
-			if (!m_pSayCmd && strcmp(name, "say") == 0)
-			{
-				m_pSayCmd = (ConCommand *)pCmd;
-				if (--total == 0)
-				{
-					break;
-				}
-			} else if (!m_pSayTeamCmd && strcmp(name, "say_team") == 0) {
-				m_pSayTeamCmd = (ConCommand *)pCmd;
-				if (--total == 0)
-				{
-					break;
-				}
-			}
-		}
-		pCmd = const_cast<ConCommandBase *>(pCmd->GetNext());
-	}
+	m_pSayCmd = FindCommand("say");
+	m_pSayTeamCmd = FindCommand("say_team");
 
 	if (m_pSayCmd)
 	{
@@ -173,7 +150,7 @@ void ChatTriggers::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_pDidFloodBlock);
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Pre(const CCommand &command)
 {
 #else
@@ -267,7 +244,7 @@ void ChatTriggers::OnSayCommand_Pre()
 	/**
 	 * Test if this is actually a command!
 	 */
-	if (!PreProcessTrigger(engine->PEntityOfEntIndex(client), args, is_quoted))
+	if (!PreProcessTrigger(PEntityOfEntIndex(client), args, is_quoted))
 	{
 		CPlayer *pPlayer;
 		if (is_silent 
@@ -299,7 +276,7 @@ void ChatTriggers::OnSayCommand_Pre()
 	RETURN_META(MRES_IGNORED);
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void ChatTriggers::OnSayCommand_Post(const CCommand &command)
 #else
 void ChatTriggers::OnSayCommand_Post()
@@ -315,7 +292,7 @@ void ChatTriggers::OnSayCommand_Post()
 		/* Execute the cached command */
 		int client = g_ConCmds.GetCommandClient();
 		unsigned int old = SetReplyTo(SM_REPLY_CHAT);
-		serverpluginhelpers->ClientCommand(engine->PEntityOfEntIndex(client), m_ToExecute);
+		serverpluginhelpers->ClientCommand(PEntityOfEntIndex(client), m_ToExecute);
 		SetReplyTo(old);
 	}
 }

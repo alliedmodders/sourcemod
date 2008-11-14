@@ -37,7 +37,7 @@
 
 float g_next_vote = 0.0f;
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void OnVoteDelayChange(IConVar *cvar, const char *value, float flOldValue);
 #else
 void OnVoteDelayChange(ConVar *cvar, const char *value);
@@ -52,7 +52,7 @@ ConVar sm_vote_delay("sm_vote_delay",
 					 0.0,
 					 OnVoteDelayChange);
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void OnVoteDelayChange(IConVar *cvar, const char *value, float flOldValue)
 #else
 void OnVoteDelayChange(ConVar *cvar, const char *value)

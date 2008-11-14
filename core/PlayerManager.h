@@ -135,7 +135,7 @@ public:
 	void OnClientPutInServer(edict_t *pEntity, char const *playername);
 	void OnClientDisconnect(edict_t *pEntity);
 	void OnClientDisconnect_Post(edict_t *pEntity);
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
 	void OnClientCommand(edict_t *pEntity);
@@ -204,7 +204,7 @@ private:
 	int m_ListenClient;
 };
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command);
 #else
 void CmdMaxplayersCallback();

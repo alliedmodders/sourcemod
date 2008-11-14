@@ -72,8 +72,13 @@ public: //IUserMessages
 	bf_write *StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags);
 	bool EndMessage();
 public:
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
+	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
+#else
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type);
 	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type);
+#endif
 	void OnMessageEnd_Pre();
 	void OnMessageEnd_Post();
 private:

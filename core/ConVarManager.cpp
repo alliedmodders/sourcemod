@@ -41,15 +41,17 @@
 
 ConVarManager g_ConVarManager;
 
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 #define CallGlobalChangeCallbacks	CallGlobalChangeCallback
 #endif
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
 #else
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
 #endif
+
+SH_DECL_HOOK1_void(ICvar, InstallGlobalChangeCallback, SH_NOATTRIB, false, FnChangeCallback_t);
 
 SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
@@ -79,12 +81,41 @@ void ConVarManager::OnSourceModStartup(bool late)
 	m_ConVarType = g_HandleSys.CreateType("ConVar", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 }
 
+bool GetFileOfAddress(void *pAddr, char *buffer, size_t maxlength)
+{
+#if defined WIN32 || defined _WIN32
+	MEMORY_BASIC_INFORMATION mem;
+	if (!VirtualQuery(pAddr, &mem, sizeof(mem)))
+		return false;
+	if (mem.AllocationBase == NULL)
+		return false;
+	HMODULE dll = (HMODULE)mem.AllocationBase;
+	GetModuleFileName(dll, (LPTSTR)buffer, maxlength);
+#elif defined __linux__
+	Dl_info info;
+	if (!dladdr(pAddr, &info))
+		return false;
+	if (!info.dli_fbase || !info.dli_fname)
+		return false;
+	const char *dllpath = info.dli_fname;
+	snprintf(buffer, maxlength, "%s", dllpath);
+#endif
+	return true;
+}
+
+void InstallCallback(FnChangeCallback_t callback)
+{
+	char path[MAX_PATH];
+	GetFileOfAddress((void *)callback, path, sizeof(path));
+	printf("Yo: %s\n", path);
+}
+
 void ConVarManager::OnSourceModAllInitialized()
 {
 	/**
 	 * Episode 2 has this function by default, but the older versions do not.
 	 */
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	if (g_SMAPI->GetGameDLLVersion() >= 6)
 	{
 		SH_ADD_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
@@ -93,6 +124,7 @@ void ConVarManager::OnSourceModAllInitialized()
 #endif
 
 	SH_ADD_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
+	SH_ADD_HOOK_STATICFUNC(ICvar, InstallGlobalChangeCallback, icvar, InstallCallback, false);
 
 	/* Add the 'convars' option to the 'sm' console command */
 	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
@@ -359,17 +391,10 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 		}
 	}
 
-	/* To prevent creating a convar that has the same name as a console command... ugh */
-	ConCommandBase *pBase = icvar->GetCommands();
-
-	while (pBase)
+	/* Prevent creating a convar that has the same name as a console command */
+	if (FindCommand(name))
 	{
-		if (pBase->IsCommand() && strcmp(pBase->GetName(), name) == 0)
-		{
-			return BAD_HANDLE;
-		}
-
-		pBase = const_cast<ConCommandBase *>(pBase->GetNext());
+		return BAD_HANDLE;
 	}
 
 	/* Create and initialize ConVarInfo structure */
@@ -595,7 +620,7 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	}
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
 #else
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
@@ -623,7 +648,7 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 			 i != pInfo->changeListeners.end();
 			 i++)
 		{
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 			(*i)->OnConVarChanged(pConVar, oldValue, flOldValue);
 #else
 			(*i)->OnConVarChanged(pConVar, oldValue, atof(oldValue));
@@ -668,7 +693,7 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		cell_t ret;
 
 		pCallback->PushCell(cookie);
-		pCallback->PushCell(engine->IndexOfEdict(pPlayer));
+		pCallback->PushCell(IndexOfEdict(pPlayer));
 		pCallback->PushCell(result);
 		pCallback->PushString(cvarName);
 

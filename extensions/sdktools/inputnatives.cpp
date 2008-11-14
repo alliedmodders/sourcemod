@@ -38,7 +38,7 @@ ICallWrapper *g_pAcceptInput = NULL;
 unsigned char g_Variant_t[SIZEOF_VARIANT_T] = {0};
 
 #define ENTINDEX_TO_CBASEENTITY(index, buffer) \
-	pEdict = engine->PEntityOfEntIndex(index); \
+	pEdict = PEntityOfEntIndex(index); \
 	if (!pEdict || pEdict->IsFree()) \
 	{ \
 		return pContext->ThrowNativeError("Entity %d is not valid or is freed", index); \

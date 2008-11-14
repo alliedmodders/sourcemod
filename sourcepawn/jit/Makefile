@@ -2,7 +2,7 @@
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..
-SOURCEHOOK = ../../../sourcemm-1.6/sourcehook
+SOURCEHOOK = ../../../mmsource/sourcehook
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###

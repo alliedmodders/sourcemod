@@ -50,7 +50,6 @@
 #include <convar.h>
 #include <iserver.h>
 #include <cdll_int.h>
-#include <compat_wrappers.h>
 
 /**
  * @brief Implementation of the SDK Tools extension.
@@ -106,6 +105,7 @@ extern IVoiceServer *voiceserver;
 extern IPlayerInfoManager *playerinfomngr;
 extern ICvar *icvar;
 extern IServer *iserver;
+extern CGlobalVars *gpGlobals;
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
@@ -118,6 +118,8 @@ extern ICallWrapper *g_pAcceptInput;
 /* Call classes */
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;
+
+#include <compat_wrappers.h>
 
 #define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 

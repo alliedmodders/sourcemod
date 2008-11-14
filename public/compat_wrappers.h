@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
 #define _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	#define CONVAR_REGISTER(object)				ConVar_Register(0, object)
 
 	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
@@ -42,6 +42,14 @@
 	inline void InsertServerCommand(const char *buf)
 	{
 		engine->InsertServerCommand(buf);
+	}
+	inline ConCommandBase *FindCommandBase(const char *name)
+	{
+		return icvar->FindCommandBase(name);
+	}
+	inline ConCommand *FindCommand(const char *name)
+	{
+		return icvar->FindCommand(name);
 	}
 #else
 	class CCommand
@@ -69,11 +77,71 @@
 	{
 		engine->InsertServerCommand(buf);
 	}
+	inline ConCommandBase *FindCommandBase(const char *name)
+	{
+		ConCommandBase *pBase = icvar->GetCommands();
+		while (pBase)
+		{
+			if (strcmp(pBase->GetName(), name) == 0)
+			{
+				if (pBase->IsCommand())
+				{
+					return NULL;
+				}
+
+				return pBase;
+			}
+			pBase = const_cast<ConCommandBase *>(pBase->GetNext());
+		}
+		return NULL;
+	}
+	inline ConCommand *FindCommand(const char *name)
+	{
+		ConCommandBase *pBase = icvar->GetCommands();
+		while (pBase)
+		{
+			if (strcmp(pBase->GetName(), name) == 0)
+			{
+				if (!pBase->IsCommand())
+				{
+					return NULL;
+				}
+
+				return static_cast<ConCommand *>(pBase);
+			}
+			pBase = const_cast<ConCommandBase *>(pBase->GetNext());
+		}
+		return NULL;
+	}
 
 	#define CVAR_INTERFACE_VERSION				VENGINE_CVAR_INTERFACE_VERSION
 
 	#define CONVAR_REGISTER(object)				ConCommandBaseMgr::OneTimeInit(object)
 	typedef FnChangeCallback					FnChangeCallback_t;
-#endif //ORANGEBOX_BUILD
+#endif //SOURCE_ENGINE >= SE_ORANGEBOX
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	inline int IndexOfEdict(const edict_t *pEdict)
+	{
+		return ((int)pEdict - (int)gpGlobals->baseEdict) >> 4;
+	}
+	inline edict_t *PEntityOfEntIndex(int iEntIndex)
+	{
+		if (iEntIndex >= 0 && iEntIndex < gpGlobals->maxEntities)
+		{
+			return (edict_t *)((int)gpGlobals->baseEdict + (iEntIndex << 4));
+		}
+		return NULL;
+	}
+#else
+	inline int IndexOfEdict(const edict_t *pEdict)
+	{
+		return engine->IndexOfEdict(pEdict);
+	}
+	inline edict_t *PEntityOfEntIndex(int iEntIndex)
+	{
+		return engine->PEntityOfEntIndex(iEntIndex);
+	}
+#endif //SOURCE_ENGINE >= SE_LEFT4DEAD
 
 #endif //_INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_

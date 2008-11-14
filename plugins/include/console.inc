@@ -473,8 +473,9 @@ native bool:GetConVarBool(Handle:convar);
 /**
  * Sets the boolean value of a console variable.
  *
- * Note: The replicate and notify params are ignored on the Episode 2/Orange Box engine.
- * This engine automatically replicates and notifies as soon as the convar is changed.
+ * Note: The replicate and notify params are ignored on the engines for Episode 2/Orange Box
+ * and Left 4 Dead. These engines automatically replicates and notifies as soon as the convar
+ * is changed.
  *
  * @param convar		Handle to the convar.
  * @param value			New boolean value.
@@ -500,8 +501,9 @@ native GetConVarInt(Handle:convar);
 /**
  * Sets the integer value of a console variable.
  *
- * Note: The replicate and notify params are ignored on the Episode 2/Orange Box engine.
- * This engine automatically replicates and notifies as soon as the convar is changed.
+ * Note: The replicate and notify params are ignored on the engines for Episode 2/Orange Box
+ * and Left 4 Dead. These engines automatically replicates and notifies as soon as the convar
+ * is changed.
  *
  * @param convar		Handle to the convar.
  * @param value			New integer value.
@@ -527,8 +529,9 @@ native Float:GetConVarFloat(Handle:convar);
 /**
  * Sets the floating point value of a console variable.
  *
- * Note: The replicate and notify params are ignored on the Episode 2/Orange Box engine.
- * This engine automatically replicates and notifies as soon as the convar is changed.
+ * Note: The replicate and notify params are ignored on the engines for Episode 2/Orange Box
+ * and Left 4 Dead. These engines automatically replicates and notifies as soon as the convar
+ * is changed.
  *
  * @param convar		Handle to the convar.
  * @param value			New floating point value.
@@ -556,8 +559,9 @@ native GetConVarString(Handle:convar, String:value[], maxlength);
 /**
  * Sets the string value of a console variable.
  *
- * Note: The replicate and notify params are ignored on the Episode 2/Orange Box engine.
- * This engine automatically replicates and notifies as soon as the convar is changed.
+ * Note: The replicate and notify params are ignored on the engines for Episode 2/Orange Box
+ * and Left 4 Dead. These engines automatically replicates and notifies as soon as the convar
+ * is changed.
  *
  * @param convar		Handle to the convar.
  * @param value			New string value.
@@ -574,8 +578,9 @@ native SetConVarString(Handle:convar, const String:value[], bool:replicate=false
 /**
  * Resets the console variable to its default value.
  *
- * Note: The replicate and notify params are ignored on the Episode 2/Orange Box engine.
- * This engine automatically replicates and notifies as soon as the convar is changed.
+ * Note: The replicate and notify params are ignored on the engines for Episode 2/Orange Box
+ * and Left 4 Dead. These engines automatically replicates and notifies as soon as the convar
+ * is changed.
  *
  * @param convar		Handle to the convar.
  * @param replicate		If set to true, the new convar value will be set on all clients.

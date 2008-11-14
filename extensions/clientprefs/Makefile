@@ -5,8 +5,9 @@ SMSDK = ../..
 SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
-SOURCEMM14 = ../../../sourcemm-1.4
-SOURCEMM16 = ../../../sourcemm-1.6
+HL2SDK_L4D = ../../../hl2sdk-l4d
+SOURCEMM14 = ../../../mmsource-legacy
+SOURCEMM16 = ../../../mmsource
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -32,8 +33,9 @@ CPP = gcc-4.1
 override ENGSET = false
 ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
-	HL2PUB = $(HL2SDK_ORIG)/public
-	HL2LIB = $(HL2SDK_ORIG)/linux_sdk
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/linux_sdk
+	CFLAGS += -DSOURCE_ENGINE=2
 	METAMOD = $(SOURCEMM14)
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
@@ -41,12 +43,22 @@ ifeq "$(ENGINE)" "original"
 endif
 ifeq "$(ENGINE)" "orangebox"
 	HL2SDK = $(HL2SDK_OB)
-	HL2PUB = $(HL2SDK_OB)/public
-	HL2LIB = $(HL2SDK_OB)/lib/linux
-	CFLAGS += -DORANGEBOX_BUILD
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=3
 	METAMOD = $(SOURCEMM16)
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
+	override ENGSET = true
+endif
+ifeq "$(ENGINE)" "left4dead"
+	HL2SDK = $(HL2SDK_L4D)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=4
+	METAMOD = $(SOURCEMM16)
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	SRCDS = $(SRCDS_BASE)/l4d_demo
 	override ENGSET = true
 endif
 
@@ -56,8 +68,9 @@ ifeq "$(USEMETA)" "true"
 	LINK += $(LINK_HL2)
 
 	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK)/public \
-		-I$(SMSDK)/public/sourcepawn 
+		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
+
+	CFLAGS += -DSE_EPISODEONE=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(SMSDK)/public/extensions \
 		-I$(SOURCEMM16)/sourcehook
@@ -109,7 +122,7 @@ all: check
 
 check:
 	if [ "$(USEMETA)" == "true" ] && [ "$(ENGSET)" == "false" ]; then \
-		echo "You must supply ENGINE=orangebox or ENGINE=original"; \
+		echo "You must supply ENGINE=left4dead or ENGINE=orangebox or ENGINE=original"; \
 		exit 1; \
 	fi
 

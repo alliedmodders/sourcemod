@@ -251,7 +251,7 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 			int serial = pEdict->m_NetworkSerialNumber;
 			
-			if (serial != hook->entity_filter && hook->entity_index == engine->IndexOfEdict(pEdict))
+			if (serial != hook->entity_filter && hook->entity_index == IndexOfEdict(pEdict))
 			{
 				// same entity index but different serial number. Entity has changed, kill the hook.
 				_iter = pOutputName->hooks.erase(_iter);
@@ -264,7 +264,7 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 			{
 				//fire the forward to hook->pf
 				hook->pf->PushString(pOutputName->Name);
-				hook->pf->PushCell(engine->IndexOfEdict(pEdict));
+				hook->pf->PushCell(IndexOfEdict(pEdict));
 				
 				edict_t *pEdictActivator = gameents->BaseEntityToEdict(pActivator);
 				if (!pEdictActivator)
@@ -273,7 +273,7 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 				}
 				else
 				{
-					hook->pf->PushCell(engine->IndexOfEdict(pEdictActivator));
+					hook->pf->PushCell(IndexOfEdict(pEdictActivator));
 				}
 				//hook->pf->PushCell(handle);
 				hook->pf->PushFloat(fDelay);
@@ -466,7 +466,7 @@ edict_t *EntityOutputManager::BaseHandleToEdict(CBaseHandle &hndl)
 
 	edict_t *pStoredEdict;
 
-	pStoredEdict = engine->PEntityOfEntIndex(index);
+	pStoredEdict = PEntityOfEntIndex(index);
 
 	if (pStoredEdict == NULL)
 	{

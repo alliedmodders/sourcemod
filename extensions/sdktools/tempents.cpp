@@ -47,7 +47,7 @@ CON_COMMAND(sm_print_telist, "Prints the temp entity list")
 
 CON_COMMAND(sm_dump_teprops, "Dumps tempentity props to a file")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 	if (!g_TEManager.IsAvailable())

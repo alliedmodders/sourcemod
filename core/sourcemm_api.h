@@ -32,10 +32,12 @@
 #ifndef _INCLUDE_SOURCEMOD_MM_API_H_
 #define _INCLUDE_SOURCEMOD_MM_API_H_
 
-#if defined ORANGEBOX_BUILD
-	#include "convar_sm_ob.h"
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+#include "convar_sm_l4d.h"
+#elif SOURCE_ENGINE == SE_ORANGEBOX
+#include "convar_sm_ob.h"
 #else
-	#include "convar_sm.h"
+#include "convar_sm.h"
 #endif
 #include <ISmmPlugin.h>
 #include <eiface.h>

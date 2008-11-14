@@ -98,7 +98,7 @@ class ConCmdManager :
 	public IPluginsListener,
 	public IConCommandTracker
 {
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	friend void CommandCallback(const CCommand &command);
 #else
 	friend void CommandCallback();
