@@ -123,13 +123,13 @@
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	inline int IndexOfEdict(const edict_t *pEdict)
 	{
-		return ((int)pEdict - (int)gpGlobals->baseEdict) >> 4;
+		return (int)(pEdict - gpGlobals->baseEdict);
 	}
 	inline edict_t *PEntityOfEntIndex(int iEntIndex)
 	{
 		if (iEntIndex >= 0 && iEntIndex < gpGlobals->maxEntities)
 		{
-			return (edict_t *)((int)gpGlobals->baseEdict + (iEntIndex << 4));
+			return (edict_t *)(gpGlobals->baseEdict + iEntIndex);
 		}
 		return NULL;
 	}
