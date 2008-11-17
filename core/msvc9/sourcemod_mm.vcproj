@@ -845,6 +845,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ExtensionSys.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ForwardSys.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\frame_hooks.cpp"
 				>
 			</File>
@@ -858,6 +866,14 @@
 			</File>
 			<File
 				RelativePath="..\HalfLife2.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\HandleSys.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LibrarySys.cpp"
 				>
 			</File>
 			<File
@@ -909,7 +925,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PluginInfoDatabase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PluginSys.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Profiler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ShareSys.cpp"
 				>
 			</File>
 			<File
@@ -1027,6 +1055,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ExtensionSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ForwardSys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\frame_hooks.h"
 				>
 			</File>
@@ -1040,6 +1076,14 @@
 			</File>
 			<File
 				RelativePath="..\HalfLife2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\HandleSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\LibrarySys.h"
 				>
 			</File>
 			<File
@@ -1091,7 +1135,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PluginInfoDatabase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PluginSys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Profiler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ShareSys.h"
 				>
 			</File>
 			<File
@@ -1263,79 +1319,6 @@
 				RelativePath="..\..\public\IUserMessages.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Systems"
-			UniqueIdentifier="{63775418-DF3F-4198-BFB1-738B19EE3EE0}"
-			>
-			<Filter
-				Name="Header Files"
-				Filter="h;hpp;hxx;hm;inl;inc;xsd"
-				UniqueIdentifier="{7D3AB33D-C1AD-46ee-B505-FEA8B6EF18E4}"
-				>
-				<File
-					RelativePath="..\systems\ExtensionSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\ForwardSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\HandleSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\LibrarySys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\PluginInfoDatabase.h"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\PluginSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\ShareSys.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-				UniqueIdentifier="{D1864A10-FF5F-4672-A70E-57C9F7486F92}"
-				>
-				<File
-					RelativePath="..\systems\ExtensionSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\ForwardSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\HandleSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\LibrarySys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\PluginInfoDatabase.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\PluginSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\systems\ShareSys.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="SourcePawn"

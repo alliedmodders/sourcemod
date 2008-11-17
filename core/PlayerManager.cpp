@@ -46,7 +46,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "GameConfigs.h"
-#include "systems/ExtensionSys.h"
+#include "ExtensionSys.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
