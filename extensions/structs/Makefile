@@ -58,7 +58,7 @@ ifeq "$(ENGINE)" "left4dead"
 	CFLAGS += -DSOURCE_ENGINE=4
 	METAMOD = $(SOURCEMM16)
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/game/shared
-	SRCDS = $(SRCDS_BASE)/l4d_demo
+	SRCDS = $(SRCDS_BASE)/l4d
 	override ENGSET = true
 endif
 
