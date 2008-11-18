@@ -92,7 +92,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	}
 #endif
 
-	SH_ADD_HOOK_STATICFUNC(ICvar, InstallGlobalChangeCallback, icvar, InstallCallback, false);
+	SH_ADD_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
 	/* Add the 'convars' option to the 'sm' console command */
 	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
