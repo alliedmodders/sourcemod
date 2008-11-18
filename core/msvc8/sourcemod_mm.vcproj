@@ -1291,31 +1291,31 @@
 				UniqueIdentifier="{7D3AB33D-C1AD-46ee-B505-FEA8B6EF18E4}"
 				>
 				<File
-					RelativePath="..\systems\ExtensionSys.h"
+					RelativePath="..\ExtensionSys.h"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\ForwardSys.h"
+					RelativePath="..\ForwardSys.h"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\HandleSys.h"
+					RelativePath="..\HandleSys.h"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\LibrarySys.h"
+					RelativePath="..\LibrarySys.h"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\PluginInfoDatabase.h"
+					RelativePath="..\PluginInfoDatabase.h"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\PluginSys.h"
+					RelativePath="..\PluginSys.h"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\ShareSys.h"
+					RelativePath="..\ShareSys.h"
 					>
 				</File>
 			</Filter>
@@ -1325,31 +1325,31 @@
 				UniqueIdentifier="{D1864A10-FF5F-4672-A70E-57C9F7486F92}"
 				>
 				<File
-					RelativePath="..\systems\ExtensionSys.cpp"
+					RelativePath="..\ExtensionSys.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\ForwardSys.cpp"
+					RelativePath="..\ForwardSys.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\HandleSys.cpp"
+					RelativePath="..\HandleSys.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\LibrarySys.cpp"
+					RelativePath="..\LibrarySys.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\PluginInfoDatabase.cpp"
+					RelativePath="..\PluginInfoDatabase.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\PluginSys.cpp"
+					RelativePath="..\PluginSys.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\systems\ShareSys.cpp"
+					RelativePath="..\ShareSys.cpp"
 					>
 				</File>
 			</Filter>

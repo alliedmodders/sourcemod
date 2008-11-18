@@ -28,9 +28,13 @@ OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_lang.cpp smn_player.cpp smn_string.cpp smn_sorting.cpp smn_textparse.cpp smn_timers.cpp \
 	smn_usermsgs.cpp smn_menus.cpp smn_database.cpp smn_vector.cpp smn_adt_array.cpp \
 	smn_adt_trie.cpp smn_hudtext.cpp smn_adt_stack.cpp smn_nextmap.cpp
-OBJECTS += systems/ExtensionSys.cpp systems/ForwardSys.cpp systems/HandleSys.cpp \
-	systems/LibrarySys.cpp systems/PluginInfoDatabase.cpp systems/PluginSys.cpp \
-	systems/ShareSys.cpp 
+OBJECTS += ExtensionSys.cpp 		\
+		   ForwardSys.cpp 			\
+		   HandleSys.cpp 			\
+		   LibrarySys.cpp 			\
+		   PluginInfoDatabase.cpp 	\
+		   PluginSys.cpp 			\
+		   ShareSys.cpp 
 OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
 
 ##############################################
