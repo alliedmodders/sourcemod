@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "systems/LibrarySys.h"
+#include "LibrarySys.h"
 #include <sh_string.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
