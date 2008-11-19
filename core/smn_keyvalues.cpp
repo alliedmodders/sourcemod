@@ -91,6 +91,151 @@ public:
 	}
 };
 
+/* From MM:S - metamod_util.cpp */
+inline bool pathchar_isalpha(char a)
+{
+	return (((a & 1<<7) == 0) && isalpha(a));
+}
+
+inline bool pathchar_sep(char a)
+{
+#if defined WIN32
+	return (a == '/' || a == '\\');
+#elif defined __linux__
+	return (a == '/');
+#endif
+}
+
+inline bool pathstr_isabsolute(const char *str)
+{
+#if defined WIN32
+	return (pathchar_isalpha(str[0]) 
+		&& str[1] == ':' 
+		&& pathchar_sep(str[2]));
+#elif defined __linux__
+	return (str[0] == '/');
+#endif
+}
+
+inline bool pathchar_cmp(char a, char b)
+{
+#if defined PLATFORM_WINDOWS
+	if (pathchar_isalpha(a) && pathchar_isalpha(b))
+	{
+		return (tolower(a) == tolower(b));
+	}
+	/* Either path separator is acceptable */
+	if (pathchar_sep(a))
+	{
+		return pathchar_sep(b);
+	}
+#endif
+	return (a == b);
+}
+
+bool UTIL_Relatize(char buffer[],
+				   size_t maxlength,
+				   const char *relTo,
+				   const char *relFrom)
+{
+	/* We don't allow relative paths in here, force
+	* the user to resolve these himself!
+	*/
+	if (!pathstr_isabsolute(relTo)
+		|| !pathstr_isabsolute(relFrom))
+	{
+		return false;
+	}
+
+#if defined PLATFORM_WINDOWS
+	/* Relative paths across drives are not possible */
+	if (!pathchar_cmp(relTo[0], relFrom[0]))
+	{
+		return false;
+	}
+	/* Get rid of the drive and semicolon part */
+	relTo = &relTo[2];
+	relFrom = &relFrom[2];
+#endif
+
+	/* Eliminate the common root between the paths */
+	const char *rootTo = NULL;
+	const char *rootFrom = NULL;
+	while (*relTo != '\0' && *relFrom != '\0')
+	{
+		/* If we get to a new path sequence, start over */
+		if (pathchar_sep(*relTo)
+			&& pathchar_sep(*relFrom))
+		{
+			rootTo = relTo;
+			rootFrom = relFrom;
+			/* If the paths don't compare, stop looking for a common root */
+		} else if (!pathchar_cmp(*relTo, *relFrom)) {
+			break;
+		}
+		relTo++;
+		relFrom++;
+	}
+
+	/* NULLs shouldn't happen! */
+	if (rootTo == NULL
+		|| rootFrom == NULL)
+	{
+		return false;
+	}
+
+	size_t numLevels = 0;
+
+	/* The root case is special! 
+	* Don't count anything from it.
+	*/
+	if (*(rootTo + 1) != '\0')
+	{
+		/* Search for how many levels we need to go up.
+		* Since the root pointer points to a '/', we increment
+		* the initial pointer by one.
+		*/
+		while (*rootTo != '\0')
+		{
+			if (pathchar_sep(*rootTo))
+			{
+				/* Check for an improper trailing slash,
+				* just to be nice even though the user 
+				* should NOT have done this!
+				*/
+				if (*(rootTo + 1) == '\0')
+				{
+					break;
+				}
+				numLevels++;
+			}
+			rootTo++;
+		}
+	}
+
+	/* Now build the new relative path. */
+	size_t len, total = 0;
+	while (numLevels--)
+	{
+		len = _snprintf(&buffer[total], maxlength - total, ".." PLATFORM_SEP_STR);
+		if (len >= maxlength - total)
+		{
+			/* Not enough space in the buffer */
+			return false;
+		}
+		total += len;
+	}
+
+	/* Add the absolute path. */
+	len = _snprintf(&buffer[total], maxlength - total, "%s", &rootFrom[1]);
+	if (len >= maxlength - total)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 KeyValues *SourceModBase::ReadKeyValuesHandle(Handle_t hndl, HandleError *err, bool root)
 {
 	HandleError herr;
@@ -771,9 +916,11 @@ static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[2], &path);
 
 	char realpath[PLATFORM_MAX_PATH];
+	char relpath[PLATFORM_MAX_PATH * 2];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	UTIL_Relatize(relpath, sizeof(relpath), g_SourceMod.GetGamePath(), realpath);
 
-	return pStk->pCurRoot.front()->SaveToFile(basefilesystem, realpath);
+	return pStk->pCurRoot.front()->SaveToFile(basefilesystem, relpath);
 }
 
 static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
@@ -797,10 +944,12 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[2], &path);
 
 	char realpath[PLATFORM_MAX_PATH];
+	char relpath[PLATFORM_MAX_PATH * 2];
 	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	UTIL_Relatize(relpath, sizeof(relpath), g_SourceMod.GetGamePath(), realpath);
 
 	kv = pStk->pCurRoot.front();
-	return g_HL2.KVLoadFromFile(kv, basefilesystem, realpath);
+	return g_HL2.KVLoadFromFile(kv, basefilesystem, relpath);
 }
 
 static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *params)

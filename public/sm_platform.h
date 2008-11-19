@@ -54,6 +54,7 @@
 #include <direct.h>
 #define PLATFORM_LIB_EXT		"dll"
 #define PLATFORM_MAX_PATH		MAX_PATH
+#define PLATFORM_SEP_STR		"\\"
 #define PLATFORM_SEP_CHAR		'\\'
 #define PLATFORM_SEP_ALTCHAR	'/'
 #define PLATFORM_EXTERN_C		extern "C" __declspec(dllexport)
@@ -68,8 +69,9 @@
 #include <dirent.h>
 #include <dlfcn.h>
 #include <sys/stat.h>
-#define PLATFORM_MAX_PATH		PATH_MAX
 #define PLATFORM_LIB_EXT		"so"
+#define PLATFORM_MAX_PATH		PATH_MAX
+#define PLATFORM_SEP_STR		"/"
 #define PLATFORM_SEP_CHAR		'/'
 #define PLATFORM_SEP_ALTCHAR	'\\'
 #define PLATFORM_EXTERN_C		extern "C" __attribute__((visibility("default")))
