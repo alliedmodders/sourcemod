@@ -1632,7 +1632,7 @@ void CPlayer::DoBasicAdminChecks()
 		}
 	}
 
-	/* Check IP address */
+	/* Check steam id */
 	if ((id = g_Admins.FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))

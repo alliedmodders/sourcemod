@@ -1182,6 +1182,12 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 		return false;
 	}
 
+	/* If the id was a steam id strip off the STEAM_*: part */
+	if (strcmp(auth, "steam") == 0 && strncmp(ident, "STEAM_", 6) == 0)
+	{
+		ident += 8;
+	}
+
 	if (sm_trie_retrieve(pTable, ident, NULL))
 	{
 		return false;
@@ -1202,6 +1208,12 @@ AdminId AdminCache::FindAdminByIdentity(const char *auth, const char *identity)
 	if (!sm_trie_retrieve(m_pAuthTables, auth, (void **)&pTable))
 	{
 		return INVALID_ADMIN_ID;
+	}
+
+	/* If the id was a steam id strip off the STEAM_*: part */
+	if (strcmp(auth, "steam") == 0 && strncmp(identity, "STEAM_", 6) == 0)
+	{
+		identity += 8;
 	}
 
 	void *object;
