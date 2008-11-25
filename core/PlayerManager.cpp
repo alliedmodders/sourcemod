@@ -699,6 +699,11 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	m_clinfochanged->PushCell(client);
 	m_clinfochanged->Execute(&res, NULL);
 
+	if (pPlayer->IsFakeClient())
+	{
+		return;
+	}
+
 	IPlayerInfo *info = pPlayer->GetPlayerInfo();
 	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
 	const char *old_name = pPlayer->m_Name.c_str();
