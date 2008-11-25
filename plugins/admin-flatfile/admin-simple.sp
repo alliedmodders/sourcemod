@@ -96,7 +96,7 @@ public ReadSimpleUsers()
 
 DecodeAuthMethod(const String:auth[], String:method[32], &offset)
 {
-	if (StrContains(auth, "STEAM_") == 0)
+	if ((StrContains(auth, "STEAM_") == 0) || (strncmp("0:", auth, 2) == 0) || (strncmp("1:", auth, 2) == 0))
 	{
 		strcopy(method, sizeof(method), AUTHMETHOD_STEAM);
 		offset = 0;
