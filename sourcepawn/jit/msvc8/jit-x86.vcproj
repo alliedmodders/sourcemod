@@ -220,14 +220,6 @@
 			<File
 				RelativePath="..\sp_vm_engine.cpp"
 				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories="&quot;$(SOURCEMM16)\sourcehook&quot;"
-					/>
-				</FileConfiguration>
 			</File>
 			<File
 				RelativePath="..\sp_vm_function.cpp"
