@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;..\..\..\knight\shared;..\x86;.."
+				AdditionalIncludeDirectories="..;..\x86;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;..\..\..\knight\shared;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;&quot;$(SOURCEMM16)\sourcehook&quot;;..\..\..\knight\shared;..\x86;.."
+				AdditionalIncludeDirectories="..;..\x86;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\sourcepawn;..\..\..\knight\shared;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"

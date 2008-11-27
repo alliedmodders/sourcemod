@@ -5,8 +5,7 @@ SMSDK = ../..
 SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
-SOURCEMM14 = ../../../sourcemm-1.4
-SOURCEMM16 = ../../../sourcemm-1.6
+MMSOURCE17 = ../../../mmsource-1.7
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -34,7 +33,7 @@ ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
 	HL2PUB = $(HL2SDK_ORIG)/public
 	HL2LIB = $(HL2SDK_ORIG)/linux_sdk
-	METAMOD = $(SOURCEMM14)
+	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
 	override ENGSET = true
@@ -44,7 +43,7 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2PUB = $(HL2SDK_OB)/public
 	HL2LIB = $(HL2SDK_OB)/lib/linux
 	CFLAGS += -DORANGEBOX_BUILD
-	METAMOD = $(SOURCEMM16)
+	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
@@ -56,8 +55,7 @@ ifeq "$(USEMETA)" "true"
 	LINK += $(LINK_HL2)
 
 	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK)/public \
-		-I$(SMSDK)/public/sourcepawn
+		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 endif

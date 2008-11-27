@@ -1,7 +1,7 @@
 # (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SOURCEMM16 = ../../sourcemm-1.6
+MMSOURCE17 = ../../mmsource-1.7
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -23,7 +23,7 @@ CPP = gcc-4.1
 
 LINK = -static-libgcc
 
-INCLUDE = -I$(SOURCEMM16) -I$(SOURCEMM16)/sourcehook -I$(SOURCEMM16)/sourcemm
+INCLUDE = -I$(MMSOURCE17)/core -I$(MMSOURCE17)/core/sourcehook
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Wno-uninitialized \

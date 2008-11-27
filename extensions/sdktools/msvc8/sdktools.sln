@@ -27,6 +27,6 @@ Global
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Orange Box|Win32.Build.0 = Release - Orange Box|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
+		HideSSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
