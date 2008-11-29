@@ -50,7 +50,9 @@
 #include "sh_string.h"
 #include "sm_version.h"
 
-#ifdef ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+#include "convar_sm_l4d.h"
+#elif SOURCE_ENGINE == SE_ORANGEBOX
 #include "convar_sm_ob.h"
 #else
 #include "convar_sm.h"
@@ -724,7 +726,7 @@ public:
 
 CON_COMMAND(sm_gamedata_md5, "Checks the MD5 sum for a given gamedata file")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 

@@ -237,4 +237,3 @@ void *SourceMod_Core::OnMetamodQuery(const char *iface, int *ret)
 
 	return ptr;
 }
-

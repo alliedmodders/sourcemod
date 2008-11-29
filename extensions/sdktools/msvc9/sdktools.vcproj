@@ -40,9 +40,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=2"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -121,10 +122,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
+				AdditionalOptions="/MP /D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=2"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
 				RuntimeTypeInfo="false"
@@ -202,9 +203,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKOB)\common&quot;;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;ORANGEBOX_BUILD"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=3"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -283,10 +285,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
+				AdditionalOptions="/MP /D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKOB)\common&quot;;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;ORANGEBOX_BUILD"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=3"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
 				RuntimeTypeInfo="false"
@@ -364,9 +366,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=2"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -445,10 +448,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
+				AdditionalOptions="/MP /D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=2"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
 				RuntimeTypeInfo="false"
@@ -469,6 +472,169 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot; &quot;$(HL2SDK)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDK)\lib\public\mathlib.lib&quot;"
+				OutputFile="$(OutDir)\sdktools.ext.dll"
+				LinkIncremental="1"
+				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug - Left 4 Dead|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
+				Optimization="0"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\common&quot;;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=4"
+				MinimalRebuild="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				EnableEnhancedInstructionSet="1"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="&quot;$(HL2SDKL4D)\lib\public\tier0.lib&quot; &quot;$(HL2SDKL4D)\lib\public\tier1.lib&quot; &quot;$(HL2SDKL4D)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKL4D)\lib\public\mathlib.lib&quot;"
+				OutputFile="$(OutDir)\sdktools.ext.dll"
+				LinkIncremental="2"
+				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
+				GenerateDebugInformation="true"
+				SubSystem="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release - Left 4 Dead|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP /D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
+				FavorSizeOrSpeed="1"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\common&quot;;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=4"
+				RuntimeLibrary="0"
+				EnableEnhancedInstructionSet="1"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="&quot;$(HL2SDKL4D)\lib\public\tier0.lib&quot; &quot;$(HL2SDKL4D)\lib\public\tier1.lib&quot; &quot;$(HL2SDKL4D)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKL4D)\lib\public\mathlib.lib&quot;"
 				OutputFile="$(OutDir)\sdktools.ext.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"

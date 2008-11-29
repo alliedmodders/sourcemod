@@ -34,7 +34,11 @@
 
 UserMessages g_UserMsgs;
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+SH_DECL_HOOK3(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int, const char *);
+#else
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
+#endif
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
 
 UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
@@ -164,9 +168,17 @@ bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigne
 
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
+#else
 		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
+#endif
 	} else {
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
+#else
 		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
+#endif
 	}
 
 	return buffer;
@@ -279,7 +291,11 @@ void UserMessages::_DecRefCounter()
 	}
 }
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
+#else
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type)
+#endif
 {
 	bool is_intercept_empty = m_msgIntercepts[msg_type].empty();
 	bool is_hook_empty = m_msgHooks[msg_type].empty();
@@ -305,7 +321,11 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
+#else
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type)
+#endif
 {
 	if (!m_InHook)
 	{
@@ -444,7 +464,11 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 		bf_write *engine_bfw;
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId, g_SMAPI->GetUserMessage(m_CurId));
+#else
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId);
+#endif
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();

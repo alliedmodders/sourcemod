@@ -56,7 +56,7 @@ enum PropFieldType
 
 inline edict_t *GetEdict(cell_t num)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(num);
+	edict_t *pEdict = PEntityOfEntIndex(num);
 	if (!pEdict || pEdict->IsFree())
 	{
 		return NULL;
@@ -74,7 +74,7 @@ inline edict_t *GetEdict(cell_t num)
 
 inline edict_t *GetEntity(cell_t num, CBaseEntity **pData)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(num);
+	edict_t *pEdict = PEntityOfEntIndex(num);
 	if (!pEdict || pEdict->IsFree())
 	{
 		return NULL;
@@ -156,12 +156,12 @@ static cell_t CreateEdict(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
 
 static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = PEntityOfEntIndex(params[1]);
 
 	if (!pEdict)
 	{

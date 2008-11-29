@@ -481,7 +481,7 @@ void CHalfLife2::PushCommandStack(const CCommand *cmd)
 	CachedCommandInfo info;
 
 	info.args = cmd;
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	strncopy(info.cmd, cmd->Arg(0), sizeof(info.cmd));
 #endif
 
@@ -505,7 +505,7 @@ void CHalfLife2::PopCommandStack()
 
 const char *CHalfLife2::CurrentCommandName()
 {
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	return m_CommandStack.front().args->Arg(0);
 #else
 	return m_CommandStack.front().cmd;

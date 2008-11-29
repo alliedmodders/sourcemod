@@ -67,6 +67,7 @@ namespace builder
 			folders.Add("addons/sourcemod/extensions/auto.1.ep1");
 			//folders.Add("addons/sourcemod/extensions/auto.2.ep1");
 			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
+			folders.Add("addons/sourcemod/extensions/auto.2.l4d");
 			folders.Add("addons/sourcemod/scripting/playercommands");
 			folders.Add("addons/metamod");
 			
@@ -173,6 +174,14 @@ namespace builder
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "core";
+			lib.binary_name = "sourcemod.2.l4d";
+			lib.vcproj_name = "sourcemod_mm";
+			lib.build_mode = BuildMode.BuildMode_Left4Dead;
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "sourcepawn/jit";
 			lib.binary_name = "sourcepawn.jit.x86";
 			lib.vcproj_name = "jit-x86";
@@ -228,6 +237,14 @@ namespace builder
 			lib.binary_name = "sdktools.ext";
 			lib.vcproj_name = "sdktools";
 			lib.build_mode = BuildMode.BuildMode_Episode2;
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.l4d";
+			lib.source_path = "extensions/sdktools";
+			lib.binary_name = "sdktools.ext";
+			lib.vcproj_name = "sdktools";
+			lib.build_mode = BuildMode.BuildMode_Left4Dead;
 			libraries.Add(lib);
 
 			lib = new Library();

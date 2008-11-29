@@ -35,8 +35,9 @@
 #include "concmd_cleaner.h"
 #include "sm_stringutil.h"
 #include "sourcemm_api.h"
+#include "compat_wrappers.h"
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
 #endif
 
@@ -56,7 +57,7 @@ ConCommandBase *FindConCommandBase(const char *name);
 class ConCommandCleaner : public SMGlobalClass
 {
 public:
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnSourceModAllInitialized()
 	{
 		SH_ADD_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
@@ -95,7 +96,7 @@ public:
 			while (iter != tracked_bases.end())
 			{
 				/* This is just god-awful! */
-				if (FindConCommandBase((*iter)->name) != (*iter)->pBase)
+				if (FindCommandBase((*iter)->name) != (*iter)->pBase)
 				{
 					pInfo = (*iter);
 					iter = tracked_bases.erase(iter);
@@ -142,22 +143,6 @@ public:
 		}
 	}
 } s_ConCmdTracker;
-
-ConCommandBase *FindConCommandBase(const char *name)
-{
-	const ConCommandBase *pBase = icvar->GetCommands();
-
-	while (pBase != NULL)
-	{
-		if (strcmp(pBase->GetName(), name) == 0)
-		{
-			return const_cast<ConCommandBase *>(pBase);
-		}
-		pBase = pBase->GetNext();
-	}
-
-	return NULL;
-}
 
 void TrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me)
 {

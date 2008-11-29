@@ -223,7 +223,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			if (pEntity)
 			{
 				edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-				*addr = engine->IndexOfEdict(pEdict);
+				*addr = IndexOfEdict(pEdict);
 			} else {
 				*addr = -1;
 			}
@@ -238,7 +238,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			edict_t *pEdict = *(edict_t **)buffer;
 			if (pEdict)
 			{
-				*addr = engine->IndexOfEdict(pEdict);
+				*addr = IndexOfEdict(pEdict);
 			} else {
 				*addr = -1;
 			}
@@ -415,7 +415,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			} else if (param == 0) {
 				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
-					pEdict = engine->PEntityOfEntIndex(0);
+					pEdict = PEntityOfEntIndex(0);
 				} else {
 					pContext->ThrowNativeError("World not allowed");
 					return Data_Fail;
@@ -479,13 +479,13 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			} else if (param == 0) {
 				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
-					pEdict = engine->PEntityOfEntIndex(0);
+					pEdict = PEntityOfEntIndex(0);
 				} else {
 					pContext->ThrowNativeError("World not allowed");
 					return Data_Fail;
 				}
 			} else {
-				pEdict = engine->PEntityOfEntIndex(param);
+				pEdict = PEntityOfEntIndex(param);
 				if (!pEdict || pEdict->IsFree())
 				{
 					pContext->ThrowNativeError("Entity %d is not valid or is freed", param);
@@ -547,13 +547,13 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			} else if (param == 0) {
 				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
-					pEdict = engine->PEntityOfEntIndex(0);
+					pEdict = PEntityOfEntIndex(0);
 				} else {
 					pContext->ThrowNativeError("World not allowed");
 					return Data_Fail;
 				}
 			} else {
-				pEdict = engine->PEntityOfEntIndex(param);
+				pEdict = PEntityOfEntIndex(param);
 				if (!pEdict || pEdict->IsFree())
 				{
 					pContext->ThrowNativeError("Entity %d is not valid or is freed", param);

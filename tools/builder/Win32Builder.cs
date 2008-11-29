@@ -50,6 +50,10 @@ namespace builder
 			{
 				config_name = config_name + " - Old Metamod";
 			}
+			else if (lib.build_mode == BuildMode.BuildMode_Left4Dead)
+			{
+			config_name = config_name + " - Left 4 Dead";
+			}
 
 			string binpath = Config.PathFormat("{0}/{1}/{2}",
 				path,

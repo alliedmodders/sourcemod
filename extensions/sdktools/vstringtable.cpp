@@ -239,7 +239,7 @@ static cell_t AddToStringTable(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &str);
 	pContext->LocalToString(params[3], &userdata);
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	pTable->AddString(true, str, params[4], userdata);
 #else
 	pTable->AddString(str, params[4], userdata);

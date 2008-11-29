@@ -5,6 +5,7 @@ SMSDK = ..
 SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../hl2sdk
 HL2SDK_OB = ../../hl2sdk-ob
+HL2SDK_L4D = ../../hl2sdk-l4d
 MMSOURCE17 = ../../mmsource-1.7
 
 #####################################
@@ -48,8 +49,9 @@ CPP = gcc-4.1
 override ENGSET = false
 ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
-	HL2PUB = $(HL2SDK_ORIG)/public
-	HL2LIB = $(HL2SDK_ORIG)/linux_sdk
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/linux_sdk
+	CFLAGS += -DSOURCE_ENGINE=2
 	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
@@ -58,15 +60,28 @@ ifeq "$(ENGINE)" "original"
 endif
 ifeq "$(ENGINE)" "orangebox"
 	HL2SDK = $(HL2SDK_OB)
-	HL2PUB = $(HL2SDK_OB)/public
-	HL2LIB = $(HL2SDK_OB)/lib/linux
-	CFLAGS += -DORANGEBOX_BUILD
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=3
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
 	BINARY = sourcemod.2.ep2.so
 	override ENGSET = true
 endif
+ifeq "$(ENGINE)" "left4dead"
+	HL2SDK = $(HL2SDK_L4D)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=4
+	METAMOD = $(MMSOURCE17)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	SRCDS = $(SRCDS_BASE)/l4d
+	BINARY = sourcemod.2.l4d.so
+	override ENGSET = true
+endif
+
+CFLAGS += -DSE_EPISODEONE=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so \
 	tier0_i486.so -lpthread -static-libgcc
@@ -116,7 +131,7 @@ all: check
 
 check:
 	if [ "$(ENGSET)" == "false" ]; then \
-		echo "You must supply ENGINE=orangebox or ENGINE=original"; \
+		echo "You must supply ENGINE=left4dead or ENGINE=orangebox or ENGINE=original"; \
 		exit 1; \
 	fi
 

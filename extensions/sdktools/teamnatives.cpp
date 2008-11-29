@@ -72,7 +72,7 @@ void SDKTools::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax
 
 	for (int i=0; i<edictCount; i++)
 	{
-		edict_t *pEdict = engine->PEntityOfEntIndex(i);
+		edict_t *pEdict = PEntityOfEntIndex(i);
 		if (!pEdict || pEdict->IsFree())
 		{
 			continue;

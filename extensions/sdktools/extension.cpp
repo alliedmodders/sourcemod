@@ -30,6 +30,7 @@
  */
 
 #include "extension.h"
+#include <compat_wrappers.h>
 #include "vcallbuilder.h"
 #include "vnatives.h"
 #include "vhelpers.h"
@@ -38,7 +39,9 @@
 #include "vsound.h"
 #include "output.h"
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+	#define SDKTOOLS_GAME_FILE		"sdktools.games.l4d"
+#elif SOURCE_ENGINE == SE_ORANGEBOX
 	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2"
 #else
 	#define SDKTOOLS_GAME_FILE		"sdktools.games"
@@ -65,6 +68,7 @@ IVoiceServer *voiceserver = NULL;
 IPlayerInfoManager *playerinfomngr = NULL;
 ICvar *icvar = NULL;
 IServer *iserver = NULL;
+CGlobalVars *gpGlobals;
 SourceHook::CallClass<IVEngineServer> *enginePatch = NULL;
 SourceHook::CallClass<IEngineSound> *enginesoundPatch = NULL;
 HandleType_t g_CallHandle = 0;
@@ -125,7 +129,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	g_pCVar = icvar;
 #endif
 	CONVAR_REGISTER(this);
@@ -231,6 +235,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetServerFactory, playerinfomngr, IPlayerInfoManager, INTERFACEVERSION_PLAYERINFOMANAGER);
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
+	gpGlobals = ismm->GetCGlobals();
 	enginePatch = SH_GET_CALLCLASS(engine);
 	enginesoundPatch = SH_GET_CALLCLASS(engsound);
 

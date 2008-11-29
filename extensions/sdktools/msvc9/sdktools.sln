@@ -6,21 +6,27 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug - Episode 1|Win32 = Debug - Episode 1|Win32
+		Debug - Left 4 Dead|Win32 = Debug - Left 4 Dead|Win32
 		Debug - Old Metamod|Win32 = Debug - Old Metamod|Win32
 		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
 		Release - Episode 1|Win32 = Release - Episode 1|Win32
+		Release - Left 4 Dead|Win32 = Release - Left 4 Dead|Win32
 		Release - Old Metamod|Win32 = Release - Old Metamod|Win32
 		Release - Orange Box|Win32 = Release - Orange Box|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Episode 1|Win32.ActiveCfg = Debug - Episode 1|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Episode 1|Win32.Build.0 = Debug - Episode 1|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Left 4 Dead|Win32.ActiveCfg = Debug - Left 4 Dead|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Left 4 Dead|Win32.Build.0 = Debug - Left 4 Dead|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Old Metamod|Win32.ActiveCfg = Debug - Old Metamod|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Old Metamod|Win32.Build.0 = Debug - Old Metamod|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Orange Box|Win32.ActiveCfg = Debug - Orange Box|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Episode 1|Win32.ActiveCfg = Release - Episode 1|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Episode 1|Win32.Build.0 = Release - Episode 1|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Left 4 Dead|Win32.ActiveCfg = Release - Left 4 Dead|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Left 4 Dead|Win32.Build.0 = Release - Left 4 Dead|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Old Metamod|Win32.ActiveCfg = Release - Old Metamod|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Old Metamod|Win32.Build.0 = Release - Old Metamod|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Orange Box|Win32.ActiveCfg = Release - Orange Box|Win32

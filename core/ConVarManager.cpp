@@ -41,11 +41,11 @@
 
 ConVarManager g_ConVarManager;
 
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 #define CallGlobalChangeCallbacks	CallGlobalChangeCallback
 #endif
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
 #else
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
@@ -84,7 +84,7 @@ void ConVarManager::OnSourceModAllInitialized()
 	/**
 	 * Episode 2 has this function by default, but the older versions do not.
 	 */
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	if (g_SMAPI->GetGameDLLVersion() >= 6)
 	{
 		SH_ADD_HOOK_MEMFUNC(IServerGameDLL, OnQueryCvarValueFinished, gamedll, this, &ConVarManager::OnQueryCvarValueFinished, false);
@@ -359,17 +359,10 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 		}
 	}
 
-	/* To prevent creating a convar that has the same name as a console command... ugh */
-	ConCommandBase *pBase = icvar->GetCommands();
-
-	while (pBase)
+	/* Prevent creating a convar that has the same name as a console command */
+	if (FindCommand(name))
 	{
-		if (pBase->IsCommand() && strcmp(pBase->GetName(), name) == 0)
-		{
-			return BAD_HANDLE;
-		}
-
-		pBase = const_cast<ConCommandBase *>(pBase->GetNext());
+		return BAD_HANDLE;
 	}
 
 	/* Create and initialize ConVarInfo structure */
@@ -595,7 +588,7 @@ void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar
 	}
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
 #else
 void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
@@ -623,7 +616,7 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 			 i != pInfo->changeListeners.end();
 			 i++)
 		{
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 			(*i)->OnConVarChanged(pConVar, oldValue, flOldValue);
 #else
 			(*i)->OnConVarChanged(pConVar, oldValue, atof(oldValue));
@@ -668,7 +661,7 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		cell_t ret;
 
 		pCallback->PushCell(cookie);
-		pCallback->PushCell(engine->IndexOfEdict(pPlayer));
+		pCallback->PushCell(IndexOfEdict(pPlayer));
 		pCallback->PushCell(result);
 		pCallback->PushString(cvarName);
 

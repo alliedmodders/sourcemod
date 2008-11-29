@@ -770,10 +770,7 @@ static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &path);
 
-	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
-
-	return pStk->pCurRoot.front()->SaveToFile(basefilesystem, realpath);
+	return pStk->pCurRoot.front()->SaveToFile(basefilesystem, path);
 }
 
 static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
@@ -796,11 +793,8 @@ static cell_t smn_FileToKeyValues(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[2], &path);
 
-	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
-
 	kv = pStk->pCurRoot.front();
-	return g_HL2.KVLoadFromFile(kv, basefilesystem, realpath);
+	return g_HL2.KVLoadFromFile(kv, basefilesystem, path);
 }
 
 static cell_t smn_KvSetEscapeSequences(IPluginContext *pCtx, const cell_t *params)

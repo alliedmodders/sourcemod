@@ -69,11 +69,13 @@ CLocalExtension::CLocalExtension(const char *filename)
 		path, 
 		PLATFORM_MAX_PATH, 
 #if defined METAMOD_PLAPI_VERSION
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+		"extensions/auto.2.l4d/%s",
+#elif SOURCE_ENGINE == SE_ORANGEBOX
 		"extensions/auto.2.ep2/%s",
 #else
 		"extensions/auto.2.ep1/%s",
-#endif //ORANGEBOX_BUILD
+#endif //SOURCE_ENGINE == SE_LEFT4DEAD
 #else  //METAMOD_PLAPI_VERSION
 		"extensions/auto.1.ep1/%s",
 #endif //METAMOD_PLAPI_VERSION

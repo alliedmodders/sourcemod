@@ -58,6 +58,18 @@
 		}
 	}
 
+	"left4dead"
+	{
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+
 	/**
 	 * Which games support ShowMenu?
 	 */
@@ -75,6 +87,7 @@
 			"game"		"diprip"
 			"game"		"synergy"
 			"game"		"FortressForever"
+			"game"		"left4dead"
 		}
 
 		"Keys"

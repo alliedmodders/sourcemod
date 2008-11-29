@@ -40,7 +40,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Entity Outputs are disabled - See error logs for details");
 	}
 
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = PEntityOfEntIndex(params[1]);
 	if (!pEdict)
 	{
 		return pContext->ThrowNativeError("Invalid Entity index %i", params[1]);
@@ -72,7 +72,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	hook = g_OutputManager.NewHook();
 
 	hook->entity_filter = pEdict->m_NetworkSerialNumber;
-	hook->entity_index = engine->IndexOfEdict(pEdict);
+	hook->entity_index = IndexOfEdict(pEdict);
 	hook->only_once= !!params[4];
 	hook->pf = pFunction;
 	hook->m_parent = pOutputName;
@@ -220,7 +220,7 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	}
 
 	// Find the classname of the entity and lookup the classname and output structures
-	edict_t *pEdict = engine->PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = PEntityOfEntIndex(params[1]);
 	if (!pEdict)
 	{
 		return pContext->ThrowNativeError("Invalid Entity index %i", params[1]);
@@ -249,7 +249,7 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
-		if (hook->pf == pFunction && hook->entity_index == engine->IndexOfEdict(pEdict))
+		if (hook->pf == pFunction && hook->entity_index == IndexOfEdict(pEdict))
 		{
 			// remove this hook.
 			if (hook->in_use)

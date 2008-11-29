@@ -247,7 +247,7 @@ int GetClientAimTarget(edict_t *pEdict, bool only_players)
 		return -1;
 	}
 
-	int ent_index = engine->IndexOfEdict(pTarget);
+	int ent_index = IndexOfEdict(pTarget);
 
 	IGamePlayer *pTargetPlayer = playerhelpers->GetGamePlayer(ent_index);
 	if (pTargetPlayer != NULL && !pTargetPlayer->IsInGame())
@@ -269,7 +269,7 @@ bool IsEyeAnglesSupported()
 
 bool GetPlayerInfo(int client, player_info_t *info)
 {
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	return engine->GetPlayerInfo(client, info);
 #else
 	return (iserver) ? iserver->GetPlayerInfo(client-1, info) : false;
@@ -420,7 +420,7 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level)
 
 CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 
@@ -462,7 +462,7 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 
 CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text file")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 
@@ -517,7 +517,7 @@ void _ignore_invalid_parameter(
 
 CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 
@@ -710,7 +710,7 @@ void UTIL_DrawDataTable(FILE *fp, datamap_t *pMap, int level)
 
 CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 {
-#if !defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE == SE_EPISODEONE
 	CCommand args;
 #endif
 

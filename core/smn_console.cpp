@@ -44,7 +44,11 @@
 #include <bitbuf.h>
 #include <sm_trie_tpl.h>
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+#define NET_SETCONVAR	6
+#else
 #define NET_SETCONVAR	5
+#endif
 
 enum ConVarBounds
 {
@@ -63,7 +67,11 @@ struct GlobCmdIter
 
 struct ConCmdIter
 {
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+	ICvarIteratorInternal *pLast;
+#else
 	const ConCommandBase *pLast;
+#endif
 };
 
 class ConsoleHelpers : 
@@ -129,7 +137,7 @@ public:
 			*flags = (*ppCmd)->GetFlags();
 			return true;
 		}
-		else if ((pCmd=FindConCommandBase(name)))
+		else if ((pCmd=FindCommandBase(name)))
 		{
 			m_CmdFlags.insert(name, pCmd);
 			TrackConCommandBase(pCmd, this);
@@ -151,7 +159,7 @@ public:
 			TrackConCommandBase((*ppCmd), this);
 			return true;
 		}
-		else if ((pCmd=FindConCommandBase(name)))
+		else if ((pCmd=FindCommandBase(name)))
 		{
 			m_CmdFlags.insert(name, pCmd);
 			pCmd->SetFlags(flags);
@@ -167,7 +175,7 @@ private:
 	KTrie<ConCommandBase *> m_CmdFlags;
 } s_CommandFlagsHelper;
 
-#ifndef ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 static void ReplicateConVar(ConVar *pConVar)
 {
 	int maxClients = g_Players.GetMaxClients();
@@ -341,7 +349,7 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(params[2]);
 
-#ifndef ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -390,7 +398,7 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	float value = sp_ctof(params[2]);
 	pConVar->SetValue(value);
 
-#ifndef ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -441,7 +449,7 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(value);
 
-#ifndef ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -472,7 +480,7 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->Revert();
 	
-#ifndef ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -1151,12 +1159,21 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToPhysAddr(params[3], &pIsCmd);
 	pContext->LocalToPhysAddr(params[4], &pFlags);
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+	ICvarIteratorInternal *cvarIter = icvar->FactoryInternalIterator();
+	cvarIter->SetFirst();
+	if (!cvarIter->IsValid())
+	{
+		return BAD_HANDLE;
+	}
+	pConCmd = cvarIter->Get();
+#else
 	pConCmd = icvar->GetCommands();
-
 	if (pConCmd == NULL)
 	{
 		return BAD_HANDLE;
 	}
+#endif
 
 	pContext->StringToLocalUTF8(params[1], params[2], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
@@ -1169,7 +1186,11 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	}
 
 	pIter = new ConCmdIter;
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+	pIter->pLast = cvarIter;
+#else
 	pIter->pLast = pConCmd;
+#endif
 
 	if ((hndl = g_HandleSys.CreateHandle(htConCmdIter, pIter, pContext->GetIdentity(), g_pCoreIdent, NULL))
 		== BAD_HANDLE)
@@ -1187,6 +1208,7 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 	ConCmdIter *pIter;
 	cell_t *pIsCmd, *pFlags;
 	const char *desc;
+	const ConCommandBase *pConCmd;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
 	if ((err = g_HandleSys.ReadHandle(params[1], htConCmdIter, &sec, (void **)&pIter)) != HandleError_None)
@@ -1199,21 +1221,33 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	if ((pIter->pLast = pIter->pLast->GetNext()) == NULL)
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+	ICvarIteratorInternal *cvarIter = pIter->pLast;
+	cvarIter->Next();
+	if (!cvarIter->IsValid())
 	{
 		return 0;
 	}
+	pConCmd = cvarIter->Get();
+#else
+	pConCmd = pIter->pLast->GetNext();
+	if (pConCmd == NULL)
+	{
+		return 0;
+	}
+	pIter->pLast = pConCmd;
+#endif
 
 	pContext->LocalToPhysAddr(params[4], &pIsCmd);
 	pContext->LocalToPhysAddr(params[5], &pFlags);
 
-	pContext->StringToLocalUTF8(params[2], params[3], pIter->pLast->GetName(), NULL);
-	*pIsCmd = pIter->pLast->IsCommand() ? 1 : 0;
-	*pFlags = pIter->pLast->GetFlags();
+	pContext->StringToLocalUTF8(params[2], params[3], pConCmd->GetName(), NULL);
+	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
+	*pFlags = pConCmd->GetFlags();
 
 	if (params[7])
 	{
-		desc = pIter->pLast->GetHelpText();
+		desc = pConCmd->GetHelpText();
 		pContext->StringToLocalUTF8(params[6], params[7], (desc && desc[0]) ? desc : "", NULL);
 	}
 

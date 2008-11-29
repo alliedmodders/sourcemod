@@ -38,7 +38,6 @@ public:
 	virtual void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe) = 0;
 };
 
-ConCommandBase *FindConCommandBase(const char *name);
 void TrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);
 void UntrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);
 void Global_OnUnlinkConCommandBase(ConCommandBase *pBase);

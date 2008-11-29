@@ -97,7 +97,7 @@ static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	return engine->IndexOfEdict(pEdict);
+	return IndexOfEdict(pEdict);
 }
 
 static cell_t SetFakeClientConVar(IPluginContext *pContext, const cell_t *params)

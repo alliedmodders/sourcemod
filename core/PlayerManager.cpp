@@ -61,7 +61,7 @@ List<ICommandTargetProcessor *> target_processors;
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
 #else
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
@@ -69,7 +69,7 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *)
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 #else
 extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
@@ -151,24 +151,7 @@ void PlayerManager::OnSourceModAllInitialized()
 
 	g_ConVarManager.AddConVarChangeListener("tv_enable", this);
 
-	ConCommandBase *pBase = icvar->GetCommands();
-	ConCommand *pCmd = NULL;
-	while (pBase)
-	{
-		if (strcmp(pBase->GetName(), "maxplayers") == 0)
-		{
-			/* Don't want to return convar with same name */
-			if (!pBase->IsCommand())
-			{
-				break;
-			}
-
-			pCmd = (ConCommand *)pBase;
-			break;
-		}
-		pBase = const_cast<ConCommandBase *>(pBase->GetNext());
-	}
-
+	ConCommand *pCmd = FindCommand("maxplayers");
 	if (pCmd != NULL)
 	{
 		SH_ADD_HOOK_STATICFUNC(ConCommand, Dispatch, pCmd, CmdMaxplayersCallback, true);
@@ -408,7 +391,7 @@ void PlayerManager::RunAuthChecks()
 
 bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	List<IClientListener *>::iterator iter;
@@ -452,7 +435,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 
 bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 	bool orig_value = META_RESULT_ORIG_RET(bool);
 	CPlayer *pPlayer = &m_Players[client];
 
@@ -492,7 +475,7 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
 {
 	cell_t res;
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	/* If they're not connected, they're a bot */
@@ -590,7 +573,7 @@ void PlayerManager::OnSourceModLevelEnd()
 void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 {
 	cell_t res;
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (pPlayer->IsConnected())
@@ -628,7 +611,7 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 {
 	cell_t res;
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 
 	m_cldisconnect_post->PushCell(client);
 	m_cldisconnect_post->Execute(&res, NULL);
@@ -642,7 +625,7 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	}
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
 #else
@@ -650,7 +633,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 {
 	CCommand args;
 #endif
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 	cell_t res = Pl_Continue;
 	CPlayer *pPlayer = &m_Players[client];
 
@@ -705,7 +688,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 {
 	cell_t res;
-	int client = engine->IndexOfEdict(pEntity);
+	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (!pPlayer->IsConnected())
@@ -713,8 +696,13 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 		return;
 	}
 
-	m_clinfochanged->PushCell(engine->IndexOfEdict(pEntity));
+	m_clinfochanged->PushCell(client);
 	m_clinfochanged->Execute(&res, NULL);
+
+	if (pPlayer->IsFakeClient())
+	{
+		return;
+	}
 
 	IPlayerInfo *info = pPlayer->GetPlayerInfo();
 	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
@@ -833,7 +821,7 @@ void PlayerManager::RemoveClientListener(IClientListener *listener)
 
 IGamePlayer *PlayerManager::GetGamePlayer(edict_t *pEdict)
 {
-	int index = engine->IndexOfEdict(pEdict);
+	int index = IndexOfEdict(pEdict);
 	return GetGamePlayer(index);
 }
 
@@ -1304,7 +1292,7 @@ void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
 	}
 }
 
-#if defined ORANGEBOX_BUILD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command)
 {
 #else
@@ -1342,7 +1330,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Name.assign(name);
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
-	m_iIndex = engine->IndexOfEdict(pEntity);
+	m_iIndex = IndexOfEdict(pEntity);
 	m_LangId = g_Translator.GetServerLanguage();
 
 	char ip2[24], *ptr;
@@ -1364,7 +1352,7 @@ void CPlayer::Connect()
 	m_IsInGame = true;
 
 	const char *var = g_Players.GetPassInfoVar();
-	int client = engine->IndexOfEdict(m_pEdict);
+	int client = IndexOfEdict(m_pEdict);
 	if (var[0] != '\0')
 	{
 		const char *pass = engine->GetClientConVarValue(client, var);
@@ -1611,7 +1599,7 @@ void CPlayer::DoBasicAdminChecks()
 
 	/* First check the name */
 	AdminId id;
-	int client = engine->IndexOfEdict(m_pEdict);
+	int client = IndexOfEdict(m_pEdict);
 
 	if ((id = g_Admins.FindAdminByIdentity("name", GetName())) != INVALID_ADMIN_ID)
 	{
