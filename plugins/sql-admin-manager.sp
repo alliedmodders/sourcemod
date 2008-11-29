@@ -828,9 +828,9 @@ public Action:Command_AddAdmin(client, args)
 	
 	decl String:password[32];
 	decl String:safe_password[80];
-	if (args > 4)
+	if (args >= 6)
 	{
-		GetCmdArg(5, password, sizeof(password));
+		GetCmdArg(6, password, sizeof(password));
 		SQL_EscapeString(db, password, safe_password, sizeof(safe_password));
 	} else {
 		safe_password[0] = '\0';
