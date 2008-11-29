@@ -754,10 +754,10 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (params[4] == 2)
 	{
-		int16_t val;
+		uint16_t val;
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fread(&val, sizeof(int16_t), 1, pFile) != 1)
+			if (fread(&val, sizeof(uint16_t), 1, pFile) != 1)
 			{
 				break;
 			}
@@ -766,10 +766,10 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (params[4] == 1)
 	{
-		int8_t val;
+		uint8_t val;
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fread(&val, sizeof(int8_t), 1, pFile) != 1)
+			if (fread(&val, sizeof(uint8_t), 1, pFile) != 1)
 			{
 				break;
 			}
