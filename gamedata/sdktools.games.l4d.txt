@@ -5,10 +5,9 @@
 	{
 		"Keys"
 		{
-			"SlapSoundCount"	"3"
-			"SlapSound1"		"player/pl_fallpain1.wav"
-			"SlapSound2"		"player/pl_fallpain3.wav"
-			"SlapSound3"		"player/pl_pain5.wav"
+			"SlapSoundCount"	"2"
+			"SlapSound1"		"player/damage1.wav"
+			"SlapSound2"		"player/damage2.wav"
 			"m_iFrags"			"m_iFrags"
 		}
 		"Offsets"
