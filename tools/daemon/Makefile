@@ -18,7 +18,7 @@ C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
 CPP = gcc-4.1
 
-BINARY = daemon
+BINARY = smupdated
 
 LINK += -lpthread -static-libgcc
 	

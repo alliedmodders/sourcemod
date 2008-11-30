@@ -1,3 +1,4 @@
+#include <errno.h>
 #include "smud.h"
 #include "smud_threads.h"
 
@@ -29,7 +30,9 @@ int main(int argc, char **argv)
 	char filename[100];
 	struct stat sbuf;
 
-	printf("Loading Gamedata files into memory\n");
+#if defined DEBUG
+	fprintf(stdout, "Loading Gamedata files into memory\n");
+#endif
 
 	for (int i=0; i<NUM_FILES; i++)
 	{
@@ -38,34 +41,44 @@ int main(int argc, char **argv)
 
 		if (!file)
 		{
+			fprintf(stderr, "Could not find file: %s", filename);
 			return 1;
 		}
 
 		if (stat(filename, &sbuf) == -1)
 		{
+			fprintf(stderr, "Could not stat file: %s (error: %s)", filename, strerror(errno));
 			return 1;
 		}
 
-		if ((fileLocations[i] = mmap(NULL, sbuf.st_size, PROT_READ, MAP_SHARED, file, 0)) == (caddr_t)(-1))
+		if ((fileLocations[i] = mmap(NULL, sbuf.st_size, PROT_READ, MAP_PRIVATE, file, 0)) == MAP_FAILED)
 		{
+			fprintf(stderr, "Could not mmap file: %s (error: %s)", filename, strerror(errno));
 			return 1;
 		}
 
 		fileLength[i] = sbuf.st_size;
 
-		printf("Initialised file of %s of length %i\n", fileNames[i], fileLength[i]);
+#if defined DEBUG
+		fprintf(stdout, "Initialised file of %s of length %i\n", fileNames[i], fileLength[i]);
+#endif
 	}
 
-	printf("Initializing Thread Pool\n");
+#if defined DEBUG
+	fprintf(stdout, "Initializing Thread Pool\n");
+#endif
 
 	pool = new ThreadPool();
 	
 	if (!pool->Start())
 	{
+		fprintf(stderr, "Could not initialize thread pool!\n");
 		return 1;
 	}
 
+#if defined DEBUG
 	printf("Create Server Socket\n");
+#endif
 
 	memset(&serverAddress, 0, sizeof(serverAddress));
 	serverAddress.sin_family = AF_INET;
@@ -76,6 +89,7 @@ int main(int argc, char **argv)
 
 	if (pProtocol == NULL)
 	{
+		fprintf(stderr, "Could not get tcp proto: %s", strerror(errno));
 		return 1;
 	}
 
@@ -83,6 +97,7 @@ int main(int argc, char **argv)
 
 	if (serverSocket < 0) 
 	{
+		fprintf(stderr, "Could not open socket: %s", strerror(errno));
 		return 1;
 	}
 
@@ -91,34 +106,45 @@ int main(int argc, char **argv)
 
 	if (bind(serverSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) < 0) 
 	{
+		fprintf(stderr, "Could not bind socket: %s", strerror(errno));
 		return 1;
 	}
 
 	if (listen(serverSocket, LISTEN_QUEUE_LENGTH) < 0) 
 	{
+		fprintf(stderr, "Could not listen on socket: %s", strerror(errno));
 		return 1;
 	}
 
-	printf("Entering Main Loop\n");
+	fprintf(stdout, "Server has started.\n");
 
 	while (1)
 	{
 		addressLen = sizeof(clientAddress);
 
-		if ( (clientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, (socklen_t *)&addressLen)) < 0) 
+		clientSocket = accept(serverSocket,
+							  (struct sockaddr *)&clientAddress,
+							  (socklen_t *)&addressLen);
+		if (clientSocket < 0)
 		{
+			fprintf(stderr, "Could not accept client: %s", strerror(errno));
 			continue;
 		}
 
 		opts = fcntl(clientSocket, F_GETFL, 0);
 		if (fcntl(clientSocket, F_SETFL, opts|O_NONBLOCK) < 0)
 		{
+			fprintf(stderr, "Could not non-block client: %s", strerror(errno));
 			closesocket(clientSocket);
 			continue;
 		}
 
-
-		printf("Connection Received!\n");
+#if defined DEBUG
+		fprintf(stdout,
+				"Accepting connection from client (sock %d, ip %s)",
+				clientSocket,
+				inet_ntoa(&clientAddress));
+#endif
 
 		pool->AddConnection(clientSocket);
 	}

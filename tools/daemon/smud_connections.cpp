@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "smud_connections.h"
 #include "smud.h"
 
@@ -19,8 +20,6 @@ void ConnectionPool::AddConnection( int fd )
 	pthread_mutex_lock(&m_AddLock);
 	m_AddQueue.push_back(connection);
 	pthread_mutex_unlock(&m_AddLock);
-
-	printf("New Connection Added\n");
 }
 
 void ConnectionPool::Process( bool *terminate )
@@ -48,9 +47,10 @@ void ConnectionPool::Process( bool *terminate )
 		/* Add all connections that want processing to the sets */
 		while (iter != m_Links.end())
 		{
-			con = (smud_connection *)*iter;
+			con = *iter;
 
 			pollReturn = poll(&(con->pollData), 1, 0);
+			assert(pollReturn <= 1);
 
 			if (pollReturn == -1)
 			{
@@ -66,11 +66,11 @@ void ConnectionPool::Process( bool *terminate )
 			if (result == QueryResult_Complete)
 			{
 				iter = m_Links.erase(iter);
+#if defined DEBUG
+				fprintf(stdout, "Closing socket %d\n", con->fd);
+#endif
 				closesocket(con->fd);
 				delete con;
-
-				printf("Connection Completed!\n");
-
 				continue;
 			}
 
@@ -169,7 +169,9 @@ void ConnectionPool::ReadQueryHeader( smud_connection *con )
 	con->sentSums = data[10];
 
 	con->state = ConnectionState_ReadQueryData;
-	printf("Query Header Read Complete, %i md5's expected\n", con->sentSums);
+#if defined DEBUG
+	fprintf(stdout, "Query Header Read Complete, %i md5's expected\n", con->sentSums);
+#endif
 }
 
 void ConnectionPool::ReplyQuery(smud_connection *con)
@@ -200,7 +202,9 @@ void ConnectionPool::ReplyQuery(smud_connection *con)
 	//Alternatively we could just send all at once here. Could make for a damn big query. 100k anyone?
 
 	con->state = ConnectionState_SendingFiles;
+#if defined DEBUG
 	printf("Query Reply Header Complete\n");
+#endif
 }
 
 void ConnectionPool::ReadQueryContent( smud_connection *con )
@@ -229,7 +233,9 @@ void ConnectionPool::ReadQueryContent( smud_connection *con )
 		
 		if (con->shouldSend[i] == MD5Status_NeedsUpdate)
 		{
-			printf("File %i needs updating\n", i);
+#if defined DEBUG
+			fprintf(stdout, "File %i needs updating\n", i);
+#endif
 			con->sendCount++;
 			con->headerSent[i] = false;
 			continue;
@@ -237,7 +243,9 @@ void ConnectionPool::ReadQueryContent( smud_connection *con )
 
 		if (con->shouldSend[i] == MD5Status_Unknown)
 		{
-			printf("File %i is unknown\n", i);
+#if defined DEBUG
+			fprintf(stdout, "File %i is unknown\n", i);
+#endif
 			con->unknownCount++;
 		}
 	}
@@ -245,7 +253,9 @@ void ConnectionPool::ReadQueryContent( smud_connection *con )
 	con->state = ConnectionState_ReplyQuery;
 	con->pollData.events = POLLOUT;
 	delete [] data;
-	printf("Query Data Read Complete\n");
+#if defined DEBUG
+	fprintf(stdout, "Query Data Read Complete\n");
+#endif
 }
 
 MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection *con, int fileNum)
@@ -263,7 +273,9 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 
 	strcat(path, md5String);
 
-	printf("checking for file \"%s\"\n", path);
+#if defined DEBUG
+	fprintf(stdout, "checking for file \"%s\"\n", path);
+#endif
 	
 	FILE *file = fopen(path, "r");
 
@@ -275,7 +287,9 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 
 	char latestMD5[33];
 	fgets(latestMD5, 33, file);
-	printf("Latest md5 is: %s\n", latestMD5);
+#if defined DEBUG
+	fprintf(stdout, "Latest md5 is: %s\n", latestMD5);
+#endif
 
 	if (strcmp(latestMD5, md5String) == 0)
 	{
@@ -298,7 +312,9 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 
 	fclose(file);
 
-	printf("Filename is %s\n", filename);
+#if defined DEBUG
+	fprintf(stdout, "Filename is %s\n", filename);
+#endif
 
 	//We now need to match this filename with one of our mmap'd files in memory and store it until send gets called.
 	for (int i=0; i<NUM_FILES; i++)
@@ -306,7 +322,9 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 		if (strcmp(fileNames[i], filename) == 0)
 		{
 			con->fileLocation[fileNum] = i;
-			printf("File %i mapped to local file %i\n", fileNum, i);
+#if defined DEBUG
+			fprintf(stdout, "File %i mapped to local file %i\n", fileNum, i);
+#endif
 			return MD5Status_NeedsUpdate;
 		}
 	}
@@ -326,7 +344,9 @@ void ConnectionPool::SendFile( smud_connection *con )
 	//All files have been sent.
 	if (con->currentFile >= con->sentSums)
 	{
-		printf("All files sent!\n");
+#if defined DEBUG
+		fprintf(stdout, "All files sent!\n");
+#endif
 		con->state = ConnectionState_SendUnknownList;
 		return;
 	}
@@ -334,8 +354,13 @@ void ConnectionPool::SendFile( smud_connection *con )
 	void *file = fileLocations[con->fileLocation[con->currentFile]];
 	int filelength = fileLength[con->fileLocation[con->currentFile]];
 
-	printf("Sending file of length %i\n", filelength);
-	printf("Current file index is: %i, maps to file index: %i\n", con->currentFile, con->fileLocation[con->currentFile]);
+#if defined DEBUG
+	fprintf(stdout, "Sending file of length %i\n", filelength);
+	fprintf(stdout,
+			"Current file index is: %i, maps to file index: %i\n",
+			con->currentFile,
+			con->fileLocation[con->currentFile]);
+#endif
 
 	if (!con->headerSent[con->currentFile])
 	{
@@ -367,7 +392,9 @@ void ConnectionPool::SendFile( smud_connection *con )
 	}
 
 	con->currentFile++;
-	printf("Sent a file!: %s\n", fileNames[con->fileLocation[con->currentFile-1]]);
+#if defined DEBUG
+	fprintf(stdout, "Sent a file!: %s\n", fileNames[con->fileLocation[con->currentFile-1]]);
+#endif
 }
 
 void ConnectionPool::SendUnknownList( smud_connection *con )
@@ -377,7 +404,9 @@ void ConnectionPool::SendUnknownList( smud_connection *con )
 
 	packet[0] = con->unknownCount;
 
-	printf("%i Files are unknown\n", con->unknownCount);
+#if defined DEBUG
+	fprintf(stdout, "%i Files are unknown\n", con->unknownCount);
+#endif
 
 	int i=1;
 
@@ -401,5 +430,8 @@ void ConnectionPool::SendUnknownList( smud_connection *con )
 	}
 
 	con->state = ConnectionState_Complete;
-	printf("Unknown's Sent\n");
+#if defined DEBUG
+	fprintf(stdout, "Unknowns Sent\n");
+#endif
 }
+
