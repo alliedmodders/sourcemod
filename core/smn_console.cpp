@@ -101,6 +101,10 @@ public:
 		else if (type == htConCmdIter)
 		{
 			ConCmdIter *iter = (ConCmdIter * )object;
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+			// ICvarIteratorInternal has no virtual destructor
+			g_pMemAlloc->Free(iter->pLast);
+#endif
 			delete iter;
 		}
 	}
