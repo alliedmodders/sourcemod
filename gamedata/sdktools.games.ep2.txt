@@ -283,7 +283,7 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"409"
+				"windows"	"406"
 				"linux"		"410"
 			}
 			"RemovePlayerItem"

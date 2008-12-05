@@ -176,11 +176,11 @@ native ReadFile(Handle:hndl, items[], num_items, size);
  * @param hndl			Handle to the file.
  * @param buffer		Buffer to store the string.
  * @param max_size		Maximum size of the string buffer.
- * @param stop			If true, reading will stop once max_size-1 bytes have 
- *						been read.  If false, reading will stop once a NUL 
- *						terminator is reached.  The buffer will simply be 
- *						terminated in either case, the difference is in how 
- *						the far the file position is changed.
+ * @param read_count	If -1, reads until a null terminator is encountered in 
+ *						the file.  Otherwise, read_count bytes are read 
+ *						into the buffer provided.  In this case the buffer 
+ *						is not explicitly null terminated, and the buffer 
+ *						will contain any null terminators read from the file.
  * @return				Number of characters written to the buffer, or -1 
  *						if an error was encountered.
  * @error				Invalid Handle, or read_count > max_size.
