@@ -115,7 +115,7 @@ all: check
 	$(MAKE) -f Makefile sourcemod
 
 check:
-	if [ "$(ENGSET)" == "false" ]; then \
+	if [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply ENGINE=orangebox or ENGINE=original"; \
 		exit 1; \
 	fi
