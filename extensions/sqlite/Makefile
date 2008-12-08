@@ -138,7 +138,7 @@ all: check
 	mkdir -p $(BIN_DIR)/sdk
 	mkdir -p $(BIN_DIR)/driver
 	mkdir -p $(BIN_DIR)/sqlite-source
-	if [ "$(USEMETA)" == "true" ]; then \
+	if [ "$(USEMETA)" = "true" ]; then \
 		ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so; \
 		ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so; \
 	fi

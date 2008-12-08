@@ -113,7 +113,7 @@ $(BIN_DIR)/%.o: %.cpp
 
 all: check
 	mkdir -p $(BIN_DIR)/sdk
-	if [ "$(USEMETA)" == "true" ]; then \
+	if [ "$(USEMETA)" = "true" ]; then \
 		ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so; \
 	fi
 	$(MAKE) -f Makefile extension
