@@ -122,7 +122,7 @@ all: check
 	$(MAKE) -f Makefile extension
 
 check:
-	if [ "$(USEMETA)" == "true" ] && [ "$(ENGSET)" == "false" ]; then \
+	if [ "$(USEMETA)" = "true" ] && [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply ENGINE=left4dead or ENGINE=orangebox or ENGINE=original"; \
 		exit 1; \
 	fi
