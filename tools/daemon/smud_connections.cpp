@@ -145,33 +145,61 @@ QueryResult ConnectionPool::ProcessConnection( smud_connection *con )
 
 void ConnectionPool::ReadQueryHeader( smud_connection *con )
 {
-	char data[11];
+	if (con->buffer == NULL)
+	{
+		con->buffer = new char[QUERY_HEADER_SIZE];
+		con->writtenCount = 0;
+	}
+	
+	int bytesReceived = 0;
 
-	if (recv(con->fd, data, sizeof(data), 0) == -1)
+	bytesReceived = recv(con->fd, con->buffer+con->writtenCount, QUERY_HEADER_SIZE-con->writtenCount, 0);
+
+	if (bytesReceived == -1)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 		{
 			con->state = ConnectionState_Complete;
+			delete [] con->buffer;
+			con->buffer = NULL;
+			con->writtenCount = 0;
 		}
 
 		return;
 	}
 
-	if (data[0] != 'A' || data[1] != 'G')
+	con->writtenCount += bytesReceived;
+
+	assert(con->writtenCount <= QUERY_HEADER_SIZE);
+
+	if (con->writtenCount < QUERY_HEADER_SIZE)
+	{
+		/* Don't change the connection status, so next cycle we will come back to here and continue receiving data */
+		return;
+	}
+	
+	if (con->buffer[0] != 'A' || con->buffer[1] != 'G')
 	{
 		con->state = ConnectionState_Complete;
+		delete [] con->buffer;
+		con->buffer = NULL;
+		con->writtenCount = 0;
 		return;
 	}
 
 	//Ignore the next 8 bytes for the moment. Versioning data is currently unused
 	// uint16[4] - source version major/minor/something/rev
 
-	con->sentSums = data[10];
+	con->sentSums = con->buffer[10];
 
 	con->state = ConnectionState_ReadQueryData;
 #if defined DEBUG
 	fprintf(stdout, "Query Header Read Complete, %i md5's expected\n", con->sentSums);
 #endif
+
+	delete [] con->buffer;
+	con->buffer = NULL;
+	con->writtenCount = 0;
 }
 
 void ConnectionPool::ReplyQuery(smud_connection *con)
@@ -188,20 +216,31 @@ void ConnectionPool::ReplyQuery(smud_connection *con)
 
 	data[11] = (char)con->sendCount;
 
-	if (send(con->fd, data, sizeof(data), 0) == -1)
+	int bytesSent = send(con->fd, data+con->writtenCount, sizeof(data)-con->writtenCount, 0);
+	
+	if (bytesSent == -1)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 		{
 			con->state = ConnectionState_Complete;
+			con->writtenCount = 0;
 		}
 
 		return;
 	}
-	
-	//Now we need more send sub functions for all the damn files. Geh.
-	//Alternatively we could just send all at once here. Could make for a damn big query. 100k anyone?
 
+	con->writtenCount += bytesSent;
+
+	assert(con->writtenCount <= 12);
+
+	if (con->writtenCount < 12)
+	{
+		/** Still more data needs to be sent - Return so we come back here next cycle */
+		return;
+	}
+	
 	con->state = ConnectionState_SendingFiles;
+	con->writtenCount = 0;
 #if defined DEBUG
 	printf("Query Reply Header Complete\n");
 #endif
@@ -209,16 +248,36 @@ void ConnectionPool::ReplyQuery(smud_connection *con)
 
 void ConnectionPool::ReadQueryContent( smud_connection *con )
 {
-	char *data = new char[16*(con->sentSums)]();
+	if (con->buffer == NULL)
+	{
+		con->buffer = new char[QUERY_CONTENT_SIZE*con->sentSums];
+		con->writtenCount = 0;
+	}
 
-	if (recv(con->fd, data, 16*(con->sentSums), 0) == -1)
+	int bytesReceived = 0;
+
+	bytesReceived = recv(con->fd, con->buffer+con->writtenCount, (QUERY_CONTENT_SIZE*con->sentSums)-con->writtenCount, 0);
+
+	if (bytesReceived == -1)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 		{
 			con->state = ConnectionState_Complete;
+			delete [] con->buffer;
+			con->buffer = NULL;
+			con->writtenCount = 0;
 		}
 
-		delete [] data;
+		return;
+	}
+
+	con->writtenCount += bytesReceived;
+
+	assert(con->writtenCount <= (QUERY_CONTENT_SIZE*con->sentSums));
+
+	if (con->writtenCount < (QUERY_CONTENT_SIZE*con->sentSums))
+	{
+		/* Don't change the connection status, so next cycle we will come back to here and continue receiving data */
 		return;
 	}
 
@@ -229,7 +288,7 @@ void ConnectionPool::ReadQueryContent( smud_connection *con )
 	for (int i=0; i<con->sentSums; i++)
 	{
 		con->fileLocation[i] = -1;
-		con->shouldSend[i] = GetMD5UpdateStatus(data + (16*i), con, i);
+		con->shouldSend[i] = GetMD5UpdateStatus(con->buffer + (QUERY_CONTENT_SIZE*i), con, i);
 		
 		if (con->shouldSend[i] == MD5Status_NeedsUpdate)
 		{
@@ -252,7 +311,9 @@ void ConnectionPool::ReadQueryContent( smud_connection *con )
 
 	con->state = ConnectionState_ReplyQuery;
 	con->pollData.events = POLLOUT;
-	delete [] data;
+	delete [] con->buffer;
+	con->buffer = NULL;
+	con->writtenCount = 0;
 #if defined DEBUG
 	fprintf(stdout, "Query Data Read Complete\n");
 #endif
@@ -335,7 +396,8 @@ MD5Status ConnectionPool::GetMD5UpdateStatus( const char *md5 , smud_connection 
 void ConnectionPool::SendFile( smud_connection *con )
 {
 	//Find the next file to send.
-	while (con->currentFile < con->sentSums &&
+	while (con->writtenCount == 0 &&
+			con->currentFile < con->sentSums &&
 			con->shouldSend[con->currentFile] != MD5Status_NeedsUpdate)
 	{
 		con->currentFile++;
@@ -348,6 +410,7 @@ void ConnectionPool::SendFile( smud_connection *con )
 		fprintf(stdout, "All files sent!\n");
 #endif
 		con->state = ConnectionState_SendUnknownList;
+		con->writtenCount = 0;
 		return;
 	}
 
@@ -362,36 +425,64 @@ void ConnectionPool::SendFile( smud_connection *con )
 			con->fileLocation[con->currentFile]);
 #endif
 
+	int sentBytes = 0;
+
 	if (!con->headerSent[con->currentFile])
 	{
 		char buffer[5];
 		buffer[0] = con->currentFile;
 		*((int *)&buffer[1]) = filelength;
 
-		if (send(con->fd, buffer, 5, 0) == -1)
+		sentBytes = send(con->fd, buffer+con->writtenCount, 5-con->writtenCount, 0);
+
+		if (sentBytes == -1)
 		{
 			if (errno != EAGAIN && errno != EWOULDBLOCK)
 			{
 				con->state = ConnectionState_Complete;
+				con->writtenCount = 0;
 			}
 
 			return;
 		}
 
+		con->writtenCount += sentBytes;
+	
+		assert(con->writtenCount <= 5);
+
+		if (con->writtenCount < 5)
+		{
+			return;
+		}
+
 		con->headerSent[con->currentFile] = true;
+		con->writtenCount = 0;
 	}
 
-	if (send(con->fd, file, filelength, 0) == -1)
+	sentBytes = send(con->fd, (unsigned char *)file+con->writtenCount, filelength-con->writtenCount, 0);
+
+	if (sentBytes == -1)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 		{
 			con->state = ConnectionState_Complete;
+			con->writtenCount = 0;
 		}
 
 		return;
 	}
 
+	con->writtenCount += sentBytes;
+
+	assert(con->writtenCount <= filelength);
+
+	if (con->writtenCount < filelength)
+	{
+		return;
+	}
+
 	con->currentFile++;
+	con->writtenCount = 0;
 #if defined DEBUG
 	fprintf(stdout, "Sent a file!: %s\n", fileNames[con->fileLocation[con->currentFile-1]]);
 #endif
@@ -419,17 +510,30 @@ void ConnectionPool::SendUnknownList( smud_connection *con )
 		}
 	}
 
-	if (send(con->fd, packet, size, 0) == -1)
+	int sentBytes = send(con->fd, packet+con->writtenCount, size-con->writtenCount, 0);
+	
+	if (sentBytes == -1)
 	{
 		if (errno != EAGAIN && errno != EWOULDBLOCK)
 		{
 			con->state = ConnectionState_Complete;
+			con->writtenCount = 0;
 		}
 
 		return;
 	}
 
+	con->writtenCount += sentBytes;
+
+	assert(con->writtenCount <= size);
+
+	if (con->writtenCount < size)
+	{
+		return;
+	}
+
 	con->state = ConnectionState_Complete;
+	con->writtenCount = 0;
 #if defined DEBUG
 	fprintf(stdout, "Unknowns Sent\n");
 #endif
