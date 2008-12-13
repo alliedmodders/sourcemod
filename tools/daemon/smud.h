@@ -16,7 +16,7 @@
 
 #define closesocket close
 
-#define NUM_FILES 5
+#define NUM_FILES 6
 
 extern char fileNames[NUM_FILES][30];
 extern void *fileLocations[NUM_FILES];

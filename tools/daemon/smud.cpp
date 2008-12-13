@@ -9,6 +9,7 @@ char fileNames[NUM_FILES][30] = {
 	"core.games.txt",
 	"sdktools.games.txt",
 	"sdktools.games.ep2.txt",
+	"sdktools.games.l4d.txt",
 	"sm-cstrike.games.txt",
 	"sm-tf2.games.txt",
 };
@@ -143,7 +144,7 @@ int main(int argc, char **argv)
 		fprintf(stdout,
 				"Accepting connection from client (sock %d, ip %s)",
 				clientSocket,
-				inet_ntoa(&clientAddress));
+				inet_ntoa(clientAddress.sin_addr));
 #endif
 
 		pool->AddConnection(clientSocket);
