@@ -18,7 +18,6 @@ int main(int argc, char **argv)
 {
 	void *handle;
 	void **pVtable;
-	handle = dlopen(argv[1], RTLD_NOW);
 
 	VOffset offsets;
 	char *params = NULL;
@@ -29,6 +28,8 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Usage: <binary> <vtable start symbol> <function> <optional: params> <optional: vtable end symbol>\n");
 		return -1;
 	}
+
+	handle = dlopen(argv[1], RTLD_NOW);
 
 	if (handle == NULL)
 	{
@@ -41,6 +42,7 @@ int main(int argc, char **argv)
 	if (pVtable == NULL)
 	{
 		fprintf(stderr, "Invalid vtable symbol \"%s\"\n", argv[2]);
+		dlclose(handle);
 		return -1;
 	}
 
@@ -86,10 +88,12 @@ int main(int argc, char **argv)
 			printf("%s - Win: %i  Linux : %i\n", argv[3], offsets.windows_offset, offsets.linux_offset);
 		}
 		
+		dlclose(handle);
 		return 0;
 	}
 
 	fprintf(stderr, "Failed to find function!");
+	dlclose(handle);
 	return -1;
 }
 
@@ -174,8 +178,6 @@ static bool FindVFunc(void *handle, void **vtable, const char* vtable_end, const
 	}
 
 	windows_offset = (overloads-location) + start_offset;
-
-	dlclose(handle);
 
 	offsets->linux_offset = linux_offset - 2;
 	offsets->windows_offset = windows_offset - 2;
