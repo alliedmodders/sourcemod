@@ -2,7 +2,7 @@
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..
-SOURCEHOOK = ../../../sourcemm-1.6/sourcehook
+MMSOURCE17 = ../../../mmsource-1.7
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -47,7 +47,7 @@ CPP = gcc-4.1
 LINK = -static-libgcc
 
 INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86 \
-	-I$(SMSDK)/public/sourcepawn -I$(SOURCEHOOK) -I$(SMSDK)/knight/shared -Ix86
+	-I$(SMSDK)/public/sourcepawn -I$(MMSOURCE17)/core/sourcehook -I$(SMSDK)/knight/shared -Ix86
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -DHAVE_STDINT_H \

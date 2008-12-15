@@ -39,9 +39,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(SOURCEMM14)&quot;;&quot;$(SOURCEMM14)\sourcemm&quot;;&quot;$(SOURCEMM14)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -58,6 +57,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -121,9 +121,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(SOURCEMM14)&quot;;&quot;$(SOURCEMM14)\sourcemm&quot;;&quot;$(SOURCEMM14)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -140,6 +139,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -206,7 +206,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(SOURCEMM14)&quot;;&quot;$(SOURCEMM14)\sourcemm&quot;;&quot;$(SOURCEMM14)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -221,6 +221,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -286,9 +287,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;ORANGEBOX_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -305,6 +305,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -368,9 +369,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;ORANGEBOX_BUILD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -387,6 +387,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -453,7 +454,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;ORANGEBOX_BUILD"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -468,6 +469,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -533,9 +535,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -552,6 +553,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -615,9 +617,8 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -634,6 +635,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -700,7 +702,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -715,6 +717,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -862,6 +865,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ExtensionSys.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ForwardSys.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\frame_hooks.cpp"
 				>
 			</File>
@@ -875,6 +886,14 @@
 			</File>
 			<File
 				RelativePath="..\HalfLife2.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\HandleSys.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\LibrarySys.cpp"
 				>
 			</File>
 			<File
@@ -926,7 +945,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PluginInfoDatabase.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PluginSys.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\Profiler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ShareSys.cpp"
 				>
 			</File>
 			<File
@@ -1044,6 +1075,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ExtensionSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ForwardSys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\frame_hooks.h"
 				>
 			</File>
@@ -1057,6 +1096,14 @@
 			</File>
 			<File
 				RelativePath="..\HalfLife2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\HandleSys.h"
+				>
+			</File>
+			<File
+				RelativePath="..\LibrarySys.h"
 				>
 			</File>
 			<File
@@ -1108,7 +1155,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\PluginInfoDatabase.h"
+				>
+			</File>
+			<File
+				RelativePath="..\PluginSys.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Profiler.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ShareSys.h"
 				>
 			</File>
 			<File
@@ -1280,79 +1339,6 @@
 				RelativePath="..\..\public\IUserMessages.h"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Systems"
-			UniqueIdentifier="{63775418-DF3F-4198-BFB1-738B19EE3EE0}"
-			>
-			<Filter
-				Name="Header Files"
-				Filter="h;hpp;hxx;hm;inl;inc;xsd"
-				UniqueIdentifier="{7D3AB33D-C1AD-46ee-B505-FEA8B6EF18E4}"
-				>
-				<File
-					RelativePath="..\ExtensionSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\ForwardSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\HandleSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\LibrarySys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\PluginInfoDatabase.h"
-					>
-				</File>
-				<File
-					RelativePath="..\PluginSys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\ShareSys.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-				UniqueIdentifier="{D1864A10-FF5F-4672-A70E-57C9F7486F92}"
-				>
-				<File
-					RelativePath="..\ExtensionSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\ForwardSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\HandleSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\LibrarySys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\PluginInfoDatabase.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\PluginSys.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\ShareSys.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="SourcePawn"

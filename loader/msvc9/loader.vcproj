@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;LOADER_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;&quot;$(SOURCEMM16)&quot;;&quot;$(SOURCEMM16)\sourcemm&quot;;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;LOADER_EXPORTS;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"

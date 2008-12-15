@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;THREADSAFE;SQLITE_OMIT_LOAD_EXTENSION"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -121,7 +121,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;&quot;$(SOURCEMM16)\sourcehook&quot;"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SQLITE_THREADSAFE;SQLITE_OMIT_LOAD_EXTENSION;_WIN32_WINNT=0x0400"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"

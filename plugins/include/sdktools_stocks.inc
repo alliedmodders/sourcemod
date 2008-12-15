@@ -58,7 +58,7 @@ stock FindTeamByName(const String:name[])
 	{
 		GetTeamName(i, team_name, sizeof(team_name));
 
-		if (strncmp(team_name, name, name_len) == 0)
+		if (strncmp(team_name, name, name_len, false) == 0)
 		{
 			if (found_team >= 0)
 			{

@@ -5,8 +5,7 @@ SMSDK = ..
 SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
-SOURCEMM14 = ../../../sourcemm-1.4
-SOURCEMM16 = ../../../sourcemm-1.6
+MMSOURCE17 = ../../../mmsource-1.7
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -31,7 +30,7 @@ ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
 	HL2PUB = $(HL2SDK_ORIG)/public
 	HL2LIB = $(HL2SDK_ORIG)/linux_sdk
-	METAMOD = $(SOURCEMM14)
+	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
 	override ENGSET = true
@@ -41,7 +40,7 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2PUB = $(HL2SDK_OB)/public
 	HL2LIB = $(HL2SDK_OB)/lib/linux
 	CFLAGS += -DORANGEBOX_BUILD
-	METAMOD = $(SOURCEMM16)
+	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
@@ -50,8 +49,8 @@ endif
 LINK = vstdlib_i486.so tier0_i486.so -static-libgcc
 
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-	-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(METAMOD)/sourcemm -I$(SMSDK) -I$(SMSDK)/jit \
-	-I$(SMSDK)/jit/x86 -I$(SMSDK)/extensions -I$(SMSDK)/sourcepawn
+	-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK) -I$(SMSDK)/jit -I$(SMSDK)/jit/x86 \
+	-I$(SMSDK)/extensions -I$(SMSDK)/sourcepawn
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -mfpmath=sse \
@@ -90,7 +89,7 @@ all: check
 	$(MAKE) -f Makefile mms_ext
 
 check:
-	if [ "$(ENGSET)" == "false" ]; then \
+	if [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply ENGINE=orangebox or ENGINE=original"; \
 		exit 1; \
 	fi

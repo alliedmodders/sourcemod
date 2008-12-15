@@ -239,7 +239,7 @@ public Action:Command_SmHsay(client, args)
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (!IsClientConnected(i) || IsFakeClient(i))
+		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
 			continue;
 		}
@@ -279,7 +279,7 @@ public Action:Command_SmTsay(client, args)
 	
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (!IsClientConnected(i) || IsFakeClient(i))
+		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
 			continue;
 		}

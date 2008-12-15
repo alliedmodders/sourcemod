@@ -5,6 +5,9 @@
 #include <list>
 #include "poll.h"
 
+#define QUERY_HEADER_SIZE 11
+#define QUERY_CONTENT_SIZE 16
+
 enum ConnectionState
 {
 	ConnectionState_ReadQueryHeader,
@@ -54,6 +57,8 @@ struct smud_connection
 		state = ConnectionState_ReadQueryHeader;
 		this->fd = fd;
 		pollData.fd = fd;
+		buffer = NULL;
+		writtenCount = 0;
 	}
 
 	~smud_connection()
@@ -77,6 +82,8 @@ struct smud_connection
 	int unknownCount;				/** Number of files that were unknown */
 	int currentFile;				/** Current file being sent (index into the above 3 arrays) */
 	pollfd pollData;				/** Data to be passed into poll() */
+	char *buffer;					/** Temporary storage buffer to hold data until all of it is available */
+	int writtenCount;				/** Number of bytes written into the storage buffer */
 };
 
 

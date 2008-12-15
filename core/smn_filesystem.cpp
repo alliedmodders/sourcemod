@@ -754,10 +754,10 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (params[4] == 2)
 	{
-		int16_t val;
+		uint16_t val;
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fread(&val, sizeof(int16_t), 1, pFile) != 1)
+			if (fread(&val, sizeof(uint16_t), 1, pFile) != 1)
 			{
 				break;
 			}
@@ -766,10 +766,10 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (params[4] == 1)
 	{
-		int8_t val;
+		uint8_t val;
 		for (cell_t i = 0; i < params[3]; i++)
 		{
-			if (fread(&val, sizeof(int8_t), 1, pFile) != 1)
+			if (fread(&val, sizeof(uint8_t), 1, pFile) != 1)
 			{
 				break;
 			}
@@ -802,11 +802,29 @@ static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
 	char *buffer;
 	pContext->LocalToString(params[2], &buffer);
 
+	if (params[4] != -1)
+	{
+		if (size_t(params[4]) > size_t(params[3]))
+		{
+			return pContext->ThrowNativeError("read_count (%u) is greater than buffer size (%u)",
+				params[4],
+				params[3]);
+		}
+
+		num_read = (cell_t)fread(buffer, 1, params[4], pFile);
+
+		if (num_read != params[4] && ferror(pFile))
+		{
+			return -1;
+		}
+
+		return num_read;
+	}
+
 	char val;
 	while (1)
 	{
-		/* If we're in stop mode, break as soon as the buffer is full. */
-		if (params[4] && (params[3] == 0 || num_read >= params[3] - 1))
+		if (params[3] == 0 || num_read >= params[3] - 1)
 		{
 			break;
 		}
