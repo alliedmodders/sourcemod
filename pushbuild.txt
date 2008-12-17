@@ -1,2 +1,2 @@
 a billion and nanas
-joys of buildbot
+joys of buildbot, part 2: buildbot and the very lonely square-shaped duck
