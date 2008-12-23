@@ -52,7 +52,7 @@ SourcePawnEngine g_engine1;
  #include <sys/mman.h>
 #endif
 
-#if defined PLATFORM_LINUX
+#if defined __linux__
 #include <malloc.h>
 #endif
 

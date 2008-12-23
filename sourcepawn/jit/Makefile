@@ -71,7 +71,7 @@ ifeq "$(OS)" "Darwin"
 	LINK += -dynamiclib
 	BINARY = $(PROJECT).dylib
 else
-	LINK += -static-libgcc-shared
+	LINK += -static-libgcc -shared
 	BINARY = $(PROJECT).so
 endif
 
