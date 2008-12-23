@@ -52,6 +52,10 @@ SourcePawnEngine g_engine1;
  #include <sys/mman.h>
 #endif
 
+#if defined PLATFORM_LINUX
+#include <malloc.h>
+#endif
+
 using namespace SourcePawn;
 
 #define ERROR_MESSAGE_MAX		25
