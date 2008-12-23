@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include "CDataPack.h"
 

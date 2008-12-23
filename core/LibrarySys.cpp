@@ -138,7 +138,7 @@ bool CDirectory::IsEntryDirectory()
 {
 #if defined PLATFORM_WINDOWS
 	return ((m_fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
 	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
 	return g_LibSys.IsPathDirectory(temppath);
@@ -160,7 +160,7 @@ const char *CDirectory::GetEntryName()
 {
 #if defined PLATFORM_WINDOWS
 	return m_fd.cFileName;
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	return ep ? ep->d_name : "";
 #endif
 }
@@ -174,7 +174,7 @@ bool CDirectory::IsValid()
 {
 #if defined PLATFORM_WINDOWS
 	return (m_dir != INVALID_HANDLE_VALUE);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	return (m_dir != NULL);
 #endif
 }
@@ -214,7 +214,7 @@ bool LibrarySystem::IsPathFile(const char *path)
 	}
 
 	return true;
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 
 	if (stat(path, &s) != 0)

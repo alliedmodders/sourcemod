@@ -33,7 +33,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 
 #if defined _MSC_VER
 	#define DLL_EXPORT				extern "C" __declspec(dllexport)
@@ -119,7 +119,7 @@ METAMOD_PLUGIN *_GetPluginPtr(const char *path, int fail_api)
 
 	if (!(g_hCore=openlib(path)))
 	{
-#if defined __linux__
+#if defined __linux__ || defined __APPLE__
 		UTIL_Format(s_FailPlugin.error_buffer, 
 			sizeof(s_FailPlugin.error_buffer),
 			"%s",
@@ -289,7 +289,7 @@ __attribute__((destructor)) static void gcc_fini()
 #endif
 
 /* Overload a few things to prevent libstdc++ linking */
-#if defined __linux__
+#if defined __linux__ || defined __APPLE__
 extern "C" void __cxa_pure_virtual(void)
 {
 }

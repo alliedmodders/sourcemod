@@ -29,7 +29,7 @@
 * Version: $Id$
 */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include "sm_globals.h"
 #include "sm_stringutil.h"
 #include "CellArray.h"

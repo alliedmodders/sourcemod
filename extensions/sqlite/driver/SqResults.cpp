@@ -343,7 +343,7 @@ bool SqResults::IsNull(unsigned int columnId)
 	return (field->type == SQLITE_NULL);
 }
 
-unsigned int SqResults::GetDataSize(unsigned int columnId)
+size_t SqResults::GetDataSize(unsigned int columnId)
 {
 	SqField *field = GetField(columnId);
 	if (!field)

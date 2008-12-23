@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
-#include <malloc.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "sp_vm_types.h"
@@ -111,7 +111,11 @@ void *SourcePawnEngine::ExecAlloc(size_t size)
 #if defined WIN32
 	return VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 #elif defined __GNUC__
+# if defined __APPLE__
+	void *base = valloc(size);
+# else
 	void *base = memalign(sysconf(_SC_PAGESIZE), size);
+# endif
 	if (mprotect(base, size, PROT_READ|PROT_WRITE|PROT_EXEC) != 0)
 	{
 		free(base);

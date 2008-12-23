@@ -33,7 +33,7 @@
 #define _INCLUDE_SM_QUEUE_H
 
 #include <new>
-#include <malloc.h>
+#include <stdlib.h>
 #include <sh_stack.h>
 
 using namespace SourceHook;

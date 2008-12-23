@@ -18,6 +18,8 @@
 
 #if defined linux
 #define KE_PLATFORM_LINUX
+#elif defined __APPLE__
+#define KE_PLATFORM_APPLE
 #else
 #error "TODO"
 #endif

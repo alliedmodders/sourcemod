@@ -31,7 +31,7 @@
 
 #include <limits.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "jit_x86.h"
 #include "opcode_helpers.h"
 #include "x86_macros.h"

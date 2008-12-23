@@ -40,7 +40,7 @@ inline const char *_strstr(const char *str, const char *substr)
 {
 #ifdef PLATFORM_WINDOWS
 	return strstr(str, substr);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	return (const char *)strstr(str, substr);
 #endif
 }

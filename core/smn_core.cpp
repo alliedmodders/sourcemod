@@ -418,6 +418,9 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 		fticks -= r;
 	}
 	return (cell_t)fticks;
+#elif defined PLATFORM_APPLE
+	assert(false);
+	return 0;
 #endif
 }
 

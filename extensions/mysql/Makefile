@@ -30,7 +30,7 @@ C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -pipe -fno-strict-aliasing
 C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
 C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
-CPP = gcc-4.1
+CPP = gcc
 
 override ENGSET = false
 ifeq "$(ENGINE)" "original"
@@ -65,7 +65,7 @@ else
 		-I$(MYSQL)/include
 endif
 
-LINK += $(MYSQL)/lib/libmysqlclient_r.a -lz -static-libgcc -lpthread
+LINK += $(MYSQL)/lib/libmysqlclient_r.a -lz -lpthread
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
@@ -94,7 +94,14 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-BINARY = $(PROJECT).ext.so
+OS := $(shell uname -s)
+ifeq "$(OS)" "Darwin"
+	LINK += -dynamiclib
+	BINARY = $(PROJECT).ext.dylib
+else
+	LINK += -static-libgcc -shared
+	BINARY = $(PROJECT).ext.so
+endif
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 
@@ -117,7 +124,7 @@ check:
 	fi
 
 extension: check $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -o $(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) -f Makefile all DEBUG=true

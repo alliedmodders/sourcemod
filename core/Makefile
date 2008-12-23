@@ -43,7 +43,7 @@ C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -pipe -fno-strict-aliasing
 C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
 C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
-CPP = gcc-4.1
+CPP = gcc
 
 override ENGSET = false
 ifeq "$(ENGINE)" "original"

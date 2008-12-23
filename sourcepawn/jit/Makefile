@@ -42,9 +42,9 @@ C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -pipe -fno-strict-aliasing
 C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
 C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
-CPP = gcc-4.1
+CPP = gcc
 
-LINK = -static-libgcc
+LINK = -m32 -ldl -lm
 
 INCLUDE = -I. -I.. -I$(SMSDK)/public -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86 \
 	-I$(SMSDK)/public/sourcepawn -I$(MMSOURCE17)/core/sourcehook -I$(SMSDK)/knight/shared -Ix86
@@ -66,13 +66,20 @@ else
 	CFLAGS += $(C_OPT_FLAGS)
 endif
 
+OS := $(shell uname -s)
+ifeq "$(OS)" "Darwin"
+	LINK += -dynamiclib
+	BINARY = $(PROJECT).dylib
+else
+	LINK += -static-libgcc-shared
+	BINARY = $(PROJECT).so
+endif
+
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
 ifeq "$(GCC_VERSION)" "4"
 	CFLAGS += $(C_GCC4_FLAGS)
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
-
-BINARY = $(PROJECT).so
 
 OBJ_LINUX := $(OBJECTS:../../knight/shared/%.cpp=$(BIN_DIR)/knight/%.o)
 OBJ_LINUX := $(OBJ_LINUX:%.cpp=$(BIN_DIR)/%.o)
@@ -96,7 +103,7 @@ all:
 	$(MAKE) -f Makefile jit
 
 jit: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -shared -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -o $(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) -f Makefile all DEBUG=true

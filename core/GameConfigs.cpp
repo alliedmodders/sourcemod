@@ -73,6 +73,9 @@ char g_GameName[256] = {'$', '\0'};
 #elif defined PLATFORM_LINUX
 #define PLATFORM_NAME				"linux"
 #define PLATFORM_SERVER_BINARY		"server_i486.so"
+#elif defined PLATFORM_APPLE
+#define PLATFORM_NAME               "undef"
+#define PLATFORM_SERVER_BINARY      "undef.dylib"
 #endif
 
 struct TempSigInfo

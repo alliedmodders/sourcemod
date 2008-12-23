@@ -24,7 +24,7 @@ C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -pipe -fno-strict-aliasing -fomit-fram
 C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
 C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
-CPP = gcc-4.1
+CPP = gcc
 
 LINK = -lgcc -static-libgcc
 
@@ -61,7 +61,7 @@ all:
 	$(MAKE) -f Makefile compiler
 
 compiler: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -ldl -lm -o$(BIN_DIR)/$(BINARY)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -ldl -lm -o $(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) -f Makefile all DEBUG=true
