@@ -90,6 +90,7 @@ public:
 	bool IsPathFile(const char *path);
 	bool IsPathDirectory(const char *path);
 	void GetPlatformError(char *error, size_t maxlength);
+	void GetPlatformErrorEx(int code, char *error, size_t maxlength);
 	size_t PathFormat(char *buffer, size_t len, const char *fmt, ...);
 	const char *GetFileExtension(const char *filename);
 	bool CreateFolder(const char *path);

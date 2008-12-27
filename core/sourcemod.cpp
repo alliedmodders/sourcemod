@@ -63,6 +63,7 @@ ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapEnd = NULL;
 bool g_Loaded = false;
+bool sm_show_debug_spew = false;
 
 typedef ISourcePawnEngine *(*GET_SP_V1)();
 typedef ISourcePawnEngine2 *(*GET_SP_V2)();
@@ -112,6 +113,12 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 
 			m_GotBasePath = true;
 		}
+
+		return ConfigResult_Accept;
+	}
+	else if (strcasecmp(key, "DebugSpew") == 0)
+	{
+		sm_show_debug_spew = (strcasecmp(value, "yes") == 0) ? true : false;
 
 		return ConfigResult_Accept;
 	}

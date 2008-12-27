@@ -40,6 +40,17 @@
 
 using namespace SourceHook;
 
+#if defined _DEBUG
+# define IF_DEBUG_SPEW
+# define ENDIF_DEBUG_SPEW
+#else
+# define IF_DEBUG_SPEW			\
+	if (sm_show_debug_spew)		\
+	{
+# define ENDIF_DEBUG_SPEW		\
+	}
+#endif
+
 /**
  * @brief Implements SourceMod's global overall management, API, and logic
  */
@@ -132,6 +143,7 @@ private:
 };
 
 extern bool g_Loaded;
+extern bool sm_show_debug_spew;
 extern SourceModBase g_SourceMod;
 extern HandleType_t g_WrBitBufType;		//:TODO: find a better place for this
 extern HandleType_t g_RdBitBufType;		//:TODO: find a better place for this

@@ -273,20 +273,34 @@ IDirectory *LibrarySystem::OpenDirectory(const char *path)
 
 void LibrarySystem::GetPlatformError(char *error, size_t maxlength)
 {
+#if defined PLATFORM_WINDOWS
+	return GetPlatformErrorEx(GetLastError(), error, maxlength);
+#elif defined PLATFORM_POSIX
+	return GetPlatformErrorEx(errno, error, maxlength);
+#endif
+}
+
+void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
+{
 	if (error && maxlength)
 	{
 #if defined PLATFORM_WINDOWS
-		DWORD dw = GetLastError();
 		FormatMessageA(
 			FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
-			dw,
+			(DWORD)code,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			(LPSTR)error,
 			maxlength,
 			NULL);
+#elif defined PLATFORM_LINUX
+		const char *ae = strerror_r(code, error, maxlength);
+		if (ae != error)
+		{
+			UTIL_Format(error, maxlength, "%s", ae);
+		}
 #elif defined PLATFORM_POSIX
-		UTIL_Format(error, maxlength, "%s", strerror(errno));
+		strerror_r(code, error, maxlength);
 #endif
 	}
 }
