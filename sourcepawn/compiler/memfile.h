@@ -1,7 +1,7 @@
 #ifndef _INCLUDE_MEMFILE_H
 #define _INCLUDE_MEMFILE_H
 
-#include <malloc.h>
+#include <stdlib.h>
 
 typedef struct memfile_s
 {

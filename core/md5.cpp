@@ -201,11 +201,7 @@ char *MD5::hex_digest(){
   int i;
   char *s= new char[33];
 
-  if (!finalized){
-/*    cerr << "MD5::hex_digest:  Can't get digest if you haven't "<<
-      "finalized the digest!" <<endl;*/
-    return "";
-  }
+  assert(finalized);
 
   for (i=0; i<16; i++)
     sprintf(s+i*2, "%02x", digest[i]);
@@ -220,12 +216,7 @@ char *MD5::hex_digest(char buffer[33]){
 
   int i;
 
-  if (!finalized)
-  {
-	 /* cerr << "MD5::hex_digest:  Can't get digest if you haven't "<<
-      "finalized the digest!" <<endl;*/
-    return "";
-  }
+  assert(finalized);
 
   for (i=0; i<16; i++)
     sprintf(buffer+i*2, "%02x", digest[i]);

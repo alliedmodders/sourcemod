@@ -30,7 +30,7 @@
  */
 
 #include <stdio.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "smsdk_ext.h"
 
 /**
@@ -90,6 +90,12 @@ IAdminSystem *adminsys = NULL;
 #endif
 #if defined SMEXT_ENABLE_TEXTPARSERS
 ITextParsers *textparsers = NULL;
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+IUserMessages *usermsgs = NULL;
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+ITranslator *translator = NULL;
 #endif
 
 /** Exports the main interface */
@@ -172,6 +178,12 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_TEXTPARSERS
 	SM_GET_IFACE(TEXTPARSERS, textparsers);
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+	SM_GET_IFACE(USERMSGS, usermsgs);
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+	SM_GET_IFACE(TRANSLATOR, translator);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
@@ -280,7 +292,11 @@ IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 /** Exposes the extension to Metamod */
 SMM_API void *PL_EXPOSURE(const char *name, int *code)
 {
+#if defined METAMOD_PLAPI_VERSION
+	if (name && !strcmp(name, METAMOD_PLAPI_NAME))
+#else
 	if (name && !strcmp(name, PLAPI_NAME))
+#endif
 	{
 		if (code)
 		{
@@ -301,8 +317,13 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 {
 	PLUGIN_SAVEVARS();
 
+#if !defined METAMOD_PLAPI_VERSION
 	GET_V_IFACE_ANY(serverFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+#else
+	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
+	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+#endif
 
 	m_SourceMMLoaded = true;
 
@@ -413,7 +434,7 @@ bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t max
 #endif
 
 /* Overload a few things to prevent libstdc++ linking */
-#if defined __linux__
+#if defined __linux__ || defined __APPLE__
 extern "C" void __cxa_pure_virtual(void)
 {
 }
@@ -438,3 +459,4 @@ void operator delete[](void * ptr)
 	free(ptr);
 }
 #endif
+

@@ -57,7 +57,7 @@ enum PhraseParseState
 
 struct Language
 {
-	char m_code2[3];
+	char m_code2[4];
 	int m_FullName;
 };
 
@@ -159,7 +159,7 @@ private:
 	bool m_InLanguageSection;
 	String m_CustomError;
 	unsigned int m_ServerLang;
-	char m_InitialLang[3];
+	char m_InitialLang[4];
 };
 
 /* Nice little wrapper to handle error logging and whatnot */

@@ -30,7 +30,7 @@
  */
 
 #include <sp_vm_api.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "x86/jit_x86.h"
 #include "dll_exports.h"
 #include "sp_vm_engine.h"
@@ -48,7 +48,7 @@ EXPORTFUNC ISourcePawnEngine2 *GetSourcePawnEngine2()
 	return &g_engine2;
 }
 
-#if defined __linux__
+#if defined __linux__ || defined __APPLE__
 extern "C" void __cxa_pure_virtual(void)
 {
 }

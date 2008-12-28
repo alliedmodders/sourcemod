@@ -151,7 +151,7 @@ inline bool IsPathSepChar(char c)
 {
 #if defined PLATFORM_WINDOWS
 	return (c == '\\' || c == '/');
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	return (c == '/');
 #endif
 }

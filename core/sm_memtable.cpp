@@ -30,7 +30,7 @@
  */
 
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "sm_memtable.h"
 
 BaseMemTable::BaseMemTable(unsigned int init_size)

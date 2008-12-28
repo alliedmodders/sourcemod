@@ -64,15 +64,14 @@ namespace builder
 				File.Delete(binpath);
 			}
 
-			string makefile_args = "";
+			string makefile_args = "CPP=gcc-4.1 ";
 
 			if (lib.build_mode == BuildMode.BuildMode_Episode1)
 			{
-				makefile_args = null;
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
 			{
-				makefile_args = "ENGINE=\"orangebox\"";
+				makefile_args += "ENGINE=\"orangebox\" ";
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{

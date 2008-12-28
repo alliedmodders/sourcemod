@@ -44,7 +44,7 @@
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 ConVar sm_corecfgfile("sm_corecfgfile", "addons/sourcemod/configs/core.cfg", 0, "SourceMod core configuration file");
 #endif
 
@@ -265,7 +265,7 @@ inline bool IsPathSepChar(char c)
 {
 #if defined PLATFORM_WINDOWS
 	return (c == '\\' || c == '/');
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_POSIX
 	return (c == '/');
 #endif
 }

@@ -34,7 +34,7 @@
 
 #include <new>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <assert.h>
 
 enum NodeType

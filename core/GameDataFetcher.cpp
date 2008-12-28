@@ -1,33 +1,33 @@
 /**
-* vim: set ts=4 :
-* =============================================================================
-* SourceMod
-* Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
-* =============================================================================
-*
-* This program is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, version 3.0, as published by the
-* Free Software Foundation.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-* details.
-*
-* You should have received a copy of the GNU General Public License along with
-* this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-* As a special exception, AlliedModders LLC gives you permission to link the
-* code of this program (as well as its derivative works) to "Half-Life 2," the
-* "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
-* by the Valve Corporation.  You must obey the GNU General Public License in
-* all respects for all other code used.  Additionally, AlliedModders LLC grants
-* this exception to all derivative works.  AlliedModders LLC defines further
-* exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
-* or <http://www.sourcemod.net/license.php>.
-*
-* Version: $Id$
-*/
+ * vim: set ts=4 :
+ * =============================================================================
+ * SourceMod
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * =============================================================================
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, version 3.0, as published by the
+ * Free Software Foundation.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * As a special exception, AlliedModders LLC gives you permission to link the
+ * code of this program (as well as its derivative works) to "Half-Life 2," the
+ * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
+ * by the Valve Corporation.  You must obey the GNU General Public License in
+ * all respects for all other code used.  Additionally, AlliedModders LLC grants
+ * this exception to all derivative works.  AlliedModders LLC defines further
+ * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
+ * or <http://www.sourcemod.net/license.php>.
+ *
+ * Version: $Id$
+ */
 
 #include "GameDataFetcher.h"
 #include "bitbuf.h"
@@ -42,8 +42,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
-#define INVALID_SOCKET -1
-#define closesocket close
+#define INVALID_SOCKET		-1
+#define closesocket 		close
+#define WSAGetLastError()	errno
 #endif
 
 #include "sh_vector.h"
@@ -63,29 +64,58 @@
 #include "TimerSys.h"
 #include "compat_wrappers.h"
 #include "sm_stringutil.h"
+#include "md5.h"
+#include "frame_hooks.h"
 
 #define QUERY_MAX_LENGTH 1024
 
-BuildMD5ableBuffer g_MD5Builder;
-FetcherThread g_FetchThread;
+static BuildMD5ableBuffer g_MD5Builder;
+static FetcherThread g_FetchThread;
 
-FILE *logfile = NULL;
+static FILE *logfile = NULL;
 
 bool g_disableGameDataUpdate = false;
+
+/**
+ * Note on this.  If we issue a reload and changelevel, my srcds.exe will emit 
+ *   Assertion Failed: !m_bServiceStarted
+ * on quit.  This seems like a non-issue, because before we just terminated the 
+ * server anyway.  If anyone notices and files a bug, we can look into it further.
+ */
 bool g_restartAfterUpdate = false;
 
-int g_serverPort = 6500;
-char g_serverAddress[100] = "hayate.alliedmods.net";
+static bool was_level_started = false;
+static int g_serverPort = 6500;
+static char g_serverAddress[100] = "smupdate.alliedmods.net";
 
-void FetcherThread::RunThread( IThreadHandle *pHandle )
+static void _ForceRestart(void *data)
+{
+	char cmd[300];
+	g_Logger.LogMessage("Automatically restarting SourceMod after a successful gamedata update.");
+	UTIL_Format(cmd, sizeof(cmd), "meta unload %d\n", g_PLID);
+	engine->ServerCommand(cmd);
+	UTIL_Format(cmd, sizeof(cmd), "changelevel \"%s\"\n", STRING(gpGlobals->mapname));
+	engine->ServerCommand(cmd);
+	UTIL_Format(cmd, sizeof(cmd), "echo SourceMod restarted after gamedata update.\n");
+	engine->ServerCommand(cmd);
+}
+
+static void ForceRestart()
+{
+	FrameAction action;
+
+	action.action = _ForceRestart;
+	action.data = NULL;
+	AddFrameAction(action);
+}
+
+void FetcherThread::RunThread(IThreadHandle *pHandle)
 {
 	char lock_path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, lock_path, sizeof(lock_path), "data/temp");
 	g_LibSys.CreateFolder(lock_path);
 
 	g_SourceMod.BuildPath(Path_SM, lock_path, sizeof(lock_path), "data/temp/gamedata.lock");
-
-	g_Logger.LogMessage("Starting Gamedata update fetcher... please report problems to bugs.alliedmods.net");
 
 	char log_path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, log_path, sizeof(log_path), "logs/gamedata");
@@ -102,7 +132,7 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 	if (!logfile)
 	{
-		g_Logger.LogError("Failed to create GameData log file");
+		/* :( */
 		return;
 	}
 
@@ -120,19 +150,16 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 	if (len == 0)
 	{
-		g_Logger.LogToOpenFile(logfile, "Query Writing failed");
-
+		g_Logger.LogToFileOnly(logfile, "Could not build gamedata query!");
 		fclose(logfile);
 		unlink(lock_path);
 		return;
 	}
 
+	/* We check this late so we have the MD5 sums available.  This may change in the future. */
 	if (g_disableGameDataUpdate)
 	{
-#ifdef DEBUG
-		g_Logger.LogMessage("Skipping GameData Query due to DisableAutoUpdate being set to true");
-#endif
-
+		g_Logger.LogToFileOnly(logfile, "Skipping gamedata fetcher (DisableAutoUpdate set)");
 		fclose(logfile);
 		unlink(lock_path);
 		return;
@@ -150,13 +177,15 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 
 	int sent = SendData(socketDescriptor, query, len);
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "Sent Query!");
-#endif
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile, "Sent gamedata query");
+ENDIF_DEBUG_SPEW
 
 	if (sent == 0)
 	{
-		g_Logger.LogToOpenFile(logfile, "Failed to send gamedata query data to remote host");
+IF_DEBUG_SPEW
+		g_Logger.LogToFileOnly(logfile, "Failed to send gamedata query data to remote host");
+ENDIF_DEBUG_SPEW
 
 		closesocket(socketDescriptor);
 		fclose(logfile);
@@ -172,12 +201,41 @@ void FetcherThread::RunThread( IThreadHandle *pHandle )
 	unlink(lock_path);
 }
 
-void FetcherThread::OnTerminate( IThreadHandle *pHandle, bool cancel )
+void FetcherThread::OnTerminate(IThreadHandle *pHandle, bool cancel)
 {
 	g_blockGameDataLoad = false;
+
+	if (cancel)
+	{
+		return;
+	}
+
+	if (wasSuccess)
+	{
+		HandleUpdateStatus(updateStatus, build);
+
+		if (needsRestart)
+		{
+			if (g_restartAfterUpdate)
+			{
+				if (was_level_started)
+				{
+					ForceRestart();
+				}
+			}
+			else
+			{
+				g_Logger.LogMessage("Your gamedata files have been updated, please restart your server.");
+			}
+		}
+	}
+	else if (!g_disableGameDataUpdate)
+	{
+		g_Logger.LogError("An error occurred in the gamedata fetcher, see your gamedata log files for more information.");
+	}
 }
 
-int FetcherThread::BuildGameDataQuery( char *buffer, int maxlen )
+int FetcherThread::BuildGameDataQuery(char *buffer, int maxlen)
 {
 	char gamedata_path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, gamedata_path, sizeof(gamedata_path), "gamedata");
@@ -206,45 +264,42 @@ int FetcherThread::BuildGameDataQuery( char *buffer, int maxlen )
 		{
 			const char *name = dir->GetEntryName();
 			size_t len = strlen(name);
-			if (len >= 4
-				&& strcmp(&name[len-4], ".txt") == 0)
+			if (len >= 4 && strcmp(&name[len-4], ".txt") == 0)
 			{
+				MD5 md5;
+				SMCError err;
+				SMCStates states;
+				unsigned char raw[16];
 				char file[PLATFORM_MAX_PATH];
 
 				g_LibSys.PathFormat(file, sizeof(file), "%s/%s", gamedata_path, name);
 
-				SMCStates states;
-				if (g_TextParser.ParseFile_SMC(file, &g_MD5Builder, &states) == SMCError_Okay)
+				g_MD5Builder.checksum = &md5;
+				if ((err = g_TextParser.ParseFile_SMC(file, &g_MD5Builder, &states)) == SMCError_Okay)
 				{
-					unsigned char *md5 = g_MD5Builder.GetMD5();
-					if (md5 != NULL)
-					{
-						(uint8_t)buffer[10]++; //Increment the file counter
-						Writer.WriteBytes(md5, 16);
+					md5.raw_digest(raw);
+					(uint8_t)buffer[10]++; //Increment the file counter
+					Writer.WriteBytes(raw, 16);
 
-						g_Logger.LogToOpenFile(logfile, "%s - \"%s\"", file, g_MD5Builder.GetMD5String());
+					FileData *data = new FileData();
+					data->filename = new SourceHook::String(file);
+					md5.hex_digest(data->checksum);
+					filenames.push_back(data);
 
-						FileData *data = new FileData();
-						data->filename = new SourceHook::String(file);
-						memcpy(data->checksum, g_MD5Builder.GetMD5String(), 33);
-						filenames.push_back(data);
-					}
-					else
-					{
-#ifdef DEBUG
-						g_Logger.LogToOpenFile(logfile, "%s no md5?", file);
-#endif
-					}
+IF_DEBUG_SPEW
+					g_Logger.LogToFileOnly(logfile, "Parsed file: %s as %s", file, data->checksum);
+ENDIF_DEBUG_SPEW
+
 				}
 				else
 				{
-#ifdef DEBUG
-					g_Logger.LogToOpenFile(logfile, "%s failed!", file);
-#endif
+IF_DEBUG_SPEW
+					const char *error = g_TextParser.GetSMCErrorString(err);
+					g_Logger.LogToFileOnly(logfile, "Parsing of file %s failed: %s", file, error);
+ENDIF_DEBUG_SPEW
 				}
 			}
 		}
-
 		dir->NextEntry();
 	}
 
@@ -253,17 +308,16 @@ int FetcherThread::BuildGameDataQuery( char *buffer, int maxlen )
 
 int FetcherThread::ConnectSocket()
 {
-	struct protoent *ptrp;
-	ptrp = getprotobyname("tcp");
-
-#ifdef WIN32
+#if defined PLATFORM_WINDOWS
 	WSADATA wsaData;
 	WSAStartup(0x0101, &wsaData);
 #endif
 
-	if (ptrp == NULL) 
+	struct protoent *ptrp;
+	
+	if ((ptrp = getprotobyname("tcp")) == NULL) 
 	{
-		g_Logger.LogToOpenFile(logfile, "Failed to find TCP");
+		g_Logger.LogToFileOnly(logfile, "Error: Failed to find TCP protocol");
 		return INVALID_SOCKET;
 	}
 
@@ -271,12 +325,9 @@ int FetcherThread::ConnectSocket()
 
 	if (socketDescriptor == INVALID_SOCKET)
 	{
-		//bugger aye?
-#ifdef WIN32
-		g_Logger.LogToOpenFile(logfile, "Failed to create a new socket - Error %i", WSAGetLastError());
-#else
-		g_Logger.LogToOpenFile(logfile, "Failed to create a new socket - Error %i", errno);
-#endif
+		char error[255];
+		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
+		g_Logger.LogToFileOnly(logfile, "Error: Failed to create socket: %s", error);
 		closesocket(socketDescriptor);
 		return INVALID_SOCKET;
 	}
@@ -293,7 +344,7 @@ int FetcherThread::ConnectSocket()
 	{
 		if ((local_addr.sin_addr.s_addr = inet_addr(g_serverAddress)) == INADDR_NONE)
 		{
-			g_Logger.LogToOpenFile(logfile, "Couldn't locate address");
+			g_Logger.LogToFileOnly(logfile, "Couldn't locate address: %s", g_serverAddress);
 			closesocket(socketDescriptor);
 			return INVALID_SOCKET;
 		}
@@ -305,11 +356,9 @@ int FetcherThread::ConnectSocket()
 
 	if (connect(socketDescriptor, (struct sockaddr *) &local_addr, sizeof(local_addr)) < 0)
 	{
-#ifdef WIN32
-		g_Logger.LogToOpenFile(logfile, "Couldn't connect - Error %i", WSAGetLastError());
-#else
-		g_Logger.LogToOpenFile(logfile, "Couldn't connect - Error %i", errno);
-#endif
+		char error[255];
+		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
+		g_Logger.LogToFileOnly(logfile, "Couldn't connect to %s: %s", g_serverAddress, error);
 		closesocket(socketDescriptor);
 		return INVALID_SOCKET;
 	}
@@ -320,58 +369,59 @@ int FetcherThread::ConnectSocket()
 void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 {
 	char buffer[50];
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "Waiting for reply!");
-#endif
+
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile, "Waiting for reply!");
+ENDIF_DEBUG_SPEW
 
 	//Read in the header bytes
 	int returnLen = RecvData(socketDescriptor, buffer, 12);
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "Recv Completed");
-#endif
 
 	if (returnLen == 0)
 	{
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, ",but it failed.");
-#endif
-		/* Timeout or fail? */
+		char error[255];
+		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
+		g_Logger.LogToFileOnly(logfile, "Did not receive reply: %s", error);
 		return;
 	}
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "Received Header!");
-#endif
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile, "Received Header!");
+ENDIF_DEBUG_SPEW
 
 	bf_read Reader = bf_read("GameDataQuery", buffer, 12);
 
 	if (Reader.ReadByte() != 'A' || Reader.ReadByte() != 'G')
 	{
-		g_Logger.LogToOpenFile(logfile, "Unknown Query Response");
+IF_DEBUG_SPEW
+		g_Logger.LogToFileOnly(logfile, "Unknown Query Response");
+ENDIF_DEBUG_SPEW
 		return;
 	}
 
-	UpdateStatus updateStatus = (UpdateStatus)Reader.ReadByte();
-
-	short build[4] = {0,0,0,0};
+	updateStatus = (UpdateStatus)Reader.ReadByte();
 
 	build[0] = Reader.ReadShort();
 	build[1] = Reader.ReadShort();
 	build[2] = Reader.ReadShort();
 	build[3] = Reader.ReadShort();
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "Update Status: %i - Latest %i.%i.%i.%i", updateStatus, build[0], build[1], build[2], build[3]);
-#endif
-
-	HandleUpdateStatus(updateStatus, build);
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile,
+						   "Update Status: %i - Latest %i.%i.%i.%i",
+						   updateStatus,
+						   build[0],
+						   build[1],
+						   build[2],
+						   build[3]);
+ENDIF_DEBUG_SPEW
 
 	int changedFiles = Reader.ReadByte();
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "Files to download: %i", changedFiles);
-#endif
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile, "Files to download: %i", changedFiles);
+ENDIF_DEBUG_SPEW
 
 	for (int i=0; i<changedFiles; i++)
 	{
@@ -389,9 +439,9 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 		int index = Reader.ReadByte();
 		int tempLen = Reader.ReadUBitLong(32);
 
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, "File index %i and length %i", index, tempLen);
-#endif
+IF_DEBUG_SPEW
+		g_Logger.LogToFileOnly(logfile, "File index %i and length %i", index, tempLen);
+ENDIF_DEBUG_SPEW
 
 		void *memPtr;
 		memtable->CreateMem(tempLen+1, &memPtr);
@@ -399,9 +449,9 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 		//Read the contents of our file into the memtable
 		returnLen = RecvData(socketDescriptor, (char *)memPtr, tempLen);
 
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, "Recieved %i bytes", returnLen);
-#endif
+IF_DEBUG_SPEW
+		g_Logger.LogToFileOnly(logfile, "Received %i bytes", returnLen);
+ENDIF_DEBUG_SPEW
 
 		if (returnLen == 0)
 		{
@@ -412,7 +462,7 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 		((unsigned char *)memPtr)[tempLen] = '\0';
 
 		FileData *data = filenames.at(index);
-		const char* filename;
+		const char *filename;
 		if (data != NULL)
 		{
 			filename = data->filename->c_str();
@@ -421,12 +471,12 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 
 			if (fp)
 			{
-				fprintf(fp, (const char *)memPtr);
+				fprintf(fp, "%s", (const char *)memPtr);
 				fclose(fp);
 			}
 			else
 			{
-				g_Logger.LogToOpenFile(logfile, "Failed to open file \"%s\"", filename);
+				g_Logger.LogToFileOnly(logfile, "Failed to open file \"%s\" for writing", filename);
 			}
 		}
 		else
@@ -436,21 +486,18 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 
 		memtable->Reset();
 
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, "Updated File %s", filename);
-#endif
+		g_Logger.LogToFileOnly(logfile, "Updated file: %s", filename);
 	}
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "File Downloads Completed!");
-#endif
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile, "File Downloads Completed!");
+ENDIF_DEBUG_SPEW
 
-	bool needsRestart = false;
+	needsRestart = false;
 
 	if (changedFiles > 0)
 	{
 		needsRestart = true;
-		g_Logger.LogMessage("New GameData Files have been downloaded to your gamedata directory. Please restart your server for these to take effect");
 	}
 
 	//Read changed file count
@@ -458,8 +505,9 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 
 	if (returnLen == 0)
 	{
-		/* Timeout or fail? */
-		g_Logger.LogToOpenFile(logfile, "Failed to receive unknown count");
+		char error[255];
+		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
+		g_Logger.LogToFileOnly(logfile, "Did not receive count reply: %s", error);
 		return;
 	}
 
@@ -467,28 +515,27 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 
 	changedFiles = Reader.ReadByte();
 
-	if (changedFiles == 0)
+	if (changedFiles < 1)
 	{
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, "No unknown files. We're all done");
-#endif
+IF_DEBUG_SPEW
+		g_Logger.LogToFileOnly(logfile, "No unknown files. We're all done");
+ENDIF_DEBUG_SPEW
 		return;
 	}
 
 	char *changedFileIndexes = new char[changedFiles];
 
-#ifdef DEBUG
-	g_Logger.LogToOpenFile(logfile, "%i Files were unknown", changedFiles);
-#endif
+IF_DEBUG_SPEW
+	g_Logger.LogToFileOnly(logfile, "%i files were unknown", changedFiles);
+ENDIF_DEBUG_SPEW
 
 	returnLen = RecvData(socketDescriptor, changedFileIndexes, changedFiles);
 
 	if (returnLen == 0)
 	{
-		/* Timeout or fail? */
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, "Failed to receive unknown list");
-#endif
+		char error[255];
+		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
+		g_Logger.LogToFileOnly(logfile, "Did not receive list reply: %s", error);
 		return;
 	}
 
@@ -511,21 +558,17 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 		}
 
 		g_LibSys.GetFileFromPath(fileName, sizeof(fileName), pathname);
-#ifdef DEBUG
-		g_Logger.LogToOpenFile(logfile, "Unknown File %i : %s", index, fileName);
-#endif
+IF_DEBUG_SPEW
+		g_Logger.LogToFileOnly(logfile, "Unknown File %i : %s", index, fileName);
+ENDIF_DEBUG_SPEW
 	}
 
 	delete [] changedFileIndexes;
 
-	if (needsRestart && g_restartAfterUpdate)
-	{
-		g_Logger.LogMessage("Automatically restarting server after a successful gamedata update!");
-		engine->ServerCommand("quit\n");
-	}
+	wasSuccess = true;
 }
 
-int FetcherThread::RecvData( int socketDescriptor, char *buffer, int len )
+int FetcherThread::RecvData(int socketDescriptor, char *buffer, int len)
 {
 	fd_set fds;
 	struct timeval tv;
@@ -564,7 +607,7 @@ int FetcherThread::RecvData( int socketDescriptor, char *buffer, int len )
 	return bytesReceivedTotal;	
 }
 
-int FetcherThread::SendData( int socketDescriptor, char *buffer, int len )
+int FetcherThread::SendData(int socketDescriptor, char *buffer, int len)
 {
 	fd_set fds;
 	struct timeval tv;
@@ -599,7 +642,7 @@ int FetcherThread::SendData( int socketDescriptor, char *buffer, int len )
 	return sentBytesTotal;
 }
 
-void FetcherThread::HandleUpdateStatus( UpdateStatus status, short version[4] )
+void FetcherThread::HandleUpdateStatus(UpdateStatus status, short version[4])
 {
 	switch (status)
 	{
@@ -611,14 +654,12 @@ void FetcherThread::HandleUpdateStatus( UpdateStatus status, short version[4] )
 
 		case Update_NewBuild:
 		{
-			g_Logger.LogMessage("SourceMod Update: A new Mercurial build is available from sourcemod.net");
-			g_Logger.LogMessage("Current Version: %i.%i.%i.%i Available: %i.%i.%i.%i", version[0], version[1], version[2], version[3], version[0], version[1], version[2], version[3]);
 			break;
 		}
 
 		case Update_MinorAvailable:
 		{
-			g_Logger.LogMessage("SourceMod Update: An incremental minor release of SourceMod is now available from sourcemod.net");
+			g_Logger.LogMessage("SourceMod Update: A new release of SourceMod is now available from sourcemod.net");
 			g_Logger.LogMessage("Current Version: %i.%i.%i Available: %i.%i.%i", version[0], version[1], version[2], version[0], version[1], version[2]);
 			break;
 		}
@@ -632,14 +673,15 @@ void FetcherThread::HandleUpdateStatus( UpdateStatus status, short version[4] )
 
 		case Update_CriticalAvailable:
 		{
-			g_Logger.LogError("SourceMod Update: A new critical release of SourceMod is now available from sourcemod.net. It is strongly recommended that you update");
-			g_Logger.LogMessage("Current Version: %i.%i.%i.%i Available: %i.%i.%i.%i", version[0], version[1], version[2], version[3], version[0], version[1], version[2], version[3]);
+			g_Logger.LogError("SourceMod Update: A critical SourceMod release is available from sourcemod.net. It is strongly recommended that you update!");
+			g_Logger.LogMessage("Current Version: %i.%i.%i Available: %i.%i.%i", version[0], version[1], version[2], version[0], version[1], version[2]);
 			break;
 		}
 	}
 }
 
 bool g_blockGameDataLoad = false;
+static IThreadHandle *fetch_thread_hndl;
 
 class InitFetch : public SMGlobalClass
 {
@@ -658,7 +700,30 @@ public:
 
 		ThreadParams fetchThreadParams = ThreadParams();
 		fetchThreadParams.prio = ThreadPrio_Low;
-		g_pThreader->MakeThread(&g_FetchThread, &fetchThreadParams);
+		fetch_thread_hndl = g_pThreader->MakeThread(&g_FetchThread, &fetchThreadParams);
+	}
+
+	void OnSourceModShutdown()
+	{
+		fetch_thread_hndl->WaitForThread();
+		fetch_thread_hndl->DestroyThis();
+	}
+
+	void OnSourceModLevelActivated()
+	{
+		was_level_started = true;
+
+		if (g_restartAfterUpdate && 
+			g_FetchThread.wasSuccess && 
+			g_FetchThread.needsRestart)
+		{
+			ForceRestart();
+		}
+	}
+
+	void OnSourceModLevelEnd()
+	{
+		was_level_started = false;
 	}
 
 	ConfigResult OnSourceModConfigChanged(const char *key, 
@@ -667,14 +732,14 @@ public:
 		char *error, 
 		size_t maxlength)
 	{
-		if (strcmp(key, "DisableAutoUpdate") == 0)
+		if (strcasecmp(key, "DisableAutoUpdate") == 0)
 		{
-			if (strcmp(value, "yes") == 0)
+			if (strcasecmp(value, "yes") == 0)
 			{
 				g_disableGameDataUpdate = true;
 				return ConfigResult_Accept;
 			}
-			else if (strcmp(value, "no") == 0)
+			else if (strcasecmp(value, "no") == 0)
 			{
 				g_disableGameDataUpdate = false;
 				return ConfigResult_Accept;
@@ -683,14 +748,14 @@ public:
 			return ConfigResult_Reject;
 		}
 
-		if (strcmp(key, "ForceRestartAfterUpdate") == 0)
+		if (strcasecmp(key, "ForceRestartAfterUpdate") == 0)
 		{
-			if (strcmp(value, "yes") == 0)
+			if (strcasecmp(value, "yes") == 0)
 			{
 				g_restartAfterUpdate = true;
 				return ConfigResult_Accept;
 			}
-			else if (strcmp(value, "no") == 0)
+			else if (strcasecmp(value, "no") == 0)
 			{
 				g_restartAfterUpdate = false;
 				return ConfigResult_Accept;
@@ -699,14 +764,14 @@ public:
 			return ConfigResult_Reject;
 		}
 
-		if (strcmp(key, "AutoUpdateServer") == 0)
+		if (strcasecmp(key, "AutoUpdateServer") == 0)
 		{
 			UTIL_Format(g_serverAddress, sizeof(g_serverAddress), "%s", value);
 
 			return ConfigResult_Accept;
 		}
 
-		if (strcmp(key, "AutoUpdatePort") == 0)
+		if (strcasecmp(key, "AutoUpdatePort") == 0)
 		{
 			int port = atoi(value);
 
@@ -723,6 +788,55 @@ public:
 		return ConfigResult_Ignore;
 	}
 } g_InitFetch;
+
+BuildMD5ableBuffer::BuildMD5ableBuffer()
+{
+	stringTable = new BaseStringTable(2048);
+}
+
+BuildMD5ableBuffer::~BuildMD5ableBuffer()
+{
+	delete stringTable;
+}
+
+void BuildMD5ableBuffer::ReadSMC_ParseStart()
+{
+	stringTable->Reset();
+}
+
+SMCResult BuildMD5ableBuffer::ReadSMC_KeyValue(const SMCStates *states,
+											   const char *key,
+											   const char *value)
+{
+	stringTable->AddString(key);
+	stringTable->AddString(value);
+
+	return SMCResult_Continue;
+}
+
+SMCResult BuildMD5ableBuffer::ReadSMC_NewSection(const SMCStates *states, const char *name)
+{
+	stringTable->AddString(name);
+
+	return SMCResult_Continue;
+}
+
+void BuildMD5ableBuffer::ReadSMC_ParseEnd(bool halted, bool failed)
+{
+	if (halted || failed)
+	{
+		return;
+	}
+
+	void *data = stringTable->GetMemTable()->GetAddress(0);
+
+	if (data != NULL)
+	{
+		checksum->update((unsigned char *)data, stringTable->GetMemTable()->GetActualMemUsed());
+	}
+
+	checksum->finalize();
+}
 
 CON_COMMAND(sm_gamedata_md5, "Checks the MD5 sum for a given gamedata file")
 {
@@ -766,3 +880,26 @@ CON_COMMAND(sm_gamedata_md5, "Checks the MD5 sum for a given gamedata file")
 
 	g_SMAPI->ConPrint("File not found!\n");
 }
+
+FetcherThread::~FetcherThread()
+{
+	SourceHook::CVector<FileData *>::iterator iter = filenames.begin();
+
+	FileData *curData;
+
+	while (iter != filenames.end())
+	{
+		curData = (*iter);
+		delete curData->filename;
+		delete curData;
+		iter = filenames.erase(iter);
+	}
+}
+
+FetcherThread::FetcherThread() 
+{
+	memtable = new BaseMemTable(4096);
+	wasSuccess = false;
+	needsRestart = false;
+}
+

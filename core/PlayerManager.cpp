@@ -255,6 +255,13 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 	g_OnMapStarted = true;
 
+	SMGlobalClass *cls = SMGlobalClass::head;
+	while (cls)
+	{
+		cls->OnSourceModLevelActivated();
+		cls = cls->m_pGlobalClassNext;
+	}
+
 	SM_ExecuteAllConfigs();
 }
 

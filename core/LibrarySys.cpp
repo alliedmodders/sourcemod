@@ -138,7 +138,7 @@ bool CDirectory::IsEntryDirectory()
 {
 #if defined PLATFORM_WINDOWS
 	return ((m_fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
 	snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
 	return g_LibSys.IsPathDirectory(temppath);
@@ -160,7 +160,7 @@ const char *CDirectory::GetEntryName()
 {
 #if defined PLATFORM_WINDOWS
 	return m_fd.cFileName;
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	return ep ? ep->d_name : "";
 #endif
 }
@@ -174,7 +174,7 @@ bool CDirectory::IsValid()
 {
 #if defined PLATFORM_WINDOWS
 	return (m_dir != INVALID_HANDLE_VALUE);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	return (m_dir != NULL);
 #endif
 }
@@ -214,7 +214,7 @@ bool LibrarySystem::IsPathFile(const char *path)
 	}
 
 	return true;
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 
 	if (stat(path, &s) != 0)
@@ -273,20 +273,34 @@ IDirectory *LibrarySystem::OpenDirectory(const char *path)
 
 void LibrarySystem::GetPlatformError(char *error, size_t maxlength)
 {
+#if defined PLATFORM_WINDOWS
+	return GetPlatformErrorEx(GetLastError(), error, maxlength);
+#elif defined PLATFORM_POSIX
+	return GetPlatformErrorEx(errno, error, maxlength);
+#endif
+}
+
+void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
+{
 	if (error && maxlength)
 	{
 #if defined PLATFORM_WINDOWS
-		DWORD dw = GetLastError();
 		FormatMessageA(
 			FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
 			NULL,
-			dw,
+			(DWORD)code,
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			(LPSTR)error,
 			maxlength,
 			NULL);
+#elif defined PLATFORM_LINUX
+		const char *ae = strerror_r(code, error, maxlength);
+		if (ae != error)
+		{
+			UTIL_Format(error, maxlength, "%s", ae);
+		}
 #elif defined PLATFORM_POSIX
-		UTIL_Format(error, maxlength, "%s", strerror(errno));
+		strerror_r(code, error, maxlength);
 #endif
 	}
 }

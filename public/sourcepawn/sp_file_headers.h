@@ -60,7 +60,7 @@
 #define SPFILE_VERSION	0x0102			/**< File format version */
 
 //:TODO: better compiler/nix support
-#if defined __linux__
+#if defined __GNUC__
 	#pragma pack(1)         /* structures must be packed (byte-aligned) */
 #else
 	#pragma pack(push)
