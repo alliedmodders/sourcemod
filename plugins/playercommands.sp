@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod SlapSlay Commands Plugin
+ * SourceMod Player Commands Plugin
  * Implements slap and slay commands
  *
  * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
@@ -40,9 +40,9 @@
 
 public Plugin:myinfo =
 {
-	name = "SlapSlay Commands",
+	name = "Player Commands",
 	author = "AlliedModders LLC",
-	description = "Slap and Slay Commands",
+	description = "Misc. Player Commands",
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
 };
@@ -51,14 +51,16 @@ new Handle:hTopMenu = INVALID_HANDLE;
 
 #include "playercommands/slay.sp"
 #include "playercommands/slap.sp"
+#include "playercommands/rename.sp"
 
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("slapslay.phrases");
+	LoadTranslations("plugin.playercommands");
 
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
+	RegAdminCmd("sm_rename", Command_Rename, ADMFLAG_SLAY, "sm_rename <#userid|name>");
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -98,6 +100,14 @@ public OnAdminMenuReady(Handle:topmenu)
 			AdminMenu_Slap,
 			player_commands,
 			"sm_slap",
-			ADMFLAG_SLAY);	
+			ADMFLAG_SLAY);
+
+		AddToTopMenu(hTopMenu,
+			"sm_rename",
+			TopMenuObject_Item,
+			AdminMenu_Rename,
+			player_commands,
+			"sm_rename",
+			ADMFLAG_SLAY);
 	}
 }

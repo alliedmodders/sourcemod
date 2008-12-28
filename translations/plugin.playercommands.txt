@@ -1,0 +1,45 @@
+"Phrases"
+{
+	"Name changed"
+	{
+		"en"			"An admin has changed your name"
+	}
+
+	"Renamed target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Renamed {1}."
+	}
+
+	"Rename player"
+	{
+		"en"			"Rename player"
+	}
+	
+	"Slap player"
+	{
+		"en"			"Slap player"
+	}
+
+	"Slap damage"
+	{
+		"en"			"Slap damage"
+	}
+	
+	"Slay player"
+	{
+		"en"			"Slay player"
+	}
+	
+	"Slapped target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Slapped {1}."
+	}
+	
+	"Slayed target"
+	{
+		"#format"		"{1:t}"
+		"en"			"Slayed {1}."
+	}
+}
