@@ -122,7 +122,13 @@
 	"Kicked target"
 	{
 		"#format"		"{1:t}"
-		"en"			"Kicked {1}."
+		"en"			"Kicked {1}"
+	}
+
+	"Kicked target reason"
+	{
+		"#format"		"{1:t},{2:s}"
+		"en"			"Kicked {1} (Reason: {2})"
 	}
 	
 	"Admin access"

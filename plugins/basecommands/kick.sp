@@ -155,13 +155,30 @@ public Action:Command_Kick(client, args)
 			sizeof(target_name),
 			tn_is_ml)) > 0)
 	{
+		decl String:reason[64];
+		Format(reason, sizeof(reason), Arguments[len]);
+
 		if (tn_is_ml)
 		{
-			ShowActivity2(client, "[SM] ", "%t", "Kicked target", target_name);
+			if (reason[0] == '\0')
+			{
+				ShowActivity2(client, "[SM] ", "%t", "Kicked target", target_name);
+			}
+			else
+			{
+				ShowActivity2(client, "[SM] ", "%t", "Kicked target reason", target_name, reason);
+			}
 		}
 		else
 		{
-			ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_s", target_name);
+			if (reason[0] == '\0')
+			{
+				ShowActivity2(client, "[SM] ", "%t", "Kicked target", "_s", target_name);            
+			}
+			else
+			{
+				ShowActivity2(client, "[SM] ", "%t", "Kicked target reason", "_s", target_name, reason);
+			}
 		}
 		
 		new kick_self = 0;
@@ -175,13 +192,13 @@ public Action:Command_Kick(client, args)
 			}
 			else
 			{
-				PerformKick(client, target_list[i], Arguments[len]);
+				PerformKick(client, target_list[i], reason);
 			}
 		}
 		
 		if (kick_self)
 		{
-			PerformKick(client, client, Arguments[len]);
+			PerformKick(client, client, reason);
 		}
 	}
 	else
