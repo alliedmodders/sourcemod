@@ -124,9 +124,15 @@ void FetcherThread::RunThread(IThreadHandle *pHandle)
 	GetAdjustedTime(&t);
 	tm *curtime = localtime(&t);
 
-	g_SourceMod.BuildPath(Path_SM, log_path, sizeof(log_path), "logs/gamedata/L%02d%02d.log", curtime->tm_mon + 1, curtime->tm_mday);
+	g_SourceMod.BuildPath(Path_SM,
+						  log_path,
+						  sizeof(log_path),
+						  "logs/gamedata/L%04d%02d%02d.log",
+						  curtime->tm_year + 1900,
+						  curtime->tm_mon + 1,
+						  curtime->tm_mday);
 
-	logfile = fopen(log_path, "a");
+	logfile = fopen(log_path, "at");
 
 	if (!logfile)
 	{
