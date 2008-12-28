@@ -100,7 +100,6 @@ private:
 	short build[4];
 };
 
-extern BuildMD5ableBuffer g_MD5Builder;
 extern bool g_blockGameDataLoad;
 
 #endif // _INCLUDE_SOURCEMOD_GAMEDATAFETCHER_H_
