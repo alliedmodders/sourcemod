@@ -78,6 +78,9 @@ public:
 	void LogFatal(const char *msg, ...);
 	void LogToOpenFile(FILE *fp, const char *msg, ...);
 	void LogToOpenFileEx(FILE *fp, const char *msg, va_list ap);
+	/* This version does not print to console, and is thus thread-safe */
+	void LogToFileOnly(FILE *fp, const char *msg, ...);
+	void LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap);
 	void MapChange(const char *mapname);
 	const char *GetLogFileName(LogType type) const;
 	LoggingMode GetLoggingMode() const;

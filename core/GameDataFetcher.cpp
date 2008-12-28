@@ -85,8 +85,6 @@ void FetcherThread::RunThread(IThreadHandle *pHandle)
 
 	g_SourceMod.BuildPath(Path_SM, lock_path, sizeof(lock_path), "data/temp/gamedata.lock");
 
-	g_Logger.LogMessage("Starting Gamedata update fetcher... please report problems to bugs.alliedmods.net");
-
 	char log_path[PLATFORM_MAX_PATH];
 	g_SourceMod.BuildPath(Path_SM, log_path, sizeof(log_path), "logs/gamedata");
 
@@ -102,7 +100,7 @@ void FetcherThread::RunThread(IThreadHandle *pHandle)
 
 	if (!logfile)
 	{
-		g_Logger.LogError("Failed to create GameData log file");
+		/* :( */
 		return;
 	}
 
@@ -120,17 +118,16 @@ void FetcherThread::RunThread(IThreadHandle *pHandle)
 
 	if (len == 0)
 	{
-		g_Logger.LogToOpenFile(logfile, "Query Writing failed");
-
+		g_Logger.LogToFileOnly(logfile, "Could not build gamedata query!");
 		fclose(logfile);
 		unlink(lock_path);
 		return;
 	}
 
+	/* We check this late so we have the MD5 sums available.  This may change in the future. */
 	if (g_disableGameDataUpdate)
 	{
-		g_Logger.LogMessage("Skipping GameData Query due to DisableAutoUpdate being set to true");
-
+		g_Logger.LogToFileOnly(logfile, "Skipping gamedata fetcher (DisableAutoUpdate set)");
 		fclose(logfile);
 		unlink(lock_path);
 		return;
@@ -149,13 +146,13 @@ void FetcherThread::RunThread(IThreadHandle *pHandle)
 	int sent = SendData(socketDescriptor, query, len);
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile, "Sent gamedata query");
+	g_Logger.LogToFileOnly(logfile, "Sent gamedata query");
 ENDIF_DEBUG_SPEW
 
 	if (sent == 0)
 	{
 IF_DEBUG_SPEW
-		g_Logger.LogToOpenFile(logfile, "Failed to send gamedata query data to remote host");
+		g_Logger.LogToFileOnly(logfile, "Failed to send gamedata query data to remote host");
 ENDIF_DEBUG_SPEW
 
 		closesocket(socketDescriptor);
@@ -175,6 +172,28 @@ ENDIF_DEBUG_SPEW
 void FetcherThread::OnTerminate(IThreadHandle *pHandle, bool cancel)
 {
 	g_blockGameDataLoad = false;
+
+	if (wasSuccess)
+	{
+		HandleUpdateStatus(updateStatus, build);
+
+		if (needsRestart)
+		{
+			if (g_restartAfterUpdate)
+			{
+				g_Logger.LogMessage("Automatically restarting server after a successful gamedata update!");
+				engine->ServerCommand("quit\n");
+			}
+			else
+			{
+				g_Logger.LogMessage("Your gamedata files have been updated, please restart your server.");
+			}
+		}
+	}
+	else if (!g_disableGameDataUpdate)
+	{
+		g_Logger.LogError("An error occurred in the gamedata fetcher, see your gamedata log files for more information.");
+	}
 }
 
 int FetcherThread::BuildGameDataQuery(char *buffer, int maxlen)
@@ -229,7 +248,7 @@ int FetcherThread::BuildGameDataQuery(char *buffer, int maxlen)
 					filenames.push_back(data);
 
 IF_DEBUG_SPEW
-					g_Logger.LogToOpenFile(logfile, "Parsed file: %s as %s", file, data->checksum);
+					g_Logger.LogToFileOnly(logfile, "Parsed file: %s as %s", file, data->checksum);
 ENDIF_DEBUG_SPEW
 
 				}
@@ -237,12 +256,11 @@ ENDIF_DEBUG_SPEW
 				{
 IF_DEBUG_SPEW
 					const char *error = g_TextParser.GetSMCErrorString(err);
-					g_Logger.LogToOpenFile(logfile, "Parsing of file %s failed: %s", file, error);
+					g_Logger.LogToFileOnly(logfile, "Parsing of file %s failed: %s", file, error);
 ENDIF_DEBUG_SPEW
 				}
 			}
 		}
-
 		dir->NextEntry();
 	}
 
@@ -260,7 +278,7 @@ int FetcherThread::ConnectSocket()
 	
 	if ((ptrp = getprotobyname("tcp")) == NULL) 
 	{
-		g_Logger.LogToOpenFile(logfile, "Error: Failed to find TCP protocol");
+		g_Logger.LogToFileOnly(logfile, "Error: Failed to find TCP protocol");
 		return INVALID_SOCKET;
 	}
 
@@ -270,7 +288,7 @@ int FetcherThread::ConnectSocket()
 	{
 		char error[255];
 		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
-		g_Logger.LogToOpenFile(logfile, "Error: Failed to create socket: %s", error);
+		g_Logger.LogToFileOnly(logfile, "Error: Failed to create socket: %s", error);
 		closesocket(socketDescriptor);
 		return INVALID_SOCKET;
 	}
@@ -287,7 +305,7 @@ int FetcherThread::ConnectSocket()
 	{
 		if ((local_addr.sin_addr.s_addr = inet_addr(g_serverAddress)) == INADDR_NONE)
 		{
-			g_Logger.LogToOpenFile(logfile, "Couldn't locate address: %s", g_serverAddress);
+			g_Logger.LogToFileOnly(logfile, "Couldn't locate address: %s", g_serverAddress);
 			closesocket(socketDescriptor);
 			return INVALID_SOCKET;
 		}
@@ -301,7 +319,7 @@ int FetcherThread::ConnectSocket()
 	{
 		char error[255];
 		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
-		g_Logger.LogToOpenFile(logfile, "Couldn't connect to %s: %s", g_serverAddress, error);
+		g_Logger.LogToFileOnly(logfile, "Couldn't connect to %s: %s", g_serverAddress, error);
 		closesocket(socketDescriptor);
 		return INVALID_SOCKET;
 	}
@@ -314,7 +332,7 @@ void FetcherThread::ProcessGameDataQuery(int socketDescriptor)
 	char buffer[50];
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile, "Waiting for reply!");
+	g_Logger.LogToFileOnly(logfile, "Waiting for reply!");
 ENDIF_DEBUG_SPEW
 
 	//Read in the header bytes
@@ -325,12 +343,12 @@ ENDIF_DEBUG_SPEW
 	{
 		char error[255];
 		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
-		g_Logger.LogToOpenFile(logfile, "Did not receive reply: %s", error);
+		g_Logger.LogToFileOnly(logfile, "Did not receive reply: %s", error);
 		return;
 	}
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile, "Received Header!");
+	g_Logger.LogToFileOnly(logfile, "Received Header!");
 ENDIF_DEBUG_SPEW
 
 	bf_read Reader = bf_read("GameDataQuery", buffer, 12);
@@ -338,14 +356,12 @@ ENDIF_DEBUG_SPEW
 	if (Reader.ReadByte() != 'A' || Reader.ReadByte() != 'G')
 	{
 IF_DEBUG_SPEW
-		g_Logger.LogToOpenFile(logfile, "Unknown Query Response");
+		g_Logger.LogToFileOnly(logfile, "Unknown Query Response");
 ENDIF_DEBUG_SPEW
 		return;
 	}
 
-	UpdateStatus updateStatus = (UpdateStatus)Reader.ReadByte();
-
-	short build[4] = {0,0,0,0};
+	updateStatus = (UpdateStatus)Reader.ReadByte();
 
 	build[0] = Reader.ReadShort();
 	build[1] = Reader.ReadShort();
@@ -353,7 +369,7 @@ ENDIF_DEBUG_SPEW
 	build[3] = Reader.ReadShort();
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile,
+	g_Logger.LogToFileOnly(logfile,
 						   "Update Status: %i - Latest %i.%i.%i.%i",
 						   updateStatus,
 						   build[0],
@@ -362,12 +378,10 @@ IF_DEBUG_SPEW
 						   build[3]);
 ENDIF_DEBUG_SPEW
 
-	HandleUpdateStatus(updateStatus, build);
-
 	int changedFiles = Reader.ReadByte();
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile, "Files to download: %i", changedFiles);
+	g_Logger.LogToFileOnly(logfile, "Files to download: %i", changedFiles);
 ENDIF_DEBUG_SPEW
 
 	for (int i=0; i<changedFiles; i++)
@@ -387,7 +401,7 @@ ENDIF_DEBUG_SPEW
 		int tempLen = Reader.ReadUBitLong(32);
 
 IF_DEBUG_SPEW
-		g_Logger.LogToOpenFile(logfile, "File index %i and length %i", index, tempLen);
+		g_Logger.LogToFileOnly(logfile, "File index %i and length %i", index, tempLen);
 ENDIF_DEBUG_SPEW
 
 		void *memPtr;
@@ -397,7 +411,7 @@ ENDIF_DEBUG_SPEW
 		returnLen = RecvData(socketDescriptor, (char *)memPtr, tempLen);
 
 IF_DEBUG_SPEW
-		g_Logger.LogToOpenFile(logfile, "Received %i bytes", returnLen);
+		g_Logger.LogToFileOnly(logfile, "Received %i bytes", returnLen);
 ENDIF_DEBUG_SPEW
 
 		if (returnLen == 0)
@@ -423,7 +437,7 @@ ENDIF_DEBUG_SPEW
 			}
 			else
 			{
-				g_Logger.LogToOpenFile(logfile, "Failed to open file \"%s\" for writing", filename);
+				g_Logger.LogToFileOnly(logfile, "Failed to open file \"%s\" for writing", filename);
 			}
 		}
 		else
@@ -433,20 +447,18 @@ ENDIF_DEBUG_SPEW
 
 		memtable->Reset();
 
-
-		g_Logger.LogToOpenFile(logfile, "Updated file: %s", filename);
+		g_Logger.LogToFileOnly(logfile, "Updated file: %s", filename);
 	}
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile, "File Downloads Completed!");
+	g_Logger.LogToFileOnly(logfile, "File Downloads Completed!");
 ENDIF_DEBUG_SPEW
 
-	bool needsRestart = false;
+	needsRestart = false;
 
 	if (changedFiles > 0)
 	{
 		needsRestart = true;
-		g_Logger.LogMessage("New GameData Files have been downloaded to your gamedata directory. Please restart your server for these to take effect");
 	}
 
 	//Read changed file count
@@ -456,7 +468,7 @@ ENDIF_DEBUG_SPEW
 	{
 		char error[255];
 		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
-		g_Logger.LogToOpenFile(logfile, "Did not receive count reply: %s", error);
+		g_Logger.LogToFileOnly(logfile, "Did not receive count reply: %s", error);
 		return;
 	}
 
@@ -467,7 +479,7 @@ ENDIF_DEBUG_SPEW
 	if (changedFiles < 1)
 	{
 IF_DEBUG_SPEW
-		g_Logger.LogToOpenFile(logfile, "No unknown files. We're all done");
+		g_Logger.LogToFileOnly(logfile, "No unknown files. We're all done");
 ENDIF_DEBUG_SPEW
 		return;
 	}
@@ -475,7 +487,7 @@ ENDIF_DEBUG_SPEW
 	char *changedFileIndexes = new char[changedFiles];
 
 IF_DEBUG_SPEW
-	g_Logger.LogToOpenFile(logfile, "%i Files were unknown", changedFiles);
+	g_Logger.LogToFileOnly(logfile, "%i files were unknown", changedFiles);
 ENDIF_DEBUG_SPEW
 
 	returnLen = RecvData(socketDescriptor, changedFileIndexes, changedFiles);
@@ -484,7 +496,7 @@ ENDIF_DEBUG_SPEW
 	{
 		char error[255];
 		g_LibSys.GetPlatformErrorEx(WSAGetLastError(), error, sizeof(error));
-		g_Logger.LogToOpenFile(logfile, "Did not receive list reply: %s", error);
+		g_Logger.LogToFileOnly(logfile, "Did not receive list reply: %s", error);
 		return;
 	}
 
@@ -508,18 +520,13 @@ ENDIF_DEBUG_SPEW
 
 		g_LibSys.GetFileFromPath(fileName, sizeof(fileName), pathname);
 IF_DEBUG_SPEW
-		g_Logger.LogToOpenFile(logfile, "Unknown File %i : %s", index, fileName);
+		g_Logger.LogToFileOnly(logfile, "Unknown File %i : %s", index, fileName);
 ENDIF_DEBUG_SPEW
 	}
 
 	delete [] changedFileIndexes;
 
-	if (needsRestart && g_restartAfterUpdate)
-	{
-		/* :TODO: none of this is thread safe. */
-		g_Logger.LogMessage("Automatically restarting server after a successful gamedata update!");
-		engine->ServerCommand("quit\n");
-	}
+	wasSuccess = true;
 }
 
 int FetcherThread::RecvData(int socketDescriptor, char *buffer, int len)
@@ -830,5 +837,6 @@ FetcherThread::~FetcherThread()
 FetcherThread::FetcherThread() 
 {
 	memtable = new BaseMemTable(4096);
+	wasSuccess = false;
 }
 

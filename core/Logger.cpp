@@ -245,6 +245,19 @@ void Logger::LogToOpenFile(FILE *fp, const char *msg, ...)
 	va_end(ap);
 }
 
+void Logger::LogToFileOnly(FILE *fp, const char *msg, ...)
+{
+	if (!m_Active)
+	{
+		return;
+	}
+
+	va_list ap;
+	va_start(ap, msg);
+	LogToFileOnlyEx(fp, msg, ap);
+	va_end(ap);
+}
+
 void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 {
 	if (!m_Active)
@@ -263,6 +276,26 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 
 	fprintf(fp, "L %s: %s\n", date, buffer);
 	g_SMAPI->ConPrintf("L %s: %s\n", date, buffer);
+}
+
+void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
+{
+	if (!m_Active)
+	{
+		return;
+	}
+
+	char buffer[3072];
+	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
+
+	char date[32];
+	time_t t;
+	GetAdjustedTime(&t);
+	tm *curtime = localtime(&t);
+	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+
+	fprintf(fp, "L %s: %s\n", date, buffer);
+	fflush(fp);
 }
 
 void Logger::LogMessage(const char *vafmt, ...)

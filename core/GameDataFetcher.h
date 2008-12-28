@@ -39,6 +39,8 @@
 #include "LibrarySys.h"
 #include "ThreadSupport.h"
 #include "sm_memtable.h"
+#include <sh_string.h>
+#include <sh_list.h>
 
 enum UpdateStatus
 { 
@@ -91,7 +93,11 @@ private:
 public:
 	SourceHook::CVector<FileData *> filenames;
 private:
+	bool wasSuccess;
+	bool needsRestart;
+	UpdateStatus updateStatus;
 	BaseMemTable *memtable;
+	short build[4];
 };
 
 extern BuildMD5ableBuffer g_MD5Builder;
