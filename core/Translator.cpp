@@ -487,7 +487,7 @@ SMCResult CPhraseFile::ReadSMC_KeyValue(const SMCStates *states, const char *key
 	else 
 	{
 		size_t len = strlen(key);
-		if (len != 2)
+		if (len < 2 || len > 3)
 		{
 			ParseWarning("Ignoring translation to invalid language \"%s\" on line %d.", key, states->line);
 			return SMCResult_Continue;
@@ -936,7 +936,7 @@ SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 {
 	size_t len = strlen(key);
 
-	if (len != 2)
+	if (len < 2 || len > 3)
 	{
 		g_Logger.LogError("[SM] Warning encountered parsing languages.cfg file.");
 		g_Logger.LogError("[SM] Invalid language code \"%s\" is being ignored.", key);
@@ -957,9 +957,7 @@ bool Translator::AddLanguage(const char *langcode, const char *description)
 	Language *pLanguage = new Language;
 	unsigned int idx = m_Languages.size();
 
-	pLanguage->m_code2[0] = langcode[0];
-	pLanguage->m_code2[1] = langcode[1];
-	pLanguage->m_code2[2] = langcode[2];
+	UTIL_Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
 	pLanguage->m_FullName = m_pStringTab->AddString(description);
 
 	sm_trie_insert(m_pLCodeLookup, langcode, reinterpret_cast<void *>(idx));
