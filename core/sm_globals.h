@@ -135,6 +135,13 @@ public:
 	}
 
 	/**
+	 * @brief Called when the level has activated.
+	 */
+	virtual void OnSourceModLevelActivated()
+	{
+	}
+
+	/**
 	 * @brief Called when the level ends.
 	 */
 	virtual void OnSourceModLevelEnd()

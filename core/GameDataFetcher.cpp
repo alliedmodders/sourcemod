@@ -1,33 +1,33 @@
 /**
-* vim: set ts=4 :
-* =============================================================================
-* SourceMod
-* Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
-* =============================================================================
-*
-* This program is free software; you can redistribute it and/or modify it under
-* the terms of the GNU General Public License, version 3.0, as published by the
-* Free Software Foundation.
-* 
-* This program is distributed in the hope that it will be useful, but WITHOUT
-* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-* details.
-*
-* You should have received a copy of the GNU General Public License along with
-* this program.  If not, see <http://www.gnu.org/licenses/>.
-*
-* As a special exception, AlliedModders LLC gives you permission to link the
-* code of this program (as well as its derivative works) to "Half-Life 2," the
-* "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
-* by the Valve Corporation.  You must obey the GNU General Public License in
-* all respects for all other code used.  Additionally, AlliedModders LLC grants
-* this exception to all derivative works.  AlliedModders LLC defines further
-* exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
-* or <http://www.sourcemod.net/license.php>.
-*
-* Version: $Id$
-*/
+ * vim: set ts=4 :
+ * =============================================================================
+ * SourceMod
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * =============================================================================
+ *
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License, version 3.0, as published by the
+ * Free Software Foundation.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * As a special exception, AlliedModders LLC gives you permission to link the
+ * code of this program (as well as its derivative works) to "Half-Life 2," the
+ * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
+ * by the Valve Corporation.  You must obey the GNU General Public License in
+ * all respects for all other code used.  Additionally, AlliedModders LLC grants
+ * this exception to all derivative works.  AlliedModders LLC defines further
+ * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
+ * or <http://www.sourcemod.net/license.php>.
+ *
+ * Version: $Id$
+ */
 
 #include "GameDataFetcher.h"
 #include "bitbuf.h"
@@ -63,19 +63,49 @@
 #include "compat_wrappers.h"
 #include "sm_stringutil.h"
 #include "md5.h"
+#include "frame_hooks.h"
 
 #define QUERY_MAX_LENGTH 1024
 
-BuildMD5ableBuffer g_MD5Builder;
-FetcherThread g_FetchThread;
+static BuildMD5ableBuffer g_MD5Builder;
+static FetcherThread g_FetchThread;
 
-FILE *logfile = NULL;
+static FILE *logfile = NULL;
 
 bool g_disableGameDataUpdate = false;
+
+/**
+ * Note on this.  If we issue a reload and changelevel, my srcds.exe will emit 
+ *   Assertion Failed: !m_bServiceStarted
+ * on quit.  This seems like a non-issue, because before we just terminated the 
+ * server anyway.  If anyone notices and files a bug, we can look into it further.
+ */
 bool g_restartAfterUpdate = false;
 
-int g_serverPort = 6500;
-char g_serverAddress[100] = "smupdate.alliedmods.net";
+static bool was_level_started = false;
+static int g_serverPort = 6500;
+static char g_serverAddress[100] = "smupdate.alliedmods.net";
+
+static void _ForceRestart(void *data)
+{
+	char cmd[300];
+	g_Logger.LogMessage("Automatically restarting SourceMod after a successful gamedata update.");
+	UTIL_Format(cmd, sizeof(cmd), "meta unload %d\n", g_PLID);
+	engine->ServerCommand(cmd);
+	UTIL_Format(cmd, sizeof(cmd), "changelevel \"%s\"\n", STRING(gpGlobals->mapname));
+	engine->ServerCommand(cmd);
+	UTIL_Format(cmd, sizeof(cmd), "echo SourceMod restarted after gamedata update.\n");
+	engine->ServerCommand(cmd);
+}
+
+static void ForceRestart()
+{
+	FrameAction action;
+
+	action.action = _ForceRestart;
+	action.data = NULL;
+	AddFrameAction(action);
+}
 
 void FetcherThread::RunThread(IThreadHandle *pHandle)
 {
@@ -173,6 +203,11 @@ void FetcherThread::OnTerminate(IThreadHandle *pHandle, bool cancel)
 {
 	g_blockGameDataLoad = false;
 
+	if (cancel)
+	{
+		return;
+	}
+
 	if (wasSuccess)
 	{
 		HandleUpdateStatus(updateStatus, build);
@@ -181,8 +216,10 @@ void FetcherThread::OnTerminate(IThreadHandle *pHandle, bool cancel)
 		{
 			if (g_restartAfterUpdate)
 			{
-				g_Logger.LogMessage("Automatically restarting server after a successful gamedata update!");
-				engine->ServerCommand("quit\n");
+				if (was_level_started)
+				{
+					ForceRestart();
+				}
 			}
 			else
 			{
@@ -642,6 +679,7 @@ void FetcherThread::HandleUpdateStatus(UpdateStatus status, short version[4])
 }
 
 bool g_blockGameDataLoad = false;
+static IThreadHandle *fetch_thread_hndl;
 
 class InitFetch : public SMGlobalClass
 {
@@ -660,7 +698,30 @@ public:
 
 		ThreadParams fetchThreadParams = ThreadParams();
 		fetchThreadParams.prio = ThreadPrio_Low;
-		g_pThreader->MakeThread(&g_FetchThread, &fetchThreadParams);
+		fetch_thread_hndl = g_pThreader->MakeThread(&g_FetchThread, &fetchThreadParams);
+	}
+
+	void OnSourceModShutdown()
+	{
+		fetch_thread_hndl->WaitForThread();
+		fetch_thread_hndl->DestroyThis();
+	}
+
+	void OnSourceModLevelActivated()
+	{
+		was_level_started = true;
+
+		if (g_restartAfterUpdate && 
+			g_FetchThread.wasSuccess && 
+			g_FetchThread.needsRestart)
+		{
+			ForceRestart();
+		}
+	}
+
+	void OnSourceModLevelEnd()
+	{
+		was_level_started = false;
 	}
 
 	ConfigResult OnSourceModConfigChanged(const char *key, 
@@ -820,7 +881,6 @@ CON_COMMAND(sm_gamedata_md5, "Checks the MD5 sum for a given gamedata file")
 
 FetcherThread::~FetcherThread()
 {
-	//delete filenames;
 	SourceHook::CVector<FileData *>::iterator iter = filenames.begin();
 
 	FileData *curData;
@@ -838,5 +898,6 @@ FetcherThread::FetcherThread()
 {
 	memtable = new BaseMemTable(4096);
 	wasSuccess = false;
+	needsRestart = false;
 }
 

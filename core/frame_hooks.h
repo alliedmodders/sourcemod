@@ -32,8 +32,17 @@
 #ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 #define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
 
+typedef void (*FRAMEACTION)(void *data);
+
+struct FrameAction
+{
+	void *data;
+	FRAMEACTION action;
+};
+
 extern bool g_PendingInternalPush;
 
+void AddFrameAction(const FrameAction & action);
 void RunFrameHooks(bool simulating);
 
 #endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
