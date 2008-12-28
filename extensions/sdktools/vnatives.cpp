@@ -101,8 +101,8 @@ bool CreateBaseCall(const char *name,
 		*vaddr = call;
 		return true;
 	} else {
-		void *addr;
-		if (g_pGameConf->GetMemSig(name, &addr))
+		void *addr = NULL;
+		if (g_pGameConf->GetMemSig(name, &addr) && addr != NULL)
 		{
 			call = CreateValveCall(addr, vcalltype, retinfo, params, numParams);
 			if (call)
