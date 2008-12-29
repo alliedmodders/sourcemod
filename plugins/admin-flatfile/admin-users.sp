@@ -162,7 +162,9 @@ public SMCResult:ReadUsers_EndSection(Handle:smc)
 				id = CreateAdmin(g_CurName);
 				if (!BindAdminIdentity(id, g_CurAuth, g_CurIdent))
 				{
+					RemoveAdmin(id);
 					ParseError("Failed to bind auth \"%s\" to identity \"%s\"", g_CurAuth, g_CurIdent);
+					return SMCParse_Continue;
 				}
 			}
 			

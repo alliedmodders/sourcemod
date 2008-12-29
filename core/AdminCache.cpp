@@ -1170,6 +1170,11 @@ bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 
 bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ident)
 {
+	if (ident == NULL || ident[0] == '\0')
+	{
+		return false;
+	}
+
 	AdminUser *pUser = (AdminUser *)m_pMemory->GetAddress(id);
 	if (!pUser || pUser->magic != USR_MAGIC_SET)
 	{
