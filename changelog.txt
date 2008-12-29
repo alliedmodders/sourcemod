@@ -2,6 +2,82 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.1.0 [2008-12-28]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.1.0_Release_Notes
+
+Major features:
+ * New map management plugins.
+ * New reserved slot type.
+ * GameData updates are retrieved remotely
+ * Client Preferences extension for per-client "cookies"
+ * New incremental and independent JIT
+
+Changes:
+
+ - Added new client preferences extension (API in clientprefs.inc, bug 1925).
+ - Added new gamedata auto-update functionality (bug 2602).
+ - Revamped and greatly expanded map management plugins and their functionality (bug 2201).
+ - Debug mode is now always on; as there is no longer a performance loss, there is no non-debug mode.
+ - The timeleft trigger can now handle mp_winlimit, mp_fraglimit, and mp_maxrounds (bug 2344).
+ - Translations can now be in separate files and placed in language-unique folders.
+ - The leading "STEAM_0:" or "STEAM_1:" in SteamIDs can now be omitted from admin files.
+ - Added sm_revote command so clients can participate in a vote that fell off their screen (bug 2156).
+ - Added Core API for creating stack structures (adt_stack.inc, bug 2441).
+ - Added API for extending mapchooser (mapchooser.inc, bug 2201).
+ - Added Core API for map transition control and history (nextmap.inc).
+ - Added TF2 forward for overriding how critical hits are calculated.
+ - Added SetClientInfo() native for modifying how a server sees a client's setinfo properties.
+ - Added CreateDirectory() native (bug 3253).
+ - Added "magic" MaxClients variable to replace slower GetMaxClients() call.
+ - Added support for three-letter language codes (bug 3526).
+ - Functions to control client versus client mic listening now work as described (bug 2498).
+ - Fixed SDKTools not being reloadable, and fixed a related bug in Handle type removal (bug 2753).
+ - Rewrote internal translation handling. Extensions now have access to an ITranslator API (bug 2535).
+ - Rewrote internal handling of dependencies (especially relating to native providers) (bug 2466).
+ - Added user config hooks to IGameConfigManager, for parsing user-defined sections.
+ - Revamped SourcePawn API. Removed and deprecated many structures and functions accidentally exposed publicly.
+ - Revamped SourcePawn structure, it is now separable from SourceMod for other projects.
+ - Renamed basefuncommands.phrases.txt to funcommands.phrases.txt (bug 2485).
+ - Renamed basefunvotes.phrases.txt to funvotes.phrases.txt (bug 2485).
+ - Added IDBDriver API call for extensions to handle IDBDriver dependencies properly.
+ - Usermessage natives now validate clients to prevent crashing.
+ - Fixed OnConfigsExecuted not working on listen servers.
+ - Fixed out-of-handle conditions in CreateTimer() causing crashes (bug 3381).
+ - Fixed accessing invalid Handles causing crashes (bug 3359).
+ - Fixed memory corruption with MySQL + FetchString (bug 3352).
+ - Fixed ReadFileString ignoring its fourth parameter (bug 3459).
+ - Fixed sm_sql_addadmin reading the immunity field as a password (bug 3395).
+ - Fixed ReadFile sign-extending instead of zero-extending (bug 3449). 
+
+----------------------------
+
+SourceMod 1.0.4 [2008-09-14]
+
+Changes:
+
+ - Fixed amb1986: Format() with very long strings could crash if the input and output buffers overlapped.
+ - Fixed amb1938: The compiler ate too many characters in preprocessor macros.
+ - Fixed amb1935: Topmenu child names were not uncached when a category was deleted.
+ - Fixed amb1929: Banning via the console threw a runtime error.
+ - Fixed amb1918: Ban menu should compare userids, not client indexes
+ - Fixed amb1916: Threaded query delay is now 50ms instead of 500ms.
+ - Fixed amb1899: Duplicate maps in auto generated maplists.
+ - Fixed amb1891: Basechat didn't check for blank message in private says.
+ - Fixed amb1853: Ternary operators with string assignments could chop strings off.
+ - Fixed amb1815: Custom admin menu wasn't escaping input.
+ - Fixed amb1808: KickClient() is now delayed to prevent crashes, use KickClientEx for old functionality.
+ - Fixed amb1802: Possible crash when a client disconnected.
+ - Fixed amb1801: Improved bot detection, and fixed bots crashing if inside an OrangeBox server.cfg.
+ - Fixed amb1780: admin-sql-threaded had a debug spew turned on.
+ - Fixed amb1779: Crash in GetTeamName() on mods that don't support it.
+ - Fixed amb1763: Function call status is now cleared on a new function call.
+ - Fixed amb1749: Updated and improved DoD:S SDKTools coverage.
+ - Fixed team native crashes in SDKTools for mods like Insurgency.
+ - Fixed various file handle leaks. 
+
+----------------------------
+
 SourceMod 1.0.3 [2008-06-21]
 
 Changes:
