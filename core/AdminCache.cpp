@@ -1170,7 +1170,7 @@ bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 
 bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ident)
 {
-	if (ident == NULL || ident[0] == '\0')
+	if (ident[0] == '\0')
 	{
 		return false;
 	}
