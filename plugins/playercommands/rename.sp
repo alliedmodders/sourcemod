@@ -36,7 +36,7 @@ new String:g_NewName[MAXPLAYERS+1][MAX_NAME_LENGTH];
 PerformRename(client, target)
 {
 	LogAction(client, target, "\"%L\" renamed \"%L\" to \"%s\")", client, target, g_NewName[target]);
-	ClientCommand(target, "name \"%s\"", g_NewName[target]);
+	SetClientInfo(target, "name", g_NewName[target]);
 }
 
 public AdminMenu_Rename(Handle:topmenu, 
