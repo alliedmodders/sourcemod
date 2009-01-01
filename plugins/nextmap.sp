@@ -55,9 +55,9 @@ new g_CurrentMapStartTime;
 public OnPluginStart()
 {
 	decl String:desc[128];
-	GetGameDescription(desc, sizeof(desc));
+	GetGameFolderName(desc, sizeof(desc));
 
-	if(StrEqual(desc, "Left 4 Dead", false))
+	if(StrEqual(desc, "left4dead", false))
 	{
 		SetFailState("The 'nextmap' plugin is not supported on Left 4 Dead.");
 		return;
