@@ -740,28 +740,28 @@
 			/* CBasePlayer */
 			"Ignite"
 			{
-				"windows"	"174"
-				"linux"		"175"
+				"windows"	"176"
+				"linux"		"177"
 			}
 			"Extinguish"
 			{
-				"windows"	"175"
-				"linux"		"176"
+				"windows"	"176"
+				"linux"		"177"
 			}
 			"Teleport"
 			{
-				"windows"	"90"
-				"linux"		"91"
+				"windows"	"91"
+				"linux"		"92"
 			}
 			"GetVelocity"
 			{
-				"windows"	"115"
-				"linux"		"116"
+				"windows"	"116"
+				"linux"		"117"
 			}
 			"EyeAngles"
 			{
-				"windows"	"107"
-				"linux"		"108"
+				"windows"	"108"
+				"linux"		"109"
 			}
 			"AcceptInput"
 			{
