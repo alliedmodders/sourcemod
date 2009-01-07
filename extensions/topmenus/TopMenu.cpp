@@ -248,6 +248,7 @@ unsigned int TopMenu::AddToMenu2(const char *name,
 		cat->serial = 1;
 
 		/* Add it, then update our serial change number. */
+		obj->cat_id = m_Categories.size();
 		m_Categories.push_back(cat);
 		m_SerialNo++;
 
@@ -257,6 +258,7 @@ unsigned int TopMenu::AddToMenu2(const char *name,
 	else if (obj->type == TopMenuObject_Item)
 	{
 		/* Update the category, mark it as needing changes */
+		obj->cat_id = 0;
 		parent_cat->obj_list.push_back(obj);
 		parent_cat->reorder = true;
 		parent_cat->serial++;
@@ -407,6 +409,12 @@ bool TopMenu::DisplayMenu(int client, unsigned int hold_time, TopMenuPosition po
 
 	UpdateClientRoot(client, pPlayer);
 
+	/* This is unfortunate but it's the best solution. */
+	for (size_t i = 0; i < m_Categories.size(); i++)
+	{
+		UpdateClientCategory(client, i, true);
+	}
+
 	topmenu_player_t *pClient = &m_clients[client];
 	if (pClient->root == NULL)
 	{
@@ -443,8 +451,7 @@ bool TopMenu::DisplayCategory(int client, unsigned int category, unsigned int ho
 	UpdateClientCategory(client, category);
 
 	topmenu_player_t *pClient = &m_clients[client];
-	if (category >= pClient->cat_count
-		|| pClient->cats[category].menu == NULL)
+	if (category >= pClient->cat_count || pClient->cats[category].menu == NULL)
 	{
 		return false;
 	}
@@ -488,18 +495,16 @@ void TopMenu::OnMenuSelect2(IBaseMenu *menu, int client, unsigned int item, unsi
 	if (obj->type == TopMenuObject_Category)
 	{
 		/* If it's a category, the user wants to view it.. */
-		for (size_t i = 0; i < m_Categories.size(); i++)
+		assert(obj->cat_id < m_Categories.size());
+		assert(m_Categories[obj->cat_id]->obj == obj);
+		pClient->last_root_pos = item_on_page;
+		if (!DisplayCategory(client, obj->cat_id, MENU_TIME_FOREVER, false))
 		{
-			if (m_Categories[i]->obj == obj)
-			{
-				pClient->last_root_pos = item_on_page;
-				if (!DisplayCategory(client, (unsigned int)i, MENU_TIME_FOREVER, false))
-				{
-					/* If we can't display the category, re-display the root menu */
-					DisplayMenu(client, MENU_TIME_FOREVER, TopMenuPosition_LastRoot);
-				}
-				break;
-			}
+			/* If we can't display the category, re-display the root menu.
+			 * This code should be dead as of bug 3256, which disables categories 
+			 * that cannot be displayed.
+			 */
+			DisplayMenu(client, MENU_TIME_FOREVER, TopMenuPosition_LastRoot);
 		}
 	}
 	else
@@ -534,6 +539,19 @@ void TopMenu::OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, uns
 	}
 
 	obj = *pObject;
+
+	/* If the category has nothing to display, disable it. */
+	if (obj->type == TopMenuObject_Category)
+	{
+		assert(obj->cat_id < m_Categories.size());
+		assert(m_Categories[obj->cat_id]->obj == obj);
+		topmenu_player_t *pClient = &m_clients[client];
+		if (obj->cat_id >= pClient->cat_count || pClient->cats[obj->cat_id].menu == NULL)
+		{
+			style = ITEMDRAW_IGNORE;
+			return;
+		}
+	}
 
 	style = obj->callbacks->OnTopMenuDrawOption(this, client, obj->object_id);
 	if (style != ITEMDRAW_DEFAULT)
@@ -701,13 +719,18 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 	pClient->last_root_pos = 0;
 }
 
-void TopMenu::UpdateClientCategory(int client, unsigned int category)
+void TopMenu::UpdateClientCategory(int client, unsigned int category, bool bSkipRootCheck)
 {
+	bool has_access = false;
+
 	/* Update the client's root menu just in case it needs it.  This 
 	 * will validate that we have both a valid client and a valid
 	 * category structure for that client.
 	 */
-	UpdateClientRoot(client);
+	if (!bSkipRootCheck)
+	{
+		UpdateClientRoot(client);
+	}
 
 	/* Now it's guaranteed that our category tables will be usable */
 	topmenu_player_t *pClient = &m_clients[client];
@@ -744,6 +767,13 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category)
 	for (size_t i = 0; i < cat->sorted.size(); i++)
 	{
 		cat_menu->AppendItem(cat->sorted[i]->name, ItemDrawInfo(""));
+		if (!has_access && adminsys->CheckAccess(client,
+												 cat->sorted[i]->cmdname,
+												 cat->sorted[i]->flags,
+												 false))
+		{
+			has_access = true;
+		}
 	}
 
 	/* Now handle unsorted items */
@@ -761,18 +791,37 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category)
 				item->name,
 				sizeof(item->name));
 			item->obj_index = (unsigned int)i;
+			if (!has_access && adminsys->CheckAccess(client, obj->cmdname, obj->flags, false))
+			{
+				has_access = true;
+			}
 		}
 
-		/* Sort the names */
-		qsort(item_list, cat->unsorted.size(), sizeof(obj_by_name_t), _SortObjectNamesDescending);
-
-		/* Add to the menu */
-		for (size_t i = 0; i < cat->unsorted.size(); i++)
+		if (has_access)
 		{
-			cat_menu->AppendItem(cat->unsorted[item_list[i].obj_index]->name, ItemDrawInfo(""));
+			/* Sort the names */
+			qsort(item_list,
+				cat->unsorted.size(),
+				sizeof(obj_by_name_t),
+				_SortObjectNamesDescending);
+
+			/* Add to the menu */
+			for (size_t i = 0; i < cat->unsorted.size(); i++)
+			{
+				cat_menu->AppendItem(cat->unsorted[item_list[i].obj_index]->name, ItemDrawInfo(""));
+			}
 		}
 
 		delete [] item_list;
+	}
+
+	/* If the player has access to no items, don't draw a menu. */
+	if (!has_access)
+	{
+		cat_menu->Destroy();
+		player_cat->menu = NULL;
+		player_cat->serial = cat->serial;
+		return;
 	}
 
 	/* Set the menu's title */
