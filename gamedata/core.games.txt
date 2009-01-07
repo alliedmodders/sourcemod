@@ -58,6 +58,23 @@
 		}
 	}
 
+	"ageofchivalry"
+	{
+		"Keys"
+		{
+			"RadioMenuTimeout"	"4"
+		}
+
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+
 	/**
 	 * Which games support ShowMenu?
 	 */
@@ -75,6 +92,7 @@
 			"game"		"diprip"
 			"game"		"synergy"
 			"game"		"FortressForever"
+			"game"		"ageofchivalry"
 		}
 
 		"Keys"
@@ -93,6 +111,7 @@
 			"game"		"hl2mp"
 			"game"		"sourceforts"
 			"game"		"tf"
+			"game"		"ageofchivalry"
 		}
 		
 		"Keys"
@@ -136,7 +155,7 @@
 		}
 	}
 
-    	"synergy"
+	"synergy"
 	{
 		"Keys"
 		{
