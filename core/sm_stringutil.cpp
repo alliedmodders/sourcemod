@@ -281,7 +281,7 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 	}
 
 	// write the fraction part
-	if (maxlen)
+	if (maxlen && prec)
 	{
 		*buf++ = '.';
 		maxlen--;

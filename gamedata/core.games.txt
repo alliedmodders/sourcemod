@@ -58,6 +58,23 @@
 		}
 	}
 
+	"ageofchivalry"
+	{
+		"Keys"
+		{
+			"RadioMenuTimeout"        "4"
+		}
+
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+
 	"left4dead"
 	{
 		"Offsets"
@@ -88,6 +105,8 @@
 			"game"		"synergy"
 			"game"		"FortressForever"
 			"game"		"left4dead"
+			"game"		"ageofchivalry"
+			"game"		"obsidian"
 		}
 
 		"Keys"
@@ -106,6 +125,8 @@
 			"game"		"hl2mp"
 			"game"		"sourceforts"
 			"game"		"tf"
+			"game"		"ageofchivalry"
+			"game"		"obsidian"
 		}
 		
 		"Keys"
@@ -149,7 +170,7 @@
 		}
 	}
 
-    	"synergy"
+	"synergy"
 	{
 		"Keys"
 		{

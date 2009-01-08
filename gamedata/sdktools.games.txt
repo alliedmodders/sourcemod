@@ -37,8 +37,7 @@
 			"game"		"!Dystopia"
 			"game"		"!Insurgency"
 			"game"		"pvkii"
-			"game"		"!SourceForts v1.9.2"
-			"game"		"$SourceForts v1.9.3"
+			"game"		"sourceforts"
 			"game"		"FortressForever"
 			"game"		"empires"
 			"game"		"synergy"
@@ -97,8 +96,7 @@
 			"game"		"!Dystopia"
 			"game"		"!Insurgency"
 			"game"		"pvkii"
-			"game"		"!SourceForts v1.9.2"
-			"game"		"$SourceForts v1.9.3"
+			"game"		"sourceforts"
 			"game"		"FortressForever"
 			"game"		"empires"
 			"game"		"synergy"
@@ -148,8 +146,7 @@
 			"game"		"ship"
 			"game"		"!Insurgency"
 			"game"		"pvkii"
-			"game"		"!SourceForts v1.9.2"
-			"game"		"$SourceForts v1.9.3"
+			"game"		"sourceforts"
 			"game"		"FortressForever"
 			"game"		"empires"
 			"game"		"synergy"
@@ -198,7 +195,7 @@
 			"game"		"hl2mp"
 			"game"		"!Insurgency"
 			"game"		"pvkii"
-			"game"		"$SourceForts v1.9.3"
+			"game"		"sourceforts"
 			"game"		"empires"
 			"game"		"synergy"
 			"game"		"hidden"
@@ -743,28 +740,28 @@
 			/* CBasePlayer */
 			"Ignite"
 			{
-				"windows"	"174"
-				"linux"		"175"
+				"windows"	"176"
+				"linux"		"177"
 			}
 			"Extinguish"
 			{
-				"windows"	"175"
-				"linux"		"176"
+				"windows"	"176"
+				"linux"		"177"
 			}
 			"Teleport"
 			{
-				"windows"	"90"
-				"linux"		"91"
+				"windows"	"91"
+				"linux"		"92"
 			}
 			"GetVelocity"
 			{
-				"windows"	"115"
-				"linux"		"116"
+				"windows"	"116"
+				"linux"		"117"
 			}
 			"EyeAngles"
 			{
-				"windows"	"107"
-				"linux"		"108"
+				"windows"	"108"
+				"linux"		"109"
 			}
 			"AcceptInput"
 			{
@@ -893,102 +890,6 @@
 		}
 	}
 
-	/* SourceForts 1.9.2 */
-	"!SourceForts v1.9.2"
-	{
-		"Offsets"
-		{
-			/* CBasePlayer */
-			"GiveNamedItem"
-			{
-				"windows"	"294"
-				"linux"		"295"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"207"
-				"linux"		"208"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"205"
-				"linux"		"206"
-			}
-			"Ignite"
-			{
-				"windows"	"170"
-				"linux"		"171"
-			}
-			"Extinguish"
-			{
-				"windows"	"171"
-				"linux"		"172"
-			}
-			"Teleport"
-			{
-				"windows"	"90"
-				"linux"		"91"
-			}
-			"GetVelocity"
-			{
-				"windows"	"114"
-				"linux"		"115"
-			}
-			"EyeAngles"
-			{
-				"windows"	"106"
-				"linux"		"107"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"30"
-				"linux"		"29"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"29"
-				"linux"		"30"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"28"
-				"linux"		"31"
-			}
-			"AcceptInput"
-			{
-				"windows"	"34"
-				"linux"		"35"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-			
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
-			}
-		}
-
-		"Signatures"
-		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14\x8B\x16\x8B\xCE"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
-			}
-		}
-	}
-	
 	/* Fortress Forever */
 	"FortressForever"
 	{	
@@ -1269,8 +1170,7 @@
 		}
 	}
 
-	/* SourceForts 1.9.3 */
-	"$SourceForts v1.9.3"
+	"sourceforts"
 	{
 		"Offsets"
 		{

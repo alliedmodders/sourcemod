@@ -33,6 +33,7 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
+			"game"		"ageofchivalry"
 		}
 
 		"Offsets"
@@ -81,6 +82,7 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
+			"game"		"ageofchivalry"
 		}
 
 		"Signatures"
@@ -107,6 +109,7 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
+			"game"		"ageofchivalry"
 		}
 		
 		"Offsets"
@@ -148,6 +151,7 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
+			"game"		"ageofchivalry"
 		}
 		
 		"Offsets"
@@ -226,6 +230,7 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
+			"game"		"ageofchivalry"
 		}
 		"Signatures"
 		{
@@ -443,6 +448,182 @@
 			{
 				"windows"	"229"
 				"linux"		"230"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+		}
+	}
+
+	/* Afe of Chivalry */
+	"ageofchivalry"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"351"
+				"linux"		"352"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"239"
+				"linux"		"240"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			"Ignite"
+			{
+				"windows"	"194"
+				"linux"		"195"
+			}
+			"Extinguish"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+			"Teleport"
+			{
+				"windows"	"101"
+				"linux"		"102"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"389"
+				"linux"		"389"
+			}
+			"GetVelocity"
+			{
+				"windows"	"130"
+				"linux"		"131"
+			}
+			"EyeAngles"
+			{
+				"windows"	"122"
+				"linux"		"123"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+		}
+	}
+
+	/* Obsidian Conflict 1.3 */
+	"obsidian"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"350"
+				"linux"		"351"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"235"
+				"linux"		"236"
+			}
+			"Ignite"
+			{
+				"windows"	"190"
+				"linux"		"191"
+			}
+			"Extinguish"
+			{
+				"windows"	"194"
+				"linux"		"195"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"393"
+				"linux"		"393"
+			}
+			"GetVelocity"
+			{
+				"windows"	"127"
+				"linux"		"128"
+			}
+			"EyeAngles"
+			{
+				"windows"	"119"
+				"linux"		"120"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"228"
+				"linux"		"229"
 			}
 			"Activate"
 			{

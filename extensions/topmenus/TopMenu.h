@@ -71,6 +71,7 @@ struct topmenu_object_t
 	TopMenuObjectType type;				/** Object Type */
 	bool is_free;						/** Free or not? */
 	char info[255];						/** Info string */
+	unsigned int cat_id;				/** Set if a category */
 };
 
 struct topmenu_category_t
@@ -157,7 +158,7 @@ private:
 	bool DisplayCategory(int client, unsigned int category, unsigned int hold_time, bool last_position);
 	void CreatePlayers(int max_clients);
 	void UpdateClientRoot(int client, IGamePlayer *pGamePlayer=NULL);
-	void UpdateClientCategory(int client, unsigned int category);
+	void UpdateClientCategory(int client, unsigned int category, bool bSkipRootCheck=false);
 	void TearDownClient(topmenu_player_t *player);
 private:
 	void OnClientConnected(int client);
