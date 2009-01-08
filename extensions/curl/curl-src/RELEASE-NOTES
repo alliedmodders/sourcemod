@@ -1,0 +1,35 @@
+Curl and libcurl 7.19.2
+
+ Public curl releases:         108
+ Command line options:         128
+ curl_easy_setopt() options:   158
+ Public functions in libcurl:  58
+ Known libcurl bindings:       37
+ Contributors:                 672
+
+This release includes the following changes:
+
+ o 
+
+This release includes the following bugfixes:
+
+ o build failure when using MSVC 6 makefile and on four platforms more
+ o crash when using --interface name on Linux systems with a TEQL device
+ o using the multi interface to download a HTTPS page with libcurl built
+   powered by OpenSSL could download "rubbish" instead of actual content
+
+This release includes the following known bugs:
+
+ o see docs/KNOWN_BUGS (http://curl.haxx.se/docs/knownbugs.html)
+
+Other curl-related news:
+
+ o 
+
+This release would not have looked like this without help, code, reports and
+advice from friends like these:
+
+ John Wilkinson, Adam Sampson, Daniel Fandrich, Yang Tse, Rainer Canavan,
+ Michal Marek
+
+        Thanks! (and sorry if I forgot to mention someone)
