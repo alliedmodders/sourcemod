@@ -31,40 +31,46 @@
 
 #include "extension.h"
 #include "CallWrapper.h"
+#include "CallMaker.h"
 
-CallWrapper::CallWrapper(CallConvention cv, const PassInfo *paramInfo, const PassInfo *retInfo, unsigned int numParams)
+CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo)
 {
-	m_Cv = cv;
+	m_AddrCodeBase = NULL;
+	m_AddrCallee = NULL;
 
-	if (numParams)
+	unsigned int argnum = protoInfo->numOfParams;
+
+	m_Info = *protoInfo;
+	m_Info.paramsPassInfo = new SourceHook::PassInfo[argnum + 1];
+	memcpy((void *)m_Info.paramsPassInfo, protoInfo->paramsPassInfo, sizeof(SourceHook::PassInfo) * (argnum+1));
+
+	if (argnum)
 	{
-		m_Params = new PassEncode[numParams];
-		for (size_t i=0; i<numParams; i++)
+		m_Params = new PassEncode[argnum];
+		for (size_t i=0; i<argnum; i++)
 		{
-			m_Params[i].info = paramInfo[i];
+			GetSMPassInfo(&(m_Params[i].info), &(m_Info.paramsPassInfo[i+1]));
 		}
 	} else {
 		m_Params = NULL;
 	}
 
-	if (retInfo)
+	if (m_Info.retPassInfo.size != 0)
 	{
 		m_RetParam = new PassInfo;
-		*m_RetParam = *retInfo;
+		GetSMPassInfo(m_RetParam, &(m_Info.retPassInfo));
 	} else {
 		m_RetParam = NULL;
 	}
 
-	m_NumParams = numParams;
-
 	/* Calculate virtual stack offsets for each parameter */
 	size_t offs = 0;
 
-	if (cv == CallConv_ThisCall)
+	if (m_Info.convention == SourceHook::ProtoInfo::CallConv_ThisCall)
 	{
 		offs += sizeof(void *);
 	}
-	for (size_t i=0; i<numParams; i++)
+	for (size_t i=0; i<argnum; i++)
 	{
 		m_Params[i].offset = offs;
 		offs += m_Params[i].info.size;
@@ -75,22 +81,34 @@ CallWrapper::~CallWrapper()
 {
 	delete [] m_Params;
 	delete m_RetParam;
-	g_SPEngine->FreePageMemory(m_Addrs[ADDR_CODEBASE]);
+	delete [] m_Info.paramsPassInfo;
 }
 
 void CallWrapper::Destroy()
 {
+	if (m_AddrCodeBase != NULL)
+	{
+		g_SPEngine->FreePageMemory(m_AddrCodeBase);
+		m_AddrCodeBase = NULL;
+	}
+
 	delete this;
 }
 
 CallConvention CallWrapper::GetCallConvention()
 {
-	return m_Cv;
+	/* Need to convert to a SourceMod convention for bcompat */
+	return GetSMCallConvention((SourceHook::ProtoInfo::CallConvention)m_Info.convention);
 }
 
 const PassEncode *CallWrapper::GetParamInfo(unsigned int num)
 {
-	return (num+1 > m_NumParams) ? NULL : &m_Params[num];
+	if (num + 1 > GetParamCount() || num < 0)
+	{
+		return NULL;
+	}
+
+	return &m_Params[num];
 }
 
 const PassInfo *CallWrapper::GetReturnInfo()
@@ -100,12 +118,69 @@ const PassInfo *CallWrapper::GetReturnInfo()
 
 unsigned int CallWrapper::GetParamCount()
 {
-	return m_NumParams;
+	return m_Info.numOfParams;
 }
 
 void CallWrapper::Execute(void *vParamStack, void *retBuffer)
 {
 	typedef void (*CALL_EXECUTE)(void *, void *);
-	CALL_EXECUTE fn = (CALL_EXECUTE)m_Addrs[ADDR_CODEBASE];
+	CALL_EXECUTE fn = (CALL_EXECUTE)GetCodeBaseAddr();
 	fn(vParamStack, retBuffer);
+}
+
+void CallWrapper::SetMemFuncInfo(const SourceHook::MemFuncInfo *funcInfo)
+{
+	m_FuncInfo = *funcInfo;
+}
+
+SourceHook::MemFuncInfo *CallWrapper::GetMemFuncInfo()
+{
+	return &m_FuncInfo;
+}
+
+void CallWrapper::SetCalleeAddr(void *addr)
+{
+	m_AddrCallee = addr;
+}
+
+void CallWrapper::SetCodeBaseAddr(void *addr)
+{
+	m_AddrCodeBase = addr;
+}
+
+void *CallWrapper::GetCalleeAddr()
+{
+	return m_AddrCallee;
+}
+
+void *CallWrapper::GetCodeBaseAddr()
+{
+	return m_AddrCodeBase;
+}
+
+const SourceHook::PassInfo *CallWrapper::GetSHReturnInfo()
+{
+	return &(m_Info.retPassInfo);
+}
+
+SourceHook::ProtoInfo::CallConvention CallWrapper::GetSHCallConvention()
+{
+	return (SourceHook::ProtoInfo::CallConvention)m_Info.convention;
+}
+
+const SourceHook::PassInfo * CallWrapper::GetSHParamInfo(unsigned int num)
+{
+	if (num + 1 > GetParamCount() || num < 0)
+	{
+		return NULL;
+	}
+
+	return &(m_Info.paramsPassInfo[num+1]);
+}
+
+unsigned int CallWrapper::GetParamOffset(unsigned int num)
+{
+	assert(num <= GetParamCount() && num > 0);
+
+	return m_Params[num].offset;
 }

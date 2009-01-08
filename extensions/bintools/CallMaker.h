@@ -32,15 +32,11 @@
 #ifndef _INCLUDE_SOURCEMOD_CALLMAKER_H_
 #define _INCLUDE_SOURCEMOD_CALLMAKER_H_
 
-#include <IBinTools.h>
+
+#include "CallWrapper.h"
+#include "HookWrapper.h"
 
 using namespace SourceMod;
-
-enum FuncAddrMethod
-{
-	FuncAddr_Direct,
-	FuncAddr_VTable
-};
 
 class CallMaker : public IBinTools
 {
@@ -57,5 +53,33 @@ public: //IBinTools
 		const PassInfo paramInfo[],
 		unsigned int numParams);
 };
+
+class CallMaker2 
+#if defined HOOKING_ENABLED
+	: public IBinTools2
+#endif
+{
+public: //IBinTools2
+	virtual ICallWrapper *CreateCall(void *address,
+		const SourceHook::ProtoInfo *protoInfo);
+	virtual ICallWrapper *CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo,
+		const SourceHook::MemFuncInfo *info);
+#if defined HOOKING_ENABLED
+	virtual IHookWrapper *CreateVirtualHook(SourceHook::ISourceHook *pSH, 
+		const SourceHook::ProtoInfo *protoInfo, 
+		const SourceHook::MemFuncInfo *info, 
+		VIRTUAL_HOOK_PROTO f);
+#endif
+};
+
+extern CallMaker2 g_CallMaker2;
+
+SourceHook::ProtoInfo::CallConvention GetSHCallConvention(SourceMod::CallConvention cv);
+SourceMod::CallConvention GetSMCallConvention(SourceHook::ProtoInfo::CallConvention cv);
+SourceHook::PassInfo::PassType GetSHPassType(SourceMod::PassType type);
+SourceMod::PassType GetSMPassType(int type);
+void GetSMPassInfo(SourceMod::PassInfo *out, const SourceHook::PassInfo *in);
+
+
 
 #endif //_INCLUDE_SOURCEMOD_CALLMAKER_H_

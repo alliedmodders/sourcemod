@@ -26,54 +26,72 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id$
+ * Version: $Id: CallMaker.h 1964 2008-03-27 04:54:56Z damagedsoul $
  */
 
-#ifndef _INCLUDE_SOURCEMOD_CALLWRAPPER_H_
-#define _INCLUDE_SOURCEMOD_CALLWRAPPER_H_
+#ifndef _INCLUDE_SOURCEMOD_HOOKWRAPPER_H_
+#define _INCLUDE_SOURCEMOD_HOOKWRAPPER_H_
 
-#include <IBinTools.h>
-#include <sourcehook_pibuilder.h>
+#if defined HOOKING_ENABLED
+
+#include "smsdk_ext.h"
+#include "sourcehook.h"
+#include "IBinTools.h"
+
+#define VTABLE_PATCH_OFFS		2
 
 using namespace SourceMod;
 
-enum FuncAddrMethod
-{
-	FuncAddr_Direct,
-	FuncAddr_VTable
-};
-
-class CallWrapper : public ICallWrapper
+class HookWrapper : public IHookWrapper
 {
 public:
-	CallWrapper(const SourceHook::ProtoInfo *protoInfo);
-	~CallWrapper();
-public: //ICallWrapper
-	CallConvention GetCallConvention();
-	const PassEncode *GetParamInfo(unsigned int num);
-	const PassInfo *GetReturnInfo();
+	HookWrapper(SourceHook::ISourceHook *pSH, 
+				const SourceHook::ProtoInfo *proto, 
+				SourceHook::MemFuncInfo *memfunc, 
+				void *addr
+				);
+	~HookWrapper();
+public: //IHookWrapper
+	ISMDelegate *CreateDelegate(void *data);
 	unsigned int GetParamCount();
-	void Execute(void *vParamStack, void *retBuffer);
+	unsigned int GetParamOffset(unsigned int argnum, unsigned int *size);
+	void PerformRecall(void *params, void *retval);
 	void Destroy();
-	const SourceHook::PassInfo *GetSHReturnInfo();
-	SourceHook::ProtoInfo::CallConvention GetSHCallConvention();
-	const SourceHook::PassInfo *GetSHParamInfo(unsigned int num);
-	unsigned int GetParamOffset(unsigned int num);
 public:
-	void SetCalleeAddr(void *addr);
-	void SetCodeBaseAddr(void *addr);
-	void *GetCalleeAddr();
-	void *GetCodeBaseAddr();
-
-	void SetMemFuncInfo(const SourceHook::MemFuncInfo *funcInfo);
-	SourceHook::MemFuncInfo *GetMemFuncInfo();
+	unsigned int GetParamSize();
+	unsigned int GetRetSize();
+	SourceHook::ProtoInfo *GetProtoInfo();
+	void *GetHandlerAddr();
+	void SetHookWrpAddr(void *addr);
+	void SetCallWrapperAddr(ICallWrapper *wrap);
 private:
-	PassEncode *m_Params;
-	SourceHook::ProtoInfo m_Info;
-	PassInfo *m_RetParam;
-	void *m_AddrCallee;
-	void *m_AddrCodeBase;
-	SourceHook::MemFuncInfo m_FuncInfo;
+	void *m_FuncAddr;
+	void *m_HookWrapper;
+	SourceHook::ISourceHook *m_pSH;
+	unsigned int *m_ParamOffs;
+	unsigned int m_ParamSize;
+	unsigned int m_RetSize;
+	SourceHook::MemFuncInfo m_MemFuncInfo;
+	SourceHook::ProtoInfo m_ProtoInfo;
+	ICallWrapper *m_CallWrapper;
 };
 
-#endif //_INCLUDE_SOURCEMOD_CALLWRAPPER_H_
+class SMDelegate : public ISMDelegate
+{
+public:
+	SMDelegate(void *data);
+public: //SourceHook::ISHDelegate
+	bool IsEqual(ISHDelegate *pOtherDeleg);
+	void DeleteThis();
+	void Call();
+public: //ISMDelegate
+	void *GetUserData();
+public:
+	void PatchVtable(void *addr);
+private:
+	void *m_Data;
+};
+
+#endif
+
+#endif //_INCLUDE_SOURCEMOD_HOOKWRAPPER_H_

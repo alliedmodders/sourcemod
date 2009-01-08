@@ -29,9 +29,54 @@
  * Version: $Id$
  */
 
+#include <stdio.h>
 #include "CallMaker.h"
-#include "CallWrapper.h"
-#include "jit_call.h"
+#include "jit_compile.h"
+#include "extension.h"
+
+/* SourceMod <==> SourceHook type conversion functions */
+
+SourceHook::ProtoInfo::CallConvention GetSHCallConvention(SourceMod::CallConvention cv)
+{
+	if (cv < SourceMod::CallConv_ThisCall || cv > SourceMod::CallConv_Cdecl)
+	{
+		return SourceHook::ProtoInfo::CallConv_Unknown;
+	}
+
+	return (SourceHook::ProtoInfo::CallConvention)(cv + 1);
+}
+
+SourceMod::CallConvention GetSMCallConvention(SourceHook::ProtoInfo::CallConvention cv)
+{
+	assert(cv >= SourceHook::ProtoInfo::CallConv_ThisCall || cv <= SourceHook::ProtoInfo::CallConv_Cdecl);
+
+	return (SourceMod::CallConvention)(cv - 1);
+}
+
+SourceHook::PassInfo::PassType GetSHPassType(SourceMod::PassType type)
+{
+	if (type < SourceMod::PassType_Basic || type > SourceMod::PassType_Object)
+	{
+		return SourceHook::PassInfo::PassType_Unknown;
+	}
+
+	return (SourceHook::PassInfo::PassType)(type + 1);
+}
+
+SourceMod::PassType GetSMPassType(int type)
+{
+	/* SourceMod doesn't provide an Unknown type so we it must be an error */
+	assert(type >= SourceHook::PassInfo::PassType_Basic && type <= SourceHook::PassInfo::PassType_Object);
+
+	return (SourceMod::PassType)(type - 1);
+}
+
+void GetSMPassInfo(SourceMod::PassInfo *out, const SourceHook::PassInfo *in)
+{
+	out->size = in->size;
+	out->flags = in->flags;
+	out->type = GetSMPassType(in->type);
+}
 
 ICallWrapper *CallMaker::CreateCall(void *address,
 						 CallConvention cv,
@@ -39,12 +84,26 @@ ICallWrapper *CallMaker::CreateCall(void *address,
 						 const PassInfo paramInfo[],
 						 unsigned int numParams)
 {
-	CallWrapper *pWrapper = new CallWrapper(cv, paramInfo, retInfo, numParams);
-	pWrapper->m_Addrs[ADDR_CALLEE] = address;
+	SourceHook::CProtoInfoBuilder protoInfo(GetSHCallConvention(cv));
 
-	JIT_Compile(pWrapper, FuncAddr_Direct);
+	for (unsigned int i=0; i<numParams; i++)
+	{
+		protoInfo.AddParam(paramInfo[i].size, GetSHPassType(paramInfo[i].type), paramInfo[i].flags,
+			NULL, NULL, NULL, NULL);
+	}
 
-	return pWrapper;
+	if (retInfo)
+	{
+		protoInfo.SetReturnType(retInfo->size, GetSHPassType(retInfo->type), retInfo->flags,
+			NULL, NULL, NULL, NULL);
+	}
+	else
+	{
+		protoInfo.SetReturnType(0, SourceHook::PassInfo::PassType_Unknown, 0,
+			NULL, NULL, NULL, NULL);
+	}
+
+	return g_CallMaker2.CreateCall(address, &(*protoInfo));
 }
 
 ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx, 
@@ -54,12 +113,73 @@ ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx,
 									 const PassInfo paramInfo[], 
 									 unsigned int numParams)
 {
-	CallWrapper *pWrapper = new CallWrapper(CallConv_ThisCall, paramInfo, retInfo, numParams);
-	pWrapper->m_VtInfo.thisOffs = thisOffs;
-	pWrapper->m_VtInfo.vtblIdx = vtblIdx;
-	pWrapper->m_VtInfo.vtblOffs = vtblOffs;
+	SourceHook::MemFuncInfo info;
+	info.isVirtual = true;
+	info.vtblindex = vtblIdx;
+	info.vtbloffs = vtblOffs;
+	info.thisptroffs = thisOffs;
 
-	JIT_Compile(pWrapper, FuncAddr_VTable);
+	SourceHook::CProtoInfoBuilder protoInfo(SourceHook::ProtoInfo::CallConv_ThisCall);
+
+	for (unsigned int i=0; i<numParams; i++)
+	{
+		protoInfo.AddParam(paramInfo[i].size, GetSHPassType(paramInfo[i].type), paramInfo[i].flags,
+			NULL, NULL, NULL, NULL);
+	}
+
+	if (retInfo)
+	{
+		protoInfo.SetReturnType(retInfo->size, GetSHPassType(retInfo->type), retInfo->flags,
+			NULL, NULL, NULL, NULL);
+	}
+	else
+	{
+		protoInfo.SetReturnType(0, SourceHook::PassInfo::PassType_Unknown, 0,
+			NULL, NULL, NULL, NULL);
+	}
+	
+
+	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info);
+}
+
+ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo)
+{
+	CallWrapper *pWrapper = new CallWrapper(protoInfo);
+	pWrapper->SetCalleeAddr(address);
+
+	void *addr = JIT_CallCompile(pWrapper, FuncAddr_Direct);
+	pWrapper->SetCodeBaseAddr(addr);
 
 	return pWrapper;
 }
+
+ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo, 
+											const SourceHook::MemFuncInfo *info)
+{
+	CallWrapper *pWrapper = new CallWrapper(protoInfo);
+	pWrapper->SetMemFuncInfo(info);
+
+	void *addr = JIT_CallCompile(pWrapper, FuncAddr_VTable);
+	pWrapper->SetCodeBaseAddr(addr);
+
+	return pWrapper;
+}
+
+#if defined HOOKING_ENABLED
+IHookWrapper *CallMaker2::CreateVirtualHook(SourceHook::ISourceHook *pSH, 
+											const SourceHook::ProtoInfo *protoInfo,
+											const SourceHook::MemFuncInfo *info, 
+											VIRTUAL_HOOK_PROTO f)
+{
+	HookWrapper *pWrapper = new HookWrapper(pSH, protoInfo, const_cast<SourceHook::MemFuncInfo *>(info), (void *)f);
+
+	void *addr = JIT_HookCompile(pWrapper);
+	pWrapper->SetHookWrpAddr(addr);
+
+	ICallWrapper *callWrap = CreateVirtualCall(protoInfo, info);
+	pWrapper->SetCallWrapperAddr(callWrap);
+	
+	return pWrapper;
+}
+#endif
+

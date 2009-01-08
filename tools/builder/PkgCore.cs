@@ -202,11 +202,36 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions";
+			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
 			lib.source_path = "extensions/bintools";
 			lib.binary_name = "bintools.ext";
 			lib.vcproj_name = "bintools";
+            lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
+
+            lib = new Library();
+            lib.package_path = "addons/sourcemod/extensions/auto.2.ep1";
+            lib.source_path = "extensions/bintools";
+            lib.binary_name = "bintools.ext";
+            lib.vcproj_name = "bintools";
+            lib.build_mode = BuildMode.BuildMode_Episode1;
+            libraries.Add(lib);
+
+            lib = new Library();
+            lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
+            lib.source_path = "extensions/bintools";
+            lib.binary_name = "bintools.ext";
+            lib.vcproj_name = "bintools";
+            lib.build_mode = BuildMode.BuildMode_Episode2;
+            libraries.Add(lib);
+
+            lib = new Library();
+            lib.package_path = "addons/sourcemod/extensions/auto.2.l4d";
+            lib.source_path = "extensions/bintools";
+            lib.binary_name = "bintools.ext";
+            lib.vcproj_name = "bintools";
+            lib.build_mode = BuildMode.BuildMode_Left4Dead;
+            libraries.Add(lib);
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions";

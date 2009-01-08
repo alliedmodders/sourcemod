@@ -39,6 +39,7 @@
 
 BinTools g_BinTools;		/**< Global singleton for extension's main interface */
 CallMaker g_CallMaker;
+CallMaker2 g_CallMaker2;
 ISourcePawnEngine *g_SPEngine;
 
 SMEXT_LINK(&g_BinTools);
@@ -47,6 +48,9 @@ bool BinTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	g_SPEngine = g_pSM->GetScriptingEngine();
 	g_pShareSys->AddInterface(myself, &g_CallMaker);
+#if defined METAMOD_PLAPI_VERSION
+	g_pShareSys->AddInterface(myself, &g_CallMaker2);
+#endif
 
 	return true;
 }

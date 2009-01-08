@@ -97,6 +97,24 @@ IUserMessages *usermsgs = NULL;
 #if defined SMEXT_ENABLE_TRANSLATOR
 ITranslator *translator = NULL;
 #endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+SourceMod::IPluginManager *plsys;
+#endif
+#if defined SMEXT_ENABLE_MENUS
+IMenuManager *menus = NULL;
+#endif
+#if defined SMEXT_ENABLE_ADMINSYS
+IAdminSystem *adminsys = NULL;
+#endif
+#if defined SMEXT_ENABLE_TEXTPARSERS
+ITextParsers *textparsers = NULL;
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+IUserMessages *usermsgs = NULL;
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+ITranslator *translator = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -166,6 +184,24 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_LIBSYS
 	SM_GET_IFACE(LIBRARYSYS, libsys);
+#endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+	SM_GET_IFACE(PLUGINSYSTEM, plsys);
+#endif
+#if defined SMEXT_ENABLE_MENUS
+	SM_GET_IFACE(MENUMANAGER, menus);
+#endif
+#if defined SMEXT_ENABLE_ADMINSYS
+	SM_GET_IFACE(ADMINSYS, adminsys);
+#endif
+#if defined SMEXT_ENABLE_TEXTPARSERS
+	SM_GET_IFACE(TEXTPARSERS, textparsers);
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+	SM_GET_IFACE(USERMSGS, usermsgs);
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+	SM_GET_IFACE(TRANSLATOR, translator);
 #endif
 #if defined SMEXT_ENABLE_PLUGINSYS
 	SM_GET_IFACE(PLUGINSYSTEM, plsys);

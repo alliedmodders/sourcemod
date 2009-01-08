@@ -14,10 +14,7 @@ MMSOURCE17 = ../../../mmsource-1.7
 
 PROJECT = bintools
 
-#Uncomment for Metamod: Source enabled extension
-#USEMETA = true
-
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp jit_call.cpp CallWrapper.cpp CallMaker.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp jit_call.cpp CallWrapper.cpp CallMaker.cpp HookWrapper.cpp jit_hook.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -49,6 +46,8 @@ ifeq "$(ENGINE)" "orangebox"
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
+	USEMETA = true
+	CFLAGS += -DHOOKING_ENABLED
 endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
@@ -59,6 +58,8 @@ ifeq "$(ENGINE)" "left4dead"
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/l4d
 	override ENGSET = true
+	USEMETA = true
+	CFLAGS += -DHOOKING_ENABLED
 endif
 
 ifeq "$(USEMETA)" "true"

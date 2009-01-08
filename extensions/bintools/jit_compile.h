@@ -29,12 +29,47 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_JIT_CALL_H_
-#define _INCLUDE_SOURCEMOD_JIT_CALL_H_
+#ifndef _INCLUDE_SOURCEMOD_JIT_COMPILE_H_
+#define _INCLUDE_SOURCEMOD_JIT_COMPILE_H_
 
-#include "CallMaker.h"
+#include <jit_helpers.h>
+#include <x86_macros.h>
 #include "CallWrapper.h"
+#include "HookWrapper.h"
 
-void JIT_Compile(CallWrapper *pWrapper, FuncAddrMethod method);
+void *JIT_CallCompile(CallWrapper *pWrapper, FuncAddrMethod method);
+#if defined HOOKING_ENABLED
+void *JIT_HookCompile(HookWrapper *pWrapper);
+void JIT_FreeHook(void *addr);
+#endif
 
-#endif //_INCLUDE_SOURCEMOD_JIT_CALL_H_
+/********************
+ * Assembly Helpers *
+ ********************/
+
+inline jit_uint8_t _DecodeRegister3(jit_uint32_t val)
+{
+	switch (val % 3)
+	{
+	case 0:
+		{
+			return REG_EAX;
+		}
+	case 1:
+		{
+			return REG_EDX;
+		}
+	case 2:
+		{
+			return REG_ECX;
+		}
+	}
+
+	/* Should never happen */
+	assert(false);
+	return 0xFF;
+}
+
+extern jit_uint32_t g_RegDecoder;
+
+#endif //_INCLUDE_SOURCEMOD_JIT_COMPILE_H_

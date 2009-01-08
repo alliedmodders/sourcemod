@@ -73,6 +73,24 @@
 #if defined SMEXT_ENABLE_LIBSYS
 #include <ILibrarySys.h>
 #endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+#include <IPluginSys.h>
+#endif
+#if defined SMEXT_ENABLE_MENUS
+#include <IMenuManager.h>
+#endif
+#if defined SMEXT_ENABLE_ADMINSYS
+#include <IAdminSystem.h>
+#endif
+#if defined SMEXT_ENABLE_TEXTPARSERS
+#include <ITextParsers.h>
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+#include <IUserMessages.h>
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+#include <ITranslator.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -255,6 +273,21 @@ extern IThreader *threader;
 #endif
 #if defined SMEXT_ENABLE_LIBSYS
 extern ILibrarySys *libsys;
+#endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+extern SourceMod::IPluginManager *plsys;
+#endif
+#if defined SMEXT_ENABLE_MENUS
+extern IMenuManager *menus;
+#endif
+#if defined SMEXT_ENABLE_ADMINSYS
+extern IAdminSystem *adminsys;
+#endif
+#if defined SMEXT_ENABLE_USERMSGS
+extern IUserMessages *usermsgs;
+#endif
+#if defined SMEXT_ENABLE_TRANSLATOR
+extern ITranslator *translator;
 #endif
 
 #if defined SMEXT_CONF_METAMOD

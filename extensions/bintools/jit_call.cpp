@@ -33,37 +33,11 @@
 #include "extension.h"
 #include <jit_helpers.h>
 #include <x86_macros.h>
-#include "jit_call.h"
+#include "jit_compile.h"
 
 jit_uint32_t g_StackUsage = 0;
 jit_uint32_t g_StackAlign = 0;
 jit_uint32_t g_RegDecoder = 0;
-
-/********************
- * Assembly Helpers *
- ********************/
-
-inline jit_uint8_t _DecodeRegister3(jit_uint32_t val)
-{
-	switch (val % 3)
-	{
-	case 0:
-		{
-			return REG_EAX;
-		}
-	case 1:
-		{
-			return REG_EDX;
-		}
-	case 2:
-		{
-			return REG_ECX;
-		}
-	}
-
-	/* Should never happen */
-	return 0xFF;
-}
 
 /********************
  * Assembly Opcodes *
@@ -137,25 +111,25 @@ inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_param
 	IA32_Return(jit);
 }
 
-inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
+inline void Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
 {
 	jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
 
-	if (pEnc->info.flags & PASSFLAG_BYVAL)
+	if (info->flags & PASSFLAG_BYVAL)
 	{
-		switch (pEnc->info.size)
+		switch (info->size)
 		{
 		case 1:
 			{
 				//movzx reg, BYTE PTR [ebx+<offset>]
 				//push reg
-				if (pEnc->offset < SCHAR_MAX)
+				if (offset < SCHAR_MAX)
 				{
-					IA32_Movzx_Reg32_Rm8_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
-				} else if (!pEnc->offset) {
+					IA32_Movzx_Reg32_Rm8_Disp8(jit, reg, REG_EBX, (jit_int8_t)offset);
+				} else if (!offset) {
 					IA32_Movzx_Reg32_Rm8(jit, reg, REG_EBX, MOD_MEM_REG);
 				} else {
-					IA32_Movzx_Reg32_Rm8_Disp32(jit, reg, REG_EBX, pEnc->offset);
+					IA32_Movzx_Reg32_Rm8_Disp32(jit, reg, REG_EBX, offset);
 				}
 				IA32_Push_Reg(jit, reg);
 
@@ -167,13 +141,13 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 				//movzx reg, WORD PTR [ebx+<offset>]
 				//push reg
 				jit->write_ubyte(IA32_16BIT_PREFIX);
-				if (pEnc->offset < SCHAR_MAX)
+				if (offset < SCHAR_MAX)
 				{
-					IA32_Movzx_Reg32_Rm16_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
-				} else if (!pEnc->offset) {
+					IA32_Movzx_Reg32_Rm16_Disp8(jit, reg, REG_EBX, (jit_int8_t)offset);
+				} else if (!offset) {
 					IA32_Movzx_Reg32_Rm16(jit, reg, REG_EBX, MOD_MEM_REG);
 				} else {
-					IA32_Movzx_Reg32_Rm16_Disp32(jit, reg, REG_EBX, pEnc->offset);
+					IA32_Movzx_Reg32_Rm16_Disp32(jit, reg, REG_EBX, offset);
 				}
 				IA32_Push_Reg(jit, reg);
 
@@ -184,13 +158,13 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 			{
 				//mov reg, DWORD PTR [ebx+<offset>]
 				//push reg
-				if (pEnc->offset < SCHAR_MAX)
+				if (offset < SCHAR_MAX)
 				{
-					IA32_Mov_Reg_Rm_Disp8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
-				} else if (!pEnc->offset) {
+					IA32_Mov_Reg_Rm_Disp8(jit, reg, REG_EBX, (jit_int8_t)offset);
+				} else if (!offset) {
 					IA32_Mov_Reg_Rm(jit, reg, REG_EBX, MOD_MEM_REG);
 				} else {
-					IA32_Mov_Reg_Rm_Disp32(jit, reg, REG_EBX, pEnc->offset);
+					IA32_Mov_Reg_Rm_Disp32(jit, reg, REG_EBX, offset);
 				}
 				IA32_Push_Reg(jit, reg);
 
@@ -205,19 +179,19 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 				//push reg2
 				jit_uint8_t reg2 = _DecodeRegister3(g_RegDecoder++);
 
-				if (pEnc->offset+4 < SCHAR_MAX)
+				if (offset+4 < SCHAR_MAX)
 				{
-					IA32_Mov_Reg_Rm_Disp8(jit, reg, REG_EBX, (jit_int8_t)(pEnc->offset+4));
+					IA32_Mov_Reg_Rm_Disp8(jit, reg, REG_EBX, (jit_int8_t)(offset+4));
 				} else {
-					IA32_Mov_Reg_Rm_Disp32(jit, reg, REG_EBX, pEnc->offset+4);
+					IA32_Mov_Reg_Rm_Disp32(jit, reg, REG_EBX, offset+4);
 				}
-				if (pEnc->offset < SCHAR_MAX)
+				if (offset < SCHAR_MAX)
 				{
-					IA32_Mov_Reg_Rm_Disp8(jit, reg2, REG_EBX, (jit_int8_t)pEnc->offset);
-				} else if (!pEnc->offset) {
+					IA32_Mov_Reg_Rm_Disp8(jit, reg2, REG_EBX, (jit_int8_t)offset);
+				} else if (!offset) {
 					IA32_Mov_Reg_Rm(jit, reg2, REG_EBX, MOD_MEM_REG);
 				} else {
-					IA32_Mov_Reg_Rm_Disp32(jit, reg2, REG_EBX, pEnc->offset);
+					IA32_Mov_Reg_Rm_Disp32(jit, reg2, REG_EBX, offset);
 				}
 				IA32_Push_Reg(jit, reg);
 				IA32_Push_Reg(jit, reg2);
@@ -226,20 +200,20 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 				break;
 			}
 		}
-	} else if (pEnc->info.flags & PASSFLAG_BYREF) {
+	} else if (info->flags & PASSFLAG_BYREF) {
 		//lea reg, [ebx+<offset>]
 		//push reg
-		if (!pEnc->offset)
+		if (!offset)
 		{
 			IA32_Push_Reg(jit, REG_EBX);
 			g_StackUsage += 4;
 			return;
 		}
-		if (pEnc->offset < SCHAR_MAX)
+		if (offset < SCHAR_MAX)
 		{
-			IA32_Lea_DispRegImm8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
+			IA32_Lea_DispRegImm8(jit, reg, REG_EBX, (jit_int8_t)offset);
 		} else {
-			IA32_Lea_DispRegImm32(jit, reg, REG_EBX, pEnc->offset);
+			IA32_Lea_DispRegImm32(jit, reg, REG_EBX, offset);
 		}
 		IA32_Push_Reg(jit, reg);
 
@@ -247,24 +221,24 @@ inline void Write_PushPOD(JitWriter *jit, const PassEncode *pEnc)
 	}
 }
 
-inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
+inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
 {
-	if (pEnc->info.flags & PASSFLAG_BYVAL)
+	if (info->flags & PASSFLAG_BYVAL)
 	{
-		switch (pEnc->info.size)
+		switch (info->size)
 		{
 		case 4:
 			{
 				//fld DWORD PTR [ebx+<offset>]
 				//push reg
 				//fstp DWORD PTR [esp]
-				if (pEnc->offset < SCHAR_MAX)
+				if (offset < SCHAR_MAX)
 				{
-					IA32_Fld_Mem32_Disp8(jit, REG_EBX, (jit_int8_t)pEnc->offset);
-				} else if (!pEnc->offset) {
+					IA32_Fld_Mem32_Disp8(jit, REG_EBX, (jit_int8_t)offset);
+				} else if (!offset) {
 					IA32_Fld_Mem32(jit, REG_EBX);
 				} else {
-					IA32_Fld_Mem32_Disp32(jit, REG_EBX, pEnc->offset);
+					IA32_Fld_Mem32_Disp32(jit, REG_EBX, offset);
 				}
 				IA32_Push_Reg(jit, _DecodeRegister3(g_RegDecoder++));
 				IA32_Fstp_Mem32_ESP(jit);
@@ -276,13 +250,13 @@ inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
 				//fld QWORD PTR [ebx+<offset>]
 				//sub esp, 8
 				//fstp QWORD PTR [esp]
-				if (pEnc->offset < SCHAR_MAX)
+				if (offset < SCHAR_MAX)
 				{
-					IA32_Fld_Mem64_Disp8(jit, REG_EBX, (jit_int8_t)pEnc->offset);
-				} else if (!pEnc->offset) {
+					IA32_Fld_Mem64_Disp8(jit, REG_EBX, (jit_int8_t)offset);
+				} else if (!offset) {
 					IA32_Fld_Mem64(jit, REG_EBX);
 				} else {
-					IA32_Fld_Mem64_Disp32(jit, REG_EBX, pEnc->offset);
+					IA32_Fld_Mem64_Disp32(jit, REG_EBX, offset);
 				}
 				IA32_Sub_Rm_Imm8(jit, REG_ESP, 8, MOD_REG);
 				IA32_Fstp_Mem64_ESP(jit);
@@ -290,10 +264,10 @@ inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
 				break;
 			}
 		}
-	} else if (pEnc->info.flags & PASSFLAG_BYREF) {
+	} else if (info->flags & PASSFLAG_BYREF) {
 		//lea reg, [ebx+<offset>]
 		//push reg
-		if (!pEnc->offset)
+		if (!offset)
 		{
 			IA32_Push_Reg(jit, REG_EBX);
 			g_StackUsage += 4;
@@ -301,11 +275,11 @@ inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
 		}
 
 		jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
-		if (pEnc->offset < SCHAR_MAX)
+		if (offset < SCHAR_MAX)
 		{
-			IA32_Lea_DispRegImm8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
+			IA32_Lea_DispRegImm8(jit, reg, REG_EBX, (jit_int8_t)offset);
 		} else {
-			IA32_Lea_DispRegImm32(jit, reg, REG_EBX, pEnc->offset);
+			IA32_Lea_DispRegImm32(jit, reg, REG_EBX, offset);
 		}
 		IA32_Push_Reg(jit, reg);
 
@@ -313,18 +287,18 @@ inline void Write_PushFloat(JitWriter *jit, const PassEncode *pEnc)
 	}
 }
 
-inline void Write_PushObject(JitWriter *jit, const PassEncode *pEnc)
+inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
 {
-	if (pEnc->info.flags & PASSFLAG_BYVAL)
+	if (info->flags & PASSFLAG_BYVAL)
 	{
 #ifdef PLATFORM_POSIX
-		if (pEnc->info.flags & PASSFLAG_ODTOR)
+		if (info->flags & PASSFLAG_ODTOR)
 		{
 			goto push_byref;
 		}
 #endif
-		jit_uint32_t dwords = pEnc->info.size >> 2;
-		jit_uint32_t bytes = pEnc->info.size & 0x3;
+		jit_uint32_t dwords = info->size >> 2;
+		jit_uint32_t bytes = info->size & 0x3;
 
 		//sub esp, <size>
 		//cld
@@ -340,23 +314,23 @@ inline void Write_PushObject(JitWriter *jit, const PassEncode *pEnc)
 		// rep movsb
 		//pop esi
 		//pop edi
-		if (pEnc->info.size < SCHAR_MAX)
+		if (info->size < SCHAR_MAX)
 		{
-			IA32_Sub_Rm_Imm8(jit, REG_ESP, (jit_int8_t)pEnc->info.size, MOD_REG);
+			IA32_Sub_Rm_Imm8(jit, REG_ESP, (jit_int8_t)info->size, MOD_REG);
 		} else {
-			IA32_Sub_Rm_Imm32(jit, REG_ESP, pEnc->info.size, MOD_REG);
+			IA32_Sub_Rm_Imm32(jit, REG_ESP, info->size, MOD_REG);
 		}
 		IA32_Cld(jit);
 		IA32_Push_Reg(jit, REG_EDI);
 		IA32_Push_Reg(jit, REG_ESI);
 		IA32_Lea_Reg_DispRegMultImm8(jit, REG_EDI, REG_NOIDX, REG_ESP, NOSCALE, 8);
-		if (pEnc->offset < SCHAR_MAX)
+		if (offset < SCHAR_MAX)
 		{
-			IA32_Lea_DispRegImm8(jit, REG_ESI, REG_EBX, (jit_int8_t)pEnc->offset);
-		} else if (!pEnc->offset) {
+			IA32_Lea_DispRegImm8(jit, REG_ESI, REG_EBX, (jit_int8_t)offset);
+		} else if (!offset) {
 			IA32_Mov_Reg_Rm(jit, REG_ESI, REG_EBX, MOD_REG);
 		} else {
-			IA32_Lea_DispRegImm32(jit, REG_ESI, REG_EBX, pEnc->offset);
+			IA32_Lea_DispRegImm32(jit, REG_ESI, REG_EBX, offset);
 		}
 		if (dwords)
 		{
@@ -373,12 +347,12 @@ inline void Write_PushObject(JitWriter *jit, const PassEncode *pEnc)
 		IA32_Pop_Reg(jit, REG_ESI);
 		IA32_Pop_Reg(jit, REG_EDI);
 
-		g_StackUsage += pEnc->info.size;
-	} else if (pEnc->info.flags & PASSFLAG_BYREF) {
+		g_StackUsage += info->size;
+	} else if (info->flags & PASSFLAG_BYREF) {
 #ifdef PLATFORM_POSIX
 push_byref:
 #endif
-		if (!pEnc->offset)
+		if (!offset)
 		{
 			IA32_Push_Reg(jit, REG_EBX);
 			g_StackUsage += 4;
@@ -388,11 +362,11 @@ push_byref:
 		//lea reg, [ebx+<offset>]
 		//push reg
 		jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
-		if (pEnc->offset < SCHAR_MAX)
+		if (offset < SCHAR_MAX)
 		{
-			IA32_Lea_DispRegImm8(jit, reg, REG_EBX, (jit_int8_t)pEnc->offset);
+			IA32_Lea_DispRegImm8(jit, reg, REG_EBX, (jit_int8_t)offset);
 		} else {
-			IA32_Lea_DispRegImm32(jit, reg, REG_EBX, pEnc->offset);
+			IA32_Lea_DispRegImm32(jit, reg, REG_EBX, offset);
 		}
 		IA32_Push_Reg(jit, reg);
 
@@ -429,15 +403,16 @@ inline void Write_CallFunction(JitWriter *jit, FuncAddrMethod method, CallWrappe
 	{
 		//call <addr>
 		jitoffs_t call = IA32_Call_Imm32(jit, 0);
-		IA32_Write_Jump32_Abs(jit, call, pWrapper->m_Addrs[ADDR_CALLEE]);
+		IA32_Write_Jump32_Abs(jit, call, pWrapper->GetCalleeAddr());
 	} else if (method == FuncAddr_VTable) {
 		//*(this + thisOffs + vtblOffs)[vtblIdx]
 		//mov edx, [ebx]
 		//mov eax, [edx+<thisOffs>+<vtblOffs>]
 		//mov edx, [eax+<vtblIdx>*4]
 		//call edx
-		jit_uint32_t total_offs = pWrapper->m_VtInfo.thisOffs + pWrapper->m_VtInfo.vtblOffs;
-		jit_uint32_t vfunc_pos = pWrapper->m_VtInfo.vtblIdx * 4;
+		SourceHook::MemFuncInfo *funcInfo = pWrapper->GetMemFuncInfo();
+		jit_uint32_t total_offs = funcInfo->thisptroffs + funcInfo->vtbloffs;
+		jit_uint32_t vfunc_pos = funcInfo->vtblindex * 4;
 
 		IA32_Mov_Reg_Rm(jit, REG_EDX, REG_EBX, MOD_MEM_REG);
 		if (total_offs < SCHAR_MAX)
@@ -529,7 +504,7 @@ inline void Write_MovRet2Buf(JitWriter *jit, const PassInfo *pRet)
  * Assembly Compiler Function *
  ******************************/
 
-void JIT_Compile(CallWrapper *pWrapper, FuncAddrMethod method)
+void *JIT_CallCompile(CallWrapper *pWrapper, FuncAddrMethod method)
 {
 	JitWriter writer;
 	JitWriter *jit = &writer;
@@ -553,22 +528,25 @@ jit_rewind:
 	/* Write parameter push code */
 	for (jit_int32_t i=ParamCount-1; i>=0; i--)
 	{
-		const PassEncode *pEnc = pWrapper->GetParamInfo(i);
-		switch (pEnc->info.type)
+		unsigned int offset = pWrapper->GetParamOffset(i);
+		const SourceHook::PassInfo *info = pWrapper->GetSHParamInfo(i);
+		assert(info != NULL);
+
+		switch (info->type)
 		{
-		case PassType_Basic:
+		case SourceHook::PassInfo::PassType_Basic:
 			{
-				Write_PushPOD(jit, pEnc);
+				Write_PushPOD(jit, info, offset);
 				break;
 			}
-		case PassType_Float:
+		case SourceHook::PassInfo::PassType_Float:
 			{
-				Write_PushFloat(jit, pEnc);
+				Write_PushFloat(jit, info, offset);
 				break;
 			}
-		case PassType_Object:
+		case SourceHook::PassInfo::PassType_Object:
 			{
-				Write_PushObject(jit, pEnc);
+				Write_PushObject(jit, info, offset);
 				break;
 			}
 		}
@@ -640,7 +618,7 @@ skip_retbuffer:
 		writer.outbase = (jitcode_t)g_SPEngine->AllocatePageMemory(CodeSize);
 		g_SPEngine->SetReadWrite(writer.outbase);
 		writer.outptr = writer.outbase;
-		pWrapper->m_Addrs[ADDR_CODEBASE] = writer.outbase;
+		pWrapper->SetCodeBaseAddr(writer.outbase);
 		g_StackAlign = (g_StackUsage) ? ((g_StackUsage & 0xFFFFFFF0) + 16) - g_StackUsage : 0;
 		g_StackUsage = 0;
 		g_RegDecoder = 0;
@@ -648,4 +626,5 @@ skip_retbuffer:
 		goto jit_rewind;
 	}
 	g_SPEngine->SetReadExecute(writer.outbase);
+	return writer.outbase;
 }

@@ -5,14 +5,32 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bintools", "bintools.vcproj
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Win32 = Debug|Win32
-		Release|Win32 = Release|Win32
+		Debug - Episode 1|Win32 = Debug - Episode 1|Win32
+		Debug - Left 4 Dead|Win32 = Debug - Left 4 Dead|Win32
+		Debug - Old Metamod|Win32 = Debug - Old Metamod|Win32
+		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
+		Release - Episode 1|Win32 = Release - Episode 1|Win32
+		Release - Left 4 Dead|Win32 = Release - Left 4 Dead|Win32
+		Release - Old Metamod|Win32 = Release - Old Metamod|Win32
+		Release - Orange Box|Win32 = Release - Orange Box|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug|Win32.Build.0 = Debug|Win32
-		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release|Win32.ActiveCfg = Release|Win32
-		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release|Win32.Build.0 = Release|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Episode 1|Win32.ActiveCfg = Debug - Episode 1|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Episode 1|Win32.Build.0 = Debug - Episode 1|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Left 4 Dead|Win32.ActiveCfg = Debug - Left 4 Dead|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Left 4 Dead|Win32.Build.0 = Debug - Left 4 Dead|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Old Metamod|Win32.ActiveCfg = Debug - Old Metamod|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Old Metamod|Win32.Build.0 = Debug - Old Metamod|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Orange Box|Win32.ActiveCfg = Debug - Orange Box|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Episode 1|Win32.ActiveCfg = Release - Episode 1|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Episode 1|Win32.Build.0 = Release - Episode 1|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Left 4 Dead|Win32.ActiveCfg = Release - Left 4 Dead|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Left 4 Dead|Win32.Build.0 = Release - Left 4 Dead|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Old Metamod|Win32.ActiveCfg = Release - Old Metamod|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Old Metamod|Win32.Build.0 = Release - Old Metamod|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Orange Box|Win32.ActiveCfg = Release - Orange Box|Win32
+		{E38F65D9-74B2-4373-B46A-DBB76F579F98}.Release - Orange Box|Win32.Build.0 = Release - Orange Box|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
