@@ -99,6 +99,8 @@ endif
 
 ifeq "$(USEMETA)" "true"
 	BIN_DIR := $(BIN_DIR).$(ENGINE)
+else
+	BIN_DIR := $(BIN_DIR).original
 endif
 
 OS := $(shell uname -s)
