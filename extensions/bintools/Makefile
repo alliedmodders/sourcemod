@@ -69,7 +69,8 @@ ifeq "$(USEMETA)" "true"
 	LINK += $(LINK_HL2)
 
 	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
-		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
+		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn \
+		-I$(SMSDK)/public/extensions -I$(SMSDK)/public/jit -I$(SMSDK)/public/jit/x86
 
 	CFLAGS += -DSE_EPISODEONE=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
 else

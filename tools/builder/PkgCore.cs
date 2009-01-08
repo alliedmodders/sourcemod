@@ -159,14 +159,6 @@ namespace builder
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "core";
-			lib.binary_name = "sourcemod.2.ep1";
-			lib.vcproj_name = "sourcemod_mm";
-			lib.build_mode = BuildMode.BuildMode_Episode1;
-			libraries.Add(lib);
-
-			lib = new Library();
-			lib.package_path = "addons/sourcemod/bin";
-			lib.source_path = "core";
 			lib.binary_name = "sourcemod.2.ep2";
 			lib.vcproj_name = "sourcemod_mm";
 			lib.build_mode = BuildMode.BuildMode_Episode2;
@@ -210,14 +202,6 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep1";
-			lib.source_path = "extensions/bintools";
-			lib.binary_name = "bintools.ext";
-			lib.vcproj_name = "bintools";
-			lib.build_mode = BuildMode.BuildMode_Episode1;
-			libraries.Add(lib);
-
-			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
 			lib.source_path = "extensions/bintools";
 			lib.binary_name = "bintools.ext";
@@ -249,14 +233,6 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep1";
-			lib.source_path = "extensions/sdktools";
-			lib.binary_name = "sdktools.ext";
-			lib.vcproj_name = "sdktools";
-			lib.build_mode = BuildMode.BuildMode_Episode1;
-			libraries.Add(lib);
-
-			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
 			lib.source_path = "extensions/sdktools";
 			lib.binary_name = "sdktools.ext";
@@ -285,14 +261,6 @@ namespace builder
 			lib.binary_name = "game.cstrike.ext";
 			lib.vcproj_name = "cstrike";
 			lib.build_mode = BuildMode.BuildMode_OldMetamod;
-			libraries.Add(lib);
-
-			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep1";
-			lib.source_path = "extensions/cstrike";
-			lib.binary_name = "game.cstrike.ext";
-			lib.vcproj_name = "cstrike";
-			lib.build_mode = BuildMode.BuildMode_Episode1;
 			libraries.Add(lib);
 
 			lib = new Library();
