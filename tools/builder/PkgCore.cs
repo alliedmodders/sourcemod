@@ -337,6 +337,7 @@ namespace builder
 			plugins.Add(new Plugin("playercommands"));
 			plugins.Add(new Plugin("clientprefs"));
 			plugins.Add(new Plugin("nominations", true));
+			plugins.Add(new Plugin("sounds"));
 
 			return (Plugin [])plugins.ToArray(typeof(Plugin));
 		}
