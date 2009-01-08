@@ -33,11 +33,6 @@
 
 new g_GravityTarget[MAXPLAYERS+1];
 
-SetupGravity()
-{
-	RegAdminCmd("sm_gravity", Command_Gravity, ADMFLAG_SLAY, "sm_gravity <#userid|name> [amount] - Leave amount off to reset. Amount is 0.0 through 5.0");
-}
-
 PerformGravity(client, target, Float:amount)
 {
 	new offset = FindDataMapOffs(client, "m_flGravity");

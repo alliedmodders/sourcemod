@@ -47,23 +47,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-// -------------------------------------------------------------------------------
-// Set any of these to 0 and recompile to completely disable those commands
-// -------------------------------------------------------------------------------
-#define BEACON		1
-#define TIMEBOMB	1
-#define FIRE		1
-#define ICE			1
-#define GRAVITY		1
-#define BLIND		1
-#define NOCLIP		1
-#define DRUG		1
-#define TELEPORT	1
-#define HEALTH		1
-#define COLORS		1
-#define CASH		1
-// -------------------------------------------------------------------------------
-
+// Admin Menu
 new Handle:hTopMenu = INVALID_HANDLE;
 
 // Sounds
@@ -81,41 +65,31 @@ new g_GlowSprite;
 new g_ExplosionSprite;
 
 // Basic color arrays for temp entities
-new redColor[4] = {255, 75, 75, 255};
-new orangeColor[4] = {255, 128, 0, 255};
-new greenColor[4] = {75, 255, 75, 255};
-new blueColor[4] = {75, 75, 255, 255};
-new whiteColor[4] = {255, 255, 255, 255};
-new greyColor[4] = {128, 128, 128, 255};
+new redColor[4]		= {255, 75, 75, 255};
+new orangeColor[4]	= {255, 128, 0, 255};
+new greenColor[4]	= {75, 255, 75, 255};
+new blueColor[4]	= {75, 75, 255, 255};
+new whiteColor[4]	= {255, 255, 255, 255};
+new greyColor[4]	= {128, 128, 128, 255};
 
 // UserMessageId for Fade.
 new UserMsg:g_FadeUserMsgId;
 
+// Serial Generator for Timer Safety
+new g_Serial_Gen = 0;
+
+// Flags used in various timers
+#define DEFAULT_TIMER_FLAGS TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE
+
 // Include various commands and supporting functions
-#if BEACON
 #include "funcommands/beacon.sp"
-#endif
-#if TIMEBOMB
 #include "funcommands/timebomb.sp"
-#endif
-#if FIRE
 #include "funcommands/fire.sp"
-#endif
-#if ICE
 #include "funcommands/ice.sp"
-#endif
-#if GRAVITY
 #include "funcommands/gravity.sp"
-#endif
-#if BLIND
 #include "funcommands/blind.sp"
-#endif
-#if NOCLIP
 #include "funcommands/noclip.sp"
-#endif
-#if DRUG
 #include "funcommands/drug.sp"
-#endif
 
 public OnPluginStart()
 {
@@ -126,46 +100,11 @@ public OnPluginStart()
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("funcommands.phrases");
-
 	g_FadeUserMsgId = GetUserMessageId("Fade");
-	
-	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
 
-	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);	
-
-	#if BEACON
-	SetupBeacon();		// sm_beacon
-	#endif
-	
-	#if TIMEBOMB
-	SetupTimeBomb();	// sm_timebomb
-	#endif
-	
-	#if FIRE
-	SetupFire();		// sm_burn and sm_firebomb
-	#endif
-	
-	#if ICE
-	SetupIce();			// sm_freeze and sm_freezebomb
-	#endif
-	
-	#if GRAVITY
-	SetupGravity();		// sm_gravity
-	#endif
-	
-	#if BLIND
-	SetupBlind();		// sm_blind
-	#endif
-	
-	#if NOCLIP
-	SetupNoClip();		// sm_noclip
-	#endif
-	
-	#if DRUG
-	SetupDrugs();		// sm_drug
-	#endif
-	
-	AutoExecConfig(true, "funcommands");
+	RegisterCvars( );
+	RegisterCmds( );
+	HookEvents( );
 	
 	/* Account for late loading */
 	new Handle:topmenu;
@@ -173,6 +112,50 @@ public OnPluginStart()
 	{
 		OnAdminMenuReady(topmenu);
 	}
+}
+
+RegisterCvars( )
+{
+	// beacon
+	g_Cvar_BeaconRadius = CreateConVar("sm_beacon_radius", "375", "Sets the radius for beacon's light rings.", 0, true, 50.0, true, 1500.0);
+
+	// timebomb
+	g_Cvar_TimeBombTicks = CreateConVar("sm_timebomb_ticks", "10.0", "Sets how long the timebomb fuse is.", 0, true, 5.0, true, 120.0);
+	g_Cvar_TimeBombRadius = CreateConVar("sm_timebomb_radius", "600", "Sets the bomb blast radius.", 0, true, 50.0, true, 3000.0);
+	g_Cvar_TimeBombMode = CreateConVar("sm_timebomb_mode", "0", "Who is killed by the timebomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
+	
+	// fire
+	g_Cvar_BurnDuration = CreateConVar("sm_burn_duration", "20.0", "Sets the default duration of sm_burn and firebomb victims.", 0, true, 0.5, true, 20.0);
+	g_Cvar_FireBombTicks = CreateConVar("sm_firebomb_ticks", "10.0", "Sets how long the FireBomb fuse is.", 0, true, 5.0, true, 120.0);
+	g_Cvar_FireBombRadius = CreateConVar("sm_firebomb_radius", "600", "Sets the bomb blast radius.", 0, true, 50.0, true, 3000.0);
+	g_Cvar_FireBombMode = CreateConVar("sm_firebomb_mode", "0", "Who is targetted by the FireBomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
+	
+	// ice
+	g_Cvar_FreezeDuration = CreateConVar("sm_freeze_duration", "10.0", "Sets the default duration for sm_freeze and freezebomb victims", 0, true, 1.0, true, 120.0);	
+	g_Cvar_FreezeBombTicks = CreateConVar("sm_freezebomb_ticks", "10.0", "Sets how long the freezebomb fuse is.", 0, true, 5.0, true, 120.0);
+	g_Cvar_FreezeBombRadius = CreateConVar("sm_freezebomb_radius", "600", "Sets the freezebomb blast radius.", 0, true, 50.0, true, 3000.0);
+	g_Cvar_FreezeBombMode = CreateConVar("sm_freezebomb_mode", "0", "Who is targetted by the freezebomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
+	
+	AutoExecConfig(true, "funcommands");
+}
+
+RegisterCmds( )
+{
+	RegAdminCmd("sm_beacon", Command_Beacon, ADMFLAG_SLAY, "sm_beacon <#userid|name> [0/1]");
+	RegAdminCmd("sm_timebomb", Command_TimeBomb, ADMFLAG_SLAY, "sm_timebomb <#userid|name> [0/1]");
+	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
+	RegAdminCmd("sm_firebomb", Command_FireBomb, ADMFLAG_SLAY, "sm_firebomb <#userid|name> [0/1]");
+	RegAdminCmd("sm_freeze", Command_Freeze, ADMFLAG_SLAY, "sm_freeze <#userid|name> [time]");
+	RegAdminCmd("sm_freezebomb", Command_FreezeBomb, ADMFLAG_SLAY, "sm_freezebomb <#userid|name> [0/1]");
+	RegAdminCmd("sm_gravity", Command_Gravity, ADMFLAG_SLAY, "sm_gravity <#userid|name> [amount] - Leave amount off to reset. Amount is 0.0 through 5.0");
+	RegAdminCmd("sm_blind", Command_Blind, ADMFLAG_SLAY, "sm_blind <#userid|name> [amount] - Leave amount off to reset.");
+	RegAdminCmd("sm_noclip", Command_NoClip, ADMFLAG_SLAY|ADMFLAG_CHEATS, "sm_noclip <#userid|name>");
+	RegAdminCmd("sm_drug", Command_Drug, ADMFLAG_SLAY, "sm_drug <#userid|name> [0/1]");
+}
+
+HookEvents( )
+{
+	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
 }
 
 public OnMapStart()
@@ -192,42 +175,20 @@ public OnMapStart()
 
 public OnMapEnd()
 {
-	#if BEACON
-	KillAllBeacons();
-	#endif
-	#if TIMEBOMB
+	KillAllBeacons( );
 	KillAllTimeBombs();
-	#endif
-	#if FIRE
 	KillAllFireBombs();
-	#endif
-	#if ICE
 	KillAllFreezes();
-	#endif
-	#if DRUG
 	KillAllDrugs();
-	#endif
 }
 
 public Action:Event_RoundEnd(Handle:event,const String:name[],bool:dontBroadcast)
 {
-	#if BEACON
-	KillAllBeacons();
-	#endif
-	#if TIMEBOMB
+	KillAllBeacons( );
 	KillAllTimeBombs();
-	#endif
-	#if FIRE
 	KillAllFireBombs();
-	#endif
-	#if ICE
 	KillAllFreezes();
-	#endif
-	#if DRUG
 	KillAllDrugs();
-	#endif
-	
-	return Plugin_Handled;
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -246,7 +207,6 @@ public OnAdminMenuReady(Handle:topmenu)
 
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
-		#if BEACON
 		AddToTopMenu(hTopMenu,
 			"sm_beacon",
 			TopMenuObject_Item,
@@ -254,9 +214,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_beacon",
 			ADMFLAG_SLAY);
-		#endif
-		
-		#if TIMEBOMB
+	
 		AddToTopMenu(hTopMenu,
 			"sm_timebomb",
 			TopMenuObject_Item,
@@ -264,9 +222,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_timebomb",
 			ADMFLAG_SLAY);
-		#endif
-		
-		#if FIRE
+
 		AddToTopMenu(hTopMenu,
 			"sm_burn",
 			TopMenuObject_Item,
@@ -274,7 +230,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_burn",
 			ADMFLAG_SLAY);
-			
+		
 		AddToTopMenu(hTopMenu,
 			"sm_firebomb",
 			TopMenuObject_Item,
@@ -282,9 +238,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_firebomb",
 			ADMFLAG_SLAY);
-		#endif
-		
-		#if ICE
+
 		AddToTopMenu(hTopMenu,
 			"sm_freeze",
 			TopMenuObject_Item,
@@ -300,9 +254,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_freezebomb",
 			ADMFLAG_SLAY);
-		#endif
-			
-		#if GRAVITY
+
 		AddToTopMenu(hTopMenu,
 			"sm_gravity",
 			TopMenuObject_Item,
@@ -310,9 +262,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_gravity",
 			ADMFLAG_SLAY);
-		#endif
-			
-		#if BLIND
+
 		AddToTopMenu(hTopMenu,
 			"sm_blind",
 			TopMenuObject_Item,
@@ -320,9 +270,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_blind",
 			ADMFLAG_SLAY);
-		#endif
-		
-		#if NOCLIP
+
 		AddToTopMenu(hTopMenu,
 			"sm_noclip",
 			TopMenuObject_Item,
@@ -330,9 +278,7 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_noclip",
 			ADMFLAG_SLAY);
-		#endif
-		
-		#if DRUG
+
 		AddToTopMenu(hTopMenu,
 			"sm_drug",
 			TopMenuObject_Item,
@@ -340,73 +286,6 @@ public OnAdminMenuReady(Handle:topmenu)
 			player_commands,
 			"sm_drug",
 			ADMFLAG_SLAY);
-		#endif		
 	}
 }
 
-public Action:Command_Play(client, args)
-{
-	if (args < 2)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
-	}
-
-	new String:Arguments[PLATFORM_MAX_PATH + 65];
-	GetCmdArgString(Arguments, sizeof(Arguments));
-
- 	decl String:Arg[65];
-	new len = BreakString(Arguments, Arg, sizeof(Arg));
-
-	/* Make sure it does not go out of bound by doing "sm_play user  "*/
-	if (len == -1)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
-		return Plugin_Handled;
-	}
-
-	/* Incase they put quotes and white spaces after the quotes */
-	if (Arguments[len] == '"')
-	{
-		len++;
-		new FileLen = TrimString(Arguments[len]) + len;
-
-		if (Arguments[FileLen - 1] == '"')
-		{
-			Arguments[FileLen - 1] = '\0';
-		}
-	}
-	
-	decl String:target_name[MAX_TARGET_LENGTH];
-	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
-	
-	if ((target_count = ProcessTargetString(
-			Arg,
-			client,
-			target_list,
-			MAXPLAYERS,
-			COMMAND_FILTER_NO_BOTS,
-			target_name,
-			sizeof(target_name),
-			tn_is_ml)) <= 0)
-	{
-		ReplyToTargetError(client, target_count);
-		return Plugin_Handled;
-	}
-	
-	for (new i = 0; i < target_count; i++)
-	{
-		ClientCommand(target_list[i], "playgamesound \"%s\"", Arguments[len]);
-		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], Arguments[len]);
-	}
-	
-	if (tn_is_ml)
-	{
-		ShowActivity2(client, "[SM] ", "%t", "Played sound to target", target_name);
-	}
-	else
-	{
-		ShowActivity2(client, "[SM] ", "%t", "Played sound to target", "_s", target_name);
-	}
-
-	return Plugin_Handled;
-}

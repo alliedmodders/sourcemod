@@ -31,98 +31,90 @@
  * Version: $Id$
  */
 
-new Handle:g_FreezeTimers[MAXPLAYERS+1];
-new Handle:g_FreezeBombTimers[MAXPLAYERS+1];
-new g_FreezeTracker[MAXPLAYERS+1];
-new g_FreezeBombTracker[MAXPLAYERS+1];
+new g_FreezeSerial[MAXPLAYERS+1] = { 0, ... };
+new g_FreezeBombSerial[MAXPLAYERS+1] = { 0, ... };
+new g_FreezeTime[MAXPLAYERS+1] = { 0, ... };
+new g_FreezeBombTime[MAXPLAYERS+1] = { 0, ... };
 
-new Handle:g_FreezeDuration = INVALID_HANDLE;
-new Handle:g_FreezeBombTicks = INVALID_HANDLE;
-new Handle:g_FreezeBombRadius = INVALID_HANDLE;
-new Handle:g_FreezeBombMode = INVALID_HANDLE;
-
-SetupIce()
-{
-	RegAdminCmd("sm_freeze", Command_Freeze, ADMFLAG_SLAY, "sm_freeze <#userid|name> [time]");
-	RegAdminCmd("sm_freezebomb", Command_FreezeBomb, ADMFLAG_SLAY, "sm_freezebomb <#userid|name> [0/1]");
-
-	g_FreezeDuration = CreateConVar("sm_freeze_duration", "10.0", "Sets the default duration for sm_freeze and freezebomb victims", 0, true, 1.0, true, 120.0);	
-	g_FreezeBombTicks = CreateConVar("sm_freezebomb_ticks", "10", "Sets how long the freezebomb fuse is.", 0, true, 5.0, true, 120.0);
-	g_FreezeBombRadius = CreateConVar("sm_freezebomb_radius", "600", "Sets the freezebomb blast radius.", 0, true, 50.0, true, 3000.0);
-	g_FreezeBombMode = CreateConVar("sm_freezebomb_mode", "0", "Who is targetted by the freezebomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
-}
+new Handle:g_Cvar_FreezeDuration = INVALID_HANDLE;
+new Handle:g_Cvar_FreezeBombTicks = INVALID_HANDLE;
+new Handle:g_Cvar_FreezeBombRadius = INVALID_HANDLE;
+new Handle:g_Cvar_FreezeBombMode = INVALID_HANDLE;
 
 FreezeClient(client, time)
 {
-	if (g_FreezeTimers[client] != INVALID_HANDLE)
+	if (g_FreezeSerial[client] != 0)
 	{
 		UnfreezeClient(client);
+		return;
 	}
-	
 	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 192);
-	
+
 	new Float:vec[3];
 	GetClientEyePosition(client, vec);
 	EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
 
-	g_FreezeTimers[client] = CreateTimer(1.0, Timer_Freeze, client, TIMER_REPEAT);
-	g_FreezeTracker[client] = time;
+	g_FreezeTime[client] = time;
+	g_FreezeSerial[client] = ++ g_Serial_Gen;
+	CreateTimer(1.0, Timer_Freeze, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
 }
 
 UnfreezeClient(client)
 {
-	KillFreezeTimer(client);
+	g_FreezeSerial[client] = 0;
+	g_FreezeTime[client] = 0;
 
-	new Float:vec[3];
-	GetClientAbsOrigin(client, vec);
-	vec[2] += 10;	
-	
-	GetClientEyePosition(client, vec);
-	EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
+	if (IsClientInGame(client))
+	{
+		new Float:vec[3];
+		GetClientAbsOrigin(client, vec);
+		vec[2] += 10;	
+		
+		GetClientEyePosition(client, vec);
+		EmitAmbientSound(SOUND_FREEZE, vec, client, SNDLEVEL_RAIDSIREN);
 
-	SetEntityMoveType(client, MOVETYPE_WALK);
-	SetEntityRenderColor(client, 255, 255, 255, 255);	
-}
-
-KillFreezeTimer(client)
-{
-	KillTimer(g_FreezeTimers[client]);
-	g_FreezeTimers[client] = INVALID_HANDLE;
+		SetEntityMoveType(client, MOVETYPE_WALK);
+		
+		SetEntityRenderColor(client, 255, 255, 255, 255);
+	}
 }
 
 CreateFreezeBomb(client)
 {
-	g_FreezeBombTimers[client] = CreateTimer(1.0, Timer_FreezeBomb, client, TIMER_REPEAT);
-	g_FreezeBombTracker[client] = GetConVarInt(g_FreezeBombTicks);
+	if (g_FreezeBombSerial[client] != 0)
+	{
+		KillFreezeBomb(client);
+		return;
+	}
+	g_FreezeBombTime[client] = GetConVarInt(g_Cvar_FreezeBombTicks);
+	g_FreezeBombSerial[client] = ++g_Serial_Gen;
+	CreateTimer(1.0, Timer_FreezeBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
 }
 
 KillFreezeBomb(client)
 {
-	KillTimer(g_FreezeBombTimers[client]);
-	g_FreezeBombTimers[client] = INVALID_HANDLE;
-	
-	SetEntityRenderColor(client, 255, 255, 255, 255);
+	g_FreezeBombSerial[client] = 0;
+	g_FreezeBombTime[client] = 0;
+
+	if (IsClientInGame(client))
+	{
+		SetEntityRenderColor(client, 255, 255, 255, 255);
+	}
 }
 
-KillAllFreezes()
+KillAllFreezes( )
 {
-	new maxclients = GetMaxClients();
-	for (new i = 1; i <= maxclients; i++)
+	new maxclients = GetMaxClients( );
+
+	for(new i = 1; i < maxclients; i++)
 	{
-		if (g_FreezeTimers[i] != INVALID_HANDLE)
+		if (g_FreezeSerial[i] != 0)
 		{
-			if(IsClientInGame(i))
-			{
-				UnfreezeClient(i);
-			}
-			else
-			{
-				KillFreezeTimer(i);
-			}			
-		}		
-		
-		if (g_FreezeBombTimers[i] != INVALID_HANDLE)
+			UnfreezeClient(i);
+		}
+
+		if (g_FreezeBombSerial[i] != 0)
 		{
 			KillFreezeBomb(i);
 		}
@@ -135,101 +127,79 @@ PerformFreeze(client, target, time)
 	LogAction(client, target, "\"%L\" froze \"%L\"", client, target);
 }
 
-PerformFreezeBomb(client, target, toggle)
+PerformFreezeBomb(client, target)
 {
-	switch (toggle)
+	if (g_FreezeBombSerial[target] != 0)
 	{
-		case (2):
-		{
-			if (g_FreezeBombTimers[target] == INVALID_HANDLE)
-			{
-				CreateFreezeBomb(target);
-				LogAction(client, target, "\"%L\" set a FreezeBomb on \"%L\"", client, target);
-			}
-			else
-			{
-				KillFreezeBomb(target);
-				LogAction(client, target, "\"%L\" removed a FreezeBomb on \"%L\"", client, target);
-			}
-		}
-
-		case (1):
-		{
-			if (g_FreezeBombTimers[target] == INVALID_HANDLE)
-			{
-				CreateFreezeBomb(target);
-				LogAction(client, target, "\"%L\" set a FreezeBomb on \"%L\"", client, target);
-			}
-		}
-		
-		case (0):
-		{
-			if (g_FreezeBombTimers[target] != INVALID_HANDLE)
-			{
-				KillFreezeBomb(target);
-				LogAction(client, target, "\"%L\" removed a FreezeBomb on \"%L\"", client, target);
-			}
-		}
+		KillFreezeBomb(target);
+		LogAction(client, target, "\"%L\" removed a FreezeBomb on \"%L\"", client, target);
+	}
+	else
+	{
+		CreateFreezeBomb(target);
+		LogAction(client, target, "\"%L\" set a FreezeBomb on \"%L\"", client, target);
 	}
 }
 
-public Action:Timer_Freeze(Handle:timer, any:client)
+public Action:Timer_Freeze(Handle:timer, any:value)
 {
-	if (!IsClientInGame(client))
-	{
-		KillFreezeTimer(client);
+	new client = value & 0x7f;
+	new serial = value >> 7;
 
-		return Plugin_Handled;
-	}
-	
-	if (!IsPlayerAlive(client))
+	if (!IsClientInGame(client)
+		|| !IsPlayerAlive(client)
+		|| g_FreezeSerial[client] != serial)
 	{
 		UnfreezeClient(client);
-		
-		return Plugin_Handled;
-	}		
+		return Plugin_Stop;
+	}
+
+	if (g_FreezeTime[client] == 0)
+	{
+		UnfreezeClient(client);
+		PrintHintText(client, "You are now unfrozen.");
+		return Plugin_Stop;
+	}
 	
-	g_FreezeTracker[client]--;
-	
+	PrintHintText(client, "You will be unfrozen in %d seconds.", g_FreezeTime[client]);
+	g_FreezeTime[client]--;
 	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 135);
-	
+
 	new Float:vec[3];
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 10;
-	
+
 	TE_SetupGlowSprite(vec, g_GlowSprite, 0.95, 1.5, 50);
-	TE_SendToAll();	
+	TE_SendToAll();
 
-	if (g_FreezeTracker[client] == 0)
-	{
-		UnfreezeClient(client);
-	}
-
-	return Plugin_Handled;
+	return Plugin_Continue;
 }
 
-public Action:Timer_FreezeBomb(Handle:timer, any:client)
+public Action:Timer_FreezeBomb(Handle:timer, any:value)
 {
-	if (!IsClientInGame(client) || !IsPlayerAlive(client))
+	new client = value & 0x7f;
+	new serial = value >> 7;
+
+	if (!IsClientInGame(client)
+		|| !IsPlayerAlive(client)
+		|| g_FreezeBombSerial[client] != serial)
 	{
 		KillFreezeBomb(client);
-
-		return Plugin_Handled;
+		return Plugin_Stop;
 	}
-	
-	g_FreezeBombTracker[client]--;
-	
+
 	new Float:vec[3];
 	GetClientEyePosition(client, vec);
-	
-	if (g_FreezeBombTracker[client] > 0)
+	g_FreezeBombTime[client]--;
+
+	if (g_FreezeBombTime[client] > 0)
 	{
 		new color;
-		
-		if (g_FreezeBombTracker[client] > 1)
+
+		if (g_FreezeBombTime[client] > 1)
 		{
-			color = RoundToFloor(g_FreezeBombTracker[client] * (255.0 / GetConVarFloat(g_FreezeBombTicks)));
+			color = RoundToFloor(g_FreezeBombTime[client] * (255.0 / GetConVarFloat(g_Cvar_FreezeBombTicks)));
 			EmitAmbientSound(SOUND_BEEP, vec, client, SNDLEVEL_RAIDSIREN);	
 		}
 		else
@@ -242,30 +212,31 @@ public Action:Timer_FreezeBomb(Handle:timer, any:client)
 
 		decl String:name[64];
 		GetClientName(client, name, sizeof(name));
-		PrintCenterTextAll("%t", "Till Explodes", name, g_FreezeBombTracker[client]);
-		
+		PrintCenterTextAll("%t", "Till Explodes", name, g_FreezeBombTime[client]);
+
 		GetClientAbsOrigin(client, vec);
 		vec[2] += 10;
 
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
 		TE_SendToAll();
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FreezeBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
 		TE_SendToAll();
+		return Plugin_Continue;
 	}
 	else
 	{
-		TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_FreezeBombRadius), 5000);
+		TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_Cvar_FreezeBombRadius), 5000);
 		TE_SendToAll();
 
 		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
 
 		KillFreezeBomb(client);
-		FreezeClient(client, GetConVarInt(g_FreezeDuration));
+		FreezeClient(client, GetConVarInt(g_Cvar_FreezeDuration));
 		
-		if (GetConVarInt(g_FreezeBombMode) > 0)
+		if (GetConVarInt(g_Cvar_FreezeBombMode) > 0)
 		{
-			new teamOnly = ((GetConVarInt(g_FreezeBombMode) == 1) ? true : false);
-			new maxClients = GetMaxClients();
+			new bool:teamOnly = ((GetConVarInt(g_Cvar_FreezeBombMode) == 1) ? true : false);
+			new maxClients = GetMaxClients( );
 			
 			for (new i = 1; i < maxClients; i++)
 			{
@@ -284,7 +255,7 @@ public Action:Timer_FreezeBomb(Handle:timer, any:client)
 				
 				new Float:distance = GetVectorDistance(vec, pos);
 				
-				if (distance > GetConVarFloat(g_FreezeBombRadius))
+				if (distance > GetConVarFloat(g_Cvar_FreezeBombRadius))
 				{
 					continue;
 				}
@@ -292,12 +263,11 @@ public Action:Timer_FreezeBomb(Handle:timer, any:client)
 				TE_SetupBeamPoints(vec, pos, g_BeamSprite2, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
 				TE_SendToAll();
 				
-				FreezeClient(i, GetConVarInt(g_FreezeDuration));
+				FreezeClient(i, GetConVarInt(g_Cvar_FreezeDuration));
 			}		
 		}
+		return Plugin_Stop;
 	}
-			
-	return Plugin_Handled;
 }
 
 public AdminMenu_Freeze(Handle:topmenu, 
@@ -396,7 +366,7 @@ public MenuHandler_Freeze(Handle:menu, MenuAction:action, param1, param2)
 			new String:name[32];
 			GetClientName(target, name, sizeof(name));
 			
-			PerformFreeze(param1, target, GetConVarInt(g_FreezeDuration));
+			PerformFreeze(param1, target, GetConVarInt(g_Cvar_FreezeDuration));
 			ShowActivity2(param1, "[SM] ", "%t", "Froze target", "_s", name);
 		}
 		
@@ -442,7 +412,7 @@ public MenuHandler_FreezeBomb(Handle:menu, MenuAction:action, param1, param2)
 			new String:name[32];
 			GetClientName(target, name, sizeof(name));
 			
-			PerformFreezeBomb(param1, target, 2);
+			PerformFreezeBomb(param1, target);
 			ShowActivity2(param1, "[SM] ", "%t", "Toggled FreezeBomb on target", "_s", name);
 		}
 		
@@ -465,7 +435,7 @@ public Action:Command_Freeze(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 	
-	new seconds = GetConVarInt(g_FreezeDuration);
+	new seconds = GetConVarInt(g_Cvar_FreezeDuration);
 	
 	if (args > 1)
 	{
@@ -516,27 +486,12 @@ public Action:Command_FreezeBomb(client, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_freezebomb <#userid|name> [0/1]");
+		ReplyToCommand(client, "[SM] Usage: sm_freezebomb <#userid|name>");
 		return Plugin_Handled;
 	}
 
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
-	
-	new toggle = 2;
-	if (args > 1)
-	{
-		decl String:arg2[2];
-		GetCmdArg(2, arg2, sizeof(arg2));
-		if (arg2[0])
-		{
-			toggle = 1;
-		}
-		else
-		{
-			toggle = 0;
-		}
-	}
 
 	decl String:target_name[MAX_TARGET_LENGTH];
 	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
@@ -557,7 +512,7 @@ public Action:Command_FreezeBomb(client, args)
 	
 	for (new i = 0; i < target_count; i++)
 	{
-		PerformFreezeBomb(client, target_list[i], toggle);
+		PerformFreezeBomb(client, target_list[i]);
 	}
 	
 	if (tn_is_ml)

@@ -33,11 +33,6 @@
 
 new g_BlindTarget[MAXPLAYERS+1];
 
-SetupBlind()
-{
-	RegAdminCmd("sm_blind", Command_Blind, ADMFLAG_SLAY, "sm_blind <#userid|name> [amount] - Leave amount off to reset.");
-}
-
 PerformBlind(client, target, amount)
 {
 	new targets[2];

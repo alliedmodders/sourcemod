@@ -31,116 +31,86 @@
  * Version: $Id$
  */
 
-new Handle:g_FireBombTimers[MAXPLAYERS+1];
-new g_FireBombTracker[MAXPLAYERS+1];
+new g_FireBombSerial[MAXPLAYERS+1] = { 0, ... };
+new g_FireBombTime[MAXPLAYERS+1] = { 0, ... };
 
-new Handle:g_BurnDuration = INVALID_HANDLE;
-new Handle:g_FireBombTicks = INVALID_HANDLE;
-new Handle:g_FireBombRadius = INVALID_HANDLE;
-new Handle:g_FireBombMode = INVALID_HANDLE;
-
-SetupFire()
-{
-	RegAdminCmd("sm_burn", Command_Burn, ADMFLAG_SLAY, "sm_burn <#userid|name> [time]");
-	RegAdminCmd("sm_firebomb", Command_FireBomb, ADMFLAG_SLAY, "sm_firebomb <#userid|name> [0/1]");	
-	
-	g_BurnDuration = CreateConVar("sm_burn_duration", "20", "Sets the default duration of sm_burn and firebomb victims.", 0, true, 0.5, true, 20.0);
-	g_FireBombTicks = CreateConVar("sm_firebomb_ticks", "10", "Sets how long the FireBomb fuse is.", 0, true, 5.0, true, 120.0);
-	g_FireBombRadius = CreateConVar("sm_firebomb_radius", "600", "Sets the bomb blast radius.", 0, true, 50.0, true, 3000.0);
-	g_FireBombMode = CreateConVar("sm_firebomb_mode", "0", "Who is targetted by the FireBomb? 0 = Target only, 1 = Target's team, 2 = Everyone", 0, true, 0.0, true, 2.0);
-}
+new Handle:g_Cvar_BurnDuration = INVALID_HANDLE;
+new Handle:g_Cvar_FireBombTicks = INVALID_HANDLE;
+new Handle:g_Cvar_FireBombRadius = INVALID_HANDLE;
+new Handle:g_Cvar_FireBombMode = INVALID_HANDLE;
 
 CreateFireBomb(client)
 {
-	g_FireBombTimers[client] = CreateTimer(1.0, Timer_FireBomb, client, TIMER_REPEAT);
-	g_FireBombTracker[client] = GetConVarInt(g_FireBombTicks);
+	g_FireBombSerial[client] = ++g_Serial_Gen;
+	CreateTimer(1.0, Timer_FireBomb, client | (g_Serial_Gen << 7), DEFAULT_TIMER_FLAGS);
+	g_FireBombTime[client] = GetConVarInt(g_Cvar_FireBombTicks);
 }
 
 KillFireBomb(client)
 {
-	KillTimer(g_FireBombTimers[client]);
-	g_FireBombTimers[client] = INVALID_HANDLE;
+	g_FireBombSerial[client] = 0;
+
+	if (IsClientInGame(client))
+	{
+		SetEntityRenderColor(client, 255, 255, 255, 255);
+	}
 }
 
 KillAllFireBombs()
 {
 	new maxclients = GetMaxClients();
+
 	for (new i = 1; i <= maxclients; i++)
 	{
-		if (g_FireBombTimers[i] != INVALID_HANDLE)
-		{
-			KillFireBomb(i);
-		}
+		KillFireBomb(i);
 	}
 }
 
 PerformBurn(client, target, Float:seconds)
 {
-	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 	IgniteEntity(target, seconds);
+	LogAction(client, target, "\"%L\" ignited \"%L\" (seconds \"%f\")", client, target, seconds);
 }
 
-PerformFireBomb(client, target, toggle)
+PerformFireBomb(client, target)
 {
-	switch (toggle)
+	if (g_FireBombSerial[client] == 0)
 	{
-		case (2):
-		{
-			if (g_FireBombTimers[target] == INVALID_HANDLE)
-			{
-				CreateFireBomb(target);
-				LogAction(client, target, "\"%L\" set a FireBomb on \"%L\"", client, target);
-			}
-			else
-			{
-				KillFireBomb(target);
-				SetEntityRenderColor(client, 255, 255, 255, 255);
-				LogAction(client, target, "\"%L\" removed a FireBomb on \"%L\"", client, target);
-			}			
-		}
-
-		case (1):
-		{
-			if (g_FireBombTimers[target] == INVALID_HANDLE)
-			{
-				CreateFireBomb(target);
-				LogAction(client, target, "\"%L\" set a FireBomb on \"%L\"", client, target);
-			}			
-		}
-		
-		case (0):
-		{
-			if (g_FireBombTimers[target] != INVALID_HANDLE)
-			{
-				KillFireBomb(target);
-				SetEntityRenderColor(client, 255, 255, 255, 255);
-				LogAction(client, target, "\"%L\" removed a FireBomb on \"%L\"", client, target);
-			}			
-		}
+		CreateFireBomb(target);
+		LogAction(client, target, "\"%L\" set a FireBomb on \"%L\"", client, target);
+	}
+	else
+	{
+		KillFireBomb(target);
+		SetEntityRenderColor(client, 255, 255, 255, 255);
+		LogAction(client, target, "\"%L\" removed a FireBomb on \"%L\"", client, target);
 	}
 }
 
-public Action:Timer_FireBomb(Handle:timer, any:client)
+public Action:Timer_FireBomb(Handle:timer, any:value)
 {
-	if (!IsClientInGame(client) || !IsPlayerAlive(client))
-	{
-		KillFireBomb(client);		
+	new client = value & 0x7f;
+	new serial = value >> 7;
 
-		return Plugin_Handled;
-	}
-	
-	g_FireBombTracker[client]--;
+	if (!IsClientInGame(client)
+		|| !IsPlayerAlive(client)
+		|| g_FireBombSerial[client] != serial)
+	{
+		KillFireBomb(client);
+		return Plugin_Stop;
+	}	
+	g_FireBombTime[client]--;
 	
 	new Float:vec[3];
 	GetClientEyePosition(client, vec);
 	
-	if (g_FireBombTracker[client] > 0)
+	if (g_FireBombTime[client] > 0)
 	{
 		new color;
 		
-		if (g_FireBombTracker[client] > 1)
+		if (g_FireBombTime[client] > 1)
 		{
-			color = RoundToFloor(g_FireBombTracker[client] * (255.0 / GetConVarFloat(g_FireBombTicks)));
+			color = RoundToFloor(g_FireBombTime[client] * (255.0 / GetConVarFloat(g_Cvar_FireBombTicks)));
 			EmitAmbientSound(SOUND_BEEP, vec, client, SNDLEVEL_RAIDSIREN);	
 		}
 		else
@@ -153,44 +123,45 @@ public Action:Timer_FireBomb(Handle:timer, any:client)
 
 		decl String:name[64];
 		GetClientName(client, name, sizeof(name));
-		PrintCenterTextAll("%t", "Till Explodes", name, g_FireBombTracker[client]);		
+		PrintCenterTextAll("%t", "Till Explodes", name, g_FireBombTime[client]);		
 		
 		GetClientAbsOrigin(client, vec);
 		vec[2] += 10;
 
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 15, 0.5, 5.0, 0.0, greyColor, 10, 0);
 		TE_SendToAll();
-		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
+		TE_SetupBeamRingPoint(vec, 10.0, GetConVarFloat(g_Cvar_FireBombRadius) / 3.0, g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 10.0, 0.5, whiteColor, 10, 0);
 		TE_SendToAll();
+		return Plugin_Continue;
 	}
 	else
 	{
-		TE_SetupExplosion(vec, g_ExplosionSprite, 0.1, 1, 0, GetConVarInt(g_FireBombRadius), 5000);
+		TE_SetupExplosion(vec, g_ExplosionSprite, 0.1, 1, 0, GetConVarInt(g_Cvar_FireBombRadius), 5000);
 		TE_SendToAll();
 		
 		GetClientAbsOrigin(client, vec);
 		vec[2] += 10;
-		TE_SetupBeamRingPoint(vec, 50.0, GetConVarFloat(g_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.5, 30.0, 1.5, orangeColor, 5, 0);
+		TE_SetupBeamRingPoint(vec, 50.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.5, 30.0, 1.5, orangeColor, 5, 0);
 		TE_SendToAll();
 		vec[2] += 15;
-		TE_SetupBeamRingPoint(vec, 40.0, GetConVarFloat(g_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 30.0, 1.5, orangeColor, 5, 0);
+		TE_SetupBeamRingPoint(vec, 40.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.6, 30.0, 1.5, orangeColor, 5, 0);
 		TE_SendToAll();	
 		vec[2] += 15;
-		TE_SetupBeamRingPoint(vec, 30.0, GetConVarFloat(g_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.7, 30.0, 1.5, orangeColor, 5, 0);
+		TE_SetupBeamRingPoint(vec, 30.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.7, 30.0, 1.5, orangeColor, 5, 0);
 		TE_SendToAll();
 		vec[2] += 15;
-		TE_SetupBeamRingPoint(vec, 20.0, GetConVarFloat(g_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.8, 30.0, 1.5, orangeColor, 5, 0);
+		TE_SetupBeamRingPoint(vec, 20.0, GetConVarFloat(g_Cvar_FireBombRadius), g_BeamSprite, g_HaloSprite, 0, 10, 0.8, 30.0, 1.5, orangeColor, 5, 0);
 		TE_SendToAll();		
 		
 		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
 
-		IgniteEntity(client, GetConVarFloat(g_BurnDuration));
+		IgniteEntity(client, GetConVarFloat(g_Cvar_BurnDuration));
 		KillFireBomb(client);
 		SetEntityRenderColor(client, 255, 255, 255, 255);
 		
-		if (GetConVarInt(g_FireBombMode) > 0)
+		if (GetConVarInt(g_Cvar_FireBombMode) > 0)
 		{
-			new teamOnly = ((GetConVarInt(g_FireBombMode) == 1) ? true : false);
+			new teamOnly = ((GetConVarInt(g_Cvar_FireBombMode) == 1) ? true : false);
 			new maxClients = GetMaxClients();
 			
 			for (new i = 1; i < maxClients; i++)
@@ -210,20 +181,19 @@ public Action:Timer_FireBomb(Handle:timer, any:client)
 				
 				new Float:distance = GetVectorDistance(vec, pos);
 				
-				if (distance > GetConVarFloat(g_FireBombRadius))
+				if (distance > GetConVarFloat(g_Cvar_FireBombRadius))
 				{
 					continue;
 				}
 				
-				new Float:duration = GetConVarFloat(g_BurnDuration);
-				duration *= (GetConVarFloat(g_FireBombRadius) - distance) / GetConVarFloat(g_FireBombRadius);
+				new Float:duration = GetConVarFloat(g_Cvar_BurnDuration);
+				duration *= (GetConVarFloat(g_Cvar_FireBombRadius) - distance) / GetConVarFloat(g_Cvar_FireBombRadius);
 
 				IgniteEntity(i, duration);
 			}		
 		}
+		return Plugin_Stop;
 	}
-			
-	return Plugin_Handled;
 }
 
 public AdminMenu_Burn(Handle:topmenu, 
@@ -367,7 +337,7 @@ public MenuHandler_FireBomb(Handle:menu, MenuAction:action, param1, param2)
 			new String:name[32];
 			GetClientName(target, name, sizeof(name));
 			
-			PerformFireBomb(param1, target, 2);
+			PerformFireBomb(param1, target);
 			ShowActivity2(param1, "[SM] ", "%t", "Toggled FireBomb on target", "_s", name);
 		}
 		
@@ -390,7 +360,7 @@ public Action:Command_Burn(client, args)
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
 
-	new Float:seconds = GetConVarFloat(g_BurnDuration);
+	new Float:seconds = GetConVarFloat(g_Cvar_BurnDuration);
 	
 	if (args > 1)
 	{
@@ -441,27 +411,12 @@ public Action:Command_FireBomb(client, args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_firebomb <#userid|name> [0/1]");
+		ReplyToCommand(client, "[SM] Usage: sm_firebomb <#userid|name>");
 		return Plugin_Handled;
 	}
 
 	decl String:arg[65];
 	GetCmdArg(1, arg, sizeof(arg));
-	
-	new toggle = 2;
-	if (args > 1)
-	{
-		decl String:arg2[2];
-		GetCmdArg(2, arg2, sizeof(arg2));
-		if (arg2[0])
-		{
-			toggle = 1;
-		}
-		else
-		{
-			toggle = 0;
-		}
-	}
 
 	decl String:target_name[MAX_TARGET_LENGTH];
 	decl target_list[MAXPLAYERS], target_count, bool:tn_is_ml;
@@ -482,7 +437,7 @@ public Action:Command_FireBomb(client, args)
 	
 	for (new i = 0; i < target_count; i++)
 	{
-		PerformFireBomb(client, target_list[i], toggle);
+		PerformFireBomb(client, target_list[i]);
 	}
 	
 	if (tn_is_ml)
@@ -492,8 +447,7 @@ public Action:Command_FireBomb(client, args)
 	else
 	{
 		ShowActivity2(client, "[SM] ", "%t", "Toggled FireBomb on target", "_s", target_name);
-	}
-	
+	}	
 	return Plugin_Handled;
 }
 

@@ -30,11 +30,6 @@
  *
  * Version: $Id$
  */
- 
-SetupNoClip()
-{
-	RegAdminCmd("sm_noclip", Command_NoClip, ADMFLAG_SLAY|ADMFLAG_CHEATS, "sm_noclip <#userid|name>");
-}
 
 PerformNoClip(client, target)
 {
