@@ -34,6 +34,7 @@ ifeq "$(ENGINE)" "original"
 	CFLAGS += -DSOURCE_ENGINE=2
 	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
+	INCLUDE += -I$(MMSOURCE17)/core -I$(MMSOURCE17)/core/sourcehook
 	SRCDS = $(SRCDS_BASE)
 	override ENGSET = true
 endif
