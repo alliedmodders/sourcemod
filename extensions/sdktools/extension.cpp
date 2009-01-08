@@ -38,6 +38,7 @@
 #include "tempents.h"
 #include "vsound.h"
 #include "output.h"
+#include <ISDKTools.h>
 
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 	#define SDKTOOLS_GAME_FILE		"sdktools.games.l4d"
@@ -73,6 +74,7 @@ SourceHook::CallClass<IVEngineServer> *enginePatch = NULL;
 SourceHook::CallClass<IEngineSound> *enginesoundPatch = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
+ISDKTools *g_pSDKTools;
 
 SMEXT_LINK(&g_SdkTools);
 
@@ -83,6 +85,8 @@ extern sp_nativeinfo_t g_StringTableNatives[];
 extern sp_nativeinfo_t g_VoiceNatives[];
 extern sp_nativeinfo_t g_EntInputNatives[];
 extern sp_nativeinfo_t g_TeamNatives[];
+
+static void InitSDKToolsAPI();
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -147,6 +151,10 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_OutputManager.Init();
 
 	VoiceInit();
+
+	GetIServer();
+
+	InitSDKToolsAPI();
 
 	return true;
 }
@@ -255,7 +263,6 @@ void SDKTools::SDK_OnAllLoaded()
 	s_TempEntHooks.Initialize();
 	s_SoundHooks.Initialize();
 	InitializeValveGlobals();
-	GetIServer();
 }
 
 bool SDKTools::QueryRunning(char *error, size_t maxlength)
@@ -378,4 +385,29 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 	snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
 
 	return true;
+}
+
+class SDKTools_API : public ISDKTools
+{
+public:
+	virtual const char *GetInterfaceName()
+	{
+		return SMINTERFACE_SDKTOOLS_NAME;
+	}
+
+	virtual unsigned int GetInterfaceVersion()
+	{
+		return SMINTERFACE_SDKTOOLS_VERSION;
+	}
+
+	virtual IServer *GetIServer()
+	{
+		return iserver;
+	}
+} g_SDKTools_API;
+
+static void InitSDKToolsAPI()
+{
+	g_pSDKTools = &g_SDKTools_API;
+	sharesys->AddInterface(myself, g_pSDKTools);
 }

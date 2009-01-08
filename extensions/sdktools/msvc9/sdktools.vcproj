@@ -764,6 +764,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\public\extensions\ISDKTools.h"
+				>
+			</File>
+			<File
 				RelativePath="..\output.h"
 				>
 			</File>
