@@ -42,7 +42,6 @@
 #include "LibrarySys.h"
 #include "HandleSys.h"
 #include "sm_crc32.h"
-#include "GameDataFetcher.h"
 
 #if defined PLATFORM_LINUX
 #include <dlfcn.h>
@@ -680,12 +679,14 @@ void GameConfigManager::OnSourceModAllShutdown()
 
 bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pConfig, char *error, size_t maxlength)
 {
+#if 0
 	/* A crash was detected during last load - We block the gamedata loading so it hopefully won't happen again */
 	if (g_blockGameDataLoad)
 	{
 		UTIL_Format(error, maxlength, "GameData loaded blocked due to detected crash");
 		return false;
 	}
+#endif
 
 	CGameConfig *pConfig;
 

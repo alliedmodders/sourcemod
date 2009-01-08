@@ -1142,10 +1142,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\GameDataFetcher.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\HalfLife2.cpp"
 				>
 			</File>
@@ -1349,10 +1345,6 @@
 			</File>
 			<File
 				RelativePath="..\GameConfigs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\GameDataFetcher.h"
 				>
 			</File>
 			<File
