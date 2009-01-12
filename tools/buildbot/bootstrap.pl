@@ -73,7 +73,7 @@ else
 sub BuildLibCurl_Win32
 {
 	chdir("extensions\\curl\\curl-src\\lib");
-	Build::Command('"' . $ENV{'VC9BUILDER'} . '" /rebuild build_libcurl.vcproj LIB-Release');
+	Build::Command('"' . $ENV{'VC9BUILDER'} . '" /rebuild build_libcurl.vcproj "LIB Release"');
 	die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
 	chdir("..\\..\\..\\..");
 }
