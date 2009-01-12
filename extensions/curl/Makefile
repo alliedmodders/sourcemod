@@ -12,7 +12,7 @@ MMSOURCE17 = ../../../mmsource-1.7
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-PROJECT = curl
+PROJECT = webternet
 
 #Uncomment for Metamod: Source enabled extension
 #USEMETA = true

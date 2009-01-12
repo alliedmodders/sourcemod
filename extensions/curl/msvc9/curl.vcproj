@@ -65,7 +65,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="..\curl-src\lib\LIB-Release\libcurl.lib ws2_32.lib"
-				OutputFile="$(OutDir)\curl.ext.dll"
+				OutputFile="$(OutDir)\webternet.ext.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="..\curl-src\lib\LIB-Release\libcurl.lib ws2_32.lib"
-				OutputFile="$(OutDir)\curl.ext.dll"
+				OutputFile="$(OutDir)\webternet.ext.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"
@@ -870,6 +870,10 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath="..\version.rc"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="SourceMod SDK"
