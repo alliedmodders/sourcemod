@@ -122,7 +122,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\curl-src\include"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\curl-src\include;..\..\..\public\extensions"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;ORANGEBOX_BUILD;CURL_STATICLIB"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
