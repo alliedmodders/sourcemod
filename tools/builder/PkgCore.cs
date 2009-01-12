@@ -292,6 +292,13 @@ namespace builder
 			lib.vcproj_name = "clientprefs";
 			libraries.Add(lib);
 
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/curl";
+			lib.binary_name = "webternet.ext";
+			lib.vcproj_name = "curl";
+			libraries.Add(lib);
+
 			return (Library [])libraries.ToArray(typeof(Library));
 		}
 

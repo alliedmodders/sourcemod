@@ -31,10 +31,13 @@ namespace builder
 			else if (cfg.Platform == BasePlatform.Platform_Windows)
 			{
 				bld = new Win32Builder(cfg);
-				if (cfg.pdb_log_file != null && File.Exists(cfg.pdb_log_file))
+				/* Do not delete this file anymore.  We don't support rebuilds, and thus the file 
+				 * is guaranteed to be wiped by buildbot.
+				 */
+				/*if (cfg.pdb_log_file != null && File.Exists(cfg.pdb_log_file))
 				{
 					File.Delete(cfg.pdb_log_file);
-				}
+				}*/
 			}
 
 			try

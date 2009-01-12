@@ -27,7 +27,7 @@ die "Unable to build builder tool!\n" unless -e 'builder.exe';
 chdir(Build::PathFormat('../..'));
 
 #Get the source path.
-my ($root) = getcwd();
+our ($root) = getcwd();
 
 #Create output folder if it doesn't exist.
 if (!(-d 'OUTPUT')) {
@@ -58,3 +58,34 @@ if ($^O eq "linux")
     Build::Command("chmod +x tools/versionchanger.pl");
 }
 Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
+
+#Bootstrap extensions that have complex dependencies
+
+if ($^O eq "linux")
+{
+	BuildLibCurl_Linux();
+}
+else
+{
+	BuildLibCurl_Win32();
+}
+
+sub BuildLibCurl_Win32
+{
+	chdir("extensions\\curl\\curl-src\\lib");
+	Build::Command('"' . $ENV{'VC9BUILDER'} . '" /rebuild build_libcurl.vcproj LIB-Release');
+	die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
+	chdir("..\\..\\..\\..");
+}
+
+sub BuildLibCurl_Linux
+{
+	chdir("extensions/curl/curl-src");
+	Build::Command("mkdir -p Release");
+	Build::Command("chmod +x configure");
+	chdir("Release");
+	Build::Command("../configure --enable-static --disable-shared --disable-ldap --without-ssl --without-zlib");
+	Build::Command("make");
+	die "Unable to find libcurl.a!\n" unless (-f "lib/.libs/libcurl.a");
+	chdir("../../../..");
+}
