@@ -1,0 +1,6 @@
+"Game Master"
+{
+	"common.games.txt"
+	{
+	}
+}

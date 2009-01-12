@@ -1,36 +1,22 @@
 "Games"
 {
-	/* Sounds */
-	"#default"
-	{
-		"Keys"
-		{
-			"SlapSoundCount"	"2"
-			"SlapSound1"		"player/damage1.wav"
-			"SlapSound2"		"player/damage2.wav"
-			"m_iFrags"			"m_iFrags"
-		}
-		"Offsets"
-		{
-			"m_iHealth"
-			{
-				"class"		"CBasePlayer"
-				"prop"		"m_iHealth"
-			}
-			"m_lifeState"
-			{
-				"class"		"CBasePlayer"
-				"prop"		"m_lifeState"
-			}
-		}
-	}
-	
 	/* General Temp Entities */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"left4dead"
+			"game"		"cstrike"
+			"game"		"hl2mp"
+			"game"		"ship"
+			"game"		"!Dystopia"
+			"game"		"insurgency"
+			"game"		"pvkii"
+			"game"		"sourceforts"
+			"game"		"FortressForever"
+			"game"		"empires"
+			"game"		"synergy"
+			"game"		"hidden"
+			"game"		"zombie_master"
 		}
 
 		"Offsets"
@@ -52,8 +38,8 @@
 			}
 			"TE_GetServerClass"
 			{
-				"windows"	"0"
-				"linux"		"0"
+				"windows"	"1"
+				"linux"		"1"
 			}
 		}
 
@@ -72,37 +58,74 @@
 		}
 	}
 	
-	/* Create Entity Signatures */
+	/* General GameRules */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"left4dead"
+			"game"		"cstrike"
+			"game"		"garrysmod"
+			"game"		"hl2mp"
+			"game"		"ship"
+			"game"		"!Dystopia"
+			"game"		"insurgency"
+			"game"		"pvkii"
+			"game"		"sourceforts"
+			"game"		"FortressForever"
+			"game"		"empires"
+			"game"		"synergy"
+			"game"		"hidden"
 		}
-
+		
+		"Offsets"
+		{
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
+			{
+				"windows"	"2"
+			}
+		}
+		
 		"Signatures"
 		{
-			"DispatchSpawn"
+			/* This signature sometimes has multiple matches, but this
+			 * does not matter as g_pGameRules is involved in all of them.
+			 * The same g_pGameRules offset applies to each match.
+			 *
+			 * Sometimes this block of bytes is at the beginning of the static
+			 * CreateGameRulesObject function and sometimes it is in the middle
+			 * of an entirely different function. This depends on the game.
+			 */
+			"CreateGameRulesObject"
 			{
 				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50"
 			}
-			"CreateEntityByName"
+			"g_pGameRules"
 			{
 				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKcib"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+				"linux"		"@g_pGameRules"
 			}
 		}
 	}
-
+	
 	/* CGlobalEntityList */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"left4dead"
+			"game"		"cstrike"
+			"game"		"garrysmod"
+			"game"		"hl2mp"
+			"game"		"ship"
+			"game"		"insurgency"
+			"game"		"pvkii"
+			"game"		"sourceforts"
+			"game"		"FortressForever"
+			"game"		"empires"
+			"game"		"synergy"
+			"game"		"hidden"
+			"game"		"zombie_master"
 		}
 		
 		"Offsets"
@@ -131,48 +154,41 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x2A\x85\xC9\x57\x74\x2A\x8B\x01\xFF\x50\x2A\x8B\x08\x81\xE1\x2A\x2A\x2A\x2A\x83\xC1\x2A\xC1\xE1\x2A\x8B\x3C\x31\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x2A\x8B\x2D\x2A\x2A\x2A\x2A\x8D\x9B\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x2A\x39"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
 
-	/* General GameRules */
+	/* Create Entity Signatures */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"left4dead"
+			"game"		"cstrike"
+			"game"		"hl2mp"
+			"game"		"insurgency"
+			"game"		"pvkii"
+			"game"		"sourceforts"
+			"game"		"empires"
+			"game"		"synergy"
+			"game"		"hidden"
+			"game"		"FortressForever"
 		}
-		
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		
+
 		"Signatures"
 		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
+			"DispatchSpawn"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60"
 			}
-			"g_pGameRules"
+			"CreateEntityByName"
 			{
 				"library"	"server"
-				"linux"		"@g_pGameRules"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
 			}
 		}
 	}
@@ -213,20 +229,20 @@
 			}
 		}
 	}
-
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
 		"#supported"
 		{
-			"game"		"left4dead"
+			"game"		"cstrike"
+			"game"		"hl2mp"
 		}
 		"Signatures"
 		{
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x85\xF6"
+				"windows"	"\x81\xEC\x1C\x03\x00\x00\x53\x55\x56\x8B\x71\x14"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
@@ -235,11 +251,11 @@
 			"FireOutputBackup"
 			{
 				"windows"	"6"
-				"linux"		"10"
+				"linux"		"6"
 			}
 		}
 	}
-	
+
 	/* SetUserInfo data */
 	"#default"
 	{
@@ -254,106 +270,18 @@
 			"SetUserCvar"
 			{
 				"windows"	"17"
-				"linux"		"62"
+				"linux"		"53"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
 			 * Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
-			 * Linux: 	mov     byte ptr [esi+0B0h], 0
-			 * Win:		mov     byte ptr [esi+0B0h], 0
+			 * Linux: 	mov     byte ptr [esi+98h], 0
+			 * Win:	mov     byte ptr [esi+0A4h], 0
 			 */
 			"InfoChanged"
 			{
-				"windows"	"176"
-				"linux"		"176"
-			}
-		}
-	}
-	
-	/* Left 4 Dead */
-	"left4dead"
-	{
-		"Offsets"
-		{
-			"GiveNamedItem"
-			{
-				"windows"	"480"
-				"linux"		"481"
-			}
-			"RemovePlayerItem"
-			{
-				"windows"	"269"
-				"linux"		"270"
-			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"267"
-				"linux"		"268"
-			}
-			"Ignite"
-			{
-				"windows"	"206"
-				"linux"		"207"
-			}
-			"Extinguish"
-			{
-				"windows"	"210"
-				"linux"		"211"
-			}
-			"Teleport"
-			{
-				"windows"	"105"
-				"linux"		"106"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"449"
-				"linux"		"449"
-			}
-			"GetVelocity"
-			{
-				"windows"	"136"
-				"linux"		"137"
-			}
-			"EyeAngles"
-			{
-				"windows"	"127"
-				"linux"		"128"
-			}
-			"AcceptInput"
-			{
-				"windows"	"37"
-				"linux"		"38"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"29"
-				"linux"		"28"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"28"
-				"linux"		"29"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"27"
-				"linux"		"30"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"23"
-				"linux"		"24"
-			}
-			"WeaponEquip"
-			{
-				"windows"	"260"
-				"linux"		"261"
-			}
-			"Activate"
-			{
-				"windows"	"31"
-				"linux"		"32"
+				"windows"	"164"
+				"linux"		"152"
 			}
 		}
 	}

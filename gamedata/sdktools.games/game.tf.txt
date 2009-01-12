@@ -1,0 +1,90 @@
+"Games"
+{
+	/* Team Fortress 2 */
+	"tf"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"406"
+				"linux"		"410"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"238"
+				"linux"		"239"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"236"
+				"linux"		"237"
+			}
+			"Ignite"
+			{
+				"windows"	"193"
+				"linux"		"194"
+			}
+			"Extinguish"
+			{
+				"windows"	"197"
+				"linux"		"198"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"388"
+				"linux"		"388"
+			}
+			"GetVelocity"
+			{
+				"windows"	"130"
+				"linux"		"131"
+			}
+			"EyeAngles"
+			{
+				"windows"	"122"
+				"linux"		"123"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"229"
+				"linux"		"230"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+		}
+	}
+}

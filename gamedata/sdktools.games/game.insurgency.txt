@@ -1,0 +1,71 @@
+"Games"
+{
+	/* Insurgency */
+	"insurgency"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"Ignite"
+			{
+				"windows"	"174"
+				"linux"		"175"
+			}
+			"Extinguish"
+			{
+				"windows"	"175"
+				"linux"		"176"
+			}
+			"Teleport"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+			"GetVelocity"
+			{
+				"windows"	"115"
+				"linux"		"116"
+			}
+			"EyeAngles"
+			{
+				"windows"	"107"
+				"linux"		"108"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"30"
+				"linux"		"29"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"28"
+				"linux"		"31"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"24"
+				"linux"		"25"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"215"
+				"linux"		"216"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+		}
+	}
+}

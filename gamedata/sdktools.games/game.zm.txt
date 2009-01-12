@@ -1,0 +1,136 @@
+"Games"
+{
+	/* Zombie Master 1.1.3 */
+	"zombie_master"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"329"
+				"linux"		"330"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"224"
+				"linux"		"225"
+			}
+			"Ignite"
+			{
+				"windows"	"188"
+				"linux"		"189"
+			}
+			"Extinguish"
+			{
+				"windows"	"189"
+				"linux"		"190"
+			}
+			"Teleport"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"357"
+				"linux"		"358"
+			}
+			"GetVelocity"
+			{
+				"windows"	"126"
+				"linux"		"127"
+			}
+			"EyeAngles"
+			{
+				"windows"	"118"
+				"linux"		"119"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+				"linux"		"32"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+				"linux"		"36"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+			"s_pTempEntities"
+			{
+				"windows"	"30"
+			}
+			"g_pGameRules"
+			{
+				"windows"	"7"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
+		}
+
+		"Signatures"
+		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x51\x89\x4D\xFC\x8B\x45\xFC\xC7\x00\x2A\x2A\x2A\x2A\x8B\x4D\xFC\x8B\x55\x08\x89\x51\x04\x8B\x45\xFC\x8B\x0D\x2A\x2A"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x83\x7D\x08\x00\x0F\x84\x95\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x50\x8D\x4D\xF0\xE8\x2A\x2A\x2A\x2A\x8D\x4D"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x83\x7D\x0C\xFF\x74\x39\x8B\x45\x0C\x50\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x11\x8B\x0D\x2A\x2A\x2A\x2A\xFF\x52"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x89\x4D\xF4\x83\x7D\x08\x00\x74\x1C\x8B\x45\x08\x8B\x10\x8B\x4D\x08\xFF\x52\x08\x50\x8B\x4D\xF4\xE8\x2A\x2A\x2A\x2A\x8B\x40\x0C\x89\x45\x\xF0\xEB\x0B\x8B\x4D\xF4\xE8\x2A\x2A\x2A\x2A\x89\x45\xF0\x8B\x4D\xF0\x89\x4D\xFC\xEB\x09\x8B\x55\xFC\x8B\x42\x0C\x89\x45\xFC\x83\x7D\xFC\x00\x74\x38\x8B\x4D\xFC\x8B\x11\x89"
+				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x10\xA1\x2A\x2A\x2A\x2A\x89\x45\xF4\x8B\x4D\xF4\x89\x4D\xF8\x83\x7D\xF8\x00"
+			}
+			"g_pGameRules"
+			{
+				"library"	"server"
+				"linux"		"@g_pGameRules"
+			}
+		}
+	}
+}

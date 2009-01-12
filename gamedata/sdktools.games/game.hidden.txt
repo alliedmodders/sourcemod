@@ -1,0 +1,101 @@
+"Games"
+{
+	/* Hidden:Source Beta 4b */
+	"hidden"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"348"
+				"linux"		"349"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"207"
+				"linux"		"208"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+			"Ignite"
+			{
+				"windows"	"170"
+				"linux"		"171"
+			}
+			"Extinguish"
+			{
+				"windows"	"171"
+				"linux"		"172"
+			}
+			"Teleport"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+			"GetVelocity"
+			{
+				"windows"	"114"
+				"linux"		"115"
+			}
+			"EyeAngles"
+			{
+				"windows"	"106"
+				"linux"		"107"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"30"
+				"linux"		"29"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"29"
+				"linux"		"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"28"
+				"linux"		"31"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+				"linux"		"33"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+		}
+		
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14"
+			}
+		}
+	}
+}

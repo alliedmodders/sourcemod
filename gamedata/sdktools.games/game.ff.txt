@@ -1,0 +1,114 @@
+"Games"
+{
+	/* Fortress Forever */
+	"FortressForever"
+	{	
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"338"
+				"linux"		"339"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"236"
+				"linux"		"237"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"234"
+				"linux"		"235"
+			}
+			"Ignite"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+			"Extinguish"
+			{
+				"windows"	"199"
+				"linux"		"200"
+			}
+			"Teleport"
+			{
+				"windows"	"104"
+				"linux"		"105"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"366"
+				"linux"		"367"
+			}
+			"GetVelocity"
+			{
+				"windows"	"136"
+				"linux"		"137"
+			}
+			"EyeAngles"
+			{
+				"windows"	"128"
+				"linux"		"129"
+			}
+			"AcceptInput"
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"35"
+				"linux"		"34"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"33"
+				"linux"		"36"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"27"
+				"linux"		"28"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
+			"Activate"
+			{
+				"windows"	"36"
+				"linux"		"37"
+			}
+		}
+		
+		"Signatures"
+		{
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x09\x8B\x01\x8B\x50\x2C\x6A\x01"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x04\x00\x01\x00\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x60\x8B\xCB"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+			}
+		}
+	}
+}

@@ -1,0 +1,37 @@
+"Games"
+{
+	/* Sounds */
+	"#default"
+	{
+		"Keys"
+		{
+			"SlapSoundCount"	"3"
+			"SlapSound1"		"player/pl_fallpain1.wav"
+			"SlapSound2"		"player/pl_fallpain3.wav"
+			"SlapSound3"		"player/pl_pain5.wav"
+		}
+	}
+
+	/* Properties */
+	"#default"
+	{
+		"Keys"
+		{
+			"m_iFrags"		"m_iFrags"
+		}
+		
+		"Offsets"
+		{
+			"m_iHealth"
+			{
+				"class"		"CBasePlayer"
+				"prop"		"m_iHealth"
+			}
+			"m_lifeState"
+			{
+				"class"		"CBasePlayer"
+				"prop"		"m_lifeState"
+			}
+		}
+	}
+}

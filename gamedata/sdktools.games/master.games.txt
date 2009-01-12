@@ -1,0 +1,112 @@
+"Game Master"
+{
+	"common.games.txt"
+	{
+	}
+	
+	"engine.l4d.txt"
+	{
+		"engine"	"left4dead"
+	}
+	
+	"engine.ep2.txt"
+	{
+		"engine"	"orangebox"
+	}
+	
+	"engine.ep1.txt"
+	{
+		"engine"	"original"
+	}
+	
+	"game.tf.txt"
+	{
+		"game"		"tf"
+	}
+	
+	"game.dod.txt"
+	{
+		"game"		"dod"
+	}
+	
+	"game.cstrike.txt"
+	{
+		"game"		"cstrike"
+	}
+	
+	"game.hl2mp.txt"
+	{
+		"game"		"hl2mp"
+	}
+	
+	"game.ship.txt"
+	{
+		"game"		"ship"
+	}
+	
+	"game.dystopia.txt"
+	{
+		"game"		"!Dystopia"
+	}
+	
+	"game.insurgency.txt"
+	{
+		"game"		"insurgency"
+	}
+	
+	"game.pvkii.txt"
+	{
+		"game"		"pvkii"
+	}
+	
+	"game.ff.txt"
+	{
+		"game"		"FortressForever"
+	}
+	
+	"game.garrysmod.txt"
+	{
+		"engine"	"original"
+		"game"		"garrysmod"
+	}
+	
+	"game.empires.txt"
+	{
+		"game"		"empires"
+	}
+	
+	"game.sourceforts.txt"
+	{
+		"game"		"sourceforts"
+	}
+	
+	"game.synergy.txt"
+	{
+		"game"		"synergy"
+	}
+	
+	"game.hidden.txt"
+	{
+		"game"		"hidden"
+	}
+	
+	"game.zm.txt"
+	{
+		"game"		"zombie_master"
+	}
+	
+	"game.zpanic.txt"
+	{
+		"game"		"$Zombie Panic! Source"
+	}
+
+	"game.obsidian.txt"
+	{
+		"game"		"obsidian"
+	}
+
+	"game.aoc.txt"
+	{
+		"game"		"ageofchivalry"
+	}
+}

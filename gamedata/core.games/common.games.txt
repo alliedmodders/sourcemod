@@ -1,0 +1,143 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"m_lifeState"
+			{
+				"class"			"CBasePlayer"
+				"prop"			"m_lifeState"
+			}
+		}
+	}
+	
+	/* Original engine specifics */
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"original"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"13"
+				"linux"			"14"
+			}
+		}
+	}
+	
+	/* OB/L4D engine specifics */
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"orangebox"
+			"engine"			"left4dead"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"11"
+				"linux"			"12"
+			}
+		}
+	}
+	
+	/* The Ship is completely different */
+	"ship"
+	{
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"18"
+				"linux"			"19"
+			}
+		}
+	}
+
+	/* Which games support ShowMenu? */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"					"cstrike"
+			"game"					"dod"
+			"game"					"sourceforts"
+			"game"					"insurgency"
+			"game"					"tf"
+			"game"					"pvkii"
+			"game"					"diprip"
+			"game"					"synergy"
+			"game"					"FortressForever"
+			"game"					"left4dead"
+			"game"					"obsidian"
+			"game"					"ageofchivalry"
+		}
+
+		"Keys"
+		{
+			"HudRadioMenuMsg"		"ShowMenu"
+		}
+	}
+	
+	/* Which games need a radio menu timeout? */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"					"tf"
+			"game"					"synergy"
+			"game"					"dod"
+			"game"					"ageofchivalry"
+		}
+		
+		"Keys"
+		{
+			"RadioMenuTimeout"		"4"
+		}
+	}
+	
+	/**
+	 * Which games support HudMsg?
+	 */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"					"hl2mp"
+			"game"					"sourceforts"
+			"game"					"tf"
+			"game"					"ageofchivalry"
+			"game"					"obsidian"
+		}
+		
+		"Keys"
+		{
+			"HudTextMsg"			"HudMsg"
+		}
+	}
+
+	"cstrike"
+	{
+		"Keys"
+		{
+			"HintTextPreByte"		"yes"
+			"GameExtension"			"game.cstrike"
+		}
+	}
+
+	"tf"
+	{
+		"Keys"
+		{
+			"GameExtension"			"game.tf2"
+		}
+	}
+}

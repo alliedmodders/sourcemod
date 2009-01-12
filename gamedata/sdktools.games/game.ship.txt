@@ -1,0 +1,114 @@
+"Games"
+{
+	/* The Ship */
+	"ship"
+	{
+		"Offsets"
+		{
+			/* CBasePlayer */
+			"GiveNamedItem"
+			{
+				"windows"	"316"
+				"linux"		"317"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"220"
+				"linux"		"221"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"218"
+				"linux"		"219"
+			}
+			"Ignite"
+			{
+				"windows"	"180"
+				"linux"		"181"
+			}
+			"Extinguish"
+			{
+				"windows"	"181"
+				"linux"		"182"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"343"
+				"linux"		"344"
+			}
+			"GetVelocity"
+			{
+				"windows"	"124"
+				"linux"		"125"
+			}
+			"EyeAngles"
+			{
+				"windows"	"116"
+				"linux"		"117"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"35"
+				"linux"		"34"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"33"
+				"linux"		"36"
+			}
+			"AcceptInput"
+			{
+				"windows"	"39"
+				"linux"		"40"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"211"
+				"linux"		"212"
+			}
+			"Activate"
+			{
+				"windows"	"37"
+				"linux"		"38"
+			}
+			
+			/* Temp Entities */
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+			}
+		}
+
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\0x16"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
+			}
+		}
+	}
+}
