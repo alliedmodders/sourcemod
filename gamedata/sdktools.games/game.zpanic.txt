@@ -5,7 +5,7 @@
 	 * The definitions below were supplied by a third party.
 	 * (thanks "noob cannon lol")
 	 */
-	"$Zombie Panic! Source"
+	"ZPS"
 	{
 		"Offsets"
 		{

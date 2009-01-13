@@ -97,7 +97,7 @@
 	
 	"game.zpanic.txt"
 	{
-		"game"		"$Zombie Panic! Source"
+		"game"		"ZPS"
 	}
 
 	"game.obsidian.txt"
