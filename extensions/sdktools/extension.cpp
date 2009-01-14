@@ -40,14 +40,6 @@
 #include "output.h"
 #include <ISDKTools.h>
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
-	#define SDKTOOLS_GAME_FILE		"sdktools.games.l4d"
-#elif SOURCE_ENGINE == SE_ORANGEBOX
-	#define SDKTOOLS_GAME_FILE		"sdktools.games.ep2"
-#else
-	#define SDKTOOLS_GAME_FILE		"sdktools.games"
-#endif
-
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -92,7 +84,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	HandleError err;
 
-	if (!gameconfs->LoadGameConfigFile(SDKTOOLS_GAME_FILE, &g_pGameConf, error, maxlength))
+	if (!gameconfs->LoadGameConfigFile("sdktools.games", &g_pGameConf, error, maxlength))
 	{
 		return false;
 	}
