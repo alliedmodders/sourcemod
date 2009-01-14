@@ -44,6 +44,8 @@ namespace builder
 			folders.Add("addons/sourcemod/bin");
 			folders.Add("addons/sourcemod/plugins/disabled");
 			folders.Add("addons/sourcemod/gamedata");
+			folders.Add("addons/sourcemod/gamedata/core.games");
+			folders.Add("addons/sourcemod/gamedata/sdktools.games");
 			folders.Add("addons/sourcemod/configs/geoip");
 			folders.Add("addons/sourcemod/translations");
 			folders.Add("addons/sourcemod/logs");
@@ -57,7 +59,6 @@ namespace builder
 			folders.Add("addons/sourcemod/configs/sql-init-scripts");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts/mysql");
 			folders.Add("addons/sourcemod/configs/sql-init-scripts/sqlite");
-			//folders.Add("addons/sourcemod/extensions/games");
 			folders.Add("addons/sourcemod/scripting/basecommands");
 			folders.Add("addons/sourcemod/scripting/basecomm");
 			folders.Add("addons/sourcemod/scripting/funvotes");
@@ -111,6 +112,8 @@ namespace builder
 			include_omits[0] = "version.tpl";
 
 			builder.CopyFolder(this, "gamedata", "addons/sourcemod/gamedata", null);
+			builder.CopyFolder(this, "gamedata/sdktools.games", "addons/sourcemod/gamedata/sdktools.games", null);
+			builder.CopyFolder(this, "gamedata/core.games", "addons/sourcemod/gamedata/core.games", null);
 			builder.CopyFolder(this, "plugins", "addons/sourcemod/scripting", plugin_omits);
 			builder.CopyFolder(this, "plugins/include", "addons/sourcemod/scripting/include", include_omits);
 			builder.CopyFolder(this, "translations", "addons/sourcemod/translations", null);
