@@ -467,6 +467,7 @@ FetchUser(Handle:db, client)
 	decl String:name[65];
 	decl String:safe_name[140];
 	decl String:steamid[32];
+	decl String:steamidalt[32];
 	decl String:ipaddr[24];
 	
 	/**
@@ -498,7 +499,10 @@ FetchUser(Handle:db, client)
 	len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'name' AND a.identity = '%s')", safe_name);
 	if (steamid[0] != '\0')
 	{
-		len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'steam' AND a.identity = '%s')", steamid);
+		strcopy(steamidalt, sizeof(steamidalt), steamid);
+		steamidalt[6] = (steamid[6] == '0') ? '1' : '0';
+
+		len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s'))", steamid, steamidalt);
 	}
 	len += Format(query[len], sizeof(query)-len, " GROUP BY a.id");
 	
