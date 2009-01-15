@@ -54,6 +54,7 @@ public Action:Command_Play(client, args)
 	if (args < 2)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
+		return Plugin_Handled;
 	}
 
 	new String:Arguments[PLATFORM_MAX_PATH + 65];
