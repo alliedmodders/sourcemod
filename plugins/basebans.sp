@@ -237,7 +237,7 @@ public Action:Command_AddBan(client, args)
 	}
 
 	/* Verify steamid */
-	if (strncmp(authid, "STEAM_0:", 8) != 0)
+	if (strncmp(authid, "STEAM_", 6) != 0 || authid[7] != ':')
 	{
 		ReplyToCommand(client, "[SM] %t", "Invalid SteamID specified");
 		return Plugin_Handled;
@@ -278,7 +278,7 @@ public Action:Command_Unban(client, args)
 	ReplaceString(arg, sizeof(arg), "\"", "");	
 
 	new ban_flags;
-	if (strncmp(arg, "STEAM_0:", 8) == 0)
+	if (strncmp(arg, "STEAM_", 6) == 0 && arg[7] == ':')
 	{
 		ban_flags |= BANFLAG_AUTHID;
 	}
