@@ -39,7 +39,9 @@
 #define SMINTERFACE_BINTOOLS_VERSION	3
 
 #if defined METAMOD_PLAPI_VERSION
+#ifndef HOOKING_ENABLED
 #define HOOKING_ENABLED
+#endif
 #endif
 
 #if defined HOOKING_ENABLED
