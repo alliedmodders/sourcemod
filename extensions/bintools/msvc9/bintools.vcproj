@@ -125,7 +125,7 @@
 				AdditionalOptions="/MP /D SE_EPISODEONE=2 /D SE_ORANGEBOX=3 /D SE_LEFT4DEAD=4"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\jit;..\..\..\public\jit\x86;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;BINTOOLS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=3"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;BINTOOLS_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;HOOKING_ENABLED;SOURCE_ENGINE=3"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="1"
 				RuntimeTypeInfo="false"

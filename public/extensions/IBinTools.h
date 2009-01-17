@@ -38,6 +38,10 @@
 #define SMINTERFACE_BINTOOLS_NAME		"IBinTools"
 #define SMINTERFACE_BINTOOLS_VERSION	3
 
+#if defined METAMOD_PLAPI_VERSION
+#define HOOKING_ENABLED
+#endif
+
 #if defined HOOKING_ENABLED
 #include <sourcehook_pibuilder.h>
 
