@@ -83,12 +83,49 @@ void InitializeValveGlobals()
 }
 #endif
 
-bool vcmp(const void *_addr1, const void *_addr2, size_t len)
+size_t UTIL_StringToSignature(const char *str, char buffer[], size_t maxlength)
 {
-	unsigned char *addr1 = (unsigned char *)_addr1;
-	unsigned char *addr2 = (unsigned char *)_addr2;
+	size_t real_bytes = 0;
+	size_t length = strlen(str);
 
-	for (size_t i=0; i<len; i++)
+	for (size_t i=0; i<length; i++)
+	{
+		if (real_bytes >= maxlength)
+		{
+			break;
+		}
+		buffer[real_bytes++] = (unsigned char)str[i];
+		if (str[i] == '\\'
+			&& str[i+1] == 'x')
+		{
+			if (i + 3 >= length)
+			{
+				continue;
+			}
+			/* Get the hex part */
+			char s_byte[3];
+			int r_byte;
+			s_byte[0] = str[i+2];
+			s_byte[1] = str[i+3];
+			s_byte[2] = '\n';
+			/* Read it as an integer */
+			sscanf(s_byte, "%x", &r_byte);
+			/* Save the value */
+			buffer[real_bytes-1] = (unsigned char)r_byte;
+			/* Adjust index */
+			i += 3;
+		}
+	}
+
+	return real_bytes;
+}
+
+bool UTIL_VerifySignature(const void *addr, const char *sig, size_t len)
+{
+	unsigned char *addr1 = (unsigned char *) addr;
+	unsigned char *addr2 = (unsigned char *) sig;
+
+	for (size_t i = 0; i < len; i++)
 	{
 		if (addr2[i] == '*')
 			continue;
@@ -100,34 +137,20 @@ bool vcmp(const void *_addr1, const void *_addr2, size_t len)
 }
 
 #if defined PLATFORM_WINDOWS
-	/* Thanks to DS for the sigs */
-	#define ISERVER_WIN_SIG				"\x8B\x44\x24\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
-	#define ISERVER_WIN_SIG_LEN			11
 void GetIServer()
 {
+	const char *sigstr;
+	char sig[32];
+	size_t siglen;
 	int offset;
 	void *vfunc = NULL;
 
-	/* Get the offset into CreateFakeClient */
-	if (!g_pGameConf->GetOffset("sv", &offset))
-	{
-		return;
-	}
 #if defined METAMOD_PLAPI_VERSION
 	/* Get the CreateFakeClient function pointer */
 	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
 	{
 		return;
 	}
-
-	/* Check if we're on the expected function */
-	if (!vcmp(vfunc, ISERVER_WIN_SIG, ISERVER_WIN_SIG_LEN))
-	{
-		return;
-	}
-
-	/* Finally we have the interface we were looking for */
-	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
 #else
 	/* Get the interface manually */
 	SourceHook::MemFuncInfo info = {true, -1, 0, 0};
@@ -139,14 +162,33 @@ void GetIServer()
 		void **vtable = *reinterpret_cast<void ***>(enginePatch->GetThisPtr() + info.thisptroffs + info.vtbloffs);
 		vfunc = vtable[info.vtblindex];
 	}
-	/* Check if we're on the expected function */
-	if (!vcmp(vfunc, ISERVER_WIN_SIG, ISERVER_WIN_SIG_LEN))
+#endif
+
+	/* Get signature string for IVEngineServer::CreateFakeClient() */
+	sigstr = g_pGameConf->GetKeyValue("CreateFakeClient_Windows");
+
+	if (!sigstr)
 	{
 		return;
 	}
 
+	/* Convert signature string to signature bytes */
+	siglen = UTIL_StringToSignature(sigstr, sig, sizeof(sig));
+
+	/* Check if we're on the expected function */
+	if (!UTIL_VerifySignature(vfunc, sig, siglen))
+	{
+		return;
+	}
+
+	/* Get the offset into CreateFakeClient */
+	if (!g_pGameConf->GetOffset("sv", &offset))
+	{
+		return;
+	}
+
+	/* Finally we have the interface we were looking for */
 	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
-#endif
 }
 #elif defined PLATFORM_POSIX
 void GetIServer()
