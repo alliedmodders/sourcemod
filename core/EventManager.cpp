@@ -424,10 +424,11 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 	if (sm_trie_retrieve(m_EventHooks, name, reinterpret_cast<void **>(&pHook)))
 	{
 		pForward = pHook->pPostHook;
+		pEventCopy = pHook->pEventCopy;
 
 		if (pForward)
 		{
-			EventInfo info = { pHook->pEventCopy, NULL };
+			EventInfo info = { pEventCopy, NULL };
 
 			if (pHook->postCopy)
 			{
