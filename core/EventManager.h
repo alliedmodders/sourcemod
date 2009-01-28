@@ -45,6 +45,12 @@ using namespace SourceHook;
 
 struct EventInfo
 {
+	EventInfo()
+	{
+	}
+	EventInfo(IGameEvent *ev, IdentityToken_t *owner) : pEvent(ev), pOwner(owner)
+	{
+	}
 	IGameEvent *pEvent;
 	IdentityToken_t *pOwner;
 };
@@ -56,13 +62,11 @@ struct EventHook
 		pPreHook = NULL;
 		pPostHook = NULL;
 		postCopy = false;
-		pEventCopy = NULL;
 		refCount = 0;
 	}
 	IChangeableForward *pPreHook;
 	IChangeableForward *pPostHook;
 	bool postCopy;
-	IGameEvent *pEventCopy;
 	unsigned int refCount;
 };
 
@@ -121,6 +125,7 @@ private:
 	Trie *m_EventHooks;
 	CStack<EventInfo *> m_FreeEvents;
 	CStack<const char *> m_EventNames;
+	CStack<IGameEvent *> m_EventCopies;
 };
 
 extern EventManager g_EventManager;
