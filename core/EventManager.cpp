@@ -377,21 +377,21 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 
 		if (pForward)
 		{
-			EventInfo info = { pEvent, NULL };
-
+			EventInfo info(pEvent, NULL);
+			HandleSecurity sec(NULL, g_pCoreIdent);
 			Handle_t hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
+
 			pForward->PushCell(hndl);
 			pForward->PushString(name);
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(&res, NULL);
 
-			HandleSecurity sec(NULL, g_pCoreIdent);
 			g_HandleSys.FreeHandle(hndl, &sec);
 		}
 
 		if (pHook->postCopy)
 		{
-			pHook->pEventCopy = gameevents->DuplicateEvent(pEvent);
+			m_EventCopies.push(gameevents->DuplicateEvent(pEvent));
 		}
 
 		if (res)
@@ -407,8 +407,8 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 /* IGameEventManager2::FireEvent post hook */
 bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 {
-	IGameEvent *pEventCopy = NULL;
 	EventHook *pHook;
+	EventInfo info;
 	IChangeableForward *pForward;
 	const char *name;
 	Handle_t hndl = 0;
@@ -427,10 +427,10 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 
 		if (pForward)
 		{
-			EventInfo info = { pHook->pEventCopy, NULL };
-
 			if (pHook->postCopy)
 			{
+				info.pEvent = m_EventCopies.front();
+				info.pOwner = NULL;
 				hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 
 				pForward->PushCell(hndl);
@@ -449,8 +449,8 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				g_HandleSys.FreeHandle(hndl, &sec);
 
 				/* Free event structure */
-				gameevents->FreeEvent(pEventCopy);
-				pHook->pEventCopy = NULL;
+				gameevents->FreeEvent(info.pEvent);
+				m_EventCopies.pop();
 			}
 		}
 	}
