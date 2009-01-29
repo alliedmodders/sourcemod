@@ -117,12 +117,22 @@ namespace Knight
 	extern void KE_ClearHashTable(KeHashTable *table);
 
 	/**
-	 * @brief Generic function for hasing strings.
+	 * @brief Generic function for hashing strings.
 	 *
 	 * @param str				Key string.
 	 * @return					Hash value.
 	 */
 	extern uint32_t KE_HashString(const void *str);
+
+    /**
+     * @brief Generic case-sensitive comparison of strings.
+     *
+     * @param str1              First string.
+     * @param str2              Second string.
+     * @return                  True if equal, false otherwise.
+     */
+    extern bool KE_AreStringsEqual(const void* str1, const void* str2);
 }
 
 #endif //_INCLUDE_KNIGHT_KE_HASHTABLE_H_
+

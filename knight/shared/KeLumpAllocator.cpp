@@ -88,6 +88,8 @@ public:
 			
 #if defined KE_PLATFORM_WINDOWS
 			VirtualFree(region, 0, MEM_RELEASE);
+#else
+            free(region);
 #endif
 			region = next;
 		}
@@ -193,6 +195,8 @@ private:
 			m_DefLumpSize,
 			MEM_COMMIT|MEM_RESERVE,
 			PAGE_READWRITE);
+#else
+        base = (char*)valloc(m_DefLumpSize);
 #endif
 
 		/* Initialize the region */
@@ -256,3 +260,4 @@ void KE_LINK Knight::KE_ResetLumpAllocator(ke_allocator_t *alloc)
 {
 	ke_LumpFromAllocator(alloc)->Reset();
 }
+

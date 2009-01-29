@@ -1,3 +1,4 @@
+#include <string.h>
 #include <KeHashTable.h>
 
 using namespace Knight;
@@ -82,7 +83,7 @@ KeHashTable *Knight::KE_CreateHashTable(
 	table->key_m = *key_marshal;
 	table->val_m = *val_marshal;
 	table->num_entries = 0;
-	table->shift = bits;
+	table->shift = 32 - bits;
 	table->node_alloc = nodeAlloc == NULL ? &s_DefHashAllocator : nodeAlloc;
 	table->num_buckets = (1 << bits);
 	table->grow_limit = (uint32_t)(0.9f * table->num_buckets);
@@ -145,7 +146,7 @@ void ke_ResizeHashTable(KeHashTable *table, uint32_t new_shift)
 
 	/* Save new data */
 	table->num_buckets = (1 << new_shift);
-	table->shift = new_shift;
+	table->shift = 32 - new_shift;
 	table->grow_limit = (uint32_t)(0.9f * table->num_buckets);
 
 	table->buckets = (KeHashNode **)malloc(sizeof(KeHashNode *) * table->num_buckets);
@@ -407,3 +408,9 @@ uint32_t Knight::KE_HashString(const void *str)
 
 	return h;
 }
+
+bool Knight::KE_AreStringsEqual(const void* str1, const void* str2)
+{
+    return (strcmp((const char*)str1, (const char*)str2) == 0) ? true : false;
+}
+
