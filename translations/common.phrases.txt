@@ -194,7 +194,7 @@
 
 	"Invalid SteamID specified"
 	{
-		"en"			"You have specified an invalid Steam ID (must start with 'STEAM_0:')."
+		"en"			"You have specified an invalid Steam ID (must start with 'STEAM_')."
 	}
 	
 	"Reload admins"
