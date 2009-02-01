@@ -46,6 +46,9 @@ public Plugin:myinfo =
 
 public OnPluginStart( )
 {
+	LoadTranslations("common.phrases");
+	LoadTranslations("sounds.phrases");
+
 	RegAdminCmd("sm_play", Command_Play, ADMFLAG_GENERIC, "sm_play <#userid|name> <filename>");
 }
 
