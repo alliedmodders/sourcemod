@@ -644,8 +644,8 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 
 	if (len >= sizeof(buffer) - 1)
 	{
-		buffer[510] = '\n';
-		buffer[511] = '\0';
+		buffer[sizeof(buffer) - 2] = '\n';
+		buffer[sizeof(buffer) - 1] = '\0';
 	} else {
 		buffer[len++] = '\n';
 		buffer[len] = '\0';
