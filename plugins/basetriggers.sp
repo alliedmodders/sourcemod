@@ -299,7 +299,7 @@ public Action:Command_Say(client, args)
 		}
 		else
 		{
-			if (mapchooser && !HasEndOfMapVoteFinished())
+			if (mapchooser && EndOfMapVoteEnabled() && !HasEndOfMapVoteFinished())
 			{
 				PrintToChat(client, "[SM] %t", "Pending Vote");			
 			}

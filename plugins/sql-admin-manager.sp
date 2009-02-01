@@ -606,7 +606,7 @@ public Action:Command_AddGroup(client, args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_sql_addgroup <flags> <name> [immunity]");
+		ReplyToCommand(client, "[SM] Usage: sm_sql_addgroup <name> <flags> [immunity]");
 		return Plugin_Handled;
 	}
 
@@ -660,8 +660,8 @@ public Action:Command_AddGroup(client, args)
 	Format(query, 
 		sizeof(query),
 		"INSERT INTO sm_groups (flags, name, immunity_level) VALUES ('%s', '%s', '%d')",
-		safe_name,
 		safe_flags,
+		safe_name,
 		immunity);
 	
 	if (!SQL_FastQuery(db, query))
