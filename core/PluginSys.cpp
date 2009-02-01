@@ -2624,3 +2624,83 @@ void CPluginManager::SyncMaxClients(int max_clients)
 		(*iter)->SyncMaxClients(max_clients);
 	}
 }
+
+void CPluginManager::ListPluginsToClient(CPlayer *player, const CCommand &args)
+{
+	char buffer[256];
+	unsigned int id = 0;
+	int plnum = GetPluginCount();
+	edict_t *e = player->GetEdict();
+	unsigned int start = 0;
+
+	if (!plnum)
+	{
+		ClientConsolePrint(e, "[SM] No plugins found.");
+		return;
+	}
+
+	if (args.ArgC() > 2)
+	{
+		start = atoi(args.Arg(2));
+	}
+
+	CPlugin *pl;
+	SourceHook::List<CPlugin *>::iterator iter;
+	SourceHook::List<CPlugin *> m_FailList;
+
+	for (iter = m_plugins.begin();
+		 iter != m_plugins.end();
+		 iter++)
+	{
+		pl = (*iter);
+
+		if (pl->GetStatus() != Plugin_Running)
+		{
+			continue;
+		}
+
+		/* Count valid plugins */
+		id++;
+		if (id < start)
+		{
+			continue;
+		}
+
+		if (id - start > 10)
+		{
+			break;
+		}
+
+		size_t len;
+		const sm_plugininfo_t *info = pl->GetPublicInfo();
+		len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+		if (IS_STR_FILLED(info->version))
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", info->version);
+		}
+		if (IS_STR_FILLED(info->author))
+		{
+			UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", info->author);
+		}
+		else
+		{
+			UTIL_Format(&buffer[len], sizeof(buffer)-len, " %s", pl->m_filename);
+		}
+		ClientConsolePrint(e, "%s", buffer);
+	}
+
+	/* See if we can get more plugins */
+	while (iter != m_plugins.end())
+	{
+		if ((*iter)->GetStatus() == Plugin_Running)
+		{
+			break;
+		}
+	}
+
+	/* Do we actually have more plugins? */
+	if (iter != m_plugins.end())
+	{
+		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id + 1);
+	}
+}

@@ -210,6 +210,8 @@ void CmdMaxplayersCallback(const CCommand &command);
 void CmdMaxplayersCallback();
 #endif
 
+extern void ClientConsolePrint(edict_t *e, const char *fmt, ...);
+
 extern PlayerManager g_Players;
 extern bool g_OnMapStarted;
 extern const unsigned int *g_NumPlayersToAuth;

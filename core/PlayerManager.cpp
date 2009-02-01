@@ -47,6 +47,7 @@
 #include <iclient.h>
 #include "GameConfigs.h"
 #include "ExtensionSys.h"
+#include "sm_version.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -632,6 +633,27 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	}
 }
 
+void ClientConsolePrint(edict_t *e, const char *fmt, ...)
+{
+	char buffer[512];
+
+	va_list ap;
+	va_start(ap, fmt);
+	size_t len = vsnprintf(buffer, sizeof(buffer), fmt, ap);
+	va_end(ap);
+
+	if (len >= sizeof(buffer) - 1)
+	{
+		buffer[510] = '\n';
+		buffer[511] = '\0';
+	} else {
+		buffer[len++] = '\n';
+		buffer[len] = '\0';
+	}
+
+	engine->ClientPrintf(e, buffer);
+}
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
@@ -647,6 +669,39 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	if (!pPlayer->IsConnected())
 	{
 		return;
+	}
+
+	if (strcmp(args.Arg(0), "sm") == 0)
+	{
+		if (args.ArgC() > 1 && strcmp(args.Arg(1), "plugins") == 0)
+		{
+			g_PluginSys.ListPluginsToClient(pPlayer, args);
+			RETURN_META(MRES_SUPERCEDE);
+		}
+		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
+		{
+			ClientConsolePrint(pEntity,
+				"SourceMod would not be possible without:");
+			ClientConsolePrint(pEntity,
+				" David \"BAILOPAN\" Anderson, Borja \"faluco\" Ferrer");
+			ClientConsolePrint(pEntity,
+				" Scott \"Damaged Soul\" Ehlert, Matt \"pRED\" Woodrow");
+			ClientConsolePrint(pEntity,
+				" Michael \"ferret\" McKoy, Pavol \"PM OnoTo\" Marko");
+			ClientConsolePrint(pEntity,
+				"SourceMod is open source under the GNU General Public License.");
+			RETURN_META(MRES_SUPERCEDE);
+		}
+
+		ClientConsolePrint(pEntity,
+			"SourceMod %s, by AlliedModders LLC", SVN_FULL_VERSION);
+		ClientConsolePrint(pEntity,
+			"To see running plugins, type \"sm plugins\"");
+		ClientConsolePrint(pEntity,
+			"To see credits, type \"sm credits\"");
+		ClientConsolePrint(pEntity,
+			"Visit http://www.sourcemod.net/");
+		RETURN_META(MRES_SUPERCEDE);
 	}
 
 	g_HL2.PushCommandStack(&args);

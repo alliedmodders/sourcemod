@@ -58,6 +58,8 @@
 #include "NativeOwner.h"
 #include "ShareSys.h"
 
+class CPlayer;
+
 using namespace SourceHook;
 
 /**
@@ -397,6 +399,8 @@ public:
 	CPlugin *FindPluginByConsoleArg(const char *arg);
 
 	void SyncMaxClients(int max_clients);
+
+	void ListPluginsToClient(CPlayer *player, const CCommand &args);
 private:
 	LoadRes _LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type, char error[], size_t maxlength);
 
