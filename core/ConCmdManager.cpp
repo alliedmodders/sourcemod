@@ -229,45 +229,66 @@ void ConCmdManager::SetCommandClient(int client)
 ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int args, ResultType type)
 {
 	ConCmdInfo *pInfo;
-	if (sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
+
+	if (!sm_trie_retrieve(m_pCmds, cmd, (void **)&pInfo))
 	{
-		cell_t result = type;
-		cell_t tempres = result;
-		List<CmdHook *>::iterator iter;
-		CmdHook *pHook;
-		for (iter=pInfo->conhooks.begin();
-			 iter!=pInfo->conhooks.end();
-			 iter++)
+		List<ConCmdInfo *>::iterator iter;
+
+		pInfo = NULL;
+		iter = m_CmdList.begin();
+		while (iter != m_CmdList.end())
 		{
-			pHook = (*iter);
-			if (!pHook->pf->IsRunnable())
+			if (strcasecmp((*iter)->pCmd->GetName(), cmd) == 0)
 			{
-				continue;
+				pInfo = (*iter);
+				break;
 			}
-			if (pHook->pAdmin && !CheckAccess(client, cmd, pHook->pAdmin))
+			iter++;
+		}
+
+		if (pInfo == NULL)
+		{
+			return type;
+		}
+	}
+
+	cell_t result = type;
+	cell_t tempres = result;
+	List<CmdHook *>::iterator iter;
+	CmdHook *pHook;
+	for (iter=pInfo->conhooks.begin();
+		 iter!=pInfo->conhooks.end();
+		 iter++)
+	{
+		pHook = (*iter);
+		if (!pHook->pf->IsRunnable())
+		{
+			continue;
+		}
+		if (pHook->pAdmin && !CheckAccess(client, cmd, pHook->pAdmin))
+		{
+			if (result < Pl_Handled)
 			{
-				if (result < Pl_Handled)
-				{
-					result = Pl_Handled;
-				}
-				continue;
+				result = Pl_Handled;
 			}
-			pHook->pf->PushCell(client);
-			pHook->pf->PushCell(args);
-			if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
+			continue;
+		}
+		pHook->pf->PushCell(client);
+		pHook->pf->PushCell(args);
+		if (pHook->pf->Execute(&tempres) == SP_ERROR_NONE)
+		{
+			if (tempres > result)
 			{
-				if (tempres > result)
-				{
-					result = tempres;
-				}
-				if (result == Pl_Stop)
-				{
-					break;
-				}
+				result = tempres;
+			}
+			if (result == Pl_Stop)
+			{
+				break;
 			}
 		}
-		type = (ResultType)result;
 	}
+
+	type = (ResultType)result;
 
 	return type;
 }
