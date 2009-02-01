@@ -82,9 +82,20 @@ public OnPluginStart()
 	RegConsoleCmd("nextmap", Command_Nextmap);
 	
 	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
+
+	decl String:folder[64];   	 
+   	GetGameFolderName(folder, sizeof(folder));
+
+   	if (strcmp(folder, "insurgency") == 0)
+   	{
+   		HookEvent("game_newmap", Event_GameStart);
+   	}
+   	else
+   	{
+   		HookEvent("game_start", Event_GameStart);
+   	}
 	
 	HookEvent("round_end", Event_RoundEnd);
-	HookEvent("game_start", Event_GameStart);
 	HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
 	HookEventEx("teamplay_restart_round", Event_TFRestartRound);
 	HookEventEx("arena_win_panel", Event_TeamPlayWinPanel);
