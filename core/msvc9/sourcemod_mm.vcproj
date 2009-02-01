@@ -1186,6 +1186,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\NativeInvoker.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\NativeOwner.cpp"
 				>
 			</File>
@@ -1392,6 +1396,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\NativeInvoker.h"
+				>
+			</File>
+			<File
 				RelativePath="..\NativeOwner.h"
 				>
 			</File>
@@ -1554,6 +1562,10 @@
 			</File>
 			<File
 				RelativePath="..\..\public\IMenuManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\public\INativeInvoker.h"
 				>
 			</File>
 			<File

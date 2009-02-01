@@ -200,7 +200,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	g_pSourcePawn = getv1();
 	g_pSourcePawn2 = getv2();
 
-	if (g_pSourcePawn2->GetAPIVersion() < 2)
+	if (g_pSourcePawn2->GetAPIVersion() < 3)
 	{
 		g_pSourcePawn2 = NULL;
 		if (error && maxlength)

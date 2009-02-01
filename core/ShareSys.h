@@ -128,10 +128,10 @@ public:
 	void BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly);
 	void BindNativeToPlugin(CPlugin *pPlugin, NativeEntry *pEntry);
 	NativeEntry *AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
+	NativeEntry *FindNative(const char *name);
 private:
 	NativeEntry *AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
 	void ClearNativeFromCache(CNativeOwner *pOwner, const char *name);
-	NativeEntry *FindNative(const char *name);
 	void BindNativeToPlugin(CPlugin *pPlugin, 
 		sp_native_t *ntv, 
 		uint32_t index, 

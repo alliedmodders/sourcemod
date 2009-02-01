@@ -27,6 +27,7 @@ public:
 	BaseRuntime();
 	~BaseRuntime();
 public:
+	virtual int CreateBlank(uint32_t heastk);
 	virtual int CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base);
 	virtual bool IsDebugging();
 	virtual IPluginDebugInfo *GetDebugInfo();

@@ -93,6 +93,7 @@ public: //IPluginContext
 	void SetKey(int k, void *value);
 	bool GetKey(int k, void **value);
 	void Refresh();
+	void ClearLastNativeError();
 public:
 	bool IsInExec();
 private:

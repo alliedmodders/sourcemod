@@ -873,3 +873,8 @@ bool BaseContext::GetKey(int k, void **value)
 
 	return true;
 }
+
+void BaseContext::ClearLastNativeError()
+{
+	m_ctx.n_err = SP_ERROR_NONE;
+}

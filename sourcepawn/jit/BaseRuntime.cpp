@@ -535,3 +535,21 @@ uint32_t BaseRuntime::AddJittedFunction(JitFunction *fn)
 
 	return m_NumFuncs;
 }
+
+int BaseRuntime::CreateBlank(uint32_t heastk)
+{
+	memset(m_pPlugin, 0, sizeof(sp_plugin_t));
+
+	/* Align to cell_t bytes */
+	heastk += sizeof(cell_t);
+	heastk -= heastk % sizeof(cell_t);
+
+	m_pPlugin->mem_size = heastk;
+	m_pPlugin->memory = new uint8_t[heastk];
+
+	m_pPlugin->profiler = g_engine2.GetProfiler();
+	m_pCtx = new BaseContext(this);
+	m_pCo = g_Jit.StartCompilation(this);
+
+	return SP_ERROR_NONE;
+}

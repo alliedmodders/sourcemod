@@ -25,6 +25,7 @@ namespace SourcePawn
 		const char *GetErrorString(int err);
 		bool Initialize();
 		void Shutdown();
+		IPluginRuntime *CreateEmptyRuntime(const char *name, uint32_t memory);
 	public:
 		IProfiler *GetProfiler();
 	private:

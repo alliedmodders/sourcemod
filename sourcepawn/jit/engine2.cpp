@@ -191,3 +191,22 @@ void SourcePawnEngine2::Shutdown()
 {
 	g_Jit.ShutdownJIT();
 }
+
+IPluginRuntime *SourcePawnEngine2::CreateEmptyRuntime(const char *name, uint32_t memory)
+{
+	int err;
+	BaseRuntime *rt;
+
+	rt = new BaseRuntime();
+	if ((err = rt->CreateBlank(memory)) != SP_ERROR_NONE)
+	{
+		delete rt;
+		return NULL;
+	}
+
+	rt->m_pPlugin->name = strdup(name != NULL ? name : "<anonymous>");
+
+	rt->ApplyCompilationOptions(NULL);
+	
+	return rt;
+}

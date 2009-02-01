@@ -33,7 +33,8 @@ OBJECTS += ExtensionSys.cpp 		\
 		   LibrarySys.cpp 			\
 		   PluginInfoDatabase.cpp 	\
 		   PluginSys.cpp 			\
-		   ShareSys.cpp 
+		   ShareSys.cpp				\
+		   NativeInvoker.cpp
 OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
 
 ##############################################

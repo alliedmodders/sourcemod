@@ -42,7 +42,7 @@
 
 /** SourcePawn Engine API Version */
 #define SOURCEPAWN_ENGINE_API_VERSION	4
-#define SOURCEPAWN_ENGINE2_API_VERSION	2
+#define SOURCEPAWN_ENGINE2_API_VERSION	3
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -876,6 +876,11 @@ namespace SourcePawn
 		 * @return				True on success, false on failure.
 		 */
 		virtual bool GetKey(int k, void **value) =0;
+
+		/**
+		 * @brief Clears the last native error.
+		 */
+		virtual void ClearLastNativeError() =0;
 	};
 
 
@@ -1252,6 +1257,15 @@ namespace SourcePawn
 		 * Initialize() succeeded.
 		 */
 		virtual void Shutdown() =0;
+
+		/**
+		 * @brief Creates an empty plugin with a blob of memory.
+		 *
+		 * @param name		Name, for debugging (NULL for anonymous).
+		 * @param bytes		Number of bytes of memory (hea+stk).
+		 * @return			New runtime, or NULL if not enough memory.
+		 */
+		virtual IPluginRuntime *CreateEmptyRuntime(const char *name, uint32_t memory) =0;
 	};
 };
 

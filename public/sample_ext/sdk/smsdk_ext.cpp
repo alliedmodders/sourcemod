@@ -97,6 +97,9 @@ IUserMessages *usermsgs = NULL;
 #if defined SMEXT_ENABLE_TRANSLATOR
 ITranslator *translator = NULL;
 #endif
+#if defined SMEXT_ENABLE_NINVOKE
+INativeInterface *ninvoke = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
