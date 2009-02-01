@@ -46,6 +46,7 @@ CookieTypeHandler g_CookieTypeHandler;
 HandleType_t g_CookieIterator = 0;
 CookieIteratorHandler g_CookieIteratorHandler;
 DbDriver g_DriverType;
+static const DatabaseInfo *storage_local = NULL;
 
 bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -57,6 +58,20 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (DBInfo == NULL)
 	{
 		DBInfo = dbi->FindDatabaseConf("default");
+
+		if (DBInfo == NULL ||
+			(strcmp(DBInfo->host, "localhost") == 0 &&
+			 strcmp(DBInfo->database, "sourcemod") == 0 && 
+			 strcmp(DBInfo->user, "root") == 0 &&
+			 strcmp(DBInfo->pass, "") == 0 &&
+			 strcmp(DBInfo->driver, "") == 0))
+		{
+			storage_local = dbi->FindDatabaseConf("storage-local");
+			if (DBInfo == NULL)
+			{
+				DBInfo = storage_local;
+			}
+		}
 
 		if (DBInfo == NULL)
 		{
@@ -175,6 +190,14 @@ void ClientPrefs::DatabaseConnect()
 	int errCode = 0;
 
 	Database = Driver->Connect(DBInfo, true, error, sizeof(error));
+
+	if (Database == NULL &&
+		DBInfo != storage_local &&
+		storage_local != NULL)
+	{
+		DBInfo = storage_local;
+		Database = Driver->Connect(DBInfo, true, error, sizeof(error));
+	}
 
 	if (Database == NULL)
 	{
