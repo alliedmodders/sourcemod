@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_WEBTERNET_NAME		"IWebternet"
-#define SMINTERFACE_WEBTERNET_VERSION	3
+#define SMINTERFACE_WEBTERNET_VERSION	2
 
 namespace SourceMod
 {
