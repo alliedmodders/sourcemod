@@ -57,13 +57,13 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	code = curl_global_init(flags);
 	if (code)
 	{
-		UTIL_Format(error, maxlength, "%s", curl_easy_strerror(code));
+		smutils->Format(error, maxlength, "%s", curl_easy_strerror(code));
 		return false;
 	}
 
 	if (!sharesys->AddInterface(myself, &g_webternet))
 	{
-		UTIL_Format(error, maxlength, "Could not add IWebternet interface");
+		smutils->Format(error, maxlength, "Could not add IWebternet interface");
 		return false;
 	}
 
@@ -73,37 +73,4 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 void CurlExt::SDK_OnUnload()
 {
 	curl_global_cleanup();
-}
-
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
-	va_end(ap);
-
-	if (len >= maxlength)
-	{
-		buffer[maxlength - 1] = '\0';
-		return (maxlength - 1);
-	}
-	else
-	{
-		return len;
-	}
-}
-
-size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap)
-{
-	size_t len = vsnprintf(buffer, maxlength, fmt, ap);
-
-	if (len >= maxlength)
-	{
-		buffer[maxlength - 1] = '\0';
-		return (maxlength - 1);
-	}
-	else
-	{
-		return len;
-	}
 }
