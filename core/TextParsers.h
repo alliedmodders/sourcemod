@@ -70,14 +70,18 @@ public:
 			char *buffer,
 			size_t maxsize);
 
+	SMCError ParseSMCStream(const char *stream,
+			size_t length,
+			ITextListener_SMC *smc_listener,
+			SMCStates *states,
+			char *buffer,
+			size_t maxsize);
+
 	unsigned int GetUTF8CharBytes(const char *stream);
 
 	const char *GetSMCErrorString(SMCError err);
 	bool IsWhitespace(const char *stream);
 private:
-	SMCError ParseString_SMC(const char *stream, 
-		ITextListener_SMC *smc,
-		SMCStates *states);
 	SMCError ParseStream_SMC(void *stream, 
 		STREAMREADER srdr,
 		ITextListener_SMC *smc,

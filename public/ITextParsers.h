@@ -43,7 +43,7 @@ namespace SourceMod
 {
 
 	#define SMINTERFACE_TEXTPARSERS_NAME		"ITextParsers"
-	#define SMINTERFACE_TEXTPARSERS_VERSION		3
+	#define SMINTERFACE_TEXTPARSERS_VERSION		4
 
 	/**
 	 * The INI file format is defined as:
@@ -399,8 +399,27 @@ namespace SourceMod
 		 * @param states		Optional pointer to store last known states.
 		 * @param buffer		Error message buffer.
 		 * @param maxsize		Maximum size of the error buffer.
+		 * @return 				Error code.
 		 */
 		virtual SMCError ParseSMCFile(const char *file,
+			ITextListener_SMC *smc_listener,
+			SMCStates *states,
+			char *buffer,
+			size_t maxsize) =0;
+
+		/**
+		 * @brief Parses a raw UTF8 stream as an SMC file.
+		 *
+		 * @param stream		Memory containing data.
+		 * @param length		Number of bytes in the stream.
+		 * @param smc_listener	Event handler for reading file.
+		 * @param states		Optional pointer to store last known states.
+		 * @param buffer		Error message buffer.
+		 * @param maxsize		Maximum size of the error buffer.
+		 * @return 				Error code.
+		 */
+		virtual SMCError ParseSMCStream(const char *stream,
+			size_t length,
 			ITextListener_SMC *smc_listener,
 			SMCStates *states,
 			char *buffer,

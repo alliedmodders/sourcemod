@@ -80,45 +80,6 @@ unsigned int TextParsers::GetUTF8CharBytes(const char *stream)
 }
 
 /**
- * Character streams
- */
-
-struct CharStream
-{
-	const char *curpos;
-};
-
-bool CharStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int *read)
-{
-	CharStream *srdr = (CharStream *)stream;
-
-	const char *ptr = srdr->curpos;
-	for (size_t i=0; i<maxlength; i++)
-	{
-		if (*ptr == '\0')
-		{
-			break;
-		}
-		*buffer++ = *ptr++;
-	}
-
-	*read = ptr - srdr->curpos;
-
-	srdr->curpos = ptr;
-
-	return true;
-}
-
-SMCError TextParsers::ParseString_SMC(const char *stream, 
-					 ITextListener_SMC *smc,
-					 SMCStates *states)
-{
-	CharStream srdr = { stream };
-
-	return ParseStream_SMC(&srdr, CharStreamReader, smc, states);
-}
-
-/**
  * File streams
  */
 
@@ -184,6 +145,57 @@ SMCError TextParsers::ParseSMCFile(const char *file,
 	fclose(fp);
 
 	errstr = GetSMCErrorString(result);
+	UTIL_Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+
+	return result;
+}
+
+struct RawStream
+{
+	const char *stream;
+	size_t length;
+	size_t pos;
+};
+
+bool RawStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int *read)
+{
+	RawStream *rs = (RawStream *)stream;
+
+	if (rs->pos >= rs->length)
+	{
+		return false;
+	}
+
+	size_t remaining = rs->length - rs->pos;
+
+	/* Use the smaller of the two */
+	size_t copy = (remaining > maxlength) ? maxlength : remaining;
+
+	memcpy(buffer, &rs->stream[rs->pos], copy);
+	rs->pos += copy;
+	*read = copy;
+	assert(rs->pos <= rs->length);
+
+	return true;
+}
+
+SMCError TextParsers::ParseSMCStream(const char *stream,
+									 size_t length,
+									 ITextListener_SMC *smc_listener,
+									 SMCStates *states,
+									 char *buffer,
+									 size_t maxsize)
+{
+	RawStream rs;
+	SMCError result;
+
+	rs.stream = stream;
+	rs.length = length;
+	rs.pos = 0;
+
+	result = ParseStream_SMC(&rs, RawStreamReader, smc_listener, states);
+
+	const char *errstr = GetSMCErrorString(result);
 	UTIL_Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
 
 	return result;
