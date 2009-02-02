@@ -2,6 +2,32 @@
 
 Webternet g_webternet;
 
+WebForm::WebForm() : first(NULL), last(NULL), lastError(CURL_FORMADD_OK)
+{
+}
+
+bool WebForm::AddString(const char *name, const char *data)
+{
+	lastError = curl_formadd(&first,
+		&last,
+		CURLFORM_COPYNAME,
+		name,
+		CURLFORM_COPYCONTENTS,
+		data,
+		CURLFORM_END);
+	return lastError == CURL_FORMADD_OK;
+}
+
+curl_httppost *WebForm::GetFormData()
+{
+	return first;
+}
+
+WebForm::~WebForm()
+{
+	curl_formfree(first);
+}
+
 WebTransfer *WebTransfer::CreateWebSession()
 {
 	CURL *curl;
@@ -46,6 +72,12 @@ bool WebTransfer::SetHeaderReturn(bool recv_hdr)
 	return lastError == 0;
 }
 
+bool WebTransfer::SetFailOnHTTPError(bool fail)
+{
+	lastError = curl_easy_setopt(curl, CURLOPT_FAILONERROR, fail ? 1 : 0);
+	return lastError == 0;
+}
+
 static size_t curl_write_to_sm(void *ptr, size_t bytes, size_t nmemb, void *stream)
 {
 	void **userdata = (void **)stream;
@@ -81,6 +113,12 @@ bool WebTransfer::Download(const char *url, ITransferHandler *handler, void *dat
 		return false;
 	}
 
+	lastError = curl_easy_setopt(curl, CURLOPT_HTTPPOST, NULL);
+	if (lastError)
+	{
+		return false;
+	}
+
 	lastError = curl_easy_setopt(curl, CURLOPT_URL, url);
 	if (lastError)
 	{
@@ -89,6 +127,46 @@ bool WebTransfer::Download(const char *url, ITransferHandler *handler, void *dat
 
 	lastError = curl_easy_perform(curl);
 	
+	return (lastError == 0);
+}
+
+bool WebTransfer::PostAndDownload(const char *url,
+								  IWebForm *form,
+								  ITransferHandler *handler,
+								  void *data)
+{
+	WebForm *realform = (WebForm*)form;
+
+	lastError = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_to_sm);
+	if (lastError)
+	{
+		return false;
+	}
+
+	void *userdata[3];
+	userdata[0] = this;
+	userdata[1] = handler;
+	userdata[2] = data;
+	lastError = curl_easy_setopt(curl, CURLOPT_WRITEDATA, userdata);
+	if (lastError)
+	{
+		return false;
+	}
+
+	lastError = curl_easy_setopt(curl, CURLOPT_HTTPPOST, realform->GetFormData());
+	if (lastError)
+	{
+		return false;
+	}
+
+	lastError = curl_easy_setopt(curl, CURLOPT_URL, url);
+	if (lastError)
+	{
+		return false;
+	}
+
+	lastError = curl_easy_perform(curl);
+
 	return (lastError == 0);
 }
 
@@ -112,3 +190,7 @@ IWebTransfer *Webternet::CreateSession()
 	return WebTransfer::CreateWebSession();
 }
 
+IWebForm *Webternet::CreateForm()
+{
+	return new WebForm();
+}

@@ -37,6 +37,21 @@
 
 using namespace SourceMod;
 
+class WebForm : public IWebForm
+{
+public:
+	WebForm();
+	~WebForm();
+public:
+	bool AddString(const char *name, const char *data);
+public:
+	curl_httppost *GetFormData();
+private:
+	curl_httppost *first;
+	curl_httppost *last;
+	CURLFORMcode lastError;
+};
+
 class WebTransfer : public IWebTransfer
 {
 public:
@@ -48,6 +63,11 @@ public:
 	int LastErrorCode();
 	bool SetHeaderReturn(bool recv_hdr);
 	bool Download(const char *url, ITransferHandler *handler, void *data);
+	bool SetFailOnHTTPError(bool fail);
+	bool PostAndDownload(const char *url,
+		IWebForm *form,
+		ITransferHandler *handler,
+		void *data);
 private:
 	CURL *curl;
 	char errorBuffer[CURL_ERROR_SIZE];
@@ -61,6 +81,7 @@ public:
 	const char *GetInterfaceName();
 public:
 	IWebTransfer *CreateSession();
+	IWebForm *CreateForm();
 };
 
 extern Webternet g_webternet;

@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_WEBTERNET_NAME		"IWebternet"
-#define SMINTERFACE_WEBTERNET_VERSION	1
+#define SMINTERFACE_WEBTERNET_VERSION	3
 
 namespace SourceMod
 {
@@ -55,6 +55,31 @@ namespace SourceMod
 
 	class IWebTransfer;
 	class IWebternet;
+
+	/**
+	 * @brief Form for POSTing data.
+	 */
+	class IWebForm
+	{
+	public:
+		/**
+		 * @brief Free with delete.
+		 */
+		virtual ~IWebForm()
+		{
+		}
+	public:
+		/**
+		 * @brief Adds raw data to the form.
+		 *
+		 * All data is copied locally and may go out of scope.
+		 *
+		 * @param name				Field name (null terminated).
+		 * @param data				Field data (null terminated).
+		 * @return					True on success, false on failure.
+		 */
+		virtual bool AddString(const char *name, const char *data) = 0;
+	};
 
 	/**
 	 * @brief Transfer handler interface.
@@ -139,6 +164,30 @@ namespace SourceMod
 		 * @return					True on success, false on failure.
 		 */
 		virtual bool Download(const char *url, ITransferHandler *handler, void *data) = 0;
+
+		/**
+		 * @brief Downloads a URL with POST options.
+		 *
+		 * @param url				URL to download.
+		 * @param form				Form to read POST info from.
+		 * @param handler			Handler object.
+		 * @param userdata			User data pointer.
+		 * @return					True on success, false on failure.
+		 */
+		virtual bool PostAndDownload(const char *url,
+			IWebForm *form,
+			ITransferHandler *handler,
+			void *data) = 0;
+
+		/**
+		 * @brief Sets whether an HTTP failure (>= 400) returns false from Download().
+		 *
+		 * Note: defaults to false.
+		 *
+		 * @param fail				True to fail, false otherwise.
+		 * @return					True on success, false otherwise.
+		 */
+		virtual bool SetFailOnHTTPError(bool fail) = 0;
 	};
 
 	/**
@@ -156,6 +205,13 @@ namespace SourceMod
 		 * @return				Object, or NULL on failure.
 		 */
 		virtual IWebTransfer *CreateSession() = 0;
+
+		/**
+		 * @brief Creates a form for building POST data.
+		 *
+		 * @return				New form, or NULL on failure.
+		 */
+		virtual IWebForm *CreateForm() = 0;
 	};
 }
 
