@@ -762,10 +762,14 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 	bShouldBeReadingDefault = true;
 	m_ParseState = PSTATE_NONE;
 
+	g_GameConfigs.AcquireLock();
+
 	if ((err=textparsers->ParseSMCFile(m_CurFile, this, &state, error, maxlength))
 		!= SMCError_Okay)
 	{
 		const char *msg;
+
+		g_GameConfigs.ReleaseLock();
 
 		msg = textparsers->GetSMCErrorString(err);
 
@@ -786,6 +790,8 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 
 		return false;
 	}
+
+	g_GameConfigs.ReleaseLock();
 
 	return true;
 }
@@ -854,6 +860,8 @@ GameConfigManager::~GameConfigManager()
 
 void GameConfigManager::OnSourceModStartup(bool late)
 {
+	m_FileLock = g_pThreader->MakeMutex();
+
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
 	strncopy(g_Game, g_SourceMod.GetGameFolderName(), sizeof(g_Game));
@@ -888,6 +896,7 @@ void GameConfigManager::OnSourceModAllInitialized()
 void GameConfigManager::OnSourceModAllShutdown()
 {
 	CloseGameConfigFile(g_pGameConf);
+	m_FileLock->DestroyThis();
 }
 
 bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pConfig, char *error, size_t maxlength)
@@ -956,12 +965,12 @@ IGameConfig *GameConfigManager::ReadHandle(Handle_t hndl, IdentityToken_t *ident
 	return conf;
 }
 
-void GameConfigManager::AddUserConfigHook( const char *sectionname, ITextListener_SMC *listener )
+void GameConfigManager::AddUserConfigHook(const char *sectionname, ITextListener_SMC *listener)
 {
 	m_customHandlers.insert(sectionname, listener);
 }
 
-void GameConfigManager::RemoveUserConfigHook( const char *sectionname, ITextListener_SMC *listener )
+void GameConfigManager::RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener)
 {
 	ITextListener_SMC **pListener = m_customHandlers.retrieve(sectionname);
 
@@ -978,4 +987,14 @@ void GameConfigManager::RemoveUserConfigHook( const char *sectionname, ITextList
 	m_customHandlers.remove(sectionname);
 	
 	return;
+}
+
+void GameConfigManager::AcquireLock()
+{
+	m_FileLock->Lock();
+}
+
+void GameConfigManager::ReleaseLock()
+{
+	m_FileLock->Unlock();
 }

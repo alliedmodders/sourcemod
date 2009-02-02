@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod Updater Extension
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,25 +29,42 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
-#define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
+#ifndef _INCLUDE_SOURCEMOD_UPDATER_H_
+#define _INCLUDE_SOURCEMOD_UPDATER_H_
 
-#include <ISourceMod.h>
+#include <IWebternet.h>
+#include <ITextParsers.h>
+#include <sh_string.h>
+#include "MemoryDownloader.h"
 
-using namespace SourceMod;
-
-struct FrameAction
+namespace SourceMod
 {
-	FrameAction(FRAMEACTION a, void *d) : data(d), action(a)
+	class UpdateReader : 
+		public ITextListener_SMC
 	{
-	}
-	void *data;
-	FRAMEACTION action;
-};
+	public:
+		UpdateReader();
+		~UpdateReader();
+	public: /* ITextListener_SMC */
+		void ReadSMC_ParseStart();
+		SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
+		SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
+		SMCResult ReadSMC_LeavingSection(const SMCStates *states);
+	public:
+		void PerformUpdate();
+	private:
+		void HandleFile();
+		void HandleFolder(const char *folder);
+	private:
+		IWebTransfer *xfer;
+		MemoryDownloader mdl;
+		unsigned int ustate;
+		unsigned int ignoreLevel;
+		SourceHook::String curfile;
+		SourceHook::String url;
+		char checksum[33];
+	};
+}
 
-extern bool g_PendingInternalPush;
+#endif /* _INCLUDE_SOURCEMOD_UPDATER_H_ */
 
-void AddFrameAction(const FrameAction & action);
-void RunFrameHooks(bool simulating);
-
-#endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_

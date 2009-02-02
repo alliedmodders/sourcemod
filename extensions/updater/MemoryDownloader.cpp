@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod Updater Extension
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,25 +29,57 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
-#define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
-
-#include <ISourceMod.h>
+#include <assert.h>
+#include <string.h>
+#include <stdlib.h>
+#include "MemoryDownloader.h"
 
 using namespace SourceMod;
 
-struct FrameAction
+MemoryDownloader::MemoryDownloader() : buffer(NULL), bufsize(0), bufpos(0)
 {
-	FrameAction(FRAMEACTION a, void *d) : data(d), action(a)
+}
+
+MemoryDownloader::~MemoryDownloader()
+{
+	free(buffer);
+}
+
+DownloadWriteStatus MemoryDownloader::OnDownloadWrite(IWebTransfer *session,
+													  void *userdata,
+													  void *ptr,
+													  size_t size,
+													  size_t nmemb)
+{
+	size_t total = size * nmemb;
+
+	if (bufpos + total > bufsize)
 	{
+		size_t rem = (bufpos + total) - bufsize;
+		bufsize += rem + (rem / 2);
+		buffer = (char *)realloc(buffer, bufsize);
 	}
-	void *data;
-	FRAMEACTION action;
-};
 
-extern bool g_PendingInternalPush;
+	assert(bufpos + total <= bufsize);
 
-void AddFrameAction(const FrameAction & action);
-void RunFrameHooks(bool simulating);
+	memcpy(&buffer[bufpos], ptr, total);
+	bufpos += total;
 
-#endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
+	return DownloadWrite_Okay;
+}
+
+void MemoryDownloader::Reset()
+{
+	bufpos = 0;
+}
+
+char *MemoryDownloader::GetBuffer()
+{
+	return buffer;
+}
+
+size_t MemoryDownloader::GetSize()
+{
+	return bufpos;
+}
+

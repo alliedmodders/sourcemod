@@ -39,6 +39,7 @@
 #include "sm_globals.h"
 #include "sm_memtable.h"
 #include "sm_trie_tpl.h"
+#include "ThreadSupport.h"
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -110,6 +111,8 @@ public: //IGameConfigManager
 		HandleError *err);
 	void AddUserConfigHook(const char *sectionname, ITextListener_SMC *listener);
 	void RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener);
+	void AcquireLock();
+	void ReleaseLock();
 public: //SMGlobalClass
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
@@ -117,6 +120,7 @@ public: //SMGlobalClass
 private:
 	List<CGameConfig *> m_cfgs;
 	Trie *m_pLookup;
+	IMutex *m_FileLock;
 public:
 	KTrie<ITextListener_SMC *> m_customHandlers;
 };

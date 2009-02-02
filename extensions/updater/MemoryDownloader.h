@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod Updater Extension
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,25 +29,34 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
-#define _INCLUDE_SOURCEMOD_FRAME_HOOKS_H_
+#ifndef _INCLUDE_SOURCEMOD_UPDATER_MEMORY_DOWNLOADER_H_
+#define _INCLUDE_SOURCEMOD_UPDATER_MEMORY_DOWNLOADER_H_
 
-#include <ISourceMod.h>
+#include <IWebternet.h>
 
-using namespace SourceMod;
-
-struct FrameAction
+namespace SourceMod
 {
-	FrameAction(FRAMEACTION a, void *d) : data(d), action(a)
+	class MemoryDownloader : public ITransferHandler
 	{
-	}
-	void *data;
-	FRAMEACTION action;
-};
+	public:
+		MemoryDownloader();
+		~MemoryDownloader();
+	public:
+		DownloadWriteStatus OnDownloadWrite(IWebTransfer *session,
+			void *userdata,
+			void *ptr,
+			size_t size,
+			size_t nmemb);
+	public:
+		void Reset();
+		char *GetBuffer();
+		size_t GetSize();
+	private:
+		char *buffer;
+		size_t bufsize;
+		size_t bufpos;
+	};
+}
 
-extern bool g_PendingInternalPush;
+#endif /* _INCLUDE_SOURCEMOD_UPDATER_MEMORY_DOWNLOADER_H_ */
 
-void AddFrameAction(const FrameAction & action);
-void RunFrameHooks(bool simulating);
-
-#endif //_INCLUDE_SOURCEMOD_FRAME_HOOKS_H_

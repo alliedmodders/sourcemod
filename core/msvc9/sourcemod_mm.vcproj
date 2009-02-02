@@ -1492,6 +1492,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\ThreadSupport.h"
+				>
+			</File>
+			<File
 				RelativePath="..\TimerSys.h"
 				>
 			</File>

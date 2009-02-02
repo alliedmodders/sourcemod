@@ -48,6 +48,7 @@
 #include "GameConfigs.h"
 #include "DebugReporter.h"
 #include "Profiler.h"
+#include "frame_hooks.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -379,7 +380,7 @@ void SourceModBase::DoGlobalPluginLoads()
 	g_Extensions.TryAutoload();
 
 	/* Fire the extensions ready message */
-	g_SMAPI->MetaFactory(SOURCEMOD_NOTICE_EXTENSIONS, NULL, NULL);	
+	g_SMAPI->MetaFactory(SOURCEMOD_NOTICE_EXTENSIONS, NULL, NULL);
 
 	/* Load any game extension */
 	const char *game_ext;
@@ -688,6 +689,11 @@ size_t SourceModBase::FormatArgs(char *buffer,
 								 va_list ap)
 {
 	return UTIL_FormatArgs(buffer, maxlength, fmt, ap);
+}
+
+void SourceModBase::AddFrameAction(FRAMEACTION fn, void *data)
+{
+	::AddFrameAction(FrameAction(fn, data));
 }
 
 SMGlobalClass *SMGlobalClass::head = NULL;
