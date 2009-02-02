@@ -129,6 +129,8 @@ public: // ISourceMod
 	void AddGameFrameHook(GAME_FRAME_HOOK hook);
 	void RemoveGameFrameHook(GAME_FRAME_HOOK hook);
 	void ProcessGameFrameHooks(bool simulating);
+	size_t Format(char *buffer, size_t maxlength, const char *fmt, ...);
+	size_t FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];

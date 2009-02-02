@@ -670,6 +670,26 @@ void SourceModBase::ProcessGameFrameHooks(bool simulating)
 	}
 }
 
+size_t SourceModBase::Format(char *buffer, size_t maxlength, const char *fmt, ...)
+{
+	size_t len;
+	va_list ap;
+
+	va_start(ap, fmt);
+	len = FormatArgs(buffer, maxlength, fmt, ap);
+	va_end(ap);
+
+	return len;
+}
+
+size_t SourceModBase::FormatArgs(char *buffer,
+								 size_t maxlength,
+								 const char *fmt,
+								 va_list ap)
+{
+	return UTIL_FormatArgs(buffer, maxlength, fmt, ap);
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()
