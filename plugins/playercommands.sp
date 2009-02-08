@@ -56,7 +56,7 @@ new Handle:hTopMenu = INVALID_HANDLE;
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
-	LoadTranslations("plugin.playercommands");
+	LoadTranslations("playercommands.phrases");
 
 	RegAdminCmd("sm_slap", Command_Slap, ADMFLAG_SLAY, "sm_slap <#userid|name> [damage]");
 	RegAdminCmd("sm_slay", Command_Slay, ADMFLAG_SLAY, "sm_slay <#userid|name>");
