@@ -68,6 +68,7 @@ struct EventHook
 	IChangeableForward *pPostHook;
 	bool postCopy;
 	unsigned int refCount;
+	char *name;
 };
 
 enum EventHookMode
@@ -124,7 +125,7 @@ private:
 	HandleType_t m_EventType;
 	Trie *m_EventHooks;
 	CStack<EventInfo *> m_FreeEvents;
-	CStack<const char *> m_EventNames;
+	CStack<EventHook *> m_EventStack;
 	CStack<IGameEvent *> m_EventCopies;
 };
 
