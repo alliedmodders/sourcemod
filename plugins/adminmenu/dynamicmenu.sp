@@ -170,7 +170,7 @@ BuildDynamicMenu()
   			new count = 1;
   			decl String:countBuffer[10] = "1";
   			
-  			decl String:inputBuffer[32];
+  			decl String:inputBuffer[48];
   			
   			while (KvJumpToKey(kvMenu, countBuffer))
   			{
