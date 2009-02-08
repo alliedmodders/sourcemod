@@ -193,6 +193,9 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 			pHook->pPostHook->AddFunction(pFunction);
 		}
 
+		/* Cache the name for post hooks */
+		pHook->name = strdup(name);
+
 		/* Increase reference count */
 		pHook->refCount++;
 
@@ -296,6 +299,9 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 		/* Delete entry in trie */
 		sm_trie_delete(m_EventHooks, name);
 
+		/* Free the cached name */
+		free(pHook->name);
+
 		/* And finally free structure memory */
 		delete pHook;
 	}
@@ -365,14 +371,17 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	{
 		RETURN_META_VALUE(MRES_IGNORED, false);
 	}
-	
-	/* Get the event name, we're going to need this for passing to post hooks */
+
 	name = pEvent->GetName();
-
-	m_EventNames.push(name);
-
+	
 	if (sm_trie_retrieve(m_EventHooks, name, reinterpret_cast<void **>(&pHook)))
 	{
+		/* Push the event onto the event stack.  The reference count is increased to make sure 
+		 * the structure is not garbage collected in between now and the post hook.
+		 */
+		pHook->refCount++;
+		m_EventStack.push(pHook);
+
 		pForward = pHook->pPreHook;
 
 		if (pForward)
@@ -400,6 +409,10 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 			RETURN_META_VALUE(MRES_SUPERCEDE, false);
 		}
 	}
+	else
+	{
+		m_EventStack.push(NULL);
+	}
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -410,7 +423,6 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 	EventHook *pHook;
 	EventInfo info;
 	IChangeableForward *pForward;
-	const char *name;
 	Handle_t hndl = 0;
 
 	/* The engine accepts NULL without crashing, so to prevent a crash in SM we ignore these */
@@ -419,9 +431,9 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		RETURN_META_VALUE(MRES_IGNORED, false);
 	}
 
-	name = m_EventNames.front();
+	pHook = m_EventStack.front();
 
-	if (sm_trie_retrieve(m_EventHooks, name, reinterpret_cast<void **>(&pHook)))
+	if (pHook != NULL)
 	{
 		pForward = pHook->pPostHook;
 
@@ -438,7 +450,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				pForward->PushCell(BAD_HANDLE);
 			}
 
-			pForward->PushString(name);
+			pForward->PushString(pHook->name);
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(NULL);
 
@@ -453,9 +465,19 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				m_EventCopies.pop();
 			}
 		}
+
+		/* Decrement reference count, check if a delayed delete is needed */
+		if (--pHook->refCount == 0)
+		{
+			assert(pHook->pPostHook == NULL);
+			assert(pHook->pPreHook == NULL);
+			sm_trie_delete(m_EventHooks, pHook->name);
+			free(pHook->name);
+			delete pHook;
+		}
 	}
 
-	m_EventNames.pop();
+	m_EventStack.pop();
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
