@@ -86,8 +86,7 @@ static const String:TFResourceNames[TFResourceType][] =
  * Get's a Clients current class.
  *
  * @param client		Player's index.
- * @param class			TFClassType to change to.
- * @noreturn
+ * @return				Current TFClassType of player.
  * @error				Invalid client index.
  */
 stock TFClassType:TF2_GetPlayerClass(client)
@@ -217,3 +216,4 @@ stock TF2_RemoveAllWeapons(client)
 		TF2_RemoveWeaponSlot(client, i);
 	}
 }
+
