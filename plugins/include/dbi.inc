@@ -150,7 +150,7 @@ native Handle:SQL_ConnectCustom(Handle:keyvalues,
  * Grabs a handle to an SQLite database, creating one if it does not exist.  
  *
  * Unless there are extenuating circumstances, you should consider using "sourcemod-local" as the 
- * database name.  This gives provides some unification between plugins on behalf of users.
+ * database name.  This provides some unification between plugins on behalf of users.
  *
  * As a precaution, you should always create some sort of unique prefix to your table names so 
  * there are no conflicts, and you should never drop or modify tables that you do not own.
@@ -158,12 +158,11 @@ native Handle:SQL_ConnectCustom(Handle:keyvalues,
  * @param database		Database name.  
  * @param error			Error buffer.
  * @param maxlength		Maximum length of the error buffer.
- * @param persistent	Persistent or not.
  * @return				A database connection Handle, or INVALID_HANDLE on failure.
  * 						On failure the error buffer will be filled with a message.
  */
 stock Handle:SQLite_UseDatabase(const String:database[],
-								String:buffer[], 
+								String:error[], 
 								maxlength)
 {
 	new Handle:kv, Handle:db;
@@ -172,7 +171,7 @@ stock Handle:SQLite_UseDatabase(const String:database[],
 	KvSetString(kv, "driver", "sqlite");
 	KvSetString(kv, "database", database);
 
-	db = SQL_ConnectCustom(kv, buffer, maxlength, false);
+	db = SQL_ConnectCustom(kv, error, maxlength, false);
 
 	CloseHandle(kv);
 
