@@ -127,6 +127,12 @@ static void PumpUpdate(void *data)
 	UpdatePart *part = (UpdatePart*)data;
 	while (part != NULL)
 	{
+		if (strstr(part->file, "..") != NULL)
+		{
+			/* Naughty naughty */
+			AddUpdateError("Detected invalid path escape (..): %s", part->file);
+			goto skip_create;
+		}
 		if (part->data == NULL)
 		{
 			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
@@ -158,6 +164,7 @@ static void PumpUpdate(void *data)
 				"Successfully updated gamedata file \"%s\"",
 				part->file);
 		}
+skip_create:
 		temp = part->next;
 		free(part->data);
 		free(part->file);
