@@ -43,7 +43,7 @@
 
 using namespace SourceMod;
 
-UpdateReader::UpdateReader()
+UpdateReader::UpdateReader() : partFirst(NULL), partLast(NULL)
 {
 }
 
@@ -174,6 +174,21 @@ SMCResult UpdateReader::ReadSMC_LeavingSection(const SMCStates *states)
 	return SMCResult_Continue;
 }
 
+void UpdateReader::LinkPart(UpdatePart *part)
+{
+	part->next = NULL;
+	if (partFirst == NULL)
+	{
+		partFirst = part;
+		partLast = part;
+	}
+	else
+	{
+		partLast->next = part;
+		partLast = part;
+	}
+}
+
 void UpdateReader::HandleFile()
 {
 	MD5 md5;
@@ -192,6 +207,12 @@ void UpdateReader::HandleFile()
 	md5.finalize();
 	md5.hex_digest(real_checksum);
 
+	if (mdl.GetSize() == 0)
+	{
+		AddUpdateError("Zero-length file returned for \"%s\"", curfile.c_str());
+		return;
+	}
+
 	if (strcasecmp(checksum, real_checksum) != 0)
 	{
 		AddUpdateError("Checksums for file \"%s\" do not match:", curfile.c_str());
@@ -199,45 +220,20 @@ void UpdateReader::HandleFile()
 		return;
 	}
 
-	char path[PLATFORM_MAX_PATH];
-	smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", curfile.c_str());
-
-	gameconfs->AcquireLock();
-	
-	FILE *fp = fopen(path, "wt");
-	if (fp == NULL)
-	{
-		gameconfs->ReleaseLock();
-		AddUpdateError("Could not open %s for writing", path);
-		return;
-	}
-
-	fwrite(mdl.GetBuffer(), 1, mdl.GetSize(), fp);
-	fclose(fp);
-
-	gameconfs->ReleaseLock();
-
-	AddUpdateMessage("Successfully updated gamedata file \"%s\"", curfile.c_str());
+	UpdatePart *part = new UpdatePart;
+	part->data = (char*)malloc(mdl.GetSize());
+	part->file = strdup(curfile.c_str());
+	part->length = mdl.GetSize();
+	LinkPart(part);
 }
 
 void UpdateReader::HandleFolder(const char *folder)
 {
-	char path[PLATFORM_MAX_PATH];
-
-	smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", folder);
-	if (libsys->IsPathDirectory(path))
-	{
-		return;
-	}
-
-	if (!libsys->CreateFolder(path))
-	{
-		AddUpdateError("Could not create folder: %s", path);
-	}
-	else
-	{
-		AddUpdateMessage("Created folder \"%s\" from updater", folder);
-	}
+	UpdatePart *part = new UpdatePart;
+	part->data = NULL;
+	part->length = 0;
+	part->file = strdup(folder);
+	LinkPart(part);
 }
 
 static bool md5_file(const char *file, char checksum[33])
@@ -380,4 +376,15 @@ void UpdateReader::PerformUpdate()
 cleanup:
 	delete xfer;
 	delete form;
+}
+
+UpdatePart *UpdateReader::DetachParts()
+{
+	UpdatePart *first;
+
+	first = partFirst;
+	partFirst = NULL;
+	partLast = NULL;
+
+	return first;
 }

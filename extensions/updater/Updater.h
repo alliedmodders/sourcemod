@@ -37,6 +37,14 @@
 #include <sh_string.h>
 #include "MemoryDownloader.h"
 
+struct UpdatePart
+{
+	UpdatePart* next;
+	char *file;
+	char *data;
+	size_t length;
+};
+
 namespace SourceMod
 {
 	class UpdateReader : 
@@ -52,9 +60,11 @@ namespace SourceMod
 		SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 	public:
 		void PerformUpdate();
+		UpdatePart *DetachParts();
 	private:
 		void HandleFile();
 		void HandleFolder(const char *folder);
+		void LinkPart(UpdatePart *part);
 	private:
 		IWebTransfer *xfer;
 		MemoryDownloader mdl;
@@ -63,6 +73,8 @@ namespace SourceMod
 		SourceHook::String curfile;
 		SourceHook::String url;
 		char checksum[33];
+		UpdatePart *partFirst;
+		UpdatePart *partLast;
 	};
 }
 

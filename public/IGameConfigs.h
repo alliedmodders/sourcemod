@@ -163,12 +163,12 @@ namespace SourceMod
 		virtual void RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener) =0;
 
 		/**
-		 * @brief Acquires a file reading lock on the gamedata system.  
+		 * @brief Does nothing.
 		 */
 		virtual void AcquireLock() = 0;
 
 		/**
-		 * @brief Releases the file reading lock.
+		 * @brief Does nothing.
 		 */
 		virtual void ReleaseLock() = 0;
 	};

@@ -45,7 +45,6 @@ SMEXT_LINK(&g_Updater);
 
 IWebternet *webternet;
 static List<String *> update_errors;
-static List<String *> update_messages;
 static IThreadHandle *update_thread;
 
 bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
@@ -85,10 +84,6 @@ void SmUpdater::SDK_OnUnload()
 	{
 		iter = update_errors.erase(iter);
 	}
-	while (iter != update_messages.end())
-	{
-		iter = update_messages.erase(iter);
-	}
 }
 
 bool SmUpdater::QueryInterfaceDrop(SourceMod::SMInterface *pInterface)
@@ -112,10 +107,53 @@ void SmUpdater::NotifyInterfaceDrop(SMInterface *pInterface)
 	}
 }
 
-static void LogAllMessages(void *data)
+static void PumpUpdate(void *data)
 {
 	String *str;
 	List<String *>::iterator iter;
+
+	char path[PLATFORM_MAX_PATH];
+	UpdatePart *temp;
+	UpdatePart *part = (UpdatePart*)data;
+	while (part != NULL)
+	{
+		if (part->data == NULL)
+		{
+			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
+			if (libsys->IsPathDirectory(path))
+			{
+				continue;
+			}
+			if (!libsys->CreateFolder(path))
+			{
+				AddUpdateError("Could not create folder: %s", path);
+			}
+			else
+			{
+				smutils->LogMessage(myself, "Created folder \"%s\" from updater", path);
+			}
+		}
+		else
+		{
+			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
+			FILE *fp = fopen(path, "wt");
+			if (fp == NULL)
+			{
+				AddUpdateError("Could not open %s for writing", path);
+				return;
+			}
+			fwrite(part->data, 1, part->length, fp);
+			fclose(fp);
+			smutils->LogMessage(myself,
+				"Successfully updated gamedata file \"%s\"",
+				part->file);
+		}
+		temp = part->next;
+		free(part->data);
+		free(part->file);
+		delete part;
+		part = temp;
+	}
 
 	if (update_errors.size())
 	{
@@ -131,14 +169,6 @@ static void LogAllMessages(void *data)
 
 		smutils->LogError(myself, "--- END ERRORS FROM AUTOMATIC UPDATER ---");
 	}
-
-	for (iter = update_messages.begin();
-		 iter != update_messages.end();
-		 iter++)
-	{
-		str = (*iter);
-		smutils->LogMessage(myself, "%s", str->c_str());
-	}
 }
 
 void SmUpdater::RunThread(IThreadHandle *pHandle)
@@ -147,26 +177,11 @@ void SmUpdater::RunThread(IThreadHandle *pHandle)
 
 	ur.PerformUpdate();
 
-	if (update_errors.size() || update_messages.size())
-	{
-		smutils->AddFrameAction(LogAllMessages, NULL);
-	}
+	smutils->AddFrameAction(PumpUpdate, ur.DetachParts());
 }
 
 void SmUpdater::OnTerminate(IThreadHandle *pHandle, bool cancel)
 {
-}
-
-void AddUpdateMessage(const char *fmt, ...)
-{
-	va_list ap;
-	char buffer[2048];
-
-	va_start(ap, fmt);
-	smutils->FormatArgs(buffer, sizeof(buffer), fmt, ap);
-	va_end(ap);
-
-	update_messages.push_back(new String(buffer));
 }
 
 void AddUpdateError(const char *fmt, ...)
