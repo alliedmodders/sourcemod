@@ -34,8 +34,6 @@
 #include "Updater.h"
 #include "md5.h"
 
-#define UPDATE_URL			"http://www.sourcemod.net/update/"
-
 #define USTATE_NONE			0
 #define USTATE_FOLDERS		1
 #define USTATE_CHANGED		2
@@ -125,7 +123,7 @@ SMCResult UpdateReader::ReadSMC_KeyValue(const SMCStates *states,
 			}
 			else if (strcmp(key, "location") == 0)
 			{
-				url.assign(UPDATE_URL);
+				url.assign(update_url);
 				url.append(value);
 			}
 			break;
@@ -330,17 +328,17 @@ static void add_folders(IWebForm *form, const char *root, unsigned int &num_file
 	libsys->CloseDirectory(dir);
 }
 
-void UpdateReader::PerformUpdate()
+void UpdateReader::PerformUpdate(const char *url)
 {
 	IWebForm *form;
 	MemoryDownloader master;
 	SMCStates states = {0, 0};
 
+	update_url = url;
+
 	form = webternet->CreateForm();
 	xfer = webternet->CreateSession();
 	xfer->SetFailOnHTTPError(true);
-
-	const char *root_url = UPDATE_URL "gamedata.php";
 
 	form->AddString("version", SVN_FULL_VERSION);
 	form->AddString("build", SM_BUILD_UNIQUEID);
@@ -352,9 +350,9 @@ void UpdateReader::PerformUpdate()
 	smutils->Format(temp, sizeof(temp), "%d", num_files);
 	form->AddString("files", temp);
 
-	if (!xfer->PostAndDownload(root_url, form, &master, NULL))
+	if (!xfer->PostAndDownload(url, form, &master, NULL))
 	{
-		AddUpdateError("Could not download \"%s\"", root_url);
+		AddUpdateError("Could not download \"%s\"", url);
 		AddUpdateError("Error: %s", xfer->LastErrorMessage());
 		goto cleanup;
 	}

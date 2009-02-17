@@ -59,7 +59,7 @@ namespace SourceMod
 		SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 		SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 	public:
-		void PerformUpdate();
+		void PerformUpdate(const char *url);
 		UpdatePart *DetachParts();
 	private:
 		void HandleFile();
@@ -75,6 +75,7 @@ namespace SourceMod
 		char checksum[33];
 		UpdatePart *partFirst;
 		UpdatePart *partLast;
+		const char *update_url;
 	};
 }
 

@@ -38,6 +38,8 @@
 #include <sh_list.h>
 #include <sh_string.h>
 
+#define DEFAULT_UPDATE_URL			"http://www.sourcemod.net/update/"
+
 using namespace SourceHook;
 
 SmUpdater g_Updater;		/**< Global singleton for extension's main interface */
@@ -46,6 +48,7 @@ SMEXT_LINK(&g_Updater);
 IWebternet *webternet;
 static List<String *> update_errors;
 static IThreadHandle *update_thread;
+static String update_url;
 
 bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -63,6 +66,13 @@ bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		smutils->Format(error, maxlength, "Could not create thread");
 		return false;
 	}
+
+	const char *url = smutils->GetCoreConfigValue("AutoUpdateURL");
+	if (url == NULL)
+	{
+		url = DEFAULT_UPDATE_URL;
+	}
+	update_url.assign(url);
 
 	return true;
 }
@@ -175,7 +185,7 @@ void SmUpdater::RunThread(IThreadHandle *pHandle)
 {
 	UpdateReader ur;
 
-	ur.PerformUpdate();
+	ur.PerformUpdate(update_url.c_str());
 
 	smutils->AddFrameAction(PumpUpdate, ur.DetachParts());
 }
