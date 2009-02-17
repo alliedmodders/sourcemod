@@ -76,9 +76,7 @@ void Hook_ExecDispatchPre()
 
 	const char *arg = cmd.Arg(1);
 
-	if (!g_bServerExecd 
-		&& arg != NULL 
-		&& strcmp(arg, g_ServerCfgFile->GetString()) == 0)
+	if (!g_bServerExecd && arg != NULL && strcmp(arg, g_ServerCfgFile->GetString()) == 0)
 	{
 		g_bGotTrigger = true;
 	}
@@ -100,8 +98,7 @@ void Hook_ExecDispatchPost()
 
 void CheckAndFinalizeConfigs()
 {
-	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
-		&& g_bGotServerStart)
+	if ((g_bServerExecd || g_ServerCfgFile == NULL) && g_bGotServerStart)
 	{
 #if SOURCE_ENGINE >= SE_ORANGEBOX
         g_PendingInternalPush = true;
