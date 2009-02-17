@@ -116,6 +116,14 @@ void CoreConfig::OnSourceModAllInitialized()
 	g_pOnAutoConfigsBuffered = g_Forwards.CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
 }
 
+CoreConfig::CoreConfig() : m_Strings(512)
+{
+}
+
+CoreConfig::~CoreConfig()
+{
+}
+
 void CoreConfig::OnSourceModShutdown()
 {
 	g_RootMenu.RemoveRootConsoleCommand("config", this);
@@ -212,6 +220,10 @@ void CoreConfig::Initialize()
 	/* Format path to config file */
 	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 
+	/* Reset cached key values */
+	m_KeyValues.clear();
+	m_Strings.Reset();
+
 	/* Parse config file */
 	if ((err=textparsers->ParseFile_SMC(filePath, this, NULL)) != SMCError_Okay)
 	{
@@ -250,7 +262,19 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	m_KeyValues.replace(option, m_Strings.AddString(value));
+
 	return ConfigResult_Ignore;
+}
+
+const char *CoreConfig::GetCoreConfigValue(const char *key)
+{
+	int *pKey = m_KeyValues.retrieve(key);
+	if (pKey == NULL)
+	{
+		return NULL;
+	}
+	return m_Strings.GetString(*pKey);
 }
 
 bool SM_AreConfigsExecuted()

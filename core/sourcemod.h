@@ -132,6 +132,7 @@ public: // ISourceMod
 	size_t Format(char *buffer, size_t maxlength, const char *fmt, ...);
 	size_t FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 	void AddFrameAction(FRAMEACTION fn, void *data);
+	const char *GetCoreConfigValue(const char *key);
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];

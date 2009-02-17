@@ -712,6 +712,11 @@ void SourceModBase::AddFrameAction(FRAMEACTION fn, void *data)
 	::AddFrameAction(FrameAction(fn, data));
 }
 
+const char *SourceModBase::GetCoreConfigValue(const char *key)
+{
+	return g_CoreConfig.GetCoreConfigValue(key);
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

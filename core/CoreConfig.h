@@ -35,6 +35,8 @@
 #include "sm_globals.h"
 #include <ITextParsers.h>
 #include <IRootConsoleMenu.h>
+#include <sm_trie_tpl.h>
+#include "sm_memtable.h"
 
 using namespace SourceMod;
 
@@ -43,6 +45,9 @@ class CoreConfig :
 	public ITextListener_SMC,
 	public IRootConsoleCommand
 {
+public:
+	CoreConfig();
+	~CoreConfig();
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
@@ -56,11 +61,15 @@ public:
 	 * Initializes CoreConfig by reading from core.cfg file
 	 */
 	void Initialize();
+	const char *GetCoreConfigValue(const char *key);
 private:
 	/**
 	 * Sets configuration option by notifying SourceMod components that rely on core.cfg
 	 */
 	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
+private:
+	BaseStringTable m_Strings;
+	KTrie<int> m_KeyValues;
 };
 
 extern bool SM_AreConfigsExecuted();
