@@ -75,7 +75,7 @@ ifeq "$(USEMETA)" "true"
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I$(MMSOURCE17)/core/sourcehook \
 		-I$(MYSQL)/include
-	CFLAGS += -DSE_EPISODEONE=1 -D_SE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
+	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
 endif
 
 LINK += $(MYSQL)/lib/libmysqlclient_r.a -lz -lpthread
