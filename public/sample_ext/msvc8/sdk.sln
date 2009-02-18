@@ -1,15 +1,17 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sdk", "sdk.vcproj", "{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sd", "sdk.vcproj", "{B3E797CF-4E77-4C9D-B8A8-7589B6902206}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug - Dark Messiah|Win32 = Debug - Dark Messiah|Win32
 		Debug - Episode 1|Win32 = Debug - Episode 1|Win32
 		Debug - Left 4 Dead|Win32 = Debug - Left 4 Dead|Win32
 		Debug - Old Metamod|Win32 = Debug - Old Metamod|Win32
 		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
 		Debug|Win32 = Debug|Win32
+		Release - Dark Messiah|Win32 = Release - Dark Messiah|Win32
 		Release - Episode 1|Win32 = Release - Episode 1|Win32
 		Release - Left 4 Dead|Win32 = Release - Left 4 Dead|Win32
 		Release - Old Metamod|Win32 = Release - Old Metamod|Win32
@@ -17,6 +19,8 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Dark Messiah|Win32.ActiveCfg = Debug - Dark Messiah|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Dark Messiah|Win32.Build.0 = Debug - Dark Messiah|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Episode 1|Win32.ActiveCfg = Debug - Episode 1|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Episode 1|Win32.Build.0 = Debug - Episode 1|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Left 4 Dead|Win32.ActiveCfg = Debug - Left 4 Dead|Win32
@@ -27,8 +31,10 @@ Global
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug|Win32.ActiveCfg = Debug|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug|Win32.Build.0 = Debug|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Dark Messiah|Win32.ActiveCfg = Release - Dark Messiah|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Dark Messiah|Win32.Build.0 = Release - Dark Messiah|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Episode 1|Win32.ActiveCfg = Release - Episode 1|Win32
-		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Episode 1|Win32.Build.0 = RRelease - Episode 1|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Episode 1|Win32.Build.0 = Release - Episode 1|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Left 4 Dead|Win32.ActiveCfg = Release - Left 4 Dead|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Left 4 Dead|Win32.Build.0 = Release - Left 4 Dead|Win32
 		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Old Metamod|Win32.ActiveCfg = Release - Old Metamod|Win32
