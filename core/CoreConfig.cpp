@@ -79,9 +79,7 @@ void Hook_ExecDispatchPre()
 
 	const char *arg = cmd.Arg(1);
 
-	if (!g_bServerExecd 
-		&& arg != NULL 
-		&& strcmp(arg, g_ServerCfgFile->GetString()) == 0)
+	if (!g_bServerExecd && arg != NULL && strcmp(arg, g_ServerCfgFile->GetString()) == 0)
 	{
 		g_bGotTrigger = true;
 	}
@@ -103,8 +101,7 @@ void Hook_ExecDispatchPost()
 
 void CheckAndFinalizeConfigs()
 {
-	if ((g_bServerExecd || g_ServerCfgFile == NULL) 
-		&& g_bGotServerStart)
+	if ((g_bServerExecd || g_ServerCfgFile == NULL) && g_bGotServerStart)
 	{
 #if SOURCE_ENGINE >= SE_ORANGEBOX
         g_PendingInternalPush = true;
@@ -120,6 +117,14 @@ void CoreConfig::OnSourceModAllInitialized()
 	g_pOnServerCfg = g_Forwards.CreateForward("OnServerCfg", ET_Ignore, 0, NULL);
 	g_pOnConfigsExecuted = g_Forwards.CreateForward("OnConfigsExecuted", ET_Ignore, 0, NULL);
 	g_pOnAutoConfigsBuffered = g_Forwards.CreateForward("OnAutoConfigsBuffered", ET_Ignore, 0, NULL);
+}
+
+CoreConfig::CoreConfig() : m_Strings(512)
+{
+}
+
+CoreConfig::~CoreConfig()
+{
 }
 
 void CoreConfig::OnSourceModShutdown()
@@ -218,6 +223,10 @@ void CoreConfig::Initialize()
 	/* Format path to config file */
 	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 
+	/* Reset cached key values */
+	m_KeyValues.clear();
+	m_Strings.Reset();
+
 	/* Parse config file */
 	if ((err=textparsers->ParseFile_SMC(filePath, this, NULL)) != SMCError_Okay)
 	{
@@ -256,7 +265,19 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	m_KeyValues.replace(option, m_Strings.AddString(value));
+
 	return ConfigResult_Ignore;
+}
+
+const char *CoreConfig::GetCoreConfigValue(const char *key)
+{
+	int *pKey = m_KeyValues.retrieve(key);
+	if (pKey == NULL)
+	{
+		return NULL;
+	}
+	return m_Strings.GetString(*pKey);
 }
 
 bool SM_AreConfigsExecuted()

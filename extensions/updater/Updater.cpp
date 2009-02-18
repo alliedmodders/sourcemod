@@ -34,8 +34,6 @@
 #include "Updater.h"
 #include "md5.h"
 
-#define UPDATE_URL			"http://www.sourcemod.net/update/"
-
 #define USTATE_NONE			0
 #define USTATE_FOLDERS		1
 #define USTATE_CHANGED		2
@@ -43,7 +41,7 @@
 
 using namespace SourceMod;
 
-UpdateReader::UpdateReader()
+UpdateReader::UpdateReader() : partFirst(NULL), partLast(NULL)
 {
 }
 
@@ -125,7 +123,7 @@ SMCResult UpdateReader::ReadSMC_KeyValue(const SMCStates *states,
 			}
 			else if (strcmp(key, "location") == 0)
 			{
-				url.assign(UPDATE_URL);
+				url.assign(update_url);
 				url.append(value);
 			}
 			break;
@@ -174,6 +172,21 @@ SMCResult UpdateReader::ReadSMC_LeavingSection(const SMCStates *states)
 	return SMCResult_Continue;
 }
 
+void UpdateReader::LinkPart(UpdatePart *part)
+{
+	part->next = NULL;
+	if (partFirst == NULL)
+	{
+		partFirst = part;
+		partLast = part;
+	}
+	else
+	{
+		partLast->next = part;
+		partLast = part;
+	}
+}
+
 void UpdateReader::HandleFile()
 {
 	MD5 md5;
@@ -192,6 +205,12 @@ void UpdateReader::HandleFile()
 	md5.finalize();
 	md5.hex_digest(real_checksum);
 
+	if (mdl.GetSize() == 0)
+	{
+		AddUpdateError("Zero-length file returned for \"%s\"", curfile.c_str());
+		return;
+	}
+
 	if (strcasecmp(checksum, real_checksum) != 0)
 	{
 		AddUpdateError("Checksums for file \"%s\" do not match:", curfile.c_str());
@@ -199,45 +218,20 @@ void UpdateReader::HandleFile()
 		return;
 	}
 
-	char path[PLATFORM_MAX_PATH];
-	smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", curfile.c_str());
-
-	gameconfs->AcquireLock();
-	
-	FILE *fp = fopen(path, "wt");
-	if (fp == NULL)
-	{
-		gameconfs->ReleaseLock();
-		AddUpdateError("Could not open %s for writing", path);
-		return;
-	}
-
-	fwrite(mdl.GetBuffer(), 1, mdl.GetSize(), fp);
-	fclose(fp);
-
-	gameconfs->ReleaseLock();
-
-	AddUpdateMessage("Successfully updated gamedata file \"%s\"", curfile.c_str());
+	UpdatePart *part = new UpdatePart;
+	part->data = (char*)malloc(mdl.GetSize());
+	part->file = strdup(curfile.c_str());
+	part->length = mdl.GetSize();
+	LinkPart(part);
 }
 
 void UpdateReader::HandleFolder(const char *folder)
 {
-	char path[PLATFORM_MAX_PATH];
-
-	smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", folder);
-	if (libsys->IsPathDirectory(path))
-	{
-		return;
-	}
-
-	if (!libsys->CreateFolder(path))
-	{
-		AddUpdateError("Could not create folder: %s", path);
-	}
-	else
-	{
-		AddUpdateMessage("Created folder \"%s\" from updater", folder);
-	}
+	UpdatePart *part = new UpdatePart;
+	part->data = NULL;
+	part->length = 0;
+	part->file = strdup(folder);
+	LinkPart(part);
 }
 
 static bool md5_file(const char *file, char checksum[33])
@@ -334,17 +328,17 @@ static void add_folders(IWebForm *form, const char *root, unsigned int &num_file
 	libsys->CloseDirectory(dir);
 }
 
-void UpdateReader::PerformUpdate()
+void UpdateReader::PerformUpdate(const char *url)
 {
 	IWebForm *form;
 	MemoryDownloader master;
 	SMCStates states = {0, 0};
 
+	update_url = url;
+
 	form = webternet->CreateForm();
 	xfer = webternet->CreateSession();
 	xfer->SetFailOnHTTPError(true);
-
-	const char *root_url = UPDATE_URL "gamedata.php";
 
 	form->AddString("version", SVN_FULL_VERSION);
 	form->AddString("build", SM_BUILD_UNIQUEID);
@@ -356,9 +350,9 @@ void UpdateReader::PerformUpdate()
 	smutils->Format(temp, sizeof(temp), "%d", num_files);
 	form->AddString("files", temp);
 
-	if (!xfer->PostAndDownload(root_url, form, &master, NULL))
+	if (!xfer->PostAndDownload(url, form, &master, NULL))
 	{
-		AddUpdateError("Could not download \"%s\"", root_url);
+		AddUpdateError("Could not download \"%s\"", url);
 		AddUpdateError("Error: %s", xfer->LastErrorMessage());
 		goto cleanup;
 	}
@@ -380,4 +374,15 @@ void UpdateReader::PerformUpdate()
 cleanup:
 	delete xfer;
 	delete form;
+}
+
+UpdatePart *UpdateReader::DetachParts()
+{
+	UpdatePart *first;
+
+	first = partFirst;
+	partFirst = NULL;
+	partLast = NULL;
+
+	return first;
 }

@@ -749,6 +749,44 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 		}
 	}
 
+	/* Parse the contents of the 'custom' directory */
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/custom", m_File);
+	IDirectory *customDir = g_LibSys.OpenDirectory(path);
+
+	if (!customDir)
+	{
+		return true;
+	}
+
+	while (customDir->MoreFiles())
+	{
+		if (!customDir->IsEntryFile())
+		{
+			customDir->NextEntry();
+			continue;
+		}
+		
+		const char *curFile = customDir->GetEntryName();
+
+		/* Only allow .txt files */
+		int len = strlen(curFile);
+		if (len > 4 && strcmp(&curFile[len-4], ".txt") != 0)
+		{
+			customDir->NextEntry();
+			continue;	
+		}
+
+		UTIL_Format(path, sizeof(path), "%s/custom/%s", m_File, curFile);
+		if (!EnterFile(path, error, maxlength))
+		{
+			g_LibSys.CloseDirectory(customDir);
+			return false;
+		}
+
+		customDir->NextEntry();
+	}
+
+	g_LibSys.CloseDirectory(customDir);
 	return true;
 }
 
@@ -764,14 +802,10 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 	bShouldBeReadingDefault = true;
 	m_ParseState = PSTATE_NONE;
 
-	g_GameConfigs.AcquireLock();
-
 	if ((err=textparsers->ParseSMCFile(m_CurFile, this, &state, error, maxlength))
 		!= SMCError_Okay)
 	{
 		const char *msg;
-
-		g_GameConfigs.ReleaseLock();
 
 		msg = textparsers->GetSMCErrorString(err);
 
@@ -792,8 +826,6 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 
 		return false;
 	}
-
-	g_GameConfigs.ReleaseLock();
 
 	return true;
 }
@@ -862,8 +894,6 @@ GameConfigManager::~GameConfigManager()
 
 void GameConfigManager::OnSourceModStartup(bool late)
 {
-	m_FileLock = g_pThreader->MakeMutex();
-
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
 	strncopy(g_Game, g_SourceMod.GetGameFolderName(), sizeof(g_Game));
@@ -898,7 +928,6 @@ void GameConfigManager::OnSourceModAllInitialized()
 void GameConfigManager::OnSourceModAllShutdown()
 {
 	CloseGameConfigFile(g_pGameConf);
-	m_FileLock->DestroyThis();
 }
 
 bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pConfig, char *error, size_t maxlength)
@@ -993,10 +1022,8 @@ void GameConfigManager::RemoveUserConfigHook(const char *sectionname, ITextListe
 
 void GameConfigManager::AcquireLock()
 {
-	m_FileLock->Lock();
 }
 
 void GameConfigManager::ReleaseLock()
 {
-	m_FileLock->Unlock();
 }

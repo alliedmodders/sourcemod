@@ -38,6 +38,8 @@
 #include <sh_list.h>
 #include <sh_string.h>
 
+#define DEFAULT_UPDATE_URL			"http://www.sourcemod.net/update/"
+
 using namespace SourceHook;
 
 SmUpdater g_Updater;		/**< Global singleton for extension's main interface */
@@ -45,8 +47,8 @@ SMEXT_LINK(&g_Updater);
 
 IWebternet *webternet;
 static List<String *> update_errors;
-static List<String *> update_messages;
 static IThreadHandle *update_thread;
+static String update_url;
 
 bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -64,6 +66,13 @@ bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		smutils->Format(error, maxlength, "Could not create thread");
 		return false;
 	}
+
+	const char *url = smutils->GetCoreConfigValue("AutoUpdateURL");
+	if (url == NULL)
+	{
+		url = DEFAULT_UPDATE_URL;
+	}
+	update_url.assign(url);
 
 	return true;
 }
@@ -84,10 +93,6 @@ void SmUpdater::SDK_OnUnload()
 	while (iter != update_errors.end())
 	{
 		iter = update_errors.erase(iter);
-	}
-	while (iter != update_messages.end())
-	{
-		iter = update_messages.erase(iter);
 	}
 }
 
@@ -112,10 +117,60 @@ void SmUpdater::NotifyInterfaceDrop(SMInterface *pInterface)
 	}
 }
 
-static void LogAllMessages(void *data)
+static void PumpUpdate(void *data)
 {
 	String *str;
 	List<String *>::iterator iter;
+
+	char path[PLATFORM_MAX_PATH];
+	UpdatePart *temp;
+	UpdatePart *part = (UpdatePart*)data;
+	while (part != NULL)
+	{
+		if (strstr(part->file, "..") != NULL)
+		{
+			/* Naughty naughty */
+			AddUpdateError("Detected invalid path escape (..): %s", part->file);
+			goto skip_create;
+		}
+		if (part->data == NULL)
+		{
+			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
+			if (libsys->IsPathDirectory(path))
+			{
+				continue;
+			}
+			if (!libsys->CreateFolder(path))
+			{
+				AddUpdateError("Could not create folder: %s", path);
+			}
+			else
+			{
+				smutils->LogMessage(myself, "Created folder \"%s\" from updater", path);
+			}
+		}
+		else
+		{
+			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
+			FILE *fp = fopen(path, "wt");
+			if (fp == NULL)
+			{
+				AddUpdateError("Could not open %s for writing", path);
+				return;
+			}
+			fwrite(part->data, 1, part->length, fp);
+			fclose(fp);
+			smutils->LogMessage(myself,
+				"Successfully updated gamedata file \"%s\"",
+				part->file);
+		}
+skip_create:
+		temp = part->next;
+		free(part->data);
+		free(part->file);
+		delete part;
+		part = temp;
+	}
 
 	if (update_errors.size())
 	{
@@ -131,42 +186,19 @@ static void LogAllMessages(void *data)
 
 		smutils->LogError(myself, "--- END ERRORS FROM AUTOMATIC UPDATER ---");
 	}
-
-	for (iter = update_messages.begin();
-		 iter != update_messages.end();
-		 iter++)
-	{
-		str = (*iter);
-		smutils->LogMessage(myself, "%s", str->c_str());
-	}
 }
 
 void SmUpdater::RunThread(IThreadHandle *pHandle)
 {
 	UpdateReader ur;
 
-	ur.PerformUpdate();
+	ur.PerformUpdate(update_url.c_str());
 
-	if (update_errors.size() || update_messages.size())
-	{
-		smutils->AddFrameAction(LogAllMessages, NULL);
-	}
+	smutils->AddFrameAction(PumpUpdate, ur.DetachParts());
 }
 
 void SmUpdater::OnTerminate(IThreadHandle *pHandle, bool cancel)
 {
-}
-
-void AddUpdateMessage(const char *fmt, ...)
-{
-	va_list ap;
-	char buffer[2048];
-
-	va_start(ap, fmt);
-	smutils->FormatArgs(buffer, sizeof(buffer), fmt, ap);
-	va_end(ap);
-
-	update_messages.push_back(new String(buffer));
 }
 
 void AddUpdateError(const char *fmt, ...)

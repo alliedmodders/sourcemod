@@ -70,6 +70,12 @@ typedef ISourcePawnEngine *(*GET_SP_V1)();
 typedef ISourcePawnEngine2 *(*GET_SP_V2)();
 typedef void (*NOTIFYSHUTDOWN)();
 
+#ifdef PLATFORM_WINDOWS
+ConVar sm_basepath("sm_basepath", "addons\\sourcemod", 0, "SourceMod base path (set via command line)");
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
+ConVar sm_basepath("sm_basepath", "addons/sourcemod", 0, "SourceMod base path (set via command line)");
+#endif
+
 void ShutdownJIT()
 {
 	NOTIFYSHUTDOWN notify = (NOTIFYSHUTDOWN)g_pJIT->GetSymbolAddress("NotifyShutdown");
@@ -145,16 +151,26 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		}
 	}
 
-	/* Initialize CoreConfig so we can get SourceMod base path properly - this basically parses core.cfg */
-	g_CoreConfig.Initialize();
-
-	/* This shouldn't happen, but can't hurt to be safe */
-	if (!g_LibSys.PathExists(m_SMBaseDir) || !m_GotBasePath)
+	const char *basepath = icvar->GetCommandLineValue("sm_basepath");
+	/* Set a custom base path if there is one. */
+	if (basepath != NULL && basepath[0] != '\0')
 	{
-		g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/addons/sourcemod", g_BaseDir.c_str());
-		g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "addons/sourcemod");
 		m_GotBasePath = true;
 	}
+	/* Otherwise, use a default and keep the m_GotBasePath unlocked. */
+	else
+	{
+		basepath = sm_basepath.GetDefault();
+	}
+
+	g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), basepath);
+	g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "%s", basepath);
+
+	/* Initialize CoreConfig to get the SourceMod base path properly - this parses core.cfg */
+	g_CoreConfig.Initialize();
+
+	/* There will always be a path by this point, since it was force-set above. */
+	m_GotBasePath = true;
 
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];
@@ -694,6 +710,11 @@ size_t SourceModBase::FormatArgs(char *buffer,
 void SourceModBase::AddFrameAction(FRAMEACTION fn, void *data)
 {
 	::AddFrameAction(FrameAction(fn, data));
+}
+
+const char *SourceModBase::GetCoreConfigValue(const char *key)
+{
+	return g_CoreConfig.GetCoreConfigValue(key);
 }
 
 SMGlobalClass *SMGlobalClass::head = NULL;

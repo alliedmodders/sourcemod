@@ -120,7 +120,6 @@ public: //SMGlobalClass
 private:
 	List<CGameConfig *> m_cfgs;
 	Trie *m_pLookup;
-	IMutex *m_FileLock;
 public:
 	KTrie<ITextListener_SMC *> m_customHandlers;
 };

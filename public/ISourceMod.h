@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	9
+#define SMINTERFACE_SOURCEMOD_VERSION	10
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -287,6 +287,15 @@ namespace SourceMod
 		 * @param data		Data to pass to function.
 		 */
 		virtual void AddFrameAction(FRAMEACTION fn, void *data) = 0;
+
+		/**
+		 * @brief Retrieves a core.cfg configuration value.
+		 *
+		 * @param key		Core.cfg key phrase.
+		 * @return			Value string, or NULL on failure.
+		 *					The string will be destroyed on core.cfg reparses.
+		 */
+		virtual const char *GetCoreConfigValue(const char *key) = 0;
 	};
 }
 
