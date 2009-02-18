@@ -748,7 +748,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	}
 
 	/* Parse the contents of the 'custom' directory */
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/custom");
+	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/custom", m_File);
 	IDirectory *customDir = g_LibSys.OpenDirectory(path);
 
 	if (!customDir)
