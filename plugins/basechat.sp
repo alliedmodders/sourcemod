@@ -53,9 +53,13 @@ new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
 
 new bool:g_DoColor = true;
 
+new g_GameEngine = SOURCE_SDK_UNKNOWN;
+
 public OnPluginStart()
 {
 	LoadTranslations("common.phrases");
+	
+	g_GameEngine = GuessSDKVersion();
 
 	g_Cvar_Chatmode = CreateConVar("sm_chat_mode", "1", "Allows player's to send messages to admin chat.", 0, true, 0.0, true, 1.0);
 
@@ -63,7 +67,13 @@ public OnPluginStart()
 	RegConsoleCmd("say_team", Command_SayAdmin);		
 	RegAdminCmd("sm_say", Command_SmSay, ADMFLAG_CHAT, "sm_say <message> - sends message to all players");
 	RegAdminCmd("sm_csay", Command_SmCsay, ADMFLAG_CHAT, "sm_csay <message> - sends centered message to all players");
-	RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");
+	
+	/* HintText does not work on Dark Messiah */
+	if (g_GameEngine != SOURCE_SDK_DARKMESSIAH)
+	{
+		RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");	
+	}
+	
 	RegAdminCmd("sm_tsay", Command_SmTsay, ADMFLAG_CHAT, "sm_tsay [color] <message> - sends top-left message to all players");
 	RegAdminCmd("sm_chat", Command_SmChat, ADMFLAG_CHAT, "sm_chat <message> - sends message to admins");
 	RegAdminCmd("sm_psay", Command_SmPsay, ADMFLAG_CHAT, "sm_psay <name or #userid> <message> - sends private message");

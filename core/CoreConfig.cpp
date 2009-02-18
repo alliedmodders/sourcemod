@@ -64,13 +64,16 @@ void CheckAndFinalizeConfigs();
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 void Hook_ExecDispatchPre(const CCommand &cmd)
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
+void Hook_ExecDispatchPre()
 #else
 extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 void Hook_ExecDispatchPre()
 #endif
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand cmd;
 #endif
 

@@ -19,6 +19,11 @@
 		"engine"	"original"
 	}
 	
+	"engine.darkm.txt"
+	{
+		"engine"	"darkmessiah"
+	}
+	
 	"game.tf.txt"
 	{
 		"game"		"tf"

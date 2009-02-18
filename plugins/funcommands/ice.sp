@@ -157,11 +157,29 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 	if (g_FreezeTime[client] == 0)
 	{
 		UnfreezeClient(client);
-		PrintHintText(client, "You are now unfrozen.");
+		
+		/* HintText doesn't work on Dark Messiah */
+		if (g_GameEngine != SOURCE_SDK_DARKMESSIAH)
+		{
+			PrintHintText(client, "You are now unfrozen.");
+		}
+		else
+		{
+			PrintCenterText(client, "You are now unfrozen.");
+		}
+		
 		return Plugin_Stop;
 	}
+
+	if (g_GameEngine != SOURCE_SDK_DARKMESSIAH)
+	{
+		PrintHintText(client, "You will be unfrozen in %d seconds.", g_FreezeTime[client]);
+	}
+	else
+	{
+		PrintCenterText(client, "You will be unfrozen in %d seconds.", g_FreezeTime[client]);
+	}
 	
-	PrintHintText(client, "You will be unfrozen in %d seconds.", g_FreezeTime[client]);
 	g_FreezeTime[client]--;
 	SetEntityMoveType(client, MOVETYPE_NONE);
 	SetEntityRenderColor(client, 0, 128, 255, 135);

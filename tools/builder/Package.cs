@@ -12,6 +12,7 @@ namespace builder
 	{
 		BuildMode_Simple,
 		BuildMode_OldMetamod,
+		BuildMode_DarkMessiah,
 		BuildMode_Episode1,
 		BuildMode_Episode2,
 		BuildMode_Left4Dead
@@ -25,15 +26,17 @@ namespace builder
 			is_executable = false;
 			release_mode = ReleaseMode.ReleaseMode_Release;
 			build_mode = BuildMode.BuildMode_Simple;
+			platform = BasePlatform.Platform_Linux | BasePlatform.Platform_Windows;
 		}
-		public string binary_name;		/* Name of binary */
-		public string source_path;		/* Local path to library build scripts */
-		public ReleaseMode release_mode; /* Release mode */
-		public BuildMode build_mode;	/* Build mode */
-		public string package_path;		/* Final relative path */
-		public bool has_platform_ext;	/* Add extra platform extension? */
-		public string vcproj_name;		/* Project file, NULL for standard */
-		public bool is_executable;		/* If this is an EXE instead of a DLL */
+		public string binary_name;          /* Name of binary */
+		public string source_path;          /* Local path to library build scripts */
+		public ReleaseMode release_mode;    /* Release mode */
+        public BuildMode build_mode;        /* Build mode */
+		public string package_path;         /* Final relative path */
+		public bool has_platform_ext;       /* Add extra platform extension? */
+		public string vcproj_name;          /* Project file, NULL for standard */
+		public bool is_executable;          /* If this is an EXE instead of a DLL */
+        public BasePlatform platform;       /* Platforms for which the binary should be built */
 	};
 
 	public class Plugin

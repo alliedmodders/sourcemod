@@ -38,10 +38,16 @@
 
 NextMapManager g_NextMap;
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 SH_DECL_HOOK2_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *);
+#else
+SH_DECL_HOOK4_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *, const char *, bool);
+#endif
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #else
 extern bool __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
@@ -109,7 +115,11 @@ bool NextMapManager::SetNextMap(const char *map)
 	return true;
 }
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 void NextMapManager::HookChangeLevel(const char *map, const char *unknown)
+#else
+void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const char *video, bool bLongLoading)
+#endif
 {
 	if (g_forcedChange)
 	{
@@ -129,7 +139,11 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown)
 	UTIL_Format(m_tempChangeInfo.m_mapName, sizeof(m_tempChangeInfo.m_mapName), newmap);
 	UTIL_Format(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::ChangeLevel, (newmap, unknown));
+#else
+	RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::ChangeLevel, (newmap, unknown, video, bLongLoading));
+#endif
 }
 
 void NextMapManager::OnSourceModLevelChange( const char *mapName )

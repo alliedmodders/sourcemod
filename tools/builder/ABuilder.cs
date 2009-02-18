@@ -175,6 +175,10 @@ namespace builder
 				{
 					continue;
 				}
+				if ((libs[i].platform & cfg.Platform) != cfg.Platform)
+				{
+					continue;
+				}
 				if (!BuildLibrary(pkg, libs[i]))
 				{
 					throw new System.Exception("Failed to compile library: " + libs[i].binary_name);

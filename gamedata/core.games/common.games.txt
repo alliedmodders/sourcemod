@@ -12,6 +12,22 @@
 		}
 	}
 	
+	/* Send properties and datamaps used by stocks in entity_prop_stocks.inc */
+	"#default"
+	{
+		"Keys"
+		{
+			"m_fFlags"			"m_fFlags"
+			"m_MoveType"		"m_MoveType"
+			"m_nRenderMode"		"m_nRenderMode"
+			"m_nRenderFX"		"m_nRenderFX"
+			"m_clrRender"		"m_clrRender"
+			"m_flGravity"		"m_flGravity"
+			"m_iHealth"			"m_iHealth"
+			"m_nButtons"		"m_nButtons"
+		}
+	}
+	
 	/* Original engine specifics */
 	"#default"
 	{
@@ -20,12 +36,41 @@
 			"engine"			"original"
 		}
 		
+		"Keys"
+		{
+			"m_iHealth"			"m_fHealth"
+		}
+		
 		"Offsets"
 		{
 			"GetDataDescMap"
 			{
 				"windows"		"13"
 				"linux"			"14"
+			}
+		}
+	}
+	
+	/* Dark Messiah engine specifics */
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"darkmessiah"
+		}
+		
+		"Keys"
+		{
+			"m_iHealth"			"m_fHealth"
+			"HintTextPreByte"	"yes"
+			"ChatSayText"		"yes"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"12"
 			}
 		}
 	}

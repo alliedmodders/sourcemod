@@ -1,0 +1,322 @@
+"Games"
+{
+	/* Sounds */
+	"#default"
+	{
+		"Keys"
+		{
+			"SlapSoundCount"	"3"
+			"SlapSound1"		"default/player/sword_on_flesh_std01.wav"
+			"SlapSound2"		"default/player/sword_on_flesh_std05.wav"
+			"SlapSound3"		"default/player/bone_breaking03.wav"
+		}
+	}
+	
+	/* Properties */
+	"#default"
+	{
+		"Offsets"
+		{
+			"m_iHealth"
+			{
+				"class"			"CBasePlayer"
+				"prop"			"m_fHealth"
+			}
+		}
+	}
+	
+	/* General Temp Entities */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"!Might and Magic Multiplayer"
+		}
+
+		"Offsets"
+		{
+			/* Offset into CBaseTempEntity constructor */
+			"s_pTempEntities"
+			{
+				"windows"	"17"
+			}
+			"GetTEName"
+			{
+				"windows"	"4"
+			}
+			"GetTENext"
+			{
+				"windows"	"8"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+			}
+		}
+
+		"Signatures"
+		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
+			}
+		}
+	}
+	
+	/* Create Entity Signatures */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"!Might and Magic Multiplayer"
+		}
+
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\x16"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x2A\x85\xC0"
+			}
+		}
+	}
+
+	/* CGlobalEntityList */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"!Might and Magic Multiplayer"
+		}
+		
+		"Offsets"
+		{
+			/* Offset into LevelShutdown */
+			"gEntList"
+			{
+				"windows"	"11"
+			}
+		}
+		
+		"Signatures"
+		{
+			"LevelShutdown"
+			{
+				"library"	"server"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+			}
+
+			/* Functions in CGlobalEntityList */
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x18\x8B\x01\xFF\x50\x08\x8B\x08\x81\xE1\xFF\x0F\x00\x00\x83\xC1\x01\xC1\xE1\x04\x8B\x3C\x31\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x3A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\x8D"
+			}
+		}
+	}
+
+	/* General GameRules */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"!Might and Magic Multiplayer"
+		}
+		
+		"Offsets"
+		{
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
+			{
+				"windows"	"2"
+			}
+		}
+		
+		"Signatures"
+		{
+			/* This signature sometimes has multiple matches, but this
+			 * does not matter as g_pGameRules is involved in all of them.
+			 * The same g_pGameRules offset applies to each match.
+			 *
+			 * Sometimes this block of bytes is at the beginning of the static
+			 * CreateGameRulesObject function and sometimes it is in the middle
+			 * of an entirely different function. This depends on the game.
+			 */
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50"
+			}
+		}
+	}
+
+	/* IServer interface pointer */
+	"#default"
+	{
+		"Keys"
+		{
+			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
+			 *
+			 * The engine binary is not actually scanned in order to look for
+			 * this. SourceHook is used to used to determine the address of the
+			 * function and this signature is used to verify that it contains
+			 * the expected code. A pointer to sv (IServer interface) is used
+			 * here.
+			 */
+			"CreateFakeClient_Windows"	"\x8B\x44\x24\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
+		}
+		
+		"Offsets"
+		{
+			/* Offset into IVEngineServer::CreateFakeClient */
+			"sv"
+			{
+				"windows"	"6"
+			}
+		}
+	}
+	
+	/* EntityFactoryDictionary function */
+	"#default"
+	{
+		"Signatures"
+		{
+			"EntityFactory"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+			}
+		}
+	}
+
+	/* CBaseEntityOutput::FireOutput */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"!Might and Magic Multiplayer"
+		}
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x1C\x53\x55\x56\x8B\x71\x14"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+		"Offsets"
+		{
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+			}
+		}
+	}
+	
+	/* SetUserInfo data */
+	"#default"
+	{
+		"Offsets"
+		{
+			/**
+			 * CBaseClient::SetUserCVar(char  const*,char  const*);
+			 * Linux offset straight from VTable dump.
+			 * Windows offset is crazy. Found the windows 'SetName' function using string "(%d)%-0.*s"
+			 * Cross referenced back to the vtable and counted manually (SetUserCvar is 1 higher, offsets start from 1)
+			 */
+			"SetUserCvar"
+			{
+				"windows"	"17"
+			}
+
+			"UpdateUserSettings"
+			{
+				"windows"	"7"
+			}
+		}
+	}
+	
+	/* Dark Messiah */
+	"!Might and Magic Multiplayer"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"309"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"210"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"208"
+			}
+			"Ignite"
+			{
+				"windows"	"172"
+			}
+			"Extinguish"
+			{
+				"windows"	"173"
+			}
+			"Teleport"
+			{
+				"windows"	"92"
+			}
+			"GetVelocity"
+			{
+				"windows"	"115"
+			}
+			"EyeAngles"
+			{
+				"windows"	"107"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"28"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"202"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+			}
+		}
+		
+		"Signatures"
+		{
+			"CommitSuicide"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x44\x56\x8B\xF1\x8B\x8E\x2A\x00\x00\x00\x85\xC9"
+			}
+		}
+	}
+}

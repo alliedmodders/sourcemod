@@ -84,7 +84,11 @@ public:
 
 	void ForceChangeLevel(const char *mapName, const char* changeReason);
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	void HookChangeLevel(const char *map, const char *unknown);
+#else
+	void HookChangeLevel(const char *map, const char *unknown, const char *video, bool bLongLoading);
+#endif
 
 public:
 	SourceHook::List<MapChangeData *> m_mapHistory;

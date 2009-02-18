@@ -74,7 +74,7 @@ struct DelayedFakeCliCmd
 struct CachedCommandInfo
 {
 	const CCommand *args;
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	char cmd[300];
 #endif
 };
@@ -130,6 +130,7 @@ private:
 	THash<datamap_t *, DataMapTrie> m_Maps;
 	int m_MsgTextMsg;
 	int m_HinTextMsg;
+	int m_SayTextMsg;
 	int m_VGUIMenu;
 	Queue<DelayedFakeCliCmd *> m_CmdQueue;
 	CStack<DelayedFakeCliCmd *> m_FreeCmds;

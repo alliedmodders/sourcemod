@@ -291,7 +291,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 
 CON_COMMAND(sm, "SourceMod Menu")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 	g_RootMenu.GotRootCmd(args);
@@ -327,7 +327,7 @@ void write_handles_to_game(const char *fmt, ...)
 
 CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle leaks")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 	if (args.ArgC() < 2)

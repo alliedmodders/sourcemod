@@ -88,11 +88,16 @@ CHalfLife2::~CHalfLife2()
 	m_Maps.clear();
 }
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 CSharedEdictChangeInfo *g_pSharedChangeInfo = NULL;
+#endif
+
 bool is_original_engine = false;
 
 void CHalfLife2::OnSourceModStartup(bool late)
 {
+#if SOURCE_ENGINE != SE_DARKMESSIAH
+
 	/* The Ship currently is the only known game to use an older version of the engine */
 #if defined METAMOD_PLAPI_VERSION
 	if (g_SMAPI->GetSourceEngineBuild() == SOURCE_ENGINE_ORIGINAL)
@@ -106,12 +111,14 @@ void CHalfLife2::OnSourceModStartup(bool late)
 	{
 		g_pSharedChangeInfo = engine->GetSharedEdictChangeInfo();
 	}
+#endif
 }
 
 void CHalfLife2::OnSourceModAllInitialized()
 {
 	m_MsgTextMsg = g_UserMsgs.GetMessageIndex("TextMsg");
 	m_HinTextMsg = g_UserMsgs.GetMessageIndex("HintText");
+	m_SayTextMsg = g_UserMsgs.GetMessageIndex("SayText");
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
 }
@@ -123,10 +130,12 @@ bool CHalfLife2::IsOriginalEngine()
 }
 #endif
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 IChangeInfoAccessor *CBaseEdict::GetChangeAccessor()
 {
 	return engine->GetChangeAccessor( (const edict_t *)this );
 }
+#endif
 
 bool UTIL_FindInSendTable(SendTable *pTable, 
 						  const char *name,
@@ -296,6 +305,7 @@ typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset
 
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 {
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (g_pSharedChangeInfo != NULL)
 	{
 		if (offset)
@@ -308,6 +318,7 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 		}
 	}
 	else
+#endif
 	{
 		pEdict->m_fStateFlags |= FL_EDICT_CHANGED;
 	}
@@ -318,6 +329,31 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 	bf_write *pBitBuf = NULL;
 	cell_t players[] = {client};
 
+	if (dest == HUD_PRINTTALK)
+	{
+		const char *chat_saytext = g_pGameConf->GetKeyValue("ChatSayText");
+
+		/* Use SayText user message instead */
+		if (chat_saytext != NULL && strcmp(chat_saytext, "yes") == 0)
+		{
+			char buffer[192];
+			UTIL_Format(buffer, sizeof(buffer), "%s\1\n", msg);
+
+			if ((pBitBuf = g_UserMsgs.StartMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+			{
+				return false;
+			}
+
+			pBitBuf->WriteByte(0);
+			pBitBuf->WriteString(buffer);
+			pBitBuf->WriteByte(1);
+
+			g_UserMsgs.EndMessage();
+
+			return true;
+		}
+	}
+
 	if ((pBitBuf = g_UserMsgs.StartMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
 		return false;
@@ -325,6 +361,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 
 	pBitBuf->WriteByte(dest);
 	pBitBuf->WriteString(msg);
+
 	g_UserMsgs.EndMessage();
 
 	return true;
@@ -481,7 +518,7 @@ void CHalfLife2::PushCommandStack(const CCommand *cmd)
 	CachedCommandInfo info;
 
 	info.args = cmd;
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	strncopy(info.cmd, cmd->Arg(0), sizeof(info.cmd));
 #endif
 

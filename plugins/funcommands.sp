@@ -78,6 +78,8 @@ new UserMsg:g_FadeUserMsgId;
 // Serial Generator for Timer Safety
 new g_Serial_Gen = 0;
 
+new g_GameEngine = SOURCE_SDK_UNKNOWN;
+
 // Flags used in various timers
 #define DEFAULT_TIMER_FLAGS TIMER_REPEAT|TIMER_FLAG_NO_MAPCHANGE
 
@@ -100,6 +102,7 @@ public OnPluginStart()
 	
 	LoadTranslations("common.phrases");
 	LoadTranslations("funcommands.phrases");
+	g_GameEngine = GuessSDKVersion();
 	g_FadeUserMsgId = GetUserMessageId("Fade");
 
 	RegisterCvars( );

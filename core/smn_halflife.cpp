@@ -445,6 +445,10 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	{
 		return 10;
 	}
+	else if (version == SOURCE_ENGINE_DARKMESSIAH)
+	{
+		return 15;
+	}
 	else if (version == SOURCE_ENGINE_EPISODEONE)
 	{
 		return 20;

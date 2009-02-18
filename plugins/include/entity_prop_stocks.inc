@@ -170,8 +170,26 @@ enum RenderFx
  */
 stock GetEntityFlags(entity)
 {
-	return GetEntProp(entity, Prop_Data, "m_fFlags");
+	static bool:gotconfig = false;
+	static String:datamap[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_fFlags", datamap, sizeof(datamap));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(datamap, sizeof(datamap), "m_fFlags");
+		}
+		
+		gotconfig = true;
+	}
+	
+	return GetEntProp(entity, Prop_Data, datamap);
 }
+
 
 /**
  * Gets an entity's movetype.
@@ -182,8 +200,24 @@ stock GetEntityFlags(entity)
  */
 stock MoveType:GetEntityMoveType(entity)
 {
-	new offset = GetEntSendPropOffs(entity, "movetype");
-	return MoveType:GetEntData(entity, offset, 1);
+	static bool:gotconfig = false;
+	static String:datamap[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(datamap, sizeof(datamap), "m_MoveType");
+		}
+		
+		gotconfig = true;
+	}
+	
+	return MoveType:GetEntProp(entity, Prop_Data, datamap);
 }
 
 /**
@@ -196,8 +230,24 @@ stock MoveType:GetEntityMoveType(entity)
  */
 stock SetEntityMoveType(entity, MoveType:mt)
 {
-	new offset = GetEntSendPropOffs(entity, "movetype");
-	SetEntData(entity, offset, mt, 1, true);
+	static bool:gotconfig = false;
+	static String:datamap[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_MoveType", datamap, sizeof(datamap));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(datamap, sizeof(datamap), "m_MoveType");
+		}
+		
+		gotconfig = true;
+	}
+	
+	SetEntProp(entity, Prop_Data, datamap, mt);
 }
 
 /**
@@ -209,7 +259,24 @@ stock SetEntityMoveType(entity, MoveType:mt)
  */
 stock RenderMode:GetEntityRenderMode(entity)
 {
-	return RenderMode:GetEntProp(entity, Prop_Send, "m_nRenderMode", 1);
+	static bool:gotconfig = false;
+	static String:prop[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_nRenderMode");
+		}
+		
+		gotconfig = true;
+	}
+	
+	return RenderMode:GetEntProp(entity, Prop_Send, prop, 1);
 }
 
 /**
@@ -222,7 +289,24 @@ stock RenderMode:GetEntityRenderMode(entity)
  */
 stock SetEntityRenderMode(entity, RenderMode:mode)
 {
-	SetEntProp(entity, Prop_Send, "m_nRenderMode", mode, 1);
+	static bool:gotconfig = false;
+	static String:prop[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderMode", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_nRenderMode");
+		}
+		
+		gotconfig = true;
+	}
+	
+	SetEntProp(entity, Prop_Send, prop, mode, 1);
 }
 
 /**
@@ -234,7 +318,24 @@ stock SetEntityRenderMode(entity, RenderMode:mode)
  */
 stock RenderFx:GetEntityRenderFx(entity)
 {
-	return RenderFx:GetEntProp(entity, Prop_Send, "m_nRenderFX", 1);
+	static bool:gotconfig = false;
+	static String:prop[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_nRenderFX");
+		}
+		
+		gotconfig = true;
+	}
+	
+	return RenderFx:GetEntProp(entity, Prop_Send, prop, 1);
 }
 
 /**
@@ -247,7 +348,24 @@ stock RenderFx:GetEntityRenderFx(entity)
  */
 stock SetEntityRenderFx(entity, RenderFx:fx)
 {
-	SetEntProp(entity, Prop_Send, "m_nRenderFX", fx, 1);
+	static bool:gotconfig = false;
+	static String:prop[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_nRenderFX", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_nRenderFX");
+		}
+		
+		gotconfig = true;
+	}
+	
+	SetEntProp(entity, Prop_Send, prop, fx, 1);
 }
 
 /**
@@ -263,14 +381,35 @@ stock SetEntityRenderFx(entity, RenderFx:fx)
  */
 stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
 {
-	new offset = GetEntSendPropOffs(entity, "m_clrRender");
+	static bool:gotconfig = false;
+	static String:prop[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_clrRender", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_clrRender");
+		}
+		
+		gotconfig = true;
+	}
+	
+	new offset = GetEntSendPropOffs(entity, prop);
+	
+	if (offset <= 0)
+	{
+		ThrowError("SetEntityRenderColor not supported by this mod");
+	}
+	
 	SetEntData(entity, offset, r, 1, true);
 	SetEntData(entity, offset + 1, g, 1, true);
 	SetEntData(entity, offset + 2, b, 1, true);
 	SetEntData(entity, offset + 3, a, 1, true);
 }
-
-/* GuessSDKVersion */
 
 /**
  * Gets an entity's gravity.
@@ -281,7 +420,24 @@ stock SetEntityRenderColor(entity, r=255, g=255, b=255, a=255)
  */
 stock Float:GetEntityGravity(entity)
 {
-	return GetEntPropFloat(entity, Prop_Data, "m_flGravity");
+	static bool:gotconfig = false;
+	static String:datamap[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(datamap, sizeof(datamap), "m_flGravity");
+		}
+		
+		gotconfig = true;
+	}
+	
+	return GetEntPropFloat(entity, Prop_Data, datamap);
 }
 
 /**
@@ -294,7 +450,24 @@ stock Float:GetEntityGravity(entity)
  */
 stock SetEntityGravity(entity, Float:amount)
 {
-	SetEntPropFloat(entity, Prop_Data, "m_flGravity", amount);
+	static bool:gotconfig = false;
+	static String:datamap[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_flGravity", datamap, sizeof(datamap));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(datamap, sizeof(datamap), "m_flGravity");
+		}
+		
+		gotconfig = true;
+	}
+	
+	SetEntPropFloat(entity, Prop_Data, datamap, amount);
 }
 
 /**
@@ -307,7 +480,50 @@ stock SetEntityGravity(entity, Float:amount)
  */
 stock SetEntityHealth(entity, amount)
 {
-	SetEntProp(entity, Prop_Send, "m_iHealth", amount);
+	static bool:gotconfig = false;
+	static String:prop[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_iHealth", prop, sizeof(prop));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(prop, sizeof(prop), "m_iHeath");
+		}
+		
+		gotconfig = true;
+	}
+	
+	decl String:cls[64];
+	new PropFieldType:type;
+	new offset;
+	
+	if (!GetEntityNetClass(ent, cls, sizeof(cls)))
+	{
+		ThrowError("SetEntityHealth not supported by this mod: Could not get serverclass name");
+		return;
+	}
+	
+	offset = FindSendPropInfo(cls, prop, type);
+	
+	if (offset <= 0)
+	{
+		ThrowError("SetEntityHealth not supported by this mod");
+		return;
+	}
+	
+	/* Dark Messiah uses a float for the health instead an integer */
+	if (type == PropField_Float)
+	{
+		SetEntDataFloat(entity, offset, float(amount));
+	}
+	else
+	{
+		SetEntProp(entity, prop, amount);
+	}
 }
 
 /**
@@ -320,5 +536,22 @@ stock SetEntityHealth(entity, amount)
  */
 stock GetClientButtons(client)
 {
-	return GetEntProp(client, Prop_Data, "m_nButtons");
+	static bool:gotconfig = false;
+	static String:datamap[32];
+	
+	if (!gotconfig)
+	{
+		new Handle:gc = LoadGameConfigFile("core.games");
+		new bool:exists = GameConfGetKeyValue(gc, "m_nButtons", datamap, sizeof(datamap));
+		CloseHandle(gc);
+		
+		if (!exists)
+		{
+			strcopy(datamap, sizeof(datamap), "m_nButtons");
+		}
+		
+		gotconfig = true;
+	}
+	
+	return GetEntProp(client, Prop_Data, datamap);
 }

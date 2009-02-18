@@ -420,7 +420,7 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level)
 
 CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 
@@ -462,7 +462,7 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 
 CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text file")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 
@@ -517,7 +517,7 @@ void _ignore_invalid_parameter(
 
 CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 
@@ -605,7 +605,6 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 		fprintf(fp,"%s - %s\n",sclass->GetName(), dict->m_Factories.GetElementName(i));
 
 		typedescription_t *datamap = gamehelpers->FindInDataMap(gamehelpers->GetDataMap(entity->GetBaseEntity()), "m_iEFlags");
-		
 		int *eflags = (int *)((char *)entity->GetBaseEntity() + datamap->fieldOffset[TD_OFFSET_NORMAL]);
 		*eflags |= (1<<0); // EFL_KILLME
 	}
@@ -710,7 +709,7 @@ void UTIL_DrawDataTable(FILE *fp, datamap_t *pMap, int level)
 
 CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 

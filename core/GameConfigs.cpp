@@ -105,6 +105,8 @@ static bool DoesEngineMatch(const char *value)
 {
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (strcmp(value, "original") == 0)
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+	if (strcmp(value, "darkmessiah") == 0)
 #elif SOURCE_ENGINE == SE_ORANGEBOX
 	if (strcmp(value, "orangebox") == 0)
 #elif SOURCE_ENGINE == SE_LEFT4DEAD

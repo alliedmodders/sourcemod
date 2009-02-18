@@ -37,6 +37,7 @@
 
 #define SOURCE_SDK_UNKNOWN			0		/**< Could not determine the engine version */
 #define SOURCE_SDK_ORIGINAL			10		/**< Original Source engine (still used by "The Ship") */
+#define SOURCE_SDK_DARKMESSIAH		15		/**< Modified version of original engine used by Dark Messiah (no SDK) */
 #define SOURCE_SDK_EPISODE1			20		/**< SDK+Engine released after Episode 1 */
 #define SOURCE_SDK_EPISODE2			30		/**< SDK+Engine released after Episode 2/Orange Box */
 #define SOURCE_SDK_LEFT4DEAD		40		/**< Engine released after Left 4 Dead (no SDK yet) */

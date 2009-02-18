@@ -47,7 +47,7 @@ CON_COMMAND(sm_print_telist, "Prints the temp entity list")
 
 CON_COMMAND(sm_dump_teprops, "Dumps tempentity props to a file")
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 	CCommand args;
 #endif
 	if (!g_TEManager.IsAvailable())

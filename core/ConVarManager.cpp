@@ -41,7 +41,7 @@
 
 ConVarManager g_ConVarManager;
 
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
 #define CallGlobalChangeCallbacks	CallGlobalChangeCallback
 #endif
 
@@ -51,8 +51,10 @@ SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar 
 SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *);
 #endif
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
 SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
+#endif
 
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
@@ -141,6 +143,7 @@ void ConVarManager::OnSourceModShutdown()
 	}
 	convar_cache.clear();
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	/* Unhook things */
 	if (m_bIsDLLQueryHooked)
 	{
@@ -152,6 +155,7 @@ void ConVarManager::OnSourceModShutdown()
 		SH_REMOVE_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
 		m_bIsVSPQueryHooked = false;
 	}
+#endif
 
 	SH_REMOVE_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
@@ -189,8 +193,10 @@ void ConVarManager::OnSourceModVSPReceived()
 	}
 #endif
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	SH_ADD_HOOK_MEMFUNC(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, this, &ConVarManager::OnQueryCvarValueFinished, false);
 	m_bIsVSPQueryHooked = true;
+#endif
 }
 
 bool convar_cache_lookup(const char *name, ConVarInfo **pVar)
@@ -528,8 +534,9 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 
 QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char *name, IPluginFunction *pCallback, Handle_t hndl)
 {
-	QueryCvarCookie_t cookie;
+	QueryCvarCookie_t cookie = 0;
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	/* Call StartQueryCvarValue() in either the IVEngineServer or IServerPluginHelpers depending on situation */
 	if (m_bIsDLLQueryHooked)
 	{
@@ -546,6 +553,7 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 
 	ConVarQuery query = {cookie, pCallback, hndl};
 	m_ConVarQueries.push_back(query);
+#endif
 
 	return cookie;
 }
@@ -639,6 +647,7 @@ bool ConVarManager::IsQueryingSupported()
 	return (m_bIsDLLQueryHooked || m_bIsVSPQueryHooked);
 }
 
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	IPluginFunction *pCallback = NULL;
@@ -680,6 +689,7 @@ void ConVarManager::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *
 		m_ConVarQueries.erase(iter);
 	}
 }
+#endif
 
 HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar)
 {

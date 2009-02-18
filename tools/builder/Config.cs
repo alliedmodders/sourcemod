@@ -4,6 +4,7 @@ using System.Text;
 
 namespace builder
 {
+	[Flags]
 	public enum BasePlatform
 	{
 		Platform_Windows,

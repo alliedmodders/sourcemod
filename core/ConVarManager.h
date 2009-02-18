@@ -42,6 +42,11 @@
 #include <compat_wrappers.h>
 #include "concmd_cleaner.h"
 
+#if SOURCE_ENGINE == SE_DARKMESSIAH
+class EQueryCvarValueStatus;
+typedef int QueryCvarCookie_t;
+#endif
+
 using namespace SourceHook;
 
 class IConVarChangeListener
@@ -149,8 +154,10 @@ private:
 	/**
 	 * Callback for when StartQueryCvarValue() has finished.
 	 */
+#if SOURCE_ENGINE != SE_DARKMESSIAH
 	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
 	                              const char *cvarName, const char *cvarValue);
+#endif
 private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;
