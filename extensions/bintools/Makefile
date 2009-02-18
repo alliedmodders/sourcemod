@@ -31,7 +31,7 @@ ifeq "$(ENGINE)" "original"
 	HL2SDK = $(HL2SDK_ORIG)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/linux_sdk
-	CFLAGS += -DSOURCE_ENGINE=2
+	CFLAGS += -DSOURCE_ENGINE=1
 	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	INCLUDE += -I$(MMSOURCE17)/core -I$(MMSOURCE17)/core/sourcehook
