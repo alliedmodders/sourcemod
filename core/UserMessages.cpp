@@ -348,6 +348,8 @@ void UserMessages::OnMessageEnd_Post()
 	MsgIter iter;
 	ListenerInfo *pInfo;
 
+	m_InHook = false;
+
 	pList = &m_msgIntercepts[m_CurId];
 	for (iter=pList->begin(); iter!=pList->end(); )
 	{
@@ -366,8 +368,6 @@ void UserMessages::OnMessageEnd_Post()
 		pInfo->IsHooked = false;
 		iter++;
 	}
-
-	m_InHook = false;
 
 	pList = &m_msgHooks[m_CurId];
 	for (iter=pList->begin(); iter!=pList->end(); )
