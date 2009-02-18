@@ -768,7 +768,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 
 		/* Only allow .txt files */
 		int len = strlen(curFile);
-		if (len > 4 && strcmp(curFile[len-4], ".txt") != 0)
+		if (len > 4 && strcmp(&curFile[len-4], ".txt") != 0)
 		{
 			customDir->NextEntry();
 			continue;	
@@ -777,14 +777,14 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 		UTIL_Format(path, sizeof(path), "%s/custom/%s", m_File, curFile);
 		if (!EnterFile(path, error, maxlength))
 		{
-			g_LibSys->CloseDirectory(customDir);
+			g_LibSys.CloseDirectory(customDir);
 			return false;
 		}
 
 		customDir->NextEntry();
 	}
 
-	g_LibSys->CloseDirectory(customDir);
+	g_LibSys.CloseDirectory(customDir);
 	return true;
 }
 
