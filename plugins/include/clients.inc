@@ -708,3 +708,17 @@ native KickClientEx(client, const String:format[]="", any:...);
  */
 native ChangeClientTeam(client, team);
 
+/**
+ * Returns the clients unique serial identifier.
+ *
+ * @return	Serial number.
+ */
+native GetClientSerial(client);
+
+/**
+ * Returns the client index by its serial number.
+ *
+ * @return				Client index, or 0 for invalid serial.
+ */
+native GetClientFromSerial(serial);
+

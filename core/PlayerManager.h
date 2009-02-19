@@ -51,6 +51,16 @@ using namespace SourceHook;
 
 #define MIN_API_FOR_ADMINCALLS		7
 
+union serial_t
+{
+	uint32_t   value;
+	struct
+	{
+		uint8_t  index;
+		uint32_t serial : 24;
+	} bits;
+};
+
 class CPlayer : public IGamePlayer
 {
 	friend class PlayerManager;
@@ -74,6 +84,7 @@ public:
 	int GetUserId();
 	bool RunAdminCacheChecks();
 	void NotifyPostAdminChecks();
+	unsigned int GetSerial();
 public:
 	void DoBasicAdminChecks();
 	bool IsInKickQueue();
@@ -107,6 +118,7 @@ private:
 	unsigned int m_LangId;
 	int m_UserId;
 	bool m_bFakeClient;
+	serial_t m_Serial;
 };
 
 class PlayerManager : 
@@ -156,6 +168,7 @@ public: //IPlayerManager
 	void RegisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
 	void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
 	void ProcessCommandTarget(cmd_target_info_t *info);
+	int GetClientFromSerial(unsigned int serial);
 public: // IConVarChangeListener
 	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 public:

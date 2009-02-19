@@ -81,6 +81,8 @@ extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelega
 
 ConCommand *maxplayersCmd = NULL;
 
+unsigned int g_PlayerSerialCount = 0;
+
 class KickPlayerTimer : public ITimedEvent
 {
 public:
@@ -1356,6 +1358,28 @@ void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
 	}
 }
 
+int PlayerManager::GetClientFromSerial(unsigned int serial)
+{
+	serial_t s;
+	s.value = serial;
+
+	int client = s.bits.index;
+
+	IGamePlayer *pPlayer = GetGamePlayer(client);
+
+	if (!pPlayer)
+	{
+		return 0;
+	}
+
+	if (serial == pPlayer->GetSerial())
+	{
+		return client;
+	}
+
+	return 0;
+}
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void CmdMaxplayersCallback(const CCommand &command)
 {
@@ -1396,6 +1420,9 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_pEdict = pEntity;
 	m_iIndex = IndexOfEdict(pEntity);
 	m_LangId = g_Translator.GetServerLanguage();
+
+	m_Serial.bits.index = m_iIndex;
+	m_Serial.bits.serial = g_PlayerSerialCount++;
 
 	char ip2[24], *ptr;
 	strncopy(ip2, ip, sizeof(ip2));
@@ -1759,4 +1786,9 @@ int CPlayer::GetLifeState()
 	{
 		return PLAYER_LIFE_DEAD;
 	}
+}
+
+unsigned int CPlayer::GetSerial()
+{
+	return m_Serial.value;
 }

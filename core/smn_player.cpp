@@ -1551,6 +1551,24 @@ static cell_t FormatActivitySource(IPluginContext *pContext, const cell_t *param
 	return bShowActivity ? 1 : 0;
 }
 
+static cell_t sm_GetClientSerial(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+
+	return pPlayer->GetSerial();
+}
+
+static cell_t sm_GetClientFromSerial(IPluginContext *pContext, const cell_t *params)
+{
+	return g_Players.GetClientFromSerial(params[1]);
+}
+
 REGISTER_NATIVES(playernatives)
 {
 	{"AddUserFlags",			AddUserFlags},
@@ -1604,6 +1622,8 @@ REGISTER_NATIVES(playernatives)
 	{"IsClientInKickQueue",		IsClientInKickQueue},
 	{"ProcessTargetString",		ProcessTargetString},
 	{"FormatActivitySource",	FormatActivitySource},
+	{"GetClientSerial",			sm_GetClientSerial},
+	{"GetClientFromSerial",		sm_GetClientFromSerial},
 	{NULL,						NULL}
 };
 

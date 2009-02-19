@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	8
+#define SMINTERFACE_PLAYERMANAGER_VERSION	9
 
 struct edict_t;
 class IPlayerInfo;
@@ -183,6 +183,13 @@ namespace SourceMod
 		 * call it at various times).
 		 */
 		virtual void NotifyPostAdminChecks() =0;
+
+		/**
+		 * @brief Returns the clients unique serial identifier.
+		 *
+		 * @return	Serial number.
+		 */
+		virtual unsigned int GetSerial() =0;
 	};
 
 	/**
@@ -481,6 +488,13 @@ namespace SourceMod
 		 * @param pHandler		Pointer to an ICommandTargetProcessor instance.
 		 */
 		virtual void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler) =0;
+
+		/**
+		 * @brief Returns the client index by its serial number.
+		 *
+		 * @return				Client index, or 0 for invalid serial.
+		 */
+		virtual int GetClientFromSerial(unsigned int serial) =0;
 	};
 }
 
