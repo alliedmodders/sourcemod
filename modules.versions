@@ -73,4 +73,7 @@ folder = extensions/tf2
 in = svn_version.tpl
 out = svn_version.h
 
-
+[clientprefs]
+folder = extensions/clientprefs
+in = svn_version.tpl
+out = svn_version.h
