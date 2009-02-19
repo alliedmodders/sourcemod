@@ -51,7 +51,7 @@ void TQueryOp::RunThinkPart()
 
 		case Query_SelectData:
 		{
-			g_CookieManager.ClientConnectCallback(m_userid, m_pResult);
+			g_CookieManager.ClientConnectCallback(m_serial, m_pResult);
 			break;
 		}
 
@@ -84,10 +84,10 @@ void TQueryOp::RunThreadPart()
 		if (!BindParamsAndRun())
 		{
 			g_pSM->LogError(myself, 
-							"Failed SQL Query, Error: \"%s\" (Query id %i - userid %i)", 
+							"Failed SQL Query, Error: \"%s\" (Query id %i - serial %i)", 
 							m_database->GetError(),
 							m_type, 
-							m_userid);
+							m_serial);
 		}
 
 		m_database->UnlockFromFullAtomicOperation();
@@ -115,10 +115,10 @@ void TQueryOp::Destroy()
 	delete this;
 }
 
-TQueryOp::TQueryOp(enum querytype type, int userid)
+TQueryOp::TQueryOp(enum querytype type, int serial)
 {
 	m_type = type;
-	m_userid = userid;
+	m_serial = serial;
 	m_database = NULL;
 	m_insertId = -1;
 	m_pResult = NULL;

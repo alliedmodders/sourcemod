@@ -205,7 +205,7 @@ void CookieManager::OnClientAuthorized(int client, const char *authstring)
 
 	connected[client] = true;
 
-	TQueryOp *op = new TQueryOp(Query_SelectData, player->GetUserId());
+	TQueryOp *op = new TQueryOp(Query_SelectData, player->GetSerial());
 	strcpy(op->m_params.steamId, authstring);
 
 	g_ClientPrefs.AddQueryToQueue(op);
@@ -268,13 +268,13 @@ void CookieManager::OnClientDisconnecting(int client)
 	}
 }
 
-void CookieManager::ClientConnectCallback(int userid, IQuery *data)
+void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 {
 	int client;
 	IResultSet *results;
 
 	/* Check validity of client */
-	if ((client = playerhelpers->GetClientOfUserId(userid)) == 0)
+	if ((client = playerhelpers->GetClientFromSerial(serial)) == 0)
 	{
 		return;
 	}
