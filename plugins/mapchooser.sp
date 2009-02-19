@@ -469,8 +469,19 @@ public Event_PlayerDeath(Handle:event, const String:name[], bool:dontBroadcast)
 		return;
 	}
 
+	if (g_MapVoteCompleted)
+	{
+		return;
+	}
+
 	new fragger = GetClientOfUserId(GetEventInt(event, "attacker"));
-	if (fragger && GetClientFrags(fragger) >= (GetConVarInt(g_Cvar_Fraglimit) - GetConVarInt(g_Cvar_StartFrags)))
+
+	if (!fragger)
+	{
+		return;
+	}
+
+	if (GetClientFrags(fragger) >= (GetConVarInt(g_Cvar_Fraglimit) - GetConVarInt(g_Cvar_StartFrags)))
 	{
 		InitiateVote(MapChange_MapEnd, INVALID_HANDLE);
 	}
