@@ -144,6 +144,6 @@ private:
 
 extern CHalfLife2 g_HL2;
 
-inline edict_t *GetEntity(cell_t num, CBaseEntity **pData);
+edict_t *GetEntity(cell_t num, CBaseEntity **pData);
 
 #endif //_INCLUDE_SOURCEMOD_CHALFLIFE2_H_
