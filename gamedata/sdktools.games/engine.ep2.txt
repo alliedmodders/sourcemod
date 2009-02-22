@@ -267,7 +267,7 @@
 			"InfoChanged"
 			{
 				"windows"	"140"
-				"linux"		"152"
+				"linux"		"140"
 			}
 		}
 	}
