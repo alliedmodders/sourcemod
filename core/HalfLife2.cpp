@@ -576,3 +576,59 @@ void CHalfLife2::ProcessDelayedKicks()
 		player->Kick(info.buffer);
 	}
 }
+
+edict_t *CHalfLife2::EdictOfIndex(int index)
+{
+	return ::PEntityOfEntIndex(index);
+}
+
+int CHalfLife2::IndexOfEdict(edict_t *pEnt)
+{
+	return ::IndexOfEdict(pEnt);
+}
+
+edict_t *CHalfLife2::GetHandleEntity(CBaseHandle &hndl)
+{
+	if (!hndl.IsValid())
+	{
+		return NULL;
+	}
+
+	int index = hndl.GetEntryIndex();
+
+	edict_t *pStoredEdict;
+	CBaseEntity *pStoredEntity;
+
+	pStoredEdict = GetEntity(index, &pStoredEntity);
+
+	if (pStoredEdict == NULL || pStoredEntity == NULL)
+	{
+		return NULL;
+	}
+
+	IServerEntity *pSE = pStoredEdict->GetIServerEntity();
+
+	if (pSE == NULL)
+	{
+		return NULL;
+	}
+
+	if (pSE->GetRefEHandle() != hndl)
+	{
+		return NULL;
+	}
+
+	return pStoredEdict;
+}
+
+void CHalfLife2::SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt)
+{
+	IServerEntity *pEntOther = pEnt->GetIServerEntity();
+
+	if (pEntOther == NULL)
+	{
+		return;
+	}
+
+	hndl.Set(pEntOther);
+}

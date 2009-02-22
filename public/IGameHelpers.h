@@ -40,9 +40,10 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		2
+#define SMINTERFACE_GAMEHELPERS_VERSION		3
 
 class CBaseEntity;
+class CBaseHandle;
 class SendProp;
 class ServerClass;
 struct edict_t;
@@ -145,6 +146,39 @@ namespace SourceMod
 		virtual bool FindSendPropInfo(const char *classname,
 			const char *offset,
 			sm_sendprop_info_t *info) =0;
+
+		/**
+		 * @brief Converts an entity index into an edict pointer.
+		 *
+		 * @param index			Entity Index.
+		 * @return				Edict pointer or NULL on failure.
+		 */
+		virtual edict_t *EdictOfIndex(int index) =0;
+
+		/**
+		* @brief Converts an edict pointer into an entity index.
+		*
+		* @param index			Edict Pointer.
+		* @return				Entity index or -1 on failure.
+		*/
+		virtual int IndexOfEdict(edict_t *pEnt) =0;
+
+		/**
+		 * @brief Retrieves the edict pointer from a CBaseHandle object.
+		 *
+		 * @param hndl			CBaseHandle object.
+		 * @return				Edict pointer or NULL on failure.
+		 */
+		virtual edict_t *GetHandleEntity(CBaseHandle &hndl) =0;
+
+		/**
+		 * @brief Sets the edict pointer in a CBaseHandle object.
+		 *
+		 * @param hndl			CBaseHandle object.
+		 * @param pEnt			Edict pointer.
+		 * @noreturn
+		 */
+		virtual void SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt) =0;
 	};
 }
 
