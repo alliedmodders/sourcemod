@@ -72,7 +72,7 @@ inline edict_t *GetEdict(cell_t num)
 	return pEdict;
 }
 
-inline edict_t *GetEntity(cell_t num, CBaseEntity **pData)
+edict_t *GetEntity(cell_t num, CBaseEntity **pData)
 {
 	edict_t *pEdict = PEntityOfEntIndex(num);
 	if (!pEdict || pEdict->IsFree())
