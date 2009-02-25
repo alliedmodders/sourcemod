@@ -17,6 +17,8 @@
 extern "C" {
 #endif
 
+void check_thunks(unsigned char *dest, unsigned char *pc);
+
 //if dest is NULL, returns minimum number of bytes needed to be copied
 //if dest is not NULL, it will copy the bytes to dest as well as fix CALLs and JMPs
 //http://www.devmaster.net/forums/showthread.php?t=2311

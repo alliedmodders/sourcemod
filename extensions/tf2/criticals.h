@@ -40,8 +40,6 @@
 void InitialiseDetours();
 void RemoveDetours();
 
-bool TempDetour(void *pWeapon);
-
 extern IForward *g_critForward;
 
 extern IServerGameEnts *gameents;

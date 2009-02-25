@@ -26,7 +26,7 @@
 * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
 * or <http://www.sourcemod.net/license.php>.
 *
-* Version: $Id$
+* Version: $Id: detours.h 257 2008-09-23 03:12:13Z pred $
 */
 
 #ifndef _INCLUDE_SOURCEMOD_DETOURS_H_
@@ -40,8 +40,102 @@
 /**
  * CDetours class for SourceMod Extensions by pRED*
  * detourhelpers.h entirely stolen from CSS:DM and were written by BAILOPAN (I assume).
- * asm.h/c from devmaster.net (thanks cybermind)
+ * asm.h/c from devmaster.net (thanks cybermind) edited by pRED* to handle gcc -fPIC thunks correctly
+ * Concept by Nephyrin Zey (http://www.doublezen.net/) and Windows Detour Library (http://research.microsoft.com/sn/detours/)
+ * Member function pointer ideas by Don Clugston (http://www.codeproject.com/cpp/FastDelegate.asp)
  */
+
+#define DETOUR_MEMBER_CALL(name) (this->*name##_Actual)
+#define DETOUR_STATIC_CALL(name) (name##_Actual)
+
+#define DETOUR_DECL_STATIC0(name, ret) \
+ret (*name##_Actual)(void) = NULL; \
+ret name(void)
+
+#define DETOUR_DECL_STATIC1(name, ret, p1type, p1name) \
+ret (*name##_Actual)(p1type) = NULL; \
+ret name(p1type p1name)
+
+#define DETOUR_DECL_STATIC4(name, ret, p1type, p1name, p2type, p2name, p3type, p3name, p4type, p4name) \
+ret (*name##_Actual)(p1type, p2type, p3type, p4type) = NULL; \
+ret name(p1type p1name, p2type p2name, p3type p3name, p4type p4name)
+
+#define DETOUR_DECL_MEMBER0(name, ret) \
+class name##Class \
+{ \
+public: \
+	ret name(); \
+	static ret (name##Class::* name##_Actual)(void); \
+}; \
+ret (name##Class::* name##Class::name##_Actual)(void) = NULL; \
+ret name##Class::name()
+
+#define DETOUR_DECL_MEMBER1(name, ret, p1type, p1name) \
+class name##Class \
+{ \
+public: \
+	ret name(p1type p1name); \
+	static ret (name##Class::* name##_Actual)(p1type); \
+}; \
+ret (name##Class::* name##Class::name##_Actual)(p1type) = NULL; \
+ret name##Class::name(p1type p1name)
+
+#define DETOUR_DECL_MEMBER2(name, ret, p1type, p1name, p2type, p2name) \
+class name##Class \
+{ \
+public: \
+	ret name(p1type p1name, p2type p2name); \
+	static ret (name##Class::* name##_Actual)(p1type, p2type); \
+}; \
+ret (name##Class::* name##Class::name##_Actual)(p1type, p2type) = NULL; \
+ret name##Class::name(p1type p1name, p2type p2name)
+
+#define DETOUR_DECL_MEMBER3(name, ret, p1type, p1name, p2type, p2name, p3type, p3name) \
+class name##Class \
+{ \
+public: \
+	ret name(p1type p1name, p2type p2name, p3type p3name); \
+	static ret (name##Class::* name##_Actual)(p1type, p2type, p3type); \
+}; \
+ret (name##Class::* name##Class::name##_Actual)(p1type, p2type, p3type) = NULL; \
+ret name##Class::name(p1type p1name, p2type p2name, p3type p3name)
+
+#define DETOUR_DECL_MEMBER4(name, ret, p1type, p1name, p2type, p2name, p3type, p3name, p4type, p4name) \
+class name##Class \
+{ \
+public: \
+        ret name(p1type p1name, p2type p2name, p3type p3name, p4type p4name); \
+        static ret (name##Class::* name##_Actual)(p1type, p2type, p3type, p4type); \
+}; \
+ret (name##Class::* name##Class::name##_Actual)(p1type, p2type, p3type, p4type) = NULL; \
+ret name##Class::name(p1type p1name, p2type p2name, p3type p3name, p4type p4name)
+
+
+#define GET_MEMBER_CALLBACK(name) (void *)GetCodeAddress(&name##Class::name)
+#define GET_MEMBER_TRAMPOLINE(name) (void **)(&name##Class::name##_Actual)
+
+#define GET_STATIC_CALLBACK(name) (void *)&name
+#define GET_STATIC_TRAMPOLINE(name) (void **)&name##_Actual
+
+#define DETOUR_CREATE_MEMBER(name, gamedata) CDetourManager::CreateDetour(GET_MEMBER_CALLBACK(name), GET_MEMBER_TRAMPOLINE(name), gamedata);
+#define DETOUR_CREATE_STATIC(name, gamedata) CDetourManager::CreateDetour(GET_STATIC_CALLBACK(name), GET_STATIC_TRAMPOLINE(name), gamedata);
+
+
+class GenericClass {};
+typedef void (GenericClass::*VoidFunc)();
+
+inline void *GetCodeAddr(VoidFunc mfp)
+{
+	return *(void **)&mfp;
+}
+
+/**
+ * Converts a member function pointer to a void pointer.
+ * This relies on the assumption that the code address lies at mfp+0
+ * This is the case for both g++ and later MSVC versions on non virtual functions but may be different for other compilers
+ * Based on research by Don Clugston : http://www.codeproject.com/cpp/FastDelegate.asp
+ */
+#define GetCodeAddress(mfp) GetCodeAddr(reinterpret_cast<VoidFunc>(mfp))
 
 class CDetourManager;
 
@@ -57,11 +151,12 @@ public:
 	void EnableDetour();
 	void DisableDetour();
 
+	void Destroy();
+
 	friend class CDetourManager;
 
 protected:
-	CDetour(void *callbackfunction, size_t paramsize, const char *signame);
-	~CDetour();
+	CDetour(void *callbackfunction, void **trampoline, const char *signame);
 
 	bool Init(ISourcePawnEngine *spengine, IGameConfig *gameconf);
 private:
@@ -74,42 +169,16 @@ private:
 	bool detoured;
 
 	patch_t detour_restore;
+	/* Address of the detoured function */
 	void *detour_address;
+	/* Address of the allocated trampoline function */
+	void *detour_trampoline;
+	/* Address of the callback handler */
 	void *detour_callback;
-
+	/* The function pointer used to call our trampoline */
+	void **trampoline;
+	
 	const char *signame;
-
-	void *callbackfunction;
-
-	size_t paramsize;
-
-	ISourcePawnEngine *spengine;
-	IGameConfig *gameconf;
-};
-
-class CBlocker
-{
-public:
-	void EnableBlock(int returnValue = 0);
-	void DisableBlock();
-
-	friend class CDetourManager;
-
-protected:
-	CBlocker(const char *signame, bool isVoid);
-	~CBlocker();
-
-	bool Init(ISourcePawnEngine *spengine, IGameConfig *gameconf);
-
-private:
-	bool isValid;
-	bool isEnabled;
-	bool isVoid;
-	patch_t block_restore;
-	void *block_address;
-
-	const char *block_sig;
-
 	ISourcePawnEngine *spengine;
 	IGameConfig *gameconf;
 };
@@ -118,25 +187,13 @@ class CDetourManager
 {
 public:
 
-	/**
-	 * Return Types for Detours
-	 */
-	enum DetourReturn
-	{
-		DetourReturn_Ignored = 0,		/** Ignore our result and let the original function run */
-		DetourReturn_Override = 1,		/** Block the original function from running and use our return value */
-	};
-
 	static void Init(ISourcePawnEngine *spengine, IGameConfig *gameconf);
 
 	/**
 	 * Creates a new detour
-	 * @param callbackfunction			Void pointer to your detour callback function. This should be a static function.
-	 *									It should have pointer to the thisptr as the first param and then the same params 
-	 *									as the original function. Use void * for unknown types.
-	 * @param paramsize					This is usually the number of params the function has (not including thisptr). If the function
-	 *									passes complex types by value you need to add the sizeof() the type (aligned to 4 bytes).
-	 *									Ie: passing something of size 8 would count as 2 in the param count.
+	 *
+	 * @param callbackfunction			Void pointer to your detour callback function.
+	 * @param trampoline				Address of the trampoline pointer
 	 * @param signame					Section name containing a signature to fetch from the gamedata file.
 	 * @return							A new CDetour pointer to control your detour.
 	 *
@@ -144,37 +201,34 @@ public:
 	 *
 	 * CBaseServer::ConnectClient(netadr_s &, int, int, int, char  const*, char  const*, char  const*, int)
 	 *
-	 * Callback: 
-	 * DetourReturn ConnectClientDetour(void *CBaseServer, void *netaddr_s, int something, int something2, int something3, char  const* name, char  const* pass, const char* steamcert, int len);
+	 * Define a new class with the required function and a member function pointer to the same type:
+	 *
+	 * class CBaseServerDetour
+	 * {
+	 * public:
+	 *		 bool ConnectClient(void *netaddr_s, int, int, int, char  const*, char  const*, char  const*, int);
+	 *		 static bool (CBaseServerDetour::* ConnectClient_Actual)(void *netaddr_s, int, int, int, char  const*, char  const*, char  const*, int);
+	 * }
+	 *
+	 *	void *callbackfunc = GetCodeAddress(&CBaseServerDetour::ConnectClient);
+	 *	void **trampoline = (void **)(&CBaseServerDetour::ConnectClient_Actual);
 	 *
 	 * Creation:
-	 * CDetourManager::CreateDetour((void *)&ConnectClientDetour, 8, "ConnectClient");
-	 */
-	static CDetour *CreateDetour(void *callbackfunction, size_t paramsize, const char *signame);
-
-	/**
-	 * Deletes a detour
-	 */
-	static void DeleteDetour(CDetour *detour);
-
-	/**
-	 * Creates a function blocker. This is slightly faster than a detour because it avoids a call.
+	 * CDetourManager::CreateDetour(callbackfunc,  trampoline, "ConnectClient");
 	 *
-	 * @param signame					Section name containing a signature to fetch from the gamedata file.
-	 * @param isVoid					Specifies if the function can return void.
+	 * Usage:
+	 *
+	 * CBaseServerDetour::ConnectClient(void *netaddr_s, int, int, int, char  const*, char  const*, char  const*, int)
+	 * {
+	 *			//pre hook code
+	 *			bool result = (this->*ConnectClient_Actual)(netaddr_s, rest of params);
+	 *			//post hook code
+	 *			return result;
+	 * }
+	 *
+	 * Note we changed the netadr_s reference into a void* to avoid needing to define the type
 	 */
-	static CBlocker *CreateFunctionBlock(const char *signame, bool isVoid);
-
-	/**
-	 * Delete a function blocker.
-	 */
-	static void DeleteFunctionBlock(CBlocker *block);
-
-
-	/**
-	 * Global DetourReturn value to use for the current hook
-	 */
-	static int returnValue;
+	static CDetour *CreateDetour(void *callbackfunction, void **trampoline, const char *signame);
 
 	friend class CBlocker;
 	friend class CDetour;
@@ -183,14 +237,5 @@ private:
 	static ISourcePawnEngine *spengine;
 	static IGameConfig *gameconf;
 };
-
-typedef bool DetourReturn;
-
-#define DETOUR_RESULT_IGNORED false
-#define DETOUR_RESULT_OVERRIDE true
-
-#define SET_DETOUR_RETURN_VALUE(value)		CDetourManager::returnValue=(int)value
-#define RETURN_DETOUR(result)				return result
-#define RETURN_DETOUR_VALUE(result,value)	do { SET_DETOUR_RETURN_VALUE(value); return (result); } while(0)
 
 #endif // _INCLUDE_SOURCEMOD_DETOURS_H_
