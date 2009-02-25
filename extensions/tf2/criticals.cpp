@@ -39,40 +39,6 @@ CDetour *calcIsAttackCriticalKnifeDetour = NULL;
 
 IForward *g_critForward = NULL;
 
-void InitialiseDetours()
-{
-	calcIsAttackCriticalDetour = CDetourManager::CreateDetour((void *)&TempDetour, 0, "CalcCritical");
-	calcIsAttackCriticalMeleeDetour = CDetourManager::CreateDetour((void *)&TempDetour, 0, "CalcCriticalMelee");
-	calcIsAttackCriticalKnifeDetour = CDetourManager::CreateDetour((void *)&TempDetour, 0, "CalcCriticalKnife");
-
-	bool HookCreated = false;
-
-	if (calcIsAttackCriticalDetour != NULL)
-	{
-		calcIsAttackCriticalDetour->EnableDetour();
-		HookCreated = true;
-	}
-
-	if (calcIsAttackCriticalMeleeDetour != NULL)
-	{
-		calcIsAttackCriticalMeleeDetour->EnableDetour();
-		HookCreated = true;
-	}
-
-	if (calcIsAttackCriticalKnifeDetour != NULL)
-	{
-		calcIsAttackCriticalKnifeDetour->EnableDetour();
-		HookCreated = true;
-	}
-
-	if (!HookCreated)
-	{
-		g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
-		return;
-	}
-
-}
-
 int CheckBaseHandle(CBaseHandle &hndl)
 {
 	if (!hndl.IsValid())
@@ -106,9 +72,9 @@ int CheckBaseHandle(CBaseHandle &hndl)
 	return index;
 }
 
-DetourReturn TempDetour(void *pWeapon)
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 {
-	edict_t *pEdict = gameents->BaseEntityToEdict((CBaseEntity *)pWeapon);
+	edict_t *pEdict = gameents->BaseEntityToEdict((CBaseEntity *)this);
 	
 	if (!pEdict)
 	{
@@ -132,7 +98,7 @@ DetourReturn TempDetour(void *pWeapon)
 
 	int returnValue=0;
 	
-	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pWeapon + info.actual_offset);
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)this + info.actual_offset);
 	int index = CheckBaseHandle(hndl);
 
 	g_critForward->PushCell(index); //Client index
@@ -146,18 +112,52 @@ DetourReturn TempDetour(void *pWeapon)
 
 	if (result)
 	{
-		RETURN_DETOUR_VALUE(DETOUR_RESULT_OVERRIDE, returnValue);
+		return !!returnValue;
 	}
 	else
 	{
-		RETURN_DETOUR_VALUE(DETOUR_RESULT_IGNORED, returnValue);
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelper)();
 	}
 	
 }
 
+void InitialiseDetours()
+{
+	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
+	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCriticalMelee");
+	calcIsAttackCriticalKnifeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCriticalKnife");
+
+	bool HookCreated = false;
+
+	if (calcIsAttackCriticalDetour != NULL)
+	{
+		calcIsAttackCriticalDetour->EnableDetour();
+		HookCreated = true;
+	}
+
+	if (calcIsAttackCriticalMeleeDetour != NULL)
+	{
+		calcIsAttackCriticalMeleeDetour->EnableDetour();
+		HookCreated = true;
+	}
+
+	if (calcIsAttackCriticalKnifeDetour != NULL)
+	{
+		calcIsAttackCriticalKnifeDetour->EnableDetour();
+		HookCreated = true;
+	}
+
+	if (!HookCreated)
+	{
+		g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
+		return;
+	}
+
+}
+
 void RemoveDetours()
 {
-	CDetourManager::DeleteDetour(calcIsAttackCriticalDetour);
-	CDetourManager::DeleteDetour(calcIsAttackCriticalMeleeDetour);
-	CDetourManager::DeleteDetour(calcIsAttackCriticalKnifeDetour);
+	calcIsAttackCriticalDetour->Destroy();
+	calcIsAttackCriticalMeleeDetour->Destroy();
+	calcIsAttackCriticalKnifeDetour->Destroy();
 }
