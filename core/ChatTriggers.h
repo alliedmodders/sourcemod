@@ -75,9 +75,7 @@ private:
 	char *m_PubTrigger;
 	size_t m_PubTriggerSize;
 	char *m_PrivTrigger;
-	char *m_PrivTrigger2;
 	size_t m_PrivTriggerSize;
-	size_t m_PrivTriggerSize2;
 	bool m_bWillProcessInPost;
 	bool m_bTriggerWasSilent;
 	bool m_bIsChatTrigger;
