@@ -2,6 +2,26 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.1.1 [2009-02-25]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.1.1_Release Notes
+
+Changes:
+
+ - Added Age of Chivalry support (bug 3366, IceMatrix).
+ - Added Obsidian Conflict support (bug 2699, The DOO).
+ - Fixed compatibility issues with latest TF2 update.
+ - Fixed crash when an event handler fired an event of the same name (bug 3468).
+ - Fixed rare crash in the event manager on post hooks (bug 3548).
+ - Fixed formatting error with zero precision floats (bug 3447).
+ - Fixed various Insurgency offsets (bug 3544).
+ - Fixed admin menu (topmenu) categories being selectable when not usable (bug 3256).
+ - Fixed sm_sql_addgroup not working (bug 3578).
+ - Fixed memory leak when events were hooked as EventHookMode_Post.
+ - Fixed nextmap trigger showing wrong output with end-of-map voting disabled and sm_trigger_show set to zero (bug 3597, mr.e.unk).
+
+----------------------------
+
 SourceMod 1.1.0 [2008-12-28]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.1.0_Release_Notes
