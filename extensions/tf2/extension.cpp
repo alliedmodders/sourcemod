@@ -102,11 +102,15 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TFNatives);
 	sharesys->RegisterLibrary(myself, "tf2");
 
+	plsys->AddPluginsListener(this);
+
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
 
 	g_pCVar = icvar;
+
+	m_DetoursEnabled = false;
 
 	return true;
 }
@@ -137,16 +141,14 @@ void TF2Tools::SDK_OnUnload()
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
 
-	forwards->ReleaseForward(g_critForward);
+	plsys->RemovePluginsListener(this);
 
-	RemoveDetours();
+	forwards->ReleaseForward(g_critForward);
 }
 
 void TF2Tools::SDK_OnAllLoaded()
 {
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
-
-	InitialiseDetours();
 }
 
 bool TF2Tools::RegisterConCommandBase(ConCommandBase *pVar)
@@ -186,7 +188,6 @@ void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_resourceEntity = FindResourceEntity();
 }
-
 
 bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)
 {
@@ -283,6 +284,23 @@ bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)
 	return true;
 }
 
+void TF2Tools::OnPluginLoaded(IPlugin *plugin)
+{
+	if (!m_DetoursEnabled && g_critForward->GetFunctionCount())
+	{
+		InitialiseDetours();
+		m_DetoursEnabled = true;
+	}
+}
+
+void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
+{
+	if (m_DetoursEnabled && !g_critForward->GetFunctionCount())
+	{
+		RemoveDetours();
+		m_DetoursEnabled = false;
+	}
+}
 int FindResourceEntity()
 {
 	return FindEntityByNetClass(-1, "CTFPlayerResource");

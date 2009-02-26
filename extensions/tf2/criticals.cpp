@@ -39,6 +39,13 @@ CDetour *calcIsAttackCriticalKnifeDetour = NULL;
 
 IForward *g_critForward = NULL;
 
+enum DetourResult
+{
+	Result_Ignore,
+	Result_NoCrit,
+	Result_Crit,
+};
+
 int CheckBaseHandle(CBaseHandle &hndl)
 {
 	if (!hndl.IsValid())
@@ -72,14 +79,14 @@ int CheckBaseHandle(CBaseHandle &hndl)
 	return index;
 }
 
-DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
+DetourResult DetourCallback(CBaseEntity *pEnt)
 {
-	edict_t *pEdict = gameents->BaseEntityToEdict((CBaseEntity *)this);
-	
+	edict_t *pEdict = gameents->BaseEntityToEdict((CBaseEntity *)pEnt);
+
 	if (!pEdict)
 	{
 		g_pSM->LogMessage(myself, "Entity Error");
-		return false;
+		return Result_Ignore;
 	}
 
 	sm_sendprop_info_t info;
@@ -87,18 +94,18 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 	if (!gamehelpers->FindSendPropInfo(pEdict->GetNetworkable()->GetServerClass()->GetName(), "m_hOwnerEntity", &info))
 	{
 		g_pSM->LogMessage(myself, "Offset Error");
-		return false;
+		return Result_Ignore;
 	}
 
 	if (!g_critForward)
 	{
 		g_pSM->LogMessage(myself, "Invalid Forward");
-		return false;
+		return Result_Ignore;
 	}
 
 	int returnValue=0;
-	
-	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)this + info.actual_offset);
+
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEnt + info.actual_offset);
 	int index = CheckBaseHandle(hndl);
 
 	g_critForward->PushCell(index); //Client index
@@ -112,20 +119,80 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 
 	if (result)
 	{
-		return !!returnValue;
+		if (returnValue)
+		{
+			return Result_Crit;
+		}
+		else
+		{
+			return Result_NoCrit;
+		}
 	}
 	else
 	{
+		return Result_Ignore;
+	}
+}
+
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperMelee, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this);
+
+	if (result == Result_Ignore)
+	{
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperMelee)();
+	}
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperKnife, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this);
+
+	if (result == Result_Ignore)
+	{
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperKnife)();
+	}
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this);
+
+	if (result == Result_Ignore)
+	{
 		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelper)();
 	}
-	
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 void InitialiseDetours()
 {
 	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
-	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCriticalMelee");
-	calcIsAttackCriticalKnifeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCriticalKnife");
+	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperMelee, "CalcCriticalMelee");
+	calcIsAttackCriticalKnifeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperKnife, "CalcCriticalKnife");
 
 	bool HookCreated = false;
 
