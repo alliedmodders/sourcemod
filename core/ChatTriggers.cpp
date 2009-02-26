@@ -63,8 +63,10 @@ ChatTriggers::ChatTriggers() : m_pSayCmd(NULL), m_bWillProcessInPost(false),
 {
 	m_PubTrigger = sm_strdup("!");
 	m_PrivTrigger = sm_strdup("/");
+	m_PrivTrigger2 = sm_strdup(".");
 	m_PubTriggerSize = 1;
 	m_PrivTriggerSize = 1;
+	m_PrivTriggerSize2 = 1;
 	m_bIsChatTrigger = false;
 }
 
@@ -74,6 +76,8 @@ ChatTriggers::~ChatTriggers()
 	m_PubTrigger = NULL;
 	delete [] m_PrivTrigger;
 	m_PrivTrigger = NULL;
+	delete [] m_PrivTrigger2;
+	m_PrivTrigger2 = NULL;
 }
 
 ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key, 
@@ -94,6 +98,13 @@ ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
 		delete [] m_PrivTrigger;
 		m_PrivTrigger = sm_strdup(value);
 		m_PrivTriggerSize = strlen(m_PrivTrigger);
+		return ConfigResult_Accept;
+	}
+	else if (strcmp(key, "SilentChatTrigger2") == 0)
+	{
+		delete [] m_PrivTrigger2;
+		m_PrivTrigger2 = sm_strdup(value);
+		m_PrivTriggerSize2 = strlen(m_PrivTrigger2);
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentFailSuppress") == 0)
@@ -252,11 +263,17 @@ void ChatTriggers::OnSayCommand_Pre()
 		is_trigger = true;
 		args = &args[m_PubTriggerSize];
 	} 
-	else if (m_PrivTriggerSize && strncmp(args, m_PrivTrigger, m_PrivTriggerSize) == 0) 
+	else if (m_PrivTriggerSize && strncmp(args, m_PrivTrigger, m_PrivTriggerSize) == 0)
 	{
 		is_trigger = true;
 		is_silent = true;
 		args = &args[m_PrivTriggerSize];
+	}
+	else if (m_PrivTriggerSize2 && strncmp(args, m_PrivTrigger2, m_PrivTriggerSize2) == 0)
+	{
+		is_trigger = true;
+		is_silent = true;
+		args = &args[m_PrivTriggerSize2];
 	}
 
 	if (!is_trigger)
