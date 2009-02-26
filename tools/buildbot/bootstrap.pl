@@ -57,4 +57,4 @@ if ($^O eq "linux")
     Build::Command("flip -u tools/versionchanger.pl");
     Build::Command("chmod +x tools/versionchanger.pl");
 }
-Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
+#Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
