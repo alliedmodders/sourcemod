@@ -2,9 +2,19 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.1.2 [2009-02-26]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.1.2_Release_Notes
+
+Changes:
+
+ - Fixed critical hits being permanently disabled (bug 2674)
+
+----------------------------
+
 SourceMod 1.1.1 [2009-02-25]
 
-URL: http://wiki.alliedmods.net/SourceMod_1.1.1_Release Notes
+URL: http://wiki.alliedmods.net/SourceMod_1.1.1_Release_Notes
 
 Changes:
 
