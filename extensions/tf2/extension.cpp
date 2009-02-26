@@ -90,7 +90,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	char conf_error[255] = "";
 	if (!gameconfs->LoadGameConfigFile("sm-tf2.games", &g_pGameConf, conf_error, sizeof(conf_error)))
 	{
-		if (conf_error)
+		if (conf_error[0])
 		{
 			UTIL_Format(error, maxlength, "Could not read sm-tf2.games.txt: %s", conf_error);
 		}

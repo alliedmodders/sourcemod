@@ -26,13 +26,13 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id$
+ * Version: $Id: detourhelpers.h 248 2008-08-27 00:56:22Z pred $
  */
 
 #ifndef _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 #define _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 
-#if defined PLATFORM_POSIX
+#if defined PLATFORM_LINUX
 #include <sys/mman.h>
 #define	PAGE_SIZE	4096
 #define ALIGN(ar) ((long)ar & ~(PAGE_SIZE-1))
@@ -52,7 +52,7 @@ struct patch_t
 
 inline void ProtectMemory(void *addr, int length, int prot)
 {
-#if defined PLATFORM_POSIX
+#if defined PLATFORM_LINUX
 	void *addr2 = (void *)ALIGN(addr);
 	mprotect(addr2, sysconf(_SC_PAGESIZE), prot);
 #elif defined PLATFORM_WINDOWS
