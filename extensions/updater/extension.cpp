@@ -89,7 +89,7 @@ void SmUpdater::SDK_OnUnload()
 	}
 
 	/* Clear message tables */
-	List<String *>::iterator iter;
+	List<String *>::iterator iter = update_errors.begin();
 	while (iter != update_errors.end())
 	{
 		iter = update_errors.erase(iter);
