@@ -76,42 +76,11 @@ public OnRebuildAdminCache(AdminCachePart:part)
 	CloseHandle(db);
 }
 
-FetchUserGroups(Handle:hQuery, AdminId:adm, id)
-{
-	SQL_BindParamInt(hQuery, 0, id);
-	if (!SQL_Execute(hQuery))
-	{
-		decl String:error[255];
-		SQL_GetError(hQuery, error, sizeof(error));
-		LogError("FetchUserGroups() statement execute failed: %s", error);
-		return;
-	}
-	
-	decl String:name[80];
-	new GroupId:gid;
-	while (SQL_FetchRow(hQuery))
-	{
-		SQL_FetchString(hQuery, 0, name, sizeof(name));
-		
-		if ((gid = FindAdmGroup(name)) == INVALID_GROUP_ID)
-		{
-			/* Group wasn't found, don't bother with it.  */
-			continue;
-		}
-		
-		#if defined _DEBUG
-		PrintToServer("Found admin group (%d, %d, %d)", id, gid, adm);
-		#endif
-		
-		AdminInheritGroup(adm, gid);
-	}
-}
-
 FetchUsers(Handle:db)
 {
 	decl String:query[255], String:error[255];
-	new Handle:hQuery, Handle:hGroupQuery;
-	
+	new Handle:hQuery;
+
 	Format(query, sizeof(query), "SELECT id, authtype, identity, password, flags, name, immunity FROM sm_admins");
 	if ((hQuery = SQL_Query(db, query)) == INVALID_HANDLE)
 	{
@@ -120,17 +89,7 @@ FetchUsers(Handle:db)
 		LogError("Query error: %s", error);
 		return;
 	}
-	
-	/* If this fails it's non-fatal */
-	Format(query,
-		sizeof(query), 
-		"SELECT g.name FROM sm_admins_groups ag JOIN sm_groups g ON ag.group_id = g.id WHERE ag.admin_id = ? ORDER BY inherit_order ASC");
-	if ((hGroupQuery = SQL_PrepareQuery(db, query, error, sizeof(error))) == INVALID_HANDLE)
-	{
-		LogError("FetchUsers() group query preparation failed: %s", query);
-		LogError("Query error: %s", error);
-	}
-	
+
 	decl String:authtype[16];
 	decl String:identity[80];
 	decl String:password[80];
@@ -138,10 +97,17 @@ FetchUsers(Handle:db)
 	decl String:name[80];
 	new immunity;
 	new AdminId:adm, id;
+	new GroupId:gid;
+
+	/* Keep track of a mapping from admin DB IDs to internal AdminIds to
+	 * enable group lookups en masse */
+	new Handle:htAdmins = CreateTrie();
+	decl String:key[16];
 	
 	while (SQL_FetchRow(hQuery))
 	{
 		id = SQL_FetchInt(hQuery, 0);
+		IntToString(id, key, sizeof(key));
 		SQL_FetchString(hQuery, 1, authtype, sizeof(authtype));
 		SQL_FetchString(hQuery, 2, identity, sizeof(identity));
 		SQL_FetchString(hQuery, 3, password, sizeof(password));
@@ -159,6 +125,8 @@ FetchUsers(Handle:db)
 				continue;
 			}
 		}
+
+		SetTrieValue(htAdmins, key, adm);
 		
 		#if defined _DEBUG
 		PrintToServer("Found SQL admin (%d,%s,%s,%s,%s,%s,%d):%d", id, authtype, identity, password, flags, name, immunity, adm);
@@ -183,16 +151,39 @@ FetchUsers(Handle:db)
 		}
 
 		SetAdminImmunityLevel(adm, immunity);
-		
-		/* Look up groups */
-		if (hGroupQuery != INVALID_HANDLE)
+	}
+
+	new Handle:hGroupQuery;
+	Format(query, sizeof(query), "SELECT ag.admin_id AS id, g.name FROM sm_admins_groups ag JOIN sm_groups g ON ag.group_id = g.id  ORDER BY id, inherit_order ASC");
+	if ((hGroupQuery = SQL_Query(db, query)) == INVALID_HANDLE)
+	{
+		SQL_GetError(db, error, sizeof(error));
+		LogError("FetchUsers() query failed: %s", query);
+		LogError("Query error: %s", error);
+		return;
+	}
+
+	decl String:group[80];
+	while (SQL_FetchRow(hGroupQuery))
+	{
+		IntToString(SQL_FetchInt(hGroupQuery, 0), key, sizeof(key));
+		SQL_FetchString(hGroupQuery, 1, group, sizeof(group));
+
+		if (GetTrieValue(htAdmins, key, adm))
 		{
-			FetchUserGroups(hGroupQuery, adm, id);
+			if ((gid = FindAdmGroup(group)) == INVALID_GROUP_ID)
+			{
+				/* Group wasn't found, don't bother with it.  */
+				continue;
+			}
+
+			AdminInheritGroup(adm, gid);
 		}
 	}
 	
-	CloseHandle(hGroupQuery);
 	CloseHandle(hQuery);
+	CloseHandle(hGroupQuery);
+	CloseHandle(htAdmins);
 }
 
 FetchGroups(Handle:db)
