@@ -996,7 +996,7 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	}
 
 	g_Logger.LogFatal("[SM] MEMORY LEAK DETECTED IN PLUGIN (file \"%s\")", highest_owner->GetFilename());
-	g_Logger.LogFatal("[SM] Reloading plugin to free %d handles.", highest_handle_count);
+	g_Logger.LogFatal("[SM] Unloading plugin to free %d handles.", highest_handle_count);
 	g_Logger.LogFatal("[SM] Contact the author(s) of this plugin to correct this error.", highest_handle_count);
 
 	highest_owner->GetBaseContext()->ThrowNativeErrorEx(SP_ERROR_MEMACCESS, "Memory leak");
