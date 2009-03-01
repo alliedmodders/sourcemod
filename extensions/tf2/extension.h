@@ -50,9 +50,10 @@ class TF2Tools :
 	public SDKExtension,
 	public ICommandTargetProcessor,
 	public IConCommandBaseAccessor,
-	public IGameEventListener2
+	public IGameEventListener2,
+	public IPluginsListener
 {
-public:
+public: //SDKExtension
 	/**
 	 * @brief This is called after the initial loading sequence has been processed.
 	 *
@@ -75,11 +76,6 @@ public:
 	virtual void SDK_OnAllLoaded();
 
 	/**
-	 * @brief Called when the pause state is changed.
-	 */
-	//virtual void SDK_OnPauseChange(bool paused);
-
-	/**
 	 * @brief this is called when Core wants to know if your extension is working.
 	 *
 	 * @param error		Error message buffer.
@@ -90,12 +86,16 @@ public:
 
 	void NotifyInterfaceDrop(SMInterface *pInterface);
 	bool QueryInterfaceDrop(SMInterface *pInterface);
-public:
+public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
+public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
-
+public: //IGameEventManager
 	IGameEventManager2 *m_GameEventManager;
 	void FireGameEvent( IGameEvent *event );
+public: //IPluginsListener
+	void OnPluginLoaded(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
@@ -107,28 +107,9 @@ public:
 	 * @return				True to succeed, false to fail.
 	 */
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
-
-	/**
-	 * @brief Called when Metamod is detaching, after the extension version is called.
-	 * NOTE: By default this is blocked unless sent from SourceMod.
-	 *
-	 * @param error			Error buffer.
-	 * @param maxlength		Maximum size of error buffer.
-	 * @return				True to succeed, false to fail.
-	 */
-	//virtual bool SDK_OnMetamodUnload(char *error, size_t maxlength);
-
-	/**
-	 * @brief Called when Metamod's pause state is changing.
-	 * NOTE: By default this is blocked unless sent from SourceMod.
-	 *
-	 * @param paused		Pause state being set.
-	 * @param error			Error buffer.
-	 * @param maxlength		Maximum size of error buffer.
-	 * @return				True to succeed, false to fail.
-	 */
-	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
+private:
+	bool m_DetoursEnabled;
 };
 
 enum TFClassType
