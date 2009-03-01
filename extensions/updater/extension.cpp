@@ -120,6 +120,7 @@ void SmUpdater::NotifyInterfaceDrop(SMInterface *pInterface)
 static void PumpUpdate(void *data)
 {
 	String *str;
+	bool new_files = false;
 	List<String *>::iterator iter;
 
 	char path[PLATFORM_MAX_PATH];
@@ -163,6 +164,7 @@ static void PumpUpdate(void *data)
 			smutils->LogMessage(myself,
 				"Successfully updated gamedata file \"%s\"",
 				part->file);
+			new_files = true;
 		}
 skip_create:
 		temp = part->next;
@@ -185,6 +187,31 @@ skip_create:
 		}
 
 		smutils->LogError(myself, "--- END ERRORS FROM AUTOMATIC UPDATER ---");
+	}
+
+	if (new_files)
+	{
+		const char *force_restart = smutils->GetCoreConfigValue("ForceRestartAfterUpdate");
+		if (force_restart == NULL || strcasecmp(force_restart, "yes") != 0)
+		{
+			smutils->LogMessage(myself,
+				"SourceMod has been updated, please reload it or restart your server.");
+		}
+		else
+		{
+			char buffer[255];
+			smutils->Format(buffer,
+				sizeof(buffer),
+				"meta unload %d\n",
+				smutils->GetPluginId());
+			gamehelpers->ServerCommand(buffer);
+			smutils->Format(buffer,
+				sizeof(buffer),
+				"changelevel \"%s\"\n",
+				gamehelpers->GetCurrentMap());
+			gamehelpers->ServerCommand(buffer);
+			gamehelpers->ServerCommand("echo SourceMod has been restarted from an automatic update.\n");
+		}
 	}
 }
 

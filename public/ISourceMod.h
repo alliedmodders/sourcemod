@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	10
+#define SMINTERFACE_SOURCEMOD_VERSION	11
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -296,6 +296,13 @@ namespace SourceMod
 		 *					The string will be destroyed on core.cfg reparses.
 		 */
 		virtual const char *GetCoreConfigValue(const char *key) = 0;
+
+		/**
+		 * @brief Returns SourceMod's Metamod:Source plugin ID.
+		 *
+		 * @return			Metamod:Source PluginId.
+		 */
+		virtual int GetPluginId() = 0;
 	};
 }
 

@@ -632,3 +632,13 @@ void CHalfLife2::SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt)
 
 	hndl.Set(pEntOther);
 }
+
+const char *CHalfLife2::GetCurrentMap()
+{
+	return STRING(gpGlobals->mapname);
+}
+
+void CHalfLife2::ServerCommand(const char *buffer)
+{
+	engine->ServerCommand(buffer);
+}

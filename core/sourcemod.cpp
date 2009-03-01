@@ -717,6 +717,11 @@ const char *SourceModBase::GetCoreConfigValue(const char *key)
 	return g_CoreConfig.GetCoreConfigValue(key);
 }
 
+int SourceModBase::GetPluginId()
+{
+	return g_PLID;
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 
 SMGlobalClass::SMGlobalClass()

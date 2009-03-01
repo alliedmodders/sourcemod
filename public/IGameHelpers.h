@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		3
+#define SMINTERFACE_GAMEHELPERS_VERSION		4
 
 class CBaseEntity;
 class CBaseHandle;
@@ -179,6 +179,20 @@ namespace SourceMod
 		 * @noreturn
 		 */
 		virtual void SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt) =0;
+
+		/**
+		 * @brief Returns the current map name.
+		 *
+		 * @return				Current map name.
+		 */
+		virtual const char *GetCurrentMap() =0;
+
+		/**
+		 * @brief Wraps IVEngineServer::ServerCommand.
+		 *
+		 * @param buffer		Command buffer (does not auto \n terminate).
+		 */
+		virtual void ServerCommand(const char *buffer) =0;
 	};
 }
 

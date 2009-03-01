@@ -49,9 +49,9 @@
 
 GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
-char g_Game[256];
-char g_GameDesc[256] = {'!', '\0'};
-char g_GameName[256] = {'$', '\0'};
+static char g_Game[256];
+static char g_GameDesc[256] = {'!', '\0'};
+static char g_GameName[256] = {'$', '\0'};
 
 #define PSTATE_NONE						0
 #define PSTATE_GAMES					1

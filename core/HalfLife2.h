@@ -113,6 +113,8 @@ public: //IGameHelpers
 	int IndexOfEdict(edict_t *pEnt);
 	edict_t *GetHandleEntity(CBaseHandle &hndl);
 	void SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt);
+	const char *GetCurrentMap();
+	void ServerCommand(const char *buffer);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
