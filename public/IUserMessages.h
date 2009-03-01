@@ -44,7 +44,7 @@
  */
 
 #define SMINTERFACE_USERMSGS_NAME		"IUserMessages"
-#define SMINTERFACE_USERMSGS_VERSION	1
+#define SMINTERFACE_USERMSGS_VERSION	2
 
 namespace SourceMod
 {
@@ -81,9 +81,33 @@ namespace SourceMod
 
 		/**
 		 * @brief Called when a hooked user message is sent, regardless of the hook type.
+		 *
+		 * Note: This is called regardless of the API version, though it only happens if the 
+		 * message is successfully sent.
+		 *
 		 * @param msg_id		Message Id.
 		 */
 		virtual void OnUserMessageSent(int msg_id)
+		{
+		}
+
+		/**
+		 * @brief Returns the user message API version.
+		 */
+		virtual unsigned int GetUserMessageAPIVersion()
+		{
+			return SMINTERFACE_USERMSGS_VERSION;
+		}
+
+		/**
+		 * @brief Called when a hooked user message hook is finished, regardless of the hook type.
+		 *
+		 * Note: this is only called if hooked using the new API (version 2 or greater).
+		 * 
+		 * @param msg_id		Message Id.
+		 * @param sent			True if message was sent, false if blocked.
+		 */
+		virtual void OnPostUserMessage(int msg_id, bool sent)
 		{
 		}
 	};
@@ -123,17 +147,22 @@ namespace SourceMod
 		 * @param intercept		If true, message will be intercepted rather than merely hooked.
 		 * @return				True on success, false otherwise.
 		 */
-		virtual bool HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false) =0;
+		virtual bool HookUserMessage(int msg_id,
+			IUserMessageListener *pListener,
+			bool intercept=false) =0;
 
 		/**
 		 * @brief Unhooks a user message.
 		 *
 		 * @param msg_id		Message Id.
 		 * @param pListener		Pointer to an IUserMessageListener.
-		 * @param intercept		If true, removed message will from interception pool rather than normal hook pool.
+		 * @param intercept		If true, message is removed from interception pool rather than the
+		 *						normal hook pool.
 		 * @return				True on success, false otherwise.
 		 */
-		virtual bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false) =0;
+		virtual bool UnhookUserMessage(int msg_id,
+			IUserMessageListener *pListener,
+			bool intercept=false) =0;
 
 		/**
 		 * @brief Wrapper around UserMessageBegin for more options.
@@ -144,13 +173,41 @@ namespace SourceMod
 		 * @param flags			Flags to use for sending the message.
 		 * @return				bf_write structure to write message with, or NULL on failure.
 		 */
-		virtual bf_write *StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags) =0;
+		virtual bf_write *StartMessage(int msg_id,
+			const cell_t players[],
+			unsigned int playersNum,
+			int flags) =0;
 
 		/**
 		 * @brief Wrapper around UserMessageEnd for use with StartMessage().
 		 * @return				True on success, false otherwise.
 		 */
 		virtual bool EndMessage() =0;
+
+		/**
+		 * @brief Sets a hook on a user message using the newer API (OnPostUserMessage).
+		 *
+		 * @param msg_id		Message Id.
+		 * @param pListener		Pointer to an IUserMessageListener.
+		 * @param intercept		If true, message will be intercepted rather than merely hooked.
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool HookUserMessage2(int msg_id,
+			IUserMessageListener *pListener,
+			bool intercept=false) =0;
+
+		/**
+		 * @brief Unhooks a user message using the newer API (OnPostUserMessage).
+		 *
+		 * @param msg_id		Message Id.
+		 * @param pListener		Pointer to an IUserMessageListener.
+		 * @param intercept		If true, message is removed from interception pool rather than the
+		 *						normal hook pool.
+		 * @return				True on success, false otherwise.
+		 */
+		virtual bool UnhookUserMessage2(int msg_id,
+			IUserMessageListener *pListener,
+			bool intercept=false) =0;
 	};
 }
 

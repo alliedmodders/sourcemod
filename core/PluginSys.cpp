@@ -273,13 +273,13 @@ bool CPlugin::UpdateInfo()
 
 		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&info);
 		m_FileVersion = info->version;
-		if (m_FileVersion >= 3)
+		if (m_FileVersion >= 4)
 		{
 			base->LocalToString(info->date, (char **)&pDate);
 			base->LocalToString(info->time, (char **)&pTime);
 			UTIL_Format(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
 		}
-		if (m_FileVersion > 4)
+		if (m_FileVersion > 5)
 		{
 			base->LocalToString(info->filevers, (char **)&pFileVers);
 			SetErrorState(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);

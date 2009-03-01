@@ -127,11 +127,12 @@ native EndMessage();
 functag public Action:MsgHook(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
 
 /**
- * Called when a message is finished sending.
+ * Called when a message hook has completed.
  *
  * @param msg_id		Message index.
+ * @param sent			True if message was sent, false if blocked.
  */
-functag public MsgSentNotify(UserMsg:msg_id);
+functag public MsgPostHook(UserMsg:msg_id, bool:sent);
 
 /**
  * Hooks a user message.
@@ -145,7 +146,7 @@ functag public MsgSentNotify(UserMsg:msg_id);
  * @noreturn
  * @error				Invalid message index.
  */
-native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgSentNotify:notify=MsgSentNotify:-1);
+native HookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false, MsgPostHook:post=MsgPostHook:-1);
 
 /**
  * Removes one usermessage hook.

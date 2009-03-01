@@ -48,6 +48,7 @@ struct ListenerInfo
 	IUserMessageListener *Callback;
 	bool IsHooked;
 	bool KillMe;
+	bool IsNew;
 };
 
 typedef List<ListenerInfo *> MsgList;
@@ -71,6 +72,12 @@ public: //IUserMessages
 	bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bf_write *StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags);
 	bool EndMessage();
+	bool HookUserMessage2(int msg_id,
+		IUserMessageListener *pListener,
+		bool intercept=false);
+	bool UnhookUserMessage2(int msg_id,
+		IUserMessageListener *pListener,
+		bool intercept=false);
 public:
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
@@ -82,6 +89,8 @@ public:
 	void OnMessageEnd_Pre();
 	void OnMessageEnd_Post();
 private:
+	bool InternalHook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew);
+	bool InternalUnhook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew);
 	void _DecRefCounter();
 private:
 	List<ListenerInfo *> m_msgHooks[255];

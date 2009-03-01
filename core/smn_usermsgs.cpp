@@ -309,7 +309,7 @@ ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IR
 	return static_cast<ResultType>(res);
 }
 
-void MsgListenerWrapper::OnUserMessageSent(int msg_id)
+void MsgListenerWrapper::OnPostUserMessage(int msg_id, bool sent)
 {
 	if (!m_Notify)
 	{
@@ -318,6 +318,7 @@ void MsgListenerWrapper::OnUserMessageSent(int msg_id)
 
 	cell_t res;
 	m_Notify->PushCell(msg_id);
+	m_Notify->PushCell(sent ? 1 : 0);
 	m_Notify->Execute(&res);
 }
 
@@ -490,7 +491,7 @@ static cell_t smn_HookUserMessage(IPluginContext *pCtx, const cell_t *params)
 	pListener = s_UsrMessageNatives.CreateListener(pCtx);
 	pListener->Initialize(msgid, pHook, pNotify, intercept);
 
-	g_UserMsgs.HookUserMessage(msgid, pListener, intercept);
+	g_UserMsgs.HookUserMessage2(msgid, pListener, intercept);
 
 	return 1;
 }
@@ -521,7 +522,7 @@ static cell_t smn_UnhookUserMessage(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	pListener = (*iter);
-	if (!g_UserMsgs.UnhookUserMessage(msgid, pListener, intercept))
+	if (!g_UserMsgs.UnhookUserMessage2(msgid, pListener, intercept))
 	{
 		return pCtx->ThrowNativeError("Unable to unhook the current user message");
 	}

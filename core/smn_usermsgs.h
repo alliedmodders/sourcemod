@@ -45,7 +45,7 @@ public:
 public: //IUserMessageListener
 	void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
 	ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
-	void OnUserMessageSent(int msg_id);
+	void OnPostUserMessage(int msg_id, bool sent);
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 private:

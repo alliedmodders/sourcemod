@@ -205,7 +205,31 @@ bool UserMessages::EndMessage()
 	return true;
 }
 
+bool UserMessages::HookUserMessage2(int msg_id,
+									IUserMessageListener *pListener,
+									bool intercept)
+{
+	return InternalHook(msg_id, pListener, intercept, true);
+}
+
+bool UserMessages::UnhookUserMessage2(int msg_id,
+									  IUserMessageListener *pListener,
+									  bool intercept)
+{
+	return InternalUnhook(msg_id, pListener, intercept, true);
+}
+
 bool UserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
+{
+	return InternalHook(msg_id, pListener, intercept, false);
+}
+
+bool UserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
+{	
+	return InternalUnhook(msg_id, pListener, intercept, false);
+}
+
+bool UserMessages::InternalHook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew)
 {
 	if (msg_id < 0 || msg_id >= 255)
 	{
@@ -224,6 +248,7 @@ bool UserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener, 
 	pInfo->Callback = pListener;
 	pInfo->IsHooked = false;
 	pInfo->KillMe = false;
+	pInfo->IsNew = isNew;
 
 	if (!m_HookCount++)
 	{
@@ -243,8 +268,8 @@ bool UserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener, 
 	return true;
 }
 
-bool UserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
-{	
+bool UserMessages::InternalUnhook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew)
+{
 	MsgList *pList;
 	MsgIter iter;
 	ListenerInfo *pInfo;
@@ -259,7 +284,7 @@ bool UserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener
 	for (iter=pList->begin(); iter!=pList->end(); iter++)
 	{
 		pInfo = (*iter);
-		if (pInfo->Callback == pListener)
+		if (pInfo->Callback == pListener && pInfo->IsNew == isNew)
 		{
 			if (pInfo->IsHooked)
 			{
@@ -339,7 +364,7 @@ bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_ty
 
 void UserMessages::OnMessageEnd_Post()
 {
-	if (!m_InHook || m_BlockEndPost)
+	if (!m_InHook)
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -354,8 +379,16 @@ void UserMessages::OnMessageEnd_Post()
 	for (iter=pList->begin(); iter!=pList->end(); )
 	{
 		pInfo = (*iter);
+		if (m_BlockEndPost && !pInfo->IsNew)
+		{
+			continue;
+		}
 		pInfo->IsHooked = true;
 		pInfo->Callback->OnUserMessageSent(m_CurId);
+		if (pInfo->IsNew)
+		{
+			pInfo->Callback->OnPostUserMessage(m_CurId, !m_BlockEndPost);
+		}
 
 		if (pInfo->KillMe)
 		{
@@ -373,8 +406,16 @@ void UserMessages::OnMessageEnd_Post()
 	for (iter=pList->begin(); iter!=pList->end(); )
 	{
 		pInfo = (*iter);
+		if (m_BlockEndPost && !pInfo->IsNew)
+		{
+			continue;
+		}
 		pInfo->IsHooked = true;
 		pInfo->Callback->OnUserMessageSent(m_CurId);
+		if (pInfo->IsNew)
+		{
+			pInfo->Callback->OnPostUserMessage(m_CurId, !m_BlockEndPost);
+		}
 
 		if (pInfo->KillMe)
 		{
@@ -495,7 +536,6 @@ void UserMessages::OnMessageEnd_Pre()
 
 	RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
 supercede:
-	m_InHook = false;
 	m_BlockEndPost = true;
 	RETURN_META(MRES_SUPERCEDE);
 }
