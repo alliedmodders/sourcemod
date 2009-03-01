@@ -76,7 +76,7 @@ ifeq "$(USEMETA)" "true"
 	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn \
-		-I$(SMSDK)/public/extensions
+		-I$(SMSDK)/public/extensions -I$(MMSOURCE17)/core/sourcehook
 endif
 
 LINK += -m32 -lm -ldl

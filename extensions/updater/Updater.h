@@ -37,6 +37,8 @@
 #include <sh_string.h>
 #include "MemoryDownloader.h"
 
+using namespace SourceHook;
+
 struct UpdatePart
 {
 	UpdatePart* next;

@@ -159,12 +159,18 @@ static void PumpUpdate(void *data)
 				AddUpdateError("Could not open %s for writing", path);
 				return;
 			}
-			fwrite(part->data, 1, part->length, fp);
+			if (fwrite(part->data, 1, part->length, fp) != part->length)
+			{
+				AddUpdateError("Could not write file %s", path);
+			}
+			else
+			{
+				smutils->LogMessage(myself,
+					"Successfully updated gamedata file \"%s\"",
+					part->file);
+				new_files = true;
+			}
 			fclose(fp);
-			smutils->LogMessage(myself,
-				"Successfully updated gamedata file \"%s\"",
-				part->file);
-			new_files = true;
 		}
 skip_create:
 		temp = part->next;
