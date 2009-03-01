@@ -153,7 +153,7 @@ static void PumpUpdate(void *data)
 		else
 		{
 			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
-			FILE *fp = fopen(path, "wt");
+			FILE *fp = fopen(path, "wb");
 			if (fp == NULL)
 			{
 				AddUpdateError("Could not open %s for writing", path);

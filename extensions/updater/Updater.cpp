@@ -38,6 +38,7 @@
 #define USTATE_FOLDERS		1
 #define USTATE_CHANGED		2
 #define USTATE_CHANGE_FILE	3
+#define USTATE_ERRORS		4
 
 using namespace SourceMod;
 
@@ -74,6 +75,10 @@ SMCResult UpdateReader::ReadSMC_NewSection(const SMCStates *states, const char *
 			else if (strcmp(name, "Changed") == 0)
 			{
 				ustate = USTATE_CHANGED;
+			}
+			else if (strcmp(name, "Errors") == 0)
+			{
+				ustate = USTATE_ERRORS;
 			}
 			else
 			{
@@ -128,6 +133,14 @@ SMCResult UpdateReader::ReadSMC_KeyValue(const SMCStates *states,
 			}
 			break;
 		}
+	case USTATE_ERRORS:
+		{
+			if (strcmp(key, "error") == 0)
+			{
+				AddUpdateError("%s", value);
+			}
+			break;
+		}
 	case USTATE_FOLDERS:
 		{
 			HandleFolder(value);
@@ -150,6 +163,7 @@ SMCResult UpdateReader::ReadSMC_LeavingSection(const SMCStates *states)
 	{
 	case USTATE_FOLDERS:
 	case USTATE_CHANGED:
+	case USTATE_ERRORS:
 		{
 			ustate = USTATE_NONE;
 			break;
@@ -220,6 +234,7 @@ void UpdateReader::HandleFile()
 
 	UpdatePart *part = new UpdatePart;
 	part->data = (char*)malloc(mdl.GetSize());
+	memcpy(part->data, mdl.GetBuffer(), mdl.GetSize());
 	part->file = strdup(curfile.c_str());
 	part->length = mdl.GetSize();
 	LinkPart(part);
@@ -241,7 +256,7 @@ static bool md5_file(const char *file, char checksum[33])
 	long length;
 	void *fdata;
 
-	if ((fp = fopen(file, "rt")) == NULL)
+	if ((fp = fopen(file, "rb")) == NULL)
 	{
 		return false;
 	}
