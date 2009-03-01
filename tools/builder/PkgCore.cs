@@ -330,6 +330,13 @@ namespace builder
 			lib.vcproj_name = "curl";
 			libraries.Add(lib);
 
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions";
+			lib.source_path = "extensions/updater";
+			lib.binary_name = "updater.ext";
+			lib.vcproj_name = "updater";
+			libraries.Add(lib);
+
 			return (Library [])libraries.ToArray(typeof(Library));
 		}
 

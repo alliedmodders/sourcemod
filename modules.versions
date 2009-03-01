@@ -77,3 +77,14 @@ out = svn_version.h
 folder = extensions/clientprefs
 in = svn_version.tpl
 out = svn_version.h
+
+[curl]
+folder = extensions/curl
+in = svn_version.tpl
+out = svn_version.h
+
+[updater]
+folder = extensions/updater
+in = svn_version.tpl
+out = svn_version.h
+

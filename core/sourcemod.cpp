@@ -300,6 +300,13 @@ void SourceModBase::StartSourceMod(bool late)
 	{
 		g_SourceMod_Core.OnVSPListening(vsp_interface);
 	}
+
+	/* If we want to autoload, do that now */
+	const char *disabled = GetCoreConfigValue("DisableAutoUpdate");
+	if (disabled == NULL || strcasecmp(disabled, "yes") != 0)
+	{
+		g_Extensions.LoadAutoExtension("updater.ext." PLATFORM_LIB_EXT);
+	}
 }
 
 static bool g_LevelEndBarrier = false;
