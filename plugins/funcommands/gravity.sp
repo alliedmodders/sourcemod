@@ -79,7 +79,7 @@ DisplayGravityAmountMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_GravityAmount);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Gravity amount", client);
+	Format(title, sizeof(title), "%T: %N", "Gravity amount", client, GetClientOfUserId(g_GravityTarget[client]));
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	

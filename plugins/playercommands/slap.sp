@@ -64,7 +64,7 @@ DisplaySlapTargetMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Slap);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Slap player", client);
+	Format(title, sizeof(title), "%T: %d damage", "Slap player", client, g_SlapDamage[client]);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	

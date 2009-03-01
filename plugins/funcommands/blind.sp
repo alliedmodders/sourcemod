@@ -102,7 +102,7 @@ DisplayAmountMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_Amount);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Blind amount", client);
+	Format(title, sizeof(title), "%T: %N", "Blind amount", client, GetClientOfUserId(g_BlindTarget[client]));
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	

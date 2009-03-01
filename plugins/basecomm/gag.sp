@@ -46,7 +46,7 @@ DisplayGagTypesMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_GagTypes);
 	
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Choose Type", client);
+	Format(title, sizeof(title), "%T: %N", "Choose Type", client, g_GagTarget[client]);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	

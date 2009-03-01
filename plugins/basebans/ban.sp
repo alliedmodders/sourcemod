@@ -101,7 +101,7 @@ DisplayBanTimeMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_BanTimeList);
 
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Ban player", client);
+	Format(title, sizeof(title), "%T: %N", "Ban player", client, g_BanTarget[client]);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 
@@ -121,7 +121,7 @@ DisplayBanReasonMenu(client)
 	new Handle:menu = CreateMenu(MenuHandler_BanReasonList);
 
 	decl String:title[100];
-	Format(title, sizeof(title), "%T:", "Ban reason", client);
+	Format(title, sizeof(title), "%T: %N", "Ban reason", client, g_BanTarget[client]);
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 
