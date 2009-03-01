@@ -1362,14 +1362,14 @@ char *sm_strdup(const char *str)
 	return ptr;
 }
 
-unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace)
+unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive)
 {
 	size_t searchLen = strlen(search);
 	size_t replaceLen = strlen(replace);
 
 	char *ptr = subject;
 	unsigned int total = 0;
-	while ((ptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen)) != NULL)
+	while ((ptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
 	{
 		total++;
 		if (*ptr == '\0')
@@ -1394,7 +1394,7 @@ unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search
  * bad buffer sizes.  Instead, this function will smartly cut off the 
  * string in a way that pushes old data out.
  */
-char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen)
+char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen, bool caseSensitive)
 {
 	char *ptr = subject;
 	size_t browsed = 0;
@@ -1414,7 +1414,7 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 		/* If the search matches and the replace length is 0, 
 		 * we can just terminate the string and be done.
 		 */
-		if (strcmp(subject, search) == 0 && replaceLen == 0)
+		if ((caseSensitive ? strcmp(subject, search) : strcasecmp(subject, search)) == 0 && replaceLen == 0)
 		{
 			*subject = '\0';
 			return subject;
@@ -1431,7 +1431,7 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 	while (*ptr != '\0' && (browsed <= textLen - searchLen))
 	{
 		/* See if we get a comparison */
-		if (strncmp(ptr, search, searchLen) == 0)
+		if ((caseSensitive ? strncmp(ptr, search, searchLen) : strncasecmp(ptr, search, searchLen)) == 0)
 		{
 			if (replaceLen > searchLen)
 			{
@@ -1507,7 +1507,7 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 				 * Search : BBB
 				 * Replace: D
 				 * OUTPUT : AADCCC
-				 * POSOTION:   ^
+				 * POSITION:   ^
 				 */
 				/* If the replacement does not grow the string length, we do not
 				 * need to do any fancy checking at all.  Yay!

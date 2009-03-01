@@ -284,9 +284,10 @@ native SplitString(const String:source[], const String:split[], String:part[], p
  * @param maxlength		Maximum length of the string buffer.
  * @param search		String to search for.
  * @param replace		String to replace the search string with.
+ * @param caseSensitive	If true (default), search is case sensitive.
  * @return				Number of replacements that were performed.
  */
-native ReplaceString(String:text[], maxlength, const String:search[], const String:replace[]);
+native ReplaceString(String:text[], maxlength, const String:search[], const String:replace[], bool:caseSensitive=true);
 
 /**
  * Given a string, replaces the first occurrence of a search string with a 
@@ -300,11 +301,12 @@ native ReplaceString(String:text[], maxlength, const String:search[], const Stri
  *						a strlen() call on the search parameter.
  * @param replaceLen	If higher than -1, its value will be used instead of
  *						a strlen() call on the replace parameter.
+ * @param caseSensitive	If true (default), search is case sensitive.
  * @return				Index into the buffer (relative to the start) from where
  *						the last replacement ended, or -1 if no replacements were
  *						made.
  */
-native ReplaceStringEx(String:text[], maxlength, const String:search[], const String:replace[], searchLen=-1, replaceLen=-1);
+native ReplaceStringEx(String:text[], maxlength, const String:search[], const String:replace[], searchLen=-1, replaceLen=-1, bool:caseSensitive=true);
 
 /** 
  * Returns the number of bytes a character is using.  This is

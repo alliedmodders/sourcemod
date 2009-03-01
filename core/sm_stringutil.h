@@ -57,8 +57,8 @@ bool gnprintf(char *buffer,
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
 char *sm_strdup(const char *str);
-unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace);
-char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen);
+unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive = true);
+char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen, bool caseSensitive = true);
 char *UTIL_TrimWhitespace(char *str, size_t &len);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_

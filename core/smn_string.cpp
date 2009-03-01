@@ -491,24 +491,36 @@ static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
 {
 	char *text, *search, *replace;
 	size_t maxlength;
+	bool caseSensitive;
 	
 	pContext->LocalToString(params[1], &text);
 	pContext->LocalToString(params[3], &search);
 	pContext->LocalToString(params[4], &replace);
 	maxlength = (size_t)params[2];
 
+	/* Account for old binary plugins that won't pass the last parameter */
+	if (params[0] == 5) 
+	{
+		caseSensitive = (bool)params[5];
+	}
+	else
+	{
+		caseSensitive = true;
+	}
+
 	if (search[0] == '\0')
 	{
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	return UTIL_ReplaceAll(text, maxlength, search, replace);
+	return UTIL_ReplaceAll(text, maxlength, search, replace, caseSensitive);
 }
 
 static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 {
 	char *text, *search, *replace;
 	size_t maxlength;
+	bool caseSensitive;
 
 	pContext->LocalToString(params[1], &text);
 	pContext->LocalToString(params[3], &search);
@@ -518,12 +530,22 @@ static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 	size_t searchLen = (params[5] == -1) ? strlen(search) : (size_t)params[5];
 	size_t replaceLen = (params[6] == -1) ? strlen(replace) : (size_t)params[6];
 
+	/* Account for old binary plugins that won't pass the last parameter */
+	if (params[0] == 7)
+	{
+		caseSensitive = (bool)params[7];
+	}
+	else
+	{
+		caseSensitive = true;
+	}
+
 	if (searchLen == 0)
 	{
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen);
+	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen, caseSensitive);
 
 	if (ptr == NULL)
 	{
