@@ -35,7 +35,8 @@
 #include "Logger.h"
 #include "DebugReporter.h"
 
-#define TIMER_HNDL_CLOSE	(1<<9)
+#define TIMER_DATA_HNDL_CLOSE	(1<<9)
+#define TIMER_HNDL_CLOSE		(1<<9)
 
 HandleType_t g_TimerType;
 
@@ -147,14 +148,14 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	sec.pOwner = pInfo->pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if (pInfo->Flags & TIMER_HNDL_CLOSE)
+	if (pInfo->Flags & TIMER_DATA_HNDL_CLOSE)
 	{
 		if ((herr=g_HandleSys.FreeHandle(usrhndl, &sec)) != HandleError_None)
 		{
 			g_DbgReporter.GenerateError(pInfo->pContext,
 										pInfo->Hook->GetFunctionID(), 
 										SP_ERROR_NATIVE, 
-										"Invalid data handle %x (error %d) passed during timer end",
+										"Invalid data handle %x (error %d) passed during timer end with TIMER_DATA_HNDL_CLOSE",
 										usrhndl, 
 										herr);
 		}
@@ -215,7 +216,7 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 	if (hndl == BAD_HANDLE)
 	{
 		/* Free this for completeness. */
-		if (flags & TIMER_HNDL_CLOSE)
+		if (flags & TIMER_DATA_HNDL_CLOSE)
 		{
 			HandleSecurity sec(pCtx->GetIdentity(), g_pCoreIdent);
 			g_HandleSys.FreeHandle(params[3], &sec);
@@ -255,14 +256,14 @@ static cell_t smn_KillTimer(IPluginContext *pCtx, const cell_t *params)
 
 	g_Timers.KillTimer(pInfo->Timer);
 
-	if (params[2] && !(pInfo->Flags & TIMER_HNDL_CLOSE))
+	if (params[2] && !(pInfo->Flags & TIMER_DATA_HNDL_CLOSE))
 	{
 		sec.pOwner = pInfo->pContext->GetIdentity();
 		sec.pIdentity = g_pCoreIdent;
 
 		if ((herr=g_HandleSys.FreeHandle(static_cast<Handle_t>(pInfo->UserData), &sec)) != HandleError_None)
 		{
-			return pCtx->ThrowNativeError("Invalid data handle %x (error %d)", hndl, herr);
+			return pCtx->ThrowNativeError("Invalid data handle %x (error %d) on timer kill with TIMER_DATA_HNDL_CLOSE", hndl, herr);
 		}
 	}
 

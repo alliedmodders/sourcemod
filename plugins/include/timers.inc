@@ -39,7 +39,8 @@
 
 #define TIMER_REPEAT			(1<<0)		/**< Timer will repeat until it returns Plugin_Stop */
 #define TIMER_FLAG_NO_MAPCHANGE	(1<<1)		/**< Timer will not carry over mapchanges */
-#define TIMER_HNDL_CLOSE		(1<<9)		/**< Timer will automatically call CloseHandle() on its value when finished */
+#define TIMER_HNDL_CLOSE		(1<<9)		/**< Deprecated define, replaced by below */
+#define TIMER_DATA_HNDL_CLOSE		(1<<9)		/**< Timer will automatically call CloseHandle() on its data when finished */
 
 /**
  * Any of the following prototypes will work for a timed function.
@@ -50,7 +51,7 @@ funcenum Timer
  	 * Called when the timer interval has elapsed.
  	 * 
  	 * @param timer			Handle to the timer object.
- 	 * @param hndl			Handle passed when the timer was created.
+ 	 * @param hndl			Handle passed to CreateTimer() when timer was created.
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
@@ -60,11 +61,11 @@ funcenum Timer
  	 * Called when the timer interval has elapsed.
  	 * 
  	 * @param timer			Handle to the timer object.
- 	 * @param value			Value passed when the timer was created.
+ 	 * @param data			Data passed to CreateTimer() when timer was created.
  	 * @return				Plugin_Stop to stop a repeating timer, any other value for
  	 *						default behavior.
  	 */
-	Action:public(Handle:timer, any:value),
+	Action:public(Handle:timer, any:data),
 	
 	/**
  	 * Called when the timer interval has elapsed.
@@ -81,18 +82,18 @@ funcenum Timer
  *
  * @param interval			Interval from the current game time to execute the given function.
  * @param func				Function to execute once the given interval has elapsed.
- * @param value				Handle or value to give to the timer function.
+ * @param data				Handle or value to pass through to the timer callback function.
  * @param flags				Flags to set (such as repeatability or auto-Handle closing).
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  *							If the timer could not be created, INVALID_HANDLE will be returned.
  */
-native Handle:CreateTimer(Float:interval, Timer:func, any:value=INVALID_HANDLE, flags=0);
+native Handle:CreateTimer(Float:interval, Timer:func, any:data=INVALID_HANDLE, flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
  *
- * @param autoClose			If autoClose is true, the timer's value will be 
- *							closed as a handle if TIMER_HNDL_CLOSE was not specified.
+ * @param autoClose			If autoClose is true, the data that was passed to CreateTimer() will
+ *							be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
  * @noreturn
  */
 native KillTimer(Handle:timer, bool:autoClose=false);
@@ -189,20 +190,21 @@ forward OnMapTimeLeftChanged();
 native bool:IsServerProcessing();
 
 /**
- * Creates a timer associated with a new data pack, and returns the datapack.
+ * Creates a timer associated with a new datapack, and returns the datapack.
  * @note The datapack is automatically freed when the timer ends.
  * @note The position of the datapack is not reset or changed for the timer function.
  *
  * @param interval			Interval from the current game time to execute the given function.
  * @param func				Function to execute once the given interval has elapsed.
- * @param data				The newly created datapack is passed though this by-reference parameter.
+ * @param datapack			The newly created datapack is passed though this by-reference 
+ *							parameter to the timer callback function.
  * @param flags				Timer flags.
  * @return					Handle to the timer object.  You do not need to call CloseHandle().
  */
-stock Handle:CreateDataTimer(Float:interval, Timer:func, &Handle:data, flags=0)
+stock Handle:CreateDataTimer(Float:interval, Timer:func, &Handle:datapack, flags=0)
 {
-	data = CreateDataPack();
-	flags |= TIMER_HNDL_CLOSE;
-	return CreateTimer(interval, func, data, flags);
+	datapack = CreateDataPack();
+	flags |= TIMER_DATA_HNDL_CLOSE;
+	return CreateTimer(interval, func, datapack, flags);
 }
 
