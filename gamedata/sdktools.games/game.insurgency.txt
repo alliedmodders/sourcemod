@@ -66,6 +66,11 @@
 				"windows"	"31"
 				"linux"		"32"
 			}
+			"CommitSuicide"
+			{
+				"windows"	"288"
+				"linux"		"289"
+			}
 		}
 	}
 }
