@@ -57,11 +57,8 @@ public OnPluginStart()
 	decl String:desc[128];
 	GetGameFolderName(desc, sizeof(desc));
 
-	if(StrEqual(desc, "left4dead", false))
-	{
-		SetFailState("The 'nextmap' plugin is not supported on Left 4 Dead.");
+	if (StrEqual(desc, "left4dead", false))
 		return;
-	}
 
 	LoadTranslations("common.phrases");
 	LoadTranslations("nextmap.phrases");
@@ -84,6 +81,12 @@ public OnMapStart()
  
 public OnConfigsExecuted()
 {
+	decl String:desc[128];
+	GetGameFolderName(desc, sizeof(desc));
+
+	if (StrEqual(desc, "left4dead", false))
+		return;
+
 	decl String:lastMap[64], String:currentMap[64];
 	GetNextMap(lastMap, sizeof(lastMap));
 	GetCurrentMap(currentMap, 64);
