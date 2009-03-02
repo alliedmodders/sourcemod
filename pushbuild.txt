@@ -6,3 +6,8 @@ buildbot has horrible bugs
 i am the very model of a modern major general
 
 It's no wonder the build always falls over when we call it pushing.
+h
+i
+D
+S
+!
