@@ -501,7 +501,7 @@ stock SetEntityHealth(entity, amount)
 	new PropFieldType:type;
 	new offset;
 	
-	if (!GetEntityNetClass(ent, cls, sizeof(cls)))
+	if (!GetEntityNetClass(entity, cls, sizeof(cls)))
 	{
 		ThrowError("SetEntityHealth not supported by this mod: Could not get serverclass name");
 		return;
@@ -522,7 +522,7 @@ stock SetEntityHealth(entity, amount)
 	}
 	else
 	{
-		SetEntProp(entity, prop, amount);
+		SetEntProp(entity, Prop_Send, prop, amount);
 	}
 }
 
