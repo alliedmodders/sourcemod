@@ -78,7 +78,7 @@ endif
 
 INCLUDE += -I$(SMSDK)/public/extensions -Icurl-src/include
 
-LINK += -m32 -lm -ldl curl-src/Release/lib/.libs/libcurl.a
+LINK += -m32 -lm -ldl -lrt curl-src/Release/lib/.libs/libcurl.a
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
