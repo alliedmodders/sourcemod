@@ -815,3 +815,23 @@ native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:i
  * @error 				Invalid client index, client not in game, or client is fake
  */
 native bool:SendConVarValue(client, Handle:convar, const String:value[]);
+
+/**
+ * Appends a string to Valve's sv_tags convar and makes sure it remains after mapchanges.
+ *
+ * Note: Tags are automatically removed on plugin unload
+ *
+ * @param tag			Tag string to append.
+ * @noreturn
+ */
+native AddServerTag(const String:tag[]);
+
+/**
+ * Removes a string from valve's sv_tags convar.
+ *
+ * Note: You can only remove tags created by you.
+ *
+ * @param tag			Tag string to remove.
+ * @noreturn
+ */
+native RemoveServerTag(const String:tag[]);

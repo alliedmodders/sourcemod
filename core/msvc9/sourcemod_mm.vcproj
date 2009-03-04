@@ -1513,6 +1513,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\TagsSystem.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\TextParsers.cpp"
 				>
 			</File>
@@ -1748,6 +1752,10 @@
 			</File>
 			<File
 				RelativePath="..\sourcemod.h"
+				>
+			</File>
+			<File
+				RelativePath="..\TagsSystem.h"
 				>
 			</File>
 			<File

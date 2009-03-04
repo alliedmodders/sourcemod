@@ -43,6 +43,7 @@
 #include <inetchannel.h>
 #include <bitbuf.h>
 #include <sm_trie_tpl.h>
+#include "TagsSystem.h"
 
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define NET_SETCONVAR	6
@@ -1304,6 +1305,60 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t AddServerTag(IPluginContext *pContext, const cell_t *params)
+{
+	char *value;
+	pContext->LocalToString(params[1], &value);
+
+	if (!g_Tags.AddTag(value))
+	{
+		return 0;
+	}
+
+	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	SourceHook::List<char *> *pList = NULL;
+
+	if (!pPlugin->GetProperty("ServerTags", (void **)&pList, false) || !pList)
+	{
+		pList = new SourceHook::List<char *>;
+		pPlugin->SetProperty("ServerTags", pList);
+	}
+
+	pList->push_back(strdup(value));
+
+	return 1;
+}
+
+static cell_t RemoveServerTag(IPluginContext *pContext, const cell_t *params)
+{
+	char *value;
+	pContext->LocalToString(params[1], &value);
+
+	IPlugin *pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+	SourceHook::List<char *> *pList = NULL;
+
+	if (!pPlugin->GetProperty("ServerTags", (void **)&pList, false) || !pList)
+	{
+		pList = new SourceHook::List<char *>;
+		pPlugin->SetProperty("ServerTags", pList);
+	}
+
+	SourceHook::List<char *>::iterator iter = pList->begin();
+
+	while (iter != pList->end())
+	{
+		if (strcmp(*iter, value) == 0)
+		{
+			g_pMemAlloc->Free(*iter);
+			pList->erase(iter);
+
+			return g_Tags.RemoveTag(value);
+		}
+	}
+
+	return 0;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1351,5 +1406,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"FindFirstConCommand",	FindFirstConCommand},
 	{"FindNextConCommand",	FindNextConCommand},
 	{"SendConVarValue",		SendConVarValue},
+	{"AddServerTag",		AddServerTag},
+	{"RemoveServerTag",		RemoveServerTag},
 	{NULL,					NULL}
 };
