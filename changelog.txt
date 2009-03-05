@@ -2,6 +2,44 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.2.0 [2009-03-05]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.0_Release_Notes
+
+Major Features:
+ * Left 4 Dead Support
+ * Dark Messiah Support
+ * New and Improved Updater
+
+Changes:
+
+ - Added Left 4 Dead support (bug 3414).
+ - Added Dark Messiah game support (requires Metamod:Source 1.7.1 or higher).
+ - Added sm_name command (bug 2150).
+ - Added extension-level dynamic hooking to bintools (bug 2616).
+ - Added client validation API to replace passing userids asynchronously.
+ - Added cURL extension, available to other extensions (bug 3560).
+ - Added parsing of custom gamedata files (bug 3644).
+ - Added case insensitivity search to ReplaceString (bug 3639, Fyren).
+ - Added more detail to certain player-oriented menu titles (bug 2740, Fyren).
+ - Added sv_tags API (bug 3677).
+ - Greatly improved admin-sql-prefetch performance for large tables (bug 3354, FLOOR_MASTER).
+ - Exposed IServer address to extensions (bug 3545).
+ - New gamedata organization; files are now smaller and per-game (bug 3546).
+ - Split sound functions into a new plugin, sounds.smx.
+ - Fixed slap and slay on Insurgency (bug 2560).
+ - Fixed blank admins being created from invalid admin file lines (bug 3431).
+ - Fixed basetriggers not working on Insurgency (bug 3497).
+ - Fixed client preferences missing some clients (bug 3616).
+ - Improved database fallback mechanism in clientprefs (bug 3564).
+ - Improved timer handling in funcommands (bug 3498).
+ - Improved compile.sh to take filenames (bug 3550, jonasfietz).
+ - sm_kick now shows the kick reason when available.
+ - Fixed MsgPostHook (ex MsgSentNotify) callbacks not firing on intercept hook (bug 3631).
+ - Note: SourceMod now adds "sourcemod" to the sv_tags cvar.
+
+----------------------------
+
 SourceMod 1.1.2 [2009-02-26]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.1.2_Release_Notes
