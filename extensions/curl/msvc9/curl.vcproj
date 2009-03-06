@@ -64,7 +64,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\curl-src\lib\LIB-Release\libcurl.lib ws2_32.lib"
+				AdditionalDependencies="..\curl-src\lib\LIB-Debug\libcurld.lib ws2_32.lib"
 				OutputFile="$(OutDir)\webternet.ext.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"

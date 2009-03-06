@@ -139,7 +139,7 @@ static void PumpUpdate(void *data)
 			smutils->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s", part->file);
 			if (libsys->IsPathDirectory(path))
 			{
-				continue;
+				goto skip_create;
 			}
 			if (!libsys->CreateFolder(path))
 			{
@@ -157,7 +157,7 @@ static void PumpUpdate(void *data)
 			if (fp == NULL)
 			{
 				AddUpdateError("Could not open %s for writing", path);
-				return;
+				goto skip_create;
 			}
 			if (fwrite(part->data, 1, part->length, fp) != part->length)
 			{
