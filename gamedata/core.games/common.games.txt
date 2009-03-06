@@ -36,11 +36,6 @@
 			"engine"			"original"
 		}
 		
-		"Keys"
-		{
-			"m_iHealth"			"m_fHealth"
-		}
-		
 		"Offsets"
 		{
 			"GetDataDescMap"
