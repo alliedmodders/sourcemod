@@ -491,7 +491,7 @@ stock SetEntityHealth(entity, amount)
 		
 		if (!exists)
 		{
-			strcopy(prop, sizeof(prop), "m_iHeath");
+			strcopy(prop, sizeof(prop), "m_iHealth");
 		}
 		
 		gotconfig = true;
