@@ -15,6 +15,12 @@
 	{
 		"en"			"Rename player"
 	}
+
+	"Dead Player Rename"
+	{
+		"#format"		"{1:s}"
+		"en"			"{1} will be renamed on the next round."
+	}
 	
 	"Slap player"
 	{
