@@ -36,7 +36,17 @@ new String:g_NewName[MAXPLAYERS+1][MAX_NAME_LENGTH];
 PerformRename(client, target)
 {
 	LogAction(client, target, "\"%L\" renamed \"%L\" to \"%s\")", client, target, g_NewName[target]);
-	SetClientInfo(target, "name", g_NewName[target]);
+
+	/* Used on OB / L4D engine */
+	if (g_ModVersion > SOURCE_SDK_EPISODE1)
+	{
+		SetClientInfo(target, "name", g_NewName[target]);
+	}
+	else /* Used on CSS and EP1 / older engine */
+	{
+		ClientCommand(target, "name %s", g_NewName[target]);
+	}
+	g_NewName[target][0] = '\0';
 }
 
 public AdminMenu_Rename(Handle:topmenu, 
@@ -156,7 +166,7 @@ public Action:Command_Rename(client, args)
 			client,
 			target_list,
 			MAXPLAYERS,
-			COMMAND_FILTER_ALIVE,
+			COMMAND_FILTER_NONE,
 			target_name,
 			sizeof(target_name),
 			tn_is_ml)) > 0)
