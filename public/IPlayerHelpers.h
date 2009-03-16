@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	9
+#define SMINTERFACE_PLAYERMANAGER_VERSION	10
 
 struct edict_t;
 class IPlayerInfo;
@@ -190,6 +190,13 @@ namespace SourceMod
 		 * @return	Serial number.
 		 */
 		virtual unsigned int GetSerial() =0;
+
+		/**
+		 * @brief Return whether the client is authorized.
+		 *
+		 * @return		True if authorized, false otherwise.
+		 */
+		virtual bool IsAuthorized() =0;
 	};
 
 	/**
