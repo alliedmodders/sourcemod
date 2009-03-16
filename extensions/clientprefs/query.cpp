@@ -200,7 +200,7 @@ bool TQueryOp::BindParamsAndRun()
 			UTIL_Format(query,
 				sizeof(query),
 				"SELECT sm_cookies.name, sm_cookie_cache.value, sm_cookies.description, \
-						sm_cookies.access 	\
+						sm_cookies.access, sm_cookie_cache.timestamp 	\
 				FROM sm_cookies				\
 				JOIN sm_cookie_cache		\
 				ON sm_cookies.id = sm_cookie_cache.cookie_id \
@@ -214,7 +214,6 @@ bool TQueryOp::BindParamsAndRun()
 
 		case Query_InsertData:
 		{
-			time_t t = time(NULL);
 			char safe_id[128];
 			char safe_val[MAX_VALUE_LENGTH*2 + 1];
 
@@ -238,9 +237,9 @@ bool TQueryOp::BindParamsAndRun()
 					safe_id,
 					m_params.cookieId,
 					safe_val,
-					(unsigned int)t,
+					(unsigned int)m_params.data->timestamp,
 					safe_val,
-					(unsigned int)t);
+					(unsigned int)m_params.data->timestamp);
 			}
 			else if (g_DriverType == Driver_SQLite)
 			{
@@ -252,7 +251,7 @@ bool TQueryOp::BindParamsAndRun()
 					safe_id,
 					m_params.cookieId,
 					safe_val,
-					(unsigned int)t);
+					(unsigned int)m_params.data->timestamp);
 			}
 
 			if (!m_database->DoSimpleQuery(query))
