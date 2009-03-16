@@ -55,6 +55,13 @@ bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddDependency(myself, "webternet.ext", true, true);
 
 	SM_GET_IFACE(WEBTERNET, webternet);
+
+	const char *url = smutils->GetCoreConfigValue("AutoUpdateURL");
+	if (url == NULL)
+	{
+		url = DEFAULT_UPDATE_URL;
+	}
+	update_url.assign(url);
 	
 	ThreadParams params;
 	params.flags = Thread_Default;
@@ -66,13 +73,6 @@ bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		smutils->Format(error, maxlength, "Could not create thread");
 		return false;
 	}
-
-	const char *url = smutils->GetCoreConfigValue("AutoUpdateURL");
-	if (url == NULL)
-	{
-		url = DEFAULT_UPDATE_URL;
-	}
-	update_url.assign(url);
 
 	return true;
 }
