@@ -159,7 +159,7 @@ public OnPluginStart()
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
 }
 
-public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	RegPluginLibrary("mapchooser");	
 	
@@ -170,7 +170,7 @@ public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("GetExcludeMapList", Native_GetExcludeMapList);
 	CreateNative("EndOfMapVoteEnabled", Native_EndOfMapVoteEnabled);
 
-	return true;
+	return APLRes_Success;
 }
 
 public OnConfigsExecuted()

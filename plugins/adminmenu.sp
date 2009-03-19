@@ -61,13 +61,13 @@ new TopMenuObject:obj_votingcmds = INVALID_TOPMENUOBJECT;
 
 #include "adminmenu/dynamicmenu.sp"
 
-public bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max)
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
 	CreateNative("GetAdminTopMenu", __GetAdminTopMenu);
 	CreateNative("AddTargetsToMenu", __AddTargetsToMenu);
 	CreateNative("AddTargetsToMenu2", __AddTargetsToMenu2);
 	RegPluginLibrary("adminmenu");
-	return true;
+	return APLRes_Success;
 }
 
 public OnPluginStart()
