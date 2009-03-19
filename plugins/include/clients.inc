@@ -129,9 +129,8 @@ forward OnClientSettingsChanged(client);
 
 /**
  * Called when a client receives a Steam ID.  The state of a client's 
- * authorization via Steam or as an admin is not guaranteed here.  
- * Use OnClientAuthorized() or OnClientPostAdminCheck() for those, 
- * respectively.
+ * authorization as an admin is not guaranteed here.  Use 
+ * OnClientPostAdminCheck() if you need a client's admin status.
  *
  * This is called by bots, but the ID will be "BOT".
  *
