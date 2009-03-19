@@ -40,7 +40,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::Burn(CTFPlayer*)
+	// CTFPlayerShared::Burn(CTFPlayer*, CTFWeaponBase*)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Burn", 
@@ -68,7 +68,7 @@ cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)];
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
