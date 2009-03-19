@@ -57,6 +57,14 @@ enum TFTeam
 	TFTeam_Blue = 3	
 };
 
+/**
+ * Sets a client on fire for 10 seconds.
+ *
+ * @param client		Player's index.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native TF2_IgnitePlayer(client, target);
 
 /**
  * Respawns a client
