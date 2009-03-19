@@ -117,7 +117,15 @@ enum LoadRes
 	LoadRes_Successful,
 	LoadRes_AlreadyLoaded,
 	LoadRes_Failure,
+	LoadRes_SilentFailure,
 	LoadRes_NeverLoad
+};
+
+enum APLRes
+{
+	APLRes_Success,
+	APLRes_Failure,
+	APLRes_SilentFailure
 };
 
 struct AutoConfig
@@ -146,6 +154,8 @@ public:
 	const char *GetFilename();
 	bool IsDebugging();
 	PluginStatus GetStatus();
+	bool IsSilentlyFailed();
+	void SetSilentlyFailed(bool sf);
 	const sm_plugininfo_t *GetPublicInfo();
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
@@ -183,7 +193,7 @@ public:
 	 *
 	 * If the error buffer is NULL, the error message is cached locally.
 	 */
-	bool Call_AskPluginLoad(char *error, size_t maxlength);
+	APLRes Call_AskPluginLoad(char *error, size_t maxlength);
 
 	/**
 	 * Calls the OnPluginStart function.
@@ -247,6 +257,7 @@ private:
 	PluginType m_type;
 	char m_filename[PLATFORM_MAX_PATH];
 	PluginStatus m_status;
+	bool m_bSilentlyFailed;
 	unsigned int m_serial;
 	sm_plugininfo_t m_info;
 	char m_errormsg[256];

@@ -57,6 +57,7 @@ CPlugin::CPlugin(const char *file)
 
 	m_type = PluginType_Private;
 	m_status = Plugin_Uncompiled;
+	m_bSilentlyFailed = false;
 	m_serial = ++MySerial;
 	m_pRuntime = NULL;
 	m_errormsg[256] = '\0';
@@ -386,22 +387,27 @@ void CPlugin::Call_OnAllPluginsLoaded()
 	}
 }
 
-bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
+APLRes CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 {
 	if (m_status != Plugin_Created)
 	{
-		return false;
+		return APLRes_Failure;
 	}
 
 	m_status = Plugin_Loaded;
 
 	int err;
 	cell_t result;
-	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad");
+	bool haveNewAPL = false;
+	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad2");
 
-	if (!pFunction)
+	if (pFunction) 
 	{
-		return true;
+		haveNewAPL = true;
+	}
+	else if (!(pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad")))
+	{
+		return APLRes_Success;
 	}
 
 	pFunction->PushCell(m_handle);
@@ -410,15 +416,21 @@ bool CPlugin::Call_AskPluginLoad(char *error, size_t maxlength)
 	pFunction->PushCell(maxlength);
 	if ((err=pFunction->Execute(&result)) != SP_ERROR_NONE)
 	{
-		return false;
+		return APLRes_Failure;
 	}
 
-	if (!result || m_status != Plugin_Loaded)
+	if (haveNewAPL) 
 	{
-		return false;
+		return (APLRes)result;
 	}
-
-	return true;
+	else if (result)
+	{
+		return APLRes_Success;
+	}
+	else
+	{
+		return APLRes_Failure;
+	}
 }
 
 void *CPlugin::GetPluginStructure()
@@ -470,6 +482,11 @@ PluginStatus CPlugin::GetStatus()
 	return m_status;
 }
 
+bool CPlugin::IsSilentlyFailed()
+{
+	return m_bSilentlyFailed;
+}
+
 bool CPlugin::IsDebugging()
 {
 	if (m_pRuntime == NULL)
@@ -478,6 +495,11 @@ bool CPlugin::IsDebugging()
 	}
 
 	return true;
+}
+
+void CPlugin::SetSilentlyFailed(bool sf)
+{
+	m_bSilentlyFailed = sf;
 }
 
 void CPlugin::LibraryActions(bool dropping)
@@ -1004,20 +1026,31 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		}
 	}
 
+	LoadRes loadFailure = LoadRes_Failure;
 	/* Get the status */
 	if (pPlugin->GetStatus() == Plugin_Created)
 	{
 		/* First native pass - add anything from Core */
 		g_ShareSys.BindNativesToPlugin(pPlugin, true);
 		pPlugin->InitIdentity();
-		if (pPlugin->Call_AskPluginLoad(error, maxlength))
+		APLRes result = pPlugin->Call_AskPluginLoad(error, maxlength);  
+		switch (result)
 		{
+		case APLRes_Success:
 			/* Autoload any modules */
 			LoadOrRequireExtensions(pPlugin, 1, error, maxlength);
-		}
-		else
-		{
+			break;
+		case APLRes_Failure:
 			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
+			loadFailure = LoadRes_Failure;
+			break;
+		case APLRes_SilentFailure:
+			pPlugin->SetErrorState(Plugin_Failed, "%s", error);
+			loadFailure = LoadRes_SilentFailure;
+			pPlugin->SetSilentlyFailed(true);
+			break;
+		default:
+			assert(false);
 		}
 	}
 
@@ -1030,7 +1063,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		*_plugin = pPlugin;
 	}
 
-	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : LoadRes_Failure;
+	return (pPlugin->GetStatus() == Plugin_Loaded) ? LoadRes_Successful : loadFailure;
 }
 
 IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType type, char error[], size_t maxlength, bool *wasloaded)
@@ -1095,7 +1128,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 			error);
 	}
 
-	if (res == LoadRes_Successful || res == LoadRes_Failure)
+	if (res == LoadRes_Successful || res == LoadRes_Failure || res == LoadRes_SilentFailure)
 	{
 		AddPlugin(pl);
 	}
@@ -1951,7 +1984,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				assert(pl->GetStatus() != Plugin_Created);
 				int len = 0;
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-				if (pl->GetStatus() != Plugin_Running)
+				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
 					len += UTIL_Format(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetStatus()));
 
@@ -1967,6 +2000,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				}
 				if (pl->GetStatus() < Plugin_Created)
 				{
+					if (pl->IsSilentlyFailed())
+						len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " Disabled:");
 					len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 					if (IS_STR_FILLED(info->version))
 					{

@@ -74,6 +74,13 @@ struct Plugin
 #include <commandfilters>
 #include <nextmap>
 
+enum APLRes
+{
+	APLRes_Success = 0,		/**< Plugin should load */
+	APLRes_Failure,			/**< Plugin shouldn't load and should display an error */
+	APLRes_SilentFailure	/**< Plugin shouldn't load but do so silently */
+};
+
 /**
  * Declare this as a struct in your plugin to expose its information.
  * Example:
@@ -101,26 +108,35 @@ public Plugin:myinfo;
  * @noreturn
  */
 forward OnPluginStart();
- 
+
+/**
+ * @deprecated Use AskPluginLoad2() instead.
+ * If a plugin contains both AskPluginLoad() and AskPluginLoad2(), the former will
+ * not be called, but old plugins with only AskPluginLoad() will work.
+ */
+#pragma deprecated Use AskPluginLoad2() instead
+forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
+
 /**
  * Called before OnPluginStart, in case the plugin wants to check for load failure.
  * This is called even if the plugin type is "private."  Any natives from modules are 
  * not available at this point.  Thus, this forward should only be used for explicit 
- * pre-emptive things, such as adding dynamic natives, or setting certain types of load filters.
+ * pre-emptive things, such as adding dynamic natives, setting certain types of load 
+ * filters (such as not loading the plugin for certain games).
  * 
  * @note It is not safe to call externally resolved natives until OnPluginStart().
  * @note Any sort of RTE in this function will cause the plugin to fail loading.
- * @note You MUST remember to return SOMETHING here.  The act of not returning is 
- *       equivalent to returning 0 (false).  If you forgot to return, it will 
- *       cause your plugin to not load with a very strange error message.
+ * @note If you do not return anything, it is treated like returning success. 
+ * @note If a plugin has an AskPluginLoad2(), AskPluginLoad() will not be called.
+ *
  *
  * @param myself	Handle to the plugin.
  * @param late		Whether or not the plugin was loaded "late" (after map load).
  * @param error		Error message buffer in case load failed.
  * @param err_max	Maximum number of characters for error message buffer.
- * @return			True if load success, false otherwise.
+ * @return			APLRes_Success for load success, APLRes_Failure or APLRes_SilentFailure otherwise
  */
-forward bool:AskPluginLoad(Handle:myself, bool:late, String:error[], err_max);
+forward APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max);
 
 /**
  * Called when the plugin is about to be unloaded.
