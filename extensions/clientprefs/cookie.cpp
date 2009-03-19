@@ -145,10 +145,7 @@ Cookie *CookieManager::CreateCookie(const char *name, const char *description, C
 
 bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 {
-	if (pCookie == NULL)
-	{
-		return false;
-	}
+	assert(pCookie);
 
 	CookieData *data = pCookie->data[client];
 
@@ -160,6 +157,7 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 		clientData[client].push_back(data);
 		pCookie->data[client] = data;
 		data->changed = true;
+		data->timestamp = time(NULL);
 	}
 
 	*value = &data->value[0];
@@ -169,10 +167,7 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 
 bool CookieManager::SetCookieValue(Cookie *pCookie, int client, char *value)
 {
-	if (pCookie == NULL)
-	{
-		return false;
-	}
+	assert(pCookie);
 
 	CookieData *data = pCookie->data[client];
 
@@ -190,6 +185,7 @@ bool CookieManager::SetCookieValue(Cookie *pCookie, int client, char *value)
 	}
 
 	data->changed = true;
+	data->timestamp = time(NULL);
 
 	return true;
 }
@@ -301,6 +297,10 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 
 		CookieData *pData = new CookieData(value);
 		pData->changed = false;
+
+		unsigned int timestamp = 0;
+		row->GetInt(4, (int *)&timestamp);
+		pData->timestamp = timestamp;
 
 		Cookie *parent = FindCookie(name);
 
@@ -417,3 +417,19 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 	}
 }
 
+bool CookieManager::GetCookieTime(Cookie *pCookie, int client, time_t *value)
+{
+	assert(pCookie);
+
+	CookieData *data = pCookie->data[client];
+
+	/* Check if a value has been set before */
+	if (data == NULL)
+	{
+		return false;
+	}
+
+	*value = data->timestamp;
+
+	return true;
+}

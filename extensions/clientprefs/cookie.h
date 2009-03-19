@@ -60,6 +60,7 @@ struct CookieData
 
 	char value[MAX_VALUE_LENGTH];
 	bool changed;
+	time_t timestamp;
 	Cookie *parent;
 };
 
@@ -118,6 +119,7 @@ public:
 	
 	bool GetCookieValue(Cookie *pCookie, int client, char **value);
 	bool SetCookieValue(Cookie *pCookie, int client, char *value);
+	bool GetCookieTime(Cookie *pCookie, int client, time_t *value);
 
 	void Unload();
 

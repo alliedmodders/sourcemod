@@ -399,6 +399,38 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+cell_t GetClientCookieTime(IPluginContext *pContext, const cell_t *params)
+{
+	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
+	{
+		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
+	}
+
+	Handle_t hndl = static_cast<Handle_t>(params[2]);
+	HandleError err;
+	HandleSecurity sec;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = myself->GetIdentity();
+
+	Cookie *pCookie;
+
+	if ((err = handlesys->ReadHandle(hndl, g_CookieType, &sec, (void **)&pCookie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Cookie handle %x (error %d)", hndl, err);
+	}
+
+	time_t value;
+
+	if (!g_CookieManager.GetCookieTime(pCookie, params[1], &value))
+	{
+		return 0;
+	}
+
+	return value;
+}
+
 sp_nativeinfo_t g_ClientPrefNatives[] = 
 {
 	{"RegClientCookie",				RegClientPrefCookie},

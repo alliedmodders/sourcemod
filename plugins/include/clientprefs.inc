@@ -223,6 +223,15 @@ native bool:ReadCookieIterator(Handle:iter,
 native CookieAccess:GetCookieAccess(Handle:cookie);
 
 /**
+ * Returns the last updated timestamp for a client cookie
+ *
+ * @param client		Client index.
+ * @param cookie		Cookie handle.
+ * @return			Last updated timestamp.
+ */
+native GetClientCookieTime(client, Handle:cookie);
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_clientprefs = 
