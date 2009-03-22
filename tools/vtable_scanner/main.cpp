@@ -41,6 +41,13 @@ int main(int argc, char **argv)
 
 	if (pVtable == NULL)
 	{
+		char startSym[128];
+		snprintf(startSym, sizeof(startSym), "_ZTV%d%s", strlen(argv[2]), argv[2]);
+		pVtable = (void **)dlsym(handle, startSym);
+	}
+
+	if (pVtable == NULL)
+	{
 		fprintf(stderr, "Invalid vtable symbol \"%s\"\n", argv[2]);
 		dlclose(handle);
 		return -1;
