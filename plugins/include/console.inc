@@ -817,9 +817,11 @@ native bool:FindNextConCommand(Handle:search, String:buffer[], max_size, &bool:i
 native bool:SendConVarValue(client, Handle:convar, const String:value[]);
 
 /**
- * Appends a string to Valve's sv_tags convar and makes sure it remains after mapchanges.
+ * Adds an informational string to the server's public "tags".
+ * This string should be a short, unique identifier.
  *
- * Note: Tags are automatically removed on plugin unload
+ * Note: Tags are automatically removed when a plugin unloads.
+ * Note: Currently, this function does nothing because of bugs in the Valve master.
  *
  * @param tag			Tag string to append.
  * @noreturn
@@ -827,9 +829,7 @@ native bool:SendConVarValue(client, Handle:convar, const String:value[]);
 native AddServerTag(const String:tag[]);
 
 /**
- * Removes a string from valve's sv_tags convar.
- *
- * Note: You can only remove tags created by you.
+ * Removes a tag previously added by the calling plugin.
  *
  * @param tag			Tag string to remove.
  * @noreturn

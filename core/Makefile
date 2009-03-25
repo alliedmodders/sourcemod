@@ -19,7 +19,7 @@ OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreC
 	sourcemm_api.cpp sourcemod.cpp MenuStyle_Base.cpp MenuStyle_Valve.cpp MenuManager.cpp \
 	MenuStyle_Radio.cpp ChatTriggers.cpp ADTFactory.cpp MenuVoting.cpp sm_crc32.cpp \
 	frame_hooks.cpp concmd_cleaner.cpp Profiler.cpp PhraseCollection.cpp NextMap.cpp \
-	NativeOwner.cpp TagsSystem.cpp
+	NativeOwner.cpp
 OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
 	smn_filesystem.cpp smn_float.cpp smn_functions.cpp smn_gameconfigs.cpp smn_halflife.cpp \
