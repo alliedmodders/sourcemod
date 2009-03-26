@@ -913,7 +913,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		{
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm exts info <#>");
 				return;
 			}
 
@@ -921,7 +921,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			unsigned int id = atoi(sId);
 			if (id <= 0)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm exts info <#>");
 				return;
 			}
 
