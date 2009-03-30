@@ -285,14 +285,16 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 	if (error && maxlength)
 	{
 #if defined PLATFORM_WINDOWS
-		FormatMessageA(
-			FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
-			NULL,
-			(DWORD)code,
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-			(LPSTR)error,
-			maxlength,
-			NULL);
+		if (FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM|FORMAT_MESSAGE_IGNORE_INSERTS,
+						   NULL,
+						   (DWORD)code,
+						   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+						   (LPSTR)error,
+						   maxlength,
+						   NULL) == 0)
+		{
+			UTIL_Format(error, maxlength, "error code %08x", code);
+		}
 #elif defined PLATFORM_LINUX
 		const char *ae = strerror_r(code, error, maxlength);
 		if (ae != error)

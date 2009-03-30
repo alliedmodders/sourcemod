@@ -75,11 +75,11 @@ namespace builder
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
-				makefile_args = "ENGINE=\"original\"";
+				makefile_args += "ENGINE=\"original\"";
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_Left4Dead)
 			{
-				makefile_args = "ENGINE=\"left4dead\"";
+				makefile_args += "ENGINE=\"left4dead\"";
 			}
 
 			/* Clean the project first */
