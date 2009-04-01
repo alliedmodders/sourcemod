@@ -54,10 +54,12 @@ new g_CurrentMapStartTime;
  
 public OnPluginStart()
 {
-	decl String:desc[128];
-	GetGameFolderName(desc, sizeof(desc));
+	decl String:game[128];
+	GetGameFolderName(game, sizeof(game));
 
-	if (StrEqual(desc, "left4dead", false))
+	if (StrEqual(game, "left4dead", false)
+			|| StrEqual(game, "dystopia", false)
+			|| StrEqual(game, "synergy", false))
 		return;
 
 	LoadTranslations("common.phrases");
@@ -81,10 +83,12 @@ public OnMapStart()
  
 public OnConfigsExecuted()
 {
-	decl String:desc[128];
-	GetGameFolderName(desc, sizeof(desc));
+	decl String:game[128];
+	GetGameFolderName(game, sizeof(game));
 
-	if (StrEqual(desc, "left4dead", false))
+	if (StrEqual(game, "left4dead", false)
+			|| StrEqual(game, "dystopia", false)
+			|| StrEqual(game, "synergy", false))
 		return;
 
 	decl String:lastMap[64], String:currentMap[64];
