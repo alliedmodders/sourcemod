@@ -132,6 +132,23 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	phrases->AddPhraseFile("clientprefs.phrases");
 	phrases->AddPhraseFile("common.phrases");
 
+	if (late)
+	{
+		int maxclients = playerhelpers->GetMaxClients();
+
+		for (int i = 1; i <= maxclients; i++)
+		{
+			IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
+
+			if (!pPlayer || !pPlayer->IsAuthorized())
+			{
+				continue;
+			}
+
+			g_CookieManager.OnClientAuthorized(i, pPlayer->GetAuthString());
+		}
+	}
+
 	return true;
 }
 
