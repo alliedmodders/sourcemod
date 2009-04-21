@@ -103,6 +103,12 @@ DetourResult DetourCallback(CBaseEntity *pEnt)
 		return Result_Ignore;
 	}
 
+	const char *cls = pEdict->GetClassName();
+	if (strcmp(cls, "tf_weapon_medigun") == 0)
+	{
+		return Result_Ignore;
+	}
+
 	int returnValue=0;
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEnt + info.actual_offset);
@@ -110,7 +116,7 @@ DetourResult DetourCallback(CBaseEntity *pEnt)
 
 	g_critForward->PushCell(index); //Client index
 	g_critForward->PushCell(engine->IndexOfEdict(pEdict)); // Weapon index
-	g_critForward->PushString(pEdict->GetClassName()); //Weapon classname
+	g_critForward->PushString(cls); //Weapon classname
 	g_critForward->PushCellByRef(&returnValue); //return value
 
 	cell_t result = 0;
