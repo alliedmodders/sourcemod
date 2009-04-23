@@ -34,13 +34,6 @@
 				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
 				"windows"	"\x83\xEC\x08\x53\x57\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x8B\xD8"
 			}
-			"CalcCriticalKnife"
-			{
-				"library"	"server"
-				"linux"		"@_ZN8CTFKnife26CalcIsAttackCriticalHelperEv"
-				"windows"	"\x8B\x81\xF0\x13\x00\x00\x83\xF8\xFF\x74\x29\x8B\x15"
-			}
-
 		}
 		"Offsets"
 		{
