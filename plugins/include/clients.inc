@@ -63,6 +63,10 @@ public const MaxClients;	/**< Maximum number of players the server supports (dyn
  * If you return false (or return nothing), the client will be rejected.  If the client is 
  * rejected by this forward or any other, OnClientDisconnect will not be called.
  *
+ * Note: Do not write to rejectmsg if you plan on returning true.  If multiple plugins write
+ * to the string buffer, it is not defined which plugin's string will be shown to the client,
+ * but it is guaranteed one of them will.
+ *
  * @param client		Client index.
  * @param rejectmsg		Buffer to store the rejection message when the connection is refused.
  * @param maxlen		Maximum number of characters for rejection buffer.

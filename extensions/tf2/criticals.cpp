@@ -35,7 +35,6 @@ IServerGameEnts *gameents = NULL;
 
 CDetour *calcIsAttackCriticalDetour = NULL;
 CDetour *calcIsAttackCriticalMeleeDetour = NULL;
-CDetour *calcIsAttackCriticalKnifeDetour = NULL;
 
 IForward *g_critForward = NULL;
 
@@ -152,24 +151,6 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperMelee, bool)
 	}
 }
 
-DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperKnife, bool)
-{
-	DetourResult result = DetourCallback((CBaseEntity *)this);
-
-	if (result == Result_Ignore)
-	{
-		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperKnife)();
-	}
-	else if (result == Result_NoCrit)
-	{
-		return 0;
-	}
-	else
-	{
-		return 1;
-	}
-}
-
 DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 {
 	DetourResult result = DetourCallback((CBaseEntity *)this);
@@ -192,7 +173,6 @@ void InitialiseDetours()
 {
 	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
 	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperMelee, "CalcCriticalMelee");
-	calcIsAttackCriticalKnifeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperKnife, "CalcCriticalKnife");
 
 	bool HookCreated = false;
 
@@ -208,12 +188,6 @@ void InitialiseDetours()
 		HookCreated = true;
 	}
 
-	if (calcIsAttackCriticalKnifeDetour != NULL)
-	{
-		calcIsAttackCriticalKnifeDetour->EnableDetour();
-		HookCreated = true;
-	}
-
 	if (!HookCreated)
 	{
 		g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
@@ -226,5 +200,4 @@ void RemoveDetours()
 {
 	calcIsAttackCriticalDetour->Destroy();
 	calcIsAttackCriticalMeleeDetour->Destroy();
-	calcIsAttackCriticalKnifeDetour->Destroy();
 }

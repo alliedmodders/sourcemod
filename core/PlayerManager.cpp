@@ -421,7 +421,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 
 	pPlayer->Initialize(pszName, pszAddress, pEntity);
 	m_clconnect->PushCell(client);
-	m_clconnect->PushStringEx(reject, maxrejectlen, SM_PARAM_STRING_UTF8, SM_PARAM_COPYBACK);
+	m_clconnect->PushStringEx(reject, maxrejectlen, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	m_clconnect->PushCell(maxrejectlen);
 	m_clconnect->Execute(&res);
 

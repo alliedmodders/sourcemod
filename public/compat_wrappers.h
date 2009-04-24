@@ -84,7 +84,7 @@
 		{
 			if (strcmp(pBase->GetName(), name) == 0)
 			{
-				if (pBase->IsCommand())
+				if (!pBase->IsCommand())
 				{
 					return NULL;
 				}
