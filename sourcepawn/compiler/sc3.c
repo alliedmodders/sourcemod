@@ -2422,8 +2422,6 @@ static int nesting=0;
           if (!checktags_string(arg[argidx].tags, arg[argidx].numtags, &lval)
               && !checktag(arg[argidx].tags,arg[argidx].numtags,lval.tag))
             error(213);
-          if (lval.tag!=0)
-            append_constval(&taglst,arg[argidx].name,lval.tag,0);
           break;
         case iVARIABLE:
           if (lval.ident==iLABEL || lval.ident==iFUNCTN || lval.ident==iREFFUNC
