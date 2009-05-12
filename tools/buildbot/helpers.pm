@@ -142,4 +142,15 @@ sub SVN_Add
 	chdir($dir);
 }
 
+sub GetBuildType
+{
+	my ($file)=(@_);
+	my ($type);
+	open(TYPE, $file) or die("Could not open file: $!\n");
+	$type = <TYPE>;
+	close(TYPE);
+	chomp $type;
+	return $type;
+}
+
 return 1;

@@ -141,7 +141,7 @@ public:
 
 private:
 	KTrie<Cookie *> cookieTrie;
-	SourceHook::List<CookieData *> clientData[MAXCLIENTS];
+	SourceHook::List<CookieData *> clientData[MAXCLIENTS+1];
 
 	bool connected[MAXCLIENTS+1];
 	bool statsLoaded[MAXCLIENTS+1];
