@@ -57,7 +57,12 @@ if ($^O eq "linux")
     Build::Command("flip -u tools/versionchanger.pl");
     Build::Command("chmod +x tools/versionchanger.pl");
 }
-Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
+my ($build_type);
+$build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
+if ($build_type == "dev")
+{
+	Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
+}
 
 #Bootstrap extensions that have complex dependencies
 

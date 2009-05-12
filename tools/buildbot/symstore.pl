@@ -22,13 +22,25 @@ my ($version);
 $version = Build::ProductVersion(Build::PathFormat('product.version'));
 $version .= '-hg' . Build::HgRevNum('.');
 
+my ($build_type);
+$build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
+
+if ($build_type == "dev")
+{
+	$build_type = "buildbot";
+}
+elsif ($build_type == "rel")
+{
+	$build_type = "release";
+}
+
 my ($line);
 while (<PDBLOG>)
 {
 	$line = $_;
 	$line =~ s/\.pdb/\*/;
 	chomp $line;
-	Build::Command("symstore add /r /f \"$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"buildbot\"");
+	Build::Command("symstore add /r /f \"$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
 }
 
 close(PDBLOG);
