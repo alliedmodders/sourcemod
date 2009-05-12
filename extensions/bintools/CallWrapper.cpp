@@ -180,7 +180,7 @@ const SourceHook::PassInfo * CallWrapper::GetSHParamInfo(unsigned int num)
 
 unsigned int CallWrapper::GetParamOffset(unsigned int num)
 {
-	assert(num <= GetParamCount() && num > 0);
+	assert(num < GetParamCount() && num >= 0);
 
 	return m_Params[num].offset;
 }
