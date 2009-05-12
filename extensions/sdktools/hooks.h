@@ -34,6 +34,9 @@
 
 #include "basehandle.h"
 #undef ARRAYSIZE
+#include "vector.h"
+#include "utlvector.h"
+#include "shareddefs.h"
 #include "usercmd.h"
 #include "extension.h"
 
