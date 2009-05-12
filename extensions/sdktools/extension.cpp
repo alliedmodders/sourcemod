@@ -38,6 +38,7 @@
 #include "tempents.h"
 #include "vsound.h"
 #include "output.h"
+#include "hooks.h"
 #include <ISDKTools.h>
 
 /**
@@ -186,6 +187,7 @@ void SDKTools::SDK_OnUnload()
 	g_TEManager.Shutdown();
 	s_TempEntHooks.Shutdown();
 	s_SoundHooks.Shutdown();
+	g_Hooks.Shutdown();
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
@@ -254,6 +256,7 @@ void SDKTools::SDK_OnAllLoaded()
 	g_TEManager.Initialize();
 	s_TempEntHooks.Initialize();
 	s_SoundHooks.Initialize();
+	g_Hooks.Initialize();
 	InitializeValveGlobals();
 }
 
@@ -377,6 +380,11 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 	snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
 
 	return true;
+}
+
+void SDKTools::OnClientPutInServer(int client)
+{
+	g_Hooks.OnClientPutInServer(client);
 }
 
 class SDKTools_API : public ISDKTools

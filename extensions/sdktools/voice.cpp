@@ -30,6 +30,7 @@
  */
 
 #include <extension.h>
+#include <hooks.h>
 
 #define SPEAK_NORMAL		0
 #define SPEAK_MUTED			1
@@ -116,6 +117,8 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 void SDKTools::OnClientDisconnecting(int client)
 {
+	g_Hooks.OnClientDisconnecting(client);
+
 	int max_clients = playerhelpers->GetMaxClients();
 
 	if (g_VoiceHookCount == 0)

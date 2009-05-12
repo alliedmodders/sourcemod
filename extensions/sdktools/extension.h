@@ -82,6 +82,7 @@ public:
 public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
+	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);

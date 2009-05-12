@@ -48,6 +48,7 @@
 #include <sdktools_voice>
 #include <sdktools_entinput>
 #include <sdktools_entoutput>
+#include <sdktools_hooks>
 
 enum SDKCallType
 {

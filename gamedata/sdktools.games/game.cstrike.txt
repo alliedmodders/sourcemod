@@ -104,6 +104,11 @@
 				"windows"	"32"
 				"linux"		"33"
 			}
+			"PlayerRunCmd"
+			{
+				"windows"	"347"
+				"linux"		"348"
+			}
 		}
 	}
 }

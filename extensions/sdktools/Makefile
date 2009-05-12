@@ -20,7 +20,7 @@ USEMETA = true
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp vdecoder.cpp vcallbuilder.cpp vcaller.cpp \
 	vnatives.cpp vsound.cpp tenatives.cpp trnatives.cpp tempents.cpp vstringtable.cpp \
 	vhelpers.cpp vglobals.cpp voice.cpp inputnatives.cpp teamnatives.cpp output.cpp \
-	outputnatives.cpp
+	outputnatives.cpp hooks.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -39,7 +39,7 @@ ifeq "$(ENGINE)" "original"
 	HL2LIB = $(HL2SDK)/linux_sdk
 	CFLAGS += -DSOURCE_ENGINE=1
 	METAMOD = $(MMSOURCE17)/core-legacy
-	INCLUDE += -I$(HL2SDK)/public/dlls
+	INCLUDE += -I$(HL2SDK)/public/dlls -I$(HL2SDK)/game_shared
 	SRCDS = $(SRCDS_BASE)
 	override ENGSET = true
 endif
@@ -49,7 +49,7 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=3
 	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
 endif
@@ -59,7 +59,7 @@ ifeq "$(ENGINE)" "left4dead"
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=4
 	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
 	SRCDS = $(SRCDS_BASE)/l4d
 	override ENGSET = true
 endif
