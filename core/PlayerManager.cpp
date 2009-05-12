@@ -1327,11 +1327,6 @@ void PlayerManager::OnSourceModMaxPlayersChanged( int newvalue )
 
 void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
 {
-	if (!m_FirstPass)
-	{
-		return;
-	}
-
 	if (newvalue == -1)
 	{
 		newvalue = gpGlobals->maxClients;
