@@ -2312,12 +2312,13 @@ static int declloc(int fstatic)
         if (matchtoken(']')) {
           idxtag[numdim] = 0;
           dim[numdim] = 0;
-		  numdim++;
+          numdim++;
           continue;
         }
         dim_ident = doexpr2(TRUE,FALSE,FALSE,FALSE,&idxtag[numdim],&dim_sym,0,&dim_val);
         if (dim_ident == iVARIABLE || dim_ident == iEXPRESSION || dim_ident == iARRAYCELL) {
           all_constant = 0;
+          dim[numdim] = 0;
         } else if (dim_ident == iCONSTEXPR) {
           dim[numdim] = dim_val.constval;
 		  /* :TODO: :URGENT: Make sure this still works */
@@ -2332,7 +2333,7 @@ static int declloc(int fstatic)
           error(29); /* invalid expression, assumed 0 */
         }
         numdim++;
-		needtoken(']');
+        needtoken(']');
       } while (matchtoken('['));
       if (all_constant) {
         /* Change the last dimension to be based on chars instead if we have a string */
@@ -2344,7 +2345,7 @@ static int declloc(int fstatic)
         ident = iARRAY;
         stgdel(_index, _code);
       } else {
-        if (tag == pc_tag_string && numdim && dim[numdim-1]) {
+        if (tag == pc_tag_string && numdim) {
           stradjust(sPRI);
         }
         pushreg(sPRI);

@@ -128,7 +128,7 @@ static cell_t RemovePlayerItem(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"RemovePlayerItem\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"RemovePlayerItem\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"RemovePlayerItem\" wrapper failed to initialize");
 		}
 	}
 
@@ -153,7 +153,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"GiveNamedItem\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"GiveNamedItem\" wrapper failed to initialize");
 		}
 	}
 
@@ -190,7 +190,7 @@ static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params
 		{
 			return pContext->ThrowNativeError("\"Weapon_GetSlot\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"Weapon_GetSlot\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"Weapon_GetSlot\" wrapper failed to initialize");
 		}
 	}
 
@@ -229,7 +229,7 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 		}
 	}
 
@@ -261,7 +261,7 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 		}
 	}
 
@@ -289,7 +289,7 @@ static cell_t ExtinguishEntity(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"Extinguish\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"Extinguish\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"Extinguish\" wrapper failed to initialize");
 		}
 	}
 
@@ -313,7 +313,7 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"Teleport\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"Teleport\" wrapper failed to initialize");
 		}
 	}
 
@@ -343,7 +343,7 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 		}
 		else if (!pCall)
 		{
-			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialize");
 		}
 	}
 
@@ -365,7 +365,7 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"CommitSuicide\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialize");
 		}
 	}
 
@@ -667,7 +667,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 		{
 			return pContext->ThrowNativeError("\"FindEntityByClassname\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"FindEntityByClassname\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"FindEntityByClassname\" wrapper failed to initialize");
 		}
 	}
 
@@ -707,7 +707,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"CreateEntityByName\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialize");
 		}
 	}
 
@@ -745,7 +745,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"CreateEntityByName\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialize");
 		}
 	}
 
@@ -782,7 +782,7 @@ static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"DispatchSpawn\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"DispatchSpawn\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"DispatchSpawn\" wrapper failed to initialize");
 		}
 	}
 
@@ -807,7 +807,7 @@ static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"DispatchKeyValue\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"DispatchKeyValue\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"DispatchKeyValue\" wrapper failed to initialize");
 		}
 	}
 
@@ -818,7 +818,7 @@ static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	FINISH_CALL_SIMPLE(&ret);
 
-	return (ret) ? 1 : 0;
+	return ret ? 1 : 0;
 }
 
 static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *params)
@@ -834,7 +834,7 @@ static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *para
 		{
 			return pContext->ThrowNativeError("\"DispatchKeyValueFloat\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"DispatchKeyValueFloat\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"DispatchKeyValueFloat\" wrapper failed to initialize");
 		}
 	}
 
@@ -845,7 +845,7 @@ static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *para
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	FINISH_CALL_SIMPLE(&ret);
 
-	return (ret) ? 1 : 0;
+	return ret ? 1 : 0;
 }
 
 static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *params)
@@ -865,7 +865,7 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 		{
 			return pContext->ThrowNativeError("\"DispatchKeyValueVector\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"DispatchKeyValueVector\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"DispatchKeyValueVector\" wrapper failed to initialize");
 		}
 	}
 
@@ -876,7 +876,7 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	FINISH_CALL_SIMPLE(&ret);
 
-	return (ret) ? 1 : 0;
+	return ret ? 1 : 0;
 }
 
 static cell_t sm_GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
@@ -907,7 +907,7 @@ static cell_t sm_SetEntityModel(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"SetEntityModel\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"SetEntityModel\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"SetEntityModel\" wrapper failed to initialize");
 		}
 	}
 
@@ -976,7 +976,7 @@ static cell_t WeaponEquip(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"WeaponEquip\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"WeaponEquip\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"WeaponEquip\" wrapper failed to initialize");
 		}
 	}
 
@@ -999,7 +999,7 @@ static cell_t ActivateEntity(IPluginContext *pContext, const cell_t *params)
 		}
 		else if (!pCall)
 		{
-			return pContext->ThrowNativeError("\"Activate\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"Activate\" wrapper failed to initialize");
 		}
 	}
 
@@ -1042,7 +1042,7 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 		}
 		else if (!pCall)
 		{
-			return pContext->ThrowNativeError("\"SetUserCvar\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"SetUserCvar\" wrapper failed to initialize");
 		}
 	}
 
@@ -1057,7 +1057,7 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 		}
 		else if (!pUpdateSettings)
 		{
-			return pContext->ThrowNativeError("\"SetUserCvar\" wrapper failed to initialized");
+			return pContext->ThrowNativeError("\"SetUserCvar\" wrapper failed to initialize");
 		}
 	}
 #else
