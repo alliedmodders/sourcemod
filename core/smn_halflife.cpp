@@ -457,6 +457,10 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	{
 		return 30;
 	}
+	else if (version == SOURCE_ENGINE_LEFT4DEAD)
+	{
+		return 40;
+	}
 #else
 	if (g_HL2.IsOriginalEngine())
 	{
