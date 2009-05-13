@@ -1,120 +1,126 @@
 "Games"
 {
-	/* Zombie Panic! Source 1.2b 
-	 * Note: This mod is not fully supported yet. 
+	/* Zombie Panic! Source 1.3-1.5
 	 * The definitions below were supplied by a third party.
 	 * (thanks "noob cannon lol")
 	 */
-	"ZPS"
+	"zps"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"333"
-				"linux"		"334"
+				"windows"	"355"
+				"linux"		"356"
 			}
 			"RemovePlayerItem"
+			{
+				"windows"	"242"
+				"linux"		"243"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			"Ignite"
+			{
+				"windows"	"194"
+				"linux"		"195"
+			}
+			"Extinguish"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+			"Teleport"
+			{
+				"windows"	"102"
+				"linux"		"103"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"396"
+				"linux"		"396"
+			}
+			"GetVelocity"
+			{
+				"windows"	"131"
+				"linux"		"132"
+			}
+			"EyeAngles"
+			{
+				"windows"	"123"
+				"linux"		"124"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"WeaponEquip"
 			{
 				"windows"	"230"
 				"linux"		"231"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"226"
-				"linux"		"227"
-			}
-			"Ignite"
-			{
-				"windows"	"190"
-				"linux"		"191"
-			}
-			"Extinguish"
-			{
-				"windows"	"191"
-				"linux"		"192"
-			}
-			"Teleport"
-			{
-				"windows"	"100"
-				"linux"		"101"
-			}
-			"CommitSuicide"
-			{
-				"windows"	"361"
-				"linux"		"362"
-			}
-			"GetVelocity"
-			{
-				"windows"	"128"
-				"linux"		"129"
-			}
-			"EyeAngles"
-			{
-				"windows"	"120"
-				"linux"		"121"
-			}
-			"AcceptInput"
-			{
-				"windows"	"35"
-				"linux"		"36"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
-			"SetEntityModel"
-			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-			"WeaponEquip"
-			{
-				"windows"	"219"
-				"linux"		"220"
-			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"31"
+				"linux"		"32"
 			}
 		}
 		"Signatures"
 		{
-			"CreateGameRulesObject"
+			"DispatchSpawn"
 			{
 				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2C\x6A\x01"
-			}
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x2A\x2A\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xC1\xE0\x04\x8B\x2A\x2A\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x2A\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x2A\x39"								
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"   
+"\x53\x55\x56\x8B\x74\x24\x10\x2A\x2A\x2A\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
 			}
 			"CreateEntityByName"
 			{
 				"library"	"server"
 				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x24\x2A\x57\x8B\x7C\x24\x2A\x83\xFE\xFF\x74\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x2A\x56\xFF\xD2"
+				"windows"   
+"\x56\x8B\x74\x24\x0C\x57\x8B\x7C\x24\x0C\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
 			}
-			"DispatchSpawn"
+			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x2A\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x60\x8B\xCB"
-			} 
+				"windows"   
+"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A"
+				"linux"	   
+"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14"
+				"linux"	   
+"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
 		}
 	}
 }
+
