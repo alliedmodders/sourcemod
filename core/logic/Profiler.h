@@ -38,8 +38,8 @@
 #include <sh_vector.h>
 #include <sh_stack.h>
 #include <stdio.h>
-#include "sm_globals.h"
-#include "sm_srvcmds.h"
+#include "common_logic.h"
+#include <IRootConsoleMenu.h>
 
 using namespace SourcePawn;
 using namespace SourceHook;
@@ -103,7 +103,7 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
 public: //IRootConsoleCommand
-	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
+	void OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *command);
 public: //IProfiler
 	void OnNativeBegin(IPluginContext *pContext, sp_native_t *native);
 	void OnNativeEnd() ;

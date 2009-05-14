@@ -30,10 +30,8 @@
  */
 
 #include <stdlib.h>
-#include "sm_globals.h"
-#include "sm_stringutil.h"
-#include "HandleSys.h"
-#include "sm_trie_tpl.h"
+#include "common_logic.h"
+#include <sm_trie_tpl.h>
 
 HandleType_t htCellTrie;
 
@@ -85,11 +83,11 @@ class TrieHelpers :
 public: //SMGlobalClass
 	void OnSourceModAllInitialized()
 	{
-		htCellTrie = g_HandleSys.CreateType("Trie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		htCellTrie = handlesys->CreateType("Trie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(htCellTrie, g_pCoreIdent);
+		handlesys->RemoveType(htCellTrie, g_pCoreIdent);
 	}
 public: //IHandleTypeDispatch
 	static void DestroySmartTrieNode(SmartTrieNode *pNode)
@@ -119,7 +117,7 @@ static cell_t CreateTrie(IPluginContext *pContext, const cell_t *params)
 
 	pTrie->mem_usage = 0;
 
-	if ((hndl = g_HandleSys.CreateHandle(htCellTrie, pTrie, pContext->GetIdentity(), g_pCoreIdent, NULL))
+	if ((hndl = handlesys->CreateHandle(htCellTrie, pTrie, pContext->GetIdentity(), g_pCoreIdent, NULL))
 		== BAD_HANDLE)
 	{
 		delete pTrie;
@@ -191,7 +189,7 @@ static cell_t SetTrieValue(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -227,7 +225,7 @@ static cell_t SetTrieArray(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -275,7 +273,7 @@ static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -317,7 +315,7 @@ static cell_t RemoveFromTrie(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -347,7 +345,7 @@ static cell_t ClearTrie(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -368,7 +366,7 @@ static cell_t GetTrieValue(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -403,7 +401,7 @@ static cell_t GetTrieArray(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -460,7 +458,7 @@ static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -507,7 +505,7 @@ static cell_t GetTrieSize(IPluginContext *pContext, const cell_t *params)
 
 	hndl = params[1];
 
-	if ((err = g_HandleSys.ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);

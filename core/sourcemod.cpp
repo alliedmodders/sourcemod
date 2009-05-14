@@ -47,7 +47,6 @@
 #include "TimerSys.h"
 #include "GameConfigs.h"
 #include "DebugReporter.h"
-#include "Profiler.h"
 #include "frame_hooks.h"
 #include "logic_bridge.h"
 
@@ -244,7 +243,6 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	}
 
 	g_pSourcePawn2->SetDebugListener(&g_DbgReporter);
-	g_pSourcePawn2->SetProfiler(&g_Profiler);
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, this, &SourceModBase::LevelInit, false);

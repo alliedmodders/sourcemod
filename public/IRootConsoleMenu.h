@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -41,19 +41,54 @@
  */
 
 #define SMINTERFACE_ROOTCONSOLE_NAME			"IRootConsole"
-#define SMINTERFACE_ROOTCONSOLE_VERSION			1
+#define SMINTERFACE_ROOTCONSOLE_VERSION			2
 
 class CCommand;
 
 namespace SourceMod
 {
 	/**
+	 * @brief Wrapper around CCommand.
+	 */
+	class ICommandArgs
+	{
+	public:
+		/**
+		 * @brief Returns an argument by number.
+		 *
+		 * @brief n		Argument number.
+		 * @return		Argument string.
+		 */
+		virtual const char *Arg(int n) const = 0;
+
+		/**
+		 * @brief Returns the argument count.
+		 *
+		 * @return		Argument count.
+		 */
+		virtual int ArgC() const = 0;
+
+		/**
+		 * @brief Returns the full argument string.
+		 *
+		 * @return		Argument string.
+		 */
+		virtual const char *ArgS() const = 0;
+	};
+
+	/**
 	 * @brief Handles a root console menu action.
 	 */
 	class IRootConsoleCommand
 	{
 	public:
-		virtual void OnRootConsoleCommand(const char *cmdname, const CCommand &command) =0;
+		virtual void OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+		{
+		}
+
+		virtual void OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *args)
+		{
+		}
 	};
 
 	/**
@@ -99,7 +134,22 @@ namespace SourceMod
 		 * @param text		String containing the command description.
 		 */
 		virtual void DrawGenericOption(const char *cmd, const char *text) =0;
+
+		/**
+		 * @brief Adds a root console command handler.  The command must be unique.
+		 *
+		 * This version of the function uses the OnRootConsoleCommand2 callback.
+		 *
+		 * @param cmd			String containing the console command.
+		 * @param text			Description text.
+		 * @param pHandler		An IRootConsoleCommand pointer to handle the command.
+		 * @return				True on success, false on too many commands or duplicate command.
+		 */
+		virtual bool AddRootConsoleCommand2(const char *cmd,
+											const char *text,
+											IRootConsoleCommand *pHandler) =0;
 	};
 }
 
 #endif //_INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_H_
+

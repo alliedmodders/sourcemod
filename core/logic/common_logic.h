@@ -44,6 +44,8 @@ extern ILibrarySys *libsys;
 extern ITextParsers *textparser;
 extern IVEngineServer *engine;
 extern IShareSys *sharesys;
+extern IRootConsole *rootmenu;
+extern IPluginManager *pluginsys;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

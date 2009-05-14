@@ -30,13 +30,12 @@
  */
 
 #include "Profiler.h"
-#include "PluginSys.h"
-#include "sm_stringutil.h"
-#include "Logger.h"
+#include <ISourceMod.h>
 #if defined PLATFORM_POSIX
 #include <sys/time.h>
 #include <time.h>
 #endif
+#include <IPluginSys.h>
 
 ProfileEngine g_Profiler;
 IProfiler *sm_profiler = &g_Profiler;
@@ -314,28 +313,28 @@ void ProfileEngine::Clear()
 
 void ProfileEngine::OnSourceModAllInitialized()
 {
-	g_RootMenu.AddRootConsoleCommand("profiler", "Profiler commands", this);
+	rootmenu->AddRootConsoleCommand2("profiler", "Profiler commands", this);
 }
 
 void ProfileEngine::OnSourceModShutdown()
 {
-	g_RootMenu.RemoveRootConsoleCommand("profiler", this);
+	rootmenu->RemoveRootConsoleCommand("profiler", this);
 }
 
-void ProfileEngine::OnRootConsoleCommand(const char *cmdname, const CCommand &command)
+void ProfileEngine::OnRootConsoleCommand2(const char *cmdname, const ICommandArgs *command)
 {
-	if (command.ArgC() >= 3)
+	if (command->ArgC() >= 3)
 	{
-		if (strcmp(command.Arg(2), "flush") == 0)
+		if (strcmp(command->Arg(2), "flush") == 0)
 		{
 			FILE *fp;
 			char path[256];
 
-			g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "logs/profile_%d.xml", (int)time(NULL));
+			g_pSM->BuildPath(Path_SM, path, sizeof(path), "logs/profile_%d.xml", (int)time(NULL));
 
 			if ((fp = fopen(path, "wt")) == NULL)
 			{
-				g_RootMenu.ConsolePrint("Failed, could not open file for writing: %s", path);
+				rootmenu->ConsolePrint("Failed, could not open file for writing: %s", path);
 				return;
 			}
 
@@ -343,14 +342,14 @@ void ProfileEngine::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 
 			fclose(fp);
 
-			g_RootMenu.ConsolePrint("Profiler report generated as: %s\n", path);
+			rootmenu->ConsolePrint("Profiler report generated as: %s\n", path);
 
 			return;
 		}
 	}
 
-	g_RootMenu.ConsolePrint("Profiler commands:");
-	g_RootMenu.DrawGenericOption("flush", "Flushes statistics to disk and starts over");
+	rootmenu->ConsolePrint("Profiler commands:");
+	rootmenu->DrawGenericOption("flush", "Flushes statistics to disk and starts over");
 }
 
 bool ProfileEngine::GenerateReport(FILE *fp)
@@ -387,9 +386,9 @@ void ProfileEngine::WriteReport(FILE *fp, ProfileReport *report, const char *nam
 	{
 		ar = report->GetReport(i);
 
-		strncopy(new_name, ar->atom_name, sizeof(new_name));
-		UTIL_ReplaceAll(new_name, sizeof(new_name), "<", "&lt;");
-		UTIL_ReplaceAll(new_name, sizeof(new_name), ">", "&gt;");
+		smcore.strncopy(new_name, ar->atom_name, sizeof(new_name));
+		smcore.ReplaceAll(new_name, sizeof(new_name), "<", "&lt;", true);
+		smcore.ReplaceAll(new_name, sizeof(new_name), ">", "&gt;", true);
 
 		fprintf(fp, "  <item name=\"%s\" numcalls=\"%d\" mintime=\"%f\" maxtime=\"%f\" totaltime=\"%f\"/>\n", 
 			new_name,
@@ -438,20 +437,20 @@ void ProfileReport::SaveAtom(const prof_atom_t &atom)
 
 	if (atom.atom_type == SP_PROF_NATIVES)
 	{
-		strncopy(full_name, atom.name, sizeof(full_name));
+		smcore.strncopy(full_name, atom.name, sizeof(full_name));
 	}
 	else
 	{
-		CPlugin *pl;
+		IPlugin *pl;
 		const char *file;
 
 		file = "unknown";
-		if ((pl = g_PluginSys.GetPluginByCtx(atom.ctx)) != NULL)
+		if ((pl = pluginsys->FindPluginByContext(atom.ctx)) != NULL)
 		{
 			file = pl->GetFilename();
 		}
 
-		UTIL_Format(full_name, sizeof(full_name), "%s!%s", file, atom.name);
+		smcore.Format(full_name, sizeof(full_name), "%s!%s", file, atom.name);
 	}
 
 	atom_time = CalcAtomTime(atom);
@@ -460,7 +459,7 @@ void ProfileReport::SaveAtom(const prof_atom_t &atom)
 	{
 		report = new prof_atom_report_t;
 
-		strncopy(report->atom_name, full_name, sizeof(report->atom_name));
+		smcore.strncopy(report->atom_name, full_name, sizeof(report->atom_name));
 		report->max_time = atom_time;
 		report->min_time = atom_time;
 		report->num_calls = 1;

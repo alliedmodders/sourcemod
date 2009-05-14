@@ -22,7 +22,9 @@ OBJECTS = \
 	ThreadSupport.cpp	\
 	smn_float.cpp		\
 	TextParsers.cpp		\
-	smn_textparse.cpp
+	smn_textparse.cpp	\
+	smn_adt_trie.cpp	\
+	Profiler.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -117,12 +117,23 @@ void RootConsoleMenu::ConsolePrint(const char *fmt, ...)
 
 bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, IRootConsoleCommand *pHandler)
 {
+	return _AddRootConsoleCommand(cmd, text, pHandler, false);
+}
+
+bool RootConsoleMenu::AddRootConsoleCommand2(const char *cmd, const char *text, IRootConsoleCommand *pHandler)
+{
+	return _AddRootConsoleCommand(cmd, text, pHandler, true);
+}
+
+bool RootConsoleMenu::_AddRootConsoleCommand(const char *cmd,
+											 const char *text,
+											 IRootConsoleCommand *pHandler,
+											 bool version2)
+{
 	if (sm_trie_retrieve(m_pCommands, cmd, NULL))
 	{
 		return false;
 	}
-
-	sm_trie_insert(m_pCommands, cmd, pHandler);
 
 	/* Sort this into the menu */
 	List<ConsoleEntry *>::iterator iter = m_Menu.begin();
@@ -136,6 +147,9 @@ bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, I
 			ConsoleEntry *pNew = new ConsoleEntry;
 			pNew->command.assign(cmd);
 			pNew->description.assign(text);
+			pNew->version2 = version2;
+			pNew->cmd = pHandler;
+			sm_trie_insert(m_pCommands, cmd, pNew);
 			m_Menu.insert(iter, pNew);
 			inserted = true;
 			break;
@@ -148,6 +162,9 @@ bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, I
 		ConsoleEntry *pNew = new ConsoleEntry;
 		pNew->command.assign(cmd);
 		pNew->description.assign(text);
+		pNew->version2 = version2;
+		pNew->cmd = pHandler;
+		sm_trie_insert(m_pCommands, cmd, pNew);
 		m_Menu.push_back(pNew);
 	}
 
@@ -156,18 +173,6 @@ bool RootConsoleMenu::AddRootConsoleCommand(const char *cmd, const char *text, I
 
 bool RootConsoleMenu::RemoveRootConsoleCommand(const char *cmd, IRootConsoleCommand *pHandler)
 {
-	/* Sanity tests */
-	IRootConsoleCommand *object;
-	if (sm_trie_retrieve(m_pCommands, cmd, (void **)&object))
-	{
-		if (object != pHandler)
-		{
-			return false;
-		}
-	} else {
-		return false;
-	}
-
 	sm_trie_delete(m_pCommands, cmd);
 
 	List<ConsoleEntry *>::iterator iter;
@@ -214,6 +219,49 @@ unsigned int RootConsoleMenu::GetInterfaceVersion()
 	return SMINTERFACE_ROOTCONSOLE_VERSION;
 }
 
+#if SOURCE_ENGINE==SE_EPISODEONE || SOURCE_ENGINE==SE_DARKMESSIAH
+class CCommandArgs : public ICommandArgs
+{
+public:
+	CCommandArgs(const CCommand& _cmd)
+	{
+	}
+	const char *Arg(int n) const
+	{
+		return engine->Cmd_Argv(n);
+	}
+	int ArgC() const
+	{
+		return engine->Cmd_Argc();
+	}
+	const char *ArgS() const
+	{
+		return engine->Cmd_Args();
+	}
+};
+#else
+class CCommandArgs : public ICommandArgs
+{
+	const CCommand *cmd;
+public:
+	CCommandArgs(const CCommand& _cmd) : cmd(&_cmd)
+	{
+	}
+	const char *Arg(int n) const
+	{
+		return cmd->Arg(n);
+	}
+	int ArgC() const
+	{
+		return cmd->ArgC();
+	}
+	const char *ArgS() const
+	{
+		return cmd->ArgS();
+	}
+};
+#endif
+
 void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 {
 	unsigned int argnum = cmd.ArgC();
@@ -241,10 +289,19 @@ void RootConsoleMenu::GotRootCmd(const CCommand &cmd)
 			return;
 		}
 
-		IRootConsoleCommand *pHandler;
-		if (sm_trie_retrieve(m_pCommands, cmdname, (void **)&pHandler))
+		CCommandArgs ocmd(cmd);
+
+		ConsoleEntry *entry;
+		if (sm_trie_retrieve(m_pCommands, cmdname, (void **)&entry))
 		{
-			pHandler->OnRootConsoleCommand(cmdname, cmd);
+			if (entry->version2)
+			{
+				entry->cmd->OnRootConsoleCommand2(cmdname, &ocmd);
+			}
+			else
+			{
+				entry->cmd->OnRootConsoleCommand(cmdname, cmd);
+			}
 			return;
 		}
 	}
@@ -357,3 +414,4 @@ CON_COMMAND(sm_dump_handles, "Dumps Handle usage to a file for finding Handle le
 		g_HandleSys.Dump(write_handles_to_game);
 	}
 }
+

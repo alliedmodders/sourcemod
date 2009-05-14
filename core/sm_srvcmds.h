@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -48,6 +48,8 @@ struct ConsoleEntry
 {
 	String command;
 	String description;
+	bool   version2;
+	IRootConsoleCommand *cmd;
 };
 
 class RootConsoleMenu : 
@@ -75,6 +77,13 @@ public: //IRootConsole
 	bool RemoveRootConsoleCommand(const char *cmd, IRootConsoleCommand *pHandler);
 	void ConsolePrint(const char *fmt, ...);
 	void DrawGenericOption(const char *cmd, const char *text);
+	bool AddRootConsoleCommand2(const char *cmd,
+								const char *text,
+								IRootConsoleCommand *pHandler);
+	bool _AddRootConsoleCommand(const char *cmd,
+								const char *text,
+								IRootConsoleCommand *pHandler,
+								bool version2);
 public:
 	void GotRootCmd(const CCommand &cmd);
 private:

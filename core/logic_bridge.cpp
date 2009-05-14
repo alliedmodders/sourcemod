@@ -41,6 +41,7 @@
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "ShareSys.h"
+#include "sm_srvcmds.h"
 
 static ILibrary *g_pLogic = NULL;
 static LogicInitFunction logic_init_fn;
@@ -92,6 +93,8 @@ static sm_core_t core_bridge =
 	&g_LibSys,
 	reinterpret_cast<IVEngineServer*>(&logic_engine),
 	&g_ShareSys,
+	&g_RootMenu,
+	&g_PluginSys,
 	/* Functions */
 	add_natives,
 	find_convar,
@@ -119,6 +122,7 @@ void InitLogicBridge()
 	glob->m_pGlobalClassNext = logic.head;
 
 	g_pThreader = logic.threader;
+	g_pSourcePawn2->SetProfiler(logic.profiler);
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)
