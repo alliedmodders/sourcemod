@@ -42,6 +42,7 @@
 #include "Logger.h"
 #include "ShareSys.h"
 #include "sm_srvcmds.h"
+#include "ForwardSys.h"
 
 static ILibrary *g_pLogic = NULL;
 static LogicInitFunction logic_init_fn;
@@ -95,6 +96,7 @@ static sm_core_t core_bridge =
 	&g_ShareSys,
 	&g_RootMenu,
 	&g_PluginSys,
+	&g_Forwards,
 	/* Functions */
 	add_natives,
 	find_convar,

@@ -29,10 +29,10 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include "PluginSys.h"
-#include "ForwardSys.h"
-#include "HandleSys.h"
+#include "common_logic.h"
+#include <IPluginSys.h>
+#include <IHandleSys.h>
+#include <IForwardSys.h>
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -52,36 +52,36 @@ public:
 		HandleAccess sec;
 
 		/* Set GlobalFwd handle access security */
-		g_HandleSys.InitAccessDefaults(NULL, &sec);
+		handlesys->InitAccessDefaults(NULL, &sec);
 		sec.access[HandleAccess_Read] = 0;
 		sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
 
 		/* Create 'GlobalFwd' handle type */
-		g_GlobalFwdType = g_HandleSys.CreateType("GlobalFwd", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+		g_GlobalFwdType = handlesys->CreateType("GlobalFwd", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 
 		/* Private forwards are cloneable */
 		sec.access[HandleAccess_Clone] = 0;
 
 		/* Create 'PrivateFwd' handle type */
-		g_PrivateFwdType = g_HandleSys.CreateType("PrivateFwd", this, g_GlobalFwdType, NULL, &sec, g_pCoreIdent, NULL);
+		g_PrivateFwdType = handlesys->CreateType("PrivateFwd", this, g_GlobalFwdType, NULL, &sec, g_pCoreIdent, NULL);
 	}
 
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(g_PrivateFwdType, g_pCoreIdent);
-		g_HandleSys.RemoveType(g_GlobalFwdType, g_pCoreIdent);
+		handlesys->RemoveType(g_PrivateFwdType, g_pCoreIdent);
+		handlesys->RemoveType(g_GlobalFwdType, g_pCoreIdent);
 	}
 
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
 		IForward *pForward = static_cast<IForward *>(object);
 
-		g_Forwards.ReleaseForward(pForward);
+		forwardsys->ReleaseForward(pForward);
 	}
 
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
-		*pSize = sizeof(CForward) + (((IForward *)object)->GetFunctionCount() * 12);
+		*pSize = sizeof(IForward*) + (((IForward *)object)->GetFunctionCount() * 12);
 		return true;
 	}
 } g_ForwardNativeHelpers;
@@ -112,9 +112,9 @@ static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *param
 
 	if (hndl == 0)
 	{
-		pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 	} else {
-		pPlugin = g_PluginSys.PluginFromHandle(hndl, &err);
+		pPlugin = pluginsys->PluginFromHandle(hndl, &err);
 
 		if (!pPlugin)
 		{
@@ -155,9 +155,9 @@ static cell_t sm_CreateGlobalForward(IPluginContext *pContext, const cell_t *par
 		forwardParams[i - 3] = static_cast<ParamType>(*addr);
 	}
 
-	IForward *pForward = g_Forwards.CreateForward(name, static_cast<ExecType>(params[2]), count - 2, forwardParams);
+	IForward *pForward = forwardsys->CreateForward(name, static_cast<ExecType>(params[2]), count - 2, forwardParams);
 
-	return g_HandleSys.CreateHandle(g_GlobalFwdType, pForward, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_GlobalFwdType, pForward, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t sm_CreateForward(IPluginContext *pContext, const cell_t *params)
@@ -177,9 +177,9 @@ static cell_t sm_CreateForward(IPluginContext *pContext, const cell_t *params)
 		forwardParams[i - 2] = static_cast<ParamType>(*addr);
 	}
 
-	IChangeableForward *pForward = g_Forwards.CreateForwardEx(NULL, static_cast<ExecType>(params[1]), count - 1, forwardParams);
+	IChangeableForward *pForward = forwardsys->CreateForwardEx(NULL, static_cast<ExecType>(params[1]), count - 1, forwardParams);
 
-	return g_HandleSys.CreateHandle(g_PrivateFwdType, pForward, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_PrivateFwdType, pForward, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t sm_GetForwardFunctionCount(IPluginContext *pContext, const cell_t *params)
@@ -188,7 +188,7 @@ static cell_t sm_GetForwardFunctionCount(IPluginContext *pContext, const cell_t 
 	HandleError err;
 	IForward *pForward;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_GlobalFwdType, NULL, (void **)&pForward))
+	if ((err=handlesys->ReadHandle(hndl, g_GlobalFwdType, NULL, (void **)&pForward))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid forward handle %x (error %d)", hndl, err);
@@ -205,7 +205,7 @@ static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)
 	IChangeableForward *pForward;
 	IPlugin *pPlugin;
 
-	if ((err=g_HandleSys.ReadHandle(fwdHandle, g_PrivateFwdType, NULL, (void **)&pForward))
+	if ((err=handlesys->ReadHandle(fwdHandle, g_PrivateFwdType, NULL, (void **)&pForward))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid private forward handle %x (error %d)", fwdHandle, err);
@@ -213,9 +213,9 @@ static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)
 
 	if (plHandle == 0)
 	{
-		pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 	} else {
-		pPlugin = g_PluginSys.PluginFromHandle(plHandle, &err);
+		pPlugin = pluginsys->PluginFromHandle(plHandle, &err);
 
 		if (!pPlugin)
 		{
@@ -241,7 +241,7 @@ static cell_t sm_RemoveFromForward(IPluginContext *pContext, const cell_t *param
 	IChangeableForward *pForward;
 	IPlugin *pPlugin;
 
-	if ((err=g_HandleSys.ReadHandle(fwdHandle, g_PrivateFwdType, NULL, (void **)&pForward))
+	if ((err=handlesys->ReadHandle(fwdHandle, g_PrivateFwdType, NULL, (void **)&pForward))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid private forward handle %x (error %d)", fwdHandle, err);
@@ -249,9 +249,9 @@ static cell_t sm_RemoveFromForward(IPluginContext *pContext, const cell_t *param
 
 	if (plHandle == 0)
 	{
-		pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 	} else {
-		pPlugin = g_PluginSys.PluginFromHandle(plHandle, &err);
+		pPlugin = pluginsys->PluginFromHandle(plHandle, &err);
 
 		if (!pPlugin)
 		{
@@ -277,7 +277,7 @@ static cell_t sm_RemoveAllFromForward(IPluginContext *pContext, const cell_t *pa
 	IChangeableForward *pForward;
 	IPlugin *pPlugin;
 
-	if ((err=g_HandleSys.ReadHandle(fwdHandle, g_PrivateFwdType, NULL, (void **)&pForward))
+	if ((err=handlesys->ReadHandle(fwdHandle, g_PrivateFwdType, NULL, (void **)&pForward))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid private forward handle %x (error %d)", fwdHandle, err);
@@ -285,9 +285,9 @@ static cell_t sm_RemoveAllFromForward(IPluginContext *pContext, const cell_t *pa
 
 	if (plHandle == 0)
 	{
-		pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 	} else {
-		pPlugin = g_PluginSys.PluginFromHandle(plHandle, &err);
+		pPlugin = pluginsys->PluginFromHandle(plHandle, &err);
 
 		if (!pPlugin)
 		{
@@ -310,9 +310,9 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 
 	if (hndl == 0)
 	{
-		pPlugin = g_PluginSys.FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 	} else {
-		pPlugin = g_PluginSys.PluginFromHandle(hndl, &err);
+		pPlugin = pluginsys->PluginFromHandle(hndl, &err);
 
 		if (!pPlugin)
 		{
@@ -344,7 +344,7 @@ static cell_t sm_CallStartForward(IPluginContext *pContext, const cell_t *params
 
 	hndl = static_cast<Handle_t>(params[1]);
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_GlobalFwdType, NULL, (void **)&pForward))
+	if ((err=handlesys->ReadHandle(hndl, g_GlobalFwdType, NULL, (void **)&pForward))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid forward handle %x (error %d)", hndl, err);

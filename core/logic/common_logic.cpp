@@ -47,6 +47,7 @@ IVEngineServer *engine;
 IShareSys *sharesys;
 IRootConsole *rootmenu;
 IPluginManager *pluginsys;
+IForwardManager *forwardsys;
 
 static sm_logic_t logic =
 {
@@ -69,6 +70,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	sharesys = core->sharesys;
 	rootmenu = core->rootmenu;
 	pluginsys = core->pluginsys;
+	forwardsys = core->forwardsys;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()

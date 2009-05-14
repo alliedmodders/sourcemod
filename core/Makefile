@@ -22,7 +22,7 @@ OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreC
 	NativeOwner.cpp logic_bridge.cpp
 OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
-	smn_filesystem.cpp smn_functions.cpp smn_gameconfigs.cpp smn_halflife.cpp \
+	smn_filesystem.cpp smn_gameconfigs.cpp smn_halflife.cpp \
 	smn_handles.cpp smn_keyvalues.cpp smn_banning.cpp \
 	smn_lang.cpp smn_player.cpp smn_string.cpp smn_timers.cpp \
 	smn_usermsgs.cpp smn_menus.cpp smn_database.cpp smn_vector.cpp \

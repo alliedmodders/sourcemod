@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -38,10 +38,11 @@
  */
 
 #include <IShareSys.h>
+#include <IHandleSys.h>
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	2
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	3
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -353,7 +354,17 @@ namespace SourceMod
 		 * @param listener	Pointer to a listener.
 		 */
 		virtual void RemovePluginsListener(IPluginsListener *listener) =0;
+
+		/**
+		 * @brief Converts a Handle to an IPlugin if possible.
+		 *
+		 * @param handle	Handle.
+		 * @param err		Error, set on failure (otherwise undefined).
+		 * @return			IPlugin pointer, or NULL on failure.
+		 */
+		virtual IPlugin *PluginFromHandle(Handle_t handle, HandleError *err) =0;
 	};
 }
 
 #endif //_INCLUDE_SOURCEMOD_PLUGINMNGR_INTERFACE_H_
+

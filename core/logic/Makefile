@@ -24,7 +24,8 @@ OBJECTS = \
 	TextParsers.cpp		\
 	smn_textparse.cpp	\
 	smn_adt_trie.cpp	\
-	Profiler.cpp
+	Profiler.cpp		\
+	smn_functions.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

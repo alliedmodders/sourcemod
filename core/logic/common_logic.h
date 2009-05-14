@@ -46,6 +46,7 @@ extern IVEngineServer *engine;
 extern IShareSys *sharesys;
 extern IRootConsole *rootmenu;
 extern IPluginManager *pluginsys;
+extern IForwardManager *forwardsys;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 
