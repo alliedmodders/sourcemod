@@ -30,17 +30,12 @@
  */
 
 #include <sh_list.h>
-#include "sm_globals.h"
-#include "sm_trie_tpl.h"
+#include <sm_trie_tpl.h>
+#include "common_logic.h"
 #include "CellArray.h"
-#include "convar.h"
-#include "sourcemm_api.h"
-#include "LibrarySys.h"
-#include "TextParsers.h"
-#include "sm_stringutil.h"
-#include "sourcemod.h"
-#include "Logger.h"
-#include "HandleSys.h"
+#include <ILibrarySys.h>
+#include <ITextParsers.h>
+#include <ISourceMod.h>
 
 using namespace SourceHook;
 
@@ -77,7 +72,7 @@ public:
 	}
 	void OnSourceModAllInitialized()
 	{
-		g_SourceMod.BuildPath(Path_SM, m_ConfigFile, sizeof(m_ConfigFile), "configs/maplists.cfg");
+		g_pSM->BuildPath(Path_SM, m_ConfigFile, sizeof(m_ConfigFile), "configs/maplists.cfg");
 	}
 	void OnSourceModShutdown()
 	{
@@ -94,13 +89,9 @@ public:
 			pMapList->bIsCompat = true;
 			pMapList->bIsPath = true;
 			pMapList->last_modified_time = 0;
-			strncopy(pMapList->name, name, sizeof(pMapList->name));
+			smcore.strncopy(pMapList->name, name, sizeof(pMapList->name));
 			pMapList->pArray = NULL;
-			g_SourceMod.BuildPath(Path_Game, 
-				pMapList->path,
-				sizeof(pMapList->path),
-				"%s",
-				file);
+			g_pSM->BuildPath(Path_Game, pMapList->path, sizeof(pMapList->path), "%s", file);
 			pMapList->serial = 0;
 			m_ListLookup.insert(name, pMapList);
 			m_MapLists.push_back(pMapList);
@@ -115,11 +106,7 @@ public:
 			return;
 		}
 
-		g_SourceMod.BuildPath(Path_Game,
-			path,
-			sizeof(path),
-			"%s",
-			file);
+		g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
 		/* If the path matches, don't reset the serial/time */
 		if (strcmp(path, pMapList->path) == 0)
@@ -127,7 +114,7 @@ public:
 			return;
 		}
 
-		strncopy(pMapList->path, path, sizeof(pMapList->path));
+		smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
 		pMapList->bIsPath = true;
 		pMapList->last_modified_time = 0;
 		pMapList->serial = 0;
@@ -139,7 +126,7 @@ public:
 		time_t fileTime;
 		SMCStates states = {0, 0};
 		
-		fileFound = g_LibSys.FileTime(m_ConfigFile, FileTime_LastChange, &fileTime);
+		fileFound = libsys->FileTime(m_ConfigFile, FileTime_LastChange, &fileTime);
 
 		/* If the file is found and hasn't changed, bail out now. */
 		if (fileFound && fileTime == m_ConfigLastChanged)
@@ -156,7 +143,7 @@ public:
 			return;
 		}
 
-		m_pMapCycleFile = icvar->FindVar("mapcyclefile");
+		m_pMapCycleFile = smcore.FindConVar("mapcyclefile");
 
 		/* Dump everything we know about. */
 		List<maplist_info_t *> compat;
@@ -166,12 +153,12 @@ public:
 		maplist_info_t *pDefList = new maplist_info_t;
 
 		pDefList->bIsPath = true;
-		strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
-		g_SourceMod.BuildPath(Path_Game,
+		smcore.strncopy(pDefList->name, "mapcyclefile", sizeof(pDefList->name));
+		g_pSM->BuildPath(Path_Game,
 			pDefList->path, 
 			sizeof(pDefList->path),
 			"%s",
-			m_pMapCycleFile ? m_pMapCycleFile->GetString() : "mapcycle.txt");
+			m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt");
 		pDefList->last_modified_time = 0;
 		pDefList->pArray = NULL;
 		pDefList->serial = 0;
@@ -182,19 +169,16 @@ public:
 		/* Now parse the config file even if we don't know about it.
 		 * This will give us a nice error message.
 		 */
-		if ((error = g_TextParser.ParseFile_SMC(m_ConfigFile, this, &states))
+		if ((error = textparser->ParseFile_SMC(m_ConfigFile, this, &states))
 			!= SMCError_Okay)
 		{
-			const char *errmsg = g_TextParser.GetSMCErrorString(error);
+			const char *errmsg = textparser->GetSMCErrorString(error);
 			if (errmsg == NULL)
 			{
 				errmsg = "Unknown error";
 			}
-			g_Logger.LogError("[SM] Could not parse file \"%s\"", m_ConfigFile);
-			g_Logger.LogError("[SM] Error on line %d (col %d): %s",
-				states.line,
-				states.col,
-				errmsg);
+			smcore.LogError("[SM] Could not parse file \"%s\"", m_ConfigFile);
+			smcore.LogError("[SM] Error on line %d (col %d): %s", states.line, states.col, errmsg);
 		}
 		else
 		{
@@ -249,7 +233,7 @@ public:
 			m_pCurMapList = new maplist_info_t;
 
 			memset(m_pCurMapList, 0, sizeof(maplist_info_t));
-			strncopy(m_pCurMapList->name, name, sizeof(m_pCurMapList->name));
+			smcore.strncopy(m_pCurMapList->name, name, sizeof(m_pCurMapList->name));
 
 			m_CurState = MPS_MAPLIST;
 		}
@@ -269,7 +253,7 @@ public:
 
 		if (strcmp(key, "file") == 0)
 		{
-			g_SourceMod.BuildPath(Path_Game, 
+			g_pSM->BuildPath(Path_Game, 
 				m_pCurMapList->path,
 				sizeof(m_pCurMapList->path),
 				"%s",
@@ -278,7 +262,7 @@ public:
 		}
 		else if (strcmp(key, "target") == 0)
 		{
-			strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
+			smcore.strncopy(m_pCurMapList->path, value, sizeof(m_pCurMapList->path));
 			m_pCurMapList->bIsPath = false;
 		}
 
@@ -369,9 +353,9 @@ public:
 
 			pNewArray = new CellArray(64);
 			free_new_array = true;
-			g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "maps");
+			g_pSM->BuildPath(Path_Game, path, sizeof(path), "maps");
 
-			if ((pDir = g_LibSys.OpenDirectory(path)) != NULL)
+			if ((pDir = libsys->OpenDirectory(path)) != NULL)
 			{
 				char *ptr;
 				cell_t *blk;
@@ -386,7 +370,7 @@ public:
 						pDir->NextEntry();
 						continue;
 					}
-					strncopy(buffer, pDir->GetEntryName(), sizeof(buffer));
+					smcore.strncopy(buffer, pDir->GetEntryName(), sizeof(buffer));
 					if ((ptr = strstr(buffer, ".bsp")) == NULL || ptr[4] != '\0')
 					{
 						pDir->NextEntry();
@@ -403,10 +387,10 @@ public:
 						pDir->NextEntry();
 						continue;
 					}
-					strncopy((char *)blk, buffer, 255);
+					smcore.strncopy((char *)blk, buffer, 255);
 					pDir->NextEntry();
 				}
-				g_LibSys.CloseDirectory(pDir);
+				libsys->CloseDirectory(pDir);
 			}
 
 			/* Remove the array if there were no items. */
@@ -461,7 +445,7 @@ public:
 		{
 			blk_dst = pUseArray->push();
 			blk_src = pNewArray->at(i);
-			strncopy((char *)blk_dst, (char *)blk_src, pUseArray->blocksize() * sizeof(cell_t));
+			smcore.strncopy((char *)blk_dst, (char *)blk_src, pUseArray->blocksize() * sizeof(cell_t));
 		}
 
 		/* Free resources if necessary. */
@@ -501,20 +485,20 @@ private:
 		if (m_pMapCycleFile != NULL && strcmp(name, "mapcyclefile") == 0)
 		{
 			char path[PLATFORM_MAX_PATH];
-			g_SourceMod.BuildPath(Path_Game,
+			g_pSM->BuildPath(Path_Game,
 				path, 
 				sizeof(path),
 				"%s",
-				m_pMapCycleFile ? m_pMapCycleFile->GetString() : "mapcycle.txt");
+				m_pMapCycleFile ? smcore.GetCvarString(m_pMapCycleFile) : "mapcycle.txt");
 
 			if (strcmp(path, pMapList->path) != 0)
 			{
-				strncopy(pMapList->path, path, sizeof(pMapList->path));
+				smcore.strncopy(pMapList->path, path, sizeof(pMapList->path));
 				pMapList->last_modified_time = 0;
 			}
 		}
 
-		if (!g_LibSys.FileTime(pMapList->path, FileTime_LastChange, &last_time)
+		if (!libsys->FileTime(pMapList->path, FileTime_LastChange, &last_time)
 			|| last_time > pMapList->last_modified_time)
 		{
 			/* Reparse */
@@ -533,7 +517,7 @@ private:
 			while (!feof(fp) && fgets(buffer, sizeof(buffer), fp) != NULL)
 			{
 				size_t len = strlen(buffer);
-				char *ptr = UTIL_TrimWhitespace(buffer, len);
+				char *ptr = smcore.TrimWhitespace(buffer, len);
 				if (*ptr == '\0'
 					|| *ptr == ';'
 					|| strncmp(ptr, "//", 2) == 0)
@@ -546,7 +530,7 @@ private:
 				}
 				if ((blk = pMapList->pArray->push()) != NULL)
 				{
-					strncopy((char *)blk, ptr, 255);
+					smcore.strncopy((char *)blk, ptr, 255);
 				}
 			}
 
@@ -616,7 +600,7 @@ static cell_t LoadMapList(IPluginContext *pContext, const cell_t *params)
 		HandleError err;
 		HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-		if ((err = g_HandleSys.ReadHandle(hndl, htCellArray, &sec, (void **)&pArray))
+		if ((err = handlesys->ReadHandle(hndl, htCellArray, &sec, (void **)&pArray))
 			!= HandleError_None)
 		{
 			return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -635,7 +619,7 @@ static cell_t LoadMapList(IPluginContext *pContext, const cell_t *params)
 	/* If the user wanted a new array, create it now. */
 	if (hndl == BAD_HANDLE)
 	{
-		if ((hndl = g_HandleSys.CreateHandle(htCellArray, pNewArray, pContext->GetIdentity(), g_pCoreIdent, NULL))
+		if ((hndl = handlesys->CreateHandle(htCellArray, pNewArray, pContext->GetIdentity(), g_pCoreIdent, NULL))
 			== BAD_HANDLE)
 		{
 			*addr = -1;

@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -76,7 +76,11 @@ class SMGlobalClass
 	friend class CExtensionManager;
 	friend class PlayerManager;
 public:
-	SMGlobalClass();
+	SMGlobalClass()
+	{
+		m_pGlobalClassNext = SMGlobalClass::head;
+		SMGlobalClass::head = this;
+	}
 public:
 	/**
 	 * @brief Called when SourceMod is initially loading
@@ -184,7 +188,7 @@ public:
 	virtual void OnSourceModMaxPlayersChanged(int newvalue)
 	{
 	}
-private:
+public:
 	SMGlobalClass *m_pGlobalClassNext;
 	static SMGlobalClass *head;
 };
@@ -193,6 +197,16 @@ extern ISourcePawnEngine *g_pSourcePawn;
 extern ISourcePawnEngine2 *g_pSourcePawn2;
 extern IdentityToken_t *g_pCoreIdent;
 
+namespace SourceMod
+{
+	class IThreader;
+	class ITextParsers;
+}
+
+extern IThreader *g_pThreader;
+extern ITextParsers *textparsers;
+
 #include "sm_autonatives.h"
 
 #endif //_INCLUDE_SOURCEMOD_GLOBALS_H_
+

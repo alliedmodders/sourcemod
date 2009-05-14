@@ -36,9 +36,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "TextParsers.h"
-#include "ShareSys.h"
-#include "sm_stringutil.h"
-#include "LibrarySys.h"
+#include <ILibrarySys.h>
 
 TextParsers g_TextParser;
 ITextParsers *textparsers = &g_TextParser;
@@ -71,7 +69,7 @@ TextParsers::TextParsers()
 
 void TextParsers::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 unsigned int TextParsers::GetUTF8CharBytes(const char *stream)
@@ -135,8 +133,8 @@ SMCError TextParsers::ParseSMCFile(const char *file,
 			states->line = 0;
 			states->col = 0;
 		}
-		g_LibSys.GetPlatformError(error, sizeof(error));
-		UTIL_Format(buffer, maxsize, "File could not be opened: %s", error);
+		libsys->GetPlatformError(error, sizeof(error));
+		smcore.Format(buffer, maxsize, "File could not be opened: %s", error);
 		return SMCError_StreamOpen;
 	}
 
@@ -145,7 +143,7 @@ SMCError TextParsers::ParseSMCFile(const char *file,
 	fclose(fp);
 
 	errstr = GetSMCErrorString(result);
-	UTIL_Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+	smcore.Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }
@@ -196,7 +194,7 @@ SMCError TextParsers::ParseSMCStream(const char *stream,
 	result = ParseStream_SMC(&rs, RawStreamReader, smc_listener, states);
 
 	const char *errstr = GetSMCErrorString(result);
-	UTIL_Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
+	smcore.Format(buffer, maxsize, "%s", errstr != NULL ? errstr : "Unknown error");
 
 	return result;
 }

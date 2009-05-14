@@ -39,7 +39,6 @@
 #include "sm_globals.h"
 #include "sm_memtable.h"
 #include "sm_trie_tpl.h"
-#include "ThreadSupport.h"
 
 using namespace SourceMod;
 using namespace SourceHook;

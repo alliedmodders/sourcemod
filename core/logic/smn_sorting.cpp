@@ -29,11 +29,10 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include <IHandleSys.h>
 #include <stdlib.h>
 #include <string.h>
-#include "HandleSys.h"
+#include <time.h>
+#include "common_logic.h"
 #include "CellArray.h"
 
 /***********************************
@@ -448,7 +447,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -535,7 +534,7 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = g_HandleSys.ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);

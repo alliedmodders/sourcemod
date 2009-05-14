@@ -152,6 +152,13 @@ namespace builder
 			lib.has_platform_ext = true;
 			libraries.Add(lib);
 
+            lib = new Library();
+            lib.package_path = "addons/sourcemod/bin";
+            lib.source_path = "core/logic";
+            lib.binary_name = "sourcemod.logic";
+            lib.vcproj_name = "logic";
+            libraries.Add(lib);
+
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "core";

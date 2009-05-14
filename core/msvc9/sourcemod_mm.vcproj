@@ -1421,6 +1421,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\logic_bridge.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\MemoryUtils.cpp"
 				>
 			</File>
@@ -1510,14 +1514,6 @@
 			</File>
 			<File
 				RelativePath="..\sourcemod.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\TextParsers.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\ThreadSupport.cpp"
 				>
 			</File>
 			<File
@@ -1624,6 +1620,10 @@
 			</File>
 			<File
 				RelativePath="..\Logger.h"
+				>
+			</File>
+			<File
+				RelativePath="..\logic_bridge.h"
 				>
 			</File>
 			<File
@@ -1748,14 +1748,6 @@
 			</File>
 			<File
 				RelativePath="..\sourcemod.h"
-				>
-			</File>
-			<File
-				RelativePath="..\TextParsers.h"
-				>
-			</File>
-			<File
-				RelativePath="..\ThreadSupport.h"
 				>
 			</File>
 			<File
@@ -1907,14 +1899,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\smn_adt_array.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_adt_stack.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\smn_adt_trie.cpp"
 				>
 			</File>
@@ -1959,10 +1943,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\smn_float.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\smn_functions.cpp"
 				>
 			</File>
@@ -1991,10 +1971,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\smn_maplists.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\smn_menus.cpp"
 				>
 			</File>
@@ -2011,15 +1987,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\smn_sorting.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\smn_string.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_textparse.cpp"
 				>
 			</File>
 			<File
@@ -2044,42 +2012,6 @@
 				RelativePath="..\version.rc"
 				>
 			</File>
-		</Filter>
-		<Filter
-			Name="Threader"
-			>
-			<Filter
-				Name="Header Files"
-				>
-				<File
-					RelativePath="..\thread\BaseWorker.h"
-					>
-				</File>
-				<File
-					RelativePath="..\thread\ThreadWorker.h"
-					>
-				</File>
-				<File
-					RelativePath="..\thread\WinThreads.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="Source Files"
-				>
-				<File
-					RelativePath="..\thread\BaseWorker.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\thread\ThreadWorker.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\thread\WinThreads.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

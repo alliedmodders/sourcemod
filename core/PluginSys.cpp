@@ -37,7 +37,6 @@
 #include "ForwardSys.h"
 #include "sourcemm_api.h"
 #include "sourcemod.h"
-#include "TextParsers.h"
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include "sm_srvcmds.h"

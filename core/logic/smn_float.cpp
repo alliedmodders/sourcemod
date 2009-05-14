@@ -32,7 +32,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include "sm_globals.h"
+#include "common_logic.h"
 
 /****************************************
 *                                       *

@@ -29,9 +29,9 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
+#include "common_logic.h"
 #include <ITextParsers.h>
-#include "HandleSys.h"
+#include <ISourceMod.h>
 
 HandleType_t g_TypeSMC = 0;
 
@@ -152,16 +152,16 @@ public:
 		/* These cannot be cloned, because they are locked to a specific plugin.
 		 * However, we let anyone read them because we don't care.
 		 */
-		g_HandleSys.InitAccessDefaults(NULL, &sec);
+		handlesys->InitAccessDefaults(NULL, &sec);
 		sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 		sec.access[HandleAccess_Read] = 0;
 
-		g_TypeSMC = g_HandleSys.CreateType("SMCParser", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+		g_TypeSMC = handlesys->CreateType("SMCParser", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 	}
 
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(g_TypeSMC, g_pCoreIdent);
+		handlesys->RemoveType(g_TypeSMC, g_pCoreIdent);
 	}
 
 	void OnHandleDestroy(HandleType_t type, void *object)
@@ -183,7 +183,7 @@ static cell_t SMC_CreateParser(IPluginContext *pContext, const cell_t *params)
 {
 	ParseInfo *pInfo = new ParseInfo();
 
-	Handle_t hndl = g_HandleSys.CreateHandle(g_TypeSMC, pInfo, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	Handle_t hndl = handlesys->CreateHandle(g_TypeSMC, pInfo, pContext->GetIdentity(), g_pCoreIdent, NULL);
 
 	/* Should never happen */
 	if (!hndl)
@@ -203,7 +203,7 @@ static cell_t SMC_SetParseStart(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	ParseInfo *parse;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -220,7 +220,7 @@ static cell_t SMC_SetParseEnd(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	ParseInfo *parse;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -237,7 +237,7 @@ static cell_t SMC_SetReaders(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	ParseInfo *parse;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -256,7 +256,7 @@ static cell_t SMC_SetRawLine(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	ParseInfo *parse;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -273,7 +273,7 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	ParseInfo *parse;
 
-	if ((err=g_HandleSys.ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
+	if ((err=handlesys->ReadHandle(hndl, g_TypeSMC, NULL, (void **)&parse))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid SMC Parse Handle %x (error %d)", hndl, err);
@@ -283,7 +283,7 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &file);
 
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "%s", file);
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
 
 	SMCStates states;
 	SMCError p_err = textparsers->ParseFile_SMC(path, parse, &states);

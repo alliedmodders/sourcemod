@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -379,6 +379,14 @@ print_error:
 
 void Logger::LogError(const char *vafmt, ...)
 {
+	va_list ap;
+	va_start(ap, vafmt);
+	LogErrorEx(vafmt, ap);
+	va_end(ap);
+}
+
+void Logger::LogErrorEx(const char *vafmt, va_list ap)
+{
 	if (!m_Active)
 	{
 		return;
@@ -408,10 +416,7 @@ void Logger::LogError(const char *vafmt, ...)
 			fprintf(fp, "L %s: Info (map \"%s\") (file \"errors_%04d%02d%02d.log\")\n", date, m_CurMapName.c_str(), curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 			m_ErrMapStart = true;
 		}
-		va_list ap;
-		va_start(ap, vafmt);
 		LogToOpenFileEx(fp, vafmt, ap);
-		va_end(ap);
 		fclose(fp);
 	}
 	else

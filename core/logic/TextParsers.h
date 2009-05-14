@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_TEXTPARSERS_H_
 
 #include <ITextParsers.h>
-#include "sm_globals.h"
+#include "common_logic.h"
 
 using namespace SourceMod;
 

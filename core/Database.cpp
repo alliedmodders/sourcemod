@@ -37,7 +37,7 @@
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include <stdlib.h>
-#include "ThreadSupport.h"
+#include <IThreader.h>
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1

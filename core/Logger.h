@@ -75,6 +75,7 @@ public:
 	void DisableLogging();
 	void LogMessage(const char *msg, ...);
 	void LogError(const char *msg, ...);
+	void LogErrorEx(const char *msg, va_list ap); 
 	void LogFatal(const char *msg, ...);
 	void LogToOpenFile(FILE *fp, const char *msg, ...);
 	void LogToOpenFileEx(FILE *fp, const char *msg, va_list ap);

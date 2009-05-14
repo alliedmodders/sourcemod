@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -49,6 +49,7 @@
 #include "DebugReporter.h"
 #include "Profiler.h"
 #include "frame_hooks.h"
+#include "logic_bridge.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -166,6 +167,11 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	g_LibSys.PathFormat(m_SMBaseDir, sizeof(m_SMBaseDir), "%s/%s", g_BaseDir.c_str(), basepath);
 	g_LibSys.PathFormat(m_SMRelDir, sizeof(m_SMRelDir), "%s", basepath);
 
+	if (!StartLogicBridge(error, maxlength))
+	{
+		return false;
+	}
+
 	/* Initialize CoreConfig to get the SourceMod base path properly - this parses core.cfg */
 	g_CoreConfig.Initialize();
 
@@ -185,7 +191,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	{
 		if (error && maxlength)
 		{
-			snprintf(error, maxlength, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
+			UTIL_Format(error, maxlength, "%s (failed to load bin/sourcepawn.jit.x86.%s)", 
 				myerror,
 				PLATFORM_LIB_EXT);
 		}
@@ -264,6 +270,8 @@ void SourceModBase::StartSourceMod(bool late)
 
 	/* Make the global core identity */
 	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
+
+	InitLogicBridge();
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -535,6 +543,7 @@ void SourceModBase::CloseSourceMod()
 	}
 
 	/* Rest In Peace */
+	ShutdownLogicBridge();
 	ShutdownJIT();
 }
 
@@ -731,8 +740,3 @@ int SourceModBase::GetPluginId()
 
 SMGlobalClass *SMGlobalClass::head = NULL;
 
-SMGlobalClass::SMGlobalClass()
-{
-	m_pGlobalClassNext = SMGlobalClass::head;
-	SMGlobalClass::head = this;
-}

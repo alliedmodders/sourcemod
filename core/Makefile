@@ -14,19 +14,19 @@ MMSOURCE17 = ../../mmsource-1.7
 
 OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreConfig.cpp \
 	Database.cpp DebugReporter.cpp EventManager.cpp GameConfigs.cpp HalfLife2.cpp Logger.cpp \
-	MemoryUtils.cpp PlayerManager.cpp TextParsers.cpp TimerSys.cpp Translator.cpp UserMessages.cpp \
+	MemoryUtils.cpp PlayerManager.cpp TimerSys.cpp Translator.cpp UserMessages.cpp \
 	sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_stringutil.cpp sm_trie.cpp \
 	sourcemm_api.cpp sourcemod.cpp MenuStyle_Base.cpp MenuStyle_Valve.cpp MenuManager.cpp \
 	MenuStyle_Radio.cpp ChatTriggers.cpp ADTFactory.cpp MenuVoting.cpp sm_crc32.cpp \
 	frame_hooks.cpp concmd_cleaner.cpp Profiler.cpp PhraseCollection.cpp NextMap.cpp \
-	NativeOwner.cpp
+	NativeOwner.cpp logic_bridge.cpp
 OBJECTS += smn_admin.cpp smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
-	smn_filesystem.cpp smn_float.cpp smn_functions.cpp smn_gameconfigs.cpp smn_halflife.cpp \
-	smn_handles.cpp smn_keyvalues.cpp smn_banning.cpp smn_maplists.cpp \
-	smn_lang.cpp smn_player.cpp smn_string.cpp smn_sorting.cpp smn_textparse.cpp smn_timers.cpp \
-	smn_usermsgs.cpp smn_menus.cpp smn_database.cpp smn_vector.cpp smn_adt_array.cpp \
-	smn_adt_trie.cpp smn_hudtext.cpp smn_adt_stack.cpp smn_nextmap.cpp
+	smn_filesystem.cpp smn_functions.cpp smn_gameconfigs.cpp smn_halflife.cpp \
+	smn_handles.cpp smn_keyvalues.cpp smn_banning.cpp \
+	smn_lang.cpp smn_player.cpp smn_string.cpp smn_timers.cpp \
+	smn_usermsgs.cpp smn_menus.cpp smn_database.cpp smn_vector.cpp \
+	smn_adt_trie.cpp smn_hudtext.cpp smn_nextmap.cpp
 OBJECTS += ExtensionSys.cpp 		\
 		   ForwardSys.cpp 			\
 		   HandleSys.cpp 			\
@@ -35,7 +35,6 @@ OBJECTS += ExtensionSys.cpp 		\
 		   PluginSys.cpp 			\
 		   ShareSys.cpp				\
 		   NativeInvoker.cpp
-OBJECTS += thread/ThreadWorker.cpp thread/BaseWorker.cpp thread/PosixThreads.cpp ThreadSupport.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -85,7 +84,7 @@ endif
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so \
-	tier0_i486.so -lpthread -static-libgcc
+	tier0_i486.so -static-libgcc
 	
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/vstdlib \
 	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook \
@@ -124,8 +123,6 @@ $(BIN_DIR)/%.o: %.c
 	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 all: check
-	mkdir -p $(BIN_DIR)/systems
-	mkdir -p $(BIN_DIR)/thread
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
 	$(MAKE) -f Makefile sourcemod
@@ -146,6 +143,5 @@ default: all
 
 clean: check
 	rm -rf $(BIN_DIR)/*.o
-	rm -rf $(BIN_DIR)/systems/*.o
 	rm -rf $(BIN_DIR)/thread/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)

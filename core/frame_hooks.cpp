@@ -37,7 +37,7 @@
 #include "PlayerManager.h"
 #include "CoreConfig.h"
 #include <sm_queue.h>
-#include "ThreadSupport.h"
+#include <IThreader.h>
 
 static IMutex *frame_mutex;
 static Queue<FrameAction> *frame_queue;

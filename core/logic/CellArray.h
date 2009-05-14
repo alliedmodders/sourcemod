@@ -29,6 +29,9 @@
  * Version: $Id$
  */
 
+#ifndef _INCLUDE_SOURCEMOD_CELLARRAY_H_
+#define _INCLUDE_SOURCEMOD_CELLARRAY_H_
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -204,3 +207,6 @@ private:
 	size_t m_AllocSize;
 	size_t m_Size;
 };
+
+#endif /* _INCLUDE_SOURCEMOD_CELLARRAY_H_ */
+
