@@ -1477,10 +1477,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\Profiler.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\ShareSys.cpp"
 				>
 			</File>
@@ -1676,10 +1672,6 @@
 			</File>
 			<File
 				RelativePath="..\PluginSys.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Profiler.h"
 				>
 			</File>
 			<File
@@ -1896,10 +1888,6 @@
 			>
 			<File
 				RelativePath="..\smn_admin.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_adt_trie.cpp"
 				>
 			</File>
 			<File

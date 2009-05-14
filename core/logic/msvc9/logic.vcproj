@@ -185,6 +185,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\smn_adt_trie.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Profiler.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\common_logic.cpp"
 				>
 			</File>
@@ -248,6 +256,10 @@
 			</File>
 			<File
 				RelativePath="..\ThreadSupport.h"
+				>
+			</File>
+			<File
+				RelativePath="..\Profiler.h"
 				>
 			</File>
 		</Filter>
