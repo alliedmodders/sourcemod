@@ -123,6 +123,7 @@ $(BIN_DIR)/%.o: %.c
 	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 all: check
+	mkdir -p $(BIN_DIR)
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
 	$(MAKE) -f Makefile sourcemod
@@ -143,5 +144,4 @@ default: all
 
 clean: check
 	rm -rf $(BIN_DIR)/*.o
-	rm -rf $(BIN_DIR)/thread/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)
