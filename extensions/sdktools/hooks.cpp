@@ -88,7 +88,13 @@ void CHookManager::OnClientDisconnecting(int client)
 		return;
 	}
 
-	CBaseEntity *pEntity = pEdict->GetUnknown()->GetBaseEntity();
+	IServerUnknown *pUnknown = pEdict->GetUnknown();
+	if (!pUnknown)
+	{
+		return;
+	}
+
+	CBaseEntity *pEntity = pUnknown->GetBaseEntity();
 	if (!pEntity)
 	{
 		return;
