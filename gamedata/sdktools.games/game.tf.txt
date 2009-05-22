@@ -18,48 +18,48 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"406"
-				"linux"		"410"
+				"windows"	"421"
+				"linux"		"426"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"238"
-				"linux"		"239"
+				"windows"	"243"
+				"linux"		"244"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"236"
-				"linux"		"237"
+				"windows"	"241"
+				"linux"		"242"
 			}
 			"Ignite"
 			{
-				"windows"	"193"
-				"linux"		"194"
+				"windows"	"198"
+				"linux"		"199"
 			}
 			"Extinguish"
 			{
-				"windows"	"197"
-				"linux"		"198"
+				"windows"	"202"
+				"linux"		"203"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"105"
+				"linux"		"106"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"391"
-				"linux"		"391"
+				"windows"	"397"
+				"linux"		"397"
 			}
 			"GetVelocity"
 			{
-				"windows"	"130"
-				"linux"		"131"
+				"windows"	"135"
+				"linux"		"136"
 			}
 			"EyeAngles"
 			{
-				"windows"	"122"
-				"linux"		"123"
+				"windows"	"127"
+				"linux"		"128"
 			}
 			"DispatchKeyValue"
 			{
@@ -88,8 +88,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"229"
-				"linux"		"230"
+				"windows"	"234"
+				"linux"		"235"
 			}
 			"Activate"
 			{
