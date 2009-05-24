@@ -496,12 +496,7 @@ void UserMessages::OnMessageEnd_Pre()
 		iter++;
 	}
 
-	if (handled)
-	{
-		goto supercede;
-	}
-
-	if (intercepted)
+	if (!handled && intercepted)
 	{
 		bf_write *engine_bfw;
 
