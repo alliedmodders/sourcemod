@@ -30,7 +30,7 @@ LINK = -lgcc -static-libgcc
 
 INCLUDE = -I. -I$(SMSDK)/public/sourcepawn
 
-CFLAGS += -DLINUX -DNDEBUG -DHAVE_STDINT_H -DAMX_ANSIONLY -DENABLE_BINRELOC -m32
+CFLAGS += -DLINUX -DHAVE_STDINT_H -DAMX_ANSIONLY -DENABLE_BINRELOC -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
