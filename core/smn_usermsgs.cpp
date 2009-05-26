@@ -130,7 +130,7 @@ void UsrMessageNatives::OnPluginUnloaded(IPlugin *plugin)
 		for (iter=pList->begin(); iter!=pList->end(); iter++)
 		{
 			pListener = (*iter);
-			if (g_UserMsgs.UnhookUserMessage(pListener->GetMessageId(), pListener, pListener->IsInterceptHook()))
+			if (g_UserMsgs.UnhookUserMessage2(pListener->GetMessageId(), pListener, pListener->IsInterceptHook()))
 			{
 				m_FreeListeners.push(pListener);
 			}
