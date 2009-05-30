@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -205,13 +205,25 @@ bool VoteMenuHandler::GetClientVoteChoice(int client, unsigned int *pItem)
 	return true;
 }
 
-bool VoteMenuHandler::RedrawToClient(int client)
+bool VoteMenuHandler::RedrawToClient(int client, bool revotes)
 {
 	unsigned int time_limit;
 
 	if (!IsClientInVotePool(client))
 	{
 		return false;
+	}
+
+	if (m_ClientVotes[client] >= 0)
+	{
+		if ((m_VoteFlags & VOTEFLAG_NO_REVOTES) == VOTEFLAG_NO_REVOTES || !revotes)
+		{
+			return false;
+		}
+		assert((unsigned)m_ClientVotes[client] < m_Items);
+		assert(m_Votes[m_ClientVotes[client]] > 0);
+		m_Votes[m_ClientVotes[client]]--;
+		m_ClientVotes[client] = -1;
 	}
 
 	if (m_nMenuTime == MENU_TIME_FOREVER)
@@ -489,3 +501,4 @@ bool VoteMenuHandler::IsCancelling()
 {
 	return m_bCancelled;
 }
+

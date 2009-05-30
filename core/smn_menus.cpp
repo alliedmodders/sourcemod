@@ -676,7 +676,13 @@ static cell_t VoteMenu(IPluginContext *pContext, const cell_t *params)
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
 
-	if (!g_Menus.StartVote(menu, params[3], addr, params[4]))
+	cell_t flags = 0;
+	if (params[0] >= 5)
+	{
+		flags = params[5];
+	}
+
+	if (!g_Menus.StartVote(menu, params[3], addr, params[4], flags))
 	{
 		return 0;
 	}
@@ -1445,7 +1451,13 @@ static cell_t RedrawClientVoteMenu(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Client is not in the voting pool");
 	}
 
-	return g_Menus.RedrawClientVoteMenu(client) ? 1 : 0;
+	bool revote = true;
+	if (params[0] >= 2 && !params[2])
+	{
+		revote = false;
+	}
+
+	return g_Menus.RedrawClientVoteMenu2(client, revote) ? 1 : 0;
 }
 
 class EmptyMenuHandler : public IMenuHandler
@@ -1567,3 +1579,4 @@ REGISTER_NATIVES(menuNatives)
 	{"VoteMenu",				VoteMenu},
 	{NULL,						NULL},
 };
+

@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		15
+#define SMINTERFACE_MENUMANAGER_VERSION		16
 
 /**
  * @file IMenuManager.h
@@ -178,6 +178,8 @@ namespace SourceMod
 	#define MENUFLAG_BUTTON_EXIT		(1<<0)	/**< Menu has an "exit" button */
 	#define MENUFLAG_BUTTON_EXITBACK	(1<<1)	/**< Menu has an "exit back" button */
 	#define MENUFLAG_NO_SOUND			(1<<2)	/**< Menu will not have any select sounds */
+
+	#define VOTEFLAG_NO_REVOTES			(1<<0)	/**< Players cannot change their votes */
 
 	/**
 	 * @brief Extended menu options.
@@ -869,7 +871,7 @@ namespace SourceMod
 		 * @param num_clients	Number of clients to display to.
 		 * @param clients		Client index array.
 		 * @param max_time		Maximum time to hold menu for.
-		 * @param flags			Vote flags (currently unused).
+		 * @param flags			Vote flags.
 		 * @return				True on success, false if a vote is in progress.
 		 */
 		virtual bool StartVote(IBaseMenu *menu,
@@ -914,7 +916,17 @@ namespace SourceMod
 		 * @return				True on success, false if client is not allowed to vote.
 		 */
 		virtual bool RedrawClientVoteMenu(int client) =0;
+
+		/**
+		 * @brief Redraws the current vote menu to a client in the voting pool.
+		 *
+		 * @param client		Client index.
+		 * @param revotes		True to allow revotes, false otherwise.
+		 * @return				True on success, false if client is not allowed to vote.
+		 */
+		virtual bool RedrawClientVoteMenu2(int client, bool revotes) =0;
 	};
 }
 
 #endif //_INCLUDE_SOURCEMOD_MENU_SYSTEM_H_
+
