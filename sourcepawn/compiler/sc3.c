@@ -698,6 +698,7 @@ static int plnge_rel(int *opstr,int opoff,int (*hier)(value *lval),value *lval)
   int lvalue,opidx;
   value lval2={0};
   int count;
+  char boolresult;
 
   /* this function should only be called for relational operators */
   assert(op1[opoff]==os_le);
@@ -708,7 +709,6 @@ static int plnge_rel(int *opstr,int opoff,int (*hier)(value *lval),value *lval)
     rvalue(lval);
   count=0;
   lval->boolresult=TRUE;
-  char boolresult;
   do {
     /* same check as in plnge(), but "chkbitwise" is always TRUE */
     if (count>0 && bitwise_opercount!=0)
