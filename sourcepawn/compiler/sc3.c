@@ -708,13 +708,16 @@ static int plnge_rel(int *opstr,int opoff,int (*hier)(value *lval),value *lval)
     rvalue(lval);
   count=0;
   lval->boolresult=TRUE;
+  char boolresult;
   do {
     /* same check as in plnge(), but "chkbitwise" is always TRUE */
     if (count>0 && bitwise_opercount!=0)
       error(212);
     if (count>0) {
       relop_prefix();
+      boolresult=lval->boolresult;
       *lval=lval2;      /* copy right hand expression of the previous iteration */
+      lval->boolresult=boolresult;
     } /* if */
     opidx+=opoff;
     plnge2(op1[opidx],hier,lval,&lval2);
