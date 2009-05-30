@@ -74,7 +74,7 @@ public:
 	unsigned int GetRemainingVoteDelay();
 	bool IsClientInVotePool(int client);
 	bool GetClientVoteChoice(int client, unsigned int *pItem);
-	bool RedrawToClient(int client);
+	bool RedrawToClient(int client, bool revote);
 private:
 	void Reset(IMenuHandler *mh);
 	void DecrementPlayerCount();
@@ -102,3 +102,4 @@ private:
 };
 
 #endif //_INCLUDE_SOURCEMOD_MENUVOTING_H_
+

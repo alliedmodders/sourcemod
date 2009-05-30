@@ -94,6 +94,8 @@ enum MenuAction
 #define VOTEINFO_ITEM_INDEX			0		/**< Item index */
 #define VOTEINFO_ITEM_VOTES			1		/**< Number of votes for the item */
 
+#define VOTEFLAG_NO_REVOTES			(1<<0)	/**< Players cannot change their votes */
+
 /**
  * Reasons a menu can be cancelled (MenuAction_Cancel).
  */
@@ -469,22 +471,24 @@ native CancelVote();
  * @param clients			Array of clients to broadcast to.
  * @param numClients		Number of clients in the array.
  * @param time				Maximum time to leave menu on the screen.
+ * @param flags				Optional voting flags.
  * @return					True on success, false if this menu already has a vote session
  *							in progress.
  * @error					Invalid Handle, or a vote is already in progress.
  */
-native bool:VoteMenu(Handle:menu, clients[], numClients, time);
+native bool:VoteMenu(Handle:menu, clients[], numClients, time, flags=0);
 
 /**
  * Sends a vote menu to all clients.  See VoteMenu() for more information.
  *
  * @param menu				Menu Handle.
  * @param time				Maximum time to leave menu on the screen.
+ * @param flags				Optional voting flags.
  * @return					True on success, false if this menu already has a vote session
  *							in progress.
  * @error					Invalid Handle.
  */
-stock VoteMenuToAll(Handle:menu, time)
+stock VoteMenuToAll(Handle:menu, time, flags=0)
 {
 	new num = GetMaxClients();
 	new total;
@@ -499,7 +503,7 @@ stock VoteMenuToAll(Handle:menu, time)
 		players[total++] = i;
 	}
 	
-	return VoteMenu(menu, players, total, time);
+	return VoteMenu(menu, players, total, time, flags);
 }
 /**
  * Callback for when a vote has ended and results are available.
@@ -543,7 +547,7 @@ native CheckVoteDelay();
 /**
  * Returns whether a client is in the pool of clients allowed 
  * to participate in the current vote.  This is determined by 
- * the client list passed to StartVote().
+ * the client list passed to VoteMenu().
  *
  * @param client			Client index.
  * @return					True if client is allowed to vote, false otherwise.
@@ -555,12 +559,13 @@ native bool:IsClientInVotePool(client);
  * Redraws the current vote menu to a client in the voting pool.
  *
  * @param client			Client index.
+ * @param revotes			True to allow revotes, false otherwise.
  * @return					True on success, false if the client is in the vote pool 
  *							but cannot vote again.
  * @error					No vote in progress, client is not in the voting pool, 
  *							or client index is invalid.
  */
-native bool:RedrawClientVoteMenu(client);
+native bool:RedrawClientVoteMenu(client, bool:revotes=true);
 
 /**
  * Returns a style's global Handle.
@@ -807,3 +812,4 @@ stock bool:IsNewVoteAllowed()
 	
 	return true;
 }
+

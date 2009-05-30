@@ -798,5 +798,11 @@ bool MenuManager::IsClientInVotePool(int client)
 
 bool MenuManager::RedrawClientVoteMenu(int client)
 {
-	return s_VoteHandler.RedrawToClient(client);
+	return RedrawClientVoteMenu2(client, true);
 }
+
+bool MenuManager::RedrawClientVoteMenu2(int client, bool revote)
+{
+	return s_VoteHandler.RedrawToClient(client, revote);
+}
+
