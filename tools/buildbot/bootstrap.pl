@@ -59,7 +59,7 @@ if ($^O eq "linux")
 }
 my ($build_type);
 $build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
-if ($build_type == "dev")
+if ($build_type eq "dev")
 {
 	Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
 }

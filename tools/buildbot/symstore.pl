@@ -25,11 +25,11 @@ $version .= '-hg' . Build::HgRevNum('.');
 my ($build_type);
 $build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
 
-if ($build_type == "dev")
+if ($build_type eq "dev")
 {
 	$build_type = "buildbot";
 }
-elsif ($build_type == "rel")
+elsif ($build_type eq "rel")
 {
 	$build_type = "release";
 }
