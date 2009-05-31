@@ -6416,7 +6416,7 @@ static void doreturn(void)
         } /* if */
       } else {
         int idxtag[sDIMEN_MAX];
-        int argcount;
+        int argcount, slength=0;
         /* this function does not yet have an array attached; clone the
          * returned symbol beneath the current function
          */
@@ -6434,6 +6434,8 @@ static void doreturn(void)
           if (dim[numdim]<=0)
             error(46,sym->name);
         } /* for */
+        if (sym->tag==pc_tag_string && numdim!=0)
+          slength=dim[numdim-1];
         /* the address of the array is stored in a hidden parameter; the address
          * of this parameter is 1 + the number of parameters (times the size of
          * a cell) + the size of the stack frame and the return address
@@ -6449,7 +6451,7 @@ static void doreturn(void)
         assert(curfunc->dim.arglist!=NULL);
         for (argcount=0; curfunc->dim.arglist[argcount].ident!=0; argcount++)
           /* nothing */;
-        sub=addvariable(curfunc->name,(argcount+3)*sizeof(cell),iREFARRAY,sGLOBAL,curfunc->tag,dim,numdim,idxtag);
+        sub=addvariable2(curfunc->name,(argcount+3)*sizeof(cell),iREFARRAY,sGLOBAL,curfunc->tag,dim,numdim,idxtag,slength);
         sub->parent=curfunc;
       } /* if */
       /* get the hidden parameter, copy the array (the array is on the heap;
