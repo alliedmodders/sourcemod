@@ -2,6 +2,38 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.2.1 [2009-05-31]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.1_Release_Notes
+
+ - Updated SDKTools for latest Team Fortress update.
+ - Added L4D handling to GuessSDKVersion() (bug 3842).
+ - Updated Zombie Panic Source offsets (bug 3632).
+ - Fixed crash when clientprefs saw disconnect from 64th client (bug 3821).
+ - Fixed Plugin_Handled acting like a Stop in usermsg hooks (bug 3685).
+ - Fixed early tv_enable causing crashes (bug 3766).
+ - Fixed unhook event crash (bug 3814).
+ - Fixed compiler reading uninitialized strings while processing varargs (bug 3811).
+ - Fixed compiler choosing whether to emit stradjust.pri on dynamic arrays based on uninitialized memory (bug 3810).
+ - Fixed Windows L4D CreateFakeClient signature (bug 3792).
+ - Fixed sm_slap for EP1 games (bug 3768).
+ - Fixed casting problems in TextParsers breaking TrimString for non-ASCII characters (bug 3800).
+ - Fixed OnClientConnect rejectmsg handling, improved doc (bug 3690).
+ - Fixed clientprefs not loading cookies for clients on late load (bug 3735).
+ - Fixed GetCommandFlags on original engine games (bug 3759).
+ - Fixed compiler asserting when returning a string literal (bug 3836).
+ - Fixed compiler erroring when tagging functions for string return (bug 3837).
+ - Fixed compiler not handling constant chained relational operators correctly (bug 3838).
+ - Fixed revote bug and inflexibilities in RedrawClientVoteMenu (bug 3834).
+ - Fixed auto update URL being set too late (bug 3699).
+ - Disabled nextmap in Synergy and Dystopia (bug 3687, bug 3741).
+ - Removed unnecessary SSE optimizations from msvc9 project files (bug 3756).
+ - Removed short-lived tag system (bug 3751).
+ - Removed the alive check from sm_rename. (bug 3698).
+ - Switched FortressForever to Valve menus (bug 3819). 
+
+----------------------------
+
 SourceMod 1.2.0 [2009-03-05]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.2.0_Release_Notes
