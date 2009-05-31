@@ -6371,6 +6371,11 @@ static void doreturn(void)
       error(78);                        /* mix "return;" and "return value;" */
     ident=doexpr(TRUE,FALSE,TRUE,FALSE,&tag,&sym,TRUE);
     needtoken(tTERM);
+    if (ident==iARRAY && sym==NULL) {
+      /* returning a literal string is not supported (it must be a variable) */
+      error(39);
+      ident=iCONSTEXPR;                 /* avoid handling an "array" case */
+    } /* if */
     /* see if this function already has a sub type (an array attached) */
     sub=finddepend(curfunc);
     assert(sub==NULL || sub->ident==iREFARRAY);
