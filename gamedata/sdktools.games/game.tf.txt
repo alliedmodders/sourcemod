@@ -98,8 +98,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"368"
-				"linux"		"369"
+				"windows"	"374"
+				"linux"		"375"
 			}
 		}
 	}
