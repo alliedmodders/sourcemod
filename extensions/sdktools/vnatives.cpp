@@ -982,7 +982,7 @@ static cell_t WeaponEquip(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(2, vparams, 1);
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
