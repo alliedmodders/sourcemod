@@ -33,6 +33,7 @@
 #include "HandleSys.h"
 #include <bitbuf.h>
 #include <vector.h>
+#include <HalfLife2.h>
 
 static cell_t smn_BfWriteBool(IPluginContext *pCtx, const cell_t *params)
 {
@@ -226,7 +227,14 @@ static cell_t smn_BfWriteEntity(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
 	}
 
-	pBitBuf->WriteShort(params[2]);
+	int index = g_HL2.ReferenceToIndex(params[2]);
+
+	if (index == -1)
+	{
+		return 0;
+	}
+
+	pBitBuf->WriteShort(index);
 
 	return 1;
 }
@@ -523,7 +531,9 @@ static cell_t smn_BfReadEntity(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid bit buffer handle %x (error %d)", hndl, herr);
 	}
 
-	return pBitBuf->ReadShort();
+	int ref = g_HL2.IndexToReference(pBitBuf->ReadShort());
+
+	return g_HL2.ReferenceToBCompatRef(ref);
 }
 
 static cell_t smn_BfReadAngle(IPluginContext *pCtx, const cell_t *params)

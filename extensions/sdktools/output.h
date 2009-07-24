@@ -49,8 +49,7 @@ struct OutputNameStruct;
  */
 struct omg_hooks 
 {
-	int entity_filter; // if not -1 is an entity signature
-	int entity_index;
+	cell_t entity_ref;
 	bool only_once;
 	IPluginFunction *pf;
 	OutputNameStruct *m_parent;
@@ -110,6 +109,8 @@ public:
 	void OnHookAdded();
 	void OnHookRemoved();
 
+	const char *GetEntityClassname(CBaseEntity *pEntity);
+
 private:
 	bool enabled;
 
@@ -123,7 +124,6 @@ private:
 	void DeleteFireEventDetour();
 
 	const char *FindOutputName(void *pOutput, CBaseEntity *pCaller);
-	edict_t *BaseHandleToEdict(CBaseHandle &hndl);
 
 	//Maps CEntityOutput * to a OutputNameStruct
 	IBasicTrie *EntityOutputs;

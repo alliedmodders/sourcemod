@@ -56,6 +56,8 @@ enum DialogType
 	DialogType_AskConnect	/**< ask the client to connect to a specified IP */
 };
 
+#define INVALID_ENT_REFERENCE 0xFFFFFFFF
+
 /**
  * Logs a generic message to the HL2 logs.
  *
@@ -544,3 +546,28 @@ stock DisplayAskConnectBox(client, Float:time, const String:ip[])
 	CreateDialog(client, Kv, DialogType_AskConnect);
 	CloseHandle(Kv);
 }
+
+/**
+ * Converts an entity index into a serial encoded entity reference.
+ *
+ * @param entity		Entity index.
+ * @return				Entity reference.
+ */
+native EntIndexToEntRef(entity);
+
+/**
+ * Retrieves the entity index from a reference.
+ *
+ * @param ref			Entity reference.
+ * @return				Entity index.
+ */
+native EntRefToEntIndex(ref);
+
+/**
+ * Converts a reference into a backwards compatible version.
+ *
+ * @param ref			Entity reference.
+ * @return				Bcompat reference.
+ */
+native MakeCompatEntRef(ref);
+

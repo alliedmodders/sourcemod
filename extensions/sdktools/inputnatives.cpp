@@ -37,21 +37,11 @@
 ICallWrapper *g_pAcceptInput = NULL;
 unsigned char g_Variant_t[SIZEOF_VARIANT_T] = {0};
 
-#define ENTINDEX_TO_CBASEENTITY(index, buffer) \
-	pEdict = PEntityOfEntIndex(index); \
-	if (!pEdict || pEdict->IsFree()) \
-	{ \
-		return pContext->ThrowNativeError("Entity %d is not valid or is freed", index); \
-	} \
-	pUnk = pEdict->GetUnknown(); \
-	if (!pUnk) \
-	{ \
-		return pContext->ThrowNativeError("Entity %d is a not an IServerUnknown", index); \
-	} \
-	buffer = pUnk->GetBaseEntity(); \
+#define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
+	buffer = gamehelpers->ReferenceToEntity(ref); \
 	if (!buffer) \
 	{ \
-		return pContext->ThrowNativeError("Entity %d is not a CBaseEntity", index); \
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
 	}
 
 /* Hack to init the variant_t object for the first time */
@@ -109,8 +99,6 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CBaseEntity *pActivator, *pCaller, *pDest;
-	edict_t *pEdict;
-	IServerUnknown *pUnk;
 
 	char *inputname;
 	unsigned char vstk[sizeof(void *) + sizeof(const char *) + sizeof(CBaseEntity *)*2 + SIZEOF_VARIANT_T + sizeof(int)];
@@ -257,8 +245,6 @@ static cell_t SetVariantColor(IPluginContext *pContext, const cell_t *params)
 static cell_t SetVariantEntity(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict;
-	IServerUnknown *pUnk;
 	unsigned char *vptr = g_Variant_t;
 	CBaseHandle bHandle;
 

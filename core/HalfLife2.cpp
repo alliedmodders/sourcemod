@@ -37,9 +37,13 @@
 #include "sm_stringutil.h"
 #include "GameConfigs.h"
 #include <compat_wrappers.h>
+#include <Logger.h>
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
+
+static void *g_EntList = NULL;
+static int entInfoOffset = -1;
 
 namespace SourceHook
 {
@@ -121,6 +125,51 @@ void CHalfLife2::OnSourceModAllInitialized()
 	m_SayTextMsg = g_UserMsgs.GetMessageIndex("SayText");
 	m_VGUIMenu = g_UserMsgs.GetMessageIndex("VGUIMenu");
 	g_ShareSys.AddInterface(NULL, this);
+}
+
+void CHalfLife2::OnSourceModAllInitialized_Post()
+{
+	char *addr = NULL;
+#ifdef PLATFORM_WINDOWS
+	int offset;
+
+	/* gEntList and/or g_pEntityList */
+	if (!g_pGameConf->GetMemSig("LevelShutdown", (void **)&addr))
+	{
+		g_Logger.LogError("Logical Entities not supported by this mod (LevelShutdown) - Reverting to networkable entities only");
+		return;
+	}
+	if (!addr)
+	{
+		g_Logger.LogError("Failed lookup of LevelShutdown - Reverting to networkable entities only");
+		return;
+	}
+	if (!g_pGameConf->GetOffset("gEntList", &offset))
+	{
+		g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
+		return;
+	}
+	g_EntList = *reinterpret_cast<void **>(addr + offset);
+#elif defined PLATFORM_LINUX
+	/* gEntList and/or g_pEntityList */
+	if (!g_pGameConf->GetMemSig("gEntList", (void **)&addr))
+	{
+		g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
+		return;
+	}
+	if (!addr)
+	{
+		g_Logger.LogError("Failed lookup of gEntList - Reverting to networkable entities only");
+		return;
+	}
+	g_EntList = reinterpret_cast<void *>(addr);
+#endif
+
+	if (!g_pGameConf->GetOffset("EntInfo", &entInfoOffset))
+	{
+		g_Logger.LogError("Logical Entities not supported by this mod (EntInfo) - Reverting to networkable entities only");
+		return;
+	}
 }
 
 #if !defined METAMOD_PLAPI_VERSION
@@ -641,4 +690,174 @@ const char *CHalfLife2::GetCurrentMap()
 void CHalfLife2::ServerCommand(const char *buffer)
 {
 	engine->ServerCommand(buffer);
+}
+
+cell_t CHalfLife2::EntityToReference(CBaseEntity *pEntity)
+{
+	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
+	CBaseHandle hndl = pUnknown->GetRefEHandle();
+	return (hndl.ToInt() | (1<<31));
+}
+
+CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
+{
+	CEntInfo *pInfo = NULL;
+
+	if (entRef & (1<<31))
+	{
+		/* Proper ent reference */
+		int hndlValue = entRef & ~(1<<31);
+		CBaseHandle hndl(hndlValue);
+
+		pInfo = LookupEntity(hndl.GetEntryIndex());
+		if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		{
+			return NULL;
+		}
+	}
+	else
+	{
+		/* Old style index only */
+		pInfo = LookupEntity(entRef);
+	}
+
+	if (!pInfo)
+	{
+		return NULL;
+	}
+
+	IServerUnknown *pUnk = static_cast<IServerUnknown *>(pInfo->m_pEntity);
+	if (pUnk)
+	{
+		return pUnk->GetBaseEntity();
+	}
+
+	return NULL;
+}
+
+/**
+ * Retrieves the CEntInfo pointer from g_EntList for a given entity index
+ */
+CEntInfo *CHalfLife2::LookupEntity(int entIndex)
+{
+	if (!g_EntList || entInfoOffset == -1)
+	{
+		/* Attempt to use engine interface instead */
+		static CEntInfo tempInfo;
+		tempInfo.m_pNext = NULL;
+		tempInfo.m_pPrev = NULL;
+
+		edict_t *pEdict = engine->PEntityOfEntIndex(entIndex);
+
+		if (!pEdict)
+		{
+			return NULL;
+		}
+
+		IServerUnknown *pUnk = pEdict->GetUnknown();
+
+		if (!pUnk)
+		{
+			return NULL;
+		}
+
+		tempInfo.m_pEntity = pUnk;
+		tempInfo.m_SerialNumber = pUnk->GetRefEHandle().GetSerialNumber();
+
+		return &tempInfo;
+	}
+
+	CEntInfo *pArray = (CEntInfo *)(((unsigned char *)g_EntList) + entInfoOffset);
+	return &pArray[entIndex];
+}
+
+/**
+	SERIAL_MASK = 0x7fff (15 bits)
+
+	#define	MAX_EDICT_BITS				11
+	#define NUM_ENT_ENTRY_BITS		(MAX_EDICT_BITS + 1)
+	m_Index = iEntry | (iSerialNumber << NUM_ENT_ENTRY_BITS); 
+	
+	Top 5 bits of a handle are unused.
+	Bit 31 - Our 'reference' flag indicator
+*/
+
+cell_t CHalfLife2::IndexToReference(int entIndex)
+{
+	CBaseEntity *pEnt = ReferenceToEntity(entIndex);
+	if (!pEnt)
+	{
+		return INVALID_EHANDLE_INDEX;
+	}
+
+	return EntityToReference(pEnt);
+}
+
+int CHalfLife2::ReferenceToIndex(cell_t entRef)
+{
+	if (entRef == INVALID_EHANDLE_INDEX)
+	{
+		return INVALID_EHANDLE_INDEX;
+	}
+
+	if (entRef & (1<<31))
+	{
+		/* Proper ent reference */
+		int hndlValue = entRef & ~(1<<31);
+		CBaseHandle hndl(hndlValue);
+
+		CEntInfo *pInfo = LookupEntity(hndl.GetEntryIndex());
+
+		if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		{
+			return INVALID_EHANDLE_INDEX;
+		}
+
+		return hndl.GetEntryIndex();
+	}
+
+	return entRef;
+}
+
+cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
+{
+	if (pEntity == NULL)
+	{
+		return INVALID_EHANDLE_INDEX;
+	}
+
+	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
+	CBaseHandle hndl = pUnknown->GetRefEHandle();
+
+	if (hndl.GetEntryIndex() >= MAX_EDICTS)
+	{
+		return (hndl.ToInt() | (1<<31));
+	}
+	else
+	{
+		return hndl.GetEntryIndex();
+	}
+}
+
+cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
+{
+	if (entRef == INVALID_EHANDLE_INDEX)
+	{
+		return INVALID_EHANDLE_INDEX;
+	}
+
+	int hndlValue = entRef & ~(1<<31);
+	CBaseHandle hndl(hndlValue);
+
+	if (hndl.GetEntryIndex() < MAX_EDICTS)
+	{
+		return hndl.GetEntryIndex();
+	}
+
+	return entRef;
+}
+
+void *CHalfLife2::GetGlobalEntityList()
+{
+	return g_EntList;
 }

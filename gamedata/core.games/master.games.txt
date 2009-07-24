@@ -14,4 +14,25 @@
 	"common.games.txt"
 	{
 	}
+
+	"engine.l4d.txt"
+	{
+		"engine"	"left4dead"
+	}
+	
+	"engine.ep2.txt"
+	{
+		"engine"	"orangebox"
+	}
+	
+	"engine.ep1.txt"
+	{
+		"engine"	"original"
+	}
+	
+	"engine.darkm.txt"
+	{
+		"engine"	"darkmessiah"
+	}
+
 }

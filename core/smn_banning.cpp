@@ -248,7 +248,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	char *ban_reason, *ban_cmd;
 	int client, ban_flags, ban_source, ban_time;
 
-	client = params[1];
+	client = g_HL2.ReferenceToIndex(params[1]);
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
 	if (!pPlayer || !pPlayer->IsConnected())

@@ -38,8 +38,7 @@ public:
 	bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask)
 	{
 		cell_t res = 1;
-		edict_t *pEdict = gameents->BaseEntityToEdict(reinterpret_cast<CBaseEntity *>(pEntity));
-		m_pFunc->PushCell(IndexOfEdict(pEdict));
+		m_pFunc->PushCell(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(pEntity)));
 		m_pFunc->PushCell(contentsMask);
 		m_pFunc->PushCell(m_Data);
 		m_pFunc->Execute(&res);
@@ -505,8 +504,7 @@ static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
-	edict_t *pEdict = gameents->BaseEntityToEdict(tr->m_pEnt);
-	return IndexOfEdict(pEdict);
+	return gamehelpers->EntityToBCompatRef(tr->m_pEnt);
 }
 
 static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *params)
@@ -532,8 +530,7 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 #else
 		mask = enginetrace->GetPointContents(pos, &hentity);
 #endif
-		edict_t *pEdict = gameents->BaseEntityToEdict(reinterpret_cast<CBaseEntity *>(hentity));
-		*ent = IndexOfEdict(pEdict);
+		*ent = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(hentity));
 	}
 
 	return mask;
@@ -541,7 +538,8 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 
 static cell_t smn_TRGetPointContentsEnt(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = PEntityOfEntIndex(params[1]);
+	/* TODO: See if we can get the collidable with a prop and remove the reliance on edicts */
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[1]));
 	if (!pEdict || pEdict->IsFree())
 	{
 		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);

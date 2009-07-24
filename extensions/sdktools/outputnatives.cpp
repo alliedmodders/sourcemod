@@ -40,12 +40,13 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Entity Outputs are disabled - See error logs for details");
 	}
 
-	edict_t *pEdict = PEntityOfEntIndex(params[1]);
-	if (!pEdict)
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[1]);
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Invalid Entity index %i", params[1]);
+		return pContext->ThrowNativeError("Invalid Entity index %i (%i)", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
-	const char *classname = pEdict->GetClassName();
+
+	const char *classname = g_OutputManager.GetEntityClassname(pEntity);
 
 	char *outputname;
 	pContext->LocalToString(params[2], &outputname);
@@ -63,7 +64,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
-		if (hook->pf == pFunction && hook->entity_filter == pEdict->m_NetworkSerialNumber)
+		if (hook->pf == pFunction && hook->entity_ref == gamehelpers->EntityToReference(pEntity))
 		{
 			return 0;
 		}
@@ -71,8 +72,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	hook = g_OutputManager.NewHook();
 
-	hook->entity_filter = pEdict->m_NetworkSerialNumber;
-	hook->entity_index = IndexOfEdict(pEdict);
+	hook->entity_ref = gamehelpers->EntityToReference(pEntity);
 	hook->only_once= !!params[4];
 	hook->pf = pFunction;
 	hook->m_parent = pOutputName;
@@ -125,7 +125,7 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
-		if (hook->pf == pFunction && hook->entity_filter == -1)
+		if (hook->pf == pFunction && hook->entity_ref == -1)
 		{
 			//already hooked to this function...
 			//throw an error or just let them get away with stupidity?
@@ -136,7 +136,7 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	hook = g_OutputManager.NewHook();
 
-	hook->entity_filter = -1;
+	hook->entity_ref = -1;
 	hook->pf = pFunction;
 	hook->m_parent = pOutputName;
 	hook->in_use = false;
@@ -192,7 +192,7 @@ cell_t UnHookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
-		if (hook->pf == pFunction && hook->entity_filter == -1)
+		if (hook->pf == pFunction && hook->entity_ref == -1)
 		{
 			// remove this hook.
 			if (hook->in_use)
@@ -220,13 +220,13 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	}
 
 	// Find the classname of the entity and lookup the classname and output structures
-	edict_t *pEdict = PEntityOfEntIndex(params[1]);
-	if (!pEdict)
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[1]);
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Invalid Entity index %i", params[1]);
+		return pContext->ThrowNativeError("Invalid Entity index %i (%i)", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
 
-	const char *classname = pEdict->GetClassName();
+	const char *classname = g_OutputManager.GetEntityClassname(pEntity);
 
 	char *outputname;
 	pContext->LocalToString(params[2], &outputname);
@@ -249,7 +249,8 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
-		if (hook->pf == pFunction && hook->entity_index == IndexOfEdict(pEdict))
+		/* We're not serial checking and just removing by index here - This was always allowed so is left for bcompat */
+		if (hook->pf == pFunction && gamehelpers->ReferenceToIndex(hook->entity_ref) == gamehelpers->ReferenceToIndex(params[1]))
 		{
 			// remove this hook.
 			if (hook->in_use)

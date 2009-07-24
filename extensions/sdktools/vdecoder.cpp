@@ -222,8 +222,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			CBaseEntity *pEntity = *(CBaseEntity **)buffer;
 			if (pEntity)
 			{
-				edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-				*addr = IndexOfEdict(pEdict);
+				*addr = gamehelpers->EntityToBCompatRef(pEntity);
 			} else {
 				*addr = -1;
 			}
@@ -384,16 +383,21 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 		}
 	case Valve_CBasePlayer:
 		{
-			edict_t *pEdict;
+			CBaseEntity *pEntity = NULL;
 			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
 				cell_t *addr;
 				pContext->LocalToPhysAddr(param, &addr);
 				param = *addr;
 			}
-			if (param >= 1 && param <= playerhelpers->GetMaxClients())
+			int index = gamehelpers->ReferenceToIndex(param);
+			if (index == INVALID_EHANDLE_INDEX && param != -1)
 			{
-				IGamePlayer *player = playerhelpers->GetGamePlayer(param);
+				return Data_Fail;
+			}
+			if (index >= 1 && index <= playerhelpers->GetMaxClients())
+			{
+				IGamePlayer *player = playerhelpers->GetGamePlayer(index);
 				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
 					&& !player->IsConnected())
 				{
@@ -403,44 +407,20 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					pContext->ThrowNativeError("Client %d is not in game", param);
 					return Data_Fail;
 				}
-				pEdict = player->GetEdict();
+				pEntity = gamehelpers->ReferenceToEntity(param);
 			} else if (param == -1) {
 				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
 				{
-					pEdict = NULL;
+					pEntity = NULL;
 				} else {
 					pContext->ThrowNativeError("NULL not allowed");
-					return Data_Fail;
-				}
-			} else if (param == 0) {
-				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
-				{
-					pEdict = PEntityOfEntIndex(0);
-				} else {
-					pContext->ThrowNativeError("World not allowed");
 					return Data_Fail;
 				}
 			} else {
 				pContext->ThrowNativeError("Entity index %d is not a valid client", param);
 				return Data_Fail;
 			}
-			CBaseEntity *pEntity = NULL;
-			if (pEdict)
-			{
-				IServerUnknown *pUnknown = pEdict->GetUnknown();
-				if (!pUnknown)
-				{
-					pContext->ThrowNativeError("Entity %d is a not an IServerUnknown", param);
-					return Data_Fail;
-				}
-				pEntity = pUnknown->GetBaseEntity();
-				if (!pEntity)
-				{
-					pContext->ThrowNativeError("Entity %d is not a CBaseEntity", param);
-					return Data_Fail;
-				}
-			}
-
+			
 			CBaseEntity **ebuf = (CBaseEntity **)buffer;
 			*ebuf = pEntity;
 
@@ -448,16 +428,21 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 		}
 	case Valve_CBaseEntity:
 		{
-			edict_t *pEdict;
+			CBaseEntity *pEntity = NULL;
 			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
 				cell_t *addr;
 				pContext->LocalToPhysAddr(param, &addr);
 				param = *addr;
 			}
-			if (param >= 1 && param <= playerhelpers->GetMaxClients())
+			int index = gamehelpers->ReferenceToIndex(param);
+			if (index == INVALID_EHANDLE_INDEX && param != -1)
 			{
-				IGamePlayer *player = playerhelpers->GetGamePlayer(param);
+				return Data_Fail;
+			}
+			if (index >= 1 && index <= playerhelpers->GetMaxClients())
+			{
+				IGamePlayer *player = playerhelpers->GetGamePlayer(index);
 				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
 					&& !player->IsConnected())
 				{
@@ -467,44 +452,28 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 					pContext->ThrowNativeError("Client %d is not in game", param);
 					return Data_Fail;
 				}
-				pEdict = player->GetEdict();
+				pEntity = gamehelpers->ReferenceToEntity(param);
 			} else if (param == -1) {
 				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
 				{
-					pEdict = NULL;
+					pEntity = NULL;
 				} else {
 					pContext->ThrowNativeError("NULL not allowed");
 					return Data_Fail;
 				}
-			} else if (param == 0) {
+			} else if (index == 0) {
 				if (data->decflags & VDECODE_FLAG_ALLOWWORLD)
 				{
-					pEdict = PEntityOfEntIndex(0);
+					pEntity = gamehelpers->ReferenceToEntity(0);
 				} else {
 					pContext->ThrowNativeError("World not allowed");
 					return Data_Fail;
 				}
 			} else {
-				pEdict = PEntityOfEntIndex(param);
-				if (!pEdict || pEdict->IsFree())
-				{
-					pContext->ThrowNativeError("Entity %d is not valid or is freed", param);
-					return Data_Fail;
-				}
-			}
-			CBaseEntity *pEntity = NULL;
-			if (pEdict)
-			{
-				IServerUnknown *pUnknown = pEdict->GetUnknown();
-				if (!pUnknown)
-				{
-					pContext->ThrowNativeError("Entity %d is a not an IServerUnknown", param);
-					return Data_Fail;
-				}
-				pEntity = pUnknown->GetBaseEntity();
+				pEntity = gamehelpers->ReferenceToEntity(param);
 				if (!pEntity)
 				{
-					pContext->ThrowNativeError("Entity %d is not a CBaseEntity", param);
+					pContext->ThrowNativeError("Entity %d is not valid", param);
 					return Data_Fail;
 				}
 			}

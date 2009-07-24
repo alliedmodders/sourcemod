@@ -383,7 +383,7 @@ static cell_t EmitAmbientSound(IPluginContext *pContext, const cell_t *params)
 	float vol, delay;
 	int pitch, flags, level;
 
-	entity = params[3];
+	entity = gamehelpers->ReferenceToIndex(params[3]);
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
@@ -436,7 +436,7 @@ static cell_t FadeClientVolume(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StopSound(IPluginContext *pContext, const cell_t *params)
 {
-	int entity = params[1];
+	int entity = gamehelpers->ReferenceToIndex(params[1]);
 	int channel = params[2];
 
 	char *name;
@@ -477,7 +477,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 	char *sample;
 	pContext->LocalToString(params[3], &sample);
 	
-	int entity = params[4];
+	int entity = gamehelpers->ReferenceToIndex(params[4]);
 	int channel = params[5];
 	int level = params[6];
 	int flags = params[7];
@@ -648,7 +648,7 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 	crf.Initialize(addr, numClients);
 
 	int sentence = params[3];
-	int entity = params[4];
+	int entity = gamehelpers->ReferenceToIndex(params[4]);
 	int channel = params[5];
 	int level = params[6];
 	int flags = params[7];

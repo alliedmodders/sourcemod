@@ -43,6 +43,7 @@
 #include <KeyValues.h>
 #include <server_class.h>
 #include <datamap.h>
+#include <ihandleentity.h>
 
 class CCommand;
 
@@ -86,6 +87,15 @@ struct DelayedKickInfo
 	char buffer[384];
 };
 
+class CEntInfo
+{
+public:
+	IHandleEntity	*m_pEntity;
+	int				m_SerialNumber;
+	CEntInfo		*m_pPrev;
+	CEntInfo		*m_pNext;
+};
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -96,6 +106,7 @@ public:
 public:
 	void OnSourceModStartup(bool late);
 	void OnSourceModAllInitialized();
+	void OnSourceModAllInitialized_Post();
 	/*void OnSourceModAllShutdown();*/
 public: //IGameHelpers
 	SendProp *FindInSendTable(const char *classname, const char *offset);
@@ -115,6 +126,14 @@ public: //IGameHelpers
 	void SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt);
 	const char *GetCurrentMap();
 	void ServerCommand(const char *buffer);
+	CBaseEntity *ReferenceToEntity(cell_t entRef);
+	cell_t EntityToReference(CBaseEntity *pEntity);
+	cell_t IndexToReference(int entIndex);
+	int ReferenceToIndex(cell_t entRef);
+	cell_t ReferenceToBCompatRef(cell_t entRef);
+	CEntInfo *LookupEntity(int entIndex);
+	cell_t EntityToBCompatRef(CBaseEntity *pEntity);
+	void *GetGlobalEntityList();
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

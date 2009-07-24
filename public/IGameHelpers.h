@@ -193,6 +193,63 @@ namespace SourceMod
 		 * @param buffer		Command buffer (does not auto \n terminate).
 		 */
 		virtual void ServerCommand(const char *buffer) =0;
+
+		/**
+		 * @brief Looks up a reference and returns the CBasseEntity* it points to.
+		 *
+		 * @note Supports 'old style' simple indexes and does a serial confirmation check on references.
+		 *
+		 * @param entRef		Entity reference.
+		 * @return				Entity pointer.
+		 */
+		virtual CBaseEntity *ReferenceToEntity(cell_t entRef) =0;
+
+		/**
+		 * @brief Returns the entity reference for an entity.
+		 *
+		 * @param pEntity		Entity pointer.
+		 * @return				Entity reference.
+		 */
+		virtual cell_t EntityToReference(CBaseEntity *pEntity) =0;
+
+		/**
+		 * @brief Returns the entity reference for logical entities, or the index for networked entities.
+		 *
+		 * @param pEntity		Entity pointer.
+		 * @return				Entity reference/index.
+		 */
+		virtual cell_t EntityToBCompatRef(CBaseEntity *pEntity) =0;
+
+		/**
+		 * @brief Converts an entity index into an entity reference.
+		 *
+		 * @param entIndex		Entity index.
+		 * @return				Entity reference.
+		 */
+		virtual cell_t IndexToReference(int entIndex) =0;
+
+		/**
+		 * @brief Retrieves the entity index from a reference.
+		 *
+		 * @param entRef		Entity reference.
+		 * @return				Entity index.
+		 */
+		virtual int ReferenceToIndex(cell_t entRef) =0;
+
+		/**
+		 * @brief Converts a reference into a bcompat version (index for networked entities).
+		 *
+		 * @param entRef		Entity reference.
+		 * @return				Entity reference/index.
+		 */
+		virtual cell_t ReferenceToBCompatRef(cell_t entRef) =0;
+		
+		/**
+		 * @brief Returns the g_EntList pointer.
+		 *
+		 * @return				g_EntList pointer.
+		 */
+		virtual void *GetGlobalEntityList() =0;
 	};
 }
 

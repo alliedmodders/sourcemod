@@ -101,29 +101,9 @@
 		{
 			"game"		"left4dead"
 		}
-		
-		"Offsets"
-		{
-			/* Offset into LevelShutdown */
-			"gEntList"
-			{
-				"windows"	"11"
-			}
-		}
-		
+			
 		"Signatures"
 		{
-			"LevelShutdown"
-			{
-				"library"	"server"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
-			}
-			"gEntList"
-			{
-				"library"	"server"
-				"linux"		"@gEntList"
-			}
-			
 			/* Functions in CGlobalEntityList */
 			"FindEntityByClassname"
 			{
@@ -258,7 +238,7 @@
 			/**
 			 * CBaseClient::SetUserCVar(char  const*,char  const*);
 			 * Linux offset straight from VTable dump.
-			 * Windows offset is crazy. Found the windows 'SetName' function using string "(%d)%-0.*s"
+			 * Windows offset is crazy. Found the windows SetName function using string "(%d)%-0.*s"
 			 * Cross referenced back to the vtable and counted manually (SetUserCvar is 1 higher, offsets start from 1)
 			 */
 			"SetUserCvar"

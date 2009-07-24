@@ -34,54 +34,35 @@
 void **g_pGameRules = NULL;
 void *g_EntList = NULL;
 
-#ifdef PLATFORM_WINDOWS
+
 void InitializeValveGlobals()
 {
-	char *addr = NULL;
-	int offset;
+	g_EntList = gamehelpers->GetGlobalEntityList();
 
-	/* gEntList and/or g_pEntityList */
-	if (!g_pGameConf->GetMemSig("LevelShutdown", (void **)&addr) || !addr)
-	{
-		return;
-	}
-	if (!g_pGameConf->GetOffset("gEntList", &offset) || !offset)
-	{
-		return;
-	}
-	g_EntList = *reinterpret_cast<void **>(addr + offset);
+	char *addr;
 
+#ifdef PLATFORM_WINDOWS
 	/* g_pGameRules */
 	if (!g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) || !addr)
 	{
 		return;
 	}
+
+	int offset;
 	if (!g_pGameConf->GetOffset("g_pGameRules", &offset) || !offset)
 	{
 		return;
 	}
 	g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
-}
 #elif defined PLATFORM_LINUX
-void InitializeValveGlobals()
-{
-	char *addr = NULL;
-
-	/* gEntList and/or g_pEntityList */
-	if (!g_pGameConf->GetMemSig("gEntList", (void **)&addr) || !addr)
-	{
-		return;
-	}
-	g_EntList = reinterpret_cast<void *>(addr);
-
 	/* g_pGameRules */
 	if (!g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
 	{
 		return;
 	}
 	g_pGameRules = reinterpret_cast<void **>(addr);
-}
 #endif
+}
 
 size_t UTIL_StringToSignature(const char *str, char buffer[], size_t maxlength)
 {

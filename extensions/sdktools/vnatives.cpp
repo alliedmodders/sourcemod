@@ -164,18 +164,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	FINISH_CALL_SIMPLE(&pEntity);
 
-	if (pEntity == NULL)
-	{
-		return -1;
-	}
-
-	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-	if (!pEdict)
-	{
-		return -1;
-	}
-
-	return IndexOfEdict(pEdict);
+	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 
 static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params)
@@ -200,18 +189,7 @@ static cell_t GetPlayerWeaponSlot(IPluginContext *pContext, const cell_t *params
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	FINISH_CALL_SIMPLE(&pEntity);
 
-	if (pEntity == NULL)
-	{
-		return -1;
-	}
-
-	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-	if (!pEdict)
-	{
-		return -1;
-	}
-
-	return IndexOfEdict(pEdict);
+	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
@@ -389,7 +367,7 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
-	edict_t *pEdict = PEntityOfEntIndex(params[2]);
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[1]));
 	if (!pEdict || pEdict->IsFree())
 	{
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
@@ -477,13 +455,12 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* First check if the client is valid */
-	int client = params[1];
-	IGamePlayer *player = playerhelpers->GetGamePlayer(client);
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
 	if (!player)
 	{
-		return pContext->ThrowNativeError("Client %d is not valid", client);
+		return pContext->ThrowNativeError("Client %d is not valid", params[1]);
 	} else if (!player->IsInGame()) {
-		return pContext->ThrowNativeError("Client %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
 	edict_t *pEdict = player->GetEdict();
@@ -551,7 +528,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 			CellRecipientFilter rf;
 			rf.SetToReliable(true);
 			rf.Initialize(player_list, total_players);
-			engsound->EmitSound(rf, client, CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, &pos);
+			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, &pos);
 		}
 	}
 
@@ -619,16 +596,15 @@ static cell_t GetClientEyePosition(IPluginContext *pContext, const cell_t *param
 
 static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 {
-	int client = params[1];
-	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(params[1]);
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}
 	else if (!pPlayer->IsInGame())
 	{
-		return pContext->ThrowNativeError("Client %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
 	edict_t *pEdict = pPlayer->GetEdict();
@@ -678,18 +654,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	DECODE_VALVE_PARAM(2, vparams, 1);
 	FINISH_CALL_SIMPLE(&pEntity);
 
-	if (pEntity == NULL)
-	{
-		return -1;
-	}
-
-	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-	if (!pEdict)
-	{
-		return -1;
-	}
-
-	return IndexOfEdict(pEdict);
+	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 
 #if SOURCE_ENGINE == SE_LEFT4DEAD
@@ -718,18 +683,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 	*(bool *)(vptr + 8) = true;
 	FINISH_CALL_SIMPLE(&pEntity);
 
-	if (pEntity == NULL)
-	{
-		return -1;
-	}
-
-	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-	if (!pEdict)
-	{
-		return -1;
-	}
-
-	return IndexOfEdict(pEdict);
+	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 #else
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
@@ -755,18 +709,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(2, vparams, 1);
 	FINISH_CALL_SIMPLE(&pEntity);
 
-	if (pEntity == NULL)
-	{
-		return -1;
-	}
-
-	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-	if (!pEdict)
-	{
-		return -1;
-	}
-
-	return IndexOfEdict(pEdict);
+	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 #endif
 
@@ -881,16 +824,15 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 
 static cell_t sm_GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
 {
-	int client = params[1];
-	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(params[1]);
 
 	if (!pPlayer)
 	{
-		return pContext->ThrowNativeError("Invalid client index %d", client);
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}
 	else if (!pPlayer->IsInGame())
 	{
-		return pContext->ThrowNativeError("Client %d is not in game", client);
+		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
 	return GetClientAimTarget(pPlayer->GetEdict(), params[2] ? true : false);

@@ -241,13 +241,8 @@ int GetClientAimTarget(edict_t *pEdict, bool only_players)
 		return -1;
 	}
 
-	edict_t *pTarget = gameents->BaseEntityToEdict(tr.m_pEnt);
-	if (pTarget == NULL)
-	{
-		return -1;
-	}
-
-	int ent_index = IndexOfEdict(pTarget);
+	int ent_ref = gamehelpers->EntityToBCompatRef(tr.m_pEnt);
+	int ent_index = gamehelpers->ReferenceToIndex(ent_ref);
 
 	IGamePlayer *pTargetPlayer = playerhelpers->GetGamePlayer(ent_index);
 	if (pTargetPlayer != NULL && !pTargetPlayer->IsInGame())
@@ -259,7 +254,7 @@ int GetClientAimTarget(edict_t *pEdict, bool only_players)
 		return -1;
 	}
 
-	return ent_index;
+	return ent_ref;
 }
 
 bool IsEyeAnglesSupported()

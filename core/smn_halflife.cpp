@@ -475,6 +475,26 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t IndexToReference(IPluginContext *pContext, const cell_t *params)
+{
+	if (params[1] >= NUM_ENT_ENTRIES || params[1] < 0)
+	{
+		return pContext->ThrowNativeError("Invalid entity index %i", params[1]);
+	}
+
+	return g_HL2.IndexToReference(params[1]);
+}
+
+static cell_t ReferenceToIndex(IPluginContext *pContext, const cell_t *params)
+{
+	return g_HL2.ReferenceToIndex(params[1]);
+}
+
+static cell_t ReferenceToBCompatRef(IPluginContext *pContext, const cell_t *params)
+{
+	return g_HL2.ReferenceToBCompatRef(params[1]);
+}
+
 REGISTER_NATIVES(halflifeNatives)
 {
 	{"CreateFakeClient",		CreateFakeClient},
@@ -505,5 +525,8 @@ REGISTER_NATIVES(halflifeNatives)
 	{"ShowVGUIPanel",			ShowVGUIPanel},
 	{"IsPlayerAlive",			smn_IsPlayerAlive},
 	{"GuessSDKVersion",			GuessSDKVersion},
+	{"EntIndexToEntRef",		IndexToReference},
+	{"EntRefToEntIndex",		ReferenceToIndex},
+	{"MakeCompatEntRef",		ReferenceToBCompatRef},
 	{NULL,						NULL},
 };

@@ -54,45 +54,74 @@ enum PropFieldType
 	PropField_String_T,			/**< Valid for Data fields.  Read only! */
 };
 
+inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
+{
+	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
+	IServerNetworkable *pNet = pUnk->GetNetworkable();
+
+	if (!pNet)
+	{
+		return NULL;
+	}
+
+	return pNet->GetEdict();
+}
+
 inline edict_t *GetEdict(cell_t num)
 {
-	edict_t *pEdict = PEntityOfEntIndex(num);
+	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(num);
+
+	if (!pEntity)
+	{
+		return 0;
+	}
+
+	edict_t *pEdict = ::BaseEntityToEdict(pEntity);
 	if (!pEdict || pEdict->IsFree())
 	{
 		return NULL;
 	}
-	if (num > 0 && num <= g_Players.GetMaxClients())
+
+	int index = g_HL2.ReferenceToIndex(num);
+	if (index > 0 && index <= g_Players.GetMaxClients())
 	{
-		CPlayer *pPlayer = g_Players.GetPlayerByIndex(num);
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 		if (!pPlayer || !pPlayer->IsConnected())
 		{
 			return NULL;
 		}
 	}
+
 	return pEdict;
 }
 
 edict_t *GetEntity(cell_t num, CBaseEntity **pData)
 {
-	edict_t *pEdict = PEntityOfEntIndex(num);
-	if (!pEdict || pEdict->IsFree())
+	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(num);
+
+	if (!pEntity)
 	{
-		return NULL;
+		return 0;
 	}
-	if (num > 0 && num <= g_Players.GetMaxClients())
+
+	int index = g_HL2.ReferenceToIndex(num);
+	if (index > 0 && index <= g_Players.GetMaxClients())
 	{
-		CPlayer *pPlayer = g_Players.GetPlayerByIndex(num);
+		CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 		if (!pPlayer || !pPlayer->IsConnected())
 		{
 			return NULL;
 		}
 	}
-	IServerUnknown *pUnk;
-	if ((pUnk=pEdict->GetUnknown()) == NULL)
+
+	*pData = pEntity;
+
+	edict_t *pEdict = ::BaseEntityToEdict(pEntity);
+	if (!pEdict || pEdict->IsFree())
 	{
 		return NULL;
 	}
-	*pData = pUnk->GetBaseEntity();
+
 	return pEdict;
 }
 
@@ -161,11 +190,11 @@ static cell_t CreateEdict(IPluginContext *pContext, const cell_t *params)
 
 static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = PEntityOfEntIndex(params[1]);
+	edict_t *pEdict = GetEdict(params[1]);
 
 	if (!pEdict)
 	{
-		return pContext->ThrowNativeError("Edict %d is not a valid edict", params[1]);
+		return pContext->ThrowNativeError("Edict %d (%d) is not a valid edict", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	engine->RemoveEdict(pEdict);
@@ -188,20 +217,8 @@ static cell_t IsValidEdict(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = GetEdict(params[1]);
+	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(params[1]);
 
-	if (!pEdict)
-	{
-		return 0;
-	}
-
-	IServerUnknown *pUnknown = pEdict->GetUnknown();
-	if (!pUnknown)
-	{
-		return 0;
-	}
-
-	CBaseEntity *pEntity = pUnknown->GetBaseEntity();
 	return (pEntity != NULL) ? 1 : 0;
 }
 
@@ -228,7 +245,7 @@ static cell_t GetEdictFlags(IPluginContext *pContext, const cell_t *params)
 
 	if (!pEdict)
 	{
-		return pContext->ThrowNativeError("Invalid edict (%d)", params[1]);
+		return pContext->ThrowNativeError("Invalid edict (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	return pEdict->m_fStateFlags;
@@ -240,7 +257,7 @@ static cell_t SetEdictFlags(IPluginContext *pContext, const cell_t *params)
 
 	if (!pEdict)
 	{
-		return pContext->ThrowNativeError("Invalid edict (%d)", params[1]);
+		return pContext->ThrowNativeError("Invalid edict (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	pEdict->m_fStateFlags = params[2];
@@ -254,7 +271,7 @@ static cell_t GetEdictClassname(IPluginContext *pContext, const cell_t *params)
 
 	if (!pEdict)
 	{
-		return pContext->ThrowNativeError("Invalid edict (%d)", params[1]);
+		return pContext->ThrowNativeError("Invalid edict (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	const char *cls = pEdict->GetClassName();
@@ -271,14 +288,16 @@ static cell_t GetEdictClassname(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = GetEdict(params[1]);
+	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(params[1]);
 
-	if (!pEdict)
+	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
+
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Invalid edict (%d)", params[1]);
+		return pContext->ThrowNativeError("Invalid entity (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	IServerNetworkable *pNet = pEdict->GetNetworkable();
+	IServerNetworkable *pNet = pUnk->GetNetworkable();
 	if (!pNet)
 	{
 		return 0;
@@ -294,11 +313,11 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 static cell_t GetEntData(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -325,9 +344,9 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -336,7 +355,7 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Offset %d is invalid", offset);
 	}
 
-	if (params[5])
+	if (params[5] && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -368,11 +387,11 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 static cell_t GetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -391,9 +410,9 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -404,7 +423,7 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 
 	*(float *)((uint8_t *)pEntity + offset) = sp_ctof(params[3]);
 
-	if (params[4])
+	if (params[4] && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -415,11 +434,11 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 static cell_t GetEntDataVector(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -445,9 +464,9 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -465,7 +484,7 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 	v->y = sp_ctof(vec[1]);
 	v->z = sp_ctof(vec[2]);
 
-	if (params[4])
+	if (params[4] && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -477,11 +496,11 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -497,7 +516,8 @@ static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	return hndl.GetEntryIndex();
+	int ref = g_HL2.IndexToReference(hndl.GetEntryIndex());
+	return g_HL2.ReferenceToBCompatRef(ref);
 }
 
 int CheckBaseHandle(CBaseHandle &hndl)
@@ -537,11 +557,11 @@ int CheckBaseHandle(CBaseHandle &hndl)
 static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (pEdict == NULL || pEntity == NULL)
+	if (pEntity == NULL)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -552,7 +572,8 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
 
-	return CheckBaseHandle(hndl);
+	int ref = g_HL2.IndexToReference(hndl.GetEntryIndex());
+	return g_HL2.ReferenceToBCompatRef(ref);
 }
 
 /* THIS GUY IS DEPRECATED. */
@@ -561,9 +582,9 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -574,20 +595,23 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
 
-	if (params[3] == 0)
+	if (params[3] == 0 || params[3] == INVALID_EHANDLE_INDEX)
 	{
 		hndl.Set(NULL);
 	} else {
-		edict_t *pEdict = GetEdict(params[3]);
-		if (!pEdict)
+		CBaseEntity *pOther;
+		GetEntity(params[3], &pOther);
+
+		if (!pOther)
 		{
-			return pContext->ThrowNativeError("Entity %d is invalid", params[3]);
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[3]), params[3]);
 		}
-		IServerEntity *pEntOther = pEdict->GetIServerEntity();
-		hndl.Set(pEntOther);
+
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		hndl.Set(pHandleEnt);
 	}
 
-	if (params[4])
+	if (params[4] && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -600,9 +624,9 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -613,22 +637,25 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
 
-	if (params[3] == -1)
+	if (params[3] == INVALID_EHANDLE_INDEX)
 	{
 		hndl.Set(NULL);
 	}
 	else
 	{
-		edict_t *pEdict = GetEdict(params[3]);
-		if (!pEdict)
+		CBaseEntity *pOther;
+		GetEntity(params[3], &pOther);
+
+		if (!pOther)
 		{
-			return pContext->ThrowNativeError("Entity %d is invalid", params[3]);
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[3]), params[3]);
 		}
-		IServerEntity *pEntOther = pEdict->GetIServerEntity();
-		hndl.Set(pEntOther);
+
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		hndl.Set(pHandleEnt);
 	}
 
-	if (params[4])
+	if (params[4] && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -642,7 +669,7 @@ static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 
 	if (!pEdict)
 	{
-		return pContext->ThrowNativeError("Edict %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Edict %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	g_HL2.SetEdictStateChanged(pEdict, params[2]);
@@ -725,11 +752,11 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 	datamap_t *pMap;
 	typedescription_t *td;
 	char *offset;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	if ((pMap=CBaseEntity_GetDataDescMap(pEntity)) == NULL)
@@ -830,11 +857,11 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -855,9 +882,9 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	int offset = params[2];
@@ -872,7 +899,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[3], &src);
 	size_t len = strncopy(dest, src, params[4]);
 
-	if (params[5])
+	if (params[5] && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -895,10 +922,11 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	}
 
 #define FIND_PROP_SEND(pProp) \
-	IServerNetworkable *pNet = pEdict->GetNetworkable(); \
+	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
+	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
 	if (!pNet) \
 	{ \
-		return pContext->ThrowNativeError("Edict %d is not networkable", params[1]); \
+		return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
 	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, pProp)) \
 	{ \
@@ -942,12 +970,13 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	/* TODO: Find a way to lookup classname without having an edict - Is this a guaranteed prop? */
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1033,12 +1062,12 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1123,12 +1152,12 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1194,12 +1223,12 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1252,7 +1281,7 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 	*(float *)((uint8_t *)pEntity + offset) = sp_ctof(params[4]);
 
-	if (params[2] == Prop_Send)
+	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -1270,12 +1299,12 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1326,7 +1355,8 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
 
-	return CheckBaseHandle(hndl);
+	int ref = g_HL2.IndexToReference(hndl.GetEntryIndex());
+	return g_HL2.ReferenceToBCompatRef(ref);
 }
 
 static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
@@ -1339,12 +1369,12 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1401,18 +1431,19 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
-		edict_t *pOther;
-		CBaseEntity *pOtherEnt;
+		CBaseEntity *pOther;
+		GetEntity(params[4], &pOther);
 
-		if ((pOther = GetEntity(params[4], &pOtherEnt)) == NULL)
+		if (!pOther)
 		{
-			return pContext->ThrowNativeError("Invalid entity %d", params[4]);
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[4]), params[4]);
 		}
 
-		hndl.Set(pOther->GetIServerEntity());
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		hndl.Set(pHandleEnt);
 	}
 
-	if (params[2] == Prop_Send)
+	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -1430,12 +1461,12 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1508,12 +1539,12 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1573,7 +1604,7 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	v->y = sp_ctof(vec[1]);
 	v->z = sp_ctof(vec[2]);
 
-	if (params[2] == Prop_Send)
+	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
@@ -1592,12 +1623,12 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	
 	pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if ((class_name = pEdict->GetClassName()) == NULL)
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
 	{
 		class_name = "";
 	}
@@ -1682,9 +1713,9 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	int maxlen;
 	edict_t *pEdict = GetEntity(params[1], &pEntity);
 
-	if (!pEdict || !pEntity)
+	if (!pEntity)
 	{
-		return pContext->ThrowNativeError("Entity %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
 	switch (params[2])
@@ -1713,7 +1744,8 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			char *prop;
-			IServerNetworkable *pNet = pEdict->GetNetworkable();
+			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
+			IServerNetworkable *pNet = pUnk->GetNetworkable();
 			if (!pNet)
 			{
 				return pContext->ThrowNativeError("The edict is not networkable");
@@ -1744,7 +1776,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[4], &src);
 	size_t len = strncopy(dest, src, maxlen);
 
-	if (params[2] == Prop_Send)
+	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}

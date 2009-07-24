@@ -205,20 +205,12 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	// attempt to directly lookup a hook using the pOutput pointer
 	OutputNameStruct *pOutputName = NULL;
 
-	edict_t *pEdict = gameents->BaseEntityToEdict(pCaller);
-
-	/* TODO: Add support for entities without an edict */
-	if (pEdict == NULL)
-	{
-		return;
-	}
-
 	bool fastLookup = false;
 	
 	// Fast lookup failed - check the slow way for hooks that havn't fired yet
 	if ((fastLookup = EntityOutputs->Retrieve(sOutput, (void **)&pOutputName)) == false)
 	{
-		const char *classname = pEdict->GetClassName();
+		const char *classname = GetEntityClassname(pCaller);
 		const char *outputname = FindOutputName(pOutput, pCaller);
 
 		pOutputName = FindOutputPointer(classname, outputname, false);
@@ -249,37 +241,31 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 			hook->in_use = true;
 
-			int serial = pEdict->m_NetworkSerialNumber;
+			cell_t ref = gamehelpers->EntityToReference(pCaller);
 			
-			if (serial != hook->entity_filter && hook->entity_index == IndexOfEdict(pEdict))
+			if (hook->entity_ref != -1 
+					&& gamehelpers->ReferenceToIndex(hook->entity_ref) == gamehelpers->ReferenceToIndex(ref)
+					&& ref != hook->entity_ref)
 			{
-				// same entity index but different serial number. Entity has changed, kill the hook.
+				// same entity index but different reference. Entity has changed, kill the hook.
 				_iter = pOutputName->hooks.erase(_iter);
 				CleanUpHook(hook);
 
 				continue;
 			}
 
-			if (hook->entity_filter == -1 || hook->entity_filter == serial) // Global classname hook
+			if (hook->entity_ref == -1 || hook->entity_ref == ref) // Global classname hook
 			{
 				//fire the forward to hook->pf
 				hook->pf->PushString(pOutputName->Name);
-				hook->pf->PushCell(IndexOfEdict(pEdict));
-				
-				edict_t *pEdictActivator = gameents->BaseEntityToEdict(pActivator);
-				if (!pEdictActivator)
-				{
-					hook->pf->PushCell(-1);
-				}
-				else
-				{
-					hook->pf->PushCell(IndexOfEdict(pEdictActivator));
-				}
+				hook->pf->PushCell(gamehelpers->ReferenceToBCompatRef(ref));
+				hook->pf->PushCell(gamehelpers->EntityToBCompatRef(pActivator));
+
 				//hook->pf->PushCell(handle);
 				hook->pf->PushFloat(fDelay);
 				hook->pf->Execute(NULL);
 
-				if ((hook->entity_filter != -1) && hook->only_once)
+				if ((hook->entity_ref != -1) && hook->only_once)
 				{
 					_iter = pOutputName->hooks.erase(_iter);
 					CleanUpHook(hook);
@@ -454,36 +440,15 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 	return NULL;
 }
 
-// Thanks SM core
-edict_t *EntityOutputManager::BaseHandleToEdict(CBaseHandle &hndl)
+const char *EntityOutputManager::GetEntityClassname(CBaseEntity *pEntity)
 {
-	if (!hndl.IsValid())
+	static int offset = -1;
+	if (offset == -1)
 	{
-		return NULL;
+		datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
+		typedescription_t *pDesc = gamehelpers->FindInDataMap(pMap, "m_iClassname");
+		offset = pDesc->fieldOffset[TD_OFFSET_NORMAL];
 	}
 
-	int index = hndl.GetEntryIndex();
-
-	edict_t *pStoredEdict;
-
-	pStoredEdict = PEntityOfEntIndex(index);
-
-	if (pStoredEdict == NULL)
-	{
-		return NULL;
-	}
-
-	IServerEntity *pSE = pStoredEdict->GetIServerEntity();
-
-	if (pSE == NULL)
-	{
-		return NULL;
-	}
-
-	if (pSE->GetRefEHandle() != hndl)
-	{
-		return NULL;
-	}
-
-	return pStoredEdict;
+	return (const char *)(((unsigned char *)pEntity) + offset);
 }
