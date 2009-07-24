@@ -747,7 +747,7 @@ CEntInfo *CHalfLife2::LookupEntity(int entIndex)
 		tempInfo.m_pNext = NULL;
 		tempInfo.m_pPrev = NULL;
 
-		edict_t *pEdict = engine->PEntityOfEntIndex(entIndex);
+		edict_t *pEdict = PEntityOfEntIndex(entIndex);
 
 		if (!pEdict)
 		{
@@ -795,7 +795,7 @@ cell_t CHalfLife2::IndexToReference(int entIndex)
 
 int CHalfLife2::ReferenceToIndex(cell_t entRef)
 {
-	if (entRef == INVALID_EHANDLE_INDEX)
+	if ((unsigned)entRef == INVALID_EHANDLE_INDEX)
 	{
 		return INVALID_EHANDLE_INDEX;
 	}
@@ -841,7 +841,7 @@ cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
 
 cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
 {
-	if (entRef == INVALID_EHANDLE_INDEX)
+	if ((unsigned)entRef == INVALID_EHANDLE_INDEX)
 	{
 		return INVALID_EHANDLE_INDEX;
 	}

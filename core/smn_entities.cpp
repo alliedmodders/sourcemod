@@ -595,7 +595,7 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
 
-	if (params[3] == 0 || params[3] == INVALID_EHANDLE_INDEX)
+	if (params[3] == 0 || (unsigned)params[3] == INVALID_EHANDLE_INDEX)
 	{
 		hndl.Set(NULL);
 	} else {
@@ -637,7 +637,7 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
 
-	if (params[3] == INVALID_EHANDLE_INDEX)
+	if ((unsigned)params[3] == INVALID_EHANDLE_INDEX)
 	{
 		hndl.Set(NULL);
 	}
