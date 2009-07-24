@@ -391,7 +391,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				param = *addr;
 			}
 			int index = gamehelpers->ReferenceToIndex(param);
-			if (index == INVALID_EHANDLE_INDEX && param != -1)
+			if ((unsigned)index == INVALID_EHANDLE_INDEX && param != -1)
 			{
 				return Data_Fail;
 			}
@@ -436,7 +436,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				param = *addr;
 			}
 			int index = gamehelpers->ReferenceToIndex(param);
-			if (index == INVALID_EHANDLE_INDEX && param != -1)
+			if ((unsigned)index == INVALID_EHANDLE_INDEX && param != -1)
 			{
 				return Data_Fail;
 			}
