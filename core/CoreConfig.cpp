@@ -214,14 +214,28 @@ void CoreConfig::Initialize()
 	/* Try to get command line value of core config convar */
 	const char *corecfg = icvar->GetCommandLineValue("sm_corecfgfile");
 
-	/* If sm_corecfgfile not specified on command line, use default value */
-	if (!corecfg)
+	/* If sm_corecfgfile is on the command line, use that
+	 * If sm_corecfgfile isn't there, check sm_basepath on the command line and build the path off that
+	 * If sm_basepath isn't there, just use the default path for the cfg
+	 */
+	if (corecfg)
 	{
-		corecfg = sm_corecfgfile.GetDefault();
+		g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
 	}
+	else
+	{
+		const char *basepath = icvar->GetCommandLineValue("sm_basepath");
 
-	/* Format path to config file */
-	g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), corecfg);
+		/* Format path to config file */
+		if (basepath)
+		{
+			g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s/%s", g_SourceMod.GetGamePath(), basepath, "configs/core.cfg");
+		}
+		else
+		{
+			g_LibSys.PathFormat(filePath, sizeof(filePath), "%s/%s", g_SourceMod.GetGamePath(), sm_corecfgfile.GetDefault());
+		}
+	}
 
 	/* Reset cached key values */
 	m_KeyValues.clear();
