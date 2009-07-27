@@ -117,6 +117,7 @@
 			"game"					"synergy"
 			"game"					"left4dead"
 			"game"					"obsidian"
+			"game"					"zps"
 		}
 
 		"Keys"

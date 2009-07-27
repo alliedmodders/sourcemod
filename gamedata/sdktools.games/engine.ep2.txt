@@ -8,7 +8,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"ageofchivalry"
-			"game"		"ZPS"
+			"game"		"zps"
 		}
 
 		"Offsets"
@@ -58,7 +58,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"ageofchivalry"
-			"game"		"ZPS"
+			"game"		"zps"
 		}
 
 		"Signatures"
@@ -86,7 +86,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"ageofchivalry"
-			"game"		"ZPS"
+			"game"		"zps"
 		}
 		
 		"Offsets"
@@ -129,7 +129,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"ageofchivalry"
-			"game"		"ZPS"
+			"game"		"zps"
 		}
 		
 		"Offsets"
