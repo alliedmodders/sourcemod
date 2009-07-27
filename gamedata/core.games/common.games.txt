@@ -180,4 +180,12 @@
 			"GameExtension"			"game.tf2"
 		}
 	}
+
+	"insurgency"
+	{
+		"Keys"
+		{
+			"ChatSayText"			"yes"
+		}
+	}
 }
