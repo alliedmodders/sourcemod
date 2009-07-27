@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* Insurgency */
+	/* Insurgency (2009-07-10) */
 	"insurgency"
 	{
 		"Offsets"
@@ -19,28 +19,28 @@
 			/* CBasePlayer */
 			"Ignite"
 			{
-				"windows"	"174"
-				"linux"		"175"
-			}
-			"Extinguish"
-			{
 				"windows"	"175"
 				"linux"		"176"
 			}
+			"Extinguish"
+			{
+				"windows"	"176"
+				"linux"		"177"
+			}
 			"Teleport"
 			{
-				"windows"	"90"
-				"linux"		"91"
+				"windows"	"91"
+				"linux"		"92"
 			}
 			"GetVelocity"
 			{
-				"windows"	"115"
-				"linux"		"116"
+				"windows"	"116"
+				"linux"		"117"
 			}
 			"EyeAngles"
 			{
-				"windows"	"107"
-				"linux"		"108"
+				"windows"	"108"
+				"linux"		"109"
 			}
 			"AcceptInput"
 			{
@@ -81,6 +81,15 @@
 			{
 				"windows"	"288"
 				"linux"		"289"
+			}
+		}
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x20\x01\x00\x00\x53\x55\x56\x8B\x71\x14"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
