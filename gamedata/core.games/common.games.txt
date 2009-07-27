@@ -118,6 +118,7 @@
 			"game"					"left4dead"
 			"game"					"obsidian"
 			"game"					"zps"
+			"game"					"empires"
 		}
 
 		"Keys"
@@ -134,6 +135,7 @@
 			"game"					"tf"
 			"game"					"synergy"
 			"game"					"dod"
+			"game"					"empires"
 		}
 		
 		"Keys"

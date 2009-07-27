@@ -9,6 +9,7 @@
 			"game"		"tf"
 			"game"		"ageofchivalry"
 			"game"		"zps"
+			"game"		"empires"
 		}
 
 		"Offsets"
@@ -59,6 +60,7 @@
 			"game"		"tf"
 			"game"		"ageofchivalry"
 			"game"		"zps"
+			"game"		"empires"
 		}
 
 		"Signatures"
@@ -87,6 +89,7 @@
 			"game"		"tf"
 			"game"		"ageofchivalry"
 			"game"		"zps"
+			"game"		"empires"
 		}
 		
 		"Offsets"
@@ -130,6 +133,7 @@
 			"game"		"tf"
 			"game"		"ageofchivalry"
 			"game"		"zps"
+			"game"		"empires"
 		}
 		
 		"Offsets"
