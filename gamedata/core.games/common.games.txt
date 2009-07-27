@@ -128,7 +128,6 @@
 			"game"					"synergy"
 			"game"					"left4dead"
 			"game"					"obsidian"
-			"game"					"ageofchivalry"
 		}
 
 		"Keys"
@@ -145,7 +144,6 @@
 			"game"					"tf"
 			"game"					"synergy"
 			"game"					"dod"
-			"game"					"ageofchivalry"
 		}
 		
 		"Keys"
