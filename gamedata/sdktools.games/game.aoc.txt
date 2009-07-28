@@ -11,35 +11,35 @@
 
 "Games"
 {
-	/* Age of Chivalry */
+	/* Age of Chivalry (CR2) */
 	"ageofchivalry"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"351"
-				"linux"		"352"
+				"windows"	"352"
+				"linux"		"353"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"239"
-				"linux"		"240"
+				"windows"	"240"
+				"linux"		"241"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"237"
-				"linux"		"238"
+				"windows"	"238"
+				"linux"		"239"
 			}
 			"Ignite"
 			{
-				"windows"	"194"
-				"linux"		"195"
+				"windows"	"195"
+				"linux"		"196"
 			}
 			"Extinguish"
 			{
-				"windows"	"198"
-				"linux"		"199"
+				"windows"	"199"
+				"linux"		"200"
 			}
 			"Teleport"
 			{
@@ -48,8 +48,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"389"
-				"linux"		"389"
+				"windows"	"390"
+				"linux"		"390"
 			}
 			"GetVelocity"
 			{
@@ -88,8 +88,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"230"
-				"linux"		"231"
+				"windows"	"231"
+				"linux"		"232"
 			}
 			"Activate"
 			{

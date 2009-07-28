@@ -11,59 +11,55 @@
 
 "Games"
 {
-	/* Zombie Panic! Source 1.2b 
-	 * Note: This mod is not fully supported yet. 
-	 * The definitions below were supplied by a third party.
-	 * (thanks "noob cannon lol")
-	 */
-	"ZPS"
+	/* Zombie Panic! Source (1.6.1) */
+	"zps"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"333"
-				"linux"		"334"
+				"windows"	"356"
+				"linux"		"357"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"230"
-				"linux"		"231"
+				"windows"	"243"
+				"linux"		"244"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"226"
-				"linux"		"227"
+				"windows"	"238"
+				"linux"		"239"
 			}
 			"Ignite"
 			{
-				"windows"	"190"
-				"linux"		"191"
+				"windows"	"195"
+				"linux"		"196"
 			}
 			"Extinguish"
 			{
-				"windows"	"191"
-				"linux"		"192"
+				"windows"	"199"
+				"linux"		"200"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"103"
+				"linux"		"104"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"361"
-				"linux"		"362"
+				"windows"	"397"
+				"linux"		"397"
 			}
 			"GetVelocity"
 			{
-				"windows"	"128"
-				"linux"		"129"
+				"windows"	"132"
+				"linux"		"133"
 			}
 			"EyeAngles"
 			{
-				"windows"	"120"
-				"linux"		"121"
+				"windows"	"124"
+				"linux"		"125"
 			}
 			"AcceptInput"
 			{
@@ -72,28 +68,28 @@
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
-				"linux"		"30"
+				"windows"	"30"
+				"linux"		"29"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
-				"linux"		"31"
+				"windows"	"29"
+				"linux"		"30"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
-				"linux"		"32"
+				"windows"	"28"
+				"linux"		"31"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"24"
+				"linux"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"219"
-				"linux"		"220"
+				"windows"	"231"
+				"linux"		"232"
 			}
 			"Activate"
 			{

@@ -128,7 +128,7 @@
 			"game"					"synergy"
 			"game"					"left4dead"
 			"game"					"obsidian"
-			"game"					"ageofchivalry"
+			"game"					"empires"
 		}
 
 		"Keys"
@@ -145,7 +145,7 @@
 			"game"					"tf"
 			"game"					"synergy"
 			"game"					"dod"
-			"game"					"ageofchivalry"
+			"game"					"empires"
 		}
 		
 		"Keys"
@@ -188,6 +188,13 @@
 		"Keys"
 		{
 			"GameExtension"			"game.tf2"
+		}
+	}
+	"insurgency"
+	{
+		"Keys"
+		{
+			"ChatSayText"			"yes"
 		}
 	}
 }

@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* Empires 2 */
+	/* Empires 2.24 */
 	"empires"
 	{
 
@@ -19,98 +19,88 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"332"
-				"linux"		"333"
+				"windows"	"354"
+				"linux"		"355"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"230"
-				"linux"		"231"
+				"windows"	"241"
+				"linux"		"242"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"228"
-				"linux"		"229"
+				"windows"	"239"
+				"linux"		"240"
 			}
 			"Ignite"
 			{
-				"windows"	"192"
-				"linux"		"193"
+				"windows"	"196"
+				"linux"		"197"
 			}
 			"Extinguish"
 			{
-				"windows"	"193"
-				"linux"		"194"
+				"windows"	"200"
+				"linux"		"201"
 			}
 			"Teleport"
 			{
-				"windows"	"102"
-				"linux"		"103"
+				"windows"	"104"
+				"linux"		"105"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"360"
-				"linux"		"361"
+				"windows"	"401"
+				"linux"		"402"
 			}
 			"GetVelocity"
 			{
-				"windows"	"130"
-				"linux"		"131"
+				"windows"	"133"
+				"linux"		"134"
 			}
 			"EyeAngles"
 			{
-				"windows"	"122"
-				"linux"		"123"
-			}
-			"AcceptInput"
-			{
-				"windows"	"36"
-				"linux"		"37"
+				"windows"	"125"
+				"linux"		"126"
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
-				"linux"		"30"
+				"windows"	"29"
+				"linux"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
-				"linux"		"31"
+				"windows"	"28"
+				"linux"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
-				"linux"		"32"
+				"windows"	"27"
+				"linux"		"30"
 			}
-			"SetEntityModel"
+			"AcceptInput"
 			{
-				"windows"	"25"
-				"linux"		"26"
-			}
-			"WeaponEquip"
-			{
-				"windows"	"221"
-				"linux"		"222"
+				"windows"	"35"
+				"linux"		"36"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"31"
+				"linux"		"32"
 			}
-
-			/* Offset into LevelShutdown for CGlobalEntList */
-			"gEntList"
+			"TakeHealth"
 			{
-				"windows"	"64"
+				"windows"	"62"
+				"linux"		"63"
 			}
-		}
-		
-		"Signatures"
-		{
-			"LevelShutdown"
+			"ChangeTeam"
 			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2B\x56\xE8\x2A\x2A\x2A\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x8B\xF1\x74\x0E"
+				"windows"	"87"
+				"linux"		"88"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
 			}
 		}
 	}
