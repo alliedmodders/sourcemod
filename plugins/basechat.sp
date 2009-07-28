@@ -190,10 +190,7 @@ public Action:Command_SayAdmin(client, args)
 	decl String:message[192];
 	strcopy(message, 192, text[startidx+1]);
 
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-	
-	SendChatToAdmins(name, message);
+	SendChatToAdmins(client, message);
 	LogAction(client, -1, "%L triggered sm_chat (text %s)", client, message);
 	
 	return Plugin_Handled;	
@@ -313,10 +310,7 @@ public Action:Command_SmChat(client, args)
 	decl String:text[192];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-	
-	SendChatToAdmins(name, text);
+	SendChatToAdmins(client, text);
 	LogAction(client, -1, "%L triggered sm_chat (text %s)", client, text);
 	
 	return Plugin_Handled;	
@@ -451,22 +445,20 @@ DisplayCenterTextToAll(client, String:message[])
 	}
 }
 
-SendChatToAdmins(String:name[], String:message[])
+SendChatToAdmins(from, String:message[])
 {
+	new fromAdmin = CheckCommandAccess(from, "sm_chat", ADMFLAG_CHAT);
 	for (new i = 1; i <= MaxClients; i++)
 	{
-		if (IsClientInGame(i))
+		if (IsClientInGame(i) && (from == i || CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT)))
 		{
-			if (CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT))
+			if (g_DoColor)
 			{
-				if (g_DoColor)
-				{
-					PrintToChat(i, "\x04(ADMINS) %s: \x01%s", name, message);
-				}
-				else
-				{
-					PrintToChat(i, "(ADMINS) %s: %s", name, message);
-				}
+				PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
+			}
+			else
+			{
+				PrintToChat(i, "(%sADMINS) %N: %s", fromAdmin ? "" : "TO ", from, message);
 			}
 		}	
 	}
