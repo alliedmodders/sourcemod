@@ -44,6 +44,16 @@ bool g_InSoundHook = false;
 *                          *
 ****************************/
 
+cell_t SoundReferenceToIndex(cell_t ref)
+{
+	if (ref == 0 || ref == -1 || ref == -2)
+	{
+		return ref;
+	}
+
+	return gamehelpers->ReferenceToIndex(ref);
+}
+
 size_t SoundHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 {
 	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
@@ -383,7 +393,7 @@ static cell_t EmitAmbientSound(IPluginContext *pContext, const cell_t *params)
 	float vol, delay;
 	int pitch, flags, level;
 
-	entity = gamehelpers->ReferenceToIndex(params[3]);
+	entity = SoundReferenceToIndex(params[3]);
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
@@ -436,7 +446,7 @@ static cell_t FadeClientVolume(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StopSound(IPluginContext *pContext, const cell_t *params)
 {
-	int entity = gamehelpers->ReferenceToIndex(params[1]);
+	int entity = SoundReferenceToIndex(params[1]);
 	int channel = params[2];
 
 	char *name;
@@ -477,7 +487,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 	char *sample;
 	pContext->LocalToString(params[3], &sample);
 	
-	int entity = gamehelpers->ReferenceToIndex(params[4]);
+	int entity = SoundReferenceToIndex(params[4]);
 	int channel = params[5];
 	int level = params[6];
 	int flags = params[7];
@@ -648,7 +658,7 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 	crf.Initialize(addr, numClients);
 
 	int sentence = params[3];
-	int entity = gamehelpers->ReferenceToIndex(params[4]);
+	int entity = SoundReferenceToIndex(params[4]);
 	int channel = params[5];
 	int level = params[6];
 	int flags = params[7];
