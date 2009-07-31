@@ -21,6 +21,7 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 
 		"Offsets"
@@ -101,6 +102,7 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 		
 		"Signatures"
@@ -125,6 +127,7 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"empires"
+			"game"		"synergy"
 		}
 		
 		"Offsets"

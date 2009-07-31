@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* Synergy Release 1 */
+	/* Synergy Release 11 */
 	"synergy"
 	{
 		"Offsets"
@@ -19,83 +19,83 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"334"
-				"linux"		"335"
+				"windows"	"354"
+				"linux"		"355"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"226"
-				"linux"		"227"
+				"windows"	"237"
+				"linux"		"238"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"224"
-				"linux"		"225"
+				"windows"	"235"
+				"linux"		"236"
 			}
 			"Ignite"
 			{
-				"windows"	"188"
-				"linux"		"189"
+				"windows"	"192"
+				"linux"		"193"
 			}
 			"Extinguish"
 			{
-				"windows"	"189"
-				"linux"		"190"
+				"windows"	"196"
+				"linux"		"197"
 			}
 			"Teleport"
 			{
-				"windows"	"98"
-				"linux"		"99"
+				"windows"	"100"
+				"linux"		"101"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"362"
-				"linux"		"363"
+				"windows"	"392"
+				"linux"		"392"
 			}
 			"GetVelocity"
 			{
-				"windows"	"126"
-				"linux"		"127"
+				"windows"	"129"
+				"linux"		"130"
 			}
 			"EyeAngles"
 			{
-				"windows"	"118"
-				"linux"		"119"
+				"windows"	"121"
+				"linux"		"122"
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
-				"linux"		"30"
+				"windows"	"29"
+				"linux"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
-				"linux"		"31"
+				"windows"	"28"
+				"linux"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
-				"linux"		"32"
+				"windows"	"27"
+				"linux"		"30"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"34"
+				"linux"		"35"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"23"
+				"linux"		"24"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"217"
-				"linux"		"218"
+				"windows"	"228"
+				"linux"		"229"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"31"
+				"linux"		"32"
 			}
 		}
 	}
