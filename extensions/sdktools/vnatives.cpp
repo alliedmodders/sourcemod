@@ -367,7 +367,7 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Client %d is not in game", params[1]);
 	}
 
-	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[1]));
+	edict_t *pEdict = PEntityOfEntIndex(gamehelpers->ReferenceToIndex(params[2]));
 	if (!pEdict || pEdict->IsFree())
 	{
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
