@@ -376,16 +376,6 @@ namespace incparser
         {
             w.BeginSection("functag");
 
-            /* Get the functag name */
-            NeedToken(LexToken.TOKEN_SYMBOL);
-            w.WritePair("name", LexString);
-            w.functagList.Add(LexString);
-
-            if (MatchToken(LexToken.TOKEN_LABEL))
-            {
-                w.WritePair("return", LexString);
-            }
-
             if (MatchToken(LexToken.TOKEN_PUBLIC))
             {
                 w.WritePair("type", "public");
@@ -394,6 +384,16 @@ namespace incparser
             {
                 w.WritePair("type", "stock");
             }
+
+            if (MatchToken(LexToken.TOKEN_LABEL))
+            {
+                w.WritePair("return", LexString);
+            }
+
+            /* Get the functag name */
+            NeedToken(LexToken.TOKEN_SYMBOL);
+            w.WritePair("name", LexString);
+            w.functagList.Add(LexString);
 
             ParseParameters(w);
             NeedChar(';');
