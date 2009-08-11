@@ -102,7 +102,7 @@
 	
 	"game.zpanic.txt"
 	{
-		"game"		"ZPS"
+		"game"		"zps"
 	}
 
 	"game.obsidian.txt"
