@@ -175,7 +175,7 @@ bool TQueryOp::BindParamsAndRun()
 				UTIL_Format(query,
 					sizeof(query),
 					"INSERT OR IGNORE INTO sm_cookies (name, description, access) \
-					 VALUES (\"%s\", \"%s\", %d)",
+					 VALUES ('%s', '%s', %d)",
 					 safe_name,
 					 safe_desc,
 					 m_params.cookie->access);
@@ -204,7 +204,7 @@ bool TQueryOp::BindParamsAndRun()
 				FROM sm_cookies				\
 				JOIN sm_cookie_cache		\
 				ON sm_cookies.id = sm_cookie_cache.cookie_id \
-				WHERE player = \"%s\"",
+				WHERE player = '%s'",
 				safe_str);
 
 			m_pResult = m_database->DoQuery(query);
@@ -247,7 +247,7 @@ bool TQueryOp::BindParamsAndRun()
 					sizeof(query),
 					"INSERT OR REPLACE INTO sm_cookie_cache						\
 					 (player, cookie_id, value, timestamp)						\
-					 VALUES (\"%s\", %d, \"%s\", %d)",
+					 VALUES ('%s', %d, '%s', %d)",
 					safe_id,
 					m_params.cookieId,
 					safe_val,
@@ -276,7 +276,7 @@ bool TQueryOp::BindParamsAndRun()
 
 			UTIL_Format(query, 
 				sizeof(query),
-				"SELECT id FROM sm_cookies WHERE name = \"%s\"",
+				"SELECT id FROM sm_cookies WHERE name = '%s'",
 				safe_name);
 
 			m_pResult = m_database->DoQuery(query);
