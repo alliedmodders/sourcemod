@@ -288,6 +288,10 @@ native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
  * characters are safely escaped according to the database engine and 
  * the database's character set.
  *
+ * NOTE: SourceMod only guarantees properly escaped strings when the query
+ * encloses the string in ''. While drivers tend to allow " instead, the string
+ * may be not be escaped (for example, on SQLite)!
+ *
  * @param hndl			A database Handle.
  * @param string		String to quote.
  * @param buffer		Buffer to store quoted string in.
