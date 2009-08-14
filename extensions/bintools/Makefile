@@ -60,6 +60,8 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
+	USEMETA = true
+	CFLAGS += -DHOOKING-ENABLED
 endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)

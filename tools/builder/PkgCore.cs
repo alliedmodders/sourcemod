@@ -69,6 +69,7 @@ namespace builder
 			folders.Add("addons/sourcemod/extensions/auto.2.darkm");
 			//folders.Add("addons/sourcemod/extensions/auto.2.ep1");
 			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
+			folders.Add("addons/sourcemod/extensions/auto.2.ep2valve");
 			folders.Add("addons/sourcemod/extensions/auto.2.l4d");
 			folders.Add("addons/sourcemod/scripting/playercommands");
 			folders.Add("addons/metamod");
@@ -222,14 +223,14 @@ namespace builder
 			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
 
-            lib = new Library();
-            lib.package_path = "addons/sourcemod/extensions/auto.2.darkm";
-            lib.source_path = "extensions/bintools";
-            lib.binary_name = "bintools.ext";
-            lib.vcproj_name = "bintools";
-            lib.build_mode = BuildMode.BuildMode_DarkMessiah;
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.darkm";
+			lib.source_path = "extensions/bintools";
+			lib.binary_name = "bintools.ext";
+			lib.vcproj_name = "bintools";
+			lib.build_mode = BuildMode.BuildMode_DarkMessiah;
 			lib.platform = BasePlatform.Platform_Windows;
-            libraries.Add(lib);
+			libraries.Add(lib);
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
@@ -270,14 +271,14 @@ namespace builder
 			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
 
-            lib = new Library();
-            lib.package_path = "addons/sourcemod/extensions/auto.2.darkm";
-            lib.source_path = "extensions/sdktools";
-            lib.binary_name = "sdktools.ext";
-            lib.vcproj_name = "sdktools";
-            lib.build_mode = BuildMode.BuildMode_DarkMessiah;
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.darkm";
+			lib.source_path = "extensions/sdktools";
+			lib.binary_name = "sdktools.ext";
+			lib.vcproj_name = "sdktools";
+			lib.build_mode = BuildMode.BuildMode_DarkMessiah;
 			lib.platform = BasePlatform.Platform_Windows;
-            libraries.Add(lib);
+			libraries.Add(lib);
 
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
