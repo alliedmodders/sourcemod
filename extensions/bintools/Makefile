@@ -61,7 +61,7 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
 	USEMETA = true
-	CFLAGS += -DHOOKING-ENABLED
+	CFLAGS += -DHOOKING_ENABLED
 endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
