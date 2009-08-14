@@ -15,6 +15,7 @@ namespace builder
 		BuildMode_DarkMessiah,
 		BuildMode_Episode1,
 		BuildMode_Episode2,
+		BuildMode_Episode2Valve,
 		BuildMode_Left4Dead
 	};
 

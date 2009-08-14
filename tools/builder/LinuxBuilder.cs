@@ -45,6 +45,10 @@ namespace builder
 			{
 				output_folder += ".orangebox";
 			}
+			else if (lib.build_mode == BuildMode.BuildMode_Episode2Valve)
+			{
+				output_folder += ".orangeboxvalve";
+			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
 				output_folder += ".original";
@@ -72,6 +76,10 @@ namespace builder
 			else if (lib.build_mode == BuildMode.BuildMode_Episode2)
 			{
 				makefile_args += "ENGINE=\"orangebox\" ";
+			}
+			else if (lib.build_mode == BuildMode.BuildMode_Episode2Valve)
+			{
+				makefile_args += "ENGINE=\"orangeboxvalve\" ";
 			}
 			else if (lib.build_mode == BuildMode.BuildMode_OldMetamod)
 			{
