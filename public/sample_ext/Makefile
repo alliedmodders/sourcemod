@@ -5,6 +5,7 @@ SMSDK = ../..
 SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
+HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
 MMSOURCE17 = ../../../mmsource-1.7
 
@@ -50,11 +51,21 @@ ifeq "$(ENGINE)" "orangebox"
 	SRCDS = $(SRCDS_BASE)/orangebox
 	override ENGSET = true
 endif
+ifeq "$(ENGINE)" "orangeboxvalve"
+	HL2SDK = $(HL2SDK_OB_VALVE)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=4
+	METAMOD = $(MMSOURCE17)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	SRCDS = $(SRCDS_BASE)/orangebox
+	override ENGSET = true
+endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=4
+	CFLAGS += -DSOURCE_ENGINE=5
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/l4d
@@ -68,7 +79,7 @@ ifeq "$(USEMETA)" "true"
 
 	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
 		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn 
-	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_LEFT4DEAD=4
+	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 endif
