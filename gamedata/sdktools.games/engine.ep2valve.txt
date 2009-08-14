@@ -5,10 +5,8 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"zps"
-			"game"		"empires"
-			"game"		"synergy"
+			"game"		"dod"
+			"game"		"tf"
 		}
 
 		"Offsets"
@@ -55,9 +53,8 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"zps"
-			"game"		"empires"
+			"game"		"dod"
+			"game"		"tf"
 		}
 
 		"Signatures"
@@ -82,10 +79,8 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"zps"
-			"game"		"empires"
-			"game"		"synergy"
+			"game"		"dod"
+			"game"		"tf"
 		}
 		
 		"Offsets"
@@ -125,10 +120,8 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
-			"game"		"zps"
-			"game"		"empires"
-			"game"		"synergy"
+			"game"		"dod"
+			"game"		"tf"
 		}
 		
 		"Offsets"
@@ -218,7 +211,8 @@
 	{
 		"#supported"
 		{
-			"game"		"ageofchivalry"
+			"game"		"dod"
+			"game"		"tf"
 		}
 		"Signatures"
 		{
