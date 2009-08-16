@@ -5,14 +5,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tf2", "tf2.vcproj", "{B3E79
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
-		Release - Orange Box|Win32 = Release - Orange Box|Win32
+		Debug - Orange Box Valve|Win32 = Debug - Orange Box Valve|Win32
+		Release - Orange Box Valve|Win32 = Release - Orange Box Valve|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.ActiveCfg = Debug - Orange Box|Win32
-		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box|Win32.Build.0 = Debug - Orange Box|Win32
-		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box|Win32.ActiveCfg = Release - Orange Box|Win32
-		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box|Win32.Build.0 = Release - Orange Box|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box Valve|Win32.ActiveCfg = Debug - Orange Box Valve|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Debug - Orange Box Valve|Win32.Build.0 = Debug - Orange Box Valve|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box Valve|Win32.ActiveCfg = Debug - Orange Box Valve|Win32
+		{B3E797CF-4E77-4C9D-B8A8-7589B6902206}.Release - Orange Box Valve|Win32.Build.0 = Debug - Orange Box Valve|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
