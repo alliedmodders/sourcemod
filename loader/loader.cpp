@@ -48,6 +48,8 @@
 		return (c == '/' || c == '\\');
 	}
 	#include <Windows.h>
+	#define TF_PATH					"\\tf\\"
+	#define DOD_PATH				"\\dod\\"
 #else
 	#define DLL_EXPORT				extern "C" __attribute__((visibility("default")))
 	#define openlib(lib)			dlopen(lib, RTLD_NOW)
@@ -61,6 +63,8 @@
 		return (c == '/');
 	}
 	#include <dlfcn.h>
+	#define TF_PATH					"/tf/"
+	#define DOD_PATH				"/dod/"
 #endif
 
 #define METAMOD_API_MAJOR			2
@@ -213,7 +217,7 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 		}
 	case SOURCE_ENGINE_ORANGEBOX:
 		{
-			if (strncmp(mli->pl_path, "tf/", 3) == 0)
+			if (strstr(mli->pl_path, TF_PATH) || strstr(mli->pl_path, DOD_PATH))
 			{
 				filename = FILENAME_1_6_EP2VALVE;
 				break;

@@ -74,7 +74,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 #elif SOURCE_ENGINE == SE_ORANGEBOX
 		"extensions/auto.2.ep2/%s",
 #elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
-		"extensions/auto.2.ep2valve",
+		"extensions/auto.2.ep2valve/%s",
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 		"extensions/auto.2.darkm/%s",
 #else

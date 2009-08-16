@@ -992,6 +992,10 @@
 			UniqueIdentifier="{C06F7BFF-18EE-4994-8572-D6383011354B}"
 			>
 			<File
+				RelativePath="..\..\..\public\extensions\IBinTools.h"
+				>
+			</File>
+			<File
 				RelativePath="..\version.rc"
 				>
 			</File>
@@ -1070,10 +1074,6 @@
 			Name="Interfaces"
 			UniqueIdentifier="{7DE81EA3-99D9-4f34-823A-B314791F3514}"
 			>
-			<File
-				RelativePath="..\..\..\public\extensions\IBinTools.h"
-				>
-			</File>
 		</Filter>
 	</Files>
 	<Globals>

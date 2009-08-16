@@ -37,6 +37,8 @@ ifeq "$(ENGINE)" "original"
 	INCLUDE += -I$(MMSOURCE17)/core -I$(MMSOURCE17)/core/sourcehook
 	SRCDS = $(SRCDS_BASE)
 	override ENGSET = true
+	USEMETA = true
+	CFLAGS += -DHOOKING_ENABLED
 endif
 ifeq "$(ENGINE)" "orangebox"
 	HL2SDK = $(HL2SDK_OB)
