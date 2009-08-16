@@ -24,6 +24,11 @@
 	{
 		"engine"	"orangebox"
 	}
+
+	"engine.ep2valve.txt"
+	{
+		"engine"	"orangebox_valve"
+	}
 	
 	"engine.ep1.txt"
 	{

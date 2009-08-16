@@ -187,6 +187,14 @@ namespace builder
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "core";
+			lib.binary_name = "sourcemod.2.ep2valve";
+			lib.vcproj_name = "sourcemod_mm";
+			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
+			libraries.Add(lib);
+
+			lib = new Library();
+			lib.package_path = "addons/sourcemod/bin";
+			lib.source_path = "core";
 			lib.binary_name = "sourcemod.2.l4d";
 			lib.vcproj_name = "sourcemod_mm";
 			lib.build_mode = BuildMode.BuildMode_Left4Dead;
@@ -239,6 +247,14 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2valve";
+			lib.source_path = "extensions/bintools";
+			lib.binary_name = "bintools.ext";
+			lib.vcproj_name = "bintools";
+			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
+			libraries.Add(lib);
+
+			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions/auto.2.l4d";
 			lib.source_path = "extensions/bintools";
 			lib.binary_name = "bintools.ext";
@@ -279,6 +295,14 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2valve";
+			lib.source_path = "extensions/sdktools";
+			lib.binary_name = "sdktools.ext";
+			lib.vcproj_name = "sdktools";
+			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
+			libraries.Add(lib);
+
+			lib = new Library();
 			lib.package_path = "addons/sourcemod/extensions/auto.2.l4d";
 			lib.source_path = "extensions/sdktools";
 			lib.binary_name = "sdktools.ext";
@@ -309,11 +333,11 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
+			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2valve";
 			lib.source_path = "extensions/tf2";
 			lib.binary_name = "game.tf2.ext";
 			lib.vcproj_name = "tf2";
-			lib.build_mode = BuildMode.BuildMode_Episode2;
+			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
 			libraries.Add(lib);
 
 			lib = new Library();

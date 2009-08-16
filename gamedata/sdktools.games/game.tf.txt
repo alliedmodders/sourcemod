@@ -18,28 +18,28 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"421"
-				"linux"		"426"
+				"windows"	"423"
+				"linux"		"427"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"243"
-				"linux"		"244"
+				"windows"	"244"
+				"linux"		"245"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"241"
-				"linux"		"242"
+				"windows"	"242"
+				"linux"		"243"
 			}
 			"Ignite"
 			{
-				"windows"	"198"
-				"linux"		"199"
+				"windows"	"199"
+				"linux"		"200"
 			}
 			"Extinguish"
 			{
-				"windows"	"202"
-				"linux"		"203"
+				"windows"	"203"
+				"linux"		"204"
 			}
 			"Teleport"
 			{
@@ -53,8 +53,8 @@
 			}
 			"GetVelocity"
 			{
-				"windows"	"135"
-				"linux"		"136"
+				"windows"	"136"
+				"linux"		"137"
 			}
 			"EyeAngles"
 			{
@@ -98,8 +98,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"374"
-				"linux"		"375"
+				"windows"	"375"
+				"linux"		"376"
 			}
 		}
 	}

@@ -34,7 +34,7 @@
 
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE == SE_ORANGEBOX
+#elif (SOURCE_ENGINE == SE_ORANGEBOX) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE)
 #include "convar_sm_ob.h"
 #else
 #include "convar_sm.h"
