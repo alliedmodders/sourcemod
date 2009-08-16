@@ -50,7 +50,7 @@ namespace builder
 			{
 				config_name = config_name + " - Orange Box";
 			}
-			else if (lib.build_mode == BuildMode.BuildMode_Episde2Valve)
+			else if (lib.build_mode == BuildMode.BuildMode_Episode2Valve)
 			{
 				config_name = config_name + " - Orange Box Valve";
 			}
