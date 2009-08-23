@@ -365,3 +365,10 @@ native TR_GetHitGroup(Handle:hndl=INVALID_HANDLE);
  */
 native TR_GetPlaneNormal(Handle:hndl, Float:normal[3]);
 
+/**
+ * Tests a point to see if it's outside any playable area
+ *
+ * @param pos		Vector buffer to store data in.
+ * @return		True if outside world, otherwise false.
+ */
+native TR_PointOutsideWorld(Float:pos[3]);
