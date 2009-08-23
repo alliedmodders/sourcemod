@@ -221,6 +221,7 @@ BuildDynamicMenu()
 					new String:temp[6];
 					new String:value[64];
 					new String:text[64];
+					new String:subadm[30];	//  same as "admin", cf. line 110
 					new i=1;
 					new bool:more = true;
 					
@@ -235,7 +236,7 @@ BuildDynamicMenu()
 						KvGetString(kvMenu, temp, text, sizeof(text), value);
 						
 						Format(temp,5,"%i*",i);
-						KvGetString(kvMenu, temp, admin, sizeof(admin),"");	
+						KvGetString(kvMenu, temp, subadm, sizeof(subadm),"");	
 						
 						if (value[0]=='\0')
 						{
@@ -246,7 +247,7 @@ BuildDynamicMenu()
 							listcount++;
 							WritePackString(submenuInput[Submenu_listdata], value);
 							WritePackString(submenuInput[Submenu_listdata], text);
-							WritePackString(submenuInput[Submenu_listdata], admin);
+							WritePackString(submenuInput[Submenu_listdata], subadm);
 						}
 						
 						i++;
