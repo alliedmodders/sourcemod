@@ -568,7 +568,7 @@ static cell_t smn_TRPointOutsideWorld(IPluginContext *pContext, const cell_t *pa
 	pos.y = sp_ctof(vec[1]);
 	pos.z = sp_ctof(vec[2]);
 
-	return enginetrace->PointOutsideWorld(pos)
+	return enginetrace->PointOutsideWorld(pos);
 }
 
 sp_nativeinfo_t g_TRNatives[] = 
