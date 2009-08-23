@@ -189,6 +189,23 @@ void CLocalExtension::Unload()
 	}
 }
 
+bool CRemoteExtension::Reload(char *error, size_t maxlength)
+{
+	snprintf(error, maxlength, "Remote extensions do not support reloading");
+	return false;
+}
+
+bool CLocalExtension::Reload(char *error, size_t maxlength)
+{
+	if (m_pLib == NULL) // FIXME: just load it instead?
+		return false;
+	
+	m_pAPI->OnExtensionUnload();
+	Unload();
+	
+	return Load(error, maxlength);
+}
+
 bool CRemoteExtension::IsExternal()
 {
 	return true;
@@ -911,6 +928,37 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			}
 			return;
 		}
+		else if (strcmp(cmd, "load") == 0)
+		{
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("[SM] Usage: sm exts load <file>");
+				return;
+			}
+
+			const char *filename = command.Arg(3);
+			char path[PLATFORM_MAX_PATH];
+			char error[256];
+
+			UTIL_Format(path, sizeof(path), "%s%s%s", filename, !strstr(filename, ".ext") ? ".ext" : "",
+				!strstr(filename, "." PLATFORM_LIB_EXT) ? "." PLATFORM_LIB_EXT : "");
+			
+			if (FindExtensionByFile(path) != NULL)
+			{
+				g_RootMenu.ConsolePrint("[SM] Extension %s is already loaded.", path);
+				return;
+			}
+			
+			if (LoadExtension(path, error, sizeof(error)))
+			{
+				g_RootMenu.ConsolePrint("[SM] Loaded extension %s successfully.", path);
+			} else
+			{
+				g_RootMenu.ConsolePrint("[SM] Extension %s failed to load: %s", path, error);
+			}
+			
+			return;
+		}
 		else if (strcmp(cmd, "info") == 0)
 		{
 			if (argcount < 4)
@@ -1113,11 +1161,57 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				return;
 			}
 		}
+		else if (strcmp(cmd, "reload") == 0)
+		{
+			if (argcount < 4)
+			{
+				g_RootMenu.ConsolePrint("[SM] Usage: sm exts reload <#>");
+				return;
+			}
+			
+			const char *arg = command.Arg(3);
+			unsigned int num = atoi(arg);
+			CExtension *pExt = FindByOrder(num);
+
+			if (!pExt)
+			{
+				g_RootMenu.ConsolePrint("[SM] Extension number %d was not found.", num);
+				return;
+			}
+			
+			if (pExt->IsLoaded())
+			{
+				char filename[PLATFORM_MAX_PATH];
+				char error[255];
+				
+				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				
+				if (pExt->Reload(error, sizeof(error)))
+				{
+					g_RootMenu.ConsolePrint("[SM] Extension %s is now reloaded.", filename);
+				}
+				else
+				{
+					g_RootMenu.ConsolePrint("[SM] Extension %s failed to reload: %s", filename, error);
+				}
+					
+				return;
+			}
+			else
+			{
+				g_RootMenu.ConsolePrint("[SM] Extension %s is not loaded.", pExt->GetFilename());
+				
+				return;
+			}
+			
+		}
 	}
 
 	g_RootMenu.ConsolePrint("SourceMod Extensions Menu:");
 	g_RootMenu.DrawGenericOption("info", "Extra extension information");
 	g_RootMenu.DrawGenericOption("list", "List extensions");
+	g_RootMenu.DrawGenericOption("load", "Load an extension");
+	g_RootMenu.DrawGenericOption("reload", "Reload an extension");
 	g_RootMenu.DrawGenericOption("unload", "Unload an extension");
 }
 
