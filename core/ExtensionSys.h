@@ -83,6 +83,7 @@ public:
 	virtual bool Load(char *error, size_t maxlength);
 	virtual bool IsLoaded() =0;
 	virtual void Unload() =0;
+	virtual bool Reload(char *error, size_t maxlength) =0;
 protected:
 	void Initialize(const char *filename, const char *path);
 	bool PerformAPICheck(char *error, size_t maxlength);
@@ -110,6 +111,7 @@ public:
 	bool Load(char *error, size_t maxlength);
 	bool IsLoaded();
 	void Unload();
+	bool Reload(char *error, size_t maxlength);
 	bool IsExternal();
 private:
 	PluginId m_PlId;
@@ -124,6 +126,7 @@ public:
 	bool Load(char *error, size_t maxlength);
 	bool IsLoaded();
 	void Unload();
+	bool Reload(char *error, size_t maxlength);
 	bool IsExternal();
 };
 
