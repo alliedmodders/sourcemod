@@ -557,6 +557,20 @@ static cell_t smn_TRGetPointContentsEnt(IPluginContext *pContext, const cell_t *
 	return enginetrace->GetPointContents_Collideable(pEdict->GetCollideable(), pos);
 }
 
+static cell_t smn_TRPointOutsideWorld(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *vec;
+	Vector pos;
+	
+	pContext->LocalToPhysAddr(params[1], &vec);
+
+	pos.x = sp_ctof(vec[0]);
+	pos.y = sp_ctof(vec[1]);
+	pos.z = sp_ctof(vec[2]);
+
+	return enginetrace->PointOutsideWorld(pos)
+}
+
 sp_nativeinfo_t g_TRNatives[] = 
 {
 	{"TR_TraceRay",				smn_TRTraceRay},
@@ -575,5 +589,6 @@ sp_nativeinfo_t g_TRNatives[] =
 	{"TR_TraceHullFilter",		smn_TRTraceHullFilter},
 	{"TR_TraceHullFilterEx",	smn_TRTraceHullFilterEx},
 	{"TR_GetPlaneNormal",		smn_TRGetPlaneNormal},
+	{"TR_PointOutsideWorld",	smn_TRPointOutsideWorld},
 	{NULL,						NULL}
 };
