@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		4
+#define SMINTERFACE_GAMEHELPERS_VERSION		5
 
 class CBaseEntity;
 class CBaseHandle;
@@ -250,6 +250,18 @@ namespace SourceMod
 		 * @return				g_EntList pointer.
 		 */
 		virtual void *GetGlobalEntityList() =0;
+		
+		/**
+		 * @brief Adds a client to the kick queue, where they will be kicked
+		 * next game frame.
+		 *
+		 * The user ID is used to ensure the correct player is kicked.
+		 *
+		 * @param client		The index of the client to kick.
+		 * @param userid		The user ID of the client to kick.
+		 * @param msg			The kick message to show to the player.
+		 */
+		virtual void AddDelayedKick(int client, int userid, const char *msg) =0;
 	};
 }
 

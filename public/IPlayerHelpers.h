@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	10
+#define SMINTERFACE_PLAYERMANAGER_VERSION	11
 
 struct edict_t;
 class IPlayerInfo;
@@ -197,6 +197,29 @@ namespace SourceMod
 		 * @return		True if authorized, false otherwise.
 		 */
 		virtual bool IsAuthorized() =0;
+		
+		/**
+		 * @brief Kicks the client with a message
+		 *
+		 * @param message   The message shown to the client when kicked
+		 */
+		virtual void Kick(const char *message) =0;
+		
+		/**
+		 * @brief Returns whether the client is marked as being in the kick
+		 * queue. The client doesn't necessarily have to be in the actual kick
+		 * queue for this function to return true.
+		 *
+		 * @return      True if in the kick queue, false otherwise.
+		 */
+		virtual bool IsInKickQueue() =0;
+		
+		/**
+		 * @brief Marks the client as being in the kick queue. They are not
+		 * actually added to the kick queue. Use IGameHelpers::AddDelayedKick()
+		 * to actually add them to the queue.
+		 */
+		virtual void MarkAsBeingKicked() =0;
 	};
 
 	/**

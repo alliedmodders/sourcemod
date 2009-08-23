@@ -79,6 +79,7 @@ public:
 	void SetAdminId(AdminId id, bool temporary);
 	AdminId GetAdminId();
 	void Kick(const char *str);
+	bool IsInKickQueue();
 	IPlayerInfo *GetPlayerInfo();
 	unsigned int GetLanguageId();
 	int GetUserId();
@@ -87,7 +88,6 @@ public:
 	unsigned int GetSerial();
 public:
 	void DoBasicAdminChecks();
-	bool IsInKickQueue();
 	void MarkAsBeingKicked();
 	int GetLifeState();
 private:
