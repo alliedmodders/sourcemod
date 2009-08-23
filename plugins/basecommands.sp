@@ -67,6 +67,7 @@ public OnPluginStart()
 	RegAdminCmd("sm_map", Command_Map, ADMFLAG_CHANGEMAP, "sm_map <map>");
 	RegAdminCmd("sm_rcon", Command_Rcon, ADMFLAG_RCON, "sm_rcon <args>");
 	RegAdminCmd("sm_cvar", Command_Cvar, ADMFLAG_CONVARS, "sm_cvar <cvar> [value]");
+	RegAdminCmd("sm_resetcvar", Command_ResetCvar, ADMFLAG_CONVARS, "sm_resetcvar <cvar>");
 	RegAdminCmd("sm_execcfg", Command_ExecCfg, ADMFLAG_CONFIG, "sm_execcfg <filename>");
 	RegAdminCmd("sm_who", Command_Who, ADMFLAG_GENERIC, "sm_who [#userid|name]");
 	RegAdminCmd("sm_reloadadmins", Command_ReloadAdmins, ADMFLAG_BAN, "sm_reloadadmins");
@@ -113,6 +114,36 @@ bool:IsVarProtected(const String:cvar[])
 {
 	decl dummy_value;
 	return GetTrieValue(g_ProtectedVars, cvar, dummy_value);
+}
+
+bool:IsClientAllowedToChangeCvar(client, const String:cvarname[])
+{
+	new Handle:hndl = FindConVar(cvarname);
+
+	new bool:allowed = false;
+	new client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
+	
+	if (client_flags & ADMFLAG_ROOT)
+	{
+		allowed = true;
+	}
+	else
+	{
+		if (GetConVarFlags(hndl) & FCVAR_PROTECTED)
+		{
+			allowed = ((client_flags & ADMFLAG_PASSWORD) == ADMFLAG_PASSWORD);
+		}
+		else if (StrEqual(cvarname, "sv_cheats"))
+		{
+			allowed = ((client_flags & ADMFLAG_CHEATS) == ADMFLAG_CHEATS);
+		}
+		else if (!IsVarProtected(cvarname))
+		{
+			allowed = true;
+		}
+	}
+
+	return allowed;
 }
 
 public OnAdminMenuReady(Handle:topmenu)
@@ -295,31 +326,8 @@ public Action:Command_Cvar(client, args)
 		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
 		return Plugin_Handled;
 	}
-	
-	new bool:allowed = false;
-	new client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
-	
-	if (client_flags & ADMFLAG_ROOT)
-	{
-		allowed = true;
-	}
-	else
-	{
-		if (GetConVarFlags(hndl) & FCVAR_PROTECTED)
-		{
-			allowed = ((client_flags & ADMFLAG_PASSWORD) == ADMFLAG_PASSWORD);
-		}
-		else if (StrEqual(cvarname, "sv_cheats"))
-		{
-			allowed = ((client_flags & ADMFLAG_CHEATS) == ADMFLAG_CHEATS);
-		}
-		else if (!IsVarProtected(cvarname))
-		{
-			allowed = true;
-		}
-	}
-	
-	if (!allowed)
+
+	if (!IsClientAllowedToChangeCvar(client, cvarname))
 	{
 		ReplyToCommand(client, "[SM] %t", "No access to cvar");
 		return Plugin_Handled;
@@ -348,6 +356,50 @@ public Action:Command_Cvar(client, args)
 	LogAction(client, -1, "\"%L\" changed cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 
 	SetConVarString(hndl, value, true);
+
+	return Plugin_Handled;
+}
+
+public Action:Command_ResetCvar(client, args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_resetcvar <cvar>");
+
+		return Plugin_Handled;
+	}
+
+	decl String:cvarname[64];
+	GetCmdArg(1, cvarname, sizeof(cvarname));
+	
+	new Handle:hndl = FindConVar(cvarname);
+	if (hndl == INVALID_HANDLE)
+	{
+		ReplyToCommand(client, "[SM] %t", "Unable to find cvar", cvarname);
+		return Plugin_Handled;
+	}
+	
+	if (!IsClientAllowedToChangeCvar(client, cvarname))
+	{
+		ReplyToCommand(client, "[SM] %t", "No access to cvar");
+		return Plugin_Handled;
+	}
+
+	ResetConVar(hndl);
+
+	decl String:value[255];
+	GetConVarString(hndl, value, sizeof(value));
+
+	if ((GetConVarFlags(hndl) & FCVAR_PROTECTED) != FCVAR_PROTECTED)
+	{
+		ShowActivity2(client, "[SM] ", "%t", "Cvar changed", cvarname, value);
+	}
+	else
+	{
+		ReplyToCommand(client, "[SM] %t", "Cvar changed", cvarname, value);
+	}
+
+	LogAction(client, -1, "\"%L\" reset cvar (cvar \"%s\") (value \"%s\")", client, cvarname, value);
 
 	return Plugin_Handled;
 }
