@@ -80,6 +80,7 @@ public OnPluginStart()
 	
 	RegConsoleCmd("timeleft", Command_Timeleft);
 	RegConsoleCmd("nextmap", Command_Nextmap);
+	RegConsoleCmd("motd", Command_Motd);
 	
 	HookConVarChange(g_Cvar_TimeleftInterval, ConVarChange_TimeleftInterval);
 
@@ -207,6 +208,13 @@ public Action:Command_Nextmap(client, args)
 	return Plugin_Handled;
 }
 
+public Action:Command_Motd(client, args)
+{
+	ShowMOTDPanel(client, "Message Of The Day", "motd", MOTDPANEL_TYPE_INDEX);
+
+	return Plugin_Handled;
+}
+
 public Action:Command_Say(client, args)
 {
 	decl String:text[192], String:command[64];
@@ -308,6 +316,10 @@ public Action:Command_Say(client, args)
 				PrintToChat(client, "[SM] %t", "Next Map", map);
 			}
 		}
+	}
+	else if (strcmp(text[startidx], "motd", false) == 0)
+	{
+		ShowMOTDPanel(client, "Message Of The Day", "motd", MOTDPANEL_TYPE_INDEX);
 	}
 	
 	return Plugin_Continue;
