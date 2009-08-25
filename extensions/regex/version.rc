@@ -50,7 +50,7 @@ BEGIN
             VALUE "FileVersion", SVN_FULL_VERSION
             VALUE "InternalName", "SourceMod Regular Expression Extension"
             VALUE "LegalCopyright", "Copyright (c) 2004-2008, AlliedModders LLC"
-            VALUE "OriginalFilename", "regex.ext.dll"
+            VALUE "OriginalFilename", BINARY_NAME
             VALUE "ProductName", "SourceMod Regular Expression Extension"
             VALUE "ProductVersion", SVN_FULL_VERSION
         END

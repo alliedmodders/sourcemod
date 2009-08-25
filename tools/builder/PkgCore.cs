@@ -65,12 +65,6 @@ namespace builder
 			folders.Add("addons/sourcemod/scripting/basevotes");
 			folders.Add("addons/sourcemod/scripting/basebans");
 			folders.Add("addons/sourcemod/scripting/funcommands");
-			folders.Add("addons/sourcemod/extensions/auto.1.ep1");
-			folders.Add("addons/sourcemod/extensions/auto.2.darkm");
-			//folders.Add("addons/sourcemod/extensions/auto.2.ep1");
-			folders.Add("addons/sourcemod/extensions/auto.2.ep2");
-			folders.Add("addons/sourcemod/extensions/auto.2.ep2valve");
-			folders.Add("addons/sourcemod/extensions/auto.2.l4d");
 			folders.Add("addons/sourcemod/scripting/playercommands");
 			folders.Add("addons/metamod");
 			
@@ -216,42 +210,42 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/bintools";
-			lib.binary_name = "bintools.ext";
+			lib.binary_name = "bintools.ext.1.ep1";
 			lib.vcproj_name = "bintools";
 			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.darkm";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/bintools";
-			lib.binary_name = "bintools.ext";
+			lib.binary_name = "bintools.ext.2.darkm";
 			lib.vcproj_name = "bintools";
 			lib.build_mode = BuildMode.BuildMode_DarkMessiah;
 			lib.platform = BasePlatform.Platform_Windows;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/bintools";
-			lib.binary_name = "bintools.ext";
+			lib.binary_name = "bintools.ext.2.ep2";
 			lib.vcproj_name = "bintools";
 			lib.build_mode = BuildMode.BuildMode_Episode2;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2valve";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/bintools";
-			lib.binary_name = "bintools.ext";
+			lib.binary_name = "bintools.ext.2.ep2v";
 			lib.vcproj_name = "bintools";
 			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.l4d";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/bintools";
-			lib.binary_name = "bintools.ext";
+			lib.binary_name = "bintools.ext.2.l4d";
 			lib.vcproj_name = "bintools";
 			lib.build_mode = BuildMode.BuildMode_Left4Dead;
 			libraries.Add(lib);
@@ -264,42 +258,42 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
+			lib.package_path = "addons/sourcemod/extension";
 			lib.source_path = "extensions/sdktools";
-			lib.binary_name = "sdktools.ext";
+			lib.binary_name = "sdktools.ext.1.ep1";
 			lib.vcproj_name = "sdktools";
 			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.darkm";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/sdktools";
-			lib.binary_name = "sdktools.ext";
+			lib.binary_name = "sdktools.ext.2.darkm";
 			lib.vcproj_name = "sdktools";
 			lib.build_mode = BuildMode.BuildMode_DarkMessiah;
 			lib.platform = BasePlatform.Platform_Windows;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/sdktools";
-			lib.binary_name = "sdktools.ext";
+			lib.binary_name = "sdktools.ext.2.ep2";
 			lib.vcproj_name = "sdktools";
 			lib.build_mode = BuildMode.BuildMode_Episode2;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2valve";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/sdktools";
-			lib.binary_name = "sdktools.ext";
+			lib.binary_name = "sdktools.ext.2.ep2v";
 			lib.vcproj_name = "sdktools";
 			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.l4d";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/sdktools";
-			lib.binary_name = "sdktools.ext";
+			lib.binary_name = "sdktools.ext.2.l4d";
 			lib.vcproj_name = "sdktools";
 			lib.build_mode = BuildMode.BuildMode_Left4Dead;
 			libraries.Add(lib);
@@ -312,9 +306,9 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.1.ep1";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/cstrike";
-			lib.binary_name = "game.cstrike.ext";
+			lib.binary_name = "game.cstrike.ext.1.ep1";
 			lib.vcproj_name = "cstrike";
 			lib.build_mode = BuildMode.BuildMode_OldMetamod;
 			libraries.Add(lib);
@@ -327,9 +321,9 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extensions/auto.2.ep2valve";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/tf2";
-			lib.binary_name = "game.tf2.ext";
+			lib.binary_name = "game.tf2.ext.2.ep2v";
 			lib.vcproj_name = "tf2";
 			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
 			libraries.Add(lib);

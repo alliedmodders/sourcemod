@@ -1302,7 +1302,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDKOBVALVE)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\tier1.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\mathlib.lib&quot; dbghelp.lib &quot;Wsock32.lib&quot;"
-				OutputFile="$(OutDir)\sourcemod.2.ep2valve.dll"
+				OutputFile="$(OutDir)\sourcemod.2.ep2v.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -1384,7 +1384,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDKOBVALVE)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\tier1.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\mathlib.lib&quot; &quot;Wsock32.lib&quot;"
-				OutputFile="$(OutDir)\sourcemod.2.ep2valve.dll"
+				OutputFile="$(OutDir)\sourcemod.2.ep2v.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -1465,7 +1465,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDKOBVALVE)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\tier1.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib&quot; &quot;$(HL2SDKOBVALVE)\lib\public\mathlib.lib&quot; &quot;Wsock32.lib&quot;"
-				OutputFile="$(OutDir)\sourcemod.2.ep2valve.dll"
+				OutputFile="$(OutDir)\sourcemod.2.ep2v.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"

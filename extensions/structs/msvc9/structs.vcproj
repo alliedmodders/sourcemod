@@ -58,6 +58,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -137,6 +138,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -219,6 +221,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -298,6 +301,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -380,6 +384,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -459,6 +464,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

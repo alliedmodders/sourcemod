@@ -58,6 +58,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -65,7 +66,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot;"
-				OutputFile="$(OutDir)\game.cstrike.ext.dll"
+				OutputFile="$(OutDir)\game.cstrike.ext.1.ep1.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -137,6 +138,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -144,7 +146,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot;"
-				OutputFile="$(OutDir)\game.cstrike.ext.dll"
+				OutputFile="$(OutDir)\game.cstrike.ext.1.ep1.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"
@@ -219,6 +221,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -226,7 +229,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDKOB)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOB)\lib\public\tier1.lib&quot;"
-				OutputFile="$(OutDir)\game.cstrike.ext.dll"
+				OutputFile="$(OutDir)\game.cstrike.ext.2.ep2.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -298,6 +301,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -305,7 +309,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDKOB)\lib\public\tier0.lib&quot; &quot;$(HL2SDKOB)\lib\public\tier1.lib&quot;"
-				OutputFile="$(OutDir)\game.cstrike.ext.dll"
+				OutputFile="$(OutDir)\game.cstrike.ext.2.ep2.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"
@@ -380,6 +384,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -387,7 +392,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot;"
-				OutputFile="$(OutDir)\game.cstrike.ext.dll"
+				OutputFile="$(OutDir)\game.cstrike.ext.1.ep1.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -459,6 +464,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -466,7 +472,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="&quot;$(HL2SDK)\lib\public\tier0.lib&quot; &quot;$(HL2SDK)\lib\public\tier1.lib&quot;"
-				OutputFile="$(OutDir)\game.cstrike.ext.dll"
+				OutputFile="$(OutDir)\game.cstrike.ext.1.ep1.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
 				GenerateDebugInformation="true"

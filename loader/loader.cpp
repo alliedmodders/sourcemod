@@ -70,7 +70,7 @@
 #define METAMOD_API_MAJOR			2
 #define FILENAME_1_4_EP1			"sourcemod.1.ep1" PLATFORM_EXT
 #define FILENAME_1_6_EP2			"sourcemod.2.ep2" PLATFORM_EXT
-#define FILENAME_1_6_EP2VALVE		"sourcemod.2.ep2valve" PLATFORM_EXT
+#define FILENAME_1_6_EP2VALVE		"sourcemod.2.ep2v" PLATFORM_EXT
 #define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
 #define FILENAME_1_6_L4D			"sourcemod.2.l4d" PLATFORM_EXT
 #define FILENAME_1_6_DARKM			"sourcemod.2.darkm" PLATFORM_EXT
