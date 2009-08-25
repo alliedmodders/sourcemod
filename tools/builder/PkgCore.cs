@@ -175,7 +175,7 @@ namespace builder
 			lib = new Library();
 			lib.package_path = "addons/sourcemod/bin";
 			lib.source_path = "core";
-			lib.binary_name = "sourcemod.2.ep2valve";
+			lib.binary_name = "sourcemod.2.ep2v";
 			lib.vcproj_name = "sourcemod_mm";
 			lib.build_mode = BuildMode.BuildMode_Episode2Valve;
 			libraries.Add(lib);
