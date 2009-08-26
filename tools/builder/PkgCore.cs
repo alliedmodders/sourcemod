@@ -258,7 +258,7 @@ namespace builder
 			libraries.Add(lib);
 
 			lib = new Library();
-			lib.package_path = "addons/sourcemod/extension";
+			lib.package_path = "addons/sourcemod/extensions";
 			lib.source_path = "extensions/sdktools";
 			lib.binary_name = "sdktools.ext.1.ep1";
 			lib.vcproj_name = "sdktools";
