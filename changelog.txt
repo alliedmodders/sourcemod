@@ -2,6 +2,32 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.2.2 [2009-08-28]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.2_Release_Notes
+
+ - Removed auto folders. (bug 3949).
+ - Added PointOutsideWorld native to sdktools. (bug 3906).
+ - Added "motd" chat trigger to basetriggers. (bug 2694).
+ - Added manual extension reloading command to root console menu. (bug 3934)
+ - Fixed 'list' type custom menu entries overwriting admin restrictions. (bug 3783).
+ - Added sm_resetcvar command to basecommands. (bug 3636).
+ - Updated gamedata for DOD:S. (bug 3948).
+ - Updated gamedata for TF2. (bug 3948).
+ - Added new .ep2v build config for valve OB based games. (bug 3948).
+ - Fixed incorrect escaping in clientprefs SQLite queries. (bug 3904)
+ - Updated gamedata for Synergy. (bug 3315).
+ - Upgraded to pcre-7.9 (bug 3923).
+ - Switched Insurgency chat printing to SayText. (bug 3738).
+ - Updated gamedata for Insurgency. (bug 3511).
+ - Updated gamedata for ZM. (bug 3746).
+ - Updated gamedata for Empires. (bug 3500).
+ - Updated gamedata for ZPS. (bug 3877).
+ - Updated gamedata for AoC. (bug 3891).
+ - Fixed RemovePlayerDisguise signature for TF2. (bug 3892). 
+
+----------------------------
+
 SourceMod 1.2.1 [2009-05-31]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.2.1_Release_Notes
