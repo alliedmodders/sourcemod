@@ -2,6 +2,14 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.2.3 [2009-08-28]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.3_Release_Notes
+
+ - Fix extension filename lookup. (bug 3975).
+
+----------------------------
+
 SourceMod 1.2.2 [2009-08-28]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.2.2_Release_Notes
