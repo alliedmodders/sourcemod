@@ -590,7 +590,7 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
 		pExt = (*iter);
-		if (pExt->IsSameFile(file))
+		if (pExt->IsSameFile(lookup))
 		{
 			return pExt;
 		}
