@@ -47,7 +47,7 @@ def PerformReversioning():
 
 #endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
 
-	""".format(tag, rev, cset, major, minor, release, major, minor, release))
+""".format(tag, rev, cset, major, minor, release, major, minor, release))
 	incFile.close()
 
 	cache.WriteCache()
