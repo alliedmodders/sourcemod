@@ -23,7 +23,7 @@ if (!(-d 'OUTPUT')) {
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 	$reconf = 1;
 } else {
-	if (-d 'OUTPUT/sentinel') {
+	if (-f 'OUTPUT/sentinel') {
 		my @s = stat('OUTPUT/sentinel');
 		my $mtime = $s[9];
 		my @files = ('build/pushbuild.txt', 'build/AMBuildScript', 'build/product.version');
@@ -52,11 +52,10 @@ if ($reconf) {
 	if ($? != 0) {
 		die('Could not configure!');
 	}
+	open(FILE, '>sentinel');
+	print FILE "this is nothing.\n";
+	close(FILE);
 }
-
-open(FILE, '>OUTPUT/sentinel');
-print FILE "this is nothing.\n";
-close(FILE);
 
 sub IsNewer
 {
