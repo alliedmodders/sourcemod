@@ -11,11 +11,10 @@ require 'helpers.pm';
 chdir('../../../OUTPUT');
 
 if ($^O eq "linux") {
-	$output = `python3.1 build.py 2>&1`;
+	system("python3.1 build.py 2>&1");
 } else {
-	$output = `C:\\Python31\\python.exe build.py 2>&1`;
+	system("C:\\Python31\\python.exe build.py 2>&1");
 }
-print($output);
 
 if ($? != 0)
 {
