@@ -19,11 +19,10 @@ def BuildCURL():
 			curl.AddCommand(command.DirectCommand(args))
 			curl.AddCommand(command.DirectCommand(['make']))
 	else:
-		args = ['devenv.com',
-		        '/Build',
-						'LIB Release',
+		args = ['vcbuild',
 		        os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                     'build_libcurl.vcproj')]
+		                     'build_libcurl.vcproj'),
+						'LIB Release']
 		curl.AddCommand(command.DirectCommand(args))
 		#die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
 
