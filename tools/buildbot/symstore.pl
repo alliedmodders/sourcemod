@@ -20,6 +20,7 @@ rsync('sourcemod@alliedmods.net:~/public_html/symbols/', '..\\..\\symstore');
 #Get version info
 my ($version);
 $version = Build::ProductVersion(Build::PathFormat('product.version'));
+$version =~ s/-dev//g;
 $version .= '-hg' . Build::HgRevNum('.');
 
 my ($build_type);
