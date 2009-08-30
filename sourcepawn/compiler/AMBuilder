@@ -5,6 +5,7 @@ compiler = SM.DefaultCompiler()
 compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public'))
 compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'sourcepawn'))
 compiler['CINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'sourcepawn', 'compiler'))
+compiler['CINCLUDES'].append(os.path.join(AMBuild.outputFolder, 'includes'))
 
 if compiler.cc.name == 'gcc':
 	compiler['CFLAGS'].extend(['-Wno-parentheses', '-Wno-format'])
