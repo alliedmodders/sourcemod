@@ -46,6 +46,7 @@ def PerformReversioning():
 #define SM_FILE_VERSION			{6},{7},{8},0
 
 #endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
+
 	""".format(tag, rev, cset, major, minor, release, major, minor, release))
 	incFile.close()
 
