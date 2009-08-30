@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include <stdarg.h>
 #include <sm_platform.h>
@@ -74,3 +75,14 @@ void CurlExt::SDK_OnUnload()
 {
 	curl_global_cleanup();
 }
+
+const char *CurlExt::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *CurlExt::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
+

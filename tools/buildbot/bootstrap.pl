@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# vim: set ts=2 sw=2 tw=99 noet: 
 
 use strict;
 use Cwd;
@@ -9,88 +10,62 @@ chdir($path);
 
 require 'helpers.pm';
 
-chdir(Build::PathFormat('../builder'));
-if ($^O eq "linux")
-{
-    Build::Command('make clean');
-    Build::Command('make');
-}
-else
-{
-    Build::Command('"' . $ENV{'VC9BUILDER'} . '" /rebuild builder.csproj Release');
-    Build::Command('move ' . Build::PathFormat('bin/Release/builder.exe') . ' .');
-}
-
-die "Unable to build builder tool!\n" unless -e 'builder.exe';
-
-#Go back to main source dir.
-chdir(Build::PathFormat('../..'));
+#Go back above build dir
+chdir(Build::PathFormat('../../..'));
 
 #Get the source path.
 our ($root) = getcwd();
 
+my $reconf = 0;
+
 #Create output folder if it doesn't exist.
 if (!(-d 'OUTPUT')) {
-    mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
+	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
+	$reconf = 1;
+} else {
+	if (-f 'OUTPUT/sentinel') {
+		my @s = stat('OUTPUT/sentinel');
+		my $mtime = $s[9];
+		my @files = ('build/pushbuild.txt', 'build/AMBuildScript', 'build/product.version');
+		my ($i);
+		for ($i = 0; $i <= $#files; $i++) {
+			if (IsNewer($files[$i], $mtime)) {
+				$reconf = 1;
+				last;
+			}
+		}
+	} else {
+		$reconf = 1;
+	}
 }
 
-#Write the configuration file.
-open(CONF, '>build.cfg') or die("Failed to write build.cfg: $!\n");
-print CONF "OutputBase = " . Build::PathFormat($root . '/OUTPUT') . "\n";
-print CONF "SourceBase = $root\n";
-if ($^O eq "linux") 
-{
-    print CONF "BuilderPath = /usr/bin/make\n";
-}
-else
-{
-    print CONF "BuilderPath = " . $ENV{'VC9BUILDER'} . "\n";
-    print CONF "PDBLog = $root\\OUTPUT\\pdblog.txt\n";
-}
-close(CONF);
-
-#Do the annoying revision bumping.
-#Linux needs some help here.
-if ($^O eq "linux")
-{
-    Build::Command("flip -u modules.versions");
-    Build::Command("flip -u tools/versionchanger.pl");
-    Build::Command("chmod +x tools/versionchanger.pl");
-}
-my ($build_type);
-$build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
-if ($build_type == "dev")
-{
-	Build::Command(Build::PathFormat('tools/versionchanger.pl') . ' --buildstring="-dev"');
+if ($reconf) {
+	chdir('OUTPUT');
+	my ($result);
+	print "Attempting to reconfigure...\n";
+	if ($^O eq "linux") {
+		$result = `CC=gcc-4.1 CXX=gcc-4.1 python3.1 ../build/configure.py --enable-optimize`;
+	} else {
+		$result = `C:\\Python31\\Python.exe ..\\build\\configure.py --enable-optimize`;
+	}
+	print "$result\n";
+	if ($? != 0) {
+		die('Could not configure!');
+	}
+	open(FILE, '>sentinel');
+	print FILE "this is nothing.\n";
+	close(FILE);
 }
 
-#Bootstrap extensions that have complex dependencies
+sub IsNewer
+{
+	my ($file, $time) = (@_);
 
-if ($^O eq "linux")
-{
-	BuildLibCurl_Linux();
-}
-else
-{
-	BuildLibCurl_Win32();
+	my @s = stat($file);
+	my $mtime = $s[9];
+	return $mtime > $time;
 }
 
-sub BuildLibCurl_Win32
-{
-	chdir("extensions\\curl\\curl-src\\lib");
-	Build::Command('"' . $ENV{'VC9BUILDER'} . '" /rebuild build_libcurl.vcproj "LIB Release"');
-	die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
-	chdir("..\\..\\..\\..");
-}
+exit(0);
 
-sub BuildLibCurl_Linux
-{
-	chdir("extensions/curl/curl-src");
-	Build::Command("mkdir -p Release");
-	Build::Command("chmod +x configure");
-	chdir("Release");
-	Build::Command("../configure --enable-static --disable-shared --disable-ldap --without-ssl --without-zlib");
-	Build::Command("make");
-	die "Unable to find libcurl.a!\n" unless (-f "lib/.libs/libcurl.a");
-	chdir("../../../..");
-}
+

@@ -38,6 +38,7 @@
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   #include <sclinux.h>
   #include <binreloc.h> /* from BinReloc, see www.autopackage.org */
+  #include <unistd.h>
 #endif
 
 #if defined FORTIFY
@@ -65,7 +66,7 @@
 
 #include "lstring.h"
 #include "sc.h"
-#include "svn_version.h"
+#include <sourcemod_version.h>
 #include "sctracker.h"
 #define VERSION_STR "3.2.3636"
 #define VERSION_INT 0x0302
@@ -172,7 +173,7 @@ static int *wqptr;              /* pointer to next entry */
   static HWND hwndFinish = 0;
 #endif
 
-SC_VDECL int glbstringread = 0;
+int glbstringread = 0;
 char g_tmpfile[_MAX_PATH] = {0};
 
 /*  "main" of the compiler
@@ -805,24 +806,17 @@ SC_FUNC void set_extension(char *filename,char *extension,int force)
     strcat(filename,extension);
 }
 
-static const char *option_value(const char *optptr,char **argv,int argc,int *arg)
+static const char *option_value(const char *optptr)
 {
-  const char *ptr;
-
-  if (*(optptr+1)=='=' || *(optptr+1)==':')
-    ptr=optptr+2;
-  else
-    ptr=optptr+1;
-
-  if (strlen(ptr)==0 && *arg!=argc-1)
-    ptr=argv[++*arg];
-
-  return ptr;
+  return (*(optptr+1)=='=' || *(optptr+1)==':') ? optptr+2 : optptr+1;
 }
 
-static int toggle_option(const char *optptr,int option)
+static int toggle_option(const char *optptr, int option)
 {
-  switch ((*(optptr+1)=='=' || *(optptr+1)==':') ? *(optptr+2) : *(optptr+1)) {
+  switch (*option_value(optptr)) {
+  case '\0':
+    option=!option;
+    break;
   case '-':
     option=FALSE;
     break;
@@ -860,7 +854,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
       ptr=&argv[arg][1];
       switch (*ptr) {
       case 'A':
-        i=atoi(option_value(ptr,argv,argc,&arg));
+        i=atoi(option_value(ptr));
         if ((i % sizeof(cell))==0)
           sc_dataalign=i;
         else
@@ -883,11 +877,11 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         break;
 #endif
       case 'c':
-        strlcpy(codepage,option_value(ptr,argv,argc,&arg),MAXCODEPAGE);  /* set name of codepage */
+        strlcpy(codepage,option_value(ptr),MAXCODEPAGE);  /* set name of codepage */
         break;
 #if defined dos_setdrive
       case 'D':                 /* set active directory */
-        ptr=option_value(ptr,argv,argc,&arg);
+        ptr=option_value(ptr);
         if (ptr[1]==':')
           dos_setdrive(toupper(*ptr)-'A'+1);    /* set active drive */
         chdir(ptr);
@@ -895,7 +889,7 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
 #endif
 #if 0 /* not allowed to change for SourceMod */
       case 'd':
-        switch (*option_value(ptr,argv,argc,&arg)) {
+        switch (*option_value(ptr)) {
         case '0':
           sc_debug=0;
           break;
@@ -916,17 +910,17 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         break;
 #endif
       case 'e':
-        strlcpy(ename,option_value(ptr,argv,argc,&arg),_MAX_PATH); /* set name of error file */
+        strlcpy(ename,option_value(ptr),_MAX_PATH); /* set name of error file */
         break;
 #if defined	__WIN32__ || defined _WIN32 || defined _Windows
       case 'H':
-        hwndFinish=(HWND)atoi(option_value(ptr,argv,argc,&arg));
+        hwndFinish=(HWND)atoi(option_value(ptr));
         if (!IsWindow(hwndFinish))
           hwndFinish=(HWND)0;
         break;
 #endif
       case 'i':
-        strlcpy(str,option_value(ptr,argv,argc,&arg),sizeof str);  /* set name of include directory */
+        strlcpy(str,option_value(ptr),sizeof str);  /* set name of include directory */
         i=strlen(str);
         if (i>0) {
           if (str[i-1]!=DIRSEP_CHAR) {
@@ -942,22 +936,21 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         sc_listing=TRUE;        /* skip second pass & code generation */
         break;
       case 'o':
-        strlcpy(oname,option_value(ptr,argv,argc,&arg),_MAX_PATH); /* set name of (binary) output file */
+        strlcpy(oname,option_value(ptr),_MAX_PATH); /* set name of (binary) output file */
         break;
       case 'O':
-        pc_optimize=*option_value(ptr,argv,argc,&arg) - '0';
+        pc_optimize=*option_value(ptr) - '0';
         if (pc_optimize<sOPTIMIZE_NONE || pc_optimize>=sOPTIMIZE_NUMBER || pc_optimize==sOPTIMIZE_NOMACRO)
           about();
         break;
       case 'p':
-        strlcpy(pname,option_value(ptr,argv,argc,&arg),_MAX_PATH); /* set name of implicit include file */
+        strlcpy(pname,option_value(ptr),_MAX_PATH); /* set name of implicit include file */
         break;
 #if !defined SC_LIGHT
       case 'r':
-        strlcpy(rname,option_value(ptr,argv,argc,&arg),_MAX_PATH); /* set name of report file */
+        strlcpy(rname,option_value(ptr),_MAX_PATH); /* set name of report file */
         sc_makereport=TRUE;
-#if 0 /* dead code due to option_value change to allow spaces between option and value */
-		if (strlen(rname)>0) {
+        if (strlen(rname)>0) {
           set_extension(rname,".xml",FALSE);
         } else if ((name=get_sourcefile(0))!=NULL) {
           assert(strlen(rname)==0);
@@ -970,29 +963,28 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
           strcpy(rname,ptr);
           set_extension(rname,".xml",TRUE);
         } /* if */
-#endif
         break;
 #endif
       case 'S':
-        i=atoi(option_value(ptr,argv,argc,&arg));
+        i=atoi(option_value(ptr));
         if (i>32)
           pc_stksize=(cell)i;   /* stack size has minimum size */
         else
           about();
         break;
       case 's':
-        skipinput=atoi(option_value(ptr,argv,argc,&arg));
+        skipinput=atoi(option_value(ptr));
         break;
       case 't':
-        sc_tabsize=atoi(option_value(ptr,argv,argc,&arg));
+        sc_tabsize=atoi(option_value(ptr));
         break;
       case 'v':
-        verbosity= isdigit(*option_value(ptr,argv,argc,&arg)) ? atoi(option_value(ptr,argv,argc,&arg)) : 2;
+        verbosity= isdigit(*option_value(ptr)) ? atoi(option_value(ptr)) : 2;
         if (sc_asmfile && verbosity>1)
           verbosity=1;
         break;
       case 'w':
-        i=(int)strtol(option_value(ptr,argv,argc,&arg),(char **)&ptr,10);
+        i=(int)strtol(option_value(ptr),(char **)&ptr,10);
         if (*ptr=='-')
           pc_enablewarning(i,0);
         else if (*ptr=='+')
@@ -1002,13 +994,13 @@ static void parseoptions(int argc,char **argv,char *oname,char *ename,char *pnam
         break;
       case 'X':
         if (*(ptr+1)=='D') {
-          i=atoi(option_value(ptr+1,argv,argc,&arg));
+          i=atoi(option_value(ptr+1));
           if (i>64)
             pc_amxram=(cell)i;  /* abstract machine data/stack has minimum size */
           else
             about();
         } else {
-          i=atoi(option_value(ptr,argv,argc,&arg));
+          i=atoi(option_value(ptr));
           if (i>64)
             pc_amxlimit=(cell)i;/* abstract machine has minimum size */
           else
@@ -1235,8 +1227,8 @@ static void setconfig(char *root)
 
 static void setcaption(void)
 {
-  pc_printf("SourcePawn Compiler " SVN_FULL_VERSION "\n");
-  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2009 AlliedModders, LLC\n\n");
+  pc_printf("SourcePawn Compiler " SM_FULL_VERSION "\n");
+  pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2008 AlliedModders, LLC\n\n");
 }
 
 static void about(void)
@@ -1276,7 +1268,7 @@ static void about(void)
     pc_printf("             2    full optimizations\n");
     pc_printf("         -p<name> set name of \"prefix\" file\n");
 #if !defined SC_LIGHT
-    pc_printf("         -r<name> write cross reference report to console or to specified file\n");
+    pc_printf("         -r[name] write cross reference report to console or to specified file\n");
 #endif
     pc_printf("         -S<num>  stack/heap size in cells (default=%d)\n",(int)pc_stksize);
     pc_printf("         -s<num>  skip lines from the input file\n");
@@ -1287,7 +1279,7 @@ static void about(void)
     pc_printf("         -XD<num> abstract machine data/stack size limit in bytes\n");
     pc_printf("         -\\       use '\\' for escape characters\n");
     pc_printf("         -^       use '^' for escape characters\n");
-    pc_printf("         -;<+/->  require a semicolon to end each statement (default=%c)\n", sc_needsemicolon ? '+' : '-');
+    pc_printf("         -;[+/-]  require a semicolon to end each statement (default=%c)\n", sc_needsemicolon ? '+' : '-');
 #if 0 /* not allowed in SourceMod */
     pc_printf("         -([+/-]  require parantheses for function invocation (default=%c)\n", optproccall ? '-' : '+');
 #endif
@@ -1298,8 +1290,8 @@ static void about(void)
     pc_printf("equivalent.\n");
 #endif
     pc_printf("\nOptions with a value may optionally separate the value from the option letter\n");
-    pc_printf("with a colon (\":\"), an equal sign (\"=\"), or a space (\" \"). That is, the options \"-d0\", \"-d=0\",\n");
-    pc_printf("\"-d:0\", and \"-d 0\" are all equivalent. \"-;\" is an exception to this and cannot use a space.\n");
+    pc_printf("with a colon (\":\") or an equal sign (\"=\"). That is, the options \"-d0\", \"-d=0\"\n");
+    pc_printf("and \"-d:0\" are all equivalent.\n");
   } /* if */
   norun = 1;
   longjmp(errbuf,3);        /* user abort */

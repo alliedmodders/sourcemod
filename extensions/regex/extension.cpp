@@ -29,8 +29,8 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
-
 #include <sh_string.h>
 #include "pcre.h"
 #include "CRegEx.h"
@@ -61,6 +61,16 @@ void RegexExtension::SDK_OnUnload()
 {
 	g_pHandleSys->RemoveType(g_RegexHandle, myself->GetIdentity());
 
+}
+
+const char *RegexExtension::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *RegexExtension::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 
 static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)

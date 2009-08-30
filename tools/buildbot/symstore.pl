@@ -12,7 +12,7 @@ chdir('..');
 
 our $SSH = 'ssh -i ../../smpvkey';
 
-open(PDBLOG, 'OUTPUT/pdblog.txt') or die "Could not open pdblog.txt: $!\n";
+open(PDBLOG, '../OUTPUT/pdblog.txt') or die "Could not open pdblog.txt: $!\n";
 
 #Sync us up with the main symbol store
 rsync('sourcemod@alliedmods.net:~/public_html/symbols/', '..\\..\\symstore');
@@ -20,16 +20,17 @@ rsync('sourcemod@alliedmods.net:~/public_html/symbols/', '..\\..\\symstore');
 #Get version info
 my ($version);
 $version = Build::ProductVersion(Build::PathFormat('product.version'));
+$version =~ s/-dev//g;
 $version .= '-hg' . Build::HgRevNum('.');
 
 my ($build_type);
 $build_type = Build::GetBuildType(Build::PathFormat('tools/buildbot/build_type'));
 
-if ($build_type == "dev")
+if ($build_type eq "dev")
 {
 	$build_type = "buildbot";
 }
-elsif ($build_type == "rel")
+elsif ($build_type eq "rel")
 {
 	$build_type = "release";
 }
@@ -40,7 +41,7 @@ while (<PDBLOG>)
 	$line = $_;
 	$line =~ s/\.pdb/\*/;
 	chomp $line;
-	Build::Command("symstore add /r /f \"$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
+	Build::Command("symstore add /r /f \"..\\OUTPUT\\$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
 }
 
 close(PDBLOG);

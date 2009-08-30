@@ -49,6 +49,7 @@
 
 /* @(#) $Id$ */
 
+#include <stdio.h>
 #include "deflate.h"
 
 const char deflate_copyright[] =

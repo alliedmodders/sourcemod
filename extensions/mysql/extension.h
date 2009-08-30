@@ -81,6 +81,8 @@ public:
 	 * @return			True if working, false otherwise.
 	 */
 	//virtual bool QueryRunning(char *error, size_t maxlength);
+	const char *GetVersion();
+	const char *GetDate();
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**

@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "GeoIP.h"
 
@@ -65,6 +66,16 @@ void GeoIP_Extension::SDK_OnUnload()
 {
 	GeoIP_delete(gi);
 	gi = NULL;
+}
+
+const char *GeoIP_Extension::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *GeoIP_Extension::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 
 /*******************************
@@ -131,3 +142,4 @@ const sp_nativeinfo_t geoip_natives[] =
 	{"GeoipCountry",		sm_Geoip_Country},
 	{NULL,					NULL},
 };
+

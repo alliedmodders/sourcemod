@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "driver/SqDriver.h"
 
@@ -70,3 +71,14 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 		return len;
 	}
 }
+
+const char *SqliteExt::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *SqliteExt::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
+

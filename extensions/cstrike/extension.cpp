@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "RegNatives.h"
 #include "timeleft.h"
@@ -250,3 +251,14 @@ bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
 
 	return true;
 }
+
+const char *CStrike::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *CStrike::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
+

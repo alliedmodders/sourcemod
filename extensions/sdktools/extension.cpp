@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include <compat_wrappers.h>
 #include "vcallbuilder.h"
@@ -382,9 +383,14 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 	return true;
 }
 
-void SDKTools::OnClientPutInServer(int client)
+const char *SDKTools::GetVersion()
 {
-	g_Hooks.OnClientPutInServer(client);
+	return SM_FULL_VERSION;
+}
+
+const char *SDKTools::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 
 class SDKTools_API : public ISDKTools

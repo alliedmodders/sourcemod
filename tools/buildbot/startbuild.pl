@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# vim: set ts=2 sw=2 tw=99 noet: 
 
 use File::Basename;
 
@@ -7,33 +8,20 @@ chdir($path);
 
 require 'helpers.pm';
 
-chdir('..');
-chdir('..');
+chdir('../../../OUTPUT');
 
-my ($cmd, $output);
-
-$cmd = Build::PathFormat('tools/builder/builder.exe') . ' build.cfg'; # 2>&1';
-
-if ($^O eq "linux")
-{
-    $cmd = 'mono ' . $cmd;
+if ($^O eq "linux") {
+	system("python3.1 build.py 2>&1");
+} else {
+	system("C:\\Python31\\python.exe build.py 2>&1");
 }
 
-system($cmd);
-
-if ($? == -1)
+if ($? != 0)
 {
-    die "Build failed: $!\n";
-}
-elsif ($^O eq "linux" and $? & 127)
-{
-    die "Build died :(\n";
-}
-elsif ($? >> 8 != 0)
-{
-    die "Build failed with exit code: " . ($? >> 8) . "\n";
+	die "Build failed: $!\n";
 }
 else
 {
-    exit(0);
+	exit(0);
 }
+

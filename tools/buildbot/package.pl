@@ -27,12 +27,13 @@ chdir($path);
 require 'helpers.pm';
 
 #Switch to the output folder.
-chdir(Build::PathFormat('../../OUTPUT/base'));
+chdir(Build::PathFormat('../../../OUTPUT/package'));
 
 my ($version);
 
-$version = Build::ProductVersion(Build::PathFormat('../../product.version'));
-$version .= '-hg' . Build::HgRevNum('../..');
+$version = Build::ProductVersion(Build::PathFormat('../../build/product.version'));
+$version =~ s/-dev//g;
+$version .= '-hg' . Build::HgRevNum('../../build');
 
 my ($filename);
 $filename = 'sourcemod-' . $version;

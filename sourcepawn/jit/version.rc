@@ -8,7 +8,7 @@
 //
 #include "winres.h"
 
-#include "jit_version.h"
+#include <sourcemod_version.h>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -28,8 +28,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION  SVN_FILE_VERSION
- PRODUCTVERSION SVN_FILE_VERSION
+ FILEVERSION  SM_FILE_VERSION
+ PRODUCTVERSION SM_FILE_VERSION
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -46,12 +46,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "SourcePawn JIT"
             VALUE "FileDescription", "SourcePawn JIT/Virtual Machine"
-            VALUE "FileVersion", SVN_FULL_VERSION
+            VALUE "FileVersion", SM_FULL_VERSION
             VALUE "InternalName", "sourcemod"
             VALUE "LegalCopyright", "Copyright (c) 2004-2008, AlliedModders LLC"
             VALUE "OriginalFilename", "sourcepawn.jit.x86.dll"
             VALUE "ProductName", "SourcePawn JIT"
-            VALUE "ProductVersion", SVN_FULL_VERSION
+            VALUE "ProductVersion", SM_FULL_VERSION
         END
     END
     BLOCK "VarFileInfo"

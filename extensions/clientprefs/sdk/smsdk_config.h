@@ -37,17 +37,15 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
-#include "svn_version.h"
-
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Client Preferences"
 #define SMEXT_CONF_DESCRIPTION	"Saves client preference settings"
-#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
+#define SMEXT_CONF_VERSION		""
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"CLIENTPREFS"
 #define SMEXT_CONF_LICENSE		"GPL"
-#define SMEXT_CONF_DATESTRING	__DATE__ " " __TIME__
+#define SMEXT_CONF_DATESTRING	""
 
 /** 
  * @brief Exposes plugin's main interface.

@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "mysql/MyDriver.h"
 #include <assert.h>
@@ -58,3 +59,14 @@ void DBI_MySQL::SDK_OnUnload()
 	//:TODO: is this needed?
 	//mysql_library_end();
 }
+
+const char *DBI_MySQL::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *DBI_MySQL::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
+

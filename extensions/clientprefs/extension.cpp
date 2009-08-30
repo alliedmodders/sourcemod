@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 
 /**
@@ -430,5 +431,13 @@ bool Translate(char *buffer,
 	return true;
 }
 
+const char *ClientPrefs::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
 
+const char *ClientPrefs::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
 

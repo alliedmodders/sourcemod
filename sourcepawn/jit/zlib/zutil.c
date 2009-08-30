@@ -5,6 +5,7 @@
 
 /* @(#) $Id$ */
 
+#include <stdio.h>
 #include "zutil.h"
 
 #ifndef NO_DUMMY_DECL
