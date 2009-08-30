@@ -8,7 +8,7 @@ chdir($path);
 
 require 'helpers.pm';
 
-chdir('../../OUTPUT');
+chdir('../../../OUTPUT');
 
 if ($^O eq "linux") {
 	system("python3.1 build.py");
