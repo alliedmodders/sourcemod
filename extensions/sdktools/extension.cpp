@@ -393,6 +393,11 @@ const char *SDKTools::GetDate()
 	return SM_BUILD_TIMESTAMP;
 }
 
+void SDKTools::OnClientPutInServer(int client)
+{
+	g_Hooks.OnClientPutInServer(client);
+}
+
 class SDKTools_API : public ISDKTools
 {
 public:

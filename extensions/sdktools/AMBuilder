@@ -31,6 +31,7 @@ for i in SM.sdkInfo:
 		'vnatives.cpp',
 		'voice.cpp',
 		'vsound.cpp',
+		'hooks.cpp',
 		'vstringtable.cpp',
 		'sdk/smsdk_ext.cpp'
 		])
