@@ -49,7 +49,7 @@ if ($reconf) {
 		$result = `C:\\Python31\\Python.exe ..\\build\\configure.py --enable-optimize`;
 	}
 	print "$result\n";
-	if ($? == -1) {
+	if ($? != 0) {
 		die('Could not configure!');
 	}
 }

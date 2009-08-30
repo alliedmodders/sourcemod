@@ -11,22 +11,15 @@ require 'helpers.pm';
 chdir('../../../OUTPUT');
 
 if ($^O eq "linux") {
-	system("python3.1 build.py");
+	$output = `python3.1 build.py 2>&1`;
 } else {
-	system("C:\\Python31\\python.exe build.py");
+	$output = `C:\\Python31\\python.exe build.py 2>&1`;
 }
+print($output);
 
-if ($? == -1)
+if ($? != 0)
 {
 	die "Build failed: $!\n";
-}
-elsif ($^O eq "linux" and $? & 127)
-{
-	die "Build died :(\n";
-}
-elsif ($? >> 8 != 0)
-{
-	die "Build failed with exit code: " . ($? >> 8) . "\n";
 }
 else
 {

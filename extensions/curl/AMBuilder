@@ -59,7 +59,8 @@ elif AMBuild.target['platform'] == 'windows':
 	                    'lib',
 	                    'LIB-Release',
 	                    'libcurl.lib')
-	binary.RelinkIfNewer(path)
+	if os.path.isfile(path):
+		binary.RelinkIfNewer(path)
 	binary['POSTLINKFLAGS'].extend([path, 'ws2_32.lib'])
 
 SM.AutoVersion('extensions/curl', binary)
