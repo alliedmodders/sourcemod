@@ -44,11 +44,14 @@ if ($reconf) {
 	my ($result);
 	print "Attempting to reconfigure...\n";
 	if ($^O eq "linux") {
-		$result = system('python3.1 ../configure.py --enable-optimize');
+		$result = `python3.1 ../configure.py --enable-optimize`;
 	} else {
-		$result = system('C:\\Python31\\Python.exe ..\\configure.py --enable-optimize')
+		$result = `C:\\Python31\\Python.exe ..\\configure.py --enable-optimize`;
 	}
 	print "$result\n";
+	if ($? == -1) {
+		die('Could not configure!');
+	}
 }
 
 open(FILE, '>OUTPUT/sentinel');
