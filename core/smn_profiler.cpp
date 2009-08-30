@@ -34,9 +34,7 @@
 
 //Note: Do not add this to Linux yet, i haven't done the HPET timing research (if even available)
 //nonetheless we need accurate counting
-#if defined PLATFORM_LINUX
-#error "Not supported"
-#endif
+#if !defined PLATFORM_LINUX
 
 struct Profiler
 {
@@ -183,3 +181,5 @@ REGISTER_NATIVES(profilerNatives)
 	{"StopProfiling",			StopProfiling},
 	{NULL,						NULL},
 };
+#endif
+
