@@ -230,7 +230,7 @@ class SM:
 			paths.append(['game_shared'])
 		else:
 			paths.append(['public', 'game', 'server'])
-			paths.append(['public', 'game', 'shared'])
+			paths.append(['game', 'shared'])
 			paths.append(['common'])
 
 		info = self.sdkInfo[sdk]
