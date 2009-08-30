@@ -383,12 +383,12 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 	return true;
 }
 
-const char *SDKTools::GetVersion()
+const char *SDKTools::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *SDKTools::GetDate()
+const char *SDKTools::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

@@ -76,12 +76,12 @@ void CurlExt::SDK_OnUnload()
 	curl_global_cleanup();
 }
 
-const char *CurlExt::GetVersion()
+const char *CurlExt::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *CurlExt::GetDate()
+const char *CurlExt::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

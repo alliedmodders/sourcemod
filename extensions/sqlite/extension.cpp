@@ -72,12 +72,12 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 	}
 }
 
-const char *SqliteExt::GetVersion()
+const char *SqliteExt::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *SqliteExt::GetDate()
+const char *SqliteExt::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

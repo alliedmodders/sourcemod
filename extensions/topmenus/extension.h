@@ -62,8 +62,8 @@ public:
 	 */
 	virtual void SDK_OnUnload();
 
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 };
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

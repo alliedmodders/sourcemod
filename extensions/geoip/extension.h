@@ -62,8 +62,8 @@ public:
 	 */
 	virtual void SDK_OnUnload();
 
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 
 	/**
 	 * @brief This is called once all known extensions have been loaded.

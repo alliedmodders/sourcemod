@@ -247,12 +247,12 @@ void AddUpdateError(const char *fmt, ...)
 	update_errors.push_back(new String(buffer));
 }
 
-const char *SmUpdater::GetVersion()
+const char *SmUpdater::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *SmUpdater::GetDate()
+const char *SmUpdater::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

@@ -252,12 +252,12 @@ bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
 	return true;
 }
 
-const char *CStrike::GetVersion()
+const char *CStrike::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *CStrike::GetDate()
+const char *CStrike::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

@@ -84,8 +84,8 @@ public:
 
 	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
 
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 
 	void DatabaseConnect();
 

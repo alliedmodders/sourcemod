@@ -63,12 +63,12 @@ void RegexExtension::SDK_OnUnload()
 
 }
 
-const char *RegexExtension::GetVersion()
+const char *RegexExtension::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *RegexExtension::GetDate()
+const char *RegexExtension::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

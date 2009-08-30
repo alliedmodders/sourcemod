@@ -73,8 +73,8 @@ public: //public SDKExtension
 	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
 	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
 	virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 public:
 #if defined SMEXT_CONF_METAMOD
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late);

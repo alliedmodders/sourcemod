@@ -65,12 +65,12 @@ void TopMenuExtension::SDK_OnUnload()
 	plsys->RemovePluginsListener(&g_TopMenus);
 }
 
-const char *TopMenuExtension::GetVersion()
+const char *TopMenuExtension::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *TopMenuExtension::GetDate()
+const char *TopMenuExtension::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }
