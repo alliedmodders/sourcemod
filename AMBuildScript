@@ -140,7 +140,7 @@ class SM:
 			#Finish up
 			self.compiler.AddToListVar('CDEFINES', 'SOURCEMOD_BUILD')
 			self.compiler.AddToListVar('CDEFINES', 'SM_GENERATED_BUILD')
-			self.compiler.AddToListVar('CXXINCLUDES',
+			self.compiler.AddToListVar('CINCLUDES',
 			                           os.path.join(AMBuild.outputFolder, 'includes'))
 			self.compiler.ToConfig(AMBuild, 'compiler')
 			AMBuild.cache.CacheVariable('vendor', self.vendor)
