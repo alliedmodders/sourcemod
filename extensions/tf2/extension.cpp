@@ -116,12 +116,12 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	return true;
 }
 
-const char *TF2Tools::GetVersion()
+const char *TF2Tools::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *TF2Tools::GetDate()
+const char *TF2Tools::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

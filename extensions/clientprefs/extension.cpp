@@ -431,12 +431,12 @@ bool Translate(char *buffer,
 	return true;
 }
 
-const char *ClientPrefs::GetVersion()
+const char *ClientPrefs::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *ClientPrefs::GetDate()
+const char *ClientPrefs::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

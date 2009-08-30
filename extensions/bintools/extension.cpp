@@ -56,12 +56,12 @@ bool BinTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	return true;
 }
 
-const char *BinTools::GetVersion()
+const char *BinTools::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *BinTools::GetDate()
+const char *BinTools::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }

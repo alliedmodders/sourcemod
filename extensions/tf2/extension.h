@@ -87,8 +87,8 @@ public: //SDKExtension
 	void NotifyInterfaceDrop(SMInterface *pInterface);
 	bool QueryInterfaceDrop(SMInterface *pInterface);
 
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public: //IConCommandBaseAccessor

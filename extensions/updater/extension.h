@@ -54,8 +54,8 @@ public: /* SDKExtension */
 public: /* IExtension */
 	bool QueryInterfaceDrop(SMInterface *pInterface);
 	void NotifyInterfaceDrop(SMInterface *pInterface);
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 public: /* IThread */
 	void RunThread(IThreadHandle *pHandle);
 	void OnTerminate(IThreadHandle *pHandle, bool cancel);

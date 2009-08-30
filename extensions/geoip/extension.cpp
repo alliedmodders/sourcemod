@@ -68,12 +68,12 @@ void GeoIP_Extension::SDK_OnUnload()
 	gi = NULL;
 }
 
-const char *GeoIP_Extension::GetVersion()
+const char *GeoIP_Extension::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *GeoIP_Extension::GetDate()
+const char *GeoIP_Extension::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }
