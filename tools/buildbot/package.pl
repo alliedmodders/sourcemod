@@ -33,7 +33,7 @@ my ($version);
 
 $version = Build::ProductVersion(Build::PathFormat('../../build/product.version'));
 $version =~ s/-dev//g;
-$version .= '-hg' . Build::HgRevNum('../..');
+$version .= '-hg' . Build::HgRevNum('../../build');
 
 my ($filename);
 $filename = 'sourcemod-' . $version;

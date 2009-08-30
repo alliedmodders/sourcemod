@@ -12,7 +12,7 @@ chdir('..');
 
 our $SSH = 'ssh -i ../../smpvkey';
 
-open(PDBLOG, 'OUTPUT/pdblog.txt') or die "Could not open pdblog.txt: $!\n";
+open(PDBLOG, '../OUTPUT/pdblog.txt') or die "Could not open pdblog.txt: $!\n";
 
 #Sync us up with the main symbol store
 rsync('sourcemod@alliedmods.net:~/public_html/symbols/', '..\\..\\symstore');
@@ -40,7 +40,7 @@ while (<PDBLOG>)
 	$line = $_;
 	$line =~ s/\.pdb/\*/;
 	chomp $line;
-	Build::Command("symstore add /r /f \"$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
+	Build::Command("symstore add /r /f \"..\\OUTPUT\\$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
 }
 
 close(PDBLOG);
