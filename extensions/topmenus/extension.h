@@ -61,6 +61,9 @@ public:
 	 * @brief This is called right before the extension is unloaded.
 	 */
 	virtual void SDK_OnUnload();
+
+	const char *GetVersion();
+	const char *GetDate();
 };
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod BinTools Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "CallMaker.h"
 
@@ -54,3 +55,14 @@ bool BinTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	return true;
 }
+
+const char *BinTools::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *BinTools::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
+

@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -245,3 +246,14 @@ void AddUpdateError(const char *fmt, ...)
 
 	update_errors.push_back(new String(buffer));
 }
+
+const char *SmUpdater::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *SmUpdater::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
+}
+

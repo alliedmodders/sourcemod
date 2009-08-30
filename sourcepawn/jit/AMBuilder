@@ -1,0 +1,43 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+
+compiler = SM.DefaultCompiler()
+base = AMBuild.sourceFolder
+compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'sourcepawn', 'jit'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'sourcepawn', 'jit', 'x86'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'sourcepawn'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'jit'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'jit', 'x86'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'knight', 'shared'))
+
+extension = AMBuild.AddJob('sourcepawn.jit.x86')
+binary = Cpp.LibraryBuilder('sourcepawn.jit.x86', AMBuild, extension, compiler)
+binary.AddSourceFiles('sourcepawn/jit', [
+	'BaseRuntime.cpp',
+	'engine2.cpp',
+	'dll_exports.cpp',
+	'jit_function.cpp',
+	'sp_vm_basecontext.cpp',
+	'sp_vm_engine.cpp',
+	'sp_vm_function.cpp',
+	'x86/jit_x86.cpp',
+	'x86/opcode_helpers.cpp',
+	'zlib/adler32.c',
+	'zlib/compress.c',
+	'zlib/crc32.c',
+	'zlib/deflate.c',
+	'zlib/gzio.c',
+	'zlib/infback.c',
+	'zlib/inffast.c',
+	'zlib/inflate.c',
+	'zlib/inftrees.c',
+	'zlib/trees.c',
+	'zlib/uncompr.c',
+	'zlib/zutil.c',
+	'../../knight/shared/KeCodeAllocator.cpp'
+	])
+SM.AutoVersion('sourcepawn/jit', binary)
+binary.SendToJob()
+

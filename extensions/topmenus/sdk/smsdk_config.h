@@ -37,17 +37,15 @@
  * @brief Contains macros for configuring basic extension information.
  */
 
-#include "svn_version.h"
-
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Top Menus"
 #define SMEXT_CONF_DESCRIPTION	"Creates sorted nested menus"
-#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
+#define SMEXT_CONF_VERSION		""
 #define SMEXT_CONF_AUTHOR		"AlliedModders"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"TOPMENUS"
 #define SMEXT_CONF_LICENSE		"GPLv3"
-#define SMEXT_CONF_DATESTRING	__DATE__ " " __TIME__
+#define SMEXT_CONF_DATESTRING	""
 
 /** 
  * @brief Exposes plugin's main interface.

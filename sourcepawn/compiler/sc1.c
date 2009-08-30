@@ -38,6 +38,7 @@
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   #include <sclinux.h>
   #include <binreloc.h> /* from BinReloc, see www.autopackage.org */
+  #include <unistd.h>
 #endif
 
 #if defined FORTIFY
@@ -65,7 +66,7 @@
 
 #include "lstring.h"
 #include "sc.h"
-#include "svn_version.h"
+#include <sourcemod_version.h>
 #include "sctracker.h"
 #define VERSION_STR "3.2.3636"
 #define VERSION_INT 0x0302
@@ -172,7 +173,7 @@ static int *wqptr;              /* pointer to next entry */
   static HWND hwndFinish = 0;
 #endif
 
-SC_VDECL int glbstringread = 0;
+int glbstringread = 0;
 char g_tmpfile[_MAX_PATH] = {0};
 
 /*  "main" of the compiler
@@ -1226,7 +1227,7 @@ static void setconfig(char *root)
 
 static void setcaption(void)
 {
-  pc_printf("SourcePawn Compiler " SVN_FULL_VERSION "\n");
+  pc_printf("SourcePawn Compiler " SM_FULL_VERSION "\n");
   pc_printf("Copyright (c) 1997-2006, ITB CompuPhase, (C)2004-2008 AlliedModders, LLC\n\n");
 }
 

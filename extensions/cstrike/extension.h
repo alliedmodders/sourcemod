@@ -86,6 +86,9 @@ public:
 
 	void NotifyInterfaceDrop(SMInterface *pInterface);
 	bool QueryInterfaceDrop(SMInterface *pInterface);
+
+	const char *GetVersion();
+	const char *GetDate();
 public:
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:

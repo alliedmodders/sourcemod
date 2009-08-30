@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "TopMenuManager.h"
 #include "smn_topmenus.h"
@@ -62,5 +63,15 @@ void TopMenuExtension::SDK_OnUnload()
 	Shutdown_Natives();
 	playerhelpers->RemoveClientListener(&g_TopMenus);
 	plsys->RemovePluginsListener(&g_TopMenus);
+}
+
+const char *TopMenuExtension::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *TopMenuExtension::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 

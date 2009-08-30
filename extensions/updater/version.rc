@@ -9,7 +9,7 @@
 //
 #include "winres.h"
 
-#include "svn_version.h"
+#include <sourcemod_version.h>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -29,8 +29,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION  SVN_FILE_VERSION
- PRODUCTVERSION SVN_FILE_VERSION
+ FILEVERSION  SM_FILE_VERSION
+ PRODUCTVERSION SM_FILE_VERSION
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -47,12 +47,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Automatic Updater"
             VALUE "FileDescription", "SourceMod Automatic Updater"
-            VALUE "FileVersion", SVN_FILE_VERSION
+            VALUE "FileVersion", SM_FILE_VERSION
             VALUE "InternalName", "SourceMod Updater Extension"
             VALUE "LegalCopyright", "Copyright (c) 2004-2009, AlliedModders LLC"
             VALUE "OriginalFilename", BINARY_NAME
             VALUE "ProductName", "SourceMod Updater Extension"
-            VALUE "ProductVersion", SVN_FULL_VERSION
+            VALUE "ProductVersion", SM_FULL_VERSION
         END
     END
     BLOCK "VarFileInfo"

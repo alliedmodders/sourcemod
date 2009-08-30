@@ -8,6 +8,11 @@
 #include "amxdbg.h"
 #include "osdefs.h"
 #include "zlib/zlib.h"
+#if defined LINUX
+#include <unistd.h>
+#elif defined WIN32
+#include <io.h>
+#endif
 
 enum FileSections
 {

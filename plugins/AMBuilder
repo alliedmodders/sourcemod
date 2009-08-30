@@ -1,0 +1,50 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+import os.path
+import ambuild.osutil as osutil
+import ambuild.command as command
+
+files = [
+	'adminhelp.sp',
+	'antiflood.sp',
+	'basecomm.sp',
+	'clientprefs.sp',
+	'nextmap.sp',
+	'reservedslots.sp',
+	'adminmenu.sp',
+	'basebans.sp',
+	'basetriggers.sp',
+	'funcommands.sp',
+	'nominations.sp',
+	'rockthevote.sp',
+	'admin-sql-prefetch.sp',
+	'basechat.sp',
+	'basevotes.sp',
+	'funvotes.sp',
+	'playercommands.sp',
+	'sounds.sp',
+	'admin-sql-threaded.sp',
+	'basecommands.sp',
+	'mapchooser.sp',
+	'randomcycle.sp',
+	'sql-admin-manager.sp'
+	]
+
+plugins = AMBuild.AddJob('plugins')
+
+spcomp = os.path.join(AMBuild.outputFolder, 'spcomp', 'spcomp')
+includes = os.path.relpath(os.path.join(AMBuild.sourceFolder, 'plugins', 'include'),
+                           os.path.join(AMBuild.outputFolder, 'plugins'))
+
+#This one has to be special
+sp = os.path.join(AMBuild.sourceFolder, 'plugins', 'admin-flatfile', 'admin-flatfile.sp')
+args = [spcomp, '-i' + includes, sp]
+plugins.AddCommand(command.DirectCommand(args))
+
+#Do the normal ones
+for file in files:
+	sp = os.path.join(AMBuild.sourceFolder, 'plugins', file)
+	args = [spcomp, '-i' + includes, sp]
+	plugins.AddCommand(command.DirectCommand(args))
+
+

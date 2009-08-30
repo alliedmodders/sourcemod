@@ -31,7 +31,6 @@
 
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
-#include "svn_version.h"
 
 /**
  * @file smsdk_config.h
@@ -41,12 +40,12 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"Webternet"
 #define SMEXT_CONF_DESCRIPTION	"Extension for interacting with URLs"
-#define SMEXT_CONF_VERSION		SVN_FULL_VERSION
+#define SMEXT_CONF_VERSION		""
 #define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"WEB"
 #define SMEXT_CONF_LICENSE		"GPL"
-#define SMEXT_CONF_DATESTRING	__DATE__
+#define SMEXT_CONF_DATESTRING	""
 
 /** 
  * @brief Exposes plugin's main interface.

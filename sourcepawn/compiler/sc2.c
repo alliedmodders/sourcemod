@@ -58,6 +58,13 @@ static short skiplevel; /* level at which we started skipping (including nested 
 static unsigned char term_expr[] = "";
 static int listline=-1; /* "current line" for the list file */
 
+#if defined __GNUC__
+static double pow10(double d)
+{
+  return pow(10, d);
+}
+#endif
+
 
 /*  pushstk & popstk
  *
@@ -602,26 +609,6 @@ static int htoi(cell *val,const unsigned char *curptr)
     return (int)(ptr-curptr);
 }
 
-#if defined __GNUC__
-static double pow10(int value)
-{
-  double res=1.0;
-  while (value>=4) {
-    res*=10000.0;
-    value-=5;
-  } /* while */
-  while (value>=2) {
-    res*=100.0;
-    value-=2;
-  } /* while */
-  while (value>=1) {
-    res*=10.0;
-    value-=1;
-  } /* while */
-  return res;
-}
-#endif
-
 /*  ftoi
  *
  *  Attempts to interpret a numeric symbol as a rational number, either as
@@ -954,7 +941,7 @@ static int command(void)
             if (skiplevel==iflevel)
               preproc_expr(&val,NULL);  /* get, but ignore the expression */
             else
-              lptr=strchr(lptr,'\0');
+              lptr=(unsigned char*)strchr((char*)lptr,'\0');
           } /* if */
         } else {
           /* previous conditions were all FALSE */
@@ -965,7 +952,7 @@ static int command(void)
             if (skiplevel==iflevel) {
               preproc_expr(&val,NULL);  /* get value (or 0 on error) */
             } else {
-              lptr=strchr(lptr,'\0');
+              lptr=(unsigned char*)strchr((char*)lptr,'\0');
               val=0;
             } /* if */
             ifstack[iflevel-1]=(char)(val ? PARSEMODE : SKIPMODE);

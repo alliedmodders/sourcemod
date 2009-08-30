@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include <compat_wrappers.h>
 #include "vcallbuilder.h"
@@ -377,6 +378,16 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 	snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
 
 	return true;
+}
+
+const char *SDKTools::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *SDKTools::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 
 class SDKTools_API : public ISDKTools

@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <stdio.h>
 #include "vcallbuilder.h"
 #include "extension.h"
 

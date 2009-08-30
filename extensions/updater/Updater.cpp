@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include <stdlib.h>
 #include "extension.h"
 #include "Updater.h"
@@ -355,7 +356,7 @@ void UpdateReader::PerformUpdate(const char *url)
 	xfer = webternet->CreateSession();
 	xfer->SetFailOnHTTPError(true);
 
-	form->AddString("version", SVN_FULL_VERSION);
+	form->AddString("version", SM_FULL_VERSION);
 	form->AddString("build", SM_BUILD_UNIQUEID);
 
 	unsigned int num_files = 0;
@@ -401,3 +402,4 @@ UpdatePart *UpdateReader::DetachParts()
 
 	return first;
 }
+

@@ -1,0 +1,21 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os.path
+
+compiler = SM.DefaultCompiler()
+compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core'))
+compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+
+if AMBuild.target['platform'] == 'windows':
+	name = 'sourcemod_mm'
+elif AMBuild.target['platform'] == 'linux':
+	name = 'sourcemod_mm_i486'
+	compiler['POSTLINKFLAGS'].extend(['-ldl'])
+
+loader = AMBuild.AddJob('loader')
+binary = Cpp.LibraryBuilder(name, AMBuild, loader, compiler)
+binary.AddSourceFiles('loader', [
+	'loader.cpp'
+	])
+SM.AutoVersion('loader', binary)
+binary.SendToJob()
+

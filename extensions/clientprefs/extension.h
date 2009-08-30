@@ -84,6 +84,9 @@ public:
 
 	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
 
+	const char *GetVersion();
+	const char *GetDate();
+
 	void DatabaseConnect();
 
 	bool AddQueryToQueue(TQueryOp *query);

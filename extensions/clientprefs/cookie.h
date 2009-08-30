@@ -33,6 +33,7 @@
 #define _INCLUDE_SOURCEMOD_CLIENTPREFS_COOKIE_H_
 
 #include "extension.h"
+#include <IPlayerHelpers.h>
 #include "sh_list.h"
 #include "sm_trie_tpl.h"
 

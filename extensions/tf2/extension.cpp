@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "util.h"
 #include "RegNatives.h"
@@ -113,6 +114,16 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_DetoursEnabled = false;
 
 	return true;
+}
+
+const char *TF2Tools::GetVersion()
+{
+	return SM_FULL_VERSION;
+}
+
+const char *TF2Tools::GetDate()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 
 bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool late)

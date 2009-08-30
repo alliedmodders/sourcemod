@@ -62,6 +62,9 @@ public:
 	 */
 	virtual void SDK_OnUnload();
 
+	const char *GetVersion();
+	const char *GetDate();
+
 	/**
 	 * @brief This is called once all known extensions have been loaded.
 	 * Note: It is is a good idea to add natives here, if any are provided.

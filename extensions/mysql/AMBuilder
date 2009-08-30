@@ -1,0 +1,38 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+
+compiler = SM.DefaultExtCompiler('extensions/mysql')
+compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache['MYSQL5'], 'include'))
+compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+
+extension = AMBuild.AddJob('dbi.mysql.ext')
+binary = Cpp.LibraryBuilder('dbi.mysql.ext', AMBuild, extension, compiler)
+
+if AMBuild.target['platform'] == 'linux':
+	lib = os.path.join(AMBuild.cache['MYSQL5'], 'lib', 'libmysqlclient_r.a')
+	link = [lib,
+          '-lz',
+          '-lpthread',
+          '-lm']
+	binary.RelinkIfNewer(lib)
+	binary['POSTLINKFLAGS'].extend(link)
+elif AMBuild.target['platform'] == 'windows':
+	mylib = os.path.join(AMBuild.cache['MYSQL5'], 'lib', 'opt', 'mysqlclient.lib')
+	zlib = os.path.join(AMBuild.cache['MYSQL5'], 'lib', 'opt', 'zlib.lib')
+	binary.RelinkIfNewer(mylib)
+	binary.RelinkIfNewer(zlib)
+	binary['POSTLINKFLAGS'].extend([mylib, zlib, 'wsock32.lib'])
+
+
+binary.AddSourceFiles('extensions/mysql', [
+	'sdk/smsdk_ext.cpp',
+	'mysql/MyBasicResults.cpp',
+	'mysql/MyBoundResults.cpp',
+	'mysql/MyDatabase.cpp',
+	'mysql/MyDriver.cpp',
+	'mysql/MyStatement.cpp',
+	'extension.cpp'
+	])
+SM.AutoVersion('extensions/mysql', binary)
+binary.SendToJob()
+

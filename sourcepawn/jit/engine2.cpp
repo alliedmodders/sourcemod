@@ -1,9 +1,9 @@
+#include <sourcemod_version.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "engine2.h"
 #include "x86/jit_x86.h"
-#include "jit_version.h"
 #include "zlib/zlib.h"
 #include "BaseRuntime.h"
 #include "sp_vm_engine.h"
@@ -149,7 +149,7 @@ const char *SourcePawnEngine2::GetEngineName()
 
 const char *SourcePawnEngine2::GetVersionString()
 {
-	return SVN_FULL_VERSION;
+	return SM_FULL_VERSION;
 }
 
 IProfiler *SourcePawnEngine2::GetProfiler()
