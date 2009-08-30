@@ -27,11 +27,12 @@ chdir($path);
 require 'helpers.pm';
 
 #Switch to the output folder.
-chdir(Build::PathFormat('../../OUTPUT/base'));
+chdir(Build::PathFormat('../../../OUTPUT/package'));
 
 my ($version);
 
 $version = Build::ProductVersion(Build::PathFormat('../../product.version'));
+$version =~ s/-dev//g;
 $version .= '-hg' . Build::HgRevNum('../..');
 
 my ($filename);
