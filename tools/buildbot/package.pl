@@ -31,7 +31,7 @@ chdir(Build::PathFormat('../../../OUTPUT/package'));
 
 my ($version);
 
-$version = Build::ProductVersion(Build::PathFormat('../../product.version'));
+$version = Build::ProductVersion(Build::PathFormat('../../build/product.version'));
 $version =~ s/-dev//g;
 $version .= '-hg' . Build::HgRevNum('../..');
 
