@@ -39,6 +39,7 @@ ifeq "$(ENGINE)" "original"
 	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
+	GAMEFIX = 1.ep1
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangebox"
@@ -49,6 +50,7 @@ ifeq "$(ENGINE)" "orangebox"
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
+	GAMEFIX = 2.ep2
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangeboxvalve"
@@ -59,6 +61,7 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
+	GAMEFIX = 2.ep2v
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead"
@@ -69,6 +72,7 @@ ifeq "$(ENGINE)" "left4dead"
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/l4d
+	GAMEFIX = 2.l4d
 	override ENGSET = true
 endif
 
@@ -111,10 +115,10 @@ endif
 OS := $(shell uname -s)
 ifeq "$(OS)" "Darwin"
 	LINK += -dynamiclib
-	BINARY = $(PROJECT).ext.dylib
+	BINARY = $(PROJECT).ext.$(GAMEFIX).dylib
 else
 	LINK += -static-libgcc -shared
-	BINARY = $(PROJECT).ext.so
+	BINARY = $(PROJECT).ext.$(GAMEFIX).so
 endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
@@ -122,8 +126,6 @@ ifeq "$(GCC_VERSION)" "4"
 	CFLAGS += $(C_GCC4_FLAGS)
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
-
-BINARY = $(PROJECT).ext.so
 
 OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 

@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -49,6 +49,9 @@ void CExtension::Initialize(const char *filename, const char *path)
 	m_bFullyLoaded = false;
 	m_File.assign(filename);
 	m_Path.assign(path);
+	char real_name[PLATFORM_MAX_PATH];
+	g_LibSys.GetFileFromPath(real_name, sizeof(real_name), m_Path.c_str());
+	m_RealFile.assign(real_name);
 }
 
 CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filename, const char *path)
@@ -57,6 +60,22 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 	m_pAPI = pAPI;
 }
 
+#if defined METAMOD_PLAPI_VERSION
+#if SOURCE_ENGINE == SE_LEFT4DEAD
+#define GAMEFIX "2.l4d"
+#elif SOURCE_ENGINE == SE_ORANGEBOX
+#define GAMEFIX "2.ep2"
+#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#define GAMEFIX "2.ep2v"
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+#define GAMEFIX "2.darkm"
+#else
+#define GAMEFIX "2.ep1"
+#endif //SOURCE_ENGINE == SE_LEFT4DEAD
+#else  //METAMOD_PLAPI_VERSION
+#define GAMEFIX "1.ep1"
+#endif //METAMOD_PLAPI_VERSION
+
 CLocalExtension::CLocalExtension(const char *filename)
 {
 	m_PlId = 0;
@@ -64,33 +83,36 @@ CLocalExtension::CLocalExtension(const char *filename)
 
 	char path[PLATFORM_MAX_PATH];
 
+	/* Zeroth, see if there is an engine specific build in the new place. */
+	g_SourceMod.BuildPath(Path_SM,
+		path,
+		PLATFORM_MAX_PATH,
+		"extensions/%s." GAMEFIX "." PLATFORM_LIB_EXT,
+		filename);
+
+	if (g_LibSys.IsPathFile(path))
+	{
+		goto found;
+	}
+
 	/* First see if there is an engine specific build! */
 	g_SourceMod.BuildPath(Path_SM, 
 		path, 
-		PLATFORM_MAX_PATH, 
-#if defined METAMOD_PLAPI_VERSION
-#if SOURCE_ENGINE == SE_LEFT4DEAD
-		"extensions/auto.2.l4d/%s",
-#elif SOURCE_ENGINE == SE_ORANGEBOX
-		"extensions/auto.2.ep2/%s",
-#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
-		"extensions/auto.2.ep2valve/%s",
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-		"extensions/auto.2.darkm/%s",
-#else
-		"extensions/auto.2.ep1/%s",
-#endif //SOURCE_ENGINE == SE_LEFT4DEAD
-#else  //METAMOD_PLAPI_VERSION
-		"extensions/auto.1.ep1/%s",
-#endif //METAMOD_PLAPI_VERSION
+		PLATFORM_MAX_PATH,
+		"extensions/auto." GAMEFIX "/%s." PLATFORM_LIB_EXT,
 		filename);
 
 	/* Try the "normal" version */
 	if (!g_LibSys.IsPathFile(path))
 	{
-		g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "extensions/%s", filename);
+		g_SourceMod.BuildPath(Path_SM,
+			path,
+			PLATFORM_MAX_PATH,
+			"extensions/%s." PLATFORM_LIB_EXT,
+			filename);
 	}
 
+found:
 	Initialize(filename, path);
 }
 
@@ -310,7 +332,7 @@ IExtensionInterface *CExtension::GetAPI()
 
 const char *CExtension::GetFilename()
 {
-	return m_File.c_str();
+	return m_RealFile.c_str();
 }
 
 IdentityToken_t *CExtension::GetIdentity()
@@ -513,7 +535,7 @@ void CExtensionManager::TryAutoload()
 
 		char file[PLATFORM_MAX_PATH];
 		len = UTIL_Format(file, sizeof(file), "%s", lfile);
-		strcpy(&file[len - 9], ".ext." PLATFORM_LIB_EXT);
+		strcpy(&file[len - 9], ".ext");
 
 		LoadAutoExtension(file);
 		
@@ -523,11 +545,14 @@ void CExtensionManager::TryAutoload()
 
 IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 {
-	if (!strstr(path, "." PLATFORM_LIB_EXT))
+	/* Remove platform extension if it's there. Compat hack. */
+	const char *ext = g_LibSys.GetFileExtension(path);
+	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
-		char newpath[PLATFORM_MAX_PATH];
-		g_LibSys.PathFormat(newpath, sizeof(newpath), "%s.%s", path, PLATFORM_LIB_EXT);
-		return LoadAutoExtension(newpath);
+		char path2[PLATFORM_MAX_PATH];
+		UTIL_Format(path2, sizeof(path2), "%s", path);
+		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
+		return LoadAutoExtension(path2);
 	}
 
 	IExtension *pAlready;
@@ -565,22 +590,10 @@ IExtension *CExtensionManager::FindExtensionByFile(const char *file)
 	for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
 	{
 		pExt = (*iter);
-		char short_file[PLATFORM_MAX_PATH];
-		g_LibSys.GetFileFromPath(short_file, sizeof(short_file), pExt->GetFilename());
-		if (strcmp(lookup, short_file) == 0)
+		if (pExt->IsSameFile(lookup))
 		{
 			return pExt;
 		}
-	}
-
-	/* If we got no results, test if there was a platform extension.
-	 * If not, add one.
-	 */
-	if (!strstr(file, "." PLATFORM_LIB_EXT))
-	{
-		char path[PLATFORM_MAX_PATH];
-		UTIL_Format(path, sizeof(path), "%s.%s", file, PLATFORM_LIB_EXT);
-		return FindExtensionByFile(path);
 	}
 
 	return NULL;
@@ -620,6 +633,16 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 
 IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size_t maxlength)
 {
+	/* Remove platform extension if it's there. Compat hack. */
+	const char *ext = g_LibSys.GetFileExtension(file);
+	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
+	{
+		char path2[PLATFORM_MAX_PATH];
+		UTIL_Format(path2, sizeof(path2), "%s", file);
+		path2[strlen(file) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
+		return LoadExtension(path2, error, maxlength);
+	}
+
 	IExtension *pAlready;
 	if ((pAlready=FindExtensionByFile(file)) != NULL)
 	{
@@ -963,7 +986,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 		{
 			if (argcount < 4)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts info <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
 				return;
 			}
 
@@ -971,7 +994,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 			unsigned int id = atoi(sId);
 			if (id <= 0)
 			{
-				g_RootMenu.ConsolePrint("[SM] Usage: sm exts info <#>");
+				g_RootMenu.ConsolePrint("[SM] Usage: sm info <#>");
 				return;
 			}
 
@@ -1196,7 +1219,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 				}
 					
 				return;
-			}
+			} 
 			else
 			{
 				g_RootMenu.ConsolePrint("[SM] Extension %s is not loaded.", pExt->GetFilename());
@@ -1306,3 +1329,16 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 		}
 	}
 }
+
+bool CLocalExtension::IsSameFile(const char *file)
+{
+	/* Only care about the shortened name. */
+	return strcmp(file, m_File.c_str()) == 0;
+}
+
+bool CRemoteExtension::IsSameFile(const char *file)
+{
+	/* :TODO: this could be better, but no one uses this API anyway. */
+	return strcmp(file, m_Path.c_str()) == 0;
+}
+

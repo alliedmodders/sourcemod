@@ -78,7 +78,7 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common
 	SRCDS = $(SRCDS_BASE)/orangebox
-	BINARY = sourcemod.2.ep2valve.so
+	BINARY = sourcemod.2.ep2v.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead"

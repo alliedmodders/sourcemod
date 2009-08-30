@@ -84,6 +84,7 @@ public:
 	virtual bool IsLoaded() =0;
 	virtual void Unload() =0;
 	virtual bool Reload(char *error, size_t maxlength) =0;
+	virtual bool IsSameFile(const char* file) =0;
 protected:
 	void Initialize(const char *filename, const char *path);
 	bool PerformAPICheck(char *error, size_t maxlength);
@@ -93,6 +94,7 @@ protected:
 	IdentityToken_t *m_pIdentToken;
 	IExtensionInterface *m_pAPI;
 	String m_File;
+	String m_RealFile;
 	String m_Path;
 	String m_Error;
 	List<IfaceInfo> m_Deps;			/** Dependencies */
@@ -113,6 +115,7 @@ public:
 	void Unload();
 	bool Reload(char *error, size_t maxlength);
 	bool IsExternal();
+	bool IsSameFile(const char *file);
 private:
 	PluginId m_PlId;
 	ILibrary *m_pLib;
@@ -128,6 +131,7 @@ public:
 	void Unload();
 	bool Reload(char *error, size_t maxlength);
 	bool IsExternal();
+	bool IsSameFile(const char *file);
 };
 
 class CExtensionManager : 

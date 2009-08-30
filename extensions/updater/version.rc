@@ -50,7 +50,7 @@ BEGIN
             VALUE "FileVersion", SVN_FILE_VERSION
             VALUE "InternalName", "SourceMod Updater Extension"
             VALUE "LegalCopyright", "Copyright (c) 2004-2009, AlliedModders LLC"
-            VALUE "OriginalFilename", "updater.ext.dll"
+            VALUE "OriginalFilename", BINARY_NAME
             VALUE "ProductName", "SourceMod Updater Extension"
             VALUE "ProductVersion", SVN_FULL_VERSION
         END
