@@ -51,6 +51,8 @@ if ($reconf) {
 	print "$result\n";
 	if ($? == -1) {
 		die('Could not configure!');
+	} elsif ($? >> 8 != 0) {
+		die('Could not configure!');
 	}
 }
 
