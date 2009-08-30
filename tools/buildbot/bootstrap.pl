@@ -10,8 +10,8 @@ chdir($path);
 
 require 'helpers.pm';
 
-#Go back to main source dir.
-chdir(Build::PathFormat('../..'));
+#Go back above build dir
+chdir(Build::PathFormat('../../..'));
 
 #Get the source path.
 our ($root) = getcwd();
@@ -26,7 +26,7 @@ if (!(-d 'OUTPUT')) {
 	if (-d 'OUTPUT/sentinel') {
 		my @s = stat('OUTPUT/sentinel');
 		my $mtime = $s[9];
-		my @files = ('pushbuild.txt', 'AMBuildScript', 'product.version');
+		my @files = ('build/pushbuild.txt', 'build/AMBuildScript', 'build/product.version');
 		my ($i);
 		for ($i = 0; $i <= $#files; $i++) {
 			if (IsNewer($files[$i], $mtime)) {
@@ -44,19 +44,18 @@ if ($reconf) {
 	my ($result);
 	print "Attempting to reconfigure...\n";
 	if ($^O eq "linux") {
-		$result = `python3.1 ../configure.py --enable-optimize`;
+		$result = `python3.1 ../build/configure.py --enable-optimize`;
 	} else {
-		$result = `C:\\Python31\\Python.exe ..\\configure.py --enable-optimize`;
+		$result = `C:\\Python31\\Python.exe ..\\build\\configure.py --enable-optimize`;
 	}
 	print "$result\n";
 	if ($? == -1) {
-		die('Could not configure!');
-	} elsif ($? >> 8 != 0) {
 		die('Could not configure!');
 	}
 }
 
 open(FILE, '>OUTPUT/sentinel');
+print FILE "this is nothing.\n";
 close(FILE);
 
 sub IsNewer
@@ -67,4 +66,7 @@ sub IsNewer
 	my $mtime = $s[9];
 	return $mtime > $time;
 }
+
+exit(0);
+
 
