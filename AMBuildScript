@@ -79,6 +79,7 @@ class SM:
 				self.compiler.AddToListVar('CFLAGS', '-static-libgcc')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-exceptions')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-rtti')
+				self.compiler.AddToListVar('CXXFLAGS', '-fno-threadsafe-statics')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-non-virtual-dtor')
 				self.compiler.AddToListVar('CDEFINES', 'HAVE_STDINT_H')
 			elif isinstance(cxx, Cpp.MSVC):
