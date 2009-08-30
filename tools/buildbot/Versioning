@@ -1,0 +1,57 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+import re
+import subprocess
+from ambuild.cache import Cache
+import ambuild.command as command
+
+#Quickly try to ascertain the current repository revision
+def GetVersion():
+	args = ['hg', 'parent', '-R', AMBuild.sourceFolder]
+	p = command.RunDirectCommand(AMBuild, args)
+	m = re.match('changeset:\s+(\d+):(.+)', p.stdoutText)
+	if m == None:
+		raise Exception('Could not determine repository version')
+	return m.groups()
+
+def PerformReversioning():
+	rev, cset = GetVersion()
+	cacheFile = os.path.join(AMBuild.outputFolder, '.ambuild', 'hgcache')
+	cache = Cache(cacheFile)
+	if os.path.isfile(cacheFile):
+		cache.LoadCache()
+		if cache.HasVariable('cset') and cache['cset'] == cset:
+			return False
+	cache.CacheVariable('cset', cset)
+
+	productFile = open(os.path.join(AMBuild.sourceFolder, 'product.version'), 'r')
+	productContents = productFile.read()
+	productFile.close()
+	m = re.match('(\d+)\.(\d+)\.(\d+)(.*)', productContents)
+	if m == None:
+		raise Exception('Could not detremine product version')
+	major, minor, release, tag = m.groups()
+
+	incFolder = os.path.join(AMBuild.outputFolder, 'includes')
+	if not os.path.isdir(incFolder):
+		os.makedirs(incFolder)
+	incFile = open(os.path.join(incFolder, 'sourcemod_version_auto.h'), 'w')
+	incFile.write("""
+#ifndef _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
+#define _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
+
+#define SM_BUILD_STRING 		\"{0}\"
+#define SM_BUILD_UNIQUEID		\"{1}:{2}\" SM_BUILD_STRING
+#define SM_FULL_VERSION			\"{3}.{4}.{5}\" SM_BUILD_STRING
+#define SM_FILE_VERSION			{6},{7},{8},0
+
+#endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
+
+""".format(tag, rev, cset, major, minor, release, major, minor, release))
+	incFile.close()
+
+	cache.WriteCache()
+
+PerformReversioning()
+
+

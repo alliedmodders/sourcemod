@@ -1,0 +1,290 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python:
+import os
+import sys
+from ambuild.command import SymlinkCommand
+
+class SM:
+	def __init__(self):
+		self.compiler = Cpp.Compiler()
+
+		#Build SDK info
+		self.sdkInfo = { }
+		self.sdkInfo['ep1'] =   {'sdk': 'HL2SDK',        'ext': '1.ep1',   'def': '1',
+		                         'name': 'EPISODEONE'}
+		self.sdkInfo['ep2'] =   {'sdk': 'HL2SDKOB',      'ext': '2.ep2',   'def': '3',
+		                         'name': 'ORANGEBOX'}
+		self.sdkInfo['ep2v'] =  {'sdk': 'HL2SDKOBVALVE', 'ext': '2.ep2v',  'def': '4',
+		                         'name': 'ORANGEBOXVALVE'}
+		self.sdkInfo['l4d'] =   {'sdk': 'HL2SDKL4D',     'ext': '2.l4d',   'def': '5',
+		                         'name': 'LEFT4DEAD'}
+		if AMBuild.target['platform'] == 'windows':
+			self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',  'ext': '2.darkm', 'def': '2',
+		                           'name': 'DARKMESSIAH'}
+
+		if AMBuild.mode == 'config':
+			#Detect compilers
+			self.compiler.DetectAll(AMBuild)
+
+			#Detect variables
+			envvars = { 'MMSOURCE17':    'mmsource-1.7',
+									'HL2SDK':        'hl2sdk',
+									'HL2SDKOB':      'hl2sdk-ob',
+									'HL2SDKL4D':     'hl2sdk-l4d',
+									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
+									'MYSQL5':        'mysql-5.0'
+			}
+
+			#Dark Messiah is Windows-only
+			if AMBuild.target['platform'] == 'windows':
+				envvars['HL2SDK-DARKM'] = 'hl2sdk-darkm'
+
+			#Must have a path for each envvar (file a bug if you don't like this)
+			for i in envvars:
+				if i in os.environ:
+					path = os.environ[i]
+					if not os.path.isdir(path):
+						raise Exception('Path for {0} was not found: {1}'.format(i, path))
+				else:
+					head = os.getcwd()
+					while head != None and head != '/':
+						path = os.path.join(head, envvars[i])
+						if os.path.isdir(path):
+							break
+						head, tail = os.path.split(head)
+					if head == None or head == '/':
+						raise Exception('Could not find a valid path for {0}'.format(i))
+				AMBuild.cache.CacheVariable(i, path)
+
+			#Set up defines
+			cxx = self.compiler.cxx
+			if isinstance(cxx, Cpp.GCC):
+				self.vendor = 'gcc'
+				self.compiler.AddToListVar('CDEFINES', 'stricmp=strcasecmp')
+				self.compiler.AddToListVar('CDEFINES', '_stricmp=strcasecmp')
+				self.compiler.AddToListVar('CDEFINES', '_snprintf=snprintf')
+				self.compiler.AddToListVar('CDEFINES', '_vsnprintf=vsnprintf')
+				self.compiler.AddToListVar('CFLAGS', '-pipe')
+				self.compiler.AddToListVar('CFLAGS', '-fno-strict-aliasing')
+				if cxx.majorVersion >= 4:
+					self.compiler.AddToListVar('CFLAGS', '-fvisibility=hidden')
+					self.compiler.AddToListVar('CXXFLAGS', '-fvisibility-inlines-hidden')
+				self.compiler.AddToListVar('CFLAGS', '-Wall')
+				self.compiler.AddToListVar('CFLAGS', '-Werror')
+				self.compiler.AddToListVar('CFLAGS', '-Wno-uninitialized')
+				self.compiler.AddToListVar('CFLAGS', '-Wno-unused')
+				self.compiler.AddToListVar('CFLAGS', '-Wno-switch')
+				self.compiler.AddToListVar('CFLAGS', '-mfpmath=sse')
+				self.compiler.AddToListVar('CFLAGS', '-msse')
+				self.compiler.AddToListVar('CFLAGS', '-m32')
+				self.compiler.AddToListVar('CFLAGS', '-static-libgcc')
+				self.compiler.AddToListVar('CXXFLAGS', '-fno-exceptions')
+				self.compiler.AddToListVar('CXXFLAGS', '-fno-rtti')
+				self.compiler.AddToListVar('CXXFLAGS', '-fno-threadsafe-statics')
+				self.compiler.AddToListVar('CXXFLAGS', '-Wno-non-virtual-dtor')
+				self.compiler.AddToListVar('CDEFINES', 'HAVE_STDINT_H')
+			elif isinstance(cxx, Cpp.MSVC):
+				self.vendor = 'msvc'
+				if AMBuild.options.debug == '1':
+					self.compiler.AddToListVar('CFLAGS', '/MTd')
+				else:
+					self.compiler.AddToListVar('CFLAGS', '/MT')
+				self.compiler.AddToListVar('CDEFINES', '_CRT_SECURE_NO_DEPRECATE')
+				self.compiler.AddToListVar('CDEFINES', '_CRT_SECURE_NO_WARNINGS')
+				self.compiler.AddToListVar('CDEFINES', '_CRT_NONSTDC_NO_DEPRECATE')
+				self.compiler.AddToListVar('CXXFLAGS', '/EHsc')
+				self.compiler.AddToListVar('CXXFLAGS', '/GR-')
+				self.compiler.AddToListVar('CFLAGS', '/W3')
+				self.compiler.AddToListVar('CFLAGS', '/nologo')
+				self.compiler.AddToListVar('CFLAGS', '/Zi')
+				self.compiler.AddToListVar('CXXFLAGS', '/TP')
+				self.compiler.AddToListVar('POSTLINKFLAGS', '/MACHINE:X86')
+				self.compiler.AddToListVar('POSTLINKFLAGS', '/SUBSYSTEM:WINDOWS')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'kernel32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'user32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'gdi32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'winspool.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'comdlg32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'advapi32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'shell32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'ole32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'oleaut32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'uuid.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'odbc32.lib')
+				self.compiler.AddToListVar('POSTLINKFLAGS', 'odbccp32.lib')
+
+			#Optimization
+			if AMBuild.options.opt == '1':
+				self.compiler.AddToListVar('CDEFINES', 'NDEBUG')
+				if self.vendor == 'gcc':
+					self.compiler.AddToListVar('CFLAGS', '-O3')
+				elif self.vendor == 'msvc':
+					self.compiler.AddToListVar('CFLAGS', '/Ot')
+					self.compiler.AddToListVar('POSTLINKFLAGS', '/OPT:ICF')
+
+			#Debugging
+			if AMBuild.options.debug == '1':
+				self.compiler.AddToListVar('CDEFINES', 'DEBUG')
+				self.compiler.AddToListVar('CDEFINES', '_DEBUG')
+				if self.vendor == 'gcc':
+					self.compiler.AddToListVar('CFLAGS', '-g3')
+				elif self.vendor == 'msvc':
+					self.compiler.AddToListVar('CFLAGS', '/Od')
+					self.compiler.AddToListVar('CFLAGS', '/RTC1')
+
+			#Platform-specifics
+			if AMBuild.target['platform'] == 'linux':
+				self.compiler.AddToListVar('CDEFINES', '_LINUX')
+			elif AMBuild.target['platform'] == 'windows':
+				self.compiler.AddToListVar('CDEFINES', 'WIN32')
+				self.compiler.AddToListVar('CDEFINES', '_WINDOWS')
+
+			#Finish up
+			self.compiler.AddToListVar('CDEFINES', 'SOURCEMOD_BUILD')
+			self.compiler.AddToListVar('CDEFINES', 'SM_GENERATED_BUILD')
+			self.compiler.AddToListVar('CINCLUDES',
+			                           os.path.join(AMBuild.outputFolder, 'includes'))
+			self.compiler.ToConfig(AMBuild, 'compiler')
+			AMBuild.cache.CacheVariable('vendor', self.vendor)
+			self.targetMap = { }
+			AMBuild.cache.CacheVariable('targetMap', self.targetMap)
+		else:
+			self.compiler.FromConfig(AMBuild, 'compiler')
+			self.targetMap = AMBuild.cache['targetMap']
+
+		if AMBuild.target['platform'] == 'windows':
+			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
+		self.mmsPath = AMBuild.cache['MMSOURCE17']
+
+	def DefaultCompiler(self):
+		return self.compiler.Clone()
+
+	def JobMatters(self, jobname):
+		file = sys._getframe().f_code.co_filename
+		if AMBuild.mode == 'config':
+			self.targetMap[jobname] = file
+			return True
+		if len(AMBuild.args) == 0:
+			return True
+		if not jobname in AMBuild.args:
+			return False
+
+	def DefaultExtCompiler(self, path):
+		compiler = self.DefaultCompiler()
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, path))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, path, 'sdk'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'extensions'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'sourcepawn'))
+		return compiler
+
+	def AutoVersion(self, folder, binary):
+		if AMBuild.target['platform'] != 'windows':
+			return
+		env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"']}
+		binary.AddResourceFile(os.path.join(folder, 'version.rc' ), env)
+
+	def PreSetupHL2Job(self, job, builder, sdk):
+		info = self.sdkInfo[sdk]
+		sdkPath = AMBuild.cache[info['sdk']]
+		if AMBuild.target['platform'] == 'linux':
+			if sdk == 'ep1':
+				staticLibs = os.path.join(sdkPath, 'linux_sdk')
+			else:
+				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
+			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
+			for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_i486.so', 'tier0_i486.so']:
+				link = os.path.join(workFolder, i)
+				target = os.path.join(staticLibs, i)
+				try:
+					os.lstat(link)
+				except:
+					job.AddCommand(SymlinkCommand(link, target))
+		elif AMBuild.target['platform'] == 'windows':
+			for lib in ['tier0', 'tier1', 'vstdlib', 'mathlib']:
+				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
+				builder.RebuildIfNewer(libPath)
+				builder['POSTLINKFLAGS'].append(libPath)
+
+	def PostSetupHL2Job(self, job, builder, sdk):
+		if AMBuild.target['platform'] == 'linux':
+			builder.AddObjectFiles(['tier1_i486.a', 'mathlib_i486.a'])
+
+	def DefaultHL2Compiler(self, path, sdk, noLink = False, oldMms = '-legacy'):
+		compiler = self.DefaultExtCompiler(path)
+
+		mms = 'core'
+		if sdk == 'ep1':
+			mms += oldMms
+
+		compiler['CXXINCLUDES'].append(os.path.join(self.mmsPath, mms))
+		compiler['CXXINCLUDES'].append(os.path.join(self.mmsPath, mms, 'sourcehook'))
+
+		info = self.sdkInfo
+		compiler['CDEFINES'].extend(['SE_' + info[i]['name'] + '=' + info[i]['def'] for i in info])
+		compiler['CDEFINES'].append('SE_DARKMESSIAH=2')
+
+		paths = [['public'], ['public', 'engine'], ['public', 'mathlib'], ['public', 'vstdlib'],
+						 ['public', 'tier0'], ['public', 'tier1']]
+		if sdk == 'ep1' or sdk == 'darkm':
+			paths.append(['public', 'dlls'])
+			paths.append(['game_shared'])
+		else:
+			paths.append(['public', 'game', 'server'])
+			paths.append(['public', 'game', 'shared'])
+			paths.append(['common'])
+
+		info = self.sdkInfo[sdk]
+		sdkPath = AMBuild.cache[info['sdk']]
+
+		compiler['CDEFINES'].append('SOURCE_ENGINE=' + info['def'])
+
+		if sdk == 'ep1':
+			if AMBuild.target['platform'] == 'linux':
+				staticLibs = os.path.join(sdkPath, 'linux_sdk')
+		else:
+			if AMBuild.target['platform'] == 'linux':
+				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
+
+		for i in paths:
+			compiler['CXXINCLUDES'].append(os.path.join(sdkPath, *i))
+
+		if not noLink:
+			if AMBuild.target['platform'] == 'linux':
+				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
+				compiler['POSTLINKFLAGS'][0:0] = ['tier0_i486.so']
+				compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']
+
+		return compiler
+
+sm = SM()
+globals = {
+	'SM': sm
+}
+
+AMBuild.Include(os.path.join('tools', 'buildbot', 'Versioning'), globals)
+
+FileList = [
+		['loader', 'AMBuilder'],
+		['core', 'AMBuilder'],
+		['core', 'logic', 'AMBuilder'],
+		['extensions', 'bintools', 'AMBuilder'],
+		['extensions', 'clientprefs', 'AMBuilder'],
+		['extensions', 'cstrike', 'AMBuilder'],
+		['extensions', 'curl', 'AMBuilder'],
+		['extensions', 'geoip', 'AMBuilder'],
+		['extensions', 'mysql', 'AMBuilder'],
+		['extensions', 'sdktools', 'AMBuilder'],
+		['extensions', 'topmenus', 'AMBuilder'],
+		['extensions', 'updater', 'AMBuilder'],
+		['extensions', 'sqlite', 'AMBuilder'],
+		['extensions', 'regex', 'AMBuilder'],
+		['extensions', 'tf2', 'AMBuilder'],
+		['sourcepawn', 'jit', 'AMBuilder'],
+		['sourcepawn', 'compiler', 'AMBuilder'],
+		['plugins', 'AMBuilder'],
+		['tools', 'buildbot', 'PackageScript']
+	]
+
+for parts in FileList:
+	AMBuild.Include(os.path.join(*parts), globals)
+

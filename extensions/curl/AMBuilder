@@ -1,0 +1,67 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python : 
+import os.path
+import ambuild.command as command
+import ambuild.osutil as osutil
+
+def BuildCURL():
+	curl = AMBuild.AddJob('curl')
+	if AMBuild.target['platform'] == 'linux':
+		if not osutil.FileExists(os.path.join(AMBuild.outputFolder, 'curl', 'Makefile')):
+			args = ['/bin/bash',
+							os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'configure'),
+							'--enable-static',
+							'--disable-shared',
+							'--disable-ldap',
+							'--without-ssl',
+							'--without-libidn',
+							'--without-libssh2',
+							'--without-zlib']
+			curl.AddCommand(command.DirectCommand(args))
+			curl.AddCommand(command.DirectCommand(['make']))
+	else:
+		args = ['vcbuild',
+		        os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
+		                     'build_libcurl.vcproj'),
+						'LIB Release']
+		curl.AddCommand(command.DirectCommand(args))
+		#die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
+
+BuildCURL()
+
+compiler = SM.DefaultExtCompiler('extensions/curl')
+extension = AMBuild.AddJob('webternet.ext')
+binary = Cpp.LibraryBuilder('webternet.ext', AMBuild, extension, compiler)
+
+curlPath = [AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'include']
+compiler['CXXINCLUDES'].append(os.path.join(*curlPath))
+compiler['CDEFINES'].append('CURL_STATICLIB')
+                                          
+binary.AddSourceFiles('extensions/curl', [
+	'extension.cpp',
+	'curlapi.cpp',
+	'sdk/smsdk_ext.cpp',
+	])
+
+if AMBuild.target['platform'] == 'linux':
+	path = os.path.join(AMBuild.outputFolder,
+                      'curl',
+                      'lib',
+                      '.libs',
+                      'libcurl.a')
+	binary['POSTLINKFLAGS'].append('-lrt')
+	binary.AddObjectFiles([path])
+elif AMBuild.target['platform'] == 'windows':
+	path = os.path.join(AMBuild.sourceFolder,
+	                    'extensions',
+	                    'curl',
+	                    'curl-src',
+	                    'lib',
+	                    'LIB-Release',
+	                    'libcurl.lib')
+	if os.path.isfile(path):
+		binary.RelinkIfNewer(path)
+	binary['POSTLINKFLAGS'].extend([path, 'ws2_32.lib'])
+
+SM.AutoVersion('extensions/curl', binary)
+binary.SendToJob()
+

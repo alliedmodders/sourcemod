@@ -1,0 +1,234 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+import shutil
+import ambuild.osutil as osutil
+from ambuild.command import Command
+
+job = AMBuild.AddJob('package')
+
+class DestroyPath(Command):
+	def __init__(self, folder):
+		Command.__init__(self)
+		self.folder = folder
+
+	def destroy(self, path):
+		entries = os.listdir(path)
+		for entry in entries:
+			newpath = os.path.join(path, entry)
+			if os.path.isdir(newpath):
+				self.destroy(newpath)
+				os.rmdir(newpath)
+			elif os.path.isfile(newpath):
+				os.remove(newpath)
+
+	def run(self, runner, job):
+		runner.PrintOut('rm -rf {0}/*'.format(self.folder))
+		self.destroy(self.folder)
+
+class CreateFolders(Command):
+	def __init__(self, folders):
+		Command.__init__(self)
+		self.folders = folders
+	
+	def run(self, runner, job):
+		for folder in self.folders:
+			path = os.path.join(*folder)
+			runner.PrintOut('mkdir {0}'.format(path))
+			os.makedirs(path)
+
+#Shallow folder copy
+class CopyFolder(Command):
+	def __init__(self, fromList, toList, excludes = []):
+		Command.__init__(self)
+		self.fromPath = os.path.join(AMBuild.sourceFolder, *fromList)
+		self.toPath = os.path.join(*toList) 
+		self.excludes = excludes
+	
+	def run(self, runner, job):
+		entries = os.listdir(self.fromPath)
+		for entry in entries:
+			if entry in self.excludes:
+				continue
+			path = os.path.join(self.fromPath, entry)
+			if not os.path.isfile(path):
+				continue
+			runner.PrintOut('copy {0} to {1}'.format(path, self.toPath))
+			shutil.copy(path, self.toPath)
+
+#Single file copy
+class CopyFile(Command):
+	def __init__(self, fromFile, toPath):
+		Command.__init__(self)
+		self.fromFile = fromFile
+		self.toPath = toPath
+
+	def run(self, runner, job):
+		runner.PrintOut('copy {0} to {1}'.format(self.fromFile, self.toPath))
+		shutil.copy(self.fromFile, self.toPath)
+
+
+folders = [['addons', 'sourcemod', 'bin'],
+           ['addons', 'sourcemod', 'plugins', 'disabled'],
+           ['addons', 'sourcemod', 'gamedata'],
+           ['addons', 'sourcemod', 'gamedata', 'core.games'],
+           ['addons', 'sourcemod', 'gamedata', 'sdktools.games'],
+           ['addons', 'sourcemod', 'configs', 'geoip'],
+           ['addons', 'sourcemod', 'translations'],
+           ['addons', 'sourcemod', 'logs'],
+           ['addons', 'sourcemod', 'extensions'],
+           ['addons', 'sourcemod', 'data'],
+           ['addons', 'sourcemod', 'scripting', 'include'],
+           ['addons', 'sourcemod', 'scripting', 'admin-flatfile'],
+           ['addons', 'sourcemod', 'scripting', 'adminmenu'],
+           ['addons', 'sourcemod', 'scripting', 'testsuite'],
+           ['cfg', 'sourcemod'],
+           ['addons', 'sourcemod', 'configs', 'sql-init-scripts'],
+           ['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'mysql'],
+           ['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'sqlite'],
+           ['addons', 'sourcemod', 'scripting', 'basecommands'],
+           ['addons', 'sourcemod', 'scripting', 'basecomm'],
+           ['addons', 'sourcemod', 'scripting', 'funvotes'],
+           ['addons', 'sourcemod', 'scripting', 'basevotes'],
+           ['addons', 'sourcemod', 'scripting', 'basebans'],
+           ['addons', 'sourcemod', 'scripting', 'funcommands'],
+           ['addons', 'sourcemod', 'scripting', 'playercommands'],
+           ['addons', 'metamod'],
+          ]
+
+#Setup
+job.AddCommand(DestroyPath(os.path.join(AMBuild.outputFolder, 'package')))
+job.AddCommand(CreateFolders(folders))
+
+#Copy Folders
+job.AddCommand(CopyFolder(['configs'], ['addons', 'sourcemod', 'configs']))
+job.AddCommand(CopyFolder(['configs', 'geoip'], ['addons', 'sourcemod', 'configs', 'geoip']))
+job.AddCommand(CopyFolder(['configs', 'cfg'], ['cfg', 'sourcemod']))
+job.AddCommand(CopyFolder(['configs', 'metamod'], ['addons', 'metamod']))
+job.AddCommand(CopyFolder(['configs', 'sql-init-scripts'],
+	['addons', 'sourcemod', 'configs', 'sql-init-scripts']))
+job.AddCommand(CopyFolder(['configs', 'sql-init-scripts', 'mysql'],
+	['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'mysql']))
+job.AddCommand(CopyFolder(['configs', 'sql-init-scripts', 'sqlite'],
+	['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'sqlite']))
+job.AddCommand(CopyFolder(['gamedata'], ['addons', 'sourcemod', 'gamedata']))
+job.AddCommand(CopyFolder(['gamedata', 'sdktools.games'],
+	['addons', 'sourcemod', 'gamedata', 'sdktools.games']))
+job.AddCommand(CopyFolder(['gamedata', 'core.games'],
+	['addons', 'sourcemod', 'gamedata', 'core.games']))
+job.AddCommand(CopyFolder(['plugins'], ['addons', 'sourcemod', 'scripting'], ['AMBuilder']))
+job.AddCommand(CopyFolder(['plugins', 'include'],
+	['addons', 'sourcemod', 'scripting', 'include']))
+job.AddCommand(CopyFolder(['translations'], ['addons', 'sourcemod', 'translations']))
+job.AddCommand(CopyFolder(['public', 'licenses'], ['addons', 'sourcemod']))
+job.AddCommand(CopyFolder(['plugins', 'admin-flatfile'],
+	['addons', 'sourcemod', 'scripting', 'admin-flatfile']))
+job.AddCommand(CopyFolder(['plugins', 'adminmenu'],
+	['addons', 'sourcemod', 'scripting', 'adminmenu']))
+job.AddCommand(CopyFolder(['plugins', 'testsuite'],
+	['addons', 'sourcemod', 'scripting', 'testsuite']))
+job.AddCommand(CopyFolder(['plugins', 'basecommands'],
+	['addons', 'sourcemod', 'scripting', 'basecommands']))
+job.AddCommand(CopyFolder(['plugins', 'basecomm'],
+	['addons', 'sourcemod', 'scripting', 'basecomm']))
+job.AddCommand(CopyFolder(['plugins', 'funvotes'],
+	['addons', 'sourcemod', 'scripting', 'funvotes']))
+job.AddCommand(CopyFolder(['plugins', 'basevotes'],
+	['addons', 'sourcemod', 'scripting', 'basevotes']))
+job.AddCommand(CopyFolder(['plugins', 'basebans'],
+	['addons', 'sourcemod', 'scripting', 'basebans']))
+job.AddCommand(CopyFolder(['plugins', 'funcommands'],
+	['addons', 'sourcemod', 'scripting', 'funcommands']))
+job.AddCommand(CopyFolder(['plugins', 'playercommands'],
+	['addons', 'sourcemod', 'scripting', 'playercommands']))
+
+defPlugins = [
+	'admin-flatfile',
+	'adminhelp',
+	'antiflood',
+	'basecommands',
+	'reservedslots',
+	'basetriggers',
+	'nextmap',
+	'basechat',
+	'funcommands',
+	'basevotes',
+	'funvotes',
+	'basebans',
+	'basecomm',
+	'adminmenu',
+	'playercommands',
+	'clientprefs',
+	'sounds'
+]
+
+disPlugins = [
+	'admin-sql-prefetch',
+	'admin-sql-threaded',
+	'sql-admin-manager',
+	'mapchooser',
+	'randomcycle',
+	'rockthevote',
+	'nominations'
+]
+
+commands = []
+for plugin in defPlugins:
+	commands.append(CopyFile(os.path.join('..', 'plugins', plugin + '.smx'),
+	                         os.path.join('addons', 'sourcemod', 'plugins')))
+
+for plugin in disPlugins:
+	commands.append(CopyFile(os.path.join('..', 'plugins', plugin + '.smx'),
+	                         os.path.join('addons', 'sourcemod', 'plugins', 'disabled')))
+job.AddCommandGroup(commands)
+
+bincopies = []
+
+def AddNormalLibrary(name, dest):
+	dest = os.path.join('addons', 'sourcemod', dest)
+	bincopies.append(CopyFile(os.path.join('..', name, name + osutil.SharedLibSuffix()), dest))
+	pdb_list.append(name + '\\' + name + '.pdb')
+
+def AddHL2Library(name, dest):
+	for i in SM.sdkInfo:
+		sdk = SM.sdkInfo[i]
+		AddNormalLibrary(name + '.' + sdk['ext'], dest)
+
+pdb_list = []
+
+if AMBuild.target['platform'] == 'linux':
+	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm_i486.so'),
+	                 os.path.join('addons', 'sourcemod', 'bin')))
+elif AMBuild.target['platform'] == 'windows':
+	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dll'),
+	                 os.path.join('addons', 'sourcemod', 'bin')))
+	pdb_list.append('loader\\sourcemod_mm.pdb')
+
+AddHL2Library('sourcemod', 'bin')
+AddNormalLibrary('sourcepawn.jit.x86', 'bin')
+AddNormalLibrary('geoip.ext', 'extensions')
+AddNormalLibrary('dbi.mysql.ext', 'extensions')
+AddNormalLibrary('dbi.sqlite.ext', 'extensions')
+AddNormalLibrary('game.cstrike.ext.1.ep1', 'extensions')
+AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
+AddNormalLibrary('topmenus.ext', 'extensions')
+AddNormalLibrary('regex.ext', 'extensions')
+AddNormalLibrary('webternet.ext', 'extensions')
+AddNormalLibrary('clientprefs.ext', 'extensions')
+AddNormalLibrary('updater.ext', 'extensions')
+AddHL2Library('bintools.ext', 'extensions')
+AddHL2Library('sdktools.ext', 'extensions')
+
+bincopies.append(CopyFile(os.path.join('..', 'spcomp', 'spcomp' + osutil.ExecutableSuffix()),
+                          os.path.join('addons', 'sourcemod', 'scripting')))
+
+job.AddCommandGroup(bincopies)
+
+if AMBuild.target['platform'] == 'windows':
+	job.AddCommand(CopyFile(
+		os.path.join(AMBuild.sourceFolder, 'sourcepawn', 'batchtool', 'compile.exe'),
+		os.path.join('addons', 'sourcemod', 'scripting')))
+	pdblog = open(os.path.join(AMBuild.outputFolder, 'pdblog.txt'), 'wt')
+	for pdb in pdb_list:
+		pdblog.write(pdb + '\n')
+	pdblog.close()
+

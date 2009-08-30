@@ -36,7 +36,7 @@
 #include "Logger.h"
 #include "LibrarySys.h"
 #include "TimerSys.h"
-#include "sm_version.h"
+#include <sourcemod_version.h>
 
 Logger g_Logger;
 
@@ -149,7 +149,7 @@ void Logger::_NewMapFile()
 	} else {
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-		fprintf(fp, "L %s: SourceMod log file started (file \"L%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SVN_FULL_VERSION);
+		fprintf(fp, "L %s: SourceMod log file started (file \"L%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SM_FULL_VERSION);
 		fclose(fp);
 	}
 }
@@ -356,7 +356,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 			char date[32];
 			m_DailyPrintHdr = false;
 			strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-			fprintf(fp, "L %s: SourceMod log file session started (file \"L%04d%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday, SVN_FULL_VERSION);
+			fprintf(fp, "L %s: SourceMod log file session started (file \"L%04d%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday, SM_FULL_VERSION);
 	 	}
 		va_list ap;
 		va_start(ap, vafmt);

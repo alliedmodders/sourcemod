@@ -1,0 +1,38 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+
+compiler = SM.DefaultCompiler()
+base = AMBuild.sourceFolder
+compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'core', 'logic'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public'))
+compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'sourcepawn'))
+compiler['CDEFINES'].append('SM_DEFAULT_THREADER')
+compiler['CDEFINES'].append('SM_LOGIC')
+
+extension = AMBuild.AddJob('sourcemod.logic')
+binary = Cpp.LibraryBuilder('sourcemod.logic', AMBuild, extension, compiler)
+files = [
+	'common_logic.cpp',
+	'smn_adt_array.cpp',
+	'smn_sorting.cpp',
+	'smn_maplists.cpp',
+	'smn_adt_stack.cpp',
+	'thread/ThreadWorker.cpp',
+	'thread/BaseWorker.cpp',
+	'ThreadSupport.cpp',
+	'smn_float.cpp',
+	'TextParsers.cpp',
+	'smn_textparse.cpp',
+	'smn_adt_trie.cpp',
+	'Profiler.cpp',
+	'smn_functions.cpp'
+	]
+if AMBuild.target['platform'] == 'windows':
+	files.append('thread/WinThreads.cpp')
+else:
+	files.append('thread/PosixThreads.cpp')
+binary.AddSourceFiles('core/logic', files)
+SM.AutoVersion('core/logic', binary)
+binary.SendToJob()
+

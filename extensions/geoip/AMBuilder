@@ -1,0 +1,15 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+compiler = SM.DefaultExtCompiler('extensions/geoip')
+
+extension = AMBuild.AddJob('geoip.ext')
+binary = Cpp.LibraryBuilder('geoip.ext', AMBuild, extension, compiler)
+binary.AddSourceFiles('extensions/geoip', [
+	'extension.cpp',
+	'GeoIP.c',
+	'sdk/smsdk_ext.cpp'
+	])
+if AMBuild.target['platform'] == 'windows':
+	binary['POSTLINKFLAGS'].append('wsock32.lib')
+SM.AutoVersion('extensions/geoip', binary)
+binary.SendToJob()
+

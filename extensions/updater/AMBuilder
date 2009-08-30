@@ -1,0 +1,18 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+
+compiler = SM.DefaultExtCompiler('extensions/updater')
+compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
+
+extension = AMBuild.AddJob('updater.ext')
+binary = Cpp.LibraryBuilder('updater.ext', AMBuild, extension, compiler)
+binary.AddSourceFiles('extensions/updater', [
+	'extension.cpp',
+	'MemoryDownloader.cpp',
+	'Updater.cpp',
+	'md5.cpp',
+	'sdk/smsdk_ext.cpp'
+	])
+SM.AutoVersion('extensions/updater', binary)
+binary.SendToJob()
+

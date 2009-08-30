@@ -1,0 +1,89 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+
+for i in SM.sdkInfo:
+	sdk = SM.sdkInfo[i]
+	name = 'sourcemod.' + sdk['ext']
+
+	compiler = SM.DefaultHL2Compiler('core', i)
+
+	extension = AMBuild.AddJob(name)
+	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
+	SM.PreSetupHL2Job(extension, binary, i)
+	files = [
+		'AdminCache.cpp',
+		'ExtensionSys.cpp',
+		'MenuStyle_Valve.cpp',
+		'sm_crc32.cpp',
+		'logic_bridge.cpp',
+		'smn_entities.cpp',
+		'sm_stringutil.cpp',
+		'ADTFactory.cpp',
+		'ForwardSys.cpp',
+		'MenuVoting.cpp',
+		'sm_memtable.cpp',
+		'smn_events.cpp',
+		'smn_menus.cpp',
+		'sm_trie.cpp',
+		'CDataPack.cpp',
+		'frame_hooks.cpp',
+		'NativeInvoker.cpp',
+		'smn_admin.cpp',
+		'smn_fakenatives.cpp',
+		'smn_nextmap.cpp',
+		'sourcemm_api.cpp',
+		'ChatTriggers.cpp',
+		'GameConfigs.cpp',
+		'NativeOwner.cpp',
+		'smn_filesystem.cpp',
+		'smn_player.cpp',
+		'sourcemod.cpp',
+		'concmd_cleaner.cpp',
+		'HalfLife2.cpp',
+		'NextMap.cpp',
+		'smn_profiler.cpp',
+		'ConCmdManager.cpp',
+		'HandleSys.cpp',
+		'PhraseCollection.cpp',
+		'ConVarManager.cpp',
+		'LibrarySys.cpp',
+		'PlayerManager.cpp',
+		'smn_banning.cpp',
+		'smn_gameconfigs.cpp',
+		'smn_string.cpp',
+		'TimerSys.cpp',
+		'CoreConfig.cpp',
+		'Logger.cpp',
+		'PluginInfoDatabase.cpp',
+		'smn_bitbuffer.cpp',
+		'smn_halflife.cpp',
+		'Translator.cpp',
+		'MemoryUtils.cpp',
+		'PluginSys.cpp',
+		'smn_console.cpp',
+		'smn_handles.cpp',
+		'smn_timers.cpp',
+		'UserMessages.cpp',
+		'Database.cpp',
+		'MenuManager.cpp',
+		'smn_core.cpp',
+		'smn_hudtext.cpp',
+		'smn_usermsgs.cpp',
+		'DebugReporter.cpp',
+		'MenuStyle_Base.cpp',
+		'ShareSys.cpp',
+		'smn_database.cpp',
+		'smn_keyvalues.cpp',
+		'smn_vector.cpp',
+		'EventManager.cpp',
+		'MenuStyle_Radio.cpp',
+		'sm_autonatives.cpp',
+		'smn_datapacks.cpp',
+		'smn_lang.cpp',
+		'sm_srvcmds.cpp',
+		]
+	binary.AddSourceFiles('core', files)
+	SM.PostSetupHL2Job(extension, binary, i)
+	SM.AutoVersion('core', binary)
+	binary.SendToJob()
+

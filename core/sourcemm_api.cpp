@@ -31,7 +31,7 @@
 
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include "sm_version.h"
+#include <sourcemod_version.h>
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include "concmd_cleaner.h"
@@ -145,7 +145,7 @@ const char *SourceMod_Core::GetLicense()
 
 const char *SourceMod_Core::GetVersion()
 {
-	return SVN_FULL_VERSION;
+	return SM_FULL_VERSION;
 }
 
 const char *SourceMod_Core::GetDate()
