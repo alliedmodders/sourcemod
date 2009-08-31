@@ -7,6 +7,8 @@ for i in SM.sdkInfo:
 
 	compiler = SM.DefaultHL2Compiler('core', i)
 	compiler['CDEFINES'].append('SM_DEFAULT_THREADER')
+	if AMBuild.target['platform'] == 'linux':
+		compiler['POSTLINKFLAGS'].append('-lpthread')
 
 	extension = AMBuild.AddJob(name)
 	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
