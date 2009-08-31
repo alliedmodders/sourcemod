@@ -10,7 +10,7 @@ compiler['CXXINCLUDES'].append(os.path.join(base, 'public', 'sourcepawn'))
 compiler['CDEFINES'].append('SM_DEFAULT_THREADER')
 compiler['CDEFINES'].append('SM_LOGIC')
 
-if AMBuild.target['platform'] == 'linux'
+if AMBuild.target['platform'] == 'linux':
 	compiler['POSTLINKFLAGS'].append('-lpthread')
 
 extension = AMBuild.AddJob('sourcemod.logic')
