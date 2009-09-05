@@ -537,7 +537,7 @@
 				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\common&quot;;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
- 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=5"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=5"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -617,10 +617,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
- 				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\extensions;..\..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\common&quot;;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
- 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=5"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SDK_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=5"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
 				RuntimeTypeInfo="false"
@@ -965,6 +965,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

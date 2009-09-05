@@ -504,6 +504,11 @@ static cell_t smn_TRGetEntityIndex(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
+	if (tr->m_pEnt == NULL)
+	{
+		return 0;
+	}
+
 	return gamehelpers->EntityToBCompatRef(tr->m_pEnt);
 }
 
