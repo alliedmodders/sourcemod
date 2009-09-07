@@ -377,7 +377,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 			/* Kick, then ban */
 			if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 			{
-   		 		pPlayer->Kick(kick_message);
+				g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), kick_message);
 			}
 			engine->ServerCommand(command);
 
@@ -390,7 +390,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	}
 	else if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 	{
-		pPlayer->Kick(kick_message);	
+		g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), kick_message);
 	}
 
 
