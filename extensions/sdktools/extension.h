@@ -89,6 +89,12 @@ public: //IClientListner
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	void OnClientCommand(edict_t *pEntity, const CCommand &args);
+#else
+	void OnClientCommand(edict_t *pEntity);
+#endif
+
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:

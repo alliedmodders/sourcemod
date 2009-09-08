@@ -42,11 +42,28 @@
 #define LISTEN_NO			1
 #define LISTEN_YES			2
 
+/* this enum needs to be in the order as the LISTEN_ defines above to keep
+   the old broken SetClientListening functionality untouched */
+enum ListenOverride
+{
+	Listen_Default,		/**< Leave it up to the game */
+	Listen_No,			/**< Can't hear */
+	Listen_Yes,			/**< Can hear */
+};
+
 size_t g_VoiceFlags[65];
 size_t g_VoiceHookCount = 0;
-int g_VoiceMap[65][65];
+int g_ClientOverrides[65];
+ListenOverride g_VoiceMap[65][65];
+bool g_ClientMutes[65][65];
 
 SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, bool);
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
+#else
+SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
+#endif
 
 bool DecHookCount(int amount = 1);
 bool DecHookCount(int amount)
@@ -72,15 +89,52 @@ void IncHookCount()
 void SDKTools::VoiceInit()
 {
 	memset(g_VoiceMap, 0, sizeof(g_VoiceMap));
+	memset(g_ClientOverrides, 0, sizeof(g_ClientOverrides));
+	memset(g_ClientMutes, 0, sizeof(g_ClientMutes));
+
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &SDKTools::OnClientCommand, true);
 }
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+void SDKTools::OnClientCommand(edict_t *pEntity, const CCommand &args)
+{
+#else
+void SDKTools::OnClientCommand(edict_t *pEntity)
+{
+	CCommand args;
+#endif
+	int client = IndexOfEdict(pEntity);
+
+	if ((args.ArgC() > 1) && (stricmp(args.Arg(0), "vban") == 0))
+	{
+		for (int i = 1; (i < args.ArgC()) && (i < 3); i++)
+		{
+			unsigned long mask = 0;
+			sscanf(args[i], "%p", (void**)&mask);
+			
+			for (int j = 0; j < 32; j++)
+			{
+				g_ClientMutes[client][1 + j + 32 * (i - 1)] = !!(mask & 1 << j);
+			}
+		}
+	}
+
+	RETURN_META(MRES_IGNORED);
+}
+
 
 bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 {
-	if (g_VoiceMap[iReceiver][iSender] == LISTEN_NO)
+	if (g_ClientMutes[iReceiver][iSender])
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
 	}
-	else if (g_VoiceMap[iReceiver][iSender] == LISTEN_YES)
+
+	if (g_VoiceMap[iReceiver][iSender] == Listen_No)
+	{
+		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+	}
+	else if (g_VoiceMap[iReceiver][iSender] == Listen_Yes)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
 	}
@@ -130,7 +184,7 @@ void SDKTools::OnClientDisconnecting(int client)
 	 * of an actual bottleneck.
 	 */
 
-	/* Reset clients who receive from us */
+	/* Reset other clients who receive from or have muted this client */
 	for (int i = 1; i <= max_clients; i++)
 	{
 		if (i == client)
@@ -138,9 +192,11 @@ void SDKTools::OnClientDisconnecting(int client)
 			continue;
 		}
 
-		if (g_VoiceMap[i][client] != LISTEN_DEFAULT)
+		g_ClientMutes[i][client] = false;
+		
+		if (g_VoiceMap[i][client] != Listen_Default)
 		{
-			g_VoiceMap[i][client] = LISTEN_DEFAULT;
+			g_VoiceMap[i][client] = Listen_Default;
 			if (DecHookCount())
 			{
 				return;
@@ -148,11 +204,16 @@ void SDKTools::OnClientDisconnecting(int client)
 		}
 	}
 
-	/* Reset clients who send to us.  I'm shoving a count in the 0 index! */
-	if (g_VoiceMap[client][0] > 0)
+	/* Reset this client's mutes, just in case */
+	memset(&g_ClientMutes[client], 0, sizeof(int) * 65);
+
+	/* Reset other clients who send to this client */
+	if (g_ClientOverrides[client] > 0)
 	{
-		DecHookCount(g_VoiceMap[client][0]);
-		memset(&g_VoiceMap[client], 0, sizeof(int) * 65);
+		DecHookCount(g_ClientOverrides[client]);
+		g_ClientOverrides[client] = 0;
+		memset(&g_VoiceMap[client], false, sizeof(ListenOverride) * 65);
+		memset(&g_ClientMutes[client], false, sizeof(bool) * 65);
 	}
 
 	if (g_VoiceFlags[client])
@@ -211,41 +272,41 @@ static cell_t SetClientListening(IPluginContext *pContext, const cell_t *params)
 	player = playerhelpers->GetGamePlayer(params[1]);
 	if (player == NULL)
 	{
-		return pContext->ThrowNativeError("(Receiver) client index %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Receiver client index %d is invalid", params[1]);
 	}
 	else if (!player->IsConnected())
 	{
-		return pContext->ThrowNativeError("(Receiver) client %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Receiver client %d is not connected", params[1]);
 	}
 
 	player = playerhelpers->GetGamePlayer(params[2]);
 	if (player == NULL)
 	{
-		return pContext->ThrowNativeError("(Sender) client index %d is invalid", params[2]);
+		return pContext->ThrowNativeError("Sender client index %d is invalid", params[2]);
 	}
 	else if (!player->IsConnected())
 	{
-		return pContext->ThrowNativeError("(Sender) client %d is not connected", params[2]);
+		return pContext->ThrowNativeError("Sender client %d is not connected", params[2]);
 	}
 
 	r = params[1];
 	s = params[2];
 	
-	if (g_VoiceMap[r][s] == LISTEN_DEFAULT && params[3] != LISTEN_DEFAULT)
+	if (g_VoiceMap[r][s] == Listen_Default && params[3] != Listen_Default)
 	{
-		g_VoiceMap[r][s] = params[3];
-		g_VoiceMap[r][0]++;
+		g_VoiceMap[r][s] = (ListenOverride) params[3];
+		g_ClientOverrides[r]++;
 		IncHookCount();
 	}
-	else if (g_VoiceMap[r][s] != LISTEN_DEFAULT && params[3] == LISTEN_DEFAULT)
+	else if (g_VoiceMap[r][s] != Listen_Default && params[3] == Listen_Default)
 	{
-		g_VoiceMap[r][s] = params[3];
-		g_VoiceMap[r][0]--;
+		g_VoiceMap[r][s] = (ListenOverride) params[3];
+		g_ClientOverrides[r]--;
 		DecHookCount();
 	}
 	else
 	{
-		g_VoiceMap[r][s] = params[3];
+		g_VoiceMap[r][s] = (ListenOverride) params[3];
 	}
 
 	return 1;
@@ -258,24 +319,51 @@ static cell_t GetClientListening(IPluginContext *pContext, const cell_t *params)
 	player = playerhelpers->GetGamePlayer(params[1]);
 	if (player == NULL)
 	{
-		return pContext->ThrowNativeError("(Receiver) client index %d is invalid", params[1]);
+		return pContext->ThrowNativeError("Receiver client index %d is invalid", params[1]);
 	}
 	else if (!player->IsConnected())
 	{
-		return pContext->ThrowNativeError("(Receiver) client %d is not connected", params[1]);
+		return pContext->ThrowNativeError("Receiver client %d is not connected", params[1]);
 	}
 
 	player = playerhelpers->GetGamePlayer(params[2]);
 	if (player == NULL)
 	{
-		return pContext->ThrowNativeError("(Sender) client index %d is invalid", params[2]);
+		return pContext->ThrowNativeError("Sender client index %d is invalid", params[2]);
 	}
 	else if (!player->IsConnected())
 	{
-		return pContext->ThrowNativeError("(Sender) client %d is not connected", params[2]);
+		return pContext->ThrowNativeError("Sender client %d is not connected", params[2]);
 	}
 
 	return g_VoiceMap[params[1]][params[2]];
+}
+
+static cell_t IsClientMuted(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player;
+
+	player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Muter client index %d is invalid", params[1]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Muter client %d is not connected", params[1]);
+	}
+
+	player = playerhelpers->GetGamePlayer(params[2]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Mutee client index %d is invalid", params[2]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Mutee client %d is not connected", params[2]);
+	}
+
+	return g_ClientMutes[params[1]][params[2]];
 }
 
 sp_nativeinfo_t g_VoiceNatives[] =
@@ -284,5 +372,8 @@ sp_nativeinfo_t g_VoiceNatives[] =
 	{"GetClientListeningFlags",		GetClientListeningFlags},
 	{"SetClientListening",			SetClientListening},
 	{"GetClientListening",			GetClientListening},
+	{"SetListenOverride",			SetClientListening},
+	{"GetListenOverride",			GetClientListening},
+	{"IsClientMuted",				IsClientMuted},
 	{NULL,							NULL},
 };

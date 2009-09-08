@@ -49,6 +49,13 @@
  * @endsection
  */
 
+enum ListenOverride
+{
+	Listen_Default = 0,	/**< Leave it up to the game */
+	Listen_No,			/**< Can't hear */
+	Listen_Yes,			/**< Can hear */
+};
+
 /**
  * Set the client listening flags.
  *
@@ -73,6 +80,7 @@ native GetClientListeningFlags(client);
  * @param iSender		The sender index.
  * @return			True if successful otherwise false.
  */
+#pragma deprecated Use SetListenOverride() instead
 native bool:SetClientListening(iReceiver, iSender, bool:bListen);
 
 /**
@@ -82,4 +90,34 @@ native bool:SetClientListening(iReceiver, iSender, bool:bListen);
  * @param iSender		The sender index.
  * @return			True if successful otherwise false.
  */
+#pragma deprecated GetListenOverride() instead
 native bool:GetClientListening(iReceiver, iSender);
+
+/**
+ * Override the receiver's ability to listen to the sender.
+ *
+ * @param iReceiver		The listener index.
+ * @param iSender		The sender index.
+ * @param override		
+ * @return			True if successful otherwise false.
+ */
+native bool:SetListenOverride(iReceiver, iSender, ListenOverride:override);
+
+/**
+ * Retrieves the override of the receiver's ability to listen to the sender.
+ *
+ * @param iReceiver		The listener index.
+ * @param iSender		The sender index.
+ * @return			The override value.
+ */
+native ListenOverride:GetListenOverride(iReceiver, iSender);
+
+/**
+ * Retrieves if the muter has muted the mutee.
+ *
+ * @param iMuter		The muter index.
+ * @param iMutee		The mutee index.
+ * @return			True if muter has muted mutee, false otherwise.
+ */
+native bool:IsClientMuted(iMuter, iMutee);
+
