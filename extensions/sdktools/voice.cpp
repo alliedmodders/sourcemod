@@ -110,7 +110,7 @@ void SDKTools::OnClientCommand(edict_t *pEntity)
 		for (int i = 1; (i < args.ArgC()) && (i < 3); i++)
 		{
 			unsigned long mask = 0;
-			sscanf(args[i], "%p", (void**)&mask);
+			sscanf(args.Arg(i), "%p", (void**)&mask);
 			
 			for (int j = 0; j < 32; j++)
 			{
