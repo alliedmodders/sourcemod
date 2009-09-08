@@ -59,7 +59,7 @@ CPlugin::CPlugin(const char *file)
 	m_bSilentlyFailed = false;
 	m_serial = ++MySerial;
 	m_pRuntime = NULL;
-	m_errormsg[256] = '\0';
+	m_errormsg[sizeof(m_errormsg) - 1] = '\0';
 	snprintf(m_filename, sizeof(m_filename), "%s", file);
 	m_handle = 0;
 	m_ident = NULL;
