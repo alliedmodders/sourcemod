@@ -857,7 +857,7 @@ try_again:
 					memcpy(new_params, params, sizeof(void *) * numparams);
 					for (i = 0; i < trans.fmt_count; i++)
 					{
-						new_params[i] = const_cast<void *>(params[curparam + trans.fmt_order[i]]);
+						new_params[curparam + i] = const_cast<void *>(params[curparam + trans.fmt_order[i]]);
 					}
 
 					if (!gnprintf(buf_p,
