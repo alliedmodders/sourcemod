@@ -665,6 +665,12 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 	IPluginFunction *pFunction;
 
 	pContext->LocalToString(params[1], &name);
+
+	if (strcasecmp(name, "sm") == 0)
+	{
+		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+	}
+
 	pContext->LocalToString(params[3], &help);
 	pFunction = pContext->GetFunctionById(params[2]);
 
@@ -687,6 +693,12 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 	IPluginFunction *pFunction;
 
 	pContext->LocalToString(params[1], &name);
+
+	if (strcasecmp(name, "sm") == 0)
+	{
+		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+	}
+
 	pContext->LocalToString(params[3], &help);
 	pFunction = pContext->GetFunctionById(params[2]);
 
@@ -712,6 +724,12 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	int cmdflags = params[6];
 
 	pContext->LocalToString(params[1], &name);
+
+	if (strcasecmp(name, "sm") == 0)
+	{
+		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+	}
+
 	pContext->LocalToString(params[4], &help);
 	pContext->LocalToString(params[5], (char **)&group);
 	pFunction = pContext->GetFunctionById(params[2]);
