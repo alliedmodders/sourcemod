@@ -45,6 +45,12 @@
 				"linux"		"@_ZN18CTFWeaponBaseMelee26CalcIsAttackCriticalHelperEv"
 				"windows"	"\x83\xEC\x08\x53\x57\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x8B\xD8"
 			}
+			"CalcCriticalBow"
+			{
+				"library"	"server
+				"linux"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x14\x6A\x0B"
+			}
 		}
 		"Offsets"
 		{

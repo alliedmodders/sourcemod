@@ -35,6 +35,7 @@ IServerGameEnts *gameents = NULL;
 
 CDetour *calcIsAttackCriticalDetour = NULL;
 CDetour *calcIsAttackCriticalMeleeDetour = NULL;
+CDetour *calcIsAttackCriticalBowDetour = NULL;
 
 IForward *g_critForward = NULL;
 
@@ -169,10 +170,29 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelper, bool)
 	}
 }
 
+DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperBow, bool)
+{
+	DetourResult result = DetourCallback((CBaseEntity *)this);
+
+	if (result == Result_Ignore)
+	{
+		return DETOUR_MEMBER_CALL(CalcIsAttackCriticalHelperBow)();
+	}
+	else if (result == Result_NoCrit)
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
 void InitialiseDetours()
 {
 	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
 	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperMelee, "CalcCriticalMelee");
+	calcIsAttackCriticalBowDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperBow, "CalcCriticalBow");
 
 	bool HookCreated = false;
 
@@ -188,6 +208,12 @@ void InitialiseDetours()
 		HookCreated = true;
 	}
 
+	if (calcIsAttackCriticalBowDetour != NULL)
+	{
+		calcIsAttackCriticalBowDetour->EnableDetour();
+		HookCreated = true;
+	}
+
 	if (!HookCreated)
 	{
 		g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
@@ -200,4 +226,5 @@ void RemoveDetours()
 {
 	calcIsAttackCriticalDetour->Destroy();
 	calcIsAttackCriticalMeleeDetour->Destroy();
+	calcIsAttackCriticalBowDetour->Destroy();
 }
