@@ -47,7 +47,7 @@
 			}
 			"CalcCriticalBow"
 			{
-				"library"	"server
+				"library"	"server"
 				"linux"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x14\x6A\x0B"
 			}
