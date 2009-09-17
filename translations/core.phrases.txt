@@ -49,6 +49,24 @@
 	{
 		"en"			"all alive players"
 	}
+
+	"Vote Count"
+	{
+		"#format"		"{1:i},{2:i},{3:i}"
+		"en"			"Votes: {1}/{2}, {3}s left"
+	}
+
+	"Voted For"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{1} voted for {2}"	
+	}
+
+	"Changed Vote"
+	{
+		"#format"		"{1:s},{2:s}"
+		"en"			"{1} changed their vote to {2}"	
+	}
 	
 	/* This is a special "pass-thru" translation */
 	"_s"

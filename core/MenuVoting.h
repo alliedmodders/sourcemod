@@ -36,6 +36,7 @@
 #include <IPlayerHelpers.h>
 #include <sh_vector.h>
 #include "sm_globals.h"
+#include <TimerSys.h>
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -43,7 +44,8 @@ using namespace SourceMod;
 class VoteMenuHandler : 
 	public IMenuHandler, 
 	public SMGlobalClass,
-	public IClientListener
+	public IClientListener,
+	public ITimedEvent
 {
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -61,6 +63,9 @@ public: //IMenuHandler
 	void OnMenuEnd(IBaseMenu *menu, MenuEndReason reason);
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
+public: //ITimedEvent
+	ResultType OnTimer(ITimer *pTimer, void *pData);
+	void OnTimerEnd(ITimer *pTimer, void *pData);
 public:
 	bool StartVote(IBaseMenu *menu,
 		unsigned int num_clients,
@@ -85,9 +90,12 @@ private:
 		unsigned int time,
 		unsigned int flags);
 	void StartVoting();
+	void DrawHintProgress();
+	void BuildVoteLeaders();
 private:
 	IMenuHandler *m_pHandler;
 	unsigned int m_Clients;
+	unsigned int m_TotalClients;
 	unsigned int m_Items;
 	CVector<unsigned int> m_Votes;
 	IBaseMenu *m_pCurMenu;
@@ -99,6 +107,9 @@ private:
 	float m_fStartTime;
 	unsigned int m_nMenuTime;
 	int m_ClientVotes[256+1];
+	bool m_Revoting[256+1];
+	char m_leaderList[1024];
+	ITimer *m_displayTimer;
 };
 
 #endif //_INCLUDE_SOURCEMOD_MENUVOTING_H_

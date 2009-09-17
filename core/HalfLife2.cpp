@@ -437,6 +437,26 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 	return true;
 }
 
+bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
+{
+	bf_write *pBitBuf = NULL;
+
+	if ((pBitBuf = g_UserMsgs.StartMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
+	const char *pre_byte = g_pGameConf->GetKeyValue("HintTextPreByte");
+	if (pre_byte != NULL && strcmp(pre_byte, "yes") == 0)
+	{
+		pBitBuf->WriteByte(1);
+	}
+	pBitBuf->WriteString(msg);
+	g_UserMsgs.EndMessage();
+
+	return true;
+}
+
 bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show)
 {
 	bf_write *pBitBuf = NULL;

@@ -1448,6 +1448,7 @@
 				EnableEnhancedInstructionSet="0"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
@@ -1458,6 +1459,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

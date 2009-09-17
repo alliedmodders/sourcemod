@@ -34,8 +34,54 @@
 #include "MenuVoting.h"
 #include "PlayerManager.h"
 #include "sourcemm_api.h"
+#include <sourcemod.h>
+#include <Logger.h>
+#include <HalfLife2.h>
+#include <mathlib.h>
+#include <const.h>
+#include <Translator.h>
 
 float g_next_vote = 0.0f;
+
+#define VOTE_NOT_VOTING -2
+#define VOTE_PENDING -1
+
+ConVar sm_vote_hintbox("sm_vote_progress_hintbox", 
+					   "0", 
+					   0, 
+					   "Show current vote progress in a hint box",
+					   true,
+					   0.0,
+					   true,
+					   1.0);
+
+ConVar sm_vote_chat("sm_vote_progress_chat", 
+					   "0", 
+					   0, 
+					   "Show current vote progress as chat messages",
+					   true,
+					   0.0,
+					   true,
+					   1.0);
+
+ConVar sm_vote_console("sm_vote_progress_console", 
+					   "0", 
+					   0, 
+					   "Show current vote progress as console messages",
+					   true,
+					   0.0,
+					   true,
+					   1.0);
+
+ConVar sm_vote_client_console("sm_vote_progress_client_console", 
+					   "0", 
+					   0, 
+					   "Show current vote progress as console messages to clients",
+					   true,
+					   0.0,
+					   true,
+					   1.0);
+
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void OnVoteDelayChange(IConVar *cvar, const char *value, float flOldValue);
@@ -117,7 +163,7 @@ void VoteMenuHandler::OnClientDisconnected(int client)
 	 * newly connected client is not allowed to vote. 
 	 */
 	int item;
-	if ((item = m_ClientVotes[client]) >= -1)
+	if ((item = m_ClientVotes[client]) >= VOTE_PENDING)
 	{
 		if (item >= 0)
 		{
@@ -125,7 +171,7 @@ void VoteMenuHandler::OnClientDisconnected(int client)
 			assert(m_Votes[item] > 0);
 			m_Votes[item]--;
 		}
-		m_ClientVotes[client] = -2;
+		m_ClientVotes[client] = VOTE_NOT_VOTING;
 	}
 }
 
@@ -189,13 +235,13 @@ bool VoteMenuHandler::IsClientInVotePool(int client)
 		return false;
 	}
 
-	return (m_ClientVotes[client] > -2);
+	return (m_ClientVotes[client] > VOTE_NOT_VOTING);
 }
 
 bool VoteMenuHandler::GetClientVoteChoice(int client, unsigned int *pItem)
 {
 	if (!IsClientInVotePool(client)
-		|| m_ClientVotes[client] == -1)
+		|| m_ClientVotes[client] == VOTE_PENDING)
 	{
 		return false;
 	}
@@ -223,7 +269,9 @@ bool VoteMenuHandler::RedrawToClient(int client, bool revotes)
 		assert((unsigned)m_ClientVotes[client] < m_Items);
 		assert(m_Votes[m_ClientVotes[client]] > 0);
 		m_Votes[m_ClientVotes[client]]--;
-		m_ClientVotes[client] = -1;
+		m_ClientVotes[client] = VOTE_PENDING;
+		m_Revoting[client] = true;
+		m_NumVotes--;
 	}
 
 	if (m_nMenuTime == MENU_TIME_FOREVER)
@@ -259,7 +307,8 @@ bool VoteMenuHandler::InitializeVoting(IBaseMenu *menu,
 	/* Mark all clients as not voting */
 	for (int i=1; i<=gpGlobals->maxClients; i++)
 	{
-		m_ClientVotes[i] = -2;
+		m_ClientVotes[i] = VOTE_NOT_VOTING;
+		m_Revoting[i] = false;
 	}
 
 	m_Items = menu->GetItemCount();
@@ -303,6 +352,8 @@ void VoteMenuHandler::StartVoting()
 
 	m_pHandler->OnMenuVoteStart(m_pCurMenu);
 
+	m_displayTimer = g_Timers.CreateTimer(this, 1.0, NULL, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
+
 	/* By now we know how many clients were set.  
 	 * If there are none, we should end IMMEDIATELY.
 	 */
@@ -310,6 +361,8 @@ void VoteMenuHandler::StartVoting()
 	{
 		EndVoting();
 	}
+
+	m_TotalClients = m_Clients;
 }
 
 void VoteMenuHandler::DecrementPlayerCount()
@@ -344,6 +397,11 @@ void VoteMenuHandler::EndVoting()
 	else
 	{
 		g_next_vote = gpGlobals->curtime + fVoteDelay;
+	}
+
+	if (m_displayTimer)
+	{
+		g_Timers.KillTimer(m_displayTimer);
 	}
 
 	if (m_bCancelled)
@@ -392,7 +450,7 @@ void VoteMenuHandler::EndVoting()
 	/* Build the client list */
 	for (int i=1; i<=gpGlobals->maxClients; i++)
 	{
-		if (m_ClientVotes[i] >= -1)
+		if (m_ClientVotes[i] >= VOTE_PENDING)
 		{
 			client_vote[vote.num_clients].client = i;
 			client_vote[vote.num_clients].item = m_ClientVotes[i];
@@ -436,7 +494,7 @@ void VoteMenuHandler::OnMenuCancel(IBaseMenu *menu, int client, MenuCancelReason
 
 void VoteMenuHandler::OnMenuDisplay(IBaseMenu *menu, int client, IMenuPanel *display)
 {
-	m_ClientVotes[client] = -1;
+	m_ClientVotes[client] = VOTE_PENDING;
 	m_pHandler->OnMenuDisplay(menu, client, display);
 }
 
@@ -458,6 +516,55 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 		m_ClientVotes[client] = item;
 		m_Votes[item]++;
 		m_NumVotes++;
+
+		if (sm_vote_chat.GetBool() || sm_vote_console.GetBool())
+		{
+			static char buffer[1024];
+			ItemDrawInfo dr;
+			menu->GetItemInfo(item, &dr);
+
+			if (sm_vote_console.GetBool())
+			{
+				int target = SOURCEMOD_SERVER_LANGUAGE;
+				CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Voted For", &target, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
+				Engine_LogPrintWrapper(buffer);
+			}
+			
+			if (sm_vote_chat.GetBool() || sm_vote_client_console.GetBool())
+			{
+				int maxclients = g_Players.GetMaxClients();
+				for (int i=1; i<=maxclients; i++)
+				{	
+					CPlayer *pPlayer = g_Players.GetPlayerByIndex(i);
+					assert(pPlayer);
+
+					if (pPlayer->IsInGame())
+					{
+						if (m_Revoting[client])
+						{
+							CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Changed Vote", &i, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
+						}
+						else
+						{
+							CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Voted For", &i, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
+						}
+
+						if (sm_vote_chat.GetBool())
+						{
+							g_HL2.TextMsg(i, HUD_PRINTTALK, buffer);
+						}
+
+						if (sm_vote_client_console.GetBool())
+						{
+							engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+						}		
+					}
+				}
+			}
+		}
+
+		BuildVoteLeaders();
+		DrawHintProgress();
 	}
 
 	m_pHandler->OnMenuSelect(menu, client, item);
@@ -480,6 +587,9 @@ void VoteMenuHandler::InternalReset()
 	m_NumVotes = 0;
 	m_bCancelled = false;
 	m_pHandler = NULL;
+	m_leaderList[0] = '\0';
+	m_displayTimer = NULL;
+	m_TotalClients = 0;
 }
 
 void VoteMenuHandler::CancelVoting()
@@ -502,3 +612,85 @@ bool VoteMenuHandler::IsCancelling()
 	return m_bCancelled;
 }
 
+void VoteMenuHandler::DrawHintProgress()
+{
+	if (!sm_vote_hintbox.GetBool())
+	{
+		return;
+	}
+
+	static char buffer[1024];
+
+	float timeRemaining = (m_fStartTime + m_nMenuTime) - gpGlobals->curtime;
+	if (timeRemaining < 0)
+	{
+		timeRemaining = 0.0;
+	}
+
+	int iTimeRemaining = RoundFloatToInt(timeRemaining);
+	
+	int maxclients = g_Players.GetMaxClients();
+	for (int i=1; i<=maxclients; i++)
+	{
+		if (g_Players.GetPlayerByIndex(i)->IsInGame())
+		{
+			CoreTranslate(buffer, sizeof(buffer), "%T%s", 6, NULL, "Vote Count", &i, &m_NumVotes, &m_TotalClients, &iTimeRemaining, &m_leaderList);
+			g_HL2.HintTextMsg(i, buffer);
+		}
+	}
+}
+
+void VoteMenuHandler::BuildVoteLeaders()
+{
+	if (m_NumVotes == 0 || !sm_vote_hintbox.GetBool())
+	{
+		return;
+	}
+
+	menu_vote_result_t vote;
+	menu_vote_result_t::menu_item_vote_t item_vote[256];
+
+	memset(&vote, 0, sizeof(vote));
+
+	/* Build the item list */
+	for (unsigned int i=0; i<m_Items; i++)
+	{
+		if (m_Votes[i] > 0)
+		{
+			item_vote[vote.num_items].count = m_Votes[i];
+			item_vote[vote.num_items].item = i;
+			vote.num_votes += m_Votes[i];
+			vote.num_items++;
+		}
+	}
+	vote.item_list = item_vote;
+	assert(vote.num_votes);
+
+	/* Sort the item list descending */
+	qsort(item_vote,
+		vote.num_items,
+		sizeof(menu_vote_result_t::menu_item_vote_t),
+		SortVoteItems);
+
+	/* Take the top 3 (if applicable) and draw them */
+	int len = 0;
+	for (unsigned int i=0; i<vote.num_items && i<3; i++)
+	{
+		int curItem = vote.item_list[i].item;
+		ItemDrawInfo dr;
+		m_pCurMenu->GetItemInfo(curItem, &dr);
+		len += g_SourceMod.Format(m_leaderList + len, sizeof(m_leaderList) - len, "\n%i. %s: (%i)", i+1, dr.display, vote.item_list[i].count);
+	}
+}
+
+SourceMod::ResultType VoteMenuHandler::OnTimer(ITimer *pTimer, void *pData)
+{
+	DrawHintProgress();
+
+	return Pl_Continue;
+}
+
+void VoteMenuHandler::OnTimerEnd(ITimer *pTimer, void *pData)
+{
+	m_displayTimer = NULL;
+}

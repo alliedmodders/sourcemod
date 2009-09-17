@@ -117,6 +117,7 @@ public: //IGameHelpers
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
 	bool TextMsg(int client, int dest, const char *msg);
 	bool HintTextMsg(int client, const char *msg);
+	bool HintTextMsg(cell_t *players, int count, const char *msg);
 	bool ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show);
 	bool IsLANServer();
 	bool KVLoadFromFile(KeyValues *kv, IBaseFileSystem *filesystem, const char *resourceName, const char *pathID = NULL);
