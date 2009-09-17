@@ -23,7 +23,8 @@
 	
 	"Already Voted"
 	{
-		"en"			"You have already voted to Rock the Vote."
+ 		"#format"		"{1:d},{2:d}"
+	 	"en"			"You have already voted to Rock the Vote. ({1} votes, {2} required)"
 	}
 	
 	"Minimal Players Not Met"

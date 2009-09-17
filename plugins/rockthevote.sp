@@ -224,7 +224,7 @@ AttemptRTV(client)
 	
 	if (g_Voted[client])
 	{
-		ReplyToCommand(client, "[SM] %t", "Already Voted");
+		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
 		return;
 	}	
 	
