@@ -159,3 +159,4 @@ private:
 extern ConCmdManager g_ConCmds;
 
 #endif // _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
+

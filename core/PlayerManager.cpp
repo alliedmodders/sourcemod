@@ -48,6 +48,7 @@
 #include "GameConfigs.h"
 #include "ExtensionSys.h"
 #include <sourcemod_version.h>
+#include "ConsoleDetours.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -722,6 +723,20 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		if (result)
 		{
 			res = Pl_Handled;
+		}
+	}
+
+	if (g_ConsoleDetours.IsEnabled())
+	{
+		cell_t res2 = g_ConsoleDetours.InternalDispatch(client, args);
+		if (res2 >= Pl_Stop)
+		{
+			g_HL2.PopCommandStack();
+			RETURN_META(MRES_SUPERCEDE);
+		}
+		else if (res2 > res)
+		{
+			res = res2;
 		}
 	}
 

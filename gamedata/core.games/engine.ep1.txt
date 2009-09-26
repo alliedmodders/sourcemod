@@ -44,6 +44,41 @@
 				"linux"		"4"
 			}
 		}
+
+		"Keys"
+		{
+			/* Windows */
+			"CES_Patch_Windows"		"\xFF\x52\x2C\x5B\x5F\x8B\xC6"
+			"CES_Offset_Windows"	"530"
+			"CES_Save_Windows"		"3"
+			"CES_Reg_Windows"		"1"
+			"CGC_Patch_Windows"		"\xFF\x50\x2C\x5F\xB0\x01"
+			"CGC_Offset_Windows"	"190"
+			"CGC_Save_Windows"		"3"
+			"CGC_Reg_Windows"		"1"
+
+			/* Linux i486 */
+			"CES_Patch_Linux_486"	"\x89\x1C\x24\xFF\x52\x30"
+			"CES_Offset_Linux_486"	"901"
+			"CES_Reg_Linux_486"		"3"
+			"CGC_Patch_Linux_486"	"\xFF\x57\x30\xBA\x01\x00\x00"
+			"CGC_Offset_Linux_486"	"391"
+
+			/* Linux i686 */
+			"CES_Patch_Linux_686"	"\x89\x1C\x24\xFF\x52\x30"
+			"CES_Offset_Linux_686"	"901"
+			"CES_Reg_Linux_686"		"3"
+			"CGC_Patch_Linux_686"	"\xFF\x57\x30\xBA\x01\x00\x00"
+			"CGC_Offset_Linux_686"	"391"
+
+			/* Linux AMD */
+			"CES_Patch_Linux_AMD"	"\xFF\x52\x30\x89\xDA\x83\xC4\x10"
+			"CES_Offset_Linux_AMD"	"916"
+			"CES_Save_Linux_AMD"	"3"
+			"CGC_Patch_Linux_AMD"	"\x89\x1C\x24\xFF\x52\x30"
+			"CGC_Offset_Linux_AMD"	"380"
+			"CGC_Reg_Linux_AMD"		"3"
+		}
 		
 		"Signatures"
 		{
@@ -52,11 +87,27 @@
 				"library"	"server"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
 			}
+
 			"gEntList"
 			{
 				"library"	"server"
 				"linux"		"@gEntList"
 			}
+
+			"Cmd_ExecuteString"
+			{
+				"library"	"engine"
+				"linux"		"@_Z17Cmd_ExecuteStringPKc12cmd_source_t"
+				"windows"	"\x8B\x4C\x24\x04\x8B\x44\x24\x08\x51\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\x83\x3D"
+			}
+
+			"CGameClient::ExecuteString"
+			{
+				"library"	"engine"
+				"linux"		"@_ZN11CGameClient20ExecuteStringCommandEPKc"
+				"windows"	"\x56\x8B\x74\x24\x08\x57\x56\x8B\xF9\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\xC4\x00\x00\x00\x56\x8D"
+			}
 		}
 	}
 }
+

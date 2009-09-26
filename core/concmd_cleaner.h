@@ -42,4 +42,26 @@ void TrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);
 void UntrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me);
 void Global_OnUnlinkConCommandBase(ConCommandBase *pBase);
 
+class IConCommandLinkListener
+{
+	friend class ConCommandCleaner;
+
+	static IConCommandLinkListener *head;
+	IConCommandLinkListener *next;
+public:
+	IConCommandLinkListener()
+	{
+		next = head;
+		head = this;
+	}
+
+	virtual void OnLinkConCommand(ConCommandBase *pBase)
+	{
+	}
+
+	virtual void OnUnlinkConCommand(ConCommandBase *pBase)
+	{
+	}
+};
+
 #endif //_INCLUDE_CONCMD_TRACKER_H_

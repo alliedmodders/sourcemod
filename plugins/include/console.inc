@@ -835,3 +835,52 @@ native AddServerTag(const String:tag[]);
  * @noreturn
  */
 native RemoveServerTag(const String:tag[]);
+
+/**
+ * Callback for command listeners. This is invoked whenever any command
+ * reaches the server, from the server console itself or a player.
+
+ * Returning Plugin_Handled or Plugin_Stop will prevent the original,
+ * baseline code from running.
+ *
+ * -- TEXT BELOW IS IMPLEMENTATION, AND NOT GUARANTEED --
+ * Even if returning Plugin_Handled or Plugin_Stop, some callbacks will still
+ * trigger. These are:
+ *  * C++ command dispatch hooks from Metamod:Source plugins
+ *  * Reg*Cmd() hooks that did not create new commands.
+ *
+ * @param client        Client, or 0 for server. Client will be connected but
+ *                      not necessarily in game.
+ * @param command       Command name, lower case. To get name as typed, use
+ *                      GetCmdArg() and specify argument 0.
+ * @param argc          Argument count.
+ * @return				Action to take (see extended notes above).
+ */
+functag public Action:CommandListener(client, const String:command[], argc);
+
+/**
+ * Adds a callback that will fire when a command is sent to the server.
+ *
+ * Registering commands is designed to create a new command as part of the UI,
+ * whereas this is a lightweight hook on a command string, existing or not.
+ * Using Reg*Cmd to intercept is in poor practice, as it physically creates a
+ * new command and can slow down dispatch in general.
+ *
+ * @param callback      Callback.
+ * @param command		Command, or if not specified, a global listener.
+ *                      The command is case insensitive.
+ * @return              True if this feature is available on the current game,
+ *                      false otherwise.
+ */
+native bool:AddCommandListener(CommandListener:callback, const String:command[]="");
+
+/**
+ * Removes a previously added command listener, in reverse order of being added.
+ *
+ * @param callback		Callback.
+ * @param command		Command, or if not specified, a global listener.
+ *                      The command is case insensitive.
+ * @error				Callback has no active listeners.
+ */
+native RemoveCommandListener(CommandListener:callback, const String:command[]="");
+

@@ -142,6 +142,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -389,6 +390,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1130,6 +1132,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1377,6 +1380,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1531,6 +1535,10 @@
 			</File>
 			<File
 				RelativePath="..\ConCmdManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\ConsoleDetours.cpp"
 				>
 			</File>
 			<File
@@ -1829,6 +1837,14 @@
 			</File>
 			<File
 				RelativePath="..\ConCmdManager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ConCommandBaseIterator.h"
+				>
+			</File>
+			<File
+				RelativePath="..\ConsoleDetours.h"
 				>
 			</File>
 			<File

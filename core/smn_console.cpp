@@ -43,6 +43,8 @@
 #include <inetchannel.h>
 #include <bitbuf.h>
 #include <sm_trie_tpl.h>
+#include "Logger.h"
+#include "ConsoleDetours.h"
 
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define NET_SETCONVAR	6
@@ -668,7 +670,7 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+		return pContext->ThrowNativeError("Cannot register \"sm\" command");
 	}
 
 	pContext->LocalToString(params[3], &help);
@@ -696,7 +698,7 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+		return pContext->ThrowNativeError("Cannot register \"sm\" command");
 	}
 
 	pContext->LocalToString(params[3], &help);
@@ -727,7 +729,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+		return pContext->ThrowNativeError("Cannot register \"sm\" command");
 	}
 
 	pContext->LocalToString(params[4], &help);
@@ -1332,6 +1334,46 @@ static cell_t RemoveServerTag(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t AddCommandListener(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	IPluginFunction *pFunction;
+
+	pContext->LocalToString(params[2], &name);
+
+	if (strcasecmp(name, "sm") == 0)
+	{
+		g_Logger.LogError("Request to register \"sm\" command denied.");
+		return 0;
+	}
+
+	pFunction = pContext->GetFunctionById(params[1]);
+
+	if (!pFunction)
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+
+	if (!g_ConsoleDetours.AddListener(pFunction, name[0] == '\0' ? NULL : name))
+		return pContext->ThrowNativeError("This game does not support command listeners");
+
+	return 1;
+}
+
+static cell_t RemoveCommandListener(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	IPluginFunction *pFunction;
+
+	pContext->LocalToString(params[2], &name);
+	pFunction = pContext->GetFunctionById(params[1]);
+	if (!pFunction)
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+
+	if (!g_ConsoleDetours.RemoveListener(pFunction, name[0] == '\0' ? NULL : name))
+		return pContext->ThrowNativeError("No matching callback was registered");
+	
+	return 1;
+}
+
 REGISTER_NATIVES(consoleNatives)
 {
 	{"CreateConVar",		sm_CreateConVar},
@@ -1381,5 +1423,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"SendConVarValue",		SendConVarValue},
 	{"AddServerTag",		AddServerTag},
 	{"RemoveServerTag",		RemoveServerTag},
+	{"AddCommandListener",	AddCommandListener},
+	{"RemoveCommandListener", RemoveCommandListener},
 	{NULL,					NULL}
 };

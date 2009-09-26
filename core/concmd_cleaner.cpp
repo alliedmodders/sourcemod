@@ -39,6 +39,9 @@
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
+SH_DECL_HOOK1_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
+#else
+SH_DECL_HOOK1_void(ICvar, RegisterConCommandBase, SH_NOATTRIB, 0, ConCommandBase *);
 #endif
 
 using namespace SourceHook;
@@ -51,28 +54,54 @@ struct ConCommandInfo
 };
 
 List<ConCommandInfo *> tracked_bases;
+IConCommandLinkListener *IConCommandLinkListener::head = NULL;
 
 ConCommandBase *FindConCommandBase(const char *name);
 
 class ConCommandCleaner : public SMGlobalClass
 {
 public:
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnSourceModAllInitialized()
 	{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 		SH_ADD_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
+		SH_ADD_HOOK_MEMFUNC(ICvar, RegisterConCommand, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+#else
+		SH_ADD_HOOK_MEMFUNC(ICvar, RegisterConCommandBase, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+#endif
 	}
 
 	void OnSourceModShutdown()
 	{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 		SH_REMOVE_HOOK_MEMFUNC(ICvar, UnregisterConCommand, icvar, this, &ConCommandCleaner::UnlinkConCommandBase, false);
-	}
+		SH_REMOVE_HOOK_MEMFUNC(ICvar, RegisterConCommand, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
+#else
+		SH_REMOVE_HOOK_MEMFUNC(ICvar, RegisterConCommandBase, icvar, this, &ConCommandCleaner::LinkConCommandBase, false);
 #endif
+	}
+
+	void LinkConCommandBase(ConCommandBase *pBase)
+	{
+		IConCommandLinkListener *listener = IConCommandLinkListener::head;
+		while (listener)
+		{
+			listener->OnLinkConCommand(pBase);
+			listener = listener->next;
+		}
+	}
 
 	void UnlinkConCommandBase(ConCommandBase *pBase)
 	{
 		ConCommandInfo *pInfo;
 		List<ConCommandInfo *>::iterator iter = tracked_bases.begin();
+
+		IConCommandLinkListener *listener = IConCommandLinkListener::head;
+		while (listener)
+		{
+			listener->OnUnlinkConCommand(pBase);
+			listener = listener->next;
+		}
 
 		if (pBase)
 		{

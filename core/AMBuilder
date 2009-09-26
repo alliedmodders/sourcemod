@@ -81,6 +81,7 @@ for i in SM.sdkInfo:
 		'smn_datapacks.cpp',
 		'smn_lang.cpp',
 		'sm_srvcmds.cpp',
+		'ConsoleDetours.cpp'
 		]
 	binary.AddSourceFiles('core', files)
 	SM.PostSetupHL2Job(extension, binary, i)

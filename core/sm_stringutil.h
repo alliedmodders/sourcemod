@@ -60,5 +60,8 @@ char *sm_strdup(const char *str);
 unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive = true);
 char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen, const char *replace, size_t replaceLen, bool caseSensitive = true);
 char *UTIL_TrimWhitespace(char *str, size_t &len);
+size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char *hexstr);
+char *UTIL_ToLowerCase(const char *str);
 
 #endif // _INCLUDE_SOURCEMOD_STRINGUTIL_H_
+

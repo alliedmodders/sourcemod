@@ -51,7 +51,7 @@ public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 public: // IMemoryUtils
 	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
-private:
+public:
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
 };
 

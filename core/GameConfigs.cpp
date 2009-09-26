@@ -519,45 +519,18 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				}
 #endif
 				/* First, preprocess the signature */
-				char real_sig[511];
+				unsigned char real_sig[511];
 				size_t real_bytes;
 				size_t length;
 
 				real_bytes = 0;
 				length = strlen(s_TempSig.sig);
 
-				for (size_t i=0; i<length; i++)
-				{
-					if (real_bytes >= sizeof(real_sig))
-					{
-						break;
-					}
-					real_sig[real_bytes++] = s_TempSig.sig[i];
-					if (s_TempSig.sig[i] == '\\'
-						&& s_TempSig.sig[i+1] == 'x')
-					{
-						if (i + 3 >= length)
-						{
-							continue;
-						}
-						/* Get the hex part */
-						char s_byte[3];
-						int r_byte;
-						s_byte[0] = s_TempSig.sig[i+2];
-						s_byte[1] = s_TempSig.sig[i+3];
-						s_byte[2] = '\0';
-						/* Read it as an integer */
-						sscanf(s_byte, "%x", &r_byte);
-						/* Save the value */
-						real_sig[real_bytes-1] = r_byte;
-						/* Adjust index */
-						i += 3;
-					}
-				}
+				real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), s_TempSig.sig);
 
 				if (real_bytes >= 1)
 				{
-					final_addr = g_MemUtils.FindPattern(addrInBase, real_sig, real_bytes);
+					final_addr = g_MemUtils.FindPattern(addrInBase, (char*)real_sig, real_bytes);
 				}
 			}
 
