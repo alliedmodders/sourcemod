@@ -92,7 +92,11 @@ bool s_ServerBinCRC_Ok = false;
 
 static bool DoesGameMatch(const char *value)
 {
+#if defined PLATFORM_WINDOWS
+	if (strcasecmp(value, g_Game) == 0 ||
+#else
 	if (strcmp(value, g_Game) == 0 ||
+#endif
 		strcmp(value, g_GameDesc) == 0 ||
 		strcmp(value, g_GameName) == 0)
 	{
