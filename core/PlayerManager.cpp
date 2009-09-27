@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -1168,10 +1168,18 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 
 	if (strcmp(info->pattern, "@me") == 0 && info->admin != 0)
 	{
-		info->targets[0] = info->admin;
-		info->num_targets = 1;
-		strncopy(info->target_name, pAdmin->GetName(), info->target_name_maxlength);
-		info->target_name_style = COMMAND_TARGETNAME_RAW;
+		info->reason = FilterCommandTarget(pAdmin, pAdmin, info->flags);
+		if (info->reason == COMMAND_TARGET_VALID)
+		{
+			info->targets[0] = info->admin;
+			info->num_targets = 1;
+			strncopy(info->target_name, pAdmin->GetName(), info->target_name_maxlength);
+			info->target_name_style = COMMAND_TARGETNAME_RAW;
+		}
+		else
+		{
+			info->num_targets = 0;
+		}
 		return;
 	}
 
