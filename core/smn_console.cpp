@@ -668,7 +668,7 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+		return 0;
 	}
 
 	pContext->LocalToString(params[3], &help);
@@ -696,7 +696,7 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+		return 0;
 	}
 
 	pContext->LocalToString(params[3], &help);
@@ -727,7 +727,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot override \"sm\" command");
+		return 0;
 	}
 
 	pContext->LocalToString(params[4], &help);
