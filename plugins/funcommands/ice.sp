@@ -107,7 +107,7 @@ KillAllFreezes( )
 {
 	new maxclients = GetMaxClients( );
 
-	for(new i = 1; i < maxclients; i++)
+	for(new i = 1; i <= maxclients; i++)
 	{
 		if (g_FreezeSerial[i] != 0)
 		{
@@ -256,7 +256,7 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 			new bool:teamOnly = ((GetConVarInt(g_Cvar_FreezeBombMode) == 1) ? true : false);
 			new maxClients = GetMaxClients( );
 			
-			for (new i = 1; i < maxClients; i++)
+			for (new i = 1; i <= maxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{

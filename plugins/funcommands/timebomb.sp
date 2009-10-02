@@ -143,7 +143,7 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 			new teamOnly = ((GetConVarInt(g_Cvar_TimeBombMode) == 1) ? true : false);
 			new maxClients = GetMaxClients();
 			
-			for (new i = 1; i < maxClients; i++)
+			for (new i = 1; i <= maxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{
