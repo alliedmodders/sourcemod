@@ -440,7 +440,7 @@ DisplayCenterTextToAll(client, String:message[])
 {
 	new String:nameBuf[MAX_NAME_LENGTH];
 	
-	for (new i = 1; i < MaxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
 		{

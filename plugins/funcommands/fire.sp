@@ -164,7 +164,7 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 			new teamOnly = ((GetConVarInt(g_Cvar_FireBombMode) == 1) ? true : false);
 			new maxClients = GetMaxClients();
 			
-			for (new i = 1; i < maxClients; i++)
+			for (new i = 1; i <= maxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{
