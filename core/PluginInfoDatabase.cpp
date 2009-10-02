@@ -276,7 +276,7 @@ SMCResult CPluginInfoDatabase::ReadSMC_LeavingSection(const SMCStates *states)
 					{
 						m_infodb_size *= 2;
 					}
-					int newidx = memtab->CreateMem(m_infodb_size, (void **)&table);
+					int newidx = memtab->CreateMem(m_infodb_size * sizeof(int), (void **)&table);
 					if (m_infodb != -1)
 					{
 						void *oldtable = (int *)memtab->GetAddress(m_infodb);
