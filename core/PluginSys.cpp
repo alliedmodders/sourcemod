@@ -60,7 +60,7 @@ CPlugin::CPlugin(const char *file)
 	m_serial = ++MySerial;
 	m_pRuntime = NULL;
 	m_errormsg[sizeof(m_errormsg) - 1] = '\0';
-	snprintf(m_filename, sizeof(m_filename), "%s", file);
+	UTIL_Format(m_filename, sizeof(m_filename), "%s", file);
 	m_handle = 0;
 	m_ident = NULL;
 	m_pProps = sm_trie_create();
@@ -164,7 +164,7 @@ CPlugin *CPlugin::CreatePlugin(const char *file, char *error, size_t maxlength)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "Unable to open file");
+			UTIL_Format(error, maxlength, "Unable to open file");
 		}
 		pPlugin->m_status = Plugin_BadLoad;
 		return pPlugin;
@@ -210,7 +210,7 @@ void CPlugin::SetErrorState(PluginStatus status, const char *error_fmt, ...)
 
 	va_list ap;
 	va_start(ap, error_fmt);
-	vsnprintf(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
+	UTIL_FormatArgs(m_errormsg, sizeof(m_errormsg), error_fmt, ap);
 	va_end(ap);
 
 	if (m_pRuntime != NULL)
@@ -872,7 +872,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			if (localpath == NULL)
 			{
 				/* If no path yet, don't add a former slash */
-				snprintf(new_local, sizeof(new_local), "%s", dir->GetEntryName());
+				UTIL_Format(new_local, sizeof(new_local), "%s", dir->GetEntryName());
 			} else {
 				g_LibSys.PathFormat(new_local, sizeof(new_local), "%s/%s", localpath, dir->GetEntryName());
 			}
@@ -887,7 +887,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				char plugin[PLATFORM_MAX_PATH];
 				if (localpath == NULL)
 				{
-					snprintf(plugin, sizeof(plugin), "%s", name);
+					UTIL_Format(plugin, sizeof(plugin), "%s", name);
 				} else {
 					g_LibSys.PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
@@ -986,7 +986,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 				{
 					if (error)
 					{
-						snprintf(error, maxlength, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
+						UTIL_Format(error, maxlength, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
 					}
 					co->Abort();
 					co = NULL;
@@ -1005,7 +1005,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		pPlugin->m_pRuntime = g_pSourcePawn2->LoadPlugin(co, fullpath, &err);
 		if (pPlugin->m_pRuntime == NULL)
 		{
-			snprintf(error, 
+			UTIL_Format(error, 
 				maxlength, 
 				"Unable to load plugin (error %d: %s)", 
 				err, 
@@ -1085,13 +1085,16 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 	if (res == LoadRes_NeverLoad)
 	{
-		if (m_LoadingLocked)
+		if (error)
 		{
-			UTIL_Format(error, maxlength, "There is a global plugin loading lock in effect");
-		}
-		else
-		{
-			UTIL_Format(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+			if (m_LoadingLocked)
+			{
+				UTIL_Format(error, maxlength, "There is a global plugin loading lock in effect");
+			}
+			else
+			{
+				UTIL_Format(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+			}
 		}
 		return NULL;
 	}
@@ -1221,7 +1224,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 					{
 						if (error)
 						{
-							snprintf(error, maxlength, "Fatal error during initializing plugin load");
+							UTIL_Format(error, maxlength, "Fatal error during initializing plugin load");
 						}
 						return false;
 					}
@@ -1254,7 +1257,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin, char *error, size
 				{
 					if (error)
 					{
-						snprintf(error, maxlength, "Could not find required plugin \"%s\"", name);
+						UTIL_Format(error, maxlength, "Could not find required plugin \"%s\"", name);
 					}
 					return false;
 				}
@@ -1325,7 +1328,7 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 					{
 						if (error)
 						{
-							snprintf(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
+							UTIL_Format(error, maxlength, "Required extension \"%s\" file(\"%s\") not running", name, file);
 						}
 						return false;
 					}
@@ -1393,7 +1396,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		{
 			if (error)
 			{
-				snprintf(error, maxlength, "Native \"%s\" was not found", native->name);
+				UTIL_Format(error, maxlength, "Native \"%s\" was not found", native->name);
 			}
 			return false;
 		}
