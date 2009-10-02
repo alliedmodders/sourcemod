@@ -42,7 +42,7 @@ int g_HudMsgNum = -1;
 
 struct hud_syncobj_t
 {
-	int *player_channels;
+	int player_channels[256 + 1];
 };
 
 struct player_chaninfo_t
@@ -116,7 +116,6 @@ public:
 	{
 		hud_syncobj_t *obj = (hud_syncobj_t *)object;
 
-		delete [] obj->player_channels;
 		delete obj;
 	}
 
@@ -138,27 +137,19 @@ public:
 	Handle_t CreateHudSyncObj(IdentityToken_t *pIdent)
 	{
 		Handle_t hndl;
-		int max_clients;
 		HandleError err;
 		hud_syncobj_t *obj;
 		HandleSecurity sec;
 
-		if ((max_clients = g_Players.MaxClients()) == 0)
-		{
-			max_clients = 256+1;
-		}
-
 		obj = new hud_syncobj_t;
-		obj->player_channels = new int[max_clients];
 
-		memset(obj->player_channels, 0, sizeof(int) * max_clients);
+		memset(obj->player_channels, 0, sizeof(obj->player_channels));
 
 		sec = HandleSecurity(pIdent, g_pCoreIdent);
 		
 		if ((hndl = g_HandleSys.CreateHandleEx(m_hHudSyncObj, obj, &sec, NULL, &err))
 			== BAD_HANDLE)
 		{
-			delete [] obj->player_channels;
 			delete obj;
 		}
 
