@@ -238,13 +238,13 @@
 			/**
 			 * CBaseClient::SetUserCVar(char  const*,char  const*);
 			 * Linux offset straight from VTable dump.
-			 * Windows offset is crazy. Found the windows SetName function using string "(%d)%-0.*s"
+			 * Windows offset is crazy. Found the windows SetName function using string "(%d)%-.*s" (aD_S in IDA)
 			 * Cross referenced back to the vtable and counted manually (SetUserCvar is 1 higher, offsets start from 1)
 			 */
 			"SetUserCvar"
 			{
 				"windows"	"17"
-				"linux"		"62"
+				"linux"		"63"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
