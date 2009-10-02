@@ -97,6 +97,7 @@ class SM:
 				self.compiler.AddToListVar('CFLAGS', '/nologo')
 				self.compiler.AddToListVar('CFLAGS', '/Zi')
 				self.compiler.AddToListVar('CXXFLAGS', '/TP')
+				self.compiler.AddToListVar('POSTLINKFLAGS', '/DEBUG')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '/MACHINE:X86')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '/SUBSYSTEM:WINDOWS')
 				self.compiler.AddToListVar('POSTLINKFLAGS', 'kernel32.lib')
