@@ -2,6 +2,21 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.2.4 [2009-10-03]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.4_Release_Notes
+
+ - Updated for L4D changes (bugs 4032, 4033, 4035).
+ - Updated GeoLite Country database for GeoIP extension.
+ - Fixed crash when block-loading more than eight plugins (bug 4034).
+ - Fixed rare crash in hudtext code on TF (bug 4016).
+ - Fixed crash when reloading a blocked plugin failed (bug 4038).
+ - Fixed Huntsman not firing critical callback on TF (bug 3927).
+ - Registering the "sm" command no longer has any effect (bug 4013).
+ - Fixed translation bug in extension API (bug 4010).
+
+----------------------------
+
 SourceMod 1.2.3 [2009-08-28]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.2.3_Release_Notes
