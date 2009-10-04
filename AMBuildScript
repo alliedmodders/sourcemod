@@ -153,7 +153,8 @@ class SM:
 			self.targetMap = AMBuild.cache['targetMap']
 
 		if AMBuild.target['platform'] == 'windows':
-			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
+			self.compiler.AddToListVar('RCINCLUDES',
+			                           os.path.join(AMBuild.outputFolder, 'includes'))
 		self.mmsPath = AMBuild.cache['MMSOURCE17']
 
 	def DefaultCompiler(self):
@@ -181,7 +182,7 @@ class SM:
 	def AutoVersion(self, folder, binary):
 		if AMBuild.target['platform'] != 'windows':
 			return
-		env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"']}
+		env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"', 'SM_GENERATED_BUILD']}
 		binary.AddResourceFile(os.path.join(folder, 'version.rc' ), env)
 
 	def PreSetupHL2Job(self, job, builder, sdk):
