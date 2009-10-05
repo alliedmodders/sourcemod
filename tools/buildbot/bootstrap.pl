@@ -4,7 +4,7 @@
 use strict;
 use Cwd;
 use File::Basename;
-use File::Path 'remove_tree';
+use File::Path;
 
 my ($myself, $path) = fileparse($0);
 chdir($path);
@@ -40,7 +40,7 @@ if (!(-d 'OUTPUT')) {
 }
 
 if ($reconf) {
-	remove_tree('OUTPUT');
+	rmtree('OUTPUT');
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 	chdir('OUTPUT');
 	my ($result);
