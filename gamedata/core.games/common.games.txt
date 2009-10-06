@@ -130,6 +130,7 @@
 			"game"					"left4dead"
 			"game"					"obsidian"
 			"game"					"empires"
+			"game"					"gesource"
 		}
 
 		"Keys"

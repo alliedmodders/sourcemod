@@ -328,7 +328,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 	}
 
 	/* Display usage of subcommand */
-	g_RootMenu.ConsolePrint("[SM] Usage: sm convars <plugin #>");
+	g_RootMenu.ConsolePrint("[SM] Usage: sm cvars <plugin #>");
 }
 
 Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *description, int flags, bool hasMin, float min, bool hasMax, float max)
