@@ -17,7 +17,7 @@ def BuildCURL():
 							'--without-libssh2',
 							'--without-zlib']
 			curl.AddCommand(command.DirectCommand(args))
-			curl.AddCommand(command.DirectCommand(['make']))
+			curl.AddCommand(command.ShellCommand('cd lib && make'))
 	else:
 		args = ['vcbuild',
 		        os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
