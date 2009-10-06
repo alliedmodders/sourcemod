@@ -4,6 +4,7 @@
 use strict;
 use Cwd;
 use File::Basename;
+use File::Path;
 
 my ($myself, $path) = fileparse($0);
 chdir($path);
@@ -20,7 +21,6 @@ my $reconf = 0;
 
 #Create output folder if it doesn't exist.
 if (!(-d 'OUTPUT')) {
-	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 	$reconf = 1;
 } else {
 	if (-f 'OUTPUT/sentinel') {
@@ -40,6 +40,8 @@ if (!(-d 'OUTPUT')) {
 }
 
 if ($reconf) {
+	rmtree('OUTPUT');
+	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 	chdir('OUTPUT');
 	my ($result);
 	print "Attempting to reconfigure...\n";

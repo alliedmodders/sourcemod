@@ -153,6 +153,7 @@ class SM:
 			self.targetMap = AMBuild.cache['targetMap']
 
 		if AMBuild.target['platform'] == 'windows':
+			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
 			self.compiler.AddToListVar('RCINCLUDES',
 			                           os.path.join(AMBuild.outputFolder, 'includes'))
 		self.mmsPath = AMBuild.cache['MMSOURCE17']
