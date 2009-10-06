@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #include "ConVarManager.h"
@@ -96,6 +94,8 @@ void ConVarManager::OnSourceModAllInitialized()
 
 	SH_ADD_HOOK_STATICFUNC(ICvar, CallGlobalChangeCallbacks, icvar, OnConVarChanged, false);
 
+	g_PluginSys.AddPluginsListener(this);
+
 	/* Add the 'convars' option to the 'sm' console command */
 	g_RootMenu.AddRootConsoleCommand("cvars", "View convars created by a plugin", this);
 }
@@ -161,6 +161,8 @@ void ConVarManager::OnSourceModShutdown()
 
 	/* Remove the 'convars' option from the 'sm' console command */
 	g_RootMenu.RemoveRootConsoleCommand("cvars", this);
+
+	g_PluginSys.RemovePluginsListener(this);
 
 	/* Remove the 'ConVar' handle type */
 	g_HandleSys.RemoveType(m_ConVarType, g_pCoreIdent);
@@ -252,11 +254,22 @@ void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 {
 	ConVarList *pConVarList;
+	List<ConVarQuery>::iterator iter;
 
 	/* If plugin has a convar list, free its memory */
 	if (plugin->GetProperty("ConVarList", (void **)&pConVarList, true))
 	{
 		delete pConVarList;
+	}
+
+	/* Remove convar queries for this plugin that haven't returned results yet */
+	for (iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end(); iter++)
+	{
+		ConVarQuery &query = (*iter);
+		if (query.pCallback->GetParentRuntime() == plugin->GetRuntime())
+		{
+			m_ConVarQueries.erase(iter);
+		}
 	}
 }
 

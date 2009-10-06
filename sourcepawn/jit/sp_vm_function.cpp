@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourcePawn
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #include <stdio.h>
@@ -330,6 +328,11 @@ int CFunction::Execute2(IPluginContext *ctx, cell_t *result)
 	}
 
 	return err;
+}
+
+IPluginRuntime *CFunction::GetParentRuntime()
+{
+	return m_pRuntime;
 }
 
 funcid_t CFunction::GetFunctionID()
