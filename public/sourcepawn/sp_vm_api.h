@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourcePawn
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEPAWN_VM_API_H_
@@ -61,6 +59,7 @@ typedef struct sp_context_s sp_context_t;
 namespace SourcePawn
 {
 	class IVirtualMachine;
+	class IPluginRuntime;
 
 	/* Parameter flags */
 	#define SM_PARAM_COPYBACK		(1<<0)		/**< Copy an array/reference back after call */
@@ -260,6 +259,13 @@ namespace SourcePawn
 			const cell_t *params, 
 			unsigned int num_params, 
 			cell_t *result) =0;
+
+		/**
+		 * @brief Returns parent plugin's runtime
+		 *
+		 * @return				IPluginRuntime pointer.
+		 */
+		virtual IPluginRuntime *GetParentRuntime() =0;
 	};
 
 
