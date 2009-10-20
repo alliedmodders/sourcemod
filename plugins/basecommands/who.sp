@@ -96,7 +96,7 @@ DisplayWhoMenu(client)
 	SetMenuTitle(menu, title);
 	SetMenuExitBackButton(menu, true);
 	
-	AddTargetsToMenu(menu, client, false, false);
+	AddTargetsToMenu2(menu, 0, COMMAND_FILTER_CONNECTED);
 	
 	DisplayMenu(menu, client, MENU_TIME_FOREVER);
 }
