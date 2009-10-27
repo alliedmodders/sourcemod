@@ -1,5 +1,5 @@
 
-#define NAME_LENGTH 32
+#define NAME_LENGTH 64
 #define CMD_LENGTH 255
 
 #define ARRAY_STRING_LENGTH 32
