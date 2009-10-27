@@ -110,33 +110,39 @@ static cell_t GetTeamCount(IPluginContext *pContext, const cell_t *params)
 }
 
 static int g_teamname_offset = -1;
+
+const char *tools_GetTeamName(int team)
+{
+	if (size_t(team) >= g_Teams.size())
+		return NULL;
+	if (g_teamname_offset == 0)
+		return NULL;
+	if (g_teamname_offset == -1)
+	{
+		SendProp *prop = g_pGameHelpers->FindInSendTable(g_Teams[team].ClassName, "m_szTeamname");
+		if (prop == NULL)
+		{
+			g_teamname_offset = 0;
+			return NULL;
+		}
+		g_teamname_offset = prop->GetOffset();
+	}
+
+	return (const char *)((unsigned char *)g_Teams[team].pEnt + g_teamname_offset);
+}
+
 static cell_t GetTeamName(IPluginContext *pContext, const cell_t *params)
 {
 	int teamindex = params[1];
 	if (teamindex >= (int)g_Teams.size() || !g_Teams[teamindex].ClassName)
-	{
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
-	}
 
 	if (g_teamname_offset == 0)
-	{
 		return pContext->ThrowNativeError("Team names are not available on this game.");
-	}
 
-	if (g_teamname_offset == -1)
-	{
-		SendProp *prop = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_szTeamname");
-
-		if (prop == NULL)
-		{
-			g_teamname_offset = 0;
-			return pContext->ThrowNativeError("Team names are not available on this game.");
-		}
-
-		g_teamname_offset = prop->GetOffset();
-	}
-
-	char *name = (char *)((unsigned char *)g_Teams[teamindex].pEnt + g_teamname_offset);
+	const char *name = tools_GetTeamName(teamindex);
+	if (name == NULL)
+		return pContext->ThrowNativeError("Team names are not available on this game.");
 
 	pContext->StringToLocalUTF8(params[2], params[3], name, NULL);
 
