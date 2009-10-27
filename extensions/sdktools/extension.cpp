@@ -337,50 +337,75 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 
 bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 {
-	if (strcmp(info->pattern, "@aim") != 0)
-	{
-		return false;
-	}
-
 	IGamePlayer *pAdmin = info->admin ? playerhelpers->GetGamePlayer(info->admin) : NULL;
 
-	/* The server can't aim, of course. */
-	if (pAdmin == NULL)
+	if (strcmp(info->pattern, "@aim") == 0)
 	{
-		return false;
-	}
+		/* The server can't aim, of course. */
+		if (pAdmin == NULL)
+		{
+			return false;
+		}
 
-	int player_index;
-	if ((player_index = GetClientAimTarget(pAdmin->GetEdict(), true)) < 1)
+		int player_index;
+		if ((player_index = GetClientAimTarget(pAdmin->GetEdict(), true)) < 1)
+		{
+			info->reason = COMMAND_TARGET_NONE;
+			info->num_targets = 0;
+			return true;
+		}
+
+		IGamePlayer *pTarget = playerhelpers->GetGamePlayer(player_index);
+
+		if (pTarget == NULL)
+		{
+			info->reason = COMMAND_TARGET_NONE;
+			info->num_targets = 0;
+			return true;
+		}
+
+		info->reason = playerhelpers->FilterCommandTarget(pAdmin, pTarget, info->flags);
+		if (info->reason != COMMAND_TARGET_VALID)
+		{
+			info->num_targets = 0;
+			return true;
+		}
+
+		info->targets[0] = player_index;
+		info->num_targets = 1;
+		info->reason = COMMAND_TARGET_VALID;
+		info->target_name_style = COMMAND_TARGETNAME_RAW;
+		snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
+		return true;
+	}
+	else if (strcmp(info->pattern, "@spec") == 0)
 	{
-		info->reason = COMMAND_TARGET_NONE;
+		const char *teamname = tools_GetTeamName(1);
+		if (strcasecmp(teamname, "spectator") != 0)
+			return false;
 		info->num_targets = 0;
+		for (int i = 1; i <= playerhelpers->GetMaxClients(); i++)
+		{
+			IGamePlayer *player = playerhelpers->GetGamePlayer(i);
+			if (player == NULL || !player->IsInGame())
+				continue;
+			IPlayerInfo *plinfo = player->GetPlayerInfo();
+			if (plinfo == NULL)
+				continue;
+			if (plinfo->GetTeamIndex() == 1 &&
+			    playerhelpers->FilterCommandTarget(pAdmin, player, info->flags) ==
+				COMMAND_TARGET_VALID)
+			{
+				info->targets[info->num_targets++] = i;
+			}
+		}
+		info->reason = info->num_targets > 0 ? COMMAND_TARGET_VALID : COMMAND_TARGET_EMPTY_FILTER;
+		info->target_name_style = COMMAND_TARGETNAME_ML;
+		snprintf(info->target_name, info->target_name_maxlength, "all spectators");
 		return true;
 	}
 
-	IGamePlayer *pTarget = playerhelpers->GetGamePlayer(player_index);
-
-	if (pTarget == NULL)
-	{
-		info->reason = COMMAND_TARGET_NONE;
-		info->num_targets = 0;
-		return true;
-	}
-
-	info->reason = playerhelpers->FilterCommandTarget(pAdmin, pTarget, info->flags);
-	if (info->reason != COMMAND_TARGET_VALID)
-	{
-		info->num_targets = 0;
-		return true;
-	}
-
-	info->targets[0] = player_index;
-	info->num_targets = 1;
-	info->reason = COMMAND_TARGET_VALID;
-	info->target_name_style = COMMAND_TARGETNAME_RAW;
-	snprintf(info->target_name, info->target_name_maxlength, "%s", pTarget->GetName());
-
-	return true;
+	return false;
 }
 
 const char *SDKTools::GetExtensionVerString()

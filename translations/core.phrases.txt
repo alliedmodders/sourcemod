@@ -50,6 +50,11 @@
 		"en"			"all alive players"
 	}
 
+	"all spectators"
+	{
+		"en"			"all spectators"
+	}
+
 	"Vote Count"
 	{
 		"#format"		"{1:i},{2:i},{3:i}"
