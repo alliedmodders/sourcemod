@@ -103,11 +103,7 @@ void CheckAndFinalizeConfigs()
 {
 	if ((g_bServerExecd || g_ServerCfgFile == NULL) && g_bGotServerStart)
 	{
-#if SOURCE_ENGINE >= SE_ORANGEBOX
         g_PendingInternalPush = true;
-#else
-        SM_InternalCmdTrigger();
-#endif
 	}
 }
 
