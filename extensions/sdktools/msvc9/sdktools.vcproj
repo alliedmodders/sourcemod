@@ -884,6 +884,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"

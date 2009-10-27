@@ -207,7 +207,7 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 	bool fastLookup = false;
 	
-	// Fast lookup failed - check the slow way for hooks that havn't fired yet
+	// Fast lookup failed - check the slow way for hooks that haven't fired yet
 	if ((fastLookup = EntityOutputs->Retrieve(sOutput, (void **)&pOutputName)) == false)
 	{
 		const char *classname = GetEntityClassname(pCaller);
@@ -450,5 +450,5 @@ const char *EntityOutputManager::GetEntityClassname(CBaseEntity *pEntity)
 		offset = pDesc->fieldOffset[TD_OFFSET_NORMAL];
 	}
 
-	return (const char *)(((unsigned char *)pEntity) + offset);
+	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
