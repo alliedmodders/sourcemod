@@ -129,6 +129,9 @@ BuildDynamicMenu()
 							name);
 
 		}
+
+		decl String:category_name[NAME_LENGTH];
+		strcopy(category_name, sizeof(category_name), buffer);
 		
 		if (!KvGotoFirstSubKey(kvMenu))
 		{
@@ -306,14 +309,17 @@ BuildDynamicMenu()
 			decl String:locString[10];
 			IntToString(location, locString, sizeof(locString));
 
-			AddToTopMenu(hAdminMenu,
-							buffer,
-							TopMenuObject_Item,
-							DynamicMenuItemHandler,
-  							categoryId,
-  							admin,
-  							ADMFLAG_GENERIC,
-  							locString);			
+			if (AddToTopMenu(hAdminMenu,
+				buffer,
+				TopMenuObject_Item,
+				DynamicMenuItemHandler,
+  				categoryId,
+  				admin,
+  				ADMFLAG_GENERIC,
+  				locString) == INVALID_TOPMENUOBJECT)
+			{
+				LogError("Duplicate command name \"%s\" in adminmenu_custom.txt category \"%s\"", buffer, category_name);
+			}
 		
 		} while (KvGotoNextKey(kvMenu));
 		
