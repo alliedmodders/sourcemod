@@ -413,3 +413,46 @@ stock Float:RadToDeg(Float:angle)
 {
 	return (angle*180)/FLOAT_PI;
 }
+
+/**
+ * Returns a random integer in the range [0, 2^31-1].
+ *
+ * Note: Uniform random number streams are seeded automatically per-plugin.
+ *
+ * @return			Random integer.
+ */
+native GetURandomInt();
+
+/**
+ * Returns a uniform random float in the range [0, 1).
+ *
+ * Note: Uniform random number streams are seeded automatically per-plugin.
+ *
+ * @return			Uniform random floating-point number.
+ */
+native Float:GetURandomFloat();
+
+/**
+ * Seeds a plugin's uniform random number stream. This is done automatically,
+ * so normally it is totally unnecessary to call this.
+ *
+ * @param seeds		Array of numbers to use as seeding data.
+ * @param numSeeds	Number of seeds in the seeds array.
+ * @noreturn
+ */
+native SetURandomSeed(const seeds[], numSeeds);
+
+/**
+ * Seeds a plugin's uniform random number stream. This is done automatically,
+ * so normally it is totally unnecessary to call this.
+ *
+ * @param seed      Single seed value.
+ * @noreturn
+ */
+stock SetURandomSeedSimple(seed)
+{
+	new seeds[1];
+	seeds[0] = seed;
+	SetURandomSeed(seeds, 1);
+}
+

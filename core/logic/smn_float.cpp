@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -33,6 +33,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include "common_logic.h"
+#include "MersenneTwister.h"
+#include <IPluginSys.h>
 
 /****************************************
 *                                       *
@@ -285,6 +287,68 @@ static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
 }
 #endif
 
+class RandomHelpers :
+	public SMGlobalClass,
+	public IPluginsListener
+{
+public:
+	void OnSourceModAllInitialized()
+	{
+		pluginsys->AddPluginsListener(this);
+	}
+
+	void OnSourceModShutdown()
+	{
+		pluginsys->RemovePluginsListener(this);
+	}
+
+	void OnPluginDestroyed(IPlugin *plugin)
+	{
+		MTRand *mtrand;
+		if (plugin->GetProperty("core.logic.mtrand", (void**)&mtrand, true))
+		{
+			delete mtrand;
+		}
+	}
+	
+	MTRand *RandObjForPlugin(IPluginContext *ctx)
+	{
+		IPlugin *plugin = pluginsys->FindPluginByContext(ctx->GetContext());
+		MTRand *mtrand;	
+		if (!plugin->GetProperty("core.logic.mtrand", (void**)&mtrand))
+		{
+			mtrand = new MTRand();
+			plugin->SetProperty("core.logic.mtrand", mtrand);
+		}
+		return mtrand;
+	}
+} s_RandHelpers;
+
+static cell_t GetURandomInt(IPluginContext *ctx, const cell_t *params)
+{
+	MTRand *randobj = s_RandHelpers.RandObjForPlugin(ctx);
+	/* Note the sign bit must be stripped off because cell_t is signed,
+	 * and this guarantees a range of [0,max_int]
+	 */
+	return randobj->randInt() & 0x7FFFFFFF;
+}
+
+static cell_t GetURandomFloat(IPluginContext *ctx, const cell_t *params)
+{
+	MTRand *randobj = s_RandHelpers.RandObjForPlugin(ctx);
+	return sp_ftoc((float)randobj->rand());
+}
+
+static cell_t SetURandomSeed(IPluginContext *ctx, const cell_t *params)
+{
+	MTRand *randobj = s_RandHelpers.RandObjForPlugin(ctx);
+	cell_t *addr;
+	ctx->LocalToPhysAddr(params[1], &addr);
+	/* We're 32-bit only. */
+	randobj->seed((MTRand::uint32*)addr, params[2]);
+	return 1;
+}
+
 REGISTER_NATIVES(floatnatives)
 {
 	{"float",			sm_float},
@@ -310,5 +374,9 @@ REGISTER_NATIVES(floatnatives)
 	{"ArcCosine",		sm_ArcCosine},
 	{"ArcSine",			sm_ArcSine},
 	{"ArcTangent2",		sm_ArcTangent2},
+	{"GetURandomInt",	GetURandomInt},
+	{"GetURandomFloat",	GetURandomFloat},
+	{"SetURandomSeed",	SetURandomSeed},
 	{NULL,				NULL}
 };
+
