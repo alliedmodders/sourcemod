@@ -117,6 +117,9 @@ forward OnClientDisconnect_Post(client);
 /**
  * Called when a client is sending a command.
  *
+ * As of SourceMod 1.3, the client is guaranteed to be in-game.
+ * Use command listeners (console.inc) for more advanced hooks.
+ *
  * @param client		Client index.
  * @param args			Number of arguments.
  * @noreturn

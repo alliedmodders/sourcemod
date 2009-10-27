@@ -741,9 +741,12 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	}
 
 	cell_t res2 = Pl_Continue;
-	m_clcommand->PushCell(client);
-	m_clcommand->PushCell(argcount);
-	m_clcommand->Execute(&res2, NULL);
+	if (pPlayer->IsInGame())
+	{
+		m_clcommand->PushCell(client);
+		m_clcommand->PushCell(argcount);
+		m_clcommand->Execute(&res2, NULL);
+	}
 
 	if (res2 > res)
 	{
