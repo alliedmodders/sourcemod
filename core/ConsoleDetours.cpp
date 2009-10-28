@@ -31,7 +31,7 @@
 
 /**
  * On SourceHook v4.3 or lower, there are no DVP hooks. Very sad, right?
- * Only do this on newer version. For the older code, we'll do an incredibly
+ * Only do this on newer versions. For the older code, we'll do an incredibly
  * hacky detour.
  *
  * The idea of the "non-hacky" (yeah... no) code is that every unique
@@ -49,6 +49,7 @@
 #include "ConCmdManager.h"
 #include "HalfLife2.h"
 #include "ConCommandBaseIterator.h"
+#include "ShareSys.h"
 
 #if defined PLATFORM_LINUX
 # include <dlfcn.h>
@@ -531,10 +532,12 @@ void DummyHook()
  * BEGIN THE ACTUALLY GENERIC CODE.
  */
 
+#define FEATURECAP_COMMANDLISTENER  "command listener"
+
 static GenericCommandHooker s_GenericHooker;
 ConsoleDetours g_ConsoleDetours;
 
-ConsoleDetours::ConsoleDetours() : triedToEnable(false), isEnabled(false)
+ConsoleDetours::ConsoleDetours() : status(FeatureStatus_Unknown)
 {
 }
 
@@ -542,6 +545,7 @@ void ConsoleDetours::OnSourceModAllInitialized()
 {
 	m_pForward = g_Forwards.CreateForwardEx("OnAnyCommand", ET_Hook, 3, NULL, Param_Cell,
 	                                        Param_String, Param_Cell);
+	g_ShareSys.AddCapabilityProvider(NULL, this, FEATURECAP_COMMANDLISTENER);
 }
 
 void ConsoleDetours::OnSourceModShutdown()
@@ -559,18 +563,23 @@ void ConsoleDetours::OnSourceModShutdown()
 	s_GenericHooker.Disable();
 }
 
-bool ConsoleDetours::IsAvailable()
+FeatureStatus ConsoleDetours::GetFeatureStatus(FeatureType type, const char *name)
 {
-	if (triedToEnable)
-		return isEnabled;
-	isEnabled = s_GenericHooker.Enable();
-	triedToEnable = true;
-	return isEnabled;
+	return GetStatus();
+}
+
+FeatureStatus ConsoleDetours::GetStatus()
+{
+	if (status == FeatureStatus_Unknown)
+	{
+		status = s_GenericHooker.Enable() ? FeatureStatus_Available : FeatureStatus_Unavailable;
+	}
+	return status;
 }
 
 bool ConsoleDetours::AddListener(IPluginFunction *fun, const char *command)
 {
-	if (!IsAvailable())
+	if (GetStatus() != FeatureStatus_Available)
 		return false;
 
 	if (command == NULL)

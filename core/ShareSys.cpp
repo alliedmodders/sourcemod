@@ -527,3 +527,85 @@ NativeEntry *ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name
 
 	return pEntry;
 }
+
+void ShareSystem::AddCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
+		                                const char *name)
+{
+	if (m_caps.retrieve(name) != NULL)
+		return;
+
+	Capability cap;
+	cap.ext = myself;
+	cap.provider = provider;
+
+	m_caps.insert(name, cap);
+}
+
+void ShareSystem::DropCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
+		                                 const char *name)
+{
+	Capability *pCap = m_caps.retrieve(name);
+	if (pCap == NULL)
+		return;
+
+	if (pCap->ext != myself || pCap->provider != provider)
+		return;
+
+	m_caps.remove(name);
+}
+
+FeatureStatus ShareSystem::TestFeature(IPluginRuntime *pRuntime, FeatureType feature, 
+                                       const char *name)
+{
+	switch (feature)
+	{
+	case FeatureType_Native:
+		return TestNative(pRuntime, name);
+	case FeatureType_Capability:
+		return TestCap(name);
+	default:
+		break;
+	}
+
+	return FeatureStatus_Unknown;
+}
+
+FeatureStatus ShareSystem::TestNative(IPluginRuntime *pRuntime, const char *name)
+{
+	uint32_t index;
+
+	if (pRuntime->FindNativeByName(name, &index) == SP_ERROR_NONE)
+	{
+		sp_native_t *native;
+		if (pRuntime->GetNativeByIndex(index, &native) == SP_ERROR_NONE)
+		{
+			if (native->status == SP_NATIVE_BOUND)
+				return FeatureStatus_Available;
+			else
+				return FeatureStatus_Unknown;
+		}
+	}
+
+	NativeEntry *entry = FindNative(name);
+	if (entry == NULL)
+		return FeatureStatus_Unknown;
+
+	if ((entry->replacement.owner != NULL || entry->owner != NULL) &&
+		(entry->replacement.func != NULL || entry->func != NULL))
+	{
+		return FeatureStatus_Available;
+	}
+	else
+	{
+		return FeatureStatus_Unavailable;
+	}
+}
+
+FeatureStatus ShareSystem::TestCap(const char *name)
+{
+	Capability *cap = m_caps.retrieve(name);
+	if (cap == NULL)
+		return FeatureStatus_Unknown;
+
+	return cap->provider->GetFeatureStatus(FeatureType_Capability, name);
+}

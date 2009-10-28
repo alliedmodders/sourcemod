@@ -151,8 +151,22 @@ public Extension:__ext_core =
 
 native VerifyCoreVersion();
 
+/**
+ * Sets a native as optional, such that if it is unloaded, removed,
+ * or otherwise non-existent, the plugin will still work.  Calling
+ * removed natives results in a run-time error.
+ *
+ * @param name			Native name.
+ * @noreturn
+ */
+native MarkNativeAsOptional(const String:name[]);
+
 public __ext_core_SetNTVOptional()
 {
+	MarkNativeAsOptional("GetFeatureStatus");
+	MarkNativeAsOptional("RequireFeature");
+	MarkNativeAsOptional("AddCommandListener");
+	MarkNativeAsOptional("RemoveCommandListener");
 	VerifyCoreVersion();
 }
 

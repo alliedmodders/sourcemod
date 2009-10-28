@@ -42,6 +42,7 @@
 #include "ForwardSys.h"
 #include "Logger.h"
 #include "ExtensionSys.h"
+#include <sm_trie_tpl.h>
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -491,6 +492,11 @@ static cell_t LibraryExists(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[1], &str);
 
+	if (strcmp(str, "__CanTestFeatures__") == 0)
+	{
+		return 1;
+	}
+
 	if (g_PluginSys.LibraryExists(str))
 	{
 		return 1;
@@ -630,6 +636,43 @@ static cell_t VerifyCoreVersion(IPluginContext *pContext, const cell_t *params)
 	return 4;
 }
 
+static cell_t GetFeatureStatus(IPluginContext *pContext, const cell_t *params)
+{
+	FeatureType type = (FeatureType)params[1];
+	char *name;
+
+	pContext->LocalToString(params[2], &name);
+
+	return g_ShareSys.TestFeature(pContext->GetRuntime(),type, name);
+}
+
+static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
+{
+	FeatureType type = (FeatureType)params[1];
+	char *name;
+
+	pContext->LocalToString(params[2], &name);
+
+	if (g_ShareSys.TestFeature(pContext->GetRuntime(),type, name) != FeatureStatus_Available)
+	{
+		char buffer[255];
+		char *msg = buffer;
+		char default_message[255];
+		CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+
+		g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 3);
+		if (pContext->GetLastNativeError() != SP_ERROR_NONE || buffer[0] == '\0')
+		{
+			UTIL_Format(default_message, sizeof(default_message), "Feature \"%s\" not available", name);
+			msg = default_message;
+		}
+		pPlugin->SetErrorState(Plugin_Error, "%s", msg);
+		return pContext->ThrowNativeErrorEx(SP_ERROR_ABORTED, "%s", msg);
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -654,6 +697,8 @@ REGISTER_NATIVES(coreNatives)
 	{"GetExtensionFileStatus",	GetExtensionFileStatus},
 	{"FindPluginByNumber",		FindPluginByNumber},
 	{"VerifyCoreVersion",		VerifyCoreVersion},
+	{"GetFeatureStatus",        GetFeatureStatus},
+	{"RequireFeature",          RequireFeature},
 	{NULL,						NULL},
 };
 

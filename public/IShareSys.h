@@ -35,9 +35,6 @@
 /**
  * @file IShareSys.h
  * @brief Defines the Share System, responsible for shared resources and dependencies.
- *
- *  The Share System also manages the Identity_t data type, although this is internally
- * implemented with the Handle System.
  */
 
 #include <sp_vm_types.h>
@@ -53,6 +50,41 @@ namespace SourceMod
 
 	/** Forward declaration from IHandleSys.h */
 	typedef HandleType_t		IdentityType_t;
+
+	/**
+	 * @brief Types of features.
+	 */
+	enum FeatureType
+	{
+		FeatureType_Native,      /**< Native functions for plugins. */
+		FeatureType_Capability   /**< Named capabilities. */
+	};
+
+	/**
+	 * @brief Feature presence status codes.
+	 */
+	enum FeatureStatus
+	{
+		FeatureStatus_Available = 0,  /**< Feature is available for use. */
+		FeatureStatus_Unavailable,    /**< Feature is unavailable, but known. */
+		FeatureStatus_Unknown         /**< Feature is not known. */
+	};
+
+	/**
+	 * @brief Provides a capability feature.
+	 */
+	class IFeatureProvider
+	{
+	public:
+		/**
+		 * @brief Must return whether a capability is present.
+		 *
+		 * @param type          Feature type (FeatureType_Capability right now).
+		 * @param name          Feature name.
+		 * @return              Feature status code.
+		 */
+		virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name) = 0;
+	};
 
 	/**
 	 * @brief Defines the base functionality required by a shared interface.
@@ -221,6 +253,31 @@ namespace SourceMod
 		 *						lifetime of the extension.
 		 */
 		virtual void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;
+
+		/**
+		 * @brief Adds a capability provider. Feature providers are used by
+		 * plugins to determine if a feature exists at runtime. This is
+		 * distinctly different from checking for a native, because natives
+		 * may be backed by underlying functionality which is not available.
+		 *
+		 * @param myself        Extension.
+		 * @param provider      Feature provider implementation.
+		 * @param name          Capibility name.
+		 */
+		virtual void AddCapabilityProvider(IExtension *myself,
+		                                   IFeatureProvider *provider,
+		                                   const char *name) =0;
+
+		/**
+		 * @brief Drops a previously added cap provider.
+		 *
+		 * @param myself        Extension.
+		 * @param provider      Feature provider implementation.
+		 * @param name          Capibility name.
+		 */
+		virtual void DropCapabilityProvider(IExtension *myself,
+		                                    IFeatureProvider *provider,
+		                                    const char *name) =0;
 	};
 }
 

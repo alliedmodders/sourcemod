@@ -411,16 +411,6 @@ native GetSysTickCount();
 native AutoExecConfig(bool:autoCreate=true, const String:name[]="", const String:folder[]="sourcemod");
 
 /**
- * Sets a native as optional, such that if it is unloaded, removed,
- * or otherwise non-existent, the plugin will still work.  Calling
- * removed natives results in a run-time error.
- *
- * @param name			Native name.
- * @noreturn
- */
-native MarkNativeAsOptional(const String:name[]);
-
-/**
  * Registers a library name for identifying as a dependency to 
  * other plugins.
  *
@@ -564,6 +554,81 @@ forward bool:OnClientFloodCheck(client);
  * @noreturn
  */
 forward OnClientFloodResult(client, bool:blocked);
+
+/**
+ * Feature types.
+ */
+enum FeatureType
+{
+	/**
+	 * A native function call.
+	 */
+	FeatureType_Native,
+	
+	/**
+	 * A named capability. This is distinctly different from checking for a
+	 * native, because the underlying functionality could be enabled on-demand
+	 * to improve loading time. Thus a native may appear to exist, but it might
+	 * be part of a set of features that are not compatible with the current game
+	 * or version of SourceMod.
+	 */
+	FeatureType_Capability
+};
+
+/**
+ * Feature statuses.
+ */
+enum FeatureStatus
+{
+	/**
+	 * Feature is available for use.
+	 */
+	FeatureStatus_Available,
+	
+	/**
+	 * Feature is not available.
+	 */
+	FeatureStatus_Unavailable,
+	
+	/**
+	 * Feature is not known at all.
+	 */
+	FeatureStatus_Unknown
+};
+
+/**
+ * Returns whether "GetFeatureStatus" will work. Using this native
+ * or this function will not cause SourceMod to fail loading on older versions,
+ * however, GetFeatureStatus will only work if this function returns true.
+ *
+ * @return              True if GetFeatureStatus will work, false otherwise.
+ */
+stock bool:CanTestFeatures()
+{
+	return LibraryExists("__CanTestFeatures__");
+}
+
+/**
+ * Returns whether a feature exists, and if so, whether it is usable.
+ *
+ * @param type          Feature type.
+ * @param name          Feature name.
+ * @return              Feature status.
+ */
+native FeatureStatus:GetFeatureStatus(FeatureType:type, const String:name[]);
+
+/**
+ * Requires that a given feature is available. If it is not, SetFailState()
+ * is called with the given message.
+ *
+ * @param type          Feature type.
+ * @param name          Feature name.
+ * @param fmt           Message format string, or empty to use default.
+ * @param ...           Message format parameters, if any.
+ * @noreturn
+ */
+native RequireFeature(FeatureType:type, const String:name[],
+                      const String:fmt[]="", any:...);
 
 #include <helpers>
 #include <entity>
