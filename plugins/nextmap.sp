@@ -194,7 +194,7 @@ public Action:Command_MapHistory(client, args)
 		lastMapStartTime = startTime;
 	}
 
-	return PLUGIN_HANDLED;
+	return Plugin_Handled;
 }
 
 FormatTimeDuration(String:buffer[], maxlen, time)
