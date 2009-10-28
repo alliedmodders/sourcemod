@@ -284,6 +284,23 @@ class GenericCommandHooker
 	Patch cgc;
 
 public:
+ 	static void DelayedActivation(void *inparam)
+ 	{
+ 		GenericCommandHooker *cdtrs = reinterpret_cast<GenericCommandHooker*>(inparam);
+ 		/* Safe to re-enter because the frame queue is lock+swapped. */
+ 		if ((!cdtrs->ces.applied || !cdtrs->cgc.applied) &&
+ 		    g_HL2.PeekCommandStack() != NULL)
+ 		{
+ 			g_SourceMod.AddFrameAction(GenericCommandHooker::DelayedActivation, cdtrs);
+ 			return;
+ 		}
+ 
+ 		if (!cdtrs->ces.applied)
+ 			cdtrs->ApplyPatch(&cdtrs->ces);
+ 		if (!cdtrs->cgc.applied)
+ 			cdtrs->ApplyPatch(&cdtrs->cgc);
+ 	}
+
 	bool Enable()
 	{
 		const char *platform = NULL;
@@ -320,6 +337,12 @@ public:
 			return false;
 		if (!PrepPatch("CGameClient::ExecuteString", "CGC", platform, &cgc))
 			return false;
+
+ 		if (g_HL2.PeekCommandStack() != NULL)
+ 		{
+ 			g_SourceMod.AddFrameAction(GenericCommandHooker::DelayedActivation, this);
+ 			return true;
+ 		}
 
 		ApplyPatch(&ces);
 		ApplyPatch(&cgc);
