@@ -87,7 +87,13 @@ struct NativeEntry
 	FakeNative *fake;
 };
 
-class ShareSystem : 
+struct Capability
+{
+	IExtension *ext;
+	IFeatureProvider *provider;
+};
+
+class ShareSystem :
 	public IShareSys,
 	public SMGlobalClass,
 	public IHandleTypeDispatch
@@ -110,6 +116,10 @@ public: //IShareSys
 	void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload);
 	void RegisterLibrary(IExtension *myself, const char *name);
 	void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives);
+	void AddCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
+		                       const char *name);
+	void DropCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
+		                        const char *name);
 public: //SMGlobalClass
 	/* Pre-empt in case anything tries to register idents early */
 	void Initialize();
@@ -119,6 +129,9 @@ public: //IHandleTypeDispatch
 public:
 	IdentityToken_t *CreateCoreIdentity();
 	void RemoveInterfaces(IExtension *pExtension);
+	FeatureStatus TestFeature(IPluginRuntime *pRuntime, FeatureType feature, const char *name);
+	FeatureStatus TestNative(IPluginRuntime *pRuntime, const char *name);
+	FeatureStatus TestCap(const char *name);
 public:
 	inline IdentityToken_t *GetIdentRoot()
 	{
@@ -143,6 +156,7 @@ private:
 	HandleType_t m_IfaceType;
 	IdentityType_t m_CoreType;
 	KTrie<NativeEntry *> m_NtvCache;
+	KTrie<Capability> m_caps;
 };
 
 extern ShareSystem g_ShareSys;

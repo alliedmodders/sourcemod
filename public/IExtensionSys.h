@@ -133,7 +133,7 @@ namespace SourceMod
 	 * Note: This is bumped when IShareSys is changed, because IShareSys 
 	 * itself is not versioned.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	4
+	#define SMINTERFACE_EXTENSIONAPI_VERSION	5
 
 	/**
 	 * @brief The interface an extension must expose.

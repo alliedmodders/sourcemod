@@ -36,7 +36,9 @@
 #include "ForwardSys.h"
 #include <sm_trie_tpl.h>
 
-class ConsoleDetours : public SMGlobalClass
+class ConsoleDetours :
+	public SMGlobalClass,
+	public IFeatureProvider
 {
 	friend class PlayerManager;
 	friend class GenericCommandHooker;
@@ -50,6 +52,8 @@ public:
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+public: //IFeatureProvider
+	FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
 public:
 	bool AddListener(IPluginFunction *fun, const char *command);
 	bool RemoveListener(IPluginFunction *fun, const char *command);
@@ -60,15 +64,14 @@ private:
 #else
 	static cell_t Dispatch(ConCommand *pBase);
 #endif
-	bool IsAvailable();
 public:
-	inline bool IsEnabled()
+	FeatureStatus GetStatus();
+	bool IsEnabled()
 	{
-		return isEnabled;
+		return status == FeatureStatus_Available;
 	}
 private:
-	bool triedToEnable;
-	bool isEnabled;
+	FeatureStatus status;
 	IChangeableForward *m_pForward;
 	KTrie<Listener*> m_CmdLookup;
 	List<Listener*> m_Listeners;

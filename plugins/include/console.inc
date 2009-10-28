@@ -858,6 +858,8 @@ native RemoveServerTag(const String:tag[]);
  */
 functag public Action:CommandListener(client, const String:command[], argc);
 
+#define FEATURECAP_COMMANDLISTENER  "command listener"
+
 /**
  * Adds a callback that will fire when a command is sent to the server.
  *
@@ -865,6 +867,9 @@ functag public Action:CommandListener(client, const String:command[], argc);
  * whereas this is a lightweight hook on a command string, existing or not.
  * Using Reg*Cmd to intercept is in poor practice, as it physically creates a
  * new command and can slow down dispatch in general.
+ *
+ * To see if this feature is available, use FeatureType_Capability and 
+ * FEATURECAP_COMMANDLISTENER.
  *
  * @param callback      Callback.
  * @param command		Command, or if not specified, a global listener.
