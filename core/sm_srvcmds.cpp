@@ -326,7 +326,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 		ConsolePrint(" Development would not have been possible without the following people:");
 		ConsolePrint("  David \"BAILOPAN\" Anderson, lead developer");
 		ConsolePrint("  Borja \"faluco\" Ferrer, core developer");
-		ConsolePrint("  Scott \"Damaged Soul\" Ehlert, core developer");
+		ConsolePrint("  Scott \"DS\" Ehlert, core developer");
 		ConsolePrint("  Matt \"pRED\" Woodrow, core developer");
 		ConsolePrint("  Michael \"ferret\" McKoy, plugin developer");
 		ConsolePrint("  Pavol \"PM OnoTo\" Marko, SourceHook developer");
