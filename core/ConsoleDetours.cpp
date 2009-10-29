@@ -64,8 +64,13 @@
 # else
 	SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 # endif
-#elif SH_IMPL_VERSION == 3
-extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+#else
+# if SH_IMPL_VERSION >= 4
+ extern int __SourceHook_FHVPAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>,bool);
+ extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+# else
+ extern bool __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+# endif
 extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
 #endif
 
