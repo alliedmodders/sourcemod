@@ -182,7 +182,7 @@ void ConVarManager::OnSourceModVSPReceived()
 	}
 
 	/* For later MM:S versions, use the updated API, since it's cleaner. */
-#if defined METAMOD_PLAPI_VERSION
+#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	int engine = g_SMAPI->GetSourceEngineBuild();
 	if (engine == SOURCE_ENGINE_ORIGINAL || vsp_version < 2)
 	{

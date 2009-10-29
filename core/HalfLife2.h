@@ -145,7 +145,7 @@ public:
 	const char *CurrentCommandName();
 	void AddDelayedKick(int client, int userid, const char *msg);
 	void ProcessDelayedKicks();
-#if !defined METAMOD_PLAPI_VERSION
+#if !defined METAMOD_PLAPI_VERSION || PLAPI_VERSION < 11
 	bool IsOriginalEngine();
 #endif
 private:
