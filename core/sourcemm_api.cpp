@@ -205,7 +205,7 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 	}
 }
 
-#if defined METAMOD_PLAPI_VERSION
+#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 
 void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
 {
