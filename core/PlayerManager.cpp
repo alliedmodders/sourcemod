@@ -694,7 +694,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 			ClientConsolePrint(pEntity,
 				" David \"BAILOPAN\" Anderson, Borja \"faluco\" Ferrer");
 			ClientConsolePrint(pEntity,
-				" Scott \"Damaged Soul\" Ehlert, Matt \"pRED\" Woodrow");
+				" Scott \"DS\" Ehlert, Matt \"pRED\" Woodrow");
 			ClientConsolePrint(pEntity,
 				" Michael \"ferret\" McKoy, Pavol \"PM OnoTo\" Marko");
 			ClientConsolePrint(pEntity,
