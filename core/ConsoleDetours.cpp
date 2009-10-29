@@ -156,7 +156,10 @@ class GenericCommandHooker : public IConCommandLinkListener
 		while (iter != vtables.end())
 		{
 			if ((*iter).refcount)
+			{
+				iter++;
 				continue;
+			}
 			/* Damn it. This event happens AFTER the plugin has unloaded!
 			 * There's two options. Remove the hook now and hope SH's memory
 			 * protection will prevent a crash. Otherwise, we can wait until
