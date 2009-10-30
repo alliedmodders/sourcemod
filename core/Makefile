@@ -7,7 +7,8 @@ HL2SDK_ORIG = ../../hl2sdk
 HL2SDK_OB = ../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../hl2sdk-l4d
-MMSOURCE17 = ../../mmsource-1.7
+HL2SDK_L4D2 = ../../hl2sdk-l4d2
+MMSOURCE17 = ../../mmsource-central
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -92,11 +93,27 @@ ifeq "$(ENGINE)" "left4dead"
 	BINARY = sourcemod.2.l4d.so
 	override ENGSET = true
 endif
+ifeq "$(ENGINE)" "left4dead2"
+	HL2SDK = $(HL2SDK_L4D2)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=6
+	METAMOD = $(MMSOURCE17)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	SRCDS = $(SRCDS_BASE)/left4dead2_demo
+	BINARY = sourcemod.2.l4d2.so
+	override ENGSET = true
+endif
 
-CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5
+CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
 
+ifeq "$(ENGINE)" "left4dead2"
+LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_linux.so \
+	tier0_linux.so -static-libgcc
+else
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so \
 	tier0_i486.so -static-libgcc
+endif
 	
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/vstdlib \
 	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook \
@@ -136,8 +153,13 @@ $(BIN_DIR)/%.o: %.c
 
 all: check
 	mkdir -p $(BIN_DIR)
+ifeq "$(ENGINE)" "left4dead2"
+	ln -sf $(SRCDS)/bin/vstdlib_linux.so vstdlib_linux.so;
+	ln -sf $(SRCDS)/bin/tier0_linux.so tier0_linux.so;
+else
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
+endif
 	$(MAKE) -f Makefile sourcemod
 
 check:

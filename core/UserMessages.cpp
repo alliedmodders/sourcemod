@@ -34,7 +34,7 @@
 
 UserMessages g_UserMsgs;
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 SH_DECL_HOOK3(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int, const char *);
 #else
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
@@ -168,13 +168,13 @@ bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigne
 
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
 #else
 		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
 #endif
 	} else {
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
 #else
 		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
@@ -316,7 +316,7 @@ void UserMessages::_DecRefCounter()
 	}
 }
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #else
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type)
@@ -346,7 +346,7 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #else
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type)
@@ -500,7 +500,7 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 		bf_write *engine_bfw;
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId, g_SMAPI->GetUserMessage(m_CurId));
 #else
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId);

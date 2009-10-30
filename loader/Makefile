@@ -1,7 +1,7 @@
 # (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-MMSOURCE17 = ../../mmsource-1.7
+MMSOURCE17 = ../../mmsource-central
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
