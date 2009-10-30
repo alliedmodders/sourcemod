@@ -63,6 +63,8 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 #if defined METAMOD_PLAPI_VERSION
 #if SOURCE_ENGINE == SE_LEFT4DEAD
 #define GAMEFIX "2.l4d"
+#elif SOURCE_ENGINE == SE_LEFT4DEAD2
+#define GAMEFIX "2.l4d2"
 #elif SOURCE_ENGINE == SE_ORANGEBOX
 #define GAMEFIX "2.ep2"
 #elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
@@ -71,7 +73,7 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 #define GAMEFIX "2.darkm"
 #else
 #define GAMEFIX "2.ep1"
-#endif //SOURCE_ENGINE == SE_LEFT4DEAD
+#endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 #else  //METAMOD_PLAPI_VERSION
 #define GAMEFIX "1.ep1"
 #endif //METAMOD_PLAPI_VERSION

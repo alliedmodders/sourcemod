@@ -79,7 +79,7 @@ public: //IUserMessages
 		IUserMessageListener *pListener,
 		bool intercept=false);
 public:
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #else

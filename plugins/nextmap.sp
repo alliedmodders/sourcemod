@@ -222,4 +222,6 @@ FormatTimeDuration(String:buffer[], maxlen, time)
 	{
 		return Format(buffer, maxlen, "%is", seconds);		
 	}
+
+	return Plugin_Handled;
 }

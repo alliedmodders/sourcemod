@@ -657,7 +657,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
