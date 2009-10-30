@@ -264,7 +264,7 @@
 	}
 	
 	/* Left 4 Dead */
-	"left4dead"
+	"left4dead2"
 	{
 		"Offsets"
 		{

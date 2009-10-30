@@ -386,6 +386,9 @@ public:
 	virtual void				SetValue( const char *value );
 	virtual void				SetValue( float value );
 	virtual void				SetValue( int value );
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+	virtual void				SetValue( Color value );
+#endif
 	
 	// Reset to default value
 	void						Revert( void );

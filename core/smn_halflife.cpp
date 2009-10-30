@@ -73,7 +73,8 @@ static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEngineTime(IPluginContext *pContext, const cell_t *params)
 {
-	float fTime = engine->Time();
+	float fTime = Plat_FloatTime();
+	
 	return sp_ftoc(fTime);
 }
 
