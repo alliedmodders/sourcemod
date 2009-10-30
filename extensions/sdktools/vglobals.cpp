@@ -126,7 +126,7 @@ void GetIServer()
 	int offset;
 	void *vfunc = NULL;
 
-#if defined METAMOD_PLAPI_VERSION
+#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	/* Get the CreateFakeClient function pointer */
 	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
 	{
