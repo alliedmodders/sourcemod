@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #include <ISmmPluginExt.h>
@@ -48,8 +46,6 @@
 		return (c == '/' || c == '\\');
 	}
 	#include <Windows.h>
-	#define TF_PATH					"\\tf\\"
-	#define DOD_PATH				"\\dod\\"
 #else
 	#define DLL_EXPORT				extern "C" __attribute__((visibility("default")))
 	#define openlib(lib)			dlopen(lib, RTLD_NOW)
@@ -63,8 +59,6 @@
 		return (c == '/');
 	}
 	#include <dlfcn.h>
-	#define TF_PATH					"/tf/"
-	#define DOD_PATH				"/dod/"
 #endif
 
 #define METAMOD_API_MAJOR			2
@@ -218,12 +212,6 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 		}
 	case SOURCE_ENGINE_ORANGEBOX:
 		{
-			if (strstr(mli->pl_path, TF_PATH) || strstr(mli->pl_path, DOD_PATH))
-			{
-				filename = FILENAME_1_6_EP2VALVE;
-				break;
-			}
-
 			filename = FILENAME_1_6_EP2;
 			break;
 		}
@@ -235,6 +223,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_DARKMESSIAH:
 		{
 			filename = FILENAME_1_6_DARKM;
+			break;
+		}
+	case SOURCE_ENGINE_ORANGEBOXVALVE:
+		{
+			filename = FILENAME_1_6_EP2VALVE;
 			break;
 		}
 	case SOURCE_ENGINE_LEFT4DEAD2:
