@@ -89,6 +89,7 @@
 			"engine"			"orangebox"
 			"engine"			"orangebox_valve"
 			"engine"			"left4dead"
+			"engine"			"left4dead2"
 		}
 		
 		"Offsets"
@@ -128,6 +129,7 @@
 			"game"					"diprip"
 			"game"					"synergy"
 			"game"					"left4dead"
+			"game"					"left4dead2"
 			"game"					"obsidian"
 			"game"					"empires"
 			"game"					"gesource"
