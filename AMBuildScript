@@ -198,13 +198,22 @@ class SM:
 			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_i486.so', 'tier0_i486.so']:
-				link = os.path.join(workFolder, i)
-				target = os.path.join(staticLibs, i)
-				try:
-					os.lstat(link)
-				except:
-					job.AddCommand(SymlinkCommand(link, target))
+			if sdk == 'l4d2':
+				for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_linux.so', 'tier0_linux.so']:
+					link = os.path.join(workFolder, i)
+					target = os.path.join(staticLibs, i)
+					try:
+						os.lstat(link)
+					except:
+						job.AddCommand(SymlinkCommand(link, target))
+			else:
+				for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_i486.so', 'tier0_i486.so']:
+					link = os.path.join(workFolder, i)
+					target = os.path.join(staticLibs, i)
+					try:
+						os.lstat(link)
+					except:
+						job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
 			for lib in ['tier0', 'tier1', 'vstdlib', 'mathlib']:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
@@ -257,8 +266,12 @@ class SM:
 		if not noLink:
 			if AMBuild.target['platform'] == 'linux':
 				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
-				compiler['POSTLINKFLAGS'][0:0] = ['tier0_i486.so']
-				compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']
+				if sdk == 'l4d2':
+					compiler['POSTLINKFLAGS'][0:0] = ['tier0_linux.so']
+					compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_linux.so']
+				else:
+					compiler['POSTLINKFLAGS'][0:0] = ['tier0_i486.so']
+					compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']				
 
 		return compiler
 
