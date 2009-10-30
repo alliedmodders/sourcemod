@@ -17,6 +17,8 @@ class SM:
 		                         'name': 'ORANGEBOXVALVE'}
 		self.sdkInfo['l4d'] =   {'sdk': 'HL2SDKL4D',     'ext': '2.l4d',   'def': '5',
 		                         'name': 'LEFT4DEAD'}
+		self.sdkInfo['l4d2'] =   {'sdk': 'HL2SDKL4D2',     'ext': '2.l4d2',   'def': '6',
+		                         'name': 'LEFT4DEAD2'}
 		if AMBuild.target['platform'] == 'windows':
 			self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',  'ext': '2.darkm', 'def': '2',
 		                           'name': 'DARKMESSIAH'}
@@ -31,6 +33,7 @@ class SM:
 									'HL2SDKOB':      'hl2sdk-ob',
 									'HL2SDKL4D':     'hl2sdk-l4d',
 									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
+									'HL2SDKL4D2': 	 'hl2sdk-l4d2',
 									'MYSQL5':        'mysql-5.0'
 			}
 
