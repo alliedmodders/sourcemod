@@ -73,7 +73,11 @@ static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEngineTime(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
 	float fTime = Plat_FloatTime();
+#else
+	float fTime = engine->Time();
+#endif
 	
 	return sp_ftoc(fTime);
 }
@@ -457,6 +461,8 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 30;
 	case SOURCE_ENGINE_LEFT4DEAD:
 		return 40;
+	case SOURCE_ENGINE_LEFT4DEAD2:
+		return 50;
 # endif
 	}
 #else
