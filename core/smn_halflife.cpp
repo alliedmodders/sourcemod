@@ -453,7 +453,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	case SOURCE_ENGINE_EPISODEONE:
 		return 20;
 
-# if defined METAMOD_PLAPI_VERISON
+# if defined METAMOD_PLAPI_VERSION
 	/* Newer games. */
 	case SOURCE_ENGINE_DARKMESSIAH:
 		return 15;
