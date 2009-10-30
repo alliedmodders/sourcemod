@@ -713,6 +713,34 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 }
 #endif
 
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[3];
+		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("DispatchSpawn", ValveCall_Static, &pass[2], pass, 2, &pCall))
+		{
+			return pContext->ThrowNativeError("\"DispatchSpawn\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"DispatchSpawn\" wrapper failed to initialize");
+		}
+	}
+
+	int ret;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, vparams, 0);
+	/* All X-refs to DispatchSpawn I checked use true - Unsure of what it does */
+	*(bool *)(vptr + 4) = true;
+	FINISH_CALL_SIMPLE(&ret);
+
+	return (ret == -1) ? 0 : 1;
+}
+#else
 static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -736,6 +764,7 @@ static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 
 	return (ret == -1) ? 0 : 1;
 }
+#endif
 
 static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
 {
