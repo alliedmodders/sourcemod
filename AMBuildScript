@@ -28,7 +28,7 @@ class SM:
 			self.compiler.DetectAll(AMBuild)
 
 			#Detect variables
-			envvars = { 'MMSOURCE17':    'mmsource-1.7',
+			envvars = { 'MMSOURCE18':    'mmsource-1.8',
 									'HL2SDK':        'hl2sdk',
 									'HL2SDKOB':      'hl2sdk-ob',
 									'HL2SDKL4D':     'hl2sdk-l4d',
@@ -159,7 +159,7 @@ class SM:
 			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
 			self.compiler.AddToListVar('RCINCLUDES',
 			                           os.path.join(AMBuild.outputFolder, 'includes'))
-		self.mmsPath = AMBuild.cache['MMSOURCE17']
+		self.mmsPath = AMBuild.cache['MMSOURCE18']
 
 	def DefaultCompiler(self):
 		return self.compiler.Clone()
