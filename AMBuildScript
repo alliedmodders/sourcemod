@@ -17,6 +17,8 @@ class SM:
 		                         'name': 'ORANGEBOXVALVE'}
 		self.sdkInfo['l4d'] =   {'sdk': 'HL2SDKL4D',     'ext': '2.l4d',   'def': '5',
 		                         'name': 'LEFT4DEAD'}
+		self.sdkInfo['l4d2'] =   {'sdk': 'HL2SDKL4D2',     'ext': '2.l4d2',   'def': '6',
+		                         'name': 'LEFT4DEAD2'}
 		if AMBuild.target['platform'] == 'windows':
 			self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',  'ext': '2.darkm', 'def': '2',
 		                           'name': 'DARKMESSIAH'}
@@ -26,11 +28,12 @@ class SM:
 			self.compiler.DetectAll(AMBuild)
 
 			#Detect variables
-			envvars = { 'MMSOURCE17':    'mmsource-1.7',
+			envvars = { 'MMSOURCE18':    'mmsource-1.8',
 									'HL2SDK':        'hl2sdk',
 									'HL2SDKOB':      'hl2sdk-ob',
 									'HL2SDKL4D':     'hl2sdk-l4d',
 									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
+									'HL2SDKL4D2': 	 'hl2sdk-l4d2',
 									'MYSQL5':        'mysql-5.0'
 			}
 
@@ -156,7 +159,7 @@ class SM:
 			self.compiler.AddToListVar('RCINCLUDES', os.path.join(AMBuild.sourceFolder, 'public'))
 			self.compiler.AddToListVar('RCINCLUDES',
 			                           os.path.join(AMBuild.outputFolder, 'includes'))
-		self.mmsPath = AMBuild.cache['MMSOURCE17']
+		self.mmsPath = AMBuild.cache['MMSOURCE18']
 
 	def DefaultCompiler(self):
 		return self.compiler.Clone()
@@ -195,13 +198,22 @@ class SM:
 			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_i486.so', 'tier0_i486.so']:
-				link = os.path.join(workFolder, i)
-				target = os.path.join(staticLibs, i)
-				try:
-					os.lstat(link)
-				except:
-					job.AddCommand(SymlinkCommand(link, target))
+			if sdk == 'l4d2':
+				for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_linux.so', 'tier0_linux.so']:
+					link = os.path.join(workFolder, i)
+					target = os.path.join(staticLibs, i)
+					try:
+						os.lstat(link)
+					except:
+						job.AddCommand(SymlinkCommand(link, target))
+			else:
+				for i in ['tier1_i486.a', 'mathlib_i486.a', 'vstdlib_i486.so', 'tier0_i486.so']:
+					link = os.path.join(workFolder, i)
+					target = os.path.join(staticLibs, i)
+					try:
+						os.lstat(link)
+					except:
+						job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
 			for lib in ['tier0', 'tier1', 'vstdlib', 'mathlib']:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
@@ -254,8 +266,12 @@ class SM:
 		if not noLink:
 			if AMBuild.target['platform'] == 'linux':
 				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
-				compiler['POSTLINKFLAGS'][0:0] = ['tier0_i486.so']
-				compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']
+				if sdk == 'l4d2':
+					compiler['POSTLINKFLAGS'][0:0] = ['tier0_linux.so']
+					compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_linux.so']
+				else:
+					compiler['POSTLINKFLAGS'][0:0] = ['tier0_i486.so']
+					compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']				
 
 		return compiler
 

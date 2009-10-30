@@ -20,6 +20,11 @@
 		"engine"	"left4dead"
 	}
 	
+	"engine.l4d2.txt"
+	{
+		"engine"	"left4dead2"
+	}
+	
 	"engine.ep2.txt"
 	{
 		"engine"	"orangebox"

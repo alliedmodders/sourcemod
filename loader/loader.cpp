@@ -74,6 +74,7 @@
 #define FILENAME_1_6_EP1			"sourcemod.2.ep1" PLATFORM_EXT
 #define FILENAME_1_6_L4D			"sourcemod.2.l4d" PLATFORM_EXT
 #define FILENAME_1_6_DARKM			"sourcemod.2.darkm" PLATFORM_EXT
+#define FILENAME_1_6_L4D2			"sourcemod.2.l4d2" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -234,6 +235,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_DARKMESSIAH:
 		{
 			filename = FILENAME_1_6_DARKM;
+			break;
+		}
+	case SOURCE_ENGINE_LEFT4DEAD2:
+		{
+			filename = FILENAME_1_6_L4D2;
 			break;
 		}
 	default:

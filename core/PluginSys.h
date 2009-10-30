@@ -47,7 +47,7 @@
 #include "sm_trie.h"
 #include "sourcemod.h"
 #include <IRootConsoleMenu.h>
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 #include "convar_sm_l4d.h"
 #elif (SOURCE_ENGINE == SE_ORANGEBOX) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE)
 #include "convar_sm_ob.h"

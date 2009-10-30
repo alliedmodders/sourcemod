@@ -46,7 +46,7 @@
 #include "Logger.h"
 #include "ConsoleDetours.h"
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 #define NET_SETCONVAR	6
 #else
 #define NET_SETCONVAR	5
@@ -69,7 +69,7 @@ struct GlobCmdIter
 
 struct ConCmdIter
 {
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	ICvarIteratorInternal *pLast;
 #else
 	const ConCommandBase *pLast;
@@ -103,7 +103,7 @@ public:
 		else if (type == htConCmdIter)
 		{
 			ConCmdIter *iter = (ConCmdIter * )object;
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 			// ICvarIteratorInternal has no virtual destructor
 			g_pMemAlloc->Free(iter->pLast);
 #endif
@@ -1183,7 +1183,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToPhysAddr(params[3], &pIsCmd);
 	pContext->LocalToPhysAddr(params[4], &pFlags);
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	ICvarIteratorInternal *cvarIter = icvar->FactoryInternalIterator();
 	cvarIter->SetFirst();
 	if (!cvarIter->IsValid())
@@ -1210,7 +1210,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	}
 
 	pIter = new ConCmdIter;
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	pIter->pLast = cvarIter;
 #else
 	pIter->pLast = pConCmd;
@@ -1245,7 +1245,7 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	ICvarIteratorInternal *cvarIter = pIter->pLast;
 	cvarIter->Next();
 	if (!cvarIter->IsValid())

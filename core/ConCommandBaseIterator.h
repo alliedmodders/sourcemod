@@ -33,7 +33,7 @@
 
 class ConCommandBaseIterator
 {
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	ICvarIteratorInternal *cvarIter;
 #else
 	ConCommandBase *cvarIter;
@@ -42,7 +42,7 @@ class ConCommandBaseIterator
 public:
 	ConCommandBaseIterator()
 	{
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		cvarIter = icvar->FactoryInternalIterator();
 		cvarIter->SetFirst();
 #else
@@ -52,14 +52,14 @@ public:
 	
 	~ConCommandBaseIterator()
 	{
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		g_pMemAlloc->Free(cvarIter);
 #endif
 	}
 
 	inline bool IsValid()
 	{
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		return cvarIter->IsValid();
 #else
 		return cvarIter != NULL;
@@ -68,7 +68,7 @@ public:
 
 	inline void Next()
 	{
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		cvarIter->Next();
 #else
 		cvarIter = const_cast<ConCommandBase*>(cvarIter->GetNext());
@@ -77,7 +77,7 @@ public:
 
 	inline ConCommandBase *Get()
 	{
-#if SOURCE_ENGINE == SE_LEFT4DEAD
+#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		return cvarIter->Get();
 #else
 		return cvarIter;
