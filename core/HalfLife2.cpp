@@ -359,11 +359,13 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (g_pSharedChangeInfo != NULL)
 	{
+#if SOURCE_ENGINE != SE_LEFT4DEAD2
 		if (offset)
 		{
 			pEdict->StateChanged(offset);
 		}
 		else
+#endif
 		{
 			pEdict->StateChanged();
 		}
