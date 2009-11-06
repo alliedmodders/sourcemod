@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #include "extension.h"
@@ -131,7 +129,11 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 		{
 			return 0;
 		}
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
+#else
 		s_call_addr = dlsym(handle, &sig[1]);
+#endif
 		dlclose(handle);
 
 		return (s_call_addr != NULL) ? 1 : 0;

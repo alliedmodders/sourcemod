@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEMOD_INTERFACE_BINARYUTILS_H_
@@ -35,7 +33,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_MEMORYUTILS_NAME		"IMemoryUtils"
-#define SMINTERFACE_MEMORYUTILS_VERSION		1
+#define SMINTERFACE_MEMORYUTILS_VERSION		2
 
 /**
  * @file IMemoryUtils.h
@@ -65,6 +63,19 @@ namespace SourceMod
 		 * @return			Pointer to pattern found in memory, NULL if not found.
 		 */
 		virtual void *FindPattern(const void *libPtr, const char *pattern, size_t len) =0;
+
+		/**
+		 * @brief Retrieves a symbol pointer from a dynamic library.
+		 *
+		 * Note: On Linux, this function is able to resolve symbols that are hidden via GCC's
+		 * -fvisibility=hidden option.
+		 *
+		 * @param handle	Operating system specific handle that points to dynamic library.
+		 *					This comes from dlopen() on Linux or LoadLibrary() on Windows.
+		 * @param symbol	Symbol name.
+		 * @return			Symbol pointer, or NULL if not found.
+		 */
+		virtual void *ResolveSymbol(void *handle, const char *symbol) =0;
 	};
 }
 

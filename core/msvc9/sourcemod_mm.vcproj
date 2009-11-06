@@ -60,6 +60,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -224,6 +225,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -308,6 +310,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -472,6 +475,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -556,6 +560,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -638,6 +643,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -719,6 +725,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -803,6 +810,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -885,6 +893,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -966,6 +975,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1050,6 +1060,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1214,6 +1225,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1298,6 +1310,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1548,6 +1561,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -1712,6 +1726,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories="..\..\public"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -2261,6 +2276,10 @@
 			</File>
 			<File
 				RelativePath="..\sm_stringutil.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sm_symtable.h"
 				>
 			</File>
 			<File

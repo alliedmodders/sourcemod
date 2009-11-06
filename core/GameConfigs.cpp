@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #include <string.h>
@@ -506,7 +504,11 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 						void *handle = dlopen(info.dli_fname, RTLD_NOW);
 						if (handle)
 						{
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+							final_addr = g_MemUtils.ResolveSymbol(handle, &s_TempSig.sig[1]);
+#else
 							final_addr = dlsym(handle, &s_TempSig.sig[1]);
+#endif
 							dlclose(handle);
 						} else {
 							g_Logger.LogError("[SM] Unable to load library \"%s\" (gameconf \"%s\")",
