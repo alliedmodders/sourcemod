@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2000 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -25,8 +25,6 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
  */
 
 #ifndef _INCLUDE_SOURCEMOD_MEMORYUTILS_H_
@@ -34,6 +32,12 @@
 
 #include <IMemoryUtils.h>
 #include "sm_globals.h"
+#ifdef PLATFORM_LINUX
+#include <sh_vector.h>
+#include "sm_symtable.h"
+
+using namespace SourceHook;
+#endif
 
 using namespace SourceMod;
 
@@ -43,16 +47,34 @@ struct DynLibInfo
 	size_t memorySize;
 };
 
+#ifdef PLATFORM_LINUX
+typedef uint32_t Elf32_Addr;
+
+struct LibSymbolTable
+{
+	SymbolTable table;
+	Elf32_Addr lib_base;
+	uint32_t last_pos;
+};
+#endif
+
 class MemoryUtils : 
 	public IMemoryUtils,
 	public SMGlobalClass
 {
+public:
+	~MemoryUtils();
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
 public: // IMemoryUtils
 	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
+	void *ResolveSymbol(void *handle, const char *symbol);
 public:
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
+#ifdef PLATFORM_LINUX
+private:
+	CVector<LibSymbolTable *> m_SymTables;
+#endif
 };
 
 extern MemoryUtils g_MemUtils;
