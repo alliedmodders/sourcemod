@@ -28,6 +28,11 @@
 		"#format"		"{1:s}"
 		"en"			"Map Vote: {1}"
 	}
+
+	"Map Vote In Use"
+	{
+		"en"			"Another admin is currently using the map vote menu."
+	}
 	
 	"Change Map To"
 	{
@@ -68,14 +73,17 @@
 	{
 		"en"			"Kick vote"
 	}
+
 	"Ban vote"
 	{
 		"en"			"Ban vote"
 	}
+
 	"Map vote"
 	{
 		"en"			"Map vote"
 	}
+
 	"Confirm Vote"
 	{
 		"en"			"Confirm Vote"
