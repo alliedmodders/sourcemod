@@ -132,8 +132,6 @@ public MenuHandler_Map(Handle:menu, MenuAction:action, param1, param2)
 		else // no action was selected.
 		{
 			/* Re-enable the menu option */
-			g_VoteMapInUse = false;
-			
 			ResetMenu();
 		}
 	}
@@ -187,9 +185,16 @@ public AdminMenu_VoteMap(Handle:topmenu,
 	}
 	else if (action == TopMenuAction_SelectOption)
 	{
-		g_VoteMapInUse = true;
-		ResetMenu();
-		DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
+		if (!g_VoteMapInUse)
+		{
+			ResetMenu();
+			g_VoteMapInUse = true;
+			DisplayMenu(g_MapList, param, MENU_TIME_FOREVER);
+		}
+		else 
+		{
+			PrintToChat(param, "[SM] %T", "Map Vote In Use", param);
+		}
 	}
 	else if (action == TopMenuAction_DrawOption)
 	{	
