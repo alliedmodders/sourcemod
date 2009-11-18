@@ -280,7 +280,7 @@ BuildMapMenu()
 
 	decl String:map[64];
 	
-	new Handle:excludeMaps;
+	new Handle:excludeMaps = INVALID_HANDLE;
 	decl String:currentMap[32];
 	
 	if (GetConVarBool(g_Cvar_ExcludeOld))
@@ -323,6 +323,11 @@ BuildMapMenu()
 	}
 	
 	SetMenuExitButton(g_MapMenu, true);
+
+	if (excludeMaps != INVALID_HANDLE)
+	{
+		CloseHandle(excludeMaps);
+	}
 }
 
 public Handler_MapSelectMenu(Handle:menu, MenuAction:action, param1, param2)
