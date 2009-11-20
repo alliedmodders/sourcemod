@@ -87,7 +87,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	
 	ismm->AddListener(this, this);
 
-#if defined METAMOD_PLAPI_VERSION
+#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if ((vsp_interface = g_SMAPI->GetVSPInfo(&vsp_version)) == NULL)
 #endif
 	{
@@ -177,7 +177,7 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 		return;
 	}
 
-#if defined METAMOD_PLAPI_VERSION
+#if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	if (vsp_version == 0)
 	{
 		g_SMAPI->GetVSPInfo(&vsp_version);
