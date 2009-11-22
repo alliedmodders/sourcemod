@@ -1,4 +1,4 @@
-# (C)2004-2008 SourceMod Development Team
+# (C)2004-2009 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ..
@@ -7,7 +7,8 @@ HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
-MMSOURCE17 = ../../../mmsource-1.7
+HL2SDK_L4D2 = ../../../hl2sdk-l4d2
+MMSOURCE18 = ../../../mmsource-1.8
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -33,9 +34,10 @@ ifeq "$(ENGINE)" "original"
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/linux_sdk
 	CFLAGS += -DSOURCE_ENGINE=1
-	METAMOD = $(MMSOURCE17)/core-legacy
+	METAMOD = $(MMSOURCE18)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
+	LIB_SUFFIX = i486
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangebox"
@@ -43,9 +45,10 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=3
-	METAMOD = $(MMSOURCE17)/core
+	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
+	LIB_SUFFIX = i486
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangeboxvalve"
@@ -53,9 +56,10 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=4
-	METAMOD = $(MMSOURCE17)/core
+	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
+	LIB_SUFFIX = i486
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead"
@@ -63,15 +67,28 @@ ifeq "$(ENGINE)" "left4dead"
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=5
-	METAMOD = $(MMSOURCE17)/core
+	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/l4d
+	LIB_SUFFIX = i486
+	override ENGSET = true
+endif
+ifeq "$(ENGINE)" "left4dead2"
+	HL2SDK = $(HL2SDK_L4D2)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=6
+	METAMOD = $(MMSOURCE18)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	SRCDS = $(SRCDS_BASE)/left4dead2
+	LIB_SUFFIX = linux
 	override ENGSET = true
 endif
 
-CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5
+CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 \
+	-DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
 
-LINK = vstdlib_i486.so tier0_i486.so -m32 -ldl -lm
+LINK = vstdlib_$(LIB_SUFFIX).so tier0_$(LIB_SUFFIX).so -m32 -ldl -lm
 
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
 	-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK) -I$(SMSDK)/jit -I$(SMSDK)/jit/x86 \
@@ -116,13 +133,14 @@ $(BIN_DIR)/%.o: %.cpp
 
 all: check
 	mkdir -p $(BIN_DIR)
-	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
-	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
+	ln -sf $(HL2LIB)/vstdlib_$(LIB_SUFFIX).so
+	ln -sf $(HL2LIB)/tier0_$(LIB_SUFFIX).so
 	$(MAKE) -f Makefile mms_ext
 
 check:
 	if [ "$(ENGSET)" = "false" ]; then \
-		echo "You must supply ENGINE=left4dead or ENGINE=orangebox or ENGINE=original"; \
+		echo "You must supply one of the following values for ENGINE:"; \
+		echo "left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
 		exit 1; \
 	fi
 
