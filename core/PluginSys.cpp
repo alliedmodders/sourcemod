@@ -2052,7 +2052,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			char pluginfile[256];
 			const char *ext = g_LibSys.GetFileExtension(filename) ? "" : ".smx";
-			UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", filename, ext);
+			g_SourceMod.BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", filename, ext);
 
 			IPlugin *pl = LoadPlugin(pluginfile, false, PluginType_MapUpdated, error, sizeof(error), &wasloaded);
 
@@ -2099,7 +2099,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			{
 				char pluginfile[256];
 				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
-				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+				g_SourceMod.BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
 				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
 				{
@@ -2189,7 +2189,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			{
 				char pluginfile[256];
 				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
-				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+				g_SourceMod.BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
 				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
 				{
@@ -2310,7 +2310,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 			{
 				char pluginfile[256];
 				const char *ext = g_LibSys.GetFileExtension(arg) ? "" : ".smx";
-				UTIL_Format(pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
+				g_SourceMod.BuildPath(Path_None, pluginfile, sizeof(pluginfile), "%s%s", arg, ext);
 
 				if (!sm_trie_retrieve(m_LoadLookup, pluginfile, (void **)&pl))
 				{
