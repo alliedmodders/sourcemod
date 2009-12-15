@@ -126,6 +126,6 @@ private:
 	prof_point_t m_ProfStart;
 };
 
-extern ProfileEngine g_Profiler;
+extern IProfiler *sm_profiler;
 
 #endif //_INCLUDE_SOURCEMOD_PLUGIN_PROFILER_H_

@@ -35,6 +35,7 @@
 #include "common_logic.h"
 #include "ThreadSupport.h"
 #include "TextParsers.h"
+#include "Profiler.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -52,7 +53,8 @@ IForwardManager *forwardsys;
 static sm_logic_t logic =
 {
 	NULL,
-	g_pThreader
+	g_pThreader,
+	sm_profiler
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
