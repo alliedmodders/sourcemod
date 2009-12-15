@@ -172,6 +172,7 @@
 			"game"					"tf"
 			"game"					"ageofchivalry"
 			"game"					"obsidian"
+			"game"					"zombie_master"
 		}
 		
 		"Keys"
