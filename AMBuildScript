@@ -49,12 +49,14 @@ class SM:
 						raise Exception('Path for {0} was not found: {1}'.format(i, path))
 				else:
 					head = os.getcwd()
-					while head != None and head != '/':
+					oldhead = None
+					while head != None and head != oldhead:
 						path = os.path.join(head, envvars[i])
 						if os.path.isdir(path):
 							break
+						oldhead = head
 						head, tail = os.path.split(head)
-					if head == None or head == '/':
+					if head == None or head == oldhead:
 						raise Exception('Could not find a valid path for {0}'.format(i))
 				AMBuild.cache.CacheVariable(i, path)
 
