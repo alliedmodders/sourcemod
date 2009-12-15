@@ -133,6 +133,7 @@
 			"game"					"obsidian"
 			"game"					"empires"
 			"game"					"gesource"
+			"game"					"NeotokyoSource"
 		}
 
 		"Keys"
@@ -150,6 +151,7 @@
 			"game"					"synergy"
 			"game"					"dod"
 			"game"					"empires"
+			"game"					"NeotokyoSource"
 		}
 		
 		"Keys"

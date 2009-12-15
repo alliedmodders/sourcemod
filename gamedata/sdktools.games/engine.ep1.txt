@@ -27,6 +27,7 @@
 			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"zombie_master"
+			"game"		"NeotokyoSource"
 		}
 
 		"Offsets"
@@ -84,6 +85,7 @@
 			"game"		"FortressForever"
 			"game"		"synergy"
 			"game"		"hidden"
+			"game"		"NeotokyoSource"
 		}
 		
 		"Offsets"
@@ -134,6 +136,7 @@
 			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"zombie_master"
+			"game"		"NeotokyoSource"
 		}
 		
 		"Signatures"
@@ -161,6 +164,7 @@
 			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"FortressForever"
+			"game"		"NeotokyoSource"
 		}
 
 		"Signatures"
@@ -236,6 +240,7 @@
 		{
 			"game"		"cstrike"
 			"game"		"hl2mp"
+			"game"		"NeotokyoSource"
 		}
 		"Signatures"
 		{

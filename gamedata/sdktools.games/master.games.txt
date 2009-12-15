@@ -135,4 +135,8 @@
 	{
 		"game"		"ageofchivalry"
 	}
+	"game.neotokyo.txt"
+	{
+		"game"		"NeotokyoSource"
+	}
 }
