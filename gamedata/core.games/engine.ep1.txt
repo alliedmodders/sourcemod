@@ -28,6 +28,7 @@
 			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"zombie_master"
+			"game"		"NeotokyoSource"
 		}
 		
 		"Offsets"

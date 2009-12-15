@@ -1,0 +1,85 @@
+"Games"
+{
+	"NeotokyoSource"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"330"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"227"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"225"
+			}
+			"Ignite"
+			{
+				"windows"	"189"
+			}
+			"Extinguish"
+			{
+				"windows"	"190"
+			}
+			"Teleport"
+			{
+				"windows"	"99"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"360"
+			}
+			"GetVelocity"
+			{
+				"windows"	"127"
+			}
+			"EyeAngles"
+			{
+				"windows"	"119"
+			}
+			"AcceptInput"
+			{
+				"windows"	"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"25"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"218"
+			}
+			"Activate"
+			{
+				"windows"	"32"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"348"
+			}
+		}
+		"Signatures"
+		{
+			"LevelShutdown"
+			{
+				"library"	"server"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x6A\x00"
+			}
+		}
+	}
+}
