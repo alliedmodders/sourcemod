@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* Synergy Release 11 */
+	/* Synergy Release 14 */
 	"synergy"
 	{
 		"Offsets"
@@ -19,28 +19,28 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"354"
-				"linux"		"355"
+				"windows"	"355"
+				"linux"		"356"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"237"
-				"linux"		"238"
+				"windows"	"238"
+				"linux"		"239"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"235"
-				"linux"		"236"
+				"windows"	"236"
+				"linux"		"237"
 			}
 			"Ignite"
 			{
-				"windows"	"192"
-				"linux"		"193"
+				"windows"	"193"
+				"linux"		"194"
 			}
 			"Extinguish"
 			{
-				"windows"	"196"
-				"linux"		"197"
+				"windows"	"197"
+				"linux"		"198"
 			}
 			"Teleport"
 			{
@@ -49,18 +49,18 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"392"
-				"linux"		"392"
+				"windows"	"396"
+				"linux"		"396"
 			}
 			"GetVelocity"
 			{
-				"windows"	"129"
-				"linux"		"130"
+				"windows"	"130"
+				"linux"		"131"
 			}
 			"EyeAngles"
 			{
-				"windows"	"121"
-				"linux"		"122"
+				"windows"	"122"
+				"linux"		"123"
 			}
 			"DispatchKeyValue"
 			{
@@ -89,13 +89,23 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"228"
-				"linux"		"229"
+				"windows"	"229"
+				"linux"		"230"
 			}
 			"Activate"
 			{
 				"windows"	"31"
 				"linux"		"32"
+			}
+			"RemoveAllItems"
+			{
+				"windows"	"303"
+				"linux"		"304"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"375"
+				"linux"		"376"
 			}
 		}
 	}
