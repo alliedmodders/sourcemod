@@ -166,6 +166,6 @@ private:
 
 extern CHalfLife2 g_HL2;
 
-edict_t *GetEntity(cell_t num, CBaseEntity **pData);
+bool IndexToAThings(cell_t, CBaseEntity **pEntData, edict_t **pEdictData);
 
 #endif //_INCLUDE_SOURCEMOD_CHALFLIFE2_H_

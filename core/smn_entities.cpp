@@ -69,39 +69,36 @@ inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 
 inline edict_t *GetEdict(cell_t num)
 {
-	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(num);
-
-	if (!pEntity)
+	edict_t *pEdict;
+	if (!IndexToAThings(num, NULL, &pEdict))
 	{
-		return 0;
+		return NULL;
 	}
+	
+	return pEdict;
+}
 
-	edict_t *pEdict = ::BaseEntityToEdict(pEntity);
-	if (!pEdict || pEdict->IsFree())
+inline CBaseEntity *GetEntity(cell_t num)
+{
+	CBaseEntity *pEntity;
+	if (!IndexToAThings(num, &pEntity, NULL))
 	{
 		return NULL;
 	}
 
-	int index = g_HL2.ReferenceToIndex(num);
-	if (index > 0 && index <= g_Players.GetMaxClients())
-	{
-		CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
-		if (!pPlayer || !pPlayer->IsConnected())
-		{
-			return NULL;
-		}
-	}
-
-	return pEdict;
+	return pEntity;
 }
 
-edict_t *GetEntity(cell_t num, CBaseEntity **pData)
+/* Given an entity reference or index, fill out a CBaseEntity and/or edict.
+   If lookup is successful, returns true and writes back the two parameters.
+   If lookup fails, returns false and doesn't touch the params.  */
+bool IndexToAThings(cell_t num, CBaseEntity **pEntData, edict_t **pEdictData)
 {
 	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(num);
 
 	if (!pEntity)
 	{
-		return 0;
+		return false;
 	}
 
 	int index = g_HL2.ReferenceToIndex(num);
@@ -110,20 +107,35 @@ edict_t *GetEntity(cell_t num, CBaseEntity **pData)
 		CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
 		if (!pPlayer || !pPlayer->IsConnected())
 		{
-			return NULL;
+			return false;
 		}
 	}
 
-	*pData = pEntity;
-
-	edict_t *pEdict = ::BaseEntityToEdict(pEntity);
-	if (!pEdict || pEdict->IsFree())
+	if (pEntData)
 	{
-		return NULL;
+		*pEntData = pEntity;
 	}
 
-	return pEdict;
+	if (pEdictData)
+	{
+		edict_t *pEdict = ::BaseEntityToEdict(pEntity);
+		if (pEdict->IsFree())
+		{
+			pEdict = NULL;
+		}
+
+		*pEdictData = pEdict;
+	}
+
+	return true;
 }
+/*
+  <predcrab> AThings is like guaranteed r+ by dvander though
+  <predcrab> he wont even read the rest of the patch to nit stuff
+  <Fyren> Like I wasn't going to r? you anyway!
+  <predcrab> he still sees!
+  <predcrab> he's everywhere
+*/
 
 class VEmptyClass {};
 datamap_t *VGetDataDescMap(CBaseEntity *pThisPtr, int offset)
@@ -312,8 +324,7 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEntData(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity *pEntity;
-	GetEntity(params[1], &pEntity);
+	CBaseEntity *pEntity = GetEntity(params[1]);
 
 	if (!pEntity)
 	{
@@ -342,9 +353,9 @@ static cell_t GetEntData(IPluginContext *pContext, const cell_t *params)
 static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -386,8 +397,7 @@ static cell_t SetEntData(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity *pEntity;
-	GetEntity(params[1], &pEntity);
+	CBaseEntity *pEntity = GetEntity(params[1]);
 
 	if (!pEntity)
 	{
@@ -408,9 +418,9 @@ static cell_t GetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -433,8 +443,7 @@ static cell_t SetEntDataFloat(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEntDataVector(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity *pEntity;
-	GetEntity(params[1], &pEntity);
+	CBaseEntity *pEntity = GetEntity(params[1]);
 
 	if (!pEntity)
 	{
@@ -462,9 +471,9 @@ static cell_t GetEntDataVector(IPluginContext *pContext, const cell_t *params)
 static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -495,8 +504,7 @@ static cell_t SetEntDataVector(IPluginContext *pContext, const cell_t *params)
 /* THIS GUY IS DEPRECATED. */
 static cell_t GetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity *pEntity;
-	GetEntity(params[1], &pEntity);
+	CBaseEntity *pEntity = GetEntity(params[1]);
 
 	if (!pEntity)
 	{
@@ -532,7 +540,10 @@ int CheckBaseHandle(CBaseHandle &hndl)
 	edict_t *pStoredEdict;
 	CBaseEntity *pStoredEntity;
 
-	pStoredEdict = GetEntity(index, &pStoredEntity);
+	if (!IndexToAThings(index, &pStoredEntity, &pStoredEdict))
+	{
+		return -1;
+	}
 
 	if (pStoredEdict == NULL || pStoredEntity == NULL)
 	{
@@ -556,8 +567,7 @@ int CheckBaseHandle(CBaseHandle &hndl)
 
 static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity *pEntity;
-	GetEntity(params[1], &pEntity);
+	CBaseEntity *pEntity = GetEntity(params[1]);
 
 	if (pEntity == NULL)
 	{
@@ -580,9 +590,9 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -599,8 +609,7 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 	{
 		hndl.Set(NULL);
 	} else {
-		CBaseEntity *pOther;
-		GetEntity(params[3], &pOther);
+		CBaseEntity *pOther = GetEntity(params[3]);
 
 		if (!pOther)
 		{
@@ -622,9 +631,9 @@ static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -643,8 +652,7 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
-		CBaseEntity *pOther;
-		GetEntity(params[3], &pOther);
+		CBaseEntity *pOther = GetEntity(params[3]);
 
 		if (!pOther)
 		{
@@ -752,7 +760,7 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 	datamap_t *pMap;
 	typedescription_t *td;
 	char *offset;
-	GetEntity(params[1], &pEntity);
+	pEntity = GetEntity(params[1]);
 
 	if (!pEntity)
 	{
@@ -856,8 +864,7 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity *pEntity;
-	GetEntity(params[1], &pEntity);
+	CBaseEntity *pEntity = GetEntity(params[1]);
 
 	if (!pEntity)
 	{
@@ -880,9 +887,9 @@ static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
 static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -968,9 +975,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	edict_t *pEdict;
 	int bit_count;
 
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1060,9 +1065,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	edict_t *pEdict;
 	int bit_count;
 
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1150,9 +1153,7 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1221,9 +1222,7 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1297,9 +1296,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1367,9 +1364,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1431,8 +1426,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
-		CBaseEntity *pOther;
-		GetEntity(params[4], &pOther);
+		CBaseEntity *pOther = GetEntity(params[4]);
 
 		if (!pOther)
 		{
@@ -1459,9 +1453,7 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 	
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1537,9 +1529,7 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 	
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1621,9 +1611,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	edict_t *pEdict;
 	bool bIsStringIndex;
 	
-	pEdict = GetEntity(params[1], &pEntity);
-
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
@@ -1711,9 +1699,9 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int maxlen;
-	edict_t *pEdict = GetEntity(params[1], &pEntity);
+	edict_t *pEdict;
 
-	if (!pEntity)
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}

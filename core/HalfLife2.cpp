@@ -672,7 +672,10 @@ edict_t *CHalfLife2::GetHandleEntity(CBaseHandle &hndl)
 	edict_t *pStoredEdict;
 	CBaseEntity *pStoredEntity;
 
-	pStoredEdict = GetEntity(index, &pStoredEntity);
+	if (!IndexToAThings(index, &pStoredEntity, &pStoredEdict))
+	{
+		return NULL;
+	}
 
 	if (pStoredEdict == NULL || pStoredEntity == NULL)
 	{
