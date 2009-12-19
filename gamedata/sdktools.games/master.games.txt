@@ -139,4 +139,8 @@
 	{
 		"game"		"NeotokyoSource"
 	}
+	"game.bg2.txt"
+	{
+		"game"		"bg2"
+	}
 }
