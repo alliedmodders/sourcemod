@@ -24,7 +24,7 @@
 			"RemoveDisguise"
 			{
 				"library"	"server"
-				"windows"	"\x51\x56\x8B\xF1\x8B\x8E\x0C\x01\x00\x00\x57\x8B\xBE\x94\x00\x00\x00"
+				"windows"	"\x51\x56\x8B\xF1\x8B\x2A\x2A\x2A\x2A\x2A\x57\x8B\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x3B\xF8"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
 			"Disguise"
@@ -56,8 +56,8 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"288"
-				"linux"		"289"
+				"windows"	"312"
+				"linux"		"313"
 			}
 		}
 	}
