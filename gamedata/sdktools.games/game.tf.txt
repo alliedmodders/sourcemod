@@ -23,7 +23,7 @@
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"258"
+				"windows"	"259"
 				"linux"		"259"
 			}
 			"Weapon_GetSlot"
