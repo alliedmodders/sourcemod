@@ -18,6 +18,7 @@
 		{
 			"game"		"ageofchivalry"
 			"game"		"zps"
+			"game"		"bg2"
 		}
 		
 		"Offsets"

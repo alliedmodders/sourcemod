@@ -134,6 +134,7 @@
 			"game"					"empires"
 			"game"					"gesource"
 			"game"					"NeotokyoSource"
+			"game"					"bg2"
 		}
 
 		"Keys"
@@ -152,6 +153,7 @@
 			"game"					"dod"
 			"game"					"empires"
 			"game"					"NeotokyoSource"
+			"game"					"bg2"
 		}
 		
 		"Keys"
@@ -173,6 +175,7 @@
 			"game"					"ageofchivalry"
 			"game"					"obsidian"
 			"game"					"zombie_master"
+			"game"					"bg2"
 		}
 		
 		"Keys"
