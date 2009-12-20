@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -41,6 +41,20 @@ SH_DECL_HOOK2(IGameEventManager2, FireEvent, SH_NOATTRIB, 0, bool, IGameEvent *,
 
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
 typedef List<EventHook *> EventHookList;
+
+class EventForwardFilter : public IForwardFilter
+{
+	EventInfo *pEventInfo;
+public:
+	EventForwardFilter(EventInfo *pEventInfo) : pEventInfo(pEventInfo)
+	{
+	}
+
+	void Preprocess(IPluginFunction *fun, FwdParamInfo *params)
+	{
+		params[2].val = pEventInfo->bDontBroadcast ? 1 : 0;
+	}
+};
 
 EventManager::EventManager() : m_EventType(0)
 {
@@ -327,6 +341,7 @@ EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name,
 
 		pInfo->pEvent = pEvent;
 		pInfo->pOwner = pContext->GetIdentity();
+		pInfo->bDontBroadcast = false;
 
 		return pInfo;
 	}
@@ -365,6 +380,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	IChangeableForward *pForward;
 	const char *name;
 	cell_t res = Pl_Continue;
+	bool broadcast = bDontBroadcast;
 
 	/* The engine accepts NULL without crashing, so to prevent a crash in SM we ignore these */
 	if (!pEvent)
@@ -390,10 +406,16 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 			HandleSecurity sec(NULL, g_pCoreIdent);
 			Handle_t hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 
+			info.bDontBroadcast = bDontBroadcast;
+
+			EventForwardFilter filter(&info);
+
 			pForward->PushCell(hndl);
 			pForward->PushString(name);
 			pForward->PushCell(bDontBroadcast);
-			pForward->Execute(&res, NULL);
+			pForward->Execute(&res, &filter);
+
+			broadcast = info.bDontBroadcast;
 
 			g_HandleSys.FreeHandle(hndl, &sec);
 		}
@@ -413,6 +435,9 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	{
 		m_EventStack.push(NULL);
 	}
+
+	if (broadcast != bDontBroadcast)
+		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, true, &IGameEventManager2::FireEvent, (pEvent, broadcast));
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -441,6 +466,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		{
 			if (pHook->postCopy)
 			{
+				info.bDontBroadcast = bDontBroadcast;
 				info.pEvent = m_EventCopies.front();
 				info.pOwner = NULL;
 				hndl = g_HandleSys.CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);

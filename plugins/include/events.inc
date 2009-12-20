@@ -241,3 +241,17 @@ native SetEventString(Handle:event, const String:key[], const String:value[]);
  * @error				Invalid or corrupt Handle.     
  */
 native GetEventName(Handle:event, String:name[], maxlength);
+
+/**
+ * Sets whether an event's broadcasting will be disabled or not.
+ *
+ * This has no effect on events Handles that are not from HookEvent
+ * or HookEventEx callbacks.
+ *
+ * @param event         Handle to an event from an event hook.
+ * @param dontBroadcast True to disable broadcasting, false otherwise.
+ * @noreturn
+ * @error               Invalid Handle.
+ */
+native SetEventBroadcast(Handle:event, bool:dontBroadcast);
+

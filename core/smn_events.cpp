@@ -348,6 +348,23 @@ static cell_t sm_SetEventString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_SetEventBroadcast(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	EventInfo *pInfo;
+
+	if ((err=g_HandleSys.ReadHandle(hndl, g_EventManager.GetHandleType(), NULL, (void **)&pInfo))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
+	}
+
+	pInfo->bDontBroadcast = params[2] ? true : false;
+
+	return 1;
+}
+
 REGISTER_NATIVES(gameEventNatives)
 {
 	{"HookEvent",			sm_HookEvent},
@@ -365,5 +382,7 @@ REGISTER_NATIVES(gameEventNatives)
 	{"SetEventInt",			sm_SetEventInt},
 	{"SetEventFloat",		sm_SetEventFloat},
 	{"SetEventString",		sm_SetEventString},
+	{"SetEventBroadcast",   sm_SetEventBroadcast},
 	{NULL,					NULL}
 };
+
