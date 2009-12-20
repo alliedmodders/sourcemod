@@ -176,6 +176,7 @@
 			"game"					"obsidian"
 			"game"					"zombie_master"
 			"game"					"bg2"
+ 			"game"					"insurgency"
 		}
 		
 		"Keys"
