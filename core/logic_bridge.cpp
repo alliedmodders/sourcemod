@@ -104,7 +104,8 @@ static sm_core_t core_bridge =
 	UTIL_TrimWhitespace,
 	log_error,
 	get_cvar_string,
-	UTIL_Format
+	UTIL_Format,
+	UTIL_ReplaceAll
 };
 
 void InitLogicBridge()
