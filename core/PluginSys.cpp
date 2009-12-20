@@ -1125,7 +1125,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	{
 		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s", plugin, error);
 		pl->SetErrorState(
-			pl->GetStatus() == Plugin_BadLoad ? Plugin_BadLoad : Plugin_Failed, 
+			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(), 
 			"%s",
 			error);
 	}
@@ -2321,7 +2321,10 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			char name[PLATFORM_MAX_PATH];
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
-			strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+			if (pl->GetStatus() <= Pl_Paused) 
+				strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+			else
+				strcpy(name, pl->GetFilename());
 
 			if (ReloadPlugin(pl))
 			{
