@@ -2321,7 +2321,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 
 			char name[PLATFORM_MAX_PATH];
 			const sm_plugininfo_t *info = pl->GetPublicInfo();
-			if (pl->GetStatus() <= Pl_Paused) 
+			if (pl->GetStatus() <= Plugin_Paused) 
 				strcpy(name, (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			else
 				strcpy(name, pl->GetFilename());
