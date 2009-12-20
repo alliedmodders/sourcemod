@@ -53,6 +53,7 @@ struct EventInfo
 	}
 	IGameEvent *pEvent;
 	IdentityToken_t *pOwner;
+	bool bDontBroadcast;
 };
 
 struct EventHook

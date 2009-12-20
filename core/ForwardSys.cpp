@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -307,6 +307,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
 	{
 		func = (*iter);
+
+		if (filter)
+			filter->Preprocess(func, temp_info);
 
 		for (unsigned int i=0; i<num_params; i++)
 		{

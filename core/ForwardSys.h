@@ -61,6 +61,14 @@ struct FwdParamInfo
 	ParamType pushedas;
 };
 
+class SourceMod::IForwardFilter
+{
+public:
+	virtual void Preprocess(IPluginFunction *fun, FwdParamInfo *params)
+	{
+	}
+};
+
 class CForward : public IChangeableForward
 {
 public: //ICallable
