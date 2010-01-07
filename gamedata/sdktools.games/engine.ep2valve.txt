@@ -238,7 +238,7 @@
 			"SetUserCvar"
 			{
 				"windows"	"17"
-				"linux"		"55"
+				"linux"		"33"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
