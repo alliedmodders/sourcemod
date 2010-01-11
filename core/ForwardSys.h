@@ -69,6 +69,50 @@ public:
 	}
 };
 
+class FuncIteratorGuard
+{
+	bool triggered;
+	FuncIteratorGuard **pprev;
+	FuncIter *iter;
+	FuncIteratorGuard *next;
+public:
+	FuncIteratorGuard(FuncIteratorGuard **pprev, FuncIter *iter)
+		: triggered(false), pprev(pprev), iter(iter), next(*pprev)
+	{
+		*pprev = this;
+	}
+
+	~FuncIteratorGuard()
+	{
+		*pprev = next;
+	}
+
+	inline bool Triggered()
+	{
+		bool t = triggered;
+		triggered = false;
+		return t;
+	}
+
+	/**
+	 * This should not read from |this| before the NULL check, because FwdSys
+	 * can call (NULL)->FixIteratorChain().
+	 */
+	void FixIteratorChain(FuncIter &other)
+	{
+		FuncIteratorGuard *guard = this;
+		while (guard != NULL)
+		{
+			if (*guard->iter == other)
+			{
+				*(guard->iter) = ++(*(guard->iter));
+				guard->triggered = true;
+			}
+			guard = guard->next;
+		}
+	}
+};
+
 class CForward : public IChangeableForward
 {
 public: //ICallable
@@ -111,6 +155,7 @@ protected:
 	 */
 	mutable List<IPluginFunction *> m_functions;
 	mutable List<IPluginFunction *> m_paused;
+	FuncIteratorGuard *m_IterGuard;
 
 	/* Type and name information */
 	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];

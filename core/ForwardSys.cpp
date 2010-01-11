@@ -255,6 +255,7 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	}
 
 	CForward *pForward = g_Forwards.ForwardMake();
+	pForward->m_IterGuard = NULL;
 	pForward->m_curparam = 0;
 	pForward->m_ExecType = et;
 	snprintf(pForward->m_name, FORWARDS_NAME_MAX, "%s", name ? name : "");
@@ -294,7 +295,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	cell_t high_result = 0;
 	cell_t low_result = 0;
 	int err;
-	unsigned int failed=0, success=0;
+	unsigned int success=0;
 	unsigned int num_params = m_curparam;
 	FwdParamInfo temp_info[SP_MAX_EXEC_PARAMS];
 	FwdParamInfo *param;
@@ -304,7 +305,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 	memcpy(temp_info, m_params, sizeof(m_params));
 	m_curparam = 0;
 
-	for (iter=m_functions.begin(); iter!=m_functions.end(); iter++)
+	FuncIteratorGuard guard(&m_IterGuard, &iter);
+
+	while (iter != m_functions.end())
 	{
 		func = (*iter);
 
@@ -362,11 +365,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 		}
 		
 		/* Call the function and deal with the return value. */
-		if ((err=func->Execute(&cur_result)) != SP_ERROR_NONE)
-		{
-			failed++;
-		}
-		else
+		if ((err=func->Execute(&cur_result)) == SP_ERROR_NONE)
 		{
 			success++;
 			switch (m_ExecType)
@@ -406,6 +405,9 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 				}
 			}
 		}
+
+		if (!guard.Triggered())
+			iter++;
 	}
 
 done:
@@ -685,6 +687,7 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 	{
 		if ((*iter) == func)
 		{
+			m_IterGuard->FixIteratorChain(iter);
 			found = true;
 			lst->erase(iter);
 			break;

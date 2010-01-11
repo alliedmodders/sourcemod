@@ -58,6 +58,40 @@ const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String}
 typedef List<const ConVar *> ConVarList;
 KTrie<ConVarInfo *> convar_cache;
 
+class ConVarReentrancyGuard
+{
+	ConVar *cvar;
+	ConVarReentrancyGuard *up;
+public:
+	static ConVarReentrancyGuard *chain;
+
+	ConVarReentrancyGuard(ConVar *cvar)
+		: cvar(cvar), up(chain)
+	{
+		chain = this;
+	}
+
+	~ConVarReentrancyGuard()
+	{
+		assert(chain == this);
+		chain = up;
+	}
+
+	static bool IsCvarInChain(ConVar *cvar)
+	{
+		ConVarReentrancyGuard *guard = chain;
+		while (guard != NULL)
+		{
+			if (guard->cvar == cvar)
+				return true;
+			guard = guard->up;
+		}
+		return false;
+	}
+};
+
+ConVarReentrancyGuard *ConVarReentrancyGuard::chain = NULL;
+
 ConVarManager::ConVarManager() : m_ConVarType(0), m_bIsDLLQueryHooked(false), m_bIsVSPQueryHooked(false)
 {
 }
@@ -536,7 +570,8 @@ void ConVarManager::UnhookConVarChange(ConVar *pConVar, IPluginFunction *pFuncti
 		}
 
 		/* If the forward now has 0 functions in it... */
-		if (pForward->GetFunctionCount() == 0)
+		if (pForward->GetFunctionCount() == 0 &&
+			!ConVarReentrancyGuard::IsCvarInChain(pConVar))
 		{
 			/* Free this forward */
 			g_Forwards.ReleaseForward(pForward);
@@ -647,6 +682,8 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue)
 
 	if (pForward != NULL)
 	{
+		ConVarReentrancyGuard guard(pConVar);
+
 		/* Now call forwards in plugins that have hooked this */
 		pForward->PushCell(pInfo->handle);
 		pForward->PushString(oldValue);
