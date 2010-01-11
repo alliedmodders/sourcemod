@@ -457,10 +457,6 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 	{
 		return 30;
 	}
-	else if (version == SOURCE_ENGINE_ORANGEBOXVALVE)
-	{
-		return 35;
-	}
 	else if (version == SOURCE_ENGINE_LEFT4DEAD)
 	{
 		return 40;
