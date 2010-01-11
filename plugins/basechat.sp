@@ -51,8 +51,6 @@ new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{
 
 new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
 
-new bool:g_DoColor = true;
-
 new g_GameEngine = SOURCE_SDK_UNKNOWN;
 
 public OnPluginStart()
@@ -78,14 +76,6 @@ public OnPluginStart()
 	RegAdminCmd("sm_chat", Command_SmChat, ADMFLAG_CHAT, "sm_chat <message> - sends message to admins");
 	RegAdminCmd("sm_psay", Command_SmPsay, ADMFLAG_CHAT, "sm_psay <name or #userid> <message> - sends private message");
 	RegAdminCmd("sm_msay", Command_SmMsay, ADMFLAG_CHAT, "sm_msay <message> - sends message as a menu panel");
-	
-	decl String:modname[64];
-	GetGameFolderName(modname, sizeof(modname));
-	
-	if (strcmp(modname, "hl2mp") == 0)
-	{
-		g_DoColor = false;
-	}
 }
 
 public Action:Command_SayChat(client, args)
@@ -145,16 +135,8 @@ public Action:Command_SayChat(client, args)
 		decl String:name2[64];
 		GetClientName(target, name2, sizeof(name2));
 	
-		if (g_DoColor)
-		{
-			PrintToChat(client, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
-			PrintToChat(target, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
-		}
-		else
-		{
-			PrintToChat(client, "(Private to %s) %s: %s", name2, name, message[len]);
-			PrintToChat(target, "(Private to %s) %s: %s", name2, name, message[len]);			
-		}
+		PrintToChat(client, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
+		PrintToChat(target, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
 
 		LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);		
 	}
@@ -352,24 +334,12 @@ public Action:Command_SmPsay(client, args)
 	{
 		PrintToServer("(Private: %s) %s: %s", name2, name, message);
 	}
-	else if (g_DoColor)
+	else
 	{
 		PrintToChat(client, "\x04(Private: %s) %s: \x01%s", name2, name, message);
 	}
-	else
-	{
-		PrintToChat(client, "(Private: %s) %s: %s", name2, name, message);
-	}
 
-	if (g_DoColor)
-	{
-		PrintToChat(target, "\x04(Private: %s) %s: \x01%s", name2, name, message);
-	}
-	else
-	{
-		PrintToChat(target, "(Private: %s) %s: %s", name2, name, message);		
-	}
-
+	PrintToChat(target, "\x04(Private: %s) %s: \x01%s", name2, name, message);
 	LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
 	
 	return Plugin_Handled;	
@@ -419,14 +389,7 @@ SendChatToAll(client, String:message[])
 		}
 		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
 		
-		if (g_DoColor)
-		{
-			PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
-		}
-		else
-		{
-			PrintToChat(i, "%s: %s", nameBuf, message);
-		}
+		PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
 	}
 }
 
@@ -452,14 +415,7 @@ SendChatToAdmins(from, String:message[])
 	{
 		if (IsClientInGame(i) && (from == i || CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT)))
 		{
-			if (g_DoColor)
-			{
-				PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
-			}
-			else
-			{
-				PrintToChat(i, "(%sADMINS) %N: %s", fromAdmin ? "" : "TO ", from, message);
-			}
+			PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
 		}	
 	}
 }
