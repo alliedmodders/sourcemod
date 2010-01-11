@@ -109,9 +109,6 @@ public Action:Command_SayChat(client, args)
 	decl String:message[192];
 	strcopy(message, 192, text[startidx+msgStart]);
 	
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-	
 	if (msgStart == 1 && CheckCommandAccess(client, "sm_say", ADMFLAG_CHAT)) // sm_say alias
 	{
 		SendChatToAll(client, message);
@@ -131,12 +128,9 @@ public Action:Command_SayChat(client, args)
 		
 		if (target == -1 || len == -1)
 			return Plugin_Handled;
-		
-		decl String:name2[64];
-		GetClientName(target, name2, sizeof(name2));
 	
-		PrintToChat(client, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
-		PrintToChat(target, "\x04(Private to %s) %s: \x01%s", name2, name, message[len]);
+		PrintToChat(client, "\x04(Private to %N) %N: \x01%s", target, client, message[len]);
+		PrintToChat(target, "\x04(Private to %N) %N: \x01%s", target, client, message[len]);
 
 		LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);		
 	}
@@ -253,9 +247,6 @@ public Action:Command_SmTsay(client, args)
 	GetCmdArgString(text, sizeof(text));
 	
 	new len = BreakString(text, colorStr, 16);
- 
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
 		
 	new color = FindColor(colorStr);
 	new String:nameBuf[MAX_NAME_LENGTH];
@@ -317,7 +308,7 @@ public Action:Command_SmPsay(client, args)
 	if (target == -1)
 		return Plugin_Handled;	
 		
-	decl String:name[64], String:name2[64];
+	decl String:name[64];
 
 	if (client == 0)
 	{
@@ -328,18 +319,16 @@ public Action:Command_SmPsay(client, args)
 		GetClientName(client, name, sizeof(name));
 	}
 
-	GetClientName(target, name2, sizeof(name2));
-
 	if (client == 0)
 	{
-		PrintToServer("(Private: %s) %s: %s", name2, name, message);
+		PrintToServer("(Private: %N) %s: %s", target, name, message);
 	}
 	else
 	{
-		PrintToChat(client, "\x04(Private: %s) %s: \x01%s", name2, name, message);
+		PrintToChat(client, "\x04(Private: %N) %s: \x01%s", target, name, message);
 	}
 
-	PrintToChat(target, "\x04(Private: %s) %s: \x01%s", name2, name, message);
+	PrintToChat(target, "\x04(Private: %N) %s: \x01%s", target, name, message);
 	LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
 	
 	return Plugin_Handled;	
@@ -356,10 +345,7 @@ public Action:Command_SmMsay(client, args)
 	decl String:text[192];
 	GetCmdArgString(text, sizeof(text));
 
-	decl String:name[64];
-	GetClientName(client, name, sizeof(name));
-		
-	SendPanelToAll(name, text);
+	SendPanelToAll(client, text);
 
 	LogAction(client, -1, "\"%L\" triggered sm_msay (text %s)", client, text);
 	
@@ -435,10 +421,10 @@ SendDialogToOne(client, color, String:text[], any:...)
 	CloseHandle(kv);	
 }
 
-SendPanelToAll(String:name[], String:message[])
+SendPanelToAll(from, String:message[])
 {
 	decl String:title[100];
-	Format(title, 64, "%s:", name);
+	Format(title, 64, "%N:", from);
 	
 	ReplaceString(message, 192, "\\n", "\n");
 	
