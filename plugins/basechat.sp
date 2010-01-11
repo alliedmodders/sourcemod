@@ -51,8 +51,6 @@ new g_Colors[13][3] = {{255,255,255},{255,0,0},{0,255,0},{0,0,255},{255,255,0},{
 
 new Handle:g_Cvar_Chatmode = INVALID_HANDLE;
 
-new bool:g_DoColor = true;
-
 new g_GameEngine = SOURCE_SDK_UNKNOWN;
 
 public OnPluginStart()
@@ -78,14 +76,6 @@ public OnPluginStart()
 	RegAdminCmd("sm_chat", Command_SmChat, ADMFLAG_CHAT, "sm_chat <message> - sends message to admins");
 	RegAdminCmd("sm_psay", Command_SmPsay, ADMFLAG_CHAT, "sm_psay <name or #userid> <message> - sends private message");
 	RegAdminCmd("sm_msay", Command_SmMsay, ADMFLAG_CHAT, "sm_msay <message> - sends message as a menu panel");
-	
-	decl String:modname[64];
-	GetGameFolderName(modname, sizeof(modname));
-	
-	if (strcmp(modname, "hl2mp") == 0)
-	{
-		g_DoColor = false;
-	}
 }
 
 public Action:Command_SayChat(client, args)
@@ -125,12 +115,12 @@ public Action:Command_SayChat(client, args)
 	if (msgStart == 1 && CheckCommandAccess(client, "sm_say", ADMFLAG_CHAT)) // sm_say alias
 	{
 		SendChatToAll(client, message);
-		LogAction(client, -1, "%L triggered sm_say (text %s)", client, message);
+		LogAction(client, -1, "\"%L\" triggered sm_say (text %s)", client, message);
 	}
 	else if (msgStart == 3 && CheckCommandAccess(client, "sm_csay", ADMFLAG_CHAT)) // sm_csay alias
 	{
 		DisplayCenterTextToAll(client, message);
-		LogAction(client, -1, "%L triggered sm_csay (text %s)", client, text);		
+		LogAction(client, -1, "\"%L\" triggered sm_csay (text %s)", client, text);		
 	}	
 	else if (msgStart == 2 && CheckCommandAccess(client, "sm_psay", ADMFLAG_CHAT)) // sm_psay alias
 	{
@@ -156,7 +146,7 @@ public Action:Command_SayChat(client, args)
 			PrintToChat(target, "(Private to %s) %s: %s", name2, name, message[len]);			
 		}
 
-		LogAction(client, -1, "%L triggered sm_psay to %L (text %s)", client, target, message);		
+		LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);		
 	}
 	else
 		return Plugin_Continue;
@@ -191,7 +181,7 @@ public Action:Command_SayAdmin(client, args)
 	strcopy(message, 192, text[startidx+1]);
 
 	SendChatToAdmins(client, message);
-	LogAction(client, -1, "%L triggered sm_chat (text %s)", client, message);
+	LogAction(client, -1, "\"%L\" triggered sm_chat (text %s)", client, message);
 	
 	return Plugin_Handled;	
 }
@@ -208,7 +198,7 @@ public Action:Command_SmSay(client, args)
 	GetCmdArgString(text, sizeof(text));
 
 	SendChatToAll(client, text);
-	LogAction(client, -1, "%L triggered sm_say (text %s)", client, text);
+	LogAction(client, -1, "\"%L\" triggered sm_say (text %s)", client, text);
 	
 	return Plugin_Handled;		
 }
@@ -226,7 +216,7 @@ public Action:Command_SmCsay(client, args)
 	
 	DisplayCenterTextToAll(client, text);
 	
-	LogAction(client, -1, "%L triggered sm_csay (text %s)", client, text);
+	LogAction(client, -1, "\"%L\" triggered sm_csay (text %s)", client, text);
 	
 	return Plugin_Handled;		
 }
@@ -254,7 +244,7 @@ public Action:Command_SmHsay(client, args)
 		PrintHintText(i, "%s: %s", nameBuf, text);
 	}
 	
-	LogAction(client, -1, "%L triggered sm_hsay (text %s)", client, text);
+	LogAction(client, -1, "\"%L\" triggered sm_hsay (text %s)", client, text);
 	
 	return Plugin_Handled;	
 }
@@ -294,7 +284,7 @@ public Action:Command_SmTsay(client, args)
 		SendDialogToOne(i, color, "%s: %s", nameBuf, text[len]);
 	}
 
-	LogAction(client, -1, "%L triggered sm_tsay (text %s)", client, text);
+	LogAction(client, -1, "\"%L\" triggered sm_tsay (text %s)", client, text);
 	
 	return Plugin_Handled;	
 }
@@ -311,7 +301,7 @@ public Action:Command_SmChat(client, args)
 	GetCmdArgString(text, sizeof(text));
 
 	SendChatToAdmins(client, text);
-	LogAction(client, -1, "%L triggered sm_chat (text %s)", client, text);
+	LogAction(client, -1, "\"%L\" triggered sm_chat (text %s)", client, text);
 	
 	return Plugin_Handled;	
 }
@@ -370,7 +360,7 @@ public Action:Command_SmPsay(client, args)
 		PrintToChat(target, "(Private: %s) %s: %s", name2, name, message);		
 	}
 
-	LogAction(client, -1, "%L triggered sm_psay to %L (text %s)", client, target, message);
+	LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
 	
 	return Plugin_Handled;	
 }
@@ -391,7 +381,7 @@ public Action:Command_SmMsay(client, args)
 		
 	SendPanelToAll(name, text);
 
-	LogAction(client, -1, "%L triggered sm_msay (text %s)", client, text);
+	LogAction(client, -1, "\"%L\" triggered sm_msay (text %s)", client, text);
 	
 	return Plugin_Handled;		
 }
@@ -419,14 +409,7 @@ SendChatToAll(client, String:message[])
 		}
 		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
 		
-		if (g_DoColor)
-		{
-			PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
-		}
-		else
-		{
-			PrintToChat(i, "%s: %s", nameBuf, message);
-		}
+		PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
 	}
 }
 
@@ -452,14 +435,7 @@ SendChatToAdmins(from, String:message[])
 	{
 		if (IsClientInGame(i) && (from == i || CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT)))
 		{
-			if (g_DoColor)
-			{
-				PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
-			}
-			else
-			{
-				PrintToChat(i, "(%sADMINS) %N: %s", fromAdmin ? "" : "TO ", from, message);
-			}
+			PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
 		}	
 	}
 }
