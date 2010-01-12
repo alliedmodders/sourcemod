@@ -150,9 +150,7 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[2], &key);
 
 	if (!gc->GetAddress(key, &val))
-	{
-		return NULL;
-	}
+		return 0;
 
 	return (cell_t)val;
 }
