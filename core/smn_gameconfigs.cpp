@@ -128,6 +128,35 @@ static cell_t smn_GameConfGetKeyValue(IPluginContext *pCtx, const cell_t *params
 	return 1;
 }
 
+
+static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	IGameConfig *gc;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=g_HandleSys.ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid game config handle %x (error %d)", hndl, herr);
+	}
+
+	char *key;
+	void* val;
+	pCtx->LocalToString(params[2], &key);
+
+	if (!gc->GetAddress(key, &val))
+	{
+		return NULL;
+	}
+
+	return (cell_t)val;
+}
+
 static GameConfigsNatives s_GameConfigsNatives;
 
 REGISTER_NATIVES(gameconfignatives)
@@ -135,5 +164,6 @@ REGISTER_NATIVES(gameconfignatives)
 	{"LoadGameConfigFile",			smn_LoadGameConfigFile},
 	{"GameConfGetOffset",			smn_GameConfGetOffset},
 	{"GameConfGetKeyValue",			smn_GameConfGetKeyValue},
+	{"GameConfGetAddress",			smn_GameConfGetAddress},
 	{NULL,							NULL}
 };

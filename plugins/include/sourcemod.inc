@@ -386,6 +386,16 @@ native GameConfGetOffset(Handle:gc, const String:key[]);
  */
 native bool:GameConfGetKeyValue(Handle:gc, const String:key[], String:buffer[], maxlen);
 
+/*
+ * Finds an address calculation in a GameConfig file,
+ * performs LoadFromAddress on it as appropriate, then returns the final address.
+ *
+ * @param gameconf      GameConfig Handle, or INVALID_HANDLE to use sdktools.games.txt.
+ * @param name          Name of the property to find.
+ * @return              An address calculated on success, or 0 on failure.
+ */
+native Address:GameConfGetAddress(Handle:gameconf, const String:name[]);
+
 /**
  * Returns the operating system's "tick count," which is a number of 
  * milliseconds since the operating system loaded.  This can be used
@@ -629,6 +639,41 @@ native FeatureStatus:GetFeatureStatus(FeatureType:type, const String:name[]);
  */
 native RequireFeature(FeatureType:type, const String:name[],
                       const String:fmt[]="", any:...);
+
+/**
+ * Represents how many bytes we can read from an address with one load
+ */
+enum NumberType
+{
+    NumberType_Int8,
+    NumberType_Int16,
+    NumberType_Int32
+};
+
+enum Address
+{
+    Address_Null = 0,              //a typical invalid result when an address lookup fails
+    Address_MinimumValid = 0x10000 //addresses below this value are considered invalid to use for Load/Store
+};
+
+/**
+ * Load up to 4 bytes from a memory address.
+ *
+ * @param addr          Address to a memory location.
+ * @param size          How many bytes should be read.
+ * @return              The value that is stored at that address.
+ */
+native LoadFromAddress(Address:addr, NumberType:size);
+
+/**
+ * Store up to 4 bytes to a memory address.
+ *
+ * @param addr          Address to a memory location.
+ * @param data          Value to store at the address.
+ * @param size          How many bytes should be written.
+ * @noreturn
+ */
+native StoreToAddress(Address:addr, data, NumberType:size); 
 
 #include <helpers>
 #include <entity>

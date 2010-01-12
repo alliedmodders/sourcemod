@@ -65,6 +65,7 @@ public: //IGameConfig
 	bool GetOffset(const char *key, int *value);
 	SendProp *GetSendProp(const char *key);
 	bool GetMemSig(const char *key, void **addr);
+	bool GetAddress(const char *key, void **addr);
 public:
 	void IncRefCount();
 	unsigned int DecRefCount();
@@ -93,6 +94,24 @@ private:
 	/* Custom Sections */
 	unsigned int m_CustomLevel;
 	ITextListener_SMC *m_CustomHandler;
+
+	/* Support for reading Addresses */
+	struct AddressConf
+	{
+		char signatureName[64];
+		int readCount;
+		int read[8];
+
+		AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read);
+
+		AddressConf() {}
+	};
+
+	char m_Address[64];
+	char m_AddressSignature[64];
+	int m_AddressReadCount;
+	int m_AddressRead[8];
+	KTrie<AddressConf> *m_pAddresses;
 };
 
 class GameConfigManager : 

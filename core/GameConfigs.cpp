@@ -63,6 +63,9 @@ static char g_GameName[256] = {'$', '\0'};
 #define PSTATE_GAMEDEFS_CRC				9
 #define PSTATE_GAMEDEFS_CRC_BINARY		10
 #define PSTATE_GAMEDEFS_CUSTOM			11
+#define PSTATE_GAMEDEFS_ADDRESSES		12
+#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	13
+#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	14
 
 #if defined PLATFORM_WINDOWS
 #define PLATFORM_NAME				"windows"
@@ -132,6 +135,7 @@ CGameConfig::CGameConfig(const char *file)
 	m_pOffsets = sm_trie_create();
 	m_pProps = sm_trie_create();
 	m_pKeys = sm_trie_create();
+	m_pAddresses = new KTrie<AddressConf>();
 	m_pSigs = sm_trie_create();
 	m_pStrings = new BaseStringTable(512);
 	m_RefCount = 0;
@@ -145,6 +149,7 @@ CGameConfig::~CGameConfig()
 	sm_trie_destroy(m_pOffsets);
 	sm_trie_destroy(m_pProps);
 	sm_trie_destroy(m_pKeys);
+	delete m_pAddresses;
 	sm_trie_destroy(m_pSigs);
 	delete m_pStrings;
 }
@@ -211,6 +216,10 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				m_ParseState = PSTATE_GAMEDEFS_CRC;
 				bShouldBeReadingDefault = false;
+			}
+			else if (strcmp(name, "Addresses") == 0)
+			{
+				m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
 			}
 			else
 			{
@@ -293,12 +302,41 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			return m_CustomHandler->ReadSMC_NewSection(states, name);
 			break;
 		}
+	case PSTATE_GAMEDEFS_ADDRESSES:
+		{
+			m_Address[0] = '\0';
+			m_AddressSignature[0] = '\0';
+			m_AddressReadCount = 0;
+
+			strncopy(m_Address, name, sizeof(m_Address));
+			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS;
+
+			break;
+		}
+	case PSTATE_GAMEDEFS_ADDRESSES_ADDRESS:
+		{
+			if (strcmp(name, PLATFORM_NAME) == 0)
+			{
+				m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ;
+			}
+			else
+			{
+				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0)
+				{
+					g_Logger.LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
+					g_Logger.LogError("[SM] Unrecognized platform \"%s\"", name);
+				}
+				m_IgnoreLevel = 1;
+			}
+			break;
+		}
 	/* No sub-sections allowed:
 	 case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 	 case PSTATE_GAMEDEFS_KEYS:
 	 case PSTATE_GAMEDEFS_SUPPORTED:
 	 case PSTATE_GAMEDEFS_SIGNATURES_SIG:
 	 case PSTATE_GAMEDEFS_CRC_BINARY:
+	 case PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ:
 	 */
 	default:
 		{
@@ -375,6 +413,21 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			{
 				bShouldBeReadingDefault = true;
 			}
+		}
+	} else if (m_ParseState == PSTATE_GAMEDEFS_ADDRESSES_ADDRESS || m_ParseState == PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ) {
+		if (strcmp(key, "read") == 0) {
+			int limit = sizeof(m_AddressRead)/sizeof(m_AddressRead[0]);
+			if (m_AddressReadCount < limit)
+			{
+				m_AddressRead[m_AddressReadCount] = atoi(value);
+				m_AddressReadCount++;
+			}
+			else
+			{
+				g_Logger.LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
+			}
+		} else if (strcmp(key, "signature") == 0) {
+			strncopy(m_AddressSignature, value, sizeof(m_AddressSignature));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM) {
 		return m_CustomHandler->ReadSMC_KeyValue(states, key, value);
@@ -550,6 +603,36 @@ skip_find:
 
 			break;
 		}
+	case PSTATE_GAMEDEFS_ADDRESSES:
+		{
+			m_ParseState = PSTATE_GAMEDEFS;
+			break;
+		}
+	case PSTATE_GAMEDEFS_ADDRESSES_ADDRESS:
+		{
+			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
+
+			if (m_Address[0] == '\0')
+			{
+				g_Logger.LogError("[SM] Address sections must have names (gameconf \"%s\")", m_CurFile);
+				break;
+			}
+			if (m_AddressSignature[0] == '\0')
+			{
+				g_Logger.LogError("[SM] Address section for \"%s\" did not specify a signature (gameconf \"%s\")", m_Address, m_CurFile);
+				break;
+			}
+
+			AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead);
+			m_pAddresses->replace(m_Address, addrConf);
+
+			break;
+		}
+	case PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ:
+		{
+			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS;
+			break;
+		}
 	}
 
 	return SMCResult_Continue;
@@ -689,6 +772,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	sm_trie_clear(m_pOffsets);
 	sm_trie_clear(m_pProps);
 	sm_trie_clear(m_pKeys);
+	m_pAddresses->clear();
 
 	char path[PLATFORM_MAX_PATH];
 
@@ -835,6 +919,53 @@ const char *CGameConfig::GetKeyValue(const char *key)
 		return NULL;
 	}
 	return m_pStrings->GetString((int)obj);
+}
+
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
+bool CGameConfig::GetAddress(const char *key, void **retaddr)
+{
+	AddressConf *addrConf;
+
+	addrConf = m_pAddresses->retrieve(key);
+	if (!addrConf)
+	{
+		*retaddr = NULL;
+		return false;
+	}
+
+	void *addr;
+	if (!GetMemSig(addrConf->signatureName, &addr))
+	{
+		*retaddr = NULL;
+		return false;
+	}
+
+	for (int i = 0; i < addrConf->readCount; ++i)
+	{
+		int offset = addrConf->read[i];
+
+		//NULLs in the middle of an indirection chain are bad, end NULL is ok
+		if (addr ==  NULL || reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+		{
+			*retaddr = NULL;
+			return false;
+		}
+		addr = *(reinterpret_cast<void**>(reinterpret_cast<uint8_t*>(addr) + offset));
+	}
+
+	*retaddr = addr;
+	return true;
+}
+
+CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read)
+{
+	unsigned readLimit = min(readCount, sizeof(this->read) / sizeof(this->read[0]));
+
+	strncopy(signatureName, sigName, sizeof(signatureName) / sizeof(signatureName[0]));
+	this->readCount = readLimit;
+	memcpy(&this->read[0], read, sizeof(this->read[0])*readLimit);
 }
 
 SendProp *CGameConfig::GetSendProp(const char *key)

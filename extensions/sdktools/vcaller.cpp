@@ -250,7 +250,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 
 	unsigned char *ptr = vc->stk_get();
 
-	unsigned int numparams = (unsigned)params[0];
+	const unsigned int numparams = (unsigned)params[0];
 	unsigned int startparam = 2;
 	/* Do we need to write a thispointer?  */
 
@@ -306,6 +306,25 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				}
 
 				*(void **)ptr = g_EntList;
+			}
+			break;
+		case ValveCall_Raw:
+			{
+				//params[startparam] is an address to a pointer to THIS
+				//params following this are params to the method we will invoke later
+				if (startparam > numparams)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Expected a ThisPtr address, it wasn't found");
+				}
+
+				//note: varargs pawn args are passed by-ref
+				cell_t *cell;
+				pContext->LocalToPhysAddr(params[startparam], &cell);
+				void *thisptr = reinterpret_cast<void*>(*cell);
+
+				*(void **)ptr = thisptr;
+				startparam++;
 			}
 			break;
 		}

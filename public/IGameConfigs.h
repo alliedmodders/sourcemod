@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_GAMECONFIG_NAME			"IGameConfigManager"
-#define SMINTERFACE_GAMECONFIG_VERSION		5
+#define SMINTERFACE_GAMECONFIG_VERSION		6
 
 class SendProp;
 
@@ -89,6 +89,15 @@ namespace SourceMod
 		 *						address is NULL.
 		 */
 		virtual bool GetMemSig(const char *key, void **addr) =0;
+
+		/**
+		 * @brief Retrieves the value of an address from the "Address" section.
+		 *
+		 * @param key			Key to retrieve from the Address section.
+		 * @param addr          Pointer to store the memory address.
+		 * @return				True on success, false on failure.
+		 */
+		virtual bool GetAddress(const char *key, void **addr) =0;
 	};
 
 	/**

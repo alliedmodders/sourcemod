@@ -673,6 +673,77 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+enum NumberType
+{
+	NumberType_Int8,
+	NumberType_Int16,
+	NumberType_Int32
+};
+
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
+static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
+{
+	void *addr = reinterpret_cast<void*>(params[1]);
+
+	if (addr == NULL)
+	{
+		pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+	NumberType size = static_cast<NumberType>(params[2]);
+
+	switch(size)
+	{
+	case NumberType_Int8:
+		return *reinterpret_cast<uint8_t*>(addr);
+	case NumberType_Int16:
+		return *reinterpret_cast<uint16_t*>(addr);
+	case NumberType_Int32:
+		return *reinterpret_cast<uint32_t*>(addr);
+	default:
+		pContext->ThrowNativeError("Invalid number types %d", size);
+	}
+
+	return 1;
+}
+
+
+static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
+{
+	void *addr = reinterpret_cast<void*>(params[1]);
+
+	if (addr == NULL)
+	{
+		pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+	cell_t data = params[2];
+
+	NumberType size = static_cast<NumberType>(params[3]);
+
+	switch(size)
+	{
+	case NumberType_Int8:
+		*reinterpret_cast<uint8_t*>(addr) = data;
+	case NumberType_Int16:
+		*reinterpret_cast<uint16_t*>(addr) = data;
+	case NumberType_Int32:
+		*reinterpret_cast<uint32_t*>(addr) = data;
+	default:
+		pContext->ThrowNativeError("Invalid number types %d", size);
+	}
+
+	return 1;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"AutoExecConfig",			AutoExecConfig},
@@ -699,6 +770,8 @@ REGISTER_NATIVES(coreNatives)
 	{"VerifyCoreVersion",		VerifyCoreVersion},
 	{"GetFeatureStatus",        GetFeatureStatus},
 	{"RequireFeature",          RequireFeature},
+	{"LoadFromAddress",         LoadFromAddress},
+	{"StoreToAddress",          StoreToAddress},
 	{NULL,						NULL},
 };
 
