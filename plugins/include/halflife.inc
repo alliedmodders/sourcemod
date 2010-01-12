@@ -40,7 +40,9 @@
 #define SOURCE_SDK_DARKMESSIAH		15		/**< Modified version of original engine used by Dark Messiah (no SDK) */
 #define SOURCE_SDK_EPISODE1			20		/**< SDK+Engine released after Episode 1 */
 #define SOURCE_SDK_EPISODE2			30		/**< SDK+Engine released after Episode 2/Orange Box */
+#define SOURCE_SDK_EPISODE2VALVE	35		/**< SDK+Engine released after Episode 2/Orange Box */
 #define SOURCE_SDK_LEFT4DEAD		40		/**< Engine released after Left 4 Dead (no SDK yet) */
+#define SOURCE_SDK_LEFT4DEAD2		50		/**< Engine released after Left 4 Dead 2 (no SDK yet) */
 
 #define MOTDPANEL_TYPE_TEXT		0	/**< Treat msg as plain text */
 #define MOTDPANEL_TYPE_INDEX	1	/**< Msg is auto determined by the engine */
