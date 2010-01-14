@@ -670,7 +670,8 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot register \"sm\" command");
+		g_Logger.LogError("Request to register \"sm\" command denied.");
+		return 0;
 	}
 
 	pContext->LocalToString(params[3], &help);
@@ -698,7 +699,8 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot register \"sm\" command");
+		g_Logger.LogError("Request to register \"sm\" command denied.");
+		return 0;
 	}
 
 	pContext->LocalToString(params[3], &help);
@@ -729,7 +731,8 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 
 	if (strcasecmp(name, "sm") == 0)
 	{
-		return pContext->ThrowNativeError("Cannot register \"sm\" command");
+		g_Logger.LogError("Request to register \"sm\" command denied.");
+		return 0;
 	}
 
 	pContext->LocalToString(params[4], &help);
