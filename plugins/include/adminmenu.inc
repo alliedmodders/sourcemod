@@ -38,8 +38,9 @@
 /* Decide whether topmenus should be required */
 #if !defined REQUIRE_PLUGIN
  #if defined REQUIRE_EXTENSIONS
- #define TEMP_REQUIRE_EXTENSIONS
- #undef REQUIRE_EXTENSIONS
+  #define TEMP_REQUIRE_EXTENSIONS
+  #undef REQUIRE_EXTENSIONS
+ #endif
 #endif
 
 #include <topmenus>
