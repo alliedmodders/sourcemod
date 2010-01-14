@@ -324,14 +324,14 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 	{
 		ConsolePrint(" SourceMod was developed by AlliedModders, LLC.");
 		ConsolePrint(" Development would not have been possible without the following people:");
-		ConsolePrint("  David \"BAILOPAN\" Anderson, lead developer");
-		ConsolePrint("  Borja \"faluco\" Ferrer, core developer");
-		ConsolePrint("  Scott \"DS\" Ehlert, core developer");
-		ConsolePrint("  Matt \"pRED\" Woodrow, core developer");
-		ConsolePrint("  Michael \"ferret\" McKoy, plugin developer");
-		ConsolePrint("  Pavol \"PM OnoTo\" Marko, SourceHook developer");
-		ConsolePrint(" Special thanks to Viper of GameConnect");
-		ConsolePrint(" Special thanks to Mani of Mani-Admin-Plugin");
+		ConsolePrint("  David \"BAILOPAN\" Anderson");
+		ConsolePrint("  Matt \"pRED\" Woodrow");
+		ConsolePrint("  Scott \"DS\" Ehlert");
+		ConsolePrint("  Fyren");
+		ConsolePrint("  Borja \"faluco\" Ferrer");
+		ConsolePrint("  Pavol \"PM OnoTo\" Marko");
+		ConsolePrint(" Special thanks to Liam, ferret, and Mani");
+		ConsolePrint(" Special thanks to Viper and SteamFriends");
 		ConsolePrint(" http://www.sourcemod.net/");
 	}
 	else if (strcmp(cmdname, "version") == 0)
