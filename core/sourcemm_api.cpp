@@ -209,7 +209,9 @@ void SourceMod_Core::OnVSPListening(IServerPluginCallbacks *iface)
 
 void SourceMod_Core::OnUnlinkConCommandBase(PluginId id, ConCommandBase *pCommand)
 {
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	Global_OnUnlinkConCommandBase(pCommand);
+#endif
 }
 
 #else
