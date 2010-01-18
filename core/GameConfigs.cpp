@@ -39,7 +39,7 @@
 #include "MemoryUtils.h"
 #include "LibrarySys.h"
 #include "HandleSys.h"
-#include "sm_crc32.h"
+#include "logic_bridge.h"
 
 #if defined PLATFORM_LINUX
 #include <dlfcn.h>

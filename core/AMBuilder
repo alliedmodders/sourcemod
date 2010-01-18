@@ -14,7 +14,6 @@ for i in SM.sdkInfo:
 		'AdminCache.cpp',
 		'ExtensionSys.cpp',
 		'MenuStyle_Valve.cpp',
-		'sm_crc32.cpp',
 		'logic_bridge.cpp',
 		'smn_entities.cpp',
 		'sm_stringutil.cpp',

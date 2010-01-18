@@ -473,3 +473,4 @@ private:
 extern CPluginManager g_PluginSys;
 
 #endif //_INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
+

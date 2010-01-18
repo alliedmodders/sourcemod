@@ -36,6 +36,7 @@
 #include "ThreadSupport.h"
 #include "TextParsers.h"
 #include "Profiler.h"
+#include "sm_crc32.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -54,7 +55,8 @@ static sm_logic_t logic =
 {
 	NULL,
 	g_pThreader,
-	sm_profiler
+	sm_profiler,
+	UTIL_CRC32
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
