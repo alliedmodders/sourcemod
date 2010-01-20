@@ -376,17 +376,17 @@
 #  endif
 #endif
 
-/* VS2008 does not support Windows build targets prior to WinXP, */
-/* so, if no build target has been defined we will target WinXP. */
+/* VS2008 does not support Windows build targets prior to Windows 2000, */
+/* so, if no build target has been defined we will target Windows 2000. */
 #if defined(_MSC_VER) && (_MSC_VER >= 1500)
 #  ifndef _WIN32_WINNT
-#    define _WIN32_WINNT 0x0501
+#    define _WIN32_WINNT 0x0500
 #  endif
 #  ifndef WINVER
-#    define WINVER 0x0501
+#    define WINVER 0x0500
 #  endif
-#  if (_WIN32_WINNT < 0x0501) || (WINVER < 0x0501)
-#    error VS2008 does not support Windows build targets prior to WinXP
+#  if (_WIN32_WINNT < 0x0500) || (WINVER < 0x0500)
+#    error VS2008 does not support Windows build targets prior to Windows 2000
 #  endif
 #endif
 
