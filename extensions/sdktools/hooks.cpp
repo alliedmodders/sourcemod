@@ -33,6 +33,7 @@
 #include "extension.h"
 
 CHookManager g_Hooks;
+static bool PRCH_enabled = false;
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
 
@@ -47,6 +48,7 @@ void CHookManager::Initialize()
 	if (g_pGameConf->GetOffset("PlayerRunCmd", &offset))
 	{
 		SH_MANUALHOOK_RECONFIGURE(PlayerRunCmdHook, offset, 0, 0);
+		PRCH_enabled = true;
 	}
 
 	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 6, NULL, Param_Cell, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_CellByRef);
@@ -59,6 +61,9 @@ void CHookManager::Shutdown()
 
 void CHookManager::OnClientPutInServer(int client)
 {
+	if (!PRCH_enabled)
+		return;
+
 	edict_t *pEdict = PEntityOfEntIndex(client);
 	if (!pEdict)
 	{
@@ -82,6 +87,9 @@ void CHookManager::OnClientPutInServer(int client)
 
 void CHookManager::OnClientDisconnecting(int client)
 {
+	if (!PRCH_enabled)
+		return;
+
 	edict_t *pEdict = PEntityOfEntIndex(client);
 	if (!pEdict)
 	{
