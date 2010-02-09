@@ -2,6 +2,29 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.1 [2010-02-09]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.1_Release_Notes
+
+User Changes:
+
+ - Added extended support for CSProMod (bug 4255).
+ - Fixed client disconnect crash on many third party games (bug 4231).
+ - Improved support for Battlegrounds 2 (bug 4146).
+ - Improved support for Insurgency (bug 4180).
+ - Improved support for Garry's Mod (bug 4230, bug 4268).
+ - Improved support for Synergy (bug 4235).
+ - Updated Day of Defeat support for 20010123 update (bug 4262).
+ - Fixed Webternet extension not loading on Windows 2000 (bug 4234). 
+
+Developer Changes:
+
+ - Fixed compiler complaints when using |any| tag on array arguments (bug 4274).
+ - Fixed GetClientCookieTime not being exported (bug 4237).
+ - Fixed potential crash in entity handling code (bug 4249). 
+
+----------------------------
+
 SourceMod 1.3.0 [2010-01-15]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.3.0_Release_Notes
