@@ -92,7 +92,6 @@
 	
 	"game.garrysmod.txt"
 	{
-		"engine"	"original"
 		"game"		"garrysmod"
 	}
 	
