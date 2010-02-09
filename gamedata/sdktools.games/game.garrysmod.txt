@@ -12,9 +12,7 @@
 "Games"
 {
 	/* Garry's Mod 10 - Windows only
-	 * This mod is not officially supported, and the definitions are 
-	 * for Garry's Mod pre-Orange Box.  
-	 * (credits: Damaged Soul)
+	 * This mod is not officially supported
 	 */
 	"garrysmod"
 	{
@@ -22,55 +20,98 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"366"
+				"windows"	"391"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"264"
+				"windows"	"279"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"262"
+				"windows"	"277"
 			}
 			"Ignite"
 			{
-				"windows"	"220"
+				"windows"	"228"
 			}
 			"Extinguish"
 			{
-				"windows"	"221"
+				"windows"	"232"
 			}
 			"Teleport"
 			{
-				"windows"	"99"
+				"windows"	"101"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"394"
+				"windows"	"429"
 			}
 			"GetVelocity"
 			{
-				"windows"	"127"
+				"windows"	"131"
 			}
 			"EyeAngles"
 			{
-				"windows"	"119"
+				"windows"	"123"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
+				"windows"	"34"
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
+				"windows"	"29"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
+				"windows"	"28"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
+				"windows"	"27"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"270"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"409"
+			}
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+			}
+		}
+		"Signatures"
+		{
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x57\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x57\x8B\x7C\x24\x0C\x83\xFE\xFF\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x04\xEB\x2A\x39\x2A\x2A\x74\x2A\x53"
+			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x57\x89"
 			}
 		}
 	}

@@ -17,7 +17,6 @@
 		"#supported"
 		{
 			"game"		"cstrike"
-			"game"		"garrysmod"
 			"game"		"hl2mp"
 			"game"		"ship"
 			"game"		"insurgency"

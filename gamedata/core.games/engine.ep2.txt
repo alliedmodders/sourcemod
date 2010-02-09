@@ -19,6 +19,7 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"bg2"
+			"game"		"garrysmod"
 		}
 		
 		"Offsets"
