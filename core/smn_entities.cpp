@@ -119,7 +119,7 @@ bool IndexToAThings(cell_t num, CBaseEntity **pEntData, edict_t **pEdictData)
 	if (pEdictData)
 	{
 		edict_t *pEdict = ::BaseEntityToEdict(pEntity);
-		if (pEdict->IsFree())
+		if (!pEdict || pEdict->IsFree())
 		{
 			pEdict = NULL;
 		}
