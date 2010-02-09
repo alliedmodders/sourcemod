@@ -28,6 +28,7 @@
 			"game"		"hidden"
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
+			"game"		"cspromod"
 		}
 
 		"Offsets"
