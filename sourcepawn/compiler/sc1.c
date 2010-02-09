@@ -4584,7 +4584,14 @@ static void doarg(char *name,int ident,int offset,int tags[],int numtags,
       arg->numdim+=1;
     } while (matchtoken('['));
     ident=iREFARRAY;            /* "reference to array" (is a pointer) */
+#if 0 /* For SM, multiple tags including string don't make sense,
+		 so just check the first tag. Done manually so the string
+		 tag isn't matched with the any tag. */
     if (checktag(tags, numtags, pc_tag_string)) {
+#endif
+	assert(tags!=0);
+	assert(numtags>0);
+	if (tags[0] == pc_tag_string) {
       slength = arg->dim[arg->numdim - 1];
       arg->dim[arg->numdim - 1] = (size + sizeof(cell) - 1) / sizeof(cell);
     }
