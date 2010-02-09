@@ -526,9 +526,7 @@ FetchUser(Handle:db, client)
 
 FetchUsersWeCan(Handle:db)
 {
-	new max_clients = GetMaxClients();
-	
-	for (new i=1; i<=max_clients; i++)
+	for (new i=1; i<=MaxClients; i++)
 	{
 		if (PlayerAuth[i] && GetUserAdmin(i) == INVALID_ADMIN_ID)
 		{

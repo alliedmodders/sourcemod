@@ -197,10 +197,9 @@ stock TE_WriteEncodedEnt(const String:prop[], value)
  */
 stock TE_SendToAll(Float:delay=0.0)
 {
-	new maxClients = GetMaxClients();
 	new total = 0;
-	new clients[maxClients];
-	for (new i=1; i<=maxClients; i++)
+	new clients[MaxClients];
+	for (new i=1; i<=MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{

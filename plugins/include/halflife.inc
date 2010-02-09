@@ -273,10 +273,9 @@ native PrintToChat(client, const String:format[], any:...);
  */
 stock PrintToChatAll(const String:format[], any:...)
 {
-	new maxClients = GetMaxClients();
 	decl String:buffer[192];
 	
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -307,10 +306,9 @@ native PrintCenterText(client, const String:format[], any:...);
  */
 stock PrintCenterTextAll(const String:format[], any:...)
 {
-	new maxClients = GetMaxClients();
 	decl String:buffer[192];
 
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{
@@ -341,10 +339,9 @@ native PrintHintText(client, const String:format[], any:...);
  */
 stock PrintHintTextToAll(const String:format[], any:...)
 {
-	new maxClients = GetMaxClients();
 	decl String:buffer[192];
 	
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (IsClientInGame(i))
 		{

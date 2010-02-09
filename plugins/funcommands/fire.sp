@@ -58,9 +58,7 @@ KillFireBomb(client)
 
 KillAllFireBombs()
 {
-	new maxclients = GetMaxClients();
-
-	for (new i = 1; i <= maxclients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		KillFireBomb(i);
 	}
@@ -162,9 +160,8 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 		if (GetConVarInt(g_Cvar_FireBombMode) > 0)
 		{
 			new teamOnly = ((GetConVarInt(g_Cvar_FireBombMode) == 1) ? true : false);
-			new maxClients = GetMaxClients();
 			
-			for (new i = 1; i <= maxClients; i++)
+			for (new i = 1; i <= MaxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{

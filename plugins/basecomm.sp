@@ -157,9 +157,8 @@ public Action:Command_Say(client, args)
 public ConVarChange_Alltalk(Handle:convar, const String:oldValue[], const String:newValue[])
 {
 	new mode = GetConVarInt(g_Cvar_Deadtalk);
-	new maxClients = GetMaxClients();
 	
-	for (new i = 1; i <= maxClients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
 		{

@@ -53,9 +53,7 @@ KillBeacon(client)
 
 KillAllBeacons()
 {
-	new maxclients = GetMaxClients();
-
-	for (new i = 1; i <= maxclients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		KillBeacon(i);
 	}

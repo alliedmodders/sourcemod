@@ -512,7 +512,7 @@ public ParamCheck(client)
 			new String:temp[4];
 			
 			//loop through players. Add name as text and name/userid/steamid as info
-			for (new i=1; i<=g_maxPlayers; i++)
+			for (new i=1; i<=MaxClients; i++)
 			{
 				if (IsClientInGame(i))
 				{			

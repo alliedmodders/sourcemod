@@ -45,8 +45,6 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-new g_maxPlayers;
-
 /* Forwards */
 new Handle:hOnAdminMenuReady = INVALID_HANDLE;
 new Handle:hOnAdminMenuCreated = INVALID_HANDLE;
@@ -97,8 +95,6 @@ public OnConfigsExecuted()
 
 public OnMapStart()
 {
-	g_maxPlayers = GetMaxClients();
-	
 	ParseConfigs();
 }
 
@@ -215,14 +211,13 @@ public Action:Command_DisplayMenu(client, args)
 
 stock UTIL_AddTargetsToMenu2(Handle:menu, source_client, flags)
 {
-	new max_clients = GetMaxClients();
 	decl String:user_id[12];
 	decl String:name[MAX_NAME_LENGTH];
 	decl String:display[MAX_NAME_LENGTH+12];
 	
 	new num_clients;
 	
-	for (new i = 1; i <= max_clients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientConnected(i) || IsClientInKickQueue(i))
 		{
