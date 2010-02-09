@@ -44,8 +44,6 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-/* Maximum number of clients that can connect to server */
-new g_MaxClients;
 new g_adminCount = 0;
 new bool:g_isAdmin[MAXPLAYERS+1];
 
@@ -82,16 +80,14 @@ public OnPluginStart()
 public OnPluginEnd()
 {
 	/* 	If the plugin has been unloaded, reset visiblemaxplayers. In the case of the server shutting down this effect will not be visible */
-	SetConVarInt(sv_visiblemaxplayers, g_MaxClients);
+	SetConVarInt(sv_visiblemaxplayers, MaxClients);
 }
 
 public OnMapStart()
 {
-	g_MaxClients = GetMaxClients();
-	
 	if (GetConVarBool(sm_hide_slots))
 	{		
-		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
 	}
 }
 
@@ -99,7 +95,7 @@ public OnConfigsExecuted()
 {
 	if (GetConVarBool(sm_hide_slots))
 	{
-		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
 	}	
 }
 
@@ -114,7 +110,7 @@ public Action:OnTimedKick(Handle:timer, any:client)
 	
 	if (GetConVarBool(sm_hide_slots))
 	{				
-		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
 	}
 	
 	return Plugin_Handled;
@@ -127,7 +123,7 @@ public OnClientPostAdminCheck(client)
 	if (reserved > 0)
 	{
 		new clients = GetClientCount(false);
-		new limit = g_MaxClients - reserved;
+		new limit = MaxClients - reserved;
 		new flags = GetUserFlagBits(client);
 		
 		new type = GetConVarInt(sm_reserve_type);
@@ -204,7 +200,7 @@ public OnClientDisconnect_Post(client)
 {
 	if (GetConVarBool(sm_hide_slots))
 	{		
-		SetVisibleMaxSlots(GetClientCount(false), g_MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
 	}
 	
 	if (g_isAdmin[client])
@@ -219,7 +215,7 @@ public SlotsChanged(Handle:convar, const String:oldValue[], const String:newValu
 	/* Reserved slots or hidden slots have been disabled - reset sv_visiblemaxplayers */
 	if (StringToInt(newValue) == 0)
 	{
-		SetConVarInt(sv_visiblemaxplayers, g_MaxClients);
+		SetConVarInt(sv_visiblemaxplayers, MaxClients);
 	}
 }
 
@@ -227,9 +223,9 @@ SetVisibleMaxSlots(clients, limit)
 {
 	new num = clients;
 	
-	if (clients == g_MaxClients)
+	if (clients == MaxClients)
 	{
-		num = g_MaxClients;
+		num = MaxClients;
 	} else if (clients < limit) {
 		num = limit;
 	}
@@ -251,7 +247,7 @@ SelectKickClient()
 	
 	new Float:value;
 	
-	for (new i=1; i<=g_MaxClients; i++)
+	for (new i=1; i<=MaxClients; i++)
 	{	
 		if (!IsClientConnected(i))
 		{

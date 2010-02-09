@@ -170,10 +170,9 @@ native UnhookUserMessage(UserMsg:msg_id, MsgHook:hook, bool:intercept=false);
  */
 stock Handle:StartMessageAll(String:msgname[], flags=0)
 {
-	new maxClients = GetMaxClients();
 	new total = 0;
-	new clients[maxClients];
-	for (new i=1; i<=maxClients; i++)
+	new clients[MaxClients];
+	for (new i=1; i<=MaxClients; i++)
 	{
 		if (IsClientConnected(i))
 		{

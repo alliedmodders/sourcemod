@@ -57,9 +57,7 @@ KillTimeBomb(client)
 
 KillAllTimeBombs()
 {
-	new maxclients = GetMaxClients();
-
-	for (new i = 1; i <= maxclients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		KillTimeBomb(i);
 	}
@@ -141,9 +139,8 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 		if (GetConVarInt(g_Cvar_TimeBombMode) > 0)
 		{
 			new teamOnly = ((GetConVarInt(g_Cvar_TimeBombMode) == 1) ? true : false);
-			new maxClients = GetMaxClients();
 			
-			for (new i = 1; i <= maxClients; i++)
+			for (new i = 1; i <= MaxClients; i++)
 			{
 				if (!IsClientInGame(i) || !IsPlayerAlive(i) || i == client)
 				{

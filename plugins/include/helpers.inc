@@ -99,7 +99,6 @@ stock Handle:FindPluginByFile(const String:filename[])
 #pragma deprecated Use FindTarget() or ProcessTargetString()
 stock SearchForClients(const String:pattern[], clients[], maxClients)
 {
-	new maxclients = GetMaxClients();
 	new total = 0;
 	
 	if (maxClients == 0)
@@ -113,7 +112,7 @@ stock SearchForClients(const String:pattern[], clients[], maxClients)
 		if (!input)
 		{
 			decl String:name[65]
-			for (new i=1; i<=maxclients; i++)
+			for (new i=1; i<=MaxClients; i++)
 			{
 				if (!IsClientInGame(i))
 				{
@@ -137,7 +136,7 @@ stock SearchForClients(const String:pattern[], clients[], maxClients)
 	}
 	
 	decl String:name[65]
-	for (new i=1; i<=maxclients; i++)
+	for (new i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
 		{

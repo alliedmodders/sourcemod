@@ -490,11 +490,10 @@ native bool:VoteMenu(Handle:menu, clients[], numClients, time, flags=0);
  */
 stock VoteMenuToAll(Handle:menu, time, flags=0)
 {
-	new num = GetMaxClients();
 	new total;
-	decl players[num];
+	decl players[MaxClients];
 	
-	for (new i=1; i<=num; i++)
+	for (new i=1; i<=MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
 		{

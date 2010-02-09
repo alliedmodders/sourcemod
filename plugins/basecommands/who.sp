@@ -189,10 +189,9 @@ public Action:Command_Who(client, args)
 		}
 
 		/* List all players */
-		new maxClients = GetMaxClients();
 		decl String:flagstring[255];
 
-		for (new i=1; i<=maxClients; i++)
+		for (new i=1; i<=MaxClients; i++)
 		{
 			if (!IsClientInGame(i))
 			{

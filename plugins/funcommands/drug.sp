@@ -74,8 +74,7 @@ KillDrugTimer(client)
 
 KillAllDrugs()
 {
-	new maxclients = GetMaxClients();
-	for (new i = 1; i <= maxclients; i++)
+	for (new i = 1; i <= MaxClients; i++)
 	{
 		if (g_DrugTimers[i] != INVALID_HANDLE)
 		{
