@@ -97,7 +97,6 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"empires"
-			"game"		"synergy"
 		}
 		
 		"Signatures"
