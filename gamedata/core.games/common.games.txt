@@ -135,6 +135,7 @@
 			"game"					"gesource"
 			"game"					"NeotokyoSource"
 			"game"					"bg2"
+			"game"					"cspromod"
 		}
 
 		"Keys"
@@ -154,6 +155,7 @@
 			"game"					"empires"
 			"game"					"NeotokyoSource"
 			"game"					"bg2"
+			"game"					"cspromod"
 		}
 		
 		"Keys"
@@ -177,6 +179,7 @@
 			"game"					"zombie_master"
 			"game"					"bg2"
  			"game"					"insurgency"
+			"game"					"cspromod"
 		}
 		
 		"Keys"
