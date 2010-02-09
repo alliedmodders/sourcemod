@@ -82,9 +82,34 @@
 				"windows"	"288"
 				"linux"		"289"
 			}
+			"g_pGameRules"
+			{
+				"windows"	"2"
+			}
 		}
 		"Signatures"
 		{
+		"Offsets"
+		{
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
+			{
+				"windows"	"2"
+			}
+		}
+		
+		"Signatures"
+		{
+			"CreateGameRulesObject"
+			{
+				"library"	"server"
+				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50"
+			}
+			"g_pGameRules"
+			{
+				"library"	"server"
+				"linux"		"@g_pGameRules"
+			}
 			"FireOutput"
 			{
 				"library"	"server"
