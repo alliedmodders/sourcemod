@@ -444,5 +444,6 @@ sp_nativeinfo_t g_ClientPrefNatives[] =
 	{"ShowCookieMenu",				ShowSettingsMenu},
 	{"SetCookieMenuItem",			AddSettingsMenuItem},
 	{"SetCookiePrefabMenu",			AddSettingsPrefabMenuItem},
+	{"GetClientCookieTime",         GetClientCookieTime},
 	{NULL,							NULL}
 };
