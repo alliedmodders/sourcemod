@@ -403,7 +403,7 @@ stock EmitSoundToAll(const String:sample[],
 				 bool:updatePos = true,
 				 Float:soundtime = 0.0)
 {
-	new clients[maxClients];
+	new clients[MaxClients];
 	new total = 0;
 	
 	for (new i=1; i<=MaxClients; i++)
