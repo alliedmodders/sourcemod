@@ -1229,6 +1229,9 @@
     <ClInclude Include="..\..\public\sourcepawn\sp_vm_types.h" />
     <ClInclude Include="..\convar_sm.h" />
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\version.rc" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
