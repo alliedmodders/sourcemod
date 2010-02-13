@@ -379,7 +379,7 @@ native bool:IsCharLower(chr);
 
 /**
  * Strips a quote pair off a string if it exists.  That is, the following 
- * replace rule is applied once:  $"(.*)"^ -> $\1^
+ * replace rule is applied once:  ^"(.*)"$ -> ^\1$
  *
  * Note that the leading and trailing quotes will only be removed if both 
  * exist.  Otherwise, the string is left unmodified.  This function should 
