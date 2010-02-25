@@ -89,17 +89,6 @@
 		}
 		"Signatures"
 		{
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		
-		"Signatures"
-		{
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
