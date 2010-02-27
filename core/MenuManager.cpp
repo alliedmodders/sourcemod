@@ -231,12 +231,18 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	unsigned int pgn = menu->GetPagination();
 	unsigned int maxItems = style->GetMaxPageItems();
 	bool exitButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT;
+	bool novoteButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_NOVOTE) == MENUFLAG_BUTTON_NOVOTE;
 
 	if (pgn != MENU_NO_PAGINATION)
 	{
 		maxItems = pgn;
 	}
 	else if (exitButton)
+	{
+		maxItems--;
+	}
+
+	if (novoteButton)
 	{
 		maxItems--;
 	}
@@ -436,6 +442,20 @@ skip_search:
 	/* Draw the item according to the order */
 	menu_slots_t *slots = md.slots;
 	unsigned int position = 0;			/* Keep track of the last position */
+
+	if (novoteButton)
+	{
+		char text[50];
+		if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "No Vote", &client))
+		{
+			UTIL_Format(text, sizeof(text), "No Vote");
+		}
+		ItemDrawInfo dr(text, 0);
+		position = panel->DrawItem(dr);
+		slots[position].type = ItemSel_Exit;
+		position++;
+	}
+
 	if (order == ItemOrder_Ascending)
 	{
 		md.item_on_page = drawItems[0].position;

@@ -72,6 +72,11 @@
 		"#format"		"{1:s},{2:s}"
 		"en"			"{1} changed their vote to {2}"	
 	}
+
+	"No Vote"
+	{
+		"en"			"No Vote"
+	}
 	
 	/* This is a special "pass-thru" translation */
 	"_s"

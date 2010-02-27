@@ -948,6 +948,32 @@ static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
 	return (flags == new_flags);
 }
 
+static cell_t SetMenuNoVoteButton(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err=g_Menus.ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	unsigned int flags = menu->GetMenuOptionFlags();
+
+	if (params[2])
+	{
+		flags |= MENUFLAG_BUTTON_NOVOTE;
+	} else {
+		flags &= ~MENUFLAG_BUTTON_NOVOTE;
+	}
+
+	menu->SetMenuOptionFlags(flags);
+	unsigned int new_flags = menu->GetMenuOptionFlags();
+
+	return (flags == new_flags);
+}
+
 static cell_t SetMenuExitBackButton(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = (Handle_t)params[1];
@@ -1577,6 +1603,7 @@ REGISTER_NATIVES(menuNatives)
 	{"SetPanelKeys",			SetPanelKeys},
 	{"SetVoteResultCallback",	SetVoteResultCallback},
 	{"VoteMenu",				VoteMenu},
+	{"SetMenuNoVoteButton",		SetMenuNoVoteButton},
 	{NULL,						NULL},
 };
 
