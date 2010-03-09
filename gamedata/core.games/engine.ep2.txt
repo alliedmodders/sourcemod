@@ -20,6 +20,7 @@
 			"game"		"zps"
 			"game"		"bg2"
 			"game"		"garrysmod"
+			"game"		"pvkii"
 		}
 		
 		"Offsets"

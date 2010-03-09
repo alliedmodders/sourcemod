@@ -156,6 +156,7 @@
 			"game"					"NeotokyoSource"
 			"game"					"bg2"
 			"game"					"cspromod"
+			"game"					"pvkii"
 		}
 		
 		"Keys"
@@ -180,6 +181,7 @@
 			"game"					"bg2"
  			"game"					"insurgency"
 			"game"					"cspromod"
+			"game"					"pvkii"
 		}
 		
 		"Keys"
