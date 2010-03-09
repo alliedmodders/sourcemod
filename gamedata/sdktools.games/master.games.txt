@@ -142,4 +142,8 @@
 	{
 		"game"		"bg2"
 	}
+	"game.cspromod.txt"
+	{
+		"game"		"cspromod"
+	}
 }
