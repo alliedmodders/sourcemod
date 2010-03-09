@@ -19,48 +19,48 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"328"
-				"linux"		"329"
+				"windows"	"352"
+				"linux"		"353"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"226"
-				"linux"		"227"
+				"windows"	"239"
+				"linux"		"240"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"224"
-				"linux"		"225"
+				"windows"	"237"
+				"linux"		"238"
 			}
 			"Ignite"
 			{
-				"windows"	"188"
-				"linux"		"189"
+				"windows"	"194"
+				"linux"		"195"
 			}
 			"Extinguish"
 			{
-				"windows"	"189"
-				"linux"		"190"
+				"windows"	"198"
+				"linux"		"199"
 			}
 			"Teleport"
 			{
-				"windows"	"98"
-				"linux"		"99"
+				"windows"	"101"
+				"linux"		"102"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"356"
-				"linux"		"357"
+				"windows"	"393"
+				"linux"		"393"
 			}
 			"GetVelocity"
 			{
-				"windows"	"126"
-				"linux"		"127"
+				"windows"	"131"
+				"linux"		"132"
 			}
 			"EyeAngles"
 			{
-				"windows"	"118"
-				"linux"		"119"
+				"windows"	"123"
+				"linux"		"124"
 			}
 			"AcceptInput"
 			{
@@ -69,33 +69,52 @@
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
-				"linux"		"30"
+				"windows"	"29"
+				"linux"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
-				"linux"		"31"
+				"windows"	"28"
+				"linux"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
-				"linux"		"32"
+				"windows"	"27"
+				"linux"		"30"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"24"
+				"linux"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"217"
-				"linux"		"218"
+				"windows"	"230"
+				"linux"		"231"
 			}
 			"Activate"
 			{
 				"windows"	"32"
 				"linux"		"33"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"372"
+				"linux"		"373"
+			}
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"10"
+			}
+		}
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x85\xF6\x57"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}

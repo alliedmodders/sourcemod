@@ -20,7 +20,6 @@
 			"game"		"hl2mp"
 			"game"		"ship"
 			"game"		"insurgency"
-			"game"		"pvkii"
 			"game"		"sourceforts"
 			"game"		"FortressForever"
 			"game"		"empires"
