@@ -96,6 +96,11 @@
 				"windows"	"36"
 				"linux"		"37"
 			}
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"6"
+			}
 		}
 		
 		"Signatures"
@@ -119,6 +124,12 @@
 			{
 				"library"	"server"
 				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x2A\x2A\x85\xF6\x57"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
