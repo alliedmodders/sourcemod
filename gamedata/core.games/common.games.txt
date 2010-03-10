@@ -137,6 +137,7 @@
 			"game"					"bg2"
 			"game"					"cspromod"
 			"game"					"FortressForever"
+			"game"					"zps"
 		}
 
 		"Keys"
@@ -159,6 +160,7 @@
 			"game"					"cspromod"
 			"game"					"pvkii"
 			"game"					"FortressForever"
+			"game"					"zps"
 		}
 		
 		"Keys"
@@ -184,6 +186,7 @@
  			"game"					"insurgency"
 			"game"					"cspromod"
 			"game"					"pvkii"
+			"game"					"zps"
 		}
 		
 		"Keys"
