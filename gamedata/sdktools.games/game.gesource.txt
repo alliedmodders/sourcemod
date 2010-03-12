@@ -1,0 +1,126 @@
+"Games"
+{
+	"gesource"
+	{
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"351"
+				"linux"		"352"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"239"
+				"linux"		"240"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			"Ignite"
+			{
+				"windows"	"194"
+				"linux"		"195"
+			}
+			"Extinguish"
+			{
+				"windows"	"198"
+				"linux"		"199"
+			}
+			"Teleport"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"392"
+				"linux"		"392"
+			}
+			"GetVelocity"
+			{
+				"windows"	"130"
+				"linux"		"131"
+			}
+			"EyeAngles"
+			{
+				"windows"	"122"
+				"linux"		"123"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"371"
+				"linux"		"372"
+			}
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"10"
+			}
+		}
+		"Signatures"
+		{
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x2A\x2A\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\x2A\x2A\x2A\x2A\x40\xC1\xE0\x2A\x8B\x3C\x30\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x2A\x2A\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x2A\x2A\x2A\x2A\x2A\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x2A\x39"
+				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+				"windows"	"\x56\x8B\x74\x24\x2A\x57\x8B\x7C\x24\x2A\x83\xFE\xFF\x74\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x2A\x56\xFF\xD2"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"windows"	"\x53\x55\x56\x8B\x74\x2A\x2A\x57\x85\xF6\x0F\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x2A\x8B\xCB"
+			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x57\x89"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
+}

@@ -146,4 +146,8 @@
 	{
 		"game"		"cspromod"
 	}
+	"game.gesource.txt"
+	{
+		"game"		"gesource"
+	}
 }
