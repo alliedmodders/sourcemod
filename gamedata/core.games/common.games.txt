@@ -138,6 +138,7 @@
 			"game"					"cspromod"
 			"game"					"FortressForever"
 			"game"					"zps"
+			"game"					"gesource"
 		}
 
 		"Keys"
@@ -161,6 +162,7 @@
 			"game"					"pvkii"
 			"game"					"FortressForever"
 			"game"					"zps"
+			"game"					"gesource"
 		}
 		
 		"Keys"
@@ -187,6 +189,7 @@
 			"game"					"cspromod"
 			"game"					"pvkii"
 			"game"					"zps"
+			"game"					"gesource"
 		}
 		
 		"Keys"

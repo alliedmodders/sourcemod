@@ -21,6 +21,7 @@
 			"game"		"bg2"
 			"game"		"garrysmod"
 			"game"		"pvkii"
+			"game"		"gesource"
 		}
 		
 		"Offsets"
