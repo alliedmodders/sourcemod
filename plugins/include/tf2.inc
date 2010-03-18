@@ -57,6 +57,33 @@ enum TFTeam
 	TFTeam_Blue = 3	
 };
 
+enum TFCond
+{
+	TFCond_Slowed = 0,
+	TFCond_Zoomed,
+	TFCond_Disguising,
+	TFCond_Disguised,
+	TFCond_Cloaked,
+	TFCond_Ubercharged,
+	TFCond_TeleportedGlow,
+	TFCond_Taunting,
+	TFCond_UberchargeFading,
+	TFCond_Unknown1,
+	TFCond_Teleporting,
+	TFCond_Kritzkrieged,
+	TFCond_Unknown2,
+	TFCond_DeadRingered,
+	TFCond_Bonked,
+	TFCond_Dazed,
+	TFCond_Buffed,
+	TFCond_Charging,
+	TFCond_DemoBuff,
+	TFCond_Healing,
+	TFCond_OnFire,
+	TFCond_Overhealed,
+	TFCond_Jarated
+}
+
 /**
  * Sets a client on fire for 10 seconds.
  *
@@ -74,6 +101,46 @@ native TF2_IgnitePlayer(client, target);
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native TF2_RespawnPlayer(client);
+
+/**
+ * Regenerates a client's health and ammunition
+ *
+ * @param client		Player's index.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native TF2_RegeneratePlayer(client);
+
+/**
+ * Adds a condition to a player
+ *
+ * @param client		Player's index.
+ * @param condition		Integer identifier of condition to apply.
+ * @param duration		Duration of condition (does not apply to all conditions).
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native TF2_AddCondition(client, TFCond:condition, Float:duration);
+
+/**
+ * Removes a condition from a player
+ *
+ * @param client		Player's index.
+ * @param condition		Integer identifier of condition to remove.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native TF2_RemoveCondition(client, TFCond:condition);
+
+/**
+ * Enables/disables PowerPlay mode on a player.
+ *
+ * @param client		Player's index.
+ * @param enabled		Whether to enable or disable PowerPlay on player.
+ * @noreturn
+ * @error				Invalid client index, client not in game, or no mod support.
+ */
+native TF2_SetPlayerPowerPlay(client, bool:enabled);
 
 /**
  * Disguises a client to the given model and team. Only has an effect on spies.

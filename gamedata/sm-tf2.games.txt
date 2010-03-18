@@ -51,6 +51,30 @@
 				"linux"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x14\x6A\x0B"
 			}
+			"Regenerate"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x08\xD9\xE8\x53\x55\xD9\x2A\x2A\x2A\x56\x8B\xF1\x8B\x06\x8B\x90"
+				"linux"		"@_ZN9CTFPlayer10RegenerateEv"
+			}
+			"AddCondition"
+			{
+				"library"	"server"
+				"windows"	"\x56\x57\x8B\x7C\x2A\x2A\x8B\xF1\x8B\xCF\xBA\x01\x00\x00\x00\xD3\xE2\x8D\x46\x2A\x8D\x4C\x2A\x2A\x51\x0B\x10"
+				"linux"		"@_ZN15CTFPlayerShared7AddCondEif"	
+			}
+			"RemoveCondition"
+			{
+				"library"	"server"
+				"windows"	"\x56\x57\x8B\x7C\x2A\x2A\x8B\xF1\x8B\xCF\xBA\x01\x00\x00\x00\xD3\xE2\x8D\x46\x2A\x8D\x4C\x2A\x2A\x51\xF7\xD2"
+				"linux"		"@_ZN15CTFPlayerShared10RemoveCondEi"	
+			}
+			"SetPowerplayEnabled"
+			{
+				"library"	"server"
+				"windows"	"\x80\x7C\x2A\x2A\x2A\x56\x8B\xF1\x74\x2A\xA1\x2A\x2A\x2A\x2A\xD9\x2A\x2A\x57"
+				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
+			}
 		}
 		"Offsets"
 		{

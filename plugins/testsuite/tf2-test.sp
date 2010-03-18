@@ -15,25 +15,21 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
 	RegConsoleCmd("sm_burnme", Command_Burn);
-	RegConsoleCmd("sm_invuln", Command_Invuln);
 	RegConsoleCmd("sm_respawn", Command_Respawn);
 	RegConsoleCmd("sm_disguise", Command_Disguise);
 	RegConsoleCmd("sm_remdisguise", Command_RemDisguise);
 	RegConsoleCmd("sm_class", Command_Class);
 	RegConsoleCmd("sm_remove", Command_Remove);
 	RegConsoleCmd("sm_changeclass", Command_ChangeClass);
+	RegConsoleCmd("sm_regenerate", Command_Regenerate);
+	RegConsoleCmd("sm_uberme", Command_UberMe);
+	RegConsoleCmd("sm_unuberme", Command_UnUberMe);
+	RegConsoleCmd("sm_setpowerplay", Command_SetPowerPlay);
 }
 
 public Action:Command_Class(client, args)
 {
 	TF2_RemoveAllWeapons(client);
-
-	decl String:text[10];
-	GetCmdArg(1, text, sizeof(text));
-	
-	new one = StringToInt(text);
-	
-	TF2_EquipPlayerClassWeapons(client, TFClassType:one);
 	
 	PrintToChat(client, "Test: sniper's classnum is %i (should be %i)", TF2_GetClass("sniper"), TFClass_Sniper);
 		
@@ -93,28 +89,6 @@ public Action:Command_Burn(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Invuln(client, args)
-{
-	if (client == 0)
-	{
-		return Plugin_Handled;
-	}
-	
-	if (args < 1)
-	{
-		return Plugin_Handled;	
-	}
-	
-	decl String:text[10];
-	GetCmdArg(1, text, sizeof(text));
-	
-	new bool:one = !!StringToInt(text);
-
-	TF2_SetPlayerInvuln(client, one)
-	
-	return Plugin_Handled;
-}
-
 public Action:Command_Disguise(client, args)
 {
 	if (client == 0)
@@ -162,6 +136,74 @@ public Action:Command_Respawn(client, args)
 	
 
 	TF2_RespawnPlayer(client);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_Regenerate(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	TF2_RegeneratePlayer(client);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_UberMe(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	if (args < 1)
+	{
+		return Plugin_Handled;
+	}
+	
+	decl String:text[10];
+	GetCmdArg(1, text, sizeof(text));
+	
+	new Float:one = StringToFloat(text);
+	
+	TF2_AddCondition(client, TFCond_Ubercharged, one);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_UnUberMe(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	TF2_RemoveCondition(client, TFCond_Ubercharged);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_SetPowerPlay(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	if (args < 1)
+	{
+		return Plugin_Handled;
+	}
+	
+	decl String:text[10];
+	GetCmdArg(1, text, sizeof(text));
+	
+	new bool:one = bool:StringToInt(text);
+	
+	TF2_SetPlayerPowerPlay(client, one);
 	
 	return Plugin_Handled;
 }
