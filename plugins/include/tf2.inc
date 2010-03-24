@@ -82,7 +82,7 @@ enum TFCond
 	TFCond_OnFire,
 	TFCond_Overhealed,
 	TFCond_Jarated
-}
+};
 
 /**
  * Sets a client on fire for 10 seconds.
