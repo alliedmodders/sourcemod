@@ -61,6 +61,7 @@ my $output = <<EOF;
 			),
 		// Defines
 		5 => array(
+			"MaxClients",
 			__defines__
 			),
 		),
@@ -69,8 +70,8 @@ my $output = <<EOF;
         "KEYWORDS" => array(
             1 => "color: #0000EE; font-weight: bold;",
             2 => "color: #218087; font-weight: bold;",
-            3 => "color: #770047;",
-            4 => "color: #aa33bb; font-weight: bold;",
+            3 => "color: #000000; font-weight: bold;",
+            4 => "color: #000000; font-weight: bold;",
             5 => "color: #8000FF;",
             ),
         "COMMENTS" => array(
@@ -88,7 +89,7 @@ my $output = <<EOF;
             3 => "color: #AA8800;",
             ),
         "STRINGS" => array(
-            0 => "color: #0000aa;",
+            0 => "color: #B90000;",
             ),
         "BRACKETS" => array(
             0 => "color: #33aa33; font-weight: bold;",
