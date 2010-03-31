@@ -38,6 +38,36 @@
 #include <tf2>
 #include <sdktools>
 
+#define TF_CONDFLAG_NONE            0
+#define TF_CONDFLAG_SLOWED          (1 << 0)
+#define TF_CONDFLAG_ZOOMED          (1 << 1)
+#define TF_CONDFLAG_DISGUISING      (1 << 2)
+#define TF_CONDFLAG_DISGUISED       (1 << 3)
+#define TF_CONDFLAG_CLOAKED         (1 << 4)
+#define TF_CONDFLAG_UBERCHARGED     (1 << 5)
+#define TF_CONDFLAG_TELEPORTGLOW    (1 << 6)
+#define TF_CONDFLAG_TAUNTING        (1 << 7)
+#define TF_CONDFLAG_UBERCHARGEFADE  (1 << 8)
+#define TF_CONDFLAG_TELEPORTING     (1 << 10)
+#define TF_CONDFLAG_KRITZKRIEGED    (1 << 11)
+#define TF_CONDFLAG_DEADRINGERED    (1 << 13)
+#define TF_CONDFLAG_BONKED          (1 << 14)
+#define TF_CONDFLAG_DAZED           (1 << 15)
+#define TF_CONDFLAG_BUFFED          (1 << 16)
+#define TF_CONDFLAG_CHARGING        (1 << 17)
+#define TF_CONDFLAG_DEMOBUFF        (1 << 18)
+#define TF_CONDFLAG_HEALING         (1 << 19)
+#define TF_CONDFLAG_ONFIRE          (1 << 20)
+#define TF_CONDFLAG_OVERHEALED      (1 << 21)
+#define TF_CONDFLAG_JARATED         (1 << 22)
+
+#define TF_DEATHFLAG_KILLERDOMINATION   (1 << 0)
+#define TF_DEATHFLAG_ASSISTERDOMINATION (1 << 1)
+#define TF_DEATHFLAG_KILLERREVENGE      (1 << 2)
+#define TF_DEATHFLAG_ASSISTERREVENGE    (1 << 3)
+#define TF_DEATHFLAG_FIRSTBLOOD         (1 << 4)
+#define TF_DEATHFLAG_DEADRINGER         (1 << 5)
+
 enum TFResourceType
 {
 	TFResource_Ping,
@@ -217,3 +247,13 @@ stock TF2_RemoveAllWeapons(client)
 	}
 }
 
+/**
+ * Gets a player's condition bits
+ *
+ * @param client		Player's index.
+ * @return				Player's condition bits
+ */
+stock TF2_GetPlayerConditionFlags(client)
+{
+	return GetEntProp(client, Prop_Send, "m_nPlayerCond");
+}

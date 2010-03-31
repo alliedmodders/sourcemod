@@ -35,6 +35,20 @@
 #endif
 #define _tf2_included
 
+#define TF_STUNFLAG_SLOWDOWN        (1 << 0)	// activates slowdown modifier
+#define TF_STUNFLAG_BONKSTUCK       (1 << 1)	// bonk sound, stuck
+#define TF_STUNFLAG_LIMITMOVEMENT   (1 << 2)	// disable forward/backward movement
+#define TF_STUNFLAG_CHEERSOUND      (1 << 3)	// cheering sound
+#define TF_STUNFLAG_NOSOUNDOREFFECT (1 << 5)	// no sound or particle
+#define TF_STUNFLAG_THIRDPERSON     (1 << 6)	// panic animation
+#define TF_STUNFLAG_GHOSTEFFECT     (1 << 7)	// ghost particles
+
+#define TF_STUNFLAGS_LOSERSTATE     TF_STUNFLAG_SLOWDOWN|TF_STUNFLAG_NOSOUNDOREFFECT|TF_STUNFLAG_THIRDPERSON
+#define TF_STUNFLAGS_GHOSTSCARE     TF_STUNFLAG_GHOSTEFFECT|TF_STUNFLAG_THIRDPERSON
+#define TF_STUNFLAGS_SMALLBONK      TF_STUNFLAG_THIRDPERSON|TF_STUNFLAG_SLOWDOWN
+#define TF_STUNFLAGS_NORMALBONK     TF_STUNFLAG_BONKSTUCK
+#define TF_STUNFLAGS_BIGBONK        TF_STUNFLAG_CHEERSOUND|TF_STUNFLAG_BONKSTUCK
+
 enum TFClassType
 {
 	TFClass_Unknown = 0,
@@ -163,6 +177,19 @@ native TF2_DisguisePlayer(client, TFTeam:team, TFClassType:class);
  * @error				Invalid client index, client not in game, or no mod support.
  */
 native TF2_RemovePlayerDisguise(client);
+
+/**
+ * Stuns a client
+ *
+ * @param client		Player's index.
+ * @param float			Duration of stun.
+ * @param float			Slowdown percent (as decimal, 0.00-1.00)
+ *						(ignored if TF_STUNFLAG_SLOWDOWN is not set.
+ * @param int			Stun flags.
+ * @param attacker		Attacker's index (0 is allowed for world).
+ * @noreturn
+ */
+native TF2_StunPlayer(client, Float:duration, Float:slowdown=0.0, stunflags, attacker=0);
 
 /**
  * Retrieves the entity index of the CPlayerResource entity

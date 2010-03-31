@@ -25,6 +25,9 @@ public OnPluginStart()
 	RegConsoleCmd("sm_uberme", Command_UberMe);
 	RegConsoleCmd("sm_unuberme", Command_UnUberMe);
 	RegConsoleCmd("sm_setpowerplay", Command_SetPowerPlay);
+	RegConsoleCmd("sm_panic", Command_Panic);
+	RegConsoleCmd("sm_bighit", Command_BigHit);
+	RegConsoleCmd("sm_frighten", Command_Frighten);
 }
 
 public Action:Command_Class(client, args)
@@ -204,6 +207,42 @@ public Action:Command_SetPowerPlay(client, args)
 	new bool:one = bool:StringToInt(text);
 	
 	TF2_SetPlayerPowerPlay(client, one);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_Panic(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	TF2_StunPlayer(client, 15.0, 0.25, TF_STUNFLAGS_LOSERSTATE);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_BigHit(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	TF2_StunPlayer(client, 5.0, _, TF_STUNFLAGS_BIGBONK, client);
+	
+	return Plugin_Handled;
+}
+
+public Action:Command_Frighten(client, args)
+{
+	if (client == 0)
+	{
+		return Plugin_Handled;
+	}
+	
+	TF2_StunPlayer(client, 5.0, _, TF_STUNFLAGS_GHOSTSCARE);
 	
 	return Plugin_Handled;
 }
