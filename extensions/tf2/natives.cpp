@@ -234,6 +234,63 @@ cell_t TF2_RemoveCondition(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+cell_t TF2_StunPlayer(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	// CTFPlayerShared::StunPlayer(float, float, int, CTFPlayer *)
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("StunPlayer", 
+			PassInfo pass[4]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(float); \
+			pass[0].type = PassType_Basic; \
+			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].size = sizeof(float); \
+			pass[1].type = PassType_Basic; \
+			pass[2].flags = PASSFLAG_BYVAL; \
+			pass[2].size = sizeof(int); \
+			pass[2].type = PassType_Basic; \
+			pass[3].flags = PASSFLAG_BYVAL; \
+			pass[3].size = sizeof(CBaseEntity *); \
+			pass[3].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	bool bByPlayer = (params[5] != 0);
+	CBaseEntity *pAttacker = NULL;
+	if (bByPlayer && !(pAttacker = UTIL_GetCBaseEntity(params[5], true)))
+	{
+		return pContext->ThrowNativeError("Attacker index %d is not valid", params[5]);
+	}
+
+	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
+
+	unsigned char vstk[sizeof(void *) + 2*sizeof(float) + sizeof(int) + sizeof(CBaseEntity *)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = obj;
+	vptr += sizeof(void *);
+	*(float *)vptr = sp_ctof(params[2]);
+	vptr += sizeof(float);
+	*(float *)vptr = sp_ctof(params[3]);
+	vptr += sizeof(float);
+	*(int *)vptr = params[4];
+	vptr += sizeof(int);
+	*(CBaseEntity **)vptr = pAttacker;
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
 cell_t TF2_SetPowerplayEnabled(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
@@ -362,6 +419,7 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_RegeneratePlayer",		TF2_Regenerate},
 	{"TF2_AddCondition",			TF2_AddCondition},
 	{"TF2_RemoveCondition",			TF2_RemoveCondition},
-	{"TF2_SetPlayerPowerPlay",	TF2_SetPowerplayEnabled},
+	{"TF2_SetPlayerPowerPlay",		TF2_SetPowerplayEnabled},
+	{"TF2_StunPlayer",				TF2_StunPlayer},
 	{NULL,							NULL}
 };
