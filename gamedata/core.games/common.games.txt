@@ -163,6 +163,7 @@
 			"game"					"FortressForever"
 			"game"					"zps"
 			"game"					"gesource"
+			"game"					"obsidian"
 		}
 		
 		"Keys"
