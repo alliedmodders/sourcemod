@@ -154,6 +154,7 @@
 			"game"					"empires"
 			"game"					"NeotokyoSource"
 			"game"					"bg2"
+			"game"					"obsidian"
 		}
 		
 		"Keys"
