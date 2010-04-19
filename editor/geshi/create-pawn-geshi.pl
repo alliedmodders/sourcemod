@@ -24,31 +24,37 @@ my $output = <<EOF;
  */
 
 \$language_data = array(
-	"LANG_NAME" => "SourcePawn",
-	"COMMENT_SINGLE" => array(1 => "//", 2 => "#"),
-	"COMMENT_MULTI" => array("/*" => "*/"),
-	"CASE_KEYWORDS" => GESHI_CAPS_NO_CHANGE,
-	"QUOTEMARKS" => array('"'),
-	"ESCAPE_CHAR" => "\\\\",
-	"SYMBOLS" => array(
-		0 => array(";"),
-		// Assignment operators
-		1 => array("=", "+=", "-=", "/=", "*=", "&=", "|=", "~=", "^="),
-		// Comparison and logical operators
-		2 => array("==", "!=", "&&", "||", ">", "<", "<=", ">="),
-		// Other operators
-		3 => array("+", "-", "*", "/", "|", "&", "~", "++", "--", "^", "%%", "!"),
+	'LANG_NAME' => 'SourcePawn',
+	'COMMENT_SINGLE' => array(1 => '//'),
+	'COMMENT_MULTI' => array("/*" => "*/"),
+	'CASE_KEYWORDS' => GESHI_CAPS_NO_CHANGE,
+	'QUOTEMARKS' => array('"','\\''),
+	'ESCAPE_CHAR' => '\\\\',
+	'ESCAPE_REGEXP' => array(
+		1 => "#\\\\\\\\x[\\da-fA-F]{1,2}#",
+		2 => "#\\\\\\\\b[01]{1,8}#",
+		3 => "#%[%sdif%NLbxXtTc]#",
 		),
-	"KEYWORDS" => array(
+	'SYMBOLS' => array(
+		0 => array(';'),
+		// Assignment operators
+		1 => array('=', '+=', '-=', '/=', '*=', '&=', '|=', '~=', '^='),
+		// Comparison and logical operators
+		2 => array('==', '!=', '&&', '||', '>', '<', '<=', '>='),
+		// Other operators
+		3 => array('+', '-', '*', '/', '|', '&', '~', '++', '--', '^', '%%', '!'),
+		),
+	'KEYWORDS' => array(
 		// Reserved words
 		1 => array(
-			"for", "if", "else", "do", "while", "switch", "case", "return",
-			"break", "continue", "new", "decl", "public", "stock", "const",
-			"enum", "forward", "static", "funcenum", "functag", "native"
+			'for', 'if', 'else', 'do', 'while', 'switch', 'case', 'return',
+			'break', 'continue', 'new', 'decl', 'public', 'stock', 'const',
+			'enum', 'forward', 'static', 'funcenum', 'functag', 'native',
+			'sizeof', 'true', false',
 			),
 		// Tags
 		2 => array(
-			"Action", "bool", "Float", "Handle", "Plugin", "String", "any",
+			'Action', 'bool', 'Float', 'Plugin', 'String', 'any',
 			__tags__
 			),
 		// Natives
@@ -61,42 +67,70 @@ my $output = <<EOF;
 			),
 		// Defines
 		5 => array(
-			"MaxClients",
+			'MaxClients',
 			__defines__
 			),
 		),
-	"REGEXPS" => array(),
-	"STYLES" => array(
-        "KEYWORDS" => array(
-            1 => "color: #0000EE; font-weight: bold;",
-            2 => "color: #218087; font-weight: bold;",
-            3 => "color: #000000; font-weight: bold;",
-            4 => "color: #000000; font-weight: bold;",
-            5 => "color: #8000FF;",
+	'NUMBERS' => array(
+		GESHI_NUMBER_INT_BASIC | GESHI_NUMBER_FLT_NONSCI | GESHI_NUMBER_BIN_PREFIX_0B | GESHI_NUMBER_HEX_PREFIX
+		),
+	'TAB_WIDTH' => 4,
+	'CASE_SENSITIVE' => array(
+		1 => true,
+		2 => true,
+		3 => true,
+		4 => true,
+		5 => true
+		),
+	'REGEXPS' => array(
+		0 => array(
+			GESHI_SEARCH => '(#include\\s+)(&lt;\\w+&gt;)',
+			GESHI_REPLACE => '\\\\2',
+			GESHI_BEFORE => '\\\\1',
+			),
+		1 => array(
+			GESHI_SEARCH => '(#\\w+)(\\s+)',
+			GESHI_REPLACE => '\\\\1',
+			GESHI_AFTER => '\\\\2'		
+			),
+		),
+	'STYLES' => array(
+        'KEYWORDS' => array(
+            1 => 'color: #0000EE; font-weight: bold;',
+            2 => 'color: #218087; font-weight: bold;',
+            3 => 'color: #000040;',
+            4 => 'color: #000040;',
+            5 => 'color: #8000FF;',
             ),
-        "COMMENTS" => array(
-            1 => "color: #006600; font-style: italic;",
-            2 => "color: #0000aa;",
-            "MULTI" => "color: #006600; font-style: italic;",
+        'COMMENTS' => array(
+            1 => 'color: #006600; font-style: italic;',
+            'MULTI' => 'color: #006600; font-style: italic;',
             ),
-        "ESCAPE_CHAR" => array(
-            0 => "color: #ff00ff;",
+        'ESCAPE_CHAR' => array(
+            0 => 'color: #ff00ff;',
+			1 => 'color: #ff00ff;',
+			2 => 'color: #ff00ff;',
+			3 => 'color: #ff00ff;',
             ),
-        "SYMBOLS" => array(
-            0 => "color: #000000; font-weight: bold;",
-            1 => "color: #880000;",
-            2 => "color: #886600;",
-            3 => "color: #AA8800;",
+        'SYMBOLS' => array(
+            0 => 'color: #1B5B00; font-weight: bold;',
+            1 => 'color: #1B5B00;',
+            2 => 'color: #1B5B00;',
+            3 => 'color: #1B5B00;',
             ),
-        "STRINGS" => array(
-            0 => "color: #B90000;",
+        'STRINGS' => array(
+            0 => 'color: #B90000;',
             ),
-        "BRACKETS" => array(
-            0 => "color: #33aa33; font-weight: bold;",
+        'BRACKETS' => array(
+            0 => 'color: #1B5B00; font-weight: bold;',
             ),
-        "NUMBERS" => array(
-            0 => "color: #AE5700;",
+        'NUMBERS' => array(
+            0 => 'color: #AE5700;',
             ),
+		'REGEXPS' => array(
+			0 => 'color: #B90000;',
+			1 => 'color: #0000aa;'
+			)
         ),
 );
 
@@ -123,10 +157,10 @@ foreach (@incs)
 	push(@natives, $contents =~ m/native\s+(?:[a-zA-Z]*:)?([a-zA-Z][a-zA-Z0-9_-]*)\s*\(/g);
 	push(@natives, $contents =~ m/stock\s+(?:[a-zA-Z]*:)?([a-zA-Z][a-zA-Z0-9_-]*)\s*\(/g);
 	push(@defines, $contents =~ m/\#define\s+([^_\s][^\s]*)/g);
-	while ($contents =~ m/[^c]enum\s+(?:\w+\s+)?{(.+?)}/sg)
+	while ($contents =~ m/[^c]enum\s+(?:\w+\s+)?\{(.+?)\}/sg)
 	{
 		my $enumcontents = $1;
-		$enumcontents =~ s/=\s*[a-zA-Z0-9-_]+\s*//g;
+		$enumcontents =~ s/=\s*[a-zA-Z0-9\+\-\*\/_\|&><\(\)~\^!=]+\s*//g;
 		$enumcontents =~ s/\/\/.*//g;
 		$enumcontents =~ s/\/\*.*?\*\///sg;
 		$enumcontents =~ s/\s//g;
@@ -137,22 +171,22 @@ foreach (@incs)
 
 foreach (@tags)
 {
-	$generated_stuff{tags} .= "\"$_\",";
+	$generated_stuff{tags} .= "'$_',";
 }
 
 foreach (@forwards)
 {
-	$generated_stuff{forwards} .= "\"$_\",";
+	$generated_stuff{forwards} .= "'$_',";
 }
 
 foreach (@natives)
 {
-	$generated_stuff{natives} .= "\"$_\",";
+	$generated_stuff{natives} .= "'$_',";
 }
 
 foreach (@defines)
 {
-	$generated_stuff{defines} .= "\"$_\",";
+	$generated_stuff{defines} .= "'$_',";
 }
 
 $output =~ s/__tags__/$generated_stuff{tags}/;
