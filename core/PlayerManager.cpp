@@ -61,6 +61,7 @@ int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
+SH_DECL_HOOK2_void(IServerGameClients, ClientActive, SH_NOATTRIB, 0, edict_t *, bool);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
 SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -135,6 +136,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &PlayerManager::OnClientCommand, false);
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientSettingsChanged, serverClients, this, &PlayerManager::OnClientSettingsChanged, true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, ServerActivate, gamedll, this, &PlayerManager::OnServerActivate, true);
+	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientActive, serverClients, this, &PlayerManager::OnClientActive, true);
 
 	g_ShareSys.AddInterface(NULL, this);
 
@@ -171,6 +173,7 @@ void PlayerManager::OnSourceModAllInitialized()
 
 void PlayerManager::OnSourceModShutdown()
 {
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientActive, serverClients, this, &PlayerManager::OnClientActive, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
@@ -487,6 +490,14 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 	}
 
 	return true;
+}
+
+void PlayerManager::OnClientActive(edict_t *pEntity, bool bLoadGame)
+{
+	int client = IndexOfEdict(pEntity);
+	CPlayer *pPlayer = &m_Players[client];
+
+	pPlayer->Activate();
 }
 
 void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
@@ -1445,6 +1456,7 @@ CPlayer::CPlayer()
 	m_LastPassword.clear();
 	m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
 	m_bFakeClient = false;
+	m_IsActive = false;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -1516,6 +1528,7 @@ void CPlayer::Disconnect()
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
 	m_bFakeClient = false;
+	m_IsActive = false;
 }
 
 void CPlayer::SetName(const char *name)
@@ -1827,3 +1840,14 @@ unsigned int CPlayer::GetSerial()
 {
 	return m_Serial.value;
 }
+
+bool CPlayer::IsActive()
+{
+	return m_IsActive;
+}
+
+void CPlayer::Activate()
+{
+	m_IsActive = true;
+}
+

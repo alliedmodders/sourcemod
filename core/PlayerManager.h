@@ -72,6 +72,7 @@ public:
 	const char *GetAuthString();
 	edict_t *GetEdict();
 	bool IsInGame();
+	bool IsActive();
 	bool WasCountedAsInGame();
 	bool IsConnected();
 	bool IsAuthorized();
@@ -90,6 +91,7 @@ public:
 	void DoBasicAdminChecks();
 	void MarkAsBeingKicked();
 	int GetLifeState();
+	void Activate();
 private:
 	void Initialize(const char *name, const char *ip, edict_t *pEntity);
 	void Connect();
@@ -119,6 +121,7 @@ private:
 	int m_UserId;
 	bool m_bFakeClient;
 	serial_t m_Serial;
+	bool m_IsActive;
 };
 
 class PlayerManager : 
@@ -147,6 +150,7 @@ public:
 	void OnClientPutInServer(edict_t *pEntity, char const *playername);
 	void OnClientDisconnect(edict_t *pEntity);
 	void OnClientDisconnect_Post(edict_t *pEntity);
+	void OnClientActive(edict_t *pEntity, bool bLoadGame);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
