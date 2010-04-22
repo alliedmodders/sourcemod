@@ -199,6 +199,11 @@ void EntityOutputManager::ShutdownFireEventDetour()
 
 void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
 {
+	if (!pCaller)
+	{
+		return;
+	}
+
 	char sOutput[20];
 	Q_snprintf(sOutput, sizeof(sOutput), "%x", pOutput);
 
