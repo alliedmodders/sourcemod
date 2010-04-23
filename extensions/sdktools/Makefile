@@ -86,13 +86,13 @@ ifeq "$(ENGINE)" "left4dead2"
 	CFLAGS += -DSOURCE_ENGINE=6
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
-	SRCDS = $(SRCDS_BASE)/left4dead2_demo
+	SRCDS = $(SRCDS_BASE)/left4dead2
 	GAMEFIX = 2.l4d2
 	override ENGSET = true
 endif
 
 ifeq "$(ENGINE)" "left4dead2"
-	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_linux.so tier0_linux.so
+	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so
 else
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so
 endif
@@ -150,8 +150,8 @@ $(BIN_DIR)/%.o: %.cpp
 all: check
 	mkdir -p $(BIN_DIR)/sdk
 ifeq "$(ENGINE)" "left4dead2"
-	ln -sf $(SRCDS)/bin/vstdlib_linux.so vstdlib_linux.so;
-	ln -sf $(SRCDS)/bin/tier0_linux.so tier0_linux.so;
+	ln -sf $(SRCDS)/bin/libvstdlib.so libvstdlib.so;
+	ln -sf $(SRCDS)/bin/libtier0.so libtier0.so;
 else
 	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
 	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
