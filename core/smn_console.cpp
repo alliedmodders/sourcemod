@@ -45,7 +45,6 @@
 #include <sm_trie_tpl.h>
 #include "Logger.h"
 #include "ConsoleDetours.h"
-#include <assert.h>
 
 #if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 #define NET_SETCONVAR	6
@@ -201,7 +200,6 @@ static void ReplicateConVar(ConVar *pConVar)
 
 		if (pPlayer && pPlayer->IsInGame() && !pPlayer->IsFakeClient())
 		{
-			assert(pPlayer->IsActive());
 			INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(i));
 			netchan->SendData(buffer);
 		}
@@ -1321,11 +1319,6 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	if (pPlayer->IsFakeClient())
 	{
 		return pContext->ThrowNativeError("Client %d is fake and cannot be targeted", params[1]);
-	}
-
-	if (!pPlayer->IsActive())
-	{
-		return 1;
 	}
 
 	INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
