@@ -127,7 +127,6 @@
 			"game"		"garrysmod"
 			"game"		"hl2mp"
 			"game"		"ship"
-			"game"		"insurgency"
 			"game"		"sourceforts"
 			"game"		"FortressForever"
 			"game"		"synergy"
