@@ -11,7 +11,6 @@
 
 "Games"
 {
-	/* Insurgency (2009-07-10) */
 	"insurgency"
 	{
 		"Offsets"
@@ -91,6 +90,11 @@
 			{
 				"windows"	"2"
 			}
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"6"
+			}			
 		}
 		"Signatures"
 		{
