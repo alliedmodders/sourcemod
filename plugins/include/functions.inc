@@ -30,6 +30,11 @@
  * Version: $Id$
  */
  
+#if defined _functions_included
+ #endinput
+#endif
+#define _functions_included
+ 
 #define SP_PARAMFLAG_BYREF	(1<<0)	/**< Internal use only. */
 
 /**
