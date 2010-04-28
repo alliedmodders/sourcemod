@@ -601,7 +601,7 @@ native Float:GetClientTime(client);
  *
  * @param client		Player's index.
  * @param flow			Traffic flowing direction.
- * @return				Latency.
+ * @return				Latency, or -1 if network info is not available.
  * @error				Invalid client index, client not in game, or fake client.
  */
 native Float:GetClientLatency(client, NetFlow:flow);
@@ -611,7 +611,7 @@ native Float:GetClientLatency(client, NetFlow:flow);
  *
  * @param client		Player's index.
  * @param flow			Traffic flowing direction.
- * @return				Average latency.
+ * @return				Latency, or -1 if network info is not available.
  * @error				Invalid client index, client not in game, or fake client.
  */
 native Float:GetClientAvgLatency(client, NetFlow:flow);
@@ -621,7 +621,7 @@ native Float:GetClientAvgLatency(client, NetFlow:flow);
  *
  * @param client		Player's index.
  * @param flow			Traffic flowing direction.
- * @return				Average packet loss.
+ * @return				Average packet loss, or -1 if network info is not available.
  * @error				Invalid client index, client not in game, or fake client.
  */
 native Float:GetClientAvgLoss(client, NetFlow:flow);
@@ -631,7 +631,7 @@ native Float:GetClientAvgLoss(client, NetFlow:flow);
  *
  * @param client		Player's index.
  * @param flow			Traffic flowing direction.
- * @return				Average packet choke.
+ * @return				Average packet loss, or -1 if network info is not available.
  * @error				Invalid client index, client not in game, or fake client.
  */
 native Float:GetClientAvgChoke(client, NetFlow:flow);

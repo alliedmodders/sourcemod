@@ -720,6 +720,10 @@ static cell_t GetTimeConnected(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return 0;
+	}
 
 	return sp_ftoc(pInfo->GetTimeConnected());
 }
@@ -739,6 +743,10 @@ static cell_t GetDataRate(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return 0;
+	}
 
 	return pInfo->GetDataRate();
 }
@@ -758,6 +766,10 @@ static cell_t IsTimingOut(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return 1;
+	}
 
 	return pInfo->IsTimingOut() ? 1 : 0;
 }
@@ -782,6 +794,10 @@ static cell_t GetLatency(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return sp_ftoc(-1);
+	}
 
 	if (params[2] == MAX_FLOWS)
 	{
@@ -815,6 +831,10 @@ static cell_t GetAvgLatency(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return sp_ftoc(-1);
+	}
 
 	if (params[2] == MAX_FLOWS)
 	{
@@ -848,6 +868,10 @@ static cell_t GetAvgLoss(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return sp_ftoc(-1);
+	}
 
 	if (params[2] == MAX_FLOWS)
 	{
@@ -881,6 +905,10 @@ static cell_t GetAvgChoke(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return sp_ftoc(-1);
+	}
 
 	if (params[2] == MAX_FLOWS)
 	{
@@ -914,6 +942,10 @@ static cell_t GetAvgData(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+	if (pInfo == NULL)
+	{
+		return 0;
+	}
 
 	if (params[2] == MAX_FLOWS)
 	{
@@ -947,6 +979,11 @@ static cell_t GetAvgPackets(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannelInfo *pInfo = engine->GetPlayerNetInfo(client);
+
+	if (pInfo == NULL)
+	{
+		return 0;
+	}
 
 	if (params[2] == MAX_FLOWS)
 	{
