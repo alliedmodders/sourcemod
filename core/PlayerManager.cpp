@@ -1619,8 +1619,22 @@ void CPlayer::Kick(const char *str)
 {
 	MarkAsBeingKicked();
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-	IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-	pClient->Disconnect("%s", str);
+	if (pNetChan == NULL)
+	{
+		/* What does this even mean? Hell if I know. */
+		int userid = GetUserId();
+		if (userid > 0)
+		{
+			char buffer[255];
+			UTIL_Format(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
+			engine->ServerCommand(buffer);
+		}
+	}
+	else
+	{
+		IClient *pClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+		pClient->Disconnect("%s", str);
+	}
 }
 
 void CPlayer::Authorize_Post()

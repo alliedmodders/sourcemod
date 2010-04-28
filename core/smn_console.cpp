@@ -200,8 +200,8 @@ static void ReplicateConVar(ConVar *pConVar)
 
 		if (pPlayer && pPlayer->IsInGame() && !pPlayer->IsFakeClient())
 		{
-			INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(i));
-			netchan->SendData(buffer);
+			if (INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(i)))
+				netchan->SendData(buffer);
 		}
 	}
 }
@@ -1319,6 +1319,11 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	}
 
 	INetChannel *netchan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(params[1]));
+	if (netchan == NULL)
+	{
+		return 0;
+	}
+
 	netchan->SendData(buffer);
 
 	return 1;
