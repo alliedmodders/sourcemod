@@ -160,6 +160,9 @@ public: //IHandleSystem
 		HandleError *err);
 
 	void Dump(HANDLE_REPORTER rep);
+
+	/* Bypasses security checks. */
+	Handle_t FastCloneHandle(Handle_t hndl);
 protected:
 	/**
 	 * Decodes a handle with sanity and security checking.
@@ -169,6 +172,9 @@ protected:
 						  QHandle **pHandle, 
 						  unsigned int *index,
 						  bool ignoreFree=false);
+
+	Handle_t FastCloneHandle(QHandle *pHandle, unsigned int index);
+	void GetHandleUnchecked(Handle_t hndl, QHandle *& pHandle, unsigned int &index);
 
 	/**
 	 * Creates a basic handle and sets its reference count to 1.
@@ -221,5 +227,28 @@ private:
 };
 
 extern HandleSystem g_HandleSys;
+
+struct AutoHandleRooter
+{
+public:
+	AutoHandleRooter(Handle_t hndl)
+	{
+		if (hndl != BAD_HANDLE)
+			this->hndl = g_HandleSys.FastCloneHandle(hndl);
+		else
+			this->hndl = BAD_HANDLE;
+	}
+
+	~AutoHandleRooter()
+	{
+		if (hndl != BAD_HANDLE)
+		{
+			HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+			g_HandleSys.FreeHandle(hndl, &sec);
+		}
+	}
+private:
+	Handle_t hndl;
+};
 
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_H_

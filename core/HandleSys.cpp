@@ -620,6 +620,43 @@ HandleError HandleSystem::CloneHandle(Handle_t handle, Handle_t *newhandle, Iden
 	return CloneHandle(pHandle, index, newhandle, newOwner);
 }
 
+Handle_t HandleSystem::FastCloneHandle(QHandle *pHandle, unsigned int index)
+{
+	if (pHandle->clone)
+		return FastCloneHandle(&m_Handles[pHandle->clone], pHandle->clone);
+
+	Handle_t hndl;
+	if (CloneHandle(pHandle, index, &hndl, g_pCoreIdent) != HandleError_None)
+		return BAD_HANDLE;
+
+	return hndl;
+}
+
+Handle_t HandleSystem::FastCloneHandle(Handle_t hndl)
+{
+	QHandle *pHandle;
+	unsigned int index;
+
+	GetHandleUnchecked(hndl, pHandle, index);
+
+	return FastCloneHandle(pHandle, index);
+}
+
+void HandleSystem::GetHandleUnchecked(Handle_t hndl, QHandle *& pHandle, unsigned int &index)
+{
+#ifndef NDEBUG
+	unsigned int serial = (hndl >> 16);
+#endif
+	index = (hndl & HANDLESYS_HANDLE_MASK);
+
+	assert(index != 0 && index <= m_HandleTail && index < HANDLESYS_MAX_HANDLES);
+
+	pHandle = &m_Handles[index];
+
+	assert(pHandle->set && pHandle->set != HandleSet_Freed);
+	assert(pHandle->serial == serial);
+}
+
 HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 {
 	QHandleType *pType = &m_Types[pHandle->type];
