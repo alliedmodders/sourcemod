@@ -1,4 +1,4 @@
-# (C)2004-2009 SourceMod Development Team
+# (C)2004-2010 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ..
@@ -37,7 +37,7 @@ ifeq "$(ENGINE)" "original"
 	METAMOD = $(MMSOURCE18)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
-	LIB_SUFFIX = i486
+	LIB_SUFFIX = _i486.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangebox"
@@ -48,7 +48,7 @@ ifeq "$(ENGINE)" "orangebox"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
-	LIB_SUFFIX = i486
+	LIB_SUFFIX = _i486.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangeboxvalve"
@@ -59,7 +59,8 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
-	LIB_SUFFIX = i486
+	LIB_PREFIX = lib
+	LIB_SUFFIX = .so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead"
@@ -70,7 +71,7 @@ ifeq "$(ENGINE)" "left4dead"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/l4d
-	LIB_SUFFIX = i486
+	LIB_SUFFIX = _i486.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead2"
@@ -81,14 +82,15 @@ ifeq "$(ENGINE)" "left4dead2"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/left4dead2
-	LIB_SUFFIX = linux
+	LIB_PREFIX = lib
+	LIB_SUFFIX = .so
 	override ENGSET = true
 endif
 
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 \
 	-DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
 
-LINK = vstdlib_$(LIB_SUFFIX).so tier0_$(LIB_SUFFIX).so -m32 -ldl -lm
+LINK = $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) $(LIB_PREFIX)tier0$(LIB_SUFFIX) -m32 -ldl -lm
 
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
 	-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK) -I$(SMSDK)/jit -I$(SMSDK)/jit/x86 \
@@ -133,8 +135,8 @@ $(BIN_DIR)/%.o: %.cpp
 
 all: check
 	mkdir -p $(BIN_DIR)
-	ln -sf $(HL2LIB)/vstdlib_$(LIB_SUFFIX).so
-	ln -sf $(HL2LIB)/tier0_$(LIB_SUFFIX).so
+	ln -sf $(HL2LIB)/$(LIB_PREFIX)vstdlib$(LIB_SUFFIX)
+	ln -sf $(HL2LIB)/$(LIB_PREFIX)tier0$(LIB_SUFFIX)
 	$(MAKE) -f Makefile mms_ext
 
 check:
