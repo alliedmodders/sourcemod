@@ -129,7 +129,7 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 		{
 			return 0;
 		}
-#if SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
 #else
 		s_call_addr = dlsym(handle, &sig[1]);
