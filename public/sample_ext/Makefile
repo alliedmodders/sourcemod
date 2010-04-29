@@ -1,4 +1,4 @@
-# (C)2004-2009 SourceMod Development Team
+# (C)2004-2010 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..
@@ -40,7 +40,7 @@ ifeq "$(ENGINE)" "original"
 	METAMOD = $(MMSOURCE18)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls
 	SRCDS = $(SRCDS_BASE)
-	LIB_SUFFIX = i486
+	LIB_SUFFIX = _i486.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangebox"
@@ -51,7 +51,7 @@ ifeq "$(ENGINE)" "orangebox"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
-	LIB_SUFFIX = i486
+	LIB_SUFFIX = _i486.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangeboxvalve"
@@ -62,7 +62,8 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/orangebox
-	LIB_SUFFIX = i486
+	LIB_PREFIX = lib
+	LIB_SUFFIX = .so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead"
@@ -73,7 +74,7 @@ ifeq "$(ENGINE)" "left4dead"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/l4d
-	LIB_SUFFIX = i486
+	LIB_SUFFIX = _i486.so
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "left4dead2"
@@ -84,12 +85,13 @@ ifeq "$(ENGINE)" "left4dead2"
 	METAMOD = $(MMSOURCE18)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	SRCDS = $(SRCDS_BASE)/left4dead2
-	LIB_SUFFIX = linux
+	LIB_PREFIX = lib
+	LIB_SUFFIX = .so
 	override ENGSET = true
 endif
 
 ifeq "$(USEMETA)" "true"
-	LINK_HL2 = $(HL2LIB)/tier1_i486.a vstdlib_$(LIB_SUFFIX).so tier0_$(LIB_SUFFIX).so
+	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) $(LIB_PREFIX)tier0$(LIB_SUFFIX)
 
 	LINK += $(LINK_HL2)
 
@@ -147,8 +149,8 @@ $(BIN_DIR)/%.o: %.cpp
 all: check
 	mkdir -p $(BIN_DIR)/sdk
 	if [ "$(USEMETA)" = "true" ]; then \
-		ln -sf $(HL2LIB)/vstdlib_$(LIB_SUFFIX).so; \
-		ln -sf $(HL2LIB)/tier0_$(LIB_SUFFIX).so; \
+		ln -sf $(HL2LIB)/$(LIB_PREFIX)vstdlib$(LIB_SUFFIX); \
+		ln -sf $(HL2LIB)/$(LIB_PREFIX)tier0$(LIB_SUFFIX); \
 	fi
 	$(MAKE) -f Makefile extension
 
