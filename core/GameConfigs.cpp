@@ -557,7 +557,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 						void *handle = dlopen(info.dli_fname, RTLD_NOW);
 						if (handle)
 						{
-#if SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 							final_addr = g_MemUtils.ResolveSymbol(handle, &s_TempSig.sig[1]);
 #else
 							final_addr = dlsym(handle, &s_TempSig.sig[1]);
