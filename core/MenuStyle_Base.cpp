@@ -377,7 +377,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 		RemoveClientFromWatch(client);
 	}
 
-	Handle_t hndl = menu->GetHandle();
+	Handle_t hndl = menu ? menu->GetHandle() : BAD_HANDLE;
 	AutoHandleRooter ahr(hndl);
 
 	if (cancel)
