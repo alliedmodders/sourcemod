@@ -23,23 +23,23 @@
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"258"
-				"linux"		"259"
+				"windows"	"259"
+				"linux"		"260"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"256"
-				"linux"		"257"
+				"windows"	"257"
+				"linux"		"258"
 			}
 			"Ignite"
 			{
-				"windows"	"201"
-				"linux"		"202"
+				"windows"	"202"
+				"linux"		"203"
 			}
 			"Extinguish"
 			{
-				"windows"	"205"
-				"linux"		"206"
+				"windows"	"206"
+				"linux"		"207"
 			}
 			"Teleport"
 			{
@@ -53,13 +53,13 @@
 			}
 			"GetVelocity"
 			{
-				"windows"	"136"
-				"linux"		"137"
+				"windows"	"137"
+				"linux"		"138"
 			}
 			"EyeAngles"
 			{
-				"windows"	"127"
-				"linux"		"128"
+				"windows"	"128"
+				"linux"		"129"
 			}
 			"AcceptInput"
 			{
@@ -88,8 +88,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"249"
-				"linux"		"250"
+				"windows"	"250"
+				"linux"		"251"
 			}
 			"Activate"
 			{
