@@ -2,6 +2,23 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.2 [2010-05-02]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.2_Release_Notes
+
+User Changes:
+
+ - Support for recent TF, DoD, and L4D2 updates (bug 4356, bug 4361, bug 4371, bug 4374, bug 4375).
+ - Fixed rare crash when replicating cvars to clients (bug 4315).
+ - Lots of extra game support for Insurgency, ZPS, CSProMod, PVKII, and FortressForever (thanks
+   Nicholas "psychonic" hastings). 
+
+Developer Changes:
+
+ - Added TF functions for stunning, conditions, regeneration, and power play (bug 4166, bug 4331).
+
+----------------------------
+
 SourceMod 1.3.1 [2010-02-09]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.3.1_Release_Notes
