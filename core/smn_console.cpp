@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -45,6 +45,12 @@
 #include <sm_trie_tpl.h>
 #include "Logger.h"
 #include "ConsoleDetours.h"
+
+#if SOURCE_ENGINE >= SE_ORANGEBOXVALVE
+#define NETMSG_BITS 6
+#else
+#define NETMSG_BITS 5
+#endif
 
 #if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 #define NET_SETCONVAR	6
@@ -189,7 +195,7 @@ static void ReplicateConVar(ConVar *pConVar)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-	buffer.WriteUBitLong(NET_SETCONVAR, 5);
+	buffer.WriteUBitLong(NET_SETCONVAR, NETMSG_BITS);
 	buffer.WriteByte(1);
 	buffer.WriteString(pConVar->GetName());
 	buffer.WriteString(pConVar->GetString());
@@ -1296,7 +1302,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-	buffer.WriteUBitLong(NET_SETCONVAR, 5);
+	buffer.WriteUBitLong(NET_SETCONVAR, NETMSG_BITS);
 	buffer.WriteByte(1);
 	buffer.WriteString(pConVar->GetName());
 	buffer.WriteString(value);
