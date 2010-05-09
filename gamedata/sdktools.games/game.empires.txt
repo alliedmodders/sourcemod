@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* Empires 2.25 */
+	/* Empires 2.25b */
 	"empires"
 	{
 
@@ -19,48 +19,48 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"354"
-				"linux"		"355"
+				"windows"	"353"
+				"linux"		"354"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"241"
-				"linux"		"242"
+				"windows"	"240"
+				"linux"		"241"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"239"
-				"linux"		"240"
+				"windows"	"238"
+				"linux"		"239"
 			}
 			"Ignite"
 			{
-				"windows"	"196"
-				"linux"		"197"
+				"windows"	"195"
+				"linux"		"196"
 			}
 			"Extinguish"
 			{
-				"windows"	"200"
-				"linux"		"201"
+				"windows"	"199"
+				"linux"		"200"
 			}
 			"Teleport"
 			{
-				"windows"	"104"
-				"linux"		"105"
+				"windows"	"103"
+				"linux"		"104"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"401"
-				"linux"		"402"
+				"windows"	"392"
+				"linux"		"393"
 			}
 			"GetVelocity"
 			{
-				"windows"	"133"
-				"linux"		"134"
+				"windows"	"132"
+				"linux"		"133"
 			}
 			"EyeAngles"
 			{
-				"windows"	"125"
-				"linux"		"126"
+				"windows"	"124"
+				"linux"		"125"
 			}
 			"DispatchKeyValue"
 			{
@@ -79,33 +79,28 @@
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"34"
+				"linux"		"35"
 			}
 			"Activate"
 			{
 				"windows"	"31"
 				"linux"		"32"
 			}
-			"TakeHealth"
-			{
-				"windows"	"62"
-				"linux"		"63"
-			}
-			"ChangeTeam"
-			{
-				"windows"	"87"
-				"linux"		"88"
-			}
 			"SetEntityModel"
 			{
 				"windows"	"23"
 				"linux"		"24"
 			}
+			"WeaponEquip"
+			{
+				"windows"	"231"
+				"linux"		"232"
+			}
 			"PlayerRunCmd"
 			{
-				"windows"	"373"
-				"linux"		"374"
+				"windows"	"372"
+				"linux"		"373"
 			}
 			"FireOutputBackup"
 			{
