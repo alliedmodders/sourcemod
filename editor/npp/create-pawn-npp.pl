@@ -14,7 +14,7 @@ my $output = <<EOF;
             <Keywords name="Folder-">}</Keywords>
             <Keywords name="Operators">- ! % &amp; ( ) , . : ; ? @ [ \ ] ^ | ~ + &lt; = &gt;</Keywords>
             <Keywords name="Comment">1/* 2*/ 0//</Keywords>
-            <Keywords name="Words1">for if else do while switch case return break continue new decl public stock const enum forward static funcenum functag native sizeof true false</Keywords>
+            <Keywords name="Words1">for if else do while switch case default return break continue new decl public stock const enum forward static funcenum functag native sizeof true false</Keywords>
             <Keywords name="Words2">#</Keywords>
             <Keywords name="Words3">Action bool Float Plugin String any __tags__</Keywords>
             <Keywords name="Words4">MaxClients __defines__</Keywords>

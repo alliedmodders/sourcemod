@@ -50,7 +50,7 @@ my $output = <<EOF;
 			'for', 'if', 'else', 'do', 'while', 'switch', 'case', 'return',
 			'break', 'continue', 'new', 'decl', 'public', 'stock', 'const',
 			'enum', 'forward', 'static', 'funcenum', 'functag', 'native',
-			'sizeof', 'true', false',
+			'sizeof', 'true', 'false', 'default',
 			),
 		// Tags
 		2 => array(
