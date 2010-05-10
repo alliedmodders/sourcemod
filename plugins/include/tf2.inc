@@ -237,3 +237,20 @@ public Extension:__ext_tf2 =
 	required = 0,
 #endif
 };
+
+#if !defined REQUIRE_EXTENSIONS
+public __ext_tf2_SetNTVOptional()
+{
+	MarkNativeAsOptional("TF2_IgnitePlayer");
+	MarkNativeAsOptional("TF2_RespawnPlayer");
+	MarkNativeAsOptional("TF2_RegeneratePlayer");
+	MarkNativeAsOptional("TF2_AddCondition");
+	MarkNativeAsOptional("TF2_RemoveCondition");
+	MarkNativeAsOptional("TF2_SetPlayerPowerPlay");
+	MarkNativeAsOptional("TF2_DisguisePlayer");
+	MarkNativeAsOptional("TF2_RemovePlayerDisguise");
+	MarkNativeAsOptional("TF2_StunPlayer");
+	MarkNativeAsOptional("TF2_GetResourceEntity");
+	MarkNativeAsOptional("TF2_GetClass");
+}
+#endif
