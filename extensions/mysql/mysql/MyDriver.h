@@ -39,8 +39,10 @@
 #endif
 
 #include <mysql.h>
-#include <my_global.h>
-#include <my_sys.h>
+#if !defined(PLATFORM_WINDOWS)
+# include <my_global.h>
+# include <my_sys.h>
+#endif
 
 #include <sh_string.h>
 #include <sh_list.h>
