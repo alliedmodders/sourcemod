@@ -11,6 +11,8 @@ if AMBuild.target['platform'] == 'linux':
 	path = os.path.join(AMBuild.sourceFolder, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
 elif AMBuild.target['platform'] == 'windows':
 	path = os.path.join(AMBuild.sourceFolder, 'extensions', 'regex', 'lib_win', 'pcre.lib')
+elif AMBuild.target['platform'] == 'darwin':
+	path = os.path.join(AMBuild.sourceFolder, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
 
 binary.RelinkIfNewer(path)
 binary['POSTLINKFLAGS'].append(path)
