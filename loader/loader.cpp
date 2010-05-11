@@ -193,7 +193,7 @@ bool GetFileOfAddress(void *pAddr, char *buffer, size_t maxlength)
 
 DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
 {
-	char *filename;
+	const char *filename;
 
 	load_attempted = true;
 	

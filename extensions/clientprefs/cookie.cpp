@@ -165,7 +165,7 @@ bool CookieManager::GetCookieValue(Cookie *pCookie, int client, char **value)
 	return true;
 }
 
-bool CookieManager::SetCookieValue(Cookie *pCookie, int client, char *value)
+bool CookieManager::SetCookieValue(Cookie *pCookie, int client, const char *value)
 {
 	assert(pCookie);
 

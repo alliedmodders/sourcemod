@@ -118,7 +118,7 @@ public:
 	void OnClientDisconnecting(int client);
 	
 	bool GetCookieValue(Cookie *pCookie, int client, char **value);
-	bool SetCookieValue(Cookie *pCookie, int client, char *value);
+	bool SetCookieValue(Cookie *pCookie, int client, const char *value);
 	bool GetCookieTime(Cookie *pCookie, int client, time_t *value);
 
 	void Unload();
