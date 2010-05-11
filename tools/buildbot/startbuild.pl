@@ -10,7 +10,7 @@ require 'helpers.pm';
 
 chdir('../../../OUTPUT');
 
-if ($^O eq "linux") {
+if ($^O eq "linux" || $^O eq "darwin") {
 	system("python3.1 build.py 2>&1");
 } else {
 	system("C:\\Python31\\python.exe build.py 2>&1");
