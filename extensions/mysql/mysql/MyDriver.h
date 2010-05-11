@@ -39,6 +39,8 @@
 #endif
 
 #include <mysql.h>
+#include <my_global.h>
+#include <my_sys.h>
 
 #include <sh_string.h>
 #include <sh_list.h>

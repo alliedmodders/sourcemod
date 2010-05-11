@@ -9,13 +9,16 @@ compiler['CINCLUDES'].append(os.path.join(AMBuild.outputFolder, 'includes'))
 
 if compiler.cc.name == 'gcc':
 	compiler['CFLAGS'].extend(['-Wno-parentheses', '-Wno-format'])
-	compiler['POSTLINKFLAGS'].extend(['-lgcc', '-lm'])
+	if AMBuild.target['platform'] == 'linux':
+		compiler['POSTLINKFLAGS'].extend(['-lgcc', '-lm'])
 elif compiler.cc.name == 'msvc':
 	compiler['POSTLINKFLAGS'].remove('/SUBSYSTEM:WINDOWS')
 	compiler['POSTLINKFLAGS'].append('/SUBSYSTEM:CONSOLE')
 
 if AMBuild.target['platform'] == 'linux':
 	compiler['CDEFINES'].extend(['LINUX', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC'])
+elif AMBuild.target['platform'] == 'darwin':
+	compiler['CDEFINES'].extend(['DARWIN', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC'])
 
 extension = AMBuild.AddJob('spcomp')
 binary = Cpp.ExecutableBuilder('spcomp', AMBuild, extension, compiler)

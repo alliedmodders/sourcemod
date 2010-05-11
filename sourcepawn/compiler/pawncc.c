@@ -8,7 +8,7 @@
 #include "amxdbg.h"
 #include "osdefs.h"
 #include "zlib/zlib.h"
-#if defined LINUX
+#if defined LINUX || defined DARWIN
 #include <unistd.h>
 #elif defined WIN32
 #include <io.h>

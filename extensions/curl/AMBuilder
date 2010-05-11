@@ -5,7 +5,7 @@ import ambuild.osutil as osutil
 
 def BuildCURL():
 	curl = AMBuild.AddJob('curl')
-	if AMBuild.target['platform'] == 'linux':
+	if AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'darwin':
 		if not osutil.FileExists(os.path.join(AMBuild.outputFolder, 'curl', 'Makefile')):
 			args = ['/bin/bash',
 							os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'configure'),
@@ -16,7 +16,13 @@ def BuildCURL():
 							'--without-libidn',
 							'--without-libssh2',
 							'--without-zlib']
-			curl.AddCommand(command.DirectCommand(args))
+			if AMBuild.target['platform'] == 'linux':
+				env = None
+			elif AMBuild.target['platform'] == 'darwin':
+				env = os.environ.copy()
+				env['CFLAGS'] = '-m32 -isysroot /Developer/SDKs/MacOSX10.5.sdk'
+				env['LDFLAGS'] = '-mmacosx-version-min=10.5'
+			curl.AddCommand(command.DirectCommand(argv = args, env = env))
 			curl.AddCommand(command.ShellCommand('cd lib && make'))
 	else:
 		args = ['vcbuild',
@@ -42,13 +48,14 @@ binary.AddSourceFiles('extensions/curl', [
 	'sdk/smsdk_ext.cpp',
 	])
 
-if AMBuild.target['platform'] == 'linux':
+if AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'darwin':
 	path = os.path.join(AMBuild.outputFolder,
                       'curl',
                       'lib',
                       '.libs',
                       'libcurl.a')
-	binary['POSTLINKFLAGS'].append('-lrt')
+	if AMBuild.target['platform'] == 'linux':
+		binary['POSTLINKFLAGS'].append('-lrt')
 	binary.AddObjectFiles([path])
 elif AMBuild.target['platform'] == 'windows':
 	path = os.path.join(AMBuild.sourceFolder,

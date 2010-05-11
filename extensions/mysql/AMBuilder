@@ -8,7 +8,7 @@ compiler['CXXINCLUDES'].append(os.path.join(SM.mmsPath, 'core', 'sourcehook'))
 extension = AMBuild.AddJob('dbi.mysql.ext')
 binary = Cpp.LibraryBuilder('dbi.mysql.ext', AMBuild, extension, compiler)
 
-if AMBuild.target['platform'] == 'linux':
+if AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'darwin':
 	lib = os.path.join(AMBuild.cache['MYSQL5'], 'lib', 'libmysqlclient_r.a')
 	link = [lib,
           '-lz',
