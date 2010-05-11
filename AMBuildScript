@@ -140,6 +140,10 @@ class SM:
 			#Platform-specifics
 			if AMBuild.target['platform'] == 'linux':
 				self.compiler.AddToListVar('CDEFINES', '_LINUX')
+			elif AMBuild.target['platform'] == 'darwin':
+				self.compiler.AddToListVar('CFLAGS', '-mmacosx-version-min=10.5')
+				self.compiler.AddToListVar('POSTLINKFLAGS', ['-isysroot',
+				                                             '/Developer/SDKs/MacOSX10.5.sdk'])
 			elif AMBuild.target['platform'] == 'windows':
 				self.compiler.AddToListVar('CDEFINES', 'WIN32')
 				self.compiler.AddToListVar('CDEFINES', '_WINDOWS')
