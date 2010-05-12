@@ -1,21 +1,22 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
 import os
 
-sdk = SM.sdkInfo['ep1']
-compiler = SM.DefaultHL2Compiler('extensions/cstrike', 'ep1')
+if 'ep1' in SM.sdkInfo:
+	sdk = SM.sdkInfo['ep1']
+	compiler = SM.DefaultHL2Compiler('extensions/cstrike', 'ep1')
 
-name = 'game.cstrike.ext.' + sdk['ext']
-extension = AMBuild.AddJob(name)
-binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
-SM.PreSetupHL2Job(extension, binary, 'ep1')
-binary.AddSourceFiles('extensions/cstrike', [
-	'extension.cpp',
-	'natives.cpp',
-	'RegNatives.cpp',
-	'timeleft.cpp',
-	'sdk/smsdk_ext.cpp'
-	])
-SM.PostSetupHL2Job(extension, binary, 'ep1')
-SM.AutoVersion('extensions/cstrike', binary)
-binary.SendToJob()
+	name = 'game.cstrike.ext.' + sdk['ext']
+	extension = AMBuild.AddJob(name)
+	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
+	SM.PreSetupHL2Job(extension, binary, 'ep1')
+	binary.AddSourceFiles('extensions/cstrike', [
+		'extension.cpp',
+		'natives.cpp',
+		'RegNatives.cpp',
+		'timeleft.cpp',
+		'sdk/smsdk_ext.cpp'
+		])
+	SM.PostSetupHL2Job(extension, binary, 'ep1')
+	SM.AutoVersion('extensions/cstrike', binary)
+	binary.SendToJob()
 
