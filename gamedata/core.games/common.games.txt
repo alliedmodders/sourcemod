@@ -139,6 +139,7 @@
 			"game"					"FortressForever"
 			"game"					"zps"
 			"game"					"gesource"
+			"game"					"cstrike_beta"
 		}
 
 		"Keys"
@@ -164,6 +165,8 @@
 			"game"					"zps"
 			"game"					"gesource"
 			"game"					"obsidian"
+			"game"					"cstrike"
+			"game"					"cstrike_beta"
 		}
 		
 		"Keys"
@@ -199,12 +202,31 @@
 		}
 	}
 
-	"cstrike"
+	"#default"
 	{
+		"#supported"
+		{
+			"game"		"cstrike"
+			"game"		"cstrike_beta"
+		}
+		
+		"Keys"
+		{
+			"GameExtension"		"game.cstrike"
+		}
+	}
+		
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+			"engine"	"original"
+		}
+		
 		"Keys"
 		{
 			"HintTextPreByte"		"yes"
-			"GameExtension"			"game.cstrike"
 		}
 	}
 
