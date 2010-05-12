@@ -12,8 +12,14 @@
 "Games"
 {
 	/* Counter-Strike: Source */
-	"cstrike"
+	"#default"
 	{
+		"#supported"
+		{
+			"engine"	"original"
+			"game"		"cstrike"
+		}
+	
 		"Keys"
 		{
 			"SlapSoundCount"	"3"
@@ -108,6 +114,114 @@
 			{
 				"windows"	"347"
 				"linux"		"348"
+			}
+		}
+	}
+		
+	/* Counter-Strike: Source ORANGEBOX */
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"orangebox_valve"
+			"game"		"cstrike"
+			"game"		"cstrike_beta"
+		}
+	
+		"Keys"
+		{
+			"SlapSoundCount"	"3"
+			"SlapSound1"		"player/damage1.wav"
+			"SlapSound2"		"player/damage2.wav"
+			"SlapSound3"		"player/damage3.wav"
+		}
+
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"386"
+				"linux"		"387"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"259"
+				"linux"		"260"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"257"
+				"linux"		"258"
+			}
+			"Ignite"
+			{
+				"windows"	"202"
+				"linux"		"203"
+			}
+			"Extinguish"
+			{
+				"windows"	"206"
+				"linux"		"207"
+			}
+			"Teleport"
+			{
+				"windows"	"105"
+				"linux"		"106"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"426"
+				"linux"		"426"
+			}
+			"GetVelocity"
+			{
+				"windows"	"137"
+				"linux"		"138"
+			}
+			"EyeAngles"
+			{
+				"windows"	"128"
+				"linux"		"129"
+			}
+			"AcceptInput"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"29"
+				"linux"		"28"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"28"
+				"linux"		"29"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"27"
+				"linux"		"30"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"250"
+				"linux"		"251"
+			}
+			"Activate"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"404"
+				"linux"		"405"
 			}
 		}
 	}

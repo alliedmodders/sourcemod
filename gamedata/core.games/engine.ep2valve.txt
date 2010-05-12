@@ -18,6 +18,8 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
+			"game"		"cstrike"
+			"game"		"cstrike_beta"
 		}
 		
 		"Offsets"
