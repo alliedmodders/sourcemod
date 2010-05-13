@@ -47,6 +47,8 @@ extern IShareSys *sharesys;
 extern IRootConsole *rootmenu;
 extern IPluginManager *pluginsys;
 extern IForwardManager *forwardsys;
+extern ITimerSystem *timersys;
+extern ServerGlobals serverGlobals;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

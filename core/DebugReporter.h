@@ -46,6 +46,7 @@ public: // IDebugListener
 	void OnDebugSpew(const char *msg, ...);
 public:
 	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
+	void GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap); 
 	void GenerateCodeError(IPluginContext *ctx, uint32_t code_addr, int err, const char *message, ...);
 private:
 	int _GetPluginIndex(IPluginContext *ctx);

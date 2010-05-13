@@ -29,11 +29,14 @@
  * Version: $Id$
  */
 
-#include "HandleSys.h"
-#include "TimerSys.h"
-#include "PluginSys.h"
-#include "Logger.h"
-#include "DebugReporter.h"
+#include "common_logic.h"
+#include <string.h>
+#include <IHandleSys.h>
+#include <ITimerSystem.h>
+#include <IPluginSys.h>
+#include <sh_stack.h>
+
+using namespace SourceHook;
 
 #define TIMER_DATA_HNDL_CLOSE	(1<<9)
 #define TIMER_HNDL_CLOSE		(1<<9)
@@ -86,15 +89,15 @@ void TimerNatives::OnSourceModAllInitialized()
 {
 	HandleAccess sec;
 
-	g_HandleSys.InitAccessDefaults(NULL, &sec);
+	handlesys->InitAccessDefaults(NULL, &sec);
 	sec.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 
-	g_TimerType = g_HandleSys.CreateType("Timer", this, 0, NULL, &sec, g_pCoreIdent, NULL);
+	g_TimerType = handlesys->CreateType("Timer", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 }
 
 void TimerNatives::OnSourceModShutdown()
 {
-	g_HandleSys.RemoveType(g_TimerType, g_pCoreIdent);
+	handlesys->RemoveType(g_TimerType, g_pCoreIdent);
 	g_TimerType = 0;
 }
 
@@ -102,7 +105,7 @@ void TimerNatives::OnHandleDestroy(HandleType_t type, void *object)
 {
 	TimerInfo *pTimer = reinterpret_cast<TimerInfo *>(object);
 
-	g_Timers.KillTimer(pTimer->Timer);
+	timersys->KillTimer(pTimer->Timer);
 }
 
 TimerInfo *TimerNatives::CreateTimerInfo()
@@ -150,27 +153,23 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 
 	if (pInfo->Flags & TIMER_DATA_HNDL_CLOSE)
 	{
-		if ((herr=g_HandleSys.FreeHandle(usrhndl, &sec)) != HandleError_None)
+		if ((herr=handlesys->FreeHandle(usrhndl, &sec)) != HandleError_None)
 		{
-			g_DbgReporter.GenerateError(pInfo->pContext,
-										pInfo->Hook->GetFunctionID(), 
-										SP_ERROR_NATIVE, 
-										"Invalid data handle %x (error %d) passed during timer end with TIMER_DATA_HNDL_CLOSE",
-										usrhndl, 
-										herr);
+			smcore.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
+							  	 SP_ERROR_NATIVE, 
+							  	 "Invalid data handle %x (error %d) passed during timer end with TIMER_DATA_HNDL_CLOSE",
+							  	 usrhndl, herr);
 		}
 	}
 
 	if (pInfo->TimerHandle != BAD_HANDLE)
 	{
-		if ((herr=g_HandleSys.FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
+		if ((herr=handlesys->FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
 		{
-			g_DbgReporter.GenerateError(pInfo->pContext, 
-				pInfo->Hook->GetFunctionID(), 
+			smcore.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
 				SP_ERROR_NATIVE, 
 				"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace", 
-				pInfo->TimerHandle, 
-				herr);
+				pInfo->TimerHandle, herr);
 		}
 	}
 
@@ -200,7 +199,7 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	pInfo = s_TimerNatives.CreateTimerInfo();
-	pTimer = g_Timers.CreateTimer(&s_TimerNatives, sp_ctof(params[1]), pInfo, flags);
+	pTimer = timersys->CreateTimer(&s_TimerNatives, sp_ctof(params[1]), pInfo, flags);
 
 	if (!pTimer)
 	{
@@ -208,7 +207,7 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
-	hndl = g_HandleSys.CreateHandle(g_TimerType, pInfo, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+	hndl = handlesys->CreateHandle(g_TimerType, pInfo, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 
 	/* If we can't get a handle, the timer isn't refcounted against the plugin and 
 	 * we need to bail out to prevent a crash.
@@ -219,11 +218,11 @@ static cell_t smn_CreateTimer(IPluginContext *pCtx, const cell_t *params)
 		if (flags & TIMER_DATA_HNDL_CLOSE)
 		{
 			HandleSecurity sec(pCtx->GetIdentity(), g_pCoreIdent);
-			g_HandleSys.FreeHandle(params[3], &sec);
+			handlesys->FreeHandle(params[3], &sec);
 		}
 		/* Zero everything so there's no conflicts */
 		memset(pInfo, 0, sizeof(TimerInfo));
-		g_Timers.KillTimer(pTimer);
+		timersys->KillTimer(pTimer);
 
 		return pCtx->ThrowNativeError("Could not create timer, no more handles");
 	}
@@ -248,20 +247,20 @@ static cell_t smn_KillTimer(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_TimerType, &sec, (void **)&pInfo))
+	if ((herr=handlesys->ReadHandle(hndl, g_TimerType, &sec, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid timer handle %x (error %d)", hndl, herr);
 	}
 
-	g_Timers.KillTimer(pInfo->Timer);
+	timersys->KillTimer(pInfo->Timer);
 
 	if (params[2] && !(pInfo->Flags & TIMER_DATA_HNDL_CLOSE))
 	{
 		sec.pOwner = pInfo->pContext->GetIdentity();
 		sec.pIdentity = g_pCoreIdent;
 
-		if ((herr=g_HandleSys.FreeHandle(static_cast<Handle_t>(pInfo->UserData), &sec)) != HandleError_None)
+		if ((herr=handlesys->FreeHandle(static_cast<Handle_t>(pInfo->UserData), &sec)) != HandleError_None)
 		{
 			return pCtx->ThrowNativeError("Invalid data handle %x (error %d) on timer kill with TIMER_DATA_HNDL_CLOSE", hndl, herr);
 		}
@@ -280,26 +279,26 @@ static cell_t smn_TriggerTimer(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = pCtx->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_TimerType, &sec, (void **)&pInfo))
+	if ((herr=handlesys->ReadHandle(hndl, g_TimerType, &sec, (void **)&pInfo))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid timer handle %x (error %d)", hndl, herr);
 	}
 
-	g_Timers.FireTimerOnce(pInfo->Timer, params[2] ? true : false);
+	timersys->FireTimerOnce(pInfo->Timer, params[2] ? true : false);
 
 	return 1;
 }
 
 static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
 {
-	return sp_ftoc(*g_pUniversalTime);
+	return sp_ftoc(*serverGlobals.universalTime);
 }
 
 static cell_t smn_GetMapTimeLeft(IPluginContext *pContext, const cell_t *params)
 {
 	float time_left;
-	if (!g_Timers.GetMapTimeLeft(&time_left))
+	if (!timersys->GetMapTimeLeft(&time_left))
 	{
 		return 0;
 	}
@@ -313,7 +312,7 @@ static cell_t smn_GetMapTimeLeft(IPluginContext *pContext, const cell_t *params)
 
 static cell_t smn_GetMapTimeLimit(IPluginContext *pContext, const cell_t *params)
 {
-	IMapTimer *pMapTimer = g_Timers.GetMapTimer();
+	IMapTimer *pMapTimer = timersys->GetMapTimer();
 
 	if (!pMapTimer)
 	{
@@ -330,7 +329,7 @@ static cell_t smn_GetMapTimeLimit(IPluginContext *pContext, const cell_t *params
 
 static cell_t smn_ExtendMapTimeLimit(IPluginContext *pContext, const cell_t *params)
 {
-	IMapTimer *pMapTimer = g_Timers.GetMapTimer();
+	IMapTimer *pMapTimer = timersys->GetMapTimer();
 
 	if (!pMapTimer)
 	{
@@ -344,12 +343,12 @@ static cell_t smn_ExtendMapTimeLimit(IPluginContext *pContext, const cell_t *par
 
 static cell_t smn_IsServerProcessing(IPluginContext *pContext, const cell_t *params)
 {
-	return (gpGlobals->frametime > 0.0f) ? 1 : 0;
+	return (*serverGlobals.frametime > 0.0f) ? 1 : 0;
 }
 
 static cell_t smn_GetTickInterval(IPluginContext *pContext, const cell_t *params)
 {
-	return sp_ftoc(gpGlobals->interval_per_tick);
+	return sp_ftoc(*serverGlobals.interval_per_tick);
 }
 
 REGISTER_NATIVES(timernatives)

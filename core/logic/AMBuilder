@@ -30,6 +30,7 @@ files = [
 	'smn_adt_trie.cpp',
 	'Profiler.cpp',
 	'smn_functions.cpp',
+	'smn_timers.cpp',
 	'sm_crc32.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':
