@@ -191,12 +191,17 @@ def AddNormalLibrary(name, dest):
 def AddHL2Library(name, dest):
 	for i in SM.sdkInfo:
 		sdk = SM.sdkInfo[i]
+		if AMBuild.target['platform'] not in sdk['platform']:
+			continue
 		AddNormalLibrary(name + '.' + sdk['ext'], dest)
 
 pdb_list = []
 
 if AMBuild.target['platform'] == 'linux':
 	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm_i486.so'),
+	                 os.path.join('addons', 'sourcemod', 'bin')))
+elif AMBuild.target['platform'] == 'darwin':
+	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dylib'),
 	                 os.path.join('addons', 'sourcemod', 'bin')))
 elif AMBuild.target['platform'] == 'windows':
 	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dll'),
@@ -209,7 +214,8 @@ AddNormalLibrary('sourcepawn.jit.x86', 'bin')
 AddNormalLibrary('geoip.ext', 'extensions')
 AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
-AddNormalLibrary('game.cstrike.ext.1.ep1', 'extensions')
+if AMBuild.target['platform'] != 'darwin':
+	AddNormalLibrary('game.cstrike.ext.1.ep1', 'extensions')
 AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
 AddNormalLibrary('topmenus.ext', 'extensions')
 AddNormalLibrary('regex.ext', 'extensions')

@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 #define _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 #include <sys/mman.h>
 #define	PAGE_SIZE	4096
 #define ALIGN(ar) ((long)ar & ~(PAGE_SIZE-1))

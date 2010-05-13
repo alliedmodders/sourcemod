@@ -24,7 +24,7 @@
 
 #ifdef _WIN32
 #define FORCEINLINE_CVAR FORCEINLINE
-#elif _LINUX
+#elif defined _LINUX || defined __APPLE__
 #define FORCEINLINE_CVAR inline
 #else
 #error "implement me"

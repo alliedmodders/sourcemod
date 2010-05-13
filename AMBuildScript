@@ -147,6 +147,7 @@ class SM:
 				                                      '/Developer/SDKs/MacOSX10.5.sdk'])
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-mmacosx-version-min=10.5')
 				self.compiler.AddToListVar('POSTLINKFLAGS', ['-arch', 'i386'])
+				self.compiler.AddToListVar('POSTLINKFLAGS', '-lstdc++')
 			elif AMBuild.target['platform'] == 'windows':
 				self.compiler.AddToListVar('CDEFINES', 'WIN32')
 				self.compiler.AddToListVar('CDEFINES', '_WINDOWS')
@@ -223,6 +224,16 @@ class SM:
 						os.lstat(link)
 					except:
 						job.AddCommand(SymlinkCommand(link, target))
+		elif AMBuild.target['platform'] == 'darwin':
+			staticLibs = os.path.join(sdkPath, 'lib', 'mac')
+			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
+			for i in ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.dylib', 'libtier0.dylib']:
+				link = os.path.join(workFolder, i)
+				target = os.path.join(staticLibs, i)
+				try:
+					os.lstat(link)
+				except:
+					job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
 			for lib in ['tier0', 'tier1', 'vstdlib', 'mathlib']:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
@@ -230,7 +241,7 @@ class SM:
 				builder['POSTLINKFLAGS'].append(libPath)
 
 	def PostSetupHL2Job(self, job, builder, sdk):
-		if AMBuild.target['platform'] == 'linux':
+		if AMBuild.target['platform'] in ['linux', 'darwin']:
 			builder.AddObjectFiles(['tier1_i486.a', 'mathlib_i486.a'])
 
 	def DefaultHL2Compiler(self, path, sdk, noLink = False, oldMms = '-legacy'):
@@ -267,6 +278,8 @@ class SM:
 		else:
 			if AMBuild.target['platform'] == 'linux':
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
+			elif AMBuild.target['platform'] == 'darwin':
+				staticLibs = os.path.join(sdkPath, 'lib', 'mac')
 
 		for i in paths:
 			compiler['CXXINCLUDES'].append(os.path.join(sdkPath, *i))
@@ -279,7 +292,10 @@ class SM:
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.so']
 				else:
 					compiler['POSTLINKFLAGS'][0:0] = ['tier0_i486.so']
-					compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']				
+					compiler['POSTLINKFLAGS'][0:0] = ['vstdlib_i486.so']
+			elif AMBuild.target['platform'] == 'darwin':
+				compiler['POSTLINKFLAGS'][0:0] = ['libtier0.dylib']
+				compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.dylib']
 
 		return compiler
 

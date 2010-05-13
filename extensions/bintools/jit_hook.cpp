@@ -50,7 +50,7 @@ inline void Write_Function_Prologue(JitWriter *jit, bool RetInMemory)
 #if defined PLATFORM_WINDOWS
 	//mov ebx, ecx
 	IA32_Mov_Reg_Rm(jit, REG_EBX, REG_ECX, MOD_REG);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	//mov ebx, [ebp+12+(RetInMemory)?4:0]
 	IA32_Mov_Reg_Rm_Disp8(jit, REG_EBX, REG_EBP, 12+((RetInMemory)?4:0));
 #endif
@@ -125,7 +125,7 @@ inline void Write_Copy_Params(JitWriter *jit, bool RetInMemory, jit_uint32_t ret
 	}
 	offs = 12 + ((RetInMemory) ? sizeof(void *) : 0);
 
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	offs += 4;
 #endif
 
@@ -403,7 +403,7 @@ jit_rewind:
 	Write_Function_Epilogue(jit, 
 #if defined PLATFORM_WINDOWS
 		ParamSize + ((RetInMemory) ? sizeof(void *) : 0)
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 		(RetInMemory) ? sizeof(void *) : 0
 #endif
 	);
