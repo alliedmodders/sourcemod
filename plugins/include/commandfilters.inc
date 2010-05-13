@@ -132,3 +132,34 @@ stock ReplyToTargetError(client, reason)
 		}
 	}
 }
+
+/**
+ * Adds clients to a multi-target filter.
+ *
+ * @param pattern       Pattern name.
+ * @param clients       Array to fill with unique, valid client indexes.
+ * @return              True if pattern was recognized, false otherwise.
+ */
+functag public bool:MultiTargetFilter(const String:pattern[], Handle:clients);
+
+/**
+ * Adds a multi-target filter function for ProcessTargetString().
+ *
+ * @param pattern       Pattern to match (case sensitive).
+ * @param filter        Filter function.
+ * @param phrase        Descriptive phrase to display on successful match.
+ * @param phraseIsML    True if phrase is multi-lingual, false otherwise.
+ * @noreturn
+ */
+native AddMultiTargetFilter(const String:pattern[], MultiTargetFilter:filter,
+                            const String:phrase[], bool:phraseIsML);
+
+/**
+ * Removes a multi-target filter function from ProcessTargetString().
+ *
+ * @param pattern       Pattern to match (case sensitive).
+ * @param filter        Filter function.
+ * @noreturn
+ */
+native RemoveMultiTargetFilter(const String:pattern[], MultiTargetFilter:filter);
+

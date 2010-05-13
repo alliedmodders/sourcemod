@@ -27,7 +27,8 @@ OBJECTS = \
 	Profiler.cpp		\
 	smn_functions.cpp   \
 	sm_crc32.cpp		\
-	smn_timers.cpp
+	smn_timers.cpp		\
+	smn_players.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

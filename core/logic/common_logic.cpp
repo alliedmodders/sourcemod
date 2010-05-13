@@ -52,6 +52,7 @@ IPluginManager *pluginsys;
 IForwardManager *forwardsys;
 ITimerSystem *timersys;
 ServerGlobals serverGlobals;
+IPlayerManager *playerhelpers;
 
 static sm_logic_t logic =
 {
@@ -79,6 +80,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	pluginsys = core->pluginsys;
 	forwardsys = core->forwardsys;
 	timersys = core->timersys;
+	playerhelpers = core->playerhelpers;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()

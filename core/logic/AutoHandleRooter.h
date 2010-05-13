@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -29,27 +29,64 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_
-#define _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_
+#ifndef _INCLUDE_SOURCEMOD_AUTO_HANDLE_ROOTER_H_
+#define _INCLUDE_SOURCEMOD_AUTO_HANDLE_ROOTER_H_
 
+#include "common_logic.h"
 #include <IHandleSys.h>
 
-#include "../sm_globals.h"
-#include "intercom.h"
+class AutoHandleRooter
+{
+public:
+	AutoHandleRooter(Handle_t hndl)
+	{
+		if (hndl != BAD_HANDLE)
+			this->hndl = handlesys->FastCloneHandle(hndl);
+		else
+			this->hndl = BAD_HANDLE;
+	}
 
-extern sm_core_t smcore;
-extern IHandleSys *handlesys;
-extern ISourceMod *g_pSM;
-extern ILibrarySys *libsys;
-extern ITextParsers *textparser;
-extern IVEngineServer *engine;
-extern IShareSys *sharesys;
-extern IRootConsole *rootmenu;
-extern IPluginManager *pluginsys;
-extern IForwardManager *forwardsys;
-extern ITimerSystem *timersys;
-extern ServerGlobals serverGlobals;
-extern IPlayerManager *playerhelpers;
+	~AutoHandleRooter()
+	{
+		if (hndl != BAD_HANDLE)
+		{
+			HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
+			handlesys->FreeHandle(hndl, &sec);
+		}
+	}
 
-#endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
+	Handle_t getHandle()
+	{
+		return hndl;
+	}
+private:
+	Handle_t hndl;
+};
+
+class AutoHandleCloner
+{
+	Handle_t original;
+	HandleSecurity sec;
+	AutoHandleRooter ahr;
+public:
+	AutoHandleCloner(Handle_t original, HandleSecurity sec)
+	  : original(original), sec(sec), ahr(original)
+	{
+	}
+
+	~AutoHandleCloner()
+	{
+		if (original != BAD_HANDLE)
+		{
+			handlesys->FreeHandle(original, &sec);
+		}
+	}
+
+	Handle_t getClone()
+	{
+		return ahr.getHandle();
+	}
+};
+
+#endif /* _INCLUDE_SOURCEMOD_AUTO_HANDLE_ROOTER_H_ */
 

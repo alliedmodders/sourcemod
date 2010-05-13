@@ -52,7 +52,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		3
+#define SMINTERFACE_HANDLESYSTEM_VERSION		4
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
@@ -357,6 +357,13 @@ namespace SourceMod
 										const HandleSecurity *pSec,
 										const HandleAccess *pAccess,
 										HandleError *err) =0;
+
+		/**
+		 * @brief Clones a handle, bypassing security checks.
+		 *
+		 * @return          A new Handle_t, or 0 on failure.
+		 */
+		virtual Handle_t FastCloneHandle(Handle_t hndl) =0;
 	};
 }
 
