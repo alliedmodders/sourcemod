@@ -3,6 +3,9 @@ import os
 
 for i in SM.sdkInfo:
 	sdk = SM.sdkInfo[i]
+	if AMBuild.target['platform'] not in sdk['platform']:
+		continue
+
 	name = 'bintools.ext.' + sdk['ext']
 	
 	compiler = SM.DefaultHL2Compiler('extensions/bintools', i, True, '')
