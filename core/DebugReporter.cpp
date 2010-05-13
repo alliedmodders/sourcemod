@@ -56,11 +56,16 @@ void DebugReport::OnDebugSpew(const char *msg, ...)
 void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...)
 {
 	va_list ap;
-	char buffer[512];
 
 	va_start(ap, message);
-	UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
+	GenerateErrorVA(ctx, func_idx, err, message, ap);
 	va_end(ap);
+}
+
+void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap)
+{
+	char buffer[512];
+	UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
 
 	const char *plname = g_PluginSys.FindPluginByContext(ctx->GetContext())->GetFilename();
 	const char *error = g_pSourcePawn2->GetErrorString(err);

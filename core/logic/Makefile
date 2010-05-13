@@ -26,7 +26,8 @@ OBJECTS = \
 	smn_adt_trie.cpp	\
 	Profiler.cpp		\
 	smn_functions.cpp   \
-	sm_crc32.cpp
+	sm_crc32.cpp		\
+	smn_timers.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###

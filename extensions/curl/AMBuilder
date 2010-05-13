@@ -5,7 +5,7 @@ import ambuild.osutil as osutil
 
 def BuildCURL():
 	curl = AMBuild.AddJob('curl')
-	if AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'darwin':
+	if AMBuild.target['platform'] in ['linux', 'darwin']:
 		if not osutil.FileExists(os.path.join(AMBuild.outputFolder, 'curl', 'Makefile')):
 			args = ['/bin/bash',
 							os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'configure'),
@@ -16,11 +16,10 @@ def BuildCURL():
 							'--without-libidn',
 							'--without-libssh2',
 							'--without-zlib']
-			if AMBuild.target['platform'] == 'linux':
-				env = None
-			elif AMBuild.target['platform'] == 'darwin':
-				env = os.environ.copy()
-				env['CFLAGS'] = '-m32 -isysroot /Developer/SDKs/MacOSX10.5.sdk'
+			env = os.environ.copy()
+			env['CFLAGS'] = '-m32'
+			if AMBuild.target['platform'] == 'darwin':
+				env['CFLAGS'] += ' -isysroot /Developer/SDKs/MacOSX10.5.sdk'
 				env['LDFLAGS'] = '-mmacosx-version-min=10.5'
 			curl.AddCommand(command.DirectCommand(argv = args, env = env))
 			curl.AddCommand(command.ShellCommand('cd lib && make'))

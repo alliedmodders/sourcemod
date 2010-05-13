@@ -43,7 +43,9 @@
 #include "ShareSys.h"
 #include "sm_srvcmds.h"
 #include "ForwardSys.h"
+#include "TimerSys.h"
 #include "logic_bridge.h"
+#include "DebugReporter.h"
 
 static ILibrary *g_pLogic = NULL;
 static LogicInitFunction logic_init_fn;
@@ -82,10 +84,21 @@ static void log_error(const char *fmt, ...)
 	va_end(ap);
 }
 
+static void generate_error(IPluginContext *ctx, cell_t func_idx, int err, const char *fmt, ...)
+{
+	va_list ap;
+	
+	va_start(ap, fmt);
+	g_DbgReporter.GenerateErrorVA(ctx, func_idx, err, fmt, ap);
+	va_end(ap);
+}
+
 static const char *get_cvar_string(ConVar* cvar)
 {
 	return cvar->GetString();
 }
+
+static ServerGlobals serverGlobals;
 
 static sm_core_t core_bridge =
 {
@@ -99,6 +112,7 @@ static sm_core_t core_bridge =
 	&g_RootMenu,
 	&g_PluginSys,
 	&g_Forwards,
+	&g_Timers,
 	/* Functions */
 	add_natives,
 	find_convar,
@@ -107,12 +121,18 @@ static sm_core_t core_bridge =
 	log_error,
 	get_cvar_string,
 	UTIL_Format,
-	UTIL_ReplaceAll
+	UTIL_ReplaceAll,
+	generate_error,
+	&serverGlobals
 };
 
 void InitLogicBridge()
 {
 	sm_logic_t logic;
+
+	serverGlobals.universalTime = g_pUniversalTime;
+	serverGlobals.frametime = &gpGlobals->frametime;
+	serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
 	core_bridge.core_ident = g_pCoreIdent;
 	logic_init_fn(&core_bridge, &logic);

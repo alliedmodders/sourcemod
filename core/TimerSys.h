@@ -78,11 +78,11 @@ public: //ITimerSystem
 	float GetTickedTime();
 	void NotifyOfGameStart(float offset /* = 0.0f */);
 	bool GetMapTimeLeft(float *pTime);
+	IMapTimer *GetMapTimer();
 public:
 	void RunFrame();
 	void RemoveMapChangeTimers();
 	void GameFrame(bool simulating);
-	IMapTimer *GetMapTimer();
 private:
 	List<ITimer *> m_SingleTimers;
 	List<ITimer *> m_LoopTimers;

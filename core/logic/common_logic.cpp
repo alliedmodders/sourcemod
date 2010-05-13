@@ -50,6 +50,8 @@ IShareSys *sharesys;
 IRootConsole *rootmenu;
 IPluginManager *pluginsys;
 IForwardManager *forwardsys;
+ITimerSystem *timersys;
+ServerGlobals serverGlobals;
 
 static sm_logic_t logic =
 {
@@ -65,6 +67,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 
 	memcpy(&smcore, core, sizeof(sm_core_t));
 	memcpy(_logic, &logic, sizeof(sm_logic_t));
+	memcpy(&serverGlobals, core->serverGlobals, sizeof(ServerGlobals));
 
 	handlesys = core->handlesys;
 	libsys = core->libsys;
@@ -75,6 +78,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	rootmenu = core->rootmenu;
 	pluginsys = core->pluginsys;
 	forwardsys = core->forwardsys;
+	timersys = core->timersys;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()

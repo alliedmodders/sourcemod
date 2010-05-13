@@ -42,7 +42,7 @@
 #include <IForwardSys.h>
 
 #define SMINTERFACE_TIMERSYS_NAME		"ITimerSys"
-#define SMINTERFACE_TIMERSYS_VERSION	3
+#define SMINTERFACE_TIMERSYS_VERSION	4
 
 namespace SourceMod
 {
@@ -203,6 +203,13 @@ namespace SourceMod
 		 * @return					True on success, false if no support.
 		 */
 		virtual bool GetMapTimeLeft(float *pTime) =0;
+
+		/**
+		 * @brief Returns the interface for dealing with map time limits.
+		 *
+		 * @return					Map timer interface.
+		 */
+		virtual IMapTimer *GetMapTimer() = 0;
 	};
 }
 
