@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2000 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -32,7 +32,7 @@
 
 #include <IMemoryUtils.h>
 #include "sm_globals.h"
-#ifdef PLATFORM_LINUX
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 #include <sh_vector.h>
 #include "sm_symtable.h"
 
@@ -47,13 +47,11 @@ struct DynLibInfo
 	size_t memorySize;
 };
 
-#ifdef PLATFORM_LINUX
-typedef uint32_t Elf32_Addr;
-
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 struct LibSymbolTable
 {
 	SymbolTable table;
-	Elf32_Addr lib_base;
+	uintptr_t lib_base;
 	uint32_t last_pos;
 };
 #endif
@@ -63,6 +61,7 @@ class MemoryUtils :
 	public SMGlobalClass
 {
 public:
+	MemoryUtils();
 	~MemoryUtils();
 public: // SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -71,9 +70,12 @@ public: // IMemoryUtils
 	void *ResolveSymbol(void *handle, const char *symbol);
 public:
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
-#ifdef PLATFORM_LINUX
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 private:
 	CVector<LibSymbolTable *> m_SymTables;
+#ifdef PLATFORM_APPLE
+	struct dyld_all_image_infos *m_ImageList;
+#endif
 #endif
 };
 

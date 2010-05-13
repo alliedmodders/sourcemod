@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -34,30 +34,31 @@
 #include <link.h>
 #include <sys/mman.h>
 #endif
+#ifdef PLATFORM_APPLE
+#include <mach-o/dyld_images.h>
+#include <mach-o/loader.h>
+#include <mach-o/nlist.h>
+#endif
 
 MemoryUtils g_MemUtils;
 
-#if 0
 MemoryUtils::MemoryUtils()
 {
-#ifdef PLATFORM_WINDOWS
+#ifdef PLATFORM_APPLE
 
-	SYSTEM_INFO info;
-	GetSystemInfo(&info);
-
-	m_PageSize = info.dwPageSize;
-
-#elif defined PLATFORM_POSIX
-
-	m_PageSize = sysconf(_SC_PAGE_SIZE);
+	/* Get pointer to struct that describes all loaded mach-o images in process */
+	struct nlist list[2];
+	memset(list, 0, sizeof(list));
+	list[0].n_un.n_name = (char *)"_dyld_all_image_infos";
+	nlist("/usr/lib/dyld", list);
+	m_ImageList = (struct dyld_all_image_infos *)list[0].n_value;
 
 #endif
 }
-#endif
 
 MemoryUtils::~MemoryUtils()
 {
-#ifdef PLATFORM_LINUX
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	for (size_t i = 0; i < m_SymTables.size(); i++)
 	{
 		delete m_SymTables[i];
@@ -113,7 +114,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 #ifdef PLATFORM_WINDOWS
 
 	return GetProcAddress((HMODULE)handle, symbol);
-
+	
 #elif defined PLATFORM_LINUX
 
 	struct link_map *dlmap;
@@ -248,12 +249,140 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	munmap(file_hdr, dlstat.st_size);
 	return symbol_entry ? symbol_entry->address : NULL;
 
+#elif defined PLATFORM_APPLE
+	
+	uintptr_t dlbase;
+	uint32_t image_count;
+	struct mach_header *file_hdr;
+	struct load_command *loadcmds;
+	struct symtab_command *symtab_hdr;
+	struct nlist *symtab;
+	const char *strtab;
+	uint32_t loadcmd_count;
+	uint32_t symbol_count;
+	LibSymbolTable *libtable;
+	SymbolTable *table;
+	Symbol *symbol_entry;
+	
+	dlbase = 0;
+	image_count = m_ImageList->infoArrayCount;
+	symtab_hdr = NULL;
+	
+	/* Loop through mach-o images in process.
+	 * We can skip index 0 since that is just the executable.
+	 */
+	for (uint32_t i = 1; i < image_count; i++)
+	{
+		const struct dyld_image_info &info = m_ImageList->infoArray[i];
+		
+		/* "Load" each one until we get a matching handle */
+		void *h = dlopen(info.imageFilePath, RTLD_NOLOAD);
+		if (h == handle)
+		{
+			dlbase = (uintptr_t)info.imageLoadAddress;
+			dlclose(h);
+			break;
+		}
+		
+		dlclose(h);
+	}
+	
+	if (!dlbase)
+	{
+		/* Uh oh, we couldn't find a matching handle */
+		return NULL;
+	}
+	
+	/* See if we already have a symbol table for this library */
+	for (size_t i = 0; i < m_SymTables.size(); i++)
+	{
+		libtable = m_SymTables[i];
+		if (libtable->lib_base == dlbase)
+		{
+			table = &libtable->table;
+			break;
+		}
+	}
+	
+	/* If we don't have a symbol table for this library, then create one */
+	if (table == NULL)
+	{
+		libtable = new LibSymbolTable();
+		libtable->table.Initialize();
+		libtable->lib_base = dlbase;
+		libtable->last_pos = 0;
+		table = &libtable->table;
+		m_SymTables.push_back(libtable);
+	}
+	
+	/* See if the symbol is already cached in our table */
+	symbol_entry = table->FindSymbol(symbol, strlen(symbol));
+	if (symbol_entry != NULL)
+	{
+		return symbol_entry->address;
+	}
+	
+	/* If symbol isn't in our table, then we have to locate it in memory */
+	
+	file_hdr = (struct mach_header *)dlbase;
+	loadcmds = (struct load_command *)(dlbase + sizeof(struct mach_header));
+	loadcmd_count = file_hdr->ncmds;
+	
+	/* Loop through load commands until we find the one for the symbol table */
+	for (uint32_t i = 0; i < loadcmd_count; i++)
+	{
+		if (loadcmds->cmd == LC_SYMTAB)
+		{
+			symtab_hdr = (struct symtab_command *)loadcmds;
+			break;
+		}
+		
+		/* Load commands are not of a fixed size which is why we add the size */
+		loadcmds = (struct load_command *)((uintptr_t)loadcmds + loadcmds->cmdsize);
+	}
+	
+	if (!symtab_hdr || !symtab_hdr->symoff || !symtab_hdr->stroff)
+	{
+		/* Uh oh, no symbol table */
+		return NULL;
+	}
+	
+	symtab = (struct nlist *)(dlbase + symtab_hdr->symoff);
+	strtab = (const char *)(dlbase + symtab_hdr->stroff);
+	symbol_count = symtab_hdr->nsyms;
+	
+	/* Iterate symbol table starting from the position we were at last time */
+	for (uint32_t i = libtable->last_pos; i < symbol_count; i++)
+	{
+		struct nlist &sym = symtab[i];
+		/* Ignore the prepended underscore on all symbols, so +1 here */
+		const char *sym_name = strtab + sym.n_un.n_strx + 1;
+		Symbol *cur_sym;
+		
+		/* Skip symbols that are undefined */
+		if (sym.n_sect == NO_SECT)
+		{
+			continue;
+		}
+		
+		/* Caching symbols as we go along */
+		cur_sym = table->InternSymbol(sym_name, strlen(sym_name), (void *)(dlbase + sym.n_value));
+		if (strcmp(symbol, sym_name) == 0)
+		{
+			symbol_entry = cur_sym;
+			libtable->last_pos = ++i;
+			break;
+		}
+	}
+	
+	return symbol_entry ? symbol_entry->address : NULL;
+
 #endif
 }
 
 bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 {
-	unsigned long baseAddr;
+	uintptr_t baseAddr;
 
 	if (libPtr == NULL)
 	{
@@ -273,7 +402,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 		return false;
 	}
 
-	baseAddr = reinterpret_cast<unsigned long>(info.AllocationBase);
+	baseAddr = reinterpret_cast<uintptr_t>(info.AllocationBase);
 
 	/* All this is for our insane sanity checks :o */
 	dos = reinterpret_cast<IMAGE_DOS_HEADER *>(baseAddr);
@@ -322,7 +451,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	}
 
 	/* This is for our insane sanity checks :o */
-	baseAddr = reinterpret_cast<unsigned long>(info.dli_fbase);
+	baseAddr = reinterpret_cast<uintptr_t>(info.dli_fbase);
 	file = reinterpret_cast<Elf32_Ehdr *>(baseAddr);
 
 	/* Check ELF magic */
@@ -363,6 +492,59 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 		{
 			lib.memorySize += hdr.p_memsz;
 		}
+	}
+	
+#elif defined PLATFORM_APPLE
+
+	Dl_info info;
+	struct mach_header *file;
+	struct segment_command *seg;
+	uint32_t cmd_count;
+
+	if (!dladdr(libPtr, &info))
+	{
+		return false;
+	}
+
+	if (!info.dli_fbase || !info.dli_fname)
+	{
+		return false;
+	}
+
+	/* This is for our insane sanity checks :o */
+	baseAddr = (uintptr_t)info.dli_fbase;
+	file = (struct mach_header *)baseAddr;
+
+	/* Check Mach-O magic */
+	if (file->magic != MH_MAGIC)
+	{
+		return false;
+	}
+
+	/* Check architecture (32-bit/x86) */
+	if (file->cputype != CPU_TYPE_I386 || file->cpusubtype != CPU_SUBTYPE_I386_ALL)
+	{
+		return false;
+	}
+
+	/* For our purposes, this must be a dynamic library */
+	if (file->filetype != MH_DYLIB)
+	{
+		return false;
+	}
+
+	cmd_count = file->ncmds;
+	seg = (struct segment_command *)(baseAddr + sizeof(struct mach_header));
+	
+	/* Add up memory sizes of mapped segments */
+	for (uint32_t i = 0; i < cmd_count; i++)
+	{		
+		if (seg->cmd == LC_SEGMENT)
+		{
+			lib.memorySize += seg->vmsize;
+		}
+		
+		seg = (struct segment_command *)((uintptr_t)seg + seg->cmdsize);
 	}
 
 #endif

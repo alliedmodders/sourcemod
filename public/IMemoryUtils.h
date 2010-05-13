@@ -67,11 +67,14 @@ namespace SourceMod
 		/**
 		 * @brief Retrieves a symbol pointer from a dynamic library.
 		 *
-		 * Note: On Linux, this function is able to resolve symbols that are hidden via GCC's
-		 * -fvisibility=hidden option.
+		 * Note: On Linux and Mac OS X, this function is able to resolve symbols that are hidden
+		 * via GCC's -fvisibility=hidden option.
+		 *
+		 * Note: On Mac OS X, the symbol name should be passed without the prepended underscore,
+		 * as this is how dlsym() would expect it.
 		 *
 		 * @param handle	Operating system specific handle that points to dynamic library.
-		 *					This comes from dlopen() on Linux or LoadLibrary() on Windows.
+		 *					This comes from dlopen() on Linux/OS X or LoadLibrary() on Windows.
 		 * @param symbol	Symbol name.
 		 * @return			Symbol pointer, or NULL if not found.
 		 */
