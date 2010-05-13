@@ -35,6 +35,16 @@ $version = Build::ProductVersion(Build::PathFormat('../../build/product.version'
 $version =~ s/-dev//g;
 $version .= '-hg' . Build::HgRevNum('../../build');
 
+# Append OS to package version
+if ($^O eq "darwin")
+{
+    $version .= '-mac';
+}
+else
+{
+    $version .= '-' . $^O;
+}
+
 my ($filename);
 $filename = 'sourcemod-' . $version;
 if ($^O eq "linux")
