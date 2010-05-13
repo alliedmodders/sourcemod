@@ -40,6 +40,10 @@ if ($^O eq "darwin")
 {
     $version .= '-mac';
 }
+elsif ($^O =~ /MSWin/)
+{
+    $version .= '-windows';
+}
 else
 {
     $version .= '-' . $^O;
