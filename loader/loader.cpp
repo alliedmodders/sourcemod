@@ -51,7 +51,11 @@
 	#define openlib(lib)			dlopen(lib, RTLD_NOW)
 	#define closelib(lib)			dlclose(lib)
 	#define findsym(lib, sym)		dlsym(lib, sym)
+	#if defined __linux__
 	#define PLATFORM_EXT			".so"
+	#elif defined __APPLE__
+	#define PLATFORM_EXT			".dylib"
+	#endif
 	typedef void *					HINSTANCE;
 	#define PATH_SEP_CHAR			"/"
 	inline bool IsPathSepChar(char c) 
