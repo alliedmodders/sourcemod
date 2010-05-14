@@ -54,6 +54,7 @@ static LogicInitFunction logic_init_fn;
 IThreader *g_pThreader;
 ITextParsers *textparsers;
 SM_FN_CRC32 UTIL_CRC32;
+IMemoryUtils *memutils;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -151,6 +152,7 @@ void InitLogicBridge()
 	g_pThreader = logic.threader;
 	g_pSourcePawn2->SetProfiler(logic.profiler);
 	UTIL_CRC32 = logic.CRC32;
+	memutils = logic.memutils;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

@@ -28,7 +28,6 @@
  */
 
 #include "MemoryUtils.h"
-#include "ShareSys.h"
 #ifdef PLATFORM_LINUX
 #include <fcntl.h>
 #include <link.h>
@@ -69,7 +68,7 @@ MemoryUtils::~MemoryUtils()
 
 void MemoryUtils::OnSourceModAllInitialized()
 {
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t len)

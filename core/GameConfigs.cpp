@@ -36,9 +36,9 @@
 #include "HalfLife2.h"
 #include "Logger.h"
 #include "ShareSys.h"
-#include "MemoryUtils.h"
 #include "LibrarySys.h"
 #include "HandleSys.h"
+#include <IMemoryUtils.h>
 #include "logic_bridge.h"
 
 #if defined PLATFORM_LINUX
@@ -558,7 +558,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 						if (handle)
 						{
 #if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-							final_addr = g_MemUtils.ResolveSymbol(handle, &s_TempSig.sig[1]);
+							final_addr = memutils->ResolveSymbol(handle, &s_TempSig.sig[1]);
 #else
 							final_addr = dlsym(handle, &s_TempSig.sig[1]);
 #endif
@@ -591,7 +591,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 
 				if (real_bytes >= 1)
 				{
-					final_addr = g_MemUtils.FindPattern(addrInBase, (char*)real_sig, real_bytes);
+					final_addr = memutils->FindPattern(addrInBase, (char*)real_sig, real_bytes);
 				}
 			}
 

@@ -28,6 +28,7 @@ OBJECTS = \
 	smn_functions.cpp   \
 	sm_crc32.cpp		\
 	smn_timers.cpp		\
+	MemoryUtils.cpp		\
 	smn_players.cpp
 
 ##############################################

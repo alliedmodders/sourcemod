@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 5)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 6)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -65,6 +65,7 @@ namespace SourceMod
 	class IForwardManager;
 	class ITimerSystem;
 	class IPlayerManager;
+	class IMemoryUtils;
 }
 
 class IVEngineServer;
@@ -110,6 +111,7 @@ struct sm_logic_t
 	SMGlobalClass	*head;
 	IThreader		*threader;
 	IProfiler		*profiler;
+	IMemoryUtils    *memutils;
 	unsigned int    (*CRC32)(const void *, size_t);
 };
 

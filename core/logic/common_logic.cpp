@@ -37,6 +37,7 @@
 #include "TextParsers.h"
 #include "Profiler.h"
 #include "sm_crc32.h"
+#include "MemoryUtils.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -59,6 +60,7 @@ static sm_logic_t logic =
 	NULL,
 	g_pThreader,
 	sm_profiler,
+	&g_MemUtils,
 	UTIL_CRC32
 };
 

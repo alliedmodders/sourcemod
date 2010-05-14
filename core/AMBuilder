@@ -60,7 +60,6 @@ for i in SM.sdkInfo:
 		'smn_bitbuffer.cpp',
 		'smn_halflife.cpp',
 		'Translator.cpp',
-		'MemoryUtils.cpp',
 		'PluginSys.cpp',
 		'smn_console.cpp',
 		'smn_handles.cpp',

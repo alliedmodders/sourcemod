@@ -30,8 +30,8 @@
 #ifndef _INCLUDE_SOURCEMOD_MEMORYUTILS_H_
 #define _INCLUDE_SOURCEMOD_MEMORYUTILS_H_
 
+#include "common_logic.h"
 #include <IMemoryUtils.h>
-#include "sm_globals.h"
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 #include <sh_vector.h>
 #include "sm_symtable.h"
