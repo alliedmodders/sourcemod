@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 7)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 8)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -52,6 +52,7 @@ class IVEngineServer_Logic
 {
 public:
 	virtual bool IsMapValid(const char *map) = 0;
+	virtual void ServerCommand(const char *cmd) = 0;
 };
 
 namespace SourceMod
@@ -67,6 +68,7 @@ namespace SourceMod
 	class IPlayerManager;
 	class IMemoryUtils;
 	class IAdminSystem;
+	class IGameHelpers;
 }
 
 class IVEngineServer;
@@ -94,6 +96,7 @@ struct sm_core_t
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
 	IAdminSystem	*adminsys;
+	IGameHelpers    *gamehelers;
 	/* Functions */
 	void			(*AddNatives)(sp_nativeinfo_t* nlist);
 	ConVar *		(*FindConVar)(const char*);

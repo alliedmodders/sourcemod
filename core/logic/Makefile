@@ -30,6 +30,7 @@ OBJECTS = \
 	smn_timers.cpp		\
 	MemoryUtils.cpp		\
 	smn_admin.cpp		\
+	smn_banning.cpp		\
 	smn_players.cpp
 
 ##############################################

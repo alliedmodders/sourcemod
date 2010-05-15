@@ -48,6 +48,7 @@
 #include "DebugReporter.h"
 #include "PlayerManager.h"
 #include "AdminCache.h"
+#include "HalfLife2.h"
 
 static ILibrary *g_pLogic = NULL;
 static LogicInitFunction logic_init_fn;
@@ -63,6 +64,11 @@ public:
 	virtual bool IsMapValid(const char *map)
 	{
 		return engine->IsMapValid(map);
+	}
+
+	virtual void ServerCommand(const char *cmd)
+	{
+		engine->ServerCommand(cmd);
 	}
 };
 
@@ -118,6 +124,7 @@ static sm_core_t core_bridge =
 	&g_Timers,
 	&g_Players,
 	&g_Admins,
+	&g_HL2,
 	/* Functions */
 	add_natives,
 	find_convar,

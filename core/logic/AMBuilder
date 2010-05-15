@@ -34,6 +34,7 @@ files = [
 	'smn_players.cpp',
 	'MemoryUtils.cpp',
 	'smn_admin.cpp',
+	'smn_banning.cpp',
 	'sm_crc32.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':

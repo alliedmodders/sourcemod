@@ -49,7 +49,6 @@ for i in SM.sdkInfo:
 		'ConVarManager.cpp',
 		'LibrarySys.cpp',
 		'PlayerManager.cpp',
-		'smn_banning.cpp',
 		'smn_gameconfigs.cpp',
 		'smn_string.cpp',
 		'TimerSys.cpp',

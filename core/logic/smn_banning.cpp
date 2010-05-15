@@ -29,11 +29,11 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include "sm_stringutil.h"
-#include "HalfLife2.h"
-#include "PlayerManager.h"
-#include "ForwardSys.h"
+#include "common_logic.h"
+#include <string.h>
+#include <IGameHelpers.h>
+#include <IPlayerHelpers.h>
+#include <IForwardSys.h>
 
 #define BANFLAG_AUTO	(1<<0)	/**< Auto-detects whether to ban by steamid or IP */
 #define BANFLAG_IP   	(1<<1)	/**< Always ban by IP address */
@@ -50,7 +50,7 @@ class BanNativeHelpers : public SMGlobalClass
 public:
 	void OnSourceModAllInitialized()
 	{
-		g_pOnBanClient = g_Forwards.CreateForward(
+		g_pOnBanClient = forwardsys->CreateForward(
 			"OnBanClient",
 			ET_Event,
 			7,
@@ -62,7 +62,7 @@ public:
 			Param_String,
 			Param_String,
 			Param_Cell);
-		g_pOnBanIdentity = g_Forwards.CreateForward(
+		g_pOnBanIdentity = forwardsys->CreateForward(
 			"OnBanIdentity",
 			ET_Event,
 			6,
@@ -73,7 +73,7 @@ public:
 			Param_String,
 			Param_String,
 			Param_Cell);
-		g_pOnRemoveBan = g_Forwards.CreateForward(
+		g_pOnRemoveBan = forwardsys->CreateForward(
 			"OnRemoveBan",
 			ET_Event,
 			4,
@@ -85,9 +85,9 @@ public:
 	}
 	void OnSourceModShutdown()
 	{
-		g_Forwards.ReleaseForward(g_pOnBanClient);
-		g_Forwards.ReleaseForward(g_pOnBanIdentity);
-		g_Forwards.ReleaseForward(g_pOnRemoveBan);
+		forwardsys->ReleaseForward(g_pOnBanClient);
+		forwardsys->ReleaseForward(g_pOnBanIdentity);
+		forwardsys->ReleaseForward(g_pOnRemoveBan);
 
 		g_pOnBanClient = NULL;
 		g_pOnBanIdentity = NULL;
@@ -117,8 +117,8 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 
 	/* Sanitize the input */
 	char identity[64];
-	strncopy(identity, r_identity, sizeof(identity));
-	UTIL_ReplaceAll(identity, sizeof(identity), ";", "");
+	smcore.strncopy(identity, r_identity, sizeof(identity));
+	smcore.ReplaceAll(identity, sizeof(identity), ";", "", true);
 
 	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnBanIdentity->GetFunctionCount() > 0)
@@ -139,7 +139,7 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 		char command[256];
 		if (ban_by_ip)
 		{
-			UTIL_Format(
+			smcore.Format(
 				command,
 				sizeof(command),
 				"addip %d %s\n",
@@ -152,9 +152,9 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 				engine->ServerCommand("writeip\n");
 			}
 		}
-		else if (!g_HL2.IsLANServer())
+		else if (!gamehelpers->IsLANServer())
 		{
-			UTIL_Format(
+			smcore.Format(
 				command,
 				sizeof(command),
 				"banid %d %s\n",
@@ -194,8 +194,8 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char identity[64];
-	strncopy(identity, r_identity, sizeof(identity));
-	UTIL_ReplaceAll(identity, sizeof(identity), ";", "");
+	smcore.strncopy(identity, r_identity, sizeof(identity));
+	smcore.ReplaceAll(identity, sizeof(identity), ";", "", true);
 
 	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnRemoveBan->GetFunctionCount() > 0)
@@ -212,7 +212,7 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	{
 		if (!handled)
 		{
-			UTIL_Format(
+			smcore.Format(
 				command,
 				sizeof(command),
 				"removeip %s\n",
@@ -221,11 +221,11 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 			engine->ServerCommand("writeip\n");
 		}
 	}
-	else if (!g_HL2.IsLANServer())
+	else if (!gamehelpers->IsLANServer())
 	{
 		if (!handled)
 		{
-			UTIL_Format(
+			smcore.Format(
 				command,
 				sizeof(command),
 				"removeid %s\n",
@@ -248,9 +248,9 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	char *ban_reason, *ban_cmd;
 	int client, ban_flags, ban_source, ban_time;
 
-	client = g_HL2.ReferenceToIndex(params[1]);
+	client = gamehelpers->ReferenceToIndex(params[1]);
 
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
 	if (!pPlayer || !pPlayer->IsConnected())
 	{
 		return pContext->ThrowNativeError("Client index %d is invalid", client);
@@ -272,7 +272,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	/* Check how we should ban the player */
 	if ((ban_flags & BANFLAG_AUTO) == BANFLAG_AUTO)
 	{
-		if (g_HL2.IsLANServer() || !pPlayer->IsAuthorized())
+		if (gamehelpers->IsLANServer() || !pPlayer->IsAuthorized())
 		{
 			ban_flags |= BANFLAG_IP;
 			ban_flags &= ~BANFLAG_AUTHID;
@@ -335,7 +335,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		{
 			/* Get the IP address and strip the port */
 			char ip[24], *ptr;
-			strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
+			smcore.strncopy(ip, pPlayer->GetIPAddress(), sizeof(ip));
 			if ((ptr = strchr(ip, ':')) != NULL)
 			{
 				*ptr = '\0';
@@ -343,7 +343,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		
 			/* Tell the server to ban the ip */
 			char command[256];
-			UTIL_Format(
+			smcore.Format(
 				command,
 				sizeof(command),
 				"addip %d %s\n",
@@ -367,7 +367,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 		{
 			/* Tell the server to ban the auth string */
 			char command[256];
-			UTIL_Format(
+			smcore.Format(
 				command, 
 				sizeof(command), 
 				"banid %d %s\n", 
@@ -377,7 +377,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 			/* Kick, then ban */
 			if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 			{
-				g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), kick_message);
+				gamehelpers->AddDelayedKick(client, pPlayer->GetUserId(), kick_message);
 			}
 			engine->ServerCommand(command);
 
@@ -390,7 +390,7 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	}
 	else if ((ban_flags & BANFLAG_NOKICK) != BANFLAG_NOKICK)
 	{
-		g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), kick_message);
+		gamehelpers->AddDelayedKick(client, pPlayer->GetUserId(), kick_message);
 	}
 
 

@@ -55,6 +55,7 @@ ITimerSystem *timersys;
 ServerGlobals serverGlobals;
 IPlayerManager *playerhelpers;
 IAdminSystem *adminsys;
+IGameHelpers *gamehelpers;
 
 static sm_logic_t logic =
 {

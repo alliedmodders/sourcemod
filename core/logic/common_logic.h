@@ -51,6 +51,7 @@ extern ITimerSystem *timersys;
 extern ServerGlobals serverGlobals;
 extern IPlayerManager *playerhelpers;
 extern IAdminSystem *adminsys;
+extern IGameHelpers *gamehelpers;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 
