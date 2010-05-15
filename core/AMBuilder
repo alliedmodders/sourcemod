@@ -71,7 +71,6 @@ for i in SM.sdkInfo:
 		'EventManager.cpp',
 		'MenuStyle_Radio.cpp',
 		'sm_autonatives.cpp',
-		'smn_datapacks.cpp',
 		'sm_srvcmds.cpp',
 		'ConsoleDetours.cpp'
 		]

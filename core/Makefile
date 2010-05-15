@@ -26,7 +26,7 @@ OBJECTS += smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_datapacks.cpp smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
 	smn_filesystem.cpp smn_gameconfigs.cpp smn_halflife.cpp \
 	smn_keyvalues.cpp smn_player.cpp \
-	smn_usermsgs.cpp smn_menus.cpp smn_database.cpp smn_vector.cpp \
+	smn_usermsgs.cpp smn_menus.cpp smn_vector.cpp \
 	smn_hudtext.cpp smn_nextmap.cpp
 OBJECTS += ExtensionSys.cpp 		\
 		   ForwardSys.cpp 			\

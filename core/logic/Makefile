@@ -37,6 +37,7 @@ OBJECTS = \
 	smn_lang.cpp		\
 	smn_string.cpp		\
 	smn_handles.cpp		\
+	smn_datapacks.cpp	\
 	smn_players.cpp
 
 ##############################################

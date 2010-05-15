@@ -1,8 +1,8 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,9 +29,10 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include "HandleSys.h"
-#include "CDataPack.h"
+#include "common_logic.h"
+#include <IHandleSys.h>
+#include <IDataPack.h>
+#include <ISourceMod.h>
 
 HandleType_t g_DataPackType;
 
@@ -45,35 +46,35 @@ public:
 		HandleAccess hacc;
 		TypeAccess tacc;
 
-		g_HandleSys.InitAccessDefaults(&tacc, &hacc);
+		handlesys->InitAccessDefaults(&tacc, &hacc);
 		tacc.access[HTypeAccess_Create] = true;
 		tacc.access[HTypeAccess_Inherit] = true;
 		tacc.ident = g_pCoreIdent;
 		hacc.access[HandleAccess_Read] = HANDLE_RESTRICT_OWNER;
 
-		g_DataPackType = g_HandleSys.CreateType("DataPack", this, 0, &tacc, &hacc, g_pCoreIdent, NULL);
+		g_DataPackType = handlesys->CreateType("DataPack", this, 0, &tacc, &hacc, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(g_DataPackType, g_pCoreIdent);
+		handlesys->RemoveType(g_DataPackType, g_pCoreIdent);
 		g_DataPackType = 0;
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		g_SourceMod.FreeDataPack(reinterpret_cast<IDataPack *>(object));
+		g_pSM->FreeDataPack(reinterpret_cast<IDataPack *>(object));
 	}
 };
 
 static cell_t smn_CreateDataPack(IPluginContext *pContext, const cell_t *params)
 {
-	IDataPack *pDataPack = g_SourceMod.CreateDataPack();
+	IDataPack *pDataPack = g_pSM->CreateDataPack();
 
 	if (!pDataPack)
 	{
 		return 0;
 	}
 
-	return g_HandleSys.CreateHandle(g_DataPackType, pDataPack, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_DataPackType, pDataPack, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
@@ -86,7 +87,7 @@ static cell_t smn_WritePackCell(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -107,7 +108,7 @@ static cell_t smn_WritePackFloat(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -129,7 +130,7 @@ static cell_t smn_WritePackString(IPluginContext *pContext, const cell_t *params
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -157,7 +158,7 @@ static cell_t smn_ReadPackCell(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -181,7 +182,7 @@ static cell_t smn_ReadPackFloat(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -205,7 +206,7 @@ static cell_t smn_ReadPackString(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -232,7 +233,7 @@ static cell_t smn_ResetPack(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -257,7 +258,7 @@ static cell_t smn_GetPackPosition(IPluginContext *pContext, const cell_t *params
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -276,7 +277,7 @@ static cell_t smn_SetPackPosition(IPluginContext *pContext, const cell_t *params
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
@@ -300,7 +301,7 @@ static cell_t smn_IsPackReadable(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
+	if ((herr=handlesys->ReadHandle(hndl, g_DataPackType, &sec, (void **)&pDataPack))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid data pack handle %x (error %d)", hndl, herr);
