@@ -32,31 +32,65 @@
 #ifndef _INCLUDE_SOURCEMOD_CORE_STRINGTABLE_H_
 #define _INCLUDE_SOURCEMOD_CORE_STRINGTABLE_H_
 
+#include <stdlib.h>
+#include <string.h>
+
 class BaseMemTable
 {
 public:
-	BaseMemTable(unsigned int init_size);
-	~BaseMemTable();
+	BaseMemTable(unsigned int init_size)
+	{
+		membase = (unsigned char *)malloc(init_size);
+		size = init_size;
+		tail = 0;
+	}
+	~BaseMemTable()
+	{
+		free(membase);
+		membase = NULL;
+	}
 public:
 	/**
 	 * Allocates 'size' bytes of memory.
 	 * Optionally outputs the address through 'addr'.
 	 * Returns an index >= 0 on success, < 0 on failure.
 	 */
-	int CreateMem(unsigned int size, void **addr);
+	int CreateMem(unsigned int addsize, void **addr)
+	{
+		int idx = (int)tail;
+
+		while (tail + addsize >= size) {
+			size *= 2;
+			membase = (unsigned char *)realloc(membase, size);
+		}
+
+		tail += addsize;
+		if (addr)
+			*addr = (void *)&membase[idx];
+
+		return idx;
+	}
 
 	/**
 	 * Given an index into the memory table, returns its address.
 	 * Returns NULL if invalid.
 	 */
-	void *GetAddress(int index);
+	void *GetAddress(int index)
+	{
+		if (index < 0 || (unsigned int)index >= tail)
+			return NULL;
+		return &membase[index];
+	}
 
 	/**
 	 * Scraps the memory table.  For caching purposes, the memory 
 	 * is not freed, however subsequent calls to CreateMem() will 
 	 * begin at the first index again.
 	 */
-	void Reset();
+	void Reset()
+	{
+		tail = 0;
+	}
 
 	inline unsigned int GetMemUsage()
 	{
@@ -77,13 +111,24 @@ private:
 class BaseStringTable
 {
 public:
-	BaseStringTable(unsigned int init_size);
-	~BaseStringTable();
+	BaseStringTable(unsigned int init_size) : m_table(init_size)
+	{
+	}
 public:
 	/** 
 	 * Adds a string to the string table and returns its index.
 	 */
-	int AddString(const char *string);
+	int AddString(const char *string)
+	{
+		size_t len = strlen(string) + 1;
+		int idx;
+		char *addr;
+
+		idx = m_table.CreateMem(len, (void **)&addr);
+		strcpy(addr, string);
+
+		return idx;
+	}
 
 	/**
 	 * Given an index into the string table, returns the associated string.
@@ -98,7 +143,10 @@ public:
 	 * is not freed, however subsequent calls to AddString() will 
 	 * begin at the first index again.
 	 */
-	void Reset();
+	void Reset()
+	{
+		m_table.Reset();
+	}
 
 	/**
 	 * Returns the parent BaseMemTable that this string table uses.
@@ -112,3 +160,4 @@ private:
 };
 
 #endif //_INCLUDE_SOURCEMOD_CORE_STRINGTABLE_H_
+

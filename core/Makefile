@@ -17,7 +17,7 @@ MMSOURCE17 = ../../mmsource-central
 OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreConfig.cpp \
 	Database.cpp DebugReporter.cpp EventManager.cpp GameConfigs.cpp HalfLife2.cpp Logger.cpp \
 	PlayerManager.cpp TimerSys.cpp Translator.cpp UserMessages.cpp \
-	sm_autonatives.cpp sm_memtable.cpp sm_srvcmds.cpp sm_stringutil.cpp sm_trie.cpp \
+	sm_autonatives.cpp sm_srvcmds.cpp sm_stringutil.cpp sm_trie.cpp \
 	sourcemm_api.cpp sourcemod.cpp MenuStyle_Base.cpp MenuStyle_Valve.cpp MenuManager.cpp \
 	MenuStyle_Radio.cpp ChatTriggers.cpp ADTFactory.cpp MenuVoting.cpp \
 	frame_hooks.cpp concmd_cleaner.cpp PhraseCollection.cpp NextMap.cpp \

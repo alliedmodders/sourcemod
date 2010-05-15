@@ -23,7 +23,6 @@ for i in SM.sdkInfo:
 		'ADTFactory.cpp',
 		'ForwardSys.cpp',
 		'MenuVoting.cpp',
-		'sm_memtable.cpp',
 		'smn_events.cpp',
 		'smn_menus.cpp',
 		'sm_trie.cpp',
