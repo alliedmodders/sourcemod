@@ -56,7 +56,6 @@ for i in SM.sdkInfo:
 		'smn_halflife.cpp',
 		'PluginSys.cpp',
 		'smn_console.cpp',
-		'smn_handles.cpp',
 		'UserMessages.cpp',
 		'Database.cpp',
 		'MenuManager.cpp',

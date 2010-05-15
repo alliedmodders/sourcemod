@@ -29,15 +29,17 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include "HandleSys.h"
-#include "PluginSys.h"
+#include "common_logic.h"
+#include <IHandleSys.h>
+#include <IPluginSys.h>
+
+using namespace SourceMod;
 
 static cell_t sm_IsValidHandle(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 
-	HandleError err = g_HandleSys.ReadHandle(hndl, 0, NULL, NULL);
+	HandleError err = handlesys->ReadHandle(hndl, 0, NULL, NULL);
 
 	if (err != HandleError_Access
 		&& err != HandleError_None)
@@ -56,7 +58,7 @@ static cell_t sm_CloseHandle(IPluginContext *pContext, const cell_t *params)
 	sec.pIdentity = NULL;
 	sec.pOwner = pContext->GetIdentity();
 
-	HandleError err = g_HandleSys.FreeHandle(hndl, &sec);
+	HandleError err = handlesys->FreeHandle(hndl, &sec);
   
 	if (err == HandleError_None)
 	{
@@ -80,7 +82,7 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 		pNewOwner = pContext->GetIdentity();
 	} else {
 		Handle_t hPlugin = static_cast<Handle_t>(params[2]);
-		IPlugin *pPlugin = g_PluginSys.PluginFromHandle(hPlugin, &err);
+		IPlugin *pPlugin = pluginsys->PluginFromHandle(hPlugin, &err);
 		if (!pPlugin)
 		{
 			return pContext->ThrowNativeError("Plugin handle %x is invalid (error %d)", hndl, err);
@@ -88,7 +90,7 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 		pNewOwner = pPlugin->GetIdentity();
 	}
 
-	err = g_HandleSys.CloneHandle(hndl, &new_hndl, pNewOwner, NULL);
+	err = handlesys->CloneHandle(hndl, &new_hndl, pNewOwner, NULL);
 
 	if (err == HandleError_Access)
 	{
@@ -102,7 +104,7 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetMyHandle(IPluginContext *pContext, const cell_t *params)
 {
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
 
 	return pPlugin->GetMyHandle();
 }

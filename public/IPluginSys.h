@@ -42,7 +42,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	4
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	5
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -206,6 +206,13 @@ namespace SourceMod
 		 * @return			Plugin's phrase collection.
 		 */
 		virtual IPhraseCollection *GetPhrases() =0;
+
+		/**
+		 * @brief Returns a plugin's handle.
+		 *
+		 * @return			Plugin's handle.
+		 */
+		virtual Handle_t GetMyHandle() =0;
 	};
 
 

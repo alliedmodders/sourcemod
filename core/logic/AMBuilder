@@ -40,6 +40,7 @@ files = [
 	'PhraseCollection.cpp',
 	'smn_lang.cpp',
 	'smn_string.cpp',
+	'smn_handles.cpp',
 	'sm_crc32.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':

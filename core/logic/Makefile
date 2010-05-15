@@ -36,6 +36,7 @@ OBJECTS = \
 	PhraseCollection.cpp \
 	smn_lang.cpp		\
 	smn_string.cpp		\
+	smn_handles.cpp		\
 	smn_players.cpp
 
 ##############################################
