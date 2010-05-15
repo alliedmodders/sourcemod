@@ -33,6 +33,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <sm_platform.h>
 #include "Translator.h"
 #include <IPlayerHelpers.h>
 #include <ISourceMod.h>

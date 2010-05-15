@@ -31,6 +31,7 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <sm_platform.h>
 #include "stringutil.h"
 
 const char *stristr(const char *str, const char *substr)
