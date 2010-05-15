@@ -29,21 +29,22 @@
  * Version: $Id$
  */
 
+#include "common_logic.h"
 #include <stdarg.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include "Translator.h"
-#include "Logger.h"
-#include "LibrarySys.h"
-#include "sm_stringutil.h"
-#include "sourcemod.h"
-#include "PlayerManager.h"
+#include <IPlayerHelpers.h>
+#include <ISourceMod.h>
+#include <ILibrarySys.h>
 #include "PhraseCollection.h"
-#include "ShareSys.h"
+#include "stringutil.h"
 
 Translator g_Translator;
 IPhraseCollection *g_pCorePhrases = NULL;
 unsigned int g_pCorePhraseID = 0;
+
+using namespace SourceMod;
 
 struct trans_t
 {
@@ -67,15 +68,10 @@ CPhraseFile::CPhraseFile(Translator *pTranslator, const char *file)
 	m_LangCount = pTranslator->GetLanguageCount();
 	m_File.assign(file);
 	m_pTranslator = pTranslator;
-	m_pPhraseLookup = NULL;
 }
 
 CPhraseFile::~CPhraseFile()
 {
-	if (m_pPhraseLookup)
-	{
-		sm_trie_destroy(m_pPhraseLookup);
-	}
 }
 
 void CPhraseFile::ParseError(const char *message, ...)
@@ -99,20 +95,16 @@ void CPhraseFile::ParseWarning(const char *message, ...)
 
 	if (!m_FileLogged)
 	{
-		g_Logger.LogError("[SM] Warning(s) encountered in translation file \"%s\"", m_File.c_str());
+		smcore.LogError("[SM] Warning(s) encountered in translation file \"%s\"", m_File.c_str());
 		m_FileLogged = true;
 	}
 
-	g_Logger.LogError("[SM] %s", buffer);
+	smcore.LogError("[SM] %s", buffer);
 }
 
 void CPhraseFile::ReparseFile()
 {
-	if (m_pPhraseLookup)
-	{
-		sm_trie_destroy(m_pPhraseLookup);
-	}
-	m_pPhraseLookup = sm_trie_create();
+	m_PhraseLookup.clear();
 
 	m_LangCount = m_pTranslator->GetLanguageCount();
 
@@ -123,19 +115,19 @@ void CPhraseFile::ReparseFile()
 
 	SMCError err;
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
+	g_pSM->BuildPath(Path_SM, path, PLATFORM_MAX_PATH, "translations/%s", m_File.c_str());
 
 	//backwards compatibility shim
 	/* :HACKHACK: Change .cfg/.txt and vice versa for compatibility */
-	if (!g_LibSys.PathExists(path))
+	if (!libsys->PathExists(path))
 	{
 		if (m_File.compare("common.cfg") == 0)
 		{
-			UTIL_ReplaceAll(path, sizeof(path), "common.cfg", "common.phrases.txt");
+			smcore.ReplaceAll(path, sizeof(path), "common.cfg", "common.phrases.txt", true);
 		} else if (strstr(path, ".cfg")) {
-			UTIL_ReplaceAll(path, sizeof(path), ".cfg", ".txt");
+			smcore.ReplaceAll(path, sizeof(path), ".cfg", ".txt", true);
 		} else if (strstr(path, ".txt")) {
-			UTIL_ReplaceAll(path, sizeof(path), ".txt", ".cfg");
+			smcore.ReplaceAll(path, sizeof(path), ".txt", ".cfg", true);
 		}
 	}
 
@@ -149,8 +141,8 @@ void CPhraseFile::ReparseFile()
 			msg = m_ParseError.c_str();
 		}
 
-		g_Logger.LogError("[SM] Fatal error encountered parsing translation file \"%s\"", m_File.c_str());
-		g_Logger.LogError("[SM] Error (line %d, column %d): %s", states.line, states.col, msg);
+		smcore.LogError("[SM] Fatal error encountered parsing translation file \"%s\"", m_File.c_str());
+		smcore.LogError("[SM] Error (line %d, column %d): %s", states.line, states.col, msg);
 	}
 
 	const char *code;
@@ -161,7 +153,7 @@ void CPhraseFile::ReparseFile()
 			continue;
 		}
 
-		g_SourceMod.BuildPath(Path_SM, 
+		g_pSM->BuildPath(Path_SM, 
 			path,
 			PLATFORM_MAX_PATH,
 			"translations/%s/%s",
@@ -169,7 +161,7 @@ void CPhraseFile::ReparseFile()
 			m_File.c_str());
 
 		/* Speculatively load these. */
-		if (!g_LibSys.PathExists(path))
+		if (!libsys->PathExists(path))
 		{
 			continue;
 		}
@@ -182,10 +174,10 @@ void CPhraseFile::ReparseFile()
 				msg = m_ParseError.c_str();
 			}
 
-			g_Logger.LogError("[SM] Fatal error encountered parsing translation file \"%s/%s\"", 
+			smcore.LogError("[SM] Fatal error encountered parsing translation file \"%s/%s\"", 
 				code, 
 				m_File.c_str());
-			g_Logger.LogError("[SM] Error (line %d, column %d): %s",
+			smcore.LogError("[SM] Error (line %d, column %d): %s",
 				states.line,
 				states.col,
 				msg);
@@ -217,17 +209,17 @@ SMCResult CPhraseFile::ReadSMC_NewSection(const SMCStates *states, const char *n
 		m_ParseState = PPS_InPhrase;
 		recognized = true;
 
-		void *value;
-		if (sm_trie_retrieve(m_pPhraseLookup, name, &value))
+		int *pvalue;
+		if ((pvalue = m_PhraseLookup.retrieve(name)) != NULL)
 		{
-			m_CurPhrase = reinterpret_cast<int>(value);
+			m_CurPhrase = *pvalue;
 		}
 		else
 		{
 			phrase_t *pPhrase;
 
 			m_CurPhrase = m_pMemory->CreateMem(sizeof(phrase_t), (void **)&pPhrase);
-			sm_trie_insert(m_pPhraseLookup, name, reinterpret_cast<void *>(m_CurPhrase));
+			m_PhraseLookup.insert(name, m_CurPhrase);
 
 			/* Initialize new phrase */
 			trans_t *pTrans;
@@ -639,9 +631,7 @@ SMCResult CPhraseFile::ReadSMC_LeavingSection(const SMCStates *states)
 	if (m_ParseState == PPS_InPhrase)
 	{
 		if (m_CurPhrase == -1 && m_LastPhraseString.size())
-		{
-			sm_trie_delete(m_pPhraseLookup, m_LastPhraseString.c_str());
-		}
+			m_PhraseLookup.remove(m_LastPhraseString.c_str());
 		m_CurPhrase = -1;
 		m_ParseState = PPS_Phrases;
 		m_LastPhraseString.assign("");
@@ -658,9 +648,7 @@ void CPhraseFile::ReadSMC_ParseEnd(bool halted, bool failed)
 {
 	/* Check to see if we have any dangling phrases that weren't completed, and scrap them */
 	if ((halted || failed) && m_LastPhraseString.size())
-	{
-		sm_trie_delete(m_pPhraseLookup, m_LastPhraseString.c_str());
-	}
+		m_PhraseLookup.remove(m_LastPhraseString.c_str());
 }
 
 TransError CPhraseFile::GetTranslation(const char *szPhrase, unsigned int lang_id, Translation *pTrans)
@@ -670,13 +658,11 @@ TransError CPhraseFile::GetTranslation(const char *szPhrase, unsigned int lang_i
 		return Trans_BadLanguage;
 	}
 
-	void *object;
-	if (!sm_trie_retrieve(m_pPhraseLookup, szPhrase, &object))
-	{
+	int *pvalue;
+	if ((pvalue = m_PhraseLookup.retrieve(szPhrase)) == NULL)
 		return Trans_BadPhrase;
-	}
 
-	phrase_t *pPhrase = (phrase_t *)m_pMemory->GetAddress(reinterpret_cast<int>(object));
+	phrase_t *pPhrase = (phrase_t *)m_pMemory->GetAddress(*pvalue);
 	trans_t *trans = (trans_t *)m_pMemory->GetAddress(pPhrase->trans_tbl);
 
 	trans = &trans[lang_id];
@@ -705,7 +691,6 @@ const char *CPhraseFile::GetFilename()
 Translator::Translator() : m_ServerLang(SOURCEMOD_LANGUAGE_ENGLISH)
 {
 	m_pStringTab = new BaseStringTable(2048);
-	m_pLCodeLookup = sm_trie_create();
 	strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 }
 
@@ -720,8 +705,6 @@ Translator::~Translator()
 	{
 		delete m_Languages[i];
 	}
-
-	sm_trie_destroy(m_pLCodeLookup);
 
 	delete m_pStringTab;
 }
@@ -739,13 +722,13 @@ ConfigResult Translator::OnSourceModConfigChanged(const char *key,
 			unsigned int index;
 			if (!GetLanguageByCode(value, &index))
 			{
-				UTIL_Format(error, maxlength, "Language code \"%s\" is not registered", value);
+				smcore.Format(error, maxlength, "Language code \"%s\" is not registered", value);
 				return ConfigResult_Reject;
 			}
 
 			m_ServerLang = index;
 		} else {
-			strncopy(m_InitialLang, value, sizeof(m_InitialLang));
+			smcore.strncopy(m_InitialLang, value, sizeof(m_InitialLang));
 		}
 
 		return ConfigResult_Accept;
@@ -758,7 +741,7 @@ void Translator::OnSourceModLevelChange(const char *mapName)
 {
 	/* Refresh language stuff */
 	char path[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/languages.cfg");
 	RebuildLanguageDatabase(path);
 }
 
@@ -769,7 +752,7 @@ void Translator::OnSourceModAllInitialized()
 	g_pCorePhrases = CreatePhraseCollection();
 	g_pCorePhrases->AddPhraseFile("core.phrases");
 
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void Translator::OnSourceModShutdown()
@@ -779,17 +762,13 @@ void Translator::OnSourceModShutdown()
 
 bool Translator::GetLanguageByCode(const char *code, unsigned int *index)
 {
-	void *_index;
+	unsigned int *pindex;
 
-	if (!sm_trie_retrieve(m_pLCodeLookup, code, &_index))
-	{
+	if ((pindex = m_LCodeLookup.retrieve(code)) == NULL)
 		return false;
-	}
 
 	if (index)
-	{
-		*index = reinterpret_cast<unsigned int>(_index);
-	}
+		*index = *pindex;
 
 	return true;
 }
@@ -853,8 +832,7 @@ unsigned int Translator::FindOrAddPhraseFile(const char *phrase_file)
 void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 {
 	/* Erase everything we have */
-	sm_trie_destroy(m_pLCodeLookup);
-	m_pLCodeLookup = sm_trie_create();
+	m_LCodeLookup.clear();
 	m_pStringTab->Reset();
 
 	for (size_t i=0; i<m_Languages.size(); i++)
@@ -874,25 +852,25 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 			str_err = m_CustomError.c_str();
 		}
 
-		g_Logger.LogError("[SM] Failed to parse language header file: \"%s\"", lang_header_file);
-		g_Logger.LogError("[SM] Parse error (line %d, column %d): %s", states.line, states.col, str_err);
+		smcore.LogError("[SM] Failed to parse language header file: \"%s\"", lang_header_file);
+		smcore.LogError("[SM] Parse error (line %d, column %d): %s", states.line, states.col, str_err);
 	}
 
-	void *serverLang;
+	unsigned int *pServerLang;
 
-	if (!sm_trie_retrieve(m_pLCodeLookup, m_InitialLang, &serverLang))
+	if ((pServerLang = m_LCodeLookup.retrieve(m_InitialLang)) == NULL)
 	{
-		g_Logger.LogError("Server language was set to bad language \"%s\" -- reverting to English", m_InitialLang);
+		smcore.LogError("Server language was set to bad language \"%s\" -- reverting to English", m_InitialLang);
 
-		strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
+		smcore.strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 		m_ServerLang = SOURCEMOD_LANGUAGE_ENGLISH;
 	}
 
-	m_ServerLang = reinterpret_cast<unsigned int>(serverLang);
+	m_ServerLang = *pServerLang;
 
 	if (!m_Languages.size())
 	{
-		g_Logger.LogError("[SM] Fatal error, no languages found! Translation will not work.");
+		smcore.LogError("[SM] Fatal error, no languages found! Translation will not work.");
 	}
 
 	for (size_t i=0; i<m_Files.size(); i++)
@@ -919,7 +897,7 @@ SMCResult Translator::ReadSMC_NewSection(const SMCStates *states, const char *na
 
 	if (!m_InLanguageSection)
 	{
-		g_Logger.LogError("[SM] Warning: Unrecognized section \"%s\" in languages.cfg", name);
+		smcore.LogError("[SM] Warning: Unrecognized section \"%s\" in languages.cfg", name);
 	}
 
 	return SMCResult_Continue;
@@ -938,8 +916,8 @@ SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 
 	if (len < 2 || len > 3)
 	{
-		g_Logger.LogError("[SM] Warning encountered parsing languages.cfg file.");
-		g_Logger.LogError("[SM] Invalid language code \"%s\" is being ignored.", key);
+		smcore.LogError("[SM] Warning encountered parsing languages.cfg file.");
+		smcore.LogError("[SM] Invalid language code \"%s\" is being ignored.", key);
 	}
 
 	AddLanguage(key, value);
@@ -949,18 +927,16 @@ SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 
 bool Translator::AddLanguage(const char *langcode, const char *description)
 {
-	if (sm_trie_retrieve(m_pLCodeLookup, langcode, NULL))
-	{
+	if (m_LCodeLookup.retrieve(langcode) != NULL)
 		return false;
-	}
 
 	Language *pLanguage = new Language;
 	unsigned int idx = m_Languages.size();
 
-	UTIL_Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
+	smcore.Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
 	pLanguage->m_FullName = m_pStringTab->AddString(description);
 
-	sm_trie_insert(m_pLCodeLookup, langcode, reinterpret_cast<void *>(idx));
+	m_LCodeLookup.insert(langcode, idx);
 
 	m_Languages.push_back(pLanguage);
 
@@ -984,7 +960,7 @@ unsigned int Translator::GetServerLanguage()
 
 unsigned int Translator::GetClientLanguage(int client)
 {
-	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
+	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
 	return pPlayer->GetLanguageId();
 }
 
@@ -1025,20 +1001,16 @@ IPhraseCollection *Translator::CreatePhraseCollection()
 
 int Translator::SetGlobalTarget(int index)
 {
-	return g_SourceMod.SetGlobalTarget(index);
+	return g_pSM->SetGlobalTarget(index);
 }
 
 int Translator::GetGlobalTarget() const
 {
-	return g_SourceMod.GetGlobalTarget();
+	return g_pSM->GetGlobalTarget();
 }
 
-bool CoreTranslate(char *buffer, 
-				   size_t maxlength,
-				   const char *format,
-				   unsigned int numparams,
-				   size_t *pOutLength,
-				   ...)
+bool CoreTranslate(char *buffer,  size_t maxlength, const char *format, unsigned int numparams,
+                   size_t *pOutLength, ...)
 {
 	va_list ap;
 	unsigned int i;
@@ -1068,11 +1040,11 @@ bool CoreTranslate(char *buffer,
 	{
 		if (fail_phrase != NULL)
 		{
-			g_Logger.LogError("[SM] Could not find core phrase: %s", fail_phrase);
+			smcore.LogError("[SM] Could not find core phrase: %s", fail_phrase);
 		}
 		else
 		{
-			g_Logger.LogError("[SM] Unknown fatal error while translating a core phrase.");
+			smcore.LogError("[SM] Unknown fatal error while translating a core phrase.");
 		}
 
 		return false;
@@ -1093,7 +1065,7 @@ bool Translator::FormatString(char *buffer,
 	unsigned int arg;
 
 	arg = 0;
-	if (!gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
+	if (!smcore.gnprintf(buffer, maxlength, format, pPhrases, params, numparams, arg, pOutLength, pFailPhrase))
 	{
 		return false;
 	}

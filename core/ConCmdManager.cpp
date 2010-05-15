@@ -34,9 +34,9 @@
 #include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
-#include "Translator.h"
 #include "HalfLife2.h"
 #include "ChatTriggers.h"
+#include "logic_bridge.h"
 
 ConCmdManager g_ConCmds;
 
@@ -540,7 +540,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	
 	/* If we got here, the command failed... */
 	char buffer[128];
-	if (!CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
+	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
 		UTIL_Format(buffer, sizeof(buffer), "You do not have access to this command");
 	}

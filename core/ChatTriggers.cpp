@@ -34,8 +34,8 @@
 #include "sm_stringutil.h"
 #include "ConCmdManager.h"
 #include "PlayerManager.h"
-#include "Translator.h"
 #include "HalfLife2.h"
+#include "logic_bridge.h"
 
 /* :HACKHACK: We can't SH_DECL here because ConCmdManager.cpp does.
  * While the OB build only runs on MM:S 1.6.0+ (SH 5+), the older one 
@@ -113,7 +113,7 @@ void ChatTriggers::OnSourceModAllInitialized()
 
 void ChatTriggers::OnSourceModAllInitialized_Post()
 {
-	g_pCorePhrases->AddPhraseFile("antiflood.phrases");
+	logicore.AddCorePhraseFile("antiflood.phrases");
 }
 
 void ChatTriggers::OnSourceModGameInitialized()
@@ -189,17 +189,8 @@ void ChatTriggers::OnSayCommand_Pre()
 	{
 		char buffer[128];
 
-		if (!CoreTranslate(
-			buffer,
-			sizeof(buffer),
-			"%T",
-			2,
-			NULL,
-			"Flooding the server",
-			&client))
-		{
+		if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "Flooding the server", &client))
 			UTIL_Format(buffer, sizeof(buffer), "You are flooding the server!");
-		}
 
 		/* :TODO: we should probably kick people who spam too much. */
 

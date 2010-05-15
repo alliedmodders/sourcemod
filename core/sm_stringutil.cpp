@@ -35,8 +35,8 @@
 #include "sm_stringutil.h"
 #include "Logger.h"
 #include "PluginSys.h"
-#include "Translator.h"
 #include "PlayerManager.h"
+#include "logic_bridge.h"
 
 #define LADJUST			0x00000004		/* left adjustment */
 #define ZEROPAD			0x00000080		/* zero (as opposed to blank) pad */
@@ -81,11 +81,11 @@ size_t Translate(char *buffer,
 try_serverlang:
 	if (target == SOURCEMOD_SERVER_LANGUAGE)
 	{
-		langid = g_Translator.GetServerLanguage();
+		langid = translator->GetServerLanguage();
  	}
 	else if ((target >= 1) && (target <= g_Players.GetMaxClients()))
 	{
-		langid = g_Translator.GetClientLanguage(target);
+		langid = translator->GetClientLanguage(target);
 	}
 	else
 	{
@@ -95,7 +95,7 @@ try_serverlang:
 
 	if (pPhrases->FindTranslation(key, langid, &pTrans) != Trans_Okay)
 	{
-		if (target != SOURCEMOD_SERVER_LANGUAGE && langid != g_Translator.GetServerLanguage())
+		if (target != SOURCEMOD_SERVER_LANGUAGE && langid != translator->GetServerLanguage())
 		{
 			target = SOURCEMOD_SERVER_LANGUAGE;
 			goto try_serverlang;
@@ -785,21 +785,21 @@ reswitch:
 				}
 				else
 				{
-					target = g_Translator.GetGlobalTarget();
+					target = translator->GetGlobalTarget();
 				}
 
 try_again:
 				if (target == SOURCEMOD_SERVER_LANGUAGE)
 				{
-					lang_id = g_Translator.GetServerLanguage();
+					lang_id = translator->GetServerLanguage();
 				}
 				else if (target >= 1 && target <= g_Players.GetMaxClients())
 				{
-					lang_id = g_Translator.GetClientLanguage(target);
+					lang_id = translator->GetClientLanguage(target);
 				}
 				else
 				{
-					lang_id = g_Translator.GetServerLanguage();
+					lang_id = translator->GetServerLanguage();
 				}
 
 				if (pPhrases == NULL)
@@ -813,7 +813,7 @@ try_again:
 
 				if (pPhrases->FindTranslation(key, lang_id, &trans) != Trans_Okay)
 				{
-					if (target != SOURCEMOD_SERVER_LANGUAGE && lang_id != g_Translator.GetServerLanguage())
+					if (target != SOURCEMOD_SERVER_LANGUAGE && lang_id != translator->GetServerLanguage())
 					{
 						target = SOURCEMOD_SERVER_LANGUAGE;
 						goto try_again;

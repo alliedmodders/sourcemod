@@ -29,9 +29,9 @@
  * Version: $Id$
  */
 
+#include "common_logic.h"
 #include "PhraseCollection.h"
 #include "Translator.h"
-#include "sm_stringutil.h"
 
 CPhraseCollection::CPhraseCollection()
 {
@@ -54,7 +54,7 @@ IPhraseFile *CPhraseCollection::AddPhraseFile(const char *filename)
 	char full_name[PLATFORM_MAX_PATH];
 
 	/* No compat shim here.  The user should have read the doc. */
-	UTIL_Format(full_name, sizeof(full_name), "%s.txt", filename);
+	smcore.Format(full_name, sizeof(full_name), "%s.txt", filename);
 	
 	fid = g_Translator.FindOrAddPhraseFile(full_name);
 	pFile = g_Translator.GetFileByIndex(fid);
@@ -113,7 +113,7 @@ bool CPhraseCollection::FormatString(char *buffer,
 	unsigned int arg;
 
 	arg = 0;
-	if (!gnprintf(buffer, maxlength, format, this, params, numparams, arg, pOutLength, pFailPhrase))
+	if (!smcore.gnprintf(buffer, maxlength, format, this, params, numparams, arg, pOutLength, pFailPhrase))
 	{
 		return false;
 	}

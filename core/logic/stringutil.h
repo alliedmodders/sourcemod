@@ -33,6 +33,7 @@
 #define _INCLUDE_SOURCEMOD_COMMON_STRINGUTIL_H_
 
 const char *stristr(const char *str, const char *substr);
+unsigned int strncopy(char *dest, const char *src, size_t count);
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_STRINGUTIL_H_ */
 

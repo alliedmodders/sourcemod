@@ -39,6 +39,7 @@
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
 #include "stringutil.h"
+#include "Translator.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -58,14 +59,22 @@ IPlayerManager *playerhelpers;
 IAdminSystem *adminsys;
 IGameHelpers *gamehelpers;
 
+static void AddCorePhraseFile(const char *filename)
+{
+	g_pCorePhrases->AddPhraseFile("antiflood.phrases");
+}
+
 static sm_logic_t logic =
 {
 	NULL,
 	g_pThreader,
 	sm_profiler,
 	&g_MemUtils,
+	&g_Translator,
 	UTIL_CRC32,
-	stristr
+	stristr,
+	CoreTranslate,
+	AddCorePhraseFile
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)

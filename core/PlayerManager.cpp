@@ -39,7 +39,6 @@
 #include "sm_stringutil.h"
 #include "CoreConfig.h"
 #include "TimerSys.h"
-#include "Translator.h"
 #include "Logger.h"
 #include "ChatTriggers.h"
 #include "HalfLife2.h"
@@ -549,9 +548,9 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		if (!pPlayer->IsFakeClient() && (name=engine->GetClientConVarValue(client, "cl_language")))
 		{
 			unsigned int langid;
-			pPlayer->m_LangId = (g_Translator.GetLanguageByName(name, &langid)) ? langid : g_Translator.GetServerLanguage();
+			pPlayer->m_LangId = (translator->GetLanguageByName(name, &langid)) ? langid : translator->GetServerLanguage();
 		} else {
-			pPlayer->m_LangId = g_Translator.GetServerLanguage();
+			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
 	}
 
@@ -1456,7 +1455,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
 	m_iIndex = IndexOfEdict(pEntity);
-	m_LangId = g_Translator.GetServerLanguage();
+	m_LangId = translator->GetServerLanguage();
 
 	m_Serial.bits.index = m_iIndex;
 	m_Serial.bits.serial = g_PlayerSerialCount++;

@@ -42,7 +42,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	3
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	4
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -92,6 +92,8 @@ namespace SourceMod
 		PluginType_MapOnly,			/**< Plugin will be removed at mapchange */
 		PluginType_Global,			/**< Plugin will never be unloaded or updated */
 	};
+
+	class IPhraseCollection;
 
 	/**
 	 * @brief Encapsulates a run-time plugin as maintained by SourceMod.
@@ -197,6 +199,13 @@ namespace SourceMod
 		 * @return			IPluginRuntime pointer, or NULL if not loaded.
 		 */
 		virtual SourcePawn::IPluginRuntime *GetRuntime() =0;
+
+		/**
+		 * @brief Returns the plugin's phrase collection.
+		 *
+		 * @return			Plugin's phrase collection.
+		 */
+		virtual IPhraseCollection *GetPhrases() =0;
 	};
 
 

@@ -44,7 +44,7 @@
 #include "ConCmdManager.h"
 #include "PlayerManager.h"
 #include "CoreConfig.h"
-#include "Translator.h"
+#include "logic_bridge.h"
 
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
@@ -67,7 +67,7 @@ CPlugin::CPlugin(const char *file)
 	m_FakeNativesMissing = false;
 	m_LibraryMissing = false;
 	m_bGotAllLoaded = false;
-	m_pPhrases = g_Translator.CreatePhraseCollection();
+	m_pPhrases = translator->CreatePhraseCollection();
 	m_MaxClientsVar = NULL;
 }
 

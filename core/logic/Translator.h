@@ -32,16 +32,13 @@
 #ifndef _INCLUDE_SOURCEMOD_TRANSLATOR_H_
 #define _INCLUDE_SOURCEMOD_TRANSLATOR_H_
 
-#include "sm_trie.h"
+#include "common_logic.h"
+#include <sm_trie_tpl.h>
 #include <sh_string.h>
 #include <sh_vector.h>
-#include "sm_globals.h"
 #include "sm_memtable.h"
 #include "ITextParsers.h"
 #include <ITranslator.h>
-
-#define MAX_TRANSLATE_PARAMS		32
-#define CORELANG_ENGLISH			0
 
 /* :TODO: write a templatized version of tries? */
 
@@ -82,7 +79,7 @@ private:
 	void ParseError(const char *message, ...);
 	void ParseWarning(const char *message, ...);
 private:
-	Trie *m_pPhraseLookup;
+	KTrie<int> m_PhraseLookup;
 	String m_File;
 	Translator *m_pTranslator;
 	PhraseParseState m_ParseState;
@@ -155,7 +152,7 @@ private:
 	CVector<Language *> m_Languages;
 	CVector<CPhraseFile *> m_Files;
 	BaseStringTable *m_pStringTab;
-	Trie *m_pLCodeLookup;
+	KTrie<unsigned int> m_LCodeLookup;
 	bool m_InLanguageSection;
 	String m_CustomError;
 	unsigned int m_ServerLang;
@@ -175,3 +172,4 @@ extern unsigned int g_pCorePhraseID;
 extern Translator g_Translator;
 
 #endif //_INCLUDE_SOURCEMOD_TRANSLATOR_H_
+

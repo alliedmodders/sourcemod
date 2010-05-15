@@ -39,7 +39,8 @@
 #include <HalfLife2.h>
 #include <mathlib.h>
 #include <const.h>
-#include <Translator.h>
+#include <ITranslator.h>
+#include "logic_bridge.h"
 
 float g_next_vote = 0.0f;
 
@@ -526,7 +527,8 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 			if (sm_vote_console.GetBool())
 			{
 				int target = SOURCEMOD_SERVER_LANGUAGE;
-				CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Voted For", &target, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
+				logicore.CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Voted For",
+				                       &target, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
 				Engine_LogPrintWrapper(buffer);
 			}
 			
@@ -542,11 +544,13 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 					{
 						if (m_Revoting[client])
 						{
-							CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Changed Vote", &i, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
+							logicore.CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Changed Vote",
+							                       &i, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
 						}
 						else
 						{
-							CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Voted For", &i, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
+							logicore.CoreTranslate(buffer, sizeof(buffer), "[SM] %T", 4, NULL, "Voted For",
+							                       &i, g_Players.GetPlayerByIndex(client)->GetName(), dr.display);
 						}
 
 						if (sm_vote_chat.GetBool())
@@ -634,7 +638,8 @@ void VoteMenuHandler::DrawHintProgress()
 	{
 		if (g_Players.GetPlayerByIndex(i)->IsInGame())
 		{
-			CoreTranslate(buffer, sizeof(buffer), "%T%s", 6, NULL, "Vote Count", &i, &m_NumVotes, &m_TotalClients, &iTimeRemaining, &m_leaderList);
+			logicore.CoreTranslate(buffer, sizeof(buffer), "%T%s", 6, NULL, "Vote Count",
+			                       &i, &m_NumVotes, &m_TotalClients, &iTimeRemaining, &m_leaderList);
 			g_HL2.HintTextMsg(i, buffer);
 		}
 	}

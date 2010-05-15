@@ -41,7 +41,7 @@
 #include "ShareSys.h"
 #include "HandleSys.h"
 #include "sourcemm_api.h"
-#include "Translator.h"
+#include "logic_bridge.h"
 
 MenuManager g_Menus;
 VoteMenuHandler s_VoteHandler;
@@ -446,7 +446,7 @@ skip_search:
 	if (novoteButton)
 	{
 		char text[50];
-		if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "No Vote", &client))
+		if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "No Vote", &client))
 		{
 			UTIL_Format(text, sizeof(text), "No Vote");
 		}
@@ -606,7 +606,7 @@ skip_search:
 				{
 					if (exitBackButton)
 					{
-						if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Back", &client))
+						if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Back", &client))
 						{
 							UTIL_Format(text, sizeof(text), "Back");
 						}
@@ -616,7 +616,7 @@ skip_search:
 					}
 					else
 					{
-						if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Previous", &client))
+						if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Previous", &client))
 						{
 							UTIL_Format(text, sizeof(text), "Previous");
 						}
@@ -637,7 +637,7 @@ skip_search:
 				/* NEXT */
 				if (displayNext || canDrawDisabled)
 				{
-					if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Next", &client))
+					if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Next", &client))
 					{
 						UTIL_Format(text, sizeof(text), "Next");
 					}
@@ -668,7 +668,7 @@ skip_search:
 		/* EXIT */
 		if (exitButton)
 		{
-			if (!CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Exit", &client))
+			if (!logicore.CoreTranslate(text, sizeof(text), "%T", 2, NULL, "Exit", &client))
 			{
 				UTIL_Format(text, sizeof(text), "Exit");
 			}

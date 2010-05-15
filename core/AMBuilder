@@ -44,7 +44,6 @@ for i in SM.sdkInfo:
 		'smn_profiler.cpp',
 		'ConCmdManager.cpp',
 		'HandleSys.cpp',
-		'PhraseCollection.cpp',
 		'ConVarManager.cpp',
 		'LibrarySys.cpp',
 		'PlayerManager.cpp',
@@ -56,7 +55,6 @@ for i in SM.sdkInfo:
 		'PluginInfoDatabase.cpp',
 		'smn_bitbuffer.cpp',
 		'smn_halflife.cpp',
-		'Translator.cpp',
 		'PluginSys.cpp',
 		'smn_console.cpp',
 		'smn_handles.cpp',
@@ -76,7 +74,6 @@ for i in SM.sdkInfo:
 		'MenuStyle_Radio.cpp',
 		'sm_autonatives.cpp',
 		'smn_datapacks.cpp',
-		'smn_lang.cpp',
 		'sm_srvcmds.cpp',
 		'ConsoleDetours.cpp'
 		]

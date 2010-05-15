@@ -36,6 +36,9 @@ files = [
 	'smn_admin.cpp',
 	'smn_banning.cpp',
 	'stringutil.cpp',
+	'Translator.cpp',
+	'PhraseCollection.cpp',
+	'smn_lang.cpp',
 	'sm_crc32.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':

@@ -42,7 +42,6 @@
 #include "AdminCache.h"
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
-#include "Translator.h"
 #include "ForwardSys.h"
 #include "TimerSys.h"
 #include "GameConfigs.h"

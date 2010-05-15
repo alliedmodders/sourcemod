@@ -43,6 +43,7 @@ typedef unsigned int (*SM_FN_CRC32)(const void *, size_t);
 
 extern SM_FN_CRC32 UTIL_CRC32;
 extern sm_logic_t logicore;
+extern ITranslator *translator;
 
 #endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */
 

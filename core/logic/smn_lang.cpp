@@ -29,20 +29,20 @@
  * Version: $Id$
  */
 
-#include "PluginSys.h"
+#include "common_logic.h"
 #include "Translator.h"
-#include "LibrarySys.h"
-#include "sm_stringutil.h"
-#include "PlayerManager.h"
+#include <IPlayerHelpers.h>
+#include <IPluginSys.h>
+#include <ISourceMod.h>
 
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {
 	char *filename, *ext;
 	char buffer[PLATFORM_MAX_PATH];
-	CPlugin *pl = (CPlugin *)g_PluginSys.FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
 
 	pCtx->LocalToString(params[1], &filename);
-	UTIL_Format(buffer, sizeof(buffer), "%s", filename);
+	smcore.Format(buffer, sizeof(buffer), "%s", filename);
 
 	/* Make sure there is no extension */
 	if ((ext = strstr(buffer, ".txt")) != NULL
@@ -62,14 +62,14 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t sm_SetGlobalTransTarget(IPluginContext *pContext, const cell_t *params)
 {
-	g_SourceMod.SetGlobalTarget(params[1]);
+	g_pSM->SetGlobalTarget(params[1]);
 
 	return 1;
 }
 
 static cell_t sm_GetClientLanguage(IPluginContext *pContext, const cell_t *params)
 {
-	CPlayer *player = g_Players.GetPlayerByIndex(params[1]);
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
 	if (!player || !player->IsConnected())
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);

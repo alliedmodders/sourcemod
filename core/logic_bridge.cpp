@@ -58,6 +58,7 @@ ITextParsers *textparsers;
 SM_FN_CRC32 UTIL_CRC32;
 IMemoryUtils *memutils;
 sm_logic_t logicore;
+ITranslator *translator;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -136,6 +137,7 @@ static sm_core_t core_bridge =
 	UTIL_Format,
 	UTIL_ReplaceAll,
 	generate_error,
+	gnprintf,
 	&serverGlobals
 };
 
@@ -161,6 +163,7 @@ void InitLogicBridge()
 	g_pSourcePawn2->SetProfiler(logicore.profiler);
 	UTIL_CRC32 = logicore.CRC32;
 	memutils = logicore.memutils;
+	translator = logicore.translator;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

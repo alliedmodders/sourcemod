@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 9)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 10)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -69,6 +69,8 @@ namespace SourceMod
 	class IMemoryUtils;
 	class IAdminSystem;
 	class IGameHelpers;
+	class IPhraseCollection;
+	class ITranslator;
 }
 
 class IVEngineServer;
@@ -107,6 +109,8 @@ struct sm_core_t
 	size_t			(*Format)(char*, size_t, const char*, ...);
 	unsigned int	(*ReplaceAll)(char*, size_t, const char *, const char *, bool);
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
+	bool			(*gnprintf)(char *, size_t, const char *, IPhraseCollection *, void **,
+	                            unsigned int, unsigned int &, size_t *, const char **);
 	/* Data */
 	ServerGlobals   *serverGlobals;
 };
@@ -117,8 +121,11 @@ struct sm_logic_t
 	IThreader		*threader;
 	IProfiler		*profiler;
 	IMemoryUtils    *memutils;
+	ITranslator		*translator;
 	unsigned int    (*CRC32)(const void *, size_t);
 	const char      *(*stristr)(const char *, const char *);
+	bool			(*CoreTranslate)(char *,  size_t, const char *, unsigned int, size_t *, ...);
+	void            (*AddCorePhraseFile)(const char *filename);
 };
 
 typedef void (*LogicInitFunction)(const sm_core_t *core, sm_logic_t *logic);

@@ -35,7 +35,10 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_TRANSLATOR_NAME		"ITranslator"
-#define SMINTERFACE_TRANSLATOR_VERSION	1
+#define SMINTERFACE_TRANSLATOR_VERSION	2
+
+#define MAX_TRANSLATE_PARAMS		32
+#define CORELANG_ENGLISH			0
 
 /**
  * @file ITranslator.h
@@ -322,6 +325,22 @@ namespace SourceMod
 			unsigned int numparams,
 			size_t *pOutLength,
 			const char **pFailPhrase) =0;
+
+		/**
+		 * @brief Get number of languages.
+		 *
+		 * @return                  Number of languages.
+		 */
+		virtual unsigned int GetLanguageCount() =0;
+
+		/**
+		 * @brief Find a language number by name.
+		 *
+		 * @param name              Language name.
+		 * @param index             Optional pointer to store language index.
+		 * @return                  True if found, false otherwise.
+		 */
+		virtual bool GetLanguageByName(const char *name, unsigned int *index) =0;
 	};
 }
 

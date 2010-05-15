@@ -32,6 +32,9 @@ OBJECTS = \
 	smn_admin.cpp		\
 	smn_banning.cpp		\
 	stringutil.cpp		\
+	Translator.cpp		\
+	PhraseCollection.cpp \
+	smn_lang.cpp		\
 	smn_players.cpp
 
 ##############################################

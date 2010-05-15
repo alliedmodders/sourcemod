@@ -32,7 +32,6 @@
 #include "sm_stringutil.h"
 #include "PlayerManager.h"
 #include "MenuStyle_Valve.h"
-#include "Translator.h"
 #include "PlayerManager.h"
 #include "ConCmdManager.h"
 
