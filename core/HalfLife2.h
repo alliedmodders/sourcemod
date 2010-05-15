@@ -135,6 +135,7 @@ public: //IGameHelpers
 	CEntInfo *LookupEntity(int entIndex);
 	cell_t EntityToBCompatRef(CBaseEntity *pEntity);
 	void *GetGlobalEntityList();
+	int GetSendPropOffset(SendProp *prop);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

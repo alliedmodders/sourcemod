@@ -44,7 +44,7 @@
 #include "HalfLife2.h"
 #include <inetchannel.h>
 #include <iclient.h>
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include "ExtensionSys.h"
 #include <sourcemod_version.h>
 #include "ConsoleDetours.h"

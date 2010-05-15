@@ -55,8 +55,6 @@ static LogicInitFunction logic_init_fn;
 
 IThreader *g_pThreader;
 ITextParsers *textparsers;
-SM_FN_CRC32 UTIL_CRC32;
-IMemoryUtils *memutils;
 sm_logic_t logicore;
 ITranslator *translator;
 
@@ -109,6 +107,56 @@ static const char *get_cvar_string(ConVar* cvar)
 	return cvar->GetString();
 }
 
+static bool get_game_name(char *buffer, size_t maxlength)
+{
+	KeyValues *pGameInfo = new KeyValues("GameInfo");
+	if (g_HL2.KVLoadFromFile(pGameInfo, basefilesystem, "gameinfo.txt"))
+	{
+		const char *str;
+		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
+		{
+			strncopy(buffer, str, maxlength);
+			return true;
+		}
+	}
+	pGameInfo->deleteThis();
+	return false;
+}
+
+static const char *get_game_description()
+{
+	return SERVER_CALL(GetGameDescription)();
+}
+
+static const char *get_source_engine_name()
+{
+#if !defined SOURCE_ENGINE
+# error "Unknown engine type"
+#endif
+#if SOURCE_ENGINE == SE_EPISODEONE
+	return "original";
+#elif SOURCE_ENGINE == SE_DARKMESSIAH
+	return "darkmessiah";
+#elif SOURCE_ENGINE == SE_ORANGEBOX
+	return "orangebox";
+#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
+	return "orangebox_valve";
+#elif SOURCE_ENGINE == SE_LEFT4DEAD
+	return "left4dead";
+#elif SOURCE_ENGINE == SE_LEFT4DEAD2
+	return "left4dead2";
+#endif
+}
+
+static bool symbols_are_hidden()
+{
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+	return true;
+#else
+	return false;
+#endif
+}
+
 static ServerGlobals serverGlobals;
 
 static sm_core_t core_bridge =
@@ -138,6 +186,10 @@ static sm_core_t core_bridge =
 	generate_error,
 	gnprintf,
 	atcprintf,
+	get_game_name,
+	get_game_description,
+	get_source_engine_name,
+	symbols_are_hidden,
 	&serverGlobals
 };
 
@@ -148,6 +200,8 @@ void InitLogicBridge()
 	serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
 	core_bridge.core_ident = g_pCoreIdent;
+	core_bridge.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
+	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	logic_init_fn(&core_bridge, &logicore);
 
 	/* Add SMGlobalClass instances */
@@ -161,8 +215,6 @@ void InitLogicBridge()
 
 	g_pThreader = logicore.threader;
 	g_pSourcePawn2->SetProfiler(logicore.profiler);
-	UTIL_CRC32 = logicore.CRC32;
-	memutils = logicore.memutils;
 	translator = logicore.translator;
 }
 

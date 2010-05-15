@@ -44,7 +44,7 @@
 #include "PlayerManager.h"
 #include "ForwardSys.h"
 #include "TimerSys.h"
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include "DebugReporter.h"
 #include "frame_hooks.h"
 #include "logic_bridge.h"
@@ -62,6 +62,7 @@ ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapEnd = NULL;
+IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
 
@@ -277,6 +278,7 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase->OnSourceModStartup(false);
 		pBase = pBase->m_pGlobalClassNext;
 	}
+	g_pGameConf = logicore.GetCoreGameConfig();
 
 	/* Notify! */
 	pBase = SMGlobalClass::head;

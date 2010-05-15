@@ -35,9 +35,10 @@
 #include "UserMessages.h"
 #include "PlayerManager.h"
 #include "sm_stringutil.h"
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include <compat_wrappers.h>
 #include <Logger.h>
+#include "logic_bridge.h"
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
@@ -888,3 +889,9 @@ void *CHalfLife2::GetGlobalEntityList()
 {
 	return g_EntList;
 }
+
+int CHalfLife2::GetSendPropOffset(SendProp *prop)
+{
+	return prop->GetOffset();
+}
+

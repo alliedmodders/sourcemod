@@ -30,6 +30,7 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 #include <ctype.h>
 #include <sm_platform.h>
 #include "stringutil.h"
@@ -268,5 +269,37 @@ char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t se
 	}
 
 	return NULL;
+}
+
+size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char *hexstr)
+{
+	size_t written = 0;
+	size_t length = strlen(hexstr);
+
+	for (size_t i = 0; i < length; i++)
+	{
+		if (written >= maxlength)
+			break;
+		buffer[written++] = hexstr[i];
+		if (hexstr[i] == '\\' && hexstr[i + 1] == 'x')
+		{
+			if (i + 3 >= length)
+				continue;
+			/* Get the hex part. */
+			char s_byte[3];
+			int r_byte;
+			s_byte[0] = hexstr[i + 2];
+			s_byte[1] = hexstr[i + 3];
+			s_byte[2] = '\0';
+			/* Read it as an integer */
+			sscanf(s_byte, "%x", &r_byte);
+			/* Save the value */
+			buffer[written - 1] = r_byte;
+			/* Adjust index */
+			i += 3;
+		}
+	}
+
+	return written;
 }
 

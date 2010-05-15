@@ -29,24 +29,24 @@
  * Version: $Id$
  */
 
-#include "sourcemod.h"
-#include "HandleSys.h"
+#include "common_logic.h"
+#include <IHandleSys.h>
 #include "GameConfigs.h"
 
 HandleType_t g_GameConfigsType;
 
 class GameConfigsNatives :
 	public IHandleTypeDispatch, 
-	public SourceModBase
+	public SMGlobalClass 
 {
 public:
 	void OnSourceModAllInitialized()
 	{
-		g_GameConfigsType = g_HandleSys.CreateType("GameConfigs", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_GameConfigsType = handlesys->CreateType("GameConfigs", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(g_GameConfigsType, g_pCoreIdent);
+		handlesys->RemoveType(g_GameConfigsType, g_pCoreIdent);
 		g_GameConfigsType = 0;
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
@@ -67,7 +67,7 @@ static cell_t smn_LoadGameConfigFile(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Unable to open %s: %s", filename, error);
 	}
 
-	return g_HandleSys.CreateHandle(g_GameConfigsType, gc, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_GameConfigsType, gc, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t smn_GameConfGetOffset(IPluginContext *pCtx, const cell_t *params)
@@ -80,7 +80,7 @@ static cell_t smn_GameConfGetOffset(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
+	if ((herr=handlesys->ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid game config handle %x (error %d)", hndl, herr);
@@ -108,7 +108,7 @@ static cell_t smn_GameConfGetKeyValue(IPluginContext *pCtx, const cell_t *params
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
+	if ((herr=handlesys->ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid game config handle %x (error %d)", hndl, herr);
@@ -139,7 +139,7 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
+	if ((herr=handlesys->ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&gc))
 		!= HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid game config handle %x (error %d)", hndl, herr);

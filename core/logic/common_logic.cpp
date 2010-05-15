@@ -40,6 +40,7 @@
 #include "MemoryUtils.h"
 #include "stringutil.h"
 #include "Translator.h"
+#include "GameConfigs.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -64,19 +65,24 @@ static void AddCorePhraseFile(const char *filename)
 	g_pCorePhrases->AddPhraseFile("antiflood.phrases");
 }
 
+static IGameConfig *GetCoreGameConfig()
+{
+	return g_pGameConf;
+}
+
 static sm_logic_t logic =
 {
 	NULL,
 	g_pThreader,
 	sm_profiler,
-	&g_MemUtils,
 	&g_Translator,
-	UTIL_CRC32,
 	stristr,
 	CoreTranslate,
 	AddCorePhraseFile,
 	UTIL_ReplaceAll,
-	UTIL_ReplaceEx
+	UTIL_ReplaceEx,
+	UTIL_DecodeHexString,
+	GetCoreGameConfig
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
@@ -99,6 +105,7 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	timersys = core->timersys;
 	playerhelpers = core->playerhelpers;
 	adminsys = core->adminsys;
+	gamehelpers = core->gamehelpers;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()

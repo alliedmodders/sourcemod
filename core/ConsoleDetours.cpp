@@ -44,7 +44,7 @@
 #include "Logger.h"
 #include "compat_wrappers.h"
 #include "ConsoleDetours.h"
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include "sm_stringutil.h"
 #include "ConCmdManager.h"
 #include "HalfLife2.h"

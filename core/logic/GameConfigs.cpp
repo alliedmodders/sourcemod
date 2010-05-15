@@ -27,23 +27,27 @@
  * or <http://www.sourcemod.net/license.php>.
  */
 
+#include "common_logic.h"
 #include <string.h>
 #include <stdlib.h>
+#include <sh_list.h>
+#include <sh_string.h>
 #include "GameConfigs.h"
-#include "sm_stringutil.h"
-#include "sourcemod.h"
-#include "sourcemm_api.h"
-#include "HalfLife2.h"
-#include "Logger.h"
-#include "ShareSys.h"
-#include "LibrarySys.h"
-#include "HandleSys.h"
+#include "stringutil.h"
+#include <IGameHelpers.h>
+#include <ILibrarySys.h>
+#include <IHandleSys.h>
 #include <IMemoryUtils.h>
-#include "logic_bridge.h"
+#include <ISourceMod.h>
+#include "common_logic.h"
+#include "sm_crc32.h"
+#include "MemoryUtils.h"
 
 #if defined PLATFORM_LINUX
 #include <dlfcn.h>
 #endif
+
+using namespace SourceHook;
 
 GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
@@ -108,35 +112,13 @@ static bool DoesGameMatch(const char *value)
 
 static bool DoesEngineMatch(const char *value)
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
-	if (strcmp(value, "original") == 0)
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-	if (strcmp(value, "darkmessiah") == 0)
-#elif SOURCE_ENGINE == SE_ORANGEBOX
-	if (strcmp(value, "orangebox") == 0)
-#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
-	if (strcmp(value, "orangebox_valve") == 0)
-#elif SOURCE_ENGINE == SE_LEFT4DEAD
-	if (strcmp(value, "left4dead") == 0)
-#elif SOURCE_ENGINE == SE_LEFT4DEAD2
-	if (strcmp(value, "left4dead2") == 0)
-#else
-#error "Unknown engine type"
-#endif
-	{
-		return true;
-	}
-	return false;
+	return strcmp(value, smcore.GetSourceEngineName()) == 0;
 }
 
 CGameConfig::CGameConfig(const char *file)
 {
 	strncopy(m_File, file, sizeof(m_File));
-	m_pOffsets = sm_trie_create();
-	m_pProps = sm_trie_create();
-	m_pKeys = sm_trie_create();
 	m_pAddresses = new KTrie<AddressConf>();
-	m_pSigs = sm_trie_create();
 	m_pStrings = new BaseStringTable(512);
 	m_RefCount = 0;
 
@@ -146,11 +128,7 @@ CGameConfig::CGameConfig(const char *file)
 
 CGameConfig::~CGameConfig()
 {
-	sm_trie_destroy(m_pOffsets);
-	sm_trie_destroy(m_pProps);
-	sm_trie_destroy(m_pKeys);
 	delete m_pAddresses;
-	sm_trie_destroy(m_pSigs);
 	delete m_pStrings;
 }
 
@@ -259,17 +237,17 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			error[0] = '\0';
 			if (strcmp(name, "server") != 0)
 			{
-				UTIL_Format(error, sizeof(error), "Unrecognized library \"%s\"", name);
+				smcore.Format(error, sizeof(error), "Unrecognized library \"%s\"", name);
 			} 
 			else if (!s_ServerBinCRC_Ok)
 			{
 				FILE *fp;
 				char path[PLATFORM_MAX_PATH];
 
-				g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "bin/" PLATFORM_SERVER_BINARY);
+				g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/" PLATFORM_SERVER_BINARY);
 				if ((fp = fopen(path, "rb")) == NULL)
 				{
-					UTIL_Format(error, sizeof(error), "Could not open binary: %s", path);
+					smcore.Format(error, sizeof(error), "Could not open binary: %s", path);
 				} else {
 					size_t size;
 					void *buffer;
@@ -289,8 +267,8 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			if (error[0] != '\0')
 			{
 				m_IgnoreLevel = 1;
-				g_Logger.LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game, m_CurFile);
-				g_Logger.LogError("[SM] %s", error);
+				smcore.LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game, m_CurFile);
+				smcore.LogError("[SM] %s", error);
 			} else {
 				m_ParseState = PSTATE_GAMEDEFS_CRC_BINARY;
 			}
@@ -323,8 +301,8 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0)
 				{
-					g_Logger.LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
-					g_Logger.LogError("[SM] Unrecognized platform \"%s\"", name);
+					smcore.LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
+					smcore.LogError("[SM] Unrecognized platform \"%s\"", name);
 				}
 				m_IgnoreLevel = 1;
 			}
@@ -364,12 +342,10 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		} else if (strcmp(key, "prop") == 0) {
 			strncopy(m_Prop, value, sizeof(m_Prop));
 		} else if (strcmp(key, PLATFORM_NAME) == 0) {
-			int val = atoi(value);
-			sm_trie_replace(m_pOffsets, m_offset, (void *)val);
+			m_Offsets.replace(m_offset, atoi(value));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
-		int id = m_pStrings->AddString(value);
-		sm_trie_replace(m_pKeys, key, (void *)id);
+		m_Keys.replace(key, m_pStrings->AddString(value));
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
 		{
@@ -424,7 +400,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			}
 			else
 			{
-				g_Logger.LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
+				smcore.LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
 			}
 		} else if (strcmp(key, "signature") == 0) {
 			strncopy(m_AddressSignature, value, sizeof(m_AddressSignature));
@@ -481,18 +457,18 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 			if (m_Class[0] != '\0'
 				&& m_Prop[0] != '\0')
 			{
-				SendProp *pProp = g_HL2.FindInSendTable(m_Class, m_Prop);
+				SendProp *pProp = gamehelpers->FindInSendTable(m_Class, m_Prop);
 				if (pProp)
 				{
-					int val = pProp->GetOffset();
-					sm_trie_replace(m_pOffsets, m_offset, (void *)val);
-					sm_trie_replace(m_pProps, m_offset, pProp);
+					int val = gamehelpers->GetSendPropOffset(pProp);
+					m_Offsets.replace(m_offset, val);
+					m_Props.replace(m_offset, pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
 					if (((strcmp(m_Game, "*") != 0) && strcmp(m_Game, "#default") != 0)
-						&& (!sm_trie_retrieve(m_pOffsets, m_offset, NULL)))
+						&& (!m_Offsets.retrieve(m_offset)))
 					{
-						g_Logger.LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
+						smcore.LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
 							m_Class,
 							m_Prop,
 							m_CurFile,
@@ -536,14 +512,14 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 			void *addrInBase = NULL;
 			if (strcmp(s_TempSig.library, "server") == 0)
 			{
-				addrInBase = (void *)g_SMAPI->GetServerFactory(false);
+				addrInBase = smcore.serverFactory;
 			} else if (strcmp(s_TempSig.library, "engine") == 0) {
-				addrInBase = (void *)g_SMAPI->GetEngineFactory(false);
+				addrInBase = smcore.engineFactory;
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
 			{
-				g_Logger.LogError("[SM] Unrecognized library \"%s\" (gameconf \"%s\")", 
+				smcore.LogError("[SM] Unrecognized library \"%s\" (gameconf \"%s\")", 
 					s_TempSig.library, 
 					m_CurFile);
 			} else {
@@ -557,19 +533,18 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 						void *handle = dlopen(info.dli_fname, RTLD_NOW);
 						if (handle)
 						{
-#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-							final_addr = memutils->ResolveSymbol(handle, &s_TempSig.sig[1]);
-#else
-							final_addr = dlsym(handle, &s_TempSig.sig[1]);
-#endif
+							if (smcore.SymbolsAreHidden())
+								final_addr = g_MemUtils.ResolveSymbol(handle, &s_TempSig.sig[1]);
+							else
+								final_addr = dlsym(handle, &s_TempSig.sig[1]);
 							dlclose(handle);
 						} else {
-							g_Logger.LogError("[SM] Unable to load library \"%s\" (gameconf \"%s\")",
+							smcore.LogError("[SM] Unable to load library \"%s\" (gameconf \"%s\")",
 								s_TempSig.library,
 								m_File);
 						}
 					} else {
-						g_Logger.LogError("[SM] Unable to find library \"%s\" in memory (gameconf \"%s\")",
+						smcore.LogError("[SM] Unable to find library \"%s\" in memory (gameconf \"%s\")",
 							s_TempSig.library,
 							m_File);
 					}
@@ -591,14 +566,14 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 
 				if (real_bytes >= 1)
 				{
-					final_addr = memutils->FindPattern(addrInBase, (char*)real_sig, real_bytes);
+					final_addr = g_MemUtils.FindPattern(addrInBase, (char*)real_sig, real_bytes);
 				}
 			}
 
 #if defined PLATFORM_LINUX
 skip_find:
 #endif
-			sm_trie_replace(m_pSigs, m_offset, final_addr);
+			m_Sigs.replace(m_offset, final_addr);
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 
 			break;
@@ -614,12 +589,12 @@ skip_find:
 
 			if (m_Address[0] == '\0')
 			{
-				g_Logger.LogError("[SM] Address sections must have names (gameconf \"%s\")", m_CurFile);
+				smcore.LogError("[SM] Address sections must have names (gameconf \"%s\")", m_CurFile);
 				break;
 			}
 			if (m_AddressSignature[0] == '\0')
 			{
-				g_Logger.LogError("[SM] Address section for \"%s\" did not specify a signature (gameconf \"%s\")", m_Address, m_CurFile);
+				smcore.LogError("[SM] Address section for \"%s\" did not specify a signature (gameconf \"%s\")", m_Address, m_CurFile);
 				break;
 			}
 
@@ -769,19 +744,19 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 {
 	/* Reset cached data */
 	m_pStrings->Reset();
-	sm_trie_clear(m_pOffsets);
-	sm_trie_clear(m_pProps);
-	sm_trie_clear(m_pKeys);
+	m_Offsets.clear();
+	m_Props.clear();
+	m_Keys.clear();
 	m_pAddresses->clear();
 
 	char path[PLATFORM_MAX_PATH];
 
 	/* See if we can use the extended gamedata format. */
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/master.games.txt", m_File);
-	if (!g_LibSys.PathExists(path))
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/master.games.txt", m_File);
+	if (!libsys->PathExists(path))
 	{
 		/* Nope, use the old mechanism. */
-		UTIL_Format(path, sizeof(path), "%s.txt", m_File);
+		smcore.Format(path, sizeof(path), "%s.txt", m_File);
 		return EnterFile(path, error, maxlength);
 	}
 
@@ -796,8 +771,8 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	{
 		const char *msg = textparsers->GetSMCErrorString(err);
 
-		g_Logger.LogError("[SM] Error parsing master gameconf file \"%s\":", path);
-		g_Logger.LogError("[SM] Error %d on line %d, col %d: %s", 
+		smcore.LogError("[SM] Error parsing master gameconf file \"%s\":", path);
+		smcore.LogError("[SM] Error %d on line %d, col %d: %s", 
 			err,
 			state.line,
 			state.col,
@@ -809,7 +784,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	List<String>::iterator iter;
 	for (iter = fileList.begin(); iter != fileList.end(); iter++)
 	{
-		UTIL_Format(path, sizeof(path), "%s/%s", m_File, (*iter).c_str());
+		smcore.Format(path, sizeof(path), "%s/%s", m_File, (*iter).c_str());
 		if (!EnterFile(path, error, maxlength))
 		{
 			return false;
@@ -817,8 +792,8 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	}
 
 	/* Parse the contents of the 'custom' directory */
-	g_SourceMod.BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/custom", m_File);
-	IDirectory *customDir = g_LibSys.OpenDirectory(path);
+	g_pSM->BuildPath(Path_SM, path, sizeof(path), "gamedata/%s/custom", m_File);
+	IDirectory *customDir = libsys->OpenDirectory(path);
 
 	if (!customDir)
 	{
@@ -843,17 +818,17 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 			continue;	
 		}
 
-		UTIL_Format(path, sizeof(path), "%s/custom/%s", m_File, curFile);
+		smcore.Format(path, sizeof(path), "%s/custom/%s", m_File, curFile);
 		if (!EnterFile(path, error, maxlength))
 		{
-			g_LibSys.CloseDirectory(customDir);
+			libsys->CloseDirectory(customDir);
 			return false;
 		}
 
 		customDir->NextEntry();
 	}
 
-	g_LibSys.CloseDirectory(customDir);
+	libsys->CloseDirectory(customDir);
 	return true;
 }
 
@@ -862,7 +837,7 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 	SMCError err;
 	SMCStates state = {0, 0};
 
-	g_SourceMod.BuildPath(Path_SM, m_CurFile, sizeof(m_CurFile), "gamedata/%s", file);
+	g_pSM->BuildPath(Path_SM, m_CurFile, sizeof(m_CurFile), "gamedata/%s", file);
 
 	/* Initialize parse states */
 	m_IgnoreLevel = 0;
@@ -876,8 +851,8 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 
 		msg = textparsers->GetSMCErrorString(err);
 
-		g_Logger.LogError("[SM] Error parsing gameconfig file \"%s\":", m_CurFile);
-		g_Logger.LogError("[SM] Error %d on line %d, col %d: %s", 
+		smcore.LogError("[SM] Error parsing gameconfig file \"%s\":", m_CurFile);
+		smcore.LogError("[SM] Error %d on line %d, col %d: %s", 
 			err,
 			state.line,
 			state.col,
@@ -899,26 +874,20 @@ bool CGameConfig::EnterFile(const char *file, char *error, size_t maxlength)
 
 bool CGameConfig::GetOffset(const char *key, int *value)
 {
-	void *obj;
-
-	if (!sm_trie_retrieve(m_pOffsets, key, &obj))
-	{
+	int *pvalue;
+	if ((pvalue = m_Offsets.retrieve(key)) == NULL)
 		return false;
-	}
 
-	*value = (int)obj;
-	
+	*value = *pvalue;
 	return true;
 }
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	void *obj;
-	if (!sm_trie_retrieve(m_pKeys, key, &obj))
-	{
+	int *pkey;
+	if ((pkey = m_Keys.retrieve(key)) == NULL)
 		return NULL;
-	}
-	return m_pStrings->GetString((int)obj);
+	return m_pStrings->GetString(*pkey);
 }
 
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
@@ -959,6 +928,11 @@ bool CGameConfig::GetAddress(const char *key, void **retaddr)
 	return true;
 }
 
+static inline unsigned min(unsigned a, unsigned b)
+{
+	return a <= b ? a : b;
+}
+
 CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read)
 {
 	unsigned readLimit = min(readCount, sizeof(this->read) / sizeof(this->read[0]));
@@ -970,19 +944,21 @@ CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigne
 
 SendProp *CGameConfig::GetSendProp(const char *key)
 {
-	SendProp *pProp;
+	SendProp **pProp;
 
-	if (!sm_trie_retrieve(m_pProps, key, (void **)&pProp))
-	{
+	if ((pProp = m_Props.retrieve(key)) == NULL)
 		return NULL;
-	}
 
-	return pProp;
+	return *pProp;
 }
 
 bool CGameConfig::GetMemSig(const char *key, void **addr)
 {
-	return sm_trie_retrieve(m_pSigs, key, addr);
+	void **paddr;
+	if ((paddr = m_Sigs.retrieve(key)) == NULL)
+		return false;
+	*addr = *paddr;
+	return true;
 }
 
 void CGameConfig::IncRefCount()
@@ -998,31 +974,19 @@ unsigned int CGameConfig::DecRefCount()
 
 GameConfigManager::GameConfigManager()
 {
-	m_pLookup = sm_trie_create();
 }
 
 GameConfigManager::~GameConfigManager()
 {
-	sm_trie_destroy(m_pLookup);
 }
 
 void GameConfigManager::OnSourceModStartup(bool late)
 {
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
-	strncopy(g_Game, g_SourceMod.GetGameFolderName(), sizeof(g_Game));
-	strncopy(g_GameDesc + 1, SERVER_CALL(GetGameDescription)(), sizeof(g_GameDesc) - 1);
-
-	KeyValues *pGameInfo = new KeyValues("GameInfo");
-	if (g_HL2.KVLoadFromFile(pGameInfo, basefilesystem, "gameinfo.txt"))
-	{
-		const char *str;
-		if ((str = pGameInfo->GetString("game", NULL)) != NULL)
-		{
-			strncopy(g_GameName + 1, str, sizeof(g_GameName) - 1);
-		}
-	}
-	pGameInfo->deleteThis();
+	strncopy(g_Game, g_pSM->GetGameFolderName(), sizeof(g_Game));
+	strncopy(g_GameDesc + 1, smcore.GetGameDescription(), sizeof(g_GameDesc) - 1);
+	smcore.GetGameName(g_GameName + 1, sizeof(g_GameName) - 1);
 }
 
 void GameConfigManager::OnSourceModAllInitialized()
@@ -1036,7 +1000,7 @@ void GameConfigManager::OnSourceModAllInitialized()
 		/* :TODO: log */
 	}
 
-	g_ShareSys.AddInterface(NULL, this);
+	sharesys->AddInterface(NULL, this);
 }
 
 void GameConfigManager::OnSourceModAllShutdown()
@@ -1056,9 +1020,11 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 #endif
 
 	CGameConfig *pConfig;
+	CGameConfig **ppConfig;
 
-	if (sm_trie_retrieve(m_pLookup, file, (void **)&pConfig))
+	if ((ppConfig = m_Lookup.retrieve(file)) != NULL)
 	{
+		pConfig = *ppConfig;
 		pConfig->IncRefCount();
 		*_pConfig = pConfig;
 		return true;
@@ -1074,7 +1040,7 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 	}
 
 	m_cfgs.push_back(pConfig);
-	sm_trie_insert(m_pLookup, file, pConfig);
+	m_Lookup.insert(file, pConfig);
 
 	pConfig->IncRefCount();
 
@@ -1089,18 +1055,18 @@ void GameConfigManager::CloseGameConfigFile(IGameConfig *cfg)
 
 	if (pConfig->DecRefCount() == 0)
 	{
-		sm_trie_delete(m_pLookup, pConfig->m_File);
+		m_Lookup.remove(pConfig->m_File);
 		delete pConfig;
 	}
 }
 
-extern HandleType_t g_GameConfigsType;
+extern Handle_t g_GameConfigsType;
 
 IGameConfig *GameConfigManager::ReadHandle(Handle_t hndl, IdentityToken_t *ident, HandleError *err)
 {
 	HandleSecurity sec(ident, g_pCoreIdent);
 	IGameConfig *conf = NULL;
-	HandleError _err = g_HandleSys.ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&conf);
+	HandleError _err = handlesys->ReadHandle(hndl, g_GameConfigsType, &sec, (void **)&conf);
 
 	if (err)
 	{

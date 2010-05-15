@@ -32,11 +32,12 @@
 #include "MenuStyle_Radio.h"
 #include "sm_stringutil.h"
 #include "UserMessages.h"
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include "PlayerManager.h"
 #if defined MENU_DEBUG
 #include "Logger.h"
 #endif
+#include "logic_bridge.h"
 
 extern const char *g_RadioNumTable[];
 CRadioStyle g_RadioMenuStyle;

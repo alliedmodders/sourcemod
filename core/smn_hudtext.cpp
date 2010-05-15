@@ -30,11 +30,12 @@
  */
 
 #include "sm_globals.h"
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include "UserMessages.h"
 #include "TimerSys.h"
 #include "PlayerManager.h"
 #include "HandleSys.h"
+#include "logic_bridge.h"
 
 #define MAX_HUD_CHANNELS		6
 

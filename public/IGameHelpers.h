@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		5
+#define SMINTERFACE_GAMEHELPERS_VERSION		6
 
 class CBaseEntity;
 class CBaseHandle;
@@ -262,6 +262,14 @@ namespace SourceMod
 		 * @param msg			The kick message to show to the player.
 		 */
 		virtual void AddDelayedKick(int client, int userid, const char *msg) =0;
+
+		/**
+		 * @brief Returns the uncomputed offset of a SendProp.
+		 *
+		 * @param prop          SendProp pointer.
+		 * @return              Uncomputed sendprop offset.
+		 */
+		virtual int GetSendPropOffset(SendProp *prop) =0;
 	};
 }
 

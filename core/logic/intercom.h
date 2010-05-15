@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 13)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 14)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -66,11 +66,11 @@ namespace SourceMod
 	class IForwardManager;
 	class ITimerSystem;
 	class IPlayerManager;
-	class IMemoryUtils;
 	class IAdminSystem;
 	class IGameHelpers;
 	class IPhraseCollection;
 	class ITranslator;
+	class IGameConfig;
 }
 
 class IVEngineServer;
@@ -98,7 +98,7 @@ struct sm_core_t
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
 	IAdminSystem	*adminsys;
-	IGameHelpers    *gamehelers;
+	IGameHelpers    *gamehelpers;
 	/* Functions */
 	void			(*AddNatives)(sp_nativeinfo_t* nlist);
 	ConVar *		(*FindConVar)(const char*);
@@ -111,8 +111,14 @@ struct sm_core_t
 	bool			(*gnprintf)(char *, size_t, const char *, IPhraseCollection *, void **,
 	                            unsigned int, unsigned int &, size_t *, const char **);
 	size_t			(*atcprintf)(char *, size_t, const char *, IPluginContext *, const cell_t *, int *);
+	bool            (*GetGameName)(char *buffer, size_t maxlength);
+	const char *    (*GetGameDescription)();
+	const char *    (*GetSourceEngineName)();
+	bool            (*SymbolsAreHidden)();
 	/* Data */
 	ServerGlobals   *serverGlobals;
+	void *          serverFactory;
+	void *          engineFactory;
 };
 
 struct sm_logic_t
@@ -120,14 +126,14 @@ struct sm_logic_t
 	SMGlobalClass	*head;
 	IThreader		*threader;
 	IProfiler		*profiler;
-	IMemoryUtils    *memutils;
 	ITranslator		*translator;
-	unsigned int    (*CRC32)(const void *, size_t);
 	const char      *(*stristr)(const char *, const char *);
 	bool			(*CoreTranslate)(char *,  size_t, const char *, unsigned int, size_t *, ...);
 	void            (*AddCorePhraseFile)(const char *filename);
 	unsigned int	(*ReplaceAll)(char*, size_t, const char *, const char *, bool);
 	char            *(*ReplaceEx)(char *, size_t, const char *, size_t, const char *, size_t, bool);
+	size_t          (*DecodeHexString)(unsigned char *, size_t, const char *);
+	IGameConfig *   (*GetCoreGameConfig)();
 };
 
 typedef void (*LogicInitFunction)(const sm_core_t *core, sm_logic_t *logic);

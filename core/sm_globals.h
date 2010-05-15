@@ -201,12 +201,10 @@ namespace SourceMod
 {
 	class IThreader;
 	class ITextParsers;
-	class IMemoryUtils;
 }
 
 extern IThreader *g_pThreader;
 extern ITextParsers *textparsers;
-extern IMemoryUtils *memutils;
 
 #include "sm_autonatives.h"
 

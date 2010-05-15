@@ -32,13 +32,12 @@
 #ifndef _INCLUDE_SOURCEMOD_CGAMECONFIGS_H_
 #define _INCLUDE_SOURCEMOD_CGAMECONFIGS_H_
 
+#include "common_logic.h"
 #include <IGameConfigs.h>
 #include <ITextParsers.h>
 #include <sh_list.h>
-#include "sm_trie.h"
-#include "sm_globals.h"
 #include "sm_memtable.h"
-#include "sm_trie_tpl.h"
+#include <sm_trie_tpl.h>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -73,10 +72,10 @@ private:
 	BaseStringTable *m_pStrings;
 	char m_File[PLATFORM_MAX_PATH];
 	char m_CurFile[PLATFORM_MAX_PATH];
-	Trie *m_pOffsets;
-	Trie *m_pProps;
-	Trie *m_pKeys;
-	Trie *m_pSigs;
+	KTrie<int> m_Offsets;
+	KTrie<SendProp *> m_Props;
+	KTrie<int> m_Keys;
+	KTrie<void *> m_Sigs;
 	unsigned int m_RefCount;
 	/* Parse states */
 	int m_ParseState;
@@ -137,7 +136,7 @@ public: //SMGlobalClass
 	void OnSourceModAllShutdown();
 private:
 	List<CGameConfig *> m_cfgs;
-	Trie *m_pLookup;
+	KTrie<CGameConfig *> m_Lookup;
 public:
 	KTrie<ITextListener_SMC *> m_customHandlers;
 };

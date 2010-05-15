@@ -34,8 +34,9 @@
 #include "sourcemm_api.h"
 #include "PlayerManager.h"
 #include "HalfLife2.h"
-#include "GameConfigs.h"
+#include <IGameConfigs.h>
 #include "sm_stringutil.h"
+#include "logic_bridge.h"
 
 enum PropType
 {

@@ -38,6 +38,8 @@ OBJECTS = \
 	smn_string.cpp		\
 	smn_handles.cpp		\
 	smn_datapacks.cpp	\
+	smn_gameconfigs.cpp	\
+	GameConfigs.cpp		\
 	smn_players.cpp
 
 ##############################################
