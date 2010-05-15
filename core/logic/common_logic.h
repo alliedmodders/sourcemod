@@ -50,6 +50,7 @@ extern IForwardManager *forwardsys;
 extern ITimerSystem *timersys;
 extern ServerGlobals serverGlobals;
 extern IPlayerManager *playerhelpers;
+extern IAdminSystem *adminsys;
 
 #endif /* _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_ */
 

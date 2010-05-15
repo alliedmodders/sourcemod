@@ -29,13 +29,15 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include "AdminCache.h"
-#include "ForwardSys.h"
+#include "common_logic.h"
+#include <IAdminSystem.h>
+#include <IForwardSys.h>
+
+using namespace SourceMod;
 
 static cell_t DumpAdminCache(IPluginContext *pContext, const cell_t *params)
 {
-	g_Admins.DumpAdminCache((AdminCachePart)params[1], (params[2] == 1) ? true : false);
+	adminsys->DumpAdminCache((AdminCachePart)params[1], (params[2] == 1) ? true : false);
 	return 1;
 }
 
@@ -44,7 +46,7 @@ static cell_t AddCommandOverride(IPluginContext *pContext, const cell_t *params)
 	char *str;
 
 	pContext->LocalToString(params[1], &str);
-	g_Admins.AddCommandOverride(str, (OverrideType)params[2], (AdminFlag)params[3]);
+	adminsys->AddCommandOverride(str, (OverrideType)params[2], (AdminFlag)params[3]);
 
 	return 1;
 }
@@ -56,7 +58,7 @@ static cell_t GetCommandOverride(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &cmd);
 
-	if (!g_Admins.GetCommandOverride(cmd, (OverrideType)params[2], &flags))
+	if (!adminsys->GetCommandOverride(cmd, (OverrideType)params[2], &flags))
 	{
 		return 0;
 	}
@@ -75,7 +77,7 @@ static cell_t UnsetCommandOverride(IPluginContext *pContext, const cell_t *param
 
 	pContext->LocalToString(params[1], &cmd);
 
-	g_Admins.UnsetCommandOverride(cmd, (OverrideType)params[2]);
+	adminsys->UnsetCommandOverride(cmd, (OverrideType)params[2]);
 
 	return 1;
 }
@@ -86,7 +88,7 @@ static cell_t CreateAdmGroup(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &str);
 
-	return g_Admins.AddGroup(str);
+	return adminsys->AddGroup(str);
 }
 
 static cell_t FindAdmGroup(IPluginContext *pContext, const cell_t *params)
@@ -95,7 +97,7 @@ static cell_t FindAdmGroup(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &str);
 
-	return g_Admins.FindGroupByName(str);
+	return adminsys->FindGroupByName(str);
 }
 
 static cell_t SetAdmGroupAddFlag(IPluginContext *pContext, const cell_t *params)
@@ -104,7 +106,7 @@ static cell_t SetAdmGroupAddFlag(IPluginContext *pContext, const cell_t *params)
 	AdminFlag flag = (AdminFlag)params[2];
 	bool enabled = params[3] ? 1 : 0;
 
-	g_Admins.SetGroupAddFlag(id, flag, enabled);
+	adminsys->SetGroupAddFlag(id, flag, enabled);
 
 	return 1;
 }
@@ -114,7 +116,7 @@ static cell_t GetAdmGroupAddFlag(IPluginContext *pContext, const cell_t *params)
 	GroupId id = (GroupId)params[1];
 	AdminFlag flag = (AdminFlag)params[2];
 	
-	return g_Admins.GetGroupAddFlag(id, flag) ? 1 : 0;
+	return adminsys->GetGroupAddFlag(id, flag) ? 1 : 0;
 }
 
 static cell_t SetAdmGroupImmunity(IPluginContext *pContext, const cell_t *params)
@@ -123,7 +125,7 @@ static cell_t SetAdmGroupImmunity(IPluginContext *pContext, const cell_t *params
 	ImmunityType type = (ImmunityType)params[2];
 	bool enabled = params[3] ? 1 : 0;
 
-	g_Admins.SetGroupGenericImmunity(id, type, enabled);
+	adminsys->SetGroupGenericImmunity(id, type, enabled);
 
 	return 1;
 }
@@ -133,7 +135,7 @@ static cell_t GetAdmGroupImmunity(IPluginContext *pContext, const cell_t *params
 	GroupId id = (GroupId)params[1];
 	ImmunityType type = (ImmunityType)params[2];
 
-	return g_Admins.GetGroupGenericImmunity(id, type) ? 1 : 0;
+	return adminsys->GetGroupGenericImmunity(id, type) ? 1 : 0;
 }
 
 static cell_t SetAdmGroupImmuneFrom(IPluginContext *pContext, const cell_t *params)
@@ -141,7 +143,7 @@ static cell_t SetAdmGroupImmuneFrom(IPluginContext *pContext, const cell_t *para
 	GroupId id = (GroupId)params[1];
 	GroupId other_id = (GroupId)params[2];
 
-	g_Admins.AddGroupImmunity(id, other_id);
+	adminsys->AddGroupImmunity(id, other_id);
 
 	return 1;
 }
@@ -150,14 +152,14 @@ static cell_t GetAdmGroupImmuneCount(IPluginContext *pContext, const cell_t *par
 {
 	GroupId id = (GroupId)params[1];
 
-	return g_Admins.GetGroupImmunityCount(id);
+	return adminsys->GetGroupImmunityCount(id);
 }
 
 static cell_t GetAdmGroupImmuneFrom(IPluginContext *pContext, const cell_t *params)
 {
 	GroupId id = (GroupId)params[1];
 
-	return g_Admins.GetGroupImmunity(id, params[2]);
+	return adminsys->GetGroupImmunity(id, params[2]);
 }
 
 static cell_t AddAdmGroupCmdOverride(IPluginContext *pContext, const cell_t *params)
@@ -169,7 +171,7 @@ static cell_t AddAdmGroupCmdOverride(IPluginContext *pContext, const cell_t *par
 
 	pContext->LocalToString(params[2], &cmd);
 
-	g_Admins.AddGroupCommandOverride(id, cmd, type, rule);
+	adminsys->AddGroupCommandOverride(id, cmd, type, rule);
 
 	return 1;
 }
@@ -183,7 +185,7 @@ static cell_t GetAdmGroupCmdOverride(IPluginContext *pContext, const cell_t *par
 
 	pContext->LocalToString(params[2], &cmd);
 
-	if (!g_Admins.GetGroupCommandOverride(id, cmd, type, &rule))
+	if (!adminsys->GetGroupCommandOverride(id, cmd, type, &rule))
 	{
 		return 0;
 	}
@@ -198,7 +200,7 @@ static cell_t GetAdmGroupCmdOverride(IPluginContext *pContext, const cell_t *par
 static cell_t GetAdmGroupAddFlags(IPluginContext *pContext, const cell_t *params)
 {
 	GroupId id = (GroupId)params[1];
-	return g_Admins.GetGroupAddFlags(id);
+	return adminsys->GetGroupAddFlags(id);
 }
 
 static cell_t RegisterAuthIdentType(IPluginContext *pContext, const cell_t *params)
@@ -206,7 +208,7 @@ static cell_t RegisterAuthIdentType(IPluginContext *pContext, const cell_t *para
 	char *type;
 	pContext->LocalToString(params[1], &type);
 
-	g_Admins.RegisterAuthIdentType(type);
+	adminsys->RegisterAuthIdentType(type);
 
 	return 1;
 }
@@ -221,14 +223,14 @@ static cell_t CreateAdmin(IPluginContext *pContext, const cell_t *params)
 		admin = NULL;
 	}
 
-	return g_Admins.CreateAdmin(admin);
+	return adminsys->CreateAdmin(admin);
 }
 
 static cell_t GetAdminUsername(IPluginContext *pContext, const cell_t *params)
 {
 	AdminId id = params[1];
 	size_t written;
-	const char *name = g_Admins.GetAdminName(id);
+	const char *name = adminsys->GetAdminName(id);
 
 	if (!name)
 	{
@@ -248,7 +250,7 @@ static cell_t BindAdminIdentity(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &auth);
 	pContext->LocalToString(params[3], &ident);
 
-	return g_Admins.BindAdminIdentity(id, auth, ident);
+	return adminsys->BindAdminIdentity(id, auth, ident);
 }
 
 static cell_t SetAdminFlag(IPluginContext *pContext, const cell_t *params)
@@ -257,7 +259,7 @@ static cell_t SetAdminFlag(IPluginContext *pContext, const cell_t *params)
 	AdminFlag flag = (AdminFlag)params[2];
 	bool enabled = params[3] ? true : false;
 
-	g_Admins.SetAdminFlag(id, flag, enabled);
+	adminsys->SetAdminFlag(id, flag, enabled);
 
 	return 1;
 }
@@ -268,7 +270,7 @@ static cell_t GetAdminFlag(IPluginContext *pContext, const cell_t *params)
 	AdminFlag flag = (AdminFlag)params[2];
 	AccessMode mode = (AccessMode)params[3];
 
-	return g_Admins.GetAdminFlag(id, flag, mode);
+	return adminsys->GetAdminFlag(id, flag, mode);
 }
 
 static cell_t GetAdminFlags(IPluginContext *pContext, const cell_t *params)
@@ -276,7 +278,7 @@ static cell_t GetAdminFlags(IPluginContext *pContext, const cell_t *params)
 	AdminId id = params[1];
 	AccessMode mode = (AccessMode)params[2];
 
-	return g_Admins.GetAdminFlags(id, mode);
+	return adminsys->GetAdminFlags(id, mode);
 }
 
 static cell_t AdminInheritGroup(IPluginContext *pContext, const cell_t *params)
@@ -284,14 +286,14 @@ static cell_t AdminInheritGroup(IPluginContext *pContext, const cell_t *params)
 	AdminId id = params[1];
 	GroupId gid = params[2];
 
-	return g_Admins.AdminInheritGroup(id, gid);
+	return adminsys->AdminInheritGroup(id, gid);
 }
 
 static cell_t GetAdminGroupCount(IPluginContext *pContext, const cell_t *params)
 {
 	AdminId id = params[1];
 
-	return g_Admins.GetAdminGroupCount(id);
+	return adminsys->GetAdminGroupCount(id);
 }
 
 static cell_t GetAdminGroup(IPluginContext *pContext, const cell_t *params)
@@ -301,7 +303,7 @@ static cell_t GetAdminGroup(IPluginContext *pContext, const cell_t *params)
 	const char *name;
 	GroupId gid;
 
-	if ((gid=g_Admins.GetAdminGroup(id, index, &name)) == INVALID_GROUP_ID)
+	if ((gid=adminsys->GetAdminGroup(id, index, &name)) == INVALID_GROUP_ID)
 	{
 		return gid;
 	}
@@ -323,7 +325,7 @@ static cell_t SetAdminPassword(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[2], &password);
 
-	g_Admins.SetAdminPassword(id, password);
+	adminsys->SetAdminPassword(id, password);
 
 	return 1;
 }
@@ -331,7 +333,7 @@ static cell_t SetAdminPassword(IPluginContext *pContext, const cell_t *params)
 static cell_t GetAdminPassword(IPluginContext *pContext, const cell_t *params)
 {
 	AdminId id = params[1];
-	const char *password = g_Admins.GetAdminPassword(id);
+	const char *password = adminsys->GetAdminPassword(id);
 
 	if (!password)
 	{
@@ -350,14 +352,14 @@ static cell_t FindAdminByIdentity(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToString(params[1], &auth);
 	pContext->LocalToString(params[2], &ident);
 
-	return g_Admins.FindAdminByIdentity(auth, ident);
+	return adminsys->FindAdminByIdentity(auth, ident);
 }
 
 static cell_t RemoveAdmin(IPluginContext *pContext, const cell_t *params)
 {
 	AdminId id = params[1];
 
-	return g_Admins.InvalidateAdmin(id);
+	return adminsys->InvalidateAdmin(id);
 }
 
 static cell_t FlagBitsToBitArray(IPluginContext *pContext, const cell_t *params)
@@ -365,7 +367,7 @@ static cell_t FlagBitsToBitArray(IPluginContext *pContext, const cell_t *params)
 	FlagBits bits = (FlagBits)params[1];
 	bool array[AdminFlags_TOTAL];
 	cell_t *addr;
-	unsigned int numWr = g_Admins.FlagBitsToBitArray(bits, array, AdminFlags_TOTAL);
+	unsigned int numWr = adminsys->FlagBitsToBitArray(bits, array, AdminFlags_TOTAL);
 
 	pContext->LocalToPhysAddr(params[2], &addr);
 
@@ -391,7 +393,7 @@ static cell_t FlagBitArrayToBits(IPluginContext *pContext, const cell_t *params)
 		array[i] = addr[i] ? true : false;
 	}
 
-	return g_Admins.FlagBitArrayToBits(array, num);
+	return adminsys->FlagBitArrayToBits(array, num);
 }
 
 static cell_t FlagArrayToBits(IPluginContext *pContext, const cell_t *params)
@@ -401,7 +403,7 @@ static cell_t FlagArrayToBits(IPluginContext *pContext, const cell_t *params)
 
 	if (sizeof(AdminFlag) == sizeof(cell_t))
 	{
-		return g_Admins.FlagArrayToBits((const AdminFlag *)addr, params[2]);
+		return adminsys->FlagArrayToBits((const AdminFlag *)addr, params[2]);
 	} else {
 		AdminFlag flags[AdminFlags_TOTAL];
 		unsigned int num = ((unsigned)params[2] > AdminFlags_TOTAL ? AdminFlags_TOTAL : params[2]);
@@ -410,7 +412,7 @@ static cell_t FlagArrayToBits(IPluginContext *pContext, const cell_t *params)
 		{
 			flags[i] = (AdminFlag)addr[i];
 		}
-		return g_Admins.FlagArrayToBits(flags, num);
+		return adminsys->FlagArrayToBits(flags, num);
 	}
 }
 
@@ -421,11 +423,11 @@ static cell_t FlagBitsToArray(IPluginContext *pContext, const cell_t *params)
 
 	if (sizeof(AdminFlag) == sizeof(cell_t))
 	{
-		return g_Admins.FlagBitsToArray(params[1], (AdminFlag *)addr, params[3]);
+		return adminsys->FlagBitsToArray(params[1], (AdminFlag *)addr, params[3]);
 	} else {
 		AdminFlag flags[AdminFlags_TOTAL];
 		unsigned int num = ((unsigned)params[2] > AdminFlags_TOTAL ? AdminFlags_TOTAL : params[2]);
-		num = g_Admins.FlagBitsToArray(params[1], flags, num);
+		num = adminsys->FlagBitsToArray(params[1], flags, num);
 
 		for (unsigned int i=0; i<num; i++)
 		{
@@ -438,36 +440,36 @@ static cell_t FlagBitsToArray(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CanAdminTarget(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Admins.CanAdminTarget(params[1], params[2]) ? 1 : 0;
+	return adminsys->CanAdminTarget(params[1], params[2]) ? 1 : 0;
 }
 
 static cell_t CreateAuthMethod(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
 	pContext->LocalToString(params[1], &name);
-	g_Admins.RegisterAuthIdentType(name);
+	adminsys->RegisterAuthIdentType(name);
 
 	return 1;
 }
 
 static cell_t SetAdmGroupImmunityLevel(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Admins.SetGroupImmunityLevel(params[1], params[2]);
+	return adminsys->SetGroupImmunityLevel(params[1], params[2]);
 }
 
 static cell_t GetAdmGroupImmunityLevel(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Admins.GetGroupImmunityLevel(params[1]);
+	return adminsys->GetGroupImmunityLevel(params[1]);
 }
 
 static cell_t SetAdminImmunityLevel(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Admins.SetAdminImmunityLevel(params[1], params[2]);
+	return adminsys->SetAdminImmunityLevel(params[1], params[2]);
 }
 
 static cell_t GetAdminImmunityLevel(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Admins.GetAdminImmunityLevel(params[1]);
+	return adminsys->GetAdminImmunityLevel(params[1]);
 }
 
 static cell_t FindFlagByName(IPluginContext *pContext, const cell_t *params)
@@ -479,7 +481,7 @@ static cell_t FindFlagByName(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[2], &addr);
 
 	AdminFlag admflag;
-	if (!g_Admins.FindFlag(flag, &admflag))
+	if (!adminsys->FindFlag(flag, &admflag))
 	{
 		return 0;
 	}
@@ -495,7 +497,7 @@ static cell_t FindFlagByChar(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[2], &addr);
 
 	AdminFlag admflag;
-	if (!g_Admins.FindFlag((char)params[1], &admflag))
+	if (!adminsys->FindFlag((char)params[1], &admflag))
 	{
 		return 0;
 	}
@@ -514,7 +516,7 @@ static cell_t ReadFlagString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[2], &addr);
 
 	const char *end = flag;
-	FlagBits bits = g_Admins.ReadFlagString(flag, &end);
+	FlagBits bits = adminsys->ReadFlagString(flag, &end);
 
 	*addr = end - flag;
 

@@ -30,7 +30,6 @@ for i in SM.sdkInfo:
 		'CDataPack.cpp',
 		'frame_hooks.cpp',
 		'NativeInvoker.cpp',
-		'smn_admin.cpp',
 		'smn_fakenatives.cpp',
 		'smn_nextmap.cpp',
 		'sourcemm_api.cpp',

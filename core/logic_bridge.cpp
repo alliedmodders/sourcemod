@@ -47,6 +47,7 @@
 #include "logic_bridge.h"
 #include "DebugReporter.h"
 #include "PlayerManager.h"
+#include "AdminCache.h"
 
 static ILibrary *g_pLogic = NULL;
 static LogicInitFunction logic_init_fn;
@@ -116,6 +117,7 @@ static sm_core_t core_bridge =
 	&g_Forwards,
 	&g_Timers,
 	&g_Players,
+	&g_Admins,
 	/* Functions */
 	add_natives,
 	find_convar,

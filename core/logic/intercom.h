@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 6)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 7)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -66,6 +66,7 @@ namespace SourceMod
 	class ITimerSystem;
 	class IPlayerManager;
 	class IMemoryUtils;
+	class IAdminSystem;
 }
 
 class IVEngineServer;
@@ -92,6 +93,7 @@ struct sm_core_t
 	IForwardManager	*forwardsys;
 	ITimerSystem    *timersys;
 	IPlayerManager  *playerhelpers;
+	IAdminSystem	*adminsys;
 	/* Functions */
 	void			(*AddNatives)(sp_nativeinfo_t* nlist);
 	ConVar *		(*FindConVar)(const char*);

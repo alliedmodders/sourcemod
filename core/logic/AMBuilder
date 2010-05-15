@@ -33,6 +33,7 @@ files = [
 	'smn_timers.cpp',
 	'smn_players.cpp',
 	'MemoryUtils.cpp',
+	'smn_admin.cpp',
 	'sm_crc32.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':
