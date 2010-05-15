@@ -48,7 +48,6 @@ for i in SM.sdkInfo:
 		'LibrarySys.cpp',
 		'PlayerManager.cpp',
 		'smn_gameconfigs.cpp',
-		'smn_string.cpp',
 		'TimerSys.cpp',
 		'CoreConfig.cpp',
 		'Logger.cpp',

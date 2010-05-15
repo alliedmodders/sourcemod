@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -29,13 +29,12 @@
  * Version: $Id$
  */
 
+#include "common_logic.h"
 #include <string.h>
 #include <stdlib.h>
-#include "sm_globals.h"
-#include "sm_stringutil.h"
 #include <ITextParsers.h>
 #include <ctype.h>
-#include "logic_bridge.h"
+#include "stringutil.h"
 
 inline const char *_strstr(const char *str, const char *substr)
 {
@@ -69,7 +68,7 @@ static cell_t sm_contain(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &str);
 	pCtx->LocalToString(params[2], &substr);
 
-	func = (params[3]) ? _strstr : logicore.stristr;
+	func = (params[3]) ? _strstr : stristr;
 	const char *pos = func(str, substr);
 	if (pos)
 	{
@@ -142,7 +141,7 @@ static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str;
 	pCtx->LocalToString(params[2], &str);
-	size_t res = UTIL_Format(str, params[3], "%d", params[1]);
+	size_t res = smcore.Format(str, params[3], "%d", params[1]);
 
 	return static_cast<cell_t>(res);
 }
@@ -175,7 +174,7 @@ static cell_t sm_floattostr(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str;
 	pCtx->LocalToString(params[2], &str);
-	size_t res = UTIL_Format(str, params[3], "%f", sp_ctof(params[1]));
+	size_t res = smcore.Format(str, params[3], "%f", sp_ctof(params[1]));
 
 	return static_cast<cell_t>(res);
 }
@@ -188,7 +187,7 @@ static cell_t sm_formatex(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->LocalToString(params[1], &buf);
 	pCtx->LocalToString(params[3], &fmt);
-	res = atcprintf(buf, static_cast<size_t>(params[2]), fmt, pCtx, params, &arg);
+	res = smcore.atcprintf(buf, static_cast<size_t>(params[2]), fmt, pCtx, params, &arg);
 
 	return static_cast<cell_t>(res);
 }
@@ -257,7 +256,7 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 	}
 
 	buf = (copy) ? __copy_buf : destbuf;
-	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
+	res = smcore.atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
 
 	if (copy)
 	{
@@ -307,7 +306,7 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[3], &format);
 
-	size_t total = atcprintf(destination, maxlen, format, pContext, local_params, &vargPos);
+	size_t total = smcore.atcprintf(destination, maxlen, format, pContext, local_params, &vargPos);
 
 	/* Perform copy-on-write if we need to */
 	if (copy)
@@ -514,7 +513,7 @@ static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	return logicore.ReplaceAll(text, maxlength, search, replace, caseSensitive);
+	return UTIL_ReplaceAll(text, maxlength, search, replace, caseSensitive);
 }
 
 static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
@@ -546,7 +545,7 @@ static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	char *ptr = logicore.ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen, caseSensitive);
+	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen, caseSensitive);
 
 	if (ptr == NULL)
 	{

@@ -137,6 +137,7 @@ static sm_core_t core_bridge =
 	UTIL_Format,
 	generate_error,
 	gnprintf,
+	atcprintf,
 	&serverGlobals
 };
 
