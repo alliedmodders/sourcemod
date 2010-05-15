@@ -36,6 +36,7 @@
 #include <time.h>
 #endif
 #include <IPluginSys.h>
+#include "stringutil.h"
 
 ProfileEngine g_Profiler;
 IProfiler *sm_profiler = &g_Profiler;
@@ -386,9 +387,9 @@ void ProfileEngine::WriteReport(FILE *fp, ProfileReport *report, const char *nam
 	{
 		ar = report->GetReport(i);
 
-		smcore.strncopy(new_name, ar->atom_name, sizeof(new_name));
-		smcore.ReplaceAll(new_name, sizeof(new_name), "<", "&lt;", true);
-		smcore.ReplaceAll(new_name, sizeof(new_name), ">", "&gt;", true);
+		strncopy(new_name, ar->atom_name, sizeof(new_name));
+		UTIL_ReplaceAll(new_name, sizeof(new_name), "<", "&lt;", true);
+		UTIL_ReplaceAll(new_name, sizeof(new_name), ">", "&gt;", true);
 
 		fprintf(fp, "  <item name=\"%s\" numcalls=\"%d\" mintime=\"%f\" maxtime=\"%f\" totaltime=\"%f\"/>\n", 
 			new_name,

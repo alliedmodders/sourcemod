@@ -514,7 +514,7 @@ static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	return UTIL_ReplaceAll(text, maxlength, search, replace, caseSensitive);
+	return logicore.ReplaceAll(text, maxlength, search, replace, caseSensitive);
 }
 
 static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
@@ -546,7 +546,7 @@ static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	char *ptr = UTIL_ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen, caseSensitive);
+	char *ptr = logicore.ReplaceEx(text, maxlength, search, searchLen, replace, replaceLen, caseSensitive);
 
 	if (ptr == NULL)
 	{

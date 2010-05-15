@@ -34,6 +34,7 @@
 #include <IGameHelpers.h>
 #include <IPlayerHelpers.h>
 #include <IForwardSys.h>
+#include "stringutil.h"
 
 #define BANFLAG_AUTO	(1<<0)	/**< Auto-detects whether to ban by steamid or IP */
 #define BANFLAG_IP   	(1<<1)	/**< Always ban by IP address */
@@ -117,8 +118,8 @@ static cell_t BanIdentity(IPluginContext *pContext, const cell_t *params)
 
 	/* Sanitize the input */
 	char identity[64];
-	smcore.strncopy(identity, r_identity, sizeof(identity));
-	smcore.ReplaceAll(identity, sizeof(identity), ";", "", true);
+	strncopy(identity, r_identity, sizeof(identity));
+	UTIL_ReplaceAll(identity, sizeof(identity), ";", "", true);
 
 	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnBanIdentity->GetFunctionCount() > 0)
@@ -194,8 +195,8 @@ static cell_t RemoveBan(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char identity[64];
-	smcore.strncopy(identity, r_identity, sizeof(identity));
-	smcore.ReplaceAll(identity, sizeof(identity), ";", "", true);
+	strncopy(identity, r_identity, sizeof(identity));
+	UTIL_ReplaceAll(identity, sizeof(identity), ";", "", true);
 
 	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnRemoveBan->GetFunctionCount() > 0)

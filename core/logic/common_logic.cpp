@@ -74,7 +74,9 @@ static sm_logic_t logic =
 	UTIL_CRC32,
 	stristr,
 	CoreTranslate,
-	AddCorePhraseFile
+	AddCorePhraseFile,
+	UTIL_ReplaceAll,
+	UTIL_ReplaceEx
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)

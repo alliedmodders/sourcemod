@@ -123,11 +123,11 @@ void CPhraseFile::ReparseFile()
 	{
 		if (m_File.compare("common.cfg") == 0)
 		{
-			smcore.ReplaceAll(path, sizeof(path), "common.cfg", "common.phrases.txt", true);
+			UTIL_ReplaceAll(path, sizeof(path), "common.cfg", "common.phrases.txt", true);
 		} else if (strstr(path, ".cfg")) {
-			smcore.ReplaceAll(path, sizeof(path), ".cfg", ".txt", true);
+			UTIL_ReplaceAll(path, sizeof(path), ".cfg", ".txt", true);
 		} else if (strstr(path, ".txt")) {
-			smcore.ReplaceAll(path, sizeof(path), ".txt", ".cfg", true);
+			UTIL_ReplaceAll(path, sizeof(path), ".txt", ".cfg", true);
 		}
 	}
 

@@ -135,7 +135,6 @@ static sm_core_t core_bridge =
 	log_error,
 	get_cvar_string,
 	UTIL_Format,
-	UTIL_ReplaceAll,
 	generate_error,
 	gnprintf,
 	&serverGlobals
