@@ -928,14 +928,14 @@ bool CGameConfig::GetAddress(const char *key, void **retaddr)
 	return true;
 }
 
-static inline unsigned min(unsigned a, unsigned b)
+static inline unsigned minOf(unsigned a, unsigned b)
 {
 	return a <= b ? a : b;
 }
 
 CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read)
 {
-	unsigned readLimit = min(readCount, sizeof(this->read) / sizeof(this->read[0]));
+	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
 	strncopy(signatureName, sigName, sizeof(signatureName) / sizeof(signatureName[0]));
 	this->readCount = readLimit;
