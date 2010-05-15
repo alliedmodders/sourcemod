@@ -1274,37 +1274,6 @@ done:
 	return (maxlen - llen - 1);
 }
 
-const char *stristr(const char *str, const char *substr)
-{
-	if (!*substr)
-	{
-		return ((char *)str);
-	}
-
-	char *needle = (char *)substr;
-	char *prevloc = (char *)str;
-	char *haystack = (char *)str;
-
-	while (*haystack)
-	{
-		if (tolower(*haystack) == tolower(*needle))
-		{
-			haystack++;
-			if (!*++needle)
-			{
-				return prevloc;
-			}
-		}
-		else
-		{
-			haystack = ++prevloc;
-			needle = (char *)substr;
-		}
-	}
-
-	return NULL;
-}
-
 unsigned int strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)

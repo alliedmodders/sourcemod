@@ -43,7 +43,6 @@ using namespace SourceMod;
 #define IS_STR_FILLED(var) (var[0] != '\0')
 
 size_t atcprintf(char *buffer, size_t maxlen, const char *format, IPluginContext *pCtx, const cell_t *params, int *param);
-const char *stristr(const char *str, const char *substr);
 unsigned int strncopy(char *dest, const char *src, size_t count);
 bool gnprintf(char *buffer,
 			  size_t maxlen,

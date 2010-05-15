@@ -38,6 +38,7 @@
 #include "Profiler.h"
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
+#include "stringutil.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -63,7 +64,8 @@ static sm_logic_t logic =
 	g_pThreader,
 	sm_profiler,
 	&g_MemUtils,
-	UTIL_CRC32
+	UTIL_CRC32,
+	stristr
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)

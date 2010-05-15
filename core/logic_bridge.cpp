@@ -57,6 +57,7 @@ IThreader *g_pThreader;
 ITextParsers *textparsers;
 SM_FN_CRC32 UTIL_CRC32;
 IMemoryUtils *memutils;
+sm_logic_t logicore;
 
 class VEngineServer_Logic : public IVEngineServer_Logic
 {
@@ -140,14 +141,12 @@ static sm_core_t core_bridge =
 
 void InitLogicBridge()
 {
-	sm_logic_t logic;
-
 	serverGlobals.universalTime = g_pUniversalTime;
 	serverGlobals.frametime = &gpGlobals->frametime;
 	serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
 	core_bridge.core_ident = g_pCoreIdent;
-	logic_init_fn(&core_bridge, &logic);
+	logic_init_fn(&core_bridge, &logicore);
 
 	/* Add SMGlobalClass instances */
 	SMGlobalClass* glob = SMGlobalClass::head;
@@ -156,12 +155,12 @@ void InitLogicBridge()
 		glob = glob->m_pGlobalClassNext;
 	}
 	assert(glob->m_pGlobalClassNext == NULL);
-	glob->m_pGlobalClassNext = logic.head;
+	glob->m_pGlobalClassNext = logicore.head;
 
-	g_pThreader = logic.threader;
-	g_pSourcePawn2->SetProfiler(logic.profiler);
-	UTIL_CRC32 = logic.CRC32;
-	memutils = logic.memutils;
+	g_pThreader = logicore.threader;
+	g_pSourcePawn2->SetProfiler(logicore.profiler);
+	UTIL_CRC32 = logicore.CRC32;
+	memutils = logicore.memutils;
 }
 
 bool StartLogicBridge(char *error, size_t maxlength)

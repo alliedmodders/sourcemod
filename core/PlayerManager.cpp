@@ -49,6 +49,7 @@
 #include "ExtensionSys.h"
 #include <sourcemod_version.h>
 #include "ConsoleDetours.h"
+#include "logic_bridge.h"
 
 PlayerManager g_Players;
 bool g_OnMapStarted = false;
@@ -1300,7 +1301,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			continue;
 		}
 
-		if (stristr(pTarget->GetName(), info->pattern) != NULL)
+		if (logicore.stristr(pTarget->GetName(), info->pattern) != NULL)
 		{
 			if (found_client)
 			{

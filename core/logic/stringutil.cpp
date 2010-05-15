@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 sw=4 :
+ * vim: set ts=4 sw=4 tw=99 et :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
@@ -28,21 +28,40 @@
  *
  * Version: $Id$
  */
-#ifndef _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_
-#define _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_
 
-#include "logic/intercom.h"
+#include <string.h>
+#include <ctype.h>
+#include "stringutil.h"
 
-void InitLogicBridge();
-bool StartLogicBridge(char *error, size_t maxlength);
-void ShutdownLogicBridge();
+const char *stristr(const char *str, const char *substr)
+{
+	if (!*substr)
+	{
+		return ((char *)str);
+	}
 
-struct sm_logic_t;
+	char *needle = (char *)substr;
+	char *prevloc = (char *)str;
+	char *haystack = (char *)str;
 
-typedef unsigned int (*SM_FN_CRC32)(const void *, size_t);
+	while (*haystack)
+	{
+		if (tolower(*haystack) == tolower(*needle))
+		{
+			haystack++;
+			if (!*++needle)
+			{
+				return prevloc;
+			}
+		}
+		else
+		{
+			haystack = ++prevloc;
+			needle = (char *)substr;
+		}
+	}
 
-extern SM_FN_CRC32 UTIL_CRC32;
-extern sm_logic_t logicore;
+	return NULL;
+}
 
-#endif /* _INCLUDE_SOURCEMOD_LOGIC_BRIDGE_H_ */
 

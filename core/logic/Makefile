@@ -31,6 +31,7 @@ OBJECTS = \
 	MemoryUtils.cpp		\
 	smn_admin.cpp		\
 	smn_banning.cpp		\
+	stringutil.cpp		\
 	smn_players.cpp
 
 ##############################################

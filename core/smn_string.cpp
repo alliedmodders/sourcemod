@@ -35,6 +35,7 @@
 #include "sm_stringutil.h"
 #include <ITextParsers.h>
 #include <ctype.h>
+#include "logic_bridge.h"
 
 inline const char *_strstr(const char *str, const char *substr)
 {
@@ -68,7 +69,7 @@ static cell_t sm_contain(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &str);
 	pCtx->LocalToString(params[2], &substr);
 
-	func = (params[3]) ? _strstr : stristr;
+	func = (params[3]) ? _strstr : logicore.stristr;
 	const char *pos = func(str, substr);
 	if (pos)
 	{
