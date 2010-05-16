@@ -78,8 +78,8 @@ static char g_GameName[256] = {'$', '\0'};
 #define PLATFORM_NAME				"linux"
 #define PLATFORM_SERVER_BINARY		"server_i486.so"
 #elif defined PLATFORM_APPLE
-#define PLATFORM_NAME               "undef"
-#define PLATFORM_SERVER_BINARY      "undef.dylib"
+#define PLATFORM_NAME               "mac"
+#define PLATFORM_SERVER_BINARY      "server.dylib"
 #endif
 
 struct TempSigInfo
@@ -299,7 +299,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			else
 			{
-				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0)
+				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0)
 				{
 					smcore.LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
 					smcore.LogError("[SM] Unrecognized platform \"%s\"", name);
