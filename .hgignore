@@ -1,5 +1,6 @@
 # Binaries
 \.dll$
+\.dylib$
 \.exe$
 \.so$
 
