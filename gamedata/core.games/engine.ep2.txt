@@ -22,6 +22,7 @@
 			"game"		"garrysmod"
 			"game"		"pvkii"
 			"game"		"gesource"
+			"game"		"empires"
 		}
 		
 		"Offsets"
