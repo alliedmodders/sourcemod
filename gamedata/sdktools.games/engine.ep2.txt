@@ -128,6 +128,7 @@
 			"game"		"garrysmod"
 			"game"		"pvkii"
 			"game"		"gesource"
+			"game"		"RnLBeta"
 		}
 		
 		"Offsets"

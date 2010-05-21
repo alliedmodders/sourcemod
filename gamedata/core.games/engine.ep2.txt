@@ -23,6 +23,7 @@
 			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"empires"
+			"game"		"RnLBeta"
 		}
 		
 		"Offsets"

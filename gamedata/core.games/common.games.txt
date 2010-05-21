@@ -140,6 +140,7 @@
 			"game"					"zps"
 			"game"					"gesource"
 			"game"					"cstrike_beta"
+			"game"					"RnLBeta"
 		}
 
 		"Keys"
@@ -167,6 +168,7 @@
 			"game"					"obsidian"
 			"game"					"cstrike"
 			"game"					"cstrike_beta"
+			"game"					"RnLBeta"
 		}
 		
 		"Keys"
@@ -194,6 +196,7 @@
 			"game"					"pvkii"
 			"game"					"zps"
 			"game"					"gesource"
+			"game"					"RnLBeta"
 		}
 		
 		"Keys"
