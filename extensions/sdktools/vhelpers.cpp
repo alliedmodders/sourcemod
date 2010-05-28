@@ -811,6 +811,11 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 		typedescription_t *datamap = gamehelpers->FindInDataMap(pMap, "m_iEFlags");
 		
+		if (!datamap)
+		{
+			continue;
+		}
+		
 		int *eflags = (int *)((char *)entity->GetBaseEntity() + datamap->fieldOffset[TD_OFFSET_NORMAL]);
 		*eflags |= (1<<0); // EFL_KILLME
 	}
