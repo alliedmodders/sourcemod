@@ -149,6 +149,19 @@ class SM:
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-mmacosx-version-min=10.5')
 				self.compiler.AddToListVar('POSTLINKFLAGS', ['-arch', 'i386'])
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-lstdc++')
+
+				# For OS X dylib versioning
+				import re
+				productFile = open(os.path.join(AMBuild.sourceFolder, 'product.version'), 'r')
+				productContents = productFile.read()
+				productFile.close()
+				m = re.match('(\d+)\.(\d+)\.(\d+).*', productContents)
+				if m == None:
+					self.version = '1.0.0'
+				else:
+					major, minor, release = m.groups()
+					self.version = '{0}.{1}.{2}'.format(major, minor, release)
+				AMBuild.cache.CacheVariable('version', self.version)
 			elif AMBuild.target['platform'] == 'windows':
 				self.compiler.AddToListVar('CDEFINES', 'WIN32')
 				self.compiler.AddToListVar('CDEFINES', '_WINDOWS')
@@ -195,10 +208,14 @@ class SM:
 		return compiler
 
 	def AutoVersion(self, folder, binary):
-		if AMBuild.target['platform'] != 'windows':
+		if AMBuild.target['platform'] == 'windows':
+			env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"', 'SM_GENERATED_BUILD']}
+			binary.AddResourceFile(os.path.join(folder, 'version.rc' ), env)
+		elif AMBuild.target['platform'] == 'darwin' and isinstance(binary, Cpp.LibraryBuilder):
+			binary.compiler['POSTLINKFLAGS'].extend(['-compatibility_version', '1.0.0'])
+			binary.compiler['POSTLINKFLAGS'].extend(['-current_version', AMBuild.cache['version']])
+		else:
 			return
-		env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"', 'SM_GENERATED_BUILD']}
-		binary.AddResourceFile(os.path.join(folder, 'version.rc' ), env)
 
 	def PreSetupHL2Job(self, job, builder, sdk):
 		info = self.sdkInfo[sdk]
