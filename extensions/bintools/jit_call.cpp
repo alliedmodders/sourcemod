@@ -566,8 +566,19 @@ jit_rewind:
 
 	if ((pRet->type == PassType_Object) && (pRet->flags & PASSFLAG_BYVAL))
 	{
-#ifdef PLATFORM_POSIX
+#ifdef PLATFORM_LINUX
 		Needs_Retbuf = true;
+#elif defined PLATFORM_APPLE
+		/*
+		 * On OS X, need retbuf if size > 8 or not power of 2.
+		 *
+		 * See Mac OS X ABI Function Call Guide:
+		 * http://developer.apple.com/mac/library/DOCUMENTATION/DeveloperTools/Conceptual/LowLevelABI/130-IA-32_Function_Calling_Conventions/IA32.html#//apple_ref/doc/uid/TP40002492-SW5
+		 */
+		if (pRet->size > 8 || (pRet->size & (pRet->size - 1)) != 0)
+		{
+			Needs_Retbuf = true;
+		}
 #elif defined PLATFORM_WINDOWS
 		if ((Convention == CallConv_ThisCall) ||
 			((Convention == CallConv_Cdecl) &&
