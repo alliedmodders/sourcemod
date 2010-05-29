@@ -57,7 +57,7 @@ int busy_handler(void *unused1, int unused2)
 {
 #if defined PLATFORM_WINDOWS
 	Sleep(100);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	usleep(100000);
 #endif
 	return 1;

@@ -52,7 +52,7 @@ struct patch_t
 
 inline void ProtectMemory(void *addr, int length, int prot)
 {
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_POSIX
 	void *addr2 = (void *)ALIGN(addr);
 	mprotect(addr2, sysconf(_SC_PAGESIZE), prot);
 #elif defined PLATFORM_WINDOWS

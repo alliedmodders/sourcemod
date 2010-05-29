@@ -116,7 +116,7 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	char *sig;
 	pContext->LocalToString(params[2], &sig);
 
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_POSIX
 	if (sig[0] == '@')
 	{
 		Dl_info info;

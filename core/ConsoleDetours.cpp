@@ -51,7 +51,7 @@
 #include "ConCommandBaseIterator.h"
 #include "ShareSys.h"
 
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_POSIX
 # include <dlfcn.h>
 # include <sys/mman.h>
 # include <stdint.h>

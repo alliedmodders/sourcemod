@@ -34,7 +34,7 @@
 
 //Note: Do not add this to Linux yet, i haven't done the HPET timing research (if even available)
 //nonetheless we need accurate counting
-#if !defined PLATFORM_LINUX
+#if !defined PLATFORM_LINUX && !defined PLATFORM_APPLE
 
 struct Profiler
 {

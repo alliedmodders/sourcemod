@@ -124,7 +124,7 @@ bool EntityOutputManager::CreateFireEventDetour()
 
 	IA32_Push_Reg(jit, REG_ECX);
 
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	IA32_Push_Rm_Disp8_ESP(jit, 20);
 	IA32_Push_Rm_Disp8_ESP(jit, 20);
 	IA32_Push_Rm_Disp8_ESP(jit, 20);
@@ -136,7 +136,7 @@ bool EntityOutputManager::CreateFireEventDetour()
 	IA32_Write_Jump32_Abs(jit, call, (void *)TempDetour);
 
 	
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);		//add esp, 4
 #elif defined PLATFORM_WINDOWS
 	IA32_Pop_Reg(jit, REG_ECX);

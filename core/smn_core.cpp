@@ -46,7 +46,7 @@
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 #include <limits.h>
 #include <unistd.h>
 #include <sys/times.h>
@@ -407,7 +407,7 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 {
 #if defined PLATFORM_WINDOWS
 	return (cell_t)GetTickCount();
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	tms tm;
 	clock_t ticks = times(&tm);
 	long ticks_per_sec = sysconf(_SC_CLK_TCK);
@@ -419,9 +419,6 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 		fticks -= r;
 	}
 	return (cell_t)fticks;
-#elif defined PLATFORM_APPLE
-	assert(false);
-	return 0;
 #endif
 }
 

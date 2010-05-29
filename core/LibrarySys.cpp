@@ -241,7 +241,7 @@ bool LibrarySystem::IsPathDirectory(const char *path)
 		return true;
 	}
 
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_POSIX
 	struct stat s;
 
 	if (stat(path, &s) != 0)

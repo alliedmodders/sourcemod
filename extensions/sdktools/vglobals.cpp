@@ -54,7 +54,7 @@ void InitializeValveGlobals()
 		return;
 	}
 	g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	/* g_pGameRules */
 	if (!g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
 	{

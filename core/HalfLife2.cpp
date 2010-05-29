@@ -153,7 +153,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 		return;
 	}
 	g_EntList = *reinterpret_cast<void **>(addr + offset);
-#elif defined PLATFORM_LINUX
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 	/* gEntList and/or g_pEntityList */
 	if (!g_pGameConf->GetMemSig("gEntList", (void **)&addr))
 	{

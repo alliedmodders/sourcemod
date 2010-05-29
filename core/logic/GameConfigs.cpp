@@ -43,7 +43,7 @@
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
 
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_POSIX
 #include <dlfcn.h>
 #endif
 
@@ -523,7 +523,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					s_TempSig.library, 
 					m_CurFile);
 			} else {
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_POSIX
 				if (s_TempSig.sig[0] == '@')
 				{
 					Dl_info info;
@@ -570,7 +570,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				}
 			}
 
-#if defined PLATFORM_LINUX
+#if defined PLATFORM_POSIX
 skip_find:
 #endif
 			m_Sigs.replace(m_offset, final_addr);
