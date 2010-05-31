@@ -230,7 +230,7 @@ public Extension:__ext_tf2 =
 {
 	name = "TF2 Tools",
 	file = "game.tf2.ext",
-	autoload = 1,
+	autoload = 0,
 #if defined REQUIRE_EXTENSIONS
 	required = 1,
 #else
