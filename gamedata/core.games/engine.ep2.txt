@@ -24,6 +24,7 @@
 			"game"		"gesource"
 			"game"		"empires"
 			"game"		"RnLBeta"
+			"game"		"obsidian"
 		}
 		
 		"Offsets"

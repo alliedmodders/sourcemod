@@ -11,90 +11,128 @@
 
 "Games"
 {
-	/* Obsidian Conflict 1.3 */
+	/* Obsidian Conflict 1.35 */
 	"obsidian"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"350"
-				"linux"		"351"
+				"windows"	"351"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"237"
-				"linux"		"238"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"235"
-				"linux"		"236"
 			}
 			"Ignite"
 			{
 				"windows"	"190"
-				"linux"		"191"
 			}
 			"Extinguish"
 			{
 				"windows"	"194"
-				"linux"		"195"
 			}
 			"Teleport"
 			{
 				"windows"	"100"
-				"linux"		"101"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"395"
-				"linux"		"395"
+				"windows"	"396"
 			}
 			"GetVelocity"
 			{
 				"windows"	"127"
-				"linux"		"128"
 			}
 			"EyeAngles"
 			{
 				"windows"	"119"
-				"linux"		"120"
 			}
 			"AcceptInput"
 			{
 				"windows"	"34"
-				"linux"		"35"
 			}
 			"DispatchKeyValue"
 			{
 				"windows"	"29"
-				"linux"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
 				"windows"	"28"
-				"linux"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
 				"windows"	"27"
-				"linux"		"30"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"23"
-				"linux"		"24"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"228"
-				"linux"		"229"
 			}
 			"Activate"
 			{
 				"windows"	"31"
-				"linux"		"32"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"371"
+			}
+			
+			/* Offset into CBaseTempEntity constructor (vs2010 moved it!) */
+			"s_pTempEntities"
+			{
+				"windows"	"19"
+			}
+			"GetTEName"
+			{
+				"windows"	"4"
+			}
+			"GetTENext"
+			{
+				"windows"	"8"
+			}
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+			}
+			"FireOutputBackup"
+			{
+				"windows"	"9"
+			}
+		}
+		"Signatures"
+		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x8B\x15\x2A\x2A\x2A\x2A\x89"
+			}
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x51\x53\x56\x8B\x75\x2A\x57\x85\xF6\x0F\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x8B"
+			}
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x56\x8B\x2A\x2A\x57\x8B\x2A\x2A\x83\x2A\x2A\x74\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x2A\x56\xFF\xD2"
+			}
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x2A\x2A\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\x2A\x2A\x2A\x2A\x40\x03\xC0\x8B\x3C\xC6\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74"
+			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x56\x8B\x2A\x2A\x57\x89"
 			}
 		}
 	}

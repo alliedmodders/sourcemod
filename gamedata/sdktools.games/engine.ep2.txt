@@ -24,7 +24,6 @@
 			"game"		"garrysmod"
 			"game"		"pvkii"
 			"game"		"gesource"
-			"game"		"obsidian"
 		}
 
 		"Offsets"
@@ -129,6 +128,7 @@
 			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"RnLBeta"
+			"game"		"obsidian"
 		}
 		
 		"Offsets"
