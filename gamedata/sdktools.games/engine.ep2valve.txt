@@ -33,16 +33,19 @@
 			{
 				"windows"	"4"
 				"linux"		"4"
+				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
+				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
+				"mac"		"0"
 			}
 		}
 
@@ -57,6 +60,7 @@
 			{
 				"library"	"server"
 				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
 		}
 	}
@@ -78,12 +82,14 @@
 			{
 				"library"	"server"
 				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+				"mac"		"@_Z13DispatchSpawnP11CBaseEntity"
 				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
 			}
 			"CreateEntityByName"
 			{
 				"library"	"server"
 				"linux"		"@_Z18CreateEntityByNamePKci"
+				"mac"		"@_Z18CreateEntityByNamePKci"
 				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
 			}
 		}
@@ -108,6 +114,7 @@
 				"library"	"server"
 				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -151,6 +158,7 @@
 			{
 				"library"	"server"
 				"linux"		"@g_pGameRules"
+				"mac"		"@g_pGameRules"
 			}
 		}
 	}
@@ -187,6 +195,7 @@
 			{
 				"library"	"engine"
 				"linux"		"@sv"
+				"mac"		"@sv"
 			}
 		}
 	}
@@ -201,6 +210,7 @@
 				"library"	"server"
 				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}
@@ -222,6 +232,7 @@
 				"library"	"server"
 				"windows"	"\x81\xEC\x1C\x01\x00\x00\x53\x55\x56\x8B\x71\x14\x85\xF6"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 		"Offsets"
@@ -230,6 +241,7 @@
 			{
 				"windows"	"6"
 				"linux"		"12"
+				"mac"		"6"
 			}
 		}
 	}
@@ -249,6 +261,7 @@
 			{
 				"windows"	"17"
 				"linux"		"56"
+				"mac"		"56"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -260,6 +273,7 @@
 			{
 				"windows"	"140"
 				"linux"		"140"
+				"mac"		"140"
 			}
 		}
 	}
