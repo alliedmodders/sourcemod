@@ -313,8 +313,6 @@ void CookieManager::ClientConnectCallback(int serial, IQuery *data)
 			row->GetInt(3, (int *)&access);
 
 			parent = CreateCookie(name, desc, access);
-			cookieTrie.insert(name, parent);
-			cookieList.push_back(parent);
 		}
 
 		pData->parent = parent;
