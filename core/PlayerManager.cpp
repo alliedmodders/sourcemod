@@ -466,7 +466,7 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 			pListener->OnClientConnected(client);
 			if (!pPlayer->IsConnected())
 			{
-				break;
+				return true;
 			}
 		}
 
@@ -520,6 +520,11 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 				return;
 			}
 		}
+
+		cell_t res;
+		OnClientConnected->PushCell(client);
+		OnClientConnected->Execute(&res, NULL);
+
 		/* Now do authorization */
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
