@@ -199,13 +199,13 @@ void SDKTools::OnClientDisconnecting(int client)
 			g_VoiceMap[i][client] = Listen_Default;
 			if (DecHookCount())
 			{
-				return;
+				break;
 			}
 		}
 	}
 
-	/* Reset this client's mutes, just in case */
-	memset(&g_ClientMutes[client], 0, sizeof(int) * 65);
+	/* Reset this client's mutes */
+	memset(&g_ClientMutes[client], 0, sizeof(bool) * 65);
 
 	/* Reset other clients who send to this client */
 	if (g_ClientOverrides[client] > 0)
@@ -213,7 +213,6 @@ void SDKTools::OnClientDisconnecting(int client)
 		DecHookCount(g_ClientOverrides[client]);
 		g_ClientOverrides[client] = 0;
 		memset(&g_VoiceMap[client], false, sizeof(ListenOverride) * 65);
-		memset(&g_ClientMutes[client], false, sizeof(bool) * 65);
 	}
 
 	if (g_VoiceFlags[client])
