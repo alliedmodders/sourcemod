@@ -250,10 +250,11 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 
 #elif defined PLATFORM_APPLE
 	
-	uintptr_t dlbase;
+	uintptr_t dlbase, linkedit_addr;
 	uint32_t image_count;
 	struct mach_header *file_hdr;
 	struct load_command *loadcmds;
+	struct segment_command *linkedit_hdr;
 	struct symtab_command *symtab_hdr;
 	struct nlist *symtab;
 	const char *strtab;
@@ -265,7 +266,9 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	
 	dlbase = 0;
 	image_count = m_ImageList->infoArrayCount;
+	linkedit_hdr = NULL;
 	symtab_hdr = NULL;
+	table = NULL;
 	
 	/* Loop through mach-o images in process.
 	 * We can skip index 0 since that is just the executable.
@@ -327,27 +330,43 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	loadcmds = (struct load_command *)(dlbase + sizeof(struct mach_header));
 	loadcmd_count = file_hdr->ncmds;
 	
-	/* Loop through load commands until we find the one for the symbol table */
+	/* Loop through load commands until we find the ones for the symbol table */
 	for (uint32_t i = 0; i < loadcmd_count; i++)
 	{
-		if (loadcmds->cmd == LC_SYMTAB)
+		if (loadcmds->cmd == LC_SEGMENT && !linkedit_hdr)
+		{
+			struct segment_command *seg = (struct segment_command *)loadcmds;
+			if (strcmp(seg->segname, "__LINKEDIT") == 0)
+			{
+				linkedit_hdr = seg;
+				if (symtab_hdr)
+				{
+					break;
+				}
+			}
+		}
+		else if (loadcmds->cmd == LC_SYMTAB)
 		{
 			symtab_hdr = (struct symtab_command *)loadcmds;
-			break;
+			if (linkedit_hdr)
+			{
+				break;
+			}
 		}
-		
+
 		/* Load commands are not of a fixed size which is why we add the size */
 		loadcmds = (struct load_command *)((uintptr_t)loadcmds + loadcmds->cmdsize);
 	}
 	
-	if (!symtab_hdr || !symtab_hdr->symoff || !symtab_hdr->stroff)
+	if (!linkedit_hdr || !symtab_hdr || !symtab_hdr->symoff || !symtab_hdr->stroff)
 	{
 		/* Uh oh, no symbol table */
 		return NULL;
 	}
-	
-	symtab = (struct nlist *)(dlbase + symtab_hdr->symoff);
-	strtab = (const char *)(dlbase + symtab_hdr->stroff);
+
+	linkedit_addr = dlbase + linkedit_hdr->vmaddr;
+	symtab = (struct nlist *)(linkedit_addr + symtab_hdr->symoff - linkedit_hdr->fileoff);
+	strtab = (const char *)(linkedit_addr + symtab_hdr->stroff - linkedit_hdr->fileoff);
 	symbol_count = symtab_hdr->nsyms;
 	
 	/* Iterate symbol table starting from the position we were at last time */
