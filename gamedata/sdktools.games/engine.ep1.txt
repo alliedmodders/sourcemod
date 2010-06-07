@@ -235,6 +235,7 @@
 			"game"		"cstrike"
 			"game"		"hl2mp"
 			"game"		"NeotokyoSource"
+			"game"		"zombie_master"
 		}
 		"Signatures"
 		{
