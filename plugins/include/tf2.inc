@@ -92,6 +92,7 @@ enum TFCond
 	TFCond_Buffed,
 	TFCond_Charging,
 	TFCond_DemoBuff,
+	TFCond_CritCola,
 	TFCond_Healing,
 	TFCond_OnFire,
 	TFCond_Overhealed,
