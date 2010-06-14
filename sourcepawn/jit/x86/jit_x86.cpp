@@ -1733,13 +1733,8 @@ inline void WriteOp_Switch(JitWriter *jit)
 			for (cell_t i=0; i<num_cases; i++)
 			{
 				val = cases[i].val;
-				//cmp eax, <val> OR cmp al, <val>
-				if (val >= SCHAR_MIN && val <= SCHAR_MAX)
-				{
-					IA32_Cmp_Al_Imm8(jit, val);
-				} else {
-					IA32_Cmp_Eax_Imm32(jit, cases[i].val);
-				}
+				//cmp eax, <val>
+				IA32_Cmp_Eax_Imm32(jit, val);
 				IA32_Jump_Cond_Imm32_Rel(jit, CC_E, RelocLookup(jit, cases[i].offs, false));
 			}
 			/* After all this, jump to the default case! */
