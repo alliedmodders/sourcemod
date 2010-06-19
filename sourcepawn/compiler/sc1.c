@@ -2341,7 +2341,10 @@ static int declloc(int fstatic)
           stradjust(sPRI);
         }
         pushreg(sPRI);
+		/* No idea why this is here, but it throws away dimension info which
+		   would otherwise be used by addvariable2 below.  
         memset(dim, 0, sizeof(int)*sDIMEN_MAX);
+		*/
         ident = iREFARRAY;
         genarray(numdim, autozero);
       }
