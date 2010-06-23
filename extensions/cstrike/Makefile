@@ -2,11 +2,11 @@
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..
-SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
+HL2SDK_L4D2 = ../../../hl2sdk-l4d2
 MMSOURCE17 = ../../../mmsource-1.7
 
 #####################################
@@ -31,74 +31,96 @@ CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
 CPP = gcc
 
 override ENGSET = false
-ifeq "$(ENGINE)" "original"
-	HL2SDK = $(HL2SDK_ORIG)
-	HL2PUB = $(HL2SDK)/public
-	HL2LIB = $(HL2SDK)/linux_sdk
-	CFLAGS += -DSOURCE_ENGINE=1
-	METAMOD = $(MMSOURCE17)/core-legacy
-	INCLUDE += -I$(HL2SDK)/public/dlls
-	SRCDS = $(SRCDS_BASE)
-	GAMEFIX = 1.ep1
-	override ENGSET = true
-endif
-ifeq "$(ENGINE)" "orangebox"
-	HL2SDK = $(HL2SDK_OB)
-	HL2PUB = $(HL2SDK)/public
-	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=3
-	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server
-	SRCDS = $(SRCDS_BASE)/orangebox
-	GAMEFIX = 2.ep2
-	override ENGSET = true
-endif
-ifeq "$(ENGINE)" "orangeboxvalve"
-	HL2SDK = $(HL2SDK_OB_VALVE)
-	HL2PUB = $(HL2SDK)/public
-	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=4
-	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server
-	SRCDS = $(SRCDS_BASE)/orangebox
-	GAMEFIX = 2.ep2v
-	override ENGSET = true
-endif
-ifeq "$(ENGINE)" "left4dead"
-	HL2SDK = $(HL2SDK_L4D)
-	HL2PUB = $(HL2SDK)/public
-	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=5
-	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server
-	SRCDS = $(SRCDS_BASE)/l4d
-	GAMEFIX = 2.l4d
+
+# Check for valid list of engines
+ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2,$(ENGINE)))
 	override ENGSET = true
 endif
 
+ifeq "$(ENGINE)" "original"
+	HL2SDK = $(HL2SDK_ORIG)
+	CFLAGS += -DSOURCE_ENGINE=1
+	GAMEFIX = 1.ep1
+endif
+ifeq "$(ENGINE)" "orangebox"
+	HL2SDK = $(HL2SDK_OB)
+	CFLAGS += -DSOURCE_ENGINE=3
+	GAMEFIX = 2.ep2
+endif
+ifeq "$(ENGINE)" "orangeboxvalve"
+	HL2SDK = $(HL2SDK_OB_VALVE)
+	CFLAGS += -DSOURCE_ENGINE=4
+	GAMEFIX = 2.ep2v
+endif
+ifeq "$(ENGINE)" "left4dead"
+	HL2SDK = $(HL2SDK_L4D)
+	CFLAGS += -DSOURCE_ENGINE=5
+	GAMEFIX = 2.l4d
+endif
+ifeq "$(ENGINE)" "left4dead2"
+	HL2SDK = $(HL2SDK_L4D2)
+	CFLAGS += -DSOURCE_ENGINE=6
+	GAMEFIX = 2.l4d2
+endif
+
+HL2PUB = $(HL2SDK)/public
+
+ifeq "$(ENGINE)" "original"
+	INCLUDE += -I$(HL2SDK)/public/dlls
+	METAMOD = $(MMSOURCE17)/core-legacy
+else
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	METAMOD = $(MMSOURCE17)/core
+endif
+
+OS := $(shell uname -s)
+
+ifeq "$(OS)" "Darwin"
+	LIB_EXT = dylib
+	HL2LIB = $(HL2SDK)/lib/mac
+else
+	LIB_EXT = so
+	ifeq "$(ENGINE)" "original"
+		HL2LIB = $(HL2SDK)/linux_sdk
+	else
+		HL2LIB = $(HL2SDK)/lib/linux
+	endif
+endif
+
+# if ENGINE is orig, OB, or L4D
+ifneq (,$(filter original orangebox left4dead,$(ENGINE)))
+	LIB_SUFFIX = _i486.$(LIB_EXT)
+else
+	LIB_PREFIX = lib
+	LIB_SUFFIX = .$(LIB_EXT)
+endif
+
 ifeq "$(USEMETA)" "true"
-	LINK_HL2 = $(HL2LIB)/tier1_i486.a tier0_i486.so
+	LINK_HL2 = $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) $(LIB_PREFIX)tier0$(LIB_SUFFIX)
 
 	LINK += $(LINK_HL2)
 
 	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
 		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/extensions \
 		-I$(SMSDK)/public/sourcepawn
-	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5
+	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 \
+		-DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 endif
 
 LINK += -m32 -ldl -lm
 
-CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -mfpmath=sse \
-	-msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
+CFLAGS += -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
+	-mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
 ### DO NOT EDIT BELOW HERE FOR MOST PROJECTS ###
 ################################################
+
+BINARY = $(PROJECT).ext.$(GAMEFIX).$(LIB_EXT)
 
 ifeq "$(DEBUG)" "true"
 	BIN_DIR = Debug
@@ -112,13 +134,14 @@ ifeq "$(USEMETA)" "true"
 	BIN_DIR := $(BIN_DIR).$(ENGINE)
 endif
 
-OS := $(shell uname -s)
 ifeq "$(OS)" "Darwin"
-	LINK += -dynamiclib
-	BINARY = $(PROJECT).ext.$(GAMEFIX).dylib
+	LIB_EXT = dylib
+	CFLAGS += -isysroot /Developer/SDKs/MacOSX10.5.sdk
+	LINK += -dynamiclib -lstdc++ -mmacosx-version-min=10.5
 else
-	LINK += -static-libgcc -shared
-	BINARY = $(PROJECT).ext.$(GAMEFIX).so
+	LIB_EXT = so
+	CFLAGS += -D_LINUX
+	LINK += -shared
 endif
 
 GCC_VERSION := $(shell $(CPP) -dumpversion >&1 | cut -b1)
@@ -127,7 +150,7 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
+OBJ_BIN := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
@@ -135,18 +158,20 @@ $(BIN_DIR)/%.o: %.cpp
 all: check
 	mkdir -p $(BIN_DIR)/sdk
 	if [ "$(USEMETA)" = "true" ]; then \
-		ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so; \
+		ln -sf $(HL2LIB)/$(LIB_PREFIX)vstdlib$(LIB_SUFFIX); \
+		ln -sf $(HL2LIB)/$(LIB_PREFIX)tier0$(LIB_SUFFIX); \
 	fi
 	$(MAKE) -f Makefile extension
 
 check:
 	if [ "$(USEMETA)" = "true" ] && [ "$(ENGSET)" = "false" ]; then \
-		echo "You must supply ENGINE=left4dead or ENGINE=orangebox or ENGINE=original"; \
+		echo "You must supply one of the following values for ENGINE:"; \
+		echo "left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
 		exit 1; \
 	fi
 
-extension: check $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -o $(BIN_DIR)/$(BINARY)
+extension: check $(OBJ_BIN)
+	$(CPP) $(INCLUDE) $(OBJ_BIN) $(LINK) -o $(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) -f Makefile all DEBUG=true
