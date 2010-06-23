@@ -55,7 +55,7 @@ extern sp_nativeinfo_t g_CSNatives[];
 
 bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0)
+	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0 && strcmp(g_pSM->GetGameFolderName(), "cstrike_beta") != 0)
 	{
 		snprintf(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S");
 		return false;
