@@ -21,3 +21,22 @@ if AMBuild.target['platform'] in sdk['platform']:
 	SM.AutoVersion('extensions/cstrike', binary)
 	binary.SendToJob()
 
+sdk = SM.sdkInfo['ep2v']
+
+if AMBuild.target['platform'] in sdk['platform']:
+	compiler = SM.DefaultHL2Compiler('extensions/cstrike', 'ep2v')
+
+	name = 'game.cstrike.ext.' + sdk['ext']
+	extension = AMBuild.AddJob(name)
+	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
+	SM.PreSetupHL2Job(extension, binary, 'ep2v')
+	binary.AddSourceFiles('extensions/cstrike', [
+		'extension.cpp',
+		'natives.cpp',
+		'RegNatives.cpp',
+		'timeleft.cpp',
+		'sdk/smsdk_ext.cpp'
+		])
+	SM.PostSetupHL2Job(extension, binary, 'ep2v')
+	SM.AutoVersion('extensions/cstrike', binary)
+	binary.SendToJob()
