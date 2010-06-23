@@ -839,7 +839,11 @@ native RemoveServerTag(const String:tag[]);
 /**
  * Callback for command listeners. This is invoked whenever any command
  * reaches the server, from the server console itself or a player.
-
+ *
+ * Clients may be in the process of connecting when they are executing commands
+ * IsClientConnected(client) is not guaranteed to return true.  Other functions
+ * such as GetClientIP() may not work at this point either.
+ *
  * Returning Plugin_Handled or Plugin_Stop will prevent the original,
  * baseline code from running.
  *
@@ -849,8 +853,8 @@ native RemoveServerTag(const String:tag[]);
  *  * C++ command dispatch hooks from Metamod:Source plugins
  *  * Reg*Cmd() hooks that did not create new commands.
  *
- * @param client        Client, or 0 for server. Client will be connected but
- *                      not necessarily in game.
+ * @param client        Client, or 0 for server.
+ *                      Client may not be connected or in game.
  * @param command       Command name, lower case. To get name as typed, use
  *                      GetCmdArg() and specify argument 0.
  * @param argc          Argument count.
