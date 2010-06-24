@@ -71,45 +71,6 @@ inline CBaseEntity *GetCBaseEntity(int num, bool isplayer)
 	return pUnk->GetBaseEntity();
 }
 
-static cell_t CS_PrintHintText(IPluginContext *pContext, const cell_t *params)
-{
-	int client = params[1];
-	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(params[1]);
-
-	if (!pPlayer)
-	{
-		return pContext->ThrowNativeError("Client index %d is invalid", client);
-	}
-
-	if (!pPlayer->IsInGame())
-	{
-		return pContext->ThrowNativeError("Client %d is not in game", client);
-	}
-
-	g_pSM->SetGlobalTarget(client);
-
-	char buffer[192];
-	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-
-	/* Check for an error before printing to the client */
-	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
-	{
-		return 0;
-	}
-
-	bf_write *pBitBuf = usermsgs->StartMessage(g_msgHintText, &params[1], 1, USERMSG_RELIABLE);
-	if (pBitBuf == NULL)
-	{
-		return pContext->ThrowNativeError("Could not send a usermessage");
-	}
-	pBitBuf->WriteByte(1);
-	pBitBuf->WriteString(buffer);
-	usermsgs->EndMessage();
-
-	return 1;
-}
-
-
 static cell_t CS_RespawnPlayer(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
@@ -166,8 +127,3 @@ sp_nativeinfo_t g_CSNatives[] =
 	{NULL,							NULL}
 };
 
-sp_nativeinfo_t g_CS_PrintHintText[] = 
-{
-	{"PrintHintText",				CS_PrintHintText},
-	{NULL,							NULL},
-};
