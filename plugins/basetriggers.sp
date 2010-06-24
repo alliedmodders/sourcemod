@@ -210,12 +210,6 @@ public Action:Command_Nextmap(client, args)
 
 public Action:Command_Motd(client, args)
 {
-	if (client == 0)
-	{
-		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
-		return Plugin_Handled;
-	}
-
 	ShowMOTDPanel(client, "Message Of The Day", "motd", MOTDPANEL_TYPE_INDEX);
 
 	return Plugin_Handled;
