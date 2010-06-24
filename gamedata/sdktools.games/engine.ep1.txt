@@ -16,7 +16,6 @@
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
 			"game"		"hl2mp"
 			"game"		"ship"
 			"game"		"!Dystopia"
@@ -74,7 +73,6 @@
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
 			"game"		"garrysmod"
 			"game"		"hl2mp"
 			"game"		"ship"
@@ -123,7 +121,6 @@
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
 			"game"		"garrysmod"
 			"game"		"hl2mp"
 			"game"		"ship"
@@ -152,7 +149,6 @@
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
 			"game"		"hl2mp"
 			"game"		"sourceforts"
 			"game"		"synergy"
@@ -232,7 +228,6 @@
 	{
 		"#supported"
 		{
-			"game"		"cstrike"
 			"game"		"hl2mp"
 			"game"		"NeotokyoSource"
 			"game"		"zombie_master"
