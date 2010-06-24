@@ -130,5 +130,6 @@ public:
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern int g_msgHintText;
+extern sp_nativeinfo_t g_CS_PrintHintText[];
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
