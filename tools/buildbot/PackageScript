@@ -214,8 +214,6 @@ AddNormalLibrary('sourcepawn.jit.x86', 'bin')
 AddNormalLibrary('geoip.ext', 'extensions')
 AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
-if AMBuild.target['platform'] != 'darwin':
-	AddNormalLibrary('game.cstrike.ext.1.ep1', 'extensions')
 AddNormalLibrary('game.cstrike.ext.2.ep2v', 'extensions')
 AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
 AddNormalLibrary('topmenus.ext', 'extensions')

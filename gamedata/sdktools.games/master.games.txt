@@ -58,7 +58,6 @@
 	"game.cstrike.txt"
 	{
 		"game"		"cstrike"
-		"game"		"cstrike_beta"
 	}
 	
 	"game.hl2mp.txt"

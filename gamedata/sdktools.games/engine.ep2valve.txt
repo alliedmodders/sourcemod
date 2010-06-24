@@ -19,7 +19,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
-			"game"		"cstrike_beta"
 		}
 
 		"Offsets"
@@ -73,7 +72,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
-			"game"		"cstrike_beta"
 		}
 
 		"Signatures"
@@ -103,7 +101,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
-			"game"		"cstrike_beta"
 		}
 		
 		"Signatures"
@@ -127,7 +124,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
-			"game"		"cstrike_beta"
 		}
 		
 		"Offsets"
@@ -223,7 +219,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
-			"game"		"cstrike_beta"
 		}
 		"Signatures"
 		{
