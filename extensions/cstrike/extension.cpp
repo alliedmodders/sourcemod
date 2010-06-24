@@ -76,11 +76,6 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_CSNatives);
 	sharesys->RegisterLibrary(myself, "cstrike");
 
-	if ((g_msgHintText = usermsgs->GetMessageIndex("HintText")) != -1)
-	{
-		sharesys->OverrideNatives(myself, g_CS_PrintHintText);
-	}
-
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
 	return true;
