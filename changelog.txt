@@ -2,6 +2,32 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.3 [2010-06-23]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.3_Release_Notes
+
+User Changes:
+
+ - Added support for CS:S on Orange Box
+ - Added gamedata for Resistance and Liberation (bug 4418).
+ - Updated gamedata for SourceForts, Empires, Obsidian Conflict, Zombie Master.
+ - Fixed memory corruption and leaks with some voice functionality (bug 4415).
+ - Fixed UI bug in sm_motd (bug 4460). 
+
+Developer Changes:
+
+ - Added new player condition (TFCond_CritCola, bug 4447).
+ - Fixed clientprefs deleting cookies twice in rare cases (bug 4412).
+ - Fixed OnClientConnected forward not firing for bots (bug 4443).
+ - Fixed sm_dump_datamaps crash (bug 4424).
+ - Fixed switch case comparisons failing with large numbers (bug 4457).
+ - Fixed rare crash in output hooks (bug 4422).
+ - Fixed bug with dynamically sized arrays being sliced (bug 4428).
+ - Fixed SendConVarValue() on TF2, DOD:S, L4D, and L4D2 (bug 4273).
+ - Fixed TF2 natives not being marked optional (bug 4389). 
+
+----------------------------
+
 SourceMod 1.3.2 [2010-05-02]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.3.2_Release_Notes
