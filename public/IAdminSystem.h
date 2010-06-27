@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_ADMINSYS_NAME		"IAdminSys"
-#define SMINTERFACE_ADMINSYS_VERSION	5
+#define SMINTERFACE_ADMINSYS_VERSION	6
 
 /**
  * @file IAdminSystem.h
@@ -717,6 +717,15 @@ namespace SourceMod
 			const char *cmd, 
 			FlagBits flags, 
 			bool override_only) =0;
+
+		/**
+		 * @brief Reads a flag as the corresponding character.
+		 *
+		 * @param flag		Flag to look up.
+		 * @param c			Variable to store flag char.
+		 * @return			True on success, false if not found.
+		 */
+		virtual bool FindFlagChar(AdminFlag flag, char *c);
 	};
 }
 

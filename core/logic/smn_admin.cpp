@@ -507,6 +507,22 @@ static cell_t FindFlagByChar(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t FindFlagChar(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	char flagchar;
+	if (!adminsys->FindFlagChar((AdminFlag)params[1], &flagchar))
+	{
+		return 0;
+	}
+
+	*addr = (cell_t)flagchar;
+
+	return 1;
+}
+
 static cell_t ReadFlagString(IPluginContext *pContext, const cell_t *params)
 {
 	char *flag;
@@ -563,6 +579,7 @@ REGISTER_NATIVES(adminNatives)
 	{"CreateAuthMethod",		CreateAuthMethod},
 	{"FindFlagByName",			FindFlagByName},
 	{"FindFlagByChar",			FindFlagByChar},
+	{"FindFlagChar",			FindFlagChar},
 	{"ReadFlagString",			ReadFlagString},
 	{"GetAdmGroupImmunityLevel",GetAdmGroupImmunityLevel},
 	{"SetAdmGroupImmunityLevel",SetAdmGroupImmunityLevel},
