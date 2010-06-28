@@ -208,8 +208,8 @@ elif AMBuild.target['platform'] == 'windows':
 	                 os.path.join('addons', 'sourcemod', 'bin')))
 	pdb_list.append('loader\\sourcemod_mm.pdb')
 
-AddHL2Library('sourcemod', 'bin')
 AddNormalLibrary('sourcemod.logic', 'bin')
+AddHL2Library('sourcemod', 'bin')
 AddNormalLibrary('sourcepawn.jit.x86', 'bin')
 AddNormalLibrary('geoip.ext', 'extensions')
 AddNormalLibrary('dbi.mysql.ext', 'extensions')
