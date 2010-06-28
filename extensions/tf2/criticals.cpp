@@ -188,7 +188,7 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperBow, bool)
 	}
 }
 
-void InitialiseDetours()
+void InitialiseCritDetours()
 {
 	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
 	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperMelee, "CalcCriticalMelee");
@@ -222,7 +222,7 @@ void InitialiseDetours()
 
 }
 
-void RemoveDetours()
+void RemoveCritDetours()
 {
 	calcIsAttackCriticalDetour->Destroy();
 	calcIsAttackCriticalMeleeDetour->Destroy();

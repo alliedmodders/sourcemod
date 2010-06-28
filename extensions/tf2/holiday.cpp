@@ -29,19 +29,49 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_CRITICALS_H_
-#define _INCLUDE_SOURCEMOD_CRITICALS_H_
+#include "holiday.h"
 
-#include "extension.h"
-#include <jit/jit_helpers.h>
-#include <jit/x86/x86_macros.h>
-#include "CDetour/detours.h"
+CDetour *getHolidayDetour = NULL;
 
-void InitialiseCritDetours();
-void RemoveCritDetours();
+IForward *g_getHolidayForward = NULL;
 
-extern IForward *g_critForward;
+DETOUR_DECL_MEMBER0(GetHoliday, int)
+{
+	int actualres = DETOUR_MEMBER_CALL(GetHoliday)();
+	if (!g_getHolidayForward)
+	{
+		g_pSM->LogMessage(myself, "Invalid Forward");
+		return actualres;
+	}
 
-extern IServerGameEnts *gameents;
+	cell_t result = 0;
+	int newres = actualres;
 
-#endif //_INCLUDE_SOURCEMOD_CRITICALS_H_
+	g_getHolidayForward->PushCellByRef(&newres);
+	g_getHolidayForward->Execute(&result);
+	
+	if (result == Pl_Changed)
+	{
+		return newres;
+	}
+
+	return actualres;
+}
+
+void InitialiseGetHolidayDetour()
+{
+	getHolidayDetour = DETOUR_CREATE_MEMBER(GetHoliday, "GetHoliday");
+
+	if (!getHolidayDetour)
+	{
+		g_pSM->LogError(myself, "GetHoliday detour failed");
+		return;
+	}
+
+	getHolidayDetour->EnableDetour();
+}
+
+void RemoveGetHolidayDetour()
+{
+	getHolidayDetour->Destroy();
+}
