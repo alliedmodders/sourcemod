@@ -725,7 +725,7 @@ namespace SourceMod
 		 * @param c			Variable to store flag char.
 		 * @return			True on success, false if not found.
 		 */
-		virtual bool FindFlagChar(AdminFlag flag, char *c);
+		virtual bool FindFlagChar(AdminFlag flag, char *c) =0;
 	};
 }
 
