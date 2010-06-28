@@ -326,8 +326,8 @@ AMBuild.Include(os.path.join('tools', 'buildbot', 'Versioning'), globals)
 
 FileList = [
 		['loader', 'AMBuilder'],
-		['core', 'AMBuilder'],
 		['core', 'logic', 'AMBuilder'],
+		['core', 'AMBuilder'],
 		['extensions', 'bintools', 'AMBuilder'],
 		['extensions', 'clientprefs', 'AMBuilder'],
 		['extensions', 'cstrike', 'AMBuilder'],
