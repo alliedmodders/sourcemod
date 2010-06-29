@@ -19,6 +19,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
+			"game"		"garrysmod"
 		}
 
 		"Offsets"
@@ -124,6 +125,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"cstrike"
+			"game"		"garrysmod"
 		}
 		
 		"Offsets"

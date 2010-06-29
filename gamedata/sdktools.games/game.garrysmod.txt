@@ -11,48 +11,46 @@
 
 "Games"
 {
-	/* Garry's Mod 10 - Windows only
-	 * This mod is not officially supported
-	 */
+	/* Garry's Mod - Windows only */
 	"garrysmod"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"391"
+				"windows"	"426"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"279"
+				"windows"	"300"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"277"
+				"windows"	"298"
 			}
 			"Ignite"
 			{
-				"windows"	"228"
+				"windows"	"237"
 			}
 			"Extinguish"
 			{
-				"windows"	"232"
+				"windows"	"241"
 			}
 			"Teleport"
 			{
-				"windows"	"101"
+				"windows"	"106"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"429"
+				"windows"	"464"
 			}
 			"GetVelocity"
 			{
-				"windows"	"131"
+				"windows"	"138"
 			}
 			"EyeAngles"
 			{
-				"windows"	"123"
+				"windows"	"129"
 			}
 			"AcceptInput"
 			{
@@ -76,7 +74,7 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"270"
+				"windows"	"291"
 			}
 			"Activate"
 			{
@@ -84,7 +82,7 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"409"
+				"windows"	"444"
 			}
 			"FireOutputBackup"
 			{
