@@ -2383,7 +2383,7 @@ static int nesting=0;
         if (arg[argidx].ident!=0 && arg[argidx].numtags==1)     /* set the expected tag, if any */
           lval.cmptag=arg[argidx].tags[0];
         lvalue=hier14(&lval);
-        assert(sc_status==statFIRST || arg[argidx].tags!=NULL);
+        assert(sc_status==statFIRST || arg[argidx].ident == 0 || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {
         case 0:
           error(92);             /* argument count mismatch */
