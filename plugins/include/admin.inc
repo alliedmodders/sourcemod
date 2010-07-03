@@ -517,6 +517,15 @@ native bool:FindFlagByName(const String:name[], &AdminFlag:flag);
 native bool:FindFlagByChar(c, &AdminFlag:flag);
 
 /**
+ * Finds a flag char by a gived admin flag.
+ *
+ * @param flag                 Flag to look up.
+ * @param c                    Variable to store flag char.
+ * @return                     True on success, false if not found.
+ */
+native bool:FindFlagChar(AdminFlag:flag, &c);
+
+/**
  * Converts a string of flag characters to a bit string.
  *
  * @param flags			Flag ASCII string.

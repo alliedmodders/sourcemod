@@ -99,6 +99,13 @@ enum TFCond
 	TFCond_Jarated
 };
 
+enum TFHoliday
+{
+	TFHoliday_None = 1,
+	TFHoliday_Halloween,
+	TFHoliday_Birthday
+};
+
 /**
  * Sets a client on fire for 10 seconds.
  *
@@ -223,6 +230,16 @@ native TFClassType:TF2_GetClass(const String:classname[]);
  * @param result		Buffer param for the result of the decision.
  */
 forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result);
+
+/**
+ * Called when the game checks to see if the current day is one of its tracked holidays
+ *
+ * @note Change the value of holiday and return Plugin_Changed to override.
+ *       Return Plugin_Continue for no change.
+ *
+ * @param holiday		Current Holiday
+ */
+forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
 
 /**
  * Do not edit below this line!

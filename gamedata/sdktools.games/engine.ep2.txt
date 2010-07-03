@@ -21,7 +21,6 @@
 			"game"		"empires"
 			"game"		"synergy"
 			"game"		"bg2"
-			"game"		"garrysmod"
 			"game"		"pvkii"
 			"game"		"gesource"
 		}
@@ -124,7 +123,6 @@
 			"game"		"empires"
 			"game"		"synergy"
 			"game"		"bg2"
-			"game"		"garrysmod"
 			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"RnLBeta"
