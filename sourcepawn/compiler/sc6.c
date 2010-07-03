@@ -1064,13 +1064,15 @@ static void append_dbginfo(FILE *fout)
   AMX_DBG_LINE dbgline;
   AMX_DBG_SYMBOL dbgsym;
   AMX_DBG_SYMDIM dbgidxtag[sDIMEN_MAX];
-  int index,dim,dbgsymdim;
+  int dim,dbgsymdim;
   char *str,*prevstr,*name,*prevname;
   ucell codeidx,previdx;
   constvalue *constptr;
   char symname[2*sNAMEMAX+16];
   int16_t id1,id2;
   ucell address;
+  stringlist *dbgstrs = get_dbgstrings();
+  stringlist *iter;
 
   /* header with general information */
   memset(&dbghdr, 0, sizeof dbghdr);
@@ -1079,13 +1081,16 @@ static void append_dbginfo(FILE *fout)
   dbghdr.file_version=CUR_FILE_VERSION;
   dbghdr.amx_version=MIN_AMX_VERSION;
 
+  dbgstrs=dbgstrs->next;
+
   /* first pass: collect the number of items in various tables */
 
   /* file table */
   previdx=0;
   prevstr=NULL;
   prevname=NULL;
-  for (index=0; (str=get_dbgstring(index))!=NULL; index++) {
+  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
+    str = iter->line;
     assert(str!=NULL);
     assert(str[0]!='\0' && str[1]==':');
     if (str[0]=='F') {
@@ -1109,7 +1114,8 @@ static void append_dbginfo(FILE *fout)
   } /* if */
 
   /* line number table */
-  for (index=0; (str=get_dbgstring(index))!=NULL; index++) {
+  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
+    str = iter->line;
     assert(str!=NULL);
     assert(str[0]!='\0' && str[1]==':');
     if (str[0]=='L') {
@@ -1119,7 +1125,8 @@ static void append_dbginfo(FILE *fout)
   } /* for */
 
   /* symbol table */
-  for (index=0; (str=get_dbgstring(index))!=NULL; index++) {
+  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
+    str = iter->line;
     assert(str!=NULL);
     assert(str[0]!='\0' && str[1]==':');
     if (str[0]=='S') {
@@ -1173,8 +1180,8 @@ static void append_dbginfo(FILE *fout)
   previdx=0;
   prevstr=NULL;
   prevname=NULL;
-  for (index=0; (str=get_dbgstring(index))!=NULL; index++) {
-    assert(str!=NULL);
+  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
+    str = iter->line;
     assert(str[0]!='\0' && str[1]==':');
     if (str[0]=='F') {
       codeidx=hex2long(str+2,&name);
@@ -1203,7 +1210,8 @@ static void append_dbginfo(FILE *fout)
   } /* if */
 
   /* line number table */
-  for (index=0; (str=get_dbgstring(index))!=NULL; index++) {
+  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
+    str = iter->line;
     assert(str!=NULL);
     assert(str[0]!='\0' && str[1]==':');
     if (str[0]=='L') {
@@ -1218,7 +1226,8 @@ static void append_dbginfo(FILE *fout)
   } /* for */
 
   /* symbol table */
-  for (index=0; (str=get_dbgstring(index))!=NULL; index++) {
+  for (iter=dbgstrs; iter!=NULL; iter=iter->next) {
+    str = iter->line;
     assert(str!=NULL);
     assert(str[0]!='\0' && str[1]==':');
     if (str[0]=='S') {

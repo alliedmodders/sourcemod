@@ -724,6 +724,7 @@ SC_FUNC stringlist *insert_dbgline(int linenr);
 SC_FUNC stringlist *insert_dbgsymbol(symbol *sym);
 SC_FUNC char *get_dbgstring(int index);
 SC_FUNC void delete_dbgstringtable(void);
+SC_FUNC stringlist *get_dbgstrings();
 
 /* function prototypes in SCMEMFILE.C */
 #if !defined tMEMFILE

@@ -519,6 +519,11 @@ SC_FUNC stringlist *insert_dbgsymbol(symbol *sym)
   return NULL;
 }
 
+SC_FUNC stringlist *get_dbgstrings()
+{
+  return &dbgstrings;
+}
+
 SC_FUNC char *get_dbgstring(int index)
 {
   return get_string(&dbgstrings,index);
