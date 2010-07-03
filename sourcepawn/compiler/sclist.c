@@ -146,12 +146,12 @@ static stringlist *insert_string(stringlist *root,char *string)
     error(103);       /* insufficient memory (fatal error) */
   if ((cur->line=duplicatestring(string))==NULL)
     error(103);       /* insufficient memory (fatal error) */
-  /* insert as "last" */
-  assert(root!=NULL);
-  while (root->next!=NULL)
-    root=root->next;
-  cur->next=root->next;
-  root->next=cur;
+  cur->next=NULL;
+  if (root->tail)
+    root->tail->next=cur;
+  else
+    root->next=cur;
+  root->tail=cur;
   return cur;
 }
 
@@ -179,6 +179,8 @@ static int delete_string(stringlist *root,int index)
     /* nothing */;
   if (cur->next!=NULL) {
     item=cur->next;
+    if (root->tail == cur->next)
+      root->tail = cur;
     cur->next=item->next;       /* unlink from list */
     assert(item->line!=NULL);
     free(item->line);
@@ -237,7 +239,7 @@ SC_FUNC void delete_aliastable(void)
 }
 
 /* ----- include paths list -------------------------------------- */
-static stringlist includepaths = {NULL, NULL};  /* directory list for include files */
+static stringlist includepaths;  /* directory list for include files */
 
 SC_FUNC stringlist *insert_path(char *path)
 {
@@ -366,7 +368,7 @@ SC_FUNC void delete_substtable(void)
 
 
 /* ----- input file list ----------------------------------------- */
-static stringlist sourcefiles = {NULL, NULL};
+static stringlist sourcefiles;
 
 SC_FUNC stringlist *insert_sourcefile(char *string)
 {
@@ -387,7 +389,7 @@ SC_FUNC void delete_sourcefiletable(void)
 
 /* ----- documentation tags -------------------------------------- */
 #if !defined SC_LIGHT
-static stringlist docstrings = {NULL, NULL};
+static stringlist docstrings;
 
 SC_FUNC stringlist *insert_docstring(char *string)
 {
@@ -413,7 +415,7 @@ SC_FUNC void delete_docstringtable(void)
 
 
 /* ----- autolisting --------------------------------------------- */
-static stringlist autolist = {NULL, NULL};
+static stringlist autolist;
 
 SC_FUNC stringlist *insert_autolist(char *string)
 {
@@ -459,7 +461,7 @@ SC_FUNC void delete_autolisttable(void)
   #define PRIxC  "x"
 #endif
 
-static stringlist dbgstrings = {NULL, NULL};
+static stringlist dbgstrings;
 
 SC_FUNC stringlist *insert_dbgfile(const char *filename)
 {

@@ -269,7 +269,10 @@ enum {
 
 typedef struct s_stringlist {
   struct s_stringlist *next;
-  char *line;
+  union {
+    char *line;
+    struct s_stringlist *tail;
+  };
 } stringlist;
 
 typedef struct s_stringpair {
