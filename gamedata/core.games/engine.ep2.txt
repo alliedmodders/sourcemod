@@ -19,7 +19,6 @@
 			"game"		"ageofchivalry"
 			"game"		"zps"
 			"game"		"bg2"
-			"game"		"garrysmod"
 			"game"		"pvkii"
 			"game"		"gesource"
 			"game"		"empires"
