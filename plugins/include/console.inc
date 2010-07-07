@@ -594,6 +594,17 @@ native SetConVarString(Handle:convar, const String:value[], bool:replicate=false
 native ResetConVar(Handle:convar, bool:replicate=false, bool:notify=false);
 
 /**
+ * Retrieves the default string value of a console variable.
+ *
+ * @param convar		Handle to the convar.
+ * @param default		Buffer to store the default value of the convar.
+ * @param maxlength		Maximum length of string buffer.
+ * @return				Number of bytes written to the buffer (UTF-8 safe).
+ * @error				Invalid or corrupt Handle.
+ */
+native GetConVarDefault(Handle:convar, String:default[], maxlength);
+
+/**
  * Returns the bitstring of flags on a console variable.
  *
  * @param convar		Handle to the convar.
