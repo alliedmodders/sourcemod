@@ -53,7 +53,8 @@ files = [
 	'zlib/inftrees.c',
 	'zlib/trees.c',
 	'zlib/uncompr.c',
-	'zlib/zutil.c'
+	'zlib/zutil.c',
+	'sp_symhash.c'
 	]
 if AMBuild.target['platform'] == 'linux':
 	files.append('binreloc.c')

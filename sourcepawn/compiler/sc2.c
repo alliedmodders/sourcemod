@@ -31,6 +31,7 @@
 #if defined LINUX || defined __FreeBSD__ || defined __OpenBSD__
   #include <sclinux.h>
 #endif
+#include "sp_symhash.h"
 
 #if defined FORTIFY
   #include <alloc/fortify.h>
@@ -2392,6 +2393,7 @@ SC_FUNC int ishex(char c)
 static symbol *add_symbol(symbol *root,symbol *entry,int sort)
 {
   symbol *newsym;
+  int global = root==&glbtab;
 
   if (sort)
     while (root->next!=NULL && strcmp(entry->name,root->next->name)>0)
@@ -2404,6 +2406,8 @@ static symbol *add_symbol(symbol *root,symbol *entry,int sort)
   memcpy(newsym,entry,sizeof(symbol));
   newsym->next=root->next;
   root->next=newsym;
+  if (global)
+    AddToHashTable(sp_Globals, newsym);
   return newsym;
 }
 
@@ -2453,6 +2457,7 @@ static void free_symbol(symbol *sym)
 
 SC_FUNC void delete_symbol(symbol *root,symbol *sym)
 {
+  symbol *origRoot=root;
   /* find the symbol and its predecessor
    * (this function assumes that you will never delete a symbol that is not
    * in the table pointed at by "root")
@@ -2463,6 +2468,9 @@ SC_FUNC void delete_symbol(symbol *root,symbol *sym)
     assert(root!=NULL);
   } /* while */
 
+  if (origRoot==&glbtab)
+    RemoveFromHashTable(sp_Globals, sym);
+
   /* unlink it, then free it */
   root->next=sym->next;
   free_symbol(sym);
@@ -2470,6 +2478,7 @@ SC_FUNC void delete_symbol(symbol *root,symbol *sym)
 
 SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_functions)
 {
+  symbol *origRoot=root;
   symbol *sym,*parent_sym;
   constvalue *stateptr;
   int mustdelete;
@@ -2525,6 +2534,8 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
       break;
     } /* switch */
     if (mustdelete) {
+      if (origRoot == &glbtab)
+        RemoveFromHashTable(sp_Globals, sym);
       root->next=sym->next;
       free_symbol(sym);
     } else {
@@ -2549,26 +2560,12 @@ SC_FUNC void delete_symbols(symbol *root,int level,int delete_labels,int delete_
   } /* if */
 }
 
-/* The purpose of the hash is to reduce the frequency of a "name"
- * comparison (which is costly). There is little interest in avoiding
- * clusters in similar names, which is why this function is plain simple.
- */
-SC_FUNC uint32_t namehash(const char *name)
-{
-  const unsigned char *ptr=(const unsigned char *)name;
-  int len=strlen(name);
-  if (len==0)
-    return 0L;
-  assert(len<256);
-  return (len<<24Lu) + (ptr[0]<<16Lu) + (ptr[len-1]<<8Lu) + (ptr[len>>1Lu]);
-}
-
 static symbol *find_symbol(const symbol *root,const char *name,int fnumber,int automaton,int *cmptag)
 {
   symbol *firstmatch=NULL;
   symbol *sym=root->next;
   int count=0;
-  unsigned long hash=namehash(name);
+  unsigned long hash=NameHash(name);
   while (sym!=NULL) {
     if (hash==sym->hash && strcmp(name,sym->name)==0        /* check name */
         && (sym->parent==NULL || sym->ident==iCONSTEXPR)    /* sub-types (hierarchical types) are skipped, except for enum fields */
@@ -2705,7 +2702,7 @@ SC_FUNC symbol *findglb(const char *name,int filter)
    * that has no state(s) attached to it
    */
   if (sym==NULL)
-    sym=find_symbol(&glbtab,name,fcurrent,-1,NULL);
+    sym=FindInHashTable(sp_Globals,name,fcurrent);
   return sym;
 }
 
@@ -2724,8 +2721,12 @@ SC_FUNC symbol *findconst(const char *name,int *cmptag)
   symbol *sym;
 
   sym=find_symbol(&loctab,name,-1,-1,cmptag);  /* try local symbols first */
-  if (sym==NULL || sym->ident!=iCONSTEXPR)     /* not found, or not a constant */
-    sym=find_symbol(&glbtab,name,fcurrent,-1,cmptag);
+  if (sym==NULL || sym->ident!=iCONSTEXPR) {   /* not found, or not a constant */
+    if (cmptag)
+      sym=FindTaggedInHashTable(sp_Globals,name,fcurrent,cmptag);
+    else
+      sym=FindInHashTable(sp_Globals,name,fcurrent);
+  }
   if (sym==NULL || sym->ident!=iCONSTEXPR)
     return NULL;
   assert(sym->parent==NULL || (sym->usage & uENUMFIELD)!=0);
@@ -2765,7 +2766,7 @@ SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,i
   /* first fill in the entry */
   memset(&entry,0,sizeof entry);
   strcpy(entry.name,name);
-  entry.hash=namehash(name);
+  entry.hash=NameHash(name);
   entry.addr=addr;
   entry.codeaddr=code_idx;
   entry.vclass=(char)vclass;
@@ -2780,8 +2781,7 @@ SC_FUNC symbol *addsym(const char *name,cell addr,int ident,int vclass,int tag,i
   /* then insert it in the list */
   if (vclass==sGLOBAL)
     return add_symbol(&glbtab,&entry,TRUE);
-  else
-    return add_symbol(&loctab,&entry,FALSE);
+  return add_symbol(&loctab,&entry,FALSE);
 }
 
 SC_FUNC symbol *addvariable(const char *name,cell addr,int ident,int vclass,int tag,
