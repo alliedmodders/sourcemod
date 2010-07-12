@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "sp_file_headers.h"
 #include "sc.h"
 #include "sp_symhash.h"
-#include "sp_file_headers.h"
 
 SC_FUNC uint32_t
 NameHash(const char *str)
@@ -187,7 +187,7 @@ SC_FUNC void
 AddToHashTable(HashTable *ht, symbol *sym)
 {
     uint32_t bucket = sym->hash & ht->bucketmask;
-    HashEntry **hep;
+    HashEntry **hep, *he;
 
     hep = &ht->buckets[bucket];
     while (*hep) {
@@ -195,7 +195,7 @@ AddToHashTable(HashTable *ht, symbol *sym)
         hep = &(*hep)->next;
     }
 
-    HashEntry *he = (HashEntry *)malloc(sizeof(HashEntry));
+    he = (HashEntry *)malloc(sizeof(HashEntry));
     if (!he)
       error(123);
     he->sym = sym;
