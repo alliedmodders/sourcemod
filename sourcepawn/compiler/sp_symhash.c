@@ -4,6 +4,7 @@
 #include <assert.h>
 #include "sc.h"
 #include "sp_symhash.h"
+#include "sp_file_headers.h"
 
 SC_FUNC uint32_t
 NameHash(const char *str)
