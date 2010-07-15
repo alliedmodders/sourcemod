@@ -187,7 +187,7 @@ private:
 	KTrie<ConCommandBase *> m_CmdFlags;
 } s_CommandFlagsHelper;
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX
 static void ReplicateConVar(ConVar *pConVar)
 {
 	int maxClients = g_Players.GetMaxClients();
@@ -361,7 +361,7 @@ static cell_t sm_SetConVarNum(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(params[2]);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -410,7 +410,7 @@ static cell_t sm_SetConVarFloat(IPluginContext *pContext, const cell_t *params)
 	float value = sp_ctof(params[2]);
 	pConVar->SetValue(value);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -461,7 +461,7 @@ static cell_t sm_SetConVarString(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->SetValue(value);
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
@@ -492,7 +492,7 @@ static cell_t sm_ResetConVar(IPluginContext *pContext, const cell_t *params)
 
 	pConVar->Revert();
 	
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	/* Should we replicate it? */
 	if (params[3] && IsFlagSet(pConVar, FCVAR_REPLICATED))
 	{
