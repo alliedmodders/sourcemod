@@ -650,12 +650,12 @@ native SetConVarBounds(Handle:convar, ConVarBounds:type, bool:set, Float:value=0
  * Retrieves the name of a console variable.
  *
  * @param convar		Handle to the convar.
- * @param value			Buffer to store the name of the convar.
+ * @param name			Buffer to store the name of the convar.
  * @param maxlength		Maximum length of string buffer.
  * @noreturn
  * @error				Invalid or corrupt Handle.     
  */
-native GetConVarName(Handle:convar, const String:name[], maxlength);
+native GetConVarName(Handle:convar, String:name[], maxlength);
 
 funcenum ConVarQueryFinished
 {	
