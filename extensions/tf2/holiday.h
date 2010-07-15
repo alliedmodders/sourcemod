@@ -29,19 +29,17 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_CRITICALS_H_
-#define _INCLUDE_SOURCEMOD_CRITICALS_H_
+#ifndef _INCLUDE_SOURCEMOD_HOLIDAY_H_
+#define _INCLUDE_SOURCEMOD_HOLIDAY_H_
 
 #include "extension.h"
 #include <jit/jit_helpers.h>
 #include <jit/x86/x86_macros.h>
 #include "CDetour/detours.h"
 
-void InitialiseCritDetours();
-void RemoveCritDetours();
+void InitialiseGetHolidayDetour();
+void RemoveGetHolidayDetour();
 
-extern IForward *g_critForward;
+extern IForward *g_getHolidayForward;
 
-extern IServerGameEnts *gameents;
-
-#endif //_INCLUDE_SOURCEMOD_CRITICALS_H_
+#endif //_INCLUDE_SOURCEMOD_HOLIDAY_H_

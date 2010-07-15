@@ -112,7 +112,8 @@ public:
 	virtual bool SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late);
 #endif
 private:
-	bool m_DetoursEnabled;
+	bool m_CritDetoursEnabled;
+	bool m_GetHolidayDetourEnabled;
 };
 
 enum TFClassType

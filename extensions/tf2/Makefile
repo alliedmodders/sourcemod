@@ -19,7 +19,7 @@ PROJECT = game.tf2
 USEMETA = true
 
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp criticals.cpp \
-	util.cpp CDetour/detours.cpp asm/asm.c
+	holiday.cpp util.cpp CDetour/detours.cpp asm/asm.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
