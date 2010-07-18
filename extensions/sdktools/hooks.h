@@ -40,7 +40,7 @@
 #include "usercmd.h"
 #include "extension.h"
 
-class CHookManager
+class CHookManager : IPluginsListener
 {
 public:
 	CHookManager();
@@ -49,6 +49,9 @@ public:
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
 	void PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
+public: //IPluginsListener
+	void OnPluginLoaded(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin);
 
 private:
 	IForward *m_usercmdsFwd;

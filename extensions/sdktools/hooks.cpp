@@ -34,6 +34,7 @@
 
 CHookManager g_Hooks;
 static bool PRCH_enabled = false;
+static bool PRCH_used = false;
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
 
@@ -51,17 +52,24 @@ void CHookManager::Initialize()
 		PRCH_enabled = true;
 	}
 
+	plsys->AddPluginsListener(this);
+
 	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 6, NULL, Param_Cell, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_CellByRef);
 }
 
 void CHookManager::Shutdown()
 {
 	forwards->ReleaseForward(m_usercmdsFwd);
+
+	plsys->RemovePluginsListener(this);
 }
 
 void CHookManager::OnClientPutInServer(int client)
 {
 	if (!PRCH_enabled)
+		return;
+
+	if (!PRCH_used)
 		return;
 
 	edict_t *pEdict = PEntityOfEntIndex(client);
@@ -88,6 +96,9 @@ void CHookManager::OnClientPutInServer(int client)
 void CHookManager::OnClientDisconnecting(int client)
 {
 	if (!PRCH_enabled)
+		return;
+
+	if (!PRCH_used)
 		return;
 
 	edict_t *pEdict = PEntityOfEntIndex(client);
@@ -164,4 +175,50 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	}
 
 	RETURN_META(MRES_IGNORED);
+}
+
+void CHookManager::OnPluginLoaded(IPlugin *plugin)
+{
+	if (!PRCH_enabled)
+		return;
+
+	if (PRCH_used)
+		return;
+
+	if (!m_usercmdsFwd->GetFunctionCount())
+		return;
+
+	PRCH_used = true;
+
+	int MaxClients = playerhelpers->GetMaxClients();
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (playerhelpers->GetGamePlayer(i)->IsInGame())
+		{
+			OnClientPutInServer(i);
+		}
+	}
+}
+
+void CHookManager::OnPluginUnloaded(IPlugin *plugin)
+{
+	if (!PRCH_enabled)
+		return;
+
+	if (!PRCH_used)
+		return;
+
+	if (m_usercmdsFwd->GetFunctionCount())
+		return;
+
+	int MaxClients = playerhelpers->GetMaxClients();
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (playerhelpers->GetGamePlayer(i)->IsInGame())
+		{
+			OnClientDisconnecting(i);
+		}
+	}
+
+	PRCH_used = false;
 }
