@@ -195,6 +195,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\holiday.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\natives.cpp"
 				>
 			</File>
@@ -218,6 +222,10 @@
 			</File>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\holiday.h"
 				>
 			</File>
 			<File

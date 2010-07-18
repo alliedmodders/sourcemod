@@ -1,10 +1,9 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod Team Fortress 2 Extension
+ * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
- *
- * This file is part of the SourceMod/SourcePawn SDK.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
@@ -29,14 +28,18 @@
  *
  * Version: $Id$
  */
- 
-#if defined _version_included
- #endinput
-#endif
-#define _version_included
 
-#define SOURCEMOD_V_MAJOR		1				/**< SourceMod Major version */
-#define SOURCEMOD_V_MINOR		3				/**< SourceMod Minor version */
-#define SOURCEMOD_V_RELEASE		5				/**< SourceMod Release version */
+#ifndef _INCLUDE_SOURCEMOD_HOLIDAY_H_
+#define _INCLUDE_SOURCEMOD_HOLIDAY_H_
 
-#define SOURCEMOD_VERSION	"1.3.5-dev"			/**< SourceMod version string (major.minor.release.build) */
+#include "extension.h"
+#include <jit/jit_helpers.h>
+#include <jit/x86/x86_macros.h>
+#include "CDetour/detours.h"
+
+void InitialiseGetHolidayDetour();
+void RemoveGetHolidayDetour();
+
+extern IForward *g_getHolidayForward;
+
+#endif //_INCLUDE_SOURCEMOD_HOLIDAY_H_

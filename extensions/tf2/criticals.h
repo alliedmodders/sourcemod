@@ -37,8 +37,8 @@
 #include <jit/x86/x86_macros.h>
 #include "CDetour/detours.h"
 
-void InitialiseDetours();
-void RemoveDetours();
+void InitialiseCritDetours();
+void RemoveCritDetours();
 
 extern IForward *g_critForward;
 
