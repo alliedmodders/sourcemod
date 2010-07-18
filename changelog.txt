@@ -2,6 +2,23 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.4 [2010-07-18]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.4_Release_Notes
+
+User Changes:
+
+ - Support for latest TF update (bug 4506).
+ - Support for latest L4D2 update (bug 4509).
+
+Developer Changes:
+
+ - Added FindFlagChar native (bug 3776).
+ - Added GetConVarDefault native (bug 4502).
+ - Added forward for TF's GetHoliday function (bug 4462). 
+
+----------------------------
+
 SourceMod 1.3.3 [2010-06-23]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.3.3_Release_Notes
