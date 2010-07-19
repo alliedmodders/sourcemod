@@ -133,6 +133,7 @@ namespace profviewer
                     }
                 }
             }
+            xml.Close();
         }
 
         public double Duration

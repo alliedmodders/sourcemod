@@ -47,13 +47,9 @@ namespace profviewer
             ProfileItem atom;
             ListViewItem item;
 
-            if (m_Report == null)
-            {
-                report_list.Items.Clear();
-                report_info_duration.Text = "";
-                report_info_starttime.Text = "";
-                return;
-            }
+            report_list.Items.Clear();
+            report_info_duration.Text = "";
+            report_info_starttime.Text = "";
 
             report_info_duration.Text = m_Report.Duration.ToString() + " seconds";
             report_info_starttime.Text = m_Report.StartTime.ToString();
