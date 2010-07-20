@@ -58,9 +58,10 @@
 #define TF_CONDFLAG_DEMOBUFF        (1 << 18)
 #define TF_CONDFLAG_CRITCOLA        (1 << 19)
 #define TF_CONDFLAG_HEALING         (1 << 20)
-#define TF_CONDFLAG_ONFIRE          (1 << 21)
-#define TF_CONDFLAG_OVERHEALED      (1 << 22)
-#define TF_CONDFLAG_JARATED         (1 << 23)
+#define TF_CONDFLAG_ONFIRE          (1 << 22)
+#define TF_CONDFLAG_OVERHEALED      (1 << 23)
+#define TF_CONDFLAG_JARATED         (1 << 24)
+#define TF_CONDFLAG_BLEEDING        (1 << 25)
 
 #define TF_DEATHFLAG_KILLERDOMINATION   (1 << 0)
 #define TF_DEATHFLAG_ASSISTERDOMINATION (1 << 1)
