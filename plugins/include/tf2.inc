@@ -94,9 +94,11 @@ enum TFCond
 	TFCond_DemoBuff,
 	TFCond_CritCola,
 	TFCond_Healing,
-	TFCond_OnFire,
+	
+	TFCond_OnFire = 22,
 	TFCond_Overhealed,
-	TFCond_Jarated
+	TFCond_Jarated,
+	TFCond_Bleeding
 };
 
 enum TFHoliday
