@@ -4,7 +4,7 @@ my $output = <<EOF;
 <NotepadPlus>
     <UserLang name="sourcemod" ext="sma inc p pawn core sp">
         <Settings>
-            <Global caseIgnored="no" escapeChar="\" />
+            <Global caseIgnored="no" escapeChar="\\" />
             <TreatAsSymbol comment="yes" commentLine="yes" />
             <Prefix words1="no" words2="yes" words3="no" words4="no" />
         </Settings>
@@ -12,7 +12,7 @@ my $output = <<EOF;
             <Keywords name="Delimiters">&quot;&apos;0&quot;&apos;0</Keywords>
             <Keywords name="Folder+">{</Keywords>
             <Keywords name="Folder-">}</Keywords>
-            <Keywords name="Operators">- ! % &amp; ( ) , . : ; ? @ [ \ ] ^ | ~ + &lt; = &gt;</Keywords>
+            <Keywords name="Operators">+ - * / = ! % &amp; ( ) , . : ; ? @ [ ] ^ | ~ + &lt; = &gt;</Keywords>
             <Keywords name="Comment">1/* 2*/ 0//</Keywords>
             <Keywords name="Words1">for if else do while switch case default return break continue new decl public stock const enum forward static funcenum functag native sizeof true false</Keywords>
             <Keywords name="Words2">#</Keywords>
