@@ -1,8 +1,8 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * SourceMod
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -26,11 +26,11 @@
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
  *
- * Version: $Id$
+ * Version: $Id: detourhelpers.h 248 2008-08-27 00:56:22Z pred $
  */
 
-#ifndef _INCLUDE_SOURCEMOD_DETOURS_H_
-#define _INCLUDE_SOURCEMOD_DETOURS_H_
+#ifndef _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
+#define _INCLUDE_SOURCEMOD_DETOURHELPERS_H_
 
 #if defined PLATFORM_POSIX
 #include <sys/mman.h>
@@ -95,4 +95,4 @@ inline void ApplyPatch(void *address, int offset, const patch_t *patch, patch_t 
 	}
 }
 
-#endif //_INCLUDE_SOURCEMOD_DETOURS_H_
+#endif //_INCLUDE_SOURCEMOD_DETOURHELPERS_H_

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -37,7 +37,7 @@
 #include "sh_list.h"
 #include "sh_stack.h"
 #include "sm_trie_tpl.h"
-#include "detours.h"
+#include "CDetour/detours.h"
 
 extern ISourcePawnEngine *spengine;
 
@@ -117,7 +117,6 @@ private:
 	// Patch/unpatch the server dll
 	void InitFireEventDetour();
 	void ShutdownFireEventDetour();
-	bool is_detoured;
 
 	//These create/delete the allocated memory and write into it
 	bool CreateFireEventDetour();

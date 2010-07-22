@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -34,13 +34,13 @@
 
 ISourcePawnEngine *spengine = NULL;
 EntityOutputManager g_OutputManager;
+CDetour *fireOutputDetour = NULL;
 
 EntityOutputManager::EntityOutputManager()
 {
 	info_address = NULL;
 	info_callback = NULL;
 	HookCount = 0;
-	is_detoured = false;
 	enabled = false;
 }
 
@@ -53,7 +53,7 @@ EntityOutputManager::~EntityOutputManager()
 
 	EntityOutputs->Destroy();
 	ClassNames->Destroy();
-	ShutdownFireEventDetour();
+	fireOutputDetour->Destroy();
 }
 
 void EntityOutputManager::Init()
@@ -74,127 +74,19 @@ bool EntityOutputManager::IsEnabled()
 	return enabled;
 }
 
+DETOUR_DECL_MEMBER4(FireOutput, void, void *, variant_t, CBaseEntity *, pActivator, CBaseEntity *, pCaller, float, fDelay)
+{
+	g_OutputManager.FireEventDetour((void *)this, pActivator, pCaller, fDelay);
+	DETOUR_MEMBER_CALL(FireOutput)(variant_t, pActivator, pCaller, fDelay);
+}
+
 bool EntityOutputManager::CreateFireEventDetour()
 {
-	if (!g_pGameConf->GetMemSig("FireOutput", &info_address))
-	{
-		return false;
-	}
+	fireOutputDetour = DETOUR_CREATE_MEMBER(FireOutput, "FireOutput");
 
-	if (!info_address)
-	{
-		g_pSM->LogError(myself, "Could not locate FireOutput - Disabling Entity Outputs");
-		return false;
-	}
+	if (fireOutputDetour) return true;
 
-	if (!g_pGameConf->GetOffset("FireOutputBackup", (int *)&(info_restore.bytes)))
-	{
-		return false;
-	}
-
-	/* First, save restore bits */
-	for (size_t i=0; i<info_restore.bytes; i++)
-	{
-		info_restore.patch[i] = ((unsigned char *)info_address)[i];
-	}
-
-	info_callback = spengine->ExecAlloc(100);
-	JitWriter wr;
-	JitWriter *jit = &wr;
-	wr.outbase = (jitcode_t)info_callback;
-	wr.outptr = wr.outbase;
-
-	/* Function we are detouring into is
-	 *
-	 * void FireEventDetour(CBaseEntityOutput(void *) *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay = 0 )
-	 */
-
-	/* push		fDelay [esp+20h]
-	 * push		pCaller [esp+1Ch]
-	 * push		pActivator [esp+18h]
-	 * push		pOutput [ecx]
-	 */
-
-
-#if defined PLATFORM_WINDOWS
-
-	IA32_Push_Rm_Disp8_ESP(jit, 32);
-	IA32_Push_Rm_Disp8_ESP(jit, 32);
-	IA32_Push_Rm_Disp8_ESP(jit, 32);
-
-	IA32_Push_Reg(jit, REG_ECX);
-
-#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
-	IA32_Push_Rm_Disp8_ESP(jit, 20);
-	IA32_Push_Rm_Disp8_ESP(jit, 20);
-	IA32_Push_Rm_Disp8_ESP(jit, 20);
-
-	IA32_Push_Rm_Disp8_ESP(jit, 16);
-#endif
-
-	jitoffs_t call = IA32_Call_Imm32(jit, 0); 
-	IA32_Write_Jump32_Abs(jit, call, (void *)TempDetour);
-
-	
-#if defined PLATFORM_LINUX || defined PLATFORM_APPLE
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 4, MOD_REG);		//add esp, 4
-#elif defined PLATFORM_WINDOWS
-	IA32_Pop_Reg(jit, REG_ECX);
-#endif
-
-	IA32_Add_Rm_Imm8(jit, REG_ESP, 12, MOD_REG);	//add esp, 12 (0Ch)
-
-
-	/* Patch old bytes in */
-	for (size_t i=0; i<info_restore.bytes; i++)
-	{
-		jit->write_ubyte(info_restore.patch[i]);
-	}
-
-	/* Return to the original function */
-	call = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, (unsigned char *)info_address + info_restore.bytes);
-
-	return true;
-}
-
-void EntityOutputManager::InitFireEventDetour()
-{
-	if (!is_detoured)
-	{
-		DoGatePatch((unsigned char *)info_address, &info_callback);
-		is_detoured = true;
-	}
-}
-
-void EntityOutputManager::DeleteFireEventDetour()
-{
-	if (is_detoured)
-	{
-		ShutdownFireEventDetour();
-	}
-
-	if (info_callback)
-	{
-		/* Free the gate */
-		spengine->ExecFree(info_callback);
-		info_callback = NULL;
-	}
-}
-
-void TempDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
-{
-	g_OutputManager.FireEventDetour(pOutput, pActivator, pCaller, fDelay);
-}
-
-void EntityOutputManager::ShutdownFireEventDetour()
-{
-	if (info_callback)
-	{
-		/* Remove the patch */
-		ApplyPatch(info_address, 0, &info_restore, NULL);
-		is_detoured = false;
-	}
+	return false;
 }
 
 void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
@@ -321,7 +213,7 @@ void EntityOutputManager::OnHookAdded()
 	if (HookCount == 1)
 	{
 		// This is the first hook created
-		InitFireEventDetour();
+		fireOutputDetour->EnableDetour();
 	}
 }
 
@@ -331,7 +223,7 @@ void EntityOutputManager::OnHookRemoved()
 
 	if (HookCount == 0)
 	{
-		ShutdownFireEventDetour();
+		fireOutputDetour->DisableDetour();
 	}
 }
 

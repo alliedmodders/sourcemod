@@ -22,7 +22,7 @@ USEMETA = true
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp vdecoder.cpp vcallbuilder.cpp vcaller.cpp \
 	vnatives.cpp vsound.cpp tenatives.cpp trnatives.cpp tempents.cpp vstringtable.cpp \
 	vhelpers.cpp vglobals.cpp voice.cpp inputnatives.cpp teamnatives.cpp output.cpp \
-	outputnatives.cpp hooks.cpp
+	outputnatives.cpp hooks.cpp CDetour/detours.cpp asm/asm.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -91,7 +91,7 @@ ifeq "$(ENGINE)" "left4dead2"
 	override ENGSET = true
 endif
 
-ifeq "$(ENGINE)" "left4dead2"
+ifeq ($(ENGINE),$(filter $(ENGINE), left4dead2 orangeboxvalve))
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so
 else
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so
@@ -149,7 +149,9 @@ $(BIN_DIR)/%.o: %.cpp
 
 all: check
 	mkdir -p $(BIN_DIR)/sdk
-ifeq "$(ENGINE)" "left4dead2"
+	mkdir -p $(BIN_DIR)/CDetour
+	mkdir -p $(BIN_DIR)/asm
+ifeq ($(ENGINE),$(filter $(ENGINE), left4dead2 orangeboxvalve))
 	ln -sf $(SRCDS)/bin/libvstdlib.so libvstdlib.so;
 	ln -sf $(SRCDS)/bin/libtier0.so libtier0.so;
 else
@@ -175,4 +177,6 @@ default: all
 clean: check
 	rm -rf $(BIN_DIR)/*.o
 	rm -rf $(BIN_DIR)/sdk/*.o
+	rm -rf $(BIN_DIR)/CDetour/*.o
+	rm -rf $(BIN_DIR)/asm/*.o
 	rm -rf $(BIN_DIR)/$(BINARY)

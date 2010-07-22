@@ -232,15 +232,6 @@
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
-		"Offsets"
-		{
-			"FireOutputBackup"
-			{
-				"windows"	"6"
-				"linux"		"12"
-				"mac"		"6"
-			}
-		}
 	}
 	
 	/* SetUserInfo data */

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -142,6 +142,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	plsys->AddPluginsListener(&g_OutputManager);
 
+	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
 	g_OutputManager.Init();
 
 	VoiceInit();
