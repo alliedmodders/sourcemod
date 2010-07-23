@@ -24,6 +24,7 @@
 			"game"		"empires"
 			"game"		"RnLBeta"
 			"game"		"obsidian"
+			"game"		"synergy"
 		}
 		
 		"Offsets"
