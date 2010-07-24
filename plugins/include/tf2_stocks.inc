@@ -259,3 +259,41 @@ stock TF2_GetPlayerConditionFlags(client)
 {
 	return GetEntProp(client, Prop_Send, "m_nPlayerCond");
 }
+
+/**
+ * Gets an entity's object type.
+ *
+ * @param entity		Entity index.
+ * @return				Current TFObjectType of entity.
+ * @error				Invalid entity index.
+ */
+stock TFObjectType:TF2_GetObjectType(entity)
+{
+	new offset = GetEntSendPropOffs(entity, "m_iObjectType");
+	
+	if (offset <= 0)
+	{
+		ThrowError("Entity index %d is not an object", entity);
+	}
+	
+	return TFObjectType:GetEntData(entity, offset);
+}
+
+/**
+ * Gets an entity's object mode.
+ *
+ * @param entity		Entity index.
+ * @return				Current TFObjectMode of entity.
+ * @error				Invalid entity index.
+ */
+stock TFObjectMode:TF2_GetObjectMode(entity)
+{
+	new offset = GetEntSendPropOffs(entity, "m_iObjectMode");
+	
+	if (offset <= 0)
+	{
+		ThrowError("Entity index %d is not an object", entity);
+	}
+	
+	return TFObjectMode:GetEntData(entity, offset);
+}
