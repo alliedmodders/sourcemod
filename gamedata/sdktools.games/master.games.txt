@@ -154,4 +154,8 @@
 	{
 		"game"		"RnLBeta"
 	}
+	"game.fas.txt"
+	{
+		"game"		"fas"
+	}
 }

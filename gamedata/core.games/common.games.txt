@@ -141,6 +141,7 @@
 			"game"					"zps"
 			"game"					"gesource"
 			"game"					"RnLBeta"
+			"game"					"fas"
 		}
 
 		"Keys"
@@ -196,6 +197,7 @@
 			"game"					"zps"
 			"game"					"gesource"
 			"game"					"RnLBeta"
+			"game"					"fas"
 		}
 		
 		"Keys"

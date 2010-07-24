@@ -25,6 +25,7 @@
 			"game"		"RnLBeta"
 			"game"		"obsidian"
 			"game"		"synergy"
+			"game"		"fas"
 		}
 		
 		"Offsets"
