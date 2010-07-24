@@ -108,6 +108,22 @@ enum TFHoliday
 	TFHoliday_Birthday
 };
 
+enum TFObjectType
+{
+	TFObject_CartDispenser = 0,
+	TFObject_Dispenser = 0,
+	TFObject_Teleporter = 1,
+	TFObject_Sentry = 2,
+	TFObject_Sapper = 3
+};
+
+enum TFObjectMode
+{
+	TFObjectMode_None = 0,
+	TFObjectMode_Entrance = 0,
+	TFObjectMode_Exit = 1
+};
+
 /**
  * Sets a client on fire for 10 seconds.
  *
