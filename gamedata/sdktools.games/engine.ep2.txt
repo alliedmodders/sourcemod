@@ -23,6 +23,7 @@
 			"game"		"bg2"
 			"game"		"pvkii"
 			"game"		"gesource"
+			"game"		"fas"
 		}
 
 		"Offsets"
@@ -127,6 +128,7 @@
 			"game"		"gesource"
 			"game"		"RnLBeta"
 			"game"		"obsidian"
+			"game"		"fas"
 		}
 		
 		"Offsets"
