@@ -99,6 +99,13 @@
 				"linux"		"@_ZN12CTFGameRules10GetHolidayEv"
 				"mac"		"@_ZN12CTFGameRules10GetHolidayEv"
 			}
+			"MakeBleed"
+			{
+				"library" 	"server"
+				"windows"	"\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x8B\x2A\x8B\x90\x2A\x2A\x2A\x2A\xFF\xD2\x84\xC0\x0F\x2A\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\xC1"
+				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasef"
+				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasef"
+			}
 		}
 		"Offsets"
 		{

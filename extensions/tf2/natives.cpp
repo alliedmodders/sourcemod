@@ -34,6 +34,57 @@
 #include "time.h"
 #include "RegNatives.h"
 
+// native TF2_MakeBleed(client, victim, Float:duration)
+cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float)
+	if(!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("MakeBleed",
+			PassInfo pass[3]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(CBaseEntity *); \
+			pass[0].type = PassType_Basic; \
+			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].size = sizeof(CBaseEntity *); \
+			pass[1].type = PassType_Basic; \
+			pass[2].flags = PASSFLAG_BYVAL; \
+			pass[2].size = sizeof(float); \
+			pass[2].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	CBaseEntity *pTarget;
+	if (!(pTarget = UTIL_GetCBaseEntity(params[2], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[2]);
+	}
+
+	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
+
+	unsigned char vstk[sizeof(void *) + 2*sizeof(CBaseEntity *) + sizeof(float)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = obj;
+	vptr += sizeof(void *);
+	*(CBaseEntity **)vptr = pTarget;
+	vptr += sizeof(CBaseEntity *);
+	*(CBaseEntity **)vptr = NULL;
+	vptr += sizeof(CBaseEntity *);
+	*(float *)vptr = sp_ctof(params[3]);
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
 
 // native TF2_Burn(client, target)
 cell_t TF2_Burn(IPluginContext *pContext, const cell_t *params)
@@ -421,5 +472,6 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_RemoveCondition",			TF2_RemoveCondition},
 	{"TF2_SetPlayerPowerPlay",		TF2_SetPowerplayEnabled},
 	{"TF2_StunPlayer",				TF2_StunPlayer},
+	{"TF2_MakeBleed",				TF2_MakeBleed},
 	{NULL,							NULL}
 };
