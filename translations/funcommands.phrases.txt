@@ -118,6 +118,17 @@
 		"en"			"froze {1}."
 	}
 	
+	"Unfrozen"
+	{
+		"en"			"You are now unfrozen."
+	}
+	
+	"You will be unfrozen"
+	{
+		"#format"		"{1:d}"
+		"en"			"You will be unfrozen in {1} seconds."
+	}
+	
 	"Toggled FreezeBomb on target"
 	{
 		"#format"		"{1:t}"
