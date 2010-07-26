@@ -173,7 +173,7 @@ public ConVarChange_Alltalk(Handle:convar, const String:oldValue[], const String
 		{
 			SetClientListeningFlags(i, VOICE_NORMAL);
 		}
-		else
+		else if (!IsPlayerAlive(i))
 		{
 			if (mode == 1)
 			{
