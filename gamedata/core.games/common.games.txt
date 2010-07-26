@@ -141,6 +141,7 @@
 			"game"					"gesource"
 			"game"					"RnLBeta"
 			"game"					"fas"
+			"game"					"fistful_of_frags"
 		}
 
 		"Keys"
@@ -168,6 +169,7 @@
 			"game"					"obsidian"
 			"game"					"cstrike"
 			"game"					"RnLBeta"
+			"game"					"fistful_of_frags"
 		}
 		
 		"Keys"
@@ -197,6 +199,7 @@
 			"game"					"gesource"
 			"game"					"RnLBeta"
 			"game"					"fas"
+			"game"					"fistful_of_frags"
 		}
 		
 		"Keys"
