@@ -158,4 +158,8 @@
 	{
 		"game"		"fas"
 	}
+	"game.fof.txt"
+	{
+		"game"		"fistful_of_frags"
+	}
 }
