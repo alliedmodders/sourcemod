@@ -218,6 +218,16 @@ native TF2_RemovePlayerDisguise(client);
 native TF2_StunPlayer(client, Float:duration, Float:slowdown=0.0, stunflags, attacker=0);
 
 /**
+ * Induces the bleed effect on a client
+ *
+ * @param client		Player's index.
+ * @param victim		Victim's index.
+ * @param float			Duration of bleeding (in seconds).
+ * @noreturn
+ */
+native TF2_MakeBleed(client, victim, Float:duration);
+
+/**
  * Retrieves the entity index of the CPlayerResource entity
  *
  * @return				The current resource entity index.
@@ -286,6 +296,7 @@ public __ext_tf2_SetNTVOptional()
 	MarkNativeAsOptional("TF2_DisguisePlayer");
 	MarkNativeAsOptional("TF2_RemovePlayerDisguise");
 	MarkNativeAsOptional("TF2_StunPlayer");
+	MakeNativeAsOptional("TF2_MakeBleed");
 	MarkNativeAsOptional("TF2_GetResourceEntity");
 	MarkNativeAsOptional("TF2_GetClass");
 }
