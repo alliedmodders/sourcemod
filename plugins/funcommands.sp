@@ -58,11 +58,11 @@ new Handle:hTopMenu = INVALID_HANDLE;
 #define SOUND_FREEZE	"physics/glass/glass_impact_bullet4.wav"
 
 // Following are model indexes for temp entities
-new g_BeamSprite;
-new g_BeamSprite2;
-new g_HaloSprite;
-new g_GlowSprite;
-new g_ExplosionSprite;
+new g_BeamSprite        = -1;
+new g_BeamSprite2       = -1;
+new g_HaloSprite        = -1;
+new g_GlowSprite        = -1;
+new g_ExplosionSprite   = -1;
 
 // Basic color arrays for temp entities
 new redColor[4]		= {255, 75, 75, 255};
@@ -169,11 +169,20 @@ public OnMapStart()
 	PrecacheSound(SOUND_BOOM, true);
 	PrecacheSound(SOUND_FREEZE, true);
 
-	g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
-	g_BeamSprite2 = PrecacheModel("sprites/bluelight1.vmt");
-	g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");	
-	g_GlowSprite = PrecacheModel("sprites/blueglow2.vmt");
-	g_ExplosionSprite = PrecacheModel("sprites/sprite_fire01.vmt");
+	if (GuessSDKVersion() == SOURCE_SDK_LEFT4DEAD2)
+	{
+		g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
+		g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
+	}
+	else
+	{
+		g_BeamSprite = PrecacheModel("materials/sprites/laser.vmt");
+		g_HaloSprite = PrecacheModel("materials/sprites/halo01.vmt");
+		g_BeamSprite2 = PrecacheModel("sprites/bluelight1.vmt");
+		g_GlowSprite = PrecacheModel("sprites/blueglow2.vmt");
+		g_ExplosionSprite = PrecacheModel("sprites/sprite_fire01.vmt");
+	}
+	
 }
 
 public OnMapEnd()

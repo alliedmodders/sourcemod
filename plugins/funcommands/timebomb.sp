@@ -127,8 +127,11 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 	}
 	else
 	{
-		TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_Cvar_TimeBombRadius), 5000);
-		TE_SendToAll();
+		if (g_ExplosionSprite > -1)
+		{
+			TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_Cvar_TimeBombRadius), 5000);
+			TE_SendToAll();
+		}
 
 		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
 
@@ -166,8 +169,12 @@ public Action:Timer_TimeBomb(Handle:timer, any:value)
 				damage = RoundToFloor(damage * ((GetConVarFloat(g_Cvar_TimeBombRadius) - distance) / GetConVarFloat(g_Cvar_TimeBombRadius)));
 					
 				SlapPlayer(i, damage, false);
-				TE_SetupExplosion(pos, g_ExplosionSprite, 0.05, 1, 0, 1, 1);
-				TE_SendToAll();				
+				
+				if (g_ExplosionSprite > -1)
+				{
+					TE_SetupExplosion(pos, g_ExplosionSprite, 0.05, 1, 0, 1, 1);
+					TE_SendToAll();	
+				}
 				
 				/* ToDo
 				new Float:dir[3];

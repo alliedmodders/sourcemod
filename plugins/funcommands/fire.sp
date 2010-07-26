@@ -134,8 +134,11 @@ public Action:Timer_FireBomb(Handle:timer, any:value)
 	}
 	else
 	{
-		TE_SetupExplosion(vec, g_ExplosionSprite, 0.1, 1, 0, GetConVarInt(g_Cvar_FireBombRadius), 5000);
-		TE_SendToAll();
+		if (g_ExplosionSprite > -1)
+		{
+			TE_SetupExplosion(vec, g_ExplosionSprite, 0.1, 1, 0, GetConVarInt(g_Cvar_FireBombRadius), 5000);
+			TE_SendToAll();
+		}
 		
 		GetClientAbsOrigin(client, vec);
 		vec[2] += 10;
