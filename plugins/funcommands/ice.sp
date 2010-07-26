@@ -186,7 +186,15 @@ public Action:Timer_Freeze(Handle:timer, any:value)
 	GetClientAbsOrigin(client, vec);
 	vec[2] += 10;
 
-	TE_SetupGlowSprite(vec, g_GlowSprite, 0.95, 1.5, 50);
+	if (g_GlowSprite > -1)
+	{
+		TE_SetupGlowSprite(vec, g_GlowSprite, 0.95, 1.5, 50);
+	}
+	else
+	{
+		TE_SetupGlowSprite(vec, g_HaloSprite, 0.95, 1.5, 50);
+	}
+	
 	TE_SendToAll();
 
 	return Plugin_Continue;
@@ -241,8 +249,11 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 	}
 	else
 	{
-		TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_Cvar_FreezeBombRadius), 5000);
-		TE_SendToAll();
+		if (g_ExplosionSprite > -1)
+		{
+			TE_SetupExplosion(vec, g_ExplosionSprite, 5.0, 1, 0, GetConVarInt(g_Cvar_FreezeBombRadius), 5000);
+			TE_SendToAll();
+		}
 
 		EmitAmbientSound(SOUND_BOOM, vec, client, SNDLEVEL_RAIDSIREN);
 
@@ -275,7 +286,14 @@ public Action:Timer_FreezeBomb(Handle:timer, any:value)
 					continue;
 				}
 				
-				TE_SetupBeamPoints(vec, pos, g_BeamSprite2, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
+				if (g_BeamSprite2 > -1)
+				{
+					TE_SetupBeamPoints(vec, pos, g_BeamSprite2, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
+				}
+				else
+				{
+					TE_SetupBeamPoints(vec, pos, g_BeamSprite, g_HaloSprite, 0, 1, 0.7, 20.0, 50.0, 1, 1.5, blueColor, 10);
+				}
 				TE_SendToAll();
 				
 				FreezeClient(i, GetConVarInt(g_Cvar_FreezeDuration));
