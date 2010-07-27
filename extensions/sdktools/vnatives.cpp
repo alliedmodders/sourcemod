@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+* Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -541,7 +541,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 			typedescription_t *pType = gamehelpers->FindInDataMap(pMap, frag_prop);
 			if (pType != NULL)
 			{
-				s_frag_offs = pType->fieldOffset[TD_OFFSET_NORMAL];
+				s_frag_offs = GetTypeDescOffs(pType);
 			}
 		}
 		if (!s_frag_offs)
@@ -657,7 +657,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -713,7 +713,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 }
 #endif
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD2
+#if SOURCE_ENGINE >= SE_LEFT4DEAD2
 static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;

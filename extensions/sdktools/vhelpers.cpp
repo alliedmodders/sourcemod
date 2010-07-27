@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -600,7 +600,7 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 		fprintf(fp,"%s - %s\n",sclass->GetName(), dict->m_Factories.GetElementName(i));
 
 		typedescription_t *datamap = gamehelpers->FindInDataMap(gamehelpers->GetDataMap(entity->GetBaseEntity()), "m_iEFlags");
-		int *eflags = (int *)((char *)entity->GetBaseEntity() + datamap->fieldOffset[TD_OFFSET_NORMAL]);
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + GetTypeDescOffs(datamap));
 		*eflags |= (1<<0); // EFL_KILLME
 	}
 
@@ -816,7 +816,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 			continue;
 		}
 		
-		int *eflags = (int *)((char *)entity->GetBaseEntity() + datamap->fieldOffset[TD_OFFSET_NORMAL]);
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + GetTypeDescOffs(datamap));
 		*eflags |= (1<<0); // EFL_KILLME
 	}
 

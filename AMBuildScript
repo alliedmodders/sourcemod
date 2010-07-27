@@ -21,6 +21,8 @@ class SM:
 		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux']}
 		self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
 		                         'name': 'DARKMESSIAH',    'platform': ['windows']}
+		self.sdkInfo['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '7',
+		                         'name': 'ALIENSWARM',     'platform': ['windows']}
 
 		if AMBuild.mode == 'config':
 			#Detect compilers
@@ -41,6 +43,7 @@ class SM:
 			#Dark Messiah is Windows-only
 			if AMBuild.target['platform'] == 'windows':
 				envvars['HL2SDK-DARKM'] = 'hl2sdk-darkm'
+				envvars['HL2SDK-SWARM'] = 'hl2sdk-swarm'
 
 			#Must have a path for each envvar (file a bug if you don't like this)
 			for i in envvars:
@@ -93,6 +96,7 @@ class SM:
 				self.vendor = 'msvc'
 				if AMBuild.options.debug == '1':
 					self.compiler.AddToListVar('CFLAGS', '/MTd')
+					self.compiler.AddToListVar('POSTLINKFLAGS', '/NODEFAULTLIB:libcmt')
 				else:
 					self.compiler.AddToListVar('CFLAGS', '/MT')
 				self.compiler.AddToListVar('CDEFINES', '_CRT_SECURE_NO_DEPRECATE')
@@ -253,7 +257,10 @@ class SM:
 				except:
 					job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
-			for lib in ['tier0', 'tier1', 'vstdlib', 'mathlib']:
+			libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
+			if sdk == 'swarm':
+				libs.append('interfaces')
+			for lib in libs:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
 				builder.RebuildIfNewer(libPath)
 				builder['POSTLINKFLAGS'].append(libPath)
@@ -289,6 +296,9 @@ class SM:
 		sdkPath = AMBuild.cache[info['sdk']]
 
 		compiler['CDEFINES'].append('SOURCE_ENGINE=' + info['def'])
+
+		if sdk == 'swarm' and AMBuild.target['platform'] == 'windows':
+			compiler['CDEFINES'].extend(['COMPILER_MSVC', 'COMPILER_MSVC32'])
 
 		if sdk == 'ep1':
 			if AMBuild.target['platform'] == 'linux':

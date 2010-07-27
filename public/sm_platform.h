@@ -38,7 +38,9 @@
  */
 
 #if defined WIN32 || defined WIN64
+#ifndef PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS
+#endif
 #if !defined WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif

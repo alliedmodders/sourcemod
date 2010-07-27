@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -73,6 +73,7 @@
 #define FILENAME_1_6_L4D			"sourcemod.2.l4d" PLATFORM_EXT
 #define FILENAME_1_6_DARKM			"sourcemod.2.darkm" PLATFORM_EXT
 #define FILENAME_1_6_L4D2			"sourcemod.2.l4d2" PLATFORM_EXT
+#define FILENAME_1_6_SWARM			"sourcemod.2.swarm" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -237,6 +238,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_LEFT4DEAD2:
 		{
 			filename = FILENAME_1_6_L4D2;
+			break;
+		}
+	case SOURCE_ENGINE_ALIENSWARM:
+		{
+			filename = FILENAME_1_6_SWARM;
 			break;
 		}
 	default:

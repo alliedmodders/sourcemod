@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -31,59 +31,59 @@
 #ifndef _INCLUDE_SOURCEMOD_CON_COMMAND_BASE_ITERATOR_H_
 #define _INCLUDE_SOURCEMOD_CON_COMMAND_BASE_ITERATOR_H_
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 class ConCommandBaseIterator
 {
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-	ICvarIteratorInternal *cvarIter;
-#else
-	ConCommandBase *cvarIter;
-#endif
-
 public:
-	ConCommandBaseIterator()
+	inline ConCommandBaseIterator() : iter(icvar)
 	{
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-		cvarIter = icvar->FactoryInternalIterator();
-		cvarIter->SetFirst();
-#else
-		cvarIter = icvar->GetCommands();
-#endif
-	}
-	
-	~ConCommandBaseIterator()
-	{
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-		g_pMemAlloc->Free(cvarIter);
-#endif
+		iter.SetFirst();
 	}
 
 	inline bool IsValid()
 	{
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-		return cvarIter->IsValid();
-#else
-		return cvarIter != NULL;
-#endif
+		return iter.IsValid();
 	}
 
 	inline void Next()
 	{
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-		cvarIter->Next();
-#else
-		cvarIter = const_cast<ConCommandBase*>(cvarIter->GetNext());
-#endif
+		iter.Next();
 	}
 
 	inline ConCommandBase *Get()
 	{
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-		return cvarIter->Get();
-#else
-		return cvarIter;
-#endif
+		return iter.Get();
 	}
+private:
+	ICvar::Iterator iter;
 };
+#else
+class ConCommandBaseIterator
+{
+public:
+	inline ConCommandBaseIterator()
+	{
+		iter = icvar->GetCommands();
+	}
+
+	inline bool IsValid()
+	{
+		return iter != NULL;
+	}
+
+	inline void Next()
+	{
+		iter = const_cast<ConCommandBase *>(iter->GetNext());
+	}
+
+	inline ConCommandBase *Get()
+	{
+		return iter;
+	}
+private:
+	ConCommandBase *iter;
+};
+#endif
 
 #endif /* _INCLUDE_SOURCEMOD_CON_COMMAND_BASE_ITERATOR_H_ */
 

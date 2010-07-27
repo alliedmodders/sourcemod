@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -160,6 +160,13 @@ void EventManager::FireGameEvent(IGameEvent *pEvent)
 	/* Not going to do anything here.
 	   Just need to add ourselves as a listener to make our hook on IGameEventManager2::FireEvent work */
 }
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+int EventManager::GetEventDebugID()
+{
+	return EVENT_DEBUG_ID_INIT;
+}
+#endif
 
 EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunction, EventHookMode mode)
 {

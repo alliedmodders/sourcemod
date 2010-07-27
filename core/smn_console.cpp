@@ -45,6 +45,7 @@
 #include <sm_trie_tpl.h>
 #include "Logger.h"
 #include "ConsoleDetours.h"
+#include "ConCommandBaseIterator.h"
 
 #if SOURCE_ENGINE >= SE_ORANGEBOXVALVE
 #define NETMSG_BITS 6
@@ -52,7 +53,7 @@
 #define NETMSG_BITS 5
 #endif
 
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 #define NET_SETCONVAR	6
 #else
 #define NET_SETCONVAR	5
@@ -71,15 +72,6 @@ struct GlobCmdIter
 {
 	bool started;
 	List<ConCmdInfo *>::iterator iter;
-};
-
-struct ConCmdIter
-{
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-	ICvarIteratorInternal *pLast;
-#else
-	const ConCommandBase *pLast;
-#endif
 };
 
 class ConsoleHelpers : 
@@ -108,11 +100,7 @@ public:
 		}
 		else if (type == htConCmdIter)
 		{
-			ConCmdIter *iter = (ConCmdIter * )object;
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-			// ICvarIteratorInternal has no virtual destructor
-			g_pMemAlloc->Free(iter->pLast);
-#endif
+			ConCommandBaseIterator *iter = (ConCommandBaseIterator * )object;
 			delete iter;
 		}
 	}
@@ -120,7 +108,7 @@ public:
 	{
 		if (type == htConCmdIter)
 		{
-			*pSize = sizeof(ConCmdIter);
+			*pSize = sizeof(ConCommandBaseIterator);
 			return true;
 		}
 		else if (type == hCmdIterType)
@@ -1199,7 +1187,7 @@ static cell_t GetCommandFlags(IPluginContext *pContext, const cell_t *params)
 static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl;
-	ConCmdIter *pIter;
+	ConCommandBaseIterator *pIter;
 	cell_t *pIsCmd, *pFlags;
 	const ConCommandBase *pConCmd;
 	const char *desc;
@@ -1207,21 +1195,15 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 	pContext->LocalToPhysAddr(params[3], &pIsCmd);
 	pContext->LocalToPhysAddr(params[4], &pFlags);
 
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-	ICvarIteratorInternal *cvarIter = icvar->FactoryInternalIterator();
-	cvarIter->SetFirst();
-	if (!cvarIter->IsValid())
+	pIter = new ConCommandBaseIterator();
+
+	if (!pIter->IsValid())
 	{
+		delete pIter;
 		return BAD_HANDLE;
 	}
-	pConCmd = cvarIter->Get();
-#else
-	pConCmd = icvar->GetCommands();
-	if (pConCmd == NULL)
-	{
-		return BAD_HANDLE;
-	}
-#endif
+
+	pConCmd = pIter->Get();
 
 	pContext->StringToLocalUTF8(params[1], params[2], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
@@ -1232,13 +1214,6 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 		desc = pConCmd->GetHelpText();
 		pContext->StringToLocalUTF8(params[5], params[6], (desc && desc[0]) ? desc : "", NULL);
 	}
-
-	pIter = new ConCmdIter;
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-	pIter->pLast = cvarIter;
-#else
-	pIter->pLast = pConCmd;
-#endif
 
 	if ((hndl = g_HandleSys.CreateHandle(htConCmdIter, pIter, pContext->GetIdentity(), g_pCoreIdent, NULL))
 		== BAD_HANDLE)
@@ -1253,7 +1228,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 {
 	HandleError err;
-	ConCmdIter *pIter;
+	ConCommandBaseIterator *pIter;
 	cell_t *pIsCmd, *pFlags;
 	const char *desc;
 	const ConCommandBase *pConCmd;
@@ -1264,27 +1239,17 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
 	}
 
-	if (pIter->pLast == NULL)
+	if (!pIter->IsValid())
 	{
 		return 0;
 	}
 
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-	ICvarIteratorInternal *cvarIter = pIter->pLast;
-	cvarIter->Next();
-	if (!cvarIter->IsValid())
+	pIter->Next();
+	if (!pIter->IsValid())
 	{
 		return 0;
 	}
-	pConCmd = cvarIter->Get();
-#else
-	pConCmd = pIter->pLast->GetNext();
-	if (pConCmd == NULL)
-	{
-		return 0;
-	}
-	pIter->pLast = pConCmd;
-#endif
+	pConCmd = pIter->Get();
 
 	pContext->LocalToPhysAddr(params[4], &pIsCmd);
 	pContext->LocalToPhysAddr(params[5], &pFlags);

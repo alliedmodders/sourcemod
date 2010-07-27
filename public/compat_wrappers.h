@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -31,6 +31,8 @@
 
 #ifndef _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
 #define _INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_
+
+#include <datamap.h>
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	#define CONVAR_REGISTER(object)				ConVar_Register(0, object)
@@ -123,15 +125,19 @@
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	inline int IndexOfEdict(const edict_t *pEdict)
 	{
-		return (int)(pEdict - gpGlobals->baseEdict);
+		return (int)(pEdict - gpGlobals->pEdicts);
 	}
 	inline edict_t *PEntityOfEntIndex(int iEntIndex)
 	{
 		if (iEntIndex >= 0 && iEntIndex < gpGlobals->maxEntities)
 		{
-			return (edict_t *)(gpGlobals->baseEdict + iEntIndex);
+			return (edict_t *)(gpGlobals->pEdicts + iEntIndex);
 		}
 		return NULL;
+	}
+	inline int GetTypeDescOffs(typedescription_t *td)
+	{
+		return td->fieldOffset;
 	}
 #else
 	inline int IndexOfEdict(const edict_t *pEdict)
@@ -141,6 +147,10 @@
 	inline edict_t *PEntityOfEntIndex(int iEntIndex)
 	{
 		return engine->PEntityOfEntIndex(iEntIndex);
+	}
+	inline int GetTypeDescOffs(typedescription_t *td)
+	{
+		return td->fieldOffset[TD_OFFSET_NORMAL];
 	}
 #endif //SOURCE_ENGINE >= SE_LEFT4DEAD
 

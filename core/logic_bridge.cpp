@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -145,6 +145,8 @@ static const char *get_source_engine_name()
 	return "left4dead";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
 	return "left4dead2";
+#elif SOURCE_ENGINE == SE_ALIENSWARM
+	return "alienswarm";
 #endif
 }
 

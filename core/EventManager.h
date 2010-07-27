@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -105,6 +105,9 @@ public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: // IGameEventListener2
 	void FireGameEvent(IGameEvent *pEvent);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	int GetEventDebugID();
+#endif
 public:
 	/**
 	 * Get the 'GameEvent' handle type ID.

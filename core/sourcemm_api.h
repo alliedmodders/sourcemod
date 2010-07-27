@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -32,7 +32,9 @@
 #ifndef _INCLUDE_SOURCEMOD_MM_API_H_
 #define _INCLUDE_SOURCEMOD_MM_API_H_
 
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if SOURCE_ENGINE == SE_ALIENSWARM
+#include "convar_sm_swarm.h"
+#elif (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 #include "convar_sm_l4d.h"
 #elif (SOURCE_ENGINE == SE_ORANGEBOX) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE)
 #include "convar_sm_ob.h"

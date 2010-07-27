@@ -330,7 +330,7 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 		{
 			if (pMap->dataDesc[i].flags & FTYPEDESC_OUTPUT)
 			{
-				if ((char *)pCaller + pMap->dataDesc[i].fieldOffset[0] == pOutput)
+				if ((char *)pCaller + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
 				{
 					return pMap->dataDesc[i].externalName;
 				}
@@ -349,7 +349,7 @@ const char *EntityOutputManager::GetEntityClassname(CBaseEntity *pEntity)
 	{
 		datamap_t *pMap = gamehelpers->GetDataMap(pEntity);
 		typedescription_t *pDesc = gamehelpers->FindInDataMap(pMap, "m_iClassname");
-		offset = pDesc->fieldOffset[TD_OFFSET_NORMAL];
+		offset = GetTypeDescOffs(pDesc);
 	}
 
 	return *(const char **)(((unsigned char *)pEntity) + offset);
