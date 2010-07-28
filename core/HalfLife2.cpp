@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -359,13 +359,11 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	if (g_pSharedChangeInfo != NULL)
 	{
-#if SOURCE_ENGINE != SE_LEFT4DEAD2
 		if (offset)
 		{
 			pEdict->StateChanged(offset);
 		}
 		else
-#endif
 		{
 			pEdict->StateChanged();
 		}

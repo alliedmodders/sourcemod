@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -530,8 +530,8 @@ static cell_t smn_TRGetPointContents(IPluginContext *pContext, const cell_t *par
 	{
 		mask = enginetrace->GetPointContents(pos);
 	} else {
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
-		mask = enginetrace->GetPointContents(pos, 0, &hentity);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+		mask = enginetrace->GetPointContents(pos, MASK_ALL, &hentity);
 #else
 		mask = enginetrace->GetPointContents(pos, &hentity);
 #endif

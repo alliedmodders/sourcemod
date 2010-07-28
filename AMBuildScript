@@ -22,6 +22,8 @@ class SM:
 		if AMBuild.target['platform'] == 'windows':
 			self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',  'ext': '2.darkm', 'def': '2',
 		                           'name': 'DARKMESSIAH'}
+			self.sdkInfo['swarm'] = {'sdk': 'HL2SDK-SWARM',  'ext': '2.swarm', 'def': '7',
+		                           'name': 'ALIENSWARM'}
 
 		if AMBuild.mode == 'config':
 			#Detect compilers
@@ -40,6 +42,7 @@ class SM:
 			#Dark Messiah is Windows-only
 			if AMBuild.target['platform'] == 'windows':
 				envvars['HL2SDK-DARKM'] = 'hl2sdk-darkm'
+				envvars['HL2SDK-SWARM'] = 'hl2sdk-swarm'
 
 			#Must have a path for each envvar (file a bug if you don't like this)
 			for i in envvars:
@@ -91,6 +94,7 @@ class SM:
 				self.vendor = 'msvc'
 				if AMBuild.options.debug == '1':
 					self.compiler.AddToListVar('CFLAGS', '/MTd')
+					self.compiler.AddToListVar('POSTLINKFLAGS', '/NODEFAULTLIB:libcmt')
 				else:
 					self.compiler.AddToListVar('CFLAGS', '/MT')
 				self.compiler.AddToListVar('CDEFINES', '_CRT_SECURE_NO_DEPRECATE')
@@ -124,8 +128,9 @@ class SM:
 				if self.vendor == 'gcc':
 					self.compiler.AddToListVar('CFLAGS', '-O3')
 				elif self.vendor == 'msvc':
-					self.compiler.AddToListVar('CFLAGS', '/Ot')
+					self.compiler.AddToListVar('CFLAGS', '/Ox')
 					self.compiler.AddToListVar('POSTLINKFLAGS', '/OPT:ICF')
+					self.compiler.AddToListVar('POSTLINKFLAGS', '/OPT:REF')
 
 			#Debugging
 			if AMBuild.options.debug == '1':
@@ -217,7 +222,10 @@ class SM:
 					except:
 						job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
-			for lib in ['tier0', 'tier1', 'vstdlib', 'mathlib']:
+			libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
+			if sdk == 'swarm':
+				libs.append('interfaces')
+			for lib in libs:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
 				builder.RebuildIfNewer(libPath)
 				builder['POSTLINKFLAGS'].append(libPath)
@@ -238,7 +246,8 @@ class SM:
 
 		info = self.sdkInfo
 		compiler['CDEFINES'].extend(['SE_' + info[i]['name'] + '=' + info[i]['def'] for i in info])
-		compiler['CDEFINES'].append('SE_DARKMESSIAH=2')
+		if AMBuild.target['platform'] != 'windows':
+			compiler['CDEFINES'].extend(['SE_DARKMESSIAH=2', 'SE_ALIENSWARM=7'])
 
 		paths = [['public'], ['public', 'engine'], ['public', 'mathlib'], ['public', 'vstdlib'],
 						 ['public', 'tier0'], ['public', 'tier1']]
@@ -254,6 +263,9 @@ class SM:
 		sdkPath = AMBuild.cache[info['sdk']]
 
 		compiler['CDEFINES'].append('SOURCE_ENGINE=' + info['def'])
+
+		if sdk == 'swarm' and AMBuild.target['platform'] == 'windows':
+			compiler['CDEFINES'].extend(['COMPILER_MSVC', 'COMPILER_MSVC32'])
 
 		if sdk == 'ep1':
 			if AMBuild.target['platform'] == 'linux':

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -859,7 +859,7 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	return td->fieldOffset[TD_OFFSET_NORMAL];
+	return GetTypeDescOffs(td);
 }
 
 static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
@@ -1003,7 +1003,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 					td->fieldType);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1092,7 +1092,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 					td->fieldType);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1183,7 +1183,7 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 					FIELD_TIME);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1252,7 +1252,7 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 					FIELD_TIME);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1324,7 +1324,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 					FIELD_EHANDLE);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1392,7 +1392,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 					FIELD_EHANDLE);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1483,7 +1483,7 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 					FIELD_POSITION_VECTOR);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1559,7 +1559,7 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 					FIELD_POSITION_VECTOR);
 			}
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1646,7 +1646,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
 
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			break;
 		}
 	case Prop_Send:
@@ -1725,7 +1725,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			{
 				return pContext->ThrowNativeError("Property \"%s\" is not a valid string", prop);
 			}
-			offset = td->fieldOffset[TD_OFFSET_NORMAL];
+			offset = GetTypeDescOffs(td);
 			maxlen = td->fieldSize;
 			break;
 		}

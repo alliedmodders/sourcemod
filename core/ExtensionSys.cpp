@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -65,6 +65,8 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 #define GAMEFIX "2.l4d"
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
 #define GAMEFIX "2.l4d2"
+#elif SOURCE_ENGINE == SE_ALIENSWARM
+#define GAMEFIX "2.swarm"
 #elif SOURCE_ENGINE == SE_ORANGEBOX
 #define GAMEFIX "2.ep2"
 #elif SOURCE_ENGINE == SE_ORANGEBOXVALVE

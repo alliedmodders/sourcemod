@@ -117,6 +117,8 @@ static bool DoesEngineMatch(const char *value)
 	if (strcmp(value, "left4dead") == 0)
 #elif SOURCE_ENGINE == SE_LEFT4DEAD2
 	if (strcmp(value, "left4dead2") == 0)
+#elif SOURCE_ENGINE == SE_ALIENSWARM
+	if (strcmp(value, "alienswarm") == 0)
 #else
 #error "Unknown engine type"
 #endif

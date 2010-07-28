@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -79,7 +79,7 @@ public: //IUserMessages
 		IUserMessageListener *pListener,
 		bool intercept=false);
 public:
-#if (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #else

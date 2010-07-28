@@ -20,15 +20,24 @@
 #include "tier1/iconvar.h"
 #include "tier1/utlvector.h"
 #include "tier1/utlstring.h"
+#include "color.h"
 #include "icvar.h"
 
 #ifdef _WIN32
 #define FORCEINLINE_CVAR FORCEINLINE
-#elif _LINUX
+#elif POSIX
 #define FORCEINLINE_CVAR inline
 #else
 #error "implement me"
 #endif
+
+
+//-----------------------------------------------------------------------------
+// Uncomment me to test for threading issues for material system convars
+// NOTE: You want to disable all threading when you do this
+// +host_thread_mode 0 +r_threaded_particles 0 +sv_parallel_packentities 0 +sv_disable_querycache 0
+//-----------------------------------------------------------------------------
+//#define CONVAR_TEST_MATERIAL_THREAD_CONVARS 1
 
 
 //-----------------------------------------------------------------------------
@@ -58,7 +67,7 @@ public:
 //-----------------------------------------------------------------------------
 // Helper method for console development
 //-----------------------------------------------------------------------------
-#if defined( _X360 ) && !defined( _RETAIL )
+#if defined( _X360 )
 void ConVar_PublishToVXConsole();
 #endif
 
@@ -120,10 +129,10 @@ public:
 	virtual bool				IsFlagSet( int flag ) const;
 	// Set flag
 	virtual void				AddFlags( int flags );
-	// Remove flag
+	// Clear flag
 	virtual void				RemoveFlags( int flags );
-	// Get flags
-	virtual int					GetFlags( void ) const;
+
+	virtual int					GetFlags() const;
 
 	// Return name of cvar
 	virtual const char			*GetName( void ) const;
@@ -134,11 +143,6 @@ public:
 	// Deal with next pointer
 	const ConCommandBase		*GetNext( void ) const;
 	ConCommandBase				*GetNext( void );
-
-	inline void SetNext(ConCommandBase *pBase)
-	{
-		m_pNext = pBase;
-	}
 	
 	virtual bool				IsRegistered( void ) const;
 
@@ -338,6 +342,7 @@ class ConVar : public ConCommandBase, public IConVar
 {
 friend class CCvar;
 friend class ConVarRef;
+friend class SplitScreenConVarRef;
 
 public:
 	typedef ConCommandBase BaseClass;
@@ -356,28 +361,35 @@ public:
 
 	virtual						~ConVar( void );
 
-	virtual	bool				IsCommand( void ) const;
 	virtual bool				IsFlagSet( int flag ) const;
-	virtual void				AddFlags( int flags );
-	virtual int					GetFlags( void ) const;
-	virtual const char			*GetName( void ) const;
 	virtual const char*			GetHelpText( void ) const;
 	virtual bool				IsRegistered( void ) const;
-		
+	virtual const char			*GetName( void ) const;
+	// Return name of command (usually == GetName(), except in case of FCVAR_SS_ADDED vars
+	virtual const char			*GetBaseName( void ) const;
+	virtual int					GetSplitScreenPlayerSlot() const;
+
+	virtual void				AddFlags( int flags );
+	virtual int					GetFlags() const;
+	virtual	bool				IsCommand( void ) const;
+
 	// Install a change callback (there shouldn't already be one....)
-	void InstallChangeCallback( FnChangeCallback_t callback );
+	void InstallChangeCallback( FnChangeCallback_t callback, bool bInvoke = true );
+	void RemoveChangeCallback( FnChangeCallback_t callbackToRemove );
+
+	int GetChangeCallbackCount() const { return m_pParent->m_fnChangeCallbacks.Count(); }
+	FnChangeCallback_t GetChangeCallback( int slot ) const { return m_pParent->m_fnChangeCallbacks[ slot ]; }
 
 	// Retrieve value
 	FORCEINLINE_CVAR float			GetFloat( void ) const;
 	FORCEINLINE_CVAR int			GetInt( void ) const;
+	FORCEINLINE_CVAR Color			GetColor( void ) const;
 	FORCEINLINE_CVAR bool			GetBool() const {  return !!GetInt(); }
 	FORCEINLINE_CVAR char const	   *GetString( void ) const;
-	
-	// Used internally by OneTimeInit to initialize.
-	virtual void				Init();
-	
-	virtual const char 			*GetBaseName( void ) const;
-	virtual int					GetSplitScreenPlayerSlot ( void ) const;
+
+	// Compiler driven selection for template use
+	template <typename T> T Get( void ) const;
+	template <typename T> T Get( T * ) const;
 
 	// Any function that allocates/frees memory needs to be virtual or else you'll have crashes
 	//  from alloc/free across dll/exe boundaries.
@@ -386,27 +398,51 @@ public:
 	virtual void				SetValue( const char *value );
 	virtual void				SetValue( float value );
 	virtual void				SetValue( int value );
-#if SOURCE_ENGINE >= SE_LEFT4DEAD2
 	virtual void				SetValue( Color value );
-#endif
 	
 	// Reset to default value
 	void						Revert( void );
 
 	// True if it has a min/max setting
+	bool						HasMin() const;
+	bool						HasMax() const;
+
 	bool						GetMin( float& minVal ) const;
 	bool						GetMax( float& maxVal ) const;
+
+	float						GetMinValue() const;
+	float						GetMaxValue() const;
+
 	const char					*GetDefault( void ) const;
 
+	// Value
+	struct CVValue_t
+	{
+		char						*m_pszString;
+		int							m_StringLength;
+
+		// Values
+		float						m_fValue;
+		int							m_nValue;
+	};
+
+	FORCEINLINE_CVAR CVValue_t &GetRawValue()
+	{
+		return m_Value;
+	}
+	FORCEINLINE_CVAR const CVValue_t &GetRawValue() const
+	{
+		return m_Value;
+	}
+
 private:
+	bool						InternalSetColorFromString( const char *value );
 	// Called by CCvar when the value of a var is changing.
 	virtual void				InternalSetValue(const char *value);
 	// For CVARs marked FCVAR_NEVER_AS_STRING
 	virtual void				InternalSetFloatValue( float fNewValue );
 	virtual void				InternalSetIntValue( int nValue );
-#if SOURCE_ENGINE >= SE_LEFT4DEAD2
 	virtual void				InternalSetColorValue( Color value );
-#endif
 
 	virtual bool				ClampValue( float& value );
 	virtual void				ChangeStringValue( const char *tempVal, float flOldValue );
@@ -415,7 +451,12 @@ private:
 									const char *pHelpString = 0, bool bMin = false, float fMin = 0.0,
 									bool bMax = false, float fMax = false, FnChangeCallback_t callback = 0 );
 
-private:
+	// Used internally by OneTimeInit to initialize.
+	virtual void				Init();
+
+
+
+protected:
 
 	// This either points to "this" or it points to the original declaration of a ConVar.
 	// This allows ConVars to exist in separate modules, and they all use the first one to be declared.
@@ -425,14 +466,7 @@ private:
 	// Static data
 	const char					*m_pszDefaultValue;
 	
-	// Value
-	// Dynamically allocated
-	char						*m_pszString;
-	int							m_StringLength;
-
-	// Values
-	float						m_fValue;
-	int							m_nValue;
+	CVValue_t					m_Value;
 
 	// Min/Max values
 	bool						m_bHasMin;
@@ -441,12 +475,8 @@ private:
 	float						m_fMaxVal;
 	
 	// Call this function when ConVar changes
-	FnChangeCallback_t			m_fnChangeCallback;
+	CUtlVector< FnChangeCallback_t > m_fnChangeCallbacks;
 public:
-	inline FnChangeCallback_t GetCallback() const
-	{
-		return m_fnChangeCallback;
-	}
 	inline void SetMin(bool set, float min=0.0)
 	{ 
 		m_bHasMin = set; 
@@ -466,7 +496,10 @@ public:
 //-----------------------------------------------------------------------------
 FORCEINLINE_CVAR float ConVar::GetFloat( void ) const
 {
-	return m_pParent->m_fValue;
+#ifdef CONVAR_TEST_MATERIAL_THREAD_CONVARS
+	Assert( ThreadInMainThread() || IsFlagSet( FCVAR_MATERIAL_THREAD_MASK | FCVAR_ACCESSIBLE_FROM_THREADS ) );
+#endif
+	return m_pParent->m_Value.m_fValue;
 }
 
 //-----------------------------------------------------------------------------
@@ -475,9 +508,36 @@ FORCEINLINE_CVAR float ConVar::GetFloat( void ) const
 //-----------------------------------------------------------------------------
 FORCEINLINE_CVAR int ConVar::GetInt( void ) const 
 {
-	return m_pParent->m_nValue;
+#ifdef CONVAR_TEST_MATERIAL_THREAD_CONVARS
+	Assert( ThreadInMainThread() || IsFlagSet( FCVAR_MATERIAL_THREAD_MASK | FCVAR_ACCESSIBLE_FROM_THREADS ) );
+#endif
+	return m_pParent->m_Value.m_nValue;
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: Return ConVar value as a color
+// Output : Color
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR Color ConVar::GetColor( void ) const 
+{
+#ifdef CONVAR_TEST_MATERIAL_THREAD_CONVARS
+	Assert( ThreadInMainThread() || IsFlagSet( FCVAR_MATERIAL_THREAD_MASK | FCVAR_ACCESSIBLE_FROM_THREADS ) );
+#endif
+	unsigned char *pColorElement = ((unsigned char *)&m_pParent->m_Value.m_nValue);
+	return Color( pColorElement[0], pColorElement[1], pColorElement[2], pColorElement[3] );
+}
+
+
+//-----------------------------------------------------------------------------
+
+template <> FORCEINLINE_CVAR float			ConVar::Get<float>( void ) const		{ return GetFloat(); }
+template <> FORCEINLINE_CVAR int			ConVar::Get<int>( void ) const			{ return GetInt(); }
+template <> FORCEINLINE_CVAR bool			ConVar::Get<bool>( void ) const			{ return GetBool(); }
+template <> FORCEINLINE_CVAR const char *	ConVar::Get<const char *>( void ) const	{ return GetString(); }
+template <> FORCEINLINE_CVAR float			ConVar::Get<float>( float *p ) const				{ return ( *p = GetFloat() ); }
+template <> FORCEINLINE_CVAR int			ConVar::Get<int>( int *p ) const					{ return ( *p = GetInt() ); }
+template <> FORCEINLINE_CVAR bool			ConVar::Get<bool>( bool *p ) const					{ return ( *p = GetBool() ); }
+template <> FORCEINLINE_CVAR const char *	ConVar::Get<const char *>( char const **p ) const	{ return ( *p = GetString() ); }
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as a string, return "" for bogus string pointer, etc.
@@ -485,12 +545,79 @@ FORCEINLINE_CVAR int ConVar::GetInt( void ) const
 //-----------------------------------------------------------------------------
 FORCEINLINE_CVAR const char *ConVar::GetString( void ) const 
 {
+#ifdef CONVAR_TEST_MATERIAL_THREAD_CONVARS
+	Assert( ThreadInMainThread() || IsFlagSet( FCVAR_MATERIAL_THREAD_MASK | FCVAR_ACCESSIBLE_FROM_THREADS ) );
+#endif
 	if ( m_nFlags & FCVAR_NEVER_AS_STRING )
 		return "FCVAR_NEVER_AS_STRING";
-
-	return ( m_pParent->m_pszString ) ? m_pParent->m_pszString : "";
+	
+	char const *str = m_pParent->m_Value.m_pszString;
+	return str ? str : "";
 }
 
+class CSplitScreenAddedConVar : public ConVar
+{
+	typedef ConVar BaseClass;
+public:
+	CSplitScreenAddedConVar( int nSplitScreenSlot, const char *pName, const ConVar *pBaseVar ) :
+		BaseClass
+		( 
+			pName, 
+			pBaseVar->GetDefault(), 
+			// Keep basevar flags, except remove _SS and add _SS_ADDED instead
+			( pBaseVar->GetFlags() & ~FCVAR_SS ) | FCVAR_SS_ADDED, 
+			pBaseVar->GetHelpText(), 
+			pBaseVar->HasMin(),
+			pBaseVar->GetMinValue(),
+			pBaseVar->HasMax(),
+			pBaseVar->GetMaxValue()
+		),
+		m_pBaseVar( pBaseVar ),
+		m_nSplitScreenSlot( nSplitScreenSlot )
+	{
+		for ( int i = 0; i < pBaseVar->GetChangeCallbackCount(); ++i )
+		{
+			InstallChangeCallback( pBaseVar->GetChangeCallback( i ), false );
+		}
+		Assert( nSplitScreenSlot >= 1 );
+		Assert( nSplitScreenSlot < MAX_SPLITSCREEN_CLIENTS );
+		Assert( m_pBaseVar );
+		Assert( IsFlagSet( FCVAR_SS_ADDED ) );
+		Assert( !IsFlagSet( FCVAR_SS ) );
+	}
+
+	const ConVar *GetBaseVar() const;
+	virtual const char *GetBaseName() const;
+	void SetSplitScreenPlayerSlot( int nSlot );
+	virtual int GetSplitScreenPlayerSlot() const;
+
+protected:
+
+	const ConVar	*m_pBaseVar;
+	int		m_nSplitScreenSlot;
+};
+
+FORCEINLINE_CVAR const ConVar *CSplitScreenAddedConVar::GetBaseVar() const 
+{ 
+	Assert( m_pBaseVar );
+	return m_pBaseVar; 
+}
+
+FORCEINLINE_CVAR const char *CSplitScreenAddedConVar::GetBaseName() const 
+{ 
+	Assert( m_pBaseVar );
+	return m_pBaseVar->GetName(); 
+}
+
+FORCEINLINE_CVAR void CSplitScreenAddedConVar::SetSplitScreenPlayerSlot( int nSlot ) 
+{ 
+	m_nSplitScreenSlot = nSlot; 
+}
+
+FORCEINLINE_CVAR int CSplitScreenAddedConVar::GetSplitScreenPlayerSlot() const 
+{ 
+	return m_nSplitScreenSlot; 
+}
 
 //-----------------------------------------------------------------------------
 // Used to read/write convars that already exist (replaces the FindVar method)
@@ -510,17 +637,23 @@ public:
 	// Get/Set value
 	float GetFloat( void ) const;
 	int GetInt( void ) const;
+	Color GetColor( void ) const;
 	bool GetBool() const { return !!GetInt(); }
 	const char *GetString( void ) const;
 
 	void SetValue( const char *pValue );
 	void SetValue( float flValue );
 	void SetValue( int nValue );
+	void SetValue( Color value );
 	void SetValue( bool bValue );
 
 	const char *GetName() const;
 
 	const char *GetDefault() const;
+
+	const char *GetBaseName() const;
+
+	int	GetSplitScreenPlayerSlot() const;
 
 private:
 	// High-speed method to read convar data
@@ -547,13 +680,22 @@ FORCEINLINE_CVAR const char *ConVarRef::GetName() const
 	return m_pConVar->GetName();
 }
 
+FORCEINLINE_CVAR const char *ConVarRef::GetBaseName() const
+{
+	return m_pConVar->GetBaseName();
+}
+
+FORCEINLINE_CVAR int ConVarRef::GetSplitScreenPlayerSlot() const
+{
+	return m_pConVar->GetSplitScreenPlayerSlot();
+}
 
 //-----------------------------------------------------------------------------
 // Purpose: Return ConVar value as a float
 //-----------------------------------------------------------------------------
 FORCEINLINE_CVAR float ConVarRef::GetFloat( void ) const
 {
-	return m_pConVarState->m_fValue;
+	return m_pConVarState->m_Value.m_fValue;
 }
 
 //-----------------------------------------------------------------------------
@@ -561,7 +703,15 @@ FORCEINLINE_CVAR float ConVarRef::GetFloat( void ) const
 //-----------------------------------------------------------------------------
 FORCEINLINE_CVAR int ConVarRef::GetInt( void ) const 
 {
-	return m_pConVarState->m_nValue;
+	return m_pConVarState->m_Value.m_nValue;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Return ConVar value as a color
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR Color ConVarRef::GetColor( void ) const 
+{
+	return m_pConVarState->GetColor();
 }
 
 //-----------------------------------------------------------------------------
@@ -570,7 +720,7 @@ FORCEINLINE_CVAR int ConVarRef::GetInt( void ) const
 FORCEINLINE_CVAR const char *ConVarRef::GetString( void ) const 
 {
 	Assert( !IsFlagSet( FCVAR_NEVER_AS_STRING ) );
-	return m_pConVarState->m_pszString;
+	return m_pConVarState->m_Value.m_pszString;
 }
 
 
@@ -589,6 +739,11 @@ FORCEINLINE_CVAR void ConVarRef::SetValue( int nValue )
 	m_pConVar->SetValue( nValue );
 }
 
+FORCEINLINE_CVAR void ConVarRef::SetValue( Color value )
+{
+	m_pConVar->SetValue( value );
+}
+
 FORCEINLINE_CVAR void ConVarRef::SetValue( bool bValue )
 {
 	m_pConVar->SetValue( bValue ? 1 : 0 );
@@ -599,6 +754,130 @@ FORCEINLINE_CVAR const char *ConVarRef::GetDefault() const
 	return m_pConVarState->m_pszDefaultValue;
 }
 
+//-----------------------------------------------------------------------------
+// Helper for referencing splitscreen convars (i.e., "name" and "name2")
+//-----------------------------------------------------------------------------
+class SplitScreenConVarRef
+{
+public:
+	SplitScreenConVarRef( const char *pName );
+	SplitScreenConVarRef( const char *pName, bool bIgnoreMissing );
+	SplitScreenConVarRef( IConVar *pConVar );
+
+	void Init( const char *pName, bool bIgnoreMissing );
+	bool IsValid() const;
+	bool IsFlagSet( int nFlags ) const;
+
+	// Get/Set value
+	float GetFloat( int nSlot ) const;
+	int GetInt( int nSlot ) const;
+	Color GetColor( int nSlot ) const;
+	bool GetBool( int nSlot ) const { return !!GetInt( nSlot ); }
+	const char *GetString( int nSlot  ) const;
+
+	void SetValue( int nSlot, const char *pValue );
+	void SetValue( int nSlot, float flValue );
+	void SetValue( int nSlot, int nValue );
+	void SetValue( int nSlot, Color value );
+	void SetValue( int nSlot, bool bValue );
+
+	const char *GetName( int nSlot ) const;
+
+	const char *GetDefault() const;
+
+	const char *GetBaseName() const;
+
+private:
+	struct cv_t
+	{
+		IConVar *m_pConVar;
+		ConVar *m_pConVarState;
+	};
+
+	cv_t	m_Info[ MAX_SPLITSCREEN_CLIENTS ];
+};
+
+//-----------------------------------------------------------------------------
+// Did we find an existing convar of that name?
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR bool SplitScreenConVarRef::IsFlagSet( int nFlags ) const
+{
+	return ( m_Info[ 0 ].m_pConVar->IsFlagSet( nFlags ) != 0 );
+}
+
+FORCEINLINE_CVAR const char *SplitScreenConVarRef::GetName( int nSlot ) const
+{
+	return m_Info[ nSlot ].m_pConVar->GetName();
+}
+
+FORCEINLINE_CVAR const char *SplitScreenConVarRef::GetBaseName() const
+{
+	return m_Info[ 0 ].m_pConVar->GetBaseName();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Return ConVar value as a float
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR float SplitScreenConVarRef::GetFloat( int nSlot ) const
+{
+	return m_Info[ nSlot ].m_pConVarState->m_Value.m_fValue;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Return ConVar value as an int
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR int SplitScreenConVarRef::GetInt( int nSlot ) const 
+{
+	return m_Info[ nSlot ].m_pConVarState->m_Value.m_nValue;
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Return ConVar value as an int
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR Color SplitScreenConVarRef::GetColor( int nSlot ) const 
+{
+	return m_Info[ nSlot ].m_pConVarState->GetColor();
+}
+
+//-----------------------------------------------------------------------------
+// Purpose: Return ConVar value as a string, return "" for bogus string pointer, etc.
+//-----------------------------------------------------------------------------
+FORCEINLINE_CVAR const char *SplitScreenConVarRef::GetString( int nSlot ) const 
+{
+	Assert( !IsFlagSet( FCVAR_NEVER_AS_STRING ) );
+	return m_Info[ nSlot ].m_pConVarState->m_Value.m_pszString;
+}
+
+
+FORCEINLINE_CVAR void SplitScreenConVarRef::SetValue( int nSlot, const char *pValue )
+{
+	m_Info[ nSlot ].m_pConVar->SetValue( pValue );
+}
+
+FORCEINLINE_CVAR void SplitScreenConVarRef::SetValue( int nSlot, float flValue )
+{
+	m_Info[ nSlot ].m_pConVar->SetValue( flValue );
+}
+
+FORCEINLINE_CVAR void SplitScreenConVarRef::SetValue( int nSlot, int nValue )
+{
+	m_Info[ nSlot ].m_pConVar->SetValue( nValue );
+}
+
+FORCEINLINE_CVAR void SplitScreenConVarRef::SetValue( int nSlot, Color value )
+{
+	m_Info[ nSlot ].m_pConVar->SetValue( value );
+}
+
+FORCEINLINE_CVAR void SplitScreenConVarRef::SetValue( int nSlot, bool bValue )
+{
+	m_Info[ nSlot ].m_pConVar->SetValue( bValue ? 1 : 0 );
+}
+
+FORCEINLINE_CVAR const char *SplitScreenConVarRef::GetDefault() const
+{
+	return m_Info[ 0 ].m_pConVarState->m_pszDefaultValue;
+}
 
 //-----------------------------------------------------------------------------
 // Called by the framework to register ConCommands with the ICVar
@@ -610,16 +889,13 @@ void ConVar_Unregister( );
 //-----------------------------------------------------------------------------
 // Utility methods 
 //-----------------------------------------------------------------------------
-void ConVar_PrintFlags( const ConCommandBase *var );
 void ConVar_PrintDescription( const ConCommandBase *pVar );
 
 
 //-----------------------------------------------------------------------------
 // Purpose: Utility class to quickly allow ConCommands to call member methods
 //-----------------------------------------------------------------------------
-#ifdef _MSC_VER
 #pragma warning (disable : 4355 )
-#endif
 
 template< class T >
 class CConCommandMemberAccessor : public ConCommand, public ICommandCallback, public ICommandCompletionCallback
@@ -666,9 +942,8 @@ private:
 	FnMemberCommandCompletionCallback_t m_CompletionFunc;
 };
 
-#ifdef _MSC_VER
 #pragma warning ( default : 4355 )
-#endif
+
 
 //-----------------------------------------------------------------------------
 // Purpose: Utility macros to quicky generate a simple console command
@@ -678,15 +953,54 @@ private:
    static ConCommand name##_command( #name, name, description ); \
    static void name( const CCommand &args )
 
+#ifdef CLIENT_DLL
+	#define CON_COMMAND_SHARED( name, description ) \
+		static void name( const CCommand &args ); \
+		static ConCommand name##_command_client( #name "_client", name, description ); \
+		static void name( const CCommand &args )
+#else
+	#define CON_COMMAND_SHARED( name, description ) \
+		static void name( const CCommand &args ); \
+		static ConCommand name##_command( #name, name, description ); \
+		static void name( const CCommand &args )
+#endif
+
+
 #define CON_COMMAND_F( name, description, flags ) \
-   static void name( const CCommand &args ); \
-   static ConCommand name##_command( #name, name, description, flags ); \
-   static void name( const CCommand &args )
+	static void name( const CCommand &args ); \
+	static ConCommand name##_command( #name, name, description, flags ); \
+	static void name( const CCommand &args )
+
+#ifdef CLIENT_DLL
+	#define CON_COMMAND_F_SHARED( name, description, flags ) \
+		static void name( const CCommand &args ); \
+		static ConCommand name##_command_client( #name "_client", name, description, flags ); \
+		static void name( const CCommand &args )
+#else
+	#define CON_COMMAND_F_SHARED( name, description, flags ) \
+		static void name( const CCommand &args ); \
+		static ConCommand name##_command( #name, name, description, flags ); \
+		static void name( const CCommand &args )
+#endif
+
 
 #define CON_COMMAND_F_COMPLETION( name, description, flags, completion ) \
 	static void name( const CCommand &args ); \
 	static ConCommand name##_command( #name, name, description, flags, completion ); \
 	static void name( const CCommand &args )
+
+#ifdef CLIENT_DLL
+	#define CON_COMMAND_F_COMPLETION_SHARED( name, description, flags, completion ) \
+		static void name( const CCommand &args ); \
+		static ConCommand name##_command_client( #name "_client", name, description, flags, completion ); \
+		static void name( const CCommand &args )
+#else
+	#define CON_COMMAND_F_COMPLETION_SHARED( name, description, flags, completion ) \
+		static void name( const CCommand &args ); \
+		static ConCommand name##_command( #name, name, description, flags, completion ); \
+		static void name( const CCommand &args )
+#endif
+
 
 #define CON_COMMAND_EXTERN( name, _funcname, description ) \
 	void _funcname( const CCommand &args ); \

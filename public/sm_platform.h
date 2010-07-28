@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -38,7 +38,9 @@
  */
 
 #if defined WIN32 || defined WIN64
+#ifndef PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS
+#endif
 #if !defined WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
