@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod MySQL Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -81,8 +81,8 @@ public:
 	 * @return			True if working, false otherwise.
 	 */
 	//virtual bool QueryRunning(char *error, size_t maxlength);
-	const char *GetVersion();
-	const char *GetDate();
+	const char *GetExtensionVerString();
+	const char *GetExtensionDateString();
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
