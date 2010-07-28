@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod MySQL Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -60,12 +60,12 @@ void DBI_MySQL::SDK_OnUnload()
 	//mysql_library_end();
 }
 
-const char *DBI_MySQL::GetVersion()
+const char *DBI_MySQL::GetExtensionVerString()
 {
 	return SM_FULL_VERSION;
 }
 
-const char *DBI_MySQL::GetDate()
+const char *DBI_MySQL::GetExtensionDateString()
 {
 	return SM_BUILD_TIMESTAMP;
 }
