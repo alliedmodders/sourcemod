@@ -32,6 +32,9 @@
 #include <fcntl.h>
 #include <link.h>
 #include <sys/mman.h>
+
+#define PAGE_SIZE			4096
+#define PAGE_ALIGN_UP(x)	((x + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
 #endif
 #ifdef PLATFORM_APPLE
 #include <mach-o/dyld_images.h>
@@ -500,18 +503,26 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	phdrCount = file->e_phnum;
 	phdr = reinterpret_cast<Elf32_Phdr *>(baseAddr + file->e_phoff);
-	
-	/* Add up the memory sizes of segments marked as PT_LOAD as those are the only ones that should be in memory */
+
 	for (uint16_t i = 0; i < phdrCount; i++)
 	{
 		Elf32_Phdr &hdr = phdr[i];
 
-		if (hdr.p_type == PT_LOAD)
+		/* We only really care about the segment with executable code */
+		if (hdr.p_type == PT_LOAD && hdr.p_flags == (PF_X|PF_R))
 		{
-			lib.memorySize += hdr.p_memsz;
+			/* From glibc, elf/dl-load.c:
+			 * c->mapend = ((ph->p_vaddr + ph->p_filesz + GLRO(dl_pagesize) - 1) 
+			 *             & ~(GLRO(dl_pagesize) - 1));
+			 *
+			 * In glibc, the segment file size is aligned up to the nearest page size and
+			 * added to the virtual address of the segment. We just want the size here.
+			 */
+			lib.memorySize = PAGE_ALIGN_UP(hdr.p_filesz);
+			break;
 		}
 	}
-	
+
 #elif defined PLATFORM_APPLE
 
 	Dl_info info;
