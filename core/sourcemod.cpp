@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2009 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -735,6 +735,14 @@ const char *SourceModBase::GetCoreConfigValue(const char *key)
 int SourceModBase::GetPluginId()
 {
 	return g_PLID;
+}
+
+int SourceModBase::GetShApiVersion()
+{
+	int api, impl;
+	g_SMAPI->GetShVersions(api, impl);
+
+	return api;
 }
 
 SMGlobalClass *SMGlobalClass::head = NULL;

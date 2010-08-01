@@ -87,6 +87,12 @@ CLocalExtension::CLocalExtension(const char *filename)
 
 	char path[PLATFORM_MAX_PATH];
 
+	/* Special case for new bintools binary */
+	if (strcmp(filename, "bintools.ext") == 0)
+	{
+		goto normal;
+	}
+
 	/* Zeroth, see if there is an engine specific build in the new place. */
 	g_SourceMod.BuildPath(Path_SM,
 		path,
@@ -106,6 +112,7 @@ CLocalExtension::CLocalExtension(const char *filename)
 		"extensions/auto." GAMEFIX "/%s." PLATFORM_LIB_EXT,
 		filename);
 
+normal:
 	/* Try the "normal" version */
 	if (!g_LibSys.IsPathFile(path))
 	{

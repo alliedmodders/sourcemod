@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -134,6 +134,7 @@ public: // ISourceMod
 	void AddFrameAction(FRAMEACTION fn, void *data);
 	const char *GetCoreConfigValue(const char *key);
 	int GetPluginId();
+	int GetShApiVersion();
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];

@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod BinTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -128,17 +128,17 @@ unsigned int HookWrapper::GetParamOffset(unsigned int argnum, unsigned int *size
 void HookWrapper::PerformRecall(void *params, void *retval)
 {
 	/* Notify SourceHook of the upcoming recall */
-	SH_GLOB_SHPTR->DoRecall();
+	m_pSH->DoRecall();
 
 	/* Add thisptr into params buffer */
 	unsigned char *newparams = new unsigned char[sizeof(void *) + m_ParamSize];
-	*(void **)newparams = META_IFACEPTR(void);
+	*(void **)newparams = m_pSH->GetIfacePtr();
 	memcpy(newparams + sizeof(void *), params, m_ParamSize);
 
 	/* Execute the call */
 	m_CallWrapper->Execute(newparams, retval);
 
-	SET_META_RESULT(MRES_SUPERCEDE);
+	m_pSH->SetRes(MRES_SUPERCEDE);
 
 	return;
 }

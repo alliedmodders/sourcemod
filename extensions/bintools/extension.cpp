@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet:
  * =============================================================================
  * SourceMod BinTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -49,9 +49,12 @@ bool BinTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	g_SPEngine = g_pSM->GetScriptingEngine();
 	g_pShareSys->AddInterface(myself, &g_CallMaker);
-#if defined METAMOD_PLAPI_VERSION
-	g_pShareSys->AddInterface(myself, &g_CallMaker2);
-#endif
+
+	/* IBinTools2 is only compatible with SH v5 */
+	if (g_pSM->GetShApiVersion() >= 5)
+	{
+		g_pShareSys->AddInterface(myself, &g_CallMaker2);
+	}
 
 	return true;
 }

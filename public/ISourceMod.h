@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	11
+#define SMINTERFACE_SOURCEMOD_VERSION	12
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -303,6 +303,14 @@ namespace SourceMod
 		 * @return			Metamod:Source PluginId.
 		 */
 		virtual int GetPluginId() = 0;
+
+		
+		/**
+		 * @brief Returns SourceHook's API version.
+		 *
+		 * @return			SourceHook API version number.
+		 */
+		virtual int GetShApiVersion() = 0;
 	};
 }
 
