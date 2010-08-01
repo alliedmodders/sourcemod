@@ -221,7 +221,7 @@ AddNormalLibrary('regex.ext', 'extensions')
 AddNormalLibrary('webternet.ext', 'extensions')
 AddNormalLibrary('clientprefs.ext', 'extensions')
 AddNormalLibrary('updater.ext', 'extensions')
-AddHL2Library('bintools.ext', 'extensions')
+AddNormalLibrary('bintools.ext', 'extensions')
 AddHL2Library('sdktools.ext', 'extensions')
 
 bincopies.append(CopyFile(os.path.join('..', 'spcomp', 'spcomp' + osutil.ExecutableSuffix()),
