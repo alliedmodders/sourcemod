@@ -31,11 +31,6 @@
 				"windows"	"235"
 				"linux"		"236"
 			}
-			"Ignite"
-			{
-				"windows"	"192"
-				"linux"		"193"
-			}
 			"Extinguish"
 			{
 				"windows"	"196"
