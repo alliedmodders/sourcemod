@@ -220,7 +220,7 @@ public Action:Command_AddBan(client, args)
 	/* Get time */
 	if ((len = BreakString(arg_string, time, sizeof(time))) == -1)
 	{
-		ReplyToCommand(client, "t[SM] Usage: sm_addban <time> <steamid> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_addban <time> <steamid> [reason]");
 		return Plugin_Handled;
 	}	
 	total_len += len;
