@@ -25,6 +25,11 @@
 		"engine"	"left4dead2"
 	}
 	
+	"engine.swarm.txt"
+	{
+		"engine"	"alienswarm"
+	}
+	
 	"engine.ep2.txt"
 	{
 		"engine"	"orangebox"

@@ -90,6 +90,7 @@
 			"engine"			"orangebox_valve"
 			"engine"			"left4dead"
 			"engine"			"left4dead2"
+			"engine"			"alienswarm"
 		}
 		
 		"Offsets"
@@ -201,6 +202,7 @@
 			"game"					"RnLBeta"
 			"game"					"fas"
 			"game"					"fistful_of_frags"
+			"game"					"swarm"
 		}
 		
 		"Keys"
