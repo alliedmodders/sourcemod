@@ -296,7 +296,7 @@ public __ext_tf2_SetNTVOptional()
 	MarkNativeAsOptional("TF2_DisguisePlayer");
 	MarkNativeAsOptional("TF2_RemovePlayerDisguise");
 	MarkNativeAsOptional("TF2_StunPlayer");
-	MakeNativeAsOptional("TF2_MakeBleed");
+	MarkNativeAsOptional("TF2_MakeBleed");
 	MarkNativeAsOptional("TF2_GetResourceEntity");
 	MarkNativeAsOptional("TF2_GetClass");
 }
