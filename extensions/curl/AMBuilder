@@ -1,5 +1,6 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python : 
 import os.path
+import subprocess
 import ambuild.command as command
 import ambuild.osutil as osutil
 
@@ -24,10 +25,21 @@ def BuildCURL():
 			curl.AddCommand(command.DirectCommand(argv = args, env = env))
 			curl.AddCommand(command.ShellCommand('cd lib && make'))
 	else:
-		args = ['vcbuild',
-		        os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
-		                     'build_libcurl.vcproj'),
-						'LIB Release']
+		args = ''
+		projpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
+		                    'build_libcurl.vcproj')
+		try:
+			subprocess.Popen('vcbuild')
+		except:
+			xprojpath = os.path.join(AMBuild.sourceFolder, 'extensions', 'curl', 'curl-src', 'lib',
+		                    'build_libcurl.vcxproj')
+			if not os.path.isfile(xprojpath):
+				curl.AddCommand(command.DirectCommand(['vcupgrade', projpath]))
+			args = ['msbuild', xprojpath, '/p:Configuration=LIB Release']
+			
+		if not args:
+			args = ['vcbuild', projpath, 'LIB Release']
+		
 		curl.AddCommand(command.DirectCommand(args))
 		#die "Unable to find libcurl.lib!\n" unless (-f "LIB-Release\\libcurl.lib");
 
