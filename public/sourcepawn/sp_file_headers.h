@@ -260,7 +260,7 @@ typedef struct fp_fdbg_ntvarg_s
 	uint32_t	name;		/**< Offset into debug nametable */
 } sp_fdbg_ntvarg_t;
 
-#if defined __linux__
+#if defined __GNUC__
 #pragma pack()    /* reset default packing */
 #else
 #pragma pack(pop) /* reset previous packing */
