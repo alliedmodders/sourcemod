@@ -65,7 +65,7 @@ void TimeLeftEvents::FireGameEvent(IGameEvent *event)
 	}
 	else if (strcmp(name, "round_end") == 0)
 	{
-		if (event->GetInt("reason") == 16)
+		if (event->GetInt("reason") == 15)
 		{
 			get_new_timeleft_offset = true;
 		}
