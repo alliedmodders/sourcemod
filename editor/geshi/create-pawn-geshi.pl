@@ -91,47 +91,51 @@ my $output = <<EOF;
 		1 => array(
 			GESHI_SEARCH => '(#\\w+)(\\s+)',
 			GESHI_REPLACE => '\\\\1',
-			GESHI_AFTER => '\\\\2'		
+			GESHI_AFTER => '\\\\2'
 			),
 		),
 	'STYLES' => array(
-        'KEYWORDS' => array(
-            1 => 'color: #0000EE; font-weight: bold;',
-            2 => 'color: #218087; font-weight: bold;',
-            3 => 'color: #000040;',
-            4 => 'color: #000040;',
-            5 => 'color: #8000FF;',
-            ),
-        'COMMENTS' => array(
-            1 => 'color: #006600; font-style: italic;',
-            'MULTI' => 'color: #006600; font-style: italic;',
-            ),
-        'ESCAPE_CHAR' => array(
-            0 => 'color: #ff00ff;',
+		'KEYWORDS' => array(
+			1 => 'color: #0000EE; font-weight: bold;',
+			2 => 'color: #218087; font-weight: bold;',
+			3 => 'color: #000040;',
+			4 => 'color: #000040;',
+			5 => 'color: #8000FF;',
+			),
+		'COMMENTS' => array(
+			1 => 'color: #006600; font-style: italic;',
+			'MULTI' => 'color: #006600; font-style: italic;',
+			),
+		'ESCAPE_CHAR' => array(
+			0 => 'color: #ff00ff;',
 			1 => 'color: #ff00ff;',
 			2 => 'color: #ff00ff;',
 			3 => 'color: #ff00ff;',
-            ),
-        'SYMBOLS' => array(
-            0 => 'color: #1B5B00; font-weight: bold;',
-            1 => 'color: #1B5B00;',
-            2 => 'color: #1B5B00;',
-            3 => 'color: #1B5B00;',
-            ),
-        'STRINGS' => array(
-            0 => 'color: #B90000;',
-            ),
-        'BRACKETS' => array(
-            0 => 'color: #1B5B00; font-weight: bold;',
-            ),
-        'NUMBERS' => array(
-            0 => 'color: #AE5700;',
-            ),
+			),
+		'SYMBOLS' => array(
+			0 => 'color: #1B5B00; font-weight: bold;',
+			1 => 'color: #1B5B00;',
+			2 => 'color: #1B5B00;',
+			3 => 'color: #1B5B00;',
+			),
+		'STRINGS' => array(
+			0 => 'color: #B90000;',
+			),
+		'BRACKETS' => array(
+			0 => 'color: #1B5B00; font-weight: bold;',
+			),
+		'NUMBERS' => array(
+			0 => 'color: #AE5700;',
+			),
 		'REGEXPS' => array(
 			0 => 'color: #B90000;',
 			1 => 'color: #0000aa;'
+			),
+		'SCRIPT' => array(
+			),
+		'METHODS' => array(
 			)
-        ),
+		)
 );
 
 ?>
