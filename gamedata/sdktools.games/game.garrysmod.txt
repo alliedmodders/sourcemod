@@ -11,82 +11,112 @@
 
 "Games"
 {
-	/* Garry's Mod - Windows only */
+	/* Garry's Mod - No symbol names in linux bin */
 	"garrysmod"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"426"
+				"windows"	"427"
+				"linux"		"428"
+				"mac"		"428"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"300"
+				"windows"	"301"
+				"linux"		"302"
+				"mac"		"302"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"298"
+				"windows"	"299"
+				"linux"		"300"
+				"mac"		"300"
 			}
 			"Ignite"
 			{
-				"windows"	"237"
+				"windows"	"238"
+				"linux"		"239"
+				"mac"		"239"
 			}
 			"Extinguish"
 			{
-				"windows"	"241"
+				"windows"	"242"
+				"linux"		"243"
+				"mac"		"243"
 			}
 			"Teleport"
 			{
 				"windows"	"106"
+				"linux"		"107"
+				"mac"		"107"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"464"
+				"windows"	"465"
+				"linux"		"465"
+				"mac"		"465"
 			}
 			"GetVelocity"
 			{
 				"windows"	"138"
+				"linux"		"139"
+				"mac"		"139"
 			}
 			"EyeAngles"
 			{
 				"windows"	"129"
+				"linux"		"130"
+				"mac"		"130"
 			}
 			"AcceptInput"
 			{
 				"windows"	"34"
+				"linux"		"35"
+				"mac"		"35"
 			}
 			"DispatchKeyValue"
 			{
 				"windows"	"29"
+				"linux"		"28"
+				"mac"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
 				"windows"	"28"
+				"linux"		"29"
+				"mac"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
 				"windows"	"27"
+				"linux"		"30"
+				"mac"		"30"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"23"
+				"linux"		"24"
+				"mac"		"24"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"291"
+				"windows"	"292"
+				"linux"		"293"
+				"mac"		"293"
 			}
 			"Activate"
 			{
 				"windows"	"31"
+				"linux"		"32"
+				"mac"		"32"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"444"
-			}
-			"FireOutputBackup"
-			{
-				"windows"	"6"
+				"windows"	"445"
+				"linux"		"446"
+				"mac"		"446"
 			}
 		}
 		"Signatures"
@@ -95,21 +125,35 @@
 			{
 				"library"	"server"
 				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x57\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x31\xC0\x8B\x75\x2A\x85\xF6\x0F"
+				"mac"		"@_Z13DispatchSpawnP11CBaseEntity"
 			}
 			"CreateEntityByName"
 			{
 				"library"	"server"
 				"windows"	"\x56\x8B\x74\x24\x0C\x57\x8B\x7C\x24\x0C\x83\xFE\xFF\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x8B\x75\x2A\x83\xFE\xFF\x74\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x00\x8B"
+				"mac"		"@_Z18CreateEntityByNamePKci"
 			}
 			"FindEntityByClassname"
 			{
 				"library"	"server"
 				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x04\xEB\x2A\x39\x2A\x2A\x74\x2A\x53"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x8B\x55\x2A\x85\xD2\x74\x75"
+				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 			"FireOutput"
 			{
 				"library"	"server"
 				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x57\x89"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x8B\x45\x2A\x8B\x78\x2A\x85\xFF\x0F"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+			
+			"EntityFactory"
+			{
+				"library"	"server"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x2A\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x8D\x2A\x2A\x2A\x2A\x2A\x80\x2A\x2A\x2A\x2A\x2A\x2A\x74\x2A\x8D\x83\x2A\x2A\x2A\x2A\x83"
 			}
 		}
 	}
