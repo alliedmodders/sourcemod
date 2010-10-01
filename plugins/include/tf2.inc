@@ -192,10 +192,11 @@ native TF2_SetPlayerPowerPlay(client, bool:enabled);
  * @param client		Player's index.
  * @param team			Team to disguise the player as (only TFTeam_Red and TFTeam_Blue have an effect)
  * @param class			TFClassType class to disguise the player as
+ * @param target		Specific target player to disguise as (0 for any)
  * @noreturn
  * @error				Invalid client index, client not in game, or no mod support.
  */
-native TF2_DisguisePlayer(client, TFTeam:team, TFClassType:class);
+native TF2_DisguisePlayer(client, TFTeam:team, TFClassType:class, target=0);
 
 /**
  * Removes the current disguise from a client. Only has an effect on spies.
