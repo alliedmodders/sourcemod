@@ -1,36 +1,32 @@
 # (C)2004-2008 SourceMod Development Team
 # Makefile written by David "BAILOPAN" Anderson
 
-SMSDK = ../..
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
 #####################################
 
-BINARY = spcomp
-
-OBJECTS = binreloc.c libpawnc.c lstring.c memfile.c pawncc.c sc1.c sc2.c sc3.c sc4.c \
-	sc5.c sc6.c sc7.c scexpand.c sci18n.c sclist.c scmemfil.c scstate.c sctracker.c \
-	scvars.c sp_file.c
-OBJECTS += zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
-	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
-	   zlib/uncompr.c zlib/zutil.c
+OBJECTS = gdc.cpp TextParsers.cpp GameConfigs.cpp MemoryUtils.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
 ##############################################
 
-C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -pipe -fno-strict-aliasing -fomit-frame-pointer
+C_OPT_FLAGS = -DNDEBUG -O3 -funroll-loops -pipe -fno-strict-aliasing
 C_DEBUG_FLAGS = -D_DEBUG -DDEBUG -g -ggdb3
 C_GCC4_FLAGS = -fvisibility=hidden
 CPP_GCC4_FLAGS = -fvisibility-inlines-hidden
-CPP = gcc
+CPP = gcc-4.1
 
-LINK = -lgcc -static-libgcc
+BINARY = gdc
 
-INCLUDE = -I. -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
+LINK += -L. -lstdc++ -ldl -lm
 
-CFLAGS += -DLINUX -DHAVE_STDINT_H -DAMX_ANSIONLY -DENABLE_BINRELOC -Dstricmp=strcasecmp -m32
+INCLUDE += -I. -I../../public -I../../public/sourcepawn
+
+CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
+	-Wno-uninitialized -mfpmath=sse -msse -DHAVE_STDINT_H -DSM_DEFAULT_THREADER -DPLATFORM_LINUX -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
@@ -51,17 +47,21 @@ ifeq "$(GCC_VERSION)" "4"
 	CPPFLAGS += $(CPP_GCC4_FLAGS)
 endif
 
-OBJ_LINUX := $(OBJECTS:%.c=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
+OBJ_LINUX := $(OBJ_LINUX:%.c=$(BIN_DIR)/%.o)
+
+$(BIN_DIR)/%.o: %.cpp
+	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
 $(BIN_DIR)/%.o: %.c
 	$(CPP) $(INCLUDE) $(CFLAGS) -o $@ -c $<
 
 all:
-	mkdir -p $(BIN_DIR)/zlib
-	$(MAKE) -f Makefile compiler
+	mkdir -p $(BIN_DIR)
+	$(MAKE) -f Makefile gdc
 
-compiler: $(OBJ_LINUX)
-	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -ldl -lm -o $(BIN_DIR)/$(BINARY)
+gdc: $(OBJ_LINUX)
+	$(CPP) $(INCLUDE) $(OBJ_LINUX) $(LINK) -m32 -o$(BIN_DIR)/$(BINARY)
 
 debug:
 	$(MAKE) -f Makefile all DEBUG=true
@@ -69,6 +69,4 @@ debug:
 default: all
 
 clean:
-	rm -rf $(BIN_DIR)/*.o
-	rm -rf $(BIN_DIR)/zlib/*.o
-	rm -rf $(BIN_DIR)/$(BINARY)
+	rm -rf $(BIN_DIR)/

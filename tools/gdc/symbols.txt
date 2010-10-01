@@ -1,0 +1,57 @@
+"Games"
+{
+	"#default"
+	{
+		"Keys"
+		{
+			"GiveNamedItem"			"_ZN11CBasePlayer13GiveNamedItemEPKci"
+			"RemovePlayerItem"		"_ZN11CBasePlayer16RemovePlayerItemEP17CBaseCombatWeapon"
+			"Weapon_GetSlot"		"_ZNK20CBaseCombatCharacter14Weapon_GetSlotEi"
+			"Ignite"			"_ZN14CBaseAnimating6IgniteEfbfb"
+			"Extinguish" 			"_ZN14CBaseAnimating10ExtinguishEv"
+			"Teleport"			"_ZN11CBaseEntity8TeleportEPK6VectorPK6QAngleS2_"
+			"CommitSuicide"			"_ZN11CBasePlayer13CommitSuicideEv"
+			"GetVelocity"			"_ZN11CBaseEntity11GetVelocityEP6VectorS1_"
+			"EyeAngles"			"_ZN11CBasePlayer9EyeAnglesEv"
+			"DispatchKeyValue"		"_ZN11CBaseEntity8KeyValueEPKcS1_"
+			"DispatchKeyValueFloat"		"_ZN11CBaseEntity8KeyValueEPKcf"
+			"DispatchKeyValueVector"	"_ZN11CBaseEntity8KeyValueEPKcRK6Vector"
+			"SetEntityModel"		"_ZN11CBaseEntity8SetModelEPKc"
+			"AcceptInput"			"_ZN11CBaseEntity11AcceptInputEPKcPS_S2_9variant_ti"
+			"WeaponEquip"			"_ZN11CBasePlayer12Weapon_EquipEP17CBaseCombatWeapon"
+			"Activate"			"_ZN11CBaseEntity8ActivateEv"
+			"PlayerRunCmd"			"_ZN11CBasePlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"game"	"tf"
+		}
+
+		"Keys"
+		{
+			"vtsym"		"_ZTV9CTFPlayer"
+			"CommitSuicide"	"_ZN9CTFPlayer13CommitSuicideEbb"
+			"ForceRespawn"	"_ZN9CTFPlayer12ForceRespawnEv"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"game" "left4dead"
+			"game" "left4dead2"
+		}
+		
+
+		"Keys"
+		{
+			"vtsym" "_ZTV13CTerrorPlayer"
+			"CommitSuicide" "_ZN11CBasePlayer13CommitSuicideEbb"
+		}
+	}
+}
