@@ -33,8 +33,8 @@
 			{
 				"library"	"server"
 				"windows"	"\x51\x53\x56\x8B\xF1\x8B\x8E\x2A\x2A\x00\x00\xE8\x2A\x2A\x2A\x2A\x8B\xD8\x8B\x86\x2A\x2A\x00\x00\x8B\x80"
-				"linux"		"@_ZN15CTFPlayerShared8DisguiseEii"
-				"mac"		"@_ZN15CTFPlayerShared8DisguiseEii"
+				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayer"
+				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayer"
 			}
 			"CalcCritical"
 			{
