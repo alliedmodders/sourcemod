@@ -258,11 +258,14 @@ cell_t TF2_RemoveCondition(IPluginContext *pContext, const cell_t *params)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("RemoveCondition", 
-			PassInfo pass[1]; \
+			PassInfo pass[2]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(int); \
 			pass[0].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
+			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].size = sizeof(bool); \
+			pass[1].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
 	}
 
 	CBaseEntity *pEntity;
@@ -273,12 +276,14 @@ cell_t TF2_RemoveCondition(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + sizeof(int)];
+	unsigned char vstk[sizeof(void *) + sizeof(int) + sizeof(bool)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
 	vptr += sizeof(void *);
 	*(int *)vptr = params[2];
+	vptr += sizeof(int);
+	*(bool *)vptr = false;
 
 	pWrapper->Execute(vstk, NULL);
 
