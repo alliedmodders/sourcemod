@@ -44,7 +44,7 @@
  */
 
 #define SMINTERFACE_USERMSGS_NAME		"IUserMessages"
-#define SMINTERFACE_USERMSGS_VERSION	2
+#define SMINTERFACE_USERMSGS_VERSION	3
 
 namespace SourceMod
 {
@@ -208,6 +208,16 @@ namespace SourceMod
 		virtual bool UnhookUserMessage2(int msg_id,
 			IUserMessageListener *pListener,
 			bool intercept=false) =0;
+
+		/**
+		 * @brief Finds a message name by id.
+		 *
+		 * @param msgid		The message index.
+		 * @param buffer	Buffer string to hold the message name in.
+		 * @param maxlength	Size of the buffer.
+		 * @return			A message index, or -1 on failure.
+		 */
+		virtual bool GetMessageName(int msgid, char *buffer, size_t maxlength) const =0;
 	};
 }
 
