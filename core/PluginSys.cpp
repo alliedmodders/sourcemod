@@ -2741,6 +2741,6 @@ void CPluginManager::ListPluginsToClient(CPlayer *player, const CCommand &args)
 	/* Do we actually have more plugins? */
 	if (iter != m_plugins.end())
 	{
-		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id + 1);
+		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id);
 	}
 }
