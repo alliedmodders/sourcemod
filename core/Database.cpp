@@ -47,7 +47,7 @@ DBManager g_DBMan;
 static bool s_OneTimeThreaderErrorMsg = false;
 
 DBManager::DBManager() 
-: m_StrTab(512), m_ParseLevel(0), m_ParseState(0), m_pDefault(NULL)
+: m_ParseLevel(0), m_ParseState(0), m_pDefault(NULL)
 {
 }
 
@@ -136,7 +136,6 @@ void DBManager::ReadSMC_ParseStart()
 	m_confs.clear();
 	m_ParseLevel = 0;
 	m_ParseState = DBPARSE_LEVEL_NONE;
-	m_StrTab.Reset();
 	m_DefDriver.clear();
 }
 
@@ -159,7 +158,7 @@ SMCResult DBManager::ReadSMC_NewSection(const SMCStates *states, const char *nam
 		}
 	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
 		s_CurInfo = ConfDbInfo();
-		s_CurInfo.name = m_StrTab.AddString(name);
+		s_CurInfo.name = name;
 		m_ParseState = DBPARSE_LEVEL_DATABASE;
 	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
 		m_ParseLevel++;
@@ -186,16 +185,16 @@ SMCResult DBManager::ReadSMC_KeyValue(const SMCStates *states, const char *key, 
 		{
 			if (strcmp(value, "default") != 0)
 			{
-				s_CurInfo.driver = m_StrTab.AddString(value);
+				s_CurInfo.driver = value;
 			}
 		} else if (strcmp(key, "database") == 0) {
-			s_CurInfo.database = m_StrTab.AddString(value);
+			s_CurInfo.database = value;
 		} else if (strcmp(key, "host") == 0) {
-			s_CurInfo.host = m_StrTab.AddString(value);
+			s_CurInfo.host = value;
 		} else if (strcmp(key, "user") == 0) {
-			s_CurInfo.user = m_StrTab.AddString(value);
+			s_CurInfo.user = value;
 		} else if (strcmp(key, "pass") == 0) {
-			s_CurInfo.pass = m_StrTab.AddString(value);
+			s_CurInfo.pass = value;
 		} else if (strcmp(key, "timeout") == 0) {
 			s_CurInfo.info.maxTimeout = atoi(value);
 		} else if (strcmp(key, "port") == 0) {
@@ -207,10 +206,10 @@ SMCResult DBManager::ReadSMC_KeyValue(const SMCStates *states, const char *key, 
 }
 
 #define ASSIGN_VAR(var) \
-	if (s_CurInfo.var == -1) { \
+	if (s_CurInfo.var == "") { \
 		s_CurInfo.info.var = ""; \
 	} else { \
-		s_CurInfo.info.var = m_StrTab.GetString(s_CurInfo.var); \
+		s_CurInfo.info.var = s_CurInfo.var.c_str(); \
 	}
 
 SMCResult DBManager::ReadSMC_LeavingSection(const SMCStates *states)
@@ -453,7 +452,7 @@ ConfDbInfo *DBManager::GetDatabaseConf(const char *name)
 	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
 	{
 		ConfDbInfo &conf = (*iter);
-		if (strcmp(m_StrTab.GetString(conf.name), name) == 0)
+		if (conf.name == name)
 		{
 			return &conf;
 		}

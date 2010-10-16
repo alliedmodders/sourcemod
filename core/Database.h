@@ -47,16 +47,15 @@ using namespace SourceHook;
 
 struct ConfDbInfo
 {
-	ConfDbInfo() : name(-1), driver(-1), host(-1), user(-1), pass(-1), 
-		database(-1), realDriver(NULL)
+	ConfDbInfo() : realDriver(NULL)
 	{
 	}
-	int name;
-	int driver;
-	int host;
-	int user;
-	int pass;
-	int database;
+	String name;
+	String driver;
+	String host;
+	String user;
+	String pass;
+	String database;
 	IDBDriver *realDriver;
 	DatabaseInfo info;
 };
@@ -138,7 +137,6 @@ private:
 	HandleType_t m_DriverType;
 	HandleType_t m_DatabaseType;
 	String m_DefDriver;
-	BaseStringTable m_StrTab;
 	char m_Filename[PLATFORM_MAX_PATH];
 	unsigned int m_ParseLevel;
 	unsigned int m_ParseState;
