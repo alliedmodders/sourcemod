@@ -120,6 +120,7 @@ public:
 		return m_DatabaseType;
 	}
 private:
+	void ClearConfigs();
 	void KillWorkerThread();
 private:
 	CVector<IDBDriver *> m_drivers;
@@ -133,7 +134,7 @@ private:
 	IMutex *m_pQueueLock;				/* Queue safety lock */
 	IMutex *m_pThinkLock;				/* Think-queue lock */
 
-	List<ConfDbInfo> m_confs;
+	List<ConfDbInfo *> m_confs;
 	HandleType_t m_DriverType;
 	HandleType_t m_DatabaseType;
 	String m_DefDriver;

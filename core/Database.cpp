@@ -104,6 +104,7 @@ void DBManager::OnSourceModShutdown()
 	m_pQueueLock->DestroyThis();
 	g_HandleSys.RemoveType(m_DatabaseType, g_pCoreIdent);
 	g_HandleSys.RemoveType(m_DriverType, g_pCoreIdent);
+	ClearConfigs();
 }
 
 unsigned int DBManager::GetInterfaceVersion()
@@ -133,10 +134,18 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 
 void DBManager::ReadSMC_ParseStart()
 {
-	m_confs.clear();
+	ClearConfigs();
 	m_ParseLevel = 0;
 	m_ParseState = DBPARSE_LEVEL_NONE;
 	m_DefDriver.clear();
+}
+
+void DBManager::ClearConfigs()
+{
+	List<ConfDbInfo *>::iterator iter;
+	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
+		delete (*iter);
+	m_confs.clear();
 }
 
 ConfDbInfo s_CurInfo;
@@ -205,13 +214,6 @@ SMCResult DBManager::ReadSMC_KeyValue(const SMCStates *states, const char *key, 
 	return SMCResult_Continue;
 }
 
-#define ASSIGN_VAR(var) \
-	if (s_CurInfo.var == "") { \
-		s_CurInfo.info.var = ""; \
-	} else { \
-		s_CurInfo.info.var = s_CurInfo.var.c_str(); \
-	}
-
 SMCResult DBManager::ReadSMC_LeavingSection(const SMCStates *states)
 {
 	if (m_ParseLevel)
@@ -222,17 +224,26 @@ SMCResult DBManager::ReadSMC_LeavingSection(const SMCStates *states)
 
 	if (m_ParseState == DBPARSE_LEVEL_DATABASE)
 	{
-		/* Set all of the info members to either a blank string
-		 * or the string pointer from the string table.
-		 */
-		ASSIGN_VAR(driver);
-		ASSIGN_VAR(database);
-		ASSIGN_VAR(host);
-		ASSIGN_VAR(user);
-		ASSIGN_VAR(pass);
+		ConfDbInfo *cdb = new ConfDbInfo();
+
+		cdb->name = s_CurInfo.name;
+		cdb->driver = s_CurInfo.driver;
+		cdb->host = s_CurInfo.host;
+		cdb->user = s_CurInfo.user;
+		cdb->pass = s_CurInfo.pass;
+		cdb->database = s_CurInfo.database;
+		cdb->realDriver = s_CurInfo.realDriver;
+		cdb->info.maxTimeout = s_CurInfo.info.maxTimeout;
+		cdb->info.port = s_CurInfo.info.port;
+
+		cdb->info.driver = cdb->driver.c_str();
+		cdb->info.database = cdb->database.c_str();
+		cdb->info.host = cdb->host.c_str();
+		cdb->info.user = cdb->user.c_str();
+		cdb->info.pass = cdb->pass.c_str();
 		
 		/* Save it.. */
-		m_confs.push_back(s_CurInfo);
+		m_confs.push_back(cdb);
 
 		/* Go up one level */
 		m_ParseState = DBPARSE_LEVEL_MAIN;
@@ -243,7 +254,6 @@ SMCResult DBManager::ReadSMC_LeavingSection(const SMCStates *states)
 
 	return SMCResult_Continue;
 }
-#undef ASSIGN_VAR
 
 void DBManager::ReadSMC_ParseEnd(bool halted, bool failed)
 {
@@ -332,10 +342,10 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 	}
 
 	/* Make sure NOTHING references this! */
-	List<ConfDbInfo>::iterator iter;
+	List<ConfDbInfo *>::iterator iter;
 	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
 	{
-		ConfDbInfo &db = (*iter);
+		ConfDbInfo &db = *(*iter);
 		if (db.realDriver == pDriver)
 		{
 			db.realDriver = NULL;
@@ -447,11 +457,11 @@ const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 
 ConfDbInfo *DBManager::GetDatabaseConf(const char *name)
 {
-	List<ConfDbInfo>::iterator iter;
+	List<ConfDbInfo *>::iterator iter;
 
 	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
 	{
-		ConfDbInfo &conf = (*iter);
+		ConfDbInfo &conf = *(*iter);
 		if (conf.name == name)
 		{
 			return &conf;
