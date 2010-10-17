@@ -2,6 +2,33 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.5 [2010-10-17]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.5_Release_Notes
+
+User Changes:
+
+ - Updated support for CS:S, Garry's Mod, DoD:S, TF2, HL2DM.
+ - Added support for Firearms: Source (bug 4537).
+ - Added support for Fistful of Frags (bug 3883).
+ - Added support for Alien Swarm (bug 4530).
+ - Fixed living players hearing dead players if alltalk is disabled while deadtalk is on (bug 4533, thanks Zach Callear).
+ - Fixed timeleft not getting reset on Game_Commencing in CS:S (bug 4557).
+ - Fixed PlayerRunCmd being hooked when not used (bug 3990).
+ - Fixed errors and missing effects caused by missing sprites on L4D2 (bug 4512).
+ - Fixed 'sm plugins' public command skipping plugins in recommended listing (bug 4501).
+ - Fixed corruption with large database.cfg files (bug 4286).
+
+Developer Changes:
+
+ - Added TF2 object stocks (bug 4536).
+ - Added TF2_MakeBleed native to TF2 ext (bug 4542).
+ - Added support for logical entities in Synergy (bug 4534).
+ - Updated TF2 conditions enum and defines (bug 4526).
+ - Fixed potential crash with IMemUtils::FindPattern on Linux (bug 4554).
+
+----------------------------
+
 SourceMod 1.3.4 [2010-07-18]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.3.4_Release_Notes
