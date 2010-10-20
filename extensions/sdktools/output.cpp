@@ -74,11 +74,19 @@ bool EntityOutputManager::IsEnabled()
 	return enabled;
 }
 
+#ifdef PLATFORM_WINDOWS
+DETOUR_DECL_MEMBER8(FireOutput, void, int, what, int, the, int, hell, int, msvc, void *, variant_t, CBaseEntity *, pActivator, CBaseEntity *, pCaller, float, fDelay)
+{
+	g_OutputManager.FireEventDetour((void *)this, pActivator, pCaller, fDelay);
+	DETOUR_MEMBER_CALL(FireOutput)(what, the, hell, msvc, variant_t, pActivator, pCaller, fDelay);
+}
+#else
 DETOUR_DECL_MEMBER4(FireOutput, void, void *, variant_t, CBaseEntity *, pActivator, CBaseEntity *, pCaller, float, fDelay)
 {
 	g_OutputManager.FireEventDetour((void *)this, pActivator, pCaller, fDelay);
 	DETOUR_MEMBER_CALL(FireOutput)(variant_t, pActivator, pCaller, fDelay);
 }
+#endif
 
 bool EntityOutputManager::CreateFireEventDetour()
 {

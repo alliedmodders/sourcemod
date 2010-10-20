@@ -110,6 +110,16 @@ public: \
 ret (name##Class::* name##Class::name##_Actual)(p1type, p2type, p3type, p4type) = NULL; \
 ret name##Class::name(p1type p1name, p2type p2name, p3type p3name, p4type p4name)
 
+#define DETOUR_DECL_MEMBER8(name, ret, p1type, p1name, p2type, p2name, p3type, p3name, p4type, p4name, p5type, p5name, p6type, p6name, p7type, p7name, p8type, p8name) \
+class name##Class \
+{ \
+public: \
+        ret name(p1type p1name, p2type p2name, p3type p3name, p4type p4name, p5type p5name, p6type p6name, p7type p7name, p8type p8name); \
+        static ret (name##Class::* name##_Actual)(p1type, p2type, p3type, p4type, p5type, p6type, p7type, p8type); \
+}; \
+ret (name##Class::* name##Class::name##_Actual)(p1type, p2type, p3type, p4type, p5type, p6type, p7type, p8type) = NULL; \
+ret name##Class::name(p1type p1name, p2type p2name, p3type p3name, p4type p4name, p5type p5name, p6type p6name, p7type p7name, p8type p8name)
+
 
 #define GET_MEMBER_CALLBACK(name) (void *)GetCodeAddress(&name##Class::name)
 #define GET_MEMBER_TRAMPOLINE(name) (void **)(&name##Class::name##_Actual)
