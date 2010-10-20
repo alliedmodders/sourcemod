@@ -1953,10 +1953,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\GameConfigs.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\HalfLife2.cpp"
 				>
 			</File>
@@ -1974,10 +1970,6 @@
 			</File>
 			<File
 				RelativePath="..\logic_bridge.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\MemoryUtils.cpp"
 				>
 			</File>
 			<File
@@ -2013,10 +2005,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\PhraseCollection.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\PlayerManager.cpp"
 				>
 			</File>
@@ -2034,10 +2022,6 @@
 			</File>
 			<File
 				RelativePath="..\sm_autonatives.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\sm_memtable.cpp"
 				>
 			</File>
 			<File
@@ -2062,10 +2046,6 @@
 			</File>
 			<File
 				RelativePath="..\TimerSys.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Translator.cpp"
 				>
 			</File>
 			<File
@@ -2443,14 +2423,6 @@
 			UniqueIdentifier="{052D6D9B-7B50-4c3c-9B82-32CA908DEF24}"
 			>
 			<File
-				RelativePath="..\smn_admin.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_banning.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\smn_bitbuffer.cpp"
 				>
 			</File>
@@ -2464,10 +2436,6 @@
 			</File>
 			<File
 				RelativePath="..\smn_database.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_datapacks.cpp"
 				>
 			</File>
 			<File
@@ -2487,15 +2455,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\smn_gameconfigs.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\smn_halflife.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_handles.cpp"
 				>
 			</File>
 			<File
@@ -2504,10 +2464,6 @@
 			</File>
 			<File
 				RelativePath="..\smn_keyvalues.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_lang.cpp"
 				>
 			</File>
 			<File
@@ -2524,14 +2480,6 @@
 			</File>
 			<File
 				RelativePath="..\smn_profiler.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_string.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_timers.cpp"
 				>
 			</File>
 			<File

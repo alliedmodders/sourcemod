@@ -1184,6 +1184,14 @@
 			UniqueIdentifier="{3FC90E55-360F-4370-ACE2-67D7691AFB97}"
 			>
 			<File
+				RelativePath="..\asm\asm.c"
+				>
+			</File>
+			<File
+				RelativePath="..\CDetour\detours.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\extension.cpp"
 				>
 			</File>
@@ -1263,10 +1271,6 @@
 			>
 			<File
 				RelativePath="..\CellRecipientFilter.h"
-				>
-			</File>
-			<File
-				RelativePath="..\detours.h"
 				>
 			</File>
 			<File

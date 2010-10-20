@@ -42,7 +42,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="..;&quot;$(MMSOURCE17)\core\sourcehook&quot;;..\..\..\public;..\..\..\public\sourcepawn"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SM_DEFAULT_THREADER"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;JITX86_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SM_DEFAULT_THREADER;SM_LOGIC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -64,7 +64,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\sourcepawn.jit.x86.dll"
+				OutputFile="$(OutDir)\sourcemod.logic.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
 				GenerateDebugInformation="true"
@@ -185,11 +185,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\smn_functions.cpp"
+				RelativePath="..\common_logic.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\smn_adt_trie.cpp"
+				RelativePath="..\GameConfigs.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\MemoryUtils.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\PhraseCollection.cpp"
 				>
 			</File>
 			<File
@@ -197,7 +205,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\common_logic.cpp"
+				RelativePath="..\sm_crc32.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_admin.cpp"
 				>
 			</File>
 			<File
@@ -209,7 +221,35 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_adt_trie.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_banning.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_datapacks.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_float.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_functions.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_gameconfigs.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_handles.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_lang.cpp"
 				>
 			</File>
 			<File
@@ -217,11 +257,27 @@
 				>
 			</File>
 			<File
+				RelativePath="..\smn_players.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_sorting.cpp"
 				>
 			</File>
 			<File
+				RelativePath="..\smn_string.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\smn_textparse.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\smn_timers.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\stringutil.cpp"
 				>
 			</File>
 			<File
@@ -230,6 +286,10 @@
 			</File>
 			<File
 				RelativePath="..\ThreadSupport.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\Translator.cpp"
 				>
 			</File>
 		</Filter>
@@ -251,6 +311,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\Profiler.h"
+				>
+			</File>
+			<File
 				RelativePath="..\svn_version.h"
 				>
 			</File>
@@ -262,10 +326,6 @@
 				RelativePath="..\ThreadSupport.h"
 				>
 			</File>
-			<File
-				RelativePath="..\Profiler.h"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -274,10 +334,6 @@
 			>
 			<File
 				RelativePath="..\svn_version.tpl"
-				>
-			</File>
-			<File
-				RelativePath="..\version.rc"
 				>
 			</File>
 		</Filter>
