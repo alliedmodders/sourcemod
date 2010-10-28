@@ -152,7 +152,7 @@ static const char *get_source_engine_name()
 
 static bool symbols_are_hidden()
 {
-#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
 	return true;
 #else
 	return false;
