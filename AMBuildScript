@@ -16,7 +16,7 @@ class SM:
 		self.sdkInfo['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '4',
 		                         'name': 'ORANGEBOXVALVE', 'platform': ['windows', 'linux', 'darwin']}
 		self.sdkInfo['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '5',
-		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux']}
+		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin']}
 		self.sdkInfo['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '6',
 		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin']}
 		self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
@@ -31,6 +31,7 @@ class SM:
 			#Detect variables
 			envvars = { 'MMSOURCE18':    'mmsource-1.8',
 									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
+									'HL2SDKL4D':     'hl2sdk-l4d',
 									'HL2SDKL4D2':    'hl2sdk-l4d2',
 									'MYSQL5':        'mysql-5.0'
 			}
@@ -38,7 +39,6 @@ class SM:
 			if AMBuild.target['platform'] != 'darwin':
 				envvars['HL2SDK'] = 'hl2sdk'
 				envvars['HL2SDKOB'] = 'hl2sdk-ob'
-				envvars['HL2SDKL4D'] = 'hl2sdk-l4d'
 
 			#Dark Messiah is Windows-only
 			if AMBuild.target['platform'] == 'windows':
