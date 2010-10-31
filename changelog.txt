@@ -8,11 +8,11 @@ URL: http://wiki.alliedmods.net/SourceMod_1.3.6_Release_Notes
 
 User Changes:
 
- - Updated support for latest Left 4 Dead 1 (bug 4682).
+ - Updated support for latest Left 4 Dead 1 (bug 4681).
 
 Developer Changes:
 
- - Updated TF2 custom kill defines (bug 4681).
+ - Updated TF2 custom kill defines (bug 4682).
 
 ----------------------------
 
