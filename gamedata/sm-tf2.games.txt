@@ -106,6 +106,13 @@
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasef"
 				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasef"
 			}
+			"IsPlayerInDuel"
+			{
+				"library"		"server"
+				"windows"		"\x83\xEC\x08\x2A\x2A\x2A\x2A\x33\xC0\x89\x04\x24\x89\x44\x24\x04\x8D\x04\x24\x50\x2A\x2A\x2A\x2A\x2A\x84\xC0\x2A\x2A\x83\xC4\x08\xC3"
+				"linux"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
+				"mac"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
+			}
 		}
 		"Offsets"
 		{
