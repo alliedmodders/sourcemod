@@ -273,6 +273,14 @@ forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bo
 forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
 
 /**
+ * Returns whether or not a client (Player) is in a duel.
+ *
+ * @param client    Client Index.
+ * @return          Boolean of whether or not the client/player is dueling.
+ */
+native bool:TF2_IsPlayerInDuel(client);
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_tf2 = 
@@ -302,5 +310,6 @@ public __ext_tf2_SetNTVOptional()
 	MarkNativeAsOptional("TF2_MakeBleed");
 	MarkNativeAsOptional("TF2_GetResourceEntity");
 	MarkNativeAsOptional("TF2_GetClass");
+	MarkNativeAsOptional("TF2_IsPlayerInDuel");
 }
 #endif

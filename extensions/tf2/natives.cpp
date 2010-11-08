@@ -475,6 +475,42 @@ cell_t TF2_GetClass(IPluginContext *pContext, const cell_t *params)
 	return (cell_t)ClassnameToType(str);
 }
 
+// native TF2_IsPlayerInDuel(client)
+cell_t TF2_IsPlayerInDuel(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	// DuelMiniGame_IsPlayerInDuel(CTFPlayer *)
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("IsPlayerInDuel", 
+			PassInfo pass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(CBaseEntity *); \
+			pass[0].type = PassType_Basic; \
+			PassInfo ret; \
+			ret.flags = PASSFLAG_BYVAL; \
+			ret.size = sizeof(bool); \
+			ret.type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &ret, pass, 1))
+	}
+
+	CBaseEntity *pPlayer;
+	if (!(pPlayer = UTIL_GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	unsigned char vstk[sizeof(CBaseEntity *)];
+	unsigned char *vptr = vstk;
+	*(CBaseEntity **)vptr = pPlayer;
+
+	bool retValue;
+	pWrapper->Execute(vstk, &retValue);
+
+	return (retValue) ? 1 : 0;
+}
+
 sp_nativeinfo_t g_TFNatives[] = 
 {
 	{"TF2_IgnitePlayer",			TF2_Burn},
@@ -490,5 +526,6 @@ sp_nativeinfo_t g_TFNatives[] =
 	{"TF2_SetPlayerPowerPlay",		TF2_SetPowerplayEnabled},
 	{"TF2_StunPlayer",				TF2_StunPlayer},
 	{"TF2_MakeBleed",				TF2_MakeBleed},
+	{"TF2_IsPlayerInDuel",				TF2_IsPlayerInDuel},
 	{NULL,							NULL}
 };
