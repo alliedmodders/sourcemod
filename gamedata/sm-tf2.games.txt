@@ -95,9 +95,9 @@
 			"GetHoliday"
 			{
 				"library"	"server"
-				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x83\x2A\x2A\x2A\x56\x8B\xF1\x89\x2A\x2A\x2A\x74\x2A\xB8"
-				"linux"		"@_ZN12CTFGameRules10GetHolidayEv"
-				"mac"		"@_ZN12CTFGameRules10GetHolidayEv"
+				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x57\x6A\x00\xE8\xF5"
+				"linux"		"@_Z15UTIL_GetHolidayv"
+				"mac"		"@_Z15UTIL_GetHolidayv"
 			}
 			"MakeBleed"
 			{

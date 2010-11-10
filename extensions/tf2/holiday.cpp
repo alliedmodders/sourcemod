@@ -35,9 +35,9 @@ CDetour *getHolidayDetour = NULL;
 
 IForward *g_getHolidayForward = NULL;
 
-DETOUR_DECL_MEMBER0(GetHoliday, int)
+DETOUR_DECL_STATIC0(GetHoliday, int)
 {
-	int actualres = DETOUR_MEMBER_CALL(GetHoliday)();
+	int actualres = DETOUR_STATIC_CALL(GetHoliday)();
 	if (!g_getHolidayForward)
 	{
 		g_pSM->LogMessage(myself, "Invalid Forward");
@@ -60,7 +60,7 @@ DETOUR_DECL_MEMBER0(GetHoliday, int)
 
 void InitialiseGetHolidayDetour()
 {
-	getHolidayDetour = DETOUR_CREATE_MEMBER(GetHoliday, "GetHoliday");
+	getHolidayDetour = DETOUR_CREATE_STATIC(GetHoliday, "GetHoliday");
 
 	if (!getHolidayDetour)
 	{
