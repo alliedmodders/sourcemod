@@ -91,6 +91,7 @@ new g_NominateCount = 0;
 new MapChange:g_ChangeTime;
 
 new Handle:g_NominationsResetForward = INVALID_HANDLE;
+new Handle:g_MapVoteStartedForward = INVALID_HANDLE;
 
 /* Upper bound of how many team there could be */
 #define MAXTEAMS 10
@@ -157,6 +158,7 @@ public OnPluginStart()
 	}
 	
 	g_NominationsResetForward = CreateGlobalForward("OnNominationRemoved", ET_Ignore, Param_String, Param_Cell);
+	g_MapVoteStartedForward = CreateGlobalForward("OnMapVoteStarted", ET_Ignore);
 }
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
@@ -164,10 +166,13 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	RegPluginLibrary("mapchooser");	
 	
 	CreateNative("NominateMap", Native_NominateMap);
+	CreateNative("RemoveNominationByMap", Native_RemoveNominationByMap);
+	CreateNative("RemoveNominationByOwner", Native_RemoveNominationByOwner);
 	CreateNative("InitiateMapChooserVote", Native_InitiateVote);
 	CreateNative("CanMapChooserStartVote", Native_CanVoteStart);
 	CreateNative("HasEndOfMapVoteFinished", Native_CheckVoteDone);
 	CreateNative("GetExcludeMapList", Native_GetExcludeMapList);
+	CreateNative("GetNominatedMapList", Native_GetNominatedMapList);
 	CreateNative("EndOfMapVoteEnabled", Native_EndOfMapVoteEnabled);
 
 	return APLRes_Success;
@@ -531,6 +536,10 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 	g_VoteMenu = CreateMenu(Handler_MapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
 	SetMenuTitle(g_VoteMenu, "Vote Nextmap");
 	SetVoteResultCallback(g_VoteMenu, Handler_MapVoteFinished);
+
+	/* Call OnMapVoteStarted() Forward */
+	Call_StartForward(g_MapVoteStartedForward);
+	Call_Finish();
 	
 	/**
 	 * TODO: Make a proper decision on when to clear the nominations list.
@@ -961,6 +970,78 @@ public Native_NominateMap(Handle:plugin, numParams)
 	return _:InternalNominateMap(map, GetNativeCell(2), GetNativeCell(3));
 }
 
+bool:InternalRemoveNominationByMap(String:map[])
+{	
+	for (new i = 0; i < GetArraySize(g_NominateList); i++)
+	{
+		new String:oldmap[33];
+		GetArrayString(g_NominateList, i, oldmap, sizeof(oldmap));
+
+		if(strcmp(map, oldmap, false) == 0)
+		{
+			Call_StartForward(g_NominationsResetForward);
+			Call_PushString(oldmap);
+			Call_PushCell(GetArrayCell(g_NominateOwners, i));
+			Call_Finish();
+
+			RemoveFromArray(g_NominateList, i);
+			RemoveFromArray(g_NominateOwners, i);
+			g_NominateCount--;
+
+			return true;
+		}
+	}
+	
+	return false;
+}
+
+/* native  bool:RemoveNominationByMap(const String:map[]); */
+public Native_RemoveNominationByMap(Handle:plugin, numParams)
+{
+	new len;
+	GetNativeStringLength(1, len);
+	
+	if (len <= 0)
+	{
+	  return false;
+	}
+	
+	new String:map[len+1];
+	GetNativeString(1, map, len+1);
+	
+	return _:InternalRemoveNominationByMap(map);
+}
+
+bool:InternalRemoveNominationByOwner(owner)
+{	
+	new index;
+
+	if (owner && ((index = FindValueInArray(g_NominateOwners, owner)) != -1))
+	{
+		new String:oldmap[33];
+		GetArrayString(g_NominateList, index, oldmap, sizeof(oldmap));
+
+		Call_StartForward(g_NominationsResetForward);
+		Call_PushString(oldmap);
+		Call_PushCell(owner);
+		Call_Finish();
+
+		RemoveFromArray(g_NominateList, index);
+		RemoveFromArray(g_NominateOwners, index);
+		g_NominateCount--;
+
+		return true;
+	}
+	
+	return false;
+}
+
+/* native  bool:RemoveNominationByOwner(owner); */
+public Native_RemoveNominationByOwner(Handle:plugin, numParams)
+{	
+	return _:InternalRemoveNominationByOwner(GetNativeCell(1));
+}
+
 /* native InitiateMapChooserVote(); */
 public Native_InitiateVote(Handle:plugin, numParams)
 {
@@ -994,8 +1075,6 @@ public Native_GetExcludeMapList(Handle:plugin, numParams)
 	{
 		return;	
 	}
-	
-	
 	new size = GetArraySize(g_OldMapList);
 	decl String:map[33];
 	
@@ -1005,5 +1084,31 @@ public Native_GetExcludeMapList(Handle:plugin, numParams)
 		PushArrayString(array, map);	
 	}
 	
+	return;
+}
+
+public Native_GetNominatedMapList(Handle:plugin, numParams)
+{
+	new Handle:maparray = Handle:GetNativeCell(1);
+	new Handle:ownerarray = Handle:GetNativeCell(2);
+	
+	if (maparray == INVALID_HANDLE)
+		return;
+
+	decl String:map[33];
+
+	for (new i = 0; i < GetArraySize(g_NominateList); i++)
+	{
+		GetArrayString(g_NominateList, i, map, sizeof(map));
+		PushArrayString(maparray, map);
+
+		// If the optional parameter for an owner list was passed, then we need to fill that out as well
+		if(ownerarray != INVALID_HANDLE)
+		{
+			new index = GetArrayCell(g_NominateOwners, i);
+			PushArrayCell(ownerarray, index);
+		}
+	}
+
 	return;
 }

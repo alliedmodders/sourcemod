@@ -30,12 +30,37 @@ enum MapChange
 native NominateResult:NominateMap(const String:map[], bool:force, owner);
 
 /**
+ * Attempt to remove a map from the mapchooser map list.
+ *
+ * @param map		Map to remove.
+ * @return			True if the nomination was found and removed, or false if the nomination was not found.
+ */
+native bool:RemoveNominationByMap(const String:map[]);
+
+/**
+ * Attempt to remove a map from the mapchooser map list.
+ *
+ * @param owner		Client index of the nominater.
+ * @return			True if the nomination was found and removed, or false if the nomination was not found.
+ */
+native bool:RemoveNominationByOwner(owner);
+
+/**
  * Gets the current list of excluded maps.
  *
- * @param array		An ADT array handle to add the map strings to. Needs to be 
+ * @param array		An ADT array handle to add the map strings to.
  * @noreturn
  */
 native GetExcludeMapList(Handle:array);
+
+/**
+ * Gets the current list of nominated maps.
+ *
+ * @param maparray		An ADT array handle to add the map strings to.
+ * @param ownerarray	An optional ADT array handle to add the nominator client indexes to.
+ * @noreturn
+ */
+native GetNominatedMapList(Handle:maparray, Handle:ownerarray = INVALID_HANDLE);
 
 /**
  * Checks if MapChooser will allow a vote
@@ -75,6 +100,11 @@ native bool:EndOfMapVoteEnabled();
  */
 forward OnNominationRemoved(const String:map[], owner);
 
+/**
+ * Called when mapchooser starts a Map Vote.
+ */
+forward OnMapVoteStarted();
+
 
 public SharedPlugin:__pl_mapchooser = 
 {
@@ -90,7 +120,10 @@ public SharedPlugin:__pl_mapchooser =
 public __pl_mapchooser_SetNTVOptional()
 {
 	MarkNativeAsOptional("NominateMap");
+	MarkNativeAsOptional("RemoveNominationByMap");
+	MarkNativeAsOptional("RemoveNominationByOwner");
 	MarkNativeAsOptional("GetExcludeMapList");
+	MarkNativeAsOptional("GetNominatedMapList");
 	MarkNativeAsOptional("CanMapChooserStartVote");
 	MarkNativeAsOptional("InitiateMapChooserVote");
 	MarkNativeAsOptional("HasEndOfMapVoteFinished");
