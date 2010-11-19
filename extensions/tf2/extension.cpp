@@ -37,6 +37,7 @@
 #include "sm_trie_tpl.h"
 #include "criticals.h"
 #include "holiday.h"
+#include "gameplayrules.h"
 #include "CDetour/detours.h"
 
 /**
@@ -110,11 +111,14 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
 	g_getHolidayForward = forwards->CreateForward("TF2_OnGetHoliday", ET_Event, 1, NULL, Param_CellByRef);
+	g_waitingPlayersStartForward = forwards->CreateForward("TF2_OnWaitingForPlayersStart", ET_Ignore, 0, NULL);
+	g_waitingPlayersEndForward = forwards->CreateForward("TF2_OnWaitingForPlayersEnd", ET_Ignore, 0, NULL);
 
 	g_pCVar = icvar;
 
 	m_CritDetoursEnabled = false;
 	m_GetHolidayDetourEnabled = false;
+	m_RulesDetoursEnabled = false;
 
 	return true;
 }
@@ -159,6 +163,8 @@ void TF2Tools::SDK_OnUnload()
 
 	forwards->ReleaseForward(g_critForward);
 	forwards->ReleaseForward(g_getHolidayForward);
+	forwards->ReleaseForward(g_waitingPlayersStartForward);
+	forwards->ReleaseForward(g_waitingPlayersEndForward);
 }
 
 void TF2Tools::SDK_OnAllLoaded()
@@ -311,6 +317,14 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 		InitialiseGetHolidayDetour();
 		m_GetHolidayDetourEnabled = true;
 	}
+	if (!m_RulesDetoursEnabled)
+	{
+		if(g_waitingPlayersStartForward->GetFunctionCount() || g_waitingPlayersEndForward->GetFunctionCount())
+		{
+			InitialiseRulesDetours();
+			m_RulesDetoursEnabled = true;
+		}
+	}
 }
 
 void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
@@ -324,6 +338,14 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 	{
 		RemoveGetHolidayDetour();
 		m_GetHolidayDetourEnabled = false;
+	}
+	if (m_RulesDetoursEnabled)
+	{
+		if(!g_waitingPlayersStartForward->GetFunctionCount() || !g_waitingPlayersEndForward->GetFunctionCount())
+		{
+			RemoveRulesDetours();
+			m_RulesDetoursEnabled = false;
+		}
 	}
 }
 int FindResourceEntity()

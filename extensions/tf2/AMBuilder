@@ -17,6 +17,7 @@ binary.AddSourceFiles('extensions/tf2', [
 	'util.cpp',
 	'criticals.cpp',
 	'holiday.cpp',
+	'gameplayrules.cpp'
 	'CDetour/detours.cpp',
 	'sdk/smsdk_ext.cpp',
 	'asm/asm.c'

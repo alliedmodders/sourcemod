@@ -114,6 +114,7 @@ public:
 private:
 	bool m_CritDetoursEnabled;
 	bool m_GetHolidayDetourEnabled;
+	bool m_RulesDetoursEnabled;
 };
 
 enum TFClassType

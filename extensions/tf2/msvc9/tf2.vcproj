@@ -59,6 +59,7 @@
 			<Tool
 				Name="VCResourceCompilerTool"
 				PreprocessorDefinitions="BINARY_NAME=\&quot;$(TargetFileName)\&quot;"
+				AdditionalIncludeDirectories=""
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -195,6 +196,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\gameplayrules.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\holiday.cpp"
 				>
 			</File>
@@ -222,6 +227,10 @@
 			</File>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\gameplayrules.h"
 				>
 			</File>
 			<File

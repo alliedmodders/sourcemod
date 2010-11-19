@@ -281,6 +281,20 @@ forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
 native bool:TF2_IsPlayerInDuel(client);
 
 /**
+ * Called when the server enters the Waiting for Players round state
+ *
+ * @noreturn
+ */
+forward TF2_OnWaitingForPlayersStart();
+
+/**
+ * Called when the server exits the Waiting for Players round state
+ *
+ * @noreturn
+ */
+forward TF2_OnWaitingForPlayersEnd();
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_tf2 = 
