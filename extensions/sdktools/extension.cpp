@@ -441,11 +441,6 @@ public:
 	{
 		return iserver;
 	}
-
-	virtual IGameRules *GetGameRules()
-	{
-		return (IGameRules*)g_pGameRules;
-	}
 } g_SDKTools_API;
 
 static void InitSDKToolsAPI()
