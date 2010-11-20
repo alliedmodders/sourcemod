@@ -441,6 +441,14 @@ public:
 	{
 		return iserver;
 	}
+	
+	virtual void *GetGameRules()
+	{
+		if (!g_pGameRules)
+			return NULL;
+		
+		return *g_pGameRules;
+	}
 } g_SDKTools_API;
 
 static void InitSDKToolsAPI()

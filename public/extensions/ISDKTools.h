@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_SDKTOOLS_NAME		"ISDKTools"
-#define SMINTERFACE_SDKTOOLS_VERSION	1
+#define SMINTERFACE_SDKTOOLS_VERSION	2
 
 class IServer;
 
@@ -61,6 +61,13 @@ namespace SourceMod
 		 * @return			IServer pointer, or NULL if SDKTools was unable to find one.
 		 */
 		virtual IServer* GetIServer() = 0;
+		
+		/**
+		 * @brief Returns a pointer to game's CGameRules class.
+		 *
+		 * @return			CGameRules pointer or NULL if not found.
+		 */
+		virtual void* GetGameRules() = 0;
 	};
 }
 
