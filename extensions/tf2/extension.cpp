@@ -303,13 +303,11 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 {
 	if (!m_CritDetoursEnabled && g_critForward->GetFunctionCount())
 	{
-		InitialiseCritDetours();
-		m_CritDetoursEnabled = true;
+		m_CritDetoursEnabled = InitialiseCritDetours();
 	}
 	if (!m_GetHolidayDetourEnabled && g_getHolidayForward->GetFunctionCount())
 	{
-		InitialiseGetHolidayDetour();
-		m_GetHolidayDetourEnabled = true;
+		m_GetHolidayDetourEnabled = InitialiseGetHolidayDetour();
 	}
 }
 
