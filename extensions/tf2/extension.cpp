@@ -309,21 +309,19 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 {
 	if (!m_CritDetoursEnabled && g_critForward->GetFunctionCount())
 	{
-		InitialiseCritDetours();
-		m_CritDetoursEnabled = true;
+		m_CritDetoursEnabled = InitialiseCritDetours();
 	}
+
 	if (!m_GetHolidayDetourEnabled && g_getHolidayForward->GetFunctionCount())
 	{
-		InitialiseGetHolidayDetour();
-		m_GetHolidayDetourEnabled = true;
+		m_GetHolidayDetourEnabled = InitialiseGetHolidayDetour();
 	}
-	if (!m_RulesDetoursEnabled)
+
+	if (!m_RulesDetoursEnabled
+		&& ( g_waitingPlayersStartForward->GetFunctionCount() || g_waitingPlayersEndForward->GetFunctionCount() )
+		)
 	{
-		if(g_waitingPlayersStartForward->GetFunctionCount() || g_waitingPlayersEndForward->GetFunctionCount())
-		{
-			InitialiseRulesDetours();
-			m_RulesDetoursEnabled = true;
-		}
+		m_RulesDetoursEnabled = InitialiseRulesDetours();
 	}
 }
 
@@ -341,7 +339,7 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 	}
 	if (m_RulesDetoursEnabled)
 	{
-		if(!g_waitingPlayersStartForward->GetFunctionCount() || !g_waitingPlayersEndForward->GetFunctionCount())
+		if (!g_waitingPlayersStartForward->GetFunctionCount() && !g_waitingPlayersEndForward->GetFunctionCount())
 		{
 			RemoveRulesDetours();
 			m_RulesDetoursEnabled = false;

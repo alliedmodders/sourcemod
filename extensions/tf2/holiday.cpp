@@ -58,17 +58,18 @@ DETOUR_DECL_STATIC0(GetHoliday, int)
 	return actualres;
 }
 
-void InitialiseGetHolidayDetour()
+bool InitialiseGetHolidayDetour()
 {
 	getHolidayDetour = DETOUR_CREATE_STATIC(GetHoliday, "GetHoliday");
 
-	if (!getHolidayDetour)
+	if (getHolidayDetour != NULL)
 	{
-		g_pSM->LogError(myself, "GetHoliday detour failed");
-		return;
+		getHolidayDetour->EnableDetour();
+		return true;
 	}
 
-	getHolidayDetour->EnableDetour();
+	g_pSM->LogError(myself, "GetHoliday detour failed");
+	return false;
 }
 
 void RemoveGetHolidayDetour()

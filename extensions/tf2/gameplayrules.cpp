@@ -64,17 +64,18 @@ DETOUR_DECL_MEMBER1(SetInWaitingForPlayers, void, bool, bWaitingForPlayers)
 	}
 }
 
-void InitialiseRulesDetours()
+bool InitialiseRulesDetours()
 {
 	setInWaitingForPlayersDetour = DETOUR_CREATE_MEMBER(SetInWaitingForPlayers, "SetInWaitingForPlayers");
 
 	if (setInWaitingForPlayersDetour != NULL)
 	{
 		setInWaitingForPlayersDetour->EnableDetour();
-		return;
+		return true;
 	}
 
 	g_pSM->LogError(myself, "No Gameplay Rules detours could be initialized - Disabled Gameplay Rules functions");
+	return false;
 }
 
 void RemoveRulesDetours()

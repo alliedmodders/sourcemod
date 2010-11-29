@@ -37,7 +37,7 @@
 #include <jit/x86/x86_macros.h>
 #include "CDetour/detours.h"
 
-void InitialiseRulesDetours();
+bool InitialiseRulesDetours();
 void RemoveRulesDetours();
 
 extern IForward *g_waitingPlayersStartForward;

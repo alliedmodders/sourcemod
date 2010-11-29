@@ -188,7 +188,7 @@ DETOUR_DECL_MEMBER0(CalcIsAttackCriticalHelperBow, bool)
 	}
 }
 
-void InitialiseCritDetours()
+bool InitialiseCritDetours()
 {
 	calcIsAttackCriticalDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelper, "CalcCritical");
 	calcIsAttackCriticalMeleeDetour = DETOUR_CREATE_MEMBER(CalcIsAttackCriticalHelperMelee, "CalcCriticalMelee");
@@ -214,17 +214,33 @@ void InitialiseCritDetours()
 		HookCreated = true;
 	}
 
-	if (!HookCreated)
+	if (HookCreated)
 	{
-		g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
-		return;
+		return true;
 	}
 
+	g_pSM->LogError(myself, "No critical hit forwards could be initialized - Disabled critical hit hooks");
+
+	return false;
 }
 
 void RemoveCritDetours()
 {
-	calcIsAttackCriticalDetour->Destroy();
-	calcIsAttackCriticalMeleeDetour->Destroy();
-	calcIsAttackCriticalBowDetour->Destroy();
+	if (calcIsAttackCriticalDetour != NULL)
+	{
+		calcIsAttackCriticalDetour->Destroy();
+		calcIsAttackCriticalDetour = NULL;
+	}
+
+	if (calcIsAttackCriticalMeleeDetour != NULL)
+	{
+		calcIsAttackCriticalMeleeDetour->Destroy();
+		calcIsAttackCriticalMeleeDetour = NULL;
+	}
+
+	if (calcIsAttackCriticalBowDetour != NULL)
+	{
+		calcIsAttackCriticalBowDetour->Destroy();
+		calcIsAttackCriticalBowDetour = NULL;
+	}
 }
