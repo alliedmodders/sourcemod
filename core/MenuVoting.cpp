@@ -538,7 +538,7 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 					CPlayer *pPlayer = g_Players.GetPlayerByIndex(i);
 					assert(pPlayer);
 
-					if (pPlayer->IsInGame())
+					if (pPlayer->IsInGame() && !pPlayer->IsFakeClient())
 					{
 						if (m_Revoting[client])
 						{
