@@ -342,15 +342,46 @@ void ProfileEngine::OnRootConsoleCommand2(const char *cmdname, const ICommandArg
 			GenerateReport(fp);
 
 			fclose(fp);
+			
+			Clear();
 
 			rootmenu->ConsolePrint("Profiler report generated as: %s\n", path);
 
+			return;
+		}
+		else if (strcmp(command->Arg(2), "report") == 0)
+		{
+			FILE *fp;
+			char path[256];
+
+			g_pSM->BuildPath(Path_SM, path, sizeof(path), "logs/profile_%d.xml", (int)time(NULL));
+
+			if ((fp = fopen(path, "wt")) == NULL)
+			{
+				rootmenu->ConsolePrint("Failed, could not open file for writing: %s", path);
+				return;
+			}
+
+			GenerateReport(fp);
+
+			fclose(fp);
+			
+			rootmenu->ConsolePrint("Profiler report generated as: %s\n", path);
+			return;
+		}
+		else if (strcmp(command->Arg(2), "clear") == 0)
+		{
+			Clear();
+
+			rootmenu->ConsolePrint("Profiler statistics cleared.\n");
 			return;
 		}
 	}
 
 	rootmenu->ConsolePrint("Profiler commands:");
 	rootmenu->DrawGenericOption("flush", "Flushes statistics to disk and starts over");
+	rootmenu->DrawGenericOption("report", "Flushes statistics to disk");
+	rootmenu->DrawGenericOption("clear", "Clears statistics");
 }
 
 bool ProfileEngine::GenerateReport(FILE *fp)
