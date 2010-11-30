@@ -269,9 +269,14 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	ban_flags = params[3];
 	ban_source = params[7];
 
-#if SOURCE_ENGINE != SE_DARKMESSIAH
 	/* Check how we should ban the player */
-	if ((ban_flags & BANFLAG_AUTO) == BANFLAG_AUTO)
+	if (!strcmp(smcore.GetSourceEngineName(), "darkmessiah"))
+	{
+		/* Dark Messiah doesn't have Steam IDs so there is only one ban method to choose */
+		ban_flags |= BANFLAG_IP;
+		ban_flags &= ~BANFLAG_AUTHID;
+	}
+	else if ((ban_flags & BANFLAG_AUTO) == BANFLAG_AUTO)
 	{
 		if (gamehelpers->IsLANServer() || !pPlayer->IsAuthorized())
 		{
@@ -305,11 +310,6 @@ static cell_t BanClient(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("No valid ban method flags specified");
 	}
-#else
-	/* Dark Messiah doesn't have Steam IDs so there is only one ban method to choose */
-	ban_flags |= BANFLAG_IP;
-	ban_flags &= ~BANFLAG_AUTHID;
-#endif
 
 	cell_t handled = 0;
 	if (ban_cmd[0] != '\0' && g_pOnBanClient->GetFunctionCount() > 0)
