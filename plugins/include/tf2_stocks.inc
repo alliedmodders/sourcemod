@@ -390,7 +390,7 @@ stock TF2_RemoveAllWeapons(client)
  */
 stock TF2_GetPlayerConditionFlags(client)
 {
-	return GetEntProp(client, Prop_Send, "m_nPlayerCond");
+	return GetEntProp(client, Prop_Send, "m_nPlayerCond")|GetEntProp(client, Prop_Send, "_condition_bits");
 }
 
 /**
