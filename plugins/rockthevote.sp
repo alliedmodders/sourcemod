@@ -162,12 +162,12 @@ public Action:Command_RTV(client, args)
 {
 	if (!g_CanRTV || !client)
 	{
-		return Plugin_Continue;
+		return Plugin_Handled;
 	}
 	
 	AttemptRTV(client);
 	
-	return Plugin_Continue;
+	return Plugin_Handled;
 }
 
 public Action:Command_Say(client, args)
