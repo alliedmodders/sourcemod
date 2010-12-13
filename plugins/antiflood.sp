@@ -67,7 +67,7 @@ public bool:OnClientFloodCheck(client)
 	max_chat = GetConVarFloat(sm_flood_time);
 	
 	if (max_chat <= 0.0 
-		|| (GetUserFlagBits(client) & ADMFLAG_ROOT) == ADMFLAG_ROOT)
+ 		|| CheckCommandAccess(client, "sm_flood_access", ADMFLAG_ROOT, true))
 	{
 		return false;
 	}
@@ -87,7 +87,7 @@ public bool:OnClientFloodCheck(client)
 public OnClientFloodResult(client, bool:blocked)
 {
 	if (max_chat <= 0.0 
-		|| (GetUserFlagBits(client) & ADMFLAG_ROOT) == ADMFLAG_ROOT)
+ 		|| CheckCommandAccess(client, "sm_flood_access", ADMFLAG_ROOT, true))
 	{
 		return;
 	}
