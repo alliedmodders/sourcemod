@@ -48,6 +48,7 @@
 #define TF_CONDFLAG_TELEPORTGLOW    (1 << 6)
 #define TF_CONDFLAG_TAUNTING        (1 << 7)
 #define TF_CONDFLAG_UBERCHARGEFADE  (1 << 8)
+#define TF_CONDFLAG_CLOAKFLICKER    (1 << 9)
 #define TF_CONDFLAG_TELEPORTING     (1 << 10)
 #define TF_CONDFLAG_KRITZKRIEGED    (1 << 11)
 #define TF_CONDFLAG_DEADRINGERED    (1 << 13)
@@ -192,7 +193,9 @@ enum {
 	TF_WEAPON_SENTRY_REVENGE,
 	TF_WEAPON_JAR_MILK,
 	TF_WEAPON_HANDGUN_SCOUT_PRIMARY,
-	TF_WEAPON_BAT_FISH
+	TF_WEAPON_BAT_FISH,
+	TF_WEAPON_CROSSBOW,
+	TF_WEAPON_STICKBOMB
 };
 
 // Identifiers for the eventtype property on the teamplay_flag_event event

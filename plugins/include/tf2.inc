@@ -82,7 +82,8 @@ enum TFCond
 	TFCond_TeleportedGlow,
 	TFCond_Taunting,
 	TFCond_UberchargeFading,
-	TFCond_Unknown1,
+	TFCond_Unknown1, //9
+	TFCond_CloakFlicker = 9,
 	TFCond_Teleporting,
 	TFCond_Kritzkrieged,
 	TFCond_Unknown2,
