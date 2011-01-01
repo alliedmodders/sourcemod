@@ -38,6 +38,7 @@
  */
 
 #include <IShareSys.h>
+#include <sp_vm_api.h>
 
 #define SMINTERFACE_NINVOKE_NAME	"INativeInterface"
 #define SMINTERFACE_NINVOKE_VERSION	1
@@ -65,7 +66,7 @@ namespace SourceMod
 		 * @param name		Name of native.
 		 * @return			True if native was found, false otherwise.
 		 */
-		virtual bool Start(IPluginContext *pContext, const char *name) = 0;
+		virtual bool Start(SourcePawn::IPluginContext *pContext, const char *name) = 0;
 
 		/**
 		 * @brief Invokes the native.  The preparation state is cleared immediately, meaning that 
@@ -92,7 +93,7 @@ namespace SourceMod
 		 * @param bytes		Number of bytes for memory (NINVOKE_DEFAULT_MEMORY recommended).
 		 * @return			New runtime, or NULL on failure.
 		 */
-		virtual IPluginRuntime *CreateRuntime(const char *name, size_t bytes) = 0;
+		virtual SourcePawn::IPluginRuntime *CreateRuntime(const char *name, size_t bytes) = 0;
 
 		/**
 		 * @brief Creates an object that can be used to invoke a single native code.
