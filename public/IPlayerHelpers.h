@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	11
+#define SMINTERFACE_PLAYERMANAGER_VERSION	12
 
 struct edict_t;
 class IPlayerInfo;
@@ -525,6 +525,14 @@ namespace SourceMod
 		 * @return				Client index, or 0 for invalid serial.
 		 */
 		virtual int GetClientFromSerial(unsigned int serial) =0;
+
+		/**
+		 * @brief Processes the pattern inside a cmd_target_info_t structure
+		 * and outputs the clients that match it.
+		 *
+		 * @param info			Pointer to the cmd_target_info_t structure to process.
+		 */
+		virtual void ProcessCommandTarget(cmd_target_info_t *info) =0;
 	};
 }
 
