@@ -197,6 +197,7 @@ private:
 private:
 	List<IClientListener *> m_hooks;
 	IForward *m_clconnect;
+	IForward *m_clconnect_post;
 	IForward *m_cldisconnect;
 	IForward *m_cldisconnect_post;
 	IForward *m_clputinserver;

@@ -55,7 +55,7 @@ bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
 IForward *PostAdminCheck = NULL;
 IForward *PostAdminFilter = NULL;
-IForward *OnClientConnected = NULL;
+
 const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
@@ -142,6 +142,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	ParamType p2[] = {Param_Cell};
 
 	m_clconnect = g_Forwards.CreateForward("OnClientConnect", ET_LowEvent, 3, p1);
+	m_clconnect_post = g_Forwards.CreateForward("OnClientConnected", ET_Ignore, 1, p2);
 	m_clputinserver = g_Forwards.CreateForward("OnClientPutInServer", ET_Ignore, 1, p2);
 	m_cldisconnect = g_Forwards.CreateForward("OnClientDisconnect", ET_Ignore, 1, p2);
 	m_cldisconnect_post = g_Forwards.CreateForward("OnClientDisconnect_Post", ET_Ignore, 1, p2);
@@ -150,7 +151,6 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clauth = g_Forwards.CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
 	m_onActivate = g_Forwards.CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 	m_onActivate2 = g_Forwards.CreateForward("OnMapStart", ET_Ignore, 0, NULL);
-	OnClientConnected = g_Forwards.CreateForward("OnClientConnected", ET_Ignore, 1, p2);
 
 	PreAdminCheck = g_Forwards.CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
 	PostAdminCheck = g_Forwards.CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
@@ -172,6 +172,7 @@ void PlayerManager::OnSourceModAllInitialized()
 void PlayerManager::OnSourceModShutdown()
 {
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect, false);
+	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientConnect, serverClients, this, &PlayerManager::OnClientConnect_Post, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientPutInServer, serverClients, this, &PlayerManager::OnClientPutInServer, true);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect, false);
 	SH_REMOVE_HOOK_MEMFUNC(IServerGameClients, ClientDisconnect, serverClients, this, &PlayerManager::OnClientDisconnect_Post, true);
@@ -181,6 +182,7 @@ void PlayerManager::OnSourceModShutdown()
 
 	/* Release forwards */
 	g_Forwards.ReleaseForward(m_clconnect);
+	g_Forwards.ReleaseForward(m_clconnect_post);
 	g_Forwards.ReleaseForward(m_clputinserver);
 	g_Forwards.ReleaseForward(m_cldisconnect);
 	g_Forwards.ReleaseForward(m_cldisconnect_post);
@@ -189,7 +191,6 @@ void PlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(m_clauth);
 	g_Forwards.ReleaseForward(m_onActivate);
 	g_Forwards.ReleaseForward(m_onActivate2);
-	g_Forwards.ReleaseForward(OnClientConnected);
 
 	g_Forwards.ReleaseForward(PreAdminCheck);
 	g_Forwards.ReleaseForward(PostAdminCheck);
@@ -478,8 +479,8 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 		}
 
 		cell_t res;
-		OnClientConnected->PushCell(client);
-		OnClientConnected->Execute(&res, NULL);
+		m_clconnect_post->PushCell(client);
+		m_clconnect_post->Execute(&res, NULL);
 	}
 	else
 	{
@@ -522,8 +523,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 
 		cell_t res;
-		OnClientConnected->PushCell(client);
-		OnClientConnected->Execute(&res, NULL);
+		m_clconnect_post->PushCell(client);
+		m_clconnect_post->Execute(&res, NULL);
 
 		/* Now do authorization */
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
