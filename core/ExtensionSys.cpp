@@ -69,6 +69,8 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 #define GAMEFIX "2.swarm"
 #elif SOURCE_ENGINE == SE_ORANGEBOX
 #define GAMEFIX "2.ep2"
+#elif SOURCE_ENGINE == SE_BLOODYGOODTIME
+#define GAMEFIX "2.bgt"
 #elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
 #define GAMEFIX "2.ep2v"
 #elif SOURCE_ENGINE == SE_DARKMESSIAH

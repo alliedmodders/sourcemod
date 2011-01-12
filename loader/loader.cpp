@@ -74,6 +74,7 @@
 #define FILENAME_1_6_DARKM			"sourcemod.2.darkm" PLATFORM_EXT
 #define FILENAME_1_6_L4D2			"sourcemod.2.l4d2" PLATFORM_EXT
 #define FILENAME_1_6_SWARM			"sourcemod.2.swarm" PLATFORM_EXT
+#define FILENAME_1_6_BGT			"sourcemod.2.bgt" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -243,6 +244,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_ALIENSWARM:
 		{
 			filename = FILENAME_1_6_SWARM;
+			break;
+		}
+	case SOURCE_ENGINE_BLOODYGOODTIME:
+		{
+			filename = FILENAME_1_6_BGT;
 			break;
 		}
 	default:

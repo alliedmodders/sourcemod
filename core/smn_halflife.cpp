@@ -459,6 +459,8 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 15;
 	case SOURCE_ENGINE_ORANGEBOX:
 		return 30;
+	case SOURCE_ENGINE_BLOODYGOODTIME:
+		return 32;
 	case SOURCE_ENGINE_ORANGEBOXVALVE:
 		return 35;
 	case SOURCE_ENGINE_LEFT4DEAD:

@@ -13,16 +13,18 @@ class SM:
 		                         'name': 'EPISODEONE',     'platform': ['windows', 'linux']}
 		self.sdkInfo['ep2'] =   {'sdk': 'HL2SDKOB',        'ext': '2.ep2',   'def': '3',
 		                         'name': 'ORANGEBOX',      'platform': ['windows', 'linux']}
-		self.sdkInfo['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '4',
+		self.sdkInfo['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '5',
 		                         'name': 'ORANGEBOXVALVE', 'platform': ['windows', 'linux', 'darwin']}
-		self.sdkInfo['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '5',
+		self.sdkInfo['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '6',
 		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin']}
-		self.sdkInfo['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '6',
+		self.sdkInfo['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '7',
 		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin']}
 		self.sdkInfo['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
 		                         'name': 'DARKMESSIAH',    'platform': ['windows']}
-		self.sdkInfo['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '7',
+		self.sdkInfo['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '8',
 		                         'name': 'ALIENSWARM',     'platform': ['windows']}
+		self.sdkInfo['bgt'] =   {'sdk': 'HL2SDK-BGT',    'ext': '2.bgt', 'def': '4',
+		                         'name': 'BLOODYGOODTIME',     'platform': ['windows']}
 
 		if AMBuild.mode == 'config':
 			#Detect compilers
@@ -44,6 +46,7 @@ class SM:
 			if AMBuild.target['platform'] == 'windows':
 				envvars['HL2SDK-DARKM'] = 'hl2sdk-darkm'
 				envvars['HL2SDK-SWARM'] = 'hl2sdk-swarm'
+				envvars['HL2SDK-BGT']   = 'hl2sdk-bgt'
 
 			#Must have a path for each envvar (file a bug if you don't like this)
 			for i in envvars:
