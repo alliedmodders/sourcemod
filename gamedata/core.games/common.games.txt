@@ -87,6 +87,7 @@
 		"#supported"
 		{
 			"engine"			"orangebox"
+			"engine"			"bloodygoodtime"
 			"engine"			"orangebox_valve"
 			"engine"			"left4dead"
 			"engine"			"left4dead2"

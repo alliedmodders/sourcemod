@@ -50,6 +50,11 @@
 		"engine"	"darkmessiah"
 	}
 	
+	"engine.bgt.txt"
+	{
+		"engine"	"bloodygoodtime"
+	}
+	
 	"game.tf.txt"
 	{
 		"game"		"tf"
