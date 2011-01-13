@@ -159,8 +159,6 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_bIsListenServer = !engine->IsDedicatedServer();
 	m_ListenClient = 0;
 
-	g_ConVarManager.AddConVarChangeListener("tv_enable", this);
-
 	ConCommand *pCmd = FindCommand("maxplayers");
 	if (pCmd != NULL)
 	{
@@ -197,8 +195,6 @@ void PlayerManager::OnSourceModShutdown()
 	g_Forwards.ReleaseForward(PostAdminFilter);
 
 	delete [] m_Players;
-
-	g_ConVarManager.RemoveConVarChangeListener("tv_enable", this);
 
 	if (maxplayersCmd != NULL)
 	{
@@ -1341,18 +1337,6 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 	{
 		info->num_targets = 0;
 		info->reason = COMMAND_TARGET_NONE;
-	}
-}
-
-void PlayerManager::OnConVarChanged( ConVar *pConVar, const char *oldValue, float flOldValue )
-{
-	if (pConVar->GetBool() && !atoi(oldValue))
-	{
-		MaxPlayersChanged(gpGlobals->maxClients + 1);
-	}
-	else
-	{
-		MaxPlayersChanged();
 	}
 }
 

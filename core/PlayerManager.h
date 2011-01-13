@@ -123,8 +123,7 @@ private:
 
 class PlayerManager : 
 	public SMGlobalClass,
-	public IPlayerManager,
-	public IConVarChangeListener
+	public IPlayerManager
 {
 	friend class CPlayer;
 public:
@@ -169,8 +168,6 @@ public: //IPlayerManager
 	void UnregisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);
 	void ProcessCommandTarget(cmd_target_info_t *info);
 	int GetClientFromSerial(unsigned int serial);
-public: // IConVarChangeListener
-	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
 public:
 	inline int MaxClients()
 	{
