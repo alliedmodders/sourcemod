@@ -72,6 +72,8 @@
 #define TF_DEATHFLAG_ASSISTERREVENGE    (1 << 3)
 #define TF_DEATHFLAG_FIRSTBLOOD         (1 << 4)
 #define TF_DEATHFLAG_DEADRINGER         (1 << 5)
+#define TF_DEATHFLAG_INTERRUPTED        (1 << 6)
+#define TF_DEATHFLAG_GIBBED             (1 << 7)
 
 // Custom kill identifiers for the customkill property on the player_death event
 enum {
@@ -115,7 +117,8 @@ enum {
 	TF_CUSTOM_TAUNT_ENGINEER_ARM,
 	TF_CUSTOM_FISH_KILL,
 	TF_CUSTOM_TRIGGER_HURT,
-	TF_CUSTOM_DECAPITATION_BOSS
+	TF_CUSTOM_DECAPITATION_BOSS,
+	TF_CUSTOM_STICKBOMB_EXPLOSION
 };
 
 // Weapon codes as used in some events, such as player_death
