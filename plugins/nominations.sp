@@ -192,13 +192,13 @@ public Action:Command_Nominate(client, args)
 {
 	if (!client)
 	{
-		return Plugin_Continue;
+		return Plugin_Handled;
 	}
 	
 	if (args == 0)
 	{
 		AttemptNominate(client);
-		return Plugin_Continue;
+		return Plugin_Handled;
 	}
 	
 	decl String:mapname[64];
