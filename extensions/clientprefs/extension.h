@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 
-#define MAXCLIENTS 64
+#define MAXCLIENTS 65
 
 #include <stdlib.h>
 #include <stdarg.h>

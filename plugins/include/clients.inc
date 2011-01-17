@@ -53,7 +53,7 @@ enum NetFlow
  * not be used in OnPluginStart().
  */
 
-#define MAXPLAYERS		64	/**< Maximum number of players SourceMod supports */
+#define MAXPLAYERS		65	/**< Maximum number of players SourceMod supports */
 #define MAX_NAME_LENGTH 32	/**< Maximum buffer required to store a client name */
 
 public const MaxClients;	/**< Maximum number of players the server supports (dynamic) */
