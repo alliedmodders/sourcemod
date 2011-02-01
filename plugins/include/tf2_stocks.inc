@@ -201,6 +201,19 @@ enum {
 	TF_WEAPON_STICKBOMB
 };
 
+// TF2 Weapon Slots for GetPlayerWeaponSlot
+enum
+{
+	TFWeaponSlot_Primary,
+	TFWeaponSlot_Secondary,
+	TFWeaponSlot_Melee,
+	TFWeaponSlot_Grenade,
+	TFWeaponSlot_Building,
+	TFWeaponSlot_PDA,
+	TFWeaponSlot_Item1,
+	TFWeaponSlot_Item2	
+};
+
 // Identifiers for the eventtype property on the teamplay_flag_event event
 enum {
 	TF_FLAGEVENT_PICKEDUP = 1,
