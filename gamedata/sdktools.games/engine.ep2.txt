@@ -25,6 +25,7 @@
 			"game"		"gesource"
 			"game"		"fas"
 			"game"		"fistful_of_frags"
+			"game"		"cspromod"
 		}
 
 		"Offsets"
@@ -75,6 +76,7 @@
 			"game"		"zps"
 			"game"		"pvkii"
 			"game"		"fistful_of_frags"
+			"game"		"cspromod"
 		}
 
 		"Signatures"
@@ -103,6 +105,7 @@
 			"game"		"zps"
 			"game"		"pvkii"
 			"game"		"fistful_of_frags"
+			"game"		"cspromod"
 		}
 		
 		"Signatures"
@@ -133,6 +136,7 @@
 			"game"		"obsidian"
 			"game"		"fas"
 			"game"		"fistful_of_frags"
+			"game"		"cspromod"
 		}
 		
 		"Offsets"
@@ -223,6 +227,7 @@
 		"#supported"
 		{
 			"game"		"ageofchivalry"
+			"game"		"cspromod"
 		}
 		"Signatures"
 		{
