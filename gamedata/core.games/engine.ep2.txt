@@ -27,6 +27,7 @@
 			"game"		"synergy"
 			"game"		"fas"
 			"game"		"fistful_of_frags"
+			"game"		"cspromod"
 		}
 		
 		"Offsets"

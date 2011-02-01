@@ -1,140 +1,94 @@
 "Games"
 {
-	/* CSpromod 1.04 */
+	/* CSpromod 1.05 */
 	"cspromod"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"330"
-				"linux"		"331"
+				"windows"	"353"
+				"linux"		"354"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"226"
-				"linux"		"227"
+				"windows"	"239"
+				"linux"		"240"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"224"
-				"linux"		"225"
+				"windows"	"237"
+				"linux"		"238"
 			}
 			"Ignite"
 			{
-				"windows"	"188"
-				"linux"		"189"
+				"windows"	"194"
+				"linux"		"195"
 			}
 			"Extinguish"
 			{
-				"windows"	"189"
-				"linux"		"190"
+				"windows"	"198"
+				"linux"		"199"
 			}
 			"Teleport"
 			{
-				"windows"	"98"
-				"linux"		"99"
+				"windows"	"101"
+				"linux"		"102"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"358"
-				"linux"		"359"
+				"windows"	"389"
+				"linux"		"389"
 			}
 			"GetVelocity"
 			{
-				"windows"	"126"
-				"linux"		"127"
+				"windows"	"131"
+				"linux"		"132"
 			}
 			"EyeAngles"
 			{
-				"windows"	"118"
-				"linux"		"119"
+				"windows"	"123"
+				"linux"		"124"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"34"
+				"linux"		"35"
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"31"
-				"linux"		"30"
+				"windows"	"29"
+				"linux"		"28"
 			}
 			"DispatchKeyValueFloat"
 			{
-				"windows"	"30"
-				"linux"		"31"
+				"windows"	"28"
+				"linux"		"29"
 			}
 			"DispatchKeyValueVector"
 			{
-				"windows"	"29"
-				"linux"		"32"
+				"windows"	"27"
+				"linux"		"30"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"23"
+				"linux"		"24"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"217"
-				"linux"		"218"
+				"windows"	"230"
+				"linux"		"231"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"31"
+				"linux"		"32"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"348"
-				"linux"		"349"
-			}
-			"FireOutputBackup"
-			{
-				"windows"	"6"
-				"linux"		"6"
-			}
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		"Signatures"
-		{
-			"FireOutput"
-			{
-				"library"	"server"
-				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x85\xF6"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-			}
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x55\x56\x8B\x74\x2A\x2A\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x2A\x2A\x8B\xCB\xFF"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKci"
-				"windows"	"\x56\x8B\x74\x2A\x2A\x83\xFE\xFF\x57\x8B\x7C\x2A\x2A\x74\x2A\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x2A\x2A\x56\xFF\xD2"
-			}
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x2A\x85\xC9\x57\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\xFF\x2A\x2A\x2A\x83\xC0\x2A\xC1\xE0\x2A\x8B\x3C\x30\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x2A\x2A\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x2A\x8D\x2A\x2A\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x2A\xEB\x11\x39"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
+				"windows"	"373"
+				"linux"		"374"
 			}
 		}
 	}
