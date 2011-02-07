@@ -73,7 +73,6 @@
 		"#supported"
 		{
 			"game"		"ageofchivalry"
-			"game"		"zps"
 			"game"		"pvkii"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
@@ -102,7 +101,6 @@
 		"#supported"
 		{
 			"game"		"ageofchivalry"
-			"game"		"zps"
 			"game"		"pvkii"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
