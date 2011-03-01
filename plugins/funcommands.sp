@@ -169,7 +169,8 @@ public OnMapStart()
 	PrecacheSound(SOUND_BOOM, true);
 	PrecacheSound(SOUND_FREEZE, true);
 
-	if (GuessSDKVersion() == SOURCE_SDK_LEFT4DEAD2)
+	new sdkversion = GuessSDKVersion();
+	if (sdkversion == SOURCE_SDK_LEFT4DEAD || sdkversion == SOURCE_SDK_LEFT4DEAD2)
 	{
 		g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 		g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
