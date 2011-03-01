@@ -94,9 +94,9 @@ enum TFCond
 	TFCond_Charging,
 	TFCond_DemoBuff,
 	TFCond_CritCola,
+	TFCond_InHealRadius,
 	TFCond_Healing,
-	
-	TFCond_OnFire = 22,
+	TFCond_OnFire,
 	TFCond_Overhealed,
 	TFCond_Jarated,
 	TFCond_Bleeding,
