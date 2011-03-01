@@ -171,7 +171,10 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 	}
 
 	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
-	*(int *)((unsigned char *)g_Teams[teamindex].pEnt + offset) = params[2];
+
+	CBaseEntity *pTeam = g_Teams[teamindex].pEnt;
+	*(int *)((unsigned char *)pTeam + offset) = params[2];
+	gamehelpers->SetEdictStateChanged(pTeam, offset);
 
 	return 1;
 }
