@@ -11,7 +11,7 @@
 
 "Games"
 {
-	/* Empires 2.25b */
+	/* Empires 2.31a */
 	"empires"
 	{
 
@@ -19,28 +19,28 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"353"
-				"linux"		"354"
+				"windows"	"357"
+				"linux"		"358"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"240"
-				"linux"		"241"
+				"windows"	"244"
+				"linux"		"245"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"238"
-				"linux"		"239"
+				"windows"	"242"
+				"linux"		"243"
 			}
 			"Ignite"
 			{
-				"windows"	"195"
-				"linux"		"196"
+				"windows"	"199"
+				"linux"		"200"
 			}
 			"Extinguish"
 			{
-				"windows"	"199"
-				"linux"		"200"
+				"windows"	"203"
+				"linux"		"204"
 			}
 			"Teleport"
 			{
@@ -49,18 +49,18 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"392"
-				"linux"		"392"
+				"windows"	"396"
+				"linux"		"396"
 			}
 			"GetVelocity"
 			{
-				"windows"	"132"
-				"linux"		"133"
+				"windows"	"136"
+				"linux"		"137"
 			}
 			"EyeAngles"
 			{
-				"windows"	"124"
-				"linux"		"125"
+				"windows"	"128"
+				"linux"		"129"
 			}
 			"DispatchKeyValue"
 			{
@@ -94,44 +94,50 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"231"
-				"linux"		"232"
+				"windows"	"235"
+				"linux"		"236"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"372"
-				"linux"		"373"
+				"windows"	"376"
+				"linux"		"377"
 			}
-			"FireOutputBackup"
+			
+			/* Offset into CBaseTempEntity constructor */
+			"s_pTempEntities"
 			{
-				"windows"	"6"
-				"linux"		"10"
+				"windows"	"19"
 			}
 		}
 		"Signatures"
 		{
+			"CBaseTempEntity"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x89\x2A\x2A\x8B\x15\x2A\x2A\x2A\x2A\x89"
+			}
 			"DispatchSpawn"
 			{
 				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x57\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
+				"windows"	"\x55\x8B\xEC\x51\x53\x56\x8B\x75\x2A\x57\x85\xF6\x0F\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x8B"
 				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
 			}
 			"CreateEntityByName"
 			{
 				"library"	"server"
-				"windows"	"\x56\x8B\x74\x24\x0C\x57\x8B\x7C\x24\x0C\x83\xFE\xFF\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
+				"windows"	"\x55\x8B\xEC\x56\x8B\x2A\x2A\x57\x8B\x2A\x2A\x83\x2A\x2A\x74\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x2A\x56\xFF\xD2"
 				"linux"		"@_Z18CreateEntityByNamePKci"
 			}
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x40\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\x8D\xA4\x24\x00\x00\x00\x00\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\xC4\x04\xEB\x2A\x39\x2A\x2A\x74\x2A\x53"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x2A\x2A\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\x2A\x2A\x2A\x2A\x40\x03\xC0\x8B\x3C\xC6\xEB\x2A\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x5D\x2A\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x2A\x2A\x2A\x2A\x83\xC4\x2A\xEB\x11\x39"
 				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57\x89"
+				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57\x89\x2A\x2A\xC7"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
