@@ -291,6 +291,10 @@
 				RelativePath="..\sp_file.c"
 				>
 			</File>
+			<File
+				RelativePath="..\sp_symhash.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -331,6 +335,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\public\sourcepawn\sp_file_headers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\sp_symhash.h"
 				>
 			</File>
 			<File
