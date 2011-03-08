@@ -125,6 +125,11 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
 	}
 
+	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
+	{
+		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+	}
+
 	if (g_VoiceMap[iReceiver][iSender] == Listen_No)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
@@ -132,11 +137,6 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 	else if (g_VoiceMap[iReceiver][iSender] == Listen_Yes)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
-	}
-
-	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
-	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
 	}
 
 	if ((g_VoiceFlags[iSender] & SPEAK_ALL) || (g_VoiceFlags[iReceiver] & SPEAK_LISTENALL))
