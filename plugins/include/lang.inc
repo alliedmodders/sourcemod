@@ -94,3 +94,28 @@ native GetLanguageCount();
  */
 native GetLanguageInfo(language, String:code[]="", codeLen=0, String:name[]="", nameLen=0);
 
+/**
+ * Sets the language number of a client.
+ *
+ * @param client	Client index.
+ * @param language	Language number.
+ * @noreturn
+ * @error			Invalid client index or client not in game.
+ */
+native SetClientLanguage(client, language);
+
+/**
+ * Retrieves the language number from a language code.
+ *
+ * @param code		Language code (2-3 characters usually).
+ * @return			Language number. -1 if not found.
+ */
+native GetLanguageByCode(const String:code[]);
+
+/**
+ * Retrieves the language number from a language name.
+ *
+ * @param name		Language name (case insensitive).
+ * @return			Language number. -1 if not found.
+ */
+native GetLanguageByName(const String:name[]);
