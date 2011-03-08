@@ -104,6 +104,46 @@ static cell_t sm_GetLanguageInfo(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_SetClientLanguage(IPluginContext *pContext, const cell_t *params)
+{
+	CPlayer *player = g_Players.GetPlayerByIndex(params[1]);
+	
+	if (!player || !player->IsInGame())
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+	
+	player->m_LangId = params[2];
+
+	return 1;
+}
+
+static cell_t sm_GetLanguageByCode(IPluginContext *pContext, const cell_t *params)
+{
+	char *code;
+	unsigned int langid;
+
+	pContext->LocalToString(params[1], &code);
+
+	if (g_Translator.GetLanguageByCode(code, &langid))
+		return langid;
+
+	return -1;
+}
+
+static cell_t sm_GetLanguageByName(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	unsigned int langid;
+
+	pContext->LocalToString(params[1], &name);
+
+	if (g_Translator.GetLanguageByName(name, &langid))
+		return langid;
+
+	return -1;
+}
+
 REGISTER_NATIVES(langNatives)
 {
 	{"LoadTranslations",			sm_LoadTranslations},
@@ -112,5 +152,8 @@ REGISTER_NATIVES(langNatives)
 	{"GetServerLanguage",			sm_GetServerLanguage},
 	{"GetLanguageCount",			sm_GetLanguageCount},
 	{"GetLanguageInfo",				sm_GetLanguageInfo},
+	{"SetClientLanguage",			sm_SetClientLanguage},
+	{"GetLanguageByCode",			sm_GetLanguageByCode},
+	{"GetLanguageByName",			sm_GetLanguageByName},
 	{NULL,							NULL},
 };
