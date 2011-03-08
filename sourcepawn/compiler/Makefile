@@ -11,7 +11,7 @@ BINARY = spcomp
 
 OBJECTS = binreloc.c libpawnc.c lstring.c memfile.c pawncc.c sc1.c sc2.c sc3.c sc4.c \
 	sc5.c sc6.c sc7.c scexpand.c sci18n.c sclist.c scmemfil.c scstate.c sctracker.c \
-	scvars.c sp_file.c
+	scvars.c sp_file.c sp_symhash.c
 OBJECTS += zlib/adler32.c zlib/compress.c zlib/crc32.c zlib/deflate.c zlib/gzio.c \
 	   zlib/infback.c zlib/inffast.c zlib/inflate.c zlib/inftrees.c zlib/trees.c \
 	   zlib/uncompr.c zlib/zutil.c
