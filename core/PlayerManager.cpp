@@ -833,6 +833,17 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 			}
 		}
 	}
+	/* Notify Extensions */
+	List<IClientListener *>::iterator iter;
+	IClientListener *pListener = NULL;
+	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	{
+		pListener = (*iter);
+		if (pListener->GetClientListenerVersion() >= 13)
+		{
+			pListener->OnClientSettingsChanged(client);
+		}
+	}
 }
 
 int PlayerManager::GetMaxClients()
