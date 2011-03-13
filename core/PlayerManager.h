@@ -82,6 +82,7 @@ public:
 	bool IsInKickQueue();
 	IPlayerInfo *GetPlayerInfo();
 	unsigned int GetLanguageId();
+	void SetLanguageId(unsigned int id);
 	int GetUserId();
 	bool RunAdminCacheChecks();
 	void NotifyPostAdminChecks();

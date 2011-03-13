@@ -113,7 +113,7 @@ static cell_t sm_SetClientLanguage(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}
 	
-	player->m_LangId = params[2];
+	player->SetLanguageId(params[2]);
 
 	return 1;
 }

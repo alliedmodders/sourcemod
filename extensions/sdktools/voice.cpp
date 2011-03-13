@@ -53,7 +53,6 @@ enum ListenOverride
 
 size_t g_VoiceFlags[65];
 size_t g_VoiceHookCount = 0;
-int g_ClientOverrides[65];
 ListenOverride g_VoiceMap[65][65];
 bool g_ClientMutes[65][65];
 
@@ -65,10 +64,10 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 
-bool DecHookCount(int amount = 1);
-bool DecHookCount(int amount)
+bool DecHookCount()
 {
-	g_VoiceHookCount -= amount;
+	g_VoiceHookCount--;
+
 	if (g_VoiceHookCount == 0)
 	{
 		SH_REMOVE_HOOK_MEMFUNC(IVoiceServer, SetClientListening, voiceserver, &g_SdkTools, &SDKTools::OnSetClientListening, false);
@@ -89,7 +88,6 @@ void IncHookCount()
 void SDKTools::VoiceInit()
 {
 	memset(g_VoiceMap, 0, sizeof(g_VoiceMap));
-	memset(g_ClientOverrides, 0, sizeof(g_ClientOverrides));
 	memset(g_ClientMutes, 0, sizeof(g_ClientMutes));
 
 	SH_ADD_HOOK_MEMFUNC(IServerGameClients, ClientCommand, serverClients, this, &SDKTools::OnClientCommand, true);
@@ -130,6 +128,11 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
 	}
 
+	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
+	{
+		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+	}
+
 	if (g_VoiceMap[iReceiver][iSender] == Listen_No)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
@@ -137,11 +140,6 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 	else if (g_VoiceMap[iReceiver][iSender] == Listen_Yes)
 	{
 		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
-	}
-
-	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
-	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
 	}
 
 	if ((g_VoiceFlags[iSender] & SPEAK_ALL) || (g_VoiceFlags[iReceiver] & SPEAK_LISTENALL))
@@ -193,6 +191,7 @@ void SDKTools::OnClientDisconnecting(int client)
 		}
 
 		g_ClientMutes[i][client] = false;
+		g_ClientMutes[client][i] = false;
 		
 		if (g_VoiceMap[i][client] != Listen_Default)
 		{
@@ -202,22 +201,19 @@ void SDKTools::OnClientDisconnecting(int client)
 				break;
 			}
 		}
-	}
-
-	/* Reset this client's mutes */
-	memset(&g_ClientMutes[client], 0, sizeof(bool) * 65);
-
-	/* Reset other clients who send to this client */
-	if (g_ClientOverrides[client] > 0)
-	{
-		DecHookCount(g_ClientOverrides[client]);
-		g_ClientOverrides[client] = 0;
-		memset(&g_VoiceMap[client], false, sizeof(ListenOverride) * 65);
+		if (g_VoiceMap[client][i] != Listen_Default)
+		{
+			g_VoiceMap[client][i] = Listen_Default;
+			if (DecHookCount())
+			{
+				break;
+			}
+		}
 	}
 
 	if (g_VoiceFlags[client])
 	{
-		g_VoiceFlags[client] = 0;
+		g_VoiceFlags[client] = SPEAK_NORMAL;
 		DecHookCount();
 	}
 }
@@ -294,13 +290,11 @@ static cell_t SetClientListening(IPluginContext *pContext, const cell_t *params)
 	if (g_VoiceMap[r][s] == Listen_Default && params[3] != Listen_Default)
 	{
 		g_VoiceMap[r][s] = (ListenOverride) params[3];
-		g_ClientOverrides[r]++;
 		IncHookCount();
 	}
 	else if (g_VoiceMap[r][s] != Listen_Default && params[3] == Listen_Default)
 	{
 		g_VoiceMap[r][s] = (ListenOverride) params[3];
-		g_ClientOverrides[r]--;
 		DecHookCount();
 	}
 	else
