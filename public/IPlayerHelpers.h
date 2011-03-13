@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	13
+#define SMINTERFACE_PLAYERMANAGER_VERSION	14
 
 struct edict_t;
 class IPlayerInfo;
@@ -220,6 +220,8 @@ namespace SourceMod
 		 * to actually add them to the queue.
 		 */
 		virtual void MarkAsBeingKicked() =0;
+
+		virtual void SetLanguageId(unsigned int id) =0;
 	};
 
 	/**

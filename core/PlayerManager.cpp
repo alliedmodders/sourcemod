@@ -1777,6 +1777,11 @@ unsigned int CPlayer::GetLanguageId()
 	return m_LangId;
 }
 
+void CPlayer::SetLanguageId(unsigned int id)
+{
+	m_LangId = id;
+}
+
 int CPlayer::GetUserId()
 {
 	if (m_UserId == -1)

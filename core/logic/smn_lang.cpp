@@ -106,14 +106,14 @@ static cell_t sm_GetLanguageInfo(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_SetClientLanguage(IPluginContext *pContext, const cell_t *params)
 {
-	CPlayer *player = g_Players.GetPlayerByIndex(params[1]);
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
 	
 	if (!player || !player->IsInGame())
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}
 	
-	player->m_LangId = params[2];
+	player->SetLanguageId(params[2]);
 
 	return 1;
 }
