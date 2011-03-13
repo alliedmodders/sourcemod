@@ -10,12 +10,7 @@ require 'helpers.pm';
 chdir('..');
 chdir('..');
 
-our $SSH = 'ssh -i ../../smpvkey';
-
 open(PDBLOG, '../OUTPUT/pdblog.txt') or die "Could not open pdblog.txt: $!\n";
-
-#Sync us up with the main symbol store
-rsync('sourcemod@alliedmods.net:~/public_html/symbols/', '..\\..\\symstore');
 
 #Get version info
 my ($version);
@@ -41,14 +36,14 @@ while (<PDBLOG>)
 	$line = $_;
 	$line =~ s/\.pdb/\*/;
 	chomp $line;
-	Build::Command("symstore add /r /f \"..\\OUTPUT\\$line\" /s ..\\..\\symstore /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
+	Build::Command("symstore add /r /f \"..\\OUTPUT\\$line\" /s \"S:\\sourcemod\" /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
 }
 
 close(PDBLOG);
 
 #Lowercase DLLs.  Sigh.
 my (@files);
-opendir(DIR, "..\\..\\symstore");
+opendir(DIR, "S:\\sourcemod");
 @files = readdir(DIR);
 closedir(DIR);
 
@@ -57,23 +52,14 @@ for ($i = 0; $i <= $#files; $i++)
 {
 	$file = $files[$i];
 	next unless ($file =~ /\.dll$/);
-	next unless (-d "..\\..\\symstore\\$file");
-	opendir(DIR, "..\\..\\symstore\\$file");
+	next unless (-d "S:\\sourcemod\\$file");
+	opendir(DIR, "S:\\sourcemod\\$file");
 	@subdirs = readdir(DIR);
 	closedir(DIR);
 	for ($j = 0; $j <= $#subdirs; $j++)
 	{
 		next unless ($subdirs[$j] =~ /[A-Z]/);
-		Build::Command("rename ..\\..\\symstore\\$file\\" . $subdirs[$j] . " " . lc($subdirs[$j]));
+		Build::Command("rename S:\\sourcemod\\$file\\" . $subdirs[$j] . " " . lc($subdirs[$j]));
 	}	
 }
 
-#Now that we're done, rsync back.
-rsync('../../symstore/', 'sourcemod@alliedmods.net:~/public_html/symbols');
-
-sub rsync
-{
-	my ($from, $to) = (@_);
-	
-	Build::Command('rsync -av --delete -e="' . $SSH . '" ' . $from . ' ' . $to);
-}
