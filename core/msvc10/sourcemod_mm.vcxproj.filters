@@ -75,9 +75,6 @@
     <ClCompile Include="..\frame_hooks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\GameConfigs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\HalfLife2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -91,9 +88,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\logic_bridge.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\MemoryUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\MenuManager.cpp">
@@ -120,9 +114,6 @@
     <ClCompile Include="..\NextMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\PhraseCollection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\PlayerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -136,9 +127,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sm_autonatives.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\sm_memtable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\sm_srvcmds.cpp">
@@ -159,17 +147,8 @@
     <ClCompile Include="..\TimerSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Translator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\UserMessages.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_admin.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_banning.cpp">
-      <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_bitbuffer.cpp">
       <Filter>Natives</Filter>
@@ -181,9 +160,6 @@
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_database.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_datapacks.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_entities.cpp">
@@ -198,22 +174,13 @@
     <ClCompile Include="..\smn_filesystem.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
-    <ClCompile Include="..\smn_gameconfigs.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
     <ClCompile Include="..\smn_halflife.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_handles.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_hudtext.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_keyvalues.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_lang.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_menus.cpp">
@@ -226,12 +193,6 @@
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_profiler.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_string.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_timers.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_usermsgs.cpp">
