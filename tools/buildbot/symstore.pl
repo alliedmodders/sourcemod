@@ -36,7 +36,7 @@ while (<PDBLOG>)
 	$line = $_;
 	$line =~ s/\.pdb/\*/;
 	chomp $line;
-	Build::Command("symstore add /r /f \"..\\OUTPUT\\$line\" /s \"S:\\sourcemod" /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
+	Build::Command("symstore add /r /f \"..\\OUTPUT\\$line\" /s \"S:\\sourcemod\" /t \"SourceMod\" /v \"$version\" /c \"$build_type\"");
 }
 
 close(PDBLOG);
