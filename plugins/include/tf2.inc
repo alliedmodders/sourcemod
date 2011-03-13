@@ -101,7 +101,9 @@ enum TFCond
 	TFCond_Jarated,
 	TFCond_Bleeding,
 	TFCond_DefenseBuffed,
-	TFCond_Milked
+	TFCond_Milked,
+	TFCond_RegenBuffed,
+	TFCond_MarkedForDeath
 };
 
 enum TFHoliday
