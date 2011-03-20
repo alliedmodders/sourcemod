@@ -104,7 +104,7 @@ public Action:Timer_RandomizeNextmap(Handle:timer)
 		RemoveFromArray(g_OldMapList, 0);
 	}
 
-	LogMessage("RandomCycle has chosen %s for the nextmap.", map);	
+	LogAction(-1, -1, "RandomCycle has chosen %s for the nextmap.", map);	
 
 	return Plugin_Stop;
 }

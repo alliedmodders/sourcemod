@@ -276,7 +276,7 @@ public Action:Command_SetNextmap(client, args)
 	}
 
 	ShowActivity(client, "%t", "Changed Next Map", map);
-	LogMessage("\"%L\" changed nextmap to \"%s\"", client, map);
+	LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
 
 	SetNextMap(map);
 	g_MapVoteCompleted = true;
@@ -635,7 +635,7 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 	SetMenuExitButton(g_VoteMenu, false);
 	VoteMenuToAll(g_VoteMenu, voteDuration);
 
-	LogMessage("Voting for next map has started.");
+	LogAction(-1, -1, "Voting for next map has started.");
 	PrintToChatAll("[SM] %t", "Nextmap Voting Started");
 }
 
@@ -696,7 +696,7 @@ public Handler_MapVoteFinished(Handle:menu,
 		}
 
 		PrintToChatAll("[SM] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
-		LogMessage("Voting for next map has finished. The current map has been extended.");
+		LogAction(-1, -1, "Voting for next map has finished. The current map has been extended.");
 		
 		// We extended, so we'll have to vote again.
 		g_HasVoteStarted = false;
@@ -707,7 +707,7 @@ public Handler_MapVoteFinished(Handle:menu,
 	else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 	{
 		PrintToChatAll("[SM] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
-		LogMessage("Voting for next map has finished. 'No Change' was the winner");
+		LogAction(-1, -1, "Voting for next map has finished. 'No Change' was the winner");
 		
 		g_HasVoteStarted = false;
 		CreateNextVote();
@@ -736,7 +736,7 @@ public Handler_MapVoteFinished(Handle:menu,
 		g_MapVoteCompleted = true;
 		
 		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", map, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
-		LogMessage("Voting for next map has finished. Nextmap: %s.", map);
+		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
 
@@ -967,7 +967,7 @@ public Native_InitiateVote(Handle:plugin, numParams)
 	new MapChange:when = MapChange:GetNativeCell(1);
 	new Handle:inputarray = Handle:GetNativeCell(2);
 	
-	LogMessage("Starting map vote because outside request");
+	LogAction(-1, -1, "Starting map vote because outside request");
 	InitiateVote(when, inputarray);
 }
 
