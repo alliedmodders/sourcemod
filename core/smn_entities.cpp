@@ -38,6 +38,44 @@
 #include "sm_stringutil.h"
 #include "logic_bridge.h"
 
+// These values need to mirror the values in entity_prop_stocks
+#define ENTFLAG_ONGROUND		(1 << 0)
+#define ENTFLAG_DUCKING			(1 << 1)
+#define ENTFLAG_WATERJUMP		(1 << 2)
+#define ENTFLAG_ONTRAIN			(1 << 3)
+#define ENTFLAG_INRAIN			(1 << 4)
+#define ENTFLAG_FROZEN			(1 << 5)
+#define ENTFLAG_ATCONTROLS		(1 << 6)
+#define ENTFLAG_CLIENT			(1 << 7)
+#define ENTFLAG_FAKECLIENT		(1 << 8)
+#define ENTFLAG_INWATER			(1 << 9)
+#define ENTFLAG_FLY				(1 << 10)
+#define ENTFLAG_SWIM			(1 << 11)
+#define ENTFLAG_CONVEYOR		(1 << 12)
+#define ENTFLAG_NPC				(1 << 13)
+#define ENTFLAG_GODMODE			(1 << 14)
+#define ENTFLAG_NOTARGET		(1 << 15)
+#define ENTFLAG_AIMTARGET		(1 << 16)
+#define ENTFLAG_PARTIALGROUND	(1 << 17)
+#define ENTFLAG_STATICPROP		(1 << 18)
+#define ENTFLAG_GRAPHED			(1 << 19)
+#define ENTFLAG_GRENADE			(1 << 20)
+#define ENTFLAG_STEPMOVEMENT	(1 << 21)
+#define ENTFLAG_DONTTOUCH		(1 << 22)
+#define ENTFLAG_BASEVELOCITY	(1 << 23)
+#define ENTFLAG_WORLDBRUSH		(1 << 24)
+#define ENTFLAG_OBJECT			(1 << 25)
+#define ENTFLAG_KILLME			(1 << 26)
+#define ENTFLAG_ONFIRE			(1 << 27)
+#define ENTFLAG_DISSOLVING		(1 << 28)
+#define ENTFLAG_TRANSRAGDOLL	(1 << 29)
+#define ENTFLAG_UNBLOCKABLE_BY_PLAYER	(1 << 30)
+#define ENTFLAG_FREEZING		(1 << 31)
+#define ENTFLAG_EP2V_UNKNOWN1	(1 << 31)
+
+// Not defined in the sdk as we have no clue what it is
+#define FL_EP2V_UNKNOWN			(1 << 2)
+
 enum PropType
 {
 	Prop_Send = 0,
@@ -1773,6 +1811,254 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 	return len;
 }
 
+static int32_t SDKEntFlagToSMEntFlag(int flag)
+{
+	switch (flag)
+	{
+		case FL_ONGROUND:
+			return ENTFLAG_ONGROUND;
+		case FL_DUCKING:
+			return ENTFLAG_DUCKING;
+		case FL_WATERJUMP:
+			return ENTFLAG_WATERJUMP;
+		case FL_ONTRAIN:
+			return ENTFLAG_ONTRAIN;
+		case FL_INRAIN:
+			return ENTFLAG_INRAIN;
+		case FL_FROZEN:
+			return ENTFLAG_FROZEN;
+		case FL_ATCONTROLS:
+			return ENTFLAG_ATCONTROLS;
+		case FL_CLIENT:
+			return ENTFLAG_CLIENT;
+		case FL_FAKECLIENT:
+			return ENTFLAG_FAKECLIENT;
+		case FL_INWATER:
+			return ENTFLAG_INWATER;
+		case FL_FLY:
+			return ENTFLAG_FLY;
+		case FL_SWIM:
+			return ENTFLAG_SWIM;
+		case FL_CONVEYOR:
+			return ENTFLAG_CONVEYOR;
+		case FL_NPC:
+			return ENTFLAG_NPC;
+		case FL_GODMODE:
+			return ENTFLAG_GODMODE;
+		case FL_NOTARGET:
+			return ENTFLAG_NOTARGET;
+		case FL_AIMTARGET:
+			return ENTFLAG_AIMTARGET;
+		case FL_PARTIALGROUND:
+			return ENTFLAG_PARTIALGROUND;
+		case FL_STATICPROP:
+			return ENTFLAG_STATICPROP;
+		case FL_GRAPHED:
+			return ENTFLAG_GRAPHED;
+		case FL_GRENADE:
+			return ENTFLAG_GRENADE;
+		case FL_STEPMOVEMENT:
+			return ENTFLAG_STEPMOVEMENT;
+		case FL_DONTTOUCH:
+			return ENTFLAG_DONTTOUCH;
+		case FL_BASEVELOCITY:
+			return ENTFLAG_BASEVELOCITY;
+		case FL_WORLDBRUSH:
+			return ENTFLAG_WORLDBRUSH;
+		case FL_OBJECT:
+			return ENTFLAG_OBJECT;
+		case FL_KILLME:
+			return ENTFLAG_KILLME;
+		case FL_ONFIRE:
+			return ENTFLAG_ONFIRE;
+		case FL_DISSOLVING:
+			return ENTFLAG_DISSOLVING;
+		case FL_TRANSRAGDOLL:
+			return ENTFLAG_TRANSRAGDOLL;
+		case FL_UNBLOCKABLE_BY_PLAYER:
+			return ENTFLAG_UNBLOCKABLE_BY_PLAYER;
+#if SOURCE_ENGINE == SE_ALIENSWARM
+		case FL_FREEZING:
+			return ENTFLAG_FREEZING;
+#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
+		case FL_EP2V_UNKNOWN:
+			return ENTFLAG_EP2V_UNKNOWN1;
+#endif
+		default:
+			return 0;
+	}
+}
+
+static int32_t SMEntFlagToSDKEntFlag(int32_t flag)
+{
+	switch (flag)
+	{
+		case ENTFLAG_ONGROUND:
+			return FL_ONGROUND;
+		case ENTFLAG_DUCKING:
+			return FL_DUCKING;
+		case ENTFLAG_WATERJUMP:
+			return FL_WATERJUMP;
+		case ENTFLAG_ONTRAIN:
+			return FL_ONTRAIN;
+		case ENTFLAG_INRAIN:
+			return FL_INRAIN;
+		case ENTFLAG_FROZEN:
+			return FL_FROZEN;
+		case ENTFLAG_ATCONTROLS:
+			return FL_ATCONTROLS;
+		case ENTFLAG_CLIENT:
+			return FL_CLIENT;
+		case ENTFLAG_FAKECLIENT:
+			return FL_FAKECLIENT;
+		case ENTFLAG_INWATER:
+			return FL_INWATER;
+		case ENTFLAG_FLY:
+			return FL_FLY;
+		case ENTFLAG_SWIM:
+			return FL_SWIM;
+		case ENTFLAG_CONVEYOR:
+			return FL_CONVEYOR;
+		case ENTFLAG_NPC:
+			return FL_NPC;
+		case ENTFLAG_GODMODE:
+			return FL_GODMODE;
+		case ENTFLAG_NOTARGET:
+			return FL_NOTARGET;
+		case ENTFLAG_AIMTARGET:
+			return FL_AIMTARGET;
+		case ENTFLAG_PARTIALGROUND:
+			return FL_PARTIALGROUND;
+		case ENTFLAG_STATICPROP:
+			return FL_STATICPROP;
+		case ENTFLAG_GRAPHED:
+			return FL_GRAPHED;
+		case ENTFLAG_GRENADE:
+			return FL_GRENADE;
+		case ENTFLAG_STEPMOVEMENT:
+			return FL_STEPMOVEMENT;
+		case ENTFLAG_DONTTOUCH:
+			return FL_DONTTOUCH;
+		case ENTFLAG_BASEVELOCITY:
+			return FL_BASEVELOCITY;
+		case ENTFLAG_WORLDBRUSH:
+			return FL_WORLDBRUSH;
+		case ENTFLAG_OBJECT:
+			return FL_OBJECT;
+		case ENTFLAG_KILLME:
+			return FL_KILLME;
+		case ENTFLAG_ONFIRE:
+			return FL_ONFIRE;
+		case ENTFLAG_DISSOLVING:
+			return FL_DISSOLVING;
+		case ENTFLAG_TRANSRAGDOLL:
+			return FL_TRANSRAGDOLL;
+		case ENTFLAG_UNBLOCKABLE_BY_PLAYER:
+			return FL_UNBLOCKABLE_BY_PLAYER;
+#if SOURCE_ENGINE == SE_ALIENSWARM
+		case ENTFLAG_FREEZING:
+			return FL_FREEZING;
+#elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
+		case ENTFLAG_EP2V_UNKNOWN1:
+			return FL_EP2V_UNKNOWN;
+#endif
+		default:
+			return 0;
+	}
+}
+
+static cell_t GetEntityFlags(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	const char *prop = g_pGameConf->GetKeyValue("m_fFlags");
+	if (!prop)
+	{
+		return pContext->ThrowNativeError("Could not find m_fFlags prop in gamedata");
+	}
+
+	typedescription_t *td;
+	datamap_t *pMap;
+
+	if ((pMap = CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+	{
+		return pContext->ThrowNativeError("Could not retrieve datamap");
+	}
+	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL)
+	{
+		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d)",
+			prop,
+			params[1]);
+	}
+
+	int offset = GetTypeDescOffs(td);
+
+	int32_t actual_flags = *(int32_t *)((uint8_t *)pEntity + offset);
+	int32_t sm_flags = 0;
+
+	for (int32_t i = 0; i < 32; i++)
+	{
+		int32_t flag = (1<<i);
+		if ((actual_flags & flag) == flag)
+		{
+			sm_flags |= SDKEntFlagToSMEntFlag(flag);
+		}
+	}
+
+	return sm_flags;
+}
+
+static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity = g_HL2.ReferenceToEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	const char *prop = g_pGameConf->GetKeyValue("m_fFlags");
+	if (!prop)
+	{
+		return pContext->ThrowNativeError("Could not find m_fFlags prop in gamedata");
+	}
+
+	typedescription_t *td;
+	datamap_t *pMap;
+
+	if ((pMap = CBaseEntity_GetDataDescMap(pEntity)) == NULL)
+	{
+		return pContext->ThrowNativeError("Could not retrieve datamap");
+	}
+	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL)
+	{
+		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d)",
+			prop,
+			params[1]);
+	}
+
+	int offset = GetTypeDescOffs(td);
+
+	int32_t sm_flags = params[2];
+	int32_t actual_flags = 0;
+
+	for (int32_t i = 0; i < 32; i++)
+	{
+		int32_t flag = (1<<i);
+		if ((sm_flags & flag) == flag)
+		{
+			actual_flags |= SMEntFlagToSDKEntFlag(flag);
+		}
+	}
+
+	*(int32_t *)((uint8_t *)pEntity + offset) = actual_flags;
+
+	return 0;
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
@@ -1794,6 +2080,7 @@ REGISTER_NATIVES(entityNatives)
 	{"GetEntPropString",		GetEntPropString},
 	{"GetEntPropVector",		GetEntPropVector},
 	{"GetEntityCount",			GetEntityCount},
+	{"GetEntityFlags",			GetEntityFlags},
 	{"GetEntityNetClass",		GetEntityNetClass},
 	{"GetMaxEntities",			GetMaxEntities},
 	{"IsEntNetworkable",		IsEntNetworkable},
@@ -1807,6 +2094,7 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntDataFloat",			SetEntDataFloat},
 	{"SetEntDataVector",		SetEntDataVector},
 	{"SetEntDataString",		SetEntDataString},
+	{"SetEntityFlags",			SetEntityFlags},
 	{"SetEntProp",				SetEntProp},
 	{"SetEntPropEnt",			SetEntPropEnt},
 	{"SetEntPropFloat",			SetEntPropFloat},
