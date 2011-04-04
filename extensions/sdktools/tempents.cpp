@@ -285,26 +285,33 @@ void TempEntityManager::Initialize()
 	int offset;
 	m_Loaded = false;
 
+	/*
+	 * First try to lookup s_pTempEntities directly for platforms with symbols.
+	 * If symbols aren't present (Windows or stripped Linux/Mac), 
+	 * attempt find via CBaseTempEntity ctor + offset
+	 */
+
 	/* Read our sigs and offsets from the config file */
-#if defined PLATFORM_WINDOWS
-	if (!g_pGameConf->GetMemSig("CBaseTempEntity", &addr) || !addr)
+	if (g_pGameConf->GetMemSig("s_pTempEntities", &addr) && addr)
+	{
+		
+		/* Store the head of the TE linked list */
+		m_ListHead = *(void **)addr;
+	}
+	else if (g_pGameConf->GetMemSig("CBaseTempEntity", &addr) && addr)
+	{
+		if (!g_pGameConf->GetOffset("s_pTempEntities", &offset))
+		{
+			return;
+		}
+		/* Store the head of the TE linked list */
+		m_ListHead = **(void ***)((unsigned char *)addr + offset);
+	}
+	else
 	{
 		return;
 	}
-	if (!g_pGameConf->GetOffset("s_pTempEntities", &offset))
-	{
-		return;
-	}
-	/* Store the head of the TE linked list */
-	m_ListHead = **(void ***)((unsigned char *)addr + offset);
-#else
-	if (!g_pGameConf->GetMemSig("s_pTempEntities", &addr) || !addr)
-	{
-		return;
-	}
-	/* Store the head of the TE linked list */
-	m_ListHead = *(void **)addr;
-#endif
+
 	if (!g_pGameConf->GetOffset("GetTEName", &m_NameOffs))
 	{
 		return;

@@ -39,29 +39,28 @@ void InitializeValveGlobals()
 {
 	g_EntList = gamehelpers->GetGlobalEntityList();
 
+	/*
+	 * g_pGameRules
+	 *
+	 * First try to lookup pointer directly for platforms with symbols.
+	 * If symbols aren't present (Windows or stripped Linux/Mac), 
+	 * attempt find via CreateGameRulesObject + offset
+	 */
+
 	char *addr;
-
-#ifdef PLATFORM_WINDOWS
-	/* g_pGameRules */
-	if (!g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) || !addr)
+	if (g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) && addr)
 	{
-		return;
+		g_pGameRules = reinterpret_cast<void **>(addr);
 	}
-
-	int offset;
-	if (!g_pGameConf->GetOffset("g_pGameRules", &offset) || !offset)
+	else if (g_pGameConf->GetMemSig("CreateGameRulesObject", (void **)&addr) && addr)
 	{
-		return;
+		int offset;
+		if (!g_pGameConf->GetOffset("g_pGameRules", &offset) || !offset)
+		{
+			return;
+		}
+		g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
 	}
-	g_pGameRules = *reinterpret_cast<void ***>(addr + offset);
-#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
-	/* g_pGameRules */
-	if (!g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) || !addr)
-	{
-		return;
-	}
-	g_pGameRules = reinterpret_cast<void **>(addr);
-#endif
 }
 
 size_t UTIL_StringToSignature(const char *str, char buffer[], size_t maxlength)

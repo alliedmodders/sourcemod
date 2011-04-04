@@ -133,40 +133,57 @@ void CHalfLife2::OnSourceModAllInitialized()
 void CHalfLife2::OnSourceModAllInitialized_Post()
 {
 	char *addr = NULL;
-#ifdef PLATFORM_WINDOWS
-	int offset;
 
-	/* gEntList and/or g_pEntityList */
-	if (!g_pGameConf->GetMemSig("LevelShutdown", (void **)&addr))
+	/*
+	 * gEntList and/or g_pEntityList
+	 *
+	 * First try to lookup pointer directly for platforms with symbols.
+	 * If symbols aren't present (Windows or stripped Linux/Mac), 
+	 * attempt find via LevelShutdown + offset
+	 */
+	if (g_pGameConf->GetMemSig("gEntList", (void **)&addr))
 	{
-		g_Logger.LogError("Logical Entities not supported by this mod (LevelShutdown) - Reverting to networkable entities only");
-		return;
+		if (!addr)
+		{
+			// Key exists so notify if lookup fails, but try other method.
+			g_Logger.LogError("Failed lookup of gEntList directly - Reverting to lookup via LevelShutdown");
+		}
+		else
+		{
+			g_EntList = reinterpret_cast<void *>(addr);
+		}
 	}
-	if (!addr)
+
+
+	if (!g_EntList)
 	{
-		g_Logger.LogError("Failed lookup of LevelShutdown - Reverting to networkable entities only");
-		return;
+		if (!g_pGameConf->GetMemSig("LevelShutdown", (void **)&addr))
+		{
+			g_Logger.LogError("Logical Entities not supported by this mod (LevelShutdown) - Reverting to networkable entities only");
+			return;
+		}
+
+		if (!addr)
+		{
+			g_Logger.LogError("Failed lookup of LevelShutdown - Reverting to networkable entities only");
+			return;
+		}
+
+		int offset;
+		if (!g_pGameConf->GetOffset("gEntList", &offset))
+		{
+			g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
+			return;
+		}
+
+		g_EntList = *reinterpret_cast<void **>(addr + offset);
 	}
-	if (!g_pGameConf->GetOffset("gEntList", &offset))
-	{
-		g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
-		return;
-	}
-	g_EntList = *reinterpret_cast<void **>(addr + offset);
-#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
-	/* gEntList and/or g_pEntityList */
-	if (!g_pGameConf->GetMemSig("gEntList", (void **)&addr))
-	{
-		g_Logger.LogError("Logical Entities not supported by this mod (gEntList) - Reverting to networkable entities only");
-		return;
-	}
-	if (!addr)
+	
+	if (!g_EntList)
 	{
 		g_Logger.LogError("Failed lookup of gEntList - Reverting to networkable entities only");
 		return;
 	}
-	g_EntList = reinterpret_cast<void *>(addr);
-#endif
 
 	if (!g_pGameConf->GetOffset("EntInfo", &entInfoOffset))
 	{
