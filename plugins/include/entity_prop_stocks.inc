@@ -123,7 +123,8 @@ enum RenderFx
 #define IN_GRENADE1		(1 << 23)	// grenade 1
 #define IN_GRENADE2		(1 << 24)	// grenade 2
 
-// CBaseEntity::m_fFlags
+// Note: these are only for use with GetEntityFlags and SetEntityFlags
+//       and may not match the game's actual, internal m_fFlags values.
 // PLAYER SPECIFIC FLAGS FIRST BECAUSE WE USE ONLY A FEW BITS OF NETWORK PRECISION
 #define	FL_ONGROUND			(1 << 0)	// At rest / on the ground
 #define FL_DUCKING			(1 << 1)	// Player flag -- Player is fully crouched
@@ -159,36 +160,36 @@ enum RenderFx
 #define FL_DISSOLVING			(1 << 28)	// We're dissolving!
 #define FL_TRANSRAGDOLL			(1 << 29)	// In the process of turning into a client side ragdoll.
 #define FL_UNBLOCKABLE_BY_PLAYER	(1 << 30)	// pusher that can't be blocked by the player
-// END m_fFlags #defines
+#define FL_FREEZING				(1 << 31)	// We're becoming frozen!
+#define FL_EP2V_UNKNOWN1		(1 << 31)	// Unknown
+// END entity flag #defines
 
 /**
  * Get an entity's flags.
  *
+ * @note The game's actual flags are internally translated by SM
+ *       to match the entity flags defined above as the actual values
+ *       can differ per engine.
+ *
  * @param entity	Entity index.
- * @return			Entity's flags, see m_fFlag defines above
+ * @return			Entity's flags, see entity flag defines above.
  * @error			Invalid entity index, or lack of mod compliance.
  */
-stock GetEntityFlags(entity)
-{
-	static bool:gotconfig = false;
-	static String:datamap[32];
-	
-	if (!gotconfig)
-	{
-		new Handle:gc = LoadGameConfigFile("core.games");
-		new bool:exists = GameConfGetKeyValue(gc, "m_fFlags", datamap, sizeof(datamap));
-		CloseHandle(gc);
-		
-		if (!exists)
-		{
-			strcopy(datamap, sizeof(datamap), "m_fFlags");
-		}
-		
-		gotconfig = true;
-	}
-	
-	return GetEntProp(entity, Prop_Data, datamap);
-}
+native GetEntityFlags(entity);
+
+/**
+ * Sets an entity's flags.
+ *
+ * @note The entity flags as defined above are internally translated by SM
+ *       to match the current game's expected value for the flags as
+ *       the actual values can differ per engine.
+ *
+ * @param entity	Entity index.
+ * @param flags		Entity flags, see entity flag defines above.
+ * @noreturn
+ * @error			Invalid entity index, or lack of mod compliance.
+ */
+native SetEntityFlags(entity, flags);
 
 
 /**
