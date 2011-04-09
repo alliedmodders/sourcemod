@@ -163,6 +163,21 @@ native SetEdictFlags(edict, flags);
 native bool:GetEdictClassname(edict, String:clsname[], maxlength);
 
 /**
+ * Retrieves the classname of an entity.
+ * This is like GetEdictClassname(), except it works for ALL
+ * entities, not just edicts.
+ *
+ * @param edict			Index of the entity.
+ * @param clsname		Buffer to store the classname.
+ * @param maxlength		Maximum length of the buffer.
+ * @return				True on success, false if there is no classname set.
+ */
+stock bool:GetEntityClassname(entity, String:clsname[], maxlength)
+{
+	return !!GetEntPropString(entity, Prop_Data, "m_iClassname", clsname, maxlength);
+}
+
+/**
  * Retrieves an entity's networkable serverclass name.
  * This is not the same as the classname and is used for networkable state changes.
  *
