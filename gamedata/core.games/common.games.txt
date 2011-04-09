@@ -204,6 +204,7 @@
 			"game"					"fas"
 			"game"					"fistful_of_frags"
 			"game"					"swarm"
+			"game"					"dinodday"
 		}
 		
 		"Keys"
