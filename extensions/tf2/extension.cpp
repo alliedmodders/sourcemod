@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod Team Fortress 2 Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -37,6 +37,7 @@
 #include "sm_trie_tpl.h"
 #include "criticals.h"
 #include "holiday.h"
+#include "conditions.h"
 #include "gameplayrules.h"
 #include "CDetour/detours.h"
 
@@ -111,6 +112,8 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
 	g_getHolidayForward = forwards->CreateForward("TF2_OnGetHoliday", ET_Event, 1, NULL, Param_CellByRef);
+	g_addCondForward = forwards->CreateForward("TF2_OnConditionAdded", ET_Ignore, 3, NULL, Param_Cell, Param_Cell, Param_Float);
+	g_removeCondForward = forwards->CreateForward("TF2_OnConditionRemoved", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_waitingPlayersStartForward = forwards->CreateForward("TF2_OnWaitingForPlayersStart", ET_Ignore, 0, NULL);
 	g_waitingPlayersEndForward = forwards->CreateForward("TF2_OnWaitingForPlayersEnd", ET_Ignore, 0, NULL);
 
@@ -118,6 +121,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	m_CritDetoursEnabled = false;
 	m_GetHolidayDetourEnabled = false;
+	m_CondChecksEnabled = false;
 	m_RulesDetoursEnabled = false;
 
 	return true;
@@ -163,6 +167,8 @@ void TF2Tools::SDK_OnUnload()
 
 	forwards->ReleaseForward(g_critForward);
 	forwards->ReleaseForward(g_getHolidayForward);
+	forwards->ReleaseForward(g_addCondForward);
+	forwards->ReleaseForward(g_removeCondForward);
 	forwards->ReleaseForward(g_waitingPlayersStartForward);
 	forwards->ReleaseForward(g_waitingPlayersEndForward);
 }
@@ -317,6 +323,13 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 		m_GetHolidayDetourEnabled = InitialiseGetHolidayDetour();
 	}
 
+	if (!m_CondChecksEnabled
+		&& ( g_addCondForward->GetFunctionCount() || g_removeCondForward->GetFunctionCount() )
+		)
+	{
+		m_CondChecksEnabled = InitialiseConditionDetours();
+	}
+
 	if (!m_RulesDetoursEnabled
 		&& ( g_waitingPlayersStartForward->GetFunctionCount() || g_waitingPlayersEndForward->GetFunctionCount() )
 		)
@@ -336,6 +349,14 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 	{
 		RemoveGetHolidayDetour();
 		m_GetHolidayDetourEnabled = false;
+	}
+	if (m_CondChecksEnabled)
+	{
+		if (!g_addCondForward->GetFunctionCount() && !g_removeCondForward->GetFunctionCount())
+		{
+			RemoveConditionDetours();
+			m_CondChecksEnabled = false;
+		}
 	}
 	if (m_RulesDetoursEnabled)
 	{

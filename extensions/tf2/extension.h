@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod Team Fortress 2 Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -114,6 +114,7 @@ public:
 private:
 	bool m_CritDetoursEnabled;
 	bool m_GetHolidayDetourEnabled;
+	bool m_CondChecksEnabled;
 	bool m_RulesDetoursEnabled;
 };
 
