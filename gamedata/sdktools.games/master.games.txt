@@ -167,4 +167,12 @@
 	{
 		"game"		"fistful_of_frags"
 	}
+	"game.alienswarm.txt"
+	{
+		"game"		"swarm"
+	}
+	"game.dinodday.txt"
+	{
+		"game"		"dinodday"
+	}
 }
