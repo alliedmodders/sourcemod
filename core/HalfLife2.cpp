@@ -142,6 +142,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	 */
 	if (g_pGameConf->GetMemSig("gEntList", (void **)&addr))
 	{
+#if !defined PLATFORM_WINDOWS
 		if (!addr)
 		{
 			// Key exists so notify if lookup fails, but try other method.
@@ -149,8 +150,11 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 		}
 		else
 		{
+#endif
 			g_EntList = reinterpret_cast<void *>(addr);
+#if !defined PLATFORM_WINDOWS
 		}
+#endif
 	}
 
 
