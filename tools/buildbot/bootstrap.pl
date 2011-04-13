@@ -54,7 +54,7 @@ if ($reconf) {
 	}
 	print "$result\n";
 	if ($? != 0) {
-		die('Could not configure!');
+		die('Could not configure: $!\n');
 	}
 	open(FILE, '>sentinel');
 	print FILE "this is nothing.\n";
