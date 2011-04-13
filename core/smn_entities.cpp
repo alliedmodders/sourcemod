@@ -1180,6 +1180,11 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	{
 		*(bool *)((uint8_t *)pEntity + offset) = params[4] ? true : false;
 	}
+	
+	if (params[2] == Prop_Send && (pEdict != NULL))
+	{
+		g_HL2.SetEdictStateChanged(pEdict, offset);
+	}
 
 	return 0;
 }
