@@ -2,6 +2,259 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.6 [2010-10-31]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.6_Release_Notes
+
+User Changes:
+
+ - Updated support for latest Left 4 Dead 1 (bug 4681).
+
+Developer Changes:
+
+ - Updated TF2 custom kill defines (bug 4682).
+
+----------------------------
+
+SourceMod 1.3.5 [2010-10-17]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.5_Release_Notes
+
+User Changes:
+
+ - Updated support for CS:S, Garry's Mod, DoD:S, TF2, HL2DM.
+ - Added support for Firearms: Source (bug 4537).
+ - Added support for Fistful of Frags (bug 3883).
+ - Added support for Alien Swarm (bug 4530).
+ - Fixed living players hearing dead players if alltalk is disabled while deadtalk is on (bug 4533, thanks Zach Callear).
+ - Fixed timeleft not getting reset on Game_Commencing in CS:S (bug 4557).
+ - Fixed PlayerRunCmd being hooked when not used (bug 3990).
+ - Fixed errors and missing effects caused by missing sprites on L4D2 (bug 4512).
+ - Fixed 'sm plugins' public command skipping plugins in recommended listing (bug 4501).
+ - Fixed corruption with large database.cfg files (bug 4286).
+
+Developer Changes:
+
+ - Added TF2 object stocks (bug 4536).
+ - Added TF2_MakeBleed native to TF2 ext (bug 4542).
+ - Added support for logical entities in Synergy (bug 4534).
+ - Updated TF2 conditions enum and defines (bug 4526).
+ - Fixed potential crash with IMemUtils::FindPattern on Linux (bug 4554).
+
+----------------------------
+
+SourceMod 1.3.4 [2010-07-18]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.4_Release_Notes
+
+User Changes:
+
+ - Support for latest TF update (bug 4506).
+ - Support for latest L4D2 update (bug 4509).
+
+Developer Changes:
+
+ - Added FindFlagChar native (bug 3776).
+ - Added GetConVarDefault native (bug 4502).
+ - Added forward for TF's GetHoliday function (bug 4462). 
+
+----------------------------
+
+SourceMod 1.3.3 [2010-06-23]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.3_Release_Notes
+
+User Changes:
+
+ - Added support for CS:S on Orange Box
+ - Added gamedata for Resistance and Liberation (bug 4418).
+ - Updated gamedata for SourceForts, Empires, Obsidian Conflict, Zombie Master.
+ - Fixed memory corruption and leaks with some voice functionality (bug 4415).
+ - Fixed UI bug in sm_motd (bug 4460). 
+
+Developer Changes:
+
+ - Added new player condition (TFCond_CritCola, bug 4447).
+ - Fixed clientprefs deleting cookies twice in rare cases (bug 4412).
+ - Fixed OnClientConnected forward not firing for bots (bug 4443).
+ - Fixed sm_dump_datamaps crash (bug 4424).
+ - Fixed switch case comparisons failing with large numbers (bug 4457).
+ - Fixed rare crash in output hooks (bug 4422).
+ - Fixed bug with dynamically sized arrays being sliced (bug 4428).
+ - Fixed SendConVarValue() on TF2, DOD:S, L4D, and L4D2 (bug 4273).
+ - Fixed TF2 natives not being marked optional (bug 4389). 
+
+----------------------------
+
+SourceMod 1.3.2 [2010-05-02]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.2_Release_Notes
+
+User Changes:
+
+ - Support for recent TF, DoD, and L4D2 updates (bug 4356, bug 4361, bug 4371, bug 4374, bug 4375).
+ - Fixed rare crash when replicating cvars to clients (bug 4315).
+ - Lots of extra game support for Insurgency, ZPS, CSProMod, PVKII, and FortressForever (thanks
+   Nicholas "psychonic" hastings). 
+
+Developer Changes:
+
+ - Added TF functions for stunning, conditions, regeneration, and power play (bug 4166, bug 4331).
+
+----------------------------
+
+SourceMod 1.3.1 [2010-02-09]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.1_Release_Notes
+
+User Changes:
+
+ - Added extended support for CSProMod (bug 4255).
+ - Fixed client disconnect crash on many third party games (bug 4231).
+ - Improved support for Battlegrounds 2 (bug 4146).
+ - Improved support for Insurgency (bug 4180).
+ - Improved support for Garry's Mod (bug 4230, bug 4268).
+ - Improved support for Synergy (bug 4235).
+ - Updated Day of Defeat support for 20010123 update (bug 4262).
+ - Fixed Webternet extension not loading on Windows 2000 (bug 4234). 
+
+Developer Changes:
+
+ - Fixed compiler complaints when using |any| tag on array arguments (bug 4274).
+ - Fixed GetClientCookieTime not being exported (bug 4237).
+ - Fixed potential crash in entity handling code (bug 4249). 
+
+----------------------------
+
+SourceMod 1.3.0 [2010-01-15]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.0_Release_Notes
+
+Major Features:
+ * Left 4 Dead 2 support
+ * Non-networked entity support
+
+User Changes:
+
+ - Added Left 4 Dead 2 support (bug 4075).
+ - Added much richer voting progress feedback (bug 1997).
+ - Improved support for various third-party games (Nicholas "psychonic" Hastings).
+ - Added @spec target (bug 2718).
+ - Added sm_resetcvar command (bug 3636).
+ - Added "motd" chat trigger (bug 2694).
+ - Updated GeoIP to OCT-2009.
+ - Fixed rare map vote error (bug 3905).
+ - Fixed small leak in the nominations plugin (bug 4104).
+ - Fixed last client being excluded from some command effects (bug 3984).
+ - Fixed crashes in plugin [|un|re]loading (bug 4034, bug 4038, bug 4044, bug 4153).
+ - Special target "@me" is now filtered for certain statuses properly (bug 4000).
+ - Improved non-admin to admin chat (bug 3844).
+ - Removed "auto.*" extension folders (bug 3949). 
+
+Developer Changes:
+
+ - Added non-networked entity support (bug 2459).
+ - Added improved random number generator (bug 3831).
+ - Added GetClientCookieTime native (bug 3736).
+ - Added AskPluginLoad2 callback (bug 3716).
+ - Added PlayerRunCmd callback (bug 3289).
+ - Added PointOutsideWorld native (bug 3906).
+ - Added API for "blanket" command hooks (bug 4015).
+ - Added ability to test for SourceMod features (bug 4021).
+ - Added ability to change broadcast status on hooked events (bug 3886).
+ - OnClientCommand no longer receives unconnected clients (bug 3732).
+ - Fixed various bugs in client listening API (bug 3818).
+ - Fixed crash in BanClient (bug 3912).
+ - Fixed various crashes in self-removing callbacks (bug 4059).
+ - Fixed rare HUD text crash on TF (bug 4016).
+ - Fixed OnConfigsExecuted not running on EP1 games with large configs (bug 3828).
+ - Fixed entity output hooks not working (bug 3988).
+ - Gamedata folder matches are now case-insensitive (bug 3913).
+ - Blocked plugins from hooking "sm" command (bug 4013). 
+
+----------------------------
+
+SourceMod 1.2.4 [2009-10-03]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.4_Release_Notes
+
+ - Updated for L4D changes (bugs 4032, 4033, 4035).
+ - Updated GeoLite Country database for GeoIP extension.
+ - Fixed crash when block-loading more than eight plugins (bug 4034).
+ - Fixed rare crash in hudtext code on TF (bug 4016).
+ - Fixed crash when reloading a blocked plugin failed (bug 4038).
+ - Fixed Huntsman not firing critical callback on TF (bug 3927).
+ - Registering the "sm" command no longer has any effect (bug 4013).
+ - Fixed translation bug in extension API (bug 4010).
+
+----------------------------
+
+SourceMod 1.2.3 [2009-08-28]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.3_Release_Notes
+
+ - Fix extension filename lookup. (bug 3975).
+
+----------------------------
+
+SourceMod 1.2.2 [2009-08-28]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.2_Release_Notes
+
+ - Removed auto folders. (bug 3949).
+ - Added PointOutsideWorld native to sdktools. (bug 3906).
+ - Added "motd" chat trigger to basetriggers. (bug 2694).
+ - Added manual extension reloading command to root console menu. (bug 3934)
+ - Fixed 'list' type custom menu entries overwriting admin restrictions. (bug 3783).
+ - Added sm_resetcvar command to basecommands. (bug 3636).
+ - Updated gamedata for DOD:S. (bug 3948).
+ - Updated gamedata for TF2. (bug 3948).
+ - Added new .ep2v build config for valve OB based games. (bug 3948).
+ - Fixed incorrect escaping in clientprefs SQLite queries. (bug 3904)
+ - Updated gamedata for Synergy. (bug 3315).
+ - Upgraded to pcre-7.9 (bug 3923).
+ - Switched Insurgency chat printing to SayText. (bug 3738).
+ - Updated gamedata for Insurgency. (bug 3511).
+ - Updated gamedata for ZM. (bug 3746).
+ - Updated gamedata for Empires. (bug 3500).
+ - Updated gamedata for ZPS. (bug 3877).
+ - Updated gamedata for AoC. (bug 3891).
+ - Fixed RemovePlayerDisguise signature for TF2. (bug 3892). 
+
+----------------------------
+
+SourceMod 1.2.1 [2009-05-31]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.2.1_Release_Notes
+
+ - Updated SDKTools for latest Team Fortress update.
+ - Added L4D handling to GuessSDKVersion() (bug 3842).
+ - Updated Zombie Panic Source offsets (bug 3632).
+ - Fixed crash when clientprefs saw disconnect from 64th client (bug 3821).
+ - Fixed Plugin_Handled acting like a Stop in usermsg hooks (bug 3685).
+ - Fixed early tv_enable causing crashes (bug 3766).
+ - Fixed unhook event crash (bug 3814).
+ - Fixed compiler reading uninitialized strings while processing varargs (bug 3811).
+ - Fixed compiler choosing whether to emit stradjust.pri on dynamic arrays based on uninitialized memory (bug 3810).
+ - Fixed Windows L4D CreateFakeClient signature (bug 3792).
+ - Fixed sm_slap for EP1 games (bug 3768).
+ - Fixed casting problems in TextParsers breaking TrimString for non-ASCII characters (bug 3800).
+ - Fixed OnClientConnect rejectmsg handling, improved doc (bug 3690).
+ - Fixed clientprefs not loading cookies for clients on late load (bug 3735).
+ - Fixed GetCommandFlags on original engine games (bug 3759).
+ - Fixed compiler asserting when returning a string literal (bug 3836).
+ - Fixed compiler erroring when tagging functions for string return (bug 3837).
+ - Fixed compiler not handling constant chained relational operators correctly (bug 3838).
+ - Fixed revote bug and inflexibilities in RedrawClientVoteMenu (bug 3834).
+ - Fixed auto update URL being set too late (bug 3699).
+ - Disabled nextmap in Synergy and Dystopia (bug 3687, bug 3741).
+ - Removed unnecessary SSE optimizations from msvc9 project files (bug 3756).
+ - Removed short-lived tag system (bug 3751).
+ - Removed the alive check from sm_rename. (bug 3698).
+ - Switched FortressForever to Valve menus (bug 3819). 
+
+----------------------------
+
 SourceMod 1.2.0 [2009-03-05]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.2.0_Release_Notes
