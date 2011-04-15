@@ -18,75 +18,75 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"387"
-				"linux"		"388"
-				"mac"		"388"
+				"windows"	"389"
+				"linux"		"390"
+				"mac"		"390"
 			}
 			"RemovePlayerItem"
+			{
+				"windows"	"262"
+				"linux"		"263"
+				"mac"		"263"
+			}
+			"Weapon_GetSlot"
 			{
 				"windows"	"260"
 				"linux"		"261"
 				"mac"		"261"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"258"
-				"linux"		"259"
-				"mac"		"259"
-			}
 			"Ignite"
 			{
-				"windows"	"202"
-				"linux"		"203"
-				"mac"		"203"
+				"windows"	"204"
+				"linux"		"205"
+				"mac"		"205"
 			}
 			"Extinguish"
 			{
-				"windows"	"206"
-				"linux"		"207"
-				"mac"		"207"
+				"windows"	"208"
+				"linux"		"209"
+				"mac"		"209"
 			}
 			"Teleport"
 			{
-				"windows"	"105"
-				"linux"		"106"
-				"mac"		"106"
+				"windows"	"106"
+				"linux"		"107"
+				"mac"		"107"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"428"
-				"linux"		"428"
-				"mac"		"428"
+				"windows"	"430"
+				"linux"		"430"
+				"mac"		"430"
 			}
 			"GetVelocity"
 			{
-				"windows"	"137"
-				"linux"		"138"
-				"mac"		"138"
+				"windows"	"138"
+				"linux"		"139"
+				"mac"		"139"
 			}
 			"EyeAngles"
 			{
-				"windows"	"128"
-				"linux"		"129"
-				"mac"		"129"
+				"windows"	"129"
+				"linux"		"130"
+				"mac"		"130"
 			}
 			"DispatchKeyValue"
 			{
-				"windows"	"29"
-				"linux"		"28"
-				"mac"		"28"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"28"
+				"windows"	"30"
 				"linux"		"29"
 				"mac"		"29"
 			}
-			"DispatchKeyValueVector"
+			"DispatchKeyValueFloat"
 			{
-				"windows"	"27"
+				"windows"	"29"
 				"linux"		"30"
 				"mac"		"30"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"28"
+				"linux"		"31"
+				"mac"		"31"
 			}
 			"SetEntityModel"
 			{
@@ -96,27 +96,27 @@
 			}
 			"AcceptInput"
 			{
-				"windows"	"34"
-				"linux"		"35"
-				"mac"		"35"
+				"windows"	"35"
+				"linux"		"36"
+				"mac"		"36"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"251"
-				"linux"		"252"
-				"mac"		"252"
+				"windows"	"253"
+				"linux"		"254"
+				"mac"		"254"
 			}
 			"Activate"
 			{
-				"windows"	"31"
-				"linux"		"32"
-				"mac"		"32"
+				"windows"	"32"
+				"linux"		"33"
+				"mac"		"33"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"405"
-				"linux"		"406"
-				"mac"		"406"
+				"windows"	"407"
+				"linux"		"408"
+				"mac"		"408"
 			}
 		}
 	}
