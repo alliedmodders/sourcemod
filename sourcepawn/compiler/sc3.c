@@ -2386,14 +2386,7 @@ static int nesting=0;
         assert(sc_status==statFIRST || arg[argidx].ident == 0 || arg[argidx].tags!=NULL);
         switch (arg[argidx].ident) {
         case 0:
-          /* On the first pass, we don't have all of the parameter info.
-           * However, use information must be marked anyway, otherwise vars
-           * declared previously will be omitted in the second pass. See
-           * SourceMod bug 4643.
-           */
           error(92);             /* argument count mismatch */
-          if (lval.sym)
-            markusage(lval.sym,uWRITTEN);
           break;
         case iVARARGS:
           /* always pass by reference */
