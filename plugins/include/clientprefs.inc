@@ -241,7 +241,7 @@ native GetClientCookieTime(client, Handle:cookie);
 /**
  * Do not edit below this line!
  */
-public Extension:__ext_clientprefs = 
+public Extension:__ext_cprefs = 
 {
 	name = "Client Preferences",
 	file = "clientprefs.ext",
@@ -254,7 +254,7 @@ public Extension:__ext_clientprefs =
 };
 
 #if !defined REQUIRE_EXTENSIONS
-public __ext_clientprefs_SetNTVOptional()
+public __ext_cprefs_SetNTVOptional()
 {
 	MarkNativeAsOptional("RegClientCookie");
 	MarkNativeAsOptional("FindClientCookie");
