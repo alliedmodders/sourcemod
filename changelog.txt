@@ -2,6 +2,45 @@ SourceMod Changelog
 
 ----------------------------
 
+SourceMod 1.3.7 [2011-04-15]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.7_Release_Notes
+
+User Changes:
+
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod).
+ - Updated support for various games, including Zombie Panic, CS ProMod, Empires, and GoldenEye: Source.
+ - Added gamedata for Dino D-Day.
+ - Fix precedence of voice mute flag versus specific client overrides (bug 4826).
+ - Fix mistaken unhooking of voice hooks (bug 4804).
+ - Fixed graphical glitches with funcommands effects in L4D1 (bug 3486).
+ - Fixed bug in nominations that could cause "Unknown command" error (bug 4797).
+ - Removed tv_enable hook to fix rare max client count issue (bug 4791).
+ - Added missing unhooking of ClientConnect in PlayerManager (bug 4749).
+ - Fixed sm_rtv printing "unknown command" (bug 4730).
+ - Fixed voting crash when client console, chat, and SourceTV are enabled (bug 4676).
+ - Fixed CDetour crash in TF2 extension when last plugin using forward is unloaded (bug 4713).
+
+Developer Changes:
+
+ - SetEntProp now marks edict state as changed (bug 4855).
+ - Added GetEntityClassname stock (bug 4798).
+ - Fix compiler hanging when #including a directory (bug 4822).
+ - Added GetEntityFlags and SetEntityFlags natives for better cross-engine compatibility. (bug 4809).
+ - Fixed ClientPrefs natives not being marked optional when REQUIRE_EXTENSIONS not defined (bug 4839).
+ - Changed some instances of LogMessage to LogAction (bug 4649).
+ - Added some new language natives (bug 4613).
+ - Fixed SetTeamScore not updating score on client (bug 2736).
+ - Raised MAXPLAYERS from 64 to 65 (bug 4490).
+ - Added and updated many TF2-specific defines in tf2.inc and tf2_stocks.inc.
+ - Fixed TF2_GetPlayerConditionFlags no longer necessarily returning all set flags (bug 4726).
+ - Fixed profiler flush not clearing, added 'report' and 'clear' (bug 4674).
+ - Fixed GetPlayerDecalFile crash on L4D and L4D2 (bug 4729).
+ - Fixed TF2_OnGetHoliday detour no longer firing under all circumstances (bug 4700).
+ - Added TF2_IsPlayerInDuel native to TF2 extension (bug 4695).
+
+----------------------------
+
 SourceMod 1.3.6 [2010-10-31]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.3.6_Release_Notes
