@@ -142,7 +142,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	/* Store name of game directory by itself */
 	size_t len = strlen(gamepath);
-	for (size_t i = len - 1; i >= 0; i--)
+	for (size_t i = len - 1; i < len; i--)
 	{
 		if (gamepath[i] == PLATFORM_SEP_CHAR)
 		{

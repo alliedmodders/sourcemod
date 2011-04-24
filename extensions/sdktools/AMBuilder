@@ -10,7 +10,7 @@ for i in SM.sdkInfo:
 	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'jit'))
 	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'jit', 'x86'))
 
-	if compiler.cc.name == 'gcc':
+	if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
 		compiler['CFLAGS'].append('-Wno-parentheses')
 
 	if i != 'ep1':

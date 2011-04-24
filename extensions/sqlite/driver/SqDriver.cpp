@@ -167,7 +167,7 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 	/* Chop any filename off */
 	for (size_t i = len-1;
-		 i >= 0 && i <= len-1;
+		 i <= len-1;
 		 i--)
 	{
 		if (IsPathSepChar(path[i]))

@@ -217,7 +217,7 @@ IResultRow *MyBoundResults::FetchRow()
 	{
 		if (mysql_stmt_bind_result(m_stmt, m_bind) != 0)
 		{
-			return false;
+			return NULL;
 		}
 		m_bUpdatedBinds = false;
 	}

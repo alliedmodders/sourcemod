@@ -37,7 +37,6 @@
 template <typename T>
 class FastLink
 {
-	friend class iterator;
 public:
 	struct FastLinkNode
 	{

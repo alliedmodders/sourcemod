@@ -872,7 +872,7 @@ bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listene
 		ptr = save_ptr;
 
 		/* Lastly, strip ending whitespace off */
-		for (size_t i=len-1; i>=0 && i<len; i--)
+		for (size_t i=len-1; i<len; i--)
 		{
 			if (g_ws_chartable[(unsigned char)ptr[i]])
 			{

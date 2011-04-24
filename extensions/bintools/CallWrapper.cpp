@@ -103,7 +103,7 @@ CallConvention CallWrapper::GetCallConvention()
 
 const PassEncode *CallWrapper::GetParamInfo(unsigned int num)
 {
-	if (num + 1 > GetParamCount() || num < 0)
+	if (num + 1 > GetParamCount())
 	{
 		return NULL;
 	}
@@ -170,7 +170,7 @@ SourceHook::ProtoInfo::CallConvention CallWrapper::GetSHCallConvention()
 
 const SourceHook::PassInfo * CallWrapper::GetSHParamInfo(unsigned int num)
 {
-	if (num + 1 > GetParamCount() || num < 0)
+	if (num + 1 > GetParamCount())
 	{
 		return NULL;
 	}

@@ -98,7 +98,7 @@ IPluginRuntime *SourcePawnEngine2::LoadPlugin(ICompilation *co, const char *file
 	size_t len;
 	
 	len = strlen(file);
-	for (size_t i = len - 1; i >= 0 && i < len; i--)
+	for (size_t i = len - 1; i < len; i--)
 	{
 		if (file[i] == '/' 
 		#if defined WIN32
