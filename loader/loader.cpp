@@ -293,7 +293,7 @@ DLL_EXPORT void *CreateInterface(const char *iface, int *ret)
 		}
 
 		size_t len = strlen(thisfile);
-		for (size_t iter=len-1; iter>=0 && iter<len; iter--)
+		for (size_t iter=len-1; iter<len; iter--)
 		{
 			if (IsPathSepChar(thisfile[iter]))
 			{

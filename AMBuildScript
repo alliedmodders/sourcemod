@@ -69,15 +69,18 @@ class SM:
 
 			#Set up defines
 			cxx = self.compiler.cxx
-			if isinstance(cxx, Cpp.GCC):
-				self.vendor = 'gcc'
+			if isinstance(cxx, Cpp.CompatGCC):
+				if isinstance(cxx, Cpp.GCC):
+					self.vendor = 'gcc'
+				elif isinstance(cxx, Cpp.Clang):
+					self.vendor = 'clang'
 				self.compiler.AddToListVar('CDEFINES', 'stricmp=strcasecmp')
 				self.compiler.AddToListVar('CDEFINES', '_stricmp=strcasecmp')
 				self.compiler.AddToListVar('CDEFINES', '_snprintf=snprintf')
 				self.compiler.AddToListVar('CDEFINES', '_vsnprintf=vsnprintf')
 				self.compiler.AddToListVar('CFLAGS', '-pipe')
 				self.compiler.AddToListVar('CFLAGS', '-fno-strict-aliasing')
-				if cxx.majorVersion >= 4:
+				if (self.vendor == 'gcc' and cxx.majorVersion >= 4) or self.vendor == 'clang':
 					self.compiler.AddToListVar('CFLAGS', '-fvisibility=hidden')
 					self.compiler.AddToListVar('CXXFLAGS', '-fvisibility-inlines-hidden')
 				self.compiler.AddToListVar('CFLAGS', '-Wall')
@@ -85,16 +88,18 @@ class SM:
 				self.compiler.AddToListVar('CFLAGS', '-Wno-uninitialized')
 				self.compiler.AddToListVar('CFLAGS', '-Wno-unused')
 				self.compiler.AddToListVar('CFLAGS', '-Wno-switch')
-				self.compiler.AddToListVar('CFLAGS', '-mfpmath=sse')
 				self.compiler.AddToListVar('CFLAGS', '-msse')
 				self.compiler.AddToListVar('CFLAGS', '-m32')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-m32')
-				self.compiler.AddToListVar('CFLAGS', '-static-libgcc')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-exceptions')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-rtti')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-threadsafe-statics')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-non-virtual-dtor')
+				self.compiler.AddToListVar('CXXFLAGS', '-Wno-overloaded-virtual')
 				self.compiler.AddToListVar('CDEFINES', 'HAVE_STDINT_H')
+				if self.vendor == 'gcc':
+					self.compiler.AddToListVar('CFLAGS', '-mfpmath=sse')
+					self.compiler.AddToListVar('CFLAGS', '-static-libgcc')
 			elif isinstance(cxx, Cpp.MSVC):
 				self.vendor = 'msvc'
 				if AMBuild.options.debug == '1':
@@ -130,7 +135,7 @@ class SM:
 			#Optimization
 			if AMBuild.options.opt == '1':
 				self.compiler.AddToListVar('CDEFINES', 'NDEBUG')
-				if self.vendor == 'gcc':
+				if self.vendor == 'gcc' or self.vendor == 'clang':
 					self.compiler.AddToListVar('CFLAGS', '-O3')
 				elif self.vendor == 'msvc':
 					self.compiler.AddToListVar('CFLAGS', '/Ox')
@@ -141,7 +146,7 @@ class SM:
 			if AMBuild.options.debug == '1':
 				self.compiler.AddToListVar('CDEFINES', 'DEBUG')
 				self.compiler.AddToListVar('CDEFINES', '_DEBUG')
-				if self.vendor == 'gcc':
+				if self.vendor == 'gcc' or self.vendor == 'clang':
 					self.compiler.AddToListVar('CFLAGS', '-g3')
 				elif self.vendor == 'msvc':
 					self.compiler.AddToListVar('CFLAGS', '/Od')

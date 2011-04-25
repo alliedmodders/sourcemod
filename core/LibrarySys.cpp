@@ -410,7 +410,7 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 	size_t length = strlen(path);
 
 	for (size_t i = length - 1;
-		 i >= 0 && i <= length - 1;
+		 i <= length - 1;
 		 i--)
 	{
 		if (path[i] == '/' 

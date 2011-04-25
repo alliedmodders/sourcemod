@@ -3,7 +3,7 @@ import os
 
 sdk = SM.sdkInfo['ep2v']
 compiler = SM.DefaultHL2Compiler('extensions/tf2', 'ep2v')
-if compiler.cc.name == 'gcc':
+if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
 	compiler['CFLAGS'].append('-Wno-parentheses')
 
 name = 'game.tf2.ext.' + sdk['ext']
