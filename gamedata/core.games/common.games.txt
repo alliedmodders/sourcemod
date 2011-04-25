@@ -143,6 +143,7 @@
 			"game"					"RnLBeta"
 			"game"					"fas"
 			"game"					"fistful_of_frags"
+			"game"					"dinodday"
 		}
 
 		"Keys"
@@ -171,6 +172,7 @@
 			"game"					"cstrike"
 			"game"					"RnLBeta"
 			"game"					"fistful_of_frags"
+			"game"					"dinodday"
 		}
 		
 		"Keys"
