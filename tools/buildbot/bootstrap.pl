@@ -43,14 +43,19 @@ if ($reconf) {
 	rmtree('OUTPUT');
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
 	chdir('OUTPUT');
-	my ($result);
+	my ($result, $argn);
+	$argn = $#ARGV + 1;
 	print "Attempting to reconfigure...\n";
-	if ($^O eq "linux") {
-		$result = `CC=gcc-4.1 CXX=gcc-4.1 python3.1 ../build/configure.py --enable-optimize`;
-	} elsif ($^O eq "darwin") {
-		$result = `CC=gcc-4.2 CXX=gcc-4.2 python3.1 ../build/configure.py --enable-optimize`;
+	if ($argn > 0 && $^O !~ /MSWin/) {
+		$result = `CC=$ARGV[0] CXX=$ARGV[0] python3.1 ../build/configure.py --enable-optimize`;
 	} else {
-		$result = `C:\\Python31\\Python.exe ..\\build\\configure.py --enable-optimize`;
+		if ($^O eq "linux") {
+			$result = `CC=gcc-4.1 CXX=gcc-4.1 python3.1 ../build/configure.py --enable-optimize`;
+		} elsif ($^O eq "darwin") {
+			$result = `CC=gcc-4.2 CXX=gcc-4.2 python3.1 ../build/configure.py --enable-optimize`;
+		} else {
+			$result = `C:\\Python31\\Python.exe ..\\build\\configure.py --enable-optimize`;
+		}
 	}
 	print "$result\n";
 	if ($? != 0) {

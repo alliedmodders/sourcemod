@@ -155,6 +155,8 @@ class SM:
 			#Platform-specifics
 			if AMBuild.target['platform'] == 'linux':
 				self.compiler.AddToListVar('CDEFINES', '_LINUX')
+				if self.vendor == 'clang':
+					self.compiler.AddToListVar('POSTLINKFLAGS', '-lgcc_eh')
 			elif AMBuild.target['platform'] == 'darwin':
 				self.compiler.AddToListVar('CFLAGS', ['-isysroot',
 				                                      '/Developer/SDKs/MacOSX10.5.sdk'])

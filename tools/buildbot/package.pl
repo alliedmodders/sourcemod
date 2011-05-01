@@ -5,9 +5,10 @@ use Cwd;
 use File::Basename;
 use Net::FTP;
 
-my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path);
+my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
 $ftp_file = shift;
+$tag = shift;
 
 open(FTP, $ftp_file) or die "Unable to read FTP config file $ftp_file: $!\n";
 $ftp_host = <FTP>;
@@ -47,6 +48,11 @@ elsif ($^O =~ /MSWin/)
 else
 {
     $version .= '-' . $^O;
+}
+
+if (defined $tag)
+{
+	$version .= '-' . $tag;
 }
 
 my ($filename);
