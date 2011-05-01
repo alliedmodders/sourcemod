@@ -99,7 +99,7 @@ class SM:
 				self.compiler.AddToListVar('CDEFINES', 'HAVE_STDINT_H')
 				if self.vendor == 'gcc':
 					self.compiler.AddToListVar('CFLAGS', '-mfpmath=sse')
-					self.compiler.AddToListVar('CFLAGS', '-static-libgcc')
+					self.compiler.AddToListVar('POSTLINKFLAGS', '-static-libgcc')
 			elif isinstance(cxx, Cpp.MSVC):
 				self.vendor = 'msvc'
 				if AMBuild.options.debug == '1':
