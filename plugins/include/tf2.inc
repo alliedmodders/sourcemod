@@ -102,6 +102,7 @@ enum TFCond
 	TFCond_Bleeding,
 	TFCond_DefenseBuffed,
 	TFCond_Milked,
+	TFCond_MegaHeal,
 	TFCond_RegenBuffed,
 	TFCond_MarkedForDeath
 };
