@@ -87,9 +87,14 @@ public:
 	IResultSet *GetResultSet();
 	bool FetchMoreResults();
 	void Destroy();
+public: // Used by the driver to implement GetInsertIDForQuery()/GetAffectedRowsForQuery()
+	unsigned int GetInsertID();
+	unsigned int GetAffectedRows();
 private:
 	MyDatabase *m_pParent;
 	MyBasicResults m_rs;
+	unsigned int m_InsertID;
+	unsigned int m_AffectedRows;
 };
 
 #endif //_INCLUDE_SM_MYSQL_BASIC_RESULTS_H_

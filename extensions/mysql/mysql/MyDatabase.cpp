@@ -257,6 +257,16 @@ IQuery *MyDatabase::DoQueryEx(const char *query, size_t len)
 	return new MyQuery(this, res);
 }
 
+unsigned int MyDatabase::GetAffectedRowsForQuery(IQuery *query)
+{
+	return static_cast<MyQuery*>(query)->GetAffectedRows();
+}
+
+unsigned int MyDatabase::GetInsertIDForQuery(IQuery *query)
+{
+	return static_cast<MyQuery*>(query)->GetInsertID();
+}
+
 IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t maxlength, int *errCode)
 {
 	MYSQL_STMT *stmt = mysql_stmt_init(m_mysql);

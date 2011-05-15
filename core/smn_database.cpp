@@ -36,8 +36,14 @@
 #include "PluginSys.h"
 #include "sm_stringutil.h"
 
-HandleType_t hQueryType;
 HandleType_t hStmtType;
+
+HandleType_t hCombinedQueryType;
+typedef struct
+{
+	IQuery *query;
+	IDatabase *db;
+} CombinedQuery;
 
 class DatabaseHelpers : 
 	public SMGlobalClass,
@@ -57,22 +63,23 @@ public:
 		g_HandleSys.InitAccessDefaults(&tacc, NULL);
 		tacc.ident = g_pCoreIdent;
 
-		hQueryType = g_HandleSys.CreateType("IQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
-		hStmtType = g_HandleSys.CreateType("IPreparedQuery", this, hQueryType, &tacc, &acc, g_pCoreIdent, NULL);
+		hCombinedQueryType = g_HandleSys.CreateType("IQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
+		hStmtType = g_HandleSys.CreateType("IPreparedQuery", this, 0, &tacc, &acc, g_pCoreIdent, NULL);
 	}
 
 	virtual void OnSourceModShutdown()
 	{
 		g_HandleSys.RemoveType(hStmtType, g_pCoreIdent);
-		g_HandleSys.RemoveType(hQueryType, g_pCoreIdent);
+		g_HandleSys.RemoveType(hCombinedQueryType, g_pCoreIdent);
 	}
 
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		if (type == hQueryType)
+		if (type == hCombinedQueryType)
 		{
-			IQuery *query = (IQuery *)object;
-			query->Destroy();
+			CombinedQuery *combined = (CombinedQuery *)object;
+			combined->query->Destroy();
+			delete combined;
 		} else if (type == hStmtType) {
 			IPreparedQuery *query = (IPreparedQuery *)object;
 			query->Destroy();
@@ -84,10 +91,37 @@ public:
 inline HandleError ReadQueryHndl(Handle_t hndl, IPluginContext *pContext, IQuery **query)
 {
 	HandleSecurity sec;
+	CombinedQuery *c;
 	sec.pOwner = pContext->GetIdentity();
 	sec.pIdentity = g_pCoreIdent;
 
-	return g_HandleSys.ReadHandle(hndl, hQueryType, &sec, (void **)query);
+	HandleError ret;
+	
+	if ((ret = g_HandleSys.ReadHandle(hndl, hStmtType, &sec, (void **)query)) != HandleError_None)
+	{
+		ret = g_HandleSys.ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
+		if (ret == HandleError_None)
+		{
+			*query = c->query;
+		}
+	}
+	return ret;
+}
+
+inline HandleError ReadQueryAndDbHndl(Handle_t hndl, IPluginContext *pContext, IQuery **query, IDatabase **db)
+{
+	HandleSecurity sec;
+	CombinedQuery *c;
+	sec.pOwner = pContext->GetIdentity();
+	sec.pIdentity = g_pCoreIdent;
+
+	HandleError ret = g_HandleSys.ReadHandle(hndl, hCombinedQueryType, &sec, (void **)&c);
+	if (ret == HandleError_None)
+	{
+		*query = c->query;
+		*db = c->db;
+	}
+	return ret;
 }
 
 inline HandleError ReadStmtHndl(Handle_t hndl, IPluginContext *pContext, IPreparedQuery **query)
@@ -192,12 +226,17 @@ public:
 		
 		if (m_pQuery)
 		{
-			qh = g_HandleSys.CreateHandle(hQueryType, m_pQuery, me->GetIdentity(), g_pCoreIdent, NULL);
+			CombinedQuery *c = new CombinedQuery;
+			c->query = m_pQuery;
+			c->db = m_pDatabase;
+			
+			qh = g_HandleSys.CreateHandle(hCombinedQueryType, c, me->GetIdentity(), g_pCoreIdent, NULL);
 			if (qh != BAD_HANDLE)
 			{
 				m_pQuery = NULL;
 			} else {
 				UTIL_Format(error, sizeof(error), "Could not alloc handle");
+				delete c;
 			}
 		}
 
@@ -537,42 +576,59 @@ static cell_t SQL_GetAffectedRows(IPluginContext *pContext, const cell_t *params
 {
 	IDatabase *db = NULL;
 	IPreparedQuery *stmt = NULL;
+	IQuery *query = NULL;
 	HandleError err;
 
-	if ((err = ReadDbOrStmtHndl(params[1], pContext, &db, &stmt)) != HandleError_None)
+	if (((err = ReadDbOrStmtHndl(params[1], pContext, &db, &stmt)) != HandleError_None)
+		&& ((err = ReadQueryAndDbHndl(params[1], pContext, &query, &db)) != HandleError_None))
 	{
-		return pContext->ThrowNativeError("Invalid statement or db Handle %x (error: %d)", params[1], err);
+		return pContext->ThrowNativeError("Invalid statement, db, or query Handle %x (error: %d)", params[1], err);
 	}
 
-	if (db)
+
+	if (stmt)
 	{
-		return db->GetAffectedRows();
-	} else if (stmt) {
 		return stmt->GetAffectedRows();
 	}
+	else if (query)
+	{
+		return db->GetAffectedRowsForQuery(query);
+	}
+	else if (db)
+	{
+		return db->GetAffectedRows();
+	}
 
-	return pContext->ThrowNativeError("Unknown error reading db/stmt handles");
+	return pContext->ThrowNativeError("Unknown error reading db/stmt/query handles");
 }
 
 static cell_t SQL_GetInsertId(IPluginContext *pContext, const cell_t *params)
 {
 	IDatabase *db = NULL;
+	IQuery *query = NULL;
 	IPreparedQuery *stmt = NULL;
 	HandleError err;
 
-	if ((err = ReadDbOrStmtHndl(params[1], pContext, &db, &stmt)) != HandleError_None)
+	if (((err = ReadDbOrStmtHndl(params[1], pContext, &db, &stmt)) != HandleError_None)
+		&& ((err = ReadQueryAndDbHndl(params[1], pContext, &query, &db)) != HandleError_None))
 	{
-		return pContext->ThrowNativeError("Invalid statement or db Handle %x (error: %d)", params[1], err);
+		return pContext->ThrowNativeError("Invalid statement, db, or query Handle %x (error: %d)", params[1], err);
 	}
 
-	if (db)
+	if (query)
+	{
+		return db->GetInsertIDForQuery(query);
+	}
+	else if (db)
 	{
 		return db->GetInsertID();
-	} else if (stmt) {
+	}
+	else if (stmt)
+	{
 		return stmt->GetInsertID();
 	}
 
-	return pContext->ThrowNativeError("Unknown error reading db/stmt handles");
+	return pContext->ThrowNativeError("Unknown error reading db/stmt/query handles");
 }
 
 static cell_t SQL_GetError(IPluginContext *pContext, const cell_t *params)
@@ -682,10 +738,14 @@ static cell_t SQL_Query(IPluginContext *pContext, const cell_t *params)
 		return BAD_HANDLE;
 	}
 
-	Handle_t hndl = g_HandleSys.CreateHandle(hQueryType, qr, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	CombinedQuery *c = new CombinedQuery;
+	c->query = qr;
+	c->db = db;
+	Handle_t hndl = g_HandleSys.CreateHandle(hCombinedQueryType, c, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		qr->Destroy();
+		delete c;
 		return BAD_HANDLE;
 	}
 

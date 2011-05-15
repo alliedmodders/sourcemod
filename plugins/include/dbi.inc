@@ -261,20 +261,20 @@ native SQL_GetAffectedRows(Handle:hndl);
 /**
  * Returns the last query's insertion id.
  *
- * @param hndl			A database OR statement Handle.
+ * @param hndl			A database, query, OR statement Handle.
  * @return				Last query's insertion id.
- * @error				Invalid database or statement Handle.
+ * @error				Invalid database, query, or statement Handle.
  */
 native SQL_GetInsertId(Handle:hndl);
 
 /**
  * Returns the error reported by the last query.
  *
- * @param hndl			A database OR statement Handle.
+ * @param hndl			A database, query, OR statement Handle.
  * @param error			Error buffer.
  * @param maxlength		Maximum length of the buffer.
  * @return				True if there was an error, false otherwise.
- * @error				Invalid database or statement Handle.
+ * @error				Invalid database, query, or statement Handle.
  */
 native bool:SQL_GetError(Handle:hndl, String:error[], maxlength);
 

@@ -307,6 +307,8 @@ MyQuery::MyQuery(MyDatabase *db, MYSQL_RES *res)
 : m_pParent(db), m_rs(res)
 {
 	m_pParent->IncReferenceCount();
+	m_InsertID = m_pParent->GetInsertID();
+	m_AffectedRows = m_pParent->GetAffectedRows();
 }
 
 IResultSet *MyQuery::GetResultSet()
@@ -317,6 +319,16 @@ IResultSet *MyQuery::GetResultSet()
 	}
 
 	return &m_rs;
+}
+
+unsigned int MyQuery::GetInsertID()
+{
+	return m_InsertID;
+}
+
+unsigned int MyQuery::GetAffectedRows()
+{
+	return m_AffectedRows;
 }
 
 bool MyQuery::FetchMoreResults()

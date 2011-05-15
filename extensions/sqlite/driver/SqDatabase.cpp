@@ -186,6 +186,15 @@ IQuery *SqDatabase::DoQueryEx(const char *query, size_t len)
 	return pQuery;
 }
 
+unsigned int SqDatabase::GetAffectedRowsForQuery(IQuery *query)
+{
+	return static_cast<SqQuery*>(query)->GetAffectedRows();
+}
+unsigned int SqDatabase::GetInsertIDForQuery(IQuery *query)
+{
+	return static_cast<SqQuery*>(query)->GetInsertID();
+}
+
 IPreparedQuery *SqDatabase::PrepareQuery(const char *query, 
 										 char *error, 
 										 size_t maxlength, 

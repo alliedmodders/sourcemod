@@ -60,6 +60,8 @@ public: //IDatabase
 	IDBDriver *GetDriver();
 	bool DoSimpleQueryEx(const char *query, size_t len);
 	IQuery *DoQueryEx(const char *query, size_t len);
+	unsigned int GetAffectedRowsForQuery(IQuery *query);
+	unsigned int GetInsertIDForQuery(IQuery *query);
 public:
 	const DatabaseInfo &GetInfo();
 private:

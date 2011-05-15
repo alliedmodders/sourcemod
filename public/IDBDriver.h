@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		7
+#define SMINTERFACE_DBI_VERSION		8
 
 namespace SourceMod
 {
@@ -573,6 +573,33 @@ namespace SourceMod
 		 * @return				IQuery pointer on success, NULL otherwise.
 		 */
 		virtual IQuery *DoQueryEx(const char *query, size_t len) =0;
+		
+		/**
+		 * @brief Retrieves the number of affected rows from the last execute of
+		 * the given query
+		 *
+		 * Note: This can only accept queries from this driver.
+		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
+		 * @param query			IQuery object from this driver
+		 * @return				Rows affected from last execution of this query,
+		 *						if applicable.
+		 */
+		virtual unsigned int GetAffectedRowsForQuery(IQuery *query) =0;
+		
+		/**
+		 * @brief Retrieves the last insert id of the given query
+		 *
+		 * Note: This can only accept queries from this driver.
+		 *
+		 * This function is not thread safe and must be included in any locks.
+		 *
+		 * @param query			IQuery object from this driver
+		 * @return				Insert Id from the last execution of this query,
+		 *						if applicable.
+		 */
+		virtual unsigned int GetInsertIDForQuery(IQuery *query) =0;
 	};
 
 	/** 
