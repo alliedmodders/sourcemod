@@ -40,7 +40,6 @@ for i in SM.sdkInfo:
 		'concmd_cleaner.cpp',
 		'HalfLife2.cpp',
 		'NextMap.cpp',
-		'smn_profiler.cpp',
 		'ConCmdManager.cpp',
 		'HandleSys.cpp',
 		'ConVarManager.cpp',

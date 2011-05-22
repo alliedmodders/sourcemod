@@ -29,12 +29,13 @@
  * Version: $Id$
  */
 
-#include "sm_globals.h"
-#include "HandleSys.h"
-
-//Note: Do not add this to Linux yet, i haven't done the HPET timing research (if even available)
-//nonetheless we need accurate counting
-#if !defined PLATFORM_LINUX && !defined PLATFORM_APPLE
+#include "common_logic.h"
+#include <IHandleSys.h>
+#if !defined PLATFORM_WINDOWS
+#include <stddef.h>
+#include <stdint.h>
+#include <sys/time.h>
+#endif
 
 struct Profiler
 {
@@ -47,6 +48,9 @@ struct Profiler
 	LARGE_INTEGER start;
 	LARGE_INTEGER end;
 	double freq;
+#else
+	struct timeval start;
+	struct timeval end;
 #endif
 	bool started;
 	bool stopped;
@@ -61,11 +65,11 @@ class ProfilerHelpers :
 public:
 	void OnSourceModAllInitialized()
 	{
-		g_ProfilerType = g_HandleSys.CreateType("Profiler", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_ProfilerType = handlesys->CreateType("Profiler", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
 	void OnSourceModShutdown()
 	{
-		g_HandleSys.RemoveType(g_ProfilerType, g_pCoreIdent);
+		handlesys->RemoveType(g_ProfilerType, g_pCoreIdent);
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -84,7 +88,7 @@ static cell_t CreateProfiler(IPluginContext *pContext, const cell_t *params)
 	p->freq = 1.0 / (double)(qpf.QuadPart);
 #endif
 
-	Handle_t hndl = g_HandleSys.CreateHandle(g_ProfilerType, p, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	Handle_t hndl = handlesys->CreateHandle(g_ProfilerType, p, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (hndl == BAD_HANDLE)
 	{
 		delete p;
@@ -100,7 +104,7 @@ static cell_t StartProfiling(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	Profiler *prof;
 
-	if ((err = g_HandleSys.ReadHandle(hndl, g_ProfilerType, &sec, (void **)&prof))
+	if ((err = handlesys->ReadHandle(hndl, g_ProfilerType, &sec, (void **)&prof))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -108,6 +112,8 @@ static cell_t StartProfiling(IPluginContext *pContext, const cell_t *params)
 
 #if defined PLATFORM_WINDOWS
 	QueryPerformanceCounter(&prof->start);
+#else
+	gettimeofday(&prof->start, NULL);
 #endif
 
 	prof->started = true;
@@ -123,7 +129,7 @@ static cell_t StopProfiling(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	Profiler *prof;
 
-	if ((err = g_HandleSys.ReadHandle(hndl, g_ProfilerType, &sec, (void **)&prof))
+	if ((err = handlesys->ReadHandle(hndl, g_ProfilerType, &sec, (void **)&prof))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -136,6 +142,8 @@ static cell_t StopProfiling(IPluginContext *pContext, const cell_t *params)
 
 #if defined PLATFORM_WINDOWS
 	QueryPerformanceCounter(&prof->end);
+#else
+	gettimeofday(&prof->end, NULL);
 #endif
 
 	prof->started = false;
@@ -151,7 +159,7 @@ static cell_t GetProfilerTime(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	Profiler *prof;
 
-	if ((err = g_HandleSys.ReadHandle(hndl, g_ProfilerType, &sec, (void **)&prof))
+	if ((err = handlesys->ReadHandle(hndl, g_ProfilerType, &sec, (void **)&prof))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
@@ -168,6 +176,10 @@ static cell_t GetProfilerTime(IPluginContext *pContext, const cell_t *params)
 	LONGLONG diff = prof->end.QuadPart - prof->start.QuadPart;
 	double seconds = diff * prof->freq;
 	fTime = (float)seconds;
+#else
+	int64_t start_us = int64_t(prof->start.tv_sec) * 1000000 + prof->start.tv_usec;
+	int64_t stop_us = int64_t(prof->end.tv_sec) * 1000000 + prof->end.tv_usec;
+	fTime = double((stop_us - start_us) / 1000) / 1000.0;
 #endif
 
 	return sp_ftoc(fTime);
@@ -181,5 +193,4 @@ REGISTER_NATIVES(profilerNatives)
 	{"StopProfiling",			StopProfiling},
 	{NULL,						NULL},
 };
-#endif
 
