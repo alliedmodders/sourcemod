@@ -866,8 +866,10 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 		smcore.strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 		m_ServerLang = SOURCEMOD_LANGUAGE_ENGLISH;
 	}
-
-	m_ServerLang = *pServerLang;
+	else
+	{
+		m_ServerLang = *pServerLang;
+	}
 
 	if (!m_Languages.size())
 	{
