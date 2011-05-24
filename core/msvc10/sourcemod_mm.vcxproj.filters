@@ -192,9 +192,6 @@
     <ClCompile Include="..\smn_player.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
-    <ClCompile Include="..\smn_profiler.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
     <ClCompile Include="..\smn_usermsgs.cpp">
       <Filter>Natives</Filter>
     </ClCompile>

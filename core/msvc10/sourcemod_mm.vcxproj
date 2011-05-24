@@ -1124,7 +1124,6 @@
     <ClCompile Include="..\smn_menus.cpp" />
     <ClCompile Include="..\smn_nextmap.cpp" />
     <ClCompile Include="..\smn_player.cpp" />
-    <ClCompile Include="..\smn_profiler.cpp" />
     <ClCompile Include="..\smn_usermsgs.cpp" />
     <ClCompile Include="..\smn_vector.cpp" />
   </ItemGroup>
