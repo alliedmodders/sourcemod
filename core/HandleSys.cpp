@@ -987,6 +987,10 @@ bool HandleSystem::InitAccessDefaults(TypeAccess *pTypeAccess, HandleAccess *pHa
 	return true;
 }
 
+#define HANDLE_LOG_VERY_BAD(message, ...) \
+	g_Logger.LogFatal(message, ##__VA_ARGS__); \
+	g_Logger.LogError(message, ##__VA_ARGS__);
+
 bool HandleSystem::TryAndFreeSomeHandles()
 {
 	IPluginIterator *pl_iter = g_PluginSys.GetPluginIterator();
@@ -1032,9 +1036,9 @@ bool HandleSystem::TryAndFreeSomeHandles()
 		return false;
 	}
 
-	g_Logger.LogFatal("[SM] MEMORY LEAK DETECTED IN PLUGIN (file \"%s\")", highest_owner->GetFilename());
-	g_Logger.LogFatal("[SM] Unloading plugin to free %d handles.", highest_handle_count);
-	g_Logger.LogFatal("[SM] Contact the author(s) of this plugin to correct this error.", highest_handle_count);
+	HANDLE_LOG_VERY_BAD("[SM] MEMORY LEAK DETECTED IN PLUGIN (file \"%s\")", highest_owner->GetFilename());
+	HANDLE_LOG_VERY_BAD("[SM] Unloading plugin to free %d handles.", highest_handle_count);
+	HANDLE_LOG_VERY_BAD("[SM] Contact the author(s) of this plugin to correct this error.", highest_handle_count);
 
 	highest_owner->GetBaseContext()->ThrowNativeErrorEx(SP_ERROR_MEMACCESS, "Memory leak");
 
