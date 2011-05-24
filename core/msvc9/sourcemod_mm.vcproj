@@ -40,9 +40,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core-legacy&quot;;&quot;$(MMSOURCE18)\core-legacy\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -123,9 +123,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core-legacy&quot;;&quot;$(MMSOURCE18)\core-legacy\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -207,9 +207,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core-legacy&quot;;&quot;$(MMSOURCE17)\core-legacy\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core-legacy&quot;;&quot;$(MMSOURCE18)\core-legacy\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=1"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -290,9 +290,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK-DARKM)\public&quot;;&quot;$(HL2SDK-DARKM)\public\dlls&quot;;&quot;$(HL2SDK-DARKM)\public\engine&quot;;&quot;$(HL2SDK-DARKM)\public\mathlib&quot;;&quot;$(HL2SDK-DARKM)\public\tier0&quot;;&quot;$(HL2SDK-DARKM)\public\tier1&quot;;&quot;$(HL2SDK-DARKM)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK-DARKM)\public&quot;;&quot;$(HL2SDK-DARKM)\public\dlls&quot;;&quot;$(HL2SDK-DARKM)\public\engine&quot;;&quot;$(HL2SDK-DARKM)\public\mathlib&quot;;&quot;$(HL2SDK-DARKM)\public\tier0&quot;;&quot;$(HL2SDK-DARKM)\public\tier1&quot;;&quot;$(HL2SDK-DARKM)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=2"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -373,9 +373,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK-DARKM)\public&quot;;&quot;$(HL2SDK-DARKM)\public\dlls&quot;;&quot;$(HL2SDK-DARKM)\public\engine&quot;;&quot;$(HL2SDK-DARKM)\public\mathlib&quot;;&quot;$(HL2SDK-DARKM)\public\tier0&quot;;&quot;$(HL2SDK-DARKM)\public\tier1&quot;;&quot;$(HL2SDK-DARKM)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK-DARKM)\public&quot;;&quot;$(HL2SDK-DARKM)\public\dlls&quot;;&quot;$(HL2SDK-DARKM)\public\engine&quot;;&quot;$(HL2SDK-DARKM)\public\mathlib&quot;;&quot;$(HL2SDK-DARKM)\public\tier0&quot;;&quot;$(HL2SDK-DARKM)\public\tier1&quot;;&quot;$(HL2SDK-DARKM)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=2"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -457,9 +457,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK-DARKM)\public&quot;;&quot;$(HL2SDK-DARKM)\public\dlls&quot;;&quot;$(HL2SDK-DARKM)\public\engine&quot;;&quot;$(HL2SDK-DARKM)\public\mathlib&quot;;&quot;$(HL2SDK-DARKM)\public\tier0&quot;;&quot;$(HL2SDK-DARKM)\public\tier1&quot;;&quot;$(HL2SDK-DARKM)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK-DARKM)\public&quot;;&quot;$(HL2SDK-DARKM)\public\dlls&quot;;&quot;$(HL2SDK-DARKM)\public\engine&quot;;&quot;$(HL2SDK-DARKM)\public\mathlib&quot;;&quot;$(HL2SDK-DARKM)\public\tier0&quot;;&quot;$(HL2SDK-DARKM)\public\tier1&quot;;&quot;$(HL2SDK-DARKM)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=2"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -540,9 +540,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=3"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -623,9 +623,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=3"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -707,9 +707,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOB)\public&quot;;&quot;$(HL2SDKOB)\public\engine&quot;;&quot;$(HL2SDKOB)\public\game\server&quot;;&quot;$(HL2SDKOB)\public\mathlib&quot;;&quot;$(HL2SDKOB)\public\tier0&quot;;&quot;$(HL2SDKOB)\public\tier1&quot;;&quot;$(HL2SDKOB)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=3"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -790,9 +790,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -873,9 +873,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -957,9 +957,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDK)\public&quot;;&quot;$(HL2SDK)\public\dlls&quot;;&quot;$(HL2SDK)\public\engine&quot;;&quot;$(HL2SDK)\public\mathlib&quot;;&quot;$(HL2SDK)\public\tier0&quot;;&quot;$(HL2SDK)\public\tier1&quot;;&quot;$(HL2SDK)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=1"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -1040,9 +1040,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(HL2SDKL4D)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(HL2SDKL4D)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=5"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1123,9 +1123,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(HL2SDKL4D)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(HL2SDKL4D)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=5"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1207,9 +1207,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(HL2SDKL4D)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D)\public&quot;;&quot;$(HL2SDKL4D)\public\engine&quot;;&quot;$(HL2SDKL4D)\public\game\server&quot;;&quot;$(HL2SDKL4D)\public\mathlib&quot;;&quot;$(HL2SDKL4D)\public\tier0&quot;;&quot;$(HL2SDKL4D)\public\tier1&quot;;&quot;$(HL2SDKL4D)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=5"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -1290,9 +1290,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOBVALVE)\public&quot;;&quot;$(HL2SDKOBVALVE)\public\engine&quot;;&quot;$(HL2SDKOBVALVE)\public\game\server&quot;;&quot;$(HL2SDKOBVALVE)\public\mathlib&quot;;&quot;$(HL2SDKOBVALVE)\public\tier0&quot;;&quot;$(HL2SDKOBVALVE)\public\tier1&quot;;&quot;$(HL2SDKOBVALVE)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOBVALVE)\public&quot;;&quot;$(HL2SDKOBVALVE)\public\engine&quot;;&quot;$(HL2SDKOBVALVE)\public\game\server&quot;;&quot;$(HL2SDKOBVALVE)\public\mathlib&quot;;&quot;$(HL2SDKOBVALVE)\public\tier0&quot;;&quot;$(HL2SDKOBVALVE)\public\tier1&quot;;&quot;$(HL2SDKOBVALVE)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1373,9 +1373,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOBVALVE)\public&quot;;&quot;$(HL2SDKOBVALVE)\public\engine&quot;;&quot;$(HL2SDKOBVALVE)\public\game\server&quot;;&quot;$(HL2SDKOBVALVE)\public\mathlib&quot;;&quot;$(HL2SDKOBVALVE)\public\tier0&quot;;&quot;$(HL2SDKOBVALVE)\public\tier1&quot;;&quot;$(HL2SDKOBVALVE)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOBVALVE)\public&quot;;&quot;$(HL2SDKOBVALVE)\public\engine&quot;;&quot;$(HL2SDKOBVALVE)\public\game\server&quot;;&quot;$(HL2SDKOBVALVE)\public\mathlib&quot;;&quot;$(HL2SDKOBVALVE)\public\tier0&quot;;&quot;$(HL2SDKOBVALVE)\public\tier1&quot;;&quot;$(HL2SDKOBVALVE)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=4"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -1457,9 +1457,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOBVALVE)\public&quot;;&quot;$(HL2SDKOBVALVE)\public\engine&quot;;&quot;$(HL2SDKOBVALVE)\public\game\server&quot;;&quot;$(HL2SDKOBVALVE)\public\mathlib&quot;;&quot;$(HL2SDKOBVALVE)\public\tier0&quot;;&quot;$(HL2SDKOBVALVE)\public\tier1&quot;;&quot;$(HL2SDKOBVALVE)\public\vstdlib&quot;;&quot;$(MMSOURCE17)\core&quot;;&quot;$(MMSOURCE17)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKOBVALVE)\public&quot;;&quot;$(HL2SDKOBVALVE)\public\engine&quot;;&quot;$(HL2SDKOBVALVE)\public\game\server&quot;;&quot;$(HL2SDKOBVALVE)\public\mathlib&quot;;&quot;$(HL2SDKOBVALVE)\public\tier0&quot;;&quot;$(HL2SDKOBVALVE)\public\tier1&quot;;&quot;$(HL2SDKOBVALVE)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=4"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -1541,7 +1541,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5 /D SE_LEFT4DEAD2=6"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8 /D SE_LEFT4DEAD2=6"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D2)\public&quot;;&quot;$(HL2SDKL4D2)\public\engine&quot;;&quot;$(HL2SDKL4D2)\public\game\server&quot;;&quot;$(HL2SDKL4D2)\public\mathlib&quot;;&quot;$(HL2SDKL4D2)\public\tier0&quot;;&quot;$(HL2SDKL4D2)\public\tier1&quot;;&quot;$(HL2SDKL4D2)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=6"
@@ -1624,7 +1624,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5 /D SE_LEFT4DEAD2=6"
+				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8 /D SE_LEFT4DEAD2=6"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D2)\public&quot;;&quot;$(HL2SDKL4D2)\public\engine&quot;;&quot;$(HL2SDKL4D2)\public\game\server&quot;;&quot;$(HL2SDKL4D2)\public\mathlib&quot;;&quot;$(HL2SDKL4D2)\public\tier0&quot;;&quot;$(HL2SDKL4D2)\public\tier1&quot;;&quot;$(HL2SDKL4D2)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=6"
@@ -1708,7 +1708,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_ORANGEBOXVALVE=4 /D SE_LEFT4DEAD=5 /D SE_LEFT4DEAD2=6"
+				AdditionalOptions="/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_ORANGEBOXVALVE=5 /D SE_LEFT4DEAD=6 /D SE_LEFT4DEAD2=7 /D SE_ALIENSWARM=8 /D SE_LEFT4DEAD2=6"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\;..\systems;..\..\public;..\..\public\sourcepawn;&quot;$(HL2SDKL4D2)\public&quot;;&quot;$(HL2SDKL4D2)\public\engine&quot;;&quot;$(HL2SDKL4D2)\public\game\server&quot;;&quot;$(HL2SDKL4D2)\public\mathlib&quot;;&quot;$(HL2SDKL4D2)\public\tier0&quot;;&quot;$(HL2SDKL4D2)\public\tier1&quot;;&quot;$(HL2SDKL4D2)\public\vstdlib&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=6"
@@ -2476,10 +2476,6 @@
 			</File>
 			<File
 				RelativePath="..\smn_player.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\smn_profiler.cpp"
 				>
 			</File>
 			<File
