@@ -228,11 +228,11 @@ native TF2_StunPlayer(client, Float:duration, Float:slowdown=0.0, stunflags, att
  * Induces the bleed effect on a client
  *
  * @param client		Player's index.
- * @param victim		Victim's index.
+ * @param attacker		Attacker's index.
  * @param float			Duration of bleeding (in seconds).
  * @noreturn
  */
-native TF2_MakeBleed(client, victim, Float:duration);
+native TF2_MakeBleed(client, attacker, Float:duration);
 
 /**
  * Retrieves the entity index of the CPlayerResource entity

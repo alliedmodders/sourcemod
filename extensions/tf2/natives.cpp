@@ -34,7 +34,7 @@
 #include "time.h"
 #include "RegNatives.h"
 
-// native TF2_MakeBleed(client, victim, Float:duration)
+// native TF2_MakeBleed(client, attacker, Float:duration)
 cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
@@ -62,8 +62,8 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	CBaseEntity *pTarget;
-	if (!(pTarget = UTIL_GetCBaseEntity(params[2], true)))
+	CBaseEntity *pAttacker;
+	if (!(pAttacker = UTIL_GetCBaseEntity(params[2], true)))
 	{
 		return pContext->ThrowNativeError("Client index %d is not valid", params[2]);
 	}
@@ -75,7 +75,7 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 
 	*(void **)vptr = obj;
 	vptr += sizeof(void *);
-	*(CBaseEntity **)vptr = pTarget;
+	*(CBaseEntity **)vptr = pAttacker;
 	vptr += sizeof(CBaseEntity *);
 	*(CBaseEntity **)vptr = NULL;
 	vptr += sizeof(CBaseEntity *);
