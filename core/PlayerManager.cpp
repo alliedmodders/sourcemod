@@ -235,7 +235,10 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	if (!m_FirstPass)
 	{
 		/* Initialize all players */
-		m_maxClients = clientMax;
+
+		// clientMax will not necessarily be correct here (such as on late SourceTV enable)
+		m_maxClients = gpGlobals->maxClients;
+
 		m_PlayerCount = 0;
 		m_Players = new CPlayer[ABSOLUTE_PLAYER_LIMIT + 1];
 		m_AuthQueue = new unsigned int[ABSOLUTE_PLAYER_LIMIT + 1];
