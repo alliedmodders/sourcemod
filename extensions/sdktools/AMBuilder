@@ -12,7 +12,6 @@ for i in SM.sdkInfo:
 
 	if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
 		compiler['CFLAGS'].append('-Wno-parentheses')
-		compiler['CFLAGS'].append('-Wno-invalid-offsetof')
 
 	if i != 'ep1':
 		compiler['CDEFINES'].append('HOOKING_ENABLED')
