@@ -887,8 +887,10 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 		strncopy(m_InitialLang, "en", sizeof(m_InitialLang));
 		m_ServerLang = SOURCEMOD_LANGUAGE_ENGLISH;
 	}
-
-	m_ServerLang = reinterpret_cast<unsigned int>(serverLang);
+	else
+	{
+		m_ServerLang = reinterpret_cast<unsigned int>(serverLang);
+	}
 
 	if (!m_Languages.size())
 	{
