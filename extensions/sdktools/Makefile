@@ -52,7 +52,7 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=3
 	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/orangebox
 	GAMEFIX = 2.ep2
 	override ENGSET = true
@@ -63,7 +63,7 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=4
 	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/orangebox
 	GAMEFIX = 2.ep2v
 	override ENGSET = true
@@ -74,7 +74,7 @@ ifeq "$(ENGINE)" "left4dead"
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=5
 	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/l4d
 	GAMEFIX = 2.l4d
 	override ENGSET = true
@@ -85,7 +85,7 @@ ifeq "$(ENGINE)" "left4dead2"
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=6
 	METAMOD = $(MMSOURCE17)/core
-	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/left4dead2
 	GAMEFIX = 2.l4d2
 	override ENGSET = true

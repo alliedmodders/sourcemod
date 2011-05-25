@@ -51,6 +51,10 @@
 #include <iserver.h>
 #include <cdll_int.h>
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+#include <itoolentity.h>
+#endif
+
 /**
  * @brief Implementation of the SDK Tools extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -115,6 +119,9 @@ extern IPlayerInfoManager *playerinfomngr;
 extern ICvar *icvar;
 extern IServer *iserver;
 extern CGlobalVars *gpGlobals;
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+extern IServerTools *servertools;
+#endif
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;

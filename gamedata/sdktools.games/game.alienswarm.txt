@@ -29,18 +29,6 @@
 			{
 				"windows"	"39"
 			}
-			"DispatchKeyValue"
-			{
-				"windows"	"34"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"33"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"31"
-			}
 			"SetEntityModel"
 			{
 				"windows"	"26"

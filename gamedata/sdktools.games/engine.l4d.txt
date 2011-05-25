@@ -72,54 +72,6 @@
 			}
 		}
 	}
-	
-	/* Create Entity Signatures */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"left4dead"
-		}
-
-		"Signatures"
-		{
-			"DispatchSpawn"
-			{
-				"library"	"server"
-				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"mac"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x55\x56\x8B\x74\x24\x10\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\x50\x64\x8B\xCB"
-			}
-			"CreateEntityByName"
-			{
-				"library"	"server"
-				"linux"		"@_Z18CreateEntityByNamePKcib"
-				"mac"		"@_Z18CreateEntityByNamePKcib"
-				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x27\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x8B\x50\x54\x56\xFF\xD2"
-			}
-		}
-	}
-
-	/* CGlobalEntityList */
-	"#default"
-	{
-		"#supported"
-		{
-			"game"		"left4dead"
-		}
-			
-		"Signatures"
-		{
-			/* Functions in CGlobalEntityList */
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x19\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x25\xFF\x0F\x00\x00\x83\xC0\x01\xC1\xE0\x04\x8B\x3C\x30\xEB\x06\x8B\xBE\x2A\x2A\x2A\x2A\x85\xFF\x74\x39\x8B\x5C\x24\x18\x8B\x2D\x2A\x2A\x2A\x2A\xEB\x03"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-		}
-	}
 
 	/* General GameRules */
 	"#default"
@@ -329,24 +281,6 @@
 				"windows"	"37"
 				"linux"		"38"
 				"mac"           "38"
-			}
-			"DispatchKeyValue"
-			{
-				"windows"	"29"
-				"linux"		"28"
-				"mac"           "28"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"28"
-				"linux"		"29"
-				"mac"           "29"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"27"
-				"linux"		"30"
-				"mac"           "30"
 			}
 			"SetEntityModel"
 			{

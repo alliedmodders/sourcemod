@@ -148,7 +148,7 @@ native bool:GetClientEyeAngles(client, Float:ang[3]);
  *  invalid or there is already an edict using that index, it will error out.
  *
  * @param classname			Entity classname.
- * @param ForceEdictIndex	Edict index used by the created entity.
+ * @param ForceEdictIndex	Edict index used by the created entity (ignored on Orangebox and above).
  * @return					Entity index on success, or -1 on failure.
  * @error					Invalid edict index, or no mod support.
  */

@@ -70,24 +70,6 @@
 				"linux"		"130"
 				"mac"		"130"
 			}
-			"DispatchKeyValue"
-			{
-				"windows"	"30"
-				"linux"		"29"
-				"mac"		"29"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"29"
-				"linux"		"30"
-				"mac"		"30"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"28"
-				"linux"		"31"
-				"mac"		"31"
-			}
 			"SetEntityModel"
 			{
 				"windows"	"23"

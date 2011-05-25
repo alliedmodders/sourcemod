@@ -40,6 +40,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "iserver.h"
+#include <iserverentity.h>
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -630,6 +631,66 @@ static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 	return got_angles ? 1 : 0;
 }
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
+{
+	char *searchname;
+	CBaseEntity *pEntity;
+
+	if (params[1] == -1)
+	{
+		pEntity = (CBaseEntity *)servertools->FirstEntity();
+	}
+	else
+	{
+		pEntity = gamehelpers->ReferenceToEntity(params[1]);
+		if (!pEntity)
+		{
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid",
+				gamehelpers->ReferenceToIndex(params[1]),
+				params[1]);
+		}
+	}
+
+	pContext->LocalToString(params[2], &searchname);
+
+	char buffer[128];
+	const char *classname = buffer;
+	int lastcharpos;
+	bool ismatch = false;
+
+	while (pEntity)
+	{
+		if (!servertools->GetKeyValue(pEntity, "classname", buffer, sizeof(buffer)))
+		{
+			pEntity = (CBaseEntity *)servertools->NextEntity(pEntity);
+			continue;
+		}
+
+		lastcharpos = strlen(searchname);
+		if (searchname[lastcharpos-1] == '*')
+		{
+			if (strncasecmp(searchname, classname, lastcharpos-1) == 0)
+			{
+				ismatch = true;
+			}
+		}
+		else if (strcasecmp(searchname, classname) == 0)
+		{
+			ismatch = true;
+		}
+
+		if (ismatch)
+		{
+			return gamehelpers->EntityToBCompatRef(pEntity);
+		}
+
+		pEntity = (CBaseEntity *)servertools->NextEntity(pEntity);
+	}
+
+	return -1;
+}
+#else
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -656,33 +717,14 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
+#endif
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
-	static ValveCall *pCall = NULL;
-	if (!pCall)
-	{
-		ValvePassInfo pass[4];
-		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[3], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("CreateEntityByName", ValveCall_Static, &pass[3], pass, 3, &pCall))
-		{
-			return pContext->ThrowNativeError("\"CreateEntityByName\" not supported by this mod");
-		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"CreateEntityByName\" wrapper failed to initialize");
-		}
-	}
-
-	CBaseEntity *pEntity = NULL;
-	START_CALL();
-	DECODE_VALVE_PARAM(1, vparams, 0);
-	DECODE_VALVE_PARAM(2, vparams, 1);
-	*(bool *)(vptr + 8) = true;
-	FINISH_CALL_SIMPLE(&pEntity);
-
+	char *classname;
+	pContext->LocalToString(params[1], &classname);
+	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 #else
@@ -713,32 +755,18 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 }
 #endif
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD2
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 {
-	static ValveCall *pCall = NULL;
-	if (!pCall)
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[1]);
+	if (!pEntity)
 	{
-		ValvePassInfo pass[3];
-		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("DispatchSpawn", ValveCall_Static, &pass[2], pass, 2, &pCall))
-		{
-			return pContext->ThrowNativeError("\"DispatchSpawn\" not supported by this mod");
-		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"DispatchSpawn\" wrapper failed to initialize");
-		}
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
 
-	int ret;
-	START_CALL();
-	DECODE_VALVE_PARAM(1, vparams, 0);
-	/* All X-refs to DispatchSpawn I checked use true - Unsure of what it does */
-	*(bool *)(vptr + 4) = true;
-	FINISH_CALL_SIMPLE(&ret);
+	servertools->DispatchSpawn(pEntity);
 
-	return (ret == -1) ? 0 : 1;
+	return 1;
 }
 #else
 static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
@@ -766,6 +794,23 @@ static cell_t DispatchSpawn(IPluginContext *pContext, const cell_t *params)
 }
 #endif
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	char *key;
+	char *value;
+	pContext->LocalToString(params[2], &key);
+	pContext->LocalToString(params[3], &value);
+
+	return (servertools->SetKeyValue(pEntity, key, value) ? 1 : 0);
+}
+#else
 static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -792,7 +837,25 @@ static cell_t DispatchKeyValue(IPluginContext *pContext, const cell_t *params)
 
 	return ret ? 1 : 0;
 }
+#endif
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	char *key;
+	pContext->LocalToString(params[2], &key);
+	
+	float value = sp_ctof(params[3]);
+
+	return (servertools->SetKeyValue(pEntity, key, value) ? 1 : 0);
+}
+#else
 static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -819,7 +882,31 @@ static cell_t DispatchKeyValueFloat(IPluginContext *pContext, const cell_t *para
 
 	return ret ? 1 : 0;
 }
+#endif
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	char *key;
+	pContext->LocalToString(params[2], &key);
+	
+	cell_t *vec;
+	pContext->LocalToPhysAddr(params[3], &vec);
+
+	const Vector *v = new Vector(
+		sp_ctof(vec[0]),
+		sp_ctof(vec[1]),
+		sp_ctof(vec[2]));
+
+	return (servertools->SetKeyValue(pEntity, key, *v) ? 1 : 0);
+}
+#else
 static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -850,6 +937,7 @@ static cell_t DispatchKeyValueVector(IPluginContext *pContext, const cell_t *par
 
 	return ret ? 1 : 0;
 }
+#endif
 
 static cell_t sm_GetClientAimTarget(IPluginContext *pContext, const cell_t *params)
 {

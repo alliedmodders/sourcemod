@@ -55,30 +55,15 @@
 				"windows"	"34"
 				"linux"		"35"
 			}
-			"DispatchKeyValue"
+			"WeaponEquip"
 			{
-				"windows"	"29"
-				"linux"		"28"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"28"
-				"linux"		"29"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"27"
-				"linux"		"30"
+				"windows"	"230"
+				"linux"		"231"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"23"
 				"linux"		"24"
-			}
-			"WeaponEquip"
-			{
-				"windows"	"230"
-				"linux"		"231"
 			}
 			"Activate"
 			{

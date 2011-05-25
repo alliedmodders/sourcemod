@@ -68,21 +68,6 @@
 				"windows"	"35"
 				"linux"		"36"
 			}
-			"DispatchKeyValue"
-			{
-				"windows"	"31"
-				"linux"		"30"
-			}
-			"DispatchKeyValueFloat"
-			{
-				"windows"	"30"
-				"linux"		"31"
-			}
-			"DispatchKeyValueVector"
-			{
-				"windows"	"29"
-				"linux"		"32"
-			}
 			"SetEntityModel"
 			{
 				"windows"	"25"
