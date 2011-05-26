@@ -180,4 +180,8 @@
 	{
 		"game"		"dinodday"
 	}
+	"game.esmod.txt"
+	{
+		"game"		"esmod"
+	}
 }

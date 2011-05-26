@@ -146,6 +146,7 @@
 			"game"					"fas"
 			"game"					"fistful_of_frags"
 			"game"					"dinodday"
+			"game"					"esmod"
 		}
 
 		"Keys"
@@ -207,6 +208,7 @@
 			"game"					"fistful_of_frags"
 			"game"					"swarm"
 			"game"					"dinodday"
+			"game"					"esmod"
 		}
 		
 		"Keys"
