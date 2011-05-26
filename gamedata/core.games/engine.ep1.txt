@@ -20,8 +20,6 @@
 			"game"		"insurgency"
 			"game"		"sourceforts"
 			"game"		"FortressForever"
-			"game"		"empires"
-			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"

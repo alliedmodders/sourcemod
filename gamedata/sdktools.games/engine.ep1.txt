@@ -17,11 +17,9 @@
 		"#supported"
 		{
 			"game"		"ship"
-			"game"		"!Dystopia"
 			"game"		"insurgency"
 			"game"		"sourceforts"
 			"game"		"FortressForever"
-			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
@@ -74,10 +72,8 @@
 		{
 			"game"		"garrysmod"
 			"game"		"ship"
-			"game"		"!Dystopia"
 			"game"		"sourceforts"
 			"game"		"FortressForever"
-			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"NeotokyoSource"
 		}
@@ -123,7 +119,6 @@
 			"game"		"ship"
 			"game"		"sourceforts"
 			"game"		"FortressForever"
-			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
@@ -147,7 +142,6 @@
 		"#supported"
 		{
 			"game"		"sourceforts"
-			"game"		"synergy"
 			"game"		"hidden"
 			"game"		"FortressForever"
 			"game"		"NeotokyoSource"
