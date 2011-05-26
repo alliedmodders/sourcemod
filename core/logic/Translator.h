@@ -55,7 +55,7 @@ enum PhraseParseState
 struct Language
 {
 	char m_code2[4];
-	int m_FullName;
+	int m_CanonicalName;
 };
 
 class CPhraseFile : 
@@ -153,6 +153,7 @@ private:
 	CVector<CPhraseFile *> m_Files;
 	BaseStringTable *m_pStringTab;
 	KTrie<unsigned int> m_LCodeLookup;
+	KTrie<unsigned int> m_LAliases;
 	bool m_InLanguageSection;
 	String m_CustomError;
 	unsigned int m_ServerLang;

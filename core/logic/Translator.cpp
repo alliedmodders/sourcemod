@@ -776,26 +776,25 @@ bool Translator::GetLanguageByCode(const char *code, unsigned int *index)
 
 bool Translator::GetLanguageByName(const char *name, unsigned int *index)
 {
-	CVector<Language *>::iterator iter;
-	unsigned int id = 0;
-
-	for (iter=m_Languages.begin(); iter!=m_Languages.end(); iter++, id++)
+	char lower[256];
+	size_t len = strlen(name);
+	if (len > 255) len = 255;
+	for (size_t i = 0; i < len; i++)
 	{
-		if (strcasecmp(m_pStringTab->GetString((*iter)->m_FullName), name) == 0)
-		{
-			break;
-		}
+		if (name[i] >= 'A' && name[i] <= 'Z')
+			lower[i] = tolower(name[i]);
+		else
+			lower[i] = name[i];
 	}
+	lower[len] = '\0';
 
-	if (iter == m_Languages.end())
-	{
+	unsigned int *pIndex;
+
+	if ((pIndex = m_LAliases.retrieve(lower)) == NULL)
 		return false;
-	}
 
 	if (index)
-	{
-		*index = id;
-	}
+		*index = *pIndex;
 
 	return true;
 }
@@ -834,6 +833,7 @@ void Translator::RebuildLanguageDatabase(const char *lang_header_file)
 {
 	/* Erase everything we have */
 	m_LCodeLookup.clear();
+	m_LAliases.clear();
 	m_pStringTab->Reset();
 
 	for (size_t i=0; i<m_Languages.size(); i++)
@@ -930,18 +930,40 @@ SMCResult Translator::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 
 bool Translator::AddLanguage(const char *langcode, const char *description)
 {
-	if (m_LCodeLookup.retrieve(langcode) != NULL)
+	char lower[256];
+	size_t len = strlen(description);
+	if (len > 255) len = 255;
+	for (size_t i = 0; i < len; i++)
+	{
+		if (description[i] >= 'A' && description[i] <= 'Z')
+			lower[i] = tolower(description[i]);
+		else
+			lower[i] = description[i];
+	}
+	lower[len] = '\0';
+
+	if (m_LAliases.retrieve(lower))
 		return false;
 
-	Language *pLanguage = new Language;
-	unsigned int idx = m_Languages.size();
+	unsigned int idx;
+	if (unsigned int *pIdx = m_LCodeLookup.retrieve(langcode))
+	{
+		idx = *pIdx;
+	}
+	else
+	{
+		Language *pLanguage = new Language;
+		idx = m_Languages.size();
 
-	smcore.Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
-	pLanguage->m_FullName = m_pStringTab->AddString(description);
+		smcore.Format(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
+		pLanguage->m_CanonicalName = m_pStringTab->AddString(lower);
 
-	m_LCodeLookup.insert(langcode, idx);
+		m_LCodeLookup.insert(langcode, idx);
 
-	m_Languages.push_back(pLanguage);
+		m_Languages.push_back(pLanguage);
+	}
+	
+	m_LAliases.insert(lower, idx);
 
 	return true;
 }
@@ -981,7 +1003,7 @@ bool Translator::GetLanguageInfo(unsigned int number, const char **code, const c
 	}
 	if (name)
 	{
-		*name = m_pStringTab->GetString(l->m_FullName);
+		*name = m_pStringTab->GetString(l->m_CanonicalName);
 	}
 
 	return true;
