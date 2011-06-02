@@ -650,6 +650,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 				gamehelpers->ReferenceToIndex(params[1]),
 				params[1]);
 		}
+		pEntity = (CBaseEntity *)servertools->NextEntity(pEntity);
 	}
 
 	pContext->LocalToString(params[2], &searchname);
