@@ -967,20 +967,93 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 			class_name); \
 	}
 
-#define FIND_PROP_SEND(pProp) \
+#define CHECK_SET_PROP_DATA_OFFSET() \
+	if (element >= td->fieldSize) \
+	{ \
+		return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
+			element, \
+			prop, \
+			td->fieldSize); \
+	} \
+	\
+	offset = GetTypeDescOffs(td) + (element * (td->fieldSizeInBytes / td->fieldSize));
+
+#define FIND_PROP_SEND(type, type_name) \
+	sm_sendprop_info_t info;\
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
 	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
 	if (!pNet) \
 	{ \
 		return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
-	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, pProp)) \
+	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info)) \
 	{ \
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
 			prop, \
 			params[1], \
 			class_name); \
+	} \
+	\
+	offset = info.actual_offset; \
+	bit_count = info.prop->m_nBits; \
+	\
+	switch (info.prop->GetType()) \
+	{ \
+	case type: \
+		{ \
+			if (element > 0) \
+			{ \
+				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.", \
+					prop, \
+					element); \
+			} \
+			break; \
+		} \
+	case DPT_DataTable: \
+		{ \
+			SendProp *pProp; \
+			FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name); \
+			\
+			offset += pProp->GetOffset(); \
+			bit_count = pProp->m_nBits; \
+			break; \
+		} \
+	default: \
+		{ \
+			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%d != %d)", \
+				prop, \
+				info.prop->GetType(), \
+				type); \
+		} \
+	} \
+
+#define FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name) \
+	SendTable *pTable = info.prop->GetDataTable(); \
+	if (!pTable) \
+	{ \
+		return pContext->ThrowNativeError("Error looking up DataTable for prop %s", \
+			prop); \
+	} \
+	\
+	int elementCount = pTable->GetNumProps(); \
+	if (element >= elementCount) \
+	{ \
+		return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
+			element, \
+			prop, \
+			elementCount); \
+	} \
+	\
+	pProp = pTable->GetProp(element); \
+	if (pProp->GetType() != type) \
+	{ \
+		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+			prop, \
+			info.prop->GetType(), \
+			info.prop->m_nBits, \
+			type); \
 	}
+
 
 inline int MatchFieldAsInteger(int field_type)
 {
@@ -1005,6 +1078,75 @@ inline int MatchFieldAsInteger(int field_type)
 	return 0;
 }
 
+static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	char *prop;
+	const char *class_name;
+	edict_t *pEdict;
+
+	if (!IndexToAThings(params[1], &pEntity, &pEdict))
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
+	{
+		class_name = "";
+	}
+
+	pContext->LocalToString(params[3], &prop);
+
+	switch (params[2])
+	{
+	case Prop_Data:
+		{
+			typedescription_t *td;
+
+			FIND_PROP_DATA(td);
+
+			return td->fieldSize;
+		}
+	case Prop_Send:
+		{
+			sm_sendprop_info_t info;
+			
+			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
+			IServerNetworkable *pNet = pUnk->GetNetworkable();
+			if (!pNet)
+			{
+				return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
+			}
+			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
+			{
+				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
+					prop,
+					params[1],
+					class_name);
+			}
+
+			if (info.prop->GetType() != DPT_DataTable)
+			{
+				return 0;
+			}
+
+			SendTable *pTable = info.prop->GetDataTable();
+			if (!pTable)
+			{
+				return pContext->ThrowNativeError("Error looking up DataTable for prop %s", prop);
+			}
+			
+			return pTable->GetNumProps();
+		}
+	default:
+		{
+			return pContext->ThrowNativeError("Invalid Property type %d", params[2]);
+		}
+	}
+
+	return 1;
+}
+
 static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -1013,6 +1155,12 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 	int bit_count;
+
+	int element = 0;
+	if (params[0] >= 5)
+	{
+		element = params[5];
+	}
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1042,26 +1190,13 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 					td->fieldType);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Int)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an integer ([%d,%d] != %d)",
-					prop,
-					info.prop->GetType(),
-					info.prop->m_nBits,
-					DPT_Int);
-			}
-
-			bit_count = info.prop->m_nBits;
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Int, "integer");
 			break;
 		}
 	default:
@@ -1104,6 +1239,12 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	edict_t *pEdict;
 	int bit_count;
 
+	int element = 0;
+	if (params[0] >= 6)
+	{
+		element = params[6];
+	}
+
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
@@ -1131,26 +1272,13 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 					td->fieldType);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Int)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an integer ([%d,%d] != %d)",
-					prop,
-					info.prop->GetType(),
-					info.prop->m_nBits,
-					DPT_Int);
-			}
-
-			bit_count = info.prop->m_nBits;
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Int, "integer");
 			break;
 		}
 	default:
@@ -1194,8 +1322,15 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	const char *class_name;
 	edict_t *pEdict;
+
+	int element = 0;
+	if (params[0] >= 4)
+	{
+		element = params[4];
+	}
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1227,24 +1362,13 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 					FIELD_TIME);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Float)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not a float (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_Float);
-			}
-
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Float, "float");
 			break;
 		}
 	default:
@@ -1263,8 +1387,15 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	const char *class_name;
 	edict_t *pEdict;
+
+	int element = 0;
+	if (params[0] >= 5)
+	{
+		element = params[5];
+	}
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1296,24 +1427,13 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 					FIELD_TIME);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Float)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not a float (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_Float);
-			}
-
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Float, "float");
 			break;
 		}
 	default:
@@ -1337,8 +1457,15 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	const char *class_name;
 	edict_t *pEdict;
+
+	int element = 0;
+	if (params[0] >= 4)
+ 	{
+		element = params[4];
+ 	}
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1368,24 +1495,13 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 					FIELD_EHANDLE);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Int)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an integer (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_Int);
-			}
-
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Int, "integer");
 			break;
 		}
 	default:
@@ -1405,8 +1521,15 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	const char *class_name;
 	edict_t *pEdict;
+
+	int element = 0;
+	if (params[0] >= 5)
+ 	{
+		element = params[5];
+ 	}
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1436,24 +1559,13 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 					FIELD_EHANDLE);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Int)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not an integer (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_Int);
-			}
-
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Int, "integer");
 			break;
 		}
 	default:
@@ -1494,8 +1606,15 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	const char *class_name;
 	edict_t *pEdict;
+
+	int element = 0;
+	if (params[0] >= 5)
+ 	{
+		element = params[5];
+ 	}
 	
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1527,24 +1646,13 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 					FIELD_POSITION_VECTOR);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Vector)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not a vector (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_Vector);
-			}
-
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Vector, "vector");
 			break;
 		}
 	default:
@@ -1570,8 +1678,15 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
+	int bit_count;
 	const char *class_name;
 	edict_t *pEdict;
+
+	int element = 0;
+	if (params[0] >= 5)
+ 	{
+		element = params[5];
+ 	}
 	
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1603,24 +1718,13 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 					FIELD_POSITION_VECTOR);
 			}
 
-			offset = GetTypeDescOffs(td);
+			CHECK_SET_PROP_DATA_OFFSET();
+
 			break;
 		}
 	case Prop_Send:
 		{
-			sm_sendprop_info_t info;
-
-			FIND_PROP_SEND(&info);
-
-			if (info.prop->GetType() != DPT_Vector)
-			{
-				return pContext->ThrowNativeError("SendProp %s is not a vector (%d != %d)",
-					prop,
-					info.prop->GetType(),
-					DPT_Vector);
-			}
-
-			offset = info.actual_offset;
+			FIND_PROP_SEND(DPT_Vector, "vector");			
 			break;
 		}
 	default:
@@ -1654,6 +1758,12 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 	bool bIsStringIndex;
+
+	int element = 0;
+	if (params[0] >= 6)
+ 	{
+		element = params[6];
+ 	}
 	
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
@@ -1690,14 +1800,46 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
 
+			if (bIsStringIndex && element >= td->fieldSize)
+			{
+				return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).",
+					element,
+					prop,
+					td->fieldSize);
+			}
+			else if (element > 1)
+			{
+				return pContext->ThrowNativeError("Prop %s is not an array. Element %d is invalid.",
+					prop,
+					element);
+			}
+
 			offset = GetTypeDescOffs(td);
+			if (bIsStringIndex)
+			{
+				offset += (element * (td->fieldSizeInBytes / td->fieldSize));
+			}
 			break;
 		}
 	case Prop_Send:
 		{
 			sm_sendprop_info_t info;
+			
+			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
+			IServerNetworkable *pNet = pUnk->GetNetworkable();
+			if (!pNet)
+			{
+				return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
+			}
+			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
+			{
+				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
+					prop,
+					params[1],
+					class_name);
+			}
 
-			FIND_PROP_SEND(&info);
+			offset = info.actual_offset;
 
 			if (info.prop->GetType() != DPT_String)
 			{
@@ -1706,9 +1848,13 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 					info.prop->GetType(),
 					DPT_String);
 			}
-
-			offset = info.actual_offset;
-			break;
+			else if (element > 0)
+			{
+				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
+					prop,
+					element);
+ 			}
+			
 			break;
 		}
 	default:
@@ -2080,6 +2226,7 @@ REGISTER_NATIVES(entityNatives)
 	{"GetEntDataString",		GetEntDataString},
 	{"GetEntDataVector",		GetEntDataVector},
 	{"GetEntProp",				GetEntProp},
+	{"GetEntPropArraySize",		GetEntPropArraySize},
 	{"GetEntPropEnt",			GetEntPropEnt},
 	{"GetEntPropFloat",			GetEntPropFloat},
 	{"GetEntPropString",		GetEntPropString},
