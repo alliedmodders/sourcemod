@@ -75,8 +75,9 @@ public OnPluginStart()
 	g_Cvar_TimeleftInterval = CreateConVar("sm_timeleft_interval", "0.0", "Display timeleft every x seconds. Default 0.", 0, true, 0.0, true, 1800.0);
 	g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 	
-	RegConsoleCmd("say", Command_Say);
-	RegConsoleCmd("say_team", Command_Say);
+	AddCommandListener("say", Command_Say);
+	AddCommandListener("say2", Command_Say);
+	AddCommandListener("say_team", Command_Say);
 	
 	RegConsoleCmd("timeleft", Command_Timeleft);
 	RegConsoleCmd("nextmap", Command_Nextmap);
@@ -221,9 +222,9 @@ public Action:Command_Motd(client, args)
 	return Plugin_Handled;
 }
 
-public Action:Command_Say(client, args)
+public Action:Command_Say(client, const String:command[], argc)
 {
-	decl String:text[192], String:command[64];
+	decl String:text[192];
 	new startidx = 0;
 	if (GetCmdArgString(text, sizeof(text)) < 1)
 	{
