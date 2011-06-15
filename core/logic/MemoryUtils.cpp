@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -36,11 +36,26 @@
 #define PAGE_SIZE			4096
 #define PAGE_ALIGN_UP(x)	((x + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
 #endif
+
 #ifdef PLATFORM_APPLE
+#include <AvailabilityMacros.h>
+#include <mach/task.h>
 #include <mach-o/dyld_images.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
-#endif
+
+/* Define things from 10.6 SDK for older SDKs */
+#ifndef MAC_OS_X_VERSION_10_6
+struct task_dyld_info
+{
+	mach_vm_address_t all_image_info_addr;
+	mach_vm_size_t all_image_info_size;
+};
+typedef struct task_dyld_info task_dyld_info_data_t;
+#define TASK_DYLD_INFO 17
+#define TASK_DYLD_INFO_COUNT (sizeof(task_dyld_info_data_t) / sizeof(natural_t))
+#endif // MAC_OS_X_VERSION_10_6
+#endif // PLATFORM_APPLE
 
 MemoryUtils g_MemUtils;
 
@@ -48,12 +63,25 @@ MemoryUtils::MemoryUtils()
 {
 #ifdef PLATFORM_APPLE
 
+	Gestalt(gestaltSystemVersionMajor, &m_OSXMajor);
+	Gestalt(gestaltSystemVersionMinor, &m_OSXMinor);
+
 	/* Get pointer to struct that describes all loaded mach-o images in process */
-	struct nlist list[2];
-	memset(list, 0, sizeof(list));
-	list[0].n_un.n_name = (char *)"_dyld_all_image_infos";
-	nlist("/usr/lib/dyld", list);
-	m_ImageList = (struct dyld_all_image_infos *)list[0].n_value;
+	if (m_OSXMajor == 10 && m_OSXMinor >= 6 || m_OSXMajor > 10)
+	{
+		task_dyld_info_data_t dyld_info;
+		mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+		task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&dyld_info, &count);
+		m_ImageList = (struct dyld_all_image_infos *)dyld_info.all_image_info_addr;
+	}
+	else
+	{
+		struct nlist list[2];
+		memset(list, 0, sizeof(list));
+		list[0].n_un.n_name = (char *)"_dyld_all_image_infos";
+		nlist("/usr/lib/dyld", list);
+		m_ImageList = (struct dyld_all_image_infos *)list[0].n_value;
+	}
 
 #endif
 }

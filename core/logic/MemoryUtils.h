@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2010 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -41,6 +41,10 @@ using namespace SourceHook;
 
 using namespace SourceMod;
 
+#ifdef PLATFORM_APPLE
+#include <CoreServices/CoreServices.h>
+#endif
+
 struct DynLibInfo
 {
 	void *baseAddress;
@@ -75,6 +79,8 @@ private:
 	CVector<LibSymbolTable *> m_SymTables;
 #ifdef PLATFORM_APPLE
 	struct dyld_all_image_infos *m_ImageList;
+	SInt32 m_OSXMajor;
+	SInt32 m_OSXMinor;
 #endif
 #endif
 };

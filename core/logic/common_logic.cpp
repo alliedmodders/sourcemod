@@ -33,12 +33,12 @@
 #include <sm_platform.h>
 #include <string.h>
 #include "common_logic.h"
-#include "ThreadSupport.h"
 #include "TextParsers.h"
 #include "Profiler.h"
 #include "sm_crc32.h"
 #include "MemoryUtils.h"
 #include "stringutil.h"
+#include "ThreadSupport.h"
 #include "Translator.h"
 #include "GameConfigs.h"
 
