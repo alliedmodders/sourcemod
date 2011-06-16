@@ -75,9 +75,9 @@ public OnPluginStart()
 	g_Cvar_TimeleftInterval = CreateConVar("sm_timeleft_interval", "0.0", "Display timeleft every x seconds. Default 0.", 0, true, 0.0, true, 1800.0);
 	g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 	
-	AddCommandListener("say", Command_Say);
-	AddCommandListener("say2", Command_Say);
-	AddCommandListener("say_team", Command_Say);
+	AddCommandListener(Command_Say, "say");
+	AddCommandListener(Command_Say, "say2");
+	AddCommandListener(Command_Say, "say_team");
 	
 	RegConsoleCmd("timeleft", Command_Timeleft);
 	RegConsoleCmd("nextmap", Command_Nextmap);
