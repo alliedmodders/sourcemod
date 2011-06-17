@@ -99,7 +99,6 @@ class SM:
 				self.compiler.AddToListVar('CDEFINES', 'HAVE_STDINT_H')
 				if self.vendor == 'gcc':
 					self.compiler.AddToListVar('CFLAGS', '-mfpmath=sse')
-					self.compiler.AddToListVar('POSTLINKFLAGS', '-static-libgcc')
 			elif isinstance(cxx, Cpp.MSVC):
 				self.vendor = 'msvc'
 				if AMBuild.options.debug == '1':
@@ -155,6 +154,8 @@ class SM:
 			#Platform-specifics
 			if AMBuild.target['platform'] == 'linux':
 				self.compiler.AddToListVar('CDEFINES', '_LINUX')
+				if self.vendor == 'gcc':
+					self.compiler.AddToListVar('POSTLINKFLAGS', '-static-libgcc')
 				if self.vendor == 'clang':
 					self.compiler.AddToListVar('POSTLINKFLAGS', '-lgcc_eh')
 			elif AMBuild.target['platform'] == 'darwin':
