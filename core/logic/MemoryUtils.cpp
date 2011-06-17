@@ -67,7 +67,7 @@ MemoryUtils::MemoryUtils()
 	Gestalt(gestaltSystemVersionMinor, &m_OSXMinor);
 
 	/* Get pointer to struct that describes all loaded mach-o images in process */
-	if (m_OSXMajor == 10 && m_OSXMinor >= 6 || m_OSXMajor > 10)
+	if ((m_OSXMajor == 10 && m_OSXMinor >= 6) || m_OSXMajor > 10)
 	{
 		task_dyld_info_data_t dyld_info;
 		mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
