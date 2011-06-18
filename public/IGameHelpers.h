@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		6
+#define SMINTERFACE_GAMEHELPERS_VERSION		7
 
 class CBaseEntity;
 class CBaseHandle;
@@ -270,6 +270,15 @@ namespace SourceMod
 		 * @return              Uncomputed sendprop offset.
 		 */
 		virtual int GetSendPropOffset(SendProp *prop) =0;
+		
+		/**
+		 * @brief Sends a hint message to a client.
+		 *
+		 * @param client		Client index.
+		 * @param msg			Message to send.
+		 * @return				True on success, false on failure.
+		 */
+		virtual bool HintTextMsg(int client, const char *msg) =0;
 	};
 }
 
