@@ -92,6 +92,8 @@ struct ConCmdInfo
 	bool is_admin_set;				/**< Whether or not admin info is set */
 };
 
+typedef List<ConCmdInfo *> ConCmdList;
+
 class ConCmdManager :
 	public SMGlobalClass,
 	public IRootConsoleCommand,
@@ -139,6 +141,12 @@ private:
 	void RemoveConCmds(List<CmdHook *> &cmdlist);
 	void RemoveConCmds(List<CmdHook *> &cmdlist, IPluginContext *pContext);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
+
+	// Case insensitive
+	ConCmdList::iterator FindInList(const char *name);
+
+	// Case sensitive
+	ConCmdInfo *FindInTrie(const char *name);
 public:
 	inline int GetCommandClient()
 	{
@@ -151,7 +159,7 @@ public:
 private:
 	Trie *m_pCmds;					/* command lookup */
 	Trie *m_pCmdGrps;				/* command group lookup */
-	List<ConCmdInfo *> m_CmdList;	/* command list */
+	ConCmdList m_CmdList;			/* command list */
 	int m_CmdClient;				/* current client */
 	BaseStringTable m_Strings;		/* string table */
 };
