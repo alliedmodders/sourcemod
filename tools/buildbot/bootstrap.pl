@@ -50,7 +50,7 @@ if ($reconf) {
 		$result = `CC=$ARGV[0] CXX=$ARGV[0] python3.1 ../build/configure.py --enable-optimize`;
 	} else {
 		if ($^O eq "linux") {
-			$result = `CC=gcc-4.1 CXX=gcc-4.1 python3.1 ../build/configure.py --enable-optimize`;
+			$result = `CC=gcc-4.4 CXX=gcc-4.4 python3.1 ../build/configure.py --enable-optimize`;
 		} elsif ($^O eq "darwin") {
 			$result = `CC=gcc-4.2 CXX=gcc-4.2 python3.1 ../build/configure.py --enable-optimize`;
 		} else {
