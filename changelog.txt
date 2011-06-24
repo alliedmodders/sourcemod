@@ -1,6 +1,30 @@
 SourceMod Changelog
 
-----------------------------
+-----------------------------
+
+SourceMod 1.3.8 [2011-06-23]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.8_Release_Notes
+
+User Changes:
+
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod).
+ - Updated support for various games, including Garry's Mod, Zombie Panic, and Dino D-Day.
+ - Added gamedata for Eternal Silence.
+ - Fixed libgcc_s.so.1 load error present on some systems (bug 4876).
+ - Handle leak notices now print to error log (in addition fatal log) (bug 4929).
+ - Translator now properly falls back on bad server language (bug 4861).
+ - Fixed invalid client errors from bad MaxClients value when SourceTV is late-loaded (bug 4881).
+ - Fixed crash on plugin unload when two commands exist with same name, different casing (bug 4698). 
+
+Developer Changes:
+
+ - Updated TF2 condition defines (bug 4916).
+ - Fixed var names and docs for TF2_MakeBleed native (bug 4928).
+ - Removed compiler double include check (bug 4863).
+ - Fixed plugin compile errors when using GetEntityClassname (bug 4798). 
+
+---------------------------
 
 SourceMod 1.3.7 [2011-04-15]
 
