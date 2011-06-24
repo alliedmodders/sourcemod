@@ -125,7 +125,7 @@ enum {
 	TF_CUSTOM_STICKBOMB_EXPLOSION,
 	TF_CUSTOM_AEGIS_ROUND,
 	TF_CUSTOM_FLARE_EXPLOSION,
-	TF_CUSTOM_BOOTS_STOP,
+	TF_CUSTOM_BOOTS_STOMP,
 };
 
 // Weapon codes as used in some events, such as player_death
@@ -432,10 +432,10 @@ stock TF2_GetPlayerConditionFlags(client)
  */
 stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 {
-	// Conditions are stored in a uint64 now. We need to check each 32-bit segment.
+	// Conditions are stored across two netprops now, one for each 32-bit segment.
 	if (_:cond < 32)
 	{
-		new bit = (1 << (_:cond - 32));
+		new bit = 1 << _:cond;
 		if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
 		{
 			return true;
@@ -448,15 +448,8 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 	}
 	else
 	{
-		new bit = 1 << _:cond;		
-		new offset = FindSendPropInfo("CTFPlayer", "m_nPlayerCond");
-		
-		if (offset <= 0)
-		{
-			ThrowError("Could not find m_nPlayerCond offset from CTFPlayer");
-		}
-		
-		if ((GetEntData(client, (offset+4)) & bit) == bit)
+		new bit = (1 << (_:cond - 32));
+		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
 		{
 			return true;
 		}
