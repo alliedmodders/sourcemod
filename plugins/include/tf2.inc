@@ -104,7 +104,9 @@ enum TFCond
 	TFCond_Milked,
 	TFCond_MegaHeal,
 	TFCond_RegenBuffed,
-	TFCond_MarkedForDeath
+	TFCond_MarkedForDeath,
+	
+	TFCond_SpeedBuffAlly = 32
 };
 
 enum TFHoliday

@@ -122,7 +122,10 @@ enum {
 	TF_CUSTOM_FISH_KILL,
 	TF_CUSTOM_TRIGGER_HURT,
 	TF_CUSTOM_DECAPITATION_BOSS,
-	TF_CUSTOM_STICKBOMB_EXPLOSION
+	TF_CUSTOM_STICKBOMB_EXPLOSION,
+	TF_CUSTOM_AEGIS_ROUND,
+	TF_CUSTOM_FLARE_EXPLOSION,
+	TF_CUSTOM_BOOTS_STOP,
 };
 
 // Weapon codes as used in some events, such as player_death
@@ -202,7 +205,10 @@ enum {
 	TF_WEAPON_HANDGUN_SCOUT_PRIMARY,
 	TF_WEAPON_BAT_FISH,
 	TF_WEAPON_CROSSBOW,
-	TF_WEAPON_STICKBOMB
+	TF_WEAPON_STICKBOMB,
+	TF_WEAPON_HANDGUN_SCOUT_SEC,
+	TF_WEAPON_SODA_POPPER,
+	TF_WEAPON_SNIPERRIFLE_DECAP,
 };
 
 // TF2 Weapon Slots for GetPlayerWeaponSlot
@@ -412,9 +418,51 @@ stock TF2_RemoveAllWeapons(client)
  * @param client		Player's index.
  * @return				Player's condition bits
  */
+#pragma deprecated Use TF2_IsPlayerInCondition instead.
 stock TF2_GetPlayerConditionFlags(client)
 {
 	return GetEntProp(client, Prop_Send, "m_nPlayerCond")|GetEntProp(client, Prop_Send, "_condition_bits");
+}
+
+/**
+ * Check whether or not a condition is set on a player
+ *
+ * @param client		Player's index.
+ * @return				True if set, false otherwise
+ */
+stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
+{
+	// Conditions are stored in a uint64 now. We need to check each 32-bit segment.
+	if (_:cond < 32)
+	{
+		new bit = (1 << (_:cond - 32));
+		if ((GetEntProp(client, Prop_Send, "m_nPlayerCond") & bit) == bit)
+		{
+			return true;
+		}
+		
+		if ((GetEntProp(client, Prop_Send, "_condition_bits") & bit) == bit)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		new bit = 1 << _:cond;		
+		new offset = FindSendPropInfo("CTFPlayer", "m_nPlayerCond");
+		
+		if (offset <= 0)
+		{
+			ThrowError("Could not find m_nPlayerCond offset from CTFPlayer");
+		}
+		
+		if ((GetEntData(client, (offset+4)) & bit) == bit)
+		{
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 /**
