@@ -25,7 +25,7 @@
 			"RemoveDisguise"
 			{
 				"library"	"server"
-				"windows"	"\x83\xEC\x2A\x53\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x57\x8B\xBE\x2A\x2A\x2A\x2A\xE8"
+				"windows"	"\x51\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x57\x8B\xBE\x2A\x2A\x2A\x2A\xE8"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 				"mac"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
@@ -55,7 +55,7 @@
 				"library"	"server"
 				"linux"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
 				"mac"		"@_ZN14CTFCompoundBow26CalcIsAttackCriticalHelperEv"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x14\x6A\x0B"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8D\x88\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\xB0"
 			}
 			"Regenerate"
 			{
@@ -67,16 +67,16 @@
 			"AddCondition"
 			{
 				"library"	"server"
-				"windows"	"\x2A\x2A\x2A\x2A\x2A\x2A\x8B\x7C\x2A\x2A\x8B\xF1\x8B\x86\x2A\x2A\x2A\x00\x50\x51\xD9\x2A\x2A\x57"
-				"linux"		"@_ZN15CTFPlayerShared7AddCondEif"
-				"mac"		"@_ZN15CTFPlayerShared7AddCondEif"
+				"windows"	"\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x83\xFF\x2A\x8B\xF1\x7C\x2A\x8D\x9E\x2A\x2A\x2A\x2A\x8D\x6F\x2A\xEB\x2A\x8D\x9E\x2A\x2A\x2A\x2A\x8B\xEF\x8B\x86\x2A\x2A\x2A\x2A\xD9"
+				"linux"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondf"
+				"mac"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondf"
 			}
 			"RemoveCondition"
 			{
 				"library"	"server"
-				"windows"	"\x2A\x2A\x2A\x2A\x2A\x2A\x8B\x7C\x2A\x2A\x8B\xF1\x50\x57\x8D\x8E\x2A\x2A\x2A\x2A\xE8"
-				"linux"		"@_ZN15CTFPlayerShared10RemoveCondEib"
-				"mac"		"@_ZN15CTFPlayerShared10RemoveCondEib"
+				"windows"	"\x2A\x2A\x2A\x2A\x2A\x2A\x8B\xF1\x57\x8D\x8E\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\x5F"
+				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
+				"mac"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
 			"SetPowerplayEnabled"
 			{
@@ -116,7 +116,7 @@
 			"RemoveAllConditions"
 			{
 				"library"	"server"
-				"windows"	"\x83\xEC\x2A\x53\x55\x56\x8B\xE9\x57\x8D\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8D"
+				"windows"	"\x51\x53\x55\x56\x57\x8B\xF9\x8D\x8F\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8D\x87"
 				"linux"		"@_ZN15CTFPlayerShared13RemoveAllCondEP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared13RemoveAllCondEP9CTFPlayer"
 			}
