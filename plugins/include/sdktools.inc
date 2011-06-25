@@ -57,7 +57,7 @@ enum SDKCallType
 	SDKCall_Player,		/**< CBasePlayer call */
 	SDKCall_GameRules,	/**< CGameRules call */
 	SDKCall_EntityList,	/**< CGlobalEntityList call */ 
-	SDKCall_Raw,		/**< Raw Address call */ 
+	SDKCall_Raw,		/**< |this| pointer with an arbitrary address */ 
 };
 
 enum SDKLibrary
