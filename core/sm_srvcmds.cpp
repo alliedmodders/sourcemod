@@ -328,9 +328,10 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const CCommand &
 		ConsolePrint("  Matt \"pRED\" Woodrow");
 		ConsolePrint("  Scott \"DS\" Ehlert");
 		ConsolePrint("  Fyren");
+		ConsolePrint("  Nicholas \"psychonic\" Hastings");
 		ConsolePrint("  Borja \"faluco\" Ferrer");
 		ConsolePrint("  Pavol \"PM OnoTo\" Marko");
-		ConsolePrint(" Special thanks to Liam, ferret, and Mani");
+		ConsolePrint(" Special thanks to asherkin, Liam, ferret, and Mani");
 		ConsolePrint(" Special thanks to Viper and SteamFriends");
 		ConsolePrint(" http://www.sourcemod.net/");
 	}
