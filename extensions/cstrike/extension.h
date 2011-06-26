@@ -38,7 +38,9 @@
  */
 
 #include "smsdk_ext.h"
+#include "CDetour/detours.h"
 #include <IBinTools.h>
+#include <ISDKTools.h>
 
 /**
  * @brief Sample implementation of the SDK Extension.
@@ -46,7 +48,8 @@
  */
 class CStrike : 
 	public SDKExtension,
-	public ICommandTargetProcessor
+	public ICommandTargetProcessor,
+	public IPluginsListener
 {
 public:
 	/**
@@ -91,6 +94,9 @@ public:
 	const char *GetExtensionDateString();
 public:
 	bool ProcessCommandTarget(cmd_target_info_t *info);
+public: //IPluginsListener
+	void OnPluginLoaded(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
@@ -124,11 +130,21 @@ public:
 	 */
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
+private:
+	bool m_WeaponPriceDetourEnabled;
+	bool m_TerminateRoundDetourEnabled;
+	bool m_HandleBuyDetourEnabled;
+	bool m_CSWeaponDetourEnabled;
 };
 
 /* Interfaces from SourceMod */
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
+extern ISDKTools *g_pSDKTools;
 extern int g_msgHintText;
+extern bool g_pIgnoreTerminateDetour;
+extern bool g_pIgnoreCSWeaponDropDetour;
+extern bool g_pTerminateRoundDetoured;
+extern bool g_pCSWeaponDropDetoured;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

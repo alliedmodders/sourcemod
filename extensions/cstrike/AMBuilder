@@ -15,7 +15,10 @@ if AMBuild.target['platform'] in sdk['platform']:
 		'natives.cpp',
 		'RegNatives.cpp',
 		'timeleft.cpp',
-		'sdk/smsdk_ext.cpp'
+		'forwards.cpp',
+		'sdk/smsdk_ext.cpp',
+		'CDetour/detours.cpp',
+		'asm/asm.c'
 		])
 	SM.PostSetupHL2Job(extension, binary, 'ep2v')
 	SM.AutoVersion('extensions/cstrike', binary)

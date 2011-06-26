@@ -18,7 +18,7 @@ PROJECT = game.cstrike
 #Uncomment for Metamod: Source enabled extension
 USEMETA = true
 
-OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp timeleft.cpp
+OBJECTS = sdk/smsdk_ext.cpp extension.cpp natives.cpp RegNatives.cpp timeleft.cpp forwards.cpp CDetour/detours.cpp asm/asm.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
@@ -157,6 +157,8 @@ $(BIN_DIR)/%.o: %.cpp
 
 all: check
 	mkdir -p $(BIN_DIR)/sdk
+	mkdir -p $(BIN_DIR)/CDetour
+	mkdir -p $(BIN_DIR)/asm
 	if [ "$(USEMETA)" = "true" ]; then \
 		ln -sf $(HL2LIB)/$(LIB_PREFIX)vstdlib$(LIB_SUFFIX); \
 		ln -sf $(HL2LIB)/$(LIB_PREFIX)tier0$(LIB_SUFFIX); \

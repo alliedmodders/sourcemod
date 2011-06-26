@@ -76,6 +76,9 @@
 #if defined SMEXT_ENABLE_USERMSGS
 #include <IUserMessages.h>
 #endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+#include <IPluginSys.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>
@@ -266,6 +269,10 @@ extern ILibrarySys *libsys;
 #if defined SMEXT_ENABLE_USERMSGS
 extern IUserMessages *usermsgs;
 #endif
+#if defined SMEXT_ENABLE_PLUGINSYS
+extern IPluginManager *plsys;
+#endif
+
 
 #if defined SMEXT_CONF_METAMOD
 PLUGIN_GLOBALVARS();

@@ -505,7 +505,7 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
-		<Configuration		
+		<Configuration
 			Name="Debug - Episode1|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
@@ -682,6 +682,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\forwards.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\natives.cpp"
 				>
 			</File>
@@ -701,6 +705,10 @@
 			>
 			<File
 				RelativePath="..\extension.h"
+				>
+			</File>
+			<File
+				RelativePath="..\forwards.h"
 				>
 			</File>
 			<File
@@ -736,6 +744,34 @@
 			</File>
 			<File
 				RelativePath="..\sdk\smsdk_ext.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="asm"
+			>
+			<File
+				RelativePath="..\asm\asm.c"
+				>
+			</File>
+			<File
+				RelativePath="..\asm\asm.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="CDetour"
+			>
+			<File
+				RelativePath="..\CDetour\detourhelpers.h"
+				>
+			</File>
+			<File
+				RelativePath="..\CDetour\detours.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\CDetour\detours.h"
 				>
 			</File>
 		</Filter>

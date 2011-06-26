@@ -34,6 +34,8 @@
 #include "RegNatives.h"
 #include "timeleft.h"
 #include "iplayerinfo.h"
+#include "ISDKTools.h"
+#include "forwards.h"
 
 /**
  * @file extension.cpp
@@ -52,6 +54,8 @@ int g_msgHintText = -1;
 SMEXT_LINK(&g_CStrike);
 
 extern sp_nativeinfo_t g_CSNatives[];
+
+ISDKTools *g_pSDKTools = NULL;
 
 bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -75,8 +79,22 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	sharesys->AddNatives(myself, g_CSNatives);
 	sharesys->RegisterLibrary(myself, "cstrike");
+	plsys->AddPluginsListener(this);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
+
+	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
+
+	g_pHandleBuyForward = forwards->CreateForward("CS_OnBuyCommand", ET_Event, 2, NULL, Param_Cell, Param_String);
+	g_pPriceForward = forwards->CreateForward("CS_OnGetWeaponPrice", ET_Event, 3, NULL, Param_Cell, Param_String, Param_CellByRef);
+	g_pTerminateRoundForward = forwards->CreateForward("CS_OnTerminateRound", ET_Event, 2, NULL, Param_FloatByRef, Param_CellByRef);
+	g_pCSWeaponDropForward = forwards->CreateForward("CS_OnCSWeaponDrop", ET_Event, 2, NULL, Param_Cell, Param_Cell);
+
+
+	m_TerminateRoundDetourEnabled = false;
+	m_WeaponPriceDetourEnabled = false;
+	m_HandleBuyDetourEnabled = false;
+	m_CSWeaponDetourEnabled = false;
 
 	return true;
 }
@@ -99,11 +117,26 @@ void CStrike::SDK_OnUnload()
 	}
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
+	plsys->RemovePluginsListener(this);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
+	forwards->ReleaseForward(g_pHandleBuyForward);
+	forwards->ReleaseForward(g_pPriceForward);
+	forwards->ReleaseForward(g_pTerminateRoundForward);
+	forwards->ReleaseForward(g_pCSWeaponDropForward);
 }
 
 void CStrike::SDK_OnAllLoaded()
 {
+	SM_GET_LATE_IFACE(SDKTOOLS, g_pSDKTools);
+	if (g_pSDKTools == NULL)
+	{
+		smutils->LogError(myself, "SDKTools interface not found. TerminateRound native disabled.");
+	}
+	else if (g_pSDKTools->GetInterfaceVersion() < 2)
+	{
+		//<psychonic> THIS ISN'T DA LIMBO STICK. LOW IS BAD
+		smutils->LogError(myself, "SDKTools interface is outdated. TerminateRound native disabled.");
+	}
 	gameevents->AddListener(&g_TimeLeftEvents, "round_start", true);
 	gameevents->AddListener(&g_TimeLeftEvents, "round_end", true);
 	SH_ADD_HOOK_MEMFUNC(IServerGameDLL, LevelInit, gamedll, &g_TimeLeftEvents, &TimeLeftEvents::LevelInit, true);
@@ -257,3 +290,48 @@ const char *CStrike::GetExtensionDateString()
 	return SM_BUILD_TIMESTAMP;
 }
 
+void CStrike::OnPluginLoaded(IPlugin *plugin)
+{
+	if (!m_WeaponPriceDetourEnabled && g_pPriceForward->GetFunctionCount())
+	{
+		m_WeaponPriceDetourEnabled = CreateWeaponPriceDetour();
+		if (m_WeaponPriceDetourEnabled)
+			m_HandleBuyDetourEnabled = true;
+	}
+	if (!m_TerminateRoundDetourEnabled && g_pTerminateRoundForward->GetFunctionCount())
+	{
+		m_TerminateRoundDetourEnabled = CreateTerminateRoundDetour();
+	}
+	if (!m_HandleBuyDetourEnabled && g_pHandleBuyForward->GetFunctionCount())
+	{
+		m_HandleBuyDetourEnabled = CreateHandleBuyDetour();
+	}
+	if (!m_CSWeaponDetourEnabled && g_pCSWeaponDropForward->GetFunctionCount())
+	{
+		m_CSWeaponDetourEnabled = CreateCSWeaponDropDetour();
+	}
+}
+
+void CStrike::OnPluginUnloaded(IPlugin *plugin)
+{
+	if (m_WeaponPriceDetourEnabled && !g_pPriceForward->GetFunctionCount())
+	{
+		RemoveWeaponPriceDetour();
+		m_WeaponPriceDetourEnabled = false;
+	}
+	if (m_TerminateRoundDetourEnabled && !g_pTerminateRoundForward->GetFunctionCount())
+	{
+		RemoveTerminateRoundDetour();
+		m_TerminateRoundDetourEnabled = false;
+	}
+	if (m_HandleBuyDetourEnabled && !g_pHandleBuyForward->GetFunctionCount())
+	{
+		RemoveHandleBuyDetour();
+		m_HandleBuyDetourEnabled = false;
+	}
+	if (m_CSWeaponDetourEnabled && !g_pCSWeaponDropForward->GetFunctionCount())
+	{
+		RemoveCSWeaponDropDetour();
+		m_CSWeaponDetourEnabled = false;;
+	}
+}
