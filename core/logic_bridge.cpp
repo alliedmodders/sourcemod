@@ -227,7 +227,7 @@ void InitLogicBridge()
 
 	g_LibSys.PathFormat(path, sizeof(path), "%s/bin/matchmaking_ds%s.%s", g_SMAPI->GetBaseDir(), MATCHMAKINGDS_SUFFIX, MATCHMAKINGDS_EXT);
 
-	if (mmlib = g_LibSys.OpenLibrary(path, NULL, 0))
+	if ((mmlib = g_LibSys.OpenLibrary(path, NULL, 0)))
 	{
 		core_bridge.matchmakingDSFactory = mmlib->GetSymbolAddress("CreateInterface");
 		mmlib->CloseLibrary();
