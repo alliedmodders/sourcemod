@@ -85,6 +85,13 @@
 				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 				"mac"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 			}
+			"SetInWaitingForPlayers"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\x2A\x2A\x2A\x2A\xA1"
+				"linux"		"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
+				"mac"		"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
+			}
 			"StunPlayer"
 			{
 				"library"	"server"
