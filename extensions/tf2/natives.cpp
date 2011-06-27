@@ -300,7 +300,7 @@ cell_t TF2_RemoveCondition(IPluginContext *pContext, const cell_t *params)
 	vptr += sizeof(void *);
 	*(int *)vptr = params[2];
 	vptr += sizeof(int);
-	*(bool *)vptr = false;
+	*(bool *)vptr = true;
 
 	pWrapper->Execute(vstk, NULL);
 
