@@ -50,6 +50,21 @@
 #include "AdminCache.h"
 #include "HalfLife2.h"
 
+#if defined _WIN32
+	#define MATCHMAKINGDS_SUFFIX	""
+	#define MATCHMAKINGDS_EXT	"dll"
+#elif defined __APPLE__
+	#define MATCHMAKINGDS_SUFFIX	""
+	#define MATCHMAKINGDS_EXT	"dylib"
+#elif defined __linux__
+#if SOURCE_ENGINE < SE_LEFT4DEAD2
+	#define MATCHMAKINGDS_SUFFIX	"_i486"
+#else
+	#define MATCHMAKINGDS_SUFFIX	""
+#endif
+	#define MATCHMAKINGDS_EXT	"so"
+#endif
+
 static ILibrary *g_pLogic = NULL;
 static LogicInitFunction logic_init_fn;
 
@@ -206,6 +221,18 @@ void InitLogicBridge()
 	core_bridge.core_ident = g_pCoreIdent;
 	core_bridge.engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
 	core_bridge.serverFactory = (void *)g_SMAPI->GetServerFactory(false);
+
+	ILibrary *mmlib;
+	char path[PLATFORM_MAX_PATH];
+
+	g_LibSys.PathFormat(path, sizeof(path), "%s/bin/matchmaking_ds%s.%s", g_SMAPI->GetBaseDir(), MATCHMAKINGDS_SUFFIX, MATCHMAKINGDS_EXT);
+
+	if (mmlib = g_LibSys.OpenLibrary(path, NULL, 0))
+	{
+		core_bridge.matchmakingDSFactory = mmlib->GetSymbolAddress("CreateInterface");
+		mmlib->CloseLibrary();
+	}
+	
 	logic_init_fn(&core_bridge, &logicore);
 
 	/* Add SMGlobalClass instances */
