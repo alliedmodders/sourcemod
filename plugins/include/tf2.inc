@@ -106,7 +106,10 @@ enum TFCond
 	TFCond_RegenBuffed,
 	TFCond_MarkedForDeath,
 	
-	TFCond_SpeedBuffAlly = 32
+	TFCond_SpeedBuffAlly = 32,
+	TFCond_HalloweenCritCandy,
+	
+	TFCond_CritHype = 36
 };
 
 enum TFHoliday
