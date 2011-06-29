@@ -65,6 +65,43 @@ enum CSRoundEndReason
 	CSRoundEnd_GameStart                   // Game Commencing!
 };
 
+enum CSWeaponID
+{
+    CSWeapon_NONE,
+    CSWeapon_P228,
+    CSWeapon_GLOCK,
+    CSWeapon_SCOUT,
+    CSWeapon_HEGRENADE,
+    CSWeapon_XM1014,
+    CSWeapon_C4,
+    CSWeapon_MAC10,
+    CSWeapon_AUG,
+    CSWeapon_SMOKEGRENADE,
+    CSWeapon_ELITE,
+    CSWeapon_FIVESEVEN,
+    CSWeapon_UMP45,
+    CSWeapon_SG550,
+    CSWeapon_GALIL,
+    CSWeapon_FAMAS,
+    CSWeapon_USP,
+    CSWeapon_AWP,
+    CSWeapon_MP5NAVY,
+    CSWeapon_M249,
+    CSWeapon_M3,
+    CSWeapon_M4A1,
+    CSWeapon_TMP,
+    CSWeapon_G3SG1,
+    CSWeapon_FLASHBANG,
+    CSWeapon_DEAGLE,
+    CSWeapon_SG552,
+    CSWeapon_AK47,
+    CSWeapon_KNIFE,
+    CSWeapon_P90,
+    CSWeapon_SHIELD,
+    CSWeapon_KEVLAR,
+    CSWeapon_ASSAULTSUIT,
+    CSWeapon_NIGHTVISION
+};
 /**
  * Called when a player attempts to purchase an item.
  * Return Plugin_Continue to allow the purchase or return a
@@ -166,6 +203,19 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  */
  native CS_GetTranslatedWeaponAlias(const String:alias[], String:weapon[], size);
  
+  /**
+ * Gets a weapon's price
+ *
+ * @param client		Client to check weapon price for.
+ * @param id			Weapon id for the weapon to check
+ * @param defaultprice	Set to true to get defaultprice.
+ * @return				Returns price of the weapon (even if modified)
+ *
+ * @error				Invalid client, failing to get weapon info, or failing to get price offset.
+ * @note				Not all "weapons" will return their default price. Example: c4, knife, vest, vest helmet, night vision.
+ */
+ native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice=false);
+ 
 /**
  * Do not edit below this line!
  */
@@ -189,6 +239,7 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_DropWeapon");
 	MarkNativeAsOptional("CS_TerminateRound");
 	MarkNativeAsOptional("CS_GetTranslatedWeaponAlias");
+	MarkNativeAsOptional("CS_GetWeaponPrice");
 }
 #endif
 

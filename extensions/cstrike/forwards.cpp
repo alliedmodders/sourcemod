@@ -51,19 +51,7 @@ DETOUR_DECL_MEMBER0(DetourWeaponPrice, int)
 
 	const char *weapon_name = reinterpret_cast<char *>(this+weaponNameOffset);
 
-	int original = price;
-
-	cell_t result = Pl_Continue;
-
-	g_pPriceForward->PushCell(lastclient);
-	g_pPriceForward->PushString(weapon_name);
-	g_pPriceForward->PushCellByRef(&price);
-	g_pPriceForward->Execute(&result);
-	
-	if (result == Pl_Continue)
-		return original;
-
-	return price;
+	return CallPriceForward(lastclient, weapon_name, price);
 }
 
 DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
@@ -231,4 +219,20 @@ void RemoveCSWeaponDropDetour()
 		DCSWeaponDrop = NULL;
 	}
 	g_pCSWeaponDropDetoured = false;
+}
+int CallPriceForward(int client, const char *weapon_name, int price)
+{
+	int changedprice = price;
+
+	cell_t result = Pl_Continue;
+
+	g_pPriceForward->PushCell(client);
+	g_pPriceForward->PushString(weapon_name);
+	g_pPriceForward->PushCellByRef(&changedprice);
+	g_pPriceForward->Execute(&result);
+	
+	if (result == Pl_Continue)
+		return price;
+
+	return changedprice;
 }

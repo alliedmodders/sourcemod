@@ -42,6 +42,8 @@
 #include <IBinTools.h>
 #include <ISDKTools.h>
 
+int CallPriceForward(int client, const char *weapon_name, int price);
+
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -146,5 +148,6 @@ extern bool g_pIgnoreTerminateDetour;
 extern bool g_pIgnoreCSWeaponDropDetour;
 extern bool g_pTerminateRoundDetoured;
 extern bool g_pCSWeaponDropDetoured;
+extern int weaponNameOffset;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

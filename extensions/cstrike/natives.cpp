@@ -325,6 +325,58 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 	
 	return 1;
 }
+static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+	static int priceOffset = -1;
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("GetWeaponInfo",
+			PassInfo pass[1]; \
+			PassInfo retpass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(int); \
+			retpass[0].flags = PASSFLAG_BYVAL; \
+			retpass[0].type = PassType_Basic; \
+			retpass[0].size = sizeof(void *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass[0], pass, 1))
+	}
+	if (priceOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("WeaponPrice", &priceOffset))
+		{
+			return pContext->ThrowNativeError("Failed to get WeaponPrice offset");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	void *info;
+
+	unsigned char vstk[sizeof(int)];
+	unsigned char *vptr = vstk;
+
+	*(int *)vptr = params[2];
+
+	pWrapper->Execute(vstk, &info);
+
+	if (!info)
+		return pContext->ThrowNativeError("Failed to get weaponinfo");
+
+	int price = *(int *)((intptr_t)info + priceOffset);
+
+	if (params[3] || weaponNameOffset == -1)
+		return price;
+
+	const char *weapon_name = (const char *)((intptr_t)info + weaponNameOffset);
+
+	return CallPriceForward(params[1], weapon_name, price);
+}
 
 sp_nativeinfo_t g_CSNatives[] = 
 {
@@ -333,6 +385,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_DropWeapon",				CS_DropWeapon},
 	{"CS_TerminateRound",			CS_TerminateRound},
 	{"CS_GetTranslatedWeaponAlias",	CS_GetTranslatedWeaponAlias},
+	{"CS_GetWeaponPrice",			CS_GetWeaponPrice},
 	{NULL,							NULL}
 };
 
