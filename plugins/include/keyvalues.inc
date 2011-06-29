@@ -389,7 +389,7 @@ native KvNodesInStack(Handle:kv);
  * NOTE: All KeyValues are processed from the current location not the root one.
  *
  * @param origin		Origin KeyValues Handle.
- * @param dest			Destination KeyValues Handlee.
+ * @param dest			Destination KeyValues Handle.
  * @noreturn
  * @error				Invalid Handle.
  */
