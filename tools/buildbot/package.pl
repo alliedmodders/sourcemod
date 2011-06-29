@@ -75,7 +75,7 @@ $ftp_path .= "/$major.$minor";
 
 my ($ftp);
 
-$ftp = Net::FTP->new($ftp_host, Debug => 0) 
+$ftp = Net::FTP->new($ftp_host, Debug => 0, Passive => 0) 
     or die "Cannot connect to host $ftp_host: $@";
 
 $ftp->login($ftp_user, $ftp_pass)
