@@ -95,6 +95,8 @@ forward Action:CS_OnCSWeaponDrop(client, weaponIndex);
  * @param client	Client index
  * @param weapon	Weapon classname
  * @param price		Buffer param for the price of the weapon
+ *
+ * @note			Not all "weapons" call GetWeaponPrice. Example: c4, knife, vest, vest helmet, night vision.
  */
 forward Action:CS_OnGetWeaponPrice(client, const String:weapon[], &price);
 

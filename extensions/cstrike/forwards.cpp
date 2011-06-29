@@ -22,7 +22,7 @@ int weaponNameOffset = -1;
 
 DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 {
-	int client = engine->IndexOfEdict(engine->PEntityOfEntIndex(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this))));
+	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this));
 
 	lastclient = client;
 
@@ -100,8 +100,8 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, somet
 		return;
 	}
 
-	int client = engine->IndexOfEdict(engine->PEntityOfEntIndex(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this))));
-	int weaponIndex = engine->IndexOfEdict(engine->PEntityOfEntIndex(gamehelpers->EntityToBCompatRef(weapon)));
+	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this));
+	int weaponIndex = gamehelpers->EntityToBCompatRef(weapon);
 
 	cell_t result = Pl_Continue;
 	g_pCSWeaponDropForward->PushCell(client);
