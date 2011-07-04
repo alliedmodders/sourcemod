@@ -2544,17 +2544,7 @@ bool JITX86::InitializeJIT()
 
 	jit = &writer;
 	
-	/* Build the genarray intrinsic */
-	jit->outbase = NULL;
-	jit->outptr = NULL;
-	WriteIntrinsic_GenArray(jit);
-	m_pJitGenArray = Knight::KE_AllocCode(g_pCodeCache, jit->get_outputpos());
-	jit->outbase = (jitcode_t)m_pJitGenArray;
-	jit->outptr = jit->outbase;
-	WriteIntrinsic_GenArray(jit);
-
 	/* Build the entry point */
-	writer = JitWriter();
 	jit->outbase = NULL;
 	jit->outptr = NULL;
 	Write_Execute_Function(jit);
@@ -2563,6 +2553,16 @@ bool JITX86::InitializeJIT()
 	jit->outptr = jit->outbase;
 	offs = Write_Execute_Function(jit);
 	m_pJitReturn = (uint8_t *)m_pJitEntry + offs;
+
+	/* Build the genarray intrinsic */
+	writer = JitWriter();
+	jit->outbase = NULL;
+	jit->outptr = NULL;
+	WriteIntrinsic_GenArray(jit);
+	m_pJitGenArray = Knight::KE_AllocCode(g_pCodeCache, jit->get_outputpos());
+	jit->outbase = (jitcode_t)m_pJitGenArray;
+	jit->outptr = jit->outbase;
+	WriteIntrinsic_GenArray(jit);
 
 	return true;
 }
