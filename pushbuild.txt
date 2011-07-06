@@ -49,3 +49,4 @@ IT'S CLOBBERIN' TIME
 vc2005 supremecy
 clobbermonkey
 that thing
+clobber build because amx.h changed (sigh)
