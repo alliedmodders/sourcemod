@@ -246,7 +246,7 @@ native SetEntData(entity, offset, any:value, size=4, bool:changeState=false);
 native Float:GetEntDataFloat(entity, offset);
 
 /**
- * Peeks into an entity's object data and sets the integer value at 
+ * Peeks into an entity's object data and sets the float value at 
  * the given offset.
  *
  * @param entity		Edict index.
