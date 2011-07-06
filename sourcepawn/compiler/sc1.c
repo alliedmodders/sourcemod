@@ -2711,6 +2711,23 @@ static void initials2(int ident,int tag,cell *size,int dim[],int numdim,
     eq_match_override = matchtoken('=');
   }
 
+  if (numdim > 2) {
+    int d, hasEmpty = 0;
+    for (d = 0; d < numdim; d++) {
+      if (dim[d] == 0)
+        hasEmpty++;
+    }
+    /* Work around ambug 4977 where indirection vectors are computed wrong. */
+    if (hasEmpty && hasEmpty < numdim-1 && dim[numdim-1]) {
+      error(101);
+      /* This will assert with something like [2][][256] from a separate bug.
+       * To prevent this assert, automatically wipe the rest of the dims.
+       */
+      for (d = 0; d < numdim - 1; d++)
+        dim[d] = 0;
+    }
+  }
+
   if (!eq_match_override) {
     assert(ident!=iARRAY || numdim>0);
     if (ident==iARRAY && dim[numdim-1]==0) {

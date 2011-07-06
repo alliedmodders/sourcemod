@@ -74,7 +74,6 @@ static int lastline,errorcount;
 static short lastfile;
   char *msg,*pre;
   va_list argptr;
-  char string[128];
 
   /* errflag is reset on each semicolon.
    * In a two-pass compiler, an error should not be reported twice. Therefore
@@ -107,8 +106,6 @@ static short lastfile;
     warnnum++;
   } /* if */
 
-  strexpand(string,(unsigned char *)msg,sizeof string,SCPACK_TABLE);
-
   assert(errstart<=fline);
   if (errline>0)
     errstart=errline;
@@ -118,7 +115,7 @@ static short lastfile;
   va_start(argptr,number);
   if (strlen(errfname)==0) {
     int start= (errstart==errline) ? -1 : errstart;
-    if (pc_error(number,string,inpfname,start,errline,argptr)) {
+    if (pc_error(number,msg,inpfname,start,errline,argptr)) {
       if (outf!=NULL) {
         pc_closeasm(outf,TRUE);
         outf=NULL;
@@ -132,7 +129,7 @@ static short lastfile;
         fprintf(fp,"%s(%d -- %d) : %s %03d: ",inpfname,errstart,errline,pre,number);
       else
         fprintf(fp,"%s(%d) : %s %03d: ",inpfname,errline,pre,number);
-      vfprintf(fp,string,argptr);
+      vfprintf(fp,msg,argptr);
       fclose(fp);
     } /* if */
   } /* if */

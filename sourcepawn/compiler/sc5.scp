@@ -38,7 +38,7 @@ unsigned char errstr_table[][2] = {
 /*-*SCPACK end of pair table, do not change or remove this line */
 
 static char *errmsg[] = {
-#ifdef SCPACK
+#if 1
 /*001*/  "expected token: \"%s\", but found \"%s\"\n",
 /*002*/  "only a single statement (or expression) can follow each \"case\"\n",
 /*003*/  "declaration of a local variable must appear in a compound block\n",
@@ -138,7 +138,8 @@ static char *errmsg[] = {
 /*097*/  "symbol \"%s\" does not have a matching type\n",
 /*098*/  "struct requires unique struct name\n",
 /*099*/  "member \"%s\" appears more than once in struct \"%s\"\n",
-/*100*/  "function prototypes do not match\n"
+/*100*/  "function prototypes do not match\n",
+/*101*/  "specify either all dimensions or only the last dimension\n"
 #else
   "\271pect\236\305k\212:\231\320bu\202fo\217\207\215\012",
   "\201l\224\251s\203g\362\317e\234\202(\260\374\201) c\352f\241\345w ea\261 \042c\361e\042\012",
@@ -244,7 +245,7 @@ static char *errmsg[] = {
        };
 
 static char *fatalmsg[] = {
-#ifdef SCPACK
+#if 1
 /*120*/  "cannot read from file: \"%s\"\n",
 /*121*/  "cannot write to file: \"%s\"\n",
 /*122*/  "table overflow: \"%s\"\n",
@@ -280,7 +281,7 @@ static char *fatalmsg[] = {
        };
 
 static char *warnmsg[] = {
-#ifdef SCPACK
+#if 1
 /*200*/  "symbol \"%s\" is truncated to %d characters\n",
 /*201*/  "redefinition of constant/macro (symbol \"%s\")\n",
 /*202*/  "number of arguments does not match definition\n",
