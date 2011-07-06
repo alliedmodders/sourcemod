@@ -42,7 +42,7 @@
 #include "hooks.h"
 #include "gamerulesnatives.h"
 #include <ISDKTools.h>
-
+#include "clientnatives.h"
 /**
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
@@ -86,6 +86,7 @@ extern sp_nativeinfo_t g_VoiceNatives[];
 extern sp_nativeinfo_t g_EntInputNatives[];
 extern sp_nativeinfo_t g_TeamNatives[];
 extern sp_nativeinfo_t g_GameRulesNatives[];
+extern sp_nativeinfo_t g_ClientNatives[];
 
 static void InitSDKToolsAPI();
 
@@ -110,6 +111,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TeamNatives);
 	sharesys->AddNatives(myself, g_EntOutputNatives);
 	sharesys->AddNatives(myself, g_GameRulesNatives);
+	sharesys->AddNatives(myself, g_ClientNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 

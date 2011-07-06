@@ -50,6 +50,7 @@
 #include <sdktools_entoutput>
 #include <sdktools_hooks>
 #include <sdktools_gamerules>
+#include <sdktools_client>
 
 enum SDKCallType
 {

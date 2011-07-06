@@ -38,6 +38,7 @@ for i in SM.sdkInfo:
 		'vnatives.cpp',
 		'voice.cpp',
 		'vsound.cpp',
+		'clientnatives.cpp',
 		'hooks.cpp',
 		'gamerulesnatives.cpp',
 		'vstringtable.cpp',
