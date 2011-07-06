@@ -42,6 +42,8 @@
 #include <server_class.h>
 #include <igameevents.h>
 
+#define MAXPLAYERS 65
+
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -51,7 +53,8 @@ class TF2Tools :
 	public ICommandTargetProcessor,
 	public IConCommandBaseAccessor,
 	public IGameEventListener2,
-	public IPluginsListener
+	public IPluginsListener,
+	public IClientListener
 {
 public: //SDKExtension
 	/**
@@ -99,6 +102,8 @@ public: //IGameEventManager
 public: //IPluginsListener
 	void OnPluginLoaded(IPlugin *plugin);
 	void OnPluginUnloaded(IPlugin *plugin);
+public: //IClientListener
+	void OnClientPutInServer(int client);
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
@@ -137,6 +142,8 @@ TFClassType ClassnameToType(const char *classname);
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern sm_sendprop_info_t *playerSharedOffset;
+
+extern CGlobalVars *gpGlobals;
 
 void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 

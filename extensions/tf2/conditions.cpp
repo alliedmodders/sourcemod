@@ -33,125 +33,93 @@
 #include "conditions.h"
 #include "util.h"
 
-typedef int condflags_t;
-#define CONDITION_TAUNTING 7
+#include <iplayerinfo.h>
+
+typedef uint64_t condflags_t;
+
+condflags_t g_PlayerConds[MAXPLAYERS+1];
 
 IForward *g_addCondForward = NULL;
 IForward *g_removeCondForward = NULL;
 
-CDetour *detConditionAdd = NULL;
-CDetour *detConditionRemove = NULL;
-CDetour *detConditionRemoveAll = NULL;
-
 int playerCondOffset = -1;
+int playerCondExOffset = -1;
 int conditionBitsOffset = -1;
 
 bool g_bIgnoreRemove;
 
 inline condflags_t GetPlayerConds(CBaseEntity *pPlayer)
 {
-	condflags_t cond1 = *(condflags_t *)((intptr_t)pPlayer + playerCondOffset);
-	condflags_t cond2 = *(condflags_t *)((intptr_t)pPlayer + conditionBitsOffset);
-	return cond1|cond2;
+	uint32_t playerCond   =  *(uint32_t *)((intptr_t)pPlayer + playerCondOffset);
+	uint32_t condBits     =  *(uint32_t *)((intptr_t)pPlayer + conditionBitsOffset);
+	uint32_t playerCondEx =  *(uint32_t *)((intptr_t)pPlayer + playerCondExOffset);
+
+	uint64_t playerCondExAdj = playerCondEx;
+	playerCondExAdj <<= 32;
+
+	return playerCond|condBits|playerCondExAdj;
 }
 
-DETOUR_DECL_MEMBER2(AddCond, void, int, condition, float, duration)
+void Conditions_OnGameFrame(bool simulating)
 {
-	CBaseEntity *pPlayer = (CBaseEntity *)((intptr_t)this - playerSharedOffset->actual_offset);
-	condflags_t oldconds = GetPlayerConds(pPlayer);
-
-	DETOUR_MEMBER_CALL(AddCond)(condition, duration);
-
-	int bit = 1 << condition;
-
-	// The player already had this condition so bug out
-	if ((oldconds & bit) == bit)
+	if (!simulating)
 		return;
 
-	// The condition wasn't actually added (this can happen!)
-	if ((GetPlayerConds(pPlayer) & bit) != bit)
-		return;
+	condflags_t oldconds;
+	condflags_t newconds;
 	
-	int client = gamehelpers->EntityToBCompatRef(pPlayer);
+	condflags_t addedconds;
+	condflags_t removedconds;
 
-	g_addCondForward->PushCell(client);
-	g_addCondForward->PushCell(condition);
-	g_addCondForward->PushFloat(duration);
-	g_addCondForward->Execute(NULL, NULL);
-}
-
-DETOUR_DECL_MEMBER2(RemoveCond, void, int, condition, bool, bForceRemove)
-{
-	if (g_bIgnoreRemove)
+	int maxClients = gpGlobals->maxClients;
+	for (int i = 1; i <= maxClients; i++)
 	{
-		DETOUR_MEMBER_CALL(RemoveCond)(condition, bForceRemove);
-		return;
-	}
-
-	CBaseEntity *pPlayer = (CBaseEntity *)((intptr_t)this - playerSharedOffset->actual_offset);
-
-	condflags_t oldconds = GetPlayerConds(pPlayer);
-	int bit = 1 << condition;
-
-	// If we didn't have it, it won't be removed
-	if ((oldconds & bit) != bit)
-	{
-		DETOUR_MEMBER_CALL(RemoveCond)(condition, bForceRemove);
-		return;
-	}
-
-	DETOUR_MEMBER_CALL(RemoveCond)(condition, bForceRemove);
-
-	// Calling RemoveCond doesn't necessarily remove the cond...
-	if ((GetPlayerConds(pPlayer) & bit) == bit)
-	{
-		return;
-	}
-
-	int client = gamehelpers->EntityToBCompatRef(pPlayer);
-
-	DoRemoveCond(client, condition);
-}
-
-DETOUR_DECL_MEMBER1(RemoveAllCond, void, CBaseEntity *, unknown)
-{
-	// We're going to ignore Remove here since it can be called multiple times for the same cond
-	g_bIgnoreRemove = true;
-
-	CBaseEntity *pPlayer = (CBaseEntity *)((intptr_t)this - playerSharedOffset->actual_offset);
-
-	int client = gamehelpers->EntityToBCompatRef(pPlayer);
-	condflags_t conds = GetPlayerConds(pPlayer);
-
-	// I don't know what the unknown is, but it's always NULL
-	DETOUR_MEMBER_CALL(RemoveAllCond)(unknown);
-	
-	int max = sizeof(condflags_t)*8;
-	for (int i = 0; i < max; i++)
-	{
-		// Taunt flag removal doesn't go through RemoveCond nor OnCondRemoved (or was mangled by compiler?)
-		// Better to "documentedly" give no removes rather than only in some cases
-		if (i == CONDITION_TAUNTING)
+		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
+		if (!pPlayer || !pPlayer->IsInGame())
 			continue;
 
-		int bit = (1<<i);
-		if ((conds & bit) == bit)
+		IPlayerInfo *info = pPlayer->GetPlayerInfo();
+		if (info->IsHLTV() || info->IsReplay())
+			continue;
+
+		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+		oldconds = g_PlayerConds[i];
+		newconds = GetPlayerConds(pEntity);
+
+		if (oldconds == newconds)
+			continue;
+
+		addedconds = newconds &~ oldconds;
+		removedconds = oldconds &~ newconds;
+
+		int j;
+		condflags_t bit;
+
+		for (j = 0; (bit = ((condflags_t)1 << j)) <= addedconds; j++)
 		{
-			DoRemoveCond(client, i);
+			if ((addedconds & bit) == bit)
+			{
+				g_addCondForward->PushCell(i);
+				g_addCondForward->PushCell(j);
+				g_addCondForward->Execute(NULL, NULL);
+			}
 		}
+
+		for (j = 0; (bit = ((condflags_t)1 << j)) <= removedconds; j++)
+		{
+			if ((removedconds & bit) == bit)
+			{
+				g_removeCondForward->PushCell(i);
+				g_removeCondForward->PushCell(j);
+				g_removeCondForward->Execute(NULL, NULL);
+			}
+		}
+
+		g_PlayerConds[i] = newconds;
 	}
-
-	g_bIgnoreRemove = false;
 }
 
-void DoRemoveCond(int client, int condition)
-{
-	g_removeCondForward->PushCell(client);
-	g_removeCondForward->PushCell(condition);
-	g_removeCondForward->Execute(NULL, NULL);
-}
-
-bool InitialiseConditionDetours()
+bool InitialiseConditionChecks()
 {
 	sm_sendprop_info_t prop;
 	if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_nPlayerCond", &prop))
@@ -170,41 +138,39 @@ bool InitialiseConditionDetours()
 
 	conditionBitsOffset = prop.actual_offset;
 
-	if (playerCondOffset == -1 || conditionBitsOffset == -1)
-		return false;
-
-	detConditionAdd = DETOUR_CREATE_MEMBER(AddCond, "AddCondition");
-	if (detConditionAdd == NULL)
+	if (!gamehelpers->FindSendPropInfo("CTFPlayer", "m_nPlayerCondEx", &prop))
 	{
-		g_pSM->LogError(myself, "CTFPlayerShared::AddCond detour failed");
+		g_pSM->LogError(myself, "Failed to find m_nPlayerCondEx prop offset");
 		return false;
 	}
+	
+	playerCondExOffset = prop.actual_offset;
 
-	detConditionRemove = DETOUR_CREATE_MEMBER(RemoveCond, "RemoveCondition");
-	if (detConditionRemove == NULL)
-	{
-		g_pSM->LogError(myself, "CTFPlayerShared::RemoveCond detour failed");
+	if (playerCondOffset == -1 || playerCondExOffset == -1 || conditionBitsOffset == -1)
 		return false;
+	
+	int maxClients = gpGlobals->maxClients;
+	for (int i = 1; i <= maxClients; i++)
+	{
+		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
+		if (!pPlayer || !pPlayer->IsInGame())
+			continue;
+
+		g_PlayerConds[i] = GetPlayerConds(gamehelpers->ReferenceToEntity(i));
 	}
 
-	detConditionRemoveAll = DETOUR_CREATE_MEMBER(RemoveAllCond, "RemoveAllConditions");
-	if (detConditionRemoveAll == NULL)
-	{
-		g_pSM->LogError(myself, "CTFPlayerShared::RemoveAllCond detour failed");
-		return false;
-	}
-
-	detConditionAdd->EnableDetour();
-	detConditionRemove->EnableDetour();
-	detConditionRemoveAll->EnableDetour();
+	g_pSM->AddGameFrameHook(Conditions_OnGameFrame);
 
 	return true;
 }
 
-void RemoveConditionDetours()
+void Conditions_OnClientPutInServer(int client)
 {
-	detConditionAdd->Destroy();
-	detConditionRemove->Destroy();
-	detConditionRemoveAll->Destroy();
+	g_PlayerConds[client] = 0;
+}
+
+void RemoveConditionChecks()
+{
+	g_pSM->RemoveGameFrameHook(Conditions_OnGameFrame);
 }
 

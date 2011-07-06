@@ -292,19 +292,14 @@ native bool:TF2_IsPlayerInDuel(client);
 /**
  * Called after a condition is added to a player
  *
- * @note Actual duration can differ based on various events ingame.
- *
  * @param client		Index of the client to which the conditon is being added.
  * @param condition     Condition that is being added.
- * @param duration      Initial duration of the condition or -1 for infinite.
  * @noreturn
  */
-forward TF2_OnConditionAdded(client, TFCond:condition, Float:duration);
+forward TF2_OnConditionAdded(client, TFCond:condition);
 
 /**
  * Called after a condition is removed from a player
- *
- * @note This will never be called for the removal of TFCond_Taunting.
  *
  * @param client		Index of the client to which the condition is being removed.
  * @param condition		Condition that is being removed.

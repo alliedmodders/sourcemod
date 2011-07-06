@@ -37,9 +37,11 @@
 #include <jit/x86/x86_macros.h>
 #include "CDetour/detours.h"
 
-bool InitialiseConditionDetours();
-void RemoveConditionDetours();
+bool InitialiseConditionChecks();
+void RemoveConditionChecks();
 void DoRemoveCond(int client, int condition);
+
+void Conditions_OnClientPutInServer(int client);
 
 extern IForward *g_addCondForward;
 extern IForward *g_removeCondForward;

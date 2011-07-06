@@ -120,13 +120,6 @@
 				"linux"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 				"mac"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 			}
-			"RemoveAllConditions"
-			{
-				"library"	"server"
-				"windows"	"\x51\x53\x55\x56\x57\x8B\xF9\x8D\x8F\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8D\x87"
-				"linux"		"@_ZN15CTFPlayerShared13RemoveAllCondEP9CTFPlayer"
-				"mac"		"@_ZN15CTFPlayerShared13RemoveAllCondEP9CTFPlayer"
-			}
 		}
 		"Offsets"
 		{

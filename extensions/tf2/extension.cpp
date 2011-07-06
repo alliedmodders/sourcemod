@@ -109,10 +109,11 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	plsys->AddPluginsListener(this);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
+	playerhelpers->AddClientListener(this);
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
 	g_getHolidayForward = forwards->CreateForward("TF2_OnGetHoliday", ET_Event, 1, NULL, Param_CellByRef);
-	g_addCondForward = forwards->CreateForward("TF2_OnConditionAdded", ET_Ignore, 3, NULL, Param_Cell, Param_Cell, Param_Float);
+	g_addCondForward = forwards->CreateForward("TF2_OnConditionAdded", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_removeCondForward = forwards->CreateForward("TF2_OnConditionRemoved", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_waitingPlayersStartForward = forwards->CreateForward("TF2_OnWaitingForPlayersStart", ET_Ignore, 0, NULL);
 	g_waitingPlayersEndForward = forwards->CreateForward("TF2_OnWaitingForPlayersEnd", ET_Ignore, 0, NULL);
@@ -162,6 +163,7 @@ void TF2Tools::SDK_OnUnload()
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->UnregisterCommandTargetProcessor(this);
+	playerhelpers->RemoveClientListener(this);
 
 	plsys->RemovePluginsListener(this);
 
@@ -307,7 +309,7 @@ bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)
 	{
 		UTIL_Format(info->target_name, info->target_name_maxlength, "Blue Team");
 	}
-
+	
 	return true;
 }
 
@@ -327,7 +329,7 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 		&& ( g_addCondForward->GetFunctionCount() || g_removeCondForward->GetFunctionCount() )
 		)
 	{
-		m_CondChecksEnabled = InitialiseConditionDetours();
+		m_CondChecksEnabled = InitialiseConditionChecks();
 	}
 
 	if (!m_RulesDetoursEnabled
@@ -354,7 +356,7 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 	{
 		if (!g_addCondForward->GetFunctionCount() && !g_removeCondForward->GetFunctionCount())
 		{
-			RemoveConditionDetours();
+			RemoveConditionChecks();
 			m_CondChecksEnabled = false;
 		}
 	}
@@ -367,6 +369,12 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 		}
 	}
 }
+
+void TF2Tools::OnClientPutInServer(int client)
+{
+	Conditions_OnClientPutInServer(client);
+}
+
 int FindResourceEntity()
 {
 	return FindEntityByNetClass(-1, "CTFPlayerResource");
