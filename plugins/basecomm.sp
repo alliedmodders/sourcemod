@@ -68,8 +68,8 @@ public OnPluginStart()
 	g_Cvar_Deadtalk = CreateConVar("sm_deadtalk", "0", "Controls how dead communicate. 0 - Off. 1 - Dead players ignore teams. 2 - Dead players talk to living teammates.", 0, true, 0.0, true, 2.0);
 	g_Cvar_Alltalk = FindConVar("sv_alltalk");
 	
-	RegConsoleCmd("say", Command_Say);
-	RegConsoleCmd("say_team", Command_Say);
+	AddCommandListener(Command_Say, "say");
+	AddCommandListener(Command_Say, "say_team");
 	
 	RegAdminCmd("sm_mute", Command_Mute, ADMFLAG_CHAT, "sm_mute <player> - Removes a player's ability to use voice.");
 	RegAdminCmd("sm_gag", Command_Gag, ADMFLAG_CHAT, "sm_gag <player> - Removes a player's ability to use chat.");
@@ -141,7 +141,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 	return true;
 }
 
-public Action:Command_Say(client, args)
+public Action:Command_Say(client, const String:command[], args)
 {
 	if (client)
 	{
