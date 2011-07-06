@@ -5973,12 +5973,6 @@ static int doif(void)
     setlabel(flab1);            /* print false label */
     statement(NULL,FALSE);      /* do "else" clause */
     setlabel(flab2);            /* print true label */
-    /* if both the "true" branch and the "false" branch ended with the same
-     * kind of statement, set the last statement id to that kind, rather than
-     * to the generic tIF; this allows for better "unreachable code" checking
-     */
-    if (lastst==lastst_true)
-      return lastst;
   } /* if */
   return tIF;
 }
