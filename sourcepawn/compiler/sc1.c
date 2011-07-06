@@ -2923,7 +2923,7 @@ static cell initvector(int ident,int tag,cell size,int fillzero,
         matchbrace=matchtoken('{');
       for ( ;; ) {
         prev2=prev1;
-        prev1=init(ident,&ctag,errorfound);
+        prev1=init(iVARIABLE,&ctag,errorfound);
         if (!matchbrace)
           break;
         if ((ellips=matchtoken(tELLIPS))!=0)
