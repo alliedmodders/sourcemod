@@ -39,6 +39,7 @@ for i in SM.sdkInfo:
 		'voice.cpp',
 		'vsound.cpp',
 		'hooks.cpp',
+		'gamerulesnatives.cpp',
 		'vstringtable.cpp',
 		'CDetour/detours.cpp',
 		'sdk/smsdk_ext.cpp',

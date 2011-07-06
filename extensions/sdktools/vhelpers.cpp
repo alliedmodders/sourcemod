@@ -32,6 +32,7 @@
 #include "extension.h"
 #include "util.h"
 #include "vhelpers.h"
+#include "vglobals.h"
 
 CallHelper s_Teleport;
 CallHelper s_GetVelocity;
@@ -276,43 +277,6 @@ void ShutdownHelpers()
 	s_Teleport.Shutdown();
 	s_GetVelocity.Shutdown();
 	s_EyeAngles.Shutdown();
-}
-
-const char *GetDTTypeName(int type)
-{
-	switch (type)
-	{
-	case DPT_Int:
-		{
-			return "integer";
-		}
-	case DPT_Float:
-		{
-			return "float";
-		}
-	case DPT_Vector:
-		{
-			return "vector";
-		}
-	case DPT_String:
-		{
-			return "string";
-		}
-	case DPT_Array:
-		{
-			return "array";
-		}
-	case DPT_DataTable:
-		{
-			return "datatable";
-		}
-	default:
-		{
-			return NULL;
-		}
-	}
-
-	return NULL;
 }
 
 void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)

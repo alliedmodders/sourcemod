@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * SourceMod SDKTools Extension
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2011 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -29,15 +29,16 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SDKTOOLS_VGLOBALS_H_
-#define _INCLUDE_SDKTOOLS_VGLOBALS_H_
+#ifndef _INCLUDE_SOURCEMOD_EXTENSION_GRNATIVES_H_
+#define _INCLUDE_SOURCEMOD_EXTENSION_GRNATIVES_H_
 
-extern void **g_pGameRules;
-extern void *g_EntList;
+/**
+ * @file gamerulesnatives.h
+ * @brief SDK Tools extension gamerules natives header.
+ */
 
-void InitializeValveGlobals();
-void GetIServer();
+void GameRulesNativesInit();
 
-const char *GetDTTypeName(int type);
+extern sp_nativeinfo_t g_GameRulesNatives[];
 
-#endif // _INCLUDE_SDKTOOLS_VGLOBALS_H_
+#endif //_INCLUDE_SOURCEMOD_EXTENSION_GRNATIVES_H_

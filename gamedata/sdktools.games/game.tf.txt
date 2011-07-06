@@ -101,5 +101,10 @@
 				"mac"		"408"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CTFGameRulesProxy"
+		}
 	}
 }

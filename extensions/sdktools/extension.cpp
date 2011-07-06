@@ -40,6 +40,7 @@
 #include "vsound.h"
 #include "output.h"
 #include "hooks.h"
+#include "gamerulesnatives.h"
 #include <ISDKTools.h>
 
 /**
@@ -84,6 +85,7 @@ extern sp_nativeinfo_t g_StringTableNatives[];
 extern sp_nativeinfo_t g_VoiceNatives[];
 extern sp_nativeinfo_t g_EntInputNatives[];
 extern sp_nativeinfo_t g_TeamNatives[];
+extern sp_nativeinfo_t g_GameRulesNatives[];
 
 static void InitSDKToolsAPI();
 
@@ -107,6 +109,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_EntInputNatives);
 	sharesys->AddNatives(myself, g_TeamNatives);
 	sharesys->AddNatives(myself, g_EntOutputNatives);
+	sharesys->AddNatives(myself, g_GameRulesNatives);
 
 	SM_GET_IFACE(GAMEHELPERS, g_pGameHelpers);
 
@@ -153,6 +156,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	VoiceInit();
 
 	GetIServer();
+
+	GameRulesNativesInit();
 
 	InitSDKToolsAPI();
 

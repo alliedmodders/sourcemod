@@ -19,6 +19,8 @@
 			"SlapSoundCount"	"2"
 			"SlapSound1"		"player/damage1.wav"
 			"SlapSound2"		"player/damage2.wav"
+			
+			"GameRulesProxy"	"CTerrorGameRulesProxy"
 		}
 	}
 	

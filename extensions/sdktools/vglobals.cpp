@@ -182,3 +182,40 @@ void GetIServer()
 	iserver = reinterpret_cast<IServer *>(addr);
 }
 #endif
+
+const char *GetDTTypeName(int type)
+{
+	switch (type)
+	{
+	case DPT_Int:
+		{
+			return "integer";
+		}
+	case DPT_Float:
+		{
+			return "float";
+		}
+	case DPT_Vector:
+		{
+			return "vector";
+		}
+	case DPT_String:
+		{
+			return "string";
+		}
+	case DPT_Array:
+		{
+			return "array";
+		}
+	case DPT_DataTable:
+		{
+			return "datatable";
+		}
+	default:
+		{
+			return NULL;
+		}
+	}
+
+	return NULL;
+}

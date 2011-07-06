@@ -42,5 +42,10 @@
 				"windows"	"442"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CAlienSwarmProxy"
+		}
 	}
 }

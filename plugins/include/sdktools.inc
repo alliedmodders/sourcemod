@@ -49,6 +49,7 @@
 #include <sdktools_entinput>
 #include <sdktools_entoutput>
 #include <sdktools_hooks>
+#include <sdktools_gamerules>
 
 enum SDKCallType
 {

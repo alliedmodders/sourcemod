@@ -22,7 +22,7 @@ USEMETA = true
 OBJECTS = sdk/smsdk_ext.cpp extension.cpp vdecoder.cpp vcallbuilder.cpp vcaller.cpp \
 	vnatives.cpp vsound.cpp tenatives.cpp trnatives.cpp tempents.cpp vstringtable.cpp \
 	vhelpers.cpp vglobals.cpp voice.cpp inputnatives.cpp teamnatives.cpp output.cpp \
-	outputnatives.cpp hooks.cpp CDetour/detours.cpp asm/asm.c
+	outputnatives.cpp hooks.cpp gamerulesnatives.cpp CDetour/detours.cpp asm/asm.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
