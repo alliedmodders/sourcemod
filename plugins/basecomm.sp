@@ -59,6 +59,17 @@ new Handle:hTopMenu = INVALID_HANDLE;
 new g_GagTarget[MAXPLAYERS+1];
 
 #include "basecomm/gag.sp"
+#include "basecomm/natives.sp"
+
+public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
+{
+	CreateNative("BaseComm_IsClientGagged", Native_IsClientGagged);
+	CreateNative("BaseComm_IsClientMuted",  Native_IsClientMuted);
+	CreateNative("BaseComm_SetClientGag",   Native_SetClientGag);
+	CreateNative("BaseComm_SetClientMute",  Native_SetClientMute);
+	
+	return APLRes_Success;
+}
 
 public OnPluginStart()
 {

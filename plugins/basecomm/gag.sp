@@ -210,14 +210,18 @@ public MenuHandler_GagTypes(Handle:menu, MenuAction:action, param1, param2)
 	}
 }
 
-PerformMute(client, target)
+PerformMute(client, target, bool:silent=false)
 {
 	g_Muted[target] = true;
 	SetClientListeningFlags(target, VOICE_MUTED);	
-	LogAction(client, target, "\"%L\" muted \"%L\"", client, target);
+	
+	if (!silent)
+	{
+		LogAction(client, target, "\"%L\" muted \"%L\"", client, target);
+	}
 }
 
-PerformUnMute(client, target)
+PerformUnMute(client, target, bool:silent=false)
 {
 	g_Muted[target] = false;
 	if (GetConVarInt(g_Cvar_Deadtalk) == 1 && !IsPlayerAlive(target))
@@ -233,19 +237,30 @@ PerformUnMute(client, target)
 		SetClientListeningFlags(target, VOICE_NORMAL);
 	}
 	
-	LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);
+	if (!silent)
+	{
+		LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);
+	}
 }
 
-PerformGag(client, target)
+PerformGag(client, target, bool:silent=false)
 {
 	g_Gagged[target] = true;
-	LogAction(client, target, "\"%L\" gagged \"%L\"", client, target);
+	
+	if (!silent)
+	{
+		LogAction(client, target, "\"%L\" gagged \"%L\"", client, target);
+	}
 }
 
-PerformUnGag(client, target)
+PerformUnGag(client, target, bool:silent=false)
 {
 	g_Gagged[target] = false;
-	LogAction(client, target, "\"%L\" ungagged \"%L\"", client, target);
+	
+	if (!silent)
+	{
+		LogAction(client, target, "\"%L\" ungagged \"%L\"", client, target);
+	}
 }
 
 PerformSilence(client, target)
