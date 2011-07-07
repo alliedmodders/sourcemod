@@ -949,6 +949,12 @@ void PlayerManager::ClearAdminId(AdminId id)
 
 void PlayerManager::ClearAllAdmins()
 {
+	// Players may not be inited if server hadn't been activated
+	if (!m_Players)
+	{
+		return;
+	}
+
 	int maxClients = gpGlobals->maxClients;
 	for (int i=1; i<=maxClients; i++)
 	{
@@ -963,6 +969,12 @@ const char *PlayerManager::GetPassInfoVar()
 
 void PlayerManager::RecheckAnyAdmins()
 {
+	// Players may not be inited if server hadn't been activated
+	if (!m_Players)
+	{
+		return;
+	}
+
 	int maxClients = gpGlobals->maxClients;
 	for (int i=1; i<=maxClients; i++)
 	{
