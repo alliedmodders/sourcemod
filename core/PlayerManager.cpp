@@ -111,6 +111,7 @@ PlayerManager::PlayerManager()
 {
 	m_AuthQueue = NULL;
 	m_FirstPass = false;
+	m_maxClients = 0;
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
@@ -231,12 +232,12 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
-	int maxClients = gpGlobals->maxClients;
 	if (!m_FirstPass)
 	{
 		/* Initialize all players */
 
 		// clientMax will not necessarily be correct here (such as on late SourceTV enable)
+		m_maxClients = gpGlobals->maxClients;
 
 		m_PlayerCount = 0;
 		m_Players = new CPlayer[ABSOLUTE_PLAYER_LIMIT + 1];
@@ -247,9 +248,9 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 
-		g_PluginSys.SyncMaxClients(maxClients);
+		g_PluginSys.SyncMaxClients(clientMax);
 	}
-	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, maxClients);
+	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, clientMax);
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
@@ -258,7 +259,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	{
 		if ((*iter)->GetClientListenerVersion() >= 5)
 		{
-			(*iter)->OnServerActivated(maxClients);
+			(*iter)->OnServerActivated(clientMax);
 		}
 	}
 
@@ -581,8 +582,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 void PlayerManager::OnSourceModLevelEnd()
 {
 	/* Disconnect all bots still in game */
-	int maxClients = gpGlobals->maxClients;
-	for (int i=1; i<=maxClients; i++)
+	for (int i=1; i<=m_maxClients; i++)
 	{
 		if (m_Players[i].IsConnected())
 		{
@@ -851,12 +851,12 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 
 int PlayerManager::GetMaxClients()
 {
-	return gpGlobals->maxClients;
+	return m_maxClients;
 }
 
 CPlayer *PlayerManager::GetPlayerByIndex(int client) const
 {
-	if (client > gpGlobals->maxClients || client < 1)
+	if (client > m_maxClients || client < 1)
 	{
 		return NULL;
 	}
@@ -896,8 +896,7 @@ int PlayerManager::GetClientOfUserId(int userid)
 
 	/* If we can't verify the userid, we have to do a manual loop */
 	CPlayer *player;
-	int maxClients = gpGlobals->maxClients;
-	for (int i = 1; i <= maxClients; i++)
+	for (int i = 1; i <= m_maxClients; i++)
 	{
 		player = GetPlayerByIndex(i);
 		if (!player || !player->IsConnected())
@@ -937,8 +936,7 @@ IGamePlayer *PlayerManager::GetGamePlayer(int client)
 
 void PlayerManager::ClearAdminId(AdminId id)
 {
-	int maxClients = gpGlobals->maxClients;
-	for (int i=1; i<=maxClients; i++)
+	for (int i=1; i<=m_maxClients; i++)
 	{
 		if (m_Players[i].m_Admin == id)
 		{
@@ -949,8 +947,7 @@ void PlayerManager::ClearAdminId(AdminId id)
 
 void PlayerManager::ClearAllAdmins()
 {
-	int maxClients = gpGlobals->maxClients;
-	for (int i=1; i<=maxClients; i++)
+	for (int i=1; i<=m_maxClients; i++)
 	{
 		m_Players[i].DumpAdmin(true);
 	}
@@ -963,8 +960,7 @@ const char *PlayerManager::GetPassInfoVar()
 
 void PlayerManager::RecheckAnyAdmins()
 {
-	int maxClients = gpGlobals->maxClients;
-	for (int i=1; i<=maxClients; i++)
+	for (int i=1; i<=m_maxClients; i++)
 	{
 		if (m_Players[i].IsInGame() && m_Players[i].IsAuthorized())
 		{
@@ -1356,6 +1352,11 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		info->num_targets = 0;
 		info->reason = COMMAND_TARGET_NONE;
 	}
+}
+
+void PlayerManager::OnSourceModMaxPlayersChanged( int newvalue )
+{
+	m_maxClients = newvalue;
 }
 
 void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )

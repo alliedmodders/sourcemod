@@ -135,6 +135,7 @@ public: //SMGlobalClass
 	void OnSourceModShutdown();
 	void OnSourceModLevelEnd();
 	ConfigResult OnSourceModConfigChanged(const char *key, const char *value, ConfigSource source, char *error, size_t maxlength);
+	void OnSourceModMaxPlayersChanged(int newvalue);
 public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
@@ -171,7 +172,7 @@ public: //IPlayerManager
 public:
 	inline int MaxClients()
 	{
-		return gpGlobals->maxClients;
+		return m_maxClients;
 	}
 	inline int NumPlayers()
 	{
@@ -205,6 +206,7 @@ private:
 	IForward *m_onActivate2;
 	CPlayer *m_Players;
 	int *m_UserIdLookUp;
+	int m_maxClients;
 	int m_PlayerCount;
 	bool m_FirstPass;
 	unsigned int *m_AuthQueue;
