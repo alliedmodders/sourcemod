@@ -274,7 +274,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	SM_ExecuteAllConfigs();
 }
 
-bool PlayerManager::IsServerActivated()
+bool PlayerManager::IsServerActivated() const
 {
 	return m_FirstPass;
 }
@@ -856,7 +856,7 @@ int PlayerManager::GetMaxClients()
 
 CPlayer *PlayerManager::GetPlayerByIndex(int client) const
 {
-	if (client > gpGlobals->maxClients || client < 1)
+	if (!IsServerActivated() || client > gpGlobals->maxClients || client < 1)
 	{
 		return NULL;
 	}
@@ -937,6 +937,12 @@ IGamePlayer *PlayerManager::GetGamePlayer(int client)
 
 void PlayerManager::ClearAdminId(AdminId id)
 {
+	// Players may not be inited if server hasn't yet been activated
+	if (!IsServerActivated())
+	{
+		return;
+	}
+
 	int maxClients = gpGlobals->maxClients;
 	for (int i=1; i<=maxClients; i++)
 	{
@@ -949,8 +955,8 @@ void PlayerManager::ClearAdminId(AdminId id)
 
 void PlayerManager::ClearAllAdmins()
 {
-	// Players may not be inited if server hadn't been activated
-	if (!m_Players)
+	// Players may not be inited if server hasn't yet been activated
+	if (!IsServerActivated())
 	{
 		return;
 	}
@@ -969,8 +975,8 @@ const char *PlayerManager::GetPassInfoVar()
 
 void PlayerManager::RecheckAnyAdmins()
 {
-	// Players may not be inited if server hadn't been activated
-	if (!m_Players)
+	// Players may not be inited if server hasn't yet been activated
+	if (!IsServerActivated())
 	{
 		return;
 	}
