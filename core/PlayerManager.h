@@ -161,7 +161,7 @@ public: //IPlayerManager
 	int GetMaxClients();
 	int GetNumPlayers();
 	int GetClientOfUserId(int userid);
-	bool IsServerActivated() const;
+	bool IsServerActivated();
 	int FilterCommandTarget(IGamePlayer *pAdmin, IGamePlayer *pTarget, int flags);
 	int InternalFilterCommandTarget(CPlayer *pAdmin, CPlayer *pTarget, int flags);
 	void RegisterCommandTargetProcessor(ICommandTargetProcessor *pHandler);

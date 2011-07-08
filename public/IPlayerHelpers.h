@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	15
+#define SMINTERFACE_PLAYERMANAGER_VERSION	14
 
 struct edict_t;
 class IPlayerInfo;
@@ -489,7 +489,7 @@ namespace SourceMod
 		 * @return				True if ServerActivate() has been called
 		 *						at least once, false otherwise.
 		 */
-		virtual bool IsServerActivated() const =0;
+		virtual bool IsServerActivated() =0;
 
 		/**
 		 * @brief Gets SourceMod's reply source.
