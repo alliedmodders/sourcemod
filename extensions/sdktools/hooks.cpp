@@ -190,15 +190,12 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 
 	PRCH_used = true;
 
-	if (playerhelpers->IsServerActivated())
+	int MaxClients = playerhelpers->GetMaxClients();
+	for (int i = 1; i <= MaxClients; i++)
 	{
-		int MaxClients = playerhelpers->GetMaxClients();
-		for (int i = 1; i <= MaxClients; i++)
+		if (playerhelpers->GetGamePlayer(i)->IsInGame())
 		{
-			if (playerhelpers->GetGamePlayer(i)->IsInGame())
-			{
-				OnClientPutInServer(i);
-			}
+			OnClientPutInServer(i);
 		}
 	}
 }
