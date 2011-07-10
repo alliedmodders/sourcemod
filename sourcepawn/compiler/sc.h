@@ -386,6 +386,7 @@ typedef struct s_stringpair {
 #define tSTRING  340
 #define tEXPR    341 /* for assigment to "lastst" only (see SC1.C) */
 #define tENDLESS 342 /* endless loop, for assigment to "lastst" only */
+#define tEMPTYBLOCK 343 /* empty blocks for AM bug 4825 */
 
 /* (reversed) evaluation of staging buffer */
 #define sSTARTREORDER 0x01
