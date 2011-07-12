@@ -40,7 +40,6 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "iserver.h"
-#include <iserverentity.h>
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -632,7 +631,7 @@ static cell_t GetClientEyeAngles(IPluginContext *pContext, const cell_t *params)
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
+static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
 	char *searchname;
 	CBaseEntity *pEntity;
@@ -653,35 +652,47 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 		pEntity = (CBaseEntity *)servertools->NextEntity(pEntity);
 	}
 
+	// it's tough to find a good ent these days
+	if (!pEntity)
+	{
+		return -1;
+	}
+
 	pContext->LocalToString(params[2], &searchname);
 
-	char buffer[128];
-	const char *classname = buffer;
-	int lastcharpos;
-	bool ismatch = false;
+	const char *classname;
+	int lastletterpos;
+
+	static int offset = -1;
+	if (offset == -1)
+	{
+		offset = GetTypeDescOffs(
+			gamehelpers->FindInDataMap(gamehelpers->GetDataMap(pEntity),
+			"m_iClassname")
+			);
+	}
+
+	string_t s;
 
 	while (pEntity)
 	{
-		if (!servertools->GetKeyValue(pEntity, "classname", buffer, sizeof(buffer)))
+		if ((s = *(string_t *)((uint8_t *)pEntity + offset)) == NULL_STRING)
 		{
 			pEntity = (CBaseEntity *)servertools->NextEntity(pEntity);
 			continue;
 		}
 
-		lastcharpos = strlen(searchname);
-		if (searchname[lastcharpos-1] == '*')
+		classname = STRING(s);
+
+		lastletterpos = strlen(searchname) - 1;
+		if (searchname[lastletterpos] == '*')
 		{
-			if (strncasecmp(searchname, classname, lastcharpos-1) == 0)
+			if (strncasecmp(searchname, classname, lastletterpos) == 0)
 			{
-				ismatch = true;
+				return gamehelpers->EntityToBCompatRef(pEntity);
 			}
 		}
 		else if (strcasecmp(searchname, classname) == 0)
-		{
-			ismatch = true;
-		}
-
-		if (ismatch)
 		{
 			return gamehelpers->EntityToBCompatRef(pEntity);
 		}
@@ -691,21 +702,48 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 
 	return -1;
 }
-#else
+#endif
+
 static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
+	static bool bProbablyNoFEBC = false;
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	if (bProbablyNoFEBC)
+	{
+		return NativeFindEntityByClassname(pContext, params);
+	}
+#endif
+
 	if (!pCall)
 	{
 		ValvePassInfo pass[3];
 		InitPass(pass[0], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL|VDECODE_FLAG_ALLOWWORLD);
 		InitPass(pass[1], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[2], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+
+		char error[256];
+		error[0] = '\0';
 		if (!CreateBaseCall("FindEntityByClassname", ValveCall_EntityList, &pass[2], pass, 2, &pCall))
 		{
-			return pContext->ThrowNativeError("\"FindEntityByClassname\" not supported by this mod");
+			g_pSM->Format(error, sizeof(error), "\"FindEntityByClassname\" not supported by this mod");
 		} else if (!pCall) {
-			return pContext->ThrowNativeError("\"FindEntityByClassname\" wrapper failed to initialize");
+			g_pSM->Format(error, sizeof(error), "\"FindEntityByClassname\" wrapper failed to initialize");
+		}
+
+		if (error[0] != '\0')
+		{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+			if (!bProbablyNoFEBC)
+			{
+				bProbablyNoFEBC = true;
+				g_pSM->LogError(myself, "%s, falling back to IServerTools method.", error);
+			}
+			return NativeFindEntityByClassname(pContext, params);
+#else
+			return pContext->ThrowNativeError("%s", error);
+#endif
 		}
 	}
 
@@ -718,7 +756,6 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
-#endif
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
