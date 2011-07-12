@@ -107,6 +107,12 @@
 				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
 				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14"
 			}
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x2A\x53\x55\x56\x8B\x71\x2A\x85\xF6\x57\x89"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
 		}
 	}
 }
