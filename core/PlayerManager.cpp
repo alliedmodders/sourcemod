@@ -232,12 +232,12 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
+	// clientMax will not necessarily be correct here (such as on late SourceTV enable)
+	m_maxClients = gpGlobals->maxClients;
+	
 	if (!m_FirstPass)
 	{
 		/* Initialize all players */
-
-		// clientMax will not necessarily be correct here (such as on late SourceTV enable)
-		m_maxClients = gpGlobals->maxClients;
 
 		m_PlayerCount = 0;
 		m_Players = new CPlayer[ABSOLUTE_PLAYER_LIMIT + 1];
@@ -248,9 +248,9 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
 
-		g_PluginSys.SyncMaxClients(clientMax);
+		g_PluginSys.SyncMaxClients(m_maxClients);
 	}
-	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, clientMax);
+	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, m_maxClients);
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
@@ -259,7 +259,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	{
 		if ((*iter)->GetClientListenerVersion() >= 5)
 		{
-			(*iter)->OnServerActivated(clientMax);
+			(*iter)->OnServerActivated(m_maxClients);
 		}
 	}
 
