@@ -5660,9 +5660,13 @@ static void statement(int *lastindent,int allow_decl)
   case '{':
   case tBEGIN:
     save=fline;
-    if (!matchtoken('}'))       /* {} is the empty statement */
+    if (!matchtoken('}')) {       /* {} is the empty statement */
       compound(save==fline,tok);
-    /* lastst (for "last statement") does not change */
+    } else {
+      lastst = tEMPTYBLOCK;
+	}
+    /* lastst (for "last statement") does not change 
+       you're not my father, don't tell me what to do */
     break;
   case ';':
     error(36);                  /* empty statement */
@@ -5990,6 +5994,12 @@ static int doif(void)
     setlabel(flab1);            /* print false label */
     statement(NULL,FALSE);      /* do "else" clause */
     setlabel(flab2);            /* print true label */
+    /* if both the "true" branch and the "false" branch ended with the same
+     * kind of statement, set the last statement id to that kind, rather than
+     * to the generic tIF; this allows for better "unreachable code" checking
+     */
+    if (lastst==lastst_true)
+      return lastst;
   } /* if */
   return tIF;
 }
