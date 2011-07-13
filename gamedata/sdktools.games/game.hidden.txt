@@ -97,6 +97,12 @@
 				"windows"	"198"
 				"linux"		"199"
 			}
+			
+			"FireOutputBackup"
+			{
+				"windows"	"6"
+				"linux"		"6"
+			}
 		}
 		
 		"Signatures"
