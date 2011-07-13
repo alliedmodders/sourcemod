@@ -28,3 +28,4 @@ tsu
 smalltsu
 _
 oh
+yam
