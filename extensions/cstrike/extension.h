@@ -44,6 +44,13 @@
 
 int CallPriceForward(int client, const char *weapon_name, int price);
 
+#define WEAPON_C4 6
+#define WEAPON_KNIFE 28
+#define WEAPON_SHIELD 30
+#define WEAPON_KEVLAR 31
+#define WEAPON_ASSAULTSUIT 32
+#define WEAPON_NIGHTVISION 33
+
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.

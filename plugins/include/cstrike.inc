@@ -212,9 +212,9 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  * @return				Returns price of the weapon (even if modified)
  *
  * @error				Invalid client, failing to get weapon info, or failing to get price offset.
- * @note				Not all "weapons" will return their default price. Example: c4, knife, vest, vest helmet, night vision.
+ * @note				c4, knife and shield will always return 0. vest, vest helmet and night vision will always return default price.
  */
- native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice=false);
+ native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
  
 /**
  * Do not edit below this line!

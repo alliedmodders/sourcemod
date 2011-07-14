@@ -327,6 +327,16 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 }
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
+	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
+	if (params[2] == WEAPON_C4 || params[2] == WEAPON_KNIFE || params[2] == WEAPON_SHIELD)
+		return 0;
+	if (params[2] == WEAPON_KEVLAR)
+		return 650;
+	if (params[2] == WEAPON_ASSAULTSUIT)
+		return 1000;
+	if (params[2] == WEAPON_NIGHTVISION)
+		return 1250;
+
 	static ICallWrapper *pWrapper = NULL;
 	static int priceOffset = -1;
 	if (!pWrapper)
