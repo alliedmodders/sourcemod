@@ -109,7 +109,12 @@ enum TFCond
 	TFCond_SpeedBuffAlly = 32,
 	TFCond_HalloweenCritCandy,
 	
-	TFCond_CritHype = 36
+	TFCond_CritHype = 36,
+	TFCond_CritOnFirstBlood,
+	TFCond_CritOnWin,
+	TFCond_CritOnFlagCapture,
+	TFCond_CritOnKill,
+	TFCond_RestrictToMelee
 };
 
 enum TFHoliday
