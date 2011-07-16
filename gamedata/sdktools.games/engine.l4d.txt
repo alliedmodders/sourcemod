@@ -71,6 +71,9 @@
 				"library"	"server"
 				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+			}
+		}
+	}
 
 	/* CGlobalEntityList */
 	"#default"
