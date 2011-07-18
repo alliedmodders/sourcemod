@@ -122,6 +122,23 @@ enum ConVarQueryResult
 native ServerCommand(const String:format[], any:...);
 
 /**
+ * Executes a server command as if it were on the server console (or RCON) 
+ * and stores the printed text into buffer.
+ *
+ * Warning: This calls ServerExecute internally and may have issues if
+ * certain commands are in the buffer, only use when you really need
+ * the response.
+ * Also, on L4D2 this will not print the command output to the server console.
+ *
+ * @param buffer		String to store command result into.
+ * @param maxlen		Length of buffer.
+ * @param format		Formatting rules.
+ * @param ...			Variable number of format parameters.
+ * @noreturn
+ */
+native ServerCommandEx(String:buffer[], maxlen, const String:format[], any:...);
+
+/**
  * Inserts a server command at the beginning of the server command buffer.
  *
  * @param format		Formatting rules.

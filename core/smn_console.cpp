@@ -43,6 +43,7 @@
 #include <inetchannel.h>
 #include <bitbuf.h>
 #include <sm_trie_tpl.h>
+#include <tier0/dbg.h>
 #include "Logger.h"
 #include "ConsoleDetours.h"
 #include "ConCommandBaseIterator.h"
@@ -901,6 +902,116 @@ static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+char *g_ServerCommandBuffer = NULL;
+cell_t g_ServerCommandBufferLength;
+
+bool g_ShouldCatchSpew = false;
+
+#if SOURCE_ENGINE < SE_LEFT4DEAD2
+SpewOutputFunc_t g_OriginalSpewOutputFunc = NULL;
+
+SpewRetval_t SourcemodSpewOutputFunc(SpewType_t spewType, tchar const *pMsg)
+{
+	if (g_ServerCommandBuffer)
+	{
+		V_strcat(g_ServerCommandBuffer, pMsg, g_ServerCommandBufferLength);
+	}
+
+	if (g_OriginalSpewOutputFunc)
+	{
+		return g_OriginalSpewOutputFunc(spewType, pMsg);
+	} else {
+		return SPEW_CONTINUE;
+	}
+}
+#else
+class CSourcemodLoggingListener: public ILoggingListener
+{
+public:
+	void Log(const LoggingContext_t *pContext, const tchar *pMessage)
+	{
+		if (g_ServerCommandBuffer)
+		{
+			V_strcat(g_ServerCommandBuffer, pMessage, g_ServerCommandBufferLength);
+		}
+	}
+} g_SourcemodLoggingListener;
+#endif
+
+CON_COMMAND(sm_conhook_start, "")
+{
+	if (!g_ShouldCatchSpew)
+	{
+		Warning("You shouldn't run this command!\n");
+		return;
+	}
+
+#if SOURCE_ENGINE < SE_LEFT4DEAD2
+	g_OriginalSpewOutputFunc = GetSpewOutputFunc();
+	SpewOutputFunc(SourcemodSpewOutputFunc);
+#else
+#if SOURCE_ENGINE < SE_ALIENSWARM
+	LoggingSystem_PushLoggingState(false);
+#else
+	LoggingSystem_PushLoggingState(false, false);
+#endif
+	LoggingSystem_RegisterLoggingListener(&g_SourcemodLoggingListener);
+#endif
+}
+
+CON_COMMAND(sm_conhook_stop, "")
+{
+	if (!g_ShouldCatchSpew)
+	{
+		Warning("You shouldn't run this command!\n");
+		return;
+	}
+
+#if SOURCE_ENGINE < SE_LEFT4DEAD2
+	SpewOutputFunc(g_OriginalSpewOutputFunc);
+#else
+	LoggingSystem_PopLoggingState(false);
+#endif
+
+	g_ShouldCatchSpew = false;
+}
+
+static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
+{
+	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+
+	char buffer[1024];
+	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer)-2, pContext, params, 3);
+
+	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	/* One byte for null terminator, one for newline */
+	buffer[len++] = '\n';
+	buffer[len] = '\0';
+
+	pContext->LocalToString(params[1], &g_ServerCommandBuffer);
+	g_ServerCommandBufferLength = params[2];
+
+	engine->ServerExecute();
+
+	g_ShouldCatchSpew = true;
+	engine->ServerCommand("sm_conhook_start\n");
+	engine->ServerCommand(buffer);
+	engine->ServerCommand("sm_conhook_stop\n");
+
+	engine->ServerExecute();
+
+	g_ServerCommandBuffer[g_ServerCommandBufferLength-1] = '\0';
+
+	g_ServerCommandBuffer = NULL;
+	g_ServerCommandBufferLength = 0;
+
+	return 1;
+}
+
 static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *params)
 {
 	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
@@ -1399,6 +1510,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"PrintToConsole",		sm_PrintToConsole},
 	{"RegAdminCmd",			sm_RegAdminCmd},
 	{"ServerCommand",		sm_ServerCommand},
+	{"ServerCommandEx",		sm_ServerCommandEx},
 	{"InsertServerCommand",	sm_InsertServerCommand},
 	{"ServerExecute",		sm_ServerExecute},
 	{"ClientCommand",		sm_ClientCommand},

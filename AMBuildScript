@@ -97,6 +97,7 @@ class SM:
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-non-virtual-dtor')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-overloaded-virtual')
 				self.compiler.AddToListVar('CDEFINES', 'HAVE_STDINT_H')
+				self.compiler.AddToListVar('CDEFINES', 'GNUC')
 				if self.vendor == 'gcc':
 					self.compiler.AddToListVar('CFLAGS', '-mfpmath=sse')
 			elif isinstance(cxx, Cpp.MSVC):
