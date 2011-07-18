@@ -417,7 +417,14 @@ public Action:Command_Rcon(client, args)
 
 	LogAction(client, -1, "\"%L\" console command (cmdline \"%s\")", client, argstring);
 
-	ServerCommand("%s", argstring);
+	if (client == 0) // They will already see the response in the console.
+	{
+		ServerCommand("%s", argstring);
+	} else {
+		new String:responseBuffer[1024];
+		ServerCommandEx(responseBuffer, sizeof(responseBuffer), "%s", argstring);
+		ReplyToCommand(client, responseBuffer);
+	}
 
 	return Plugin_Handled;
 }
