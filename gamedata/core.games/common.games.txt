@@ -209,6 +209,7 @@
 			"game"					"swarm"
 			"game"					"dinodday"
 			"game"					"esmod"
+			"game"					"ios"
 		}
 		
 		"Keys"

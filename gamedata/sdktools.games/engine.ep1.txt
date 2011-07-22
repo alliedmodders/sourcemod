@@ -24,6 +24,7 @@
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
 			"game"		"esmod"
+			"game"		"ios"
 		}
 
 		"Offsets"
@@ -76,6 +77,7 @@
 			"game"		"FortressForever"
 			"game"		"hidden"
 			"game"		"NeotokyoSource"
+			"game"		"ios"
 		}
 		
 		"Offsets"
@@ -122,6 +124,7 @@
 			"game"		"hidden"
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
+			"game"		"ios"
 		}
 		
 		"Signatures"
@@ -145,6 +148,7 @@
 			"game"		"hidden"
 			"game"		"FortressForever"
 			"game"		"NeotokyoSource"
+			"game"		"ios"
 		}
 
 		"Signatures"
@@ -220,6 +224,7 @@
 		{
 			"game"		"NeotokyoSource"
 			"game"		"zombie_master"
+			"game"		"ios"
 		}
 		"Signatures"
 		{

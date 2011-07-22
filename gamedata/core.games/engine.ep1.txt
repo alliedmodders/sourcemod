@@ -24,6 +24,7 @@
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
 			"game"		"esmod"
+			"game"		"ios"
 		}
 		
 		"Offsets"

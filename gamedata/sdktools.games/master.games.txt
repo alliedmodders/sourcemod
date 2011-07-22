@@ -184,4 +184,8 @@
 	{
 		"game"		"esmod"
 	}
+	"game.ios.txt"
+	{
+		"game"		"ios"
+	}
 }
