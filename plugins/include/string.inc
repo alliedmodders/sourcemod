@@ -494,7 +494,8 @@ stock StrCat(String:buffer[], maxlength, const String:source[])
  *							delimiters after last piece.
  * @return					Number of strings retrieved.
  */
-stock ExplodeStringLumiStance(const String:text[], const String:split[], String:buffers[][], maxStrings, maxStringLength, bool:copyRemainder = false)
+stock ExplodeString(const String:text[], const String:split[], String:buffers[][], maxStrings,
+                    maxStringLength, bool:copyRemainder = false)
 {
 	new reloc_idx, idx, total;
 
