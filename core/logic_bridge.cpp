@@ -49,6 +49,7 @@
 #include "PlayerManager.h"
 #include "AdminCache.h"
 #include "HalfLife2.h"
+#include "CoreConfig.h"
 
 #if defined _WIN32
 	#define MATCHMAKINGDS_SUFFIX	""
@@ -176,6 +177,11 @@ static bool symbols_are_hidden()
 #endif
 }
 
+static const char* get_core_config_value(const char* key)
+{
+	return g_CoreConfig.GetCoreConfigValue(key);
+}	
+
 static ServerGlobals serverGlobals;
 
 static sm_core_t core_bridge =
@@ -209,6 +215,7 @@ static sm_core_t core_bridge =
 	get_game_description,
 	get_source_engine_name,
 	symbols_are_hidden,
+	get_core_config_value,
 	&serverGlobals
 };
 

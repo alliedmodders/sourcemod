@@ -750,6 +750,12 @@ void Translator::OnSourceModAllInitialized()
 {
 	AddLanguage("en", "English");
 
+	const char* lang = smcore.GetCoreConfigValue("ServerLang");
+	if (lang)
+	{
+		strncpy(m_InitialLang, lang, sizeof(m_InitialLang));
+	}
+
 	g_pCorePhrases = CreatePhraseCollection();
 	g_pCorePhrases->AddPhraseFile("core.phrases");
 

@@ -42,7 +42,7 @@ using namespace SourceMod;
  * Add 1 to the RHS of this expression to bump the intercom file
  * This is to prevent mismatching core/logic binaries
  */
-#define SM_LOGIC_MAGIC		(0x0F47C0DE - 16)
+#define SM_LOGIC_MAGIC		(0x0F47C0DE - 17)
 
 #if defined SM_LOGIC
 class IVEngineServer
@@ -115,6 +115,7 @@ struct sm_core_t
 	const char *    (*GetGameDescription)();
 	const char *    (*GetSourceEngineName)();
 	bool            (*SymbolsAreHidden)();
+	const char *	(*GetCoreConfigValue)(const char*);
 	/* Data */
 	ServerGlobals   *serverGlobals;
 	void *          serverFactory;
