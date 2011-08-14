@@ -322,8 +322,15 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 	int argcount = command.ArgC();
 	if (argcount >= 3)
 	{
+		bool wantReset = false;
+		
 		/* Get plugin index that was passed */
 		const char *arg = command.Arg(2);
+		if (argcount >= 4 && strcmp(arg, "reset") == 0)
+		{
+			wantReset = true;
+			arg = command.Arg(3);
+		}
 		
 		/* Get plugin object */
 		CPlugin *plugin = g_PluginSys.FindPluginByConsoleArg(arg);
@@ -348,21 +355,34 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 			return;
 		}
 
-		g_RootMenu.ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
-		g_RootMenu.ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
-
-		/* Iterate convar list and display each one */
+		if (!wantReset)
+		{
+			g_RootMenu.ConsolePrint("[SM] Listing %d convars for: %s", pConVarList->size(), plname);
+			g_RootMenu.ConsolePrint("  %-32.31s %s", "[Name]", "[Value]");
+		}
+		
+		/* Iterate convar list and display/reset each one */
 		for (iter = pConVarList->begin(); iter != pConVarList->end(); iter++)
 		{
-			const ConVar *pConVar = (*iter);
-			g_RootMenu.ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
+			/*const */ConVar *pConVar = const_cast<ConVar *>(*iter);
+			if (!wantReset)
+			{
+				g_RootMenu.ConsolePrint("  %-32.31s %s", pConVar->GetName(), pConVar->GetString()); 
+			} else {
+				pConVar->Revert();
+			}
+		}
+		
+		if (wantReset)
+		{
+			g_RootMenu.ConsolePrint("[SM] Reset %d convars for: %s", pConVarList->size(), plname);
 		}
 
 		return;
 	}
 
 	/* Display usage of subcommand */
-	g_RootMenu.ConsolePrint("[SM] Usage: sm cvars <plugin #>");
+	g_RootMenu.ConsolePrint("[SM] Usage: sm cvars [reset] <plugin #>");
 }
 
 Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name, const char *defaultVal, const char *description, int flags, bool hasMin, float min, bool hasMax, float max)
