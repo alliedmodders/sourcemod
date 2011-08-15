@@ -182,6 +182,28 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	{
 		bool already;
 		m_PlId = g_pMMPlugins->Load(m_Path.c_str(), g_PLID, already, error, maxlength);
+
+		// Check the plugin didn't refuse load
+		Pl_Status status;
+		
+#ifndef METAMOD_PLAPI_VERSION
+		const char *file;
+		PluginId source;
+#endif
+		
+		if (!m_PlId || (
+#ifndef METAMOD_PLAPI_VERSION
+			g_pMMPlugins->Query(m_PlId, file, status, source)
+#else
+			g_pMMPlugins->Query(m_PlId, NULL, &status, NULL)
+#endif			
+			&& status < Pl_Paused))
+		{
+			m_pLib->CloseLibrary();
+			m_pLib = NULL;
+			m_pAPI = NULL;
+			return false;
+		}
 	}
 
 	if (!CExtension::Load(error, maxlength))
