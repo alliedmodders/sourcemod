@@ -96,6 +96,11 @@
 				"windows"	"36"
 				"linux"		"37"
 			}
+			"PlayerRunCmd"
+			{
+				"windows"	"354"
+				"linux"		"355"
+			}
 			"FireOutputBackup"
 			{
 				"windows"	"6"
@@ -131,6 +136,11 @@
 				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x2A\x2A\x85\xF6\x57"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CFFGameRulesProxy"
 		}
 	}
 }
