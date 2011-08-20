@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include "mysql.h"
 #include "sm_globals.h"
 #include "HandleSys.h"
 #include "Database.h"
@@ -662,22 +663,23 @@ static cell_t SQL_GetError(IPluginContext *pContext, const cell_t *params)
 
 static cell_t SQL_QuoteString(IPluginContext *pContext, const cell_t *params)
 {
-	IDatabase *db = NULL;
-	HandleError err;
+	//IDatabase *db = NULL;
+	//HandleError err;
 
-	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
+/*	if ((err = g_DBMan.ReadHandle(params[1], DBHandle_Database, (void **)&db))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid database Handle %x (error: %d)", params[1], err);
 	}
+	*/
 
 	char *input, *output;
-	size_t maxlength = (size_t)params[4];
+	//size_t maxlength = (size_t)params[4];
 	pContext->LocalToString(params[2], &input);
 	pContext->LocalToString(params[3], &output);
 
 	size_t written;
-	bool s = db->QuoteString(input, output, maxlength, &written);
+	bool s = mysql_escape_string(output, input, strlen(input));
 
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[5], &addr);

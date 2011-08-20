@@ -186,7 +186,7 @@ bool MyDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, s
 		return false;
 	}
 
-	needed = mysql_real_escape_string(m_mysql, buffer, str, size);
+	needed = mysql_escape_string(buffer, str, size);
 	if (newSize)
 	{
 		*newSize = (size_t)needed;

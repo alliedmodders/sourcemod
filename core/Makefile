@@ -26,7 +26,7 @@ OBJECTS += smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
 	smn_filesystem.cpp smn_halflife.cpp \
 	smn_keyvalues.cpp smn_player.cpp \
 	smn_usermsgs.cpp smn_menus.cpp smn_vector.cpp \
-	smn_hudtext.cpp smn_nextmap.cpp
+	smn_hudtext.cpp smn_nextmap.cpp smn_database.cpp
 OBJECTS += ExtensionSys.cpp 		\
 		   ForwardSys.cpp 			\
 		   HandleSys.cpp 			\
@@ -120,12 +120,13 @@ endif
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
 	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9
 
+#LINK += /usr/lib/mysql/libmysqlclient_r.a /usr/lib/libssl.a /usr/lib/libkrb5.a  /usr/lib/libcrypto.a $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX)
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) \
-	$(LIB_PREFIX)tier0$(LIB_SUFFIX) -static-libgcc
+	$(LIB_PREFIX)tier0$(LIB_SUFFIX) -static-libgcc -L/usr/lib/mysql -lmysqlclient
 	
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/vstdlib \
 	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook \
-	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
+	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn -I/usr/include/mysql
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
