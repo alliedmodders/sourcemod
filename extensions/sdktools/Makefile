@@ -62,7 +62,7 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2SDK = $(HL2SDK_OB_VALVE)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=4
+	CFLAGS += -DSOURCE_ENGINE=6
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/orangebox
@@ -73,7 +73,7 @@ ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=5
+	CFLAGS += -DSOURCE_ENGINE=7
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/l4d
@@ -84,7 +84,7 @@ ifeq "$(ENGINE)" "left4dead2"
 	HL2SDK = $(HL2SDK_L4D2)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=6
+	CFLAGS += -DSOURCE_ENGINE=8
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	SRCDS = $(SRCDS_BASE)/left4dead2
@@ -103,7 +103,8 @@ LINK += $(LINK_HL2)
 INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/tier0 \
 	-I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/extensions \
 	-I$(SMSDK)/public/sourcepawn
-CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
+CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
+	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9
 
 LINK += -m32 -ldl -lm
 

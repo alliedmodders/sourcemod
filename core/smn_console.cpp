@@ -48,7 +48,7 @@
 #include "ConsoleDetours.h"
 #include "ConCommandBaseIterator.h"
 
-#if SOURCE_ENGINE >= SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE >= SE_EYE
 #define NETMSG_BITS 6
 #else
 #define NETMSG_BITS 5

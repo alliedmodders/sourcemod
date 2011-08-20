@@ -88,6 +88,7 @@
 		{
 			"engine"			"orangebox"
 			"engine"			"bloodygoodtime"
+			"engine"			"eye"
 			"engine"			"orangebox_valve"
 			"engine"			"left4dead"
 			"engine"			"left4dead2"
@@ -210,6 +211,7 @@
 			"game"					"dinodday"
 			"game"					"esmod"
 			"game"					"ios"
+			"game"					"eye"
 		}
 		
 		"Keys"

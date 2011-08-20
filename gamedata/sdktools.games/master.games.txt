@@ -55,6 +55,11 @@
 		"engine"	"bloodygoodtime"
 	}
 	
+	"engine.eye.txt"
+	{
+		"engine"	"eye"
+	}
+	
 	"game.tf.txt"
 	{
 		"game"		"tf"

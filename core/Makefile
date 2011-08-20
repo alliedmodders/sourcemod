@@ -71,7 +71,7 @@ endif
 ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2SDK = $(HL2SDK_OB_VALVE)
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=4
+	CFLAGS += -DSOURCE_ENGINE=6
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server 
 #-I$(HL2SDK)/common
@@ -80,7 +80,7 @@ endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=5
+	CFLAGS += -DSOURCE_ENGINE=7
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.l4d.so
@@ -88,7 +88,7 @@ endif
 ifeq "$(ENGINE)" "left4dead2"
 	HL2SDK = $(HL2SDK_L4D2)
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=6
+	CFLAGS += -DSOURCE_ENGINE=8
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.l4d2.so
@@ -117,7 +117,8 @@ else
 	LIB_SUFFIX = .$(LIB_EXT)
 endif
 
-CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 -DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
+CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
+	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) \
 	$(LIB_PREFIX)tier0$(LIB_SUFFIX) -static-libgcc

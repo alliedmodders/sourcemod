@@ -54,5 +54,10 @@
 	{
 		"engine"	"bloodygoodtime"
 	}
+	
+	"engine.eye.txt"
+	{
+		"engine"	"eye"
+	}
 
 }

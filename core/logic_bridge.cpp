@@ -157,6 +157,8 @@ static const char *get_source_engine_name()
 	return "orangebox";
 #elif SOURCE_ENGINE == SE_BLOODYGOODTIME
 	return "bloodygoodtime";
+#elif SOURCE_ENGINE == SE_EYE
+	return "eye";
 #elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
 	return "orangebox_valve";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD
