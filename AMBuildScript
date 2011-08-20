@@ -49,7 +49,7 @@ class SM:
 				envvars['HL2SDK-DARKM'] = 'hl2sdk-darkm'
 				envvars['HL2SDK-SWARM'] = 'hl2sdk-swarm'
 				envvars['HL2SDK-BGT']   = 'hl2sdk-bgt'
-				envvars['HL2SDK-BGT']   = 'hl2sdk-eye'
+				envvars['HL2SDK-EYE']   = 'hl2sdk-eye'
 
 			#Must have a path for each envvar (file a bug if you don't like this)
 			for i in envvars:
