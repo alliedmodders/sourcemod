@@ -1,0 +1,99 @@
+"Games"
+{
+	/* Nuclear Dawn */
+	"nucleardawn"
+	{		
+		"Offsets"
+		{
+			"GiveNamedItem"
+			{
+				"windows"	"441"
+				"linux"		"442"
+				"mac"		"442"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"299"
+				"linux"		"300"
+				"mac"		"300"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"297"
+				"linux"		"298"
+				"mac"		"298"
+			}
+			"Ignite"
+			{
+				"windows"	"232"
+				"linux"		"233"
+				"mac"		"233"
+			}
+			"Extinguish"
+			{
+				"windows"	"235"
+				"linux"		"236"
+				"mac"		"236"
+			}
+			"Teleport"
+			{
+				"windows"	"127"
+				"linux"		"128"
+				"mac"		"128"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"486"
+				"linux"		"486"
+				"mac"		"486"
+			}
+			"GetVelocity"
+			{
+				"windows"	"159"
+				"linux"		"160"
+				"mac"		"160"
+			}
+			"EyeAngles"
+			{
+				"windows"	"150"
+				"linux"		"151"
+				"mac"		"151"
+			}
+			"AcceptInput"
+			{
+				"windows"	"43"
+				"linux"		"44"
+				"mac"		"44"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"26"
+				"linux"		"27"
+				"mac"		"27"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"290"
+				"linux"		"291"
+				"mac"		"291"
+			}
+			"Activate"
+			{
+				"windows"	"35"
+				"linux"		"36"
+				"mac"		"36"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"464"
+				"linux"		"465"
+				"mac"		"465"
+			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CNuclearDawnRulesProxy"
+		}
+	}
+}

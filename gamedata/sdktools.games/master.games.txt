@@ -193,4 +193,12 @@
 	{
 		"game"		"ios"
 	}
+	"game.left4dead2.txt"
+	{
+		"game"		"left4dead2"
+	}
+	"game.nucleardawn.txt"
+	{
+		"game"		"nucleardawn"
+	}
 }
