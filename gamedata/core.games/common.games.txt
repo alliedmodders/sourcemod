@@ -148,7 +148,6 @@
 			"game"					"fistful_of_frags"
 			"game"					"dinodday"
 			"game"					"esmod"
-			"game"					"nucleardawn"
 		}
 
 		"Keys"
@@ -178,7 +177,6 @@
 			"game"					"RnLBeta"
 			"game"					"fistful_of_frags"
 			"game"					"dinodday"
-			"game"					"nucleardawn"
 		}
 		
 		"Keys"
