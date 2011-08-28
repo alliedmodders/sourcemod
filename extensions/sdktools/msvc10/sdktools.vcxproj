@@ -44,6 +44,7 @@
     <ProjectConfiguration Include="Release - Bloody Good Time|Win32">
       <Configuration>Release - Bloody Good Time</Configuration>
       <Platform>Win32</Platform>
+	</ProjectConfiguration>
     <ProjectConfiguration Include="Release - Dark Messiah|Win32">
       <Configuration>Release - Dark Messiah</Configuration>
       <Platform>Win32</Platform>
