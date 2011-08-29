@@ -84,6 +84,9 @@
     <ClCompile Include="..\gamerulesnatives.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\clientnatives.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CellRecipientFilter.h">
@@ -129,6 +132,9 @@
       <Filter>SourceMod SDK</Filter>
     </ClInclude>
     <ClInclude Include="..\gamerulesnatives.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\clientnatives.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

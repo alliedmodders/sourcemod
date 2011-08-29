@@ -934,6 +934,7 @@
   <ItemGroup>
     <ClCompile Include="..\asm\asm.c" />
     <ClCompile Include="..\CDetour\detours.cpp" />
+    <ClCompile Include="..\clientnatives.cpp" />
     <ClCompile Include="..\extension.cpp" />
     <ClCompile Include="..\gamerulesnatives.cpp" />
     <ClCompile Include="..\hooks.cpp" />
@@ -957,6 +958,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CellRecipientFilter.h" />
+    <ClInclude Include="..\clientnatives.h" />
     <ClInclude Include="..\extension.h" />
     <ClInclude Include="..\gamerulesnatives.h" />
     <ClInclude Include="..\hooks.h" />
