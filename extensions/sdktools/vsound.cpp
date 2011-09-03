@@ -782,6 +782,14 @@ static cell_t smn_RemoveNormalSoundHook(IPluginContext *pContext, const cell_t *
 	return 1;
 }
 
+static cell_t smn_GetDistGainFromSoundLevel(IPluginContext *pContext, const cell_t *params)
+{
+	int decibel = params[1];
+	float distance = sp_ctof(params[2]);
+
+	return sp_ftoc(engsound->GetDistGainFromSoundLevel(soundlevel_t)decibel, distance));
+}
+
 sp_nativeinfo_t g_SoundNatives[] = 
 {
 	{"EmitAmbientSound",		EmitAmbientSound},
@@ -795,5 +803,6 @@ sp_nativeinfo_t g_SoundNatives[] =
 	{"AddNormalSoundHook",		smn_AddNormalSoundHook},
 	{"RemoveAmbientSoundHook",	smn_RemoveAmbientSoundHook},
 	{"RemoveNormalSoundHook",	smn_RemoveNormalSoundHook},
+	{"GetDistGainFromSoundLevel", smn_GetDistGainFromSoundLevel},
 	{NULL,						NULL},
 };
