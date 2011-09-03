@@ -303,15 +303,15 @@ stock TFClassType:TF2_GetPlayerClass(client)
  * @param client		Player's index.
  * @param class			TFClassType class symbol.
  * @param weapons		This paramater is ignored.
- * @param persistant	If true changes the players desired class so the change stays after death.
+ * @param persistent	If true changes the players desired class so the change stays after death.
  * @noreturn
  * @error				Invalid client index.
  */
-stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:persistant=true)
+stock TF2_SetPlayerClass(client, TFClassType:class, bool:weapons=true, bool:persistent=true)
 {
 	SetEntProp(client, Prop_Send, "m_iClass", _:class);
 	
-	if (persistant)
+	if (persistent)
 	{
 		SetEntProp(client, Prop_Send, "m_iDesiredPlayerClass", _:class);
 	}
