@@ -787,7 +787,7 @@ static cell_t smn_GetDistGainFromSoundLevel(IPluginContext *pContext, const cell
 	int decibel = params[1];
 	float distance = sp_ctof(params[2]);
 
-	return sp_ftoc(engsound->GetDistGainFromSoundLevel(soundlevel_t)decibel, distance));
+	return sp_ftoc(engsound->GetDistGainFromSoundLevel((soundlevel_t)decibel, distance));
 }
 
 sp_nativeinfo_t g_SoundNatives[] = 
