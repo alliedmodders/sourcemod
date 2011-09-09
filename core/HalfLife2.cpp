@@ -787,6 +787,12 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
  */
 CEntInfo *CHalfLife2::LookupEntity(int entIndex)
 {
+	// Make sure that our index is within the bounds of the global ent array
+	if (entIndex < 0 || entIndex >= NUM_ENT_ENTRIES)
+	{
+		return NULL;
+	}
+
 	if (!g_EntList || entInfoOffset == -1)
 	{
 		/* Attempt to use engine interface instead */
