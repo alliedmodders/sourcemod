@@ -1257,7 +1257,7 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 	char *cmd;
 	pContext->LocalToString(params[2], &cmd);
 
-	/* Auto-detect a command if we can */
+	/* Match up with an admin command if possible */
 	FlagBits bits = params[3];
 	bool found_command = false;
 	if (params[0] < 4 || !params[4])
@@ -1270,7 +1270,28 @@ static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 		g_Admins.GetCommandOverride(cmd, Override_Command, &bits);
 	}
 
-	return g_ConCmds.CheckCommandAccess(params[1], cmd, bits) ? 1 : 0;
+	return g_ConCmds.CheckClientCommandAccess(params[1], cmd, bits) ? 1 : 0;
+}
+
+static cell_t CheckAccess(IPluginContext *pContext, const cell_t *params)
+{
+	char *cmd;
+	pContext->LocalToString(params[2], &cmd);
+
+	/* Match up with an admin command if possible */
+	FlagBits bits = params[3];
+	bool found_command = false;
+	if (params[0] < 4 || !params[4])
+	{
+		found_command = g_ConCmds.LookForCommandAdminFlags(cmd, &bits);
+	}
+	
+	if (!found_command)
+	{
+		g_Admins.GetCommandOverride(cmd, Override_Command, &bits);
+	}
+
+	return g_ConCmds.CheckAdminCommandAccess(params[1], cmd, bits) ? 1 : 0;
 }
 
 static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
@@ -1521,6 +1542,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetCommandIterator",	GetCommandIterator},
 	{"ReadCommandIterator",	ReadCommandIterator},
 	{"CheckCommandAccess",	CheckCommandAccess},
+	{"CheckAccess",			CheckAccess},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{"IsChatTrigger",		IsChatTrigger},
 	{"SetCommandFlags",		SetCommandFlags},

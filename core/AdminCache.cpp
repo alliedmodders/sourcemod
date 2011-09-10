@@ -1719,7 +1719,7 @@ bool AdminCache::CanAdminUseCommand(int client, const char *cmd)
 		}
 	}
 
-	return g_ConCmds.CheckCommandAccess(client, cmd, bits);
+	return g_ConCmds.CheckClientCommandAccess(client, cmd, bits);
 }
 
 unsigned int AdminCache::SetGroupImmunityLevel(GroupId gid, unsigned int level)
@@ -1794,7 +1794,7 @@ bool AdminCache::CheckAccess(int client, const char *cmd, FlagBits flags, bool o
 		GetCommandOverride(cmd, Override_Command, &bits);
 	}
 
-	return g_ConCmds.CheckCommandAccess(client, cmd, bits) ? 1 : 0;
+	return g_ConCmds.CheckClientCommandAccess(client, cmd, bits) ? 1 : 0;
 }
 
 void iterator_glob_basic_override(Trie *pTrie, const char *key, void **value, void *data)

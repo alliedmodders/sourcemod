@@ -450,7 +450,7 @@ void ConCmdManager::InternalDispatch(const CCommand &command)
 	}
 }
 
-bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmdflags)
+bool ConCmdManager::CheckClientCommandAccess(int client, const char *cmd, FlagBits cmdflags)
 {
 	if (cmdflags == 0 || client == 0)
 	{
@@ -471,7 +471,11 @@ bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmd
 		return false;
 	}
 
-	AdminId adm = player->GetAdminId();
+	return CheckAdminCommandAccess(player->GetAdminId(), cmd, cmdflags);
+}
+
+bool ConCmdManager::CheckAdminCommandAccess(AdminId adm, const char *cmd, FlagBits cmdflags)
+{
 	if (adm != INVALID_ADMIN_ID)
 	{
 		FlagBits bits = g_Admins.GetAdminFlags(adm, Access_Effective);
@@ -524,7 +528,7 @@ bool ConCmdManager::CheckCommandAccess(int client, const char *cmd, FlagBits cmd
 
 bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin)
 {
-	if (CheckCommandAccess(client, cmd, pAdmin->eflags))
+	if (CheckClientCommandAccess(client, cmd, pAdmin->eflags))
 	{
 		return true;
 	}

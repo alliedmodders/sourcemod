@@ -739,8 +739,8 @@ native bool:ReadCommandIterator(Handle:iter,
 
 /**
  * Returns whether a client has access to a given command string.  The string 
- * can also be any override string, as overrides can be independent of 
- * commands.  This important feature essentially allows you to create custom 
+ * can be any override string, as overrides can be independent of 
+ * commands.  This feature essentially allows you to create custom 
  * flags using the override system.
  *
  * @param client		Client index.
@@ -755,6 +755,28 @@ native bool:ReadCommandIterator(Handle:iter,
  * @return				True if the client has access, false otherwise.
  */
 native bool:CheckCommandAccess(client, 
+							   const String:command[],
+							   flags,
+							   bool:override_only=false);
+
+/**
+ * Returns whether an admin has access to a given command string.  The string 
+ * can be any override string, as overrides can be independent of 
+ * commands.  This feature essentially allows you to create custom flags
+ * using the override system.
+ *
+ * @param id			AdminId of the admin.
+ * @param command		Command name.  If the command is not found, the default 
+ *						flags are used.
+ * @param flags			Flag string to use as a default, if the command or override 
+ *						is not found.
+ * @param override_only	If true, SourceMod will not attempt to find a matching 
+ *						command, and it will only use the default flags specified.
+ *						Otherwise, SourceMod will ignore the default flags if 
+ *						there is a matching admin command.
+ * @return				True if the admin has access, false otherwise.
+ */
+native bool:CheckAccess(AdminId:id, 
 							   const String:command[],
 							   flags,
 							   bool:override_only=false);
