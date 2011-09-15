@@ -81,7 +81,7 @@
 			"SetPowerplayEnabled"
 			{
 				"library"	"server"
-				"windows"	"\x80\x7C\x2A\x2A\x2A\x56\x8B\xF1\x74\x2A\xA1\x2A\x2A\x2A\x2A\xD9\x2A\x2A\x57"
+				"windows"	"\x80\x7C\x2A\x2A\x2A\x56\x8B\xF1\x74\x2A\x57\x8D\x44\x24\x2A\x50"
 				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 				"mac"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 			}
