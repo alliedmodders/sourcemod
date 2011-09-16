@@ -48,14 +48,14 @@
 			"HandleCommand_Buy_Internal"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x81\xEC\x2A\x01\x00\x00\x89\x8D\x58"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x89\x2A\x2A\x6A\x00\x8B\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x0F\x2A\x2A\xF7\xD8"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
 				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
 			}
 			"GetWeaponPrice"
 			{
 				"library"		"server"
-				"windows"		"\x8B\x81\xB0\x08\x00\x00\xC3"
+				"windows"		"\x8B\x81\x04\x09\x00\x00\xC3"
 				"linux"			"@_ZNK13CCSWeaponInfo14GetWeaponPriceEv"
 				"mac"			"@_ZNK13CCSWeaponInfo14GetWeaponPriceEv"
 			}
@@ -76,7 +76,7 @@
 			"GetTranslatedWeaponAlias"
 			{
 				"library"		"server"
-				"windows"		"\xA1\x2A\x2A\x2A\x2A\x80\x2A\x00\x53"
+				"windows"		"\x56\x57\x8B\x7C\x2A\x2A\x33\xF6\xEB\x2A\x2A\x2A\x00\x00\x00\x00\x8B\x04\x2A\x2A\x2A\x2A\x2A\x57\x50\xE8\x2A\x2A\x2A\x00\x83\xC4\x08\x85\xC0\x74\x2A\x83\x2A\x01\x83\x2A\x2A\x72\x2A\x8B\xC7\x5F\x5E"
 				"linux"			"@_Z24GetTranslatedWeaponAliasPKc"
 				"mac"			"@_Z24GetTranslatedWeaponAliasPKc"
 			}
