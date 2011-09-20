@@ -24,9 +24,9 @@
 			}
 			"WeaponPrice"
 			{
-				"windows"		"2224"
-				"linux"			"2224"
-				"mac"			"2224"
+				"windows"		"2308"
+				"linux"			"2308"
+				"mac"			"2308"
 			}
 		}
 		"Signatures"
