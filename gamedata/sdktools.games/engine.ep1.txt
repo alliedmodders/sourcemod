@@ -25,6 +25,7 @@
 			"game"		"NeotokyoSource"
 			"game"		"esmod"
 			"game"		"ios"
+			"game"		"hl2ctf"
 		}
 
 		"Offsets"
@@ -78,6 +79,7 @@
 			"game"		"hidden"
 			"game"		"NeotokyoSource"
 			"game"		"ios"
+			"game"		"hl2ctf"
 		}
 		
 		"Offsets"
@@ -125,6 +127,7 @@
 			"game"		"zombie_master"
 			"game"		"NeotokyoSource"
 			"game"		"ios"
+			"game"		"hl2ctf"
 		}
 		
 		"Signatures"

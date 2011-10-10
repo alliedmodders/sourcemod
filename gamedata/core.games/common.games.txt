@@ -215,6 +215,7 @@
 			"game"					"ios"
 			"game"					"eye"
 			"game"					"nucleardawn"
+			"game"					"hl2ctf"
 		}
 		
 		"Keys"

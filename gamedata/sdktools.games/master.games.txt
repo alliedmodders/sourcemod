@@ -201,4 +201,8 @@
 	{
 		"game"		"nucleardawn"
 	}
+	"game.hl2ctf.txt"
+	{
+		"game"		"hl2ctf"
+	}
 }
