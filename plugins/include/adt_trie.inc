@@ -79,8 +79,7 @@ native bool:SetTrieArray(Handle:trie, const String:key[], const any:array[], num
  *
  * @param trie		Trie Handle.
  * @param key		Key string.
- * @param array		Array to store.
- * @param num_items	Number of items in the array.
+ * @param value		String to store.
  * @param replace	If false, operation will fail if the key is already set.
  * @return			True on success, false on failure.
  * @error			Invalid Handle.
