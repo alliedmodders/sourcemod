@@ -129,6 +129,7 @@ enum {
 	TF_CUSTOM_PLASMA,
 	TF_CUSTOM_PLASMA_CHARGED,
 	TF_CUSTOM_PLASMA_GIB,
+	TF_CUSTOM_PRACTICE_STICKY,
 };
 
 // Weapon codes as used in some events, such as player_death

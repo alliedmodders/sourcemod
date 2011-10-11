@@ -86,7 +86,8 @@ enum TFCond
 	TFCond_CloakFlicker = 9,
 	TFCond_Teleporting,
 	TFCond_Kritzkrieged,
-	TFCond_Unknown2,
+	TFCond_Unknown2, //12
+	TFCond_TmpDamageBonus = 12,
 	TFCond_DeadRingered,
 	TFCond_Bonked,
 	TFCond_Dazed,
@@ -105,8 +106,8 @@ enum TFCond
 	TFCond_MegaHeal,
 	TFCond_RegenBuffed,
 	TFCond_MarkedForDeath,
-	
-	TFCond_SpeedBuffAlly = 32,
+	TFCond_NoHealingDamageBuff,
+	TFCond_SpeedBuffAlly,
 	TFCond_HalloweenCritCandy,
 	
 	TFCond_CritHype = 36,
