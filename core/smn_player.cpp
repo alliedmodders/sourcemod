@@ -1307,17 +1307,6 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		return 1;
 	}
 
-	pPlayer->MarkAsBeingKicked();
-
-	if (pPlayer->IsFakeClient())
-	{
-		char kickcmd[40];
-		UTIL_Format(kickcmd, sizeof(kickcmd), "kick %s\n", pPlayer->GetName());
-
-		engine->ServerCommand(kickcmd);
-		return 1;
-	}
-
 	g_SourceMod.SetGlobalTarget(client);
 
 	char buffer[256];
@@ -1328,6 +1317,15 @@ static cell_t KickClient(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
+	if (pPlayer->IsFakeClient())
+	{
+		// Kick uses the kickid command for bots. It is already delayed
+		// until the next frame unless someone flushes command buffer
+		pPlayer->Kick(buffer);
+		return 1;
+	}
+
+	pPlayer->MarkAsBeingKicked();
 	g_HL2.AddDelayedKick(client, pPlayer->GetUserId(), buffer);
 
 	return 1;
@@ -1345,23 +1343,6 @@ static cell_t KickClientEx(IPluginContext *pContext, const cell_t *params)
 	else if (!pPlayer->IsConnected())
 	{
 		return pContext->ThrowNativeError("Client %d is not connected", client);
-	}
-
-	/* Ignore duplicate kicks */
-	if (pPlayer->IsInKickQueue())
-	{
-		return 1;
-	}
-
-	pPlayer->MarkAsBeingKicked();
-
-	if (pPlayer->IsFakeClient())
-	{
-		char kickcmd[40];
-		UTIL_Format(kickcmd, sizeof(kickcmd), "kick %s\n", pPlayer->GetName());
-
-		engine->ServerCommand(kickcmd);
-		return 1;
 	}
 
 	g_SourceMod.SetGlobalTarget(client);
