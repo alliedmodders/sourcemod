@@ -158,7 +158,23 @@ RegisterCmds( )
 
 HookEvents( )
 {
-	HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+	decl String:folder[64];
+	GetGameFolderName(folder, sizeof(folder));
+
+	if (strcmp(folder, "tf") == 0)
+	{
+		HookEvent("teamplay_win_panel", Event_RoundEnd, EventHookMode_PostNoCopy);
+		HookEvent("teamplay_restart_round", Event_RoundEnd, EventHookMode_PostNoCopy);
+		HookEvent("arena_win_panel", Event_RoundEnd, EventHookMode_PostNoCopy);
+	}
+	else if (strcmp(folder, "nucleardawn") == 0)
+	{
+		HookEvent("round_win", Event_RoundEnd, EventHookMode_PostNoCopy);
+	}
+	else
+	{
+		HookEvent("round_end", Event_RoundEnd, EventHookMode_PostNoCopy);
+	}	
 }
 
 public OnMapStart()

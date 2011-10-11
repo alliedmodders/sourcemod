@@ -137,10 +137,23 @@ public OnPluginStart()
 	
 	if (g_Cvar_Winlimit != INVALID_HANDLE || g_Cvar_Maxrounds != INVALID_HANDLE)
 	{
-		HookEvent("round_end", Event_RoundEnd);
-		HookEventEx("teamplay_win_panel", Event_TeamPlayWinPanel);
-		HookEventEx("teamplay_restart_round", Event_TFRestartRound);
-		HookEventEx("arena_win_panel", Event_TeamPlayWinPanel);
+		decl String:folder[64];
+		GetGameFolderName(folder, sizeof(folder));
+
+		if (strcmp(folder, "tf") == 0)
+		{
+			HookEvent("teamplay_win_panel", Event_TeamPlayWinPanel);
+			HookEvent("teamplay_restart_round", Event_TFRestartRound);
+			HookEvent("arena_win_panel", Event_TeamPlayWinPanel);
+		}
+		else if (strcmp(folder, "nucleardawn") == 0)
+		{
+			HookEvent("round_win", Event_RoundEnd);
+		}
+		else
+		{
+			HookEvent("round_end", Event_RoundEnd);
+		}
 	}
 	
 	if (g_Cvar_Fraglimit != INVALID_HANDLE)
@@ -407,7 +420,16 @@ public Event_RoundEnd(Handle:event, const String:name[], bool:dontBroadcast)
 		g_ChangeMapInProgress = true;
 	}
 	
-	new winner = GetEventInt(event, "winner");
+	new winner;
+	if (strcmp(name, "round_win") == 0)
+	{
+		// Nuclear Dawn
+		winner = GetEventInt(event, "team");
+	}
+	else
+	{
+		winner = GetEventInt(event, "winner");
+	}
 	
 	if (winner == 0 || winner == 1 || !GetConVarBool(g_Cvar_EndOfMapVote))
 	{
