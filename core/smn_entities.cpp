@@ -1155,6 +1155,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	const char *class_name;
 	edict_t *pEdict;
 	int bit_count;
+	bool is_unsigned = false;
 
 	int element = 0;
 	if (params[0] >= 5)
@@ -1197,6 +1198,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Int, "integer");
+			is_unsigned = ((info.prop->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 			break;
 		}
 	default:
@@ -1216,11 +1218,25 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (bit_count >= 9)
 	{
-		return *(int16_t *)((uint8_t *)pEntity + offset);
+		if (is_unsigned)
+		{
+			return *(uint16_t *)((uint8_t *)pEntity + offset);
+		}
+		else
+		{
+			return *(int16_t *)((uint8_t *)pEntity + offset);
+		}
 	}
 	else if (bit_count >= 2)
 	{
-		return *(int8_t *)((uint8_t *)pEntity + offset);
+		if (is_unsigned)
+		{
+			return *(uint8_t *)((uint8_t *)pEntity + offset);
+		}
+		else
+		{
+			return *(int8_t *)((uint8_t *)pEntity + offset);
+		}
 	}
 	else
 	{
