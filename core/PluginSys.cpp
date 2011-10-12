@@ -1308,7 +1308,8 @@ bool CPluginManager::LoadOrRequireExtensions(CPlugin *pPlugin, unsigned int pass
 				if (ext->autoload)
 				{
 					g_LibSys.PathFormat(path, PLATFORM_MAX_PATH, "%s", file);
-					g_Extensions.LoadAutoExtension(path);
+					bool bErrorOnMissing = ext->required ? true : false;
+					g_Extensions.LoadAutoExtension(path, bErrorOnMissing);
 				}
 			}
 			else if (pass == 2)

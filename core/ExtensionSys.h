@@ -66,6 +66,7 @@ public:
 public: //IExtension
 	IExtensionInterface *GetAPI();
 	const char *GetFilename();
+	const char *GetPath() const;
 	IdentityToken_t *GetIdentity();
 	ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface);
 	bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface);
@@ -163,7 +164,7 @@ public: //IPluginsListener
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const CCommand &command);
 public:
-	IExtension *LoadAutoExtension(const char *path);
+	IExtension *LoadAutoExtension(const char *path, bool bErrorOnMissing=true);
 	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
 	void BindChildPlugin(IExtension *pParent, CPlugin *pPlugin);

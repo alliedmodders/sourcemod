@@ -372,6 +372,11 @@ const char *CExtension::GetFilename()
 	return m_RealFile.c_str();
 }
 
+const char *CExtension::GetPath() const
+{
+	return m_Path.c_str();
+}
+
 IdentityToken_t *CExtension::GetIdentity()
 {
 	return m_pIdentToken;
@@ -580,7 +585,7 @@ void CExtensionManager::TryAutoload()
 	}
 }
 
-IExtension *CExtensionManager::LoadAutoExtension(const char *path)
+IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOnMissing)
 {
 	/* Remove platform extension if it's there. Compat hack. */
 	const char *ext = g_LibSys.GetFileExtension(path);
@@ -589,7 +594,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 		char path2[PLATFORM_MAX_PATH];
 		UTIL_Format(path2, sizeof(path2), "%s", path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
-		return LoadAutoExtension(path2);
+		return LoadAutoExtension(path2, bErrorOnMissing);
 	}
 
 	IExtension *pAlready;
@@ -608,7 +613,11 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path)
 
 	if (!p->Load(error, sizeof(error)) || !p->IsLoaded())
 	{
-		g_Logger.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
+		if (bErrorOnMissing || g_LibSys.IsPathFile(p->GetPath()))
+		{
+			g_Logger.LogError("[SM] Unable to load extension \"%s\": %s", path, error);
+		}
+
 		p->SetError(error);
 	}
 
