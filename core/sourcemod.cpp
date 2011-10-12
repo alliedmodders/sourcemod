@@ -745,5 +745,10 @@ int SourceModBase::GetShApiVersion()
 	return api;
 }
 
+bool SourceModBase::IsMapRunning()
+{
+	return g_OnMapStarted;
+}
+
 SMGlobalClass *SMGlobalClass::head = NULL;
 

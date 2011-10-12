@@ -43,7 +43,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	12
+#define SMINTERFACE_SOURCEMOD_VERSION	13
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -311,6 +311,13 @@ namespace SourceMod
 		 * @return			SourceHook API version number.
 		 */
 		virtual int GetShApiVersion() = 0;
+
+		/**
+		 * @brief Returns whether or not a map is currently running.
+		 *
+		 * @return			True if a map is currently running, otherwise false.
+		 */
+		virtual bool IsMapRunning() = 0;
 	};
 }
 

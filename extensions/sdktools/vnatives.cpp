@@ -760,6 +760,11 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot create new entity when no map is running");
+	}
+
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
@@ -768,6 +773,11 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 #else
 static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot create new entity when no map is running");
+	}
+
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{

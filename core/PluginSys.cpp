@@ -372,7 +372,7 @@ void CPlugin::Call_OnAllPluginsLoaded()
 		pFunction->Execute(&result);
 	}
 
-	if (g_OnMapStarted)
+	if (g_SourceMod.IsMapRunning())
 	{
 		if ((pFunction = m_pRuntime->GetFunctionByName("OnMapStart")) != NULL)
 		{

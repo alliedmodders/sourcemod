@@ -135,6 +135,7 @@ public: // ISourceMod
 	const char *GetCoreConfigValue(const char *key);
 	int GetPluginId();
 	int GetShApiVersion();
+	bool IsMapRunning();
 private:
 	CStack<CDataPack *> m_freepacks;
 	char m_SMBaseDir[PLATFORM_MAX_PATH];

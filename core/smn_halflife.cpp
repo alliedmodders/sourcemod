@@ -89,6 +89,11 @@ static cell_t GetGameTime(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_SourceMod.IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot create fakeclient when no map is active");
+	}
+
 	char *netname;
 
 	pContext->LocalToString(params[1], &netname);
