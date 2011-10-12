@@ -1450,6 +1450,7 @@ CPlayer::CPlayer()
 	m_LastPassword.clear();
 	m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
 	m_bFakeClient = false;
+	m_Serial.value = -1;
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
@@ -1521,6 +1522,7 @@ void CPlayer::Disconnect()
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
 	m_bFakeClient = false;
+	m_Serial.value = -1;
 }
 
 void CPlayer::SetName(const char *name)
