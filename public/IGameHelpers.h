@@ -50,6 +50,11 @@ struct edict_t;
 struct datamap_t;
 struct typedescription_t;
 
+#define TEXTMSG_DEST_NOTIFY  1
+#define TEXTMSG_DEST_CONSOLE 2
+#define TEXTMSG_DEST_CHAT    3
+#define TEXTMSG_DEST_CENTER  4
+
 namespace SourceMod
 {
 	/**
@@ -119,7 +124,7 @@ namespace SourceMod
 		 * @brief Sends a text message to a client.
 		 *
 		 * @param client		Client index.
-		 * @param dest			Destination on the HUD.
+		 * @param dest			Destination on the HUD (see TEXTMSG_DEST defines above).
 		 * @param msg			Message to send.
 		 * @return				True on success, false on failure.
 		 */
