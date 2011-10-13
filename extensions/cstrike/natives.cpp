@@ -325,6 +325,7 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 	
 	return 1;
 }
+
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
 	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
@@ -388,6 +389,83 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 	return CallPriceForward(params[1], weapon_name, price);
 }
 
+static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
+{
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("SetClanTag", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	static int tagOffsetOffset = -1;
+	static int tagOffset;
+
+	if (tagOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("ClanTagOffset", &tagOffsetOffset))
+		{
+			tagOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find ClanTagOffset gamedata");
+		}
+
+		tagOffset = *(int *)((intptr_t)addr + tagOffsetOffset);
+	}
+
+	size_t len;
+
+	const char *src = (char *)((intptr_t)pEntity + tagOffset);
+	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
+
+	return len;
+}
+
+static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("SetClanTag",
+			PassInfo pass[2]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type  = PassType_Basic; \
+			pass[0].size  = sizeof(CBaseEntity *); \
+			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].type  = PassType_Basic; \
+			pass[1].size  = sizeof(char *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char *szNewTag;
+	pContext->LocalToString(params[2], &szNewTag);
+
+	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(char *)];
+	unsigned char *vptr = vstk;
+
+	*(CBaseEntity **)vptr = pEntity;
+	vptr += sizeof(CBaseEntity *);
+	*(char **)vptr = szNewTag;
+
+	pWrapper->Execute(vstk, NULL);
+
+	return 1;
+}
+
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -396,6 +474,8 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_TerminateRound",			CS_TerminateRound},
 	{"CS_GetTranslatedWeaponAlias",	CS_GetTranslatedWeaponAlias},
 	{"CS_GetWeaponPrice",			CS_GetWeaponPrice},
+	{"CS_GetClientClanTag",			CS_GetClientClanTag},
+	{"CS_SetClientClanTag",			CS_SetClientClanTag},
 	{NULL,							NULL}
 };
 

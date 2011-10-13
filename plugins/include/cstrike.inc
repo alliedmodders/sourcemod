@@ -191,7 +191,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  */
  native CS_TerminateRound(Float:delay, CSRoundEndReason:reason, bool:blockhook = false);
  
- /**
+/**
  * Gets a weapon name from a weapon alias
  *
  * @param alias			Weapons alias to get weapon name for.
@@ -203,7 +203,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  */
  native CS_GetTranslatedWeaponAlias(const String:alias[], String:weapon[], size);
  
-  /**
+/**
  * Gets a weapon's price
  *
  * @param client		Client to check weapon price for.
@@ -215,6 +215,27 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  * @note				c4, knife and shield will always return 0. vest, vest helmet and night vision will always return default price.
  */
  native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
+ 
+/**
+ * Gets a clients clan tag
+ * @param client		Client index to get clan tag for.
+ * @param buffer		Buffer to store clients clan tag in.
+ * @param size			Size of the buffer.
+ * @return				Number of non-null bytes written.
+ *
+ * @error				Invalid client.
+ */
+ native CS_GetClientClanTag(client, String:buffer[], size);
+
+/**
+ * Sets a clients clan tag
+ * @param client		Client index to set clan tag for.
+ * @param tag			Tag to set clients clan tag as.
+ * @noreturn
+ *
+ * @error				Invalid client.
+ */
+ native CS_SetClientClanTag(client, const String:tag[]);
  
 /**
  * Do not edit below this line!
@@ -240,6 +261,8 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_TerminateRound");
 	MarkNativeAsOptional("CS_GetTranslatedWeaponAlias");
 	MarkNativeAsOptional("CS_GetWeaponPrice");
+	MarkNativeAsOptional("CS_GetClientClanTag");
+	MarkNativeAsOptional("CS_SetClientClanTag");
 }
 #endif
 

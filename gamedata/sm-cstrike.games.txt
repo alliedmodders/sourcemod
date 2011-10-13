@@ -28,6 +28,13 @@
 				"linux"			"2308"
 				"mac"			"2308"
 			}
+			//Offset into SetClanTag to find clan tag's offset from player
+			"ClanTagOffset"
+			{
+				"windows"	"24"
+				"linux"		"41"
+				"mac"		"29"
+			}
 		}
 		"Signatures"
 		{
@@ -86,6 +93,13 @@
 				"windows"		"\x8B\x4C\x2A\x2A\x85\xC9\x75\x2A\x33\xC0\xC3"
 				"linux"			"@_Z13GetWeaponInfo10CSWeaponID"
 				"mac"			"@_Z13GetWeaponInfo10CSWeaponID"
+			}
+			"SetClanTag"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x51\x89\x2A\x2A\x83\x2A\x2A\x2A\x74\x2A\x6A\x2A\x8B\x2A\x2A\x50"
+				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
+				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
 		}
 	}
