@@ -26,8 +26,8 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"390"
-				"linux"		"391"
+				"windows"	"391"
+				"linux"		"392"
 			}
 			"RemovePlayerItem"
 			{
@@ -56,8 +56,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"431"
-				"linux"		"431"
+				"windows"	"432"
+				"linux"		"432"
 			}
 			"GetVelocity"
 			{
@@ -106,8 +106,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"408"
-				"linux"		"409"
+				"windows"	"409"
+				"linux"		"410"
 			}
 		}
 	}
