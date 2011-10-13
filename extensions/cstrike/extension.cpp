@@ -66,6 +66,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
+	sharesys->AddDependency(myself, "sdktools.ext", false, true);
 
 	char conf_error[255];
 	if (!gameconfs->LoadGameConfigFile("sm-cstrike.games", &g_pGameConf, conf_error, sizeof(conf_error)))
