@@ -250,6 +250,9 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 
 		g_PluginSys.SyncMaxClients(m_maxClients);
 	}
+
+	g_OnMapStarted = true;
+
 	g_Extensions.CallOnCoreMapStart(pEdictList, edictCount, m_maxClients);
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
@@ -262,8 +265,6 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 			(*iter)->OnServerActivated(m_maxClients);
 		}
 	}
-
-	g_OnMapStarted = true;
 
 	SMGlobalClass *cls = SMGlobalClass::head;
 	while (cls)
