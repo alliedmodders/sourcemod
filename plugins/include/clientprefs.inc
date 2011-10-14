@@ -132,6 +132,17 @@ native SetClientCookie(client, Handle:cookie, const String:value[]);
 native GetClientCookie(client, Handle:cookie, String:buffer[], maxlen);
 
 /**
+ * Sets the value of a Client preference cookie based on an authID string.
+ *
+ * @param authID		String Auth/STEAM ID of player to set.
+ * @param cookie		Client preference cookie handle.
+ * @param value			String value to set.
+ * @noreturn
+ * @error			Invalid cookie handle.
+ */
+native SetAuthIdCookie(const String:authID[], Handle:cookie, const String:value[]);
+
+/**
  * Checks if a clients cookies have been loaded from the database.
  *
  * @param client		Client index.

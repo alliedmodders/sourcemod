@@ -170,6 +170,8 @@ public:
 	}
 };
 
+size_t IsAuthIdConnected(char *authID);
+
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
 extern sp_nativeinfo_t g_ClientPrefNatives[];

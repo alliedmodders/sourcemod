@@ -89,6 +89,63 @@ cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 		NULL);
 }
 
+cell_t SetAuthIdCookie(IPluginContext *pContext, const cell_t *params)
+{
+	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
+	{
+		return pContext->ThrowNativeError("Clientprefs is disabled due to a failed database connection");
+	}
+
+	char *steamID;
+	pContext->LocalToString(params[1], &steamID);
+
+	// convert cookie handle to Cookie*
+	Handle_t hndl = static_cast<Handle_t>(params[2]);
+	HandleError err;
+	HandleSecurity sec;
+ 
+	sec.pOwner = NULL;
+	sec.pIdentity = myself->GetIdentity();
+
+	Cookie *pCookie;
+
+	if ((err = handlesys->ReadHandle(hndl, g_CookieType, &sec, (void **)&pCookie))
+	     != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Cookie handle %x (error %d)", hndl, err);
+	}
+
+	int i_dbId = pCookie->dbid;
+	char *value;
+	pContext->LocalToString(params[3], &value);
+
+	// make sure the steamID isn't currently connected
+	if (int client = IsAuthIdConnected(steamID))
+	{
+		// use regular code for connected players
+		return g_CookieManager.SetCookieValue(pCookie, client, value);
+	}
+
+	// constructor calls strncpy for us
+	CookieData *payload = new CookieData(value);
+
+	// set changed so players connecting later in during the same map will have the correct value
+	payload->changed = true;
+	payload->timestamp = time(NULL);
+
+	// edit database table
+	TQueryOp *op = new TQueryOp(Query_InsertData, pCookie);
+	// limit player auth length which doubles for cookie name length
+	strncpy(op->m_params.steamId, steamID, MAX_NAME_LENGTH);
+	op->m_params.steamId[MAX_NAME_LENGTH-1] = '\0';
+	op->m_params.cookieId = i_dbId;
+	op->m_params.data = payload;
+
+	g_ClientPrefs.AddQueryToQueue(op);
+
+	return 1;
+}
+
 cell_t SetClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 {
 	if (g_ClientPrefs.Database == NULL && !g_ClientPrefs.databaseLoading)
@@ -436,6 +493,7 @@ sp_nativeinfo_t g_ClientPrefNatives[] =
 	{"RegClientCookie",				RegClientPrefCookie},
 	{"FindClientCookie",			FindClientPrefCookie},
 	{"SetClientCookie",				SetClientPrefCookie},
+	{"SetAuthIdCookie",				SetAuthIdCookie},
 	{"GetClientCookie",				GetClientPrefCookie},
 	{"AreClientCookiesCached",		AreClientCookiesCached},
 	{"GetCookieAccess",				GetCookieAccess},

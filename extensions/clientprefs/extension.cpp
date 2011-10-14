@@ -365,6 +365,32 @@ void ClientPrefs::ProcessQueryCache()
 	queryMutex->Unlock();
 }
 
+size_t IsAuthIdConnected(char *authID)
+{
+	IGamePlayer *player;
+	int maxPlayers = playerhelpers->GetMaxClients();
+
+	for (int playerIndex = 1; playerIndex <= maxPlayers; playerIndex++)
+	{
+		player = playerhelpers->GetGamePlayer(playerIndex);
+		if (!player || !player->IsConnected())
+		{
+			continue;
+		}
+		const char *authString = player->GetAuthString();
+		if (!authString || authString[0] == '\0')
+		{
+			continue;
+		}
+
+		if (strcmp(authString, authID) == 0)
+		{
+			return playerIndex;
+		}
+	}
+	return 0;
+}
+
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
 	va_list ap;
