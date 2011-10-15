@@ -63,7 +63,7 @@ native SetGlobalTransTarget(client);
  *
  * @param client	Client index.
  * @return			Language number client is using.
- * @error			Invalid client index or client not in game.
+ * @error			Invalid client index or client not connected.
  */
 native GetClientLanguage(client);
 
@@ -100,7 +100,7 @@ native GetLanguageInfo(language, String:code[]="", codeLen=0, String:name[]="", 
  * @param client	Client index.
  * @param language	Language number.
  * @noreturn
- * @error			Invalid client index or client not in game.
+ * @error			Invalid client index or client not connected.
  */
 native SetClientLanguage(client, language);
 

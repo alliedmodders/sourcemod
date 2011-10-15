@@ -108,7 +108,7 @@ static cell_t sm_SetClientLanguage(IPluginContext *pContext, const cell_t *param
 {
 	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
 	
-	if (!player || !player->IsInGame())
+	if (!player || !player->IsConnected())
 	{
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
 	}

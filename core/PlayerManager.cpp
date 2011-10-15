@@ -412,6 +412,21 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 
+	pPlayer->Initialize(pszName, pszAddress, pEntity);
+	
+	/* Get the client's language */
+	if (m_QueryLang)
+	{
+		const char *name;
+		if (!pPlayer->IsFakeClient() && (name=engine->GetClientConVarValue(client, "cl_language")))
+		{
+			unsigned int langid;
+			pPlayer->m_LangId = (translator->GetLanguageByName(name, &langid)) ? langid : translator->GetServerLanguage();
+		} else {
+			pPlayer->m_LangId = translator->GetServerLanguage();
+		}
+	}
+	
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
 	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
@@ -425,7 +440,6 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 
 	cell_t res = 1;
 
-	pPlayer->Initialize(pszName, pszAddress, pEntity);
 	m_clconnect->PushCell(client);
 	m_clconnect->PushStringEx(reject, maxrejectlen, SM_PARAM_STRING_UTF8 | SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
 	m_clconnect->PushCell(maxrejectlen);
@@ -545,19 +559,6 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	if (playerinfo)
 	{
 		pPlayer->m_Info = playerinfo->GetPlayerInfo(pEntity);
-	}
-
-	/* Get the client's language */
-	if (m_QueryLang)
-	{
-		const char *name;
-		if (!pPlayer->IsFakeClient() && (name=engine->GetClientConVarValue(client, "cl_language")))
-		{
-			unsigned int langid;
-			pPlayer->m_LangId = (translator->GetLanguageByName(name, &langid)) ? langid : translator->GetServerLanguage();
-		} else {
-			pPlayer->m_LangId = translator->GetServerLanguage();
-		}
 	}
 
 	pPlayer->Connect();
