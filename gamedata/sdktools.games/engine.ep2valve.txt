@@ -231,7 +231,7 @@
 			"FireOutputBackup"
 			{
 				"windows"	"6"
-				"linux"		"12"
+				"linux"		"6"
 			}
 		}
 	}
