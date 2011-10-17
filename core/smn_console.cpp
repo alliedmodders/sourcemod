@@ -994,6 +994,11 @@ static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &g_ServerCommandBuffer);
 	g_ServerCommandBufferLength = params[2];
+	
+	if (g_ServerCommandBufferLength > 0)
+	{
+		g_ServerCommandBuffer[0] = '\0';
+	}
 
 	engine->ServerExecute();
 
@@ -1004,7 +1009,10 @@ static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
 
 	engine->ServerExecute();
 
-	g_ServerCommandBuffer[g_ServerCommandBufferLength-1] = '\0';
+	if (g_ServerCommandBufferLength > 0)
+	{
+		g_ServerCommandBuffer[g_ServerCommandBufferLength-1] = '\0';
+	}
 
 	g_ServerCommandBuffer = NULL;
 	g_ServerCommandBufferLength = 0;
