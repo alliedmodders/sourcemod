@@ -94,6 +94,9 @@
 #if defined SMEXT_ENABLE_NINVOKE
 #include <INativeInvoker.h>
 #endif
+#if defined SMEXT_ENABLE_ROOTCONSOLEMENU
+#include <IRootConsoleMenu.h>
+#endif
 
 #if defined SMEXT_CONF_METAMOD
 #include <ISmmPlugin.h>

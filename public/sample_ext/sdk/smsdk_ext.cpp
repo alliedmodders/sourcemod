@@ -100,6 +100,9 @@ ITranslator *translator = NULL;
 #if defined SMEXT_ENABLE_NINVOKE
 INativeInterface *ninvoke = NULL;
 #endif
+#if defined SMEXT_ENABLE_ROOTCONSOLEMENU
+IRootConsole *rootconsole = NULL;
+#endif
 
 /** Exports the main interface */
 PLATFORM_EXTERN_C IExtensionInterface *GetSMExtAPI()
@@ -187,6 +190,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #endif
 #if defined SMEXT_ENABLE_TRANSLATOR
 	SM_GET_IFACE(TRANSLATOR, translator);
+#endif
+#if defined SMEXT_ENABLE_ROOTCONSOLEMENU
+	SM_GET_IFACE(ROOTCONSOLE, rootconsole);
 #endif
 
 	if (SDK_OnLoad(error, maxlength, late))
