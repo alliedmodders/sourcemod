@@ -44,7 +44,7 @@ EntityOutputManager::EntityOutputManager()
 	enabled = false;
 }
 
-EntityOutputManager::~EntityOutputManager()
+void EntityOutputManager::Shutdown()
 {
 	if (!enabled)
 	{

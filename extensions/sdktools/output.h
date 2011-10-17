@@ -90,10 +90,9 @@ class EntityOutputManager : public IPluginsListener
 {
 public:
 	EntityOutputManager();
-	~EntityOutputManager();
 public:
 	void Init();
-
+	void Shutdown();
 	bool IsEnabled();
 
 	void FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay);

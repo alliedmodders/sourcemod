@@ -202,6 +202,7 @@ void SDKTools::SDK_OnUnload()
 	s_TempEntHooks.Shutdown();
 	s_SoundHooks.Shutdown();
 	g_Hooks.Shutdown();
+	g_OutputManager.Shutdown();
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	playerhelpers->RemoveClientListener(&g_SdkTools);
