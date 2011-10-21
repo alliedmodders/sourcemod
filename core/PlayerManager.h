@@ -76,6 +76,8 @@ public:
 	bool IsConnected();
 	bool IsAuthorized();
 	bool IsFakeClient();
+	bool IsSourceTV() const;
+	bool IsReplay() const;
 	void SetAdminId(AdminId id, bool temporary);
 	AdminId GetAdminId();
 	void Kick(const char *str);
@@ -119,6 +121,8 @@ private:
 	unsigned int m_LangId;
 	int m_UserId;
 	bool m_bFakeClient;
+	bool m_bIsSourceTV;
+	bool m_bIsReplay;
 	serial_t m_Serial;
 };
 
@@ -208,12 +212,17 @@ private:
 	int *m_UserIdLookUp;
 	int m_maxClients;
 	int m_PlayerCount;
+	int m_PlayersSinceActive;
 	bool m_FirstPass;
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
 	bool m_bIsListenServer;
 	int m_ListenClient;
+	bool m_bIsSourceTVActive;
+	bool m_bIsReplayActive;
+	int m_SourceTVUserId;
+	int m_ReplayUserId;
 };
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX

@@ -44,6 +44,7 @@
 #include "HalfLife2.h"
 #include <inetchannel.h>
 #include <iclient.h>
+#include <tier0/icommandline.h>
 #include <IGameConfigs.h>
 #include "ExtensionSys.h"
 #include <sourcemod_version.h>
@@ -112,6 +113,9 @@ PlayerManager::PlayerManager()
 	m_AuthQueue = NULL;
 	m_FirstPass = false;
 	m_maxClients = 0;
+
+	m_SourceTVUserId = -1;
+	m_ReplayUserId = -1;
 
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
@@ -232,8 +236,20 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 
 void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
+	static ConVar *tv_enable = icvar->FindVar("tv_enable");
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+	static ConVar *replay_enable = icvar->FindVar("replay_enable");
+#endif
+
 	// clientMax will not necessarily be correct here (such as on late SourceTV enable)
 	m_maxClients = gpGlobals->maxClients;
+
+	m_bIsSourceTVActive = (tv_enable && tv_enable->GetBool() && CommandLine()->FindParm("-nohltv") == 0);
+	m_bIsReplayActive = false;
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+	m_bIsReplayActive = (replay_enable && replay_enable->GetBool());
+#endif
+	m_PlayersSinceActive = 0;
 	
 	if (!m_FirstPass)
 	{
@@ -411,6 +427,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 {
 	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
+	++m_PlayersSinceActive;
 
 	pPlayer->Initialize(pszName, pszAddress, pEntity);
 	
@@ -518,6 +535,40 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		const char *authid = engine->GetPlayerNetworkIDString(pEntity);
 		pPlayer->Authorize(authid);
 		pPlayer->m_bFakeClient = true;
+
+		/*
+		 * While we're already filtered to just bots, we'll do other checks to
+		 * make sure that the requisite services are enabled and that the bots
+		 * have joined at the expected time.
+		 *
+		 * Checking playerinfo's IsHLTV and IsReplay would be better and less
+		 * error-prone but will always show false until later in the frame,
+		 * after PutInServer and Activate, and we want it now!
+		 */
+		
+		// This doesn't actually get incremented until OnClientConnect. Fake it to check.
+		int newCount = m_PlayersSinceActive + 1;
+		int userId = engine->GetPlayerUserId(pEntity);
+
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+		if (m_bIsReplayActive && newCount == 1
+			&& (m_ReplayUserId == userId || strcmp(playername, "Replay") == 0))
+		{
+			pPlayer->m_bIsReplay = true;
+			m_ReplayUserId = userId;
+		}
+#endif
+
+		if (m_bIsSourceTVActive
+			&& ((!m_bIsReplayActive && newCount == 1)
+				|| (m_bIsReplayActive && newCount == 2))
+			&& (m_SourceTVUserId == userId || strcmp(playername, "SourceTV") == 0)
+			)
+		{
+			pPlayer->m_bIsSourceTV = true;
+			m_SourceTVUserId = userId;
+		}
+
 		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
 		{
 			/* :TODO: kick the bot if it's rejected */
@@ -1452,6 +1503,8 @@ CPlayer::CPlayer()
 	m_LastPassword.clear();
 	m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
 	m_bFakeClient = false;
+	m_bIsSourceTV = false;
+	m_bIsReplay = false;
 	m_Serial.value = -1;
 }
 
@@ -1524,6 +1577,8 @@ void CPlayer::Disconnect()
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
 	m_bFakeClient = false;
+	m_bIsSourceTV = false;
+	m_bIsReplay = false;
 	m_Serial.value = -1;
 }
 
@@ -1590,6 +1645,16 @@ IPlayerInfo *CPlayer::GetPlayerInfo()
 bool CPlayer::IsFakeClient()
 {
 	return m_bFakeClient;
+}
+
+bool CPlayer::IsSourceTV() const
+{
+	return m_bIsSourceTV;
+}
+
+bool CPlayer::IsReplay() const
+{
+	return m_bIsReplay;
 }
 
 void CPlayer::SetAdminId(AdminId id, bool temporary)

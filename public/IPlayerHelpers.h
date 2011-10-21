@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	14
+#define SMINTERFACE_PLAYERMANAGER_VERSION	15
 
 struct edict_t;
 class IPlayerInfo;
@@ -222,6 +222,20 @@ namespace SourceMod
 		virtual void MarkAsBeingKicked() =0;
 
 		virtual void SetLanguageId(unsigned int id) =0;
+
+		/**
+		 * @brief Returns whether the player is the SourceTV bot.
+		 *
+		 * @return		True if the SourceTV bot, false otherwise.
+		 */
+		virtual bool IsSourceTV() const =0;
+		
+		/**
+		 * @brief Returns whether the player is the Replay bot.
+		 *
+		 * @return		True if the Replay bot, false otherwise.
+		 */
+		virtual bool IsReplay() const =0;
 	};
 
 	/**

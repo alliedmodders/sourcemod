@@ -200,6 +200,40 @@ static cell_t sm_IsClientFakeClient(IPluginContext *pCtx, const cell_t *params)
 	return (pPlayer->IsFakeClient()) ? 1 : 0;
 }
 
+static cell_t sm_IsClientSourceTV(IPluginContext *pCtx, const cell_t *params)
+{
+	int index = params[1];
+	if ((index < 1) || (index > g_Players.GetMaxClients()))
+	{
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
+	}
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
+	if (!pPlayer->IsConnected())
+	{
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
+	}
+
+	return (pPlayer->IsSourceTV()) ? 1 : 0;
+}
+
+static cell_t sm_IsClientReplay(IPluginContext *pCtx, const cell_t *params)
+{
+	int index = params[1];
+	if ((index < 1) || (index > g_Players.GetMaxClients()))
+	{
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
+	}
+
+	CPlayer *pPlayer = g_Players.GetPlayerByIndex(index);
+	if (!pPlayer->IsConnected())
+	{
+		return pCtx->ThrowNativeError("Client %d is not connected", index);
+	}
+
+	return (pPlayer->IsReplay()) ? 1 : 0;
+}
+
 static cell_t IsClientObserver(IPluginContext *pContext, const cell_t *params)
 {
 	int client = params[1];
@@ -1605,6 +1639,8 @@ REGISTER_NATIVES(playernatives)
 	{"IsClientAuthorized",		sm_IsClientAuthorized},
 	{"IsClientConnected",		sm_IsClientConnected},
 	{"IsFakeClient",			sm_IsClientFakeClient},
+	{"IsClientSourceTV",		sm_IsClientSourceTV},
+	{"IsClientReplay",			sm_IsClientReplay},
 	{"IsClientInGame",			sm_IsClientInGame},
 	{"IsClientObserver",		IsClientObserver},
 	{"RemoveUserFlags",			RemoveUserFlags},
