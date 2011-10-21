@@ -968,7 +968,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	}
 
 #define CHECK_SET_PROP_DATA_OFFSET() \
-	if (element >= td->fieldSize) \
+	if (element < 0 || element >= td->fieldSize) \
 	{ \
 		return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
 			element, \
@@ -1001,7 +1001,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	{ \
 	case type: \
 		{ \
-			if (element > 0) \
+			if (element != 0) \
 			{ \
 				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.", \
 					prop, \
@@ -1036,7 +1036,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	} \
 	\
 	int elementCount = pTable->GetNumProps(); \
-	if (element >= elementCount) \
+	if (element < 0 || element >= elementCount) \
 	{ \
 		return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
 			element, \
@@ -1816,14 +1816,14 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 			bIsStringIndex = (td->fieldType != FIELD_CHARACTER);
 
-			if (bIsStringIndex && element >= td->fieldSize)
+			if (bIsStringIndex && (element < 0 || element >= td->fieldSize))
 			{
 				return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).",
 					element,
 					prop,
 					td->fieldSize);
 			}
-			else if (element > 1)
+			else if (element != 0)
 			{
 				return pContext->ThrowNativeError("Prop %s is not an array. Element %d is invalid.",
 					prop,
@@ -1864,7 +1864,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 					info.prop->GetType(),
 					DPT_String);
 			}
-			else if (element > 0)
+			else if (element != 0)
 			{
 				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.",
 					prop,
