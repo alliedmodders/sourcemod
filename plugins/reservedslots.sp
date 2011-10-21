@@ -55,6 +55,10 @@ new Handle:sm_reserve_type;
 new Handle:sm_reserve_maxadmins;
 new Handle:sm_reserve_kicktype;
 
+new g_SDKVersion;
+new g_SourceTV = -1;
+new g_Replay = -1;
+
 enum KickType
 {
 	Kick_HighestPing,
@@ -73,14 +77,31 @@ public OnPluginStart()
 	sm_reserve_maxadmins = CreateConVar("sm_reserve_maxadmins", "1", "Maximum amount of admins to let in the server with reserve type 2", 0, true, 0.0);
 	sm_reserve_kicktype = CreateConVar("sm_reserve_kicktype", "0", "How to select a client to kick (if appropriate)", 0, true, 0.0, true, 2.0);
 	
-	HookConVarChange(sm_reserved_slots, SlotsChanged);
-	HookConVarChange(sm_hide_slots, SlotsChanged);
+	HookConVarChange(sm_reserved_slots, SlotCountChanged);
+	HookConVarChange(sm_hide_slots, SlotHideChanged);
+	
+	g_SDKVersion = GuessSDKVersion();
+	
+	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	{
+		for (new i = 1; i <= MaxClients; i++)
+		{
+			if (IsClientSourceTV(i))
+			{
+				g_SourceTV = i;
+			}
+			else if (IsClientReplay(i))
+			{
+				g_Replay = i;
+			}
+		}
+	}
 }
 
 public OnPluginEnd()
 {
 	/* 	If the plugin has been unloaded, reset visiblemaxplayers. In the case of the server shutting down this effect will not be visible */
-	SetConVarInt(sv_visiblemaxplayers, MaxClients);
+	ResetVisibleMax();
 }
 
 public OnMapStart()
@@ -118,6 +139,18 @@ public Action:OnTimedKick(Handle:timer, any:client)
 
 public OnClientPostAdminCheck(client)
 {
+	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	{
+		if (IsClientSourceTV(client))
+		{
+			g_SourceTV = client;
+		}
+		else if (IsClientReplay(client))
+		{
+			g_Replay = client;
+		}
+	}
+	
 	new reserved = GetConVarInt(sm_reserved_slots);
 
 	if (reserved > 0)
@@ -198,6 +231,18 @@ public OnClientPostAdminCheck(client)
 
 public OnClientDisconnect_Post(client)
 {
+	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	{
+		if (client == g_SourceTV)
+		{
+			g_SourceTV = -1;
+		}
+		else if (client == g_Replay)
+		{
+			g_Replay = -1;
+		}
+	}
+	
 	if (GetConVarBool(sm_hide_slots))
 	{		
 		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
@@ -210,12 +255,30 @@ public OnClientDisconnect_Post(client)
 	}
 }
 
-public SlotsChanged(Handle:convar, const String:oldValue[], const String:newValue[])
+public SlotCountChanged(Handle:convar, const String:oldValue[], const String:newValue[])
 {
 	/* Reserved slots or hidden slots have been disabled - reset sv_visiblemaxplayers */
-	if (StringToInt(newValue) == 0)
+	new slotcount = GetConVarInt(convar);
+	if (slotcount == 0)
 	{
-		SetConVarInt(sv_visiblemaxplayers, MaxClients);
+		ResetVisibleMax();
+	}
+	else if (GetConVarBool(sm_hide_slots))
+	{
+		SetVisibleMaxSlots(GetClientCount(false), MaxClients - slotcount);
+	}
+}
+
+public SlotHideChanged(Handle:convar, const String:oldValue[], const String:newValue[])
+{
+	/* Reserved slots or hidden slots have been disabled - reset sv_visiblemaxplayers */
+	if (!GetConVarBool(convar))
+	{
+		ResetVisibleMax();
+	}
+	else
+	{
+		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
 	}
 }
 
@@ -230,7 +293,25 @@ SetVisibleMaxSlots(clients, limit)
 		num = limit;
 	}
 	
+	if (g_SDKVersion == SOURCE_SDK_EPISODE2VALVE)
+	{
+		if (g_SourceTV > -1)
+		{
+			--num;
+		}
+		
+		if (g_Replay > -1)
+		{
+			--num;
+		}
+	}
+	
 	SetConVarInt(sv_visiblemaxplayers, num);
+}
+
+ResetVisibleMax()
+{
+	SetConVarInt(sv_visiblemaxplayers, -1);
 }
 
 SelectKickClient()
