@@ -112,7 +112,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	playerhelpers->AddClientListener(this);
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
-	g_getHolidayForward = forwards->CreateForward("TF2_OnGetHoliday", ET_Event, 1, NULL, Param_CellByRef);
+	g_isHolidayForward = forwards->CreateForward("TF2_OnIsHolidayActive", ET_Event, 2, NULL, Param_Cell, Param_CellByRef);
 	g_addCondForward = forwards->CreateForward("TF2_OnConditionAdded", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_removeCondForward = forwards->CreateForward("TF2_OnConditionRemoved", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_waitingPlayersStartForward = forwards->CreateForward("TF2_OnWaitingForPlayersStart", ET_Ignore, 0, NULL);
@@ -121,7 +121,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_pCVar = icvar;
 
 	m_CritDetoursEnabled = false;
-	m_GetHolidayDetourEnabled = false;
+	m_IsHolidayDetourEnabled = false;
 	m_CondChecksEnabled = false;
 	m_RulesDetoursEnabled = false;
 
@@ -168,7 +168,7 @@ void TF2Tools::SDK_OnUnload()
 	plsys->RemovePluginsListener(this);
 
 	forwards->ReleaseForward(g_critForward);
-	forwards->ReleaseForward(g_getHolidayForward);
+	forwards->ReleaseForward(g_isHolidayForward);
 	forwards->ReleaseForward(g_addCondForward);
 	forwards->ReleaseForward(g_removeCondForward);
 	forwards->ReleaseForward(g_waitingPlayersStartForward);
@@ -320,9 +320,9 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 		m_CritDetoursEnabled = InitialiseCritDetours();
 	}
 
-	if (!m_GetHolidayDetourEnabled && g_getHolidayForward->GetFunctionCount())
+	if (!m_IsHolidayDetourEnabled && g_isHolidayForward->GetFunctionCount())
 	{
-		m_GetHolidayDetourEnabled = InitialiseGetHolidayDetour();
+		m_IsHolidayDetourEnabled = InitialiseIsHolidayDetour();
 	}
 
 	if (!m_CondChecksEnabled
@@ -347,10 +347,10 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 		RemoveCritDetours();
 		m_CritDetoursEnabled = false;
 	}
-	if (m_GetHolidayDetourEnabled && !g_getHolidayForward->GetFunctionCount())
+	if (m_IsHolidayDetourEnabled && !g_isHolidayForward->GetFunctionCount())
 	{
-		RemoveGetHolidayDetour();
-		m_GetHolidayDetourEnabled = false;
+		RemoveIsHolidayDetour();
+		m_IsHolidayDetourEnabled = false;
 	}
 	if (m_CondChecksEnabled)
 	{

@@ -118,7 +118,7 @@ public:
 #endif
 private:
 	bool m_CritDetoursEnabled;
-	bool m_GetHolidayDetourEnabled;
+	bool m_IsHolidayDetourEnabled;
 	bool m_CondChecksEnabled;
 	bool m_RulesDetoursEnabled;
 };
