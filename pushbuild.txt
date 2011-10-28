@@ -51,3 +51,6 @@ clobstermonkey
 that thing
 clobber build because amx.h changed (sigh)
 a dead fish
+ten clams, ten of them
+snail
+rum ham
