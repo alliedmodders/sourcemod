@@ -121,8 +121,10 @@ enum TFCond
 enum TFHoliday
 {
 	TFHoliday_None = 1,
+	TFHoliday_Birthday,
 	TFHoliday_Halloween,
-	TFHoliday_Birthday
+	TFHoliday_FullMoon,
+	TFHoliday_HalloweenOrFullMoon,
 };
 
 enum TFObjectType
@@ -278,14 +280,21 @@ native TFClassType:TF2_GetClass(const String:classname[]);
 forward Action:TF2_CalcIsAttackCritical(client, weapon, String:weaponname[], &bool:result);
 
 /**
- * Called when the game checks to see if the current day is one of its tracked holidays
- *
- * @note Change the value of holiday and return Plugin_Changed to override.
- *       Return Plugin_Continue for no change.
- *
- * @param holiday		Current Holiday
+ * @deprecated		No longer called. Use TF2_OnIsHolidayActive.
  */
+#pragma deprecated No longer called. Use TF2_OnIsHolidayActive.
 forward Action:TF2_OnGetHoliday(&TFHoliday:holiday);
+
+/**
+ * Called at various times when the game checks to see if the given holiday is active.
+ * Return Plugin_Continue to let the original calculation or return a higher
+ * action to override the decision with the value of 'result'
+ *
+ * @param holiday		Holiday being checked.
+ * @param result		Buffer param for the result of the decision.
+ * @return				Plugin_Continue for original calculation, higher value to use 'result'.
+ */
+forward Action:TF2_OnIsHolidayActive(TFHoliday:holiday, &bool:result);
 
 /**
  * Returns whether or not a client (Player) is in a duel.

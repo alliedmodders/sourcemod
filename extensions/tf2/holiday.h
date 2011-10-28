@@ -37,9 +37,9 @@
 #include <jit/x86/x86_macros.h>
 #include "CDetour/detours.h"
 
-bool InitialiseGetHolidayDetour();
-void RemoveGetHolidayDetour();
+bool InitialiseIsHolidayDetour();
+void RemoveIsHolidayDetour();
 
-extern IForward *g_getHolidayForward;
+extern IForward *g_isHolidayForward;
 
 #endif //_INCLUDE_SOURCEMOD_HOLIDAY_H_

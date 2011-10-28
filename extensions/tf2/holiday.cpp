@@ -31,48 +31,49 @@
 
 #include "holiday.h"
 
-CDetour *getHolidayDetour = NULL;
+CDetour *isHolidayDetour = NULL;
 
-IForward *g_getHolidayForward = NULL;
+IForward *g_isHolidayForward = NULL;
 
-DETOUR_DECL_STATIC0(GetHoliday, int)
+DETOUR_DECL_STATIC1(IsHolidayActive, bool, int, holiday)
 {
-	int actualres = DETOUR_STATIC_CALL(GetHoliday)();
-	if (!g_getHolidayForward)
+	bool actualres = DETOUR_STATIC_CALL(IsHolidayActive)(holiday);
+	if (!g_isHolidayForward)
 	{
 		g_pSM->LogMessage(myself, "Invalid Forward");
 		return actualres;
 	}
 
 	cell_t result = 0;
-	int newres = actualres;
+	cell_t newres = actualres ? 1 : 0;
 
-	g_getHolidayForward->PushCellByRef(&newres);
-	g_getHolidayForward->Execute(&result);
+	g_isHolidayForward->PushCell(holiday);
+	g_isHolidayForward->PushCellByRef(&newres);
+	g_isHolidayForward->Execute(&result);
 	
 	if (result == Pl_Changed)
 	{
-		return newres;
+		return (newres == 0) ? false : true;
 	}
 
 	return actualres;
 }
 
-bool InitialiseGetHolidayDetour()
+bool InitialiseIsHolidayDetour()
 {
-	getHolidayDetour = DETOUR_CREATE_STATIC(GetHoliday, "GetHoliday");
+	isHolidayDetour = DETOUR_CREATE_STATIC(IsHolidayActive, "IsHolidayActive");
 
-	if (getHolidayDetour != NULL)
+	if (isHolidayDetour != NULL)
 	{
-		getHolidayDetour->EnableDetour();
+		isHolidayDetour->EnableDetour();
 		return true;
 	}
 
-	g_pSM->LogError(myself, "GetHoliday detour failed");
+	g_pSM->LogError(myself, "IsHolidayActive detour failed");
 	return false;
 }
 
-void RemoveGetHolidayDetour()
+void RemoveIsHolidayDetour()
 {
-	getHolidayDetour->Destroy();
+	isHolidayDetour->Destroy();
 }
