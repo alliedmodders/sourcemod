@@ -1,5 +1,147 @@
 SourceMod Changelog
 
+-----------------------------
+
+SourceMod 1.4.0 [2011-10-28]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.0_Release_Notes
+
+User Changes:
+
+ - Added support for Max OS X (bug 4392). 
+ - Added support for Bloody Good Time (bug 4780). 
+ - Added support for E.Y.E Divine Cybermancy (bug 5035). 
+ - Added gamedata for Nuclear Dawn. 
+ - Added gamedata for International Online Soccer: Source (bug 5019). 
+ - Added gamedata for Half-Life 2 Capture the Flag (bug 5114). 
+ - Updated mapchooser and other base plugins with Nuclear Dawn specific fixes (bug 5117). 
+ - Fixed ServerLang value not being read properly on startup (bug 4675). 
+ - Added support for aliases in languages.cfg (bug 4858). 
+ - Added output display to sm_rcon command (bug 5018). 
+ - Flood protection bypass access can now be overridden with command name sm_flood_access (bug 4584). 
+ - Added a reset argument to sm cvars command to revset cvar values to default (bug 5043). 
+ - Fixed incorrect language identifiers for Chinese (both Trad. and Simplified) and Brazilian Portuguese not matching cl_language values (bug 5067). 
+ - Added translation support for Bulgarian (bg). 
+ - Fixed incorrect number of slots being hidden for reserve with sm_hideslots on Source 2009 with SourceTV or replay (bug 5094). 
+ - sm_hideslots changes now take effect immediately instead of waiting until a client joins or leaves (bug 5094). 
+ - Fixed sv_visiblemaxplayers getting stuck at previous max clients in some cases with reserves and SourceTV or replay (bug 5094). 
+ - Removed error logging if an optional extension is not found (bug 5112). 
+ - Fixed bots with semicolon in name being unkickable (bug 5120). 
+ - Changed strings in ice-related funcommands to be translatable (bug 4540). 
+ - Changed Bintools extension to use a single build for every engine (bug 4548). 
+
+Developer Changes:
+ - Provided native interface for basecomm (bug 2594). 
+ - Client language detection is too late. (bug 3714) (Tony A. "GoD-Tony"). 
+ - Added ServerCommandEx native to execute server command and retrieve output (bug 3873). 
+ - Added ability to update clientprefs cookies values on clients not currently connected (bug 3882) (databomb). 
+ - Added library "matchmaking_ds" support to gamedata lookups (bug 4158). 
+ - Rooted menu handles to callbacks (bug 4353). 
+ - Fixed corner cases with ExplodeString (bug 4629). (Michael "LumiStance"). 
+ - Fixed return omission with else-after-return (bug 4852). 
+ - Added OnConditionAdded and OnConditionRemoved forwards to TF2 extension (bug 4851). 
+ - Added new natives and forward to the cstrike extension (bug 4732, bug 4985) (Dr!fter). 
+ - Added WaitingForPlayers forwards to the TF2 extension (bug 4704) (CrimsonGT). 
+ - Updated and added more TF2 condition, weapon, and damagecustom defines (multiple bug#s). 
+ - Fixed TF2_RemoveCondition not always removing conditions (bug 4981). 
+ - Fixed MaxClients not being updated correctly in some places with SourceTV or replay active (bug 4986). 
+ - Fixed some vars not being marked for init on first compile pass (bug 4643). 
+ - Increased symbol name limit to 63 characters (bug 4564) (javalia). 
+ - Fixed crash when dynamic arrays run out of memory (bug 4632). 
+ - Fixed a crash that could happen from looking up out-of-bounds edict or entity indexes (bug 5080). 
+ - Fixed client serials not getting cleared on disconnect (bug 5121). 
+ - Added error on declaring arrays that the compiler is too buggy to handle (bug 4977). 
+ - Removed reliance on gamedata for multiple SDKTools functions in ep2 and later (bug 4899). 
+ - Added InvalidateClient and ReconnectClient natives to SDKTools (bug 4931) (Brian "Afronanny" Simon). 
+ - Added ability to lookup and set values on the gamerules class (bug 4983. 
+ - BaseComm now uses AddCommandListener for chat hooks (bug 4991). 
+ - Fixed shutdown bug in SDKTools (bug 5063). 
+ - Fixed MM-enabled extensions continuing to load after failing MM attach (bug 5042). 
+ - Added GetDistGainFromSoundLevel native to SDKTools (bug 5066) (javalia). 
+ - Added CheckAccess native to check an AdminId's command access (bug 5083). 
+ - Fixed GetEntProp not sign-extending unsigned values less than 32 bits (bug 5105). 
+ - Fixed crashing when calling CreateEntityByName or CreateFakeClient when no map is running (now errors) (bug 5119). 
+ - Fixed erring in kick function (e. bad translation) causing client to become unkickable until disconnect (bug 5120). 
+ - Fixed KickClientEx not immediately kicking client if client was in kick queue (bug 5120). 
+ - Added IsClientSourceTV and IsClientReplay natives (bug 5124). 
+ - Added support for getting and setting individual array elements with Get/Set EntProp functions (bug 4160). 
+ - Added support for threaded query handles to SQL_GetInsertId and SQL_GetAffectedRows (bug 4699) (Nephyrin). 
+ - Added a GetGameRules function to ISDKTools for extensions to easily get the GameRules class pointer (bug 4707). 
+ - Added GetMessageName to IUserMessages (bug 4573) (Zach "theY4Kman" Kanzler) 
+ - Added HintTextMsg to IGameHelpers (bug 4950). 
+ - Added ProcessTargetString simple filter API (bug 4404). 
+ - Moved much functionality from core bins to logic bin (bug 4406, bug 4402). 
+ - Fixed bogus asserts in sp compiler (bug 4486, bug 4487). 
+ - Greatly improved sp compiler performance (~5x overall speedup) (bug 3820, bug 4493, bug 4495). 
+ - Changed entity output detours to use CDetour (bug 4416). 
+ - Enhanced nominations API (bug 4677) (CrimsonGT). 
+ - Added Linux support for profiling natives (bug 4927). 
+ - Added a new ValveCallType that allows for arbitrary |this| parameters, as well as associated features in gamedata and for reading/writing memory (bug 3520) (Downtown1). 
+ - Updated TF2 extension to handle Valve's changes to the "holiday" system (bug 5150).
+
+-----------------------------
+
+SourceMod 1.3.8 [2011-06-23]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.8_Release_Notes
+
+User Changes:
+
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod).
+ - Updated support for various games, including Garry's Mod, Zombie Panic, and Dino D-Day.
+ - Added gamedata for Eternal Silence.
+ - Fixed libgcc_s.so.1 load error present on some systems (bug 4876).
+ - Handle leak notices now print to error log (in addition fatal log) (bug 4929).
+ - Translator now properly falls back on bad server language (bug 4861).
+ - Fixed invalid client errors from bad MaxClients value when SourceTV is late-loaded (bug 4881).
+ - Fixed crash on plugin unload when two commands exist with same name, different casing (bug 4698). 
+
+Developer Changes:
+
+ - Updated TF2 condition defines (bug 4916).
+ - Fixed var names and docs for TF2_MakeBleed native (bug 4928).
+ - Removed compiler double include check (bug 4863).
+ - Fixed plugin compile errors when using GetEntityClassname (bug 4798). 
+
+---------------------------
+
+SourceMod 1.3.7 [2011-04-15]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.3.7_Release_Notes
+
+User Changes:
+
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod).
+ - Updated support for various games, including Zombie Panic, CS ProMod, Empires, and GoldenEye: Source.
+ - Added gamedata for Dino D-Day.
+ - Fix precedence of voice mute flag versus specific client overrides (bug 4826).
+ - Fix mistaken unhooking of voice hooks (bug 4804).
+ - Fixed graphical glitches with funcommands effects in L4D1 (bug 3486).
+ - Fixed bug in nominations that could cause "Unknown command" error (bug 4797).
+ - Removed tv_enable hook to fix rare max client count issue (bug 4791).
+ - Added missing unhooking of ClientConnect in PlayerManager (bug 4749).
+ - Fixed sm_rtv printing "unknown command" (bug 4730).
+ - Fixed voting crash when client console, chat, and SourceTV are enabled (bug 4676).
+ - Fixed CDetour crash in TF2 extension when last plugin using forward is unloaded (bug 4713).
+
+Developer Changes:
+
+ - SetEntProp now marks edict state as changed (bug 4855).
+ - Added GetEntityClassname stock (bug 4798).
+ - Fix compiler hanging when #including a directory (bug 4822).
+ - Added GetEntityFlags and SetEntityFlags natives for better cross-engine compatibility. (bug 4809).
+ - Fixed ClientPrefs natives not being marked optional when REQUIRE_EXTENSIONS not defined (bug 4839).
+ - Changed some instances of LogMessage to LogAction (bug 4649).
+ - Added some new language natives (bug 4613).
+ - Fixed SetTeamScore not updating score on client (bug 2736).
+ - Raised MAXPLAYERS from 64 to 65 (bug 4490).
+ - Added and updated many TF2-specific defines in tf2.inc and tf2_stocks.inc.
+ - Fixed TF2_GetPlayerConditionFlags no longer necessarily returning all set flags (bug 4726).
+ - Fixed profiler flush not clearing, added 'report' and 'clear' (bug 4674).
+ - Fixed GetPlayerDecalFile crash on L4D and L4D2 (bug 4729).
+ - Fixed TF2_OnGetHoliday detour no longer firing under all circumstances (bug 4700).
+ - Added TF2_IsPlayerInDuel native to TF2 extension (bug 4695).
+
 ----------------------------
 
 SourceMod 1.3.6 [2010-10-31]
