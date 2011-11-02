@@ -125,9 +125,9 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"319"
-				"linux"		"320"
-				"mac"		"320"
+				"windows"	"318"
+				"linux"		"319"
+				"mac"		"319"
 			}
 		}
 	}
