@@ -104,8 +104,8 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"319"
-				"linux"		"320"
+				"windows"	"318"
+				"linux"		"319"
 
 			}
 		}
