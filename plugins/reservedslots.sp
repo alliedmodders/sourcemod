@@ -86,6 +86,9 @@ public OnPluginStart()
 	{
 		for (new i = 1; i <= MaxClients; i++)
 		{
+			if (!IsClientConnected(i))
+				continue;
+			
 			if (IsClientSourceTV(i))
 			{
 				g_SourceTV = i;
