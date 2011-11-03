@@ -78,6 +78,7 @@
 #define TF_DEATHFLAG_DEADRINGER         (1 << 5)
 #define TF_DEATHFLAG_INTERRUPTED        (1 << 6)
 #define TF_DEATHFLAG_GIBBED             (1 << 7)
+#define TF_DEATHFLAG_PURGATORY          (1 << 8)
 
 // Custom kill identifiers for the customkill property on the player_death event
 enum {
@@ -130,6 +131,7 @@ enum {
 	TF_CUSTOM_PLASMA_CHARGED,
 	TF_CUSTOM_PLASMA_GIB,
 	TF_CUSTOM_PRACTICE_STICKY,
+	TF_CUSTOM_EYEBALL_ROCKET,
 };
 
 // Weapon codes as used in some events, such as player_death
