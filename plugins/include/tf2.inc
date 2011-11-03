@@ -120,8 +120,7 @@ enum TFCond
 
 enum TFHoliday
 {
-	TFHoliday_None = 1,
-	TFHoliday_Birthday,
+	TFHoliday_Birthday = 1,
 	TFHoliday_Halloween,
 	TFHoliday_FullMoon,
 	TFHoliday_HalloweenOrFullMoon,
