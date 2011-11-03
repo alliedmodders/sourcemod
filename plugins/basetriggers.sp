@@ -270,23 +270,23 @@ public Action:Command_Say(client, const String:command[], argc)
 	{
 		if (g_Cvar_FriendlyFire != INVALID_HANDLE)
 		{
-			decl String:message[64];
+			decl String:phrase[24];
 			if (GetConVarBool(g_Cvar_FriendlyFire))
 			{
-				Format(message, sizeof(message), "%T", "Friendly Fire On", client);
+				strcopy(phrase, sizeof(phrase), "Friendly Fire On");
 			}
 			else
 			{
-				Format(message, sizeof(message), "%T", "Friendly Fire Off", client);
+				strcopy(phrase, sizeof(phrase), "Friendly Fire Off");
 			}
 		
 			if(GetConVarInt(g_Cvar_TriggerShow))
 			{
-				PrintToChatAll("[SM] %s", message);
+				PrintToChatAll("[SM] %t", phrase);
 			}
 			else
 			{
-				PrintToChat(client,"[SM] %s", message);		
+				PrintToChat(client,"[SM] %t", phrase);
 			}
 		}
 	}
