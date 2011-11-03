@@ -67,6 +67,7 @@ public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 	CreateNative("BaseComm_IsClientMuted",  Native_IsClientMuted);
 	CreateNative("BaseComm_SetClientGag",   Native_SetClientGag);
 	CreateNative("BaseComm_SetClientMute",  Native_SetClientMute);
+	RegPluginLibrary("basecomm");
 	
 	return APLRes_Success;
 }
