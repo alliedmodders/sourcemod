@@ -263,9 +263,9 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 		memset(m_AuthQueue, 0, sizeof(unsigned int) * (ABSOLUTE_PLAYER_LIMIT + 1));
 
 		g_NumPlayersToAuth = &m_AuthQueue[0];
-
-		g_PluginSys.SyncMaxClients(m_maxClients);
 	}
+
+	g_PluginSys.SyncMaxClients(m_maxClients);
 
 	g_OnMapStarted = true;
 
