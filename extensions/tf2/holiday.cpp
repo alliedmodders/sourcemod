@@ -51,7 +51,7 @@ DETOUR_DECL_STATIC1(IsHolidayActive, bool, int, holiday)
 	g_isHolidayForward->PushCellByRef(&newres);
 	g_isHolidayForward->Execute(&result);
 	
-	if (result == Pl_Changed)
+	if (result > Pl_Continue)
 	{
 		return (newres == 0) ? false : true;
 	}
