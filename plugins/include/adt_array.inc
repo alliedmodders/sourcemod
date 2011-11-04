@@ -88,7 +88,7 @@ native ClearArray(Handle:array);
  * @return				New handle to the cloned array object
  * @error				Invalid Handle
  */
- native Handle:CloneArray(Handle:array);
+native Handle:CloneArray(Handle:array);
 
 /**
  * Resizes an array.  If the size is smaller than the current size,

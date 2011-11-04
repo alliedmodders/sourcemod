@@ -189,7 +189,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  *						forward from being called.
  * @noreturn
  */
- native CS_TerminateRound(Float:delay, CSRoundEndReason:reason, bool:blockhook = false);
+native CS_TerminateRound(Float:delay, CSRoundEndReason:reason, bool:blockhook = false);
  
 /**
  * Gets a weapon name from a weapon alias
@@ -201,7 +201,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  *
  * @note				Will set the buffer to the original alias if it is not an alias to a weapon.
  */
- native CS_GetTranslatedWeaponAlias(const String:alias[], String:weapon[], size);
+native CS_GetTranslatedWeaponAlias(const String:alias[], String:weapon[], size);
  
 /**
  * Gets a weapon's price
@@ -214,7 +214,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  * @error				Invalid client, failing to get weapon info, or failing to get price offset.
  * @note				c4, knife and shield will always return 0. vest, vest helmet and night vision will always return default price.
  */
- native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
+native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
  
 /**
  * Gets a clients clan tag
@@ -225,7 +225,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  *
  * @error				Invalid client.
  */
- native CS_GetClientClanTag(client, String:buffer[], size);
+native CS_GetClientClanTag(client, String:buffer[], size);
 
 /**
  * Sets a clients clan tag
@@ -235,7 +235,7 @@ native CS_DropWeapon(client, weaponIndex, bool:toss, bool:blockhook = false);
  *
  * @error				Invalid client.
  */
- native CS_SetClientClanTag(client, const String:tag[]);
+native CS_SetClientClanTag(client, const String:tag[]);
  
 /**
  * Do not edit below this line!
