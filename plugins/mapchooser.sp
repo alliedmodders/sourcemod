@@ -31,6 +31,16 @@
  *
  * Version: $Id$
  */
+ 
+//#define DEBUG
+
+#if defined DEBUG
+	#define assert(%1) if (!(%1)) ThrowError("Debug Assertion Failed");
+	#define assert_msg(%1,%2) if (!(%1)) ThrowError(%2);
+#else
+	#define assert(%1)
+	#define assert_msg(%1,%2)
+#endif
 
 #pragma semicolon 1
 #include <sourcemod>
@@ -66,6 +76,8 @@ new Handle:g_Cvar_Extend = INVALID_HANDLE;
 new Handle:g_Cvar_DontChange = INVALID_HANDLE;
 new Handle:g_Cvar_EndOfMapVote = INVALID_HANDLE;
 new Handle:g_Cvar_VoteDuration = INVALID_HANDLE;
+new Handle:g_Cvar_RunOff = INVALID_HANDLE;
+new Handle:g_Cvar_RunOffPercent = INVALID_HANDLE;
 
 new Handle:g_VoteTimer = INVALID_HANDLE;
 new Handle:g_RetryTimer = INVALID_HANDLE;
@@ -126,6 +138,8 @@ public OnPluginStart()
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
 	g_Cvar_DontChange = CreateConVar("sm_mapvote_dontchange", "1", "Specifies if a 'Don't Change' option should be added to early votes", _, true, 0.0);
 	g_Cvar_VoteDuration = CreateConVar("sm_mapvote_voteduration", "20", "Specifies how long the mapvote should be available for.", _, true, 5.0);
+	g_Cvar_RunOff = CreateConVar("sm_mapvote_runoff", "0", "Hold run of votes if winning choice is less than a certain margin", _, true, 0.0, true, 1.0);
+	g_Cvar_RunOffPercent = CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
 	
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
@@ -526,6 +540,7 @@ public Action:Command_Mapvote(client, args)
  *
  * @param when			When the resulting map change should occur.
  * @param inputlist		Optional list of maps to use for the vote, otherwise an internal list of nominations + random maps will be used.
+ * @param noSpecials	Block special vote options like extend/nochange (upgrade this to bitflags instead?)
  */
 InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 {
@@ -586,6 +601,7 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 		{
 			GetArrayString(g_NominateList, i, map, sizeof(map));
 			AddMenuItem(g_VoteMenu, map, map);
+			RemoveStringFromArray(g_NextMapList, map);
 			
 			/* Notify Nominations that this map is now free */
 			Call_StartForward(g_NominationsResetForward);
@@ -598,6 +614,7 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 		for (new i=nominationsToAdd; i<nominateCount; i++)
 		{
 			GetArrayString(g_NominateList, i, map, sizeof(map));
+			/* These maps shouldn't be excluded from the vote as they weren't really nominated at all */
 			
 			/* Notify Nominations that this map is now free */
 			Call_StartForward(g_NominationsResetForward);
@@ -617,13 +634,9 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 			GetArrayString(g_NextMapList, count, map, sizeof(map));
 			count++;
 			
-			//Check if this map is in the nominate list (and thus already in the vote) */
-			if (FindStringInArray(g_NominateList, map) == -1)
-			{
-				/* Insert the map and increment our count */
-				AddMenuItem(g_VoteMenu, map, map);
-				i++;
-			}
+			/* Insert the map and increment our count */
+			AddMenuItem(g_VoteMenu, map, map);
+			i++;
 			
 			if (count >= availableMaps)
 			{
@@ -670,19 +683,13 @@ InitiateVote(MapChange:when, Handle:inputlist=INVALID_HANDLE)
 	PrintToChatAll("[SM] %t", "Nextmap Voting Started");
 }
 
-public Handler_MapVoteFinished(Handle:menu,
+public Handler_VoteFinishedGeneric(Handle:menu,
 						   num_votes, 
 						   num_clients,
 						   const client_info[][2], 
 						   num_items,
 						   const item_info[][2])
 {
-	if (num_votes == 0)
-	{
-		LogError("No Votes recorded yet Advanced callback fired - Tell pRED* to fix this");
-		return;	
-	}
-	
 	decl String:map[32];
 	GetMenuItem(menu, item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map));
 
@@ -769,6 +776,53 @@ public Handler_MapVoteFinished(Handle:menu,
 		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", map, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
+}
+
+public Handler_MapVoteFinished(Handle:menu,
+						   num_votes, 
+						   num_clients,
+						   const client_info[][2], 
+						   num_items,
+						   const item_info[][2])
+{
+	if (GetConVarBool(g_Cvar_RunOff) && num_items > 1)
+	{
+		new Float:winningvotes = float(item_info[0][VOTEINFO_ITEM_VOTES]);
+		new Float:required = num_votes * (GetConVarFloat(g_Cvar_RunOffPercent) / 100.0);
+		
+		if (winningvotes <= required)
+		{
+			/* Insufficient Winning margin - Lets do a runoff */
+			g_VoteMenu = CreateMenu(Handler_MapVoteMenu, MenuAction:MENU_ACTIONS_ALL);
+			SetMenuTitle(g_VoteMenu, "Runoff Vote Nextmap");
+			SetVoteResultCallback(g_VoteMenu, Handler_VoteFinishedGeneric);
+
+			decl String:map[32];
+			decl String:info1[32];
+			decl String:info2[32];
+			
+			GetMenuItem(menu, item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, info1, sizeof(info1));
+			AddMenuItem(g_VoteMenu, map, info1);
+			GetMenuItem(menu, item_info[1][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, info2, sizeof(info2));
+			AddMenuItem(g_VoteMenu, map, info2);
+			
+			new voteDuration = GetConVarInt(g_Cvar_VoteDuration);
+			SetMenuExitButton(g_VoteMenu, false);
+			VoteMenuToAll(g_VoteMenu, voteDuration);
+			
+			/* Notify */
+			new Float:map1percent = float(item_info[0][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
+			new Float:map2percent = float(item_info[1][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
+			
+			
+			PrintToChatAll("[SM] %t", "Starting Runoff", GetConVarFloat(g_Cvar_RunOffPercent), info1, map1percent, info2, map2percent);
+			LogMessage("Voting for next map was indecisive, beginning runoff vote");
+					
+			return;
+		}
+	}
+	
+	Handler_VoteFinishedGeneric(menu, num_votes, num_clients, client_info, num_items, item_info);
 }
 
 public Handler_MapVoteMenu(Handle:menu, MenuAction:action, param1, param2)
@@ -865,33 +919,35 @@ public Action:Timer_ChangeMap(Handle:hTimer, Handle:dp)
 	return Plugin_Stop;
 }
 
-CreateNextVote()
+bool:RemoveStringFromArray(Handle:array, String:str[])
 {
-	if(g_NextMapList != INVALID_HANDLE)
-	{
-		ClearArray(g_NextMapList);
-	}
-	
-	decl String:map[32];
-	new index, Handle:tempMaps  = CloneArray(g_MapList);
-	
-	GetCurrentMap(map, sizeof(map));
-	index = FindStringInArray(tempMaps, map);
+	new index = FindStringInArray(array, str);
 	if (index != -1)
 	{
-		RemoveFromArray(tempMaps, index);
-	}	
+		RemoveFromArray(array, index);
+		return true;
+	}
+	
+	return false;
+}
+
+CreateNextVote()
+{
+	assert(g_NextMapList)
+	ClearArray(g_NextMapList);
+	
+	decl String:map[32];
+	new Handle:tempMaps  = CloneArray(g_MapList);
+	
+	GetCurrentMap(map, sizeof(map));
+	RemoveStringFromArray(tempMaps, map);
 	
 	if (GetConVarInt(g_Cvar_ExcludeMaps) && GetArraySize(tempMaps) > GetConVarInt(g_Cvar_ExcludeMaps))
 	{
 		for (new i = 0; i < GetArraySize(g_OldMapList); i++)
 		{
 			GetArrayString(g_OldMapList, i, map, sizeof(map));
-			index = FindStringInArray(tempMaps, map);
-			if (index != -1)
-			{
-				RemoveFromArray(tempMaps, index);
-			}
+			RemoveStringFromArray(tempMaps, map);
 		}	
 	}
 
