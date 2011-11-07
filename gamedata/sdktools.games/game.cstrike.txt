@@ -26,18 +26,18 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"391"
-				"linux"		"392"
+				"windows"	"393"
+				"linux"		"394"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"262"
-				"linux"		"263"
+				"windows"	"264"
+				"linux"		"265"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"260"
-				"linux"		"261"
+				"windows"	"262"
+				"linux"		"263"
 			}
 			"Ignite"
 			{
@@ -56,8 +56,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"432"
-				"linux"		"432"
+				"windows"	"433"
+				"linux"		"433"
 			}
 			"GetVelocity"
 			{
@@ -96,8 +96,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"253"
-				"linux"		"254"
+				"windows"	"255"
+				"linux"		"256"
 			}
 			"Activate"
 			{
@@ -106,8 +106,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"409"
-				"linux"		"410"
+				"windows"	"411"
+				"linux"		"412"
 			}
 		}
 	}
