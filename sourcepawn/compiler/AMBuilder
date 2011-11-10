@@ -16,7 +16,7 @@ elif compiler.cc.name == 'msvc':
 	compiler['POSTLINKFLAGS'].append('/SUBSYSTEM:CONSOLE')
 
 if AMBuild.target['platform'] == 'linux':
-	compiler['CDEFINES'].extend(['LINUX', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC', '_POSIX_SOURCE'])
+	compiler['CDEFINES'].extend(['LINUX', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC', '_GNU_SOURCE'])
 elif AMBuild.target['platform'] == 'darwin':
 	compiler['CDEFINES'].extend(['DARWIN', 'HAVE_STDINT_H', 'AMX_ANSIONLY', 'ENABLE_BINRELOC'])
 
