@@ -18,21 +18,21 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"432"
-				"linux"		"433"
-				"mac"		"433"
+				"windows"	"433"
+				"linux"		"434"
+				"mac"		"434"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"304"
-				"linux"		"305"
-				"mac"		"305"
+				"windows"	"305"
+				"linux"		"306"
+				"mac"		"306"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"302"
-				"linux"		"303"
-				"mac"		"303"
+				"windows"	"303"
+				"linux"		"304"
+				"mac"		"304"
 			}
 			"Ignite"
 			{
@@ -54,9 +54,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"471"
-				"linux"		"471"
-				"mac"		"471"
+				"windows"	"472"
+				"linux"		"472"
+				"mac"		"472"
 			}
 			"GetVelocity"
 			{
@@ -84,9 +84,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"295"
-				"linux"		"296"
-				"mac"		"296"
+				"windows"	"296"
+				"linux"		"297"
+				"mac"		"297"
 			}
 			"Activate"
 			{
@@ -96,9 +96,9 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"450"
-				"linux"		"451"
-				"mac"		"451"
+				"windows"	"451"
+				"linux"		"452"
+				"mac"		"452"
 			}
 		}
 		"Signatures"
