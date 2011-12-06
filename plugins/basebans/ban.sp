@@ -134,7 +134,7 @@ DisplayBanReasonMenu(client)
 	AddMenuItem(menu, "Aimbot", "Aimbot");
 	AddMenuItem(menu, "Speedhacking", "Speedhacking");
 	AddMenuItem(menu, "Mic spamming", "Mic spamming");
-	AddMenuItem(menu, "Admin disrepect", "Admin disrepect");
+	AddMenuItem(menu, "Admin disrespect", "Admin disrespect");
 	AddMenuItem(menu, "Camping", "Camping");
 	AddMenuItem(menu, "Team killing", "Team killing");
 	AddMenuItem(menu, "Unacceptable Spray", "Unacceptable Spray");
