@@ -205,4 +205,8 @@
 	{
 		"game"		"hl2ctf"
 	}
+	"game.ag2.txt"
+	{
+		"game"		"ag2"
+	}
 }
