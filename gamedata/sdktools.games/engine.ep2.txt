@@ -26,6 +26,7 @@
 			"game"		"fas"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
+			"game"		"ag2"
 		}
 
 		"Offsets"
@@ -76,6 +77,7 @@
 			"game"		"pvkii"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
+			"game"		"ag2"
 		}
 		
 		"Signatures"
@@ -107,6 +109,7 @@
 			"game"		"fas"
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
+			"game"		"ag2"
 		}
 		
 		"Offsets"
@@ -198,6 +201,7 @@
 		{
 			"game"		"ageofchivalry"
 			"game"		"cspromod"
+			"game"		"ag2"
 		}
 		"Signatures"
 		{
