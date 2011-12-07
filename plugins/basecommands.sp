@@ -421,7 +421,7 @@ public Action:Command_Rcon(client, args)
 	{
 		ServerCommand("%s", argstring);
 	} else {
-		new String:responseBuffer[1024];
+		new String:responseBuffer[4096];
 		ServerCommandEx(responseBuffer, sizeof(responseBuffer), "%s", argstring);
 		ReplyToCommand(client, responseBuffer);
 	}
