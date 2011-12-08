@@ -32,7 +32,7 @@
 			"ClanTagOffset"
 			{
 				"windows"	"24"
-				"linux"		"41"
+				"linux"		"42"
 				"mac"		"29"
 			}
 		}
