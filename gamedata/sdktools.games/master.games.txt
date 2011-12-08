@@ -209,4 +209,8 @@
 	{
 		"game"		"ag2"
 	}
+	"game.nmrih.txt"
+	{
+		"game"		"nmrih"
+	}
 }

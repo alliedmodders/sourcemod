@@ -110,6 +110,7 @@
 			"game"		"fistful_of_frags"
 			"game"		"cspromod"
 			"game"		"ag2"
+			"game"		"nmrih"
 		}
 		
 		"Offsets"
