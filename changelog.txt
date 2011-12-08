@@ -2,6 +2,31 @@ SourceMod Changelog
 
 -----------------------------
 
+SourceMod 1.4.1 [2011-12-07]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.1_Release_Notes
+
+User Changes:
+
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod). 
+ - Added gamedata for Adrenaline Gamer 2 and No More Room in Hell. 
+ - Fixed "not connected" error in reserve slots plugin (bug 5158) (ostrel). 
+ - Fixed ff trigger output printing to all in triggerer's language (rather than viewer's language) (bug 5161). 
+ - Fixed typo in one of basebans ban reasons (bug 5188).
+ - Fixed formatting error in Swedish "Vote Count" phrase (bug 5174).
+
+Developer Changes:
+
+ - Fixed sp MaxClients not being updated on map changes after load (bug 5160). 
+ - Removed GLIBC_2.7 dependency from spcomp. 
+ - Increased buffer for sm_rcon command to fit larger responses (bug 5169). 
+ - BaseComm now properly registers a library allowing it to be required by other plugins (bug 5156). 
+ - Fixed TFHoliday enum values (bug 5155). 
+ - Updated TF2_OnIsHolidayActive ret behavior to match doc (bug 5155). 
+ - Added new TF2 deathflag and dmg custom defines (bug 5157).
+
+-----------------------------
+
 SourceMod 1.4.0 [2011-10-28]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.0_Release_Notes
