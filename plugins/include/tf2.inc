@@ -122,6 +122,7 @@ enum TFHoliday
 {
 	TFHoliday_Birthday = 1,
 	TFHoliday_Halloween,
+	TFHoliday_Christmas,
 	TFHoliday_FullMoon,
 	TFHoliday_HalloweenOrFullMoon,
 };
