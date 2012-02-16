@@ -2,6 +2,7 @@
 import os
 import sys
 from ambuild.command import SymlinkCommand
+from ambuild.command import ShellCommand
 
 class SM:
 	def __init__(self):
@@ -113,6 +114,7 @@ class SM:
 				self.compiler.AddToListVar('CFLAGS', '-Wno-switch')
 				self.compiler.AddToListVar('CFLAGS', '-msse')
 				self.compiler.AddToListVar('CFLAGS', '-m32')
+				self.compiler.AddToListVar('CFLAGS', '-g3')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-m32')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-exceptions')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-rtti')
@@ -169,9 +171,7 @@ class SM:
 			if AMBuild.options.debug == '1':
 				self.compiler.AddToListVar('CDEFINES', 'DEBUG')
 				self.compiler.AddToListVar('CDEFINES', '_DEBUG')
-				if self.vendor == 'gcc' or self.vendor == 'clang':
-					self.compiler.AddToListVar('CFLAGS', '-g3')
-				elif self.vendor == 'msvc':
+				if self.vendor == 'msvc':
 					self.compiler.AddToListVar('CFLAGS', '/Od')
 					self.compiler.AddToListVar('CFLAGS', '/RTC1')
 
@@ -257,6 +257,17 @@ class SM:
 		else:
 			return
 
+	def StripBinary(self, job, binary):
+		workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
+		src = os.path.join('..', workFolder, binary.binaryFile)
+		if AMBuild.target['platform'] == 'linux':
+			job.AddCommand(ShellCommand('objcopy --only-keep-debug ' + src + ' ' + src + '.dbg'))
+			job.AddCommand(ShellCommand('objcopy --strip-debug ' + src))
+			job.AddCommand(ShellCommand('objcopy --add-gnu-debuglink=' + src + '.dbg ' + src))
+		elif AMBuild.target['platform'] == 'darwin':
+			job.AddCommand(ShellCommand('dsymutil ' + src))
+			job.AddCommand(ShellCommand('strip -S ' + src))
+
 	def PreSetupHL2Job(self, job, builder, sdk):
 		info = self.sdkInfo[sdk]
 		sdkPath = AMBuild.cache[info['sdk']]
@@ -304,7 +315,7 @@ class SM:
 	def PostSetupHL2Job(self, job, builder, sdk):
 		if AMBuild.target['platform'] in ['linux', 'darwin']:
 			builder.AddObjectFiles(['tier1_i486.a', 'mathlib_i486.a'])
-
+	
 	def DefaultHL2Compiler(self, path, sdk, noLink = False, oldMms = '-legacy'):
 		compiler = self.DefaultExtCompiler(path)
 

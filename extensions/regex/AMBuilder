@@ -24,4 +24,4 @@ binary.AddSourceFiles('extensions/regex', [
 	])
 SM.AutoVersion('extensions/regex', binary)
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)

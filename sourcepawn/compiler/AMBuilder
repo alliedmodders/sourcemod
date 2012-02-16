@@ -65,4 +65,4 @@ if AMBuild.target['platform'] == 'windows':
 	binary.AddResourceFile('sourcepawn/compiler/libpawnc.rc', env)
 
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)

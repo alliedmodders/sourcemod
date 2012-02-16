@@ -84,4 +84,4 @@ elif AMBuild.target['platform'] == 'windows':
 
 SM.AutoVersion('extensions/curl', binary)
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)

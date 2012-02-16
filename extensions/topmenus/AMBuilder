@@ -16,4 +16,4 @@ binary.AddSourceFiles('extensions/topmenus', [
 	])
 SM.AutoVersion('extensions/topmenus', binary)
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)

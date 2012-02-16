@@ -18,4 +18,4 @@ binary.AddSourceFiles('loader', [
 	])
 SM.AutoVersion('loader', binary)
 binary.SendToJob()
-
+SM.StripBinary(loader, binary)

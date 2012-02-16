@@ -35,4 +35,4 @@ binary.AddSourceFiles('extensions/mysql', [
 	])
 SM.AutoVersion('extensions/mysql', binary)
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)

@@ -40,4 +40,4 @@ binary.AddSourceFiles('sourcepawn/jit', [
 	])
 SM.AutoVersion('sourcepawn/jit', binary)
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)

@@ -56,4 +56,5 @@ else:
 binary.AddSourceFiles('core/logic', files)
 SM.AutoVersion('core/logic', binary)
 binary.SendToJob()
+SM.StripBinary(extension, binary)
 

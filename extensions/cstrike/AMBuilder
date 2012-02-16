@@ -23,3 +23,4 @@ if AMBuild.target['platform'] in sdk['platform']:
 	SM.PostSetupHL2Job(extension, binary, 'ep2v')
 	SM.AutoVersion('extensions/cstrike', binary)
 	binary.SendToJob()
+	SM.StripBinary(extension, binary)

@@ -37,4 +37,4 @@ elif AMBuild.target['platform'] == 'linux' or AMBuild.target['platform'] == 'dar
 binary.AddSourceFiles('extensions/sqlite', files)
 SM.AutoVersion('extensions/sqlite', binary)
 binary.SendToJob()
-
+SM.StripBinary(extension, binary)
