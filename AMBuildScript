@@ -401,7 +401,8 @@ FileList = [
 		['sourcepawn', 'jit', 'AMBuilder'],
 		['sourcepawn', 'compiler', 'AMBuilder'],
 		['plugins', 'AMBuilder'],
-		['tools', 'buildbot', 'PackageScript']
+		['tools', 'buildbot', 'PackageScript'],
+		['tools', 'buildbot', 'BreakpadSymbols']
 	]
 
 for parts in FileList:

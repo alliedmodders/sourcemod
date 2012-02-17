@@ -186,7 +186,14 @@ bincopies = []
 def AddNormalLibrary(name, dest):
 	dest = os.path.join('addons', 'sourcemod', dest)
 	bincopies.append(CopyFile(os.path.join('..', name, name + osutil.SharedLibSuffix()), dest))
-	pdb_list.append(name + '\\' + name + '.pdb')
+	
+	# Each platform's version of dump_syms needs the path in a different format.
+	if AMBuild.target['platform'] == 'linux':
+		debug_info.append(name + '/' + name + '.so')
+	elif AMBuild.target['platform'] == 'darwin':
+		debug_info.append(name + '/' + name + '.dylib.dSYM')
+	elif AMBuild.target['platform'] == 'windows':
+		debug_info.append(name + '\\' + name + '.pdb')
 
 def AddHL2Library(name, dest):
 	for i in SM.sdkInfo:
@@ -195,18 +202,20 @@ def AddHL2Library(name, dest):
 			continue
 		AddNormalLibrary(name + '.' + sdk['ext'], dest)
 
-pdb_list = []
+debug_info = []
 
 if AMBuild.target['platform'] == 'linux':
 	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm_i486.so'),
 	                 os.path.join('addons', 'sourcemod', 'bin')))
+	debug_info.append('loader/sourcemod_mm_i486.so')
 elif AMBuild.target['platform'] == 'darwin':
 	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dylib'),
 	                 os.path.join('addons', 'sourcemod', 'bin')))
+	debug_info.append('loader/sourcemod_mm.dylib.dSYM')
 elif AMBuild.target['platform'] == 'windows':
 	bincopies.append(CopyFile(os.path.join('..', 'loader', 'sourcemod_mm.dll'),
 	                 os.path.join('addons', 'sourcemod', 'bin')))
-	pdb_list.append('loader\\sourcemod_mm.pdb')
+	debug_info.append('loader\\sourcemod_mm.pdb')
 
 AddHL2Library('sourcemod', 'bin')
 AddNormalLibrary('sourcemod.logic', 'bin')
@@ -233,8 +242,9 @@ if AMBuild.target['platform'] == 'windows':
 	job.AddCommand(CopyFile(
 		os.path.join(AMBuild.sourceFolder, 'sourcepawn', 'batchtool', 'compile.exe'),
 		os.path.join('addons', 'sourcemod', 'scripting')))
-	pdblog = open(os.path.join(AMBuild.outputFolder, 'pdblog.txt'), 'wt')
-	for pdb in pdb_list:
-		pdblog.write(pdb + '\n')
-	pdblog.close()
+	
+pdblog = open(os.path.join(AMBuild.outputFolder, 'pdblog.txt'), 'wt')
+for pdb in debug_info:
+	pdblog.write(pdb + '\n')
+pdblog.close()
 

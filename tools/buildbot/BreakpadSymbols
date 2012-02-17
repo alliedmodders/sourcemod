@@ -1,0 +1,41 @@
+# vim: set ts=2 sw=2 tw=99 noet ft=python: 
+import os
+import urllib.request
+from ambuild.command import Command
+from ambuild.command import ShellCommand
+
+class IterateDebugInfoCommand(Command):
+	def run(self, master, job):
+		pdblog = open(os.path.join(AMBuild.outputFolder, 'pdblog.txt'), 'rt')
+		for debug_info in pdblog:
+			debug_info = os.path.join(AMBuild.outputFolder, debug_info.strip())
+			job.AddCommand(SymbolCommand(debug_info, symbolServer))
+		pdblog.close()
+
+class SymbolCommand(ShellCommand):
+	def __init__(self, debugFile, symbolServer):
+		self.serverResponse = None
+		self.symbolServer = symbolServer
+		if AMBuild.target['platform'] == 'linux':
+			cmdstring = "dump_syms {0} {1}".format(debugFile, os.path.dirname(debugFile))
+		elif AMBuild.target['platform'] == 'darwin':
+			cmdstring = "dump_syms {0}".format(debugFile)
+		elif AMBuild.target['platform'] == 'windows':
+			cmdstring = "dump_syms.exe {0}".format(debugFile)
+		ShellCommand.__init__(self, cmdstring)
+	def run(self, master, job):
+		ShellCommand.run(self, master, job)
+		if self.stdout != None and len(self.stdout) > 0:
+			request = urllib.request.Request(symbolServer, self.stdout.encode('utf-8'))
+			request.add_header("Content-Type", "text/plain")
+			self.serverResponse = urllib.request.urlopen(request).read().decode('utf-8')
+	def spew(self, runner):
+		if self.stderr != None and len(self.stderr) > 0:
+			runner.PrintOut(self.stderr)
+		if self.serverResponse != None and len(self.serverResponse) > 0:
+			runner.PrintOut(self.serverResponse)
+
+if 'BREAKPAD_SYMBOL_SERVER' in os.environ:
+	symbolServer = os.environ['BREAKPAD_SYMBOL_SERVER']
+	job = AMBuild.AddJob('breakpad-symbols')
+	job.AddCommand(IterateDebugInfoCommand())
