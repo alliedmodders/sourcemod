@@ -38,7 +38,19 @@
 #include <IGameConfigs.h>
 #include <compat_wrappers.h>
 #include <Logger.h>
+#include "LibrarySys.h"
 #include "logic_bridge.h"
+
+#if defined _WIN32
+#define TIER0_NAME			"tier0.dll"
+#define VSTDLIB_NAME		"vstdlib.dll"
+#elif defined __APPLE__
+#define TIER0_NAME			"libtier0.dylib"
+#define VSTDLIB_NAME		"libvstdlib.dylib"
+#elif defined __linux__
+#define TIER0_NAME			LIB_PREFIX "tier0" LIB_SUFFIX
+#define VSTDLIB_NAME		LIB_PREFIX "vstdlib" LIB_SUFFIX
+#endif
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;
@@ -132,6 +144,12 @@ void CHalfLife2::OnSourceModAllInitialized()
 
 void CHalfLife2::OnSourceModAllInitialized_Post()
 {
+	InitLogicalEntData();
+	InitCommandLine();
+}
+
+void CHalfLife2::InitLogicalEntData()
+{
 	char *addr = NULL;
 
 	/*
@@ -194,6 +212,64 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 		g_Logger.LogError("Logical Entities not supported by this mod (EntInfo) - Reverting to networkable entities only");
 		return;
 	}
+}
+
+void CHalfLife2::InitCommandLine()
+{
+	char path[PLATFORM_MAX_PATH];
+	char error[256];
+	
+	g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "../bin/" TIER0_NAME);
+
+	if (!g_LibSys.IsPathFile(path))
+	{
+		g_Logger.LogError("Could not find path for: " TIER0_NAME);
+		return;
+	}
+
+	ILibrary *lib = g_LibSys.OpenLibrary(path, error, sizeof(error));
+	m_pGetCommandLine = (GetCommandLine)lib->GetSymbolAddress("CommandLine_Tier0");
+
+	/* '_Tier0' dropped on Alien Swarm version */
+	if (m_pGetCommandLine == NULL)
+	{
+		m_pGetCommandLine = (GetCommandLine)lib->GetSymbolAddress("CommandLine");
+	}
+
+	if (m_pGetCommandLine == NULL)
+	{
+		/* We probably have a Ship engine. */
+		lib->CloseLibrary();
+		g_SourceMod.BuildPath(Path_Game, path, sizeof(path), "../bin/" VSTDLIB_NAME);
+		if (!g_LibSys.IsPathFile(path))
+		{
+			g_Logger.LogError("Could not find path for: " VSTDLIB_NAME);
+			return;
+		}
+
+		if ((lib = g_LibSys.OpenLibrary(path, error, sizeof(error))) == NULL)
+		{
+			g_Logger.LogError("Could not load %s: %s", path, error);
+			return;
+		}
+
+		m_pGetCommandLine = (GetCommandLine)lib->GetSymbolAddress("CommandLine");
+
+		if (m_pGetCommandLine == NULL)
+		{
+			g_Logger.LogError("Could not locate any command line functionality");
+		}
+
+		lib->CloseLibrary();
+	}
+}
+
+ICommandLine *CHalfLife2::GetValveCommandLine()
+{
+	if (!m_pGetCommandLine)
+		return NULL;
+
+	return m_pGetCommandLine();
 }
 
 #if !defined METAMOD_PLAPI_VERSION || PLAPI_VERSION < 11

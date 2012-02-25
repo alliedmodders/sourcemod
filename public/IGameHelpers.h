@@ -40,12 +40,13 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		7
+#define SMINTERFACE_GAMEHELPERS_VERSION		8
 
 class CBaseEntity;
 class CBaseHandle;
 class SendProp;
 class ServerClass;
+class ICommandLine;
 struct edict_t;
 struct datamap_t;
 struct typedescription_t;
@@ -284,6 +285,13 @@ namespace SourceMod
 		 * @return				True on success, false on failure.
 		 */
 		virtual bool HintTextMsg(int client, const char *msg) =0;
+
+		/**
+		 * @brief Retrieves the Valve command line pointer.
+		 *
+		 * @return				ICommandLine ptr or NULL if not found.
+		 */
+		virtual ICommandLine *GetValveCommandLine() =0;
 	};
 }
 

@@ -44,6 +44,11 @@
 #include <server_class.h>
 #include <datamap.h>
 #include <ihandleentity.h>
+#include <tier0\icommandline.h>
+
+#undef GetCommandLine
+
+typedef ICommandLine *(*GetCommandLine)();
 
 class CCommand;
 
@@ -136,6 +141,7 @@ public: //IGameHelpers
 	cell_t EntityToBCompatRef(CBaseEntity *pEntity);
 	void *GetGlobalEntityList();
 	int GetSendPropOffset(SendProp *prop);
+	ICommandLine *GetValveCommandLine();
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
@@ -152,6 +158,9 @@ public:
 private:
 	DataTableInfo *_FindServerClass(const char *classname);
 private:
+	void InitLogicalEntData();
+	void InitCommandLine();
+private:
 	Trie *m_pClasses;
 	List<DataTableInfo *> m_Tables;
 	THash<datamap_t *, DataMapTrie> m_Maps;
@@ -163,6 +172,7 @@ private:
 	CStack<DelayedFakeCliCmd *> m_FreeCmds;
 	CStack<CachedCommandInfo> m_CommandStack;
 	Queue<DelayedKickInfo> m_DelayedKicks;
+	GetCommandLine m_pGetCommandLine;
 };
 
 extern CHalfLife2 g_HL2;
