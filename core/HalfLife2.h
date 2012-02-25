@@ -46,10 +46,6 @@
 #include <ihandleentity.h>
 #include <tier0/icommandline.h>
 
-#undef GetCommandLine
-
-typedef ICommandLine *(*GetCommandLine)();
-
 class CCommand;
 
 using namespace SourceHook;
@@ -172,7 +168,7 @@ private:
 	CStack<DelayedFakeCliCmd *> m_FreeCmds;
 	CStack<CachedCommandInfo> m_CommandStack;
 	Queue<DelayedKickInfo> m_DelayedKicks;
-	GetCommandLine m_pGetCommandLine;
+	void *m_pGetCommandLine;
 };
 
 extern CHalfLife2 g_HL2;

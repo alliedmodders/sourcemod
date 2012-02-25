@@ -41,6 +41,9 @@
 #include "LibrarySys.h"
 #include "logic_bridge.h"
 
+
+typedef ICommandLine *(*FakeGetCommandLine)();
+
 #if defined _WIN32
 #define TIER0_NAME			"tier0.dll"
 #define VSTDLIB_NAME		"vstdlib.dll"
@@ -48,8 +51,13 @@
 #define TIER0_NAME			"libtier0.dylib"
 #define VSTDLIB_NAME		"libvstdlib.dylib"
 #elif defined __linux__
-#define TIER0_NAME			LIB_PREFIX "tier0" LIB_SUFFIX
-#define VSTDLIB_NAME		LIB_PREFIX "vstdlib" LIB_SUFFIX
+#if SOURCE_ENGINE == SE_EPISODE1 || SOURCE_ENGINE == ORANGEBOX || SOURCE_ENGINE == SE_LEFT4DEAD
+#define TIER0_NAME			"tier0_i486.so"
+#define VSTDLIB_NAME		"vstdlib_i486.so"
+#else
+#define TIER0_NAME			"libtier0.so"
+#define VSTDLIB_NAME		"libvstdlib.so"
+#endif
 #endif
 
 CHalfLife2 g_HL2;
@@ -228,12 +236,12 @@ void CHalfLife2::InitCommandLine()
 	}
 
 	ILibrary *lib = g_LibSys.OpenLibrary(path, error, sizeof(error));
-	m_pGetCommandLine = (GetCommandLine)lib->GetSymbolAddress("CommandLine_Tier0");
+	m_pGetCommandLine = lib->GetSymbolAddress("CommandLine_Tier0");
 
 	/* '_Tier0' dropped on Alien Swarm version */
 	if (m_pGetCommandLine == NULL)
 	{
-		m_pGetCommandLine = (GetCommandLine)lib->GetSymbolAddress("CommandLine");
+		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
 	}
 
 	if (m_pGetCommandLine == NULL)
@@ -253,7 +261,7 @@ void CHalfLife2::InitCommandLine()
 			return;
 		}
 
-		m_pGetCommandLine = (GetCommandLine)lib->GetSymbolAddress("CommandLine");
+		m_pGetCommandLine = lib->GetSymbolAddress("CommandLine");
 
 		if (m_pGetCommandLine == NULL)
 		{
@@ -269,7 +277,7 @@ ICommandLine *CHalfLife2::GetValveCommandLine()
 	if (!m_pGetCommandLine)
 		return NULL;
 
-	return m_pGetCommandLine();
+	return ((FakeGetCommandLine)((FakeGetCommandLine *)m_pGetCommandLine))();
 }
 
 #if !defined METAMOD_PLAPI_VERSION || PLAPI_VERSION < 11
