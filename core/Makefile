@@ -129,8 +129,9 @@ INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PU
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
-	-Wno-uninitialized -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -DSM_DEFAULT_THREADER -m32
-CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
+	-Wno-uninitialized -Wno-unused -Wno-switch -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H \
+	-DSM_DEFAULT_THREADER -m32
+CPPFLAGS += -Wno-non-virtual-dtor -Wno-overloaded-virtual -fno-threadsafe-statics -fno-exceptions -fno-rtti
 
 ################################################
 ### DO NOT EDIT BELOW HERE FOR MOST PROJECTS ###
