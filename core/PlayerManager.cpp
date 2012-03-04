@@ -44,7 +44,6 @@
 #include "HalfLife2.h"
 #include <inetchannel.h>
 #include <iclient.h>
-#include <tier0/icommandline.h>
 #include <IGameConfigs.h>
 #include "ExtensionSys.h"
 #include <sourcemod_version.h>
@@ -244,7 +243,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	// clientMax will not necessarily be correct here (such as on late SourceTV enable)
 	m_maxClients = gpGlobals->maxClients;
 
-	m_bIsSourceTVActive = (tv_enable && tv_enable->GetBool() && CommandLine()->FindParm("-nohltv") == 0);
+	ICommandLine *commandLine = g_HL2.GetValveCommandLine();
+	m_bIsSourceTVActive = (tv_enable && tv_enable->GetBool() && (!commandLine || commandLine->FindParm("-nohltv") == 0));
 	m_bIsReplayActive = false;
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE
 	m_bIsReplayActive = (replay_enable && replay_enable->GetBool());
