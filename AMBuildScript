@@ -260,6 +260,8 @@ class SM:
 	def StripBinary(self, job, binary):
 		workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
 		src = os.path.join('..', workFolder, binary.binaryFile)
+		if not binary.NeedsRelink(src):
+			return;
 		if AMBuild.target['platform'] == 'linux':
 			job.AddCommand(ShellCommand('objcopy --only-keep-debug ' + src + ' ' + src + '.dbg'))
 			job.AddCommand(ShellCommand('objcopy --strip-debug ' + src))
