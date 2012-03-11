@@ -730,10 +730,13 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	{
 	case NumberType_Int8:
 		*reinterpret_cast<uint8_t*>(addr) = data;
+		break;
 	case NumberType_Int16:
 		*reinterpret_cast<uint16_t*>(addr) = data;
+		break;
 	case NumberType_Int32:
 		*reinterpret_cast<uint32_t*>(addr) = data;
+		break;
 	default:
 		pContext->ThrowNativeError("Invalid number types %d", size);
 	}
