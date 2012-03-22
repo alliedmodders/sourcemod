@@ -80,8 +80,9 @@ class SM:
 						oldhead = head
 						head, tail = os.path.split(head)
 					if i.startswith('HL2SDK'):
-						(info, sdk) = findDictByKey(self.possibleSdks, 'sdk', i)
-						self.sdkInfo[sdk] = info	
+						if head != None and head != oldhead:
+							(info, sdk) = findDictByKey(self.possibleSdks, 'sdk', i)
+							self.sdkInfo[sdk] = info
 					elif head == None or head == oldhead:
 						raise Exception('Could not find a valid path for {0}'.format(i))
 				AMBuild.cache.CacheVariable(i, path)
