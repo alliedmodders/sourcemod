@@ -20,7 +20,6 @@ def BuildCURL():
 			env = os.environ.copy()
 			env['CFLAGS'] = '-m32'
 			if AMBuild.target['platform'] == 'darwin':
-				env['CFLAGS'] += ' -isysroot /Developer/SDKs/MacOSX10.5.sdk'
 				env['LDFLAGS'] = '-mmacosx-version-min=10.5'
 			else:
 				env['CFLAGS'] += ' -D_GNU_SOURCE'
