@@ -184,8 +184,6 @@ class SM:
 				if self.vendor == 'clang':
 					self.compiler.AddToListVar('POSTLINKFLAGS', '-lgcc_eh')
 			elif AMBuild.target['platform'] == 'darwin':
-				self.compiler.AddToListVar('CFLAGS', ['-isysroot',
-				                                      '/Developer/SDKs/MacOSX10.5.sdk'])
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-mmacosx-version-min=10.5')
 				self.compiler.AddToListVar('POSTLINKFLAGS', ['-arch', 'i386'])
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-lstdc++')
