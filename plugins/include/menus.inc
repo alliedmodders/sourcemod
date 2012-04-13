@@ -489,7 +489,7 @@ native bool:VoteMenu(Handle:menu, clients[], numClients, time, flags=0);
  *							in progress.
  * @error					Invalid Handle.
  */
-stock VoteMenuToAll(Handle:menu, time, flags=0)
+stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
 {
 	new total;
 	decl players[MaxClients];
