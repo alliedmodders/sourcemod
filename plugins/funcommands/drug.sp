@@ -264,7 +264,7 @@ public Action:Command_Drug(client, args)
 	{
 		decl String:arg2[2];
 		GetCmdArg(2, arg2, sizeof(arg2));
-		if (arg2[0])
+		if (StringToInt(arg2))
 		{
 			toggle = 1;
 		}
