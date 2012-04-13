@@ -43,6 +43,7 @@
 #include "Logger.h"
 #include "ExtensionSys.h"
 #include <sm_trie_tpl.h>
+#include <sh_memory.h>
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -729,12 +730,15 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	switch(size)
 	{
 	case NumberType_Int8:
+		SourceHook::SetMemAccess(addr, sizeof(uint8_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
 		*reinterpret_cast<uint8_t*>(addr) = data;
 		break;
 	case NumberType_Int16:
+		SourceHook::SetMemAccess(addr, sizeof(uint16_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
 		*reinterpret_cast<uint16_t*>(addr) = data;
 		break;
 	case NumberType_Int32:
+		SourceHook::SetMemAccess(addr, sizeof(uint32_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
 		*reinterpret_cast<uint32_t*>(addr) = data;
 		break;
 	default:
