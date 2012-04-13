@@ -664,6 +664,11 @@ cell_t ConsoleDetours::InternalDispatch(int client, const CCommand& args)
 	char name[255];
 	const char *realname = args.Arg(0);
 	size_t len = strlen(realname);
+
+	// Disallow command strings that are too long, for now.
+	if (len >= sizeof(name) - 1)
+		return Pl_Continue;
+
 	for (size_t i = 0; i < len; i++)
 	{
 		if (realname[i] >= 'A' && realname[i] <= 'Z')
