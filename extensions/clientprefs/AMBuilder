@@ -16,4 +16,4 @@ binary.AddSourceFiles('extensions/clientprefs', [
 	])
 SM.AutoVersion('extensions/clientprefs', binary)
 binary.SendToJob()
-SM.StripBinary(extension, binary)
+
