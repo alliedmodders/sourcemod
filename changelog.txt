@@ -2,6 +2,24 @@ SourceMod Changelog
 
 -----------------------------
 
+SourceMod 1.4.2 [2011-04-13]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.2_Release_Notes
+
+User Changes:
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod). 
+ - Fixed regression in SourceMod 1.4.0 causing SM to cause load errors on The Ship (bug 5216).
+ - Fixed toggling and player lag issues with sm_drug command (bugs 5217, 5218) (FlaminSarge).
+
+Developer Changes:
+ - Updated TF2-specific defines and enums (bug 5194).
+ - Fixed StoreToAddress always writing 32 bits and throwing an error (bug 5248) (ProdigySim).
+ - Fixed crash with StoreToAddress if memory wasn't writable (bug 5252) (Dr!fter).
+ - Fixed return value of VoteMenuToAll (bug 5254) (VoiDeD).
+ - Fixed bug in command lower-casing API guarantee
+
+-----------------------------
+
 SourceMod 1.4.1 [2011-12-07]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.1_Release_Notes
