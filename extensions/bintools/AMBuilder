@@ -20,4 +20,5 @@ binary.AddSourceFiles('extensions/bintools', [
 	])
 SM.AutoVersion('extensions/bintools', binary)
 binary.SendToJob()
-SM.StripBinary(extension, binary)
+
+

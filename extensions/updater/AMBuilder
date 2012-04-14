@@ -15,4 +15,4 @@ binary.AddSourceFiles('extensions/updater', [
 	])
 SM.AutoVersion('extensions/updater', binary)
 binary.SendToJob()
-SM.StripBinary(extension, binary)
+

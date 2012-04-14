@@ -26,4 +26,4 @@ binary.AddSourceFiles('extensions/tf2', [
 SM.PostSetupHL2Job(extension, binary, 'ep2v')
 SM.AutoVersion('extensions/tf2', binary)
 binary.SendToJob()
-SM.StripBinary(extension, binary)
+
