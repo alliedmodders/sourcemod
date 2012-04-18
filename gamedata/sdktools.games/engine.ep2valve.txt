@@ -18,7 +18,6 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
-			"game"		"cstrike"
 			"game"		"garrysmod"
 			"game"		"hl2mp"
 		}
@@ -28,7 +27,7 @@
 			/* Offset into CBaseTempEntity constructor */
 			"s_pTempEntities"
 			{
-				"windows"	"10"
+				"windows"	"32"
 			}
 			"GetTEName"
 			{
@@ -65,7 +64,7 @@
 			}
 		}
 	}
-
+	
 	/* CGlobalEntityList */
 	"#default"
 	{
@@ -73,7 +72,6 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
-			"game"		"cstrike"
 			"game"		"hl2mp"
 		}
 		
@@ -194,7 +192,6 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
-			"game"		"cstrike"
 			"game"		"hl2mp"
 		}
 		"Signatures"
@@ -212,6 +209,14 @@
 	/* SetUserInfo data */
 	"#default"
 	{
+		"#supported"
+		{
+			"game"		"dod"
+			"game"		"tf"
+			"game"		"garrysmod"
+			"game"		"hl2mp"
+		}
+		
 		"Offsets"
 		{
 			/**
