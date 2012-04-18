@@ -18,7 +18,6 @@
 		{
 			"game"		"dod"
 			"game"		"tf"
-			"game"		"garrysmod"
 			"game"		"hl2mp"
 		}
 
