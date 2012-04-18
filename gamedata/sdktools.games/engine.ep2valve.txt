@@ -27,7 +27,7 @@
 			/* Offset into CBaseTempEntity constructor */
 			"s_pTempEntities"
 			{
-				"windows"	"32"
+				"windows"	"10"
 			}
 			"GetTEName"
 			{
