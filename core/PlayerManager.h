@@ -56,7 +56,7 @@ union serial_t
 	uint32_t   value;
 	struct
 	{
-		uint8_t  index;
+		uint32_t index  :  8;
 		uint32_t serial : 24;
 	} bits;
 };
