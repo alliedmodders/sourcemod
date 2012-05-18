@@ -6,6 +6,7 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug - Bloody Good Time|Win32 = Debug - Bloody Good Time|Win32
+		Debug - CS GO|Win32 = Debug - CS GO|Win32
 		Debug - Dark Messiah|Win32 = Debug - Dark Messiah|Win32
 		Debug - Episode 1|Win32 = Debug - Episode 1|Win32
 		Debug - Left 4 Dead 2|Win32 = Debug - Left 4 Dead 2|Win32
@@ -15,6 +16,7 @@ Global
 		Debug - Orange Box|Win32 = Debug - Orange Box|Win32
 		Debug - Swarm|Win32 = Debug - Swarm|Win32
 		Release - Bloody Good Time|Win32 = Release - Bloody Good Time|Win32
+		Release - CS GO|Win32 = Release - CS GO|Win32
 		Release - Dark Messiah|Win32 = Release - Dark Messiah|Win32
 		Release - Episode 1|Win32 = Release - Episode 1|Win32
 		Release - Left 4 Dead 2|Win32 = Release - Left 4 Dead 2|Win32
@@ -27,6 +29,8 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Bloody Good Time|Win32.ActiveCfg = Debug - Bloody Good Time|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Bloody Good Time|Win32.Build.0 = Debug - Bloody Good Time|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - CS GO|Win32.ActiveCfg = Debug - CS GO|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - CS GO|Win32.Build.0 = Debug - CS GO|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Dark Messiah|Win32.ActiveCfg = Debug - Dark Messiah|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Dark Messiah|Win32.Build.0 = Debug - Dark Messiah|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Episode 1|Win32.ActiveCfg = Debug - Episode 1|Win32
@@ -45,6 +49,8 @@ Global
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Debug - Swarm|Win32.Build.0 = Debug - Swarm|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Bloody Good Time|Win32.ActiveCfg = Release - Bloody Good Time|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Bloody Good Time|Win32.Build.0 = Release - Bloody Good Time|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - CS GO|Win32.ActiveCfg = Release - CS GO|Win32
+		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - CS GO|Win32.Build.0 = Release - CS GO|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Dark Messiah|Win32.ActiveCfg = Release - Dark Messiah|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Dark Messiah|Win32.Build.0 = Release - Dark Messiah|Win32
 		{7A740927-C751-4312-BF9D-6367F8C508F8}.Release - Episode 1|Win32.ActiveCfg = Release - Episode 1|Win32
