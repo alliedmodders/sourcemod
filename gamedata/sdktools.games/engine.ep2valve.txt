@@ -19,6 +19,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"hl2mp"
+			"game"		"cstrike"
 		}
 
 		"Offsets"
@@ -72,6 +73,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"hl2mp"
+			"game"		"cstrike"
 		}
 		
 		"Signatures"
@@ -192,6 +194,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"hl2mp"
+			"game"		"cstrike"
 		}
 		"Signatures"
 		{
@@ -214,6 +217,7 @@
 			"game"		"tf"
 			"game"		"garrysmod"
 			"game"		"hl2mp"
+			"game"		"cstrike"
 		}
 		
 		"Offsets"
