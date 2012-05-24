@@ -87,6 +87,8 @@ public:
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
 
+	virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
+	
 	void DatabaseConnect();
 
 	bool AddQueryToQueue(TQueryOp *query);
