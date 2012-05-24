@@ -451,6 +451,6 @@ TFClassType ClassnameToType(const char *classname)
 /**
  * A picture of a blue crab given to me as a gift and stored here for safe keeping
  *
- * http://www.democracycellproject.net/blog/archives/Clown%20car.jpg
+ * http://sourcemod.net/Clown%20car.jpg
  */
 
