@@ -116,6 +116,8 @@ PlayerManager::PlayerManager()
 	m_SourceTVUserId = -1;
 	m_ReplayUserId = -1;
 
+	m_bUseSteamAdminAuth = true; // use steam auth by default
+
 	m_UserIdLookUp = new int[USHRT_MAX+1];
 	memset(m_UserIdLookUp, 0, sizeof(int) * (USHRT_MAX+1));
 }
@@ -226,6 +228,17 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 			m_QueryLang = false;
 		} else {
 			UTIL_Format(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			return ConfigResult_Reject;
+		}
+		return ConfigResult_Accept;
+	} else if (strcmp( key, "SteamAuthstringValidation" ) == 0) {
+		if (strcasecmp(value, "yes") == 0)
+		{
+			m_bUseSteamAdminAuth = true;
+		} else if ( strcasecmp(value, "no") == 0) {
+			m_bUseSteamAdminAuth = false;
+		} else {
+			UTIL_Format(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -354,6 +367,18 @@ void PlayerManager::RunAuthChecks()
 	{
 		pPlayer = &m_Players[m_AuthQueue[i]];
 		authstr = engine->GetPlayerNetworkIDString(pPlayer->m_pEdict);
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+		// we can only easily check if the client is fully authed if we're on a recent engine
+		if (m_bUseSteamAdminAuth && !g_HL2.IsLANServer())
+		{
+			if (!pPlayer->IsAuthedBySteam())
+			{
+				continue; // we're using steam auth, and steam doesn't know about this player yet so we can't do anything about them for now
+			}
+		}
+#endif
+
 		if (authstr && authstr[0] != '\0'
 			&& (strcmp(authstr, "STEAM_ID_PENDING") != 0))
 		{
@@ -1631,6 +1656,13 @@ bool CPlayer::IsAuthorized()
 {
 	return m_IsAuthorized;
 }
+
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+bool CPlayer::IsAuthedBySteam()
+{
+	return engine->IsClientFullyAuthenticated( m_pEdict );
+}
+#endif
 
 IPlayerInfo *CPlayer::GetPlayerInfo()
 {

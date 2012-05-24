@@ -75,6 +75,9 @@ public:
 	bool WasCountedAsInGame();
 	bool IsConnected();
 	bool IsAuthorized();
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	bool IsAuthedBySteam();
+#endif
 	bool IsFakeClient();
 	bool IsSourceTV() const;
 	bool IsReplay() const;
@@ -217,6 +220,7 @@ private:
 	unsigned int *m_AuthQueue;
 	String m_PassInfoVar;
 	bool m_QueryLang;
+	bool m_bUseSteamAdminAuth; // are we validating admins with steam before authorizing?
 	bool m_bIsListenServer;
 	int m_ListenClient;
 	bool m_bIsSourceTVActive;
