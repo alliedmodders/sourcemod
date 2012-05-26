@@ -518,7 +518,7 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 		m_Votes[item]++;
 		m_NumVotes++;
 
-		if (sm_vote_chat.GetBool() || sm_vote_console.GetBool())
+		if (sm_vote_chat.GetBool() || sm_vote_console.GetBool() || sm_vote_client_console.GetBool())
 		{
 			static char buffer[1024];
 			ItemDrawInfo dr;
