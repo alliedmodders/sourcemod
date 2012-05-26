@@ -560,7 +560,7 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 
 						if (sm_vote_client_console.GetBool())
 						{
-							engine->ClientPrintf(pPlayer->GetEdict(), buffer);
+							ClientConsolePrint(pPlayer->GetEdict(), buffer);
 						}		
 					}
 				}
