@@ -115,7 +115,10 @@ enum TFCond
 	TFCond_CritOnWin,
 	TFCond_CritOnFlagCapture,
 	TFCond_CritOnKill,
-	TFCond_RestrictToMelee
+	TFCond_RestrictToMelee,
+	
+	TFCond_CritMmmph = 44,
+	TFCond_DefenseBuffMmmph,
 };
 
 enum TFHoliday
