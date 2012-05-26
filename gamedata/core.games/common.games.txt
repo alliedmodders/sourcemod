@@ -234,6 +234,7 @@
 		"#supported"
 		{
 			"game"		"cstrike"
+			"game"		"csgo"
 		}
 		
 		"Keys"

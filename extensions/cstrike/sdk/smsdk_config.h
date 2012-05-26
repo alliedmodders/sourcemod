@@ -38,8 +38,8 @@
  */
 
 /* Basic information exposed publicly */
-#define SMEXT_CONF_NAME			"CS:S Tools"
-#define SMEXT_CONF_DESCRIPTION	"CS:S extended functionality"
+#define SMEXT_CONF_NAME			"CS Tools"
+#define SMEXT_CONF_DESCRIPTION	"CS extended functionality"
 #define SMEXT_CONF_VERSION		""
 #define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"

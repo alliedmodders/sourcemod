@@ -67,41 +67,63 @@ enum CSRoundEndReason
 
 enum CSWeaponID
 {
-    CSWeapon_NONE,
-    CSWeapon_P228,
-    CSWeapon_GLOCK,
-    CSWeapon_SCOUT,
-    CSWeapon_HEGRENADE,
-    CSWeapon_XM1014,
-    CSWeapon_C4,
-    CSWeapon_MAC10,
-    CSWeapon_AUG,
-    CSWeapon_SMOKEGRENADE,
-    CSWeapon_ELITE,
-    CSWeapon_FIVESEVEN,
-    CSWeapon_UMP45,
-    CSWeapon_SG550,
-    CSWeapon_GALIL,
-    CSWeapon_FAMAS,
-    CSWeapon_USP,
-    CSWeapon_AWP,
-    CSWeapon_MP5NAVY,
-    CSWeapon_M249,
-    CSWeapon_M3,
-    CSWeapon_M4A1,
-    CSWeapon_TMP,
-    CSWeapon_G3SG1,
-    CSWeapon_FLASHBANG,
-    CSWeapon_DEAGLE,
-    CSWeapon_SG552,
-    CSWeapon_AK47,
-    CSWeapon_KNIFE,
-    CSWeapon_P90,
-    CSWeapon_SHIELD,
-    CSWeapon_KEVLAR,
-    CSWeapon_ASSAULTSUIT,
-    CSWeapon_NIGHTVISION
+	CSWeapon_NONE = 0,
+	CSWeapon_P228,
+	CSWeapon_GLOCK,
+	CSWeapon_SCOUT,
+	CSWeapon_HEGRENADE,
+	CSWeapon_XM1014,
+	CSWeapon_C4,
+	CSWeapon_MAC10,
+	CSWeapon_AUG,
+	CSWeapon_SMOKEGRENADE,
+	CSWeapon_ELITE,
+	CSWeapon_FIVESEVEN,
+	CSWeapon_UMP45,
+	CSWeapon_SG550,
+	CSWeapon_GALIL,
+	CSWeapon_FAMAS,
+	CSWeapon_USP,
+	CSWeapon_AWP,
+	CSWeapon_MP5NAVY,
+	CSWeapon_M249,
+	CSWeapon_M3,
+	CSWeapon_M4A1,
+	CSWeapon_TMP,
+	CSWeapon_G3SG1,
+	CSWeapon_FLASHBANG,
+	CSWeapon_DEAGLE,
+	CSWeapon_SG552,
+	CSWeapon_AK47,
+	CSWeapon_KNIFE,
+	CSWeapon_P90,
+	CSWeapon_SHIELD,
+	CSWeapon_KEVLAR,
+	CSWeapon_ASSAULTSUIT,
+	CSWeapon_NIGHTVISION,
+	CSWeapon_GALILAR,
+	CSWeapon_BIZON,
+	CSWeapon_MAG7,
+	CSWeapon_NEGEV,
+	CSWeapon_SAWEDOFF,
+	CSWeapon_TEC9,
+	CSWeapon_TASER,
+	CSWeapon_HKP2000,
+	CSWeapon_MP7,
+	CSWeapon_MP9,
+	CSWeapon_NOVA,
+	CSWeapon_P250,
+	CSWeapon_SCAR17,
+	CSWeapon_SCAR20,
+	CSWeapon_SG556,
+	CSWeapon_SSG08,
+	CSWeapon_KNIFE_GG,
+	CSWeapon_MOLOTOV,
+	CSWeapon_DECOY,
+	CSWeapon_INCGRENADE,
+	CSWeapon_DEFUSER
 };
+
 /**
  * Called when a player attempts to purchase an item.
  * Return Plugin_Continue to allow the purchase or return a
@@ -224,6 +246,7 @@ native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
  * @return				Number of non-null bytes written.
  *
  * @error				Invalid client.
+ * @note				Only supported on CS:S. Writes 0-length string on CS:GO.
  */
 native CS_GetClientClanTag(client, String:buffer[], size);
 
@@ -234,9 +257,19 @@ native CS_GetClientClanTag(client, String:buffer[], size);
  * @noreturn
  *
  * @error				Invalid client.
+ * @note				Only supported on CS:S. Has no effect on CS:GO.
  */
 native CS_SetClientClanTag(client, const String:tag[]);
  
+/**
+ * Gets a weaponID from a alias
+ * @param alias			Weapon alias to attempt to get an id for.
+ * @return				Returns a weapon id or 0 if failed to find a match.
+ *
+ * @note For best results use CS_GetTranslatedWeaponAlias on the weapon name before passing it.
+ */
+native CS_AliasToWeaponID(const String:alias[]);
+
 /**
  * Do not edit below this line!
  */
@@ -263,6 +296,7 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_GetWeaponPrice");
 	MarkNativeAsOptional("CS_GetClientClanTag");
 	MarkNativeAsOptional("CS_SetClientClanTag");
+	MakrNativeAsOptional("CS_AliasToWeaponID");
 }
 #endif
 

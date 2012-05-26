@@ -59,9 +59,9 @@ ISDKTools *g_pSDKTools = NULL;
 
 bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0)
+	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0 && strcmp(g_pSM->GetGameFolderName(), "csgo") != 0)
 	{
-		snprintf(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S");
+		snprintf(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S and CS:GO");
 		return false;
 	}
 
@@ -73,7 +73,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "Could not read sm-cstrike.games.txt: %s", conf_error);
+			snprintf(error, maxlength, "Could not read sm-cstrike.games: %s", conf_error);
 		}
 		return false;
 	}

@@ -101,6 +101,13 @@
 				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
+			"AliasToWeaponID"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x2A\x2A\x85\xFF\x74\x2A\x33\xF6\x8B\xFF\x8B\x04\x2A\x2A\x2A\x2A\x2A\x57\x50"
+				"linux"		"@_Z15AliasToWeaponIDPKc"
+				"mac"		"@_Z15AliasToWeaponIDPKc"
+			}
 		}
 	}
 }

@@ -476,6 +476,7 @@
     <ClCompile Include="..\natives.cpp" />
     <ClCompile Include="..\RegNatives.cpp" />
     <ClCompile Include="..\timeleft.cpp" />
+	<ClCompile Include="..\util_cstrike.cpp" />
     <ClCompile Include="..\sdk\smsdk_ext.cpp" />
     <ClCompile Include="..\asm\asm.c" />
     <ClCompile Include="..\CDetour\detours.cpp" />
@@ -485,6 +486,7 @@
     <ClInclude Include="..\forwards.h" />
     <ClInclude Include="..\RegNatives.h" />
     <ClInclude Include="..\timeleft.h" />
+	<ClInclude Include="..\util_cstrike.h" />
     <ClInclude Include="..\sdk\smsdk_config.h" />
     <ClInclude Include="..\sdk\smsdk_ext.h" />
     <ClInclude Include="..\asm\asm.h" />

@@ -31,7 +31,11 @@
 
 #include "extension.h"
 #include "RegNatives.h"
+#include "forwards.h"
+#include "util_cstrike.h"
 #include <server_class.h>
+
+int g_iPriceOffset = -1;
 
 #define REGISTER_NATIVE_ADDR(name, code) \
 	void *addr; \
@@ -44,7 +48,7 @@
 
 inline CBaseEntity *GetCBaseEntity(int num, bool isplayer)
 {
-	edict_t *pEdict = engine->PEntityOfEntIndex(num);
+	edict_t *pEdict = gamehelpers->EdictOfIndex(num);
 	if (!pEdict || pEdict->IsFree())
 	{
 		return NULL;
@@ -292,35 +296,13 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t *params)
 {
-	static ICallWrapper *pWrapper = NULL;
-
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("GetTranslatedWeaponAlias",
-			PassInfo pass[1]; \
-			PassInfo retpass[1]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
-			pass[0].size = sizeof(char *); \
-			retpass[0].flags = PASSFLAG_BYVAL; \
-			retpass[0].type = PassType_Basic; \
-			retpass[0].size = sizeof(char *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass[0], pass, 1))
-	}
-	char *dest, *weapon;
+	char *weapon;
+	char *dest;
 
 	pContext->LocalToString(params[2], &dest);
 	pContext->LocalToString(params[1], &weapon);
 
-	char *ret = new char[128];
-
-	unsigned char vstk[sizeof(char *)];
-	unsigned char *vptr = vstk;
-
-	*(char **)vptr = weapon;
-
-	pWrapper->Execute(vstk, &ret);
-
+	const char *ret = GetTranslatedWeaponAlias(weapon);
 	strncopy(dest, ret, params[3]);
 	
 	return 1;
@@ -329,34 +311,31 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
 	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
-	if (params[2] == WEAPON_C4 || params[2] == WEAPON_KNIFE || params[2] == WEAPON_SHIELD)
+	int id = GetRealWeaponID(params[2]);
+#if SOURCE_ENGINE == SE_CSGO
+	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_KNIFE_GG)
+#else
+ 	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_SHIELD)
+#endif
 		return 0;
-	if (params[2] == WEAPON_KEVLAR)
+	if (id == WEAPON_KEVLAR)
 		return 650;
-	if (params[2] == WEAPON_ASSAULTSUIT)
+	if (id == WEAPON_ASSAULTSUIT)
 		return 1000;
-	if (params[2] == WEAPON_NIGHTVISION)
+	if (id == WEAPON_NIGHTVISION)
 		return 1250;
+#if SOURCE_ENGINE == SE_CSGO
+	if (id == WEAPON_DEFUSER)
+		return 200;
+#endif
+	if (id == 0)
+		return 0;
 
-	static ICallWrapper *pWrapper = NULL;
-	static int priceOffset = -1;
-	if (!pWrapper)
+	if (g_iPriceOffset == -1)
 	{
-		REGISTER_NATIVE_ADDR("GetWeaponInfo",
-			PassInfo pass[1]; \
-			PassInfo retpass[1]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
-			pass[0].size = sizeof(int); \
-			retpass[0].flags = PASSFLAG_BYVAL; \
-			retpass[0].type = PassType_Basic; \
-			retpass[0].size = sizeof(void *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass[0], pass, 1))
-	}
-	if (priceOffset == -1)
-	{
-		if (!g_pGameConf->GetOffset("WeaponPrice", &priceOffset))
+		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset))
 		{
+			g_iPriceOffset = -1;
 			return pContext->ThrowNativeError("Failed to get WeaponPrice offset");
 		}
 	}
@@ -367,30 +346,31 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	void *info;
-
-	unsigned char vstk[sizeof(int)];
-	unsigned char *vptr = vstk;
-
-	*(int *)vptr = params[2];
-
-	pWrapper->Execute(vstk, &info);
-
+	void *info = GetWeaponInfo(params[2]);
 	if (!info)
 		return pContext->ThrowNativeError("Failed to get weaponinfo");
 
-	int price = *(int *)((intptr_t)info + priceOffset);
+	int price = *(int *)((intptr_t)info + g_iPriceOffset);
 
 	if (params[3] || weaponNameOffset == -1)
 		return price;
 
 	const char *weapon_name = (const char *)((intptr_t)info + weaponNameOffset);
 
+#if SOURCE_ENGINE == SE_CSGO
+	return CallPriceForwardCSGO(params[1], weapon_name, price);
+#else
 	return CallPriceForward(params[1], weapon_name, price);
+#endif
 }
 
 static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	size_t len;
+	pContext->StringToLocalUTF8(params[2], params[3], "", &len);
+	return len;
+#else
 	static void *addr;
 	if (!addr)
 	{
@@ -426,10 +406,14 @@ static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
 
 	return len;
+#endif
 }
 
 static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	return 0;
+#else
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -464,6 +448,16 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pWrapper->Execute(vstk, NULL);
 
 	return 1;
+#endif
+}
+
+static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
+{
+	char *weapon;
+
+	pContext->LocalToString(params[1], &weapon);
+
+	return GetFakeWeaponID(AliasToWeaponID(weapon));
 }
 
 sp_nativeinfo_t g_CSNatives[] = 
@@ -476,6 +470,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_GetWeaponPrice",			CS_GetWeaponPrice},
 	{"CS_GetClientClanTag",			CS_GetClientClanTag},
 	{"CS_SetClientClanTag",			CS_SetClientClanTag},
+	{"CS_AliasToWeaponID",			CS_AliasToWeaponID},
 	{NULL,							NULL}
 };
 

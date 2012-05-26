@@ -537,7 +537,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 /D COMPILER_MSVC /D COMPILER_MSVC32"
 				Optimization="0"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;&quot;$(HL2SDK-CSGO)\public&quot;;&quot;$(HL2SDK-CSGO)\public\game\server&quot;;&quot;$(HL2SDK-CSGO)\public\engine&quot;;&quot;$(HL2SDK-CSGO)\public\tier0&quot;;&quot;$(HL2SDK-CSGO)\public\tier1&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;&quot;$(HL2SDKCSGO)\public&quot;;&quot;$(HL2SDKCSGO)\public\game\server&quot;;&quot;$(HL2SDKCSGO)\public\engine&quot;;&quot;$(HL2SDKCSGO)\public\tier0&quot;;&quot;$(HL2SDKCSGO)\public\tier1&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=11"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -561,7 +561,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(HL2SDK-CSGO)\lib\public\tier0.lib&quot; &quot;$(HL2SDK-CSGO)\lib\public\tier1.lib&quot; &quot;$(HL2SDK-CSGO)\lib\public\interfaces.lib&quot;"
+				AdditionalDependencies="&quot;$(HL2SDKCSGO)\lib\public\tier0.lib&quot; &quot;$(HL2SDKCSGO)\lib\public\tier1.lib&quot; &quot;$(HL2SDKCSGO)\lib\public\interfaces.lib&quot;"
 				OutputFile="$(OutDir)\game.cstrike.ext.2.csgo.dll"
 				LinkIncremental="2"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMT"
@@ -620,7 +620,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 /D COMPILER_MSVC /D COMPILER_MSVC32"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;&quot;$(HL2SDK-CSGO)\public&quot;;&quot;$(HL2SDK-CSGO)\public\game\server&quot;;&quot;$(HL2SDK-CSGO)\public\engine&quot;;&quot;$(HL2SDK-CSGO)\public\tier0&quot;;&quot;$(HL2SDK-CSGO)\public\tier1&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
+				AdditionalIncludeDirectories="..;..\sdk;..\..\..\public;..\..\..\public\sourcepawn;..\..\..\public\extensions;&quot;$(HL2SDKCSGO)\public&quot;;&quot;$(HL2SDKCSGO)\public\game\server&quot;;&quot;$(HL2SDKCSGO)\public\engine&quot;;&quot;$(HL2SDKCSGO)\public\tier0&quot;;&quot;$(HL2SDKCSGO)\public\tier1&quot;;&quot;$(MMSOURCE18)\core&quot;;&quot;$(MMSOURCE18)\core\sourcehook&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;CSTRIKE_EXPORTS;_CRT_SECURE_NO_DEPRECATE;SOURCEMOD_BUILD;SOURCE_ENGINE=11"
 				RuntimeLibrary="0"
 				EnableEnhancedInstructionSet="0"
@@ -642,7 +642,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="&quot;$(HL2SDK-CSGO)\lib\public\tier0.lib&quot; &quot;$(HL2SDK-CSGO)\lib\public\tier1.lib&quot; &quot;$(HL2SDK-CSGO)\lib\public\interfaces.lib&quot;"
+				AdditionalDependencies="&quot;$(HL2SDKCSGO)\lib\public\tier0.lib&quot; &quot;$(HL2SDKCSGO)\lib\public\tier1.lib&quot; &quot;$(HL2SDKCSGO)\lib\public\interfaces.lib&quot;"
 				OutputFile="$(OutDir)\game.cstrike.ext.2.csgo.dll"
 				LinkIncremental="1"
 				IgnoreDefaultLibraryNames="LIBC;LIBCD;LIBCMTD"
@@ -870,6 +870,10 @@
 				RelativePath="..\timeleft.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\util_cstrike.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -890,6 +894,10 @@
 			</File>
 			<File
 				RelativePath="..\timeleft.h"
+				>
+			</File>
+			<File
+				RelativePath="..\util_cstrike.h"
 				>
 			</File>
 		</Filter>

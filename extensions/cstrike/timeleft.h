@@ -40,6 +40,9 @@ class TimeLeftEvents : public IGameEventListener2
 public:
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 	virtual void FireGameEvent(IGameEvent *event);
+#if SOURCE_ENGINE >= SE_ALIENSWARM
+	virtual int	 GetEventDebugID( void ) { return 42; }
+#endif
 };
 
 extern TimeLeftEvents g_TimeLeftEvents;

@@ -44,12 +44,22 @@
 
 int CallPriceForward(int client, const char *weapon_name, int price);
 
+#if SOURCE_ENGINE == SE_CSGO
+#define WEAPON_C4 49
+#define WEAPON_KNIFE 42
+#define WEAPON_KNIFE_GG 41
+#define WEAPON_KEVLAR 50
+#define WEAPON_ASSAULTSUIT 51
+#define WEAPON_NIGHTVISION 52
+#define WEAPON_DEFUSER 53
+#else
 #define WEAPON_C4 6
 #define WEAPON_KNIFE 28
 #define WEAPON_SHIELD 30
 #define WEAPON_KEVLAR 31
 #define WEAPON_ASSAULTSUIT 32
 #define WEAPON_NIGHTVISION 33
+#endif
 
 /**
  * @brief Sample implementation of the SDK Extension.
