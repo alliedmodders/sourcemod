@@ -308,7 +308,7 @@ class SM:
 					job.AddCommand(SymlinkCommand(link, target))
 		elif AMBuild.target['platform'] == 'windows':
 			libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
-			if sdk == 'swarm':
+			if sdk in ['swarm', 'csgo']:
 				libs.append('interfaces')
 			for lib in libs:
 				libPath = os.path.join(sdkPath, 'lib', 'public', lib) + '.lib'
