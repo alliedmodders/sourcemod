@@ -1,0 +1,22 @@
+Based on Fyren's original "gdc" in ../gdc.
+
+This program checks SM gamedata in the given gameconf against the given server (not engine) binary.  It only checks vtable offsets and signatures.  It also only checks one gameconf per invocation.
+
+Example usage:
+
+  LD_LIBRARY_PATH=~/steam/left4dead2/bin/ gdc -g left4dead2 -e l4d2 -f ~/sourcemod-central/gamedata/sdktools.games/engine.l4d2.txt -b ~/steam/left4dead2/left4dead2/bin/server.so -x ~/steam/left4dead2/bin/engine.so -w ~/steam/left4dead2/left4dead2/bin/server.dll -y ~/steam/left4dead2/bin/engine.dll
+
+This will verify the gamedata in engine.l4d2.txt against the L4D2 server and engine binaries.
+
+The command line can get a bit long, but it is meant to be scripted.
+
+The parameters taken (in any order) are:
+  -g <game name> 
+  -e <engine name> 
+  -f <gameconf file> 
+  -b <linux game binary path>
+  -x <engine binary path>
+  -w <windows game binary path>
+  -y <windows engine binary path>
+
+The file symbols.txt defines the extra information necessary to link up gamedata key names (like "CommitSuicide") with symbols (like "_ZN11CBasePlayer13CommitSuicideEv").  It also needs a "vtsym" key that contains the symbol name of the default class' vtable.  Vtable to use for an individual conf key can be overridden by adding a key with name "<keyname>_vt", using the vtable symbol for its class as the value. The symbols.txt itself is a gameconf file.

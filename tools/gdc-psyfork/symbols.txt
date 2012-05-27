@@ -1,0 +1,129 @@
+"Games"
+{
+	"#default"
+	{
+		"Keys"
+		{
+			"vtsym"		"_ZTV11CBaseEntity"
+			"GiveNamedItem"		"_ZN11CBasePlayer13GiveNamedItemEPKci"
+			"GiveNamedItem_vt"	"_ZTV11CBasePlayer"
+			
+			"RemovePlayerItem"		"_ZN11CBasePlayer16RemovePlayerItemEP17CBaseCombatWeapon"
+			"RemovePlayerItem_vt"	"_ZTV11CBasePlayer"
+			
+			"Weapon_GetSlot"		"_ZNK20CBaseCombatCharacter14Weapon_GetSlotEi"
+			"Weapon_GetSlot_vt"		"_ZTV20CBaseCombatCharacter"
+			
+			"Ignite"			"_ZN14CBaseAnimating6IgniteEfbfb"
+			"Ignite_vt"			"_ZTV14CBaseAnimating"
+			
+			"Extinguish" 			"_ZN14CBaseAnimating10ExtinguishEv"
+			"Extinguish_vt" 		"_ZTV14CBaseAnimating"
+			
+			"Teleport"			"_ZN11CBaseEntity8TeleportEPK6VectorPK6QAngleS2_"
+			
+			"CommitSuicide" 	"_ZN11CBasePlayer13CommitSuicideEbb"
+			"CommitSuicide_vt"	"_ZTV11CBasePlayer"
+			
+			"GetVelocity"				"_ZN11CBaseEntity11GetVelocityEP6VectorS1_"
+			"EyeAngles"					"_ZN11CBasePlayer9EyeAnglesEv"
+			"DispatchKeyValue"			"_ZN11CBaseEntity8KeyValueEPKcS1_"
+			"DispatchKeyValueFloat"		"_ZN11CBaseEntity8KeyValueEPKcf"
+			"DispatchKeyValueVector"	"_ZN11CBaseEntity8KeyValueEPKcRK6Vector"
+			"SetEntityModel"			"_ZN11CBaseEntity8SetModelEPKc"
+			"AcceptInput"				"_ZN11CBaseEntity11AcceptInputEPKcPS_S2_9variant_ti"
+			
+			"WeaponEquip"		"_ZN11CBasePlayer12Weapon_EquipEP17CBaseCombatWeapon"
+			"WeaponEquip_vt"	"_ZTV20CBaseCombatCharacter"
+			
+			"Activate"			"_ZN11CBaseEntity8ActivateEv"
+			
+			"PlayerRunCmd"		"_ZN11CBasePlayer16PlayerRunCommandEP8CUserCmdP11IMoveHelper"
+			"PlayerRunCmd_vt"	"_ZTV11CBasePlayer"
+			
+			// SDKHooks
+			"EndTouch"			"_ZN11CBaseEntity8EndTouchEPS_"
+			"FireBullets"		"_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
+			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEv"
+			"OnTakeDamage"		"_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
+			"PreThink"			"_ZN11CBasePlayer8PreThinkEv"
+			"PreThink_vt"		"_ZTV11CBasePlayer"
+			"PostThink"			"_ZN11CBasePlayer9PostThinkEv"
+			"PostThink_vt"		"_ZTV11CBasePlayer"
+			"Reload"			"_ZN17CBaseCombatWeapon6ReloadEv"
+			"Reload_vt"			"_ZTV17CBaseCombatWeapon"
+			"SetTransmit"		"_ZN11CBaseEntity11SetTransmitEP18CCheckTransmitInfob"
+			"ShouldCollide"		"_ZNK11CBaseEntity13ShouldCollideEii"
+			"Spawn"				"_ZN11CBaseEntity5SpawnEv"
+			"StartTouch"		"_ZN11CBaseEntity10StartTouchEPS_"
+			"Think"				"_ZN11CBaseEntity5ThinkEv"
+			"Touch"				"_ZN11CBaseEntity5TouchEPS_"
+			"TraceAttack"		"_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTrace"
+			"UpdateOnRemove"	"_ZN11CBaseEntity14UpdateOnRemoveEv"
+			"Use"				"_ZN11CBaseEntity3UseEPS_S0_8USE_TYPEf"
+			"VPhysicsUpdate"	"_ZN11CBaseEntity14VPhysicsUpdateEP14IPhysicsObject"
+			"Weapon_CanSwitchTo"	"_ZN20CBaseCombatCharacter18Weapon_CanSwitchToEP17CBaseCombatWeapon"
+			"Weapon_CanSwitchTo_vt"	"_ZTV20CBaseCombatCharacter"
+			"Weapon_CanUse"		"_ZN20CBaseCombatCharacter13Weapon_CanUseEP17CBaseCombatWeapon"
+			"Weapon_CanUse_vt"	"_ZTV20CBaseCombatCharacter"
+			"Weapon_Drop"		"_ZN20CBaseCombatCharacter11Weapon_DropEP17CBaseCombatWeaponPK6VectorS4_"
+			"Weapon_Drop_vt"	"_ZTV20CBaseCombatCharacter"
+			"Weapon_Equip"		"_ZN11CBasePlayer12Weapon_EquipEP17CBaseCombatWeapon"
+			"Weapon_Equip_vt"	"_ZTV20CBaseCombatCharacter"
+			"Weapon_Switch"		"_ZN20CBaseCombatCharacter13Weapon_SwitchEP17CBaseCombatWeaponi"
+			"Weapon_Switch_vt"	"_ZTV20CBaseCombatCharacter"
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"orangebox_valve"
+			"engine"	"left4dead2"
+			"engine"	"alienswarm"
+		}
+		
+		"Keys"
+		{
+			"GetMaxHealth"	"_ZNK11CBaseEntity12GetMaxHealthEv"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"game"	"tf"
+		}
+
+		"Keys"
+		{
+			"ForceRespawn"			"_ZN9CTFPlayer12ForceRespawnEv"
+			"ForceRespawn_vt"		"_ZTV9CTFPlayer"
+			"GiveNamedItemTF"		"_ZN9CTFPlayer13GiveNamedItemEPKciP13CEconItemViewb"
+			"GiveNamedItemTF_vt"	"_ZTV9CTFPlayer"
+			"EquipWearable"			"_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
+			"EquipWearable_vt"		"_ZTV11CBasePlayer"
+			"RemoveWearable"		"_ZN11CBasePlayer14RemoveWearableEP13CEconWearable"
+			"RemoveWearable_vt"		"_ZTV11CBasePlayer"
+			"GrenadeDetonate"		"_ZN12CBaseGrenade8DetonateEv"
+			"GrenadeDetonate_vt"	"_ZTV12CBaseGrenade"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"left4dead"
+			"engine"	"left4dead2"
+		}
+
+		"Keys"
+		{
+			"GiveNamedItem"		"_ZN9CCSPlayer13GiveNamedItemEPKci"
+			"GiveNamedItem_vt"       "_ZTV9CCSPlayer"
+		}
+	}
+}
