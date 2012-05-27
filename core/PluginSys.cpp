@@ -1005,11 +1005,14 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		pPlugin->m_pRuntime = g_pSourcePawn2->LoadPlugin(co, fullpath, &err);
 		if (pPlugin->m_pRuntime == NULL)
 		{
-			UTIL_Format(error, 
-				maxlength, 
-				"Unable to load plugin (error %d: %s)", 
-				err, 
-				g_pSourcePawn2->GetErrorString(err));
+			if (error)
+			{
+				UTIL_Format(error, 
+					maxlength, 
+					"Unable to load plugin (error %d: %s)", 
+					err, 
+					g_pSourcePawn2->GetErrorString(err));
+			}
 			pPlugin->m_status = Plugin_BadLoad;
 		}
 		else
@@ -1020,7 +1023,10 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 			}
 			else
 			{
-				UTIL_Format(error, maxlength, "%s", pPlugin->m_errormsg);
+				if (error)
+				{
+					UTIL_Format(error, maxlength, "%s", pPlugin->m_errormsg);
+				}
 			}
 		}
 	}
