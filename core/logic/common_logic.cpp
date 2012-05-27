@@ -62,7 +62,7 @@ IGameHelpers *gamehelpers;
 
 static void AddCorePhraseFile(const char *filename)
 {
-	g_pCorePhrases->AddPhraseFile("antiflood.phrases");
+	g_pCorePhrases->AddPhraseFile(filename);
 }
 
 static IGameConfig *GetCoreGameConfig()

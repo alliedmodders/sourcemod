@@ -265,6 +265,8 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 		return;
 	}
 
+	static ConVar *sv_logecho = icvar->FindVar("sv_logecho");
+
 	char buffer[3072];
 	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
 
@@ -275,7 +277,11 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 
 	fprintf(fp, "L %s: %s\n", date, buffer);
-	g_SMAPI->ConPrintf("L %s: %s\n", date, buffer);
+
+	if (!sv_logecho || sv_logecho->GetBool())
+	{
+		g_SMAPI->ConPrintf("L %s: %s\n", date, buffer);
+	}
 }
 
 void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)

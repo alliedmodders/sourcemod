@@ -202,6 +202,19 @@ void ClientPrefs::SDK_OnUnload()
 	cookieMutex->DestroyThis();
 }
 
+void ClientPrefs::OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax)
+{
+	if (Database == NULL && !databaseLoading)
+	{
+		g_pSM->LogMessage(myself, "Attempting to reconnect to database...");
+		
+		databaseLoading = true;
+		
+		TQueryOp *op = new TQueryOp(Query_Connect, 0);
+		dbi->AddToThreadQueue(op, PrioQueue_High);
+	}
+}
+
 void ClientPrefs::DatabaseConnect()
 {
 	char error[256];
