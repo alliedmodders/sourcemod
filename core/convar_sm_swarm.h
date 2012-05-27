@@ -20,7 +20,7 @@
 #include "tier1/iconvar.h"
 #include "tier1/utlvector.h"
 #include "tier1/utlstring.h"
-#include "color.h"
+#include "Color.h"
 #include "icvar.h"
 
 #ifdef _WIN32
