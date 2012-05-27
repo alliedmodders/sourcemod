@@ -27,6 +27,27 @@
 				"windows"		"2700"
 				"linux"			"2700"
 			}
+			//Offset into CheckRestartRound
+			//Only Windows/Linux for now.
+			"CTTeamScoreOffset"
+			{
+				"windows"	"82"
+				"linux"		"117"
+			}
+			//Offset into CheckRestartRound
+			//Only Windows/Linux for now.
+			"TTeamScoreOffset"
+			{
+				"windows"	"107"
+				"linux"		"152"
+			}
+			//Offset into IncrementNumMVPs to find MVP count offset from player
+			//Only Windows/Linux for now.
+			"MVPCountOffset"
+			{
+				"windows"	"42"
+				"linux"		"46"
+			}
 		}
 		"Signatures"
 		{
@@ -71,6 +92,19 @@
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x8B\x4D\x2A\x33\xC0\x85\xC9\x74"
 				"linux"			"@_Z13GetWeaponInfo10CSWeaponID"
+			}
+			//In CS:GO this is actually CCSGameRules::CheckRestartRound(void) but to keep same gamedata as cs:s.
+			"CheckWinLimit"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x83\xEC\x2A\x57\x8B\xF9\x85\xC0\x0F\x84\x2A\x2A\x00\x00"
+				"linux"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
+			}
+			"IncrementNumMVPs"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x57\x8B\xF9\x85\x2A\x74\x2A\x83\x2A\x2A\x00\x74\x2A\x68\x50"
+				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
 			}
 			"AliasToWeaponID"
 			{

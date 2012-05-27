@@ -35,6 +35,27 @@
 				"linux"		"42"
 				"mac"		"29"
 			}
+			//Offset into CheckWinLimit to find CT team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
+			"CTTeamScoreOffset"
+			{
+				"windows"	"18"
+				"linux"		"46"
+				"mac"		"466"
+			}
+			//Offset into CheckWinLimit to find T team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
+			"TTeamScoreOffset"
+			{
+				"windows"	"40"
+				"linux"		"57"
+				"mac"		"481"
+			}
+			//Offset into IncrementNumMVPs to find MVP count offset from player
+			"MVPCountOffset"
+			{
+				"windows"	"60"
+				"linux"		"49"
+				"mac"		"62"
+			}
 		}
 		"Signatures"
 		{
@@ -107,6 +128,22 @@
 				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x2A\x2A\x85\xFF\x74\x2A\x33\xF6\x8B\xFF\x8B\x04\x2A\x2A\x2A\x2A\x2A\x57\x50"
 				"linux"		"@_Z15AliasToWeaponIDPKc"
 				"mac"		"@_Z15AliasToWeaponIDPKc"
+			}
+			
+			//For mac we use think since CheckWinLimit dosnt exist on mac.
+			"CheckWinLimit"
+			{
+				"library"	"server"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x8B\x40\x2A\x85\xC0\x56\x8B\xF1\x74"
+				"linux"		"@_ZN12CCSGameRules13CheckWinLimitEv"
+				"mac"		"@_ZN12CCSGameRules5ThinkEv"
+			}
+			"IncrementNumMVPs"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x89\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x8B\x48\x2A\x89\x2A\x2A\x33\xD2\x83\x7D\x2A\x00\x0F\x95\xC2\x0F\xB6\xC2\x85\xC0\x74\x2A\x68"
+				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
+				"mac"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
 			}
 		}
 	}

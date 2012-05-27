@@ -460,6 +460,210 @@ static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 	return GetFakeWeaponID(AliasToWeaponID(weapon));
 }
 
+static cell_t CS_SetTeamScore(IPluginContext *pContext, const cell_t *params)
+{
+	if (g_pSDKTools == NULL)
+	{
+		smutils->LogError(myself, "SDKTools interface not found. CS_SetTeamScore native disabled.");
+	}
+	else if (g_pSDKTools->GetInterfaceVersion() < 2)
+	{
+		//<psychonic> THIS ISN'T DA LIMBO STICK. LOW IS BAD
+		return pContext->ThrowNativeError("SDKTools interface is outdated. CS_SetTeamScore native disabled.");
+	}
+
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("CheckWinLimit", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate CheckWinLimit function");
+		}
+	}
+
+	static int ctTeamOffsetOffset = -1;
+	static int ctTeamOffset;
+
+	static int tTeamOffsetOffset = -1;
+	static int tTeamOffset;
+
+	if (ctTeamOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("CTTeamScoreOffset", &ctTeamOffsetOffset))
+		{
+			ctTeamOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find CTTeamOffset gamedata");
+		}
+
+		ctTeamOffset = *(int *)((intptr_t)addr + ctTeamOffsetOffset);
+	}
+
+	if (tTeamOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("TTeamScoreOffset", &tTeamOffsetOffset))
+		{
+			tTeamOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find CTTeamOffset gamedata");
+		}
+
+		tTeamOffset = *(int *)((intptr_t)addr + tTeamOffsetOffset);
+	}
+
+	void *gamerules = g_pSDKTools->GetGameRules();
+	if (gamerules == NULL)
+	{
+		return pContext->ThrowNativeError("GameRules not available. CS_SetTeamScore native disabled.");
+	}
+
+	if (params[1] == 3)
+	{
+		*(int16_t *)((intptr_t)gamerules+ctTeamOffset) = params[2];
+		return 1;
+	}
+	else if (params[1] == 2)
+	{
+		*(int16_t *)((intptr_t)gamerules+tTeamOffset) = params[2];
+		return 1;
+	}
+	return pContext->ThrowNativeError("Invalid team index passed (%i).", params[1]);
+}
+
+static cell_t CS_GetTeamScore(IPluginContext *pContext, const cell_t *params)
+{
+	if (g_pSDKTools == NULL)
+	{
+		smutils->LogError(myself, "SDKTools interface not found. CS_GetTeamScore native disabled.");
+	}
+	else if (g_pSDKTools->GetInterfaceVersion() < 2)
+	{
+		//<psychonic> THIS ISN'T DA LIMBO STICK. LOW IS BAD
+		return pContext->ThrowNativeError("SDKTools interface is outdated. CS_GetTeamScore native disabled.");
+	}
+
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("CheckWinLimit", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate CheckWinLimit function");
+		}
+	}
+
+	static int ctTeamOffsetOffset = -1;
+	static int ctTeamOffset;
+
+	static int tTeamOffsetOffset = -1;
+	static int tTeamOffset;
+
+	if (ctTeamOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("CTTeamScoreOffset", &ctTeamOffsetOffset))
+		{
+			ctTeamOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find CTTeamOffset gamedata");
+		}
+
+		ctTeamOffset = *(int *)((intptr_t)addr + ctTeamOffsetOffset);
+	}
+
+	if (tTeamOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("TTeamScoreOffset", &tTeamOffsetOffset))
+		{
+			tTeamOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find CTTeamOffset gamedata");
+		}
+
+		tTeamOffset = *(int *)((intptr_t)addr + tTeamOffsetOffset);
+	}
+
+	void *gamerules = g_pSDKTools->GetGameRules();
+	if (gamerules == NULL)
+	{
+		return pContext->ThrowNativeError("GameRules not available. CS_GetTeamScore native disabled.");
+	}
+
+	if (params[1] == 3)
+	{
+		return *(int16_t *)((intptr_t)gamerules+ctTeamOffset);
+	}
+	else if (params[1] == 2)
+	{
+		return *(int16_t *)((intptr_t)gamerules+tTeamOffset);
+	}
+	return pContext->ThrowNativeError("Invalid team index passed (%i).", params[1]);
+}
+
+static cell_t CS_SetMVPCount(IPluginContext *pContext, const cell_t *params)
+{
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("IncrementNumMVPs", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate IncrementNumMVPs function");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	static int mvpOffsetOffset = -1;
+	static int mvpOffset;
+
+	if (mvpOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("MVPCountOffset", &mvpOffsetOffset))
+		{
+			mvpOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find MVPCountOffset gamedata");
+		}
+
+		mvpOffset = *(int *)((intptr_t)addr + mvpOffsetOffset);
+	}
+
+	*(int *)((intptr_t)pEntity + mvpOffset) = params[2];
+
+	return 1;
+}
+
+static cell_t CS_GetMVPCount(IPluginContext *pContext, const cell_t *params)
+{
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("IncrementNumMVPs", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate IncrementNumMVPs function");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	static int mvpOffsetOffset = -1;
+	static int mvpOffset;
+
+	if (mvpOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("MVPCountOffset", &mvpOffsetOffset))
+		{
+			mvpOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find MVPCountOffset gamedata");
+		}
+
+		mvpOffset = *(int *)((intptr_t)addr + mvpOffsetOffset);
+	}
+
+	return *(int *)((intptr_t)pEntity + mvpOffset);
+}
+
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -471,6 +675,10 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_GetClientClanTag",			CS_GetClientClanTag},
 	{"CS_SetClientClanTag",			CS_SetClientClanTag},
 	{"CS_AliasToWeaponID",			CS_AliasToWeaponID},
+	{"CS_GetTeamScore",				CS_GetTeamScore},
+	{"CS_SetTeamScore",				CS_SetTeamScore},
+	{"CS_GetMVPCount",				CS_GetMVPCount},
+	{"CS_SetMVPCount",				CS_SetMVPCount},
 	{NULL,							NULL}
 };
 

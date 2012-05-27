@@ -264,7 +264,46 @@ native CS_GetClientClanTag(client, String:buffer[], size);
  * @note				Only supported on CS:S. Has no effect on CS:GO.
  */
 native CS_SetClientClanTag(client, const String:tag[]);
- 
+
+/**
+ * Gets a team's score
+ * @param team			Team index to get score for.
+ * @return				Returns the internal team score.
+ *
+ * @error				Invalid team index.
+ */
+native CS_GetTeamScore(team);
+
+/**
+ * Sets a team's score
+ * @param team			Team index to set score for.
+ * @param value			Value to set teams score as.
+ * @noreturn
+ *
+ * @error				Invalid team index.
+ * @note				This will update the scoreboard only after the scoreboard update function is called. Use SetTeamScore plus this to update the scoreboard instantly and save values correctly.
+ */
+native CS_SetTeamScore(team, value);
+
+/**
+ * Gets a client's mvp count
+ * @param client		Client index to set mvp count for.
+ * @return				Returns the clients internal MVP count.
+ *
+ * @error				Invalid client.
+ */
+native CS_GetMVPCount(client);
+
+/**
+ * Sets a client's mvp count
+ * @param client		Client index to set mvp count for.
+ * @param value			Value to set clients mvp count as.
+ * @noreturn
+ *
+ * @error				Invalid client.
+ */
+native CS_SetMVPCount(client, value);
+
 /**
  * Gets a weaponID from a alias
  * @param alias			Weapon alias to attempt to get an id for.
@@ -300,6 +339,10 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_GetWeaponPrice");
 	MarkNativeAsOptional("CS_GetClientClanTag");
 	MarkNativeAsOptional("CS_SetClientClanTag");
+	MarkNativeAsOptional("CS_GetTeamScore");
+	MarkNativeAsOptional("CS_SetTeamScore");
+	MarkNativeAsOptional("CS_GetMVPCount");
+	MarkNativeAsOptional("CS_SetMVPCount");
 	MakrNativeAsOptional("CS_AliasToWeaponID");
 }
 #endif
