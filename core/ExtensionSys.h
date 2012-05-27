@@ -45,6 +45,8 @@
 #include "PluginSys.h"
 #include "NativeOwner.h"
 
+class CPlayer;
+
 using namespace SourceMod;
 using namespace SourceHook;
 
@@ -175,6 +177,8 @@ public:
 	bool LibraryExists(const char *library);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
+public:
+	void ListExtensionsToClient(CPlayer *player, const CCommand &args);
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();
