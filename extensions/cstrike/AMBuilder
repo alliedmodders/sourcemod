@@ -1,10 +1,12 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
 import os
 
-sdks = ['ep2v', 'csgo']
-
-for i in sdks:
+for i in SM.sdkInfo:
+	if i != 'cstrike' and i != 'csgo:
+		continue
+	
 	sdk = SM.sdkInfo[i]
+	
 	if AMBuild.target['platform'] not in sdk['platform']:
 		continue
 	
