@@ -381,8 +381,14 @@ public:
 	FnChangeCallback_t GetChangeCallback( int slot ) const { return m_pParent->m_fnChangeCallbacks[ slot ]; }
 
 	// Retrieve value
+#if SOURCE_ENGINE == SE_CSGO
+	virtual float					GetFloat( void ) const;
+	virtual int						GetInt( void ) const;
+#else
 	FORCEINLINE_CVAR float			GetFloat( void ) const;
 	FORCEINLINE_CVAR int			GetInt( void ) const;
+#endif
+
 	FORCEINLINE_CVAR Color			GetColor( void ) const;
 	FORCEINLINE_CVAR bool			GetBool() const {  return !!GetInt(); }
 	FORCEINLINE_CVAR char const	   *GetString( void ) const;
@@ -895,7 +901,9 @@ void ConVar_PrintDescription( const ConCommandBase *pVar );
 //-----------------------------------------------------------------------------
 // Purpose: Utility class to quickly allow ConCommands to call member methods
 //-----------------------------------------------------------------------------
+#ifdef _WIN32
 #pragma warning (disable : 4355 )
+#endif
 
 template< class T >
 class CConCommandMemberAccessor : public ConCommand, public ICommandCallback, public ICommandCompletionCallback
@@ -942,7 +950,9 @@ private:
 	FnMemberCommandCompletionCallback_t m_CompletionFunc;
 };
 
+#ifdef _WIN32
 #pragma warning ( default : 4355 )
+#endif
 
 
 //-----------------------------------------------------------------------------

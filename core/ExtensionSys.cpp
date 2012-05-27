@@ -78,6 +78,10 @@ CRemoteExtension::CRemoteExtension(IExtensionInterface *pAPI, const char *filena
 #define GAMEFIX "2.ep2v"
 #elif SOURCE_ENGINE == SE_DARKMESSIAH
 #define GAMEFIX "2.darkm"
+#elif SOURCE_ENGINE == SE_PORTAL2
+#define GAMEFIX "2.portal2"
+#elif SOURCE_ENGINE == SE_CSGO
+#define GAMEFIX "2.csgo"
 #else
 #define GAMEFIX "2.ep1"
 #endif //(SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)

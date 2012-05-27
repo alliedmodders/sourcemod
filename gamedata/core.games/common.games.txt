@@ -93,6 +93,7 @@
 			"engine"			"left4dead"
 			"engine"			"left4dead2"
 			"engine"			"alienswarm"
+			"engine"			"csgo"
 		}
 		
 		"Offsets"
@@ -149,6 +150,7 @@
 			"game"					"dinodday"
 			"game"					"esmod"
 			"game"					"nucleardawn"
+			"game"					"csgo"
 		}
 
 		"Keys"
@@ -179,6 +181,7 @@
 			"game"					"fistful_of_frags"
 			"game"					"dinodday"
 			"game"					"nucleardawn"
+			"game"					"csgo"
 		}
 		
 		"Keys"

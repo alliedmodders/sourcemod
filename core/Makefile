@@ -7,6 +7,7 @@ HL2SDK_OB = ../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../hl2sdk-l4d2
+HL2SDK_CSGO = ../../hl2sdk-csgo
 MMSOURCE = ../../mmsource-central
 
 #####################################
@@ -48,7 +49,7 @@ CPP = gcc
 
 override ENGSET = false
 
-ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2,$(ENGINE)))
+ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2 csgo,$(ENGINE)))
 	override ENGSET = true
 endif
 
@@ -93,6 +94,14 @@ ifeq "$(ENGINE)" "left4dead2"
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.l4d2.so
 endif
+ifeq "$(ENGINE)" "csgo"
+	HL2SDK = $(HL2SDK_CSGO)
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=11
+	METAMOD = $(MMSOURCE)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server
+	BINARY = sourcemod.2.csgo.so
+endif
 
 HL2PUB = $(HL2SDK)/public
 
@@ -118,19 +127,24 @@ else
 endif
 
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
-	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9
+	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9 -DSE_PORTAL2=10 \
+	-DSE_CSGO=11
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) \
 	$(LIB_PREFIX)tier0$(LIB_SUFFIX) -static-libgcc
+
+ifeq "$(ENGINE)" "csgo"
+	LINK += $(HL2LIB)/interfaces_i486.a
+endif
 	
 INCLUDE += -I. -I.. -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/vstdlib \
 	-I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook \
 	-I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 
-CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+CFLAGS += -D_LINUX -DPOSIX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
 	-Wno-uninitialized -Wno-unused -Wno-switch -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H \
-	-DSM_DEFAULT_THREADER -m32
+	-DSM_DEFAULT_THREADER -m32 -DCOMPILER_GCC
 CPPFLAGS += -Wno-non-virtual-dtor -Wno-overloaded-virtual -fno-threadsafe-statics -fno-exceptions -fno-rtti
 
 ################################################
@@ -169,7 +183,7 @@ all: check
 check:
 	if [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply one of the following values for ENGINE:"; \
-		echo "left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
+		echo "csgo, left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
 		exit 1; \
 	fi
 

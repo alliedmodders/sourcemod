@@ -70,7 +70,9 @@
 # define PLATFORM_APPLE
 # define PLATFORM_LIB_EXT		"dylib"
 #endif
-#define PLATFORM_POSIX
+#ifndef PLATFORM_POSIX
+# define PLATFORM_POSIX
+#endif
 #include <errno.h>
 #include <unistd.h>
 #include <dirent.h>

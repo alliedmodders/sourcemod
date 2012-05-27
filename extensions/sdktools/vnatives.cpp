@@ -528,7 +528,11 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 			CellRecipientFilter rf;
 			rf.SetToReliable(true);
 			rf.Initialize(player_list, total_players);
+#if SOURCE_ENGINE < SE_PORTAL2
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, &pos);
+#else
+			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, -1, sound_name, VOL_NORM, ATTN_NORM, 0, 0, PITCH_NORM, &pos);
+#endif
 		}
 	}
 

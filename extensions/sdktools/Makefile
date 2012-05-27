@@ -2,12 +2,12 @@
 # Makefile written by David "BAILOPAN" Anderson
 
 SMSDK = ../..
-SRCDS_BASE = ~/srcds
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../../hl2sdk-l4d2
+HL2SDK_CSGO = ../../../hl2sdk-csgo
 MMSOURCE17 = ../../../mmsource-central
 
 #####################################
@@ -43,7 +43,6 @@ ifeq "$(ENGINE)" "original"
 	CFLAGS += -DSOURCE_ENGINE=1
 	METAMOD = $(MMSOURCE17)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls -I$(HL2SDK)/game_shared
-	SRCDS = $(SRCDS_BASE)
 	GAMEFIX = 1.ep1
 	override ENGSET = true
 endif
@@ -54,7 +53,6 @@ ifeq "$(ENGINE)" "orangebox"
 	CFLAGS += -DSOURCE_ENGINE=3
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
-	SRCDS = $(SRCDS_BASE)/orangebox
 	GAMEFIX = 2.ep2
 	override ENGSET = true
 endif
@@ -65,7 +63,6 @@ ifeq "$(ENGINE)" "orangeboxvalve"
 	CFLAGS += -DSOURCE_ENGINE=6
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
-	SRCDS = $(SRCDS_BASE)/orangebox
 	GAMEFIX = 2.ep2v
 	override ENGSET = true
 endif
@@ -76,7 +73,6 @@ ifeq "$(ENGINE)" "left4dead"
 	CFLAGS += -DSOURCE_ENGINE=7
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
-	SRCDS = $(SRCDS_BASE)/l4d
 	GAMEFIX = 2.l4d
 	override ENGSET = true
 endif
@@ -87,15 +83,28 @@ ifeq "$(ENGINE)" "left4dead2"
 	CFLAGS += -DSOURCE_ENGINE=8
 	METAMOD = $(MMSOURCE17)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
-	SRCDS = $(SRCDS_BASE)/left4dead2
 	GAMEFIX = 2.l4d2
 	override ENGSET = true
 endif
+ifeq "$(ENGINE)" "csgo"
+	HL2SDK = $(HL2SDK_CSGO)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=11
+	METAMOD = $(MMSOURCE17)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
+	GAMEFIX = 2.csgo
+	override ENGSET = true
+endif
 
-ifeq ($(ENGINE),$(filter $(ENGINE), left4dead2 orangeboxvalve))
+ifeq ($(ENGINE),$(filter $(ENGINE), csgo left4dead2 orangeboxvalve))
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so
 else
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so
+endif
+
+ifeq "$(ENGINE)" "csgo"
+	LINK_HL2 += $(HL2LIB)/interfaces_i486.a
 endif
 
 LINK += $(LINK_HL2)
@@ -103,14 +112,16 @@ LINK += $(LINK_HL2)
 INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$(HL2PUB)/tier0 \
 	-I$(HL2PUB)/tier1 -I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/extensions \
 	-I$(SMSDK)/public/sourcepawn
+
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
-	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9
+	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9 -DSE_PORTAL2=10 \
+	-DSE_CSGO=11
 
 LINK += -m32 -ldl -lm
 
-CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
-	-Wno-unused -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
+CFLAGS += -D_LINUX -DPOSIX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DCOMPILER_GCC \
+	-Wno-switch -Wall -Werror -Wno-uninitialized -Wno-invalid-offsetof -Wno-unused -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti -fno-threadsafe-statics
 
 ################################################
@@ -153,12 +164,12 @@ all: check
 	mkdir -p $(BIN_DIR)/sdk
 	mkdir -p $(BIN_DIR)/CDetour
 	mkdir -p $(BIN_DIR)/asm
-ifeq ($(ENGINE),$(filter $(ENGINE), left4dead2 orangeboxvalve))
-	ln -sf $(SRCDS)/bin/libvstdlib.so libvstdlib.so;
-	ln -sf $(SRCDS)/bin/libtier0.so libtier0.so;
+ifeq ($(ENGINE),$(filter $(ENGINE), csgo left4dead2 orangeboxvalve))
+	ln -sf $(HL2LIB)/libvstdlib.so libvstdlib.so;
+	ln -sf $(HL2LIB)/libtier0.so libtier0.so;
 else
-	ln -sf $(SRCDS)/bin/vstdlib_i486.so vstdlib_i486.so;
-	ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so;
+	ln -sf $(HL2LIB)/vstdlib_i486.so vstdlib_i486.so;
+	ln -sf $(HL2LIB)/tier0_i486.so tier0_i486.so;
 endif
 	$(MAKE) -f Makefile extension
 

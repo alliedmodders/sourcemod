@@ -105,7 +105,7 @@ void EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	}
 
 	char sOutput[20];
-	Q_snprintf(sOutput, sizeof(sOutput), "%x", pOutput);
+	Q_snprintf(sOutput, sizeof(sOutput), "%p", pOutput);
 
 	// attempt to directly lookup a hook using the pOutput pointer
 	OutputNameStruct *pOutputName = NULL;

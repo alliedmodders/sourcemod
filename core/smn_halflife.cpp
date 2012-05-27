@@ -476,6 +476,10 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 50;
 	case SOURCE_ENGINE_ALIENSWARM:
 		return 60;
+	case SOURCE_ENGINE_PORTAL2:
+		return 70;
+	case SOURCE_ENGINE_CSGO:
+		return 80;
 # endif
 	}
 #else

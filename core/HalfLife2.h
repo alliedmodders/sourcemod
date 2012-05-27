@@ -45,6 +45,9 @@
 #include <datamap.h>
 #include <ihandleentity.h>
 #include <tier0/icommandline.h>
+#if SOURCE_ENGINE >= SE_PORTAL2
+#include <string_t.h>
+#endif
 
 class CCommand;
 
@@ -88,6 +91,7 @@ struct DelayedKickInfo
 	char buffer[384];
 };
 
+// copy from game/shared/entitylist_base.h
 class CEntInfo
 {
 public:
@@ -95,6 +99,10 @@ public:
 	int				m_SerialNumber;
 	CEntInfo		*m_pPrev;
 	CEntInfo		*m_pNext;
+#if SOURCE_ENGINE >= SE_PORTAL2
+	string_t		m_iName;
+	string_t		m_iClassName;
+#endif
 };
 
 class CHalfLife2 : 

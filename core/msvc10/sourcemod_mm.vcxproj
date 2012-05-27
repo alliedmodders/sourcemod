@@ -1644,7 +1644,7 @@
     <ClCompile>
       <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 /D COMPILER_MSVC /D COMPILER_MSVC32 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDK-CSGO)\public;$(HL2SDK-CSGO)\public\engine;$(HL2SDK-CSGO)\public\game\server;$(HL2SDK-CSGO)\public\mathlib;$(HL2SDK-CSGO)\public\tier0;$(HL2SDK-CSGO)\public\tier1;$(HL2SDK-CSGO)\public\vstdlib;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDKCSGO)\public;$(HL2SDKCSGO)\public\engine;$(HL2SDKCSGO)\public\game\server;$(HL2SDKCSGO)\public\mathlib;$(HL2SDKCSGO)\public\tier0;$(HL2SDKCSGO)\public\tier1;$(HL2SDKCSGO)\public\vstdlib;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -1661,7 +1661,7 @@
       <AdditionalIncludeDirectories>..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(HL2SDK-CSGO)\lib\public\tier0.lib;$(HL2SDK-CSGO)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDK-CSGO)\lib\public\mathlib.lib;$(HL2SDK-CSGO)\lib\public\interfaces.lib;dbghelp.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(HL2SDKCSGO)\lib\public\tier0.lib;$(HL2SDKCSGO)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDKCSGO)\lib\public\mathlib.lib;$(HL2SDKCSGO)\lib\public\interfaces.lib;dbghelp.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sourcemod.2.csgo.dll</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -1676,7 +1676,7 @@
     <ClCompile>
       <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 /D COMPILER_MSVC /D COMPILER_MSVC32 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDK-CSGO)\public;$(HL2SDK-CSGO)\public\engine;$(HL2SDK-CSGO)\public\game\server;$(HL2SDK-CSGO)\public\mathlib;$(HL2SDK-CSGO)\public\tier0;$(HL2SDK-CSGO)\public\tier1;$(HL2SDK-CSGO)\public\vstdlib;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDKCSGO)\public;$(HL2SDKCSGO)\public\engine;$(HL2SDKCSGO)\public\game\server;$(HL2SDKCSGO)\public\mathlib;$(HL2SDKCSGO)\public\tier0;$(HL2SDKCSGO)\public\tier1;$(HL2SDKCSGO)\public\vstdlib;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -1693,7 +1693,7 @@
       <AdditionalIncludeDirectories>..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(HL2SDK-CSGO)\lib\public\tier0.lib;$(HL2SDK-CSGO)\lib\public\tier1.lib;$(HL2SDK-CSGO)\lib\public\vstdlib.lib;$(HL2SDK-CSGO)\lib\public\mathlib.lib;$(HL2SDK-CSGO)\lib\public\interfaces.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(HL2SDKCSGO)\lib\public\tier0.lib;$(HL2SDKCSGO)\lib\public\tier1.lib;$(HL2SDKCSGO)\lib\public\vstdlib.lib;$(HL2SDKCSGO)\lib\public\mathlib.lib;$(HL2SDKCSGO)\lib\public\interfaces.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sourcemod.2.csgo.dll</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -1708,7 +1708,7 @@
     <ClCompile>
       <AdditionalOptions>/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 /D COMPILER_MSVC /D COMPILER_MSVC32 %(AdditionalOptions)</AdditionalOptions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDK-CSGO)\public;$(HL2SDK-CSGO)\public\engine;$(HL2SDK-CSGO)\public\game\server;$(HL2SDK-CSGO)\public\mathlib;$(HL2SDK-CSGO)\public\tier0;$(HL2SDK-CSGO)\public\tier1;$(HL2SDK-CSGO)\public\vstdlib;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDKCSGO)\public;$(HL2SDKCSGO)\public\engine;$(HL2SDKCSGO)\public\game\server;$(HL2SDKCSGO)\public\mathlib;$(HL2SDKCSGO)\public\tier0;$(HL2SDKCSGO)\public\tier1;$(HL2SDKCSGO)\public\vstdlib;$(MMSOURCE18)\core;$(MMSOURCE18)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=11;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
@@ -1723,7 +1723,7 @@
       <AdditionalIncludeDirectories>..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>$(HL2SDK-CSGO)\lib\public\tier0.lib;$(HL2SDK-CSGO)\lib\public\tier1.lib;$(HL2SDK-CSGO)\lib\public\vstdlib.lib;$(HL2SDK-CSGO)\lib\public\mathlib.lib;$(HL2SDK-CSGO)\lib\public\interfaces.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(HL2SDKCSGO)\lib\public\tier0.lib;$(HL2SDKCSGO)\lib\public\tier1.lib;$(HL2SDKCSGO)\lib\public\vstdlib.lib;$(HL2SDKCSGO)\lib\public\mathlib.lib;$(HL2SDKCSGO)\lib\public\interfaces.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)sourcemod.2.csgo.dll</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>

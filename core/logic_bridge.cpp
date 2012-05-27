@@ -167,12 +167,16 @@ static const char *get_source_engine_name()
 	return "left4dead2";
 #elif SOURCE_ENGINE == SE_ALIENSWARM
 	return "alienswarm";
+#elif SOURCE_ENGINE == SE_PORTAL2
+	return "portal2";
+#elif SOURCE_ENGINE == SE_CSGO
+	return "csgo";
 #endif
 }
 
 static bool symbols_are_hidden()
 {
-#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO)
 	return true;
 #else
 	return false;

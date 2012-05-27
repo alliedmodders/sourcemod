@@ -76,6 +76,8 @@
 #define FILENAME_1_6_SWARM			"sourcemod.2.swarm" PLATFORM_EXT
 #define FILENAME_1_6_BGT			"sourcemod.2.bgt" PLATFORM_EXT
 #define FILENAME_1_6_EYE			"sourcemod.2.eye" PLATFORM_EXT
+#define FILENAME_1_6_PORTAL2		"sourcemod.2.portal2" PLATFORM_EXT
+#define FILENAME_1_6_CSGO			"sourcemod.2.csgo" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -255,6 +257,16 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_EYE:
 		{
 			filename = FILENAME_1_6_EYE;
+			break;
+		}
+	case SOURCE_ENGINE_PORTAL2:
+		{
+			filename = FILENAME_1_6_PORTAL2;
+			break;
+		}
+	case SOURCE_ENGINE_CSGO:
+		{
+			filename = FILENAME_1_6_CSGO;
 			break;
 		}
 	default:

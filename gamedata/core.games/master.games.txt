@@ -59,5 +59,10 @@
 	{
 		"engine"	"eye"
 	}
+	
+	"engine.csgo.txt"
+	{
+		"engine"	"csgo"
+	}
 
 }

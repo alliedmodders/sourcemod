@@ -50,6 +50,17 @@ public:
 	void Shutdown();
 	void AddHook(int type, IPluginFunction *pFunc);
 	bool RemoveHook(int type, IPluginFunction *pFunc);
+#if SOURCE_ENGINE >= SE_PORTAL2
+	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
+	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
+		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
+		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+		float soundtime, int speakerentity);
+	int OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
+		float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
+		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+		float soundtime, int speakerentity);
+#else
 	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
 		soundlevel_t soundlevel, int fFlags, int pitch, float delay);
 	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
@@ -60,6 +71,7 @@ public:
 		float flAttenuation, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
+#endif
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 	void _IncRefCounter(int type);
