@@ -2,7 +2,7 @@
 import os
 
 for i in SM.sdkInfo:
-	if i != 'cstrike' and i != 'csgo:
+	if i != 'cstrike' and i != 'csgo':
 		continue
 	
 	sdk = SM.sdkInfo[i]
