@@ -72,6 +72,7 @@ folders = [['addons', 'sourcemod', 'bin'],
            ['addons', 'sourcemod', 'gamedata'],
            ['addons', 'sourcemod', 'gamedata', 'core.games'],
            ['addons', 'sourcemod', 'gamedata', 'sdktools.games'],
+		   ['addons', 'sourcemod', 'gamedata', 'sm-cstrike.games'],
            ['addons', 'sourcemod', 'configs', 'geoip'],
            ['addons', 'sourcemod', 'translations'],
            ['addons', 'sourcemod', 'logs'],
@@ -115,6 +116,8 @@ job.AddCommand(CopyFolder(['gamedata', 'sdktools.games'],
 	['addons', 'sourcemod', 'gamedata', 'sdktools.games']))
 job.AddCommand(CopyFolder(['gamedata', 'core.games'],
 	['addons', 'sourcemod', 'gamedata', 'core.games']))
+job.AddCommand(CopyFolder(['gamedata', 'sm-cstrike.games'],
+	['addons', 'sourcemod', 'gamedata', 'sm-cstrike.games']))
 job.AddCommand(CopyFolder(['plugins'], ['addons', 'sourcemod', 'scripting'], ['AMBuilder']))
 job.AddCommand(CopyFolder(['plugins', 'include'],
 	['addons', 'sourcemod', 'scripting', 'include']))
@@ -224,6 +227,7 @@ AddNormalLibrary('geoip.ext', 'extensions')
 AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
 AddNormalLibrary('game.cstrike.ext.2.ep2v', 'extensions')
+AddNormalLibrary('game.cstrike.ext.2.csgo', 'extensions')
 AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
 AddNormalLibrary('topmenus.ext', 'extensions')
 AddNormalLibrary('regex.ext', 'extensions')
