@@ -1504,7 +1504,9 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 		{
 			break;
 		}
-		if (native->status == SP_NATIVE_UNBOUND && !(native->flags & SP_NTVFLAG_OPTIONAL))
+		if (native->status == SP_NATIVE_UNBOUND
+			&& native->name[0] != '@'
+			&& !(native->flags & SP_NTVFLAG_OPTIONAL))
 		{
 			pPlugin->SetErrorState(Plugin_Error, "Native not found: %s", native->name);
 			return;
