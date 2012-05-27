@@ -37,6 +37,7 @@
 #include "sourcemm_api.h"
 #include "sm_srvcmds.h"
 #include "sm_stringutil.h"
+#include "PlayerManager.h"
 
 CExtensionManager g_Extensions;
 IdentityType_t g_ExtType;
@@ -1282,6 +1283,94 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const CCommand
 	g_RootMenu.DrawGenericOption("load", "Load an extension");
 	g_RootMenu.DrawGenericOption("reload", "Reload an extension");
 	g_RootMenu.DrawGenericOption("unload", "Unload an extension");
+}
+
+void CExtensionManager::ListExtensionsToClient(CPlayer *player, const CCommand &args)
+{
+	char buffer[256];
+	int numExtensions = m_Libs.size();
+	edict_t *edict = player->GetEdict();
+	unsigned int id = 0;
+	unsigned int start = 0;
+
+	if (!numExtensions)
+	{
+		ClientConsolePrint(edict, "[SM] No extensions found.");
+		return;
+	}
+
+	if (args.ArgC() > 2)
+	{
+		start = atoi(args.Arg(2));
+	}
+
+	CExtension *ext;
+	SourceHook::List<CExtension *>::iterator iter;
+
+	for (iter = m_Libs.begin();
+		 iter != m_Libs.end();
+		 iter++)
+	{
+		ext = (*iter);
+
+		char error[255];
+		if (!ext->IsRunning(error, sizeof(error)))
+		{
+			continue;
+		}
+
+		id++;
+		if (id < start)
+		{
+			continue;
+		}
+
+		if (id - start > 10)
+		{
+			break;
+		}
+
+		IExtensionInterface *api = ext->GetAPI();
+
+		const char *name = api->GetExtensionName();
+		const char *version = api->GetExtensionVerString();
+		const char *author = api->GetExtensionAuthor();
+		const char *description = api->GetExtensionDescription();
+
+		size_t len = UTIL_Format(buffer, sizeof(buffer), " \"%s\"", name);
+
+		if (version != NULL && IS_STR_FILLED(version))
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " (%s)", version);
+		}
+
+		if (author != NULL && IS_STR_FILLED(author))
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, " by %s", author);
+		}
+
+		if (description != NULL && IS_STR_FILLED(description))
+		{
+			len += UTIL_Format(&buffer[len], sizeof(buffer)-len, ": %s", description);
+		}
+
+
+		ClientConsolePrint(edict, "%s", buffer);
+	}
+
+	while (iter != m_Libs.end())
+	{
+		char error[255];
+		if ((*iter)->IsRunning(error, sizeof(error)))
+		{
+			break;
+		}
+	}
+
+	if (iter != m_Libs.end())
+	{
+		ClientConsolePrint(edict, "To see more, type \"sm exts %d\"", id);
+	}
 }
 
 CExtension *CExtensionManager::GetExtensionFromIdent(IdentityToken_t *ptr)

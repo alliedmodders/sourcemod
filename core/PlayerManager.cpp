@@ -770,6 +770,11 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 			g_PluginSys.ListPluginsToClient(pPlayer, args);
 			RETURN_META(MRES_SUPERCEDE);
 		}
+		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "exts") == 0)
+		{
+			g_Extensions.ListExtensionsToClient(pPlayer, args);
+			RETURN_META(MRES_SUPERCEDE);
+		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
 		{
 			ClientConsolePrint(pEntity,
