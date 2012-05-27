@@ -272,7 +272,7 @@ native CS_SetClientClanTag(client, const String:tag[]);
  *
  * @note For best results use CS_GetTranslatedWeaponAlias on the weapon name before passing it.
  */
-native CS_AliasToWeaponID(const String:alias[]);
+native CSWeaponID:CS_AliasToWeaponID(const String:alias[]);
 
 /**
  * Do not edit below this line!
