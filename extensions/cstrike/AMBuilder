@@ -5,24 +5,26 @@ sdks = ['ep2v', 'csgo']
 
 for i in sdks:
 	sdk = SM.sdkInfo[i]
-	if AMBuild.target['platform'] in sdk['platform']:
-		compiler = SM.DefaultHL2Compiler('extensions/cstrike', i)
+	if AMBuild.target['platform'] not in sdk['platform']:
+		continue
+	
+	compiler = SM.DefaultHL2Compiler('extensions/cstrike', i)
 
-		name = 'game.cstrike.ext.' + sdk['ext']
-		extension = AMBuild.AddJob(name)
-		binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
-		SM.PreSetupHL2Job(extension, binary, i)
-		binary.AddSourceFiles('extensions/cstrike', [
-			'extension.cpp',
-			'natives.cpp',
-			'RegNatives.cpp',
-			'timeleft.cpp',
-			'forwards.cpp',
-			'util_cstrike.cpp',
-			'sdk/smsdk_ext.cpp',
-			'CDetour/detours.cpp',
-			'asm/asm.c'
-			])
-		SM.PostSetupHL2Job(extension, binary, i)
-		SM.AutoVersion('extensions/cstrike', binary)
-		binary.SendToJob()
+	name = 'game.cstrike.ext.' + sdk['ext']
+	extension = AMBuild.AddJob(name)
+	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
+	SM.PreSetupHL2Job(extension, binary, i)
+	binary.AddSourceFiles('extensions/cstrike', [
+		'extension.cpp',
+		'natives.cpp',
+		'RegNatives.cpp',
+		'timeleft.cpp',
+		'forwards.cpp',
+		'util_cstrike.cpp',
+		'sdk/smsdk_ext.cpp',
+		'CDetour/detours.cpp',
+		'asm/asm.c'
+		])
+	SM.PostSetupHL2Job(extension, binary, i)
+	SM.AutoVersion('extensions/cstrike', binary)
+	binary.SendToJob()
