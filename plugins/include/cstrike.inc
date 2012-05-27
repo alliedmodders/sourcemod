@@ -63,6 +63,10 @@ enum CSRoundEndReason
 	CSRoundEnd_TerroristsNotEscaped,       // Terrorists have not escaped!
 	CSRoundEnd_VIPNotEscaped,              // VIP has not escaped!
 	CSRoundEnd_GameStart                   // Game Commencing!
+	
+	// The below only exist on CS:GO
+	CSRoundEnd_TerroristsSurrender,        // Terrorists Surrender
+	CSRoundEnd_CTSurrender,                // CTs Surrender
 };
 
 enum CSWeaponID
