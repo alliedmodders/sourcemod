@@ -347,7 +347,7 @@ native AdminId:CreateAdmin(const String:name[]="");
  * @param maxlength		Maximum size of string buffer.
  * @return				Number of bytes written.
  */
-native GetAdminUsername(AdminId:id, const String:name[], maxlength);
+native GetAdminUsername(AdminId:id, String:name[], maxlength);
 
 /**
  * Binds an admin to an identity for fast lookup later on.  The bind must be unique.
