@@ -340,6 +340,19 @@ forward TF2_OnWaitingForPlayersStart();
 forward TF2_OnWaitingForPlayersEnd();
 
 /**
+ * Called when a player attempts to use a teleporter to decide if the player should be allowed to teleport.
+ * Return Plugin_Continue to let the original calculation or return a higher
+ * action to override the decision with the value of 'result'
+ *
+ * @param client		Client index.
+ * @param teleporter	Teleporter entity index.
+ * @param result		Buffer param for the result of the decision.
+ *						This is prepopulated with the game's original decision to let a player teleport.
+ * @return				Plugin_Continue for original calculation, higher value to use 'result'.
+ */
+forward Action:TF2_OnPlayerTeleport(client, teleporter, &bool:result);
+ 
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_tf2 = 

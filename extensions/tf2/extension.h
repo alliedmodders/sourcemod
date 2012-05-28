@@ -121,6 +121,7 @@ private:
 	bool m_IsHolidayDetourEnabled;
 	bool m_CondChecksEnabled;
 	bool m_RulesDetoursEnabled;
+	bool m_TeleportDetourEnabled;
 };
 
 enum TFClassType

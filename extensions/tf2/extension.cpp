@@ -39,6 +39,7 @@
 #include "holiday.h"
 #include "conditions.h"
 #include "gameplayrules.h"
+#include "teleporter.h"
 #include "CDetour/detours.h"
 
 /**
@@ -117,6 +118,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_removeCondForward = forwards->CreateForward("TF2_OnConditionRemoved", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	g_waitingPlayersStartForward = forwards->CreateForward("TF2_OnWaitingForPlayersStart", ET_Ignore, 0, NULL);
 	g_waitingPlayersEndForward = forwards->CreateForward("TF2_OnWaitingForPlayersEnd", ET_Ignore, 0, NULL);
+	g_teleportForward = forwards->CreateForward("TF2_OnPlayerTeleport", ET_Hook, 3, NULL, Param_Cell, Param_Cell, Param_CellByRef);
 
 	g_pCVar = icvar;
 
@@ -124,6 +126,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_IsHolidayDetourEnabled = false;
 	m_CondChecksEnabled = false;
 	m_RulesDetoursEnabled = false;
+	m_TeleportDetourEnabled = false;
 
 	return true;
 }
@@ -173,6 +176,7 @@ void TF2Tools::SDK_OnUnload()
 	forwards->ReleaseForward(g_removeCondForward);
 	forwards->ReleaseForward(g_waitingPlayersStartForward);
 	forwards->ReleaseForward(g_waitingPlayersEndForward);
+	forwards->ReleaseForward(g_teleportForward);
 }
 
 void TF2Tools::SDK_OnAllLoaded()
@@ -338,6 +342,11 @@ void TF2Tools::OnPluginLoaded(IPlugin *plugin)
 	{
 		m_RulesDetoursEnabled = InitialiseRulesDetours();
 	}
+
+	if (!m_TeleportDetourEnabled && g_teleportForward->GetFunctionCount())
+	{
+		m_TeleportDetourEnabled = InitialiseTeleporterDetour();
+	}
 }
 
 void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
@@ -367,6 +376,11 @@ void TF2Tools::OnPluginUnloaded(IPlugin *plugin)
 			RemoveRulesDetours();
 			m_RulesDetoursEnabled = false;
 		}
+	}
+	if (m_TeleportDetourEnabled && !g_teleportForward->GetFunctionCount())
+	{
+		RemoveTeleporterDetour();
+		m_TeleportDetourEnabled = false;
 	}
 }
 

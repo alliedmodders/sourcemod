@@ -114,6 +114,7 @@
     <ClCompile Include="..\holiday.cpp" />
     <ClCompile Include="..\natives.cpp" />
     <ClCompile Include="..\RegNatives.cpp" />
+    <ClCompile Include="..\teleporter.cpp" />
     <ClCompile Include="..\util.cpp" />
     <ClCompile Include="..\sdk\smsdk_ext.cpp" />
     <ClCompile Include="..\CDetour\detours.cpp" />
@@ -126,6 +127,7 @@
     <ClInclude Include="..\gameplayrules.h" />
     <ClInclude Include="..\holiday.h" />
     <ClInclude Include="..\RegNatives.h" />
+    <ClInclude Include="..\teleporter.h" />
     <ClInclude Include="..\util.h" />
     <ClInclude Include="..\sdk\smsdk_config.h" />
     <ClInclude Include="..\sdk\smsdk_ext.h" />

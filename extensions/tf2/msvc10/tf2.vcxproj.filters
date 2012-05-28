@@ -57,6 +57,9 @@
     <ClCompile Include="..\asm\asm.c">
       <Filter>asm</Filter>
     </ClCompile>
+    <ClCompile Include="..\teleporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\conditions.h">
@@ -94,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="..\asm\asm.h">
       <Filter>asm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\teleporter.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

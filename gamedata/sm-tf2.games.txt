@@ -120,6 +120,13 @@
 				"linux"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 				"mac"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 			}
+			"CanPlayerTeleport"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8b\xec\x53\x8b\x5d\x08\x85\xdb\x56\x8b\xf1\x74\x2A\x8b\xcb\xe8\x2A\x2A\x2A\x2A\x84\xc0"
+				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
+				"mac"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
+			}
 		}
 		"Offsets"
 		{

@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\teleporter.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\util.cpp"
 				>
 			</File>
@@ -247,6 +251,10 @@
 			</File>
 			<File
 				RelativePath="..\RegNatives.h"
+				>
+			</File>
+			<File
+				RelativePath="..\teleporter.h"
 				>
 			</File>
 			<File
