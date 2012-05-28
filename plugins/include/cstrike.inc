@@ -62,7 +62,7 @@ enum CSRoundEndReason
 	CSRoundEnd_HostagesNotRescued,         // Hostages have not been rescued!
 	CSRoundEnd_TerroristsNotEscaped,       // Terrorists have not escaped!
 	CSRoundEnd_VIPNotEscaped,              // VIP has not escaped!
-	CSRoundEnd_GameStart                   // Game Commencing!
+	CSRoundEnd_GameStart,                  // Game Commencing!
 	
 	// The below only exist on CS:GO
 	CSRoundEnd_TerroristsSurrender,        // Terrorists Surrender
