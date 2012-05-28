@@ -31,22 +31,22 @@
 			//Only Windows/Linux for now.
 			"CTTeamScoreOffset"
 			{
-				"windows"	"82"
+				"windows"	"97"
 				"linux"		"117"
 			}
 			//Offset into CheckRestartRound
 			//Only Windows/Linux for now.
 			"TTeamScoreOffset"
 			{
-				"windows"	"107"
+				"windows"	"119"
 				"linux"		"152"
 			}
 			//Offset into IncrementNumMVPs to find MVP count offset from player
 			//Only Windows/Linux for now.
 			"MVPCountOffset"
 			{
-				"windows"	"42"
-				"linux"		"46"
+				"windows"	"46"
+				"linux"		"47"
 			}
 		}
 		"Signatures"
@@ -97,13 +97,13 @@
 			"CheckWinLimit"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x83\xEC\x2A\x57\x8B\xF9\x85\xC0\x0F\x84\x2A\x2A\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x81\xF9\x2A\x2A\x2A\x2A\x75\x2A\x8B"
 				"linux"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
 			}
 			"IncrementNumMVPs"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x57\x8B\xF9\x85\x2A\x74\x2A\x83\x2A\x2A\x00\x74\x2A\x68\x50"
+				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x8B\x50\x2A\x57\x8B\xF9\xB9\x2A\x2A\x2A\x2A\xFF\xD2\x85\xC0\x74\x2A\x68"
 				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
 			}
 			"AliasToWeaponID"
