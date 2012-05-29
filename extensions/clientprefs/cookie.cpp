@@ -396,7 +396,7 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 				{
 					ItemDrawInfo draw;
 					const char *info = clientMenu->GetItemInfo(i, &draw);
-					AutoMenuData *data = (AutoMenuData *)strtol(info, NULL, 16);
+					AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
 
 					if (data->handler->forward != NULL)
 					{
