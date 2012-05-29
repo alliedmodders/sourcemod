@@ -186,10 +186,27 @@ public OnMapStart()
 	PrecacheSound(SOUND_FREEZE, true);
 
 	new sdkversion = GuessSDKVersion();
-	if (sdkversion == SOURCE_SDK_LEFT4DEAD || sdkversion == SOURCE_SDK_LEFT4DEAD2)
+	if (sdkversion >= SOURCE_SDK_LEFT4DEAD)
 	{
 		g_BeamSprite = PrecacheModel("materials/sprites/laserbeam.vmt");
 		g_HaloSprite = PrecacheModel("materials/sprites/glow01.vmt");
+		
+		// l4d, l4d2, and csgo have this. swarm does not.
+		if (sdkversion != SOURCE_SDK_ALIENSWARM)
+		{
+			g_BeamSprite2 = PrecacheModel("materials/sprites/physbeam.vmt");
+		}
+		
+		g_GlowSprite = PrecacheModel("materials/sprites/blueflare1.vmt");
+		
+		if (sdkversion == SOURCE_SDK_LEFT4DEAD || sdkversion == SOURCE_SDK_LEFT4DEAD2)
+		{
+			g_ExplosionSprite = PrecacheModel("sprites/floorfire4_.vmt");
+		}
+		else if (sdkversion == SOURCE_SDK_ALIENSWARM)
+		{
+			g_ExplosionSprite = PrecacheModel("sprites/flamelet1.vmt");
+		}
 	}
 	else
 	{
