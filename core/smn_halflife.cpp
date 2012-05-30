@@ -87,6 +87,11 @@ static cell_t GetGameTime(IPluginContext *pContext, const cell_t *params)
 	return sp_ftoc(gpGlobals->curtime);
 }
 
+static cell_t GetGameTickCount(IPluginContext *pContext, const cell_t *params)
+{
+	return gpGlobals->tickcount;
+}
+
 static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_SourceMod.IsMapRunning())
@@ -524,6 +529,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetGameDescription",		GetGameDescription},
 	{"GetGameFolderName",		GetGameFolderName},
 	{"GetGameTime",				GetGameTime},
+	{"GetGameTickCount",		GetGameTickCount},
 	{"GetRandomFloat",			GetRandomFloat},
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},

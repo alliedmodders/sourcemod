@@ -128,6 +128,13 @@ native Float:GetEngineTime();
  */
 native Float:GetGameTime();
 
+/** 
+ * Returns the game's internal tick count.
+ *
+ * @return				Game tick count.
+ */
+native GetGameTickCount();
+
 /**
  * Returns the game description from the mod.
  *

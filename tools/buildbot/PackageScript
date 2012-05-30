@@ -224,7 +224,7 @@ AddHL2Library('sourcemod', 'bin')
 AddNormalLibrary('sourcemod.logic', 'bin')
 AddNormalLibrary('sourcepawn.jit.x86', 'bin')
 AddNormalLibrary('geoip.ext', 'extensions')
-AddNormalLibrary('dbi.mysql.ext', 'extensions')
+#AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
 
 AddNormalLibrary('game.cstrike.ext.2.ep2v', 'extensions')
