@@ -43,7 +43,7 @@ class SM:
 									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
 									'HL2SDKL4D':     'hl2sdk-l4d',
 									'HL2SDKL4D2':    'hl2sdk-l4d2',
-#									'MYSQL5':        'mysql-5.0'
+									'MYSQL5':        'mysql-5.0'
 			}
 
 			if AMBuild.target['platform'] != 'darwin':
@@ -403,7 +403,7 @@ FileList = [
 		['extensions', 'cstrike', 'AMBuilder'],
 		['extensions', 'curl', 'AMBuilder'],
 		['extensions', 'geoip', 'AMBuilder'],
-#		['extensions', 'mysql', 'AMBuilder'],
+		['extensions', 'mysql', 'AMBuilder'],
 		['extensions', 'sdktools', 'AMBuilder'],
 		['extensions', 'topmenus', 'AMBuilder'],
 		['extensions', 'updater', 'AMBuilder'],
