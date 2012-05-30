@@ -343,7 +343,7 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_SetTeamScore");
 	MarkNativeAsOptional("CS_GetMVPCount");
 	MarkNativeAsOptional("CS_SetMVPCount");
-	MakrNativeAsOptional("CS_AliasToWeaponID");
+	MarkNativeAsOptional("CS_AliasToWeaponID");
 }
 #endif
 
