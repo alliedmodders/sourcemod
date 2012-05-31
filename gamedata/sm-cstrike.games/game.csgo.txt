@@ -32,14 +32,14 @@
 			"CTTeamScoreOffset"
 			{
 				"windows"	"97"
-				"linux"		"117"
+				"linux"		"124"
 			}
 			//Offset into CheckRestartRound
 			//Only Windows/Linux for now.
 			"TTeamScoreOffset"
 			{
 				"windows"	"119"
-				"linux"		"152"
+				"linux"		"159"
 			}
 			//Offset into IncrementNumMVPs to find MVP count offset from player
 			//Only Windows/Linux for now.
