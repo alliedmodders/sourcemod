@@ -832,6 +832,11 @@ cell_t CHalfLife2::EntityToReference(CBaseEntity *pEntity)
 
 CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 {
+	if (entRef == INVALID_EHANDLE_INDEX)
+	{
+		return NULL;
+	}
+
 	CEntInfo *pInfo = NULL;
 
 	if (entRef & (1<<31))
@@ -841,7 +846,7 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 		CBaseHandle hndl(hndlValue);
 
 		pInfo = LookupEntity(hndl.GetEntryIndex());
-		if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		if (!pInfo || pInfo->m_SerialNumber != hndl.GetSerialNumber())
 		{
 			return NULL;
 		}
