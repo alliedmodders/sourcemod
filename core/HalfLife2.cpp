@@ -832,7 +832,7 @@ cell_t CHalfLife2::EntityToReference(CBaseEntity *pEntity)
 
 CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 {
-	if (entRef == INVALID_EHANDLE_INDEX)
+	if ((unsigned)entRef == INVALID_EHANDLE_INDEX)
 	{
 		return NULL;
 	}
