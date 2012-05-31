@@ -38,6 +38,8 @@ struct TeamInfo
 	CBaseEntity *pEnt;
 };
 
+const char *m_iScore;
+
 SourceHook::CVector<TeamInfo> g_Teams;
 
 bool FindTeamEntities(SendTable *pTable, const char *name)
@@ -157,7 +159,27 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
+	if (!m_iScore)
+	{
+		m_iScore = g_pGameConf->GetKeyValue("m_iScore");
+		if (!m_iScore)
+		{
+			return pContext->ThrowNativeError("Failed to get m_iScore key");
+		}
+	}
+
+	static int offset = -1;
+
+	if (offset == -1)
+	{
+		SendProp *prop = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, m_iScore);
+		if (!prop)
+		{
+			return pContext->ThrowNativeError("Failed to get m_iScore prop");
+		}
+		offset = prop->GetOffset();
+	}
+
 
 	return *(int *)((unsigned char *)g_Teams[teamindex].pEnt + offset);
 }
@@ -170,7 +192,26 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	static int offset = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, "m_iScore")->GetOffset();
+	if (m_iScore == NULL)
+	{
+		m_iScore = g_pGameConf->GetKeyValue("m_iScore");
+		if (m_iScore == NULL)
+		{
+			return pContext->ThrowNativeError("Failed to get m_iScore key");
+		}
+	}
+
+	static int offset = -1;
+
+	if (offset == -1)
+	{
+		SendProp *prop = g_pGameHelpers->FindInSendTable(g_Teams[teamindex].ClassName, m_iScore);
+		if (!prop)
+		{
+			return pContext->ThrowNativeError("Failed to get m_iScore prop");
+		}
+		offset = prop->GetOffset();
+	}
 
 	CBaseEntity *pTeam = g_Teams[teamindex].pEnt;
 	*(int *)((unsigned char *)pTeam + offset) = params[2];

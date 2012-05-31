@@ -18,6 +18,8 @@
 		"Keys"
 		{
 			"m_iFrags"		"m_iFrags"
+			// Netprop on the team entity for team score
+			"m_iScore"		"m_iScore"
 		}
 		
 		"Offsets"

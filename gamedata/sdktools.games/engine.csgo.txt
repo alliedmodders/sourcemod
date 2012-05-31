@@ -225,6 +225,11 @@
 	
 	"csgo"
 	{
+		"Keys"
+		{
+			// Netprop on the team entity for team score
+			"m_iScore"		"m_scoreTotal"
+		}
 		"Offsets"
 		{
 			"GiveNamedItem"
