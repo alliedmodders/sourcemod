@@ -88,6 +88,11 @@
 	/* General GameRules */
 	"#default"
 	{
+		"Keys"
+		{
+			"GameRulesProxy"	"CCSGameRulesProxy"
+		}
+		
 		"Offsets"
 		{
 			/* Offset into CreateGameRulesObject */
