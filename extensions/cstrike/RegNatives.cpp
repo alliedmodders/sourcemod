@@ -47,4 +47,6 @@ void RegNatives::UnregisterAll()
 	{
 		(*iter)->Destroy();
 	}
+	
+	m_List.clear();
 }
