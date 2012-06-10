@@ -2,6 +2,37 @@ SourceMod Changelog
 
 -----------------------------
 
+SourceMod 1.4.3 [2012-06-09]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.3_Release_Notes
+
+User Changes:
+
+ - Updated support for latest OrangeBox engine changes (CS:S, DoD:S, TF2, HL2DM, GMod).
+ - Made clientprefs attempt to reconnect to the database on map change (bug 4745). 
+ - Log functions now respect sv_logecho (bug 5135). 
+ - Fixed client console vote output (bug 5290, bug 5205) (FlaminSarge). 
+ - Fixed error when reloading dependant plugins using aliased natives (bug 5302). 
+ - Fixed intermittent crash when looking for an invalid signature (bug 5301). 
+ - Fixed possible crash when reloading a plugin with an invalid binary (bug 5288). 
+ - Exposed extensions list to clients (bug 5221) (VoiDeD). 
+ - Fixed intermittent crashes in clientprefs (bug 4660). 
+ - Fixed crash when passing an invalid entity reference to ReferenceToEntity (bug 5330). 
+ - Fixed cstrike extension crash on shutdown (bug 5328). 
+ - Lowered threading API think time to 20ms, making threaded MySQL queries complete faster (bug 4733).
+
+Developer Changes:
+
+ - Fixed client serials not being unique on Windows (bug 5285). 
+ - Fixed broken SourceTV detection on L4D1 (bug 5216). 
+ - Fixed Float negation operator (bug 5292). 
+ - Updated TF2 condition defines (bug 5259) (FlaminSarge). 
+ - Adding missing SetMenuNoVoteButton native declaration (bug 4522) (GoD-Tony). 
+ - Fixed erroneous const-qualification of name param of GetAdminUsername (bug 5267). 
+ - Added GetGameTickCount native (bug 5209) (GoD-Tony).
+ 
+-----------------------------
+
 SourceMod 1.4.2 [2011-04-13]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.2_Release_Notes
