@@ -884,6 +884,20 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
 	const char *old_name = pPlayer->m_Name.c_str();
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	const char *networkid_force;
+	if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
+	{
+		unsigned long long *steamId = (unsigned long long *)engine->GetClientSteamID(pEntity);
+		unsigned int accountId = steamId ? (*steamId & 0xFFFFFFFF) : 0;
+		g_Logger.LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
+			new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
+
+		pPlayer->Kick("NetworkID spoofing detected.");
+		RETURN_META(MRES_IGNORED);
+	}
+#endif
+
 	if (strcmp(old_name, new_name) != 0)
 	{
 		AdminId id = g_Admins.FindAdminByIdentity("name", new_name);
