@@ -175,7 +175,7 @@ cell_t TF2_Disguise(IPluginContext *pContext, const cell_t *params)
 	// Compatibility fix for the newly-added target parameter
 	if (params[0] >= 4 && params[4] > 0 && !(pTarget = UTIL_GetCBaseEntity(params[4], true)))
 	{
-		return pContext->ThrowNativeError("Target client index %d is not valid", params[1]);
+		return pContext->ThrowNativeError("Target client index %d is not valid", params[4]);
 	}
 
 	unsigned char vstk[sizeof(void *) + 2*sizeof(int) + sizeof(bool)];
