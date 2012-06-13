@@ -11,7 +11,8 @@ HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../../hl2sdk-l4d2
-MMSOURCE18 = ../../../mmsource-1.8
+HL2SDK_CSGO = ../../../hl2sdk-csgo
+MMSOURCE19 = ../../../mmsource-1.9
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -41,7 +42,7 @@ CPP = gcc
 override ENGSET = false
 
 # Check for valid list of engines
-ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2,$(ENGINE)))
+ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2 csgo,$(ENGINE)))
 	override ENGSET = true
 endif
 
@@ -65,15 +66,19 @@ ifeq "$(ENGINE)" "left4dead2"
 	HL2SDK = $(HL2SDK_L4D2)
 	CFLAGS += -DSOURCE_ENGINE=8
 endif
+ifeq "$(ENGINE)" "csgo"
+	HL2SDK = $(HL2SDK_CSGO)
+	CFLAGS += -DSOURCE_ENGINE=11
+endif
 
 HL2PUB = $(HL2SDK)/public
 
 ifeq "$(ENGINE)" "original"
 	INCLUDE += -I$(HL2SDK)/public/dlls
-	METAMOD = $(MMSOURCE18)/core-legacy
+	METAMOD = $(MMSOURCE19)/core-legacy
 else
 	INCLUDE += -I$(HL2SDK)/public/game/server
-	METAMOD = $(MMSOURCE18)/core
+	METAMOD = $(MMSOURCE19)/core
 endif
 
 OS := $(shell uname -s)
@@ -102,19 +107,23 @@ INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 
 ifeq "$(USEMETA)" "true"
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) $(LIB_PREFIX)tier0$(LIB_SUFFIX)
+	ifeq "$(ENGINE)" "csgo"
+		LINK_HL2 += $(HL2LIB)/interfaces_i486.a
+	endif
 
 	LINK += $(LINK_HL2)
 
 	INCLUDE += -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 -I$(METAMOD) \
 		-I$(METAMOD)/sourcehook 
 	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
-		-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9
+		-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9 -DSE_PORTAL2=10 \
+		-DSE_CSGO=11
 endif
 
 LINK += -m32 -lm -ldl
 
-CFLAGS += -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
-	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror \
+CFLAGS += -DPOSIX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
+	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -DCOMPILER_GCC -Wall -Werror \
 	-Wno-switch -Wno-unused -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
@@ -154,6 +163,11 @@ endif
 
 OBJ_BIN := $(OBJECTS:%.cpp=$(BIN_DIR)/%.o)
 
+# This will break if we include other Makefiles, but is fine for now. It allows
+#  us to make a copy of this file that uses altered paths (ie. Makefile.mine)
+#  or other changes without mucking up the original.
+MAKEFILE_NAME := $(CURDIR)/$(word $(words $(MAKEFILE_LIST)),$(MAKEFILE_LIST))
+
 $(BIN_DIR)/%.o: %.cpp
 	$(CPP) $(INCLUDE) $(CFLAGS) $(CPPFLAGS) -o $@ -c $<
 
@@ -163,12 +177,12 @@ all: check
 		ln -sf $(HL2LIB)/$(LIB_PREFIX)vstdlib$(LIB_SUFFIX); \
 		ln -sf $(HL2LIB)/$(LIB_PREFIX)tier0$(LIB_SUFFIX); \
 	fi
-	$(MAKE) -f Makefile extension
+	$(MAKE) -f $(MAKEFILE_NAME) extension
 
 check:
 	if [ "$(USEMETA)" = "true" ] && [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply one of the following values for ENGINE:"; \
-		echo "left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
+		echo "csgo, left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
 		exit 1; \
 	fi
 
@@ -176,7 +190,7 @@ extension: check $(OBJ_BIN)
 	$(CPP) $(INCLUDE) $(OBJ_BIN) $(LINK) -o $(BIN_DIR)/$(BINARY)
 
 debug:
-	$(MAKE) -f Makefile all DEBUG=true
+	$(MAKE) -f $(MAKEFILE_NAME) all DEBUG=true
 
 default: all
 
