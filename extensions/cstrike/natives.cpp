@@ -346,7 +346,7 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	void *info = GetWeaponInfo(params[2]);
+	void *info = GetWeaponInfo(id);
 	if (!info)
 		return pContext->ThrowNativeError("Failed to get weaponinfo");
 
