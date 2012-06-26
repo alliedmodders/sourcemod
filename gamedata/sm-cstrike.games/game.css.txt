@@ -45,7 +45,7 @@
 			//Offset into CheckWinLimit to find T team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
 			"TTeamScoreOffset"
 			{
-				"windows"	"40"
+				"windows"	"58"
 				"linux"		"57"
 				"mac"		"481"
 			}
