@@ -35,9 +35,9 @@
 SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const Vector &, const char *, float, soundlevel_t, int, int, float);
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE
 SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 0, IRecipientFilter &, int, int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
-SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #else
-SH_DECL_HOOK14_void(IEngineSound, EmitSound, SH_NOATTRIB, 0, IRecipientFilter &, int, int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
+SH_DECL_HOOK14_void(IEngineSound, EmitSound, SH_NOATTRIB, 0, IRecipientFilter &, int, int, const char *, float, float, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK14_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #endif
 
