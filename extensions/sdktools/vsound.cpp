@@ -591,45 +591,6 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 			{
 				SH_CALL(enginesoundPatch, 
 					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
-					soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
-					(&IEngineSound::EmitSound))
-					(crf, 
-					player[0], 
-					channel, 
-					sample, 
-					vol, 
-					(soundlevel_t)level, 
-					flags, 
-					pitch, 
-					pOrigin,
-					pDir,
-					pOrigVec,
-					updatePos,
-					soundtime,
-					speakerentity);
-			}
-			else
-			{
-				engsound->EmitSound(crf, 
-					player[0], 
-					channel, 
-					sample, 
-					vol, 
-					(soundlevel_t)level, 
-					flags, 
-					pitch, 
-					pOrigin,
-					pDir,
-					pOrigVec,
-					updatePos,
-					soundtime,
-					speakerentity);
-			}
-#else
-			if (g_InSoundHook)
-			{
-				SH_CALL(enginesoundPatch, 
-					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
 					(&IEngineSound::EmitSound))
 					(crf, 
@@ -659,6 +620,45 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 					flags, 
 					pitch, 
 					0, 
+					pOrigin,
+					pDir,
+					pOrigVec,
+					updatePos,
+					soundtime,
+					speakerentity);
+			}
+#else
+			if (g_InSoundHook)
+			{
+				SH_CALL(enginesoundPatch, 
+					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+					soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
+					(&IEngineSound::EmitSound))
+					(crf, 
+					player[0], 
+					channel, 
+					sample, 
+					vol, 
+					(soundlevel_t)level, 
+					flags, 
+					pitch, 
+					pOrigin,
+					pDir,
+					pOrigVec,
+					updatePos,
+					soundtime,
+					speakerentity);
+			}
+			else
+			{
+				engsound->EmitSound(crf, 
+					player[0], 
+					channel, 
+					sample, 
+					vol, 
+					(soundlevel_t)level, 
+					flags, 
+					pitch, 
 					pOrigin,
 					pDir,
 					pOrigVec,
