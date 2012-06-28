@@ -331,6 +331,9 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 							ATTN_NORM, 
 							0, 
 							PITCH_NORM, 
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+							0, 
+#endif
 							&pos);
 					}
 				}

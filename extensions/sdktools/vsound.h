@@ -52,6 +52,16 @@ public:
 	bool RemoveHook(int type, IPluginFunction *pFunc);
 	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
 		soundlevel_t soundlevel, int fFlags, int pitch, float delay);
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
+		soundlevel_t iSoundlevel, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
+		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+		float soundtime, int speakerentity);
+	void OnEmitSound2(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
+		float flAttenuation, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
+		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+		float soundtime, int speakerentity);
+#else
 	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -60,6 +70,7 @@ public:
 		float flAttenuation, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
+#endif
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 	void _IncRefCounter(int type);
