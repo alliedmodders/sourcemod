@@ -839,6 +839,9 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 		(soundlevel_t)level, 
 		flags, 
 		pitch, 
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+		0, 
+#endif
 		pOrigin,
 		pDir,
 		pOrigVec,
