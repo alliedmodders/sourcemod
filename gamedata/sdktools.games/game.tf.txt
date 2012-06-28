@@ -18,87 +18,87 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"391"
-				"linux"		"392"
-				"mac"		"392"
+				"windows"	"393"
+				"linux"		"394"
+				"mac"		"394"
 			}
 			"RemovePlayerItem"
+			{
+				"windows"	"265"
+				"linux"		"266"
+				"mac"		"266"
+			}
+			"Weapon_GetSlot"
 			{
 				"windows"	"263"
 				"linux"		"264"
 				"mac"		"264"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"261"
-				"linux"		"262"
-				"mac"		"262"
-			}
 			"Ignite"
 			{
-				"windows"	"204"
-				"linux"		"205"
-				"mac"		"205"
+				"windows"	"206"
+				"linux"		"207"
+				"mac"		"207"
 			}
 			"Extinguish"
 			{
-				"windows"	"208"
-				"linux"		"209"
-				"mac"		"209"
+				"windows"	"210"
+				"linux"		"211"
+				"mac"		"211"
 			}
 			"Teleport"
 			{
-				"windows"	"106"
-				"linux"		"107"
-				"mac"		"107"
+				"windows"	"107"
+				"linux"		"108"
+				"mac"		"108"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"432"
-				"linux"		"432"
-				"mac"		"432"
+				"windows"	"434"
+				"linux"		"434"
+				"mac"		"434"
 			}
 			"GetVelocity"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"139"
+				"linux"		"140"
+				"mac"		"140"
 			}
 			"EyeAngles"
 			{
-				"windows"	"129"
-				"linux"		"130"
-				"mac"		"130"
+				"windows"	"130"
+				"linux"		"131"
+				"mac"		"131"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"23"
-				"linux"		"24"
-				"mac"		"24"
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
-				"mac"		"36"
+				"windows"	"36"
+				"linux"		"37"
+				"mac"		"37"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"254"
-				"linux"		"255"
-				"mac"		"255"
+				"windows"	"256"
+				"linux"		"257"
+				"mac"		"257"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
-				"mac"		"33"
+				"windows"	"34"
+				"linux"		"35"
+				"mac"		"35"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"409"
-				"linux"		"410"
-				"mac"		"410"
+				"windows"	"411"
+				"linux"		"412"
+				"mac"		"412"
 			}
 		}
 		
