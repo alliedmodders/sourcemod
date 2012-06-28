@@ -90,9 +90,9 @@
 			}
 			"Activate"
 			{
-				"windows"	"34"
-				"linux"		"35"
-				"mac"		"35"
+				"windows"	"33"
+				"linux"		"34"
+				"mac"		"34"
 			}
 			"PlayerRunCmd"
 			{
