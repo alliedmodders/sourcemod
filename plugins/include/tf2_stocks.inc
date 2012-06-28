@@ -132,6 +132,7 @@ enum {
 	TF_CUSTOM_PLASMA_GIB,
 	TF_CUSTOM_PRACTICE_STICKY,
 	TF_CUSTOM_EYEBALL_ROCKET,
+	TF_CUSTOM_HEADSHOT_DECAPITATION,
 };
 
 // Weapon codes as used in some events, such as player_death
@@ -222,6 +223,7 @@ enum {
 	TF_WEAPON_BAT_GIFTWRAP,
 	TF_WEAPON_GRENADE_ORNAMENT,
 	TF_WEAPON_RAYGUN_REVENGE,
+	TF_WEAPON_PEP_BRAWLER_BLASTER,
 };
 
 // TF2 Weapon Slots for GetPlayerWeaponSlot
