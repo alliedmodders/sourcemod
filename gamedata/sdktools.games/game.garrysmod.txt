@@ -18,33 +18,33 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"433"
-				"linux"		"434"
-				"mac"		"434"
+				"windows"	"434"
+				"linux"		"435"
+				"mac"		"435"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"305"
-				"linux"		"306"
-				"mac"		"306"
+				"windows"	"306"
+				"linux"		"307"
+				"mac"		"307"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"303"
-				"linux"		"304"
-				"mac"		"304"
+				"windows"	"304"
+				"linux"		"305"
+				"mac"		"305"
 			}
 			"Ignite"
 			{
-				"windows"	"240"
-				"linux"		"241"
-				"mac"		"241"
+				"windows"	"241"
+				"linux"		"242"
+				"mac"		"242"
 			}
 			"Extinguish"
 			{
-				"windows"	"244"
-				"linux"		"245"
-				"mac"		"245"
+				"windows"	"245"
+				"linux"		"246"
+				"mac"		"246"
 			}
 			"Teleport"
 			{
@@ -54,9 +54,9 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"472"
-				"linux"		"472"
-				"mac"		"472"
+				"windows"	"473"
+				"linux"		"473"
+				"mac"		"473"
 			}
 			"GetVelocity"
 			{
@@ -84,9 +84,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"296"
-				"linux"		"297"
-				"mac"		"297"
+				"windows"	"297"
+				"linux"		"298"
+				"mac"		"298"
 			}
 			"Activate"
 			{
@@ -96,70 +96,9 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"451"
-				"linux"		"452"
-				"mac"		"452"
-			}
-		}
-		"Signatures"
-		{
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x2A\x2A\x2A\x85\xC9\x57\x74\x2A\x8B\x01\x8B\x50\x2A\xFF\xD2\x8B\x00\x25\x2A\x2A\x2A\x2A\x83\xC0\x2A\xC1\xE0\x2A\x8B\x3C\x30\xEB\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xFF\x74\x2A\x8B\x2A\x2A\x2A\x8B\x2A\x2A\x2A\x2A\x2A\xEB\x2A\x8D\x2A\x2A\x8B\x37\x85\xF6\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x83\x2A\x2A\xEB\x2A\x39"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-			"FireOutput"
-			{
-				"library"	"server"
-				"windows"	"\x81\xEC\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x71\x2A\x85\xF6"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-			}
-		}
-	}
-	
-	"#default"
-	{
-		"Offsets"
-		{
-			"s_pTempEntities"
-			{
-				"windows"	"17"
-			}
-			"GetTEName"
-			{
-				"windows"	"4"
-				"linux"		"4"
-				"mac"		"4"
-			}
-			"GetTENext"
-			{
-				"windows"	"8"
-				"linux"		"8"
-				"mac"		"8"
-			}
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
-				"mac"		"0"
-			}
-		}
-
-		"Signatures"
-		{
-			"CBaseTempEntity"
-			{
-				"library"	"server"
-				"windows"	"\x8B\xC1\x8B\x4C\x24\x04\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04\x8B\x15\x2A\x2A\x2A\x2A\x89\x50\x08\xA3\x2A\x2A\x2A\x2A\xC2\x04\x00"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"windows"	"452"
+				"linux"		"453"
+				"mac"		"453"
 			}
 		}
 	}
