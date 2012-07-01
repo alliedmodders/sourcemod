@@ -191,6 +191,9 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 #if defined SMEXT_ENABLE_TRANSLATOR
 	SM_GET_IFACE(TRANSLATOR, translator);
 #endif
+#if defined SMEXT_ENABLE_NINVOKE
+	SM_GET_IFACE(NINVOKE, ninvoke);
+#endif
 #if defined SMEXT_ENABLE_ROOTCONSOLEMENU
 	SM_GET_IFACE(ROOTCONSOLE, rootconsole);
 #endif
