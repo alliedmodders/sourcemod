@@ -142,6 +142,7 @@ public:
 		unsigned int time,
 		unsigned int start_item,
 		IMenuHandler *alt_handler/* =NULL */);
+	bool SetPagination(unsigned int itemsPerPage);
 	void Cancel_Finally();
 	unsigned int GetApproxMemUsage();
 };

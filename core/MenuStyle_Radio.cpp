@@ -45,6 +45,14 @@ int g_ShowMenuId = -1;
 bool g_bRadioInit = false;
 unsigned int g_RadioMenuTimeout = 0;
 
+// back, next, exit
+#define MAX_PAGINATION_OPTIONS 3
+
+#define MAX_MENUSLOT_KEYS 10
+
+static unsigned int s_RadioMaxPageItems = MAX_MENUSLOT_KEYS;
+
+
 CRadioStyle::CRadioStyle()
 {
 	m_players = new CRadioMenuPlayer[256+1];
@@ -88,6 +96,18 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 	else
 	{
 		g_RadioMenuTimeout = 0;
+	}
+
+	const char *items = g_pGameConf->GetKeyValue("RadioMenuMaxPageItems");
+	if (items != NULL)
+	{
+		int value = atoi(items);
+
+		// Only override the mostly-safe default if it's a sane value
+		if (value > MAX_PAGINATION_OPTIONS && value <= MAX_MENUSLOT_KEYS)
+		{
+			s_RadioMaxPageItems = value;
+		}
 	}
 
 	g_Menus.AddStyle(this);
@@ -189,7 +209,7 @@ IBaseMenu *CRadioStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwn
 
 unsigned int CRadioStyle::GetMaxPageItems()
 {
-	return 10;
+	return s_RadioMaxPageItems;
 }
 
 const char *CRadioStyle::GetStyleName()
@@ -307,7 +327,7 @@ unsigned int CRadioDisplay::GetCurrentKey()
 
 bool CRadioDisplay::SetCurrentKey(unsigned int key)
 {
-	if (key < m_NextPos || m_NextPos > 10)
+	if (key < m_NextPos || m_NextPos > s_RadioMaxPageItems)
 	{
 		return false;
 	}
@@ -343,7 +363,7 @@ void CRadioDisplay::DrawTitle(const char *text, bool onlyIfEmpty/* =false */)
 
 unsigned int CRadioDisplay::DrawItem(const ItemDrawInfo &item)
 {
-	if (m_NextPos > 10 || !CanDrawItem(item.style))
+	if (m_NextPos > s_RadioMaxPageItems || !CanDrawItem(item.style))
 	{
 		return 0;
 	}
@@ -511,6 +531,7 @@ unsigned int CRadioDisplay::GetApproxMemUsage()
 CRadioMenu::CRadioMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner) : 
 CBaseMenu(pHandler, &g_RadioMenuStyle, pOwner)
 {
+	m_Pagination = s_RadioMaxPageItems - MAX_PAGINATION_OPTIONS;
 }
 
 bool CRadioMenu::SetExtOption(MenuOption option, const void *valuePtr)
@@ -549,6 +570,17 @@ bool CRadioMenu::DisplayAtItem(int client,
 		start_item,
 		alt_handler ? alt_handler : m_pHandler, 
 		time);
+}
+
+bool CRadioMenu::SetPagination(unsigned int itemsPerPage)
+{
+	const unsigned int maxPerPage = s_RadioMaxPageItems - MAX_PAGINATION_OPTIONS;
+	if (itemsPerPage > maxPerPage)
+	{
+		return false;
+	}
+
+	return CBaseMenu::SetPagination(itemsPerPage);
 }
 
 void CRadioMenu::Cancel_Finally()
