@@ -257,4 +257,12 @@
 			"ChatSayText"			"yes"
 		}
 	}
+	
+	"csgo"
+	{
+		"Keys"
+		{
+			"RadioMenuMaxPageItems"	"9"
+		}
+	}
 }
