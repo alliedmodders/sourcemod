@@ -57,7 +57,7 @@ void ClientMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int i
 		return;
 	}
 
-	IBaseMenu *submenu = menus->GetDefaultStyle()->CreateMenu(&g_AutoHandler, NULL);
+	IBaseMenu *submenu = menus->GetDefaultStyle()->CreateMenu(&g_AutoHandler, g_ClientPrefs.GetIdentity());
 
 	char message[256];
 
@@ -175,5 +175,10 @@ void AutoMenuHandler::OnMenuSelect(SourceMod::IBaseMenu *menu, int client, unsig
 
 void AutoMenuHandler::OnMenuEnd(IBaseMenu *menu, MenuEndReason reason)
 {
-	menu->Destroy(true);
+	HandleSecurity sec = HandleSecurity(g_ClientPrefs.GetIdentity(), g_ClientPrefs.GetIdentity());
+	HandleError err = handlesys->FreeHandle(menu->GetHandle(), &sec);
+	if (HandleError_None != err)
+	{
+		g_pSM->LogError(myself, "Error %d when attempting to free automenu handle", err);
+	}
 }

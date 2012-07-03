@@ -105,6 +105,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	sharesys->AddNatives(myself, g_ClientPrefNatives);
 	sharesys->RegisterLibrary(myself, "clientprefs");
+	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("ClientPrefs"), this);
 	g_CookieManager.cookieDataLoadedForward = forwards->CreateForward("OnClientCookiesCached", ET_Ignore, 1, NULL, Param_Cell);
 
 	g_CookieType = handlesys->CreateType("Cookie", 
@@ -124,7 +125,7 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		NULL);
 
 	IMenuStyle *style = menus->GetDefaultStyle();
-	g_CookieManager.clientMenu = style->CreateMenu(&g_Handler, NULL);
+	g_CookieManager.clientMenu = style->CreateMenu(&g_Handler, identity);
 	g_CookieManager.clientMenu->SetDefaultTitle("Client Settings:");
 
 	plsys->AddPluginsListener(&g_CookieManager);
@@ -191,9 +192,16 @@ void ClientPrefs::SDK_OnUnload()
 
 	forwards->ReleaseForward(g_CookieManager.cookieDataLoadedForward);
 
-	g_CookieManager.clientMenu->Destroy();
+	HandleSecurity sec = HandleSecurity(identity, identity);
+	HandleError err = handlesys->FreeHandle(g_CookieManager.clientMenu->GetHandle(), &sec);
+	if (HandleError_None != err)
+	{
+		g_pSM->LogError(myself, "Error %d when attempting to free client menu handle", err);
+	}
 
 	phrases->Destroy();
+
+	sharesys->DestroyIdentity( identity );
 
 	plsys->RemovePluginsListener(&g_CookieManager);
 	playerhelpers->RemoveClientListener(&g_CookieManager);
@@ -468,6 +476,11 @@ bool Translate(char *buffer,
 	}
 
 	return true;
+}
+
+IdentityToken_t *ClientPrefs::GetIdentity() const
+{
+	return identity;
 }
 
 const char *ClientPrefs::GetExtensionVerString()
