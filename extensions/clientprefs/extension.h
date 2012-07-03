@@ -141,6 +141,8 @@ public:
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
 public:
+	IdentityToken_t *GetIdentity() const;
+public:
 	IDBDriver *Driver;
 	IDatabase *Database;
 	bool databaseLoading;
@@ -152,6 +154,7 @@ public:
 private:
 	SourceHook::List<TQueryOp *> cachedQueries;
 	IMutex *queryMutex;
+	IdentityToken_t *identity;
 };
 
 class CookieTypeHandler : public IHandleTypeDispatch
