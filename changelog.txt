@@ -2,6 +2,24 @@ SourceMod Changelog
 
 -----------------------------
 
+SourceMod 1.4.4 [2012-07-03]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.4_Release_Notes
+
+User Changes:
+
+ - Updated support for latest Source 2009 engine changes (CS:S, DoD:S, TF2, HL2DM, GMod). 
+ - Updated Nuclear Dawn gamedata. 
+ - Fixed a crash that could occur when selecting an option on a clientprefs prefab menu (bug 5374).
+
+Developer Changes:
+
+ - Added new TF2 weapon and custom dmg defines. 
+ - Added new TF2 TFHoliday value (bug 5364) (Powerlord). 
+ - Updated sample extension to properly fill ninvoke with INativeInvoker ptr (bug 5340) (Afronanny).
+
+-----------------------------
+
 SourceMod 1.4.3 [2012-06-09]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.3_Release_Notes
