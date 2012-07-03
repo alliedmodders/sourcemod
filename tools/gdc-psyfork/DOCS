@@ -19,4 +19,4 @@ The parameters taken (in any order) are:
   -w <windows game binary path>
   -y <windows engine binary path>
 
-The file symbols.txt defines the extra information necessary to link up gamedata key names (like "CommitSuicide") with symbols (like "_ZN11CBasePlayer13CommitSuicideEv").  It also needs a "vtsym" key that contains the symbol name of the default class' vtable.  Vtable to use for an individual conf key can be overridden by adding a key with name "<keyname>_vt", using the vtable symbol for its class as the value. The symbols.txt itself is a gameconf file.
+The file symbols.txt defines the extra information necessary to link up gamedata key names (like "CommitSuicide") with symbols (like "_ZN11CBasePlayer13CommitSuicideEv"). The symbols.txt itself is a gameconf file.
