@@ -67,20 +67,27 @@ MemoryUtils::~MemoryUtils()
 #endif
 }
 
-void *MemoryUtils::FindPatternInFile(int fd, const char *pattern, size_t len)
+void *MemoryUtils::FindPatternInFile(int fd, const char *pattern, size_t len, int &matches, bool &atFuncStart)
 {
 	size_t size;
 	size = lseek (fd , 0 , SEEK_END);
+	
+	matches = 0;
+	// TODO: fix this
+	atFuncStart = true;
 
 	lseek(fd, 0, SEEK_SET);
 
 	void *map;
-	char *ptr, *end;
+	char *ptr, *start, *end;
 	bool found = true;
 	map = mmap(0, size, PROT_READ, MAP_SHARED, fd, 0);
 
 	ptr = (char *)map;
+	start = ptr;
 	end = ptr + size;
+	
+	void *firstMatch = NULL;
 
 	while (ptr < end)
 	{
@@ -95,19 +102,49 @@ void *MemoryUtils::FindPatternInFile(int fd, const char *pattern, size_t len)
 		}
 
 		if (found)
-			return ptr;
+		{
+			if( !firstMatch )
+			{
+				firstMatch = ptr;
+				if( ptr - start >= 1 )
+				{
+					unsigned char oneBack = *(unsigned char*)((intptr_t)ptr - 1);
+					if( oneBack != 0xC3 && oneBack != 0xCB && oneBack != 0xCC )
+					{
+						if( ptr - start >= 3 )
+						{
+							unsigned char threeBack = *(unsigned char*)((intptr_t)ptr - 3);
+							if( threeBack != 0xCA && threeBack != 0xC2 )
+							{
+								atFuncStart = false;
+							}
+						}
+						else
+						{
+							atFuncStart = false;
+						}
+					}
+				}
+			}
+			
+			++matches;
+		}
 
-		ptr++;
+		++ptr;
 	}
 
-	return NULL;
+	return firstMatch;
 }
 
-void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t len)
+void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t len, int &matches, bool &atFuncStart)
 {
 	DynLibInfo lib;
 	bool found;
 	char *ptr, *end;
+	
+	matches = 0;
+	// TODO: fix this
+	atFuncStart = true;
 
 	memset(&lib, 0, sizeof(DynLibInfo));
 
@@ -115,7 +152,8 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 	{
 		return NULL;
 	}
-
+	
+	void *firstMatch = NULL;
 	ptr = reinterpret_cast<char *>(lib.baseAddress);
 	end = ptr + lib.memorySize - 1;
 
@@ -132,12 +170,17 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 		}
 
 		if (found)
-			return ptr;
+		{
+			if( !firstMatch )
+				firstMatch = ptr;
+			
+			++matches;
+		}
 
-		ptr++;
+		++ptr;
 	}
 
-	return NULL;
+	return firstMatch;
 }
 
 void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)

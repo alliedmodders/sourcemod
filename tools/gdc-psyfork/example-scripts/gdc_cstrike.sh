@@ -22,7 +22,7 @@ ENGINE_NAME=orangebox_valve
 gamedata_files=(
 	"sdktools.games/game.cstrike.txt"
 	"sdktools.games/engine.ep2valve.txt"
-	"sm-cstrike.games.txt"
+	"sm-cstrike.games/game.css.txt"
 )
 
 # Is game a 2006/2007 "mod" ?

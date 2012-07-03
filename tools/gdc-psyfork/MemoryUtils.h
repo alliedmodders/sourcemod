@@ -64,11 +64,11 @@ public:
 	MemoryUtils();
 	~MemoryUtils();
 public: // IMemoryUtils
-	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
+	void *FindPattern(const void *libPtr, const char *pattern, size_t len, int &matches, bool &atFuncStart);
 	void *ResolveSymbol(void *handle, const char *symbol);
 	const char *ResolveAddr(void *handle, void *addr);
 public:
-	void *FindPatternInFile(int fd, const char *pattern, size_t len);
+	void *FindPatternInFile(int fd, const char *pattern, size_t len, int &matches, bool &atFuncStart);
 	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 private:

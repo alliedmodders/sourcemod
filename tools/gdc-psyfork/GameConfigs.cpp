@@ -45,6 +45,7 @@
 #define PSTATE_GAMEDEFS_CRC				9
 #define PSTATE_GAMEDEFS_CRC_BINARY		10
 #define PSTATE_GAMEDEFS_CUSTOM			11
+#define PSTATE_GAMEDEFS_OPTIONS			12
 
 #define WIN 0
 #define LIN 1
@@ -134,6 +135,10 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			}
+			else if (strcmp(name, "Options") == 0)
+			{
+				m_ParseState = PSTATE_GAMEDEFS_OPTIONS;
+			}
 			else if ((strcmp(name, "#supported") == 0) && (strcmp(m_Game, "#default") == 0))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
@@ -206,6 +211,8 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		m_Keys.replace(key, m_pStrings->AddString(value));
+	} else if (m_ParseState == PSTATE_GAMEDEFS_OPTIONS) {
+		m_Options.replace(key, m_pStrings->AddString(value));
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
 		{
@@ -289,6 +296,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 		}
 	case PSTATE_GAMEDEFS_KEYS:
 	case PSTATE_GAMEDEFS_OFFSETS:
+	case PSTATE_GAMEDEFS_OPTIONS:
 		{
 			m_ParseState = PSTATE_GAMEDEFS;
 			break;
@@ -471,6 +479,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	m_Offsets.clear();
 	m_Sigs.clear();
 	m_Keys.clear();
+	m_Options.clear();
 
 	char path[PLATFORM_MAX_PATH];
 
@@ -553,6 +562,14 @@ const char *CGameConfig::GetKeyValue(const char *key)
 {
 	int *pkey;
 	if ((pkey = m_Keys.retrieve(key)) == NULL)
+		return NULL;
+	return m_pStrings->GetString(*pkey);
+}
+
+const char *CGameConfig::GetOptionValue(const char *key)
+{
+	int *pkey;
+	if ((pkey = m_Options.retrieve(key)) == NULL)
 		return NULL;
 	return m_pStrings->GetString(*pkey);
 }

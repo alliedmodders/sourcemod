@@ -201,6 +201,7 @@ public: //ITextListener_SMC
 	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public: //IGameConfig
 	const char *GetKeyValue(const char *key);
+	const char *GetOptionValue(const char *key);
 	bool GetOffset(const char *key, int *value);
 	SendProp *GetSendProp(const char *key);
 	bool GetMemSig(const char *key, void **addr);
@@ -218,6 +219,7 @@ public:
 	list<Sig> m_Sigs;
 //	map<const char*,const char*,cmp_str> m_Keys;
 	KTrie<int> m_Keys;
+	KTrie<int> m_Options;
 	unsigned int m_RefCount;
 	/* Parse states */
 	int m_ParseState;

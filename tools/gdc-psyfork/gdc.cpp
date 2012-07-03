@@ -3,6 +3,7 @@
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <math.h>
+#include <iostream>
 #include "gdc.h"
 #include "GameConfigs.h"
 #include "MemoryUtils.h"
@@ -15,6 +16,11 @@ char *game_binary = NULL;
 char *engine_binary = NULL;
 char *wgame_binary = NULL;
 char *wengine_binary = NULL;
+
+inline bool IsDigit( char c )
+{
+	return c < 58 && c > 47;
+}
 
 int main(int argc, char **argv)
 {
@@ -125,26 +131,6 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	const char *vtsym = symbols.GetKeyValue("vtsym");
-	if (!vtsym)
-	{
-		printf("Couldn't find vtsym\n");
-		return 0;
-	}
-
-	void **vt = (void**) mu.ResolveSymbol(ghandle, vtsym);
-	if (!vt)
-	{
-		printf("Couldn't find vtable %s\n", vtsym);
-		dlclose(ghandle);
-		dlclose(ehandle);
-		close(wgfile);
-		close(wefile);
-
-		return 0;
-	}
-
-
 	for (list<Offset>::iterator it = gc.m_Offsets.begin(); it != gc.m_Offsets.end(); it++)
 	{
 		if (debug)
@@ -155,34 +141,60 @@ int main(int argc, char **argv)
 		const char *symbol = symbols.GetKeyValue(it->name);
 		if (symbol)
 		{
-			int newOffset;
-			char symvt[128];
-			strcpy(symvt, it->name);
-			strcat(symvt, "_vt");
-			const char *newvtsym = symbols.GetKeyValue(symvt);
-			if (newvtsym && newvtsym[0])
+			char symvt[128] = "_ZTV";
+			bool bGotFirstNumbers = false;
+			bool bLastNumberDigit = false;
+			unsigned int symlen = strlen(symbol);
+			unsigned int pos = strlen(symvt);
+			
+			for ( unsigned int i = 0; i < symlen && pos < (sizeof(symvt)-1); ++i )
 			{
-				void **newvt = (void**) mu.ResolveSymbol(ghandle, newvtsym);
+				bool isDigit = IsDigit( symbol[i] );
+				if( !isDigit && bLastNumberDigit )
+				{
+					bGotFirstNumbers = true;
+				}
+				
+				// we're before the class len
+				if( !bGotFirstNumbers && !isDigit )
+					continue;
+				
+				// we're at the function name len
+				if( bGotFirstNumbers && isDigit )
+				{
+					symvt[pos] = 0;
+					break;
+				}
+				
+				// we're at the class len or class name. we want these
+				symvt[pos++] = symbol[i];
+				if( isDigit )
+				{
+					bLastNumberDigit = isDigit;
+				}
+			}
+			symvt[pos] = 0;
+			
+			int newOffset;
+			if (symvt[0])
+			{
+				void **newvt = (void**) mu.ResolveSymbol(ghandle, symvt);
 			        if (!newvt)
 				{
-					printf("O: %-22s - can't find, skipping\n", symvt);
+					printf("? O: %-22s - can't find, skipping\n", symvt);
 					continue;
 				}
 
 				newOffset = findVFunc(ghandle, newvt, symbol);
 			}
-			else
-			{
-				newOffset = findVFunc(ghandle, vt, symbol);
-			}
 
 			if (newOffset == it->lin)
 			{
-				printf("O: %-22s - GOOD.    current [ w: %3d, l: %3d ].\n", it->name, it->win, it->lin);
+				printf("  O: %-22s - GOOD.    current [ w: %3d, l: %3d ].\n", it->name, it->win, it->lin);
 			}
 			else
 			{
-				printf("O: %-22s - CHANGED. old [ w: %3d, l: %3d ]. new [ w: %3d, l: %3d ].\n",
+				printf("! O: %-22s - CHANGED. old [ w: %3d, l: %3d ]. new [ w: %3d, l: %3d ].\n",
 					it->name,
 					it->win, it->lin,
 					newOffset - (it->lin - it->win), newOffset
@@ -191,7 +203,7 @@ int main(int argc, char **argv)
 		}
 		else // !symbol
 		{
-			printf("O: %-22s - no Linux symbol, skipping\n", it->name);
+			printf("  O: %-22s - no Linux symbol, skipping\n", it->name);
 		}
 	}
 
@@ -210,7 +222,7 @@ int main(int argc, char **argv)
 		bool hasWindows = (winSymbol && winSymbol[0]);
 		if (!hasLinux && !hasWindows)
 		{
-			printf("S: %-22s - hasn't linux nor windows data, skipping\n", it->name);
+			printf("  S: %-22s - hasn't linux nor windows data, skipping\n", it->name);
 			continue;
 		}
 		
@@ -228,16 +240,17 @@ int main(int argc, char **argv)
 		}
 		else
 		{
-			printf("S: %-22s - isn't from server nor engine, skipping\n", it->name);
+			printf("  S: %-22s - isn't from server nor engine, skipping\n", it->name);
 			continue;
 		}
 		
-		bool foundLinux   = (!hasLinux   || checkSigStringL(linHandle, linSymbol));
-		bool foundWindows = (!hasWindows || checkSigStringW(winFile,   winSymbol));
+		int linuxMatches = 0, windowsMatches = 0;
+		if( hasLinux )
+			linuxMatches = checkSigStringL(linHandle, linSymbol);
+		if( hasWindows )
+			windowsMatches = checkSigStringW(winFile,   winSymbol);
 			
-		// Prepare for ternery ABUSE
-		
-		if (foundLinux && foundWindows)
+		if (linuxMatches == 1 && windowsMatches == 1)
 		{
 			// too much clutter to print current data if it matches anyway, unlike with offsets
 			/*
@@ -248,42 +261,86 @@ int main(int argc, char **argv)
 				linSymbol ? linSymbol : ""
 				);
 			*/
-			printf("S: %-22s (%s) - GOOD.\n",
+			printf("  S: %-22s (%s) - w: GOOD     - l: GOOD    \n",
 				it->name,
 				(it->lib == Server) ? "server" : "engine"
 				);
 		}
 		else
 		{
-			// extra \n at end is intentional to add buffer after possibly long sigs
-			printf("S: %-22s (%s) - w: %s - l: %s\n%s%s%s%s%s%s%s%s\n",
-					it->name,
-					(it->lib == Server) ? "server" : "engine",
-					hasWindows ? (foundWindows ? "GOOD" : "CHANGED") : "UNKNOWN",
-					hasLinux   ? (foundLinux   ? "GOOD" : "CHANGED") : "UNKNOWN",
-					
-					hasWindows ? "\tcurrent - w: " : "",
-					(hasWindows && foundWindows) ? "    (found) \"" : (hasWindows ? "(NOT found) \"" : ""),
-					(hasWindows && winSymbol)  ? winSymbol : "",
-					hasWindows ? "\"\n" : "",
-					
-					hasLinux ? "\tcurrent - l: " : "",
-					(hasLinux && foundLinux) ? "    (found) \"" : (hasLinux ? "(NOT found) \"" : ""),
-					(hasLinux && linSymbol)  ? linSymbol : "",
-					hasLinux ? "\"\n" : ""
-					);
+			char winStatus[16];
+			// right now the only option is to ignore
+			const char *options = symbols.GetOptionValue(it->name);
+			bool allowMulti = ( options && strstr(options, "allowmultiple") != NULL );
+			bool allowMidfunc = ( options && strstr(options, "allowmidfunc") != NULL );
 			
+			bool bWinGood = false;
+			if( !hasWindows ) {
+				snprintf( winStatus, sizeof(winStatus), "UNKNOWN" );
+			}
+			else if( windowsMatches == -1 && !allowMidfunc) {
+				snprintf( winStatus, sizeof(winStatus), "MIDFUNC" );
+			}
+			else if( windowsMatches == 0 ) {
+				snprintf( winStatus, sizeof(winStatus), "NOTFOUND" );
+			}
+			else if( windowsMatches > 1 && !allowMulti) {
+				snprintf( winStatus, sizeof(winStatus), "MULTIPLE" );
+			}
+			else {
+				bWinGood = true;
+				snprintf( winStatus, sizeof(winStatus), "GOOD" );
+			}
+			
+			char linStatus[16];
+			bool bLinGood = false;
+			if( !hasLinux ) {
+				snprintf( linStatus, sizeof(linStatus), "UNKNOWN" );
+			}
+			else if( linuxMatches == 0 ) {
+				snprintf( linStatus, sizeof(linStatus), "NOTFOUND" );
+			}
+			else if( linuxMatches == 1 ) {
+				bLinGood = true;
+				snprintf( linStatus, sizeof(linStatus), "GOOD" );
+			}
+			else {
+				snprintf( linStatus, sizeof(linStatus), "CHECK" );
+			}
+			
+			bool showWinExtra = (hasWindows && !bWinGood);
+			bool showLinExtra = ( ( hasLinux && !bLinGood ) || showWinExtra );
+			
+			printf("%s S: %-22s (%s)", (showWinExtra || showLinExtra) ? "!" : " ", it->name, (it->lib == Server) ? "server" : "engine" );
+				printf(" - w: %-8s - l: %-8s\n", winStatus, linStatus );
+			
+			if( showWinExtra || showLinExtra )
+				printf( "!    current:\n" );
+			
+			if( showWinExtra )
+			{
+				printf("!    w: \"%s\"\n",
+					winSymbol ? winSymbol : ""
+					);
+			}
+			
+			if( showLinExtra )
+			{
+				// extra \n at end is intentional to add buffer after possibly long sigs
+				printf("!    l: \"%s\"\n\n",
+					linSymbol ? linSymbol : ""
+					);
+			}			
 		}
-		
-		//  j/k, no way that anyone could have been prepared for that
 	}
 
 	return 0;
 }
 
-bool checkSigStringW(int file, const char* symbol)
+int checkSigStringW(int file, const char* symbol)
 {
-	void *addr = NULL;
+	int matches = 0;
+	bool atFuncStart = true;
 	bool isAt = (symbol[0] == '@');
 	// we can't support this on windows from here
 	if (isAt)
@@ -294,23 +351,25 @@ bool checkSigStringW(int file, const char* symbol)
 
 	if (real_bytes >= 1)
 	{
-		addr = mu.FindPatternInFile(file, (char*)real_sig, real_bytes);
+		mu.FindPatternInFile(file, (char*)real_sig, real_bytes, matches, atFuncStart);
 	}
 
-	if (addr)
-		return true;
+	if( !atFuncStart )
+		return -1;
 	
-	return false;
+	return matches;
 }
 
-bool checkSigStringL(void *handle, const char* symbol)
+int checkSigStringL(void *handle, const char* symbol)
 {
-	void *addr = NULL;
 	bool isAt = (symbol[0] == '@');
+	int matches = 0;
+	bool dummy;
 	
 	if (isAt)
 	{
-		addr = mu.ResolveSymbol(handle, symbol + 1);
+		if( mu.ResolveSymbol(handle, symbol + 1) )
+			matches = 1;
 	}
 	else
 	{
@@ -319,14 +378,11 @@ bool checkSigStringL(void *handle, const char* symbol)
 
 		if (real_bytes >= 1)
 		{
-			addr = mu.FindPattern(handle, (char*)real_sig, real_bytes);
+			mu.FindPattern(handle, (char*)real_sig, real_bytes, matches, dummy);
 		}
 	}
 
-	if (addr)
-		return true;
-	
-	return false;
+	return matches;
 }
 
 /* 

@@ -12,8 +12,8 @@ using namespace SourceMod;
 int findFuncPos(const char* sym);
 int findVFunc(void *handle, void **vt, const char *symbol);
 
-bool checkSigStringW(int file, const char* symbol);
-bool checkSigStringL(void* handle, const char* symbol);
+int checkSigStringW(int file, const char* symbol);
+int checkSigStringL(void* handle, const char* symbol);
 
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char *hexstr);
