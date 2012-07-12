@@ -459,4 +459,9 @@
       <Filter>HL2SDK</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\version.rc">
+      <Filter>Resources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
 </Project>

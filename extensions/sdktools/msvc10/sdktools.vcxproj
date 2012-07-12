@@ -20,7 +20,7 @@
     <ProjectConfiguration Include="Debug - EYE|Win32">
       <Configuration>Debug - EYE</Configuration>
       <Platform>Win32</Platform>
-	</ProjectConfiguration>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Debug - Left 4 Dead 2|Win32">
       <Configuration>Debug - Left 4 Dead 2</Configuration>
       <Platform>Win32</Platform>
@@ -48,11 +48,11 @@
     <ProjectConfiguration Include="Release - Bloody Good Time|Win32">
       <Configuration>Release - Bloody Good Time</Configuration>
       <Platform>Win32</Platform>
-	</ProjectConfiguration>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release - CS GO|Win32">
       <Configuration>Release - CS GO</Configuration>
       <Platform>Win32</Platform>
-	</ProjectConfiguration>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release - Dark Messiah|Win32">
       <Configuration>Release - Dark Messiah</Configuration>
       <Platform>Win32</Platform>
@@ -315,7 +315,7 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release - Bloody Good Time|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - Bloody Good Time|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Bloody Good Time|Win32'">false</LinkIncremental>
-	<OutDir Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">true</LinkIncremental>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
@@ -334,6 +334,72 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - Swarm|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Swarm|Win32'">false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
+    <TargetName>sdktools.ext.2.ep2v</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Bloody Good Time|Win32'">
+    <TargetName>sdktools.ext.2.bgt</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">
+    <TargetName>sdktools.ext.2.csgo</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Dark Messiah|Win32'">
+    <TargetName>sdktools.ext.2.darkm</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - EYE|Win32'">
+    <TargetName>sdktools.ext.2.eye</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Episode 1|Win32'">
+    <TargetName>sdktools.ext.2.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead|Win32'">
+    <TargetName>sdktools.ext.2.l4d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead 2|Win32'">
+    <TargetName>sdktools.ext.2.l4d2</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Old Metamod|Win32'">
+    <TargetName>sdktools.ext.1.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box|Win32'">
+    <TargetName>sdktools.ext.2.ep2</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
+    <TargetName>sdktools.ext.2.ep2v</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Swarm|Win32'">
+    <TargetName>sdktools.ext.2.swarm</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Bloody Good Time|Win32'">
+    <TargetName>sdktools.ext.2.bgt</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">
+    <TargetName>sdktools.ext.2.csgo</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Dark Messiah|Win32'">
+    <TargetName>sdktools.ext.2.darkm</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - EYE|Win32'">
+    <TargetName>sdktools.ext.2.eye</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">
+    <TargetName>sdktools.ext.2.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Left 4 Dead|Win32'">
+    <TargetName>sdktools.ext.2.l4d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Left 4 Dead 2|Win32'">
+    <TargetName>sdktools.ext.2.l4d2</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Old Metamod|Win32'">
+    <TargetName>sdktools.ext.1.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box|Win32'">
+    <TargetName>sdktools.ext.2.ep2</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Swarm|Win32'">
+    <TargetName>sdktools.ext.2.swarm</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Old Metamod|Win32'">
     <ClCompile>
       <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 %(AdditionalOptions)</AdditionalOptions>
@@ -351,12 +417,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;$(HL2SDK)\lib\public\vstdlib.lib;$(HL2SDK)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -365,6 +431,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Old Metamod|Win32'">
     <ClCompile>
@@ -381,11 +450,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;$(HL2SDK)\lib\public\vstdlib.lib;$(HL2SDK)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -396,6 +466,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box|Win32'">
     <ClCompile>
@@ -414,11 +487,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOB)\lib\public\tier0.lib;$(HL2SDKOB)\lib\public\tier1.lib;$(HL2SDKOB)\lib\public\vstdlib.lib;$(HL2SDKOB)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.ep2.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -427,6 +501,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box|Win32'">
     <ClCompile>
@@ -443,11 +520,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOB)\lib\public\tier0.lib;$(HL2SDKOB)\lib\public\tier1.lib;$(HL2SDKOB)\lib\public\vstdlib.lib;$(HL2SDKOB)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.ep2.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -458,6 +536,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Episode 1|Win32'">
     <ClCompile>
@@ -477,7 +558,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;$(HL2SDK)\lib\public\vstdlib.lib;$(HL2SDK)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -486,6 +567,15 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
+    <ResourceCompile>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">
     <ClCompile>
@@ -502,11 +592,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;$(HL2SDK)\lib\public\vstdlib.lib;$(HL2SDK)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -517,6 +608,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead|Win32'">
     <ClCompile>
@@ -535,11 +629,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKL4D)\lib\public\tier0.lib;$(HL2SDKL4D)\lib\public\tier1.lib;$(HL2SDKL4D)\lib\public\vstdlib.lib;$(HL2SDKL4D)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.l4d.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -548,6 +643,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Left 4 Dead|Win32'">
     <ClCompile>
@@ -564,11 +662,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKL4D)\lib\public\tier0.lib;$(HL2SDKL4D)\lib\public\tier1.lib;$(HL2SDKL4D)\lib\public\vstdlib.lib;$(HL2SDKL4D)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.l4d.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -579,6 +678,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Dark Messiah|Win32'">
     <ClCompile>
@@ -597,11 +699,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-DARKM)\lib\public\tier0.lib;$(HL2SDK-DARKM)\lib\public\tier1.lib;$(HL2SDK-DARKM)\lib\public\vstdlib.lib;$(HL2SDK-DARKM)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.darkm.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -610,6 +713,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Dark Messiah|Win32'">
     <ClCompile>
@@ -626,11 +732,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-DARKM)\lib\public\tier0.lib;$(HL2SDK-DARKM)\lib\public\tier1.lib;$(HL2SDK-DARKM)\lib\public\vstdlib.lib;$(HL2SDK-DARKM)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.darkm.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -641,6 +748,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
     <ClCompile>
@@ -659,12 +769,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib;$(HL2SDKOBVALVE)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.ep2v.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -673,6 +783,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
     <ClCompile>
@@ -690,12 +803,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;$(HL2SDKOBVALVE)\lib\public\vstdlib.lib;$(HL2SDKOBVALVE)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.ep2v.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -706,6 +819,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - EYE|Win32'">
     <ClCompile>
@@ -724,12 +840,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-EYE)\lib\public\tier0.lib;$(HL2SDK-EYE)\lib\public\tier1.lib;$(HL2SDK-EYE)\lib\public\vstdlib.lib;$(HL2SDK-EYE)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.eye.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -738,6 +854,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - EYE|Win32'">
     <ClCompile>
@@ -755,12 +874,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-EYE)\lib\public\tier0.lib;$(HL2SDK-EYE)\lib\public\tier1.lib;$(HL2SDK-EYE)\lib\public\vstdlib.lib;$(HL2SDK-EYE)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.eye.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -771,6 +890,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead 2|Win32'">
     <ClCompile>
@@ -789,12 +911,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKL4D2)\lib\public\tier0.lib;$(HL2SDKL4D2)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDKL4D2)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.l4d2.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -803,6 +925,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Left 4 Dead 2|Win32'">
     <ClCompile>
@@ -819,11 +944,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKL4D2)\lib\public\tier0.lib;$(HL2SDKL4D2)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDKL4D2)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.l4d2.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -834,6 +960,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Bloody Good Time|Win32'">
     <ClCompile>
@@ -852,11 +981,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-BGT)\lib\public\tier0.lib;$(HL2SDK-BGT)\lib\public\tier1.lib;$(HL2SDK-BGT)\lib\public\vstdlib.lib;$(HL2SDK-BGT)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.bgt.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -865,6 +995,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Bloody Good Time|Win32'">
     <ClCompile>
@@ -881,11 +1014,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-BGT)\lib\public\tier0.lib;$(HL2SDK-BGT)\lib\public\tier1.lib;$(HL2SDK-BGT)\lib\public\vstdlib.lib;$(HL2SDK-BGT)\lib\public\mathlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.bgt.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -896,6 +1030,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Swarm|Win32'">
     <ClCompile>
@@ -914,12 +1051,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-SWARM)\lib\public\tier0.lib;$(HL2SDK-SWARM)\lib\public\tier1.lib;$(HL2SDK-SWARM)\lib\public\vstdlib.lib;$(HL2SDK-SWARM)\lib\public\mathlib.lib;$(HL2SDK-SWARM)\lib\public\interfaces.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.swarm.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -928,6 +1065,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Swarm|Win32'">
     <ClCompile>
@@ -944,11 +1084,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-SWARM)\lib\public\tier0.lib;$(HL2SDK-SWARM)\lib\public\tier1.lib;$(HL2SDK-SWARM)\lib\public\vstdlib.lib;$(HL2SDK-SWARM)\lib\public\mathlib.lib;$(HL2SDK-SWARM)\lib\public\interfaces.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.swarm.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -959,6 +1100,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">
     <ClCompile>
@@ -977,12 +1121,12 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKCSGO)\lib\public\tier0.lib;$(HL2SDKCSGO)\lib\public\tier1.lib;$(HL2SDKCSGO)\lib\public\vstdlib.lib;$(HL2SDKCSGO)\lib\public\mathlib.lib;$(HL2SDKCSGO)\lib\public\interfaces.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.csgo.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -991,6 +1135,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">
     <ClCompile>
@@ -1007,11 +1154,12 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BINARY_NAME="\"$(TargetFileName)\"";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\public</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKCSGO)\lib\public\tier0.lib;$(HL2SDKCSGO)\lib\public\tier1.lib;$(HL2SDKCSGO)\lib\public\vstdlib.lib;$(HL2SDKCSGO)\lib\public\mathlib.lib;$(HL2SDKCSGO)\lib\public\interfaces.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sdktools.ext.2.csgo.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -1022,6 +1170,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\asm\asm.c" />
@@ -1065,6 +1216,9 @@
     <ClInclude Include="..\vsound.h" />
     <ClInclude Include="..\sdk\smsdk_config.h" />
     <ClInclude Include="..\sdk\smsdk_ext.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

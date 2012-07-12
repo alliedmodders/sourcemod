@@ -43,7 +43,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B3E797CF-4E77-4C9D-B8A8-7589B6902206}</ProjectGuid>
+    <ProjectGuid>{18B5ED38-DBB7-47B2-8500-5648B8C1263B}</ProjectGuid>
     <RootNamespace>cstrike</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -160,6 +160,36 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">
+    <TargetName>cstrike.ext.2.csgo</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Episode1|Win32'">
+    <TargetName>cstrike.ext.2.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Old Metamod|Win32'">
+    <TargetName>cstrike.ext.1.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box|Win32'">
+    <TargetName>cstrike.ext.2.ep2</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
+    <TargetName>cstrike.ext.2.ep2v</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">
+    <TargetName>cstrike.ext.2.csgo</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">
+    <TargetName>cstrike.ext.2.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Old Metamod|Win32'">
+    <TargetName>cstrike.ext.1.ep1</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box|Win32'">
+    <TargetName>cstrike.ext.2.ep2</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
+    <TargetName>cstrike.ext.2.ep2v</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Old Metamod|Win32'">
     <ClCompile>
       <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 %(AdditionalOptions)</AdditionalOptions>
@@ -181,7 +211,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -190,6 +220,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Old Metamod|Win32'">
     <ClCompile>
@@ -210,7 +243,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -221,6 +254,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box|Win32'">
     <ClCompile>
@@ -243,7 +279,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOB)\lib\public\tier0.lib;$(HL2SDKOB)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.2.ep2.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -252,6 +288,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box|Win32'">
     <ClCompile>
@@ -272,7 +311,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOB)\lib\public\tier0.lib;$(HL2SDKOB)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.2.ep2.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -283,6 +322,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
     <ClCompile>
@@ -305,7 +347,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.2.ep2v.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -314,6 +356,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
     <ClCompile>
@@ -334,7 +379,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.2.ep2v.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -345,6 +390,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">
     <ClCompile>
@@ -367,7 +415,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-CSGO)\lib\public\tier0.lib;$(HL2SDK-CSGO)\lib\public\tier1.lib;$(HL2SDK-CSGO)\lib\public\interfaces.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.2.csgo.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -376,6 +424,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">
     <ClCompile>
@@ -396,7 +447,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK-CSGO)\lib\public\tier0.lib;$(HL2SDK-CSGO)\lib\public\tier1.lib;$(HL2SDK-CSGO)\lib\public\interfaces.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.2.csgo.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -407,6 +458,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Episode1|Win32'">
     <ClCompile>
@@ -429,7 +483,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -438,6 +492,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">
     <ClCompile>
@@ -458,7 +515,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDK)\lib\public\tier0.lib;$(HL2SDK)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.cstrike.ext.1.ep1.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -469,6 +526,9 @@
       </DataExecutionPrevention>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\extension.cpp" />
@@ -476,7 +536,7 @@
     <ClCompile Include="..\natives.cpp" />
     <ClCompile Include="..\RegNatives.cpp" />
     <ClCompile Include="..\timeleft.cpp" />
-	<ClCompile Include="..\util_cstrike.cpp" />
+    <ClCompile Include="..\util_cstrike.cpp" />
     <ClCompile Include="..\sdk\smsdk_ext.cpp" />
     <ClCompile Include="..\asm\asm.c" />
     <ClCompile Include="..\CDetour\detours.cpp" />
@@ -486,7 +546,7 @@
     <ClInclude Include="..\forwards.h" />
     <ClInclude Include="..\RegNatives.h" />
     <ClInclude Include="..\timeleft.h" />
-	<ClInclude Include="..\util_cstrike.h" />
+    <ClInclude Include="..\util_cstrike.h" />
     <ClInclude Include="..\sdk\smsdk_config.h" />
     <ClInclude Include="..\sdk\smsdk_ext.h" />
     <ClInclude Include="..\asm\asm.h" />

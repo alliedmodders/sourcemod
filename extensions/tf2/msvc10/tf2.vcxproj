@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{B3E797CF-4E77-4C9D-B8A8-7589B6902206}</ProjectGuid>
+    <ProjectGuid>{B3E8AF22-5436-49A4-9A3F-631519874372}</ProjectGuid>
     <RootNamespace>tf2</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
@@ -44,6 +44,12 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">false</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
+    <TargetName>tf2.ext.2.ep2v</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
+    <TargetName>tf2.ext.2.ep2v</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -65,7 +71,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.tf2.ext.2.ep2v.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -75,6 +81,9 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
     <ClCompile>
@@ -94,7 +103,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalDependencies>$(HL2SDKOBVALVE)\lib\public\tier0.lib;$(HL2SDKOBVALVE)\lib\public\tier1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)game.tf2.ext.2.ep2v.dll</OutputFile>
+      <OutputFile>$(OutDir)$(TargetFileName)</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
@@ -105,6 +114,9 @@
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreSpecificDefaultLibraries>/NODEFAULTLIB:LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
+    <PostBuildEvent>
+      <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\extensions"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\conditions.cpp" />
