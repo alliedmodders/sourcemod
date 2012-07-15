@@ -23,8 +23,8 @@ OBJECTS = AdminCache.cpp CDataPack.cpp ConCmdManager.cpp ConVarManager.cpp CoreC
 	frame_hooks.cpp concmd_cleaner.cpp NextMap.cpp \
 	NativeOwner.cpp logic_bridge.cpp ConsoleDetours.cpp
 OBJECTS += smn_bitbuffer.cpp smn_console.cpp smn_core.cpp \
-	smn_entities.cpp smn_events.cpp smn_fakenatives.cpp \
-	smn_filesystem.cpp smn_halflife.cpp \
+	smn_database.cpp smn_entities.cpp smn_events.cpp \
+	smn_fakenatives.cpp smn_filesystem.cpp smn_halflife.cpp \
 	smn_keyvalues.cpp smn_player.cpp \
 	smn_usermsgs.cpp smn_menus.cpp smn_vector.cpp \
 	smn_hudtext.cpp smn_nextmap.cpp

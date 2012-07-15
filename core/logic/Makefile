@@ -40,7 +40,8 @@ OBJECTS = \
 	smn_datapacks.cpp	\
 	smn_gameconfigs.cpp	\
 	GameConfigs.cpp		\
-	smn_players.cpp
+	smn_players.cpp 	\
+	smn_profiler.cpp
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
