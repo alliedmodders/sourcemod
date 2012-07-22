@@ -692,6 +692,15 @@ stock SetEntDataArray(entity, offset, const array[], arraySize, dataSize=4, bool
 }
 
 /**
+ * Gets the memory address of an entity.
+ * 
+ * @param entity		Entity index.
+ * @return				Address of the entity.
+ * @error				Invalid entity.
+ */
+native Address:GetEntityAddress(entity);
+
+/**
  * Retrieves the classname of an entity.
  * This is like GetEdictClassname(), except it works for ALL
  * entities, not just edicts.

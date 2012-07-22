@@ -2226,6 +2226,16 @@ static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity * pEntity = GetEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+	return reinterpret_cast<cell_t>(pEntity);
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
@@ -2268,5 +2278,6 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntPropFloat",			SetEntPropFloat},
 	{"SetEntPropString",		SetEntPropString},
 	{"SetEntPropVector",		SetEntPropVector},
+	{"GetEntityAddress",		GetEntityAddress},
 	{NULL,						NULL}
 };
