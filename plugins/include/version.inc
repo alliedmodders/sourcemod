@@ -36,7 +36,7 @@
 #define _version_included
 
 #define SOURCEMOD_V_MAJOR		1				/**< SourceMod Major version */
-#define SOURCEMOD_V_MINOR		4				/**< SourceMod Minor version */
+#define SOURCEMOD_V_MINOR		5				/**< SourceMod Minor version */
 #define SOURCEMOD_V_RELEASE		0				/**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION	"1.4.0-dev"	/**< SourceMod version string (major.minor.release.build) */
+#define SOURCEMOD_VERSION	"1.5.0-dev"	/**< SourceMod version string (major.minor.release.build) */
