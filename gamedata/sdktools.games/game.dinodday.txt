@@ -7,7 +7,7 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"423"
+				"windows"	"424"
 			}
 			"RemovePlayerItem"
 			{
@@ -31,7 +31,7 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"468"
+				"windows"	"469"
 			}
 			"GetVelocity"
 			{
@@ -59,7 +59,7 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"444"
+				"windows"	"445"
 			}
 		}
 		
