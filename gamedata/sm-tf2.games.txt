@@ -25,7 +25,7 @@
 			"RemoveDisguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x8B\xF1\x8B\x2A\x2A\x2A\x2A\x2A\x57\x8B"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x56\x8B\xF1\x57\x8D\x9E"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 				"mac"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
