@@ -22,23 +22,7 @@ OBJECTS = sdk/smsdk_ext.cpp sdk/sm_memtable.cpp extension.cpp \
 	driver/SqDatabase.cpp driver/SqDriver.cpp driver/SqQuery.cpp \
 	driver/SqResults.cpp
 
-OBJECTS += sqlite-source/alter.c sqlite-source/analyze.c \
-	sqlite-source/attach.c sqlite-source/auth.c sqlite-source/btree.c \
-	sqlite-source/build.c sqlite-source/callback.c sqlite-source/complete.c \
-	sqlite-source/date.c sqlite-source/delete.c sqlite-source/expr.c \
-	sqlite-source/func.c sqlite-source/hash.c sqlite-source/insert.c \
-	sqlite-source/legacy.c sqlite-source/main.c sqlite-source/malloc.c \
-	sqlite-source/opcodes.c sqlite-source/os.c sqlite-source/os_unix.c \
-	sqlite-source/pager.c sqlite-source/parse.c sqlite-source/pragma.c \
-	sqlite-source/prepare.c sqlite-source/printf.c sqlite-source/random.c \
-	sqlite-source/select.c sqlite-source/table.c sqlite-source/tokenize.c \
-	sqlite-source/trigger.c sqlite-source/update.c sqlite-source/utf.c \
-	sqlite-source/util.c sqlite-source/vacuum.c sqlite-source/vdbe.c \
-	sqlite-source/vdbeapi.c sqlite-source/vdbeaux.c sqlite-source/vdbeblob.c \
-	sqlite-source/vdbefifo.c sqlite-source/vdbemem.c sqlite-source/vtab.c \
-	sqlite-source/where.c sqlite-source/btmutex.c sqlite-source/journal.c \
-	sqlite-source/mem1.c sqlite-source/mem2.c sqlite-source/mutex.c \
-	sqlite-source/mutex_unix.c
+OBJECTS += sqlite-source/sqlite3.c
 
 ##############################################
 ### CONFIGURE ANY OTHER FLAGS/OPTIONS HERE ###
