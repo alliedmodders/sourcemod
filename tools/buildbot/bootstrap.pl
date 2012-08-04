@@ -54,7 +54,7 @@ if ($reconf) {
 		} elsif ($^O eq "darwin") {
 			$result = `CC=clang CXX=clang python3 ../build/configure.py --enable-optimize`;
 		} else {
-			$result = `C:\\Python31\\Python.exe ..\\build\\configure.py --enable-optimize`;
+			$result = `C:\\Python32\\Python.exe ..\\build\\configure.py --enable-optimize`;
 		}
 	}
 	print "$result\n";
