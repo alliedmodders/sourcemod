@@ -789,6 +789,8 @@ CPluginManager::CPluginManager()
 	m_AllPluginsLoaded = false;
 	m_MyIdent = NULL;
 	m_LoadingLocked = false;
+	
+	m_bBlockBadPlugins = true;
 }
 
 CPluginManager::~CPluginManager()
@@ -1030,6 +1032,41 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 			}
 		}
 	}
+	
+	if (pPlugin->GetStatus() == Plugin_Created)
+	{
+		unsigned char *pCodeHash = pPlugin->m_pRuntime->GetCodeHash();
+		
+		char codeHashBuf[40];
+		UTIL_Format(codeHashBuf, 40, "plugin_");
+		for (int i = 0; i < 16; i++)
+			UTIL_Format(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
+		
+		const char *bulletinUrl = g_pGameConf->GetKeyValue(codeHashBuf);
+		if (bulletinUrl != NULL)
+		{
+			if (m_bBlockBadPlugins)
+			{
+				if (error)
+				{
+					if (bulletinUrl[0] != '\0')
+					{
+						UTIL_Format(error, maxlength, "Known malware detected and blocked. See %s for more info", bulletinUrl);
+					} else {
+						UTIL_Format(error, maxlength, "Possible malware or illegal plugin detected and blocked");
+					}
+				}
+				pPlugin->m_status = Plugin_BadLoad;
+			} else {
+				if (bulletinUrl[0] != '\0')
+				{
+					g_Logger.LogMessage("%s: Known malware detected. See %s for more info, blocking disabled in core.cfg", pPlugin->GetFilename(), bulletinUrl);
+				} else {
+					g_Logger.LogMessage("%s: Possible malware or illegal plugin detected, blocking disabled in core.cfg", pPlugin->GetFilename());
+				}
+			}
+		}
+	}
 
 	LoadRes loadFailure = LoadRes_Failure;
 	/* Get the status */
@@ -1129,7 +1166,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 	if ((res=_LoadPlugin(&pl, plugin, false, PluginType_MapUpdated, error, sizeof(error))) == LoadRes_Failure)
 	{
-		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s", plugin, error);
+		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, error);
 		pl->SetErrorState(
 			pl->GetStatus() <= Plugin_Created ? Plugin_BadLoad : pl->GetStatus(), 
 			"%s",
@@ -1889,6 +1926,27 @@ void CPluginManager::OnSourceModShutdown()
 	g_ShareSys.DestroyIdentity(m_MyIdent);
 }
 
+ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key, 
+												 const char *value, 
+												 ConfigSource source, 
+												 char *error, 
+												 size_t maxlength)
+{
+	if (strcmp(key, "BlockBadPlugins") == 0) {
+		if (strcasecmp(value, "yes") == 0)
+		{
+			m_bBlockBadPlugins = true;
+		} else if (strcasecmp(value, "no") == 0) {
+			m_bBlockBadPlugins = false;
+		} else {
+			UTIL_Format(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			return ConfigResult_Reject;
+		}
+		return ConfigResult_Accept;
+	}
+	return ConfigResult_Ignore;
+}
+
 void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 	/* We don't care about the internal object, actually */
@@ -2269,6 +2327,15 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const CCommand &c
 				{
 					g_RootMenu.ConsolePrint("  Timestamp: %s", pl->m_DateTime);
 				}
+				
+				unsigned char *pCodeHash = pl->m_pRuntime->GetCodeHash();
+				unsigned char *pDataHash = pl->m_pRuntime->GetDataHash();
+				
+				char combinedHash[33];
+				for (int i = 0; i < 16; i++)
+					UTIL_Format(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
+				
+				g_RootMenu.ConsolePrint("  Hash: %s", combinedHash);
 			}
 			else
 			{

@@ -36,6 +36,7 @@ binary.AddSourceFiles('sourcepawn/jit', [
 	'zlib/trees.c',
 	'zlib/uncompr.c',
 	'zlib/zutil.c',
+	'md5/md5.cpp',
 	'../../knight/shared/KeCodeAllocator.cpp'
 	])
 SM.AutoVersion('sourcepawn/jit', binary)
