@@ -8,6 +8,8 @@
 #include "sp_vm_basecontext.h"
 #include "engine2.h"
 
+#include "md5/md5.h"
+
 using namespace SourcePawn;
 
 BaseRuntime::BaseRuntime() : m_Debug(&m_plugin), m_pPlugin(&m_plugin), m_pCtx(NULL), 
@@ -18,6 +20,9 @@ m_PubFuncs(NULL), m_PubJitFuncs(NULL), m_pCo(NULL), m_CompSerial(0)
 	m_FuncCache = NULL;
 	m_MaxFuncs = 0;
 	m_NumFuncs = 0;
+	
+	memset(m_CodeHash, 0, sizeof(m_CodeHash));
+	memset(m_DataHash, 0, sizeof(m_DataHash));
 }
 
 BaseRuntime::~BaseRuntime()
@@ -226,6 +231,16 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 		m_PubJitFuncs = new JitFunction *[m_pPlugin->num_publics];
 		memset(m_PubJitFuncs, 0, sizeof(JitFunction *) * m_pPlugin->num_publics);
 	}
+
+	MD5 md5_pcode;
+	md5_pcode.update(plugin->pcode, plugin->pcode_size);
+	md5_pcode.finalize();
+	md5_pcode.raw_digest(m_CodeHash);
+	
+	MD5 md5_data;
+	md5_data.update(plugin->data, plugin->data_size);
+	md5_data.finalize();
+	md5_data.raw_digest(m_DataHash);
 
 	m_pPlugin->profiler = g_engine2.GetProfiler();
 	m_pCtx = new BaseContext(this);
@@ -481,6 +496,16 @@ size_t BaseRuntime::GetMemUsage()
 	mem += m_pPlugin->base_size;
 
 	return mem;
+}
+
+unsigned char *BaseRuntime::GetCodeHash()
+{
+	return m_CodeHash;
+}
+
+unsigned char *BaseRuntime::GetDataHash()
+{
+	return m_DataHash;
 }
 
 BaseContext *BaseRuntime::GetBaseContext()
