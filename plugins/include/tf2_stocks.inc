@@ -231,7 +231,7 @@ enum {
 	TF_WEAPON_GRENADE_CLEAVER,
 };
 
-// TF2 Weapon Slots for GetPlayerWeaponSlot
+// TF2 Weapon Loadout Slots
 enum
 {
 	TFWeaponSlot_Primary,

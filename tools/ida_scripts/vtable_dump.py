@@ -18,6 +18,79 @@ __license__ = "zlib/libpng"
 
 import re
 
+"""
+Output Format:"
+    VTable for <1>: (<2>, <3>)
+    Lin    Win Function
+    <4><5> <6> <7>
+    <4><5> <6> <7>
+    ...
+    <4><5> <6> <7>
+
+1: Classname
+2: VTable Offset
+3: Linux This Pointer Offset
+4: "T" if the function is a MI thunk
+5: Linux VTable Index
+6: Windows VTable Index
+7: Function Signature
+"""
+
+catchclass = False
+innerclass = ""
+
+classname = None
+offsetdata = {}
+
+def ExtractTypeInfo(ea, level = 0):
+	global catchclass
+	global innerclass
+	global classname
+	global offsetdata
+	
+	# Param needed to support old IDAPython versions
+	end = NextHead(ea, 4294967295)
+	
+	# Skip vtable
+	ea += 4
+	
+	# Get type name
+	name = Demangle("_Z" + GetString(Dword(ea)), GetLongPrm(INF_LONG_DN))
+	ea += 4
+	
+	if classname is None and level == 0:
+		classname = name
+	
+	if catchclass:
+		innerclass = name
+		catchclass = False
+	
+	print "%*s%s" % (level, "", name)
+	
+	if not ea < end: # Base Type
+		pass
+	elif isData(GetFlags(Dword(ea))): # Single Inheritance
+		ExtractTypeInfo(Dword(ea), level + 1)
+		ea += 4
+	else: # Multiple Inheritance
+		ea += 8
+		while ea < end:
+			catchclass = True
+			ExtractTypeInfo(Dword(ea), level + 1)
+			ea += 4
+			offset = Dword(ea)
+			ea += 4
+			#print "%*s Offset: 0x%06X" % (level, "", offset >> 8)
+			if (offset >> 8) != 0:
+				offsetdata[offset >> 8] = innerclass
+
+# Source: http://stackoverflow.com/a/9147327
+def twos_comp(val, bits):
+	"""compute the 2's compliment of int value val"""
+	if (val & (1 << (bits - 1))) != 0:
+		val = val - (1 << bits)
+	return val
+
 def Analyze():
 	SetStatus(IDA_STATUS_WORK)
 	
@@ -29,7 +102,8 @@ def Analyze():
 	ea = ScreenEA()
 	
 	if not isHead(GetFlags(ea)):
-		ea = PrevHead(ea)
+		# Param needed to support old IDAPython versions
+		ea = PrevHead(ea, 0)
 	
 	# Param needed to support old IDAPython versions
 	end = NextHead(ea, 4294967295)
@@ -43,18 +117,23 @@ def Analyze():
 	linux_vtable = []
 	temp_windows_vtable = []
 	
+	other_linux_vtables = {}
+	other_thunk_linux_vtables = {}
+	temp_other_windows_vtables = {}
+	
 	# Extract vtable
 	while ea < end:
-		offset = Dword(ea)
+		# Read thisoffs
+		offset = -twos_comp(Dword(ea), 32)
+		ea += 4
 		
-		# A vtable starts with some metadata, if it's missing...
-		if isCode(GetFlags(offset)):
-			Warning("Something went wrong!")
-			SetStatus(IDA_STATUS_READY)
-			return
+		# Read typeinfo address
+		typeinfo = Dword(ea)
+		ea += 4
 		
-		# Skip thisoffs and typeinfo address
-		ea += 8
+		if offset == 0: # We only need to read this once
+			print "Inheritance Tree:"
+			ExtractTypeInfo(typeinfo)
 		
 		while ea < end and isCode(GetFlags(Dword(ea))):
 			name = Demangle(Name(Dword(ea)), GetLongPrm(INF_LONG_DN))
@@ -63,9 +142,22 @@ def Analyze():
 				linux_vtable.append(name)
 				temp_windows_vtable.append(name)
 			else:
+				if offset not in other_linux_vtables:
+					other_linux_vtables[offset] = []
+					temp_other_windows_vtables[offset] = []
+					other_thunk_linux_vtables[offset] = []
+				
+				if "`non-virtual thunk to'" in name:
+					other_linux_vtables[offset].append(name[22:])
+					other_thunk_linux_vtables[offset].append(name[22:])
+					temp_other_windows_vtables[offset].append(name[22:])
+				else:
+					other_linux_vtables[offset].append(name)
+					temp_other_windows_vtables[offset].append(name)
+				
 				# MI entry, strip "`non-virtual thunk to'" and remove from list
 				#     But not if it's a dtor... what the hell is this.
-				if (name.find("`non-virtual thunk to'") != -1) and name.find("::~") == -1:
+				if "`non-virtual thunk to'" in name and "::~" not in name:
 					name = name[22:]
 					#print "Stripping '%s' from windows vtable." % (name)
 					temp_windows_vtable.remove(name)
@@ -73,7 +165,7 @@ def Analyze():
 			ea += 4
 	
 	for i, v in enumerate(temp_windows_vtable):
-		if v.find("::~") != -1:
+		if "::~" in v:
 			#print "Found destructor at index %d: %s" % (i, v)
 			del temp_windows_vtable[i]
 			break
@@ -96,16 +188,19 @@ def Analyze():
 			overload_stack.append(v)
 		else:
 			# If we've moved onto something new, dump the stack first
-			if len(overload_stack) > 0:
-				#print overload_stack
-				while len(overload_stack) > 0:
-					windows_vtable.append(overload_stack.pop())
+			while len(overload_stack) > 0:
+				windows_vtable.append(overload_stack.pop())
 			
 			windows_vtable.append(v)
 		
 		prev_function = function
 		prev_symbol = v
 	
+	# If there is anything left in the stack, dump it
+	while len(overload_stack) > 0:
+		windows_vtable.append(overload_stack.pop())
+	
+	print "\nVTable for %s: (0, 0)" % (classname)
 	print "Lin Win Function"
 	for i, v in enumerate(linux_vtable):
 		winindex = windows_vtable.index(v) if v in windows_vtable else None
@@ -113,6 +208,44 @@ def Analyze():
 			print "%3d %3d %s" % (i, winindex, v)
 		else:
 			print "%3d     %s" % (i, v)
+	
+	for k in temp_other_windows_vtables:
+		for i, v in enumerate(temp_other_windows_vtables[k]):
+			if v.find("::~") != -1:
+				#print "Found destructor at index %d: %s" % (i, v)
+				del temp_other_windows_vtables[k][i]
+				break
+	
+	other_windows_vtables = {}
+	for k in temp_other_windows_vtables:
+		other_windows_vtables[k] = []
+		overload_stack = []
+		prev_function = ""
+		prev_symbol = ""
+		for v in temp_other_windows_vtables[k]:
+			function = v.split("(", 1)[0]
+			if function == prev_function:
+				if len(overload_stack) == 0:
+					other_windows_vtables[k].pop()
+					overload_stack.append(prev_symbol)
+				overload_stack.append(v)
+			else:
+				if len(overload_stack) > 0:
+					while len(overload_stack) > 0:
+						other_windows_vtables[k].append(overload_stack.pop())
+				other_windows_vtables[k].append(v)
+			prev_function = function
+			prev_symbol = v
+	
+	for k in other_linux_vtables:
+		print "\nVTable for %s: (%d, %d)" % (offsetdata[k], offsetdata.keys().index(k) + 1, k)
+		print "Lin Win Function"
+		for i, v in enumerate(other_linux_vtables[k]):
+			winindex = other_windows_vtables[k].index(v)
+			if v not in other_thunk_linux_vtables[k]:
+				print "%3d %3d %s" % (i, winindex, v)
+			else:
+				print "T%2d %3d %s" % (i, winindex, v)
 	
 	SetStatus(IDA_STATUS_READY)
 

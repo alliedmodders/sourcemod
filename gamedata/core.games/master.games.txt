@@ -65,4 +65,7 @@
 		"engine"	"csgo"
 	}
 
+	"blacklist.plugins.txt"
+	{
+	}
 }
