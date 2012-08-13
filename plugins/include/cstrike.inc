@@ -250,7 +250,6 @@ native CS_GetWeaponPrice(client, CSWeaponID:id, bool:defaultprice = false);
  * @return				Number of non-null bytes written.
  *
  * @error				Invalid client.
- * @note				Only supported on CS:S. Writes 0-length string on CS:GO.
  */
 native CS_GetClientClanTag(client, String:buffer[], size);
 
@@ -261,7 +260,6 @@ native CS_GetClientClanTag(client, String:buffer[], size);
  * @noreturn
  *
  * @error				Invalid client.
- * @note				Only supported on CS:S. Has no effect on CS:GO.
  */
 native CS_SetClientClanTag(client, const String:tag[]);
 

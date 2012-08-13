@@ -49,6 +49,12 @@
 				"linux"		"47"
 				"mac"		"61"
 			}
+			"ClanTagOffset"
+			{
+				"windows"	"15"
+				"linux"		"41"
+				"mac"		"22"
+			}
 		}
 		"Signatures"
 		{
@@ -122,6 +128,13 @@
 				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x2A\x2A\x85\xFF\x74\x2A\x33\xF6\x8B\xFF"
 				"linux"		"@_Z15AliasToWeaponIDPKc"
 				"mac"		"@_Z15AliasToWeaponIDPKc"
+			}
+			"SetClanTag"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x85\xC0\x74\x2A\x6A\x10\x50\x81\xC1\x2A\x2A\x2A\x2A\x51"
+				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
+				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
 		}
 	}

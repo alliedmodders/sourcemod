@@ -366,11 +366,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE == SE_CSGO
-	size_t len;
-	pContext->StringToLocalUTF8(params[2], params[3], "", &len);
-	return len;
-#else
 	static void *addr;
 	if (!addr)
 	{
@@ -406,14 +401,10 @@ static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
 
 	return len;
-#endif
 }
 
 static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE == SE_CSGO
-	return 0;
-#else
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -448,7 +439,6 @@ static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params
 	pWrapper->Execute(vstk, NULL);
 
 	return 1;
-#endif
 }
 
 static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
