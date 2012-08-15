@@ -66,6 +66,9 @@ enum RoundState {
 	
 	//Game is over, doing bonus round stuff
 	RoundState_Bonus,
+	
+	//Between rounds
+	RoundState_BetweenRounds,
 };
 
 /**
