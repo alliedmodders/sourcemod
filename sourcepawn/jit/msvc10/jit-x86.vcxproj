@@ -119,6 +119,7 @@
     <ClCompile Include="..\dll_exports.cpp" />
     <ClCompile Include="..\engine2.cpp" />
     <ClCompile Include="..\jit_function.cpp" />
+    <ClCompile Include="..\md5\md5.cpp" />
     <ClCompile Include="..\x86\jit_x86.cpp" />
     <ClCompile Include="..\..\..\knight\shared\KeCodeAllocator.cpp" />
     <ClCompile Include="..\x86\opcode_helpers.cpp" />
@@ -145,6 +146,7 @@
     <ClInclude Include="..\jit_function.h" />
     <ClInclude Include="..\jit_shared.h" />
     <ClInclude Include="..\jit_version.h" />
+    <ClInclude Include="..\md5\md5.h" />
     <ClInclude Include="..\x86\jit_x86.h" />
     <ClInclude Include="..\x86\opcode_helpers.h" />
     <ClInclude Include="..\sp_vm_basecontext.h" />

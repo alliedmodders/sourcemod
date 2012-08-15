@@ -19,6 +19,9 @@
     <Filter Include="zlib">
       <UniqueIdentifier>{be3a7952-1237-418c-82bb-d56f3b0f9204}</UniqueIdentifier>
     </Filter>
+    <Filter Include="md5">
+      <UniqueIdentifier>{a4ac4f24-40e4-481c-9bd8-42a6f5b379f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\BaseRuntime.cpp">
@@ -87,6 +90,9 @@
     <ClCompile Include="..\zlib\zutil.c">
       <Filter>zlib</Filter>
     </ClCompile>
+    <ClCompile Include="..\md5\md5.cpp">
+      <Filter>md5</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\BaseRuntime.h">
@@ -136,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\public\sourcepawn\sp_vm_types.h">
       <Filter>SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\md5\md5.h">
+      <Filter>md5</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
