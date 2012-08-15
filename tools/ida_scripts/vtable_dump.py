@@ -49,7 +49,7 @@ def ExtractTypeInfo(ea, level = 0):
 	global offsetdata
 	
 	# Param needed to support old IDAPython versions
-	end = NextHead(ea, 4294967295)
+	end = NextNotTail(ea)
 	
 	# Skip vtable
 	ea += 4
@@ -65,7 +65,7 @@ def ExtractTypeInfo(ea, level = 0):
 		innerclass = name
 		catchclass = False
 	
-	print "%*s%s" % (level, "", name)
+	print " %*s%s" % (level, "", name)
 	
 	if not ea < end: # Base Type
 		pass
@@ -105,8 +105,7 @@ def Analyze():
 		# Param needed to support old IDAPython versions
 		ea = PrevHead(ea, 0)
 	
-	# Param needed to support old IDAPython versions
-	end = NextHead(ea, 4294967295)
+	end = NextNotTail(ea)
 	
 	name = Demangle(Name(ea), GetLongPrm(INF_LONG_DN))
 	if ea == BADADDR or name is None or not re.search(r"vf?table(?: |'\{)for", name):
@@ -136,7 +135,11 @@ def Analyze():
 			ExtractTypeInfo(typeinfo)
 		
 		while ea < end and isCode(GetFlags(Dword(ea))):
-			name = Demangle(Name(Dword(ea)), GetLongPrm(INF_LONG_DN))
+			name = Name(Dword(ea))
+			demangled = Demangle(name, GetLongPrm(INF_LONG_DN))
+			#print "Name: %s, Demangled: %s" % (name, demangled)
+			
+			name = demangled if demangled else name
 			
 			if offset == 0:
 				linux_vtable.append(name)
@@ -201,13 +204,17 @@ def Analyze():
 		windows_vtable.append(overload_stack.pop())
 	
 	print "\nVTable for %s: (0, 0)" % (classname)
-	print "Lin Win Function"
+	print " Lin  Win Function"
 	for i, v in enumerate(linux_vtable):
+		if "__cxa_pure_virtual" in v:
+			print "P%3d" % (i)
+			continue
+		
 		winindex = windows_vtable.index(v) if v in windows_vtable else None
 		if winindex is not None:
-			print "%3d %3d %s" % (i, winindex, v)
+			print "%4d %4d %s" % (i, winindex, v)
 		else:
-			print "%3d     %s" % (i, v)
+			print "%4d      %s" % (i, v)
 	
 	for k in temp_other_windows_vtables:
 		for i, v in enumerate(temp_other_windows_vtables[k]):
@@ -227,7 +234,9 @@ def Analyze():
 			if function == prev_function:
 				if len(overload_stack) == 0:
 					other_windows_vtables[k].pop()
+					#print "Storing '%s' (!)" % (prev_symbol)
 					overload_stack.append(prev_symbol)
+				#print "Storing '%s'" % (v)
 				overload_stack.append(v)
 			else:
 				if len(overload_stack) > 0:
@@ -239,13 +248,17 @@ def Analyze():
 	
 	for k in other_linux_vtables:
 		print "\nVTable for %s: (%d, %d)" % (offsetdata[k], offsetdata.keys().index(k) + 1, k)
-		print "Lin Win Function"
+		print " Lin  Win Function"
 		for i, v in enumerate(other_linux_vtables[k]):
+			if "__cxa_pure_virtual" in v:
+				print "P%3d" % (i)
+				continue
+			
 			winindex = other_windows_vtables[k].index(v)
 			if v not in other_thunk_linux_vtables[k]:
-				print "%3d %3d %s" % (i, winindex, v)
+				print "%4d %4d %s" % (i, winindex, v)
 			else:
-				print "T%2d %3d %s" % (i, winindex, v)
+				print "T%3d %4d %s" % (i, winindex, v)
 	
 	SetStatus(IDA_STATUS_READY)
 
