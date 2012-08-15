@@ -60,9 +60,9 @@
 			"Regenerate"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\xF3\x0F\x10\x05\x2A\x2A\x2A\x2A\x53\x56\x8B\xF1\x8B\x86"
-				"linux"		"@_ZN9CTFPlayer10RegenerateEv"
-				"mac"		"@_ZN9CTFPlayer10RegenerateEv"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\xF3\x0F\x2A\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\xF1\x8B"
+				"linux"		"@_ZN9CTFPlayer10RegenerateEb"
+				"mac"		"@_ZN9CTFPlayer10RegenerateEb"
 			}
 			"AddCondition"
 			{
@@ -110,8 +110,8 @@
 			{
 				"library" 	"server"
 				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x2A\x2A\x2A\x2A\x2A\x8B\x01\x8B\x2A\x2A\x2A\x2A\x2A\xFF\xD2\x84\xC0\x0F\x2A\x2A\x2A\x2A\x2A\x6A\x19"
-				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasef"
-				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasef"
+				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefi"
+				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefi"
 			}
 			"IsPlayerInDuel"
 			{
@@ -132,9 +132,9 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"320"
-				"linux"		"321"
-				"mac"		"321"
+				"windows"	"321"
+				"linux"		"322"
+				"mac"		"322"
 			}
 		}
 	}
