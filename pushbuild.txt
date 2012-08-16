@@ -51,3 +51,4 @@ clobstermonkey
 that thing
 clobber build because amx.h changed (sigh)
 a dead fish
+BuildBot is very well-written, stable, enterprise software.
