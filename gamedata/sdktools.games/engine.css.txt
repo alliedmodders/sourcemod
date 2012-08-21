@@ -14,14 +14,6 @@
 	/* General Temp Entities */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-			"game"		"garrysmod"
-		}
-
 		"Offsets"
 		{
 			/* Offset into CBaseTempEntity constructor */
@@ -68,14 +60,6 @@
 	/* CGlobalEntityList */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-			"game"		"garrysmod"
-		}
-		
 		"Signatures"
 		{
 			/* Functions in CGlobalEntityList */
@@ -92,14 +76,6 @@
 	/* General GameRules */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-		}
-		
 		"Offsets"
 		{
 			/* Offset into CreateGameRulesObject */
@@ -188,13 +164,6 @@
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-			"game"		"garrysmod"
-		}
 		"Signatures"
 		{
 			"FireOutput"
@@ -210,14 +179,6 @@
 	/* SetUserInfo data */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"garrysmod"
-			"game"		"hl2mp"
-		}
-		
 		"Offsets"
 		{
 			/**
