@@ -39,11 +39,11 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float)
+	// CTFPlayerShared::MakeBleed(CTFPlayer*, CTFWeaponBase*, float, int=4)
 	if(!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("MakeBleed",
-			PassInfo pass[3]; \
+			PassInfo pass[4]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(CBaseEntity *); \
 			pass[0].type = PassType_Basic; \
@@ -53,7 +53,10 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 			pass[2].flags = PASSFLAG_BYVAL; \
 			pass[2].size = sizeof(float); \
 			pass[2].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
+			pass[3].flags = PASSFLAG_BYVAL; \
+			pass[3].size = sizeof(int); \
+			pass[3].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4))
 	}
 
 	CBaseEntity *pEntity;
@@ -80,6 +83,8 @@ cell_t TF2_MakeBleed(IPluginContext *pContext, const cell_t *params)
 	*(CBaseEntity **)vptr = NULL;
 	vptr += sizeof(CBaseEntity *);
 	*(float *)vptr = sp_ctof(params[3]);
+	vptr += sizeof(float);
+	*(int *)vptr = 4;
 
 	pWrapper->Execute(vstk, NULL);
 
@@ -449,12 +454,16 @@ cell_t TF2_Regenerate(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pWrapper = NULL;
 
-	//CTFPlayer::Regenerate()
+	//CTFPlayer::Regenerate( bool=true )
 
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("Regenerate", 
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, NULL, 0));
+			PassInfo pass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].size = sizeof(bool); \
+			pass[0].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
 	}
 
 	CBaseEntity *pEntity;
@@ -462,7 +471,15 @@ cell_t TF2_Regenerate(IPluginContext *pContext, const cell_t *params)
 	{
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
-	pWrapper->Execute(&pEntity, NULL);
+	
+	unsigned char vstk[sizeof(void *) + sizeof(bool)];
+	unsigned char *vptr = vstk;
+
+	*(void **)vptr = (void *)pEntity;
+	vptr += sizeof(void *);
+	*(bool *)vptr = true;
+
+	pWrapper->Execute(vstk, NULL);
 
 	return 1;
 }
