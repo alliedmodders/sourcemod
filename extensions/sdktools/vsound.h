@@ -63,7 +63,7 @@ public:
 #else
 	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
 		soundlevel_t soundlevel, int fFlags, int pitch, float delay);
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS
 	
 	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
@@ -82,7 +82,7 @@ public:
 		float flAttenuation, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
-#endif // SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#endif // SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS
 #endif // SOURCE_ENGINE >= SE_PORTAL2
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);

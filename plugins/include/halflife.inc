@@ -42,7 +42,8 @@
 #define SOURCE_SDK_EPISODE2			30		/**< SDK+Engine released after Episode 2/Orange Box */
 #define SOURCE_SDK_BLOODYGOODTIME	32		/**< Modified version of ep2 engine used by Bloody Good Time (no SDK) */
 #define SOURCE_SDK_EYE				33		/**< Modified version of ep2 engine used by E.Y.E Divine Cybermancy (no SDK) */
-#define SOURCE_SDK_EPISODE2VALVE	35		/**< SDK+Engine released after Episode 2/Orange Box */
+#define SOURCE_SDK_CSS				34		/**< Sometime-older version of Source 2009 SDK+Engine, used for Counter-Strike: Source */
+#define SOURCE_SDK_EPISODE2VALVE	35		/**< SDK+Engine released after Episode 2/Orange Box, "Source 2009" or "Source MP" */
 #define SOURCE_SDK_LEFT4DEAD		40		/**< Engine released after Left 4 Dead (no SDK yet) */
 #define SOURCE_SDK_LEFT4DEAD2		50		/**< Engine released after Left 4 Dead 2 (no SDK yet) */
 #define SOURCE_SDK_ALIENSWARM		60		/**< SDK+Engine released after Alien Swarm */

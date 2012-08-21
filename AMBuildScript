@@ -13,23 +13,25 @@ class SM:
 		                         'name': 'EPISODEONE',     'platform': ['windows', 'linux']}
 		self.possibleSdks['ep2'] =   {'sdk': 'HL2SDKOB',        'ext': '2.ep2',   'def': '3',
 		                         'name': 'ORANGEBOX',      'platform': ['windows', 'linux']}
-		self.possibleSdks['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '6',
+		self.possibleSdks['css'] =  {'sdk': 'HL2SDKCSS',   'ext': '2.css',  'def': '6',
+		                         'name': 'CSS', 'platform': ['windows', 'linux', 'darwin']}
+		self.possibleSdks['ep2v'] =  {'sdk': 'HL2SDKOBVALVE',   'ext': '2.ep2v',  'def': '7',
 		                         'name': 'ORANGEBOXVALVE', 'platform': ['windows', 'linux', 'darwin']}
-		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '7',
+		self.possibleSdks['l4d'] =   {'sdk': 'HL2SDKL4D',       'ext': '2.l4d',   'def': '8',
 		                         'name': 'LEFT4DEAD',      'platform': ['windows', 'linux', 'darwin']}
-		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '8',
+		self.possibleSdks['l4d2'] =  {'sdk': 'HL2SDKL4D2',      'ext': '2.l4d2',  'def': '9',
 		                         'name': 'LEFT4DEAD2',     'platform': ['windows', 'linux', 'darwin']}
 		self.possibleSdks['darkm'] = {'sdk': 'HL2SDK-DARKM',    'ext': '2.darkm', 'def': '2',
 		                         'name': 'DARKMESSIAH',    'platform': ['windows']}
-		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '9',
+		self.possibleSdks['swarm'] = {'sdk': 'HL2SDK-SWARM',    'ext': '2.swarm', 'def': '10',
 		                         'name': 'ALIENSWARM',     'platform': ['windows']}
 		self.possibleSdks['bgt'] =   {'sdk': 'HL2SDK-BGT',      'ext': '2.bgt', 'def': '4',
 		                         'name': 'BLOODYGOODTIME', 'platform': ['windows']}
 		self.possibleSdks['eye'] =   {'sdk': 'HL2SDK-EYE',      'ext': '2.eye', 'def': '5',
 		                         'name': 'EYE', 'platform': ['windows']}
-		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',  'def': '11',
+		self.possibleSdks['csgo'] =  {'sdk': 'HL2SDKCSGO',     'ext': '2.csgo',  'def': '12',
 		                         'name': 'CSGO',           'platform': ['windows', 'linux']}
-		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '10',
+		# self.possibleSdks['portal2'] =  {'sdk': 'HL2SDK-PORTAL2',     'ext': '2.portal2',  'def': '11',
 		#                          'name': 'PORTAL2',           'platform': ['windows']}
 		
 		self.sdkInfo = { }
@@ -40,6 +42,7 @@ class SM:
 
 			#Detect variables
 			envvars = { 'MMSOURCE19':    'mmsource-1.9',
+									'HL2SDKCSS':     'hl2sdk-css',
 									'HL2SDKOBVALVE': 'hl2sdk-ob-valve',
 									'HL2SDKL4D':     'hl2sdk-l4d',
 									'HL2SDKL4D2':    'hl2sdk-l4d2',
@@ -273,7 +276,7 @@ class SM:
 			else:
 				staticLibs = os.path.join(sdkPath, 'lib', 'linux')
 			workFolder = os.path.join(AMBuild.outputFolder, job.workFolder)
-			if sdk in ['ep2v', 'l4d', 'l4d2', 'csgo']:
+			if sdk in ['css', 'ep2v', 'l4d', 'l4d2', 'csgo']:
 				libs = ['tier1_i486.a', 'mathlib_i486.a', 'libvstdlib.so', 'libtier0.so']
 				if sdk == 'csgo':
 					libs.append('interfaces_i486.a')
@@ -336,7 +339,7 @@ class SM:
 				
 		# We don't build for Portal 2 (yet?, ever?), but using this define in code as 
 		# it saves trouble if we ever need to
-		compiler['CDEFINES'].append('SE_PORTAL2=10')
+		compiler['CDEFINES'].append('SE_PORTAL2=11')
 
 		paths = [['public'], ['public', 'engine'], ['public', 'mathlib'], ['public', 'vstdlib'],
 						 ['public', 'tier0'], ['public', 'tier1']]
@@ -375,7 +378,7 @@ class SM:
 		if not noLink:
 			if AMBuild.target['platform'] == 'linux':
 				compiler['POSTLINKFLAGS'][0:0] = ['-lm']
-				if sdk in ['ep2v', 'l4d', 'l4d2', 'csgo']:
+				if sdk in ['css', 'ep2v', 'l4d', 'l4d2', 'csgo']:
 					compiler['POSTLINKFLAGS'][0:0] = ['libtier0.so']
 					compiler['POSTLINKFLAGS'][0:0] = ['libvstdlib.so']
 				else:

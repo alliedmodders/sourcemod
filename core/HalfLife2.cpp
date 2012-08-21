@@ -51,7 +51,7 @@ typedef ICommandLine *(*FakeGetCommandLine)();
 #define TIER0_NAME			"libtier0.dylib"
 #define VSTDLIB_NAME		"libvstdlib.dylib"
 #elif defined __linux__
-#if SOURCE_ENGINE >= SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE >= SE_CSS
 #define TIER0_NAME			"libtier0.so"
 #define VSTDLIB_NAME		"libvstdlib.so"
 #else

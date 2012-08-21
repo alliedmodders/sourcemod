@@ -337,7 +337,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 #endif
 							0, 
 							PITCH_NORM, 
-#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
 							0,
 #endif
 							&pos);

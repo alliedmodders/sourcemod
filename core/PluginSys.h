@@ -49,9 +49,9 @@
 #include <IRootConsoleMenu.h>
 #if SOURCE_ENGINE >= SE_ALIENSWARM
 #include "convar_sm_swarm.h"
-#elif (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2)
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
 #include "convar_sm_l4d.h"
-#elif (SOURCE_ENGINE == SE_ORANGEBOX) || (SOURCE_ENGINE == SE_BLOODYGOODTIME) || (SOURCE_ENGINE == SE_EYE) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE)
+#elif SOURCE_ENGINE >= SE_ORANGEBOX
 #include "convar_sm_ob.h"
 #else
 #include "convar_sm.h"

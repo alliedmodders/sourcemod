@@ -227,7 +227,7 @@ AddNormalLibrary('geoip.ext', 'extensions')
 AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
 
-AddNormalLibrary('game.cstrike.ext.2.ep2v', 'extensions')
+AddNormalLibrary('game.cstrike.ext.2.css', 'extensions')
 if AMBuild.target['platform'] != 'darwin':
 	AddNormalLibrary('game.cstrike.ext.2.csgo', 'extensions')
 	

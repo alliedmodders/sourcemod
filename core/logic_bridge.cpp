@@ -159,6 +159,8 @@ static const char *get_source_engine_name()
 	return "bloodygoodtime";
 #elif SOURCE_ENGINE == SE_EYE
 	return "eye";
+#elif SOURCE_ENGINE == SE_CSS
+	return "css";
 #elif SOURCE_ENGINE == SE_ORANGEBOXVALVE
 	return "orangebox_valve";
 #elif SOURCE_ENGINE == SE_LEFT4DEAD
@@ -176,7 +178,7 @@ static const char *get_source_engine_name()
 
 static bool symbols_are_hidden()
 {
-#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO)
+#if (SOURCE_ENGINE == SE_CSS) || (SOURCE_ENGINE == SE_ORANGEBOXVALVE) || (SOURCE_ENGINE == SE_LEFT4DEAD) || (SOURCE_ENGINE == SE_LEFT4DEAD2) || (SOURCE_ENGINE == SE_CSGO)
 	return true;
 #else
 	return false;
