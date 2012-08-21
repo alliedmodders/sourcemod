@@ -4,10 +4,12 @@
 SMSDK = ../..
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
+HL2SDK_CSS = ../../../hl2sdk-css
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../../hl2sdk-l4d2
-MMSOURCE17 = ../../../mmsource-1.7
+HL2SDK_CSGO = ../../../hl2sdk-csgo
+MMSOURCE19 = ../../../mmsource-1.9
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -33,7 +35,7 @@ CPP = gcc
 override ENGSET = false
 
 # Check for valid list of engines
-ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2,$(ENGINE)))
+ifneq (,$(filter original orangebox css orangeboxvalve left4dead left4dead2,$(ENGINE)))
 	override ENGSET = true
 endif
 
@@ -47,30 +49,40 @@ ifeq "$(ENGINE)" "orangebox"
 	CFLAGS += -DSOURCE_ENGINE=3
 	GAMEFIX = 2.ep2
 endif
+ifeq "$(ENGINE)" "css"
+	HL2SDK = $(HL2SDK_CSS)
+	CFLAGS += -DSOURCE_ENGINE=4
+	GAMEFIX = 2.css
+endif
 ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2SDK = $(HL2SDK_OB_VALVE)
-	CFLAGS += -DSOURCE_ENGINE=4
+	CFLAGS += -DSOURCE_ENGINE=5
 	GAMEFIX = 2.ep2v
 endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
-	CFLAGS += -DSOURCE_ENGINE=5
+	CFLAGS += -DSOURCE_ENGINE=6
 	GAMEFIX = 2.l4d
 endif
 ifeq "$(ENGINE)" "left4dead2"
 	HL2SDK = $(HL2SDK_L4D2)
-	CFLAGS += -DSOURCE_ENGINE=6
+	CFLAGS += -DSOURCE_ENGINE=7
 	GAMEFIX = 2.l4d2
+endif
+ifeq "$(ENGINE)" "csgo"
+	HL2SDK = $(HL2SDK_CSGO)
+	CFLAGS += -DSOURCE_ENGINE=8
+	GAMEFIX = 2.csgo
 endif
 
 HL2PUB = $(HL2SDK)/public
 
 ifeq "$(ENGINE)" "original"
 	INCLUDE += -I$(HL2SDK)/public/dlls
-	METAMOD = $(MMSOURCE17)/core-legacy
+	METAMOD = $(MMSOURCE19)/core-legacy
 else
 	INCLUDE += -I$(HL2SDK)/public/game/server
-	METAMOD = $(MMSOURCE17)/core
+	METAMOD = $(MMSOURCE19)/core
 endif
 
 OS := $(shell uname -s)
@@ -103,8 +115,8 @@ ifeq "$(USEMETA)" "true"
 	INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/tier0 -I$(HL2PUB)/tier1 \
 		-I$(METAMOD) -I$(METAMOD)/sourcehook -I$(SMSDK)/public -I$(SMSDK)/public/extensions \
 		-I$(SMSDK)/public/sourcepawn
-	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_ORANGEBOXVALVE=4 \
-		-DSE_LEFT4DEAD=5 -DSE_LEFT4DEAD2=6
+	CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_CSS=4 -DSE_ORANGEBOXVALVE=5 \
+		-DSE_LEFT4DEAD=6 -DSE_LEFT4DEAD2=7 -DSE_CSGO=8
 else
 	INCLUDE += -I. -I.. -Isdk -I$(SMSDK)/public -I$(SMSDK)/public/sourcepawn
 endif
@@ -168,7 +180,7 @@ all: check
 check:
 	if [ "$(USEMETA)" = "true" ] && [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply one of the following values for ENGINE:"; \
-		echo "left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
+		echo "left4dead2, left4dead, orangeboxvalve, css, orangebox, or original"; \
 		exit 1; \
 	fi
 

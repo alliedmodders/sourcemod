@@ -4,6 +4,7 @@
 SMSDK = ..
 HL2SDK_ORIG = ../../hl2sdk
 HL2SDK_OB = ../../hl2sdk-ob
+HL2SDK_CSS = ../../hl2sdk-css
 HL2SDK_OB_VALVE = ../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../hl2sdk-l4d2
@@ -49,7 +50,7 @@ CPP = gcc
 
 override ENGSET = false
 
-ifneq (,$(filter original orangebox orangeboxvalve left4dead left4dead2 csgo,$(ENGINE)))
+ifneq (,$(filter original orangebox css orangeboxvalve left4dead left4dead2 csgo,$(ENGINE)))
 	override ENGSET = true
 endif
 
@@ -69,19 +70,26 @@ ifeq "$(ENGINE)" "orangebox"
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.ep2.so
 endif
-ifeq "$(ENGINE)" "orangeboxvalve"
-	HL2SDK = $(HL2SDK_OB_VALVE)
+ifeq "$(ENGINE)" "css"
+	HL2SDK = $(HL2SDK_CSS)
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=6
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server 
-#-I$(HL2SDK)/common
+	BINARY = sourcemod.2.css.so
+endif
+ifeq "$(ENGINE)" "orangeboxvalve"
+	HL2SDK = $(HL2SDK_OB_VALVE)
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=7
+	METAMOD = $(MMSOURCE)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server 
 	BINARY = sourcemod.2.ep2v.so
 endif
 ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=7
+	CFLAGS += -DSOURCE_ENGINE=8
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.l4d.so
@@ -89,7 +97,7 @@ endif
 ifeq "$(ENGINE)" "left4dead2"
 	HL2SDK = $(HL2SDK_L4D2)
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=8
+	CFLAGS += -DSOURCE_ENGINE=9
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.l4d2.so
@@ -97,7 +105,7 @@ endif
 ifeq "$(ENGINE)" "csgo"
 	HL2SDK = $(HL2SDK_CSGO)
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=11
+	CFLAGS += -DSOURCE_ENGINE=12
 	METAMOD = $(MMSOURCE)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server
 	BINARY = sourcemod.2.csgo.so
@@ -127,8 +135,8 @@ else
 endif
 
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
-	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9 -DSE_PORTAL2=10 \
-	-DSE_CSGO=11
+	-DSE_CSS=6 -DSE_ORANGEBOXVALVE=7 -DSE_LEFT4DEAD=8 -DSE_LEFT4DEAD2=9 -DSE_ALIENSWARM=10 \
+	-DSE_PORTAL2=11 -DSE_CSGO=12
 
 LINK += $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a $(LIB_PREFIX)vstdlib$(LIB_SUFFIX) \
 	$(LIB_PREFIX)tier0$(LIB_SUFFIX) -static-libgcc
@@ -183,7 +191,7 @@ all: check
 check:
 	if [ "$(ENGSET)" = "false" ]; then \
 		echo "You must supply one of the following values for ENGINE:"; \
-		echo "csgo, left4dead2, left4dead, orangeboxvalve, orangebox, or original"; \
+		echo "csgo, left4dead2, left4dead, orangeboxvalve, css, orangebox, or original"; \
 		exit 1; \
 	fi
 

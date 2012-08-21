@@ -4,11 +4,12 @@
 SMSDK = ../..
 HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
+HL2SDK_CSS = ../../../hl2sdk-css
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
 HL2SDK_L4D2 = ../../../hl2sdk-l4d2
 HL2SDK_CSGO = ../../../hl2sdk-csgo
-MMSOURCE17 = ../../../mmsource-central
+MMSOURCE19 = ../../../mmsource-central
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -41,7 +42,7 @@ ifeq "$(ENGINE)" "original"
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/linux_sdk
 	CFLAGS += -DSOURCE_ENGINE=1
-	METAMOD = $(MMSOURCE17)/core-legacy
+	METAMOD = $(MMSOURCE19)/core-legacy
 	INCLUDE += -I$(HL2SDK)/public/dlls -I$(HL2SDK)/game_shared
 	GAMEFIX = 1.ep1
 	override ENGSET = true
@@ -51,17 +52,27 @@ ifeq "$(ENGINE)" "orangebox"
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
 	CFLAGS += -DSOURCE_ENGINE=3
-	METAMOD = $(MMSOURCE17)/core
+	METAMOD = $(MMSOURCE19)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	GAMEFIX = 2.ep2
+	override ENGSET = true
+endif
+ifeq "$(ENGINE)" "css"
+	HL2SDK = $(HL2SDK_CSS)
+	HL2PUB = $(HL2SDK)/public
+	HL2LIB = $(HL2SDK)/lib/linux
+	CFLAGS += -DSOURCE_ENGINE=6
+	METAMOD = $(MMSOURCE19)/core
+	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
+	GAMEFIX = 2.css
 	override ENGSET = true
 endif
 ifeq "$(ENGINE)" "orangeboxvalve"
 	HL2SDK = $(HL2SDK_OB_VALVE)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=6
-	METAMOD = $(MMSOURCE17)/core
+	CFLAGS += -DSOURCE_ENGINE=7
+	METAMOD = $(MMSOURCE19)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	GAMEFIX = 2.ep2v
 	override ENGSET = true
@@ -70,8 +81,8 @@ ifeq "$(ENGINE)" "left4dead"
 	HL2SDK = $(HL2SDK_L4D)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=7
-	METAMOD = $(MMSOURCE17)/core
+	CFLAGS += -DSOURCE_ENGINE=8
+	METAMOD = $(MMSOURCE19)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	GAMEFIX = 2.l4d
 	override ENGSET = true
@@ -80,8 +91,8 @@ ifeq "$(ENGINE)" "left4dead2"
 	HL2SDK = $(HL2SDK_L4D2)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=8
-	METAMOD = $(MMSOURCE17)/core
+	CFLAGS += -DSOURCE_ENGINE=9
+	METAMOD = $(MMSOURCE19)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	GAMEFIX = 2.l4d2
 	override ENGSET = true
@@ -90,14 +101,14 @@ ifeq "$(ENGINE)" "csgo"
 	HL2SDK = $(HL2SDK_CSGO)
 	HL2PUB = $(HL2SDK)/public
 	HL2LIB = $(HL2SDK)/lib/linux
-	CFLAGS += -DSOURCE_ENGINE=11
-	METAMOD = $(MMSOURCE17)/core
+	CFLAGS += -DSOURCE_ENGINE=12
+	METAMOD = $(MMSOURCE19)/core
 	INCLUDE += -I$(HL2SDK)/public/game/server -I$(HL2SDK)/common -I$(HL2SDK)/game/shared -I$(HL2SDK)/public/toolframework
 	GAMEFIX = 2.csgo
 	override ENGSET = true
 endif
 
-ifeq ($(ENGINE),$(filter $(ENGINE), csgo left4dead2 orangeboxvalve))
+ifeq ($(ENGINE),$(filter $(ENGINE), csgo left4dead2 orangeboxvalve css))
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a libvstdlib.so libtier0.so
 else
 	LINK_HL2 = $(HL2LIB)/tier1_i486.a $(HL2LIB)/mathlib_i486.a vstdlib_i486.so tier0_i486.so
@@ -114,8 +125,8 @@ INCLUDE += -I. -I.. -Isdk -I$(HL2PUB) -I$(HL2PUB)/engine -I$(HL2PUB)/mathlib -I$
 	-I$(SMSDK)/public/sourcepawn
 
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
-	-DSE_ORANGEBOXVALVE=6 -DSE_LEFT4DEAD=7 -DSE_LEFT4DEAD2=8 -DSE_ALIENSWARM=9 -DSE_PORTAL2=10 \
-	-DSE_CSGO=11
+	-DSE_CSS=6 -DSE_ORANGEBOXVALVE=7 -DSE_LEFT4DEAD=8 -DSE_LEFT4DEAD2=9 -DSE_ALIENSWARM=10
+	-DSE_PORTAL2=11 -DSE_CSGO=12
 
 LINK += -m32 -ldl -lm
 
@@ -164,7 +175,7 @@ all: check
 	mkdir -p $(BIN_DIR)/sdk
 	mkdir -p $(BIN_DIR)/CDetour
 	mkdir -p $(BIN_DIR)/asm
-ifeq ($(ENGINE),$(filter $(ENGINE), csgo left4dead2 orangeboxvalve))
+ifeq ($(ENGINE),$(filter $(ENGINE), csgo left4dead2 orangeboxvalve css))
 	ln -sf $(HL2LIB)/libvstdlib.so libvstdlib.so;
 	ln -sf $(HL2LIB)/libtier0.so libtier0.so;
 else
