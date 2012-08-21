@@ -77,6 +77,11 @@
 #define FILENAME_1_6_BGT			"sourcemod.2.bgt" PLATFORM_EXT
 #define FILENAME_1_6_EYE			"sourcemod.2.eye" PLATFORM_EXT
 
+// Shim for compatibility with MM:S 1.9.0+
+#ifndef SOURCE_ENGINE_CSS
+#define SOURCE_ENGINE_CSS 13
+#endif
+
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
 
@@ -255,6 +260,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_EYE:
 		{
 			filename = FILENAME_1_6_EYE;
+			break;
+		}
+	case SOURCE_ENGINE_CSS:
+		{
+			filename = FILENAME_1_6_EP2VALVE;
 			break;
 		}
 	default:
