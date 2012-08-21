@@ -127,6 +127,7 @@ enum TFHoliday
 	TFHoliday_Halloween,
 	TFHoliday_Christmas,
 	TFHoliday_MeetThePyro,
+	TFHoliday_MannVsMachine,
 	TFHoliday_FullMoon,
 	TFHoliday_HalloweenOrFullMoon,
 };
