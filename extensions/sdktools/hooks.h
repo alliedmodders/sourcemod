@@ -40,7 +40,7 @@
 #include "usercmd.h"
 #include "extension.h"
 
-class CHookManager : IPluginsListener
+class CHookManager : IPluginsListener, IFeatureProvider
 {
 public:
 	CHookManager();
@@ -52,6 +52,8 @@ public:
 public: //IPluginsListener
 	void OnPluginLoaded(IPlugin *plugin);
 	void OnPluginUnloaded(IPlugin *plugin);
+public: //IFeatureProvider
+	virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
 
 private:
 	IForward *m_usercmdsFwd;

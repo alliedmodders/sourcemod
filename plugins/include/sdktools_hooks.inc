@@ -35,6 +35,8 @@
 #endif
 #define _sdktools_hooks_included
 
+#define FEATURECAP_PLAYERRUNCMD_11PARAMS	"SDKTools PlayerRunCmd 11Params"
+
 /**
  * @brief Called when a clients movement buttons are being processed
  *
@@ -44,6 +46,14 @@
  * @param vel		Players desired velocity.
  * @param angles	Players desired view angles.
  * @param weapon	Entity index of the new weapon if player switches weapon, 0 otherwise.
+ * @param subtype	Weapon subtype when selected from a menu.
+ * @param cmdnum	Command number. Increments from the first command sent.
+ * @param tickcount	Tick count. A client's prediction based on the server's GetGameTickCount value.
+ * @param seed		Random seed. Used to determine weapon recoil, spread, and other predicted elements.
+ * @param mouse		Mouse direction (x, y).
  * @return 			Plugin_Handled to block the commands from being processed, Plugin_Continue otherwise.
+ *
+ * @note			To see if all 11 params are avaliable, use FeatureType_Capability and
+ *					FEATURECAP_PLAYERRUNCMD_11PARAMS.
  */
-forward Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon);
+forward Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2]);

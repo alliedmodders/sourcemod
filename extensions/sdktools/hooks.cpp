@@ -32,6 +32,8 @@
 #include "hooks.h"
 #include "extension.h"
 
+#define FEATURECAP_PLAYERRUNCMD_11PARAMS	"SDKTools PlayerRunCmd 11Params"
+
 CHookManager g_Hooks;
 static bool PRCH_enabled = false;
 static bool PRCH_used = false;
@@ -53,8 +55,20 @@ void CHookManager::Initialize()
 	}
 
 	plsys->AddPluginsListener(this);
+	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
 
-	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 6, NULL, Param_Cell, Param_CellByRef, Param_CellByRef, Param_Array, Param_Array, Param_CellByRef);
+	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 11, NULL,
+		Param_Cell,			// client
+		Param_CellByRef,	// buttons
+		Param_CellByRef,	// impulse
+		Param_Array,		// Float:vel[3]
+		Param_Array,		// Float:angles[3]
+		Param_CellByRef,	// weapon
+		Param_CellByRef,	// subtype
+		Param_CellByRef,	// cmdnum
+		Param_CellByRef,	// tickcount
+		Param_CellByRef,	// seed
+		Param_Array);		// mouse[2]
 }
 
 void CHookManager::Shutdown()
@@ -62,6 +76,7 @@ void CHookManager::Shutdown()
 	forwards->ReleaseForward(m_usercmdsFwd);
 
 	plsys->RemovePluginsListener(this);
+	sharesys->DropCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
 }
 
 void CHookManager::OnClientPutInServer(int client)
@@ -151,6 +166,7 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	cell_t impulse = ucmd->impulse;
 	cell_t vel[3] = {sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove)};
 	cell_t angles[3] = {sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z)};
+	cell_t mouse[2] = {ucmd->mousedx, ucmd->mousedy};
 
 	m_usercmdsFwd->PushCell(client);
 	m_usercmdsFwd->PushCellByRef(&ucmd->buttons);
@@ -158,6 +174,11 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	m_usercmdsFwd->PushArray(vel, 3, SM_PARAM_COPYBACK);
 	m_usercmdsFwd->PushArray(angles, 3, SM_PARAM_COPYBACK);
 	m_usercmdsFwd->PushCellByRef(&ucmd->weaponselect);
+	m_usercmdsFwd->PushCellByRef(&ucmd->weaponsubtype);
+	m_usercmdsFwd->PushCellByRef(&ucmd->command_number);
+	m_usercmdsFwd->PushCellByRef(&ucmd->tick_count);
+	m_usercmdsFwd->PushCellByRef(&ucmd->random_seed);
+	m_usercmdsFwd->PushArray(mouse, 2, SM_PARAM_COPYBACK);
 	m_usercmdsFwd->Execute(&result);
 
 	ucmd->impulse = impulse;
@@ -167,6 +188,8 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	ucmd->viewangles.x = sp_ctof(angles[0]);
 	ucmd->viewangles.y = sp_ctof(angles[1]);
 	ucmd->viewangles.z = sp_ctof(angles[2]);
+	ucmd->mousedx = mouse[0];
+	ucmd->mousedy = mouse[1];
 
 
 	if (result == Pl_Handled)
@@ -221,4 +244,9 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 	}
 
 	PRCH_used = false;
+}
+
+FeatureStatus CHookManager::GetFeatureStatus(FeatureType type, const char *name)
+{
+	return FeatureStatus_Available;
 }
