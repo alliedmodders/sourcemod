@@ -777,14 +777,16 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
 		{
+ 			ClientConsolePrint(pEntity,
+ 				"SourceMod would not be possible without:");
+ 			ClientConsolePrint(pEntity,
+				" David \"BAILOPAN\" Anderson, Matt \"pRED\" Woodrow");
+ 			ClientConsolePrint(pEntity,
+				" Scott \"DS\" Ehlert, Fyren");
+ 			ClientConsolePrint(pEntity,
+				" Nicholas \"psychonic\" Hastings, Asher \"asherkin\" Baker");
 			ClientConsolePrint(pEntity,
-				"SourceMod would not be possible without:");
-			ClientConsolePrint(pEntity,
-				" David \"BAILOPAN\" Anderson, Borja \"faluco\" Ferrer");
-			ClientConsolePrint(pEntity,
-				" Scott \"DS\" Ehlert, Matt \"pRED\" Woodrow");
-			ClientConsolePrint(pEntity,
-				" Michael \"ferret\" McKoy, Pavol \"PM OnoTo\" Marko");
+				" Borja \"faluco\" Ferrer, Pavol \"PM OnoTo\" Marko");
 			ClientConsolePrint(pEntity,
 				"SourceMod is open source under the GNU General Public License.");
 			RETURN_META(MRES_SUPERCEDE);
