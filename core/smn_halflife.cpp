@@ -451,6 +451,10 @@ static cell_t smn_IsPlayerAlive(IPluginContext *pContext, const cell_t *params)
 	}
 }
 
+#ifndef SOURCE_ENGINE_CSS
+#define SOURCE_ENGINE_CSS 13
+#endif
+
 static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 {
 #if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
@@ -473,6 +477,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 32;
 	case SOURCE_ENGINE_EYE:
 		return 33;
+	case SOURCE_ENGINE_CSS:
 	case SOURCE_ENGINE_ORANGEBOXVALVE:
 		return 35;
 	case SOURCE_ENGINE_LEFT4DEAD:
