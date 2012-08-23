@@ -138,7 +138,7 @@
 	{
 		"Keys"
 		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
+			/* Signature for the beginning of IVEngineServer::CreateFakeClientEx.
 			 *
 			 * The engine binary is not actually scanned in order to look for
 			 * this. SourceHook is used to used to determine the address of the
@@ -146,7 +146,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x45\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0"
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x8A\x2A\x2A\x51\xB9\x2A\x2A\x2A\x2A\xA2"
 		}
 		
 		"Offsets"
@@ -154,7 +154,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"8"
+				"windows"	"11"
 			}
 		}
 
