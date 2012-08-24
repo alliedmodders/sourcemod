@@ -139,6 +139,14 @@
 	/* IServer interface pointer */
 	"#default"
 	{
+		"#supported"
+		{
+			"game"		"dod"
+			"game"		"tf"
+			"game"		"hl2mp"
+			"game"		"garrysmod"
+		}
+		
 		"Keys"
 		{
 			/* Signature for the beginning of IVEngineServer::CreateFakeClientEx.
@@ -149,12 +157,45 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x8A\x2A\x2A\x51\xB9\x2A\x2A\x2A\x2A\xA2"
+			
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8A\x2A\x2A\xA2\x2A\x2A\x2A\x2A\x8B\x2A\x8B"
 		}
 		
 		"Offsets"
 		{
 			/* Offset into IVEngineServer::CreateFakeClient */
+			"sv"
+			{
+				"windows"	"7"
+			}
+		}
+
+		"Signatures"
+		{
+			/* CBaseServer object for IServer interface */
+			"sv"
+			{
+				"library"	"engine"
+				"linux"		"@sv"
+				"mac"		"@sv"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"game"	"cstrike"
+		}
+		
+		"Keys"
+		{
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x8A\x2A\x2A\x51\xB9\x2A\x2A\x2A\x2A\xA2"
+		}
+		
+		"Offsets"
+		{
 			"sv"
 			{
 				"windows"	"11"
@@ -163,7 +204,6 @@
 
 		"Signatures"
 		{
-			/* CBaseServer object for IServer interface */
 			"sv"
 			{
 				"library"	"engine"
