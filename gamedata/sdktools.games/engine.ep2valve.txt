@@ -146,7 +146,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8A\x2A\x2A\xA2\x2A\x2A\x2A\x2A\x8B\x2A\x8B"
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8"
 		}
 		
 		"Offsets"
@@ -154,7 +154,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"7"
+				"windows"	"8"
 			}
 		}
 
