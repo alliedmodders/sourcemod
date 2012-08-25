@@ -11,7 +11,6 @@
 
 "Games"
 {
-	//No mac binary yet so no mac gamedata
 	"csgo"
 	{
 		"Offsets"
@@ -21,32 +20,34 @@
 			{
 				"windows"		"6"
 				"linux"			"6"
+				"mac"			"6"
 			}
 			"WeaponPrice"
 			{
 				"windows"		"2700"
 				"linux"			"2700"
+				"mac"			"2700"
 			}
 			//Offset into CheckRestartRound
-			//Only Windows/Linux for now.
 			"CTTeamScoreOffset"
 			{
 				"windows"	"97"
 				"linux"		"124"
+				"mac"		"150"
 			}
 			//Offset into CheckRestartRound
-			//Only Windows/Linux for now.
 			"TTeamScoreOffset"
 			{
 				"windows"	"119"
 				"linux"		"159"
+				"mac"		"185"
 			}
 			//Offset into IncrementNumMVPs to find MVP count offset from player
-			//Only Windows/Linux for now.
 			"MVPCountOffset"
 			{
 				"windows"	"46"
 				"linux"		"47"
+				"mac"		"61"
 			}
 		}
 		"Signatures"
@@ -56,42 +57,49 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\xE8\x2A\x2A\x2A\x2A\x84\xC0\x75"
 				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
+				"mac"		"@_ZN9CCSPlayer12RoundRespawnEv"
 			}
 			"SwitchTeam"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x57\x8B\x7D\x2A\x57\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x83\xC4"
 				"linux"		"@_ZN9CCSPlayer10SwitchTeamEi"
+				"mac"		"@_ZN9CCSPlayer10SwitchTeamEi"
 			}
 			"HandleCommand_Buy_Internal"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x81\xEC\x2A\x2A\x00\x00\x53\x56\x8B\xF1\x80\xBE\x2A\x2A\x00\x00\x00"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
+				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
 			}
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM
 			{
 				"library"		"server"
 				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x2A\x2A\x32\xDB\x57\x8B\xF9\x85\xF6\x0F\x84"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
+				"mac"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
 			"TerminateRound"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x53\x8B\x2A\x2A\x56\x57\x33\xFF"
 				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
+				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 			}
 			"GetTranslatedWeaponAlias"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x56\x57\x8B\x2A\x2A\x33\xF6\x8D\x9B\x2A\x2A\x2A\x2A\x8B\x04\xF5\x2A\x2A\x2A\x2A\x57\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x2A\x85\xC0\x74\x2A\x46\x83\xFE\x2A\x72\x2A\x8B\xC7\x5F\x5E\x5D\xC3"
 				"linux"			"@_Z24GetTranslatedWeaponAliasPKc"
+				"mac"			"@_Z24GetTranslatedWeaponAliasPKc"
 			}
 			"GetWeaponInfo"
 			{
 				"library"		"server"
 				"windows"		"\x55\x8B\xEC\x8B\x4D\x2A\x33\xC0\x85\xC9\x74"
 				"linux"			"@_Z13GetWeaponInfo10CSWeaponID"
+				"mac"			"@_Z13GetWeaponInfo10CSWeaponID"
 			}
 			//In CS:GO this is actually CCSGameRules::CheckRestartRound(void) but to keep same gamedata as cs:s.
 			"CheckWinLimit"
@@ -99,18 +107,21 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x81\xF9\x2A\x2A\x2A\x2A\x75\x2A\x8B"
 				"linux"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
+				"mac"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
 			}
 			"IncrementNumMVPs"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x8B\x50\x2A\x57\x8B\xF9\xB9\x2A\x2A\x2A\x2A\xFF\xD2\x85\xC0\x74\x2A\x68"
 				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
+				"mac"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
 			}
 			"AliasToWeaponID"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x2A\x2A\x85\xFF\x74\x2A\x33\xF6\x8B\xFF"
 				"linux"		"@_Z15AliasToWeaponIDPKc"
+				"mac"		"@_Z15AliasToWeaponIDPKc"
 			}
 		}
 	}
