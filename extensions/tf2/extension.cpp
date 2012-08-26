@@ -133,7 +133,7 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 const char *TF2Tools::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *TF2Tools::GetExtensionDateString()

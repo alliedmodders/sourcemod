@@ -36,15 +36,18 @@ spcomp = os.path.join(AMBuild.outputFolder, 'spcomp', 'spcomp')
 includes = os.path.relpath(os.path.join(AMBuild.sourceFolder, 'plugins', 'include'),
                            os.path.join(AMBuild.outputFolder, 'plugins'))
 
+versioninc = os.path.relpath(os.path.join(AMBuild.outputFolder, 'includes'),
+                             os.path.join(AMBuild.outputFolder, 'plugins'))
+
 #This one has to be special
 sp = os.path.join(AMBuild.sourceFolder, 'plugins', 'admin-flatfile', 'admin-flatfile.sp')
-args = [spcomp, '-i' + includes, sp]
+args = [spcomp, 'SM_GENERATED_BUILD=', '-i' + versioninc, '-i' + includes, sp]
 plugins.AddCommand(command.DirectCommand(args))
 
 #Do the normal ones
 for file in files:
 	sp = os.path.join(AMBuild.sourceFolder, 'plugins', file)
-	args = [spcomp, '-i' + includes, sp]
+	args = [spcomp, 'SM_GENERATED_BUILD=', '-i' + versioninc, '-i' + includes, sp]
 	plugins.AddCommand(command.DirectCommand(args))
 
 

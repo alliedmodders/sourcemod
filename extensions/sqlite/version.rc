@@ -29,8 +29,8 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION  SM_FILE_VERSION
- PRODUCTVERSION SM_FILE_VERSION
+ FILEVERSION  SM_VERSION_FILE
+ PRODUCTVERSION SM_VERSION_FILE
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -47,12 +47,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "SQLite Extension"
             VALUE "FileDescription", "SourceMod SQLite Extension"
-            VALUE "FileVersion", SM_FULL_VERSION
+            VALUE "FileVersion", SM_VERSION_STRING
             VALUE "InternalName", "SourceMod SQLite Extension"
             VALUE "LegalCopyright", "Copyright (c) 2004-2008, AlliedModders LLC"
             VALUE "OriginalFilename", BINARY_NAME
             VALUE "ProductName", "SourceMod SQLite Extension"
-            VALUE "ProductVersion", SM_FULL_VERSION
+            VALUE "ProductVersion", SM_VERSION_STRING
         END
     END
     BLOCK "VarFileInfo"

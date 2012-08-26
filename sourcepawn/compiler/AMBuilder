@@ -61,8 +61,11 @@ if AMBuild.target['platform'] == 'linux':
 binary.AddSourceFiles('sourcepawn/compiler', files)
 
 if AMBuild.target['platform'] == 'windows':
-	env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"']}
+	env = {'RCDEFINES': ['BINARY_NAME="' + binary.binaryFile + '"', 'SM_GENERATED_BUILD']}
 	binary.AddResourceFile('sourcepawn/compiler/libpawnc.rc', env)
+elif AMBuild.target['platform'] == 'darwin' and isinstance(binary, Cpp.LibraryBuilder):
+	binary.compiler['POSTLINKFLAGS'].extend(['-compatibility_version', '1.0.0'])
+	binary.compiler['POSTLINKFLAGS'].extend(['-current_version', AMBuild.cache['version']])
 
 binary.SendToJob()
 

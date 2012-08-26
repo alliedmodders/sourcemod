@@ -61,7 +61,7 @@ bool BinTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 const char *BinTools::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *BinTools::GetExtensionDateString()

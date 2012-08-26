@@ -283,7 +283,7 @@ bool CStrike::ProcessCommandTarget(cmd_target_info_t *info)
 
 const char *CStrike::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *CStrike::GetExtensionDateString()

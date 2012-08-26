@@ -249,7 +249,7 @@ void AddUpdateError(const char *fmt, ...)
 
 const char *SmUpdater::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *SmUpdater::GetExtensionDateString()
