@@ -67,7 +67,7 @@ void TopMenuExtension::SDK_OnUnload()
 
 const char *TopMenuExtension::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *TopMenuExtension::GetExtensionDateString()

@@ -78,7 +78,7 @@ void CurlExt::SDK_OnUnload()
 
 const char *CurlExt::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *CurlExt::GetExtensionDateString()

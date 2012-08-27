@@ -62,7 +62,7 @@ void DBI_MySQL::SDK_OnUnload()
 
 const char *DBI_MySQL::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *DBI_MySQL::GetExtensionDateString()

@@ -34,7 +34,9 @@
 
 #if defined PLATFORM_POSIX
 #include <sys/mman.h>
+#ifndef PAGE_SIZE
 #define	PAGE_SIZE	4096
+#endif
 #define ALIGN(ar) ((long)ar & ~(PAGE_SIZE-1))
 #define	PAGE_EXECUTE_READWRITE	PROT_READ|PROT_WRITE|PROT_EXEC
 #endif

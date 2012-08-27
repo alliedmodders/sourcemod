@@ -70,7 +70,7 @@ void GeoIP_Extension::SDK_OnUnload()
 
 const char *GeoIP_Extension::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *GeoIP_Extension::GetExtensionDateString()

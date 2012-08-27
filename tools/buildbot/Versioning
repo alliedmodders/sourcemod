@@ -27,11 +27,17 @@ def PerformReversioning():
 	productFile = open(os.path.join(AMBuild.sourceFolder, 'product.version'), 'r')
 	productContents = productFile.read()
 	productFile.close()
-	m = re.match('(\d+)\.(\d+)\.(\d+)(.*)', productContents)
+	m = re.match('(\d+)\.(\d+)\.(\d+)-?(.*)', productContents)
 	if m == None:
 		raise Exception('Could not detremine product version')
 	major, minor, release, tag = m.groups()
-
+	
+	fullstring = "{0}.{1}.{2}".format(major, minor, release)
+	if tag != "":
+		fullstring += "-{0}".format(tag)
+		if tag == "dev":
+			fullstring += "+{0}".format(rev)
+	
 	incFolder = os.path.join(AMBuild.outputFolder, 'includes')
 	if not os.path.isdir(incFolder):
 		os.makedirs(incFolder)
@@ -40,14 +46,40 @@ def PerformReversioning():
 #ifndef _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
 #define _SOURCEMOD_AUTO_VERSION_INFORMATION_H_
 
-#define SM_BUILD_STRING 		\"{0}\"
-#define SM_BUILD_UNIQUEID		\"{1}:{2}\" SM_BUILD_STRING
-#define SM_FULL_VERSION			\"{3}.{4}.{5}\" SM_BUILD_STRING
-#define SM_FILE_VERSION			{6},{7},{8},0
+#define SM_BUILD_TAG		\"{0}\"
+#define SM_BUILD_REV		\"{1}\"
+#define SM_BUILD_CSET		\"{2}\"
+#define SM_BUILD_MAJOR		\"{3}\"
+#define SM_BUILD_MINOR		\"{4}\"
+#define SM_BUILD_RELEASE	\"{5}\"
+
+#define SM_BUILD_UNIQUEID SM_BUILD_REV \":\" SM_BUILD_CSET
+
+#define SM_VERSION_STRING	\"{6}\"
+#define SM_VERSION_FILE		{7},{8},{9},0
 
 #endif /* _SOURCEMOD_AUTO_VERSION_INFORMATION_H_ */
 
-""".format(tag, rev, cset, major, minor, release, major, minor, release))
+""".format(tag, rev, cset, major, minor, release, fullstring, major, minor, release))
+	incFile.close()
+	
+	incFile = open(os.path.join(incFolder, 'version_auto.inc'), 'w')
+	incFile.write("""
+#if defined _auto_version_included
+ #endinput
+#endif
+#define _auto_version_included
+
+#define SOURCEMOD_V_TAG		\"{0}\"
+#define SOURCEMOD_V_REV		{1}
+#define SOURCEMOD_V_CSET	\"{2}\"
+#define SOURCEMOD_V_MAJOR	{3}
+#define SOURCEMOD_V_MINOR	{4}
+#define SOURCEMOD_V_RELEASE	{5}
+
+#define SOURCEMOD_VERSION	\"{6}\"
+
+""".format(tag, rev, cset, major, minor, release, fullstring))
 	incFile.close()
 
 	cache.WriteCache()

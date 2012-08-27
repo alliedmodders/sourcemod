@@ -19,8 +19,8 @@ AppIcon ICON "pawn.ico"
 #define VERSIONPRODUCTNAME   "smcomp\0"
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION    SM_FILE_VERSION
-PRODUCTVERSION SM_FILE_VERSION
+FILEVERSION    SM_VERSION_FILE
+PRODUCTVERSION SM_VERSION_FILE
 FILEFLAGSMASK  0x0000003FL
 FILEFLAGS      0
 #if defined(WIN32)
@@ -36,12 +36,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName",      "(C)1998-2006 ITB CompuPhase, AlliedModders LLC\0"
             VALUE "FileDescription",  VERSIONDESCRIPTION
-            VALUE "FileVersion",      SM_FULL_VERSION
+            VALUE "FileVersion",      SM_VERSION_STRING
             VALUE "InternalName",     VERSIONNAME
             VALUE "LegalCopyright",   "(C)1998-2006 ITB CompuPhase, AlliedModders LLC\0"
             VALUE "OriginalFilename", VERSIONNAME
             VALUE "ProductName",      VERSIONPRODUCTNAME
-            VALUE "ProductVersion",   SM_FULL_VERSION
+            VALUE "ProductVersion",   SM_VERSION_STRING
         END
     END
 

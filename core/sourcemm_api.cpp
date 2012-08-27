@@ -145,7 +145,7 @@ const char *SourceMod_Core::GetLicense()
 
 const char *SourceMod_Core::GetVersion()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *SourceMod_Core::GetDate()

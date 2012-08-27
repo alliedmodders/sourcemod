@@ -149,7 +149,7 @@ const char *SourcePawnEngine2::GetEngineName()
 
 const char *SourcePawnEngine2::GetVersionString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 IProfiler *SourcePawnEngine2::GetProfiler()

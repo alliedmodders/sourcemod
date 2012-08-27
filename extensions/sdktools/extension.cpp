@@ -428,7 +428,7 @@ bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
 
 const char *SDKTools::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *SDKTools::GetExtensionDateString()

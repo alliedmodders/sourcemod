@@ -65,7 +65,7 @@ void RegexExtension::SDK_OnUnload()
 
 const char *RegexExtension::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *RegexExtension::GetExtensionDateString()

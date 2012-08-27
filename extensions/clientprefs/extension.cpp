@@ -485,7 +485,7 @@ IdentityToken_t *ClientPrefs::GetIdentity() const
 
 const char *ClientPrefs::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *ClientPrefs::GetExtensionDateString()

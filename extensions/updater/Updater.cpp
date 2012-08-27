@@ -356,8 +356,7 @@ void UpdateReader::PerformUpdate(const char *url)
 	xfer = webternet->CreateSession();
 	xfer->SetFailOnHTTPError(true);
 
-	form->AddString("version", SM_FULL_VERSION);
-	form->AddString("build", SM_BUILD_UNIQUEID);
+	form->AddString("version", SM_VERSION_STRING);
 
 	unsigned int num_files = 0;
 	add_folders(form, "gamedata", num_files);

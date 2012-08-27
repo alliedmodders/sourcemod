@@ -74,7 +74,7 @@ size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 
 const char *SqliteExt::GetExtensionVerString()
 {
-	return SM_FULL_VERSION;
+	return SM_VERSION_STRING;
 }
 
 const char *SqliteExt::GetExtensionDateString()

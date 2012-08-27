@@ -41,10 +41,17 @@
 #if defined SM_GENERATED_BUILD
 #include <sourcemod_version_auto.h>
 #else
-#define SM_BUILD_STRING		"-pdev"
-#define SM_BUILD_UNIQUEID	"2650:5d34bc3edbfa" SM_BUILD_STRING
-#define SM_FULL_VERSION		"1.3.0" SM_BUILD_STRING
-#define SM_FILE_VERSION		1,3,0,0
+#define SM_BUILD_TAG		"manual"
+#define SM_BUILD_REV		"0"
+#define SM_BUILD_CSET		"0"
+#define SM_BUILD_MAJOR		"1"
+#define SM_BUILD_MINOR		"5"
+#define SM_BUILD_RELEASE	"0"
+
+#define SM_BUILD_UNIQUEID SM_BUILD_REV ":" SM_BUILD_CSET
+
+#define SM_VERSION_STRING	SM_BUILD_MAJOR "." SM_BUILD_MINOR "." SM_BUILD_RELEASE "-" SM_BUILD_TAG
+#define SM_VERSION_FILE		1,5,0,0
 #endif
 #define SM_BUILD_TIMESTAMP	__DATE__ " " __TIME__
 
