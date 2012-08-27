@@ -19,7 +19,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"hl2mp"
-			"game"		"garrysmod"
 		}
 
 		"Offsets"
@@ -173,6 +172,13 @@
 	/* EntityFactoryDictionary function */
 	"#default"
 	{
+		"#supported"
+		{
+			"game"		"tf"
+			"game"		"dod"
+			"game"		"hl2mp"
+		}
+		
 		"Signatures"
 		{
 			"EntityFactory"
@@ -193,7 +199,6 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"hl2mp"
-			"game"		"garrysmod"
 		}
 		"Signatures"
 		{
