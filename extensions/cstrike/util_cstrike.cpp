@@ -90,7 +90,7 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 			retpass.size = sizeof(const char *); \
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
-	const char *ret = new char[128];
+	const char *ret = NULL;
 
 	unsigned char vstk[sizeof(const char *)];
 	unsigned char *vptr = vstk;

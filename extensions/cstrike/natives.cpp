@@ -210,17 +210,17 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	}
 
 	//Psychonic is awesome for this
-	sm_sendprop_info_t *spi = new sm_sendprop_info_t;
+	sm_sendprop_info_t spi;
 	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
 
-	if (!UTIL_FindDataTable(pNet->GetServerClass()->m_pTable, "DT_WeaponCSBase", spi, 0))
+	if (!UTIL_FindDataTable(pNet->GetServerClass()->m_pTable, "DT_WeaponCSBase", &spi, 0))
 		return pContext->ThrowNativeError("Entity index %d is not a weapon", params[2]);
 
-	if (!gamehelpers->FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity", spi))
+	if (!gamehelpers->FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity", &spi))
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 
-	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pWeapon + spi->actual_offset);
+	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pWeapon + spi.actual_offset);
 	if (params[1] != hndl.GetEntryIndex())
 		return pContext->ThrowNativeError("Weapon %d is not owned by client %d", params[2], params[1]);
 
