@@ -125,6 +125,7 @@ void GetIServer()
 	int offset;
 	void *vfunc = NULL;
 
+#if SOURCE_ENGINE != SE_ORANGEBOXVALVE
 #if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	/* Get the CreateFakeClient function pointer */
 	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
@@ -142,7 +143,8 @@ void GetIServer()
 		void **vtable = *reinterpret_cast<void ***>(enginePatch->GetThisPtr() + info.thisptroffs + info.vtbloffs);
 		vfunc = vtable[info.vtblindex];
 	}
-#endif
+#endif // defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
+#endif // SOURCE_ENGINE != SE_ORANGEBOXVALVE
 
 	/* Get signature string for IVEngineServer::CreateFakeClient() */
 	sigstr = g_pGameConf->GetKeyValue("CreateFakeClient_Windows");
@@ -154,12 +156,20 @@ void GetIServer()
 
 	/* Convert signature string to signature bytes */
 	siglen = UTIL_StringToSignature(sigstr, sig, sizeof(sig));
-
+	
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+	vfunc = memutils->FindPattern(engine, sigstr, siglen);
+	if (!vfunc)
+	{
+		return;
+	}
+#else
 	/* Check if we're on the expected function */
 	if (!UTIL_VerifySignature(vfunc, sig, siglen))
 	{
 		return;
 	}
+#endif
 
 	/* Get the offset into CreateFakeClient */
 	if (!g_pGameConf->GetOffset("sv", &offset))
