@@ -20,7 +20,6 @@
 			"game"		"tf"
 			"game"		"hl2mp"
 			"game"		"cstrike"
-			"game"		"garrysmod"
 		}
 
 		"Offsets"
@@ -214,6 +213,13 @@
 	/* EntityFactoryDictionary function */
 	"#default"
 	{
+		"#supported"
+		{
+			"game"		"tf"
+			"game"		"dod"
+			"game"		"hl2mp"
+		}
+		
 		"Signatures"
 		{
 			"EntityFactory"
@@ -235,7 +241,6 @@
 			"game"		"tf"
 			"game"		"hl2mp"
 			"game"		"cstrike"
-			"game"		"garrysmod"
 		}
 		"Signatures"
 		{
