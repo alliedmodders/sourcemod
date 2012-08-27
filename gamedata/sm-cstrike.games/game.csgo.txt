@@ -38,7 +38,7 @@
 			//Only Windows/Linux for now.
 			"TTeamScoreOffset"
 			{
-				"windows"	"119"
+				"windows"	"122"
 				"linux"		"159"
 			}
 			//Offset into IncrementNumMVPs to find MVP count offset from player
