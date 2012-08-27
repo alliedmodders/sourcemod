@@ -476,7 +476,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		pListener = (*iter);
 		if (!pListener->InterceptClientConnect(client, reject, maxrejectlen))
 		{
-			return false;
+			RETURN_META_VALUE(MRES_SUPERCEDE, false);
 		}
 	}
 
