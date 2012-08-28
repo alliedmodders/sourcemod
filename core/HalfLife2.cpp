@@ -1009,3 +1009,38 @@ int CHalfLife2::GetSendPropOffset(SendProp *prop)
 	return prop->GetOffset();
 }
 
+const char *CHalfLife2::GetEntityClassname(edict_t * pEdict)
+{
+	if (pEdict == NULL || pEdict->IsFree())
+	{
+		return NULL;
+	}
+	
+	IServerUnknown *pUnk = pEdict->GetUnknown();
+	if (pUnk == NULL)
+	{
+		return NULL;
+	}
+	
+	CBaseEntity * pEntity = pUnk->GetBaseEntity();
+	
+	if (pEntity == NULL)
+	{
+		return NULL;
+	}
+	
+	return GetEntityClassname(pEntity);
+}
+
+const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
+{
+	static int offset = -1;
+	if (offset == -1)
+	{
+		datamap_t *pMap = GetDataMap(pEntity);
+		typedescription_t *pDesc = FindInDataMap(pMap, "m_iClassname");
+		offset = GetTypeDescOffs(pDesc);
+	}
+
+	return *(const char **)(((unsigned char *)pEntity) + offset);
+}

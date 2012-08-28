@@ -146,6 +146,8 @@ public: //IGameHelpers
 	void *GetGlobalEntityList();
 	int GetSendPropOffset(SendProp *prop);
 	ICommandLine *GetValveCommandLine();
+	const char *GetEntityClassname(edict_t *pEdict);
+	const char *GetEntityClassname(CBaseEntity *pEntity);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

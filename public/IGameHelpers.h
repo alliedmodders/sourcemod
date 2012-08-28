@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		8
+#define SMINTERFACE_GAMEHELPERS_VERSION		9
 
 class CBaseEntity;
 class CBaseHandle;
@@ -292,6 +292,22 @@ namespace SourceMod
 		 * @return				ICommandLine ptr or NULL if not found.
 		 */
 		virtual ICommandLine *GetValveCommandLine() =0;
+
+		/**
+		 * @brief Gets a Classname from an edict_t pointer.
+		 *
+		 * @param pEdict		edict_t pointer.
+		 * @return				Pointer to the string, or NULL if bad pointer.
+		 */
+		virtual const char *GetEntityClassname(edict_t *pEdict) =0;
+
+		/**
+		 * @brief Gets a Classname from an CBaseEntity pointer.
+		 *
+		 * @param pEntity		CBaseEntity pointer.
+		 * @return				Pointer to the string, or NULL if bad pointer.
+		 */
+		virtual const char *GetEntityClassname(CBaseEntity *pEntity) =0;
 	};
 }
 
