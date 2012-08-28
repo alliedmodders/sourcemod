@@ -325,7 +325,7 @@ static cell_t GetEdictClassname(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid edict (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	const char *cls = pEdict->GetClassName();
+	const char *cls = g_HL2.GetEntityClassname(pEdict);
 
 	if (!cls || cls[0] == '\0')
 	{
@@ -961,10 +961,11 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	} \
 	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL) \
 	{ \
+		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
 			prop, \
 			params[1], \
-			class_name); \
+			((class_name) ? class_name : "")); \
 	}
 
 #define CHECK_SET_PROP_DATA_OFFSET() \
@@ -988,10 +989,11 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	} \
 	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info)) \
 	{ \
+		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
 			prop, \
 			params[1], \
-			class_name); \
+			((class_name) ? class_name : "")); \
 	} \
 	\
 	offset = info.actual_offset; \
@@ -1082,17 +1084,11 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	const char *class_name;
 	edict_t *pEdict;
 
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1119,10 +1115,11 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 			}
 			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
 			{
+				const char *class_name = g_HL2.GetEntityClassname(pEntity);
 				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
 					prop,
 					params[1],
-					class_name);
+					((class_name) ? class_name : ""));
 			}
 
 			if (info.prop->GetType() != DPT_DataTable)
@@ -1152,7 +1149,6 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
-	const char *class_name;
 	edict_t *pEdict;
 	int bit_count;
 	bool is_unsigned = false;
@@ -1166,12 +1162,6 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	/* TODO: Find a way to lookup classname without having an edict - Is this a guaranteed prop? */
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1251,7 +1241,6 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
-	const char *class_name;
 	edict_t *pEdict;
 	int bit_count;
 
@@ -1264,11 +1253,6 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1339,7 +1323,6 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int bit_count;
-	const char *class_name;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -1351,11 +1334,6 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1404,7 +1382,6 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int bit_count;
-	const char *class_name;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -1416,11 +1393,6 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1474,7 +1446,6 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int bit_count;
-	const char *class_name;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -1486,11 +1457,6 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1538,7 +1504,6 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int bit_count;
-	const char *class_name;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -1550,11 +1515,6 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1623,7 +1583,6 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int bit_count;
-	const char *class_name;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -1635,11 +1594,6 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1695,7 +1649,6 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	char *prop;
 	int offset;
 	int bit_count;
-	const char *class_name;
 	edict_t *pEdict;
 
 	int element = 0;
@@ -1707,11 +1660,6 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1771,7 +1719,6 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pEntity;
 	char *prop;
 	int offset;
-	const char *class_name;
 	edict_t *pEdict;
 	bool bIsStringIndex;
 
@@ -1784,11 +1731,6 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	if (!IndexToAThings(params[1], &pEntity, &pEdict))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
-	}
-
-	if (!pEdict || (class_name = pEdict->GetClassName()) == NULL)
-	{
-		class_name = "";
 	}
 
 	pContext->LocalToString(params[3], &prop);
@@ -1849,10 +1791,11 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
 			{
+				const char *class_name = g_HL2.GetEntityClassname(pEntity);
 				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
 					prop,
 					params[1],
-					class_name);
+					((class_name) ? class_name : ""));
 			}
 
 			offset = info.actual_offset;
