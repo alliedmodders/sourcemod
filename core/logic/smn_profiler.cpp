@@ -179,7 +179,7 @@ static cell_t GetProfilerTime(IPluginContext *pContext, const cell_t *params)
 #else
 	int64_t start_us = int64_t(prof->start.tv_sec) * 1000000 + prof->start.tv_usec;
 	int64_t stop_us = int64_t(prof->end.tv_sec) * 1000000 + prof->end.tv_usec;
-	fTime = double((stop_us - start_us) / 1000) / 1000.0;
+	fTime = double(stop_us - start_us) / 1000000.0;
 #endif
 
 	return sp_ftoc(fTime);
