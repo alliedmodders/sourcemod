@@ -663,6 +663,15 @@
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">sourcemod.2.ep2v</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release - CSS|Win32'">sourcemod.2.css</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Dark Messiah|Win32'">
+    <TargetName>sourcemod.2.darkm</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Dark Messiah|Win32'">
+    <TargetName>sourcemod.2.darkm</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='CrazyDebug - Dark Messiah|Win32'">
+    <TargetName>sourcemod.2.darkm</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CrazyDebug - Old Metamod|Win32'">
     <ClCompile>
       <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_CSS=6 /D SE_ORANGEBOXVALVE=7 /D SE_LEFT4DEAD=8 /D SE_LEFT4DEAD2=9 /D SE_ALIENSWARM=10 /D SE_PORTAL2=11 /D SE_CSGO=12</AdditionalOptions>
