@@ -195,6 +195,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - CSS|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -1408,102 +1409,6 @@
     <PostBuildEvent>
       <Command>IF NOT "%SMOUTDIR%"=="" copy /Y "$(TargetDir)$(TargetFileName)" "%SMOUTDIR%\bin"</Command>
     </PostBuildEvent>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CrazyDebug - Left 4 Dead 2|Win32'">
-    <ClCompile>
-      <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 %(AdditionalOptions)</AdditionalOptions>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDKL4D2)\public;$(HL2SDKL4D2)\public\engine;$(HL2SDKL4D2)\public\game\server;$(HL2SDKL4D2)\public\mathlib;$(HL2SDKL4D2)\public\tier0;$(HL2SDKL4D2)\public\tier1;$(HL2SDKL4D2)\public\vstdlib;$(MMSOURCE19)\core;$(MMSOURCE19)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-    </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Link>
-      <AdditionalDependencies>$(HL2SDKL4D2)\lib\public\tier0.lib;$(HL2SDKL4D2)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDKL4D2)\lib\public\mathlib.lib;dbghelp.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sourcemod.2.l4d2.dll</OutputFile>
-      <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Left 4 Dead 2|Win32'">
-    <ClCompile>
-      <AdditionalOptions>/D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 %(AdditionalOptions)</AdditionalOptions>
-      <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDKL4D2)\public;$(HL2SDKL4D2)\public\engine;$(HL2SDKL4D2)\public\game\server;$(HL2SDKL4D2)\public\mathlib;$(HL2SDKL4D2)\public\tier0;$(HL2SDKL4D2)\public\tier1;$(HL2SDKL4D2)\public\vstdlib;$(MMSOURCE19)\core;$(MMSOURCE19)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild>true</MinimalRebuild>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-    </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Link>
-      <AdditionalDependencies>$(HL2SDKL4D2)\lib\public\tier0.lib;$(HL2SDKL4D2)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDKL4D2)\lib\public\mathlib.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sourcemod.2.l4d2.dll</OutputFile>
-      <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMT;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release - Left 4 Dead 2|Win32'">
-    <ClCompile>
-      <AdditionalOptions>/MP /D SE_EPISODEONE=1 /D SE_DARKMESSIAH=2 /D SE_ORANGEBOX=3 /D SE_BLOODYGOODTIME=4 /D SE_EYE=5 /D SE_ORANGEBOXVALVE=6 /D SE_LEFT4DEAD=7 /D SE_LEFT4DEAD2=8 /D SE_ALIENSWARM=9 /D SE_PORTAL2=10 /D SE_CSGO=11 %(AdditionalOptions)</AdditionalOptions>
-      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <AdditionalIncludeDirectories>..\;..\systems;..\..\public;..\..\public\sourcepawn;$(HL2SDKL4D2)\public;$(HL2SDKL4D2)\public\engine;$(HL2SDKL4D2)\public\game\server;$(HL2SDKL4D2)\public\mathlib;$(HL2SDKL4D2)\public\tier0;$(HL2SDKL4D2)\public\tier1;$(HL2SDKL4D2)\public\vstdlib;$(MMSOURCE19)\core;$(MMSOURCE19)\core\sourcehook;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SOURCEMOD_MM_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;SOURCEMOD_BUILD;SM_DEFAULT_THREADER;SOURCE_ENGINE=8;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-    </ClCompile>
-    <ResourceCompile>
-      <PreprocessorDefinitions>BINARY_NAME="$(TargetFileName)";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ResourceCompile>
-    <Link>
-      <AdditionalDependencies>$(HL2SDKL4D2)\lib\public\tier0.lib;$(HL2SDKL4D2)\lib\public\tier1.lib;$(HL2SDKL4D2)\lib\public\vstdlib.lib;$(HL2SDKL4D2)\lib\public\mathlib.lib;Wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)sourcemod.2.l4d2.dll</OutputFile>
-      <IgnoreSpecificDefaultLibraries>LIBC;LIBCD;LIBCMTD;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem>Windows</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='CrazyDebug - Left 4 Dead 2|Win32'">
     <ClCompile>
