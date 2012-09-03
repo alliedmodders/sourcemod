@@ -329,8 +329,13 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 	return false;
 }
 
-typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name)
+typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name, bool *isNested)
 {
+	if (isNested)
+	{
+		*isNested = false;
+	}
+	
 	while (pMap)
 	{
 		for (int i=0; i<pMap->dataNumFields; i++)
@@ -345,10 +350,16 @@ typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name)
 			}
 			if (pMap->dataDesc[i].td)
 			{
-				typedescription_t *_td;
-				if ((_td=UTIL_FindInDataMap(pMap->dataDesc[i].td, name)) != NULL)
+				if (isNested)
 				{
-					return _td;
+					*isNested = true;
+					return NULL;
+				} else { // Use the old behaviour, we dont want to spring this on extensions - even if they're doing bad things.
+					typedescription_t *_td;
+					if ((_td=UTIL_FindInDataMap(pMap->dataDesc[i].td, name, isNested)) != NULL)
+					{
+						return _td;
+					}
 				}
 			}
 		}
@@ -442,6 +453,11 @@ SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
 
 typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset)
 {
+	return this->FindInDataMap(pMap, offset, NULL);
+}
+
+typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset, bool *isNested)
+{
 	typedescription_t *td = NULL;
 	DataMapTrie &val = m_Maps[pMap];
 
@@ -451,7 +467,7 @@ typedescription_t *CHalfLife2::FindInDataMap(datamap_t *pMap, const char *offset
 	}
 	if (!sm_trie_retrieve(val.trie, offset, (void **)&td))
 	{
-		if ((td = UTIL_FindInDataMap(pMap, offset)) != NULL)
+		if ((td = UTIL_FindInDataMap(pMap, offset, isNested)) != NULL)
 		{
 			sm_trie_insert(val.trie, offset, td);
 		}
