@@ -11,6 +11,17 @@
 	{
 		"Keys"
 		{
+			"plugin_541de8d7f577398bad43b75f4ac80b84"	"http://forums.alliedmods.net/showpost.php?p=1767388&postcount=7"	/* LightRP (Sphex) - Version 1.2.5 */
+			"plugin_e10aab3464312dc0e484bda26b490b3f"	"http://forums.alliedmods.net/showpost.php?p=1767388&postcount=7"	/* LightRP (Sphex) - Version 1.2.7 */
+			"plugin_a7973ddc4e72aafd0312432568a1806b"	"http://forums.alliedmods.net/showpost.php?p=1767388&postcount=7"	/* LightRP (Sphex) - Version 1.2.8 */
+			"plugin_c82200dc10b39ad196fc805e4d4da807"	""	/* [L4D] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 */
+			"plugin_4225ffe2fd15d10a730466909a64bd01"	""	/* [L4D2] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 */
+			"plugin_862ae600f417a26e6b6d3ab5d702c5e7"	""	/* [L4D] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 - Hotfix */
+			"plugin_cdb8b711ff0166791e761d6324b30b4c"	""	/* [L4D2] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 - Hotfix */
+			"plugin_fd89ca333467cffe722072a52e7bc752"	""	/* L4D SuperVersus (DDRKhat) - Version 1.6.5 - Marcus101RR version */
+			"plugin_33c1c93eaff16f385ef245cb4af80f1a"	""	/* Survivor Health & Armor System (Marcus101RR) - Version 1.4.8 */
+			"plugin_895eb68cb2dd5235e29b93452e14e52b"	""	/* [L4D(2)] Health & Armor System (Marcus101RR) - Version 1.5.0 */
+			"plugin_56ce0378afbb2cadb06be89dcba76706"	""	/* [L4D(2)] Human Director Reloaded (Marcus101RR & lucskywalker) - Version 0.7.0 */
 		}
 	}
 }
