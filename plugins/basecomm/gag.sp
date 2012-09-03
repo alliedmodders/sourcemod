@@ -213,7 +213,9 @@ public MenuHandler_GagTypes(Handle:menu, MenuAction:action, param1, param2)
 PerformMute(client, target, bool:silent=false)
 {
 	g_Muted[target] = true;
-	SetClientListeningFlags(target, VOICE_MUTED);	
+	SetClientListeningFlags(target, VOICE_MUTED);
+	
+	FireOnClientMute(client, true);
 	
 	if (!silent)
 	{
@@ -237,6 +239,8 @@ PerformUnMute(client, target, bool:silent=false)
 		SetClientListeningFlags(target, VOICE_NORMAL);
 	}
 	
+	FireOnClientMute(client, false);
+	
 	if (!silent)
 	{
 		LogAction(client, target, "\"%L\" unmuted \"%L\"", client, target);
@@ -246,6 +250,7 @@ PerformUnMute(client, target, bool:silent=false)
 PerformGag(client, target, bool:silent=false)
 {
 	g_Gagged[target] = true;
+	FireOnClientGag(client, true);
 	
 	if (!silent)
 	{
@@ -256,6 +261,7 @@ PerformGag(client, target, bool:silent=false)
 PerformUnGag(client, target, bool:silent=false)
 {
 	g_Gagged[target] = false;
+	FireOnClientGag(client, false);
 	
 	if (!silent)
 	{
@@ -268,12 +274,14 @@ PerformSilence(client, target)
 	if (!g_Gagged[target])
 	{
 		g_Gagged[target] = true;
+		FireOnClientGag(client, true);
 	}
 	
 	if (!g_Muted[target])
 	{
 		g_Muted[target] = true;
 		SetClientListeningFlags(target, VOICE_MUTED);
+		FireOnClientMute(client, true);
 	}
 	
 	LogAction(client, target, "\"%L\" silenced \"%L\"", client, target);
@@ -284,6 +292,7 @@ PerformUnSilence(client, target)
 	if (g_Gagged[target])
 	{
 		g_Gagged[target] = false;
+		FireOnClientGag(client, false);
 	}
 	
 	if (g_Muted[target])
@@ -301,7 +310,8 @@ PerformUnSilence(client, target)
 		else
 		{
 			SetClientListeningFlags(target, VOICE_NORMAL);
-		}	
+		}
+		FireOnClientMute(client, false);
 	}
 	
 	LogAction(client, target, "\"%L\" unsilenced \"%L\"", client, target);

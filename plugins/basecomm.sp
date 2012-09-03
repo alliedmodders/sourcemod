@@ -60,6 +60,7 @@ new g_GagTarget[MAXPLAYERS+1];
 
 #include "basecomm/gag.sp"
 #include "basecomm/natives.sp"
+#include "basecomm/forwards.sp"
 
 public APLRes:AskPluginLoad2(Handle:myself, bool:late, String:error[], err_max)
 {
