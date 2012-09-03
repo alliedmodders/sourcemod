@@ -158,7 +158,7 @@ void GetIServer()
 	siglen = UTIL_StringToSignature(sigstr, sig, sizeof(sig));
 	
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE
-	vfunc = memutils->FindPattern(engine, sigstr, siglen);
+	vfunc = memutils->FindPattern(engine, sig, siglen);
 	if (!vfunc)
 	{
 		return;
