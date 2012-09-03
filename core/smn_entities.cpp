@@ -815,9 +815,13 @@ static cell_t FindDataMapOffs(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->LocalToString(params[2], &offset);
-	if ((td=g_HL2.FindInDataMap(pMap, offset)) == NULL)
+	bool isNested = false;
+	if ((td=g_HL2.FindInDataMap(pMap, offset, &isNested)) == NULL)
 	{
-		return -1;
+		if (isNested)
+			return pContext->ThrowNativeError("Property \"%s\" is not safe to access for entity %d", offset, params[1]);
+		else
+			return -1;
 	}
 
 	if (params[0] == 4)
@@ -962,13 +966,22 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	{ \
 		return pContext->ThrowNativeError("Could not retrieve datamap"); \
 	} \
-	if ((td = g_HL2.FindInDataMap(pMap, prop)) == NULL) \
+	bool isNested = false; \
+	if ((td = g_HL2.FindInDataMap(pMap, prop, &isNested)) == NULL) \
 	{ \
 		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
-		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
-			prop, \
-			params[1], \
-			((class_name) ? class_name : "")); \
+		if (isNested) \
+		{ \
+			return pContext->ThrowNativeError("Property \"%s\" not safe to access (entity %d/%s)", \
+				prop, \
+				params[1], \
+				((class_name) ? class_name : "")); \
+		} else { \
+			return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
+				prop, \
+				params[1], \
+				((class_name) ? class_name : "")); \
+		} \
 	}
 
 #define CHECK_SET_PROP_DATA_OFFSET() \
@@ -1889,9 +1902,13 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 				return pContext->ThrowNativeError("Unable to retrieve GetDataDescMap offset");
 			}
 			pContext->LocalToString(params[3], &prop);
-			if ((td=g_HL2.FindInDataMap(pMap, prop)) == NULL)
+			bool isNested = false;
+			if ((td=g_HL2.FindInDataMap(pMap, prop, &isNested)) == NULL)
 			{
-				return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
+				if (isNested)
+					return pContext->ThrowNativeError("Property \"%s\" is not safe to access for entity %d", prop, params[1]);
+				else
+					return pContext->ThrowNativeError("Property \"%s\" not found for entity %d", prop, params[1]);
 			}
 			if (td->fieldType != FIELD_CHARACTER)
 			{

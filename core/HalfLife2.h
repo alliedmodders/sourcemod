@@ -123,6 +123,7 @@ public: //IGameHelpers
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
+	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset, bool *isNested);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
 	bool TextMsg(int client, int dest, const char *msg);
 	bool HintTextMsg(int client, const char *msg);
