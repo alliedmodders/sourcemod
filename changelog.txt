@@ -2,6 +2,29 @@ SourceMod Changelog
 
 -----------------------------
 
+SourceMod 1.4.5 [2012-09-03]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.5_Release_Notes
+
+User Changes:
+
+ - Updated support for latest Source 2009 engine changes (CS:S, DoD:S, TF2, HL2DM, GMod). 
+ - Updated Nuclear Dawn, Dino D-Day, and Zombie Panic gamedata. 
+ - Added compatibility for running on Metamod:Source 1.9.0.
+ - Fixed very minor memory leaks in CStrike extension (bug 5456) (KyleS).
+ - Fixed crash from plugins accessing netprops too early (bug 5297) (KyleS).
+ - Fixed crash from plugins trying to access nested datadesc members (bug 5446).
+
+Developer Changes:
+
+ - Added new TF2 weapon and custom dmg defines. 
+ - Added new TF2 TFHoliday value (bug 5436) (Powerlord). 
+ - Fixed IClientListener::InterceptClientConnect not being able to properly block connections (bug 5461) (PimpinJuice).
+ - Fixed PrepSDKCall_SetSignature native not working with symbol names on L4D2 linux (bug 5440).
+ - Fixed resolution of GetProfilerTime native on non-Windows platforms.
+
+-----------------------------
+
 SourceMod 1.4.4 [2012-07-03]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.4_Release_Notes
