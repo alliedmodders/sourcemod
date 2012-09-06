@@ -352,11 +352,16 @@ typedescription_t *UTIL_FindInDataMap(datamap_t *pMap, const char *name, bool *i
 			{
 				if (isNested)
 				{
-					*isNested = true;
-					return NULL;
+					*isNested = (UTIL_FindInDataMap(pMap->dataDesc[i].td, name, NULL) != NULL);
+					if (*isNested)
+					{
+						return NULL;
+					} else {
+						continue;
+					}
 				} else { // Use the old behaviour, we dont want to spring this on extensions - even if they're doing bad things.
 					typedescription_t *_td;
-					if ((_td=UTIL_FindInDataMap(pMap->dataDesc[i].td, name, isNested)) != NULL)
+					if ((_td=UTIL_FindInDataMap(pMap->dataDesc[i].td, name, NULL)) != NULL)
 					{
 						return _td;
 					}

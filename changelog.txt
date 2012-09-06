@@ -1,6 +1,16 @@
 SourceMod Changelog
 
------------------------------
+
+
+SourceMod 1.4.6 [2012-09-04]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.6_Release_Notes
+
+User Changes:
+
+ - Fixed extraneous errors resulting from a bug in 1.4.5.
+
+----------------------------------------------------------
 
 SourceMod 1.4.5 [2012-09-03]
 
