@@ -45,10 +45,10 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
-    <TargetName>tf2.ext.2.ep2v</TargetName>
+    <TargetName>game.tf2.ext.2.ep2v</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
-    <TargetName>tf2.ext.2.ep2v</TargetName>
+    <TargetName>game.tf2.ext.2.ep2v</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
     <ClCompile>

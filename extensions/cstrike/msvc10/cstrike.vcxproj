@@ -190,40 +190,40 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - CS GO|Win32'">
-    <TargetName>cstrike.ext.2.csgo</TargetName>
+    <TargetName>game.cstrike.ext.2.csgo</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Episode1|Win32'">
-    <TargetName>cstrike.ext.2.ep1</TargetName>
+    <TargetName>game.cstrike.ext.2.ep1</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Old Metamod|Win32'">
-    <TargetName>cstrike.ext.1.ep1</TargetName>
+    <TargetName>game.cstrike.ext.1.ep1</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box|Win32'">
-    <TargetName>cstrike.ext.2.ep2</TargetName>
+    <TargetName>game.cstrike.ext.2.ep2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Orange Box Valve|Win32'">
-    <TargetName>cstrike.ext.2.ep2v</TargetName>
+    <TargetName>game.cstrike.ext.2.ep2v</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug - CSS|Win32'">
-    <TargetName>cstrike.ext.2.css</TargetName>
+    <TargetName>game.cstrike.ext.2.css</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">
-    <TargetName>cstrike.ext.2.csgo</TargetName>
+    <TargetName>game.cstrike.ext.2.csgo</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Episode 1|Win32'">
-    <TargetName>cstrike.ext.2.ep1</TargetName>
+    <TargetName>game.cstrike.ext.2.ep1</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Old Metamod|Win32'">
-    <TargetName>cstrike.ext.1.ep1</TargetName>
+    <TargetName>game.cstrike.ext.1.ep1</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box|Win32'">
-    <TargetName>cstrike.ext.2.ep2</TargetName>
+    <TargetName>game.cstrike.ext.2.ep2</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - Orange Box Valve|Win32'">
-    <TargetName>cstrike.ext.2.ep2v</TargetName>
+    <TargetName>game.cstrike.ext.2.ep2v</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release - CSS|Win32'">
-    <TargetName>cstrike.ext.2.css</TargetName>
+    <TargetName>game.cstrike.ext.2.css</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug - Old Metamod|Win32'">
     <ClCompile>
