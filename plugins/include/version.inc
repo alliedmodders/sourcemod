@@ -35,9 +35,9 @@
 #endif
 #define _version_included
 
-#if defined SM_GENERATED_BUILD
-#include <version_auto>
-#else
+#tryinclude <version_auto>
+
+#if !defined _auto_version_included
 #define SOURCEMOD_V_TAG			"manual"
 #define SOURCEMOD_V_REV			0
 #define SOURCEMOD_V_CSET		"0"
@@ -45,5 +45,5 @@
 #define SOURCEMOD_V_MINOR		5				/**< SourceMod Minor version */
 #define SOURCEMOD_V_RELEASE		0				/**< SourceMod Release version */
 
-#define SOURCEMOD_VERSION	"1.5.0-manual"	/**< SourceMod version string (major.minor.release.build) */
+#define SOURCEMOD_VERSION	"1.5.0-manual"	/**< SourceMod version string (major.minor.release-tag) */
 #endif
