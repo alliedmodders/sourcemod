@@ -219,7 +219,11 @@ int BaseRuntime::CreateFromMemory(sp_file_hdr_t *hdr, uint8_t *base)
 		return SP_ERROR_FILE_FORMAT;
 	}
 
-	if ((plugin->flags & SP_FLAG_DEBUG) && (!(plugin->debug.files) || !(plugin->debug.lines) || !(plugin->debug.symbols)))
+	if ((plugin->flags & SP_FLAG_DEBUG) && (
+		!(plugin->debug.files) || 
+		!(plugin->debug.lines) || 
+		!(plugin->debug.symbols) || 
+		!(plugin->debug.stringbase) ))
 	{
 		return SP_ERROR_FILE_FORMAT;
 	}
