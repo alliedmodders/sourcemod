@@ -184,6 +184,9 @@ for plugin in disPlugins:
 	                         os.path.join('addons', 'sourcemod', 'plugins', 'disabled')))
 job.AddCommandGroup(commands)
 
+job.AddCommand(CopyFile(os.path.join('..', 'includes', 'version_auto.inc'),
+	os.path.join('addons', 'sourcemod', 'scripting', 'include')))
+
 bincopies = []
 
 def AddNormalLibrary(name, dest):
