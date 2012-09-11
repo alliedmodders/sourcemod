@@ -74,6 +74,7 @@
 			"game"		"tf"
 			"game"		"hl2mp"
 			"game"		"garrysmod"
+			"game"		"cstrike"
 		}
 		
 		"Signatures"
@@ -143,6 +144,7 @@
 			"game"		"tf"
 			"game"		"hl2mp"
 			"game"		"garrysmod"
+			"game"		"cstrike"
 		}
 		
 		"Keys"
@@ -175,40 +177,6 @@
 		}
 	}
 	
-	"#default"
-	{
-		"#supported"
-		{
-			"game"	"cstrike"
-		}
-		
-		"Keys"
-		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClientEx.
-			 * (Must be unique!)
-			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x8A\x2A\x2A\x51\xB9\x2A\x2A\x2A\x2A\xA2"
-		}
-		
-		"Offsets"
-		{
-			"sv"
-			{
-				"windows"	"11"
-			}
-		}
-
-		"Signatures"
-		{
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
-			}
-		}
-	}
-	
 	/* EntityFactoryDictionary function */
 	"#default"
 	{
@@ -217,6 +185,7 @@
 			"game"		"tf"
 			"game"		"dod"
 			"game"		"hl2mp"
+			"game"		"cstrike"
 		}
 		
 		"Signatures"
@@ -239,6 +208,7 @@
 			"game"		"dod"
 			"game"		"tf"
 			"game"		"hl2mp"
+			"game"		"cstrike"
 		}
 		"Signatures"
 		{
