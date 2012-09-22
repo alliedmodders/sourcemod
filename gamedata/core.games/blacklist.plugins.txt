@@ -14,6 +14,7 @@
 			"plugin_541de8d7f577398bad43b75f4ac80b84"	"http://forums.alliedmods.net/showpost.php?p=1767388&postcount=7"	/* LightRP (Sphex) - Version 1.2.5 */
 			"plugin_e10aab3464312dc0e484bda26b490b3f"	"http://forums.alliedmods.net/showpost.php?p=1767388&postcount=7"	/* LightRP (Sphex) - Version 1.2.7 */
 			"plugin_a7973ddc4e72aafd0312432568a1806b"	"http://forums.alliedmods.net/showpost.php?p=1767388&postcount=7"	/* LightRP (Sphex) - Version 1.2.8 */
+			"plugin_39ddd719f74b62e27e8e480871b9d3b6"	"http://forums.alliedmods.net/showpost.php?p=1803875&postcount=1"	/* Malicious plugin being uploaded to CS:GO servers */
 			"plugin_c82200dc10b39ad196fc805e4d4da807"	""	/* [L4D] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 */
 			"plugin_4225ffe2fd15d10a730466909a64bd01"	""	/* [L4D2] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 */
 			"plugin_862ae600f417a26e6b6d3ab5d702c5e7"	""	/* [L4D] Survivor Upgrades Reloaded (Marcus101RR, Whosat & Jerrith) - Version 1.5.0 - Hotfix */
