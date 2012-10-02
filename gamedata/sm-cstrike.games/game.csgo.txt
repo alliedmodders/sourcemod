@@ -83,7 +83,7 @@
 			"TerminateRound"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x53\x8B\x2A\x2A\x56\x57\x33\xFF"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x24\x8B\x45\x0C\x53\x56\x57\x33\xF6"
 				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 			}
@@ -112,7 +112,7 @@
 			"IncrementNumMVPs"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x8B\x50\x2A\x57\x8B\xF9\xB9\x2A\x2A\x2A\x2A\xFF\xD2\x85\xC0\x74\x2A\x68"
+				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x8B\x50\x34\x83\xEC\x24\x57\x8B\xF9\xB9\x40"
 				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
 				"mac"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
 			}
