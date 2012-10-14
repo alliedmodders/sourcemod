@@ -48,6 +48,8 @@ public:
 	virtual void SetPauseState(bool paused);
 	virtual bool IsPaused();
 	virtual size_t GetMemUsage();
+	virtual unsigned char *GetCodeHash();
+	virtual unsigned char *GetDataHash();
 	JitFunction *GetJittedFunction(uint32_t idx);
 	uint32_t AddJittedFunction(JitFunction *fn);
 public:
@@ -65,6 +67,9 @@ public:
 	JitFunction **m_PubJitFuncs;
 	ICompilation *m_pCo;
 	unsigned int m_CompSerial;
+	
+	unsigned char m_CodeHash[16];
+	unsigned char m_DataHash[16];
 };
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_RUNTIME_H_

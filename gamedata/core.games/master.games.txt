@@ -60,4 +60,7 @@
 		"engine"	"eye"
 	}
 
+	"blacklist.plugins.txt"
+	{
+	}
 }

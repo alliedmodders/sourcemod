@@ -57,6 +57,7 @@
 #include "convar_sm.h"
 #endif
 #include "ITranslator.h"
+#include "IGameConfigs.h"
 #include "NativeOwner.h"
 #include "ShareSys.h"
 
@@ -326,6 +327,7 @@ public: //IPluginManager
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModShutdown();
+	ConfigResult OnSourceModConfigChanged(const char *key, const char *value, ConfigSource source, char *error, size_t maxlength);
 	void OnSourceModMaxPlayersChanged(int newvalue);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
@@ -470,6 +472,9 @@ private:
 	List<FakeNative *> m_Natives;
 
 	bool m_LoadingLocked;
+	
+	// Config
+	bool m_bBlockBadPlugins;
 };
 
 extern CPluginManager g_PluginSys;

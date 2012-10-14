@@ -40,7 +40,7 @@
 
 /** SourcePawn Engine API Version */
 #define SOURCEPAWN_ENGINE_API_VERSION	4
-#define SOURCEPAWN_ENGINE2_API_VERSION	3
+#define SOURCEPAWN_ENGINE2_API_VERSION	4
 
 #if !defined SOURCEMOD_BUILD
 #define SOURCEMOD_BUILD
@@ -479,6 +479,20 @@ namespace SourcePawn
 		 * @return				Memory usage, in bytes.
 		 */
 		virtual size_t GetMemUsage() =0;
+
+		/**
+		 * @brief Returns the MD5 hash of the plugin's P-Code.
+		 *
+		 * @return				16-byte buffer with MD5 hash of the plugin's P-Code.
+		 */
+		virtual unsigned char *GetCodeHash() =0;
+		
+		/**
+		 * @brief Returns the MD5 hash of the plugin's Data.
+		 *
+		 * @return				16-byte buffer with MD5 hash of the plugin's Data.
+		 */
+		virtual unsigned char *GetDataHash() =0;
 	};
 
 	/**
