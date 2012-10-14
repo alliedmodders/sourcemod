@@ -525,9 +525,16 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					s_TempSig.library, 
 					m_CurFile);
 			} else {
-#if defined PLATFORM_POSIX
 				if (s_TempSig.sig[0] == '@')
 				{
+#if defined PLATFORM_WINDOWS
+					MEMORY_BASIC_INFORMATION mem;
+
+					if (VirtualQuery(addrInBase, &mem, sizeof(mem)))
+						final_addr = g_MemUtils.ResolveSymbol(mem.AllocationBase, &s_TempSig.sig[1]);
+					else
+						smcore.LogError("[SM] Unable to find library \"%s\" in memory (gameconf \"%s\")", s_TempSig.library, m_File);
+#elif defined PLATFORM_POSIX
 					Dl_info info;
 					/* GNU only: returns 0 on error, inconsistent! >:[ */
 					if (dladdr(addrInBase, &info) != 0)
@@ -550,12 +557,12 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 							s_TempSig.library,
 							m_File);
 					}
+#endif
 				}
 				if (final_addr)
 				{
 					goto skip_find;
 				}
-#endif
 				/* First, preprocess the signature */
 				unsigned char real_sig[511];
 				size_t real_bytes;
@@ -572,9 +579,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				}
 			}
 
-#if defined PLATFORM_POSIX
 skip_find:
-#endif
 			m_Sigs.replace(m_offset, final_addr);
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 
