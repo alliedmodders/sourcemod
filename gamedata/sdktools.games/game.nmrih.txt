@@ -11,25 +11,25 @@
 
 "Games"
 {
-	/* No More Room in Hell 1.02 */
+	/* No More Room in Hell 1.05 */
 	"nmrih"
 	{
 		"Offsets"
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"361"
-				"linux"		"362"
+				"windows"	"362"
+				"linux"		"363"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"240"
-				"linux"		"241"
+				"windows"	"241"
+				"linux"		"242"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"238"
-				"linux"		"239"
+				"windows"	"239"
+				"linux"		"240"
 			}
 			"Ignite"
 			{
@@ -48,8 +48,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"402"
-				"linux"		"402"
+				"windows"	"403"
+				"linux"		"403"
 			}
 			"GetVelocity"
 			{
@@ -73,8 +73,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"231"
-				"linux"		"232"
+				"windows"	"232"
+				"linux"		"233"
 			}
 			"Activate"
 			{
@@ -83,8 +83,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"381"
-				"linux"		"382"
+				"windows"	"382"
+				"linux"		"383"
 			}
 			
 			/* Offset into CBaseTempEntity constructor (vs2010 moved it!) */
