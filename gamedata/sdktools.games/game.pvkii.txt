@@ -19,28 +19,28 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"352"
-				"linux"		"353"
+				"windows"	"354"
+				"linux"		"355"
 			}
 			"RemovePlayerItem"
+			{
+				"windows"	"241"
+				"linux"		"242"
+			}
+			"Weapon_GetSlot"
 			{
 				"windows"	"239"
 				"linux"		"240"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"237"
-				"linux"		"238"
-			}
 			"Ignite"
 			{
-				"windows"	"194"
-				"linux"		"195"
+				"windows"	"196"
+				"linux"		"197"
 			}
 			"Extinguish"
 			{
-				"windows"	"198"
-				"linux"		"199"
+				"windows"	"200"
+				"linux"		"201"
 			}
 			"Teleport"
 			{
@@ -49,8 +49,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"393"
-				"linux"		"393"
+				"windows"	"395"
+				"linux"		"395"
 			}
 			"GetVelocity"
 			{
@@ -74,8 +74,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"230"
-				"linux"		"231"
+				"windows"	"232"
+				"linux"		"233"
 			}
 			"Activate"
 			{
@@ -84,8 +84,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"372"
-				"linux"		"373"
+				"windows"	"374"
+				"linux"		"375"
 			}
 			"FireOutputBackup"
 			{
