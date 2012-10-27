@@ -28,6 +28,7 @@
 			"plugin_4d320d6c5aba5d31c644fe2847c0662f"	""	/* UCP Server (Endi) - Version 7.2 */
 			"plugin_92d7c31873390c254bbcd0c955939aa6"	""	/* UCP Server (Endi) - Version 7.7 */
 			"plugin_f99d77668e7aa0adb6a960322ab05568"	""	/* UCP Server (Endi) - Version 7.8 */
+			"plugin_7b3ce69f15e61cc896228cb8424be589"	""	/* UCP Server (Endi) - Version 7.8.2 */
 			"plugin_78140f1a0f26cd3297767d0598eac4b1"	""	/* [Any] PReplay (DarthNinja) - Version 1.0.0 */
 		}
 	}
