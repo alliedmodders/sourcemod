@@ -131,7 +131,15 @@ ifneq (,$(filter original orangebox left4dead,$(ENGINE)))
 	LIB_SUFFIX = _i486.$(LIB_EXT)
 else
 	LIB_PREFIX = lib
-	LIB_SUFFIX = .$(LIB_EXT)
+	ifeq "$(ENGINE)" "orangeboxvalve"
+		ifneq "$(OS)" "Darwin"
+			LIB_SUFFIX = _srv.$(LIB_EXT)
+		else
+			LIB_SUFFIX = .$(LIB_EXT)
+		endif
+	else
+		LIB_SUFFIX = .$(LIB_EXT)
+	endif
 endif
 
 CFLAGS += -DSE_EPISODEONE=1 -DSE_DARKMESSIAH=2 -DSE_ORANGEBOX=3 -DSE_BLOODYGOODTIME=4 -DSE_EYE=5 \
