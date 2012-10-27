@@ -40,6 +40,7 @@
 #include <Logger.h>
 #include "LibrarySys.h"
 #include "logic_bridge.h"
+#include <tier0/mem.h>
 
 
 typedef ICommandLine *(*FakeGetCommandLine)();
