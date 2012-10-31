@@ -95,5 +95,17 @@
 		{
 			"GameRulesProxy"	"CNuclearDawnRulesProxy"
 		}
+		
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x81\x2A\x2A\x2A\x2A\x2A\x53\x55\x56\x8B\x2A\x2A\x85"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
 	}
 }
