@@ -196,7 +196,6 @@
 		"#supported"
 		{
 			"game"		"left4dead2"
-			"game"		"nucleardawn"
 		}
 		"Signatures"
 		{
