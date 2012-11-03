@@ -593,7 +593,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 #if SOURCE_ENGINE == SE_CSGO
 			&& (m_SourceTVUserId == userId || strcmp(playername, "GOTV") == 0)
 #elif (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS)
-				&& (m_SourceTVUserId == userId || (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)))
+				&& (m_SourceTVUserId == userId || (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0))
 #else
 			&& (m_SourceTVUserId == userId || strcmp(playername, "SourceTV") == 0)
 #endif
