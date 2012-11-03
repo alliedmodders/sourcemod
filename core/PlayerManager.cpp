@@ -574,6 +574,9 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		// This doesn't actually get incremented until OnClientConnect. Fake it to check.
 		int newCount = m_PlayersSinceActive + 1;
 		int userId = engine->GetPlayerUserId(pEntity);
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS)
+		static ConVar *tv_name = icvar->FindVar("tv_name");
+#endif
 
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE
 		if (m_bIsReplayActive && newCount == 1
@@ -587,7 +590,13 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		if (m_bIsSourceTVActive
 			&& ((!m_bIsReplayActive && newCount == 1)
 				|| (m_bIsReplayActive && newCount == 2))
+#if SOURCE_ENGINE == SE_CSGO
+			&& (m_SourceTVUserId == userId || strcmp(playername, "GOTV") == 0)
+#elif (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS)
+				&& (m_SourceTVUserId == userId || (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)))
+#else
 			&& (m_SourceTVUserId == userId || strcmp(playername, "SourceTV") == 0)
+#endif
 			)
 		{
 			pPlayer->m_bIsSourceTV = true;
