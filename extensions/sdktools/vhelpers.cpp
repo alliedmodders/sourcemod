@@ -329,24 +329,22 @@ void UTIL_DrawServerClass_XML(FILE *fp, ServerClass *sc)
 	fprintf(fp, "</serverclass>\n");
 }
 
-void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level)
+void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 {
-	char spaces[255];
-	for (int i=0; i<level; i++)
-		spaces[i] = ' ';
-	spaces[level] = '\0';
-
-	const char *name, *type;
 	SendProp *pProp;
+	const char *type;
 
-	fprintf(fp, "%sSub-Class Table (%d Deep): %s\n", spaces, level, pTable->GetName());
-
-	for (int i=0; i<pTable->GetNumProps(); i++)
+	for (int i = 0; i < pTable->GetNumProps(); i++)
 	{
 		pProp = pTable->GetProp(i);
-		name = pProp->GetName();
 		if (pProp->GetDataTable())
 		{
+			fprintf(fp, "%*sTable: %s (offset %d) (type %s)\n", 
+				level, "", 
+				pProp->GetName(), 
+				pProp->GetOffset(), 
+				pProp->GetDataTable()->GetName());
+			
 			UTIL_DrawSendTable(fp, pProp->GetDataTable(), level + 1);
 		}
 		else
@@ -356,8 +354,8 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level)
 			if (type != NULL)
 			{
 				fprintf(fp,
-					"%s-Member: %s (offset %d) (type %s) (bits %d)\n", 
-					spaces, 
+					"%*sMember: %s (offset %d) (type %s) (bits %d)\n", 
+					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					type,
@@ -366,8 +364,8 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level)
 			else
 			{
 				fprintf(fp,
-					"%s-Member: %s (offset %d) (type %d) (bits %d)\n", 
-					spaces, 
+					"%*sMember: %s (offset %d) (type %d) (bits %d)\n", 
+					level, "", 
 					pProp->GetName(),
 					pProp->GetOffset(),
 					pProp->GetType(),
@@ -453,8 +451,8 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
 	{
-		fprintf(fp, "%s:\n", pBase->GetName());
-		UTIL_DrawSendTable(fp, pBase->m_pTable, 1);
+		fprintf(fp, "%s (type %s)\n", pBase->GetName(), pBase->m_pTable->GetName());
+		UTIL_DrawSendTable(fp, pBase->m_pTable);
 		pBase = pBase->m_pNext;
 	}
 
