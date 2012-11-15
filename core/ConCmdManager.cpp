@@ -559,44 +559,6 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	return false;
 }
 
-bool ConCmdManager::AddConsoleCommand(IPluginFunction *pFunction, 
-									   const char *name, 
-									   const char *description, 
-									   int flags)
-{
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
-
-	if (!pInfo)
-	{
-		return false;
-	}
-
-	CmdHook *pHook = new CmdHook();
-
-	pHook->pf = pFunction;
-	if (description && description[0])
-	{
-		pHook->helptext.assign(description);
-	}
-	pInfo->conhooks.push_back(pHook);
-
-	/* Add to the plugin */
-	CmdList *pList;
-	IPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pFunction->GetParentContext()->GetContext());
-	if (!pPlugin->GetProperty("CommandList", (void **)&pList))
-	{
-		pList = new CmdList();
-		pPlugin->SetProperty("CommandList", pList);
-	}
-	PlCmdInfo info;
-	info.pInfo = pInfo;
-	info.type = Cmd_Console;
-	info.pHook = pHook;
-	AddToPlCmdList(pList, info);
-
-	return true;
-}
-
 bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction, 
 									 const char *name, 
 									 const char *group,
@@ -658,7 +620,6 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	/* Finally, add the hook */
 	pInfo->conhooks.push_back(pHook);
 	pInfo->admin = *(pHook->pAdmin);
-	pInfo->is_admin_set = true;
 
 	/* Now add to the plugin */
 	CmdList *pList;
@@ -803,7 +764,6 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 				pInfo->admin = *(pHook->pAdmin);
 			}
 		}
-		pInfo->is_admin_set = true;
 	}
 	else if (type == Override_CommandGroup)
 	{
@@ -837,7 +797,6 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 				}
 			}
 		}
-		pInfo->is_admin_set = true;
 	}
 }
 
@@ -905,7 +864,7 @@ bool ConCmdManager::LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags)
 
 	*pFlags = pInfo->admin.eflags;
 
-	return pInfo->is_admin_set;
+	return true;
 }
 
 ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
@@ -942,7 +901,6 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 		}
 
 		pInfo->pCmd = pCmd;
-		pInfo->is_admin_set = false;
 
 		sm_trie_insert(m_pCmds, name, pInfo);
 		AddToCmdList(pInfo);
@@ -995,13 +953,9 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const CCommand &co
 			{
 				type = "server";
 			}
-			else if (cmd.type == Cmd_Console)
-			{
-				type = "console";
-			}
 			else if (cmd.type == Cmd_Admin)
 			{
-				type = "admin";
+				type = (cmd.pInfo->admin.eflags == 0)?"console":"admin";
 			}
 			name = cmd.pInfo->pCmd->GetName();
 			if (cmd.pHook->helptext.size())

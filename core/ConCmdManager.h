@@ -48,7 +48,6 @@ using namespace SourceHook;
 enum CmdType
 {
 	Cmd_Server,
-	Cmd_Console,
 	Cmd_Admin,
 };
 
@@ -89,7 +88,6 @@ struct ConCmdInfo
 	List<CmdHook *> srvhooks;		/**< Hooks as a server command */
 	List<CmdHook *> conhooks;		/**< Hooks as a console command */
 	AdminCmdInfo admin;				/**< Admin info, if any */
-	bool is_admin_set;				/**< Whether or not admin info is set */
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -119,7 +117,6 @@ public: //IConCommandTracker
 	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name, bool is_read_safe);
 public:
 	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
-	bool AddConsoleCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
 	bool AddAdminCommand(IPluginFunction *pFunction, 
 						 const char *name, 
 						 const char *group,
