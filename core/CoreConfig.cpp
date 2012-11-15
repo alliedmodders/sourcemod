@@ -193,17 +193,30 @@ void CoreConfig::OnRootConsoleCommand(const char *cmdname, const CCommand &comma
 
 		if (res == ConfigResult_Reject)
 		{
-			g_RootMenu.ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\" (%s)", option, value, error);
+			g_RootMenu.ConsolePrint("[SM] Could not set config option \"%s\" to \"%s\". (%s)", option, value, error);
 		} else if (res == ConfigResult_Ignore) {
 			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
 		} else {
-			g_RootMenu.ConsolePrint("Config option \"%s\" successfully set to \"%s.\"", option, value);
+			g_RootMenu.ConsolePrint("[SM] Config option \"%s\" successfully set to \"%s\".", option, value);
 		}
 
 		return;
+	} else if (argcount >= 3) {
+		const char *option = command.Arg(2);
+		
+		const char *value = GetCoreConfigValue(option);
+		
+		if (value == NULL)
+		{
+			g_RootMenu.ConsolePrint("[SM] No such config option \"%s\" exists.", option);
+		} else {
+			g_RootMenu.ConsolePrint("[SM] Config option \"%s\" is set to \"%s\".", option, value);
+		}
+		
+		return;
 	}
 
-	g_RootMenu.ConsolePrint("[SM] Usage: sm config <option> <value>");
+	g_RootMenu.ConsolePrint("[SM] Usage: sm config <option> [value]");
 }
 
 void CoreConfig::Initialize()
