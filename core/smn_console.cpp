@@ -722,7 +722,9 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	if (!g_ConCmds.AddConsoleCommand(pFunction, name, help, params[4]))
+	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	const char *group = pPlugin->GetFilename();
+	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4]))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
 	}
