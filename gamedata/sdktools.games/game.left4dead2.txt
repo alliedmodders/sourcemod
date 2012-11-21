@@ -25,15 +25,15 @@
 			}
 			"Ignite"
 			{
-				"windows"	"221"
-				"linux"		"222"
-				"mac"		"222"
+				"windows"	"222"
+				"linux"		"223"
+				"mac"		"223"
 			}
 			"Extinguish"
 			{
-				"windows"	"224"
-				"linux"		"225"
-				"mac"		"225"
+				"windows"	"225"
+				"linux"		"226"
+				"mac"		"226"
 			}
 			"Teleport"
 			{
