@@ -569,18 +569,37 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		 * Checking playerinfo's IsHLTV and IsReplay would be better and less
 		 * error-prone but will always show false until later in the frame,
 		 * after PutInServer and Activate, and we want it now!
+		 *
+		 * These checks are hairy as hell due to differences between engines and games.
+		 * 
+		 * Most engines use "Replay" and "SourceTV" as bot names for these when they're
+		 * created. EP2V, CSS and Nuclear Dawn (but not L4D2) differ from this by now using
+		 * replay_/tv_name directly when creating the bot(s). To complicate it slightly
+		 * further, the cvar can be empty and the engine's fallback to "unnamed" will be used.
+		 * We can maybe just rip out the name checks at some point and rely solely on whether
+		 * they're enabled and the join order.
 		 */
 		
 		// This doesn't actually get incremented until OnClientConnect. Fake it to check.
 		int newCount = m_PlayersSinceActive + 1;
+
 		int userId = engine->GetPlayerUserId(pEntity);
-#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS)
+#if (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_LEFT4DEAD2)
 		static ConVar *tv_name = icvar->FindVar("tv_name");
+#endif
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
+		static ConVar *replay_name = icvar->FindVar("replay_name");
+#endif
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+		static bool bIsNuclearDawn = (strcmp(g_SourceMod.GetGameFolderName(), "nucleardawn") == 0);
 #endif
 
 #if SOURCE_ENGINE == SE_ORANGEBOXVALVE
 		if (m_bIsReplayActive && newCount == 1
-			&& (m_ReplayUserId == userId || strcmp(playername, "Replay") == 0))
+			&& (m_ReplayUserId == userId
+				|| (replay_name && strcmp(playername, replay_name->GetString()) == 0) || (replay_name && replay_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
+				)
+			)
 		{
 			pPlayer->m_bIsReplay = true;
 			m_ReplayUserId = userId;
@@ -590,13 +609,22 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		if (m_bIsSourceTVActive
 			&& ((!m_bIsReplayActive && newCount == 1)
 				|| (m_bIsReplayActive && newCount == 2))
+			&& (m_SourceTVUserId == userId
 #if SOURCE_ENGINE == SE_CSGO
-			&& (m_SourceTVUserId == userId || strcmp(playername, "GOTV") == 0)
-#elif (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS)
-				&& (m_SourceTVUserId == userId || (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0))
+				|| strcmp(playername, "GOTV") == 0
+#elif (SOURCE_ENGINE == SE_ORANGEBOXVALVE || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_LEFT4DEAD2)
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+				|| (bIsNuclearDawn && ( true
+#endif // SE_LEFT4DEAD2
+				|| (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+					))
+				|| (!bIsNuclearDawn && strcmp(playername, "SourceTV") == 0)
+#endif // SE_LEFT4DEAD2
 #else
-			&& (m_SourceTVUserId == userId || strcmp(playername, "SourceTV") == 0)
+				|| strcmp(playername, "SourceTV") == 0
 #endif
+				)
 			)
 		{
 			pPlayer->m_bIsSourceTV = true;
