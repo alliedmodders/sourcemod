@@ -465,6 +465,11 @@ bool SM_ExecuteConfig(CPlugin *pl, AutoConfig *cfg, bool can_create)
 				can_create = false;
 				fclose(fp);
 			}
+			else
+			{
+				g_Logger.LogError("Failed to auto generate config for %s, make sure the directory has write permission.", pl->GetFilename());
+				return can_create;
+			}
 		}
 	}
 
