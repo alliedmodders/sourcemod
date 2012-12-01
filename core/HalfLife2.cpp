@@ -975,6 +975,11 @@ cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	CBaseHandle hndl = pUnknown->GetRefEHandle();
 
+	if (hndl == INVALID_EHANDLE_INDEX)
+	{
+		return INVALID_EHANDLE_INDEX;
+	}
+	
 	if (hndl.GetEntryIndex() >= MAX_EDICTS)
 	{
 		return (hndl.ToInt() | (1<<31));
