@@ -2037,10 +2037,11 @@
     <ClCompile Include="..\smn_vector.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\public\sm_platform.h" />
+    <ClInclude Include="..\..\public\sourcemod_version.h" />
     <ClInclude Include="..\AdminCache.h" />
     <ClInclude Include="..\ADTFactory.h" />
     <ClInclude Include="..\CDataPack.h" />
-    <ClInclude Include="..\CellArray.h" />
     <ClInclude Include="..\CellRecipientFilter.h" />
     <ClInclude Include="..\ChatTriggers.h" />
     <ClInclude Include="..\..\public\compat_wrappers.h" />
@@ -2049,6 +2050,9 @@
     <ClInclude Include="..\ConCommandBaseIterator.h" />
     <ClInclude Include="..\ConsoleDetours.h" />
     <ClInclude Include="..\ConVarManager.h" />
+    <ClInclude Include="..\convar_sm_l4d.h" />
+    <ClInclude Include="..\convar_sm_ob.h" />
+    <ClInclude Include="..\convar_sm_swarm.h" />
     <ClInclude Include="..\CoreConfig.h" />
     <ClInclude Include="..\Database.h" />
     <ClInclude Include="..\DebugReporter.h" />
@@ -2056,13 +2060,11 @@
     <ClInclude Include="..\ExtensionSys.h" />
     <ClInclude Include="..\ForwardSys.h" />
     <ClInclude Include="..\frame_hooks.h" />
-    <ClInclude Include="..\GameConfigs.h" />
     <ClInclude Include="..\HalfLife2.h" />
     <ClInclude Include="..\HandleSys.h" />
     <ClInclude Include="..\LibrarySys.h" />
     <ClInclude Include="..\Logger.h" />
     <ClInclude Include="..\logic_bridge.h" />
-    <ClInclude Include="..\MemoryUtils.h" />
     <ClInclude Include="..\MenuManager.h" />
     <ClInclude Include="..\MenuStyle_Base.h" />
     <ClInclude Include="..\MenuStyle_Radio.h" />
@@ -2071,7 +2073,6 @@
     <ClInclude Include="..\NativeInvoker.h" />
     <ClInclude Include="..\NativeOwner.h" />
     <ClInclude Include="..\NextMap.h" />
-    <ClInclude Include="..\PhraseCollection.h" />
     <ClInclude Include="..\PlayerManager.h" />
     <ClInclude Include="..\PluginInfoDatabase.h" />
     <ClInclude Include="..\PluginSys.h" />
@@ -2080,20 +2081,16 @@
     <ClInclude Include="..\sm_fastlink.h" />
     <ClInclude Include="..\sm_globals.h" />
     <ClInclude Include="..\sm_memtable.h" />
-    <ClInclude Include="..\..\public\sm_platform.h" />
     <ClInclude Include="..\sm_queue.h" />
     <ClInclude Include="..\sm_simple_prioqueue.h" />
     <ClInclude Include="..\sm_srvcmds.h" />
     <ClInclude Include="..\sm_stringutil.h" />
-    <ClInclude Include="..\sm_symtable.h" />
     <ClInclude Include="..\sm_trie.h" />
     <ClInclude Include="..\..\public\sm_trie_tpl.h" />
-    <ClInclude Include="..\sm_version.h" />
     <ClInclude Include="..\smn_usermsgs.h" />
     <ClInclude Include="..\sourcemm_api.h" />
     <ClInclude Include="..\sourcemod.h" />
     <ClInclude Include="..\TimerSys.h" />
-    <ClInclude Include="..\Translator.h" />
     <ClInclude Include="..\UserMessages.h" />
     <ClInclude Include="..\..\public\IAdminSystem.h" />
     <ClInclude Include="..\..\public\IADTFactory.h" />

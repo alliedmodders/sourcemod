@@ -131,9 +131,6 @@
     <ClInclude Include="..\Profiler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\svn_version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\TextParsers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -177,6 +174,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Translator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public\sm_trie_tpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public\sourcemod_version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\public\sm_platform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

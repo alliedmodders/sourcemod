@@ -209,9 +209,6 @@
     <ClInclude Include="..\CDataPack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\CellArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\CellRecipientFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -257,9 +254,6 @@
     <ClInclude Include="..\frame_hooks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\GameConfigs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\HalfLife2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -273,9 +267,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\logic_bridge.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MemoryUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\MenuManager.h">
@@ -302,9 +293,6 @@
     <ClInclude Include="..\NextMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\PhraseCollection.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\PlayerManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -329,9 +317,6 @@
     <ClInclude Include="..\sm_memtable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\public\sm_platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sm_queue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -344,16 +329,10 @@
     <ClInclude Include="..\sm_stringutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\sm_symtable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\sm_trie.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\public\sm_trie_tpl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\sm_version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\smn_usermsgs.h">
@@ -366,9 +345,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\TimerSys.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Translator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\UserMessages.h">
@@ -456,6 +432,21 @@
       <Filter>SourcePawn</Filter>
     </ClInclude>
     <ClInclude Include="..\convar_sm.h">
+      <Filter>HL2SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\sm_platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\public\sourcemod_version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\convar_sm_l4d.h">
+      <Filter>HL2SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\convar_sm_ob.h">
+      <Filter>HL2SDK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\convar_sm_swarm.h">
       <Filter>HL2SDK</Filter>
     </ClInclude>
   </ItemGroup>

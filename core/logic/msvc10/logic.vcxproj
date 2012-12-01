@@ -143,6 +143,9 @@
     <ClCompile Include="..\thread\WinThreads.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\public\sm_platform.h" />
+    <ClInclude Include="..\..\..\public\sm_trie_tpl.h" />
+    <ClInclude Include="..\..\..\public\sourcemod_version.h" />
     <ClInclude Include="..\AutoHandleRooter.h" />
     <ClInclude Include="..\CellArray.h" />
     <ClInclude Include="..\common_logic.h" />
@@ -156,7 +159,6 @@
     <ClInclude Include="..\sm_memtable.h" />
     <ClInclude Include="..\sm_symtable.h" />
     <ClInclude Include="..\stringutil.h" />
-    <ClInclude Include="..\svn_version.h" />
     <ClInclude Include="..\TextParsers.h" />
     <ClInclude Include="..\ThreadSupport.h" />
     <ClInclude Include="..\thread\BaseWorker.h" />
