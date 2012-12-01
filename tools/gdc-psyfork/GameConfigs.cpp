@@ -153,6 +153,10 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 			}
+			else
+			{
+				m_IgnoreLevel++;
+			}
 
 			break;
 		}

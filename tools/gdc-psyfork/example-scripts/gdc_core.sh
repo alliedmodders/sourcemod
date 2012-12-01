@@ -7,7 +7,11 @@ SM_PATH=/home/gdc/sourcemod-central
 ENGINE_BIN=${ENGINE_PATH}/bin/engine
 GAME_BIN=${ENGINE_PATH}/${GAME_DIR}/bin/server
 STEAMINF=${ENGINE_PATH}/${GAME_DIR}/steam.inf
-BIN_EXT=""
+
+if [ "${GAMEDATA_DIR}" == "" ] ; then
+	GAMEDATA_DIR=${GAME_DIR}
+fi
+
 if [ $MOD == 1 ] ; then
 	BIN_EXT="_i486"
 fi
@@ -15,12 +19,12 @@ fi
 echo -e "Checking game ${GAME_DIR}...\n"
 
 if [ $MOD == 0 ] && [ "$1" == "auto" ] ; then
-	./updatecheck.pl "${STEAMINF}"
+	UPDATE_RES=`./updatecheck.pl "${STEAMINF}"`
 	if [ $? -ne 0 ] ; then
 		exit 1
-	elif [ ! -e ${STEAMINF}.new ] ; then
-		echo -e "Update (maybe) available but no steam.inf.new written!\n"
 	fi
+	EXPECTED_VER=`echo ${UPDATE_RES} | egrep -o '([0-9]+)$'`
+	echo Expecting version ${EXPECTED_VER}
 fi
 
 export RDTSC_FREQUENCY="disabled"
@@ -36,24 +40,43 @@ fi
 if [ ${UPDATE} -eq 1 ] ; then
 	cd ${DD_PATH}
 
-	if [ $MOD == 0 ] ; then
-		#workaround for DD1 "bug" (won't redownload file of same name/size)
-		rm -f ${STEAMINF}.old
-		mv ${STEAMINF} ${STEAMINF}.old
+	if [ "${DD_GAME}" != "" ] ; then
+		DD_OPT_AUTH=`tr '\r\n' ' ' < dd-login-info.txt`
+	elif [ "${DD_APP}" != "" ] ; then
+		DD_OPT_AUTH=`tr '\r\n' ' ' < dd-login-info.txt`
+	else
+		echo "Error: neither DD_GAME nor DD_APP are set!"
+		exit 1
 	fi
 
 	for i in 1 2 3 4 5
 	do
-		mono DepotDownloader.exe     \
-			-game "${DD_GAME}"   \
-			-dir ${DD_DIR}       \
-			-filelist server.txt \
-			-all-platforms
+		if [ "${DD_GAME}" != "" ] ; then
+			mono DepotDownloader.exe     \
+				-game "${DD_GAME}"   \
+				-dir ${DD_DIR}       \
+				-filelist server.txt \
+				-all-platforms       \
+				-no-exclude          \
+				${DD_OPT_CELL}       \
+				${DD_OPT_AUTH}
+		else
+			mono DepotDownloader.exe     \
+				-app "${DD_APP}"     \
+				-dir ${DD_DIR}       \
+				-filelist server.txt \
+				-all-platforms       \
+				-no-exclude          \
+				${DD_OPT_CELL}       \
+				${DD_OPT_AUTH}
+		fi
+		
+		echo
 
 		if [ $? == 0 ] ; then
 			break
 		elif [ $i == 5 ] ; then
-			echo -e "Update failed five times; giving up  ¯\(º_º)/¯\n"
+			echo Update failed five times; welp
 			break
 		fi
 
@@ -64,12 +87,19 @@ fi
 
 if [ "$1" == "auto" ] ; then
 	DOWNLOADED_VER=`grep -E "^(Patch)?Version=(([0-9]\.?)+)" ${STEAMINF} | grep -Eo "([0-9]\.?)+" | sed s/[^0-9]//g`
-	EXPECTED_VER=`cat ${STEAMINF}.new`
 
 	if [ ${DOWNLOADED_VER} != ${EXPECTED_VER} ] ; then
-		echo -e "Download resulted with version ${DOWNLOADED_VER}, but expected ${EXPECTED_VER}. Exiting.\n"
+		echo Download resulted with version ${DOWNLOADED_VER}, but expected ${EXPECTED_VER}. Exiting.
 		exit 1
 	fi
+fi
+
+# update game-specific
+cd ${SCRIPT_PATH}
+GAME_SCRIPT_NAME=`echo $0 | sed s/\.sh$//`
+echo checking to see if  ${GAME_SCRIPT_NAME}_repos.sh  exists
+if [ -e ${GAME_SCRIPT_NAME}_repos.sh ] ; then
+	./${GAME_SCRIPT_NAME}_repos.sh
 fi
 
 # update sourcemod
@@ -88,15 +118,6 @@ do
 	        -w ${GAME_BIN}.dll \
 	        -y ${ENGINE_BIN}.dll
 	echo -e "------------------------------------------------------\n"
-	echo -e "\n"
 done
-
-if [ ! -e ${STEAMINF} ] ; then
-	mv ${STEAMINF}.old ${STEAMINF}
-fi
-
-if [ "$1" == "auto" ] && [ -e ${STEAMINF}.new ] ; then
-	rm ${STEAMINF}.new
-fi
 
 exit 0

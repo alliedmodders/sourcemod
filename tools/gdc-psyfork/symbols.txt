@@ -40,6 +40,7 @@
 			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEv"
 			"OnTakeDamage"		"_ZN11CBaseEntity12OnTakeDamageERK15CTakeDamageInfo"
 			"PreThink"			"_ZN11CBasePlayer8PreThinkEv"
+			"PostConstructor"	"_ZN11CBaseEntity15PostConstructorEPKc"
 			"PostThink"			"_ZN11CBasePlayer9PostThinkEv"
 			"Reload"			"_ZN17CBaseCombatWeapon6ReloadEv"
 			"SetTransmit"		"_ZN11CBaseEntity11SetTransmitEP18CCheckTransmitInfob"
@@ -72,14 +73,24 @@
 			"GetSoundEmissionOrigin"	"_ZNK11CBaseEntity22GetSoundEmissionOriginEv"
 			"GetServerClass"	"_ZN11CBaseEntity14GetServerClassEv"
 			"StudioFrameAdvance"	"_ZN14CBaseAnimating18StudioFrameAdvanceEv"
-			"ShouldGib"		"_ZN20CBaseCombatCharacter9ShouldGibERK15CTakeDamageInfo"
+			"ShouldGib"		"_ZN9CTFPlayer9ShouldGibERK15CTakeDamageInfob"
 			"GetRadius"		"_ZN13CTFBaseRocket9GetRadiusEv"
 			"DeflectPlayer"		"_ZN13CTFWeaponBase13DeflectPlayerEP9CTFPlayerS1_R6VectorS3_S3_"
+
+			// CSSDM
+			"IPointsForKill"	"_ZN14CTeamplayRules14IPointsForKillEP11CBasePlayerS1_"
+			"RemoveAllItems"	"_ZN11CBasePlayer14RemoveAllItemsEb"
+			"GiveAmmo"		"_ZN20CBaseCombatCharacter8GiveAmmoEiib"
+			
+			// NapalmLagFix
+			"RadiusDamage"	"_ZN10CGameRules12RadiusDamageERK15CTakeDamageInfoRK6VectorfiP11CBaseEntity"
 		}
 		
 		"Options"
 		{
 			"CreateGameRulesObject"		"allowmultiple,allowmidfunc"
+			"TakeOverBot"				"allowmidfunc"
+			"OnVersusRoundStart"		"allowmidfunc"
 		}
 	}
 	
@@ -120,8 +131,22 @@
 	{
 		"#supported"
 		{
+			"engine"	"css"
+			"engine"	"orangebox_valve"
+		}
+
+		"Keys"
+		{
+			"TraceAttack"	"_ZN11CBaseEntity11TraceAttackERK15CTakeDamageInfoRK6VectorP10CGameTraceP15CDmgAccumulator"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
 			"engine"	"left4dead"
-			"game"	"left4dead2"
+			"engine"	"left4dead2"
 		}
 
 		"Keys"

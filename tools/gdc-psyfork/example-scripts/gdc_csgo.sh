@@ -4,25 +4,24 @@
 DD_PATH=/home/gdc/dd
 
 # Path for DepotDownloader to download to, relative to DD_PATH
-DD_DIR=source
+DD_DIR=csgo
 
-# Game to use for DepotDownloader for Steam2 content (hldsupdatetool -game param)
-DD_GAME="Counter-Strike Source"
+# AppId to use for DepotDownloader for Steam3 content (steamcmd app_update number)
+DD_APP=740
 
 # Absolute path to game's engine directory
-ENGINE_PATH=${DD_PATH}/${DD_DIR}/css
+ENGINE_PATH=${DD_PATH}/${DD_DIR}/
 
 # Game's directory name
-GAME_DIR=cstrike
+GAME_DIR=csgo
 
 # SM gamedata engine name
-ENGINE_NAME=orangebox_valve
+ENGINE_NAME=csgo
 
 # List of gamedata files to run checks on
 gamedata_files=(
-	"sdktools.games/game.cstrike.txt"
-	"sdktools.games/engine.ep2valve.txt"
-	"sm-cstrike.games/game.css.txt"
+	"sdktools.games/engine.csgo.txt"
+	"sm-cstrike.games/game.csgo.txt"
 )
 
 # Is game a 2006/2007 "mod" ?
