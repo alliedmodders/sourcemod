@@ -210,6 +210,21 @@ forward OnClientPostAdminCheck(client);
 native GetMaxClients();
 
 /**
+ * Returns the maximum number of human players allowed on the server.  This is 
+ * a game-specific function used on newer games to limit the number of humans
+ * that can join a game and can be lower than MaxClients. It is the number often
+ * reflected in the server browser or when viewing the output of the status command.
+ * On unsupported games or modes without overrides, it will return the same value
+ * as MaxClients.
+ *
+ * You should not globally cache the value to GetMaxHumanPlayers() because it can change across
+ * game modes. You may still cache it locally.
+ *
+ * @return				Maximum number of humans allowed.
+ */
+native GetMaxHumanPlayers();
+
+/**
  * Returns the client count put in the server.
  *
  * @param inGameOnly	If false connecting players are also counted.

@@ -66,6 +66,22 @@ static cell_t sm_GetMaxClients(IPluginContext *pCtx, const cell_t *params)
 	return g_Players.MaxClients();
 }
 
+static cell_t sm_GetMaxHumanPlayers(IPluginContext *pCtx, const cell_t *params)
+{
+	int maxHumans = -1;
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	maxHumans = serverClients->GetMaxHumanPlayers();
+#endif
+
+	if( maxHumans == -1 )
+	{
+		return g_Players.MaxClients();
+	}
+	
+	return maxHumans;
+}
+
 static cell_t sm_GetClientName(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
@@ -1634,6 +1650,7 @@ REGISTER_NATIVES(playernatives)
 	{"GetClientTeam",			GetClientTeam},
 	{"GetClientUserId",			GetClientUserId},
 	{"GetMaxClients",			sm_GetMaxClients},
+	{"GetMaxHumanPlayers",		sm_GetMaxHumanPlayers},
 	{"GetUserAdmin",			GetUserAdmin},
 	{"GetUserFlagBits",			GetUserFlagBits},
 	{"IsClientAuthorized",		sm_IsClientAuthorized},
