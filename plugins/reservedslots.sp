@@ -111,7 +111,7 @@ public OnMapStart()
 {
 	if (GetConVarBool(sm_hide_slots))
 	{		
-		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - GetConVarInt(sm_reserved_slots));
 	}
 }
 
@@ -119,7 +119,7 @@ public OnConfigsExecuted()
 {
 	if (GetConVarBool(sm_hide_slots))
 	{
-		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - GetConVarInt(sm_reserved_slots));
 	}	
 }
 
@@ -134,7 +134,7 @@ public Action:OnTimedKick(Handle:timer, any:client)
 	
 	if (GetConVarBool(sm_hide_slots))
 	{				
-		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - GetConVarInt(sm_reserved_slots));
 	}
 	
 	return Plugin_Handled;
@@ -159,7 +159,7 @@ public OnClientPostAdminCheck(client)
 	if (reserved > 0)
 	{
 		new clients = GetClientCount(false);
-		new limit = MaxClients - reserved;
+		new limit = GetMaxHumanPlayers() - reserved;
 		new flags = GetUserFlagBits(client);
 		
 		new type = GetConVarInt(sm_reserve_type);
@@ -248,7 +248,7 @@ public OnClientDisconnect_Post(client)
 	
 	if (GetConVarBool(sm_hide_slots))
 	{		
-		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - GetConVarInt(sm_reserved_slots));
 	}
 	
 	if (g_isAdmin[client])
@@ -268,7 +268,7 @@ public SlotCountChanged(Handle:convar, const String:oldValue[], const String:new
 	}
 	else if (GetConVarBool(sm_hide_slots))
 	{
-		SetVisibleMaxSlots(GetClientCount(false), MaxClients - slotcount);
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - slotcount);
 	}
 }
 
@@ -281,7 +281,7 @@ public SlotHideChanged(Handle:convar, const String:oldValue[], const String:newV
 	}
 	else
 	{
-		SetVisibleMaxSlots(GetClientCount(false), MaxClients - GetConVarInt(sm_reserved_slots));
+		SetVisibleMaxSlots(GetClientCount(false), GetMaxHumanPlayers() - GetConVarInt(sm_reserved_slots));
 	}
 }
 
@@ -289,9 +289,9 @@ SetVisibleMaxSlots(clients, limit)
 {
 	new num = clients;
 	
-	if (clients == MaxClients)
+	if (clients == GetMaxHumanPlayers())
 	{
-		num = MaxClients;
+		num = GetMaxHumanPlayers();
 	} else if (clients < limit) {
 		num = limit;
 	}
