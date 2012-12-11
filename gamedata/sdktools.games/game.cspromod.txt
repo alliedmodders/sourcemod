@@ -1,6 +1,6 @@
 "Games"
 {
-	/* CSpromod 1.05 */
+	/* CSpromod 1.09 */
 	"cspromod"
 	{
 		"Offsets"
@@ -8,47 +8,47 @@
 			"GiveNamedItem"
 			{
 				"windows"	"353"
-				"linux"		"354"
+				"linux"		"355"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"239"
+				"windows"	"238"
 				"linux"		"240"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"237"
+				"windows"	"236"
 				"linux"		"238"
 			}
 			"Ignite"
 			{
-				"windows"	"194"
+				"windows"	"193"
 				"linux"		"195"
 			}
 			"Extinguish"
 			{
-				"windows"	"198"
+				"windows"	"197"
 				"linux"		"199"
 			}
 			"Teleport"
 			{
-				"windows"	"101"
+				"windows"	"100"
 				"linux"		"102"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"389"
-				"linux"		"389"
+				"windows"	"390"
+				"linux"		"391"
 			}
 			"GetVelocity"
 			{
-				"windows"	"131"
-				"linux"		"132"
+				"windows"	"132"
+				"linux"		"134"
 			}
 			"EyeAngles"
 			{
-				"windows"	"123"
-				"linux"		"124"
+				"windows"	"124"
+				"linux"		"126"
 			}
 			"AcceptInput"
 			{
@@ -57,7 +57,7 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"230"
+				"windows"	"229"
 				"linux"		"231"
 			}
 			"SetEntityModel"
@@ -72,8 +72,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"373"
-				"linux"		"374"
+				"windows"	"374"
+				"linux"		"376"
 			}
 		}
 	}
