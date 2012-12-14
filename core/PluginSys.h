@@ -131,6 +131,12 @@ enum APLRes
 	APLRes_SilentFailure
 };
 
+enum LibraryAction
+{
+	LibraryAction_Removed,
+	LibraryAction_Added
+};
+
 struct AutoConfig
 {
 	String autocfg;
@@ -250,7 +256,7 @@ public:
 	{
 		m_Libraries.push_back(name);
 	}
-	void LibraryActions(bool dropping);
+	void LibraryActions(LibraryAction action);
 	void SyncMaxClients(int max_clients);
 protected:
 	bool UpdateInfo();
@@ -403,7 +409,7 @@ public:
 
 	void Shutdown();
 
-	void OnLibraryAction(const char *lib, bool is_a_plugin, bool drop);
+	void OnLibraryAction(const char *lib, LibraryAction action);
 
 	bool LibraryExists(const char *lib);
 
@@ -475,6 +481,10 @@ private:
 	
 	// Config
 	bool m_bBlockBadPlugins;
+	
+	// Forwards
+	IForward *m_pOnLibraryAdded;
+	IForward *m_pOnLibraryRemoved;
 };
 
 extern CPluginManager g_PluginSys;

@@ -828,7 +828,7 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			 s_iter != pExt->m_Libraries.end();
 			 s_iter++)
 		{
-			g_PluginSys.OnLibraryAction((*s_iter).c_str(), false, true);
+			g_PluginSys.OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
 		}
 
 		/* Notify and/or unload all dependencies */
@@ -1401,7 +1401,7 @@ void CExtensionManager::AddLibrary(IExtension *pSource, const char *library)
 {
 	CExtension *pExt = (CExtension *)pSource;
 	pExt->AddLibrary(library);
-	g_PluginSys.OnLibraryAction(library, false, false);
+	g_PluginSys.OnLibraryAction(library, LibraryAction_Added);
 }
 
 bool CExtensionManager::LibraryExists(const char *library)

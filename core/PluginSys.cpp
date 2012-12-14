@@ -501,14 +501,14 @@ void CPlugin::SetSilentlyFailed(bool sf)
 	m_bSilentlyFailed = sf;
 }
 
-void CPlugin::LibraryActions(bool dropping)
+void CPlugin::LibraryActions(LibraryAction action)
 {
 	List<String>::iterator iter;
 	for (iter = m_Libraries.begin();
 		iter != m_Libraries.end();
 		iter++)
 	{
-		g_PluginSys.OnLibraryAction((*iter).c_str(), true, dropping);
+		g_PluginSys.OnLibraryAction((*iter).c_str(), action);
 	}
 }
 
@@ -523,7 +523,7 @@ bool CPlugin::SetPauseState(bool paused)
 
 	if (paused)
 	{
-		LibraryActions(true);
+		LibraryActions(LibraryAction_Removed);
 	}
 
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("OnPluginPauseChange");
@@ -547,7 +547,7 @@ bool CPlugin::SetPauseState(bool paused)
 
 	if (!paused)
 	{
-		LibraryActions(false);
+		LibraryActions(LibraryAction_Added);
 	}
 
 	return true;
@@ -1495,7 +1495,7 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin, char *error, size_t maxleng
 		s_iter != pPlugin->m_Libraries.end();
 		s_iter++)
 	{
-		OnLibraryAction((*s_iter).c_str(), true, false);
+		OnLibraryAction((*s_iter).c_str(), LibraryAction_Added);
 	}
 
 	/* :TODO: optimize? does this even matter? */
@@ -1597,7 +1597,7 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 		 s_iter != pPlugin->m_Libraries.end();
 		 s_iter++)
 	{
-		OnLibraryAction((*s_iter).c_str(), true, true);
+		OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
 	}
 
 	List<IPluginsListener *>::iterator iter;
@@ -1914,6 +1914,9 @@ void CPluginManager::OnSourceModAllInitialized()
 	g_RootMenu.AddRootConsoleCommand("plugins", "Manage Plugins", this);
 
 	g_ShareSys.AddInterface(NULL, this);
+	
+	m_pOnLibraryAdded = g_Forwards.CreateForward("OnLibraryAdded", ET_Ignore, 1, NULL, Param_String);
+	m_pOnLibraryRemoved = g_Forwards.CreateForward("OnLibraryRemoved", ET_Ignore, 1, NULL, Param_String);
 }
 
 void CPluginManager::OnSourceModShutdown()
@@ -1925,6 +1928,9 @@ void CPluginManager::OnSourceModShutdown()
 	g_HandleSys.RemoveType(g_PluginType, m_MyIdent);
 	g_ShareSys.DestroyIdentType(g_PluginIdent);
 	g_ShareSys.DestroyIdentity(m_MyIdent);
+	
+	g_Forwards.ReleaseForward(m_pOnLibraryAdded);
+	g_Forwards.ReleaseForward(m_pOnLibraryRemoved);
 }
 
 ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key, 
@@ -2551,83 +2557,18 @@ CPlugin *CPluginManager::GetPluginFromIdentity(IdentityToken_t *pToken)
 	return (CPlugin *)(pToken->ptr);
 }
 
-void CPluginManager::OnLibraryAction(const char *lib, bool is_a_plugin, bool drop)
+void CPluginManager::OnLibraryAction(const char *lib, LibraryAction action)
 {
-	List<CPlugin *>::iterator iter;
-
-	struct _pl
+	switch (action)
 	{
-		cell_t name;
-		cell_t file;
-		cell_t required;
-	} *plc;
-
-	struct _ext
-	{
-		cell_t name;
-		cell_t file;
-		cell_t autoload;
-		cell_t required;
-	} *ext;
-
-	const char *name = drop ? "OnLibraryRemoved" : "OnLibraryAdded";
-
-	for (iter=m_plugins.begin();
-		 iter!=m_plugins.end();
-		 iter++)
-	{
-		CPlugin *pl = (*iter);
-		if (pl->GetStatus() != Plugin_Running)
-		{
-			continue;
-		}
-		IPluginContext *pContext = pl->GetBaseContext();
-		IPluginFunction *pf = pContext->GetFunctionByName(name);
-		if (!pf)
-		{
-			continue;
-		}
-		uint32_t num_vars = pContext->GetPubVarsNum();
-		for (uint32_t i=0; i<num_vars; i++)
-		{
-			sp_pubvar_t *pubvar;
-			if (pContext->GetPubvarByIndex(i, &pubvar) != SP_ERROR_NONE)
-			{
-				continue;
-			}
-			if (is_a_plugin && strncmp(pubvar->name, "__pl_", 5) == 0)
-			{
-				plc = (_pl *)pubvar->offs;
-				if (plc->required)
-				{
-					continue;
-				}
-				char *str;
-				pContext->LocalToString(plc->name, &str);
-				if (strcmp(str, lib) != 0)
-				{
-					continue;
-				}
-				pf->PushString(lib);
-				pf->Execute(NULL);
-			}
-			else if (!is_a_plugin && strncmp(pubvar->name, "__ext_", 6) == 0)
-			{
-				ext = (_ext *)pubvar->offs;
-				if (ext->required)
-				{
-					continue;
-				}
-				char *str;
-				pContext->LocalToString(ext->name, &str);
-				if (strcmp(str, lib) != 0)
-				{
-					continue;
-				}
-				pf->PushString(lib);
-				pf->Execute(NULL);
-			}
-		}
+	case LibraryAction_Removed:
+		m_pOnLibraryRemoved->PushString(lib);
+		m_pOnLibraryRemoved->Execute(NULL);
+		break;
+	case LibraryAction_Added:
+		m_pOnLibraryAdded->PushString(lib);
+		m_pOnLibraryAdded->Execute(NULL);
+		break;
 	}
 }
 
