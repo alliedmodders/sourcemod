@@ -40,7 +40,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_THREADER_NAME		"IThreader"
-#define SMINTERFACE_THREADER_VERSION	2
+#define SMINTERFACE_THREADER_VERSION	3
 
 namespace SourceMod
 {
@@ -362,6 +362,23 @@ namespace SourceMod
 		 * @return				State of the worker.
 		 */
 		virtual WorkerState GetStatus(unsigned int *numThreads) =0;
+
+		/**
+		 * @brief Sets the number of threads to run per frame.
+		 * Default value is 1 thread per frame.
+		 *
+		 * @param threads	Number of threads to run per frame.
+		 */
+		virtual void SetMaxThreadsPerFrame(unsigned int threads) =0;
+
+		/**
+		 * @brief For threaded workers, the think time of a frame.
+		 * Has no effect for non-threaded workers.
+		 * Default value is 50ms.
+		 *
+		 * @param thinktime	Number of ms to sleep between frame execution.
+		 */
+		virtual void SetThinkTimePerFrame(unsigned int thinktime) =0;
 	};
 
 	/**

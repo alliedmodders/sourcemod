@@ -209,6 +209,11 @@ WorkerState ThreadWorker::GetStatus(unsigned int *threads)
 	return state;
 }
 
+void ThreadWorker::SetThinkTimePerFrame(unsigned int thinktime)
+{
+	m_think_time = thinktime;
+}
+
 bool ThreadWorker::Start()
 {
 	if (m_state == Worker_Invalid)

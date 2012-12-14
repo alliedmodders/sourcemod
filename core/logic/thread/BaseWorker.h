@@ -84,6 +84,8 @@ public:	//IWorker
 	virtual unsigned int Flush(bool flush_cancel);
 	//returns status and number of threads in queue
 	virtual WorkerState GetStatus(unsigned int *numThreads);
+	virtual void SetMaxThreadsPerFrame(unsigned int threads);
+	virtual void SetThinkTimePerFrame(unsigned int thinktime) {}
 public:	//IThreadCreator
 	virtual void MakeThread(IThread *pThread);
 	virtual IThreadHandle *MakeThread(IThread *pThread, ThreadFlags flags);
@@ -92,8 +94,6 @@ public:	//IThreadCreator
 public:	//BaseWorker
 	virtual void AddThreadToQueue(SWThreadHandle *pHandle);
 	virtual SWThreadHandle *PopThreadFromQueue();
-	virtual void SetMaxThreadsPerFrame(unsigned int threads);
-	virtual unsigned int GetMaxThreadsPerFrame();
 protected:
 	SourceHook::List<SWThreadHandle *> m_ThreadQueue;
 	unsigned int m_perFrame;

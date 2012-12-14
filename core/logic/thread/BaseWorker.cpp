@@ -124,11 +124,6 @@ void BaseWorker::AddThreadToQueue(SWThreadHandle *pHandle)
 	m_ThreadQueue.push_back(pHandle);
 }
 
-unsigned int BaseWorker::GetMaxThreadsPerFrame()
-{
-	return m_perFrame;
-}
-
 WorkerState BaseWorker::GetStatus(unsigned int *threads)
 {
 	if (threads)
@@ -140,7 +135,7 @@ WorkerState BaseWorker::GetStatus(unsigned int *threads)
 unsigned int BaseWorker::RunFrame()
 {
 	unsigned int done = 0;
-	unsigned int max = GetMaxThreadsPerFrame();
+	unsigned int max = m_perFrame;
 	SWThreadHandle *swt = NULL;
 	IThread *pThread = NULL;
 

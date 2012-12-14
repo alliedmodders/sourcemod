@@ -53,6 +53,8 @@ public:	//IWorker
 	virtual bool Stop(bool flush_cancel);
 	//returns status and number of threads in queue
 	virtual WorkerState GetStatus(unsigned int *numThreads);
+	//virtual void SetMaxThreadsPerFrame(unsigned int threads);
+	virtual void SetThinkTimePerFrame(unsigned int thinktime);
 public:	//BaseWorker
 	virtual void AddThreadToQueue(SWThreadHandle *pHandle);
 	virtual SWThreadHandle *PopThreadFromQueue();
