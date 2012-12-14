@@ -1605,14 +1605,15 @@ bool CPluginManager::UnloadPlugin(IPlugin *plugin)
 
 	if (pPlugin->GetStatus() <= Plugin_Error)
 	{
+		/* Notify plugin */
+		pPlugin->Call_OnPluginEnd();
+
 		/* Notify listeners of unloading */
 		for (iter=m_listeners.begin(); iter!=m_listeners.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnPluginUnloaded(pPlugin);
 		}
-		/* Notify plugin */
-		pPlugin->Call_OnPluginEnd();
 	}
 
 	pPlugin->DropEverything();
