@@ -109,6 +109,7 @@ enum TFCond
 	TFCond_NoHealingDamageBuff,
 	TFCond_SpeedBuffAlly,
 	TFCond_HalloweenCritCandy,
+	TFCond_CritCanteen,
 	
 	TFCond_CritHype = 36,
 	TFCond_CritOnFirstBlood,
@@ -117,8 +118,18 @@ enum TFCond
 	TFCond_CritOnKill,
 	TFCond_RestrictToMelee,
 	
-	TFCond_CritMmmph = 44,
+	TFCond_Reprogrammed = 43,
+	TFCond_CritMmmph,
 	TFCond_DefenseBuffMmmph,
+	TFCond_FocusBuff,
+	TFCond_DisguiseRemoved,
+	TFCond_MarkedForDeathSilent,
+	TFCond_DisguisedAsDispenser,
+	TFCond_Sapped,
+	TFCond_UberchargedHidden,
+	TFCond_UberchargedCanteen,
+	TFCond_HalloweenBombHead,
+	TFCond_HalloweenThriller,
 };
 
 enum TFHoliday
