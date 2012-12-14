@@ -97,6 +97,11 @@
 				"windows"	"198"
 				"linux"		"199"
 			}
+			"PlayerRunCmd"
+			{
+				"windows"	"364"
+				"linux"		"365"
+			}
 		}
 		
 		"Signatures"
