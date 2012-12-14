@@ -506,7 +506,7 @@ stock bool:VoteMenuToAll(Handle:menu, time, flags=0)
 	
 	for (new i=1; i<=MaxClients; i++)
 	{
-		if (!IsClientInGame(i))
+		if (!IsClientInGame(i) || IsFakeClient(i))
 		{
 			continue;
 		}
