@@ -155,6 +155,8 @@ const char *GetTranslatedWeaponAlias(const char *weapon);
 
 int AliasToWeaponID(const char *weapon);
 
+const char *WeaponIDToAlias(int weaponID);
+
 int GetRealWeaponID(int weaponId);
 
 int GetFakeWeaponID(int weaponId);

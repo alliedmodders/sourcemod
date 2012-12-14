@@ -130,6 +130,35 @@ int AliasToWeaponID(const char *weapon)
 
 	return weaponID;
 }
+
+const char *WeaponIDToAlias(int weaponID)
+{
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_ADDR("WeaponIDToAlias", 0,
+			PassInfo pass[1]; \
+			PassInfo retpass; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(int); \
+			retpass.flags = PASSFLAG_BYVAL; \
+			retpass.type = PassType_Basic; \
+			retpass.size = sizeof(const char *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
+	}
+	const char *ret = NULL;
+	
+	unsigned char vstk[sizeof(int)];
+	unsigned char *vptr = vstk;
+
+	*(int *)vptr = GetRealWeaponID(weaponID);
+
+	pWrapper->Execute(vstk, &ret);
+
+	return ret;
+}
 int GetRealWeaponID(int weaponId)
 {
 #if SOURCE_ENGINE == SE_CSGO

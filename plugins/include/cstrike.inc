@@ -312,6 +312,15 @@ native CS_SetMVPCount(client, value);
 native CSWeaponID:CS_AliasToWeaponID(const String:alias[]);
 
 /**
+ * Gets a alias from a weaponID
+ * @param weaponID		WeaponID to get alias for.
+ * @param destination	Destination string to hold the weapon alias.
+ * @param len			Length of the destination array.
+ * @return				Returns number of cells written.
+ */
+native CS_WeaponIDToAlias(weaponID, String:destination[], len);
+
+/**
  * Do not edit below this line!
  */
 public Extension:__ext_cstrike = 

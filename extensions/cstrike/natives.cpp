@@ -294,6 +294,22 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t CS_WeaponIDToAlias(IPluginContext *pContext, const cell_t *params)
+{
+	char *dest;
+
+	pContext->LocalToString(params[2], &dest);
+
+	const char *ret = WeaponIDToAlias(params[1]);
+	
+	if (ret == NULL)
+	{
+		return 0;
+	}
+	
+	return strncopy(dest, ret, params[3]);
+}
+
 static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t *params)
 {
 	char *weapon;
@@ -669,6 +685,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_SetTeamScore",				CS_SetTeamScore},
 	{"CS_GetMVPCount",				CS_GetMVPCount},
 	{"CS_SetMVPCount",				CS_SetMVPCount},
+	{"CS_WeaponIDToAlias",			CS_WeaponIDToAlias},
 	{NULL,							NULL}
 };
 
