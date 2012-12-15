@@ -137,10 +137,11 @@ enum TFHoliday
 	TFHoliday_Birthday = 1,
 	TFHoliday_Halloween,
 	TFHoliday_Christmas,
+	TFHoliday_ValentinesDay,
 	TFHoliday_MeetThePyro,
-	TFHoliday_MannVsMachine,
 	TFHoliday_FullMoon,
 	TFHoliday_HalloweenOrFullMoon,
+	TFHoliday_HalloweenOrFullMoonOrValentines,
 };
 
 enum TFObjectType
