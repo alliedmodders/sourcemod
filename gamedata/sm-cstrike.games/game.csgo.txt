@@ -42,13 +42,6 @@
 				"linux"		"159"
 				"mac"		"185"
 			}
-			//Offset into IncrementNumMVPs to find MVP count offset from player
-			"MVPCountOffset"
-			{
-				"windows"	"46"
-				"linux"		"47"
-				"mac"		"61"
-			}
 			"ClanTagOffset"
 			{
 				"windows"	"15"
@@ -115,13 +108,6 @@
 				"linux"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
 				"mac"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
 			}
-			"IncrementNumMVPs"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x8B\x50\x34\x81\xEC\x2A\x2A\x2A\x2A\x57\x8B\xF9\xB9\x2A\x2A\x2A\x2A\xFF\xD2\x85\xC0\x74"
-				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
-				"mac"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
-			}
 			"AliasToWeaponID"
 			{
 				"library"	"server"
@@ -142,6 +128,62 @@
 				"windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x85\xC0\x74\x2A\x6A\x10\x50\x81\xC1\x2A\x2A\x2A\x2A\x51"
 				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
+			}
+		}
+	}
+	
+	"csgo"
+	{
+		"Keys"
+		{
+			"AssistsBase"		"m_iFrags"
+		}
+		
+		"Offsets"
+		{
+			"Assists"
+			{
+				"windows"	"4"
+				"linux"		"4"
+				"mac"		"4"
+			}
+		}
+	}
+	
+	"csgo"
+	{
+		"Keys"
+		{
+			"CScoreBase"		"m_iWeaponPurchasesThisRound"
+		}
+		
+		"Offsets"
+		{
+			/* factors in 256 (size of m_iWeaponPurchasesThisRound array (int size * 64 maxplayers)) */
+			"CScore"
+			{
+				"windows"	"276"
+				"linux"		"276"
+				"mac"		"276"
+			}
+		}
+	}
+	
+	"csgo"
+	{
+		"Keys"
+		{
+			"MVPsBase"		"m_iWeaponPurchasesThisRound"
+		}
+		
+		"Offsets"
+		{
+			"MVPs"
+			{
+				/* factors in 256 (size of m_iWeaponPurchasesThisRound array (int size * 64 maxplayers)) */
+				"windows"	"256"
+				"linux"		"256"
+				"mac"		"256"
 			}
 		}
 	}

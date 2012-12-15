@@ -49,13 +49,6 @@
 				"linux"		"57"
 				"mac"		"481"
 			}
-			//Offset into IncrementNumMVPs to find MVP count offset from player
-			"MVPCountOffset"
-			{
-				"windows"	"60"
-				"linux"		"49"
-				"mac"		"62"
-			}
 		}
 		"Signatures"
 		{
@@ -145,12 +138,25 @@
 				"linux"		"@_ZN12CCSGameRules13CheckWinLimitEv"
 				"mac"		"@_ZN12CCSGameRules5ThinkEv"
 			}
-			"IncrementNumMVPs"
+		}
+	}
+	
+	"cstrike"
+	{
+		"Keys"
+		{
+			"MVPsBase"		"m_bPlayerDominatingMe"
+		}
+		
+		"Offsets"
+		{
+			"MVPs"
 			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x89\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x8B\x48\x2A\x89\x2A\x2A\x33\xD2\x83\x7D\x2A\x00\x0F\x95\xC2\x0F\xB6\xC2\x85\xC0\x74\x2A\x68"
-				"linux"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
-				"mac"		"@_ZN9CCSPlayer16IncrementNumMVPsE13CSMvpReason_t"
+				/* factors in 66 (size of m_bPlayerDominatingMe array (bool size * (65 maxplayers + 1)))
+				... plus another 3 because alignment(?) lolidk */
+				"windows"	"69"
+				"linux"		"69"
+				"mac"		"69"
 			}
 		}
 	}

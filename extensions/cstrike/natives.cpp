@@ -600,74 +600,136 @@ static cell_t CS_GetTeamScore(IPluginContext *pContext, const cell_t *params)
 	return pContext->ThrowNativeError("Invalid team index passed (%i).", params[1]);
 }
 
-static cell_t CS_SetMVPCount(IPluginContext *pContext, const cell_t *params)
+template <typename T>
+static inline T *GetPlayerVarAddressOrError(const char *pszGamedataName, IPluginContext *pContext, CBaseEntity *pPlayerEntity)
 {
-	static void *addr;
-	if (!addr)
+	char szBaseName[128];
+	g_pSM->Format(szBaseName, sizeof(szBaseName), "%sBase", pszGamedataName);
+
+	const char *pszBaseVar = g_pGameConf->GetKeyValue(szBaseName);
+	if (pszBaseVar == NULL)
 	{
-		if (!g_pGameConf->GetMemSig("IncrementNumMVPs", &addr) || !addr)
+		pContext->ThrowNativeError("Failed to locate %s key in gamedata", szBaseName);
+		return NULL;
+	}
+
+	int interimOffset = 0;
+	sm_sendprop_info_t info;
+	if (gamehelpers->FindSendPropInfo("CCSPlayer", pszBaseVar, &info))
+	{
+		interimOffset = info.actual_offset;
+	}
+	else
+	{
+		datamap_t *pMap = gamehelpers->GetDataMap(pPlayerEntity);
+		typedescription_t *td = gamehelpers->FindInDataMap(pMap, pszBaseVar);
+		if (td)
 		{
-			return pContext->ThrowNativeError("Failed to locate IncrementNumMVPs function");
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+			interimOffset = td->fieldOffset;
+#else
+			interimOffset = td->fieldOffset[TD_OFFSET_NORMAL];
+#endif
 		}
 	}
 
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	if (interimOffset == 0)
+	{
+		pContext->ThrowNativeError("Failed to find property \"%s\" on player.", pszBaseVar);
+		return NULL;
+	}
+		
+
+	int tempOffset;
+	if (!g_pGameConf->GetOffset(pszGamedataName, &tempOffset))
+	{
+		pContext->ThrowNativeError("Failed to locate %s offset in gamedata", pszGamedataName);
+		return NULL;
+	}
+
+	return (T *)((intptr_t)pPlayerEntity + interimOffset + tempOffset);
+}
+
+template <typename T>
+static inline cell_t GetPlayerVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
 	{
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	static int mvpOffsetOffset = -1;
-	static int mvpOffset;
-
-	if (mvpOffsetOffset == -1)
-	{
-		if (!g_pGameConf->GetOffset("MVPCountOffset", &mvpOffsetOffset))
-		{
-			mvpOffsetOffset = -1;
-			return pContext->ThrowNativeError("Unable to find MVPCountOffset gamedata");
-		}
-
-		mvpOffset = *(int *)((intptr_t)addr + mvpOffsetOffset);
+	T *pVar = GetPlayerVarAddressOrError<T>(varName, pContext, pPlayer);
+	if (pVar)
+	{	
+		return (cell_t)*pVar;
 	}
 
-	*(int *)((intptr_t)pEntity + mvpOffset) = params[2];
+	return 0;
+}
 
-	return 1;
+template <typename T>
+static inline cell_t SetPlayerVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	T *pVar = GetPlayerVarAddressOrError<T>(varName, pContext, pPlayer);
+	if (pVar)
+	{
+		*pVar = (T)params[2];
+	}
+
+	return 0;
+}
+
+static cell_t CS_SetMVPCount(IPluginContext *pContext, const cell_t *params)
+{
+	return SetPlayerVar<int>(pContext, params, "MVPs");
 }
 
 static cell_t CS_GetMVPCount(IPluginContext *pContext, const cell_t *params)
 {
-	static void *addr;
-	if (!addr)
-	{
-		if (!g_pGameConf->GetMemSig("IncrementNumMVPs", &addr) || !addr)
-		{
-			return pContext->ThrowNativeError("Failed to locate IncrementNumMVPs function");
-		}
-	}
+	return GetPlayerVar<int>(pContext, params, "MVPs");
+}
 
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
+static cell_t CS_SetClientContributionScore(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerVar<int>(pContext, params, "CScore");
+#else
+	return pContext->ThrowNativeError("SetClientContributionScore is not supported on this game");
+#endif
+}
 
-	static int mvpOffsetOffset = -1;
-	static int mvpOffset;
+static cell_t CS_GetClientContributionScore(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerVar<int>(pContext, params, "CScore");
+#else
+	return pContext->ThrowNativeError("GetClientContributionScore is not supported on this game");
+#endif
+}
 
-	if (mvpOffsetOffset == -1)
-	{
-		if (!g_pGameConf->GetOffset("MVPCountOffset", &mvpOffsetOffset))
-		{
-			mvpOffsetOffset = -1;
-			return pContext->ThrowNativeError("Unable to find MVPCountOffset gamedata");
-		}
+static cell_t CS_SetClientAssists(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerVar<int>(pContext, params, "Assists");
+#else
+	return pContext->ThrowNativeError("SetClientAssists is not supported on this game");
+#endif
+}
 
-		mvpOffset = *(int *)((intptr_t)addr + mvpOffsetOffset);
-	}
-
-	return *(int *)((intptr_t)pEntity + mvpOffset);
+static cell_t CS_GetClientAssists(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerVar<int>(pContext, params, "Assists");
+#else
+	return pContext->ThrowNativeError("GetClientAssists is not supported on this game");
+#endif
 }
 
 sp_nativeinfo_t g_CSNatives[] = 
@@ -686,6 +748,10 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_GetMVPCount",				CS_GetMVPCount},
 	{"CS_SetMVPCount",				CS_SetMVPCount},
 	{"CS_WeaponIDToAlias",			CS_WeaponIDToAlias},
+	{"CS_GetClientContributionScore",	CS_GetClientContributionScore},
+	{"CS_SetClientContributionScore",	CS_SetClientContributionScore},
+	{"CS_GetClientAssists",			CS_GetClientAssists},
+	{"CS_SetClientAssists",			CS_SetClientAssists},
 	{NULL,							NULL}
 };
 

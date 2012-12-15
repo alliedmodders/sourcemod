@@ -285,8 +285,8 @@ native CS_SetTeamScore(team, value);
 
 /**
  * Gets a client's mvp count
- * @param client		Client index to set mvp count for.
- * @return				Returns the clients internal MVP count.
+ * @param client		Client index to get mvp count of.
+ * @return				Returns the client's internal MVP count.
  *
  * @error				Invalid client.
  */
@@ -295,12 +295,50 @@ native CS_GetMVPCount(client);
 /**
  * Sets a client's mvp count
  * @param client		Client index to set mvp count for.
- * @param value			Value to set clients mvp count as.
+ * @param value			Value to set client's mvp count as.
  * @noreturn
  *
  * @error				Invalid client.
  */
 native CS_SetMVPCount(client, value);
+
+/**
+ * Gets a client's contribution score (CS:GO only)
+ * @param client		Client index to get score of.
+ * @return				Returns the client's score.
+ *
+ * @error				Invalid client.
+ */
+native CS_GetClientContributionScore(client);
+
+/**
+ * Sets a client's contribution score (CS:GO only)
+ * @param client		Client index to set score for.
+ * @param value			Value to set client's score as.
+ * @noreturn
+ *
+ * @error				Invalid client.
+ */
+native CS_SetClientContributionScore(client, value);
+
+/**
+ * Gets a client's assists (CS:GO only)
+ * @param client		Client index to get assists of.
+ * @return				Returns the client's assists.
+ *
+ * @error				Invalid client.
+ */
+native CS_GetClientAssists(client);
+
+/**
+ * Sets a client's assists (CS:GO only)
+ * @param client		Client index to set assists for.
+ * @param value			Value to set client's assists as.
+ * @noreturn
+ *
+ * @error				Invalid client.
+ */
+native CS_SetClientAssists(client, value);
 
 /**
  * Gets a weaponID from a alias
@@ -350,6 +388,10 @@ public __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_SetTeamScore");
 	MarkNativeAsOptional("CS_GetMVPCount");
 	MarkNativeAsOptional("CS_SetMVPCount");
+	MarkNativeAsOptional("CS_GetClientContributionScore");
+	MarkNativeAsOptional("CS_SetClientContributionScore");
+	MarkNativeAsOptional("CS_GetClientAssists");
+	MarkNativeAsOptional("CS_SetClientAssists");
 	MarkNativeAsOptional("CS_AliasToWeaponID");
 }
 #endif
