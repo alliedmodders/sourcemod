@@ -620,8 +620,13 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+	int index = hndl.GetEntryIndex();
 
-	int ref = g_HL2.IndexToReference(hndl.GetEntryIndex());
+	CEntInfo *pInfo = g_HL2.LookupEntity(index);
+	if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		return -1;
+
+	int ref = g_HL2.IndexToReference(index);
 	return g_HL2.ReferenceToBCompatRef(ref);
 }
 
@@ -1493,8 +1498,13 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pEntity + offset);
+	int index = hndl.GetEntryIndex();
 
-	int ref = g_HL2.IndexToReference(hndl.GetEntryIndex());
+	CEntInfo *pInfo = g_HL2.LookupEntity(index);
+	if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		return -1;
+
+	int ref = g_HL2.IndexToReference(index);
 	return g_HL2.ReferenceToBCompatRef(ref);
 }
 
