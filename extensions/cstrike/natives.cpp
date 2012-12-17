@@ -221,7 +221,7 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 
 	CBaseHandle &hndl = *(CBaseHandle *)((uint8_t *)pWeapon + spi.actual_offset);
-	if (params[1] != hndl.GetEntryIndex())
+	if (params[1] != hndl.GetEntryIndex() || hndl != ((IServerEntity *)pEntity)->GetRefEHandle())
 		return pContext->ThrowNativeError("Weapon %d is not owned by client %d", params[2], params[1]);
 
 	if (params[4] == 1 && g_pCSWeaponDropDetoured)
