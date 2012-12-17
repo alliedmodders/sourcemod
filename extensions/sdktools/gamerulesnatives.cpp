@@ -339,9 +339,14 @@ static cell_t GameRules_GetPropEnt(IPluginContext *pContext, const cell_t *param
 	void *pGameRules = *g_pGameRules;
 
 	CBaseHandle &hndl = *(CBaseHandle *)((intptr_t)pGameRules + offset);
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(hndl.GetEntryIndex());
 
-	int ref = gamehelpers->IndexToReference(hndl.GetEntryIndex());
-	return gamehelpers->ReferenceToBCompatRef(ref);
+	if (!pEntity || ((IServerEntity *)pEntity)->GetRefEHandle() != hndl)
+	{
+		return -1;
+	}
+
+	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 
 static cell_t GameRules_SetPropEnt(IPluginContext *pContext, const cell_t *params)
