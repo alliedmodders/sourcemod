@@ -160,6 +160,7 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 	int element = params[3];
 	int offset;
 	int bit_count;
+	bool is_unsigned;
 
 	if (!g_pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
@@ -169,6 +170,7 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 	int elementCount = 1;
 
 	FIND_PROP_SEND(DPT_Int, "integer");
+	is_unsigned = ((info.prop->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 	if (bit_count < 1)
 	{
 		bit_count = params[2] * 8;
@@ -182,11 +184,25 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (bit_count >= 9)
 	{
-		return *(int16_t *)((intptr_t)pGameRules + offset);
+		if (is_unsigned)
+		{
+			return *(uint16_t *)((intptr_t)pGameRules + offset);
+		}
+		else
+		{
+			return *(int16_t *)((intptr_t)pGameRules + offset);
+		}
 	}
 	else if (bit_count >= 2)
 	{
-		return *(int8_t *)((intptr_t)pGameRules + offset);
+		if (is_unsigned)
+		{
+			return *(uint8_t *)((intptr_t)pGameRules + offset);
+		}
+		else
+		{
+			return *(int8_t *)((intptr_t)pGameRules + offset);
+		}
 	}
 	else
 	{
