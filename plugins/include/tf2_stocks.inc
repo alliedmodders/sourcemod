@@ -472,10 +472,18 @@ stock bool:TF2_IsPlayerInCondition(client, TFCond:cond)
 			return true;
 		}
 	}
-	else
+	else if (_:cond < 64)
 	{
 		new bit = (1 << (_:cond - 32));
 		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx") & bit) == bit)
+		{
+			return true;
+		}
+	}
+	else
+	{
+		new bit = (1 << (_:cond - 64));
+		if ((GetEntProp(client, Prop_Send, "m_nPlayerCondEx2") & bit) == bit)
 		{
 			return true;
 		}
