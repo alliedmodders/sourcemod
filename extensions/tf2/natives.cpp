@@ -240,14 +240,17 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR("AddCondition", 
-			PassInfo pass[2]; \
+			PassInfo pass[3]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].size = sizeof(int); \
 			pass[0].type = PassType_Basic; \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].size = sizeof(float); \
 			pass[1].type = PassType_Basic; \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
+			pass[2].flags = PASSFLAG_BYVAL; \
+			pass[2].size = sizeof(CBaseEntity *); \
+			pass[2].type = PassType_Basic; \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
 	}
 
 	CBaseEntity *pEntity;
@@ -258,7 +261,7 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 
 	void *obj = (void *)((uint8_t *)pEntity + playerSharedOffset->actual_offset);
 
-	unsigned char vstk[sizeof(void *) + sizeof(int) + sizeof(float)];
+	unsigned char vstk[sizeof(void *) + sizeof(int) + sizeof(float) + sizeof(CBaseEntity *)];
 	unsigned char *vptr = vstk;
 
 	*(void **)vptr = obj;
@@ -266,6 +269,8 @@ cell_t TF2_AddCondition(IPluginContext *pContext, const cell_t *params)
 	*(int *)vptr = params[2];
 	vptr += sizeof(int);
 	*(float *)vptr = *(float *)&params[3];
+	vptr += sizeof(float);
+	*(CBaseEntity **)vptr = NULL;
 
 	pWrapper->Execute(vstk, NULL);
 
