@@ -1207,7 +1207,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			is_unsigned = ((info.prop->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
 			if (info.prop->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1305,7 +1305,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_SEND(DPT_Int, "integer");
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
+#if SOURCE_ENGINE == SE_ORANGEBOXVALVE
 			if (info.prop->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
