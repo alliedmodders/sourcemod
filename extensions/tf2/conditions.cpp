@@ -48,6 +48,8 @@ int conditionBitsOffset = -1;
 
 bool g_bIgnoreRemove;
 
+#define MAX_CONDS (sizeof(uint64_t) * 8)
+
 inline condflags_t GetPlayerConds(CBaseEntity *pPlayer)
 {
 	uint32_t playerCond   =  *(uint32_t *)((intptr_t)pPlayer + playerCondOffset);
@@ -92,25 +94,25 @@ void Conditions_OnGameFrame(bool simulating)
 		addedconds = newconds &~ oldconds;
 		removedconds = oldconds &~ newconds;
 
-		int j;
+		uint64_t j;
 		condflags_t bit;
 
-		for (j = 0; (bit = ((condflags_t)1 << j)) <= addedconds; j++)
+		for (j = 0; j < MAX_CONDS && (bit = ((condflags_t)1 << j)) <= addedconds; j++)
 		{
 			if ((addedconds & bit) == bit)
 			{
 				g_addCondForward->PushCell(i);
-				g_addCondForward->PushCell(j);
+				g_addCondForward->PushCell(j & 0xFFFFFFFF);
 				g_addCondForward->Execute(NULL, NULL);
 			}
 		}
 
-		for (j = 0; (bit = ((condflags_t)1 << j)) <= removedconds; j++)
+		for (j = 0; j < MAX_CONDS && (bit = ((condflags_t)1 << j)) <= removedconds; j++)
 		{
 			if ((removedconds & bit) == bit)
 			{
 				g_removeCondForward->PushCell(i);
-				g_removeCondForward->PushCell(j);
+				g_removeCondForward->PushCell(j & 0xFFFFFFFF);
 				g_removeCondForward->Execute(NULL, NULL);
 			}
 		}
