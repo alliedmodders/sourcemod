@@ -5,6 +5,8 @@ sdk = SM.sdkInfo['ep2v']
 compiler = SM.DefaultHL2Compiler('extensions/tf2', 'ep2v')
 if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
 	compiler['CFLAGS'].append('-Wno-parentheses')
+if compiler.cc.name == 'gcc':
+	compiler['CFLAGS'].append('-Wno-array-bounds')
 
 name = 'game.tf2.ext.' + sdk['ext']
 extension = AMBuild.AddJob(name)
