@@ -230,10 +230,15 @@ AddNormalLibrary('geoip.ext', 'extensions')
 AddNormalLibrary('dbi.mysql.ext', 'extensions')
 AddNormalLibrary('dbi.sqlite.ext', 'extensions')
 
-AddNormalLibrary('game.cstrike.ext.2.css', 'extensions')
-AddNormalLibrary('game.cstrike.ext.2.csgo', 'extensions')
-	
-AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
+if 'css' in SM.sdkInfo:
+	AddNormalLibrary('game.cstrike.ext.2.css', 'extensions')
+
+if 'csgo' in SM.sdkInfo:
+	AddNormalLibrary('game.cstrike.ext.2.csgo', 'extensions')
+
+if 'ep2v' in SM.sdkInfo:
+	AddNormalLibrary('game.tf2.ext.2.ep2v', 'extensions')
+
 AddNormalLibrary('topmenus.ext', 'extensions')
 AddNormalLibrary('regex.ext', 'extensions')
 AddNormalLibrary('webternet.ext', 'extensions')
