@@ -34,11 +34,7 @@
 
 UserMessages g_UserMsgs;
 
-#if SOURCE_ENGINE == SE_CSGO
-#define CSGO_USERMESSAGES_DISABLE
-#endif
-
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 SH_DECL_HOOK3(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int, const char *);
 #else
@@ -84,7 +80,7 @@ void UserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)
 	{
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
@@ -106,7 +102,7 @@ int UserMessages::GetMessageIndex(const char *msg)
 			int size;
 			msgid = 0;
 
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 			while (gamedll->GetUserMessageInfo(msgid, msgbuf, sizeof(msgbuf), size))
 			{
 				if (strcmp(msgbuf, msg) == 0)
@@ -132,7 +128,7 @@ int UserMessages::GetMessageIndex(const char *msg)
 
 bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) const
 {
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 	if (m_FallbackSearch)
 	{
 		int size;
@@ -180,7 +176,7 @@ bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigne
 
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
 #else
@@ -266,7 +262,7 @@ bool UserMessages::InternalHook(int msg_id, IUserMessageListener *pListener, boo
 
 	if (!m_HookCount++)
 	{
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
@@ -325,7 +321,7 @@ void UserMessages::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
@@ -518,7 +514,7 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 		bf_write *engine_bfw;
 
-#ifndef CSGO_USERMESSAGES_DISABLE
+#ifndef CSGO_USERMESSAGES_ENABLE
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId, g_SMAPI->GetUserMessage(m_CurId));
 #else
