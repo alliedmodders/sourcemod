@@ -7,7 +7,7 @@ HL2SDK_ORIG = ../../../hl2sdk
 HL2SDK_OB = ../../../hl2sdk-ob
 HL2SDK_OB_VALVE = ../../../hl2sdk-ob-valve
 HL2SDK_L4D = ../../../hl2sdk-l4d
-MMSOURCE17 = ../../../mmsource-1.7
+MMSOURCE17 = ../../../mmsource-1.9
 
 #####################################
 ### EDIT BELOW FOR OTHER PROJECTS ###
@@ -78,7 +78,7 @@ ifeq "$(ENGINE)" "left4dead"
 endif
 
 ifeq "$(USEMETA)" "true"
-	LINK_HL2 = $(HL2LIB)/tier1_i486.a tier0_i486.so
+	LINK_HL2 = $(HL2LIB)/tier1_i486.a libtier0_srv.so
 
 	LINK += $(LINK_HL2)
 
@@ -94,7 +94,7 @@ LINK += -m32 -ldl -lm
 
 CFLAGS += -D_LINUX -Dstricmp=strcasecmp -D_stricmp=strcasecmp -D_strnicmp=strncasecmp -Dstrnicmp=strncasecmp \
 	-D_snprintf=snprintf -D_vsnprintf=vsnprintf -D_alloca=alloca -Dstrcmpi=strcasecmp -Wall -Werror -Wno-switch \
-	-Wno-unused -Wno-uninitialized -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
+	-Wno-array-bounds -Wno-unused -Wno-uninitialized -mfpmath=sse -msse -DSOURCEMOD_BUILD -DHAVE_STDINT_H -m32
 CPPFLAGS += -Wno-non-virtual-dtor -fno-exceptions -fno-rtti
 
 ################################################
@@ -138,7 +138,7 @@ all: check
 	mkdir -p $(BIN_DIR)/CDetour
 	mkdir -p $(BIN_DIR)/asm
 	if [ "$(USEMETA)" = "true" ]; then \
-		ln -sf $(SRCDS)/bin/tier0_i486.so tier0_i486.so; \
+		ln -sf $(SRCDS)/bin/libtier0_srv.so libtier0_srv.so; \
 	fi
 	$(MAKE) -f Makefile extension
 
