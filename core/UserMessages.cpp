@@ -34,12 +34,14 @@
 
 UserMessages g_UserMsgs;
 
+#ifndef CSGO_USERMESSAGES_ENABLE
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 SH_DECL_HOOK3(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int, const char *);
 #else
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
 #endif
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
+#endif
 
 UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
 {
@@ -78,10 +80,12 @@ void UserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)
 	{
+#ifndef CSGO_USERMESSAGES_ENABLE
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+#endif
 	}
 	m_HookCount = 0;
 }
@@ -98,6 +102,7 @@ int UserMessages::GetMessageIndex(const char *msg)
 			int size;
 			msgid = 0;
 
+#ifndef CSGO_USERMESSAGES_ENABLE
 			while (gamedll->GetUserMessageInfo(msgid, msgbuf, sizeof(msgbuf), size))
 			{
 				if (strcmp(msgbuf, msg) == 0)
@@ -107,6 +112,7 @@ int UserMessages::GetMessageIndex(const char *msg)
 				}
 				msgid++;
 			}
+#endif
 		}
 
 		msgid = g_SMAPI->FindUserMessage(msg);
@@ -122,11 +128,13 @@ int UserMessages::GetMessageIndex(const char *msg)
 
 bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) const
 {
+#ifndef CSGO_USERMESSAGES_ENABLE
 	if (m_FallbackSearch)
 	{
 		int size;
 		return gamedll->GetUserMessageInfo(msgid, buffer, maxlength, size);
 	}
+#endif
 
 	const char *msg = g_SMAPI->GetUserMessage(msgid);
 
@@ -168,6 +176,7 @@ bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigne
 
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
+#ifndef CSGO_USERMESSAGES_ENABLE
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 		buffer = ENGINE_CALL(UserMessageBegin)(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
 #else
@@ -178,6 +187,7 @@ bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigne
 		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
 #else
 		buffer = engine->UserMessageBegin(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id);
+#endif
 #endif
 	}
 
@@ -252,10 +262,12 @@ bool UserMessages::InternalHook(int msg_id, IUserMessageListener *pListener, boo
 
 	if (!m_HookCount++)
 	{
+#ifndef CSGO_USERMESSAGES_ENABLE
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+#endif
 	}
 
 	if (intercept)
@@ -309,10 +321,12 @@ void UserMessages::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
+#ifndef CSGO_USERMESSAGES_ENABLE
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+#endif
 	}
 }
 
@@ -500,6 +514,7 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 		bf_write *engine_bfw;
 
+#ifndef CSGO_USERMESSAGES_ENABLE
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId, g_SMAPI->GetUserMessage(m_CurId));
 #else
@@ -508,6 +523,7 @@ void UserMessages::OnMessageEnd_Pre()
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();
+#endif
 	}
 
 	pList = &m_msgHooks[m_CurId];
