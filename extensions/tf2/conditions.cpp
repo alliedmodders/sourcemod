@@ -114,7 +114,7 @@ void Conditions_OnGameFrame(bool simulating)
 			g_addCondForward->Execute(NULL, NULL);
 		}
 
-		for (j = 0; (j = removedconds->FindNextSetBit( j )) != -1; ++j)
+		for (j = 0; (j = addedconds->FindNextSetBit( j )) != -1; ++j)
 		{
 			g_removeCondForward->PushCell(i);
 			g_removeCondForward->PushCell(j);
