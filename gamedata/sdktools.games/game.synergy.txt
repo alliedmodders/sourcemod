@@ -19,83 +19,78 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"355"
-				"linux"		"356"
+				"windows"	"357"
+				"linux"		"358"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"238"
-				"linux"		"239"
+				"windows"	"239"
+				"linux"		"240"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"236"
-				"linux"		"237"
+				"windows"	"237"
+				"linux"		"238"
 			}
 			"Ignite"
 			{
-				"windows"	"193"
-				"linux"		"194"
+				"windows"	"194"
+				"linux"		"195"
 			}
 			"Extinguish"
 			{
-				"windows"	"197"
-				"linux"		"198"
+				"windows"	"198"
+				"linux"		"199"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"101"
+				"linux"		"102"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"396"
-				"linux"		"396"
+				"windows"	"398"
+				"linux"		"398"
 			}
 			"GetVelocity"
 			{
-				"windows"	"130"
-				"linux"		"131"
+				"windows"	"131"
+				"linux"		"132"
 			}
 			"EyeAngles"
 			{
-				"windows"	"122"
-				"linux"		"123"
+				"windows"	"123"
+				"linux"		"124"
 			}
 			"AcceptInput"
 			{
-				"windows"	"34"
-				"linux"		"35"
+				"windows"	"35"
+				"linux"		"36"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"23"
-				"linux"		"24"
+				"windows"	"24"
+				"linux"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"229"
-				"linux"		"230"
+				"windows"	"230"
+				"linux"		"231"
 			}
 			"Activate"
 			{
-				"windows"	"31"
-				"linux"		"32"
+				"windows"	"32"
+				"linux"		"33"
 			}
 			"RemoveAllItems"
 			{
-				"windows"	"303"
-				"linux"		"304"
+				"windows"	"305"
+				"linux"		"306"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"375"
-				"linux"		"376"
-			}
-			"FireOutputBackup"
-			{
-				"windows"	"6"
-				"linux"		"10"
+				"windows"	"377"
+				"linux"		"378"
 			}
 		}
 		"Signatures"
