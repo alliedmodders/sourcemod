@@ -6,73 +6,73 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"352"
-				"linux"		"353"
+				"windows"	"355"
+				"linux"		"356"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"239"
-				"linux"		"240"
+				"windows"	"242"
+				"linux"		"243"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"237"
-				"linux"		"238"
+				"windows"	"240"
+				"linux"		"241"
 			}
 			"Ignite"
 			{
-				"windows"	"194"
-				"linux"		"195"
+				"windows"	"197"
+				"linux"		"198"
 			}
 			"Extinguish"
 			{
-				"windows"	"198"
-				"linux"		"199"
+				"windows"	"201"
+				"linux"		"202"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"101"
+				"linux"		"102"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"393"
-				"linux"		"393"
+				"windows"	"396"
+				"linux"		"396"
 			}
 			"GetVelocity"
 			{
-				"windows"	"130"
-				"linux"		"131"
+				"windows"	"131"
+				"linux"		"132"
 			}
 			"EyeAngles"
 			{
-				"windows"	"122"
-				"linux"		"123"
+				"windows"	"123"
+				"linux"		"124"
 			}
 			"AcceptInput"
 			{
-				"windows"	"34"
-				"linux"		"35"
+				"windows"	"35"
+				"linux"		"36"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"23"
-				"linux"		"24"
+				"windows"	"24"
+				"linux"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"230"
-				"linux"		"231"
+				"windows"	"233"
+				"linux"		"234"
 			}
 			"Activate"
 			{
-				"windows"	"31"
-				"linux"		"32"
+				"windows"	"32"
+				"linux"		"33"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"372"
-				"linux"		"373"
+				"windows"	"375"
+				"linux"		"376"
 			}
 			"s_pTempEntities"
 			{
