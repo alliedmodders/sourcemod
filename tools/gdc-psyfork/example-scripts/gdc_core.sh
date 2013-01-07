@@ -8,6 +8,9 @@ ENGINE_BIN=${ENGINE_PATH}/bin/engine
 GAME_BIN=${ENGINE_PATH}/${GAME_DIR}/bin/server
 STEAMINF=${ENGINE_PATH}/${GAME_DIR}/steam.inf
 
+GDC_PATH=${SM_PATH}/tools/gdc-psyfork
+GDC_BIN=${GDC_PATH}/Release/gdc
+
 if [ "${GAMEDATA_DIR}" == "" ] ; then
 	GAMEDATA_DIR=${GAME_DIR}
 fi
@@ -107,16 +110,34 @@ cd ${SM_PATH}/tools/gdc-psyfork
 hg pull -u
 
 echo -e "\n"
+
+cd ${ENGINE_PATH}
+
 for i in "${gamedata_files[@]}"
 do
-	./Release/gdc \
-	        -g ${GAME_DIR} \
-        	-e ${ENGINE_NAME} \
-	        -f ${SM_PATH}/gamedata/$i \
-        	-b ${GAME_BIN}${BIN_EXT}.so \
-	        -x ${ENGINE_BIN}${BIN_EXT}.so \
-	        -w ${GAME_BIN}.dll \
-	        -y ${ENGINE_BIN}.dll
+	NO_SYMTABLE=
+
+	readelf --sections ${GAME_BIN}${BIN_EXT}.so | grep --quiet .symtab
+	if [ "${PIPESTATUS[1]}" != "0" ] ; then
+		NO_SYMTABLE=" -n"
+	fi
+
+	readelf --sections ${GAME_BIN}${BIN_EXT}.so | grep --quiet .strtab
+	if [ "${PIPESTATUS[1]}" != "0" ] ; then
+			NO_SYMTABLE=" -n"
+	fi
+
+	# having an issue upon exit after loading some source2007 server bins, invalid free in sendtable dtor, idk. suppress.
+	MALLOC_CHECK_=0 ${GDC_BIN} \
+		-g ${GAMEDATA_DIR} \
+		-e ${ENGINE_NAME} \
+		-f ${SM_PATH}/gamedata/$i \
+		-b ${GAME_BIN}${BIN_EXT}.so \
+		-x ${ENGINE_BIN}${BIN_EXT}.so \
+		-w ${GAME_BIN}.dll \
+		-y ${ENGINE_BIN}.dll \
+		-s ${GDC_PATH}/symbols.txt \
+		${NO_SYMTABLE}
 	echo -e "------------------------------------------------------\n"
 done
 

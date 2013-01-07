@@ -16,10 +16,21 @@ char *game_binary = NULL;
 char *engine_binary = NULL;
 char *wgame_binary = NULL;
 char *wengine_binary = NULL;
+char *symbols_file = NULL;
+
+bool use_symtab = true;
 
 inline bool IsDigit( char c )
 {
 	return c < 58 && c > 47;
+}
+
+void PrintUsage()
+{
+	printf("Usage: ./gdc -g <game> -e <engine name> -f <gamedata file> -b <game binary> -x <engine binary> -w <win game binary> -y <win engine binary> [-s <symbols.txt file>]\n");
+	printf("Other options:\n");
+	printf(" -d\tAdd debug output\n");
+	printf(" -n\tDon't use symbol table for lookups (falls back to dlsym)\n");
 }
 
 int main(int argc, char **argv)
@@ -29,12 +40,18 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 	int opt;
-	while ((opt = getopt(argc, argv, "b:de:f:g:x:w:y:")) != -1)
+	while ((opt = getopt(argc, argv, "b:nde:f:g:x:w:y:s:")) != -1)
+	{
 		switch (opt)
 		{
 			case 'd':
 				debug = true;
 				break;
+
+			case 'n':
+				use_symtab = false;
+				break;
+
 			case 'g':
 				game = optarg;
 				break;
@@ -63,18 +80,23 @@ int main(int argc, char **argv)
 				wengine_binary = optarg;
 				break;
 
+			case 's':
+				symbols_file = optarg;
+				break;
+
 			case '?':
-				printf("Usage: ./gdc -g <game> -e <engine name> -f <gamedata file> -b <game binary> -x <engine binary> -w <win game binary> -y <win engine binary>\n");
+				PrintUsage();
 				return 0;
 
 			default:
 				printf("WHAT\n");
 				return 0;
 		}
+	}
 
 	if (!game || !engine || !gamedata || !game_binary || !engine_binary || !wgame_binary || !wengine_binary)
 	{
-		printf("Usage: ./gdc -g <game> -e <engine name> -f <gamedata file> -b <game binary> -x <engine binary> -w <win game binary> -y <win engine binary>\n");
+		PrintUsage();
 		return 0;
 	}
 
@@ -125,7 +147,7 @@ int main(int argc, char **argv)
 	}
 
 	CGameConfig symbols;
-	if (!symbols.EnterFile("symbols.txt", err, sizeof(err)))
+	if (!symbols.EnterFile(symbols_file ? symbols_file : "symbols.txt", err, sizeof(err)))
 	{
 		printf("symbols.txt: %s\n", err);
 		return 0;
@@ -178,8 +200,17 @@ int main(int argc, char **argv)
 			int newOffset;
 			if (symvt[0])
 			{
-				void **newvt = (void**) mu.ResolveSymbol(ghandle, symvt);
-			        if (!newvt)
+                void **newvt = NULL;
+				if( use_symtab )
+				{
+					newvt = (void**)mu.ResolveSymbol(ghandle, symvt);
+				}
+				else
+				{
+					newvt = (void **)dlsym(ghandle, symvt);
+				}
+				
+			    if (!newvt)
 				{
 					printf("? O: %-22s - can't find, skipping\n", symvt);
 					continue;
@@ -362,13 +393,15 @@ int checkSigStringW(int file, const char* symbol)
 
 int checkSigStringL(void *handle, const char* symbol)
 {
-	bool isAt = (symbol[0] == '@');
+	bool isAt = (symbol[0] == '@' && symbol[1] != '\0');
 	int matches = 0;
 	bool dummy;
 	
 	if (isAt)
 	{
-		if( mu.ResolveSymbol(handle, symbol + 1) )
+		if( use_symtab && mu.ResolveSymbol(handle, &symbol[1]) )
+			matches = 1;
+		else if( !use_symtab && dlsym(handle, &symbol[1]) )
 			matches = 1;
 	}
 	else
@@ -403,15 +436,30 @@ void findFuncPos(const char *sym, int &func, int &params)
 
 int findVFunc(void *handle, void **vt, const char *symbol)
 {
-	int offset = 1;
+	if( !use_symtab )
+	{
+		for (int i = 0; i < 1000; i++ )
+		{
+			void *pFunc = vt[i];
+			if( !pFunc )
+				continue;
+			
+			if( pFunc == dlsym(handle, symbol ) )
+				return i - 2;
+		}
+		
+		return -1;
+	}
+	
 	int funcPos, paramPos;
 	findFuncPos(symbol, funcPos, paramPos);
-
-
 
 	for (int i = 0; i < 1000; i++)
 	{
 		void *pFunc = vt[i];
+		if( !pFunc )
+			continue;
+		
 		const char *s;
 
 		if (!(s = mu.ResolveAddr(handle, pFunc)))
@@ -426,12 +474,11 @@ int findVFunc(void *handle, void **vt, const char *symbol)
 
 		if (strcmp(s + tempFuncPos, symbol + funcPos) == 0)
 		{
-			offset = i;
-			break;
+			return i - 2;
 		}
 	}
 
-	return offset - 2;
+	return -1;
 }
 
 unsigned int strncopy(char *dest, const char *src, size_t count)

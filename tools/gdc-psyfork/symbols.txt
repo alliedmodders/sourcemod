@@ -76,6 +76,7 @@
 			"ShouldGib"		"_ZN9CTFPlayer9ShouldGibERK15CTakeDamageInfob"
 			"GetRadius"		"_ZN13CTFBaseRocket9GetRadiusEv"
 			"DeflectPlayer"		"_ZN13CTFWeaponBase13DeflectPlayerEP9CTFPlayerS1_R6VectorS3_S3_"
+			"GetDataDescMap"	"_ZN11CBaseEntity14GetDataDescMapEv"
 
 			// CSSDM
 			"IPointsForKill"	"_ZN14CTeamplayRules14IPointsForKillEP11CBasePlayerS1_"
@@ -84,6 +85,12 @@
 			
 			// NapalmLagFix
 			"RadiusDamage"	"_ZN10CGameRules12RadiusDamageERK15CTakeDamageInfoRK6VectorfiP11CBaseEntity"
+			
+			// V
+			"CTFFlameThrower::FireProjectile"	"_ZN16CTFWeaponBaseGun14FireProjectileEP9CTFPlayer"
+			"CTFFlameThrower::FireFlameRocket"	"_ZN16CTFWeaponBaseGun15FireFlameRocketEP9CTFPlayer"
+			"CTFPlayer::GetMaxHealth"			"_ZNK11CBaseEntity12GetMaxHealthEv"
+			"CBaseEntity::GetBaseEntity"		"_ZN11CBaseEntity13GetBaseEntityEv"
 		}
 		
 		"Options"
@@ -178,6 +185,19 @@
 		{
 			"Teleport"	"_ZN11CBaseEntity8TeleportEPK6VectorPK6QAngleS2_b"
 			"GiveNamedItem"	"_ZN11CBasePlayer13GiveNamedItemEPKcib"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"synergy"
+		}
+
+		"Keys"
+		{
+			"GiveNamedItem" "_ZN11CBasePlayer13GiveNamedItemEPKcib"
 		}
 	}
 }
