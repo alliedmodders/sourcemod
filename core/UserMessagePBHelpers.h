@@ -70,7 +70,7 @@
 
 #define CHECK_REPEATED_ELEMENT(idx) \
 	int elemCount = msg->GetReflection()->FieldSize(*msg, field); \
-	if (elemCount == 0 || idx >= elemCount || idx <= 0)       \
+	if (elemCount == 0 || idx >= elemCount || idx < 0)        \
 	{                                                         \
 		return false;                                         \
 	}
