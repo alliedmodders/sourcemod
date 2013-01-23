@@ -516,7 +516,7 @@ public:
 		CHECK_FIELD_NOT_REPEATED();
 
 		std::string scratch;
-		strncopy(out, msg->GetReflection()->GetStringReference(*msg, field, &buffer).c_str(), size);
+		strncopy(out, msg->GetReflection()->GetStringReference(*msg, field, &scratch).c_str(), size);
 
 		return true;	
 	}
