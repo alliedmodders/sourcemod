@@ -54,7 +54,7 @@
 			"RoundRespawn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\xE8\x2A\x2A\x2A\x2A\x84\xC0\x75"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F"
 				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
 				"mac"		"@_ZN9CCSPlayer12RoundRespawnEv"
 			}
@@ -68,14 +68,14 @@
 			"HandleCommand_Buy_Internal"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x81\xEC\x2A\x2A\x00\x00\x53\x56\x8B\xF1\x80\xBE\x2A\x2A\x00\x00\x00"
-				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
-				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
+				"windows"		"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x57\x6A\x00\x8B\xF1\xE8"
+				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcb"
+				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcb"
 			}
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x2A\x2A\x32\xDB\x57\x8B\xF9\x85\xF6\x0F\x84"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x53\x57\x8B\xF9\x8B\x2A\x2A\x2A\x2A\x2A\x32\xDB\x85\xC9\x74"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 				"mac"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
