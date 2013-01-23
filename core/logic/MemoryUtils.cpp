@@ -116,7 +116,7 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 	}
 
 	ptr = reinterpret_cast<char *>(lib.baseAddress);
-	end = ptr + lib.memorySize - 1;
+	end = ptr + lib.memorySize - len;
 
 	while (ptr < end)
 	{
