@@ -71,7 +71,7 @@ static cell_t smn_PbReadInt(IPluginContext *pCtx, const cell_t *params)
 	int ret;
 	if (!msg->GetInt32OrUnsigned(strField, &ret))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return ret;
@@ -85,7 +85,7 @@ static cell_t smn_PbReadFloat(IPluginContext *pCtx, const cell_t *params)
 	float ret;
 	if (!msg->GetFloatOrDouble(strField, &ret))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return sp_ftoc(ret);
@@ -99,7 +99,7 @@ static cell_t smn_PbReadBool(IPluginContext *pCtx, const cell_t *params)
 	bool ret;
 	if (!msg->GetBool(strField, &ret))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return ret ? 1 : 0;
@@ -115,7 +115,7 @@ static cell_t smn_PbReadString(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->GetString(strField, buf, params[4]))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -132,7 +132,7 @@ static cell_t smn_PbReadColor(IPluginContext *pCtx, const cell_t *params)
 	Color clr;
 	if (!msg->GetColor(strField, &clr))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = clr.r();
@@ -154,7 +154,7 @@ static cell_t smn_PbReadAngle(IPluginContext *pCtx, const cell_t *params)
 	QAngle ang;
 	if (!msg->GetQAngle(strField, &ang))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = sp_ftoc(ang.x);
@@ -175,7 +175,7 @@ static cell_t smn_PbReadVector(IPluginContext *pCtx, const cell_t *params)
 	Vector vec;
 	if (!msg->GetVector(strField, &vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = sp_ftoc(vec.x);
@@ -196,7 +196,7 @@ static cell_t smn_PbReadVector2D(IPluginContext *pCtx, const cell_t *params)
 	Vector2D vec;
 	if (!msg->GetVector2D(strField, &vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = sp_ftoc(vec.x);
@@ -213,7 +213,7 @@ static cell_t smn_PbGetRepeatedFieldCount(IPluginContext *pCtx, const cell_t *pa
 	int cnt = msg->GetRepeatedFieldCount(strField);
 	if (cnt == -1)
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return cnt;
@@ -227,7 +227,7 @@ static cell_t smn_PbReadRepeatedInt(IPluginContext *pCtx, const cell_t *params)
 	int ret;
 	if (!msg->GetRepeatedInt32OrUnsigned(strField, params[3], &ret))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return ret;
@@ -241,7 +241,7 @@ static cell_t smn_PbReadRepeatedFloat(IPluginContext *pCtx, const cell_t *params
 	float ret;
 	if (!msg->GetRepeatedFloatOrDouble(strField, params[3], &ret))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return sp_ftoc(ret);
@@ -255,7 +255,7 @@ static cell_t smn_PbReadRepeatedBool(IPluginContext *pCtx, const cell_t *params)
 	bool ret;
 	if (!msg->GetRepeatedBool(strField, params[3], &ret))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return ret ? 1 : 0;
@@ -271,7 +271,7 @@ static cell_t smn_PbReadRepeatedString(IPluginContext *pCtx, const cell_t *param
 
 	if (!msg->GetRepeatedString(strField, params[3], buf, params[5]))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -288,7 +288,7 @@ static cell_t smn_PbReadRepeatedColor(IPluginContext *pCtx, const cell_t *params
 	Color clr;
 	if (!msg->GetRepeatedColor(strField, params[3], &clr))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = clr.r();
@@ -310,7 +310,7 @@ static cell_t smn_PbReadRepeatedAngle(IPluginContext *pCtx, const cell_t *params
 	QAngle ang;
 	if (!msg->GetRepeatedQAngle(strField, params[3], &ang))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = sp_ftoc(ang.x);
@@ -331,7 +331,7 @@ static cell_t smn_PbReadRepeatedVector(IPluginContext *pCtx, const cell_t *param
 	Vector vec;
 	if (!msg->GetRepeatedVector(strField, params[3], &vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = sp_ftoc(vec.x);
@@ -352,7 +352,7 @@ static cell_t smn_PbReadRepeatedVector2D(IPluginContext *pCtx, const cell_t *par
 	Vector2D vec;
 	if (!msg->GetRepeatedVector2D(strField, params[3], &vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	out[0] = sp_ftoc(vec.x);
@@ -368,7 +368,7 @@ static cell_t smn_PbSetInt(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetInt32OrUnsigned(strField, params[3]))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -381,7 +381,7 @@ static cell_t smn_PbSetFloat(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetFloatOrDouble(strField, sp_ctof(params[3])))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -395,7 +395,7 @@ static cell_t smn_PbSetBool(IPluginContext *pCtx, const cell_t *params)
 	bool value = (params[3] == 0 ? false : true);
 	if (!msg->SetBool(strField, value))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -415,7 +415,7 @@ static cell_t smn_PbSetString(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetString(strField, strValue))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -441,7 +441,7 @@ static cell_t smn_PbSetColor(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetColor(strField, clr))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -466,7 +466,7 @@ static cell_t smn_PbSetAngle(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetQAngle(strField, ang))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -491,7 +491,7 @@ static cell_t smn_PbSetVector(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetVector(strField, vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -515,7 +515,7 @@ static cell_t smn_PbSetVector2D(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->SetVector2D(strField, vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -528,7 +528,7 @@ static cell_t smn_PbAddInt(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddInt32OrUnsigned(strField, params[3]))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -541,7 +541,7 @@ static cell_t smn_PbAddFloat(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddFloatOrDouble(strField, sp_ctof(params[3])))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -555,7 +555,7 @@ static cell_t smn_PbAddBool(IPluginContext *pCtx, const cell_t *params)
 	bool value = (params[3] == 0 ? false : true);
 	if (!msg->AddBool(strField, value))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -575,7 +575,7 @@ static cell_t smn_PbAddString(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddString(strField, strValue))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -601,7 +601,7 @@ static cell_t smn_PbAddColor(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddColor(strField, clr))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -626,7 +626,7 @@ static cell_t smn_PbAddAngle(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddQAngle(strField, ang))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -651,7 +651,7 @@ static cell_t smn_PbAddVector(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddVector(strField, vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -675,7 +675,7 @@ static cell_t smn_PbAddVector2D(IPluginContext *pCtx, const cell_t *params)
 
 	if (!msg->AddVector2D(strField, vec))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	return 1;
@@ -689,7 +689,7 @@ static cell_t smn_PbReadMessage(IPluginContext *pCtx, const cell_t *params)
 	protobuf::Message *innerMsg;
 	if (!msg->GetMessage(strField, &innerMsg))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	Handle_t outHndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(innerMsg), NULL, g_pCoreIdent, NULL);
@@ -706,7 +706,7 @@ static cell_t smn_PbReadRepeatedMessage(IPluginContext *pCtx, const cell_t *para
 	const protobuf::Message *innerMsg;
 	if (!msg->GetRepeatedMessage(strField, params[3], &innerMsg))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\"[%d] for message \"%s\"", strField, params[3], msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	Handle_t outHndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(const_cast<protobuf::Message *>(innerMsg)), NULL, g_pCoreIdent, NULL);
@@ -723,7 +723,7 @@ static cell_t smn_PbAddMessage(IPluginContext *pCtx, const cell_t *params)
 	protobuf::Message *innerMsg;
 	if (!msg->AddMessage(strField, &innerMsg))
 	{
-		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName());
+		return pCtx->ThrowNativeError("Invalid field \"%s\" for message \"%s\"", strField, msg->GetProtobufMessage()->GetTypeName().c_str());
 	}
 
 	Handle_t outHndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(innerMsg), NULL, g_pCoreIdent, NULL);
