@@ -12,6 +12,9 @@ for i in SM.sdkInfo:
 	compiler = SM.DefaultHL2Compiler('core', i)
 
 	if i == 'csgo':
+		# Protobuf 2.3 headers have some signed/unsigned compares. I believe that it's fixed in later versions, but Valve.
+		if isinstance(compiler.cxx, Cpp.CompatGCC):
+			compiler.AddToListVar('CFLAGS', '-Wno-sign-compare')
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'common', 'protobuf-2.3.0', 'src'))
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'engine', 'protobuf'))
 		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'csgo', 'protobuf'))
