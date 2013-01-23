@@ -32,9 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_CMSGLISTENERWRAPPER_H_
 #define _INCLUDE_SOURCEMOD_CMSGLISTENERWRAPPER_H_
 
-extern int g_MsgPlayers[256];
+#include "UserMessages.h"
 
-class MsgListenerWrapper : public IUserMessageListener
+class MsgListenerWrapper
+#ifdef USE_PROTOBUF_USERMESSAGES
+	: public IProtobufUserMessageListener
+#else
+	: public IBitBufUserMessageListener
+#endif
 {
 public:
 	void Initialize(int msgid, IPluginFunction *hook, IPluginFunction *notify, bool intercept);
@@ -43,8 +48,13 @@ public:
 	IPluginFunction *GetHookedFunction() const;
 	IPluginFunction *GetNotifyFunction() const;
 public: //IUserMessageListener
+#ifdef USE_PROTOBUF_USERMESSAGES
+	void OnUserMessage(int msg_id, protobuf::Message *msg, IRecipientFilter *pFilter);
+	ResultType InterceptUserMessage(int msg_id, protobuf::Message *msg, IRecipientFilter *pFilter);
+#else
 	void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
 	ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
+#endif
 	void OnPostUserMessage(int msg_id, bool sent);
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
@@ -55,5 +65,9 @@ private:
 	bool m_IsInterceptHook;
 	int m_MsgId;
 };
+
+extern HandleType_t g_WrBitBufType;
+extern HandleType_t g_RdBitBufType;
+extern HandleType_t g_ProtobufType;
 
 #endif //_INCLUDE_SOURCEMOD_CMSGLISTENERWRAPPER_H_

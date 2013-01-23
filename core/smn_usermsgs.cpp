@@ -31,15 +31,22 @@
 
 #include "HandleSys.h"
 #include "PluginSys.h"
-#include "UserMessages.h"
 #include "PlayerManager.h"
 #include "smn_usermsgs.h"
+#ifdef USE_PROTOBUF_USERMESSAGES
+#include "UserMessagePBHelpers.h"
+#endif
 
-HandleType_t g_WrBitBufType;
-HandleType_t g_RdBitBufType;
+HandleType_t g_ProtobufType = NO_HANDLE_TYPE;
+HandleType_t g_WrBitBufType = NO_HANDLE_TYPE;
+HandleType_t g_RdBitBufType = NO_HANDLE_TYPE;
+
 Handle_t g_CurMsgHandle;
+
+#ifndef USE_PROTOBUF_USERMESSAGES
 Handle_t g_ReadBufHandle;
 bf_read g_ReadBitBuf;
+#endif
 
 int g_MsgPlayers[256];
 bool g_IsMsgInExec = false;
@@ -85,10 +92,14 @@ void UsrMessageNatives::OnSourceModAllInitialized()
 	g_HandleSys.InitAccessDefaults(NULL, &sec);
 	sec.access[HandleAccess_Delete] = HANDLE_RESTRICT_IDENTITY;
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+	g_ProtobufType = g_HandleSys.CreateType("ProtobufUM", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+#else
 	g_WrBitBufType = g_HandleSys.CreateType("BitBufWriter", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	g_RdBitBufType = g_HandleSys.CreateType("BitBufReader", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 
 	g_ReadBufHandle = g_HandleSys.CreateHandle(g_RdBitBufType, &g_ReadBitBuf, NULL, g_pCoreIdent, NULL);
+#endif
 
 	g_PluginSys.AddPluginsListener(this);
 }
@@ -98,6 +109,11 @@ void UsrMessageNatives::OnSourceModShutdown()
 	HandleSecurity sec;
 	sec.pIdentity = g_pCoreIdent;
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+	g_HandleSys.RemoveType(g_ProtobufType, g_pCoreIdent);
+
+	g_ProtobufType = 0;
+#else
 	g_HandleSys.FreeHandle(g_ReadBufHandle, &sec);
 
 	g_HandleSys.RemoveType(g_WrBitBufType, g_pCoreIdent);
@@ -105,15 +121,24 @@ void UsrMessageNatives::OnSourceModShutdown()
 
 	g_WrBitBufType = 0;
 	g_RdBitBufType = 0;
+#endif
 }
 
 void UsrMessageNatives::OnHandleDestroy(HandleType_t type, void *object)
 {
+#ifdef USE_PROTOBUF_USERMESSAGES
+	delete (SMProtobufMessage *)object;
+#endif
 }
 
 bool UsrMessageNatives::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 {
+#ifdef USE_PROTOBUF_USERMESSAGES
+	// Different messages have different sizes, but this works as an approximate
+	*pSize = sizeof(protobuf::Message) + sizeof(SMProtobufMessage);
+#else
 	*pSize = sizeof(bf_read);
+#endif
 
 	return true;
 }
@@ -275,36 +300,68 @@ IPluginFunction *MsgListenerWrapper::GetNotifyFunction() const
 	return m_Notify;
 }
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+void MsgListenerWrapper::OnUserMessage(int msg_id, protobuf::Message *msg, IRecipientFilter *pFilter)
+#else
 void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+#endif
 {
 	cell_t res;
+	Handle_t hndl;
 	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+	hndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(msg), NULL, g_pCoreIdent, NULL);
+#else
 	g_ReadBitBuf.StartReading(bf->GetBasePointer(), bf->GetNumBytesWritten());
+	hndl = g_ReadBufHandle;
+#endif
 
 	m_Hook->PushCell(msg_id);
-	m_Hook->PushCell(g_ReadBufHandle);
+	m_Hook->PushCell(hndl);
 	m_Hook->PushArray(g_MsgPlayers, size);
 	m_Hook->PushCell(size);
 	m_Hook->PushCell(pFilter->IsReliable());
 	m_Hook->PushCell(pFilter->IsInitMessage());
 	m_Hook->Execute(&res);
+
+#ifdef USE_PROTOBUF_USERMESSAGES
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	g_HandleSys.FreeHandle(hndl, &sec);
+#endif
 }
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, protobuf::Message *msg, IRecipientFilter *pFilter)
+#else
 ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+#endif
 {
+	Handle_t hndl;
 	cell_t res = static_cast<cell_t>(Pl_Continue);
 	size_t size = _FillInPlayers(g_MsgPlayers, pFilter);
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+	hndl = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(msg), NULL, g_pCoreIdent, NULL);
+#else
 	g_ReadBitBuf.StartReading(bf->GetBasePointer(), bf->GetNumBytesWritten());
+	hndl = g_ReadBufHandle;
+#endif
 
 	m_Intercept->PushCell(msg_id);
-	m_Intercept->PushCell(g_ReadBufHandle);
+	m_Intercept->PushCell(hndl);
 	m_Intercept->PushArray(g_MsgPlayers, size);
 	m_Intercept->PushCell(size);
 	m_Intercept->PushCell(pFilter->IsReliable());
 	m_Intercept->PushCell(pFilter->IsInitMessage());
 	m_Intercept->Execute(&res);
+
+#ifdef USE_PROTOBUF_USERMESSAGES
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	g_HandleSys.FreeHandle(hndl, &sec);
+#endif
 
 	return static_cast<ResultType>(res);
 }
@@ -330,6 +387,11 @@ void MsgListenerWrapper::OnPostUserMessage(int msg_id, bool sent)
 
 static UsrMessageNatives s_UsrMessageNatives;
 
+static cell_t smn_GetUserMessageType(IPluginContext *pCtx, const cell_t *params)
+{
+	return g_UserMsgs.GetUserMessageType();
+}
+
 static cell_t smn_GetUserMessageId(IPluginContext *pCtx, const cell_t *params)
 {
 	char *msgname;
@@ -353,7 +415,6 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 	cell_t *cl_array;
 	unsigned int numClients;
 	int msgid;
-	bf_write *pBitBuf;
 	int client;
 	CPlayer *pPlayer = NULL;
 
@@ -387,13 +448,24 @@ static cell_t smn_StartMessage(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 
-	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, numClients, params[4]);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	protobuf::Message *msg = g_UserMsgs.StartProtobufMessage(msgid, cl_array, numClients, params[4]);
+	if (!msg)
+	{
+		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
+	}
+
+	g_CurMsgHandle = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(msg), pCtx->GetIdentity(), g_pCoreIdent, NULL);
+#else
+	bf_write *pBitBuf = g_UserMsgs.StartBitBufMessage(msgid, cl_array, numClients, params[4]);
 	if (!pBitBuf)
 	{
 		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
 	}
 
 	g_CurMsgHandle = g_HandleSys.CreateHandle(g_WrBitBufType, pBitBuf, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+#endif
+
 	g_IsMsgInExec = true;
 
 	return g_CurMsgHandle;
@@ -403,7 +475,6 @@ static cell_t smn_StartMessageEx(IPluginContext *pCtx, const cell_t *params)
 {
 	cell_t *cl_array;
 	unsigned int numClients;
-	bf_write *pBitBuf;
 	int client;
 	CPlayer *pPlayer = NULL;
 	int msgid = params[1];
@@ -436,13 +507,23 @@ static cell_t smn_StartMessageEx(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 
-	pBitBuf = g_UserMsgs.StartMessage(msgid, cl_array, numClients, params[4]);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	protobuf::Message *msg = g_UserMsgs.StartProtobufMessage(msgid, cl_array, numClients, params[4]);
+	if (!msg)
+	{
+		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
+	}
+
+	g_CurMsgHandle = g_HandleSys.CreateHandle(g_ProtobufType, new SMProtobufMessage(msg), pCtx->GetIdentity(), g_pCoreIdent, NULL);
+#else
+	bf_write *pBitBuf = g_UserMsgs.StartBitBufMessage(msgid, cl_array, numClients, params[4]);
 	if (!pBitBuf)
 	{
 		return pCtx->ThrowNativeError("Unable to execute a new message while in hook");
 	}
 
 	g_CurMsgHandle = g_HandleSys.CreateHandle(g_WrBitBufType, pBitBuf, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+#endif
 	g_IsMsgInExec = true;
 
 	return g_CurMsgHandle;
@@ -534,6 +615,7 @@ static cell_t smn_UnhookUserMessage(IPluginContext *pCtx, const cell_t *params)
 
 REGISTER_NATIVES(usrmsgnatives)
 {
+	{"GetUserMessageType",			smn_GetUserMessageType},
 	{"GetUserMessageId",			smn_GetUserMessageId},
 	{"GetUserMessageName",			smn_GetUserMessageName},
 	{"StartMessage",				smn_StartMessage},

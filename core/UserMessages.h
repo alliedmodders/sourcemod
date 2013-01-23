@@ -36,16 +36,35 @@
 #include <IUserMessages.h>
 #include "sourcemm_api.h"
 #include "sm_trie.h"
+#include "sm_stringutil.h"
 #include "CellRecipientFilter.h"
 
 using namespace SourceHook;
 using namespace SourceMod;
 
+#if SOURCE_ENGINE == SE_CSGO
+#define USE_PROTOBUF_USERMESSAGES
+#endif
+
+#ifdef USE_PROTOBUF_USERMESSAGES
+#include <google/protobuf/message.h>
+#include <google/protobuf/descriptor.h>
+#include <netmessages.pb.h>
+
+using namespace google;
+#else
+#include <bitbuf.h>
+#endif
+
 #define INVALID_MESSAGE_ID -1
 
 struct ListenerInfo
 {
-	IUserMessageListener *Callback;
+#ifdef USE_PROTOBUF_USERMESSAGES
+	IProtobufUserMessageListener *Callback;
+#else
+	IBitBufUserMessageListener *Callback;
+#endif
 	bool IsHooked;
 	bool KillMe;
 	bool IsNew;
@@ -70,7 +89,8 @@ public: //IUserMessages
 	bool GetMessageName(int msgid, char *buffer, size_t maxlength) const;
 	bool HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
 	bool UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept=false);
-	bf_write *StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags);
+	bf_write *StartBitBufMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags);
+	google::protobuf::Message *StartProtobufMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags);
 	bool EndMessage();
 	bool HookUserMessage2(int msg_id,
 		IUserMessageListener *pListener,
@@ -78,8 +98,17 @@ public: //IUserMessages
 	bool UnhookUserMessage2(int msg_id,
 		IUserMessageListener *pListener,
 		bool intercept=false);
+	UserMessageType GetUserMessageType() const;
 public:
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#if SOURCE_ENGINE == SE_CSGO
+	void OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
+	void OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
+#endif
+
+#if SOURCE_ENGINE == SE_CSGO
+	protobuf::Message *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
+	protobuf::Message *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #else
@@ -89,8 +118,13 @@ public:
 	void OnMessageEnd_Pre();
 	void OnMessageEnd_Post();
 private:
-	bool InternalHook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew);
-	bool InternalUnhook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	bool InternalHook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew);
+	bool InternalUnhook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew);
+#else
+	bool InternalHook(int msg_id, IBitBufUserMessageListener *pListener, bool intercept, bool isNew);
+	bool InternalUnhook(int msg_id, IBitBufUserMessageListener *pListener, bool intercept, bool isNew);
+#endif
 	void _DecRefCounter();
 private:
 	List<ListenerInfo *> m_msgHooks[255];
@@ -98,15 +132,26 @@ private:
 	CStack<ListenerInfo *> m_FreeListeners;
 	unsigned char m_pBase[2500];
 	IRecipientFilter *m_CurRecFilter;
+#ifndef USE_PROTOBUF_USERMESSAGES
 	bf_write m_InterceptBuffer;
 	bf_write *m_OrigBuffer;
 	bf_read m_ReadBuffer;
+#else
+	// The engine used to provide this. Now we track it.
+	protobuf::Message *m_OrigBuffer;
+	protobuf::Message *m_FakeEngineBuffer;
+	META_RES m_FakeMetaRes;
+
+	protobuf::Message *m_InterceptBuffer;
+#endif
 	size_t m_HookCount;
 	bool m_InHook;
 	bool m_BlockEndPost;
+#ifndef USE_PROTOBUF_USERMESSAGES
 	bool m_FallbackSearch;
 
 	Trie *m_Names;
+#endif
 	CellRecipientFilter m_CellRecFilter;
 	bool m_InExec;
 	int m_CurFlags;

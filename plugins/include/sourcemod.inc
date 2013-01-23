@@ -66,6 +66,7 @@ struct Plugin
 #include <console>
 #include <events>
 #include <bitbuffer>
+#include <protobuf>
 #include <usermessages>
 #include <menus>
 #include <halflife>

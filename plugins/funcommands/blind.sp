@@ -38,23 +38,39 @@ PerformBlind(client, target, amount)
 	new targets[2];
 	targets[0] = target;
 	
-	new Handle:message = StartMessageEx(g_FadeUserMsgId, targets, 1);
-	BfWriteShort(message, 1536);
-	BfWriteShort(message, 1536);
-	
+	new duration = 1536;
+	new holdtime = 1536;
+	new flags;
 	if (amount == 0)
 	{
-		BfWriteShort(message, (0x0001 | 0x0010));
+		flags = (0x0001 | 0x0010);
 	}
 	else
 	{
-		BfWriteShort(message, (0x0002 | 0x0008));
+		flags = (0x0002 | 0x0008);
 	}
 	
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	BfWriteByte(message, amount);
+	new color[4] = { 0, 0, 0, 0 };
+	color[3] = amount;
+	
+	new Handle:message = StartMessageEx(g_FadeUserMsgId, targets, 1);
+	if (GetUserMessageType() == UM_Protobuf)
+	{
+		PbSetInt(message, "duration", duration);
+		PbSetInt(message, "hold_time", holdtime);
+		PbSetInt(message, "flags", flags);
+		PbSetColor(message, "clr", color);
+	}
+	else
+	{
+		BfWriteShort(message, duration);
+		BfWriteShort(message, holdtime);
+		BfWriteShort(message, flags);		
+		BfWriteByte(message, color[0]);
+		BfWriteByte(message, color[1]);
+		BfWriteByte(message, color[2]);
+		BfWriteByte(message, color[3]);
+	}
 	
 	EndMessage();
 

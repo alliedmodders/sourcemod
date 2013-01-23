@@ -39,6 +39,14 @@
 #endif
 #include "logic_bridge.h"
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+#include <google/protobuf/descriptor.h>
+#endif
+
+#if SOURCE_ENGINE == SE_CSGO
+#include <game/shared/csgo/protobuf/cstrike15_usermessages.pb.h>
+#endif
+
 extern const char *g_RadioNumTable[];
 CRadioStyle g_RadioMenuStyle;
 int g_ShowMenuId = -1;
@@ -155,13 +163,22 @@ static unsigned int g_last_holdtime = 0;
 static unsigned int g_last_client_count = 0;
 static int g_last_clients[256];
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+void CRadioStyle::OnUserMessage(int msg_id, protobuf::Message &msg, IRecipientFilter *pFilter)
+#else
 void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+#endif
 {
 	int count = pFilter->GetRecipientCount();
+
+#ifdef USE_PROTOBUF_USERMESSAGES
+	int c = ((CCSUsrMsg_ShowMenu &)msg).display_time();
+#else
 	bf_read br(bf->GetBasePointer(), 3);
 
 	br.ReadWord();
 	int c = br.ReadChar();
+#endif
 
 	g_last_holdtime = (c == -1) ? 0 : (unsigned)c;
 
@@ -472,6 +489,15 @@ void CRadioMenuPlayer::Radio_Refresh()
 		time = menuHoldTime - (unsigned int)(gpGlobals->curtime - menuStartTime);
 	}
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+	// If or when we need to support multiple games per engine with this, we can switch to reflection
+	// TODO: find what happens past 240 on CS:GO
+	CCSUsrMsg_ShowMenu *msg = (CCSUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
+	msg->set_bits_valid_slots(display_keys);
+	msg->set_display_time(time);
+	msg->set_menu_string(ptr);
+	g_UserMsgs.EndMessage();
+#else
 	while (true)
 	{
 		if (len > 240)
@@ -479,7 +505,8 @@ void CRadioMenuPlayer::Radio_Refresh()
 			save = ptr[240];
 			ptr[240] = '\0';
 		}
-		bf_write *buffer = g_UserMsgs.StartMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
+
+		bf_write *buffer = g_UserMsgs.StartBitBufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
 		buffer->WriteWord(display_keys);
 		buffer->WriteChar(time ? time : -1);
 		buffer->WriteByte( (len > 240) ? 1 : 0 );
@@ -496,6 +523,7 @@ void CRadioMenuPlayer::Radio_Refresh()
 			break;
 		}
 	}
+#endif
 
 	display_last_refresh = gpGlobals->curtime;
 }

@@ -37,7 +37,7 @@
 #include "MenuStyle_Base.h"
 #include "sourcemm_api.h"
 #include <IPlayerHelpers.h>
-#include <IUserMessages.h>
+#include "UserMessages.h"
 #include "sm_fastlink.h"
 #include <sh_stack.h>
 #include <compat_wrappers.h>
@@ -65,7 +65,11 @@ private:
 class CRadioStyle : 
 	public BaseMenuStyle,
 	public SMGlobalClass,
-	public IUserMessageListener
+#ifdef USE_PROTOBUF_USERMESSAGES
+	public IProtobufUserMessageListener
+#else
+	public IBitBufUserMessageListener
+#endif
 {
 public:
 	CRadioStyle();
@@ -84,7 +88,11 @@ public: //IMenuStyle
 	unsigned int GetMaxPageItems();
 	unsigned int GetApproxMemUsage();
 public: //IUserMessageListener
+#ifdef USE_PROTOBUF_USERMESSAGES
+	void OnUserMessage(int msg_id, protobuf::Message &msg, IRecipientFilter *pFilter);
+#else
 	void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter);
+#endif
 	void OnUserMessageSent(int msg_id);
 public:
 	bool IsSupported();

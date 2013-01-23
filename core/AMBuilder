@@ -1,5 +1,6 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
 import os
+from ambuild.command import SymlinkCommand
 
 for i in SM.sdkInfo:
 	sdk = SM.sdkInfo[i]
@@ -10,9 +11,35 @@ for i in SM.sdkInfo:
 
 	compiler = SM.DefaultHL2Compiler('core', i)
 
+	if i == 'csgo':
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'common', 'protobuf-2.3.0', 'src'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'engine', 'protobuf'))
+		compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'public', 'game', 'shared', 'csgo', 'protobuf'))
+
 	extension = AMBuild.AddJob(name)
 	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
 	SM.PreSetupHL2Job(extension, binary, i)
+
+	if i == 'csgo':
+		if AMBuild.target['platform'] == 'linux':
+			link = os.path.join(os.path.join(AMBuild.outputFolder, extension.workFolder), 'libprotobuf.a')
+			target = os.path.join(os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'linux32', 'release'), 'libprotobuf.a')
+			try:
+				os.lstat(link)
+			except:
+				extension.AddCommand(SymlinkCommand(link, target))
+		elif AMBuild.target['platform'] == 'darwin':
+			link = os.path.join(os.path.join(AMBuild.outputFolder, extension.workFolder), 'libprotobuf.a')
+			target = os.path.join(os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'osx32', 'release'), 'libprotobuf.a')
+			try:
+				os.lstat(link)
+			except:
+				extension.AddCommand(SymlinkCommand(link, target))
+		elif AMBuild.target['platform'] == 'windows':
+			libPath = os.path.join(AMBuild.cache[sdk['sdk']], 'lib', 'win32', 'release', 'vs2010', 'libprotobuf.lib')
+			binary.RebuildIfNewer(libPath)
+			binary['POSTLINKFLAGS'].append(libPath)
+
 	files = [
 		'AdminCache.cpp',
 		'ExtensionSys.cpp',
@@ -49,7 +76,6 @@ for i in SM.sdkInfo:
 		'CoreConfig.cpp',
 		'Logger.cpp',
 		'PluginInfoDatabase.cpp',
-		'smn_bitbuffer.cpp',
 		'smn_halflife.cpp',
 		'PluginSys.cpp',
 		'smn_console.cpp',
@@ -71,7 +97,22 @@ for i in SM.sdkInfo:
 		'sm_srvcmds.cpp',
 		'ConsoleDetours.cpp'
 		]
+	
+	if i == 'csgo':
+		files.append('smn_protobuf.cpp')
+	else:
+		files.append('smn_bitbuffer.cpp')
+
 	binary.AddSourceFiles('core', files)
+
+	if i == 'csgo':
+		files = [
+			os.path.join('public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
+			os.path.join('public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
+			]
+		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
+
 	SM.PostSetupHL2Job(extension, binary, i)
 	SM.AutoVersion('core', binary)
 	binary.SendToJob()

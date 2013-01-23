@@ -51,17 +51,34 @@ KillDrug(client)
 	TeleportEntity(client, NULL_VECTOR, angs, NULL_VECTOR);	
 	
 	new clients[2];
-	clients[0] = client;	
-	
+	clients[0] = client;
+
+	new duration = 1536;
+	new holdtime = 1536;
+	new flags = (0x0001 | 0x0010);
+	new color[4] = { 0, 0, 0, 0 };
+
 	new Handle:message = StartMessageEx(g_FadeUserMsgId, clients, 1);
-	BfWriteShort(message, 1536);
-	BfWriteShort(message, 1536);
-	BfWriteShort(message, (0x0001 | 0x0010));
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	BfWriteByte(message, 0);
-	EndMessage();	
+
+	if (GetUserMessageType() == UM_Protobuf)
+	{
+		PbSetInt(message, "duration", duration);
+		PbSetInt(message, "hold_time", holdtime);
+		PbSetInt(message, "flags", flags);
+		PbSetColor(message, "clr", color);
+	}
+	else
+	{	
+		BfWriteShort(message, duration);
+		BfWriteShort(message, holdtime);
+		BfWriteShort(message, flags);
+		BfWriteByte(message, color[0]);
+		BfWriteByte(message, color[1]);
+		BfWriteByte(message, color[2]);
+		BfWriteByte(message, color[3]);
+	}
+	
+	EndMessage();
 }
 
 KillDrugTimer(client)
@@ -152,16 +169,35 @@ public Action:Timer_Drug(Handle:timer, any:client)
 	new clients[2];
 	clients[0] = client;	
 	
+	new duration = 255;
+	new holdtime = 255;
+	new flags = 0x0002;
+	new color[4] = { 0, 0, 0, 128 };
+	color[0] = GetRandomInt(0,255);
+	color[1] = GetRandomInt(0,255);
+	color[2] = GetRandomInt(0,255);
+
 	new Handle:message = StartMessageEx(g_FadeUserMsgId, clients, 1);
-	BfWriteShort(message, 255);
-	BfWriteShort(message, 255);
-	BfWriteShort(message, (0x0002));
-	BfWriteByte(message, GetRandomInt(0,255));
-	BfWriteByte(message, GetRandomInt(0,255));
-	BfWriteByte(message, GetRandomInt(0,255));
-	BfWriteByte(message, 128);
 	
-	EndMessage();	
+	if (GetUserMessageType() == UM_Protobuf)
+	{
+		PbSetInt(message, "duration", duration);
+		PbSetInt(message, "hold_time", holdtime);
+		PbSetInt(message, "flags", flags);
+		PbSetColor(message, "clr", color);
+	}
+	else
+	{
+		BfWriteShort(message, duration);
+		BfWriteShort(message, holdtime);
+		BfWriteShort(message, flags);
+		BfWriteByte(message, color[0]);
+		BfWriteByte(message, color[1]);
+		BfWriteByte(message, color[2]);
+		BfWriteByte(message, color[3]);
+	}
+	
+	EndMessage();
 		
 	return Plugin_Handled;
 }

@@ -44,6 +44,15 @@ enum UserMsg
 };
 
 /**
+ * UserMsg message serialization formats
+ */
+enum UserMessageType
+{
+	UM_BitBuf = 0,
+	UM_Protobuf,
+};
+
+/**
  * @section Message Flags.
  */
 #define USERMSG_RELIABLE		(1<<2)		/**< Message will be set on the reliable stream */
@@ -53,6 +62,13 @@ enum UserMsg
 /**
  * @endsection
  */
+
+/**
+ * Returns usermessage serialization type used for the current engine
+ *
+ * @return				The supported usermessage type.
+ */
+native UserMessageType:GetUserMessageType();
 
 /**
  * Returns the ID of a given message, or -1 on failure.
@@ -115,7 +131,7 @@ native EndMessage();
  * Called when a message is hooked
  *
  * @param msg_id		Message index.
- * @param bf			Handle to the input bit buffer of the message.
+ * @param msg			Handle to the input bit buffer or protobuf.
  * @param players		Array containing player indexes.
  * @param playersNum	Number of players in the array.
  * @param reliable		True if message is reliable, false otherwise.
@@ -124,7 +140,7 @@ native EndMessage();
  *						blocks the message from being sent, and Plugin_Continue 
  *						resumes normal functionality.
  */
-functag public Action:MsgHook(UserMsg:msg_id, Handle:bf, const players[], playersNum, bool:reliable, bool:init);
+functag public Action:MsgHook(UserMsg:msg_id, Handle:msg, const players[], playersNum, bool:reliable, bool:init);
 
 /**
  * Called when a message hook has completed.

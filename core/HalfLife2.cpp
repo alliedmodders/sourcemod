@@ -42,6 +42,10 @@
 #include "logic_bridge.h"
 #include <tier0/mem.h>
 
+#if SOURCE_ENGINE == SE_CSGO
+#include <cstrike15_usermessages.pb.h>
+#endif
+
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
@@ -487,7 +491,9 @@ void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 
 bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 {
+#if SOURCE_ENGINE != SE_CSGO
 	bf_write *pBitBuf = NULL;
+#endif
 	cell_t players[] = {client};
 
 	if (dest == HUD_PRINTTALK)
@@ -500,7 +506,18 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			char buffer[192];
 			UTIL_Format(buffer, sizeof(buffer), "%s\1\n", msg);
 
-			if ((pBitBuf = g_UserMsgs.StartMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+#if SOURCE_ENGINE == SE_CSGO
+			CCSUsrMsg_SayText *pMsg;
+			if ((pMsg = (CCSUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+			{
+				return false;
+			}
+
+			pMsg->set_ent_idx(0);
+			pMsg->set_text(buffer);
+			pMsg->set_chat(false);
+#else
+			if ((pBitBuf = g_UserMsgs.StartBitBufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 			{
 				return false;
 			}
@@ -508,6 +525,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			pBitBuf->WriteByte(0);
 			pBitBuf->WriteString(buffer);
 			pBitBuf->WriteByte(1);
+#endif
 
 			g_UserMsgs.EndMessage();
 
@@ -515,13 +533,29 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		}
 	}
 
-	if ((pBitBuf = g_UserMsgs.StartMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+#if SOURCE_ENGINE == SE_CSGO
+	CCSUsrMsg_TextMsg *pMsg;
+	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
+	// Client tries to read all 5 'params' and will crash if less
+	pMsg->set_msg_dst(dest);
+	pMsg->add_params(msg);
+	pMsg->add_params("");
+	pMsg->add_params("");
+	pMsg->add_params("");
+	pMsg->add_params("");
+#else
+	if ((pBitBuf = g_UserMsgs.StartBitBufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
 		return false;
 	}
 
 	pBitBuf->WriteByte(dest);
 	pBitBuf->WriteString(msg);
+#endif
 
 	g_UserMsgs.EndMessage();
 
@@ -530,10 +564,20 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 
 bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
-	bf_write *pBitBuf = NULL;
 	cell_t players[] = {client};
 
-	if ((pBitBuf = g_UserMsgs.StartMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+#if SOURCE_ENGINE == SE_CSGO
+	CCSUsrMsg_HintText *pMsg;
+	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
+	pMsg->set_text(msg);
+#else
+	bf_write *pBitBuf = NULL;
+
+	if ((pBitBuf = g_UserMsgs.StartBitBufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
 		return false;
 	}
@@ -544,6 +588,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 		pBitBuf->WriteByte(1);
 	}
 	pBitBuf->WriteString(msg);
+#endif
 	g_UserMsgs.EndMessage();
 
 	return true;
@@ -551,9 +596,18 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 
 bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	CCSUsrMsg_HintText *pMsg;
+	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+
+	pMsg->set_text(msg);
+#else
 	bf_write *pBitBuf = NULL;
 
-	if ((pBitBuf = g_UserMsgs.StartMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
+	if ((pBitBuf = g_UserMsgs.StartBitBufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
 	{
 		return false;
 	}
@@ -564,6 +618,8 @@ bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 		pBitBuf->WriteByte(1);
 	}
 	pBitBuf->WriteString(msg);
+#endif
+
 	g_UserMsgs.EndMessage();
 
 	return true;
@@ -571,15 +627,23 @@ bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 
 bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, bool show)
 {
-	bf_write *pBitBuf = NULL;
 	KeyValues *SubKey = NULL;
 	int count = 0;
 	cell_t players[] = {client};
 
-	if ((pBitBuf = g_UserMsgs.StartMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
+#if SOURCE_ENGINE == SE_CSGO
+	CCSUsrMsg_VGUIMenu *pMsg;
+	if ((pMsg = (CCSUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
 		return false;
 	}
+#else
+	bf_write *pBitBuf = NULL;
+	if ((pBitBuf = g_UserMsgs.StartBitBufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
+	{
+		return false;
+	}
+#endif
 
 	if (data)
 	{
@@ -592,6 +656,18 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		SubKey = data->GetFirstSubKey();
 	}
 
+#if SOURCE_ENGINE == SE_CSGO
+	pMsg->set_name(name);
+	pMsg->set_show(show);
+
+	while (SubKey)
+	{
+		CCSUsrMsg_VGUIMenu_Subkey *key = pMsg->add_subkeys();
+		key->set_name(SubKey->GetName());
+		key->set_str(SubKey->GetString());
+		SubKey = SubKey->GetNextKey();
+	}
+#else
 	pBitBuf->WriteString(name);
 	pBitBuf->WriteByte((show) ? 1 : 0);
 	pBitBuf->WriteByte(count);
@@ -601,6 +677,8 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		pBitBuf->WriteString(SubKey->GetString());
 		SubKey = SubKey->GetNextKey();
 	}
+#endif
+
 	g_UserMsgs.EndMessage();
 
 	return true;

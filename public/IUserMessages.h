@@ -35,8 +35,13 @@
 #include <IShareSys.h>
 #include <sp_vm_api.h>
 #include <IForwardSys.h>
-#include <bitbuf.h>
 #include <irecipientfilter.h>
+
+namespace google { namespace protobuf {
+	class Message;
+} };
+
+class bf_write;
 
 /**
  * @file IUserMessages.h
@@ -44,41 +49,22 @@
  */
 
 #define SMINTERFACE_USERMSGS_NAME		"IUserMessages"
-#define SMINTERFACE_USERMSGS_VERSION	3
+#define SMINTERFACE_USERMSGS_VERSION	4
 
 namespace SourceMod
 {
+	enum UserMessageType
+	{
+		UM_BitBuf,
+		UM_Protobuf,
+	};
+	
 	/**
 	 * @brief Listens to user messages sent from the server.
 	 */
 	class IUserMessageListener
 	{
 	public:
-		/**
-		 * @brief Called when a hooked user message is being sent 
-		 * and all interceptions have finished.
-		 *
-		 * @param msg_id		Message Id.
-		 * @param bf			bf_write structure containing written bytes.
-		 * @param pFilter		Recipient filter.
-		 */
-		virtual void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
-		{
-		}
-
-		/**
-		 * @brief Called when a hooked user message is intercepted.
-		 * 
-		 * @param msg_id		Message Id.
-		 * @param bf			bf_write structure containing written bytes.
-		 * @param pFilter		Recipient filter.
-		 * @return				Pl_Continue to allow message, Pl_Stop or Pl_Handled to scrap it.
-		 */
-		virtual ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
-		{
-			return Pl_Continue;
-		}
-
 		/**
 		 * @brief Called when a hooked user message is sent, regardless of the hook type.
 		 *
@@ -109,6 +95,76 @@ namespace SourceMod
 		 */
 		virtual void OnPostUserMessage(int msg_id, bool sent)
 		{
+		}
+		
+		virtual UserMessageType GetUserMessageType() const =0;
+	};
+	
+	class IBitBufUserMessageListener : public IUserMessageListener
+	{
+	public:
+		/**
+		 * @brief Called when a hooked user message is being sent 
+		 * and all interceptions have finished.
+		 *
+		 * @param msg_id		Message Id.
+		 * @param bf			bf_write structure containing written bytes.
+		 * @param pFilter		Recipient filter.
+		 */
+		virtual void OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+		{
+		}
+
+		/**
+		 * @brief Called when a hooked user message is intercepted.
+		 * 
+		 * @param msg_id		Message Id.
+		 * @param bf			bf_write structure containing written bytes.
+		 * @param pFilter		Recipient filter.
+		 * @return				Pl_Continue to allow message, Pl_Stop or Pl_Handled to scrap it.
+		 */
+		virtual ResultType InterceptUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFilter)
+		{
+			return Pl_Continue;
+		}
+		
+		virtual UserMessageType GetUserMessageType() const
+		{
+			return UM_BitBuf;
+		}
+	};
+	
+	class IProtobufUserMessageListener : public IUserMessageListener
+	{
+	public:
+		/**
+		 * @brief Called when a hooked user message is being sent 
+		 * and all interceptions have finished.
+		 *
+		 * @param msg_id		Message Id.
+		 * @param msg			Protobuf Message structure containing message data.
+		 * @param pFilter		Recipient filter.
+		 */
+		virtual void OnUserMessage(int msg_id, google::protobuf::Message *msg, IRecipientFilter *pFilter)
+		{
+		}
+
+		/**
+		 * @brief Called when a hooked user message is intercepted.
+		 * 
+		 * @param msg_id		Message Id.
+		 * @param msg			Protobuf Message structure containing message data.
+		 * @param pFilter		Recipient filter.
+		 * @return				Pl_Continue to allow message, Pl_Stop or Pl_Handled to scrap it.
+		 */
+		virtual ResultType InterceptUserMessage(int msg_id, google::protobuf::Message *msg, IRecipientFilter *pFilter)
+		{
+			return Pl_Continue;
+		}
+		
+		virtual UserMessageType GetUserMessageType() const
+		{
+			return UM_Protobuf;
 		}
 	};
 
@@ -173,7 +229,12 @@ namespace SourceMod
 		 * @param flags			Flags to use for sending the message.
 		 * @return				bf_write structure to write message with, or NULL on failure.
 		 */
-		virtual bf_write *StartMessage(int msg_id,
+		virtual bf_write *StartBitBufMessage(int msg_id,
+			const cell_t players[],
+			unsigned int playersNum,
+			int flags) =0;
+
+		virtual google::protobuf::Message *StartProtobufMessage(int msg_id,
 			const cell_t players[],
 			unsigned int playersNum,
 			int flags) =0;
@@ -218,6 +279,13 @@ namespace SourceMod
 		 * @return			A message index, or -1 on failure.
 		 */
 		virtual bool GetMessageName(int msgid, char *buffer, size_t maxlength) const =0;
+		
+		/**
+		 * @brief Returns usermessage serialization type used for the current engine.
+		 *
+		 * @return			The supported usermessage type.
+		 */
+		virtual UserMessageType GetUserMessageType() const =0;
 	};
 }
 

@@ -29,11 +29,16 @@
  * Version: $Id$
  */
 
+#include "UserMessages.h"
+
+#ifndef USE_PROTOBUF_USERMESSAGES
+
 #include "sourcemod.h"
 #include "HandleSys.h"
 #include <bitbuf.h>
 #include <vector.h>
 #include <HalfLife2.h>
+#include "smn_usermsgs.h"
 
 static cell_t smn_BfWriteBool(IPluginContext *pCtx, const cell_t *params)
 {
@@ -713,3 +718,5 @@ REGISTER_NATIVES(bitbufnatives)
 	{"BfGetNumBytesLeft",		smn_BfGetNumBytesLeft},
 	{NULL,						NULL}
 };
+
+#endif

@@ -124,7 +124,6 @@ class SM:
 				self.compiler.AddToListVar('CFLAGS', '-m32')
 				self.compiler.AddToListVar('POSTLINKFLAGS', '-m32')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-exceptions')
-				self.compiler.AddToListVar('CXXFLAGS', '-fno-rtti')
 				self.compiler.AddToListVar('CXXFLAGS', '-fno-threadsafe-statics')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-non-virtual-dtor')
 				self.compiler.AddToListVar('CXXFLAGS', '-Wno-overloaded-virtual')

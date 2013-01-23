@@ -32,18 +32,32 @@
 #include "UserMessages.h"
 #include "sm_stringutil.h"
 
+#if SOURCE_ENGINE == SE_CSGO
+#include <cstrike15_usermessage_helpers.h>
+#endif
+
 UserMessages g_UserMsgs;
 
+#if SOURCE_ENGINE == SE_CSGO
+SH_DECL_HOOK3_void(IVEngineServer, SendUserMessage, SH_NOATTRIB, 0, IRecipientFilter &, int, const protobuf::Message &);
+#else
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 SH_DECL_HOOK3(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int, const char *);
 #else
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
 #endif
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
+#endif // ==SE_CSGO
 
-UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
+UserMessages::UserMessages()
+#ifndef USE_PROTOBUF_USERMESSAGES
+	: m_InterceptBuffer(m_pBase, 2500)
 {
 	m_Names = sm_trie_create();
+#else
+	: m_InterceptBuffer(NULL)
+{
+#endif
 	m_HookCount = 0;
 	m_InExec = false;
 	m_InHook = false;
@@ -53,7 +67,9 @@ UserMessages::UserMessages() : m_InterceptBuffer(m_pBase, 2500)
 
 UserMessages::~UserMessages()
 {
+#ifndef USE_PROTOBUF_USERMESSAGES
 	sm_trie_destroy(m_Names);
+#endif
 
 	CStack<ListenerInfo *>::iterator iter;
 	for (iter=m_FreeListeners.begin(); iter!=m_FreeListeners.end(); iter++)
@@ -65,8 +81,10 @@ UserMessages::~UserMessages()
 
 void UserMessages::OnSourceModStartup(bool late)
 {
+#ifndef USE_PROTOBUF_USERMESSAGES
 	/* -1 means SourceMM was unable to get the user message list */
 	m_FallbackSearch = (g_SMAPI->GetUserMessageCount() == -1);
+#endif
 }
 
 void UserMessages::OnSourceModAllInitialized()
@@ -78,16 +96,25 @@ void UserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)
 	{
+#if SOURCE_ENGINE == SE_CSGO
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Pre, false);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Post, true);
+#else
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+#endif
 	}
 	m_HookCount = 0;
 }
 
 int UserMessages::GetMessageIndex(const char *msg)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	// Can split this per engine and/or game later
+	return g_Cstrike15UsermessageHelpers.GetIndex(msg);
+#else
 	int msgid;
 
 	if (!sm_trie_retrieve(m_Names, msg, reinterpret_cast<void **>(&msgid)))
@@ -118,10 +145,19 @@ int UserMessages::GetMessageIndex(const char *msg)
 	}
 
 	return msgid;
+#endif
 }
 
 bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) const
 {
+#if SOURCE_ENGINE == SE_CSGO
+	const char *pszName = g_Cstrike15UsermessageHelpers.GetName(msgid);
+	if (!pszName)
+		return false;
+
+	strncopy(buffer, pszName, maxlength);
+	return true;
+#else
 	if (m_FallbackSearch)
 	{
 		int size;
@@ -137,10 +173,14 @@ bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) con
 	}
 
 	return false;
+#endif
 }
 
-bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags)
+bf_write *UserMessages::StartBitBufMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags)
 {
+#ifdef USE_PROTOBUF_USERMESSAGES
+	return NULL;
+#else
 	bf_write *buffer;
 
 	if (m_InExec || m_InHook)
@@ -182,6 +222,68 @@ bf_write *UserMessages::StartMessage(int msg_id, const cell_t players[], unsigne
 	}
 
 	return buffer;
+#endif // USE_PROTOBUF_USERMESSAGES
+}
+
+google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const cell_t players[], unsigned int playersNum, int flags)
+{
+#ifndef USE_PROTOBUF_USERMESSAGES
+	return NULL;
+#else
+	protobuf::Message *buffer;
+
+	if (m_InExec || m_InHook)
+	{
+		return NULL;
+	}
+	if (msg_id < 0 || msg_id >= 255)
+	{
+		return NULL;
+	}
+
+	m_CurId = msg_id;
+	m_CellRecFilter.Initialize(players, playersNum);
+
+	m_CurFlags = flags;
+	if (m_CurFlags & USERMSG_INITMSG)
+	{
+		m_CellRecFilter.SetToInit(true);
+	}
+	if (m_CurFlags & USERMSG_RELIABLE)
+	{
+		m_CellRecFilter.SetToReliable(true);
+	}
+
+	m_InExec = true;
+
+	if (m_CurFlags & USERMSG_BLOCKHOOKS)
+	{
+		// direct message creation, return buffer "from engine". keep track
+		m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
+		buffer = m_FakeEngineBuffer;
+	} else {
+		protobuf::Message *msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
+		switch (m_FakeMetaRes)
+		{
+		case MRES_IGNORED:
+		case MRES_HANDLED:
+			m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
+			buffer = m_FakeEngineBuffer;
+			break;		
+
+		case MRES_OVERRIDE:
+			m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
+		// fallthrough
+		case MRES_SUPERCEDE:
+			buffer = msg;
+			break;
+		}
+		
+		OnStartMessage_Post(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
+	}
+
+	return buffer;
+#endif // USE_PROTOBUF_USERMESSAGES
 }
 
 bool UserMessages::EndMessage()
@@ -191,12 +293,37 @@ bool UserMessages::EndMessage()
 		return false;
 	}
 
+#if SOURCE_ENGINE == SE_CSGO
+	if (m_CurFlags & USERMSG_BLOCKHOOKS)
+	{
+		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
+		delete m_FakeEngineBuffer;
+		m_FakeEngineBuffer = NULL;
+	} else {
+		OnMessageEnd_Pre();
+
+		switch (m_FakeMetaRes)
+		{
+		case MRES_IGNORED:
+		case MRES_HANDLED:
+		case MRES_OVERRIDE:
+			engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
+			delete m_FakeEngineBuffer;
+			m_FakeEngineBuffer = NULL;
+			break;
+		//case MRES_SUPERCEDE:
+		}
+
+		OnMessageEnd_Post();
+	}
+#else
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
 		ENGINE_CALL(MessageEnd)();
 	} else {
 		engine->MessageEnd();
 	}
+#endif // SE_CSGO
 
 	m_InExec = false;
 	m_CurFlags = 0;
@@ -205,31 +332,60 @@ bool UserMessages::EndMessage()
 	return true;
 }
 
+UserMessageType UserMessages::GetUserMessageType() const
+{
+#ifdef USE_PROTOBUF_USERMESSAGES
+	return UM_Protobuf;
+#else
+	return UM_BitBuf;
+#endif
+}
+
 bool UserMessages::HookUserMessage2(int msg_id,
 									IUserMessageListener *pListener,
 									bool intercept)
 {
-	return InternalHook(msg_id, pListener, intercept, true);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	return InternalHook(msg_id, (IProtobufUserMessageListener *)pListener, intercept, true);
+#else
+	return InternalHook(msg_id, (IBitBufUserMessageListener *)pListener, intercept, true);
+#endif
 }
 
 bool UserMessages::UnhookUserMessage2(int msg_id,
 									  IUserMessageListener *pListener,
 									  bool intercept)
 {
-	return InternalUnhook(msg_id, pListener, intercept, true);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	return InternalUnhook(msg_id, (IProtobufUserMessageListener *)pListener, intercept, true);
+#else
+	return InternalUnhook(msg_id, (IBitBufUserMessageListener *)pListener, intercept, true);
+#endif
 }
 
 bool UserMessages::HookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
 {
-	return InternalHook(msg_id, pListener, intercept, false);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	return InternalHook(msg_id, (IProtobufUserMessageListener *)pListener, intercept, false);
+#else
+	return InternalHook(msg_id, (IBitBufUserMessageListener *)pListener, intercept, false);
+#endif
 }
 
 bool UserMessages::UnhookUserMessage(int msg_id, IUserMessageListener *pListener, bool intercept)
 {	
-	return InternalUnhook(msg_id, pListener, intercept, false);
+#ifdef USE_PROTOBUF_USERMESSAGES
+	return InternalUnhook(msg_id, (IProtobufUserMessageListener *)pListener, intercept, false);
+#else
+	return InternalUnhook(msg_id, (IBitBufUserMessageListener *)pListener, intercept, false);
+#endif
 }
 
-bool UserMessages::InternalHook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew)
+#ifdef USE_PROTOBUF_USERMESSAGES
+bool UserMessages::InternalHook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew)
+#else
+bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListener, bool intercept, bool isNew)
+#endif
 {
 	if (msg_id < 0 || msg_id >= 255)
 	{
@@ -252,10 +408,15 @@ bool UserMessages::InternalHook(int msg_id, IUserMessageListener *pListener, boo
 
 	if (!m_HookCount++)
 	{
+#if SOURCE_ENGINE == SE_CSGO
+		SH_ADD_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Pre, false);
+		SH_ADD_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Post, true);
+#else
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
 		SH_ADD_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+#endif
 	}
 
 	if (intercept)
@@ -268,7 +429,11 @@ bool UserMessages::InternalHook(int msg_id, IUserMessageListener *pListener, boo
 	return true;
 }
 
-bool UserMessages::InternalUnhook(int msg_id, IUserMessageListener *pListener, bool intercept, bool isNew)
+#ifdef USE_PROTOBUF_USERMESSAGES
+bool UserMessages::InternalUnhook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew)
+#else
+bool UserMessages::InternalUnhook(int msg_id, IBitBufUserMessageListener *pListener, bool intercept, bool isNew)
+#endif
 {
 	MsgList *pList;
 	MsgIter iter;
@@ -309,14 +474,167 @@ void UserMessages::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
+#if SOURCE_ENGINE == SE_CSGO
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Pre, false);
+		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, SendUserMessage, engine, this, &UserMessages::OnSendUserMessage_Post, true);
+#else
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, UserMessageBegin, engine, this, &UserMessages::OnStartMessage_Post, true);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Pre, false);
 		SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, MessageEnd, engine, this, &UserMessages::OnMessageEnd_Post, true);
+#endif
 	}
 }
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#ifdef USE_PROTOBUF_USERMESSAGES
+// Unlike protobuf's Message::CopyFrom:
+// - Does not require to/from message descriptors to be identical.
+// - Fields are copied by name, rather than index.
+// - String fields are retrieved for copy with GetStringReference, to avoid destucting libprotobuf std::string in sm.
+// - Unknown fields in |from| message are not copied to |to| message.
+// - Copying Message fields recursively calls this function, rather than Message::MergeFrom.
+static void _CopyProtobufMessage(const protobuf::Message &from, protobuf::Message *to)
+{
+	const protobuf::Descriptor* descriptor = from.GetDescriptor();
+
+	const protobuf::Reflection* from_reflection = from.GetReflection();
+	const protobuf::Reflection* to_reflection = to->GetReflection();
+
+	protobuf::UnknownFieldSet toUnknownFields;
+
+	int fromFieldCount = descriptor->field_count();
+	for (int i = 0; i < fromFieldCount; i++)
+	{
+		const protobuf::FieldDescriptor* fromField = descriptor->field(i);
+		const protobuf::FieldDescriptor* toField = to->GetDescriptor()->FindFieldByName(fromField->name());
+
+		// This will stripped new fields off of intercepted usermessages.
+		// TODO: fix that.
+		if (!toField)
+		{
+			continue;
+		}
+
+		if (fromField->is_repeated())
+		{
+			int count = from_reflection->FieldSize(from, fromField);
+			for (int j = 0; j < count; j++)
+			{
+				switch (fromField->cpp_type())
+				{
+#define HANDLE_TYPE(CPPTYPE, METHOD)                                           \
+				case protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE:             \
+					to_reflection->Add##METHOD(to, toField,                    \
+					from_reflection->GetRepeated##METHOD(from, fromField, j)); \
+					break;
+				HANDLE_TYPE(INT32 , Int32 );
+				HANDLE_TYPE(INT64 , Int64 );
+				HANDLE_TYPE(UINT32, UInt32);
+				HANDLE_TYPE(UINT64, UInt64);
+				HANDLE_TYPE(FLOAT , Float );
+				HANDLE_TYPE(DOUBLE, Double);
+				HANDLE_TYPE(BOOL  , Bool  );
+				HANDLE_TYPE(ENUM  , Enum  );
+#undef HANDLE_TYPE
+				case protobuf::FieldDescriptor::CPPTYPE_STRING:
+					{
+						std::string buffer;
+						to_reflection->AddString(to, toField,
+							from_reflection->GetRepeatedStringReference(from, fromField, j, &buffer));
+					}
+					break;
+				case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+					_CopyProtobufMessage(
+						from_reflection->GetRepeatedMessage(from, fromField, j),
+						to_reflection->AddMessage(to, toField)
+						);
+					break;
+				}
+			}
+		}
+		else
+		{
+			switch (fromField->cpp_type())
+			{
+#define HANDLE_TYPE(CPPTYPE, METHOD)                            \
+			case protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE:  \
+				to_reflection->Set##METHOD(to, toField,         \
+				from_reflection->Get##METHOD(from, fromField)); \
+				break;
+			HANDLE_TYPE(INT32 , Int32 );
+			HANDLE_TYPE(INT64 , Int64 );
+			HANDLE_TYPE(UINT32, UInt32);
+			HANDLE_TYPE(UINT64, UInt64);
+			HANDLE_TYPE(FLOAT , Float );
+			HANDLE_TYPE(DOUBLE, Double);
+			HANDLE_TYPE(BOOL  , Bool  );
+			HANDLE_TYPE(ENUM  , Enum  );
+#undef HANDLE_TYPE
+			case protobuf::FieldDescriptor::CPPTYPE_STRING:
+				{
+					std::string buffer;
+					to_reflection->SetString(to, toField,
+						from_reflection->GetStringReference(from, fromField, &buffer));
+				}
+				break;
+			case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+				_CopyProtobufMessage(
+					from_reflection->GetMessage(from, fromField),
+					to_reflection->MutableMessage(to, toField)
+					);
+				break;
+			}
+		}
+	}
+}
+#endif
+
+#if SOURCE_ENGINE == SE_CSGO
+void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
+{
+	OnStartMessage_Pre(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
+	if (m_FakeMetaRes == MRES_SUPERCEDE)
+	{
+		_CopyProtobufMessage(msg, m_InterceptBuffer);
+	}
+	else
+	{
+		OnStartMessage_Post(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
+	}
+
+	OnMessageEnd_Pre();
+	if (m_FakeMetaRes == MRES_SUPERCEDE)
+		RETURN_META(MRES_SUPERCEDE);
+
+	RETURN_META(MRES_IGNORED);
+}
+
+void UserMessages::OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
+{
+	OnMessageEnd_Post();
+	RETURN_META(MRES_IGNORED);
+}
+#endif
+
+#ifdef USE_PROTOBUF_USERMESSAGES
+#define UM_RETURN_META_VALUE(res, val) \
+	m_FakeMetaRes = res;               \
+	return val;
+
+#define UM_RETURN_META(res)            \
+	m_FakeMetaRes = res;               \
+	return;
+#else
+#define UM_RETURN_META_VALUE(res, val) \
+	RETURN_META_VALUE(res, val)
+
+#define UM_RETURN_META(res)            \
+	RETURN_META(res)
+#endif
+
+#if SOURCE_ENGINE == SE_CSGO
+protobuf::Message *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #else
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type)
@@ -329,7 +647,7 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 		|| (m_InExec && (m_CurFlags & USERMSG_BLOCKHOOKS)))
 	{
 		m_InHook = false;
-		RETURN_META_VALUE(MRES_IGNORED, NULL);
+		UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
 	}
 
 	m_CurId = msg_type;
@@ -339,14 +657,23 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 
 	if (!is_intercept_empty)
 	{
+#ifdef USE_PROTOBUF_USERMESSAGES
+		if (m_InterceptBuffer)
+			delete m_InterceptBuffer;
+		m_InterceptBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_type)->New();
+		UM_RETURN_META_VALUE(MRES_SUPERCEDE, m_InterceptBuffer);
+#else
 		m_InterceptBuffer.Reset();
-		RETURN_META_VALUE(MRES_SUPERCEDE, &m_InterceptBuffer);
+		UM_RETURN_META_VALUE(MRES_SUPERCEDE, &m_InterceptBuffer);
+#endif
 	}
 
-	RETURN_META_VALUE(MRES_IGNORED, NULL);
+	UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#if SOURCE_ENGINE == SE_CSGO
+protobuf::Message *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #else
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type)
@@ -354,19 +681,24 @@ bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_ty
 {
 	if (!m_InHook)
 	{
-		RETURN_META_VALUE(MRES_IGNORED, NULL);
+		UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
 	}
 
+#ifdef USE_PROTOBUF_USERMESSAGES
+	m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_type)->New();
+	m_OrigBuffer = m_FakeEngineBuffer;
+#else
 	m_OrigBuffer = META_RESULT_ORIG_RET(bf_write *);
+#endif
 
-	RETURN_META_VALUE(MRES_IGNORED, NULL);
+	UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
 void UserMessages::OnMessageEnd_Post()
 {
 	if (!m_InHook)
 	{
-		RETURN_META(MRES_IGNORED);
+		UM_RETURN_META(MRES_IGNORED);
 	}
 
 	MsgList *pList;
@@ -434,7 +766,7 @@ void UserMessages::OnMessageEnd_Pre()
 {
 	if (!m_InHook)
 	{
-		RETURN_META(MRES_IGNORED);
+		UM_RETURN_META(MRES_IGNORED);
 	}
 
 	MsgList *pList;
@@ -450,7 +782,11 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 		pInfo = (*iter);
 		pInfo->IsHooked = true;
+#ifdef USE_PROTOBUF_USERMESSAGES
+		res = pInfo->Callback->InterceptUserMessage(m_CurId, m_InterceptBuffer, m_CurRecFilter);
+#else
 		res = pInfo->Callback->InterceptUserMessage(m_CurId, &m_InterceptBuffer, m_CurRecFilter);
+#endif
 
 		intercepted = true;
 
@@ -498,8 +834,12 @@ void UserMessages::OnMessageEnd_Pre()
 
 	if (!handled && intercepted)
 	{
+#if SOURCE_ENGINE == SE_CSGO
+		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(*m_CurRecFilter), m_CurId, *m_InterceptBuffer);
+		delete m_InterceptBuffer;
+		m_InterceptBuffer = NULL;
+#else
 		bf_write *engine_bfw;
-
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 		engine_bfw = ENGINE_CALL(UserMessageBegin)(m_CurRecFilter, m_CurId, g_SMAPI->GetUserMessage(m_CurId));
 #else
@@ -508,6 +848,7 @@ void UserMessages::OnMessageEnd_Pre()
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();
+#endif // SE_CSGO
 	}
 
 	pList = &m_msgHooks[m_CurId];
@@ -529,8 +870,8 @@ void UserMessages::OnMessageEnd_Pre()
 		iter++;
 	}
 
-	RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
+	UM_RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
 supercede:
 	m_BlockEndPost = true;
-	RETURN_META(MRES_SUPERCEDE);
+	UM_RETURN_META(MRES_SUPERCEDE);
 }

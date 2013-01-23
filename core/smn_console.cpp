@@ -48,6 +48,10 @@
 #include "ConsoleDetours.h"
 #include "ConCommandBaseIterator.h"
 
+#if SOURCE_ENGINE == SE_CSGO
+#include <netmessages.pb.h>
+#endif
+
 #if SOURCE_ENGINE >= SE_EYE
 #define NETMSG_BITS 6
 #else
@@ -1427,10 +1431,22 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
+#if SOURCE_ENGINE == SE_CSGO
+	CNETMsg_SetConVar msg;
+	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
+
+	cvar->set_name(pConVar->GetName());
+	cvar->set_value(value);
+   
+	buffer.WriteVarInt32(net_SetConVar);
+	buffer.WriteVarInt32(msg.ByteSize());
+	msg.SerializeWithCachedSizesToArray( (uint8 *)( buffer.GetBasePointer() + buffer.GetNumBytesWritten() ) );
+#else
 	buffer.WriteUBitLong(NET_SETCONVAR, NETMSG_BITS);
 	buffer.WriteByte(1);
 	buffer.WriteString(pConVar->GetName());
 	buffer.WriteString(value);
+#endif
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(params[1]);
 
