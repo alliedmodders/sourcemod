@@ -117,6 +117,11 @@ for i in SM.sdkInfo:
 		binary.AddSourceFiles(AMBuild.cache[sdk['sdk']], files)
 
 	SM.PostSetupHL2Job(extension, binary, i)
+	
+	if i == 'csgo':
+		if AMBuild.target['platform'] in ['linux', 'darwin']:
+			binary.AddObjectFiles(['libprotobuf.a'])
+	
 	SM.AutoVersion('core', binary)
 	binary.SendToJob()
 
