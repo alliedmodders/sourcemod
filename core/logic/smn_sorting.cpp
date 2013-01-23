@@ -94,7 +94,7 @@ void sort_random(cell_t *array, cell_t size)
 
 	for (int i = size-1; i > 0; i--)
 	{
-        int n = (rand() % i) + 1;
+        int n = rand() % (i + 1);
 
 		if (array[i] != array[n]) 
 		{
@@ -435,7 +435,7 @@ void sort_adt_random(CellArray *cArray)
 
 	for (int i = arraysize-1; i > 0; i--)
 	{
-        int n = (rand() % i) + 1;
+        int n = rand() % (i + 1);
 
 		cArray->swap(i, n);
 	}
