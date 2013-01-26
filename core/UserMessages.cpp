@@ -262,7 +262,14 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 		m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_id)->New();
 		buffer = m_FakeEngineBuffer;
 	} else {
-		protobuf::Message *msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
+		char messageName[32];
+		if (!GetMessageName(msg_id, messageName, sizeof(messageName)))
+		{
+			m_InExec = false;
+			return NULL;
+		}
+
+		protobuf::Message *msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
 		switch (m_FakeMetaRes)
 		{
 		case MRES_IGNORED:
@@ -279,7 +286,7 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 			break;
 		}
 		
-		OnStartMessage_Post(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, g_SMAPI->GetUserMessage(msg_id));
+		OnStartMessage_Post(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
 	}
 
 	return buffer;
