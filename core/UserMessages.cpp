@@ -692,7 +692,6 @@ bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_ty
 	}
 
 #ifdef USE_PROTOBUF_USERMESSAGES
-	m_FakeEngineBuffer = g_Cstrike15UsermessageHelpers.GetPrototype(msg_type)->New();
 	m_OrigBuffer = m_FakeEngineBuffer;
 #else
 	m_OrigBuffer = META_RESULT_ORIG_RET(bf_write *);
