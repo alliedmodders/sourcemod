@@ -507,7 +507,7 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 
 	if (sendChange)
 	{
-		v = (Vector *)((intptr_t)g_pGameRules + offset);
+		v = (Vector *)((intptr_t)pProxy + offset);
 		v->x = sp_ctof(vec[0]);
 		v->y = sp_ctof(vec[1]);
 		v->z = sp_ctof(vec[2]);
