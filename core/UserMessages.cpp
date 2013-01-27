@@ -606,6 +606,7 @@ void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type,
 	}
 	else
 	{
+		m_FakeEngineBuffer = &const_cast<protobuf::Message &>(msg);
 		OnStartMessage_Post(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
 	}
 
