@@ -984,6 +984,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
+	SendProp *pProp; \
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
 	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
 	if (!pNet) \
@@ -1000,9 +1001,10 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	} \
 	\
 	offset = info.actual_offset; \
-	bit_count = info.prop->m_nBits; \
+	pProp = info.prop; \
+	bit_count = pProp->m_nBits; \
 	\
-	switch (info.prop->GetType()) \
+	switch (pProp->GetType()) \
 	{ \
 	case type: \
 		{ \
@@ -1016,7 +1018,6 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 		} \
 	case DPT_DataTable: \
 		{ \
-			SendProp *pProp; \
 			FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name); \
 			\
 			offset += pProp->GetOffset(); \
@@ -1027,13 +1028,13 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 		{ \
 			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%d != %d)", \
 				prop, \
-				info.prop->GetType(), \
+				pProp->GetType(), \
 				type); \
 		} \
 	} \
 
 #define FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name) \
-	SendTable *pTable = info.prop->GetDataTable(); \
+	SendTable *pTable = pProp->GetDataTable(); \
 	if (!pTable) \
 	{ \
 		return pContext->ThrowNativeError("Error looking up DataTable for prop %s", \
@@ -1054,8 +1055,8 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	{ \
 		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
 			prop, \
-			info.prop->GetType(), \
-			info.prop->m_nBits, \
+			pProp->GetType(), \
+			pProp->m_nBits, \
 			type); \
 	}
 
@@ -1191,11 +1192,11 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 	case Prop_Send:
 		{
 			FIND_PROP_SEND(DPT_Int, "integer");
-			is_unsigned = ((info.prop->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
+			is_unsigned = ((pProp->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
-			if (info.prop->GetFlags() & SPROP_VARINT)
+			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
 			}
@@ -1293,7 +1294,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
-			if (info.prop->GetFlags() & SPROP_VARINT)
+			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
 			}

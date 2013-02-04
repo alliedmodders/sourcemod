@@ -89,15 +89,17 @@ enum PropFieldType
 
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
+	SendProp *pProp; \
 	if (!gamehelpers->FindSendPropInfo(g_szGameRulesProxy, prop, &info)) \
 	{ \
 		return pContext->ThrowNativeError("Property \"%s\" not found on the gamerules proxy", prop); \
 	} \
 	\
 	offset = info.actual_offset; \
-	bit_count = info.prop->m_nBits; \
+	pProp = info.prop; \
+	bit_count = pProp->m_nBits; \
 	\
-	switch (info.prop->GetType()) \
+	switch (pProp->GetType()) \
 	{ \
 	case type: \
 		{ \
@@ -111,7 +113,6 @@ enum PropFieldType
 		} \
 	case DPT_DataTable: \
 		{ \
-			SendProp *pProp; \
 			FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name); \
 			\
 			offset += pProp->GetOffset(); \
@@ -122,13 +123,13 @@ enum PropFieldType
 		{ \
 			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%d != %d)", \
 				prop, \
-				info.prop->GetType(), \
+				pProp->GetType(), \
 				type); \
 		} \
 	} \
 
 #define FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name) \
-	SendTable *pTable = info.prop->GetDataTable(); \
+	SendTable *pTable = pProp->GetDataTable(); \
 	if (!pTable) \
 	{ \
 		return pContext->ThrowNativeError("Error looking up DataTable for prop %s", \
@@ -149,8 +150,8 @@ enum PropFieldType
 	{ \
 		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
 			prop, \
-			info.prop->GetType(), \
-			info.prop->m_nBits, \
+			pProp->GetType(), \
+			pProp->m_nBits, \
 			type); \
 	}
 
@@ -170,11 +171,11 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 	int elementCount = 1;
 
 	FIND_PROP_SEND(DPT_Int, "integer");
-	is_unsigned = ((info.prop->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
+	is_unsigned = ((pProp->GetFlags() & SPROP_UNSIGNED) == SPROP_UNSIGNED);
 
 	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
-	if (info.prop->GetFlags() & SPROP_VARINT)
+	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
 	}
@@ -244,7 +245,7 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 
 	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_ORANGEBOXVALVE
-	if (info.prop->GetFlags() & SPROP_VARINT)
+	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
 	}
