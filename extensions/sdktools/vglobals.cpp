@@ -127,22 +127,14 @@ void GetIServer()
 
 #if defined METAMOD_PLAPI_VERSION || PLAPI_VERSION >= 11
 	/* Get the CreateFakeClient function pointer */
-#if SOURCE_ENGINE == SE_CSS
-	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClientEx)))
-#else
 	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
-#endif
 	{
 		return;
 	}
 #else
 	/* Get the interface manually */
 	SourceHook::MemFuncInfo info = {true, -1, 0, 0};
-#if SOURCE_ENGINE == SE_CSS
-	SourceHook::GetFuncInfo(&IVEngineServer::CreateFakeClientEx, info);
-#else
 	SourceHook::GetFuncInfo(&IVEngineServer::CreateFakeClient, info);
-#endif
 
 	vfunc = enginePatch->GetOrigFunc(info.vtbloffs, info.vtblindex);
 	if (!vfunc)
