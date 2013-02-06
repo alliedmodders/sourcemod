@@ -32,21 +32,21 @@
 			"ClanTagOffset"
 			{
 				"windows"	"24"
-				"linux"		"42"
+				"linux"		"29"
 				"mac"		"29"
 			}
 			//Offset into CheckWinLimit to find CT team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
 			"CTTeamScoreOffset"
 			{
 				"windows"	"18"
-				"linux"		"46"
+				"linux"		"27"
 				"mac"		"466"
 			}
 			//Offset into CheckWinLimit to find T team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
 			"TTeamScoreOffset"
 			{
 				"windows"	"58"
-				"linux"		"57"
+				"linux"		"38"
 				"mac"		"481"
 			}
 		}
