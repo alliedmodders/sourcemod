@@ -2,6 +2,32 @@ SourceMod Changelog
 
 
 
+SourceMod 1.4.7 [2013-02-06]
+
+URL: http://wiki.alliedmods.net/SourceMod_1.4.7_Release_Notes
+
+User Changes: 
+
+ - Updated support for latest Source 2009 engine changes (CS:S, DoD:S, TF2, HL2DM). 
+ - Updated gamedata for Left 4 Dead 2, Nuclear Dawn, No More Room in Hell, Zombie Panic Source, CSPromod, GoldenEye Source, Synergy, The Hidden, and PVKII. 
+ - Added system to block malware or illegal plugins (bug 5289). 
+ - Fixed a potential crash when a bad entity index is passed to certain functions (bug 5539) (KyleS). 
+ - Added an error message for when auto plugin configs fail to be created due to write error (bug 5465) (Drifter). 
+ - Fixed an issue where a malformed plugin could cause crashes (bug 5478). 
+
+Developer Changes: 
+
+ - Added new values to the TFCond TF2 conditions enum (bug 5537) (FlaminSarge). 
+ - Updated TFHoliday TF2 holidays enum (bug 5526) (Powerlord). 
+ - Fixed regression in SourceMod 1.3.0 causing GetEntPropEnt, GetEntDataEnt2, and GameRules_GetPropEnt to possibly return stale (incorrect) entity indexes in place of -1. 
+ - Added support for < 32-bit unsigned sign extension to GameRules_GetProp lookup (already in GetEntProp since SM 1.4.0). 
+ - Fixed < 32-bit unsigned sign extension in GetEntProp not being applied for array prop elements (bug 5591). 
+ - Fixed value size auto-detection in GetEntProp and GameRules_GetProp for ep2v's new SPROP_VARINT sendprops. 
+ - Fixed Sort_Random sort type not including first value in array sorting functions (bug 4292) (Peace-Maker). 
+ - Fixed GameRules_SetPropVector writing data to unexpected addresses instead of to the gamerules proxy entity (bug 5592) (ProdigySim). 
+ - Fixed VoteMenuToAll stock adding bots to list (bug 5253 (VoiDeD).
+
+----------------------------------------------------------
 SourceMod 1.4.6 [2012-09-04]
 
 URL: http://wiki.alliedmods.net/SourceMod_1.4.6_Release_Notes
