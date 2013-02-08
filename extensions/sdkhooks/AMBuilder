@@ -7,8 +7,7 @@ for i in SM.sdkInfo:
 		continue
 
 	compiler = SM.DefaultHL2Compiler('extensions/sdkhooks', i)
-	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'jit'))
-	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.sourceFolder, 'public', 'jit', 'x86'))
+	compiler['CXXINCLUDES'].append(os.path.join(AMBuild.cache[sdk['sdk']], 'game', 'shared'))
 
 	if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
 		compiler['CFLAGS'].append('-Wno-parentheses')

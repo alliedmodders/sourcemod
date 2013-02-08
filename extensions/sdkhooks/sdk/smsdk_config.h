@@ -32,8 +32,6 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 
-#include "version.h"
-
 /**
  * @file smsdk_config.h
  * @brief Contains macros for configuring basic extension information.

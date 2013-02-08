@@ -50,15 +50,9 @@
 #define _DEBUG 1
 #endif
 
+#include <server_class.h>
+
 #include <shareddefs.h>
-
-// Hack to server sdk util.h rather than project util.h
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-#include <../game/server/util.h>
-#else
-#include <../dlls/util.h>
-#endif
-
 #include <takedamageinfo.h>
 
 class CTakeDamageInfoHack : public CTakeDamageInfo
