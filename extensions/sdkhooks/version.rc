@@ -51,7 +51,7 @@ BEGIN
             VALUE "InternalName", "SourceMod SDKHooks Extension"
             VALUE "LegalCopyright", "Copyright (c) 2009-2013, AlliedModders LLC"
             VALUE "OriginalFilename", BINARY_NAME
-            VALUE "ProductName", "SourceMod SDKHooKs Extension"
+            VALUE "ProductName", "SourceMod SDKHooks Extension"
             VALUE "ProductVersion", SM_VERSION_STRING
         END
     END
