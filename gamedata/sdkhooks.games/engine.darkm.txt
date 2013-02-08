@@ -1,0 +1,75 @@
+"Games"
+{
+	/* Dark Messiah Might & Magic */
+	"#default"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"85"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"56"
+			}
+			"PreThink"
+			{
+				"windows"	"256"
+			}
+			"PostThink"
+			{
+				"windows"	"257"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"16"
+			}
+			"Spawn"
+			{
+				"windows"	"23"
+			}
+			"StartTouch"
+			{
+				"windows"	"83"
+			}
+			"Think"
+			{
+				"windows"	"47"
+			}
+			"Touch"
+			{
+				"windows"	"84"
+			}
+			"UpdateOnRemove"
+			{
+				"windows"	"90"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"201"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"202"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"204"
+			}
+		}
+		
+		"Signatures"
+		{
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+			}
+		}
+	}
+}

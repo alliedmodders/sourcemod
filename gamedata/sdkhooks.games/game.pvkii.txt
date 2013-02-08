@@ -1,0 +1,120 @@
+"Games"
+{
+	/* Pirates, Vikings and Knights II 2.3 */
+	"pvkii"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"93"
+				"linux"		"94"
+			}
+			"FireBullets"
+			{
+				"windows"	"105"
+				"linux"		"106"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"61"
+				"linux"		"62"
+			}
+			"PreThink"
+			{
+				"windows"	"292"
+				"linux"		"293"
+			}
+			"PostThink"
+			{
+				"windows"	"293"
+				"linux"		"294"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+				"linux"		"21"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"15"
+				"linux"		"16"
+			}
+			"Spawn"
+			{
+				"windows"	"22"
+				"linux"		"23"
+			}
+			"StartTouch"
+			{
+				"windows"	"91"
+				"linux"		"92"
+			}
+			"Think"
+			{
+				"windows"	"46"
+				"linux"		"47"
+			}
+			"Touch"
+			{
+				"windows"	"92"
+				"linux"		"93"
+			}
+			"TraceAttack"
+			{
+				"windows"	"59"
+				"linux"		"60"
+			}
+			"UpdateOnRemove"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			"Use"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"145"
+				"linux"		"146"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"231"
+				"linux"		"232"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"234"
+				"linux"		"235"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"232"
+				"linux"		"233"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"235"
+				"linux"		"236"
+			}
+		}
+		
+		"Signatures"
+		{
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+}

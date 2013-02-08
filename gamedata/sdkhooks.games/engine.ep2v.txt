@@ -1,0 +1,190 @@
+"Games"
+{
+	// Now this is getting ridiculous
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"tf"
+			"game"		"hl2mp"
+			"game"		"dod"
+		}
+		
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"99"
+				"linux"		"100"
+				"mac"		"100"
+			}
+			"FireBullets"
+			{
+				"windows"	"111"
+				"linux"		"112"
+				"mac"		"112"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"116"
+				"linux"		"117"
+				"mac"		"117"				
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"176"
+				"linux"		"177"
+				"mac"		"177"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"62"
+				"linux"		"63"
+				"mac"		"63"
+			}
+			"PreThink"
+			{
+				"windows"	"330"
+				"linux"		"331"
+				"mac"		"331"
+			}
+			"PostThink"
+			{
+				"windows"	"331"
+				"linux"		"332"
+				"mac"		"332"
+			}
+			"Reload"
+			{
+				"windows"	"274"
+				"linux"		"275"
+				"mac"		"275"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+				"linux"		"21"
+				"mac"		"21"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"16"
+				"linux"		"17"
+				"mac"		"17"
+			}
+			"Spawn"
+			{
+				"windows"	"22"
+				"linux"		"23"
+				"mac"		"23"
+			}
+			"StartTouch"
+			{
+				"windows"	"97"
+				"linux"		"98"
+				"mac"		"98"
+			}
+			"Think"
+			{
+				"windows"	"47"
+				"linux"		"48"
+				"mac"		"48"
+			}
+			"Touch"
+			{
+				"windows"	"98"
+				"linux"		"99"
+				"mac"		"99"
+			}
+			"TraceAttack"
+			{
+				"windows"	"60"
+				"linux"		"61"
+				"mac"		"61"
+			}
+			"Use"
+			{
+				"windows"	"96"
+				"linux"		"97"
+				"mac"		"97"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"156"
+				"linux"		"157"
+				"mac"		"157"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"264"
+				"linux"		"265"
+				"mac"		"265"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"258"
+				"linux"		"259"
+				"mac"		"259"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"261"
+				"linux"		"262"
+				"mac"		"262"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"259"
+				"linux"		"260"
+				"mac"		"260"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"262"
+				"linux"		"263"
+				"mac"		"263"
+			}
+			
+			
+			// no longer used
+			"UpdateOnRemove"
+			{
+				"windows"	"104"
+				"linux"		"105"
+				"mac"		"105"
+			}
+			//
+		}
+		
+		"Signatures"
+		{
+			// no longer used
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
+			}
+			//
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"cstrike"
+		}
+		
+		"Offsets"
+		{
+			"Reload"
+			{
+				"windows"	"272"
+				"linux"		"273"
+				"mac"		"273"
+			}
+		}
+	}
+}

@@ -1,0 +1,125 @@
+"Games"
+{
+	/* Empires Mod 2.31a */
+	"empires"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"95"
+				"linux"		"96"
+			}
+			"FireBullets"
+			{
+				"windows"	"107"
+				"linux"		"108"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"60"
+				"linux"		"61"
+			}
+			"PreThink"
+			{
+				"windows"	"294"
+				"linux"		"295"
+			}
+			"PostThink"
+			{
+				"windows"	"295"
+				"linux"		"296"
+			}
+			"SetTransmit"
+			{
+				"windows"	"19"
+				"linux"		"20"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"15"
+				"linux"		"16"
+			}
+			"Spawn"
+			{
+				"windows"	"21"
+				"linux"		"22"
+			}
+			"StartTouch"
+			{
+				"windows"	"93"
+				"linux"		"94"
+			}
+			"Think"
+			{
+				"windows"	"45"
+				"linux"		"46"
+			}
+			"Touch"
+			{
+				"windows"	"94"
+				"linux"		"95"
+			}
+			"TraceAttack"
+			{
+				"windows"	"58"
+				"linux"		"69"
+			}
+			"UpdateOnRemove"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"Use"
+			{
+				"windows"	"92"
+				"linux"		"93"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"150"
+				"linux"		"151"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"240"
+				"linux"		"241"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"234"
+				"linux"		"235"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"237"
+				"linux"		"238"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"235"
+				"linux"		"236"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"238"
+				"linux"		"239"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"170"
+				"linux"		"171"
+			}
+		}
+		
+		"Signatures"
+		{
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x2A\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+}

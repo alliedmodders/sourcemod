@@ -1,0 +1,124 @@
+"Games"
+{
+	"ageofchivalry"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"93"
+				"linux"		"94"
+			}
+			"FireBullets"
+			{
+				"windows"	"105"
+				"linux"		"106"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"164"
+				"linux"		"165"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"60"
+				"linux"		"61"
+			}
+			"PreThink"
+			{
+				"windows"	"290"
+				"linux"		"291"
+			}
+			"PostThink"
+			{
+				"windows"	"291"
+				"linux"		"292"
+			}
+			"SetTransmit"
+			{
+				"windows"	"19"
+				"linux"		"20"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"15"
+				"linux"		"16"
+			}
+			"Spawn"
+			{
+				"windows"	"21"
+				"linux"		"22"
+			}
+			"StartTouch"
+			{
+				"windows"	"91"
+				"linux"		"92"
+			}
+			"Think"
+			{
+				"windows"	"45"
+				"linux"		"46"
+			}
+			"Touch"
+			{
+				"windows"	"92"
+				"linux"		"93"
+			}
+			"TraceAttack"
+			{
+				"windows"	"58"
+				"linux"		"59"
+			}
+			"UpdateOnRemove"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			"Use"
+			{
+				"windows"	"90"
+				"linux"		"91"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"144"
+				"linux"		"145"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"236"
+				"linux"		"237"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"233"
+				"linux"		"234"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"231"
+				"linux"		"232"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"234"
+				"linux"		"235"
+			}
+		}
+		
+		"Signatures"
+		{
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+}

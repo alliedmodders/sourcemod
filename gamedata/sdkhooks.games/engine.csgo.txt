@@ -1,0 +1,177 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"102"
+				"linux"		"103"
+				"mac"		"103"
+			}
+			"FireBullets"
+			{
+				"windows"	"115"
+				"linux"		"116"
+				"mac"		"116"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"119"
+				"linux"		"120"
+				"mac"		"120"				
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"173"
+				"linux"		"174"
+				"mac"		"174"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"66"
+				"linux"		"67"
+				"mac"		"67"
+			}
+			"PreThink"
+			{
+				"windows"	"356"
+				"linux"		"357"
+				"mac"		"357"
+			}
+			"PostThink"
+			{
+				"windows"	"357"
+				"linux"		"358"
+				"mac"		"358"
+			}
+			"Reload"
+			{
+				"windows"	"281"
+				"linux"		"282"
+				"mac"		"282"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+				"linux"		"23"
+				"mac"		"23"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+				"linux"		"18"
+				"mac"		"18"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
+			}
+			"StartTouch"
+			{
+				"windows"	"100"
+				"linux"		"101"
+				"mac"		"101"
+			}
+			"Think"
+			{
+				"windows"	"50"
+				"linux"		"51"
+				"mac"		"51"
+			}
+			"Touch"
+			{
+				"windows"	"101"
+				"linux"		"102"
+				"mac"		"102"
+			}
+			"TraceAttack"
+			{
+				"windows"	"64"
+				"linux"		"65"
+				"mac"		"65"
+			}
+			"Use"
+			{
+				"windows"	"99"
+				"linux"		"100"
+				"mac"		"100"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"152"
+				"linux"		"153"
+				"mac"		"153"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"281"
+				"linux"		"282"
+				"mac"		"282"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"275"
+				"linux"		"276"
+				"mac"		"276"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"278"
+				"linux"		"279"
+				"mac"		"279"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"276"
+				"linux"		"277"
+				"mac"		"277"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"279"
+				"linux"		"280"
+				"mac"		"280"
+			}
+			
+			
+			// no longer used
+			"UpdateOnRemove"
+			{
+				"windows"	"108"
+				"linux"		"109"
+				"mac"		"109"
+			}
+			//
+		}
+		
+		"Signatures"
+		{
+			// no longer used
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
+			}
+			//
+		}
+	}
+	
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"	"196644"
+				"linux"		"196644"
+				"mac"		"196644"
+			}
+		}
+	}
+}

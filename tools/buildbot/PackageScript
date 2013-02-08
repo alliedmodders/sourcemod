@@ -71,6 +71,7 @@ folders = [['addons', 'sourcemod', 'bin'],
            ['addons', 'sourcemod', 'plugins', 'disabled'],
            ['addons', 'sourcemod', 'gamedata'],
            ['addons', 'sourcemod', 'gamedata', 'core.games'],
+		   ['addons', 'sourcemod', 'gamedata', 'sdkhooks.games'],
            ['addons', 'sourcemod', 'gamedata', 'sdktools.games'],
 		   ['addons', 'sourcemod', 'gamedata', 'sm-cstrike.games'],
            ['addons', 'sourcemod', 'configs', 'geoip'],
@@ -112,6 +113,8 @@ job.AddCommand(CopyFolder(['configs', 'sql-init-scripts', 'mysql'],
 job.AddCommand(CopyFolder(['configs', 'sql-init-scripts', 'sqlite'],
 	['addons', 'sourcemod', 'configs', 'sql-init-scripts', 'sqlite']))
 job.AddCommand(CopyFolder(['gamedata'], ['addons', 'sourcemod', 'gamedata']))
+job.AddCommand(CopyFolder(['gamedata', 'sdkhooks.games'],
+	['addons', 'sourcemod', 'gamedata', 'sdkhooks.games']))
 job.AddCommand(CopyFolder(['gamedata', 'sdktools.games'],
 	['addons', 'sourcemod', 'gamedata', 'sdktools.games']))
 job.AddCommand(CopyFolder(['gamedata', 'core.games'],
@@ -245,6 +248,7 @@ AddNormalLibrary('webternet.ext', 'extensions')
 AddNormalLibrary('clientprefs.ext', 'extensions')
 AddNormalLibrary('updater.ext', 'extensions')
 AddNormalLibrary('bintools.ext', 'extensions')
+AddHL2Library('sdkhooks.ext', 'extensions')
 AddHL2Library('sdktools.ext', 'extensions')
 
 bincopies.append(CopyFile(os.path.join('..', 'spcomp', 'spcomp' + osutil.ExecutableSuffix()),

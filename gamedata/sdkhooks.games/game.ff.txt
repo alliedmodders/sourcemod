@@ -1,0 +1,120 @@
+"Games"
+{
+	/* Fortress Forever 2.4 */
+	"fortressforever"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"96"
+				"linux"		"97"
+			}
+			"FireBullets"
+			{
+				"windows"	"107"
+				"linux"		"108"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"65"
+				"linux"		"66"
+			}
+			"PreThink"
+			{
+				"windows"	"283"
+				"linux"		"284"
+			}
+			"PostThink"
+			{
+				"windows"	"284"
+				"linux"		"285"
+			}
+			"SetTransmit"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+				"linux"		"18"
+			}
+			"Spawn"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+			"StartTouch"
+			{
+				"windows"	"94"
+				"linux"		"95"
+			}
+			"Think"
+			{
+				"windows"	"51"
+				"linux"		"52"
+			}
+			"Touch"
+			{
+				"windows"	"95"
+				"linux"		"96"
+			}
+			"TraceAttack"
+			{
+				"windows"	"63"
+				"linux"		"64"
+			}
+			"UpdateOnRemove"
+			{
+				"windows"	"101"
+				"linux"		"102"
+			}
+			"Use"
+			{
+				"windows"	"93"
+				"linux"		"94"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"152"
+				"linux"		"153"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"232"
+				"linux"		"233"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"226"
+				"linux"		"227"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"229"
+				"linux"		"230"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"227"
+				"linux"		"228"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"230"
+				"linux"		"231"
+			}
+		}
+		
+		"Signatures"
+		{
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+}

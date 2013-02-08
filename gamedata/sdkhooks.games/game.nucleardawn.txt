@@ -1,0 +1,158 @@
+"Games"
+{
+	"nucleardawn"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"119"
+				"linux"		"120"
+				"mac"		"120"
+			}
+			"FireBullets"
+			{
+				"windows"	"132"
+				"linux"		"133"
+				"mac"		"133"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"136"
+				"linux"		"137"
+				"mac"		"137"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"198"
+				"linux"		"199"
+				"mac"		"199"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"72"
+				"linux"		"73"
+				"mac"		"73"
+			}
+			"PreThink"
+			{
+				"windows"	"367"
+				"linux"		"368"
+				"mac"		"368"
+			}
+			"PostThink"
+			{
+				"windows"	"368"
+				"linux"		"369"
+				"mac"		"369"
+			}
+			"Reload"
+			{
+				"windows"	"291"
+				"linux"		"292"
+				"mac"		"292"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+				"linux"		"23"
+				"mac"		"23"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+				"linux"		"18"
+				"mac"		"18"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+				"linux"		"25"
+				"mac"		"25"
+			}
+			"StartTouch"
+			{
+				"windows"	"117"
+				"linux"		"118"
+				"mac"		"118"
+			}
+			"Think"
+			{
+				"windows"	"56"
+				"linux"		"57"
+				"mac"		"57"
+			}
+			"Touch"
+			{
+				"windows"	"118"
+				"linux"		"119"
+				"mac"		"119"
+			}
+			"TraceAttack"
+			{
+				"windows"	"70"
+				"linux"		"71"
+				"mac"		"71"
+			}
+			"UpdateOnRemove"
+			{
+				"windows"	"125"
+				"linux"		"126"
+				"mac"		"126"
+			}
+			"Use"
+			{
+				"windows"	"116"
+				"linux"		"117"
+				"mac"		"117"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"177"
+				"linux"		"178"
+				"mac"		"178"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"296"
+				"linux"		"297"
+				"mac"		"297"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"290"
+				"linux"		"291"
+				"mac"		"291"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"293"
+				"linux"		"294"
+				"mac"		"294"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"291"
+				"linux"		"292"
+				"mac"		"292"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"294"
+				"linux"		"295"
+				"mac"		"295"
+			}
+		}
+		
+		"Signatures"
+		{
+			"IEntityFactoryDictionary"
+			{
+				"library"	"server"
+				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
+				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
+			}
+		}
+	}
+}

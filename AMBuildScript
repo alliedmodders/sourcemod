@@ -420,6 +420,7 @@ FileList = [
 		['extensions', 'curl', 'AMBuilder'],
 		['extensions', 'geoip', 'AMBuilder'],
 		['extensions', 'mysql', 'AMBuilder'],
+		['extensions', 'sdkhools', 'AMBuilder'],
 		['extensions', 'sdktools', 'AMBuilder'],
 		['extensions', 'topmenus', 'AMBuilder'],
 		['extensions', 'updater', 'AMBuilder'],
