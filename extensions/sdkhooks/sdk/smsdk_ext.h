@@ -301,7 +301,9 @@ extern INativeInterface *ninvoke;
 PLUGIN_GLOBALVARS();
 extern IVEngineServer *engine;
 extern IServerGameDLL *gamedll;
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 extern IServerTools *servertools;
+#endif
 #endif
 
 /** Creates a SourceMod interface macro pair */
