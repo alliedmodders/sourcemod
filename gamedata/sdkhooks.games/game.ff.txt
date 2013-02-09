@@ -1,7 +1,7 @@
 "Games"
 {
 	/* Fortress Forever 2.4 */
-	"fortressforever"
+	"FortressForever"
 	{
 		"Offsets"
 		{
@@ -22,13 +22,13 @@
 			}
 			"PreThink"
 			{
-				"windows"	"283"
-				"linux"		"284"
+				"windows"	"281"
+				"linux"		"282"
 			}
 			"PostThink"
 			{
-				"windows"	"284"
-				"linux"		"285"
+				"windows"	"282"
+				"linux"		"283"
 			}
 			"SetTransmit"
 			{
@@ -77,33 +77,33 @@
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"152"
-				"linux"		"153"
+				"windows"	"150"
+				"linux"		"151"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"232"
-				"linux"		"233"
+				"windows"	"230"
+				"linux"		"231"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"226"
-				"linux"		"227"
+				"windows"	"224"
+				"linux"		"225"
 			}
 			"Weapon_Drop"
-			{
-				"windows"	"229"
-				"linux"		"230"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"227"
 				"linux"		"228"
 			}
+			"Weapon_Equip"
+			{
+				"windows"	"225"
+				"linux"		"226"
+			}
 			"Weapon_Switch"
 			{
-				"windows"	"230"
-				"linux"		"231"
+				"windows"	"228"
+				"linux"		"229"
 			}
 		}
 		

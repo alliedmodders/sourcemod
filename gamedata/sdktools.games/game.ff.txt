@@ -18,28 +18,28 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"338"
-				"linux"		"339"
+				"windows"	"336"
+				"linux"		"337"
 			}
 			"RemovePlayerItem"
-			{
-				"windows"	"236"
-				"linux"		"237"
-			}
-			"Weapon_GetSlot"
 			{
 				"windows"	"234"
 				"linux"		"235"
 			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"232"
+				"linux"		"233"
+			}
 			"Ignite"
 			{
-				"windows"	"198"
-				"linux"		"199"
+				"windows"	"196"
+				"linux"		"197"
 			}
 			"Extinguish"
 			{
-				"windows"	"199"
-				"linux"		"200"
+				"windows"	"197"
+				"linux"		"198"
 			}
 			"Teleport"
 			{
@@ -48,18 +48,18 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"366"
-				"linux"		"367"
+				"windows"	"364"
+				"linux"		"365"
 			}
 			"GetVelocity"
 			{
-				"windows"	"136"
-				"linux"		"137"
+				"windows"	"134"
+				"linux"		"135"
 			}
 			"EyeAngles"
 			{
-				"windows"	"128"
-				"linux"		"129"
+				"windows"	"126"
+				"linux"		"127"
 			}
 			"AcceptInput"
 			{
@@ -88,8 +88,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"227"
-				"linux"		"228"
+				"windows"	"225"
+				"linux"		"226"
 			}
 			"Activate"
 			{
@@ -113,7 +113,7 @@
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
-				"windows"	"8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x09\x8B\x01\x8B\x50\x2C\x6A\x01"
+				"windows"	"\8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x09\x8B\x01\x8B\x50\x2C\x6A\x01"
 			}
 			"FindEntityByClassname"
 			{
