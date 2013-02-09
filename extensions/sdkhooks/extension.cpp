@@ -30,6 +30,7 @@
  * Version: $Id$
  */
 
+#include <sourcemod_version.h>
 #include "extension.h"
 #include "compat_wrappers.h"
 #include "macros.h"
@@ -345,6 +346,16 @@ bool SDKHooks::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	gpGlobals = ismm->GetCGlobals();
 
 	return true;
+}
+
+const char *SDKHooks::GetExtensionVerString()
+{
+	return SM_VERSION_STRING;
+}
+
+const char *SDKHooks::GetExtensionDateString()
+{
+	return SM_BUILD_TIMESTAMP;
 }
 
 void SDKHooks::OnPluginLoaded(IPlugin *plugin)

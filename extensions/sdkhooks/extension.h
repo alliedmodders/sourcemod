@@ -157,6 +157,13 @@ public:
 	 * @return			True if working, false otherwise.
 	 */
 	//virtual bool QueryRunning(char *error, size_t maxlength);
+
+	/** Returns version string */
+	virtual const char *GetExtensionVerString();
+
+	/** Returns date string */
+	virtual const char *GetExtensionDateString();
+
 public:
 #if defined SMEXT_CONF_METAMOD
 	/**
