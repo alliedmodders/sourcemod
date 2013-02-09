@@ -200,4 +200,18 @@
 			"GiveNamedItem" "_ZN11CBasePlayer13GiveNamedItemEPKcib"
 		}
 	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"original"
+		}
+		
+		"Keys"
+		{
+			"CommitSuicide"	"_ZN11CBasePlayer13CommitSuicideEv"
+			"DispatchKeyValueVector"	"_ZN11CBaseEntity8KeyValueEPKc6Vector"
+		}
+	}
 }
