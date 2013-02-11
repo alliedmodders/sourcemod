@@ -502,13 +502,14 @@ void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type,
 		int size = msg.ByteSize();
 		uint8 *data = (uint8 *)stackalloc(size);
 		msg.SerializePartialToArray(data, size);
-		m_InterceptBuffer->ParseFromArray(data, size);
+		m_InterceptBuffer->ParsePartialFromArray(data, size);
 	}
 	else
 	{
 		m_FakeEngineBuffer = &const_cast<protobuf::Message &>(msg);
-		OnStartMessage_Post(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
 	}
+
+	OnStartMessage_Post(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
 
 	OnMessageEnd_Pre();
 	if (m_FakeMetaRes == MRES_SUPERCEDE)
@@ -593,7 +594,10 @@ bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_ty
 	}
 
 #ifdef USE_PROTOBUF_USERMESSAGES
-	m_OrigBuffer = m_FakeEngineBuffer;
+	if (m_FakeMetaRes == MRES_SUPERCEDE)
+		m_OrigBuffer = m_InterceptBuffer;
+	else
+		m_OrigBuffer = m_FakeEngineBuffer;
 #else
 	m_OrigBuffer = META_RESULT_ORIG_RET(bf_write *);
 #endif
@@ -743,8 +747,6 @@ void UserMessages::OnMessageEnd_Pre()
 	{
 #if SOURCE_ENGINE == SE_CSGO
 		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(*m_CurRecFilter), m_CurId, *m_InterceptBuffer);
-		delete m_InterceptBuffer;
-		m_InterceptBuffer = NULL;
 #else
 		bf_write *engine_bfw;
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -764,7 +766,7 @@ void UserMessages::OnMessageEnd_Pre()
 		uint8 *data = (uint8 *)stackalloc(size);
 		m_OrigBuffer->SerializePartialToArray(data, size);
 		protobuf::Message *pTempMsg = g_Cstrike15UsermessageHelpers.GetPrototype(m_CurId)->New();
-		pTempMsg->ParseFromArray(data, size);
+		pTempMsg->ParsePartialFromArray(data, size);
 #else
 		bf_write *pTempMsg = m_OrigBuffer;
 #endif
