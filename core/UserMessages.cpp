@@ -493,116 +493,16 @@ void UserMessages::_DecRefCounter()
 	}
 }
 
-#ifdef USE_PROTOBUF_USERMESSAGES
-// Unlike protobuf's Message::CopyFrom:
-// - Does not require to/from message descriptors to be identical.
-// - Fields are copied by name, rather than index.
-// - String fields are retrieved for copy with GetStringReference, to avoid destucting libprotobuf std::string in sm.
-// - Unknown fields in |from| message are not copied to |to| message.
-// - Copying Message fields recursively calls this function, rather than Message::MergeFrom.
-static void _CopyProtobufMessage(const protobuf::Message &from, protobuf::Message *to)
-{
-	const protobuf::Descriptor* descriptor = from.GetDescriptor();
-
-	const protobuf::Reflection* from_reflection = from.GetReflection();
-	const protobuf::Reflection* to_reflection = to->GetReflection();
-
-	protobuf::UnknownFieldSet toUnknownFields;
-
-	int fromFieldCount = descriptor->field_count();
-	for (int i = 0; i < fromFieldCount; i++)
-	{
-		const protobuf::FieldDescriptor* fromField = descriptor->field(i);
-		const protobuf::FieldDescriptor* toField = to->GetDescriptor()->FindFieldByName(fromField->name());
-
-		// This will stripped new fields off of intercepted usermessages.
-		// TODO: fix that.
-		if (!toField)
-		{
-			continue;
-		}
-
-		if (fromField->is_repeated())
-		{
-			int count = from_reflection->FieldSize(from, fromField);
-			for (int j = 0; j < count; j++)
-			{
-				switch (fromField->cpp_type())
-				{
-#define HANDLE_TYPE(CPPTYPE, METHOD)                                           \
-				case protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE:             \
-					to_reflection->Add##METHOD(to, toField,                    \
-					from_reflection->GetRepeated##METHOD(from, fromField, j)); \
-					break;
-				HANDLE_TYPE(INT32 , Int32 );
-				HANDLE_TYPE(INT64 , Int64 );
-				HANDLE_TYPE(UINT32, UInt32);
-				HANDLE_TYPE(UINT64, UInt64);
-				HANDLE_TYPE(FLOAT , Float );
-				HANDLE_TYPE(DOUBLE, Double);
-				HANDLE_TYPE(BOOL  , Bool  );
-				HANDLE_TYPE(ENUM  , Enum  );
-#undef HANDLE_TYPE
-				case protobuf::FieldDescriptor::CPPTYPE_STRING:
-					{
-						std::string buffer;
-						to_reflection->AddString(to, toField,
-							from_reflection->GetRepeatedStringReference(from, fromField, j, &buffer));
-					}
-					break;
-				case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-					_CopyProtobufMessage(
-						from_reflection->GetRepeatedMessage(from, fromField, j),
-						to_reflection->AddMessage(to, toField)
-						);
-					break;
-				}
-			}
-		}
-		else
-		{
-			switch (fromField->cpp_type())
-			{
-#define HANDLE_TYPE(CPPTYPE, METHOD)                            \
-			case protobuf::FieldDescriptor::CPPTYPE_##CPPTYPE:  \
-				to_reflection->Set##METHOD(to, toField,         \
-				from_reflection->Get##METHOD(from, fromField)); \
-				break;
-			HANDLE_TYPE(INT32 , Int32 );
-			HANDLE_TYPE(INT64 , Int64 );
-			HANDLE_TYPE(UINT32, UInt32);
-			HANDLE_TYPE(UINT64, UInt64);
-			HANDLE_TYPE(FLOAT , Float );
-			HANDLE_TYPE(DOUBLE, Double);
-			HANDLE_TYPE(BOOL  , Bool  );
-			HANDLE_TYPE(ENUM  , Enum  );
-#undef HANDLE_TYPE
-			case protobuf::FieldDescriptor::CPPTYPE_STRING:
-				{
-					std::string buffer;
-					to_reflection->SetString(to, toField,
-						from_reflection->GetStringReference(from, fromField, &buffer));
-				}
-				break;
-			case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-				_CopyProtobufMessage(
-					from_reflection->GetMessage(from, fromField),
-					to_reflection->MutableMessage(to, toField)
-					);
-				break;
-			}
-		}
-	}
-}
-#endif
-
 #if SOURCE_ENGINE == SE_CSGO
 void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
 	OnStartMessage_Pre(&filter, msg_type, g_Cstrike15UsermessageHelpers.GetName(msg_type));
 	if (m_FakeMetaRes == MRES_SUPERCEDE)
 	{
-		_CopyProtobufMessage(msg, m_InterceptBuffer);
+		int size = msg.ByteSize();
+		uint8 *data = (uint8 *)stackalloc(size);
+		msg.SerializePartialToArray(data, size);
+		m_InterceptBuffer->ParseFromArray(data, size);
 	}
 	else
 	{
@@ -858,23 +758,33 @@ void UserMessages::OnMessageEnd_Pre()
 #endif // SE_CSGO
 	}
 
-	pList = &m_msgHooks[m_CurId];
-	for (iter=pList->begin(); iter!=pList->end(); )
 	{
-		pInfo = (*iter);
-		pInfo->IsHooked = true;
-		pInfo->Callback->OnUserMessage(m_CurId, m_OrigBuffer, m_CurRecFilter);
+		int size = m_OrigBuffer->ByteSize();
+		uint8 *data = (uint8 *)stackalloc(size);
+		m_OrigBuffer->SerializePartialToArray(data, size);
+		protobuf::Message *pTempMsg = g_Cstrike15UsermessageHelpers.GetPrototype(m_CurId)->New();
+		pTempMsg->ParseFromArray(data, size);
 
-		if (pInfo->KillMe)
+		pList = &m_msgHooks[m_CurId];
+		for (iter=pList->begin(); iter!=pList->end(); )
 		{
-			iter = pList->erase(iter);
-			m_FreeListeners.push(pInfo);
-			_DecRefCounter();
-			continue;
+			pInfo = (*iter);
+			pInfo->IsHooked = true;
+			pInfo->Callback->OnUserMessage(m_CurId, pTempMsg, m_CurRecFilter);
+
+			if (pInfo->KillMe)
+			{
+				iter = pList->erase(iter);
+				m_FreeListeners.push(pInfo);
+				_DecRefCounter();
+				continue;
+			}
+
+			pInfo->IsHooked = false;
+			iter++;
 		}
 
-		pInfo->IsHooked = false;
-		iter++;
+		delete pTempMsg;
 	}
 
 	UM_RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
