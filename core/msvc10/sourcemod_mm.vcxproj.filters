@@ -213,6 +213,9 @@
     <ClCompile Include="..\..\..\hl2sdks\hl2sdk-csgo\public\engine\protobuf\netmessages.pb.cc">
       <Filter>HL2SDK\Protobuf</Filter>
     </ClCompile>
+    <ClCompile Include="..\smn_protobuf.cpp">
+      <Filter>Natives</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\AdminCache.h">
