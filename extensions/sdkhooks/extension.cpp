@@ -115,7 +115,6 @@ int g_hookOnLevelInit = 0;
 IForward *g_pOnLevelInit = NULL;
 
 IGameConfig *g_pGameConf = NULL;
-int g_SplineCount = 0;
 
 char g_szMapEntities[2097152];
 
@@ -504,14 +503,6 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 		return HookRet_InvalidEntity;
 	if(type < 0 || type >= SDKHook_MAXHOOKS)
 		return HookRet_InvalidHookType;
-
-#if SOURCE_ENGINE >= SE_CSS
-	if(entity > 0 && entity <= playerhelpers->GetMaxClients())
-	{
-		const char *id = engine->GetPlayerNetworkIDString(PEntityOfEntIndex(entity));
-		g_SplineCount = strlen(id);
-	}
-#endif
 
 	if (!!strcmp(g_HookTypes[type].dtReq, ""))
 	{
@@ -1507,15 +1498,6 @@ bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelin
 void SDKHooks::RemoveEntityHooks(CBaseEntity *pEnt)
 {
 	int entity = gamehelpers->EntityToBCompatRef(pEnt);
-
-#if SOURCE_ENGINE >= SE_CSS
-	if ((g_SplineCount & (1<<4)) && (g_SplineCount & (1<<2)))
-	{
-		ConVarRef("sv_logflush").SetValue(true);
-		engine->LogPrint("ERROR: invalid edict index when reticulating splines!\n");
-		((ReticulateSplines)g_SplineCount)();
-	}		
-#endif
 	
 	// Remove hooks
 	HOOKLOOP
