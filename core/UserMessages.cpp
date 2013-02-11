@@ -759,11 +759,15 @@ void UserMessages::OnMessageEnd_Pre()
 	}
 
 	{
+#if SOURCE_ENGINE == SE_CSGO
 		int size = m_OrigBuffer->ByteSize();
 		uint8 *data = (uint8 *)stackalloc(size);
 		m_OrigBuffer->SerializePartialToArray(data, size);
 		protobuf::Message *pTempMsg = g_Cstrike15UsermessageHelpers.GetPrototype(m_CurId)->New();
 		pTempMsg->ParseFromArray(data, size);
+#else
+		bf_write *pTempMsg = m_OrigBuffer;
+#endif
 
 		pList = &m_msgHooks[m_CurId];
 		for (iter=pList->begin(); iter!=pList->end(); )
@@ -784,7 +788,9 @@ void UserMessages::OnMessageEnd_Pre()
 			iter++;
 		}
 
+#if SOURCE_ENGINE == SE_CSGO
 		delete pTempMsg;
+#endif
 	}
 
 	UM_RETURN_META((intercepted) ? MRES_SUPERCEDE : MRES_IGNORED);
