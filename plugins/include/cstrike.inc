@@ -356,7 +356,7 @@ native CSWeaponID:CS_AliasToWeaponID(const String:alias[]);
  * @param len			Length of the destination array.
  * @return				Returns number of cells written.
  */
-native CS_WeaponIDToAlias(weaponID, String:destination[], len);
+native CS_WeaponIDToAlias(CSWeaponID:weaponID, String:destination[], len);
 
 /**
  * Do not edit below this line!
