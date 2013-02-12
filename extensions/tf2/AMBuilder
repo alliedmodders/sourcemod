@@ -1,30 +1,30 @@
 # vim: set ts=2 sw=2 tw=99 noet ft=python: 
 import os
+if 'ep2v' in SM.sdkInfo:
+	sdk = SM.sdkInfo['ep2v']
+	compiler = SM.DefaultHL2Compiler('extensions/tf2', 'ep2v')
+	if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
+		compiler['CFLAGS'].append('-Wno-parentheses')
 
-sdk = SM.sdkInfo['ep2v']
-compiler = SM.DefaultHL2Compiler('extensions/tf2', 'ep2v')
-if compiler.cc.name == 'gcc' or compiler.cc.name == 'clang':
-	compiler['CFLAGS'].append('-Wno-parentheses')
-
-name = 'game.tf2.ext.' + sdk['ext']
-extension = AMBuild.AddJob(name)
-binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
-SM.PreSetupHL2Job(extension, binary, 'ep2v')
-binary.AddSourceFiles('extensions/tf2', [
-	'extension.cpp',
-	'natives.cpp',
-	'RegNatives.cpp',
-	'util.cpp',
-	'criticals.cpp',
-	'holiday.cpp',
-	'teleporter.cpp',
-	'gameplayrules.cpp',
-	'conditions.cpp',
-	'CDetour/detours.cpp',
-	'sdk/smsdk_ext.cpp',
-	'asm/asm.c'
-	])
-SM.PostSetupHL2Job(extension, binary, 'ep2v')
-SM.AutoVersion('extensions/tf2', binary)
-binary.SendToJob()
+	name = 'game.tf2.ext.' + sdk['ext']
+	extension = AMBuild.AddJob(name)
+	binary = Cpp.LibraryBuilder(name, AMBuild, extension, compiler)
+	SM.PreSetupHL2Job(extension, binary, 'ep2v')
+	binary.AddSourceFiles('extensions/tf2', [
+		'extension.cpp',
+		'natives.cpp',
+		'RegNatives.cpp',
+		'util.cpp',
+		'criticals.cpp',
+		'holiday.cpp',
+		'teleporter.cpp',
+		'gameplayrules.cpp',
+		'conditions.cpp',
+		'CDetour/detours.cpp',
+		'sdk/smsdk_ext.cpp',
+		'asm/asm.c'
+		])
+	SM.PostSetupHL2Job(extension, binary, 'ep2v')
+	SM.AutoVersion('extensions/tf2', binary)
+	binary.SendToJob()
 
