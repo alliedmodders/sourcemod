@@ -75,7 +75,7 @@
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x53\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x32\xDB\x81\xF9"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x75\x08\x57\x6A\x00\x68"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 				"mac"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
