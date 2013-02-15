@@ -63,7 +63,7 @@ static cell_t IsMapValid(IPluginContext *pContext, const cell_t *params)
 	char *map;
 	pContext->LocalToString(params[1], &map);
 
-	return engine->IsMapValid(map);
+	return g_HL2.IsMapValid(map);
 }
 
 static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)

@@ -33,6 +33,7 @@
 #include <sm_trie_tpl.h>
 #include "common_logic.h"
 #include "CellArray.h"
+#include <IGameHelpers.h>
 #include <ILibrarySys.h>
 #include <ITextParsers.h>
 #include <ISourceMod.h>
@@ -524,7 +525,7 @@ private:
 				{
 					continue;
 				}
-				if (!engine->IsMapValid(ptr))
+				if (!gamehelpers->IsMapValid(ptr))
 				{
 					continue;
 				}

@@ -308,6 +308,16 @@ namespace SourceMod
 		 * @return				Pointer to the string, or NULL if bad pointer.
 		 */
 		virtual const char *GetEntityClassname(CBaseEntity *pEntity) =0;
+
+		/**
+		 * @brief Returns whether or not a map name is valid to use with the
+		 * engine's Changelevel functionality. It need not be an exact filename on
+		 * some engines. For a check on the exact name, use IVEngineServer::IsMapValid.
+		 *
+		 * @param map			Map name.
+		 * @return				True if valid, otherwise false.
+		 */
+		virtual bool IsMapValid(const char *map) =0;
 	};
 }
 
