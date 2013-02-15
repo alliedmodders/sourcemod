@@ -31,6 +31,7 @@
 
 #include "NextMap.h"
 #include "Logger.h"
+#include "HalfLife2.h"
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
 #include "sourcehook.h"
@@ -109,7 +110,7 @@ const char *NextMapManager::GetNextMap()
 
 bool NextMapManager::SetNextMap(const char *map)
 {
-	if (!engine->IsMapValid(map))
+	if (!g_HL2.IsMapValid(map))
 	{
 		return false;
 	}
@@ -133,7 +134,7 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 
 	const char *newmap = sm_nextmap.GetString();
 
-	if (newmap[0] == 0 || !engine->IsMapValid(newmap))
+	if (newmap[0] == 0 || !g_HL2.IsMapValid(newmap))
 	{
 		RETURN_META(MRES_IGNORED);
 	}

@@ -148,6 +148,7 @@ public: //IGameHelpers
 	ICommandLine *GetValveCommandLine();
 	const char *GetEntityClassname(edict_t *pEdict);
 	const char *GetEntityClassname(CBaseEntity *pEntity);
+	bool IsMapValid(const char *map);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

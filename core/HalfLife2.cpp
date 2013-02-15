@@ -1131,3 +1131,44 @@ const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 
 	return *(const char **)(((unsigned char *)pEntity) + offset);
 }
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+static bool ResolveFuzzyMapName(const char *fuzzyName, char *outFullname, int size)
+{
+	static ConCommand *pHelperCmd = g_pCVar->FindCommand("changelevel");
+	if (!pHelperCmd || !pHelperCmd->CanAutoComplete())
+		return false;
+
+	static size_t helperCmdLen = strlen(pHelperCmd->GetName());
+
+	CUtlVector<CUtlString> results;
+	pHelperCmd->AutoCompleteSuggest(fuzzyName, results);
+	if (results.Count() == 0)
+		return false;
+
+	// Results come back as you'd see in autocomplete. (ie. "changelevel fullmapnamehere"),
+	// so skip ahead to start of map path/name
+
+	// Like the engine, we're only going to deal with the first match.
+
+	strncopy(outFullname, &results[0][helperCmdLen + 1], size);
+
+	return true;
+}
+#endif
+
+bool CHalfLife2::IsMapValid(const char *map)
+{
+	bool ret = engine->IsMapValid(map);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	if (!ret)
+	{
+		static char szFuzzyName[PLATFORM_MAX_PATH];
+		if (ResolveFuzzyMapName(map, szFuzzyName, sizeof(szFuzzyName)))
+		{
+			ret = engine->IsMapValid(szFuzzyName);
+		}
+	}
+#endif
+	return ret;
+}
