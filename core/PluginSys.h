@@ -43,7 +43,6 @@
 #include <sh_vector.h>
 #include <sh_string.h>
 #include "sm_globals.h"
-#include "PluginInfoDatabase.h"
 #include "sm_trie.h"
 #include "sourcemod.h"
 #include <IRootConsoleMenu.h>
@@ -469,7 +468,6 @@ private:
 	List<IPluginsListener *> m_listeners;
 	List<CPlugin *> m_plugins;
 	CStack<CPluginManager::CPluginIterator *> m_iters;
-	CPluginInfoDatabase m_PluginInfo;
 	Trie *m_LoadLookup;
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;

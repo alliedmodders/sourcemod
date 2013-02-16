@@ -823,19 +823,7 @@ void CPluginManager::Shutdown()
 void CPluginManager::LoadAll_FirstPass(const char *config, const char *basedir)
 {
 	/* First read in the database of plugin settings */
-	SMCError err;
-	SMCStates states;
 	m_AllPluginsLoaded = false;
-	if ((err=textparsers->ParseFile_SMC(config, &m_PluginInfo, &states)) != SMCError_Okay)
-	{
-		g_Logger.LogError("[SM] Encountered fatal error parsing file \"%s\"", config);
-		const char *err_msg = textparsers->GetSMCErrorString(err);
-		if (err_msg)
-		{
-			g_Logger.LogError("[SM] Parse error encountered: \"%s\"", err_msg);
-		}
-	}
-
 	LoadPluginsFromDir(basedir, NULL);
 }
 
@@ -909,21 +897,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	}
 
 	int err;
-	bool no_load = false;
-	PluginSettings *pset;
-	unsigned int setcount = m_PluginInfo.GetSettingsNum();
-	for (unsigned int i=0; i<setcount; i++)
-	{
-		if ((pset = m_PluginInfo.GetSettingsIfMatch(i, path)) == NULL)
-		{
-			continue;
-		}
-		if (pset->blockload_val)
-		{
-			no_load = true;
-			break;
-		}
-	}
 
 	/**
 	 * Does this plugin already exist?
@@ -934,8 +907,7 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
 			|| pPlugin->GetStatus() == Plugin_Error
-			|| pPlugin->GetStatus() == Plugin_Failed
-			|| no_load)
+			|| pPlugin->GetStatus() == Plugin_Failed)
 		{
 			UnloadPlugin(pPlugin);
 		}
@@ -949,11 +921,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 		}
 	}
 
-	if (no_load)
-	{
-		return LoadRes_NeverLoad;
-	}
-
 	pPlugin = CPlugin::CreatePlugin(path, error, maxlength);
 
 	assert(pPlugin != NULL);
@@ -965,37 +932,6 @@ LoadRes CPluginManager::_LoadPlugin(CPlugin **_plugin, const char *path, bool de
 	if (pPlugin->m_status == Plugin_Uncompiled)
 	{
 		co = g_pSourcePawn2->StartCompilation();
-	}
-
-	for (unsigned int i=0; i<setcount; i++)
-	{
-		if ((pset=m_PluginInfo.GetSettingsIfMatch(i, path)) == NULL)
-		{
-			continue;
-		}
-		pPlugin->m_type = pset->type_val;
-		if (co)
-		{
-			for (unsigned int j=0; j<pset->opts_num; j++)
-			{
-				const char *key, *val;
-				m_PluginInfo.GetOptionsForPlugin(pset, j, &key, &val);
-				if (!key || !val)
-				{
-					continue;
-				}
-				if ((err = co->SetOption(key, val)) == SP_ERROR_NONE)
-				{
-					if (error)
-					{
-						UTIL_Format(error, maxlength, "Unable to set JIT option (key \"%s\") (value \"%s\")", key, val);
-					}
-					co->Abort();
-					co = NULL;
-					break;
-				}
-			}
-		}
 	}
 
 	/* Do the actual compiling */

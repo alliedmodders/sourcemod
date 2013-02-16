@@ -78,7 +78,6 @@ for i in SM.sdkInfo:
 		'TimerSys.cpp',
 		'CoreConfig.cpp',
 		'Logger.cpp',
-		'PluginInfoDatabase.cpp',
 		'smn_halflife.cpp',
 		'PluginSys.cpp',
 		'smn_console.cpp',
