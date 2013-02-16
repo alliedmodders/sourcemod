@@ -31,7 +31,6 @@
 
 #include "sm_globals.h"
 #include <sh_stack.h>
-#include "DebugReporter.h"
 #include "MenuManager.h"
 #include "MenuStyle_Valve.h"
 #include "MenuStyle_Radio.h"
@@ -44,6 +43,7 @@
 #include "Logger.h"
 #endif
 #include "ChatTriggers.h"
+#include "logic_bridge.h"
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -470,7 +470,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 			if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
 				!= SP_ERROR_NONE)
 			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
+				logicore.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
 				no_call = true;
 			} else {
 				cell_t target_offs = sizeof(cell_t) * results->num_clients;
@@ -503,7 +503,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 			if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
 				!= SP_ERROR_NONE)
 			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
+				logicore.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
 				no_call = true;
 			} else {
 				cell_t target_offs = sizeof(cell_t) * results->num_items;

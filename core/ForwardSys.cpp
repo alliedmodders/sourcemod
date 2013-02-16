@@ -35,7 +35,7 @@
 #include "ForwardSys.h"
 #include "PluginSys.h"
 #include "ShareSys.h"
-#include "DebugReporter.h"
+#include "logic_bridge.h"
 
 CForwardManager g_Forwards;
 
@@ -356,7 +356,7 @@ int CForward::Execute(cell_t *result, IForwardFilter *filter)
 
 			if (err != SP_ERROR_NONE)
 			{
-				g_DbgReporter.GenerateError(func->GetParentContext(), 
+				logicore.GenerateError(func->GetParentContext(), 
 					func->GetFunctionID(), 
 					err, 
 					"Failed to push parameter while executing forward");

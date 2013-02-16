@@ -41,6 +41,7 @@
 #include "ThreadSupport.h"
 #include "Translator.h"
 #include "GameConfigs.h"
+#include "DebugReporter.h"
 
 sm_core_t smcore;
 IHandleSys *handlesys;
@@ -59,6 +60,8 @@ ServerGlobals serverGlobals;
 IPlayerManager *playerhelpers;
 IAdminSystem *adminsys;
 IGameHelpers *gamehelpers;
+ISourcePawnEngine *g_pSourcePawn;
+ISourcePawnEngine2 *g_pSourcePawn2;
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -73,6 +76,14 @@ static IGameConfig *GetCoreGameConfig()
 // Defined in smn_filesystem.cpp.
 extern bool OnLogPrint(const char *msg);
 
+static void GenerateError(IPluginContext *ctx, cell_t idx, int err, const char *msg, ...)
+{
+	va_list ap;
+	va_start(ap, msg);
+	g_DbgReporter.GenerateErrorVA(ctx, idx, err, msg, ap);
+	va_end(ap);
+}
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -86,7 +97,9 @@ static sm_logic_t logic =
 	UTIL_ReplaceEx,
 	UTIL_DecodeHexString,
 	GetCoreGameConfig,
-	OnLogPrint
+	OnLogPrint,
+	&g_DbgReporter,
+	GenerateError
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
@@ -110,6 +123,8 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	playerhelpers = core->playerhelpers;
 	adminsys = core->adminsys;
 	gamehelpers = core->gamehelpers;
+	g_pSourcePawn = core->spe1;
+	g_pSourcePawn2 = core->spe2;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()

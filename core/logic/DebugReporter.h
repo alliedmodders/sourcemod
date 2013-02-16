@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_CDBGREPORTER_H_
 
 #include "sp_vm_api.h"
-#include "sm_globals.h"
+#include "common_logic.h"
 
 class DebugReport : 
 	public SMGlobalClass, 

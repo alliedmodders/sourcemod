@@ -49,7 +49,8 @@ files = [
 	'smn_gameconfigs.cpp',
 	'GameConfigs.cpp',
 	'sm_crc32.cpp',
-	'smn_profiler.cpp'
+	'smn_profiler.cpp',
+	'DebugReporter.cpp'
 	]
 if AMBuild.target['platform'] == 'windows':
 	files.append('thread/WinThreads.cpp')

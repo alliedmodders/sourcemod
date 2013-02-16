@@ -35,6 +35,7 @@
 #include <ITimerSystem.h>
 #include <IPluginSys.h>
 #include <sh_stack.h>
+#include "DebugReporter.h"
 
 using namespace SourceHook;
 
@@ -155,7 +156,7 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	{
 		if ((herr=handlesys->FreeHandle(usrhndl, &sec)) != HandleError_None)
 		{
-			smcore.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
+			g_DbgReporter.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
 							  	 SP_ERROR_NATIVE, 
 							  	 "Invalid data handle %x (error %d) passed during timer end with TIMER_DATA_HNDL_CLOSE",
 							  	 usrhndl, herr);
@@ -166,7 +167,7 @@ void TimerNatives::OnTimerEnd(ITimer *pTimer, void *pData)
 	{
 		if ((herr=handlesys->FreeHandle(pInfo->TimerHandle, &sec)) != HandleError_None)
 		{
-			smcore.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
+			g_DbgReporter.GenerateError(pInfo->pContext, pInfo->Hook->GetFunctionID(), 
 				SP_ERROR_NATIVE, 
 				"Invalid timer handle %x (error %d) during timer end, displayed function is timer callback, not the stack trace", 
 				pInfo->TimerHandle, herr);

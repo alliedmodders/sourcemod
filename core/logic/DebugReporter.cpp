@@ -29,10 +29,8 @@
  * Version: $Id$
  */
 
+#include <IPluginSys.h>
 #include "DebugReporter.h"
-#include "Logger.h"
-#include "PluginSys.h"
-#include "sm_stringutil.h"
 
 DebugReport g_DbgReporter;
 
@@ -47,10 +45,10 @@ void DebugReport::OnDebugSpew(const char *msg, ...)
 	char buffer[512];
 
 	va_start(ap, msg);
-	UTIL_FormatArgs(buffer, sizeof(buffer), msg, ap);
+	smcore.FormatArgs(buffer, sizeof(buffer), msg, ap);
 	va_end(ap);
 
-	g_Logger.LogMessage("[SM] %s", buffer);
+	smcore.Log("[SM] %s", buffer);
 }
 
 void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...)
@@ -65,19 +63,19 @@ void DebugReport::GenerateError(IPluginContext *ctx, cell_t func_idx, int err, c
 void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap)
 {
 	char buffer[512];
-	UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
+	smcore.FormatArgs(buffer, sizeof(buffer), message, ap);
 
-	const char *plname = g_PluginSys.FindPluginByContext(ctx->GetContext())->GetFilename();
+	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
 	const char *error = g_pSourcePawn2->GetErrorString(err);
 
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		smcore.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+		smcore.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
 	}
 
-	g_Logger.LogError("[SM] %s", buffer);
+	smcore.LogError("[SM] %s", buffer);
 
 	if (func_idx != -1)
 	{
@@ -87,7 +85,7 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 			sp_public_t *function;
 			if (ctx->GetRuntime()->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
 			{
-				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
+				smcore.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
 			}
 		}
 	}
@@ -99,26 +97,26 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	char buffer[512];
 
 	va_start(ap, message);
-	UTIL_FormatArgs(buffer, sizeof(buffer), message, ap);
+	smcore.FormatArgs(buffer, sizeof(buffer), message, ap);
 	va_end(ap);
 
-	const char *plname = g_PluginSys.FindPluginByContext(pContext->GetContext())->GetFilename();
+	const char *plname = pluginsys->FindPluginByContext(pContext->GetContext())->GetFilename();
 	const char *error = g_pSourcePawn2->GetErrorString(err);
 
 	if (error)
 	{
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		smcore.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
 	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+		smcore.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
 	}
 
-	g_Logger.LogError("[SM] %s", buffer);
+	smcore.LogError("[SM] %s", buffer);
 
 	IPluginDebugInfo *pDebug;
 	if ((pDebug = pContext->GetRuntime()->GetDebugInfo()) == NULL)
 	{
-		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
-		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
+		smcore.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
+		smcore.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
 			_GetPluginIndex(pContext));
 		return;
 	}
@@ -126,21 +124,21 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	const char *name;
 	if (pDebug->LookupFunction(code_addr, &name) == SP_ERROR_NONE)
 	{
-		g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", name);
+		smcore.LogError("[SM] Unable to call function \"%s\" due to above error(s).", name);
 	} else {
-		g_Logger.LogError("[SM] Unable to call function (name unknown, address \"%x\").", code_addr);
+		smcore.LogError("[SM] Unable to call function (name unknown, address \"%x\").", code_addr);
 	}
 }
 
 void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *error)
 {
 	const char *lastname;
-	const char *plname = g_PluginSys.FindPluginByContext(ctx->GetContext())->GetFilename();
+	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
 	int n_err = error->GetErrorCode();
 
 	if (n_err != SP_ERROR_NATIVE)
 	{
-		g_Logger.LogError("[SM] Plugin encountered error %d: %s",
+		smcore.LogError("[SM] Plugin encountered error %d: %s",
 			n_err,
 			error->GetErrorString());
 	}
@@ -150,26 +148,26 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 		const char *custerr;
 		if ((custerr=error->GetCustomErrorString()) != NULL)
 		{
-			g_Logger.LogError("[SM] Native \"%s\" reported: %s", lastname, custerr);
+			smcore.LogError("[SM] Native \"%s\" reported: %s", lastname, custerr);
 		} else {
-			g_Logger.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
+			smcore.LogError("[SM] Native \"%s\" encountered a generic error.", lastname);
 		}
 	}
 
 	if (!error->DebugInfoAvailable())
 	{
-		g_Logger.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
-		g_Logger.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
+		smcore.LogError("[SM] Debug mode is not enabled for \"%s\"", plname);
+		smcore.LogError("[SM] To enable debug mode, edit plugin_settings.cfg, or type: sm plugins debug %d on",
 			_GetPluginIndex(ctx));
 		return;
 	}
 
 	CallStackInfo stk_info;
 	int i = 0;
-	g_Logger.LogError("[SM] Displaying call stack trace for plugin \"%s\":", plname);
+	smcore.LogError("[SM] Displaying call stack trace for plugin \"%s\":", plname);
 	while (error->GetTraceInfo(&stk_info))
 	{
-		g_Logger.LogError("[SM]   [%d]  Line %d, %s::%s()",
+		smcore.LogError("[SM]   [%d]  Line %d, %s::%s()",
 			i++,
 			stk_info.line,
 			stk_info.filename,
@@ -180,7 +178,7 @@ void DebugReport::OnContextExecuteError(IPluginContext *ctx, IContextTrace *erro
 int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 {
 	int id = 1;
-	IPluginIterator *iter = g_PluginSys.GetPluginIterator();
+	IPluginIterator *iter = pluginsys->GetPluginIterator();
 
 	for (; iter->MorePlugins(); iter->NextPlugin(), id++)
 	{
@@ -196,6 +194,6 @@ int DebugReport::_GetPluginIndex(IPluginContext *ctx)
 
 	/* If we don't know which plugin this is, it's one being loaded.  Fake its index for now. */
 
-	return g_PluginSys.GetPluginCount() + 1;
+	return pluginsys->GetPluginCount() + 1;
 }
 

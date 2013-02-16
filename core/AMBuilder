@@ -86,7 +86,6 @@ for i in SM.sdkInfo:
 		'smn_core.cpp',
 		'smn_hudtext.cpp',
 		'smn_usermsgs.cpp',
-		'DebugReporter.cpp',
 		'MenuStyle_Base.cpp',
 		'ShareSys.cpp',
 		'smn_database.cpp',

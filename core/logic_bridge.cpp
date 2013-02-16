@@ -45,7 +45,6 @@
 #include "ForwardSys.h"
 #include "TimerSys.h"
 #include "logic_bridge.h"
-#include "DebugReporter.h"
 #include "PlayerManager.h"
 #include "AdminCache.h"
 #include "HalfLife2.h"
@@ -133,15 +132,6 @@ static void log_to_game(const char *message)
 static bool file_exists(const char *path)
 {
 	return basefilesystem->FileExists(path);
-}
-
-static void generate_error(IPluginContext *ctx, cell_t func_idx, int err, const char *fmt, ...)
-{
-	va_list ap;
-	
-	va_start(ap, fmt);
-	g_DbgReporter.GenerateErrorVA(ctx, func_idx, err, fmt, ap);
-	va_end(ap);
 }
 
 static const char *get_cvar_string(ConVar* cvar)
@@ -234,6 +224,8 @@ static sm_core_t core_bridge =
 	&g_Players,
 	&g_Admins,
 	&g_HL2,
+	g_pSourcePawn,
+	g_pSourcePawn2,
 	/* Functions */
 	add_natives,
 	find_convar,
@@ -246,7 +238,7 @@ static sm_core_t core_bridge =
 	file_exists,
 	get_cvar_string,
 	UTIL_Format,
-	generate_error,
+	UTIL_FormatArgs,
 	gnprintf,
 	atcprintf,
 	get_game_name,
