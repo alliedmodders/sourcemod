@@ -37,8 +37,11 @@
 #include "LibrarySys.h"
 #include "TimerSys.h"
 #include <sourcemod_version.h>
+#include "logic_bridge.h"
 
 Logger g_Logger;
+
+SH_DECL_HOOK1_void(IVEngineServer, LogPrint, SH_NOATTRIB, false, const char *);
 
 /**
  * :TODO: This should be creating the log folder if it doesn't exist
@@ -91,14 +94,27 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
+static void HookLogPrint(const char *message)
+{
+	g_in_game_log_hook = true;
+	bool stopped = logicore.OnLogPrint(message);
+	g_in_game_log_hook = false;
+
+	if (stopped)
+		RETURN_META(MRES_SUPERCEDE);
+}
+
 void Logger::OnSourceModStartup(bool late)
 {
 	InitLogger(m_Mode);
+
+	SH_ADD_HOOK_STATICFUNC(IVEngineServer, LogPrint, engine, HookLogPrint, false);
 }
 
 void Logger::OnSourceModAllShutdown()
 {
 	CloseLogger();
+	SH_REMOVE_HOOK_STATICFUNC(IVEngineServer, LogPrint, engine, HookLogPrint, false);
 }
 
 void Logger::OnSourceModLevelChange(const char *mapName)
@@ -306,6 +322,14 @@ void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
 
 void Logger::LogMessage(const char *vafmt, ...)
 {
+	va_list ap;
+	va_start(ap, vafmt);
+	LogMessageEx(vafmt, ap);
+	va_end(ap);
+}
+
+void Logger::LogMessageEx(const char *vafmt, va_list ap)
+{
 	if (!m_Active)
 	{
 		return;
@@ -313,10 +337,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 
 	if (m_Mode == LoggingMode_Game)
 	{
-		va_list ap;
-		va_start(ap, vafmt);
 		_PrintToGameLog(vafmt, ap);
-		va_end(ap);
 		return;
 	}
 
@@ -364,10 +385,7 @@ void Logger::LogMessage(const char *vafmt, ...)
 			strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 			fprintf(fp, "L %s: SourceMod log file session started (file \"L%04d%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday, SM_VERSION_STRING);
 	 	}
-		va_list ap;
-		va_start(ap, vafmt);
 		LogToOpenFileEx(fp, vafmt, ap);
-		va_end(ap);
 		fclose(fp);
 	} else {
 		goto print_error;

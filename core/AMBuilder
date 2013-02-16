@@ -64,7 +64,6 @@ for i in SM.sdkInfo:
 		'sourcemm_api.cpp',
 		'ChatTriggers.cpp',
 		'NativeOwner.cpp',
-		'smn_filesystem.cpp',
 		'smn_player.cpp',
 		'sourcemod.cpp',
 		'concmd_cleaner.cpp',

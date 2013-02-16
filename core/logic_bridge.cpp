@@ -109,6 +109,32 @@ static void log_error(const char *fmt, ...)
 	va_end(ap);
 }
 
+static void log_message(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	g_Logger.LogMessageEx(fmt, ap);
+	va_end(ap);
+}
+
+static void log_to_file(FILE *fp, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	g_Logger.LogToOpenFileEx(fp, fmt, ap);
+	va_end(ap);
+}
+
+static void log_to_game(const char *message)
+{
+	Engine_LogPrintWrapper(message);
+}
+
+static bool file_exists(const char *path)
+{
+	return basefilesystem->FileExists(path);
+}
+
 static void generate_error(IPluginContext *ctx, cell_t func_idx, int err, const char *fmt, ...)
 {
 	va_list ap;
@@ -214,6 +240,10 @@ static sm_core_t core_bridge =
 	strncopy,
 	UTIL_TrimWhitespace,
 	log_error,
+	log_message,
+	log_to_file,
+	log_to_game,
+	file_exists,
 	get_cvar_string,
 	UTIL_Format,
 	generate_error,

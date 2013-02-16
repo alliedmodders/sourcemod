@@ -105,6 +105,10 @@ struct sm_core_t
 	unsigned int	(*strncopy)(char*, const char*, size_t);
 	char *			(*TrimWhitespace)(char *, size_t &);
 	void			(*LogError)(const char*, ...);
+	void			(*Log)(const char*, ...);
+	void			(*LogToFile)(FILE *fp, const char*, ...);
+	void			(*LogToGame)(const char *message);
+	bool			(*FileExists)(const char *path);
 	const char *	(*GetCvarString)(ConVar*);
 	size_t			(*Format)(char*, size_t, const char*, ...);
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
@@ -136,6 +140,7 @@ struct sm_logic_t
 	char            *(*ReplaceEx)(char *, size_t, const char *, size_t, const char *, size_t, bool);
 	size_t          (*DecodeHexString)(unsigned char *, size_t, const char *);
 	IGameConfig *   (*GetCoreGameConfig)();
+	bool			(*OnLogPrint)(const char *msg);	// true to supercede
 };
 
 typedef void (*LogicInitFunction)(const sm_core_t *core, sm_logic_t *logic);

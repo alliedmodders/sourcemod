@@ -74,6 +74,7 @@ public:
 	void EnableLogging();
 	void DisableLogging();
 	void LogMessage(const char *msg, ...);
+	void LogMessageEx(const char *msg, va_list ap);
 	void LogError(const char *msg, ...);
 	void LogErrorEx(const char *msg, va_list ap); 
 	void LogFatal(const char *msg, ...);

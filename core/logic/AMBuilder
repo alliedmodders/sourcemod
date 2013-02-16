@@ -38,6 +38,7 @@ files = [
 	'MemoryUtils.cpp',
 	'smn_admin.cpp',
 	'smn_banning.cpp',
+	'smn_filesystem.cpp',
 	'stringutil.cpp',
 	'Translator.cpp',
 	'PhraseCollection.cpp',

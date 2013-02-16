@@ -30,16 +30,13 @@
  */
 
 #include <sys/stat.h>
-#include "sm_globals.h"
-#include "HandleSys.h"
-#include "LibrarySys.h"
-#include "sm_stringutil.h"
-#include "Logger.h"
-#include "PluginSys.h"
-#include "sourcemm_api.h"
-#include "ForwardSys.h"
-
-SH_DECL_HOOK1_void(IVEngineServer, LogPrint, SH_NOATTRIB, false, const char *);
+#include <IHandleSys.h>
+#include <ILibrarySys.h>
+#include <IPluginSys.h>
+#include <IForwardSys.h>
+#include <ISourceMod.h>
+#include <ITranslator.h>
+#include "common_logic.h"
 
 HandleType_t g_FileType;
 HandleType_t g_DirType;
@@ -53,26 +50,20 @@ class FileNatives :
 public:
 	FileNatives()
 	{
-		m_bIsLoggingHooked = false;
 	}
 	virtual void OnSourceModAllInitialized()
 	{
-		g_FileType = g_HandleSys.CreateType("File", this, 0, NULL, NULL, g_pCoreIdent, NULL);
-		g_DirType = g_HandleSys.CreateType("Directory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
-		g_pLogHook = g_Forwards.CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
-		g_PluginSys.AddPluginsListener(this);
+		g_FileType = handlesys->CreateType("File", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_DirType = handlesys->CreateType("Directory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_pLogHook = forwardsys->CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
+		pluginsys->AddPluginsListener(this);
 	}
 	virtual void OnSourceModShutdown()
 	{
-		g_PluginSys.RemovePluginsListener(this);
-		if (m_bIsLoggingHooked)
-		{
-			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
-			m_bIsLoggingHooked = false;
-		}
-		g_Forwards.ReleaseForward(g_pLogHook);
-		g_HandleSys.RemoveType(g_DirType, g_pCoreIdent);
-		g_HandleSys.RemoveType(g_FileType, g_pCoreIdent);
+		pluginsys->RemovePluginsListener(this);
+		forwardsys->ReleaseForward(g_pLogHook);
+		handlesys->RemoveType(g_DirType, g_pCoreIdent);
+		handlesys->RemoveType(g_FileType, g_pCoreIdent);
 		g_DirType = 0;
 		g_FileType = 0;
 	}
@@ -86,56 +77,30 @@ public:
 		else if (type == g_DirType)
 		{
 			IDirectory *pDir = (IDirectory *)object;
-			g_LibSys.CloseDirectory(pDir);
-		}
-	}
-	virtual void OnPluginDestroyed(IPlugin *plugin)
-	{
-		if (m_bIsLoggingHooked && g_pLogHook->GetFunctionCount() == 0)
-		{
-			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
-			m_bIsLoggingHooked = false;
+			libsys->CloseDirectory(pDir);
 		}
 	}
 	virtual void AddLogHook(IPluginFunction *pFunc)
 	{
-		if (!m_bIsLoggingHooked)
-		{
-			SH_ADD_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
-			m_bIsLoggingHooked = true;
-		}
-
 		g_pLogHook->AddFunction(pFunc);
 	}
 	virtual void RemoveLogHook(IPluginFunction *pFunc)
 	{
 		g_pLogHook->RemoveFunction(pFunc);
-
-		if (m_bIsLoggingHooked && g_pLogHook->GetFunctionCount() == 0)
-		{
-			SH_REMOVE_HOOK_MEMFUNC(IVEngineServer, LogPrint, engine, this, &FileNatives::LogPrint, false);
-			m_bIsLoggingHooked = false;
-		}
 	}
-	virtual void LogPrint(const char *msg)
+	virtual bool LogPrint(const char *msg)
 	{
-		cell_t result;
-
-		result = 0;
-
-		g_in_game_log_hook = true;
+		cell_t result = 0;
 		g_pLogHook->PushString(msg);
 		g_pLogHook->Execute(&result);
-		g_in_game_log_hook = false;
-
-		if (result >= Pl_Handled)
-		{
-			RETURN_META(MRES_SUPERCEDE);
-		}
+		return result >= Pl_Handled;
 	}
-private:
-	bool m_bIsLoggingHooked;
 } s_FileNatives;
+
+bool OnLogPrint(const char *msg)
+{
+	return s_FileNatives.LogPrint(msg);
+}
 
 static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 {
@@ -148,15 +113,15 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
 
-	IDirectory *pDir = g_LibSys.OpenDirectory(realpath);
+	IDirectory *pDir = libsys->OpenDirectory(realpath);
 	if (!pDir)
 	{
 		return 0;
 	}
 
-	return g_HandleSys.CreateHandle(g_DirType, pDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_DirType, pDir, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
@@ -170,7 +135,7 @@ static cell_t sm_ReadDirEntry(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_DirType, &sec, (void **)&pDir))
+	if ((herr=handlesys->ReadHandle(hndl, g_DirType, &sec, (void **)&pDir))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -226,7 +191,7 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 	FILE *pFile = fopen(realpath, mode);
 	if (!pFile)
@@ -234,7 +199,7 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	return g_HandleSys.CreateHandle(g_FileType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	return handlesys->CreateHandle(g_FileType, pFile, pContext->GetIdentity(), g_pCoreIdent, NULL);
 }
 
 static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
@@ -248,7 +213,7 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 	return (unlink(realpath)) ? 0 : 1;
 }
@@ -264,7 +229,7 @@ static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -295,7 +260,7 @@ static cell_t sm_IsEndOfFile(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -314,7 +279,7 @@ static cell_t sm_FileSeek(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -335,7 +300,7 @@ static cell_t sm_FilePosition(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -356,11 +321,11 @@ static cell_t sm_FileExists(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] >= 2 && params[2] == 1)
 	{
-		return basefilesystem->FileExists(name) ? 1 : 0;
+		return smcore.FileExists(name) ? 1 : 0;
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(realpath, &s) != 0)
@@ -402,9 +367,9 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char new_realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
+	g_pSM->BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
 	char old_realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
+	g_pSM->BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
 
 #ifdef PLATFORM_WINDOWS
 	return (MoveFileA(old_realpath, new_realpath)) ? 1 : 0;
@@ -424,7 +389,7 @@ static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(realpath, &s) != 0)
@@ -461,7 +426,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 #ifdef PLATFORM_WINDOWS
 	struct _stat s;
 	if (_stat(realpath, &s) != 0)
@@ -493,7 +458,7 @@ static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 	char realpath[PLATFORM_MAX_PATH];
 
 	pContext->LocalToString(params[1], &name);
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 #if defined PLATFORM_WINDOWS
 	return mkdir(realpath) == 0;
@@ -513,7 +478,7 @@ static cell_t sm_RemoveDir(IPluginContext *pContext, const cell_t *params)
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
 	return (rmdir(realpath)) ? 0 : 1;
 }
@@ -528,7 +493,7 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -544,7 +509,7 @@ static cell_t sm_WriteFileLine(IPluginContext *pContext, const cell_t *params)
 
 	char buffer[2048];
 	int arg = 3;
-	atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
+	smcore.atcprintf(buffer, sizeof(buffer), fmt, pContext, params, &arg);
 	fprintf(pFile, "%s\n", buffer);
 
 	return 1;
@@ -560,7 +525,7 @@ static cell_t sm_FlushFile(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -576,17 +541,17 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[2], &buffer);
 	pContext->LocalToString(params[4], &fmt);
 
-	atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
+	smcore.atcprintf(path, sizeof(path), fmt, pContext, params, &arg);
 
-	return g_SourceMod.BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
+	return g_pSM->BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
 }
 
 static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 {
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	size_t len = g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+	size_t len = g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
@@ -602,43 +567,43 @@ static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
 		buffer[len] = '\0';
 	}
 
-	Engine_LogPrintWrapper(buffer);
+	smcore.LogToGame(buffer);
 
 	return 1;
 }
 
 static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 {
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
-	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	smcore.Log("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
 
 static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 {
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
 	char buffer[1024];
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 1);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
-	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	smcore.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -655,9 +620,9 @@ static cell_t sm_GetFileTime(IPluginContext *pContext, const cell_t *params)
 
 	time_t time_val;
 	char realpath[PLATFORM_MAX_PATH];
-	g_SourceMod.BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
 
-	if (!g_LibSys.FileTime(realpath, (FileTimeType)params[2], &time_val))
+	if (!libsys->FileTime(realpath, (FileTimeType)params[2], &time_val))
 	{
 		return -1;
 	}
@@ -675,23 +640,23 @@ static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
 
-	CPlugin *pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
-	g_Logger.LogToOpenFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	smcore.LogToFile(pFile, "[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
 }
@@ -706,22 +671,22 @@ static cell_t sm_LogToOpenFileEx(IPluginContext *pContext, const cell_t *params)
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
 	}
 
 	char buffer[2048];
-	g_SourceMod.SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
-	g_SourceMod.FormatString(buffer, sizeof(buffer), pContext, params, 2);
+	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
 
 	if (pContext->GetLastNativeError() != SP_ERROR_NONE)
 	{
 		return 0;
 	}
 
-	g_Logger.LogToOpenFile(pFile, "%s", buffer);
+	smcore.LogToFile(pFile, "%s", buffer);
 
 	return 1;
 }
@@ -734,7 +699,7 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	FILE *pFile;
 	size_t read = 0;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -793,7 +758,7 @@ static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)
 	FILE *pFile;
 	cell_t num_read = 0;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -861,7 +826,7 @@ static cell_t sm_WriteFile(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 	FILE *pFile;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);
@@ -915,7 +880,7 @@ static cell_t sm_WriteFileString(IPluginContext *pContext, const cell_t *params)
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 	FILE *pFile;
 
-	if ((herr=g_HandleSys.ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
+	if ((herr=handlesys->ReadHandle(hndl, g_FileType, &sec, (void **)&pFile))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid file handle %x (error %d)", hndl, herr);

@@ -70,6 +70,9 @@ static IGameConfig *GetCoreGameConfig()
 	return g_pGameConf;
 }
 
+// Defined in smn_filesystem.cpp.
+extern bool OnLogPrint(const char *msg);
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -82,7 +85,8 @@ static sm_logic_t logic =
 	UTIL_ReplaceAll,
 	UTIL_ReplaceEx,
 	UTIL_DecodeHexString,
-	GetCoreGameConfig
+	GetCoreGameConfig,
+	OnLogPrint
 };
 
 static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
