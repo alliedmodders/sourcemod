@@ -30,6 +30,7 @@
  */
 
 #include <IPluginSys.h>
+#include <stdarg.h>
 #include "DebugReporter.h"
 
 DebugReport g_DbgReporter;
