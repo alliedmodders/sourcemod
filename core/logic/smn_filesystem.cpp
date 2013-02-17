@@ -30,6 +30,7 @@
  */
 
 #include <sys/stat.h>
+#include <string.h>
 #include <IHandleSys.h>
 #include <ILibrarySys.h>
 #include <IPluginSys.h>
