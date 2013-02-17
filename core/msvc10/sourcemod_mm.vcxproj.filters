@@ -66,9 +66,6 @@
     <ClCompile Include="..\Database.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\DebugReporter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\EventManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -123,9 +120,6 @@
     <ClCompile Include="..\PlayerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\PluginInfoDatabase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\PluginSys.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -175,9 +169,6 @@
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_fakenatives.cpp">
-      <Filter>Natives</Filter>
-    </ClCompile>
-    <ClCompile Include="..\smn_filesystem.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
     <ClCompile Include="..\smn_halflife.cpp">
@@ -257,9 +248,6 @@
     <ClInclude Include="..\Database.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\DebugReporter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\EventManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -312,9 +300,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\PlayerManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\PluginInfoDatabase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\PluginSys.h">

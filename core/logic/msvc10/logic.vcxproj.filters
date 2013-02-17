@@ -117,6 +117,12 @@
     <ClCompile Include="..\smn_textparse.cpp">
       <Filter>Natives</Filter>
     </ClCompile>
+    <ClCompile Include="..\DebugReporter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\smn_filesystem.cpp">
+      <Filter>Natives</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\CellArray.h">

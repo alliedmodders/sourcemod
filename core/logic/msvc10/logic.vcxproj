@@ -112,10 +112,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\common_logic.cpp" />
+    <ClCompile Include="..\DebugReporter.cpp" />
     <ClCompile Include="..\GameConfigs.cpp" />
     <ClCompile Include="..\MemoryUtils.cpp" />
     <ClCompile Include="..\PhraseCollection.cpp" />
     <ClCompile Include="..\Profiler.cpp" />
+    <ClCompile Include="..\smn_filesystem.cpp" />
     <ClCompile Include="..\sm_crc32.cpp" />
     <ClCompile Include="..\smn_admin.cpp" />
     <ClCompile Include="..\smn_adt_array.cpp" />

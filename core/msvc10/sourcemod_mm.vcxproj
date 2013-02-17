@@ -2097,7 +2097,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release - CS GO|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\Database.cpp" />
-    <ClCompile Include="..\DebugReporter.cpp" />
     <ClCompile Include="..\EventManager.cpp" />
     <ClCompile Include="..\ExtensionSys.cpp" />
     <ClCompile Include="..\ForwardSys.cpp" />
@@ -2116,7 +2115,6 @@
     <ClCompile Include="..\NativeOwner.cpp" />
     <ClCompile Include="..\NextMap.cpp" />
     <ClCompile Include="..\PlayerManager.cpp" />
-    <ClCompile Include="..\PluginInfoDatabase.cpp" />
     <ClCompile Include="..\PluginSys.cpp" />
     <ClCompile Include="..\ShareSys.cpp" />
     <ClCompile Include="..\smn_protobuf.cpp">
@@ -2173,7 +2171,6 @@
     <ClCompile Include="..\smn_entities.cpp" />
     <ClCompile Include="..\smn_events.cpp" />
     <ClCompile Include="..\smn_fakenatives.cpp" />
-    <ClCompile Include="..\smn_filesystem.cpp" />
     <ClCompile Include="..\smn_halflife.cpp" />
     <ClCompile Include="..\smn_hudtext.cpp" />
     <ClCompile Include="..\smn_keyvalues.cpp" />
@@ -2310,7 +2307,6 @@
     <ClInclude Include="..\convar_sm_swarm.h" />
     <ClInclude Include="..\CoreConfig.h" />
     <ClInclude Include="..\Database.h" />
-    <ClInclude Include="..\DebugReporter.h" />
     <ClInclude Include="..\EventManager.h" />
     <ClInclude Include="..\ExtensionSys.h" />
     <ClInclude Include="..\ForwardSys.h" />
@@ -2329,7 +2325,6 @@
     <ClInclude Include="..\NativeOwner.h" />
     <ClInclude Include="..\NextMap.h" />
     <ClInclude Include="..\PlayerManager.h" />
-    <ClInclude Include="..\PluginInfoDatabase.h" />
     <ClInclude Include="..\PluginSys.h" />
     <ClInclude Include="..\ShareSys.h" />
     <ClInclude Include="..\sm_autonatives.h" />
