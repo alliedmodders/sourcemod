@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <sm_platform.h>
 #include <string.h>
+#include <stdarg.h>
 #include "common_logic.h"
 #include "TextParsers.h"
 #include "Profiler.h"
