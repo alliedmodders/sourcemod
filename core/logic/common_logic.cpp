@@ -124,8 +124,8 @@ static void logic_init(const sm_core_t* core, sm_logic_t* _logic)
 	playerhelpers = core->playerhelpers;
 	adminsys = core->adminsys;
 	gamehelpers = core->gamehelpers;
-	g_pSourcePawn = core->spe1;
-	g_pSourcePawn2 = core->spe2;
+	g_pSourcePawn = *core->spe1;
+	g_pSourcePawn2 = *core->spe2;
 }
 
 PLATFORM_EXTERN_C ITextParsers *get_textparsers()

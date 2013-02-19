@@ -99,8 +99,8 @@ struct sm_core_t
 	IPlayerManager  *playerhelpers;
 	IAdminSystem	*adminsys;
 	IGameHelpers    *gamehelpers;
-	ISourcePawnEngine *spe1;
-	ISourcePawnEngine2 *spe2;
+	ISourcePawnEngine **spe1;
+	ISourcePawnEngine2 **spe2;
 	/* Functions */
 	void			(*AddNatives)(sp_nativeinfo_t* nlist);
 	ConVar *		(*FindConVar)(const char*);

@@ -224,8 +224,8 @@ static sm_core_t core_bridge =
 	&g_Players,
 	&g_Admins,
 	&g_HL2,
-	g_pSourcePawn,
-	g_pSourcePawn2,
+	&g_pSourcePawn,
+	&g_pSourcePawn2,
 	/* Functions */
 	add_natives,
 	find_convar,
