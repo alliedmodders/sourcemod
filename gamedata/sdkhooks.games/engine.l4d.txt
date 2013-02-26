@@ -8,101 +8,121 @@
 			{
 				"windows"	"97"
 				"linux"		"98"
+				"mac"		"98"
 			}
 			"FireBullets"
 			{
 				"windows"	"109"
 				"linux"		"110"
+				"mac"		"110"
 			}
 			"OnTakeDamage"
 			{
 				"windows"	"62"
 				"linux"		"63"
+				"mac"		"63"
 			}
 			"PreThink"
 			{
 				"windows"	"333"
 				"linux"		"334"
+				"mac"		"334"
 			}
 			"PostThink"
 			{
 				"windows"	"334"
 				"linux"		"335"
+				"mac"		"335"
 			}
 			"SetTransmit"
 			{
 				"windows"	"19"
 				"linux"		"20"
+				"mac"		"20"
 			}
 			"ShouldCollide"
 			{
 				"windows"	"15"
 				"linux"		"16"
+				"mac"		"16"
 			}
 			"Spawn"
 			{
 				"windows"	"21"
 				"linux"		"22"
+				"mac"		"22"
 			}
 			"StartTouch"
 			{
 				"windows"	"95"
 				"linux"		"96"
+				"mac"		"96"
 			}
 			"Think"
 			{
 				"windows"	"47"
 				"linux"		"48"
+				"mac"		"48"
 			}
 			"Touch"
 			{
 				"windows"	"96"
 				"linux"		"97"
+				"mac"		"97"
 			}
 			"TraceAttack"
 			{
 				"windows"	"60"
 				"linux"		"61"
+				"mac"		"61"
 			}
 			"UpdateOnRemove"
 			{
 				"windows"	"102"
 				"linux"		"103"
+				"mac"		"103"
 			}
 			"Use"
 			{
 				"windows"	"94"
 				"linux"		"95"
+				"mac"		"95"
 			}
 			"VPhysicsUpdate"
 			{
 				"windows"	"152"
 				"linux"		"153"
+				"mac"		"153"
 			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"265"
 				"linux"		"266"
+				"mac"		"266"
 			}
 			"Weapon_CanUse"
 			{
 				"windows"	"259"
 				"linux"		"260"
+				"mac"		"260"
 			}
 			"Weapon_Drop"
 			{
 				"windows"	"262"
 				"linux"		"263"
+				"mac"		"263"
 			}
 			"Weapon_Equip"
 			{
 				"windows"	"260"
 				"linux"		"261"
+				"mac"		"261"
 			}
 			"Weapon_Switch"
 			{
 				"windows"	"263"
 				"linux"		"264"
+				"mac"		"264"
 			}
 		}
 		
@@ -113,6 +133,7 @@
 				"library"	"server"
 				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
 				"linux"		"@_Z23EntityFactoryDictionaryv"
+				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}
