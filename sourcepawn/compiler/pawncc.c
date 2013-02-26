@@ -67,9 +67,6 @@ t_native *native_list = NULL;
 
 int main(int argc, char *argv[])
 {
-#if defined _DEBUG
-	getchar();
-#endif
 	if (pc_compile(argc,argv) == 0)
 	{
 		AMX_HEADER *hdr;
