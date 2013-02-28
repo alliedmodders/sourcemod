@@ -805,6 +805,13 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 		return false;
 	}
 
+	/* Tell it to unload */
+	if (pExt->IsLoaded())
+	{
+		IExtensionInterface *pAPI = pExt->GetAPI();
+		pAPI->OnExtensionUnload();
+	}
+
 	/* First remove us from internal lists */
 	g_ShareSys.RemoveInterfaces(_pExt);
 	m_Libs.remove(pExt);
@@ -897,13 +904,6 @@ bool CExtensionManager::UnloadExtension(IExtension *_pExt)
 			glob->OnSourceModIdentityDropped(pIdentity);
 			glob = glob->m_pGlobalClassNext;
 		}
-	}
-
-	/* Tell it to unload */
-	if (pExt->IsLoaded())
-	{
-		IExtensionInterface *pAPI = pExt->GetAPI();
-		pAPI->OnExtensionUnload();
 	}
 
 	pExt->Unload();
